@@ -1,0 +1,158 @@
+<Bindings>
+  <Layer name="SI_KEYBINDINGS_CATEGORY_GENERAL">
+    <Category name="|c00FF00FCO |cFFFF00Item Saver|r">
+      <Action name="FCOIS_SETTINGS_MENU">
+        <Down>FCOIS.ShowFCOItemSaverSettings()</Down>
+      </Action>
+      <Action name="FCOISFILTER1">
+        <Down>FCOIS.ChangeFilter(1)</Down>
+      </Action>
+      <Action name="FCOISFILTER2">
+        <Down>FCOIS.ChangeFilter(2)</Down>
+      </Action>
+      <Action name="FCOISFILTER3">
+        <Down>FCOIS.ChangeFilter(3)</Down>
+      </Action>
+      <Action name="FCOISFILTER4">
+        <Down>FCOIS.ChangeFilter(4)</Down>
+      </Action>
+      <Action name="FCOIS_MARK_ITEM_WITH_STANDARD_ICON">
+        <Down>FCOIS.MarkItemCycle('next')</Down>
+      </Action>
+<!--
+      <Action name="FCOIS_MARK_ITEM_CYCLE_UP">
+        <Down>FCOIS.MarkItemCycle('next')</Down>
+      </Action>
+      <Action name="FCOIS_MARK_ITEM_CYCLE_DOWN">
+        <Down>FCOIS.MarkItemCycle('prev')</Down>
+      </Action>
+-->
+      <Action name="FCOIS_MARK_ITEM_1">
+        <Down>FCOIS.MarkItemByKeybind(1)</Down>
+      </Action>
+      <Action name="FCOIS_MARK_ITEM_3">
+        <Down>FCOIS.MarkItemByKeybind(3)</Down>
+      </Action>
+      <Action name="FCOIS_MARK_ITEM_5">
+        <Down>FCOIS.MarkItemByKeybind(5)</Down>
+      </Action>
+      <Action name="FCOIS_MARK_ITEM_9">
+        <Down>FCOIS.MarkItemByKeybind(9)</Down>
+      </Action>
+      <Action name="FCOIS_MARK_ITEM_10">
+        <Down>FCOIS.MarkItemByKeybind(10)</Down>
+      </Action>
+      <Action name="FCOIS_MARK_ITEM_11">
+        <Down>FCOIS.MarkItemByKeybind(11)</Down>
+      </Action>
+      <Action name="FCOIS_MARK_ITEM_12">
+        <Down>FCOIS.MarkItemByKeybind(12)</Down>
+      </Action>
+      <Action name="FCOIS_MARK_GEAR_SET_1">
+        <Down>FCOIS.MarkItemByKeybind(2)</Down>
+      </Action>
+      <Action name="FCOIS_MARK_GEAR_SET_2">
+        <Down>FCOIS.MarkItemByKeybind(4)</Down>
+      </Action>
+      <Action name="FCOIS_MARK_GEAR_SET_3">
+        <Down>FCOIS.MarkItemByKeybind(6)</Down>
+      </Action>
+      <Action name="FCOIS_MARK_GEAR_SET_4">
+        <Down>FCOIS.MarkItemByKeybind(7)</Down>
+      </Action>
+      <Action name="FCOIS_MARK_GEAR_SET_5">
+        <Down>FCOIS.MarkItemByKeybind(8)</Down>
+      </Action>
+      <Action name="FCOIS_MARK_ITEM_13">
+        <Down>FCOIS.MarkItemByKeybind(13)</Down>
+      </Action>
+      <Action name="FCOIS_MARK_ITEM_14">
+        <Down>FCOIS.MarkItemByKeybind(14)</Down>
+      </Action>
+      <Action name="FCOIS_MARK_ITEM_15">
+        <Down>FCOIS.MarkItemByKeybind(15)</Down>
+      </Action>
+      <Action name="FCOIS_MARK_ITEM_16">
+        <Down>FCOIS.MarkItemByKeybind(16)</Down>
+      </Action>
+      <Action name="FCOIS_MARK_ITEM_17">
+        <Down>FCOIS.MarkItemByKeybind(17)</Down>
+      </Action>
+      <Action name="FCOIS_MARK_ITEM_18">
+        <Down>FCOIS.MarkItemByKeybind(18)</Down>
+      </Action>
+      <Action name="FCOIS_MARK_ITEM_19">
+        <Down>FCOIS.MarkItemByKeybind(19)</Down>
+      </Action>
+      <Action name="FCOIS_MARK_ITEM_20">
+        <Down>FCOIS.MarkItemByKeybind(20)</Down>
+      </Action>
+      <Action name="FCOIS_MARK_ITEM_21">
+        <Down>FCOIS.MarkItemByKeybind(21)</Down>
+      </Action>
+      <Action name="FCOIS_MARK_ITEM_22">
+        <Down>FCOIS.MarkItemByKeybind(22)</Down>
+      </Action>
+      <Action name="FCOIS_MARK_ITEM_23">
+        <Down>FCOIS.MarkItemByKeybind(23)</Down>
+      </Action>
+      <Action name="FCOIS_MARK_ITEM_24">
+        <Down>FCOIS.MarkItemByKeybind(24)</Down>
+      </Action>
+      <Action name="FCOIS_MARK_ITEM_25">
+        <Down>FCOIS.MarkItemByKeybind(25)</Down>
+      </Action>
+      <Action name="FCOIS_MARK_ITEM_26">
+        <Down>FCOIS.MarkItemByKeybind(26)</Down>
+      </Action>
+      <Action name="FCOIS_MARK_ITEM_27">
+        <Down>FCOIS.MarkItemByKeybind(27)</Down>
+      </Action>
+      <Action name="FCOIS_MARK_ITEM_28">
+        <Down>FCOIS.MarkItemByKeybind(28)</Down>
+      </Action>
+      <Action name="FCOIS_MARK_ITEM_29">
+        <Down>FCOIS.MarkItemByKeybind(29)</Down>
+      </Action>
+      <Action name="FCOIS_MARK_ITEM_30">
+        <Down>FCOIS.MarkItemByKeybind(30)</Down>
+      </Action>
+      <Action name="FCOIS_MARK_ITEM_31">
+        <Down>FCOIS.MarkItemByKeybind(31)</Down>
+      </Action>
+      <Action name="FCOIS_MARK_ITEM_32">
+        <Down>FCOIS.MarkItemByKeybind(32)</Down>
+      </Action>
+      <Action name="FCOIS_MARK_ITEM_33">
+        <Down>FCOIS.MarkItemByKeybind(33)</Down>
+      </Action>
+      <Action name="FCOIS_MARK_ITEM_34">
+        <Down>FCOIS.MarkItemByKeybind(34)</Down>
+      </Action>
+      <Action name="FCOIS_MARK_ITEM_35">
+        <Down>FCOIS.MarkItemByKeybind(35)</Down>
+      </Action>
+      <Action name="FCOIS_MARK_ITEM_36">
+        <Down>FCOIS.MarkItemByKeybind(36)</Down>
+      </Action>
+      <Action name="FCOIS_MARK_ITEM_37">
+        <Down>FCOIS.MarkItemByKeybind(37)</Down>
+      </Action>
+      <Action name="FCOIS_MARK_ITEM_38">
+        <Down>FCOIS.MarkItemByKeybind(38)</Down>
+      </Action>
+      <Action name="FCOIS_MARK_ITEM_39">
+        <Down>FCOIS.MarkItemByKeybind(39)</Down>
+      </Action>
+      <Action name="FCOIS_MARK_ITEM_40">
+        <Down>FCOIS.MarkItemByKeybind(40)</Down>
+      </Action>
+      <Action name="FCOIS_MARK_ITEM_41">
+        <Down>FCOIS.MarkItemByKeybind(41)</Down>
+      </Action>
+      <Action name="FCOIS_MARK_ITEM_42">
+        <Down>FCOIS.MarkItemByKeybind(42)</Down>
+      </Action>
+    </Category>
+  </Layer>
+</Bindings>
