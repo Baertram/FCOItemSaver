@@ -55,6 +55,8 @@ function FCOIS.checkActivePanel(comingFrom, overwriteFilterWhere)
     local currentSceneName = SCENE_MANAGER.currentScene.name
     if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[FCOIS.checkActivePanel] Before: " .. tostring(oldFilterWhere) .. ", overwriteFilterWhere: " .. tostring(overwriteFilterWhere) .. ", currentSceneName: " ..tostring(currentSceneName), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
 
+d("[FCOIS.checkActivePanel] comingFrom: " .. tostring(comingFrom) .. ", overwriteFilterWhere: " ..tostring(overwriteFilterWhere))
+
     --Player bank
     if (currentSceneName ~= nil and currentSceneName == ctrlVars.bankSceneName and not ctrlVars.BANK:IsHidden()) or comingFrom == LF_BANK_WITHDRAW then
         --Update the filterPanelId
@@ -90,11 +92,29 @@ function FCOIS.checkActivePanel(comingFrom, overwriteFilterWhere)
         --Update the filterPanelId
         FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(LF_GUILDSTORE_SELL)
         inventoryName = ctrlVars.INV
-    --Vendor (not showing the buy, buyback or repair tabs and showing the player inventory or the craftbag panel)
+    --Vendor buy
+    elseif ((currentSceneName ~= nil and currentSceneName == ctrlVars.vendorSceneName) or comingFrom == LF_VENDOR_BUY) and not ctrlVars.STORE:IsHidden() then
+        --Update the filterPanelId
+        FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(LF_VENDOR_BUY)
+        --inventoryName = ctrlVars.VENDOR_SELL
+        inventoryName = ctrlVars.INV
+    --Vendor sell (not showing the buy, buyback or repair tabs and showing the player inventory or the craftbag panel)
     elseif ((currentSceneName ~= nil and currentSceneName == ctrlVars.vendorSceneName) or comingFrom == LF_VENDOR_SELL)
         and (ctrlVars.STORE:IsHidden() and ctrlVars.STORE_BUY_BACK:IsHidden() and ctrlVars.REPAIR_LIST:IsHidden()) then
         --Update the filterPanelId
         FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(LF_VENDOR_SELL)
+        --inventoryName = ctrlVars.VENDOR_SELL
+        inventoryName = ctrlVars.INV
+    --Vendor buyback
+    elseif ((currentSceneName ~= nil and currentSceneName == ctrlVars.vendorSceneName) or comingFrom == LF_VENDOR_BUYBACK) and not ctrlVars.STORE_BUY_BACK:IsHidden() then
+        --Update the filterPanelId
+        FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(LF_VENDOR_BUYBACK)
+        --inventoryName = ctrlVars.VENDOR_SELL
+        inventoryName = ctrlVars.INV
+    --Vendor repair
+    elseif ((currentSceneName ~= nil and currentSceneName == ctrlVars.vendorSceneName) or comingFrom == LF_VENDOR_REPAIR) and not ctrlVars.REPAIR_LIST:IsHidden() then
+        --Update the filterPanelId
+        FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(LF_VENDOR_REPAIR)
         --inventoryName = ctrlVars.VENDOR_SELL
         inventoryName = ctrlVars.INV
     --Fence

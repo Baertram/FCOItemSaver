@@ -21,30 +21,33 @@ end
 FCOIS_CON_DESTROY				= 71
 FCOIS_CON_MAIL 					= 72
 FCOIS_CON_TRADE 				= 73
-FCOIS_CON_SELL 					= 74
-FCOIS_CON_IMPROVE 				= 75
-FCOIS_CON_DECONSTRUCT 			= 76
-FCOIS_CON_ENCHANT_EXTRACT 		= 77
-FCOIS_CON_ENCHANT_CREATE 		= 78
-FCOIS_CON_GUILD_STORE_SELL 		= 79
-FCOIS_CON_FENCE_SELL 			= 80
-FCOIS_CON_LAUNDER_SELL 			= 81
-FCOIS_CON_ALCHEMY_DESTROY 		= 82
-FCOIS_CON_CONTAINER_AUTOOLOOT 	= 83
-FCOIS_CON_RECIPE_USAGE 			= 84
-FCOIS_CON_MOTIF_USAGE 			= 85
-FCOIS_CON_POTION_USAGE 			= 86
-FCOIS_CON_FOOD_USAGE 			= 87
-FCOIS_CON_CRAFTBAG_DESTROY		= 88
-FCOIS_CON_REFINE				= 89
-FCOIS_CON_RESEARCH				= 90
-FCOIS_CON_RETRAIT               = 91
+FCOIS_CON_BUY					= 74
+FCOIS_CON_SELL 					= 75
+FCOIS_CON_BUYBACK				= 76
+FCOIS_CON_REPAIR    			= 77
+FCOIS_CON_IMPROVE 				= 78
+FCOIS_CON_DECONSTRUCT 			= 79
+FCOIS_CON_ENCHANT_EXTRACT 		= 80
+FCOIS_CON_ENCHANT_CREATE 		= 81
+FCOIS_CON_GUILD_STORE_SELL 		= 82
+FCOIS_CON_FENCE_SELL 			= 83
+FCOIS_CON_LAUNDER_SELL 			= 84
+FCOIS_CON_ALCHEMY_DESTROY 		= 85
+FCOIS_CON_CONTAINER_AUTOOLOOT 	= 86
+FCOIS_CON_RECIPE_USAGE 			= 87
+FCOIS_CON_MOTIF_USAGE 			= 88
+FCOIS_CON_POTION_USAGE 			= 89
+FCOIS_CON_FOOD_USAGE 			= 90
+FCOIS_CON_CRAFTBAG_DESTROY		= 91
 FCOIS_CON_REFINE				= 92
-FCOIS_CON_JEWELRY_REFINE		= 93
-FCOIS_CON_JEWELRY_DECONSTRUCT 	= 94
-FCOIS_CON_JEWELRY_IMPROVE		= 95
-FCOIS_CON_JEWELRY_RESEARCH		= 96
-FCOIS_CON_CROWN_ITEM            = 97
+FCOIS_CON_RESEARCH				= 93
+FCOIS_CON_RETRAIT               = 94
+FCOIS_CON_REFINE				= 95
+FCOIS_CON_JEWELRY_REFINE		= 96
+FCOIS_CON_JEWELRY_DECONSTRUCT 	= 97
+FCOIS_CON_JEWELRY_IMPROVE		= 98
+FCOIS_CON_JEWELRY_RESEARCH		= 99
+FCOIS_CON_CROWN_ITEM            = 100
 FCOIS_CON_FALLBACK 				= 999
 
 --Constant values for the FCOItemSaver filter buttons at the inventories (bottom)
@@ -242,7 +245,10 @@ FCOIS.mappingVars.whereAreWeToFilterPanelId = {
     	[FCOIS_CON_DESTROY]				=	LF_INVENTORY,
     	[FCOIS_CON_MAIL]				=	LF_MAIL_SEND,
     	[FCOIS_CON_TRADE]				=	LF_TRADE,
-    	[FCOIS_CON_SELL ]				=	LF_VENDOR_SELL,
+    	[FCOIS_CON_BUY]				    =	LF_VENDOR_BUY,
+        [FCOIS_CON_SELL]				=	LF_VENDOR_SELL,
+        [FCOIS_CON_BUYBACK]				=	LF_VENDOR_BUYBACK,
+        [FCOIS_CON_REPAIR]				=	LF_VENDOR_REPAIR,
     	[FCOIS_CON_REFINE]				=	LF_SMITHING_REFINE,
     	[FCOIS_CON_DECONSTRUCT]			=	LF_SMITHING_DECONSTRUCT,
 		[FCOIS_CON_IMPROVE]				=	LF_SMITHING_IMPROVEMENT,
@@ -275,7 +281,10 @@ FCOIS.mappingVars.activeFilterPanelIds			= {
 	[LF_BANK_DEPOSIT]				= true,
 	[LF_GUILDBANK_WITHDRAW] 	    = true,
 	[LF_GUILDBANK_DEPOSIT]	    	= true,
+    [LF_VENDOR_BUY] 				= true,
 	[LF_VENDOR_SELL] 				= true,
+    [LF_VENDOR_BUYBACK]				= true,
+    [LF_VENDOR_REPAIR] 				= true,
 	[LF_GUILDSTORE_SELL] 	 		= true,
 	[LF_SMITHING_REFINE]  			= true,
 	[LF_SMITHING_DECONSTRUCT]  		= true,
@@ -303,7 +312,10 @@ FCOIS.mappingVars.InvToInventoryType = {
 	[LF_BANK_DEPOSIT]				= INVENTORY_BACKPACK,
 	[LF_GUILDBANK_WITHDRAW] 		= INVENTORY_GUILD_BANK,
 	[LF_GUILDBANK_DEPOSIT]    		= INVENTORY_BACKPACK,
-	[LF_VENDOR_SELL] 				= INVENTORY_BACKPACK,
+	[LF_VENDOR_BUY] 				= INVENTORY_BACKPACK,
+    [LF_VENDOR_SELL] 				= INVENTORY_BACKPACK,
+    [LF_VENDOR_BUYBACK]				= INVENTORY_BACKPACK,
+    [LF_VENDOR_REPAIR] 				= INVENTORY_BACKPACK,
 	[LF_SMITHING_REFINE]  			= INVENTORY_BACKPACK,
 	[LF_SMITHING_DECONSTRUCT]  		= INVENTORY_BACKPACK,
 	[LF_SMITHING_IMPROVEMENT]		= INVENTORY_BACKPACK,
@@ -371,6 +383,14 @@ FCOIS.mappingVars.craftingModeAndCraftingTypeToFilterPanelId = {
         [CRAFTING_TYPE_CLOTHIER]        = LF_SMITHING_RESEARCH,
         [CRAFTING_TYPE_WOODWORKING]     = LF_SMITHING_RESEARCH,
     },
+}
+
+--The supported vendor LibFilters 2.0 panel IDs
+FCOIS.mappingVars.supportedVendorPanels = {
+    [LF_VENDOR_BUY]     = true,
+    [LF_VENDOR_SELL]    = true,
+    [LF_VENDOR_BUYBACK] = true,
+    [LF_VENDOR_REPAIR]  = true,
 }
 
 --Global variable to tell where the filtering is currently needed (Inventory, Bank, Crafting Station, Guild Bank, Guild Store, Mail, Trading, Vendor, Enchanting table, fence)
@@ -468,11 +488,22 @@ FCOIS.otherAddons.possibleExternalAddonCalls = {
 }
 --The recipe addons which are supported by FCOIS
 FCOIS_RECIPE_ADDON_SOUSCHEF = 1
-FCOIS_RECIPE_ADDON_CSFAI = 2
+FCOIS_RECIPE_ADDON_CSFAI    = 2
 FCOIS.otherAddons.recipeAddonsSupported = {
     [FCOIS_RECIPE_ADDON_SOUSCHEF]   = "SousChef",
     [FCOIS_RECIPE_ADDON_CSFAI]      = "CraftStoreFixedAndImproved",
 }
+
+--The research addons which are supported by FCOIS
+FCOIS_RESEARCH_ADDON_ESO_STANDARD       = 1
+FCOIS_RESEARCH_ADDON_CSFAI              = 2
+FCOIS_RESEARCH_ADDON_RESEARCHASSISTANT  = 3
+FCOIS.otherAddons.researchAddonsSupported = {
+    [FCOIS_RESEARCH_ADDON_ESO_STANDARD]         = "ESO Standard",
+    [FCOIS_RESEARCH_ADDON_CSFAI]                = "CraftStoreFixedAndImproved",
+    [FCOIS_RESEARCH_ADDON_RESEARCHASSISTANT]    = "ResearchAssistant",
+}
+
 
 --Variables for the anti-extraction functions
 FCOIS.craftingPrevention = {}
@@ -502,9 +533,25 @@ FCOIS.ZOControlVars.BACKPACK_BAG 				= ZO_PlayerInventoryListContents
 FCOIS.ZOControlVars.VENDOR_SELL				    = ZO_StoreWindowListSellToVendorArea
 FCOIS.ZOControlVars.vendorSceneName             = "store"
 --FCOIS.ZOControlVars.VENDOR_SELL_NAME			= FCOIS.ZOControlVars.VENDOR_SELL:GetName()
---FCOIS.ZOControlVars.VENDOR_MENUBAR_BUTTON_SELL = ZO_StoreWindowMenuBarButton2
+FCOIS.ZOControlVars.VENDOR_MENUBAR_BUTTON_BUY       = ZO_StoreWindowMenuBarButton1
+FCOIS.ZOControlVars.VENDOR_MENUBAR_BUTTON_SELL      = ZO_StoreWindowMenuBarButton2
+FCOIS.ZOControlVars.VENDOR_MENUBAR_BUTTON_BUYBACK   = ZO_StoreWindowMenuBarButton3
+FCOIS.ZOControlVars.VENDOR_MENUBAR_BUTTON_REPAIR    = ZO_StoreWindowMenuBarButton4
+FCOIS.ZOControlVars.vendorPanelMainMenuButtonControlSets = {
+    ["Normal"] = {
+        [1] = FCOIS.ZOControlVars.VENDOR_MENUBAR_BUTTON_BUY,
+        [2] = FCOIS.ZOControlVars.VENDOR_MENUBAR_BUTTON_SELL,
+        [3] = FCOIS.ZOControlVars.VENDOR_MENUBAR_BUTTON_BUYBACK,
+        [4] = FCOIS.ZOControlVars.VENDOR_MENUBAR_BUTTON_REPAIR,
+    },
+    ["Nuzhimeh"] = {
+        [1] = FCOIS.ZOControlVars.VENDOR_MENUBAR_BUTTON_SELL,
+        [2] = FCOIS.ZOControlVars.VENDOR_MENUBAR_BUTTON_BUYBACK,
+    },
+}
 FCOIS.ZOControlVars.STORE                       = ZO_StoreWindow
 FCOIS.ZOControlVars.STORE_BUY_BACK              = ZO_BuyBackListContents
+FCOIS.ZOControlVars.VENDOR_MAINMENU_BUTTON_BAR  = ""
 --FCOIS.ZOControlVars.FENCE						= ZO_Fence_Keyboard_WindowMenu
 FCOIS.ZOControlVars.REPAIR_LIST				    = ZO_RepairWindowList
 FCOIS.ZOControlVars.BANK_INV					= ZO_PlayerBank
@@ -659,7 +706,7 @@ FCOIS.lastVars.gLastBankButton					= FCOIS.ZOControlVars.BANK_MENUBAR_BUTTON_WIT
 FCOIS.lastVars.gLastHouseBankButton				= FCOIS.ZOControlVars.HOUSE_BANK_MENUBAR_BUTTON_WITHDRAW
 FCOIS.lastVars.gLastGuildBankButton   			= FCOIS.ZOControlVars.GUILD_BANK_MENUBAR_BUTTON_WITHDRAW
 FCOIS.lastVars.gLastGuildStoreButton			= FCOIS.ZOControlVars.GUILD_STORE_MENUBAR_BUTTON_SEARCH
---FCOIS.lastVars.gLastVendorButton				= FCOIS.ZOControlVars.VENDOR_MENUBAR_BUTTON_SELL
+FCOIS.lastVars.gLastVendorButton				= FCOIS.ZOControlVars.VENDOR_MENUBAR_BUTTON_SELL
 --FCOIS.lastVars.gLastMailButton         		= FCOIS.ZOControlVars.MAIL_MENUBAR_BUTTON_SEND
 FCOIS.lastVars.gLastAlchemyButton				= FCOIS.ZOControlVars.ALCHEMY_STATION_MENUBAR_BUTTON_CREATION
 FCOIS.lastVars.gLastSmithingDeconstructionSubFilterButton 	= FCOIS.ZOControlVars.DECONSTRUCTION_BUTTON_WEAPONS
@@ -675,7 +722,10 @@ FCOIS.mappingVars.gFilterPanelIdToInv = {
 	[LF_BANK_DEPOSIT]						= FCOIS.ZOControlVars.BACKPACK,
 	[LF_GUILDBANK_WITHDRAW] 			   	= FCOIS.ZOControlVars.GUILD_BANK,
 	[LF_GUILDBANK_DEPOSIT]					= FCOIS.ZOControlVars.BACKPACK,
+    [LF_VENDOR_BUY] 						= FCOIS.ZOControlVars.BACKPACK,
 	[LF_VENDOR_SELL] 						= FCOIS.ZOControlVars.BACKPACK,
+    [LF_VENDOR_BUYBACK]						= FCOIS.ZOControlVars.BACKPACK,
+    [LF_VENDOR_REPAIR] 						= FCOIS.ZOControlVars.BACKPACK,
     [LF_SMITHING_REFINE]					= FCOIS.ZOControlVars.REFINEMENT,
 	[LF_SMITHING_DECONSTRUCT]  				= FCOIS.ZOControlVars.DECONSTRUCTION,
 	[LF_SMITHING_IMPROVEMENT]				= FCOIS.ZOControlVars.IMPROVEMENT,
@@ -696,31 +746,39 @@ FCOIS.mappingVars.gFilterPanelIdToInv = {
 }
 
 --The array for the texture names of each panel Id
+local invTextureName = FCOIS.ZOControlVars.INV_NAME .. "_FilterButton%sTexture"
+local refineTextureName = FCOIS.ZOControlVars.REFINEMENT_INV_NAME .. "_FilterButton%sTexture"
+local enchantTextureName = FCOIS.ZOControlVars.ENCHANTING_STATION_NAME .. "_FilterButton%sTexture"
+local deconTextureName = FCOIS.ZOControlVars.DECONSTRUCTION_INV_NAME .. "_FilterButton%sTexture"
+local improveTextureName = FCOIS.ZOControlVars.IMPROVEMENT_INV_NAME .. "_FilterButton%sTexture"
 FCOIS.mappingVars.gFilterPanelIdToTextureName = {
-	[LF_INVENTORY] 					= FCOIS.ZOControlVars.INV_NAME .. "_FilterButton%sTexture",
+	[LF_INVENTORY] 					= invTextureName,
 	[LF_CRAFTBAG] 					= FCOIS.ZOControlVars.CRAFTBAG_NAME .. "_FilterButton%sTexture",
-    [LF_SMITHING_REFINE]			= FCOIS.ZOControlVars.REFINEMENT_INV_NAME .. "_FilterButton%sTexture",
-    [LF_SMITHING_DECONSTRUCT] 		= FCOIS.ZOControlVars.DECONSTRUCTION_INV_NAME .. "_FilterButton%sTexture",
-	[LF_SMITHING_IMPROVEMENT] 		= FCOIS.ZOControlVars.IMPROVEMENT_INV_NAME .. "_FilterButton%sTexture",
-	[LF_VENDOR_SELL] 				= FCOIS.ZOControlVars.INV_NAME .. "_FilterButton%sTexture",
+    [LF_SMITHING_REFINE]			= refineTextureName,
+    [LF_SMITHING_DECONSTRUCT] 		= deconTextureName,
+	[LF_SMITHING_IMPROVEMENT] 		= improveTextureName,
+	[LF_VENDOR_BUY] 				= invTextureName,
+    [LF_VENDOR_SELL] 				= invTextureName,
+    [LF_VENDOR_BUYBACK]				= invTextureName,
+    [LF_VENDOR_REPAIR] 				= invTextureName,
 	[LF_GUILDBANK_WITHDRAW]			= FCOIS.ZOControlVars.GUILD_BANK_INV_NAME .. "_FilterButton%sTexture",
-	[LF_GUILDBANK_DEPOSIT] 			= FCOIS.ZOControlVars.INV_NAME .. "_FilterButton%sTexture",
-	[LF_GUILDSTORE_SELL] 			= FCOIS.ZOControlVars.INV_NAME .. "_FilterButton%sTexture",
+	[LF_GUILDBANK_DEPOSIT] 			= invTextureName,
+	[LF_GUILDSTORE_SELL] 			= invTextureName,
 	[LF_BANK_WITHDRAW] 				= FCOIS.ZOControlVars.BANK_INV_NAME .. "_FilterButton%sTexture",
-	[LF_BANK_DEPOSIT] 				= FCOIS.ZOControlVars.INV_NAME .. "_FilterButton%sTexture",
-	[LF_ENCHANTING_EXTRACTION] 		= FCOIS.ZOControlVars.ENCHANTING_STATION_NAME .. "_FilterButton%sTexture",
-	[LF_ENCHANTING_CREATION] 		= FCOIS.ZOControlVars.ENCHANTING_STATION_NAME .. "_FilterButton%sTexture",
-	[LF_MAIL_SEND] 					= FCOIS.ZOControlVars.INV_NAME .. "_FilterButton%sTexture",
-	[LF_TRADE] 						= FCOIS.ZOControlVars.INV_NAME .. "_FilterButton%sTexture",
-	[LF_FENCE_SELL] 				= FCOIS.ZOControlVars.INV_NAME .. "_FilterButton%sTexture",
-	[LF_FENCE_LAUNDER] 				= FCOIS.ZOControlVars.INV_NAME .. "_FilterButton%sTexture",
+	[LF_BANK_DEPOSIT] 				= invTextureName,
+	[LF_ENCHANTING_EXTRACTION] 		= enchantTextureName,
+	[LF_ENCHANTING_CREATION] 		= enchantTextureName,
+	[LF_MAIL_SEND] 					= invTextureName,
+	[LF_TRADE] 						= invTextureName,
+	[LF_FENCE_SELL] 				= invTextureName,
+	[LF_FENCE_LAUNDER] 				= invTextureName,
 	[LF_ALCHEMY_CREATION] 			= FCOIS.ZOControlVars.ALCHEMY_INV_NAME .. "_FilterButton%sTexture",
     [LF_RETRAIT] 		            = FCOIS.ZOControlVars.RETRAIT_INV_NAME .. "_FilterButton%sTexture",
     [LF_HOUSE_BANK_WITHDRAW]		= FCOIS.ZOControlVars.HOUSE_BANK_INV_NAME .. "_FilterButton%sTexture",
-    [LF_HOUSE_BANK_DEPOSIT] 		= FCOIS.ZOControlVars.INV_NAME .. "_FilterButton%sTexture",
-    [LF_JEWELRY_REFINE]		        = FCOIS.ZOControlVars.REFINEMENT_INV_NAME .. "_FilterButton%sTexture",
-    [LF_JEWELRY_DECONSTRUCT]		= FCOIS.ZOControlVars.DECONSTRUCTION_INV_NAME .. "_FilterButton%sTexture",
-    [LF_JEWELRY_IMPROVEMENT]		= FCOIS.ZOControlVars.IMPROVEMENT_INV_NAME .. "_FilterButton%sTexture",
+    [LF_HOUSE_BANK_DEPOSIT] 		= invTextureName,
+    [LF_JEWELRY_REFINE]		        = refineTextureName,
+    [LF_JEWELRY_DECONSTRUCT]		= deconTextureName,
+    [LF_JEWELRY_IMPROVEMENT]		= improveTextureName,
 }
 
 --The icons to choose from
@@ -817,6 +875,7 @@ FCOIS.preventerVars.createdMasterWrit= false
 FCOIS.preventerVars.writCreatorCreatedItem = false
 FCOIS.preventerVars.eventInventorySingleSlotUpdate = false
 FCOIS.preventerVars.resetNonServerDependentSavedVars = false
+FCOIS.preventerVars.hookedVendorMainMenuButtons = false
 
 --The event handler array for OnMouseDoubleClick, Drag&Drop, etc.
 FCOIS.eventHandlers = {}
@@ -1708,7 +1767,16 @@ FCOIS.contextMenuVars.filterPanelIdToContextMenuButtonInvoker = {
 	[LF_GUILDBANK_DEPOSIT]			= {
         ["name"]          = invAddButtonVars.playerInventoryFCOAdditionalOptionsButton                      --Same like inventory
     },
-	[LF_VENDOR_SELL] 				= {
+    [LF_VENDOR_BUY] 				= {
+        ["name"]          = invAddButtonVars.playerInventoryFCOAdditionalOptionsButton                      --Same like inventory
+    },
+    [LF_VENDOR_SELL] 				= {
+        ["name"]          = invAddButtonVars.playerInventoryFCOAdditionalOptionsButton                      --Same like inventory
+    },
+    [LF_VENDOR_BUYBACK] 				= {
+        ["name"]          = invAddButtonVars.playerInventoryFCOAdditionalOptionsButton                      --Same like inventory
+    },
+	[LF_VENDOR_REPAIR] 				= {
         ["name"]          = invAddButtonVars.playerInventoryFCOAdditionalOptionsButton                      --Same like inventory
     },
     [LF_SMITHING_REFINE]		   	= {
@@ -2232,6 +2300,9 @@ FCOIS.contextMenuVars.buttonContextMenuToIconId = {
     FCOIS.sortHeaderVars.name[LF_FENCE_SELL]             = FCOIS.sortHeaderVars.name[LF_INVENTORY]
     FCOIS.sortHeaderVars.name[LF_FENCE_LAUNDER]          = FCOIS.sortHeaderVars.name[LF_INVENTORY]
     --Others
+    FCOIS.sortHeaderVars.name[LF_VENDOR_BUY]             = "ZO_StoreWindowSortByNameName"
+    FCOIS.sortHeaderVars.name[LF_VENDOR_BUYBACK]         = "ZO_BuyBackSortByNameName"
+    FCOIS.sortHeaderVars.name[LF_VENDOR_REPAIR]          = "ZO_RepairWindowSortByNameName"
     FCOIS.sortHeaderVars.name[LF_BANK_WITHDRAW]          = "ZO_PlayerBankSortByNameName"
     FCOIS.sortHeaderVars.name[LF_GUILDBANK_WITHDRAW]     = "ZO_GuildBankSortByNameName"
     FCOIS.sortHeaderVars.name[LF_SMITHING_REFINE]        = "ZO_SmithingTopLevelRefinementPanelInventorySortByNameName"
@@ -2296,16 +2367,22 @@ FCOIS.contextMenuVars.buttonContextMenuToIconId = {
     --The inventory flag context menu anti-* settings buttons
     local buttonContextMenuDestroy  = "button_context_menu_toggle_anti_destroy_"
     local buttonContextMenuSell     = "button_context_menu_toggle_anti_sell_"
+    local buttonContextMenuRefine   = "button_context_menu_toggle_anti_refine_"
+    local buttonContextMenuDecon    = "button_context_menu_toggle_anti_deconstruct_"
+    local buttonContextMenuImprove  = "button_context_menu_toggle_anti_improve_"
     FCOIS.mappingVars.contextMenuAntiButtonsAtPanel = {
         [LF_INVENTORY] 				= buttonContextMenuDestroy,
         [LF_BANK_WITHDRAW] 			= buttonContextMenuDestroy,
         [LF_BANK_DEPOSIT] 			= buttonContextMenuDestroy,
         [LF_GUILDBANK_WITHDRAW] 	= buttonContextMenuDestroy,
         [LF_GUILDBANK_DEPOSIT]		= buttonContextMenuDestroy,
+        [LF_VENDOR_BUY] 			= "button_context_menu_toggle_anti_buy_",
         [LF_VENDOR_SELL] 			= buttonContextMenuSell,
-        [LF_SMITHING_REFINE]  		= "button_context_menu_toggle_anti_refine_",
-        [LF_SMITHING_DECONSTRUCT]  	= "button_context_menu_toggle_anti_deconstruct_",
-        [LF_SMITHING_IMPROVEMENT]	= "button_context_menu_toggle_anti_improve_",
+        [LF_VENDOR_BUYBACK] 		= "button_context_menu_toggle_anti_buyback_",
+        [LF_VENDOR_REPAIR] 			= "button_context_menu_toggle_anti_repair_",
+        [LF_SMITHING_REFINE]  		= buttonContextMenuRefine,
+        [LF_SMITHING_DECONSTRUCT]  	= buttonContextMenuDecon,
+        [LF_SMITHING_IMPROVEMENT]	= buttonContextMenuImprove,
         [LF_SMITHING_RESEARCH]		= "",
         [LF_GUILDSTORE_SELL] 	 	= buttonContextMenuSell,
         [LF_MAIL_SEND] 				= "button_context_menu_toggle_anti_mail_",
@@ -2318,9 +2395,9 @@ FCOIS.contextMenuVars.buttonContextMenuToIconId = {
         [LF_RETRAIT]				= "button_context_menu_toggle_anti_retrait_",
         [LF_HOUSE_BANK_WITHDRAW]    = buttonContextMenuDestroy,
         [LF_HOUSE_BANK_DEPOSIT] 	= buttonContextMenuDestroy,
-        [LF_JEWELRY_REFINE]  		= "button_context_menu_toggle_anti_refine_",
-        [LF_JEWELRY_DECONSTRUCT]  	= "button_context_menu_toggle_anti_deconstruct_",
-        [LF_JEWELRY_IMPROVEMENT]	= "button_context_menu_toggle_anti_improve_",
+        [LF_JEWELRY_REFINE]  		= buttonContextMenuRefine,
+        [LF_JEWELRY_DECONSTRUCT]  	= buttonContextMenuDecon,
+        [LF_JEWELRY_IMPROVEMENT]	= buttonContextMenuImprove,
     }
 
 --Mapping for the Transmuation Geode container ItemIds (and flavor text)

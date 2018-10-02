@@ -64,8 +64,14 @@ local function outputFilterState(p_outputToChat, p_newFilterMethod, p_panelId, p
             outputText = preChatText .. locVars["filter_enchantingstation_extraction"] .. locVars["filter" .. filterText .. p_stateText]
         elseif (p_panelId == LF_ENCHANTING_CREATION) then
             outputText = preChatText .. locVars["filter_enchantingstation_creation"] .. locVars["filter" .. filterText .. p_stateText]
+        elseif (p_panelId == LF_VENDOR_BUY) then
+            outputText = preChatText .. locVars["filter_buy"] .. locVars["filter" .. filterText .. p_stateText]
         elseif (p_panelId == LF_VENDOR_SELL) then
             outputText = preChatText .. locVars["filter_store"] .. locVars["filter" .. filterText .. p_stateText]
+        elseif (p_panelId == LF_VENDOR_BUYBACK) then
+            outputText = preChatText .. locVars["filter_buyback"] .. locVars["filter" .. filterText .. p_stateText]
+        elseif (p_panelId == LF_VENDOR_REPAIR) then
+            outputText = preChatText .. locVars["filter_repair"] .. locVars["filter" .. filterText .. p_stateText]
         elseif (p_panelId == LF_FENCE_SELL) then
             outputText = preChatText .. locVars["filter_fence"] .. locVars["filter" .. filterText .. p_stateText]
         elseif (p_panelId == LF_FENCE_LAUNDER) then
@@ -149,12 +155,13 @@ function FCOIS.PreHookButtonHandler(comingFrom, goingTo)
         FCOIS.debugMessage( ">>>~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~<<<", true, FCOIS_DEBUG_DEPTH_VERY_DETAILED)
         FCOIS.debugMessage( "[FCOIS.PreHookButtonHandler] Coming from panel ID: " ..tostring(comingFrom)..", going to panel ID: " .. tostring(goingTo), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED)
     end
---d("[PreHookButtonHandler] Coming from panel ID: " ..tostring(comingFrom) .. ", going to panel ID: " .. tostring(goingTo))
+d("[PreHookButtonHandler] Coming from panel ID: " ..tostring(comingFrom) .. ", going to panel ID: " .. tostring(goingTo))
 
     --Hide the context menu at last active panel
     FCOIS.hideContextMenu(comingFrom)
 
     --Update the number of filtered items at the sort header "name"?
+    -->Shown within AdvancedFilters addon, at the inventory bottom line where the bagSpace and bankSpace items are shown!
     --FCOIS.updateFilteredItemCount(goingTo)
 
     --If the craftbag panel is shown: Abort here and let the callback function of the craftbag scene do the rest
@@ -802,10 +809,25 @@ local function filterStatusLoop(filterId, silent, givenArray, p_atLeastOneFilter
                             d(locVars["filter_craftbag"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
                         end
 
+                    elseif     (j == LF_VENDOR_BUY) then
+                        returnArray[j][filterId] = settings.allowVendorBuyFilter
+                        if (not silent) then
+                            d(locVars["filter_buy"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
+                        end
                     elseif     (j == LF_VENDOR_SELL) then
                         returnArray[j][filterId] = settings.allowVendorFilter
                         if (not silent) then
                             d(locVars["filter_store"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
+                        end
+                    elseif     (j == LF_VENDOR_BUYBACK) then
+                        returnArray[j][filterId] = settings.allowVendorBuybackFilter
+                        if (not silent) then
+                            d(locVars["filter_buyback"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
+                        end
+                    elseif     (j == LF_VENDOR_REPAIR) then
+                        returnArray[j][filterId] = settings.allowVendorRepairFilter
+                        if (not silent) then
+                            d(locVars["filter_repair"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
                         end
                     elseif     (j == LF_FENCE_SELL) then
                         returnArray[j][filterId] = settings.allowFenceFilter

@@ -1557,8 +1557,14 @@ function FCOIS.getContextMenuAntiSettingsTextAndState(p_filterWhere, buildText)
             currentSettingsState = settings.blockDestroying
         end
 
+    elseif p_filterWhere == LF_VENDOR_BUY then
+        currentSettingsState = settings.blockVendorBuy
     elseif p_filterWhere == LF_VENDOR_SELL then
         currentSettingsState = settings.blockSelling
+    elseif p_filterWhere == LF_VENDOR_BUYBACK then
+        currentSettingsState = settings.blockVendorBuyback
+    elseif p_filterWhere == LF_VENDOR_REPAIR then
+        currentSettingsState = settings.blockVendorRepair
     elseif p_filterWhere == LF_FENCE_SELL then
         currentSettingsState = settings.blockFence
     elseif p_filterWhere == LF_FENCE_LAUNDER then

@@ -37,7 +37,10 @@ function FCOIS.buildDefaultSettings()
 		allowDeconstructDeconstructionWithMarkers = false,
 		allowInventoryFilter    	= true,
 		allowCraftBagFilter			= true,
+		allowVendorBuyFilter	    = false,
 		allowVendorFilter	    	= true,
+		allowVendorBuybackFilter   	= false,
+		allowVendorRepairFilter	   	= false,
 		allowFenceFilter			= true,
 		allowLaunderFilter			= true,
 		allowGuildBankFilter    	= true,
@@ -65,13 +68,17 @@ function FCOIS.buildDefaultSettings()
 		blockJewelryImprovement		= true,
 		blockSendingByMail			= true,
 		blockTrading				= true,
+		blockVendorBuy				= false,
 		blockSelling				= true,
+		blockVendorBuyback			= false,
+		blockVendorRepair			= false,
 		blockSellingGuildStore      = true,
 		blockFence					= true,
 		blockLaunder				= true,
 		blockRetrait				= true,
 		removeMarkAsJunk			= false,
         dontUnjunkOnBulkMark        = false,
+		dontUnjunkOnNormalMark		= false,
 		allowSellingForBlocked		= true,
 		allowSellingForBlockedOrnate = true,
 		allowSellingForBlockedIntricate = false,
@@ -116,6 +123,8 @@ function FCOIS.buildDefaultSettings()
 		autoMarkOrnate 		    	= false,
 		autoMarkIntricate           = false,
 		autoMarkResearch			= false,
+		autoMarkResearchOnlyLoggedInChar = false,
+		researchAddonUsed			= FCOIS_RESEARCH_ADDON_RESEARCHASSISTANT, --Default research marking addon: ResearchAssistant
 		autoMarkQuality				= 1,
 		autoMarkQualityIconNr		= FCOIS_CON_ICON_LOCK,
 		autoMarkHigherQuality		= false,
@@ -293,7 +302,7 @@ function FCOIS.buildDefaultSettings()
        	FCOIS.settingsVars.defaults.markedItems[helper] 	= {}
            --General icon information
         FCOIS.settingsVars.defaults.icon[helper] 		  	= {}
-	   FCOIS.settingsVars.defaults.icon[helper].antiCheckAtPanel = {}
+	    FCOIS.settingsVars.defaults.icon[helper].antiCheckAtPanel = {}
 		for helperPanel = 1, FCOIS.numVars.gFCONumFilterInventoryTypes, 1 do
 			FCOIS.settingsVars.defaults.icon[helper].antiCheckAtPanel[helperPanel] = false
        	end
@@ -307,6 +316,9 @@ function FCOIS.buildDefaultSettings()
 		local isIconDynamic = iconIsDynamic[helper]
 		if isIconDynamic then defResearchCheck = true end
         FCOIS.settingsVars.defaults.disableResearchCheck[helper] = defResearchCheck
+        if isIconDynamic then
+            FCOIS.settingsVars.defaults.icon[helper].temporaryDisableByInventoryFlagIcon = false
+        end
 
         --Defaults for the enabling/disabling of the icons
         local enabledVar = true

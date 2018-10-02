@@ -89,8 +89,14 @@ function FCOIS.getFilterWhereBySettings(p_filterWhere, onlyAnti)
             FCOIS.settingsVars.settings.atPanelEnabled[p_filterWhere]["filters"] = settingsAllowed.allowInventoryFilter
         elseif (p_filterWhere == LF_CRAFTBAG) then
             FCOIS.settingsVars.settings.atPanelEnabled[p_filterWhere]["filters"] = settingsAllowed.allowCraftBagFilter
+        elseif (p_filterWhere == LF_VENDOR_BUY) then
+            FCOIS.settingsVars.settings.atPanelEnabled[p_filterWhere]["filters"] = settingsAllowed.allowVendorBuyFilter
         elseif (p_filterWhere == LF_VENDOR_SELL) then
             FCOIS.settingsVars.settings.atPanelEnabled[p_filterWhere]["filters"] = settingsAllowed.allowVendorFilter
+        elseif (p_filterWhere == LF_VENDOR_BUYBACK) then
+            FCOIS.settingsVars.settings.atPanelEnabled[p_filterWhere]["filters"] = settingsAllowed.allowVendorBuybackFilter
+        elseif (p_filterWhere == LF_VENDOR_REPAIR) then
+            FCOIS.settingsVars.settings.atPanelEnabled[p_filterWhere]["filters"] = settingsAllowed.allowVendorRepairFilter
         elseif (p_filterWhere == LF_FENCE_SELL) then
             FCOIS.settingsVars.settings.atPanelEnabled[p_filterWhere]["filters"] = settingsAllowed.allowFenceFilter
         elseif (p_filterWhere == LF_FENCE_LAUNDER) then
@@ -130,8 +136,7 @@ function FCOIS.getFilterWhereBySettings(p_filterWhere, onlyAnti)
         end
     end
 
-    if settingsAllowed.debug then FCOIS.debugMessage( "[FCOIS.getFilterWhereBySettings] " .. tostring(p_filterWhere) .. " = " .. tostring(FCOIS.settingsVars.settings.atPanelEnabled[p_filterWhere]["filters"]), true, FCOIS_DEBUG_DEPTH_SPAM) end
-
+    if settingsAllowed.debug then FCOIS.debugMessage( "[FCOIS.getFilterWhereBySettings] " .. tostring(p_filterWhere) .. " = " .. tostring(settingsAllowed.atPanelEnabled[p_filterWhere]["filters"]), true, FCOIS_DEBUG_DEPTH_SPAM) end
     return p_filterWhere
 end
 

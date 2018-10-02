@@ -729,7 +729,8 @@ end
 local function isResearchableItemTypeCheck(itemType, markId)
     local retVal = false
     local allowedTab = {}
-    allowedTab = FCOIS.checkVars.allowedResearchableItemTypes[itemType]
+    local checkVars = FCOIS.checkVars
+    allowedTab = checkVars.allowedResearchableItemTypes[itemType]
     if allowedTab == nil then return false end
     if markId == nil then
         retVal = allowedTab.allowed and not allowedTab.isGlpyh
@@ -756,7 +757,8 @@ function FCOIS.isItemLinkResearchable(itemLink, markId)
     --Check if the item is virtually researchable as the settings is enabled to allow marking of non researchable items as gear/dynamic
     markId = markId or nil
     if markId ~= nil then
-        retVal = FCOIS.settingsVars.settings.disableResearchCheck[markId] or false
+        local settings = FCOIS.settingsVars.settings
+        retVal = settings.disableResearchCheck[markId] or false
     end
     if retVal == false then
         local itemType = GetItemLinkItemType(itemLink)
@@ -774,7 +776,8 @@ function FCOIS.isItemResearchableNoControl(bagId, slotIndex, markId)
     --Check if the item is virtually researchable as the settings is enabled to allow marking of non researchable items as gear/dynamic
     markId = markId or nil
     if markId ~= nil then
-        retVal = FCOIS.settingsVars.settings.disableResearchCheck[markId] or false
+        local settings = FCOIS.settingsVars.settings
+        retVal = settings.disableResearchCheck[markId] or false
     end
     if retVal == false then
         local itemType = GetItemType(bagId, slotIndex)
@@ -943,6 +946,30 @@ end
 --======================================================================================================================
 -- Get functions
 --======================================================================================================================
+--Get the type of the vendor used currently.
+-- "Normal"     = NPC vendor
+-- "Nuzhimeh"   = The mobile vendor you can buy in the crown store, called Nuzhimeh
+function FCOIS.GetCurrentVendorType()
+    local isVendorPanelShown = FCOIS.IsVendorPanelShown()
+    if not isVendorPanelShown then return "" end
+    local retVar = ""
+    local vendorButtonCount = 2
+    --Are we able to buy something in this store?
+    if not IsStoreEmpty() then vendorButtonCount = vendorButtonCount +1 end
+    --Are we able to repair something in this store?
+    if CanStoreRepair() then vendorButtonCount = vendorButtonCount +1 end
+    --Are there 4 buttons at the vendor menu bar?
+    if vendorButtonCount == 4 then
+        retVar = "Normal"
+    --Are there only 3 buttons at the vendor menu bar?
+    elseif vendorButtonCount == 3 then
+        retVar = "Nuzhimeh"
+    --Are there only 2 buttons at the vendor menu bar?
+    elseif vendorButtonCount == 2 then
+        retVar = "Nuzhimeh"
+    end
+    return retVar
+end
 
 --Function to get the filter panel for the undo methods (SHIFT+right mouse on items)
 function FCOIS.getUndoFilterPanel()
@@ -1191,6 +1218,40 @@ function FCOIS.IsAlchemyPanelCreationShown()
         end
     end
     --d("<result: " .. tostring(retVar))
+    return retVar
+end
+
+--Check if any of the vendor panels (buy, sell, buyback, repair) are shown
+function FCOIS.IsVendorPanelShown(vendorPanelId)
+    --Check the scene name if it is the "vendor" scene
+    local currentSceneName = SCENE_MANAGER.currentScene.name
+    if currentSceneName == nil or currentSceneName ~= ctrlVars.vendorSceneName then return false end
+    local vendorLibFilterIds = FCOIS.mappingVars.supportedVendorPanels
+    local isVendorPanelChecked = false
+    if vendorPanelId ~= nil then
+        isVendorPanelChecked = vendorLibFilterIds[vendorPanelId] or false
+        if not isVendorPanelChecked then return false end
+    end
+    local retVar = false
+    if vendorPanelId ~= nil then
+        --Vendor Buy
+        if vendorPanelId ==     LF_VENDOR_BUY then
+            retVar = not ctrlVars.STORE:IsHidden() or false
+        --Vendor Sell (PlayerInventory or CraftBag are shown and all other vendor panels are hidden)
+        elseif vendorPanelId == LF_VENDOR_SELL then
+            retVar = ((ctrlVars.STORE:IsHidden() and ctrlVars.STORE_BUY_BACK:IsHidden() and ctrlVars.REPAIR_LIST:IsHidden()) and (not ctrlVars.BACKPACK_BAG:IsHidden() or not ctrlVars.CRAFTBAG_BAG:IsHidden())) or false
+        --Vendor Buyback
+        elseif vendorPanelId == LF_VENDOR_BUYBACK then
+            retVar = not ctrlVars.STORE_BUY_BACK:IsHidden() or false
+        --Vendor Repair
+        elseif vendorPanelId == LF_VENDOR_REPAIR then
+            retVar = not ctrlVars.REPAIR_LIST:IsHidden() or false
+        end
+    else
+        --Check each panel
+        retVar = ((not ctrlVars.STORE:IsHidden() or not ctrlVars.VENDOR_SELL:IsHidden() or not ctrlVars.STORE_BUY_BACK:IsHidden() or not ctrlVars.REPAIR_LIST:IsHidden())
+                  or (not ctrlVars.BACKPACK_BAG:IsHidden() or not ctrlVars.CRAFTBAG_BAG:IsHidden())) or false
+    end
     return retVar
 end
 

@@ -138,6 +138,18 @@ function FCOIS.BuildAddonMenu()
     end
     buildRecipeAddonsList()
 
+    --The list of research addons
+    local researchAddonsList = {}
+    local researchAddonsListValues = {}
+    local function buildResearchAddonsList()
+        local researchAddonsAvailable = FCOIS.otherAddons.researchAddonsSupported
+        for researchAddonIdx, researchAddonName in pairs(researchAddonsAvailable) do
+            table.insert(researchAddonsListValues, researchAddonIdx)
+            table.insert(researchAddonsList, researchAddonName)
+        end
+    end
+    buildResearchAddonsList()
+
 	--Function to create a LAM control
 	local function CreateControl(ref, name, tooltip, data, disabledChecks, getFunc, setFunc, defaultSettings, warning, isIconDropDown, scrollable)
         scrollable = scrollable or false
@@ -944,6 +956,21 @@ function FCOIS.BuildAddonMenu()
                 FCOIS.rebuildGearSetBaseVars(fcoisDynIconNr, value)
             end
             defaultSettings = FCOISdefaultSettings.iconIsGear[fcoisDynIconNr]
+            createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
+            if createdControl ~= nil then
+                table.insert(dynIconsSubMenusControls, createdControl)
+            end
+------------------------------------------------------------------------------------------------------------------------
+            --Add the respect inventory flag icon state
+            name = locVars["options_enable_block_marked_disable_with_flag"]
+            tooltip = locVars["options_enable_block_marked_disable_with_flag_tooltip"]
+            data = { type = "checkbox", width = "half"}
+            disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
+            getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].temporaryDisableByInventoryFlagIcon end
+            setFunc = function(value)
+                FCOISsettings.icon[fcoisDynIconNr].temporaryDisableByInventoryFlagIcon = value
+            end
+            defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].temporaryDisableByInventoryFlagIcon
             createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
             if createdControl ~= nil then
                 table.insert(dynIconsSubMenusControls, createdControl)
@@ -3403,6 +3430,23 @@ function FCOIS.BuildAddonMenu()
 						name = GetString(SI_SMITHING_TAB_RESEARCH),
                         controls =
                         {
+                            {
+                                type = 'dropdown',
+                                name = locVars["options_auto_mark_addon"],
+                                tooltip = zo_strformat(locVars["options_auto_mark_addon_tooltip"], GetString(SI_SMITHING_TAB_RESEARCH)),
+                                choices = researchAddonsList,
+                                choicesValues = researchAddonsListValues,
+                                --scrollable = true,
+                                getFunc = function() return FCOISsettings.researchAddonUsed
+                                end,
+                                setFunc = function(value)
+                                    FCOISsettings.researchAddonUsed = value
+
+                                end,
+                                default = FCOISdefaultSettings.researchAddonUsed,
+                                --disabled = function() return not FCOISsettings.autoMarkResearch end,
+                                width = "half",
+                            },
 							{
 								type = "checkbox",
 								name = locVars["options_enable_auto_mark_research_items"],
@@ -3410,14 +3454,29 @@ function FCOIS.BuildAddonMenu()
 								getFunc = function() return FCOISsettings.autoMarkResearch end,
 								setFunc = function(value)
 					            	FCOISsettings.autoMarkResearch = value
-					                if (FCOISsettings.autoMarkResearch == true and FCOIS.otherAddons.researchAssistantActive == true) then
+					                if (FCOISsettings.autoMarkResearch == true and FCOIS.checkIfResearchAddonUsed() and FCOIS.checkIfChosenResearchAddonActive(FCOISsettings.researchAddonUsed)) then
 					                	FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "research", false)
 					                end
 					            end,
-					            disabled = function() return not FCOIS.otherAddons.researchAssistantActive or not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_RESEARCH] end,
+					            disabled = function() return not FCOIS.checkIfResearchAddonUsed() or not FCOIS.checkIfChosenResearchAddonActive(FCOISsettings.researchAddonUsed) or not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_RESEARCH] end,
 					            warning = locVars["options_enable_auto_mark_research_items_hint"],
 					            width = "half",
 							},
+                            {
+                                type = "checkbox",
+                                name = locVars["options_logged_in_char"],
+                                tooltip = locVars["options_logged_in_char_tooltip"],
+                                getFunc = function() return FCOISsettings.autoMarkResearchOnlyLoggedInChar end,
+                                setFunc = function(value)
+                                    FCOISsettings.autoMarkResearchOnlyLoggedInChar = value
+                                    if (FCOISsettings.autoMarkResearch == true and FCOISsettings.autoMarkResearchOnlyLoggedInChar == true and FCOIS.checkIfResearchAddonUsed() and FCOIS.checkIfChosenResearchAddonActive(FCOISsettings.researchAddonUsed)) then
+                                        FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "research", false)
+                                    end
+                                end,
+                                disabled = function() return not FCOIS.checkIfResearchAddonUsed() or FCOISsettings.researchAddonUsed == FCOIS_RESEARCH_ADDON_ESO_STANDARD or FCOISsettings.researchAddonUsed == FCOIS_RESEARCH_ADDON_RESEARCHASSISTANT or not FCOIS.checkIfChosenResearchAddonActive(FCOISsettings.researchAddonUsed) or not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_RESEARCH] end,
+                                warning = locVars["options_enable_auto_mark_research_items_hint_logged_in_char"],
+                                width = "half",
+                            },
 							{
 								type = "checkbox",
 								name = locVars["options_enable_auto_mark_research_items_in_chat"],
@@ -3426,7 +3485,7 @@ function FCOIS.BuildAddonMenu()
 								setFunc = function(value)
 					            	FCOISsettings.showResearchItemsInChat = value
 					            end,
-					            disabled = function() return not FCOIS.otherAddons.researchAssistantActive or not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_RESEARCH] or not FCOISsettings.autoMarkResearch end,
+					            disabled = function() return not FCOIS.checkIfResearchAddonUsed() or not FCOIS.checkIfChosenResearchAddonActive(FCOISsettings.researchAddonUsed) or not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_RESEARCH] or not FCOISsettings.autoMarkResearch end,
 					            warning = locVars["options_enable_auto_mark_research_items_hint"],
 					            width = "half",
 							},
@@ -4068,8 +4127,8 @@ function FCOIS.BuildAddonMenu()
                         {
                             {
                                 type = 'dropdown',
-                                name = locVars["options_auto_mark_recipes_addon"],
-                                tooltip = locVars["options_auto_mark_recipes_addon_tooltip"],
+                                name = locVars["options_auto_mark_addon"],
+                                tooltip = zo_strformat(locVars["options_auto_mark_addon_tooltip"], GetString(SI_ITEMTYPE29)),
                                 choices = recipeAddonsList,
                                 choicesValues = recipeAddonsListValues,
                                 --scrollable = true,
@@ -4090,11 +4149,11 @@ function FCOIS.BuildAddonMenu()
 								getFunc = function() return FCOISsettings.autoMarkRecipes end,
 								setFunc = function(value)
 					            	FCOISsettings.autoMarkRecipes = value
-					                if (FCOISsettings.autoMarkRecipes == true and FCOIS.checkIfRecipeAddonUsed()) then
+					                if (FCOISsettings.autoMarkRecipes == true and FCOIS.checkIfRecipeAddonUsed() and FCOIS.checkIfChosenRecipeAddonActive(FCOISsettings.autoMarkRecipes)) then
 					                	FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "recipes", false)
 					                end
 					            end,
-					            disabled = function() return not FCOIS.checkIfRecipeAddonUsed() or not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkRecipesIconNr] end,
+					            disabled = function() return not FCOIS.checkIfRecipeAddonUsed() or not FCOIS.checkIfChosenRecipeAddonActive(FCOISsettings.autoMarkRecipes) or not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkRecipesIconNr] end,
 					            warning = locVars["options_enable_auto_mark_recipes_hint"],
 					            width = "half",
 							},
@@ -5228,6 +5287,14 @@ function FCOIS.BuildAddonMenu()
                     tooltip = locVars["options_remove_context_menu_mark_as_junk_tooltip"],
                     getFunc = function() return FCOISsettings.removeMarkAsJunk end,
                     setFunc = function(value) FCOISsettings.removeMarkAsJunk = value
+                    end,
+                },
+                {
+                    type = "checkbox",
+                    name = locVars["options_dont_unjunk_on_normal_mark"],
+                    tooltip = locVars["options_dont_unjunk_on_normal_mark_tooltip"],
+                    getFunc = function() return FCOISsettings.dontUnjunkOnNormalMark end,
+                    setFunc = function(value) FCOISsettings.dontUnjunkOnNormalMark = value
                     end,
                 },
                 {

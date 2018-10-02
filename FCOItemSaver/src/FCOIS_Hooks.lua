@@ -408,6 +408,16 @@ local function FCOItemSaver_AddSlotAction(self, actionStringId, ...)
             return not FCOIS.checkIfGuildBankWithdrawAllowed(FCOIS.guildBankVars.guildBankId)
         end
 
+    --Buy (at vendor)
+    elseif actionStringId == SI_ITEM_ACTION_BUY or actionStringId == SI_ITEM_ACTION_BUY_MULTIPLE then
+
+    --Buy back (at vendor)
+    elseif actionStringId == SI_ITEM_ACTION_BUYBACK then
+
+    --Repair (at vendor)
+    elseif actionStringId == SI_ITEM_ACTION_REPAIR then
+
+
     --CraftBagExtended: Unpack item and add to mail
     elseif FCOIS.otherAddons.craftBagExtendedActive and actionStringId == SI_CBE_CRAFTBAG_MAIL_ATTACH then
         --Is item marked with any of the FCOItemSaver icons? Then don't show the actionStringId in the contextmenu
@@ -1332,6 +1342,11 @@ function FCOIS.CreateHooks()
             FCOIS.changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
         end
     end)
+
+    --======== VENDOR =====================================================
+    --Pre Hook the menubar button's (buy, sell, buyback, repair) handler at the vendor
+    --> Will be done in event callback function for EVENT_OPEN_STORE + a delay as the buttons are not created before!
+    ---> See file src/FCOIS_events.lua, function 'FCOItemSaver_OpenStore("vendor")'
 
     --======== BANK ================================================================
     --Pre Hook the bank withdraw panel for mouse right click function SHIFT + RMB

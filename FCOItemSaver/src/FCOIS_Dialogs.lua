@@ -77,12 +77,13 @@ local function FCOAcceptDialogChanges(dialog)
         --Set global var to allow equip of item
         FCOIS.preventerVars.askBeforeEquipDialogRetVal = true
         --Equip the item now
-        local itemLink = GetItemLink(dialog.data.bag, dialog.data.slot)
+        --local itemLink = GetItemLink(dialog.data.bag, dialog.data.slot)
 --d(">[FCOAcceptDialogChanges]Equipping " .. itemLink .. " now - equipSlot: " .. tostring(dialog.data.equipSlot))
-        if dialog.data.equipSlot ~= nil then
-            EquipItem(dialog.data.bag, dialog.data.slot, dialog.data.equipSlot)
+        local dialogData = dialog.data
+        if dialogData.equipSlot ~= nil then
+            EquipItem(dialogData.bag, dialogData.slot, dialogData.equipSlot)
         else
-            EquipItem(dialog.data.bag, dialog.data.slot)
+            EquipItem(dialogData.bag, dialogData.slot)
         end
         --reset the global var again
         FCOIS.preventerVars.askBeforeEquipDialogRetVal = false
@@ -184,6 +185,7 @@ end
 
 --function to initialize the ask before binding an item dialog
 function FCOIS.AskBeforeMigrateDialogInitialize(control)
+    local localVars = FCOIS.localizationVars.fcois_loc
     local content   = GetControl(control, "Content")
     local acceptBtn = GetControl(control, "Accept")
     local cancelBtn = GetControl(control, "Cancel")
@@ -191,9 +193,9 @@ function FCOIS.AskBeforeMigrateDialogInitialize(control)
 
     local titleText = ""
     if FCOIS.settingsVars.settings.useUniqueIds then
-        titleText = FCOIS.preChatVars.preChatTextRed .. FCOIS.localizationVars.fcois_loc["options_migrate_uniqueids"]
+        titleText = FCOIS.preChatVars.preChatTextRed .. localVars["options_migrate_uniqueids"]
     else
-        titleText = FCOIS.preChatVars.preChatTextRed .. FCOIS.localizationVars.fcois_loc["options_migrate_uniqueids"]
+        titleText = FCOIS.preChatVars.preChatTextRed .. localVars["options_migrate_uniqueids"]
     end
 
     ZO_Dialogs_RegisterCustomDialog("FCOIS_ASK_BEFORE_MIGRATE_DIALOG", {
@@ -203,9 +205,9 @@ function FCOIS.AskBeforeMigrateDialogInitialize(control)
         setup = function(_, data)
             local formattedText = ""
             if FCOIS.settingsVars.settings.useUniqueIds then
-                formattedText = FCOIS.localizationVars.fcois_loc["options_migrate_uniqueids_dialog"]
+                formattedText = localVars["options_migrate_uniqueids_dialog"]
             else
-                formattedText = FCOIS.localizationVars.fcois_loc["options_migrate_nonuniqueids_dialog"]
+                formattedText = localVars["options_migrate_nonuniqueids_dialog"]
             end
             descLabel:SetText(formattedText)
         end,

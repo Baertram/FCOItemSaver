@@ -70,6 +70,13 @@ end
 --=========== FCOIS check single protection API functions (without alert messages, only provided panel check!) =================================
 -- ===== ANTI-* - Automatically determine the current filter panel ID ====
 -- FCOIS prevention for being ...
+--Check if the item is protected somehow at the current panel.
+--ATTENTION: This will NOT ONLY check for the LOCK marker icon (FCOIS_CON_ICON_LOCK)!
+--It will check for ANY marker icon which prevents the item from e.g. destroy (inventory panel), attach to mail (mail panel),
+--deconstruct (crafting station deconstruction panel), attach to trade (player trade panel),
+--put into guild bank where you got no rights to withdraw it again (at guild deposit panel) etc.
+--The protection depends on the marker icon type (normal, gear, dynamic, dynamic set as gear) and the protective global settings (for normal and gear marker icons)
+--or dynamic protective settings (for each dynamic, including dynamic set as gear, icons)
 function FCOIS.IsLocked(bagId, slotIndex)
 	--Don't show chat output and don't show alert message
     -- (bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId)
@@ -122,6 +129,51 @@ function FCOIS.IsLaunderLocked(bagId, slotIndex)
 	--Don't show chat output and don't show alert message
 	return FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, true, LF_FENCE_LAUNDER)
 end
+
+-- ===== ANTI Deposit =====
+-- FCOIS prevention for being depositted to player bank
+--> ATTENTION: FCOIS is currently NOT protecting the deposit of items to a player bank.
+-- This is always allowed!
+-- If you want to check if there is a marker icon on the item you want to deposit, and thus not allow to deposit it,
+-- use the function FCOIS.IsMarked() please -> See below in this API file!
+function FCOIS.IsPlayerBankDepositLocked(bagId, slotIndex)
+    --Don't show chat output and don't show alert message
+    return FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, true, LF_BANK_DEPOSIT)
+end
+
+-- FCOIS prevention for being depositted to a guild bank
+--> ATTENTION: FCOIS is currently only protecting the deposit of items to a guild bank, if you have enabled the setting for it and
+-- if you are not allowed to withdraw this item anymore (missing rights in that guild).
+-- This applies even to non marked items, so there does not need to be a marker icon on the item!
+-- Otherwise the deposit is always allowed!
+-- If you want to check if there is a marker icon on the item you want to deposit, and thus not allow to deposit it,
+-- use the function FCOIS.IsMarked() please -> See below in this API file!
+function FCOIS.IsGuildBankDepositLocked(bagId, slotIndex)
+    --Don't show chat output and don't show alert message
+    return FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, true, LF_GUILDBANK_DEPOSIT)
+end
+
+-- ===== ANTI Withdraw =====
+-- FCOIS prevention for being withdrawn from player bank
+--> ATTENTION: FCOIS is currently NOT protecting the withdraw of items from a player bank.
+-- This is always allowed!
+-- If you want to check if there is a marker icon on the item you want to withdraw, and thus not allow to withdraw it,
+-- use the function FCOIS.IsMarked() please -> See below in this API file!
+function FCOIS.IsPlayerBankWithdrawLocked(bagId, slotIndex)
+    --Don't show chat output and don't show alert message
+    return FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, true, LF_BANK_WITHDRAW)
+end
+
+-- FCOIS prevention for being withdrawn from a guild bank
+--> ATTENTION: FCOIS is currently NOT protecting the withdraw of items from a guild bank.
+-- This is always allowed!
+-- If you want to check if there is a marker icon on the item you want to withdraw, and thus not allow to withdraw it,
+-- use the function FCOIS.IsMarked() please -> See below in this API file!
+function FCOIS.IsGuildBankWithdrawLocked(bagId, slotIndex)
+    --Don't show chat output and don't show alert message
+    return FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, true, LF_GUILDBANK_WITHDRAW)
+end
+
 
 -- ===== ANTI CRAFTING =====
 -- FCOIS prevention for being created as enchantment
@@ -934,6 +986,7 @@ function FCOIS.GetDynamicInfo()
 end -- FCOGetDynamicInfo
 
 --Global function to get the for a given gear set's iconId (2, 4, 6, 7 or 8) or a dynamic icon id (13, 14, 15, 16, 17, 18, 19, 20, 21, 22)
+--> use the constants for the amrker icons please! e.g. FCOIS_CON_ICON_LOCK, FCOIS_CON_ICON_DYNAMIC_1 etc. Check file src/FCOIS_constants.lua for the available constants (top of the file)
 function FCOIS.GetIconText(iconId)
 	--Load the user settings, if not done already
 	FCOIS.LoadUserSettings()

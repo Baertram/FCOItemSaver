@@ -56,7 +56,7 @@ function FCOIS.checkIfProtectedSettingsEnabled(checkType, iconNr, isDynamicIcon,
     if iconNr == nil then return false end
     isDynamicIcon = isDynamicIcon or false
     checkAntiDetails = checkAntiDetails or false
-    --d("[FCOIS.checkIfProtectedSettingsEnabled - checkType: " .. tostring(checkType) .. ", iconNr: " .. tostring(iconNr) .. ", checkAntiDetails: " .. tostring(checkAntiDetails) .. ", whereAreWe: " .. tostring(whereAreWe))
+--d("[FCOIS.checkIfProtectedSettingsEnabled - checkType: " .. tostring(checkType) .. ", iconNr: " .. tostring(iconNr) .. ", checkAntiDetails: " .. tostring(checkAntiDetails) .. ", whereAreWe: " .. tostring(whereAreWe))
     local protectionVal = false
     --Local mapping array for the filter panel ID -> the anti-settings
     local settings = FCOIS.settingsVars.settings
@@ -101,10 +101,25 @@ function FCOIS.checkIfProtectedSettingsEnabled(checkType, iconNr, isDynamicIcon,
     end
     --Dynamic icon or not?
     local icon2Dyn = FCOIS.mappingVars.iconIsDynamic
+    --Dynamic icon?
     if isDynamicIcon or icon2Dyn[iconNr] then
         --d("Dynamic icon")
-        --Dynamic
+        --Get the protection
         protectionVal = settings.icon[iconNr].antiCheckAtPanel[checkType]
+        --Is the dynamic icon protected at the current panel?
+        if protectionVal then
+            --The protective functions are not enabled (red flag in the inventory additional options flag icon or the current panel got no additional inventory button, e.g. the crafting research tab)?
+            local _, invAntiSettingsEnabled = FCOIS.getContextMenuAntiSettingsTextAndState(checkType, false)
+            if not invAntiSettingsEnabled then
+                --Check if the temporary disabling of the protection is enabled, if the user uses the inventory "flag" icon and sets it to red
+                local isDynIconSettingForProtectionTemporaryDisabledByInvFlag = settings.icon[iconNr].temporaryDisableByInventoryFlagIcon or false
+                if isDynIconSettingForProtectionTemporaryDisabledByInvFlag then
+                    --The dynamic icon is temporary not protected at this panel!
+    --d(">Dyn icon protection disabled by inventory \"flag\" icon!")
+                    protectionVal = false
+                end
+            end
+        end
     else
         --d("Non dynamic icon")
         --Non dynamic
@@ -167,7 +182,7 @@ function FCOIS.checkIfProtectedSettingsEnabled(checkType, iconNr, isDynamicIcon,
         end
     end
     if protectionVal == nil then protectionVal = false end
-    --d(">Icon: " .. iconNr .. ", protection enabled: " .. tostring(protectionVal))
+--d(">Icon: " .. iconNr .. ", protection enabled: " .. tostring(protectionVal))
     return protectionVal
 end
 
@@ -234,8 +249,8 @@ function FCOIS.checkIfItemIsProtected(iconId, itemId, checkHandler)
     return itemIsMarked
 end
 
--- fired when user selects an item to destroy
--- warns user if the item is marked with any of the filter icons
+-- Fired when user selects an item to destroy.
+-- Warns user if the item is marked with any of the filter icons
 function FCOIS.DestroySelectionHandler(bag, slot, echo, parentControl)
     echo = echo or false
     if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[DestroySelectionHandler] Bag: " .. tostring(bag) .. ", Slot: " .. tostring(slot) ..", filterPanelId: " .. tostring(FCOIS.gFilterWhere), true, FCOIS_DEBUG_DEPTH_SPAM) end
@@ -548,15 +563,15 @@ function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChat
     --Check if single items checks should be done (like "check a recipe" or "potion")
     local singleItemChecks = whereAreWeToSingleItemChecks[whereAreWe]
 
---d(">Where are we: " .. tostring(whereAreWe) .. ", isBlocked: " .. tostring(isBlocked) .. ", singleItemChecks: " .. tostring(singleItemChecks))
+--d(">Where are we: " .. tostring(whereAreWe) .. ", isBlocked: " .. tostring(isBlocked) .. ", singleItemChecks: " .. tostring(singleItemChecks) .. ", panelId: " .. tostring(panelId))
 
     --======= SPECIAL CHECKS - RECIPES, STYLE MOTIFS, FOOD =========================
     -- Check if the recipe/style motif/food/crown store item is not protected because the current anti-destroy option is disabled
     -- by help of the addiitonal inventory options flag icon (red flag)
     if panelId == LF_INVENTORY and singleItemChecks then
         --See if the Anti-settings for the given panel are enabled or not
-        local _, invAntiSettingsEnabled = FCOIS.getContextMenuAntiSettingsTextAndState(panelId, false)
         --The protective functions are not enabled (red flag in the inventory additional options flag icon or the current panel got no additional inventory button, e.g. the crafting research tab)
+        local _, invAntiSettingsEnabled = FCOIS.getContextMenuAntiSettingsTextAndState(panelId, false)
         if not invAntiSettingsEnabled then
             --Using/eating/drinking items for marked items is blocked, e.g. for recipes/style motifs?
             --If the settings allow it: Change the blocked state to unblocked upon right-clicking the inventory additional options flag icon
@@ -594,9 +609,8 @@ function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChat
     end
 
     --======= CHECKs AGAINST ICONs =================================================
-    -- if item is in any protection list, warn user
-    -- first check all marker icons now
-    --Check each marker icon at the item
+    -- If item is in any protection list, warn user.
+    -- First check all marker icons on the item now:
     for i=1, numFilterIcons, 1 do
 --d("[FCOIS]ItemSelectionHandler - icon: " .. i)
         --Check if the item is marked with the icon
@@ -1187,14 +1201,22 @@ function FCOIS.checkIfGuildBankWithdrawAllowed(currentGuildBank)
 end
 
 --Is the item marked as junk? Remove it from junk again if a non-junkable marker icon was set now
+--> Only remove from bulk
+---- if setting to not remove normal (keybind/context menu) marked items from junk is disabled
+---- if setting to not remove bulk (inventory "flag" icon) marked items from junk is disabled
 function FCOIS.checkIfIsJunkItem(bagId, slotIndex, bulkMark)
     bulkMark = bulkMark or false
     if IsItemJunk(bagId, slotIndex) and FCOIS.IsJunkLocked(bagId, slotIndex) then
+        local settings = FCOIS.settingsVars.settings
         --Are we bulk marking the item and is the option to "not remove items from junk on bulk mark" enabled?
         if bulkMark then
-            local dontUnjunkOnBulkMark = FCOIS.settingsVars.settings.dontUnjunkOnBulkMark
+            local dontUnjunkOnBulkMark = settings.dontUnjunkOnBulkMark
             if dontUnjunkOnBulkMark then return false end
-         end
+        else
+            local dontUnjunkOnNormalMark = settings.dontUnjunkOnNormalMark
+            if dontUnjunkOnNormalMark then return false end
+        end
+        --Unjunk the marked item now
         SetItemIsJunk(bagId, slotIndex, false)
     end
 end
