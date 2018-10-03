@@ -278,7 +278,7 @@ function FCOIS.GetBagAndSlotFromControlUnderMouse()
                 bagId, slotIndex = FCOIS.MyGetItemDetails(moc)
             end
         end
-        --if it's a backpack row or child of one -> Since API 1000015
+    --if it's a backpack row or child of one -> Since API 1000015
     elseif moc:GetName():find("^ZO_%a+InventoryList%dRow%d%d*") then
         if moc:GetName():find("^ZO_%a+InventoryList%dRow%d%d*$") then
             bagId, slotIndex = FCOIS.MyGetItemDetails(moc)
@@ -288,7 +288,7 @@ function FCOIS.GetBagAndSlotFromControlUnderMouse()
                 bagId, slotIndex = FCOIS.MyGetItemDetails(moc)
             end
         end
-        --CRAFTBAG: if it's a backpack row or child of one -> Since API 1000015
+    --CRAFTBAG: if it's a backpack row or child of one -> Since API 1000015
     elseif moc:GetName():find("^ZO_CraftBagList%dRow%d%d*") then
         if moc:GetName():find("^ZO_CraftBagList%dRow%d%d*$") then
             bagId, slotIndex = FCOIS.MyGetItemDetails(moc)
@@ -298,13 +298,13 @@ function FCOIS.GetBagAndSlotFromControlUnderMouse()
                 bagId, slotIndex = FCOIS.MyGetItemDetails(moc)
             end
         end
-        --Character
+    --Character
     elseif moc:GetName():find("^ZO_CharacterEquipmentSlots.+$") then
         bagId, slotIndex = FCOIS.MyGetItemDetails(moc)
-        --Quickslot
+    --Quickslot
     elseif moc:GetName():find("^ZO_QuickSlotList%dRow%d%d*") then
         bagId, slotIndex = FCOIS.MyGetItemDetails(moc)
-        --Vendor rebuy
+    --Vendor rebuy
     elseif moc:GetName():find("^ZO_RepairWindowList%dRow%d%d*") then
         bagId, slotIndex = FCOIS.MyGetItemDetails(moc)
     --IIfA support
@@ -949,8 +949,9 @@ end
 --Get the type of the vendor used currently.
 -- "Normal"     = NPC vendor
 -- "Nuzhimeh"   = The mobile vendor you can buy in the crown store, called Nuzhimeh
-function FCOIS.GetCurrentVendorType()
-    local isVendorPanelShown = FCOIS.IsVendorPanelShown()
+function FCOIS.GetCurrentVendorType(vendorPanelIsShown)
+    vendorPanelIsShown = vendorPanelIsShown or false
+    local isVendorPanelShown = FCOIS.IsVendorPanelShown(nil, vendorPanelIsShown)
     if not isVendorPanelShown then return "" end
     local retVar = ""
     local vendorButtonCount = 2
@@ -968,7 +969,7 @@ function FCOIS.GetCurrentVendorType()
     elseif vendorButtonCount == 2 then
         retVar = "Nuzhimeh"
     end
-    return retVar
+    return retVar, vendorButtonCount
 end
 
 --Function to get the filter panel for the undo methods (SHIFT+right mouse on items)
@@ -1222,7 +1223,9 @@ function FCOIS.IsAlchemyPanelCreationShown()
 end
 
 --Check if any of the vendor panels (buy, sell, buyback, repair) are shown
-function FCOIS.IsVendorPanelShown(vendorPanelId)
+function FCOIS.IsVendorPanelShown(vendorPanelId, overwrite)
+    overwrite = overwrite or false
+    if overwrite then return true end
     --Check the scene name if it is the "vendor" scene
     local currentSceneName = SCENE_MANAGER.currentScene.name
     if currentSceneName == nil or currentSceneName ~= ctrlVars.vendorSceneName then return false end

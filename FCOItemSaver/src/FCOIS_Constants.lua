@@ -69,11 +69,16 @@ FCOIS.numVars.languageCount = 7 --English, German, French, Spanish, Italian, Jap
 FCOIS.numVars.gFCONumFilterInventoryTypes = FCOIS.libFilters:GetMaxFilter() -- Maximum libFilters 2.0 filter types
 --Global value: Number of filters
 FCOIS.numVars.gFCONumFilters			= 4
+--Global value: Number of non-dynamic and non gear set icons
+FCOIS.numVars.gFCONumNonDynamicIcons	= 7
 --Global value: Number of gear sets
 FCOIS.numVars.gFCONumGearSetsStatic  	= 5
 FCOIS.numVars.gFCONumGearSets			= FCOIS.numVars.gFCONumGearSetsStatic
+--Global value: Number of non-dynamic normal + gear sets
+FCOIS.numVars.gFCONumNonDynamicAndGearIcons	= FCOIS.numVars.gFCONumNonDynamicIcons + FCOIS.numVars.gFCONumGearSetsStatic
 --Global value: Number of dynamic icons
 FCOIS.numVars.gFCONumDynamicIcons		= 30
+local numDynamicIcons = FCOIS.numVars.gFCONumDynamicIcons
 
 --Possible icon IDs
 --and possible context menus for the filter buttons: RESDECIMP and SELLGUILDINT
@@ -119,7 +124,7 @@ FCOIS_CON_ICON_INTRICATE			= 12
 ----Changed to dynamically created variables and added to global namespace
 ]]
 local markerIconsBefore = FCOIS_CON_ICON_INTRICATE --12
-local maxDynIcons = FCOIS.numVars.gFCONumDynamicIcons
+local maxDynIcons = numDynamicIcons
 for dynIconNr = 1, maxDynIcons, 1 do
 	markerIconsBefore = markerIconsBefore + 1
 	_G["FCOIS_CON_ICON_DYNAMIC_" .. tostring(dynIconNr)] = markerIconsBefore
@@ -533,6 +538,8 @@ FCOIS.ZOControlVars.BACKPACK_BAG 				= ZO_PlayerInventoryListContents
 FCOIS.ZOControlVars.VENDOR_SELL				    = ZO_StoreWindowListSellToVendorArea
 FCOIS.ZOControlVars.vendorSceneName             = "store"
 --FCOIS.ZOControlVars.VENDOR_SELL_NAME			= FCOIS.ZOControlVars.VENDOR_SELL:GetName()
+--> The following 4 controls/buttons & the depending table entries will be known first as the vendor gets opened the first time.
+--> So they will be re-assigned within EVENT_OPEN_STORE in src/FCOIS_events.lua, function "FCOItemSaver_Open_Store()"
 FCOIS.ZOControlVars.VENDOR_MENUBAR_BUTTON_BUY       = ZO_StoreWindowMenuBarButton1
 FCOIS.ZOControlVars.VENDOR_MENUBAR_BUTTON_SELL      = ZO_StoreWindowMenuBarButton2
 FCOIS.ZOControlVars.VENDOR_MENUBAR_BUTTON_BUYBACK   = ZO_StoreWindowMenuBarButton3
@@ -706,7 +713,7 @@ FCOIS.lastVars.gLastBankButton					= FCOIS.ZOControlVars.BANK_MENUBAR_BUTTON_WIT
 FCOIS.lastVars.gLastHouseBankButton				= FCOIS.ZOControlVars.HOUSE_BANK_MENUBAR_BUTTON_WITHDRAW
 FCOIS.lastVars.gLastGuildBankButton   			= FCOIS.ZOControlVars.GUILD_BANK_MENUBAR_BUTTON_WITHDRAW
 FCOIS.lastVars.gLastGuildStoreButton			= FCOIS.ZOControlVars.GUILD_STORE_MENUBAR_BUTTON_SEARCH
-FCOIS.lastVars.gLastVendorButton				= FCOIS.ZOControlVars.VENDOR_MENUBAR_BUTTON_SELL
+--FCOIS.lastVars.gLastVendorButton				= FCOIS.ZOControlVars.VENDOR_MENUBAR_BUTTON_SELL -> See file src/FCOIS_events.lua, function FCOItemSaver_Open_Store()
 --FCOIS.lastVars.gLastMailButton         		= FCOIS.ZOControlVars.MAIL_MENUBAR_BUTTON_SEND
 FCOIS.lastVars.gLastAlchemyButton				= FCOIS.ZOControlVars.ALCHEMY_STATION_MENUBAR_BUTTON_CREATION
 FCOIS.lastVars.gLastSmithingDeconstructionSubFilterButton 	= FCOIS.ZOControlVars.DECONSTRUCTION_BUTTON_WEAPONS
@@ -875,7 +882,7 @@ FCOIS.preventerVars.createdMasterWrit= false
 FCOIS.preventerVars.writCreatorCreatedItem = false
 FCOIS.preventerVars.eventInventorySingleSlotUpdate = false
 FCOIS.preventerVars.resetNonServerDependentSavedVars = false
-FCOIS.preventerVars.hookedVendorMainMenuButtons = false
+FCOIS.preventerVars.preHookButtonDone = {}
 
 --The event handler array for OnMouseDoubleClick, Drag&Drop, etc.
 FCOIS.eventHandlers = {}
@@ -1588,6 +1595,7 @@ FCOIS.contextMenuVars.filterButtons.entryHeight = 24
 FCOIS.contextMenuVars.undoMarkedItems = {}
 --The name prefix of the context menu inventory buttons
 FCOIS.contextMenuVars.buttonNamePrefix = "ButtonContextMenu"
+local buttonNamePrefix = FCOIS.contextMenuVars.buttonNamePrefix
 
 --The available contextmenus at the filter buttons
 FCOIS.contextMenuVars.availableCtms = {
@@ -1616,7 +1624,7 @@ FCOIS.contextMenuVars.LockDynFilter.buttonContextMenuToIconIdEntries = 32 -- OLD
 --The index of the mapping table for context menu buttons to icon id
 FCOIS.contextMenuVars.LockDynFilter.buttonContextMenuToIconIdIndex = {}
 for index=1, FCOIS.contextMenuVars.LockDynFilter.buttonContextMenuToIconIdEntries do
-	table.insert(FCOIS.contextMenuVars.LockDynFilter.buttonContextMenuToIconIdIndex, FCOIS.contextMenuVars.buttonNamePrefix .. FCOIS.contextMenuVars.LockDynFilter.buttonNamePrefix .. index)
+	table.insert(FCOIS.contextMenuVars.LockDynFilter.buttonContextMenuToIconIdIndex, buttonNamePrefix .. FCOIS.contextMenuVars.LockDynFilter.buttonNamePrefix .. index)
 end
 
 --The context menu for the gear sets filter button
@@ -1636,7 +1644,7 @@ FCOIS.contextMenuVars.GearSetFilter.buttonContextMenuToIconIdEntries = 6
 --The index of the mapping table for context menu buttons to icon id
 FCOIS.contextMenuVars.GearSetFilter.buttonContextMenuToIconIdIndex = {}
 for index=1, FCOIS.contextMenuVars.GearSetFilter.buttonContextMenuToIconIdEntries do
-	table.insert(FCOIS.contextMenuVars.GearSetFilter.buttonContextMenuToIconIdIndex, FCOIS.contextMenuVars.buttonNamePrefix .. FCOIS.contextMenuVars.GearSetFilter.buttonNamePrefix .. index)
+	table.insert(FCOIS.contextMenuVars.GearSetFilter.buttonContextMenuToIconIdIndex, buttonNamePrefix .. FCOIS.contextMenuVars.GearSetFilter.buttonNamePrefix .. index)
 end
 
 --The context menu for the RESEARCH & DECONSTRUCTION & IMPORVEMENT filter button
@@ -1656,7 +1664,7 @@ FCOIS.contextMenuVars.ResDecImpFilter.buttonContextMenuToIconIdEntries = 4
 --The index of the mapping table for context menu buttons to icon id
 FCOIS.contextMenuVars.ResDecImpFilter.buttonContextMenuToIconIdIndex = {}
 for index=1, FCOIS.contextMenuVars.ResDecImpFilter.buttonContextMenuToIconIdEntries do
-	table.insert(FCOIS.contextMenuVars.ResDecImpFilter.buttonContextMenuToIconIdIndex, FCOIS.contextMenuVars.buttonNamePrefix .. FCOIS.contextMenuVars.ResDecImpFilter.buttonNamePrefix .. index)
+	table.insert(FCOIS.contextMenuVars.ResDecImpFilter.buttonContextMenuToIconIdIndex, buttonNamePrefix .. FCOIS.contextMenuVars.ResDecImpFilter.buttonNamePrefix .. index)
 end
 
 --The context menu for the SELL & SELL IN GUILD STORE & INTRICATE  filter button
@@ -1676,7 +1684,7 @@ FCOIS.contextMenuVars.SellGuildIntFilter.buttonContextMenuToIconIdEntries = 4
 --The index of the mapping table for context menu buttons to icon id
 FCOIS.contextMenuVars.SellGuildIntFilter.buttonContextMenuToIconIdIndex = {}
 for index=1, FCOIS.contextMenuVars.SellGuildIntFilter.buttonContextMenuToIconIdEntries do
-	table.insert(FCOIS.contextMenuVars.SellGuildIntFilter.buttonContextMenuToIconIdIndex, FCOIS.contextMenuVars.buttonNamePrefix .. FCOIS.contextMenuVars.SellGuildIntFilter.buttonNamePrefix .. index)
+	table.insert(FCOIS.contextMenuVars.SellGuildIntFilter.buttonContextMenuToIconIdIndex, buttonNamePrefix .. FCOIS.contextMenuVars.SellGuildIntFilter.buttonNamePrefix .. index)
 end
 
 --Mapping array fo the filter button context menu types and their settings
@@ -1857,435 +1865,85 @@ FCOIS.contextMenuVars.filterPanelIdToContextMenuButtonInvoker = {
 
 }
 --The entries in the following mapping array. The entry number is needed to anchor the REMOVE_ALL_GEARS button correctly!
-FCOIS.contextMenuVars.buttonContextMenuToIconIdEntries = 84 --OLD: 44 before additional 20 dynamic icons were added
+local numNonDynamicAndGearIcons = FCOIS.numVars.gFCONumNonDynamicAndGearIcons --or 12 -- As fallback value: dated 2018-10-03
+local buttonContextMenuToIconIdEntryCount = ((numNonDynamicAndGearIcons)*2) --or 24 -- As fallback value: dated 2018-10-03
+--FCOIS.contextMenuVars.buttonContextMenuToIconIdEntries = 84 --OLD: 44 before additional 20 dynamic icons were added
+FCOIS.contextMenuVars.buttonContextMenuToIconIdEntries = (buttonContextMenuToIconIdEntryCount+(numDynamicIcons*2)) --or 84 -- As fallback value: dated 2018-10-03
+local maxContextMenuEntries = FCOIS.contextMenuVars.buttonContextMenuToIconIdEntries --or 84 -- As fallback value: dated 2018-10-03
+
+--The table for the context menu marker icons in the additional inventory "flag" context menu
+FCOIS.contextMenuVars.buttonContextMenuNonDynamicIcons = {
+    [1] = FCOIS_CON_ICON_LOCK,
+    [2] = FCOIS_CON_ICON_GEAR_1,
+    [3] = FCOIS_CON_ICON_GEAR_2,
+    [4] = FCOIS_CON_ICON_GEAR_3,
+    [5] = FCOIS_CON_ICON_GEAR_4,
+    [6] = FCOIS_CON_ICON_GEAR_5,
+    [7] = FCOIS_CON_ICON_RESEARCH,
+    [8] = FCOIS_CON_ICON_DECONSTRUCTION,
+    [9] = FCOIS_CON_ICON_IMPROVEMENT,
+    [10] = FCOIS_CON_ICON_SELL,
+    [11] = FCOIS_CON_ICON_SELL_AT_GUILDSTORE,
+    [12] = FCOIS_CON_ICON_INTRICATE,
+}
+local buttonContextMenuIcons = FCOIS.contextMenuVars.buttonContextMenuNonDynamicIcons
+--The mapping table for the additional inventory context menu buttons (flag icon) to icon id
+FCOIS.contextMenuVars.buttonContextMenuToIconId = {}
+local buttonContextMenuToIconIdTable = FCOIS.contextMenuVars.buttonContextMenuToIconId
 --The index of the mapping table for context menu buttons to icon id
 FCOIS.contextMenuVars.buttonContextMenuToIconIdIndex = {}
-for index=1, FCOIS.contextMenuVars.buttonContextMenuToIconIdEntries do
-	table.insert(FCOIS.contextMenuVars.buttonContextMenuToIconIdIndex, FCOIS.contextMenuVars.buttonNamePrefix .. index)
+local buttonContextMenuToIconIdIndexTable = FCOIS.contextMenuVars.buttonContextMenuToIconIdIndex
+local iconIndex = 1
+for index=1, maxContextMenuEntries do
+    --Insert the icon indices
+	table.insert(buttonContextMenuToIconIdIndexTable, buttonNamePrefix .. index)
+
+    --Is the current index <= buttonContextMenuToIconIdEntryCount so no dynamic icons will be affected:
+    -->Dynamic icons will be added after this loop here!
+    if index <= buttonContextMenuToIconIdEntryCount then
+        local anchorEntryIndex = index - 1
+        if index == 1 then anchorEntryIndex = 1 end
+        local entryKey = buttonNamePrefix .. tostring(index)
+        local entryData = {}
+        local markerIconForContextMenuEntryAtIndex = buttonContextMenuIcons[iconIndex] --icon index of the last icon
+        entryData.iconId = markerIconForContextMenuEntryAtIndex
+        --index is even, value = false. Else: Value = true
+        entryData.mark = true
+        if index % 2 == 0 then
+            --Only increase the iconIndex if the number is even, so the next icon in next loop will be increased
+            iconIndex = iconIndex + 1
+            entryData.mark = false
+        end
+        entryData. anchorButton = buttonNamePrefix .. tostring(anchorEntryIndex)
+        if entryKey ~= nil and entryKey ~= "" and entryData ~= nil then
+            buttonContextMenuToIconIdTable[entryKey] = entryData
+        end
+    end
 end
---The mapping table for the additional inventory context menu buttons (flag icon) to icon id
-FCOIS.contextMenuVars.buttonContextMenuToIconId = {
-	[FCOIS.contextMenuVars.buttonNamePrefix .. "1"] = {
-	    iconId = FCOIS_CON_ICON_LOCK,
-        mark   = true,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "1",
-    },
-	[FCOIS.contextMenuVars.buttonNamePrefix .. "2"] = {
-	    iconId = FCOIS_CON_ICON_LOCK,
-        mark   = false,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "1",
-    },
-	[FCOIS.contextMenuVars.buttonNamePrefix .. "3"] = {
-	    iconId = FCOIS_CON_ICON_GEAR_1,
-        mark   = true,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "2",
-    },
-	[FCOIS.contextMenuVars.buttonNamePrefix .. "4"] = {
-	    iconId = FCOIS_CON_ICON_GEAR_1,
-        mark   = false,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "3",
-    },
-	[FCOIS.contextMenuVars.buttonNamePrefix .. "5"] = {
-	    iconId = FCOIS_CON_ICON_GEAR_2,
-        mark   = true,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "4",
-    },
-	[FCOIS.contextMenuVars.buttonNamePrefix .. "6"] = {
-	    iconId = FCOIS_CON_ICON_GEAR_2,
-        mark   = false,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "5",
-    },
-	[FCOIS.contextMenuVars.buttonNamePrefix .. "7"] = {
-	    iconId = FCOIS_CON_ICON_GEAR_3,
-        mark   = true,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "6",
-    },
-	[FCOIS.contextMenuVars.buttonNamePrefix .. "8"] = {
-	    iconId = FCOIS_CON_ICON_GEAR_3,
-        mark   = false,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "7",
-    },
-	[FCOIS.contextMenuVars.buttonNamePrefix .. "9"] = {
-	    iconId = FCOIS_CON_ICON_GEAR_4,
-        mark   = true,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "8",
-    },
-	[FCOIS.contextMenuVars.buttonNamePrefix .. "10"] = {
-	    iconId = FCOIS_CON_ICON_GEAR_4,
-        mark   = false,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "9",
-    },
-	[FCOIS.contextMenuVars.buttonNamePrefix .. "11"] = {
-	    iconId = FCOIS_CON_ICON_GEAR_5,
-        mark   = true,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "10",
-    },
-	[FCOIS.contextMenuVars.buttonNamePrefix .. "12"] = {
-	    iconId = FCOIS_CON_ICON_GEAR_5,
-        mark   = false,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "11",
-    },
-	[FCOIS.contextMenuVars.buttonNamePrefix .. "13"] = {
-	    iconId = FCOIS_CON_ICON_RESEARCH,
-        mark   = true,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "12",
-    },
-	[FCOIS.contextMenuVars.buttonNamePrefix .. "14"] = {
-	    iconId = FCOIS_CON_ICON_RESEARCH,
-        mark   = false,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "13",
-    },
-	[FCOIS.contextMenuVars.buttonNamePrefix .. "15"] = {
-	    iconId = FCOIS_CON_ICON_DECONSTRUCTION,
-        mark   = true,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "14",
-    },
-	[FCOIS.contextMenuVars.buttonNamePrefix .. "16"] = {
-	    iconId = FCOIS_CON_ICON_DECONSTRUCTION,
-        mark   = false,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "15",
-    },
-	[FCOIS.contextMenuVars.buttonNamePrefix .. "17"] = {
-	    iconId = FCOIS_CON_ICON_IMPROVEMENT,
-        mark   = true,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "16",
-    },
-	[FCOIS.contextMenuVars.buttonNamePrefix .. "18"] = {
-	    iconId = FCOIS_CON_ICON_IMPROVEMENT,
-        mark   = false,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "17",
-    },
-	[FCOIS.contextMenuVars.buttonNamePrefix .. "19"] = {
-	    iconId = FCOIS_CON_ICON_SELL,
-        mark   = true,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "18",
-    },
-	[FCOIS.contextMenuVars.buttonNamePrefix .. "20"] = {
-	    iconId = FCOIS_CON_ICON_SELL,
-        mark   = false,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "19",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "21"] = {
-        iconId = FCOIS_CON_ICON_SELL_AT_GUILDSTORE,
-        mark   = true,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "20",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "22"] = {
-        iconId = FCOIS_CON_ICON_SELL_AT_GUILDSTORE,
-        mark   = false,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "21",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "23"] = {
-        iconId = FCOIS_CON_ICON_INTRICATE,
-        mark   = true,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "22",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "24"] = {
-        iconId = FCOIS_CON_ICON_INTRICATE,
-        mark   = false,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "23",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "25"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_1,
-        mark   = true,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "24",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "26"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_1,
-        mark   = false,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "25",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "27"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_2,
-        mark   = true,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "26",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "28"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_2,
-        mark   = false,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "27",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "29"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_3,
-        mark   = true,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "28",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "30"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_3,
-        mark   = false,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "29",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "31"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_4,
-        mark   = true,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "30",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "32"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_4,
-        mark   = false,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "31",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "33"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_5,
-        mark   = true,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "32",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "34"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_5,
-        mark   = false,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "33",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "35"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_6,
-        mark   = true,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "34",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "36"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_6,
-        mark   = false,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "35",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "37"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_7,
-        mark   = true,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "36",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "38"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_7,
-        mark   = false,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "37",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "39"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_8,
-        mark   = true,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "38",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "40"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_8,
-        mark   = false,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "39",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "41"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_9,
-        mark   = true,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "40",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "42"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_9,
-        mark   = false,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "41",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "43"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_10,
-        mark   = true,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "42",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "44"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_10,
-        mark   = false,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "43",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "45"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_11,
-        mark   = true,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "44",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "46"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_11,
-        mark   = false,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "45",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "47"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_12,
-        mark   = true,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "46",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "48"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_12,
-        mark   = false,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "47",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "49"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_13,
-        mark   = true,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "48",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "50"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_13,
-        mark   = false,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "49",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "51"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_14,
-        mark   = true,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "50",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "52"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_14,
-        mark   = false,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "51",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "53"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_15,
-        mark   = true,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "52",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "54"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_15,
-        mark   = false,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "53",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "55"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_16,
-        mark   = true,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "54",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "56"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_16,
-        mark   = false,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "55",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "57"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_17,
-        mark   = true,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "56",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "58"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_17,
-        mark   = false,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "57",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "59"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_18,
-        mark   = true,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "58",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "60"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_18,
-        mark   = false,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "59",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "61"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_19,
-        mark   = true,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "60",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "62"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_19,
-        mark   = false,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "61",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "63"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_20,
-        mark   = true,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "62",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "64"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_20,
-        mark   = false,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "63",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "65"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_21,
-        mark   = true,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "64",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "66"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_21,
-        mark   = false,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "65",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "67"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_22,
-        mark   = true,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "66",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "68"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_22,
-        mark   = false,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "67",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "69"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_23,
-        mark   = true,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "68",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "70"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_23,
-        mark   = false,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "69",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "71"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_24,
-        mark   = true,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "70",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "72"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_24,
-        mark   = false,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "71",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "73"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_25,
-        mark   = true,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "72",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "74"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_25,
-        mark   = false,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "73",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "75"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_26,
-        mark   = true,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "74",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "76"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_26,
-        mark   = false,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "75",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "77"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_27,
-        mark   = true,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "76",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "78"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_27,
-        mark   = false,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "77",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "79"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_28,
-        mark   = true,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "78",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "80"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_28,
-        mark   = false,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "79",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "81"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_29,
-        mark   = true,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "80",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "82"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_29,
-        mark   = false,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "81",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "83"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_30,
-        mark   = true,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "82",
-    },
-    [FCOIS.contextMenuVars.buttonNamePrefix .. "84"] = {
-        iconId = FCOIS_CON_ICON_DYNAMIC_30,
-        mark   = false,
-        anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. "83",
-    },
-}
+--Dynamic context menu entries
+if buttonContextMenuToIconIdTable ~= nil then
+    --Actual count of context menu entries should be sum of "non-dynamic + gear sets", multiplied by 2 (because of "mark" and "unmark" context menu entries)
+    if buttonContextMenuToIconIdEntryCount ~= nil and buttonContextMenuToIconIdEntryCount > 0 and maxContextMenuEntries ~= nil and maxContextMenuEntries > 0 then
+        local dynIconCounter = 1
+        --Maxmium count of context menu entries should be sum of "non-dynamic + gear sets + dynamic", multiplied by 2 (because of "mark" and "unmark" context menu entries), and subracted 1
+        for entryNumber = buttonContextMenuToIconIdEntryCount+1, maxContextMenuEntries do
+            local entryKey = buttonNamePrefix .. tostring(entryNumber)
+            local entryData = {}
+            entryData.iconId = _G["FCOIS_CON_ICON_DYNAMIC_" .. tostring(dynIconCounter)]
+            --entryNumber is even, value = false. Else: Value = true
+            entryData.mark = true
+            if entryNumber % 2 == 0 then
+                --Only increase the counter if the number is even, so the next icon in next loop will be increased
+                dynIconCounter = dynIconCounter + 1
+                entryData.mark = false
+            end
+            entryData. anchorButton = buttonNamePrefix .. tostring(entryNumber-1)
+            if entryKey ~= nil and entryKey ~= "" and entryData ~= nil then
+                buttonContextMenuToIconIdTable[entryKey] = entryData
+            end
+        end
+    end
+end
 
 --Constants for the filter item number sort header entries "name" at the filter panels
     FCOIS.sortHeaderVars = {}

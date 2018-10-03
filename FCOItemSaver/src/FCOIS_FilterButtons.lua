@@ -164,14 +164,16 @@ d("[PreHookButtonHandler] Coming from panel ID: " ..tostring(comingFrom) .. ", g
     -->Shown within AdvancedFilters addon, at the inventory bottom line where the bagSpace and bankSpace items are shown!
     --FCOIS.updateFilteredItemCount(goingTo)
 
-    --If the craftbag panel is shown: Abort here and let the callback function of the craftbag scene do the rest
+    --If the craftbag panel is shown: Abort here and let the callback function of the craftbag scene do the rest.
+    --> See file src/FCOIS_hooks.lua, function FCOIS.CreateHooks(), CRAFT_BAG_FRAGMENT:RegisterCallback("StateChange", ...)
     if FCOIS.isCraftbagPanelShown() then
 --d(">> Craftbag panel is shown -> abort!")
         return false
     end
 
-    --TODO 2106-11-08: Update context menu invoker buttons, except for the Alchemy panel (no buttons yet)
-    if comingFrom ~= INV_ALVHEMY then
+    --Update context menu invoker buttons, except for theese where no additional inventory "flag" button exists (e.g. Alchemy)
+    local contextMenuInventoryFlagInvokerData = FCOIS.contextMenuVars.filterPanelIdToContextMenuButtonInvoker
+    if not contextMenuInventoryFlagInvokerData[comingFrom] then
         --Change the button color of the context menu invoker button (flag)
         FCOIS.changeContextMenuInvokerButtonColorByPanelId(goingTo)
     end
