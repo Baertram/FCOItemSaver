@@ -154,7 +154,7 @@ end
 --This function will change the actual ANTI-DETSROY etc. settings according to the active filter panel ID (inventory, vendor, mail, trade, bank, etc.)
 function FCOIS.changeAntiSettingsAccordingToFilterPanel()
     if FCOIS.gFilterWhere == nil then return false end
---d("[FCOIS.changeAntiSettingsAccordingToFilterPanel - FilterPanel: " .. FCOIS.gFilterWhere .. ", FilterPanelParent: " .. tostring(FCOIS.gFilterWhereParent))
+d("[FCOIS.changeAntiSettingsAccordingToFilterPanel - FilterPanel: " .. FCOIS.gFilterWhere .. ", FilterPanelParent: " .. tostring(FCOIS.gFilterWhereParent))
 
     local currentSettings = FCOIS.settingsVars.settings
     local isSettingEnabled = false
@@ -189,15 +189,28 @@ function FCOIS.changeAntiSettingsAccordingToFilterPanel()
             elseif	parentPanel == LF_TRADE then
                 FCOIS.settingsVars.settings.blockTrading = not currentSettings.blockTrading
                 isSettingEnabled = FCOIS.settingsVars.settings.blockTrading
+            --The parent panel for the craftbag is the vendor sell panel
+            elseif	parentPanel == LF_VENDOR_SELL then
+                FCOIS.settingsVars.settings.blockSelling = not currentSettings.blockSelling
+                isSettingEnabled = FCOIS.settingsVars.settings.blockSelling
             end
         else
             FCOIS.settingsVars.settings.blockDestroying = not currentSettings.blockDestroying
             isSettingEnabled = FCOIS.settingsVars.settings.blockDestroying
         end
 
+    elseif FCOIS.gFilterWhere == LF_VENDOR_BUY then
+        FCOIS.settingsVars.settings.blockVendorRepair = not currentSettings.blockVendorBuy
+        isSettingEnabled = FCOIS.settingsVars.settings.blockVendorBuy
     elseif FCOIS.gFilterWhere == LF_VENDOR_SELL then
         FCOIS.settingsVars.settings.blockSelling = not currentSettings.blockSelling
         isSettingEnabled = FCOIS.settingsVars.settings.blockSelling
+    elseif FCOIS.gFilterWhere == LF_VENDOR_BUYBACK then
+        FCOIS.settingsVars.settings.blockSelling = not currentSettings.blockVendorBuyback
+        isSettingEnabled = FCOIS.settingsVars.settings.blockVendorBuyback
+    elseif FCOIS.gFilterWhere == LF_VENDOR_REPAIR then
+        FCOIS.settingsVars.settings.blockSelling = not currentSettings.blockVendorRepair
+        isSettingEnabled = FCOIS.settingsVars.settings.blockVendorRepair
     elseif FCOIS.gFilterWhere == LF_FENCE_SELL then
         FCOIS.settingsVars.settings.blockFence = not currentSettings.blockFence
         isSettingEnabled = FCOIS.settingsVars.settings.blockFence
@@ -316,9 +329,21 @@ function FCOIS.autoReenableAntiSettingsCheck(checkWhere)
         end
 
     elseif checkWhere == "STORE" then
+        --Reenable the Anti-Buy methods if activated in the settings
+        if settings.autoReenable_blockVendorBuy then
+            settings.blockVendorBuy = true
+        end
         --Reenable the Anti-Sell methods if activated in the settings
         if settings.autoReenable_blockSelling then
             settings.blockSelling = true
+        end
+        --Reenable the Anti-Buyback methods if activated in the settings
+        if settings.autoReenable_blockVendorBuyback then
+            settings.blockVendorBuyback = true
+        end
+        --Reenable the Anti-Repair methods if activated in the settings
+        if settings.autoReenable_blockVendorRepair then
+            settings.blockVendorRepair = true
         end
         --Reenable the Fence Anti-Sell methods if activated in the settings
         if settings.autoReenable_blockFenceSelling then

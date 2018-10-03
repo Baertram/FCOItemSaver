@@ -418,8 +418,9 @@ local function FCOItemSaver_AddSlotAction(self, actionStringId, ...)
     elseif actionStringId == SI_ITEM_ACTION_REPAIR then
 
 
-    --CraftBagExtended: Unpack item and add to mail
-    elseif FCOIS.otherAddons.craftBagExtendedActive and actionStringId == SI_CBE_CRAFTBAG_MAIL_ATTACH then
+    --CraftBagExtended: Unpack item and add to mail, sell, trade
+    elseif FCOIS.otherAddons.craftBagExtendedActive and
+        (actionStringId == SI_CBE_CRAFTBAG_MAIL_ATTACH or actionStringId == SI_CBE_CRAFTBAG_SELL_QUANTITY or actionStringId == SI_CBE_CRAFTBAG_TRADE_ADD) then
         --Is item marked with any of the FCOItemSaver icons? Then don't show the actionStringId in the contextmenu
         --  bag, slot, echo, isDragAndDrop, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId
         return FCOIS.callItemSelectionHandler(bag, slotIndex, false, false, false, false, false, false, false)
@@ -1509,17 +1510,24 @@ function FCOIS.CreateHooks()
         FCOIS.sceneCallbackHideContextMenu(oldState, newState)
 
         if 	newState == SCENE_FRAGMENT_SHOWING then
+d("[FCOIS]CraftBag SCENE_FRAGMENT_SHOWING")
+            FCOIS.preventerVars.craftBagSceneShowInProgress = true
             if settings.debug then FCOIS.debugMessage( "Callback fragment CRAFTBAG: Showing", true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
             --Reset the parent panel ID
             FCOIS.gFilterWhereParent = nil
 
-            --Check the filter buttons and create them if they are not there
-            FCOIS.CheckFilterButtonsAtPanel(true, LF_CRAFTBAG, LF_CRAFTBAG) --overwrite with LF_CRAFTBAG so it'll create and update the buttons for the craftbag panel, and not the CBE subpanels (mail, trade, bank, guild bank, etc.)
-
+            --Check the filter buttons at the CraftBag panel and create them if they are not there. Return the parent filter panel ID if given (e.g. LF_MAIL)
+d("Showing 1")
+            local _, parentPanel = FCOIS.CheckFilterButtonsAtPanel(true, LF_CRAFTBAG, LF_CRAFTBAG) --overwrite with LF_CRAFTBAG so it'll create and update the buttons for the craftbag panel, and not the CBE subpanels (mail, trade, bank, vendor, guild bank, etc.)
             --Update the inventory context menu ("flag" icon) so it uses the correct "anti-settings" and the correct colour and right-click callback function
             --depending on the currently shown craftbag "parent" (inventory, mail send, guild bank, guild store)
-            local currentPanel, parentPanel = FCOIS.checkActivePanel(FCOIS.gFilterWhere, LF_CRAFTBAG)
+            if parentPanel == nil then
+d("Showing 1 parent")
+                _, parentPanel = FCOIS.checkActivePanel(FCOIS.gFilterWhere, LF_CRAFTBAG)
+            end
+
             if settings.debug then FCOIS.debugMessage( ">Parent panel: " .. tostring(parentPanel), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+
             --Update the current filter panel ID to "CraftBag"
             FCOIS.gFilterWhere = LF_CRAFTBAG
 
@@ -1535,6 +1543,7 @@ function FCOIS.CreateHooks()
                 end
             end
             --Change the additional context-menu button's color in the inventory (Craft Bag button)
+d("<CraftBag: SCENE_FRAGMENT_SHOWING, before changeContextMenuInvokerButtonColorByPanelId(LF_CRAFTBAG)")
             FCOIS.changeContextMenuInvokerButtonColorByPanelId(LF_CRAFTBAG)
 
             --				elseif 	newState == SCENE_FRAGMENT_SHOWN then
@@ -1542,21 +1551,44 @@ function FCOIS.CreateHooks()
 
             --				elseif 	newState == SCENE_FRAGMENT_HIDING then
             --	d("Callback fragment CRAFTBAG: Hiding")
-
+            FCOIS.preventerVars.craftBagSceneShowInProgress = false
 --------------------------------------------------------------------------------------------------------------------
         elseif  newState == SCENE_FRAGMENT_HIDDEN then
+d("[FCOIS]CraftBag SCENE_FRAGMENT_HIDDEN")
             if settings.debug then FCOIS.debugMessage( "Callback fragment CRAFTBAG: Hidden", true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
             --Reset the CraftBag filter parent panel ID
             FCOIS.gFilterWhereParent = nil
             --Hide the context menu at last active panel
             FCOIS.hideContextMenu(LF_CRAFTBAG)
-            --Get the new active filter panel ID -> FCOIS.gFilterWhere
-            FCOIS.checkActivePanel(FCOIS.gFilterWhere)
-            if settings.debug then FCOIS.debugMessage( ">new panel: " .. tostring(FCOIS.gFilterWhere), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
-            --Check the filter buttons and create them if they are not there
-            --FCOIS.CheckFilterButtonsAtPanel(true, FCOIS.gFilterWhere)
-            --Change the additional context-menu button's color in the inventory (new active filter panel ID)
-            FCOIS.changeContextMenuInvokerButtonColorByPanelId(FCOIS.gFilterWhere)
+
+            --Needs to be done here as changing the CraftBag at the mail panel e.g. will not call PreHookButtonHandler function!
+            --So we need to get the active filter panel ID after the craftbag was closed again, and update the additional inventory flag icon at thius panel too.
+            --> Wait a few milliseconds for the function FCOIS.PreHookButtonHandler to be run (if it is run! Won't be run e.g if the craftbag scene get's closed/changed
+            --> via a keybind/ESC key or by other means then the click on another inventory button!)
+            --zo_callLater(function()
+                --If the delayed hide craftbag scene stuff gets into a new craftbag scene show call:
+                --Abort the hide functions now
+                if FCOIS.preventerVars.craftBagSceneShowInProgress then
+d("<CraftBag SCENE_FRAGMENT_HIDDEN: craftBagSceneShowInProgress 1 ->Abort!")
+                    FCOIS.preventerVars.gPreHookButtonHandlerCallActive = false
+                    return false
+                end
+                -->Check within this time if FCOIS.PreHookButtonHandler function was called and do not execute the craftbag_scene_hidden->checkActivePanel stuff then!
+                if FCOIS.preventerVars.gPreHookButtonHandlerCallActive then
+d("<CraftBag SCENE_FRAGMENT_HIDDEN: PreeHookButtonHandler already called ->Abort!")
+                    FCOIS.preventerVars.gPreHookButtonHandlerCallActive = false
+                    return false
+                end
+                --Get the new active filter panel ID -> FCOIS.gFilterWhere (in function CheckFilterButtonAtPanel the function FCOIS.checkActivePanel will be called!)
+                --Check the filter buttons and create them if they are not there. Be sure to leave the filterPanelId = nil so it will be properly new determined
+                --by help of the shown control (names), and not only the libFilters constant LF_*!
+d("hidden1")
+                FCOIS.CheckFilterButtonsAtPanel(true, nil)
+                if settings.debug then FCOIS.debugMessage( ">new panel: " .. tostring(FCOIS.gFilterWhere), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+                --Change the additional context-menu button's color in the inventory (new active filter panel ID)
+d("<CraftBag: SCENE_FRAGMENT_HIDDEN before changeContextMenuInvokerButtonColorByPanelId(" .. FCOIS.gFilterWhere .. ")")
+                FCOIS.changeContextMenuInvokerButtonColorByPanelId(FCOIS.gFilterWhere)
+            --end, 50)
         end
     end)
 

@@ -883,6 +883,8 @@ FCOIS.preventerVars.writCreatorCreatedItem = false
 FCOIS.preventerVars.eventInventorySingleSlotUpdate = false
 FCOIS.preventerVars.resetNonServerDependentSavedVars = false
 FCOIS.preventerVars.preHookButtonDone = {}
+FCOIS.preventerVars.gPreHookButtonHandlerCallActive = false
+FCOIS.preventerVars.craftBagSceneShowInProgress = false
 
 --The event handler array for OnMouseDoubleClick, Drag&Drop, etc.
 FCOIS.eventHandlers = {}
@@ -1946,117 +1948,121 @@ if buttonContextMenuToIconIdTable ~= nil then
 end
 
 --Constants for the filter item number sort header entries "name" at the filter panels
-    FCOIS.sortHeaderVars = {}
-    FCOIS.sortHeaderVars.name = {}
-    FCOIS.sortHeaderVars.name[LF_INVENTORY]              = "ZO_PlayerInventorySortByNameName"
-    --Same like inventory
-    FCOIS.sortHeaderVars.name[LF_MAIL_SEND]              = FCOIS.sortHeaderVars.name[LF_INVENTORY]
-    FCOIS.sortHeaderVars.name[LF_TRADE]                  = FCOIS.sortHeaderVars.name[LF_INVENTORY]
-    FCOIS.sortHeaderVars.name[LF_GUILDSTORE_SELL]        = FCOIS.sortHeaderVars.name[LF_INVENTORY]
-    FCOIS.sortHeaderVars.name[LF_BANK_DEPOSIT]           = FCOIS.sortHeaderVars.name[LF_INVENTORY]
-    FCOIS.sortHeaderVars.name[LF_VENDOR_SELL]            = FCOIS.sortHeaderVars.name[LF_INVENTORY]
-    FCOIS.sortHeaderVars.name[LF_FENCE_SELL]             = FCOIS.sortHeaderVars.name[LF_INVENTORY]
-    FCOIS.sortHeaderVars.name[LF_FENCE_LAUNDER]          = FCOIS.sortHeaderVars.name[LF_INVENTORY]
-    --Others
-    FCOIS.sortHeaderVars.name[LF_VENDOR_BUY]             = "ZO_StoreWindowSortByNameName"
-    FCOIS.sortHeaderVars.name[LF_VENDOR_BUYBACK]         = "ZO_BuyBackSortByNameName"
-    FCOIS.sortHeaderVars.name[LF_VENDOR_REPAIR]          = "ZO_RepairWindowSortByNameName"
-    FCOIS.sortHeaderVars.name[LF_BANK_WITHDRAW]          = "ZO_PlayerBankSortByNameName"
-    FCOIS.sortHeaderVars.name[LF_GUILDBANK_WITHDRAW]     = "ZO_GuildBankSortByNameName"
-    FCOIS.sortHeaderVars.name[LF_SMITHING_REFINE]        = "ZO_SmithingTopLevelRefinementPanelInventorySortByNameName"
-    FCOIS.sortHeaderVars.name[LF_SMITHING_DECONSTRUCT]   = "ZO_SmithingTopLevelDeconstructionPanelInventorySortByNameName"
-    FCOIS.sortHeaderVars.name[LF_SMITHING_IMPROVEMENT]   = "ZO_SmithingTopLevelImprovementPanelInventorySortByNameName"
-    FCOIS.sortHeaderVars.name[LF_ALCHEMY_CREATION]       = "ZO_AlchemyTopLevelInventorySortByNameName"
-    FCOIS.sortHeaderVars.name[LF_ENCHANTING_CREATION]    = "ZO_EnchantingTopLevelInventorySortByNameName"
-    FCOIS.sortHeaderVars.name[LF_ENCHANTING_EXTRACTION]  = "ZO_EnchantingTopLevelInventorySortByNameName"
-    FCOIS.sortHeaderVars.name[LF_CRAFTBAG]               = "ZO_CraftBagSortByNameName"
-    FCOIS.sortHeaderVars.name[LF_RETRAIT]                = "ZO_RetraitStation_KeyboardTopLevelRetraitPanelInventorySortByNameName"
-    FCOIS.sortHeaderVars.name[LF_HOUSE_BANK_WITHDRAW]	 = "ZO_HouseBankSortByNameName"
-    FCOIS.sortHeaderVars.name[LF_HOUSE_BANK_DEPOSIT]     = FCOIS.sortHeaderVars.name[LF_INVENTORY]
-    FCOIS.sortHeaderVars.name[LF_JEWELRY_REFINE]         = "ZO_SmithingTopLevelRefinementPanelInventorySortByNameName"
-    FCOIS.sortHeaderVars.name[LF_JEWELRY_DECONSTRUCT]    = "ZO_SmithingTopLevelDeconstructionPanelInventorySortByNameName"
-    FCOIS.sortHeaderVars.name[LF_JEWELRY_IMPROVEMENT]    = "ZO_SmithingTopLevelImprovementPanelInventorySortByNameName"
+FCOIS.sortHeaderVars = {}
+--The sort header name lookup table
+FCOIS.sortHeaderVars.name = {}
+local sortHeaderNames = FCOIS.sortHeaderVars.name
+local sortByNameNameStr = "SortByNameName"
+sortHeaderNames = {
+    [LF_INVENTORY]              = "ZO_PlayerInventory" .. sortByNameNameStr,
+    [LF_VENDOR_BUY]             = "ZO_StoreWindow" .. sortByNameNameStr,
+    [LF_VENDOR_BUYBACK]         = "ZO_BuyBack" .. sortByNameNameStr,
+    [LF_VENDOR_REPAIR]          = "ZO_RepairWindow" .. sortByNameNameStr,
+    [LF_BANK_WITHDRAW]          = "ZO_PlayerBank" .. sortByNameNameStr,
+    [LF_GUILDBANK_WITHDRAW]     = "ZO_GuildBank" .. sortByNameNameStr,
+    [LF_SMITHING_REFINE]        = "ZO_SmithingTopLevelRefinementPanelInventory" .. sortByNameNameStr,
+    [LF_SMITHING_DECONSTRUCT]   = "ZO_SmithingTopLevelDeconstructionPanelInventory" .. sortByNameNameStr,
+    [LF_SMITHING_IMPROVEMENT]   = "ZO_SmithingTopLevelImprovementPanelInventory" .. sortByNameNameStr,
+    [LF_ALCHEMY_CREATION]       = "ZO_AlchemyTopLevelInventory" .. sortByNameNameStr,
+    [LF_ENCHANTING_CREATION]    = "ZO_EnchantingTopLevelInventory" .. sortByNameNameStr,
+    [LF_CRAFTBAG]               = "ZO_CraftBag" .. sortByNameNameStr,
+    [LF_RETRAIT]                = "ZO_RetraitStation_KeyboardTopLevelRetraitPanelInventory" .. sortByNameNameStr,
+    [LF_HOUSE_BANK_WITHDRAW]	= "ZO_HouseBank" .. sortByNameNameStr,
+}
+local sortHeaderInventoryName = sortHeaderNames[LF_INVENTORY]
+sortHeaderNames[LF_MAIL_SEND]              = sortHeaderInventoryName
+sortHeaderNames[LF_TRADE]                  = sortHeaderInventoryName
+sortHeaderNames[LF_GUILDSTORE_SELL]        = sortHeaderInventoryName
+sortHeaderNames[LF_BANK_DEPOSIT]           = sortHeaderInventoryName
+sortHeaderNames[LF_VENDOR_SELL]            = sortHeaderInventoryName
+sortHeaderNames[LF_FENCE_SELL]             = sortHeaderInventoryName
+sortHeaderNames[LF_FENCE_LAUNDER]          = sortHeaderInventoryName
+sortHeaderNames[LF_HOUSE_BANK_DEPOSIT]     = sortHeaderInventoryName
+sortHeaderNames[LF_JEWELRY_REFINE]         = sortHeaderNames[LF_SMITHING_REFINE]
+sortHeaderNames[LF_JEWELRY_DECONSTRUCT]    = sortHeaderNames[LF_SMITHING_DECONSTRUCT]
+sortHeaderNames[LF_JEWELRY_IMPROVEMENT]    = sortHeaderNames[LF_SMITHING_IMPROVEMENT]
+sortHeaderNames[LF_ENCHANTING_EXTRACTION]  = sortHeaderNames[LF_ENCHANTING_CREATION]
 
-    --The variable containing the number of filtered items at the different panels
-    FCOIS.numberOfFilteredItems = {}
+--The variable containing the number of filtered items at the different panels
+FCOIS.numberOfFilteredItems = {}
 
-    --Levels
-    FCOIS.mappingVars.levels = {
-        [1] = 5,
-        [2] = 10,
-        [3] = 15,
-        [4] = 20,
-        [5] = 25,
-        [6] = 30,
-        [7] = 35,
-        [8] = 40,
-        [9] = 45,
-        [10] = 50,
-    }
-    --Champion ranks
-    FCOIS.mappingVars.maxCPLevel = 160 -- The current maxmium of Champion ranks
-    FCOIS.mappingVars.CPlevels = {}
-    local cpCnt = 1
-    for cpRank = 10, FCOIS.mappingVars.maxCPLevel, 10 do
-        FCOIS.mappingVars.CPlevels[cpCnt] = cpRank
-        cpCnt = cpCnt + 1
-    end
-    --Build the level 2 threshold mapping array for the settingsmenu dropdownbox value -> comparison with item's level
-    FCOIS.mappingVars.levelToThreshold = {}
-    if FCOIS.mappingVars.levels ~= nil then
-        for _, level in ipairs(FCOIS.mappingVars.levels) do
-            if level > 0 then
-                FCOIS.mappingVars.levelToThreshold[tostring(level)] = level
-            end
+--Levels
+FCOIS.mappingVars.levels = {
+    [1] = 5,
+    [2] = 10,
+    [3] = 15,
+    [4] = 20,
+    [5] = 25,
+    [6] = 30,
+    [7] = 35,
+    [8] = 40,
+    [9] = 45,
+    [10] = 50,
+}
+--Champion ranks
+FCOIS.mappingVars.maxCPLevel = 160 -- The current maxmium of Champion ranks
+FCOIS.mappingVars.CPlevels = {}
+local cpCnt = 1
+for cpRank = 10, FCOIS.mappingVars.maxCPLevel, 10 do
+    FCOIS.mappingVars.CPlevels[cpCnt] = cpRank
+    cpCnt = cpCnt + 1
+end
+--Build the level 2 threshold mapping array for the settingsmenu dropdownbox value -> comparison with item's level
+FCOIS.mappingVars.levelToThreshold = {}
+if FCOIS.mappingVars.levels ~= nil then
+    for _, level in ipairs(FCOIS.mappingVars.levels) do
+        if level > 0 then
+            FCOIS.mappingVars.levelToThreshold[tostring(level)] = level
         end
     end
-    --Afterwards add the CP ranks
-    if FCOIS.mappingVars.CPlevels ~= nil then
-        for _, CPRank in ipairs(FCOIS.mappingVars.CPlevels) do
-            if CPRank > 0 then
-                FCOIS.mappingVars.levelToThreshold[tostring("CP") .. CPRank] = CPRank
-            end
+end
+--Afterwards add the CP ranks
+if FCOIS.mappingVars.CPlevels ~= nil then
+    for _, CPRank in ipairs(FCOIS.mappingVars.CPlevels) do
+        if CPRank > 0 then
+            FCOIS.mappingVars.levelToThreshold[tostring("CP") .. CPRank] = CPRank
         end
     end
-    --Global "all levels" table. Will be filled in file "FCOIS_SettingsMenu.lua" in function "FCOIS.BuildAddonMenu()"
-    --as the levelList array is build for the LAM dropdown box (for the automatic marking -> non-wished -> levels)
-    FCOIS.mappingVars.allLevels = {}
+end
+--Global "all levels" table. Will be filled in file "FCOIS_SettingsMenu.lua" in function "FCOIS.BuildAddonMenu()"
+--as the levelList array is build for the LAM dropdown box (for the automatic marking -> non-wished -> levels)
+FCOIS.mappingVars.allLevels = {}
 
-    --The inventory flag context menu anti-* settings buttons
-    local buttonContextMenuDestroy  = "button_context_menu_toggle_anti_destroy_"
-    local buttonContextMenuSell     = "button_context_menu_toggle_anti_sell_"
-    local buttonContextMenuRefine   = "button_context_menu_toggle_anti_refine_"
-    local buttonContextMenuDecon    = "button_context_menu_toggle_anti_deconstruct_"
-    local buttonContextMenuImprove  = "button_context_menu_toggle_anti_improve_"
-    FCOIS.mappingVars.contextMenuAntiButtonsAtPanel = {
-        [LF_INVENTORY] 				= buttonContextMenuDestroy,
-        [LF_BANK_WITHDRAW] 			= buttonContextMenuDestroy,
-        [LF_BANK_DEPOSIT] 			= buttonContextMenuDestroy,
-        [LF_GUILDBANK_WITHDRAW] 	= buttonContextMenuDestroy,
-        [LF_GUILDBANK_DEPOSIT]		= buttonContextMenuDestroy,
-        [LF_VENDOR_BUY] 			= "button_context_menu_toggle_anti_buy_",
-        [LF_VENDOR_SELL] 			= buttonContextMenuSell,
-        [LF_VENDOR_BUYBACK] 		= "button_context_menu_toggle_anti_buyback_",
-        [LF_VENDOR_REPAIR] 			= "button_context_menu_toggle_anti_repair_",
-        [LF_SMITHING_REFINE]  		= buttonContextMenuRefine,
-        [LF_SMITHING_DECONSTRUCT]  	= buttonContextMenuDecon,
-        [LF_SMITHING_IMPROVEMENT]	= buttonContextMenuImprove,
-        [LF_SMITHING_RESEARCH]		= "",
-        [LF_GUILDSTORE_SELL] 	 	= buttonContextMenuSell,
-        [LF_MAIL_SEND] 				= "button_context_menu_toggle_anti_mail_",
-        [LF_TRADE] 					= "button_context_menu_toggle_anti_trade_",
-        [LF_ENCHANTING_CREATION]	= "button_context_menu_toggle_anti_create_",
-        [LF_ENCHANTING_EXTRACTION]	= "button_context_menu_toggle_anti_extract_",
-        [LF_FENCE_SELL] 			= "button_context_menu_toggle_anti_fence_sell_",
-        [LF_FENCE_LAUNDER] 			= "button_context_menu_toggle_anti_launder_sell_",
-        [LF_CRAFTBAG]				= buttonContextMenuDestroy,
-        [LF_RETRAIT]				= "button_context_menu_toggle_anti_retrait_",
-        [LF_HOUSE_BANK_WITHDRAW]    = buttonContextMenuDestroy,
-        [LF_HOUSE_BANK_DEPOSIT] 	= buttonContextMenuDestroy,
-        [LF_JEWELRY_REFINE]  		= buttonContextMenuRefine,
-        [LF_JEWELRY_DECONSTRUCT]  	= buttonContextMenuDecon,
-        [LF_JEWELRY_IMPROVEMENT]	= buttonContextMenuImprove,
-    }
+--The inventory flag context menu anti-* settings buttons
+local buttonContextMenuDestroy  = "button_context_menu_toggle_anti_destroy_"
+local buttonContextMenuSell     = "button_context_menu_toggle_anti_sell_"
+local buttonContextMenuRefine   = "button_context_menu_toggle_anti_refine_"
+local buttonContextMenuDecon    = "button_context_menu_toggle_anti_deconstruct_"
+local buttonContextMenuImprove  = "button_context_menu_toggle_anti_improve_"
+FCOIS.mappingVars.contextMenuAntiButtonsAtPanel = {
+    [LF_INVENTORY] 				= buttonContextMenuDestroy,
+    [LF_BANK_WITHDRAW] 			= buttonContextMenuDestroy,
+    [LF_BANK_DEPOSIT] 			= buttonContextMenuDestroy,
+    [LF_GUILDBANK_WITHDRAW] 	= buttonContextMenuDestroy,
+    [LF_GUILDBANK_DEPOSIT]		= buttonContextMenuDestroy,
+    [LF_VENDOR_BUY] 			= "button_context_menu_toggle_anti_buy_",
+    [LF_VENDOR_SELL] 			= buttonContextMenuSell,
+    [LF_VENDOR_BUYBACK] 		= "button_context_menu_toggle_anti_buyback_",
+    [LF_VENDOR_REPAIR] 			= "button_context_menu_toggle_anti_repair_",
+    [LF_SMITHING_REFINE]  		= buttonContextMenuRefine,
+    [LF_SMITHING_DECONSTRUCT]  	= buttonContextMenuDecon,
+    [LF_SMITHING_IMPROVEMENT]	= buttonContextMenuImprove,
+    [LF_SMITHING_RESEARCH]		= "",
+    [LF_GUILDSTORE_SELL] 	 	= buttonContextMenuSell,
+    [LF_MAIL_SEND] 				= "button_context_menu_toggle_anti_mail_",
+    [LF_TRADE] 					= "button_context_menu_toggle_anti_trade_",
+    [LF_ENCHANTING_CREATION]	= "button_context_menu_toggle_anti_create_",
+    [LF_ENCHANTING_EXTRACTION]	= "button_context_menu_toggle_anti_extract_",
+    [LF_FENCE_SELL] 			= "button_context_menu_toggle_anti_fence_sell_",
+    [LF_FENCE_LAUNDER] 			= "button_context_menu_toggle_anti_launder_sell_",
+    [LF_CRAFTBAG]				= buttonContextMenuDestroy,
+    [LF_RETRAIT]				= "button_context_menu_toggle_anti_retrait_",
+    [LF_HOUSE_BANK_WITHDRAW]    = buttonContextMenuDestroy,
+    [LF_HOUSE_BANK_DEPOSIT] 	= buttonContextMenuDestroy,
+    [LF_JEWELRY_REFINE]  		= buttonContextMenuRefine,
+    [LF_JEWELRY_DECONSTRUCT]  	= buttonContextMenuDecon,
+    [LF_JEWELRY_IMPROVEMENT]	= buttonContextMenuImprove,
+}
 
 --Mapping for the Transmuation Geode container ItemIds (and flavor text)
 FCOIS.mappingVars.containerTransmuation = {}
@@ -2075,15 +2081,16 @@ ID #134623: [Intakte Transmutationsgeode]               1-10 crystals
 Finished search. Total results: 9
 ]]
 FCOIS.mappingVars.containerTransmuation.geodeItemIds = {}
-FCOIS.mappingVars.containerTransmuation.geodeItemIds[134583] = true -- 1
-FCOIS.mappingVars.containerTransmuation.geodeItemIds[134588] = true -- 5
-FCOIS.mappingVars.containerTransmuation.geodeItemIds[134589] = true -- 1-10
-FCOIS.mappingVars.containerTransmuation.geodeItemIds[134590] = true -- 10
-FCOIS.mappingVars.containerTransmuation.geodeItemIds[134591] = true -- 50
-FCOIS.mappingVars.containerTransmuation.geodeItemIds[134618] = true -- 4-25
-FCOIS.mappingVars.containerTransmuation.geodeItemIds[134622] = true -- 1-3
-FCOIS.mappingVars.containerTransmuation.geodeItemIds[134623] = true -- 1-10
-FCOIS.mappingVars.containerTransmuation.geodeItemIds[134595] = true -- Endless geode, reveiling 200 crystals and geodes
+local geodeItemIds = FCOIS.mappingVars.containerTransmuation.geodeItemIds
+geodeItemIds[134583] = true -- 1
+geodeItemIds[134588] = true -- 5
+geodeItemIds[134589] = true -- 1-10
+geodeItemIds[134590] = true -- 10
+geodeItemIds[134591] = true -- 50
+geodeItemIds[134618] = true -- 4-25
+geodeItemIds[134622] = true -- 1-3
+geodeItemIds[134623] = true -- 1-10
+geodeItemIds[134595] = true -- Endless geode, reveiling 200 crystals and geodes
 
 ------------------------------------------------------------------------------------------------------------------------
 --Special item'S itemID (Master weapons, Mahlstrom weapons, etc.)

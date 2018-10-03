@@ -40,20 +40,21 @@ end
 function FCOIS.checkActivePanel(comingFrom, overwriteFilterWhere)
     if overwriteFilterWhere == nil then overwriteFilterWhere = false end
     local inventoryName
-    local panelType
-    local oldFilterWhere
-    if comingFrom == 0 or comingFrom == nil then
-        --Get the current filter panel id
-        oldFilterWhere = FCOIS.gFilterWhere
-    else
-        oldFilterWhere = comingFrom
-    end
-
     local ctrlVars = FCOIS.ZOControlVars
 
     --Get the current scene's name to be able to distinguish between bank, guildbank, mail etc. when changing to CBE's craftbag panels
     local currentSceneName = SCENE_MANAGER.currentScene.name
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[FCOIS.checkActivePanel] Before: " .. tostring(oldFilterWhere) .. ", overwriteFilterWhere: " .. tostring(overwriteFilterWhere) .. ", currentSceneName: " ..tostring(currentSceneName), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+    --Debug
+    if FCOIS.settingsVars.settings.debug then
+        local oldFilterWhere
+        if comingFrom == 0 or comingFrom == nil then
+            --Get the current filter panel id
+            oldFilterWhere = FCOIS.gFilterWhere
+        else
+            oldFilterWhere = comingFrom
+        end
+        FCOIS.debugMessage( "[FCOIS.checkActivePanel] Coming from/Before: " .. tostring(oldFilterWhere) .. ", overwriteFilterWhere: " .. tostring(overwriteFilterWhere) .. ", currentSceneName: " ..tostring(currentSceneName), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED)
+    end
 
 d("[FCOIS.checkActivePanel] comingFrom: " .. tostring(comingFrom) .. ", overwriteFilterWhere: " ..tostring(overwriteFilterWhere))
 
@@ -202,11 +203,6 @@ d("[FCOIS.checkActivePanel] comingFrom: " .. tostring(comingFrom) .. ", overwrit
         --Update the filterPanelId
         FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(filterPanelId)
         inventoryName = ctrlVars.IMPROVEMENT_INV
-    --Craft bag
-    elseif (not ctrlVars.CRAFTBAG:IsHidden() or comingFrom == LF_CRAFTBAG) then
-        --Update the filterPanelId
-        FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(LF_CRAFTBAG)
-        inventoryName = ctrlVars.CRAFTBAG
     --Retrait
     elseif (FCOIS.isRetraitStationShown() or comingFrom == LF_RETRAIT) then
         --Update the filterPanelId
@@ -217,6 +213,11 @@ d("[FCOIS.checkActivePanel] comingFrom: " .. tostring(comingFrom) .. ", overwrit
         --Update the filterPanelId
         FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(LF_INVENTORY)
         inventoryName = ctrlVars.INV
+    --Craft bag
+    elseif (not ctrlVars.CRAFTBAG:IsHidden() or comingFrom == LF_CRAFTBAG) then
+        --Update the filterPanelId
+        FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(LF_CRAFTBAG)
+        inventoryName = ctrlVars.CRAFTBAG
     else
         --Update the filterPanelId with a standard value
         FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(LF_INVENTORY)
@@ -224,9 +225,10 @@ d("[FCOIS.checkActivePanel] comingFrom: " .. tostring(comingFrom) .. ", overwrit
     end
 
     --Set the return variable for the currently active filter panel
-    panelType = FCOIS.gFilterWhere
+    local panelType = FCOIS.gFilterWhere
 
     --Overwrite the FCOIS panelID with the one from the function parameter?
+    --(e.g. at the CraftBag Extended mail panel the filterPanel will be LF_MAIL. This will be moved to the "parent panel". And the filterPanel will be overwritten with LF_CRAFTBAG)
     if overwriteFilterWhere then
         FCOIS.gFilterWhere = overwriteFilterWhere
         --CraftBagExtended is active?
@@ -237,7 +239,7 @@ d("[FCOIS.checkActivePanel] comingFrom: " .. tostring(comingFrom) .. ", overwrit
 
     if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( ">> after: " .. tostring(FCOIS.gFilterWhere) .. ", filterParentPanel: " .. tostring(panelType), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
 
-    --Return the found inventory variable (e.g. ZO_PlayerInventory) and the libfilters filter panel ID (e.g. LF_BANK_WITHDRAW)
+    --Return the found inventory variable (e.g. ZO_PlayerInventory) and the LibFilters filter panel ID (e.g. LF_BANK_WITHDRAW)
     return inventoryName, panelType
 end
 

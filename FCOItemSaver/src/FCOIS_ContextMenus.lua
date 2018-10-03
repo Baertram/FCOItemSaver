@@ -1499,7 +1499,7 @@ end
 -- ========================================================================================================================
 -- ========================================================================================================================
 -- ============================================================
---         Additional inventory button context menu
+--         Additional inventory button "flag" context menu
 -- ============================================================
 --Function to build the text for the toggle buttons (Anti-Deconstruct, Anti-Destroy, Anti_Sell, etc. FCOIS.settingsVars.settings)
 --The function will return as first parameter the text and as second parameter a boolean value: true if the setting for the current panel is enabled, and false if not
@@ -1516,88 +1516,56 @@ function FCOIS.getContextMenuAntiSettingsTextAndState(p_filterWhere, buildText)
     --Update the Anti-* settings for the panel
     FCOIS.getFilterWhereBySettings(p_filterWhere, true)
 
+    --The mapping table with the LibFilters filterPanelId to block settings
+    local libFiltersPanelIdToBlockSettings = {
+        [LF_INVENTORY]              = settings.blockDestroying,
+        [LF_BANK_WITHDRAW]          = settings.blockDestroying,
+        [LF_GUILDBANK_WITHDRAW]     = settings.blockDestroying,
+        [LF_HOUSE_BANK_WITHDRAW]    = settings.blockDestroying,
+        [LF_BANK_DEPOSIT]           = settings.blockDestroying,
+        [LF_GUILDBANK_DEPOSIT]      = settings.blockDestroying,
+        [LF_HOUSE_BANK_DEPOSIT]     = settings.blockDestroying,
+        [LF_VENDOR_BUY]             = settings.blockVendorBuy,
+        [LF_VENDOR_SELL]            = settings.blockSelling,
+        [LF_VENDOR_BUYBACK]         = settings.blockVendorBuyback,
+        [LF_VENDOR_REPAIR]          = settings.blockVendorRepair,
+        [LF_FENCE_SELL]             = settings.blockFence,
+        [LF_FENCE_LAUNDER]          = settings.blockLaunder,
+        [LF_SMITHING_REFINE]        = settings.blockRefinement,
+        [LF_SMITHING_DECONSTRUCT ]  = settings.blockDeconstruction,
+        [LF_SMITHING_IMPROVEMENT]   = settings.blockImprovement,
+        [LF_SMITHING_RESEARCH]      = false, -- Research tab got no additional filter button or settings so always simulate it as OFF (false)
+        [LF_JEWELRY_REFINE]         = settings.blockJewelryRefinement,
+        [LF_JEWELRY_DECONSTRUCT]    = settings.blockJewelryDeconstruction,
+        [LF_JEWELRY_IMPROVEMENT]    = settings.blockJewelryImprovement,
+        [LF_JEWELRY_RESEARCH]       = false, -- Jewelry research tab got no additional filter button or settings so always simulate it as OFF (false)
+        [LF_GUILDSTORE_SELL]        = settings.blockSellingGuildStore,
+        [LF_MAIL_SEND]              = settings.blockSendingByMail,
+        [LF_TRADE]                  = settings.blockTrading,
+        [LF_ENCHANTING_CREATION]    = settings.blockEnchantingCreation,
+        [LF_ENCHANTING_EXTRACTION]  = settings.blockEnchantingExtraction,
+        [LF_RETRAIT]                = settings.blockRetrait,
+    }
     local currentSettingsState
-    --Get the current anti-settings state
-    if   p_filterWhere == LF_INVENTORY or p_filterWhere == LF_BANK_WITHDRAW or p_filterWhere == LF_GUILDBANK_WITHDRAW or p_filterWhere == LF_HOUSE_BANK_WITHDRAW
-      or p_filterWhere == LF_BANK_DEPOSIT or p_filterWhere == LF_GUILDBANK_DEPOSIT or p_filterWhere == LF_HOUSE_BANK_DEPOSIT then
-        currentSettingsState = settings.blockDestroying
-
-        --CraftBag and CraftBagExtended addon
-    elseif p_filterWhere == LF_CRAFTBAG then
-        --As the CraftBag can be active at the mail send, trade, guild store sell and guild bank panels too we need to check if we are currently using the
+    --Special treatment for CraftBag, e.g. for addon CraftBagExtended!
+    if p_filterWhere == LF_CRAFTBAG then
+        --As the CraftBag can be active at the mail send, trade, vendor sell, guild store sell and guild bank panels too we need to check if we are currently using the
         --addon CraftBagExtended and if the parent panel ID (FCOIS.gFilterWhereParent) is one of the above mentioned
         -- -> See callback function for CRAFT_BAG_FRAGMENT in the PreHooks section!
         if FCOIS.checkIfCBEorAGSActive(FCOIS.gFilterWhereParent) then
             local parentPanel = FCOIS.gFilterWhereParent
-            --The parent panel for the craftbag is the guild bank deposit panel
-            if 		parentPanel == LF_GUILDBANK_DEPOSIT then
-                currentSettingsState = settings.blockDestroying
-
-            --The parent panel for the craftbag is the bank deposit panel
-            elseif 		parentPanel == LF_BANK_DEPOSIT then
-                currentSettingsState = settings.blockDestroying
-
-            --The parent panel for the craftbag is the house bank deposit panel
-            elseif 		parentPanel == LF_HOUSE_BANK_DEPOSIT then
-                currentSettingsState = settings.blockDestroying
-
-            --The parent panel for the craftbag is the mail send panel
-            elseif	parentPanel == LF_MAIL_SEND then
-                currentSettingsState = settings.blockSendingByMail
-
-            --The parent panel for the craftbag is the guild store sell panel
-            elseif	parentPanel == LF_GUILDSTORE_SELL then
-                currentSettingsState = settings.blockSellingGuildStore
-
-            --The parent panel for the craftbag is the trade panel
-            elseif	parentPanel == LF_TRADE then
-                currentSettingsState = settings.blockTrading
+            if parentPanel ~= nil then
+                currentSettingsState = libFiltersPanelIdToBlockSettings[parentPanel]
             end
         else
+            --Normal craftbag in inventory. Block destroy
             currentSettingsState = settings.blockDestroying
         end
-
-    elseif p_filterWhere == LF_VENDOR_BUY then
-        currentSettingsState = settings.blockVendorBuy
-    elseif p_filterWhere == LF_VENDOR_SELL then
-        currentSettingsState = settings.blockSelling
-    elseif p_filterWhere == LF_VENDOR_BUYBACK then
-        currentSettingsState = settings.blockVendorBuyback
-    elseif p_filterWhere == LF_VENDOR_REPAIR then
-        currentSettingsState = settings.blockVendorRepair
-    elseif p_filterWhere == LF_FENCE_SELL then
-        currentSettingsState = settings.blockFence
-    elseif p_filterWhere == LF_FENCE_LAUNDER then
-        currentSettingsState = settings.blockLaunder
-    elseif p_filterWhere == LF_SMITHING_REFINE then
-        currentSettingsState = settings.blockRefinement
-    elseif p_filterWhere == LF_SMITHING_DECONSTRUCT then
-        currentSettingsState = settings.blockDeconstruction
-    elseif p_filterWhere == LF_SMITHING_IMPROVEMENT then
-        currentSettingsState = settings.blockImprovement
-    elseif p_filterWhere == LF_SMITHING_RESEARCH then
-        currentSettingsState = false -- Research tab got no additional filter button or settings so always simulate it as OFF (false)
-    elseif p_filterWhere == LF_JEWELRY_REFINE then
-        currentSettingsState = settings.blockJewelryRefinement
-    elseif p_filterWhere == LF_JEWELRY_DECONSTRUCT then
-        currentSettingsState = settings.blockJewelryDeconstruction
-    elseif p_filterWhere == LF_JEWELRY_IMPROVEMENT then
-        currentSettingsState = settings.blockJewelryImprovement
-    elseif p_filterWhere == LF_GUILDSTORE_SELL then
-        currentSettingsState = settings.blockSellingGuildStore
-    elseif p_filterWhere == LF_MAIL_SEND then
-        currentSettingsState = settings.blockSendingByMail
-    elseif p_filterWhere == LF_TRADE then
-        currentSettingsState = settings.blockTrading
-    elseif p_filterWhere == LF_ENCHANTING_CREATION then
-        currentSettingsState = settings.blockEnchantingCreation
-    elseif p_filterWhere == LF_ENCHANTING_EXTRACTION then
-        currentSettingsState = settings.blockEnchantingExtraction
-    elseif p_filterWhere == LF_RETRAIT then
-        currentSettingsState = settings.blockRetrait
     else
-        currentSettingsState = settings.blockDestroying
+        --All others: Lookup in mapping table
+        currentSettingsState = libFiltersPanelIdToBlockSettings[p_filterWhere]
     end
+    --Fallback solution: Disable the protection
     currentSettingsState = currentSettingsState or false
 
     --Build the text too?
@@ -1614,9 +1582,9 @@ function FCOIS.getContextMenuAntiSettingsTextAndState(p_filterWhere, buildText)
             --Mapping array for the localized button texts
             local mappingButtonText = FCOIS.mappingVars.contextMenuAntiButtonsAtPanel
             local btnText = ""
-            --As the CraftBag can be active at the mail send, trade, guild store sell and guild bank panels too we need to check if we are currently using the
+            --As the CraftBag can be active at the mail send, trade, sell, guild store sell and guild bank panels too we need to check if we are currently using the
             --addon CraftBagExtended and if the parent panel ID (FCOIS.gFilterWhereParent) is one of the above mentioned
-            -- -> See callback function for CRAFT_BAG_FRAGMENT in the PreHooks section!
+            -- -> See callback function for CRAFT_BAG_FRAGMENT in the PreHooks section! File src/FCOIS_hooks.lua, search for "CRAFT_BAG_FRAGMENT"
             if p_filterWhere == LF_CRAFTBAG and FCOIS.checkIfCBEorAGSActive(FCOIS.gFilterWhereParent) then
                 --Let the context menu button text be the one from the parent panel, and not the currently active (CraftBag) panel
                 btnText = mappingButtonText[FCOIS.gFilterWhereParent]
@@ -1674,7 +1642,6 @@ end
 local function getContextMenuInvokerButton(panelId)
     panelId = panelId or FCOIS.gFilterWhere
     if not panelId or panelId == 0 then return false end
-
     --Workaround: Craftbag stuff, check if active panel is the Craftbag
     if FCOIS.isCraftbagPanelShown() then
         panelId = LF_CRAFTBAG
@@ -1712,7 +1679,7 @@ function FCOIS.changeContextMenuInvokerButtonColorByPanelId(panelId)
     local _, settingsEnabled = FCOIS.getContextMenuAntiSettingsTextAndState(panelId, false)
     local contextMenuInvokerButtonName = getContextMenuInvokerButton(panelId)
     if contextMenuInvokerButtonName ~= "" and contextMenuInvokerButtonName ~= false then
-        --d("[FCOIS.changeContextMenuInvokerButtonColorByPanelId: " .. contextMenuInvokerButtonName .. ", settings: " .. tostring(settingsEnabled))
+d("[FCOIS.changeContextMenuInvokerButtonColorByPanelId: " .. contextMenuInvokerButtonName .. ", settings: " .. tostring(settingsEnabled))
         local contextMenuInvokerButton = WINDOW_MANAGER:GetControlByName(contextMenuInvokerButtonName, "")
         if contextMenuInvokerButton then
             changeContextMenuInvokerButtonColor(contextMenuInvokerButton, settingsEnabled)
@@ -2164,7 +2131,7 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
     end
 end
 
---Function that is called upon onMouseUp event on the additional inventory context menu buttons
+--Function that is called upon onMouseUp event on the additional inventory "flag" context menu buttons (e.g. right mouse click to change the protection)
 function FCOIS.onContextMenuForAddInvButtonsButtonMouseUp(inventoryAdditionalContextMenuInvokerButton, mouseButton, upInside)
     if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[FCOIS.onContextMenuForAddInvButtonsButtonMouseUp] invokerButton: " .. tostring(inventoryAdditionalContextMenuInvokerButton:GetName()) .. ", panelId: " .. tostring(FCOIS.gFilterWhere) .. ", mouseButton: " .. tostring(mouseButton), true, FCOIS_DEBUG_DEPTH_ALL) end
     --Only go on if the context menu is not currently shown

@@ -952,7 +952,9 @@ end
 function FCOIS.GetCurrentVendorType(vendorPanelIsShown)
     vendorPanelIsShown = vendorPanelIsShown or false
     local isVendorPanelShown = FCOIS.IsVendorPanelShown(nil, vendorPanelIsShown)
-    if not isVendorPanelShown then return "" end
+    if not isVendorPanelShown then
+d("[FCOIS]GetCurrentVendorType: No vendor panel shown. >Abort!")
+        return "" end
     local retVar = ""
     local vendorButtonCount = 2
     --Are we able to buy something in this store?
@@ -1225,10 +1227,13 @@ end
 --Check if any of the vendor panels (buy, sell, buyback, repair) are shown
 function FCOIS.IsVendorPanelShown(vendorPanelId, overwrite)
     overwrite = overwrite or false
+d("FCOIS.IsVendorPanelShown, vendorPanelId: " .. tostring(vendorPanelId) .. ", overwrite: " .. tostring(overwrite))
     if overwrite then return true end
     --Check the scene name if it is the "vendor" scene
     local currentSceneName = SCENE_MANAGER.currentScene.name
-    if currentSceneName == nil or currentSceneName ~= ctrlVars.vendorSceneName then return false end
+    if currentSceneName == nil or currentSceneName ~= ctrlVars.vendorSceneName then
+d("<1, sceneName: " ..tostring(currentSceneName))
+        return false end
     local vendorLibFilterIds = FCOIS.mappingVars.supportedVendorPanels
     local isVendorPanelChecked = false
     if vendorPanelId ~= nil then
@@ -1251,10 +1256,12 @@ function FCOIS.IsVendorPanelShown(vendorPanelId, overwrite)
             retVar = not ctrlVars.REPAIR_LIST:IsHidden() or false
         end
     else
+d("2")
         --Check each panel
         retVar = ((not ctrlVars.STORE:IsHidden() or not ctrlVars.VENDOR_SELL:IsHidden() or not ctrlVars.STORE_BUY_BACK:IsHidden() or not ctrlVars.REPAIR_LIST:IsHidden())
                   or (not ctrlVars.BACKPACK_BAG:IsHidden() or not ctrlVars.CRAFTBAG_BAG:IsHidden())) or false
     end
+d("<retVar: " ..tostring(retVar))
     return retVar
 end
 

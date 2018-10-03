@@ -50,145 +50,153 @@ end
 --Event upon opening of a vendor store
 local function FCOItemSaver_Open_Store(p_storeIndicator)
     FCOIS.preventerVars.gActiveFilterPanel = true
-
     p_storeIndicator = p_storeIndicator or "vendor"
     if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage("[EVENT] Open store: " .. p_storeIndicator, true, FCOIS_DEBUG_DEPTH_NORMAL) end
+    zo_callLater(function()
+        --> The following 4 controls/buttons & the depending table entries will be known first as the vendor gets opened the first time.
+        --> So they will be re-assigned within EVENT_OPEN_STORE in src/FCOIS_events.lua, function "FCOItemSaver_Open_Store()"
+        FCOIS.ZOControlVars.VENDOR_MENUBAR_BUTTON_BUY       = ZO_StoreWindowMenuBarButton1
+        FCOIS.ZOControlVars.VENDOR_MENUBAR_BUTTON_SELL      = ZO_StoreWindowMenuBarButton2
+        FCOIS.ZOControlVars.VENDOR_MENUBAR_BUTTON_BUYBACK   = ZO_StoreWindowMenuBarButton3
+        FCOIS.ZOControlVars.VENDOR_MENUBAR_BUTTON_REPAIR    = ZO_StoreWindowMenuBarButton4
+        FCOIS.ZOControlVars.vendorPanelMainMenuButtonControlSets = {
+            ["Normal"] = {
+                [1] = FCOIS.ZOControlVars.VENDOR_MENUBAR_BUTTON_BUY,
+                [2] = FCOIS.ZOControlVars.VENDOR_MENUBAR_BUTTON_SELL,
+                [3] = FCOIS.ZOControlVars.VENDOR_MENUBAR_BUTTON_BUYBACK,
+                [4] = FCOIS.ZOControlVars.VENDOR_MENUBAR_BUTTON_REPAIR,
+            },
+            ["Nuzhimeh"] = {
+                [1] = FCOIS.ZOControlVars.VENDOR_MENUBAR_BUTTON_SELL,
+                [2] = FCOIS.ZOControlVars.VENDOR_MENUBAR_BUTTON_BUYBACK,
+            },
+        }
 
-    --> The following 4 controls/buttons & the depending table entries will be known first as the vendor gets opened the first time.
-    --> So they will be re-assigned within EVENT_OPEN_STORE in src/FCOIS_events.lua, function "FCOItemSaver_Open_Store()"
-    FCOIS.ZOControlVars.VENDOR_MENUBAR_BUTTON_BUY       = ZO_StoreWindowMenuBarButton1
-    FCOIS.ZOControlVars.VENDOR_MENUBAR_BUTTON_SELL      = ZO_StoreWindowMenuBarButton2
-    FCOIS.ZOControlVars.VENDOR_MENUBAR_BUTTON_BUYBACK   = ZO_StoreWindowMenuBarButton3
-    FCOIS.ZOControlVars.VENDOR_MENUBAR_BUTTON_REPAIR    = ZO_StoreWindowMenuBarButton4
-    FCOIS.ZOControlVars.vendorPanelMainMenuButtonControlSets = {
-        ["Normal"] = {
-            [1] = FCOIS.ZOControlVars.VENDOR_MENUBAR_BUTTON_BUY,
-            [2] = FCOIS.ZOControlVars.VENDOR_MENUBAR_BUTTON_SELL,
-            [3] = FCOIS.ZOControlVars.VENDOR_MENUBAR_BUTTON_BUYBACK,
-            [4] = FCOIS.ZOControlVars.VENDOR_MENUBAR_BUTTON_REPAIR,
-        },
-        ["Nuzhimeh"] = {
-            [1] = FCOIS.ZOControlVars.VENDOR_MENUBAR_BUTTON_SELL,
-            [2] = FCOIS.ZOControlVars.VENDOR_MENUBAR_BUTTON_BUYBACK,
-        },
-    }
-    --Preset the last active vendor button as the different vendor types can have different button counts
-    --> The first will be always activated!
-    local currentVendorType, vendorTypeButtonCount = FCOIS.GetCurrentVendorType()
-d("[FCOIS]FCOItemSaver_Open_Store, lastVendorButton. CurrentVendorType: " .. tostring(currentVendorType) .. ", vendorTypeButtonCount: " ..tostring(vendorTypeButtonCount))
-    if currentVendorType ~= nil and currentVendorType ~= "" and vendorTypeButtonCount ~= nil then
-        if vendorTypeButtonCount <= 2 then
-            FCOIS.lastVars.gLastVendorButton = ctrlVars.VENDOR_MENUBAR_BUTTON_SELL
-        else
-            FCOIS.lastVars.gLastVendorButton = ctrlVars.VENDOR_MENUBAR_BUTTON_BUY
-        end
-    end
-
-    --Check the filter buttons and create them if they are not there. Update the inventory afterwards too
-    if p_storeIndicator == "vendor" then
-        --Done inside the PreHookedHandler "OnMouseUp" callback functions:
-        local function checkCurrentVendorTypeAndGetLibFiltersPanelId(currentVendorMenuBarbuttonToCheck)
-d("[FCOIS]checkCurrentVendorTypeAndGetLibFiltersPanelId: " .. tostring(currentVendorMenuBarbuttonToCheck:GetName()))
-            if currentVendorMenuBarbuttonToCheck == nil then return false end
-            local libFiltersFilterPanelId
-            --Get the current vendor type and count of menu buttons
-            local currentVendorType, vendorTypeButtonCount = FCOIS.GetCurrentVendorType()
+        --Check the filter buttons and create them if they are not there. Update the inventory afterwards too
+        if p_storeIndicator == "vendor" then
+            --Preset the last active vendor button as the different vendor types can have different button counts
+            --> The first will be always activated!
+            local currentVendorType, vendorTypeButtonCount = FCOIS.GetCurrentVendorType(true)
+            d("[FCOIS]FCOItemSaver_Open_Store, lastVendorButton. CurrentVendorType: " .. tostring(currentVendorType) .. ", vendorTypeButtonCount: " ..tostring(vendorTypeButtonCount))
             if currentVendorType ~= nil and currentVendorType ~= "" and vendorTypeButtonCount ~= nil then
-                if vendorTypeButtonCount == 2 then
-                    --The vendor type is e.g. Nuzhimeh with only sell and buyback menu buttons
-                    if currentVendorMenuBarbuttonToCheck == ctrlVars.VENDOR_MENUBAR_BUTTON_BUY then
-                        libFiltersFilterPanelId = LF_VENDOR_SELL
-                    elseif currentVendorMenuBarbuttonToCheck == ctrlVars.VENDOR_MENUBAR_BUTTON_SELL then
-                        libFiltersFilterPanelId = LF_VENDOR_BUYBACK
-                    end
-                elseif vendorTypeButtonCount == 3 then
-                    --The vendor type is e.g. ??? with only buy, sell and buyback menu buttons, but no repair button.
-                    if currentVendorMenuBarbuttonToCheck == ctrlVars.VENDOR_MENUBAR_BUTTON_BUY then
-                        libFiltersFilterPanelId = LF_VENDOR_BUY
-                    elseif currentVendorMenuBarbuttonToCheck == ctrlVars.VENDOR_MENUBAR_BUTTON_SELL then
-                        libFiltersFilterPanelId = LF_VENDOR_SELL
-                    elseif currentVendorMenuBarbuttonToCheck == ctrlVars.VENDOR_MENUBAR_BUTTON_BUYBACK then
-                        libFiltersFilterPanelId = LF_VENDOR_BUYBACK
-                    end
-
-                elseif vendorTypeButtonCount == 4 then
-                    --The vendor type is e.g. Normal NPC with buy, sell, buyback and repair menu buttons.
-                    if currentVendorMenuBarbuttonToCheck == ctrlVars.VENDOR_MENUBAR_BUTTON_BUY then
-                        libFiltersFilterPanelId = LF_VENDOR_BUY
-                    elseif currentVendorMenuBarbuttonToCheck == ctrlVars.VENDOR_MENUBAR_BUTTON_SELL then
-                        libFiltersFilterPanelId = LF_VENDOR_SELL
-                    elseif currentVendorMenuBarbuttonToCheck == ctrlVars.VENDOR_MENUBAR_BUTTON_BUYBACK then
-                        libFiltersFilterPanelId = LF_VENDOR_BUYBACK
-                    elseif currentVendorMenuBarbuttonToCheck == ctrlVars.VENDOR_MENUBAR_BUTTON_REPAIR then
-                        libFiltersFilterPanelId = LF_VENDOR_REPAIR
-                    end
+                if vendorTypeButtonCount <= 2 then
+                    FCOIS.lastVars.gLastVendorButton = ctrlVars.VENDOR_MENUBAR_BUTTON_SELL
+                else
+                    FCOIS.lastVars.gLastVendorButton = ctrlVars.VENDOR_MENUBAR_BUTTON_BUY
                 end
             end
-d("<libFiltersFilterPanelId: " ..tostring(libFiltersFilterPanelId))
-            return libFiltersFilterPanelId
-        end
-        --Check if there are shown 4 buttons in the vendor's menu bar (then it is a real vendor).
-        --Or if there are only 2 buttons (it's the mobile vendor "Nuzhimeh" then).
-        --> This needs to be done here in order to "move" the pressed button names:
-        --> If the normal vendor is used the button names 1 to 4 are normal.
-        --> If a mobile vendor is used the button name 1 is the "sell" tab (and not the buy tab) and the button name 2 is the "buyback" tab and not the
-        --> sell tab.
-        --======== VENDOR =====================================================
-        --Pre Hook the menubar button's (buy, sell, buyback, repair) handler at the vendor
-        local preHookButtonDoneCheck = FCOIS.preventerVars.preHookButtonDone
-        if ctrlVars.VENDOR_MENUBAR_BUTTON_BUY ~= nil and not preHookButtonDoneCheck[ctrlVars.VENDOR_MENUBAR_BUTTON_BUY:GetName()] then
-d(">Vendor button 1 found")
-            preHookButtonDoneCheck[ctrlVars.VENDOR_MENUBAR_BUTTON_BUY:GetName()] = true
-            ZO_PreHookHandler(ctrlVars.VENDOR_MENUBAR_BUTTON_BUY, "OnMouseUp", function(control, button, upInside)
-                d(">====================>\nvendor button 1, button: " .. button .. ", upInside: " .. tostring(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastVendorButton:GetName())
-                if (button == MOUSE_BUTTON_INDEX_LEFT and upInside and FCOIS.lastVars.gLastVendorButton~=ctrlVars.VENDOR_MENUBAR_BUTTON_BUY) then
-                    FCOIS.lastVars.gLastVendorButton = ctrlVars.VENDOR_MENUBAR_BUTTON_BUY
-                    local fromPanelId = FCOIS.gFilterWhere or LF_INVENTORY
-                    local toPanelId = checkCurrentVendorTypeAndGetLibFiltersPanelId(ctrlVars.VENDOR_MENUBAR_BUTTON_BUY)
-                    zo_callLater(function() FCOIS.PreHookButtonHandler(fromPanelId, toPanelId) end, 50)
+
+            --Check the current active panel and set FCOIS.gFilterWhere
+            FCOIS.CheckFilterButtonsAtPanel(true, nil)
+
+            --Done inside the PreHookedHandler "OnMouseUp" callback functions:
+            local function checkCurrentVendorTypeAndGetLibFiltersPanelId(currentVendorMenuBarbuttonToCheck)
+    d("[FCOIS]checkCurrentVendorTypeAndGetLibFiltersPanelId: " .. tostring(currentVendorMenuBarbuttonToCheck:GetName()))
+                if currentVendorMenuBarbuttonToCheck == nil then return false end
+                local libFiltersFilterPanelId
+                --Get the current vendor type and count of menu buttons
+                local currentVendorType, vendorTypeButtonCount = FCOIS.GetCurrentVendorType(true)
+                if currentVendorType ~= nil and currentVendorType ~= "" and vendorTypeButtonCount ~= nil then
+                    if vendorTypeButtonCount == 2 then
+                        --The vendor type is e.g. Nuzhimeh with only sell and buyback menu buttons
+                        if currentVendorMenuBarbuttonToCheck == ctrlVars.VENDOR_MENUBAR_BUTTON_BUY then
+                            libFiltersFilterPanelId = LF_VENDOR_SELL
+                        elseif currentVendorMenuBarbuttonToCheck == ctrlVars.VENDOR_MENUBAR_BUTTON_SELL then
+                            libFiltersFilterPanelId = LF_VENDOR_BUYBACK
+                        end
+                    elseif vendorTypeButtonCount == 3 then
+                        --The vendor type is e.g. ??? with only buy, sell and buyback menu buttons, but no repair button.
+                        if currentVendorMenuBarbuttonToCheck == ctrlVars.VENDOR_MENUBAR_BUTTON_BUY then
+                            libFiltersFilterPanelId = LF_VENDOR_BUY
+                        elseif currentVendorMenuBarbuttonToCheck == ctrlVars.VENDOR_MENUBAR_BUTTON_SELL then
+                            libFiltersFilterPanelId = LF_VENDOR_SELL
+                        elseif currentVendorMenuBarbuttonToCheck == ctrlVars.VENDOR_MENUBAR_BUTTON_BUYBACK then
+                            libFiltersFilterPanelId = LF_VENDOR_BUYBACK
+                        end
+
+                    elseif vendorTypeButtonCount == 4 then
+                        --The vendor type is e.g. Normal NPC with buy, sell, buyback and repair menu buttons.
+                        if currentVendorMenuBarbuttonToCheck == ctrlVars.VENDOR_MENUBAR_BUTTON_BUY then
+                            libFiltersFilterPanelId = LF_VENDOR_BUY
+                        elseif currentVendorMenuBarbuttonToCheck == ctrlVars.VENDOR_MENUBAR_BUTTON_SELL then
+                            libFiltersFilterPanelId = LF_VENDOR_SELL
+                        elseif currentVendorMenuBarbuttonToCheck == ctrlVars.VENDOR_MENUBAR_BUTTON_BUYBACK then
+                            libFiltersFilterPanelId = LF_VENDOR_BUYBACK
+                        elseif currentVendorMenuBarbuttonToCheck == ctrlVars.VENDOR_MENUBAR_BUTTON_REPAIR then
+                            libFiltersFilterPanelId = LF_VENDOR_REPAIR
+                        end
+                    end
                 end
-            end)
+    d("<libFiltersFilterPanelId: " ..tostring(libFiltersFilterPanelId))
+                return libFiltersFilterPanelId
+            end
+            --Check if there are shown 4 buttons in the vendor's menu bar (then it is a real vendor).
+            --Or if there are only 2 buttons (it's the mobile vendor "Nuzhimeh" then).
+            --> This needs to be done here in order to "move" the pressed button names:
+            --> If the normal vendor is used the button names 1 to 4 are normal.
+            --> If a mobile vendor is used the button name 1 is the "sell" tab (and not the buy tab) and the button name 2 is the "buyback" tab and not the
+            --> sell tab.
+            --======== VENDOR =====================================================
+            --Pre Hook the menubar button's (buy, sell, buyback, repair) handler at the vendor
+            local preHookButtonDoneCheck = FCOIS.preventerVars.preHookButtonDone
+d("Vendor button 1 name: " .. tostring(ctrlVars.VENDOR_MENUBAR_BUTTON_BUY:GetName()))
+            if ctrlVars.VENDOR_MENUBAR_BUTTON_BUY ~= nil and not preHookButtonDoneCheck[ctrlVars.VENDOR_MENUBAR_BUTTON_BUY:GetName()] then
+    d(">Vendor button 1 found")
+                preHookButtonDoneCheck[ctrlVars.VENDOR_MENUBAR_BUTTON_BUY:GetName()] = true
+                ZO_PreHookHandler(ctrlVars.VENDOR_MENUBAR_BUTTON_BUY, "OnMouseUp", function(control, button, upInside)
+                    d(">====================>\nvendor button 1, button: " .. button .. ", upInside: " .. tostring(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastVendorButton:GetName())
+                    if (button == MOUSE_BUTTON_INDEX_LEFT and upInside and FCOIS.lastVars.gLastVendorButton~=ctrlVars.VENDOR_MENUBAR_BUTTON_BUY) then
+                        FCOIS.lastVars.gLastVendorButton = ctrlVars.VENDOR_MENUBAR_BUTTON_BUY
+                        local fromPanelId = FCOIS.gFilterWhere or LF_INVENTORY
+                        local toPanelId = checkCurrentVendorTypeAndGetLibFiltersPanelId(ctrlVars.VENDOR_MENUBAR_BUTTON_BUY)
+                        zo_callLater(function() FCOIS.PreHookButtonHandler(fromPanelId, toPanelId) end, 50)
+                    end
+                end)
+            end
+d("Vendor button 2 name: " .. tostring(ctrlVars.VENDOR_MENUBAR_BUTTON_SELL:GetName()))
+            if ctrlVars.VENDOR_MENUBAR_BUTTON_SELL ~= nil and not preHookButtonDoneCheck[ctrlVars.VENDOR_MENUBAR_BUTTON_SELL:GetName()] then
+    d(">Vendor button 2 found")
+                preHookButtonDoneCheck[ctrlVars.VENDOR_MENUBAR_BUTTON_SELL:GetName()] = true
+                ZO_PreHookHandler(ctrlVars.VENDOR_MENUBAR_BUTTON_SELL, "OnMouseUp", function(control, button, upInside)
+                    d(">====================>\nvendor button 2, button: " .. button .. ", upInside: " .. tostring(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastVendorButton:GetName())
+                    if (button == MOUSE_BUTTON_INDEX_LEFT and upInside and FCOIS.lastVars.gLastVendorButton~=ctrlVars.VENDOR_MENUBAR_BUTTON_SELL) then
+                        FCOIS.lastVars.gLastVendorButton = ctrlVars.VENDOR_MENUBAR_BUTTON_SELL
+                        local fromPanelId = FCOIS.gFilterWhere or LF_INVENTORY
+                        local toPanelId = checkCurrentVendorTypeAndGetLibFiltersPanelId(ctrlVars.VENDOR_MENUBAR_BUTTON_SELL)
+                        zo_callLater(function() FCOIS.PreHookButtonHandler(fromPanelId, toPanelId) end, 50)
+                    end
+                end)
+            end
+d("Vendor button 3 name: " .. tostring(ctrlVars.VENDOR_MENUBAR_BUTTON_BUYBACK:GetName()))
+            if ctrlVars.VENDOR_MENUBAR_BUTTON_BUYBACK ~= nil and not preHookButtonDoneCheck[ctrlVars.VENDOR_MENUBAR_BUTTON_BUYBACK:GetName()] then
+    d(">Vendor button 3 found")
+                preHookButtonDoneCheck[ctrlVars.VENDOR_MENUBAR_BUTTON_BUYBACK:GetName()] = true
+                ZO_PreHookHandler(ctrlVars.VENDOR_MENUBAR_BUTTON_BUYBACK, "OnMouseUp", function(control, button, upInside)
+                    d(">====================>\nvendor button 3, button: " .. button .. ", upInside: " .. tostring(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastVendorButton:GetName())
+                    if (button == MOUSE_BUTTON_INDEX_LEFT and upInside and FCOIS.lastVars.gLastVendorButton~=ctrlVars.VENDOR_MENUBAR_BUTTON_BUYBACK) then
+                        FCOIS.lastVars.gLastVendorButton = ctrlVars.VENDOR_MENUBAR_BUTTON_BUYBACK
+                        local fromPanelId = FCOIS.gFilterWhere or LF_INVENTORY
+                        local toPanelId = checkCurrentVendorTypeAndGetLibFiltersPanelId(ctrlVars.VENDOR_MENUBAR_BUTTON_BUYBACK)
+                        zo_callLater(function() FCOIS.PreHookButtonHandler(fromPanelId, toPanelId) end, 50)
+                    end
+                end)
+            end
+d("Vendor button 4 name: " .. tostring(ctrlVars.VENDOR_MENUBAR_BUTTON_REPAIR:GetName()))
+            if ctrlVars.VENDOR_MENUBAR_BUTTON_REPAIR ~= nil and not preHookButtonDoneCheck[ctrlVars.VENDOR_MENUBAR_BUTTON_REPAIR:GetName()] then
+    d(">Vendor button 4 found")
+                preHookButtonDoneCheck[ctrlVars.VENDOR_MENUBAR_BUTTON_REPAIR:GetName()] = true
+                ZO_PreHookHandler(ctrlVars.VENDOR_MENUBAR_BUTTON_REPAIR, "OnMouseUp", function(control, button, upInside)
+                    d(">====================>\nvendor button 4, button: " .. button .. ", upInside: " .. tostring(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastVendorButton:GetName())
+                    if (button == MOUSE_BUTTON_INDEX_LEFT and upInside and FCOIS.lastVars.gLastVendorButton~=ctrlVars.VENDOR_MENUBAR_BUTTON_REPAIR) then
+                        FCOIS.lastVars.gLastVendorButton = ctrlVars.VENDOR_MENUBAR_BUTTON_REPAIR
+                        local fromPanelId = FCOIS.gFilterWhere or LF_INVENTORY
+                        local toPanelId = checkCurrentVendorTypeAndGetLibFiltersPanelId(ctrlVars.VENDOR_MENUBAR_BUTTON_REPAIR)
+                        zo_callLater(function() FCOIS.PreHookButtonHandler(fromPanelId, toPanelId) end, 50)
+                    end
+                end)
+            end
         end
-        if ctrlVars.VENDOR_MENUBAR_BUTTON_SELL ~= nil and not preHookButtonDoneCheck[ctrlVars.VENDOR_MENUBAR_BUTTON_SELL:GetName()] then
-d(">Vendor button 2 found")
-            preHookButtonDoneCheck[ctrlVars.VENDOR_MENUBAR_BUTTON_SELL:GetName()] = true
-            ZO_PreHookHandler(ctrlVars.VENDOR_MENUBAR_BUTTON_SELL, "OnMouseUp", function(control, button, upInside)
-                d(">====================>\nvendor button 2, button: " .. button .. ", upInside: " .. tostring(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastVendorButton:GetName())
-                if (button == MOUSE_BUTTON_INDEX_LEFT and upInside and FCOIS.lastVars.gLastVendorButton~=ctrlVars.VENDOR_MENUBAR_BUTTON_SELL) then
-                    FCOIS.lastVars.gLastVendorButton = ctrlVars.VENDOR_MENUBAR_BUTTON_SELL
-                    local fromPanelId = FCOIS.gFilterWhere or LF_INVENTORY
-                    local toPanelId = checkCurrentVendorTypeAndGetLibFiltersPanelId(ctrlVars.VENDOR_MENUBAR_BUTTON_SELL)
-                    zo_callLater(function() FCOIS.PreHookButtonHandler(fromPanelId, toPanelId) end, 50)
-                end
-            end)
-        end
-        if ctrlVars.VENDOR_MENUBAR_BUTTON_BUYBACK ~= nil and not preHookButtonDoneCheck[ctrlVars.VENDOR_MENUBAR_BUTTON_BUYBACK:GetName()] then
-d(">Vendor button 3 found")
-            preHookButtonDoneCheck[ctrlVars.VENDOR_MENUBAR_BUTTON_BUYBACK:GetName()] = true
-            ZO_PreHookHandler(ctrlVars.VENDOR_MENUBAR_BUTTON_BUYBACK, "OnMouseUp", function(control, button, upInside)
-                d(">====================>\nvendor button 3, button: " .. button .. ", upInside: " .. tostring(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastVendorButton:GetName())
-                if (button == MOUSE_BUTTON_INDEX_LEFT and upInside and FCOIS.lastVars.gLastVendorButton~=ctrlVars.VENDOR_MENUBAR_BUTTON_BUYBACK) then
-                    FCOIS.lastVars.gLastVendorButton = ctrlVars.VENDOR_MENUBAR_BUTTON_BUYBACK
-                    local fromPanelId = FCOIS.gFilterWhere or LF_INVENTORY
-                    local toPanelId = checkCurrentVendorTypeAndGetLibFiltersPanelId(ctrlVars.VENDOR_MENUBAR_BUTTON_BUYBACK)
-                    zo_callLater(function() FCOIS.PreHookButtonHandler(fromPanelId, toPanelId) end, 50)
-                end
-            end)
-        end
-        if ctrlVars.VENDOR_MENUBAR_BUTTON_REPAIR ~= nil and not preHookButtonDoneCheck[ctrlVars.VENDOR_MENUBAR_BUTTON_REPAIR:GetName()] then
-d(">Vendor button 4 found")
-            preHookButtonDoneCheck[ctrlVars.VENDOR_MENUBAR_BUTTON_REPAIR:GetName()] = true
-            ZO_PreHookHandler(ctrlVars.VENDOR_MENUBAR_BUTTON_REPAIR, "OnMouseUp", function(control, button, upInside)
-                d(">====================>\nvendor button 4, button: " .. button .. ", upInside: " .. tostring(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastVendorButton:GetName())
-                if (button == MOUSE_BUTTON_INDEX_LEFT and upInside and FCOIS.lastVars.gLastVendorButton~=ctrlVars.VENDOR_MENUBAR_BUTTON_REPAIR) then
-                    FCOIS.lastVars.gLastVendorButton = ctrlVars.VENDOR_MENUBAR_BUTTON_REPAIR
-                    local fromPanelId = FCOIS.gFilterWhere or LF_INVENTORY
-                    local toPanelId = checkCurrentVendorTypeAndGetLibFiltersPanelId(ctrlVars.VENDOR_MENUBAR_BUTTON_REPAIR)
-                    zo_callLater(function() FCOIS.PreHookButtonHandler(fromPanelId, toPanelId) end, 50)
-                end
-            end)
-        end
-    end
+    end, 200)
 end
 
 --Event upon closing of a vendor store

@@ -151,6 +151,7 @@ end
 --PreHook function for the buttons at the top menus of banks, crafting stations, mail panel, trading, etc.
 function FCOIS.PreHookButtonHandler(comingFrom, goingTo)
     FCOIS.preventerVars.gActiveFilterPanel = true
+    FCOIS.preventerVars.gPreHookButtonHandlerCallActive = true
     if FCOIS.settingsVars.settings.debug then
         FCOIS.debugMessage( ">>>~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~<<<", true, FCOIS_DEBUG_DEPTH_VERY_DETAILED)
         FCOIS.debugMessage( "[FCOIS.PreHookButtonHandler] Coming from panel ID: " ..tostring(comingFrom)..", going to panel ID: " .. tostring(goingTo), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED)
@@ -167,19 +168,22 @@ d("[PreHookButtonHandler] Coming from panel ID: " ..tostring(comingFrom) .. ", g
     --If the craftbag panel is shown: Abort here and let the callback function of the craftbag scene do the rest.
     --> See file src/FCOIS_hooks.lua, function FCOIS.CreateHooks(), CRAFT_BAG_FRAGMENT:RegisterCallback("StateChange", ...)
     if FCOIS.isCraftbagPanelShown() then
---d(">> Craftbag panel is shown -> abort!")
+d(">> Craftbag panel is shown -> abort!")
+        FCOIS.preventerVars.gPreHookButtonHandlerCallActive = false
         return false
     end
 
-    --Update context menu invoker buttons, except for theese where no additional inventory "flag" button exists (e.g. Alchemy)
+    --Update context menu invoker buttons, except for these where no additional inventory "flag" button exists (e.g. Alchemy)
     local contextMenuInventoryFlagInvokerData = FCOIS.contextMenuVars.filterPanelIdToContextMenuButtonInvoker
-    if not contextMenuInventoryFlagInvokerData[comingFrom] then
+    if contextMenuInventoryFlagInvokerData[comingFrom] then
         --Change the button color of the context menu invoker button (flag)
         FCOIS.changeContextMenuInvokerButtonColorByPanelId(goingTo)
     end
 
     --Check the filter buttons and create them if they are not there
     FCOIS.CheckFilterButtonsAtPanel(true, goingTo)
+
+    FCOIS.preventerVars.gPreHookButtonHandlerCallActive = false
 
     --Return false to call the normal callback handler of the button afterwards
     return false
@@ -266,9 +270,9 @@ function FCOIS.CheckFilterButtonsAtPanel(doUpdateLists, panelId, overwriteFilter
     FCOIS.checkMarker(-1)
 
     --Get the currently shown panel and update FCOIS.gFilterWhere
-    local buttonsParentCtrl = FCOIS.checkActivePanel(panelId, overwriteFilterWhere)
+    local buttonsParentCtrl, filterPanel = FCOIS.checkActivePanel(panelId, overwriteFilterWhere)
 
-    --d("[FCOIS.CheckFilterButtonsAtPanel - " .. tostring(buttonsParentCtrl:GetName()) .. ", FilterPanelId: " .. tostring(FCOIS.gFilterWhere) .. ", UseFilters: " .. tostring(settings.atPanelEnabled[FCOIS.gFilterWhere]["filters"]))
+d("[FCOIS.CheckFilterButtonsAtPanel - " .. tostring(buttonsParentCtrl:GetName()) .. ", FilterPanelId/ParentPanelId: " .. tostring(FCOIS.gFilterWhere) .. "/" .. tostring(filterPanel) .. ", UseFilters: " .. tostring(settings.atPanelEnabled[FCOIS.gFilterWhere]["filters"]))
 
     --Is an inventory found?
     if buttonsParentCtrl ~= nil then
@@ -314,6 +318,7 @@ function FCOIS.CheckFilterButtonsAtPanel(doUpdateLists, panelId, overwriteFilter
             FCOIS.FilterBasics(false)
         end
     end
+    return buttonsParentCtrl, filterPanel
 end
 
 --Update the filter button colors and textures, depending on the filters (and chosen sub-filter icons)
