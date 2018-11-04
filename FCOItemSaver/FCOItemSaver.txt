@@ -8,7 +8,7 @@
 ## SavedVariables: FCOItemSaver_Settings
 ## DependsOn: LibStub LibFilters-2.0 LibAddonMenu-2.0 LibLoadedAddons LibDialog LibFeedback LibCustomMenu LibMainMenu-2.0
 ## OptionalDependsOn: ResearchAssistant SousChef VotansSettingsMenu PotionMaker CraftedPotions ChatMerchant InventoryGridView CraftBagExtended SetTracker AdvancedDisableControllerUI DetailedResearchScrolls DolgubonsLazyWritCreator QualitySort
-## FastAPI : 100025
+## FastAPI : 100025 
 
 ##Known addons with FCOIS function usage:
 ##(Check file FCOIS_API.lua for functions to use within your addon)
