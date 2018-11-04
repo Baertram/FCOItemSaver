@@ -156,7 +156,7 @@ function FCOIS.PreHookButtonHandler(comingFrom, goingTo)
         FCOIS.debugMessage( ">>>~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~<<<", true, FCOIS_DEBUG_DEPTH_VERY_DETAILED)
         FCOIS.debugMessage( "[FCOIS.PreHookButtonHandler] Coming from panel ID: " ..tostring(comingFrom)..", going to panel ID: " .. tostring(goingTo), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED)
     end
-d("[PreHookButtonHandler] Coming from panel ID: " ..tostring(comingFrom) .. ", going to panel ID: " .. tostring(goingTo))
+--d("[PreHookButtonHandler] Coming from panel ID: " ..tostring(comingFrom) .. ", going to panel ID: " .. tostring(goingTo))
 
     --Hide the context menu at last active panel
     FCOIS.hideContextMenu(comingFrom)
@@ -168,7 +168,7 @@ d("[PreHookButtonHandler] Coming from panel ID: " ..tostring(comingFrom) .. ", g
     --If the craftbag panel is shown: Abort here and let the callback function of the craftbag scene do the rest.
     --> See file src/FCOIS_hooks.lua, function FCOIS.CreateHooks(), CRAFT_BAG_FRAGMENT:RegisterCallback("StateChange", ...)
     if FCOIS.isCraftbagPanelShown() then
-d(">> Craftbag panel is shown -> abort!")
+--d(">> Craftbag panel is shown -> abort!")
         FCOIS.preventerVars.gPreHookButtonHandlerCallActive = false
         return false
     end
@@ -272,7 +272,7 @@ function FCOIS.CheckFilterButtonsAtPanel(doUpdateLists, panelId, overwriteFilter
     --Get the currently shown panel and update FCOIS.gFilterWhere
     local buttonsParentCtrl, filterPanel = FCOIS.checkActivePanel(panelId, overwriteFilterWhere)
 
-d("[FCOIS.CheckFilterButtonsAtPanel - " .. tostring(buttonsParentCtrl:GetName()) .. ", FilterPanelId/ParentPanelId: " .. tostring(FCOIS.gFilterWhere) .. "/" .. tostring(filterPanel) .. ", UseFilters: " .. tostring(settings.atPanelEnabled[FCOIS.gFilterWhere]["filters"]))
+--d("[FCOIS.CheckFilterButtonsAtPanel - " .. tostring(buttonsParentCtrl:GetName()) .. ", FilterPanelId/ParentPanelId: " .. tostring(FCOIS.gFilterWhere) .. "/" .. tostring(filterPanel) .. ", UseFilters: " .. tostring(settings.atPanelEnabled[FCOIS.gFilterWhere]["filters"]))
 
     --Is an inventory found?
     if buttonsParentCtrl ~= nil then

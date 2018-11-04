@@ -1102,6 +1102,25 @@ function FCOIS.countMarkerIconsEnabled()
 end
 
 
+--Check if a marker icon was changed manually via the context menu e.g.
+function FCOIS.GetMarkerIconChangedManually()
+	local prevVars = FCOIS.preventerVars
+	if prevVars.markerIconChangedManually then
+		return true
+	end
+	return false
+end
+
+--Check if an inventory list refresh is active
+-- (to prevent addons applying the inventoryRow's setupCallback function during the refresh again and again)
+function FCOIS.GetListIsRefreshing()
+    local prevVars = FCOIS.preventerVars
+    if prevVars.isInventoryListUpdating then
+        return true
+    end
+    return false
+end
+
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -1126,10 +1145,10 @@ end
 --=========== FCOIS LibAddonMenu 2.0 API functions ==========================
 --Function to build a LAM dropdown choices and choicesValues table for the available FCOIS marker icons
 --> Type can be one of the following one:
----> standard: A list with the marker icons, using the name from the settins, including the icon as texture (if "withIcons" = true) and disabled icons are marked red
----> standardNonDisabled: A list with the marker icons, using the name from the settins, including the icon as texture (if "withIcons" = true) and disabled icons are not marked in any other way then enabled ones
----> keybinds: A list with the marker icons, using the fixed name from the translations, including the icon as texture (if "withIcons" = true) and disabled icons are marked red
----> gearSets: A list with only the gear set marker icons, using the name from the settings, including the icon as texture (if "withIcons" = true) and disabled icons are marked red
+---> standard: A list with the marker icons, using the name from the settings, including the icon as texture (if "withIcons" = true) and disabled icons are marked red.
+---> standardNonDisabled: A list with the marker icons, using the name from the settings, including the icon as texture (if "withIcons" = true) and disabled icons are not marked in any other way then enabled ones.
+---> keybinds: A list with the marker icons, using the fixed name from the translations, including the icon as texture (if "withIcons" = true) and disabled icons are marked red.
+---> gearSets: A list with only the gear set marker icons, using the name from the settings, including the icon as texture (if "withIcons" = true) and disabled icons are marked red.
 function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons)
 	if type == nil then type = "standard" end
 	withIcons = withIcons or false
@@ -1137,23 +1156,43 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons)
 	if FCOIS.settingsVars == nil or FCOIS.settingsVars.settings == nil or FCOIS.settingsVars.settings.isIconEnabled == nil then
 		FCOIS.BuildAndGetSettingsFromExternal()
 	end
-
 	--Build icons choicesValues list
-	local function buildIconsChoicesValuesList()
-		local choicesValuesList = {}
-		for i=1, numFilterIcons, 1 do
-			choicesValuesList[i] = i
-		end
-		return choicesValuesList
+	local function buildIconsChoicesValuesList(typeToCheck)
+		--Shall the icons values list contain non-enabled icons?
+        local typeToEnabledCheck = {
+            ['standard']            = false,
+            ['standardNonDisabled'] = true,
+            ['keybinds']            = false,
+            ['gearSets']            = false,
+        }
+        local choicesValuesList = {}
+        local doCheckForEnabledIcons = typeToEnabledCheck[typeToCheck] or false
+        local settings = FCOIS.settingsVars.settings
+        local isGearIcon = settings.iconIsGear
+		local counter = 0
+        for i=1, numFilterIcons, 1 do
+            local doAddIconValueNow = true
+            if doCheckForEnabledIcons then
+                doAddIconValueNow = settings.isIconEnabled[i]
+            end
+            if doAddIconValueNow and typeToCheck == "gearSets" then
+                doAddIconValueNow = isGearIcon[i]
+            end
+            if doAddIconValueNow then
+                counter = counter + 1
+                choicesValuesList[counter] = i
+            end
+        end
+        return choicesValuesList
 	end
 
 	--Build the icon lists for the options
-	local function buildIconsChoicesList(type, withIcons)
-		type = type or 'standard'
+	local function buildIconsChoicesList(typeToCheck, withIcons)
+		typeToCheck = typeToCheck or 'standard'
 		withIcons = withIcons or false
 		local settings = FCOIS.settingsVars.settings
 		local iconsList = {}
-		if type == 'standard' then
+		if typeToCheck == 'standard' then
 			for i=1, numFilterIcons, 1 do
 				local locNameStr = FCOISlocVars.iconEndStrArray[i]
 				local iconName = FCOIS.GetIconText(i) or FCOISlocVars.fcois_loc["options_icon" .. tostring(i) .. "_" .. locNameStr] or "Icon " .. tostring(i)
@@ -1170,8 +1209,9 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons)
 					--Icon is not enabled, so color the entry red (or strike it through)
 					iconsList[i] = "|cFF0000" .. iconName .. "|r"
 				end
-			end
-		elseif type == 'standardNonDisabled' then
+            end
+
+		elseif typeToCheck == 'standardNonDisabled' then
 			for i=1, numFilterIcons, 1 do
 				if settings.isIconEnabled[i] then
 					local locNameStr = FCOISlocVars.iconEndStrArray[i]
@@ -1181,10 +1221,10 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons)
 						local iconNameWithIcon = FCOIS.buildIconText(iconName, i, false, true) -- no color as row is completely red
 						iconName = iconNameWithIcon
 					end
-					iconsList[i] = iconName
+                    iconsList[i] = iconName
 				end
 			end
-		elseif type == 'keybinds' then
+		elseif typeToCheck == 'keybinds' then
 			--Check for each icon if it is enabled in the settings
 			for i=1, numFilterIcons, 1 do
 				local locNameStr = FCOISlocVars.iconEndStrArray[i]
@@ -1195,30 +1235,43 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons)
 					local iconNameWithIcon = FCOIS.buildIconText(iconName, i, false, not iconIsEnabled)
 					iconName = iconNameWithIcon
 				end
-				iconsList[i] = iconName
-			end
-		elseif type == 'gearSets' then
+                --Is the icon enabled?
+                if iconIsEnabled then
+                    iconsList[i] = iconName
+                else
+                    --Icon is not enabled, so color the entry red (or strike it through)
+                    iconsList[i] = "|cFF0000" .. iconName .. "|r"
+                end
+            end
+		elseif typeToCheck == 'gearSets' then
 			local gearCounter = 1
 			local isGearIcon = settings.iconIsGear
 			for i=1, numFilterIcons, 1 do
 				--Check if icon is a gear set icon and if it's enabled
 				local iconIsEnabled = settings.isIconEnabled[i]
-				if isGearIcon[i] and iconIsEnabled then
-					local locNameStr = FCOISlocVars.iconEndStrArray[i]
-					local iconName = FCOISlocVars.fcois_loc["options_icon" .. tostring(i) .. "_" .. locNameStr]
+				if isGearIcon[i] then
+                    local locNameStr = FCOISlocVars.iconEndStrArray[i]
+                    local iconName = FCOIS.GetIconText(i) or FCOISlocVars.fcois_loc["options_icon" .. tostring(i) .. "_" .. locNameStr] or "Icon " .. tostring(i)
 					--Should the icon be shown at the start of the text too?
 					if withIcons then
 						local iconNameWithIcon = FCOIS.buildIconText(iconName, i, false, not iconIsEnabled)
 						iconName = iconNameWithIcon
 					end
-					iconsList[gearCounter] = iconName
+                    --Is the icon enabled?
+                    if iconIsEnabled then
+                        iconsList[gearCounter] = iconName
+                    else
+                        --Icon is not enabled, so color the entry red (or strike it through)
+                        iconsList[gearCounter] = "|cFF0000" .. iconName .. "|r"
+                    end
 					gearCounter = gearCounter + 1
 				end
 			end
-		end
+        end
 		return iconsList
-	end
-    return buildIconsChoicesList(type, withIcons), buildIconsChoicesValuesList()
+    end
+    local iconsDropdownList, iconsDropdownValuesList = buildIconsChoicesList(type, withIcons), buildIconsChoicesValuesList(type)
+    return iconsDropdownList, iconsDropdownValuesList
 end
 
 --==========================================================================================================================================

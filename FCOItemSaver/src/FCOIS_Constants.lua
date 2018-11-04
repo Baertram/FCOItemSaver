@@ -286,10 +286,10 @@ FCOIS.mappingVars.activeFilterPanelIds			= {
 	[LF_BANK_DEPOSIT]				= true,
 	[LF_GUILDBANK_WITHDRAW] 	    = true,
 	[LF_GUILDBANK_DEPOSIT]	    	= true,
-    [LF_VENDOR_BUY] 				= true,
+    [LF_VENDOR_BUY] 				= false, -- Disabled, as no filter buttons/marker icons needed atm
 	[LF_VENDOR_SELL] 				= true,
-    [LF_VENDOR_BUYBACK]				= true,
-    [LF_VENDOR_REPAIR] 				= true,
+    [LF_VENDOR_BUYBACK]				= false, -- Disabled, as no filter buttons/marker icons needed atm
+    [LF_VENDOR_REPAIR] 				= false, -- Disabled, as no filter buttons/marker icons needed atm
 	[LF_GUILDSTORE_SELL] 	 		= true,
 	[LF_SMITHING_REFINE]  			= true,
 	[LF_SMITHING_DECONSTRUCT]  		= true,
@@ -885,6 +885,8 @@ FCOIS.preventerVars.resetNonServerDependentSavedVars = false
 FCOIS.preventerVars.preHookButtonDone = {}
 FCOIS.preventerVars.gPreHookButtonHandlerCallActive = false
 FCOIS.preventerVars.craftBagSceneShowInProgress = false
+FCOIS.preventerVars.markerIconChangedManually = false
+FCOIS.preventerVars.isInventoryListUpdating = false
 
 --The event handler array for OnMouseDoubleClick, Drag&Drop, etc.
 FCOIS.eventHandlers = {}

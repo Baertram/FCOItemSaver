@@ -46,6 +46,7 @@ function FCOIS.getSettingsIsFilterOn(p_filterId, p_filterPanel)
         local p_filterPanelNew = p_filterPanel or FCOIS.gFilterWhere
 
         --New behaviour with filters
+        settings.isFilterPanelOn[p_filterPanelNew] = settings.isFilterPanelOn[p_filterPanelNew] or {}
         result = settings.isFilterPanelOn[p_filterPanelNew][p_filterId]
         if result == nil then
             return false
@@ -66,6 +67,7 @@ function FCOIS.setSettingsIsFilterOn(p_filterId, p_value, p_filterPanel)
     local settings = FCOIS.settingsVars.settings
     if (settings.splitFilters == true) then
         --New behaviour with filters
+        settings.isFilterPanelOn[p_filterPanelNew] = settings.isFilterPanelOn[p_filterPanelNew] or {}
         settings.isFilterPanelOn[p_filterPanelNew][p_filterId] = p_value
         if settings.debug then FCOIS.debugMessage( "[SetSettingsIsFilterOn] Filter Panel: " .. tostring(p_filterPanelNew) .. ", FilterId: " .. tostring(p_filterId) .. ", Value: " .. tostring(p_value), true, FCOIS_DEBUG_DEPTH_SPAM) end
     else
@@ -84,6 +86,8 @@ function FCOIS.getFilterWhereBySettings(p_filterWhere, onlyAnti)
 
     local settingsAllowed = FCOIS.settingsVars.settings
     if onlyAnti == false then
+        FCOIS.settingsVars.settings.atPanelEnabled = FCOIS.settingsVars.settings.atPanelEnabled or {}
+        FCOIS.settingsVars.settings.atPanelEnabled[p_filterWhere] = FCOIS.settingsVars.settings.atPanelEnabled[p_filterWhere] or {}
         --Set the resultVar and update the FCOIS.settingsVars.settings.atPanelEnabled array
         if     (p_filterWhere == LF_INVENTORY or p_filterWhere == LF_BANK_DEPOSIT or p_filterWhere == LF_GUILDBANK_DEPOSIT or p_filterWhere == LF_HOUSE_BANK_DEPOSIT) then
             FCOIS.settingsVars.settings.atPanelEnabled[p_filterWhere]["filters"] = settingsAllowed.allowInventoryFilter
@@ -154,7 +158,7 @@ end
 --This function will change the actual ANTI-DETSROY etc. settings according to the active filter panel ID (inventory, vendor, mail, trade, bank, etc.)
 function FCOIS.changeAntiSettingsAccordingToFilterPanel()
     if FCOIS.gFilterWhere == nil then return false end
-d("[FCOIS.changeAntiSettingsAccordingToFilterPanel - FilterPanel: " .. FCOIS.gFilterWhere .. ", FilterPanelParent: " .. tostring(FCOIS.gFilterWhereParent))
+--d("[FCOIS.changeAntiSettingsAccordingToFilterPanel - FilterPanel: " .. FCOIS.gFilterWhere .. ", FilterPanelParent: " .. tostring(FCOIS.gFilterWhereParent))
 
     local currentSettings = FCOIS.settingsVars.settings
     local isSettingEnabled = false
@@ -540,7 +544,10 @@ function FCOIS.afterSettings()
     FCOIS.numberOfFilteredItems[LF_TRADE]                  = FCOIS.numberOfFilteredItems[LF_INVENTORY]
     FCOIS.numberOfFilteredItems[LF_GUILDSTORE_SELL]        = FCOIS.numberOfFilteredItems[LF_INVENTORY]
     FCOIS.numberOfFilteredItems[LF_BANK_DEPOSIT]           = FCOIS.numberOfFilteredItems[LF_INVENTORY]
+    FCOIS.numberOfFilteredItems[LF_VENDOR_BUY]             = 0 -- TODO: Add as filter panel gets supported
     FCOIS.numberOfFilteredItems[LF_VENDOR_SELL]            = FCOIS.numberOfFilteredItems[LF_INVENTORY]
+    FCOIS.numberOfFilteredItems[LF_VENDOR_BUYBACK]         = 0 -- TODO: Add as filter panel gets supported
+    FCOIS.numberOfFilteredItems[LF_VENDOR_REPAIR]          = 0 -- TODO: Add as filter panel gets supported
     FCOIS.numberOfFilteredItems[LF_FENCE_SELL]             = FCOIS.numberOfFilteredItems[LF_INVENTORY]
     FCOIS.numberOfFilteredItems[LF_FENCE_LAUNDER]          = FCOIS.numberOfFilteredItems[LF_INVENTORY]
     --Others

@@ -56,7 +56,7 @@ function FCOIS.checkActivePanel(comingFrom, overwriteFilterWhere)
         FCOIS.debugMessage( "[FCOIS.checkActivePanel] Coming from/Before: " .. tostring(oldFilterWhere) .. ", overwriteFilterWhere: " .. tostring(overwriteFilterWhere) .. ", currentSceneName: " ..tostring(currentSceneName), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED)
     end
 
-d("[FCOIS.checkActivePanel] comingFrom: " .. tostring(comingFrom) .. ", overwriteFilterWhere: " ..tostring(overwriteFilterWhere))
+--d("[FCOIS.checkActivePanel] comingFrom: " .. tostring(comingFrom) .. ", overwriteFilterWhere: " ..tostring(overwriteFilterWhere))
 
     --Player bank
     if (currentSceneName ~= nil and currentSceneName == ctrlVars.bankSceneName and not ctrlVars.BANK:IsHidden()) or comingFrom == LF_BANK_WITHDRAW then

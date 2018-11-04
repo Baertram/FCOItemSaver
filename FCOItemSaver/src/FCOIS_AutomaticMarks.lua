@@ -1027,7 +1027,7 @@ function FCOIS.scanInventoryItemsForAutomaticMarks(bag, slot, scanType, updateIn
             check				= settings.autoMarkKnownRecipes,
             result 				= true,
             resultNot			= nil,
-            checkOtherAddon		= FCOIS.checkIfRecipeAddonUsed(),
+            checkOtherAddon		= function() return FCOIS.checkIfRecipeAddonUsed() and FCOIS.checkIfChosenRecipeAddonActive() end,
             resultOtherAddon   	= true,
             resultNotOtherAddon	= nil,
             icon				= FCOIS_CON_ICON_SELL_AT_GUILDSTORE,
@@ -1192,7 +1192,7 @@ function FCOIS.scanInventorySingle(p_bagId, p_slotIndex)
                 end
 
                 --Update unknown recipes
-                if (settings.autoMarkRecipes == true and FCOIS.checkIfRecipeAddonUsed() and FCOIS.checkIfChosenRecipeAddonActive() and settings.isIconEnabled[settings.autoMarkRecipesIconNr]) then
+                if (FCOIS.isRecipeAutoMarkDoable(true, false)) then
                     local _, recipeChanged = scanInventoryItemsForAutomaticMarks(p_bagId, p_slotIndex, "recipes", false)
                     if not updateInv and recipeChanged then
                         updateInv = true
@@ -1200,7 +1200,7 @@ function FCOIS.scanInventorySingle(p_bagId, p_slotIndex)
                 end
 
                 --Update known recipes
-                if (settings.autoMarkKnownRecipes == true and FCOIS.checkIfRecipeAddonUsed() and FCOIS.checkIfChosenRecipeAddonActive() and settings.isIconEnabled[FCOIS_CON_ICON_SELL_AT_GUILDSTORE]) then
+                if (settings.autoMarkKnownRecipes == true and FCOIS.isRecipeAutoMarkDoable(false, true)) then
                     local _, recipeChanged = scanInventoryItemsForAutomaticMarks(p_bagId, p_slotIndex, "knownRecipes", false)
                     if not updateInv and recipeChanged then
                         updateInv = true
