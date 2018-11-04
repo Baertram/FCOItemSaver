@@ -46,6 +46,7 @@ function FCOIS.getSettingsIsFilterOn(p_filterId, p_filterPanel)
         local p_filterPanelNew = p_filterPanel or FCOIS.gFilterWhere
 
         --New behaviour with filters
+        settings.isFilterPanelOn[p_filterPanelNew] = settings.isFilterPanelOn[p_filterPanelNew] or {}
         result = settings.isFilterPanelOn[p_filterPanelNew][p_filterId]
         if result == nil then
             return false
@@ -66,6 +67,7 @@ function FCOIS.setSettingsIsFilterOn(p_filterId, p_value, p_filterPanel)
     local settings = FCOIS.settingsVars.settings
     if (settings.splitFilters == true) then
         --New behaviour with filters
+        settings.isFilterPanelOn[p_filterPanelNew] = settings.isFilterPanelOn[p_filterPanelNew] or {}
         settings.isFilterPanelOn[p_filterPanelNew][p_filterId] = p_value
         if settings.debug then FCOIS.debugMessage( "[SetSettingsIsFilterOn] Filter Panel: " .. tostring(p_filterPanelNew) .. ", FilterId: " .. tostring(p_filterId) .. ", Value: " .. tostring(p_value), true, FCOIS_DEBUG_DEPTH_SPAM) end
     else
@@ -84,13 +86,21 @@ function FCOIS.getFilterWhereBySettings(p_filterWhere, onlyAnti)
 
     local settingsAllowed = FCOIS.settingsVars.settings
     if onlyAnti == false then
+        FCOIS.settingsVars.settings.atPanelEnabled = FCOIS.settingsVars.settings.atPanelEnabled or {}
+        FCOIS.settingsVars.settings.atPanelEnabled[p_filterWhere] = FCOIS.settingsVars.settings.atPanelEnabled[p_filterWhere] or {}
         --Set the resultVar and update the FCOIS.settingsVars.settings.atPanelEnabled array
         if     (p_filterWhere == LF_INVENTORY or p_filterWhere == LF_BANK_DEPOSIT or p_filterWhere == LF_GUILDBANK_DEPOSIT or p_filterWhere == LF_HOUSE_BANK_DEPOSIT) then
             FCOIS.settingsVars.settings.atPanelEnabled[p_filterWhere]["filters"] = settingsAllowed.allowInventoryFilter
         elseif (p_filterWhere == LF_CRAFTBAG) then
             FCOIS.settingsVars.settings.atPanelEnabled[p_filterWhere]["filters"] = settingsAllowed.allowCraftBagFilter
+        elseif (p_filterWhere == LF_VENDOR_BUY) then
+            FCOIS.settingsVars.settings.atPanelEnabled[p_filterWhere]["filters"] = settingsAllowed.allowVendorBuyFilter
         elseif (p_filterWhere == LF_VENDOR_SELL) then
             FCOIS.settingsVars.settings.atPanelEnabled[p_filterWhere]["filters"] = settingsAllowed.allowVendorFilter
+        elseif (p_filterWhere == LF_VENDOR_BUYBACK) then
+            FCOIS.settingsVars.settings.atPanelEnabled[p_filterWhere]["filters"] = settingsAllowed.allowVendorBuybackFilter
+        elseif (p_filterWhere == LF_VENDOR_REPAIR) then
+            FCOIS.settingsVars.settings.atPanelEnabled[p_filterWhere]["filters"] = settingsAllowed.allowVendorRepairFilter
         elseif (p_filterWhere == LF_FENCE_SELL) then
             FCOIS.settingsVars.settings.atPanelEnabled[p_filterWhere]["filters"] = settingsAllowed.allowFenceFilter
         elseif (p_filterWhere == LF_FENCE_LAUNDER) then
@@ -130,8 +140,7 @@ function FCOIS.getFilterWhereBySettings(p_filterWhere, onlyAnti)
         end
     end
 
-    if settingsAllowed.debug then FCOIS.debugMessage( "[FCOIS.getFilterWhereBySettings] " .. tostring(p_filterWhere) .. " = " .. tostring(FCOIS.settingsVars.settings.atPanelEnabled[p_filterWhere]["filters"]), true, FCOIS_DEBUG_DEPTH_SPAM) end
-
+    if settingsAllowed.debug then FCOIS.debugMessage( "[FCOIS.getFilterWhereBySettings] " .. tostring(p_filterWhere) .. " = " .. tostring(settingsAllowed.atPanelEnabled[p_filterWhere]["filters"]), true, FCOIS_DEBUG_DEPTH_SPAM) end
     return p_filterWhere
 end
 
@@ -184,15 +193,28 @@ function FCOIS.changeAntiSettingsAccordingToFilterPanel()
             elseif	parentPanel == LF_TRADE then
                 FCOIS.settingsVars.settings.blockTrading = not currentSettings.blockTrading
                 isSettingEnabled = FCOIS.settingsVars.settings.blockTrading
+            --The parent panel for the craftbag is the vendor sell panel
+            elseif	parentPanel == LF_VENDOR_SELL then
+                FCOIS.settingsVars.settings.blockSelling = not currentSettings.blockSelling
+                isSettingEnabled = FCOIS.settingsVars.settings.blockSelling
             end
         else
             FCOIS.settingsVars.settings.blockDestroying = not currentSettings.blockDestroying
             isSettingEnabled = FCOIS.settingsVars.settings.blockDestroying
         end
 
+    elseif FCOIS.gFilterWhere == LF_VENDOR_BUY then
+        FCOIS.settingsVars.settings.blockVendorRepair = not currentSettings.blockVendorBuy
+        isSettingEnabled = FCOIS.settingsVars.settings.blockVendorBuy
     elseif FCOIS.gFilterWhere == LF_VENDOR_SELL then
         FCOIS.settingsVars.settings.blockSelling = not currentSettings.blockSelling
         isSettingEnabled = FCOIS.settingsVars.settings.blockSelling
+    elseif FCOIS.gFilterWhere == LF_VENDOR_BUYBACK then
+        FCOIS.settingsVars.settings.blockSelling = not currentSettings.blockVendorBuyback
+        isSettingEnabled = FCOIS.settingsVars.settings.blockVendorBuyback
+    elseif FCOIS.gFilterWhere == LF_VENDOR_REPAIR then
+        FCOIS.settingsVars.settings.blockSelling = not currentSettings.blockVendorRepair
+        isSettingEnabled = FCOIS.settingsVars.settings.blockVendorRepair
     elseif FCOIS.gFilterWhere == LF_FENCE_SELL then
         FCOIS.settingsVars.settings.blockFence = not currentSettings.blockFence
         isSettingEnabled = FCOIS.settingsVars.settings.blockFence
@@ -311,9 +333,21 @@ function FCOIS.autoReenableAntiSettingsCheck(checkWhere)
         end
 
     elseif checkWhere == "STORE" then
+        --Reenable the Anti-Buy methods if activated in the settings
+        if settings.autoReenable_blockVendorBuy then
+            settings.blockVendorBuy = true
+        end
         --Reenable the Anti-Sell methods if activated in the settings
         if settings.autoReenable_blockSelling then
             settings.blockSelling = true
+        end
+        --Reenable the Anti-Buyback methods if activated in the settings
+        if settings.autoReenable_blockVendorBuyback then
+            settings.blockVendorBuyback = true
+        end
+        --Reenable the Anti-Repair methods if activated in the settings
+        if settings.autoReenable_blockVendorRepair then
+            settings.blockVendorRepair = true
         end
         --Reenable the Fence Anti-Sell methods if activated in the settings
         if settings.autoReenable_blockFenceSelling then
@@ -510,7 +544,10 @@ function FCOIS.afterSettings()
     FCOIS.numberOfFilteredItems[LF_TRADE]                  = FCOIS.numberOfFilteredItems[LF_INVENTORY]
     FCOIS.numberOfFilteredItems[LF_GUILDSTORE_SELL]        = FCOIS.numberOfFilteredItems[LF_INVENTORY]
     FCOIS.numberOfFilteredItems[LF_BANK_DEPOSIT]           = FCOIS.numberOfFilteredItems[LF_INVENTORY]
+    FCOIS.numberOfFilteredItems[LF_VENDOR_BUY]             = 0 -- TODO: Add as filter panel gets supported
     FCOIS.numberOfFilteredItems[LF_VENDOR_SELL]            = FCOIS.numberOfFilteredItems[LF_INVENTORY]
+    FCOIS.numberOfFilteredItems[LF_VENDOR_BUYBACK]         = 0 -- TODO: Add as filter panel gets supported
+    FCOIS.numberOfFilteredItems[LF_VENDOR_REPAIR]          = 0 -- TODO: Add as filter panel gets supported
     FCOIS.numberOfFilteredItems[LF_FENCE_SELL]             = FCOIS.numberOfFilteredItems[LF_INVENTORY]
     FCOIS.numberOfFilteredItems[LF_FENCE_LAUNDER]          = FCOIS.numberOfFilteredItems[LF_INVENTORY]
     --Others

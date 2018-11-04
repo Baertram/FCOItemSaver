@@ -60,7 +60,6 @@ function FCOIS.command_handler(args)
     local settings = FCOIS.settingsVars.settings
     local numFilters = FCOIS.numVars.gFCONumFilters
     local actFilterPanelId = FCOIS.mappingVars.activeFilterPanelIds
-    local LAM = FCOIS.LAM
 
     local function toboolean(value)
         if value == "1" or value == 1 or value == "true" or value == true then
@@ -73,7 +72,7 @@ function FCOIS.command_handler(args)
 
     --Parse the arguments string
     local options = {}
-    local searchResult = {} --old: searchResult = { string.match(args, "^(%S*)%s*(.-)$") }
+    --local searchResult = {} --old: searchResult = { string.match(args, "^(%S*)%s*(.-)$") }
     for param in string.gmatch(args, "([^%s]+)%s*") do
         if (param ~= nil and param ~= "") then
             options[#options+1] = string.lower(param)

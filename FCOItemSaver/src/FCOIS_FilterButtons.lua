@@ -64,8 +64,14 @@ local function outputFilterState(p_outputToChat, p_newFilterMethod, p_panelId, p
             outputText = preChatText .. locVars["filter_enchantingstation_extraction"] .. locVars["filter" .. filterText .. p_stateText]
         elseif (p_panelId == LF_ENCHANTING_CREATION) then
             outputText = preChatText .. locVars["filter_enchantingstation_creation"] .. locVars["filter" .. filterText .. p_stateText]
+        elseif (p_panelId == LF_VENDOR_BUY) then
+            outputText = preChatText .. locVars["filter_buy"] .. locVars["filter" .. filterText .. p_stateText]
         elseif (p_panelId == LF_VENDOR_SELL) then
             outputText = preChatText .. locVars["filter_store"] .. locVars["filter" .. filterText .. p_stateText]
+        elseif (p_panelId == LF_VENDOR_BUYBACK) then
+            outputText = preChatText .. locVars["filter_buyback"] .. locVars["filter" .. filterText .. p_stateText]
+        elseif (p_panelId == LF_VENDOR_REPAIR) then
+            outputText = preChatText .. locVars["filter_repair"] .. locVars["filter" .. filterText .. p_stateText]
         elseif (p_panelId == LF_FENCE_SELL) then
             outputText = preChatText .. locVars["filter_fence"] .. locVars["filter" .. filterText .. p_stateText]
         elseif (p_panelId == LF_FENCE_LAUNDER) then
@@ -145,6 +151,7 @@ end
 --PreHook function for the buttons at the top menus of banks, crafting stations, mail panel, trading, etc.
 function FCOIS.PreHookButtonHandler(comingFrom, goingTo)
     FCOIS.preventerVars.gActiveFilterPanel = true
+    FCOIS.preventerVars.gPreHookButtonHandlerCallActive = true
     if FCOIS.settingsVars.settings.debug then
         FCOIS.debugMessage( ">>>~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~<<<", true, FCOIS_DEBUG_DEPTH_VERY_DETAILED)
         FCOIS.debugMessage( "[FCOIS.PreHookButtonHandler] Coming from panel ID: " ..tostring(comingFrom)..", going to panel ID: " .. tostring(goingTo), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED)
@@ -155,22 +162,28 @@ function FCOIS.PreHookButtonHandler(comingFrom, goingTo)
     FCOIS.hideContextMenu(comingFrom)
 
     --Update the number of filtered items at the sort header "name"?
+    -->Shown within AdvancedFilters addon, at the inventory bottom line where the bagSpace and bankSpace items are shown!
     --FCOIS.updateFilteredItemCount(goingTo)
 
-    --If the craftbag panel is shown: Abort here and let the callback function of the craftbag scene do the rest
+    --If the craftbag panel is shown: Abort here and let the callback function of the craftbag scene do the rest.
+    --> See file src/FCOIS_hooks.lua, function FCOIS.CreateHooks(), CRAFT_BAG_FRAGMENT:RegisterCallback("StateChange", ...)
     if FCOIS.isCraftbagPanelShown() then
 --d(">> Craftbag panel is shown -> abort!")
+        FCOIS.preventerVars.gPreHookButtonHandlerCallActive = false
         return false
     end
 
-    --TODO 2106-11-08: Update context menu invoker buttons, except for the Alchemy panel (no buttons yet)
-    if comingFrom ~= INV_ALVHEMY then
+    --Update context menu invoker buttons, except for these where no additional inventory "flag" button exists (e.g. Alchemy)
+    local contextMenuInventoryFlagInvokerData = FCOIS.contextMenuVars.filterPanelIdToContextMenuButtonInvoker
+    if contextMenuInventoryFlagInvokerData[comingFrom] then
         --Change the button color of the context menu invoker button (flag)
         FCOIS.changeContextMenuInvokerButtonColorByPanelId(goingTo)
     end
 
     --Check the filter buttons and create them if they are not there
     FCOIS.CheckFilterButtonsAtPanel(true, goingTo)
+
+    FCOIS.preventerVars.gPreHookButtonHandlerCallActive = false
 
     --Return false to call the normal callback handler of the button afterwards
     return false
@@ -257,9 +270,9 @@ function FCOIS.CheckFilterButtonsAtPanel(doUpdateLists, panelId, overwriteFilter
     FCOIS.checkMarker(-1)
 
     --Get the currently shown panel and update FCOIS.gFilterWhere
-    local buttonsParentCtrl = FCOIS.checkActivePanel(panelId, overwriteFilterWhere)
+    local buttonsParentCtrl, filterPanel = FCOIS.checkActivePanel(panelId, overwriteFilterWhere)
 
-    --d("[FCOIS.CheckFilterButtonsAtPanel - " .. tostring(buttonsParentCtrl:GetName()) .. ", FilterPanelId: " .. tostring(FCOIS.gFilterWhere) .. ", UseFilters: " .. tostring(settings.atPanelEnabled[FCOIS.gFilterWhere]["filters"]))
+--d("[FCOIS.CheckFilterButtonsAtPanel - " .. tostring(buttonsParentCtrl:GetName()) .. ", FilterPanelId/ParentPanelId: " .. tostring(FCOIS.gFilterWhere) .. "/" .. tostring(filterPanel) .. ", UseFilters: " .. tostring(settings.atPanelEnabled[FCOIS.gFilterWhere]["filters"]))
 
     --Is an inventory found?
     if buttonsParentCtrl ~= nil then
@@ -305,6 +318,7 @@ function FCOIS.CheckFilterButtonsAtPanel(doUpdateLists, panelId, overwriteFilter
             FCOIS.FilterBasics(false)
         end
     end
+    return buttonsParentCtrl, filterPanel
 end
 
 --Update the filter button colors and textures, depending on the filters (and chosen sub-filter icons)
@@ -802,10 +816,25 @@ local function filterStatusLoop(filterId, silent, givenArray, p_atLeastOneFilter
                             d(locVars["filter_craftbag"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
                         end
 
+                    elseif     (j == LF_VENDOR_BUY) then
+                        returnArray[j][filterId] = settings.allowVendorBuyFilter
+                        if (not silent) then
+                            d(locVars["filter_buy"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
+                        end
                     elseif     (j == LF_VENDOR_SELL) then
                         returnArray[j][filterId] = settings.allowVendorFilter
                         if (not silent) then
                             d(locVars["filter_store"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
+                        end
+                    elseif     (j == LF_VENDOR_BUYBACK) then
+                        returnArray[j][filterId] = settings.allowVendorBuybackFilter
+                        if (not silent) then
+                            d(locVars["filter_buyback"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
+                        end
+                    elseif     (j == LF_VENDOR_REPAIR) then
+                        returnArray[j][filterId] = settings.allowVendorRepairFilter
+                        if (not silent) then
+                            d(locVars["filter_repair"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
                         end
                     elseif     (j == LF_FENCE_SELL) then
                         returnArray[j][filterId] = settings.allowFenceFilter

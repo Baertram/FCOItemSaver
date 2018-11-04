@@ -505,20 +505,34 @@ function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, do
     local checksWereDone			 = false
     local atLeastOneMarkerIconWasSet = false
 
+    local settings = FCOIS.settingsVars.settings
+
+    local function abortChecksNow(whereWasTheFunctionAborted)
+        if settings.debug then
+            whereWasTheFunctionAborted = whereWasTheFunctionAborted or "n/a"
+            if whereWasTheFunctionAborted ~= "" then
+                d("<<[FCOIS]ScanInvForAutomaticMarks \"" .. tostring(scanType) .. "\". Aborting! [" .. tostring(whereWasTheFunctionAborted) .. "]")
+            else
+                d("<<[FCOIS]ScanInvForAutomaticMarks \"" .. tostring(scanType) .. "\". Aborting!")
+            end
+        end
+        return false, false
+    end
+
     --------------------------------------------------------------------------------
     --Check only one bag & slot, or a whole inventory?
     if bag ~= nil and slot ~= nil then
         --Are the TO DOs given?
-        if toDos == nil then return false, false end
+        if toDos == nil then if not settings.debug then return false, false else return abortChecksNow("ToDos are nil!") end end
         --d(">Todos found")
 
         --Check only one item slot
         --Is the inventory already scanned currently?
         if FCOIS.preventerVars.gScanningInv then
             --d("<<<!!! Aborting inv. scan. Scan already active - bag: " .. tostring(bag) .. ", slot: " .. tostring(slot) .. " scanType: " .. tostring(scanType) .. " !!!>>>")
-            return false, false
+            if not settings.debug then return false, false else return abortChecksNow("Scanning inv already")  end
         end
-        --local itemLink = GetItemLink(bag, slot)
+--local itemLink = GetItemLink(bag, slot)
 --d("!!!!!> Scanning - bag: " .. tostring(bag) .. ", slot: " .. tostring(slot) .. " " .. itemLink .. " scanType: " .. tostring(scanType) .. " <!!!!!")
         FCOIS.preventerVars.gScanningInv = true
 
@@ -528,42 +542,54 @@ function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, do
         local forceAdditionalCheckFunc = false
         --1) Icon
         --Check if the marker icon is given and enabled
-        if not toDos.icon or not FCOIS.settingsVars.settings.isIconEnabled[toDos.icon] then return false, false end
+        if not toDos.icon or not settings.isIconEnabled[toDos.icon] then if not settings.debug then return false, false else return abortChecksNow("Icon not given/not enabled: " ..tostring(toDos.icon)) end  end
         --d(">Active icon found for '" .. tostring(scanType) .. "': " .. tostring(toDos.icon))
 
         --2) Settings enabled?
         --Check if the settings to automatically mark the item is enabled
+        local checkResult
         if toDos.check ~= nil then
-            --d(">Check active: " .. tostring(toDos.check) .. " (" .. tostring(toDos.result) .. "/" .. tostring(toDos.resultNot) .. ")")
+            if type(toDos.check) == "function" then
+                checkResult = toDos.check(bag, slot)
+            else
+                checkResult = toDos.check
+            end
+            --d(">Check active: " .. tostring(checkResult) .. " (" .. tostring(toDos.result) .. "/" .. tostring(toDos.resultNot) .. ")")
             --Result should equal the check variable
             if toDos.result ~= nil then
                 --Result does NOT equal check variable -> abort
-                if toDos.check ~= toDos.result then return false, false end
+                if checkResult ~= toDos.result then if not settings.debug then return false, false else return abortChecksNow("Check value " .. tostring(checkResult) .. " <> result " ..tostring(toDos.result)) end  end
             --Result should NOT equal the check variable
             elseif toDos.resultNot ~= nil then
                 --Result equals check variable -> abort
-                if toDos.check == toDos.resultNot then return false, false end
+                if checkResult == toDos.resultNot then if not settings.debug then return false, false else return abortChecksNow("Check value " .. tostring(checkResult) .. " <> result NOT " ..tostring(toDos.resultNot)) end  end
             else
                 --No expected result given? Abort
-                return false, false
+                if not settings.debug then return false, false else return abortChecksNow("No expected result given")  end
             end
         end
 
         --3) Other addons needed?
         --Check if the settings to automatically mark the item is enabled
+        local checkOtherAddonResult
         if toDos.checkOtherAddon ~= nil then
+            if type(toDos.checkOtherAddon) == "function" then
+                checkOtherAddonResult = toDos.checkOtherAddon(bag, slot)
+            else
+                checkOtherAddonResult = toDos.checkOtherAddon
+            end
             --d(">Other addons active: " .. tostring(toDos.checkOtherAddon) .. " (" .. tostring(toDos.resultOtherAddon) .. "/" .. tostring(toDos.resultNotOtherAddon) .. ")")
             --Result should equal the other addons check variable
             if toDos.resultOtherAddon ~= nil then
                 --Result does NOT equal other addons check variable -> abort
-                if toDos.checkOtherAddon ~= toDos.resultOtherAddon then return false, false end
+                if checkOtherAddonResult ~= toDos.resultOtherAddon then if not settings.debug then return false, false else return abortChecksNow("Check other addon value " .. tostring(checkOtherAddonResult) .. " <> result other addon value " ..tostring(toDos.resultOtherAddon)) end  end
             --Result should NOT equal the other addons check variable
             elseif toDos.resultNotOtherAddon ~= nil then
                 --Result equals other addons check variable -> abort
-                if toDos.checkOtherAddon == toDos.resultNotOtherAddon then return false, false end
+                if checkOtherAddonResult == toDos.resultNotOtherAddon then if not settings.debug then return false, false else return abortChecksNow("Check other addon value " .. tostring(checkOtherAddonResult) .. " <> result NOT other addon value" ..tostring(toDos.resultNotOtherAddon)) end  end
             else
                 --No expected result given? Abort
-                return false, false
+                if not settings.debug then return false, false else return abortChecksNow("No expected other addon result given") end
             end
         end
 
@@ -613,7 +639,7 @@ function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, do
         end
         if itemId == nil or not canBeAutomaticallyMarked or isItemProtected	then
             --d("<-- ABORTED [".. itemLink .. "] - ItemId: " .. tostring(itemId) .. ", scanType: " .. tostring(scanType) .. ", FCOIS.checkIfItemIsProtected: " .. tostring(isItemProtected) .. " -> Should be: false, checkIfCanBeAutomaticallyMarked: (" .. tostring(canBeAutomaticallyMarked) .." -> Should be: true)")
-            return false, false
+            if not settings.debug then return false, false else return abortChecksNow("ItemId nil?: " .. tostring(itemId) .. ", canBeAutomaticallyMarked false/nil?: " ..tostring(canBeAutomaticallyMarked) .. ", isItemProtected true?: " ..tostring(isItemProtected)) end
         end
 
         --5) Check function needs to be run?
@@ -638,19 +664,19 @@ function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, do
 
             --d(">Check func active: " .. tostring(checkFuncResult) .. " (" .. tostring(toDos.resultCheckFunc) .. "/" .. tostring(toDos.resultNotCheckFunc) .. "), forceAdditionalCheckFunc: " ..tostring(forceAdditionalCheckFunc))
             --Was the check successfull?
-            if checkFuncResult == nil and not forceAdditionalCheckFunc then return false, false end
+            if checkFuncResult == nil and not forceAdditionalCheckFunc then if not settings.debug then return false, false else return abortChecksNow("CheckFuncResult is nil and no force to go on is active!") end  end
             --Result should equal the check func result
             if not forceAdditionalCheckFunc then
                 if toDos.resultCheckFunc ~= nil then
                     --Result does NOT equal check func result -> abort
-                    if checkFuncResult ~= toDos.resultCheckFunc then return false, false end
+                    if checkFuncResult ~= toDos.resultCheckFunc then if not settings.debug then return false, false else return abortChecksNow("CheckFunc " .. tostring(checkFuncResult) .. " <> CheckFuncResult " ..tostring(toDos.resultCheckFunc)) end  end
                 --Result should NOT equal the check func result
                 elseif toDos.resultNotCheckFunc ~= nil then
                     --Result equals check func result -> abort
-                    if checkFuncResult == toDos.resultNotCheckFunc then return false, false end
+                    if checkFuncResult == toDos.resultNotCheckFunc then if not settings.debug then return false, false else return abortChecksNow("CheckFunc " .. tostring(checkFuncResult) .. " <> NOT CheckFuncResult " ..tostring(toDos.resultNotCheckFunc)) end  end
                 else
                     --No expected result given? Abort
-                    return false, false
+                    if not settings.debug then return false, false else return abortChecksNow("Check func or result not used")  end
                 end
             end
         end
@@ -669,7 +695,7 @@ function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, do
                     itemData.fromCheckFunc = {}
                     itemData.fromCheckFunc = checkFuncResultData
                 end
-                if itemData == nil then return false, false end
+                if itemData == nil then if not settings.debug then return false, false else return abortChecksNow("Additional check func, itemdata is nil!") end  end
                 --The check is a function, so call it with the itemData table and the current check func result variable
                 additionalCheckFuncResult, additionalCheckFuncResultData = toDos.additionalCheckFunc(itemData, checkFuncResult)
             else
@@ -678,24 +704,29 @@ function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, do
             end
 --d(">Add. check func active: " .. tostring(additionalCheckFuncResult) .. " (" .. tostring(toDos.resultAdditionalCheckFunc) .. "/" .. tostring(toDos.resultNotAdditionalCheckFunc) .. ")")
             --Was the check successfull?
-            if additionalCheckFuncResult == nil then return false, false end
+            if additionalCheckFuncResult == nil then if not settings.debug then return false, false else return abortChecksNow("Additional check func result is nil!") end  end
             --Result should equal the add. check func result
             if toDos.resultAdditionalCheckFunc ~= nil then
                 --Result does NOT equal add. check func result -> abort
-                if additionalCheckFuncResult ~= toDos.resultAdditionalCheckFunc then return false, false end
+                if additionalCheckFuncResult ~= toDos.resultAdditionalCheckFunc then if not settings.debug then return false, false else return abortChecksNow("Additional check func " ..tostring(additionalCheckFuncResult) .. " <> Additional check func result " .. tostring(toDos.resultAdditionalCheckFunc)) end  end
             --Result should NOT equal the add. check func result
             elseif toDos.resultNotAdditionalCheckFunc ~= nil then
                 --Result equals add. check func result -> abort
-                if additionalCheckFuncResult == toDos.resultNotAdditionalCheckFunc then return false, false end
+                if additionalCheckFuncResult == toDos.resultNotAdditionalCheckFunc then if not settings.debug then return false, false else return abortChecksNow("Additional check func " ..tostring(additionalCheckFuncResult) .. " <> NOT Additional check func result " .. tostring(toDos.resultNotAdditionalCheckFunc)) end  end
             else
                 --No expected result given? Abort
-                return false, false
+                if not settings.debug then return false, false else return abortChecksNow("Additional check func or result not given!")  end
             end
         end
 --d(">got here, addCheckfuncMarkerIcon")
         --Compare the two 2nd parameters (new marker icon IDs) of checkFunc and additionalCheckFunc.
         --Use the later one returned that is not nil as the new marker icon for the item
-        local newMarkerIcon = toDos.icon
+        local newMarkerIcon
+        if type(toDos.icon) == "function" then
+            newMarkerIcon = todos.icon(bag, slot)
+        else
+            newMarkerIcon = toDos.icon
+        end
         if additionalCheckFuncResultData ~= nil and additionalCheckFuncResultData.newMarkerIcon ~= nil then
 --d(">newMarkerIcon taken from add. check func newMarkerIcon")
             newMarkerIcon = additionalCheckFuncResultData.newMarkerIcon
@@ -718,12 +749,28 @@ function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, do
 
         --d(">Chat output: " .. tostring(toDos.chatOutput))
         --Show the marked item in the chat now?
-        if toDos.chatOutput or doOverride then
+        local chatOutput
+        if type(toDos.chatOutput) == "function" then
+            chatOutput = toDos.chatOutput(bag, slot)
+        else
+            chatOutput = toDos.chatOutput
+        end
+        local chatBegin
+        if type(toDos.chatBegin) == "function" then
+            chatBegin = toDos.chatBegin(bag, slot)
+        else
+            chatBegin = toDos.chatBegin
+        end
+        local chatEnd
+        if type(toDos.chatEnd) == "function" then
+            chatEnd = toDos.chatEnd(bag, slot)
+        else
+            chatEnd = toDos.chatEnd
+        end
+        if chatOutput or doOverride then
             local itemLink = GetItemLink(bag, slot)
             --Show the marked item in the chat with the clickable itemLink
             if (itemLink ~= nil) then
-                local chatBegin = toDos.chatBegin or ""
-                local chatEnd 	= toDos.chatEnd or ""
                 d(chatBegin .. itemLink .. chatEnd)
             end
             --local scanTypeCapitalText
@@ -733,7 +780,7 @@ function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, do
             --Show the marked item in the chat via debug message
             local scanTypeCapitalText
             scanTypeCapitalText = zo_strformat("<<C:1>>", scanType)
-            if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[ScanInventoryFor".. scanTypeCapitalText or tostring(scanType) .."]: " .. toDos.chatBegin .. itemLink .. toDos.chatEnd, false) end
+            if settings.debug then FCOIS.debugMessage( "[ScanInventoryFor".. scanTypeCapitalText or tostring(scanType) .."]: " .. chatBegin .. itemLink .. chatEnd, false) end
         end
     end -- if bag ~= nil and slot ~= nil then
     --Return the functions return variables now
@@ -837,7 +884,7 @@ function FCOIS.scanInventoryItemsForAutomaticMarks(bag, slot, scanType, updateIn
             check				= settings.autoMarkResearch,
             result 				= true,
             resultNot			= nil,
-            checkOtherAddon		= FCOIS.otherAddons.researchAssistantActive,
+            checkOtherAddon		= function() return (FCOIS.checkIfResearchAddonUsed() and FCOIS.checkIfChosenResearchAddonActive()) or false end,
             resultOtherAddon   	= true,
             resultNotOtherAddon	= nil,
             icon				= FCOIS_CON_ICON_RESEARCH,
@@ -861,25 +908,69 @@ function FCOIS.scanInventoryItemsForAutomaticMarks(bag, slot, scanType, updateIn
                     local retVar = false
                     local itemDataEntry = inventorySlots[p_itemData.slotIndex]
                     if itemDataEntry ~= nil then
---d(">>>>scanInventoryItemsForAutomaticMarks - research !got here!")
-                        local itemLinkResearch = GetItemLink(p_itemData.bagId, p_itemData.slotIndex)
+                        local bagId, slotIndex = p_itemData.bagId, p_itemData.slotIndex
+                        local itemLinkResearch = GetItemLink(bagId, slotIndex)
                         local isResearchable = false
                         --Only if coming from EVENT_INVENTORY_SINGLE_SLOT_UPDATE for new looted items as otherwise the dateEntry.data.researchAssistant exists properly!
                         --Added function to Research Assistant but addon update is not released yet?
                         local comingFromEventInvSingleSlotUpdate = FCOIS.preventerVars.eventInventorySingleSlotUpdate
-                        if comingFromEventInvSingleSlotUpdate and ResearchAssistant ~= nil and ResearchAssistant.IsItemResearchableWithSettingsCharacter ~= nil then
---d(">InvSingleSlotUpdate & RA function exists")
-                            isResearchable = ResearchAssistant.IsItemResearchableWithSettingsCharacter(p_itemData.bagId, p_itemData.slotIndex)
-                        else
-                            isResearchable = (itemDataEntry.researchAssistant ~= nil and itemDataEntry.researchAssistant == 'researchable')
+                        --ResearchAssistant should be used?
+                        local researchAddonId = FCOIS.getResearchAddonUsed()
+                        if researchAddonId == FCOIS_RESEARCH_ADDON_RESEARCHASSISTANT then
+                            if comingFromEventInvSingleSlotUpdate and ResearchAssistant ~= nil and ResearchAssistant.IsItemResearchableWithSettingsCharacter ~= nil then
+                                isResearchable = ResearchAssistant.IsItemResearchableWithSettingsCharacter(bagId, slotIndex)
+                            else
+                                isResearchable = (itemDataEntry.researchAssistant ~= nil and itemDataEntry.researchAssistant == 'researchable')
+                            end
+
+                        --CraftStoreFixedAndImproved
+                        elseif researchAddonId == FCOIS_RESEARCH_ADDON_CSFAI then
+                            isResearchable = false
+                            if (FCOIS.otherAddons.craftStoreFixedAndImprovedActive and CraftStoreFixedAndImprovedLongClassName ~= nil and CraftStoreFixedAndImprovedLongClassName.IsResearchable ~= nil) then
+                                if itemLinkResearch ~= nil then
+                                    local currentlyLoggedInCharOnly = settings.autoMarkResearchOnlyLoggedInChar
+                                    --Return value of function is a table containing an integer key and a table as value. This table got an integer 1 as key and the charname asvalue, and an integer 2 as key and a boolean var isResearchable [true/false] as value:
+                                    --table[1] = {[1] = "Glacies", [2] = false}, [2] = {[1] = "Baertram", [2] = true}, etc.
+                                    --If currentlyLoggedInCharOnly is set to true it will only contain the entry for the currently logged in char
+                                    local isResearchableCharTable = CraftStoreFixedAndImprovedLongClassName.IsResearchable(itemLinkResearch, currentlyLoggedInCharOnly)
+                                    if isResearchableCharTable ~= nil and type(isResearchableCharTable) == "table" then
+                                        for _, isResearchableTableForChar in ipairs(isResearchableCharTable) do
+                                            if type(isResearchableTableForChar) == "table" then
+                                                local charName, isResearchableTableValue = isResearchableTableForChar[1], isResearchableTableForChar[2]
+                                                if isResearchableTableValue == true then
+                                                    if currentlyLoggedInCharOnly == true then
+                                                        if FCOIS.currentlyLoggedInCharName ~= nil and FCOIS.currentlyLoggedInCharName ~= "" and charName == FCOIS.currentlyLoggedInCharName then
+                                                            isResearchable = true
+                                                        end
+                                                    else
+                                                        isResearchable = true
+                                                    end
+                                                    if isResearchable then
+--d(">researchable " .. itemLinkResearch .. ", currentlyLoggedInCharOnly: " ..tostring(currentlyLoggedInCharOnly) .. ", charName: " ..tostring(charName))
+                                                        break -- Exit the inner loop now as a researchable item for a character was found
+                                                    end
+                                                end
+                                            end
+                                        end
+                                    end
+                                end
+                            end
+
+                        --ESO standard research
+                        elseif researchAddonId == FCOIS_RESEARCH_ADDON_ESO_STANDARD then
+--d(">ESO standard research check")
+                            --Check if the item is researchable for currently logged in character via standard ESO function
+                            if (GetItemTraitInformation(bagId, slotIndex) == ITEM_TRAIT_INFORMATION_CAN_BE_RESEARCHED) then
+                                isResearchable = true
+                            end
                         end
---d("[FCOIS]AutoMarkResearchable - " .. itemLinkResearch .. ", isResearchable: " .. tostring(isResearchable))
+--d("[FCOIS]AutoMarkResearchable, isResearchable: " .. tostring(isResearchable))
                         return isResearchable, nil
                     else
                         retVar = false
                     end
                     return retVar, nil
-                --end, 5000)
+                --end, 100)
             end,
             resultAdditionalCheckFunc = true,
             resultNotAdditionalCheckFunc = nil,
@@ -887,12 +978,33 @@ function FCOIS.scanInventoryItemsForAutomaticMarks(bag, slot, scanType, updateIn
             chatBegin			= FCOIS.localizationVars.fcois_loc["marked"],
             chatEnd				= FCOIS.localizationVars.fcois_loc["research_item_found"],
         },
+        ---------------------------- Research scrolls-------------------------------
+        ["researchScrolls"] = {
+            check				= settings.autoMarkWastedResearchScrolls,
+            result 				= true,
+            resultNot			= nil,
+            checkOtherAddon		= nil,
+            resultOtherAddon   	= nil,
+            resultNotOtherAddon	= nil,
+            icon				= FCOIS_CON_ICON_LOCK,
+            checkIfAnyIconIsMarkedAlready = nil,
+            checkFunc			= function(p_bagId, p_slotIndex)
+                --Check if item is intricate
+                return FCOIS.checkIfResearchScrollWouldBeWasted(p_bagId, p_slotIndex), nil
+            end,
+            resultCheckFunc 	= true,
+            resultNotCheckFunc 	= nil,
+            additionalCheckFunc = nil,
+            chatOutput			= settings.showResearchItemsInChat,
+            chatBegin			= FCOIS.localizationVars.fcois_loc["marked"],
+            chatEnd				= FCOIS.localizationVars.fcois_loc["researchScroll_item_found"],
+        },
         ---------------------------- Unknown recipes ---------------------------
         ["recipes"] = {
             check				= settings.autoMarkRecipes,
             result 				= true,
             resultNot			= nil,
-            checkOtherAddon		= function() return FCOIS.checkIfRecipeAddonUsed() end,
+            checkOtherAddon		= function() return FCOIS.checkIfRecipeAddonUsed() and FCOIS.checkIfChosenRecipeAddonActive() end,
             resultOtherAddon   	= true,
             resultNotOtherAddon	= nil,
             icon				= settings.autoMarkRecipesIconNr,
@@ -915,7 +1027,7 @@ function FCOIS.scanInventoryItemsForAutomaticMarks(bag, slot, scanType, updateIn
             check				= settings.autoMarkKnownRecipes,
             result 				= true,
             resultNot			= nil,
-            checkOtherAddon		= FCOIS.checkIfRecipeAddonUsed(),
+            checkOtherAddon		= function() return FCOIS.checkIfRecipeAddonUsed() and FCOIS.checkIfChosenRecipeAddonActive() end,
             resultOtherAddon   	= true,
             resultNotOtherAddon	= nil,
             icon				= FCOIS_CON_ICON_SELL_AT_GUILDSTORE,
@@ -956,39 +1068,18 @@ function FCOIS.scanInventoryItemsForAutomaticMarks(bag, slot, scanType, updateIn
             chatEnd				= FCOIS.localizationVars.fcois_loc["set_part_found"],
             ------------------------------------------------------------------------
         },
-        ---------------------------- Research scrolls-------------------------------
-        ["researchScrolls"] = {
-            check				= settings.autoMarkWastedResearchScrolls,
-            result 				= true,
-            resultNot			= nil,
-            checkOtherAddon		= nil,
-            resultOtherAddon   	= nil,
-            resultNotOtherAddon	= nil,
-            icon				= FCOIS_CON_ICON_LOCK,
-            checkIfAnyIconIsMarkedAlready = nil,
-            checkFunc			= function(p_bagId, p_slotIndex)
-                --Check if item is intricate
-                return FCOIS.checkIfResearchScrollWouldBeWasted(p_bagId, p_slotIndex), nil
-            end,
-            resultCheckFunc 	= true,
-            resultNotCheckFunc 	= nil,
-            additionalCheckFunc = nil,
-            chatOutput			= settings.showResearchItemsInChat,
-            chatBegin			= FCOIS.localizationVars.fcois_loc["marked"],
-            chatEnd				= FCOIS.localizationVars.fcois_loc["researchScroll_item_found"],
-        },
     } -- scantypeToDo
-    --------------------------------------------------------------------------------
-    --------------------------------------------------------------------------------
-    --		Function start                                                        --
-    --------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--		Function start                                                        --
+--------------------------------------------------------------------------------
     --Local variables for the return
     local checksWereDoneLoop			 = false
     local atLeastOneMarkerIconWasSetLoop = false
-
     --Is the scantype given: Get the todos ->
-    --Get the array below the scanType
+    --Get the array below the scanType with the functions and stepts to check
     local toDos = scanTypeToDo[scanType]
+    if toDos == nil then return false, false end
 
     --Check only one bag & slot, or a whole inventory?
     if bag ~= nil and slot ~= nil then
@@ -1047,8 +1138,9 @@ local scanInventoryItemsForAutomaticMarks = FCOIS.scanInventoryItemsForAutomatic
 function FCOIS.scanInventorySingle(p_bagId, p_slotIndex)
     --d("[ScanInventorySingle] bag: " .. tostring(p_bagId) .. ", slot: " .. tostring(p_slotIndex) .. ", scanningInv: " .. tostring(FCOIS.preventerVars.gScanningInv))
     local updateInv = false
+    local settings = FCOIS.settingsVars.settings
     if FCOIS.preventerVars.gScanningInv == false then
-        if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[ScanInventorySingle] Start", false, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+        if settings.debug then FCOIS.debugMessage( "[ScanInventorySingle] Start", false, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
 --d("[ScanInventorySingle] Start")
         -- Update only one item in inventory
         -- bagId AND slotIndex are given?
@@ -1058,7 +1150,7 @@ function FCOIS.scanInventorySingle(p_bagId, p_slotIndex)
             if (itemId ~= nil) then
 
                 --Update ornate items
-                if (FCOIS.settingsVars.settings.autoMarkOrnate == true and FCOIS.settingsVars.settings.isIconEnabled[FCOIS_CON_ICON_SELL]) then
+                if (settings.autoMarkOrnate == true and settings.isIconEnabled[FCOIS_CON_ICON_SELL]) then
                     local _, ornateChanged = scanInventoryItemsForAutomaticMarks(p_bagId, p_slotIndex, "ornate", false)
                     if not updateInv and ornateChanged then
                         updateInv = true
@@ -1066,7 +1158,7 @@ function FCOIS.scanInventorySingle(p_bagId, p_slotIndex)
                 end
 
                 --Update intricate items
-                if (FCOIS.settingsVars.settings.autoMarkIntricate == true and FCOIS.settingsVars.settings.isIconEnabled[FCOIS_CON_ICON_INTRICATE]) then
+                if (settings.autoMarkIntricate == true and settings.isIconEnabled[FCOIS_CON_ICON_INTRICATE]) then
                     local _, intricateChanged = scanInventoryItemsForAutomaticMarks(p_bagId, p_slotIndex, "intricate", false)
                     if not updateInv and intricateChanged then
                         updateInv = true
@@ -1074,7 +1166,7 @@ function FCOIS.scanInventorySingle(p_bagId, p_slotIndex)
                 end
 
                 --Update researchable items
-                if (FCOIS.otherAddons.researchAssistantActive == true and FCOIS.settingsVars.settings.autoMarkResearch == true and FCOIS.settingsVars.settings.isIconEnabled[FCOIS_CON_ICON_RESEARCH]) then
+                if (settings.autoMarkResearch == true and FCOIS.checkIfResearchAddonUsed() and FCOIS.checkIfChosenResearchAddonActive() and settings.isIconEnabled[FCOIS_CON_ICON_RESEARCH]) then
 --local itemLink = GetItemLink(p_bagId, p_slotIndex)
 --d(">scanInvSingle, research scan reached for: " .. itemLink)
                     local _, researchableChanged = scanInventoryItemsForAutomaticMarks(p_bagId, p_slotIndex, "research", false)
@@ -1084,7 +1176,7 @@ function FCOIS.scanInventorySingle(p_bagId, p_slotIndex)
                 end
 
                 --Update research scrolls (time reduction for crafting research) items
-                if ((DetailedResearchScrolls ~= nil and DetailedResearchScrolls.GetWarningLine ~= nil) and FCOIS.settingsVars.settings.autoMarkWastedResearchScrolls == true and FCOIS.settingsVars.settings.isIconEnabled[FCOIS_CON_ICON_LOCK]) then
+                if ((DetailedResearchScrolls ~= nil and DetailedResearchScrolls.GetWarningLine ~= nil) and settings.autoMarkWastedResearchScrolls == true and settings.isIconEnabled[FCOIS_CON_ICON_LOCK]) then
                     local _, researchScrollWastedChanged = scanInventoryItemsForAutomaticMarks(p_bagId, p_slotIndex, "researchScrolls", false)
                     if not updateInv and researchScrollWastedChanged then
                         updateInv = true
@@ -1092,7 +1184,7 @@ function FCOIS.scanInventorySingle(p_bagId, p_slotIndex)
                 end
 
                 --Check for item quality
-                if (FCOIS.settingsVars.settings.autoMarkQuality ~= 1 and FCOIS.settingsVars.settings.isIconEnabled[FCOIS.settingsVars.settings.autoMarkQualityIconNr]) then
+                if (settings.autoMarkQuality ~= 1 and settings.isIconEnabled[settings.autoMarkQualityIconNr]) then
                     local _, qualityChanged = scanInventoryItemsForAutomaticMarks(p_bagId, p_slotIndex, "quality", false)
                     if not updateInv and qualityChanged then
                         updateInv = true
@@ -1100,7 +1192,7 @@ function FCOIS.scanInventorySingle(p_bagId, p_slotIndex)
                 end
 
                 --Update unknown recipes
-                if (FCOIS.checkIfRecipeAddonUsed() and FCOIS.settingsVars.settings.autoMarkRecipes == true and FCOIS.settingsVars.settings.isIconEnabled[FCOIS.settingsVars.settings.autoMarkRecipesIconNr]) then
+                if (FCOIS.isRecipeAutoMarkDoable(true, false)) then
                     local _, recipeChanged = scanInventoryItemsForAutomaticMarks(p_bagId, p_slotIndex, "recipes", false)
                     if not updateInv and recipeChanged then
                         updateInv = true
@@ -1108,7 +1200,7 @@ function FCOIS.scanInventorySingle(p_bagId, p_slotIndex)
                 end
 
                 --Update known recipes
-                if (FCOIS.checkIfRecipeAddonUsed() and FCOIS.settingsVars.settings.autoMarkKnownRecipes == true and FCOIS.settingsVars.settings.isIconEnabled[FCOIS_CON_ICON_SELL_AT_GUILDSTORE]) then
+                if (settings.autoMarkKnownRecipes == true and FCOIS.isRecipeAutoMarkDoable(false, true)) then
                     local _, recipeChanged = scanInventoryItemsForAutomaticMarks(p_bagId, p_slotIndex, "knownRecipes", false)
                     if not updateInv and recipeChanged then
                         updateInv = true
@@ -1116,7 +1208,7 @@ function FCOIS.scanInventorySingle(p_bagId, p_slotIndex)
                 end
 
                 --Mark set parts
-                if (FCOIS.settingsVars.settings.autoMarkSets == true and FCOIS.settingsVars.settings.isIconEnabled[FCOIS.settingsVars.settings.autoMarkSetsIconNr]) then
+                if (settings.autoMarkSets == true and settings.isIconEnabled[settings.autoMarkSetsIconNr]) then
                     local _, setPartChanged = scanInventoryItemsForAutomaticMarks(p_bagId, p_slotIndex, "sets", false)
                     if not updateInv and setPartChanged then
                         updateInv = true
@@ -1127,7 +1219,7 @@ function FCOIS.scanInventorySingle(p_bagId, p_slotIndex)
         --Inventory scan is latest finished here
         --FCOIS.preventerVars.gScanningInv = false
     end
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[ScanInventorySingle] End", false, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+    if settings.debug then FCOIS.debugMessage( "[ScanInventorySingle] End", false, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
 --d("[ScanInventorySingle] END, updateInv: " .. tostring(updateInv))
     return updateInv
 end
@@ -1145,25 +1237,28 @@ function FCOIS.scanInventory(p_bagId, p_slotIndex)
     end
 --d("[ScanInventory] bag: " .. tostring(p_bagId) .. ", slot: " .. tostring(p_slotIndex) .. ", scanningInv: " .. tostring(FCOIS.preventerVars.gScanningInv))
     local updateInv = false
-    local isRecipeAddonActive = FCOIS.checkIfRecipeAddonUsed()
-    --Automatic marking of ornate, intricate, researchable items (researchAssistant addon needed!), unknown recipes (SousChef or other recipe addon is needed!), set parts, quality items is activated?
+    local settings = FCOIS.settingsVars.settings
+    local isRecipeAddonActive = (FCOIS.checkIfRecipeAddonUsed() and FCOIS.checkIfChosenRecipeAddonActive()) or false
+    local isResearchAddonActive = (FCOIS.checkIfRecipeAddonUsed() and FCOIS.checkIfChosenResearchAddonActive() and settings.isIconEnabled[FCOIS_CON_ICON_RESEARCH]) or false
+    local isResearchScrollsAddonActive = (DetailedResearchScrolls ~= nil and DetailedResearchScrolls.GetWarningLine ~= nil and settings.isIconEnabled[FCOIS_CON_ICON_LOCK]) or false
+--d(">isResearchAddonActive: " ..tostring(isResearchAddonActive))
+    --Automatic marking of ornate, intricate, researchable items (researchAssistant or other research addon needed, or ESO base game marks for researchabel items), unknown recipes (SousChef or other recipe addon is needed!), set parts, quality items is activated?
     local isCheckNecessary = (
-               (FCOIS.settingsVars.settings.autoMarkOrnate == true and FCOIS.settingsVars.settings.isIconEnabled[FCOIS_CON_ICON_SELL])
-            or (FCOIS.settingsVars.settings.autoMarkIntricate == true and FCOIS.settingsVars.settings.isIconEnabled[FCOIS_CON_ICON_INTRICATE])
-            or (FCOIS.otherAddons.researchAssistantActive == true and FCOIS.settingsVars.settings.autoMarkResearch == true and FCOIS.settingsVars.settings.isIconEnabled[FCOIS_CON_ICON_RESEARCH])
-            or (FCOIS.settingsVars.settings.autoMarkQuality ~= 1 and FCOIS.settingsVars.settings.isIconEnabled[FCOIS.settingsVars.settings.autoMarkQualityIconNr])
-            or (isRecipeAddonActive and FCOIS.settingsVars.settings.autoMarkRecipes == true and FCOIS.settingsVars.settings.isIconEnabled[FCOIS.settingsVars.settings.autoMarkRecipesIconNr])
-            or (isRecipeAddonActive and FCOIS.settingsVars.settings.autoMarkKnownRecipes == true and FCOIS.settingsVars.settings.isIconEnabled[FCOIS_CON_ICON_SELL_AT_GUILDSTORE])
-            or (FCOIS.settingsVars.settings.autoMarkSets == true and FCOIS.settingsVars.settings.isIconEnabled[FCOIS.settingsVars.settings.autoMarkSetsIconNr])
-            or ((DetailedResearchScrolls ~= nil and DetailedResearchScrolls.GetWarningLine ~= nil) and FCOIS.settingsVars.settings.autoMarkWastedResearchScrolls == true and FCOIS.settingsVars.settings.isIconEnabled[FCOIS_CON_ICON_LOCK])
+               (settings.autoMarkOrnate == true and settings.isIconEnabled[FCOIS_CON_ICON_SELL])
+            or (settings.autoMarkIntricate == true and settings.isIconEnabled[FCOIS_CON_ICON_INTRICATE])
+            or (isResearchAddonActive and settings.autoMarkResearch == true )
+            or (settings.autoMarkQuality ~= 1 and settings.isIconEnabled[settings.autoMarkQualityIconNr])
+            or (isRecipeAddonActive and settings.autoMarkRecipes == true and settings.isIconEnabled[settings.autoMarkRecipesIconNr])
+            or (isRecipeAddonActive and settings.autoMarkKnownRecipes == true and settings.isIconEnabled[FCOIS_CON_ICON_SELL_AT_GUILDSTORE])
+            or (settings.autoMarkSets == true and settings.isIconEnabled[settings.autoMarkSetsIconNr])
+            or (isResearchScrollsAddonActive and settings.autoMarkWastedResearchScrolls == true)
             ) and FCOIS.preventerVars.gScanningInv == false
     if isCheckNecessary then
 
         -- Scan the whole inventory because no bagId and slotIndex are given
         if p_bagId == nil or p_slotIndex == nil then
 --d("[ScanInventory] Start ALL")
-            if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[ScanInventory] Start ALL", false, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
-
+            if settings.debug then FCOIS.debugMessage( "[ScanInventory] Start ALL", false, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
             --Check a whole inventory?
             local bagToCheck = p_bagId or BAG_BACKPACK
             --d("[FCOIS]--> Scan whole inventory, bag: " .. tostring(bagToCheck))
@@ -1176,7 +1271,7 @@ function FCOIS.scanInventory(p_bagId, p_slotIndex)
                 updateInvLoop = scanInventorySingle(data.bagId, data.slotIndex)
                 if not updateInv then updateInv = updateInvLoop end
             end
-            if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[ScanInventory] End ALL", false, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+            if settings.debug then FCOIS.debugMessage( "[ScanInventory] End ALL", false, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
 --d("[ScanInventory] END ALL")
 
         else
@@ -1278,6 +1373,5 @@ function FCOIS.scanInventoriesForZOsLockedItems(allInventories, houseBankBagId)
     if atLeastOneZOsMarkedFound == true then
         FCOIS.FilterBasics(true)
     end
-
     if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[scanInventoriesForZOsLockedItems] End, allInventories: " ..tostring(allInventories), false) end
 end

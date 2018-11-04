@@ -18,7 +18,7 @@ end
 --Check if another addon name is found and thus active
 function FCOIS.checkIfOtherAddonActive(addOnName)
     --Check if addon "Research Assistant" is active
-    if(addOnName == "ResearchAssistant") then
+    if(addOnName == "ResearchAssistant" or ResearchAssistant) then
         FCOIS.otherAddons.researchAssistantActive = true
     end
     --Check if addon "InventoryGridView" is active
@@ -957,6 +957,13 @@ end
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
+--Function to return the ID of the recipe addon used
+function FCOIS.getRecipeAddonUsed()
+    local settings = FCOIS.settingsVars.settings
+    local recipeAddonUsed = settings.recipeAddonUsed or 0
+    return recipeAddonUsed
+end
+
 --Function to check which recipe addon handles the checks (enabled within the FCOIS settings)
 function FCOIS.checkIfRecipeAddonUsed()
     local retVar = false
@@ -965,12 +972,6 @@ function FCOIS.checkIfRecipeAddonUsed()
         retVar = true
     end
     return retVar
-end
-
---Function to return the name of the recipe addon used
-function FCOIS.getRecipeAddonUsed()
-    local recipeAddonUsed = FCOIS.settingsVars.settings.recipeAddonUsed or 0
-    return recipeAddonUsed
 end
 
 --Function to check if the recipe addon is loaded
@@ -983,6 +984,52 @@ function FCOIS.checkIfChosenRecipeAddonActive(recipeAddonId)
         retVar = (FCOIS.otherAddons.sousChefActive and SousChef.settings.showAltKnowledge) or false
     elseif recipeAddonId == FCOIS_RECIPE_ADDON_CSFAI then
         retVar = (FCOIS.otherAddons.craftStoreFixedAndImprovedActive and CraftStoreFixedAndImprovedLongClassName ~= nil and CraftStoreFixedAndImprovedLongClassName.IsLearnable ~= nil) or false
+    end
+    return retVar
+end
+
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+-- Research check addons: ESO standard, CraftStoreFixedAndImproved, ResearchAssistant
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+--Function to return the ID of the research addon used
+function FCOIS.getResearchAddonUsed()
+    local settings = FCOIS.settingsVars.settings
+    local researchAddonUsed = settings.researchAddonUsed or 0
+    return researchAddonUsed
+end
+
+--Function to check which research addon handles the checks (enabled within the FCOIS settings)
+function FCOIS.checkIfResearchAddonUsed()
+    local retVar = false
+    --Is the ESO standard setting chosen, then we do not need any additional addon enabled.
+    local researchAddonId = FCOIS.getResearchAddonUsed()
+    if researchAddonId == FCOIS_RESEARCH_ADDON_ESO_STANDARD then
+        retVar = true
+    else
+        if (FCOIS.otherAddons.researchAssistantActive)
+            or (FCOIS.otherAddons.craftStoreFixedAndImprovedActive and CraftStoreFixedAndImprovedLongClassName ~= nil and CraftStoreFixedAndImprovedLongClassName.IsResearchable ~= nil) then
+            retVar = true
+        end
+    end
+    return retVar
+end
+
+--Function to check if the research addon is loaded
+function FCOIS.checkIfChosenResearchAddonActive(researchAddonId)
+    if researchAddonId == nil then researchAddonId = FCOIS.getResearchAddonUsed() end
+    if researchAddonId == 0 then return false end
+    local retVar = false
+
+    if researchAddonId == FCOIS_RESEARCH_ADDON_ESO_STANDARD then
+        retVar = true
+    elseif researchAddonId == FCOIS_RESEARCH_ADDON_CSFAI then
+        retVar = (FCOIS.otherAddons.craftStoreFixedAndImprovedActive and CraftStoreFixedAndImprovedLongClassName ~= nil and CraftStoreFixedAndImprovedLongClassName.IsResearchable ~= nil) or false
+    elseif researchAddonId == FCOIS_RESEARCH_ADDON_RESEARCHASSISTANT then
+        retVar = FCOIS.otherAddons.researchAssistantActive or false
     end
     return retVar
 end

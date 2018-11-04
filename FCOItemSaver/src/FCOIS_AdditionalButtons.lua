@@ -248,7 +248,7 @@ function FCOIS.AddAdditionalButtons(buttonName, buttonData)
             FCOIS.reAnchorAdditionalInvButtons(false)
             --Add all additional inventory flag buttons
             local addInvBtnInvokers = FCOIS.contextMenuVars.filterPanelIdToContextMenuButtonInvoker
-            for panelId, buttonDataTab in pairs(addInvBtnInvokers) do
+            for _, buttonDataTab in pairs(addInvBtnInvokers) do
                 if buttonDataTab ~= nil and buttonDataTab.addInvButton and buttonDataTab.name ~= nil and buttonDataTab.name ~= "" then
                     FCOIS.AddAdditionalButtons(nil, buttonDataTab)
                 end

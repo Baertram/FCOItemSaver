@@ -278,7 +278,7 @@ function FCOIS.GetBagAndSlotFromControlUnderMouse()
                 bagId, slotIndex = FCOIS.MyGetItemDetails(moc)
             end
         end
-        --if it's a backpack row or child of one -> Since API 1000015
+    --if it's a backpack row or child of one -> Since API 1000015
     elseif moc:GetName():find("^ZO_%a+InventoryList%dRow%d%d*") then
         if moc:GetName():find("^ZO_%a+InventoryList%dRow%d%d*$") then
             bagId, slotIndex = FCOIS.MyGetItemDetails(moc)
@@ -288,7 +288,7 @@ function FCOIS.GetBagAndSlotFromControlUnderMouse()
                 bagId, slotIndex = FCOIS.MyGetItemDetails(moc)
             end
         end
-        --CRAFTBAG: if it's a backpack row or child of one -> Since API 1000015
+    --CRAFTBAG: if it's a backpack row or child of one -> Since API 1000015
     elseif moc:GetName():find("^ZO_CraftBagList%dRow%d%d*") then
         if moc:GetName():find("^ZO_CraftBagList%dRow%d%d*$") then
             bagId, slotIndex = FCOIS.MyGetItemDetails(moc)
@@ -298,13 +298,13 @@ function FCOIS.GetBagAndSlotFromControlUnderMouse()
                 bagId, slotIndex = FCOIS.MyGetItemDetails(moc)
             end
         end
-        --Character
+    --Character
     elseif moc:GetName():find("^ZO_CharacterEquipmentSlots.+$") then
         bagId, slotIndex = FCOIS.MyGetItemDetails(moc)
-        --Quickslot
+    --Quickslot
     elseif moc:GetName():find("^ZO_QuickSlotList%dRow%d%d*") then
         bagId, slotIndex = FCOIS.MyGetItemDetails(moc)
-        --Vendor rebuy
+    --Vendor rebuy
     elseif moc:GetName():find("^ZO_RepairWindowList%dRow%d%d*") then
         bagId, slotIndex = FCOIS.MyGetItemDetails(moc)
     --IIfA support
@@ -623,6 +623,26 @@ function FCOIS.isRecipeKnown(bagId, slotIndex, expectedResult)
     return nil
 end
 
+--Check if the recipe addon chosen is active, the marker icon too and the setting to automark it is enabled
+function FCOIS.isRecipeAutoMarkDoable(checkIfSettingToAutoMarkIsEnabled, sellAtGuildStoreCheck)
+    checkIfSettingToAutoMarkIsEnabled = checkIfSettingToAutoMarkIsEnabled or false
+    sellAtGuildStoreCheck = sellAtGuildStoreCheck or false
+    local settings = FCOIS.settingsVars.settings
+    local retVar = false
+    local iconCheck
+    if sellAtGuildStoreCheck then
+        iconCheck = settings.isIconEnabled[FCOIS_CON_ICON_SELL_AT_GUILDSTORE]
+    else
+        iconCheck = settings.isIconEnabled[settings.autoMarkRecipesIconNr]
+    end
+    local isRecipeAutoMarkPrerequisites = (FCOIS.checkIfRecipeAddonUsed() and FCOIS.checkIfChosenRecipeAddonActive(settings.recipeAddonUsed)
+        and iconCheck) or false
+    if checkIfSettingToAutoMarkIsEnabled then
+        retVar = isRecipeAutoMarkPrerequisites and settings.autoMarkRecipes
+    end
+    return retVar
+end
+
 --Is the item a set part?
 function FCOIS.isItemSetPartNoControl(bagId, slotIndex)
     local retVal = false
@@ -729,7 +749,8 @@ end
 local function isResearchableItemTypeCheck(itemType, markId)
     local retVal = false
     local allowedTab = {}
-    allowedTab = FCOIS.checkVars.allowedResearchableItemTypes[itemType]
+    local checkVars = FCOIS.checkVars
+    allowedTab = checkVars.allowedResearchableItemTypes[itemType]
     if allowedTab == nil then return false end
     if markId == nil then
         retVal = allowedTab.allowed and not allowedTab.isGlpyh
@@ -756,7 +777,8 @@ function FCOIS.isItemLinkResearchable(itemLink, markId)
     --Check if the item is virtually researchable as the settings is enabled to allow marking of non researchable items as gear/dynamic
     markId = markId or nil
     if markId ~= nil then
-        retVal = FCOIS.settingsVars.settings.disableResearchCheck[markId] or false
+        local settings = FCOIS.settingsVars.settings
+        retVal = settings.disableResearchCheck[markId] or false
     end
     if retVal == false then
         local itemType = GetItemLinkItemType(itemLink)
@@ -774,7 +796,8 @@ function FCOIS.isItemResearchableNoControl(bagId, slotIndex, markId)
     --Check if the item is virtually researchable as the settings is enabled to allow marking of non researchable items as gear/dynamic
     markId = markId or nil
     if markId ~= nil then
-        retVal = FCOIS.settingsVars.settings.disableResearchCheck[markId] or false
+        local settings = FCOIS.settingsVars.settings
+        retVal = settings.disableResearchCheck[markId] or false
     end
     if retVal == false then
         local itemType = GetItemType(bagId, slotIndex)
@@ -943,6 +966,33 @@ end
 --======================================================================================================================
 -- Get functions
 --======================================================================================================================
+--Get the type of the vendor used currently.
+-- "Normal"     = NPC vendor
+-- "Nuzhimeh"   = The mobile vendor you can buy in the crown store, called Nuzhimeh
+function FCOIS.GetCurrentVendorType(vendorPanelIsShown)
+    vendorPanelIsShown = vendorPanelIsShown or false
+    local isVendorPanelShown = FCOIS.IsVendorPanelShown(nil, vendorPanelIsShown)
+    if not isVendorPanelShown then
+--d("[FCOIS]GetCurrentVendorType: No vendor panel shown. >Abort!")
+        return "" end
+    local retVar = ""
+    local vendorButtonCount = 2
+    --Are we able to buy something in this store?
+    if not IsStoreEmpty() then vendorButtonCount = vendorButtonCount +1 end
+    --Are we able to repair something in this store?
+    if CanStoreRepair() then vendorButtonCount = vendorButtonCount +1 end
+    --Are there 4 buttons at the vendor menu bar?
+    if vendorButtonCount == 4 then
+        retVar = "Normal"
+    --Are there only 3 buttons at the vendor menu bar?
+    elseif vendorButtonCount == 3 then
+        retVar = "Nuzhimeh"
+    --Are there only 2 buttons at the vendor menu bar?
+    elseif vendorButtonCount == 2 then
+        retVar = "Nuzhimeh"
+    end
+    return retVar, vendorButtonCount
+end
 
 --Function to get the filter panel for the undo methods (SHIFT+right mouse on items)
 function FCOIS.getUndoFilterPanel()
@@ -1191,6 +1241,47 @@ function FCOIS.IsAlchemyPanelCreationShown()
         end
     end
     --d("<result: " .. tostring(retVar))
+    return retVar
+end
+
+--Check if any of the vendor panels (buy, sell, buyback, repair) are shown
+function FCOIS.IsVendorPanelShown(vendorPanelId, overwrite)
+    overwrite = overwrite or false
+--d("FCOIS.IsVendorPanelShown, vendorPanelId: " .. tostring(vendorPanelId) .. ", overwrite: " .. tostring(overwrite))
+    if overwrite then return true end
+    --Check the scene name if it is the "vendor" scene
+    local currentSceneName = SCENE_MANAGER.currentScene.name
+    if currentSceneName == nil or currentSceneName ~= ctrlVars.vendorSceneName then
+--d("<1, sceneName: " ..tostring(currentSceneName))
+        return false end
+    local vendorLibFilterIds = FCOIS.mappingVars.supportedVendorPanels
+    local isVendorPanelChecked = false
+    if vendorPanelId ~= nil then
+        isVendorPanelChecked = vendorLibFilterIds[vendorPanelId] or false
+        if not isVendorPanelChecked then return false end
+    end
+    local retVar = false
+    if vendorPanelId ~= nil then
+        --Vendor Buy
+        if vendorPanelId ==     LF_VENDOR_BUY then
+            retVar = not ctrlVars.STORE:IsHidden() or false
+        --Vendor Sell (PlayerInventory or CraftBag are shown and all other vendor panels are hidden)
+        elseif vendorPanelId == LF_VENDOR_SELL then
+            retVar = ((ctrlVars.STORE:IsHidden() and ctrlVars.STORE_BUY_BACK:IsHidden() and ctrlVars.REPAIR_LIST:IsHidden()) and (not ctrlVars.BACKPACK_BAG:IsHidden() or not ctrlVars.CRAFTBAG_BAG:IsHidden())) or false
+        --Vendor Buyback
+        elseif vendorPanelId == LF_VENDOR_BUYBACK then
+            retVar = not ctrlVars.STORE_BUY_BACK:IsHidden() or false
+        --Vendor Repair
+        elseif vendorPanelId == LF_VENDOR_REPAIR then
+            retVar = not ctrlVars.REPAIR_LIST:IsHidden() or false
+        end
+    else
+--d("2")
+        --Check each panel
+        retVar = ((not ctrlVars.STORE:IsHidden() or not ctrlVars.VENDOR_SELL:IsHidden() or not ctrlVars.STORE_BUY_BACK:IsHidden() or not ctrlVars.REPAIR_LIST:IsHidden())
+                  or (not ctrlVars.BACKPACK_BAG:IsHidden() or not ctrlVars.CRAFTBAG_BAG:IsHidden())) or false
+    end
+--d("<retVar: " ..tostring(retVar))
     return retVar
 end
 

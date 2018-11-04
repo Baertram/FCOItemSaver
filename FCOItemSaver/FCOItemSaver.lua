@@ -34,8 +34,8 @@ FCOIS.LMM2:Init()
 --===================== ADDON Info =============================================
 --Addon variables
 FCOIS.addonVars = {}
-FCOIS.addonVars.addonVersionOptions 		= '1.4.0' -- version shown in the settings panel
-FCOIS.addonVars.addonVersionOptionsNumber	= 1.40
+FCOIS.addonVars.addonVersionOptions 		= '1.4.3' -- version shown in the settings panel
+FCOIS.addonVars.addonVersionOptionsNumber	= 1.43
 FCOIS.addonVars.gAddonName					= "FCOItemSaver"
 FCOIS.addonVars.addonNameMenu				= "FCO ItemSaver"
 FCOIS.addonVars.addonNameMenuDisplay		= "|c00FF00FCO |cFFFF00ItemSaver|r"
@@ -54,6 +54,7 @@ FCOIS.addonVars.gSettingsLoaded				= false
 -- =====================================================================================================================
 --  Addon initialization
 -- =====================================================================================================================
+FCOIS.currentlyLoggedInCharName = ""
 
 -- Register the event "addon loaded" for this addon
 local function FCOItemSaver_Initialized()
