@@ -4260,6 +4260,18 @@ function FCOIS.BuildAddonMenu()
 			            width = "full",
                         default = FCOISdefaultSettings.autoMarkPreventIfMarkedForSell,
 					},
+                    -- Sell at guild store
+                    {
+                        type = "checkbox",
+                        name = locVars["options_prevent_auto_marking_sell_guild_store"],
+                        tooltip = locVars["options_prevent_auto_marking_sell_guild_store_TT"],
+                        getFunc = function() return FCOISsettings.autoMarkPreventIfMarkedForSellAtGuildStore end,
+                        setFunc = function(value)
+                            FCOISsettings.autoMarkPreventIfMarkedForSellAtGuildStore = value
+                        end,
+                        width = "full",
+                        default = FCOISdefaultSettings.autoMarkPreventIfMarkedForSellAtGuildStore,
+                    },
 					-- Deconstruction
 					{
 						type = "checkbox",

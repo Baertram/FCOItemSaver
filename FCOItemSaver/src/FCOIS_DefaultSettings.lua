@@ -281,6 +281,7 @@ function FCOIS.buildDefaultSettings()
 		-- Added with FCOIS v1.5.2. Value of addonFCOISChangedDynIconMaxUsableSlider = nil to assure checks in file src/FCOIS_Settings.lua, function afterSettings()!
 		numMaxDynamicIconsUsable = 10,
 		addonFCOISChangedDynIconMaxUsableSlider = nil, --Set the value of settings.addonFCOISChangedDynIconMaxUsableSlider to nil to repeat checks after addon updates in file src/FCOIS_Settings.lua, function afterSettings()!
+		autoMarkPreventIfMarkedForSellAtGuildStore = false,
     }
     --Local constant values for speed-up
     local numLibFiltersFilterPanelIds   = FCOIS.numVars.gFCONumFilterInventoryTypes

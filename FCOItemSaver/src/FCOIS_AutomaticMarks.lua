@@ -46,6 +46,11 @@ local function checkIfCanBeAutomaticallyMarked(bagId, slotIndex, itemId, checkTy
                     --d(">> Sell item is marked and no others are allowed!")
                     retVar = false
                     break -- end the loop
+                --Do not automatically mark items if they got the sell in guild store icon on them?
+                elseif iconId == FCOIS_CON_ICON_SELL_AT_GUILDSTORE and settings.autoMarkPreventIfMarkedForSellAtGuildStore then
+                    --d(">> Sell item at guild store is marked and no others are allowed!")
+                    retVar = false
+                    break -- end the loop
                 end
             end
         end
