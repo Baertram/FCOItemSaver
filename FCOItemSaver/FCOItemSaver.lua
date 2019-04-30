@@ -22,9 +22,6 @@
 -- 4) 2019-04-10 - Feature -  Baertram
 -- Add settings to mark recipes to be sold (not at guild store) if known
 
--- 5) 2019-04-25 - Feature -  Baertram
--- Add settings to dynamic icons to automatically unmark all other marker icons, if this dynamic icon is set
-
 
 ------------------------------------------------------------------
 --FCOItemSaver.lua

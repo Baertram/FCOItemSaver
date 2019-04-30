@@ -4060,7 +4060,7 @@ function FCOIS.BuildAddonMenu()
 
                                 end,
                                 --disabled = function() return not FCOISsettings.autoMarkRecipes end,
-                                width = "half",
+                                width = "full",
                                 default = FCOISdefaultSettings.recipeAddonUsed,
                             },
 							{
@@ -4074,7 +4074,7 @@ function FCOIS.BuildAddonMenu()
 					                	FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "recipes", false)
 					                end
 					            end,
-					            disabled = function() return not FCOIS.isRecipeAutoMarkDoable() end,
+					            disabled = function() return not FCOIS.isRecipeAutoMarkDoable(false, false, false) end,
 					            warning = locVars["options_enable_auto_mark_recipes_hint"],
 					            width = "half",
                                 default = FCOISdefaultSettings.autoMarkRecipes,
@@ -4092,7 +4092,7 @@ function FCOIS.BuildAddonMenu()
                                     FCOISsettings.autoMarkRecipesIconNr = value
 					            end,
 					            reference = "FCOItemSaver_Icon_On_Automatic_Recipe_Dropdown",
-					            disabled = function() return not FCOIS.isRecipeAutoMarkDoable(true) end,
+					            disabled = function() return not FCOIS.isRecipeAutoMarkDoable(true, false, false) end,
 			                    width = "half",
                                 default = iconsList[FCOISdefaultSettings.autoMarkRecipesIconNr],
 							},
@@ -4107,26 +4107,43 @@ function FCOIS.BuildAddonMenu()
 					                	FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "recipes", false)
 					                end
 					            end,
-					            disabled = function() return not FCOIS.isRecipeAutoMarkDoable() end,
-					            width = "half",
+					            disabled = function() return not FCOIS.isRecipeAutoMarkDoable(false, false, false) end,
+					            width = "full",
                                 default = FCOISdefaultSettings.autoMarkRecipesOnlyThisChar,
 							},
-							{
-								type = "checkbox",
-								name = locVars["options_enable_auto_mark_known_recipes"],
-								tooltip = locVars["options_enable_auto_mark_known_recipes_TT"],
-								getFunc = function() return FCOISsettings.autoMarkKnownRecipes end,
-								setFunc = function(value)
-					            	FCOISsettings.autoMarkKnownRecipes = value
-					                if (FCOISsettings.autoMarkKnownRecipes == true and FCOIS.checkIfRecipeAddonUsed()) then
-					                	FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "knownRecipes", false)
-					                end
-					            end,
-					            disabled = function() return not FCOIS.isRecipeAutoMarkDoable(false, true) end,
-					            warning = locVars["options_enable_auto_mark_recipes_hint"],
-					            width = "half",
+                            {
+                                type = "checkbox",
+                                name = locVars["options_enable_auto_mark_known_recipes"],
+                                tooltip = locVars["options_enable_auto_mark_known_recipes_TT"],
+                                getFunc = function() return FCOISsettings.autoMarkKnownRecipes end,
+                                setFunc = function(value)
+                                    FCOISsettings.autoMarkKnownRecipes = value
+                                    if (FCOISsettings.autoMarkKnownRecipes == true and FCOIS.checkIfRecipeAddonUsed()) then
+                                        FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "knownRecipes", false)
+                                    end
+                                end,
+                                disabled = function() return not FCOIS.isRecipeAutoMarkDoable(false, false, false) end,
+                                warning = locVars["options_enable_auto_mark_recipes_hint"],
+                                width = "half",
                                 default = FCOISdefaultSettings.autoMarkKnownRecipes,
-							},
+                            },
+                            {
+                                type = 'dropdown',
+                                name = locVars["options_enable_auto_mark_known_recipes"],
+                                tooltip = locVars["options_enable_auto_mark_known_recipes_TT"],
+                                choices = iconsList,
+                                choicesValues = iconsListValues,
+                                scrollable = true,
+                                getFunc = function() return FCOISsettings.autoMarkKnownRecipesIconNr
+                                end,
+                                setFunc = function(value)
+                                    FCOISsettings.autoMarkKnownRecipesIconNr = value
+                                end,
+                                reference = "FCOItemSaver_Icon_On_Automatic_Known_Recipe_Dropdown",
+                                disabled = function() return not FCOISsettings.autoMarkKnownRecipes or not FCOIS.isRecipeAutoMarkDoable(false, false, false) end,
+                                width = "half",
+                                default = iconsList[FCOISdefaultSettings.autoMarkKnownRecipesIconNr],
+                            },
 							{
 								type = "checkbox",
 								name = locVars["options_enable_auto_mark_recipes_in_chat"],
@@ -4135,7 +4152,7 @@ function FCOIS.BuildAddonMenu()
 								setFunc = function(value)
 					            	FCOISsettings.showRecipesInChat = value
 					            end,
-					            disabled = function() return not FCOIS.isRecipeAutoMarkDoable(true) end,
+					            disabled = function() return not FCOIS.isRecipeAutoMarkDoable(true, true, false) end,
 					            warning = locVars["options_enable_auto_mark_recipes_hint"],
 					            width = "half",
                                 default = FCOISdefaultSettings.showRecipesInChat,

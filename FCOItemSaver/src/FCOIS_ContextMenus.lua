@@ -2028,7 +2028,8 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
         ["ornate"]          = {allowed = true, icon = FCOIS_CON_ICON_SELL},
         ["research"]        = {allowed = true, icon = FCOIS_CON_ICON_RESEARCH},
         ["researchScrolls"] = {allowed = true, icon = FCOIS_CON_ICON_LOCK},
-        ["recipes"]         = {allowed = true, icon = FCOIS_CON_ICON_SELL_AT_GUILDSTORE},
+        ["recipes"]         = {allowed = true, icon = settings.autoMarkRecipesIconNr},
+        ["knownRecipes"]    = {allowed = true, icon = settings.autoMarkKnownRecipesIconNr},
         ["sets"]            = {allowed = true, icon = settings.autoMarkSetsIconNr},
     }
 
@@ -2250,7 +2251,6 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                                 elseif doMark == nil and specialButtonType ~= nil then
                                     local checksWereDoneLoop, atLeastOneMarkerChangedLoop = false, false
                                     checksWereDoneLoop, atLeastOneMarkerChangedLoop = FCOIS.scanInventoryItemsForAutomaticMarks(bagId, slotIndex, specialButtonType, true)
---d(">>checksWereDoneLoop: " .. tostring(checksWereDoneLoop) .. ", atLeastOneMarkerChangedLoop: " ..tostring(atLeastOneMarkerChangedLoop))
                                     --Old value:
                                     undoEntry.marked = not atLeastOneMarkerChangedLoop
                                     markerChangedAtBagAndSlot = atLeastOneMarkerChangedLoop
@@ -2788,11 +2788,18 @@ function FCOIS.showContextMenuForAddInvButtons(invAddContextMenuInvokerButton)
             disabled	= function() return not settings.autoMarkSets or not settings.isIconEnabled[settings.autoMarkSetsIconNr] end,
         }
         table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
-        --Recipes
+        --Unknown recipes
         subMenuEntryAutomaticMarking = {
-            label 		= GetString(SI_ITEMTYPE29),
+            label 		= GetString(SI_ITEM_FORMAT_STR_UNKNOWN_RECIPE),
             callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "recipes") end,
             disabled	= function() return not settings.autoMarkRecipes or not FCOIS.checkIfRecipeAddonUsed() or not settings.isIconEnabled[settings.autoMarkRecipesIconNr] end,
+        }
+        table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
+        --Known recipes
+        subMenuEntryAutomaticMarking = {
+            label 		= zo_strformat(GetString(SI_ITEM_FORMAT_STR_KNOWN_ITEM_TYPE), GetString(SI_ITEMTYPE29)),
+            callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "knownRecipes") end,
+            disabled	= function() return not settings.autoMarkKnownRecipes or not FCOIS.checkIfRecipeAddonUsed() or not settings.isIconEnabled[settings.autoMarkKnownRecipesIconNr] end,
         }
         table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
         --Quality

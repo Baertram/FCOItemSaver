@@ -542,7 +542,8 @@ function FCOIS.isSoulGem(bagId, slotIndex)
     return isSoulGem
 end
 
---Is the item a recipe and is it known by one of your chars?
+--Is the item a recipe and is it known by one of your chars? Boolean expectedResult will give the
+--true (known recipe) or false (unknown recipe) parameter
 function FCOIS.isRecipeKnown(bagId, slotIndex, expectedResult)
     expectedResult = expectedResult or false
     --Check if any recipe addon is used and available
@@ -636,7 +637,6 @@ function FCOIS.isRecipeKnown(bagId, slotIndex, expectedResult)
                                         end
                                     end
                                 end
-
                             --Row in the table is for the currently logged in char
                             else
                                 knownLoop = not knownDataOfChar[2]
@@ -666,21 +666,30 @@ function FCOIS.isRecipeKnown(bagId, slotIndex, expectedResult)
 end
 
 --Check if the recipe addon chosen is active, the marker icon too and the setting to automark it is enabled
-function FCOIS.isRecipeAutoMarkDoable(checkIfSettingToAutoMarkIsEnabled, sellAtGuildStoreCheck)
+function FCOIS.isRecipeAutoMarkDoable(checkIfSettingToAutoMarkIsEnabled, knownRecipesIconCheck, doIconCheck)
     checkIfSettingToAutoMarkIsEnabled = checkIfSettingToAutoMarkIsEnabled or false
-    sellAtGuildStoreCheck = sellAtGuildStoreCheck or false
+    knownRecipesIconCheck = knownRecipesIconCheck or false
+    doIconCheck = doIconCheck or false
     local settings = FCOIS.settingsVars.settings
     local retVar = false
     local iconCheck
-    if sellAtGuildStoreCheck then
-        iconCheck = settings.isIconEnabled[FCOIS_CON_ICON_SELL_AT_GUILDSTORE]
-    else
-        iconCheck = settings.isIconEnabled[settings.autoMarkRecipesIconNr]
+    if doIconCheck then
+        if knownRecipesIconCheck then
+            iconCheck = settings.isIconEnabled[settings.autoMarkKnownRecipesIconNr]
+        else
+            iconCheck = settings.isIconEnabled[settings.autoMarkRecipesIconNr]
+        end
     end
-    local isRecipeAutoMarkPrerequisites = (FCOIS.checkIfRecipeAddonUsed() and FCOIS.checkIfChosenRecipeAddonActive(settings.recipeAddonUsed)
-        and iconCheck) or false
-    if checkIfSettingToAutoMarkIsEnabled then
+    local isRecipeAutoMarkPrerequisites = (FCOIS.checkIfRecipeAddonUsed() and FCOIS.checkIfChosenRecipeAddonActive(settings.recipeAddonUsed)) or false
+    if doIconCheck and isRecipeAutoMarkPrerequisites then
+        isRecipeAutoMarkPrerequisites = (isRecipeAutoMarkPrerequisites and iconCheck) or false
+    end
+    if checkIfSettingToAutoMarkIsEnabled and knownRecipesIconCheck then
+        retVar = isRecipeAutoMarkPrerequisites and (settings.autoMarkRecipes or settings.autoMarkKnownRecipes)
+    elseif checkIfSettingToAutoMarkIsEnabled and not knownRecipesIconCheck then
         retVar = isRecipeAutoMarkPrerequisites and settings.autoMarkRecipes
+    elseif not checkIfSettingToAutoMarkIsEnabled and knownRecipesIconCheck then
+        retVar = isRecipeAutoMarkPrerequisites and settings.autoMarkKnownRecipes
     else
         retVar = isRecipeAutoMarkPrerequisites
     end
