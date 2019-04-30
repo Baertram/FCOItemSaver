@@ -1,4 +1,32 @@
 ------------------------------------------------------------------
+-- [Error messages to check] --
+---------------------------------------------------------------------
+--[ToDo list] --
+-- 1) 2019-01-14 - Bugfix - Baertram
+--Right clicking an item to show the context menu, and then left clicking somewhere else does not close the context menu on first click, but on 2nd click
+--> Bug within LibCustomMenu -> >To be fixed by Votan?
+
+-- 2) 2019-03-11 - Bugfix - Baertram
+--Todo: IIfA UI: Set FCOIS marker icons by keybind for items without bagId and slotIndex (non-logged in chars!), by help of the itemLink and itemInstanceOrUniqueIdIIfA
+--> See file src/FCOIS_functions.lua, function FCOIS.GetBagAndSlotFromControlUnderMouse(), at --IIfA support
+--> marking via bagId and slotIndex does work BUT the list of IIfA is not refreshed until scrolling! SO this needs a fix as well.
+
+-- 3) 2019-04-10 - Bugfix -  Reported by Kyoma on gitter.im
+--Kyoma: Go to bank withdraw tab and use the keybind to mark with lock icon, then use keybind again to demark it.
+--> Will produce an called by insecure code.
+--> Why?
+--Votan: item saver does ZO_PreHook("ZO_InventorySlot_ShowContextMenu",
+-- Recomment to use libCustomMenu RegisterContextMenu
+-- Should be a following error
+
+-- 4) 2019-04-10 - Feature -  Baertram
+-- Add settings to mark recipes to be sold (not at guild store) if known
+
+-- 5) 2019-04-25 - Feature -  Baertram
+-- Add settings to dynamic icons to automatically unmark all other marker icons, if this dynamic icon is set
+
+
+------------------------------------------------------------------
 --FCOItemSaver.lua
 --Author: Baertram
 ----------------------------------------------------------
@@ -34,8 +62,8 @@ FCOIS.LMM2:Init()
 --===================== ADDON Info =============================================
 --Addon variables
 FCOIS.addonVars = {}
-FCOIS.addonVars.addonVersionOptions 		= '1.4.3' -- version shown in the settings panel
-FCOIS.addonVars.addonVersionOptionsNumber	= 1.43
+FCOIS.addonVars.addonVersionOptions 		= '1.5.2' -- version shown in the settings panel
+FCOIS.addonVars.addonVersionOptionsNumber	= 1.52
 FCOIS.addonVars.gAddonName					= "FCOItemSaver"
 FCOIS.addonVars.addonNameMenu				= "FCO ItemSaver"
 FCOIS.addonVars.addonNameMenuDisplay		= "|c00FF00FCO |cFFFF00ItemSaver|r"
@@ -44,8 +72,10 @@ FCOIS.addonVars.addonAuthorDisplayNameEU  	= '@Baertram'
 FCOIS.addonVars.addonAuthorDisplayNameNA  	= '@Baertram'
 FCOIS.addonVars.addonAuthorDisplayNamePTS  	= '@Baertram'
 FCOIS.addonVars.website 					= "https://www.esoui.com/downloads/info630-FCOItemSaver.html"
-FCOIS.addonVars.FAQwebsite                  = "http://www.esoui.com/portal.php?id=136&a=faq"
-FCOIS.addonVars.authorPortal                = "http://www.esoui.com/portal.php?&id=136"
+FCOIS.addonVars.FAQwebsite                  = "https://www.esoui.com/portal.php?id=136&a=faq"
+FCOIS.addonVars.authorPortal                = "https://www.esoui.com/portal.php?&id=136"
+FCOIS.addonVars.feedback                    = "https://www.esoui.com/portal.php?id=136&a=bugreport"
+FCOIS.addonVars.donation                    = "https://www.esoui.com/portal.php?id=136&a=faq&faqid=131"
 FCOIS.addonVars.savedVarVersion		   		= 0.10 -- Changing this will reset all SavedVariables!
 FCOIS.addonVars.gAddonLoaded				= false
 FCOIS.addonVars.gPlayerActivated			= false

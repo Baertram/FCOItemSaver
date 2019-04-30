@@ -1,16 +1,17 @@
 ##
 ## Title: |c00FF00FCO |cFFFF00ItemSaver|r
 ## Author: Baertram
-## Version: 1.4.3
-## APIVersion: 100025 100026
-## AddOnVersion: 143
+## Version: 1.5.2
+## AddOnVersion: 152
+## APIVersion: 100026 100027
 ## Description: Mark/demark your inventory items with different icons and filter them in inventories, during trading, banks, guild store, mail, enchanting, crafting, researching and stores. Save your marked items before destroying/deconstructing/researching/selling/sending/trading/using or equipping/binding them!
 ## SavedVariables: FCOItemSaver_Settings
-## DependsOn: LibStub LibFilters-2.0 LibAddonMenu-2.0 LibLoadedAddons LibDialog LibFeedback LibCustomMenu LibMainMenu-2.0
-## OptionalDependsOn: ResearchAssistant SousChef VotansSettingsMenu PotionMaker CraftedPotions ChatMerchant InventoryGridView CraftBagExtended SetTracker AdvancedDisableControllerUI DetailedResearchScrolls DolgubonsLazyWritCreator QualitySort
-## FastAPI : 100025 
+## DependsOn: LibFilters-2.0 LibAddonMenu-2.0 LibLoadedAddons LibDialog LibFeedback LibCustomMenu LibMainMenu-2.0
+## OptionalDependsOn: ResearchAssistant SousChef VotansSettingsMenu PotionMaker CraftedPotions ChatMerchant InventoryGridView CraftBagExtended SetTracker AdvancedDisableControllerUI DetailedResearchScrolls DolgubonsLazyWritCreator QualitySort PerfectPixel
+## FastAPI : 100026
 
 ##Known addons with FCOIS function usage:
+##(Check file FCOIS_Constants.lua for local and global constant values
 ##(Check file FCOIS_API.lua for functions to use within your addon)
 ##-----------------------------------------------------------------
 ##BankManagerRevived
@@ -29,9 +30,10 @@
 ##Inventory Assistant
 ##Inventory Insight (from Ashes -> IIfA)
 ##RulebasedInventory
+##AlphaGear 2
 
 ## Addon variables & constants
-src/FCOIS_Constants.lua
+FCOIS_Constants.lua
 
 ## Addon textures
 src/FCOIS_Textures.lua
@@ -73,6 +75,7 @@ src/FCOIS_OtherAddons.lua
 src/FCOIS_AutomaticMarks.lua
 
 ## Addon marker controls & tooltips at inventories/equipment items
+src/FCOIS_Tooltips.lua
 src/FCOIS_MarkerIcons.lua
 
 ## Addon filter buttons in inventories

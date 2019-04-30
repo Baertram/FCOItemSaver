@@ -456,7 +456,7 @@ function FCOIS.otherAddons.SetTracker.updateSetTrackerMarker(bagId, slotIndex, s
     --Check if the item is a set part
     local itemLink = GetItemLink(bagId, slotIndex)
     if itemLink == nil then return false end
-    local bIsSetItem, sSetName, nNumBonuses, nNumEquipped, nMaxEquipped = GetItemLinkSetInfo(itemLink, false)
+    local bIsSetItem, sSetName, _, _, _ = GetItemLinkSetInfo(itemLink, false)
     --Is the item a set item?
     if bIsSetItem and sSetName ~= nil and sSetName ~= "" then
         local iTrackIndex
@@ -516,7 +516,7 @@ function FCOIS.checkLazyWritCreatorCraftedItem()
     local writCreatedItem, craftingType, addonRequester
     if FCOIS.otherAddons.LazyWritCreatorActive and WritCreater ~= nil and FCOIS.settingsVars.settings.autoMarkCraftedWritItems then
         writCreatedItem, craftingType, addonRequester = LibStub("LibLazyCrafting"):IsPerformingCraftProcess() --> returns boolean, type of crafting, addon that requested the craft
-        --    d("[FCOIS]checkLazyWritCreatorCraftedItem - writCreatedItem: " .. tostring(writCreatedItem) .. ", craftingType: " .. tostring(craftingType) .. ", addonRequester: " .. tostring(addonRequester))
+--d("[FCOIS]checkLazyWritCreatorCraftedItem - writCreatedItem: " .. tostring(writCreatedItem) .. ", craftingType: " .. tostring(craftingType) .. ", addonRequester: " .. tostring(addonRequester))
         FCOIS.preventerVars.writCreatorCreatedItem = writCreatedItem and addonRequester == WritCreater.name
     end
     return writCreatedItem, craftingType, addonRequester
@@ -526,7 +526,7 @@ end
 --Parameters: LLC_CRAFT_SUCCESS, station, {["bag"] = BAG_BACKPACK,["slot"] = currentCraftAttempt.slot,["reference"] = currentCraftAttempt.reference}
 function FCOIS.checkIfWritItemShouldBeMarked(craftSuccess, craftSkill, craftData)
     local isMasterWrit = FCOIS.preventerVars.createdMasterWrit or false
-    --d("[FCOIS]checkIfWritItemShouldBeMarked - craftSuccess: " .. tostring(craftSuccess)  .. ", craftSkill: " .. tostring(craftSkill) .. ", bag: " .. tostring(craftData.bag) .. ", slotIndex: " .. tostring(craftData.slot) .. ", reference: " .. tostring(craftData.reference) .. ", isMasterWrit: " ..tostring(isMasterWrit))
+--d("[FCOIS]checkIfWritItemShouldBeMarked - craftSuccess: " .. tostring(craftSuccess)  .. ", craftSkill: " .. tostring(craftSkill) .. ", bag: " .. tostring(craftData.bag) .. ", slotIndex: " .. tostring(craftData.slot) .. ", reference: " .. tostring(craftData.reference) .. ", isMasterWrit: " ..tostring(isMasterWrit))
     --Check if the addon WritCreator is enabled and the settings are enabled to automatically mark writ items
     if not FCOIS.otherAddons.LazyWritCreatorActive or WritCreater == nil or not FCOIS.settingsVars.settings.autoMarkCraftedWritItems or craftSuccess ~= LLC_CRAFT_SUCCESS then return false end
     --Check the needed marker icon and if it's enabled in the settings
@@ -539,7 +539,8 @@ function FCOIS.checkIfWritItemShouldBeMarked(craftSuccess, craftSkill, craftData
     --Get the actual craftskill and overwrite the variable FCOIS.preventerVars.newItemCrafted with true
     --local craftSkill = GetCraftingInteractionType()
     if craftSkill ~= CRAFTING_TYPE_INVALID then
-        --d(">writCreatorIsMasterWrit: Item will be marked now with marker icon " .. tostring(writMarkerIcon))
+        local itemLink = GetItemLink(craftData.bag, craftData.slot)
+--d(">writCreator: Item " .. itemLink .. " will be marked now with marker icon " .. tostring(writMarkerIcon))
         FCOIS.MarkItem(craftData.bag, craftData.slot, writMarkerIcon, true, true)
     end
     FCOIS.preventerVars.createdMasterWrit = nil
@@ -740,7 +741,7 @@ function FCOIS.MyGetItemInstanceIdForIIfA(clickedDataLine, signToo)
             --Loop over the account wide item table and see if any entry exists
             isItemInAccountWideBags = false
             if itemFoundAtLocationTableAccountWide ~= nil then
-                for accountWideBagStr, accountWideBagId in pairs(itemFoundAtLocationTableAccountWide) do
+                for _, _ in pairs(itemFoundAtLocationTableAccountWide) do
                     isItemInAccountWideBags = true
                     break -- exit the loop here
                 end
@@ -757,7 +758,7 @@ function FCOIS.MyGetItemInstanceIdForIIfA(clickedDataLine, signToo)
                         if currentLoggedInCharItemData.bagSlot ~= nil then
                             local DBv3CurrentCharBagSlots = currentLoggedInCharItemData.bagSlot
                             --Get the first slotIndex from the table as each slotIndex will give the same itemId/data
-                            for slotIndexNr, amount in pairs(DBv3CurrentCharBagSlots) do
+                            for slotIndexNr, _ in pairs(DBv3CurrentCharBagSlots) do
                                 slotIndex = slotIndexNr
                                 break -- abort the loop after first found slotIndex
                             end
@@ -796,7 +797,7 @@ function FCOIS.MyGetItemInstanceIdForIIfA(clickedDataLine, signToo)
                                     if accountWideBagItemData.bagSlot ~= nil then
                                         local DBv3FirstAccountWideBagSlots = accountWideBagItemData.bagSlot
                                         --Get the first slotIndex from the table as each slotIndex will give the same itemId/data
-                                        for slotIndexNr, amount in pairs(DBv3FirstAccountWideBagSlots) do
+                                        for slotIndexNr, _ in pairs(DBv3FirstAccountWideBagSlots) do
                                             slotIndex = slotIndexNr
                                             --Found a slotIndex? If not go on with next slotIndex (or bagSlot)
                                             if slotIndex ~= nil then
@@ -854,7 +855,7 @@ function FCOIS.MyGetItemInstanceIdForIIfA(clickedDataLine, signToo)
         end
     end
     if signToo or (not ownedByLoggedInChar and not isItemInAccountWideBags) then
-        itemId = FCOIS.SignItemId(itemId, allowedItemType)
+        itemId = FCOIS.SignItemId(itemId, allowedItemType, nil, nil)
     end
 --d("[FCOIS.MyGetItemInstanceIdForIIfA] itemIdOrLink: " .. itemIdOrLink .. ", itemInstanceOrUniqueId: " .. tostring(itemId) .. ", bagId: " .. tostring(bagId) .. ", slotIndex: " .. tostring(slotIndex))
     return itemId, bagId, slotIndex, itemFoundAtLocationTable, itemFoundAtLocationTableAccountWide

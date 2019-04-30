@@ -15,9 +15,9 @@ local numFilterIcons = FCOIS.numVars.gFCONumFilterIcons
 	Basically the protection check functions of this API (FCOIS.Is*****Locked) will call the function:
 	FCOIS.callDeconstructionSelectionHandler(integer bag, integer slot, boolean echo, boolean overrideChatOutput, boolean suppressChatOutput, boolean overrideAlert, boolean suppressAlert boolean calledFromExternalAddon, libFilters2.x->LF_filterPanelID panelId)
 
-	You need to give the function call the item's bag and slotId, and the libFilters 2.x filter panel ID of the desired panel that you want to check, e.g. the crafting research panel.
-    It will think we are at the research tab of the crafting station (and not at the crafting stations  create, deconstruct, or improve tabs)
-    Research panel libFilters 2.x constant:    LF_SMITHING_RESEARCH
+	You need to give the function call the item's bag and slotId, and the libFilters 2.x filter panel ID of the desired panel that you want to check, e.g. the crafting improvement panel.
+    It will think we are at the improvement tab of the crafting station (and not at the crafting stations  create, deconstruct, or research tabs)
+    Improvement panel libFilters 2.x constant:    LF_SMITHING_IMPROVEMENT
 
     Function call parameters:
     Integer bag:                                                The bag index of the inventory/bank/guild bank/craft bag/equipment item
@@ -218,6 +218,18 @@ function FCOIS.IsJewelryImprovementLocked(bagId, slotIndex)
 	return FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, true, LF_JEWELRY_IMPROVEMENT)
 end
 
+-- FCOIS prevention for jewelry being researched
+function FCOIS.IsJewelryResearchLocked(bagId, slotIndex)
+	--Don't show chat output and don't show alert message
+	return FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, true, LF_JEWELRY_RESEARCH)
+end
+
+-- FCOIS prevention for jewelry being researched at the jewelry research popup dialog
+function FCOIS.IsJewelryResearchDialogLocked(bagId, slotIndex)
+	--Don't show chat output and don't show alert message
+	return FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, true, LF_JEWELRY_RESEARCH_DIALOG)
+end
+
 -- FCOIS prevention for being extracted from a glyphe
 function FCOIS.IsEnchantingExtractionLocked(bagId, slotIndex)
 	--Don't show chat output and don't show alert message
@@ -228,6 +240,12 @@ end
 function FCOIS.IsResearchLocked(bagId, slotIndex)
 	--Don't show chat output and don't show alert message
 	return FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, true, LF_SMITHING_RESEARCH)
+end
+
+-- FCOIS prevention for being researched at the research popup dialog
+function FCOIS.IsResearchDialogLocked(bagId, slotIndex)
+	--Don't show chat output and don't show alert message
+	return FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, true, LF_SMITHING_RESEARCH_DIALOG)
 end
 
 -- FCOIS prevention for being destroyed at the alchemy station
@@ -255,7 +273,6 @@ end
 function FCOIS.IsJunkLocked(bagId, slotIndex)
 	local isItemProtectedAgainstJunk = false
     --Check all marker icons and exclude the icon for "Sell"
-    local markedIcons = {}
     local settings = FCOIS.settingsVars.settings
 	local isItemMarked, markedIcons = FCOIS.IsMarked(bagId, slotIndex, -1, FCOIS_CON_ICON_SELL)
     --Is the item marked with any of the marker items (except "sell" item)
@@ -310,9 +327,9 @@ function FCOIS.IsIconEnabled(markerIconId)
         FCOIS.LoadUserSettings()
     end
     --Check if the icon is enabled
-    local settings = FCOIS.settingsVars.settings
-	local isIconEnabled = settings.isIconEnabled[markerIconId] or false
-    return isIconEnabled
+	local isIconEnabled = FCOIS.settingsVars.settings.isIconEnabled
+	local isIconEnabledOne = isIconEnabled[markerIconId] or false
+    return isIconEnabledOne
 end
 
 
@@ -320,268 +337,370 @@ end
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 --=========== FCOIS mark an item API functions =================================
---Global function to mark an item with an icon
---TODO: Add possibility to provide a table with multiple icons to mark!
+--Global function to mark an item with one (or several, by help of a table or iconId = -1) FCOIS marker icon(s).
+--The other marking functions like "automatic de-mark" or "automatic mark" will be applied too.
+-->Parameters:
+---bag (number):				The bagId of the item to mark
+---slot (number): 				The slotId of the item to mark
+---iconId (number|table): 		Number: The iconId to change. Can be a value between 1 and FCOIS.numVars.gFCONumFilterIcons, or -1 for all.
+---								Table:	A table containing the icons to change. Table key must be a number (without gaps!) and the value must bve the marker icon Id
+---								e.g. local myTableOfFCOISMarkerIcons = { [1] = FCOIS_CON_ICON_RSEARCH, [2] = FCOIS_CON_ICON_SELL }
+---showIcon (boolean): 			Flag to set if the item should be marked with the icon(s), or not
+---updateInventories (boolean):	Flag to set if the inventory lists should be updated, or not. Use this only "after updating the last marker icon", if you (de)mark many at once!
 function FCOIS.MarkItem(bag, slot, iconId, showIcon, updateInventories)
-	--d("[FCOIS.MarkItem] bag " .. tostring(bag) .. ", slot: " .. tostring(slot) .. ", iconId: " .. tostring(iconId) .. ", show: " .. tostring(showIcon) .. ", updateInv: " .. tostring(updateInventories))
-	if bag == nil or slot == nil then return false end
-	if ((iconId > numFilterIcons) or (iconId < 1 and iconId ~= -1)) then return false end
+--d("[FCOIS.MarkItem] bag " .. tostring(bag) .. ", slot: " .. tostring(slot) .. ", iconId: " .. tostring(iconId) .. ", show: " .. tostring(showIcon) .. ", updateInv: " .. tostring(updateInventories))
+	if bag == nil or slot == nil or iconId == nil then return false end
 	if showIcon == nil then showIcon = true end
-    updateInventories = updateInventories or false
-
-    local settings = FCOIS.settingsVars.settings
-    local numVars = FCOIS.numVars
-
-    local isCharShown = (bag == BAG_WORN and not FCOIS.ZOControlVars.CHARACTER:IsHidden())
-    local recurRetValTotal = true
-	--Recursively set/remove markers for all icons?
-	if iconId == -1 then
+	updateInventories = updateInventories or false
+	--Are we restoring or clearing marker icons via SHIFT + right mouse button on an inventory row e.g.?
+	local isRestoringOrClearingMarkerIcons = (FCOIS.preventerVars.gRestoringMarkerIcons or FCOIS.preventerVars.gClearingMarkerIcons) or false
+	local isCharShown = (bag == BAG_WORN and not FCOIS.ZOControlVars.CHARACTER:IsHidden())
+	local recurRetValTotal = true
+	--Check the type of iconId parameter
+	local iconIdType = type(iconId)
+	local iconIdTypeIsATable = false
+	if iconIdType == "number" then
+		if ((iconId > numFilterIcons) or (iconId < 1 and iconId ~= -1)) then return false end
+	elseif iconIdType == "table" then
+--d("[FCOIS]MarkItem - IconId is a table with " .. tostring(#iconId) .. " entries!")
+		--IconId is a table. Set the variable so no marker icons will be changed with this 1st call of the function FCOIS.MarkItem
+		iconIdTypeIsATable = true
 		--Set preventing variable against endless loop
 		FCOIS.preventerVars.markItemAntiEndlessLoop = true
+		--Now change each icon inside the table
 		local doUpdateInvNow = false
 		local recurRetVal = false
-        local numFilterIcons = numVars.gFCONumFilterIcons
-		for iconNr=1, numFilterIcons, 1 do
-			if updateInventories and iconNr == numFilterIcons then
+		local numMarkerIconsToChange = #iconId
+		local markerIconsChanged = 0
+		for _, iconIdInTable in ipairs(iconId) do
+			FCOIS.preventerVars.gMarkItemLastIconInLoop = false
+			markerIconsChanged = markerIconsChanged + 1
+			if updateInventories and markerIconsChanged == numMarkerIconsToChange then
 				doUpdateInvNow = true
+				FCOIS.preventerVars.gMarkItemLastIconInLoop = true
 			end
 			--Recursively call this function again to change each marker icon at the item
-			recurRetVal = FCOIS.MarkItem(bag, slot, iconNr, showIcon, doUpdateInvNow)
+			recurRetVal = FCOIS.MarkItem(bag, slot, iconIdInTable, showIcon, doUpdateInvNow)
 			if not recurRetVal then
 				recurRetValTotal = false
 			end
 		end
 		--Reset preventing variable against endless loop
 		FCOIS.preventerVars.markItemAntiEndlessLoop = false
-	end -- if iconId == -1 then
+	else
+		return false
+	end
+	--IconId is not a table, then go on. Else: return with return value in recurRetValTotal
+	if not iconIdTypeIsATable then
+		--Recursively set/remove markers for all icons?
+		if iconId == -1 then
+			--Set preventing variable against endless loop
+			FCOIS.preventerVars.markItemAntiEndlessLoop = true
+			local doUpdateInvNow = false
+			local recurRetVal = false
+			for iconNr=1, numFilterIcons, 1 do
+				FCOIS.preventerVars.gMarkItemLastIconInLoop = false
+				if updateInventories and iconNr == numFilterIcons then
+					doUpdateInvNow = true
+					FCOIS.preventerVars.gMarkItemLastIconInLoop = true
+				end
+				--Recursively call this function again to change each marker icon at the item
+				recurRetVal = FCOIS.MarkItem(bag, slot, iconNr, showIcon, doUpdateInvNow)
+				if not recurRetVal then
+					recurRetValTotal = false
+				end
+			end
+			--Reset preventing variable against endless loop
+			FCOIS.preventerVars.markItemAntiEndlessLoop = false
+		end -- if iconId == -1 then
 
-	--Only run this code if not all icons should be checked
-	if iconId ~= -1 then
-		--Allow the update of the marker here, and change it later if no update is needed
-		local doUpdateMarkerNow = true
-		--Get/use the (given) item instance id
-		local itemId = FCOIS.MyGetItemInstanceIdNoControl(bag, slot)
-		if itemId ~= nil then
-			local researchableItem = false
-			--Set the marker here now
-			local itemIsMarked = showIcon
-			if itemIsMarked == nil then itemIsMarked = false end
-			--Item is already un/marked -> No need to change it
-			if FCOIS.checkIfItemIsProtected(iconId, itemId) == itemIsMarked then
-				doUpdateMarkerNow = false
-			else
-				--Check if the item is a researchable one, but only if icon should be shown and bag + slot are given
-				-- Equipment gear 1, 2, 3, 4, 5, Research, Improve, Deconstruct or Intricate
-                local mappingVars = FCOIS.mappingVars
-				local iconIsResearchable = mappingVars.iconIsResearchable[iconId] or false
-                if (showIcon and iconIsResearchable and (bag ~= nil and slot ~= nil)) then
-					researchableItem = true
-					-- Check if item is researchable (as only researchable items can work as equipment too)
-					if (not FCOIS.isItemResearchableNoControl(bag, slot, iconId)) then
-						doUpdateMarkerNow = false
-						recurRetValTotal = false
+		--Only run this code if not all icons should be checked
+		if iconId ~= -1 then
+			--Allow the update of the marker here, and change it later if no update is needed
+			local doUpdateMarkerNow = true
+			--Get/use the (given) item instance id
+			local itemId = FCOIS.MyGetItemInstanceIdNoControl(bag, slot)
+			if itemId ~= nil then
+				--Set the marker here now
+				local itemIsMarked = showIcon
+				if itemIsMarked == nil then itemIsMarked = false end
+				--Item is already un/marked -> No need to change it
+				if FCOIS.checkIfItemIsProtected(iconId, itemId) == itemIsMarked then
+					doUpdateMarkerNow = false
+				else
+					--Check if the item is a researchable one, but only if icon should be shown and bag + slot are given
+					-- Equipment gear 1, 2, 3, 4, 5, Research, Improve, Deconstruct or Intricate
+					local mappingVars = FCOIS.mappingVars
+					local iconIsResearchable = mappingVars.iconIsResearchable[iconId] or false
+					if (showIcon and iconIsResearchable and (bag ~= nil and slot ~= nil)) then
+						-- Check if item is researchable (as only researchable items can work as equipment too)
+						if (not FCOIS.isItemResearchableNoControl(bag, slot, iconId)) then
+							doUpdateMarkerNow = false
+							recurRetValTotal = false
+							--The last marker icon in a loop call of FCOIS.MarkItem is reached and we abort here becasue the item is not
+							--researchable but should be marked with a marker icon which needs a researchable item?
+							--Update the inventory lists then at least
+							if FCOIS.preventerVars.gMarkItemLastIconInLoop then
+								FCOIS.preventerVars.gOverrideInvUpdateAfterMarkItem = true
+							end
+						end
 					end
 				end
-			end
 
---d("[FCOIS]MarkItem - updateInventories: " .. tostring(updateInventories) .. ", doUpdateMarkerNow: " ..tostring(doUpdateMarkerNow) ..", iconId: " ..tostring(iconId) .. ", show: " ..tostring(showIcon))
-			--Change the marker now?
-			if doUpdateMarkerNow then
-				--Unmark all other markers before? Only if marker should be set
-				--Prevent endless loop here as FCOIS.MarkItem will call itsself recursively
-				if not FCOIS.preventerVars.markItemAntiEndlessLoop and showIcon and FCOIS.checkIfItemShouldBeDemarked(iconId) then
+--d("[FCOIS]MarkItem - updateInventories: " .. tostring(updateInventories) .. ", doUpdateMarkerNow: " ..tostring(doUpdateMarkerNow) ..", iconId: " ..tostring(iconId) .. ", show: " ..tostring(showIcon) .. ", isRestoringOrClearingMarkerIcons: " .. tostring(isRestoringOrClearingMarkerIcons))
+				--Change the marker now?
+				if doUpdateMarkerNow then
+					local settings = FCOIS.settingsVars.settings
+					--Do not auto (un)mark other/all marker icons if we are restoring or clearing marker icons!
+					if not isRestoringOrClearingMarkerIcons then
+						--Unmark all other markers before? Only if marker should be set
+						--Prevent endless loop here as FCOIS.MarkItem will call itsself recursively
+						if not FCOIS.preventerVars.markItemAntiEndlessLoop and showIcon and FCOIS.checkIfItemShouldBeDemarked(iconId) then
 --d(">remove all markers now, isCharShown: " ..tostring(isCharShown) .. ", bag: " ..tostring(bag) .. ", charCtrlHidden: " .. tostring(FCOIS.ZOControlVars.CHARACTER:IsHidden()))
-					--Remove all markers now
-					FCOIS.MarkItem(bag, slot, -1, false, isCharShown)
-					FCOIS.preventerVars.markItemAntiEndlessLoop = false
+							--Check if dynamic marker items should not be removed
+							local isDynamicIcon = FCOIS.mappingVars.iconIsDynamic
+							local iconsToRemoveViaAutomaticRemoveCheck = {}
+							local iconsToRemoveViaAutomaticRemoveCheckTmp = {}
+							local isMarkedForAutoRemoveCheck
+							if settings.icon[iconId].demarkAllOthersExcludeDynamic then
+								--Get all marked icons (including dynamic icons)
+								isMarkedForAutoRemoveCheck, iconsToRemoveViaAutomaticRemoveCheck = FCOIS.IsMarked(bag, slot, -1)
+								--Check which ones are dynamic and remove them from the list
+								if isMarkedForAutoRemoveCheck then
+									if iconsToRemoveViaAutomaticRemoveCheck and #iconsToRemoveViaAutomaticRemoveCheck > 0 then
+										for iconIdForRemoveCheckLoop, isIconMarkedForRemoveCheckLoop in pairs(iconsToRemoveViaAutomaticRemoveCheck) do
+											if isIconMarkedForRemoveCheckLoop then
+												if not isDynamicIcon[iconIdForRemoveCheckLoop] then
+													--Add this icon to the automatic remove table!
+													table.insert(iconsToRemoveViaAutomaticRemoveCheckTmp, iconIdForRemoveCheckLoop)
+												end
+											end
+										end
+										iconsToRemoveViaAutomaticRemoveCheck = iconsToRemoveViaAutomaticRemoveCheckTmp
+									end
+								end
+							else
+								iconsToRemoveViaAutomaticRemoveCheck = -1
+							end
+							--Remove all markers now, using the -1 iconId if all icons should be removed without any further checks,
+							--or use the given table with iconIds to remove if further checks were done
+							FCOIS.MarkItem(bag, slot, iconsToRemoveViaAutomaticRemoveCheck, false, isCharShown)
+							FCOIS.preventerVars.markItemAntiEndlessLoop = false
 
-				--Any other circumstances
-				else
---d(">1")
-					--Prevent endless loop here as FCOIS.MarkItem will call itsself recursively
-					-- Should the item be marked?
-					if not FCOIS.preventerVars.markItemAntiEndlessLoop and showIcon and (
-					--  Icon is not sell or sell at guild store
-					--  and is the setting to remove sell/sell at guild store enabled if any other marker icon is set?
-						FCOIS.checkIfOtherDemarksSell(iconId)
-					) then
---d(">2")
-						--Get the icon to remove
-						local iconsToRemove = {}
-						iconsToRemove = FCOIS.getIconsToRemove(iconId)
-                        --Is the item marked with any of the icons that should be removed?
-                        if FCOIS.IsMarked(bag, slot, iconsToRemove) then
-                            --For each icon that should be removed, do:
-                            for key, iconToRemove in pairs(iconsToRemove) do
---d(">remove icon: " ..tostring(iconToRemove))
-                                --Remove the sell/sell at guildstore/... marker icons now
-                                --Is the character screen shown, then update the marker icons now?
-                                FCOIS.MarkItem(bag, slot, iconToRemove, false, isCharShown)
-                                FCOIS.preventerVars.markItemAntiEndlessLoop = false
-                            end
-                        end
-                    else
---d(">>isCharShown: " ..tostring(isCharShown) .. ", antiEndlessLoop: " ..tostring(FCOIS.preventerVars.markItemAntiEndlessLoop) .. ", updateInventories: " ..tostring(updateInventories) .. ", doUpdateMarkerNow: " ..tostring(doUpdateMarkerNow))
-                        --Is the character shown, and we are inside a loop to demark everyhting?
-                        --Set the inventory to update now so the removed marker icons get updated properly at the character
-                        if isCharShown and FCOIS.preventerVars.markItemAntiEndlessLoop and updateInventories == false then
-                            updateInventories = true
-                        end
-                    end
+						--Any other circumstances
+						else
+							--Prevent endless loop here as FCOIS.MarkItem will call itsself recursively
+							-- Should the item be marked?
+							if not FCOIS.preventerVars.markItemAntiEndlessLoop and showIcon and (
+									--  Icon is not sell or sell at guild store
+									--  and is the setting to remove sell/sell at guild store enabled if any other marker icon is set?
+									FCOIS.checkIfOtherDemarksSell(iconId)
+							) then
+								--d(">remove sell/sell at guild store if any other marker icon is set")
+								--Get the icon to remove
+								local iconsToRemove = {}
+								iconsToRemove = FCOIS.getIconsToRemove(iconId)
+								--Is the item marked with any of the icons that should be removed?
+								if FCOIS.IsMarked(bag, slot, iconsToRemove) then
+									--For each icon that should be removed, do:
+									for _, iconToRemove in pairs(iconsToRemove) do
+										--d(">remove icon: " ..tostring(iconToRemove))
+										--Remove the sell/sell at guildstore/... marker icons now
+										--Is the character screen shown, then update the marker icons now?
+										FCOIS.MarkItem(bag, slot, iconToRemove, false, isCharShown)
+										FCOIS.preventerVars.markItemAntiEndlessLoop = false
+									end
+								end
+							else
+								--d(">>isCharShown: " ..tostring(isCharShown) .. ", antiEndlessLoop: " ..tostring(FCOIS.preventerVars.markItemAntiEndlessLoop) .. ", updateInventories: " ..tostring(updateInventories) .. ", doUpdateMarkerNow: " ..tostring(doUpdateMarkerNow))
+								--Is the character shown, and we are inside a loop to demark everyhting?
+								--Set the inventory to update now so the removed marker icons get updated properly at the character
+								if isCharShown and FCOIS.preventerVars.markItemAntiEndlessLoop and updateInventories == false then
+									updateInventories = true
+								end
+							end
+						end
+					end -- if not isRestoringOrClearingMarkerIcons
+					--d(">>itemIsMarked: " .. tostring(itemIsMarked))
+					--Shall we unmark the item? Then remove it from the SavedVars totally!
+					if itemIsMarked == false then itemIsMarked = nil end
+					--Un/Mark the item now
+					FCOIS.markedItems[iconId][FCOIS.SignItemId(itemId, nil, nil, nil)] = itemIsMarked
+					--d(">> new markedItem value: " .. tostring(FCOIS.markedItems[iconId][FCOIS.SignItemId(itemId, nil, nil, nil)]))
 				end
-				
-				--d(">>itemIsMarked: " .. tostring(itemIsMarked))
-
-				--Shall we unmark the item? Then remove it from the SavedVars totally!
-				if itemIsMarked == false then itemIsMarked = nil end
-				--Un/Mark the item now
-				FCOIS.markedItems[iconId][FCOIS.SignItemId(itemId)] = itemIsMarked
-				--d(">> new markedItem value: " .. tostring(FCOIS.markedItems[iconId][FCOIS.SignItemId(itemId)]))
-			end
-		end --if itemId ~= nil
-
-		--Update inventories or character equipment, but only needed if marker was changed
-		if ( (updateInventories and doUpdateMarkerNow) or (FCOIS.preventerVars.gOverrideInvUpdateAfterMarkItem) ) then
---d("<<yUpdateInv: " ..tostring(updateInventories) .. ", doUpdateMarkerNow: " .. tostring(doUpdateMarkerNow) .. ", gOverrideInvUpdateAfterMarkItem: " ..tostring(FCOIS.preventerVars.gOverrideInvUpdateAfterMarkItem))
-			FCOIS.preventerVars.gOverrideInvUpdateAfterMarkItem = false
-
-			if isCharShown then
-				FCOIS.RefreshEquipmentControl(nil, showIcon, iconId)
-			elseif bag == BAG_BACKPACK or bag == BAG_VIRTUAL
-				or bag == BAG_BANK or bag == BAG_SUBSCRIBER_BANK or bag == BAG_GUILDBANK or IsHouseBankBag(bag) then
-				FCOIS.FilterBasics(false)
-			end
-		end -- if updateInventories ...
-	end -- if iconId ~= -1
-
+			end --if itemId ~= nil
+			--Update inventories or character equipment, but only needed if marker was changed
+			if ( (updateInventories and doUpdateMarkerNow) or (FCOIS.preventerVars.gOverrideInvUpdateAfterMarkItem) ) then
+				--d("<<UpdateInv: " ..tostring(updateInventories) .. ", doUpdateMarkerNow: " .. tostring(doUpdateMarkerNow) .. ", gOverrideInvUpdateAfterMarkItem: " ..tostring(FCOIS.preventerVars.gOverrideInvUpdateAfterMarkItem))
+				FCOIS.preventerVars.gOverrideInvUpdateAfterMarkItem = false
+				if isCharShown then
+					FCOIS.RefreshEquipmentControl(nil, showIcon, iconId)
+				elseif bag == BAG_BACKPACK or bag == BAG_VIRTUAL
+					or bag == BAG_BANK or bag == BAG_SUBSCRIBER_BANK or bag == BAG_GUILDBANK or IsHouseBankBag(bag) then
+					FCOIS.FilterBasics(false)
+				end
+			end -- if updateInventories ...
+		end -- if iconId ~= -1
+	end -- if not iconIdTypeIsATable
 	--Return value if icon was added/removed
 	return recurRetValTotal
 end -- FCOIS.MarkItem
 
---Function to mark an item via the itemInstaceId of an item or the uniqueId of an item.
+--Function to mark an item with a FCOIS marker icon using either the itemInstaceId, or the uniqueId, of that item.
 --IMPORTANT: The itemInstanceId or uniqueId must be unsigned! They will get signed in this function.
 --This function can be used to mark an item for a non-logged in character
-function FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon, itemLink, itemId)
---d("[FCOIS.MarkItemByItemInstanceId] id " .. tostring(itemInstanceOrUniqueId) .. ", iconId: " .. tostring(iconId) .. ", show: " .. tostring(showIcon))
-	if itemInstanceOrUniqueId == nil then return false end
-	if ((iconId > numFilterIcons) or (iconId < 1 and iconId ~= -1)) then return false end
-	if showIcon == nil then showIcon = true end
-
-	local settings = FCOIS.settingsVars.settings
-	local numVars = FCOIS.numVars
-
-	--local isCharShown = not FCOIS.ZOControlVars.CHARACTER:IsHidden()
-	local recurRetValTotal = true
-	--Recursively set/remove markers for all icons?
-	if iconId == -1 then
-		--Set preventing variable against endless loop
-		FCOIS.preventerVars.markItemAntiEndlessLoop = true
-		local recurRetVal = false
-		local numFilterIcons = numVars.gFCONumFilterIcons
-		for iconNr=1, numFilterIcons, 1 do
-			--Recursively call this function again to change each marker icon at the item
-			recurRetVal = FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconNr, showIcon, itemLink, itemId)
-			if not recurRetVal then
-				recurRetValTotal = false
-			end
-		end
-		--Reset preventing variable against endless loop
-		FCOIS.preventerVars.markItemAntiEndlessLoop = false
-	end -- if iconId == -1 then
-
-	--Only run this code if not all icons should be checked
-	if iconId ~= -1 then
-		--Allow the update of the marker here, and change it later if no update is needed
-		local doUpdateMarkerNow = true
-		--Use the given itemLink or the given itemId to build a generic itemLink from it
-        if itemId ~= nil and itemLink == nil then
-            --Build a generic itemLink from the itemId to test the itemType
-            itemLink = FCOIS.getItemLinkFromItemId(itemId)
+-->Parameters:
+---itemInstanceOrUniqueId (number):		The itemInstanceId or the uniqueId of the item to mark
+---iconId (number|table): 		        Number: The iconId to change. Can be a value between 1 and FCOIS.numVars.gFCONumFilterIcons, or -1 for all.
+---								        Table:	A table containing the icons to change. Table key must be a number (without gaps!) and the value must bve the marker icon Id
+---								        e.g. local myTableOfFCOISMarkerIcons = { [1] = FCOIS_CON_ICON_RSEARCH, [2] = FCOIS_CON_ICON_SELL }
+---showIcon (boolean): 			        Flag to set if the item should be marked with the icon(s), or not
+---itemLink (String):                   The itemLink of the item. Can be left NIL and will be determined via the itemId then. One of the two must be given though!
+---itemId (number):                     The itemID of the item. Can be left NIL and the itemLink will be used instead. One of the two must be given though!
+---addonName (String):					Can be left NIL! The unique addon name which was used to temporarily enable the uniqueId usage for the item checks.
+---										-> See FCOIS API function "FCOIS.UseTemporaryUniqueIds(addonName, doUse)"
+function FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon, itemLink, itemId, addonName)
+    --d("[FCOIS.MarkItemByItemInstanceId] id " .. tostring(itemInstanceOrUniqueId) .. ", iconId: " .. tostring(iconId) .. ", show: " .. tostring(showIcon))
+    if itemInstanceOrUniqueId == nil then return false end
+    if itemLink == nil and itemId == nil then return false end
+    if showIcon == nil then showIcon = true end
+    --Use the given itemLink or the given itemId to build a generic itemLink from it
+    if itemId ~= nil and itemLink == nil then
+        --Build a generic itemLink from the itemId to test the itemType
+        itemLink = FCOIS.getItemLinkFromItemId(itemId)
+    end
+    --local isCharShown = not FCOIS.ZOControlVars.CHARACTER:IsHidden()
+    local recurRetValTotal = true
+    --Check the type of iconId parameter
+    local iconIdType = type(iconId)
+    local iconIdTypeIsATable = false
+    if iconIdType == "number" then
+        if ((iconId > numFilterIcons) or (iconId < 1 and iconId ~= -1)) then return false end
+    elseif iconIdType == "table" then
+        --d("[FCOIS]MarkItemByItemInstanceId - IconId is a table with " .. tostring(#iconId) .. " entries!")
+        --IconId is a table. Set the variable so no marker icons will be changed with this 1st call of the function FCOIS.MarkItem
+        iconIdTypeIsATable = true
+        --Set preventing variable against endless loop
+        FCOIS.preventerVars.markItemAntiEndlessLoop = true
+        --Now change each icon inside the table
+        local recurRetVal = false
+        for _, iconIdInTable in ipairs(iconId) do
+            --Recursively call this function again to change each marker icon at the item
+            recurRetVal = FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconIdInTable, showIcon, itemLink, itemId, addonName)
+            if not recurRetVal then
+                recurRetValTotal = false
+            end
         end
-		if itemLink ~= nil then
---d(">"..itemLink)
-			local researchableItem = false
-			--Set the marker here now
-			local itemIsMarked = showIcon
-			if itemIsMarked == nil then itemIsMarked = false end
-			--Item is already un/marked -> No need to change it
-			if FCOIS.checkIfItemIsProtected(iconId, itemInstanceOrUniqueId) == itemIsMarked then
-				doUpdateMarkerNow = false
-			else
-				--Check if the item is a researchable one, but only if icon should be shown and bag + slot are given
-				-- Equipment gear 1, 2, 3, 4, 5, Research, Improve, Deconstruct or Intricate
-				local mappingVars = FCOIS.mappingVars
-				local iconIsResearchable = mappingVars.iconIsResearchable[iconId] or false
-				if (showIcon and iconIsResearchable) then
-					researchableItem = true
-                    -- Check if item is researchable (as only researchable items can work as equipment too)
-					if (not FCOIS.isItemLinkResearchable(itemLink, iconId)) then
-						doUpdateMarkerNow = false
-						recurRetValTotal = false
-					end
-				end
-			end
+        --Reset preventing variable against endless loop
+        FCOIS.preventerVars.markItemAntiEndlessLoop = false
+    else
+        return false
+    end
+    --IconId is not a table, then go on. Else: return with return value in recurRetValTotal
+    if not iconIdTypeIsATable then
+        --Recursively set/remove markers for all icons?
+        if iconId == -1 then
+            --Set preventing variable against endless loop
+            FCOIS.preventerVars.markItemAntiEndlessLoop = true
+            local recurRetVal = false
+            for iconNr=1, numFilterIcons, 1 do
+                --Recursively call this function again to change each marker icon at the item
+                recurRetVal = FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconNr, showIcon, itemLink, itemId, addonName)
+                if not recurRetVal then
+                    recurRetValTotal = false
+                end
+            end
+            --Reset preventing variable against endless loop
+            FCOIS.preventerVars.markItemAntiEndlessLoop = false
+        end -- if iconId == -1 then
 
---d("[FCOIS]MarkItemByItemInstanceId doUpdateMarkerNow: " ..tostring(doUpdateMarkerNow) ..", iconId: " ..tostring(iconId) .. ", show: " ..tostring(showIcon))
-			--Change the marker now?
-			if doUpdateMarkerNow then
-				--Unmark all other markers before? Only if marker should be set
-				--Prevent endless loop here as FCOIS.MarkItemByItemInstanceId will call itsself recursively
-				if not FCOIS.preventerVars.markItemAntiEndlessLoop and showIcon and FCOIS.checkIfItemShouldBeDemarked(iconId) then
-					--d(">remove all markers now, isCharShown: " ..tostring(isCharShown) .. ", bag: " ..tostring(bag) .. ", charCtrlHidden: " .. tostring(FCOIS.ZOControlVars.CHARACTER:IsHidden()))
-					--Remove all markers now
-					FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, -1, false, itemLink, itemId)
-					FCOIS.preventerVars.markItemAntiEndlessLoop = false
+        --Only run this code if not all icons should be checked
+        if iconId ~= -1 then
+            --Allow the update of the marker here, and change it later if no update is needed
+            local doUpdateMarkerNow = true
+            if itemLink ~= nil then
+                --d(">"..itemLink)
+                local researchableItem = false
+                --Set the marker here now
+                local itemIsMarked = showIcon
+                if itemIsMarked == nil then itemIsMarked = false end
+                --Item is already un/marked -> No need to change it
+                if FCOIS.checkIfItemIsProtected(iconId, itemInstanceOrUniqueId, nil, addonName) == itemIsMarked then
+                    doUpdateMarkerNow = false
+                else
+                    --Check if the item is a researchable one, but only if icon should be shown and bag + slot are given
+                    -- Equipment gear 1, 2, 3, 4, 5, Research, Improve, Deconstruct or Intricate
+                    local mappingVars = FCOIS.mappingVars
+                    local iconIsResearchable = mappingVars.iconIsResearchable[iconId] or false
+                    if (showIcon and iconIsResearchable) then
+                        researchableItem = true
+                        -- Check if item is researchable (as only researchable items can work as equipment too)
+                        if (not FCOIS.isItemLinkResearchable(itemLink, iconId)) then
+                            doUpdateMarkerNow = false
+                            recurRetValTotal = false
+                        end
+                    end
+                end
 
-                --Any other circumstances
-				else
-					--d(">1")
-					--Prevent endless loop here as FCOIS.MarkItemByItemInstanceId will call itsself recursively
-					-- Should the item be marked?
-					if not FCOIS.preventerVars.markItemAntiEndlessLoop and showIcon and (
-					--  Icon is not sell or sell at guild store
-					--  and is the setting to remove sell/sell at guild store enabled if any other marker icon is set?
-					   FCOIS.checkIfOtherDemarksSell(iconId)
-					) then
-						--d(">2")
-						--Get the icon to remove
-						local iconsToRemove = {}
-						iconsToRemove = FCOIS.getIconsToRemove(iconId)
-						--Is the item marked with any of the icons that should be removed?
-						if FCOIS.IsMarkedByItemInstanceId(itemInstanceOrUniqueId, iconsToRemove) then
-							--For each icon that should be removed, do:
-							for key, iconToRemove in pairs(iconsToRemove) do
-								--d(">remove icon: " ..tostring(iconToRemove))
-								--Remove the sell/sell at guildstore/... marker icons now
-								--Is the character screen shown, then update the marker icons now?
-								FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconToRemove, false, itemLink, itemId)
-								FCOIS.preventerVars.markItemAntiEndlessLoop = false
-							end
-						end
-					--else
-						--d(">>isCharShown: " ..tostring(isCharShown) .. ", antiEndlessLoop: " ..tostring(FCOIS.preventerVars.markItemAntiEndlessLoop) .. ", updateInventories: " ..tostring(updateInventories) .. ", doUpdateMarkerNow: " ..tostring(doUpdateMarkerNow))
-						--Is the character shown, and we are inside a loop to demark everyhting?
-						--Set the inventory to update now so the removed marker icons get updated properly at the character
-						--if isCharShown and FCOIS.preventerVars.markItemAntiEndlessLoop then
-						--end
-					end
-				end
+                --d("[FCOIS]MarkItemByItemInstanceId doUpdateMarkerNow: " ..tostring(doUpdateMarkerNow) ..", iconId: " ..tostring(iconId) .. ", show: " ..tostring(showIcon))
+                --Change the marker now?
+                if doUpdateMarkerNow then
+                    --Unmark all other markers before? Only if marker should be set
+                    --Prevent endless loop here as FCOIS.MarkItemByItemInstanceId will call itsself recursively
+                    if not FCOIS.preventerVars.markItemAntiEndlessLoop and showIcon and FCOIS.checkIfItemShouldBeDemarked(iconId) then
+                        --d(">remove all markers now, isCharShown: " ..tostring(isCharShown) .. ", bag: " ..tostring(bag) .. ", charCtrlHidden: " .. tostring(FCOIS.ZOControlVars.CHARACTER:IsHidden()))
+                        --Remove all markers now
+                        FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, -1, false, itemLink, itemId, addonName)
+                        FCOIS.preventerVars.markItemAntiEndlessLoop = false
 
-				--d(">>itemIsMarked: " .. tostring(itemIsMarked))
+                    --Any other circumstances
+                    else
+                        --d(">1")
+                        --Prevent endless loop here as FCOIS.MarkItemByItemInstanceId will call itsself recursively
+                        -- Should the item be marked?
+                        if not FCOIS.preventerVars.markItemAntiEndlessLoop and showIcon and (
+                                --  Icon is not sell or sell at guild store
+                                --  and is the setting to remove sell/sell at guild store enabled if any other marker icon is set?
+                                FCOIS.checkIfOtherDemarksSell(iconId)
+                        ) then
+                            --d(">2")
+                            --Get the icon to remove
+                            local iconsToRemove = {}
+                            iconsToRemove = FCOIS.getIconsToRemove(iconId)
+                            --Is the item marked with any of the icons that should be removed?
+                            if FCOIS.IsMarkedByItemInstanceId(itemInstanceOrUniqueId, iconsToRemove, addonName) then
+                                --For each icon that should be removed, do:
+                                for _, iconToRemove in pairs(iconsToRemove) do
+                                    --d(">remove icon: " ..tostring(iconToRemove))
+                                    --Remove the sell/sell at guildstore/... marker icons now
+                                    --Is the character screen shown, then update the marker icons now?
+                                    FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconToRemove, false, itemLink, itemId, addonName)
+                                    FCOIS.preventerVars.markItemAntiEndlessLoop = false
+                                end
+                            end
+                            --else
+                            --d(">>isCharShown: " ..tostring(isCharShown) .. ", antiEndlessLoop: " ..tostring(FCOIS.preventerVars.markItemAntiEndlessLoop) .. ", updateInventories: " ..tostring(updateInventories) .. ", doUpdateMarkerNow: " ..tostring(doUpdateMarkerNow))
+                            --Is the character shown, and we are inside a loop to demark everyhting?
+                            --Set the inventory to update now so the removed marker icons get updated properly at the character
+                            --if isCharShown and FCOIS.preventerVars.markItemAntiEndlessLoop then
+                            --end
+                        end
+                    end
 
-				--Shall we unmark the item? Then remove it from the SavedVars totally!
-				if itemIsMarked == false then itemIsMarked = nil end
-				--Un/Mark the item now
-				FCOIS.markedItems[iconId][FCOIS.SignItemId(itemInstanceOrUniqueId)] = itemIsMarked
-				--d(">> new markedItem value: " .. tostring(FCOIS.markedItems[iconId][FCOIS.SignItemId(itemId)]))
-			end
-		end --if itemId ~= nil
+                    --d(">>itemIsMarked: " .. tostring(itemIsMarked))
 
-	end -- if iconId ~= -1
-
-	--Return value if icon was added/removed
-	return recurRetValTotal
-end
+                    --Shall we unmark the item? Then remove it from the SavedVars totally!
+                    if itemIsMarked == false then itemIsMarked = nil end
+                    --Un/Mark the item now
+                    FCOIS.markedItems[iconId][FCOIS.SignItemId(itemInstanceOrUniqueId, nil, nil, addonName)] = itemIsMarked
+                    --d(">> new markedItem value: " .. tostring(FCOIS.markedItems[iconId][FCOIS.SignItemId(itemId, nil, nil, nil)]))
+                end
+            end --if itemId ~= nil
+        end -- if iconId ~= -1
+    end --if not iconIdTypeIsATable then
+    --Return value if icon was added/removed
+    return recurRetValTotal
+end -- FCOIS.MarkItemByItemInstanceId
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -589,7 +708,9 @@ end
 --=========== FCOIS is an item marked API functions =================================
 --Function used to check if the items is marked with any marker icon and return a boolean value + array containing the marker icons which are set
 -->Used in FCOIS.IsMarked and FCOIS.IsMarkedByItemInstanceId
-local function checkIfItemIsMarkedAndReturnMarkerIcons(instance, iconIds, excludeIconIds)
+---addonName (String):					Can be left NIL! The unique addon name which was used to temporarily enable the uniqueId usage for the item checks.
+---										-> See FCOIS API function "FCOIS.UseTemporaryUniqueIds(addonName, doUse)"
+local function checkIfItemIsMarkedAndReturnMarkerIcons(instance, iconIds, excludeIconIds, addonName)
 	if instance == nil then return nil, nil end
 	if (iconIds ~= -1 and excludeIconIds ~= nil) or excludeIconIds == -1 then return nil, nil end
 	local markedArray = {}
@@ -638,7 +759,7 @@ local function checkIfItemIsMarkedAndReturnMarkerIcons(instance, iconIds, exclud
 					--Only if iconIds contains the value -1 or {-1} do the excluded icon checks too
 					if not excludeIconIdsCheckTable[icoId] then
 						--Is the not-excluded icon ID protected?
-						if (FCOIS.checkIfItemIsProtected(icoId, instance) == true) then
+						if (FCOIS.checkIfItemIsProtected(icoId, instance, nil, addonName) == true) then
 							--return true, if any icon is set
 							isMarked = true
 							markedArray[icoId] = true
@@ -658,7 +779,7 @@ local function checkIfItemIsMarkedAndReturnMarkerIcons(instance, iconIds, exclud
 					iconsChecked = iconsChecked + 1
 					--is the item marked with that iconId?
 					if (FCOIS.markedItems[iconId] ~= nil) then
-						iconIsSet = FCOIS.checkIfItemIsProtected(iconId, instance)
+						iconIsSet = FCOIS.checkIfItemIsProtected(iconId, instance, nil, addonName)
 						markedArray[iconId] = iconIsSet
 						if not isMarked then
 							isMarked = iconIsSet
@@ -674,7 +795,7 @@ local function checkIfItemIsMarkedAndReturnMarkerIcons(instance, iconIds, exclud
 		--iconIds is no array/table
 		--Check only 1 icon
 		if (iconIds ~= -1) then
-			isMarked = FCOIS.markedItems[iconIds] ~= nil and FCOIS.checkIfItemIsProtected(iconIds, instance)
+			isMarked = FCOIS.markedItems[iconIds] ~= nil and FCOIS.checkIfItemIsProtected(iconIds, instance, nil, addonName)
 			if isMarked then
 				markedArray[iconIds] = true
 			end
@@ -685,7 +806,7 @@ local function checkIfItemIsMarkedAndReturnMarkerIcons(instance, iconIds, exclud
 				--Only if iconIds contains the value -1 or {-1} do the excluded icon checks too
 				if not excludeIconIdsCheckTable[icoId] then
 					--Is the not-excluded icon ID protected?
-					if (FCOIS.checkIfItemIsProtected(icoId, instance) == true) then
+					if (FCOIS.checkIfItemIsProtected(icoId, instance, nil, addonName) == true) then
 						isMarked = true
 						markedArray[icoId] = true
 					end
@@ -708,20 +829,22 @@ end -- checkIfItemIsMarkedAndReturnMarkerIcons
 --excludeIconIds:   Exclude the iconID or an array of iconIDs from the check.
 --                  Can only be used together with iconIds = -1 or iconIds = {-1}!
 --                  excludeIconIds cannot be -1 or the function will return nil!
-function FCOIS.IsMarkedByItemInstanceId(itemInstanceId, iconIds, excludeIconIds)
+---addonName (String):	Can be left NIL! The unique addon name which was used to temporarily enable the uniqueId usage for the item checks.
+---						-> See FCOIS API function "FCOIS.UseTemporaryUniqueIds(addonName, doUse)"
+function FCOIS.IsMarkedByItemInstanceId(itemInstanceId, iconIds, excludeIconIds, addonName)
 	if (iconIds ~= -1 and excludeIconIds ~= nil) or excludeIconIds == -1 then return nil, nil end
 	if itemInstanceId == nil then return nil, nil end
 	--Build the itemInstanceId (signed) by help of the itemId
-	local signedItemInstanceId = FCOIS.SignItemId(itemInstanceId, nil, true) -- only sign
+	local signedItemInstanceId = FCOIS.SignItemId(itemInstanceId, nil, true, addonName) -- only sign
 	if signedItemInstanceId == nil then return nil, nil end
 	local isMarked = false
 	local markedIconsArray = {}
-	isMarked, markedIconsArray = checkIfItemIsMarkedAndReturnMarkerIcons(signedItemInstanceId, iconIds, excludeIconIds)
+	isMarked, markedIconsArray = checkIfItemIsMarkedAndReturnMarkerIcons(signedItemInstanceId, iconIds, excludeIconIds, addonName)
 	return isMarked, markedIconsArray
 end -- FCOIS.IsMarkedByItemInstanceId
 
 --Global function to return boolean value, if an item is marked
--- + it will return an array as 2nd return parameter, containing boolean entries, one for each iconId. True if item is marked with this iconId, false if not
+-- + it will return an array as 2nd return parameter, containing boolean entries, one for each iconId (key). True if item is marked with this iconId, false if not (value).
 --bag:     The bag where the item is located
 --slot:    The slotIndex where the item is located in the bag
 --iconIds: Specifies the icon the item is marked with. iconIds can be any of the marker icons FCOIS_CON_ICON_* or -1 for all icons.
@@ -739,9 +862,44 @@ function FCOIS.IsMarked(bag, slot, iconIds, excludeIconIds)
 	if signedItemInstanceId == nil then return nil, nil end
 	local isMarked = false
 	local markedIconsArray = {}
-	isMarked, markedIconsArray = checkIfItemIsMarkedAndReturnMarkerIcons(signedItemInstanceId, iconIds, excludeIconIds)
+	isMarked, markedIconsArray = checkIfItemIsMarkedAndReturnMarkerIcons(signedItemInstanceId, iconIds, excludeIconIds, nil)
 	return isMarked, markedIconsArray
 end -- FCOIS.IsMarked
+
+
+
+--Global function to temporarily set the addon to use UniqueItemIds for functions "FCOIS.IsMarkedByItemInstanceId" and "FCOIS.MarkItemByItemInstanceId"
+-- even if the FCOIS settings are set to use the normal itemInstanceIds.
+-- The "temporary timeframe" will last from doUse = true until doUse will be set to false again for the same addonName.
+--Attention: doUse will be set to false for ALL addons upon reloadui/logout/loading screens.
+--->This function will return a boolean value to show if the temporary setting was enabled properly (true), or not (false).
+--addonName:	String	Your addon's unique name, which must be set in order to uniquely identify which checks should use the uniqueIds. Otherwise
+--				 FCOIS itsself or other addons would use uniqueIds in the "temporary timeframe" as well, where it is not wanted to happen!
+--				Important: Be sure to use the SAME addonName within the FCOIS api functions FCOIS.IsMarkedByItemInstanceId (parameter "addonName")
+--						    and/or FCOIS.MarkItemByItemInstanceId (parameter "addonName") AND specify a uniqueId then, instead of an itemInstanceId!
+--doUse:		Boolean true/false to enable/disable the temporary setting. Will be disabled automatically after reloadui/logout/zone change
+function FCOIS.UseTemporaryUniqueIds(addonName, doUse)
+	if addonName == nil or addonName == "" then return false end
+	if type(addonName) ~= "string" or type(doUse) ~= "boolean" then return false end
+	if FCOIS.temporaryUseUniqueIds == nil then return false end
+	--Enable
+	if doUse == true then
+		if FCOIS.temporaryUseUniqueIds[addonName] == nil then
+			FCOIS.temporaryUseUniqueIds[addonName] = true
+		else
+			return false
+		end
+	--Disable
+	else
+		if FCOIS.temporaryUseUniqueIds[addonName] == nil then
+			return false
+		else
+			FCOIS.temporaryUseUniqueIds[addonName] = nil
+		end
+	end
+	return true
+end
+
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -761,7 +919,6 @@ function FCOIS.IsFiltered(bag, slot, filterId, filterPanelId)
 	if (bag ~= nil and slot ~= nil and filterId ~= nil) then
         local instance = FCOIS.MyGetItemInstanceIdNoControl(bag, slot)
 		if instance == nil then return false end
-        local offs  = 0
 		--Workaround for empty filterPanelId
 		if (filterPanelId == nil or filterPanelId == '') then
 			--Fallback solution: FilterPanelId will be the inventory
@@ -948,24 +1105,31 @@ function FCOIS.IsFiltered(bag, slot, filterId, filterPanelId)
 	end
 end -- FCOIS.IsFiltered
 
-
 --Global function to change a filter at the given panel Id
-function FCOIS.ChangeFilter(filterId)
+function FCOIS.ChangeFilter(filterId, libFiltersFilterPanelId)
+	libFiltersFilterPanelId = libFiltersFilterPanelId or FCOIS.gFilterWhere
 	--Valid filterId?
 	if filterId == nil or filterId <= 0 or filterId > FCOIS.numVars.gFCONumFilters then return end
 	--Valid filterPanelId?
-	if FCOIS.gFilterWhere == nil or FCOIS.gFilterWhere <= 0
-			or FCOIS.gFilterWhere > FCOIS.numVars.gFCONumFilterInventoryTypes then return end
+	if libFiltersFilterPanelId == nil or libFiltersFilterPanelId <= 0
+			or libFiltersFilterPanelId > FCOIS.numVars.gFCONumFilterInventoryTypes then return end
 	--Is filtering at the current panel enabled?
-	if not FCOIS.settingsVars.settings.atPanelEnabled[FCOIS.gFilterWhere]["filters"] then return end
+	if not FCOIS.settingsVars.settings.atPanelEnabled[libFiltersFilterPanelId]["filters"] then return end
 	--is the filterPanelId visible?
-	if FCOIS.mappingVars.gFilterPanelIdToInv[FCOIS.gFilterWhere]:IsHidden() then return end
+	if FCOIS.mappingVars.gFilterPanelIdToInv[libFiltersFilterPanelId]:IsHidden() then return end
 
-	if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[FCOChangeFilter] FilterId: " .. tostring(filterId) .. ", FilterPanelId: " .. tostring(FCOIS.gFilterWhere) .. ", InventoryName: " .. FCOIS.mappingVars.gFilterPanelIdToInv[FCOIS.gFilterWhere]:GetName(), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+	if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[FCOChangeFilter] FilterId: " .. tostring(filterId) .. ", FilterPanelId: " .. tostring(libFiltersFilterPanelId) .. ", InventoryName: " .. FCOIS.mappingVars.gFilterPanelIdToInv[libFiltersFilterPanelId]:GetName(), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
 	--Use the chat command handler now to emulate a filter change
-	FCOIS.command_handler("filter" .. tostring(filterId) .. " " .. tostring(FCOIS.gFilterWhere))
+	FCOIS.command_handler("filter" .. tostring(filterId) .. " " .. tostring(libFiltersFilterPanelId))
 end -- FCOChangeFilter
 
+--Function to check if the inventory context menu should not be shown as the user pressed the SHIFT key + right mouse button
+--(special FCOIS behavior). If so the context menu will not be shown and other addons, which add context menu entries, shouldn't show
+--their context menu neither
+function FCOIS.ShouldInventoryContextMenuBeHiddden()
+	local contextMenuClearMarkesByShiftKey = FCOIS.settingsVars.settings.contextMenuClearMarkesByShiftKey
+    return (contextMenuClearMarkesByShiftKey and FCOIS.preventerVars.dontShowInvContextMenu == true) or false
+end
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -1022,15 +1186,22 @@ end -- FCOGetLocText
 --------------------------------------------------------------------------------
 --=========== FCOIS keybind API functions ======================================
 --Mark the icon with a chosen keybind
-function FCOIS.MarkItemByKeybind(iconId)
+function FCOIS.MarkItemByKeybind(iconId, p_bagId, p_slotIndex)
     if iconId == nil then return false end
     --is the icon enabled? Otherwise abort here.
-    if not FCOIS.settingsVars.settings.isIconEnabled[iconId] then return false end
-    local bagId, slotIndex = FCOIS.GetBagAndSlotFromControlUnderMouse()
+    local settings = FCOIS.settingsVars.settings
+	local isIconEnabled = settings.isIconEnabled
+	if not isIconEnabled[iconId] then return false end
+	local bagId, slotIndex
+	if p_bagId == nil or p_slotIndex == nil then
+		bagId, slotIndex = FCOIS.GetBagAndSlotFromControlUnderMouse()
+	else
+		bagId, slotIndex =  p_bagId, p_slotIndex
+	end
     --bag and slot could be retrieved?
     if bagId ~= nil and slotIndex ~= nil then
-        if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[FCOIS.MarkItemByKeybind] Bag: " .. bagId .. ", slot: " .. slotIndex, true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
-
+        if settings.debug then FCOIS.debugMessage( "[FCOIS.MarkItemByKeybind] Bag: " .. bagId .. ", slot: " .. slotIndex, true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+		local mappingVars = FCOIS.mappingVars
         --Check if the item is currently marked with this icon, or not
         --Get the itemId of the bag, slot combination
         local itemId = FCOIS.MyGetItemInstanceIdNoControl(bagId, slotIndex)
@@ -1038,7 +1209,7 @@ function FCOIS.MarkItemByKeybind(iconId)
 			--Check if item is not researchable and research/gear/improve/deconstruct/intrictae icon is used, or if icon is a dynamic on and the research check is enabled
 			-- Equipment gear (1, 2, 3, 4, 5), Research, Improve, Deconstruct, Intricate or dynamic icons
 			--Check if the icon is allowed for research and if the research-enabled check is set in the settings
-			if FCOIS.mappingVars.iconIsResearchable[iconId] or FCOIS.mappingVars.iconIsDynamic[iconId] then
+			if mappingVars.iconIsResearchable[iconId] or mappingVars.iconIsDynamic[iconId] then
 				-- Check if item is researchable (as only researchable items can work as equipment too)
 				if not FCOIS.isItemResearchableNoControl(bagId, slotIndex, iconId) then
 					--Abort here if not researchable or not enabled to be marked even if not researchable in the dynamic icon settings
@@ -1061,24 +1232,194 @@ function FCOIS.MarkItemByKeybind(iconId)
     end
 end -- FCOIS.MarkItemByKeybind
 
---Cycle through the item markers by help of a keybind
---> Currently only the standard icon is supported
-function FCOIS.MarkItemCycle(direction)
+--Returns the next/previous enabled marker icon
+local function getNextEnabledMarkerIcon(direction, currentSortOrderId)
 	direction = direction or "next"
-	if direction ~= "next" and direction ~= "prev" then return false end
-
-	if FCOIS.settingsVars.settings.standardIconOnKeybind ~= nil and FCOIS.settingsVars.settings.standardIconOnKeybind > 0 and FCOIS.settingsVars.settings.standardIconOnKeybind <= numFilterIcons then
-		--d("Mark item with standard markersymbol from settings: " .. FCOIS.settingsVars.settings.standardIconOnKeybind)
-		local iconId = FCOIS.settingsVars.settings.standardIconOnKeybind
-		if not FCOIS.settingsVars.settings.isIconEnabled[iconId] then
-			--d(">> IconId was not enabled in the settings! Taking iconId 1")
-			iconId = 1 --the lock symbol will be always enabled!
+	if direction ~= "next" and direction ~= "prev" then return 0 end
+	local nextIconInDirection = 0
+	local settings = FCOIS.settingsVars.settings
+	local isIconEnabled = settings.isIconEnabled
+	local iconSortOrder = settings.iconSortOrder
+	local icons = settings.icon
+	--Get the next iconId from sortOrder
+	if direction == "next" then
+		if currentSortOrderId <= (numFilterIcons-1) then
+			for iconsSortOrder=currentSortOrderId+1, #iconSortOrder, 1 do
+				nextIconInDirection = iconSortOrder[iconsSortOrder]
+				--Found the next icon in sortOrder and it is enabled?
+				if icons[nextIconInDirection] ~= nil and isIconEnabled[nextIconInDirection] then
+					return nextIconInDirection
+				end
+			end
+			nextIconInDirection = 0
 		end
-		--Mark/Unmark the item now
-		FCOIS.MarkItemByKeybind(iconId)
+		--If no icon was found until end of sortOrder: Start at 1 again until currentSortOder is reached
+		if nextIconInDirection == 0 then
+			for iconsSortOrder=1, currentSortOrderId-1, 1 do
+				nextIconInDirection = iconSortOrder[iconsSortOrder]
+				--Found the next icon in sortOrder and it is enabled?
+				if icons[nextIconInDirection] ~= nil and isIconEnabled[nextIconInDirection] then
+					return nextIconInDirection
+				end
+			end
+		end
+	elseif direction == "prev" then
+		if currentSortOrderId >= 2 then
+			for iconsSortOrder=currentSortOrderId-1, 1, -1 do
+				nextIconInDirection = iconSortOrder[iconsSortOrder]
+				--Found the prev icon in sortOrder and it is enabled?
+				if icons[nextIconInDirection] ~= nil and isIconEnabled[nextIconInDirection] then
+					return nextIconInDirection
+				end
+			end
+			nextIconInDirection = 0
+		end
+		--If no icon was found until begin of sortOrder: Start at the end again until currentSortOder is reached
+		if nextIconInDirection == 0 then
+			for iconsSortOrder=numFilterIcons, currentSortOrderId+1, -1 do
+				nextIconInDirection = iconSortOrder[iconsSortOrder]
+				--Found the prev icon in sortOrder and it is enabled?
+				if icons[nextIconInDirection] ~= nil and isIconEnabled[nextIconInDirection] then
+					return nextIconInDirection
+				end
+			end
+		end
 	end
+	return nextIconInDirection
 end
 
+--Returns the first enabled marker icon of all marker icons
+function FCOIS.getFirstEnabledMarkerIcon()
+	local settings = FCOIS.settingsVars.settings
+	local isIconEnabled = settings.isIconEnabled
+	if isIconEnabled ~= nil then
+		for iconId, isIconEnabledOne in ipairs(isIconEnabled) do
+			if isIconEnabledOne == true then return iconId end
+		end
+	end
+	return 0
+end
+
+--Returns the last enabled marker icon of all marker icons
+function FCOIS.getLastEnabledMarkerIcon()
+	local settings = FCOIS.settingsVars.settings
+	local isIconEnabled = settings.isIconEnabled
+	if isIconEnabled ~= nil then
+		local function ripairs(t)
+			local function ripairs_it(t,i)
+				i=i-1
+				local v=t[i]
+				if v==nil then return v end
+				return i,v
+			end
+			return ripairs_it, t, #t+1
+		end
+		for iconId, isIconEnabledOne in ripairs(isIconEnabled) do
+			if isIconEnabledOne == true then return iconId end
+		end
+	end
+	return 0
+end
+
+--Cycle through the item markers by help of a keybind
+function FCOIS.MarkItemCycle(direction)
+	direction = direction or "standard"
+	if direction ~= "standard" and direction ~= "next" and direction ~= "prev" then return false end
+	--The sort order of the marker icons was defined in the FCOIS settings. Use this sort order as icon mark order
+	local settings = FCOIS.settingsVars.settings
+	local iconSortOrder = settings.iconSortOrder
+	local icons = settings.icon
+
+	local function getNextAndPreviousMarkerIcon(currentSortOrderId)
+		if currentSortOrderId == nil then return nil, nil end
+		local nextIconId, prevIconId = 0, 0
+		nextIconId = getNextEnabledMarkerIcon("next", currentSortOrderId)
+		prevIconId = getNextEnabledMarkerIcon("prev", currentSortOrderId)
+		return nextIconId, prevIconId
+	end
+	local function getCurrentMarkerIconAndRemoveIt(bagId, slotIndex)
+		--Get the current marker icon. This will only work if only 1 marker icon is set!
+		local currentIconId = 0
+		local next, prev = 0, 0
+		local isMarked, markedIconsArray = FCOIS.IsMarked(bagId, slotIndex, -1, nil)
+		if isMarked == true and markedIconsArray ~= nil then
+			local markerIconsApplied = 0
+			for iconId, isMarkedIconId in pairs(markedIconsArray) do
+				if isMarkedIconId == true then
+					markerIconsApplied = markerIconsApplied + 1
+					currentIconId = iconId
+				end
+				if markerIconsApplied > 1 then
+					currentIconId = 0
+					break
+				end
+			end
+			--Only 1 marker icon is set and the used iconId is known?
+			if markerIconsApplied == 1 and currentIconId ~= 0 then
+				--Check which sort order this marker icon currently got
+				local currentSortOrderId = icons[currentIconId].sortOrder or 0
+				if currentSortOrderId > 0 then
+					--Get the next and previous sort order's marker icon
+					next, prev = getNextAndPreviousMarkerIcon(currentSortOrderId)
+					if next ~= 0 and prev ~= 0 then
+						--Remove the current marker icon
+						FCOIS.MarkItem(bagId, slotIndex, currentIconId, false, false)
+					end
+				end
+			end
+		end
+		--Return the next and previous iconId
+		return next, prev
+	end
+	local function checkRemoveAndGetIconToMark(bagId, slotIndex)
+		return getCurrentMarkerIconAndRemoveIt(bagId, slotIndex)
+	end
+
+	--Mark with standard icon
+	if direction == "standard" then
+		local standardIconOnKeybind = settings.standardIconOnKeybind
+		if standardIconOnKeybind ~= nil and standardIconOnKeybind > 0 and standardIconOnKeybind <= numFilterIcons then
+			--d("Mark item with standard markersymbol from settings: " .. FCOIS.settingsVars.settings.standardIconOnKeybind)
+			local iconId = standardIconOnKeybind
+			local isIconEnabled = settings.isIconEnabled
+			if not isIconEnabled[iconId] then
+				--d(">> IconId was not enabled in the settings! Taking iconId 1")
+				iconId = FCOIS_CON_ICON_LOCK --the lock symbol will be always enabled!
+			end
+			--Mark/Unmark the item now
+			FCOIS.MarkItemByKeybind(iconId)
+		end
+
+	--Mark with next icon
+	elseif direction == "next" then
+		if iconSortOrder ~= nil and icons ~= nil then
+			local bagId, slotIndex = FCOIS.GetBagAndSlotFromControlUnderMouse()
+			if bagId and slotIndex then
+				--Check if only one marker icon is set, remove it, get the next and previous marker icon IDs
+				local next, _ = checkRemoveAndGetIconToMark(bagId, slotIndex)
+				if next and next > 0 then
+					--Mark with the next marker icon
+					FCOIS.MarkItemByKeybind(next, bagId, slotIndex)
+				end
+			end
+		end
+
+	--Mark with previous icon
+	elseif direction == "prev" then
+		if iconSortOrder ~= nil and icons ~= nil then
+			local bagId, slotIndex = FCOIS.GetBagAndSlotFromControlUnderMouse()
+			if bagId and slotIndex then
+				--Check if only one marker icon is set, remove it, get the next and previous marker icon IDs
+				local _, prev = checkRemoveAndGetIconToMark(bagId, slotIndex)
+				if prev and prev > 0 then
+					--Mark with the previous marker icon
+					FCOIS.MarkItemByKeybind(prev, bagId, slotIndex)
+				end
+			end
+		end
+
+	end
+end
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -1087,11 +1428,11 @@ end
 function FCOIS.countMarkerIconsEnabled()
     local iconsEnabledCount = 0
     local dynIconsEnabledCount = 0
-    local iconsEnabledSettings = FCOIS.settingsVars.settings.isIconEnabled
     local isDynamicIcon = FCOIS.mappingVars.iconIsDynamic
-
+	local settings = FCOIS.settingsVars.settings
+	local isIconEnabled = settings.isIconEnabled
     for iconNr=1, numFilterIcons do
-        if iconsEnabledSettings[iconNr] then
+        if isIconEnabled[iconNr] then
             if isDynamicIcon[iconNr] then
                 dynIconsEnabledCount = dynIconsEnabledCount +1
             end
@@ -1168,12 +1509,13 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons)
         local choicesValuesList = {}
         local doCheckForEnabledIcons = typeToEnabledCheck[typeToCheck] or false
         local settings = FCOIS.settingsVars.settings
+		local isIconEnabled = settings.isIconEnabled
         local isGearIcon = settings.iconIsGear
 		local counter = 0
         for i=1, numFilterIcons, 1 do
             local doAddIconValueNow = true
             if doCheckForEnabledIcons then
-                doAddIconValueNow = settings.isIconEnabled[i]
+                doAddIconValueNow = isIconEnabled[i]
             end
             if doAddIconValueNow and typeToCheck == "gearSets" then
                 doAddIconValueNow = isGearIcon[i]
@@ -1187,18 +1529,19 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons)
 	end
 
 	--Build the icon lists for the options
-	local function buildIconsChoicesList(typeToCheck, withIcons)
+	local function buildIconsChoicesList(typeToCheck, p_withIcons)
 		typeToCheck = typeToCheck or 'standard'
-		withIcons = withIcons or false
+		p_withIcons = p_withIcons or false
 		local settings = FCOIS.settingsVars.settings
+		local isIconEnabled = settings.isIconEnabled
 		local iconsList = {}
 		if typeToCheck == 'standard' then
 			for i=1, numFilterIcons, 1 do
 				local locNameStr = FCOISlocVars.iconEndStrArray[i]
 				local iconName = FCOIS.GetIconText(i) or FCOISlocVars.fcois_loc["options_icon" .. tostring(i) .. "_" .. locNameStr] or "Icon " .. tostring(i)
-				local iconIsEnabled = settings.isIconEnabled[i]
+				local iconIsEnabled = isIconEnabled[i]
 				--Should the icon be shown at the start of the text too?
-				if withIcons then
+				if p_withIcons then
 					local iconNameWithIcon = FCOIS.buildIconText(iconName, i, false, not iconIsEnabled)
 					iconName = iconNameWithIcon
 				end
@@ -1213,11 +1556,11 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons)
 
 		elseif typeToCheck == 'standardNonDisabled' then
 			for i=1, numFilterIcons, 1 do
-				if settings.isIconEnabled[i] then
+				if isIconEnabled[i] then
 					local locNameStr = FCOISlocVars.iconEndStrArray[i]
 					local iconName = FCOISlocVars.fcois_loc["options_icon" .. tostring(i) .. "_" .. locNameStr]
 					--Should the icon be shown at the start of the text too?
-					if withIcons then
+					if p_withIcons then
 						local iconNameWithIcon = FCOIS.buildIconText(iconName, i, false, true) -- no color as row is completely red
 						iconName = iconNameWithIcon
 					end
@@ -1229,9 +1572,9 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons)
 			for i=1, numFilterIcons, 1 do
 				local locNameStr = FCOISlocVars.iconEndStrArray[i]
 				local iconName = FCOISlocVars.fcois_loc["options_icon" .. tostring(i) .. "_" .. locNameStr]
-				local iconIsEnabled = settings.isIconEnabled[i]
+				local iconIsEnabled = isIconEnabled[i]
 				--Should the icon be shown at the start of the text too?
-				if withIcons then
+				if p_withIcons then
 					local iconNameWithIcon = FCOIS.buildIconText(iconName, i, false, not iconIsEnabled)
 					iconName = iconNameWithIcon
 				end
@@ -1248,12 +1591,12 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons)
 			local isGearIcon = settings.iconIsGear
 			for i=1, numFilterIcons, 1 do
 				--Check if icon is a gear set icon and if it's enabled
-				local iconIsEnabled = settings.isIconEnabled[i]
+				local iconIsEnabled = isIconEnabled[i]
 				if isGearIcon[i] then
                     local locNameStr = FCOISlocVars.iconEndStrArray[i]
                     local iconName = FCOIS.GetIconText(i) or FCOISlocVars.fcois_loc["options_icon" .. tostring(i) .. "_" .. locNameStr] or "Icon " .. tostring(i)
 					--Should the icon be shown at the start of the text too?
-					if withIcons then
+					if p_withIcons then
 						local iconNameWithIcon = FCOIS.buildIconText(iconName, i, false, not iconIsEnabled)
 						iconName = iconNameWithIcon
 					end

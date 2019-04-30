@@ -244,8 +244,6 @@ function FCOIS.AddAdditionalButtons(buttonName, buttonData)
 
             --Add all additional inventory context menu "flag icon" buttons
         elseif buttonName == "FCOInventoriesContextMenuButtons" and buttonData == nil then
-            --ReAnchor the additional inventory "flag" buttons with the x and y offsets from the settings
-            FCOIS.reAnchorAdditionalInvButtons(false)
             --Add all additional inventory flag buttons
             local addInvBtnInvokers = FCOIS.contextMenuVars.filterPanelIdToContextMenuButtonInvoker
             for _, buttonDataTab in pairs(addInvBtnInvokers) do
@@ -253,6 +251,8 @@ function FCOIS.AddAdditionalButtons(buttonName, buttonData)
                     FCOIS.AddAdditionalButtons(nil, buttonDataTab)
                 end
             end
+            --ReAnchor the additional inventory "flag" buttons with the x and y offsets from the settings
+            FCOIS.reAnchorAdditionalInvButtons(true)
 
         --AddButton(parent, name, callbackFunction, onMouseUpCallbackFunction, onMouseUpCallbackFunctionMouseButton, text, font, tooltipText, tooltipAlign, textureNormal, textureMouseOver, textureClicked, width, height, left, top, alignMain, alignBackup, alignControl, hideButton)
         --Add a single additional inventory context menu "flag icon" button

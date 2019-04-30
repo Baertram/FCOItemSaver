@@ -266,12 +266,29 @@ function FCOIS.RefreshTransmutation()
     end
 end
 
---Refresh the list dialog 1 scroll list
-function FCOIS.RefreshListDialog()
+--Refresh the list dialog 1 scroll list (ZO_ListDialog1List)
+function FCOIS.RefreshListDialog(rebuildItems, filterPanelId)
+--d("[FCOIS]RefreshListDialog - rebuildItems: " .. tostring(rebuildItems) .. ", filterPanelId: " .. tostring(filterPanelId))
+    rebuildItems = rebuildItems or false
+    local refreshListDialogNow = false
     if not FCOIS.ZOControlVars.LIST_DIALOG:IsHidden() then
         if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[FCOIS.RefreshListDialog] List Dialog refresh", true, FCOIS_DEBUG_DEPTH_DETAILED) end
         FCOIS.preventerVars.isInventoryListUpdating = true
-        ZO_ScrollList_RefreshVisible(FCOIS.ZOControlVars.LIST_DIALOG)
+        --Rebuild the whole ZO_ListDialog1List ?
+        if rebuildItems and filterPanelId ~= nil then
+            --Is the function to update a dialog from LibFilters given?
+            if FCOIS.libFilters and FCOIS.libFilters.RequestUpdate then
+                FCOIS.libFilters:RequestUpdate(filterPanelId)
+            else
+                refreshListDialogNow = true
+            end
+        else
+            refreshListDialogNow = true
+        end
+        if refreshListDialogNow then
+            --Refresh the visible contents if the list dialog
+            ZO_ScrollList_RefreshVisible(FCOIS.ZOControlVars.LIST_DIALOG)
+        end
         FCOIS.preventerVars.isInventoryListUpdating = false
     end
 end

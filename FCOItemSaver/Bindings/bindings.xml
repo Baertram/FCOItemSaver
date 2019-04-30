@@ -17,16 +17,14 @@
         <Down>FCOIS.ChangeFilter(4)</Down>
       </Action>
       <Action name="FCOIS_MARK_ITEM_WITH_STANDARD_ICON">
-        <Down>FCOIS.MarkItemCycle('next')</Down>
+        <Down>FCOIS.MarkItemCycle('standard')</Down>
       </Action>
-<!--
       <Action name="FCOIS_MARK_ITEM_CYCLE_UP">
         <Down>FCOIS.MarkItemCycle('next')</Down>
       </Action>
       <Action name="FCOIS_MARK_ITEM_CYCLE_DOWN">
         <Down>FCOIS.MarkItemCycle('prev')</Down>
       </Action>
--->
       <Action name="FCOIS_MARK_ITEM_1">
         <Down>FCOIS.MarkItemByKeybind(1)</Down>
       </Action>

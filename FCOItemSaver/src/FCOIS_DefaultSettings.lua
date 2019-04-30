@@ -22,6 +22,7 @@ function FCOIS.buildDefaultSettings()
 		iconSortOrder				= {},
 		filterButtonLeft			= {},
 		filterButtonTop				= {},
+		filterButtonData			= {},
 		splitFilters				= true, -- always true since version 0.8.7. Support for non-split filter buttons is obsolete since then
 		isFilterOn   		   	 	= {false, false, false, false},
 		isFilterPanelOn				= {},
@@ -55,6 +56,8 @@ function FCOIS.buildDefaultSettings()
 		allowJewelryDeconstructionFilter = true,
 		allowImprovementFilter  	= true,
 		allowJewelryImprovementFilter = true,
+		allowResearchFilter  		= true,
+		allowJewelryResearchFilter  = true,
 		allowAlchemyFilter			= true,
         allowRetraitFilter          = true,
         allowOnlyUnbound            = {},
@@ -63,10 +66,14 @@ function FCOIS.buildDefaultSettings()
 		blockRefinement				= true,
 		blockDeconstruction			= true,
 		blockImprovement			= true,
+        blockResearch               = true,
+		blockResearchDialog  		= true,
 		blockJewelryRefinement		= true,
 		blockJewelryDeconstruction	= true,
 		blockJewelryImprovement		= true,
-		blockSendingByMail			= true,
+        blockJewelryResearch        = true,
+		blockJewelryResearchDialog  = true,
+        blockSendingByMail			= true,
 		blockTrading				= true,
 		blockVendorBuy				= false,
 		blockSelling				= true,
@@ -77,8 +84,11 @@ function FCOIS.buildDefaultSettings()
 		blockLaunder				= true,
 		blockRetrait				= true,
 		removeMarkAsJunk			= false,
+		allowMarkAsJunkForMarkedToBeSold = true,
         dontUnjunkOnBulkMark        = false,
 		dontUnjunkOnNormalMark		= false,
+		junkItemsMarkedToBeSold		= false,
+		dontUnJunkItemsMarkedToBeSold = false,
 		allowSellingForBlocked		= true,
 		allowSellingForBlockedOrnate = true,
 		allowSellingForBlockedIntricate = false,
@@ -268,14 +278,28 @@ function FCOIS.buildDefaultSettings()
         },
 		filterButtonContextMenuMaxIcons = 6,
 		useDifferentUndoFilterPanels = true,
+		-- Added with FCOIS v1.5.2. Value of addonFCOISChangedDynIconMaxUsableSlider = nil to assure checks in file src/FCOIS_Settings.lua, function afterSettings()!
+		numMaxDynamicIconsUsable = 10,
+		addonFCOISChangedDynIconMaxUsableSlider = nil, --Set the value of settings.addonFCOISChangedDynIconMaxUsableSlider to nil to repeat checks after addon updates in file src/FCOIS_Settings.lua, function afterSettings()!
     }
-	--For each panel id that is active
-    for helper_inv = 1, FCOIS.numVars.gFCONumFilterInventoryTypes, 1 do
-		if FCOIS.mappingVars.activeFilterPanelIds[helper_inv] == true then
+    --Local constant values for speed-up
+    local numLibFiltersFilterPanelIds   = FCOIS.numVars.gFCONumFilterInventoryTypes
+    local activeFilterPanelIds          = FCOIS.mappingVars.activeFilterPanelIds
+    local numFilterIcons                = FCOIS.numVars.gFCONumFilterIcons
+    local filterButtonsToCheck          = FCOIS.checkVars.filterButtonsToCheck
+   -- local numNonDynamicAndGearIcons     = FCOIS.numVars.gFCONumNonDynamicAndGearIcons
+    local numMaxDynIcons                = FCOIS.numVars.gFCOMaxNumDynamicIcons
+    local iconIsDynamic                 = FCOIS.mappingVars.iconIsDynamic
+    local iconIdToDynIcon               = FCOIS.mappingVars.dynamicToIcon
+    local iconNrToOrdinalStr            = FCOIS.mappingVars.iconNrToOrdinalStr
+
+    --For each panel id that is active
+    for libFiltersFilterPanelIdHelper = 1, numLibFiltersFilterPanelIds, 1 do
+		if activeFilterPanelIds[libFiltersFilterPanelIdHelper] == true then
 			--Create 2-dimensional arrays for the filters
-		    FCOIS.settingsVars.defaults.isFilterPanelOn[helper_inv] = {false, false, false, false}
+		    FCOIS.settingsVars.defaults.isFilterPanelOn[libFiltersFilterPanelIdHelper] = {false, false, false, false}
 		    --Create 2-dimensional array for the "enabled" setings (Filters, Anti-Destroy, Anti-Deconstruction, Anti-Sell, Anti-Trade, Anti-Mail, etc.)
-		    FCOIS.settingsVars.defaults.atPanelEnabled[helper_inv]	= {
+		    FCOIS.settingsVars.defaults.atPanelEnabled[libFiltersFilterPanelIdHelper]	= {
 		        ["filters"] 		 = false,
 --			    ["anti-destroy"] 	 = false,
 --			    ["anti-deconstruct"] = false,
@@ -288,39 +312,44 @@ function FCOIS.buildDefaultSettings()
 --				["anti-launder"]	 = false,
 	        }
 			--Create the helper arays for the filter button context menus
-			FCOIS.settingsVars.defaults.lastLockDynFilterIconId[helper_inv]		= -1
-            FCOIS.settingsVars.defaults.lastGearFilterIconId[helper_inv] 		= -1
-            FCOIS.settingsVars.defaults.lastResDecImpFilterIconId[helper_inv] 	= -1
-            FCOIS.settingsVars.defaults.lastSellGuildIntFilterIconId[helper_inv]= -1
+			FCOIS.settingsVars.defaults.lastLockDynFilterIconId[libFiltersFilterPanelIdHelper]		= -1
+            FCOIS.settingsVars.defaults.lastGearFilterIconId[libFiltersFilterPanelIdHelper] 		= -1
+            FCOIS.settingsVars.defaults.lastResDecImpFilterIconId[libFiltersFilterPanelIdHelper] 	= -1
+            FCOIS.settingsVars.defaults.lastSellGuildIntFilterIconId[libFiltersFilterPanelIdHelper]= -1
 			--Create 2-dimensional array for the UNDO functions from the addiitonal inventory context menu (flag) menu
-			FCOIS.contextMenuVars.undoMarkedItems[helper_inv] = {}
+			FCOIS.contextMenuVars.undoMarkedItems[libFiltersFilterPanelIdHelper] = {}
 		end
     end
 	--Create 2-dimensional arrays for the icons
 	local dynamicCounter = 0
-	local iconIsDynamic = FCOIS.mappingVars.iconIsDynamic
-	local iconIdToDynIcon = FCOIS.mappingVars.dynamicToIcon
-	for helper = 1, FCOIS.numVars.gFCONumFilterIcons, 1 do
-           --Marker icons in inventories
-       	FCOIS.settingsVars.defaults.markedItems[helper] 	= {}
-           --General icon information
-        FCOIS.settingsVars.defaults.icon[helper] 		  	= {}
-	    FCOIS.settingsVars.defaults.icon[helper].antiCheckAtPanel = {}
-		for helperPanel = 1, FCOIS.numVars.gFCONumFilterInventoryTypes, 1 do
-			FCOIS.settingsVars.defaults.icon[helper].antiCheckAtPanel[helperPanel] = false
-       	end
+	for filterIconHelper = 1, numFilterIcons, 1 do
+       --Marker icons in inventories
+       	FCOIS.settingsVars.defaults.markedItems[filterIconHelper] 	= {}
+        --Defaults for filter button offsets
+        FCOIS.settingsVars.defaults.filterButtonTop[filterIconHelper]  = FCOIS.filterButtonVars.gFilterButtonTop
+        FCOIS.settingsVars.defaults.filterButtonLeft[filterIconHelper] = FCOIS.filterButtonVars.gFilterButtonLeft[filterIconHelper]
 
-		--Defaults for filter button offsets
-		FCOIS.settingsVars.defaults.filterButtonTop[helper]  = FCOIS.filterButtonVars.gFilterButtonTop
-		FCOIS.settingsVars.defaults.filterButtonLeft[helper] = FCOIS.filterButtonVars.gFilterButtonLeft[helper]
+        --General icon information
+        FCOIS.settingsVars.defaults.icon[filterIconHelper] 		  	= {}
+	    FCOIS.settingsVars.defaults.icon[filterIconHelper].antiCheckAtPanel = {}
+		FCOIS.settingsVars.defaults.icon[filterIconHelper].demarkAllOthers = false --added with FCOIS 1.5.2
+		FCOIS.settingsVars.defaults.icon[filterIconHelper].demarkAllOthersExcludeDynamic = false
+		for filterIconHelperPanel = 1, numLibFiltersFilterPanelIds, 1 do
+			local valueToSet = false
+			--FCOIS v.1.4.4 - Research dialog panels need to be protected as default value as they were added new with this version
+			if filterIconHelperPanel == LF_SMITHING_RESEARCH_DIALOG or filterIconHelperPanel == LF_JEWELRY_RESEARCH_DIALOG then
+				valueToSet = true
+			end
+			FCOIS.settingsVars.defaults.icon[filterIconHelper].antiCheckAtPanel[filterIconHelperPanel] = valueToSet
+        end
 
-        --Defaults for research check is "false", except fordynamic icons where it is "true"
+        --Defaults for research check is "false", except for dynamic icons where it is "true"
 		local defResearchCheck = false
-		local isIconDynamic = iconIsDynamic[helper]
+		local isIconDynamic = iconIsDynamic[filterIconHelper]
 		if isIconDynamic then defResearchCheck = true end
-        FCOIS.settingsVars.defaults.disableResearchCheck[helper] = defResearchCheck
+        FCOIS.settingsVars.defaults.disableResearchCheck[filterIconHelper] = defResearchCheck
         if isIconDynamic then
-            FCOIS.settingsVars.defaults.icon[helper].temporaryDisableByInventoryFlagIcon = false
+            FCOIS.settingsVars.defaults.icon[filterIconHelper].temporaryDisableByInventoryFlagIcon = false
         end
 
         --Defaults for the enabling/disabling of the icons
@@ -332,28 +361,28 @@ function FCOIS.buildDefaultSettings()
 				enabledVar = false
 			end
 		end
-		FCOIS.settingsVars.defaults.isIconEnabled[helper] = enabledVar
+		FCOIS.settingsVars.defaults.isIconEnabled[filterIconHelper] = enabledVar
 
         --Defaults for the marker icon tooltips
-        if FCOIS.settingsVars.defaults.showMarkerTooltip[helper] == nil then
-	        FCOIS.settingsVars.defaults.showMarkerTooltip[helper] = true
+        if FCOIS.settingsVars.defaults.showMarkerTooltip[filterIconHelper] == nil then
+	        FCOIS.settingsVars.defaults.showMarkerTooltip[filterIconHelper] = true
         end
 
         --Defaults for allow only unbound items to be marked
         --Introduced with FCOIS version 1.0.6
-        FCOIS.settingsVars.defaults.allowOnlyUnbound[helper] = false
+        FCOIS.settingsVars.defaults.allowOnlyUnbound[filterIconHelper] = false
 
         --Fill the missing icon numbers to the isGearSet table so they exist with a "false" value as "non gear" entries
         local isStaticGearIcon = FCOIS.mappingVars.isStaticGearIcon
-        if FCOIS.settingsVars.defaults.iconIsGear[helper] == nil then
-            FCOIS.settingsVars.defaults.iconIsGear[helper] = false
+        if FCOIS.settingsVars.defaults.iconIsGear[filterIconHelper] == nil then
+            FCOIS.settingsVars.defaults.iconIsGear[filterIconHelper] = false
         end
         --Always set the 5 static gear icons to "true"
-        if isStaticGearIcon[helper] ~= nil and isStaticGearIcon[helper] then
-            FCOIS.settingsVars.defaults.iconIsGear[helper] = true
+        if isStaticGearIcon[filterIconHelper] ~= nil and isStaticGearIcon[filterIconHelper] then
+            FCOIS.settingsVars.defaults.iconIsGear[filterIconHelper] = true
         end
 
-    end
+    end -- for filter icons ...
 	--Preset the default icon colors, textures and sort orders
     FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_LOCK].color   = {["r"] = 1,["g"] = 0,["b"] = 0,["a"] = 1}
 	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_LOCK].texture = 1
@@ -489,9 +518,8 @@ function FCOIS.buildDefaultSettings()
     FCOIS.settingsVars.defaults.iconSortOrder[22] = FCOIS_CON_ICON_DYNAMIC_10
 
 	--Add the next 20 default values for the dynamic icons (11 to 30)
-	local currentIconSortOrder = 22
-    local numDynamicIcons = FCOIS.numVars.gFCONumDynamicIcons
-	for dynIconId=11, numDynamicIcons, 1 do
+	local currentIconSortOrder = FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_DYNAMIC_10].sortOrder
+	for dynIconId=11, numMaxDynIcons, 1 do
 		local dynIconNumber = iconIdToDynIcon[dynIconId]
 		if iconIsDynamic[dynIconNumber] then
 			currentIconSortOrder = currentIconSortOrder + 1
@@ -519,12 +547,26 @@ function FCOIS.buildDefaultSettings()
 	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_GEAR_5].name    = "Gear 5"
 
 	--Update the "Dynamic icon" texts depending on localization
-    local iconNrToOrdinalStr = FCOIS.mappingVars.iconNrToOrdinalStr
-    local numDynIcons = FCOIS.numVars.gFCONumDynamicIcons
-    for dynIconNr=1, numDynIcons, 1 do
+    for dynIconNr=1, numMaxDynIcons, 1 do
         --Use english ordinals
         local iconToOrdinalStrDynEn = iconNrToOrdinalStr[1][tonumber(dynIconNr)] or "th"
         local dynIconStr = tostring(dynIconNr).. iconToOrdinalStrDynEn
 		FCOIS.settingsVars.defaults.icon[_G["FCOIS_CON_ICON_DYNAMIC_" .. tostring(dynIconNr)]].name     = dynIconStr .. " dynamic"
+    end
+
+    --New filter button data settings -> since FCOIS version 1.4.4
+    for _, filterButtonNr in ipairs(filterButtonsToCheck) do
+        --Initialize the default settings
+        FCOIS.settingsVars.defaults.filterButtonData[filterButtonNr] = FCOIS.settingsVars.defaults.filterButtonData[filterButtonNr] or {}
+        for filterIconHelperPanel = 1, numLibFiltersFilterPanelIds, 1 do
+            --Create a subtable in the filterIcon data for each libFiltersFilterPanelId
+            FCOIS.settingsVars.defaults.filterButtonData[filterButtonNr][filterIconHelperPanel] = FCOIS.settingsVars.defaults.filterButtonData[filterButtonNr][filterIconHelperPanel]
+                or  {
+                ["left"]    = FCOIS.filterButtonVars.gFilterButtonLeft[filterButtonNr],
+                ["top"]     = FCOIS.filterButtonVars.gFilterButtonTop,
+                ["width"]   = FCOIS.filterButtonVars.gFilterButtonWidth,
+                ["height"]  = FCOIS.filterButtonVars.gFilterButtonHeight,
+            }
+        end
     end
 end

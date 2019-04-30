@@ -31,17 +31,18 @@ local function checkIfCanBeAutomaticallyMarked(bagId, slotIndex, itemId, checkTy
     --Get all icons of the item
     local isMarkedWithOneIcon, markedIcons = FCOIS.IsMarked(bagId, slotIndex, -1)
     if isMarkedWithOneIcon and markedIcons then
+        local settings = FCOIS.settingsVars.settings
         --Loop over all icons of the item
         for iconId, iconIsMarked in pairs(markedIcons) do
             --Is the current icon marked?
             if iconIsMarked then
                 --Do not automatically mark items if they got the deconstruction icon on them?
-                if iconId == FCOIS_CON_ICON_DECONSTRUCTION and FCOIS.settingsVars.settings.autoMarkPreventIfMarkedForDeconstruction then
+                if iconId == FCOIS_CON_ICON_DECONSTRUCTION and settings.autoMarkPreventIfMarkedForDeconstruction then
                     --d(">> Deconstruction item is marked and no others are allowed!")
                     retVar = false
                     break -- end the loop
                 --Do not automatically mark items if they got the sell icon on them?
-                elseif iconId == FCOIS_CON_ICON_SELL and FCOIS.settingsVars.settings.autoMarkPreventIfMarkedForSell then
+                elseif iconId == FCOIS_CON_ICON_SELL and settings.autoMarkPreventIfMarkedForSell then
                     --d(">> Sell item is marked and no others are allowed!")
                     retVar = false
                     break -- end the loop
@@ -53,6 +54,84 @@ local function checkIfCanBeAutomaticallyMarked(bagId, slotIndex, itemId, checkTy
     return retVar
 end
 
+--Do the additional checks for researchabel items (other addons, etc.)
+local function automaticMarkingResearchAdditionalCheckFunc(p_itemData, p_checkFuncResult)
+    --zo_callLater(function()
+    --d("[FCOIS]automaticMarkingResearchAdditionalCheckFunc() bagId: " .. tostring(p_itemData.bagId))
+    local bag2Inv = FCOIS.mappingVars.bagToPlayerInv
+    local inv = bag2Inv[p_itemData.bagId]
+    if inv == nil then return false, nil end
+    --The inventory slots got moved one hierarchy down, as the slots got a subarray now
+    local inventorySlots = PLAYER_INVENTORY.inventories[inv].slots[p_itemData.bagId]
+    local retVar = false
+    local itemDataEntry = inventorySlots[p_itemData.slotIndex]
+    if itemDataEntry ~= nil then
+        local settings = FCOIS.settingsVars.settings
+        local bagId, slotIndex = p_itemData.bagId, p_itemData.slotIndex
+        local itemLinkResearch = GetItemLink(bagId, slotIndex)
+        local isResearchable = false
+        --Only if coming from EVENT_INVENTORY_SINGLE_SLOT_UPDATE for new looted items as otherwise the dateEntry.data.researchAssistant exists properly!
+        --Added function to Research Assistant but addon update is not released yet?
+        local comingFromEventInvSingleSlotUpdate = FCOIS.preventerVars.eventInventorySingleSlotUpdate
+        --ResearchAssistant should be used?
+        local researchAddonId = FCOIS.getResearchAddonUsed()
+        if researchAddonId == FCOIS_RESEARCH_ADDON_RESEARCHASSISTANT then
+            if comingFromEventInvSingleSlotUpdate and ResearchAssistant ~= nil and ResearchAssistant.IsItemResearchableWithSettingsCharacter ~= nil then
+                isResearchable = ResearchAssistant.IsItemResearchableWithSettingsCharacter(bagId, slotIndex)
+            else
+                isResearchable = (itemDataEntry.researchAssistant ~= nil and itemDataEntry.researchAssistant == 'researchable')
+            end
+
+        --CraftStoreFixedAndImproved
+        elseif researchAddonId == FCOIS_RESEARCH_ADDON_CSFAI then
+            isResearchable = false
+            if (FCOIS.otherAddons.craftStoreFixedAndImprovedActive and CraftStoreFixedAndImprovedLongClassName ~= nil and CraftStoreFixedAndImprovedLongClassName.IsResearchable ~= nil) then
+                if itemLinkResearch ~= nil then
+                    local currentlyLoggedInCharOnly = settings.autoMarkResearchOnlyLoggedInChar
+                    --Return value of function is a table containing an integer key and a table as value. This table got an integer 1 as key and the charname asvalue, and an integer 2 as key and a boolean var isResearchable [true/false] as value:
+                    --table[1] = {[1] = "Glacies", [2] = false}, [2] = {[1] = "Baertram", [2] = true}, etc.
+                    --If currentlyLoggedInCharOnly is set to true it will only contain the entry for the currently logged in char
+                    local isResearchableCharTable = CraftStoreFixedAndImprovedLongClassName.IsResearchable(itemLinkResearch, currentlyLoggedInCharOnly)
+                    if isResearchableCharTable ~= nil and type(isResearchableCharTable) == "table" then
+                        for _, isResearchableTableForChar in ipairs(isResearchableCharTable) do
+                            if type(isResearchableTableForChar) == "table" then
+                                local charName, isResearchableTableValue = isResearchableTableForChar[1], isResearchableTableForChar[2]
+                                if isResearchableTableValue == true then
+                                    if currentlyLoggedInCharOnly == true then
+                                        if FCOIS.currentlyLoggedInCharName ~= nil and FCOIS.currentlyLoggedInCharName ~= "" and charName == FCOIS.currentlyLoggedInCharName then
+                                            isResearchable = true
+                                        end
+                                    else
+                                        isResearchable = true
+                                    end
+                                    if isResearchable then
+                                        --d(">researchable " .. itemLinkResearch .. ", currentlyLoggedInCharOnly: " ..tostring(currentlyLoggedInCharOnly) .. ", charName: " ..tostring(charName))
+                                        break -- Exit the inner loop now as a researchable item for a character was found
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+
+        --ESO standard research
+        elseif researchAddonId == FCOIS_RESEARCH_ADDON_ESO_STANDARD then
+            --d(">ESO standard research check")
+            --Check if the item is researchable for currently logged in character via standard ESO function
+            if (GetItemTraitInformation(bagId, slotIndex) == ITEM_TRAIT_INFORMATION_CAN_BE_RESEARCHED) then
+                isResearchable = true
+            end
+        end
+        --d("[FCOIS]automaticMarkingResearchAdditionalCheckFunc, isResearchable: " .. tostring(isResearchable))
+        return isResearchable, nil
+    else
+        retVar = false
+    end
+    return retVar, nil
+    --end, 100)
+end
+
 --Do all the checks for the "automatic mark item with quality"
 local function automaticMarkingQualityCheckFunc(p_bagId, p_slotIndex)
     --Check if item's quality is a selected, or higher one?
@@ -61,13 +140,15 @@ local function automaticMarkingQualityCheckFunc(p_bagId, p_slotIndex)
     --local itemLink = GetItemLink(p_bagId, p_slotIndex)
     --d(itemLink .. ", quality: " .. tostring(itemQuality))
     if not itemQuality then return false, nil end
-    if FCOIS.settingsVars.settings.autoMarkHigherQuality and FCOIS.settingsVars.settings.autoMarkQuality < ITEM_QUALITY_LEGENDARY then
-        qualityCheck = itemQuality and itemQuality ~= false and itemQuality >= FCOIS.settingsVars.settings.autoMarkQuality
+    local settings = FCOIS.settingsVars.settings
+    local autoMarkQuality = settings.autoMarkQuality
+    if settings.autoMarkHigherQuality and autoMarkQuality < ITEM_QUALITY_LEGENDARY then
+        qualityCheck = itemQuality and itemQuality ~= false and itemQuality >= autoMarkQuality
     else
-        qualityCheck = itemQuality and itemQuality ~= false and itemQuality == FCOIS.settingsVars.settings.autoMarkQuality
+        qualityCheck = itemQuality and itemQuality ~= false and itemQuality == autoMarkQuality
     end
     --Is the item marked due to it's quality? Then check if the item is a weapon or armor part and exclude the check if the settings tell so
-    if qualityCheck and FCOIS.settingsVars.settings.autoMarkHigherQualityExcludeArmor then
+    if qualityCheck and settings.autoMarkHigherQualityExcludeArmor then
         --[[
                             GetItemArmorType(*integer* _bagId_, *integer* _slotIndex_)
                             ** _Returns:_ *[ArmorType|#ArmorType]* _armorType_
@@ -485,13 +566,13 @@ local function automaticMarkingSetsAdditionalCheckFunc(p_itemData, p_checkFuncRe
 --==== Trait & non-wished trait checks - END ===========================================================================
 
     --Set marker icon was set already, or only the trait should be marked and was marked successfully? Then abort here now
-    --so the set icon won't be set later on in the calling function's "toDo" entry
+    --so the set icon won't be set later on in the calling function's "to do" entry
     if (markWithTraitIcon and settings.autoMarkSetsOnlyTraits) or isMarkedWithAutomaticSetMarkerIcon then return nil, nil end
     --Change the marker icon in the 1st checkFunc resultdata from the trait icon (if valid set part and trait was found)
     --to the normal "Set" marker icon now
     p_itemData.fromCheckFunc["newMarkerIcon"] = setsIconNr
 
-    --Return true: No set marker icon will be set. Return false: Set marker icon will be set via calling function's "toDo" entry
+    --Return true: No set marker icon will be set. Return false: Set marker icon will be set via calling function's "to do" entry
     return isProtected, nil
 end -- automaticMarkingSetsAdditionalCheckFunc
 
@@ -898,79 +979,7 @@ function FCOIS.scanInventoryItemsForAutomaticMarks(bag, slot, scanType, updateIn
             resultCheckFunc 	= true,
             resultNotCheckFunc 	= nil,
             additionalCheckFunc = function(p_itemData, p_checkFuncResult)
-                --zo_callLater(function()
---d("[FCOIS]additionalCheckfunc(research) bagId: " .. tostring(p_itemData.bagId))
-                    local bag2Inv = FCOIS.mappingVars.bagToPlayerInv
-                    local inv = bag2Inv[p_itemData.bagId]
-                    if inv == nil then return false, nil end
-                    --The inventory slots got moved one hierarchy down, as the slots got a subarray now
-                    local inventorySlots = PLAYER_INVENTORY.inventories[inv].slots[p_itemData.bagId]
-                    local retVar = false
-                    local itemDataEntry = inventorySlots[p_itemData.slotIndex]
-                    if itemDataEntry ~= nil then
-                        local bagId, slotIndex = p_itemData.bagId, p_itemData.slotIndex
-                        local itemLinkResearch = GetItemLink(bagId, slotIndex)
-                        local isResearchable = false
-                        --Only if coming from EVENT_INVENTORY_SINGLE_SLOT_UPDATE for new looted items as otherwise the dateEntry.data.researchAssistant exists properly!
-                        --Added function to Research Assistant but addon update is not released yet?
-                        local comingFromEventInvSingleSlotUpdate = FCOIS.preventerVars.eventInventorySingleSlotUpdate
-                        --ResearchAssistant should be used?
-                        local researchAddonId = FCOIS.getResearchAddonUsed()
-                        if researchAddonId == FCOIS_RESEARCH_ADDON_RESEARCHASSISTANT then
-                            if comingFromEventInvSingleSlotUpdate and ResearchAssistant ~= nil and ResearchAssistant.IsItemResearchableWithSettingsCharacter ~= nil then
-                                isResearchable = ResearchAssistant.IsItemResearchableWithSettingsCharacter(bagId, slotIndex)
-                            else
-                                isResearchable = (itemDataEntry.researchAssistant ~= nil and itemDataEntry.researchAssistant == 'researchable')
-                            end
-
-                        --CraftStoreFixedAndImproved
-                        elseif researchAddonId == FCOIS_RESEARCH_ADDON_CSFAI then
-                            isResearchable = false
-                            if (FCOIS.otherAddons.craftStoreFixedAndImprovedActive and CraftStoreFixedAndImprovedLongClassName ~= nil and CraftStoreFixedAndImprovedLongClassName.IsResearchable ~= nil) then
-                                if itemLinkResearch ~= nil then
-                                    local currentlyLoggedInCharOnly = settings.autoMarkResearchOnlyLoggedInChar
-                                    --Return value of function is a table containing an integer key and a table as value. This table got an integer 1 as key and the charname asvalue, and an integer 2 as key and a boolean var isResearchable [true/false] as value:
-                                    --table[1] = {[1] = "Glacies", [2] = false}, [2] = {[1] = "Baertram", [2] = true}, etc.
-                                    --If currentlyLoggedInCharOnly is set to true it will only contain the entry for the currently logged in char
-                                    local isResearchableCharTable = CraftStoreFixedAndImprovedLongClassName.IsResearchable(itemLinkResearch, currentlyLoggedInCharOnly)
-                                    if isResearchableCharTable ~= nil and type(isResearchableCharTable) == "table" then
-                                        for _, isResearchableTableForChar in ipairs(isResearchableCharTable) do
-                                            if type(isResearchableTableForChar) == "table" then
-                                                local charName, isResearchableTableValue = isResearchableTableForChar[1], isResearchableTableForChar[2]
-                                                if isResearchableTableValue == true then
-                                                    if currentlyLoggedInCharOnly == true then
-                                                        if FCOIS.currentlyLoggedInCharName ~= nil and FCOIS.currentlyLoggedInCharName ~= "" and charName == FCOIS.currentlyLoggedInCharName then
-                                                            isResearchable = true
-                                                        end
-                                                    else
-                                                        isResearchable = true
-                                                    end
-                                                    if isResearchable then
---d(">researchable " .. itemLinkResearch .. ", currentlyLoggedInCharOnly: " ..tostring(currentlyLoggedInCharOnly) .. ", charName: " ..tostring(charName))
-                                                        break -- Exit the inner loop now as a researchable item for a character was found
-                                                    end
-                                                end
-                                            end
-                                        end
-                                    end
-                                end
-                            end
-
-                        --ESO standard research
-                        elseif researchAddonId == FCOIS_RESEARCH_ADDON_ESO_STANDARD then
---d(">ESO standard research check")
-                            --Check if the item is researchable for currently logged in character via standard ESO function
-                            if (GetItemTraitInformation(bagId, slotIndex) == ITEM_TRAIT_INFORMATION_CAN_BE_RESEARCHED) then
-                                isResearchable = true
-                            end
-                        end
---d("[FCOIS]AutoMarkResearchable, isResearchable: " .. tostring(isResearchable))
-                        return isResearchable, nil
-                    else
-                        retVar = false
-                    end
-                    return retVar, nil
-                --end, 100)
+                return automaticMarkingResearchAdditionalCheckFunc(p_itemData, p_checkFuncResult), nil
             end,
             resultAdditionalCheckFunc = true,
             resultNotAdditionalCheckFunc = nil,
@@ -1301,7 +1310,7 @@ function FCOIS.scanInventoriesForZOsLockedItemsAndTransfer(p_bagId, p_slotIndex)
         if (itemId ~= nil and IsItemPlayerLocked(p_bagId, p_slotIndex)) then
             foundAndTransferedOne = true
             --Mark the item with FCOIS without checking if other markers should be removed etc. (see function FCOMarkMe())
-            FCOIS.markedItems[1][FCOIS.SignItemId(itemId)] = true
+            FCOIS.markedItems[1][FCOIS.SignItemId(itemId, nil, nil, nil)] = true
             --Unmark the item with ZOs functions
             SetItemIsPlayerLocked(p_bagId, p_slotIndex, false)
         end
@@ -1318,8 +1327,6 @@ function FCOIS.scanInventoriesForZOsLockedItems(allInventories, houseBankBagId)
     if houseBankBagId ~= nil then
         allInventories = false
     end
-    local updateInv = false
-    local atLeastOneZOsMarkedFound = false
 
     --Only scan if not already scanning
     if FCOIS.preventerVars.gScanningInv then return false end

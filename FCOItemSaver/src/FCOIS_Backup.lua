@@ -106,7 +106,6 @@ function FCOIS.backupMarkerIcons(backupType, withDetails, apiVersion, doClearBac
     --Get the current API version of the server, to distinguish code differences dependant on the API version
     FCOIS.APIversion = GetAPIVersion()
     local apiVersionToUse
-    local apiVersionSpecified = false
     if apiVersion ~= nil then
         --Use the specified api version
         apiVersionToUse = apiVersion
@@ -129,7 +128,7 @@ function FCOIS.backupMarkerIcons(backupType, withDetails, apiVersion, doClearBac
     local isInOwnHouse = FCOIS.checkIfInHouse() and FCOIS.checkIfIsOwnerOfHouse()
     if isOwningAHouse and isInOwnHouse then
         local houseBankBagIdToBag = FCOIS.mappingVars.houseBankBagIdToBag
-        for houseBankNr, houseBankBagId in ipairs(houseBankBagIdToBag) do
+        for _, houseBankBagId in ipairs(houseBankBagIdToBag) do
             if houseBankBagId ~= nil and IsHouseBankBag(houseBankBagId) then
                 --Add the house bank bags
                 allowedBagTypes[houseBankBagId] = true
@@ -317,7 +316,6 @@ function FCOIS.restoreMarkerIcons(restoreType, withDetails, apiVersion)
     FCOIS.APIversion = GetAPIVersion()
     local lastApiVersion
     local apiVersionToUse
-    local apiVersionSpecified = false
     if apiVersion ~= nil then
         --Set both the same in order to let the check later fail if both are not given
         lastApiVersion = apiVersion
@@ -375,7 +373,7 @@ function FCOIS.restoreMarkerIcons(restoreType, withDetails, apiVersion)
         local isInOwnHouse = FCOIS.checkIfInHouse() and FCOIS.checkIfIsOwnerOfHouse()
         if isOwningAHouse and isInOwnHouse then
             local houseBankBagIdToBag = FCOIS.mappingVars.houseBankBagIdToBag
-            for houseBankNr, houseBankBagId in ipairs(houseBankBagIdToBag) do
+            for _, houseBankBagId in ipairs(houseBankBagIdToBag) do
                 if houseBankBagId ~= nil and IsHouseBankBag(houseBankBagId) then
                     --Add the house bank bags
                     allowedBagTypes[houseBankBagId] = true

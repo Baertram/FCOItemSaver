@@ -131,13 +131,13 @@ function FCOIS.checkActivePanel(comingFrom, overwriteFilterWhere)
         --inventoriyName = ctrlVars.LAUNDER
         inventoryName = ctrlVars.INV
     --Mail
-    elseif (currentSceneName ~= nil and currentSceneName == ctrlVars.mailSendSceneName and not ctrlVars.MAIL_SEND:IsHidden()) or comingFrom == LF_MAIL_SEND then
+    elseif (currentSceneName ~= nil and currentSceneName == ctrlVars.mailSendSceneName and not ctrlVars.MAIL_SEND.control:IsHidden()) or comingFrom == LF_MAIL_SEND then
         --Update the filterPanelId
         FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(LF_MAIL_SEND)
         --inventoryName = ctrlVars.MAIL_SEND
         inventoryName = ctrlVars.INV
     --Trade
-    elseif not ctrlVars.PLAYER_TRADE:IsHidden() or comingFrom == LF_TRADE then
+    elseif not ctrlVars.PLAYER_TRADE.control:IsHidden() or comingFrom == LF_TRADE then
         --Update the filterPanelId
         FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(LF_TRADE)
         --inventoryName = ctrlVars.PLAYER_TRADE
@@ -203,6 +203,26 @@ function FCOIS.checkActivePanel(comingFrom, overwriteFilterWhere)
         --Update the filterPanelId
         FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(filterPanelId)
         inventoryName = ctrlVars.IMPROVEMENT_INV
+    --Research dialog
+    elseif FCOIS.isResearchListDialogShown() or (comingFrom == LF_SMITHING_RESEARCH_DIALOG or comingFrom == LF_JEWELRY_RESEARCH_DIALOG) then
+        local craftType = GetCraftingInteractionType()
+        local filterPanelId = LF_SMITHING_RESEARCH_DIALOG
+        if craftType == CRAFTING_TYPE_JEWELRYCRAFTING then
+            filterPanelId = LF_JEWELRY_RESEARCH_DIALOG
+        end
+        --Update the filterPanelId
+        FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(filterPanelId)
+        inventoryName = ctrlVars.RESEARCH_POPUP_TOP_DIVIDER
+    --Research
+    elseif not ctrlVars.RESEARCH:IsHidden() or (comingFrom == LF_SMITHING_RESEARCH or comingFrom == LF_JEWELRY_RESEARCH) then
+        local craftType = GetCraftingInteractionType()
+        local filterPanelId = LF_SMITHING_RESEARCH
+        if craftType == CRAFTING_TYPE_JEWELRYCRAFTING then
+            filterPanelId = LF_JEWELRY_RESEARCH
+        end
+        --Update the filterPanelId
+        FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(filterPanelId)
+        inventoryName = ctrlVars.RESEARCH
     --Retrait
     elseif (FCOIS.isRetraitStationShown() or comingFrom == LF_RETRAIT) then
         --Update the filterPanelId
@@ -245,6 +265,7 @@ end
 
 --Function to set the anti checks at a panel variable to true or false
 --and change depending anti check panels accordingly
+-->Used in files src/FCOIS_SettingsMenu.lua and src/FCOIS_Workarounds.lua
 function FCOIS.updateAntiCheckAtPanelVariable(iconNr, panelId, value)
     value = value or false
     if iconNr == nil or panelId == nil then return false end
