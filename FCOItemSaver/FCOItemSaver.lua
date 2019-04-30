@@ -48,15 +48,19 @@ local FCOIS = FCOIS
 --Create the filter object for addon libFilters 2.x if not already done in FCOIS_Constants.lua file
 
 --Load libLoadedAddons
-FCOIS.LIBLA = LibStub:GetLibrary("LibLoadedAddons")
+--FCOIS.LIBLA = LibStub:GetLibrary("LibLoadedAddons")
+FCOIS.LIBLA = LibLoadedAddons
 
 --Create the settings panel object of libAddonMenu 2.0
-FCOIS.LAM = LibStub('LibAddonMenu-2.0')
+FCOIS.LAM = LibAddonMenu2 or LibAddonMenu
+if FCOIS.LAM == nil then FCOIS.LAM = LibStub('LibAddonMenu-2.0') end
+
 --The options panel of FCO ItemSaver
 FCOIS.FCOSettingsPanel = nil
 
 --Create the libMainMenu 2.0 object
-FCOIS.LMM2 = LibStub("LibMainMenu-2.0")
+FCOIS.LMM2 = LibMainMenu2
+if FCOIS.LMM2 == nil then d("[FCOIS]Loading LibMainMenu-2.0 via LibStub") FCOIS.LMM2 = LibStub("LibMainMenu-2.0") end
 FCOIS.LMM2:Init()
 
 --===================== ADDON Info =============================================
