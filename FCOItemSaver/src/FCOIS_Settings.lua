@@ -18,7 +18,7 @@ local function NamesToIDSavedVars(serverWorldName)
         local displayName = GetDisplayName()
         --Check all the characters of the account
         for i = 1, GetNumCharacters() do
-            local name, _, _, _, _, _, characterId = GetCharacterInfo(i)
+            local name, _, _, _, _, _, _ = GetCharacterInfo(i)
             charName = name
             charName = zo_strformat(SI_UNIT_NAME, charName)
             --If the current logged in character was found
@@ -53,11 +53,6 @@ function FCOIS.getSettingsIsFilterOn(p_filterId, p_filterPanel)
         end
         if settings.debug then FCOIS.debugMessage( "[GetSettingsIsFilterOn] Filter Panel: " .. tostring(p_filterPanelNew) .. ", FilterId: " .. tostring(p_filterId) .. ", Result: " .. tostring(result), true, FCOIS_DEBUG_DEPTH_SPAM) end
         return result
-    else
-        --Old behaviour with filters
-        result = settings.isFilterOn[p_filterId]
-        if settings.debug then FCOIS.debugMessage( "[GetSettingsIsFilterOn] FilterId: " .. tostring(p_filterId) .. ", Result: " .. tostring(result), true, FCOIS_DEBUG_DEPTH_SPAM) end
-        return result
     end
 end
 
@@ -70,10 +65,6 @@ function FCOIS.setSettingsIsFilterOn(p_filterId, p_value, p_filterPanel)
         settings.isFilterPanelOn[p_filterPanelNew] = settings.isFilterPanelOn[p_filterPanelNew] or {}
         settings.isFilterPanelOn[p_filterPanelNew][p_filterId] = p_value
         if settings.debug then FCOIS.debugMessage( "[SetSettingsIsFilterOn] Filter Panel: " .. tostring(p_filterPanelNew) .. ", FilterId: " .. tostring(p_filterId) .. ", Value: " .. tostring(p_value), true, FCOIS_DEBUG_DEPTH_SPAM) end
-    else
-        --Old behaviour with filters
-        settings.isFilterOn[p_filterId] = p_value
-        if settings.debug then FCOIS.debugMessage( "[SetSettingsIsFilterOn] FilterId: " .. tostring(p_filterId) .. ", Value: " .. tostring(p_value), true, FCOIS_DEBUG_DEPTH_SPAM) end
     end
     --return the value
     return p_value
@@ -111,6 +102,10 @@ function FCOIS.getFilterWhereBySettings(p_filterWhere, onlyAnti)
             FCOIS.settingsVars.settings.atPanelEnabled[p_filterWhere]["filters"] = settingsAllowed.allowDeconstructionFilter
         elseif (p_filterWhere == LF_SMITHING_IMPROVEMENT ) then
             FCOIS.settingsVars.settings.atPanelEnabled[p_filterWhere]["filters"] = settingsAllowed.allowImprovementFilter
+        elseif (p_filterWhere == LF_SMITHING_RESEARCH ) then
+            FCOIS.settingsVars.settings.atPanelEnabled[p_filterWhere]["filters"] = settingsAllowed.allowResearchFilter
+        elseif (p_filterWhere == LF_SMITHING_RESEARCH_DIALOG ) then
+            FCOIS.settingsVars.settings.atPanelEnabled[p_filterWhere]["filters"] = settingsAllowed.allowResearchFilter
         elseif (p_filterWhere == LF_ENCHANTING_EXTRACTION ) then
             FCOIS.settingsVars.settings.atPanelEnabled[p_filterWhere]["filters"] = settingsAllowed.allowEnchantingFilter
         elseif (p_filterWhere == LF_ENCHANTING_CREATION ) then
@@ -137,6 +132,10 @@ function FCOIS.getFilterWhereBySettings(p_filterWhere, onlyAnti)
             FCOIS.settingsVars.settings.atPanelEnabled[p_filterWhere]["filters"] = settingsAllowed.allowJewelryDeconstructionFilter
         elseif (p_filterWhere == LF_JEWELRY_IMPROVEMENT ) then
             FCOIS.settingsVars.settings.atPanelEnabled[p_filterWhere]["filters"] = settingsAllowed.allowJewelryImprovementFilter
+        elseif (p_filterWhere == LF_JEWELRY_RESEARCH ) then
+            FCOIS.settingsVars.settings.atPanelEnabled[p_filterWhere]["filters"] = settingsAllowed.allowJewelryResearchFilter
+        elseif (p_filterWhere == LF_JEWELRY_RESEARCH_DIALOG ) then
+            FCOIS.settingsVars.settings.atPanelEnabled[p_filterWhere]["filters"] = settingsAllowed.allowJewelryResearchFilter
         end
     end
 
@@ -230,6 +229,12 @@ function FCOIS.changeAntiSettingsAccordingToFilterPanel()
     elseif FCOIS.gFilterWhere == LF_SMITHING_IMPROVEMENT then
         FCOIS.settingsVars.settings.blockImprovement = not currentSettings.blockImprovement
         isSettingEnabled = FCOIS.settingsVars.settings.blockImprovement
+    elseif FCOIS.gFilterWhere == LF_SMITHING_RESEARCH then
+        FCOIS.settingsVars.settings.blockResearch = not currentSettings.blockResearch
+        isSettingEnabled = FCOIS.settingsVars.settings.blockResearch
+    elseif FCOIS.gFilterWhere == LF_SMITHING_RESEARCH_DIALOG then
+        FCOIS.settingsVars.settings.blockResearchDialog = not currentSettings.blockResearchDialog
+        isSettingEnabled = FCOIS.settingsVars.settings.blockResearch
     elseif FCOIS.gFilterWhere == LF_GUILDSTORE_SELL then
         FCOIS.settingsVars.settings.blockSellingGuildStore = not currentSettings.blockSellingGuildStore
         isSettingEnabled = FCOIS.settingsVars.settings.blockSellingGuildStore
@@ -257,6 +262,12 @@ function FCOIS.changeAntiSettingsAccordingToFilterPanel()
     elseif FCOIS.gFilterWhere == LF_JEWELRY_IMPROVEMENT then
         FCOIS.settingsVars.settings.blockJewelryImprovement = not currentSettings.blockJewelryImprovement
         isSettingEnabled = FCOIS.settingsVars.settings.blockJewelryImprovement
+    elseif FCOIS.gFilterWhere == LF_JEWELRY_RESEARCH then
+        FCOIS.settingsVars.settings.blockJewelryResearch = not currentSettings.blockJewelryResearch
+        isSettingEnabled = FCOIS.settingsVars.settings.blockJewelryResearch
+    elseif FCOIS.gFilterWhere == LF_JEWELRY_RESEARCH_DIALOG then
+        FCOIS.settingsVars.settings.blockJewelryResearchDialog = not currentSettings.blockJewelryResearchDialog
+        isSettingEnabled = FCOIS.settingsVars.settings.blockJewelryResearch
     else
         FCOIS.settingsVars.settings.blockDestroying = not currentSettings.blockDestroying
         isSettingEnabled = FCOIS.settingsVars.settings.blockDestroying
@@ -438,7 +449,7 @@ local function scanBagsAndTransferMarkerIcon(toUnique)
             if toUnique then
                 --Build the item ID (ItemInstanceId)
                 local itemInstanceId = GetItemInstanceId(data.bagId, data.slotIndex)
-                itemId = FCOIS.SignItemId(itemInstanceId, false, true)
+                itemId = FCOIS.SignItemId(itemInstanceId, false, true, nil)
                 local uniqueId = zo_getSafeId64Key(GetItemUniqueId(data.bagId, data.slotIndex))
                 itemIdNew = uniqueId
 
@@ -447,7 +458,7 @@ local function scanBagsAndTransferMarkerIcon(toUnique)
                 local uniqueId = zo_getSafeId64Key(GetItemUniqueId(data.bagId, data.slotIndex))
                 itemId = uniqueId
                 local itemInstanceId = GetItemInstanceId(data.bagId, data.slotIndex)
-                itemIdNew = FCOIS.SignItemId(itemInstanceId, false, true)
+                itemIdNew = FCOIS.SignItemId(itemInstanceId, false, true, nil)
 
             end
             --Is the itemId (unique or non-unique) given?
@@ -508,14 +519,49 @@ end
 --Do some "after settings" stuff
 function FCOIS.afterSettings()
     local settings = FCOIS.settingsVars.settings
+    local numLibFiltersFilterPanelIds = FCOIS.numVars.gFCONumFilterInventoryTypes
+    local numFilterIcons = FCOIS.numVars.gFCONumFilterIcons
+    local icon2Dynamic = FCOIS.mappingVars.iconToDynamic
+    local dynamic2Icon = FCOIS.mappingVars.dynamicToIcon
+
+    --Introduced with FCOIS version 1.5.2: Dynamic icons global settings slider to set dynamic icons total count enabled
+    --Check if the current value of the settings slider was set due to an update of the addon and check if the user was using more than the
+    --default value of the enabled dynamic icons already: If so set the slider to the users max value so his dyn icons are all enabled
+    --Set the valuie from the settings to the global constant now:
+    FCOIS.numVars.gFCONumDynamicIcons = settings.numMaxDynamicIconsUsable
+    --Did the addon update and the max usable dyn. icons slider was introduced?
+    if settings.addonFCOISChangedDynIconMaxUsableSlider == nil then
+        FCOIS.settingsVars.settings.addonFCOISChangedDynIconMaxUsableSlider = true
+    end
+    if settings.addonFCOISChangedDynIconMaxUsableSlider then
+        --Check if the user got more dyn. icons enabled as the current value of the usable dyn. icons is set (standard value is: 10)
+        --Loop over iconsEnabled in settings and check if the number of dynIcons is > then the currently total usable number
+        local firstDynIconNr = FCOIS.numVars.gFCONumNonDynamicAndGearIcons + 1 --Start at icon# 13 = Dyn. icon #1
+        local maxUsableDynIconNr = 0
+        for dynIconNr, isEnabled in ipairs(settings.isIconEnabled) do
+            if isEnabled then
+                maxUsableDynIconNr = icon2Dynamic[dynIconNr]
+            end
+        end
+        if maxUsableDynIconNr > 0 then
+            --Update the global variable with the current number of usable dyn. icons from the settings
+            FCOIS.settingsVars.settings.numMaxDynamicIconsUsable    = maxUsableDynIconNr
+            FCOIS.numVars.gFCONumDynamicIcons                       = maxUsableDynIconNr
+        end
+    end
+    --Reset the settings value to false so the checks won't be done on next change again!
+    if settings.addonFCOISChangedDynIconMaxUsableSlider == true then
+        FCOIS.settingsVars.settings.addonFCOISChangedDynIconMaxUsableSlider = false
+    end
+
     --Set the split filters to true as old "non-split filters" method is not supported anymore!
     settings.splitFilters = true
 
     --Preset global variable for item destroying
     FCOIS.preventerVars.gAllowDestroyItem = not settings.blockDestroying
     -- Get the marked items for each filter from the settings (or defaults, if not set yet)
-    for markedItemsId = 1, FCOIS.numVars.gFCONumFilterIcons, 1 do
-        FCOIS.markedItems[markedItemsId] = settings.markedItems[markedItemsId]
+    for filterIconId = 1, numFilterIcons, 1 do
+        FCOIS.markedItems[filterIconId] = settings.markedItems[filterIconId]
     end
     --The automatic set marker icon name was changed from autoMarkSetsGearIconNr to autoMarkSetsIconNr
     if settings.autoMarkSetsGearIconNr ~= nil then
@@ -538,33 +584,38 @@ function FCOIS.afterSettings()
     settings.useUniqueIdsToggle = nil
 
     --Set the variables for each panel where the number of filtered items can be found for the current inventory
-    FCOIS.numberOfFilteredItems[LF_INVENTORY]              = ZO_PlayerInventoryList.data
+    local numFilterdItemsInv = ZO_PlayerInventoryList.data
+    FCOIS.numberOfFilteredItems[LF_INVENTORY]              = numFilterdItemsInv
     --Same like inventory
-    FCOIS.numberOfFilteredItems[LF_MAIL_SEND]              = FCOIS.numberOfFilteredItems[LF_INVENTORY]
-    FCOIS.numberOfFilteredItems[LF_TRADE]                  = FCOIS.numberOfFilteredItems[LF_INVENTORY]
-    FCOIS.numberOfFilteredItems[LF_GUILDSTORE_SELL]        = FCOIS.numberOfFilteredItems[LF_INVENTORY]
-    FCOIS.numberOfFilteredItems[LF_BANK_DEPOSIT]           = FCOIS.numberOfFilteredItems[LF_INVENTORY]
+    FCOIS.numberOfFilteredItems[LF_MAIL_SEND]              = numFilterdItemsInv
+    FCOIS.numberOfFilteredItems[LF_TRADE]                  = numFilterdItemsInv
+    FCOIS.numberOfFilteredItems[LF_GUILDSTORE_SELL]        = numFilterdItemsInv
+    FCOIS.numberOfFilteredItems[LF_BANK_DEPOSIT]           = numFilterdItemsInv
     FCOIS.numberOfFilteredItems[LF_VENDOR_BUY]             = 0 -- TODO: Add as filter panel gets supported
-    FCOIS.numberOfFilteredItems[LF_VENDOR_SELL]            = FCOIS.numberOfFilteredItems[LF_INVENTORY]
+    FCOIS.numberOfFilteredItems[LF_VENDOR_SELL]            = numFilterdItemsInv
     FCOIS.numberOfFilteredItems[LF_VENDOR_BUYBACK]         = 0 -- TODO: Add as filter panel gets supported
     FCOIS.numberOfFilteredItems[LF_VENDOR_REPAIR]          = 0 -- TODO: Add as filter panel gets supported
-    FCOIS.numberOfFilteredItems[LF_FENCE_SELL]             = FCOIS.numberOfFilteredItems[LF_INVENTORY]
-    FCOIS.numberOfFilteredItems[LF_FENCE_LAUNDER]          = FCOIS.numberOfFilteredItems[LF_INVENTORY]
+    FCOIS.numberOfFilteredItems[LF_FENCE_SELL]             = numFilterdItemsInv
+    FCOIS.numberOfFilteredItems[LF_FENCE_LAUNDER]          = numFilterdItemsInv
     --Others
     FCOIS.numberOfFilteredItems[LF_BANK_WITHDRAW]          = ZO_PlayerBankBackpack.data
     FCOIS.numberOfFilteredItems[LF_GUILDBANK_WITHDRAW]     = ZO_GuildBankBackpack.data
     FCOIS.numberOfFilteredItems[LF_SMITHING_REFINE]        = ZO_SmithingTopLevelRefinementPanelInventoryBackpack.data
     FCOIS.numberOfFilteredItems[LF_SMITHING_DECONSTRUCT]   = ZO_SmithingTopLevelDeconstructionPanelInventoryBackpack.data
     FCOIS.numberOfFilteredItems[LF_SMITHING_IMPROVEMENT]   = ZO_SmithingTopLevelImprovementPanelInventoryBackpack.data
+    FCOIS.numberOfFilteredItems[LF_SMITHING_RESEARCH]      = 0 -- TODO: Add as filter panel gets supported
+    FCOIS.numberOfFilteredItems[LF_SMITHING_RESEARCH_DIALOG] = 0 -- TODO: Add as filter panel gets supported
     FCOIS.numberOfFilteredItems[LF_ALCHEMY_CREATION]       = ZO_AlchemyTopLevelInventoryBackpack.data
     FCOIS.numberOfFilteredItems[LF_ENCHANTING_CREATION]    = ZO_EnchantingTopLevelInventoryBackpack.data
-    FCOIS.numberOfFilteredItems[LF_ENCHANTING_EXTRACTION]  = ZO_EnchantingTopLevelInventoryBackpack.data
+    FCOIS.numberOfFilteredItems[LF_ENCHANTING_EXTRACTION]  = FCOIS.numberOfFilteredItems[LF_ENCHANTING_CREATION]
     FCOIS.numberOfFilteredItems[LF_CRAFTBAG]               = ZO_CraftBagList.data
     FCOIS.numberOfFilteredItems[LF_RETRAIT]                = ZO_RetraitStation_KeyboardTopLevelRetraitPanelInventoryBackpack.data
     FCOIS.numberOfFilteredItems[LF_HOUSE_BANK_WITHDRAW]    = ZO_HouseBankBackpack.data
-    FCOIS.numberOfFilteredItems[LF_JEWELRY_REFINE]         = ZO_SmithingTopLevelRefinementPanelInventoryBackpack.data
-    FCOIS.numberOfFilteredItems[LF_JEWELRY_DECONSTRUCT]    = ZO_SmithingTopLevelDeconstructionPanelInventoryBackpack.data
-    FCOIS.numberOfFilteredItems[LF_JEWELRY_IMPROVEMENT]    = ZO_SmithingTopLevelImprovementPanelInventoryBackpack.data
+    FCOIS.numberOfFilteredItems[LF_JEWELRY_REFINE]         = FCOIS.numberOfFilteredItems[LF_SMITHING_REFINE]
+    FCOIS.numberOfFilteredItems[LF_JEWELRY_DECONSTRUCT]    = FCOIS.numberOfFilteredItems[LF_SMITHING_DECONSTRUCT]
+    FCOIS.numberOfFilteredItems[LF_JEWELRY_IMPROVEMENT]    = FCOIS.numberOfFilteredItems[LF_SMITHING_IMPROVEMENT]
+    FCOIS.numberOfFilteredItems[LF_JEWELRY_RESEARCH]       = 0 -- TODO: Add as filter panel gets supported
+    FCOIS.numberOfFilteredItems[LF_JEWELRY_RESEARCH_DIALOG]  = 0 -- TODO: Add as filter panel gets supported
 
     --The crafting station creation panel controls or a function to check if it's currently active
     FCOIS.craftingCreatePanelControlsOrFunction = {
@@ -629,6 +680,18 @@ function FCOIS.afterSettings()
             buttonData.alignControl = ancVars.additionalInventoryFlagButton[apiVersion][panelId].anchorControl
             buttonData.hideButton = doHide
         end
+    end
+
+    --Since FCOIS version 1.4.4
+    --Transfer old settings of filter button offsets, width and height to the new settings structure
+    -->See file src/FCOIS_FilterButtons.lua, function FCOIS.CheckAndTransferFilterButtonDataByPanelId(libFiltersPanelId, filterButtonNr)
+    local filterButtonsToCheck = FCOIS.checkVars.filterButtonsToCheck
+    if filterButtonsToCheck ~= nil then
+        for _, filterButtonNr in ipairs(filterButtonsToCheck) do
+            for libFiltersPanelId = 1, numLibFiltersFilterPanelIds, 1 do
+                FCOIS.CheckAndTransferFilterButtonDataByPanelId(libFiltersPanelId, filterButtonNr)
+            end
+        end -- for filterbuttonsToCheck ...
     end
 end
 
@@ -756,6 +819,7 @@ function FCOIS.LoadUserSettings(calledFromExternal)
             --Transfer the data from the name to the unique ID SavedVars now
             NamesToIDSavedVars()
         elseif (oldDefaultSettings.saveMode == 2) then
+            --Account wide settings
             oldSettings = ZO_SavedVars:NewAccountWide(FCOIS.addonVars.gAddonName .. "_Settings", FCOIS.addonVars.savedVarVersion, "Settings", checkForMigrateDefaults)
         else
             oldSettings = ZO_SavedVars:NewAccountWide(FCOIS.addonVars.gAddonName .. "_Settings", FCOIS.addonVars.savedVarVersion, "Settings", checkForMigrateDefaults)
@@ -801,7 +865,7 @@ function FCOIS.LoadUserSettings(calledFromExternal)
                 FCOIS.settingsVars.settings = ZO_SavedVars:NewCharacterIdSettings(FCOIS.addonVars.gAddonName .. "_Settings", FCOIS.addonVars.savedVarVersion , "Settings", FCOIS.settingsVars.defaults, world)
                 --Transfer the data from the name to the unique ID SavedVars now
                 NamesToIDSavedVars(world)
-
+            --Account wide settings
             elseif (FCOIS.settingsVars.defaultSettings.saveMode == 2) then
                 FCOIS.settingsVars.settings = ZO_SavedVars:NewAccountWide(FCOIS.addonVars.gAddonName .. "_Settings", FCOIS.addonVars.savedVarVersion, "Settings", FCOIS.settingsVars.defaults, world)
             else
@@ -813,7 +877,6 @@ function FCOIS.LoadUserSettings(calledFromExternal)
             -- Disable non-server dependent settings and save them to the server dependent ones now
             d("|cFF0000>>=====================================================>>|r")
             d("[FCOIS]Found non-server dependent SavedVars -> Migrating them now to server (" .. world .. ") dependent settings")
-            local defSettings = {}
             --First the settings for all
             --Copy the non-server dependent SV data determined above to a new table without "link"
             local oldDefSettings = FCOItemSaver_Settings["Default"][displayName]["$AccountWide"]["SettingsForAll"]
@@ -904,13 +967,10 @@ function FCOIS.copySavedVarsFromServerToServer(srcServer, targServer, onlyDelete
 --d("[FCOIS.copySavedVarsFromServerToServer]srcServer: " .. tostring(srcServerName) .. ", targServer: " ..tostring(targServerName).. ", onlyDelete: " .. tostring(onlyDelete))
 
     local settingsVars = FCOIS.settingsVars
-    local settings = settingsVars.settings
     local useAccountWideSV = (settingsVars.defaultSettings.saveMode == 2) or false
     local displayName = GetDisplayName()
     local svDefToCopy = {}
     local svToCopy = {}
-    local svDefTarget = {}
-    local svTarget = {}
     local currentlyLoggedInUserId = 0
 
     --Account wide settings enabled?

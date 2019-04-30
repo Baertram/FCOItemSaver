@@ -78,10 +78,13 @@ function FCOIS.checkIfProtectedSettingsEnabled(checkType, iconNr, isDynamicIcon,
         [LF_SMITHING_REFINE] 			= settings.blockRefinement,
         [LF_SMITHING_DECONSTRUCT] 		= settings.blockDeconstruction,
         [LF_SMITHING_IMPROVEMENT]		= settings.blockImprovement,
-        [LF_SMITHING_RESEARCH]			= true, 			--Always say that items are blocked for research
+        [LF_SMITHING_RESEARCH]			= true, 			                --Always say that items are blocked for research
+        [LF_SMITHING_RESEARCH_DIALOG]	= settings.blockResearchDialog,
         [LF_JEWELRY_REFINE] 			= settings.blockJewelryRefinement,
         [LF_JEWELRY_DECONSTRUCT] 		= settings.blockJewelryDeconstruction,
         [LF_JEWELRY_IMPROVEMENT]		= settings.blockJewelryImprovement,
+        [LF_JEWELRY_RESEARCH]			= true, 			                --Always say that items are blocked for research
+        [LF_JEWELRY_RESEARCH_DIALOG]    = settings.blockJewelryResearchDialog,
         [LF_ENCHANTING_CREATION] 		= settings.blockEnchantingCreation,
         [LF_ENCHANTING_EXTRACTION] 		= settings.blockEnchantingExtraction,
         [LF_ALCHEMY_CREATION] 			= settings.blockAlchemyDestroy,
@@ -112,7 +115,7 @@ function FCOIS.checkIfProtectedSettingsEnabled(checkType, iconNr, isDynamicIcon,
         protectionVal = settings.icon[iconNr].antiCheckAtPanel[checkType]
         --Is the dynamic icon protected at the current panel?
         if protectionVal then
-            --The protective functions are not enabled (red flag in the inventory additional options flag icon or the current panel got no additional inventory button, e.g. the crafting research tab)?
+            --The protective functions are not enabled (red flag is set in the inventory additional options flag icon, or the current panel got no additional inventory button, e.g. the crafting research tab or the research popup dialog)?
             local _, invAntiSettingsEnabled = FCOIS.getContextMenuAntiSettingsTextAndState(checkType, false)
             if not invAntiSettingsEnabled then
                 --Check if the temporary disabling of the protection is enabled, if the user uses the inventory "flag" icon and sets it to red
@@ -193,9 +196,11 @@ end
 --Function to check if the item is marked ("protected") with the icon number & settings
 --2nd parameter itemId is the item's instance id or the unique item's id
 --3rd parameter allows a handler like "gear" or "dynamic" to check all gear set or all dyanmic icons at once (in a loop)
-function FCOIS.checkIfItemIsProtected(iconId, itemId, checkHandler)
+--4th parameter addonName (String):	Can be left NIL! The unique addon name which was used to temporarily enable the uniqueIdm usage for the item checks.
+-----                               -> See FCOIS API function "FCOIS.UseTemporaryUniqueIds(addonName, doUse)"
+function FCOIS.checkIfItemIsProtected(iconId, itemId, checkHandler, addonName)
     if itemId == nil or (iconId == nil and checkHandler == nil) then return false end
---d("FCOIS.checkIfItemIsProtected -  iconId: " .. tostring(iconId) .. ", itemId: " .. tostring(FCOIS.SignItemId(itemId)) .. ", checkHandler: " .. tostring(checkHandler))
+--d("FCOIS.checkIfItemIsProtected -  iconId: " .. tostring(iconId) .. ", itemId: " .. tostring(FCOIS.SignItemId(itemId)) .. ", checkHandler: " .. tostring(checkHandler) .. ", addonName: " .. tostring(addonName))
     ------------------------------------------------------
     --	Check in a loop, for gear sets and dynamic icons:
     -------------------------------------------------------
@@ -207,9 +212,9 @@ function FCOIS.checkIfItemIsProtected(iconId, itemId, checkHandler)
         if checkHandler == "gear" then
             local itemIsProtectedWithGear = false
             local gearIcons = FCOIS.mappingVars.gearToIcon
-            for gearNr, gearIconNr in pairs(gearIcons) do
+            for _, gearIconNr in pairs(gearIcons) do
                 if gearIconNr ~= nil then
-                    local itemIsProtectedWithGearLoop = FCOIS.checkIfItemIsProtected(gearIconNr, itemId, nil)
+                    local itemIsProtectedWithGearLoop = FCOIS.checkIfItemIsProtected(gearIconNr, itemId, nil, addonName)
                     --Is the current gear's icon protecting the item then return "protected" (true)
                     if itemIsProtectedWithGearLoop then return true end
                 end
@@ -219,9 +224,9 @@ function FCOIS.checkIfItemIsProtected(iconId, itemId, checkHandler)
         elseif checkHandler == "dynamic" then
             local itemIsProtectedWithDynamic = false
             local dynamicIcons = FCOIS.mappingVars.dynamicToIcon
-            for dynamicNr, dynamicIconNr in pairs(dynamicIcons) do
+            for _, dynamicIconNr in pairs(dynamicIcons) do
                 if dynamicIconNr ~= nil then
-                    local itemIsProtectedWithDynamicLoop = FCOIS.checkIfItemIsProtected(dynamicIconNr, itemId, nil)
+                    local itemIsProtectedWithDynamicLoop = FCOIS.checkIfItemIsProtected(dynamicIconNr, itemId, nil, addonName)
                     --Is the current dynamic's icon protecting the item then return "protected" (true)
                     if itemIsProtectedWithDynamicLoop then return true end
                 end
@@ -246,7 +251,7 @@ function FCOIS.checkIfItemIsProtected(iconId, itemId, checkHandler)
             return false
         end
         --Check if the item is marked with the icon
-        itemIsMarked = FCOIS.markedItems[iconId][FCOIS.SignItemId(itemId)]
+        itemIsMarked = FCOIS.markedItems[iconId][FCOIS.SignItemId(itemId, nil, nil, addonName)]
     end
     if itemIsMarked == nil then itemIsMarked = false end
     --d("FCOIS.checkIfItemIsProtected - itemIsMarked: " .. tostring(itemIsMarked))
@@ -323,10 +328,12 @@ function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChat
         [FCOIS_CON_DECONSTRUCT]			= settings.blockDeconstruction,		    --Deconstruction
         [FCOIS_CON_IMPROVE]				= settings.blockImprovement,			--Improvement
         [FCOIS_CON_RESEARCH]			= true, 								--Research -> Always return true as there is no special option for anti-research and the protection is on
+        [FCOIS_CON_RESEARCH_DIALOG] 	= true, 								--Research dialog -> Always return true as there is no special option for anti-research and the protection is on
         [FCOIS_CON_JEWELRY_REFINE]		= settings.blockJewelryRefinement,		--Jewelry Refinement,
         [FCOIS_CON_JEWELRY_DECONSTRUCT]	= settings.blockJewelryDeconstruction,	--Jewelry Deconstruction
         [FCOIS_CON_JEWELRY_IMPROVE]		= settings.blockJewelryImprovement,		--Jewelry Improvement
-        [FCOIS_CON_JEWELRY_RESEARCH]    = true, 								--Research -> Always return true as there is no special option for anti-jewelry research and the protection is on
+        [FCOIS_CON_JEWELRY_RESEARCH]    = true, 								--Jewelry research -> Always return true as there is no special option for anti-jewelry research and the protection is on
+        [FCOIS_CON_JEWELRY_RESEARCH_DIALOG] = true, 							--Jewelry research dialog -> Always return true as there is no special option for anti-jewelry research and the protection is on
         [FCOIS_CON_ENCHANT_EXTRACT]		= settings.blockEnchantingExtraction,   --Enchanting extraction
         [FCOIS_CON_ENCHANT_CREATE]		= settings.blockEnchantingCreation,	    --Enchanting creation
         [FCOIS_CON_GUILD_STORE_SELL]	= settings.blockSellingGuildStore,	    --Guild store sell
@@ -344,7 +351,7 @@ function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChat
         [FCOIS_CON_FALLBACK]			= false,							    --Always return false. Used e.g. for the bank/guild bank deposit checks
     }
     --Mapping array for the alertMessages
-    local whereAreWeToAlertmessageText = FCOIS.mappingVars.whereAreWeToAlertmessageText
+    --local whereAreWeToAlertmessageText = FCOIS.mappingVars.whereAreWeToAlertmessageText
     --The mapping array to skip the dyanmic icon checks, as the whereAreWe filter panel ID is related to single item checks!
     local whereAreWeToSingleItemChecks = {
         [FCOIS_CON_CONTAINER_AUTOOLOOT]	= true,	--Auto loot container
@@ -356,27 +363,27 @@ function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChat
     }
     --======= FUNCTIONs ============================================================
     --Function to check a single item's type and get the whereAreWe panel ID
-    local function checkSingleItemProtection(bag, slot, whereAreWeBefore)
+    local function checkSingleItemProtection(p_bag, p_slotIndex, whereAreWeBefore)
         if settings.debug then FCOIS.debugMessage( ">>checkSingleItemProtection - panelId: " .. tostring(panelId) .. ", whereAreWeBefore: " .. tostring(whereAreWeBefore), true, FCOIS_DEBUG_DEPTH_ALL) end
-        if bag == nil or slot == nil then return false end
+        if p_bag == nil or p_slotIndex == nil then return false end
         local locWhereAreWe = FCOIS_CON_DESTROY
         --Are we trying to open a container with autoloot on?
-        if (FCOIS.isAutolootContainer(bag, slot)) then
+        if (FCOIS.isAutolootContainer(p_bag, p_slotIndex)) then
             locWhereAreWe = FCOIS_CON_CONTAINER_AUTOOLOOT
         --Read recipe?
-        elseif (FCOIS.isItemType(bag, slot, ITEMTYPE_RECIPE)) then
+        elseif (FCOIS.isItemType(p_bag, p_slotIndex, ITEMTYPE_RECIPE)) then
             locWhereAreWe = FCOIS_CON_RECIPE_USAGE
         --Read style motif?
-        elseif (FCOIS.isItemType(bag, slot, ITEMTYPE_RACIAL_STYLE_MOTIF)) then
+        elseif (FCOIS.isItemType(p_bag, p_slotIndex, ITEMTYPE_RACIAL_STYLE_MOTIF)) then
             locWhereAreWe = FCOIS_CON_MOTIF_USAGE
         --Drink potion?
-        elseif (FCOIS.isItemType(bag, slot, ITEMTYPE_POTION)) then
+        elseif (FCOIS.isItemType(p_bag, p_slotIndex, ITEMTYPE_POTION)) then
             locWhereAreWe = FCOIS_CON_POTION_USAGE
         --Eat food?
-        elseif (FCOIS.isItemType(bag, slot, ITEMTYPE_FOOD)) then
+        elseif (FCOIS.isItemType(p_bag, p_slotIndex, ITEMTYPE_FOOD)) then
             locWhereAreWe = FCOIS_CON_FOOD_USAGE
         --Use crown store item?
-        elseif (FCOIS.isItemType(bag, slot, ITEMTYPE_CROWN_ITEM) or FCOIS.isItemType(bag, slot, ITEMTYPE_CROWN_REPAIR)) then
+        elseif (FCOIS.isItemType(p_bag, p_slotIndex, ITEMTYPE_CROWN_ITEM) or FCOIS.isItemType(p_bag, p_slotIndex, ITEMTYPE_CROWN_REPAIR)) then
             locWhereAreWe = FCOIS_CON_CROWN_ITEM
         --Other items are allowed!
         else
@@ -424,10 +431,10 @@ function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChat
     --CraftBagExtended at a mail send panel, the bank, guild bank, guild store, store or trade?
     if FCOIS.otherAddons.craftBagExtendedActive and INVENTORY_CRAFT_BAG and (panelId == LF_CRAFTBAG or not ctrlVars.CRAFTBAG:IsHidden()) then
         --Inside mail panel?
-        if (not ctrlVars.MAIL_SEND:IsHidden() or FCOIS.gFilterWhereParent == LF_MAIL_SEND) then
+        if (not ctrlVars.MAIL_SEND.control:IsHidden() or FCOIS.gFilterWhereParent == LF_MAIL_SEND) then
             whereAreWe = FCOIS_CON_MAIL
         --Inside trading player 2 player panel?
-        elseif (not ctrlVars.PLAYER_TRADE:IsHidden() or FCOIS.gFilterWhereParent == LF_TRADE) then
+        elseif (not ctrlVars.PLAYER_TRADE.control:IsHidden() or FCOIS.gFilterWhereParent == LF_TRADE) then
             whereAreWe = FCOIS_CON_TRADE
         --Are we at a vendor sell tab (not showing the buy, buyback or repair tabs and showing the player inventory or the craftbag panel)
         elseif ((currentSceneName == "store" or FCOIS.gFilterWhereParent == LF_VENDOR_SELL) and (ctrlVars.STORE:IsHidden() and ctrlVars.STORE_BUY_BACK:IsHidden() and ctrlVars.REPAIR_LIST:IsHidden())) then
@@ -470,10 +477,10 @@ function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChat
     else -- if FCOIS.otherAddons.craftBagExtendedActive and INVENTORY_CRAFT_BAG and (panelId == LF_CRAFTBAG or not ctrlVars.CRAFTBAG:IsHidden()) then
 
         --Inside mail panel?
-        if (not ctrlVars.MAIL_SEND:IsHidden() or panelId == LF_MAIL_SEND) then
+        if (not ctrlVars.MAIL_SEND.control:IsHidden() or panelId == LF_MAIL_SEND) then
             whereAreWe = FCOIS_CON_MAIL
         --Inside trading player 2 player panel?
-        elseif (not ctrlVars.PLAYER_TRADE:IsHidden() or panelId == LF_TRADE) then
+        elseif (not ctrlVars.PLAYER_TRADE.control:IsHidden() or panelId == LF_TRADE) then
             whereAreWe = FCOIS_CON_TRADE
         --Inside vendor sell?
         elseif ((currentSceneName == "store" or panelId == LF_VENDOR_SELL) and (ctrlVars.STORE:IsHidden() and ctrlVars.STORE_BUY_BACK:IsHidden() and ctrlVars.REPAIR_LIST:IsHidden())) then
@@ -508,9 +515,22 @@ function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChat
             else
                 whereAreWe = FCOIS_CON_IMPROVE
             end
+        --Are we at the crafting stations research panel's popup list dialog?
+        elseif (FCOIS.isResearchListDialogShown() or (panelId == LF_SMITHING_RESEARCH_DIALOG or panelId == LF_JEWELRY_RESEARCH_DIALOG)) then
+            local craftType = GetCraftingInteractionType()
+            if craftType == CRAFTING_TYPE_JEWELRYCRAFTING then
+                whereAreWe = FCOIS_CON_JEWELRY_RESEARCH_DIALOG
+            else
+                whereAreWe = FCOIS_CON_RESEARCH_DIALOG
+            end
         --Are we at the crafting stations research panel?
-        elseif (not ctrlVars.RESEARCH:IsHidden() or panelId == LF_SMITHING_RESEARCH) then
-            whereAreWe = FCOIS_CON_RESEARCH
+        elseif (not ctrlVars.RESEARCH:IsHidden() or (panelId == LF_SMITHING_RESEARCH or panelId == LF_JEWELRY_RESEARCH)) then
+            local craftType = GetCraftingInteractionType()
+            if craftType == CRAFTING_TYPE_JEWELRYCRAFTING then
+                whereAreWe = FCOIS_CON_JEWELRY_RESEARCH
+            else
+                whereAreWe = FCOIS_CON_RESEARCH
+            end
         --Inside enchanting station
         elseif (not ctrlVars.ENCHANTING_STATION:IsHidden() or (panelId == LF_ENCHANTING_EXTRACTION or panelId == LF_ENCHANTING_CREATION)) then
             --Enchanting Extraction panel?
@@ -560,7 +580,7 @@ function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChat
                 --Get the whereAreWe panel ID by checking the item's type etc. now
                 whereAreWe = checkSingleItemProtection(bag, slot)
             end
-            --All others: We are trying to destroy an item
+        --All others: We are trying to destroy an item
         else
             whereAreWe = FCOIS_CON_DESTROY
         end
@@ -657,7 +677,6 @@ function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChat
                         --Check the whereAreWe settings again now, to get special settings for the autoloot container/recipes/etc.
                         isBlockedLoop = isBlocked
                     end
---d("Dynamic icon protection check for panel '" .. tostring(whereAreWeToFilterPanelId[whereAreWe]) .."' returned: " .. tostring(isBlockedLoop))
                 end
                 --============== DYNAMIC ICON CHECKS - END =====================================
             end -- if not whereAreWe == FCOIS_CON_FALLBACK then
@@ -695,17 +714,16 @@ function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChat
                            end
                        end
                     end
-                    --Improved items and settings allow them to be improved?
+                --Improved items and settings allow them to be improved?
                 elseif (i==FCOIS_CON_ICON_IMPROVEMENT and (whereAreWe == FCOIS_CON_IMPROVE or whereAreWe == FCOIS_CON_JEWELRY_IMPROVE) and settings.allowImproveImprovement == true) then
                     isBlockedLoop = false
-                    --Extraction of glyphs with deconstruction item
+                --Extraction of glyphs with deconstruction item
                 elseif (i==FCOIS_CON_ICON_DECONSTRUCTION and whereAreWe == FCOIS_CON_ENCHANT_EXTRACT and settings.allowDeconstructDeconstruction == true) then
                     --Check if the itemtype is a glyph
                     isBlockedLoop = not FCOIS.isItemAGlpyh(bag, slot)
                     --d(">>IsItemAGlpyh: " .. tostring(not isBlockedLoop) .. ", isBlockedLoop: " .. tostring(isBlockedLoop))
-                    --Research and research marker icon is allowed to be used?
+                --Research and research marker icon is allowed to be used?
                 elseif (i==FCOIS_CON_ICON_RESEARCH and whereAreWe == FCOIS_CON_RESEARCH and settings.allowResearch == true) then
-                    --d(">>research of research icon is allowed!")
                     isBlockedLoop = false
                 end
                 --============== SPECIAL ITEM & ICON CHECKS - END (non-dynamic) ====================================
@@ -741,7 +759,7 @@ function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChat
     --Else return the global block value from before the icon checks
 --d("return isBlocked: " .. tostring(isBlocked))
     return isBlocked
-end
+end -- ItemSelectionHandler
 
 
 --=============== DECONSTRUCTION SELECTION HANDLER ========================================================================================
@@ -758,7 +776,6 @@ function FCOIS.DeconstructionSelectionHandler(bag, slot, echo, overrideChatOutpu
     local settings = FCOIS.settingsVars.settings
 
     if settings.debug then FCOIS.debugMessage( "[DeconstructionSelectionHandler] Bag: " .. tostring(bag) .. ", Slot: " .. tostring(slot) .. ", echo: " .. tostring(echo) .. ", overrideChatOutput: " .. tostring(overrideChatOutput) .. ", suppressChatOutput: " .. tostring(suppressChatOutput) .. ", overrideAlert: " .. tostring(overrideAlert) .. ", suppressAlert: " .. tostring(suppressAlert) .. ", calledFromExternalAddon: " .. tostring(calledFromExternalAddon) .. ", panelId: " .. tostring(panelId), true, FCOIS_DEBUG_DEPTH_SPAM) end
---d("[FCOIS]DeconstructionSelectionHandler - Bag: " .. tostring(bag) .. ", Slot: " .. tostring(slot).. ", Echo: " .. tostring(echo))
     --> GOT HERE FROM CONTEXT MENU ENTRY FOR "ADD ITEM TO CRAFT" e.g.
     -- Is user not at the deconstruction panel or the panelId is given from the function call but it is NOT the deconstruction panel at a crafting station?
     if( not ctrlVars.DECONSTRUCTION_BAG or ctrlVars.DECONSTRUCTION_BAG:IsHidden() or (panelId ~= nil and (panelId ~= LF_SMITHING_DECONSTRUCT or panelId ~= LF_JEWELRY_DECONSTRUCT)) ) then
@@ -768,6 +785,8 @@ function FCOIS.DeconstructionSelectionHandler(bag, slot, echo, overrideChatOutpu
                 or (not ctrlVars.ENCHANTING_STATION:IsHidden() or FCOIS.gFilterWhere == LF_ENCHANTING_CREATION or FCOIS.gFilterWhere == LF_ENCHANTING_EXTRACTION)
                 or (FCOIS.craftingPrevention.IsShowingRefinement() or FCOIS.gFilterWhere == LF_SMITHING_REFINE or FCOIS.gFilterWhere == LF_JEWELRY_REFINE)
                 or (FCOIS.craftingPrevention.IsShowingImprovement() or FCOIS.gFilterWhere == LF_SMITHING_IMPROVEMENT or FCOIS.gFilterWhere == LF_JEWELRY_IMPROVEMENT)
+                or (FCOIS.craftingPrevention.IsShowingResearch() or FCOIS.gFilterWhere == LF_SMITHING_RESEARCH or FCOIS.gFilterWhere == LF_JEWELRY_RESEARCH)
+                or (FCOIS.isResearchListDialogShown() or FCOIS.gFilterWhere == LF_SMITHING_RESEARCH_DIALOG or FCOIS.gFilterWhere == LF_JEWELRY_RESEARCH_DIALOG)
                 or (FCOIS.isRetraitStationShown() or FCOIS.gFilterWhere == LF_RETRAIT)
         ) then
             --or (not ctrlVars.GUILD_STORE:IsHidden() or FCOIS.gFilterWhere == LF_GUILDSTORE_SELL) ) then
@@ -776,7 +795,6 @@ function FCOIS.DeconstructionSelectionHandler(bag, slot, echo, overrideChatOutpu
             return false
         end
     end
-
     --The mapping table for the current deconstruction panel
     local deconPanelToBlockSettings = {
         [LF_SMITHING_DECONSTRUCT]   = settings.blockDeconstruction,
@@ -868,7 +886,7 @@ function FCOIS.DeconstructionSelectionHandler(bag, slot, echo, overrideChatOutpu
     --Else return the global block value from before the icon checks
     --d("Decon: return isBlocked: " .. tostring(isBlocked))
     return isBlocked
-end
+end -- DeconstructionSelectionHandler
 
 
 -- ==================================================================================
@@ -896,6 +914,9 @@ end
 function FCOIS.craftingPrevention.IsShowingRefinement()
     return not ctrlVars.REFINEMENT_SLOT:IsHidden()
 end
+function FCOIS.craftingPrevention.IsShowingResearch()
+    return not ctrlVars.RESEARCH:IsHidden()
+end
 function FCOIS.craftingPrevention.IsShowingAlchemy()
     return not ctrlVars.ALCHEMY_SLOT_CONTAINER:IsHidden()
 end
@@ -905,14 +926,14 @@ end
 function FCOIS.craftingPrevention.IsShowingProvisionerCook()
     local retVar = FCOIS.craftingPrevention.IsShowingProvisioner()
     if retVar then
-        return ctrlVars.PROVISIONER.filterType == 1
+        return ctrlVars.PROVISIONER.filterType == PROVISIONER_SPECIAL_INGREDIENT_TYPE_SPICES
     end
     return false
 end
 function FCOIS.craftingPrevention.IsShowingProvisionerBrew()
     local retVar = FCOIS.craftingPrevention.IsShowingProvisioner()
     if retVar then
-        return ctrlVars.PROVISIONER.filterType == 2
+        return ctrlVars.PROVISIONER.filterType == PROVISIONER_SPECIAL_INGREDIENT_TYPE_FLAVORING
     end
     return false
 end
@@ -939,7 +960,6 @@ function FCOIS.craftingPrevention.RemoveItemFromCraftSlot(bagId, slotIndex, isSl
     local whereAreWe
     --The global crafting stations variable
     local craftingStationVar
-    local ctrlVars = ctrlVars
     local craftPrev = FCOIS.craftingPrevention
     --Are we at an enchanting station?
     if craftPrev.IsShowingEnchantmentExtraction() then
@@ -1065,7 +1085,6 @@ end
 
 --Returns the bagId and slotIndex of a slotted item in the deconstruction/improvement/refine/enchant extraction slot
 function FCOIS.craftingPrevention.GetSlottedItemBagAndSlot()
-    local ctrlVars = ctrlVars
     local isRetraitShown = FCOIS.isRetraitStationShown()
     local isCraftingStationShown = ZO_CraftingUtils_IsCraftingWindowOpen() and ctrlVars.RESEARCH:IsHidden() -- No crafting slot at research!
     local bagId, slotIndex
@@ -1102,7 +1121,6 @@ end
 
 function FCOIS.craftingPrevention.IsItemProtectedAtACraftSlotNow(bagId, slotIndex)
     --Are we inside a crafting or retrait station?
-    local ctrlVars = ctrlVars
     local isRetraitShown = FCOIS.isRetraitStationShown()
     local isCraftingStationShown = ZO_CraftingUtils_IsCraftingWindowOpen() and ctrlVars.RESEARCH:IsHidden() -- No crafting slot at research!
     if isCraftingStationShown or isRetraitShown then
@@ -1149,7 +1167,7 @@ function FCOIS.isCraftBagItemDraggedToCraftingSlot(panelId, bagId, slotIndex)
     if checkFunc == nil then return false end
 --d("[FCOIS] Received item drag at crafting station")
     if checkFunc() and bagId ~= nil then
-        local itemLink = GetItemLink(bagId, slotIndex)
+        --local itemLink = GetItemLink(bagId, slotIndex)
 --d(">" .. itemLink .. " - bag: " ..tostring(bagId) .. ", slotIndex: " ..tostring(slotIndex))
         --Is the item from the craftbag?
         if bagId == BAG_VIRTUAL then
@@ -1165,6 +1183,8 @@ function FCOIS.isCraftBagItemDraggedToCraftingSlot(panelId, bagId, slotIndex)
     end
 end
 
+--Function to check if an item is protected at the guild store sell tab now, after it got marked with a marker icon.
+--If so: Remove the item from the guild store's sell slot again, if it is slotted
 function FCOIS.IsItemProtectedAtTheGuildStoreSellTabNow(bagId, slotIndex)
     if not ctrlVars.GUILD_STORE:IsHidden() and ctrlVars.GUILD_STORE_KEYBOARD:IsInSellMode() then
         --Check if marked item is currently in the "sell slot" and remove it again, if it is protected
@@ -1189,7 +1209,78 @@ function FCOIS.IsItemProtectedAtTheGuildStoreSellTabNow(bagId, slotIndex)
     end
 end
 
---Function to check if an item is protected at a slot (crafting, junk, etc.) at the moment, and if so,
+--Function to check if an item is protected at a libFilters filter panel ID now, after it got marked with a marker icon.
+--If so: Remove the item from the panel's slot again, if it is slotted
+function FCOIS.IsItemProtectedAtPanelNow(bagId, slotIndex, panelId)
+    panelId = panelId or FCOIS.gFilterWhere
+    if panelId == nil then return nil end
+    --Mail send
+    if panelId == LF_MAIL_SEND then
+        if (ctrlVars.MAIL_SEND and not ctrlVars.MAIL_SEND.control:IsHidden()) or not ctrlVars.MAIL_ATTACHMENTS:IsHidden() then
+            local function CheckAttachments()
+                --Check each of the attachmenmt slots
+                for i = 1, MAIL_MAX_ATTACHED_ITEMS do
+                    -- Return value would be 1 if item is slotted in this attachment slot
+                    if GetQueuedItemAttachmentInfo(i) ~= 0 then
+                        --Get the slot i's slotIndex
+                        local attachmentSlotsParent = ctrlVars.MAIL_ATTACHMENTS
+                        local slotControl = attachmentSlotsParent[i]
+                        --Search the slotControl slotIndex and compare it with the actually checked item's slotIndex
+                        if slotControl ~= nil and slotControl.bagId ~= nil and slotControl.bagId == bagId and slotControl.slotIndex ~= nil and slotControl.slotIndex == slotIndex then
+                            --Item was found: Check if it is protected now
+                            --d("[FCOIS]MarkMe ProtectedAtSlotNow - callDeconstructionSelectionHandler without echo")
+                            --FCOIS.callDeconstructionSelectionHandler(bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon)
+                            --Be sure to set calledFromExternalAddon = true here as otherwise the guild store sell checks aren't done, because
+                            --the DeconstructionSelectionhandler will not call the ItemSelectionHandler then!
+                            local isProtected = FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, false, true, false, true, true)
+                            --Item is protected?
+                            if isProtected then
+                                --Item is protected now, so remove it from the mail attachment slot again
+                                RemoveQueuedItemAttachment(i)
+                                local whereAreWe = FCOIS_CON_MAIL
+                                --function FCOIS.outputItemProtectedMessage(bag, slot, whereAreWe, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert)
+                                FCOIS.outputItemProtectedMessage(bagId, slotIndex, whereAreWe, true, false, false, false)
+                            end
+                        end
+                    end
+                end
+            end
+            --Check the attachments now and unslot them if they are protected now
+            CheckAttachments()
+        end
+
+    --Player2Player trade
+    elseif panelId == LF_TRADE then
+        if (ctrlVars.PLAYER_TRADE_WINDOW and ctrlVars.PLAYER_TRADE_WINDOW:IsTrading()) or (ctrlVars.PLAYER_TRADE and not ctrlVars.PLAYER_TRADE.control:IsHidden()) or not ctrlVars.PLAYER_TRADE_ATTACHMENTS:IsHidden() then
+            --local functions for mail send checks
+            local function CheckTradeAttachments()
+                for i = 1, TRADE_NUM_SLOTS do
+                    local bagIdTradeSlot, slotIndexTradeSlot = GetTradeItemBagAndSlot(TRADE_ME, i)
+                    if bagIdTradeSlot and slotIndexTradeSlot and bagIdTradeSlot == bagId and slotIndexTradeSlot == slotIndex then
+                        --Item was found: Check if it is protected now
+                        --d("[FCOIS]MarkMe ProtectedAtSlotNow - callDeconstructionSelectionHandler without echo")
+                        --FCOIS.callDeconstructionSelectionHandler(bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon)
+                        --Be sure to set calledFromExternalAddon = true here as otherwise the guild store sell checks aren't done, because
+                        --the DeconstructionSelectionhandler will not call the ItemSelectionHandler then!
+                        local isProtected = FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, false, true, false, true, true)
+                        --Item is protected?
+                        if isProtected then
+                            TradeRemoveItem(i)
+                            local whereAreWe = FCOIS_CON_TRADE
+                            --function FCOIS.outputItemProtectedMessage(bag, slot, whereAreWe, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert)
+                            FCOIS.outputItemProtectedMessage(bagId, slotIndex, whereAreWe, true, false, false, false)
+                        end
+                    end
+                end
+            end
+            --Check the attachments now and unslot them if they are protected now
+            CheckTradeAttachments()
+        end
+    end
+end
+
+
+--Function to check if an item is protected at a slot (crafting, junk, mail, trade, etc.) at the moment, and if so,
 --remove it from the slot/junk now
 function FCOIS.IsItemProtectedAtASlotNow(bagId, slotIndex, bulkMark)
     bulkMark = bulkMark or false
@@ -1199,10 +1290,8 @@ function FCOIS.IsItemProtectedAtASlotNow(bagId, slotIndex, bulkMark)
     FCOIS.IsItemProtectedAtTheGuildStoreSellTabNow(bagId, slotIndex)
     --Check if the item is protected at the junk tab now
     FCOIS.checkIfIsJunkItem(bagId, slotIndex, bulkMark)
-    --Todo:
-    --Check if the item is added to the mail, and remove it if it's protected again now
-    --Todo:
-    --Check if the item is added to the player trade, and remove it if it's protected again now
+    --Check if the item is protected at any other panel now
+    FCOIS.IsItemProtectedAtPanelNow(bagId, slotIndex, FCOIS.gFilterWhere)
 end
 
 --Check if withdraw from guild bank is allowed, or block deposit of items

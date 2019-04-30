@@ -58,7 +58,7 @@ function FCOIS.overrideDialogYesButton(dialog)
         end
     else
         --All other dialogs
-        ZO_Dialog1:SetKeyboardEnabled(false)
+        FCOIS.ZOControlVars.ZODialog1:SetKeyboardEnabled(false)
         button1:SetEnabled(true)
         button1:SetMouseEnabled(true)
         button1:SetHidden(false)

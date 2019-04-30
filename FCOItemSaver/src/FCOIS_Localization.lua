@@ -23,7 +23,8 @@ function FCOIS.buildLocalizedFilterButtonContextMenuEntries(contextMenuType)
 
     --Gear set / dynamic icon variables
     local iconIsGear = settings.iconIsGear
-    local dynIconTotalCount = FCOIS.numVars.gFCONumDynamicIcons
+    --local dynIconTotalCount = FCOIS.numVars.gFCONumDynamicIcons
+    local dynIconTotalCount   = settings.numMaxDynamicIconsUsable
     local dynIconCounter2IconNr = FCOIS.mappingVars.dynamicToIcon
     local isDynamicIcon = FCOIS.mappingVars.iconIsDynamic
 
@@ -172,6 +173,14 @@ local function afterLocalization()
         local locIconNameStr = locVars["options_icon" .. tostring(1) .. "_" .. iconEndStrArray[1]]
         settings.standardIconNameOnKeybind = locIconNameStr
     end
+
+    --Added with FCOIS v1.5.2
+    --Dynamic icon texts localized
+    FCOIS.generateLocalizedDynamicIconTexts()
+    --Static keybinding texts
+    FCOIS.generateStaticGearSetIconsKeybindingsTexts()
+    --Dynamic keybinding texts
+    FCOIS.generateDynamicIconsKeybindingsTexts()
 
     --Added with FCOIS v0.8.8d
     --Dynamic arrays for the inventory filter button's context menus:
@@ -330,9 +339,7 @@ end
 --Localized texts etc.
 function FCOIS.Localization()
     local preventerVars = FCOIS.preventerVars
-    local settings = FCOIS.settingsVars.settings
     local defSettings = FCOIS.settingsVars.defaultSettings
-    local defaults = FCOIS.settingsVars.defaults
     local langVars = FCOIS.langVars
 --d("[FCOIS] Localization - Start, keybindings: " .. tostring(preventerVars.KeyBindingTexts) ..", useClientLang: " .. tostring(FCOIS.settingsVars.settings.alwaysUseClientLanguage))
 
@@ -359,28 +366,28 @@ function FCOIS.Localization()
     end
     --d("[FCOIS] localization, fallBackToEnglish: " .. tostring(fallbackToEnglish))
     --Fallback to english language now
-    if (fallbackToEnglish) then defSettings.language = 1 end
+    if (fallbackToEnglish) then defSettings.language = FCOIS_CON_LANG_EN end
     --Is the standard language english set?
-    if FCOIS.settingsVars.settings.alwaysUseClientLanguage or (preventerVars.KeyBindingTexts or (defSettings.language == 1 and not FCOIS.settingsVars.settings.languageChosen)) then
+    if FCOIS.settingsVars.settings.alwaysUseClientLanguage or (preventerVars.KeyBindingTexts or (defSettings.language == FCOIS_CON_LANG_EN and not FCOIS.settingsVars.settings.languageChosen)) then
         --d("[FCOIS] localization: Language chosen is false or always use client language is true!")
         local lang = GetCVar("language.2")
         --Check for supported languages
         if(lang == "de") then
-            defSettings.language = 2
+            defSettings.language = FCOIS_CON_LANG_DE
         elseif (lang == "en") then
-            defSettings.language = 1
+            defSettings.language = FCOIS_CON_LANG_EN
         elseif (lang == "fr") then
-            defSettings.language = 3
+            defSettings.language = FCOIS_CON_LANG_FR
         elseif (lang == "es") then
-            defSettings.language = 4
+            defSettings.language = FCOIS_CON_LANG_ES
         elseif (lang == "it") then
-            defSettings.language = 5
+            defSettings.language = FCOIS_CON_LANG_IT
         elseif (lang == "jp") then
-            defSettings.language = 6
+            defSettings.language = FCOIS_CON_LANG_JP
         elseif (lang == "ru") then
-            defSettings.language = 7
+            defSettings.language = FCOIS_CON_LANG_RU
         else
-            defSettings.language = 1
+            defSettings.language = FCOIS_CON_LANG_EN
         end
     end
     if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[Localization] default settings, language: " .. tostring(defSettings.language), false) end
@@ -465,22 +472,23 @@ function FCOIS.Localization()
     contextEntries.menu_remove_all_gear_text[4] = locTexts["rightclick_menu_remove_all_gear4"]
     contextEntries.menu_remove_all_gear_text[5] = locTexts["rightclick_menu_remove_all_gear5"]
     --Add all/remove all additional inventory button (flag) context menu
-    contextEntries.menu_add_all_text[1] 		= locTexts["button_context_menu_lock_all"]
-    contextEntries.menu_remove_all_text[1] 		= locTexts["button_context_menu_unlock_all"]
-    contextEntries.menu_add_all_text[3] 		= locTexts["button_context_menu_research_all"]
-    contextEntries.menu_remove_all_text[3] 		= locTexts["button_context_menu_dont_research_all"]
-    contextEntries.menu_add_all_text[5] 		= locTexts["button_context_menu_sell_all"]
-    contextEntries.menu_remove_all_text[5] 		= locTexts["button_context_menu_dont_sell_all"]
-    contextEntries.menu_add_all_text[9] 		= locTexts["button_context_menu_deconstruct_all"]
-    contextEntries.menu_remove_all_text[9] 		= locTexts["button_context_menu_dont_deconstruct_all"]
-    contextEntries.menu_add_all_text[10]  		= locTexts["button_context_menu_improve_all"]
-    contextEntries.menu_remove_all_text[10] 	= locTexts["button_context_menu_dont_improve_all"]
-    contextEntries.menu_add_all_text[11]  		= locTexts["button_context_menu_sell_all_in_guild_store"]
-    contextEntries.menu_remove_all_text[11] 	= locTexts["button_context_menu_dont_sell_all_in_guild_store"]
-    contextEntries.menu_add_all_text[12]  		= locTexts["button_context_menu_mark_all_as_intricate"]
-    contextEntries.menu_remove_all_text[12] 	= locTexts["button_context_menu_unmark_all_as_intricate"]
+    contextEntries.menu_add_all_text[FCOIS_CON_ICON_LOCK] 		            = locTexts["button_context_menu_lock_all"]
+    contextEntries.menu_remove_all_text[FCOIS_CON_ICON_LOCK] 		        = locTexts["button_context_menu_unlock_all"]
+    contextEntries.menu_add_all_text[FCOIS_CON_ICON_RESEARCH] 		        = locTexts["button_context_menu_research_all"]
+    contextEntries.menu_remove_all_text[FCOIS_CON_ICON_RESEARCH] 		    = locTexts["button_context_menu_dont_research_all"]
+    contextEntries.menu_add_all_text[FCOIS_CON_ICON_SELL] 		            = locTexts["button_context_menu_sell_all"]
+    contextEntries.menu_remove_all_text[FCOIS_CON_ICON_SELL] 		        = locTexts["button_context_menu_dont_sell_all"]
+    contextEntries.menu_add_all_text[FCOIS_CON_ICON_DECONSTRUCTION] 		= locTexts["button_context_menu_deconstruct_all"]
+    contextEntries.menu_remove_all_text[FCOIS_CON_ICON_DECONSTRUCTION] 		= locTexts["button_context_menu_dont_deconstruct_all"]
+    contextEntries.menu_add_all_text[FCOIS_CON_ICON_IMPROVEMENT]  		    = locTexts["button_context_menu_improve_all"]
+    contextEntries.menu_remove_all_text[FCOIS_CON_ICON_IMPROVEMENT] 	    = locTexts["button_context_menu_dont_improve_all"]
+    contextEntries.menu_add_all_text[FCOIS_CON_ICON_SELL_AT_GUILDSTORE]  	= locTexts["button_context_menu_sell_all_in_guild_store"]
+    contextEntries.menu_remove_all_text[FCOIS_CON_ICON_SELL_AT_GUILDSTORE] 	= locTexts["button_context_menu_dont_sell_all_in_guild_store"]
+    contextEntries.menu_add_all_text[FCOIS_CON_ICON_INTRICATE]  		    = locTexts["button_context_menu_mark_all_as_intricate"]
+    contextEntries.menu_remove_all_text[FCOIS_CON_ICON_INTRICATE] 	        = locTexts["button_context_menu_unmark_all_as_intricate"]
     --Add the dynamic icon entries to the tables
-    local numDynIcons = FCOIS.numVars.gFCONumDynamicIcons
+    --local numDynIcons = FCOIS.numVars.gFCONumDynamicIcons
+    local numDynIcons   = FCOIS.settingsVars.settings.numMaxDynamicIconsUsable
     local dynIconCounter2IconNr = FCOIS.mappingVars.dynamicToIcon
     local isDynamicIcon = FCOIS.mappingVars.iconIsDynamic
     for dynamicIconId=1, numDynIcons, 1 do
@@ -507,9 +515,11 @@ function FCOIS.Localization()
         [FCOIS_CON_REFINE]				=	locTexts["refinement_not_allowed"],
         [FCOIS_CON_IMPROVE]				=	locTexts["improvement_not_allowed"],
         [FCOIS_CON_DECONSTRUCT]			=	locTexts["deconstruction_not_allowed"],
+        [FCOIS_CON_RESEARCH]	        =	locTexts["research_not_allowed"],
         [FCOIS_CON_JEWELRY_REFINE]		=	locTexts["refinement_not_allowed"],
         [FCOIS_CON_JEWELRY_DECONSTRUCT]	=	locTexts["deconstruction_not_allowed"],
         [FCOIS_CON_JEWELRY_IMPROVE]		=	locTexts["improvement_not_allowed"],
+        [FCOIS_CON_JEWELRY_RESEARCH]	=	locTexts["research_not_allowed"],
         [FCOIS_CON_ENCHANT_EXTRACT]		=	locTexts["enchanting_extraction_not_allowed"],
         [FCOIS_CON_ENCHANT_CREATE]		=	locTexts["enchanting_creation_not_allowed"],
         [FCOIS_CON_GUILD_STORE_SELL]	=	locTexts["guild_store_sell_not_allowed"],
@@ -529,5 +539,3 @@ function FCOIS.Localization()
     --Do some "after localization" stuff
     afterLocalization()
 end
-
-

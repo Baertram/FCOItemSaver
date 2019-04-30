@@ -95,7 +95,7 @@ local function FCOItemSaver_Open_Store(p_storeIndicator)
                 if currentVendorMenuBarbuttonToCheck == nil then return false end
                 local libFiltersFilterPanelId
                 --Get the current vendor type and count of menu buttons
-                local currentVendorType, vendorTypeButtonCount = FCOIS.GetCurrentVendorType(true)
+                currentVendorType, vendorTypeButtonCount = FCOIS.GetCurrentVendorType(true)
                 if currentVendorType ~= nil and currentVendorType ~= "" and vendorTypeButtonCount ~= nil then
                     if vendorTypeButtonCount == 2 then
                         --The vendor type is e.g. Nuzhimeh with only sell and buyback menu buttons
@@ -659,7 +659,7 @@ local function FCOItemSaver_OnMouseRequestDestroyItem(eventCode, bagId, slotInde
         if( bagId and slotIndex ) then
             FCOIS.preventerVars.gAllowDestroyItem = not FCOIS.DestroySelectionHandler(bagId, slotIndex, true)
             --Hide the "YES" button of the destroy dialog and disable keybind
-            FCOIS.overrideDialogYesButton(ZO_Dialog1)
+            FCOIS.overrideDialogYesButton(FCOIS.ZOControlVars.ZODialog1)
         end
     end
 end
@@ -688,6 +688,12 @@ function FCOIS.checkForPlayerActivatedTasks()
         otherAddons.SetTracker.checkAllItemsForSetTrackerTrackingState()
     end
 
+    --FCOIS version 1.4.8
+    --Reset the flag "temporary use unique IDs" of other addons
+    if FCOIS.temporaryUseUniqueIds ~= nil then
+        FCOIS.temporaryUseUniqueIds = {}
+    end
+
     --Was the item ID type changed to unique IDs: Show the migrate data from old item IDs to unique itemIDs now
     if FCOIS.preventerVars.migrateItemMarkers then
         FCOIS.ShowAskBeforeMigrateDialog()
@@ -709,6 +715,10 @@ local function FCOItemSaver_Player_Activated(...)
 
         --Check if other Addons active now, as the addons should all have been loaded
         FCOIS.CheckIfOtherAddonsActiveAfterPlayerActivated()
+
+        --Map the LibFilters panel IDs to their filter functions
+        --> See file src/FCOIS_Filters.lua, function "FCOIS.mapLibFiltersIds2FilterFunctionsNow()"
+        FCOIS.mapLibFiltersIds2FilterFunctionsNow()
 
         --Add/update the filter buttons, but only if not done already in addon initialization
         if FCOIS.addonVars.gAddonLoaded == false then
