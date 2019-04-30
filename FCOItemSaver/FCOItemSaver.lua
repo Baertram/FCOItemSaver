@@ -47,6 +47,7 @@ local FCOIS = FCOIS
 --Load libLoadedAddons
 --FCOIS.LIBLA = LibStub:GetLibrary("LibLoadedAddons")
 FCOIS.LIBLA = LibLoadedAddons
+if FCOIS.LIBLA == nil then FCOIS.LIBLA = LibStub:GetLibrary("LibLoadedAddons") end
 
 --Create the settings panel object of libAddonMenu 2.0
 FCOIS.LAM = LibAddonMenu2 or LibAddonMenu
@@ -57,7 +58,7 @@ FCOIS.FCOSettingsPanel = nil
 
 --Create the libMainMenu 2.0 object
 FCOIS.LMM2 = LibMainMenu2
-if FCOIS.LMM2 == nil then d("[FCOIS]Loading LibMainMenu-2.0 via LibStub") FCOIS.LMM2 = LibStub("LibMainMenu-2.0") end
+if FCOIS.LMM2 == nil then FCOIS.LMM2 = LibStub("LibMainMenu-2.0") end
 FCOIS.LMM2:Init()
 
 --===================== ADDON Info =============================================
