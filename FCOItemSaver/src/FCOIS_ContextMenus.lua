@@ -555,7 +555,6 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
         local doResearchItemGotTraitCheck = doResearchTraitCheck[markId] or false
         -- Check if item is researchable (as only researchable items can work as equipment too)
         if not FCOIS.isItemResearchable(rowControl, markId, doResearchItemGotTraitCheck) then
-d("[FCOIS]FALSE -> AddMark, markId: " ..tostring(markId))
             return false
         end
     end
