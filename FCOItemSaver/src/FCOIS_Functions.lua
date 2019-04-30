@@ -815,45 +815,46 @@ local function isResearchableItemTypeCheck(itemType, markId)
 end
 
 -- Check if an itemLink is researchable
-function FCOIS.isItemLinkResearchable(itemLink, markId)
+function FCOIS.isItemLinkResearchable(itemLink, markId, doTraitCheck)
     if itemLink == nil then return false end
     local retVal = false
+    doTraitCheck = doTraitCheck or false
     --Check if the item is virtually researchable as the settings is enabled to allow marking of non researchable items as gear/dynamic
     markId = markId or nil
     if markId ~= nil then
         local settings = FCOIS.settingsVars.settings
         retVal = settings.disableResearchCheck[markId] or false
     end
+    --Check the item's type (Armor, weapon, jewelry e.g. are researchable)
     if retVal == false then
         local itemType = GetItemLinkItemType(itemLink)
         if itemType == nil then return false end
         retVal = isResearchableItemTypeCheck(itemType, markId)
+    end
+    --Check the item's trait (no trait-> No research)
+    if retVal == true and doTraitCheck then
+        local itemTraitType = GetItemLinkTraitInfo(itemLink)
+        local itemTraiTypesNotAllowedForResearch = FCOIS.checkVars.researchTraitCheckTraitsNotAllowed
+        local itemTraitTypeNotAllowedForResearch = itemTraiTypesNotAllowedForResearch[itemTraitType] or false
+        if itemTraitType == nil or itemTraitTypeNotAllowedForResearch then return false end
     end
 --d("[FCOIS.isItemLinkResearchable] retVal: " .. tostring(retVal))
     return retVal
 end
 
 -- Is the item researchable?
-function FCOIS.isItemResearchableNoControl(bagId, slotIndex, markId)
+function FCOIS.isItemResearchableNoControl(bagId, slotIndex, markId, doTraitCheck)
     if bagId == nil or slotIndex == nil then return false end
-    local retVal = false
-    --Check if the item is virtually researchable as the settings is enabled to allow marking of non researchable items as gear/dynamic
+    --Check if the item is virtually researchable as the settings is enabled to allow marking of non-researchable items as gear/dynamic
     markId = markId or nil
-    if markId ~= nil then
-        local settings = FCOIS.settingsVars.settings
-        retVal = settings.disableResearchCheck[markId] or false
-    end
-    if retVal == false then
-        local itemType = GetItemType(bagId, slotIndex)
-        if itemType == nil then return false end
-        retVal = isResearchableItemTypeCheck(itemType, markId)
-    end
+    local itemLink = GetItemLink(bagId, slotIndex)
+    local retVal = FCOIS.isItemLinkResearchable(itemLink, markId, doTraitCheck)
 --d("[FCOIS.isItemResearchableNoControl] retVal: " .. tostring(retVal))
     return retVal
 end
 
 -- Is the item researchable?
-function FCOIS.isItemResearchable(p_rowControl, markId)
+function FCOIS.isItemResearchable(p_rowControl, markId, doTraitCheck)
     if p_rowControl == nil then return false end
     local bag, slotIndex
     local retVal = false
@@ -865,17 +866,18 @@ function FCOIS.isItemResearchable(p_rowControl, markId)
     else
         bag, slotIndex = FCOIS.MyGetItemDetails(p_rowControl)
     end
+    local itemLink
     if bag == nil or slotIndex == nil then
         --Was a row in IIfA inventory frame clicked and does function FCOIS.AddMark check if the item is researchable now?
         if IIfArowControlCheck then
             --Get the itemLink of the clicked item from the IIfA rowcontrol
-            local itemLink = FCOIS.IIfAclicked.itemLink
-            if itemLink ~= nil then
-                retVal = FCOIS.isItemLinkResearchable(itemLink, markId)
-            end
+            itemLink = FCOIS.IIfAclicked.itemLink
         end
     else
-        retVal = FCOIS.isItemResearchableNoControl(bag, slotIndex, markId)
+        itemLink = GetItemLink(bag, slotIndex)
+    end
+    if itemLink ~= nil then
+        retVal = FCOIS.isItemLinkResearchable(itemLink, markId, doTraitCheck)
     end
     return retVal
 end

@@ -1123,15 +1123,15 @@ FCOIS.mappingVars.gearToIcon = {
 
 --Table to see if the icon is researchable
 FCOIS.mappingVars.iconIsResearchable = {
-	[FCOIS_CON_ICON_GEAR_1] = true,
-	[FCOIS_CON_ICON_RESEARCH] = true,
-	[FCOIS_CON_ICON_GEAR_2] = true,
-	[FCOIS_CON_ICON_GEAR_3] = true,
-	[FCOIS_CON_ICON_GEAR_4] = true,
-	[FCOIS_CON_ICON_GEAR_5] = true,
+	[FCOIS_CON_ICON_GEAR_1]         = true,
+	[FCOIS_CON_ICON_RESEARCH]       = true,
+	[FCOIS_CON_ICON_GEAR_2]         = true,
+	[FCOIS_CON_ICON_GEAR_3]         = true,
+	[FCOIS_CON_ICON_GEAR_4]         = true,
+	[FCOIS_CON_ICON_GEAR_5]         = true,
 	[FCOIS_CON_ICON_DECONSTRUCTION] = true,
-	[FCOIS_CON_ICON_IMPROVEMENT]= true,
-    [FCOIS_CON_ICON_INTRICATE]= true,
+	[FCOIS_CON_ICON_IMPROVEMENT]    = true,
+    [FCOIS_CON_ICON_INTRICATE]      = true,
 }
 
 --Table to see if the icon is a dynamic icon
@@ -1592,6 +1592,18 @@ FCOIS.checkVars.equipmentSlotsNames = {
 FCOIS.checkVars.doNotShowJunkAdditionalContextMenuEntryFilterTypes = {
     [ITEMFILTERTYPE_QUICKSLOT]  = true,
     [ITEMFILTERTYPE_QUEST]      = true,
+}
+
+--The markerIcons which should do a trait check on the items if they will be checked for research
+FCOIS.checkVars.researchTraitCheck = {
+    [FCOIS_CON_ICON_RESEARCH] = true,
+}
+--The item traits which are not allowed for research
+FCOIS.checkVars.researchTraitCheckTraitsNotAllowed = {
+    [ITEM_TRAIT_TYPE_NONE]              = true,
+    [ITEM_TRAIT_TYPE_ARMOR_ORNATE]      = true,
+    [ITEM_TRAIT_TYPE_JEWELRY_ORNATE]    = true,
+    [ITEM_TRAIT_TYPE_WEAPON_ORNATE]     = true,
 }
 
 --Table with all equipment slot names which can be updated with markes for the icons

@@ -489,6 +489,7 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
     local contextMenuSubMenuEntryTextPre = ""
     local customMenuVars = FCOIS.customMenuVars
     local preventerVars = FCOIS.preventerVars
+    local doResearchTraitCheck = FCOIS.checkVars.researchTraitCheck
 
     --Define the font of the context menu entries
     if myFont == nil then
@@ -549,9 +550,12 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
 
     -- Equipment gear (static gear marker icons 1, 2, 3, 4, 5), Research, Improve, Deconstruct, Intricate or dynamic icons
     --Check if the icon is allowed for research and if the research-enabled check is set in the settings
+    --and if the itemType is a researchable one, and if the item got a trait so research makes sense (only for non-dynamic icons!)
     if isResearchAble or isDynamic then
+        local doResearchItemGotTraitCheck = doResearchTraitCheck[markId] or false
         -- Check if item is researchable (as only researchable items can work as equipment too)
-        if not FCOIS.isItemResearchable(rowControl, markId) then
+        if not FCOIS.isItemResearchable(rowControl, markId, doResearchItemGotTraitCheck) then
+d("[FCOIS]FALSE -> AddMark, markId: " ..tostring(markId))
             return false
         end
     end
