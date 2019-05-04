@@ -6,7 +6,7 @@
 ## APIVersion: 100026 100027
 ## Description: Mark/demark your inventory items with different icons and filter them in inventories, during trading, banks, guild store, mail, enchanting, crafting, researching and stores. Save your marked items before destroying/deconstructing/researching/selling/sending/trading/using or equipping/binding them!
 ## SavedVariables: FCOItemSaver_Settings
-## DependsOn: LibFilters-2.0 LibAddonMenu-2.0 LibLoadedAddons LibDialog LibFeedback LibCustomMenu LibMainMenu-2.0
+## DependsOn: LibFilters-3.0 LibAddonMenu-2.0 LibLoadedAddons LibDialog LibFeedback LibCustomMenu LibMainMenu-2.0
 ## OptionalDependsOn: ResearchAssistant SousChef VotansSettingsMenu PotionMaker CraftedPotions ChatMerchant InventoryGridView CraftBagExtended SetTracker AdvancedDisableControllerUI DetailedResearchScrolls DolgubonsLazyWritCreator QualitySort PerfectPixel
 ## FastAPI : 100026
 

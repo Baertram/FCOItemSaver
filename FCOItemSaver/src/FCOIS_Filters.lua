@@ -5,12 +5,6 @@ local activeFilterPanelIds = FCOIS.mappingVars.activeFilterPanelIds
 local numFilters = FCOIS.numVars.gFCONumFilters
 local numFilterInventoryTypes = FCOIS.numVars.gFCONumFilterInventoryTypes
 
---Create the filter object for addon libFilters 2.x
-if FCOIS.libFilters == nil then
-    FCOIS.libFilters = LibStub("LibFilters-2.0")
-    --Initialize the libFilters 2.x filters
-    FCOIS.libFilters:InitializeLibFilters()
-end
 --The local libFilters v2.x library instance
 local libFilters = FCOIS.libFilters
 
