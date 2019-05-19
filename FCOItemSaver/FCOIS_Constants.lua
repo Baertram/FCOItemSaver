@@ -9,8 +9,8 @@ FCOIS.APIVersionLength = string.len(FCOIS.APIversion) or 6
 --===================== Libraries ==============================================
 --Create the filter object for addon libFilters 2.x
 if FCOIS.libFilters == nil then
-    FCOIS.libFilters = LibStub("LibFilters-2.0")
-    --Initialize the libFilters 2.x filters
+    FCOIS.libFilters = LibFilters3
+    --Initialize the libFilters 3.x filters
     FCOIS.libFilters:InitializeLibFilters()
 end
 

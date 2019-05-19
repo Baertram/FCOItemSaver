@@ -19,9 +19,6 @@
 -- Recomment to use libCustomMenu RegisterContextMenu
 -- Should be a following error
 
--- 4) 2019-04-10 - Feature -  Baertram
--- Add settings to mark recipes to be sold (not at guild store) if known
-
 
 ------------------------------------------------------------------
 --FCOItemSaver.lua
@@ -41,25 +38,32 @@ if FCOIS == nil then FCOIS = {} end
 local FCOIS = FCOIS
 
 --===================== Libraries ==============================================
---libFilters 2.0
---Create the filter object for addon libFilters 2.x if not already done in FCOIS_Constants.lua file
-
 --Load libLoadedAddons
 --FCOIS.LIBLA = LibStub:GetLibrary("LibLoadedAddons")
 FCOIS.LIBLA = LibLoadedAddons
-if FCOIS.LIBLA == nil then FCOIS.LIBLA = LibStub:GetLibrary("LibLoadedAddons") end
+if FCOIS.LIBLA == nil and LibStub  then FCOIS.LIBLA = LibStub:GetLibrary("LibLoadedAddons") end
 
 --Create the settings panel object of libAddonMenu 2.0
-FCOIS.LAM = LibAddonMenu2 or LibAddonMenu
-if FCOIS.LAM == nil then FCOIS.LAM = LibStub('LibAddonMenu-2.0') end
+FCOIS.LAM = LibAddonMenu2
+if FCOIS.LAM == nil and LibStub then FCOIS.LAM = LibStub('LibAddonMenu-2.0') end
 
 --The options panel of FCO ItemSaver
 FCOIS.FCOSettingsPanel = nil
 
 --Create the libMainMenu 2.0 object
 FCOIS.LMM2 = LibMainMenu2
-if FCOIS.LMM2 == nil then FCOIS.LMM2 = LibStub("LibMainMenu-2.0") end
+if FCOIS.LMM2 == nil and LibStub then FCOIS.LMM2 = LibStub("LibMainMenu-2.0") end
 FCOIS.LMM2:Init()
+
+--Create the filter object for addon libFilters 3.x
+FCOIS.libFilters = {}
+FCOIS.libFilters = LibFilters3
+if not FCOIS.libFilters then
+    d(FCOIS.preChatVars.preChatTextRed .. " ERROR: Needed librray LibFilters-3.0 is not loaded. This addon will not work properly!")
+    return
+end
+--Initialize the libFilters 3.x filters
+FCOIS.libFilters:InitializeLibFilters()
 
 --===================== ADDON Info =============================================
 --Addon variables
