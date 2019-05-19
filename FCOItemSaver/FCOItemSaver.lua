@@ -19,9 +19,6 @@
 -- Recomment to use libCustomMenu RegisterContextMenu
 -- Should be a following error
 
--- 4) 2019-04-10 - Feature -  Baertram
--- Add settings to mark recipes to be sold (not at guild store) if known
-
 
 ------------------------------------------------------------------
 --FCOItemSaver.lua
