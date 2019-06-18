@@ -1,12 +1,13 @@
 --Global array with all data of this addon
 if FCOIS == nil then FCOIS = {} end
 local FCOIS = FCOIS
+--Do not go on if libraries are not loaded properly
+if not FCOIS.libsLoadedProperly then return end
+
 local numFilterIcons = FCOIS.numVars.gFCONumFilterIcons
 local myColorEnabled	= ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_TEXT_COLORS, INTERFACE_TEXT_COLOR_NORMAL))
 local myColorDisabled	= ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_TEXT_COLORS, INTERFACE_TEXT_COLOR_DISABLED))
 local ctrlVars = FCOIS.ZOControlVars
-
-
 
 --==========================================================================================================================================
 --									FCOIS context menus

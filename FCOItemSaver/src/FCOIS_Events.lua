@@ -472,7 +472,8 @@ local function FCOItemSaver_Crafting_Interact(_, craftSkill)
     end
 end
 
-local updateSetTrackerMarker = FCOIS.otherAddons.SetTracker.updateSetTrackerMarker
+local updateSetTrackerMarker
+if FCOIS.otherAddons then updateSetTrackerMarker = FCOIS.otherAddons.SetTracker.updateSetTrackerMarker end
 --Inventory slot gets updated function
 local function FCOItemSaver_Inv_Single_Slot_Update(_, bagId, slotId, isNewItem, itemSoundCategory, updateReason)
     --Do not mark or scan inventory if writcreater addon is crafting items
@@ -706,6 +707,26 @@ local function FCOItemSaver_Player_Activated(...)
     --Prevent this event to be fired again and again upon each zone change
     EVENT_MANAGER:UnregisterForEvent(FCOIS.addonVars.gAddonName, EVENT_PLAYER_ACTIVATED)
 
+    --Do not go on if libraries are not loaded properly
+    if not FCOIS.libsLoadedProperly then
+        --Output missing library text to chat
+        local preVars = FCOIS.preChatVars
+        local libMissingErrorText = FCOIS.errorTexts["libraryMissing"]
+        --libLoadedAddons
+        if FCOIS.LIBLA == nil then d(preVars.preChatTextRed .. string.format(libMissingErrorText, "LibLoadedAddons")) end
+        --LibAddonMenu 2.0
+        if FCOIS.LAM == nil then d(preVars.preChatTextRed .. string.format(libMissingErrorText, "LibAddonMenu-2.0")) end
+        --LibMainMenu 2.0
+        if FCOIS.LMM2 == nil then d(preVars.preChatTextRed .. string.format(libMissingErrorText, "LibMainMenu-2.0")) end
+        --libFilters 3.x
+        if not FCOIS.libFilters then d(preVars.preChatTextRed .. string.format(libMissingErrorText, "LibFilters-3.0")) end
+        --LibDialog
+        if not FCOIS.LDIALOG then d(preVars.preChatTextRed .. string.format(libMissingErrorText, "LibDialog")) end
+        --LibFeedback
+        if not FCOIS.libFeedback then d(preVars.preChatTextRed .. string.format(libMissingErrorText, "LibFeedback")) end
+        return
+    end
+
     --Disable this addon if we are in GamePad mode
     if not FCOIS.FCOItemSaver_CheckGamePadMode() then
         if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[EVENT] Player activated", true, FCOIS_DEBUG_DEPTH_NORMAL) end
@@ -753,75 +774,81 @@ end
 
 --Addon is now loading and building up
 local function FCOItemSaver_Loaded(eventCode, addOnName)
-    --Check if another addon name is found and thus active
-    FCOIS.checkIfOtherAddonActive(addOnName)
-    --Check if gamepad mode is deactivated?
-    --Is this addon found?
-    if(addOnName ~= FCOIS.addonVars.gAddonName) then
-        return
-    end
-    if FCOIS.settingsVars.settings ~= nil and FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[FCOIS -Event- FCOItemSaver_Loaded]", true, FCOIS_DEBUG_DEPTH_NORMAL) end
---d("[FCOIS -Event- FCOItemSaver_Loaded]")
+    --Libraries were loaded properly?
+    if FCOIS.libsLoadedProperly then
+        --Check if another addon name is found and thus active
+        FCOIS.checkIfOtherAddonActive(addOnName)
+        --Check if gamepad mode is deactivated?
+        --Is this addon found?
+        if(addOnName ~= FCOIS.addonVars.gAddonName) then
+            return
+        end
+        if FCOIS.settingsVars.settings ~= nil and FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[FCOIS -Event- FCOItemSaver_Loaded]", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        --d("[FCOIS -Event- FCOItemSaver_Loaded]")
 
-    if not FCOIS.FCOItemSaver_CheckGamePadMode() then
-        --Unregister this event again so it isn't fired again after this addon has beend recognized
-        EVENT_MANAGER:UnregisterForEvent(FCOIS.addonVars.gAddonName, EVENT_ADD_ON_LOADED)
+        if not FCOIS.FCOItemSaver_CheckGamePadMode() then
+            --Unregister this event again so it isn't fired again after this addon has beend recognized
+            EVENT_MANAGER:UnregisterForEvent(FCOIS.addonVars.gAddonName, EVENT_ADD_ON_LOADED)
 
-        if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[Addon loading begins...]", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+            if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[Addon loading begins...]", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+            FCOIS.addonVars.gAddonLoaded = false
+
+            FCOIS.preventerVars.gAddonStartupInProgress = true
+
+            --=============================================================================================================
+            --	LOAD USER SETTINGS
+            --=============================================================================================================
+            FCOIS.LoadUserSettings()
+
+            -- Set Localization
+            FCOIS.preventerVars.KeyBindingTexts = false
+            FCOIS.Localization()
+
+            --Build the addon settings menu
+            FCOIS.BuildAddonMenu()
+
+            --Create the icon textures
+            FCOIS.CreateTextures(-1)
+
+            --Create the hooks
+            FCOIS.CreateHooks()
+
+            --Build the inventory filter buttons and add them to the panels
+            FCOIS.updateFilterButtonsInInv(-1)
+
+            --Initialize the filters
+            FCOIS.EnableFilters(-100)
+
+            -- Register slash commands
+            FCOIS.RegisterSlashCommands()
+
+            --Add the additional buttons, controlled by the FCOIS settings
+            --e.g. quick access settings button to the main menu, or the context menu invoker buttons at the inventories (flag icon)
+            FCOIS.AddAdditionalButtons(-1)
+
+            --Initialize the custom dialogs
+            --Ask before bind dialog (parameter = XML dialog control)
+            FCOIS.AskBeforeBindDialogInitialize(FCOISAskBeforeBindDialogXML)
+            --Ask before migrate dialog (parameter = XML dialog control)
+            FCOIS.AskBeforeMigrateDialogInitialize(FCOISAskBeforeMigrateDialogXML)
+            --Ask before protection dialog (parameter = XML dialog control)
+            FCOIS.AskProtectionDialogInitialize(FCOISAskProtectionDialogXML)
+
+            --Check the auto reenable Anti-* settings and react on them
+            FCOIS.autoReenableAntiSettingsCheck("-ALL-")
+
+            --Set the addon loaded variable
+            FCOIS.addonVars.gAddonLoaded = true
+
+            -- Registers addon to loadedAddon library
+            FCOIS.LIBLA:RegisterAddon(FCOIS.addonVars.gAddonName, FCOIS.addonVars.addonVersionOptionsNumber)
+
+            if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[Addon startup finished!]", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        end --gamepad active check
+    else
         FCOIS.addonVars.gAddonLoaded = false
-
-        FCOIS.preventerVars.gAddonStartupInProgress = true
-
-        --=============================================================================================================
-        --	LOAD USER SETTINGS
-        --=============================================================================================================
-        FCOIS.LoadUserSettings()
-
-        -- Set Localization
-        FCOIS.preventerVars.KeyBindingTexts = false
-        FCOIS.Localization()
-
-        --Build the addon settings menu
-        FCOIS.BuildAddonMenu()
-
-        --Create the icon textures
-        FCOIS.CreateTextures(-1)
-
-        --Create the hooks
-        FCOIS.CreateHooks()
-
-        --Build the inventory filter buttons and add them to the panels
-        FCOIS.updateFilterButtonsInInv(-1)
-
-        --Initialize the filters
-        FCOIS.EnableFilters(-100)
-
-        -- Register slash commands
-        FCOIS.RegisterSlashCommands()
-
-        --Add the additional buttons, controlled by the FCOIS settings
-        --e.g. quick access settings button to the main menu, or the context menu invoker buttons at the inventories (flag icon)
-        FCOIS.AddAdditionalButtons(-1)
-
-        --Initialize the custom dialogs
-        --Ask before bind dialog (parameter = XML dialog control)
-        FCOIS.AskBeforeBindDialogInitialize(FCOISAskBeforeBindDialogXML)
-        --Ask before migrate dialog (parameter = XML dialog control)
-        FCOIS.AskBeforeMigrateDialogInitialize(FCOISAskBeforeMigrateDialogXML)
-        --Ask before protection dialog (parameter = XML dialog control)
-        FCOIS.AskProtectionDialogInitialize(FCOISAskProtectionDialogXML)
-
-        --Check the auto reenable Anti-* settings and react on them
-        FCOIS.autoReenableAntiSettingsCheck("-ALL-")
-
-        --Set the addon loaded variable
-        FCOIS.addonVars.gAddonLoaded = true
-
-        -- Registers addon to loadedAddon library
-        FCOIS.LIBLA:RegisterAddon(FCOIS.addonVars.gAddonName, FCOIS.addonVars.addonVersionOptionsNumber)
-
-        if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[Addon startup finished!]", true, FCOIS_DEBUG_DEPTH_NORMAL) end
-    end --gamepad active check
+        --Libraries were not loaded properly!
+    end
 end
 
 --==============================================================================
@@ -840,44 +867,48 @@ function FCOIS.setEventCallbackFunctions()
     if not FCOIS.FCOItemSaver_CheckGamePadMode() then
         --Register for the zone change/player ready event
         EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_PLAYER_ACTIVATED, FCOItemSaver_Player_Activated)
-        --Register for Crafting stations opened & closed (integer eventCode,number craftSkill, boolean sameStation)
-        EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_CRAFTING_STATION_INTERACT, FCOItemSaver_Crafting_Interact)
-        EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_END_CRAFTING_STATION_INTERACT, FCOItemSaver_End_Crafting_Interact)
-        EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_CRAFT_STARTED, FCOItemSaver_Craft_Started)
-        EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_CRAFT_COMPLETED, FCOItemSaver_Craft_Completed)
-        --Register for Store opened & closed
-        EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_OPEN_STORE, function() FCOItemSaver_Open_Store("vendor") end)
-        EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_CLOSE_STORE, FCOItemSaver_Close_Store)
-        --Register for Trading house (guild store) opened & closed
-        EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_OPEN_TRADING_HOUSE, FCOItemSaver_Open_Trading_House)
-        EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_CLOSE_TRADING_HOUSE, FCOItemSaver_Close_Trading_House)
-        --Register for Guild Bank opened & closed
-        EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_OPEN_GUILD_BANK, FCOItemSaver_Open_Guild_Bank)
-        EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_CLOSE_GUILD_BANK, FCOItemSaver_Close_Guild_Bank)
-        --Register for Player's Bank opened & closed
-        EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_OPEN_BANK, FCOItemSaver_Open_Player_Bank)
-        EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_CLOSE_BANK, FCOItemSaver_Close_Player_Bank)
-        --Register for Trade panel opened & closed
-        EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_TRADE_INVITE_ACCEPTED, FCOItemSaver_Open_Trade_Panel)
-        EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_TRADE_CANCELED, FCOItemSaver_Close_Trade_Panel)
-        EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_TRADE_SUCCEEDED, FCOItemSaver_Close_Trade_Panel)
-        EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_TRADE_FAILED, FCOItemSaver_Close_Trade_Panel)
-        --Register for player inventory slot update
-        EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_INVENTORY_SINGLE_SLOT_UPDATE, FCOItemSaver_Inv_Single_Slot_Update)
-        EVENT_MANAGER:AddFilterForEvent(FCOIS.addonVars.gAddonName, EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_UNIT_TAG, "player")
-        --Register the callback function for an update of the inventory slots
-        --SHARED_INVENTORY:RegisterCallback("SingleSlotInventoryUpdate", FCOItemSaver_OnSharedSingleSlotUpdate)
-        --Events for destruction & destroy prevention
-        EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_INVENTORY_SLOT_LOCKED, FCOItemSaver_OnInventorySlotLocked)
-        EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_INVENTORY_SLOT_UNLOCKED, FCOItemSaver_OnInventorySlotUnLocked)
-        EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_MOUSE_REQUEST_DESTROY_ITEM, FCOItemSaver_OnMouseRequestDestroyItem)
-        --Event if an action layer changes
-        --EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_ACTION_LAYER_POPPED, FCOItemsaver_OnActionLayerPopped)
-        --EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_ACTION_LAYER_PUSHED, FCOItemsaver_OnActionLayerPushed)
-        EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_GAME_CAMERA_UI_MODE_CHANGED, FCOItemsaver_OnGameCameraUIModeChanged)
-        --Guild bank is selected
-        EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_GUILD_BANK_SELECTED, FCOItemsaver_SelectGuildBank)
-        --Retrait station is interacted with
-        EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_RETRAIT_STATION_INTERACT_START, FCOItemsaver_RetraitStationInteract)
+
+        --Do not go on if libraries are not loaded properly
+        if FCOIS.libsLoadedProperly then
+            --Register for Crafting stations opened & closed (integer eventCode,number craftSkill, boolean sameStation)
+            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_CRAFTING_STATION_INTERACT, FCOItemSaver_Crafting_Interact)
+            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_END_CRAFTING_STATION_INTERACT, FCOItemSaver_End_Crafting_Interact)
+            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_CRAFT_STARTED, FCOItemSaver_Craft_Started)
+            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_CRAFT_COMPLETED, FCOItemSaver_Craft_Completed)
+            --Register for Store opened & closed
+            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_OPEN_STORE, function() FCOItemSaver_Open_Store("vendor") end)
+            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_CLOSE_STORE, FCOItemSaver_Close_Store)
+            --Register for Trading house (guild store) opened & closed
+            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_OPEN_TRADING_HOUSE, FCOItemSaver_Open_Trading_House)
+            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_CLOSE_TRADING_HOUSE, FCOItemSaver_Close_Trading_House)
+            --Register for Guild Bank opened & closed
+            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_OPEN_GUILD_BANK, FCOItemSaver_Open_Guild_Bank)
+            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_CLOSE_GUILD_BANK, FCOItemSaver_Close_Guild_Bank)
+            --Register for Player's Bank opened & closed
+            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_OPEN_BANK, FCOItemSaver_Open_Player_Bank)
+            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_CLOSE_BANK, FCOItemSaver_Close_Player_Bank)
+            --Register for Trade panel opened & closed
+            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_TRADE_INVITE_ACCEPTED, FCOItemSaver_Open_Trade_Panel)
+            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_TRADE_CANCELED, FCOItemSaver_Close_Trade_Panel)
+            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_TRADE_SUCCEEDED, FCOItemSaver_Close_Trade_Panel)
+            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_TRADE_FAILED, FCOItemSaver_Close_Trade_Panel)
+            --Register for player inventory slot update
+            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_INVENTORY_SINGLE_SLOT_UPDATE, FCOItemSaver_Inv_Single_Slot_Update)
+            EVENT_MANAGER:AddFilterForEvent(FCOIS.addonVars.gAddonName, EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_UNIT_TAG, "player")
+            --Register the callback function for an update of the inventory slots
+            --SHARED_INVENTORY:RegisterCallback("SingleSlotInventoryUpdate", FCOItemSaver_OnSharedSingleSlotUpdate)
+            --Events for destruction & destroy prevention
+            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_INVENTORY_SLOT_LOCKED, FCOItemSaver_OnInventorySlotLocked)
+            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_INVENTORY_SLOT_UNLOCKED, FCOItemSaver_OnInventorySlotUnLocked)
+            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_MOUSE_REQUEST_DESTROY_ITEM, FCOItemSaver_OnMouseRequestDestroyItem)
+            --Event if an action layer changes
+            --EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_ACTION_LAYER_POPPED, FCOItemsaver_OnActionLayerPopped)
+            --EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_ACTION_LAYER_PUSHED, FCOItemsaver_OnActionLayerPushed)
+            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_GAME_CAMERA_UI_MODE_CHANGED, FCOItemsaver_OnGameCameraUIModeChanged)
+            --Guild bank is selected
+            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_GUILD_BANK_SELECTED, FCOItemsaver_SelectGuildBank)
+            --Retrait station is interacted with
+            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_RETRAIT_STATION_INTERACT_START, FCOItemsaver_RetraitStationInteract)
+        end
     end
 end

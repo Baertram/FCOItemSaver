@@ -1,6 +1,9 @@
 --Global array with all data of this addon
 if FCOIS == nil then FCOIS = {} end
 local FCOIS = FCOIS
+--Do not go on if libraries are not loaded properly
+if not FCOIS.libsLoadedProperly then return end
+
 local ctrlVars = FCOIS.ZOControlVars
 
 --==========================================================================================================================================
@@ -1533,10 +1536,6 @@ end
 -- =====================================================================================================================
 --Function to show a confirmation dialog
 function FCOIS.ShowConfirmationDialog(dialogName, title, body, callbackYes, callbackNo, callbackSetup, data, forceUpdate)
-    --Initialize the library
-    if FCOIS.LDIALOG == nil then
-        FCOIS.LDIALOG = LibStub('LibDialog')
-    end
     local libDialog = FCOIS.LDIALOG
     local addonVars = FCOIS.addonVars
     --Force the dialog to be updated with the title, text, etc.?
@@ -1548,42 +1547,6 @@ function FCOIS.ShowConfirmationDialog(dialogName, title, body, callbackYes, call
     end
     --Show the dialog now
     libDialog:ShowDialog(addonVars.gAddonName, dialogName, data)
-end
-
--- =====================================================================================================================
---  Gamepad functions
--- =====================================================================================================================
---Is the gamepad mode enabled in the ESO settings?
-function FCOIS.FCOItemSaver_CheckGamePadMode()
-    --Gamepad enabled?
-    if IsInGamepadPreferredMode() then
-        --Gamepad enabled but addon AdvancedDisableControllerUI is enabled and is not showing the gamepad mode for the inventory,
-        --but the normal inventory
-        if FCOIS.checkIfADCUIAndIsNotUsingGamepadMode() then
-            return false
-        else
-            if FCOIS.preventerVars.noGamePadMoudeSupportTextOutput == false then
-                FCOIS.preventerVars.noGamePadMoudeSupportTextOutput = true
-                --Normal gamepad mode is enabled -> Abort with error message "not supported!"
-                local noGamepadModeSupportedLanguageTexts = {
-                    ["en"]	=	"FCO ItemSaver does not support the gamepad mode! Please change the mode to keyboard at the settings.",
-                    ["de"]	=	"FCO ItemSaver unterstützt den Gamepad Modus nicht! Bitte wechsel in den Optionen zum Tastatur Modus.",
-                    ["fr"]	=	"FCO ItemSaver ne prend pas en charge le mode de gamepad! S'il vous plaît changer le mode de clavier au niveau des réglages.",
-                    ["es"]	=	"FCO ItemSaver no es compatible con el modo de mando de juegos! Por favor, cambie el modo de teclado en la configuración.",
-                    ["it"]	=	"FCO ItemSaver non supporta la modalità di gamepad! Si prega di cambiare la modalità di tastiera con le impostazioni.",
-                    ["jp"]	=	"FCO ItemSaverはゲームパッドモードをサポートしません！設定でキーボードモードに変更してください。",
-                    ["ru"]	=	"FCO ItemSaver нe пoддepживaeт peжим гeймпaдa! Пoжaлуйcтa, cмeнитe в нacтpoйкax peжим нa клaвиaтуpу.",
-                }
-                local lang = GetCVar("language.2")
-                local noGamepadModeSupportedText = noGamepadModeSupportedLanguageTexts[lang] or noGamepadModeSupportedLanguageTexts["en"]
-                d(FCOIS.preChatVars.preChatTextRed .. noGamepadModeSupportedText)
-            end
-            return true
-        end
-    else
-        --Gamepad not enabled
-        return false
-    end
 end
 
 -- =====================================================================================================================

@@ -1,7 +1,8 @@
 --Global array with all data of this addon
 if FCOIS == nil then FCOIS = {} end
 local FCOIS = FCOIS
-
+--Do not go on if libraries are not loaded properly
+if not FCOIS.libsLoadedProperly then return end
 --==========================================================================================================================================
 --									FCOIS texture names
 --==========================================================================================================================================
@@ -211,6 +212,7 @@ FCOIS.textureVars.MARKER_TEXTURES = {
     [199] = [[/esoui/art/battlegrounds/battlegroundscapturebar_teambadge_orange.dds]],
     [200] = [[/esoui/art/battlegrounds/battlegroundscapturebar_teambadge_purple.dds]],
 }
+
 
 --The variable for the maximum of the texture icons
 FCOIS.numVars.maxTextureIcons = #FCOIS.textureVars.MARKER_TEXTURES or 201

@@ -1,10 +1,16 @@
 --Global array with all data of this addon
 if FCOIS == nil then FCOIS = {} end
 local FCOIS = FCOIS
+--Do not go on if libraries are not loaded properly
+if not FCOIS.libsLoadedProperly then return end
+
+--==========================================================================================================================================
+--													FCOIS FEEDBACK functions
+--==========================================================================================================================================
+
 
 local addonVars = FCOIS.addonVars
 --local preVars = FCOIS.preChatVars
-FCOIS.libFeedback = LibStub:GetLibrary('LibFeedback')
 local libFB = FCOIS.libFeedback
 
 --Add the Feedback button to a control

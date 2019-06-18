@@ -1,6 +1,10 @@
 --Global array with all data of this addon
 if FCOIS == nil then FCOIS = {} end
 local FCOIS = FCOIS
+--Do not go on if libraries are not loaded properly
+if not FCOIS.libsLoadedProperly then return end
+
+
 local activeFilterPanelIds = FCOIS.mappingVars.activeFilterPanelIds
 local numFilters = FCOIS.numVars.gFCONumFilters
 local numFilterInventoryTypes = FCOIS.numVars.gFCONumFilterInventoryTypes

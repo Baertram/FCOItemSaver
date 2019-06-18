@@ -2,17 +2,71 @@
 if FCOIS == nil then FCOIS = {} end
 local FCOIS = FCOIS
 
+--Local pre chat color variables
+FCOIS.preChatVars = {}
+--Uncolored "FCOIS" pre chat text for the chat output
+FCOIS.preChatVars.preChatText = "FCOIS"
+--Green colored "FCOIS" pre text for the chat output
+FCOIS.preChatVars.preChatTextGreen = "|c22DD22"..FCOIS.preChatVars.preChatText.."|r "
+--Red colored "FCOIS" pre text for the chat output
+FCOIS.preChatVars.preChatTextRed = "|cDD2222"..FCOIS.preChatVars.preChatText.."|r "
+--Blue colored "FCOIS" pre text for the chat output
+FCOIS.preChatVars.preChatTextBlue = "|c2222DD"..FCOIS.preChatVars.preChatText.."|r "
+
+--Error text constants
+FCOIS.errorTexts = {}
+FCOIS.errorTexts["libraryMissing"] = "ERROR: Needed library \'%s\' was not found. Addon is not working!"
+
 --Get the current API version of the server, to distinguish code differences dependant on the API version
 FCOIS.APIversion = GetAPIVersion()
 FCOIS.APIVersionLength = string.len(FCOIS.APIversion) or 6
 
---===================== Libraries ==============================================
---Create the filter object for addon libFilters 2.x
-if FCOIS.libFilters == nil then
-    FCOIS.libFilters = LibFilters3
-    --Initialize the libFilters 3.x filters
-    FCOIS.libFilters:InitializeLibFilters()
-end
+--======================================================================================================================
+--                  LIBRARIES
+--======================================================================================================================
+FCOIS.libsLoadedProperly = false
+
+local preVars = FCOIS.preChatVars
+local libMissingErrorText = FCOIS.errorTexts["libraryMissing"]
+
+--Load libLoadedAddons
+FCOIS.LIBLA = LibLoadedAddons
+if FCOIS.LIBLA == nil and LibStub then FCOIS.LIBLA = LibStub:GetLibrary("LibLoadedAddons", true) end
+if FCOIS.LIBLA == nil then d(preVars.preChatTextRed .. string.format(libMissingErrorText, "LibLoadedAddons")) return end
+
+--Create the settings panel object of libAddonMenu 2.0
+FCOIS.LAM = LibAddonMenu2
+if FCOIS.LAM == nil and LibStub then FCOIS.LAM = LibStub('LibAddonMenu-2.0', true) end
+if FCOIS.LAM == nil then d(preVars.preChatTextRed .. string.format(libMissingErrorText, "LibAddonMenu-2.0")) return end
+
+--The options panel of FCO ItemSaver
+FCOIS.FCOSettingsPanel = nil
+
+--Create the libMainMenu 2.0 object
+FCOIS.LMM2 = LibMainMenu2
+if FCOIS.LMM2 == nil and LibStub then FCOIS.LMM2 = LibStub("LibMainMenu-2.0", true) end
+if FCOIS.LMM2 == nil then d(preVars.preChatTextRed .. string.format(libMissingErrorText, "LibMainMenu-2.0")) return end
+FCOIS.LMM2:Init()
+
+--Create the filter object for addon libFilters 3.x
+FCOIS.libFilters = {}
+FCOIS.libFilters = LibFilters3
+if not FCOIS.libFilters then d(preVars.preChatTextRed .. string.format(libMissingErrorText, "LibFilters-3.0")) return end
+--Initialize the libFilters 3.x filters
+FCOIS.libFilters:InitializeLibFilters()
+
+--Initialize the library LibDialog
+FCOIS.LDIALOG = LibDialog
+if FCOIS.LDIALOG == nil and LibStub then FCOIS.LDIALOG = LibStub('LibDialog', true) end
+if not FCOIS.LDIALOG then d(preVars.preChatTextRed .. string.format(libMissingErrorText, "LibDialog")) return end
+
+--Initialize the library LibFeedback
+FCOIS.libFeedback = LibFeedback
+if FCOIS.libFeedback == nil and LibStub then FCOIS.libFeedback = LibStub:GetLibrary('LibFeedback', true) end
+if not FCOIS.libFeedback then d(preVars.preChatTextRed .. string.format(libMissingErrorText, "LibFeedback")) return end
+
+--All libraries are loaded prolery?
+FCOIS.libsLoadedProperly = true
 
 --==========================================================================================================================================
 -- 															FCOIS CONSTANTS
@@ -188,8 +242,6 @@ FCOIS.invAdditionalButtonVars = {}
 FCOIS.otherAddons = {}
 -- Local variables for improvement
 FCOIS.improvementVars = {}
---Local pre chat color variables
-FCOIS.preChatVars = {}
 --Handlers for the check functions (e.g. FCOIS.IsItemprotected() in file FCOIS_Protection.lua)
 FCOIS.checkHandlers = {}
 
@@ -200,15 +252,6 @@ FCOIS.lastMarkedIcons			= nil
 FCOIS.improvementVars.improvementBagId		= nil
 FCOIS.improvementVars.improvementSlotIndex	= nil
 FCOIS.improvementVars.improvementMarkedIcons = {}
-
---Uncolored "FCOIS" pre chat text for the chat output
-FCOIS.preChatVars.preChatText = "FCOIS"
---Green colored "FCOIS" pre text for the chat output
-FCOIS.preChatVars.preChatTextGreen = "|c22DD22"..FCOIS.preChatVars.preChatText.."|r "
---Red colored "FCOIS" pre text for the chat output
-FCOIS.preChatVars.preChatTextRed = "|cDD2222"..FCOIS.preChatVars.preChatText.."|r "
---Blue colored "FCOIS" pre text for the chat output
-FCOIS.preChatVars.preChatTextBlue = "|c2222DD"..FCOIS.preChatVars.preChatText.."|r "
 
 --Entries for the context menu submenu entries, and the dynamic icons submenu entries
 FCOIS.customMenuVars.customMenuSubEntries		= {}

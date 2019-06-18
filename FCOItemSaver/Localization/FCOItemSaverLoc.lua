@@ -19,6 +19,10 @@
 ]]
 --Move the localization vars to the global data
 local FCOIS = FCOIS
+
+--Do not go on if libraries are not loaded properly
+if not FCOIS.libsLoadedProperly then return end
+
 --Local speed-ups of global number and other variables
 local numLanguages                      = FCOIS.numVars.languageCount
 local numFilterPanels                   = FCOIS.numVars.gFCONumFilterInventoryTypes

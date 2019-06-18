@@ -1,5 +1,7 @@
 --Global variable
 FCOIS = FCOIS or {}
+--Do not go on if libraries are not loaded properly
+if not FCOIS.libsLoadedProperly then return end
 --Keybinding texts
 
 --Filters

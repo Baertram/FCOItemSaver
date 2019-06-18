@@ -6,14 +6,17 @@ local FCOIS = FCOIS
 --									FCOIS other addon functions
 --==========================================================================================================================================
 
---Inventory Insight From Ashes (IIFA) loaded now?
-function FCOIS.checkIfOtherAddonIIfAIsActive()
-    if (IIfA ~= nil) then
-        FCOIS.otherAddons.IIFAActive = true
-    else
-        FCOIS.otherAddons.IIFAActive = false
-    end
+-- ==================================================================
+--               AdvancedDisableControllerUI
+-- ==================================================================
+function FCOIS.checkIfADCUIAndIsNotUsingGamepadMode()
+    FCOIS.otherAddons = FCOIS.otherAddons or {}
+    return (FCOIS.otherAddons.ADCUIActive and ADCUI ~= nil and ADCUI.savedVariables ~= nil and ADCUI.savedVariables.useControllerUI == false)
 end
+
+--Do not go on if libraries are not loaded properly
+if not FCOIS.libsLoadedProperly then return end
+
 
 --Check if another addon name is found and thus active
 function FCOIS.checkIfOtherAddonActive(addOnName)
@@ -146,13 +149,6 @@ function FCOIS.checkIfInventoryRowOfExternalAddonNeedsMarkerIconsUpdate(rowContr
             IIfA:UpdateFCOISMarkerIcons(rowControl, showFCOISMarkerIcons, false, -1)
         end
     end
-end
-
--- ==================================================================
---               AdvancedDisableControllerUI
--- ==================================================================
-function FCOIS.checkIfADCUIAndIsNotUsingGamepadMode()
-    return (FCOIS.otherAddons.ADCUIActive and ADCUI ~= nil and ADCUI.savedVariables ~= nil and ADCUI.savedVariables.useControllerUI == false)
 end
 
 -- ==================================================================
@@ -554,6 +550,16 @@ end
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
+
+--Inventory Insight From Ashes (IIFA) loaded now?
+function FCOIS.checkIfOtherAddonIIfAIsActive()
+    if (IIfA ~= nil) then
+        FCOIS.otherAddons.IIFAActive = true
+    else
+        FCOIS.otherAddons.IIFAActive = false
+    end
+end
+
 --Get the itemInstance or the unique ID
 function FCOIS.getItemInstanceOrUniqueId(bagId, slotIndex, itemLink)
     if bagId == nil or slotIndex == nil then return 0, false end

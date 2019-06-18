@@ -1,6 +1,8 @@
 --Global array with all data of this addon
 if FCOIS == nil then FCOIS = {} end
 local FCOIS = FCOIS
+--Do not go on if libraries are not loaded properly
+if not FCOIS.libsLoadedProperly then return end
 
 --==========================================================================================================================================
 -- 										FCOIS settings & saved variables functions
@@ -542,6 +544,10 @@ function FCOIS.afterSettings()
             if isEnabled then
                 maxUsableDynIconNr = icon2Dynamic[dynIconNr]
             end
+        end
+        --Fallback
+        if maxUsableDynIconNr == nil then
+            maxUsableDynIconNr = 10
         end
         if maxUsableDynIconNr > 0 then
             --Update the global variable with the current number of usable dyn. icons from the settings
