@@ -84,8 +84,16 @@ local function automaticMarkingResearchAdditionalCheckFunc(p_itemData, p_checkFu
         --ResearchAssistant should be used?
         local researchAddonId = FCOIS.getResearchAddonUsed()
         if researchAddonId == FCOIS_RESEARCH_ADDON_RESEARCHASSISTANT then
-            if comingFromEventInvSingleSlotUpdate and ResearchAssistant ~= nil and ResearchAssistant.IsItemResearchableWithSettingsCharacter ~= nil then
-                isResearchable = ResearchAssistant.IsItemResearchableWithSettingsCharacter(bagId, slotIndex)
+            if comingFromEventInvSingleSlotUpdate and ResearchAssistant ~= nil and
+                (ResearchAssistant.IsItemResearchableOrDuplicateWithSettingsCharacter ~= nil or ResearchAssistant.IsItemResearchableWithSettingsCharacter ~= nil) then
+                isResearchable = false
+                if ResearchAssistant.IsItemResearchableOrDuplicateWithSettingsCharacter ~= nil then
+                    isResearchable = ResearchAssistant.IsItemResearchableOrDuplicateWithSettingsCharacter(bagId, slotIndex)
+                    --return value could be true, false or "duplicate"
+                    if isResearchable ~= true then isResearchable = false end
+                else
+                    isResearchable = ResearchAssistant.IsItemResearchableWithSettingsCharacter(bagId, slotIndex)
+                end
             else
                 isResearchable = (itemDataEntry.researchAssistant ~= nil and itemDataEntry.researchAssistant == 'researchable')
             end

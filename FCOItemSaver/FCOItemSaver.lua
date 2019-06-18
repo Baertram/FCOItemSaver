@@ -19,9 +19,9 @@
 -- Recomment to use libCustomMenu RegisterContextMenu
 -- Should be a following error
 
--- 4) 2019-06-18 - Bugfix - Baertram
---Dynamic icons in the additional inventory "flag" menu should be sorted as well by the settings sort options, if the option to sort the "flag" context menu is enabled too
---> See file strc/FCOIS_Contextmenus.lua, function FCOIS.showContextMenuForAddInvButtons(...) and function sortContextMenuEntries() ???
+-- 4) 2019-06-18 - Bugfix - Baertram (on user report in comments, Ivo_ESO
+--Research assistant duplicate items will be auto marked with FCOIS even if another researchable one was already marked
+--> See file src/FCOIS_AutomaticMarks.lua, function
 
 
 ------------------------------------------------------------------
@@ -44,8 +44,8 @@ local FCOIS = FCOIS
 --===================== ADDON Info =============================================
 --Addon variables
 FCOIS.addonVars = {}
-FCOIS.addonVars.addonVersionOptions 		= '1.5.5' -- version shown in the settings panel
-FCOIS.addonVars.addonVersionOptionsNumber	= 1.55
+FCOIS.addonVars.addonVersionOptions 		= '1.5.6' -- version shown in the settings panel
+FCOIS.addonVars.addonVersionOptionsNumber	= 1.56
 FCOIS.addonVars.gAddonName					= "FCOItemSaver"
 FCOIS.addonVars.addonNameMenu				= "FCO ItemSaver"
 FCOIS.addonVars.addonNameMenuDisplay		= "|c00FF00FCO |cFFFF00ItemSaver|r"
