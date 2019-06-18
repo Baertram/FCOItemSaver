@@ -2665,7 +2665,7 @@ function FCOIS.showContextMenuForAddInvButtons(invAddContextMenuInvokerButton)
         local isIconDynamic = FCOIS.mappingVars.iconIsDynamic
         local sortAddInvFlagContextMenu = settings.sortIconsInAdditionalInvFlagContextMenu
 
-        d("[FCOIS]showContextMenuForAddInvButtons, countDynIconsEnabled: " ..tostring(countDynIconsEnabled) .. ", useDynSubMenu: " ..tostring(useDynSubMenu) .. ", sortAddInvFlagContextMenu: " ..tostring(sortAddInvFlagContextMenu))
+--d("[FCOIS]showContextMenuForAddInvButtons, countDynIconsEnabled: " ..tostring(countDynIconsEnabled) .. ", useDynSubMenu: " ..tostring(useDynSubMenu) .. ", sortAddInvFlagContextMenu: " ..tostring(sortAddInvFlagContextMenu))
 
         local parentName = invAddContextMenuInvokerButton:GetParent():GetName()
         local myFont
@@ -2711,7 +2711,6 @@ function FCOIS.showContextMenuForAddInvButtons(invAddContextMenuInvokerButton)
         if sortAddInvFlagContextMenu then
             if not FCOIS.checkIfUserContextMenuSortOrderValid() then FCOIS.resetUserContextMenuSortOrder() end
         end
-        --TODO:
         local contextMenuEntriesAdded = 0
         local FCOAddInvFlagButtonContextMenu = {}
         --For each icon check if it is enabled and then add an entry to internal tables.
