@@ -524,9 +524,12 @@ function FCOIS.afterSettings()
     local numLibFiltersFilterPanelIds = FCOIS.numVars.gFCONumFilterInventoryTypes
     local numFilterIcons = FCOIS.numVars.gFCONumFilterIcons
     local icon2Dynamic = FCOIS.mappingVars.iconToDynamic
-    local dynamic2Icon = FCOIS.mappingVars.dynamicToIcon
+    --local dynamic2Icon = FCOIS.mappingVars.dynamicToIcon
 
-    --Introduced with FCOIS version 1.5.2: Dynamic icons global settings slider to set dynamic icons total count enabled
+    --Set the split filters to true as old "non-split filters" method is not supported anymore!
+    settings.splitFilters = true
+
+    --Introduced with FCOIS version 1.5.2: Dynamic icons global settings slider to set dynamic icons max total count enabled.
     --Check if the current value of the settings slider was set due to an update of the addon and check if the user was using more than the
     --default value of the enabled dynamic icons already: If so set the slider to the users max value so his dyn icons are all enabled
     --Set the valuie from the settings to the global constant now:
@@ -538,7 +541,7 @@ function FCOIS.afterSettings()
     if settings.addonFCOISChangedDynIconMaxUsableSlider then
         --Check if the user got more dyn. icons enabled as the current value of the usable dyn. icons is set (standard value is: 10)
         --Loop over iconsEnabled in settings and check if the number of dynIcons is > then the currently total usable number
-        local firstDynIconNr = FCOIS.numVars.gFCONumNonDynamicAndGearIcons + 1 --Start at icon# 13 = Dyn. icon #1
+        --local firstDynIconNr = FCOIS.numVars.gFCONumNonDynamicAndGearIcons + 1 --Start at icon# 13 = Dyn. icon #1
         local maxUsableDynIconNr = 0
         for dynIconNr, isEnabled in ipairs(settings.isIconEnabled) do
             if isEnabled then
@@ -560,8 +563,10 @@ function FCOIS.afterSettings()
         FCOIS.settingsVars.settings.addonFCOISChangedDynIconMaxUsableSlider = false
     end
 
-    --Set the split filters to true as old "non-split filters" method is not supported anymore!
-    settings.splitFilters = true
+    --Build the additional inventory "flag" context menu button data, which depends on the here before set values
+    --FCOIS.numVars.gFCONumDynamicIcons and FCOIS.settingsVars.settings.numMaxDynamicIconsUsable
+    --> See file src/FCOIS_ContextMenus.lua, function FCOIS.buildAdditionalInventoryFlagContextMenuData(calledFromFCOISSettings)
+    FCOIS.buildAdditionalInventoryFlagContextMenuData(true)
 
     --Preset global variable for item destroying
     FCOIS.preventerVars.gAllowDestroyItem = not settings.blockDestroying

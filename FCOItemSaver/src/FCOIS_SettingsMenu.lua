@@ -655,10 +655,23 @@ function FCOIS.BuildAddonMenu()
             local data = {}
             data.type = "description"
             data.text = locVars["options_icon_sort_order_warning"]
-            --Create the dropdownbox now
+            --Create the warning header control now
             local createdIconSortWarningHeader = CreateControl(nil, "", "", data)
             table.insert(submenuControls, createdIconSortWarningHeader)
-            --Create the dropdown boxes for the icons
+
+            --Add the checkbox for additional inventory button "flag" context menu should be sorted too
+            data = { type = "checkbox", width = "full" }
+            local name = locVars["options_icon_sort_order_add_inv_button_flag_too"]
+            local tooltip = locVars["options_icon_sort_order_add_inv_button_flag_too_TT"]
+            local getFunc = function() return FCOISsettings.sortIconsInAdditionalInvFlagContextMenu end
+            local setFunc = function(value) FCOIS.settingsVars.settings.sortIconsInAdditionalInvFlagContextMenu = value end
+            local disabledFunc = function() return false end
+            local defaultSettings     = FCOISdefaultSettings.sortIconsInAdditionalInvFlagContextMenu
+            --Create the checkbox now
+            local createdIconSortAddInvButtonFlagToo = CreateControl(name, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
+            table.insert(submenuControls, createdIconSortAddInvButtonFlagToo)
+
+            --Create the dropdown boxe for each marker icon now
 			local createdIconSortOrderDDBoxes = buildIconSortOrderDropdowns()
 			--Was the IconSortOrder submenu build?
 			if createdIconSortOrderDDBoxes ~= nil and #createdIconSortOrderDDBoxes > 0 then
@@ -706,7 +719,7 @@ function FCOIS.BuildAddonMenu()
 
             end
             local defaultSettings = FCOISdefaultSettings.isIconEnabled[fcoisDynIconNr]
-            --Create the dropdownbox now
+            --Create the checkbox now
             local createdDynIconEnableCB = CreateControl(name, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
             if createdDynIconEnableCB ~= nil then
                 table.insert(dynamicIconsEnabledCbs, createdDynIconEnableCB)
@@ -2999,8 +3012,8 @@ function FCOIS.BuildAddonMenu()
             --Slider to change total possible dynamic icons -> Speedup for non-used dynamic icons (1-30)
             {
                 type = "slider",
-                name = "Dynamic icons - Total usable",
-                tooltip = "Set the total number of usable dynamic icons here.",
+                name = locVars["options_icons_dynamic_usable"],
+                tooltip = locVars["options_icons_dynamic_usable_TT"],
                 min = 1,
                 max = numMaxDynIcons,
                 decimals = 0,

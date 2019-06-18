@@ -155,7 +155,6 @@ FCOIS.numVars.gFCOMaxNumDynamicIcons	= 30
 --Global value: Number of dynamic icons
 FCOIS.numVars.gFCONumDynamicIcons		= 10
 local numMaxDynamicIcons                = FCOIS.numVars.gFCOMaxNumDynamicIcons
-local numDynamicIcons                   = FCOIS.numVars.gFCONumDynamicIcons
 
 --Possible icon IDs
 --and possible context menus for the filter buttons: RESDECIMP and SELLGUILDINT
@@ -1807,7 +1806,27 @@ FCOIS.mappingVars.traits.weaponShieldTraits = {
 	[ITEM_TRAIT_TYPE_ARMOR_ORNATE] = GetString(SI_ITEMTRAITTYPE19),
 }
 
---Context menu variables for additional inventory buttons (flag icon)
+--The mapping table for the additional inventory context menu buttons (flag icon) to icon id
+FCOIS.contextMenuVars.buttonContextMenuToIconId = {}
+--The index of the mapping table for context menu buttons to icon id
+FCOIS.contextMenuVars.buttonContextMenuToIconIdIndex = {}
+--The table for the context menu marker icons in the additional inventory "flag" context menu, but only non-dynamic icons
+FCOIS.contextMenuVars.buttonContextMenuNonDynamicIcons = {
+    [1]     = FCOIS_CON_ICON_LOCK,
+    [2]     = FCOIS_CON_ICON_GEAR_1,
+    [3]     = FCOIS_CON_ICON_GEAR_2,
+    [4]     = FCOIS_CON_ICON_GEAR_3,
+    [5]     = FCOIS_CON_ICON_GEAR_4,
+    [6]     = FCOIS_CON_ICON_GEAR_5,
+    [7]     = FCOIS_CON_ICON_RESEARCH,
+    [8]     = FCOIS_CON_ICON_DECONSTRUCTION,
+    [9]     = FCOIS_CON_ICON_IMPROVEMENT,
+    [10]    = FCOIS_CON_ICON_SELL,
+    [11]    = FCOIS_CON_ICON_SELL_AT_GUILDSTORE,
+    [12]    = FCOIS_CON_ICON_INTRICATE,
+}
+
+--Context menu variables for additional inventory buttons ("flag" icon)
 FCOIS.contextMenuVars.maxWidth			= 275
 FCOIS.contextMenuVars.maxHeight			= 880 -- old 880 before dynamic icons 11 to 30 were added, more old 721 before 6 new dynamic icons 5 to 10 were added, even more older 561 before the first 4 dynamic icons were added
 FCOIS.contextMenuVars.entryHeight		= 20
@@ -2092,86 +2111,6 @@ FCOIS.contextMenuVars.filterPanelIdToContextMenuButtonInvoker = {
     },
 
 }
---The entries in the following mapping array. The entry number is needed to anchor the REMOVE_ALL_GEARS button correctly!
-local numNonDynamicAndGearIcons = FCOIS.numVars.gFCONumNonDynamicAndGearIcons --or 12 -- As fallback value: dated 2018-10-03
-local buttonContextMenuToIconIdEntryCount = ((numNonDynamicAndGearIcons)*2) --or 24 -- As fallback value: dated 2018-10-03
---FCOIS.contextMenuVars.buttonContextMenuToIconIdEntries = 84 --OLD: 44 before additional 20 dynamic icons were added
-FCOIS.contextMenuVars.buttonContextMenuToIconIdEntries = (buttonContextMenuToIconIdEntryCount+(numDynamicIcons*2)) --or 84 -- As fallback value: dated 2018-10-03
-local maxContextMenuEntries = FCOIS.contextMenuVars.buttonContextMenuToIconIdEntries --or 84 -- As fallback value: dated 2018-10-03
-
---The table for the context menu marker icons in the additional inventory "flag" context menu
-FCOIS.contextMenuVars.buttonContextMenuNonDynamicIcons = {
-    [1] = FCOIS_CON_ICON_LOCK,
-    [2] = FCOIS_CON_ICON_GEAR_1,
-    [3] = FCOIS_CON_ICON_GEAR_2,
-    [4] = FCOIS_CON_ICON_GEAR_3,
-    [5] = FCOIS_CON_ICON_GEAR_4,
-    [6] = FCOIS_CON_ICON_GEAR_5,
-    [7] = FCOIS_CON_ICON_RESEARCH,
-    [8] = FCOIS_CON_ICON_DECONSTRUCTION,
-    [9] = FCOIS_CON_ICON_IMPROVEMENT,
-    [10] = FCOIS_CON_ICON_SELL,
-    [11] = FCOIS_CON_ICON_SELL_AT_GUILDSTORE,
-    [12] = FCOIS_CON_ICON_INTRICATE,
-}
-local buttonContextMenuIcons = FCOIS.contextMenuVars.buttonContextMenuNonDynamicIcons
---The mapping table for the additional inventory context menu buttons (flag icon) to icon id
-FCOIS.contextMenuVars.buttonContextMenuToIconId = {}
-local buttonContextMenuToIconIdTable = FCOIS.contextMenuVars.buttonContextMenuToIconId
---The index of the mapping table for context menu buttons to icon id
-FCOIS.contextMenuVars.buttonContextMenuToIconIdIndex = {}
-local buttonContextMenuToIconIdIndexTable = FCOIS.contextMenuVars.buttonContextMenuToIconIdIndex
-local iconIndex = 1
-for index=1, maxContextMenuEntries do
-    --Insert the icon indices
-	table.insert(buttonContextMenuToIconIdIndexTable, buttonNamePrefix .. index)
-
-    --Is the current index <= buttonContextMenuToIconIdEntryCount so no dynamic icons will be affected:
-    -->Dynamic icons will be added after this loop here!
-    if index <= buttonContextMenuToIconIdEntryCount then
-        local anchorEntryIndex = index - 1
-        if index == 1 then anchorEntryIndex = 1 end
-        local entryKey = buttonNamePrefix .. tostring(index)
-        local entryData = {}
-        local markerIconForContextMenuEntryAtIndex = buttonContextMenuIcons[iconIndex] --icon index of the last icon
-        entryData.iconId = markerIconForContextMenuEntryAtIndex
-        --index is even, value = false. Else: Value = true
-        entryData.mark = true
-        if index % 2 == 0 then
-            --Only increase the iconIndex if the number is even, so the next icon in next loop will be increased
-            iconIndex = iconIndex + 1
-            entryData.mark = false
-        end
-        entryData. anchorButton = buttonNamePrefix .. tostring(anchorEntryIndex)
-        if entryKey ~= nil and entryKey ~= "" and entryData ~= nil then
-            buttonContextMenuToIconIdTable[entryKey] = entryData
-        end
-    end
-end
---Dynamic context menu entries
-if buttonContextMenuToIconIdTable ~= nil then
-    --Actual count of context menu entries should be sum of "non-dynamic + gear sets", multiplied by 2 (because of "mark" and "unmark" context menu entries)
-    if buttonContextMenuToIconIdEntryCount ~= nil and buttonContextMenuToIconIdEntryCount > 0 and maxContextMenuEntries ~= nil and maxContextMenuEntries > 0 then
-        local dynIconCounter = 1
-        --Maxmium count of context menu entries should be sum of "non-dynamic + gear sets + dynamic", multiplied by 2 (because of "mark" and "unmark" context menu entries), and subracted 1
-        for entryNumber = buttonContextMenuToIconIdEntryCount+1, maxContextMenuEntries do
-            local entryKey = buttonNamePrefix .. tostring(entryNumber)
-            local entryData = {}
-            entryData.iconId = _G["FCOIS_CON_ICON_DYNAMIC_" .. tostring(dynIconCounter)]
-            --entryNumber is even, value = false. Else: Value = true
-            entryData.mark = true
-            if entryNumber % 2 == 0 then
-                --Only increase the counter if the number is even, so the next icon in next loop will be increased
-                dynIconCounter = dynIconCounter + 1
-                entryData.mark = false
-            end
-            entryData. anchorButton = buttonNamePrefix .. tostring(entryNumber-1)
-            if entryKey ~= nil and entryKey ~= "" and entryData ~= nil then
-                buttonContextMenuToIconIdTable[entryKey] = entryData
-            end
-        end
-    end
-end
 
 --Constants for the filter item number sort header entries "name" at the filter panels
 FCOIS.sortHeaderVars = {}

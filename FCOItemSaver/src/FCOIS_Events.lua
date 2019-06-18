@@ -795,6 +795,9 @@ local function FCOItemSaver_Loaded(eventCode, addOnName)
 
             FCOIS.preventerVars.gAddonStartupInProgress = true
 
+            -- Registers addon to loadedAddon library LibLoadedAddons
+            FCOIS.LIBLA:RegisterAddon(FCOIS.addonVars.gAddonName, FCOIS.addonVars.addonVersionOptionsNumber)
+
             --=============================================================================================================
             --	LOAD USER SETTINGS
             --=============================================================================================================
@@ -839,9 +842,6 @@ local function FCOItemSaver_Loaded(eventCode, addOnName)
 
             --Set the addon loaded variable
             FCOIS.addonVars.gAddonLoaded = true
-
-            -- Registers addon to loadedAddon library
-            FCOIS.LIBLA:RegisterAddon(FCOIS.addonVars.gAddonName, FCOIS.addonVars.addonVersionOptionsNumber)
 
             if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[Addon startup finished!]", true, FCOIS_DEBUG_DEPTH_NORMAL) end
         end --gamepad active check

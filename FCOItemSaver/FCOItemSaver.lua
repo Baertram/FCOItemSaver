@@ -19,6 +19,10 @@
 -- Recomment to use libCustomMenu RegisterContextMenu
 -- Should be a following error
 
+-- 4) 2019-06-18 - Bugfix - Baertram
+--Dynamic icons in the additional inventory "flag" menu should be sorted as well by the settings sort options, if the option to sort the "flag" context menu is enabled too
+--> See file strc/FCOIS_Contextmenus.lua, function FCOIS.showContextMenuForAddInvButtons(...) and function sortContextMenuEntries() ???
+
 
 ------------------------------------------------------------------
 --FCOItemSaver.lua
@@ -40,8 +44,8 @@ local FCOIS = FCOIS
 --===================== ADDON Info =============================================
 --Addon variables
 FCOIS.addonVars = {}
-FCOIS.addonVars.addonVersionOptions 		= '1.5.3' -- version shown in the settings panel
-FCOIS.addonVars.addonVersionOptionsNumber	= 1.53
+FCOIS.addonVars.addonVersionOptions 		= '1.5.5' -- version shown in the settings panel
+FCOIS.addonVars.addonVersionOptionsNumber	= 1.55
 FCOIS.addonVars.gAddonName					= "FCOItemSaver"
 FCOIS.addonVars.addonNameMenu				= "FCO ItemSaver"
 FCOIS.addonVars.addonNameMenuDisplay		= "|c00FF00FCO |cFFFF00ItemSaver|r"

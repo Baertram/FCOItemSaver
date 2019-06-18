@@ -1627,7 +1627,7 @@ local function sortContextMenuEntries(menuEntriesUnsorted)
     end
     --Add them to the sorted table with the sort order they got from the settings
     if contextMenuEntriesAdded > 0 then
-        --Was the * butotn in the unsorted table? Then add it at first to the sorted tbale again
+        --Was the * button in the unsorted table? Then add it at first to the sorted table again
         if iconStarFound then
             table.insert(menuEntriesSorted, menuEntriesUnsorted[-1])
         end
@@ -1830,6 +1830,81 @@ end
 -- ============================================================
 --         Additional inventory button "flag" context menu
 -- ============================================================
+
+--Function to build the additional inventory "flag" context menu entries according to the enabled marker icons and the maximum set dynamic icons
+-->Added with FCOIS v1.5.4
+function FCOIS.buildAdditionalInventoryFlagContextMenuData(calledFromFCOISSettings)
+    calledFromFCOISSettings = calledFromFCOISSettings or false
+    if not calledFromFCOISSettings then return false end
+
+    local buttonNamePrefix = FCOIS.contextMenuVars.buttonNamePrefix
+    --The set maximum dynamic icons
+    local numDynamicIcons                   = FCOIS.numVars.gFCONumDynamicIcons
+    --The entries in the following mapping array. The entry number is needed to anchor the REMOVE_ALL_GEARS button correctly!
+    local numNonDynamicAndGearIcons = FCOIS.numVars.gFCONumNonDynamicAndGearIcons --or 12 -- As fallback value: dated 2018-10-03
+    local buttonContextMenuToIconIdEntryCount = ((numNonDynamicAndGearIcons)*2) --or 24 -- As fallback value: dated 2018-10-03
+    --FCOIS.contextMenuVars.buttonContextMenuToIconIdEntries = 84 --OLD: 44 before additional 20 dynamic icons were added
+    FCOIS.contextMenuVars.buttonContextMenuToIconIdEntries = (buttonContextMenuToIconIdEntryCount+(numDynamicIcons*2)) --or 84 -- As fallback value: dated 2018-10-03
+    local maxContextMenuEntries = FCOIS.contextMenuVars.buttonContextMenuToIconIdEntries --or 84 -- As fallback value: dated 2018-10-03
+    --The tables handling the buttonNames, the anchor buttons, the markerIds etc.
+    local buttonContextMenuIcons                = FCOIS.contextMenuVars.buttonContextMenuNonDynamicIcons
+    local buttonContextMenuToIconIdTable        = FCOIS.contextMenuVars.buttonContextMenuToIconId
+    local buttonContextMenuToIconIdIndexTable   = FCOIS.contextMenuVars.buttonContextMenuToIconIdIndex
+
+    local iconIndex = 1
+    for index=1, maxContextMenuEntries do
+        --Insert the icon indices
+        table.insert(buttonContextMenuToIconIdIndexTable, buttonNamePrefix .. index)
+
+        --Is the current index <= buttonContextMenuToIconIdEntryCount so no dynamic icons will be affected:
+        -->Dynamic icons will be added after this loop here!
+        if index <= buttonContextMenuToIconIdEntryCount then
+            local anchorEntryIndex = index - 1
+            if index == 1 then anchorEntryIndex = 1 end
+            local entryKey = buttonNamePrefix .. tostring(index)
+            local entryData = {}
+            local markerIconForContextMenuEntryAtIndex = buttonContextMenuIcons[iconIndex] --icon index of the last icon
+            entryData.iconId = markerIconForContextMenuEntryAtIndex
+            --index is even, value = false. Else: Value = true
+            entryData.mark = true
+            if index % 2 == 0 then
+                --Only increase the iconIndex if the number is even, so the next icon in next loop will be increased
+                iconIndex = iconIndex + 1
+                entryData.mark = false
+            end
+            entryData. anchorButton = buttonNamePrefix .. tostring(anchorEntryIndex)
+            if entryKey ~= nil and entryKey ~= "" and entryData ~= nil then
+                buttonContextMenuToIconIdTable[entryKey] = entryData
+            end
+        end
+    end
+    --Dynamic context menu entries
+    if buttonContextMenuToIconIdTable ~= nil then
+        --Actual count of context menu entries should be sum of "non-dynamic + gear sets", multiplied by 2 (because of "mark" and "unmark" context menu entries)
+        if buttonContextMenuToIconIdEntryCount ~= nil and buttonContextMenuToIconIdEntryCount > 0 and maxContextMenuEntries ~= nil and maxContextMenuEntries > 0 then
+            local dynIconCounter = 1
+            --Maxmium count of context menu entries should be sum of "non-dynamic + gear sets + dynamic", multiplied by 2 (because of "mark" and "unmark" context menu entries), and subracted 1
+            for entryNumber = buttonContextMenuToIconIdEntryCount+1, maxContextMenuEntries do
+                local entryKey = buttonNamePrefix .. tostring(entryNumber)
+                local entryData = {}
+                entryData.iconId = _G["FCOIS_CON_ICON_DYNAMIC_" .. tostring(dynIconCounter)]
+                --entryNumber is even, value = false. Else: Value = true
+                entryData.mark = true
+                if entryNumber % 2 == 0 then
+                    --Only increase the counter if the number is even, so the next icon in next loop will be increased
+                    dynIconCounter = dynIconCounter + 1
+                    entryData.mark = false
+                end
+                entryData. anchorButton = buttonNamePrefix .. tostring(entryNumber-1)
+                if entryKey ~= nil and entryKey ~= "" and entryData ~= nil then
+                    buttonContextMenuToIconIdTable[entryKey] = entryData
+                end
+            end
+        end
+    end
+end
+
+
 --Function to build the text for the toggle buttons (Anti-Deconstruct, Anti-Destroy, Anti-Sell, etc.)
 --The function will return as first parameter the text and as second parameter a boolean value: true if the setting for the current panel is enabled, and false if not
 function FCOIS.getContextMenuAntiSettingsTextAndState(p_filterWhere, buildText)
@@ -2548,7 +2623,7 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
     end
 end
 
---Function that is called upon onMouseUp event on the additional inventory "flag" context menu buttons (e.g. right mouse click to change the protection, left moseu to show the context menu)
+--Function that is called upon onMouseUp event on the additional inventory "flag" context menu button's right mouse click to change the protection
 function FCOIS.onContextMenuForAddInvButtonsButtonMouseUp(inventoryAdditionalContextMenuInvokerButton, mouseButton, upInside)
 --d("[FCOIS]onContextMenuForAddInvButtonsButtonMouseUp, invokerButton: " .. tostring(inventoryAdditionalContextMenuInvokerButton:GetName()))
     if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[FCOIS.onContextMenuForAddInvButtonsButtonMouseUp] invokerButton: " .. tostring(inventoryAdditionalContextMenuInvokerButton:GetName()) .. ", panelId: " .. tostring(FCOIS.gFilterWhere) .. ", mouseButton: " .. tostring(mouseButton), true, FCOIS_DEBUG_DEPTH_ALL) end
@@ -2568,7 +2643,7 @@ function FCOIS.onContextMenuForAddInvButtonsButtonMouseUp(inventoryAdditionalCon
     end
 end
 
---Function that display the context menu after the player clicks on the additional inventory "flag" button on the top left corner of the inventories (left to the "name" sort header)
+--Function that display the context menu after the player clicks with left mouse button on the additional inventory "flag" button on the top left corner of the inventories (left to the "name" sort header)
 function FCOIS.showContextMenuForAddInvButtons(invAddContextMenuInvokerButton)
     --FCOIS v.0.8.8d
     --Add ZOs ZO_Menu contextMenu entries via addon library libCustomMenu
@@ -2582,12 +2657,15 @@ function FCOIS.showContextMenuForAddInvButtons(invAddContextMenuInvokerButton)
         local locVars = FCOIS.localizationVars.fcois_loc
         local locContextEntriesVars = FCOIS.localizationVars.contextEntries
         local _, countDynIconsEnabled = FCOIS.countMarkerIconsEnabled()
-        local useDynSubMenu = (settings.useDynSubMenuMaxCount > 0 and  countDynIconsEnabled >= settings.useDynSubMenuMaxCount) or false
+        local useDynSubMenu = (settings.useDynSubMenuMaxCount > 0 and countDynIconsEnabled >= settings.useDynSubMenuMaxCount) or false
         local icon2Gear = FCOIS.mappingVars.iconToGear
         local icon2Dynamic = FCOIS.mappingVars.iconToDynamic
         --local isIconGear	= FCOIS.mappingVars.iconIsGear
         local isIconGear = settings.iconIsGear
         local isIconDynamic = FCOIS.mappingVars.iconIsDynamic
+        local sortAddInvFlagContextMenu = settings.sortIconsInAdditionalInvFlagContextMenu
+
+        d("[FCOIS]showContextMenuForAddInvButtons, countDynIconsEnabled: " ..tostring(countDynIconsEnabled) .. ", useDynSubMenu: " ..tostring(useDynSubMenu) .. ", sortAddInvFlagContextMenu: " ..tostring(sortAddInvFlagContextMenu))
 
         local parentName = invAddContextMenuInvokerButton:GetParent():GetName()
         local myFont
@@ -2628,15 +2706,73 @@ function FCOIS.showContextMenuForAddInvButtons(invAddContextMenuInvokerButton)
         local gearAdded = false
         local dynamicAdded = false
         local otherAdded = false
+
+        --Is the sorting enabled then check the sort order and reset it if not valid
+        if sortAddInvFlagContextMenu then
+            if not FCOIS.checkIfUserContextMenuSortOrderValid() then FCOIS.resetUserContextMenuSortOrder() end
+        end
+        --TODO:
+        local contextMenuEntriesAdded = 0
+        local FCOAddInvFlagButtonContextMenu = {}
+        --For each icon check if it is enabled and then add an entry to internal tables.
+        --Check if the entries should be sorted and then add them in the chosen sort order (settings) order.
+        --This internal tables will be added to the context menus afterwards
         for index, buttonNameStr in ipairs(invContextMenuButtonTemplateIndex) do
             local buttonData = invContextMenuButtonTemplate[buttonNameStr]
-            local buttonText
+            local newOrderId = 0
             if buttonData ~= nil and (buttonData.iconId ~= nil and settings.isIconEnabled[buttonData.iconId]) and buttonData.mark ~= nil then
                 --The icon which the button affects -> Gets the text that should be displayed
                 local buttonsIcon = buttonData.iconId
                 local isGear	= isIconGear[buttonsIcon]
                 local isDynamic = isIconDynamic[buttonsIcon]
-                --Does the button set or remove the icon?
+                --Use the custom sort order as it is valid, or do not sort and use the iconId instead as sortIndex
+                if sortAddInvFlagContextMenu then
+                    newOrderId = settings.icon[buttonsIcon].sortOrder
+                else
+                    newOrderId = buttonsIcon
+                end
+                if newOrderId > 0 and newOrderId <= numFilterIcons then
+                    --Initialize the context menu entry at the new index
+                    --Entry could be one for "mark" (+) and one for "unmark" (-) so the table needs to be kept if it already exists
+                    FCOAddInvFlagButtonContextMenu[newOrderId] = FCOAddInvFlagButtonContextMenu[newOrderId] or {}
+                    --Add subtable for mark (1=true) and unmark (0=false)
+                    local trueOrFalseInteger = -1
+                    if buttonData.mark == true then
+                        trueOrFalseInteger = 1
+                    elseif buttonData.mark == false then
+                        trueOrFalseInteger = 0
+                    end
+                    if trueOrFalseInteger > -1 then
+                        FCOAddInvFlagButtonContextMenu[newOrderId][trueOrFalseInteger] = {}
+                        --Is the current control an equipment control?
+                        FCOAddInvFlagButtonContextMenu[newOrderId][trueOrFalseInteger].index	    = index
+                        FCOAddInvFlagButtonContextMenu[newOrderId][trueOrFalseInteger].iconId	    = buttonsIcon
+                        FCOAddInvFlagButtonContextMenu[newOrderId][trueOrFalseInteger].isGear       = isGear
+                        FCOAddInvFlagButtonContextMenu[newOrderId][trueOrFalseInteger].isDynamic    = isDynamic
+                        FCOAddInvFlagButtonContextMenu[newOrderId][trueOrFalseInteger].buttonData   = buttonData
+                        FCOAddInvFlagButtonContextMenu[newOrderId][trueOrFalseInteger].buttonNameStr= buttonNameStr
+                        --Increase the counter for added context menu entries
+                        contextMenuEntriesAdded = contextMenuEntriesAdded + 1
+                    end
+                end
+
+            end -- if buttonNameStr ~= "" and buttonData ~= nil and buttonData.iconId ~= nil and buttonData.mark ~= nil then
+        end -- for index, buttonNameStr in ipairs(invContextMenuButtonTemplateIndex) do
+
+        --Added with v1.5.5
+        --Sorted table of normal, gear set and dynamic icons must be looped and added to the context menu then
+        if FCOAddInvFlagButtonContextMenu ~= nil and #FCOAddInvFlagButtonContextMenu > 0 and contextMenuEntriesAdded > 0 then
+------------------------------------------------------------------------------------------------------------------------
+            --Helper function to add the table entries of sorted button data, + and -
+            local function addSortedButtonDataTableEntries(sortedButtonData)
+                local index         = sortedButtonData.index
+                local buttonsIcon   = sortedButtonData.iconId
+                local isGear	    = sortedButtonData.isGear
+                local isDynamic     = sortedButtonData.isDynamic
+                local buttonData    = sortedButtonData.buttonData
+                local buttonNameStr = sortedButtonData.buttonNameStr
+                local buttonText
+                --Does the button set or remove the icon? (mark)
                 if buttonData.mark then
                     --Is the icon a gear item?
                     if isGear then
@@ -2649,7 +2785,7 @@ function FCOIS.showContextMenuForAddInvButtons(invAddContextMenuInvokerButton)
                         }
                         table.insert(subMenuEntriesGear, subMenuEntryGear)
                         gearAdded = true
-                    --Is the icon a dynamic icon?
+                        --Is the icon a dynamic icon?
                     elseif isDynamic then
                         --Get the dynamic number
                         local dynamicNumber = icon2Dynamic[buttonsIcon]
@@ -2670,6 +2806,7 @@ function FCOIS.showContextMenuForAddInvButtons(invAddContextMenuInvokerButton)
                     else
                         buttonText = locContextEntriesVars.menu_add_all_text[buttonsIcon]
                     end
+                --Remove the icon (unmark)
                 else
                     --Is the icon a gear item?
                     if isGear then
@@ -2715,7 +2852,7 @@ function FCOIS.showContextMenuForAddInvButtons(invAddContextMenuInvokerButton)
                     FCOIS.errorMessage2Chat("showContextMenuForAddInvButtons", 1, errorData)
                     return nil
                 end
-                --is the button's text too long? Then shorten it and show ... at the ende
+                --is the button's text too long? Then shorten it and show ... at the end
                 if string.len(buttonText) > FCOIS.contextMenuVars.maxCharactersInLine then
                     buttonText = string.sub(buttonText, 1, FCOIS.contextMenuVars.maxCharactersInLine) .. " ..."
                 end
@@ -2725,8 +2862,20 @@ function FCOIS.showContextMenuForAddInvButtons(invAddContextMenuInvokerButton)
                     AddCustomMenuItem(buttonText, function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, buttonsIcon, buttonData.mark, nil) end, MENU_ADD_OPTION_LABEL)
                     otherAdded = true
                 end
-            end -- if buttonNameStr ~= "" and buttonData ~= nil and buttonData.iconId ~= nil and buttonData.mark ~= nil then
-        end -- for index, buttonNameStr in ipairs(invContextMenuButtonTemplateIndex) do
+            end -- function addSortedButtonDataTableEntries()
+------------------------------------------------------------------------------------------------------------------------
+            --Check all entries of the pre-sorted data tabloe and create the context menu entries in the output tables for LibContextMenu now
+            for sortOrderId, sortedButtonDataTable in ipairs(FCOAddInvFlagButtonContextMenu) do
+                --Check the mark=false and mark=true subtable entries and add them to the sorted output after another.
+                --First + mark and then - mark
+                if sortedButtonDataTable[1] ~= nil then
+                    addSortedButtonDataTableEntries(sortedButtonDataTable[1])
+                end
+                if sortedButtonDataTable[0] ~= nil then
+                    addSortedButtonDataTableEntries(sortedButtonDataTable[0])
+                end
+            end --for buttonsIcon, sortedButtonData in ipairs(FCOAddInvFlagButtonContextMenu) do
+        end -- if contextMenuEntriesAdded > 0 then
 
         --Static entries at the end
         --Context menu button REMOVE ALL GEARS
@@ -2884,5 +3033,5 @@ function FCOIS.showContextMenuForAddInvButtons(invAddContextMenuInvokerButton)
         ShowMenu(invAddContextMenuInvokerButton)
         --Reanchor the menu more to the left
         reAnchorMenu(ZO_Menu, -5, 0)
-   end
+    end
 end
