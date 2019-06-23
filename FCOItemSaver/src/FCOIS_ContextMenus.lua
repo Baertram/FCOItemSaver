@@ -2665,7 +2665,7 @@ function FCOIS.showContextMenuForAddInvButtons(invAddContextMenuInvokerButton)
         local isIconDynamic = FCOIS.mappingVars.iconIsDynamic
         local sortAddInvFlagContextMenu = settings.sortIconsInAdditionalInvFlagContextMenu
 
---d("[FCOIS]showContextMenuForAddInvButtons, countDynIconsEnabled: " ..tostring(countDynIconsEnabled) .. ", useDynSubMenu: " ..tostring(useDynSubMenu) .. ", sortAddInvFlagContextMenu: " ..tostring(sortAddInvFlagContextMenu))
+        d("[FCOIS]showContextMenuForAddInvButtons, countDynIconsEnabled: " ..tostring(countDynIconsEnabled) .. ", useDynSubMenu: " ..tostring(useDynSubMenu) .. ", sortAddInvFlagContextMenu: " ..tostring(sortAddInvFlagContextMenu))
 
         local parentName = invAddContextMenuInvokerButton:GetParent():GetName()
         local myFont
@@ -2711,7 +2711,9 @@ function FCOIS.showContextMenuForAddInvButtons(invAddContextMenuInvokerButton)
         if sortAddInvFlagContextMenu then
             if not FCOIS.checkIfUserContextMenuSortOrderValid() then FCOIS.resetUserContextMenuSortOrder() end
         end
+        local maxNewOrderId = 0
         local contextMenuEntriesAdded = 0
+        local FCOAddInvFlagButtonContextMenuWithKeyGap = {}
         local FCOAddInvFlagButtonContextMenu = {}
         --For each icon check if it is enabled and then add an entry to internal tables.
         --Check if the entries should be sorted and then add them in the chosen sort order (settings) order.
@@ -2733,7 +2735,7 @@ function FCOIS.showContextMenuForAddInvButtons(invAddContextMenuInvokerButton)
                 if newOrderId > 0 and newOrderId <= numFilterIcons then
                     --Initialize the context menu entry at the new index
                     --Entry could be one for "mark" (+) and one for "unmark" (-) so the table needs to be kept if it already exists
-                    FCOAddInvFlagButtonContextMenu[newOrderId] = FCOAddInvFlagButtonContextMenu[newOrderId] or {}
+                    FCOAddInvFlagButtonContextMenuWithKeyGap[newOrderId] = FCOAddInvFlagButtonContextMenuWithKeyGap[newOrderId] or {}
                     --Add subtable for mark (1=true) and unmark (0=false)
                     local trueOrFalseInteger = -1
                     if buttonData.mark == true then
@@ -2742,26 +2744,38 @@ function FCOIS.showContextMenuForAddInvButtons(invAddContextMenuInvokerButton)
                         trueOrFalseInteger = 0
                     end
                     if trueOrFalseInteger > -1 then
-                        FCOAddInvFlagButtonContextMenu[newOrderId][trueOrFalseInteger] = {}
+                        FCOAddInvFlagButtonContextMenuWithKeyGap[newOrderId][trueOrFalseInteger] = {}
                         --Is the current control an equipment control?
-                        FCOAddInvFlagButtonContextMenu[newOrderId][trueOrFalseInteger].index	    = index
-                        FCOAddInvFlagButtonContextMenu[newOrderId][trueOrFalseInteger].iconId	    = buttonsIcon
-                        FCOAddInvFlagButtonContextMenu[newOrderId][trueOrFalseInteger].isGear       = isGear
-                        FCOAddInvFlagButtonContextMenu[newOrderId][trueOrFalseInteger].isDynamic    = isDynamic
-                        FCOAddInvFlagButtonContextMenu[newOrderId][trueOrFalseInteger].buttonData   = buttonData
-                        FCOAddInvFlagButtonContextMenu[newOrderId][trueOrFalseInteger].buttonNameStr= buttonNameStr
+                        FCOAddInvFlagButtonContextMenuWithKeyGap[newOrderId][trueOrFalseInteger].index	    = index
+                        FCOAddInvFlagButtonContextMenuWithKeyGap[newOrderId][trueOrFalseInteger].iconId	    = buttonsIcon
+                        FCOAddInvFlagButtonContextMenuWithKeyGap[newOrderId][trueOrFalseInteger].isGear       = isGear
+                        FCOAddInvFlagButtonContextMenuWithKeyGap[newOrderId][trueOrFalseInteger].isDynamic    = isDynamic
+                        FCOAddInvFlagButtonContextMenuWithKeyGap[newOrderId][trueOrFalseInteger].buttonData   = buttonData
+                        FCOAddInvFlagButtonContextMenuWithKeyGap[newOrderId][trueOrFalseInteger].buttonNameStr= buttonNameStr
                         --Increase the counter for added context menu entries
                         contextMenuEntriesAdded = contextMenuEntriesAdded + 1
+                        --Remember the maximum sortOrder id
+                        if newOrderId > 0 and newOrderId > maxNewOrderId then maxNewOrderId = newOrderId end
                     end
                 end
 
             end -- if buttonNameStr ~= "" and buttonData ~= nil and buttonData.iconId ~= nil and buttonData.mark ~= nil then
         end -- for index, buttonNameStr in ipairs(invContextMenuButtonTemplateIndex) do
+        --As the table FCOAddInvFlagButtonContextMenu could contain entries with "gaps" as key (icons could be disabled and therefor "skipped")
+        --we need to rearrange the table key to be a non-gap integer value
+        if maxNewOrderId <= 0 or FCOAddInvFlagButtonContextMenuWithKeyGap[maxNewOrderId] == nil then return end
+        local tableKeyNonGap = 1
+        for tableIndexWithGap=1, maxNewOrderId, 1 do
+            if FCOAddInvFlagButtonContextMenuWithKeyGap[tableIndexWithGap] ~= nil then
+                FCOAddInvFlagButtonContextMenu[tableKeyNonGap] = FCOAddInvFlagButtonContextMenuWithKeyGap[tableIndexWithGap]
+                tableKeyNonGap = tableKeyNonGap + 1
+            end
+        end
 
         --Added with v1.5.5
         --Sorted table of normal, gear set and dynamic icons must be looped and added to the context menu then
         if FCOAddInvFlagButtonContextMenu ~= nil and #FCOAddInvFlagButtonContextMenu > 0 and contextMenuEntriesAdded > 0 then
-------------------------------------------------------------------------------------------------------------------------
+            ------------------------------------------------------------------------------------------------------------------------
             --Helper function to add the table entries of sorted button data, + and -
             local function addSortedButtonDataTableEntries(sortedButtonData)
                 local index         = sortedButtonData.index
@@ -2805,7 +2819,7 @@ function FCOIS.showContextMenuForAddInvButtons(invAddContextMenuInvokerButton)
                     else
                         buttonText = locContextEntriesVars.menu_add_all_text[buttonsIcon]
                     end
-                --Remove the icon (unmark)
+                    --Remove the icon (unmark)
                 else
                     --Is the icon a gear item?
                     if isGear then
@@ -2862,7 +2876,7 @@ function FCOIS.showContextMenuForAddInvButtons(invAddContextMenuInvokerButton)
                     otherAdded = true
                 end
             end -- function addSortedButtonDataTableEntries()
-------------------------------------------------------------------------------------------------------------------------
+            ------------------------------------------------------------------------------------------------------------------------
             --Check all entries of the pre-sorted data tabloe and create the context menu entries in the output tables for LibContextMenu now
             for sortOrderId, sortedButtonDataTable in ipairs(FCOAddInvFlagButtonContextMenu) do
                 --Check the mark=false and mark=true subtable entries and add them to the sorted output after another.
