@@ -2665,7 +2665,7 @@ function FCOIS.showContextMenuForAddInvButtons(invAddContextMenuInvokerButton)
         local isIconDynamic = FCOIS.mappingVars.iconIsDynamic
         local sortAddInvFlagContextMenu = settings.sortIconsInAdditionalInvFlagContextMenu
 
-        d("[FCOIS]showContextMenuForAddInvButtons, countDynIconsEnabled: " ..tostring(countDynIconsEnabled) .. ", useDynSubMenu: " ..tostring(useDynSubMenu) .. ", sortAddInvFlagContextMenu: " ..tostring(sortAddInvFlagContextMenu))
+--d("[FCOIS]showContextMenuForAddInvButtons, countDynIconsEnabled: " ..tostring(countDynIconsEnabled) .. ", useDynSubMenu: " ..tostring(useDynSubMenu) .. ", sortAddInvFlagContextMenu: " ..tostring(sortAddInvFlagContextMenu))
 
         local parentName = invAddContextMenuInvokerButton:GetParent():GetName()
         local myFont
