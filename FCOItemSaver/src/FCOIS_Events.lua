@@ -728,7 +728,7 @@ local function FCOItemSaver_Player_Activated(...)
     end
 
     --Disable this addon if we are in GamePad mode
-    if not FCOIS.FCOItemSaver_CheckGamePadMode() then
+    if not FCOIS.FCOItemSaver_CheckGamePadMode(true) then
         if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[EVENT] Player activated", true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
         --Get the currently logged in character name
@@ -786,7 +786,7 @@ local function FCOItemSaver_Loaded(eventCode, addOnName)
         if FCOIS.settingsVars.settings ~= nil and FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[FCOIS -Event- FCOItemSaver_Loaded]", true, FCOIS_DEBUG_DEPTH_NORMAL) end
         --d("[FCOIS -Event- FCOItemSaver_Loaded]")
 
-        if not FCOIS.FCOItemSaver_CheckGamePadMode() then
+        if not FCOIS.FCOItemSaver_CheckGamePadMode(true) then
             --Unregister this event again so it isn't fired again after this addon has beend recognized
             EVENT_MANAGER:UnregisterForEvent(FCOIS.addonVars.gAddonName, EVENT_ADD_ON_LOADED)
 

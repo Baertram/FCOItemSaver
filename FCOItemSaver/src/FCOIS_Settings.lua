@@ -793,6 +793,7 @@ end
     --Check if the FCOIS settings were loaded already, or load them
     function FCOIS.checkIfFCOISSettingsWereLoaded(calledFromExternal)
         calledFromExternal = calledFromExternal or false
+--d("[FCOIS]checkIfFCOISSettingsWereLoaded-calledFromExternal: " ..tostring(calledFromExternal))
         if not calledFromExternal or (FCOIS and FCOIS.settingsVars and FCOIS.settingsVars.settings and FCOIS.settingsVars.settings.markedItems) then return true end
         return FCOIS.LoadUserSettings(calledFromExternal)
     end
@@ -800,6 +801,7 @@ end
     --Load the SavedVariables now
     function FCOIS.LoadUserSettings(calledFromExternal)
     calledFromExternal = calledFromExternal or false
+--d("[FCOIS]LoadUserSettings-calledFromExternal: " .. tostring(calledFromExternal))
     if calledFromExternal then
         FCOIS.addonVars.gSettingsLoaded = false
         if FCOIS.FCOItemSaver_CheckGamePadMode() then return false end
