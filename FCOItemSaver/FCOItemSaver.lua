@@ -19,10 +19,9 @@
 -- Recomment to use libCustomMenu RegisterContextMenu
 -- Should be a following error
 
--- 4) 2019-06-18 - Bugfix - Baertram (on user report in comments, Ivo_ESO
---Research assistant duplicate items will be auto marked with FCOIS even if another researchable one was already marked
---> See file src/FCOIS_AutomaticMarks.lua, function
-
+-- 4) 2019-07-11 - Bugfix - Baertram (on user report in comments, DavidJCobb)
+--If started with GamepadMode enabled the settings of FCOIS are not loaded and the API functions will fail to work
+-->Add gamepad check to the API functions and throw an "incomatible error"
 
 ------------------------------------------------------------------
 --FCOItemSaver.lua
@@ -44,8 +43,8 @@ local FCOIS = FCOIS
 --===================== ADDON Info =============================================
 --Addon variables
 FCOIS.addonVars = {}
-FCOIS.addonVars.addonVersionOptions 		= '1.5.7' -- version shown in the settings panel
-FCOIS.addonVars.addonVersionOptionsNumber	= 1.57
+FCOIS.addonVars.addonVersionOptions 		= '1.5.8' -- version shown in the settings panel
+FCOIS.addonVars.addonVersionOptionsNumber	= 1.58
 FCOIS.addonVars.gAddonName					= "FCOItemSaver"
 FCOIS.addonVars.addonNameMenu				= "FCO ItemSaver"
 FCOIS.addonVars.addonNameMenuDisplay		= "|c00FF00FCO |cFFFF00ItemSaver|r"
@@ -77,8 +76,8 @@ function FCOIS.FCOItemSaver_CheckGamePadMode()
         if FCOIS.checkIfADCUIAndIsNotUsingGamepadMode() then
             return false
         else
-            if FCOIS.preventerVars.noGamePadMoudeSupportTextOutput == false then
-                FCOIS.preventerVars.noGamePadMoudeSupportTextOutput = true
+            if FCOIS.preventerVars.noGamePadModeSupportTextOutput == false then
+                FCOIS.preventerVars.noGamePadModeSupportTextOutput = true
                 --Normal gamepad mode is enabled -> Abort with error message "not supported!"
                 local noGamepadModeSupportedLanguageTexts = {
                     ["en"]	=	"FCO ItemSaver does not support the gamepad mode! Please change the mode to keyboard at the settings.",

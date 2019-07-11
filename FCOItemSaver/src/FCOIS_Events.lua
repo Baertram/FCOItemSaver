@@ -792,11 +792,53 @@ local function FCOItemSaver_Loaded(eventCode, addOnName)
 
             if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[Addon loading begins...]", true, FCOIS_DEBUG_DEPTH_NORMAL) end
             FCOIS.addonVars.gAddonLoaded = false
-
             FCOIS.preventerVars.gAddonStartupInProgress = true
 
             -- Registers addon to loadedAddon library LibLoadedAddons
             FCOIS.LIBLA:RegisterAddon(FCOIS.addonVars.gAddonName, FCOIS.addonVars.addonVersionOptionsNumber)
+
+            --Register for the zone change/player ready event
+            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_PLAYER_ACTIVATED, FCOItemSaver_Player_Activated)
+
+            --Register for Crafting stations opened & closed (integer eventCode,number craftSkill, boolean sameStation)
+            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_CRAFTING_STATION_INTERACT, FCOItemSaver_Crafting_Interact)
+            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_END_CRAFTING_STATION_INTERACT, FCOItemSaver_End_Crafting_Interact)
+            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_CRAFT_STARTED, FCOItemSaver_Craft_Started)
+            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_CRAFT_COMPLETED, FCOItemSaver_Craft_Completed)
+            --Register for Store opened & closed
+            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_OPEN_STORE, function() FCOItemSaver_Open_Store("vendor") end)
+            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_CLOSE_STORE, FCOItemSaver_Close_Store)
+            --Register for Trading house (guild store) opened & closed
+            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_OPEN_TRADING_HOUSE, FCOItemSaver_Open_Trading_House)
+            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_CLOSE_TRADING_HOUSE, FCOItemSaver_Close_Trading_House)
+            --Register for Guild Bank opened & closed
+            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_OPEN_GUILD_BANK, FCOItemSaver_Open_Guild_Bank)
+            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_CLOSE_GUILD_BANK, FCOItemSaver_Close_Guild_Bank)
+            --Register for Player's Bank opened & closed
+            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_OPEN_BANK, FCOItemSaver_Open_Player_Bank)
+            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_CLOSE_BANK, FCOItemSaver_Close_Player_Bank)
+            --Register for Trade panel opened & closed
+            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_TRADE_INVITE_ACCEPTED, FCOItemSaver_Open_Trade_Panel)
+            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_TRADE_CANCELED, FCOItemSaver_Close_Trade_Panel)
+            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_TRADE_SUCCEEDED, FCOItemSaver_Close_Trade_Panel)
+            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_TRADE_FAILED, FCOItemSaver_Close_Trade_Panel)
+            --Register for player inventory slot update
+            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_INVENTORY_SINGLE_SLOT_UPDATE, FCOItemSaver_Inv_Single_Slot_Update)
+            EVENT_MANAGER:AddFilterForEvent(FCOIS.addonVars.gAddonName, EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_UNIT_TAG, "player")
+            --Register the callback function for an update of the inventory slots
+            --SHARED_INVENTORY:RegisterCallback("SingleSlotInventoryUpdate", FCOItemSaver_OnSharedSingleSlotUpdate)
+            --Events for destruction & destroy prevention
+            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_INVENTORY_SLOT_LOCKED, FCOItemSaver_OnInventorySlotLocked)
+            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_INVENTORY_SLOT_UNLOCKED, FCOItemSaver_OnInventorySlotUnLocked)
+            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_MOUSE_REQUEST_DESTROY_ITEM, FCOItemSaver_OnMouseRequestDestroyItem)
+            --Event if an action layer changes
+            --EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_ACTION_LAYER_POPPED, FCOItemsaver_OnActionLayerPopped)
+            --EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_ACTION_LAYER_PUSHED, FCOItemsaver_OnActionLayerPushed)
+            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_GAME_CAMERA_UI_MODE_CHANGED, FCOItemsaver_OnGameCameraUIModeChanged)
+            --Guild bank is selected
+            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_GUILD_BANK_SELECTED, FCOItemsaver_SelectGuildBank)
+            --Retrait station is interacted with
+            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_RETRAIT_STATION_INTERACT_START, FCOItemsaver_RetraitStationInteract)
 
             --=============================================================================================================
             --	LOAD USER SETTINGS
@@ -862,53 +904,4 @@ function FCOIS.setEventCallbackFunctions()
     --==================================================================================================================================================================================================
     --Register the addon's loaded callback function
     EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_ADD_ON_LOADED, FCOItemSaver_Loaded)
-
-    --Disable this addon if we are in GamePad mode
-    if not FCOIS.FCOItemSaver_CheckGamePadMode() then
-        --Register for the zone change/player ready event
-        EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_PLAYER_ACTIVATED, FCOItemSaver_Player_Activated)
-
-        --Do not go on if libraries are not loaded properly
-        if FCOIS.libsLoadedProperly then
-            --Register for Crafting stations opened & closed (integer eventCode,number craftSkill, boolean sameStation)
-            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_CRAFTING_STATION_INTERACT, FCOItemSaver_Crafting_Interact)
-            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_END_CRAFTING_STATION_INTERACT, FCOItemSaver_End_Crafting_Interact)
-            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_CRAFT_STARTED, FCOItemSaver_Craft_Started)
-            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_CRAFT_COMPLETED, FCOItemSaver_Craft_Completed)
-            --Register for Store opened & closed
-            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_OPEN_STORE, function() FCOItemSaver_Open_Store("vendor") end)
-            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_CLOSE_STORE, FCOItemSaver_Close_Store)
-            --Register for Trading house (guild store) opened & closed
-            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_OPEN_TRADING_HOUSE, FCOItemSaver_Open_Trading_House)
-            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_CLOSE_TRADING_HOUSE, FCOItemSaver_Close_Trading_House)
-            --Register for Guild Bank opened & closed
-            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_OPEN_GUILD_BANK, FCOItemSaver_Open_Guild_Bank)
-            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_CLOSE_GUILD_BANK, FCOItemSaver_Close_Guild_Bank)
-            --Register for Player's Bank opened & closed
-            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_OPEN_BANK, FCOItemSaver_Open_Player_Bank)
-            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_CLOSE_BANK, FCOItemSaver_Close_Player_Bank)
-            --Register for Trade panel opened & closed
-            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_TRADE_INVITE_ACCEPTED, FCOItemSaver_Open_Trade_Panel)
-            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_TRADE_CANCELED, FCOItemSaver_Close_Trade_Panel)
-            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_TRADE_SUCCEEDED, FCOItemSaver_Close_Trade_Panel)
-            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_TRADE_FAILED, FCOItemSaver_Close_Trade_Panel)
-            --Register for player inventory slot update
-            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_INVENTORY_SINGLE_SLOT_UPDATE, FCOItemSaver_Inv_Single_Slot_Update)
-            EVENT_MANAGER:AddFilterForEvent(FCOIS.addonVars.gAddonName, EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_UNIT_TAG, "player")
-            --Register the callback function for an update of the inventory slots
-            --SHARED_INVENTORY:RegisterCallback("SingleSlotInventoryUpdate", FCOItemSaver_OnSharedSingleSlotUpdate)
-            --Events for destruction & destroy prevention
-            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_INVENTORY_SLOT_LOCKED, FCOItemSaver_OnInventorySlotLocked)
-            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_INVENTORY_SLOT_UNLOCKED, FCOItemSaver_OnInventorySlotUnLocked)
-            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_MOUSE_REQUEST_DESTROY_ITEM, FCOItemSaver_OnMouseRequestDestroyItem)
-            --Event if an action layer changes
-            --EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_ACTION_LAYER_POPPED, FCOItemsaver_OnActionLayerPopped)
-            --EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_ACTION_LAYER_PUSHED, FCOItemsaver_OnActionLayerPushed)
-            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_GAME_CAMERA_UI_MODE_CHANGED, FCOItemsaver_OnGameCameraUIModeChanged)
-            --Guild bank is selected
-            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_GUILD_BANK_SELECTED, FCOItemsaver_SelectGuildBank)
-            --Retrait station is interacted with
-            EVENT_MANAGER:RegisterForEvent(FCOIS.addonVars.gAddonName, EVENT_RETRAIT_STATION_INTERACT_START, FCOItemsaver_RetraitStationInteract)
-        end
-    end
 end
