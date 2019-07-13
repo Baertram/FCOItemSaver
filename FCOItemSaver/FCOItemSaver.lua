@@ -19,11 +19,6 @@
 -- Recomment to use libCustomMenu RegisterContextMenu
 -- Should be a following error
 
--- 4) 2019-06-18 - Bugfix - Baertram (on user report in comments, Ivo_ESO
---Research assistant duplicate items will be auto marked with FCOIS even if another researchable one was already marked
---> See file src/FCOIS_AutomaticMarks.lua, function
-
-
 ------------------------------------------------------------------
 --FCOItemSaver.lua
 --Author: Baertram
@@ -44,8 +39,8 @@ local FCOIS = FCOIS
 --===================== ADDON Info =============================================
 --Addon variables
 FCOIS.addonVars = {}
-FCOIS.addonVars.addonVersionOptions 		= '1.5.7' -- version shown in the settings panel
-FCOIS.addonVars.addonVersionOptionsNumber	= 1.57
+FCOIS.addonVars.addonVersionOptions 		= '1.5.9' -- version shown in the settings panel
+FCOIS.addonVars.addonVersionOptionsNumber	= 1.59
 FCOIS.addonVars.gAddonName					= "FCOItemSaver"
 FCOIS.addonVars.addonNameMenu				= "FCO ItemSaver"
 FCOIS.addonVars.addonNameMenuDisplay		= "|c00FF00FCO |cFFFF00ItemSaver|r"
@@ -67,8 +62,21 @@ FCOIS.addonVars.gSettingsLoaded				= false
 -- =====================================================================================================================
 --  Gamepad functions
 -- =====================================================================================================================
+function FCOIS.resetPreventerVariableAfterTime(eventRegisterName, preventerVariableName, newValue, resetAfterTimeMS)
+    local eventNameStart = "FCOIS_PreventerVariableReset_"
+    if eventRegisterName == nil or eventRegisterName == "" or preventerVariableName == nil or preventerVariableName == "" or resetAfterTimeMS == nil then return end
+    local eventName = eventNameStart .. tostring(eventRegisterName)
+    EVENT_MANAGER:UnregisterForUpdate(eventName)
+    EVENT_MANAGER:RegisterForUpdate(eventName, resetAfterTimeMS, function()
+        EVENT_MANAGER:UnregisterForUpdate(eventName)
+        if FCOIS.preventerVars == nil or FCOIS.preventerVars[preventerVariableName] == nil then return end
+        FCOIS.preventerVars[preventerVariableName] = newValue
+    end)
+end
+
 --Is the gamepad mode enabled in the ESO settings?
-function FCOIS.FCOItemSaver_CheckGamePadMode()
+function FCOIS.FCOItemSaver_CheckGamePadMode(showChatOutputOverride)
+    showChatOutputOverride = showChatOutputOverride or false
     FCOIS.preventerVars = FCOIS.preventerVars or {}
     --Gamepad enabled?
     if IsInGamepadPreferredMode() then
@@ -77,8 +85,10 @@ function FCOIS.FCOItemSaver_CheckGamePadMode()
         if FCOIS.checkIfADCUIAndIsNotUsingGamepadMode() then
             return false
         else
-            if FCOIS.preventerVars.noGamePadMoudeSupportTextOutput == false then
-                FCOIS.preventerVars.noGamePadMoudeSupportTextOutput = true
+            if showChatOutputOverride or FCOIS.preventerVars.noGamePadModeSupportTextOutput == false then
+                FCOIS.preventerVars.noGamePadModeSupportTextOutput = true
+                --Reset the anti-chat spam variable FCOIS.preventerVars.noGamePadModeSupportTextOutput again after 3 seconds
+                FCOIS.resetPreventerVariableAfterTime("noGamePadModeSupportTextOutput", "noGamePadModeSupportTextOutput", false, 3000)
                 --Normal gamepad mode is enabled -> Abort with error message "not supported!"
                 local noGamepadModeSupportedLanguageTexts = {
                     ["en"]	=	"FCO ItemSaver does not support the gamepad mode! Please change the mode to keyboard at the settings.",
