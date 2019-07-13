@@ -19,10 +19,6 @@
 -- Recomment to use libCustomMenu RegisterContextMenu
 -- Should be a following error
 
--- 4) 2019-07-11 - Bugfix - Baertram (on user report in comments, DavidJCobb)
---If started with GamepadMode enabled the settings of FCOIS are not loaded and the API functions will fail to work
--->Add gamepad check to the API functions and throw an "incomatible error"
-
 ------------------------------------------------------------------
 --FCOItemSaver.lua
 --Author: Baertram
