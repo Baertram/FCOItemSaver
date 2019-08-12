@@ -1,36 +1,39 @@
 ##
 ## Title: |c00FF00FCO |cFFFF00ItemSaver|r
 ## Author: Baertram
-## Version: 1.5.9
-## AddOnVersion: 159
-## APIVersion: 100027 100028
+## Version: 1.6.1
+## AddOnVersion: 161
+## APIVersion: 100028 100029
 ## Description: Mark/demark your inventory items with different icons and filter them in inventories, during trading, banks, guild store, mail, enchanting, crafting, researching and stores. Save your marked items before destroying/deconstructing/researching/selling/sending/trading/using or equipping/binding them!
 ## SavedVariables: FCOItemSaver_Settings
-## DependsOn: LibFilters-3.0 LibAddonMenu-2.0 LibLoadedAddons LibDialog LibFeedback LibMainMenu-2.0 LibCustomMenu
-## OptionalDependsOn: ResearchAssistant SousChef VotansSettingsMenu PotionMaker CraftedPotions ChatMerchant InventoryGridView CraftBagExtended SetTracker AdvancedDisableControllerUI DetailedResearchScrolls DolgubonsLazyWritCreator QualitySort
+## DependsOn: LibAddonMenu-2.0 LibCustomMenu LibDialog LibFeedback LibFilters-3.0 LibLoadedAddons LibMainMenu-2.0
+## OptionalDependsOn: AdvancedDisableControllerUI AdvancedFilters ChatMerchant CraftBagExtended CraftedPotions DetailedResearchScrolls DolgubonsLazyWritCreator InventoryGridView PotionMaker QualitySort ResearchAssistant SetTracker SousChef VotansSettingsMenu
 
-##Known addons with FCOIS function usage:
 ##(Check file FCOIS_Constants.lua for local and global constant values
 ##(Check file FCOIS_API.lua for functions to use within your addon)
+
+##Known addons with FCOIS function usage:
 ##-----------------------------------------------------------------
+##AlphaGear 2
+##Auto Category
 ##BankManagerRevived
 ##CDGBankStack
 ##CraftStoreFixedAndImproved
 ##DoItAll
 ##Dustman
+##Inventory Assistant
 ##InventoryGridView
+##Inventory Insight (from Ashes -> IIfA)
+##InventoryManager
+##ItemTrig
 ##KhrillMasterCook
 ##KhrillMerlinTheEnchanter
 ##MailerDemon
+##MassDeconstructor
 ##PotionMaker
 ##QuickEnchanter
-##SetTracker
-##Auto Category
-##InventoryManager
-##Inventory Assistant
-##Inventory Insight (from Ashes -> IIfA)
 ##RulebasedInventory
-##AlphaGear 2
+##SetTracker
 
 ## Addon variables & constants
 FCOIS_Constants.lua

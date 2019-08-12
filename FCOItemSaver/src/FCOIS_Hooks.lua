@@ -110,12 +110,79 @@ end
 --==============================================================================
 --PreHook the global ZO_Menu hide function to show the PlayerProgressBar again at the character panel
 ZO_PreHook("ZO_Menu_OnHide", function()
+--d("[FCOIS]ZO_Menu_OnHide")
+    --Check if a context menu item was disabled for the mouse and enable it again
+    local settings = FCOIS.settingsVars.settings
+    local prevVars = FCOIS.preventerVars
+    if settings.showContextMenuDivider and prevVars.disabledContextMenuItemIndex ~= nil and prevVars.disabledContextMenuItemIndex ~= -1 then
+        local contextMenuItemControl = ZO_Menu.items[prevVars.disabledContextMenuItemIndex].item
+        if contextMenuItemControl then
+            contextMenuItemControl:SetMouseEnabled(true)
+            FCOIS.preventerVars.disabledContextMenuItemIndex = -1
+        end
+    end
     --Check if the character window is shown and if the current scene is the inventory scene
     if not ctrlVars.CHARACTER:IsHidden() and SCENE_MANAGER.currentScene.name == "inventory" then
         --Show the PlayerProgressBar again as the context menu closes
         FCOIS.ShowPlayerProgressBar(true)
     end
 end)
+
+--Show tooltips in ZO_Menu items
+--[[
+ZO_PreHook("ZO_Menu_SetSelectedIndex", function(index)
+    if(not index or not ZO_Menu.items) then return end
+    --Hide old text tooltips
+    ZO_Tooltips_HideTextTooltip()
+    --Check the selected menu index (row index)
+    --index = zo_max(zo_min(index, #ZO_Menu.items), 1)
+    --Check if the parentControl of the menu's item menu (e.g. the inventory row) is an allowed FCOIS control
+    local menuOwner = ZO_Menu.owner
+    if menuOwner then
+        local menuOwnerName = menuOwner:GetName()
+        if not menuOwnerName then return false end
+        --FCOIS specific checks for allowed parent control names of the ZO_Menu owner
+        local checkVars = FCOIS.checkVars
+        local notAllowedContextMenuParentControls = checkVars.notAllowedContextMenuParentControls
+        local notAllowedContextMenuControls = checkVars.notAllowedContextMenuControls
+        local notAllowed = notAllowedContextMenuParentControls[menuOwnerName] or false
+        if not notAllowed then notAllowed = notAllowedContextMenuControls[menuOwnerName] or false end
+        if notAllowed then return false end
+        --Get the selected control name of the menu entry
+        local mouseOverControl = WINDOW_MANAGER:GetMouseOverControl()
+        if not mouseOverControl then return false end
+        --Is the control mouse enabled?
+        if not mouseOverControl:IsMouseEnabled() then return end
+        --Build the text tooltip
+        local addonVars = FCOIS.addonVars
+        local textTooltip
+        local mouseOverControlCustomData = mouseOverControl.customData
+        if mouseOverControlCustomData and mouseOverControlCustomData.creatingAddon and mouseOverControlCustomData.creatingAddon == addonVars.gAddonNameShort
+            and mouseOverControlCustomData.tooltipText and mouseOverControlCustomData.tooltipText ~= "" then
+            local childName = mouseOverControl:GetNamedChild("Name")
+            if not childName then return false end
+            textTooltip = childName:GetText()
+            textTooltip = textTooltip .. "\n" .. mouseOverControlCustomData.tooltipText
+        end
+        if textTooltip then
+            local tooltipAnchor = LEFT
+            --If the control is a character screen control we need to anchor the tooltip at the right
+            if menuOwner:GetParent() == ctrlVars.CHARACTER then
+                tooltipAnchor = RIGHT
+            end
+            --Show the text tooltip now
+            ZO_Tooltips_ShowTextTooltip(mouseOverControl, tooltipAnchor, textTooltip)
+        end
+    end
+end)
+]]
+
+--ZO_Menu item mouse exit -> Hide tooltip e.g.
+--[[
+ZO_PreHook("ZO_Menu_ExitItem", function()
+    ZO_Tooltips_HideTextTooltip()
+end)
+]]
 
 function FCOIS.useAddSlotActionCallbackFunc(self)
     --d("[FCOIS.useAddSlotActionCallbackFunc]")
@@ -207,28 +274,20 @@ end
 --==============================================================================
 
 -- handler function for character window item controls' OnMouseDoubleClick event
-local function FCOItemSaver_CharacterItem_OnMouseDoubleClick(self, ...)
+local function FCOItemSaver_CharacterItem_OnMouseDoubleClick(self, button, ctrl, alt, shift, command)
+--d("[FCOIS]CharacterItem_OnMouseDoubleClick] mouseButton: " .. tostring(button) .. ", ctrlKey: " .. tostring(ctrl) .. ", altKey: " .. tostring(alt).. ", shiftKey: " .. tostring(shift))
     --Hide the context menu at last active panel
     FCOIS.hideContextMenu(FCOIS.gFilterWhere)
 
-    local bagId, slotId
-
-    -- make sure control contains an item
-    if( self.dataEntry and self.dataEntry.data ) then
-        bagId = self.dataEntry.data.bagId
-        slotId = self.dataEntry.data.slotIndex
-    else
-        if( self.slotIndex and self.bagId ) then
-            bagId  = self.bagId
-            slotId = self.slotIndex
-        end
-    end
+    --Check if SHIFT key is pressed and if mouse button is RIGHT mouse button
+    -->Then do not call the double click handler here
+    if shift and button == MOUSE_BUTTON_INDEX_RIGHT then return false end
 
     -- call the original handler function
     local func = GetEventHandler("OnMouseDoubleClick", self:GetName())
     if ( not func ) then return false end
 
-    return func(self, ...)
+    return func(self, button, ctrl, alt, shift, command)
 end
 
 -- handler function for inventory item controls' OnMouseUp event
@@ -242,22 +301,16 @@ local function FCOItemSaver_InventoryItem_OnMouseUp(self, mouseButton, upInside,
 end
 
 -- handler function for inventory item controls' OnMouseDoubleClick event
-local function FCOItemSaver_InventoryItem_OnMouseDoubleClick(self, ...)
+local function FCOItemSaver_InventoryItem_OnMouseDoubleClick(self, button, ctrl, alt, shift, command)
 --d("[FCOIS]InventoryItem_OnMouseDoubleClick]")
     --Hide the context menu at last active panel
     FCOIS.hideContextMenu(FCOIS.gFilterWhere)
 
-    local bagId, slotId
-    -- make sure control contains an item
-    if( self.dataEntry and self.dataEntry.data ) then
-        bagId = self.dataEntry.data.bagId
-        slotId = self.dataEntry.data.slotIndex
-    else
-        if( self.slotIndex and self.bagId ) then
-            bagId  = self.bagId
-            slotId = self.slotIndex
-        end
-    end
+    --Check if SHIFT key is pressed and if mouse button is RIGHT mouse button
+    -->Then do not call the double click handler here
+    if shift and button == MOUSE_BUTTON_INDEX_RIGHT then return false end
+
+    local bagId, slotId = FCOIS.MyGetItemDetails(self)
 
     if( bagId ~= nil and slotId ~= nil ) then
         --Set: Tell function ItemSelectionHandler that a drag&drop or doubleclick event was raised so it's not blocking the equip/use/etc. functions
@@ -289,7 +342,7 @@ local function FCOItemSaver_InventoryItem_OnMouseDoubleClick(self, ...)
     local func = GetEventHandler("OnMouseDoubleClick", self:GetName())
     if ( not func ) then return false end
 
-    return func(self, ...)
+    return func(self, button, ctrl, alt, shift, command)
 end
 
 -- handler function for character equipment double click -> OnEffectivelyShown function
@@ -340,13 +393,14 @@ local function FCOItemSaver_OnEffectivelyShown(self, ...)
     FCOIS.checkMarker(-1)
     if ( not self ) then return false end
     local isABankWithdraw = (self == ctrlVars.BANK_BAG or self == ctrlVars.GUILD_BANK_BAG or self == ctrlVars.HOUSE_BANK_BAG)
---d("[FCOItemSaver_OnEffectivelyShown]: " .. self:GetName() .. ", isABankWithdraw: " .. tostring(isABankWithdraw))
     local contextMenuClearMarkesByShiftKey = FCOIS.settingsVars.settings.contextMenuClearMarkesByShiftKey
     local isCharacter = (self == ctrlVars.CHARACTER) or false
+    local isVendorRepair = FCOIS.IsVendorPanelShown(LF_VENDOR_REPAIR, false) or false
+--d("[FCOItemSaver_OnEffectivelyShown]: " .. self:GetName() .. ", isABankWithdraw: " .. tostring(isABankWithdraw) .. ", isCharacter: " .. tostring(isCharacter) .. ", isVendorRepair: " .. tostring(isVendorRepair))
     for i = 1, self:GetNumChildren() do
         local childrenCtrl = self:GetChild(i)
-        --Do not add protection double click functions to bank/guild bank withdraw and character!
-        if not isABankWithdraw and not isCharacter then
+        --Do not add protection double click functions to bank/guild bank withdraw and character, and vendor repair
+        if not isABankWithdraw and not isCharacter and not isVendorRepair then
             -- Append OnMouseDoubleClick event of inventory item controls, for each row (children)
             if( childrenCtrl:GetHandler("OnMouseDoubleClick") ~= FCOItemSaver_InventoryItem_OnMouseDoubleClick ) then
                 PreHookHandler( "OnMouseDoubleClick", childrenCtrl, FCOItemSaver_InventoryItem_OnMouseDoubleClick)
@@ -376,21 +430,16 @@ local function FCOItemSaver_OnEffectivelyShown(self, ...)
 end
 
 --Callback function for start a new drag&drop operation
+--After the item was picked from the inventory the event EVENT_INVENTORY_SLOT_LOCKED will be called, as the item get's locked against changes
+--Check file src/FCOIS_Events.lua, function FCOItemSaver_OnInventorySlotLocked() for the further checks of a dragged item -> Protections
 local function FCOItemSaver_OnDragStart(inventorySlot)
     if inventorySlot == nil then return end
     --local cursorContentType = GetCursorContentType()
-    --d("[OnDragStart] cursorContentType: " .. tostring(cursorContentType) .. "/" .. tostring(MOUSE_CONTENT_INVENTORY_ITEM))
+--d("[FCOIS]FCOItemSaver_OnDragStart-cursorContentType: " .. tostring(cursorContentType) .. "/" .. tostring(MOUSE_CONTENT_INVENTORY_ITEM))
+    --cursorContentType is in 99% of the cases = MOUSE_CONTENT_EMPTY, even if an inventory item gets dragged
     --if(cursorContentType == MOUSE_CONTENT_EMPTY) then return end
 
-    local bag
-    local slot
-    if inventorySlot.dataEntry ~= nil and inventorySlot.dataEntry.data ~= nil then
-        bag		= inventorySlot.dataEntry.data.bagId
-        slot	= inventorySlot.dataEntry.data.slotIndex
-    elseif inventorySlot.bagId ~= nil and inventorySlot.slotIndex ~= nil then
-        bag		= inventorySlot.bagId
-        slot	= inventorySlot.slotIndex
-    end
+    local bag, slot = FCOIS.MyGetItemDetails(inventorySlot)
     FCOIS.dragAndDropVars.bag = nil
     FCOIS.dragAndDropVars.slot = nil
     if bag == nil or slot == nil then return end
@@ -403,6 +452,7 @@ local function FCOItemSaver_OnReceiveDrag(inventorySlot)
     --FCOinvs = inventorySlot
     local cursorContentType = GetCursorContentType()
     if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[OnReceiveDrag] cursorContentType: " .. tostring(cursorContentType) .. "/" .. tostring(MOUSE_CONTENT_INVENTORY_ITEM) .. ", invSlotType: " .. tostring(inventorySlot.slotType) .. "/" .. tostring(SLOT_TYPE_EQUIPMENT), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+--d("[FCOIS]FCOItemSaver_OnReceiveDrag, cursorContentType: " ..tostring(cursorContentType))
 
     -- if there is an inventory item on the cursor:
     if cursorContentType ~= MOUSE_CONTENT_INVENTORY_ITEM and cursorContentType ~= MOUSE_CONTENT_EQUIPPED_ITEM then return end
@@ -411,10 +461,11 @@ local function FCOItemSaver_OnReceiveDrag(inventorySlot)
     if inventorySlot.slotType == SLOT_TYPE_EQUIPMENT then
         local bag
         local slot
+        local dragAndDropVars = FCOIS.dragAndDropVars
         --Was the drag started with another item then the dropped item slot?
-        if FCOIS.dragAndDropVars.bag ~= nil and FCOIS.dragAndDropVars.slot ~= nil then
-            bag			= FCOIS.dragAndDropVars.bag
-            slot		= FCOIS.dragAndDropVars.slot
+        if dragAndDropVars.bag ~= nil and dragAndDropVars.slot ~= nil then
+            bag			= dragAndDropVars.bag
+            slot		= dragAndDropVars.slot
             --receiveSlot = inventorySlot.slotIndex
         else
             --get bagid and SlotIndex from receiving inventorySlot -> Makes no sense as the bind dialog shows the wrong item then!
@@ -496,8 +547,7 @@ function FCOIS.CreateHooks()
     local locVars = FCOIS.localizationVars.fcois_loc
 
     --========= INVENTORY SLOT - SHOW CONTEXT MENU =================================
-    -- Hook functions for the inventory/store contextmenus
-    ZO_PreHook("ZO_InventorySlot_ShowContextMenu", function(rowControl)
+    local function ZO_InventorySlot_ShowContextMenu_For_FCOItemSaver(rowControl, slotActions)
         local prevVars = FCOIS.preventerVars
         FCOIS.preventerVars.buildingInvContextMenuEntries = false
         --As this prehook is called before the character OnMouseUp function is called:
@@ -522,106 +572,116 @@ function FCOIS.CreateHooks()
             --d(">FCOIS context menu, hiding it!")
             FCOIS.preventerVars.dontShowInvContextMenu = false
             --Hide the context menu now by returning true in this preHook and not calling the "context menu show" function
+            --Nil the current menu ZO_Menu so it does not show (anti-flickering)
+            ClearMenu()
             return true
         end
 
         --Call a little bit later so the context menu is already created
-        zo_callLater(function()
-            --Reset the IIfA clicked variables
-            FCOIS.IIfAclicked = nil
+        --zo_callLater(function()
+        --Reset the IIfA clicked variables
+        FCOIS.IIfAclicked = nil
 
-            local parentControl = rowControl:GetParent()
+        local parentControl = rowControl:GetParent()
 
-            local FCOcontextMenu = {}
+        local FCOcontextMenu = {}
 
-            --Check if the user set ordering is valid, else use the default sorting
-            local userOrderValid = FCOIS.checkIfUserContextMenuSortOrderValid()
-            local resetSortOrderDone = false
+        --Check if the user set ordering is valid, else use the default sorting
+        local userOrderValid = FCOIS.checkIfUserContextMenuSortOrderValid()
+        local resetSortOrderDone = false
 
-            local contextMenuEntriesAdded = 0
-            --check each iconId and build a sorted context menu then
-            local useSubContextMenu     = settings.useSubContextMenu
-            local _, countDynIconsEnabled = FCOIS.countMarkerIconsEnabled()
-            local useDynSubContextMenu  = (settings.useDynSubMenuMaxCount > 0 and  countDynIconsEnabled >= settings.useDynSubMenuMaxCount) or false
-            for iconId = 1, numFilterIcons, 1 do
-                --Check if the icon (including gear sets) is enabled
-                if settings.isIconEnabled[iconId] then
-                    --Re-order the context menu entries by defaults, or with user settings
-                    local newOrderId = 0
-                    if userOrderValid then
-                        --Use the custom sort order as it is valid!
-                        newOrderId = settings.icon[iconId].sortOrder
+        local contextMenuEntriesAdded = 0
+        --check each iconId and build a sorted context menu then
+        local useSubContextMenu     = settings.useSubContextMenu
+        local _, countDynIconsEnabled = FCOIS.countMarkerIconsEnabled()
+        local useDynSubContextMenu  = (settings.useDynSubMenuMaxCount > 0 and  countDynIconsEnabled >= settings.useDynSubMenuMaxCount) or false
+        for iconId = 1, numFilterIcons, 1 do
+            --Check if the icon (including gear sets) is enabled
+            if settings.isIconEnabled[iconId] then
+                --Re-order the context menu entries by defaults, or with user settings
+                local newOrderId = 0
+                if userOrderValid then
+                    --Use the custom sort order as it is valid!
+                    newOrderId = settings.icon[iconId].sortOrder
+                else
+                    --Reset the sort order to the default values now - Only once for the first icon where this happens
+                    if not resetSortOrderDone then
+                        resetSortOrderDone = FCOIS.resetUserContextMenuSortOrder()
+                    end
+                    --Use the default sort order as the other one is not valid!
+                    newOrderId = FCOIS.settingsVars.defaults.icon[iconId].sortOrder
+                end
+                if newOrderId > 0 and newOrderId <= numFilterIcons then
+                    --Initialize the context menu entry at the new index
+                    FCOcontextMenu[newOrderId] = nil
+                    FCOcontextMenu[newOrderId] = {}
+                    --Is the current control an equipment control?
+                    local isEquipControl = (parentControl == ctrlVars.CHARACTER)
+                    if(isEquipControl) then
+                        FCOcontextMenu[newOrderId].control		= rowControl
                     else
-                        --Reset the sort order to the default values now - Only once for the first icon where this happens
-                        if not resetSortOrderDone then
-                            resetSortOrderDone = FCOIS.resetUserContextMenuSortOrder()
-                        end
-                        --Use the default sort order as the other one is not valid!
-                        newOrderId = FCOIS.settingsVars.defaults.icon[iconId].sortOrder
+                        FCOcontextMenu[newOrderId].control		= parentControl
                     end
-                    if newOrderId > 0 and newOrderId <= numFilterIcons then
-                        --Initialize the context menu entry at the new index
-                        FCOcontextMenu[newOrderId] = nil
-                        FCOcontextMenu[newOrderId] = {}
-                        --Is the current control an equipment control?
-                        local isEquipControl = (parentControl == ctrlVars.CHARACTER)
-                        if(isEquipControl) then
-                            FCOcontextMenu[newOrderId].control		= rowControl
-                        else
-                            FCOcontextMenu[newOrderId].control		= parentControl
-                        end
-                        FCOcontextMenu[newOrderId].iconId		= iconId
-                        FCOcontextMenu[newOrderId].refreshPopup	= false
-                        FCOcontextMenu[newOrderId].isEquip		= isEquipControl
-                        FCOcontextMenu[newOrderId].useSubMenu	= useSubContextMenu
-                        --Increase the counter for added context menu entries
-                        contextMenuEntriesAdded = contextMenuEntriesAdded + 1
-                    end -- if newOrderId > 0 and newOrderId <= numFilterIcons then
-                end -- if settings.isIconEnabled[iconId] then
-            end -- for
+                    FCOcontextMenu[newOrderId].iconId		= iconId
+                    FCOcontextMenu[newOrderId].refreshPopup	= false
+                    FCOcontextMenu[newOrderId].isEquip		= isEquipControl
+                    FCOcontextMenu[newOrderId].useSubMenu	= useSubContextMenu
+                    --Increase the counter for added context menu entries
+                    contextMenuEntriesAdded = contextMenuEntriesAdded + 1
+                end -- if newOrderId > 0 and newOrderId <= numFilterIcons then
+            end -- if settings.isIconEnabled[iconId] then
+        end -- for
 
-            --Are there any context menu entries?
-            if contextMenuEntriesAdded > 0 then
-                local addedCounter = 0
-                FCOIS.preventerVars.buildingInvContextMenuEntries = true
-                for j = 1, numFilterIcons, 1 do
-                    if FCOcontextMenu[j] ~= nil then
-                        addedCounter = addedCounter + 1
-                        --Is the currently added entry with AddMark the "last one in this context menu"?
-                        --> Needed to set the preventer variable buildingInvContextMenuEntries for the function AddMark so the IIfA addon is recognized properly!
-                        if addedCounter == contextMenuEntriesAdded then
-                            --Last entry in custom context menu reached
-                            FCOIS.preventerVars.buildingInvContextMenuEntries = false
-                        end
-                        --FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, useSubMenu)
-                        --Increase the global counter for the added context menu entries so the function FCOIS.AddMark can react on it
-                        FCOIS.customMenuVars.customMenuCurrentCounter = FCOIS.customMenuVars.customMenuCurrentCounter + 1
-                        FCOIS.AddMark(FCOcontextMenu[j].control, FCOcontextMenu[j].iconId, FCOcontextMenu[j].isEquip, FCOcontextMenu[j].refreshPopup, FCOcontextMenu[j].useSubMenu)
+        --Are there any context menu entries?
+        if contextMenuEntriesAdded > 0 then
+            local addedCounter = 0
+            FCOIS.preventerVars.buildingInvContextMenuEntries = true
+            for j = 1, numFilterIcons, 1 do
+                if FCOcontextMenu[j] ~= nil then
+                    addedCounter = addedCounter + 1
+                    --Is the currently added entry with AddMark the "last one in this context menu"?
+                    --> Needed to set the preventer variable buildingInvContextMenuEntries for the function AddMark so the IIfA addon is recognized properly!
+                    if addedCounter == contextMenuEntriesAdded then
+                        --Last entry in custom context menu reached
+                        FCOIS.preventerVars.buildingInvContextMenuEntries = false
                     end
+                    --FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, useSubMenu)
+                    --Increase the global counter for the added context menu entries so the function FCOIS.AddMark can react on it
+                    FCOIS.customMenuVars.customMenuCurrentCounter = FCOIS.customMenuVars.customMenuCurrentCounter + 1
+                    FCOIS.AddMark(FCOcontextMenu[j].control, FCOcontextMenu[j].iconId, FCOcontextMenu[j].isEquip, FCOcontextMenu[j].refreshPopup, FCOcontextMenu[j].useSubMenu)
                 end
+            end
 
-                --As the (dynamic) sub menu entries were build, show them now
-                if useSubContextMenu or useDynSubContextMenu then
-                    zo_callLater(function()
-                        --ClearMenu()
-                        if FCOIS.customMenuVars.customMenuSubEntries ~= nil and #FCOIS.customMenuVars.customMenuSubEntries > 0 then
-                            AddCustomSubMenuItem("|c22DD22FCO|r ItemSaver", FCOIS.customMenuVars.customMenuSubEntries)
-                        else
-                            if FCOIS.customMenuVars.customMenuDynSubEntries ~= nil and #FCOIS.customMenuVars.customMenuDynSubEntries > 0 then
-                                local dynamicSubMenuEntryHeaderText = locVars["options_icons_dynamic"]
-                                if settings.addContextMenuLeadingMarkerIcon then
-                                    dynamicSubMenuEntryHeaderText = "  " .. dynamicSubMenuEntryHeaderText
-                                end
-                                AddCustomSubMenuItem(dynamicSubMenuEntryHeaderText, FCOIS.customMenuVars.customMenuDynSubEntries)
+            --As the (dynamic) sub menu entries were build, show them now
+            if useSubContextMenu or useDynSubContextMenu then
+                zo_callLater(function()
+                    --ClearMenu()
+                    if FCOIS.customMenuVars.customMenuSubEntries ~= nil and #FCOIS.customMenuVars.customMenuSubEntries > 0 then
+                        AddCustomSubMenuItem("|c22DD22FCO|r ItemSaver", FCOIS.customMenuVars.customMenuSubEntries)
+                    else
+                        if FCOIS.customMenuVars.customMenuDynSubEntries ~= nil and #FCOIS.customMenuVars.customMenuDynSubEntries > 0 then
+                            local dynamicSubMenuEntryHeaderText = locVars["options_icons_dynamic"]
+                            if settings.addContextMenuLeadingMarkerIcon then
+                                dynamicSubMenuEntryHeaderText = "  " .. dynamicSubMenuEntryHeaderText
                             end
+                            AddCustomSubMenuItem(dynamicSubMenuEntryHeaderText, FCOIS.customMenuVars.customMenuDynSubEntries)
                         end
-                        ShowMenu()
-                    end, 30)
-                end
-            end -- if contextMenuEntriesAdded > 0 then
-            FCOIS.preventerVars.buildingInvContextMenuEntries = false
-        end, 30) -- zo_callLater
+                    end
+                    ShowMenu(rowControl)
+                end, 30)
+            end
+        end -- if contextMenuEntriesAdded > 0 then
+        FCOIS.preventerVars.buildingInvContextMenuEntries = false
+        --end, 30) -- zo_callLater
+    end
+
+    -- Hook functions for the inventory/store contextmenus
+    --[[ -- Replaced by LibCustomMenu:RegisterContextMenu(func, category, ...)
+    ZO_PreHook("ZO_InventorySlot_ShowContextMenu", function(rowControl)
+        ZO_InventorySlot_ShowContextMenu_For_FCOItemSaver(rowControl)
     end)
+    ]]
+    LibCustomMenu:RegisterContextMenu(ZO_InventorySlot_ShowContextMenu_For_FCOItemSaver)
 
     --========= ZO_DIALOG1 / DESTROY DIALOG ========================================
     --Destroy item dialog button 2 ("Abort") hook
@@ -840,6 +900,7 @@ function FCOIS.CreateHooks()
     local researchPopupDialogCustomControl = ESO_Dialogs["SMITHING_RESEARCH_SELECT"].customControl()
     if researchPopupDialogCustomControl ~= nil then
         ZO_PreHookHandler(researchPopupDialogCustomControl, "OnShow", function()
+            --d("[FCOIS]SMITHING_RESEARCH_SELECT PreHook:OnShow")
             --As this OnShow function will be also called for other ZO_ListDialog1 dialogs...
             --Check if we are at the research popup dialog
             if not FCOIS.isResearchListDialogShown() then return false end
@@ -848,6 +909,7 @@ function FCOIS.CreateHooks()
             FCOIS.CheckFilterButtonsAtPanel(true, LF_SMITHING_RESEARCH_DIALOG)
         end)
         ZO_PreHookHandler(researchPopupDialogCustomControl, "OnHide", function()
+            --d("[FCOIS]SMITHING_RESEARCH_SELECT PreHook:OnHide")
             --Check if we are at the research popup dialog
             if not FCOIS.preventerVars.ZO_ListDialog1ResearchIsOpen then return false end
             FCOIS.preventerVars.ZO_ListDialog1ResearchIsOpen = false
@@ -1050,37 +1112,37 @@ function FCOIS.CreateHooks()
     --ONLY if the craftbag is active
     --Pre Hook the 2 menubar button's (items and crafting bag) handler at the inventory
     ZO_PreHookHandler(ctrlVars.INV_MENUBAR_BUTTON_ITEMS, "OnMouseUp", function(control, button, upInside)
-    --d("inv button 1, button: " .. button .. ", upInside: " .. tostring(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastInvButton:GetName())
-    if (button == MOUSE_BUTTON_INDEX_LEFT and upInside and FCOIS.lastVars.gLastInvButton~=ctrlVars.INV_MENUBAR_BUTTON_ITEMS) then
-    FCOIS.lastVars.gLastInvButton = ctrlVars.INV_MENUBAR_BUTTON_ITEMS
-    zo_callLater(function() FCOIS.PreHookButtonHandler(LF_CRAFTBAG, LF_INVENTORY) end, 50)
-    end
+        --d("inv button 1, button: " .. button .. ", upInside: " .. tostring(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastInvButton:GetName())
+        if (button == MOUSE_BUTTON_INDEX_LEFT and upInside and FCOIS.lastVars.gLastInvButton~=ctrlVars.INV_MENUBAR_BUTTON_ITEMS) then
+            FCOIS.lastVars.gLastInvButton = ctrlVars.INV_MENUBAR_BUTTON_ITEMS
+            zo_callLater(function() FCOIS.PreHookButtonHandler(LF_CRAFTBAG, LF_INVENTORY) end, 50)
+        end
     end)
     ZO_PreHookHandler(ctrlVars.INV_MENUBAR_BUTTON_CRAFTBAG, "OnMouseUp", function(control, button, upInside)
-    --d("inv button 2, button: " .. button .. ", upInside: " .. tostring(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastInvButton:GetName())
-    if (button == MOUSE_BUTTON_INDEX_LEFT and upInside and FCOIS.lastVars.gLastInvButton~=ctrlVars.INV_MENUBAR_BUTTON_CRAFTBAG) then
-    FCOIS.lastVars.gLastInvButton = ctrlVars.INV_MENUBAR_BUTTON_CRAFTBAG
+        --d("inv button 2, button: " .. button .. ", upInside: " .. tostring(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastInvButton:GetName())
+        if (button == MOUSE_BUTTON_INDEX_LEFT and upInside and FCOIS.lastVars.gLastInvButton~=ctrlVars.INV_MENUBAR_BUTTON_CRAFTBAG) then
+            FCOIS.lastVars.gLastInvButton = ctrlVars.INV_MENUBAR_BUTTON_CRAFTBAG
 
-    -- If CraftBagExtended is active: The button prehook will be moved and executed in craftbag's fragment "showing" callback function, for state "shown"
-    -- so it needn't be added here
-    if not FCOIS.otherAddons.craftBagExtendedActive then
-    zo_callLater(function() FCOIS.PreHookButtonHandler(LF_INVENTORY, LF_CRAFTBAG) end, 50)
-    end
-    end
+            -- If CraftBagExtended is active: The button prehook will be moved and executed in craftbag's fragment "showing" callback function, for state "shown"
+            -- so it needn't be added here
+            if not FCOIS.otherAddons.craftBagExtendedActive then
+                zo_callLater(function() FCOIS.PreHookButtonHandler(LF_INVENTORY, LF_CRAFTBAG) end, 50)
+            end
+        end
     end)
 
     --======== LOOT SCENE ===========================================================
     --Register a callback function for the loot scene
     --Register a callback function for the inventory scene
     LOOT_SCENE:RegisterCallback("StateChange", function(oldState, newState)
-    if settings.debug then FCOIS.debugMessage( "[LOOT_SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        if settings.debug then FCOIS.debugMessage( "[LOOT_SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
-    if newState == SCENE_HIDING then
-    --If the inventory was shown at last and the loot panel was opened (by using a container e.g.) the
-    --anti-destroy settings have to be reenabled if the loot scene closes again
-    FCOIS.preventerVars.dontAutoReenableAntiSettingsInInventory = true
-    --d("Don't auto reenable anti-settings in invntory!")
-    end
+        if newState == SCENE_HIDING then
+            --If the inventory was shown at last and the loot panel was opened (by using a container e.g.) the
+            --anti-destroy settings have to be reenabled if the loot scene closes again
+            FCOIS.preventerVars.dontAutoReenableAntiSettingsInInventory = true
+            --d("Don't auto reenable anti-settings in invntory!")
+        end
     end)
 
     --======== CHARACTER ===========================================================
@@ -1099,54 +1161,56 @@ function FCOIS.CreateHooks()
     --======== CURRENCIES (in inventory) ===========================================
     --Pre Hook the 3rd menubar button (Currencies) handler at the player inventory
     ZO_PreHookHandler(ctrlVars.INV_MENUBAR_BUTTON_CURRENCIES, "OnMouseUp", function(control, button, upInside)
-    if (button == MOUSE_BUTTON_INDEX_LEFT and upInside) then
-    --Set the global filter panel ID to LF_INVENTORY again (otherwise it would stay the same like before, e.g. craftbag, and block the drag&drop!)
-    FCOIS.gFilterWhere = LF_INVENTORY
-    --Hide the context menus
-    zo_callLater(function()
-    FCOIS.hideContextMenu(LF_INVENTORY)
-    end, 50)
-    end
+        if (button == MOUSE_BUTTON_INDEX_LEFT and upInside) then
+            --Set the global filter panel ID to LF_INVENTORY again (otherwise it would stay the same like before, e.g. craftbag, and block the drag&drop!)
+            FCOIS.gFilterWhere = LF_INVENTORY
+            --Hide the context menus
+            zo_callLater(function()
+                FCOIS.hideContextMenu(LF_INVENTORY)
+            end, 50)
+        end
     end)
 
     --======== QUICK SLOTS =========================================================
     --Pre Hook the 4th menubar button (Quickslots) handler at the player inventory
     ZO_PreHookHandler(ctrlVars.INV_MENUBAR_BUTTON_QUICKSLOTS, "OnMouseUp", function(control, button, upInside)
-    if (button == MOUSE_BUTTON_INDEX_LEFT and upInside) then
-    --Set the global filter panel ID to LF_INVENTORY again (otherwise it would stay the same like before, e.g. craftbag, and block the drag&drop!)
-    FCOIS.gFilterWhere = LF_INVENTORY
-    --Hide the context menus
-    zo_callLater(function()
-    if not ctrlVars.QUICKSLOT_CIRCLE:IsHidden() then
-    FCOIS.hideContextMenu(LF_INVENTORY)
-    end
-    end, 50)
-    end
+        if (button == MOUSE_BUTTON_INDEX_LEFT and upInside) then
+            --Set the global filter panel ID to LF_INVENTORY again (otherwise it would stay the same like before, e.g. craftbag, and block the drag&drop!)
+            FCOIS.gFilterWhere = LF_INVENTORY
+            --Hide the context menus
+            zo_callLater(function()
+                if not ctrlVars.QUICKSLOT_CIRCLE:IsHidden() then
+                    FCOIS.hideContextMenu(LF_INVENTORY)
+                end
+            end, 50)
+        end
     end)
 
     --======== FENCE & LAUNDER =====================================================
     --Pre Hook the fence and launder "enter" and "fence closed" functions
     ZO_PreHook(FENCE_MANAGER, "OnEnterSell", function(...)
-    zo_callLater(function() FCOIS.PreHookButtonHandler(LF_FENCE_LAUNDER, LF_FENCE_SELL) end, 50)
+        zo_callLater(function() FCOIS.PreHookButtonHandler(LF_FENCE_LAUNDER, LF_FENCE_SELL) end, 50)
     end)
     ZO_PreHook(FENCE_MANAGER, "OnEnterLaunder", function(...)
-    zo_callLater(function() FCOIS.PreHookButtonHandler(LF_FENCE_SELL, LF_FENCE_LAUNDER) end, 50)
+        zo_callLater(function() FCOIS.PreHookButtonHandler(LF_FENCE_SELL, LF_FENCE_LAUNDER) end, 50)
     end)
     ZO_PreHook(FENCE_MANAGER, "OnFenceClosed", function(...)
-    if settings.debug then FCOIS.debugMessage( "[FENCE_MANAGER:OnFenceClosed]", true, FCOIS_DEBUG_DEPTH_NORMAL) end
-    --Avoid the filter panel ID change if the fence_manager is called from a normal vendor, which closes the store:
-    --If you directly open the mail panel at the vendor the current panel ID will be reset to LF_INVENTORY and this would be not true!
-    if FCOIS.preventerVars.gNoCloseEvent == false then
-    FCOIS.gFilterWhere = LF_INVENTORY
-    --Change the button color of the context menu invoker
-    FCOIS.changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
-    end
+        if settings.debug then FCOIS.debugMessage( "[FENCE_MANAGER:OnFenceClosed]", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        --Avoid the filter panel ID change if the fence_manager is called from a normal vendor, which closes the store:
+        --If you directly open the mail panel at the vendor the current panel ID will be reset to LF_INVENTORY and this would be not true!
+        if FCOIS.preventerVars.gNoCloseEvent == false then
+            FCOIS.gFilterWhere = LF_INVENTORY
+            --Change the button color of the context menu invoker
+            FCOIS.changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
+        end
     end)
 
     --======== VENDOR =====================================================
     --Pre Hook the menubar button's (buy, sell, buyback, repair) handler at the vendor
     --> Will be done in event callback function for EVENT_OPEN_STORE + a delay as the buttons are not created before!
     ---> See file src/FCOIS_events.lua, function 'FCOItemSaver_OpenStore("vendor")'
+    --Pre Hook the improvement for prevention methods
+    PreHookHandler( "OnEffectivelyShown", ctrlVars.REPAIR_LIST_BAG, FCOItemSaver_OnEffectivelyShown )
 
     --======== BANK ================================================================
     --Pre Hook the bank withdraw panel for mouse right click function SHIFT + RMB
@@ -1154,18 +1218,18 @@ function FCOIS.CreateHooks()
 
     --Pre Hook the 2 menubar button's (take and deposit) handler at the bank
     ZO_PreHookHandler(ctrlVars.BANK_MENUBAR_BUTTON_WITHDRAW, "OnMouseUp", function(control, button, upInside)
-    --d("bank button 1, button: " .. button .. ", upInside: " .. tostring(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastBankButton:GetName())
-    if (button == MOUSE_BUTTON_INDEX_LEFT and upInside and FCOIS.lastVars.gLastBankButton~=ctrlVars.BANK_MENUBAR_BUTTON_WITHDRAW) then
-    FCOIS.lastVars.gLastBankButton = ctrlVars.BANK_MENUBAR_BUTTON_WITHDRAW
-    zo_callLater(function() FCOIS.PreHookButtonHandler(LF_BANK_DEPOSIT, LF_BANK_WITHDRAW) end, 50)
-    end
+        --d("bank button 1, button: " .. button .. ", upInside: " .. tostring(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastBankButton:GetName())
+        if (button == MOUSE_BUTTON_INDEX_LEFT and upInside and FCOIS.lastVars.gLastBankButton~=ctrlVars.BANK_MENUBAR_BUTTON_WITHDRAW) then
+            FCOIS.lastVars.gLastBankButton = ctrlVars.BANK_MENUBAR_BUTTON_WITHDRAW
+            zo_callLater(function() FCOIS.PreHookButtonHandler(LF_BANK_DEPOSIT, LF_BANK_WITHDRAW) end, 50)
+        end
     end)
     ZO_PreHookHandler(ctrlVars.BANK_MENUBAR_BUTTON_DEPOSIT, "OnMouseUp", function(control, button, upInside)
-    --d("bank button 2, button: " .. button .. ", upInside: " .. tostring(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastBankButton:GetName())
-    if (button == MOUSE_BUTTON_INDEX_LEFT and upInside and FCOIS.lastVars.gLastBankButton~=ctrlVars.BANK_MENUBAR_BUTTON_DEPOSIT) then
-    FCOIS.lastVars.gLastBankButton = ctrlVars.BANK_MENUBAR_BUTTON_DEPOSIT
-    zo_callLater(function() FCOIS.PreHookButtonHandler(LF_BANK_WITHDRAW, LF_BANK_DEPOSIT) end, 50)
-    end
+        --d("bank button 2, button: " .. button .. ", upInside: " .. tostring(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastBankButton:GetName())
+        if (button == MOUSE_BUTTON_INDEX_LEFT and upInside and FCOIS.lastVars.gLastBankButton~=ctrlVars.BANK_MENUBAR_BUTTON_DEPOSIT) then
+            FCOIS.lastVars.gLastBankButton = ctrlVars.BANK_MENUBAR_BUTTON_DEPOSIT
+            zo_callLater(function() FCOIS.PreHookButtonHandler(LF_BANK_WITHDRAW, LF_BANK_DEPOSIT) end, 50)
+        end
     end)
 
     --======== HOUSE BANK ================================================================
@@ -1174,18 +1238,18 @@ function FCOIS.CreateHooks()
 
     --Pre Hook the 2 menubar button's (take and deposit) handler at the bank
     ZO_PreHookHandler(ctrlVars.HOUSE_BANK_MENUBAR_BUTTON_WITHDRAW, "OnMouseUp", function(control, button, upInside)
-    --d("house bank button 1, button: " .. button .. ", upInside: " .. tostring(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastBankButton:GetName())
-    if (button == MOUSE_BUTTON_INDEX_LEFT and upInside and FCOIS.lastVars.gLastHouseBankButton~=ctrlVars.HOUSE_BANK_MENUBAR_BUTTON_WITHDRAW) then
-    FCOIS.lastVars.gLastHouseBankButton = ctrlVars.HOUSE_BANK_MENUBAR_BUTTON_WITHDRAW
-    zo_callLater(function() FCOIS.PreHookButtonHandler(LF_HOUSE_BANK_DEPOSIT, LF_HOUSE_BANK_WITHDRAW) end, 50)
-    end
+        --d("house bank button 1, button: " .. button .. ", upInside: " .. tostring(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastBankButton:GetName())
+        if (button == MOUSE_BUTTON_INDEX_LEFT and upInside and FCOIS.lastVars.gLastHouseBankButton~=ctrlVars.HOUSE_BANK_MENUBAR_BUTTON_WITHDRAW) then
+            FCOIS.lastVars.gLastHouseBankButton = ctrlVars.HOUSE_BANK_MENUBAR_BUTTON_WITHDRAW
+            zo_callLater(function() FCOIS.PreHookButtonHandler(LF_HOUSE_BANK_DEPOSIT, LF_HOUSE_BANK_WITHDRAW) end, 50)
+        end
     end)
     ZO_PreHookHandler(ctrlVars.HOUSE_BANK_MENUBAR_BUTTON_DEPOSIT, "OnMouseUp", function(control, button, upInside)
-    --d("house bank button 2, button: " .. button .. ", upInside: " .. tostring(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastBankButton:GetName())
-    if (button == MOUSE_BUTTON_INDEX_LEFT and upInside and FCOIS.lastVars.gLastHouseBankButton~=ctrlVars.HOUSE_BANK_MENUBAR_BUTTON_DEPOSIT) then
-    FCOIS.lastVars.gLastHouseBankButton = ctrlVars.HOUSE_BANK_MENUBAR_BUTTON_DEPOSIT
-    zo_callLater(function() FCOIS.PreHookButtonHandler(LF_HOUSE_BANK_WITHDRAW, LF_HOUSE_BANK_DEPOSIT) end, 50)
-    end
+        --d("house bank button 2, button: " .. button .. ", upInside: " .. tostring(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastBankButton:GetName())
+        if (button == MOUSE_BUTTON_INDEX_LEFT and upInside and FCOIS.lastVars.gLastHouseBankButton~=ctrlVars.HOUSE_BANK_MENUBAR_BUTTON_DEPOSIT) then
+            FCOIS.lastVars.gLastHouseBankButton = ctrlVars.HOUSE_BANK_MENUBAR_BUTTON_DEPOSIT
+            zo_callLater(function() FCOIS.PreHookButtonHandler(LF_HOUSE_BANK_WITHDRAW, LF_HOUSE_BANK_DEPOSIT) end, 50)
+        end
     end)
 
     --======== GUILD BANK ==========================================================
@@ -1194,100 +1258,116 @@ function FCOIS.CreateHooks()
 
     --Pre Hook the 2 menubar button's (take and deposit) handler at the guild bank
     ZO_PreHookHandler(ctrlVars.GUILD_BANK_MENUBAR_BUTTON_WITHDRAW, "OnMouseUp", function(control, button, upInside)
-    --d("guild bank button 1, button: " .. button .. ", upInside: " .. tostring(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastGuildBankButton:GetName())
-    if (button == MOUSE_BUTTON_INDEX_LEFT and upInside and FCOIS.lastVars.gLastGuildBankButton~=ctrlVars.GUILD_BANK_MENUBAR_BUTTON_WITHDRAW) then
-    FCOIS.lastVars.gLastGuildBankButton = ctrlVars.GUILD_BANK_MENUBAR_BUTTON_WITHDRAW
-    zo_callLater(function() FCOIS.PreHookButtonHandler(LF_GUILDBANK_DEPOSIT, LF_GUILDBANK_WITHDRAW) end, 50)
-    end
+        --d("guild bank button 1, button: " .. button .. ", upInside: " .. tostring(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastGuildBankButton:GetName())
+        if (button == MOUSE_BUTTON_INDEX_LEFT and upInside and FCOIS.lastVars.gLastGuildBankButton~=ctrlVars.GUILD_BANK_MENUBAR_BUTTON_WITHDRAW) then
+            FCOIS.lastVars.gLastGuildBankButton = ctrlVars.GUILD_BANK_MENUBAR_BUTTON_WITHDRAW
+            zo_callLater(function() FCOIS.PreHookButtonHandler(LF_GUILDBANK_DEPOSIT, LF_GUILDBANK_WITHDRAW) end, 50)
+        end
     end)
     ZO_PreHookHandler(ctrlVars.GUILD_BANK_MENUBAR_BUTTON_DEPOSIT, "OnMouseUp", function(control, button, upInside)
-    --d("guild bank button 2, button: " .. button .. ", upInside: " .. tostring(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastGuildBankButton:GetName())
-    if (button == MOUSE_BUTTON_INDEX_LEFT and upInside and FCOIS.lastVars.gLastGuildBankButton~=ctrlVars.GUILD_BANK_MENUBAR_BUTTON_DEPOSIT) then
-    FCOIS.lastVars.gLastGuildBankButton = ctrlVars.GUILD_BANK_MENUBAR_BUTTON_DEPOSIT
-    zo_callLater(function() FCOIS.PreHookButtonHandler(LF_GUILDBANK_WITHDRAW, LF_GUILDBANK_DEPOSIT) end, 50)
-    end
+        --d("guild bank button 2, button: " .. button .. ", upInside: " .. tostring(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastGuildBankButton:GetName())
+        if (button == MOUSE_BUTTON_INDEX_LEFT and upInside and FCOIS.lastVars.gLastGuildBankButton~=ctrlVars.GUILD_BANK_MENUBAR_BUTTON_DEPOSIT) then
+            FCOIS.lastVars.gLastGuildBankButton = ctrlVars.GUILD_BANK_MENUBAR_BUTTON_DEPOSIT
+            zo_callLater(function() FCOIS.PreHookButtonHandler(LF_GUILDBANK_WITHDRAW, LF_GUILDBANK_DEPOSIT) end, 50)
+        end
     end)
 
     --======== SMITHING =============================================================
     --Prehook the smithing function SetMode() which gets executed as the smithing tabs are changed
     local origSmithingSetMode = ZO_Smithing.SetMode
     ZO_Smithing.SetMode = function(smithingCtrl, mode, ...)
-    local retVar = origSmithingSetMode(smithingCtrl, mode, ...)
+        local retVar = origSmithingSetMode(smithingCtrl, mode, ...)
 
-    --Hide the context menu at last active panel
-    FCOIS.hideContextMenu(FCOIS.gFilterWhere)
+        --Hide the context menu at last active panel
+        FCOIS.hideContextMenu(FCOIS.gFilterWhere)
 
-    if settings.debug then FCOIS.debugMessage( "[SMITHING:SetMode] Mode: " .. tostring(mode), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        if settings.debug then FCOIS.debugMessage( "[SMITHING:SetMode] Mode: " .. tostring(mode), true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
-    --Get the filter panel ID by crafting type (to distinguish jewelry crafting and normal)
-    local craftingModeAndCraftingTypeToFilterPanelId = FCOIS.mappingVars.craftingModeAndCraftingTypeToFilterPanelId
-    local craftingType = GetCraftingInteractionType()
-    local filterPanelId
-    --Refinement
-    if mode == SMITHING_MODE_REFINMENT then
-    filterPanelId = craftingModeAndCraftingTypeToFilterPanelId[mode][craftingType] or LF_SMITHING_REFINE
-    FCOIS.PreHookButtonHandler(FCOIS.gFilterWhere, filterPanelId)
-    --Creation
-    --elseif mode == SMITHING_MODE_CREATION then
-    --	FCOIS.gFilterWhere = LF_SMITHING_CREATION
-    --Deconstruction
-    elseif mode == SMITHING_MODE_DECONSTRUCTION then
-    filterPanelId = craftingModeAndCraftingTypeToFilterPanelId[mode][craftingType] or LF_SMITHING_DECONSTRUCT
-    FCOIS.PreHookButtonHandler(FCOIS.gFilterWhere, filterPanelId)
-    --Improvement
-    elseif mode == SMITHING_MODE_IMPROVEMENT then
-    filterPanelId = craftingModeAndCraftingTypeToFilterPanelId[mode][craftingType] or LF_SMITHING_IMPROVEMENT
-    FCOIS.PreHookButtonHandler(FCOIS.gFilterWhere, filterPanelId)
-    --Research
-    --elseif mode == SMITHING_MODE_RESEARCH then
-    --FCOIS.PreHookButtonHandler(FCOIS.gFilterWhere, LF_SMITHING_RESEARCH)
-    end
+        --Get the filter panel ID by crafting type (to distinguish jewelry crafting and normal)
+        local craftingModeAndCraftingTypeToFilterPanelId = FCOIS.mappingVars.craftingModeAndCraftingTypeToFilterPanelId
+        local craftingType = GetCraftingInteractionType()
+        local filterPanelId
+        --Refinement
+        if mode == SMITHING_MODE_REFINMENT then
+            filterPanelId = craftingModeAndCraftingTypeToFilterPanelId[mode][craftingType] or LF_SMITHING_REFINE
+            FCOIS.PreHookButtonHandler(FCOIS.gFilterWhere, filterPanelId)
+            --Creation
+            --elseif mode == SMITHING_MODE_CREATION then
+            --	FCOIS.gFilterWhere = LF_SMITHING_CREATION
+            --Deconstruction
+        elseif mode == SMITHING_MODE_DECONSTRUCTION then
+            filterPanelId = craftingModeAndCraftingTypeToFilterPanelId[mode][craftingType] or LF_SMITHING_DECONSTRUCT
+            FCOIS.PreHookButtonHandler(FCOIS.gFilterWhere, filterPanelId)
+            --Improvement
+        elseif mode == SMITHING_MODE_IMPROVEMENT then
+            filterPanelId = craftingModeAndCraftingTypeToFilterPanelId[mode][craftingType] or LF_SMITHING_IMPROVEMENT
+            FCOIS.PreHookButtonHandler(FCOIS.gFilterWhere, filterPanelId)
+            --Research
+            --elseif mode == SMITHING_MODE_RESEARCH then
+            --FCOIS.PreHookButtonHandler(FCOIS.gFilterWhere, LF_SMITHING_RESEARCH)
+        end
 
-    --d("[FCOIS]smithingSetMode- mode: " ..tostring(mode) .. ", craftType: " ..tostring(craftingType) .. ", filterPanelId: " ..tostring(filterPanelId) .. ", filterWhere: " ..tostring(FCOIS.gFilterWhere))
+        --d("[FCOIS]smithingSetMode- mode: " ..tostring(mode) .. ", craftType: " ..tostring(craftingType) .. ", filterPanelId: " ..tostring(filterPanelId) .. ", filterWhere: " ..tostring(FCOIS.gFilterWhere))
 
-    --Go on with original function
-    return retVar
+        --Go on with original function
+        return retVar
     end
 
     --======== ENCHANTING ==========================================================
-    --Prehook the enchanting function SetEnchantingMode() which gets executed as the enchanting tabs are changed
-    local origEnchantingSetEnchantMode = ZO_Enchanting.SetEnchantingMode
-    ZO_Enchanting.SetEnchantingMode = function(enchantingCtrl, enchantingMode, ...)
-    local retVar = origEnchantingSetEnchantMode(enchantingCtrl, enchantingMode, ...)
+    local function enchantingPostHook(enchantingMode)
+        --Hide the context menu at last active panel
+        FCOIS.hideContextMenu(FCOIS.gFilterWhere)
 
-    --Hide the context menu at last active panel
-    FCOIS.hideContextMenu(FCOIS.gFilterWhere)
+        if settings.debug then FCOIS.debugMessage( "[ENCHANTING:SetEnchantingMode/OnModeUpdated] EnchantingMode: " .. tostring(enchantingMode), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        --[[ enchantingMode could be:
+            ENCHANTING_MODE_CREATION
+            ENCHANTING_MODE_EXTRACTION
+        ]]
 
-    if settings.debug then FCOIS.debugMessage( "[ENCHANTING:SetEnchantingMode] EnchantingMode: " .. tostring(enchantingMode), true, FCOIS_DEBUG_DEPTH_NORMAL) end
-    --[[ enchantingMode could be:
-        ENCHANTING_MODE_CREATION
-        ENCHANTING_MODE_EXTRACTION
-    ]]
-    --Creation
-    if     enchantingMode == ENCHANTING_MODE_CREATION then
-    FCOIS.PreHookButtonHandler(LF_ENCHANTING_EXTRACTION, LF_ENCHANTING_CREATION)
-    --zo_callLater(function() FCOItemSaver_OnEffectivelyShown(ctrlVars.ENCHANTING_STATION_BAG) end, 100)
-    --Extraction
-    elseif enchantingMode == ENCHANTING_MODE_EXTRACTION then
-    FCOIS.PreHookButtonHandler(LF_ENCHANTING_CREATION, LF_ENCHANTING_EXTRACTION)
-    --zo_callLater(function() FCOItemSaver_OnEffectivelyShown(ctrlVars.ENCHANTING_STATION_BAG) end, 100)
+        --d("[FCOIS]Hook ZO_Enchanting.SetEnchantingMode/OnModeUpdated - Mode: " ..tostring(enchantingMode))
+        --Creation
+        if     enchantingMode == ENCHANTING_MODE_CREATION then
+            FCOIS.PreHookButtonHandler(LF_ENCHANTING_EXTRACTION, LF_ENCHANTING_CREATION)
+            --zo_callLater(function() FCOItemSaver_OnEffectivelyShown(ctrlVars.ENCHANTING_STATION_BAG) end, 100)
+            --Extraction
+        elseif enchantingMode == ENCHANTING_MODE_EXTRACTION then
+            FCOIS.PreHookButtonHandler(LF_ENCHANTING_CREATION, LF_ENCHANTING_EXTRACTION)
+            --zo_callLater(function() FCOItemSaver_OnEffectivelyShown(ctrlVars.ENCHANTING_STATION_BAG) end, 100)
+        end
+        --Go on with original function
     end
-    --Go on with original function
-    return retVar
+
+    --Posthook the enchanting function SetEnchantingMode() which gets executed as the enchanting tabs are changed
+    local origEnchantingSetEnchantMode = ZO_Enchanting.SetEnchantingMode
+    if origEnchantingSetEnchantMode ~= nil then
+        ZO_Enchanting.SetEnchantingMode = function(enchantingCtrl, enchantingMode, ...)
+            local retVar = origEnchantingSetEnchantMode(enchantingCtrl, enchantingMode, ...)
+            enchantingPostHook(enchantingMode)
+            return retVar
+        end
+    else
+        --ZO_Enchanting:SetEnchantingMode does not exist anymore (PTS -> Scalebreaker) and was replaced by ZO_Enchanting:OnModeUpdated()
+        origEnchantingSetEnchantMode = ZO_Enchanting.OnModeUpdated
+        ZO_Enchanting.OnModeUpdated = function(self, ...)
+            local retVar = origEnchantingSetEnchantMode(self, ...)
+            local enchantingMode = self.enchantingMode
+            enchantingPostHook(enchantingMode)
+            return retVar
+        end
     end
 
     --======== ALCHEMY =============================================================
     --Prehook the alchemy function which gets executed as the alchemy tabs are changed
     ZO_PreHookHandler(ctrlVars.ALCHEMY_STATION_MENUBAR_BUTTON_CREATION, "OnMouseUp", function(control, button, upInside)
-    --d("Alchemy button 1, button: " .. button .. ", upInside: " .. tostring(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastAlchemyButton:GetName())
-    if (button == MOUSE_BUTTON_INDEX_LEFT and upInside) then
-    if (FCOIS.otherAddons.potionMakerActive and FCOIS.lastVars.gLastAlchemyButton~=ctrlVars.ALCHEMY_STATION_MENUBAR_BUTTON_CREATION) then
-    FCOIS.lastVars.gLastAlchemyButton = ctrlVars.ALCHEMY_STATION_MENUBAR_BUTTON_CREATION
-    --zo_callLater(function() FCOIS.PreHookButtonHandler(nil, LF_ALCHEMY_CREATION) end, 50)
-    else
-    --zo_callLater(function() FCOIS.PreHookButtonHandler(nil, LF_ALCHEMY_CREATION) end, 50)
-    end
-    end
+        --d("Alchemy button 1, button: " .. button .. ", upInside: " .. tostring(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastAlchemyButton:GetName())
+        if (button == MOUSE_BUTTON_INDEX_LEFT and upInside) then
+            if (FCOIS.otherAddons.potionMakerActive and FCOIS.lastVars.gLastAlchemyButton~=ctrlVars.ALCHEMY_STATION_MENUBAR_BUTTON_CREATION) then
+                FCOIS.lastVars.gLastAlchemyButton = ctrlVars.ALCHEMY_STATION_MENUBAR_BUTTON_CREATION
+                --zo_callLater(function() FCOIS.PreHookButtonHandler(nil, LF_ALCHEMY_CREATION) end, 50)
+            else
+                --zo_callLater(function() FCOIS.PreHookButtonHandler(nil, LF_ALCHEMY_CREATION) end, 50)
+            end
+        end
     end)
 
     --Another Prehook will be done at the event callback function for the crafting station interact, when the alchemy station
@@ -1297,517 +1377,643 @@ function FCOIS.CreateHooks()
     --Register a callback function to the CraftBag fragment state, if the addon CraftBagextended is active
     --to be able to show filter buttons etc. at the mail craftbag and bank craftbag panel as well
     CRAFT_BAG_FRAGMENT:RegisterCallback("StateChange", function(oldState, newState)
-    --[[ possible states are:
-        SCENE_FRAGMENT_SHOWN = "shown"
-        SCENE_FRAGMENT_HIDDEN = "hidden"
-        SCENE_FRAGMENT_SHOWING = "showing"
-        SCENE_FRAGMENT_HIDING = "hiding"
-    ]]--
+        --[[ possible states are:
+            SCENE_FRAGMENT_SHOWN = "shown"
+            SCENE_FRAGMENT_HIDDEN = "hidden"
+            SCENE_FRAGMENT_SHOWING = "showing"
+            SCENE_FRAGMENT_HIDING = "hiding"
+        ]]--
 
-    --d("[FCOIS] CraftBag Fragment state change")
-    --Hide the context menu at the active panel
-    FCOIS.sceneCallbackHideContextMenu(oldState, newState)
+        --d("[FCOIS] CraftBag Fragment state change")
+        --Hide the context menu at the active panel
+        FCOIS.sceneCallbackHideContextMenu(oldState, newState)
 
-    if 	newState == SCENE_FRAGMENT_SHOWING then
-    --d("[FCOIS]CraftBag SCENE_FRAGMENT_SHOWING")
-    FCOIS.preventerVars.craftBagSceneShowInProgress = true
-    if settings.debug then FCOIS.debugMessage( "Callback fragment CRAFTBAG: Showing", true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
-    --Reset the parent panel ID
-    FCOIS.gFilterWhereParent = nil
+        if 	newState == SCENE_FRAGMENT_SHOWING then
+            --d("[FCOIS]CraftBag SCENE_FRAGMENT_SHOWING")
+            FCOIS.preventerVars.craftBagSceneShowInProgress = true
+            if settings.debug then FCOIS.debugMessage( "Callback fragment CRAFTBAG: Showing", true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+            --Reset the parent panel ID
+            FCOIS.gFilterWhereParent = nil
 
-    --Check the filter buttons at the CraftBag panel and create them if they are not there. Return the parent filter panel ID if given (e.g. LF_MAIL)
-    local _, parentPanel = FCOIS.CheckFilterButtonsAtPanel(true, LF_CRAFTBAG, LF_CRAFTBAG) --overwrite with LF_CRAFTBAG so it'll create and update the buttons for the craftbag panel, and not the CBE subpanels (mail, trade, bank, vendor, guild bank, etc.)
-    --Update the inventory context menu ("flag" icon) so it uses the correct "anti-settings" and the correct colour and right-click callback function
-    --depending on the currently shown craftbag "parent" (inventory, mail send, guild bank, guild store)
-    if parentPanel == nil then
-    _, parentPanel = FCOIS.checkActivePanel(FCOIS.gFilterWhere, LF_CRAFTBAG)
-    end
+            --Check the filter buttons at the CraftBag panel and create them if they are not there. Return the parent filter panel ID if given (e.g. LF_MAIL)
+            local _, parentPanel = FCOIS.CheckFilterButtonsAtPanel(true, LF_CRAFTBAG, LF_CRAFTBAG) --overwrite with LF_CRAFTBAG so it'll create and update the buttons for the craftbag panel, and not the CBE subpanels (mail, trade, bank, vendor, guild bank, etc.)
+            --Update the inventory context menu ("flag" icon) so it uses the correct "anti-settings" and the correct colour and right-click callback function
+            --depending on the currently shown craftbag "parent" (inventory, mail send, guild bank, guild store)
+            if parentPanel == nil then
+                _, parentPanel = FCOIS.checkActivePanel(FCOIS.gFilterWhere, LF_CRAFTBAG)
+            end
 
-    if settings.debug then FCOIS.debugMessage( ">Parent panel: " .. tostring(parentPanel), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+            if settings.debug then FCOIS.debugMessage( ">Parent panel: " .. tostring(parentPanel), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
 
-    --Update the current filter panel ID to "CraftBag"
-    FCOIS.gFilterWhere = LF_CRAFTBAG
+            --Update the current filter panel ID to "CraftBag"
+            FCOIS.gFilterWhere = LF_CRAFTBAG
 
-    --Are we showing a CBE subpanel of another parent panel?
-    local cbeOrAGSActive = FCOIS.checkIfCBEorAGSActive(FCOIS.gFilterWhereParent, true)
-    if cbeOrAGSActive and parentPanel ~= nil then
-    --The parent panel for the craftbag can be one of these
-    local supportedPanels = FCOIS.otherAddons.craftBagExtendedSupportedFilterPanels
-    if supportedPanels[parentPanel] then
-    --Set the global CBE parentPanel ID to e.g. mail send, vendor, guild bank, bank, trade, ...
-    FCOIS.gFilterWhereParent = parentPanel
-    if settings.debug then FCOIS.debugMessage( ">supported craftbag parent panel: " .. tostring(FCOIS.gFilterWhereParent), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
-    end
-    end
-    --Change the additional context-menu button's color in the inventory (Craft Bag button)
-    --d("<CraftBag: SCENE_FRAGMENT_SHOWING, before changeContextMenuInvokerButtonColorByPanelId(LF_CRAFTBAG)")
-    FCOIS.changeContextMenuInvokerButtonColorByPanelId(LF_CRAFTBAG)
+            --Are we showing a CBE subpanel of another parent panel?
+            local cbeOrAGSActive = FCOIS.checkIfCBEorAGSActive(FCOIS.gFilterWhereParent, true)
+            if cbeOrAGSActive and parentPanel ~= nil then
+                --The parent panel for the craftbag can be one of these
+                local supportedPanels = FCOIS.otherAddons.craftBagExtendedSupportedFilterPanels
+                if supportedPanels[parentPanel] then
+                    --Set the global CBE parentPanel ID to e.g. mail send, vendor, guild bank, bank, trade, ...
+                    FCOIS.gFilterWhereParent = parentPanel
+                    if settings.debug then FCOIS.debugMessage( ">supported craftbag parent panel: " .. tostring(FCOIS.gFilterWhereParent), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+                end
+            end
+            --Change the additional context-menu button's color in the inventory (Craft Bag button)
+            --d("<CraftBag: SCENE_FRAGMENT_SHOWING, before changeContextMenuInvokerButtonColorByPanelId(LF_CRAFTBAG)")
+            FCOIS.changeContextMenuInvokerButtonColorByPanelId(LF_CRAFTBAG)
 
-    --				elseif 	newState == SCENE_FRAGMENT_SHOWN then
-    --	d("Callback fragment CRAFTBAG: Shown")
+            --				elseif 	newState == SCENE_FRAGMENT_SHOWN then
+            --	d("Callback fragment CRAFTBAG: Shown")
 
-    --				elseif 	newState == SCENE_FRAGMENT_HIDING then
-    --	d("Callback fragment CRAFTBAG: Hiding")
-    FCOIS.preventerVars.craftBagSceneShowInProgress = false
-    --------------------------------------------------------------------------------------------------------------------
-    elseif  newState == SCENE_FRAGMENT_HIDDEN then
-    --d("[FCOIS]CraftBag SCENE_FRAGMENT_HIDDEN")
-    if settings.debug then FCOIS.debugMessage( "Callback fragment CRAFTBAG: Hidden", true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
-    --Reset the CraftBag filter parent panel ID
-    FCOIS.gFilterWhereParent = nil
-    --Hide the context menu at last active panel
-    FCOIS.hideContextMenu(LF_CRAFTBAG)
+            --				elseif 	newState == SCENE_FRAGMENT_HIDING then
+            --	d("Callback fragment CRAFTBAG: Hiding")
+            FCOIS.preventerVars.craftBagSceneShowInProgress = false
+            --------------------------------------------------------------------------------------------------------------------
+        elseif  newState == SCENE_FRAGMENT_HIDDEN then
+            --d("[FCOIS]CraftBag SCENE_FRAGMENT_HIDDEN")
+            if settings.debug then FCOIS.debugMessage( "Callback fragment CRAFTBAG: Hidden", true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+            --Reset the CraftBag filter parent panel ID
+            FCOIS.gFilterWhereParent = nil
+            --Hide the context menu at last active panel
+            FCOIS.hideContextMenu(LF_CRAFTBAG)
 
-    --Needs to be done here as changing the CraftBag at the mail panel e.g. will not call PreHookButtonHandler function!
-    --So we need to get the active filter panel ID after the craftbag was closed again, and update the additional inventory flag icon at thius panel too.
-    --> Wait a few milliseconds for the function FCOIS.PreHookButtonHandler to be run (if it is run! Won't be run e.g if the craftbag scene get's closed/changed
-    --> via a keybind/ESC key or by other means then the click on another inventory button!)
-    --zo_callLater(function()
-    --If the delayed hide craftbag scene stuff gets into a new craftbag scene show call:
-    --Abort the hide functions now
-    if FCOIS.preventerVars.craftBagSceneShowInProgress then
-    --d("<CraftBag SCENE_FRAGMENT_HIDDEN: craftBagSceneShowInProgress 1 ->Abort!")
-    FCOIS.preventerVars.gPreHookButtonHandlerCallActive = false
-    return false
-    end
-    -->Check within this time if FCOIS.PreHookButtonHandler function was called and do not execute the craftbag_scene_hidden->checkActivePanel stuff then!
-    if FCOIS.preventerVars.gPreHookButtonHandlerCallActive then
-    --d("<CraftBag SCENE_FRAGMENT_HIDDEN: PreeHookButtonHandler already called ->Abort!")
-    FCOIS.preventerVars.gPreHookButtonHandlerCallActive = false
-    return false
-    end
-    --Get the new active filter panel ID -> FCOIS.gFilterWhere (in function CheckFilterButtonAtPanel the function FCOIS.checkActivePanel will be called!)
-    --Check the filter buttons and create them if they are not there. Be sure to leave the filterPanelId = nil so it will be properly new determined
-    --by help of the shown control (names), and not only the libFilters constant LF_*!
-    FCOIS.CheckFilterButtonsAtPanel(true, nil)
-    if settings.debug then FCOIS.debugMessage( ">new panel: " .. tostring(FCOIS.gFilterWhere), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
-    --Change the additional context-menu button's color in the inventory (new active filter panel ID)
-    --d("<CraftBag: SCENE_FRAGMENT_HIDDEN before changeContextMenuInvokerButtonColorByPanelId(" .. FCOIS.gFilterWhere .. ")")
-    FCOIS.changeContextMenuInvokerButtonColorByPanelId(FCOIS.gFilterWhere)
-    --end, 50)
-    end
+            --Needs to be done here as changing the CraftBag at the mail panel e.g. will not call PreHookButtonHandler function!
+            --So we need to get the active filter panel ID after the craftbag was closed again, and update the additional inventory flag icon at thius panel too.
+            --> Wait a few milliseconds for the function FCOIS.PreHookButtonHandler to be run (if it is run! Won't be run e.g if the craftbag scene get's closed/changed
+            --> via a keybind/ESC key or by other means then the click on another inventory button!)
+            --zo_callLater(function()
+            --If the delayed hide craftbag scene stuff gets into a new craftbag scene show call:
+            --Abort the hide functions now
+            if FCOIS.preventerVars.craftBagSceneShowInProgress then
+                --d("<CraftBag SCENE_FRAGMENT_HIDDEN: craftBagSceneShowInProgress 1 ->Abort!")
+                FCOIS.preventerVars.gPreHookButtonHandlerCallActive = false
+                return false
+            end
+            -->Check within this time if FCOIS.PreHookButtonHandler function was called and do not execute the craftbag_scene_hidden->checkActivePanel stuff then!
+            if FCOIS.preventerVars.gPreHookButtonHandlerCallActive then
+                --d("<CraftBag SCENE_FRAGMENT_HIDDEN: PreeHookButtonHandler already called ->Abort!")
+                FCOIS.preventerVars.gPreHookButtonHandlerCallActive = false
+                return false
+            end
+            --Get the new active filter panel ID -> FCOIS.gFilterWhere (in function CheckFilterButtonAtPanel the function FCOIS.checkActivePanel will be called!)
+            --Check the filter buttons and create them if they are not there. Be sure to leave the filterPanelId = nil so it will be properly new determined
+            --by help of the shown control (names), and not only the libFilters constant LF_*!
+            FCOIS.CheckFilterButtonsAtPanel(true, nil)
+            if settings.debug then FCOIS.debugMessage( ">new panel: " .. tostring(FCOIS.gFilterWhere), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+            --Change the additional context-menu button's color in the inventory (new active filter panel ID)
+            --d("<CraftBag: SCENE_FRAGMENT_HIDDEN before changeContextMenuInvokerButtonColorByPanelId(" .. FCOIS.gFilterWhere .. ")")
+            FCOIS.changeContextMenuInvokerButtonColorByPanelId(FCOIS.gFilterWhere)
+            --end, 50)
+        end
     end)
 
     --======== MAIL INBOX ================================================================
     --Register a callback function for the mail inbox scene
     MAIL_INBOX_SCENE:RegisterCallback("StateChange", function(oldState, newState)
-    if settings.debug then FCOIS.debugMessage( "[MAIL_INBOX_SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        if settings.debug then FCOIS.debugMessage( "[MAIL_INBOX_SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
-    FCOIS.sceneCallbackHideContextMenu(oldState, newState)
+        FCOIS.sceneCallbackHideContextMenu(oldState, newState)
 
-    --If the inventory was shown at last and the mail panel was opened directly with shown inventory the settings for the anti-destroy won't be updted!
-    --So do this here now:
-    FCOIS.resetInventoryAntiSettings(newState)
+        --If the inventory was shown at last and the mail panel was opened directly with shown inventory the settings for the anti-destroy won't be updted!
+        --So do this here now:
+        FCOIS.resetInventoryAntiSettings(newState)
     end)
 
     --======== MAIL SEND ================================================================
     --Register a callback function for the mail send scene
     MAIL_SEND_SCENE:RegisterCallback("StateChange", function(oldState, newState)
-    if settings.debug then FCOIS.debugMessage( "[MAIL_SEND_SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        if settings.debug then FCOIS.debugMessage( "[MAIL_SEND_SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
-    FCOIS.sceneCallbackHideContextMenu(oldState, newState)
+        FCOIS.sceneCallbackHideContextMenu(oldState, newState)
 
-    --If the inventory was shown at last and the mail panel was opened directly with shown inventory the settings for the anti-destroy won't be updated!
-    --So do this here now:
-    FCOIS.resetInventoryAntiSettings(newState)
+        --If the inventory was shown at last and the mail panel was opened directly with shown inventory the settings for the anti-destroy won't be updated!
+        --So do this here now:
+        FCOIS.resetInventoryAntiSettings(newState)
 
-    --When the mail send panel is showing up
-    if newState == SCENE_SHOWING then
-    --Check if craftbag is active and change filter panel and parent panel accordingly
-    FCOIS.gFilterWhere, FCOIS.gFilterWhereParent = FCOIS.checkCraftbagOrOtherActivePanel(LF_MAIL_SEND)
+        --When the mail send panel is showing up
+        if newState == SCENE_SHOWING then
+            --Check if craftbag is active and change filter panel and parent panel accordingly
+            FCOIS.gFilterWhere, FCOIS.gFilterWhereParent = FCOIS.checkCraftbagOrOtherActivePanel(LF_MAIL_SEND)
 
-    --Check if another filter panel was already opened and we are coming form there before the CLOSE EVENT function was called
-    if FCOIS.preventerVars.gActiveFilterPanel == true then
-    --Set the "No Close Event" flag so the called close event won't override gFilterWhere and update the filter button colors and callback handlers
-    FCOIS.preventerVars.gNoCloseEvent = true
-    end
+            --Check if another filter panel was already opened and we are coming form there before the CLOSE EVENT function was called
+            if FCOIS.preventerVars.gActiveFilterPanel == true then
+                --Set the "No Close Event" flag so the called close event won't override gFilterWhere and update the filter button colors and callback handlers
+                FCOIS.preventerVars.gNoCloseEvent = true
+            end
 
-    --Change the button color of the context menu invoker
-    FCOIS.changeContextMenuInvokerButtonColorByPanelId(FCOIS.gFilterWhere)
-    --Check the filter buttons and create them if they are not there. Update the inventory afterwards too
-    FCOIS.CheckFilterButtonsAtPanel(true, FCOIS.gFilterWhere)
+            --Change the button color of the context menu invoker
+            FCOIS.changeContextMenuInvokerButtonColorByPanelId(FCOIS.gFilterWhere)
+            --Check the filter buttons and create them if they are not there. Update the inventory afterwards too
+            FCOIS.CheckFilterButtonsAtPanel(true, FCOIS.gFilterWhere)
 
-    --When the mail send panel is hiding
-    elseif newState == SCENE_HIDING then
-    --d("mail scene hiding")
-    --Update the current filter panel ID to "Mail"
-    FCOIS.gFilterWhere = LF_MAIL_SEND
+            --When the mail send panel is hiding
+        elseif newState == SCENE_HIDING then
+            --d("mail scene hiding")
+            --Update the current filter panel ID to "Mail"
+            FCOIS.gFilterWhere = LF_MAIL_SEND
 
-    --Hide the context menu at mail panel
-    FCOIS.hideContextMenu(FCOIS.gFilterWhere)
+            --Hide the context menu at mail panel
+            FCOIS.hideContextMenu(FCOIS.gFilterWhere)
 
-    --When the mail send panel is hidden
-    elseif newState == SCENE_HIDDEN then
-    --d("mail scene hidden")
+            --When the mail send panel is hidden
+        elseif newState == SCENE_HIDDEN then
+            --d("mail scene hidden")
 
-    --Update the inventory filter buttons
-    FCOIS.updateFilterButtonsInInv(-1)
-    --Update the 4 inventory button's color
-    FCOIS.UpdateButtonColorsAndTextures(-1, nil, -1, LF_INVENTORY)
+            --Update the inventory filter buttons
+            FCOIS.updateFilterButtonsInInv(-1)
+            --Update the 4 inventory button's color
+            FCOIS.UpdateButtonColorsAndTextures(-1, nil, -1, LF_INVENTORY)
 
-    FCOIS.preventerVars.gActiveFilterPanel = false
-    FCOIS.preventerVars.gNoCloseEvent = false
+            FCOIS.preventerVars.gActiveFilterPanel = false
+            FCOIS.preventerVars.gNoCloseEvent = false
 
-    --Change the button color of the context menu invoker
-    FCOIS.changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
-    --Check, if the Anti-* checks need to be enabled again
-    FCOIS.autoReenableAntiSettingsCheck("MAIL")
-    end
+            --Change the button color of the context menu invoker
+            FCOIS.changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
+            --Check, if the Anti-* checks need to be enabled again
+            FCOIS.autoReenableAntiSettingsCheck("MAIL")
+        end
     end)
 
     --======== QUEST JOURNAL ================================================================
     --Register a callback function for the quest journal scene
     QUEST_JOURNAL_SCENE:RegisterCallback("StateChange", function(oldState, newState)
-    if settings.debug then FCOIS.debugMessage( "[QUEST JOURNAL SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        if settings.debug then FCOIS.debugMessage( "[QUEST JOURNAL SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
-    FCOIS.sceneCallbackHideContextMenu(oldState, newState)
+        FCOIS.sceneCallbackHideContextMenu(oldState, newState)
 
-    --If the inventory was shown at last and the mail panel was opened directly with shown inventory the settings for the anti-destroy won't be updted!
-    --So do this here now:
-    FCOIS.resetInventoryAntiSettings(newState)
+        --If the inventory was shown at last and the mail panel was opened directly with shown inventory the settings for the anti-destroy won't be updted!
+        --So do this here now:
+        FCOIS.resetInventoryAntiSettings(newState)
     end)
 
     --======== GROUP LIST ================================================================
     --Register a callback function for the group list scene
     local groupScene = KEYBOARD_GROUP_MENU_SCENE
     groupScene:RegisterCallback("StateChange", function(oldState, newState)
-    if settings.debug then FCOIS.debugMessage( "[KEYBOARD_GROUP_MENU_SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        if settings.debug then FCOIS.debugMessage( "[KEYBOARD_GROUP_MENU_SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
-    FCOIS.sceneCallbackHideContextMenu(oldState, newState)
+        FCOIS.sceneCallbackHideContextMenu(oldState, newState)
 
-    --If the inventory was shown at last and the mail panel was opened directly with shown inventory the settings for the anti-destroy won't be updted!
-    --So do this here now:
-    FCOIS.resetInventoryAntiSettings(newState)
+        --If the inventory was shown at last and the mail panel was opened directly with shown inventory the settings for the anti-destroy won't be updted!
+        --So do this here now:
+        FCOIS.resetInventoryAntiSettings(newState)
     end)
 
     --======== LORE LIBRARY ================================================================
     --Register a callback function for the lore library scene
     LORE_LIBRARY_SCENE:RegisterCallback("StateChange", function(oldState, newState)
-    if settings.debug then FCOIS.debugMessage( "[LORE LIBRARY SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        if settings.debug then FCOIS.debugMessage( "[LORE LIBRARY SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
-    FCOIS.sceneCallbackHideContextMenu(oldState, newState)
+        FCOIS.sceneCallbackHideContextMenu(oldState, newState)
 
-    --If the inventory was shown at last and the mail panel was opened directly with shown inventory the settings for the anti-destroy won't be updted!
-    --So do this here now:
-    FCOIS.resetInventoryAntiSettings(newState)
+        --If the inventory was shown at last and the mail panel was opened directly with shown inventory the settings for the anti-destroy won't be updted!
+        --So do this here now:
+        FCOIS.resetInventoryAntiSettings(newState)
     end)
 
     --======== LORE READER INVENTORY ================================================================
     --Register a callback function for the lore reader inventory scene
     LORE_READER_INVENTORY_SCENE:RegisterCallback("StateChange", function(oldState, newState)
-    if settings.debug then FCOIS.debugMessage( "[LORE READER INVENTORY SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        if settings.debug then FCOIS.debugMessage( "[LORE READER INVENTORY SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
-    FCOIS.sceneCallbackHideContextMenu(oldState, newState)
+        FCOIS.sceneCallbackHideContextMenu(oldState, newState)
 
-    --If the inventory was shown at last and the mail panel was opened directly with shown inventory the settings for the anti-destroy won't be updted!
-    --So do this here now:
-    FCOIS.resetInventoryAntiSettings(newState)
+        --If the inventory was shown at last and the mail panel was opened directly with shown inventory the settings for the anti-destroy won't be updted!
+        --So do this here now:
+        FCOIS.resetInventoryAntiSettings(newState)
     end)
 
     --======== LORE READER LORE LIBRARY ================================================================
     --Register a callback function for the lore library scene
     LORE_READER_LORE_LIBRARY_SCENE:RegisterCallback("StateChange", function(oldState, newState)
-    if settings.debug then FCOIS.debugMessage( "[LORE READER LORE LIBRARY SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        if settings.debug then FCOIS.debugMessage( "[LORE READER LORE LIBRARY SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
-    FCOIS.sceneCallbackHideContextMenu(oldState, newState)
+        FCOIS.sceneCallbackHideContextMenu(oldState, newState)
 
-    --If the inventory was shown at last and the mail panel was opened directly with shown inventory the settings for the anti-destroy won't be updted!
-    --So do this here now:
-    FCOIS.resetInventoryAntiSettings(newState)
+        --If the inventory was shown at last and the mail panel was opened directly with shown inventory the settings for the anti-destroy won't be updted!
+        --So do this here now:
+        FCOIS.resetInventoryAntiSettings(newState)
     end)
 
     --======== LORE READER INTERACTION ================================================================
     --Register a callback function for the lore reader interaction scene
     LORE_READER_INTERACTION_SCENE:RegisterCallback("StateChange", function(oldState, newState)
-    if settings.debug then FCOIS.debugMessage( "[LORE READER INTERACTION SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        if settings.debug then FCOIS.debugMessage( "[LORE READER INTERACTION SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
-    FCOIS.sceneCallbackHideContextMenu(oldState, newState)
+        FCOIS.sceneCallbackHideContextMenu(oldState, newState)
     end)
 
     --======== TREASURE MAP INVENTORY ================================================================
     --Register a callback function for the treasure map inventory scene
     TREASURE_MAP_INVENTORY_SCENE:RegisterCallback("StateChange", function(oldState, newState)
-    if settings.debug then FCOIS.debugMessage( "[TREASURE MAP INVENTORY SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        if settings.debug then FCOIS.debugMessage( "[TREASURE MAP INVENTORY SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
-    FCOIS.sceneCallbackHideContextMenu(oldState, newState)
+        FCOIS.sceneCallbackHideContextMenu(oldState, newState)
     end)
 
     --======== TREASURE MAP QUICK SLOT ================================================================
     --Register a callback function for the treasure map quick slot scene
     TREASURE_MAP_QUICK_SLOT_SCENE:RegisterCallback("StateChange", function(oldState, newState)
-    if settings.debug then FCOIS.debugMessage( "[TREASURE MAP QUICK SLOT SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        if settings.debug then FCOIS.debugMessage( "[TREASURE MAP QUICK SLOT SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
-    FCOIS.sceneCallbackHideContextMenu(oldState, newState)
+        FCOIS.sceneCallbackHideContextMenu(oldState, newState)
     end)
 
     --======== GAME MENU ================================================================
     --Register a callback function for the game menu scene
     GAME_MENU_SCENE:RegisterCallback("StateChange", function(oldState, newState)
-    if settings.debug then FCOIS.debugMessage( "[GAME MENU SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        if settings.debug then FCOIS.debugMessage( "[GAME MENU SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
-    FCOIS.sceneCallbackHideContextMenu(oldState, newState)
+        FCOIS.sceneCallbackHideContextMenu(oldState, newState)
 
-    --If the inventory was shown at last and the mail panel was opened directly with shown inventory the settings for the anti-destroy won't be updted!
-    --So do this here now:
-    FCOIS.resetInventoryAntiSettings(newState)
+        --If the inventory was shown at last and the mail panel was opened directly with shown inventory the settings for the anti-destroy won't be updted!
+        --So do this here now:
+        FCOIS.resetInventoryAntiSettings(newState)
     end)
 
     --======== LEADERBOARD ================================================================
     --Register a callback function for the leaderboard scene
     LEADERBOARDS_SCENE:RegisterCallback("StateChange", function(oldState, newState)
-    if settings.debug then FCOIS.debugMessage( "[LEADERBOARDS SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        if settings.debug then FCOIS.debugMessage( "[LEADERBOARDS SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
-    FCOIS.sceneCallbackHideContextMenu(oldState, newState)
+        FCOIS.sceneCallbackHideContextMenu(oldState, newState)
 
-    --If the inventory was shown at last and the mail panel was opened directly with shown inventory the settings for the anti-destroy won't be updted!
-    --So do this here now:
-    FCOIS.resetInventoryAntiSettings(newState)
+        --If the inventory was shown at last and the mail panel was opened directly with shown inventory the settings for the anti-destroy won't be updted!
+        --So do this here now:
+        FCOIS.resetInventoryAntiSettings(newState)
     end)
 
     --======== WORLD MAP ================================================================
     --Register a callback function for the wolrd map scene
     WORLD_MAP_SCENE:RegisterCallback("StateChange", function(oldState, newState)
-    if settings.debug then FCOIS.debugMessage( "[WORLD MAP SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        if settings.debug then FCOIS.debugMessage( "[WORLD MAP SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
-    FCOIS.sceneCallbackHideContextMenu(oldState, newState)
+        FCOIS.sceneCallbackHideContextMenu(oldState, newState)
 
-    --If the inventory was shown at last and the mail panel was opened directly with shown inventory the settings for the anti-destroy won't be updted!
-    --So do this here now:
-    FCOIS.resetInventoryAntiSettings(newState)
+        --If the inventory was shown at last and the mail panel was opened directly with shown inventory the settings for the anti-destroy won't be updted!
+        --So do this here now:
+        FCOIS.resetInventoryAntiSettings(newState)
     end)
 
     --======== HELP CUSTOMER SUPPORT ================================================================
     --Register a callback function for the help customer support scene
     HELP_CUSTOMER_SUPPORT_SCENE:RegisterCallback("StateChange", function(oldState, newState)
-    if settings.debug then FCOIS.debugMessage( "[HELP CUSTOMER SUPPORT SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        if settings.debug then FCOIS.debugMessage( "[HELP CUSTOMER SUPPORT SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
-    FCOIS.sceneCallbackHideContextMenu(oldState, newState)
+        FCOIS.sceneCallbackHideContextMenu(oldState, newState)
 
-    --If the inventory was shown at last and the mail panel was opened directly with shown inventory the settings for the anti-destroy won't be updted!
-    --So do this here now:
-    FCOIS.resetInventoryAntiSettings(newState)
+        --If the inventory was shown at last and the mail panel was opened directly with shown inventory the settings for the anti-destroy won't be updted!
+        --So do this here now:
+        FCOIS.resetInventoryAntiSettings(newState)
     end)
 
     --======== FRIENDS LIST ================================================================
     --Register a callback function for the friends list scene
     FRIENDS_LIST_SCENE:RegisterCallback("StateChange", function(oldState, newState)
-    if settings.debug then FCOIS.debugMessage( "[FRIENDS LIST SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        if settings.debug then FCOIS.debugMessage( "[FRIENDS LIST SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
-    FCOIS.sceneCallbackHideContextMenu(oldState, newState)
+        FCOIS.sceneCallbackHideContextMenu(oldState, newState)
 
-    --If the inventory was shown at last and the mail panel was opened directly with shown inventory the settings for the anti-destroy won't be updted!
-    --So do this here now:
-    FCOIS.resetInventoryAntiSettings(newState)
+        --If the inventory was shown at last and the mail panel was opened directly with shown inventory the settings for the anti-destroy won't be updted!
+        --So do this here now:
+        FCOIS.resetInventoryAntiSettings(newState)
     end)
 
     --======== IGNORE LIST ================================================================
     --Register a callback function for the ignore list scene
     IGNORE_LIST_SCENE:RegisterCallback("StateChange", function(oldState, newState)
-    if settings.debug then FCOIS.debugMessage( "[IGNORE LIST SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        if settings.debug then FCOIS.debugMessage( "[IGNORE LIST SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
-    FCOIS.sceneCallbackHideContextMenu(oldState, newState)
+        FCOIS.sceneCallbackHideContextMenu(oldState, newState)
 
-    --If the inventory was shown at last and the mail panel was opened directly with shown inventory the settings for the anti-destroy won't be updted!
-    --So do this here now:
-    FCOIS.resetInventoryAntiSettings(newState)
+        --If the inventory was shown at last and the mail panel was opened directly with shown inventory the settings for the anti-destroy won't be updted!
+        --So do this here now:
+        FCOIS.resetInventoryAntiSettings(newState)
     end)
 
     --======== GUILD HOME ================================================================
     --Register a callback function for the guild home scene
     GUILD_HOME_SCENE:RegisterCallback("StateChange", function(oldState, newState)
-    if settings.debug then FCOIS.debugMessage( "[GUILD HOME SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        if settings.debug then FCOIS.debugMessage( "[GUILD HOME SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
-    FCOIS.sceneCallbackHideContextMenu(oldState, newState)
+        FCOIS.sceneCallbackHideContextMenu(oldState, newState)
     end)
 
     --======== GUILD ROSTER ================================================================
     --Register a callback function for the guild roster scene
     GUILD_ROSTER_SCENE:RegisterCallback("StateChange", function(oldState, newState)
-    if settings.debug then FCOIS.debugMessage( "[GUILD ROSTER SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        if settings.debug then FCOIS.debugMessage( "[GUILD ROSTER SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
-    FCOIS.sceneCallbackHideContextMenu(oldState, newState)
+        FCOIS.sceneCallbackHideContextMenu(oldState, newState)
 
-    --If the inventory was shown at last and the mail panel was opened directly with shown inventory the settings for the anti-destroy won't be updted!
-    --So do this here now:
-    FCOIS.resetInventoryAntiSettings(newState)
+        --If the inventory was shown at last and the mail panel was opened directly with shown inventory the settings for the anti-destroy won't be updted!
+        --So do this here now:
+        FCOIS.resetInventoryAntiSettings(newState)
     end)
 
     --======== GUILD RANKS ================================================================
     --Register a callback function for the guild ranks scene
     GUILD_RANKS_SCENE:RegisterCallback("StateChange", function(oldState, newState)
-    if settings.debug then FCOIS.debugMessage( "[GUILD RANKS SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        if settings.debug then FCOIS.debugMessage( "[GUILD RANKS SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
-    FCOIS.sceneCallbackHideContextMenu(oldState, newState)
+        FCOIS.sceneCallbackHideContextMenu(oldState, newState)
 
-    --If the inventory was shown at last and the mail panel was opened directly with shown inventory the settings for the anti-destroy won't be updted!
-    --So do this here now:
-    FCOIS.resetInventoryAntiSettings(newState)
+        --If the inventory was shown at last and the mail panel was opened directly with shown inventory the settings for the anti-destroy won't be updted!
+        --So do this here now:
+        FCOIS.resetInventoryAntiSettings(newState)
     end)
 
     --======== GUILD HERALDRY ================================================================
     --Register a callback function for the guild heraldry scene
     GUILD_HERALDRY_SCENE:RegisterCallback("StateChange", function(oldState, newState)
-    if settings.debug then FCOIS.debugMessage( "[GUILD HERALDRY SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        if settings.debug then FCOIS.debugMessage( "[GUILD HERALDRY SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
-    FCOIS.sceneCallbackHideContextMenu(oldState, newState)
+        FCOIS.sceneCallbackHideContextMenu(oldState, newState)
 
-    --If the inventory was shown at last and the mail panel was opened directly with shown inventory the settings for the anti-destroy won't be updted!
-    --So do this here now:
-    FCOIS.resetInventoryAntiSettings(newState)
+        --If the inventory was shown at last and the mail panel was opened directly with shown inventory the settings for the anti-destroy won't be updted!
+        --So do this here now:
+        FCOIS.resetInventoryAntiSettings(newState)
     end)
 
     --======== GUILD HISTORY ================================================================
     --Register a callback function for the guild history scene
     GUILD_HISTORY_SCENE:RegisterCallback("StateChange", function(oldState, newState)
-    if settings.debug then FCOIS.debugMessage( "[GUILD HISTORY SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        if settings.debug then FCOIS.debugMessage( "[GUILD HISTORY SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
-    FCOIS.sceneCallbackHideContextMenu(oldState, newState)
+        FCOIS.sceneCallbackHideContextMenu(oldState, newState)
 
-    --If the inventory was shown at last and the mail panel was opened directly with shown inventory the settings for the anti-destroy won't be updted!
-    --So do this here now:
-    FCOIS.resetInventoryAntiSettings(newState)
+        --If the inventory was shown at last and the mail panel was opened directly with shown inventory the settings for the anti-destroy won't be updted!
+        --So do this here now:
+        FCOIS.resetInventoryAntiSettings(newState)
     end)
 
     --======== GUILD CREATE ================================================================
     --Register a callback function for the guild create scene
     GUILD_CREATE_SCENE:RegisterCallback("StateChange", function(oldState, newState)
-    if settings.debug then FCOIS.debugMessage( "[GUILD CREATE SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        if settings.debug then FCOIS.debugMessage( "[GUILD CREATE SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
-    FCOIS.sceneCallbackHideContextMenu(oldState, newState)
+        FCOIS.sceneCallbackHideContextMenu(oldState, newState)
 
-    --If the inventory was shown at last and the mail panel was opened directly with shown inventory the settings for the anti-destroy won't be updted!
-    --So do this here now:
-    FCOIS.resetInventoryAntiSettings(newState)
+        --If the inventory was shown at last and the mail panel was opened directly with shown inventory the settings for the anti-destroy won't be updted!
+        --So do this here now:
+        FCOIS.resetInventoryAntiSettings(newState)
     end)
 
     --======== NOTIFICATIONS ================================================================
     --Register a callback function for the notifications scene
     NOTIFICATIONS_SCENE:RegisterCallback("StateChange", function(oldState, newState)
-    if settings.debug then FCOIS.debugMessage( "[NOTIFICATIONS SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        if settings.debug then FCOIS.debugMessage( "[NOTIFICATIONS SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
-    FCOIS.sceneCallbackHideContextMenu(oldState, newState)
+        FCOIS.sceneCallbackHideContextMenu(oldState, newState)
 
-    --If the inventory was shown at last and the mail panel was opened directly with shown inventory the settings for the anti-destroy won't be updted!
-    --So do this here now:
-    FCOIS.resetInventoryAntiSettings(newState)
+        --If the inventory was shown at last and the mail panel was opened directly with shown inventory the settings for the anti-destroy won't be updted!
+        --So do this here now:
+        FCOIS.resetInventoryAntiSettings(newState)
     end)
 
     --======== CAMPAIGN BROWSER ================================================================
     --Register a callback function for the campaign browser scene
     CAMPAIGN_BROWSER_SCENE:RegisterCallback("StateChange", function(oldState, newState)
-    if settings.debug then FCOIS.debugMessage( "[CAMPAIGN BROWSER SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        if settings.debug then FCOIS.debugMessage( "[CAMPAIGN BROWSER SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
-    FCOIS.sceneCallbackHideContextMenu(oldState, newState)
+        FCOIS.sceneCallbackHideContextMenu(oldState, newState)
 
-    --If the inventory was shown at last and the mail panel was opened directly with shown inventory the settings for the anti-destroy won't be updted!
-    --So do this here now:
-    FCOIS.resetInventoryAntiSettings(newState)
+        --If the inventory was shown at last and the mail panel was opened directly with shown inventory the settings for the anti-destroy won't be updted!
+        --So do this here now:
+        FCOIS.resetInventoryAntiSettings(newState)
     end)
 
     --======== CAMPAIGN OVERVIEW ================================================================
     --Register a callback function for the campaign overview scene
     CAMPAIGN_OVERVIEW_SCENE:RegisterCallback("StateChange", function(oldState, newState)
-    if settings.debug then FCOIS.debugMessage( "[CAMPAIGN OVERVIEW SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        if settings.debug then FCOIS.debugMessage( "[CAMPAIGN OVERVIEW SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
-    FCOIS.sceneCallbackHideContextMenu(oldState, newState)
+        FCOIS.sceneCallbackHideContextMenu(oldState, newState)
 
-    --If the inventory was shown at last and the mail panel was opened directly with shown inventory the settings for the anti-destroy won't be updted!
-    --So do this here now:
-    FCOIS.resetInventoryAntiSettings(newState)
+        --If the inventory was shown at last and the mail panel was opened directly with shown inventory the settings for the anti-destroy won't be updted!
+        --So do this here now:
+        FCOIS.resetInventoryAntiSettings(newState)
     end)
 
     --======== STATS ================================================================
     --Register a callback function for the stats scene
     STATS_SCENE:RegisterCallback("StateChange", function(oldState, newState)
-    if settings.debug then FCOIS.debugMessage( "[STATS SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        if settings.debug then FCOIS.debugMessage( "[STATS SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
-    FCOIS.sceneCallbackHideContextMenu(oldState, newState)
+        FCOIS.sceneCallbackHideContextMenu(oldState, newState)
     end)
 
     --======== SIEGE BAR ================================================================
     --Register a callback function for the siege bar scene
     SIEGE_BAR_SCENE:RegisterCallback("StateChange", function(oldState, newState)
-    if settings.debug then FCOIS.debugMessage( "[SIEGE BAR SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        if settings.debug then FCOIS.debugMessage( "[SIEGE BAR SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
-    FCOIS.sceneCallbackHideContextMenu(oldState, newState)
+        FCOIS.sceneCallbackHideContextMenu(oldState, newState)
 
-    --If the inventory was shown at last and the mail panel was opened directly with shown inventory the settings for the anti-destroy won't be updted!
-    --So do this here now:
-    FCOIS.resetInventoryAntiSettings(newState)
+        --If the inventory was shown at last and the mail panel was opened directly with shown inventory the settings for the anti-destroy won't be updted!
+        --So do this here now:
+        FCOIS.resetInventoryAntiSettings(newState)
     end)
 
     --======== CHAMPION PERKS ===========================================================
     CHAMPION_PERKS_SCENE:RegisterCallback("StateChange", function(oldState, newState)
-    if settings.debug then FCOIS.debugMessage( "[CHAMPION PERKS SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        if settings.debug then FCOIS.debugMessage( "[CHAMPION PERKS SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
-    FCOIS.sceneCallbackHideContextMenu(oldState, newState)
+        FCOIS.sceneCallbackHideContextMenu(oldState, newState)
 
-    --If the inventory was shown at last and the mail panel was opened directly with shown inventory the settings for the anti-destroy won't be updted!
-    --So do this here now:
-    FCOIS.resetInventoryAntiSettings(newState)
+        --If the inventory was shown at last and the mail panel was opened directly with shown inventory the settings for the anti-destroy won't be updted!
+        --So do this here now:
+        FCOIS.resetInventoryAntiSettings(newState)
     end)
 
     --======== RETRAIT ================================================================
     --Register a callback function for the siege bar scene
     ZO_RETRAIT_STATION_KEYBOARD.interactScene:RegisterCallback("StateChange", function(oldState, newState)
-    if settings.debug then FCOIS.debugMessage( "[RETRAIT SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
-    FCOIS.sceneCallbackHideContextMenu(oldState, newState)
-    if     newState == SCENE_SHOWING then
-    --Check if craftbag is active and change filter panel and parent panel accordingly
-    FCOIS.gFilterWhere, FCOIS.gFilterWhereParent = FCOIS.checkCraftbagOrOtherActivePanel(LF_RETRAIT)
+        if settings.debug then FCOIS.debugMessage( "[RETRAIT SCENE] State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        FCOIS.sceneCallbackHideContextMenu(oldState, newState)
+        if     newState == SCENE_SHOWING then
+            --Check if craftbag is active and change filter panel and parent panel accordingly
+            FCOIS.gFilterWhere, FCOIS.gFilterWhereParent = FCOIS.checkCraftbagOrOtherActivePanel(LF_RETRAIT)
 
-    --Check if another filter panel was already opened and we are coming form there before the CLOSE EVENT function was called
-    --if FCOIS.preventerVars.gActiveFilterPanel == true then
-    --Set the "No Close Event" flag so the called close event won't override gFilterWhere and update the filter button colors and callback handlers
-    --    FCOIS.preventerVars.gNoCloseEvent = true
-    --end
+            --Check if another filter panel was already opened and we are coming form there before the CLOSE EVENT function was called
+            --if FCOIS.preventerVars.gActiveFilterPanel == true then
+            --Set the "No Close Event" flag so the called close event won't override gFilterWhere and update the filter button colors and callback handlers
+            --    FCOIS.preventerVars.gNoCloseEvent = true
+            --end
 
-    --Change the button color of the context menu invoker
-    FCOIS.changeContextMenuInvokerButtonColorByPanelId(FCOIS.gFilterWhere)
-    --Check the filter buttons and create them if they are not there. Update the inventory afterwards too
-    FCOIS.CheckFilterButtonsAtPanel(true, LF_RETRAIT)
+            --Change the button color of the context menu invoker
+            FCOIS.changeContextMenuInvokerButtonColorByPanelId(FCOIS.gFilterWhere)
+            --Check the filter buttons and create them if they are not there. Update the inventory afterwards too
+            FCOIS.CheckFilterButtonsAtPanel(true, LF_RETRAIT)
 
-    elseif newState == SCENE_HIDING then
-    --Update the current filter panel ID to "Retrait"
-    FCOIS.gFilterWhere = LF_RETRAIT
+        elseif newState == SCENE_HIDING then
+            --Update the current filter panel ID to "Retrait"
+            FCOIS.gFilterWhere = LF_RETRAIT
 
-    --Hide the context menu at mail panel
-    FCOIS.hideContextMenu(FCOIS.gFilterWhere)
+            --Hide the context menu at mail panel
+            FCOIS.hideContextMenu(FCOIS.gFilterWhere)
 
-    --When the mail send panel is hidden
-    elseif newState == SCENE_HIDDEN then
-    --Update the inventory filter buttons
-    FCOIS.updateFilterButtonsInInv(-1)
-    --Update the 4 inventory button's color
-    FCOIS.UpdateButtonColorsAndTextures(-1, nil, -1, LF_INVENTORY)
+            --When the mail send panel is hidden
+        elseif newState == SCENE_HIDDEN then
+            --Update the inventory filter buttons
+            FCOIS.updateFilterButtonsInInv(-1)
+            --Update the 4 inventory button's color
+            FCOIS.UpdateButtonColorsAndTextures(-1, nil, -1, LF_INVENTORY)
 
-    FCOIS.preventerVars.gActiveFilterPanel = false
-    FCOIS.preventerVars.gNoCloseEvent = false
+            FCOIS.preventerVars.gActiveFilterPanel = false
+            FCOIS.preventerVars.gNoCloseEvent = false
 
-    --Change the button color of the context menu invoker
-    FCOIS.changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
-    --Check, if the Anti-* checks need to be enabled again
-    FCOIS.autoReenableAntiSettingsCheck("RETRAIT")
-    end
+            --Change the button color of the context menu invoker
+            FCOIS.changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
+            --Check, if the Anti-* checks need to be enabled again
+            FCOIS.autoReenableAntiSettingsCheck("RETRAIT")
+        end
     end)
 
 
     --======== Extraction / Refinement / Deconstruction / Improvement functions =======================
     --PreHook the enchanting extract function to check if no marked item is currently in the extraction slot
     ZO_PreHook("ExtractEnchantingItem", function()
-    return FCOIS.craftingPrevention.CheckPreventCrafting()
+        return FCOIS.craftingPrevention.CheckPreventCrafting()
     end)
     --PreHook the enchanting create function to check if no marked item is currently in the creation slot
     ZO_PreHook("CraftEnchantingItem", function()
-    return FCOIS.craftingPrevention.CheckPreventCrafting()
+        return FCOIS.craftingPrevention.CheckPreventCrafting()
     end)
     --PreHook the crafting refine/extract function to check if no marked item is currently in the extraction slot
     ZO_PreHook("ExtractOrRefineSmithingItem", function()
-    return FCOIS.craftingPrevention.CheckPreventCrafting()
+        return FCOIS.craftingPrevention.CheckPreventCrafting()
     end)
     --PreHook the crafting improvement function to check if no marked item is currently in the improvement slot
     ZO_PreHook(SMITHING.improvementPanel, "Improve", function()
-    return FCOIS.craftingPrevention.CheckPreventCrafting()
+        return FCOIS.craftingPrevention.CheckPreventCrafting()
+    end)
+
+    --======== Stack split dialog - Callback function for button 1 (Yes) ===============================
+    --PreHook stack split dialog YES button function to set the preventer variable to disable the item protection/anti-checks
+    ZO_PreHook("ZO_Dialogs_ShowDialog", function(dialogName, inventorySlotControl)
+        --d("[FCOIS]ZO_Dialogs_ShowDialog, dialogName: " ..tostring(dialogName) .. ", splitItemStackDialogButtonCallbacks: " .. tostring(FCOIS.preventerVars.splitItemStackDialogButtonCallbacks))
+        if FCOIS.preventerVars.splitItemStackDialogButtonCallbacks then return false end
+        zo_callLater(function()
+            if ZO_Dialogs_IsShowing(ctrlVars.DIALOG_SPLIT_STACK_NAME) then
+                local dialog = ZO_Dialogs_FindDialog(dialogName)
+                if dialog then
+                    local NUM_DIALOG_BUTTONS = dialog.numButtons or 2 --YES and NO
+                    for i = 1, NUM_DIALOG_BUTTONS do
+                        local btn = dialog.info.buttons[i]
+                        if btn ~= nil and btn.callback ~= nil then
+                            if btn.text and btn.text == SI_INVENTORY_SPLIT_STACK then
+                                ZO_PreHook(btn, "callback", function()
+                                    --PreHook the callback function for the YES button
+                                    FCOIS.preventerVars.splitItemStackDialogActive = true
+                                end)
+                                FCOIS.preventerVars.splitItemStackDialogButtonCallbacks = true
+                            else
+                                ZO_PreHook(btn, "callback", function()
+                                    --PreHook the callback function for the NO button
+                                    FCOIS.preventerVars.splitItemStackDialogActive = false
+                                end)
+                            end
+                        end
+                    end
+                end
+            end
+        end, 50)
+    end)
+    --This functiuon will be called from the stack split dialog if the dialog button YES is pressed
+    ZO_PreHook("ZO_InventoryLandingArea_DropCursorInBag", function(bagId)
+        --d("[FCOIS]ZO_InventoryLandingArea_DropCursorInBag, splitItemStackDialogActive: " ..tostring(FCOIS.preventerVars.splitItemStackDialogActive))
+        --Split stack dialog was active and clicked/used the keybind for "YES"
+        FCOIS.preventerVars.splitItemStackDialogActive = true
+    end)
+
+    --======== General dialog hooks ============================================================
+    local resetZOsDialogVariables = FCOIS.resetZOsDialogVariables -- See file src/FCOIS_Dialogs.lua
+    --Is the dialog close keybind pressed?
+    ZO_PreHook("ZO_Dialogs_CloseKeybindPressed", function()
+        resetZOsDialogVariables()
+    end)
+    --Is the dialog close keybind pressed?
+    ZO_PreHook("ZO_Dialogs_ReleaseAllDialogsOfName", function(dialogName)
+        if dialogName == ctrlVars.DIALOG_SPLIT_STACK_NAME then
+            resetZOsDialogVariables()
+        end
+    end)
+
+    --======== Hooks at the inventory and crafting filter functions ==================================
+    --Player Inventory
+    --ZO_PreHook(PLAYER_INVENTORY, "ChangeFilter", function() d("[FCOIS]Player_Inventory ChangeFilter") FCOIS.updateFilteredItemCountThrottled(filterPanelId, delay) end)
+    --Smithing
+    ZO_PreHook(SMITHING.refinementPanel.inventory, "ChangeFilter", function() FCOIS.updateFilteredItemCountThrottled(nil, 50, "Smithing refine - ChangeFilter") end)
+    ZO_PreHook(SMITHING.deconstructionPanel.inventory, "ChangeFilter", function()  FCOIS.updateFilteredItemCountThrottled(nil, 50, "Smithing decon - ChangeFilter") end)
+    ZO_PreHook(SMITHING.improvementPanel.inventory, "ChangeFilter", function() FCOIS.updateFilteredItemCountThrottled(nil, 50, "Smithing improve - ChangeFilter") end)
+    --Retrait
+    ZO_PreHook(ZO_RETRAIT_STATION_KEYBOARD.retraitPanel.inventory, "ChangeFilter", function() FCOIS.updateFilteredItemCountThrottled(nil, 50, "Retrait - ChangeFilter") end)
+    --Enchanting
+    ZO_PreHook(ENCHANTING.inventory, "ChangeFilter", function()  FCOIS.updateFilteredItemCountThrottled(nil, 50, "Enchanting - ChangeFilter") end)
+    --PreHook the QuickSlotWindow change filter function
+    local function ChangeFilterQuickSlot(self, filterData)
+        FCOIS.updateFilteredItemCountThrottled(LF_QUICKSLOT, 50, "Quickslots - ChangeFilter")
+    end
+    ZO_PreHook(QUICKSLOT_WINDOW, "ChangeFilter", ChangeFilterQuickSlot)
+    --Update the count of items filtered if text search boxes are used (ZOs or Votans Search Box)
+    ZO_PreHook(ZO_InventoryManager, "UpdateEmptyBagLabel", function(ctrl, inventoryType, isEmptyList)
+        local inventories = ctrlVars.inventories
+        if not inventories then return false end
+        --Check if the currently active focus in inside a search box
+        local inventory = inventories[inventoryType]
+        local searchBox
+        --Normal inventory update without searchBox changed
+        local delay = 50
+        if inventory then
+            local goOn = false
+            local searchBoxIsEmpty = false
+            searchBox = inventory.searchBox
+            if searchBox and searchBox.GetText then
+                local searchBoxText = searchBox:GetText()
+                searchBoxIsEmpty = (searchBoxText == "") or false
+                if not searchBoxIsEmpty then
+                    --Check if the contents of the searchbox are not only spaces
+                    local searchBoxTextWithoutSpaces = string.match(searchBoxText, "%S") -- %S = NOT a space
+                    if searchBoxTextWithoutSpaces and searchBoxTextWithoutSpaces ~= "" then
+                        goOn = true
+                    else
+                        searchBoxIsEmpty = true
+                    end
+                end
+            end
+            --SearchBox exists and is not empty
+            if searchBox and not searchBoxIsEmpty then
+                --Delay for search box updated
+                delay = 250
+                goOn = true
+            elseif not searchBox or (searchBox and searchBoxIsEmpty) then
+                --Delay for normal label update
+                delay = 50
+                goOn = true
+            end
+            if not goOn then return false end
+        end
+        --d("[FCOIS]UpdateEmptyBagLabel, isEmptyList: " ..tostring(isEmptyList))
+        --Update the count of filtered/shown items before the sortHeader "name" text
+        local filterPanelId  = FCOIS.gFilterWhere
+        --Special checks for the filterPanelId, for e.g. "QUEST items"
+        if inventoryType == INVENTORY_QUEST_ITEM then
+            filterPanelId = "INVENTORY_QUEST_ITEM"
+        end
+        FCOIS.updateFilteredItemCountThrottled(filterPanelId, delay, "ZO_InventoryManager - UpdateEmptyBagLabel")
+    end)
+    --Update inventory slot labels
+    ZO_PreHook("UpdateInventorySlots", function()
+        --d("[FCOIS]UpdateInventorySlots")
+        --This variable is set within file src/FCOIS_FilterButtons.lua, function FCOIS.updateFilteredItemCount if the addon AdvancedFilters is used,
+        --and the AF itemCount is enabled (next to the inventory free slots labels), and FCOIS is calling the function AF.util.updateInventoryInfoBarCountLabel.
+        -->Otherwise we would create an endless loop here which will be AF.util.updateInventoryInfoBarCountLabel -> UpdateInventorySlots ->
+        --PreHook in FCOIS to function UpdateInventorySlots -> FCOIS.updateFilteredItemCountThrottled -> FCOIS.updateFilteredItemCount -> AF.util.updateInventoryInfoBarCountLabel ...
+        if not FCOIS.preventerVars.dontUpdateFilteredItemCount then
+            FCOIS.updateFilteredItemCountThrottled(nil, 50, "UpdateInventorySlots")
+        end
     end)
 
     --======== TEST HOOKS =============================================================================

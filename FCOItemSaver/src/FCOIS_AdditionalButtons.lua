@@ -16,7 +16,7 @@ local function AddButton(parent, name, callbackFunction, onMouseUpCallbackFuncti
             and (textureNormal == nil or text == nil) then
         return nil
     end
-    onMouseUpCallbackFunctionMouseButton = onMouseUpCallbackFunctionMouseButton or 1
+    onMouseUpCallbackFunctionMouseButton = onMouseUpCallbackFunctionMouseButton or MOUSE_BUTTON_INDEX_LEFT
 
     local button
     --Does the button already exist?

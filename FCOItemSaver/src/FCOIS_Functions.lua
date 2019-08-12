@@ -7,6 +7,64 @@ if not FCOIS.libsLoadedProperly then return end
 local ctrlVars = FCOIS.ZOControlVars
 
 --==========================================================================================================================================
+--                                          FCOIS - Base & helper functions
+--==========================================================================================================================================
+--A throttle updater function to run updates not too ofter
+function FCOIS.ThrottledUpdate(callbackName, timer, callback, ...)
+--d("[FCOIS]ThrottledUpdate, callbackName: " .. tostring(callbackName))
+    local args = {...}
+    local function Update()
+        EVENT_MANAGER:UnregisterForUpdate(callbackName)
+        callback(unpack(args))
+    end
+    EVENT_MANAGER:UnregisterForUpdate(callbackName)
+    EVENT_MANAGER:RegisterForUpdate(callbackName, timer, Update)
+end
+
+
+--Set the variables for each panel where the number of filtered items can be found for the current inventory
+function FCOIS.getNumberOfFilteredItemsForEachPanel()
+    local numFilterdItemsInv = ZO_PlayerInventoryList.data
+    FCOIS.numberOfFilteredItems[LF_INVENTORY]              = numFilterdItemsInv
+    --Same like inventory
+    FCOIS.numberOfFilteredItems[LF_MAIL_SEND]              = numFilterdItemsInv
+    FCOIS.numberOfFilteredItems[LF_TRADE]                  = numFilterdItemsInv
+    FCOIS.numberOfFilteredItems[LF_GUILDSTORE_SELL]        = numFilterdItemsInv
+    FCOIS.numberOfFilteredItems[LF_BANK_DEPOSIT]           = numFilterdItemsInv
+    FCOIS.numberOfFilteredItems[LF_GUILDBANK_DEPOSIT]      = numFilterdItemsInv
+    FCOIS.numberOfFilteredItems[LF_VENDOR_BUY]             = 0 -- TODO: Add as filter panel gets supported
+    FCOIS.numberOfFilteredItems[LF_VENDOR_SELL]            = numFilterdItemsInv
+    FCOIS.numberOfFilteredItems[LF_VENDOR_BUYBACK]         = 0 -- TODO: Add as filter panel gets supported
+    FCOIS.numberOfFilteredItems[LF_VENDOR_REPAIR]          = 0 -- TODO: Add as filter panel gets supported
+    FCOIS.numberOfFilteredItems[LF_FENCE_SELL]             = numFilterdItemsInv
+    FCOIS.numberOfFilteredItems[LF_FENCE_LAUNDER]          = numFilterdItemsInv
+    --Others
+    FCOIS.numberOfFilteredItems[LF_BANK_WITHDRAW]          = ZO_PlayerBankBackpack.data
+    FCOIS.numberOfFilteredItems[LF_GUILDBANK_WITHDRAW]     = ZO_GuildBankBackpack.data
+    FCOIS.numberOfFilteredItems[LF_SMITHING_REFINE]        = ZO_SmithingTopLevelRefinementPanelInventoryBackpack.data
+    FCOIS.numberOfFilteredItems[LF_SMITHING_DECONSTRUCT]   = ZO_SmithingTopLevelDeconstructionPanelInventoryBackpack.data
+    FCOIS.numberOfFilteredItems[LF_SMITHING_IMPROVEMENT]   = ZO_SmithingTopLevelImprovementPanelInventoryBackpack.data
+    FCOIS.numberOfFilteredItems[LF_SMITHING_RESEARCH]      = 0 -- TODO: Add as filter panel gets supported
+    FCOIS.numberOfFilteredItems[LF_SMITHING_RESEARCH_DIALOG] = 0 -- TODO: Add as filter panel gets supported
+    FCOIS.numberOfFilteredItems[LF_ALCHEMY_CREATION]       = ZO_AlchemyTopLevelInventoryBackpack.data
+    FCOIS.numberOfFilteredItems[LF_ENCHANTING_CREATION]    = ZO_EnchantingTopLevelInventoryBackpack.data
+    FCOIS.numberOfFilteredItems[LF_ENCHANTING_EXTRACTION]  = FCOIS.numberOfFilteredItems[LF_ENCHANTING_CREATION]
+    FCOIS.numberOfFilteredItems[LF_CRAFTBAG]               = ZO_CraftBagList.data
+    FCOIS.numberOfFilteredItems[LF_RETRAIT]                = ZO_RetraitStation_KeyboardTopLevelRetraitPanelInventoryBackpack.data
+    FCOIS.numberOfFilteredItems[LF_HOUSE_BANK_WITHDRAW]    = ZO_HouseBankBackpack.data
+    FCOIS.numberOfFilteredItems[LF_JEWELRY_REFINE]         = FCOIS.numberOfFilteredItems[LF_SMITHING_REFINE]
+    FCOIS.numberOfFilteredItems[LF_JEWELRY_DECONSTRUCT]    = FCOIS.numberOfFilteredItems[LF_SMITHING_DECONSTRUCT]
+    FCOIS.numberOfFilteredItems[LF_JEWELRY_IMPROVEMENT]    = FCOIS.numberOfFilteredItems[LF_SMITHING_IMPROVEMENT]
+    FCOIS.numberOfFilteredItems[LF_JEWELRY_RESEARCH]       = 0 -- TODO: Add as filter panel gets supported
+    FCOIS.numberOfFilteredItems[LF_JEWELRY_RESEARCH_DIALOG]  = 0 -- TODO: Add as filter panel gets supported
+    FCOIS.numberOfFilteredItems[LF_QUICKSLOT]              = QUICKSLOT_WINDOW.list.data
+    --Special numbers for e.g. quest items in inventory
+    FCOIS.numberOfFilteredItems["INVENTORY_QUEST_ITEM"]    = PLAYER_INVENTORY.inventories[INVENTORY_QUEST_ITEM].listView.data
+
+end
+
+
+--==========================================================================================================================================
 --                                          FCOIS - Is, Get, Set functions
 --==========================================================================================================================================
 
@@ -17,6 +75,12 @@ local ctrlVars = FCOIS.ZOControlVars
 function FCOIS.getItemLinkFromItemId(itemId)
     return string.format("|H1:item:%d:%d:50:0:0:0:0:0:0:0:0:0:0:0:0:%d:%d:0:0:%d:0|h|h", itemId, 0, ITEMSTYLE_NONE, 0, 10000)
 end
+
+--Function to get the itemId from an itemLink
+function FCOIS.getItemIdFromItemLink(itemLink)
+    return GetItemLinkItemId(itemLink)
+end
+
 
 --Check if the given addonName had enabled the temporary uniqueId checks
 local function checkIfAddonNameHasTemporarilyEnabledUniqueIds(addonName)
@@ -279,75 +343,112 @@ function FCOIS.checkRepetivelyIfControlExists(controlName, callbackFunc, stepToc
     end
 end
 
---Get the bagid and slotIndex from the item below the mouse cursor
+--Get the bagid and slotIndex from the item below the mouse cursor.
+--And get the control hovered over, the controlType (e.g. Inventory, CraftBag, .. or other addon's UI like Inventory Insigh from Ashes row)
+-->Returns bagId, slotIndex, controlBelowMouse, controlTypeBelowMouse
 function FCOIS.GetBagAndSlotFromControlUnderMouse()
+--d("[FCOIS]GetBagAndSlotFromControlUnderMouse")
+    --The control type below the mouse
+    local controlTypeBelowMouse = false
     --Get the control below the mouse cursor
-    local moc = WINDOW_MANAGER:GetMouseOverControl()
-    if moc == nil then return end
-    --d("[FCOIS.GetBagAndSlotFromControlUnderMouse] " .. moc:GetName())
+    local mouseOverControl = WINDOW_MANAGER:GetMouseOverControl()
+    if mouseOverControl == nil then return end
+--d("[FCOIS.GetBagAndSlotFromControlUnderMouse] " .. mouseOverControl:GetName())
     local bagId
     local slotIndex
     local itemLink
     local itemInstanceOrUniqueIdIIfA
-    --if it's a backpack row or child of one -> PRE API 1000015
-    if moc:GetName():find("^ZO_%a+Backpack%dRow%d%d*") then
-        if moc:GetName():find("^ZO_%a+Backpack%dRow%d%d*$") then
-            bagId, slotIndex = FCOIS.MyGetItemDetails(moc)
-        else
-            moc = moc:GetParent()
-            if moc:GetName():find("^ZO_%a+Backpack%dRow%d%d*$") then
-                bagId, slotIndex = FCOIS.MyGetItemDetails(moc)
+    FCOIS.IIfAmouseOvered = nil
+    local inventoryRowPatterns = FCOIS.checkVars.inventoryRowPatterns
+    if inventoryRowPatterns == nil then return end
+    --For each inventory row pattern check if the current control mouseOverControl's name matches this pattern
+    local mouseOverControlName = mouseOverControl:GetName()
+    local otherAddons = FCOIS.otherAddons
+    local IIFAitemsListEntryPrePattern = otherAddons.IIFAitemsListEntryPrePattern
+    local IIfAInvRowPatternToCheck = "^" .. IIFAitemsListEntryPrePattern .. "*"
+    for _, patternToCheck in ipairs(inventoryRowPatterns) do
+        if mouseOverControlName:find(patternToCheck) then
+            if patternToCheck ~= IIfAInvRowPatternToCheck then
+                bagId, slotIndex = FCOIS.MyGetItemDetails(mouseOverControl)
+            else
+                --Special treatment for the addon InventoryInsightFromAshes
+                controlTypeBelowMouse = IIFAitemsListEntryPrePattern
+                itemLink, itemInstanceOrUniqueIdIIfA, bagId, slotIndex = FCOIS.checkAndGetIIfAData(mouseOverControl, mouseOverControl:GetParent())
+                if bagId == nil or slotIndex == nil and itemInstanceOrUniqueIdIIfA ~= nil then
+                    FCOIS.IIfAmouseOvered = {}
+                    FCOIS.IIfAmouseOvered.itemLink = itemLink
+                    FCOIS.IIfAmouseOvered.itemInstanceOrUniqueId = itemInstanceOrUniqueIdIIfA
+                end
             end
+            break --bagId and slotIndex were determined
         end
-    --if it's a backpack row or child of one -> Since API 1000015
-    elseif moc:GetName():find("^ZO_%a+InventoryList%dRow%d%d*") then
-        if moc:GetName():find("^ZO_%a+InventoryList%dRow%d%d*$") then
-            bagId, slotIndex = FCOIS.MyGetItemDetails(moc)
-        else
-            moc = moc:GetParent()
-            if moc:GetName():find("^ZO_%a+InventoryList%dRow%d%d*$") then
-                bagId, slotIndex = FCOIS.MyGetItemDetails(moc)
-            end
-        end
-    --CRAFTBAG: if it's a backpack row or child of one -> Since API 1000015
-    elseif moc:GetName():find("^ZO_CraftBagList%dRow%d%d*") then
-        if moc:GetName():find("^ZO_CraftBagList%dRow%d%d*$") then
-            bagId, slotIndex = FCOIS.MyGetItemDetails(moc)
-        else
-            moc = moc:GetParent()
-            if moc:GetName():find("^ZO_CraftBagList%dRow%d%d*$") then
-                bagId, slotIndex = FCOIS.MyGetItemDetails(moc)
-            end
-        end
-    --if it's a RETRAIT station row or child of one -> Since API 1000015
-    --ZO_RetraitStation_KeyboardTopLevelRetraitPanelInventoryBackpack1Row1
-    elseif moc:GetName():find("^ZO_RetraitStation_%a+RetraitPanelInventoryBackpack%dRow%d%d*") then
-        if moc:GetName():find("^ZO_RetraitStation_%a+RetraitPanelInventoryBackpack%dRow%d%d*$") then
-            bagId, slotIndex = FCOIS.MyGetItemDetails(moc)
-        else
-            moc = moc:GetParent()
-            if moc:GetName():find("^ZO_RetraitStation_%a+RetraitPanelInventoryBackpack%dRow%d%d*$") then
-                bagId, slotIndex = FCOIS.MyGetItemDetails(moc)
-            end
-        end
-    --Character
-    elseif moc:GetName():find("^ZO_CharacterEquipmentSlots.+$") then
-        bagId, slotIndex = FCOIS.MyGetItemDetails(moc)
-    --Quickslot
-    elseif moc:GetName():find("^ZO_QuickSlotList%dRow%d%d*") then
-        bagId, slotIndex = FCOIS.MyGetItemDetails(moc)
-    --Vendor rebuy
-    elseif moc:GetName():find("^ZO_RepairWindowList%dRow%d%d*") then
-        bagId, slotIndex = FCOIS.MyGetItemDetails(moc)
-    --IIfA support
-    elseif moc:GetName():find("^" .. FCOIS.otherAddons.IIFAitemsListEntryPrePattern .. "*") then
-        itemLink, itemInstanceOrUniqueIdIIfA, bagId, slotIndex = FCOIS.checkAndGetIIfAData(moc, moc:GetParent())
-        --Todo: 2019-03-11 IIfA UI: Set FCOIS marker icons by keybind for items without bagId and slotIndex (non-logged in chars!), by help of the itemLink and itemInstanceOrUniqueIdIIfA
     end
+--[[
+    --if it's a backpack row or child of one -> PRE API 1000015
+    if mouseOverControl:GetName():find("^ZO_%a+Backpack%dRow%d%d*") then
+        if mouseOverControl:GetName():find("^ZO_%a+Backpack%dRow%d%d*$") then
+            bagId, slotIndex = FCOIS.MyGetItemDetails(mouseOverControl)
+        else
+            mouseOverControl = mouseOverControl:GetParent()
+            if mouseOverControl:GetName():find("^ZO_%a+Backpack%dRow%d%d*$") then
+                bagId, slotIndex = FCOIS.MyGetItemDetails(mouseOverControl)
+            end
+        end
+        --if it's a backpack row or child of one -> Since API 1000015
+    elseif mouseOverControl:GetName():find("^ZO_%a+InventoryList%dRow%d%d*") then
+        if mouseOverControl:GetName():find("^ZO_%a+InventoryList%dRow%d%d*$") then
+            bagId, slotIndex = FCOIS.MyGetItemDetails(mouseOverControl)
+        else
+            mouseOverControl = mouseOverControl:GetParent()
+            if mouseOverControl:GetName():find("^ZO_%a+InventoryList%dRow%d%d*$") then
+                bagId, slotIndex = FCOIS.MyGetItemDetails(mouseOverControl)
+            end
+        end
+        --CRAFTBAG: if it's a backpack row or child of one -> Since API 1000015
+    elseif mouseOverControl:GetName():find("^ZO_CraftBagList%dRow%d%d*") then
+        if mouseOverControl:GetName():find("^ZO_CraftBagList%dRow%d%d*$") then
+            bagId, slotIndex = FCOIS.MyGetItemDetails(mouseOverControl)
+        else
+            mouseOverControl = mouseOverControl:GetParent()
+            if mouseOverControl:GetName():find("^ZO_CraftBagList%dRow%d%d*$") then
+                bagId, slotIndex = FCOIS.MyGetItemDetails(mouseOverControl)
+            end
+        end
+        --if it's a RETRAIT station row or child of one -> Since API 1000015
+        --ZO_RetraitStation_KeyboardTopLevelRetraitPanelInventoryBackpack1Row1
+    elseif mouseOverControl:GetName():find("^ZO_RetraitStation_%a+RetraitPanelInventoryBackpack%dRow%d%d*") then
+        if mouseOverControl:GetName():find("^ZO_RetraitStation_%a+RetraitPanelInventoryBackpack%dRow%d%d*$") then
+            bagId, slotIndex = FCOIS.MyGetItemDetails(mouseOverControl)
+        else
+            mouseOverControl = mouseOverControl:GetParent()
+            if mouseOverControl:GetName():find("^ZO_RetraitStation_%a+RetraitPanelInventoryBackpack%dRow%d%d*$") then
+                bagId, slotIndex = FCOIS.MyGetItemDetails(mouseOverControl)
+            end
+        end
+        --Character
+    elseif mouseOverControl:GetName():find("^ZO_CharacterEquipmentSlots.+$") then
+        bagId, slotIndex = FCOIS.MyGetItemDetails(mouseOverControl)
+        --Quickslot
+    elseif mouseOverControl:GetName():find("^ZO_QuickSlotList%dRow%d%d*") then
+        bagId, slotIndex = FCOIS.MyGetItemDetails(mouseOverControl)
+        --Vendor rebuy
+    elseif mouseOverControl:GetName():find("^ZO_RepairWindowList%dRow%d%d*") then
+        bagId, slotIndex = FCOIS.MyGetItemDetails(mouseOverControl)
+        --IIfA support
+    elseif mouseOverControl:GetName():find("^" .. FCOIS.otherAddons.IIFAitemsListEntryPrePattern .. "*") then
+        controlTypeBelowMouse = FCOIS.otherAddons.IIFAitemsListEntryPrePattern
+        itemLink, itemInstanceOrUniqueIdIIfA, bagId, slotIndex = FCOIS.checkAndGetIIfAData(mouseOverControl, mouseOverControl:GetParent())
+        if bagId == nil or slotIndex == nil and itemInstanceOrUniqueIdIIfA ~= nil then
+            FCOIS.IIfAmouseOvered = {}
+            FCOIS.IIfAmouseOvered.itemLink = itemLink
+            FCOIS.IIfAmouseOvered.itemInstanceOrUniqueId = itemInstanceOrUniqueIdIIfA
+        end
+    end
+]]
     if bagId ~= nil and slotIndex ~= nil then
-        return bagId, slotIndex
+        return bagId, slotIndex, mouseOverControl, controlTypeBelowMouse
     else
-        return false
+        return false, nil, mouseOverControl, controlTypeBelowMouse
     end
 end
 
@@ -1082,6 +1183,18 @@ end
 --======================================================================================================================
 -- Get functions
 --======================================================================================================================
+--Get the effective level of a unitTag and check if it's above or equals a specified "needed level".
+--Returns boolean true if level is above or equal the parameter neededLevel
+--Returns boolean false if level is below the parameter neededLevel
+function FCOIS.checkNeededLevel(unitTag, neededLevel)
+    if unitTag == nil or neededLevel == nil or type(neededLevel) ~= "number" then return false end
+    local gotNeededLevel = false
+    local charLevel = GetUnitLevel(unitTag)
+    if not charLevel then return false end
+    gotNeededLevel = (charLevel >= neededLevel) or false
+    return gotNeededLevel
+end
+
 --Get the type of the vendor used currently.
 -- "Normal"     = NPC vendor
 -- "Nuzhimeh"   = The mobile vendor you can buy in the crown store, called Nuzhimeh
@@ -1490,7 +1603,7 @@ function FCOIS.jumpToOwnHouse(backupType, withDetails, apiVersion, doClearBackup
     -->collectibleIndex (e.g. 5)
     --The list of houses in the collections. 1st row should contain the bought ones, 2nd row the locked ones.
     --If you do not own any the 1st row is the locked ones!
-    --Only way to distinguish them is by help of a text: Freigeschaltet/Nicht freigeschaltet
+    --Only way to distinguish them is by help of a text: Unlocked/Locked (German: Freigeschaltet/Nicht freigeschaltet)
     --which is available at: FCOIS.ZOControlVars.housingBookNavigation.rootNode.children[1].data (or via function FCOIS.ZOControlVars.housingBookNavigation.rootNode.children[1]:GetData()) = "Freigeschaltet" (unlocked) / "Nicht freigeschaltet" (locked)
     local housesListInCollections = FCOIS.ZOControlVars.housingBookNavigation.rootNode.children[1]
     if housesListInCollections ~= nil then
@@ -1765,24 +1878,76 @@ function FCOIS.buildIconText(text, iconId, iconRight, noColor)
 end
 
 -- =====================================================================================================================
---  Logged in functions
+--  Character functions
 -- =====================================================================================================================
 --Get the currently logged in character's unique ID
 function FCOIS.getCurrentlyLoggedInCharUniqueId()
---[[
-    local loggedInCharUniqueId = 0
-    local loggedInName = GetUnitName("player")
+    --[[
+        local loggedInCharUniqueId = 0
+        local loggedInName = GetUnitName("player")
+        --Check all the characters of the account
+        for i = 1, GetNumCharacters() do
+            local name, _, _, _, _, _, characterId = GetCharacterInfo(i)
+            local charName = zo_strformat(SI_UNIT_NAME, name)
+            --If the current logged in character was found
+            if loggedInName == charName or loggedInName == name then
+                loggedInCharUniqueId = characterId
+                break -- exit the loop
+            end
+        end
+        return tostring(loggedInCharUniqueId)
+        ]]
+    return GetCurrentCharacterId()
+end
+
+--Get the currently logged in account's characters as table, with the name as key and the characterId as value,
+--or the characterId as key and the character name as key (depending in boolean parameter keyIsCharName)
+function FCOIS.getCharactersOfAccount(keyIsCharName)
+    keyIsCharName = keyIsCharName or false
+    local charactersOfAccount
     --Check all the characters of the account
     for i = 1, GetNumCharacters() do
         local name, _, _, _, _, _, characterId = GetCharacterInfo(i)
         local charName = zo_strformat(SI_UNIT_NAME, name)
-        --If the current logged in character was found
-        if loggedInName == charName or loggedInName == name then
-            loggedInCharUniqueId = characterId
-            break -- exit the loop
+        if characterId ~= nil and charName ~= "" then
+            if charactersOfAccount == nil then charactersOfAccount = {} end
+            if keyIsCharName then
+                charactersOfAccount[charName]   = characterId
+            else
+                charactersOfAccount[characterId]= charName
+            end
         end
     end
-    return tostring(loggedInCharUniqueId)
-    ]]
-    return GetCurrentCharacterId()
+    return charactersOfAccount
+end
+
+--Get the character name using it's unique characterId.
+--If the 2nd parameter characterTable is given it needs to be a table generated via function FCOIS.getCharactersOfAccount.
+--At best the key is the unique characterId, it not it can be the characterName as well.
+function FCOIS.getCharacterName(characterId, characterTable)
+    if characterId == nil then return nil end
+    local keyIsName = false
+    local characterName
+    if characterTable == nil then
+        characterTable =  FCOIS.getCharactersOfAccount(false)
+    else
+        --Check if the characterTable got the uniqueId or the name as key
+        for key, _ in pairs(characterTable) do
+            if type(key) == "String" then
+                keyIsName = true
+                break -- end the for loop
+            end
+        end
+    end
+    --Key of the table is a name?
+    if keyIsName then
+        --Key of the table is an unique ID?
+        for charName, charId in pairs(characterTable) do
+            if charId == characterId then return charName end
+        end
+    else
+        characterName = characterTable[characterId]
+    end
+    if not characterName or characterName == "" then return end
+    return characterName
 end

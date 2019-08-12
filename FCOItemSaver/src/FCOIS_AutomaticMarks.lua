@@ -273,6 +273,8 @@ local function automaticMarkingSetsAdditionalCheckFunc(p_itemData, p_checkFuncRe
 --d(">>" .. itemLink .. ", isSetPartWithATrait: " .. tostring(isSetPartAndIsValidAndGotTrait) .. ", isSetPartWithAWishedTrait: " .. tostring(isSetPartWithWishedTrait) .. ", traitMarkerIcon: " .. tostring(newMarkerIcon))
         end
     end
+    local skipAllOtherChecks = false
+    local nonWishedBecauseOfCharacterLevel = false
     --Local settings
     local settings = FCOIS.settingsVars.settings
     --Do the other additonal set checks
@@ -287,124 +289,146 @@ local function automaticMarkingSetsAdditionalCheckFunc(p_itemData, p_checkFuncRe
     --The standard automatic marker icon for the sets
     local setsIconNr = settings.autoMarkSetsIconNr
 
---==== SET TRACKER addon integration - START ===========================================================================
-    local isSetTrackerAndIsMarkedWithOtherIconAlready = false
-    if SetTrack and SetTrack.GetMaxTrackStates and FCOIS.otherAddons.SetTracker.isActive then
---d(">check SetTracker addon")
-        --If the option is enabled to check for all marker icons before checking SetTracker set icons: If the set part is alreay marked with
-        --any of the marker icons it shouldn't be marked with another SetTracker set marker icon again
-        if settings.autoMarkSetTrackerSetsCheckAllIcons then
-            for iconNr = 1, numFilterIcons, 1 do
-                table.insert(setTrackerIconIdArray, iconNr)
-            end
-            if setTrackerIconIdArray ~= nil and #setTrackerIconIdArray > 0 then
-                isSetTrackerAndIsMarkedWithOtherIconAlready = checkIfItemArrayIsProtected(setTrackerIconIdArray, itemId) or false
+--=== Non-Wished set items check for characters below level 50 =========================================================
+    if settings.autoMarkSetsNonWished and settings.isIconEnabled[settings.autoMarkSetsNonWishedIconNr] and settings.autoMarkSetsNonWishedIfCharBelowLevel then
+        --Get the actual logged in character level
+        local isCharLevelAboveOrEqual = FCOIS.checkNeededLevel("player", 50)
+        if not isCharLevelAboveOrEqual then
+--d("[FCOIS]automaticMarkingSetsAdditionalCheckFunc, charLevelIsBelow")
+            --Check the item's level if it is below level 50
+            local itemLevel = GetItemLinkRequiredLevel(itemLink)
+            local itemRequiredCP = GetItemLinkRequiredChampionPoints(itemLink)
+            local maxPossibleCPLevel = GetChampionPointsPlayerProgressionCap() --API 100028 = 160
+            if itemLevel < 50 or (itemLevel > 50 and itemRequiredCP < maxPossibleCPLevel) then
+                --Character is below level 50, so mark all set items as "Non-Wished" now
+                skipAllOtherChecks = true --Skip all other set checks now (except setting the non-wished icon!)
+                nonWishedBecauseOfCharacterLevel = true
             end
         end
-        --If the option is enabled to check for all SetTracker set icons: If the set part is alreay marked with
-        --any of the SetTracker set icons it shouldn't be marked with another set marker icon again.
-        --If the option is enabled that the SetTracker marker should not be set if any other marker is already set this will be skipped too!
-        if not isSetTrackerAndIsMarkedWithOtherIconAlready and settings.autoMarkSetTrackerSets and settings.autoMarkSetsCheckAllSetTrackerIcons then
-            --Set the variable to check other icons
-            checkOtherSetMarkerIcons = true
-            --Reset the variable for the SetTracker icon checks
-            setTrackerIconIdArray = {}
-            --Add the SetTracker sets tracking icons now
-            local STtrackingStates = SetTrack.GetMaxTrackStates()
-            if STtrackingStates ~= nil and STtrackingStates > 0 then
-                --For each SetTracker tracking state (set) get the appropriate marker icon from FCOIS
-                for i=0, (STtrackingStates-1), 1 do
-                    local setTrackerTrackingIcon = settings.setTrackerIndexToFCOISIcon[i]
-                    if setTrackerTrackingIcon ~= nil then
-                        table.insert(setTrackerIconIdArray, setTrackerTrackingIcon)
-                    end
+    end
+
+--==== SET TRACKER addon integration - START ===========================================================================
+    if not skipAllOtherChecks then
+
+        local isSetTrackerAndIsMarkedWithOtherIconAlready = false
+        if SetTrack and SetTrack.GetMaxTrackStates and FCOIS.otherAddons.SetTracker.isActive then
+            --d(">check SetTracker addon")
+            --If the option is enabled to check for all marker icons before checking SetTracker set icons: If the set part is alreay marked with
+            --any of the marker icons it shouldn't be marked with another SetTracker set marker icon again
+            if settings.autoMarkSetTrackerSetsCheckAllIcons then
+                for iconNr = 1, numFilterIcons, 1 do
+                    table.insert(setTrackerIconIdArray, iconNr)
                 end
                 if setTrackerIconIdArray ~= nil and #setTrackerIconIdArray > 0 then
                     isSetTrackerAndIsMarkedWithOtherIconAlready = checkIfItemArrayIsProtected(setTrackerIconIdArray, itemId) or false
                 end
             end
-        end
-    end
---==== SET TRACKER addon integration - END =============================================================================
-
---==== Normal set marker icon - BEGIN ==================================================================================
-    --Check if the item is marked with the automatic set icon alreay
-    --table.insert(iconIdArray, setsIconNr)
-    local isMarkedWithAutomaticSetMarkerIcon = FCOIS.checkIfItemIsProtected(setsIconNr, itemId) or false
---==== Normal set marker icon - END ====================================================================================
-
---==== Gear marker icons - BEGIN =======================================================================================
-    --If the option is enabled to check for all gear set icons: If the set part is alreay marked with
-    --any of the gear set icons it shouldn't be marked with another set marker icon again
-    local isGearProtected = false
-    if settings.autoMarkSetsCheckAllGearIcons then
---d(">check all gear icons")
-        --Set the variable to check other icons
-        checkOtherSetMarkerIcons = true
-        --Add the gear set icons now
-		local iconIsGear = settings.iconIsGear
-        for i=1, numFilterIcons, 1 do
-            --Check if icon is a gear set icon and if it's enabled
-            if iconIsGear[i] then
-                table.insert(gearIconIdArray, i)
+            --If the option is enabled to check for all SetTracker set icons: If the set part is alreay marked with
+            --any of the SetTracker set icons it shouldn't be marked with another set marker icon again.
+            --If the option is enabled that the SetTracker marker should not be set if any other marker is already set this will be skipped too!
+            if not isSetTrackerAndIsMarkedWithOtherIconAlready and settings.autoMarkSetTrackerSets and settings.autoMarkSetsCheckAllSetTrackerIcons then
+                --Set the variable to check other icons
+                checkOtherSetMarkerIcons = true
+                --Reset the variable for the SetTracker icon checks
+                setTrackerIconIdArray = {}
+                --Add the SetTracker sets tracking icons now
+                local STtrackingStates = SetTrack.GetMaxTrackStates()
+                if STtrackingStates ~= nil and STtrackingStates > 0 then
+                    --For each SetTracker tracking state (set) get the appropriate marker icon from FCOIS
+                    for i=0, (STtrackingStates-1), 1 do
+                        local setTrackerTrackingIcon = settings.setTrackerIndexToFCOISIcon[i]
+                        if setTrackerTrackingIcon ~= nil then
+                            table.insert(setTrackerIconIdArray, setTrackerTrackingIcon)
+                        end
+                    end
+                    if setTrackerIconIdArray ~= nil and #setTrackerIconIdArray > 0 then
+                        isSetTrackerAndIsMarkedWithOtherIconAlready = checkIfItemArrayIsProtected(setTrackerIconIdArray, itemId) or false
+                    end
+                end
             end
         end
-        if gearIconIdArray ~= nil and #gearIconIdArray > 0 then
-            isGearProtected = checkIfItemArrayIsProtected(gearIconIdArray, itemId)
-        end
---d(">isGearProtected: " .. tostring(isGearProtected))
-    end
---==== Gear marker icons - END =========================================================================================
+        --==== SET TRACKER addon integration - END =============================================================================
 
---==== Sell marker icons - BEGIN =======================================================================================
-    --If the option is enabled to check for sell and sell in guild store icons: If the set part is alreay marked with
-    --any of them it shouldn't be marked with another set marker icon again
-    local isSellProtected = false
-    if settings.autoMarkSetsCheckSellIcons and (settings.isIconEnabled[FCOIS_CON_ICON_SELL] or settings.isIconEnabled[FCOIS_CON_ICON_SELL_AT_GUILDSTORE]) then
---d(">check sell icons")
-        --Set the variable to check other icons
-        checkOtherSetMarkerIcons = true
-        if settings.isIconEnabled[FCOIS_CON_ICON_SELL] then
-            table.insert(sellIconIdArray, FCOIS_CON_ICON_SELL)
-        end
-        if settings.isIconEnabled[FCOIS_CON_ICON_SELL_AT_GUILDSTORE] then
-            table.insert(sellIconIdArray, FCOIS_CON_ICON_SELL_AT_GUILDSTORE)
-        end
-        if sellIconIdArray ~= nil and #sellIconIdArray > 0 then
-            isSellProtected = checkIfItemArrayIsProtected(sellIconIdArray, itemId)
-        end
---d(">isSellProtected: " .. tostring(isSellProtected))
-    end
---==== Sell marker icons - END =========================================================================================
+        --==== Normal set marker icon - BEGIN ==================================================================================
+        --Check if the item is marked with the automatic set icon alreay
+        --table.insert(iconIdArray, setsIconNr)
+        local isMarkedWithAutomaticSetMarkerIcon = FCOIS.checkIfItemIsProtected(setsIconNr, itemId) or false
+        --==== Normal set marker icon - END ====================================================================================
 
---==== Is item protected check - BEGIN =================================================================================
-    --Check other set marker icons too? Or only the normal one
---d(">isSetTrackerAndIsMarkedWithOtherIconAlready: " ..tostring(isSetTrackerAndIsMarkedWithOtherIconAlready))
-    local checkOnlySetMarkerIcon = false
-    if checkOtherSetMarkerIcons then
-        if iconIdArray ~= nil and #iconIdArray > 0 then
-            --Check all the marker icons in the table iconIdArray
-            isProtected = isSetTrackerAndIsMarkedWithOtherIconAlready or isGearProtected or isSellProtected or checkIfItemArrayIsProtected(iconIdArray, itemId)
+        --==== Gear marker icons - BEGIN =======================================================================================
+        --If the option is enabled to check for all gear set icons: If the set part is alreay marked with
+        --any of the gear set icons it shouldn't be marked with another set marker icon again
+        local isGearProtected = false
+        if settings.autoMarkSetsCheckAllGearIcons then
+            --d(">check all gear icons")
+            --Set the variable to check other icons
+            checkOtherSetMarkerIcons = true
+            --Add the gear set icons now
+            local iconIsGear = settings.iconIsGear
+            for i=1, numFilterIcons, 1 do
+                --Check if icon is a gear set icon and if it's enabled
+                if iconIsGear[i] then
+                    table.insert(gearIconIdArray, i)
+                end
+            end
+            if gearIconIdArray ~= nil and #gearIconIdArray > 0 then
+                isGearProtected = checkIfItemArrayIsProtected(gearIconIdArray, itemId)
+            end
+            --d(">isGearProtected: " .. tostring(isGearProtected))
+        end
+        --==== Gear marker icons - END =========================================================================================
+
+        --==== Sell marker icons - BEGIN =======================================================================================
+        --If the option is enabled to check for sell and sell in guild store icons: If the set part is alreay marked with
+        --any of them it shouldn't be marked with another set marker icon again
+        local isSellProtected = false
+        if settings.autoMarkSetsCheckSellIcons and (settings.isIconEnabled[FCOIS_CON_ICON_SELL] or settings.isIconEnabled[FCOIS_CON_ICON_SELL_AT_GUILDSTORE]) then
+            --d(">check sell icons")
+            --Set the variable to check other icons
+            checkOtherSetMarkerIcons = true
+            if settings.isIconEnabled[FCOIS_CON_ICON_SELL] then
+                table.insert(sellIconIdArray, FCOIS_CON_ICON_SELL)
+            end
+            if settings.isIconEnabled[FCOIS_CON_ICON_SELL_AT_GUILDSTORE] then
+                table.insert(sellIconIdArray, FCOIS_CON_ICON_SELL_AT_GUILDSTORE)
+            end
+            if sellIconIdArray ~= nil and #sellIconIdArray > 0 then
+                isSellProtected = checkIfItemArrayIsProtected(sellIconIdArray, itemId)
+            end
+            --d(">isSellProtected: " .. tostring(isSellProtected))
+        end
+        --==== Sell marker icons - END =========================================================================================
+
+        --==== Is item protected check - BEGIN =================================================================================
+        --Check other set marker icons too? Or only the normal one
+        --d(">isSetTrackerAndIsMarkedWithOtherIconAlready: " ..tostring(isSetTrackerAndIsMarkedWithOtherIconAlready))
+        local checkOnlySetMarkerIcon = false
+        if checkOtherSetMarkerIcons then
+            if iconIdArray ~= nil and #iconIdArray > 0 then
+                --Check all the marker icons in the table iconIdArray
+                isProtected = isSetTrackerAndIsMarkedWithOtherIconAlready or isGearProtected or isSellProtected or checkIfItemArrayIsProtected(iconIdArray, itemId)
+            else
+                checkOnlySetMarkerIcon = true
+            end
         else
             checkOnlySetMarkerIcon = true
         end
-    else
-        checkOnlySetMarkerIcon = true
-    end
-    if checkOnlySetMarkerIcon then
-        --Only check the automatic sets marker icon
-        isProtected = isSetTrackerAndIsMarkedWithOtherIconAlready or isGearProtected or isSellProtected or isMarkedWithAutomaticSetMarkerIcon
-    end
-    if not isProtected then isProtected = false end
+        if checkOnlySetMarkerIcon then
+            --Only check the automatic sets marker icon
+            isProtected = isSetTrackerAndIsMarkedWithOtherIconAlready or isGearProtected or isSellProtected or isMarkedWithAutomaticSetMarkerIcon
+        end
+        if not isProtected then isProtected = false end
 --==== Is item protected check - END ===================================================================================
 
+
+    end --if not skipAllOtherChecks then
 --==== Trait & non-wished trait checks - BEGIN =========================================================================
     --The item is not marked with any marker icon yet and it's not protected
     --> then check for non wished item traits
 --d("> isProtected: " .. tostring(isProtected))
     local markWithNonWishedIcon = false
     local markWithNonWishedSellIcon = false
-    if isProtected == false then
+    if isProtected == false or nonWishedBecauseOfCharacterLevel == true then
         ------------------------------------------------------------------------------------------------------------------
         -- NON WISHED ITEM TRAIT CHECK - BEGIN
         -- Check if item is a set part with the wished trait and skip the "all marker icons check"!
@@ -412,40 +436,40 @@ local function automaticMarkingSetsAdditionalCheckFunc(p_itemData, p_checkFuncRe
         ------------------------------------------------------------------------------------------------------------------
         local nonWishedLevelFound = false
         local nonWishedQualityFound = false
-        if isSetPartWithWishedTrait == false and settings.autoMarkSetsNonWished and settings.isIconEnabled[settings.autoMarkSetsNonWishedIconNr] then
---d(">non wished item trait check")
-
-            --Quality, level or botch checks?
-            local doNonWishedQualityCheck   = (settings.autoMarkSetsNonWishedChecks==FCOIS_CON_NON_WISHED_ALL or settings.autoMarkSetsNonWishedChecks==FCOIS_CON_NON_WISHED_QUALITY) or false
-            local doNonWishedLevelCheck     = (settings.autoMarkSetsNonWishedChecks==FCOIS_CON_NON_WISHED_ALL or settings.autoMarkSetsNonWishedChecks==FCOIS_CON_NON_WISHED_LEVEL) or false
+        if (isSetPartWithWishedTrait == false or nonWishedBecauseOfCharacterLevel) and settings.autoMarkSetsNonWished and settings.isIconEnabled[settings.autoMarkSetsNonWishedIconNr] then
+            --d(">non wished item trait check")
+            if not nonWishedBecauseOfCharacterLevel then
+                --Quality, level or botch checks?
+                local doNonWishedQualityCheck   = (settings.autoMarkSetsNonWishedChecks==FCOIS_CON_NON_WISHED_ALL or settings.autoMarkSetsNonWishedChecks==FCOIS_CON_NON_WISHED_QUALITY) or false
+                local doNonWishedLevelCheck     = (settings.autoMarkSetsNonWishedChecks==FCOIS_CON_NON_WISHED_ALL or settings.autoMarkSetsNonWishedChecks==FCOIS_CON_NON_WISHED_LEVEL) or false
 
                 --If the item is a s set part "Check the item's level" is activated?
-            if isSetPartAndIsValidAndGotTrait and doNonWishedLevelCheck and settings.autoMarkSetsNonWishedLevel ~= 1 then
-                local levelMapping = FCOIS.mappingVars.levels
-                local CPlevelMapping = FCOIS.mappingVars.CPlevels
-                local level2Threshold = FCOIS.mappingVars.levelToThreshold
-                local allLevels = FCOIS.mappingVars.allLevels
-                if levelMapping ~= nil and CPlevelMapping ~= nil and itemLink ~= nil and level2Threshold ~= nil and allLevels ~= nil then
-                    local levelThreshold = tonumber(level2Threshold[tostring(allLevels[settings.autoMarkSetsNonWishedLevel])]) or 0
-                    if levelThreshold ~= nil and levelThreshold > 0  then
-                        --Get the item level and champion rank
-                        local requiredLevel = GetItemLinkRequiredLevel(itemLink)
-                        local requiredCPRank = GetItemLinkRequiredChampionPoints(itemLink)
-                        --Is the item a ChampionRank item?
-                        if requiredCPRank > 0 then
-                            if requiredCPRank < levelThreshold then
-                                nonWishedLevelFound = true
-                            end
-                        else
-                            --No CPs needed to wear this item
-                            if requiredLevel < levelThreshold then
-                                nonWishedLevelFound = true
+                if isSetPartAndIsValidAndGotTrait and doNonWishedLevelCheck and settings.autoMarkSetsNonWishedLevel ~= 1 then
+                    local levelMapping = FCOIS.mappingVars.levels
+                    local CPlevelMapping = FCOIS.mappingVars.CPlevels
+                    local level2Threshold = FCOIS.mappingVars.levelToThreshold
+                    local allLevels = FCOIS.mappingVars.allLevels
+                    if levelMapping ~= nil and CPlevelMapping ~= nil and itemLink ~= nil and level2Threshold ~= nil and allLevels ~= nil then
+                        local levelThreshold = tonumber(level2Threshold[tostring(allLevels[settings.autoMarkSetsNonWishedLevel])]) or 0
+                        if levelThreshold ~= nil and levelThreshold > 0  then
+                            --Get the item level and champion rank
+                            local requiredLevel = GetItemLinkRequiredLevel(itemLink)
+                            local requiredCPRank = GetItemLinkRequiredChampionPoints(itemLink)
+                            --Is the item a ChampionRank item?
+                            if requiredCPRank > 0 then
+                                if requiredCPRank < levelThreshold then
+                                    nonWishedLevelFound = true
+                                end
+                            else
+                                --No CPs needed to wear this item
+                                if requiredLevel < levelThreshold then
+                                    nonWishedLevelFound = true
+                                end
                             end
                         end
                     end
-                end
-                --Was a non wished level found? Then mark the item as non wished now
-                --if nonWishedLevelFound then
+                    --Was a non wished level found? Then mark the item as non wished now
+                    --if nonWishedLevelFound then
                     --Check if the item is a jewelry part and if the non-wished marker icon is the "deconstruction" icon
                     --replace it with the sell icon
                     --> Not needed nymore: FCOIS v1.3.6 as deconstruction of jewelry works too now since "Summerset" update
@@ -456,44 +480,49 @@ local function automaticMarkingSetsAdditionalCheckFunc(p_itemData, p_checkFuncRe
                     --        markWithNonWishedSellIcon = true
                     --    end
                     --end
-                --end
-            end -- Non wished item level checks
-            --Don't do quality checks etc. if the level checks were done already
-            if isSetPartAndIsValidAndGotTrait and doNonWishedQualityCheck then
-                --Check the item's quality to mark it with the chosen non-wished icon, or the sell icon?
-                if settings.autoMarkSetsNonWishedQuality ~= 1 then
---d(">> non-wished quality check! Non-wished quality: " .. tostring(settings.autoMarkSetsNonWishedQuality))
-                    --Check the item's quality now
-                    local itemQuality = FCOIS.GetItemQuality(p_itemData.bagId, p_itemData.slotIndex)
-                    if itemQuality ~= false then
-                        nonWishedQualityFound = (itemQuality <= settings.autoMarkSetsNonWishedQuality) or false
---d("Quality: " .. tostring(itemQuality) .. ", check: " .. tostring(qualityCheck))
-                        --Is the quality higher or equals the non-wished quality from the settings?
-                        --if qualityCheck then
-                        --else
-                        --    --Mark with the sell icon
-                        --    markWithNonWishedIcon = false
-                        --    markWithNonWishedSellIcon = true
-                        --end
+                    --end
+                end -- Non wished item level checks
+                --Don't do quality checks etc. if the level checks were done already
+                if isSetPartAndIsValidAndGotTrait and doNonWishedQualityCheck then
+                    --Check the item's quality to mark it with the chosen non-wished icon, or the sell icon?
+                    if settings.autoMarkSetsNonWishedQuality ~= 1 then
+                        --d(">> non-wished quality check! Non-wished quality: " .. tostring(settings.autoMarkSetsNonWishedQuality))
+                        --Check the item's quality now
+                        local itemQuality = FCOIS.GetItemQuality(p_itemData.bagId, p_itemData.slotIndex)
+                        if itemQuality ~= false then
+                            nonWishedQualityFound = (itemQuality <= settings.autoMarkSetsNonWishedQuality) or false
+                            --d("Quality: " .. tostring(itemQuality) .. ", check: " .. tostring(qualityCheck))
+                            --Is the quality higher or equals the non-wished quality from the settings?
+                            --if qualityCheck then
+                            --else
+                            --    --Mark with the sell icon
+                            --    markWithNonWishedIcon = false
+                            --    markWithNonWishedSellIcon = true
+                            --end
+                        end
                     end
                 end
-            end
-            --Was a level or quality or both combined found, matching to the non-wished settings?
-            if (doNonWishedLevelCheck and doNonWishedQualityCheck and nonWishedLevelFound and nonWishedQualityFound)             -- Both
-               or (doNonWishedLevelCheck and not doNonWishedQualityCheck and nonWishedLevelFound and not nonWishedQualityFound)  -- Level
-                or (not doNonWishedLevelCheck and doNonWishedQualityCheck and not nonWishedLevelFound and nonWishedQualityFound) -- Quality
-            then
-                markWithNonWishedIcon       = true
-                markWithNonWishedSellIcon   = false
-            else
-                markWithNonWishedIcon       = false
-                markWithNonWishedSellIcon   = false
-                if settings.autoMarkSetsNonWishedSellOthers and settings.isIconEnabled[FCOIS_CON_ICON_SELL] then
-                    --Don't do quality checks -> Mark with the non-wished icon
+                --Was a level or quality or both combined found, matching to the non-wished settings?
+                if (doNonWishedLevelCheck and doNonWishedQualityCheck and nonWishedLevelFound and nonWishedQualityFound)             -- Both
+                        or (doNonWishedLevelCheck and not doNonWishedQualityCheck and nonWishedLevelFound and not nonWishedQualityFound)  -- Level
+                        or (not doNonWishedLevelCheck and doNonWishedQualityCheck and not nonWishedLevelFound and nonWishedQualityFound) -- Quality
+                then
+                    markWithNonWishedIcon       = true
+                    markWithNonWishedSellIcon   = false
+                else
                     markWithNonWishedIcon       = false
-                    markWithNonWishedSellIcon   = true
+                    markWithNonWishedSellIcon   = false
+                    if settings.autoMarkSetsNonWishedSellOthers and settings.isIconEnabled[FCOIS_CON_ICON_SELL] then
+                        --Don't do quality checks -> Mark with the non-wished icon
+                        markWithNonWishedIcon       = false
+                        markWithNonWishedSellIcon   = true
+                    end
                 end
-            end
+            else
+                --No other checks were needed and we need to mark the setItem with the non-wished marker icon now
+                --as the character is below level 50 and the setting to mark then as non-wished is enabled
+                markWithNonWishedIcon = true
+            end --if not nonWishedBecauseOfCharacterLevel then
             --Mark with the non-wished icon now?
             if markWithNonWishedIcon or markWithNonWishedSellIcon then
                 local nonWishedMarkerIcon
@@ -520,76 +549,81 @@ local function automaticMarkingSetsAdditionalCheckFunc(p_itemData, p_checkFuncRe
         -- NON WISHED ITEM TRAIT CHECK - END
         ------------------------------------------------------------------------------------------------------------------
     end
+    --Skip all other checks?
+    if not skipAllOtherChecks then
 
-    ------------------------------------------------------------------------------------------------------------------
-    -- WISHED ITEM TRAIT CHECK - BEGIN
-    ------------------------------------------------------------------------------------------------------------------
-    --Item is not non-wished trait and it is already marked with the set icon, or not marked with the set item:
-    --Check if the trait icon needs to be applied.
-    -->Depending on the settings for trais, like "Check all marker icons", "Check gear marker icons", "Check sell icons", "Check SetTracker icons"!
-    local markWithTraitIcon = false
-    if isSetPartWithWishedTrait and not markWithNonWishedIcon and not markWithNonWishedSellIcon
-       and (not isMarkedWithAutomaticSetMarkerIcon or (isMarkedWithAutomaticSetMarkerIcon and settings.autoMarkSetsWithTraitIfAutoSetMarked)) then
---d(">>>Trait marking checks start")
-        --Check if any other marker icon can be set
-        if settings.autoMarkSetsWithTraitCheckAllIcons and not isMarkedWithAutomaticSetMarkerIcon then
-            local isMarkedWithAnyOtherIcon = false
-            local allMarkerIconsArray = {}
-            for iconNr = 1, numFilterIcons, 1 do
-                if iconNr ~= setsIconNr then
-                    table.insert(allMarkerIconsArray, iconNr)
+        ------------------------------------------------------------------------------------------------------------------
+        -- WISHED ITEM TRAIT CHECK - BEGIN
+        ------------------------------------------------------------------------------------------------------------------
+        --Item is not non-wished trait and it is already marked with the set icon, or not marked with the set item:
+        --Check if the trait icon needs to be applied.
+        -->Depending on the settings for trais, like "Check all marker icons", "Check gear marker icons", "Check sell icons", "Check SetTracker icons"!
+        local markWithTraitIcon = false
+        if isSetPartWithWishedTrait and not markWithNonWishedIcon and not markWithNonWishedSellIcon
+                and (not isMarkedWithAutomaticSetMarkerIcon or (isMarkedWithAutomaticSetMarkerIcon and settings.autoMarkSetsWithTraitIfAutoSetMarked)) then
+            --d(">>>Trait marking checks start")
+            --Check if any other marker icon can be set
+            if settings.autoMarkSetsWithTraitCheckAllIcons and not isMarkedWithAutomaticSetMarkerIcon then
+                local isMarkedWithAnyOtherIcon = false
+                local allMarkerIconsArray = {}
+                for iconNr = 1, numFilterIcons, 1 do
+                    if iconNr ~= setsIconNr then
+                        table.insert(allMarkerIconsArray, iconNr)
+                    end
+                end
+                if allMarkerIconsArray ~= nil and #allMarkerIconsArray > 0 then
+                    isMarkedWithAnyOtherIcon = checkIfItemArrayIsProtected(allMarkerIconsArray, itemId) or false
+                end
+                if not isMarkedWithAnyOtherIcon then
+                    markWithTraitIcon = true
+                end
+            else
+                --Check if any gear marker icon can be set
+                if settings.autoMarkSetsWithTraitCheckAllGearIcons and not isGearProtected then
+                    markWithTraitIcon = true
+                    --Check if any SetTracker marker icon can be set
+                elseif settings.autoMarkSetsWithTraitCheckAllSetTrackerIcons and not isSetTrackerAndIsMarkedWithOtherIconAlready then
+                    markWithTraitIcon = true
+                    --Check if any sell marker icon can be set
+                elseif settings.autoMarkSetsWithTraitCheckSellIcons and not isSellProtected then
+                    markWithTraitIcon = true
+                    --None of the above settings is enabled: Just mark the item with teh trait icon
+                else
+                    markWithTraitIcon = true
                 end
             end
-            if allMarkerIconsArray ~= nil and #allMarkerIconsArray > 0 then
-                isMarkedWithAnyOtherIcon = checkIfItemArrayIsProtected(allMarkerIconsArray, itemId) or false
-            end
-            if not isMarkedWithAnyOtherIcon then
-                markWithTraitIcon = true
-            end
-        else
-            --Check if any gear marker icon can be set
-            if settings.autoMarkSetsWithTraitCheckAllGearIcons and not isGearProtected then
-                markWithTraitIcon = true
-            --Check if any SetTracker marker icon can be set
-            elseif settings.autoMarkSetsWithTraitCheckAllSetTrackerIcons and not isSetTrackerAndIsMarkedWithOtherIconAlready then
-                markWithTraitIcon = true
-            --Check if any sell marker icon can be set
-            elseif settings.autoMarkSetsWithTraitCheckSellIcons and not isSellProtected then
-                markWithTraitIcon = true
-            --None of the above settings is enabled: Just mark the item with teh trait icon
-            else
-                markWithTraitIcon = true
-            end
         end
-    end
---d(">>>markWithTraitIcon: " .. tostring(markWithTraitIcon))
---if newMarkerIcon == nil then
---    d(">markWithTraitIcon " .. tostring(markWithTraitIcon) .. ": markWithNonWishedIcon " .. tostring(markWithNonWishedIcon) .. ", markWithNonWishedSellIcon " .. tostring(markWithNonWishedSellIcon) ..
---        ", isMarkedWithAutomaticSetMarkerIcon " .. tostring(isMarkedWithAutomaticSetMarkerIcon) .. ", settings.autoMarkSetsWithTraitIfAutoSetMarked " .. tostring(settings.autoMarkSetsWithTraitIfAutoSetMarked))
---    if itemLink ~= nil then
---        d(">Itemlink: " ..tostring(itemLink))
---    else
---        d(">Itemlink is missing!")
---    end
---end
-    if markWithTraitIcon then
-        --Mark the item with the trait marker icon now
-        FCOIS.MarkItem(p_itemData.bagId, p_itemData.slotIndex, newMarkerIcon, true, true)
-    end
-    ------------------------------------------------------------------------------------------------------------------
-    -- WISHED ITEM TRAIT CHECK - END
-    ------------------------------------------------------------------------------------------------------------------
---==== Trait & non-wished trait checks - END ===========================================================================
+        --d(">>>markWithTraitIcon: " .. tostring(markWithTraitIcon))
+        --if newMarkerIcon == nil then
+        --    d(">markWithTraitIcon " .. tostring(markWithTraitIcon) .. ": markWithNonWishedIcon " .. tostring(markWithNonWishedIcon) .. ", markWithNonWishedSellIcon " .. tostring(markWithNonWishedSellIcon) ..
+        --        ", isMarkedWithAutomaticSetMarkerIcon " .. tostring(isMarkedWithAutomaticSetMarkerIcon) .. ", settings.autoMarkSetsWithTraitIfAutoSetMarked " .. tostring(settings.autoMarkSetsWithTraitIfAutoSetMarked))
+        --    if itemLink ~= nil then
+        --        d(">Itemlink: " ..tostring(itemLink))
+        --    else
+        --        d(">Itemlink is missing!")
+        --    end
+        --end
+        if markWithTraitIcon then
+            --Mark the item with the trait marker icon now
+            FCOIS.MarkItem(p_itemData.bagId, p_itemData.slotIndex, newMarkerIcon, true, true)
+        end
+        ------------------------------------------------------------------------------------------------------------------
+        -- WISHED ITEM TRAIT CHECK - END
+        ------------------------------------------------------------------------------------------------------------------
+        --==== Trait & non-wished trait checks - END ===========================================================================
 
-    --Set marker icon was set already, or only the trait should be marked and was marked successfully? Then abort here now
-    --so the set icon won't be set later on in the calling function's "to do" entry
-    if (markWithTraitIcon and settings.autoMarkSetsOnlyTraits) or isMarkedWithAutomaticSetMarkerIcon then return nil, nil end
-    --Change the marker icon in the 1st checkFunc resultdata from the trait icon (if valid set part and trait was found)
-    --to the normal "Set" marker icon now
-    p_itemData.fromCheckFunc["newMarkerIcon"] = setsIconNr
+        --Set marker icon was set already, or only the trait should be marked and was marked successfully? Then abort here now
+        --so the set icon won't be set later on in the calling function's "to do" entry
+        if (markWithTraitIcon and settings.autoMarkSetsOnlyTraits) or isMarkedWithAutomaticSetMarkerIcon then return nil, nil end
+        --Change the marker icon in the 1st checkFunc resultdata from the trait icon (if valid set part and trait was found)
+        --to the normal "Set" marker icon now
+        p_itemData.fromCheckFunc["newMarkerIcon"] = setsIconNr
 
-    --Return true: No set marker icon will be set. Return false: Set marker icon will be set via calling function's "to do" entry
-    return isProtected, nil
+        --Return true: No set marker icon will be set. Return false: Set marker icon will be set via calling function's "to do" entry
+        return isProtected, nil
+    end --if not skipAllOtherChecks then
+    --Return true: No set marker icon will be set.
+    return true, nil
 end -- automaticMarkingSetsAdditionalCheckFunc
 
 --Function to scan a single item. Is needed so the return false won't abort scanning the whole inventory!

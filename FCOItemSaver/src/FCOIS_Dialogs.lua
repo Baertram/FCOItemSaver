@@ -364,3 +364,20 @@ function FCOIS.showProtectionDialog(titleVar, questionVar, data)
     --Show the dialog now
     ZO_Dialogs_ShowDialog("FCOIS_ASK_PROTECTION_DIALOG", {title=titleVar, question=questionVar, callbackData=callbackData})
 end
+
+--Reset preventer vars and other variables if the ZOs dialog gets closed e.g.
+function FCOIS.resetZOsDialogVariables()
+--d("[FCOIS]resetZOsDialogVariables")
+    local prevVars = FCOIS.preventerVars
+    prevVars.splitItemStackDialogActive = false
+end
+
+--Show the user a remember popup "once" to logout and backup the savedvariables
+function FCOIS.ShowRememberUserAboutSavedVariablesBackupDialog()
+    local locVars = FCOIS.localizationVars
+    local locVars_loc = locVars.fcois_loc
+    local title = locVars_loc["options_hint_backup_savedvariables_file_title"]
+    local body = locVars_loc["options_hint_backup_savedvariables_file"]
+    local FCOISsettings = FCOIS.settingsVars.settings
+    FCOIS.ShowConfirmationDialog("ShowRemmeberUserAboutSavedVariablesBackupDialog", title, body, function() FCOISsettings.rememberUserAboutSavedVariablesBackup = false  end, function() FCOISsettings.rememberUserAboutSavedVariablesBackup = true end)
+end

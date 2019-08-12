@@ -4,10 +4,8 @@ local FCOIS = FCOIS
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
 
-local numFilterIcons = FCOIS.numVars.gFCONumFilterIcons
-
 --==========================================================================================================================================
--- 															FCOIS API
+-- 			README PLEASE		README PLEASE			-FCOIS API limitations-			README PLEASE		README PLEASE
 --==========================================================================================================================================
 --IMPORTANT		IMPORTANT	IMPORTANT	IMPORTANT	IMPORTANT	IMPORTANT	IMPORTANT	IMPORTANT	IMPORTANT	IMPORTANT
 --!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! FCOItemSaver is NOT working with the gamepad mode enabled !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -31,7 +29,22 @@ local numFilterIcons = FCOIS.numVars.gFCONumFilterIcons
 --else
 --	--We are in keyboard mode so FCOIS will work normal
 --end
+--
+--
+--
+--!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! FCOItemSaver API functions are NOT working properly at crafting stations if you do not open the controls (UI)
+--normally (e.g. show the Deconstruction panel and THEN check for FCOIS.IsDeconstructionLocked(bagId, slotIndex) ) !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+--Due to ESO's design one could simply approach a crafting station and as the station got opened (And it's on the way to show the refinement pabel)
+--you could already deconstruct, improve and/or refine materials. But FCOItemSaver relies on the UI elements like improvementSlot, refinementSlot,
+--etc. in order to detect the opened panel, assure all items got loaded properly and the marker icons set will be checked + the items protected
+--properly. So please do not use the FCOIS API to do crafting stuff and protection checks if the UI for the crafting is not loaded properly!
 --IMPORTANT		IMPORTANT	IMPORTANT	IMPORTANT	IMPORTANT	IMPORTANT	IMPORTANT	IMPORTANT	IMPORTANT	IMPORTANT
+
+--==========================================================================================================================================
+-- 															FCOIS API
+--==========================================================================================================================================
+--Local variables for speedup
+local numFilterIcons = FCOIS.numVars.gFCONumFilterIcons
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -559,7 +572,8 @@ function FCOIS.MarkItem(bag, slot, iconId, showIcon, updateInventories)
 				if isCharShown then
 					FCOIS.RefreshEquipmentControl(nil, showIcon, iconId)
 				elseif bag == BAG_BACKPACK or bag == BAG_VIRTUAL
-					or bag == BAG_BANK or bag == BAG_SUBSCRIBER_BANK or bag == BAG_GUILDBANK or IsHouseBankBag(bag) then
+					or bag == BAG_BANK or bag == BAG_SUBSCRIBER_BANK or bag == BAG_GUILDBANK or IsHouseBankBag(bag)
+					or (bag == BAG_WORN and FCOIS.IsVendorPanelShown(LF_VENDOR_REPAIR, false)) then
 					FCOIS.FilterBasics(false)
 				end
 			end -- if updateInventories ...
@@ -582,12 +596,15 @@ end -- FCOIS.MarkItem
 ---itemId (number):                     The itemID of the item. Can be left NIL and the itemLink will be used instead. One of the two must be given though!
 ---addonName (String):					Can be left NIL! The unique addon name which was used to temporarily enable the uniqueId usage for the item checks.
 ---										-> See FCOIS API function "FCOIS.UseTemporaryUniqueIds(addonName, doUse)"
-function FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon, itemLink, itemId, addonName)
-    --d("[FCOIS.MarkItemByItemInstanceId] id " .. tostring(itemInstanceOrUniqueId) .. ", iconId: " .. tostring(iconId) .. ", show: " .. tostring(showIcon))
+---updateInventories (boolean):    		Flag to set if the inventory lists should be updated, or not. Use this only "after updating the last marker icon", if you (de)mark many at once!
+function FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon, itemLink, itemId, addonName, updateInventories)
+--d("[FCOIS.MarkItemByItemInstanceId] id " .. tostring(itemInstanceOrUniqueId) .. ", iconId: " .. tostring(iconId) .. ", show: " .. tostring(showIcon))
     if itemInstanceOrUniqueId == nil then return false end
     if itemLink == nil and itemId == nil then return false end
     if showIcon == nil then showIcon = true end
+	updateInventories = updateInventories or false
 	if not FCOIS.checkIfFCOISSettingsWereLoaded(true) then return false end
+	local isCharShown = not FCOIS.ZOControlVars.CHARACTER:IsHidden()
     --Use the given itemLink or the given itemId to build a generic itemLink from it
     if itemId ~= nil and itemLink == nil then
         --Build a generic itemLink from the itemId to test the itemType
@@ -606,11 +623,20 @@ function FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon
         iconIdTypeIsATable = true
         --Set preventing variable against endless loop
         FCOIS.preventerVars.markItemAntiEndlessLoop = true
+		local doUpdateInvNow = false
         --Now change each icon inside the table
         local recurRetVal = false
+		local numMarkerIconsToChange = #iconId
+		local markerIconsChanged = 0
         for _, iconIdInTable in ipairs(iconId) do
+			FCOIS.preventerVars.gMarkItemLastIconInLoop = false
+			markerIconsChanged = markerIconsChanged + 1
+			if updateInventories and markerIconsChanged == numMarkerIconsToChange then
+				doUpdateInvNow = true
+				FCOIS.preventerVars.gMarkItemLastIconInLoop = true
+			end
             --Recursively call this function again to change each marker icon at the item
-            recurRetVal = FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconIdInTable, showIcon, itemLink, itemId, addonName)
+            recurRetVal = FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconIdInTable, showIcon, itemLink, itemId, addonName, doUpdateInvNow)
             if not recurRetVal then
                 recurRetValTotal = false
             end
@@ -627,9 +653,14 @@ function FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon
             --Set preventing variable against endless loop
             FCOIS.preventerVars.markItemAntiEndlessLoop = true
             local recurRetVal = false
+			local doUpdateInvNow = false
             for iconNr=1, numFilterIcons, 1 do
+				if updateInventories and iconNr == numFilterIcons then
+					doUpdateInvNow = true
+					FCOIS.preventerVars.gMarkItemLastIconInLoop = true
+				end
                 --Recursively call this function again to change each marker icon at the item
-                recurRetVal = FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconNr, showIcon, itemLink, itemId, addonName)
+                recurRetVal = FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconNr, showIcon, itemLink, itemId, addonName, doUpdateInvNow)
                 if not recurRetVal then
                     recurRetValTotal = false
                 end
@@ -643,7 +674,7 @@ function FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon
             --Allow the update of the marker here, and change it later if no update is needed
             local doUpdateMarkerNow = true
             if itemLink ~= nil then
-                --d(">"..itemLink)
+--d(">"..itemLink)
                 local researchableItem = false
                 --Set the marker here now
                 local itemIsMarked = showIcon
@@ -651,6 +682,7 @@ function FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon
                 --Item is already un/marked -> No need to change it
                 if FCOIS.checkIfItemIsProtected(iconId, itemInstanceOrUniqueId, nil, addonName) == itemIsMarked then
                     doUpdateMarkerNow = false
+--d(">changed doUpdateMarkerNow to: " ..tostring(doUpdateMarkerNow))
                 else
                     --Check if the item is a researchable one, but only if icon should be shown and bag + slot are given
                     -- Equipment gear 1, 2, 3, 4, 5, Research, Improve, Deconstruct or Intricate
@@ -660,26 +692,27 @@ function FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon
                         researchableItem = true
                         -- Check if item is researchable (as only researchable items can work as equipment too)
                         if (not FCOIS.isItemLinkResearchable(itemLink, iconId)) then
+--d(">Item is not researchable. Changed doUpdateMarkerNow to: " ..tostring(doUpdateMarkerNow))
                             doUpdateMarkerNow = false
                             recurRetValTotal = false
                         end
                     end
                 end
 
-                --d("[FCOIS]MarkItemByItemInstanceId doUpdateMarkerNow: " ..tostring(doUpdateMarkerNow) ..", iconId: " ..tostring(iconId) .. ", show: " ..tostring(showIcon))
+--d("[FCOIS]MarkItemByItemInstanceId doUpdateMarkerNow: " ..tostring(doUpdateMarkerNow) ..", iconId: " ..tostring(iconId) .. ", show: " ..tostring(showIcon))
                 --Change the marker now?
                 if doUpdateMarkerNow then
                     --Unmark all other markers before? Only if marker should be set
                     --Prevent endless loop here as FCOIS.MarkItemByItemInstanceId will call itsself recursively
                     if not FCOIS.preventerVars.markItemAntiEndlessLoop and showIcon and FCOIS.checkIfItemShouldBeDemarked(iconId) then
-                        --d(">remove all markers now, isCharShown: " ..tostring(isCharShown) .. ", bag: " ..tostring(bag) .. ", charCtrlHidden: " .. tostring(FCOIS.ZOControlVars.CHARACTER:IsHidden()))
+--d(">remove all markers now, isCharShown: " ..tostring(isCharShown) .. ", bag: " ..tostring(bag) .. ", charCtrlHidden: " .. tostring(FCOIS.ZOControlVars.CHARACTER:IsHidden()))
                         --Remove all markers now
-                        FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, -1, false, itemLink, itemId, addonName)
+                        FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, -1, false, itemLink, itemId, addonName, false)
                         FCOIS.preventerVars.markItemAntiEndlessLoop = false
 
                     --Any other circumstances
                     else
-                        --d(">1")
+--d(">1")
                         --Prevent endless loop here as FCOIS.MarkItemByItemInstanceId will call itsself recursively
                         -- Should the item be marked?
                         if not FCOIS.preventerVars.markItemAntiEndlessLoop and showIcon and (
@@ -687,7 +720,7 @@ function FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon
                                 --  and is the setting to remove sell/sell at guild store enabled if any other marker icon is set?
                                 FCOIS.checkIfOtherDemarksSell(iconId)
                         ) then
-                            --d(">2")
+--d(">2")
                             --Get the icon to remove
                             local iconsToRemove = {}
                             iconsToRemove = FCOIS.getIconsToRemove(iconId)
@@ -698,7 +731,7 @@ function FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon
                                     --d(">remove icon: " ..tostring(iconToRemove))
                                     --Remove the sell/sell at guildstore/... marker icons now
                                     --Is the character screen shown, then update the marker icons now?
-                                    FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconToRemove, false, itemLink, itemId, addonName)
+                                    FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconToRemove, false, itemLink, itemId, addonName, false)
                                     FCOIS.preventerVars.markItemAntiEndlessLoop = false
                                 end
                             end
@@ -711,15 +744,26 @@ function FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon
                         end
                     end
 
-                    --d(">>itemIsMarked: " .. tostring(itemIsMarked))
-
+--d(">>itemIsMarked: " .. tostring(itemIsMarked))
                     --Shall we unmark the item? Then remove it from the SavedVars totally!
                     if itemIsMarked == false then itemIsMarked = nil end
                     --Un/Mark the item now
-                    FCOIS.markedItems[iconId][FCOIS.SignItemId(itemInstanceOrUniqueId, nil, nil, addonName)] = itemIsMarked
-                    --d(">> new markedItem value: " .. tostring(FCOIS.markedItems[iconId][FCOIS.SignItemId(itemId, nil, nil, nil)]))
+					local signedItemInstanceOrUniqueId = FCOIS.SignItemId(itemInstanceOrUniqueId, nil, nil, addonName)
+--d(">itemId: " ..tostring(itemId) .. ", itemInstanceOrUniqueId: " .. tostring(itemInstanceOrUniqueId) .. ", signedItemInstanceOrUniqueId: " .. tostring(signedItemInstanceOrUniqueId))
+					FCOIS.markedItems[iconId][signedItemInstanceOrUniqueId] = itemIsMarked
+--d(">> new markedItem value: " .. tostring(FCOIS.markedItems[iconId][signedItemInstanceOrUniqueId]))
                 end
             end --if itemId ~= nil
+			--Update inventories or character equipment, but only needed if marker was changed
+			if ( (updateInventories and doUpdateMarkerNow) or (FCOIS.preventerVars.gOverrideInvUpdateAfterMarkItem) ) then
+				--d("<<UpdateInv: " ..tostring(updateInventories) .. ", doUpdateMarkerNow: " .. tostring(doUpdateMarkerNow) .. ", gOverrideInvUpdateAfterMarkItem: " ..tostring(FCOIS.preventerVars.gOverrideInvUpdateAfterMarkItem))
+				FCOIS.preventerVars.gOverrideInvUpdateAfterMarkItem = false
+				if isCharShown then
+					FCOIS.RefreshEquipmentControl(nil, showIcon, iconId)
+				else
+					FCOIS.FilterBasics(false)
+				end
+			end -- if updateInventories ...
         end -- if iconId ~= -1
     end --if not iconIdTypeIsATable then
     --Return value if icon was added/removed
@@ -1167,16 +1211,30 @@ end
 --Global function to get the number of possible different gear sets and their icon IDs
 --Returns the number of gear sets as 1st value, and an array for the mapping from gear to the icon ID as 2nd value
 function FCOIS.GetGearSetInfo()
-	if #FCOIS.mappingVars.gearToIcon <= 0 then return nil end
-    return #FCOIS.mappingVars.gearToIcon, FCOIS.mappingVars.gearToIcon
+	local gearToIcon = FCOIS.mappingVars.gearToIcon
+	if gearToIcon or #gearToIcon <= 0 then return nil end
+    return #gearToIcon, gearToIcon
 end -- FCOGetGearSetInfo
 
 --Global function to get the number of possible different dyanmic icons and their icon IDs
 --Returns the number of dynamic icons as 1st value, and an array for the mapping from dynamic icon to the icon ID as 2nd value
 function FCOIS.GetDynamicInfo()
-	if #FCOIS.mappingVars.dynamicToIcon <= 0 then return nil end
-    return #FCOIS.mappingVars.dynamicToIcon, FCOIS.mappingVars.dynamicToIcon
+	local dynamicToIcon = FCOIS.mappingVars.dynamicToIcon
+	if dynamicToIcon or #dynamicToIcon <= 0 then return nil end
+    return #dynamicToIcon, dynamicToIcon
 end -- FCOGetDynamicInfo
+
+--Global function to check if an item is a dynamic icon marked as gearset
+function FCOIS.isDynamicGearIcon(iconId)
+	if iconId == nil then return end
+	local iconToGear = FCOIS.mappingVars.iconToGear
+	local iconToDynamic = FCOIS.mappingVars.iconToDynamic
+	if iconToDynamic and iconToGear and iconToGear[iconId] and iconToDynamic[iconId] then
+		return true
+	end
+	return false
+end
+
 
 --Global function to get the for a given gear set's iconId (2, 4, 6, 7 or 8) or a dynamic icon id (13, 14, 15, 16, 17, 18, 19, 20, 21, 22)
 --> use the constants for the amrker icons please! e.g. FCOIS_CON_ICON_LOCK, FCOIS_CON_ICON_DYNAMIC_1 etc. Check file src/FCOIS_constants.lua for the available constants (top of the file)
@@ -1189,7 +1247,6 @@ function FCOIS.GetIconText(iconId)
 	   	return FCOIS.settingsVars.settings.icon[iconId].name
     end
 end -- FCOGetIconText
-
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -1218,19 +1275,26 @@ end -- FCOGetLocText
 function FCOIS.MarkItemByKeybind(iconId, p_bagId, p_slotIndex)
     if iconId == nil then return false end
 	if not FCOIS.checkIfFCOISSettingsWereLoaded(true) then return false end
-    --is the icon enabled? Otherwise abort here.
+	--is the icon enabled? Otherwise abort here.
     local settings = FCOIS.settingsVars.settings
 	local isIconEnabled = settings.isIconEnabled
 	if not isIconEnabled[iconId] then return false end
-	local bagId, slotIndex
+	local isIIfAControlChanged = false
+	local bagId, slotIndex, controlBelowMouse, controlTypeBelowMouse
+--d("[FCOIS.MarkItemByKeybind] Bag: " .. tostring(bagId) .. ", slot: " .. tostring(slotIndex))
 	if p_bagId == nil or p_slotIndex == nil then
-		bagId, slotIndex = FCOIS.GetBagAndSlotFromControlUnderMouse()
+		bagId, slotIndex, controlBelowMouse, controlTypeBelowMouse  = FCOIS.GetBagAndSlotFromControlUnderMouse()
+		--No valid bagId and slotIndex was found
+		if bagId ~= false or slotIndex ~= nil then
+			--No IIfA mosue over GUI was triggered, so clear the data again
+			FCOIS.IIfAmouseOvered = nil
+		end
 	else
 		bagId, slotIndex =  p_bagId, p_slotIndex
 	end
     --bag and slot could be retrieved?
     if bagId ~= nil and slotIndex ~= nil then
-        if settings.debug then FCOIS.debugMessage( "[FCOIS.MarkItemByKeybind] Bag: " .. bagId .. ", slot: " .. slotIndex, true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+        if settings.debug then FCOIS.debugMessage( "[FCOIS.MarkItemByKeybind] Bag: " .. tostring(bagId) .. ", slot: " .. tostring(slotIndex), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
 		local mappingVars = FCOIS.mappingVars
         --Check if the item is currently marked with this icon, or not
         --Get the itemId of the bag, slot combination
@@ -1248,16 +1312,38 @@ function FCOIS.MarkItemByKeybind(iconId, p_bagId, p_slotIndex)
 			end
             --Set the marker here now
             --Item is already un/marked?
-            local itemIsMarked = FCOIS.checkIfItemIsProtected(iconId, itemId)
+            --local itemIsMarked = FCOIS.checkIfItemIsProtected(iconId, itemId)
+			local itemIsMarked = FCOIS.IsMarked(bagId, slotIndex, iconId, nil)
             itemIsMarked = not itemIsMarked
             --Check if all markers should be removed prior to setting a new marker
             FCOIS.MarkItem(bagId, slotIndex, iconId, itemIsMarked, true)
             --If the item got marked: Check if the item is a junk item. Remove it from junk again then
             if itemIsMarked then
-				FCOIS.IsItemProtectedAtASlotNow(bagId, slotIndex)
+				FCOIS.IsItemProtectedAtASlotNow(bagId, slotIndex, false, true)
             end
         end
     else
+		--Is the controlType below the mouse given?
+		if controlTypeBelowMouse ~= nil then
+			--Did we try to change a marker icon at the InventoryInsightFromAshes UI?
+			if controlTypeBelowMouse == FCOIS.otherAddons.IIFAitemsListEntryPrePattern then
+				if FCOIS.IIfAmouseOvered ~= nil then
+--d("[FCOIS]MarkItemByKeybind-IIfA control found: " .. FCOIS.IIfAmouseOvered.itemLink)
+					local IIfAmouseOvered = FCOIS.IIfAmouseOvered
+					if IIfAmouseOvered.itemLink ~= nil and IIfAmouseOvered.itemInstanceOrUniqueId ~= nil then
+						--Get the item's id from the itemLink
+						local itemId = FCOIS.getItemIdFromItemLink(FCOIS.IIfAmouseOvered.itemLink)
+						--Item is already un/marked?
+						--local itemIsMarked = FCOIS.checkIfItemIsProtected(iconId, itemId)
+						local itemIsMarked = FCOIS.IsMarkedByItemInstanceId(IIfAmouseOvered.itemInstanceOrUniqueId, iconId)
+						itemIsMarked = not itemIsMarked
+						--Check if all markers should be removed prior to setting a new marker
+						--FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon, itemLink, itemId, addonName, updateInventories)
+						FCOIS.MarkItemByItemInstanceId(IIfAmouseOvered.itemInstanceOrUniqueId, iconId, itemIsMarked, IIfAmouseOvered.itemLink, itemId, nil, true)
+					end
+				end
+			end
+		end
         return false
     end
 end -- FCOIS.MarkItemByKeybind

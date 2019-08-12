@@ -9,13 +9,14 @@ function FCOIS.buildDefaultSettings()
     --The default values for the language and save mode
     FCOIS.settingsVars.firstRunSettings = {
         language 	 		    = 1, --Standard: English
-        saveMode     		    = 2, --Standard: Account wide FCOIS settings
+        saveMode     		    = 2, --Standard: Account wide FCOIS settings (1=Each character, 2=Account wide, 3=All accounts the same)
     }
 
     --Pre-set the deafult values
     FCOIS.settingsVars.defaults = {
 		languageChosen				= false,
 		alwaysUseClientLanguage		= true,
+		rememberUserAboutSavedVariablesBackup = true,
 		markedItems	 		    	= {},
 		icon		 		    	= {},
 		iconPosition				= {},
@@ -182,6 +183,7 @@ function FCOIS.buildDefaultSettings()
         autoMarkSetsCheckWeaponTraitIcon	= {},
 		autoMarkSetsNonWished 				= false,
 		autoMarkSetsNonWishedIconNr			= FCOIS_CON_ICON_DECONSTRUCTION,
+		autoMarkSetsNonWishedIfCharBelowLevel = false,
         autoMarkSetsNonWishedChecks         = FCOIS_CON_NON_WISHED_LEVEL,
         autoMarkSetsNonWishedSellOthers     = true,
 		autoMarkSetsNonWishedQuality 		= 1,
@@ -242,6 +244,9 @@ function FCOIS.buildDefaultSettings()
 		addContextMenuLeadingSpaces	 = 0,
 		useContextMenuCustomMarkedNormalColor = true,
 		contextMenuCustomMarkedNormalColor = {["r"] = 1,["g"] = 0,["b"] = 0,["a"] = 1},
+		contextMenuItemEntryShowTooltip	= false,
+		contextMenuItemEntryShowTooltipWithSHIFTKeyOnly = false,
+		contextMenuItemEntryTooltipProtectedPanels	= false,
 		showArmorTypeIconAtCharacter = false,
 		armorTypeIconAtCharacterX	 = 15,
 		armorTypeIconAtCharacterY	 = 15,

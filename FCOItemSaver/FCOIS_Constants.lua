@@ -2,16 +2,68 @@
 if FCOIS == nil then FCOIS = {} end
 local FCOIS = FCOIS
 
+--===================== ADDON Info =============================================
+--Addon variables
+FCOIS.addonVars = {}
+--Addon variables
+FCOIS.addonVars.addonVersionOptions 		= '1.6.1' -- version shown in the settings panel
+FCOIS.addonVars.addonVersionOptionsNumber	= 1.61
+FCOIS.addonVars.gAddonName					= "FCOItemSaver"
+FCOIS.addonVars.gAddonNameShort             = "FCOIS"
+FCOIS.addonVars.addonNameMenu				= "FCO ItemSaver"
+FCOIS.addonVars.addonNameMenuDisplay		= "|c00FF00FCO |cFFFF00ItemSaver|r"
+FCOIS.addonVars.addonNameContextMenuEntry   = "     - |c22DD22FCO|r ItemSaver -"
+FCOIS.addonVars.addonAuthor 				= '|cFFFF00Baertram|r'
+FCOIS.addonVars.addonAuthorDisplayNameEU  	= '@Baertram'
+FCOIS.addonVars.addonAuthorDisplayNameNA  	= '@Baertram'
+FCOIS.addonVars.addonAuthorDisplayNamePTS  	= '@Baertram'
+FCOIS.addonVars.website 					= "https://www.esoui.com/downloads/info630-FCOItemSaver.html"
+FCOIS.addonVars.FAQwebsite                  = "https://www.esoui.com/portal.php?id=136&a=faq"
+FCOIS.addonVars.authorPortal                = "https://www.esoui.com/portal.php?&id=136"
+FCOIS.addonVars.feedback                    = "https://www.esoui.com/portal.php?id=136&a=bugreport"
+FCOIS.addonVars.donation                    = "https://www.esoui.com/portal.php?id=136&a=faq&faqid=131"
+FCOIS.addonVars.gAddonLoaded				= false
+FCOIS.addonVars.gPlayerActivated			= false
+FCOIS.addonVars.gSettingsLoaded				= false
+
+--SavedVariables constants
+FCOIS.addonVars.savedVarName				= FCOIS.addonVars.gAddonName .. "_Settings"
+FCOIS.addonVars.savedVarVersion		   		= 0.10 -- Changing this will reset all SavedVariables!
+FCOIS.svDefaultName                         = "Default"
+FCOIS.svAccountWideName                     = "$AccountWide"
+FCOIS.svAllAccountsName                     = "$AllAccounts"
+FCOIS.svSettingsForAllName                  = "SettingsForAll"
+FCOIS.svSettingsName                        = "Settings"
+
+--The global variable for the current mouseDown button
+FCOIS.gMouseButtonDown = {}
+
+--Data for the protection (colors, textures, ...)
+FCOIS.protectedData = {}
+FCOIS.protectedData.colors = {
+    [false] = "|cDD2222",
+    [true]  = "|c22DD22",
+}
+FCOIS.protectedData.textures = {
+    [false] = "esoui/art/buttons/cancel_up.dds",
+    [true]  = "esoui/art/buttons/accept_up.dds",
+}
+local protectedColors = FCOIS.protectedData.colors
+local protectionOffColor    = protectedColors[false]
+local protectionOnColor     = protectedColors[true]
 --Local pre chat color variables
 FCOIS.preChatVars = {}
 --Uncolored "FCOIS" pre chat text for the chat output
-FCOIS.preChatVars.preChatText = "FCOIS"
+FCOIS.preChatVars.preChatText = FCOIS.addonVars.gAddonNameShort
 --Green colored "FCOIS" pre text for the chat output
-FCOIS.preChatVars.preChatTextGreen = "|c22DD22"..FCOIS.preChatVars.preChatText.."|r "
+FCOIS.preChatVars.preChatTextGreen = protectionOnColor..FCOIS.preChatVars.preChatText.."|r "
 --Red colored "FCOIS" pre text for the chat output
-FCOIS.preChatVars.preChatTextRed = "|cDD2222"..FCOIS.preChatVars.preChatText.."|r "
+FCOIS.preChatVars.preChatTextRed = protectionOffColor..FCOIS.preChatVars.preChatText.."|r "
 --Blue colored "FCOIS" pre text for the chat output
 FCOIS.preChatVars.preChatTextBlue = "|c2222DD"..FCOIS.preChatVars.preChatText.."|r "
+--Values for the "marked" entries
+FCOIS.preChatVars.currentStart = "> "
+FCOIS.preChatVars.currentEnd = " <"
 
 --Error text constants
 FCOIS.errorTexts = {}
@@ -214,8 +266,27 @@ FCOIS_DEBUG_DEPTH_VERY_DETAILED	= 3
 FCOIS_DEBUG_DEPTH_SPAM		    = 4
 FCOIS_DEBUG_DEPTH_ALL			= 5
 
+--The inventory row patterns for the supported keybindings and MouseOverControl checks (SHIFT+right mouse functions e.g.)
+--See file src/FCOIS_Functions.lua, function FCOIS.GetBagAndSlotFromControlUnderMouse()
+FCOIS.checkVars.inventoryRowPatterns = {
+[1] = "^ZO_%a+Backpack%dRow%d%d*",                                          --Inventory backpack
+[2] = "^ZO_%a+InventoryList%dRow%d%d*",                                     --Inventory backpack
+[3] = "^ZO_CharacterEquipmentSlots.+$",                                     --Character
+[4] = "^ZO_CraftBagList%dRow%d%d*",                                         --CraftBag
+[5] = "^ZO_Smithing%aRefinementPanelInventoryBackpack%dRow%d%d*",           --Smithing refinement
+[6] = "^ZO_RetraitStation_%a+RetraitPanelInventoryBackpack%dRow%d%d*",      --Retrait
+[7] = "^ZO_QuickSlotList%dRow%d%d*",                                        --Quickslot
+[8] = "^ZO_RepairWindowList%dRow%d%d*",                                     --Repair at vendor
+--Other adons like IIfA will be added dynamically at EVENT_ON_ADDON_LOADED callback function
+--See file src/FCOIS_Events.lua, call to function FCOIS.checkIfOtherAddonActive() -> See file
+-- src/FCOIS_OtherAddons.lua, function FCOIS.checkIfOtherAddonActive()
+}
+
 --Array for the mapping between variables and values
 FCOIS.mappingVars = {}
+FCOIS.mappingVars.noEntry = "-------------"
+FCOIS.mappingVars.noEntryValue = 1
+local noEntry = FCOIS.mappingVars.noEntry
 --Local last variables
 FCOIS.lastVars = {}
 --Local override variables
@@ -264,7 +335,7 @@ FCOIS.checkHandlers["dynamic"]  = true
 
 --The mapping between the FCOIS settings ID and the real server name (for the SavedVars)
 FCOIS.mappingVars.serverNames = {
-    [1] = "-------------",   -- None
+    [1] = noEntry,           -- None
     [2] = "EU Megaserver",   -- EU
     [3] = "NA Megaserver",   -- US, North America
     [4] = "PTS",             -- PTS
@@ -344,6 +415,12 @@ FCOIS.mappingVars.whereAreWeToFilterPanelId = {
         [FCOIS_CON_RESEARCH_DIALOG]	    =   LF_SMITHING_RESEARCH_DIALOG,
         [FCOIS_CON_JEWELRY_RESEARCH_DIALOG] = LF_JEWELRY_RESEARCH_DIALOG,
 }
+--The array for the mapping between the LibFilters FilterPanelId and the "WhereAreWe" (e.g. used in ItemSelectionHandler function)
+FCOIS.mappingVars.filterPanelIdToWhereAreWe = {}
+for whereAreWe, filterPanelId in pairs(FCOIS.mappingVars.whereAreWeToFilterPanelId) do
+    FCOIS.mappingVars.filterPanelIdToWhereAreWe[filterPanelId] = whereAreWe
+end
+
 --The array with the alert message texts for every filterPanel
 FCOIS.mappingVars.whereAreWeToAlertmessageText = {}
 
@@ -413,7 +490,7 @@ FCOIS.mappingVars.InvToInventoryType = {
 }
 --The mapping array between LibFilters IDs to their filter name string "prefix"
 FCOIS_CON_LIBFILTERS_STRING_PREFIX_BACKUP_ID    = 0
-FCOIS_CON_LIBFILTERS_STRING_PREFIX_FCOIS        = "FCOIS_"
+FCOIS_CON_LIBFILTERS_STRING_PREFIX_FCOIS        = FCOIS.addonVars.gAddonNameShort .. "_"
 FCOIS.mappingVars.libFiltersIds2StringPrefix = {
     --Backup entry if string for LibFilters ID is not given inside this array!
     [FCOIS_CON_LIBFILTERS_STRING_PREFIX_BACKUP_ID] = FCOIS_CON_LIBFILTERS_STRING_PREFIX_FCOIS .. "LibFiltersIdFilter_",
@@ -673,6 +750,35 @@ FCOIS.craftingPrevention.extractSlot = nil
 FCOIS.craftingPrevention.extractWhereAreWe = nil
 
 FCOIS.ZOControlVars = {}
+--Inventories and their searchBox controls
+local inventories =
+{
+    [INVENTORY_BACKPACK] =
+    {
+        searchBox = ZO_PlayerInventorySearchBox,
+    },
+    [INVENTORY_QUEST_ITEM] =
+    {
+        searchBox = ZO_PlayerInventorySearchBox,
+    },
+    [INVENTORY_BANK] =
+    {
+        searchBox = ZO_PlayerBankSearchBox,
+    },
+    [INVENTORY_HOUSE_BANK] =
+    {
+        searchBox = ZO_HouseBankSearchBox,
+    },
+    [INVENTORY_GUILD_BANK] =
+    {
+        searchBox = ZO_GuildBankSearchBox,
+    },
+    [INVENTORY_CRAFT_BAG] =
+    {
+        searchBox = ZO_CraftBagSearchBox,
+    },
+}
+FCOIS.ZOControlVars.inventories = inventories
 --Control names of ZO* standard controls etc.
 FCOIS.ZOControlVars.FCOISfilterButtonNames = {
  [FCOIS_CON_FILTER_BUTTON_LOCKDYN] 		= "ZO_PlayerInventory_FilterButton1",
@@ -718,6 +824,7 @@ FCOIS.ZOControlVars.STORE_BUY_BACK              = ZO_BuyBackListContents
 FCOIS.ZOControlVars.VENDOR_MAINMENU_BUTTON_BAR  = ""
 --FCOIS.ZOControlVars.FENCE						= ZO_Fence_Keyboard_WindowMenu
 FCOIS.ZOControlVars.REPAIR_LIST				    = ZO_RepairWindowList
+FCOIS.ZOControlVars.REPAIR_LIST_BAG 		    = ZO_RepairWindowListContents
 FCOIS.ZOControlVars.BANK_INV					= ZO_PlayerBank
 FCOIS.ZOControlVars.BANK_INV_NAME				= FCOIS.ZOControlVars.BANK_INV:GetName()
 FCOIS.ZOControlVars.BANK			    		= ZO_PlayerBankBackpack
@@ -737,10 +844,9 @@ FCOIS.ZOControlVars.GUILD_STORE_KEYBOARD	= TRADING_HOUSE
 FCOIS.ZOControlVars.GUILD_STORE				= ZO_TradingHouse
 FCOIS.ZOControlVars.tradingHouseSceneName	= "tradinghouse"
 ------------------------------------------------------------------------------------------------------------------------
---Todo: Remove old controls (in front of the or) after API 100026 Wrathstone has gone live
 --2019-01-26: Support for API 100025 and 100026 controls!
-FCOIS.ZOControlVars.GUILD_STORE_SELL_SLOT	= ZO_TradingHouseLeftPanePostItemFormInfo or ZO_TradingHousePostItemPaneFormInfo
-FCOIS.ZOControlVars.GUILD_STORE_SELL_SLOT_ITEM	= ZO_TradingHouseLeftPanePostItemFormInfoItem or ZO_TradingHousePostItemPaneFormInfoItem
+FCOIS.ZOControlVars.GUILD_STORE_SELL_SLOT	= ZO_TradingHousePostItemPaneFormInfo
+FCOIS.ZOControlVars.GUILD_STORE_SELL_SLOT_ITEM	= ZO_TradingHousePostItemPaneFormInfoItem
 ------------------------------------------------------------------------------------------------------------------------
 FCOIS.ZOControlVars.GUILD_STORE_MENUBAR_BUTTON_SEARCH = ZO_TradingHouseMenuBarButton1
 FCOIS.ZOControlVars.GUILD_STORE_MENUBAR_BUTTON_SEARCH_NAME = "ZO_TradingHouseMenuBarButton1"
@@ -775,6 +881,7 @@ FCOIS.ZOControlVars.IMPROVEMENT_BUTTON_ARMOR   = ZO_SmithingTopLevelImprovementP
 FCOIS.ZOControlVars.RESEARCH    				= ZO_SmithingTopLevelResearchPanel
 FCOIS.ZOControlVars.RESEARCH_POPUP_TOP_DIVIDER  = ZO_ListDialog1Divider
 FCOIS.ZOControlVars.LIST_DIALOG 	    		= ZO_ListDialog1List
+FCOIS.ZOControlVars.DIALOG_SPLIT_STACK_NAME      = "SPLIT_STACK"
 FCOIS.ZOControlVars.MAIL_SEND					= MAIL_SEND
 FCOIS.ZOControlVars.MAIL_SEND_NAME			    = FCOIS.ZOControlVars.MAIL_SEND.control:GetName()
 FCOIS.ZOControlVars.mailSendSceneName		    = "mailSend"
@@ -1049,7 +1156,7 @@ FCOIS.preventerVars.dontShowInvContextMenu = false
 FCOIS.preventerVars.markItemAntiEndlessLoop = false
 FCOIS.preventerVars.dontAutoReenableAntiSettingsInInventory = false
 FCOIS.preventerVars.dragAndDropOrDoubleClickItemSelectionHandler = false
-FCOIS.preventerVars.noGamePadMoudeSupportTextOutput = false
+FCOIS.preventerVars.noGamePadModeSupportTextOutput = false
 FCOIS.preventerVars.contextMenuUpdateLoopLastLoop = false
 FCOIS.preventerVars.doNotScanInv = false
 FCOIS.preventerVars.migrateItemMarkers = false
@@ -1069,6 +1176,10 @@ FCOIS.preventerVars.gClearingMarkerIcons = false
 FCOIS.preventerVars.gMarkItemLastIconInLoop = false
 FCOIS.preventerVars.repairDialogOnRepairKitSelectedOverwrite = false
 FCOIS.preventerVars.ZO_ListDialog1ResearchIsOpen = false
+FCOIS.preventerVars.splitItemStackDialogActive = false
+FCOIS.preventerVars.splitItemStackDialogButtonCallbacks = false
+FCOIS.preventerVars.useAdvancedFiltersItemCountInInventories = false
+FCOIS.preventerVars.dontUpdateFilteredItemCount = false
 
 --The event handler array for OnMouseDoubleClick, Drag&Drop, etc.
 FCOIS.eventHandlers = {}
@@ -1647,7 +1758,29 @@ FCOIS.checkVars.researchTraitCheckTraitsNotAllowed = {
     [ITEM_TRAIT_TYPE_JEWELRY_ORNATE]    = true,
     [ITEM_TRAIT_TYPE_WEAPON_ORNATE]     = true,
 }
-
+--The possible checkWere panels for the antiSettings reenable checks
+--See file src/FCOIS_Settings.lua, function FCOIS.autoReenableAntiSettingsCheck(checkWhere)
+FCOIS.checkVars.autoReenableAntiSettingsCheckWheres = {
+    [1] = "CRAFTING_STATION",
+    [2] = "STORE",
+    [3]	= "GUILD_STORE",
+    [4] = "DESTROY",
+    [5] = "TRADE",
+    [6] = "MAIL",
+    [7] = "RETRAIT",
+}
+--The entry for "all" the antisettings reenable panel checks above
+FCOIS.checkVars.autoReenableAntiSettingsCheckWheresAll = "-ALL-"
+--The filter panelÍds which need to be checked if anti-destroy is checked
+FCOIS.checkVars.filterPanelIdsForAntiDestroy = {
+    [LF_INVENTORY]          = true,
+    [LF_BANK_WITHDRAW]      = true,
+    [LF_GUILDBANK_WITHDRAW] = true,
+    [LF_HOUSE_BANK_WITHDRAW]= true,
+    [LF_BANK_DEPOSIT]       = true,
+    [LF_GUILDBANK_DEPOSIT]  = true,
+    [LF_HOUSE_BANK_DEPOSIT] = true,
+}
 --Table with all equipment slot names which can be updated with markes for the icons
 --The index is the relating slotIndex of the bag BAG_WORN!
 FCOIS.mappingVars.characterEquipmentSlotNameByIndex = {
@@ -1999,7 +2132,7 @@ local invAddButtonVars = FCOIS.invAdditionalButtonVars
 --and file FCOIS_constants.lua at the bottom for the anchorvars for each API version.
 --Entries without a parent and without "addInvButton" boolean == true will not be added again as another panel (like LF_INVENTORY) is reused for the button.
 --The entry is only there to get the button's name for the functions in file "FCOIS_ContextMenus.lua" to show/hide it.
---> To check what entries the context menu below this invokerButton will create/show check the file src/FCOIS_COntextMenus.lua, function FCOIS.showContextMenuForAddInvButtons(invokerButton)
+--> To check what entries the context menu below this invokerButton will create/show check the file src/FCOIS_ContextMenus.lua, function FCOIS.showContextMenuForAddInvButtons(invokerButton)
 FCOIS.contextMenuVars.filterPanelIdToContextMenuButtonInvoker = {
 	[LF_INVENTORY] 					= {
         ["addInvButton"]  = true,
@@ -2114,11 +2247,8 @@ FCOIS.contextMenuVars.filterPanelIdToContextMenuButtonInvoker = {
 
 --Constants for the filter item number sort header entries "name" at the filter panels
 FCOIS.sortHeaderVars = {}
---The sort header name lookup table
-FCOIS.sortHeaderVars.name = {}
-local sortHeaderNames = FCOIS.sortHeaderVars.name
 local sortByNameNameStr = "SortByNameName"
-sortHeaderNames = {
+local sortHeaderNames = {
     [LF_INVENTORY]              = "ZO_PlayerInventory" .. sortByNameNameStr,
     [LF_VENDOR_BUY]             = "ZO_StoreWindow" .. sortByNameNameStr,
     [LF_VENDOR_BUYBACK]         = "ZO_BuyBack" .. sortByNameNameStr,
@@ -2133,12 +2263,14 @@ sortHeaderNames = {
     [LF_CRAFTBAG]               = "ZO_CraftBag" .. sortByNameNameStr,
     [LF_RETRAIT]                = "ZO_RetraitStation_KeyboardTopLevelRetraitPanelInventory" .. sortByNameNameStr,
     [LF_HOUSE_BANK_WITHDRAW]	= "ZO_HouseBank" .. sortByNameNameStr,
+    [LF_QUICKSLOT]              = "ZO_QuickSlot" .. sortByNameNameStr,
 }
 local sortHeaderInventoryName = sortHeaderNames[LF_INVENTORY]
 sortHeaderNames[LF_MAIL_SEND]              = sortHeaderInventoryName
 sortHeaderNames[LF_TRADE]                  = sortHeaderInventoryName
 sortHeaderNames[LF_GUILDSTORE_SELL]        = sortHeaderInventoryName
 sortHeaderNames[LF_BANK_DEPOSIT]           = sortHeaderInventoryName
+sortHeaderNames[LF_GUILDBANK_DEPOSIT]      = sortHeaderInventoryName
 sortHeaderNames[LF_VENDOR_SELL]            = sortHeaderInventoryName
 sortHeaderNames[LF_FENCE_SELL]             = sortHeaderInventoryName
 sortHeaderNames[LF_FENCE_LAUNDER]          = sortHeaderInventoryName
@@ -2147,6 +2279,8 @@ sortHeaderNames[LF_JEWELRY_REFINE]         = sortHeaderNames[LF_SMITHING_REFINE]
 sortHeaderNames[LF_JEWELRY_DECONSTRUCT]    = sortHeaderNames[LF_SMITHING_DECONSTRUCT]
 sortHeaderNames[LF_JEWELRY_IMPROVEMENT]    = sortHeaderNames[LF_SMITHING_IMPROVEMENT]
 sortHeaderNames[LF_ENCHANTING_EXTRACTION]  = sortHeaderNames[LF_ENCHANTING_CREATION]
+--The sort header name lookup table
+FCOIS.sortHeaderVars.name = sortHeaderNames
 
 --The variable containing the number of filtered items at the different panels
 FCOIS.numberOfFilteredItems = {}

@@ -90,6 +90,8 @@ function FCOIS.checkIfOtherAddonActive(addOnName)
     --Inventory Insight From Ashes (IIFA)
     if (addOnName == "IIfA" or IIfA ~= nil) then
         FCOIS.otherAddons.IIFAActive = true
+        --Add entry to constants table for the keybinds/SHIFT+right mouse click inventory row patterns
+        table.insert(FCOIS.checkVars.inventoryRowPatterns, "^" .. FCOIS.otherAddons.IIFAitemsListEntryPrePattern .. "*")         --Other addons: InventoryInsightFromAshes UI
     end
 end
 
@@ -134,6 +136,7 @@ end
 -- ==================================================================
 --Check if an update to the visible marker icons need to be done
 function FCOIS.checkIfInventoryRowOfExternalAddonNeedsMarkerIconsUpdate(rowControl, markId)
+--d("[FCOIS]checkIfInventoryRowOfExternalAddonNeedsMarkerIconsUpdate-markId: " ..tostring(markId))
     --Were all other marker icons removed as this marker icon got set?
     if FCOIS.checkIfItemShouldBeDemarked(markId)
         --  Icon is not sell or sell at guild store
@@ -144,7 +147,6 @@ function FCOIS.checkIfInventoryRowOfExternalAddonNeedsMarkerIconsUpdate(rowContr
         --Other addons "Inventory Insight" integration:
         --Update the complete row in the IIfA inventory frame
         if IIfA ~= nil and FCOIS.IIfAclicked ~= nil and IIfA.UpdateFCOISMarkerIcons ~= nil then
-            --d(">updating IIfA row")
             local showFCOISMarkerIcons = IIfA:GetSettings().FCOISshowMarkerIcons
             IIfA:UpdateFCOISMarkerIcons(rowControl, showFCOISMarkerIcons, false, -1)
         end
@@ -1039,4 +1041,30 @@ function FCOIS.checkIfChosenResearchAddonActive(researchAddonId)
         retVar = FCOIS.otherAddons.researchAssistantActive or false
     end
     return retVar
+end
+
+
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+-- AdvancedFilters (Updated)
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+
+--Check if the itemCount addition to the invenmtory bagSpace is enabled in teh AdvancedFilters settings
+function FCOIS.checkIfAdvancedFiltersItemCountIsEnabled()
+    --Is the AddOnAdvancedFilters addon active and the function to refresh the shown item count below the inventory, at the "FreeSlot" label exists
+    if AdvancedFilters ~= nil then
+        local AF = AdvancedFilters
+        local afUtil = AF.util
+        if afUtil.updateInventoryInfoBarCountLabel ~= nil then
+            --AdvancedFilters settings to hide the itemsount in the inventories is disabled?
+            if AF.settings and AF.settings.hideItemCount == false then
+                FCOIS.preventerVars.useAdvancedFiltersItemCountInInventories = true
+                return true
+            end
+        end
+    end
+    return false
 end

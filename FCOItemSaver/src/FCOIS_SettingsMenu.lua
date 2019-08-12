@@ -8,12 +8,22 @@ if not FCOIS.libsLoadedProperly then return end
 local FCOISdefaultSettings = {}
 local FCOISsettings = {}
 local FCOISlocVars = {}
-local numFilterPanels = FCOIS.numVars.gFCONumFilterInventoryTypes
-local activeFilterPanelIds = FCOIS.mappingVars.activeFilterPanelIds
---local numFilterButtons = FCOIS.numVars.gFCONumFilters
+local mappingVars = FCOIS.mappingVars
+local preChatVars = FCOIS.preChatVars
+local noEntry = mappingVars.noEntry
+local noEntryValue = mappingVars.noEntryValue
+local currentStart  = preChatVars.currentStart
+local currentEnd    = preChatVars.currentEnd
+
+local GetCharacterName = FCOIS.getCharacterName
+
+local numVars = FCOIS.numVars
+local numFilterPanels = numVars.gFCONumFilterInventoryTypes
+local activeFilterPanelIds = mappingVars.activeFilterPanelIds
+--local numFilterButtons = numVars.gFCONumFilters
 local filterButtonsToCheck = FCOIS.checkVars.filterButtonsToCheck
-local numFilterIcons = FCOIS.numVars.gFCONumFilterIcons
-local numMaxDynIcons = FCOIS.numVars.gFCOMaxNumDynamicIcons
+local numFilterIcons = numVars.gFCONumFilterIcons
+local numMaxDynIcons = numVars.gFCOMaxNumDynamicIcons
 local markerIconTextures = FCOIS.textureVars.MARKER_TEXTURES
 local minIconSize = FCOIS.iconVars.minIconSize
 local maxIconSize = FCOIS.iconVars.maxIconSize
@@ -21,6 +31,19 @@ local minFilterButtonWidth = FCOIS.filterButtonVars.minFilterButtonWidth
 local maxFilterButtonWidth = FCOIS.filterButtonVars.maxFilterButtonWidth
 local minFilterButtonHeight = FCOIS.filterButtonVars.minFilterButtonHeight
 local maxFilterButtonHeight = FCOIS.filterButtonVars.maxFilterButtonHeight
+
+FCOIS.worldName = FCOIS.worldName or GetWorldName()
+local currentServerName     = FCOIS.worldName
+local currentAccountName    = GetDisplayName()
+local currentCharacterName  = ZO_CachedStrFormat(SI_UNIT_NAME, GetUnitName("player"))
+local currentCharacterId    = GetCurrentCharacterId()
+local currentServerNameMarked   = currentStart..currentServerName..currentEnd
+local currentAccountNameMarked  = currentStart..currentAccountName..currentEnd
+local currentCharacterNameMarked= currentStart..currentCharacterName..currentEnd
+local serverNames = mappingVars.serverNames
+local svAllAccountsName = FCOIS.svAllAccountsName
+
+local doNotRunDropdownValueSetFunc = false
 
 --==========================================================================================================================================
 --									FCOIS libAddonMenu 2.x settings menu
@@ -41,14 +64,59 @@ local function GetFCOTextureId(texturePath)
     return 0
 end
 
+local function cleanName(nameStr, nameType, nameValue)
+    if nameStr == nil or nameStr =="" or nameType == nil or nameType == "" then return end
+    if nameValue ~= nil and nameValue == noEntry then return nameStr end
+    local nameCleaned = ""
+    if nameType == "server" then
+        --Namevalue is given, or not, and it's another entry
+        --Check for the currentStart and currentEnd values and remove them
+        nameCleaned = string.gsub(nameStr, currentStart, "", 1)
+        nameCleaned = string.gsub(nameCleaned, currentEnd, "", 1)
+        return nameCleaned
+    elseif nameType == "account" then
+        --Namevalue is given and it's the AllAccounts entry?
+        if nameValue then
+            if nameValue == noEntryValue+2 then --AllAccounts entry?
+                return svAllAccountsName
+            elseif nameValue == noEntryValue+1 then --Current account entry?
+                return currentAccountName
+            end
+        end
+        --Namevalue is given, or not, and it's another entry
+        --Check for the currentStart and currentEnd values and remove them
+        nameCleaned = string.gsub(nameStr, currentStart, "", 1)
+        nameCleaned = string.gsub(nameCleaned, currentEnd, "", 1)
+        return nameCleaned
+    elseif nameType == "character" then
+        --Namevalue is given and it's the AllAccounts entry?
+        if nameValue then
+            if nameValue == noEntryValue+1 then --Current Character entry?
+                return currentCharacterName
+            end
+        end
+        --Namevalue is given, or not, and it's another entry
+        --Check for the currentStart and currentEnd values and remove them
+        nameCleaned = string.gsub(nameStr, currentStart, "", 1)
+        nameCleaned = string.gsub(nameCleaned, currentEnd, "", 1)
+        return nameCleaned
+    end
+    nameCleaned = nameStr
+    return nameCleaned
+end
+
 -- Build the LAM options menu
 function FCOIS.BuildAddonMenu()
     --Update some settings for the libAddonMenu settings menu
     FCOIS.updateSettingsBeforeAddonMenu()
 
     --Variablen
-    local srcServer = 1
-    local targServer = 1
+    local srcServer     = noEntryValue
+    local targServer    = noEntryValue
+    local srcAcc        = noEntryValue
+    local targAcc       = noEntryValue
+    local srcChar       = noEntryValue
+    local targChar      = noEntryValue
 
     local addonVars = FCOIS.addonVars
 
@@ -113,7 +181,7 @@ function FCOIS.BuildAddonMenu()
 	-- Build options menu parts
     --The textures/marker icons names (just numbers)
 	local texturesList = {}
-    local maxTextureIcons = FCOIS.numVars.maxTextureIcons or 100
+    local maxTextureIcons = numVars.maxTextureIcons or 100
     for i=1, maxTextureIcons, 1 do
         texturesList[i] = tostring(i)
     end
@@ -222,7 +290,7 @@ function FCOIS.BuildAddonMenu()
 	--local LV_Cur = locVars
 	local LV_Eng = FCOISlocVars.localizationAll[FCOIS_CON_LANG_EN]
 	local languageOptions = {}
-	for i=1, FCOIS.numVars.languageCount do
+	for i=1, numVars.languageCount do
 		local s="options_language_dropdown_selection"..i
 		if locVars==LV_Eng then
 			languageOptions[i] = nvl(locVars[s])
@@ -235,6 +303,7 @@ function FCOIS.BuildAddonMenu()
     local savedVariablesOptions = {
     	[1] = locVars["options_savedVariables_dropdown_selection1"], -- Each character
         [2] = locVars["options_savedVariables_dropdown_selection2"], -- Account wide
+        [3] = locVars["options_savedVariables_dropdown_selection3"], -- Each account saved the same
     }
 
     --The server/world/realm names dropdown
@@ -242,18 +311,21 @@ function FCOIS.BuildAddonMenu()
     local serverOptionsValues = {}
     local serverOptionsTarget = {}
     local serverOptionsValuesTarget = {}
-    local function reBuildServerOptions()
-        local serverNames = FCOIS.mappingVars.serverNames
+    local function reBuildServerOptions(updateSourceOrTarget)
         --Reset the server name and index tables
         serverOptions = {}
         serverOptionsValues = {}
         for serverIdx, serverName in ipairs(serverNames) do
+            local serverNameStr = serverName
+            if serverName == currentServerName then
+                serverNameStr = currentServerNameMarked
+            end
             if serverIdx > 1 then
                 --Do we have server settings for the servername in the SavedVars?
-                table.insert(serverOptionsTarget, serverName)
+                table.insert(serverOptionsTarget, serverNameStr)
                 table.insert(serverOptionsValuesTarget, serverIdx)
                 if FCOItemSaver_Settings and FCOItemSaver_Settings[serverName] then
-                    table.insert(serverOptions, serverName)
+                    table.insert(serverOptions, serverNameStr)
                     table.insert(serverOptionsValues, serverIdx)
                 end
             else
@@ -264,10 +336,246 @@ function FCOIS.BuildAddonMenu()
                 table.insert(serverOptionsValuesTarget, serverIdx)
             end
         end
+        --Reset chosen dropdown values
+        doNotRunDropdownValueSetFunc = true
+        if updateSourceOrTarget == nil or updateSourceOrTarget == true then
+            srcServer  = noEntryValue
+            if FCOItemSaver_Settings_Copy_SV_Src_Server then
+                FCOItemSaver_Settings_Copy_SV_Src_Server:UpdateValue(srcServer)
+            end
+            srcAcc  = noEntryValue
+            if FCOItemSaver_Settings_Copy_SV_Src_Acc then
+                FCOItemSaver_Settings_Copy_SV_Src_Acc:UpdateValue(srcAcc)
+            end
+            srcChar = noEntryValue
+            if FCOItemSaver_Settings_Copy_SV_Src_Char then
+                FCOItemSaver_Settings_Copy_SV_Src_Char:UpdateValue(srcChar)
+            end
+        end
+        if updateSourceOrTarget == nil or updateSourceOrTarget == false then
+            targServer = noEntryValue
+            if FCOItemSaver_Settings_Copy_SV_Targ_Server then
+                FCOItemSaver_Settings_Copy_SV_Src_Server:UpdateValue(targServer)
+            end
+            targAcc = noEntryValue
+            if FCOItemSaver_Settings_Copy_SV_Targ_Acc then
+                FCOItemSaver_Settings_Copy_SV_Targ_Acc:UpdateValue(targAcc)
+            end
+            targChar = noEntryValue
+            if FCOItemSaver_Settings_Copy_SV_Targ_Char then
+                FCOItemSaver_Settings_Copy_SV_Targ_Char:UpdateValue(targChar)
+            end
+        end
+        doNotRunDropdownValueSetFunc = false
     end
     reBuildServerOptions()
 
-    local mapServerNames = FCOIS.mappingVars.serverNames
+    --The account dropdown
+    local accountSrcOptions = {}
+    local accountSrcOptionsValues = {}
+    local accountTargOptions = {}
+    local accountTargOptionsValues = {}
+    local allAccountsFoundInSV = false
+    local function reBuildAccountOptions(updateSourceOrTarget)
+        --Reset the account name and index tables
+        accountSrcOptions = {}
+        accountSrcOptionsValues = {}
+        accountTargOptions = {}
+        accountTargOptionsValues = {}
+        --The source server name
+        local sourceServerName = serverNames[srcServer]
+        --Source accounts
+        --Add the no entry entry
+        table.insert(accountSrcOptions, noEntry)
+        table.insert(accountSrcOptionsValues, noEntryValue)
+        --Get current acount name
+        table.insert(accountSrcOptions, currentAccountNameMarked)
+        table.insert(accountSrcOptionsValues, noEntryValue+1)
+        if FCOItemSaver_Settings then
+            local accCnt = 3 -- Preset with 3 so the 3rd item will be left empty for the "All accounts" entry
+            --Get account names from the SavedVariables, for each server
+            for serverName, serverData in pairs(FCOItemSaver_Settings) do
+                if serverName == sourceServerName then
+                    for accountName, _ in pairs(serverData) do
+                        --Do not add the current accountName again, and not the all accounts name
+                        if accountName ~= currentAccountName and accountName ~= svAllAccountsName then
+                            accCnt = accCnt + 1
+                            table.insert(accountSrcOptions, accountName)
+                            table.insert(accountSrcOptionsValues, accCnt)
+                        elseif accountName == svAllAccountsName then
+                            allAccountsFoundInSV = true
+                        end
+                    end
+                end
+            end
+        end
+        --Add all acounts name at fixed positon 3! Color it red if it does not exist yet
+        local allAccountsText = locVars["options_savedVariables_dropdown_selection3"]
+        if not allAccountsFoundInSV then
+            allAccountsText = "|cff0000" .. allAccountsText .. "|r"
+        end
+        table.insert(accountSrcOptions, allAccountsText)
+        table.insert(accountSrcOptionsValues, noEntryValue+2)
+
+        --Target accounts
+        allAccountsFoundInSV = false
+        --Copy the source to the target accounts
+        --accountTargOptions          = ZO_ShallowTableCopy(accountSrcOptions)
+        --accountTargOptionsValues    = ZO_ShallowTableCopy(accountSrcOptionsValues)
+        --The target server name
+        local targetServerName = serverNames[targServer]
+        --Add the no entry entry
+        table.insert(accountTargOptions, noEntry)
+        table.insert(accountTargOptionsValues, noEntryValue)
+        --Get current acount name
+        table.insert(accountTargOptions, currentAccountNameMarked)
+        table.insert(accountTargOptionsValues, noEntryValue+1)
+        if FCOItemSaver_Settings then
+            local accCnt = 3 -- Preset with 3 so the 3rd item will be left empty for the "All accounts" entry
+            --Get account names from the SavedVariables, for each server
+            for serverName, serverData in pairs(FCOItemSaver_Settings) do
+                if serverName == targetServerName then
+                    for accountName, _ in pairs(serverData) do
+                        --Do not add the current accountName again, and not the all accounts name
+                        if accountName ~= currentAccountName and accountName ~= svAllAccountsName then
+                            accCnt = accCnt + 1
+                            local accNameTarg = accountName
+                            table.insert(accountTargOptions, accNameTarg)
+                            table.insert(accountTargOptionsValues, accCnt)
+                        elseif accountName == svAllAccountsName then
+                            allAccountsFoundInSV = true
+                        end
+                    end
+                end
+            end
+        end
+        --Add all acounts name at fixed positon 3! Color it red if it does not exist yet
+        allAccountsText = locVars["options_savedVariables_dropdown_selection3"]
+        if not allAccountsFoundInSV then
+            allAccountsText = "|cff0000" .. allAccountsText .. "|r"
+        end
+        table.insert(accountTargOptions, allAccountsText)
+        table.insert(accountTargOptionsValues, noEntryValue+2)
+
+        --Reset chosen dropdown values
+        doNotRunDropdownValueSetFunc = true
+        if updateSourceOrTarget == nil or updateSourceOrTarget == true then
+            srcAcc  = noEntryValue
+            if FCOItemSaver_Settings_Copy_SV_Src_Acc then
+                FCOItemSaver_Settings_Copy_SV_Src_Acc:UpdateValue(srcAcc)
+                FCOItemSaver_Settings_Copy_SV_Src_Acc:UpdateChoices(accountSrcOptions, accountSrcOptionsValues)
+            end
+            srcChar = noEntryValue
+            if FCOItemSaver_Settings_Copy_SV_Src_Char then
+                FCOItemSaver_Settings_Copy_SV_Src_Char:UpdateValue(srcChar)
+            end
+        end
+        if updateSourceOrTarget == nil or updateSourceOrTarget == false then
+            targAcc = noEntryValue
+            if FCOItemSaver_Settings_Copy_SV_Targ_Acc then
+                FCOItemSaver_Settings_Copy_SV_Targ_Acc:UpdateValue(targAcc)
+                FCOItemSaver_Settings_Copy_SV_Targ_Acc:UpdateChoices(accountTargOptions, accountTargOptionsValues)
+            end
+            targChar = noEntryValue
+            if FCOItemSaver_Settings_Copy_SV_Targ_Char then
+                FCOItemSaver_Settings_Copy_SV_Targ_Char:UpdateValue(targChar)
+            end
+        end
+        doNotRunDropdownValueSetFunc = false
+    end
+    reBuildAccountOptions()
+
+    --The character dropdown
+    local characterSrcOptions = {}
+    local characterSrcOptionsValues = {}
+    local characterTargOptions = {}
+    local characterTargOptionsValues = {}
+    local function reBuildCharacterOptions(updateSourceOrTarget)
+        --Reset the server name and index tables
+        characterSrcOptions = {}
+        characterSrcOptionsValues = {}
+        characterTargOptions = {}
+        characterTargOptionsValues = {}
+        local charactersOfAccount       = FCOIS.getCharactersOfAccount(true) --name as key
+        if not charactersOfAccount then return end
+        table.sort(charactersOfAccount) --sort by name
+        local charactersOfAccountKeyId  = FCOIS.getCharactersOfAccount(false) --unique ID as key
+        --Source characters
+        --Add the no entry entry
+        table.insert(characterSrcOptions, noEntry)
+        table.insert(characterSrcOptionsValues, noEntryValue)
+        --table.insert(characterSrcOptions, currentCharacterNameMarked)
+        --table.insert(characterSrcOptionsValues, currentCharacterId)
+        if FCOItemSaver_Settings then
+            --Get account names from the SavedVariables, for each server
+            for _, serverData in pairs(FCOItemSaver_Settings) do
+                --For each accountName get the characters
+                for _, accountData in pairs(serverData) do
+                    for characterId, _ in pairs(accountData) do
+                        -- Do not use the $AccountWide entry or entries with starting @
+                        if characterId ~= FCOIS.svAccountWideName and string.sub(characterId, 1, 1) ~= "@" then
+                            --IS the read entry a number?
+                            local characterIdNumber = tonumber(characterId)
+                            if characterIdNumber and characterIdNumber > 0 then
+                                --Get the character name for the characterId
+                                local characterName = ""
+                                --Do not add the current character again
+                                if characterId ~= currentCharacterId then
+                                    characterName = GetCharacterName(characterId, charactersOfAccountKeyId)
+                                else
+                                    characterName = currentCharacterName
+                                end
+                                table.insert(characterSrcOptions, characterName)
+                                table.insert(characterSrcOptionsValues, characterId)
+                            end
+                        end
+                    end
+                end
+            end
+        end
+        --Target characters
+        --Add the no entry entry
+        table.insert(characterTargOptions, noEntry)
+        table.insert(characterTargOptionsValues, noEntryValue)
+        --Add the current character
+        table.insert(characterTargOptions, currentCharacterNameMarked)
+        table.insert(characterTargOptionsValues, currentCharacterId)
+        for charNameTarg, charIdTarg in pairs(charactersOfAccount) do
+            if charIdTarg ~= currentCharacterId then
+                --Check if the character exists on the actually chosen server and account already.
+                --If not color the charactername red
+                local targetServerName = serverNames[targServer]
+                local targetAccName = accountTargOptions[targAcc]
+                local targetAccNameClean = cleanName(targetAccName, "account", targAcc)
+                if FCOItemSaver_Settings == nil or FCOItemSaver_Settings[targetServerName] == nil or FCOItemSaver_Settings[targetServerName][targetAccNameClean] == nil or FCOItemSaver_Settings[targetServerName][targetAccNameClean][tostring(charIdTarg)] == nil then
+                    charNameTarg = "|cff0000" .. charNameTarg .. "|r"
+                end
+                table.insert(characterTargOptions, charNameTarg)
+                table.insert(characterTargOptionsValues, charIdTarg)
+            end
+        end
+        --Reset chosen dropdown values
+        doNotRunDropdownValueSetFunc = true
+        if updateSourceOrTarget == nil or updateSourceOrTarget == true then
+            srcChar = noEntryValue
+            if FCOItemSaver_Settings_Copy_SV_Src_Char then
+                FCOItemSaver_Settings_Copy_SV_Src_Char:UpdateValue(srcChar)
+            end
+        end
+        if updateSourceOrTarget == nil or updateSourceOrTarget == false then
+            targChar = noEntryValue
+            if FCOItemSaver_Settings_Copy_SV_Targ_Char then
+                FCOItemSaver_Settings_Copy_SV_Targ_Char:UpdateValue(targChar)
+            end
+        end
+        doNotRunDropdownValueSetFunc = false
+
+        FCOIS._characterSrcOptions = characterSrcOptions
+        FCOIS._characterSrcOptionsValues = characterSrcOptionsValues
+        FCOIS._characterTargOptions = characterTargOptions
+        FCOIS._characterTargOptionsValues = characterTargOptionsValues
+    end
+    reBuildCharacterOptions()
 
 	--Build the list of colored qualities for the settings
 	local colorMagic = GetItemQualityColor(ITEM_QUALITY_MAGIC)
@@ -299,15 +607,15 @@ function FCOIS.BuildAddonMenu()
 
     --Add the normal levels first
     local levelIndex = (#levelList + 1) or 2 -- Add after the "Disabled" entry
-    if FCOIS.mappingVars.levels ~= nil then
-        for _, level in ipairs(FCOIS.mappingVars.levels) do
+    if mappingVars.levels ~= nil then
+        for _, level in ipairs(mappingVars.levels) do
             levelList[levelIndex] = tostring(level)
             levelIndex = levelIndex + 1
         end
     end
     --Afterwards add the CP ranks
-    if FCOIS.mappingVars.CPlevels ~= nil then
-        for _, CPRank in ipairs(FCOIS.mappingVars.CPlevels) do
+    if mappingVars.CPlevels ~= nil then
+        for _, CPRank in ipairs(mappingVars.CPlevels) do
             levelList[levelIndex] = tostring("CP" .. CPRank)
             levelIndex = levelIndex + 1
         end
@@ -315,7 +623,7 @@ function FCOIS.BuildAddonMenu()
     --Globalize the mapping table for the backwards search of the index "levelIndex", which will be
     --saved in the SavedVariables in the variable "FCOIS.settingsVars.settings.autoMarkSetsNonWishedLevel",
     --to get the level value (e.g. 40, or CP120)
-    FCOIS.mappingVars.allLevels = levelList
+    mappingVars.allLevels = levelList
 
 
     --Build the dropdown boxes for the armor, weapon and jewelry trait checkboxes
@@ -324,10 +632,10 @@ function FCOIS.BuildAddonMenu()
     local weaponTraitControls = {}
     local weaponShieldTraitControls = {}
     local traitData = {
-		[1] = FCOIS.mappingVars.traits.armorTraits,         --Armor
-		[2] = FCOIS.mappingVars.traits.jewelryTraits,       --Jewelry
-		[3] = FCOIS.mappingVars.traits.weaponTraits,        --Weapons
-        [4] = FCOIS.mappingVars.traits.weaponShieldTraits,  --Shields
+		[1] = mappingVars.traits.armorTraits,         --Armor
+		[2] = mappingVars.traits.jewelryTraits,       --Jewelry
+		[3] = mappingVars.traits.weaponTraits,        --Weapons
+        [4] = mappingVars.traits.weaponShieldTraits,  --Shields
 	}
     local function buildTraitCheckboxes()
         if traitData == nil then return nil end
@@ -691,7 +999,7 @@ function FCOIS.BuildAddonMenu()
 
 
 --==================== Dynamic icons - BEGIN ===================================
-    local iconId2FCOISIconNr            = FCOIS.mappingVars.dynamicToIcon
+    local iconId2FCOISIconNr            = mappingVars.dynamicToIcon
 
     --Build the enable/disable checkboxes submenu for the dynamic icons
     local function buildDynamicIconEnableCheckboxes()
@@ -1482,75 +1790,6 @@ function FCOIS.BuildAddonMenu()
                     requiresReload = true,
                     default = savedVariablesOptions[2], -- Account wide
 				},
-
---Copy savedvars from server to server
-                {
-                    type = 'header',
-                    name = locVars["options_header_copy_sv"],
-                },
-                {
-                    type = 'dropdown',
-                    name = locVars["options_copy_sv_source_server"],
-                    tooltip = locVars["options_copy_sv_source_server"],
-                    choices = serverOptions,
-                    choicesValues = serverOptionsValues,
-                    getFunc = function() return srcServer end,
-                    setFunc = function(value)
-                        srcServer = value
-                    end,
-                    width = "half",
-                    default = srcServer,
-                },
-                {
-                    type = 'dropdown',
-                    name = locVars["options_copy_sv_target_server"],
-                    tooltip = locVars["options_copy_sv_target_server"],
-                    choices = serverOptionsTarget,
-                    choicesValues = serverOptionsValuesTarget,
-                    getFunc = function() return targServer end,
-                    setFunc = function(value)
-                        targServer = value
-                    end,
-                    width = "half",
-                    default = targServer,
-                },
-                {
-                    type = "button",
-                    name = locVars["options_copy_sv_to_server"],
-                    tooltip = locVars["options_copy_sv_to_server_TT"],
-                    func = function()
-                        FCOIS.copySavedVarsFromServerToServer(srcServer, targServer, false)
-                        reBuildServerOptions()
-                    end,
-                    isDangerous = true,
-                    disabled = function() return (FCOIS.settingsNonServerDependendFound and FCOIS.defSettingsNonServerDependendFound) or (srcServer == 1 or targServer == 1 or srcServer == targServer) end,
-                    warning = locVars["options_copy_sv_to_server_warning"],
-                    width="half",
-                },
-
-                {
-                    type = "button",
-                    name = locVars["options_delete_sv_on_server"],
-                    tooltip = locVars["options_delete_sv_on_server_TT"],
-                    func = function()
-                        FCOIS.copySavedVarsFromServerToServer(srcServer, targServer, true)
-                        reBuildServerOptions()
-                    end,
-                    isDangerous = true,
-                    disabled = function()
-                        local targetServerName = mapServerNames[targServer]
-                        if (FCOIS.settingsNonServerDependendFound and FCOIS.defSettingsNonServerDependendFound)
-                            or (targServer == 1 or targetServerName == FCOIS.worldName)
-                            or (targServer ~= 1 and FCOItemSaver_Settings[targetServerName] == nil)
-                        then
-                            return true
-                        end
-                        return false
-                    end,
-                    warning = locVars["options_delete_sv_on_server_TT"],
-                    width="half",
-                },
-
 --Unique ID switch
 				{
 					type = 'header',
@@ -2351,7 +2590,7 @@ function FCOIS.BuildAddonMenu()
                                 updateIconListDropdownEntries()
 				            end,
 							width = "half",
-				            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS.mappingVars.gearToIcon[1]] end,
+				            disabled = function() return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[1]] end,
                             default = locVars["options_icon2_name"],
 						},
 						{
@@ -2362,12 +2601,12 @@ function FCOIS.BuildAddonMenu()
 							setFunc = function(r,g,b,a)
 								FCOISsettings.icon[FCOIS_CON_ICON_GEAR_1].color = {["r"] = r, ["g"] = g, ["b"] = b, ["a"] = a}
 				                FCOItemSaver_Settings_Filter2Preview_Select:SetColor(ZO_ColorDef:New(r,g,b,a))
-								
+
 								--Set global variable to update the marker colors and textures
 				                FCOIS.preventerVars.gUpdateMarkersNow = true
 							end,
 				            width = "half",
-				            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS.mappingVars.gearToIcon[1]] end,
+				            disabled = function() return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[1]] end,
                             default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_GEAR_1].color,
 						},
 						{
@@ -2393,7 +2632,7 @@ function FCOIS.BuildAddonMenu()
 						    iconSize = FCOISsettings.icon[FCOIS_CON_ICON_GEAR_1].size,
 						    width = "half",
 						    reference = "FCOItemSaver_Settings_Filter2Preview_Select",
-							disabled = function() return not FCOISsettings.isIconEnabled[FCOIS.mappingVars.gearToIcon[1]] end,
+							disabled = function() return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[1]] end,
                             default = markerIconTextures[FCOISsettings.icon[FCOIS_CON_ICON_GEAR_1].texture],
 						},
 						{
@@ -2412,7 +2651,7 @@ function FCOIS.BuildAddonMenu()
 					                FCOIS.preventerVars.gUpdateMarkersNow = true
 								end,
 				            width = "half",
-				            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS.mappingVars.gearToIcon[1]] end,
+				            disabled = function() return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[1]] end,
                             default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_GEAR_1].size,
 						},
 						{
@@ -2424,7 +2663,7 @@ function FCOIS.BuildAddonMenu()
 				            	FCOIS.preventerVars.gUpdateMarkersNow = true
 				            end,
 				            width="half",
-				            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS.mappingVars.gearToIcon[1]] end,
+				            disabled = function() return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[1]] end,
                             default = FCOISdefaultSettings.showMarkerTooltip[FCOIS_CON_ICON_GEAR_1],
 						},
 						{
@@ -2435,7 +2674,7 @@ function FCOIS.BuildAddonMenu()
 							setFunc = function(value) FCOISsettings.disableResearchCheck[FCOIS_CON_ICON_GEAR_1] = value
 				            end,
 				            width="half",
-				            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS.mappingVars.gearToIcon[1]] end,
+				            disabled = function() return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[1]] end,
                             default = FCOISdefaultSettings.disableResearchCheck[FCOIS_CON_ICON_GEAR_1],
 						},
 					} -- controls gear 1
@@ -2459,7 +2698,7 @@ function FCOIS.BuildAddonMenu()
                                 updateIconListDropdownEntries()
 							end,
 							width = "half",
-				            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS.mappingVars.gearToIcon[2]] end,
+				            disabled = function() return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[2]] end,
                             default = locVars["options_icon4_name"],
 						},
 						{
@@ -2470,12 +2709,12 @@ function FCOIS.BuildAddonMenu()
 							setFunc = function(r,g,b,a)
 								FCOISsettings.icon[FCOIS_CON_ICON_GEAR_2].color = {["r"] = r, ["g"] = g, ["b"] = b, ["a"] = a}
 				                FCOItemSaver_Settings_Filter4Preview_Select:SetColor(ZO_ColorDef:New(r,g,b,a))
-								
+
 								--Set global variable to update the marker colors and textures
 				                FCOIS.preventerVars.gUpdateMarkersNow = true
 							end,
 				            width = "half",
-				            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS.mappingVars.gearToIcon[2]] end,
+				            disabled = function() return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[2]] end,
                             default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_GEAR_2].color,
 						},
 						{
@@ -2501,7 +2740,7 @@ function FCOIS.BuildAddonMenu()
 						    iconSize = FCOISsettings.icon[FCOIS_CON_ICON_GEAR_2].size,
 						    width = "half",
 						    reference = "FCOItemSaver_Settings_Filter4Preview_Select",
-							disabled = function() return not FCOISsettings.isIconEnabled[FCOIS.mappingVars.gearToIcon[2]] end,
+							disabled = function() return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[2]] end,
                             default = markerIconTextures[FCOISsettings.icon[FCOIS_CON_ICON_GEAR_2].texture],
 						},
 						{
@@ -2520,7 +2759,7 @@ function FCOIS.BuildAddonMenu()
 					                FCOIS.preventerVars.gUpdateMarkersNow = true
 								end,
 				            width = "half",
-				            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS.mappingVars.gearToIcon[2]] end,
+				            disabled = function() return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[2]] end,
                             default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_GEAR_2].size,
 						},
 						{
@@ -2532,7 +2771,7 @@ function FCOIS.BuildAddonMenu()
 				            	FCOIS.preventerVars.gUpdateMarkersNow = true
 				            end,
 				            width="half",
-				            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS.mappingVars.gearToIcon[2]] end,
+				            disabled = function() return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[2]] end,
                             default = FCOISdefaultSettings.showMarkerTooltip[FCOIS_CON_ICON_GEAR_2],
 						},
 						{
@@ -2543,7 +2782,7 @@ function FCOIS.BuildAddonMenu()
 							setFunc = function(value) FCOISsettings.disableResearchCheck[FCOIS_CON_ICON_GEAR_2] = value
 				            end,
 				            width="half",
-				            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS.mappingVars.gearToIcon[2]] end,
+				            disabled = function() return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[2]] end,
                             default = FCOISdefaultSettings.disableResearchCheck[FCOIS_CON_ICON_GEAR_2],
 						},
 					} -- controls gear 2
@@ -2567,7 +2806,7 @@ function FCOIS.BuildAddonMenu()
                                 updateIconListDropdownEntries()
 							end,
 							width = "half",
-				            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS.mappingVars.gearToIcon[3]] end,
+				            disabled = function() return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[3]] end,
                             default = locVars["options_icon6_name"],
 						},
 						{
@@ -2582,7 +2821,7 @@ function FCOIS.BuildAddonMenu()
 				                FCOIS.preventerVars.gUpdateMarkersNow = true
 							end,
 				            width = "half",
-				            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS.mappingVars.gearToIcon[3]] end,
+				            disabled = function() return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[3]] end,
                             default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_GEAR_3].color,
 						},
 						{
@@ -2608,7 +2847,7 @@ function FCOIS.BuildAddonMenu()
 						    iconSize = FCOISsettings.icon[FCOIS_CON_ICON_GEAR_3].size,
 						    width = "half",
 						    reference = "FCOItemSaver_Settings_Filter6Preview_Select",
-							disabled = function() return not FCOISsettings.isIconEnabled[FCOIS.mappingVars.gearToIcon[3]] end,
+							disabled = function() return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[3]] end,
                             default = markerIconTextures[FCOISsettings.icon[FCOIS_CON_ICON_GEAR_3].texture],
 						},
 						{
@@ -2627,7 +2866,7 @@ function FCOIS.BuildAddonMenu()
 					                FCOIS.preventerVars.gUpdateMarkersNow = true
 								end,
 				            width = "half",
-				            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS.mappingVars.gearToIcon[3]] end,
+				            disabled = function() return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[3]] end,
                             default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_GEAR_3].size,
 						},
 						{
@@ -2639,7 +2878,7 @@ function FCOIS.BuildAddonMenu()
 				            	FCOIS.preventerVars.gUpdateMarkersNow = true
 				            end,
 				            width="half",
-				            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS.mappingVars.gearToIcon[3]] end,
+				            disabled = function() return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[3]] end,
                             default = FCOISdefaultSettings.showMarkerTooltip[FCOIS_CON_ICON_GEAR_3],
 						},
 						{
@@ -2650,7 +2889,7 @@ function FCOIS.BuildAddonMenu()
 							setFunc = function(value) FCOISsettings.disableResearchCheck[FCOIS_CON_ICON_GEAR_3] = value
 				            end,
 				            width="half",
-				            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS.mappingVars.gearToIcon[3]] end,
+				            disabled = function() return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[3]] end,
                             default = FCOISdefaultSettings.disableResearchCheck[FCOIS_CON_ICON_GEAR_3],
 						},
 					} -- controls gear 3
@@ -2673,7 +2912,7 @@ function FCOIS.BuildAddonMenu()
                                 updateIconListDropdownEntries()
 							end,
 							width = "half",
-				            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS.mappingVars.gearToIcon[4]] end,
+				            disabled = function() return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[4]] end,
                             default = locVars["options_icon7_name"],
 						},
 						{
@@ -2688,7 +2927,7 @@ function FCOIS.BuildAddonMenu()
 				                FCOIS.preventerVars.gUpdateMarkersNow = true
 							end,
 				            width = "half",
-				            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS.mappingVars.gearToIcon[4]] end,
+				            disabled = function() return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[4]] end,
                             default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_GEAR_4].color,
 						},
 						{
@@ -2714,7 +2953,7 @@ function FCOIS.BuildAddonMenu()
 						    iconSize = FCOISsettings.icon[FCOIS_CON_ICON_GEAR_4].size,
 						    width = "half",
 						    reference = "FCOItemSaver_Settings_Filter7Preview_Select",
-							disabled = function() return not FCOISsettings.isIconEnabled[FCOIS.mappingVars.gearToIcon[4]] end,
+							disabled = function() return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[4]] end,
                             default = markerIconTextures[FCOISsettings.icon[FCOIS_CON_ICON_GEAR_4].texture],
 						},
 						{
@@ -2733,7 +2972,7 @@ function FCOIS.BuildAddonMenu()
 					                FCOIS.preventerVars.gUpdateMarkersNow = true
 								end,
 				            width = "half",
-				            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS.mappingVars.gearToIcon[4]] end,
+				            disabled = function() return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[4]] end,
                             default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_GEAR_4].size,
 						},
 						{
@@ -2745,7 +2984,7 @@ function FCOIS.BuildAddonMenu()
 				            	FCOIS.preventerVars.gUpdateMarkersNow = true
 				            end,
 				            width="half",
-				            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS.mappingVars.gearToIcon[4]] end,
+				            disabled = function() return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[4]] end,
                             default = FCOISdefaultSettings.showMarkerTooltip[FCOIS_CON_ICON_GEAR_4],
 						},
 						{
@@ -2756,7 +2995,7 @@ function FCOIS.BuildAddonMenu()
 							setFunc = function(value) FCOISsettings.disableResearchCheck[FCOIS_CON_ICON_GEAR_4] = value
 				            end,
 				            width="half",
-				            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS.mappingVars.gearToIcon[4]] end,
+				            disabled = function() return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[4]] end,
                             default = FCOISdefaultSettings.disableResearchCheck[FCOIS_CON_ICON_GEAR_4],
 						},
 					} -- controls gear 4
@@ -2779,7 +3018,7 @@ function FCOIS.BuildAddonMenu()
                                 updateIconListDropdownEntries()
 							end,
 							width = "half",
-				            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS.mappingVars.gearToIcon[5]] end,
+				            disabled = function() return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[5]] end,
                             default = locVars["options_icon8_name"],
 						},
 						{
@@ -2794,7 +3033,7 @@ function FCOIS.BuildAddonMenu()
 				                FCOIS.preventerVars.gUpdateMarkersNow = true
 							end,
 				            width = "half",
-				            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS.mappingVars.gearToIcon[5]] end,
+				            disabled = function() return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[5]] end,
                             default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_GEAR_5].color,
 						},
 						{
@@ -2820,7 +3059,7 @@ function FCOIS.BuildAddonMenu()
 						    iconSize = FCOISsettings.icon[FCOIS_CON_ICON_GEAR_5].size,
 						    width = "half",
 						    reference = "FCOItemSaver_Settings_Filter8Preview_Select",
-							disabled = function() return not FCOISsettings.isIconEnabled[FCOIS.mappingVars.gearToIcon[5]] end,
+							disabled = function() return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[5]] end,
                             default = markerIconTextures[FCOISsettings.icon[FCOIS_CON_ICON_GEAR_5].texture],
 						},
 						{
@@ -2839,7 +3078,7 @@ function FCOIS.BuildAddonMenu()
 					                FCOIS.preventerVars.gUpdateMarkersNow = true
 								end,
 				            width = "half",
-				            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS.mappingVars.gearToIcon[5]] end,
+				            disabled = function() return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[5]] end,
                             default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_GEAR_5].size,
 						},
 						{
@@ -2851,7 +3090,7 @@ function FCOIS.BuildAddonMenu()
 				            	FCOIS.preventerVars.gUpdateMarkersNow = true
 				            end,
 				            width="half",
-				            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS.mappingVars.gearToIcon[5]] end,
+				            disabled = function() return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[5]] end,
                             default = FCOISdefaultSettings.showMarkerTooltip[FCOIS_CON_ICON_GEAR_5],
 						},
 						{
@@ -2862,7 +3101,7 @@ function FCOIS.BuildAddonMenu()
 							setFunc = function(value) FCOISsettings.disableResearchCheck[FCOIS_CON_ICON_GEAR_5] = value
 				            end,
 				            width="half",
-				            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS.mappingVars.gearToIcon[5]] end,
+				            disabled = function() return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[5]] end,
                             default = FCOISdefaultSettings.disableResearchCheck[FCOIS_CON_ICON_GEAR_5],
 						},
 			        } -- controls gear 5
@@ -2874,11 +3113,11 @@ function FCOIS.BuildAddonMenu()
 					type = "checkbox",
 					name = locVars["options_icon2_activate_text"],
 					tooltip = locVars["options_icon_activate_text_TT"],
-					getFunc = function() return FCOISsettings.isIconEnabled[FCOIS.mappingVars.gearToIcon[1]] end,
+					getFunc = function() return FCOISsettings.isIconEnabled[mappingVars.gearToIcon[1]] end,
 					setFunc = function(value)
-		            	FCOISsettings.isIconEnabled[FCOIS.mappingVars.gearToIcon[1]] = value
+		            	FCOISsettings.isIconEnabled[mappingVars.gearToIcon[1]] = value
 						--Hide the textures for gear 1
-		            	if not FCOISsettings.isIconEnabled[FCOIS.mappingVars.gearToIcon[1]] then
+		            	if not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[1]] then
 		                    --Character equipment
 		                	FCOIS.RefreshEquipmentControl(nil, false, 2)
 		                    FCOIS.FilterBasics(true)
@@ -2893,16 +3132,16 @@ function FCOIS.BuildAddonMenu()
                         updateIconListDropdownEntries()
 		            end,
 		            width="full",
-                    default = FCOISdefaultSettings.isIconEnabled[FCOIS.mappingVars.gearToIcon[1]],
+                    default = FCOISdefaultSettings.isIconEnabled[mappingVars.gearToIcon[1]],
 				},
 				{
 					type = "checkbox",
 					name = locVars["options_icon4_activate_text"],
 					tooltip = locVars["options_icon_activate_text_TT"],
-					getFunc = function() return FCOISsettings.isIconEnabled[FCOIS.mappingVars.gearToIcon[2]] end,
-					setFunc = function(value) FCOISsettings.isIconEnabled[FCOIS.mappingVars.gearToIcon[2]] = value
+					getFunc = function() return FCOISsettings.isIconEnabled[mappingVars.gearToIcon[2]] end,
+					setFunc = function(value) FCOISsettings.isIconEnabled[mappingVars.gearToIcon[2]] = value
 						--Hide the textures for gear 2
-		            	if not FCOISsettings.isIconEnabled[FCOIS.mappingVars.gearToIcon[2]] then
+		            	if not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[2]] then
 		                    --Character equipment
 		                	FCOIS.RefreshEquipmentControl(nil, false, 4)
 		                    FCOIS.FilterBasics(true)
@@ -2917,16 +3156,16 @@ function FCOIS.BuildAddonMenu()
                         updateIconListDropdownEntries()
 		            end,
 		            width="full",
-                    default = FCOISdefaultSettings.isIconEnabled[FCOIS.mappingVars.gearToIcon[2]],
+                    default = FCOISdefaultSettings.isIconEnabled[mappingVars.gearToIcon[2]],
 				},
 				{
 					type = "checkbox",
 					name = locVars["options_icon6_activate_text"],
 					tooltip = locVars["options_icon_activate_text_TT"],
-					getFunc = function() return FCOISsettings.isIconEnabled[FCOIS.mappingVars.gearToIcon[3]] end,
-					setFunc = function(value) FCOISsettings.isIconEnabled[FCOIS.mappingVars.gearToIcon[3]] = value
+					getFunc = function() return FCOISsettings.isIconEnabled[mappingVars.gearToIcon[3]] end,
+					setFunc = function(value) FCOISsettings.isIconEnabled[mappingVars.gearToIcon[3]] = value
 						--Hide the textures for gear 3
-		            	if not FCOISsettings.isIconEnabled[FCOIS.mappingVars.gearToIcon[3]] then
+		            	if not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[3]] then
 		                    --Character equipment
 		                	FCOIS.RefreshEquipmentControl(nil, false, 6)
 		                    FCOIS.FilterBasics(true)
@@ -2941,16 +3180,16 @@ function FCOIS.BuildAddonMenu()
                         updateIconListDropdownEntries()
 		            end,
 		            width="full",
-                    default = FCOISdefaultSettings.isIconEnabled[FCOIS.mappingVars.gearToIcon[3]],
+                    default = FCOISdefaultSettings.isIconEnabled[mappingVars.gearToIcon[3]],
 				},
 		        {
 					type = "checkbox",
 					name = locVars["options_icon7_activate_text"],
 					tooltip = locVars["options_icon_activate_text_TT"],
-					getFunc = function() return FCOISsettings.isIconEnabled[FCOIS.mappingVars.gearToIcon[4]] end,
-					setFunc = function(value) FCOISsettings.isIconEnabled[FCOIS.mappingVars.gearToIcon[4]] = value
+					getFunc = function() return FCOISsettings.isIconEnabled[mappingVars.gearToIcon[4]] end,
+					setFunc = function(value) FCOISsettings.isIconEnabled[mappingVars.gearToIcon[4]] = value
 						--Hide the textures for gear 4
-		            	if not FCOISsettings.isIconEnabled[FCOIS.mappingVars.gearToIcon[4]] then
+		            	if not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[4]] then
 		                    --Character equipment
 		                	FCOIS.RefreshEquipmentControl(nil, false, 7)
 		                    FCOIS.FilterBasics(true)
@@ -2965,16 +3204,16 @@ function FCOIS.BuildAddonMenu()
                         updateIconListDropdownEntries()
 		            end,
 		            width="full",
-                    default = FCOISdefaultSettings.isIconEnabled[FCOIS.mappingVars.gearToIcon[4]],
+                    default = FCOISdefaultSettings.isIconEnabled[mappingVars.gearToIcon[4]],
 				},
 		        {
 					type = "checkbox",
 					name = locVars["options_icon8_activate_text"],
 					tooltip = locVars["options_icon_activate_text_TT"],
-					getFunc = function() return FCOISsettings.isIconEnabled[FCOIS.mappingVars.gearToIcon[5]] end,
-					setFunc = function(value) FCOISsettings.isIconEnabled[FCOIS.mappingVars.gearToIcon[5]] = value
+					getFunc = function() return FCOISsettings.isIconEnabled[mappingVars.gearToIcon[5]] end,
+					setFunc = function(value) FCOISsettings.isIconEnabled[mappingVars.gearToIcon[5]] = value
 						--Hide the textures for gear 5
-		            	if not FCOISsettings.isIconEnabled[FCOIS.mappingVars.gearToIcon[5]] then
+		            	if not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[5]] then
 		                    --Character equipment
 		                	FCOIS.RefreshEquipmentControl(nil, false, 8)
 		                    FCOIS.FilterBasics(true)
@@ -2989,7 +3228,7 @@ function FCOIS.BuildAddonMenu()
                         updateIconListDropdownEntries()
 		            end,
 		            width="full",
-                    default = FCOISdefaultSettings.isIconEnabled[FCOIS.mappingVars.gearToIcon[5]],
+                    default = FCOISdefaultSettings.isIconEnabled[mappingVars.gearToIcon[5]],
 				},
 
 	        } -- controls gear sets
@@ -3663,6 +3902,22 @@ function FCOIS.BuildAddonMenu()
                                                 },
 
                                                 {
+                                                    type = "checkbox",
+                                                    name = locVars["options_enable_auto_mark_sets_non_wished_char_below_level_50"],
+                                                    tooltip = locVars["options_enable_auto_mark_sets_non_wished_char_below_level_50_TT"],
+                                                    getFunc = function() return FCOISsettings.autoMarkSetsNonWishedIfCharBelowLevel end,
+                                                    setFunc = function(value)
+                                                        FCOISsettings.autoMarkSetsNonWishedIfCharBelowLevel = value
+                                                        if (FCOISsettings.autoMarkSetsNonWished == true) then
+                                                            FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
+                                                        end
+                                                    end,
+                                                    disabled = function() return (not FCOISsettings.autoMarkSetsNonWished or (not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkSetsNonWishedIconNr] or not FCOISsettings.autoMarkSets)) end,
+                                                    width = "full",
+                                                    default = FCOISdefaultSettings.autoMarkSetsNonWishedIfCharBelowLevel,
+                                                },
+
+                                                {
                                                     type = 'dropdown',
                                                     name = locVars["options_enable_auto_mark_sets_non_wished_checks"],
                                                     tooltip = locVars["options_enable_auto_mark_sets_non_wished_checks_TT"],
@@ -3676,7 +3931,7 @@ function FCOIS.BuildAddonMenu()
                                                             FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
                                                         end
                                                     end,
-                                                    disabled = function()return (not FCOISsettings.autoMarkSets or not FCOISsettings.autoMarkSetsNonWished or not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkSetsNonWishedIconNr] or not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL]) end,
+                                                    disabled = function()return (FCOISsettings.autoMarkSetsNonWishedIfCharBelowLevel and not FCOIS.checkNeededLevel("player", 50)) or (not FCOISsettings.autoMarkSets or not FCOISsettings.autoMarkSetsNonWished or not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkSetsNonWishedIconNr] or not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL]) end,
                                                     width = "full",
                                                     default = FCOISdefaultSettings.autoMarkSetsNonWishedChecks,
                                                 },
@@ -3699,7 +3954,7 @@ function FCOIS.BuildAddonMenu()
                                                             end
                                                         end
                                                     end,
-                                                    disabled = function()return (not FCOISsettings.autoMarkSets or not FCOISsettings.autoMarkSetsNonWished or not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkSetsNonWishedIconNr] or not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL] or (FCOISsettings.autoMarkSetsNonWishedChecks~=FCOIS_CON_NON_WISHED_ALL and FCOISsettings.autoMarkSetsNonWishedChecks~=FCOIS_CON_NON_WISHED_LEVEL)) end,
+                                                    disabled = function()return (FCOISsettings.autoMarkSetsNonWishedIfCharBelowLevel and not FCOIS.checkNeededLevel("player", 50)) or (not FCOISsettings.autoMarkSets or not FCOISsettings.autoMarkSetsNonWished or not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkSetsNonWishedIconNr] or not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL] or (FCOISsettings.autoMarkSetsNonWishedChecks~=FCOIS_CON_NON_WISHED_ALL and FCOISsettings.autoMarkSetsNonWishedChecks~=FCOIS_CON_NON_WISHED_LEVEL)) end,
                                                     width = "full",
                                                     default = levelList[FCOISdefaultSettings.autoMarkSetsNonWishedLevel],
                                                 },
@@ -3721,7 +3976,7 @@ function FCOIS.BuildAddonMenu()
                                                             end
                                                         end
                                                     end,
-                                                    disabled = function()return (not FCOISsettings.autoMarkSets or not FCOISsettings.autoMarkSetsNonWished or not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkSetsNonWishedIconNr] or not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL] or (FCOISsettings.autoMarkSetsNonWishedChecks~=FCOIS_CON_NON_WISHED_ALL and FCOISsettings.autoMarkSetsNonWishedChecks~=FCOIS_CON_NON_WISHED_QUALITY)) end,
+                                                    disabled = function()return (FCOISsettings.autoMarkSetsNonWishedIfCharBelowLevel and not FCOIS.checkNeededLevel("player", 50)) or (not FCOISsettings.autoMarkSets or not FCOISsettings.autoMarkSetsNonWished or not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkSetsNonWishedIconNr] or not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL] or (FCOISsettings.autoMarkSetsNonWishedChecks~=FCOIS_CON_NON_WISHED_ALL and FCOISsettings.autoMarkSetsNonWishedChecks~=FCOIS_CON_NON_WISHED_QUALITY)) end,
                                                     width = "full",
                                                     default = qualityList[FCOISdefaultSettings.autoMarkSetsNonWishedQuality],
                                                 },
@@ -3736,7 +3991,7 @@ function FCOIS.BuildAddonMenu()
                                                             FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
                                                         end
                                                     end,
-                                                    disabled = function() return not FCOISsettings.autoMarkSets or not FCOISsettings.autoMarkSetsNonWished or not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL] end,
+                                                    disabled = function() return (FCOISsettings.autoMarkSetsNonWishedIfCharBelowLevel and not FCOIS.checkNeededLevel("player", 50)) or (not FCOISsettings.autoMarkSets or not FCOISsettings.autoMarkSetsNonWished or not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL]) end,
                                                     width = "full",
                                                     default = FCOISdefaultSettings.autoMarkSetsNonWishedSellOthers,
                                                 },
@@ -4389,7 +4644,7 @@ function FCOIS.BuildAddonMenu()
                             },
                         }, -- controls de-marking sell
                     }, -- submenu de-marking sell
-					
+
 	            } -- controls de-marking
 			}, -- submenu de-marking
 
@@ -4646,8 +4901,6 @@ function FCOIS.BuildAddonMenu()
             } -- controls filter buttons
 	    }, -- submenu filter buttons
 
---[[
---TODO: Enable later again!
             {
                 type = "checkbox",
                 name = locVars["options_enable_filtered_item_count"],
@@ -4658,7 +4911,6 @@ function FCOIS.BuildAddonMenu()
                 end,
                 default = FCOISdefaultSettings.showFilteredItemCount,
             },
-]]
 
         } -- controls ALL filters
 	}, -- submenu ALL filters
@@ -5594,6 +5846,40 @@ function FCOIS.BuildAddonMenu()
                     end,
                     default = FCOISdefaultSettings.contextMenuLeadingIconSize,
                 },
+                --Tooltip at context menu entry
+                {
+                    type = "checkbox",
+                    name = locVars["options_contextmenu_entries_enable_tooltip"],
+                    tooltip = locVars["options_contextmenu_entries_enable_tooltip_TT"],
+                    getFunc = function() return FCOISsettings.contextMenuItemEntryShowTooltip end,
+                    setFunc = function(value) FCOISsettings.contextMenuItemEntryShowTooltip = value
+                    end,
+                    width = "half",
+                    default = FCOISdefaultSettings.contextMenuItemEntryShowTooltip,
+                },
+                {
+                    type = "checkbox",
+                    name = locVars["options_contextmenu_entries_enable_tooltip_only_SHIFTkey"],
+                    tooltip = locVars["options_contextmenu_entries_enable_tooltip_only_SHIFTkey_TT"],
+                    getFunc = function() return FCOISsettings.contextMenuItemEntryShowTooltipWithSHIFTKeyOnly end,
+                    setFunc = function(value) FCOISsettings.contextMenuItemEntryShowTooltipWithSHIFTKeyOnly = value
+                    end,
+                    width = "half",
+                    default = FCOISdefaultSettings.contextMenuItemEntryShowTooltipWithSHIFTKeyOnly,
+                    disabled = function() return not FCOISsettings.contextMenuItemEntryShowTooltip end,
+                },
+                {
+                    type = "checkbox",
+                    name = locVars["options_contextmenu_entries_tooltip_protectedpanels"],
+                    tooltip = locVars["options_contextmenu_entries_tooltip_protectedpanels_TT"],
+                    getFunc = function() return FCOISsettings.contextMenuItemEntryTooltipProtectedPanels end,
+                    setFunc = function(value) FCOISsettings.contextMenuItemEntryTooltipProtectedPanels = value
+                    end,
+                    width = "half",
+                    default = FCOISdefaultSettings.contextMenuItemEntryTooltipProtectedPanels,
+                    disabled = function() return not FCOISsettings.contextMenuItemEntryShowTooltip end,
+                },
+
                 --------------------------------------------------------------------------------------------------------
                 {
                     type = "header",
@@ -6071,7 +6357,7 @@ function FCOIS.BuildAddonMenu()
                                 end
                             end,
                             --isDangerous = false,
-                            disabled = function() return false end,
+                            disabled = function() return (fcoRestore.apiVersion == nil or #restoreChoicesValues == 0) or false end,
                             warning = locVars["options_restore_marker_icons_warning"],
                             width="half",
                         },
@@ -6089,14 +6375,351 @@ function FCOIS.BuildAddonMenu()
                                 end
                             end,
                             isDangerous = true,
-                            disabled = function() return false end,
+                            disabled = function() return (fcoRestore.apiVersion == nil or #restoreChoicesValues == 0) or false end,
                             warning = locVars["options_restore_marker_icons_delete_selected_warning"],
                             width="half",
                         },
                     },
                 },
-            },
-        }
+            }, -- backup & restore controls
+        }, -- backup & restore submenu
+--======================================================================================================================
+        --Copy savedvars
+        {
+            type = "submenu",
+            name = locVars["options_header_copy_sv"],
+            controls =
+            {
+                --from server to server
+                {
+                    type = 'description',
+                    text = locVars["options_description_copy_sv_server"],
+                },
+                {
+                    type = 'dropdown',
+                    name = locVars["options_copy_sv_source_server"],
+                    tooltip = locVars["options_copy_sv_source_server"],
+                    choices = serverOptions,
+                    choicesValues = serverOptionsValues,
+                    getFunc = function()
+                        return srcServer
+                    end,
+                    setFunc = function(value)
+                        if not doNotRunDropdownValueSetFunc then
+                            srcServer = value
+                            reBuildAccountOptions(true)
+                        end
+                        srcServer = value
+                    end,
+                    width = "half",
+                    default = srcServer,
+                    reference = "FCOItemSaver_Settings_Copy_SV_Src_Server"
+                },
+                {
+                    type = 'dropdown',
+                    name = locVars["options_copy_sv_target_server"],
+                    tooltip = locVars["options_copy_sv_target_server"],
+                    choices = serverOptionsTarget,
+                    choicesValues = serverOptionsValuesTarget,
+                    getFunc = function()
+                        return targServer
+                    end,
+                    setFunc = function(value)
+                        if not doNotRunDropdownValueSetFunc then
+                            targServer = value
+                            reBuildAccountOptions(false)
+                        end
+                        targServer = value
+                    end,
+                    width = "half",
+                    default = targServer,
+                    reference = "FCOItemSaver_Settings_Copy_SV_Targ_Server"
+                },
+                --[[
+                {
+                    type = "button",
+                    name = locVars["options_copy_sv_to_server"],
+                    tooltip = locVars["options_copy_sv_to_server_TT"],
+                    func = function()
+                        local srcServerNameClean = cleanName(serverOptionsTarget[srcServer], "server")
+                        local targServerNameClean = cleanName(serverOptionsTarget[targServer], "server")
+                        FCOIS.copySavedVars(srcServerNameClean, targServerNameClean, nil, nil, nil, nil, false)
+                        reBuildServerOptions()
+                        reBuildAccountOptions()
+                        reBuildCharacterOptions()
+                    end,
+                    isDangerous = true,
+                    disabled = function()
+                        return (FCOIS.settingsNonServerDependendFound and FCOIS.defSettingsNonServerDependendFound) or (srcServer == noEntryValue or targServer == noEntryValue or srcServer == targServer)
+                    end,
+                    warning = locVars["options_copy_sv_to_server_warning"],
+                    width = "half",
+                },
+                {
+                    type = "button",
+                    name = locVars["options_delete_sv_on_server"],
+                    tooltip = locVars["options_delete_sv_on_server_TT"],
+                    func = function()
+                        local srcServerNameClean = cleanName(serverOptionsTarget[srcServer], "server")
+                        local targServerNameClean = cleanName(serverOptionsTarget[targServer], "server")
+                        FCOIS.copySavedVars(srcServerNameClean, targServerNameClean, nil, nil, nil, nil, true)
+                        reBuildServerOptions()
+                        reBuildAccountOptions()
+                        reBuildCharacterOptions()
+                    end,
+                    isDangerous = true,
+                    disabled = function()
+                        local targetServerName = serverNames[targServer]
+                        if (FCOIS.settingsNonServerDependendFound and FCOIS.defSettingsNonServerDependendFound)
+                                or (targServer == noEntryValue or targetServerName == currentServerNameMarked)
+                                or (targServer ~= noEntryValue and FCOItemSaver_Settings[targetServerName] == nil)
+                        then
+                            return true
+                        end
+                        return false
+                    end,
+                    warning = locVars["options_delete_sv_on_server_TT"],
+                    width = "half",
+                },
+                ]]
+                --from account to (all)account
+                {
+                    type = 'description',
+                    text = locVars["options_description_copy_sv_account"],
+                },
+                {
+                    type = 'dropdown',
+                    name = locVars["options_copy_sv_source_account"],
+                    tooltip = locVars["options_copy_sv_source_account"],
+                    choices = accountSrcOptions,
+                    choicesValues = accountSrcOptionsValues,
+                    getFunc = function()
+                        return srcAcc
+                    end,
+                    setFunc = function(value)
+                        if not doNotRunDropdownValueSetFunc then
+                            reBuildCharacterOptions(true)
+                        end
+                        srcAcc = value
+                    end,
+                    width = "half",
+                    default = srcAcc,
+                    disabled = function()
+                        return srcServer == noEntryValue
+                    end,
+                    reference = "FCOItemSaver_Settings_Copy_SV_Src_Acc"
+                },
+                {
+                    type = 'dropdown',
+                    name = locVars["options_copy_sv_target_account"],
+                    tooltip = locVars["options_copy_sv_target_account"],
+                    choices = accountTargOptions,
+                    choicesValues = accountTargOptionsValues,
+                    getFunc = function()
+                        return targAcc
+                    end,
+                    setFunc = function(value)
+                        if not doNotRunDropdownValueSetFunc then
+                            reBuildCharacterOptions(false)
+                        end
+                        targAcc = value
+                    end,
+                    width = "half",
+                    default = targAcc,
+                    disabled = function()
+                        return targServer == noEntryValue
+                    end,
+                    reference = "FCOItemSaver_Settings_Copy_SV_Targ_Acc"
+                },
+                {
+                    type = "button",
+                    name = locVars["options_copy_sv_to_account"],
+                    tooltip = locVars["options_copy_sv_to_account_TT"],
+                    func = function()
+                        if FCOISsettings.rememberUserAboutSavedVariablesBackup == true then
+                            FCOIS.ShowRememberUserAboutSavedVariablesBackupDialog()
+                        else
+                            local srcServerNameClean = cleanName(serverOptionsTarget[srcServer], "server")
+                            local targServerNameClean = cleanName(serverOptionsTarget[targServer], "server")
+                            local srcAccNameClean = cleanName(serverOptionsTarget[srcAcc], "account", srcAcc)
+                            local targAccNameClean = cleanName(serverOptionsTarget[targAcc], "account", targAcc)
+                            FCOIS.copySavedVars(srcServerNameClean, targServerNameClean, srcAccNameClean, targAccNameClean,  nil, nil, false)
+                            reBuildAccountOptions()
+                            reBuildCharacterOptions()
+                        end
+                    end,
+                    isDangerous = true,
+                    disabled = function()
+                        local srcServerName = serverNames[srcServer]
+                        local targetServerName = serverNames[targServer]
+                        local targetAccName = accountTargOptions[targAcc]
+                        local targetAccNameClean = cleanName(targetAccName, "account", targAcc)
+                        local srcAccNameClean = cleanName(serverOptionsTarget[srcAcc], "account", srcAcc)
+
+                        if ((FCOIS.settingsNonServerDependendFound and FCOIS.defSettingsNonServerDependendFound)
+                                or (srcServer == noEntryValue or targServer == noEntryValue or srcAcc == noEntryValue or targAcc == noEntryValue)
+                                or (srcServer == targServer and srcAcc == targAcc)
+                                or (FCOItemSaver_Settings[srcServerName] == nil or FCOItemSaver_Settings[srcServerName][srcAccNameClean] == nil)
+                        ) then
+                            return true
+                        end
+                        return false
+                    end,
+                    warning = locVars["options_copy_sv_to_server_warning"],
+                    width = "half",
+                },
+
+                {
+                    type = "button",
+                    name = locVars["options_delete_sv_account"],
+                    tooltip = locVars["options_delete_sv_account_TT"],
+                    func = function()
+                        if FCOISsettings.rememberUserAboutSavedVariablesBackup == true then
+                            FCOIS.ShowRememberUserAboutSavedVariablesBackupDialog()
+                        else
+                            local srcServerNameClean = cleanName(serverOptionsTarget[srcServer], "server")
+                            local targServerNameClean = cleanName(serverOptionsTarget[targServer], "server")
+                            local srcAccNameClean = cleanName(serverOptionsTarget[srcAcc], "account", srcAcc)
+                            local targAccNameClean = cleanName(serverOptionsTarget[targAcc], "account", targAcc)
+                            local forceReloadUI = false
+                            FCOIS.worldName = FCOIS.worldName or GetWorldName()
+                            if targServerNameClean == FCOIS.worldName and targAccNameClean == currentAccountName then forceReloadUI = true end
+                            FCOIS.copySavedVars(srcServerNameClean, targServerNameClean, srcAccNameClean, targAccNameClean,  nil, nil, true, forceReloadUI)
+                            reBuildAccountOptions()
+                            reBuildCharacterOptions()
+                        end
+                    end,
+                    isDangerous = true,
+                    disabled = function()
+                        local targetServerName = serverNames[targServer]
+                        local targetAccName = accountTargOptions[targAcc]
+                        local targetAccNameClean = cleanName(targetAccName, "account", targAcc)
+                        if ((FCOIS.settingsNonServerDependendFound and FCOIS.defSettingsNonServerDependendFound)
+                                or (targServer == noEntryValue or targAcc == noEntryValue)
+                                or (targServer ~= noEntryValue and targAcc ~= noEntryValue
+                                and (FCOItemSaver_Settings[targetServerName] == nil or FCOItemSaver_Settings[targetServerName][targetAccNameClean] == nil)))
+                        then
+                            return true
+                        end
+                        return false
+                    end,
+                    warning = locVars["options_delete_sv_account_TT"],
+                    width = "half",
+                },
+                --from character to character
+                {
+                    type = 'description',
+                    text = locVars["options_description_copy_sv_character"],
+                },
+                {
+                    type = 'dropdown',
+                    name = locVars["options_copy_sv_source_character"],
+                    tooltip = locVars["options_copy_sv_source_character"],
+                    choices = characterSrcOptions,
+                    choicesValues = characterSrcOptionsValues,
+                    getFunc = function()
+                        return srcChar
+                    end,
+                    setFunc = function(value)
+                        srcChar = value
+                    end,
+                    scrollable = true,
+                    sort = "name-up",
+                    width = "half",
+                    default = srcChar,
+                    disabled = function()
+                        return srcServer == noEntryValue or srcAcc == noEntryValue or srcAcc == noEntryValue + 2
+                    end,
+                    reference = "FCOItemSaver_Settings_Copy_SV_Src_Char"
+                },
+                {
+                    type = 'dropdown',
+                    name = locVars["options_copy_sv_target_character"],
+                    tooltip = locVars["options_copy_sv_target_character"],
+                    choices = characterTargOptions,
+                    choicesValues = characterTargOptionsValues,
+                    getFunc = function()
+                        return targChar
+                    end,
+                    setFunc = function(value)
+                        targChar = value
+                    end,
+                    scrollable = true,
+                    sort = "name-up",
+                    width = "half",
+                    default = targChar,
+                    disabled = function()
+                        return targServer == noEntryValue or targAcc == noEntryValue or targAcc == noEntryValue + 2
+                    end,
+                    reference = "FCOItemSaver_Settings_Copy_SV_Targ_Char"
+                },
+                {
+                    type = "button",
+                    name = locVars["options_copy_sv_to_character"],
+                    tooltip = locVars["options_copy_sv_to_character_TT"],
+                    func = function()
+                        if FCOISsettings.rememberUserAboutSavedVariablesBackup == true then
+                            FCOIS.ShowRememberUserAboutSavedVariablesBackupDialog()
+                        else
+                            local srcServerNameClean = cleanName(serverOptionsTarget[srcServer], "server")
+                            local targServerNameClean = cleanName(serverOptionsTarget[targServer], "server")
+                            local srcAccNameClean = cleanName(serverOptionsTarget[srcAcc], "account", srcAcc)
+                            local targAccNameClean = cleanName(serverOptionsTarget[targAcc], "account", targAcc)
+                            FCOIS.copySavedVars(srcServerNameClean, targServerNameClean, srcAccNameClean, targAccNameClean,  tostring(srcChar), tostring(targChar), false)
+                            reBuildCharacterOptions()
+                        end
+                    end,
+                    isDangerous = true,
+                    disabled = function()
+                        return ((FCOIS.settingsNonServerDependendFound and FCOIS.defSettingsNonServerDependendFound)
+                                or (srcServer == noEntryValue or targServer == noEntryValue
+                                or srcAcc == noEntryValue or targAcc == noEntryValue
+                                or srcChar == noEntryValue or targChar == noEntryValue
+                                or (srcServer == targServer and srcAcc == targAcc and srcChar == targChar)))
+                    end,
+                    warning = locVars["options_copy_sv_to_server_warning"],
+                    width = "half",
+                },
+
+                {
+                    type = "button",
+                    name = locVars["options_delete_sv_character"],
+                    tooltip = locVars["options_delete_sv_character_TT"],
+                    func = function()
+                        if FCOISsettings.rememberUserAboutSavedVariablesBackup == true then
+                            FCOIS.ShowRememberUserAboutSavedVariablesBackupDialog()
+                        else
+                            local srcServerNameClean = cleanName(serverOptionsTarget[srcServer], "server")
+                            local targServerNameClean = cleanName(serverOptionsTarget[targServer], "server")
+                            local srcAccNameClean = cleanName(serverOptionsTarget[srcAcc], "account", srcAcc)
+                            local targAccNameClean = cleanName(serverOptionsTarget[targAcc], "account", targAcc)
+                            local forceReloadUI = false
+                            FCOIS.worldName = FCOIS.worldName or GetWorldName()
+                            if targServerNameClean == FCOIS.worldName and targAccNameClean == currentAccountName and tostring(targChar) == currentCharacterId then forceReloadUI = true end
+                            FCOIS.copySavedVars(srcServerNameClean, targServerNameClean, srcAccNameClean, targAccNameClean,  tostring(srcChar), tostring(targChar), true, forceReloadUI)
+                            reBuildCharacterOptions()
+                        end
+                    end,
+                    isDangerous = true,
+                    disabled = function()
+                        local targetServerName = serverNames[targServer]
+                        local targetAccName = accountTargOptions[targAcc]
+                        local targetAccNameClean = cleanName(targetAccName, "account", targAcc)
+                        if ((FCOIS.settingsNonServerDependendFound and FCOIS.defSettingsNonServerDependendFound)
+                                or (targServer == noEntryValue or targAcc == noEntryValue or targChar == noEntryValue)
+                                or ((targServer ~= noEntryValue and targAcc ~= noEntryValue and targChar ~= noEntryValue)
+                                and (FCOItemSaver_Settings[targetServerName] == nil or FCOItemSaver_Settings[targetServerName][targetAccNameClean] == nil or FCOItemSaver_Settings[targetServerName][targetAccNameClean][tostring(targChar)] == nil)))
+                        then
+                            return true
+                        end
+                        return false
+                    end,
+                    warning = locVars["options_delete_sv_character_TT"],
+                    width = "half",
+                },
+            }, --controls copy savedvars
+        }, --submenu copy savedvars
+
 
 	} -- END OF OPTIONS TABLE
     CALLBACK_MANAGER:RegisterCallback("LAM-PanelControlsCreated", FCOLAMPanelCreated)

@@ -1,25 +1,4 @@
 ------------------------------------------------------------------
--- [Error messages to check] --
----------------------------------------------------------------------
---[ToDo list] --
--- 1) 2019-01-14 - Bugfix - Baertram
---Right clicking an item to show the context menu, and then left clicking somewhere else does not close the context menu on first click, but on 2nd click
---> Bug within LibCustomMenu -> >To be fixed by Votan?
-
--- 2) 2019-03-11 - Bugfix - Baertram
---Todo: IIfA UI: Set FCOIS marker icons by keybind for items without bagId and slotIndex (non-logged in chars!), by help of the itemLink and itemInstanceOrUniqueIdIIfA
---> See file src/FCOIS_functions.lua, function FCOIS.GetBagAndSlotFromControlUnderMouse(), at --IIfA support
---> marking via bagId and slotIndex does work BUT the list of IIfA is not refreshed until scrolling! SO this needs a fix as well.
-
--- 3) 2019-04-10 - Bugfix -  Reported by Kyoma on gitter.im
---Kyoma: Go to bank withdraw tab and use the keybind to mark with lock icon, then use keybind again to demark it.
---> Will produce an called by insecure code.
---> Why?
---Votan: item saver does ZO_PreHook("ZO_InventorySlot_ShowContextMenu",
--- Recomment to use libCustomMenu RegisterContextMenu
--- Should be a following error
-
-------------------------------------------------------------------
 --FCOItemSaver.lua
 --Author: Baertram
 ----------------------------------------------------------
@@ -31,33 +10,69 @@
 	Including filters on/off/show only marked items inside inventories, crafting stations, banks, guild banks, guild stores, player 2 player trading, sending mail, fence, launder and craftbag
 ]]
 
+
+------------------------------------------------------------------
+-- [Error/bug & feature messages to check] --
+---------------------------------------------------------------------
+--[ToDo list] --
+-- Current max bugs: 23
+-- 1) 2019-01-14 - Bugfix - Baertram
+--Right clicking an item to show the context menu, and then left clicking somewhere else does not close the context menu on first click, but on 2nd click
+--> Bug within LibCustomMenu -> To be fixed by Votan?
+
+--23) Check - Baertram
+--Test if backup/restore is working properly with the "AllAccountsTheSame" settings enabled
+
+------------------------------------------------------------------
+-- Currently worked on [Added/Fixed/Changed]
+---------------------------------------------------------------------
+
+--
+--Fixed:
+--  Bug #2: Updating keybinds at the InventoryInsightFromAshes UI won't update the marker icons shown.
+--          They will show the changed amrker icons now on the IIfA UI and the normal inventories (if both are open at the same time),
+--          and they will also update the marker icons for non-logged in characters in the IIfA UI properly now.
+--  Bug #3: Bank keybind triggers lua error about insecure call
+--          Replaced PreHook of ZO_InventorySlot_ShowContextMenu with LibCustomMenu:RegisterContextMenu(...)
+--  Bug #5: Filtering for items will recognize all filter buttons now and will hide items which are hidden via a green filter button 1 to 3 even if button 4 says "only show"
+--  Bug #10: The destroy selection handler did not work properly for dynamic icons if you have used drag&drop. It should now recognize if you got the settings for the dynamic
+--           icon for anti-destroy enabled or not AND if you currentld disabled them via the additonal inventory flag icon (if the dynamic icon got the setting to support the
+--           temporary disabling of the icon protection, via the additional flag icon, enabled!)
+--  Bug #11: Item tooltips protection state is shown for normal and gear/dynamic gear items now in red/green too. And the state will update if you use the additional inventory
+--           flag buttons "right click" option to change the protection state at the current filterPanel.
+--  Bug #12: Changing the protection state with the right click on an additional inventory flag icon now checks if items are slotted to a craft/mail/trade... panel and unslots them
+--           if they are protected again now
+--  Bug #13: The same items at an inventory where one of them is inside the crafting extraction slot: If you protect one of the same itms now each other same item should be removed
+--           from the extraction slot
+--  Bug #14: Multicraft support for Scalebreaker (PTS). Enchanting panel was not recognized correctly anymore (function SetEnchantingMode was removed by ZOs)
+--  Bug #15: Keybindings and SHIFT+right mouse did not work at the refine panel of crafting stations, and not at retrait station
+--  Bug #16: Double clicking with SHIFT+right mouse button (to remove/readd marker icons) will trigger the protective checks at the crafting stations e.g.
+--  Bug #17: At vendor repair -> Drag&Drop enabled, keybind enabled, SHIFT+right mouse enabled, Fixed protection variables settings.blockVendorBu, blockVendorBuyback, blockVendorRepair,
+--           fixed Anti-Destroy protection by drag&drop
+--  Bug #18: Deconstruction/Intricate icon tooltip shows "green -> protected" at the tooltips (icon / context menu entry) even if setting to allow deconstruction of items marked
+--           for deconstruction/intricate is enabled.
+--  Bug #19: At the guild store sell tab the tooltip for the "sell" icon shows "protected" (green) even if the item can be added to the sell slot.
+--  Bug #20: At the (jewelry)deconstruction/improvement panel the tooltip for the "deconstruct/improve/intricate" icon shows "protected" (green) even if the item can be added to the extraction/improvement slot.
+--  Bug #21: The reasearch marker icon is not shown as "unprotected (red) at the resaerch popup dialog" at the tooltips, if the setting to allow research of items marked for research is enabked.
+--
+--Added:
+--Copy & delete SavedVariables from server, account, character (SavedVariables copy & delete is a new settings submenu at the bottom, next to backup & restore)
+--Item count next to name sort header can be enabled in the "filter" settings. This count will update if you change filters within FCOItemSaver or AdvancedFilters.
+--->If you are using AdvancedFilters as well you should either disable the item count setting in AdvancedFilters or FCOItemSaver to increase the performance.
+--Add feature request #4 Setting to automatic marks->set items->non wished: Mark non-wished set items if character level below 50 and item below max level or max CP level
+--API function FCOIS.isDynamicGearIcon(iconId)
+--
+--Added on request:
+--SavedVariables can be enabled for all acounts the same
+--Settings for tooltips at the context menu entries
+--Settings to add the protected panel information to the context menu item entries
+--->These tooltips only work if using LibCustomMenu 3.8.0!
+
+
 ------------------------------------------------------------------
 --Global array with all data of this addon
 if FCOIS == nil then FCOIS = {} end
 local FCOIS = FCOIS
-
---===================== ADDON Info =============================================
---Addon variables
-FCOIS.addonVars = {}
-FCOIS.addonVars.addonVersionOptions 		= '1.5.9' -- version shown in the settings panel
-FCOIS.addonVars.addonVersionOptionsNumber	= 1.59
-FCOIS.addonVars.gAddonName					= "FCOItemSaver"
-FCOIS.addonVars.addonNameMenu				= "FCO ItemSaver"
-FCOIS.addonVars.addonNameMenuDisplay		= "|c00FF00FCO |cFFFF00ItemSaver|r"
-FCOIS.addonVars.addonAuthor 				= '|cFFFF00Baertram|r'
-FCOIS.addonVars.addonAuthorDisplayNameEU  	= '@Baertram'
-FCOIS.addonVars.addonAuthorDisplayNameNA  	= '@Baertram'
-FCOIS.addonVars.addonAuthorDisplayNamePTS  	= '@Baertram'
-FCOIS.addonVars.website 					= "https://www.esoui.com/downloads/info630-FCOItemSaver.html"
-FCOIS.addonVars.FAQwebsite                  = "https://www.esoui.com/portal.php?id=136&a=faq"
-FCOIS.addonVars.authorPortal                = "https://www.esoui.com/portal.php?&id=136"
-FCOIS.addonVars.feedback                    = "https://www.esoui.com/portal.php?id=136&a=bugreport"
-FCOIS.addonVars.donation                    = "https://www.esoui.com/portal.php?id=136&a=faq&faqid=131"
-FCOIS.addonVars.savedVarVersion		   		= 0.10 -- Changing this will reset all SavedVariables!
-FCOIS.addonVars.gAddonLoaded				= false
-FCOIS.addonVars.gPlayerActivated			= false
-FCOIS.addonVars.gSettingsLoaded				= false
-
 
 -- =====================================================================================================================
 --  Gamepad functions
@@ -110,7 +125,6 @@ function FCOIS.FCOItemSaver_CheckGamePadMode(showChatOutputOverride)
         return false
     end
 end
-
 
 -- =====================================================================================================================
 --  Addon initialization

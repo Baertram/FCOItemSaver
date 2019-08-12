@@ -364,7 +364,7 @@ function FCOIS.ClearOrRestoreAllMarkers(rowControl, bagId, slotIndex)
             --Reset the global preventer variable
             FCOIS.preventerVars.gRestoringMarkerIcons = false
             --Check if the item needs to be removed from a craft slot or the guild store sell tab now
-            FCOIS.IsItemProtectedAtASlotNow(bagId, slotIndex)
+            FCOIS.IsItemProtectedAtASlotNow(bagId, slotIndex, false, true)
             loc_counter = loc_counter + 1
         end
         --Reset the last saved marker array for the current item
