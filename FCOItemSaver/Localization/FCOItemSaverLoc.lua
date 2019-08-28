@@ -94,6 +94,9 @@ FCOIS.localizationVars.localizationAll = {
         ["options_delete_sv_character"]           =   "Delete target character",
         ["options_delete_sv_character_TT"]   =   "Delete the character SavedVariables on the target server, target account and target character.\nIf you are logged in to the target server with the chosen target account and character your user UI will reload afterwards!\n\n\nAttention: Existing target character data of the target account will be deleted without any backup!",
 
+        ["options_hint_backup_savedvariables_file_title"] = "Backup SavedVariables!",
+        ["options_hint_backup_savedvariables_file"] = "Please logout and create a\nbackup of your file 'FCOItemSaver.lua'\n in the SavedVariables folder, before\n working with the SavedVariable copy/delete options!",
+
         ["options_header_uniqueids"]           = "Unique Item ID",
         ["options_description_uniqueids"]   = "Your ingame items got an ID. This ID is the same if the item's name is the same (e.g. a lockpick and a stolen lockpick are equal). This is the standard behaviour of this addon!\n\nEach item got a unique item ID too. But the unique item ID is not the same, if the item is enchanted, got a different style or even if the item is stolen. Unique item IDs enable you to mark these items differently but it will need you to mark each of the items if they differ anywhere from other items with the same name.\n\nYou need to manually reload the user interface to change this option!",
         ["options_use_uniqueids"]           = "Use unique item IDs",

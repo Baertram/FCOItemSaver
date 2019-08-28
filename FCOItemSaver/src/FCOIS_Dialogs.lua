@@ -379,5 +379,5 @@ function FCOIS.ShowRememberUserAboutSavedVariablesBackupDialog()
     local title = locVars_loc["options_hint_backup_savedvariables_file_title"]
     local body = locVars_loc["options_hint_backup_savedvariables_file"]
     local FCOISsettings = FCOIS.settingsVars.settings
-    FCOIS.ShowConfirmationDialog("ShowRemmeberUserAboutSavedVariablesBackupDialog", title, body, function() FCOISsettings.rememberUserAboutSavedVariablesBackup = false  end, function() FCOISsettings.rememberUserAboutSavedVariablesBackup = true end)
+    FCOIS.ShowConfirmationDialog("ShowRememberUserAboutSavedVariablesBackupDialog", title, body, function() FCOISsettings.rememberUserAboutSavedVariablesBackup = false  end, function() FCOISsettings.rememberUserAboutSavedVariablesBackup = true end)
 end

@@ -1212,7 +1212,7 @@ end
 --Returns the number of gear sets as 1st value, and an array for the mapping from gear to the icon ID as 2nd value
 function FCOIS.GetGearSetInfo()
 	local gearToIcon = FCOIS.mappingVars.gearToIcon
-	if gearToIcon or #gearToIcon <= 0 then return nil end
+	if not gearToIcon or #gearToIcon <= 0 then return nil end
     return #gearToIcon, gearToIcon
 end -- FCOGetGearSetInfo
 
@@ -1220,7 +1220,7 @@ end -- FCOGetGearSetInfo
 --Returns the number of dynamic icons as 1st value, and an array for the mapping from dynamic icon to the icon ID as 2nd value
 function FCOIS.GetDynamicInfo()
 	local dynamicToIcon = FCOIS.mappingVars.dynamicToIcon
-	if dynamicToIcon or #dynamicToIcon <= 0 then return nil end
+	if not dynamicToIcon or #dynamicToIcon <= 0 then return nil end
     return #dynamicToIcon, dynamicToIcon
 end -- FCOGetDynamicInfo
 
@@ -1240,12 +1240,13 @@ end
 --> use the constants for the amrker icons please! e.g. FCOIS_CON_ICON_LOCK, FCOIS_CON_ICON_DYNAMIC_1 etc. Check file src/FCOIS_constants.lua for the available constants (top of the file)
 function FCOIS.GetIconText(iconId)
 	--Load the user settings, if not done already
-	if not FCOIS.checkIfFCOISSettingsWereLoaded(true) then return false end
+	if not FCOIS.checkIfFCOISSettingsWereLoaded(true) then return nil end
 
 	if iconId ~= nil and FCOIS.settingsVars.settings.icon ~= nil and
        FCOIS.settingsVars.settings.icon[iconId] ~= nil and FCOIS.settingsVars.settings.icon[iconId].name ~= nil and FCOIS.settingsVars.settings.icon[iconId].name ~= "" then
 	   	return FCOIS.settingsVars.settings.icon[iconId].name
     end
+	return nil
 end -- FCOGetIconText
 
 --------------------------------------------------------------------------------
@@ -1610,11 +1611,21 @@ end
 ---> standardNonDisabled: A list with the marker icons, using the name from the settings, including the icon as texture (if "withIcons" = true) and disabled icons are not marked in any other way then enabled ones.
 ---> keybinds: A list with the marker icons, using the fixed name from the translations, including the icon as texture (if "withIcons" = true) and disabled icons are marked red.
 ---> gearSets: A list with only the gear set marker icons, using the name from the settings, including the icon as texture (if "withIcons" = true) and disabled icons are marked red.
+---In all cases the icons added to the dropdown and dropdown values will only include the dynamic icons which are currently enabled via the settings slider
+---"Max. dynamic icons"
 function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons)
 	if type == nil then type = "standard" end
 	withIcons = withIcons or false
 	local FCOISlocVars            = FCOIS.localizationVars
 	if not FCOIS.checkIfFCOISSettingsWereLoaded(true) then return nil end
+	local settings = FCOIS.settingsVars.settings
+	local isIconEnabled = settings.isIconEnabled
+	local isGearIcon = settings.iconIsGear
+	local mappingVars = FCOIS.mappingVars
+	local isDynamicIcon = mappingVars.iconIsDynamic
+	local icon2DynIconCountNr = mappingVars.iconToDynamic
+	local numDynIconsUsable = settings.numMaxDynamicIconsUsable
+
 	--Build icons choicesValues list
 	local function buildIconsChoicesValuesList(typeToCheck)
 		--Shall the icons values list contain non-enabled icons?
@@ -1626,23 +1637,37 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons)
         }
         local choicesValuesList = {}
         local doCheckForEnabledIcons = typeToEnabledCheck[typeToCheck] or false
-        local settings = FCOIS.settingsVars.settings
-		local isIconEnabled = settings.isIconEnabled
-        local isGearIcon = settings.iconIsGear
 		local counter = 0
-        for i=1, numFilterIcons, 1 do
-            local doAddIconValueNow = true
-            if doCheckForEnabledIcons then
-                doAddIconValueNow = isIconEnabled[i]
-            end
-            if doAddIconValueNow and typeToCheck == "gearSets" then
-                doAddIconValueNow = isGearIcon[i]
-            end
-            if doAddIconValueNow then
-                counter = counter + 1
-                choicesValuesList[counter] = i
-            end
-        end
+		for i=1, numFilterIcons, 1 do
+			local goOn = false
+			local isGear = isGearIcon[i]
+			local isDynamic = isDynamicIcon[i]
+			if isDynamic then
+				--Map the icon to the dynamic icon counter
+				local dynIconCountNr = icon2DynIconCountNr[i]
+				--Is the dynamic icon enabled or disabled via the slider "Max dynamic icons"?
+				if dynIconCountNr <= numDynIconsUsable then
+					goOn = true
+				end
+			elseif isGear then
+				goOn = true
+			else
+				goOn = true
+			end
+			if goOn then
+				local doAddIconValueNow = true
+				if doCheckForEnabledIcons then
+					doAddIconValueNow = isIconEnabled[i]
+				end
+				if doAddIconValueNow and typeToCheck == "gearSets" then
+					doAddIconValueNow = isGearIcon[i]
+				end
+				if doAddIconValueNow then
+					counter = counter + 1
+					choicesValuesList[counter] = i
+				end
+			end
+		end
         return choicesValuesList
 	end
 
@@ -1650,27 +1675,42 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons)
 	local function buildIconsChoicesList(typeToCheck, p_withIcons)
 		typeToCheck = typeToCheck or 'standard'
 		p_withIcons = p_withIcons or false
-		local settings = FCOIS.settingsVars.settings
-		local isIconEnabled = settings.isIconEnabled
 		local iconsList = {}
 		if typeToCheck == 'standard' then
 			for i=1, numFilterIcons, 1 do
-				local locNameStr = FCOISlocVars.iconEndStrArray[i]
-				local iconName = FCOIS.GetIconText(i) or FCOISlocVars.fcois_loc["options_icon" .. tostring(i) .. "_" .. locNameStr] or "Icon " .. tostring(i)
-				local iconIsEnabled = isIconEnabled[i]
-				--Should the icon be shown at the start of the text too?
-				if p_withIcons then
-					local iconNameWithIcon = FCOIS.buildIconText(iconName, i, false, not iconIsEnabled)
-					iconName = iconNameWithIcon
-				end
-				--Is the icon enabled?
-				if iconIsEnabled then
-					iconsList[i] = iconName
+  				local goOn = false
+				local isGear = isGearIcon[i]
+				local isDynamic = isDynamicIcon[i]
+				if isDynamic then
+					--Map the icon to the dynamic icon counter
+					local dynIconCountNr = icon2DynIconCountNr[i]
+					--Is the dynamic icon enabled or disabled via the slider "Max dynamic icons"?
+					if dynIconCountNr <= numDynIconsUsable then
+						goOn = true
+					end
+				elseif isGear then
+					goOn = true
 				else
-					--Icon is not enabled, so color the entry red (or strike it through)
-					iconsList[i] = "|cFF0000" .. iconName .. "|r"
+					goOn = true
 				end
-            end
+				if goOn then
+					local locNameStr = FCOISlocVars.iconEndStrArray[i]
+					local iconIsEnabled = isIconEnabled[i]
+					local iconName = FCOIS.GetIconText(i) or FCOISlocVars.fcois_loc["options_icon" .. tostring(i) .. "_" .. locNameStr] or "Icon " .. tostring(i)
+					--Should the icon be shown at the start of the text too?
+					if p_withIcons then
+						local iconNameWithIcon = FCOIS.buildIconText(iconName, i, false, not iconIsEnabled)
+						iconName = iconNameWithIcon
+					end
+					--Is the icon enabled?
+					if iconIsEnabled then
+						iconsList[i] = iconName
+					else
+						--Icon is not enabled, so color the entry red (or strike it through)
+						iconsList[i] = "|cFF0000" .. iconName .. "|r"
+					end
+				end
+			end
 
 		elseif typeToCheck == 'standardNonDisabled' then
 			for i=1, numFilterIcons, 1 do
@@ -1688,44 +1728,76 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons)
 		elseif typeToCheck == 'keybinds' then
 			--Check for each icon if it is enabled in the settings
 			for i=1, numFilterIcons, 1 do
-				local locNameStr = FCOISlocVars.iconEndStrArray[i]
-				local iconName = FCOISlocVars.fcois_loc["options_icon" .. tostring(i) .. "_" .. locNameStr]
-				local iconIsEnabled = isIconEnabled[i]
-				--Should the icon be shown at the start of the text too?
-				if p_withIcons then
-					local iconNameWithIcon = FCOIS.buildIconText(iconName, i, false, not iconIsEnabled)
-					iconName = iconNameWithIcon
+				local goOn = false
+				local isGear = isGearIcon[i]
+				local isDynamic = isDynamicIcon[i]
+				if isDynamic then
+					--Map the icon to the dynamic icon counter
+					local dynIconCountNr = icon2DynIconCountNr[i]
+					--Is the dynamic icon enabled or disabled via the slider "Max dynamic icons"?
+					if dynIconCountNr <= numDynIconsUsable then
+						goOn = true
+					end
+				elseif isGear then
+					goOn = true
+				else
+					goOn = true
 				end
-                --Is the icon enabled?
-                if iconIsEnabled then
-                    iconsList[i] = iconName
-                else
-                    --Icon is not enabled, so color the entry red (or strike it through)
-                    iconsList[i] = "|cFF0000" .. iconName .. "|r"
-                end
-            end
-		elseif typeToCheck == 'gearSets' then
-			local gearCounter = 1
-			local isGearIcon = settings.iconIsGear
-			for i=1, numFilterIcons, 1 do
-				--Check if icon is a gear set icon and if it's enabled
-				local iconIsEnabled = isIconEnabled[i]
-				if isGearIcon[i] then
-                    local locNameStr = FCOISlocVars.iconEndStrArray[i]
-                    local iconName = FCOIS.GetIconText(i) or FCOISlocVars.fcois_loc["options_icon" .. tostring(i) .. "_" .. locNameStr] or "Icon " .. tostring(i)
+				if goOn then
+					local locNameStr = FCOISlocVars.iconEndStrArray[i]
+					local iconName = FCOISlocVars.fcois_loc["options_icon" .. tostring(i) .. "_" .. locNameStr]
+					local iconIsEnabled = isIconEnabled[i]
 					--Should the icon be shown at the start of the text too?
 					if p_withIcons then
 						local iconNameWithIcon = FCOIS.buildIconText(iconName, i, false, not iconIsEnabled)
 						iconName = iconNameWithIcon
 					end
-                    --Is the icon enabled?
-                    if iconIsEnabled then
-                        iconsList[gearCounter] = iconName
-                    else
-                        --Icon is not enabled, so color the entry red (or strike it through)
-                        iconsList[gearCounter] = "|cFF0000" .. iconName .. "|r"
-                    end
-					gearCounter = gearCounter + 1
+					--Is the icon enabled?
+					if iconIsEnabled then
+						iconsList[i] = iconName
+					else
+						--Icon is not enabled, so color the entry red (or strike it through)
+						iconsList[i] = "|cFF0000" .. iconName .. "|r"
+					end
+				end
+			end
+		elseif typeToCheck == 'gearSets' then
+			local gearCounter = 1
+			for i=1, numFilterIcons, 1 do
+				--Check if icon is a gear set icon and if it's enabled
+				local goOn = false
+				local isGear = isGearIcon[i]
+				if isGear then
+					local isDynamic = isDynamicIcon[i]
+					if isDynamic then
+						--Map the icon to the dynamic icon counter
+						local dynIconCountNr = icon2DynIconCountNr[i]
+						--Is the dynamic icon enabled or disabled via the slider "Max dynamic icons"?
+						if dynIconCountNr <= numDynIconsUsable then
+							goOn = true
+						end
+						goOn = true
+					else
+						goOn = true
+					end
+					if goOn then
+						local iconIsEnabled = isIconEnabled[i]
+						local locNameStr = FCOISlocVars.iconEndStrArray[i]
+						local iconName = FCOIS.GetIconText(i) or FCOISlocVars.fcois_loc["options_icon" .. tostring(i) .. "_" .. locNameStr] or "Icon " .. tostring(i)
+						--Should the icon be shown at the start of the text too?
+						if p_withIcons then
+							local iconNameWithIcon = FCOIS.buildIconText(iconName, i, false, not iconIsEnabled)
+							iconName = iconNameWithIcon
+						end
+						--Is the icon enabled?
+						if iconIsEnabled then
+							iconsList[gearCounter] = iconName
+						else
+							--Icon is not enabled, so color the entry red (or strike it through)
+							iconsList[gearCounter] = "|cFF0000" .. iconName .. "|r"
+						end
+						gearCounter = gearCounter + 1
+					end
 				end
 			end
         end
