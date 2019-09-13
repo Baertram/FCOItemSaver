@@ -1372,7 +1372,7 @@ function FCOIS.updateFilteredItemCountThrottled(filterPanelId, delay, calledFrom
     filterPanelId = filterPanelId or FCOIS.gFilterWhere
     delay = delay or 250
     calledFromWhere = calledFromWhere or ""
-    --d("[FCOIS]updateFilteredItemCountThrottled->" .. calledFromWhere .. " - filterPanelId: " ..tostring(filterPanelId) .. ", delay: " ..tostring(delay))
+--d("[FCOIS]updateFilteredItemCountThrottled->" .. calledFromWhere .. " - filterPanelId: " ..tostring(filterPanelId) .. ", delay: " ..tostring(delay))
     --Only go on if the update for the item count is for the currently visible filterPanelId
     if filterPanelId ~= FCOIS.gFilterWhere then return end
     --Update the count of filtered/shown items before the sortHeader "name" text
@@ -1409,9 +1409,11 @@ end
 --Get the sort header where the filtered item count should be added as pre-text
 function FCOIS.getSortHeaderControl(filterPanelId)
     filterPanelId = filterPanelId or FCOIS.gFilterWhere
-    local sortHeaderName = FCOIS.sortHeaderVars.name[filterPanelId]
+    local sortHeaderVars = FCOIS.sortHeaderVars
+    local sortHeaderName = sortHeaderVars.name[filterPanelId]
+    if not sortHeaderName then return end
     local sortHeaderCtrl = WINDOW_MANAGER:GetControlByName(sortHeaderName, "")
-    if sortHeaderCtrl == nil then return nil end
+    if sortHeaderCtrl == nil then return  end
     return sortHeaderCtrl
 end
 
@@ -1441,15 +1443,16 @@ function FCOIS.updateFilteredItemCount(panelId, calledFrom)
     --d(">[FCOIS]updateFilteredItemCount->".. calledFrom .. " - panelId: " ..tostring(panelId) .. ", libFiltersPanelId: " ..tostring(libFiltersPanelId) .. ", showFilteredItemCount: " .. tostring(showFilteredItemCount))
     local sortHeaderCtrl = FCOIS.getSortHeaderControl(libFiltersPanelId)
     --Reset the sortheader text to the original one
-    FCOIS.resetSortHeaderCount(libFiltersPanelId, sortHeaderCtrl)
+    if sortHeaderCtrl then FCOIS.resetSortHeaderCount(libFiltersPanelId, sortHeaderCtrl) end
     --AdvancedFilters version 1.5.0.6 adds filtered item count at the bottom inventory lines. So FCOIS does not need to show this anymore if AdvancedFilters has enabled this setting.
     FCOIS.preventerVars.useAdvancedFiltersItemCountInInventories = FCOIS.checkIfAdvancedFiltersItemCountIsEnabled()
     if FCOIS.preventerVars.useAdvancedFiltersItemCountInInventories then
-        --d(">>>[AF]filtered itemCount is used -> FCOIS aborting item count output")
+        --d(">>>[AF]filtered itemCount is used")
         --Update the AdvancedFilters item count
         zo_callLater(function()
             local afUtil = AdvancedFilters.util
             if afUtil.UpdateCraftingInventoryFilteredCount then
+                --Set this to prevent endless loop!
                 FCOIS.preventerVars.dontUpdateFilteredItemCount = true
                 afUtil.UpdateCraftingInventoryFilteredCount(nil) --invType: nil
                 FCOIS.preventerVars.dontUpdateFilteredItemCount = false
@@ -1460,9 +1463,7 @@ function FCOIS.updateFilteredItemCount(panelId, calledFrom)
     if not showFilteredItemCount then return false end
     --Update the item count at the sort header?
     if libFiltersPanelId == nil then return false end
-    local sortHeaderVars = FCOIS.sortHeaderVars
-    if not sortHeaderVars or not sortHeaderVars.name or not sortHeaderVars.name[libFiltersPanelId] then
-        return false end
+    if not sortHeaderCtrl then return false end
     if not FCOIS.numberOfFilteredItems or not FCOIS.numberOfFilteredItems[libFiltersPanelId] then
         return false end
     --Get the item number of the current inventory, slightly delayed as the filters need to be run first

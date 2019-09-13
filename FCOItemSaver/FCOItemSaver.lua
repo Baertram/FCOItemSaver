@@ -15,13 +15,19 @@
 -- [Error/bug & feature messages to check] --
 ---------------------------------------------------------------------
 --[ToDo list] --
--- Current max bugs: 23
+-- Current max bugs: 24
 -- 1) 2019-01-14 - Bugfix - Baertram
 --Right clicking an item to show the context menu, and then left clicking somewhere else does not close the context menu on first click, but on 2nd click
 --> Bug within LibCustomMenu -> To be fixed by Votan?
 
---23) Check - Baertram
+--23) 2019-08-17 Check - Baertram
 --Test if backup/restore is working properly with the "AllAccountsTheSame" settings enabled
+
+--24) 2019-09-02 Check - Baertram
+--TODO: 2019-09-02  Why is parameter "calledFromExternalAddon" set to "false" in function FCOIS.DeconstructionHandler as FCOIS.callItemSelectionHandler is called,
+--TODO:             even if the value was true ebfore (e.g. if coming from FCOIS.IsVendorSellLocked(bagId, slotIndex)?
+--TODO:             The only function where this parameter is used inside FCOIS.ItemSelectionHandler is the function FCOIS.getWhereAreWe().
+--TODO:             And only if the filterPanelId passed to the function is NIL. -> Can this be changed?
 
 ------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]

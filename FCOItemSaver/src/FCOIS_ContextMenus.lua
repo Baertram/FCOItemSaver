@@ -770,7 +770,6 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
             contMenuVars.contextMenuIndex = AddCustomMenuItem(addonVars.addonNameContextMenuEntry, function() callbackFnc() end, menuItemType, nil, nil, nil, nil, nil)
             AddCustomMenuTooltip(function(control, inside)
                 local tooltipData=FCOIS.CheckBuildAndAddCustomMenuTooltip(tooltipAlign, tooltipText)
-FCOIS._tooltipData = tooltipData
                 FCOIS.contextMenuEntryTooltipFunc(control, inside, tooltipData) end,
             contMenuVars.contextMenuIndex)
         end

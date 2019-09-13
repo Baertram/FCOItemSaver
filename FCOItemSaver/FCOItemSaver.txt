@@ -1,8 +1,8 @@
 ##
 ## Title: |c00FF00FCO |cFFFF00ItemSaver|r
 ## Author: Baertram
-## Version: 1.6.4
-## AddOnVersion: 164
+## Version: 1.6.6
+## AddOnVersion: 166
 ## APIVersion: 100028 100029
 ## Description: Mark/demark your inventory items with different icons and filter them in inventories, during trading, banks, guild store, mail, enchanting, crafting, researching and stores. Save your marked items before destroying/deconstructing/researching/selling/sending/trading/using or equipping/binding them!
 ## SavedVariables: FCOItemSaver_Settings

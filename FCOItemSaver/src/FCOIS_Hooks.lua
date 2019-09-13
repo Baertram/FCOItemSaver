@@ -2007,8 +2007,9 @@ function FCOIS.CreateHooks()
     --Update inventory slot labels
     ZO_PreHook("UpdateInventorySlots", function()
         --d("[FCOIS]UpdateInventorySlots")
-        --This variable is set within file src/FCOIS_FilterButtons.lua, function FCOIS.updateFilteredItemCount if the addon AdvancedFilters is used,
-        --and the AF itemCount is enabled (next to the inventory free slots labels), and FCOIS is calling the function AF.util.updateInventoryInfoBarCountLabel.
+        --This variable (FCOIS.preventerVars.dontUpdateFilteredItemCount) is set within file src/FCOIS_FilterButtons.lua, function FCOIS.updateFilteredItemCount 
+		--if the addon AdvancedFilters is used, and the AF itemCount is enabled (next to the inventory free slots labels), 
+		--and FCOIS is calling the function AF.util.updateInventoryInfoBarCountLabel.
         -->Otherwise we would create an endless loop here which will be AF.util.updateInventoryInfoBarCountLabel -> UpdateInventorySlots ->
         --PreHook in FCOIS to function UpdateInventorySlots -> FCOIS.updateFilteredItemCountThrottled -> FCOIS.updateFilteredItemCount -> AF.util.updateInventoryInfoBarCountLabel ...
         if not FCOIS.preventerVars.dontUpdateFilteredItemCount then

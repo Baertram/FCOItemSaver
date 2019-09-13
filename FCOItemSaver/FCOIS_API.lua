@@ -175,7 +175,7 @@ end
 --> ATTENTION: FCOIS is currently NOT protecting the deposit of items to a player bank.
 -- This is always allowed!
 -- If you want to check if there is a marker icon on the item you want to deposit, and thus not allow to deposit it,
--- use the function FCOIS.IsMarked() please -> See below in this API file!
+-- use the function FCOIS.IsMarked() -> See below in this API file, or FCOIS.IsLocked(bagId, slotIndex) -> See above in this API file
 function FCOIS.IsPlayerBankDepositLocked(bagId, slotIndex)
     --Don't show chat output and don't show alert message
     return FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, true, LF_BANK_DEPOSIT)
@@ -187,7 +187,7 @@ end
 -- This applies even to non marked items, so there does not need to be a marker icon on the item!
 -- Otherwise the deposit is always allowed!
 -- If you want to check if there is a marker icon on the item you want to deposit, and thus not allow to deposit it,
--- use the function FCOIS.IsMarked() please -> See below in this API file!
+-- use the function FCOIS.IsMarked() -> See below in this API file, or FCOIS.IsLocked(bagId, slotIndex) -> See above in this API file
 function FCOIS.IsGuildBankDepositLocked(bagId, slotIndex)
     --Don't show chat output and don't show alert message
     return FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, true, LF_GUILDBANK_DEPOSIT)
@@ -198,7 +198,7 @@ end
 --> ATTENTION: FCOIS is currently NOT protecting the withdraw of items from a player bank.
 -- This is always allowed!
 -- If you want to check if there is a marker icon on the item you want to withdraw, and thus not allow to withdraw it,
--- use the function FCOIS.IsMarked() please -> See below in this API file!
+-- use the function FCOIS.IsMarked() -> See below in this API file, or FCOIS.IsLocked(bagId, slotIndex) -> See above in this API file
 function FCOIS.IsPlayerBankWithdrawLocked(bagId, slotIndex)
     --Don't show chat output and don't show alert message
     return FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, true, LF_BANK_WITHDRAW)
@@ -208,7 +208,7 @@ end
 --> ATTENTION: FCOIS is currently NOT protecting the withdraw of items from a guild bank.
 -- This is always allowed!
 -- If you want to check if there is a marker icon on the item you want to withdraw, and thus not allow to withdraw it,
--- use the function FCOIS.IsMarked() please -> See below in this API file!
+-- use the function FCOIS.IsMarked() -> See below in this API file, or FCOIS.IsLocked(bagId, slotIndex) -> See above in this API file
 function FCOIS.IsGuildBankWithdrawLocked(bagId, slotIndex)
     --Don't show chat output and don't show alert message
     return FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, true, LF_GUILDBANK_WITHDRAW)
@@ -238,6 +238,18 @@ end
 function FCOIS.IsImprovementLocked(bagId, slotIndex)
 	--Don't show chat output and don't show alert message
 	return FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, true, LF_SMITHING_IMPROVEMENT)
+end
+
+-- FCOIS prevention for being researched
+function FCOIS.IsResearchLocked(bagId, slotIndex)
+	--Don't show chat output and don't show alert message
+	return FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, true, LF_SMITHING_RESEARCH)
+end
+
+-- FCOIS prevention for being researched at the research popup dialog
+function FCOIS.IsResearchDialogLocked(bagId, slotIndex)
+	--Don't show chat output and don't show alert message
+	return FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, true, LF_SMITHING_RESEARCH_DIALOG)
 end
 
 -- FCOIS prevention for jewelry being refined
@@ -274,18 +286,6 @@ end
 function FCOIS.IsEnchantingExtractionLocked(bagId, slotIndex)
 	--Don't show chat output and don't show alert message
 	return FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, true, LF_ENCHANTING_EXTRACTION)
-end
-
--- FCOIS prevention for being researched
-function FCOIS.IsResearchLocked(bagId, slotIndex)
-	--Don't show chat output and don't show alert message
-	return FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, true, LF_SMITHING_RESEARCH)
-end
-
--- FCOIS prevention for being researched at the research popup dialog
-function FCOIS.IsResearchDialogLocked(bagId, slotIndex)
-	--Don't show chat output and don't show alert message
-	return FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, true, LF_SMITHING_RESEARCH_DIALOG)
 end
 
 -- FCOIS prevention for being destroyed at the alchemy station

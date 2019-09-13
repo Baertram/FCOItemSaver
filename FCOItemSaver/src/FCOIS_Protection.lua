@@ -321,265 +321,6 @@ function FCOIS.DestroySelectionHandler(bag, slot, echo, parentControl)
 end
 
 --============================== ITEM SELECTION HANDLER ===================================================================================
---Determine which filterPanelId is currently active and set the whereAreWe variable
-function FCOIS.getWhereAreWe(panelId, panelIdAtCall, bag, slot, isDragAndDrop, calledFromExternalAddon)
-    --The number for the orientation (which filter panel ID and which sub-checks were done -> for the chat output and the alert message determination)
-    local whereAreWe = FCOIS_CON_DESTROY
-    --The current game's SCENE name (used for determining bank/guild bank deposit)
-    local currentSceneName = SCENE_MANAGER.currentScene.name
-    --Local settings pointer
-    local settings = FCOIS.settingsVars.settings
-
-    --======= FUNCTIONs ============================================================
-    --Function to check a single item's type and get the whereAreWe panel ID
-    local function checkSingleItemProtection(p_bag, p_slotIndex, whereAreWeBefore)
-        if settings.debug then FCOIS.debugMessage( ">>checkSingleItemProtection - panelId: " .. tostring(panelId) .. ", whereAreWeBefore: " .. tostring(whereAreWeBefore), true, FCOIS_DEBUG_DEPTH_ALL) end
-        if p_bag == nil or p_slotIndex == nil then return false end
-        local locWhereAreWe = FCOIS_CON_DESTROY
-        --Are we trying to open a container with autoloot on?
-        if (FCOIS.isAutolootContainer(p_bag, p_slotIndex)) then
-            locWhereAreWe = FCOIS_CON_CONTAINER_AUTOOLOOT
-            --Read recipe?
-        elseif (FCOIS.isItemType(p_bag, p_slotIndex, ITEMTYPE_RECIPE)) then
-            locWhereAreWe = FCOIS_CON_RECIPE_USAGE
-            --Read style motif?
-        elseif (FCOIS.isItemType(p_bag, p_slotIndex, ITEMTYPE_RACIAL_STYLE_MOTIF)) then
-            locWhereAreWe = FCOIS_CON_MOTIF_USAGE
-            --Drink potion?
-        elseif (FCOIS.isItemType(p_bag, p_slotIndex, ITEMTYPE_POTION)) then
-            locWhereAreWe = FCOIS_CON_POTION_USAGE
-            --Eat food?
-        elseif (FCOIS.isItemType(p_bag, p_slotIndex, ITEMTYPE_FOOD)) then
-            locWhereAreWe = FCOIS_CON_FOOD_USAGE
-            --Use crown store item?
-        elseif (FCOIS.isItemType(p_bag, p_slotIndex, ITEMTYPE_CROWN_ITEM) or FCOIS.isItemType(p_bag, p_slotIndex, ITEMTYPE_CROWN_REPAIR)) then
-            locWhereAreWe = FCOIS_CON_CROWN_ITEM
-            --Other items are allowed!
-        else
-            --If the panelId was given at the call set the whereAreWe type to the fallback to return false -> Allow the equip/usage of the item
-            --Else use the "Anti-Destroy" method to allow the API function "FCOIS.IsDestroyLocked" to function correct
-            if panelIdAtCall ~= nil then
-                --Set whereAreWe to FCOIS_CON_FALLBACK so the anti-settings mapping function returns "false" and allows the usage/equipping/etc.
-                locWhereAreWe = FCOIS_CON_FALLBACK
-            else
-                --PanelId was NIL as the function got called.
-                --Check if the function was called internally, or from another addon (by the help of API functions).
-                if not calledFromExternalAddon then
-                    --Called internally, no filterPanelId was given. Current filterPanelId is the globally active one FCOIS.gFilterWhere
-                    --Could be called during drag&drop or doubleclick functions of the addon
-                    if FCOIS.preventerVars.dragAndDropOrDoubleClickItemSelectionHandler then
-                        --Return the fallback value "false" so the drag&drop/double click works and will not show "Destroy not allowed!"
-                        --d(">SingleItemChecks: Drag&Drop handler -> whereAreWe = FCOIS_CON_FALLBACK")
-                        locWhereAreWe = FCOIS_CON_FALLBACK
-                        FCOIS.preventerVars.dragAndDropOrDoubleClickItemSelectionHandler = false
-                    end
-                end
-            end
-        end
-        if settings.debug then FCOIS.debugMessage( "<<< whereAreWeAfter: " .. tostring(locWhereAreWe), true, FCOIS_DEBUG_DEPTH_ALL) end
-        return locWhereAreWe
-    end
-
-    --======= WhereAreWe determination ============================================================
-    --------------------------------------------------------------------------------------------------------------------
-    --------------------------------------------------------------------------------------------------------------------
-    --------------------------------------------------------------------------------------------------------------------
-    --CraftBagExtended at a mail send panel, the bank, guild bank, guild store, store or trade?
-    --------------------------------------------------------------------------------------------------------------------
-    --------------------------------------------------------------------------------------------------------------------
-    --------------------------------------------------------------------------------------------------------------------
-    if FCOIS.otherAddons.craftBagExtendedActive and INVENTORY_CRAFT_BAG and (panelId == LF_CRAFTBAG or not ctrlVars.CRAFTBAG:IsHidden()) then
-        --Inside mail panel?
-        if (not ctrlVars.MAIL_SEND.control:IsHidden() or FCOIS.gFilterWhereParent == LF_MAIL_SEND) then
-            whereAreWe = FCOIS_CON_MAIL
-            --Inside trading player 2 player panel?
-        elseif (not ctrlVars.PLAYER_TRADE.control:IsHidden() or FCOIS.gFilterWhereParent == LF_TRADE) then
-            whereAreWe = FCOIS_CON_TRADE
-            --Are we at the store scene
-        elseif currentSceneName == "store" then
-            --Vendor buy
-            if (FCOIS.gFilterWhereParent == LF_VENDOR_BUY or (not ctrlVars.STORE:IsHidden() and ctrlVars.BACKPACK_BAG:IsHidden() and ctrlVars.STORE_BUY_BACK:IsHidden() and ctrlVars.REPAIR_LIST:IsHidden())) then
-                whereAreWe = FCOIS_CON_BUY
-                --Vendor sell
-            elseif (FCOIS.gFilterWhereParent == LF_VENDOR_SELL or (ctrlVars.STORE:IsHidden() and not ctrlVars.BACKPACK_BAG:IsHidden() and ctrlVars.STORE_BUY_BACK:IsHidden() and ctrlVars.REPAIR_LIST:IsHidden())) then
-                whereAreWe = FCOIS_CON_SELL
-                --Vendor buyback
-            elseif (FCOIS.gFilterWhereParent == LF_VENDOR_BUYBACK or (ctrlVars.STORE:IsHidden() and ctrlVars.BACKPACK_BAG:IsHidden() and not ctrlVars.STORE_BUY_BACK:IsHidden() and ctrlVars.REPAIR_LIST:IsHidden())) then
-                whereAreWe = FCOIS_CON_BUYBACK
-                --Vendor repair
-            elseif (FCOIS.gFilterWhereParent == LF_VENDOR_SELL or (ctrlVars.STORE:IsHidden() and ctrlVars.BACKPACK_BAG:IsHidden() and ctrlVars.STORE_BUY_BACK:IsHidden() and not ctrlVars.REPAIR_LIST:IsHidden())) then
-                whereAreWe = FCOIS_CON_REPAIR
-            end
-            --Inside guild store selling?
-        elseif (not ctrlVars.GUILD_STORE:IsHidden() or FCOIS.gFilterWhereParent == LF_GUILDSTORE_SELL) then
-            whereAreWe = FCOIS_CON_GUILD_STORE_SELL
-            --[[
-            --There is no CraftBag or CraftBagExtended at a guild bank withdraw panel!
-            --Are we at a guild bank and trying to withdraw some items by double clicking it?
-            elseif (not ctrlVars.GUILD_BANK:IsHidden() or FCOIS.gFilterWhereParent == LF_GUILDBANK_WITHDRAW) then
-                --TODO: Why FCOIS_CON_SELL here for Guildstore withdraw??? To test!
-                whereAreWe = FCOIS_CON_SELL
-            ]]
-            --Are we at the inventory/bank/guild bank/house bank and trying to use/equip/deposit an item?
-        elseif (FCOIS.gFilterWhereParent == LF_BANK_DEPOSIT or FCOIS.gFilterWhereParent == LF_GUILDBANK_DEPOSIT or FCOIS.gFilterWhereParent == LF_HOUSE_BANK_DEPOSIT) then
-            --Check if player or guild bank is active by checking current scene in scene manager
-            if currentSceneName ~= nil and (currentSceneName == ctrlVars.bankSceneName or currentSceneName == ctrlVars.guildBankSceneName or currentSceneName == ctrlVars.houseBankSceneName) then
-                --If bank/guild bank/house bank deposit tab is active
-                if ctrlVars.BANK:IsHidden() and ctrlVars.GUILD_BANK:IsHidden() and ctrlVars.HOUSE_BANK:IsHidden() then
-                    --If the item is double clicked + marked deposit it, instead of blocking the deposition
-                    --Set whereAreWe to FCOIS_CON_FALLBACK so the anti-settings mapping function returns "false"
-                    whereAreWe = FCOIS_CON_FALLBACK
-                    --Abort the checks here as items are always allowed to deposit at the bank/guildbank deposit tab, even from the craftbag
-                    --but only if you do not use the mouse drag&drop (or context menu destroy)
-                    if not isDragAndDrop then return false end
-                end
-            end
-            --Only do the item checks if the item should not be depositted at a bank/guild bank
-            if whereAreWe ~= FCOIS_CON_FALLBACK then
-                --Get the whereAreWe panel ID by checking the item's type etc. now
-                whereAreWe = checkSingleItemProtection(bag, slot, whereAreWe)
-            end
-            --Are we in the normal craftbag?
-        else
-            whereAreWe = FCOIS_CON_CRAFTBAG_DESTROY
-        end
-
-        --------------------------------------------------------------------------------------------------------------------
-        --------------------------------------------------------------------------------------------------------------------
-        --------------------------------------------------------------------------------------------------------------------
-        --No Craftbag panels
-        --------------------------------------------------------------------------------------------------------------------
-        --------------------------------------------------------------------------------------------------------------------
-        --------------------------------------------------------------------------------------------------------------------
-    else -- if FCOIS.otherAddons.craftBagExtendedActive and INVENTORY_CRAFT_BAG and (panelId == LF_CRAFTBAG or not ctrlVars.CRAFTBAG:IsHidden()) then
-
-        --Inside mail panel?
-        if (not ctrlVars.MAIL_SEND.control:IsHidden() or panelId == LF_MAIL_SEND) then
-            whereAreWe = FCOIS_CON_MAIL
-            --Inside trading player 2 player panel?
-        elseif (not ctrlVars.PLAYER_TRADE.control:IsHidden() or panelId == LF_TRADE) then
-            whereAreWe = FCOIS_CON_TRADE
-            --Are we at the store scene?
-        elseif currentSceneName == "store" then
-            --Vendor buy
-            if (panelId == LF_VENDOR_BUY or (not ctrlVars.STORE:IsHidden() and ctrlVars.BACKPACK_BAG:IsHidden() and ctrlVars.STORE_BUY_BACK:IsHidden() and ctrlVars.REPAIR_LIST:IsHidden())) then
-                whereAreWe = FCOIS_CON_BUY
-                --Vendor sell
-            elseif (panelId == LF_VENDOR_SELL or (ctrlVars.STORE:IsHidden() and not ctrlVars.BACKPACK_BAG:IsHidden() and ctrlVars.STORE_BUY_BACK:IsHidden() and ctrlVars.REPAIR_LIST:IsHidden())) then
-                whereAreWe = FCOIS_CON_SELL
-                --Vendor buyback
-            elseif (panelId == LF_VENDOR_BUYBACK or (ctrlVars.STORE:IsHidden() and ctrlVars.BACKPACK_BAG:IsHidden() and not ctrlVars.STORE_BUY_BACK:IsHidden() and ctrlVars.REPAIR_LIST:IsHidden())) then
-                whereAreWe = FCOIS_CON_BUYBACK
-                --Vendor repair
-            elseif (panelId == LF_VENDOR_REPAIR or (ctrlVars.STORE:IsHidden() and ctrlVars.BACKPACK_BAG:IsHidden() and ctrlVars.STORE_BUY_BACK:IsHidden() and not ctrlVars.REPAIR_LIST:IsHidden())) then
-                whereAreWe = FCOIS_CON_REPAIR
-            end
-            --Fence/Launder scene
-        elseif currentSceneName == "fence_keyboard" then
-            --Inside fence sell?
-            if ((FENCE_KEYBOARD ~= nil and FENCE_KEYBOARD.mode ~= nil and FENCE_KEYBOARD.mode == ZO_MODE_STORE_SELL_STOLEN) or panelId == LF_FENCE_SELL) then
-                whereAreWe = FCOIS_CON_FENCE_SELL
-                --Inside launder sell?
-            elseif ((FENCE_KEYBOARD ~= nil and FENCE_KEYBOARD.mode ~= nil and FENCE_KEYBOARD.mode == ZO_MODE_STORE_LAUNDER) or panelId == LF_FENCE_LAUNDER) then
-                whereAreWe = FCOIS_CON_LAUNDER_SELL
-            end
-            --Inside crafting station refinement
-        elseif (not ctrlVars.REFINEMENT:IsHidden() or (panelId == LF_SMITHING_REFINE or panelId == LF_JEWELRY_DECONSTRUCT)) then
-            local craftType = GetCraftingInteractionType()
-            if craftType == CRAFTING_TYPE_JEWELRYCRAFTING then
-                whereAreWe = FCOIS_CON_JEWELRY_REFINE
-            else
-                whereAreWe = FCOIS_CON_REFINE
-            end
-            --Inside crafting station deconstruction
-        elseif (not ctrlVars.DECONSTRUCTION:IsHidden() or (panelId == LF_SMITHING_DECONSTRUCT or panelId == LF_JEWELRY_DECONSTRUCT)) then
-            local craftType = GetCraftingInteractionType()
-            if craftType == CRAFTING_TYPE_JEWELRYCRAFTING then
-                whereAreWe = FCOIS_CON_JEWELRY_DECONSTRUCT
-            else
-                whereAreWe = FCOIS_CON_DECONSTRUCT
-            end
-            --Inside crafting station improvement
-        elseif (not ctrlVars.IMPROVEMENT:IsHidden() or (panelId == LF_SMITHING_IMPROVEMENT or panelId == LF_JEWELRY_DECONSTRUCT)) then
-            local craftType = GetCraftingInteractionType()
-            if craftType == CRAFTING_TYPE_JEWELRYCRAFTING then
-                whereAreWe = FCOIS_CON_JEWELRY_IMPROVE
-            else
-                whereAreWe = FCOIS_CON_IMPROVE
-            end
-            --Are we at the crafting stations research panel's popup list dialog?
-        elseif (FCOIS.isResearchListDialogShown() or (panelId == LF_SMITHING_RESEARCH_DIALOG or panelId == LF_JEWELRY_RESEARCH_DIALOG)) then
-            local craftType = GetCraftingInteractionType()
-            if craftType == CRAFTING_TYPE_JEWELRYCRAFTING then
-                whereAreWe = FCOIS_CON_JEWELRY_RESEARCH_DIALOG
-            else
-                whereAreWe = FCOIS_CON_RESEARCH_DIALOG
-            end
-            --Are we at the crafting stations research panel?
-        elseif (not ctrlVars.RESEARCH:IsHidden() or (panelId == LF_SMITHING_RESEARCH or panelId == LF_JEWELRY_RESEARCH)) then
-            local craftType = GetCraftingInteractionType()
-            if craftType == CRAFTING_TYPE_JEWELRYCRAFTING then
-                whereAreWe = FCOIS_CON_JEWELRY_RESEARCH
-            else
-                whereAreWe = FCOIS_CON_RESEARCH
-            end
-            --Inside enchanting station
-        elseif (not ctrlVars.ENCHANTING_STATION:IsHidden() or (panelId == LF_ENCHANTING_EXTRACTION or panelId == LF_ENCHANTING_CREATION)) then
-            --Enchanting Extraction panel?
-            if panelId == LF_ENCHANTING_EXTRACTION or ENCHANTING.enchantingMode == 2 then
-                whereAreWe = FCOIS_CON_ENCHANT_EXTRACT
-                --Enchanting Creation panel?
-            elseif panelId == LF_ENCHANTING_CREATION or ENCHANTING.enchantingMode == 1 then
-                whereAreWe = FCOIS_CON_ENCHANT_CREATE
-            end
-            --Inside guild store selling?
-        elseif (not ctrlVars.GUILD_STORE:IsHidden() or panelId == LF_GUILDSTORE_SELL) then
-            whereAreWe = FCOIS_CON_GUILD_STORE_SELL
-            --Are we at the alchemy station?
-        elseif (not ctrlVars.ALCHEMY_STATION:IsHidden() or panelId == LF_ALCHEMY_CREATION) then
-            whereAreWe = FCOIS_CON_ALCHEMY_DESTROY
-            --Are we at a bank and trying to withdraw some items by double clicking it?
-        elseif (not ctrlVars.BANK:IsHidden() or panelId == LF_BANK_WITHDRAW) then
-            --Set whereAreWe to FCOIS_CON_FALLBACK so the anti-settings mapping function returns "false"
-            whereAreWe = FCOIS_CON_FALLBACK
-        elseif (not ctrlVars.HOUSE_BANK:IsHidden() or panelId == LF_HOUSE_BANK_WITHDRAW) then
-            --Set whereAreWe to FCOIS_CON_FALLBACK so the anti-settings mapping function returns "false"
-            whereAreWe = FCOIS_CON_FALLBACK
-            --Are we at a guild bank and trying to withdraw some items by double clicking it?
-        elseif (not ctrlVars.GUILD_BANK:IsHidden() or panelId == LF_GUILDBANK_WITHDRAW) then
-            --Set whereAreWe to FCOIS_CON_FALLBACK so the anti-settings mapping function returns "false"
-            whereAreWe = FCOIS_CON_FALLBACK
-            --Are we at a transmutation/retrait station?
-        elseif (FCOIS.isRetraitStationShown() or panelId == LF_RETRAIT) then
-            --Set whereAreWe to FCOIS_CON_FALLBACK so the anti-settings mapping function returns "false"
-            whereAreWe = FCOIS_CON_RETRAIT
-            --Are we at the inventory/bank/guild bank and trying to use/equip/deposit an item?
-        elseif (not ctrlVars.BACKPACK:IsHidden() or panelId == LF_INVENTORY or panelId == LF_BANK_DEPOSIT or panelId == LF_GUILDBANK_DEPOSIT or panelId == LF_HOUSE_BANK_DEPOSIT) then
-            --Check if player or guild bank is active by checking current scene in scene manager
-            if currentSceneName ~= nil and (currentSceneName == ctrlVars.bankSceneName or currentSceneName == ctrlVars.guildBankSceneName or currentSceneName == ctrlVars.houseBankSceneName) then
-                --If bank/guild bank deposit tab is active
-                if ctrlVars.BANK:IsHidden() and ctrlVars.GUILD_BANK:IsHidden() and ctrlVars.HOUSE_BANK:IsHidden() then
-                    --If the item is double clicked + marked deposit it, instead of blocking the deposition
-                    --Set whereAreWe to FCOIS_CON_FALLBACK so the anti-settings mapping function returns "false"
-                    whereAreWe = FCOIS_CON_FALLBACK
-                    --Abort the checks here as items are always allowed to deposit at the bank/guildbank deposit tab
-                    --but only if you do not use the mouse drag&drop (or context menu destroy)
-                    if not isDragAndDrop then return false end
-                end
-            end
-            --Only do the item checks if the item should not be deposited at a bank/guild bank
-            if whereAreWe ~= FCOIS_CON_FALLBACK then
-                --Get the whereAreWe panel ID by checking the item's type etc. now
-                whereAreWe = checkSingleItemProtection(bag, slot)
-            end
-            --All others: We are trying to destroy an item
-        else
-            whereAreWe = FCOIS_CON_DESTROY
-        end
-    end --if FCOIS.otherAddons.craftBagExtendedActive and INVENTORY_CRAFT_BAG and (panelId == LF_CRAFTBAG or not ctrlVars.CRAFTBAG:IsHidden()) then
-    return whereAreWe
-end
-
 -- Fired when user selects an item by drag&drop, doubleclick etc.
 -- Warns user if the item is marked with any of the filter icons and if the marked icon protects the item at teh current filterPanelId
 function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId)
@@ -671,8 +412,9 @@ function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChat
     --Get the anti-settings for the whereAreWe panel number now
     isBlocked = whereAreWeToIsBlocked[whereAreWe]
     --Check if single items checks should be done (like "check a recipe" or "potion")
-    local singleItemChecks = whereAreWeToSingleItemChecks[whereAreWe]
+    local singleItemChecks = whereAreWeToSingleItemChecks[whereAreWe] or false
 
+    if settings.debug then FCOIS.debugMessage( "[ItemSelectionHandler]>Where are we: " .. tostring(whereAreWe) .. ", isBlocked: " .. tostring(isBlocked) .. ", singleItemChecks: " .. tostring(singleItemChecks) .. ", panelId: " .. tostring(panelId), true, FCOIS_DEBUG_DEPTH_SPAM) end
 --d(">Where are we: " .. tostring(whereAreWe) .. ", isBlocked: " .. tostring(isBlocked) .. ", singleItemChecks: " .. tostring(singleItemChecks) .. ", panelId: " .. tostring(panelId))
 
     --======= SPECIAL CHECKS - RECIPES, STYLE MOTIFS, FOOD =========================
@@ -723,15 +465,17 @@ function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChat
     -- First check all marker icons on the item now:
     local mappedIsDynIcon = FCOIS.mappingVars.iconIsDynamic
     for iconIdToCheck=1, numFilterIcons, 1 do
+        if settings.debug then FCOIS.debugMessage(">icon: " .. iconIdToCheck, true, FCOIS_DEBUG_DEPTH_SPAM) end
 --d("[FCOIS]ItemSelectionHandler - icon: " .. iconIdToCheck)
         --Check if the item is marked with the icon
         if( FCOIS.checkIfItemIsProtected(iconIdToCheck, id) ) then
             markedWithOneIcon = true
             local isDynamicIcon = mappedIsDynIcon[iconIdToCheck]
+            if settings.debug then FCOIS.debugMessage(">> Item is protected with the icon " .. iconIdToCheck .. ", isDynamic: " .. tostring(isDynamicIcon), true, FCOIS_DEBUG_DEPTH_SPAM) end
 --d(">> Item is protected with the icon " .. iconIdToCheck .. ", isDynamic: " .. tostring(isDynamicIcon))
             --Reset the return variable for each icon again to the global block variable!
             isBlockedLoop = isBlocked
-            --Is the current filterPanelId not 99 (fallback, e.g. bank withdraw or bank deposit, guild bank withdraw or guild bank deposit, ...)
+            --Is the current filterPanelId not 999 (fallback, e.g. bank withdraw or bank deposit, guild bank withdraw or guild bank deposit, ...)
             --Return the global setting "isBlocked" then so the ItemDestroyHandler is managing the anti-destroy functions!
             if whereAreWe ~= FCOIS_CON_FALLBACK then
                 --d(">>WhereAreWe <> FCOIS_CON_FALLBACK")
@@ -739,6 +483,7 @@ function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChat
                 --============== DYNAMIC ICON CHECKS - START ===================================
                 --Is the icon a dynamic icon?
                 if isDynamicIcon then
+                    if settings.debug then FCOIS.debugMessage(">>> dynamic icon", true, FCOIS_DEBUG_DEPTH_SPAM) end
 --d(">>> dynamic icon")
                     --The filterPanelId (determined by whereAreWe) given to function FCOIS.checkIfProtectedSettingsEnabled here is just LF_INVENTORY for the item related checks
                     --(recipes, autoloot container, bank deposit, guild bank deposit, etc.)
@@ -748,12 +493,14 @@ function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChat
                         --Check the settings again now to see if this icon's dyanmic anti-settings are enabled for the given panel "whereAreWe"
                         --Call with 3rd parameter "isDynamicIcon" = true to skip "is dynamic icon check" inside the function again
                         isBlockedLoop = FCOIS.checkIfProtectedSettingsEnabled(whereAreWeToFilterPanelId[whereAreWe], iconIdToCheck, true)
+                        if settings.debug then FCOIS.debugMessage(">>>> Dyn 1, isBlockedLoop: " .. tostring(isBlockedLoop), true, FCOIS_DEBUG_DEPTH_SPAM) end
 --d(">>>> Dyn 1, isBlockedLoop: " .. tostring(isBlockedLoop))
                     end
                     --Does the dynamic icon block the item and was it not globally blocked before?
                     --Then we need to check some global stuff from before again (like the item's type -> recipe/autoloot container/style motif/potion/food/etc.)
                     --and return the settings from there to get the 'real' anti-settings block state
                     if singleItemChecks and (isBlockedLoop ~= isBlocked) then
+                        if settings.debug then FCOIS.debugMessage(">>>> Dyn 2, singleItemChecks: " .. tostring(singleItemChecks) .. ", isBlocked: " .. tostring(isBlocked), true, FCOIS_DEBUG_DEPTH_SPAM) end
 --d(">>>> Dyn 2, singleItemChecks: " .. tostring(singleItemChecks) .. ", isBlocked: " .. tostring(isBlocked))
                         --The dynmic icon is blocking but the global settings did not block before.
                         --Check the whereAreWe settings again now, to get special settings for the autoloot container/recipes/etc.
@@ -791,9 +538,9 @@ function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChat
                                isBlockedLoop = false
                            end
                        else
-                           if settings.allowSellingForBlockedIntricate == true then
-                               isBlockedLoop = false
-                           end
+                          if settings.allowSellingForBlockedIntricate == true then
+                            isBlockedLoop = false
+                          end
                        end
                     end
                 --Improve icon and item or jewelry item, and settings allow them to be improved?
@@ -813,6 +560,7 @@ function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChat
             --======= ITEM IS BLOCKED ! - START ============================================
             --Abort here if at least one marker icon was set and it is protecting the item!
             if isBlockedLoop == true then
+                if settings.debug then FCOIS.debugMessage("isBlockedLoop: true -> Item is protected!", true, FCOIS_DEBUG_DEPTH_SPAM) end
 --d("isBlockedLoop: true -> Item is protected!")
                 --Show text in chat or alert message now?
                 if echo == true then
@@ -830,15 +578,18 @@ function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChat
     --======= RETURN ===============================================================
     --Is the item marked with any of the marker icons? Don't block it
     if not markedWithOneIcon and (isBlockedLoop or isBlocked) then
+        if settings.debug then FCOIS.debugMessage("<not marked with one icon -> Abort 'false'", true, FCOIS_DEBUG_DEPTH_SPAM) end
 --d("not marked with one icon -> Abort 'false'")
         return false
     end
     --Were all icons checked and everything was not blocked? Then return false to unblock the icon
     if not isBlockedLoop then
+        if settings.debug then FCOIS.debugMessage("<not blocked in loop -> Abort 'false'", true, FCOIS_DEBUG_DEPTH_SPAM) end
 --d("not blocked in loop -> Abort 'false'")
         return false
     end
     --Else return the global block value from before the icon checks
+    if settings.debug then FCOIS.debugMessage("<return isBlocked: " .. tostring(isBlocked), true, FCOIS_DEBUG_DEPTH_SPAM) end
 --d("return isBlocked: " .. tostring(isBlocked))
     return isBlocked
 end -- ItemSelectionHandler
@@ -857,11 +608,10 @@ function FCOIS.DeconstructionSelectionHandler(bag, slot, echo, overrideChatOutpu
 
     local settings = FCOIS.settingsVars.settings
 
-    if settings.debug then FCOIS.debugMessage( "[DeconstructionSelectionHandler] Bag: " .. tostring(bag) .. ", Slot: " .. tostring(slot) .. ", echo: " .. tostring(echo) .. ", overrideChatOutput: " .. tostring(overrideChatOutput) .. ", suppressChatOutput: " .. tostring(suppressChatOutput) .. ", overrideAlert: " .. tostring(overrideAlert) .. ", suppressAlert: " .. tostring(suppressAlert) .. ", calledFromExternalAddon: " .. tostring(calledFromExternalAddon) .. ", panelId: " .. tostring(panelId), true, FCOIS_DEBUG_DEPTH_SPAM) end
     --> GOT HERE FROM CONTEXT MENU ENTRY FOR "ADD ITEM TO CRAFT" e.g.
     -- Is user not at the deconstruction panel or the panelId is given from the function call but it is NOT the deconstruction panel at a crafting station?
     --Get the current craftingtype
-    local craftingTypeIsDeconstuctable = false
+    local craftingTypeIsDeconstructable = false
     local craftingType
     if calledFromExternalAddon then
         local craftingTypesWithDeconstruction = {
@@ -871,27 +621,29 @@ function FCOIS.DeconstructionSelectionHandler(bag, slot, echo, overrideChatOutpu
             [CRAFTING_TYPE_WOODWORKING] = true,
         }
         craftingType = GetCraftingInteractionType()
-        craftingTypeIsDeconstuctable = craftingTypesWithDeconstruction[craftingType] or false
+        craftingTypeIsDeconstructable = craftingTypesWithDeconstruction[craftingType] or false
     end
     local noDeconstructionShouldBeDone = true
-    if (ctrlVars.DECONSTRUCTION_BAG ~= nil and not ctrlVars.DECONSTRUCTION_BAG:IsHidden()) or (calledFromExternalAddon and craftingTypeIsDeconstuctable) or (panelId ~= nil and (panelId == LF_SMITHING_DECONSTRUCT or panelId == LF_JEWELRY_DECONSTRUCT)) then
+    if (ctrlVars.DECONSTRUCTION_BAG ~= nil and not ctrlVars.DECONSTRUCTION_BAG:IsHidden()) or (calledFromExternalAddon and craftingTypeIsDeconstructable) or (panelId ~= nil and (panelId == LF_SMITHING_DECONSTRUCT or panelId == LF_JEWELRY_DECONSTRUCT)) then
         noDeconstructionShouldBeDone = false
     end
 
---d("[FCOIS]DeconstructionSelectionHandler - panelId: " ..tostring(panelId) .. ", calledFromExternalAddon: " ..tostring(calledFromExternalAddon) .. "->craftingType: " .. tostring(craftingType) .. ", craftingTypeIsDeconstuctable: " ..tostring(craftingTypeIsDeconstuctable).. ", noDeconstructionShouldBeDone: " ..tostring(noDeconstructionShouldBeDone))
+    if settings.debug then FCOIS.debugMessage( "[DeconstructionSelectionHandler] Bag: " .. tostring(bag) .. ", Slot: " .. tostring(slot) .. ", echo: " .. tostring(echo) .. ", overrideChatOutput: " .. tostring(overrideChatOutput) .. ", suppressChatOutput: " .. tostring(suppressChatOutput) .. ", overrideAlert: " .. tostring(overrideAlert) .. ", suppressAlert: " .. tostring(suppressAlert) .. ", calledFromExternalAddon: " .. tostring(calledFromExternalAddon) .. ", panelId: " .. tostring(panelId).. ", craftingType: " .. tostring(craftingType) .. ", craftingTypeIsDeconstructable: " ..tostring(craftingTypeIsDeconstructable).. ", noDeconstructionShouldBeDone: " ..tostring(noDeconstructionShouldBeDone), true, FCOIS_DEBUG_DEPTH_SPAM) end
+--d("[FCOIS]DeconstructionSelectionHandler - panelId: " ..tostring(panelId) .. ", calledFromExternalAddon: " ..tostring(calledFromExternalAddon) .. "->craftingType: " .. tostring(craftingType) .. ", craftingTypeIsDeconstructable: " ..tostring(craftingTypeIsDeconstructable).. ", noDeconstructionShouldBeDone: " ..tostring(noDeconstructionShouldBeDone))
     --Call the itemSelectionHandler for everything else then Deconstruction now?
     if( noDeconstructionShouldBeDone ) then
-        --d("No deconstruction ->  Use ItemSelectionHandler")
+        local craftingPrevention = FCOIS.craftingPrevention
+        --No deconstruction ->  Use ItemSelectionHandler
         if ( calledFromExternalAddon
                 or (not ctrlVars.ALCHEMY_STATION:IsHidden() or FCOIS.gFilterWhere == LF_ALCHEMY_CREATION or (calledFromExternalAddon and (panelId==LF_ALCHEMY_CREATION)))
                 or (not ctrlVars.ENCHANTING_STATION:IsHidden() or FCOIS.gFilterWhere == LF_ENCHANTING_CREATION or FCOIS.gFilterWhere == LF_ENCHANTING_EXTRACTION or (calledFromExternalAddon and (panelId==LF_ENCHANTING_CREATION or panelId==LF_ENCHANTING_EXTRACTION)))
-                or (FCOIS.craftingPrevention.IsShowingRefinement() or FCOIS.gFilterWhere == LF_SMITHING_REFINE or FCOIS.gFilterWhere == LF_JEWELRY_REFINE or (calledFromExternalAddon and (panelId==LF_SMITHING_REFINE or panelId==LF_JEWELRY_REFINE)))
-                or (FCOIS.craftingPrevention.IsShowingImprovement() or FCOIS.gFilterWhere == LF_SMITHING_IMPROVEMENT or FCOIS.gFilterWhere == LF_JEWELRY_IMPROVEMENT or (calledFromExternalAddon and (panelId==LF_SMITHING_IMPROVEMENT or panelId==LF_JEWELRY_IMPROVEMENT)))
-                or (FCOIS.craftingPrevention.IsShowingResearch() or FCOIS.gFilterWhere == LF_SMITHING_RESEARCH or FCOIS.gFilterWhere == LF_JEWELRY_RESEARCH or (calledFromExternalAddon and (panelId==LF_SMITHING_RESEARCH or panelId==LF_JEWELRY_RESEARCH)))
+                or (craftingPrevention.IsShowingRefinement() or FCOIS.gFilterWhere == LF_SMITHING_REFINE or FCOIS.gFilterWhere == LF_JEWELRY_REFINE or (calledFromExternalAddon and (panelId==LF_SMITHING_REFINE or panelId==LF_JEWELRY_REFINE)))
+                or (craftingPrevention.IsShowingImprovement() or FCOIS.gFilterWhere == LF_SMITHING_IMPROVEMENT or FCOIS.gFilterWhere == LF_JEWELRY_IMPROVEMENT or (calledFromExternalAddon and (panelId==LF_SMITHING_IMPROVEMENT or panelId==LF_JEWELRY_IMPROVEMENT)))
+                or (craftingPrevention.IsShowingResearch() or FCOIS.gFilterWhere == LF_SMITHING_RESEARCH or FCOIS.gFilterWhere == LF_JEWELRY_RESEARCH or (calledFromExternalAddon and (panelId==LF_SMITHING_RESEARCH or panelId==LF_JEWELRY_RESEARCH)))
                 or (FCOIS.isResearchListDialogShown() or FCOIS.gFilterWhere == LF_SMITHING_RESEARCH_DIALOG or FCOIS.gFilterWhere == LF_JEWELRY_RESEARCH_DIALOG or (calledFromExternalAddon and (panelId==LF_SMITHING_RESEARCH_DIALOG or panelId==LF_JEWELRY_RESEARCH_DIALOG)))
                 or (FCOIS.isRetraitStationShown() or FCOIS.gFilterWhere == LF_RETRAIT or (calledFromExternalAddon and panelId==LF_RETRAIT))
         ) then
-            --or (not ctrlVars.GUILD_STORE:IsHidden() or FCOIS.gFilterWhere == LF_GUILDSTORE_SELL) ) then
+            -- Why "calledFromExternalAddon" = false? And not taken from the parameter of this function?
             return FCOIS.callItemSelectionHandler(bag, slot, echo, false, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, false, panelId)
         else
             return false

@@ -12,6 +12,7 @@ local libFilters = FCOIS.libFilters
 --Update the count of filtered/shown items before the sortHeader "name" text
 local function updateFilteredItemCountCheck(updateFilteredItemCount)
     if updateFilteredItemCount == true then
+--d("[FCOIS]updateFilteredItemCountCheck - filterPaneldId: " ..tostring(FCOIS.gFilterWhere))
         FCOIS.updateFilteredItemCountThrottled(FCOIS.gFilterWhere, 50)
     end
 end

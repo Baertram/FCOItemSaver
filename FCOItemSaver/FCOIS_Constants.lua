@@ -6,8 +6,8 @@ local FCOIS = FCOIS
 --Addon variables
 FCOIS.addonVars = {}
 --Addon variables
-FCOIS.addonVars.addonVersionOptions 		= '1.6.4' -- version shown in the settings panel
-FCOIS.addonVars.addonVersionOptionsNumber	= 1.64
+FCOIS.addonVars.addonVersionOptions 		= '1.6.6' -- version shown in the settings panel
+FCOIS.addonVars.addonVersionOptionsNumber	= 1.66
 FCOIS.addonVars.gAddonName					= "FCOItemSaver"
 FCOIS.addonVars.gAddonNameShort             = "FCOIS"
 FCOIS.addonVars.addonNameMenu				= "FCO ItemSaver"
@@ -2253,7 +2253,9 @@ local sortHeaderNames = {
     [LF_VENDOR_BUY]             = "ZO_StoreWindow" .. sortByNameNameStr,
     [LF_VENDOR_BUYBACK]         = "ZO_BuyBack" .. sortByNameNameStr,
     [LF_VENDOR_REPAIR]          = "ZO_RepairWindow" .. sortByNameNameStr,
+    [LF_BANK_DEPOSIT]           = "ZO_PlayerInventory" .. sortByNameNameStr,
     [LF_BANK_WITHDRAW]          = "ZO_PlayerBank" .. sortByNameNameStr,
+    [LF_GUILDBANK_DEPOSIT]      = "ZO_PlayerInventory" .. sortByNameNameStr,
     [LF_GUILDBANK_WITHDRAW]     = "ZO_GuildBank" .. sortByNameNameStr,
     [LF_SMITHING_REFINE]        = "ZO_SmithingTopLevelRefinementPanelInventory" .. sortByNameNameStr,
     [LF_SMITHING_DECONSTRUCT]   = "ZO_SmithingTopLevelDeconstructionPanelInventory" .. sortByNameNameStr,
