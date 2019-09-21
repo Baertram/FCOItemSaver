@@ -169,11 +169,13 @@ end
 --This function will change the actual ANTI-DETSROY etc. settings according to the active filter panel ID (inventory, vendor, mail, trade, bank, etc.)
 function FCOIS.changeAntiSettingsAccordingToFilterPanel()
     if FCOIS.gFilterWhere == nil then return false end
---d("[FCOIS.changeAntiSettingsAccordingToFilterPanel - FilterPanel: " .. FCOIS.gFilterWhere .. ", FilterPanelParent: " .. tostring(FCOIS.gFilterWhereParent))
+    --d("[FCOIS.changeAntiSettingsAccordingToFilterPanel - FilterPanel: " .. FCOIS.gFilterWhere .. ", FilterPanelParent: " .. tostring(FCOIS.gFilterWhereParent))
 
     local currentSettings = FCOIS.settingsVars.settings
     local isSettingEnabled = false
 
+    --The anti-destroy settings will be always checked as there are panels like LF_GUILDBANK_DEPOSIT which use the anti-destroy
+    --AND anti guiild bank deposit if no rights to withdraw again settings.
     --The filterPanelIds which need to be checked for anti-destroy
     local filterPanelIdsCheckForAntiDestroy = FCOIS.checkVars.filterPanelIdsForAntiDestroy
     --Get the current FCOIS.settingsVars.settings state and inverse them
@@ -181,9 +183,10 @@ function FCOIS.changeAntiSettingsAccordingToFilterPanel()
     if isFilterPanelIdCheckForAntiDestroyNeeded then
         FCOIS.settingsVars.settings.blockDestroying = not currentSettings.blockDestroying
         isSettingEnabled = FCOIS.settingsVars.settings.blockDestroying
+    end
     --------------------------------------------------------------------------------------------------------------------
     --CraftBag and CraftBagExtended addon
-    elseif FCOIS.gFilterWhere == LF_CRAFTBAG then
+    if FCOIS.gFilterWhere == LF_CRAFTBAG then
         --As the CraftBag can be active at the mail send, trade, guild store sell and guild bank panels too we need to check if we are currently using the
         --addon CraftBagExtended and if the parent panel ID (FCOIS.gFilterWhereParent) is one of the above mentioned
         -- -> See callback function for CRAFT_BAG_FRAGMENT in the PreHooks section!
@@ -194,19 +197,19 @@ function FCOIS.changeAntiSettingsAccordingToFilterPanel()
             if 	parentPanel == LF_BANK_DEPOSIT or parentPanel == LF_GUILDBANK_DEPOSIT then
                 FCOIS.settingsVars.settings.blockDestroying = not currentSettings.blockDestroying
                 isSettingEnabled = FCOIS.settingsVars.settings.blockDestroying
-            --The parent panel for the craftbag is the mail send panel
+                --The parent panel for the craftbag is the mail send panel
             elseif	parentPanel == LF_MAIL_SEND then
                 FCOIS.settingsVars.settings.blockSendingByMail = not currentSettings.blockSendingByMail
                 isSettingEnabled = FCOIS.settingsVars.settings.blockSendingByMail
-            --The parent panel for the craftbag is the guild store sell panel
+                --The parent panel for the craftbag is the guild store sell panel
             elseif	parentPanel == LF_GUILDSTORE_SELL then
                 FCOIS.settingsVars.settings.blockSellingGuildStore = not currentSettings.blockSellingGuildStore
                 isSettingEnabled = FCOIS.settingsVars.settings.blockSellingGuildStore
-            --The parent panel for the craftbag is the trade panel
+                --The parent panel for the craftbag is the trade panel
             elseif	parentPanel == LF_TRADE then
                 FCOIS.settingsVars.settings.blockTrading = not currentSettings.blockTrading
                 isSettingEnabled = FCOIS.settingsVars.settings.blockTrading
-            --The parent panel for the craftbag is the vendor sell panel
+                --The parent panel for the craftbag is the vendor sell panel
             elseif	parentPanel == LF_VENDOR_SELL then
                 FCOIS.settingsVars.settings.blockSelling = not currentSettings.blockSelling
                 isSettingEnabled = FCOIS.settingsVars.settings.blockSelling
@@ -215,7 +218,7 @@ function FCOIS.changeAntiSettingsAccordingToFilterPanel()
             FCOIS.settingsVars.settings.blockDestroying = not currentSettings.blockDestroying
             isSettingEnabled = FCOIS.settingsVars.settings.blockDestroying
         end
-    --------------------------------------------------------------------------------------------------------------------
+        --------------------------------------------------------------------------------------------------------------------
     elseif FCOIS.gFilterWhere == LF_VENDOR_BUY then
         FCOIS.settingsVars.settings.blockVendorBuy = not currentSettings.blockVendorBuy
         isSettingEnabled = FCOIS.settingsVars.settings.blockVendorBuy
@@ -282,6 +285,9 @@ function FCOIS.changeAntiSettingsAccordingToFilterPanel()
     elseif FCOIS.gFilterWhere == LF_JEWELRY_RESEARCH_DIALOG then
         FCOIS.settingsVars.settings.blockJewelryResearchDialog = not currentSettings.blockJewelryResearchDialog
         isSettingEnabled = FCOIS.settingsVars.settings.blockJewelryResearch
+    elseif FCOIS.gFilterWhere == LF_GUILDBANK_DEPOSIT then
+        FCOIS.settingsVars.settings.blockGuildBankWithoutWithdraw = not currentSettings.blockGuildBankWithoutWithdraw
+        isSettingEnabled = FCOIS.settingsVars.settings.blockGuildBankWithoutWithdraw
     else
         FCOIS.settingsVars.settings.blockDestroying = not currentSettings.blockDestroying
         isSettingEnabled = FCOIS.settingsVars.settings.blockDestroying
@@ -350,30 +356,30 @@ function FCOIS.autoReenableAntiSettingsCheck(checkWhere)
         if settings.autoReenable_blockEnchantingExtraction then
             settings.blockEnchantingExtraction = true
         end
-    --"STORE"
+        --"STORE"
     elseif checkWhere == checksToDo[2] then
---FCOIS version 1.6.0 disabled as not yet implemented settings in the settingsMenu for this
---[[
-        --Reenable the Anti-Buy methods if activated in the settings
-        if settings.autoReenable_blockVendorBuy then
-            settings.blockVendorBuy = true
-        end
-]]
+        --FCOIS version 1.6.0 disabled as not yet implemented settings in the settingsMenu for this
+        --[[
+                --Reenable the Anti-Buy methods if activated in the settings
+                if settings.autoReenable_blockVendorBuy then
+                    settings.blockVendorBuy = true
+                end
+        ]]
         --Reenable the Anti-Sell methods if activated in the settings
         if settings.autoReenable_blockSelling then
             settings.blockSelling = true
         end
---FCOIS version 1.6.0 disabled as not yet implemented settings in the settingsMenu for this
---[[
-        --Reenable the Anti-Buyback methods if activated in the settings
-        if settings.autoReenable_blockVendorBuyback then
-            settings.blockVendorBuyback = true
-        end
-        --Reenable the Anti-Repair methods if activated in the settings
-        if settings.autoReenable_blockVendorRepair then
-            settings.blockVendorRepair = true
-        end
-]]
+        --FCOIS version 1.6.0 disabled as not yet implemented settings in the settingsMenu for this
+        --[[
+                --Reenable the Anti-Buyback methods if activated in the settings
+                if settings.autoReenable_blockVendorBuyback then
+                    settings.blockVendorBuyback = true
+                end
+                --Reenable the Anti-Repair methods if activated in the settings
+                if settings.autoReenable_blockVendorRepair then
+                    settings.blockVendorRepair = true
+                end
+        ]]
         --Reenable the Fence Anti-Sell methods if activated in the settings
         if settings.autoReenable_blockFenceSelling then
             settings.blockFence = true
@@ -382,13 +388,13 @@ function FCOIS.autoReenableAntiSettingsCheck(checkWhere)
         if settings.autoReenable_blockLaunderSelling then
             settings.blockLaunder = true
         end
-    --"GUILD_STORE"
+        --"GUILD_STORE"
     elseif checkWhere == checksToDo[3] then
         --Reenable the Anti-Sell methods if activated in the settings
         if settings.autoReenable_blockSellingGuildStore then
             settings.blockSellingGuildStore = true
         end
-    --"DESTROY"
+        --"DESTROY"
     elseif checkWhere == checksToDo[4] then
         --Reenable the Anti-Destroy methods if activated in the settings
         --but do not enable it as we come back to the inventory from a container loot scene
@@ -398,23 +404,29 @@ function FCOIS.autoReenableAntiSettingsCheck(checkWhere)
             end
         end
         FCOIS.preventerVars.dontAutoReenableAntiSettingsInInventory = false
-    --"TRADE"
+        --"TRADE"
     elseif checkWhere == checksToDo[5] then
         --Reenable the Anti-Trade methods if activated in the settings
         if settings.autoReenable_blockTrading then
             settings.blockTrading = true
         end
-    --"MAIL"
+        --"MAIL"
     elseif checkWhere == checksToDo[6] then
         --Reenable the Anti-Mail methods if activated in the settings
         if settings.autoReenable_blockSendingByMail then
             settings.blockSendingByMail = true
         end
-    --"RETRAIT"
+        --"RETRAIT"
     elseif checkWhere == checksToDo[7] then
         --Reenable the Anti-Retrait methods if activated in the settings
         if settings.autoReenable_blockRetrait then
             settings.blockRetrait = true
+        end
+    --"GUILDBANK"
+    elseif checkWhere == checksToDo[8] then
+        --Reenable the Anti-guild bank deposit if no withdraw rights exists
+        if settings.autoReenable_blockGuildBankWithoutWithdraw then
+            settings.blockGuildBankWithoutWithdraw = true
         end
     end
     --Workaround to enable the correct additional inventory context menu invoker button color for the normal inventory again

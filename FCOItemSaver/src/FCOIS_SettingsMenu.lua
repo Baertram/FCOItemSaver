@@ -5610,6 +5610,25 @@ function FCOIS.BuildAddonMenu()
                     default = FCOISdefaultSettings.blockGuildBankWithoutWithdraw,
 				},
                 {
+                    type = "checkbox",
+                    name = locVars["options_auto_reenable_block_guild_bank_without_withdraw"],
+                    tooltip = locVars["options_auto_reenable_block_guild_bank_without_withdraw_TT"],
+                    getFunc = function() return FCOISsettings.autoReenable_blockGuildBankWithoutWithdraw end,
+                    setFunc = function(value) FCOISsettings.autoReenable_blockGuildBankWithoutWithdraw = value
+                    end,
+                    default = FCOISdefaultSettings.autoReenable_blockGuildBankWithoutWithdraw,
+                    disabled = function() return not FCOISsettings.blockGuildBankWithoutWithdraw end,
+                },
+                {
+                    type = "checkbox",
+                    name = locVars["options_enable_block_marked_disable_with_flag"],
+                    tooltip = locVars["options_enable_block_marked_disable_with_flag_TT"],
+                    getFunc = function() return FCOISsettings.blockGuildBankWithoutWithdrawDisableWithFlag end,
+                    setFunc = function(value) FCOISsettings.blockGuildBankWithoutWithdrawDisableWithFlag = value
+                    end,
+                    default = FCOISdefaultSettings.blockGuildBankWithoutWithdrawDisableWithFlag,
+                },
+                {
                     type = "header",
                     name = locVars["options_header_transmutation"],
                 },

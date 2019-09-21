@@ -6,8 +6,8 @@ local FCOIS = FCOIS
 --Addon variables
 FCOIS.addonVars = {}
 --Addon variables
-FCOIS.addonVars.addonVersionOptions 		= '1.6.6' -- version shown in the settings panel
-FCOIS.addonVars.addonVersionOptionsNumber	= 1.66
+FCOIS.addonVars.addonVersionOptions 		= '1.6.7' -- version shown in the settings panel
+FCOIS.addonVars.addonVersionOptionsNumber	= 1.67
 FCOIS.addonVars.gAddonName					= "FCOItemSaver"
 FCOIS.addonVars.gAddonNameShort             = "FCOIS"
 FCOIS.addonVars.addonNameMenu				= "FCO ItemSaver"
@@ -165,6 +165,7 @@ FCOIS_CON_JEWELRY_IMPROVE		= 98
 FCOIS_CON_JEWELRY_RESEARCH		= 99
 FCOIS_CON_RESEARCH_DIALOG       = 100
 FCOIS_CON_JEWELRY_RESEARCH_DIALOG = 101
+FCOIS_CON_GUILDBANK_DEPOSIT     = 102
 FCOIS_CON_CROWN_ITEM            = 900
 FCOIS_CON_FALLBACK 				= 999
 
@@ -1768,6 +1769,7 @@ FCOIS.checkVars.autoReenableAntiSettingsCheckWheres = {
     [5] = "TRADE",
     [6] = "MAIL",
     [7] = "RETRAIT",
+    [8] = "GUILDBANK",
 }
 --The entry for "all" the antisettings reenable panel checks above
 FCOIS.checkVars.autoReenableAntiSettingsCheckWheresAll = "-ALL-"

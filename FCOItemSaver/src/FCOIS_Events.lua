@@ -365,6 +365,8 @@ local function FCOItemSaver_Close_Player_Bank()
 
     --Check, if the Anti-* checks need to be enabled again
     FCOIS.autoReenableAntiSettingsCheck("DESTROY")
+    --Check the auto reenable Anti-* settings for the guild bank and react on them
+    FCOIS.autoReenableAntiSettingsCheck("GUILDBANK")
 end
 
 --Event upon opening of the trade panel
