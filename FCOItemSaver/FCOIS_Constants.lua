@@ -2015,11 +2015,12 @@ contextMenuVars.availableCtms = {
 
 --The self-build contextMenus (filter buttons)
 FCOIS.contextMenu = {}
+local fcoisContextMenu = FCOIS.contextMenu
 --The context menu for the lock & dynmic icons filter button
-FCOIS.contextMenu.LockDynFilter 	= {}
-FCOIS.contextMenu.LockDynFilterName = contextMenuVars.availableCtms[FCOIS_CON_FILTER_BUTTON_LOCKDYN] .. "Filter"
-FCOIS.contextMenu.ContextMenuLockDynFilterName = "ContextMenu" .. FCOIS.contextMenu.LockDynFilterName
-FCOIS.contextMenu.LockDynFilter.bdSelectedLine = {}
+fcoisContextMenu.LockDynFilter 	= {}
+fcoisContextMenu.LockDynFilterName = contextMenuVars.availableCtms[FCOIS_CON_FILTER_BUTTON_LOCKDYN] .. "Filter"
+fcoisContextMenu.ContextMenuLockDynFilterName = "ContextMenu" .. fcoisContextMenu.LockDynFilterName
+fcoisContextMenu.LockDynFilter.bdSelectedLine = {}
 --Lock & dynamic icons filter split context menu variables
 contextMenuVars.LockDynFilter	= {}
 contextMenuVars.LockDynFilter.maxWidth		= contextMenuVars.filterButtons.maxWidth
@@ -2036,10 +2037,10 @@ for index=1, contextMenuVars.LockDynFilter.buttonContextMenuToIconIdEntries do
 end
 
 --The context menu for the gear sets filter button
-FCOIS.contextMenu.GearSetFilter 	= {}
-FCOIS.contextMenu.GearSetFilterName = contextMenuVars.availableCtms[FCOIS_CON_FILTER_BUTTON_GEARSETS] .. "Filter"
-FCOIS.contextMenu.ContextMenuGearSetFilterName = "ContextMenu" .. FCOIS.contextMenu.GearSetFilterName
-FCOIS.contextMenu.GearSetFilter.bdSelectedLine = {}
+fcoisContextMenu.GearSetFilter 	= {}
+fcoisContextMenu.GearSetFilterName = contextMenuVars.availableCtms[FCOIS_CON_FILTER_BUTTON_GEARSETS] .. "Filter"
+fcoisContextMenu.ContextMenuGearSetFilterName = "ContextMenu" .. fcoisContextMenu.GearSetFilterName
+fcoisContextMenu.GearSetFilter.bdSelectedLine = {}
 --Gear set filter split context menu variables
 contextMenuVars.GearSetFilter	= {}
 contextMenuVars.GearSetFilter.maxWidth		= contextMenuVars.filterButtons.maxWidth
@@ -2056,10 +2057,10 @@ for index=1, contextMenuVars.GearSetFilter.buttonContextMenuToIconIdEntries do
 end
 
 --The context menu for the RESEARCH & DECONSTRUCTION & IMPORVEMENT filter button
-FCOIS.contextMenu.ResDecImpFilter 	= {}
-FCOIS.contextMenu.ResDecImpFilterName =  contextMenuVars.availableCtms[FCOIS_CON_FILTER_BUTTON_RESDECIMP] .. "Filter"
-FCOIS.contextMenu.ContextMenuResDecImpFilterName = "ContextMenu" .. FCOIS.contextMenu.ResDecImpFilterName
-FCOIS.contextMenu.ResDecImpFilter.bdSelectedLine = {}
+fcoisContextMenu.ResDecImpFilter 	= {}
+fcoisContextMenu.ResDecImpFilterName =  contextMenuVars.availableCtms[FCOIS_CON_FILTER_BUTTON_RESDECIMP] .. "Filter"
+fcoisContextMenu.ContextMenuResDecImpFilterName = "ContextMenu" .. fcoisContextMenu.ResDecImpFilterName
+fcoisContextMenu.ResDecImpFilter.bdSelectedLine = {}
 --Research/Deconstruction filter split context menu variables
 contextMenuVars.ResDecImpFilter	= {}
 contextMenuVars.ResDecImpFilter.maxWidth      = contextMenuVars.filterButtons.maxWidth
@@ -2076,10 +2077,10 @@ for index=1, contextMenuVars.ResDecImpFilter.buttonContextMenuToIconIdEntries do
 end
 
 --The context menu for the SELL & SELL IN GUILD STORE & INTRICATE  filter button
-FCOIS.contextMenu.SellGuildIntFilter 	= {}
-FCOIS.contextMenu.SellGuildIntFilterName = contextMenuVars.availableCtms[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT] .. "Filter"
-FCOIS.contextMenu.ContextMenuSellGuildIntFilterName = "ContextMenu" .. FCOIS.contextMenu.SellGuildIntFilterName
-FCOIS.contextMenu.SellGuildIntFilter.bdSelectedLine = {}
+fcoisContextMenu.SellGuildIntFilter 	= {}
+fcoisContextMenu.SellGuildIntFilterName = contextMenuVars.availableCtms[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT] .. "Filter"
+fcoisContextMenu.ContextMenuSellGuildIntFilterName = "ContextMenu" .. fcoisContextMenu.SellGuildIntFilterName
+fcoisContextMenu.SellGuildIntFilter.bdSelectedLine = {}
 --Sell/Guild sell/Intricate filter split context menu variables
 contextMenuVars.SellGuildIntFilter	= {}
 contextMenuVars.SellGuildIntFilter.maxWidth       = contextMenuVars.filterButtons.maxWidth
@@ -2126,19 +2127,19 @@ for i=1, numVars.gFCONumFilterInventoryTypes, 1 do
 		--Inventory filter buttons context menus
         --Lock & dynamic filter button context menus
         preventerVars.gLockDynFilterContextCreated[i]	        = false
-	    FCOIS.contextMenu.LockDynFilter[i]	  	 			        = nil
-	    FCOIS.contextMenu.LockDynFilter.bdSelectedLine[i]		    = nil
+	    fcoisContextMenu.LockDynFilter[i]	  	 			        = nil
+	    fcoisContextMenu.LockDynFilter.bdSelectedLine[i]		    = nil
 		--Gear sets filter button context menus
         preventerVars.gGearSetFilterContextCreated[i]	        = false
-	    FCOIS.contextMenu.GearSetFilter[i]	  	 			        = nil
-	    FCOIS.contextMenu.GearSetFilter.bdSelectedLine[i]		    = nil
+	    fcoisContextMenu.GearSetFilter[i]	  	 			        = nil
+	    fcoisContextMenu.GearSetFilter.bdSelectedLine[i]		    = nil
 		--Research, Deconstruction, Improvement filter button context menus
-        FCOIS.contextMenu.ResDecImpFilter[i]	  	 			    = nil
-	    FCOIS.contextMenu.ResDecImpFilter.bdSelectedLine[i]	        = nil
+        fcoisContextMenu.ResDecImpFilter[i]	  	 			    = nil
+	    fcoisContextMenu.ResDecImpFilter.bdSelectedLine[i]	        = nil
 		preventerVars.gResDecImpFilterContextCreated[i]	    = false
         --Sell/Sell in guild store/intricate filter button context menus
-        FCOIS.contextMenu.SellGuildIntFilter[i]	  	 			    = nil
-        FCOIS.contextMenu.SellGuildIntFilter.bdSelectedLine[i]	    = nil
+        fcoisContextMenu.SellGuildIntFilter[i]	  	 			    = nil
+        fcoisContextMenu.SellGuildIntFilter.bdSelectedLine[i]	    = nil
         preventerVars.gSellGuildIntFilterContextCreated[i]	= false
 		--Initialize the variable for the last choosen filter button
         FCOIS.lastVars.gLastFilterId[i]                             = LF_INVENTORY
@@ -2160,8 +2161,8 @@ invAddButtonVars.houseBankInventoryButtonAdditionalOptions = ctrlVars.HOUSE_BANK
 --The mapping between the panel (libFilters filter ID LF_*) and the button data -> See file FCOIS_settings.lua -> function AfterSettings() for additional added data
 --and file FCOIS_constants.lua at the bottom for the anchorvars for each API version.
 --Entries without a parent and without "addInvButton" boolean == true will not be added again as another panel (like LF_INVENTORY) is reused for the button.
---The entry is only there to get the button's name for the functions in file "FCOIS_ContextMenus.lua" to show/hide it.
---> To check what entries the context menu below this invokerButton will create/show check the file src/FCOIS_ContextMenus.lua, function FCOIS.showContextMenuForAddInvButtons(invokerButton)
+--The entry is only there to get the button's name for the functions in file "fcoisContextMenus.lua" to show/hide it.
+--> To check what entries the context menu below this invokerButton will create/show check the file src/fcoisContextMenus.lua, function FCOIS.showContextMenuForAddInvButtons(invokerButton)
 contextMenuVars.filterPanelIdToContextMenuButtonInvoker = {
 	[LF_INVENTORY] 					= {
         ["addInvButton"]  = true,
