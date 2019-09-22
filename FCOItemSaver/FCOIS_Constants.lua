@@ -831,7 +831,7 @@ FCOIS.ZOControlVars.STORE_NAME                  = FCOIS.ZOControlVars.STORE:GetN
 FCOIS.ZOControlVars.STORE_BUY_BACK              = ZO_BuyBack
 FCOIS.ZOControlVars.STORE_BUY_BACK_NAME         = FCOIS.ZOControlVars.STORE_BUY_BACK:GetName()
 FCOIS.ZOControlVars.STORE_BUY_BACK_LIST         = ZO_BuyBackList
-FCOIS.ZOControlVars.STORE_BUY_BACK_LIST_BAG     = ZO_BuyBackListContents
+--FCOIS.ZOControlVars.STORE_BUY_BACK_LIST_BAG     = ZO_BuyBackListContents
 FCOIS.ZOControlVars.VENDOR_MAINMENU_BUTTON_BAR  = ""
 --FCOIS.ZOControlVars.FENCE						= ZO_Fence_Keyboard_WindowMenu
 FCOIS.ZOControlVars.REPAIR                      = ZO_RepairWindow
@@ -859,6 +859,7 @@ FCOIS.ZOControlVars.tradingHouseSceneName	= "tradinghouse"
 ------------------------------------------------------------------------------------------------------------------------
 --2019-01-26: Support for API 100025 and 100026 controls!
 FCOIS.ZOControlVars.GUILD_STORE_SELL_SLOT	= ZO_TradingHousePostItemPaneFormInfo
+FCOIS.ZOControlVars.GUILD_STORE_SELL_SLOT_NAME	= FCOIS.ZOControlVars.GUILD_STORE_SELL_SLOT:GetName()
 FCOIS.ZOControlVars.GUILD_STORE_SELL_SLOT_ITEM	= ZO_TradingHousePostItemPaneFormInfoItem
 ------------------------------------------------------------------------------------------------------------------------
 FCOIS.ZOControlVars.GUILD_STORE_MENUBAR_BUTTON_SEARCH = ZO_TradingHouseMenuBarButton1
@@ -917,7 +918,9 @@ FCOIS.ZOControlVars.ENCHANTING_STATION_BAG	= ZO_EnchantingTopLevelInventoryBackp
 --FCOIS.ZOControlVars.ENCHANTING_STATION_MENUBAR_BUTTON_CREATION    = ZO_EnchantingTopLevelModeMenuBarButton1
 --FCOIS.ZOControlVars.ENCHANTING_STATION_MENUBAR_BUTTON_EXTRACTION  = ZO_EnchantingTopLevelModeMenuBarButton2
 FCOIS.ZOControlVars.ENCHANTING_RUNE_CONTAINER	= ZO_EnchantingTopLevelRuneSlotContainer
+FCOIS.ZOControlVars.ENCHANTING_RUNE_CONTAINER_NAME	= FCOIS.ZOControlVars.ENCHANTING_RUNE_CONTAINER:GetName()
 FCOIS.ZOControlVars.ENCHANTING_EXTRACTION_SLOT	= ZO_EnchantingTopLevelExtractionSlotContainerExtractionSlot
+FCOIS.ZOControlVars.ENCHANTING_EXTRACTION_SLOT_NAME = FCOIS.ZOControlVars.ENCHANTING_EXTRACTION_SLOT:GetName()
 FCOIS.ZOControlVars.ENCHANTING_RUNE_CONTAINER_POTENCY = ZO_EnchantingTopLevelRuneSlotContainerPotencyRune
 FCOIS.ZOControlVars.ENCHANTING_RUNE_CONTAINER_ESSENCE = ZO_EnchantingTopLevelRuneSlotContainerEssenceRune
 FCOIS.ZOControlVars.ENCHANTING_RUNE_CONTAINER_ASPECT = ZO_EnchantingTopLevelRuneSlotContainerAspectRune
@@ -930,6 +933,7 @@ FCOIS.ZOControlVars.ALCHEMY_STATION_BAG		= ZO_AlchemyTopLevelInventoryBackpackCo
 FCOIS.ZOControlVars.ALCHEMY_STATION_MENUBAR_BUTTON_CREATION = ZO_AlchemyTopLevelModeMenuBarButton1
 FCOIS.ZOControlVars.ALCHEMY_STATION_MENUBAR_BUTTON_POTIONMAKER = ZO_AlchemyTopLevelModeMenuBarButton2
 FCOIS.ZOControlVars.ALCHEMY_SLOT_CONTAINER = ZO_AlchemyTopLevelSlotContainer
+FCOIS.ZOControlVars.ALCHEMY_SLOT_CONTAINER_NAME = FCOIS.ZOControlVars.ALCHEMY_SLOT_CONTAINER:GetName()
 FCOIS.ZOControlVars.PROVISIONER             = PROVISIONER
 FCOIS.ZOControlVars.PROVISIONER_PANEL = FCOIS.ZOControlVars.PROVISIONER.control
 FCOIS.ZOControlVars.QUICKSLOT               = ZO_QuickSlot
@@ -944,6 +948,7 @@ FCOIS.ZOControlVars.RepairItemDialogTitle       = SI_REPAIR_KIT_TITLE
 FCOIS.ZOControlVars.CHARACTER					= ZO_Character
 FCOIS.ZOControlVars.CONTAINER_LOOT_LIST			= ZO_LootAlphaContainerList
 FCOIS.ZOControlVars.CONTAINER_LOOT_LIST_CONTENTS= ZO_LootAlphaContainerListContents
+FCOIS.ZOControlVars.CONTAINER_LOOT_LIST_CONTENTS_NAME= FCOIS.ZOControlVars.CONTAINER_LOOT_LIST_CONTENTS:GetName()
 --Transmutation
 FCOIS.ZOControlVars.RETRAIT					    = ZO_RetraitStation_Keyboard
 FCOIS.ZOControlVars.RETRAIT_RETRAIT_PANEL	    = ZO_RETRAIT_STATION_KEYBOARD.retraitPanel
@@ -952,6 +957,7 @@ FCOIS.ZOControlVars.RETRAIT_INV_NAME		    = FCOIS.ZOControlVars.RETRAIT_INV:GetN
 FCOIS.ZOControlVars.RETRAIT_LIST			    = ZO_RetraitStation_KeyboardTopLevelRetraitPanelInventoryBackpack
 FCOIS.ZOControlVars.RETRAIT_BAG					= ZO_RetraitStation_KeyboardTopLevelRetraitPanelInventoryBackpackContents
 FCOIS.ZOControlVars.RETRAIT_PANEL  	            = ZO_RetraitStation_KeyboardTopLevelRetraitPanel
+FCOIS.ZOControlVars.RETRAIT_PANEL_NAME          = FCOIS.ZOControlVars.RETRAIT_PANEL:GetName()
 --House bank storage
 FCOIS.ZOControlVars.HOUSE_BANK					= ZO_HouseBankBackpack
 FCOIS.ZOControlVars.HOUSE_BANK_BAG				= ZO_HouseBankBackpackContents
@@ -1146,60 +1152,61 @@ FCOIS.dragAndDropVars.bag	= nil
 FCOIS.dragAndDropVars.slot	= nil
 --Prevention variables
 FCOIS.preventerVars = {}
-FCOIS.preventerVars.gLocalizationDone		= false
-FCOIS.preventerVars.KeyBindingTexts		= false
-FCOIS.preventerVars.gScanningInv	    	= false
---FCOIS.preventerVars.canUpdateInv 	   		= true
-FCOIS.preventerVars.gFilteringBasics		= false
-FCOIS.preventerVars.gActiveFilterPanel	= false
-FCOIS.preventerVars.gNoCloseEvent 		= false
-FCOIS.preventerVars.gAllowDestroyItem		= false
-FCOIS.preventerVars.wasDestroyDone        = false
-FCOIS.preventerVars.gItemSlotIsLocked 	= false
-FCOIS.preventerVars.gCheckEquipmentSlots  = false
-FCOIS.preventerVars.gUpdateMarkersNow		= false
-FCOIS.preventerVars.gChangedGears			= false
-FCOIS.preventerVars.gContextCreated		= {}
-FCOIS.preventerVars.gLockDynFilterContextCreated = {}
-FCOIS.preventerVars.gGearSetFilterContextCreated = {}
-FCOIS.preventerVars.gResDecImpFilterContextCreated = {}
-FCOIS.preventerVars.gSellGuildIntFilterContextCreated = {}
-FCOIS.preventerVars.askBeforeEquipDialogRetVal = false
-FCOIS.preventerVars.gOverrideInvUpdateAfterMarkItem = false
-FCOIS.preventerVars.doFalseOverride = false
-FCOIS.preventerVars.newItemCrafted = false
---FCOIS.preventerVars.ZOsPlayerItemLockEnabled = true -- implemented with API 1000015 by ZOs: Lock items in inventory. Items will get dataEntry "isPlayerLocked = true"
-FCOIS.preventerVars.isControlCheckActive = {}
-FCOIS.preventerVars.controlCheckActiveCounter = {}
-FCOIS.preventerVars.buildingSlotActionTexts = false
-FCOIS.preventerVars.dontShowInvContextMenu = false
-FCOIS.preventerVars.markItemAntiEndlessLoop = false
-FCOIS.preventerVars.dontAutoReenableAntiSettingsInInventory = false
-FCOIS.preventerVars.dragAndDropOrDoubleClickItemSelectionHandler = false
-FCOIS.preventerVars.noGamePadModeSupportTextOutput = false
-FCOIS.preventerVars.contextMenuUpdateLoopLastLoop = false
-FCOIS.preventerVars.doNotScanInv = false
-FCOIS.preventerVars.migrateItemMarkers = false
-FCOIS.preventerVars.gAddonStartupInProgress = false
-FCOIS.preventerVars.lastHoveredInvSlot = nil
-FCOIS.preventerVars.createdMasterWrit= false
-FCOIS.preventerVars.writCreatorCreatedItem = false
-FCOIS.preventerVars.eventInventorySingleSlotUpdate = false
-FCOIS.preventerVars.resetNonServerDependentSavedVars = false
-FCOIS.preventerVars.preHookButtonDone = {}
-FCOIS.preventerVars.gPreHookButtonHandlerCallActive = false
-FCOIS.preventerVars.craftBagSceneShowInProgress = false
-FCOIS.preventerVars.markerIconChangedManually = false
-FCOIS.preventerVars.isInventoryListUpdating = false
-FCOIS.preventerVars.gRestoringMarkerIcons = false
-FCOIS.preventerVars.gClearingMarkerIcons = false
-FCOIS.preventerVars.gMarkItemLastIconInLoop = false
-FCOIS.preventerVars.repairDialogOnRepairKitSelectedOverwrite = false
-FCOIS.preventerVars.ZO_ListDialog1ResearchIsOpen = false
-FCOIS.preventerVars.splitItemStackDialogActive = false
-FCOIS.preventerVars.splitItemStackDialogButtonCallbacks = false
-FCOIS.preventerVars.useAdvancedFiltersItemCountInInventories = false
-FCOIS.preventerVars.dontUpdateFilteredItemCount = false
+local preventerVars = FCOIS.preventerVars
+preventerVars.gLocalizationDone		= false
+preventerVars.KeyBindingTexts		= false
+preventerVars.gScanningInv	    	= false
+--preventerVars.canUpdateInv 	   		= true
+preventerVars.gFilteringBasics		= false
+preventerVars.gActiveFilterPanel	= false
+preventerVars.gNoCloseEvent 		= false
+preventerVars.gAllowDestroyItem		= false
+preventerVars.wasDestroyDone        = false
+preventerVars.gItemSlotIsLocked 	= false
+preventerVars.gCheckEquipmentSlots  = false
+preventerVars.gUpdateMarkersNow		= false
+preventerVars.gChangedGears			= false
+preventerVars.gContextCreated		= {}
+preventerVars.gLockDynFilterContextCreated = {}
+preventerVars.gGearSetFilterContextCreated = {}
+preventerVars.gResDecImpFilterContextCreated = {}
+preventerVars.gSellGuildIntFilterContextCreated = {}
+preventerVars.askBeforeEquipDialogRetVal = false
+preventerVars.gOverrideInvUpdateAfterMarkItem = false
+preventerVars.doFalseOverride = false
+preventerVars.newItemCrafted = false
+--preventerVars.ZOsPlayerItemLockEnabled = true -- implemented with API 1000015 by ZOs: Lock items in inventory. Items will get dataEntry "isPlayerLocked = true"
+preventerVars.isControlCheckActive = {}
+preventerVars.controlCheckActiveCounter = {}
+preventerVars.buildingSlotActionTexts = false
+preventerVars.dontShowInvContextMenu = false
+preventerVars.markItemAntiEndlessLoop = false
+preventerVars.dontAutoReenableAntiSettingsInInventory = false
+preventerVars.dragAndDropOrDoubleClickItemSelectionHandler = false
+preventerVars.noGamePadModeSupportTextOutput = false
+preventerVars.contextMenuUpdateLoopLastLoop = false
+preventerVars.doNotScanInv = false
+preventerVars.migrateItemMarkers = false
+preventerVars.gAddonStartupInProgress = false
+preventerVars.lastHoveredInvSlot = nil
+preventerVars.createdMasterWrit= false
+preventerVars.writCreatorCreatedItem = false
+preventerVars.eventInventorySingleSlotUpdate = false
+preventerVars.resetNonServerDependentSavedVars = false
+preventerVars.preHookButtonDone = {}
+preventerVars.gPreHookButtonHandlerCallActive = false
+preventerVars.craftBagSceneShowInProgress = false
+preventerVars.markerIconChangedManually = false
+preventerVars.isInventoryListUpdating = false
+preventerVars.gRestoringMarkerIcons = false
+preventerVars.gClearingMarkerIcons = false
+preventerVars.gMarkItemLastIconInLoop = false
+preventerVars.repairDialogOnRepairKitSelectedOverwrite = false
+preventerVars.ZO_ListDialog1ResearchIsOpen = false
+preventerVars.splitItemStackDialogActive = false
+preventerVars.splitItemStackDialogButtonCallbacks = false
+preventerVars.useAdvancedFiltersItemCountInInventories = false
+preventerVars.dontUpdateFilteredItemCount = false
 
 --The event handler array for OnMouseDoubleClick, Drag&Drop, etc.
 FCOIS.eventHandlers = {}
@@ -1679,8 +1686,8 @@ checkVars.notAllowedContextMenuParentControls = {
     ["ZO_TradingHousePostedItemsListContents"] = true,
 --		["ZO_QuickSlotListContents"] = true,
     ["ZO_InventoryWalletListContents"] = true,
-    [ctrlVars.CONTAINER_LOOT_LIST_CONTENTS:GetName()] = true,
-    [ctrlVars.RETRAIT_PANEL:GetName()] = true,
+    [ctrlVars.CONTAINER_LOOT_LIST_CONTENTS_NAME] = true,
+    [ctrlVars.RETRAIT_PANEL_NAME] = true,
 
 }
 --Table with NOT allowed control names. These cannot use the FCOItemSaver right click context menu entries
@@ -1688,13 +1695,13 @@ checkVars.notAllowedContextMenuParentControls = {
 checkVars.notAllowedContextMenuControls = {
 	["ZO_SmithingTopLevelRefinementPanelSlotContainer"] = true,
 	["ZO_SmithingTopLevelDeconstructionPanelSlotContainer"] = true,
-	[ctrlVars.ALCHEMY_SLOT_CONTAINER:GetName()] = true,
-	[ctrlVars.ENCHANTING_RUNE_CONTAINER:GetName()] = true,
-    [ctrlVars.ENCHANTING_EXTRACTION_SLOT:GetName()] = true,
+	[ctrlVars.ALCHEMY_SLOT_CONTAINER_NAME] = true,
+	[ctrlVars.ENCHANTING_RUNE_CONTAINER_NAME] = true,
+    [ctrlVars.ENCHANTING_EXTRACTION_SLOT_NAME] = true,
 	["ZO_ApplyEnchantPanel"] = true,
 	["ZO_SoulGemItemChargerPanel"] = true,
     ["ZO_SoulGemItemChargerPanelImprovementPreviewContainer"] = true,
-    [ctrlVars.GUILD_STORE_SELL_SLOT:GetName()] = true,
+    [ctrlVars.GUILD_STORE_SELL_SLOT_NAME] = true,
 }
 --Table with allowed libFilters panelIds (LF_*) for the additional inventory "flag" context menu's "JUNK" entry
 --> See file src/FCOIS_ContextMenu.lua, function FCOIS.showContextMenuForAddInvButtons(invAddContextMenuInvokerButton)
@@ -1730,33 +1737,89 @@ checkVars.allowedCraftingPanelIdsForMarkerRechecks = {
     [LF_JEWELRY_IMPROVEMENT]	= true,
     [LF_JEWELRY_RESEARCH] 		= false,
 }
+
+--The character equipment slots
+--Table with all equipment slot names which can be updated with markes for the icons
+--The index is the relating slotIndex of the bag BAG_WORN!
+mappingVars.characterEquipmentSlotNameByIndex = {
+    [EQUIP_SLOT_HEAD]           = "ZO_CharacterEquipmentSlotsHead",
+    [EQUIP_SLOT_NECK]           = "ZO_CharacterEquipmentSlotsNeck",
+    [EQUIP_SLOT_CHEST]          = "ZO_CharacterEquipmentSlotsChest",
+    [EQUIP_SLOT_SHOULDERS]      = "ZO_CharacterEquipmentSlotsShoulder",
+    [EQUIP_SLOT_MAIN_HAND]      = "ZO_CharacterEquipmentSlotsMainHand",
+    [EQUIP_SLOT_OFF_HAND]       = "ZO_CharacterEquipmentSlotsOffHand",
+    [EQUIP_SLOT_WAIST]          = "ZO_CharacterEquipmentSlotsBelt",
+    [EQUIP_SLOT_LEGS]           = "ZO_CharacterEquipmentSlotsLeg",
+    [EQUIP_SLOT_FEET]           = "ZO_CharacterEquipmentSlotsFoot",
+    [EQUIP_SLOT_COSTUME]        = "ZO_CharacterEquipmentSlotsCostume",
+    [EQUIP_SLOT_RING1]          = "ZO_CharacterEquipmentSlotsRing1",
+    [EQUIP_SLOT_RING2]          = "ZO_CharacterEquipmentSlotsRing2",
+    [EQUIP_SLOT_POISON]         = "ZO_CharacterEquipmentSlotsPoison",
+    [EQUIP_SLOT_BACKUP_POISON]  = "ZO_CharacterEquipmentSlotsBackupPoison",
+    [EQUIP_SLOT_HAND]           = "ZO_CharacterEquipmentSlotsGlove",
+    [EQUIP_SLOT_BACKUP_MAIN]    = "ZO_CharacterEquipmentSlotsBackupMain",
+    [EQUIP_SLOT_BACKUP_OFF]     = "ZO_CharacterEquipmentSlotsBackupOff",
+}
+local characterEquipmentSlotNameByIndex = mappingVars.characterEquipmentSlotNameByIndex
+
+--Table with the eqipment slot control names which are armor
+mappingVars.characterEquipmentArmorSlots = {
+    [characterEquipmentSlotNameByIndex[EQUIP_SLOT_HEAD]] = true,
+    [characterEquipmentSlotNameByIndex[EQUIP_SLOT_CHEST]] = true,
+    [characterEquipmentSlotNameByIndex[EQUIP_SLOT_SHOULDERS]] = true,
+    [characterEquipmentSlotNameByIndex[EQUIP_SLOT_WAIST]] = true,
+    [characterEquipmentSlotNameByIndex[EQUIP_SLOT_LEGS]] = true,
+    [characterEquipmentSlotNameByIndex[EQUIP_SLOT_FEET]] = true,
+    [characterEquipmentSlotNameByIndex[EQUIP_SLOT_HAND]] = true,
+}
+
+--Table with the eqipment slot control names which are jewelry
+mappingVars.characterEquipmentJewelrySlots = {
+    [characterEquipmentSlotNameByIndex[EQUIP_SLOT_NECK]] = true,
+    [characterEquipmentSlotNameByIndex[EQUIP_SLOT_RING1]] = true,
+    [characterEquipmentSlotNameByIndex[EQUIP_SLOT_RING2]] = true,
+}
+
+--Table with the eqipment slot control names which are weapons
+mappingVars.characterEquipmentWeaponSlots = {
+    [characterEquipmentSlotNameByIndex[EQUIP_SLOT_MAIN_HAND]] = true,
+    [characterEquipmentSlotNameByIndex[EQUIP_SLOT_OFF_HAND]] = true,
+    [characterEquipmentSlotNameByIndex[EQUIP_SLOT_POISON]] = true,
+    [characterEquipmentSlotNameByIndex[EQUIP_SLOT_BACKUP_MAIN]] = true,
+    [characterEquipmentSlotNameByIndex[EQUIP_SLOT_BACKUP_OFF]] = true,
+    [characterEquipmentSlotNameByIndex[EQUIP_SLOT_BACKUP_POISON]] = true,
+}
+
+--Mapping table fo one ring to the other
+mappingVars.equipmentJewelryRing2RingSlot = {
+    [characterEquipmentSlotNameByIndex[EQUIP_SLOT_RING1]] = characterEquipmentSlotNameByIndex[EQUIP_SLOT_RING2],
+    [characterEquipmentSlotNameByIndex[EQUIP_SLOT_RING2]] = characterEquipmentSlotNameByIndex[EQUIP_SLOT_RING1],
+}
+
 --Table with allowed control names for the character equipment weapon and offhand weapon slots
 checkVars.allowedCharacterEquipmentWeaponControlNames = {
-	['ZO_CharacterEquipmentSlotsMainHand'] = true,
-	['ZO_CharacterEquipmentSlotsOffHand'] = true,
-	['ZO_CharacterEquipmentSlotsBackupMain'] = true,
-	['ZO_CharacterEquipmentSlotsBackupOff'] = true,
+	[characterEquipmentSlotNameByIndex[EQUIP_SLOT_MAIN_HAND]] = true,
+	[characterEquipmentSlotNameByIndex[EQUIP_SLOT_OFF_HAND]] = true,
+	[characterEquipmentSlotNameByIndex[EQUIP_SLOT_BACKUP_MAIN]] = true,
+	[characterEquipmentSlotNameByIndex[EQUIP_SLOT_BACKUP_OFF]] = true,
    }
 --Table with weapon backup slot names
 checkVars.allowedCharacterEquipmentWeaponBackupControlNames = {
-	['ZO_CharacterEquipmentSlotsOffHand'] = true,
-	['ZO_CharacterEquipmentSlotsBackupOff'] = true,
+	[characterEquipmentSlotNameByIndex[EQUIP_SLOT_OFF_HAND]] = true,
+	[characterEquipmentSlotNameByIndex[EQUIP_SLOT_BACKUP_OFF]] = true,
    }
 --Table with allowed control names for the character equipment jewelry rings
 checkVars.allowedCharacterEquipmentJewelryRingControlNames = {
-    ['ZO_CharacterEquipmentSlotsRing1'] = true,
-    ['ZO_CharacterEquipmentSlotsRing2'] = true,
+    [characterEquipmentSlotNameByIndex[EQUIP_SLOT_RING1]] = true,
+    [characterEquipmentSlotNameByIndex[EQUIP_SLOT_RING2]] = true,
 }
 --Table with allowed control names for the character equipment jewelry
-checkVars.allowedCharacterEquipmentJewelryControlNames = {
-	['ZO_CharacterEquipmentSlotsNeck'] = true,
-	['ZO_CharacterEquipmentSlotsRing1'] = true,
-	['ZO_CharacterEquipmentSlotsRing2'] = true,
-}
+checkVars.allowedCharacterEquipmentJewelryControlNames = mappingVars.characterEquipmentJewelrySlots
+
 --Table with weapon and jewelry slot names for equipment checks
 checkVars.equipmentSlotsNames = {
     ["no_auto_mark"] = {
-		["ZO_CharacterEquipmentSlotsCostume"] = true,
+		[characterEquipmentSlotNameByIndex[EQUIP_SLOT_COSTUME]] = true,
     }
 }
 
@@ -1801,60 +1864,6 @@ checkVars.filterPanelIdsForAntiDestroy = {
     [LF_BANK_DEPOSIT]       = true,
     [LF_GUILDBANK_DEPOSIT]  = true,
     [LF_HOUSE_BANK_DEPOSIT] = true,
-}
---Table with all equipment slot names which can be updated with markes for the icons
---The index is the relating slotIndex of the bag BAG_WORN!
-mappingVars.characterEquipmentSlotNameByIndex = {
-	[0] = "ZO_CharacterEquipmentSlotsHead",
-	[1] = "ZO_CharacterEquipmentSlotsNeck",
-	[2] = "ZO_CharacterEquipmentSlotsChest",
-	[3] = "ZO_CharacterEquipmentSlotsShoulder",
-	[4] = "ZO_CharacterEquipmentSlotsMainHand",
-	[5] = "ZO_CharacterEquipmentSlotsOffHand",
-	[6] = "ZO_CharacterEquipmentSlotsBelt",
-	[8] = "ZO_CharacterEquipmentSlotsLeg",
-	[9] = "ZO_CharacterEquipmentSlotsFoot",
-	[10] = "ZO_CharacterEquipmentSlotsCostume",
-	[11] = "ZO_CharacterEquipmentSlotsRing1",
-	[12] = "ZO_CharacterEquipmentSlotsRing2",
-    [13] = "ZO_CharacterEquipmentSlotsPoison",
-	[14] = "ZO_CharacterEquipmentSlotsBackupPoison",
-	[16] = "ZO_CharacterEquipmentSlotsGlove",
-	[20] = "ZO_CharacterEquipmentSlotsBackupMain",
-	[21] = "ZO_CharacterEquipmentSlotsBackupOff",
-}
---Table with the eqipment slot control names which are armor
-mappingVars.characterEquipmentArmorSlots = {
-	['ZO_CharacterEquipmentSlotsHead'] = true,
-	['ZO_CharacterEquipmentSlotsChest'] = true,
-	['ZO_CharacterEquipmentSlotsShoulder'] = true,
-	['ZO_CharacterEquipmentSlotsBelt'] = true,
-	['ZO_CharacterEquipmentSlotsLeg'] = true,
-	['ZO_CharacterEquipmentSlotsFoot'] = true,
-	['ZO_CharacterEquipmentSlotsGlove'] = true,
-}
-
---Table with the eqipment slot control names which are jewelry
-mappingVars.characterEquipmentJewelrySlots = {
-	['ZO_CharacterEquipmentSlotsNeck'] = true,
-	['ZO_CharacterEquipmentSlotsRing1'] = true,
-	['ZO_CharacterEquipmentSlotsRing2'] = true,
-}
-
---Table with the eqipment slot control names which are weapons
-mappingVars.characterEquipmentWeaponSlots = {
-	['ZO_CharacterEquipmentSlotsMainHand'] = true,
-	['ZO_CharacterEquipmentSlotsOffHand'] = true,
-	['ZO_CharacterEquipmentSlotsPoison'] = true,
-	['ZO_CharacterEquipmentSlotsBackupMain'] = true,
-	['ZO_CharacterEquipmentSlotsBackupOff'] = true,
-	['ZO_CharacterEquipmentSlotsBackupPoiosn'] = true,
-}
-
---Mapping table fo one ring to the other
-mappingVars.equipmentJewelryRing2RingSlot = {
-    ['ZO_CharacterEquipmentSlotsRing1'] = 'ZO_CharacterEquipmentSlotsRing2',
-    ['ZO_CharacterEquipmentSlotsRing2'] = 'ZO_CharacterEquipmentSlotsRing1',
 }
 
 --BagId to SetTracker addon settings in FCOIS
@@ -2113,24 +2122,24 @@ contextMenuVars.menuInfo =
 for i=1, numVars.gFCONumFilterInventoryTypes, 1 do
 	if mappingVars.activeFilterPanelIds[i] == true then
 		--Additional inventory "flag" button context menus
-		FCOIS.preventerVars.gContextCreated[i] 				        = false
+		preventerVars.gContextCreated[i] 				        = false
 		--Inventory filter buttons context menus
         --Lock & dynamic filter button context menus
-        FCOIS.preventerVars.gLockDynFilterContextCreated[i]	        = false
+        preventerVars.gLockDynFilterContextCreated[i]	        = false
 	    FCOIS.contextMenu.LockDynFilter[i]	  	 			        = nil
 	    FCOIS.contextMenu.LockDynFilter.bdSelectedLine[i]		    = nil
 		--Gear sets filter button context menus
-        FCOIS.preventerVars.gGearSetFilterContextCreated[i]	        = false
+        preventerVars.gGearSetFilterContextCreated[i]	        = false
 	    FCOIS.contextMenu.GearSetFilter[i]	  	 			        = nil
 	    FCOIS.contextMenu.GearSetFilter.bdSelectedLine[i]		    = nil
 		--Research, Deconstruction, Improvement filter button context menus
         FCOIS.contextMenu.ResDecImpFilter[i]	  	 			    = nil
 	    FCOIS.contextMenu.ResDecImpFilter.bdSelectedLine[i]	        = nil
-		FCOIS.preventerVars.gResDecImpFilterContextCreated[i]	    = false
+		preventerVars.gResDecImpFilterContextCreated[i]	    = false
         --Sell/Sell in guild store/intricate filter button context menus
         FCOIS.contextMenu.SellGuildIntFilter[i]	  	 			    = nil
         FCOIS.contextMenu.SellGuildIntFilter.bdSelectedLine[i]	    = nil
-        FCOIS.preventerVars.gSellGuildIntFilterContextCreated[i]	= false
+        preventerVars.gSellGuildIntFilterContextCreated[i]	= false
 		--Initialize the variable for the last choosen filter button
         FCOIS.lastVars.gLastFilterId[i]                             = LF_INVENTORY
     end
