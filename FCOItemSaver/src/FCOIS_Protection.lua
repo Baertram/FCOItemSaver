@@ -1319,7 +1319,17 @@ function FCOIS.IsItemProtectedAtASlotNow(bagId, slotIndex, bulkMark, scanOtherIn
     --Check if the item is protected at the junk tab now
     FCOIS.checkIfIsJunkItem(bagId, slotIndex, bulkMark, scanOtherInvItemsIfSlotted)
     --Check if the item is protected at any other panel now
-    FCOIS.IsItemProtectedAtPanelNow(bagId, slotIndex, FCOIS.gFilterWhere, scanOtherInvItemsIfSlotted)
+    local panelIdToUse = FCOIS.gFilterWhere
+    --Check if we are at the CraftBag and another parent panel needs to be checked:
+    if panelIdToUse == LF_CRAFTBAG then
+        --As the CraftBag can be active at the mail send, trade, guild store sell and guild bank panels too we need to check if we are currently using the
+        --addon CraftBagExtended and if the parent panel ID (filterPanelIdParent) is one of the above mentioned
+        -- -> See callback function for CRAFT_BAG_FRAGMENT in the PreHooks section!
+        if FCOIS.checkIfCBEorAGSActive(FCOIS.gFilterWhereParent) then
+            panelIdToUse = FCOIS.gFilterWhereParent
+        end
+    end
+    FCOIS.IsItemProtectedAtPanelNow(bagId, slotIndex, panelIdToUse, scanOtherInvItemsIfSlotted)
 end
 
 --Check if withdraw from guild bank is allowed, or block deposit of items

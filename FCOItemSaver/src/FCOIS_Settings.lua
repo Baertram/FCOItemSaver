@@ -168,8 +168,10 @@ end
 
 --This function will change the actual ANTI-DETSROY etc. settings according to the active filter panel ID (inventory, vendor, mail, trade, bank, etc.)
 function FCOIS.changeAntiSettingsAccordingToFilterPanel()
-    if FCOIS.gFilterWhere == nil then return false end
-    --d("[FCOIS.changeAntiSettingsAccordingToFilterPanel - FilterPanel: " .. FCOIS.gFilterWhere .. ", FilterPanelParent: " .. tostring(FCOIS.gFilterWhereParent))
+    local filterPanelId = FCOIS.gFilterWhere
+    if filterPanelId == nil then return false end
+    local parentPanel = FCOIS.gFilterWhereParent
+--d("[FCOIS.changeAntiSettingsAccordingToFilterPanel - FilterPanel: " .. filterPanelId .. ", FilterPanelParent: " .. tostring(parentPanel))
 
     local currentSettings = FCOIS.settingsVars.settings
     local isSettingEnabled = false
@@ -179,19 +181,18 @@ function FCOIS.changeAntiSettingsAccordingToFilterPanel()
     --The filterPanelIds which need to be checked for anti-destroy
     local filterPanelIdsCheckForAntiDestroy = FCOIS.checkVars.filterPanelIdsForAntiDestroy
     --Get the current FCOIS.settingsVars.settings state and inverse them
-    local isFilterPanelIdCheckForAntiDestroyNeeded = filterPanelIdsCheckForAntiDestroy[FCOIS.gFilterWhere] or false
+    local isFilterPanelIdCheckForAntiDestroyNeeded = filterPanelIdsCheckForAntiDestroy[filterPanelId] or false
     if isFilterPanelIdCheckForAntiDestroyNeeded then
         FCOIS.settingsVars.settings.blockDestroying = not currentSettings.blockDestroying
         isSettingEnabled = FCOIS.settingsVars.settings.blockDestroying
     end
     --------------------------------------------------------------------------------------------------------------------
     --CraftBag and CraftBagExtended addon
-    if FCOIS.gFilterWhere == LF_CRAFTBAG then
+    if filterPanelId == LF_CRAFTBAG then
         --As the CraftBag can be active at the mail send, trade, guild store sell and guild bank panels too we need to check if we are currently using the
-        --addon CraftBagExtended and if the parent panel ID (FCOIS.gFilterWhereParent) is one of the above mentioned
+        --addon CraftBagExtended and if the parent panel ID (filterPanelIdParent) is one of the above mentioned
         -- -> See callback function for CRAFT_BAG_FRAGMENT in the PreHooks section!
-        if FCOIS.checkIfCBEorAGSActive(FCOIS.gFilterWhereParent) then
-            local parentPanel = FCOIS.gFilterWhereParent
+        if FCOIS.checkIfCBEorAGSActive(parentPanel) then
             --The parent panel for the craftbag is the bank deposit panel
             --or the parent panel for the craftbag is the guild bank deposit panel
             if 	parentPanel == LF_BANK_DEPOSIT or parentPanel == LF_GUILDBANK_DEPOSIT then
@@ -214,94 +215,95 @@ function FCOIS.changeAntiSettingsAccordingToFilterPanel()
                 FCOIS.settingsVars.settings.blockSelling = not currentSettings.blockSelling
                 isSettingEnabled = FCOIS.settingsVars.settings.blockSelling
             end
+        --[[
+        --Was handled further up at "if isFilterPanelIdCheckForAntiDestroyNeeded then" already!
         else
             FCOIS.settingsVars.settings.blockDestroying = not currentSettings.blockDestroying
             isSettingEnabled = FCOIS.settingsVars.settings.blockDestroying
+        ]]
         end
         --------------------------------------------------------------------------------------------------------------------
-    elseif FCOIS.gFilterWhere == LF_VENDOR_BUY then
+    elseif filterPanelId == LF_VENDOR_BUY then
         FCOIS.settingsVars.settings.blockVendorBuy = not currentSettings.blockVendorBuy
         isSettingEnabled = FCOIS.settingsVars.settings.blockVendorBuy
-    elseif FCOIS.gFilterWhere == LF_VENDOR_SELL then
+    elseif filterPanelId == LF_VENDOR_SELL then
         FCOIS.settingsVars.settings.blockSelling = not currentSettings.blockSelling
         isSettingEnabled = FCOIS.settingsVars.settings.blockSelling
-    elseif FCOIS.gFilterWhere == LF_VENDOR_BUYBACK then
+    elseif filterPanelId == LF_VENDOR_BUYBACK then
         FCOIS.settingsVars.settings.blockVendorBuyback = not currentSettings.blockVendorBuyback
         isSettingEnabled = FCOIS.settingsVars.settings.blockVendorBuyback
-    elseif FCOIS.gFilterWhere == LF_VENDOR_REPAIR then
+    elseif filterPanelId == LF_VENDOR_REPAIR then
         FCOIS.settingsVars.settings.blockVendorRepair = not currentSettings.blockVendorRepair
         isSettingEnabled = FCOIS.settingsVars.settings.blockVendorRepair
-    elseif FCOIS.gFilterWhere == LF_FENCE_SELL then
+    elseif filterPanelId == LF_FENCE_SELL then
         FCOIS.settingsVars.settings.blockFence = not currentSettings.blockFence
         isSettingEnabled = FCOIS.settingsVars.settings.blockFence
-    elseif FCOIS.gFilterWhere == LF_FENCE_LAUNDER then
+    elseif filterPanelId == LF_FENCE_LAUNDER then
         FCOIS.settingsVars.settings.blockLaunder = not currentSettings.blockLaunder
         isSettingEnabled = FCOIS.settingsVars.settings.blockLaunder
-    elseif FCOIS.gFilterWhere == LF_SMITHING_REFINE then
+    elseif filterPanelId == LF_SMITHING_REFINE then
         FCOIS.settingsVars.settings.blockRefinement = not currentSettings.blockRefinement
         isSettingEnabled = FCOIS.settingsVars.settings.blockRefinement
-    elseif FCOIS.gFilterWhere == LF_SMITHING_DECONSTRUCT then
+    elseif filterPanelId == LF_SMITHING_DECONSTRUCT then
         FCOIS.settingsVars.settings.blockDeconstruction = not currentSettings.blockDeconstruction
         isSettingEnabled = FCOIS.settingsVars.settings.blockDeconstruction
-    elseif FCOIS.gFilterWhere == LF_SMITHING_IMPROVEMENT then
+    elseif filterPanelId == LF_SMITHING_IMPROVEMENT then
         FCOIS.settingsVars.settings.blockImprovement = not currentSettings.blockImprovement
         isSettingEnabled = FCOIS.settingsVars.settings.blockImprovement
-    elseif FCOIS.gFilterWhere == LF_SMITHING_RESEARCH then
+    elseif filterPanelId == LF_SMITHING_RESEARCH then
         FCOIS.settingsVars.settings.blockResearch = not currentSettings.blockResearch
         isSettingEnabled = FCOIS.settingsVars.settings.blockResearch
-    elseif FCOIS.gFilterWhere == LF_SMITHING_RESEARCH_DIALOG then
+    elseif filterPanelId == LF_SMITHING_RESEARCH_DIALOG then
         FCOIS.settingsVars.settings.blockResearchDialog = not currentSettings.blockResearchDialog
         isSettingEnabled = FCOIS.settingsVars.settings.blockResearch
-    elseif FCOIS.gFilterWhere == LF_GUILDSTORE_SELL then
+    elseif filterPanelId == LF_GUILDSTORE_SELL then
         FCOIS.settingsVars.settings.blockSellingGuildStore = not currentSettings.blockSellingGuildStore
         isSettingEnabled = FCOIS.settingsVars.settings.blockSellingGuildStore
-    elseif FCOIS.gFilterWhere == LF_MAIL_SEND then
+    elseif filterPanelId == LF_MAIL_SEND then
         FCOIS.settingsVars.settings.blockSendingByMail = not currentSettings.blockSendingByMail
         isSettingEnabled = FCOIS.settingsVars.settings.blockSendingByMail
-    elseif FCOIS.gFilterWhere == LF_TRADE then
+    elseif filterPanelId == LF_TRADE then
         FCOIS.settingsVars.settings.blockTrading = not currentSettings.blockTrading
         isSettingEnabled = FCOIS.settingsVars.settings.blockTrading
-    elseif FCOIS.gFilterWhere == LF_ENCHANTING_CREATION then
+    elseif filterPanelId == LF_ENCHANTING_CREATION then
         FCOIS.settingsVars.settings.blockEnchantingCreation = not currentSettings.blockEnchantingCreation
         isSettingEnabled = FCOIS.settingsVars.settings.blockEnchantingCreation
-    elseif FCOIS.gFilterWhere == LF_ENCHANTING_EXTRACTION then
+    elseif filterPanelId == LF_ENCHANTING_EXTRACTION then
         FCOIS.settingsVars.settings.blockEnchantingExtraction = not currentSettings.blockEnchantingExtraction
         isSettingEnabled = FCOIS.settingsVars.settings.blockEnchantingExtraction
-    elseif FCOIS.gFilterWhere == LF_RETRAIT then
+    elseif filterPanelId == LF_RETRAIT then
         FCOIS.settingsVars.settings.blockRetrait = not currentSettings.blockRetrait
         isSettingEnabled = FCOIS.settingsVars.settings.blockRetrait
-    elseif FCOIS.gFilterWhere == LF_JEWELRY_REFINE then
+    elseif filterPanelId == LF_JEWELRY_REFINE then
         FCOIS.settingsVars.settings.blockJewelryRefinement = not currentSettings.blockJewelryRefinement
         isSettingEnabled = FCOIS.settingsVars.settings.blockJewelryRefinement
-    elseif FCOIS.gFilterWhere == LF_JEWELRY_DECONSTRUCT then
+    elseif filterPanelId == LF_JEWELRY_DECONSTRUCT then
         FCOIS.settingsVars.settings.blockJewelryDeconstruction = not currentSettings.blockJewelryDeconstruction
         isSettingEnabled = FCOIS.settingsVars.settings.blockJewelryDeconstruction
-    elseif FCOIS.gFilterWhere == LF_JEWELRY_IMPROVEMENT then
+    elseif filterPanelId == LF_JEWELRY_IMPROVEMENT then
         FCOIS.settingsVars.settings.blockJewelryImprovement = not currentSettings.blockJewelryImprovement
         isSettingEnabled = FCOIS.settingsVars.settings.blockJewelryImprovement
-    elseif FCOIS.gFilterWhere == LF_JEWELRY_RESEARCH then
+    elseif filterPanelId == LF_JEWELRY_RESEARCH then
         FCOIS.settingsVars.settings.blockJewelryResearch = not currentSettings.blockJewelryResearch
         isSettingEnabled = FCOIS.settingsVars.settings.blockJewelryResearch
-    elseif FCOIS.gFilterWhere == LF_JEWELRY_RESEARCH_DIALOG then
+    elseif filterPanelId == LF_JEWELRY_RESEARCH_DIALOG then
         FCOIS.settingsVars.settings.blockJewelryResearchDialog = not currentSettings.blockJewelryResearchDialog
         isSettingEnabled = FCOIS.settingsVars.settings.blockJewelryResearch
-    elseif FCOIS.gFilterWhere == LF_GUILDBANK_DEPOSIT then
+    elseif filterPanelId == LF_GUILDBANK_DEPOSIT then
         FCOIS.settingsVars.settings.blockGuildBankWithoutWithdraw = not currentSettings.blockGuildBankWithoutWithdraw
         isSettingEnabled = FCOIS.settingsVars.settings.blockGuildBankWithoutWithdraw
+    --[[
+    --Was handled further up at "if isFilterPanelIdCheckForAntiDestroyNeeded then" already!
     else
         FCOIS.settingsVars.settings.blockDestroying = not currentSettings.blockDestroying
         isSettingEnabled = FCOIS.settingsVars.settings.blockDestroying
+    ]]
     end
 
     --Check if the settings are enabled now and if any item is slotted in the deconstruction/improvement/extraction/refine slot
     --> Then remove the item from the slot again if it's protected again now
     if isSettingEnabled then
-        --Get the bagId and slotIndex of a slotted item
-        local bagId, slotIndex = FCOIS.craftingPrevention.GetSlottedItemBagAndSlot()
-        if bagId ~= nil and slotIndex ~= nil then
-            --Then check if they are protected and remove them from the slot again
-            FCOIS.craftingPrevention.IsItemProtectedAtACraftSlotNow(bagId, slotIndex)
-        end
+        FCOIS.IsItemProtectedAtASlotNow(nil, nil, false, true)
     end
 end
 

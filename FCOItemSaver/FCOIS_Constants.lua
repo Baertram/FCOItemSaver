@@ -1858,6 +1858,7 @@ checkVars.autoReenableAntiSettingsCheckWheresAll = "-ALL-"
 --The filter panelÍds which need to be checked if anti-destroy is checked
 checkVars.filterPanelIdsForAntiDestroy = {
     [LF_INVENTORY]          = true,
+    [LF_CRAFTBAG]           = true,
     [LF_BANK_WITHDRAW]      = true,
     [LF_GUILDBANK_WITHDRAW] = true,
     [LF_HOUSE_BANK_WITHDRAW]= true,
