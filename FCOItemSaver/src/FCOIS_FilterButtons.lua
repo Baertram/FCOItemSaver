@@ -264,7 +264,7 @@ function FCOIS.CheckAndTransferFilterButtonDataByPanelId(libFiltersPanelId, filt
 end
 
 --Set all the filter button settings equal/to the same value of a given filter panel ID
-function FCOIS.setAllFilterButtonSettingsEqual(filterPanelIdSource)
+function FCOIS.setAllFilterButtonOffsetAndSizeSettingsEqual(filterPanelIdSource)
     if filterPanelIdSource == nil then return false end
     --local filterButtonsToCheck = FCOIS.checkVars.filterButtonsToCheck
     if filterButtonsToCheck ~= nil then

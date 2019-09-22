@@ -223,10 +223,7 @@ function FCOIS.buildDefaultSettings()
 		showFCOISMenuBarButton		= true,
 		showFCOISAdditionalInventoriesButton = true,
 		colorizeFCOISAdditionalInventoriesButton = true,
-		FCOISAdditionalInventoriesButtonOffset = {
-			["x"] = 0,
-			["y"] = 0
-		},
+		FCOISAdditionalInventoriesButtonOffset = {},
 		showFilterButtonTooltip		= true,
 		showFilterButtonContextTooltip = true,
 		showAntiMessageInChat		= true,
@@ -305,7 +302,7 @@ function FCOIS.buildDefaultSettings()
     local iconIdToDynIcon               = FCOIS.mappingVars.dynamicToIcon
     local iconNrToOrdinalStr            = FCOIS.mappingVars.iconNrToOrdinalStr
 
-    --For each panel id that is active
+	--For each panel id that is active
     for libFiltersFilterPanelIdHelper = 1, numLibFiltersFilterPanelIds, 1 do
 		if activeFilterPanelIds[libFiltersFilterPanelIdHelper] == true then
 			--Create 2-dimensional arrays for the filters
@@ -331,6 +328,12 @@ function FCOIS.buildDefaultSettings()
 			--Create 2-dimensional array for the UNDO functions from the addiitonal inventory context menu (flag) menu
 			FCOIS.contextMenuVars.undoMarkedItems[libFiltersFilterPanelIdHelper] = {}
 		end
+		--FCOIS version 1.6.7
+		--Add the default additional inventory context menu "flag" button values for each filter panel ID
+		FCOIS.settingsVars.defaults.FCOISAdditionalInventoriesButtonOffset[libFiltersFilterPanelIdHelper] = {
+			["top"] = 0,
+			["left"] = 0,
+		}
     end
 	--Create 2-dimensional arrays for the icons
 	local dynamicCounter = 0

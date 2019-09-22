@@ -4,6 +4,8 @@ local FCOIS = FCOIS
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
 
+local fcoisLAMSettingsReferencePrefix = "FCOItemSaver_Settings_"
+local LAMopenedCounter = 0
 
 local FCOISdefaultSettings = {}
 local FCOISsettings = {}
@@ -45,6 +47,7 @@ local svAllAccountsName = FCOIS.svAllAccountsName
 
 local doNotRunDropdownValueSetFunc = false
 
+local editBoxesToSetTextTypes
 --==========================================================================================================================================
 --									FCOIS libAddonMenu 2.x settings menu
 --==========================================================================================================================================
@@ -244,8 +247,8 @@ function FCOIS.BuildAddonMenu()
 	local function CreateControl(ref, name, tooltip, data, disabledChecks, getFunc, setFunc, defaultSettings, warning, isIconDropDown, scrollable)
         scrollable = scrollable or false
         if ref ~= nil then
-            if string.find(ref, "FCOItemSaver_Settings_", 1)  ~= 1 then
-                data.reference = "FCOItemSaver_Settings_" .. ref
+            if string.find(ref, fcoisLAMSettingsReferencePrefix, 1)  ~= 1 then
+                data.reference = fcoisLAMSettingsReferencePrefix .. ref
             else
                 data.reference = ref
             end
@@ -569,11 +572,6 @@ function FCOIS.BuildAddonMenu()
             end
         end
         doNotRunDropdownValueSetFunc = false
-
-        FCOIS._characterSrcOptions = characterSrcOptions
-        FCOIS._characterSrcOptionsValues = characterSrcOptionsValues
-        FCOIS._characterTargOptions = characterTargOptions
-        FCOIS._characterTargOptionsValues = characterTargOptionsValues
     end
     reBuildCharacterOptions()
 
@@ -1555,7 +1553,7 @@ function FCOIS.BuildAddonMenu()
             return false
         end
         local btnFunc = function()
-            FCOIS.setAllFilterButtonSettingsEqual(LF_INVENTORY)
+            FCOIS.setAllFilterButtonOffsetAndSizeSettingsEqual(LF_INVENTORY)
         end
         local btncreatedControl = CreateControl(nil, btnname, btntooltip, btndata, btndisabledFunc, nil, btnFunc, nil, locVars["options_filter_button_set_all_equal_TT"])
         if btncreatedControl ~= nil then
@@ -1571,6 +1569,7 @@ function FCOIS.BuildAddonMenu()
                 for _, filterButtonNr in ipairs(filterButtonsToCheck) do
                     --Variables
                     local name
+                    local ref
                     local tooltip
                     local data = {}
                     local disabledFunc, getFunc, setFunc, defaultSettings, createdControl
@@ -1584,6 +1583,7 @@ function FCOIS.BuildAddonMenu()
                         table.insert(filterButtonsPositionsSubMenuControls, createdControl)
                     end
                     --Add the filter button left edit box
+                    ref = fcoisLAMSettingsReferencePrefix .. "FilterButtonsPositionsAtPanel" .. tostring(filterPanelId) .. "_" .. tostring(filterButtonNr) .. "_LEFT"
                     name    = locVars["options_filter_button" .. tostring(filterButtonNr) .. "_left"]
                     tooltip = locVars["options_filter_button" .. tostring(filterButtonNr) .. "_left_TT"]
                     data = { type = "editbox", width = "half" }
@@ -1594,11 +1594,14 @@ function FCOIS.BuildAddonMenu()
                         saveValueFilterButtonChecks(filterPanelId, filterButtonNr)
                     end
                     defaultSettings = FCOISdefaultSettings.filterButtonData[filterButtonNr][filterPanelId]["left"]
-                    createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
+                    createdControl = CreateControl(ref, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
                     if createdControl ~= nil then
                         table.insert(filterButtonsPositionsSubMenuControls, createdControl)
+                        editBoxesToSetTextTypes = editBoxesToSetTextTypes or {}
+                        editBoxesToSetTextTypes[ref] = TEXT_TYPE_NUMERIC
                     end
                     --Add the filter button top edit box
+                    ref = fcoisLAMSettingsReferencePrefix .. "FilterButtonsPositionsAtPanel" .. tostring(filterPanelId) .. "_" .. tostring(filterButtonNr) .. "_TOP"
                     name    = locVars["options_filter_button" .. tostring(filterButtonNr) .. "_top"]
                     tooltip = locVars["options_filter_button" .. tostring(filterButtonNr) .. "_top_TT"]
                     data = { type = "editbox", width = "half" }
@@ -1609,11 +1612,14 @@ function FCOIS.BuildAddonMenu()
                         saveValueFilterButtonChecks(filterPanelId, filterButtonNr)
                     end
                     defaultSettings = FCOISdefaultSettings.filterButtonData[filterButtonNr][filterPanelId]["top"]
-                    createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
+                    createdControl = CreateControl(ref, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
                     if createdControl ~= nil then
                         table.insert(filterButtonsPositionsSubMenuControls, createdControl)
+                        editBoxesToSetTextTypes = editBoxesToSetTextTypes or {}
+                        editBoxesToSetTextTypes[ref] = TEXT_TYPE_NUMERIC
                     end
                     --Add the filter button width edit box
+                    ref = fcoisLAMSettingsReferencePrefix .. "FilterButtonsPositionsAtPanel" .. tostring(filterPanelId) .. "_" .. tostring(filterButtonNr) .. "_WIDTH"
                     name    = locVars["options_filter_button" .. tostring(filterButtonNr) .. "_width"]
                     tooltip = locVars["options_filter_button" .. tostring(filterButtonNr) .. "_width_TT"]
                     data = { type = "slider", width = "half", min = minFilterButtonWidth, max = maxFilterButtonWidth, decimals = 0, step = 1}
@@ -1624,11 +1630,12 @@ function FCOIS.BuildAddonMenu()
                         saveValueFilterButtonChecks(filterPanelId, filterButtonNr)
                     end
                     defaultSettings = FCOISdefaultSettings.filterButtonData[filterButtonNr][filterPanelId]["width"]
-                    createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
+                    createdControl = CreateControl(ref, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
                     if createdControl ~= nil then
                         table.insert(filterButtonsPositionsSubMenuControls, createdControl)
                     end
                     --Add the filter button height edit box
+                    ref = fcoisLAMSettingsReferencePrefix .. "FilterButtonsPositionsAtPanel" .. tostring(filterPanelId) .. "_" .. tostring(filterButtonNr) .. "_HEIGHT"
                     name    = locVars["options_filter_button" .. tostring(filterButtonNr) .. "_height"]
                     tooltip = locVars["options_filter_button" .. tostring(filterButtonNr) .. "_height_TT"]
                     data = { type = "slider", width = "half", min = minFilterButtonHeight, max = maxFilterButtonHeight, decimals = 0, step = 1}
@@ -1639,7 +1646,7 @@ function FCOIS.BuildAddonMenu()
                         saveValueFilterButtonChecks(filterPanelId, filterButtonNr)
                     end
                     defaultSettings = FCOISdefaultSettings.filterButtonData[filterButtonNr][filterPanelId]["height"]
-                    createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
+                    createdControl = CreateControl(ref, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
                     if createdControl ~= nil then
                         table.insert(filterButtonsPositionsSubMenuControls, createdControl)
                     end
@@ -1647,7 +1654,7 @@ function FCOIS.BuildAddonMenu()
     ------------------------------------------------------------------------------------------------------------------------
                 --Create the submenu header for the libFilters filterPanel ID and assign the before build edit controls to it
                 if filterButtonsPositionsSubMenuControls ~= nil and #filterButtonsPositionsSubMenuControls > 0 then
-                    local subMenuRef = "FCOIS_OPTIONS_FilterButtonsPositionsAtPanel" .. tostring(filterPanelId) .. "_submenu"
+                    local subMenuRef = fcoisLAMSettingsReferencePrefix .. "FilterButtonsPositionsAtPanel" .. tostring(filterPanelId) .. "_submenu"
                     --local subMenuName = locVars["options_libFiltersFilterPanelIdName_" .. tostring(filterPanelId)]
                     local subMenuName = locVars["FCOIS_LibFilters_PanelIds"][filterPanelId] or locVars["options_libFiltersFilterPanelIdName_" .. tostring(filterPanelId)]
                     local subMenuTooltip = ""
@@ -1662,6 +1669,94 @@ function FCOIS.BuildAddonMenu()
     local filterButtonsPositionsSubMenu = buildFilterButtonsPositionsSubMenu()
 --==================== Filter buttons positions - END =====================================
 
+--==================== Filter panel additional inventory context menu "flag" button positions - BEGIN =====================================
+    --Added with FCOIS v1.6.7
+    --Build the complete submenus for the addiitonal inventory context menu "flag" offset settings
+    local function buildAddInvContextMenuFlagButtonsPositionsSubMenu()
+        local addInvFlagButtonsPositionsSubMenu = {}
+        --Add 1 button to set all filter panel ID settings to an equal value, the one of LF_INVENTORY
+        --Add the filter button left edit box
+        local btnname    = locVars["options_filter_button_set_all_equal"]
+        local btntooltip = locVars["options_add_inv_flag_button_set_all_equal_TT"]
+        local btndata = { type = "button", width = "full", isDangerous="true"}
+        local btndisabledFunc = function()
+            return false
+        end
+        local btnFunc = function()
+            FCOIS.setAllAddInvFlagButtonOffsetSettingsEqual(LF_INVENTORY)
+        end
+        local btncreatedControl = CreateControl(nil, btnname, btntooltip, btndata, btndisabledFunc, nil, btnFunc, nil, locVars["options_add_inv_flag_button_set_all_equal_TT"])
+        if btncreatedControl ~= nil then
+            table.insert(addInvFlagButtonsPositionsSubMenu, btncreatedControl)
+        end
+        --Create a submenu for each LibFilters filter panel ID where the add. inv. context menu "flag" button is active
+        local addInvBtnInvokers = FCOIS.contextMenuVars.filterPanelIdToContextMenuButtonInvoker
+        for filterPanelId, addInvBtnInvokerData in pairs(addInvBtnInvokers) do
+            local isActiveFilterPanelId = activeFilterPanelIds[filterPanelId] or false
+            if isActiveFilterPanelId and addInvBtnInvokerData and addInvBtnInvokerData.addInvButton then
+                --Clear the controls of the submenu
+                local addInvFlagButtonsPositionsSubMenuControls = {}
+                --Create textfields for the add. inv. "flag" button positions left + top
+                --Variables
+                local ref
+                local name
+                local tooltip
+                local data = {}
+                local disabledFunc, getFunc, setFunc, defaultSettings, createdControl
+                ------------------------------------------------------------------------------------------------------------------------
+                --Add the button left edit box
+                ref = fcoisLAMSettingsReferencePrefix .. "AddInvFlagButtonsPositionsAtPanel" .. tostring(filterPanelId) .. "_LEFT"
+                name    = locVars["options_filter_button1_left"]
+                tooltip = locVars["options_filter_button1_left"]
+                data = { type = "editbox", width = "half"}
+                disabledFunc = function() return false end
+                getFunc = function() return FCOISsettings.FCOISAdditionalInventoriesButtonOffset[filterPanelId]["left"] end
+                setFunc = function(newValue)
+                    FCOISsettings.FCOISAdditionalInventoriesButtonOffset[filterPanelId]["left"] = newValue
+                    FCOIS.reAnchorAdditionalInvButtons(filterPanelId)
+                end
+                defaultSettings = FCOISdefaultSettings.FCOISAdditionalInventoriesButtonOffset[filterPanelId]["left"]
+                createdControl = CreateControl(ref, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
+                if createdControl ~= nil then
+                    table.insert(addInvFlagButtonsPositionsSubMenuControls, createdControl)
+                    editBoxesToSetTextTypes = editBoxesToSetTextTypes or {}
+                    editBoxesToSetTextTypes[ref] = TEXT_TYPE_NUMERIC
+                end
+                --Add the button top edit box
+                ref = fcoisLAMSettingsReferencePrefix .. "AddInvFlagButtonsPositionsAtPanel" .. tostring(filterPanelId) .. "_TOP"
+                name    = locVars["options_filter_button1_top"]
+                tooltip = locVars["options_filter_button1_top_TT"]
+                data = { type = "editbox", width = "half"}
+                disabledFunc = function() return false end
+                getFunc = function() return FCOISsettings.FCOISAdditionalInventoriesButtonOffset[filterPanelId]["top"] end
+                setFunc = function(newValue)
+                    FCOISsettings.FCOISAdditionalInventoriesButtonOffset[filterPanelId]["top"] = newValue
+                    FCOIS.reAnchorAdditionalInvButtons(filterPanelId)
+                end
+                defaultSettings = FCOISdefaultSettings.FCOISAdditionalInventoriesButtonOffset[filterPanelId]["top"]
+                createdControl = CreateControl(ref, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
+                if createdControl ~= nil then
+                    table.insert(addInvFlagButtonsPositionsSubMenuControls, createdControl)
+                    editBoxesToSetTextTypes = editBoxesToSetTextTypes or {}
+                    editBoxesToSetTextTypes[ref] = TEXT_TYPE_NUMERIC
+                end
+                ------------------------------------------------------------------------------------------------------------------------
+                --Create the submenu header for the libFilters filterPanel ID and assign the before build edit controls to it
+                if addInvFlagButtonsPositionsSubMenuControls ~= nil and #addInvFlagButtonsPositionsSubMenuControls > 0 then
+                    local subMenuRef = fcoisLAMSettingsReferencePrefix .. "AddInvFlagButtonsPositionsAtPanel" .. tostring(filterPanelId) .. "_submenu"
+                    --local subMenuName = locVars["options_libFiltersFilterPanelIdName_" .. tostring(filterPanelId)]
+                    local subMenuName = locVars["FCOIS_LibFilters_PanelIds"][filterPanelId] or locVars["options_libFiltersFilterPanelIdName_" .. tostring(filterPanelId)]
+                    local subMenuTooltip = ""
+                    local subMenuData = { type = "submenu", controls = addInvFlagButtonsPositionsSubMenuControls }
+                    local createdaddInvFlagButtonsPositionsSubMenuSurrounding = CreateControl(subMenuRef, subMenuName, subMenuTooltip, subMenuData, nil, nil, nil, nil, nil)
+                    table.insert(addInvFlagButtonsPositionsSubMenu, createdaddInvFlagButtonsPositionsSubMenuSurrounding)
+                end
+            end -- is active filter panel ID?
+        end -- for filterPanelId in addInvBtnInvokers
+        return addInvFlagButtonsPositionsSubMenu
+    end
+    local addInvFlagButtonsPositionsSubMenu = buildAddInvContextMenuFlagButtonsPositionsSubMenu()
+--==================== Filter panel additional inventory context menu "flag" button positions - END =====================================
 
 --==================== Restore API versions - BEGIN =====================================
     --Read all restorable API versions from the savedvars to get a table with the API
@@ -1702,8 +1797,55 @@ function FCOIS.BuildAddonMenu()
     FCOIS.buildRestoreAPIVersionData(false)
 --==================== Restore API versions - END =======================================
 
+    --Set the text type of some edit boxes in the settings menu so the values entered are validated
+    local function setSettingsMenuEditBoxTextTypes()
+        if not editBoxesToSetTextTypes then return end
+        for controlName, textType in pairs(editBoxesToSetTextTypes) do
+            if textType then
+                local control = WINDOW_MANAGER:GetControlByName(controlName, "")
+                if control then
+                    if control.editbox and control.editbox.SetTextType then
+                        control.editbox:SetTextType(textType)
+                    end
+                end
+            end
+        end
+    end
+
+    --Hide/Show the FCOIS LAM menu container now and show
+    --a placeholder "Loading" meanwhile if the menu is hidden
+    local function ChangeFCOISLamMenuVisibleState(doHide)
+        if not FCOIS.FCOSettingsPanel then return end
+        FCOIS.FCOSettingsPanel.container:SetHidden(doHide)
+        local fcoisCurrentlyLoadingPlaceHolderLableName = "FCOIS_LAM_CurrentlyLoadingLabel"
+        local fcoisCurrentlyLoadingPlaceHolderLable = FCOIS.FCOSettingsPanel.fcoisCurrentlyLoadingPlaceHolderLable
+        if not fcoisCurrentlyLoadingPlaceHolderLable then
+            fcoisCurrentlyLoadingPlaceHolderLable = WINDOW_MANAGER:CreateControl(fcoisCurrentlyLoadingPlaceHolderLableName, FCOIS.FCOSettingsPanel, CT_LABEL)
+            fcoisCurrentlyLoadingPlaceHolderLable:SetAnchor(TOPLEFT, FCOIS.FCOSettingsPanel.container, CENTER, (FCOIS.FCOSettingsPanel.container:GetWidth()/3)*-1, 0)
+            fcoisCurrentlyLoadingPlaceHolderLable:SetFont("ZoFontAlert")
+            fcoisCurrentlyLoadingPlaceHolderLable:SetScale(1.0)
+            fcoisCurrentlyLoadingPlaceHolderLable:SetDrawLayer(DL_OVERLAY)
+            fcoisCurrentlyLoadingPlaceHolderLable:SetDrawTier(DT_HIGH)
+            fcoisCurrentlyLoadingPlaceHolderLable:SetText(locVars["LAM_settings_are_currently_build"])
+            fcoisCurrentlyLoadingPlaceHolderLable:SetDimensions(FCOIS.FCOSettingsPanel.container:GetWidth(), 100)
+            FCOIS.FCOSettingsPanel.fcoisCurrentlyLoadingPlaceHolderLable = fcoisCurrentlyLoadingPlaceHolderLable
+        end
+        if fcoisCurrentlyLoadingPlaceHolderLable then
+            fcoisCurrentlyLoadingPlaceHolderLable:SetHidden(not doHide)
+        end
+    end
 --==================== LAM controls - BEGIN =====================================
-	--LAM 2.0 callback function if the panel was created
+    --LAM 2.0 callback function if the panel was opened
+    local FCOLAMPanelOpened = function(panel)
+        if panel == FCOIS.FCOSettingsPanel then
+            LAMopenedCounter = LAMopenedCounter + 1
+            if LAMopenedCounter == 1 then
+                --Hide the LAM menu container now and show the "Please wait, loading..." label
+                ChangeFCOISLamMenuVisibleState(true)
+            end
+        end
+    end
+    --LAM 2.0 callback function if the panel was created
     local FCOLAMPanelCreated = function(panel)
         if panel == FCOIS.FCOSettingsPanel then
     --d("[FCOIS] SettingsPanel Created")
@@ -1715,7 +1857,11 @@ function FCOIS.BuildAddonMenu()
             if FCOIS.checkIfUserContextMenuSortOrderValid() == false then
 	        	FCOIS.resetUserContextMenuSortOrder()
             end
+            --Set the editbox TextType to validate the entered value
+            setSettingsMenuEditBoxTextTypes(panel)
             CALLBACK_MANAGER:UnregisterCallback("LAM-PanelControlsCreated")
+            --Show the LAM menu container now
+            ChangeFCOISLamMenuVisibleState(false)
         end
     end
 
@@ -6083,6 +6229,7 @@ function FCOIS.BuildAddonMenu()
                         width="full",
                         default = FCOISdefaultSettings.useDifferentUndoFilterPanels,
                     },
+--[[
                     {
                         type = "slider",
                         min  = -500,
@@ -6121,6 +6268,13 @@ function FCOIS.BuildAddonMenu()
                        width = "half",
                        default = FCOISdefaultSettings.FCOISAdditionalInventoriesButtonOffset.y,
                    },
+]]
+                    --Submenu with sliders for each filterPanelId to change the x and y offsets of the additional inventory context menu "flag" icon position
+                    { -- Begin Submenu filter button position data
+                        type = "submenu",
+                        name = locVars["options_additional_buttons_FCOIS_additional_options_offsets"],
+                        controls = addInvFlagButtonsPositionsSubMenu
+                    }, -- End submenu - Filter button position data
 
 	            } -- controls additional buttons in inventories
 	        }, -- submenu  additional buttons in inventories
@@ -6742,6 +6896,7 @@ function FCOIS.BuildAddonMenu()
 
 	} -- END OF OPTIONS TABLE
     CALLBACK_MANAGER:RegisterCallback("LAM-PanelControlsCreated", FCOLAMPanelCreated)
+    CALLBACK_MANAGER:RegisterCallback("LAM-PanelOpened", FCOLAMPanelOpened)
 	FCOIS.LAM:RegisterOptionControls(FCOIS.addonVars.gAddonName .. "_LAM", optionsTable)
     --Show the LibFeedback icon top right at the LAM panel
     -->With LAM r27 moved to the LAM feedback link!

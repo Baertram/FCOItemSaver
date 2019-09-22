@@ -642,6 +642,7 @@ FCOIS.localizationVars.localizationAll = {
         ["options_header_filter_buttons"]	= "Filter buttons",
         ["options_filter_button_set_all_equal"]         = "Set all equal",
         ["options_filter_button_set_all_equal_TT"] = "This will set all the filter button positions and sizes to an equal value which you need to choose in the first submenu \"" .. GetString(SI_INVENTORY_MENU_INVENTORY) .. "\"",
+        ["options_add_inv_flag_button_set_all_equal_TT"] = "This will set all the additional inventory context menu \'flag\' button positions and sizes to an equal value which you need to choose in the first submenu \"" .. GetString(SI_INVENTORY_MENU_INVENTORY) .. "\"",
         ["options_filter_buttons_show_TT"] = "Show tooltip",
         ["options_filter_buttons_show_tooltip_TT"] = "Show a tooltip upon mouse over/clicking a filter button",
 		["options_filter_buttons_context_menu_show_TT"] = "Show filter context menu tooltips",
@@ -673,6 +674,7 @@ FCOIS.localizationVars.localizationAll = {
         ["options_additional_buttons_FCOIS_additional_options_TT"] = "Show an additional button for more options (mark all/unmark all/undo last change) in the inventories. The button will be shown as a small 'flag' symbol at the top-left edge of the inventories and it will show a context menu if you click on it!",
         ["options_additional_buttons_FCOIS_additional_options_colorize"] 		= "Colorize addit. options in inv.",
         ["options_additional_buttons_FCOIS_additional_options_colorize_TT"] = "Colors the additional options button green/red if the protection functionality for this current panel is enabled/disabled",
+        ["options_additional_buttons_FCOIS_additional_options_offsets"]         = "Add. inv. \'flag\' button offsets",
         ["options_additional_buttons_FCOIS_additional_options_offsetx"]         = "Offset X",
         ["options_additional_buttons_FCOIS_additional_options_offsetx_TT"] = "Move the additional inventory \'flag button\' button on the x axis. Standard value is 0.",
         ["options_additional_buttons_FCOIS_additional_options_offsety"]         = "Offset Y",
@@ -1076,6 +1078,7 @@ FCOIS.localizationVars.localizationAll = {
         ["filter_buy"]      = "["..GetString(SI_DIALOG_PURCHASE).."] ",
         ["filter_buyback"]  = "["..GetString(SI_ITEMFILTERTYPE8).."] ",
         ["filter_repair"]   = "["..GetString(SI_ITEM_ACTION_REPAIR).."] ",
+        ["LAM_settings_are_currently_build"] = "                   - Please wait-\nSettings are currently build...",
     },
 --==============================================================================
 	--German / Deutsch
@@ -1684,7 +1687,8 @@ FCOIS.localizationVars.localizationAll = {
 		["options_auto_mark_crafted_items_icon_TT"]=	"Symbol für die automatisch markierten hergestellten Gegenstände",
         ["options_header_filter_buttons"]	= "Filter Knöpfe",
         ["options_filter_button_set_all_equal"]         = "Setze alle gleich",
-        ["options_filter_button_set_all_equal_TT"] = "Dies setzt die Einstellungen der Filter Knöpfe alle gleich auf den Wert, welchen du im 1. Untermenü Eintrage \"" .. GetString(SI_INVENTORY_MENU_INVENTORY) .. "\" ausgewählt hast!",
+        ["options_filter_button_set_all_equal_TT"] = "Dies setzt die Einstellungen der Filter Knöpfe alle gleich auf den Wert, welchen du im 1. Untermenü Eintrag \"" .. GetString(SI_INVENTORY_MENU_INVENTORY) .. "\" ausgewählt hast!",
+        ["options_add_inv_flag_button_set_all_equal_TT"] = "Dies setzt die Einstellungen der zusätzlichen Inventar Kontextmenü \'Flaggen\' Knöpfe alle gleich auf den Wert, welchen du im 1. Untermenü Eintrag \"" .. GetString(SI_INVENTORY_MENU_INVENTORY) .. "\" ausgewählt hast!",
         ["options_filter_buttons_show_TT"] = "Tooltip anzeigen",
         ["options_filter_buttons_show_tooltip_TT"] = "Beim Klicken/Bewegen über den Filter Knopf einen Tooltip anzeigen",
 		["options_filter_buttons_context_menu_show_TT"] = "Filter Kontextmenü Tooltip zeigen",
@@ -1716,6 +1720,7 @@ FCOIS.localizationVars.localizationAll = {
         ["options_additional_buttons_FCOIS_additional_options_TT"] = "Zeigt einen Knopf für zusätzliche Optionen (Alle markieren/Alle demarkieren/Rückgängig machen) in den Inventaren an. Der Knopf wird als kleine 'Flagge' links oben im Inventar angezeigt und öffnet ein Kontextmenü, wenn man mit der Maus darauf klickt!",
         ["options_additional_buttons_FCOIS_additional_options_colorize"] 		= "Färbe zusätzl. Optionen in Inv.",
         ["options_additional_buttons_FCOIS_additional_options_colorize_TT"] = "Färbt den zusätzliche Optionen Knopf in den Inventaren grün/rot ein, wenn die Anti-* funktionalität für das aktuelle Inventar an-/ausgeschaltet ist",
+        ["options_additional_buttons_FCOIS_additional_options_offsets"]         = "Zusätzl. Inv. \'Flaggen\' Knopf Offsets",
         ["options_additional_buttons_FCOIS_additional_options_offsetx"]         = "Position X",
         ["options_additional_buttons_FCOIS_additional_options_offsetx_TT"] = "Verschiebe den zusätzliche Optionen \'Flagge\' Knopf auf der X Achse. Standard Wert ist 0.",
         ["options_additional_buttons_FCOIS_additional_options_offsety"]         = "Position Y",
@@ -2106,6 +2111,7 @@ FCOIS.localizationVars.localizationAll = {
         ["button_context_menu_toggle_anti_buyback_off"] = "Deaktiviere 'Anti-Rückkauf'",
         ["button_context_menu_toggle_anti_repair_on"]   = "Aktiviere 'Anti-Reparieren'",
         ["button_context_menu_toggle_anti_repair_off"]  = "Deaktiviere 'Anti-Reparieren'",
+        ["LAM_settings_are_currently_build"] = "                        - Bitte warten -\nEinstellungen werden gerade aufbereitet...",
     },
 --==============================================================================
 --French / Französisch

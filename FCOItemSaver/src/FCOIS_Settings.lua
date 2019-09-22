@@ -638,12 +638,32 @@ function FCOIS.afterSettings()
     --Rebuild the allowed craft skills from the settings
     FCOIS.rebuildAllowedCraftSkillsForCraftedMarking()
 
+    --Added with FCOIS v1.6.7
+    --Check if the values at the add. inv. context menu "flag" button offsets are properly set, or
+    --reset them
+    local apiVersion = FCOIS.APIversion
+    local addInvButtonOffsets = settings.FCOISAdditionalInventoriesButtonOffset
+    local anchorVarsAddInvButtons = FCOIS.anchorVars.additionalInventoryFlagButton[apiVersion]
+    --Loop over the anchorVars and get each panel of the additional inv buttons (e.g. LF_INVENTORY, LF_BANK_WITHDRAW, ...)
+    if anchorVarsAddInvButtons then
+        for panelId, _ in pairs(anchorVarsAddInvButtons) do
+            local addInvButtonOffsetsForPanel = addInvButtonOffsets[panelId]
+            if addInvButtonOffsetsForPanel then
+                if tonumber(addInvButtonOffsetsForPanel["left"]) == nil then
+                    addInvButtonOffsetsForPanel["left"] = 0
+                end
+                if tonumber(addInvButtonOffsetsForPanel["top"]) == nil then
+                    addInvButtonOffsetsForPanel["top"] = 0
+                end
+            end
+        end
+    end
+
 ------------------------------------------------------------------------------------------------------------------------
 --  Build the additional inventory "flag" context menu button data
 ------------------------------------------------------------------------------------------------------------------------
     --Constants
     local addInvBtnInvokers = FCOIS.contextMenuVars.filterPanelIdToContextMenuButtonInvoker
-    local apiVersion = FCOIS.APIversion
     local ancVars = FCOIS.anchorVars
     local locVars = FCOIS.localizationVars.fcois_loc
     --Non changing values
@@ -659,8 +679,8 @@ function FCOIS.afterSettings()
     local texClicked = texMouseOver
     local width  = 32
     local height = 32
-    local alignMain = BOTTOM
-    local alignBackup = TOP
+    local alignMain = TOPLEFT
+    local alignBackup = TOPLEFT
     local doHide = not settings.showFCOISAdditionalInventoriesButton
 
     --Loop over each additional inventory "flag" invoker button from the constants and check if it's "really adding" a new button.
