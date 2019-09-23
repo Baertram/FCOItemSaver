@@ -1384,7 +1384,7 @@ function FCOIS.CreateHooks()
             SCENE_FRAGMENT_HIDING = "hiding"
         ]]--
 
-        --d("[FCOIS] CraftBag Fragment state change")
+--d("[FCOIS] CraftBag Fragment state change")
         --Hide the context menu at the active panel
         FCOIS.sceneCallbackHideContextMenu(oldState, newState)
 

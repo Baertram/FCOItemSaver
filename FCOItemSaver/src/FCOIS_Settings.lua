@@ -169,12 +169,12 @@ end
 --This function will change the actual ANTI-DETSROY etc. settings according to the active filter panel ID (inventory, vendor, mail, trade, bank, etc.)
 function FCOIS.changeAntiSettingsAccordingToFilterPanel()
     local filterPanelId = FCOIS.gFilterWhere
-    if filterPanelId == nil then return false end
+    if filterPanelId == nil then return nil end
     local parentPanel = FCOIS.gFilterWhereParent
---d("[FCOIS.changeAntiSettingsAccordingToFilterPanel - FilterPanel: " .. filterPanelId .. ", FilterPanelParent: " .. tostring(parentPanel))
+d("[FCOIS.changeAntiSettingsAccordingToFilterPanel - FilterPanel: " .. filterPanelId .. ", FilterPanelParent: " .. tostring(parentPanel))
 
     local currentSettings = FCOIS.settingsVars.settings
-    local isSettingEnabled = false
+    local isSettingEnabled
 
     --The anti-destroy settings will be always checked as there are panels like LF_GUILDBANK_DEPOSIT which use the anti-destroy
     --AND anti guiild bank deposit if no rights to withdraw again settings.
@@ -196,9 +196,11 @@ function FCOIS.changeAntiSettingsAccordingToFilterPanel()
             --The parent panel for the craftbag is the bank deposit panel
             --or the parent panel for the craftbag is the guild bank deposit panel
             if 	parentPanel == LF_BANK_DEPOSIT or parentPanel == LF_GUILDBANK_DEPOSIT then
-                FCOIS.settingsVars.settings.blockDestroying = not currentSettings.blockDestroying
-                isSettingEnabled = FCOIS.settingsVars.settings.blockDestroying
-                --The parent panel for the craftbag is the mail send panel
+                --Do not return a value so that the NIL returned will change the add. inv. context menu "flag" button to be non colored at the CraftBag
+                --FCOIS.settingsVars.settings.blockDestroying = not currentSettings.blockDestroying
+                --isSettingEnabled = FCOIS.settingsVars.settings.blockDestroying
+
+            --The parent panel for the craftbag is the mail send panel
             elseif	parentPanel == LF_MAIL_SEND then
                 FCOIS.settingsVars.settings.blockSendingByMail = not currentSettings.blockSendingByMail
                 isSettingEnabled = FCOIS.settingsVars.settings.blockSendingByMail
@@ -215,12 +217,6 @@ function FCOIS.changeAntiSettingsAccordingToFilterPanel()
                 FCOIS.settingsVars.settings.blockSelling = not currentSettings.blockSelling
                 isSettingEnabled = FCOIS.settingsVars.settings.blockSelling
             end
-        --[[
-        --Was handled further up at "if isFilterPanelIdCheckForAntiDestroyNeeded then" already!
-        else
-            FCOIS.settingsVars.settings.blockDestroying = not currentSettings.blockDestroying
-            isSettingEnabled = FCOIS.settingsVars.settings.blockDestroying
-        ]]
         end
         --------------------------------------------------------------------------------------------------------------------
     elseif filterPanelId == LF_VENDOR_BUY then
@@ -292,19 +288,16 @@ function FCOIS.changeAntiSettingsAccordingToFilterPanel()
     elseif filterPanelId == LF_GUILDBANK_DEPOSIT then
         FCOIS.settingsVars.settings.blockGuildBankWithoutWithdraw = not currentSettings.blockGuildBankWithoutWithdraw
         isSettingEnabled = FCOIS.settingsVars.settings.blockGuildBankWithoutWithdraw
-    --[[
-    --Was handled further up at "if isFilterPanelIdCheckForAntiDestroyNeeded then" already!
-    else
-        FCOIS.settingsVars.settings.blockDestroying = not currentSettings.blockDestroying
-        isSettingEnabled = FCOIS.settingsVars.settings.blockDestroying
-    ]]
     end
+
+d(">isSettingEnabled: " ..tostring(isSettingEnabled))
 
     --Check if the settings are enabled now and if any item is slotted in the deconstruction/improvement/extraction/refine slot
     --> Then remove the item from the slot again if it's protected again now
     if isSettingEnabled then
         FCOIS.IsItemProtectedAtASlotNow(nil, nil, false, true)
     end
+    return isSettingEnabled
 end
 
 --Function to reenable the Anti-* settings again at a given check panel automatically (if the panel closes e.g.)

@@ -342,6 +342,7 @@ function FCOIS.buildMarkerIconProtectedWhereTooltip(markId)
                 if not isProtected and isDestroyProtected then
                     isProtected = isDestroyProtected
                 end
+                if isProtected == nil then isProtected = "non_active" end
                 local protectedColorPrefix = protectedColorPrefixes[isProtected]
                 local protectedTexture = protectedTextures[isProtected]
                 --Add the texture to the filterpanelName

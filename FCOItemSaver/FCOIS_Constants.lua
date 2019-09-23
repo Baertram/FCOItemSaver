@@ -42,12 +42,14 @@ FCOIS.gMouseButtonDown = {}
 --Data for the protection (colors, textures, ...)
 FCOIS.protectedData = {}
 FCOIS.protectedData.colors = {
-    [false] = "|cDD2222",
-    [true]  = "|c22DD22",
+    [false]         = "|cDD2222",
+    [true]          = "|c22DD22",
+    ["non_active"]  = "|c808080",
 }
 FCOIS.protectedData.textures = {
-    [false] = "esoui/art/buttons/cancel_up.dds",
-    [true]  = "esoui/art/buttons/accept_up.dds",
+    [false]         = "esoui/art/buttons/cancel_up.dds",
+    [true]          = "esoui/art/buttons/accept_up.dds",
+    ["non_active"]  = "esoui/art/buttons/cancel_up.dds",
 }
 local protectedColors = FCOIS.protectedData.colors
 local protectionOffColor    = protectedColors[false]
@@ -1858,7 +1860,6 @@ checkVars.autoReenableAntiSettingsCheckWheresAll = "-ALL-"
 --The filter panelÍds which need to be checked if anti-destroy is checked
 checkVars.filterPanelIdsForAntiDestroy = {
     [LF_INVENTORY]          = true,
-    [LF_CRAFTBAG]           = true,
     [LF_BANK_WITHDRAW]      = true,
     [LF_GUILDBANK_WITHDRAW] = true,
     [LF_HOUSE_BANK_WITHDRAW]= true,

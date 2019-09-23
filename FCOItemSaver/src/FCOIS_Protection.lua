@@ -60,14 +60,14 @@ function FCOIS.checkIfProtectedSettingsEnabled(checkType, iconNr, isDynamicIcon,
     if checkType == nil then return nil, false end
     isDynamicIcon = isDynamicIcon or false
     checkAntiDetails = checkAntiDetails or false
-    --d("[FCOIS.checkIfProtectedSettingsEnabled - checkType: " .. tostring(checkType) .. ", iconNr: " .. tostring(iconNr) .. ", checkAntiDetails: " .. tostring(checkAntiDetails) .. ", whereAreWe: " .. tostring(whereAreWe))
-    local protectionVal = false
-    local protectionValDestroy = false
+--d("[FCOIS.checkIfProtectedSettingsEnabled - checkType: " .. tostring(checkType) .. ", iconNr: " .. tostring(iconNr) .. ", checkAntiDetails: " .. tostring(checkAntiDetails) .. ", whereAreWe: " .. tostring(whereAreWe))
+    local protectionVal
+    local protectionValDestroy
     local protectionValues
     --Local mapping array for the filter panel ID -> the anti-settings
     local settings = FCOIS.settingsVars.settings
     local protectionSettings = {
-        [LF_CRAFTBAG]   				= {[LF_CRAFTBAG]=settings.blockDestroying},
+        --[LF_CRAFTBAG]   				= {[LF_CRAFTBAG]=settings.blockDestroying},
         [LF_VENDOR_BUY]   				= {[LF_VENDOR_BUY]=settings.blockVendorBuy},
         [LF_VENDOR_SELL]   				= {[LF_VENDOR_SELL]=settings.blockSelling},
         [LF_VENDOR_BUYBACK]   			= {[LF_VENDOR_BUYBACK]=settings.blockVendorBuyback},
@@ -115,7 +115,7 @@ function FCOIS.checkIfProtectedSettingsEnabled(checkType, iconNr, isDynamicIcon,
 
     -- Is CraftBagExtended addon active and are we at a subfilter panel of CBE (e.g. the mail CBE panel, where the anti-mail settings must be checked, and not the craftbag settings)?
     if FCOIS.gFilterWhereParent ~= nil then
-        --d("Subfilter active: " .. tostring(FCOIS.gFilterWhereParent))
+--d(">CBE filter parent panel active: " .. tostring(FCOIS.gFilterWhereParent))
         checkType = FCOIS.gFilterWhereParent
     end
     --Do checks with the icon?
@@ -230,8 +230,7 @@ function FCOIS.checkIfProtectedSettingsEnabled(checkType, iconNr, isDynamicIcon,
             end
         end
     end
-    if protectionValDestroy == nil then protectionValDestroy = false end
---d(">Icon: " .. iconNr .. ", protection enabled: " .. tostring(protectionVal) .. ", protectionDestroy: " .. tostring(protectionValDestroy))
+--d(">Icon: " .. tostring(iconNr) .. ", protection enabled: " .. tostring(protectionVal) .. ", protectionDestroy: " .. tostring(protectionValDestroy))
     return protectionVal, protectionValDestroy
 end
 
@@ -428,7 +427,7 @@ function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChat
     --======= VARIABLEs ============================================================
     --The return value for this function, initiated with "true" = "block"
     local isBlocked = true
-    -- Get instance id of the item
+    -- Get the item instance id of the item
     local id = FCOIS.MyGetItemInstanceIdNoControl(bag, slot)
     if id == nil then return false end
     --The return variable for the "check all icons" for ... loop
@@ -450,7 +449,7 @@ function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChat
     local singleItemChecks = whereAreWeToSingleItemChecks[whereAreWe] or false
 
     if settings.debug then FCOIS.debugMessage( "[ItemSelectionHandler]>Where are we: " .. tostring(whereAreWe) .. ", isBlocked: " .. tostring(isBlocked) .. ", singleItemChecks: " .. tostring(singleItemChecks) .. ", panelId: " .. tostring(panelId), true, FCOIS_DEBUG_DEPTH_SPAM) end
---d(">Where are we: " .. tostring(whereAreWe) .. ", isBlocked: " .. tostring(isBlocked) .. ", singleItemChecks: " .. tostring(singleItemChecks) .. ", panelId: " .. tostring(panelId))
+--d(">Where are we: " .. tostring(whereAreWe) .. ", isBlocked: " .. tostring(isBlocked) .. ", singleItemChecks: " .. tostring(singleItemChecks) .. ", panelId: " .. tostring(panelId) .. ", id: " ..tostring(id))
 
     --======= SPECIAL CHECKS - RECIPES, STYLE MOTIFS, FOOD =========================
     -- Check if the recipe/style motif/food/crown store item is not protected because the current anti-destroy option is disabled
@@ -503,7 +502,7 @@ function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChat
         if settings.debug then FCOIS.debugMessage(">icon: " .. iconIdToCheck, true, FCOIS_DEBUG_DEPTH_SPAM) end
 --d("[FCOIS]ItemSelectionHandler - icon: " .. iconIdToCheck)
         --Check if the item is marked with the icon
-        if( FCOIS.checkIfItemIsProtected(iconIdToCheck, id) ) then
+        if FCOIS.checkIfItemIsProtected(iconIdToCheck, id) then
             markedWithOneIcon = true
             local isDynamicIcon = mappedIsDynIcon[iconIdToCheck]
             if settings.debug then FCOIS.debugMessage(">> Item is protected with the icon " .. iconIdToCheck .. ", isDynamic: " .. tostring(isDynamicIcon), true, FCOIS_DEBUG_DEPTH_SPAM) end
@@ -527,6 +526,7 @@ function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChat
                     if not singleItemChecks then
                         --Check the settings again now to see if this icon's dyanmic anti-settings are enabled for the given panel "whereAreWe"
                         --Call with 3rd parameter "isDynamicIcon" = true to skip "is dynamic icon check" inside the function again
+--d(">dynIcon ->checkIfProtectedSettingsEnabled")
                         isBlockedLoop, isBlockedLoopDestroy = FCOIS.checkIfProtectedSettingsEnabled(whereAreWeToFilterPanelId[whereAreWe], iconIdToCheck, true)
                         if not isBlockedLoop and isBlockedLoopDestroy then
                             isBlockedLoop = isBlockedLoopDestroy
@@ -704,7 +704,7 @@ function FCOIS.DeconstructionSelectionHandler(bag, slot, echo, overrideChatOutpu
     -- If anti-(jewelry) deconstruction is globally active
     local isBlocked = deconPanelToBlockSettings[panelId] or false
 --d("[FCOIS]DeconstructionSelectionHandler - panelId: " ..tostring(panelId) .. ", isBlocked: " ..tostring(isBlocked))
-    --> We cannot return false here if deconstruction is globally enabled because the dynamic icons have their own checks for deconstruction/jewelry deconstruction
+    --> We cannot return false here if deconstruction is globaly enabled because the dynamic icons have their own checks for deconstruction/jewelry deconstruction
 
     local isBlockedLoop = true
     local isBlockedLoopDestroy = false
@@ -1211,6 +1211,7 @@ end
 function FCOIS.IsItemProtectedAtPanelNow(bagId, slotIndex, panelId, scanOtherInvItemsIfSlotted)
     scanOtherInvItemsIfSlotted = scanOtherInvItemsIfSlotted or false
     panelId = panelId or FCOIS.gFilterWhere
+--d("[FCOIS]IsItemProtectedAtPanelNow-bagId: " ..tostring(bagId) .. ", slotIndex: " ..tostring(slotIndex) .. ", panelId: " ..tostring(panelId) .. ", scanOtherInvItemsIfSlotted: " ..tostring(scanOtherInvItemsIfSlotted))
     if panelId == nil then return nil end
     --Mail send
     if panelId == LF_MAIL_SEND then
@@ -1229,7 +1230,7 @@ function FCOIS.IsItemProtectedAtPanelNow(bagId, slotIndex, panelId, scanOtherInv
                                 or  (bagId == nil and slotIndex == nil and slotControl.bagId ~= nil and slotControl.slotIndex ~= nil) )
                         then
                             --Item was found: Check if it is protected now
-                            --d("[FCOIS]MarkMe ProtectedAtSlotNow - callDeconstructionSelectionHandler without echo")
+    --d("[FCOIS]MarkMe ProtectedAtSlotNow - callDeconstructionSelectionHandler without echo")
                             --FCOIS.callDeconstructionSelectionHandler(bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon)
                             --Be sure to set calledFromExternalAddon = true here as otherwise the guild store sell checks aren't done, because
                             --the DeconstructionSelectionhandler will not call the ItemSelectionHandler then!
