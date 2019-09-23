@@ -171,7 +171,7 @@ function FCOIS.changeAntiSettingsAccordingToFilterPanel()
     local filterPanelId = FCOIS.gFilterWhere
     if filterPanelId == nil then return nil end
     local parentPanel = FCOIS.gFilterWhereParent
-d("[FCOIS.changeAntiSettingsAccordingToFilterPanel - FilterPanel: " .. filterPanelId .. ", FilterPanelParent: " .. tostring(parentPanel))
+--d("[FCOIS.changeAntiSettingsAccordingToFilterPanel - FilterPanel: " .. filterPanelId .. ", FilterPanelParent: " .. tostring(parentPanel))
 
     local currentSettings = FCOIS.settingsVars.settings
     local isSettingEnabled
@@ -290,7 +290,7 @@ d("[FCOIS.changeAntiSettingsAccordingToFilterPanel - FilterPanel: " .. filterPan
         isSettingEnabled = FCOIS.settingsVars.settings.blockGuildBankWithoutWithdraw
     end
 
-d(">isSettingEnabled: " ..tostring(isSettingEnabled))
+--d(">isSettingEnabled: " ..tostring(isSettingEnabled))
 
     --Check if the settings are enabled now and if any item is slotted in the deconstruction/improvement/extraction/refine slot
     --> Then remove the item from the slot again if it's protected again now
@@ -1078,8 +1078,8 @@ function FCOIS.copySavedVars(srcServer, targServer, srcAcc, targAcc, srcCharId, 
     end
     local showReloadUIDialog = false
 
-    d("[FCOIS.copySavedVars]srcServer: " .. tostring(srcServer) .. ", targServer: " ..tostring(targServer).. ", srcAccount: " .. tostring(srcAcc) .. ", targAccount: " ..tostring(targAcc).. ", srcChar: " .. tostring(srcCharId) .. ", targChar: " ..tostring(targCharId).. ", onlyDelete: " .. tostring(onlyDelete))
-    d(">copyServer: " .. tostring(copyServer) .. ", deleteServer: " ..tostring(deleteServer).. ", copyAccount: " .. tostring(copyAcc) .. ", deleteAccount: " ..tostring(deleteAcc).. ", copyChar: " .. tostring(copyChar) .. ", deleteChar: " ..tostring(deleteChar))
+    --d("[FCOIS.copySavedVars]srcServer: " .. tostring(srcServer) .. ", targServer: " ..tostring(targServer).. ", srcAccount: " .. tostring(srcAcc) .. ", targAccount: " ..tostring(targAcc).. ", srcChar: " .. tostring(srcCharId) .. ", targChar: " ..tostring(targCharId).. ", onlyDelete: " .. tostring(onlyDelete))
+    --d(">copyServer: " .. tostring(copyServer) .. ", deleteServer: " ..tostring(deleteServer).. ", copyAccount: " .. tostring(copyAcc) .. ", deleteAccount: " ..tostring(deleteAcc).. ", copyChar: " .. tostring(copyChar) .. ", deleteChar: " ..tostring(deleteChar))
 
     --Security check
     if ((srcServer == noEntry or targServer == noEntry) and onlyDelete == false) or (targServer == noEntry and onlyDelete == true) then return end
