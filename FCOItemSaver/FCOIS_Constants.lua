@@ -1861,7 +1861,6 @@ checkVars.autoReenableAntiSettingsCheckWheresAll = "-ALL-"
 checkVars.filterPanelIdsForAntiDestroy = {
     [LF_INVENTORY]          = true,
     [LF_BANK_WITHDRAW]      = true,
-    [LF_GUILDBANK_WITHDRAW] = true,
     [LF_HOUSE_BANK_WITHDRAW]= true,
     [LF_BANK_DEPOSIT]       = true,
     [LF_GUILDBANK_DEPOSIT]  = true,

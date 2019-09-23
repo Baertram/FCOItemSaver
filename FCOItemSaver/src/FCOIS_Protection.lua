@@ -61,6 +61,7 @@ function FCOIS.checkIfProtectedSettingsEnabled(checkType, iconNr, isDynamicIcon,
     isDynamicIcon = isDynamicIcon or false
     checkAntiDetails = checkAntiDetails or false
 --d("[FCOIS.checkIfProtectedSettingsEnabled - checkType: " .. tostring(checkType) .. ", iconNr: " .. tostring(iconNr) .. ", checkAntiDetails: " .. tostring(checkAntiDetails) .. ", whereAreWe: " .. tostring(whereAreWe))
+    local craftBagExtendedUsed = false
     local protectionVal
     local protectionValDestroy
     local protectionValues
@@ -69,7 +70,7 @@ function FCOIS.checkIfProtectedSettingsEnabled(checkType, iconNr, isDynamicIcon,
     local protectionSettings = {
         --[LF_CRAFTBAG]   				= {[LF_CRAFTBAG]=settings.blockDestroying},
         [LF_VENDOR_BUY]   				= {[LF_VENDOR_BUY]=settings.blockVendorBuy},
-        [LF_VENDOR_SELL]   				= {[LF_VENDOR_SELL]=settings.blockSelling},
+        [LF_VENDOR_SELL]   				= {[LF_VENDOR_SELL]=settings.blockSelling, [LF_CRAFTBAG]=settings.blockSelling},
         [LF_VENDOR_BUYBACK]   			= {[LF_VENDOR_BUYBACK]=settings.blockVendorBuyback},
         [LF_VENDOR_REPAIR]   			= {[LF_VENDOR_REPAIR]=settings.blockVendorRepair},
         [LF_GUILDBANK_DEPOSIT] 			= {[LF_GUILDBANK_DEPOSIT]=settings.blockGuildBankWithoutWithdraw},
@@ -89,8 +90,8 @@ function FCOIS.checkIfProtectedSettingsEnabled(checkType, iconNr, isDynamicIcon,
         [LF_ENCHANTING_CREATION] 		= {[LF_ENCHANTING_CREATION]=settings.blockEnchantingCreation},
         [LF_ENCHANTING_EXTRACTION] 		= {[LF_ENCHANTING_EXTRACTION]=settings.blockEnchantingExtraction},
         [LF_ALCHEMY_CREATION] 			= {[LF_ALCHEMY_CREATION]=settings.blockAlchemyDestroy},
-        [LF_MAIL_SEND] 					= {[LF_MAIL_SEND]=settings.blockSendingByMail},
-        [LF_TRADE] 						= {[LF_TRADE]=settings.blockTrading},
+        [LF_MAIL_SEND] 					= {[LF_MAIL_SEND]=settings.blockSendingByMail, [LF_CRAFTBAG]=settings.blockSendingByMail},
+        [LF_TRADE] 						= {[LF_TRADE]=settings.blockTrading, [LF_CRAFTBAG]=settings.blockTrading},
         [LF_RETRAIT] 					= {[LF_RETRAIT]=settings.blockRetrait},
         --Special entries for the call from ItemSelectionHandler() function's variable 'whereAreWe'
         [FCOIS_CON_CONTAINER_AUTOOLOOT]	= {[FCOIS_CON_CONTAINER_AUTOOLOOT]=settings.blockAutoLootContainer},	--Auto loot container
@@ -114,7 +115,8 @@ function FCOIS.checkIfProtectedSettingsEnabled(checkType, iconNr, isDynamicIcon,
     end
 
     -- Is CraftBagExtended addon active and are we at a subfilter panel of CBE (e.g. the mail CBE panel, where the anti-mail settings must be checked, and not the craftbag settings)?
-    if FCOIS.gFilterWhereParent ~= nil then
+    if FCOIS.gFilterWhere == LF_CRAFTBAG and FCOIS.gFilterWhereParent ~= nil then
+        craftBagExtendedUsed = true
 --d(">CBE filter parent panel active: " .. tostring(FCOIS.gFilterWhereParent))
         checkType = FCOIS.gFilterWhereParent
     end
@@ -221,12 +223,23 @@ function FCOIS.checkIfProtectedSettingsEnabled(checkType, iconNr, isDynamicIcon,
         --or this if multiple entries:
         --[LF_GUILDBANK_DEPOSIT] 			= {[LF_GUILDBANK_DEPOSIT]=settings.blockGuildBankWithoutWithdraw, [FCOIS_CON_DESTROY]=settings.blockDestroying},
         for key, value in pairs(protectionValues) do
-            --Anti destroy settings?
-            if key == FCOIS_CON_DESTROY then
-                protectionValDestroy = value
+            --Is the CraftBag the active panel and are we at a non-standard craftbag extended panel (mail, trade, bank)?
+            --Then get the settings from the LF_CRAFTBAG subentry!
+            if craftBagExtendedUsed then
+                --Anti destroy settings? CraftBag got no anti-destroy!
+                protectionValDestroy = nil
                 --Other panel anti settings?
-            elseif key == checkType then
-                protectionVal = value
+                if key == LF_CRAFTBAG then
+                    protectionVal = value
+                end
+            else
+                --Anti destroy settings?
+                if key == FCOIS_CON_DESTROY then
+                    protectionValDestroy = value
+                    --Other panel anti settings?
+                elseif key == checkType then
+                    protectionVal = value
+                end
             end
         end
     end
