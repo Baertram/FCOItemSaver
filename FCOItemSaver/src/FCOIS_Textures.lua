@@ -215,12 +215,21 @@ FCOIS.textureVars.MARKER_TEXTURES = {
 
 
 --The variable for the maximum of the texture icons
-FCOIS.numVars.maxTextureIcons = #FCOIS.textureVars.MARKER_TEXTURES or 201
+FCOIS.numVars.maxTextureIcons = #FCOIS.textureVars.MARKER_TEXTURES
+if not FCOIS.numVars.maxTextureIcons or FCOIS.numVars.maxTextureIcons and FCOIS.numVars.maxTextureIcons <= 0 then
+    FCOIS.numVars.maxTextureIcons = 200
+end
 
 --Additional size for the textures, if the texture got a special size
--- Used at the filter buttons e.g.
+-- Used at the filter buttons e.g. and at the context menus
+-->width:                       Used at filter buttons and context menus to resize the icons properly
+-->height:                      Used at filter buttons and context menus to resize the icons properly
+-->offsetLeft:                  Used at filter buttons to move the icon
+-->offsetTop:                   Used at filter buttons to move the icon
+-->contextMenuOffsetLeft:       Used at context menus to move the icon
+-->contextMenuOffsetTop:        Used at context menus to move the icon
 FCOIS.textureVars.MARKER_TEXTURES_SIZE = {
-    --[51] = { width = 32, height = 32, offsetLeft = 0, offsetTop = 0, contextMenuOffsetLeft = 0, contextMenuOffsetTop = 0 },   --
-    [27] = { width = 0, height = 0, offsetLeft = 0, offsetTop = 0, contextMenuOffsetLeft = 1, contextMenuOffsetTop = 0 },       -- Costume cloathes hanger
-    [58] = { width = 16, height = 16, offsetLeft = 1, offsetTop = -19, contextMenuOffsetLeft = 1, contextMenuOffsetTop = -19 }, -- Single coin icon
+    --[markerTextureIndexFromTable FCOIS.textureVars.MARKER_TEXTURES] = { width = 32, height = 32, offsetLeft = 0, offsetTop = 0, contextMenuOffsetLeft = 0, contextMenuOffsetTop = 0,  },   --Description of marker icon texture
+    [27] = { width= 0,     height= 0,     offsetLeft= 0, offsetTop= 0,      contextMenuOffsetLeft= 1,      contextMenuOffsetTop= 0 },       -- Costume cloathes hanger
+    [58] = { width= 16,    height= 16,    offsetLeft= 1, offsetTop= -19,    contextMenuOffsetLeft= 1,      contextMenuOffsetTop= -19 },     -- Single coin icon
 }

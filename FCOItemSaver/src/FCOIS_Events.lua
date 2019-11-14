@@ -155,8 +155,8 @@ local function FCOItemSaver_Open_Store(p_storeIndicator)
                 end)
             end
             if ctrlVars.VENDOR_MENUBAR_BUTTON_SELL ~= nil and not preHookButtonDoneCheck[ctrlVars.VENDOR_MENUBAR_BUTTON_SELL:GetName()] then
---d("Vendor button 2 name: " .. tostring(ctrlVars.VENDOR_MENUBAR_BUTTON_SELL:GetName()))
---d(">Vendor button 2 found")
+                --d("Vendor button 2 name: " .. tostring(ctrlVars.VENDOR_MENUBAR_BUTTON_SELL:GetName()))
+                --d(">Vendor button 2 found")
                 preHookButtonDoneCheck[ctrlVars.VENDOR_MENUBAR_BUTTON_SELL:GetName()] = true
                 ZO_PreHookHandler(ctrlVars.VENDOR_MENUBAR_BUTTON_SELL, "OnMouseUp", function(control, button, upInside)
                     --d(">====================>\nvendor button 2, button: " .. button .. ", upInside: " .. tostring(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastVendorButton:GetName())
@@ -169,8 +169,8 @@ local function FCOItemSaver_Open_Store(p_storeIndicator)
                 end)
             end
             if ctrlVars.VENDOR_MENUBAR_BUTTON_BUYBACK ~= nil and not preHookButtonDoneCheck[ctrlVars.VENDOR_MENUBAR_BUTTON_BUYBACK:GetName()] then
---d("Vendor button 3 name: " .. tostring(ctrlVars.VENDOR_MENUBAR_BUTTON_BUYBACK:GetName()))
---d(">Vendor button 3 found")
+                --d("Vendor button 3 name: " .. tostring(ctrlVars.VENDOR_MENUBAR_BUTTON_BUYBACK:GetName()))
+                --d(">Vendor button 3 found")
                 preHookButtonDoneCheck[ctrlVars.VENDOR_MENUBAR_BUTTON_BUYBACK:GetName()] = true
                 ZO_PreHookHandler(ctrlVars.VENDOR_MENUBAR_BUTTON_BUYBACK, "OnMouseUp", function(control, button, upInside)
                     --d(">====================>\nvendor button 3, button: " .. button .. ", upInside: " .. tostring(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastVendorButton:GetName())
@@ -183,8 +183,8 @@ local function FCOItemSaver_Open_Store(p_storeIndicator)
                 end)
             end
             if ctrlVars.VENDOR_MENUBAR_BUTTON_REPAIR ~= nil and not preHookButtonDoneCheck[ctrlVars.VENDOR_MENUBAR_BUTTON_REPAIR:GetName()] then
---d("Vendor button 4 name: " .. tostring(ctrlVars.VENDOR_MENUBAR_BUTTON_REPAIR:GetName()))
---d(">Vendor button 4 found")
+                --d("Vendor button 4 name: " .. tostring(ctrlVars.VENDOR_MENUBAR_BUTTON_REPAIR:GetName()))
+                --d(">Vendor button 4 found")
                 preHookButtonDoneCheck[ctrlVars.VENDOR_MENUBAR_BUTTON_REPAIR:GetName()] = true
                 ZO_PreHookHandler(ctrlVars.VENDOR_MENUBAR_BUTTON_REPAIR, "OnMouseUp", function(control, button, upInside)
                     --d(">====================>\nvendor button 4, button: " .. button .. ", upInside: " .. tostring(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastVendorButton:GetName())
@@ -196,8 +196,9 @@ local function FCOItemSaver_Open_Store(p_storeIndicator)
                     end
                 end)
             end
+
         end
-    end, 200)
+    end, 200) -- zo_callLater(function()
 end
 
 --Event upon closing of a vendor store
@@ -661,7 +662,7 @@ end
 
 --Executed if item should be destroyed manually
 local function FCOItemSaver_OnMouseRequestDestroyItem(_, bagId, slotIndex, _, _, needsConfirm)
---d("[FCOS]FCOItemSaver_OnMouseRequestDestroyItem")
+d("[FCOS]FCOItemSaver_OnMouseRequestDestroyItem")
     FCOIS.preventerVars.splitItemStackDialogActive = false
     --Hide the context menu at last active panel
     FCOIS.hideContextMenu(FCOIS.gFilterWhere)
@@ -790,33 +791,11 @@ end
 --[[
 --* EVENT_GLOBAL_MOUSE_DOWN (*[MouseButtonIndex|#MouseButtonIndex]* _button_, *bool* _ctrl_, *bool* _alt_, *bool* _shift_, *bool* _command_)
 local function FCOItemSaver_EventMouseButtonDown(_, button)
-    --Is the current control below the mouse a supported row for the marker icons?
-    local mouseUnderControl = WINDOW_MANAGER:GetMouseOverControl()
-    if mouseUnderControl then
-        local mouseOverControlName = mouseUnderControl:GetName()
-        local inventoryRowPatterns = FCOIS.checkVars.inventoryRowPatterns
-        for _, patternToCheck in ipairs(inventoryRowPatterns) do
-            if mouseOverControlName:find(patternToCheck) then
-                FCOIS.gMouseButtonDown[button] = true
-                return
-            end
-        end
-    end
+    FCOIS.gMouseButtonDown[button] = true
 end
 --* EVENT_GLOBAL_MOUSE_UP (*[MouseButtonIndex|#MouseButtonIndex]* _button_, *bool* _ctrl_, *bool* _alt_, *bool* _shift_, *bool* _command_)
 local function FCOItemSaver_EventMouseButtonUp(_, button)
-    --Is the current control below the mouse a supported row for the marker icons?
-    local mouseUnderControl = WINDOW_MANAGER:GetMouseOverControl()
-    if mouseUnderControl then
-        local mouseOverControlName = mouseUnderControl:GetName()
-        local inventoryRowPatterns = FCOIS.checkVars.inventoryRowPatterns
-        for _, patternToCheck in ipairs(inventoryRowPatterns) do
-            if mouseOverControlName:find(patternToCheck) then
-                FCOIS.gMouseButtonDown[button] = false
-                return
-            end
-        end
-    end
+    FCOIS.gMouseButtonDown[button] = false
 end
 ]]
 
@@ -937,6 +916,9 @@ local function FCOItemSaver_Loaded(eventCode, addOnName)
 
             --Set the addon loaded variable
             FCOIS.addonVars.gAddonLoaded = true
+
+            --Do keybinding stuff
+            FCOIS.InitializeInventoryKeybind()
 
             if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[Addon startup finished!]", true, FCOIS_DEBUG_DEPTH_NORMAL) end
         end --gamepad active check

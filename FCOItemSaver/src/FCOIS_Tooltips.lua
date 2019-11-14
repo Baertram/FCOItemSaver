@@ -157,7 +157,7 @@ function FCOIS.CreateToolTip(markerControl, markerId, doHide, pUpdateAllEquipmen
                                 end
                                 iconName = colorForText .. iconName .. "|r"
                             end
-                        --No gear and no dynamic icon
+                        --No gear and no dynamic icon -> Static icon!
                         else
                             local colorForText = ""
                             local normalSettingsEnabled, isDestroyProtected = FCOIS.checkIfProtectedSettingsEnabled(panelId, iconId, nil, true, whereAreWe)
@@ -321,6 +321,7 @@ end
 
 --Build the tooltip for e.g. a marker icon's context menu entry and show which panel is protected at this marker icon
 function FCOIS.buildMarkerIconProtectedWhereTooltip(markId)
+    local icon2Dyn = FCOIS.mappingVars.iconIsDynamic
     local locVars = FCOIS.localizationVars
     local locVarsFCO = locVars.fcois_loc
     local protectedAtStr = "[" .. locVarsFCO["protection_at_panel"] .. "]"

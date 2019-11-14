@@ -29,6 +29,11 @@ local numMaxDynIcons = numVars.gFCOMaxNumDynamicIcons
 local markerIconTextures = FCOIS.textureVars.MARKER_TEXTURES
 local minIconSize = FCOIS.iconVars.minIconSize
 local maxIconSize = FCOIS.iconVars.maxIconSize
+local minIconOffsetLeft = FCOIS.iconVars.minIconOffsetLeft
+local maxIconOffsetLeft = FCOIS.iconVars.maxIconOffsetLeft
+local minIconOffsetTop  = FCOIS.iconVars.minIconOffsetTop
+local maxIconOffsetTop  = FCOIS.iconVars.maxIconOffsetTop
+
 local minFilterButtonWidth = FCOIS.filterButtonVars.minFilterButtonWidth
 local maxFilterButtonWidth = FCOIS.filterButtonVars.maxFilterButtonWidth
 local minFilterButtonHeight = FCOIS.filterButtonVars.minFilterButtonHeight
@@ -1836,6 +1841,7 @@ function FCOIS.BuildAddonMenu()
     end
 --==================== LAM controls - BEGIN =====================================
     --LAM 2.0 callback function if the panel was opened
+    --[[
     local FCOLAMPanelOpened = function(panel)
         if panel == FCOIS.FCOSettingsPanel then
             LAMopenedCounter = LAMopenedCounter + 1
@@ -1845,6 +1851,7 @@ function FCOIS.BuildAddonMenu()
             end
         end
     end
+    ]]
     --LAM 2.0 callback function if the panel was created
     local FCOLAMPanelCreated = function(panel)
         if panel == FCOIS.FCOSettingsPanel then
@@ -1859,9 +1866,9 @@ function FCOIS.BuildAddonMenu()
             end
             --Set the editbox TextType to validate the entered value
             setSettingsMenuEditBoxTextTypes(panel)
-            CALLBACK_MANAGER:UnregisterCallback("LAM-PanelControlsCreated")
             --Show the LAM menu container now
-            ChangeFCOISLamMenuVisibleState(false)
+            --ChangeFCOISLamMenuVisibleState(false)
+            --CALLBACK_MANAGER:UnregisterCallback("LAM-PanelControlsCreated")
         end
     end
 
@@ -2115,6 +2122,38 @@ function FCOIS.BuildAddonMenu()
 				            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_LOCK] end,
                             default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_LOCK].size,
 						},
+                        {
+                            type = "slider",
+                            name = locVars["options_icon_offset_left"],
+                            tooltip = locVars["options_icon_offset_left_TT"],
+                            min = minIconOffsetLeft,
+                            max = maxIconOffsetLeft,
+                            decimals = 0,
+                            autoSelect = true,
+                            getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_LOCK].offsets[LF_INVENTORY]["left"] end,
+                            setFunc = function(left)
+                                FCOISsettings.icon[FCOIS_CON_ICON_LOCK].offsets[LF_INVENTORY]["left"] = left
+                            end,
+                            width="half",
+                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_LOCK] end,
+                            default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_LOCK].offsets[LF_INVENTORY]["left"],
+                        },
+                        {
+                            type = "slider",
+                            name = locVars["options_icon_offset_top"],
+                            tooltip = locVars["options_icon_offset_top_TT"],
+                            min = minIconOffsetLeft,
+                            max = maxIconOffsetLeft,
+                            decimals = 0,
+                            autoSelect = true,
+                            getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_LOCK].offsets[LF_INVENTORY]["top"] end,
+                            setFunc = function(top)
+                                FCOISsettings.icon[FCOIS_CON_ICON_LOCK].offsets[LF_INVENTORY]["top"] = top
+                            end,
+                            width="half",
+                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_LOCK] end,
+                            default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_LOCK].offsets[LF_INVENTORY]["top"],
+                        },
 					} -- controls icon 1
 	        	}, -- submenu icon 1
 --==============================================================================
@@ -2196,6 +2235,38 @@ function FCOIS.BuildAddonMenu()
 				            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_RESEARCH] end,
                             default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_RESEARCH].size,
 						},
+                        {
+                            type = "slider",
+                            name = locVars["options_icon_offset_left"],
+                            tooltip = locVars["options_icon_offset_left_TT"],
+                            min = minIconOffsetLeft,
+                            max = maxIconOffsetLeft,
+                            decimals = 0,
+                            autoSelect = true,
+                            getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_RESEARCH].offsets[LF_INVENTORY]["left"] end,
+                            setFunc = function(left)
+                                FCOISsettings.icon[FCOIS_CON_ICON_RESEARCH].offsets[LF_INVENTORY]["left"] = left
+                            end,
+                            width="half",
+                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_RESEARCH] end,
+                            default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_RESEARCH].offsets[LF_INVENTORY]["left"],
+                        },
+                        {
+                            type = "slider",
+                            name = locVars["options_icon_offset_top"],
+                            tooltip = locVars["options_icon_offset_top_TT"],
+                            min = minIconOffsetLeft,
+                            max = maxIconOffsetLeft,
+                            decimals = 0,
+                            autoSelect = true,
+                            getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_RESEARCH].offsets[LF_INVENTORY]["top"] end,
+                            setFunc = function(top)
+                                FCOISsettings.icon[FCOIS_CON_ICON_RESEARCH].offsets[LF_INVENTORY]["top"] = top
+                            end,
+                            width="half",
+                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_RESEARCH] end,
+                            default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_RESEARCH].offsets[LF_INVENTORY]["top"],
+                        },
 		            } -- controls icon 3
 				}, -- submenu icon 3
 --==============================================================================
@@ -2277,6 +2348,38 @@ function FCOIS.BuildAddonMenu()
 				            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL] end,
                             default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_SELL].size,
 						},
+                        {
+                            type = "slider",
+                            name = locVars["options_icon_offset_left"],
+                            tooltip = locVars["options_icon_offset_left_TT"],
+                            min = minIconOffsetLeft,
+                            max = maxIconOffsetLeft,
+                            decimals = 0,
+                            autoSelect = true,
+                            getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_SELL].offsets[LF_INVENTORY]["left"] end,
+                            setFunc = function(left)
+                                FCOISsettings.icon[FCOIS_CON_ICON_SELL].offsets[LF_INVENTORY]["left"] = left
+                            end,
+                            width="half",
+                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL] end,
+                            default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_SELL].offsets[LF_INVENTORY]["left"],
+                        },
+                        {
+                            type = "slider",
+                            name = locVars["options_icon_offset_top"],
+                            tooltip = locVars["options_icon_offset_top_TT"],
+                            min = minIconOffsetLeft,
+                            max = maxIconOffsetLeft,
+                            decimals = 0,
+                            autoSelect = true,
+                            getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_SELL].offsets[LF_INVENTORY]["top"] end,
+                            setFunc = function(top)
+                                FCOISsettings.icon[FCOIS_CON_ICON_SELL].offsets[LF_INVENTORY]["top"] = top
+                            end,
+                            width="half",
+                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL] end,
+                            default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_SELL].offsets[LF_INVENTORY]["top"],
+                        },
 		            } -- controls icon 5
 				}, -- submenu icon 5
 --==============================================================================
@@ -2358,6 +2461,38 @@ function FCOIS.BuildAddonMenu()
 				            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_DECONSTRUCTION] end,
                             default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_DECONSTRUCTION].size,
 						},
+                        {
+                            type = "slider",
+                            name = locVars["options_icon_offset_left"],
+                            tooltip = locVars["options_icon_offset_left_TT"],
+                            min = minIconOffsetLeft,
+                            max = maxIconOffsetLeft,
+                            decimals = 0,
+                            autoSelect = true,
+                            getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_DECONSTRUCTION].offsets[LF_INVENTORY]["left"] end,
+                            setFunc = function(left)
+                                FCOISsettings.icon[FCOIS_CON_ICON_DECONSTRUCTION].offsets[LF_INVENTORY]["left"] = left
+                            end,
+                            width="half",
+                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_DECONSTRUCTION] end,
+                            default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_DECONSTRUCTION].offsets[LF_INVENTORY]["left"],
+                        },
+                        {
+                            type = "slider",
+                            name = locVars["options_icon_offset_top"],
+                            tooltip = locVars["options_icon_offset_top_TT"],
+                            min = minIconOffsetLeft,
+                            max = maxIconOffsetLeft,
+                            decimals = 0,
+                            autoSelect = true,
+                            getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_DECONSTRUCTION].offsets[LF_INVENTORY]["top"] end,
+                            setFunc = function(top)
+                                FCOISsettings.icon[FCOIS_CON_ICON_DECONSTRUCTION].offsets[LF_INVENTORY]["top"] = top
+                            end,
+                            width="half",
+                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_DECONSTRUCTION] end,
+                            default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_DECONSTRUCTION].offsets[LF_INVENTORY]["top"],
+                        },
 		            } -- controls icon 9
 				}, -- submenu icon 9
 --==============================================================================
@@ -2439,6 +2574,38 @@ function FCOIS.BuildAddonMenu()
 				            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_IMPROVEMENT] end,
                             default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_IMPROVEMENT].size,
 						},
+                        {
+                            type = "slider",
+                            name = locVars["options_icon_offset_left"],
+                            tooltip = locVars["options_icon_offset_left_TT"],
+                            min = minIconOffsetLeft,
+                            max = maxIconOffsetLeft,
+                            decimals = 0,
+                            autoSelect = true,
+                            getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_IMPROVEMENT].offsets[LF_INVENTORY]["left"] end,
+                            setFunc = function(left)
+                                FCOISsettings.icon[FCOIS_CON_ICON_IMPROVEMENT].offsets[LF_INVENTORY]["left"] = left
+                            end,
+                            width="half",
+                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_IMPROVEMENT] end,
+                            default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_IMPROVEMENT].offsets[LF_INVENTORY]["left"],
+                        },
+                        {
+                            type = "slider",
+                            name = locVars["options_icon_offset_top"],
+                            tooltip = locVars["options_icon_offset_top_TT"],
+                            min = minIconOffsetLeft,
+                            max = maxIconOffsetLeft,
+                            decimals = 0,
+                            autoSelect = true,
+                            getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_IMPROVEMENT].offsets[LF_INVENTORY]["top"] end,
+                            setFunc = function(top)
+                                FCOISsettings.icon[FCOIS_CON_ICON_IMPROVEMENT].offsets[LF_INVENTORY]["top"] = top
+                            end,
+                            width="half",
+                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_IMPROVEMENT] end,
+                            default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_IMPROVEMENT].offsets[LF_INVENTORY]["top"],
+                        },
 		            } -- controls icon 10
 				}, -- submenu icon 10
 --==============================================================================
@@ -2531,6 +2698,38 @@ function FCOIS.BuildAddonMenu()
                             disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL_AT_GUILDSTORE] end,
                             default = FCOISdefaultSettings.allowOnlyUnbound[FCOIS_CON_ICON_SELL_AT_GUILDSTORE],
                         },
+                        {
+                            type = "slider",
+                            name = locVars["options_icon_offset_left"],
+                            tooltip = locVars["options_icon_offset_left_TT"],
+                            min = minIconOffsetLeft,
+                            max = maxIconOffsetLeft,
+                            decimals = 0,
+                            autoSelect = true,
+                            getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_SELL_AT_GUILDSTORE].offsets[LF_INVENTORY]["left"] end,
+                            setFunc = function(left)
+                                FCOISsettings.icon[FCOIS_CON_ICON_SELL_AT_GUILDSTORE].offsets[LF_INVENTORY]["left"] = left
+                            end,
+                            width="half",
+                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL_AT_GUILDSTORE] end,
+                            default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_SELL_AT_GUILDSTORE].offsets[LF_INVENTORY]["left"],
+                        },
+                        {
+                            type = "slider",
+                            name = locVars["options_icon_offset_top"],
+                            tooltip = locVars["options_icon_offset_top_TT"],
+                            min = minIconOffsetLeft,
+                            max = maxIconOffsetLeft,
+                            decimals = 0,
+                            autoSelect = true,
+                            getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_SELL_AT_GUILDSTORE].offsets[LF_INVENTORY]["top"] end,
+                            setFunc = function(top)
+                                FCOISsettings.icon[FCOIS_CON_ICON_SELL_AT_GUILDSTORE].offsets[LF_INVENTORY]["top"] = top
+                            end,
+                            width="half",
+                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL_AT_GUILDSTORE] end,
+                            default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_SELL_AT_GUILDSTORE].offsets[LF_INVENTORY]["top"],
+                        },
 		            } -- controls icon 11
 				}, -- submenu icon 11
 --==============================================================================
@@ -2612,6 +2811,38 @@ function FCOIS.BuildAddonMenu()
 				            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_INTRICATE] end,
                             default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_INTRICATE].size,
 				        },
+                        {
+                            type = "slider",
+                            name = locVars["options_icon_offset_left"],
+                            tooltip = locVars["options_icon_offset_left_TT"],
+                            min = minIconOffsetLeft,
+                            max = maxIconOffsetLeft,
+                            decimals = 0,
+                            autoSelect = true,
+                            getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_INTRICATE].offsets[LF_INVENTORY]["left"] end,
+                            setFunc = function(left)
+                                FCOISsettings.icon[FCOIS_CON_ICON_INTRICATE].offsets[LF_INVENTORY]["left"] = left
+                            end,
+                            width="half",
+                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_INTRICATE] end,
+                            default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_INTRICATE].offsets[LF_INVENTORY]["left"],
+                        },
+                        {
+                            type = "slider",
+                            name = locVars["options_icon_offset_top"],
+                            tooltip = locVars["options_icon_offset_top_TT"],
+                            min = minIconOffsetLeft,
+                            max = maxIconOffsetLeft,
+                            decimals = 0,
+                            autoSelect = true,
+                            getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_INTRICATE].offsets[LF_INVENTORY]["top"] end,
+                            setFunc = function(top)
+                                FCOISsettings.icon[FCOIS_CON_ICON_INTRICATE].offsets[LF_INVENTORY]["top"] = top
+                            end,
+                            width="half",
+                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_INTRICATE] end,
+                            default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_INTRICATE].offsets[LF_INVENTORY]["top"],
+                        },
 		            } -- controls icon 12
 				}, -- submenu icon 12
 --==============================================================================
@@ -2800,6 +3031,38 @@ function FCOIS.BuildAddonMenu()
 				            disabled = function() return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[1]] end,
                             default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_GEAR_1].size,
 						},
+                        {
+                            type = "slider",
+                            name = locVars["options_icon_offset_left"],
+                            tooltip = locVars["options_icon_offset_left_TT"],
+                            min = minIconOffsetLeft,
+                            max = maxIconOffsetLeft,
+                            decimals = 0,
+                            autoSelect = true,
+                            getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_GEAR_1].offsets[LF_INVENTORY]["left"] end,
+                            setFunc = function(left)
+                                FCOISsettings.icon[FCOIS_CON_ICON_GEAR_1].offsets[LF_INVENTORY]["left"] = left
+                            end,
+                            width="half",
+                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_GEAR_1] end,
+                            default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_GEAR_1].offsets[LF_INVENTORY]["left"],
+                        },
+                        {
+                            type = "slider",
+                            name = locVars["options_icon_offset_top"],
+                            tooltip = locVars["options_icon_offset_top_TT"],
+                            min = minIconOffsetLeft,
+                            max = maxIconOffsetLeft,
+                            decimals = 0,
+                            autoSelect = true,
+                            getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_GEAR_1].offsets[LF_INVENTORY]["top"] end,
+                            setFunc = function(top)
+                                FCOISsettings.icon[FCOIS_CON_ICON_GEAR_1].offsets[LF_INVENTORY]["top"] = top
+                            end,
+                            width="half",
+                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_GEAR_1] end,
+                            default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_GEAR_1].offsets[LF_INVENTORY]["top"],
+                        },
 						{
 							type = "checkbox",
 							name = locVars["options_icon2_TT"],
@@ -2908,6 +3171,38 @@ function FCOIS.BuildAddonMenu()
 				            disabled = function() return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[2]] end,
                             default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_GEAR_2].size,
 						},
+                        {
+                            type = "slider",
+                            name = locVars["options_icon_offset_left"],
+                            tooltip = locVars["options_icon_offset_left_TT"],
+                            min = minIconOffsetLeft,
+                            max = maxIconOffsetLeft,
+                            decimals = 0,
+                            autoSelect = true,
+                            getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_GEAR_2].offsets[LF_INVENTORY]["left"] end,
+                            setFunc = function(left)
+                                FCOISsettings.icon[FCOIS_CON_ICON_GEAR_2].offsets[LF_INVENTORY]["left"] = left
+                            end,
+                            width="half",
+                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_GEAR_2] end,
+                            default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_GEAR_2].offsets[LF_INVENTORY]["left"],
+                        },
+                        {
+                            type = "slider",
+                            name = locVars["options_icon_offset_top"],
+                            tooltip = locVars["options_icon_offset_top_TT"],
+                            min = minIconOffsetLeft,
+                            max = maxIconOffsetLeft,
+                            decimals = 0,
+                            autoSelect = true,
+                            getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_GEAR_2].offsets[LF_INVENTORY]["top"] end,
+                            setFunc = function(top)
+                                FCOISsettings.icon[FCOIS_CON_ICON_GEAR_2].offsets[LF_INVENTORY]["top"] = top
+                            end,
+                            width="half",
+                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_GEAR_2] end,
+                            default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_GEAR_2].offsets[LF_INVENTORY]["top"],
+                        },
 						{
 							type = "checkbox",
 							name = locVars["options_icon4_TT"],
@@ -3015,6 +3310,38 @@ function FCOIS.BuildAddonMenu()
 				            disabled = function() return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[3]] end,
                             default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_GEAR_3].size,
 						},
+                        {
+                            type = "slider",
+                            name = locVars["options_icon_offset_left"],
+                            tooltip = locVars["options_icon_offset_left_TT"],
+                            min = minIconOffsetLeft,
+                            max = maxIconOffsetLeft,
+                            decimals = 0,
+                            autoSelect = true,
+                            getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_GEAR_3].offsets[LF_INVENTORY]["left"] end,
+                            setFunc = function(left)
+                                FCOISsettings.icon[FCOIS_CON_ICON_GEAR_3].offsets[LF_INVENTORY]["left"] = left
+                            end,
+                            width="half",
+                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_GEAR_3] end,
+                            default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_GEAR_3].offsets[LF_INVENTORY]["left"],
+                        },
+                        {
+                            type = "slider",
+                            name = locVars["options_icon_offset_top"],
+                            tooltip = locVars["options_icon_offset_top_TT"],
+                            min = minIconOffsetLeft,
+                            max = maxIconOffsetLeft,
+                            decimals = 0,
+                            autoSelect = true,
+                            getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_GEAR_3].offsets[LF_INVENTORY]["top"] end,
+                            setFunc = function(top)
+                                FCOISsettings.icon[FCOIS_CON_ICON_GEAR_3].offsets[LF_INVENTORY]["top"] = top
+                            end,
+                            width="half",
+                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_GEAR_3] end,
+                            default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_GEAR_3].offsets[LF_INVENTORY]["top"],
+                        },
 						{
 							type = "checkbox",
 							name = locVars["options_icon6_TT"],
@@ -3121,6 +3448,38 @@ function FCOIS.BuildAddonMenu()
 				            disabled = function() return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[4]] end,
                             default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_GEAR_4].size,
 						},
+                        {
+                            type = "slider",
+                            name = locVars["options_icon_offset_left"],
+                            tooltip = locVars["options_icon_offset_left_TT"],
+                            min = minIconOffsetLeft,
+                            max = maxIconOffsetLeft,
+                            decimals = 0,
+                            autoSelect = true,
+                            getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_GEAR_4].offsets[LF_INVENTORY]["left"] end,
+                            setFunc = function(left)
+                                FCOISsettings.icon[FCOIS_CON_ICON_GEAR_4].offsets[LF_INVENTORY]["left"] = left
+                            end,
+                            width="half",
+                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_GEAR_4] end,
+                            default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_GEAR_4].offsets[LF_INVENTORY]["left"],
+                        },
+                        {
+                            type = "slider",
+                            name = locVars["options_icon_offset_top"],
+                            tooltip = locVars["options_icon_offset_top_TT"],
+                            min = minIconOffsetLeft,
+                            max = maxIconOffsetLeft,
+                            decimals = 0,
+                            autoSelect = true,
+                            getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_GEAR_4].offsets[LF_INVENTORY]["top"] end,
+                            setFunc = function(top)
+                                FCOISsettings.icon[FCOIS_CON_ICON_GEAR_4].offsets[LF_INVENTORY]["top"] = top
+                            end,
+                            width="half",
+                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_GEAR_4] end,
+                            default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_GEAR_4].offsets[LF_INVENTORY]["top"],
+                        },
 						{
 							type = "checkbox",
 							name = locVars["options_icon7_TT"],
@@ -3227,6 +3586,38 @@ function FCOIS.BuildAddonMenu()
 				            disabled = function() return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[5]] end,
                             default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_GEAR_5].size,
 						},
+                        {
+                            type = "slider",
+                            name = locVars["options_icon_offset_left"],
+                            tooltip = locVars["options_icon_offset_left_TT"],
+                            min = minIconOffsetLeft,
+                            max = maxIconOffsetLeft,
+                            decimals = 0,
+                            autoSelect = true,
+                            getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_GEAR_5].offsets[LF_INVENTORY]["left"] end,
+                            setFunc = function(left)
+                                FCOISsettings.icon[FCOIS_CON_ICON_GEAR_5].offsets[LF_INVENTORY]["left"] = left
+                            end,
+                            width="half",
+                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_GEAR_5] end,
+                            default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_GEAR_5].offsets[LF_INVENTORY]["left"],
+                        },
+                        {
+                            type = "slider",
+                            name = locVars["options_icon_offset_top"],
+                            tooltip = locVars["options_icon_offset_top_TT"],
+                            min = minIconOffsetLeft,
+                            max = maxIconOffsetLeft,
+                            decimals = 0,
+                            autoSelect = true,
+                            getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_GEAR_5].offsets[LF_INVENTORY]["top"] end,
+                            setFunc = function(top)
+                                FCOISsettings.icon[FCOIS_CON_ICON_GEAR_5].offsets[LF_INVENTORY]["top"] = top
+                            end,
+                            width="half",
+                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_GEAR_5] end,
+                            default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_GEAR_5].offsets[LF_INVENTORY]["top"],
+                        },
 						{
 							type = "checkbox",
 							name = locVars["options_icon8_TT"],
@@ -5023,7 +5414,7 @@ function FCOIS.BuildAddonMenu()
 
 
 --==============================================================================
---		1
+--		Filter button positions
 --==============================================================================
 		{
         	type = "submenu",
@@ -5291,11 +5682,30 @@ function FCOIS.BuildAddonMenu()
                 },
                 {
                     type = "checkbox",
+                    name = locVars["options_enable_block_research"],
+                    tooltip = locVars["options_enable_block_research_TT"],
+                    getFunc = function() return FCOISsettings.blockResearchDialog end,
+                    setFunc = function(value) FCOISsettings.blockResearchDialog = value
+                    end,
+                    default = FCOISdefaultSettings.blockResearchDialog,
+                },
+                {
+                    type = "checkbox",
+                    name = locVars["options_enable_block_jewelry_research"],
+                    tooltip = locVars["options_enable_block_jewelry_research_TT"],
+                    getFunc = function() return FCOISsettings.blockJewelryResearchDialog end,
+                    setFunc = function(value) FCOISsettings.blockJewelryResearchDialog = value
+                    end,
+                    default = FCOISdefaultSettings.blockJewelryResearchDialog,
+                },
+                {
+                    type = "checkbox",
                     name = locVars["options_research_filter"],
                     tooltip = locVars["options_research_filter_TT"],
                     getFunc = function() return FCOISsettings.allowResearch end,
                     setFunc = function(value) FCOISsettings.allowResearch = value
                     end,
+                    disabled = function() return (not FCOISsettings.blockResearchDialog and not FCOISsettings.blockJewelryResearchDialog) end,
                     default = FCOISdefaultSettings.allowResearch,
                 },
                 {
@@ -6896,7 +7306,7 @@ function FCOIS.BuildAddonMenu()
 
 	} -- END OF OPTIONS TABLE
     CALLBACK_MANAGER:RegisterCallback("LAM-PanelControlsCreated", FCOLAMPanelCreated)
-    CALLBACK_MANAGER:RegisterCallback("LAM-PanelOpened", FCOLAMPanelOpened)
+    --CALLBACK_MANAGER:RegisterCallback("PanelControlsCreated", FCOLAMPanelOpened)
 	FCOIS.LAM:RegisterOptionControls(FCOIS.addonVars.gAddonName .. "_LAM", optionsTable)
     --Show the LibFeedback icon top right at the LAM panel
     -->With LAM r27 moved to the LAM feedback link!

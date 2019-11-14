@@ -367,7 +367,8 @@ function FCOIS.GetBagAndSlotFromControlUnderMouse()
     local IIFAitemsListEntryPrePattern = otherAddons.IIFAitemsListEntryPrePattern
     local IIfAInvRowPatternToCheck = "^" .. IIFAitemsListEntryPrePattern .. "*"
     for _, patternToCheck in ipairs(inventoryRowPatterns) do
-        if mouseOverControlName:find(patternToCheck) then
+        if mouseOverControlName:find(patternToCheck) ~= nil then
+--d(">found pattern: " ..tostring(patternToCheck) .. " in row " .. tostring(mouseOverControlName))
             if patternToCheck ~= IIfAInvRowPatternToCheck then
                 bagId, slotIndex = FCOIS.MyGetItemDetails(mouseOverControl)
             else
@@ -1120,6 +1121,21 @@ function FCOIS.isRepairDialogShown()
         end
     end
     return isRepairDialogShown
+end
+
+--==============================================================================
+-- Dialog functions
+--==============================================================================
+--Function to change the button #  state and keybind of a dialog now
+function FCOIS.changeDialogButtonState(dialog, buttonNr, stateBool)
+    if not dialog or not buttonNr then return end
+    stateBool = stateBool or false
+    --WINDOW_MANAGER:GetControlByName(ctrlVars.RepairItemDialog, "Button" .. tostring(buttonNr)):SetEnabled(enableResearchButton)
+    -- Activate or deactivate a button...use BSTATE_NORMAL to activate and BSTATE_DISABLED to deactivate
+    local buttonState = (stateBool and BSTATE_NORMAL) or BSTATE_DISABLED
+    ZO_Dialogs_UpdateButtonState(dialog, 1, buttonState)
+    local buttonControl = ctrlVars.RepairItemDialog:GetNamedChild("Button" .. tostring(buttonNr))
+    if buttonControl and buttonControl.SetKeybindEnabled then buttonControl:SetKeybindEnabled(stateBool) end
 end
 
 --==============================================================================
@@ -1950,4 +1966,32 @@ function FCOIS.getCharacterName(characterId, characterTable)
     end
     if not characterName or characterName == "" then return end
     return characterName
+end
+
+--Junk all items marked with a/some marker icons
+function FCOIS.JunkMarkedItems(markerIconsMarkedOnItems, bagId)
+    --d("[FCOIS]Junk all marked for sell item in inventory now!")
+    if bagId == nil or markerIconsMarkedOnItems == nil then return end
+    --Scan the bag for any of the marked items and transfer them to the Junk now
+    local bagToCheck = bagId
+    --d("[FCOIS]--> Scan whole inventory, bag: " .. tostring(bagToCheck))
+    --Get the bag cache (all entries in that bag)
+    --local bagCache = SHARED_INVENTORY:GenerateFullSlotData(nil, bagToCheck)
+    local bagCache = SHARED_INVENTORY:GetOrCreateBagCache(bagToCheck)
+    if not bagCache then return end
+    local retVar = false
+    local junkedItemCount = 0
+    for _, data in pairs(bagCache) do
+        local isMarked, _ = FCOIS.IsMarked(data.bagId, data.slotIndex, markerIconsMarkedOnItems, nil)
+        if isMarked and isMarked == true then
+            SetItemIsJunk(data.bagId, data.slotIndex, true)
+            junkedItemCount = junkedItemCount + 1
+            retVar = true
+        end
+    end
+    if retVar == true then
+        local locVarJunkedItemCount = FCOIS.GetLocText("fcois_junked_item_count", false)
+        d(string.format(FCOIS.preChatVars.preChatTextGreen .. locVarJunkedItemCount, tostring(junkedItemCount)))
+    end
+    return retVar
 end

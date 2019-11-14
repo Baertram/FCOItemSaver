@@ -728,6 +728,12 @@ function FCOIS.afterSettings()
                 if filterIconHelperPanel == LF_VENDOR_BUY or filterIconHelperPanel == LF_VENDOR_BUYBACK or filterIconHelperPanel == LF_VENDOR_REPAIR then
                     FCOIS.settingsVars.settings.icon[filterIconHelper].antiCheckAtPanel[filterIconHelperPanel] = false
                 end
+                --Added with FCOIS version 1.6.7
+                --Resetting the dynamic icons filterpanel protection settings for GuildStore withdraw and CarftBag to nil as there is no protection available
+                --and the tooltips etc. should show these as "grey" entries without protection!
+                if filterIconHelperPanel == LF_GUILDBANK_WITHDRAW or filterIconHelperPanel == LF_CRAFTBAG then
+                    FCOIS.settingsVars.settings.icon[filterIconHelper].antiCheckAtPanel[filterIconHelperPanel] = nil
+                end
             end
         end
     end

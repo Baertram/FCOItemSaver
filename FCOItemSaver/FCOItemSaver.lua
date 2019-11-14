@@ -11,70 +11,60 @@
 ]]
 
 
+--************************************************************************************************************************
+--************************************************************************************************************************
+--************************************************************************************************************************
 ------------------------------------------------------------------
--- [Error/bug & feature messages to check] --
+-- [Error/bug & feature messages to check - CHANGELOG since last version] --
 ---------------------------------------------------------------------
 --[ToDo list] --
--- Current max bugs: 24
+--____________________________
+-- Current max bugs: 42
+--____________________________
+
 -- 1) 2019-01-14 - Bugfix - Baertram
 --Right clicking an item to show the context menu, and then left clicking somewhere else does not close the context menu on first click, but on 2nd click
---> Bug within LibCustomMenu -> To be fixed by Votan?
+-->Todo: Bug within LibCustomMenu -> To be fixed by Votan?
 
 --23) 2019-08-17 Check - Baertram
---Test if backup/restore is working properly with the "AllAccountsTheSame" settings enabled
+--Todo: Test if backup/restore is working properly with the "AllAccountsTheSame" settings enabled
 
---24) 2019-09-02 Check - Baertram
---TODO: 2019-09-02  Why is parameter "calledFromExternalAddon" set to "false" in function FCOIS.DeconstructionHandler as FCOIS.callItemSelectionHandler is called,
---TODO:             even if the value was true ebfore (e.g. if coming from FCOIS.IsVendorSellLocked(bagId, slotIndex)?
---TODO:             The only function where this parameter is used inside FCOIS.ItemSelectionHandler is the function FCOIS.getWhereAreWe().
---TODO:             And only if the filterPanelId passed to the function is NIL. -> Can this be changed?
+--27) 2019-10-10 Bug - Beartram
+-- Drag & drop of marked items directly from the CraftBagExtended panel to a mail slot works even if the FCOIS protection is enabled! SAme for player2player trade.
 
-------------------------------------------------------------------
+-- 40)  2019-11-04 Bug - Baertram
+--lua error message if you use the context menu to destroy an item from inventory:
+--[[
+EsoUI/Ingame/Inventory/InventorySlot.lua:1060: Attempt to access a private function 'PickupInventoryItem' from insecure code. The callstack became untrusted 1 stack frame(s) from the top.
+stack traceback:
+EsoUI/Ingame/Inventory/InventorySlot.lua:1060: in function 'ZO_InventorySlot_InitiateDestroyItem'
+EsoUI/Ingame/Inventory/InventorySlot.lua:1700: in function 'OnSelect'
+EsoUI/Libraries/ZO_ContextMenus/ZO_ContextMenus.lua:453: in function 'ZO_Menu_ClickItem'
+ZO_MenuItem1_MouseUp:4: in function '(main chunk)'
+]]
+--> src/FCOIS_Hooks.lua ->     ZO_PreHookHandler(ctrlVars.BACKPACK_BAG, "OnEffectivelyShown", FCOItemSaver_OnEffectivelyShown) -> FCOItemSaver_OnEffectivelyShown ->  ZO_PreHookHandler(childrenCtrl, "OnMouseUp", function(...)
+--> causes the error message!
+
+-- 41) 2019-10-25 Bug - Beartram
+--Research and other ZO_ListDialogs: If you move the mouse over a row the keybindings of FCOIS get enabled. If you do not leave the row again and press the standard
+--keybindings of the dialog (e.g. research) it will  not work but after closing the menu the UI is messed and something is broken!
+
+---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
+--Since last update - New version: 1.6.9
+---------------------------------------------------------------------
+--[Fixed]
+--#42: FCOIS contextmenu showing again on containers (removed collectibles check, not sure why it was there. Maybe as collectibles stayed inside the inventories in the past? We'll see).
 
---
---Fixed:
---  Bug #2: Updating keybinds at the InventoryInsightFromAshes UI won't update the marker icons shown.
---          They will show the changed amrker icons now on the IIfA UI and the normal inventories (if both are open at the same time),
---          and they will also update the marker icons for non-logged in characters in the IIfA UI properly now.
---  Bug #3: Bank keybind triggers lua error about insecure call
---          Replaced PreHook of ZO_InventorySlot_ShowContextMenu with LibCustomMenu:RegisterContextMenu(...)
---  Bug #5: Filtering for items will recognize all filter buttons now and will hide items which are hidden via a green filter button 1 to 3 even if button 4 says "only show"
---  Bug #10: The destroy selection handler did not work properly for dynamic icons if you have used drag&drop. It should now recognize if you got the settings for the dynamic
---           icon for anti-destroy enabled or not AND if you currentld disabled them via the additonal inventory flag icon (if the dynamic icon got the setting to support the
---           temporary disabling of the icon protection, via the additional flag icon, enabled!)
---  Bug #11: Item tooltips protection state is shown for normal and gear/dynamic gear items now in red/green too. And the state will update if you use the additional inventory
---           flag buttons "right click" option to change the protection state at the current filterPanel.
---  Bug #12: Changing the protection state with the right click on an additional inventory flag icon now checks if items are slotted to a craft/mail/trade... panel and unslots them
---           if they are protected again now
---  Bug #13: The same items at an inventory where one of them is inside the crafting extraction slot: If you protect one of the same itms now each other same item should be removed
---           from the extraction slot
---  Bug #14: Multicraft support for Scalebreaker (PTS). Enchanting panel was not recognized correctly anymore (function SetEnchantingMode was removed by ZOs)
---  Bug #15: Keybindings and SHIFT+right mouse did not work at the refine panel of crafting stations, and not at retrait station
---  Bug #16: Double clicking with SHIFT+right mouse button (to remove/readd marker icons) will trigger the protective checks at the crafting stations e.g.
---  Bug #17: At vendor repair -> Drag&Drop enabled, keybind enabled, SHIFT+right mouse enabled, Fixed protection variables settings.blockVendorBu, blockVendorBuyback, blockVendorRepair,
---           fixed Anti-Destroy protection by drag&drop
---  Bug #18: Deconstruction/Intricate icon tooltip shows "green -> protected" at the tooltips (icon / context menu entry) even if setting to allow deconstruction of items marked
---           for deconstruction/intricate is enabled.
---  Bug #19: At the guild store sell tab the tooltip for the "sell" icon shows "protected" (green) even if the item can be added to the sell slot.
---  Bug #20: At the (jewelry)deconstruction/improvement panel the tooltip for the "deconstruct/improve/intricate" icon shows "protected" (green) even if the item can be added to the extraction/improvement slot.
---  Bug #21: The reasearch marker icon is not shown as "unprotected (red) at the resaerch popup dialog" at the tooltips, if the setting to allow research of items marked for research is enabked.
---
---Added:
---Copy & delete SavedVariables from server, account, character (SavedVariables copy & delete is a new settings submenu at the bottom, next to backup & restore)
---Item count next to name sort header can be enabled in the "filter" settings. This count will update if you change filters within FCOItemSaver or AdvancedFilters.
---->If you are using AdvancedFilters as well you should either disable the item count setting in AdvancedFilters or FCOItemSaver to increase the performance.
---Add feature request #4 Setting to automatic marks->set items->non wished: Mark non-wished set items if character level below 50 and item below max level or max CP level
---API function FCOIS.isDynamicGearIcon(iconId)
---
---Added on request:
---SavedVariables can be enabled for all acounts the same
---Settings for tooltips at the context menu entries
---Settings to add the protected panel information to the context menu item entries
---->These tooltips only work if using LibCustomMenu 3.8.0!
+--[Added]
+--Keybind to mark all items marked for sell as junk
 
+--[Added on request]
 
+--************************************************************************************************************************
+--************************************************************************************************************************
+--************************************************************************************************************************
 ------------------------------------------------------------------
 --Global array with all data of this addon
 if FCOIS == nil then FCOIS = {} end

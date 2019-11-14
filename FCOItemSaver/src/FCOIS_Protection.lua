@@ -128,10 +128,10 @@ function FCOIS.checkIfProtectedSettingsEnabled(checkType, iconNr, isDynamicIcon,
         if isDynamicIcon or icon2Dyn[iconNr] then
             --d("Dynamic icon")
             --Get the protection
-            protectionVal = settings.icon[iconNr].antiCheckAtPanel[checkType] or false
+            protectionVal = settings.icon[iconNr].antiCheckAtPanel[checkType]
             --d(">iconNr: " .. tostring(iconNr) .. ", checkAtPanelChecks: " .. tostring(protectionVal))
             --Is the dynamic icon protected at the current panel?
-            if protectionVal then
+            if protectionVal == true then
                 --The protective functions are not enabled (red flag is set in the inventory additional options flag icon, or the current panel got no additional inventory button, e.g. the crafting research tab or the research popup dialog)?
                 local _, invAntiSettingsEnabled = FCOIS.getContextMenuAntiSettingsTextAndState(checkType, false)
                 if not invAntiSettingsEnabled then
@@ -152,6 +152,35 @@ function FCOIS.checkIfProtectedSettingsEnabled(checkType, iconNr, isDynamicIcon,
     else
         --d("No icon")
         protectionValues = protectionSettings[checkType]
+    end
+    --============== SPECIAL ITEM & ICON CHECKS ====================================
+    --Special treatment for the protectionValue and the AntiDestroy protectionValue
+    --Found one or more protection values? Check each now to
+    if protectionValues ~= nil then
+        --Entries look like this:
+        --[LF_INVENTORY] 			        = {[FCOIS_CON_DESTROY]=settings.blockDestroying},
+        --or this if multiple entries:
+        --[LF_GUILDBANK_DEPOSIT] 			= {[LF_GUILDBANK_DEPOSIT]=settings.blockGuildBankWithoutWithdraw, [FCOIS_CON_DESTROY]=settings.blockDestroying},
+        for key, value in pairs(protectionValues) do
+            --Is the CraftBag the active panel and are we at a non-standard craftbag extended panel (mail, trade, bank)?
+            --Then get the settings from the LF_CRAFTBAG subentry!
+            if craftBagExtendedUsed then
+                --Anti destroy settings? CraftBag got no anti-destroy!
+                protectionValDestroy = nil
+                --Other panel anti settings?
+                if key == LF_CRAFTBAG then
+                    protectionVal = value
+                end
+            else
+                --Anti destroy settings?
+                if key == FCOIS_CON_DESTROY then
+                    protectionValDestroy = value
+                    --Other panel anti settings?
+                elseif key == checkType then
+                    protectionVal = value
+                end
+            end
+        end
     end
     --============== SPECIAL ITEM & ICON CHECKS ====================================
     --Check details for the current filter panel too? e.g. check if items marked for deconstruction are allowed to be deconstructed at the deconstruction panel
@@ -212,35 +241,8 @@ function FCOIS.checkIfProtectedSettingsEnabled(checkType, iconNr, isDynamicIcon,
         elseif (iconNr==FCOIS_CON_ICON_INTRICATE and (whereAreWe == FCOIS_CON_DECONSTRUCT or whereAreWe == FCOIS_CON_JEWELRY_DECONSTRUCT) and settings.allowDeconstructIntricate == true) then
             protectionVal = false
             --If the checked panel is the research popup dialog and the icon is the research icon
-        elseif (iconNr==FCOIS_CON_ICON_RESEARCH and (whereAreWe == FCOIS_CON_RESEARCH_DIALOG or whereAreWe == FCOIS_CON_JEWELRY_RESEARCH_DIALOG) and settings.allowResearch == true) then
+        elseif (iconNr==FCOIS_CON_ICON_RESEARCH and settings.allowResearch == true and (whereAreWe == FCOIS_CON_RESEARCH or whereAreWe == FCOIS_CON_JEWELRY_RESEARCH or whereAreWe == FCOIS_CON_RESEARCH_DIALOG or whereAreWe == FCOIS_CON_JEWELRY_RESEARCH_DIALOG)) then
             protectionVal = false
-        end
-    end
-    --Found one or more protection values? Check each now to
-    if protectionValues ~= nil then
-        --Entries look like this:
-        --[LF_INVENTORY] 			        = {[FCOIS_CON_DESTROY]=settings.blockDestroying},
-        --or this if multiple entries:
-        --[LF_GUILDBANK_DEPOSIT] 			= {[LF_GUILDBANK_DEPOSIT]=settings.blockGuildBankWithoutWithdraw, [FCOIS_CON_DESTROY]=settings.blockDestroying},
-        for key, value in pairs(protectionValues) do
-            --Is the CraftBag the active panel and are we at a non-standard craftbag extended panel (mail, trade, bank)?
-            --Then get the settings from the LF_CRAFTBAG subentry!
-            if craftBagExtendedUsed then
-                --Anti destroy settings? CraftBag got no anti-destroy!
-                protectionValDestroy = nil
-                --Other panel anti settings?
-                if key == LF_CRAFTBAG then
-                    protectionVal = value
-                end
-            else
-                --Anti destroy settings?
-                if key == FCOIS_CON_DESTROY then
-                    protectionValDestroy = value
-                    --Other panel anti settings?
-                elseif key == checkType then
-                    protectionVal = value
-                end
-            end
         end
     end
 --d(">Icon: " .. tostring(iconNr) .. ", protection enabled: " .. tostring(protectionVal) .. ", protectionDestroy: " .. tostring(protectionValDestroy))
@@ -382,7 +384,7 @@ function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChat
     local settings = FCOIS.settingsVars.settings
 
     if settings.debug then FCOIS.debugMessage( "[ItemSelectionHandler] Bag: " .. tostring(bag) .. ", Slot: " .. tostring(slot) .. ", echo: " .. tostring(echo) .. ", isDragAndDrop: " .. tostring(isDragAndDrop) .. ", overrideChatOutput: " .. tostring(overrideChatOutput) .. ", suppressChatOutput: " .. tostring(suppressChatOutput) .. ", overrideAlert: " .. tostring(overrideAlert) .. ", suppressAlert: " .. tostring(suppressAlert) .. ", calledFromExternalAddon: " .. tostring(calledFromExternalAddon) .. ", panelId: " .. tostring(panelId), true, FCOIS_DEBUG_DEPTH_SPAM) end
---d("[FCOIS]ItemSelectionHandler - Bag: " .. tostring(bag) .. ", Slot: " .. tostring(slot) .. ", Echo: " .. tostring(echo) .. ", overrideChatOutput: " .. tostring(overrideChatOutput) .. ", suppressChatOutput: " .. tostring(suppressChatOutput) .. ", overrideAlert: " .. tostring(overrideAlert) .. ", suppressAlert: " .. tostring(suppressAlert) .. ", calledFromExternalAddon: " .. tostring(calledFromExternalAddon) .. ", panelId: " .. tostring(panelId))
+    --d("[FCOIS]ItemSelectionHandler - Bag: " .. tostring(bag) .. ", Slot: " .. tostring(slot) .. ", Echo: " .. tostring(echo) .. ", overrideChatOutput: " .. tostring(overrideChatOutput) .. ", suppressChatOutput: " .. tostring(suppressChatOutput) .. ", overrideAlert: " .. tostring(overrideAlert) .. ", suppressAlert: " .. tostring(suppressAlert) .. ", calledFromExternalAddon: " .. tostring(calledFromExternalAddon) .. ", panelId: " .. tostring(panelId))
 
     --Panel at the call of the function
     local panelIdAtCall = panelId
@@ -403,13 +405,13 @@ function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChat
         [FCOIS_CON_REFINE]				= settings.blockRefinement,			    --Refinement,
         [FCOIS_CON_DECONSTRUCT]			= settings.blockDeconstruction,		    --Deconstruction
         [FCOIS_CON_IMPROVE]				= settings.blockImprovement,			--Improvement
-        [FCOIS_CON_RESEARCH]			= true, 								--Research -> Always return true as there is no special option for anti-research and the protection is on
-        [FCOIS_CON_RESEARCH_DIALOG] 	= true, 								--Research dialog -> Always return true as there is no special option for anti-research and the protection is on
+        [FCOIS_CON_RESEARCH]			= true,   			                    --Research -> Always return true as there is no special option for anti-research and the protection is on
+        [FCOIS_CON_RESEARCH_DIALOG] 	= settings.blockResearchDialog, 		--Research dialog
         [FCOIS_CON_JEWELRY_REFINE]		= settings.blockJewelryRefinement,		--Jewelry Refinement,
         [FCOIS_CON_JEWELRY_DECONSTRUCT]	= settings.blockJewelryDeconstruction,	--Jewelry Deconstruction
         [FCOIS_CON_JEWELRY_IMPROVE]		= settings.blockJewelryImprovement,		--Jewelry Improvement
         [FCOIS_CON_JEWELRY_RESEARCH]    = true, 								--Jewelry research -> Always return true as there is no special option for anti-jewelry research and the protection is on
-        [FCOIS_CON_JEWELRY_RESEARCH_DIALOG] = true, 							--Jewelry research dialog -> Always return true as there is no special option for anti-jewelry research and the protection is on
+        [FCOIS_CON_JEWELRY_RESEARCH_DIALOG] = settings.blockJewelryResearchDialog, --Jewelry research dialog
         [FCOIS_CON_ENCHANT_EXTRACT]		= settings.blockEnchantingExtraction,   --Enchanting extraction
         [FCOIS_CON_ENCHANT_CREATE]		= settings.blockEnchantingCreation,	    --Enchanting creation
         [FCOIS_CON_GUILD_STORE_SELL]	= settings.blockSellingGuildStore,	    --Guild store sell
@@ -454,6 +456,21 @@ function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChat
     --======= WHERE ARE WE? ========================================================
     --The number for the orientation (which filter panel ID and which sub-checks were done -> for the chat output and the alert message determination)
     local whereAreWe = FCOIS.getWhereAreWe(panelId, panelIdAtCall, bag, slot, isDragAndDrop, calledFromExternalAddon)
+    --Error: wheerAreWe is NIL!
+    if whereAreWe == nil then
+        local itemLink = "bag: " ..tostring(bag) .. ", slot: " .. tostring(slot)
+        if bag and slot then
+            itemLink = GetItemLink(bag, slot)
+        end
+        local errorData = {
+            [1] = panelId,
+            [2] = itemLink,
+            [3] = isDragAndDrop,
+            [4] = calledFromExternalAddon,
+        }
+        FCOIS.errorMessage2Chat("whereAreWeNIL", 1, errorData)
+        return true
+    end
 
     --======= GLOBAL ANTI-CHECKs ===================================================
     --Get the anti-settings for the whereAreWe panel number now
@@ -602,8 +619,8 @@ function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChat
                     --Check if the itemtype is a glyph
                     isBlockedLoop = not FCOIS.isItemAGlpyh(bag, slot)
                     --d(">>IsItemAGlpyh: " .. tostring(not isBlockedLoop) .. ", isBlockedLoop: " .. tostring(isBlockedLoop))
-                --Research and research marker icon is allowed to be used?
-                elseif (iconIdToCheck==FCOIS_CON_ICON_RESEARCH and whereAreWe == FCOIS_CON_RESEARCH and settings.allowResearch == true) then
+                --Research and research marker icon is allowed to be used at research panel and research dialog?
+                elseif ((iconIdToCheck==FCOIS_CON_ICON_RESEARCH and settings.allowResearch == true) and (whereAreWe == FCOIS_CON_RESEARCH or whereAreWe == FCOIS_CON_JEWELRY_RESEARCH or whereAreWe == FCOIS_CON_RESEARCH_DIALOG or whereAreWe == FCOIS_CON_JEWELRY_RESEARCH_DIALOG)) then
                     isBlockedLoop = false
                 end
                 --============== SPECIAL ITEM & ICON CHECKS - END (non-dynamic) ====================================
@@ -694,8 +711,8 @@ function FCOIS.DeconstructionSelectionHandler(bag, slot, echo, overrideChatOutpu
                 or (FCOIS.isResearchListDialogShown() or FCOIS.gFilterWhere == LF_SMITHING_RESEARCH_DIALOG or FCOIS.gFilterWhere == LF_JEWELRY_RESEARCH_DIALOG or (calledFromExternalAddon and (panelId==LF_SMITHING_RESEARCH_DIALOG or panelId==LF_JEWELRY_RESEARCH_DIALOG)))
                 or (FCOIS.isRetraitStationShown() or FCOIS.gFilterWhere == LF_RETRAIT or (calledFromExternalAddon and panelId==LF_RETRAIT))
         ) then
-            -- Why "calledFromExternalAddon" = false? And not taken from the parameter of this function?
-            return FCOIS.callItemSelectionHandler(bag, slot, echo, false, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, false, panelId)
+            --TODO: Why "calledFromExternalAddon" = false? And not taken from the parameter of this function?
+            return FCOIS.callItemSelectionHandler(bag, slot, echo, false, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId)
         else
             return false
         end
@@ -1008,6 +1025,7 @@ function FCOIS.craftingPrevention.GetSlottedItemBagAndSlot()
     local isCraftingStationShown = ZO_CraftingUtils_IsCraftingWindowOpen() and ctrlVars.RESEARCH:IsHidden() -- No crafting slot at research!
     local bagId, slotIndex, slottedItems
     local craftingStationSlot
+    local craftingStationSlots
         --Crafting station shown?
     if isCraftingStationShown then
         --Refinement
@@ -1021,6 +1039,10 @@ function FCOIS.craftingPrevention.GetSlottedItemBagAndSlot()
         --Improvement
         elseif FCOIS.gFilterWhere == LF_SMITHING_IMPROVEMENT or FCOIS.gFilterWhere == LF_JEWELRY_IMPROVEMENT then
             craftingStationSlot = ctrlVars.SMITHING.improvementPanel.improvementSlot
+
+        --Enchanting creation
+        elseif FCOIS.gFilterWhere == LF_ENCHANTING_CREATION then
+            craftingStationSlots = ctrlVars.ENCHANTING.runeSlots
 
         --Enchanting extraction
         elseif FCOIS.gFilterWhere == LF_ENCHANTING_EXTRACTION then
@@ -1037,6 +1059,15 @@ function FCOIS.craftingPrevention.GetSlottedItemBagAndSlot()
             bagId, slotIndex = craftingStationSlot:GetBagAndSlot()
         end
         slottedItems = craftingStationSlot.items
+    elseif craftingStationSlots ~= nil and type(craftingStationSlots) == "table" then
+        slottedItems = {}
+        for _, craftingStationSlotData in ipairs(craftingStationSlots) do
+            if craftingStationSlotData and craftingStationSlotData.items and #craftingStationSlotData.items > 0 then
+                for _, slottedItemData in ipairs(craftingStationSlotData.items) do
+                    table.insert(slottedItems, slottedItemData)
+                end
+            end
+        end
     end
     return bagId, slotIndex, slottedItems
 end
@@ -1076,8 +1107,14 @@ end
 --Is the item protected at a crafting table's slot now
 function FCOIS.craftingPrevention.IsItemProtectedAtACraftSlotNow(bagId, slotIndex, scanOtherInvItemsIfSlotted)
     scanOtherInvItemsIfSlotted = scanOtherInvItemsIfSlotted or false
---local itemLink = GetItemLink(bagId, slotIndex)
---d("[FCOIS]craftingPrevention.IsItemProtectedAtACraftSlotNow: " ..itemLink)
+    --[[
+    if bagId and slotIndex then
+        local itemLink = GetItemLink(bagId, slotIndex)
+        d("[FCOIS]craftingPrevention.IsItemProtectedAtACraftSlotNow: " ..itemLink)
+    else
+        d("[FCOIS]craftingPrevention.IsItemProtectedAtACraftSlotNow - No bagId or slotIndex given!")
+    end
+    ]]
     --Are we inside a crafting or retrait station?
     local isRetraitShown = FCOIS.isRetraitStationShown()
     local slottedItems
@@ -1121,6 +1158,9 @@ function FCOIS.craftingPrevention.IsItemProtectedAtACraftSlotNow(bagId, slotInde
                         --and got protected as you marked the currently checked item (which is not slotted).
                         -->Scan the currently visible inventory rows for such items and if they are slotted.
                         if scanOtherInvItemsIfSlotted then
+--local itemLink = GetItemLink(slottedData.bagId, slottedData.slotIndex)
+--d(">checking slotted items: " ..itemLink)
+
                             local foundBagdIdAndSlotIndices = FCOIS.checkCurrentInventoryRowsDataForItemInstanceId(slottedData.bagId, slottedData.slotIndex)
                             if foundBagdIdAndSlotIndices ~= nil then
                                 for _, invItemData in ipairs(foundBagdIdAndSlotIndices) do

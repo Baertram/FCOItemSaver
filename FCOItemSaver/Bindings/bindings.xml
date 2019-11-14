@@ -151,6 +151,10 @@
       <Action name="FCOIS_MARK_ITEM_42">
         <Down>FCOIS.MarkItemByKeybind(42)</Down>
       </Action>
+      <Action name="FCOIS_JUNK_ALL_SELL">
+        <Down>FCOIS.JunkMarkedItems({FCOIS_CON_ICON_SELL}, BAG_BACKPACK)</Down>
+      </Action>
+
     </Category>
   </Layer>
 </Bindings>

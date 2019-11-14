@@ -147,7 +147,11 @@ function FCOIS.CreateMarkerControl(parent, controlId, pWidth, pHeight, pTexture,
                         local filterPanelIdToIconOffset = FCOIS.mappingVars.filterPanelIdToIconOffset
                         local iconPosition = settings.iconPosition
                         local iconOffset = filterPanelIdToIconOffset[FCOIS.gFilterWhere] or iconPosition
-                        control:SetAnchor(LEFT, parent, LEFT, iconOffset.x, iconOffset.y)
+                        --Now add the iconOffset defined at each marker icon too
+                        local iconOffsetDefinedAtMarkerIcon = settings.icon[controlId].offsets[LF_INVENTORY]
+                        local totalOffSetLeft = iconOffset.x + iconOffsetDefinedAtMarkerIcon["left"]
+                        local totalOffSetTop = iconOffset.y + iconOffsetDefinedAtMarkerIcon["top"]
+                        control:SetAnchor(LEFT, parent, LEFT, totalOffSetLeft, totalOffSetTop)
                     end
                     --Add the OnMouseDown event handler to open the context menu of the inventory if right clicking on a texture control
                     if control:GetHandler("OnMouseUp") == nil then

@@ -153,6 +153,10 @@ FCOIS.localizationVars.localizationAll = {
 		["options_icons_gear4"]					 = "Gear 4",
 		["options_icons_gear5"]					 = "Gear 5",
         ["options_header_color"]				 = "Colors & icons",
+        ["options_icon_offset_left"]            = "Offset left",
+        ["options_icon_offset_left_TT"]         = "Offset of the icon inside the inventories, on the x axis (from left)",
+        ["options_icon_offset_top"]             = "Offset top",
+        ["options_icon_offset_top_TT"]          = "Offset of the icon inside the inventories, on the y axis (from top)",
         ["options_icon1_color"]					 = "Lock",
         ["options_icon1_color_TT"]			 = "Color for the lock filter icon",
         ["options_icon2_color"]					 = "Color",
@@ -971,6 +975,8 @@ FCOIS.localizationVars.localizationAll = {
         ["SI_BINDING_NAME_FCOIS_MARK_GEAR_SET_3"]  	 = "Mark with gear set 3",
         ["SI_BINDING_NAME_FCOIS_MARK_GEAR_SET_4"]  	 = "Mark with gear set 4",
         ["SI_BINDING_NAME_FCOIS_MARK_GEAR_SET_5"]  	 = "Mark with gear set 5",
+        ["SI_BINDING_NAME_FCOIS_JUNK_ALL_SELL"]      = "[FCOIS]Junk sell marked",
+        ["fcois_junked_item_count"] = "Junked %s item(s)",
         --Error messages
         ["error_gamepad_mode_not_supported"]	= "FCO ItemSaver does not support the gamepad mode! Please change the mode to keyboard at the settings.",
 
@@ -1197,6 +1203,10 @@ FCOIS.localizationVars.localizationAll = {
 		["options_icons_gear3"]					 = "Set 3",
 		["options_icons_gear4"]					 = "Set 4",
 		["options_icons_gear5"]					 = "Set 5",
+        ["options_icon_offset_left"]            = "Abstand links",
+        ["options_icon_offset_left_TT"]         = "Abstand des Symbols in den Inventaren, auf der X-Achse (von links)",
+        ["options_icon_offset_top"]             = "Abstand oben",
+        ["options_icon_offset_top_TT"]          = "Abstand des Symbols in den Inventaren, auf der Y-Achse (von oben)",
         ["options_header_color"]				 = "Farben & Symbole",
         ["options_icon1_color"]					 = "Schloß Filter",
         ["options_icon1_color_TT"]			 = "Farbe für das Symbol der Schloß Filter Markierungen",
@@ -2019,6 +2029,8 @@ FCOIS.localizationVars.localizationAll = {
         ["SI_BINDING_NAME_FCOIS_MARK_GEAR_SET_3"]  	 = "Gear Set 3 markieren",
         ["SI_BINDING_NAME_FCOIS_MARK_GEAR_SET_4"]  	 = "Gear Set 4 markieren",
         ["SI_BINDING_NAME_FCOIS_MARK_GEAR_SET_5"]  	 = "Gear Set 5 markieren",
+        ["SI_BINDING_NAME_FCOIS_JUNK_ALL_SELL"]      = "[FCOIS]Verkauf markierte->Trödel",
+        ["fcois_junked_item_count"] = "%s Gegenstände zum Trödel bewegt",
         --Error messages
         ["error_gamepad_mode_not_supported"]	= "FCO ItemSaver unterstützt den Gamepad Modus nicht! Bitte wechsel in den Optionen zum Tastatur Modus.",
 
@@ -5077,12 +5089,19 @@ english["ERROR_MESSAGES"]["showContextMenuForAddInvButtons"] = {
 english["ERROR_MESSAGES"]["registerFilterId"] = {
     [1] = "registerFilterId - Registering filter #<<1>> at panelId <<2>> failed!\n"
 }
+english["ERROR_MESSAGES"]["whereAreWeNIL"] = {
+    [1] = "Deconstruction-/ItemSelectionHandler could not determine whereAreWe - <<2>> - panelId: <<1>>, isDragAndDrop: <<3>>, calledFromExternalAddon: <<4>>!\n"
+}
+
 german["ERROR_MESSAGES"] = {}
 german["ERROR_MESSAGES"]["showContextMenuForAddInvButtons"] = {
     [1] = "showContextMenuForAddInvButtons - ButtonText ist leer!\n>index: <<1>>, buttonNameStr: <<2>>, icon: <<3>>, mark: <<4>>\n"
 }
 german["ERROR_MESSAGES"]["registerFilterId"] = {
     [1] = "registerFilterId - Filter Registrierung #<<1>> am Panel <<2>> fehlgeschlagen!\n"
+}
+german["ERROR_MESSAGES"]["whereAreWeNIL"] = {
+    [1] = "Deconstruction-/ItemSelectionHandler konnte woSindWir nicht ermitteln - <<2>> - panelId: <<1>>, isDragAndDrop: <<3>>, calledFromExternalAddon: <<4>>!\n"
 }
 
 --Use metatable to use english "fallback" entries for other languages

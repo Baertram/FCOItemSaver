@@ -22,7 +22,7 @@ function FCOIS.getWhereAreWe(panelId, panelIdAtCall, bag, slot, isDragAndDrop, c
     --======= FUNCTIONs ============================================================
     --Function to check a single item's type and get the whereAreWe panel ID
     local function checkSingleItemProtection(p_bag, p_slotIndex, whereAreWeBefore)
-        if settings.debug then FCOIS.debugMessage( ">>checkSingleItemProtection - panelId: " .. tostring(panelId) .. ", whereAreWeBefore: " .. tostring(whereAreWeBefore), true, FCOIS_DEBUG_DEPTH_ALL) end
+        if settings.debug then FCOIS.debugMessage( ">>checkSingleItemProtection - panelId: " .. tostring(panelId) .. ", whereAreWeBefore: " .. tostring(whereAreWeBefore .. ", calledFromExternalAddon: " ..tostring(calledFromExternalAddon)), true, FCOIS_DEBUG_DEPTH_ALL) end
         if p_bag == nil or p_slotIndex == nil then return false end
         local locWhereAreWe = FCOIS_CON_DESTROY
         --Are we trying to open a container with autoloot on?
@@ -305,7 +305,7 @@ end
 function FCOIS.checkActivePanel(comingFrom, overwriteFilterWhere)
     if overwriteFilterWhere == nil then overwriteFilterWhere = false end
     local inventoryName
-    local ctrlVars = FCOIS.ZOControlVars
+    local ctrlVars2 = FCOIS.ZOControlVars
 
     --Get the current scene's name to be able to distinguish between bank, guildbank, mail etc. when changing to CBE's craftbag panels
     local currentSceneName = SCENE_MANAGER.currentScene.name
@@ -321,125 +321,125 @@ function FCOIS.checkActivePanel(comingFrom, overwriteFilterWhere)
         FCOIS.debugMessage( "[FCOIS.checkActivePanel] Coming from/Before: " .. tostring(oldFilterWhere) .. ", overwriteFilterWhere: " .. tostring(overwriteFilterWhere) .. ", currentSceneName: " ..tostring(currentSceneName), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED)
     end
 
---d("[FCOIS.checkActivePanel] comingFrom: " .. tostring(comingFrom) .. ", overwriteFilterWhere: " ..tostring(overwriteFilterWhere))
+--d("[FCOIS.checkActivePanel] comingFrom/Before: " .. tostring(comingFrom) .. ", overwriteFilterWhere: " ..tostring(overwriteFilterWhere).. ", currentSceneName: " ..tostring(currentSceneName))
 
     --Player bank
-    if (currentSceneName ~= nil and currentSceneName == ctrlVars.bankSceneName and not ctrlVars.BANK:IsHidden()) or comingFrom == LF_BANK_WITHDRAW then
+    if (currentSceneName ~= nil and currentSceneName == ctrlVars2.bankSceneName and not ctrlVars2.BANK:IsHidden()) or comingFrom == LF_BANK_WITHDRAW then
         --Update the filterPanelId
         FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(LF_BANK_WITHDRAW)
-        inventoryName = ctrlVars.BANK_INV
+        inventoryName = ctrlVars2.BANK_INV
     --House bank
-    elseif (currentSceneName ~= nil and currentSceneName == ctrlVars.houseBankSceneName and not ctrlVars.HOUSE_BANK:IsHidden()) or comingFrom == LF_HOUSE_BANK_WITHDRAW then
+    elseif (currentSceneName ~= nil and currentSceneName == ctrlVars2.houseBankSceneName and not ctrlVars2.HOUSE_BANK:IsHidden()) or comingFrom == LF_HOUSE_BANK_WITHDRAW then
         --Update the filterPanelId
         FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(LF_HOUSE_BANK_WITHDRAW)
-        inventoryName = ctrlVars.HOUSE_BANK_INV
+        inventoryName = ctrlVars2.HOUSE_BANK_INV
     --Player inventory at bank (deposit)
-    elseif (currentSceneName ~= nil and currentSceneName == ctrlVars.bankSceneName and ctrlVars.BANK:IsHidden()) or comingFrom == LF_BANK_DEPOSIT then
+    elseif (currentSceneName ~= nil and currentSceneName == ctrlVars2.bankSceneName and ctrlVars2.BANK:IsHidden()) or comingFrom == LF_BANK_DEPOSIT then
         --Update the filterPanelId
         FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(LF_BANK_DEPOSIT)
-        inventoryName = ctrlVars.INV
+        inventoryName = ctrlVars2.INV
     --Player inventory at house bank (deposit)
-    elseif (currentSceneName ~= nil and currentSceneName == ctrlVars.houseBankSceneName and ctrlVars.HOUSE_BANK:IsHidden()) or comingFrom == LF_HOUSE_BANK_DEPOSIT then
+    elseif (currentSceneName ~= nil and currentSceneName == ctrlVars2.houseBankSceneName and ctrlVars2.HOUSE_BANK:IsHidden()) or comingFrom == LF_HOUSE_BANK_DEPOSIT then
         --Update the filterPanelId
         FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(LF_HOUSE_BANK_DEPOSIT)
-        inventoryName = ctrlVars.INV
+        inventoryName = ctrlVars2.INV
     --Guild bank
-    elseif (currentSceneName ~= nil and currentSceneName == ctrlVars.guildBankSceneName and not ctrlVars.GUILD_BANK:IsHidden()) or comingFrom == LF_GUILDBANK_WITHDRAW then
+    elseif (currentSceneName ~= nil and currentSceneName == ctrlVars2.guildBankSceneName and not ctrlVars2.GUILD_BANK:IsHidden()) or comingFrom == LF_GUILDBANK_WITHDRAW then
         --Update the filterPanelId
         FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(LF_GUILDBANK_WITHDRAW)
-        inventoryName = ctrlVars.GUILD_BANK_INV
+        inventoryName = ctrlVars2.GUILD_BANK_INV
     --Player inventory at guild bank (deposit)
-    elseif (currentSceneName ~= nil and currentSceneName == ctrlVars.guildBankSceneName and ctrlVars.GUILD_BANK:IsHidden()) or comingFrom == LF_GUILDBANK_DEPOSIT then
+    elseif (currentSceneName ~= nil and currentSceneName == ctrlVars2.guildBankSceneName and ctrlVars2.GUILD_BANK:IsHidden()) or comingFrom == LF_GUILDBANK_DEPOSIT then
         --Update the filterPanelId
         FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(LF_GUILDBANK_DEPOSIT)
-        inventoryName = ctrlVars.INV
+        inventoryName = ctrlVars2.INV
     --Trading house / Guild store
-    elseif (currentSceneName ~= nil and currentSceneName == ctrlVars.tradingHouseSceneName and not ctrlVars.GUILD_STORE:IsHidden()) or comingFrom == LF_GUILDSTORE_SELL then
+    elseif (currentSceneName ~= nil and currentSceneName == ctrlVars2.tradingHouseSceneName and not ctrlVars2.GUILD_STORE:IsHidden()) or comingFrom == LF_GUILDSTORE_SELL then
         --Update the filterPanelId
         FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(LF_GUILDSTORE_SELL)
-        inventoryName = ctrlVars.INV
+        inventoryName = ctrlVars2.INV
     --Vendor buy
-    elseif ((currentSceneName ~= nil and currentSceneName == ctrlVars.vendorSceneName) or comingFrom == LF_VENDOR_BUY) and not ctrlVars.STORE:IsHidden() then
+    elseif ((currentSceneName ~= nil and currentSceneName == ctrlVars2.vendorSceneName) or comingFrom == LF_VENDOR_BUY) and not ctrlVars2.STORE:IsHidden() then
         --Update the filterPanelId
         FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(LF_VENDOR_BUY)
-        --inventoryName = ctrlVars.VENDOR_SELL
-        inventoryName = ctrlVars.INV
+        --inventoryName = ctrlVars2.VENDOR_SELL
+        inventoryName = ctrlVars2.INV
     --Vendor sell (not showing the buy, buyback or repair tabs and showing the player inventory or the craftbag panel)
-    elseif ((currentSceneName ~= nil and currentSceneName == ctrlVars.vendorSceneName) or comingFrom == LF_VENDOR_SELL)
-        and (ctrlVars.STORE:IsHidden() and ctrlVars.STORE_BUY_BACK:IsHidden() and ctrlVars.REPAIR_LIST:IsHidden()) then
+    elseif ((currentSceneName ~= nil and currentSceneName == ctrlVars2.vendorSceneName) or comingFrom == LF_VENDOR_SELL)
+        and (ctrlVars2.STORE:IsHidden() and ctrlVars2.STORE_BUY_BACK:IsHidden() and ctrlVars2.REPAIR_LIST:IsHidden()) then
         --Update the filterPanelId
         FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(LF_VENDOR_SELL)
-        --inventoryName = ctrlVars.VENDOR_SELL
-        inventoryName = ctrlVars.INV
+        --inventoryName = ctrlVars2.VENDOR_SELL
+        inventoryName = ctrlVars2.INV
     --Vendor buyback
-    elseif ((currentSceneName ~= nil and currentSceneName == ctrlVars.vendorSceneName) or comingFrom == LF_VENDOR_BUYBACK) and not ctrlVars.STORE_BUY_BACK:IsHidden() then
+    elseif ((currentSceneName ~= nil and currentSceneName == ctrlVars2.vendorSceneName) or comingFrom == LF_VENDOR_BUYBACK) and not ctrlVars2.STORE_BUY_BACK:IsHidden() then
         --Update the filterPanelId
         FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(LF_VENDOR_BUYBACK)
-        --inventoryName = ctrlVars.VENDOR_SELL
-        inventoryName = ctrlVars.INV
+        --inventoryName = ctrlVars2.VENDOR_SELL
+        inventoryName = ctrlVars2.INV
     --Vendor repair
-    elseif ((currentSceneName ~= nil and currentSceneName == ctrlVars.vendorSceneName) or comingFrom == LF_VENDOR_REPAIR) and not ctrlVars.REPAIR_LIST:IsHidden() then
+    elseif ((currentSceneName ~= nil and currentSceneName == ctrlVars2.vendorSceneName) or comingFrom == LF_VENDOR_REPAIR) and not ctrlVars2.REPAIR_LIST:IsHidden() then
         --Update the filterPanelId
         FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(LF_VENDOR_REPAIR)
-        --inventoryName = ctrlVars.VENDOR_SELL
-        inventoryName = ctrlVars.INV
+        --inventoryName = ctrlVars2.VENDOR_SELL
+        inventoryName = ctrlVars2.INV
     --Fence
     elseif comingFrom == LF_FENCE_SELL then
         --Update the filterPanelId
         FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(LF_FENCE_SELL)
-        --inventoryName = ctrlVars.FENCE
-        inventoryName = ctrlVars.INV
+        --inventoryName = ctrlVars2.FENCE
+        inventoryName = ctrlVars2.INV
     --Launder
     elseif comingFrom == LF_FENCE_LAUNDER then
         --Update the filterPanelId
         FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(LF_FENCE_LAUNDER)
-        --inventoriyName = ctrlVars.LAUNDER
-        inventoryName = ctrlVars.INV
+        --inventoriyName = ctrlVars2.LAUNDER
+        inventoryName = ctrlVars2.INV
     --Mail
-    elseif (currentSceneName ~= nil and currentSceneName == ctrlVars.mailSendSceneName and not ctrlVars.MAIL_SEND.control:IsHidden()) or comingFrom == LF_MAIL_SEND then
+    elseif (currentSceneName ~= nil and currentSceneName == ctrlVars2.mailSendSceneName and not ctrlVars2.MAIL_SEND.control:IsHidden()) or comingFrom == LF_MAIL_SEND then
         --Update the filterPanelId
         FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(LF_MAIL_SEND)
-        --inventoryName = ctrlVars.MAIL_SEND
-        inventoryName = ctrlVars.INV
+        --inventoryName = ctrlVars2.MAIL_SEND
+        inventoryName = ctrlVars2.INV
     --Trade
-    elseif not ctrlVars.PLAYER_TRADE.control:IsHidden() or comingFrom == LF_TRADE then
+    elseif not ctrlVars2.PLAYER_TRADE.control:IsHidden() or comingFrom == LF_TRADE then
         --Update the filterPanelId
         FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(LF_TRADE)
-        --inventoryName = ctrlVars.PLAYER_TRADE
-        inventoryName = ctrlVars.INV
+        --inventoryName = ctrlVars2.PLAYER_TRADE
+        inventoryName = ctrlVars2.INV
     --Enchanting creation mode
     elseif comingFrom == LF_ENCHANTING_CREATION then
         --Update the filterPanelId
         FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(LF_ENCHANTING_CREATION)
-        inventoryName = ctrlVars.ENCHANTING_STATION
+        inventoryName = ctrlVars2.ENCHANTING_STATION
     --Enchanting extraction mode
     elseif comingFrom == LF_ENCHANTING_EXTRACTION then
         --Update the filterPanelId
         FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(LF_ENCHANTING_EXTRACTION)
-        inventoryName = ctrlVars.ENCHANTING_STATION
+        inventoryName = ctrlVars2.ENCHANTING_STATION
     --Enchanting
     elseif comingFrom == "ENCHANTING" then
         --Determine which enchanting mode is used
         --Enchanting creation mode
-        if ctrlVars.ENCHANTING.enchantingMode == 1 then
+        if ctrlVars2.ENCHANTING.enchantingMode == 1 then
             --Update the filterPanelId
             comingFrom = LF_ENCHANTING_CREATION
             FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(LF_ENCHANTING_CREATION)
-            inventoryName = ctrlVars.ENCHANTING_STATION
+            inventoryName = ctrlVars2.ENCHANTING_STATION
         --Enchanting extraction mode
-        elseif ctrlVars.ENCHANTING.enchantingMode == 2 then
+        elseif ctrlVars2.ENCHANTING.enchantingMode == 2 then
             --Update the filterPanelId
             comingFrom = LF_ENCHANTING_EXTRACTION
             FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(LF_ENCHANTING_EXTRACTION)
-            inventoryName = ctrlVars.ENCHANTING_STATION
+            inventoryName = ctrlVars2.ENCHANTING_STATION
         end
     --Alchemy
-    elseif not ctrlVars.ALCHEMY_STATION:IsHidden() or comingFrom == LF_ALCHEMY_CREATION then
+    elseif not ctrlVars2.ALCHEMY_STATION:IsHidden() or comingFrom == LF_ALCHEMY_CREATION then
         --Update the filterPanelId
         FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(LF_ALCHEMY_CREATION)
-        inventoryName = ctrlVars.ALCHEMY_INV
+        inventoryName = ctrlVars2.ALCHEMY_INV
     --Refinement
-    elseif not ctrlVars.REFINEMENT_INV:IsHidden() or (comingFrom == LF_SMITHING_REFINE or comingFrom == LF_JEWELRY_REFINE) then
+    elseif not ctrlVars2.REFINEMENT_INV:IsHidden() or (comingFrom == LF_SMITHING_REFINE or comingFrom == LF_JEWELRY_REFINE) then
         local craftType = GetCraftingInteractionType()
         local filterPanelId = LF_SMITHING_REFINE
         if craftType == CRAFTING_TYPE_JEWELRYCRAFTING then
@@ -447,9 +447,9 @@ function FCOIS.checkActivePanel(comingFrom, overwriteFilterWhere)
         end
         --Update the filterPanelId
         FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(filterPanelId)
-        inventoryName = ctrlVars.REFINEMENT_INV
+        inventoryName = ctrlVars2.REFINEMENT_INV
     --Deconstruction
-    elseif not ctrlVars.DECONSTRUCTION_INV:IsHidden() or (comingFrom == LF_SMITHING_DECONSTRUCT or comingFrom == LF_JEWELRY_DECONSTRUCT) then
+    elseif not ctrlVars2.DECONSTRUCTION_INV:IsHidden() or (comingFrom == LF_SMITHING_DECONSTRUCT or comingFrom == LF_JEWELRY_DECONSTRUCT) then
         local craftType = GetCraftingInteractionType()
         local filterPanelId = LF_SMITHING_DECONSTRUCT
         if craftType == CRAFTING_TYPE_JEWELRYCRAFTING then
@@ -457,9 +457,9 @@ function FCOIS.checkActivePanel(comingFrom, overwriteFilterWhere)
         end
         --Update the filterPanelId
         FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(filterPanelId)
-        inventoryName = ctrlVars.DECONSTRUCTION_INV
+        inventoryName = ctrlVars2.DECONSTRUCTION_INV
     --Improvement
-    elseif not ctrlVars.IMPROVEMENT_INV:IsHidden() or (comingFrom == LF_SMITHING_IMPROVEMENT or comingFrom == LF_JEWELRY_IMPROVEMENT) then
+    elseif not ctrlVars2.IMPROVEMENT_INV:IsHidden() or (comingFrom == LF_SMITHING_IMPROVEMENT or comingFrom == LF_JEWELRY_IMPROVEMENT) then
         local craftType = GetCraftingInteractionType()
         local filterPanelId = LF_SMITHING_IMPROVEMENT
         if craftType == CRAFTING_TYPE_JEWELRYCRAFTING then
@@ -467,7 +467,7 @@ function FCOIS.checkActivePanel(comingFrom, overwriteFilterWhere)
         end
         --Update the filterPanelId
         FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(filterPanelId)
-        inventoryName = ctrlVars.IMPROVEMENT_INV
+        inventoryName = ctrlVars2.IMPROVEMENT_INV
     --Research dialog
     elseif FCOIS.isResearchListDialogShown() or (comingFrom == LF_SMITHING_RESEARCH_DIALOG or comingFrom == LF_JEWELRY_RESEARCH_DIALOG) then
         local craftType = GetCraftingInteractionType()
@@ -477,9 +477,9 @@ function FCOIS.checkActivePanel(comingFrom, overwriteFilterWhere)
         end
         --Update the filterPanelId
         FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(filterPanelId)
-        inventoryName = ctrlVars.RESEARCH_POPUP_TOP_DIVIDER
+        inventoryName = ctrlVars2.RESEARCH_POPUP_TOP_DIVIDER
     --Research
-    elseif not ctrlVars.RESEARCH:IsHidden() or (comingFrom == LF_SMITHING_RESEARCH or comingFrom == LF_JEWELRY_RESEARCH) then
+    elseif not ctrlVars2.RESEARCH:IsHidden() or (comingFrom == LF_SMITHING_RESEARCH or comingFrom == LF_JEWELRY_RESEARCH) then
         local craftType = GetCraftingInteractionType()
         local filterPanelId = LF_SMITHING_RESEARCH
         if craftType == CRAFTING_TYPE_JEWELRYCRAFTING then
@@ -487,26 +487,26 @@ function FCOIS.checkActivePanel(comingFrom, overwriteFilterWhere)
         end
         --Update the filterPanelId
         FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(filterPanelId)
-        inventoryName = ctrlVars.RESEARCH
+        inventoryName = ctrlVars2.RESEARCH
     --Retrait
     elseif (FCOIS.isRetraitStationShown() or comingFrom == LF_RETRAIT) then
         --Update the filterPanelId
         FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(LF_RETRAIT)
-        inventoryName = ctrlVars.RETRAIT_INV
+        inventoryName = ctrlVars2.RETRAIT_INV
     --Player inventory
-    elseif not ctrlVars.INV:IsHidden() then
+    elseif not ctrlVars2.INV:IsHidden() then
         --Update the filterPanelId
         FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(LF_INVENTORY)
-        inventoryName = ctrlVars.INV
+        inventoryName = ctrlVars2.INV
     --Craft bag
-    elseif (not ctrlVars.CRAFTBAG:IsHidden() or comingFrom == LF_CRAFTBAG) then
+    elseif (not ctrlVars2.CRAFTBAG:IsHidden() or comingFrom == LF_CRAFTBAG) then
         --Update the filterPanelId
         FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(LF_CRAFTBAG)
-        inventoryName = ctrlVars.CRAFTBAG
+        inventoryName = ctrlVars2.CRAFTBAG
     else
         --Update the filterPanelId with a standard value
         FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(LF_INVENTORY)
-        inventoryName = ctrlVars.INV
+        inventoryName = ctrlVars2.INV
     end
 
     --Set the return variable for the currently active filter panel
@@ -518,11 +518,12 @@ function FCOIS.checkActivePanel(comingFrom, overwriteFilterWhere)
         FCOIS.gFilterWhere = overwriteFilterWhere
         --CraftBagExtended is active?
         if overwriteFilterWhere == LF_CRAFTBAG and FCOIS.checkIfCBEorAGSActive(FCOIS.gFilterWhereParent, true) then
-            inventoryName = ctrlVars.CRAFTBAG
+            inventoryName = ctrlVars2.CRAFTBAG
         end
     end
 
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( ">> after: " .. tostring(FCOIS.gFilterWhere) .. ", filterParentPanel: " .. tostring(panelType), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( ">> after: " .. tostring(FCOIS.gFilterWhere) .. ", inventoryName: " .. tostring(inventoryName) .. ", filterParentPanel: " .. tostring(panelType), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+--d( ">> after: " .. tostring(FCOIS.gFilterWhere) .. ", inventoryName: " .. tostring(inventoryName) .. ", filterParentPanel: " .. tostring(panelType))
 
     --Return the found inventory variable (e.g. ZO_PlayerInventory) and the LibFilters filter panel ID (e.g. LF_BANK_WITHDRAW)
     return inventoryName, panelType

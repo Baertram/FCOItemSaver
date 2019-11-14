@@ -337,6 +337,10 @@ function FCOIS.buildDefaultSettings()
     end
 	--Create 2-dimensional arrays for the icons
 	local dynamicCounter = 0
+	local defaultIconOffsets = {
+		["left"] 	= 0,
+		["top"] 	= 0,
+	}
 	for filterIconHelper = 1, numFilterIcons, 1 do
        --Marker icons in inventories
        	FCOIS.settingsVars.defaults.markedItems[filterIconHelper] 	= {}
@@ -349,9 +353,16 @@ function FCOIS.buildDefaultSettings()
 	    FCOIS.settingsVars.defaults.icon[filterIconHelper].antiCheckAtPanel = {}
 		FCOIS.settingsVars.defaults.icon[filterIconHelper].demarkAllOthers = false --added with FCOIS 1.5.2
 		FCOIS.settingsVars.defaults.icon[filterIconHelper].demarkAllOthersExcludeDynamic = false
+		--Icon offsets in inventories etc. (FCOIS v1.6.8)
+		FCOIS.settingsVars.defaults.icon[filterIconHelper].offsets = {}
+		--For each filterPanelId do some checks and add icon default settings data:
 		for filterIconHelperPanel = 1, numLibFiltersFilterPanelIds, 1 do
-			local valueToSet = false
+			--FCOIS v1.6.8
+			--For each filterPanelId add the icon offsets table
+			FCOIS.settingsVars.defaults.icon[filterIconHelper].offsets[filterIconHelperPanel] = defaultIconOffsets
+
 			--FCOIS v.1.4.4 - Research dialog panels need to be protected as default value as they were added new with this version
+			local valueToSet = false
 			if filterIconHelperPanel == LF_SMITHING_RESEARCH_DIALOG or filterIconHelperPanel == LF_JEWELRY_RESEARCH_DIALOG then
 				valueToSet = true
 			end
@@ -396,7 +407,6 @@ function FCOIS.buildDefaultSettings()
         if isStaticGearIcon[filterIconHelper] ~= nil and isStaticGearIcon[filterIconHelper] then
             FCOIS.settingsVars.defaults.iconIsGear[filterIconHelper] = true
         end
-
     end -- for filter icons ...
 	--Preset the default icon colors, textures and sort orders
     FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_LOCK].color   = {["r"] = 1,["g"] = 0,["b"] = 0,["a"] = 1}

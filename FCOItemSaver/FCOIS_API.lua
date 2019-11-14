@@ -1287,7 +1287,7 @@ function FCOIS.MarkItemByKeybind(iconId, p_bagId, p_slotIndex)
 		bagId, slotIndex, controlBelowMouse, controlTypeBelowMouse  = FCOIS.GetBagAndSlotFromControlUnderMouse()
 		--No valid bagId and slotIndex was found
 		if bagId ~= false or slotIndex ~= nil then
-			--No IIfA mosue over GUI was triggered, so clear the data again
+			--No IIfA mouse over GUI was triggered, so clear the data again
 			FCOIS.IIfAmouseOvered = nil
 		end
 	else
@@ -1296,6 +1296,7 @@ function FCOIS.MarkItemByKeybind(iconId, p_bagId, p_slotIndex)
     --bag and slot could be retrieved?
     if bagId ~= nil and slotIndex ~= nil then
         if settings.debug then FCOIS.debugMessage( "[FCOIS.MarkItemByKeybind] Bag: " .. tostring(bagId) .. ", slot: " .. tostring(slotIndex), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+--d("[FCOIS.MarkItemByKeybind] Bag: " .. tostring(bagId) .. ", slot: " .. tostring(slotIndex) .. ", controlBelowMouse: ".. tostring(controlBelowMouse:GetName()) .. ", controlTypeBelowMouse: " .. tostring(controlTypeBelowMouse))
 		local mappingVars = FCOIS.mappingVars
         --Check if the item is currently marked with this icon, or not
         --Get the itemId of the bag, slot combination
@@ -1499,7 +1500,7 @@ function FCOIS.MarkItemCycle(direction)
 	if direction == "standard" then
 		local standardIconOnKeybind = settings.standardIconOnKeybind
 		if standardIconOnKeybind ~= nil and standardIconOnKeybind > 0 and standardIconOnKeybind <= numFilterIcons then
-			--d("Mark item with standard markersymbol from settings: " .. FCOIS.settingsVars.settings.standardIconOnKeybind)
+--d("Mark item with standard markersymbol from settings: " .. settings.standardIconOnKeybind)
 			local iconId = standardIconOnKeybind
 			local isIconEnabled = settings.isIconEnabled
 			if not isIconEnabled[iconId] then

@@ -7,37 +7,40 @@ local FCOIS = FCOIS
 FCOIS.addonVars = {}
 local addonVars = FCOIS.addonVars
 --Addon variables
-addonVars.addonVersionOptions 		= '1.6.7' -- version shown in the settings panel
-addonVars.addonVersionOptionsNumber	= 1.67
-addonVars.gAddonName					= "FCOItemSaver"
-addonVars.gAddonNameShort             = "FCOIS"
+addonVars.addonVersionOptions 		= '1.7.2' -- version shown in the settings panel
+addonVars.addonVersionOptionsNumber	= 1.72
+addonVars.gAddonName				= "FCOItemSaver"
+addonVars.gAddonNameShort           = "FCOIS"
 addonVars.addonNameMenu				= "FCO ItemSaver"
 addonVars.addonNameMenuDisplay		= "|c00FF00FCO |cFFFF00ItemSaver|r"
-addonVars.addonNameContextMenuEntry   = "     - |c22DD22FCO|r ItemSaver -"
+addonVars.addonNameContextMenuEntry = "     - |c22DD22FCO|r ItemSaver -"
 addonVars.addonAuthor 				= '|cFFFF00Baertram|r'
-addonVars.addonAuthorDisplayNameEU  	= '@Baertram'
-addonVars.addonAuthorDisplayNameNA  	= '@Baertram'
-addonVars.addonAuthorDisplayNamePTS  	= '@Baertram'
+addonVars.addonAuthorDisplayNameEU  = '@Baertram'
+addonVars.addonAuthorDisplayNameNA  = '@Baertram'
+addonVars.addonAuthorDisplayNamePTS = '@Baertram'
 addonVars.website 					= "https://www.esoui.com/downloads/info630-FCOItemSaver.html"
-addonVars.FAQwebsite                  = "https://www.esoui.com/portal.php?id=136&a=faq"
-addonVars.authorPortal                = "https://www.esoui.com/portal.php?&id=136"
-addonVars.feedback                    = "https://www.esoui.com/portal.php?id=136&a=bugreport"
-addonVars.donation                    = "https://www.esoui.com/portal.php?id=136&a=faq&faqid=131"
+addonVars.FAQwebsite                = "https://www.esoui.com/portal.php?id=136&a=faq"
+addonVars.authorPortal              = "https://www.esoui.com/portal.php?&id=136"
+addonVars.feedback                  = "https://www.esoui.com/portal.php?id=136&a=bugreport"
+addonVars.donation                  = "https://www.esoui.com/portal.php?id=136&a=faq&faqid=131"
 addonVars.gAddonLoaded				= false
 addonVars.gPlayerActivated			= false
-addonVars.gSettingsLoaded				= false
+addonVars.gSettingsLoaded			= false
 
 --SavedVariables constants
 addonVars.savedVarName				= addonVars.gAddonName .. "_Settings"
-addonVars.savedVarVersion		   		= 0.10 -- Changing this will reset all SavedVariables!
-FCOIS.svDefaultName                         = "Default"
-FCOIS.svAccountWideName                     = "$AccountWide"
-FCOIS.svAllAccountsName                     = "$AllAccounts"
-FCOIS.svSettingsForAllName                  = "SettingsForAll"
-FCOIS.svSettingsName                        = "Settings"
+addonVars.savedVarVersion		   	= 0.10 -- Changing this will reset all SavedVariables!
+FCOIS.svDefaultName                 = "Default"
+FCOIS.svAccountWideName             = "$AccountWide"
+FCOIS.svAllAccountsName             = "$AllAccounts"
+FCOIS.svSettingsForAllName          = "SettingsForAll"
+FCOIS.svSettingsName                = "Settings"
 
 --The global variable for the current mouseDown button
 FCOIS.gMouseButtonDown = {}
+
+--Keybindings
+FCOIS.keybinds = FCOIS.keybinds or {}
 
 --Data for the protection (colors, textures, ...)
 FCOIS.protectedData = {}
@@ -88,6 +91,9 @@ local libMissingErrorText = FCOIS.errorTexts["libraryMissing"]
 FCOIS.LIBLA = LibLoadedAddons
 if FCOIS.LIBLA == nil and LibStub then FCOIS.LIBLA = LibStub:GetLibrary("LibLoadedAddons", true) end
 if FCOIS.LIBLA == nil then d(preVars.preChatTextRed .. string.format(libMissingErrorText, "LibLoadedAddons")) return end
+
+--Initiliaze the library LibCustomMenu
+if LibCustomMenu then FCOIS.LCM = LibCustomMenu else d(preVars.preChatTextRed .. string.format(libMissingErrorText, "LibCustomMenu")) return end
 
 --Create the settings panel object of libAddonMenu 2.0
 FCOIS.LAM = LibAddonMenu2
@@ -282,6 +288,7 @@ checkVars.inventoryRowPatterns = {
 [6] = "^ZO_RetraitStation_%a+RetraitPanelInventoryBackpack%dRow%d%d*",      --Retrait
 [7] = "^ZO_QuickSlotList%dRow%d%d*",                                        --Quickslot
 [8] = "^ZO_RepairWindowList%dRow%d%d*",                                     --Repair at vendor
+[9] = "^ZO_ListDialog1List%dRow%d%d*",                                      --List dialog (Repair, Recharge, Enchant, Research)
 --Other adons like IIfA will be added dynamically at EVENT_ON_ADDON_LOADED callback function
 --See file src/FCOIS_Events.lua, call to function FCOIS.checkIfOtherAddonActive() -> See file
 -- src/FCOIS_OtherAddons.lua, function FCOIS.checkIfOtherAddonActive()
@@ -574,6 +581,38 @@ mappingVars.libFiltersId2BagId = {
     [LF_HOUSE_BANK_DEPOSIT]                     = BAG_BACKPACK,
 }
 
+--The scene names to add register a callback for StateChange to hide the FCOIS context menu(s).
+mappingVars.sceneControlsToRegisterStateChangeForContextMenu = {
+    MAIL_INBOX_SCENE,
+    QUEST_JOURNAL_SCENE,
+    KEYBOARD_GROUP_MENU_SCENE,
+    LORE_LIBRARY_SCENE,
+    LORE_READER_INVENTORY_SCENE,
+    LORE_READER_LORE_LIBRARY_SCENE,
+    LORE_READER_INTERACTION_SCENE,
+    TREASURE_MAP_INVENTORY_SCENE,
+    TREASURE_MAP_QUICK_SLOT_SCENE,
+    GAME_MENU_SCENE,
+    LEADERBOARDS_SCENE,
+    WORLD_MAP_SCENE,
+    HELP_CUSTOMER_SUPPORT_SCENE,
+    FRIENDS_LIST_SCENE,
+    IGNORE_LIST_SCENE,
+    GUILD_HOME_SCENE,
+    GUILD_ROSTER_SCENE,
+    GUILD_RANKS_SCENE,
+    GUILD_HERALDRY_SCENE,
+    GUILD_HISTORY_SCENE,
+    GUILD_CREATE_SCENE,
+    NOTIFICATIONS_SCENE,
+    GUILD_HISTORY_SCENE,
+    CAMPAIGN_BROWSER_SCENE,
+    CAMPAIGN_OVERVIEW_SCENE,
+    STATS_SCENE,
+    SIEGE_BAR_SCENE,
+    CHAMPION_PERKS_SCENE,
+}
+
 --[[
     * CRAFTING_TYPE_ALCHEMY
     * CRAFTING_TYPE_BLACKSMITHING
@@ -656,6 +695,11 @@ FCOIS.iconVars.minIconSize                          = 4
 FCOIS.iconVars.maxIconSize                          = 48
 FCOIS.iconVars.gIconWidth							= 32
 FCOIS.iconVars.gIconHeight             				= 32
+FCOIS.iconVars.minIconOffsetLeft                    = -30
+FCOIS.iconVars.maxIconOffsetLeft                    = 525
+FCOIS.iconVars.minIconOffsetTop                     = -50
+FCOIS.iconVars.maxIconOffsetTop                     = 50
+
 --Width and height for the equipment icons
 FCOIS.equipmentVars.gEquipmentIconWidth 			= 20
 FCOIS.equipmentVars.gEquipmentIconHeight			= 20
@@ -979,6 +1023,24 @@ FCOIS.ZOControlVars.housingBookNavigation = FCOIS.ZOControlVars.housingBook.navi
 -->collectibleIndex (e.g. 5)
 FCOIS.ZOControlVars.ZODialog1 = ZO_Dialog1
 local ctrlVars = FCOIS.ZOControlVars
+
+--The crafting panelIds which should show FCOIS filter buttons
+mappingVars.craftingPanelsWithFCOISFilterButtons = {
+    ["ALCHEMY"] = {
+        [LF_ALCHEMY_CREATION]           = { usesFCOISFilterButtons = true,  panelControl = ctrlVars.ALCHEMY }
+    },
+    ["RETRAIT"] = {
+        [LF_RETRAIT]                    = { usesFCOISFilterButtons = true,  panelControl = ctrlVars.RETRAIT_RETRAIT_PANEL }
+    },
+    ["SMITHING"] = {
+        [LF_SMITHING_REFINE]            = { usesFCOISFilterButtons = true,  panelControl = ctrlVars.SMITHING.refinementPanel},
+        [LF_SMITHING_CREATION]          = { usesFCOISFilterButtons = false, panelControl = nil},
+        [LF_SMITHING_DECONSTRUCT]       = { usesFCOISFilterButtons = true,  panelControl = ctrlVars.SMITHING.deconstructionPanel},
+        [LF_SMITHING_IMPROVEMENT]       = { usesFCOISFilterButtons = true,  panelControl = ctrlVars.SMITHING.improvementPanel},
+        [LF_SMITHING_RESEARCH]          = { usesFCOISFilterButtons = false, panelControl = nil},
+        [LF_SMITHING_RESEARCH_DIALOG]   = { usesFCOISFilterButtons = false, panelControl = nil},
+    },
+}
 
 --Mapping for the house bank BAG numbers
 --[[

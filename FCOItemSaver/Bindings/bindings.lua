@@ -5,26 +5,28 @@ if not FCOIS.libsLoadedProperly then return end
 --Keybinding texts
 
 --Filters
-ZO_CreateStringId("SI_BINDING_NAME_FCOISFILTER1", FCOIS.GetLocText("SI_BINDING_NAME_FCOISFILTER1", true))
-ZO_CreateStringId("SI_BINDING_NAME_FCOISFILTER2", FCOIS.GetLocText("SI_BINDING_NAME_FCOISFILTER2", true))
-ZO_CreateStringId("SI_BINDING_NAME_FCOISFILTER3", FCOIS.GetLocText("SI_BINDING_NAME_FCOISFILTER3", true))
-ZO_CreateStringId("SI_BINDING_NAME_FCOISFILTER4", FCOIS.GetLocText("SI_BINDING_NAME_FCOISFILTER4", true))
+ZO_CreateStringId("SI_BINDING_NAME_FCOISFILTER1",                       FCOIS.GetLocText("SI_BINDING_NAME_FCOISFILTER1", true))
+ZO_CreateStringId("SI_BINDING_NAME_FCOISFILTER2",                       FCOIS.GetLocText("SI_BINDING_NAME_FCOISFILTER2", true))
+ZO_CreateStringId("SI_BINDING_NAME_FCOISFILTER3",                       FCOIS.GetLocText("SI_BINDING_NAME_FCOISFILTER3", true))
+ZO_CreateStringId("SI_BINDING_NAME_FCOISFILTER4",                       FCOIS.GetLocText("SI_BINDING_NAME_FCOISFILTER4", true))
 --Settings menu
-ZO_CreateStringId("SI_BINDING_NAME_FCOIS_SETTINGS_MENU", FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_SETTINGS_MENU", true))
+ZO_CreateStringId("SI_BINDING_NAME_FCOIS_SETTINGS_MENU",                FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_SETTINGS_MENU", true))
 --Standard mark icon
 ZO_CreateStringId("SI_BINDING_NAME_FCOIS_MARK_ITEM_WITH_STANDARD_ICON", FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_MARK_ITEM_WITH_STANDARD_ICON", true))
 --Cycle marker icon up
-ZO_CreateStringId("SI_BINDING_NAME_FCOIS_MARK_ITEM_CYCLE_UP", FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_MARK_ITEM_CYCLE_UP", true))
+ZO_CreateStringId("SI_BINDING_NAME_FCOIS_MARK_ITEM_CYCLE_UP",           FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_MARK_ITEM_CYCLE_UP", true))
 --Cycle marker icon down
-ZO_CreateStringId("SI_BINDING_NAME_FCOIS_MARK_ITEM_CYCLE_DOWN", FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_MARK_ITEM_CYCLE_DOWN", true))
+ZO_CreateStringId("SI_BINDING_NAME_FCOIS_MARK_ITEM_CYCLE_DOWN",         FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_MARK_ITEM_CYCLE_DOWN", true))
 --Static icons
-ZO_CreateStringId("SI_BINDING_NAME_FCOIS_MARK_ITEM_1", FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_MARK_ITEM_1", true))
-ZO_CreateStringId("SI_BINDING_NAME_FCOIS_MARK_ITEM_3", FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_MARK_ITEM_3", true))
-ZO_CreateStringId("SI_BINDING_NAME_FCOIS_MARK_ITEM_5", FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_MARK_ITEM_5", true))
-ZO_CreateStringId("SI_BINDING_NAME_FCOIS_MARK_ITEM_9", FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_MARK_ITEM_9", true))
-ZO_CreateStringId("SI_BINDING_NAME_FCOIS_MARK_ITEM_10", FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_MARK_ITEM_10", true))
-ZO_CreateStringId("SI_BINDING_NAME_FCOIS_MARK_ITEM_11", FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_MARK_ITEM_11", true))
-ZO_CreateStringId("SI_BINDING_NAME_FCOIS_MARK_ITEM_12", FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_MARK_ITEM_12", true))
+ZO_CreateStringId("SI_BINDING_NAME_FCOIS_MARK_ITEM_1",                  FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_MARK_ITEM_1", true))
+ZO_CreateStringId("SI_BINDING_NAME_FCOIS_MARK_ITEM_3",                  FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_MARK_ITEM_3", true))
+ZO_CreateStringId("SI_BINDING_NAME_FCOIS_MARK_ITEM_5",                  FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_MARK_ITEM_5", true))
+ZO_CreateStringId("SI_BINDING_NAME_FCOIS_MARK_ITEM_9",                  FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_MARK_ITEM_9", true))
+ZO_CreateStringId("SI_BINDING_NAME_FCOIS_MARK_ITEM_10",                 FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_MARK_ITEM_10", true))
+ZO_CreateStringId("SI_BINDING_NAME_FCOIS_MARK_ITEM_11",                 FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_MARK_ITEM_11", true))
+ZO_CreateStringId("SI_BINDING_NAME_FCOIS_MARK_ITEM_12",                 FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_MARK_ITEM_12", true))
+--Junk sell marked items
+ZO_CreateStringId("SI_BINDING_NAME_FCOIS_JUNK_ALL_SELL",                FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_JUNK_ALL_SELL", true))
 
 
 --Generate the keybinding texts for the static gear set icons
@@ -33,7 +35,7 @@ function FCOIS.generateStaticGearSetIconsKeybindingsTexts()
     local gearKeybindString = "SI_BINDING_NAME_FCOIS_MARK_GEAR_SET_"
     local numGearSets = FCOIS.numVars.gFCONumGearSets
     for gearNr = 1, numGearSets, 1 do
-        ZO_CreateStringId(gearKeybindString .. tostring(gearNr), FCOIS.GetLocText(gearKeybindString .. tostring(gearNr), true))
+        ZO_CreateStringId(gearKeybindString .. tostring(gearNr),        FCOIS.GetLocText(gearKeybindString .. tostring(gearNr), true))
     end
 end
 
@@ -47,6 +49,43 @@ function FCOIS.generateDynamicIconsKeybindingsTexts()
     local dyn2Icon          = FCOIS.mappingVars.dynamicToIcon
     for dynNr = 1, numDynIcons, 1 do
         local dynIconNr = dyn2Icon[dynNr]
-        ZO_CreateStringId(dynKeybindString .. tostring(dynIconNr), FCOIS.GetLocText(dynKeybindString .. tostring(dynIconNr), true))
+        ZO_CreateStringId(dynKeybindString .. tostring(dynIconNr),      FCOIS.GetLocText(dynKeybindString .. tostring(dynIconNr), true))
     end
+end
+
+--Visibility function for the junk all sell marked items keybind
+local function UpdateAndDisplayJunkSellKeybind()
+    --Scan the inventory for currently shown items and check if there is any marked with the sell marker icon
+    return true
+end
+
+local function JunkAllSellMarkedItems()
+    FCOIS.JunkMarkedItems({FCOIS_CON_ICON_SELL}, BAG_BACKPACK)
+end
+
+--Inventory keybinds
+function FCOIS.InitializeInventoryKeybind()
+    FCOIS.keybinds = FCOIS.keybinds or {}
+    FCOIS.keybinds["inventory"] =
+    {
+        alignment = KEYBIND_STRIP_ALIGN_CENTER,
+        {
+            name = GetString(SI_BINDING_NAME_FCOIS_JUNK_ALL_SELL),
+            keybind = "JUNK_ALL_SELL",
+            callback = JunkAllSellMarkedItems,
+            visible = UpdateAndDisplayJunkSellKeybind,
+        },
+    }
+    local invKeybinds = FCOIS.keybinds["inventory"]
+
+    local function OnStateChanged(oldState, newState)
+        if invKeybinds then
+            if newState == SCENE_SHOWING then
+                KEYBIND_STRIP:AddKeybindButtonGroup(invKeybinds)
+            elseif newState == SCENE_HIDDEN then
+                KEYBIND_STRIP:RemoveKeybindButtonGroup(invKeybinds)
+            end
+        end
+    end
+    INVENTORY_FRAGMENT:RegisterCallback("StateChange", OnStateChanged)
 end
