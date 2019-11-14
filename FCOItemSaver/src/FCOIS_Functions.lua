@@ -1983,7 +1983,7 @@ function FCOIS.JunkMarkedItems(markerIconsMarkedOnItems, bagId)
     local junkedItemCount = 0
     for _, data in pairs(bagCache) do
         local isMarked, _ = FCOIS.IsMarked(data.bagId, data.slotIndex, markerIconsMarkedOnItems, nil)
-        if isMarked and isMarked == true then
+        if isMarked and isMarked == true and not IsItemJunk(data.bagId, data.slotIndex) then
             SetItemIsJunk(data.bagId, data.slotIndex, true)
             junkedItemCount = junkedItemCount + 1
             retVar = true
