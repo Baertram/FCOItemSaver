@@ -290,6 +290,7 @@ function FCOIS.buildDefaultSettings()
 		autoMarkPreventIfMarkedForSellAtGuildStore = false,
 		autoMarkKnownRecipesIconNr = FCOIS_CON_ICON_SELL_AT_GUILDSTORE,
 		sortIconsInAdditionalInvFlagContextMenu = false,
+		keybindMoveMarkedForSellToJunkEnabled = true,
     }
     --Local constant values for speed-up
     local numLibFiltersFilterPanelIds   = FCOIS.numVars.gFCONumFilterInventoryTypes

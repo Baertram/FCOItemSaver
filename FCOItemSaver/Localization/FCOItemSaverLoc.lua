@@ -975,7 +975,9 @@ FCOIS.localizationVars.localizationAll = {
         ["SI_BINDING_NAME_FCOIS_MARK_GEAR_SET_3"]  	 = "Mark with gear set 3",
         ["SI_BINDING_NAME_FCOIS_MARK_GEAR_SET_4"]  	 = "Mark with gear set 4",
         ["SI_BINDING_NAME_FCOIS_MARK_GEAR_SET_5"]  	 = "Mark with gear set 5",
-        ["SI_BINDING_NAME_FCOIS_JUNK_ALL_SELL"]      = "[FCOIS]Junk sell marked",
+        ["SI_BINDING_NAME_FCOIS_JUNK_ALL_SELL"]      = "Sell marked->Junk",
+        ["options_keybind_move_marked_for_sell_to_junk_enabled"]    = "Enable 'Sell marked->Junk' keybind",
+        ["options_keybind_move_marked_for_sell_to_junk_enabled_TT"] = "Enable a keybind in the inventories to move all items marked for sell to the junk.",
         ["fcois_junked_item_count"] = "Junked %s item(s)",
         --Error messages
         ["error_gamepad_mode_not_supported"]	= "FCO ItemSaver does not support the gamepad mode! Please change the mode to keyboard at the settings.",
@@ -2029,7 +2031,9 @@ FCOIS.localizationVars.localizationAll = {
         ["SI_BINDING_NAME_FCOIS_MARK_GEAR_SET_3"]  	 = "Gear Set 3 markieren",
         ["SI_BINDING_NAME_FCOIS_MARK_GEAR_SET_4"]  	 = "Gear Set 4 markieren",
         ["SI_BINDING_NAME_FCOIS_MARK_GEAR_SET_5"]  	 = "Gear Set 5 markieren",
-        ["SI_BINDING_NAME_FCOIS_JUNK_ALL_SELL"]      = "[FCOIS]Verkauf markierte->Trödel",
+        ["SI_BINDING_NAME_FCOIS_JUNK_ALL_SELL"]      = "Verkauf markierte->Trödel",
+        ["options_keybind_move_marked_for_sell_to_junk_enabled"]    = "Aktiviere 'Verkauf markiert->Trödel' Taste",
+        ["options_keybind_move_marked_for_sell_to_junk_enabled_TT"] = "Aktiviere die Tastenkombination in den Inventaren mit der alle zum Verkauf markierte Gegenstände zum Trödel verschoben werden.",
         ["fcois_junked_item_count"] = "%s Gegenstände zum Trödel bewegt",
         --Error messages
         ["error_gamepad_mode_not_supported"]	= "FCO ItemSaver unterstützt den Gamepad Modus nicht! Bitte wechsel in den Optionen zum Tastatur Modus.",

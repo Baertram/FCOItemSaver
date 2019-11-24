@@ -3965,6 +3965,17 @@ function FCOIS.BuildAddonMenu()
 		            default = iconsList[FCOISdefaultSettings.standardIconOnKeybind],
 		            reference = "FCOItemSaver_Standard_Icon_On_Keybind_Dropdown",
 				},
+                --Keybind for "Move all 'marked for sell' to junk"
+                {
+                    type = "checkbox",
+                    name = locVars["options_keybind_move_marked_for_sell_to_junk_enabled"],
+                    tooltip = locVars["options_keybind_move_marked_for_sell_to_junk_enabled_TT"],
+                    getFunc = function() return FCOISsettings.keybindMoveMarkedForSellToJunkEnabled end,
+                    setFunc = function(value) FCOISsettings.keybindMoveMarkedForSellToJunkEnabled = value
+                    end,
+                    default = FCOISdefaultSettings.keybindMoveMarkedForSellToJunkEnabled,
+                    width="full",
+                },
 			},  -- controls keybinds
         },  -- submenu keybinds
 

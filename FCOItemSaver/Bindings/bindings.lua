@@ -55,11 +55,18 @@ end
 
 --Visibility function for the junk all sell marked items keybind
 local function UpdateAndDisplayJunkSellKeybind()
-    --Scan the inventory for currently shown items and check if there is any marked with the sell marker icon
-    return true
+    --Load the user settings, if not done already
+    if not FCOIS.checkIfFCOISSettingsWereLoaded(true) then return nil end
+    --Is the setting enabled to show the keybind?
+    return FCOIS.settingsVars.settings.keybindMoveMarkedForSellToJunkEnabled
 end
 
 local function JunkAllSellMarkedItems()
+    --Load the user settings, if not done already
+    if not FCOIS.checkIfFCOISSettingsWereLoaded(true) then return nil end
+    --Is the setting enabled to show the keybind?
+    if not FCOIS.settingsVars.settings.keybindMoveMarkedForSellToJunkEnabled then return end
+    --Junk the sell marked items now
     FCOIS.JunkMarkedItems({FCOIS_CON_ICON_SELL}, BAG_BACKPACK)
 end
 
