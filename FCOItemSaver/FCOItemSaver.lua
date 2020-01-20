@@ -19,7 +19,7 @@
 ---------------------------------------------------------------------
 --[ToDo list] --
 --____________________________
--- Current max bugs: 42
+-- Current max bugs: 47
 --____________________________
 
 -- 1) 2019-01-14 - Bugfix - Baertram
@@ -29,7 +29,7 @@
 --23) 2019-08-17 Check - Baertram
 --Todo: Test if backup/restore is working properly with the "AllAccountsTheSame" settings enabled
 
---27) 2019-10-10 Bug - Beartram
+--27) 2019-10-10 Bug - Baertram
 -- Drag & drop of marked items directly from the CraftBagExtended panel to a mail slot works even if the FCOIS protection is enabled! SAme for player2player trade.
 
 -- 40)  2019-11-04 Bug - Baertram
@@ -45,22 +45,83 @@ ZO_MenuItem1_MouseUp:4: in function '(main chunk)'
 --> src/FCOIS_Hooks.lua ->     ZO_PreHookHandler(ctrlVars.BACKPACK_BAG, "OnEffectivelyShown", FCOItemSaver_OnEffectivelyShown) -> FCOItemSaver_OnEffectivelyShown ->  ZO_PreHookHandler(childrenCtrl, "OnMouseUp", function(...)
 --> causes the error message!
 
--- 41) 2019-10-25 Bug - Beartram
+-- 41) 2019-10-25 Bug - Baertram
 --Research and other ZO_ListDialogs: If you move the mouse over a row the keybindings of FCOIS get enabled. If you do not leave the row again and press the standard
 --keybindings of the dialog (e.g. research) it will  not work but after closing the menu the UI is messed and something is broken!
+
+-- 43) 2019-12-12 Bug - Baertram
+-- Enchant item popup allows to use items which are marked and protected if you click twice on the items
+
+-- 44) 2019-12-13 Change of code - Baertram
+-- Try to use the listView's setupFunction instead of OnEffectivelyShown to register a secureposthook on the OnMouseUp etc. events to the inventory rows
+
+-- 45) 2019-12-29 bug - Baertram
+-- SHIFT + right mouse button will restore marker icons on items which got NEW into the inventory or got the same bagId + slotIndex like a before "saved"
+-- (via shift+ right mouse) item had. But this item changed it's bagId and slotIndex now or even left the inventory (sold e.g.)
+-- So the save should use the itemId/itemInstanceId or uniqueID instead and the restore as well!
+
+-- 46) 2019-12-29 bug - Baertram
+-- Error message in Guild bank withdraw, after using inventory, bank and guild store before!
+--Clicking left on the additional inventory flag icon:
+--[[
+user:/AddOns/FCOItemSaver/src/FCOIS_ContextMenus.lua:2993: operator .. is not supported for string .. nil
+stack traceback:
+user:/AddOns/FCOItemSaver/src/FCOIS_ContextMenus.lua:2993: in function 'addSortedButtonDataTableEntries'
+|caaaaaa<Locals> sortedButtonData = [table:1]{isDynamic = T, index = 31, iconId = 16, isGear = F, buttonNameStr = "ButtonContextMenu31"},
+index = 31, buttonsIcon = 16, isGear = F, isDynamic = T, buttonData = [table:2]{iconId = 16, anchorButton = "ButtonContextMenu30", mark = T},
+buttonNameStr = "ButtonContextMenu31", dynamicNumber = 4 </Locals>|r
+user:/AddOns/FCOItemSaver/src/FCOIS_ContextMenus.lua:3073: in function 'FCOIS.showContextMenuForAddInvButtons'
+|caaaaaa<Locals> invAddContextMenuInvokerButton = ud, panelId = 4, settings = [table:3]{}, locVars = [table:4]{
+options_prevent_auto_marking_sell_guild_store = "Verhindere Auto-Mark. (Verkauf...",
+options_libFiltersFilterPanelIdName_14 = "LibFilters - Filter Bereich 14...",
+options_auto_mark_crafted_items_TT = "Wenn Sie diese Option aktivier...",
+options_enable_auto_mark_sets_settracker_icons = "Prüfe SetTracker Sets",
+options_icon25_texture_TT = "Symbol des 13. dynamischen Fil...",
+button_context_menu_toggle_anti_deconstruct_off = "Deaktiviere 'Anti-Verwerten'",
+filter1_onlyfiltered = "Schloß Filter ZEIGT NUR GEFIL...",
+options_libFiltersFilterPanelIdName_29 = "LibFilters - Filter Bereich 29...",
+options_icon7_name = "Gear 4",
+chatcommands_filtershow = "|cFFFFFF'allezeigen'|cFFFF00: ...",
+options_libFiltersFilterPanelIdName_31 = "LibFilters - Filter Bereich 31...",
+button_context_menu_unmark_all_as_dynamic2 = "- 2. dynamische",
+options_libFiltersFilterPanelIdName_8 = "LibFilters - Filter Bereich 8...",
+options_icon14_enabled_TT = "Das 2. dynamische Symbol ist a...",
+show_anti_messages_as_alert = "Warnung im Fehler Fenster anze...",
+button_context_menu_toggle_anti_sell_off = "Deaktiviere 'Anti-Verkauf'",
+options_header_items_demark = "Automatische De-Markierung",
+options_additional_buttons_FCOIS_additional_options_colorize = "Färbe zusätzl.
+Optionen in I...", options_quality_legendary = "Legendär",
+SI_BINDING_NAME_FCOIS_MARK_ITEM_1 = "'Schloss' Symbol markieren",
+options_auto_mark_addon = "Zu verwendendes Addon",
+options_enable_auto_mark_check_all_icons = "Prüfe alle Anderen",
+filter1_split_onlyfiltered = "Filter ZEIGT NUR GEFILTERTE",
+SI_BINDING_NAME_FCOIS_MARK_ITEM_21 = "Markiere mit dynamischen Symbo...",
+options_auto_reenable_block_refinement = "Reaktiviere Anti-Veredeln auto...",
+options_enable_filter_in_jewelry_refinement_TT = "Ermöglicht es dir die markier...",
+chatcommands_status_info = "|c00FF00FCO|cFFFF00Item Saver|...",
+rightclick_menu_lock = "Sperre setzen",
+options_block_selling_exception_intricate = "Erlaube Verkauf von aufwendige...", show_anti_messages_in_chat = "Warnung im Chat anzeigen", options_contextmenu_entries_tooltip_protectedpanels_TT = "Zeige den aktuellen Schutz-Sta...", options_icon4_tooltip_TT = "Tooltip beim Gear 2 Symbol anz...", options_enable_auto_mark_sets_non_wished_level = "Level Schwelle <", options_quality_trash = "Trödel", button_context_menu_unmark_all_as_dynamic11 = "- 11. dynamische", rightclick_menu_add_all_start_gear = "Alle hinzufügen zu ", options_additional_buttons_FCOIS_additional_options_offsetx = "Position X", filter_sellguildint_3 = "Aufwendig", options_enable_auto_mark_research_items = "Analysierbare Items", options_enable_filter_in_deconstruction_TT = "Ermöglicht es dir die markier...", options_libFiltersFilterPanelIdName_7 = "LibFilters - Filter Bereich 7...", options_contextmenu_entries_tooltip_protectedpanels = "Zeige Schutz-Status im Tooltip...", options_icon_sort_15 = "15.", filter_lockdyn_13 = "2. dynamische", options_auto_mark_crafted_items = "Markiere hergestellte Gegenstä...", options_icon7_TT = "Tooltip anzeigen", options_armor_type_icon_character_pos_y_TT = "Wähle die Y-Achsen Position f...", options_demark_all_deconstruct = "Demarkiere alle bei 'Verwerten...", options_auto_reenable_block_selling_guild_store = "Reaktiviere Gildenladen Anti-V...", options_quality_artifact = "Artefakt"}, locContextEntriesVars = [table:5]{menu_remove_deconstruction_text = "Verwerten zurücknehmen", menu_add_deconstruction_text = "Verwerten vormerken", menu_add_lock_text = "Sperre setzen", menu_add_research_text = "Analyse vormerken", menu_add_improvement_text = "Aufwerten vormerken", menu_remove_sell_text = "Verkauf zurücknehmen", menu_add_sell_text = "Zum Verkauf vormerken", menu_add_sell_to_guild_text = "Zum Verkauf im Gildenladen vor...", menu_remove_research_text = "Analyse zurücknehmen", menu_remove_improvement_text = "Aufwerten zurücknehmen", menu_remove_intricate_text = "Aufwendig zurücknehmen", menu_remove_lock_text = "Sperre entfernen", menu_add_intricate_text = "Als aufwendig markieren", menu_remove_sell_to_guild_text = "Verkauf im Gildenladen zurück..."}, _ = 26, countDynIconsEnabled = 14, useDynSubMenu = F, icon2Gear = [table:6]{2 = 1}, icon2Dynamic = [table:7]{32 = 20}, isIconGear = [table:8]{1 = F}, isIconDynamic = [table:9]{1 = F}, sortAddInvFlagContextMenu = T, parentName = "ZO_GuildBank", myFont = "ZoFontGame", textPrefix = [table:10]{(null) = "+ ", (null) = "- "}, subMenuEntriesGear = [table:11]{}, subMenuEntriesDynamic = [table:12]{}, subMenuEntriesDynamicAdd = [table:13]{}, subMenuEntriesDynamicRemove = [table:14]{} </Locals>|r
+user:/AddOns/FCOItemSaver/src/FCOIS_AdditionalButtons.lua:117: in function '(anonymous)'
+]]
+
+-- 47) 2019-12-29 bug - Baertram
+-- SHIFT +right click directly in guild bank's withdraw row (with addon Perfect Pixel enabled!) does not work if the inventory was not at least opened once before
+-- the guild bank was opened
+
 
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
---Since last update - New version: 1.6.9
+--Since last update - New version: 1.7.3
 ---------------------------------------------------------------------
 --[Fixed]
---#42: FCOIS contextmenu showing again on containers (removed collectibles check, not sure why it was there. Maybe as collectibles stayed inside the inventories in the past? We'll see).
+--
 
 --[Added]
---Keybind to mark all items marked for sell as junk
+--
 
 --[Added on request]
+--
 
 --************************************************************************************************************************
 --************************************************************************************************************************
