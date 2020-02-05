@@ -545,6 +545,7 @@ function FCOIS.afterSettings()
     local numFilterIcons = FCOIS.numVars.gFCONumFilterIcons
     local icon2Dynamic = FCOIS.mappingVars.iconToDynamic
     local iconIsDynamic = FCOIS.mappingVars.iconIsDynamic
+    local mappingVars = FCOIS.mappingVars
 
     --Set the split filters to true as old "non-split filters" method is not supported anymore!
     settings.splitFilters = true
@@ -654,7 +655,19 @@ function FCOIS.afterSettings()
         end
     end
 
-------------------------------------------------------------------------------------------------------------------------
+    --Added with FCOIS v1.7.4
+    --For each panelId add an entry to for the non-deconstructable Libfilters panelIds
+    local panelIdToDeconstructable = mappingVars.panelIdToDeconstructable
+    local activeFilterPanelIds = mappingVars.activeFilterPanelIds
+    if panelIdToDeconstructable and activeFilterPanelIds then
+        for panelId, _ in pairs(activeFilterPanelIds) do
+            if panelIdToDeconstructable[panelId] == nil then
+                FCOIS.mappingVars.panelIdToDeconstructable[panelId] = false
+            end
+        end
+    end
+
+    ------------------------------------------------------------------------------------------------------------------------
 --  Build the additional inventory "flag" context menu button data
 ------------------------------------------------------------------------------------------------------------------------
     --Constants

@@ -19,7 +19,7 @@
 ---------------------------------------------------------------------
 --[ToDo list] --
 --____________________________
--- Current max bugs: 47
+-- Current max bugs: 51
 --____________________________
 
 -- 1) 2019-01-14 - Bugfix - Baertram
@@ -47,10 +47,17 @@ ZO_MenuItem1_MouseUp:4: in function '(main chunk)'
 
 -- 41) 2019-10-25 Bug - Baertram
 --Research and other ZO_ListDialogs: If you move the mouse over a row the keybindings of FCOIS get enabled. If you do not leave the row again and press the standard
---keybindings of the dialog (e.g. research) it will  not work but after closing the menu the UI is messed and something is broken!
+--keybindings of the dialog (e.g. research) it will not work but after closing the menu the UI is messed and something is broken!
 
 -- 43) 2019-12-12 Bug - Baertram
--- Enchant item popup allows to use items which are marked and protected if you click twice on the items
+-- Enchant item popup allows to use items which are marked and protected if you click twice on the same item row.
+--> Analysis: FCOIS_Hooks.lua- --========= RESEARCH LIST / ListDialog (also repair, enchant, charge, etc.) - ZO_Dialog1 -> ZO_PreHookHandler(rowControl, "OnMouseUp" ->
+--> if upInside then -> FCOIS.refreshPopupDialogButtons(rowControl, false) -> FCOIS_ContextMenus.lua -> function FCOIS.refreshPopupDialogButtons ->
+--> if not ctrlVars.RepairItemDialog:IsHidden() then -> disableResearchNow = FCOIS.DeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, false, nil)
+--TODO: variable disableResearchNow will be "false" on the 2nd click on the same dialog's row: Why?
+-->Tests: If paraemeter calledFromExternalAddon is set to false the protection function will return "false" in the dialogs if you click an item's row
+-->where an icon is marked and protects this item! So why does it return false if calledFromExternalAddon is set to "false" ???
+
 
 -- 44) 2019-12-13 Change of code - Baertram
 -- Try to use the listView's setupFunction instead of OnEffectivelyShown to register a secureposthook on the OnMouseUp etc. events to the inventory rows
@@ -59,6 +66,7 @@ ZO_MenuItem1_MouseUp:4: in function '(main chunk)'
 -- SHIFT + right mouse button will restore marker icons on items which got NEW into the inventory or got the same bagId + slotIndex like a before "saved"
 -- (via shift+ right mouse) item had. But this item changed it's bagId and slotIndex now or even left the inventory (sold e.g.)
 -- So the save should use the itemId/itemInstanceId or uniqueID instead and the restore as well!
+--> File FCOIS_MarkerIcons.lua, function FCOIS.checkIfClearOrRestoreAllMarkers()
 
 -- 46) 2019-12-29 bug - Baertram
 -- Error message in Guild bank withdraw, after using inventory, bank and guild store before!
@@ -108,14 +116,37 @@ user:/AddOns/FCOItemSaver/src/FCOIS_AdditionalButtons.lua:117: in function '(ano
 -- SHIFT +right click directly in guild bank's withdraw row (with addon Perfect Pixel enabled!) does not work if the inventory was not at least opened once before
 -- the guild bank was opened
 
+-- 48) 2020-01-29 bug - Baertram
+-- Changed function's call of ItemSelection and DeconstructionHandler parameter "CalledFromExternalAddon" to be false if called from inside FCOIS
+-- and this makes bug #43 (ZO_ListDialog protected item row clicked twice -> item can be used even if protected) be solved but creates other bugs:
+-- Guild store item sell -> CraftBagExtended panel!!!: Tooltip says e.g. dyanmic icons like Quality are not protected and allows selling but the setting of this dynamic icon
+-- says it is protected!
+-- So it's some problem with CBE and other panels, maybe also happens at the mail and trade panels!
+
+-- 49) 2020-02-01 bug - Baertram
+-- CraftBagExtended panel additional inventory "flag" button was grey and not able to change the "Anti sell at guildstore" protection
+
+-- 50) 2020-02-01 bug - Baertram
+-- Using the left click context menu on an additional inventory "flag" context menu button, and then selecting the "Disable/Enable anti-" protection entry will
+-- not update the tooltips of the marker icons properly. Whereas right clicking the "flag" icon does update the tooltips!
+--> See file FCOIS_ContextMenus.lua, function ContextMenuForAddInvButtonsOnClicked -> isTOGGLEANTISETTINGSButton boolean ->
+
+-- 51) 2020-01-20 bug - Baertram
+-- Typinmg error in function IsMenuVisisble was fixed by ZOs. Adopt the code to support both function names (wrong and correct)
+
 
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
---Since last update - New version: 1.7.3
+--Since last update 1.7.3 - New version: 1.7.4
 ---------------------------------------------------------------------
 --[Fixed]
---
+--#41: Research and other ZO_ListDialogs: Keybindings of vanilla UI and FCOIS will both work on dialogs now and not destroy the UI keys afterwards
+--#43: Double click on dialog item made it selectable even if the item was protected
+--#48: CraftBagExtended items at GuildStore sell panel were not protected properly anymore after #44 was fixed
+--#49: CraftBagExtended panel additional inventory "flag" button was grey and not able to change the "Anti sell at guildstore" protection
+--#50: Additional inventory "flag" button entry "Disable/Enable anti-*" did not update the marker icon tooltips properly to reflect the current protection state, and did not remove slotted and protected items from an extraction/sell/etc. slot automatically
+--#51: Typo in function IsMenuVisisble was removed. Adopted code.
 
 --[Added]
 --

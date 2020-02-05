@@ -74,7 +74,7 @@ function FCOIS.checkIfProtectedSettingsEnabled(checkType, iconNr, isDynamicIcon,
         [LF_VENDOR_BUYBACK]   			= {[LF_VENDOR_BUYBACK]=settings.blockVendorBuyback},
         [LF_VENDOR_REPAIR]   			= {[LF_VENDOR_REPAIR]=settings.blockVendorRepair},
         [LF_GUILDBANK_DEPOSIT] 			= {[LF_GUILDBANK_DEPOSIT]=settings.blockGuildBankWithoutWithdraw},
-        [LF_GUILDSTORE_SELL] 			= {[LF_GUILDSTORE_SELL]=settings.blockSellingGuildStore},
+        [LF_GUILDSTORE_SELL] 			= {[LF_GUILDSTORE_SELL]=settings.blockSellingGuildStore, [LF_CRAFTBAG]=settings.blockSellingGuildStore},
         [LF_FENCE_SELL]					= {[LF_FENCE_SELL]=settings.blockFence},
         [LF_FENCE_LAUNDER]				= {[LF_FENCE_LAUNDER]=settings.blockLaunder},
         [LF_SMITHING_REFINE] 			= {[LF_SMITHING_REFINE]=settings.blockRefinement},
@@ -129,34 +129,36 @@ function FCOIS.checkIfProtectedSettingsEnabled(checkType, iconNr, isDynamicIcon,
             --d("Dynamic icon")
             --Get the protection
             protectionVal = settings.icon[iconNr].antiCheckAtPanel[checkType]
-            --d(">iconNr: " .. tostring(iconNr) .. ", checkAtPanelChecks: " .. tostring(protectionVal))
+--d(">iconNr: " .. tostring(iconNr) .. ", checkAtPanelChecks: " .. tostring(protectionVal))
             --Is the dynamic icon protected at the current panel?
             if protectionVal == true then
                 --The protective functions are not enabled (red flag is set in the inventory additional options flag icon, or the current panel got no additional inventory button, e.g. the crafting research tab or the research popup dialog)?
                 local _, invAntiSettingsEnabled = FCOIS.getContextMenuAntiSettingsTextAndState(checkType, false)
+--d(">invAntiSettingsEnabled: " ..tostring(invAntiSettingsEnabled))
                 if not invAntiSettingsEnabled then
                     --Check if the temporary disabling of the protection is enabled, if the user uses the inventory "flag" icon and sets it to red
                     local isDynIconSettingForProtectionTemporaryDisabledByInvFlag = settings.icon[iconNr].temporaryDisableByInventoryFlagIcon or false
-                    if isDynIconSettingForProtectionTemporaryDisabledByInvFlag then
+                    if isDynIconSettingForProtectionTemporaryDisabledByInvFlag == true then
                         --The dynamic icon is temporary not protected at this panel!
-                        --d(">>Dyn icon protection disabled by inventory flag icon!")
+--d(">>Dyn icon protection disabled by inventory flag icon!")
                         protectionVal = false
                     end
                 end
             end
         else
-            --d("Non dynamic icon")
+--d("Non dynamic icon")
             --Non dynamic
             protectionValues = protectionSettings[checkType]
         end
     else
-        --d("No icon")
+--d("No icon")
         protectionValues = protectionSettings[checkType]
     end
     --============== SPECIAL ITEM & ICON CHECKS ====================================
     --Special treatment for the protectionValue and the AntiDestroy protectionValue
     --Found one or more protection values? Check each now to
     if protectionValues ~= nil then
+--d(">>>Anti-Destroy checks")
         --Entries look like this:
         --[LF_INVENTORY] 			        = {[FCOIS_CON_DESTROY]=settings.blockDestroying},
         --or this if multiple entries:
@@ -170,21 +172,25 @@ function FCOIS.checkIfProtectedSettingsEnabled(checkType, iconNr, isDynamicIcon,
                 --Other panel anti settings?
                 if key == LF_CRAFTBAG then
                     protectionVal = value
+--d(">CraftBag protectionVal: " ..tostring(protectionVal))
                 end
             else
                 --Anti destroy settings?
                 if key == FCOIS_CON_DESTROY then
                     protectionValDestroy = value
-                    --Other panel anti settings?
+--d(">Destroy protectionVal: " ..tostring(protectionValDestroy))
+                --Other panel anti settings?
                 elseif key == checkType then
                     protectionVal = value
+--d(">Anti: checkType: " .. tostring(checkType) .. ", protectionVal: " ..tostring(protectionVal))
                 end
             end
         end
     end
     --============== SPECIAL ITEM & ICON CHECKS ====================================
     --Check details for the current filter panel too? e.g. check if items marked for deconstruction are allowed to be deconstructed at the deconstruction panel
-    if iconNr ~= nil and checkAntiDetails and whereAreWe ~= nil then
+    if iconNr ~= nil and checkAntiDetails == true and whereAreWe ~= nil then
+--d(">>checkAntiDetails checks")
         --After checking dynamic icon settings check the global extra checks now (e.g. if selling an icon at the vendor sell panel is allowed if the icon is marked with the 'sell' icon)
         --If current checked panel = sell or guild store sell or fence sell
         if (whereAreWe == FCOIS_CON_SELL or whereAreWe == FCOIS_CON_GUILD_STORE_SELL or whereAreWe == FCOIS_CON_FENCE_SELL) then
@@ -384,7 +390,7 @@ function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChat
     local settings = FCOIS.settingsVars.settings
 
     if settings.debug then FCOIS.debugMessage( "[ItemSelectionHandler] Bag: " .. tostring(bag) .. ", Slot: " .. tostring(slot) .. ", echo: " .. tostring(echo) .. ", isDragAndDrop: " .. tostring(isDragAndDrop) .. ", overrideChatOutput: " .. tostring(overrideChatOutput) .. ", suppressChatOutput: " .. tostring(suppressChatOutput) .. ", overrideAlert: " .. tostring(overrideAlert) .. ", suppressAlert: " .. tostring(suppressAlert) .. ", calledFromExternalAddon: " .. tostring(calledFromExternalAddon) .. ", panelId: " .. tostring(panelId), true, FCOIS_DEBUG_DEPTH_SPAM) end
-    --d("[FCOIS]ItemSelectionHandler - Bag: " .. tostring(bag) .. ", Slot: " .. tostring(slot) .. ", Echo: " .. tostring(echo) .. ", overrideChatOutput: " .. tostring(overrideChatOutput) .. ", suppressChatOutput: " .. tostring(suppressChatOutput) .. ", overrideAlert: " .. tostring(overrideAlert) .. ", suppressAlert: " .. tostring(suppressAlert) .. ", calledFromExternalAddon: " .. tostring(calledFromExternalAddon) .. ", panelId: " .. tostring(panelId))
+--d("[FCOIS]ItemSelectionHandler - Bag: " .. tostring(bag) .. ", Slot: " .. tostring(slot) .. ", Echo: " .. tostring(echo) .. ", overrideChatOutput: " .. tostring(overrideChatOutput) .. ", suppressChatOutput: " .. tostring(suppressChatOutput) .. ", overrideAlert: " .. tostring(overrideAlert) .. ", suppressAlert: " .. tostring(suppressAlert) .. ", calledFromExternalAddon: " .. tostring(calledFromExternalAddon) .. ", panelId: " .. tostring(panelId))
 
     --Panel at the call of the function
     local panelIdAtCall = panelId
@@ -479,7 +485,7 @@ function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChat
     local singleItemChecks = whereAreWeToSingleItemChecks[whereAreWe] or false
 
     if settings.debug then FCOIS.debugMessage( "[ItemSelectionHandler]>Where are we: " .. tostring(whereAreWe) .. ", isBlocked: " .. tostring(isBlocked) .. ", singleItemChecks: " .. tostring(singleItemChecks) .. ", panelId: " .. tostring(panelId), true, FCOIS_DEBUG_DEPTH_SPAM) end
---d(">Where are we: " .. tostring(whereAreWe) .. ", isBlocked: " .. tostring(isBlocked) .. ", singleItemChecks: " .. tostring(singleItemChecks) .. ", panelId: " .. tostring(panelId) .. ", id: " ..tostring(id))
+    --d(">Where are we: " .. tostring(whereAreWe) .. ", isBlocked: " .. tostring(isBlocked) .. ", singleItemChecks: " .. tostring(singleItemChecks) .. ", panelId: " .. tostring(panelId) .. ", id: " ..tostring(id))
 
     --======= SPECIAL CHECKS - RECIPES, STYLE MOTIFS, FOOD =========================
     -- Check if the recipe/style motif/food/crown store item is not protected because the current anti-destroy option is disabled
@@ -536,7 +542,7 @@ function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChat
             markedWithOneIcon = true
             local isDynamicIcon = mappedIsDynIcon[iconIdToCheck]
             if settings.debug then FCOIS.debugMessage(">> Item is protected with the icon " .. iconIdToCheck .. ", isDynamic: " .. tostring(isDynamicIcon), true, FCOIS_DEBUG_DEPTH_SPAM) end
---d(">> Item is protected with the icon " .. iconIdToCheck .. ", isDynamic: " .. tostring(isDynamicIcon))
+            --d(">> Item is protected with the icon " .. iconIdToCheck .. ", isDynamic: " .. tostring(isDynamicIcon))
             --Reset the return variable for each icon again to the global block variable!
             isBlockedLoop = isBlocked
             --Is the current filterPanelId not 999 (fallback, e.g. bank withdraw or bank deposit, guild bank withdraw or guild bank deposit, ...)
@@ -548,7 +554,7 @@ function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChat
                 --Is the icon a dynamic icon?
                 if isDynamicIcon then
                     if settings.debug then FCOIS.debugMessage(">>> dynamic icon", true, FCOIS_DEBUG_DEPTH_SPAM) end
---d(">>> dynamic icon")
+                    --d(">>> dynamic icon")
                     --The filterPanelId (determined by whereAreWe) given to function FCOIS.checkIfProtectedSettingsEnabled here is just LF_INVENTORY for the item related checks
                     --(recipes, autoloot container, bank deposit, guild bank deposit, etc.)
                     --This would return the wrong settings and thus it is checked before, if the whereAreWe panel id is related to single item checks.
@@ -556,20 +562,20 @@ function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChat
                     if not singleItemChecks then
                         --Check the settings again now to see if this icon's dyanmic anti-settings are enabled for the given panel "whereAreWe"
                         --Call with 3rd parameter "isDynamicIcon" = true to skip "is dynamic icon check" inside the function again
---d(">dynIcon ->checkIfProtectedSettingsEnabled")
+                        --d(">dynIcon ->checkIfProtectedSettingsEnabled")
                         isBlockedLoop, isBlockedLoopDestroy = FCOIS.checkIfProtectedSettingsEnabled(whereAreWeToFilterPanelId[whereAreWe], iconIdToCheck, true)
                         if not isBlockedLoop and isBlockedLoopDestroy then
                             isBlockedLoop = isBlockedLoopDestroy
                         end
                         if settings.debug then FCOIS.debugMessage(">>>> Dyn 1, isBlockedLoop: " .. tostring(isBlockedLoop), true, FCOIS_DEBUG_DEPTH_SPAM) end
---d(">>>> Dyn 1, isBlockedLoop: " .. tostring(isBlockedLoop))
+                        --d(">>>> Dyn 1, isBlockedLoop: " .. tostring(isBlockedLoop))
                     end
                     --Does the dynamic icon block the item and was it not globally blocked before?
                     --Then we need to check some global stuff from before again (like the item's type -> recipe/autoloot container/style motif/potion/food/etc.)
                     --and return the settings from there to get the 'real' anti-settings block state
                     if singleItemChecks and (isBlockedLoop ~= isBlocked) then
                         if settings.debug then FCOIS.debugMessage(">>>> Dyn 2, singleItemChecks: " .. tostring(singleItemChecks) .. ", isBlocked: " .. tostring(isBlocked), true, FCOIS_DEBUG_DEPTH_SPAM) end
---d(">>>> Dyn 2, singleItemChecks: " .. tostring(singleItemChecks) .. ", isBlocked: " .. tostring(isBlocked))
+                        --d(">>>> Dyn 2, singleItemChecks: " .. tostring(singleItemChecks) .. ", isBlocked: " .. tostring(isBlocked))
                         --The dynmic icon is blocking but the global settings did not block before.
                         --Check the whereAreWe settings again now, to get special settings for the autoloot container/recipes/etc.
                         isBlockedLoop = isBlocked
@@ -629,7 +635,7 @@ function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChat
             --Abort here if at least one marker icon was set and it is protecting the item!
             if isBlockedLoop == true then
                 if settings.debug then FCOIS.debugMessage("isBlockedLoop: true -> Item is protected!", true, FCOIS_DEBUG_DEPTH_SPAM) end
---d("isBlockedLoop: true -> Item is protected!")
+                --d("isBlockedLoop: true -> Item is protected!")
                 --Show text in chat or alert message now?
                 if echo == true then
                     --d(">item echo - whereAreWe: " .. tostring(whereAreWe) .. ", overrideChatOutput: " .. tostring(overrideChatOutput) .. ", suppressChatOutput: " .. tostring(suppressChatOutput) .. ", overrideAlert: " .. tostring(overrideAlert) .. ", suppressAlert: " .. tostring(suppressAlert))
@@ -647,18 +653,18 @@ function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChat
     --Is the item marked with any of the marker icons? Don't block it
     if not markedWithOneIcon and (isBlockedLoop or isBlocked) then
         if settings.debug then FCOIS.debugMessage("<not marked with one icon -> Abort 'false'", true, FCOIS_DEBUG_DEPTH_SPAM) end
---d("not marked with one icon -> Abort 'false'")
+        --d("not marked with one icon -> Abort 'false'")
         return false
     end
     --Were all icons checked and everything was not blocked? Then return false to unblock the icon
     if not isBlockedLoop then
         if settings.debug then FCOIS.debugMessage("<not blocked in loop -> Abort 'false'", true, FCOIS_DEBUG_DEPTH_SPAM) end
---d("not blocked in loop -> Abort 'false'")
+        --d("not blocked in loop -> Abort 'false'")
         return false
     end
     --Else return the global block value from before the icon checks
     if settings.debug then FCOIS.debugMessage("<return isBlocked: " .. tostring(isBlocked), true, FCOIS_DEBUG_DEPTH_SPAM) end
---d("return isBlocked: " .. tostring(isBlocked))
+    --d("return isBlocked: " .. tostring(isBlocked))
     return isBlocked
 end -- ItemSelectionHandler
 
@@ -691,27 +697,28 @@ function FCOIS.DeconstructionSelectionHandler(bag, slot, echo, overrideChatOutpu
         craftingType = GetCraftingInteractionType()
         craftingTypeIsDeconstructable = craftingTypesWithDeconstruction[craftingType] or false
     end
+    local isDeconstructablePanelId = (panelId ~= nil and FCOIS.checkIfFilterPanelIsDeconstructable(panelId)) or false
     local noDeconstructionShouldBeDone = true
-    if (ctrlVars.DECONSTRUCTION_BAG ~= nil and not ctrlVars.DECONSTRUCTION_BAG:IsHidden()) or (calledFromExternalAddon and craftingTypeIsDeconstructable) or (panelId ~= nil and (panelId == LF_SMITHING_DECONSTRUCT or panelId == LF_JEWELRY_DECONSTRUCT)) then
+    if (ctrlVars.DECONSTRUCTION_BAG ~= nil and not ctrlVars.DECONSTRUCTION_BAG:IsHidden()) or (calledFromExternalAddon and craftingTypeIsDeconstructable) or isDeconstructablePanelId == true then
         noDeconstructionShouldBeDone = false
     end
 
     if settings.debug then FCOIS.debugMessage( "[DeconstructionSelectionHandler] Bag: " .. tostring(bag) .. ", Slot: " .. tostring(slot) .. ", echo: " .. tostring(echo) .. ", overrideChatOutput: " .. tostring(overrideChatOutput) .. ", suppressChatOutput: " .. tostring(suppressChatOutput) .. ", overrideAlert: " .. tostring(overrideAlert) .. ", suppressAlert: " .. tostring(suppressAlert) .. ", calledFromExternalAddon: " .. tostring(calledFromExternalAddon) .. ", panelId: " .. tostring(panelId).. ", craftingType: " .. tostring(craftingType) .. ", craftingTypeIsDeconstructable: " ..tostring(craftingTypeIsDeconstructable).. ", noDeconstructionShouldBeDone: " ..tostring(noDeconstructionShouldBeDone), true, FCOIS_DEBUG_DEPTH_SPAM) end
---d("[FCOIS]DeconstructionSelectionHandler - panelId: " ..tostring(panelId) .. ", calledFromExternalAddon: " ..tostring(calledFromExternalAddon) .. "->craftingType: " .. tostring(craftingType) .. ", craftingTypeIsDeconstructable: " ..tostring(craftingTypeIsDeconstructable).. ", noDeconstructionShouldBeDone: " ..tostring(noDeconstructionShouldBeDone))
+    --d("[FCOIS]DeconstructionSelectionHandler - panelId: " ..tostring(panelId) .. ", calledFromExternalAddon: " ..tostring(calledFromExternalAddon) .. "->craftingType: " .. tostring(craftingType) .. ", craftingTypeIsDeconstructable: " ..tostring(craftingTypeIsDeconstructable).. ", noDeconstructionShouldBeDone: " ..tostring(noDeconstructionShouldBeDone))
     --Call the itemSelectionHandler for everything else then Deconstruction now?
-    if( noDeconstructionShouldBeDone ) then
+    if( noDeconstructionShouldBeDone == true ) then
         local craftingPrevention = FCOIS.craftingPrevention
-        --No deconstruction ->  Use ItemSelectionHandler
-        if ( calledFromExternalAddon
-                or (not ctrlVars.ALCHEMY_STATION:IsHidden() or FCOIS.gFilterWhere == LF_ALCHEMY_CREATION or (calledFromExternalAddon and (panelId==LF_ALCHEMY_CREATION)))
-                or (not ctrlVars.ENCHANTING_STATION:IsHidden() or FCOIS.gFilterWhere == LF_ENCHANTING_CREATION or FCOIS.gFilterWhere == LF_ENCHANTING_EXTRACTION or (calledFromExternalAddon and (panelId==LF_ENCHANTING_CREATION or panelId==LF_ENCHANTING_EXTRACTION)))
-                or (craftingPrevention.IsShowingRefinement() or FCOIS.gFilterWhere == LF_SMITHING_REFINE or FCOIS.gFilterWhere == LF_JEWELRY_REFINE or (calledFromExternalAddon and (panelId==LF_SMITHING_REFINE or panelId==LF_JEWELRY_REFINE)))
-                or (craftingPrevention.IsShowingImprovement() or FCOIS.gFilterWhere == LF_SMITHING_IMPROVEMENT or FCOIS.gFilterWhere == LF_JEWELRY_IMPROVEMENT or (calledFromExternalAddon and (panelId==LF_SMITHING_IMPROVEMENT or panelId==LF_JEWELRY_IMPROVEMENT)))
-                or (craftingPrevention.IsShowingResearch() or FCOIS.gFilterWhere == LF_SMITHING_RESEARCH or FCOIS.gFilterWhere == LF_JEWELRY_RESEARCH or (calledFromExternalAddon and (panelId==LF_SMITHING_RESEARCH or panelId==LF_JEWELRY_RESEARCH)))
-                or (FCOIS.isResearchListDialogShown() or FCOIS.gFilterWhere == LF_SMITHING_RESEARCH_DIALOG or FCOIS.gFilterWhere == LF_JEWELRY_RESEARCH_DIALOG or (calledFromExternalAddon and (panelId==LF_SMITHING_RESEARCH_DIALOG or panelId==LF_JEWELRY_RESEARCH_DIALOG)))
-                or (FCOIS.isRetraitStationShown() or FCOIS.gFilterWhere == LF_RETRAIT or (calledFromExternalAddon and panelId==LF_RETRAIT))
+        --No deconstruction -> Use ItemSelectionHandler function to run the Anti-* protection checks
+        if ( (calledFromExternalAddon and panelId ~= nil and isDeconstructablePanelId == false)
+                or FCOIS.checkIfFilterPanelIsDeconstructable(FCOIS.gFilterWhere) == false
+                or not ctrlVars.ALCHEMY_STATION:IsHidden()
+                or not ctrlVars.ENCHANTING_STATION:IsHidden()
+                or craftingPrevention.IsShowingRefinement()
+                or craftingPrevention.IsShowingImprovement()
+                or craftingPrevention.IsShowingResearch()
+                or FCOIS.isResearchListDialogShown()
+                or FCOIS.isRetraitStationShown()
         ) then
-            --TODO: Why "calledFromExternalAddon" = false? And not taken from the parameter of this function?
             return FCOIS.callItemSelectionHandler(bag, slot, echo, false, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId)
         else
             return false

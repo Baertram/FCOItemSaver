@@ -1061,6 +1061,15 @@ function FCOIS.isNotCreatingCraftItem()
     return isNotCreatingCraftItem
 end
 
+--Check if the LibFilters panelId is a panel Id which allows deconstruction
+function FCOIS.checkIfFilterPanelIsDeconstructable(panelId)
+    panelId = panelId or FCOIS.gFilterWhere
+    if panelId == nil then return nil end
+    local deconstructablePanels = FCOIS.mappingVars.panelIdToDeconstructable
+    local panelIsDeconstructable = deconstructablePanels[panelId] or false
+    return panelIsDeconstructable
+end
+
 --Check if the writ or non-writ item is crafted and should be marked wih the "crafted" marker icon
 function FCOIS.isWritOrNonWritItemCraftedAndIsAllowedToBeMarked()
     --d("[FCOIS]isWritOrNonWritItemCraftedAndIsAllowedToBeMarked")
@@ -1128,6 +1137,7 @@ end
 --==============================================================================
 --Function to change the button #  state and keybind of a dialog now
 function FCOIS.changeDialogButtonState(dialog, buttonNr, stateBool)
+--d("[FCOIS]changeDialogButtonState-dialog: " ..tostring(dialog) .. ", button: " ..tostring(buttonNr) .. ", stateBool: " ..tostring(stateBool))
     if not dialog or not buttonNr then return end
     stateBool = stateBool or false
     --WINDOW_MANAGER:GetControlByName(ctrlVars.RepairItemDialog, "Button" .. tostring(buttonNr)):SetEnabled(enableResearchButton)

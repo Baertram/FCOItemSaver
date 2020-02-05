@@ -9,6 +9,9 @@ local numFilterIcons = FCOIS.numVars.gFCONumFilterIcons
 --LibCustomMenu
 local lcm = FCOIS.LCM
 
+--Keybind layer containing FCOIS keybinds
+local FCOISKeybindingActionLayerName = GetString(SI_KEYBINDINGS_LAYER_GENERAL)
+
 --==========================================================================================================================================
 --									FCOIS Pre-Hooks & Hooks / Scene & Fragment callback functions
 --==========================================================================================================================================
@@ -311,10 +314,10 @@ local function FCOItemSaver_OnInventorySlot_DoPrimaryAction(inventorySlot)
     local doNotCallOriginalZO_InventorySlot_DoPrimaryAction = false
     --Hide the context menu at last active panel
     FCOIS.hideContextMenu(FCOIS.gFilterWhere)
-    local contextMenuClearMarkesByShiftKey = FCOIS.settingsVars.settings.contextMenuClearMarkesByShiftKey
     --Check if SHIFT key is pressed and if settings to use SHIFT key + right mouse to remove/restore marker icons on the inventory row is enabled
     -->Then do not call the double click handler here
-    if contextMenuClearMarkesByShiftKey and IsShiftKeyDown() then return false end
+    local contextMenuClearMarkesByShiftKey = FCOIS.settingsVars.settings.contextMenuClearMarkesByShiftKey
+    if contextMenuClearMarkesByShiftKey == true and IsShiftKeyDown() then return false end
 
     --Check where we are
     local parent = inventorySlot:GetParent()
@@ -418,7 +421,7 @@ local function FCOItemSaver_CharacterOnEffectivelyShown(self, ...)
 --d(">EquipmentSlot: " ..tostring(equipmentSlotName))
                 local currentCharChild = self:GetChild(i)
                 if currentCharChild ~= nil then
-                    if contextMenuClearMarkesByShiftKey then
+                    if contextMenuClearMarkesByShiftKey == true then
                         --Mouse up event for the SHIFT+right mouse button
                         if( not GetEventHandler("OnMouseUp", equipmentSlotName) ) then
 --d(">>Set event handler: OnMouseUp")
@@ -456,7 +459,7 @@ local function FCOItemSaver_OnEffectivelyShown(self, ...)
     for i = 1, self:GetNumChildren() do
         local childrenCtrl = self:GetChild(i)
         --Enable clearing all markers by help of the SHIFT+right click?
-        if contextMenuClearMarkesByShiftKey then
+        if contextMenuClearMarkesByShiftKey == true then
             local childrenName = childrenCtrl:GetName()
             -- Append OnMouseUp event of inventory item controls, for each row (children), if it is not already set there before inside the if via SetEventHandler(...)
             if( not GetEventHandler("OnMouseUp", childrenName) ) then
@@ -464,7 +467,7 @@ local function FCOItemSaver_OnEffectivelyShown(self, ...)
                 --PreHookHandler( "OnMouseUp", childrenCtrl, FCOItemSaver_InventoryItem_OnMouseUp)
                 --Add the custom event handler function to a global list so it won't be added twice
                 SetEventHandler("OnMouseUp", childrenName, FCOItemSaver_InventoryItem_OnMouseUp)
-                --Use ZO function to PreHook the event handler now
+                --Use ZOs function to PreHook the event handler now
                 ZO_PreHookHandler(childrenCtrl, "OnMouseUp", function(...)
                     FCOItemSaver_InventoryItem_OnMouseUp(...)
                 end)
@@ -477,7 +480,7 @@ end
 
 --Callback function for start a new drag&drop operation
 --After the item was picked from the inventory the event EVENT_INVENTORY_SLOT_LOCKED will be called, as the item get's locked against changes
---Check file src/FCOIS_Events.lua, function FCOItemSaver_OnInventorySlotLocked() for the further checks of a dragged item -> Protections
+--Check file src/FCOIS_Events.lua, function FCOItemSaver_OnInventorySlotLocked() for the further checks of a dragged item -> Protections and error messages
 local function FCOItemSaver_OnDragStart(inventorySlot)
     if inventorySlot == nil then return end
     local cursorContentType = GetCursorContentType()
@@ -486,10 +489,12 @@ local function FCOItemSaver_OnDragStart(inventorySlot)
     if cursorContentType == MOUSE_CONTENT_EMPTY then
         inventorySlot = ZO_InventorySlot_GetInventorySlotComponents(inventorySlot)
     end
+--FCOIS._inventorySlot=inventorySlot
     FCOIS.dragAndDropVars.bag = nil
     FCOIS.dragAndDropVars.slot = nil
     local bag, slot = FCOIS.MyGetItemDetails(inventorySlot)
     if bag == nil or slot == nil then bag, slot = ZO_Inventory_GetBagAndIndex(inventorySlot) end
+--d(">bag, slot: " .. tostring(bag) .. ", " .. tostring(slot))
     if bag == nil or slot == nil then return end
     FCOIS.dragAndDropVars.bag = bag
     FCOIS.dragAndDropVars.slot = slot
@@ -613,7 +618,7 @@ function FCOIS.CreateHooks()
 
         --if the context menu should not be shown, because all marker icons were removed
         -- hide it now
-        if prevVars.dontShowInvContextMenu == false and isCharacterShown and contextMenuClearMarkesByShiftKey and IsShiftKeyDown() then
+        if prevVars.dontShowInvContextMenu == false and isCharacterShown and contextMenuClearMarkesByShiftKey == true and IsShiftKeyDown() then
             --d(">FCOIS context menu, shift key is down")
             FCOIS.preventerVars.dontShowInvContextMenu = true
         end
@@ -946,7 +951,7 @@ function FCOIS.CreateHooks()
     local researchPopupDialogCustomControl = ESO_Dialogs["SMITHING_RESEARCH_SELECT"].customControl()
     if researchPopupDialogCustomControl ~= nil then
         ZO_PreHookHandler(researchPopupDialogCustomControl, "OnShow", function()
-            --d("[FCOIS]SMITHING_RESEARCH_SELECT PreHook:OnShow")
+--d("[FCOIS]SMITHING_RESEARCH_SELECT PreHook:OnShow")
             --As this OnShow function will be also called for other ZO_ListDialog1 dialogs...
             --Check if we are at the research popup dialog
             if not FCOIS.isResearchListDialogShown() then return false end
@@ -955,7 +960,7 @@ function FCOIS.CreateHooks()
             FCOIS.CheckFilterButtonsAtPanel(true, LF_SMITHING_RESEARCH_DIALOG)
         end)
         ZO_PreHookHandler(researchPopupDialogCustomControl, "OnHide", function()
-            --d("[FCOIS]SMITHING_RESEARCH_SELECT PreHook:OnHide")
+--d("[FCOIS]SMITHING_RESEARCH_SELECT PreHook:OnHide")
             --Check if we are at the research popup dialog
             if not FCOIS.preventerVars.ZO_ListDialog1ResearchIsOpen then return false end
             FCOIS.preventerVars.ZO_ListDialog1ResearchIsOpen = false
@@ -964,14 +969,14 @@ function FCOIS.CreateHooks()
             FCOIS.CheckFilterButtonsAtPanel(false, LF_SMITHING_RESEARCH_DIALOG, nil, true) -- Last parameter: Hide filter buttons
         end)
     end
-    --========= RESEARCH LIST / ListDialog (also repair, enchant, charge, etc.) ======================================================
+    --========= RESEARCH LIST / ListDialog (also repair, enchant, charge, etc.) - ZO_Dialog1 ======================================================
     --Original setupCallback function
     local hookedResearchListFunctions = ctrlVars.LIST_DIALOG.dataTypes[1].setupCallback
     --Pre-Hook the list dialog's rows
     ctrlVars.LIST_DIALOG.dataTypes[1].setupCallback = function(rowControl, slot)
         --Call the original row's setupCallback function
         hookedResearchListFunctions(rowControl, slot)
-
+--d("[".. os.date("%c", GetTimeStamp()) .."]>enabling the control's row again")
         --Reset the row so it is enabled
         rowControl.disableControl = false
 
@@ -1021,11 +1026,16 @@ function FCOIS.CreateHooks()
                 if(not isSoulGem and iconIsProtected) then
                     if (isRepairDialog and settings.blockMarkedRepairKits) then
                         disableControl = true
-                        break -- leave for ... do loop
+--d("[".. os.date("%c", GetTimeStamp()) .."]>disableControl repairDialog: " ..tostring(disableControl))
+                        break -- leave for ... do loop of iconIds
                     elseif not isRepairDialog then
                         --Is the icon a dynamic icon? Check if research at the popup dialog is allowed
-                        disableControl = FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, true, nil) --leave the panelId empty so the addon will detect it automatically!
-                        if disableControl then break else disableControl = false end
+                        --Todo: 2020-01-27: Why was the calledFromExternalAddon flag (2nd last) set to always true here? Changed to false.
+                        -->Tests: If paraemeter is set to false the protection function will return "false" in the dialogs if you click an item's row
+                        -->where an icon is marked and protects this item! So why does it return false if calledFromExternalAddon is set to "false" ???
+                        disableControl = FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, false, nil) --leave the panelId empty so the addon will detect it automatically!
+--d("[".. os.date("%c", GetTimeStamp()) .."]>disableControl other Dialog: " ..tostring(disableControl))
+                        if disableControl == true then break else disableControl = false end
                     else
                         if not disableControl then
                             disableControl = false
@@ -1041,24 +1051,12 @@ function FCOIS.CreateHooks()
         end -- for j = 1, numFilterIcons, 1 do
         --Set an attribute to the row which can be checked in other functions of the rowControl too!
         rowControl.disableControl = disableControl
+--d("[".. os.date("%c", GetTimeStamp()) .."]>> disabling the control's row: " ..tostring(disableControl))
 
         --Get here after for loop is left by a "break" and item is not researchable
         if rowControl.disableControl == true then
             --Change the color of the item to red
             rowControl:GetNamedChild("Name"):SetColor(0.75, 0, 0, 1)
-        end
-
-        --PreHook the handler "OnMouseEnter" event so the standard action layer of the ZO_Dialog, which prevents the
-        --global keybindings and only enables the dialog's keybindings, will be removed.
-        --And "OnMouseExit" of the dialog list row control the dialog keybind layer will be re-enabled again.
-        local zoDialogKEybindingActionlayerName = GetString(SI_KEYBINDINGS_LAYER_DIALOG)
-        if zoDialogKEybindingActionlayerName and zoDialogKEybindingActionlayerName ~= "" then
-            ZO_PreHookHandler(rowControl, "OnMouseEnter", function(control)
-                RemoveActionLayerByName(zoDialogKEybindingActionlayerName)
-            end)
-            ZO_PreHookHandler(rowControl, "OnMouseExit", function(control)
-                PushActionLayerByName(zoDialogKEybindingActionlayerName)
-            end)
         end
 
         --Pre-Hook the handler "OnMouseUp" event for the rowControl to disable the researching of the item,
@@ -1079,7 +1077,7 @@ function FCOIS.CreateHooks()
                     --If the context menu should not be shown, because all marker icons were removed
                     -- hide it now
                     local contextMenuClearMarkesByShiftKey = FCOIS.settingsVars.settings.contextMenuClearMarkesByShiftKey
-                    if contextMenuClearMarkesByShiftKey and FCOIS.preventerVars.dontShowInvContextMenu then
+                    if contextMenuClearMarkesByShiftKey == true and FCOIS.preventerVars.dontShowInvContextMenu then
                         FCOIS.preventerVars.dontShowInvContextMenu = false
                         --Hide the context menu now by returning true in this preHook and not calling the "context menu show" function
                         return true
@@ -1142,12 +1140,14 @@ function FCOIS.CreateHooks()
                 local dialog = ctrlVars.RepairItemDialog
                 --Should this row be protected and disabled buttons and keybindings
                 if rowControl.disableControl == true then
+--d("MouseUpInside, rowControl.disableControl-> true")
                     --Do nothing (true tells the handler function that everything was achieved already in this function
                     --and the normal "hooked" functions don't need to be run afterwards)
                     -- -> All handling will be done in file src/FCOIS_ContextMenus.lua, function MarkMe() as the dialog list will be refreshed!
                     FCOIS.changeDialogButtonState(dialog, 1, false)
                     return true
                 else -- if disableControl == false
+--d("MouseUpInside, rowControl.disableControl-> false")
                     --Is the row selected? Check with a slight delay to assure the row gets updated and the selectedControl was set!
                     zo_callLater(function()
                         local selectedControl = ZO_ScrollList_GetSelectedControl(ctrlVars.LIST_DIALOG)
@@ -1946,6 +1946,21 @@ d("[FCOIS]OnEnchantingAnyPanelSetHidden - Mode: " ..tostring(enchantingMode))
             FCOIS.updateFilteredItemCountThrottled(nil, 50, "UpdateInventorySlots")
         end
     end)
+
+    --Test if CraftBag raises OnInventorySlotLocked as well
+    --[[
+    ZO_PreHook(PLAYER_INVENTORY, "OnInventorySlotLocked", function(ctrl, bagId, slotIndex)
+        d("[FCOIS]OnInventorySlotLocked, bagId: " ..tostring(bagId) .. ", slotIndex: " ..tostring(slotIndex))
+    end)
+    ]]
+
+    --Prevent researching!
+    --[[
+    ZO_PreHook("ResearchSmithingTrait", function()
+        d("[FCOIS]Research would be started now, but aborting 'ResearchSmithingTrait' now!")
+        return true
+    end)
+    ]]
 
     --======== TEST HOOKS =============================================================================
     --Call some test hooks

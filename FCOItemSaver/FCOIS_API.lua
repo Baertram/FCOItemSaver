@@ -8,10 +8,14 @@ if not FCOIS.libsLoadedProperly then return end
 -- 			README PLEASE		README PLEASE			-FCOIS API limitations-			README PLEASE		README PLEASE
 --==========================================================================================================================================
 --IMPORTANT		IMPORTANT	IMPORTANT	IMPORTANT	IMPORTANT	IMPORTANT	IMPORTANT	IMPORTANT	IMPORTANT	IMPORTANT
+--
+--
+--
+-- [GAMEPAD MODE]
 --!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! FCOItemSaver is NOT working with the gamepad mode enabled !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
---If you are using any of these API functions below with the gamepad mode enbaled they will throw error messages.
+--If you are using any of these API functions below with the gamepad mode enabled they will throw error messages.
 --The only way to enable FCOIS with the gamepad mode enabled is to use the addon "Advanced Disable Controller UI" AND disable the gamepad mode
---in the settings of this addon! This will allow you top play and fight with the gamnepad but the keyboard UI is shown in the inventories,
+--in the settings of this (ADCUI) addon! This will allow you to play and fight with the gamepad but the keyboard UI is shown in the inventories,
 --making FCOIS work properly.
 --
 --You need to check the following within your addons code:
@@ -32,19 +36,32 @@ if not FCOIS.libsLoadedProperly then return end
 --
 --
 --
---!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! FCOItemSaver API functions are NOT working properly at crafting stations if you do not open the controls (UI)
---normally (e.g. show the Deconstruction panel and THEN check for FCOIS.IsDeconstructionLocked(bagId, slotIndex) ) !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
---Due to ESO's design one could simply approach a crafting station and as the station got opened (And it's on the way to show the refinement pabel)
---you could already deconstruct, improve and/or refine materials. But FCOItemSaver relies on the UI elements like improvementSlot, refinementSlot,
---etc. in order to detect the opened panel, assure all items got loaded properly and the marker icons set will be checked + the items protected
---properly. So please do not use the FCOIS API to do crafting stuff and protection checks if the UI for the crafting is not loaded properly!
+-- [CRAFTING STATIONS]
+--FCOItemSaver API functions are NOT working properly at crafting stations if you do not open the controls (UI) normally
+--(e.g. show the Deconstruction panel and THEN check for FCOIS.IsDeconstructionLocked(bagId, slotIndex) BEFORE trying to use the API functions!
+--Due to ESO's design one could simply approach a crafting station and as the station got opened (and it's on the way to show the refinement panel)
+--you could already deconstruct, improve and/or refine materials.
+--But FCOItemSaver relies on the UI elements like improvementSlot, refinementSlot, etc. in order to detect the opened panel, assure all items got
+--loaded properly and the marker icons set will be checked + the items get protected properly.
+--So please do not use the FCOIS API to do crafting stuff and protection checks if the UI for the crafting is not loaded properly!
+--
+--
+--
 --IMPORTANT		IMPORTANT	IMPORTANT	IMPORTANT	IMPORTANT	IMPORTANT	IMPORTANT	IMPORTANT	IMPORTANT	IMPORTANT
+
+
 
 --==========================================================================================================================================
 -- 															FCOIS API
 --==========================================================================================================================================
 --Local variables for speedup
 local numFilterIcons = FCOIS.numVars.gFCONumFilterIcons
+local ZOsCtrlVars = FCOIS.ZOControlVars
+
+--Local functions for speedup
+local checkIfFCOISSettingsWereLoaded = FCOIS.checkIfFCOISSettingsWereLoaded
+local DeconstructionSelectionHandler = FCOIS.DeconstructionSelectionHandler
+local ItemSelectionHandler = FCOIS.ItemSelectionHandler
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -65,7 +82,7 @@ local numFilterIcons = FCOIS.numVars.gFCONumFilterIcons
     Boolean parameter echo: 									if true the chat output or alert message will be shown if protected.
     Boolean parameters overrideChatOutput / overrideAlert: 	    if true the FCOIS settings for the chat/alert messages will be overwritten so they get shown from your call.
     Boolean parameters suppressChatOutput / suppressAlert: 		if true the FCOIs settings for the chat/alert message will be suppressed so no message is shown from your call.
-    Boolean parameter calledFromExternalAddon: 					Must be true if the call comes from another addon then FCOIS. Otherwise the protective functions won't work properly! Must be true for these protective check functions too!
+    Boolean parameter calledFromExternalAddon: 					Must be true if the call comes from another addon than FCOIS. Otherwise the protective functions won't work properly! Must be true for these protective check functions too!
     Integer parameter panelId: 									libFilters 2.x filter constant LF_* for the panel where the check should be done. If this variable is nil FCOIS will detect the active panel automatically.
 ]]
 --Function to call the itemSelectionHandler from other addons (e.g. DoItAll with FCOItemSaver support)
@@ -79,14 +96,18 @@ function FCOIS.callItemSelectionHandler(bag, slot, echo, isDragAndDrop, override
 	overrideAlert = overrideAlert or false
 	suppressAlert = suppressAlert or false
 	calledFromExternalAddon = calledFromExternalAddon or false
-	if not FCOIS.checkIfFCOISSettingsWereLoaded(calledFromExternalAddon) then return true end
+	if not checkIfFCOISSettingsWereLoaded(calledFromExternalAddon) then return true end
 	--Return true to "protect" an item, if the bag and slot are missing
 	if bag == nil or slot == nil then return true end
 	--Call the item selection handler method now for the item
-	return FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId)
+	return ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId)
 end
+--Local function for speedup -> Anti-Item protection handler
+local FCOIScish = FCOIS.callItemSelectionHandler
 
---Function to call the DeconstructionSelectionHandler from other addons (e.g. DoItAll with FCOItemSaver support)
+--Function to call the DeconstructionSelectionHandler from other addons (e.g. DoItAll with FCOItemSaver support). Only used at the deconstruction/extract panels of LibFilters.
+-- If no deconstructable panel get's detected or no filterPanelId of a deconstructable panel was passed at the parameter panelId (+ calledFromExternalAddon must be true in this case!)
+-- the normal ItemSelectionHandler function will be called internally from the DeconstructionSelectionHandlder function.
 --Return true:   Item is protected
 --Returns false: Item is not protected
 function FCOIS.callDeconstructionSelectionHandler(bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId)
@@ -96,12 +117,14 @@ function FCOIS.callDeconstructionSelectionHandler(bag, slot, echo, overrideChatO
     overrideAlert = overrideAlert or false
     suppressAlert = suppressAlert or false
     calledFromExternalAddon	= calledFromExternalAddon or false
-	if not FCOIS.checkIfFCOISSettingsWereLoaded(calledFromExternalAddon) then return true end
+	if not checkIfFCOISSettingsWereLoaded(calledFromExternalAddon) then return true end
     --Return true to "protect" an item, if the bag and slot are missing
     if bag == nil or slot == nil then return true end
     --Call the item selection handler method now for the item
-    return FCOIS.DeconstructionSelectionHandler(bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId)
+    return DeconstructionSelectionHandler(bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId)
 end
+--Local function for speedup -> Anti-Deconstruction protection handler
+local FCOIScdsh = FCOIS.callDeconstructionSelectionHandler
 
 
 --------------------------------------------------------------------------------
@@ -120,54 +143,54 @@ end
 function FCOIS.IsLocked(bagId, slotIndex)
 	--Don't show chat output and don't show alert message
     -- (bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId)
-    return FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, true)
+    return FCOIScdsh(bagId, slotIndex, false, true, true, true, true, true)
 end
 
 -- ===== ANTI DESTROY =====
 -- FCOIS prevention for being destroyed at the current panel
 function FCOIS.IsDestroyLocked(bagId, slotIndex)
 	--Don't show chat output and don't show alert message
-	return FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, true)
+	return FCOIScdsh(bagId, slotIndex, false, true, true, true, true, true)
 end
 
 -- ===== ANTI TRADE =====
 -- FCOIS prevention for being traded
 function FCOIS.IsTradeLocked(bagId, slotIndex)
 	--Don't show chat output and don't show alert message
-	return FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, true, LF_TRADE)
+	return FCOIScish(bagId, slotIndex, false, true, true, true, true, true, LF_TRADE)
 end
 
 -- ===== ANTI MAIL =====
 -- FCOIS prevention for being mailed
 function FCOIS.IsMailLocked(bagId, slotIndex)
 	--Don't show chat output and don't show alert message
-	return FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, true, LF_MAIL_SEND)
+	return FCOIScish(bagId, slotIndex, false, true, true, true, true, true, LF_MAIL_SEND)
 end
 
 -- ===== ANTI SELL =====
 -- FCOIS prevention for being sold at a vendor
 function FCOIS.IsVendorSellLocked(bagId, slotIndex)
 	--Don't show chat output and don't show alert message
-	return FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, true, LF_VENDOR_SELL)
+	return FCOIScish(bagId, slotIndex, false, true, true, true, true, true, LF_VENDOR_SELL)
 end
 
 -- FCOIS prevention for being sold at the guild store
 function FCOIS.IsGuildStoreSellLocked(bagId, slotIndex)
 	--Don't show chat output and don't show alert message
-	return FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, true, LF_GUILDSTORE_SELL)
+	return FCOIScish(bagId, slotIndex, false, true, true, true, true, true, LF_GUILDSTORE_SELL)
 end
 
 -- FCOIS prevention for being sold at a fence
 function FCOIS.IsFenceSellLocked(bagId, slotIndex)
 	--Don't show chat output and don't show alert message
-	return FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, true, LF_FENCE_SELL)
+	return FCOIScish(bagId, slotIndex, false, true, true, true, true, true, LF_FENCE_SELL)
 end
 
 -- ===== ANTI LAUNDER =====
 -- FCOIS prevention for being laundered
 function FCOIS.IsLaunderLocked(bagId, slotIndex)
 	--Don't show chat output and don't show alert message
-	return FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, true, LF_FENCE_LAUNDER)
+	return FCOIScish(bagId, slotIndex, false, true, true, true, true, true, LF_FENCE_LAUNDER)
 end
 
 -- ===== ANTI Deposit =====
@@ -178,7 +201,7 @@ end
 -- use the function FCOIS.IsMarked() -> See below in this API file, or FCOIS.IsLocked(bagId, slotIndex) -> See above in this API file
 function FCOIS.IsPlayerBankDepositLocked(bagId, slotIndex)
     --Don't show chat output and don't show alert message
-    return FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, true, LF_BANK_DEPOSIT)
+    return FCOIScish(bagId, slotIndex, false, true, true, true, true, true, LF_BANK_DEPOSIT)
 end
 
 -- FCOIS prevention for being depositted to a guild bank
@@ -190,7 +213,7 @@ end
 -- use the function FCOIS.IsMarked() -> See below in this API file, or FCOIS.IsLocked(bagId, slotIndex) -> See above in this API file
 function FCOIS.IsGuildBankDepositLocked(bagId, slotIndex)
     --Don't show chat output and don't show alert message
-    return FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, true, LF_GUILDBANK_DEPOSIT)
+    return FCOIScish(bagId, slotIndex, false, true, true, true, true, true, LF_GUILDBANK_DEPOSIT)
 end
 
 -- ===== ANTI Withdraw =====
@@ -201,7 +224,7 @@ end
 -- use the function FCOIS.IsMarked() -> See below in this API file, or FCOIS.IsLocked(bagId, slotIndex) -> See above in this API file
 function FCOIS.IsPlayerBankWithdrawLocked(bagId, slotIndex)
     --Don't show chat output and don't show alert message
-    return FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, true, LF_BANK_WITHDRAW)
+    return FCOIScish(bagId, slotIndex, false, true, true, true, true, true, LF_BANK_WITHDRAW)
 end
 
 -- FCOIS prevention for being withdrawn from a guild bank
@@ -211,7 +234,7 @@ end
 -- use the function FCOIS.IsMarked() -> See below in this API file, or FCOIS.IsLocked(bagId, slotIndex) -> See above in this API file
 function FCOIS.IsGuildBankWithdrawLocked(bagId, slotIndex)
     --Don't show chat output and don't show alert message
-    return FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, true, LF_GUILDBANK_WITHDRAW)
+    return FCOIScish(bagId, slotIndex, false, true, true, true, true, true, LF_GUILDBANK_WITHDRAW)
 end
 
 
@@ -219,85 +242,85 @@ end
 -- FCOIS prevention for being created as enchantment
 function FCOIS.IsEnchantingCreationLocked(bagId, slotIndex)
 	--Don't show chat output and don't show alert message
-	return FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, true, LF_ENCHANTING_CREATION)
+	return FCOIScish(bagId, slotIndex, false, true, true, true, true, true, LF_ENCHANTING_CREATION)
 end
 
 -- FCOIS prevention for being refined
 function FCOIS.IsRefinementLocked(bagId, slotIndex)
 	--Don't show chat output and don't show alert message
-	return FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, true, LF_SMITHING_REFINE)
+	return FCOIScish(bagId, slotIndex, false, true, true, true, true, true, LF_SMITHING_REFINE)
 end
 
 -- FCOIS prevention for being deconstructed
 function FCOIS.IsDeconstructionLocked(bagId, slotIndex)
 	--Don't show chat output and don't show alert message
-	return FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, true, LF_SMITHING_DECONSTRUCT)
+	return FCOIScdsh(bagId, slotIndex, false, true, true, true, true, true, LF_SMITHING_DECONSTRUCT)
 end
 
 -- FCOIS prevention for being improved
 function FCOIS.IsImprovementLocked(bagId, slotIndex)
 	--Don't show chat output and don't show alert message
-	return FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, true, LF_SMITHING_IMPROVEMENT)
+	return FCOIScish(bagId, slotIndex, false, true, true, true, true, true, LF_SMITHING_IMPROVEMENT)
 end
 
 -- FCOIS prevention for being researched
 function FCOIS.IsResearchLocked(bagId, slotIndex)
 	--Don't show chat output and don't show alert message
-	return FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, true, LF_SMITHING_RESEARCH)
+	return FCOIScish(bagId, slotIndex, false, true, true, true, true, true, LF_SMITHING_RESEARCH)
 end
 
 -- FCOIS prevention for being researched at the research popup dialog
 function FCOIS.IsResearchDialogLocked(bagId, slotIndex)
 	--Don't show chat output and don't show alert message
-	return FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, true, LF_SMITHING_RESEARCH_DIALOG)
+	return FCOIScish(bagId, slotIndex, false, true, true, true, true, true, LF_SMITHING_RESEARCH_DIALOG)
 end
 
 -- FCOIS prevention for jewelry being refined
 function FCOIS.IsJewelryRefinementLocked(bagId, slotIndex)
 	--Don't show chat output and don't show alert message
-	return FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, true, LF_JEWELRY_REFINE)
+	return FCOIScish(bagId, slotIndex, false, true, true, true, true, true, LF_JEWELRY_REFINE)
 end
 
 -- FCOIS prevention for jewelry being deconstructed
 function FCOIS.IsJewelryDeconstructionLocked(bagId, slotIndex)
 	--Don't show chat output and don't show alert message
-	return FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, true, LF_JEWELRY_DECONSTRUCT)
+	return FCOIScdsh(bagId, slotIndex, false, true, true, true, true, true, LF_JEWELRY_DECONSTRUCT)
 end
 
 -- FCOIS prevention for jewelry being improved
 function FCOIS.IsJewelryImprovementLocked(bagId, slotIndex)
 	--Don't show chat output and don't show alert message
-	return FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, true, LF_JEWELRY_IMPROVEMENT)
+	return FCOIScish(bagId, slotIndex, false, true, true, true, true, true, LF_JEWELRY_IMPROVEMENT)
 end
 
 -- FCOIS prevention for jewelry being researched
 function FCOIS.IsJewelryResearchLocked(bagId, slotIndex)
 	--Don't show chat output and don't show alert message
-	return FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, true, LF_JEWELRY_RESEARCH)
+	return FCOIScish(bagId, slotIndex, false, true, true, true, true, true, LF_JEWELRY_RESEARCH)
 end
 
 -- FCOIS prevention for jewelry being researched at the jewelry research popup dialog
 function FCOIS.IsJewelryResearchDialogLocked(bagId, slotIndex)
 	--Don't show chat output and don't show alert message
-	return FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, true, LF_JEWELRY_RESEARCH_DIALOG)
+	return FCOIScish(bagId, slotIndex, false, true, true, true, true, true, LF_JEWELRY_RESEARCH_DIALOG)
 end
 
 -- FCOIS prevention for being extracted from a glyphe
 function FCOIS.IsEnchantingExtractionLocked(bagId, slotIndex)
 	--Don't show chat output and don't show alert message
-	return FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, true, LF_ENCHANTING_EXTRACTION)
+	return FCOIScdsh(bagId, slotIndex, false, true, true, true, true, true, LF_ENCHANTING_EXTRACTION)
 end
 
 -- FCOIS prevention for being destroyed at the alchemy station
 function FCOIS.IsAlchemyDestroyLocked(bagId, slotIndex)
 	--Don't show chat output and don't show alert message
-	return FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, true, LF_ALCHEMY_CREATION)
+	return FCOIScish(bagId, slotIndex, false, true, true, true, true, true, LF_ALCHEMY_CREATION)
 end
 
 -- ===== ANTI EQUIP =====
 -- FCOIS prevention for being equipped
 function FCOIS.IsEquipLocked(bagId, slotIndex)
-	if not FCOIS.checkIfFCOISSettingsWereLoaded(true) then return true end
+	if not checkIfFCOISSettingsWereLoaded(true) then return true end
 	--Only if the "ask before bind" setting is enabled: Every marked item that is not yet bound is protected
 	if not FCOIS.settingsVars.settings.askBeforeEquipBoundItems or not FCOIS.isItemBindable(bagId, slotIndex) then return false end
 	--Only the bindable AND non-bound equipment items result in a positive result = item is locked
@@ -308,7 +331,7 @@ end
 -- FCOIS prevention for being marked as junk (e.g. in AddOn Dustman)
 function FCOIS.IsJunkLocked(bagId, slotIndex, calledFromExternalAddon)
 	calledFromExternalAddon = calledFromExternalAddon or false
-	if not FCOIS.checkIfFCOISSettingsWereLoaded(calledFromExternalAddon) then return true end
+	if not checkIfFCOISSettingsWereLoaded(calledFromExternalAddon) then return true end
 	local isItemProtectedAgainstJunk = false
     --Check all marker icons and exclude the icon for "Sell"
     local settings = FCOIS.settingsVars.settings
@@ -329,7 +352,7 @@ function FCOIS.IsJunkLocked(bagId, slotIndex, calledFromExternalAddon)
                 --All marked dyanmic icons must allow "sell" in order to let this item be marked as junk!
                 --Check if dynamic icon's "sell" setting is allowed
                 local iconData = settings.icon[iconId]
-				if iconData.antiCheckAtPanel[LF_VENDOR_SELL] then
+				if iconData.antiCheckAtPanel[LF_VENDOR_SELL] == true then
                     oneDynamicDoesNotAllowToSell = true
                 end
             elseif isMarked and not isDynIcon then
@@ -360,7 +383,7 @@ function FCOIS.IsIconEnabled(markerIconId, calledFromExternalAddon)
 	calledFromExternalAddon = calledFromExternalAddon or false
 	if markerIconId == nil or markerIconId <= 0 or markerIconId > numFilterIcons then return nil end
 --d("[FCOIS.IsIconEnabled] markerIconId: " .. tostring(markerIconId))
-	if not FCOIS.checkIfFCOISSettingsWereLoaded(calledFromExternalAddon) then return false end
+	if not checkIfFCOISSettingsWereLoaded(calledFromExternalAddon) then return false end
     --Check if the icon is enabled
 	local isIconEnabled = FCOIS.settingsVars.settings.isIconEnabled
 	local isIconEnabledOne = isIconEnabled[markerIconId] or false
@@ -387,10 +410,10 @@ function FCOIS.MarkItem(bag, slot, iconId, showIcon, updateInventories)
 	if bag == nil or slot == nil or iconId == nil then return false end
 	if showIcon == nil then showIcon = true end
 	updateInventories = updateInventories or false
-	if not FCOIS.checkIfFCOISSettingsWereLoaded(true) then return false end
+	if not checkIfFCOISSettingsWereLoaded(true) then return false end
 	--Are we restoring or clearing marker icons via SHIFT + right mouse button on an inventory row e.g.?
 	local isRestoringOrClearingMarkerIcons = (FCOIS.preventerVars.gRestoringMarkerIcons or FCOIS.preventerVars.gClearingMarkerIcons) or false
-	local isCharShown = (bag == BAG_WORN and not FCOIS.ZOControlVars.CHARACTER:IsHidden())
+	local isCharShown = (bag == BAG_WORN and not ZOsCtrlVars.CHARACTER:IsHidden())
 	local recurRetValTotal = true
 	--Check the type of iconId parameter
 	local iconIdType = type(iconId)
@@ -492,7 +515,7 @@ function FCOIS.MarkItem(bag, slot, iconId, showIcon, updateInventories)
 						--Unmark all other markers before? Only if marker should be set
 						--Prevent endless loop here as FCOIS.MarkItem will call itsself recursively
 						if not FCOIS.preventerVars.markItemAntiEndlessLoop and showIcon and FCOIS.checkIfItemShouldBeDemarked(iconId) then
---d(">remove all markers now, isCharShown: " ..tostring(isCharShown) .. ", bag: " ..tostring(bag) .. ", charCtrlHidden: " .. tostring(FCOIS.ZOControlVars.CHARACTER:IsHidden()))
+--d(">remove all markers now, isCharShown: " ..tostring(isCharShown) .. ", bag: " ..tostring(bag) .. ", charCtrlHidden: " .. tostring(ZOsCtrlVars.CHARACTER:IsHidden()))
 							--Check if dynamic marker items should not be removed
 							local isDynamicIcon = FCOIS.mappingVars.iconIsDynamic
 							local iconsToRemoveViaAutomaticRemoveCheck = {}
@@ -603,14 +626,14 @@ function FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon
     if itemLink == nil and itemId == nil then return false end
     if showIcon == nil then showIcon = true end
 	updateInventories = updateInventories or false
-	if not FCOIS.checkIfFCOISSettingsWereLoaded(true) then return false end
-	local isCharShown = not FCOIS.ZOControlVars.CHARACTER:IsHidden()
+	if not checkIfFCOISSettingsWereLoaded(true) then return false end
+	local isCharShown = not ZOsCtrlVars.CHARACTER:IsHidden()
     --Use the given itemLink or the given itemId to build a generic itemLink from it
     if itemId ~= nil and itemLink == nil then
         --Build a generic itemLink from the itemId to test the itemType
         itemLink = FCOIS.getItemLinkFromItemId(itemId)
     end
-    --local isCharShown = not FCOIS.ZOControlVars.CHARACTER:IsHidden()
+    --local isCharShown = not ZOsCtrlVars.CHARACTER:IsHidden()
     local recurRetValTotal = true
     --Check the type of iconId parameter
     local iconIdType = type(iconId)
@@ -705,7 +728,7 @@ function FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon
                     --Unmark all other markers before? Only if marker should be set
                     --Prevent endless loop here as FCOIS.MarkItemByItemInstanceId will call itsself recursively
                     if not FCOIS.preventerVars.markItemAntiEndlessLoop and showIcon and FCOIS.checkIfItemShouldBeDemarked(iconId) then
---d(">remove all markers now, isCharShown: " ..tostring(isCharShown) .. ", bag: " ..tostring(bag) .. ", charCtrlHidden: " .. tostring(FCOIS.ZOControlVars.CHARACTER:IsHidden()))
+--d(">remove all markers now, isCharShown: " ..tostring(isCharShown) .. ", bag: " ..tostring(bag) .. ", charCtrlHidden: " .. tostring(ZOsCtrlVars.CHARACTER:IsHidden()))
                         --Remove all markers now
                         FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, -1, false, itemLink, itemId, addonName, false)
                         FCOIS.preventerVars.markItemAntiEndlessLoop = false
@@ -902,7 +925,7 @@ end -- checkIfItemIsMarkedAndReturnMarkerIcons
 function FCOIS.IsMarkedByItemInstanceId(itemInstanceId, iconIds, excludeIconIds, addonName)
 	if (iconIds ~= -1 and excludeIconIds ~= nil) or excludeIconIds == -1 then return nil, nil end
 	if itemInstanceId == nil then return nil, nil end
-	if not FCOIS.checkIfFCOISSettingsWereLoaded(true) then return false end
+	if not checkIfFCOISSettingsWereLoaded(true) then return false end
 	--Build the itemInstanceId (signed) by help of the itemId
 	local signedItemInstanceId = FCOIS.SignItemId(itemInstanceId, nil, true, addonName) -- only sign
 	if signedItemInstanceId == nil then return nil, nil end
@@ -925,7 +948,7 @@ end -- FCOIS.IsMarkedByItemInstanceId
 --                  excludeIconIds cannot be -1 or the function will return nil!
 function FCOIS.IsMarked(bag, slot, iconIds, excludeIconIds)
     if (iconIds ~= -1 and excludeIconIds ~= nil) or excludeIconIds == -1 then return nil, nil end
-	if not FCOIS.checkIfFCOISSettingsWereLoaded(true) then return false end
+	if not checkIfFCOISSettingsWereLoaded(true) then return false end
 	--At least one of the needed function parameters is missing. Return nil, nil
     if (bag == nil or slot == nil or iconIds == nil) then return nil, nil end
 	local signedItemInstanceId = FCOIS.MyGetItemInstanceIdNoControl(bag, slot)
@@ -986,7 +1009,7 @@ end
 --					 Filter 4 controls icon 5, 11 and 12 (Sell, sell in guild store & intricate SELLGUILDINT)
 --filterPanelId: The panel where the filter is activated. Possible values are:
 function FCOIS.IsFiltered(bag, slot, filterId, filterPanelId)
-	if not FCOIS.checkIfFCOISSettingsWereLoaded(true) then return false end
+	if not checkIfFCOISSettingsWereLoaded(true) then return false end
 	if (bag ~= nil and slot ~= nil and filterId ~= nil) then
         local instance = FCOIS.MyGetItemInstanceIdNoControl(bag, slot)
 		if instance == nil then return false end
@@ -1179,7 +1202,7 @@ end -- FCOIS.IsFiltered
 --Global function to change a filter at the given panel Id
 function FCOIS.ChangeFilter(filterId, libFiltersFilterPanelId)
 	libFiltersFilterPanelId = libFiltersFilterPanelId or FCOIS.gFilterWhere
-	if not FCOIS.checkIfFCOISSettingsWereLoaded(true) then return false end
+	if not checkIfFCOISSettingsWereLoaded(true) then return false end
 	--Valid filterId?
 	if filterId == nil or filterId <= 0 or filterId > FCOIS.numVars.gFCONumFilters then return end
 	--Valid filterPanelId?
@@ -1199,7 +1222,7 @@ end -- FCOChangeFilter
 --(special FCOIS behavior). If so the context menu will not be shown and other addons, which add context menu entries, shouldn't show
 --their context menu neither
 function FCOIS.ShouldInventoryContextMenuBeHiddden()
-	if not FCOIS.checkIfFCOISSettingsWereLoaded(true) then return false end
+	if not checkIfFCOISSettingsWereLoaded(true) then return false end
 	local contextMenuClearMarkesByShiftKey = FCOIS.settingsVars.settings.contextMenuClearMarkesByShiftKey
     return (contextMenuClearMarkesByShiftKey and FCOIS.preventerVars.dontShowInvContextMenu == true) or false
 end
@@ -1240,7 +1263,7 @@ end
 --> use the constants for the amrker icons please! e.g. FCOIS_CON_ICON_LOCK, FCOIS_CON_ICON_DYNAMIC_1 etc. Check file src/FCOIS_constants.lua for the available constants (top of the file)
 function FCOIS.GetIconText(iconId)
 	--Load the user settings, if not done already
-	if not FCOIS.checkIfFCOISSettingsWereLoaded(true) then return nil end
+	if not checkIfFCOISSettingsWereLoaded(true) then return nil end
 
 	if iconId ~= nil and FCOIS.settingsVars.settings.icon ~= nil and
        FCOIS.settingsVars.settings.icon[iconId] ~= nil and FCOIS.settingsVars.settings.icon[iconId].name ~= nil and FCOIS.settingsVars.settings.icon[iconId].name ~= "" then
@@ -1275,7 +1298,7 @@ end -- FCOGetLocText
 --Mark the icon with a chosen keybind
 function FCOIS.MarkItemByKeybind(iconId, p_bagId, p_slotIndex)
     if iconId == nil then return false end
-	if not FCOIS.checkIfFCOISSettingsWereLoaded(true) then return false end
+	if not checkIfFCOISSettingsWereLoaded(true) then return false end
 	--is the icon enabled? Otherwise abort here.
     local settings = FCOIS.settingsVars.settings
 	local isIconEnabled = settings.isIconEnabled
@@ -1408,7 +1431,7 @@ end
 
 --Returns the first enabled marker icon of all marker icons
 function FCOIS.getFirstEnabledMarkerIcon()
-	if not FCOIS.checkIfFCOISSettingsWereLoaded(true) then return false end
+	if not checkIfFCOISSettingsWereLoaded(true) then return false end
 	local settings = FCOIS.settingsVars.settings
 	local isIconEnabled = settings.isIconEnabled
 	if isIconEnabled ~= nil then
@@ -1421,7 +1444,7 @@ end
 
 --Returns the last enabled marker icon of all marker icons
 function FCOIS.getLastEnabledMarkerIcon()
-	if not FCOIS.checkIfFCOISSettingsWereLoaded(true) then return false end
+	if not checkIfFCOISSettingsWereLoaded(true) then return false end
 	local settings = FCOIS.settingsVars.settings
 	local isIconEnabled = settings.isIconEnabled
 	if isIconEnabled ~= nil then
@@ -1445,7 +1468,7 @@ end
 function FCOIS.MarkItemCycle(direction)
 	direction = direction or "standard"
 	if direction ~= "standard" and direction ~= "next" and direction ~= "prev" then return false end
-	if not FCOIS.checkIfFCOISSettingsWereLoaded(true) then return false end
+	if not checkIfFCOISSettingsWereLoaded(true) then return false end
 	--The sort order of the marker icons was defined in the FCOIS settings. Use this sort order as icon mark order
 	local settings = FCOIS.settingsVars.settings
 	local iconSortOrder = settings.iconSortOrder
@@ -1547,7 +1570,7 @@ end
 --------------------------------------------------------------------------------
 --=========== FCOIS marker icon API functions ==========================
 function FCOIS.countMarkerIconsEnabled()
-	if not FCOIS.checkIfFCOISSettingsWereLoaded(true) then return false end
+	if not checkIfFCOISSettingsWereLoaded(true) then return false end
     local iconsEnabledCount = 0
     local dynIconsEnabledCount = 0
     local isDynamicIcon = FCOIS.mappingVars.iconIsDynamic
@@ -1597,7 +1620,7 @@ end
 --Settings will be loaded normally "again" within FCOIS addon
 function FCOIS.BuildAndGetSettingsFromExternal()
 	--Load the needed user settings -> file FCOIS-Settings.lua, from the SavedVariables with flag "external call" = true
-	if not FCOIS.checkIfFCOISSettingsWereLoaded(true) then return nil end
+	if not checkIfFCOISSettingsWereLoaded(true) then return nil end
 	return FCOIS.settingsVars
 end
 
@@ -1618,7 +1641,7 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons)
 	if type == nil then type = "standard" end
 	withIcons = withIcons or false
 	local FCOISlocVars            = FCOIS.localizationVars
-	if not FCOIS.checkIfFCOISSettingsWereLoaded(true) then return nil end
+	if not checkIfFCOISSettingsWereLoaded(true) then return nil end
 	local settings = FCOIS.settingsVars.settings
 	local isIconEnabled = settings.isIconEnabled
 	local isGearIcon = settings.iconIsGear

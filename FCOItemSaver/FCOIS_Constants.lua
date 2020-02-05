@@ -504,6 +504,16 @@ mappingVars.InvToInventoryType = {
     [LF_JEWELRY_DECONSTRUCT]		= INVENTORY_BACKPACK,
     [LF_JEWELRY_IMPROVEMENT]		= INVENTORY_BACKPACK,
 }
+--The LibFilters panelIds where deconstruction can happen
+mappingVars.panelIdToDeconstructable = {
+    --Deconstructable
+    [LF_SMITHING_DECONSTRUCT]       = true,
+    [LF_JEWELRY_DECONSTRUCT]        = true,
+    --Not deconstructable
+    -->Filled in FCOIS_Settings.lua, function AfterSettings() upon load of the addon for all other
+    -->panelIds (from table mappingVars.activeFilterPanelIds above) as key, and the value = false
+}
+
 --The mapping array between LibFilters IDs to their filter name string "prefix"
 FCOIS_CON_LIBFILTERS_STRING_PREFIX_BACKUP_ID    = 0
 FCOIS_CON_LIBFILTERS_STRING_PREFIX_FCOIS        = addonVars.gAddonNameShort .. "_"

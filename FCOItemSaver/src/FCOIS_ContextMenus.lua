@@ -9,6 +9,15 @@ local myColorEnabled	= ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_TE
 local myColorDisabled	= ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_TEXT_COLORS, INTERFACE_TEXT_COLOR_DISABLED))
 local ctrlVars = FCOIS.ZOControlVars
 
+--Compatibility functions
+local function menuVisibleCheck()
+    --Old: Before API10030 - Function name includes a typo!
+    if (IsMenuVisisble and IsMenuVisisble()) then return IsMenuVisisble()
+        --New: Since API10030 - Typo was removed
+    elseif (IsMenuVisible and IsMenuVisible()) then return IsMenuVisible() end
+    return nil
+end
+
 --==========================================================================================================================================
 --									FCOIS context menus
 --==========================================================================================================================================
@@ -413,12 +422,14 @@ function FCOIS.refreshPopupDialogButtons(rowControl, override)
             if rowControl ~= nil and rowControl.dataEntry ~= nil and rowControl.dataEntry.data ~= nil then
                 local bagId, slotIndex = FCOIS.MyGetItemDetails(rowControl)
                 if bagId ~= nil and slotIndex ~= nil then
+--d(">bagId, slotIndex: " ..tostring(bagId) ..", " ..tostring(slotIndex) .. ", itemLink: " ..GetItemLink(bagId, slotIndex))
                     local _, markedIcons = FCOIS.IsMarked(bagId, slotIndex, -1)
                     if markedIcons then
                         local settings = FCOIS.settingsVars.settings
                         for iconId, iconIsMarked in pairs(markedIcons) do
                             --Is the current item marked?
                             if iconIsMarked then
+--d(">markedIcon: " ..tostring(iconId))
                                 --Research (or at least NO repair item dialog!)
                                 if not isRepairItemDialog then
                                     --Was the marked icon the research icon?
@@ -431,9 +442,10 @@ function FCOIS.refreshPopupDialogButtons(rowControl, override)
                                     else
                                         --Why not using internal function with "calledFromExternalAddon" false?
                                         --disableResearchNow = FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, true, nil) --leave the panelId empty so the addon will detect it automatically!
+                                        --                   FCOIS.DeconstructionSelectionHandler(bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId)
                                         disableResearchNow = FCOIS.DeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, false, nil)
---d(">callDeconstructionHandler returned disableResearchNow: " .. tostring(disableResearchNow))
-                                        if disableResearchNow then break else if not disableResearchNow then disableResearchNow = false end end
+--d(">>RepairItemDialog,refreshPopupDialogButtons-callDeconstructionHandler: " .. tostring(disableResearchNow))
+                                        if disableResearchNow == true then break else if not disableResearchNow then disableResearchNow = false end end
                                     end
                                 else
                                     --Repair item dialog
@@ -449,14 +461,16 @@ function FCOIS.refreshPopupDialogButtons(rowControl, override)
                 end
             end
         end
+--d(">>refreshPopupDialogButtons-disableResearchNow: " ..tostring(disableResearchNow))
         --Is the research not allowed?
-        if disableResearchNow or override then
+        if disableResearchNow == true or override == true then
             rowControl.disableControl = true
             --Clear the current cursor
             ClearCursor()
             --Reset the selected row in the ZO_ListDialog1
             --local origOnSelectedCallback
             if not isResearchItemDialog then
+--d(">>>other dialog!")
                 ctrlVars.LIST_DIALOG.selectedControl = nil
                 ctrlVars.LIST_DIALOG.selectedItem = nil
                 rowControl:GetNamedChild("Selected"):SetHidden(true)
@@ -467,18 +481,7 @@ function FCOIS.refreshPopupDialogButtons(rowControl, override)
                 local NOT_RESELECTING_DURING_REBUILD = false
                 local ANIMATE_INSTANTLY = true
                 --[[
-                --Bugfix: Check if the FCOIS right mouse context menu is still shown and hide it again
-                -->Two checks as the function name got a typo in it! Pre-cautioned for a fix :-)
-                local clearMenuNow = false
-                if IsMenuVisisble ~= nil then
-                    if IsMenuVisisble() then
-                        clearMenuNow = true
-                    end
-                elseif IsMenuVisible ~= nil then
-                    if IsMenuVisible() then
-                        clearMenuNow = true
-                    end
-                end
+                local clearMenuNow = menuVisibleCheck() or false
                 if clearMenuNow then ClearMenu() end
                 ]]
                 ZO_ScrollList_SelectData(ctrlVars.LIST_DIALOG, NO_SELECTED_DATA, NO_DATA_CONTROL, NOT_RESELECTING_DURING_REBUILD, ANIMATE_INSTANTLY)
@@ -486,6 +489,7 @@ function FCOIS.refreshPopupDialogButtons(rowControl, override)
             --Disable the "Research" button in the popup
             FCOIS.changeDialogButtonState(ctrlVars.RepairItemDialog, 1, false)
         else
+--d(">>>rowControl.disableControl = false")
             rowControl.disableControl = false
         end
     end -- if not ZO_ListDialog1:IsHidden() then
@@ -2006,12 +2010,25 @@ end
 --*********************************************************************************************************************************************************************************
 --*********************************************************************************************************************************************************************************
 
+--Function to remove slotted but now protected items from the slots of extract/sell/etc. panels and
+--update the tooltips of the items to show their new protection state properly
+local function removeSlottedProtectedItemsAndUpdateTooltips(settingsStateAfterChange)
+    --Check if the protection got enabled again and if any items are shown at the different slots (extract, deconstruct, mail, trade, ...)
+    if settingsStateAfterChange == true then
+        --Let the function use bagId = nil and slotIndex = nil to automatically find the items at the different slots and remove them if needed
+        FCOIS.IsItemProtectedAtASlotNow(nil, nil, false, true)
+    end
+    --Update the tooltips at the items to reflect the protection state properly. But only update the currently visible ones
+    --A refresh of the visible scroll list should be enough to refresh the marker icons and tooltips
+    FCOIS.FilterBasics()
+end
+
 --Hide the context menu at the additional inventory flag button, if visible
 function FCOIS.hideAdditionalInventoryFlagContextMenu(override)
     override = override or false
     local goOn = false
     if not override then
-        if IsMenuVisisble() then goOn = true end
+        goOn = menuVisibleCheck()
     else
         goOn = true
     end
@@ -2124,6 +2141,7 @@ function FCOIS.getContextMenuAntiSettingsTextAndState(p_filterWhere, buildText)
     end
 --d(">filterPanelToCheck: " ..tostring(filterPanelToCheck))
     currentSettingsState, currentSettingsStateDestroy = FCOIS.checkIfProtectedSettingsEnabled(filterPanelToCheck)
+--d(">currentSettingsState: " ..tostring(currentSettingsState) .. ", currentSettingsStateDestroy: " ..tostring(currentSettingsStateDestroy))
     if not currentSettingsState and currentSettingsStateDestroy ~= nil then
         currentSettingsState = currentSettingsStateDestroy
     end
@@ -2690,15 +2708,15 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                 end
             end --for _,v in pairs(PLAYER_INV...
 
-            -- TOGGLEANTISETTINGS
+        -- TOGGLEANTISETTINGS
         elseif isTOGGLEANTISETTINGSButton then
 
             if settings.debug then FCOIS.debugMessage( "Clicked "..contextmenuType.." context menu button, TOGGLE ANTI SETTINGS", true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
-            --Change the ANTI settings now
-            local isSettingEnabled = FCOIS.changeAntiSettingsAccordingToFilterPanel()
+            --Invert the active anti-setting (false->true / true->false)
+            local isSettingEnabledNew = FCOIS.changeAntiSettingsAccordingToFilterPanel()
             local dummy, settingsEnabled
-            if isSettingEnabled ~= nil then
+            if isSettingEnabledNew ~= nil then
                 --Update the buttons text and get the settings state
                 dummy, settingsEnabled = FCOIS.getContextMenuAntiSettingsTextAndState(FCOIS.gFilterWhere, false)
             else
@@ -2708,6 +2726,8 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
             if buttonCtrl ~= nil then
                 changeContextMenuInvokerButtonColor(buttonCtrl, settingsEnabled)
             end
+            --Remove protected items from a slot and update tooltips now
+            removeSlottedProtectedItemsAndUpdateTooltips(isSettingEnabledNew)
 
             --Mark all as junk/UNmark all junked
         elseif isMARKALLASJUNKButton or isMARKALLASNOJUNKButton then
@@ -2803,7 +2823,7 @@ function FCOIS.onContextMenuForAddInvButtonsButtonMouseUp(inventoryAdditionalCon
     if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[FCOIS.onContextMenuForAddInvButtonsButtonMouseUp] invokerButton: " .. tostring(inventoryAdditionalContextMenuInvokerButton:GetName()) .. ", panelId: " .. tostring(FCOIS.gFilterWhere) .. ", mouseButton: " .. tostring(mouseButton), true, FCOIS_DEBUG_DEPTH_ALL) end
     --Only go on if the context menu is not currently shown
     local menuOwner = GetMenuOwner(inventoryAdditionalContextMenuInvokerButton)
-    if (menuOwner == nil or not IsMenuVisisble()) then
+    if (menuOwner == nil or not menuVisibleCheck()) then
         local filterPanel = FCOIS.gFilterWhere
         --Hide the other filter button context menus first
         FCOIS.hideContextMenu(filterPanel)
@@ -2819,14 +2839,8 @@ function FCOIS.onContextMenuForAddInvButtonsButtonMouseUp(inventoryAdditionalCon
         local settingsStateAfterChange = not settingsEnabled
         --Change the additional inventory context menu button's color to the new anti-setting state
         changeContextMenuInvokerButtonColor(inventoryAdditionalContextMenuInvokerButton, settingsStateAfterChange)
-        --Check if the protection got enabled again and if any items are shown at the different slots (extract, deconstruct, mail, trade, ...)
-        if settingsStateAfterChange == true then
-            --Let the function use bagId = nil and slotIndex = nil to automatically find the items at the different slots and remove them if needed
-            FCOIS.IsItemProtectedAtASlotNow(nil, nil, false, true)
-        end
-        --Update the tooltips at the items to reflect the protection state properly. But only update the currently visible ones
-        --A refresh of the visible scroll list should be enough to refresh the marker icons and tooltips
-        FCOIS.FilterBasics()
+        --Update the items slotted and protected and the tooltips
+        removeSlottedProtectedItemsAndUpdateTooltips(settingsStateAfterChange)
     end
 end
 
@@ -2837,7 +2851,7 @@ function FCOIS.showContextMenuForAddInvButtons(invAddContextMenuInvokerButton)
     --Add ZOs ZO_Menu contextMenu entries via addon library libCustomMenu
     local panelId = FCOIS.gFilterWhere
     --Is a menu already shown?
-    if (GetMenuOwner(invAddContextMenuInvokerButton) and IsMenuVisisble()) then
+    if (GetMenuOwner(invAddContextMenuInvokerButton) and menuVisibleCheck()==true) then
         --Hide the actual contextmenu first
         FCOIS.hideContextMenu(panelId)
     else

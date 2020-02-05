@@ -308,8 +308,8 @@ end
 
 --Refresh the list dialog 1 scroll list (ZO_ListDialog1List)
 function FCOIS.RefreshListDialog(rebuildItems, filterPanelId)
---d("[FCOIS]RefreshListDialog - rebuildItems: " .. tostring(rebuildItems) .. ", filterPanelId: " .. tostring(filterPanelId))
     rebuildItems = rebuildItems or false
+--d("[FCOIS]RefreshListDialog - rebuildItems: " .. tostring(rebuildItems) .. ", filterPanelId: " .. tostring(filterPanelId))
     local refreshListDialogNow = false
     if not FCOIS.ZOControlVars.LIST_DIALOG:IsHidden() then
         if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[FCOIS.RefreshListDialog] List Dialog refresh", true, FCOIS_DEBUG_DEPTH_DETAILED) end
