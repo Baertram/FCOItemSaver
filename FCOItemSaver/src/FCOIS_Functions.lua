@@ -343,6 +343,21 @@ function FCOIS.checkRepetivelyIfControlExists(controlName, callbackFunc, stepToc
     end
 end
 
+--Check if a controlName is an inventory row pattern defined in file FCOIS_Constants.lua, table FCOIS.checkVars.inventoryRowPatterns
+--Function returns as 1st return value a boolean isAnInventoryRowWithPattern, and as 2nd return value the pattern
+function FCOIS.IsSupportedInventoryRowPattern(controlName)
+    if not controlName then return false, nil end
+    local inventoryRowPatterns = FCOIS.checkVars.inventoryRowPatterns
+    if not inventoryRowPatterns then return false, nil end
+    for _, patternToCheck in ipairs(inventoryRowPatterns) do
+        if controlName:find(patternToCheck) ~= nil then
+            return true, patternToCheck
+        end
+    end
+    return false, nil
+end
+local isSupportedInventoryRowPattern = FCOIS.IsSupportedInventoryRowPattern
+
 --Get the bagid and slotIndex from the item below the mouse cursor.
 --And get the control hovered over, the controlType (e.g. Inventory, CraftBag, .. or other addon's UI like Inventory Insigh from Ashes row)
 -->Returns bagId, slotIndex, controlBelowMouse, controlTypeBelowMouse
@@ -366,22 +381,20 @@ function FCOIS.GetBagAndSlotFromControlUnderMouse()
     local otherAddons = FCOIS.otherAddons
     local IIFAitemsListEntryPrePattern = otherAddons.IIFAitemsListEntryPrePattern
     local IIfAInvRowPatternToCheck = "^" .. IIFAitemsListEntryPrePattern .. "*"
-    for _, patternToCheck in ipairs(inventoryRowPatterns) do
-        if mouseOverControlName:find(patternToCheck) ~= nil then
 --d(">found pattern: " ..tostring(patternToCheck) .. " in row " .. tostring(mouseOverControlName))
-            if patternToCheck ~= IIfAInvRowPatternToCheck then
-                bagId, slotIndex = FCOIS.MyGetItemDetails(mouseOverControl)
-            else
-                --Special treatment for the addon InventoryInsightFromAshes
-                controlTypeBelowMouse = IIFAitemsListEntryPrePattern
-                itemLink, itemInstanceOrUniqueIdIIfA, bagId, slotIndex = FCOIS.checkAndGetIIfAData(mouseOverControl, mouseOverControl:GetParent())
-                if bagId == nil or slotIndex == nil and itemInstanceOrUniqueIdIIfA ~= nil then
-                    FCOIS.IIfAmouseOvered = {}
-                    FCOIS.IIfAmouseOvered.itemLink = itemLink
-                    FCOIS.IIfAmouseOvered.itemInstanceOrUniqueId = itemInstanceOrUniqueIdIIfA
-                end
+    local isInvRow, patternToCheck = isSupportedInventoryRowPattern(mouseOverControlName)
+    if isInvRow == true then
+        if patternToCheck ~= IIfAInvRowPatternToCheck then
+            bagId, slotIndex = FCOIS.MyGetItemDetails(mouseOverControl)
+        else
+            --Special treatment for the addon InventoryInsightFromAshes
+            controlTypeBelowMouse = IIFAitemsListEntryPrePattern
+            itemLink, itemInstanceOrUniqueIdIIfA, bagId, slotIndex = FCOIS.checkAndGetIIfAData(mouseOverControl, mouseOverControl:GetParent())
+            if bagId == nil or slotIndex == nil and itemInstanceOrUniqueIdIIfA ~= nil then
+                FCOIS.IIfAmouseOvered = {}
+                FCOIS.IIfAmouseOvered.itemLink = itemLink
+                FCOIS.IIfAmouseOvered.itemInstanceOrUniqueId = itemInstanceOrUniqueIdIIfA
             end
-            break --bagId and slotIndex were determined
         end
     end
 --[[
@@ -1728,9 +1741,10 @@ local function sortGearSetMappingTables()
     end
 end
 
---Function to rebuild the gear set values (icons, ids, names, context enu values, etc.)
-function FCOIS.rebuildGearSetBaseVars(iconNr, value)
---d("FCOIS]rebuildGearSetBaseVars")
+--Function to rebuild the gear set values (icons, ids, names, context menu values, etc.)
+function FCOIS.rebuildGearSetBaseVars(iconNr, value, calledFromEventPlayerActivated)
+--d("FCOIS]rebuildGearSetBaseVars-calledFromEventPlayerActivated: " ..tostring(calledFromEventPlayerActivated))
+    calledFromEventPlayerActivated = calledFromEventPlayerActivated or false
     local settings = FCOIS.settingsVars.settings
     local iconIsGear = settings.iconIsGear
     if iconIsGear == nil then return end
@@ -1790,7 +1804,11 @@ function FCOIS.rebuildGearSetBaseVars(iconNr, value)
             FCOIS.numVars.gFCONumGearSets = currentMaxGearSets
 
             --Update the context menu texts for this icon
-            FCOIS.changeContextMenuEntryTexts(iconNrLoop)
+            --but not if this function was called from Event_Player_Activated as the same function will be called just after
+            --FCOIS.rebuildGearSetBaseVars for all icons (-1) already!
+            if not calledFromEventPlayerActivated then
+                FCOIS.changeContextMenuEntryTexts(iconNrLoop)
+            end
         end -- for ... loop
 
         --Sort the tables iconToGear and gearToIcon again

@@ -2993,6 +2993,10 @@ function FCOIS.showContextMenuForAddInvButtons(invAddContextMenuInvokerButton)
                     if isGear then
                         --Get the gear number
                         local gearNumber = icon2Gear[buttonsIcon]
+                        --Is the buttons text not given? Create it again
+                        if not locContextEntriesVars.menu_add_all_gear_text or not locContextEntriesVars.menu_add_all_gear_text[gearNumber] then
+                            FCOIS.changeContextMenuEntryTexts(buttonsIcon)
+                        end
                         buttonText = locContextEntriesVars.menu_add_all_gear_text[gearNumber]
                         local subMenuEntryGear = {
                             label 		= buttonText,
@@ -3004,6 +3008,14 @@ function FCOIS.showContextMenuForAddInvButtons(invAddContextMenuInvokerButton)
                     elseif isDynamic then
                         --Get the dynamic number
                         local dynamicNumber = icon2Dynamic[buttonsIcon]
+                        --Is the buttons text not given? Create it again
+                        if not locContextEntriesVars.menu_add_dynamic_text or not locContextEntriesVars.menu_add_dynamic_text[dynamicNumber] then
+                            if GetDisplayName() == "@Baertram" then
+                                d("[FCOIS]showContextMenuForAddInvButtons-Dynamic icon: " ..tostring(buttonsIcon).."(" .. tostring(dynamicNumber).."), menu_add_dynamic_text: " ..tostring(locContextEntriesVars.menu_add_dynamic_text) .. ", menu_add_dynamic_text[dynamicNumber]: " ..tostring(locContextEntriesVars.menu_add_dynamic_text[dynamicNumber]))
+                            else
+                                FCOIS.changeContextMenuEntryTexts(buttonsIcon)
+                            end
+                        end
                         buttonText = textPrefix[buttonData.mark] .. locContextEntriesVars.menu_add_dynamic_text[dynamicNumber]
                         local subMenuEntryDynamic = {
                             label 		= buttonText,
@@ -3027,6 +3039,10 @@ function FCOIS.showContextMenuForAddInvButtons(invAddContextMenuInvokerButton)
                     if isGear then
                         --Get the gear number
                         local gearNumber = icon2Gear[buttonsIcon]
+                        --Is the buttons text not given? Create it again
+                        if not locContextEntriesVars.menu_remove_all_gear_text or not locContextEntriesVars.menu_remove_all_gear_text[gearNumber] then
+                            FCOIS.changeContextMenuEntryTexts(buttonsIcon)
+                        end
                         buttonText = locContextEntriesVars.menu_remove_all_gear_text[gearNumber]
                         local subMenuEntryGear = {
                             label 		= buttonText,
@@ -3038,6 +3054,14 @@ function FCOIS.showContextMenuForAddInvButtons(invAddContextMenuInvokerButton)
                     elseif isDynamic then
                         --Get the dynamic number
                         local dynamicNumber = icon2Dynamic[buttonsIcon]
+                        --Is the buttons text not given? Create it again
+                        if not locContextEntriesVars.menu_remove_dynamic_text or not locContextEntriesVars.menu_remove_dynamic_text[dynamicNumber] then
+                            if GetDisplayName() == "@Baertram" then
+                                d("[FCOIS]showContextMenuForAddInvButtons-Dynamic icon: " ..tostring(buttonsIcon).."(" .. tostring(dynamicNumber).."), menu_remove_dynamic_text: " ..tostring(locContextEntriesVars.menu_remove_dynamic_text) .. ", menu_remove_dynamic_text[dynamicNumber]: " ..tostring(locContextEntriesVars.menu_remove_dynamic_text[dynamicNumber]))
+                            else
+                                FCOIS.changeContextMenuEntryTexts(buttonsIcon)
+                            end
+                        end
                         buttonText = textPrefix[buttonData.mark] .. locContextEntriesVars.menu_remove_dynamic_text[dynamicNumber]
                         local subMenuEntryDynamic = {
                             label 		= buttonText,

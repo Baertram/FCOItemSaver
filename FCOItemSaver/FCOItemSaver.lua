@@ -30,7 +30,9 @@
 --Todo: Test if backup/restore is working properly with the "AllAccountsTheSame" settings enabled
 
 --27) 2019-10-10 Bug - Baertram
--- Drag & drop of marked items directly from the CraftBagExtended panel to a mail slot works even if the FCOIS protection is enabled! SAme for player2player trade.
+-- Drag & drop of marked items directly from the CraftBagExtended panel to a mail slot works even if the FCOIS protection is enabled! Same for player2player trade.
+--> 2020-02-02: ZOs code does not call the event to lock/unlock items if you drag start/drag stop an item from the guild bank, craftbag panels. Also destroy event is not raised.
+--> Asked ZOs for a fix here:  https://www.esoui.com/forums/showthread.php?t=8938
 
 -- 40)  2019-11-04 Bug - Baertram
 --lua error message if you use the context menu to destroy an item from inventory:
@@ -54,7 +56,6 @@ ZO_MenuItem1_MouseUp:4: in function '(main chunk)'
 --> Analysis: FCOIS_Hooks.lua- --========= RESEARCH LIST / ListDialog (also repair, enchant, charge, etc.) - ZO_Dialog1 -> ZO_PreHookHandler(rowControl, "OnMouseUp" ->
 --> if upInside then -> FCOIS.refreshPopupDialogButtons(rowControl, false) -> FCOIS_ContextMenus.lua -> function FCOIS.refreshPopupDialogButtons ->
 --> if not ctrlVars.RepairItemDialog:IsHidden() then -> disableResearchNow = FCOIS.DeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, false, nil)
---TODO: variable disableResearchNow will be "false" on the 2nd click on the same dialog's row: Why?
 -->Tests: If paraemeter calledFromExternalAddon is set to false the protection function will return "false" in the dialogs if you click an item's row
 -->where an icon is marked and protects this item! So why does it return false if calledFromExternalAddon is set to "false" ???
 
@@ -72,6 +73,8 @@ ZO_MenuItem1_MouseUp:4: in function '(main chunk)'
 -- Error message in Guild bank withdraw, after using inventory, bank and guild store before!
 --Clicking left on the additional inventory flag icon:
 --[[
+!!!WICHTIG: Zeile 3007 (nicht mehr 2993) in FCOIS version 1.4.7!!!!
+--> buttonText = textPrefix[buttonData.mark] .. locContextEntriesVars.menu_add_dynamic_text[dynamicNumber]
 user:/AddOns/FCOItemSaver/src/FCOIS_ContextMenus.lua:2993: operator .. is not supported for string .. nil
 stack traceback:
 user:/AddOns/FCOItemSaver/src/FCOIS_ContextMenus.lua:2993: in function 'addSortedButtonDataTableEntries'
@@ -108,13 +111,40 @@ options_auto_reenable_block_refinement = "Reaktiviere Anti-Veredeln auto...",
 options_enable_filter_in_jewelry_refinement_TT = "Ermöglicht es dir die markier...",
 chatcommands_status_info = "|c00FF00FCO|cFFFF00Item Saver|...",
 rightclick_menu_lock = "Sperre setzen",
-options_block_selling_exception_intricate = "Erlaube Verkauf von aufwendige...", show_anti_messages_in_chat = "Warnung im Chat anzeigen", options_contextmenu_entries_tooltip_protectedpanels_TT = "Zeige den aktuellen Schutz-Sta...", options_icon4_tooltip_TT = "Tooltip beim Gear 2 Symbol anz...", options_enable_auto_mark_sets_non_wished_level = "Level Schwelle <", options_quality_trash = "Trödel", button_context_menu_unmark_all_as_dynamic11 = "- 11. dynamische", rightclick_menu_add_all_start_gear = "Alle hinzufügen zu ", options_additional_buttons_FCOIS_additional_options_offsetx = "Position X", filter_sellguildint_3 = "Aufwendig", options_enable_auto_mark_research_items = "Analysierbare Items", options_enable_filter_in_deconstruction_TT = "Ermöglicht es dir die markier...", options_libFiltersFilterPanelIdName_7 = "LibFilters - Filter Bereich 7...", options_contextmenu_entries_tooltip_protectedpanels = "Zeige Schutz-Status im Tooltip...", options_icon_sort_15 = "15.", filter_lockdyn_13 = "2. dynamische", options_auto_mark_crafted_items = "Markiere hergestellte Gegenstä...", options_icon7_TT = "Tooltip anzeigen", options_armor_type_icon_character_pos_y_TT = "Wähle die Y-Achsen Position f...", options_demark_all_deconstruct = "Demarkiere alle bei 'Verwerten...", options_auto_reenable_block_selling_guild_store = "Reaktiviere Gildenladen Anti-V...", options_quality_artifact = "Artefakt"}, locContextEntriesVars = [table:5]{menu_remove_deconstruction_text = "Verwerten zurücknehmen", menu_add_deconstruction_text = "Verwerten vormerken", menu_add_lock_text = "Sperre setzen", menu_add_research_text = "Analyse vormerken", menu_add_improvement_text = "Aufwerten vormerken", menu_remove_sell_text = "Verkauf zurücknehmen", menu_add_sell_text = "Zum Verkauf vormerken", menu_add_sell_to_guild_text = "Zum Verkauf im Gildenladen vor...", menu_remove_research_text = "Analyse zurücknehmen", menu_remove_improvement_text = "Aufwerten zurücknehmen", menu_remove_intricate_text = "Aufwendig zurücknehmen", menu_remove_lock_text = "Sperre entfernen", menu_add_intricate_text = "Als aufwendig markieren", menu_remove_sell_to_guild_text = "Verkauf im Gildenladen zurück..."}, _ = 26, countDynIconsEnabled = 14, useDynSubMenu = F, icon2Gear = [table:6]{2 = 1}, icon2Dynamic = [table:7]{32 = 20}, isIconGear = [table:8]{1 = F}, isIconDynamic = [table:9]{1 = F}, sortAddInvFlagContextMenu = T, parentName = "ZO_GuildBank", myFont = "ZoFontGame", textPrefix = [table:10]{(null) = "+ ", (null) = "- "}, subMenuEntriesGear = [table:11]{}, subMenuEntriesDynamic = [table:12]{}, subMenuEntriesDynamicAdd = [table:13]{}, subMenuEntriesDynamicRemove = [table:14]{} </Locals>|r
+options_block_selling_exception_intricate = "Erlaube Verkauf von aufwendige...", show_anti_messages_in_chat = "Warnung im Chat anzeigen", options_contextmenu_entries_tooltip_protectedpanels_TT = "Zeige den aktuellen Schutz-Sta...", options_icon4_tooltip_TT = "Tooltip beim Gear 2 Symbol anz...", options_enable_auto_mark_sets_non_wished_level = "Level Schwelle <", options_quality_trash = "Trödel", button_context_menu_unmark_all_as_dynamic11 = "- 11. dynamische", rightclick_menu_add_all_start_gear = "Alle hinzufügen zu ", options_additional_buttons_FCOIS_additional_options_offsetx = "Position X", filter_sellguildint_3 = "Aufwendig", options_enable_auto_mark_research_items = "Analysierbare Items", options_enable_filter_in_deconstruction_TT = "Ermöglicht es dir die markier...", options_libFiltersFilterPanelIdName_7 = "LibFilters - Filter Bereich 7...", options_contextmenu_entries_tooltip_protectedpanels = "Zeige Schutz-Status im Tooltip...", options_icon_sort_15 = "15.", filter_lockdyn_13 = "2. dynamische", options_auto_mark_crafted_items = "Markiere hergestellte Gegenstä...", options_icon7_TT = "Tooltip anzeigen", options_armor_type_icon_character_pos_y_TT = "Wähle die Y-Achsen Position f...", options_demark_all_deconstruct = "Demarkiere alle bei 'Verwerten...", options_auto_reenable_block_selling_guild_store = "Reaktiviere Gildenladen Anti-V...", options_quality_artifact = "Artefakt"},
+locContextEntriesVars = [table:5]
+{menu_remove_deconstruction_text = "Verwerten zurücknehmen",
+menu_add_deconstruction_text = "Verwerten vormerken",
+menu_add_lock_text = "Sperre setzen",
+menu_add_research_text = "Analyse vormerken",
+menu_add_improvement_text = "Aufwerten vormerken",
+menu_remove_sell_text = "Verkauf zurücknehmen",
+menu_add_sell_text = "Zum Verkauf vormerken",
+menu_add_sell_to_guild_text = "Zum Verkauf im Gildenladen vor...",
+menu_remove_research_text = "Analyse zurücknehmen",
+menu_remove_improvement_text = "Aufwerten zurücknehmen",
+menu_remove_intricate_text = "Aufwendig zurücknehmen",
+menu_remove_lock_text = "Sperre entfernen",
+menu_add_intricate_text = "Als aufwendig markieren",
+menu_remove_sell_to_guild_text = "Verkauf im Gildenladen zurück..."
+},
+_ = 26, countDynIconsEnabled = 14, useDynSubMenu = F, icon2Gear = [table:6]{2 = 1}, icon2Dynamic = [table:7]{32 = 20}, isIconGear = [table:8]{1 = F}, isIconDynamic = [table:9]{1 = F}, sortAddInvFlagContextMenu = T, parentName = "ZO_GuildBank", myFont = "ZoFontGame", textPrefix = [table:10]{(null) = "+ ", (null) = "- "}, subMenuEntriesGear = [table:11]{}, subMenuEntriesDynamic = [table:12]{}, subMenuEntriesDynamicAdd = [table:13]{}, subMenuEntriesDynamicRemove = [table:14]{} </Locals>|r
 user:/AddOns/FCOItemSaver/src/FCOIS_AdditionalButtons.lua:117: in function '(anonymous)'
 ]]
+--> Seems locContextEntriesVars.that menu_add_dynamic_text is NIL in these cases, so where is menu_add_dynamic_text added to locContextEntriesVars?
+---> locContextEntriesVars = FCOIS.localizationVars.contextEntries  -> In file FCOIS_Localization.lua, line 425 inside function FCOIS.Localization()
+---> FCOIS.localizationVars.contextEntries.menu_add_dynamic_text = {} in line 434 so the table should exist at least but it doesn't in these cases?
+----> Also done in file FCOIS_ContextMenu.lua, function FCOIS.changeContextMenuEntryTexts line 1427
+-------> Entries: line 502: table.insert(contextEntries.menu_add_dynamic_text, locTexts["rightclick_menu_mark_dynamic" .. tostring(dynIconNr)])
+
 
 -- 47) 2019-12-29 bug - Baertram
--- SHIFT +right click directly in guild bank's withdraw row (with addon Perfect Pixel enabled!) does not work if the inventory was not at least opened once before
+-- SHIFT +right click directly in guild bank's withdraw row does not work if the inventory was not at least opened once before
 -- the guild bank was opened
+--> File FCOIS_Hooks.lua, line 1332: ZO_PreHookHandler( ctrlVars.GUILD_BANK_BAG, "OnEffectivelyShown", FCOItemSaver_OnEffectivelyShown ) ->  function FCOItemSaver_OnEffectivelyShown -> function FCOItemSaver_InventoryItem_OnMouseUp
+--> GuildBank withdraw: ZO_GuildBankBackpackContents only got child ZO_GuildBankBackpackLandingArea, but not rows if you directly open the guild bank after login/reloadui.
+---> Guild bank needs more time to build the rows initially. So we need to wait here until they are build to register the hook!
+--> If you switch to the guild bank deposit and back it got the rows then: ZO_GuildBankBackpack1RowN
 
 -- 48) 2020-01-29 bug - Baertram
 -- Changed function's call of ItemSelection and DeconstructionHandler parameter "CalledFromExternalAddon" to be false if called from inside FCOIS
@@ -132,7 +162,7 @@ user:/AddOns/FCOItemSaver/src/FCOIS_AdditionalButtons.lua:117: in function '(ano
 --> See file FCOIS_ContextMenus.lua, function ContextMenuForAddInvButtonsOnClicked -> isTOGGLEANTISETTINGSButton boolean ->
 
 -- 51) 2020-01-20 bug - Baertram
--- Typinmg error in function IsMenuVisisble was fixed by ZOs. Adopt the code to support both function names (wrong and correct)
+-- Typing error in function IsMenuVisisble was fixed by ZOs. Adopt the code to support both function names (wrong and correct)
 
 
 ---------------------------------------------------------------------
@@ -143,6 +173,9 @@ user:/AddOns/FCOItemSaver/src/FCOIS_AdditionalButtons.lua:117: in function '(ano
 --[Fixed]
 --#41: Research and other ZO_ListDialogs: Keybindings of vanilla UI and FCOIS will both work on dialogs now and not destroy the UI keys afterwards
 --#43: Double click on dialog item made it selectable even if the item was protected
+--#46: Fixed the error message in Guild bank withdraw, after using inventory, bank and guild store before and clicking left on the additional inventory "flag" icon to show the context menu.
+--> This is only a temporary fix to suppress the error message as I was not able to rebuild this error and need more input how and when it happens.
+---> Added a debug message for my own account to see when it happens again and maybe collect some info how to fix it finally to "not happen" anymore.
 --#48: CraftBagExtended items at GuildStore sell panel were not protected properly anymore after #44 was fixed
 --#49: CraftBagExtended panel additional inventory "flag" button was grey and not able to change the "Anti sell at guildstore" protection
 --#50: Additional inventory "flag" button entry "Disable/Enable anti-*" did not update the marker icon tooltips properly to reflect the current protection state, and did not remove slotted and protected items from an extraction/sell/etc. slot automatically

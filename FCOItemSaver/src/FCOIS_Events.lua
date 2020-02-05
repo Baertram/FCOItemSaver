@@ -681,6 +681,18 @@ local function FCOItemSaver_OnMouseRequestDestroyItem(_, bagId, slotIndex, _, _,
     end
 end
 
+--[[
+--Register a function to the items ready event at the guild bank
+--Only run this function once! Register the OnEffectivlyShown callback function for the OnMouseUp handler
+--and the SHIFT+right mouse button functions
+--->See file FCOIS_Hooks.lua
+local function FCOItemSaver_Event_GuildBank_ItemsReady(eventCode)
+    --d("[FCOIS]EVENT_GUILD_BANK_ITEMS_READY")
+    EVENT_MANAGER:UnregisterForEvent(gAddonName, EVENT_GUILD_BANK_ITEMS_READY)
+    ZO_PreHookHandler( ctrlVars.GUILD_BANK_BAG, "OnEffectivelyShown", FCOIS.OnInventoryRowEffectivelyShown )
+end
+]]
+
 --==============================================================================
 --===================== END EVENT CALLBACK FUNCTIONS============================
 --==============================================================================
@@ -714,6 +726,8 @@ function FCOIS.checkForPlayerActivatedTasks()
     --Was the item ID type changed to unique IDs: Show the migrate data from old item IDs to unique itemIDs now
     if FCOIS.preventerVars.migrateItemMarkers then
         FCOIS.ShowAskBeforeMigrateDialog()
+    --else
+        --EVENT_MANAGER:RegisterForEvent(gAddonName, EVENT_GUILD_BANK_ITEMS_READY, FCOItemSaver_Event_GuildBank_ItemsReady)
     end
 end
 
@@ -765,7 +779,9 @@ local function FCOItemSaver_Player_Activated(...)
 
         --Rebuild the gear set variables like the mapping tables for the filter buttons, etc.
         --Must be called once before FCOIS.changeContextMenuEntryTexts(-1) to build the mapping tables + settings.iconIsGear!
-        FCOIS.rebuildGearSetBaseVars(nil, nil)
+        --3rd parameter "calledFromEventPlayerActivated" will tell the function to NOT call FCOIS.changeContextMenuEntryTexts internally
+        --as it will be called with -1 (all icons) just below!
+        FCOIS.rebuildGearSetBaseVars(nil, nil, true)
 
         --Overwrite the localized texts for the equipment gears, if changed in the settings
         FCOIS.changeContextMenuEntryTexts(-1)

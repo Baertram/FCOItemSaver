@@ -1192,7 +1192,7 @@ function FCOIS.BuildAddonMenu()
             setFunc = function(value)
                 FCOISsettings.iconIsGear[fcoisDynIconNr] = value
                 --Now rebuild all other gear set values
-                FCOIS.rebuildGearSetBaseVars(fcoisDynIconNr, value)
+                FCOIS.rebuildGearSetBaseVars(fcoisDynIconNr, value, false)
             end
             defaultSettings = FCOISdefaultSettings.iconIsGear[fcoisDynIconNr]
             createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)

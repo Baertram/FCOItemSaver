@@ -217,7 +217,7 @@ numVars.gFCONumNonDynamicAndGearIcons	= numVars.gFCONumNonDynamicIcons + numVars
 numVars.gFCOMaxNumDynamicIcons	= 30
 --Global value: Number of dynamic icons
 numVars.gFCONumDynamicIcons		= 10
-local numMaxDynamicIcons                = numVars.gFCOMaxNumDynamicIcons
+local numMaxDynamicIcons        = numVars.gFCOMaxNumDynamicIcons
 
 --Possible icon IDs
 --and possible context menus for the filter buttons: RESDECIMP and SELLGUILDINT
@@ -1817,24 +1817,45 @@ checkVars.allowedCraftingPanelIdsForMarkerRechecks = {
 --The index is the relating slotIndex of the bag BAG_WORN!
 mappingVars.characterEquipmentSlotNameByIndex = {
     [EQUIP_SLOT_HEAD]           = "ZO_CharacterEquipmentSlotsHead",
-    [EQUIP_SLOT_NECK]           = "ZO_CharacterEquipmentSlotsNeck",
-    [EQUIP_SLOT_CHEST]          = "ZO_CharacterEquipmentSlotsChest",
     [EQUIP_SLOT_SHOULDERS]      = "ZO_CharacterEquipmentSlotsShoulder",
-    [EQUIP_SLOT_MAIN_HAND]      = "ZO_CharacterEquipmentSlotsMainHand",
-    [EQUIP_SLOT_OFF_HAND]       = "ZO_CharacterEquipmentSlotsOffHand",
-    [EQUIP_SLOT_WAIST]          = "ZO_CharacterEquipmentSlotsBelt",
+    [EQUIP_SLOT_HAND]           = "ZO_CharacterEquipmentSlotsGlove",
     [EQUIP_SLOT_LEGS]           = "ZO_CharacterEquipmentSlotsLeg",
+    [EQUIP_SLOT_CHEST]          = "ZO_CharacterEquipmentSlotsChest",
+    [EQUIP_SLOT_WAIST]          = "ZO_CharacterEquipmentSlotsBelt",
     [EQUIP_SLOT_FEET]           = "ZO_CharacterEquipmentSlotsFoot",
     [EQUIP_SLOT_COSTUME]        = "ZO_CharacterEquipmentSlotsCostume",
+    [EQUIP_SLOT_NECK]           = "ZO_CharacterEquipmentSlotsNeck",
     [EQUIP_SLOT_RING1]          = "ZO_CharacterEquipmentSlotsRing1",
     [EQUIP_SLOT_RING2]          = "ZO_CharacterEquipmentSlotsRing2",
+    [EQUIP_SLOT_MAIN_HAND]      = "ZO_CharacterEquipmentSlotsMainHand",
+    [EQUIP_SLOT_OFF_HAND]       = "ZO_CharacterEquipmentSlotsOffHand",
     [EQUIP_SLOT_POISON]         = "ZO_CharacterEquipmentSlotsPoison",
-    [EQUIP_SLOT_BACKUP_POISON]  = "ZO_CharacterEquipmentSlotsBackupPoison",
-    [EQUIP_SLOT_HAND]           = "ZO_CharacterEquipmentSlotsGlove",
     [EQUIP_SLOT_BACKUP_MAIN]    = "ZO_CharacterEquipmentSlotsBackupMain",
     [EQUIP_SLOT_BACKUP_OFF]     = "ZO_CharacterEquipmentSlotsBackupOff",
+    [EQUIP_SLOT_BACKUP_POISON]  = "ZO_CharacterEquipmentSlotsBackupPoison",
 }
 local characterEquipmentSlotNameByIndex = mappingVars.characterEquipmentSlotNameByIndex
+
+--The mapping table for the character equipment slots: Speed find without string.find in EventHandlers
+mappingVars.characterEquipmentSlots = {
+    ["ZO_CharacterEquipmentSlotsHead"] = true,
+    ["ZO_CharacterEquipmentSlotsShoulder"] = true,
+    ["ZO_CharacterEquipmentSlotsGlove"] = true,
+    ["ZO_CharacterEquipmentSlotsLeg"] = true,
+    ["ZO_CharacterEquipmentSlotsChest"] = true,
+    ["ZO_CharacterEquipmentSlotsBelt"] = true,
+    ["ZO_CharacterEquipmentSlotsFoot"] = true,
+    ["ZO_CharacterEquipmentSlotsCostume"] = true,
+    ["ZO_CharacterEquipmentSlotsNeck"] = true,
+    ["ZO_CharacterEquipmentSlotsRing1"] = true,
+    ["ZO_CharacterEquipmentSlotsRing2"] = true,
+    ["ZO_CharacterEquipmentSlotsMainHand"] = true,
+    ["ZO_CharacterEquipmentSlotsOffHand"] = true,
+    ["ZO_CharacterEquipmentSlotsPoison"] = true,
+    ["ZO_CharacterEquipmentSlotsBackupMain"] = true,
+    ["ZO_CharacterEquipmentSlotsBackupOff"] = true,
+    ["ZO_CharacterEquipmentSlotsBackupPoison"] = true,
+}
 
 --Table with the eqipment slot control names which are armor
 mappingVars.characterEquipmentArmorSlots = {

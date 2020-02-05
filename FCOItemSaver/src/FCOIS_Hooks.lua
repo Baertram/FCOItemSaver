@@ -93,7 +93,13 @@ end
 local function SetEventHandler(eventName, objName, handler)
     FCOIS.eventHandlers[eventName] = FCOIS.eventHandlers[eventName] or {}
     --Set the global event handler function for an object name
-    FCOIS.eventHandlers[eventName][objName] = handler
+    --FCOIS.eventHandlers[eventName][objName] = handler
+    --Speed up: Just set boolean value
+    if handler == true then
+        FCOIS.eventHandlers[eventName][objName] = handler
+    else
+        FCOIS.eventHandlers[eventName][objName] = nil
+    end
 end
 
 -- puts given handler in front of the event handler of given object
@@ -412,12 +418,15 @@ local function FCOItemSaver_CharacterOnEffectivelyShown(self, ...)
     if ( not self ) then return false end
     local contextMenuClearMarkesByShiftKey = FCOIS.settingsVars.settings.contextMenuClearMarkesByShiftKey
     local equipmentSlotName
+    local characterEquipmentSlots = FCOIS.mappingVars.characterEquipmentSlots
 --d("[FCOItemSaver_CharacterOnEffectivelyShown]: " .. self:GetName())
     for i = 1, self:GetNumChildren() do
         -- override OnMouseDoubleClick event of character window item controls, for each row (children)
         equipmentSlotName = ctrlVars.CHARACTER:GetChild(i):GetName()
         if equipmentSlotName ~= nil then
-            if(string.find(equipmentSlotName, "ZO_CharacterEquipmentSlots")) then
+            local isEquipmentSlot = characterEquipmentSlots[equipmentSlotName] or false
+            --if(string.find(equipmentSlotName, "ZO_CharacterEquipmentSlots")) then
+            if isEquipmentSlot == true then
 --d(">EquipmentSlot: " ..tostring(equipmentSlotName))
                 local currentCharChild = self:GetChild(i)
                 if currentCharChild ~= nil then
@@ -428,7 +437,9 @@ local function FCOItemSaver_CharacterOnEffectivelyShown(self, ...)
                             --is not working as it'll overwrite the original OnMouseUp callback function totally somehow :-(
                             --PreHookHandler( "OnMouseUp", childrenCtrl, FCOItemSaver_InventoryItem_OnMouseUp)
                             --Add the custom event handler function to a global list so it won't be added twice
-                            SetEventHandler("OnMouseUp", equipmentSlotName, FCOItemSaver_InventoryItem_OnMouseUp)
+                            --SetEventHandler("OnMouseUp", equipmentSlotName, FCOItemSaver_InventoryItem_OnMouseUp)
+                            --Speed up: Only set boolean
+                            SetEventHandler("OnMouseUp", equipmentSlotName, true)
                             --Use ZO function to PreHook the event handler now
                             ZO_PreHookHandler(currentCharChild, "OnMouseUp", function(...)
                                 FCOItemSaver_InventoryItem_OnMouseUp(...)
@@ -450,33 +461,42 @@ local function FCOItemSaver_CharacterOnEffectivelyShown(self, ...)
 end
 
 -- handler function for new shown bag & slotindex (during scrolling e.g.) -> register double click event for the new shown items -> OnEffectivelyShown function
-local function FCOItemSaver_OnEffectivelyShown(self, ...)
+function FCOIS.OnInventoryRowEffectivelyShown(self, ...)
     --Should we update the marker textures, size and color?
     FCOIS.checkMarker(-1)
     if ( not self ) then return false end
     local contextMenuClearMarkesByShiftKey = FCOIS.settingsVars.settings.contextMenuClearMarkesByShiftKey
---d("[FCOItemSaver_OnEffectivelyShown]: " .. self:GetName())
+d("[FCOItemSaver_OnEffectivelyShown]: " .. self:GetName())
     for i = 1, self:GetNumChildren() do
         local childrenCtrl = self:GetChild(i)
         --Enable clearing all markers by help of the SHIFT+right click?
         if contextMenuClearMarkesByShiftKey == true then
             local childrenName = childrenCtrl:GetName()
-            -- Append OnMouseUp event of inventory item controls, for each row (children), if it is not already set there before inside the if via SetEventHandler(...)
-            if( not GetEventHandler("OnMouseUp", childrenName) ) then
-                --PreHookHandler is not working as it'll overwrite the original OnMouseUp callback function totally!
-                --PreHookHandler( "OnMouseUp", childrenCtrl, FCOItemSaver_InventoryItem_OnMouseUp)
-                --Add the custom event handler function to a global list so it won't be added twice
-                SetEventHandler("OnMouseUp", childrenName, FCOItemSaver_InventoryItem_OnMouseUp)
-                --Use ZOs function to PreHook the event handler now
-                ZO_PreHookHandler(childrenCtrl, "OnMouseUp", function(...)
-                    FCOItemSaver_InventoryItem_OnMouseUp(...)
-                end)
+            local isInvRow, _ = FCOIS.IsSupportedInventoryRowPattern(childrenName)
+            if isInvRow == true then
+d(">child: " ..tostring(childrenName))
+                -- Append OnMouseUp event of inventory item controls, for each row (children), if it is not already set there before inside the if via SetEventHandler(...)
+                if( not GetEventHandler("OnMouseUp", childrenName) ) then
+                    --PreHookHandler is not working as it'll overwrite the original OnMouseUp callback function totally!
+                    --PreHookHandler( "OnMouseUp", childrenCtrl, FCOItemSaver_InventoryItem_OnMouseUp)
+                    --Add the custom event handler function to a global list so it won't be added twice
+                    --SetEventHandler("OnMouseUp", childrenName, FCOItemSaver_InventoryItem_OnMouseUp)
+                    --Speed up: Only set boolean value
+                    SetEventHandler("OnMouseUp", childrenName, true)
+                    --Use ZOs function to PreHook the event handler now
+                    ZO_PreHookHandler(childrenCtrl, "OnMouseUp", function(...)
+                        FCOItemSaver_InventoryItem_OnMouseUp(...)
+                    end)
+                else
+d("<Handler OnMouseUp already exists on child!")
+                end
             end
         end
     end
     --Call the original OnEffectivelyShown handler function now
     return false
 end
+local FCOItemSaver_OnEffectivelyShown = FCOIS.OnInventoryRowEffectivelyShown
 
 --Callback function for start a new drag&drop operation
 --After the item was picked from the inventory the event EVENT_INVENTORY_SLOT_LOCKED will be called, as the item get's locked against changes
@@ -1172,7 +1192,6 @@ function FCOIS.CreateHooks()
     --======== INVENTORY ===========================================================
     --Pre Hook the inventory for prevention methods
     --PreHookHandler( "OnEffectivelyShown", ctrlVars.BACKPACK_BAG, FCOItemSaver_OnEffectivelyShown )
-    --TODO: Are we able to use a secure post hook heer instead?
     --ZO_PreHookHandler(ctrlVars.BACKPACK_BAG, "OnEffectivelyShown", FCOItemSaver_OnEffectivelyShown)
     ZO_PostHookHandler(ctrlVars.BACKPACK_BAG, "OnEffectivelyShown", FCOItemSaver_OnEffectivelyShown)
     ZO_PreHook("ZO_InventorySlot_DoPrimaryAction", FCOItemSaver_OnInventorySlot_DoPrimaryAction)
@@ -1327,6 +1346,12 @@ function FCOIS.CreateHooks()
 
     --======== GUILD BANK ==========================================================
     --Pre Hook the bank withdraw panel for mouse right click function SHIFT + RMB
+    --[[
+    --DEACTIVATED!
+    --> This must be run at the event  EVENT_GUILD_BANK_ITEMS_READY as the rows of the guild bank need to build first
+    --> before we can register the event to them!
+    --> See file FCOIS_Events.lua,  EVENT_GUILD_BANK_ITEMS_READY
+    ]]
     ZO_PreHookHandler( ctrlVars.GUILD_BANK_BAG, "OnEffectivelyShown", FCOItemSaver_OnEffectivelyShown )
 
     --Pre Hook the 2 menubar button's (take and deposit) handler at the guild bank
