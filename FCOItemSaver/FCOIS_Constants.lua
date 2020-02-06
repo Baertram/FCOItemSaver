@@ -850,6 +850,7 @@ FCOIS.ZOControlVars.FCOISfilterButtonNames = {
  [FCOIS_CON_FILTER_BUTTON_SELLGUILDINT]	= "ZO_PlayerInventory_FilterButton4",
 }
 FCOIS.ZOControlVars.invSceneName                = "inventory"
+FCOIS.ZOControlVars.INVENTORY_MANAGER           = ZO_InventoryManager
 FCOIS.ZOControlVars.INV				        	= ZO_PlayerInventory
 FCOIS.ZOControlVars.INV_NAME					= FCOIS.ZOControlVars.INV:GetName()
 FCOIS.ZOControlVars.INV_MENUBAR_BUTTON_ITEMS	= ZO_PlayerInventoryMenuBarButton1
@@ -858,8 +859,10 @@ FCOIS.ZOControlVars.INV_MENUBAR_BUTTON_CURRENCIES = ZO_PlayerInventoryMenuBarBut
 FCOIS.ZOControlVars.INV_MENUBAR_BUTTON_QUICKSLOTS = ZO_PlayerInventoryMenuBarButton4
 FCOIS.ZOControlVars.BACKPACK 		    		= ZO_PlayerInventoryBackpack
 FCOIS.ZOControlVars.CRAFTBAG					= ZO_CraftBag
+FCOIS.ZOControlVars.CRAFTBAG_LIST 			    = ZO_CraftBagList
 FCOIS.ZOControlVars.CRAFTBAG_NAME				= FCOIS.ZOControlVars.CRAFTBAG:GetName()
 FCOIS.ZOControlVars.CRAFTBAG_BAG				= ZO_CraftBagListContents
+FCOIS.ZOControlVars.CRAFT_BAG_FRAGMENT          = CRAFT_BAG_FRAGMENT
 --New since 1000016
 FCOIS.ZOControlVars.BACKPACK_BAG 				= ZO_PlayerInventoryListContents
 FCOIS.ZOControlVars.VENDOR_SELL				    = ZO_StoreWindowListSellToVendorArea
@@ -924,7 +927,8 @@ FCOIS.ZOControlVars.GUILD_STORE_MENUBAR_BUTTON_SEARCH_NAME = "ZO_TradingHouseMen
 FCOIS.ZOControlVars.GUILD_STORE_MENUBAR_BUTTON_SELL = ZO_TradingHouseMenuBarButton2
 FCOIS.ZOControlVars.GUILD_STORE_MENUBAR_BUTTON_LIST = ZO_TradingHouseMenuBarButton3
 FCOIS.ZOControlVars.SMITHING                = SMITHING
-FCOIS.ZOControlVars.SMITHING = SMITHING
+FCOIS.ZOControlVars.SMITHING                = SMITHING
+FCOIS.ZOControlVars.SMITHING_CLASS          = ZO_Smithing
 FCOIS.ZOControlVars.SMITHING_PANEL          = ZO_SmithingTopLevel
 FCOIS.ZOControlVars.CRAFTING_CREATION_PANEL = ZO_SmithingTopLevelCreationPanel
 FCOIS.ZOControlVars.DECONSTRUCTION_INV		= ZO_SmithingTopLevelDeconstructionPanelInventory
@@ -956,6 +960,7 @@ FCOIS.ZOControlVars.RESEARCH_POPUP_TOP_DIVIDER_NAME  = FCOIS.ZOControlVars.RESEA
 FCOIS.ZOControlVars.LIST_DIALOG 	    		= ZO_ListDialog1List
 FCOIS.ZOControlVars.DIALOG_SPLIT_STACK_NAME      = "SPLIT_STACK"
 FCOIS.ZOControlVars.MAIL_SEND					= MAIL_SEND
+FCOIS.ZOControlVars.MAIL_SEND_SCENE             = MAIL_SEND_SCENE
 FCOIS.ZOControlVars.MAIL_SEND_NAME			    = FCOIS.ZOControlVars.MAIL_SEND.control:GetName()
 FCOIS.ZOControlVars.mailSendSceneName		    = "mailSend"
 --FCOIS.ZOControlVars.MAIL_INBOX				= ZO_MailInbox
@@ -966,7 +971,7 @@ FCOIS.ZOControlVars.PLAYER_TRADE_WINDOW         = TRADE_WINDOW
 --FCOIS.ZOControlVars.PLAYER_TRADE_NAME			= FCOIS.ZOControlVars.PLAYER_TRADE.control:GetName()
 FCOIS.ZOControlVars.PLAYER_TRADE_ATTACHMENTS    = FCOIS.ZOControlVars.PLAYER_TRADE.Columns[TRADE_ME]
 FCOIS.ZOControlVars.ENCHANTING                  = ENCHANTING
---FCOIS.ZOControlVars.ENCHANTING				= ZO_Enchanting
+FCOIS.ZOControlVars.ENCHANTING_CLASS    		= ZO_Enchanting
 FCOIS.ZOControlVars.ENCHANTING_INV          = ZO_EnchantingTopLevelInventory
 FCOIS.ZOControlVars.ENCHANTING_INV_NAME     = FCOIS.ZOControlVars.ENCHANTING_INV:GetName()
 FCOIS.ZOControlVars.ENCHANTING_STATION		= ZO_EnchantingTopLevelInventoryBackpack
@@ -994,6 +999,7 @@ FCOIS.ZOControlVars.ALCHEMY_SLOT_CONTAINER_NAME = FCOIS.ZOControlVars.ALCHEMY_SL
 FCOIS.ZOControlVars.PROVISIONER             = PROVISIONER
 FCOIS.ZOControlVars.PROVISIONER_PANEL = FCOIS.ZOControlVars.PROVISIONER.control
 FCOIS.ZOControlVars.QUICKSLOT               = ZO_QuickSlot
+FCOIS.ZOControlVars.QUICKSLOT_WINDOW        = QUICKSLOT_WINDOW
 FCOIS.ZOControlVars.QUICKSLOT_NAME          = FCOIS.ZOControlVars.QUICKSLOT:GetName()
 FCOIS.ZOControlVars.QUICKSLOT_CIRCLE  		= ZO_QuickSlotCircle
 FCOIS.ZOControlVars.QUICKSLOT_LIST			= ZO_QuickSlotList
@@ -1008,7 +1014,8 @@ FCOIS.ZOControlVars.CONTAINER_LOOT_LIST_CONTENTS= ZO_LootAlphaContainerListConte
 FCOIS.ZOControlVars.CONTAINER_LOOT_LIST_CONTENTS_NAME= FCOIS.ZOControlVars.CONTAINER_LOOT_LIST_CONTENTS:GetName()
 --Transmutation
 FCOIS.ZOControlVars.RETRAIT					    = ZO_RetraitStation_Keyboard
-FCOIS.ZOControlVars.RETRAIT_RETRAIT_PANEL	    = ZO_RETRAIT_STATION_KEYBOARD.retraitPanel
+FCOIS.ZOControlVars.RETRAIT_KEYBOARD            = ZO_RETRAIT_STATION_KEYBOARD
+FCOIS.ZOControlVars.RETRAIT_RETRAIT_PANEL	    = FCOIS.ZOControlVars.RETRAIT_KEYBOARD.retraitPanel
 FCOIS.ZOControlVars.RETRAIT_INV                 = ZO_RetraitStation_KeyboardTopLevelRetraitPanelInventory
 FCOIS.ZOControlVars.RETRAIT_INV_NAME		    = FCOIS.ZOControlVars.RETRAIT_INV:GetName()
 FCOIS.ZOControlVars.RETRAIT_LIST			    = ZO_RetraitStation_KeyboardTopLevelRetraitPanelInventoryBackpack
@@ -1032,7 +1039,9 @@ FCOIS.ZOControlVars.housingBookNavigation = FCOIS.ZOControlVars.housingBook.navi
 --FCOIS.ZOControlVars.housingBookNavigation.rootNode.children[1].children[1].data:GetReferenceId() -> returns 31 e.g. the houesId which can be used to jump to
 -->collectibleId (e.g. 1090)
 -->collectibleIndex (e.g. 5)
-FCOIS.ZOControlVars.ZODialog1 = ZO_Dialog1
+FCOIS.ZOControlVars.ZOMenu                      = ZO_Menu
+FCOIS.ZOControlVars.ZODialog1                   = ZO_Dialog1
+FCOIS.ZOControlVars.mainMenuCategoryBar         = ZO_MainMenuCategoryBar
 local ctrlVars = FCOIS.ZOControlVars
 
 --The crafting panelIds which should show FCOIS filter buttons
