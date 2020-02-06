@@ -849,6 +849,7 @@ FCOIS.ZOControlVars.FCOISfilterButtonNames = {
  [FCOIS_CON_FILTER_BUTTON_RESDECIMP] 	= "ZO_PlayerInventory_FilterButton3",
  [FCOIS_CON_FILTER_BUTTON_SELLGUILDINT]	= "ZO_PlayerInventory_FilterButton4",
 }
+FCOIS.ZOControlVars.invSceneName                = "inventory"
 FCOIS.ZOControlVars.INV				        	= ZO_PlayerInventory
 FCOIS.ZOControlVars.INV_NAME					= FCOIS.ZOControlVars.INV:GetName()
 FCOIS.ZOControlVars.INV_MENUBAR_BUTTON_ITEMS	= ZO_PlayerInventoryMenuBarButton1

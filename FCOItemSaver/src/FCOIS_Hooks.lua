@@ -135,7 +135,7 @@ ZO_PreHook("ZO_Menu_OnHide", function()
         end
     end
     --Check if the character window is shown and if the current scene is the inventory scene
-    if not ctrlVars.CHARACTER:IsHidden() and SCENE_MANAGER.currentScene.name == "inventory" then
+    if not ctrlVars.CHARACTER:IsHidden() and SCENE_MANAGER.currentScene.name == ctrlVars.invSceneName  then
         --Show the PlayerProgressBar again as the context menu closes
         FCOIS.ShowPlayerProgressBar(true)
     end
@@ -466,7 +466,7 @@ function FCOIS.OnInventoryRowEffectivelyShown(self, ...)
     FCOIS.checkMarker(-1)
     if ( not self ) then return false end
     local contextMenuClearMarkesByShiftKey = FCOIS.settingsVars.settings.contextMenuClearMarkesByShiftKey
-d("[FCOItemSaver_OnEffectivelyShown]: " .. self:GetName())
+--d("[FCOItemSaver_OnEffectivelyShown]: " .. self:GetName())
     for i = 1, self:GetNumChildren() do
         local childrenCtrl = self:GetChild(i)
         --Enable clearing all markers by help of the SHIFT+right click?
@@ -474,7 +474,7 @@ d("[FCOItemSaver_OnEffectivelyShown]: " .. self:GetName())
             local childrenName = childrenCtrl:GetName()
             local isInvRow, _ = FCOIS.IsSupportedInventoryRowPattern(childrenName)
             if isInvRow == true then
-d(">child: " ..tostring(childrenName))
+--d(">child: " ..tostring(childrenName))
                 -- Append OnMouseUp event of inventory item controls, for each row (children), if it is not already set there before inside the if via SetEventHandler(...)
                 if( not GetEventHandler("OnMouseUp", childrenName) ) then
                     --PreHookHandler is not working as it'll overwrite the original OnMouseUp callback function totally!
@@ -487,8 +487,6 @@ d(">child: " ..tostring(childrenName))
                     ZO_PreHookHandler(childrenCtrl, "OnMouseUp", function(...)
                         FCOItemSaver_InventoryItem_OnMouseUp(...)
                     end)
-                else
-d("<Handler OnMouseUp already exists on child!")
                 end
             end
         end
