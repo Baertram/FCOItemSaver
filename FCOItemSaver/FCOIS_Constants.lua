@@ -863,7 +863,7 @@ FCOIS.ZOControlVars.CRAFTBAG_LIST 			    = ZO_CraftBagList
 FCOIS.ZOControlVars.CRAFTBAG_NAME				= FCOIS.ZOControlVars.CRAFTBAG:GetName()
 FCOIS.ZOControlVars.CRAFTBAG_BAG				= ZO_CraftBagListContents
 FCOIS.ZOControlVars.CRAFT_BAG_FRAGMENT          = CRAFT_BAG_FRAGMENT
---New since 1000016
+FCOIS.ZOControlVars.BACKPACK_LIST 				= ZO_PlayerInventoryList
 FCOIS.ZOControlVars.BACKPACK_BAG 				= ZO_PlayerInventoryListContents
 FCOIS.ZOControlVars.VENDOR_SELL				    = ZO_StoreWindowListSellToVendorArea
 FCOIS.ZOControlVars.vendorSceneName             = "store"

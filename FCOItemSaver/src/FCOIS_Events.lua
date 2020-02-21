@@ -616,7 +616,7 @@ end
 ----> Check file src/FCOIS_Hooks.lua, function FCOItemSaver_OnDragStart(...)
 local function FCOItemSaver_OnInventorySlotLocked(self, bag, slot)
     if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[Event] OnInventorySlotLocked: bag: " .. tostring(bag) .. ", slot: " .. tostring(slot), true, FCOIS_DEBUG_DEPTH_NORMAL) end
-d("[FCOIS]EVENT_INVENTORY_SLOT_LOCKED-bagId: " ..tostring(bag) ..", slotIndex: " ..tostring(slot))
+--d("[FCOIS]EVENT_INVENTORY_SLOT_LOCKED-bagId: " ..tostring(bag) ..", slotIndex: " ..tostring(slot))
 
     FCOIS.preventerVars.gItemSlotIsLocked = true
     --Set: Tell function ItemSelectionHandler that a drag&drop or doubleclick event was raised so it's not blocking the equip/use/etc. functions
@@ -625,13 +625,13 @@ d("[FCOIS]EVENT_INVENTORY_SLOT_LOCKED-bagId: " ..tostring(bag) ..", slotIndex: "
     --Then do not do the anti-/protection checks.
     if FCOIS.preventerVars.splitItemStackDialogActive then
         FCOIS.preventerVars.splitItemStackDialogActive = false
-d("[FCOIS]<Split item dialog active!")
+--d("[FCOIS]<Split item dialog active!")
         return false
     end
 
     --Deconstruction at crafting station?
     if(not ctrlVars.DECONSTRUCTION_BAG:IsHidden() ) then
-d(">got here, calling deconstruction selection handler")
+--d(">got here, calling deconstruction selection handler")
         -- check if deconstruction is forbidden
         -- if so, clear item hold by cursor
         if( FCOIS.callDeconstructionSelectionHandler(bag, slot, true) ) then

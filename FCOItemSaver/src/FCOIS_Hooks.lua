@@ -472,7 +472,10 @@ function FCOIS.CreateHooks()
     local mappingVars = FCOIS.mappingVars
 
     --========= INVENTORY SLOT - SHOW CONTEXT MENU =================================
-    local function ZO_InventorySlot_ShowContextMenu_For_FCOItemSaver(rowControl, slotActions)
+    local function ZO_InventorySlot_ShowContextMenu_For_FCOItemSaver(rowControl, slotActions, ctrl, alt, shift, command)
+        shift = shift or IsShiftKeyDown()
+        alt = alt or IsAltKeyDown()
+        ctrl = ctrl or IsControlKeyDown()
         local prevVars = FCOIS.preventerVars
         FCOIS.preventerVars.buildingInvContextMenuEntries = false
         --As this prehook is called before the character OnMouseUp function is called:
@@ -481,7 +484,7 @@ function FCOIS.CreateHooks()
         local contextMenuClearMarkesByShiftKey = FCOIS.settingsVars.settings.contextMenuClearMarkesByShiftKey
         local isCharacterShown = not FCOIS.ZOControlVars.CHARACTER:IsHidden()
 
-        --d("[FCOIS]ZO_InventorySlot_ShowContextMenu - dontShowInvContextMenu: " ..tostring(FCOIS.preventerVars.dontShowInvContextMenu) .. ", isCharacterShown: " ..tostring(isCharacterShown))
+--d("[FCOIS]ZO_InventorySlot_ShowContextMenu - dontShowInvContextMenu: " ..tostring(FCOIS.preventerVars.dontShowInvContextMenu) .. ", isCharacterShown: " ..tostring(isCharacterShown))
         --Clear the sub context menu entries
         FCOIS.customMenuVars.customMenuSubEntries = {}
         FCOIS.customMenuVars.customMenuDynSubEntries = {}
@@ -489,12 +492,12 @@ function FCOIS.CreateHooks()
 
         --if the context menu should not be shown, because all marker icons were removed
         -- hide it now
-        if prevVars.dontShowInvContextMenu == false and isCharacterShown and contextMenuClearMarkesByShiftKey == true and IsShiftKeyDown() then
-            --d(">FCOIS context menu, shift key is down")
+        if prevVars.dontShowInvContextMenu == false and isCharacterShown and contextMenuClearMarkesByShiftKey == true and ( shift == true and not (ctrl or alt or command) ) then
+--d(">FCOIS context menu, shift key is down")
             FCOIS.preventerVars.dontShowInvContextMenu = true
         end
         if prevVars.dontShowInvContextMenu then
-            --d(">FCOIS context menu, hiding it!")
+--d(">FCOIS context menu, hiding it!")
             FCOIS.preventerVars.dontShowInvContextMenu = false
             --Hide the context menu now by returning true in this preHook and not calling the "context menu show" function
             --Nil the current menu ZO_Menu so it does not show (anti-flickering)
@@ -605,7 +608,18 @@ function FCOIS.CreateHooks()
     --    ZO_InventorySlot_ShowContextMenu_For_FCOItemSaver(rowControl)
     --end)
     -->Use LibCustomMenu for this!
-    if lcm then lcm:RegisterContextMenu(ZO_InventorySlot_ShowContextMenu_For_FCOItemSaver) end
+    -->Check if the function to register a special context menu (with shift, alt, ctrl, control keys!) exists and use this,
+    -->or the normal RegisterContextMenu function
+    if lcm then
+        if lcm.RegisterSpecialKeyContextMenu then
+            lcm:RegisterSpecialKeyContextMenu(ZO_InventorySlot_ShowContextMenu_For_FCOItemSaver)
+        end
+        lcm:RegisterContextMenu(ZO_InventorySlot_ShowContextMenu_For_FCOItemSaver)
+    else
+        local libMissingErrorText = FCOIS.errorTexts["libraryMissing"]
+        d(FCOIS.preChatVars.preChatTextRed .. string.format(libMissingErrorText, "LibCustomMenu"))
+    end
+
 
     --========= ZO_DIALOG1 / DESTROY DIALOG ========================================
     --Destroy item dialog button 2 ("Abort") hook
@@ -850,7 +864,7 @@ function FCOIS.CreateHooks()
         --Pre-Hook the handler "OnMouseUp" event for the rowControl to disable the researching of the item,
         --but still enable the right click/context menu:
         --Show context menu at mouse button 2, but keep the normal OnMouseUp handler as well
-        ZO_PreHookHandler(rowControl, "OnMouseUp", function(control, button, upInside, ctrlKey, altKey, shiftKey, ...)
+        ZO_PreHookHandler(rowControl, "OnMouseUp", function(control, button, upInside, ctrlKey, altKey, shiftKey, command)
             if settings.debug then FCOIS.debugMessage( "Clicked: " ..control:GetName() .. ", MouseButton: " .. tostring(button), true, FCOIS_DEBUG_DEPTH_NORMAL) end
             --button 1= left mouse button / 2= right mouse button
             --d("[FCOIS Hooks-ResearchDialog:OnMouseUp handler]Clicked: " ..control:GetName() .. ", MouseButton: " .. tostring(button) .. ", Shift: " ..tostring(shiftKey))
@@ -858,7 +872,7 @@ function FCOIS.CreateHooks()
             --Right click/mouse button 2 context menu hook part:
             if button == MOUSE_BUTTON_INDEX_RIGHT and upInside then
                 --Was the shift key clicked?
-                if shiftKey then
+                if shiftKey == true and not (ctrlKey or altKey or command) then
                     --Right click/mouse button 2 context menu together with shift key: Clear/Restore all marker icons on the item?
                     --If the setting to remove/readd marker icons via shift+right mouse button is enabled:
                     FCOIS.checkIfClearOrRestoreAllMarkers(rowControl, shiftKey, upInside, button, true)

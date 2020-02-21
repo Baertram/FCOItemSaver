@@ -1224,7 +1224,7 @@ end -- FCOChangeFilter
 function FCOIS.ShouldInventoryContextMenuBeHiddden()
 	if not checkIfFCOISSettingsWereLoaded(true) then return false end
 	local contextMenuClearMarkesByShiftKey = FCOIS.settingsVars.settings.contextMenuClearMarkesByShiftKey
-    return (contextMenuClearMarkesByShiftKey and FCOIS.preventerVars.dontShowInvContextMenu == true) or false
+    return (contextMenuClearMarkesByShiftKey == true and FCOIS.preventerVars.dontShowInvContextMenu == true) or false
 end
 
 --------------------------------------------------------------------------------

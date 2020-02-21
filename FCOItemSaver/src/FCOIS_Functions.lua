@@ -24,7 +24,7 @@ end
 
 --Set the variables for each panel where the number of filtered items can be found for the current inventory
 function FCOIS.getNumberOfFilteredItemsForEachPanel()
-    local numFilterdItemsInv = ZO_PlayerInventoryList.data
+    local numFilterdItemsInv = ctrlVars.BACKPACK_LIST.data
     FCOIS.numberOfFilteredItems[LF_INVENTORY]              = numFilterdItemsInv
     --Same like inventory
     FCOIS.numberOfFilteredItems[LF_MAIL_SEND]              = numFilterdItemsInv
@@ -39,25 +39,25 @@ function FCOIS.getNumberOfFilteredItemsForEachPanel()
     FCOIS.numberOfFilteredItems[LF_FENCE_SELL]             = numFilterdItemsInv
     FCOIS.numberOfFilteredItems[LF_FENCE_LAUNDER]          = numFilterdItemsInv
     --Others
-    FCOIS.numberOfFilteredItems[LF_BANK_WITHDRAW]          = ZO_PlayerBankBackpack.data
-    FCOIS.numberOfFilteredItems[LF_GUILDBANK_WITHDRAW]     = ZO_GuildBankBackpack.data
-    FCOIS.numberOfFilteredItems[LF_SMITHING_REFINE]        = ZO_SmithingTopLevelRefinementPanelInventoryBackpack.data
-    FCOIS.numberOfFilteredItems[LF_SMITHING_DECONSTRUCT]   = ZO_SmithingTopLevelDeconstructionPanelInventoryBackpack.data
-    FCOIS.numberOfFilteredItems[LF_SMITHING_IMPROVEMENT]   = ZO_SmithingTopLevelImprovementPanelInventoryBackpack.data
-    FCOIS.numberOfFilteredItems[LF_SMITHING_RESEARCH]      = 0 -- TODO: Add as filter panel gets supported
-    FCOIS.numberOfFilteredItems[LF_SMITHING_RESEARCH_DIALOG] = 0 -- TODO: Add as filter panel gets supported
-    FCOIS.numberOfFilteredItems[LF_ALCHEMY_CREATION]       = ZO_AlchemyTopLevelInventoryBackpack.data
-    FCOIS.numberOfFilteredItems[LF_ENCHANTING_CREATION]    = ZO_EnchantingTopLevelInventoryBackpack.data
+    FCOIS.numberOfFilteredItems[LF_BANK_WITHDRAW]          = ctrlVars.BANK.data
+    FCOIS.numberOfFilteredItems[LF_GUILDBANK_WITHDRAW]     = ctrlVars.GUILD_BANK.data
+    FCOIS.numberOfFilteredItems[LF_SMITHING_REFINE]        = ctrlVars.REFINEMENT.data
+    FCOIS.numberOfFilteredItems[LF_SMITHING_DECONSTRUCT]   = ctrlVars.DECONSTRUCTION.data
+    FCOIS.numberOfFilteredItems[LF_SMITHING_IMPROVEMENT]   = ctrlVars.IMPROVEMENT.data
+    FCOIS.numberOfFilteredItems[LF_SMITHING_RESEARCH]      = 0 -- No item count should be shown at the research traits list
+    FCOIS.numberOfFilteredItems[LF_SMITHING_RESEARCH_DIALOG] = 0 -- No item count should be shown inside the selected traits popup
+    FCOIS.numberOfFilteredItems[LF_ALCHEMY_CREATION]       = ctrlVars.ALCHEMY_STATION.data
+    FCOIS.numberOfFilteredItems[LF_ENCHANTING_CREATION]    = ctrlVars.ENCHANTING_STATION.data
     FCOIS.numberOfFilteredItems[LF_ENCHANTING_EXTRACTION]  = FCOIS.numberOfFilteredItems[LF_ENCHANTING_CREATION]
-    FCOIS.numberOfFilteredItems[LF_CRAFTBAG]               = ZO_CraftBagList.data
-    FCOIS.numberOfFilteredItems[LF_RETRAIT]                = ZO_RetraitStation_KeyboardTopLevelRetraitPanelInventoryBackpack.data
-    FCOIS.numberOfFilteredItems[LF_HOUSE_BANK_WITHDRAW]    = ZO_HouseBankBackpack.data
+    FCOIS.numberOfFilteredItems[LF_CRAFTBAG]               = ctrlVars.CRAFTBAG_LIST.data
+    FCOIS.numberOfFilteredItems[LF_RETRAIT]                = ctrlVars.RETRAIT_LIST.data
+    FCOIS.numberOfFilteredItems[LF_HOUSE_BANK_WITHDRAW]    = ctrlVars.HOUSE_BANK.data
     FCOIS.numberOfFilteredItems[LF_JEWELRY_REFINE]         = FCOIS.numberOfFilteredItems[LF_SMITHING_REFINE]
     FCOIS.numberOfFilteredItems[LF_JEWELRY_DECONSTRUCT]    = FCOIS.numberOfFilteredItems[LF_SMITHING_DECONSTRUCT]
     FCOIS.numberOfFilteredItems[LF_JEWELRY_IMPROVEMENT]    = FCOIS.numberOfFilteredItems[LF_SMITHING_IMPROVEMENT]
-    FCOIS.numberOfFilteredItems[LF_JEWELRY_RESEARCH]       = 0 -- TODO: Add as filter panel gets supported
-    FCOIS.numberOfFilteredItems[LF_JEWELRY_RESEARCH_DIALOG]  = 0 -- TODO: Add as filter panel gets supported
-    FCOIS.numberOfFilteredItems[LF_QUICKSLOT]              = QUICKSLOT_WINDOW.list.data
+    FCOIS.numberOfFilteredItems[LF_JEWELRY_RESEARCH]       = FCOIS.numberOfFilteredItems[LF_SMITHING_RESEARCH]
+    FCOIS.numberOfFilteredItems[LF_JEWELRY_RESEARCH_DIALOG]= FCOIS.numberOfFilteredItems[LF_SMITHING_RESEARCH_DIALOG]
+    FCOIS.numberOfFilteredItems[LF_QUICKSLOT]              = ctrlVars.QUICKSLOT_WINDOW.list.data
     --Special numbers for e.g. quest items in inventory
     FCOIS.numberOfFilteredItems["INVENTORY_QUEST_ITEM"]    = PLAYER_INVENTORY.inventories[INVENTORY_QUEST_ITEM].listView.data
 
