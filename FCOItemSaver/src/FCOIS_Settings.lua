@@ -63,7 +63,7 @@ function FCOIS.getSettingsIsFilterOn(p_filterId, p_filterPanel)
         if result == nil then
             return false
         end
-        if settings.debug then FCOIS.debugMessage( "[GetSettingsIsFilterOn] Filter Panel: " .. tostring(p_filterPanelNew) .. ", FilterId: " .. tostring(p_filterId) .. ", Result: " .. tostring(result), true, FCOIS_DEBUG_DEPTH_SPAM) end
+        if settings.debug then FCOIS.debugMessage( "[GetSettingsIsFilterOn]","Filter Panel: " .. tostring(p_filterPanelNew) .. ", FilterId: " .. tostring(p_filterId) .. ", Result: " .. tostring(result), true, FCOIS_DEBUG_DEPTH_SPAM) end
         return result
     end
 end
@@ -76,7 +76,7 @@ function FCOIS.setSettingsIsFilterOn(p_filterId, p_value, p_filterPanel)
         --New behaviour with filters
         settings.isFilterPanelOn[p_filterPanelNew] = settings.isFilterPanelOn[p_filterPanelNew] or {}
         settings.isFilterPanelOn[p_filterPanelNew][p_filterId] = p_value
-        if settings.debug then FCOIS.debugMessage( "[SetSettingsIsFilterOn] Filter Panel: " .. tostring(p_filterPanelNew) .. ", FilterId: " .. tostring(p_filterId) .. ", Value: " .. tostring(p_value), true, FCOIS_DEBUG_DEPTH_SPAM) end
+        if settings.debug then FCOIS.debugMessage( "[SetSettingsIsFilterOn]","Filter Panel: " .. tostring(p_filterPanelNew) .. ", FilterId: " .. tostring(p_filterId) .. ", Value: " .. tostring(p_value), true, FCOIS_DEBUG_DEPTH_SPAM) end
     end
     --return the value
     return p_value
@@ -151,7 +151,7 @@ function FCOIS.getFilterWhereBySettings(p_filterWhere, onlyAnti)
         end
     end
 
-    if settingsAllowed.debug then FCOIS.debugMessage( "[FCOIS.getFilterWhereBySettings] " .. tostring(p_filterWhere) .. " = " .. tostring(settingsAllowed.atPanelEnabled[p_filterWhere]["filters"]), true, FCOIS_DEBUG_DEPTH_SPAM) end
+    if settingsAllowed.debug then FCOIS.debugMessage( "[getFilterWhereBySettings]", tostring(p_filterWhere) .. " = " .. tostring(settingsAllowed.atPanelEnabled[p_filterWhere]["filters"]), true, FCOIS_DEBUG_DEPTH_SPAM) end
     return p_filterWhere
 end
 

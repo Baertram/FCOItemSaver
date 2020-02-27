@@ -66,7 +66,7 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
     local mouseRightClickDone = self.m_contextMenuMode
     --Hide the inventory button contextMenu if shown and if we right clicked another item
     if mouseRightClickDone == true then
-        if settings.debug then FCOIS.debugMessage( "[FCOIS]AddSlotAction-Parent: " .. parentName .. ", actionStringId: " .. tostring(actionStringId), true, FCOIS_DEBUG_DEPTH_ALL) end
+        if settings.debug then FCOIS.debugMessage( "[AddSlotAction]","Parent: " .. parentName .. ", actionStringId: " .. tostring(actionStringId), true, FCOIS_DEBUG_DEPTH_ALL) end
         --Hide the context menu at last active panel
         FCOIS.hideContextMenu(FCOIS.gFilterWhere)
 
@@ -83,7 +83,7 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
         end
     else
         if isNewSlot then
-            if settings.debug then FCOIS.debugMessage( "[FCOIS]AddSlotAction-Parent: " .. parentName, true, FCOIS_DEBUG_DEPTH_ALL) end
+            if settings.debug then FCOIS.debugMessage( "[AddSlotAction]",">newSlot! Parent: " .. parentName, true, FCOIS_DEBUG_DEPTH_ALL) end
         end
     end
 
@@ -574,7 +574,7 @@ end
         firstAdd = true
         lastAdd = false
         --To prevent spamming only output the debug message once for the first added context menu item
-        if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[FCOIS.AddMark]: Parent: " .. parentName .. ", Control: " .. controlName .. ", IsEquipmentSlot: " ..tostring(isEquipmentSlot) .. ", useSubMenu: " .. tostring(useSubMenu), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[AddMark]", "Parent: " .. parentName .. ", Control: " .. controlName .. ", IsEquipmentSlot: " ..tostring(isEquipmentSlot) .. ", useSubMenu: " .. tostring(useSubMenu), true, FCOIS_DEBUG_DEPTH_NORMAL) end
         --d("[FCOIS.AddMark - Parent: " .. parentName .. ", Control: " .. controlName .. ", IsEquipmentSlot: " ..tostring(isEquipmentSlot) .. ", useSubMenu: " .. tostring(useSubMenu))
         --Check if we clicked a row within the IIfA addon.
         --Will clear (nil) and then fill the table FCOIS.IIfAclicked if itemLink, itemInstanceId, bagId and slotId were found
@@ -610,7 +610,7 @@ end
     if (notAllowed) then
         --Not allowed parent or control is given -> Abort here
         if firstAdd then
-            if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[FCOIS.AddMark]: Not allowed parent '" .. tostring(parentName) .. "' or control '" .. tostring(controlName) .. "' -> Aborted!", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+            if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[AddMark]","Not allowed parent '" .. tostring(parentName) .. "' or control '" .. tostring(controlName) .. "' -> Aborted!", true, FCOIS_DEBUG_DEPTH_NORMAL) end
         end
         return
     end
@@ -1095,7 +1095,7 @@ function FCOIS.MarkMe(rowControl, markId, updateNow, doUnmark, refreshPopupDialo
     local isNotInHouseAndBagIsHouseBankBag = false
     local itemLink
     local itemInstanceOrUniqueId
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[FCOIS.MarkMe] markId: " .. tostring(markId) .. ", updateNow: " .. tostring(updateNow) .. ", doUnmark: " .. tostring(doUnmark) .. ", refreshPopupDialog: " .. tostring(refreshPopupDialog), FCOIS_DEBUG_DEPTH_ALL) end
+    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[MarkMe]","markId: " .. tostring(markId) .. ", updateNow: " .. tostring(updateNow) .. ", doUnmark: " .. tostring(doUnmark) .. ", refreshPopupDialog: " .. tostring(refreshPopupDialog), FCOIS_DEBUG_DEPTH_ALL) end
     if FCOIS.gFilterWhere == nil then return end
     --Set the last used filter Id at the current panel
     local iconToFilter = FCOIS.mappingVars.iconToFilter
@@ -1508,7 +1508,7 @@ end
 function FCOIS.resetUserContextMenuSortOrder()
 --d("[FCOIS]resetUserContextMenuSortOrder")
     local settings = FCOIS.settingsVars.settings
-    if settings.debug then FCOIS.debugMessage( "FCOIS.resetUserContextMenuSortOrder", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+    if settings.debug then FCOIS.debugMessage( "[resetUserContextMenuSortOrder]", "executed", true, FCOIS_DEBUG_DEPTH_NORMAL) end
     local defaults = FCOIS.settingsVars.defaults
     local retVar = false
     --For each icon get the default sort order and reset it so the LAM dropdown boxes show the standard sort order again
@@ -1672,7 +1672,7 @@ local function ContextMenuFilterButtonOnClicked(button, contextMenuType, iconId,
     local ctmVars = FCOIS.ctmVars[contextMenuType]
     ctmVars.lastIcon[filterPanelId] = iconId
 
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[ContextMenuFilterButtonOnClicked] ContextMenuType: " .. contextMenuType .. ", clicked button: " .. button:GetName() .. ", IconId: " .. tostring(iconId) .. ", filterPanelId: " .. tostring(filterPanelId), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[ContextMenuFilterButtonOnClicked]","ContextMenuType: " .. contextMenuType .. ", clicked button: " .. button:GetName() .. ", IconId: " .. tostring(iconId) .. ", filterPanelId: " .. tostring(filterPanelId), true, FCOIS_DEBUG_DEPTH_NORMAL) end
 --d("[FCOIS]ContextMenuFilterButtonOnClicked - ContextMenuType: " .. contextMenuType .. ", clicked button: " .. button:GetName() .. ", buttonNr: " .. tostring(buttonNr) ..", IconId: " .. tostring(iconId) .. ", filterPanelId: " .. tostring(filterPanelId))
     if iconId ~= nil then
         --Update the last filter ID (determined by the used icon) for the correct inventory refresh
@@ -1819,7 +1819,7 @@ function FCOIS.showContextMenuFilterButton(parentButton, p_FilterPanelId, contex
     p_FilterPanelId = p_FilterPanelId or FCOIS.gFilterWhere
     if parentButton == nil or p_FilterPanelId == nil or p_FilterPanelId == 0 then return end
 
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[FCOIS.showContextMenuFilterButton] Parent name: " .. parentButton:GetName() .. ", Type: " .. contextMenuType .. ", PanelId: " .. FCOIS.gFilterWhere, true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[showContextMenuFilterButton]","Parent name: " .. parentButton:GetName() .. ", Type: " .. contextMenuType .. ", PanelId: " .. FCOIS.gFilterWhere, true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
 --d("[FCOIS.showContextMenuFilterButton] Parent name: " .. parentButton:GetName() .. ", Type: " .. contextMenuType .. ", PanelId: " .. FCOIS.gFilterWhere)
 
     --Get the settings for the filter button context menu type and check if the context menu is enabled at this filter button
@@ -2122,7 +2122,7 @@ function FCOIS.getContextMenuAntiSettingsTextAndState(p_filterWhere, buildText)
     local filterPanelToCheck = p_filterWhere
 
     local settings = FCOIS.settingsVars.settings
-    if settings.debug then FCOIS.debugMessage( "[FCOIS.getContextMenuAntiSettingsTextAndState] PanelId: " .. p_filterWhere .. ", BuildText: " .. tostring(buildText), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+    if settings.debug then FCOIS.debugMessage( "[getContextMenuAntiSettingsTextAndState]","PanelId: " .. p_filterWhere .. ", BuildText: " .. tostring(buildText), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
 
     --Build the settings value
     --Update the Anti-* settings for the panel
@@ -2265,7 +2265,7 @@ end
 --Change the context menu invoker button's color by help of the current panel ID
 function FCOIS.changeContextMenuInvokerButtonColorByPanelId(panelId)
     panelId = panelId or FCOIS.gFilterWhere
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[FCOIS.changeContextMenuInvokerButtonColorByPanelId] PanelId: " .. panelId, true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[changeContextMenuInvokerButtonColorByPanelId]","PanelId: " .. panelId, true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
     if not panelId or panelId == 0 then return false end
     --Change the color of the context menu invoker button now
     --First see if the setitngs for the given panel are enabled or not
@@ -2380,7 +2380,7 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
         else
             if specialButtonType == nil then return end
         end
-        if settings.debug then FCOIS.debugMessage( "Clicked "..contextmenuType.." context menu button, IconId: " .. tostring(iconId) .. ", Mark: " .. tostring(doMark) ..", specialButtonType: " .. tostring(specialButtonType), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        if settings.debug then FCOIS.debugMessage( "[ContextMenuForAddInvButtonsOnClicked]", "Clicked "..contextmenuType.." context menu button, IconId: " .. tostring(iconId) .. ", Mark: " .. tostring(doMark) ..", specialButtonType: " .. tostring(specialButtonType), true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
         --Check all "currently shown -> non filtered!" items in the given inventory
         if (iconId ~= nil and doMark ~= nil) or (specialButtonType ~= nil and allowedSpecialButtonTypes[specialButtonType].allowed) then
@@ -2539,7 +2539,7 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
         --UNDO
         if isUNDOButton then
             --Undo the last change at this panel Id
-            if settings.debug then FCOIS.debugMessage( "Clicked "..contextmenuType.." context menu button. Will undo last change at panel " .. tostring(FCOIS.gFilterWhere) .. " now!", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+            if settings.debug then FCOIS.debugMessage( "[ContextMenuForAddInvButtonsOnClicked]", "Clicked "..contextmenuType.." context menu button. Will undo last change at panel " .. tostring(FCOIS.gFilterWhere) .. " now!", true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
             atLeastOneMarkerChanged = false
             --local undoEntry
@@ -2573,7 +2573,7 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
             --REMOVE ALL GEARS
         elseif isREMOVEALLGEARSButton then
 
-            if settings.debug then FCOIS.debugMessage( "Clicked "..contextmenuType.." context menu button, Remove ALL GEARS", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+            if settings.debug then FCOIS.debugMessage( "[ContextMenuForAddInvButtonsOnClicked]", "Clicked "..contextmenuType.." context menu button, Remove ALL GEARS", true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
             --Get the current inventorytype
             --local inventoryType = mappingVars.InvToInventoryType[FCOIS.gFilterWhere]
@@ -2650,7 +2650,7 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
             --REMOVE ALL
         elseif isREMOVEALLButton then
 
-            if settings.debug then FCOIS.debugMessage( "Clicked "..contextmenuType.." context menu button, Remove ALL", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+            if settings.debug then FCOIS.debugMessage( "[ContextMenuForAddInvButtonsOnClicked]", "Clicked "..contextmenuType.." context menu button, Remove ALL", true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
             --Get the current inventorytype
             --local inventoryType = mappingVars.InvToInventoryType[FCOIS.gFilterWhere]
@@ -2711,7 +2711,7 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
         -- TOGGLEANTISETTINGS
         elseif isTOGGLEANTISETTINGSButton then
 
-            if settings.debug then FCOIS.debugMessage( "Clicked "..contextmenuType.." context menu button, TOGGLE ANTI SETTINGS", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+            if settings.debug then FCOIS.debugMessage( "[ContextMenuForAddInvButtonsOnClicked]", "Clicked "..contextmenuType.." context menu button, TOGGLE ANTI SETTINGS", true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
             --Invert the active anti-setting (false->true / true->false)
             local isSettingEnabledNew = FCOIS.changeAntiSettingsAccordingToFilterPanel()
@@ -2774,7 +2774,7 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                                 end
                                 --Check all icon Ids, if item is protected (only if item should be marked as junk! Not neccessary if item should be removed from junk)
                                 if not isProtectedWithIcon then
-                                    if settings.debug then FCOIS.debugMessage( "Clicked "..contextmenuType.." context menu button, MARK ALL AS JUNK", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+                                    if settings.debug then FCOIS.debugMessage( "[ContextMenuForAddInvButtonsOnClicked]", "Clicked "..contextmenuType.." context menu button, MARK ALL AS JUNK", true, FCOIS_DEBUG_DEPTH_NORMAL) end
                                     FCOIS.setItemIsJunk(bagId, slotIndex, true)
                                 end
                                 --UnMark all junk items
@@ -2799,7 +2799,7 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                                     end
                                 end
                                 if not isProtectedWithIcon then
-                                    if settings.debug then FCOIS.debugMessage( "Clicked "..contextmenuType.." context menu button, REMOVE ALL FROM JUNK", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+                                    if settings.debug then FCOIS.debugMessage( "[ContextMenuForAddInvButtonsOnClicked]", "Clicked "..contextmenuType.." context menu button, REMOVE ALL FROM JUNK", true, FCOIS_DEBUG_DEPTH_NORMAL) end
                                     FCOIS.setItemIsJunk(bagId, slotIndex, false)
                                 end
                             end
@@ -2820,7 +2820,7 @@ end
 --Function that is called upon OnMouseUp event on the additional inventory "flag" context menu button's right mouse click to change the protection
 function FCOIS.onContextMenuForAddInvButtonsButtonMouseUp(inventoryAdditionalContextMenuInvokerButton, mouseButton, upInside)
 --d("[FCOIS]onContextMenuForAddInvButtonsButtonMouseUp, invokerButton: " .. tostring(inventoryAdditionalContextMenuInvokerButton:GetName()))
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[FCOIS.onContextMenuForAddInvButtonsButtonMouseUp] invokerButton: " .. tostring(inventoryAdditionalContextMenuInvokerButton:GetName()) .. ", panelId: " .. tostring(FCOIS.gFilterWhere) .. ", mouseButton: " .. tostring(mouseButton), true, FCOIS_DEBUG_DEPTH_ALL) end
+    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[onContextMenuForAddInvButtonsButtonMouseUp]","invokerButton: " .. tostring(inventoryAdditionalContextMenuInvokerButton:GetName()) .. ", panelId: " .. tostring(FCOIS.gFilterWhere) .. ", mouseButton: " .. tostring(mouseButton), true, FCOIS_DEBUG_DEPTH_ALL) end
     --Only go on if the context menu is not currently shown
     local menuOwner = GetMenuOwner(inventoryAdditionalContextMenuInvokerButton)
     if (menuOwner == nil or not menuVisibleCheck()) then
@@ -2879,7 +2879,7 @@ function FCOIS.showContextMenuForAddInvButtons(invAddContextMenuInvokerButton)
             end
         end
 
-        if settings.debug then FCOIS.debugMessage( "[FCOIS.showContextMenuForAddInvButtons] invokerButton: " .. tostring(invAddContextMenuInvokerButton:GetName()) .. ", parentName: " .. tostring(parentName) .. ", panelId: " .. tostring(panelId), true, FCOIS_DEBUG_DEPTH_ALL) end
+        if settings.debug then FCOIS.debugMessage( "[showContextMenuForAddInvButtons]","invokerButton: " .. tostring(invAddContextMenuInvokerButton:GetName()) .. ", parentName: " .. tostring(parentName) .. ", panelId: " .. tostring(panelId), true, FCOIS_DEBUG_DEPTH_ALL) end
 
         --Clear the last context menu entries
         ClearMenu()

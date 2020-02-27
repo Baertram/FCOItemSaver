@@ -101,7 +101,7 @@ function FCOIS.CheckIfOtherAddonsActiveAfterPlayerActivated()
     if (FCOIS.otherAddons.inventoryGridViewActive == false) then
         local gridViewControlName = WINDOW_MANAGER:GetControlByName(FCOIS.otherAddons.GRIDVIEWBUTTON, "")
         if gridViewControlName ~=  nil then
-            if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "Addon Inventory Gridview is active", false) end
+            if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[Other addons]", "Addon Inventory Gridview is active", false) end
             FCOIS.otherAddons.inventoryGridViewActive = true
         end
     end
@@ -110,7 +110,7 @@ function FCOIS.CheckIfOtherAddonsActiveAfterPlayerActivated()
         FCOIS.otherAddons.chatMerchantActive = false
         local chatMerchantControlName = WINDOW_MANAGER:GetControlByName(FCOIS.otherAddons.CHATMERCHANTBUTTON, "")
         if chatMerchantControlName ~=  nil then
-            if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "Addon ChatMerchant is active", false) end
+            if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[Other addons]", "Addon ChatMerchant is active", false) end
             FCOIS.otherAddons.chatMerchantActive = true
         end
     end
@@ -159,7 +159,7 @@ end
 --Function to check if CraftBagExtended or AwesomeGuildStore are active
 function FCOIS.checkIfCBEorAGSActive(parentFilterPanelId, checkWithoutParentFilterPanelId)
     checkWithoutParentFilterPanelId = checkWithoutParentFilterPanelId or false
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[FCOIS.checkIfCBEorAGSActive] parentFilterPanelId: " .. tostring(parentFilterPanelId) ..", checkWithoutParentFilterPanelId: " .. tostring(checkWithoutParentFilterPanelId), true, FCOIS_DEBUG_DEPTH_SPAM) end
+    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[Other addons]","checkIfCBEorAGSActive - parentFilterPanelId: " .. tostring(parentFilterPanelId) ..", checkWithoutParentFilterPanelId: " .. tostring(checkWithoutParentFilterPanelId), true, FCOIS_DEBUG_DEPTH_SPAM) end
     local addonActive = false
     --Do the check only for the other addons enabled
     if checkWithoutParentFilterPanelId then
@@ -168,13 +168,13 @@ function FCOIS.checkIfCBEorAGSActive(parentFilterPanelId, checkWithoutParentFilt
     else
         --Do the checks together for the other addons enabled AND the parent filter panel ID given from the craftbag's fragment callback function
         if parentFilterPanelId == nil then
-            if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "<<< aborted", true, FCOIS_DEBUG_DEPTH_SPAM) end
+            if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[Other addons]","checkIfCBEorAGSActive <<< aborted", true, FCOIS_DEBUG_DEPTH_SPAM) end
             return false
         end
         --CraftBagExtended addon is active, or AwesomeGuildStore addon is active and we are at the CraftBag panel of AGS's guild store sell tab
         addonActive = FCOIS.otherAddons.craftBagExtendedActive or (FCOIS.otherAddons.AGSActive and parentFilterPanelId == LF_GUILDSTORE_SELL)
     end
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "> addonActive: " .. tostring(addonActive), true, FCOIS_DEBUG_DEPTH_SPAM) end
+    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[Other addons]", "checkIfCBEorAGSActive > addonActive: " .. tostring(addonActive), true, FCOIS_DEBUG_DEPTH_SPAM) end
     return addonActive
 end
 
@@ -845,7 +845,7 @@ function FCOIS.MyGetItemInstanceIdForIIfA(clickedDataLine, signToo)
         end
     end
     local allowedItemType = FCOIS.allowedUniqueIdItemTypes[GetItemLinkItemType(itemLink)] or false
-    if settings.debug then FCOIS.debugMessage( "[FCOIS.MyGetItemInstanceIdForIIfA] ownedByLoggedInChar: " .. tostring(ownedByLoggedInChar) .. ", useUniqueIds: " .. tostring(settings.useUniqueIds) .. ", allowedItemType: " .. tostring(allowedItemType) .. ", bagId: " .. tostring(bagId) .. ", slotIndex: " ..tostring(slotIndex) .. ", itemId: " ..tostring(itemId), true, FCOIS_DEBUG_DEPTH_ALL) end
+    if settings.debug then FCOIS.debugMessage( "[MyGetItemInstanceIdForIIfA]","ownedByLoggedInChar: " .. tostring(ownedByLoggedInChar) .. ", useUniqueIds: " .. tostring(settings.useUniqueIds) .. ", allowedItemType: " .. tostring(allowedItemType) .. ", bagId: " .. tostring(bagId) .. ", slotIndex: " ..tostring(slotIndex) .. ", itemId: " ..tostring(itemId), true, FCOIS_DEBUG_DEPTH_ALL) end
     --Item owned by the currently logged in character,
     --or it's in the account wide bags and the itemId was not fetched yet (for guild bag items e.g.)
     --or the itemId is not fetched yet but bagId and slotIndex (to build it) are given, but bag is not worn or player inventory

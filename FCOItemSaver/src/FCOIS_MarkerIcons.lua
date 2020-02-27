@@ -302,7 +302,7 @@ end
 function FCOIS.checkMarker(markerId)
     markerId = markerId or -1
     local doDebug = FCOIS.settingsVars.settings.debug
-    if doDebug then FCOIS.debugMessage( "[FCOIS.checkMarker] MarkerId: " .. tostring(markerId) .. ", CheckNow: " .. tostring(FCOIS.preventerVars.gUpdateMarkersNow) .. ", Gears changed: " .. tostring(FCOIS.preventerVars.gChangedGears), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+    if doDebug then FCOIS.debugMessage( "[checkMarker]","MarkerId: " .. tostring(markerId) .. ", CheckNow: " .. tostring(FCOIS.preventerVars.gUpdateMarkersNow) .. ", Gears changed: " .. tostring(FCOIS.preventerVars.gChangedGears), true, FCOIS_DEBUG_DEPTH_ALL) end
 
     --Should we update the marker textures, size and color?
     if FCOIS.preventerVars.gUpdateMarkersNow == true or FCOIS.preventerVars.gChangedGears == true then
@@ -475,7 +475,7 @@ local function AddArmorTypeIconToEquipmentSlot(equipmentSlotControl, armorType)
     if not characterEquipmentArmorSlots[equipmentSlotControl:GetName()] then return false end
     if armorType == nil or armorType == ARMORTYPE_NONE then return false end
     local settings = FCOIS.settingsVars.settings
-    if settings.debug then FCOIS.debugMessage( "[AddArmorTypeIconToEquipmentSlot] EquipmentSlot: " .. equipmentSlotControl:GetName() .. ", armorType: " .. tostring(armorType), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+    if settings.debug then FCOIS.debugMessage( "[AddArmorTypeIconToEquipmentSlot]","EquipmentSlot: " .. equipmentSlotControl:GetName() .. ", armorType: " .. tostring(armorType), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
 
     local armorTypeLabel = WINDOW_MANAGER:GetControlByName("FCOIS_" .. equipmentSlotControl:GetName() .. "_ArmorTypeLabel")
     if settings.showArmorTypeIconAtCharacter then
@@ -593,7 +593,7 @@ function FCOIS.RemoveEmptyWeaponEquipmentMarkers(delay)
         local texVars = FCOIS.textureVars
         --For each weapon equipment control: check the empty markers and remove them
         for equipmentControlName, _ in pairs(allowedCharacterEquipmentWeaponControlNames) do
-            if settings.debug then FCOIS.debugMessage( "[FCOIS.RemoveEmptyWeaponEquipmentMarkers] equipmentControl: " .. equipmentControlName ..", delay: " .. delay, true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+            if settings.debug then FCOIS.debugMessage( "[RemoveEmptyWeaponEquipmentMarkers]","equipmentControl: " .. equipmentControlName ..", delay: " .. delay, true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
             if equipmentControlName ~= nil and equipmentControlName ~= "" then
                 local equipmentControl = WINDOW_MANAGER:GetControlByName(equipmentControlName, "")
                 if equipmentControl ~= nil then
@@ -631,14 +631,14 @@ function FCOIS.RefreshEquipmentControl(equipmentControl, doCreateMarkerControl, 
     if equipmentControl ~= nil then
         --Check all marker ids?
         if p_markId == nil or p_markId == 0 then
-            if settings.debug then FCOIS.debugMessage( "[FCOIS.RefreshEquipmentControl] Control: " .. equipmentControl:GetName() .. ", Create: " .. tostring(doCreateMarkerControl) .. ", MarkId: ALL", true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+            if settings.debug then FCOIS.debugMessage( "[RefreshEquipmentControl]","Control: " .. equipmentControl:GetName() .. ", Create: " .. tostring(doCreateMarkerControl) .. ", MarkId: ALL", true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
             --Add/Update the markers for the filter icons at the equipment slot
             for j=1, numFilterIcons, 1 do
                 FCOIS.CreateMarkerControl(equipmentControl, j, equipVars.gEquipmentIconWidth, equipVars.gEquipmentIconHeight, texVars.MARKER_TEXTURES[settings.icon[j].texture], true, doCreateMarkerControl, false)
             end
             --Only check a specific marker id
         else
-            if settings.debug then FCOIS.debugMessage( "[FCOIS.RefreshEquipmentControl] Control: " .. equipmentControl:GetName() .. ", Create: " .. tostring(doCreateMarkerControl) .. ", MarkId: " .. tostring(p_markId), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+            if settings.debug then FCOIS.debugMessage( "[RefreshEquipmentControl]","Control: " .. equipmentControl:GetName() .. ", Create: " .. tostring(doCreateMarkerControl) .. ", MarkId: " .. tostring(p_markId), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
             --Add/Update the marker p_markId for the filter icons at the equipment slot
             FCOIS.CreateMarkerControl(equipmentControl, p_markId, equipVars.gEquipmentIconWidth, equipVars.gEquipmentIconHeight, texVars.MARKER_TEXTURES[settings.icon[p_markId].texture], true, doCreateMarkerControl, true)
         end
@@ -685,7 +685,7 @@ function FCOIS.RefreshEquipmentControl(equipmentControl, doCreateMarkerControl, 
 
     --Equipment control is not given yet, or unknown
     else
-        if settings.debug then FCOIS.debugMessage( "[FCOIS.RefreshEquipmentControl] ALL CONTROLS! Create: " .. tostring(doCreateMarkerControl) .. ", MarkId: " .. tostring(p_markId), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+        if settings.debug then FCOIS.debugMessage( "[RefreshEquipmentControl]","ALL CONTROLS! Create: " .. tostring(doCreateMarkerControl) .. ", MarkId: " .. tostring(p_markId), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
         --Reset the armor type counters
         FCOIS.countVars.countLightArmor		= 0
         FCOIS.countVars.countMediumArmor	= 0
@@ -725,7 +725,7 @@ function FCOIS.updateEquipmentSlotMarker(slotIndex, delay)
             local equipSlotControlName = mappingVars.characterEquipmentSlotNameByIndex[slotIndex]
             local equipSlotControl
             if equipSlotControlName ~= nil and equipSlotControlName ~= "" then
-                if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[FCOIS.updateEquipmentSlotMarker] control name="..equipSlotControlName..", slotIndex: " .. slotIndex, true, FCOIS_DEBUG_DEPTH_NORMAL) end
+                if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[updateEquipmentSlotMarker]","control name="..equipSlotControlName..", slotIndex: " .. slotIndex, true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
                 equipSlotControl = WINDOW_MANAGER:GetControlByName(equipSlotControlName, "")
             end
             if equipSlotControl ~= nil then
@@ -760,7 +760,7 @@ function FCOIS.MarkAllEquipment(rowControl, markId, updateNow, doHide)
         dontChange = false
         equipmentSlotName = ctrlVars.CHARACTER:GetChild(i):GetName()
 --d("[FCOIS.MarkAllEquipment]equipmentSlotName: " ..tostring(equipmentSlotName))
-        if settings.debug then FCOIS.debugMessage( "[FCOIS.MarkAllEquipment] MarkId: " .. tostring(markId) .. ", EquipmentSlot: "..equipmentSlotName..", no_auto_mark: " .. tostring(checkVars.equipmentSlotsNames["no_auto_mark"][equipmentSlotName])) end
+        if settings.debug then FCOIS.debugMessage( "[MarkAllEquipment]","MarkId: " .. tostring(markId) .. ", EquipmentSlot: "..equipmentSlotName..", no_auto_mark: " .. tostring(checkVars.equipmentSlotsNames["no_auto_mark"][equipmentSlotName])) end
         --Is the current equipment slot a changeable one?
         if(string.find(equipmentSlotName, ctrlVars.equipmentSlotsName)) then
             --Only mark weapons too if enabled in settings
@@ -818,7 +818,7 @@ end
 --Check if the current equipment slot is the offhand or backup offhand slot
 function FCOIS.checkWeaponOffHand(controlName, weaponTypeName, doCheckOffHand, doCheckBackupOffHand, echo)
     if echo then
-        if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[FCOIS.checkWeaponOffHand] ControlName: " .. controlName ..", WeaponTypeName: " .. weaponTypeName, true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+        if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[checkWeaponOffHand]", "ControlName: " .. controlName ..", WeaponTypeName: " .. weaponTypeName, true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
     end
     local weaponControl
     local weaponType

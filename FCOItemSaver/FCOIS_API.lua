@@ -1215,7 +1215,7 @@ function FCOIS.ChangeFilter(filterId, libFiltersFilterPanelId)
 	--is the filterPanelId visible?
 	if FCOIS.mappingVars.gFilterPanelIdToInv[libFiltersFilterPanelId]:IsHidden() then return end
 
-	if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[FCOChangeFilter] FilterId: " .. tostring(filterId) .. ", FilterPanelId: " .. tostring(libFiltersFilterPanelId) .. ", InventoryName: " .. FCOIS.mappingVars.gFilterPanelIdToInv[libFiltersFilterPanelId]:GetName(), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+	if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[ChangeFilter]","FilterId: " .. tostring(filterId) .. ", FilterPanelId: " .. tostring(libFiltersFilterPanelId) .. ", InventoryName: " .. FCOIS.mappingVars.gFilterPanelIdToInv[libFiltersFilterPanelId]:GetName(), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
 	--Use the chat command handler now to emulate a filter change
 	FCOIS.command_handler("filter" .. tostring(filterId) .. " " .. tostring(libFiltersFilterPanelId))
 end -- FCOChangeFilter
@@ -1320,7 +1320,7 @@ function FCOIS.MarkItemByKeybind(iconId, p_bagId, p_slotIndex)
 	end
     --bag and slot could be retrieved?
     if bagId ~= nil and slotIndex ~= nil then
-        if settings.debug then FCOIS.debugMessage( "[FCOIS.MarkItemByKeybind] Bag: " .. tostring(bagId) .. ", slot: " .. tostring(slotIndex), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+        if settings.debug then FCOIS.debugMessage( "[MarkItemByKeybind]","Bag: " .. tostring(bagId) .. ", slot: " .. tostring(slotIndex), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
 --d("[FCOIS.MarkItemByKeybind] Bag: " .. tostring(bagId) .. ", slot: " .. tostring(slotIndex) .. ", controlBelowMouse: ".. tostring(controlBelowMouse:GetName()) .. ", controlTypeBelowMouse: " .. tostring(controlTypeBelowMouse))
 		local mappingVars = FCOIS.mappingVars
         --Check if the item is currently marked with this icon, or not

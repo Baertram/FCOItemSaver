@@ -19,21 +19,21 @@ end
 
 --The function to update the repair list
 local function UpdateRepairList()
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[UpdateRepairList]", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[Refresh]", "UpdateRepairList", true, FCOIS_DEBUG_DEPTH_NORMAL) end
     --Update the scroll list controls for the repair list
     FCOIS.RefreshRepairList()
 end
 
 --The function to update the quickslots inventory
 local function UpdateQuickSlots()
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[UpdateQuickSlots]", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[Refresh]", "UpdateQuickSlots", true, FCOIS_DEBUG_DEPTH_NORMAL) end
     --Update the scroll list controls for the quick slots inventory
     FCOIS.RefreshQuickSlots()
 end
 
 --The function to update the transmutation inventory
 local function UpdateTransmutationList()
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[UpdateTransmutationList]", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[Refresh]", "UpdateTransmutationList", true, FCOIS_DEBUG_DEPTH_NORMAL) end
     --Update the scroll list controls for the quick slots inventory
     FCOIS.RefreshTransmutation()
 end
@@ -42,13 +42,13 @@ end
 local function UpdateInventories()
     --Check if we are at a crafting station
     local craftInteractiontype = GetCraftingInteractionType()
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[UpdateInventories] CraftingInteractionType: " .. tostring(craftInteractiontype), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[UpdateInventories]", "CraftingInteractionType: " .. tostring(craftInteractiontype), true, FCOIS_DEBUG_DEPTH_NORMAL) end
     --Are we not inside a crafting station? Else abort as this function will only update the player inventory
     if craftInteractiontype ~= CRAFTING_TYPE_INVALID then return end
 
     --Update the current shown inventory
     if (libFilters ~= nil and FCOIS.gFilterWhere ~= nil and FCOIS.lastVars.gLastFilterId[FCOIS.gFilterWhere] ~= nil) then
-        if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "Filter Id: " ..tostring(FCOIS.lastVars.gLastFilterId[FCOIS.gFilterWhere]) .. ", Filter panel Id: " .. tostring(FCOIS.gFilterWhere), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[UpdateInventories]", "Filter Id: " ..tostring(FCOIS.lastVars.gLastFilterId[FCOIS.gFilterWhere]) .. ", Filter panel Id: " .. tostring(FCOIS.gFilterWhere), true, FCOIS_DEBUG_DEPTH_NORMAL) end
         --Get the current set settings for the filter panels
         FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(FCOIS.gFilterWhere, false)
         --Is the filter for this panel enabled in the FCOIS.settingsVars.settings?
@@ -56,7 +56,7 @@ local function UpdateInventories()
             --Is the filter we have added the icon for currently enabled(registered)?
             --local isFilterEnabled = FCOIS.getSettingsIsFilterOn(FCOIS.lastVars.gLastFilterId[FCOIS.gFilterWhere], FCOIS.gFilterWhere)
             --if isFilterEnabled == true or isFilterEnabled == -99 then
-            --if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "UpdaterName: " .. libFilterVars.filterTypeToUpdaterName[FCOIS.gFilterWhere], true, FCOIS_DEBUG_DEPTH_NORMAL) end
+            --if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[UpdateInventories]", "UpdaterName: " .. libFilterVars.filterTypeToUpdaterName[FCOIS.gFilterWhere], true, FCOIS_DEBUG_DEPTH_NORMAL) end
             --libFilterVars.inventoryUpdaters[libFilterVars.filterTypeToUpdaterName[FCOIS.gFilterWhere]]()
             libFilters:RequestUpdate( FCOIS.gFilterWhere )
             --end
@@ -74,7 +74,7 @@ local function UpdateCraftingInventory(filterPanelOverride)
     --Check if we are at a crafting station
     local locCraftType = GetCraftingInteractionType()
     local updateFilteredItemCount = false
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[UpdateCraftingInventory] CraftingInteractionType: " .. tostring(locCraftType), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[UpdateCraftingInventory]","CraftingInteractionType: " .. tostring(locCraftType), true, FCOIS_DEBUG_DEPTH_NORMAL) end
     --Abort if we are not at a crafting station
     if locCraftType == CRAFTING_TYPE_INVALID then return end
 
@@ -95,8 +95,7 @@ local function UpdateCraftingInventory(filterPanelOverride)
             --Is the filter we have added the icon for currently enabled(registered)?
             --local isFilterEnabled = FCOIS.getSettingsIsFilterOn(FCOIS.lastVars.gLastFilterId[FCOIS.gFilterWhere], FCOIS.gFilterWhere)
             --if isFilterEnabled == true or isFilterEnabled == -99 then
-            --if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "Filter Id: " ..tostring(FCOIS.lastVars.gLastFilterId[FCOIS.gFilterWhere]) .. ", Filter panel Id: " .. tostring(FCOIS.gFilterWhere) .. ", UpdaterName: " .. libFilterVars.filterTypeToUpdaterName[FCOIS.gFilterWhere], true, FCOIS_DEBUG_DEPTH_NORMAL) end
-            if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "Filter Id: " ..tostring(FCOIS.lastVars.gLastFilterId[FCOIS.gFilterWhere]) .. ", Filter panel Id: " .. tostring(FCOIS.gFilterWhere), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+            if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[UpdateCraftingInventory]", "Filter Id: " ..tostring(FCOIS.lastVars.gLastFilterId[FCOIS.gFilterWhere]) .. ", Filter panel Id: " .. tostring(FCOIS.gFilterWhere), true, FCOIS_DEBUG_DEPTH_NORMAL) end
             --libFilterVars.inventoryUpdaters[libFilterVars.filterTypeToUpdaterName[FCOIS.gFilterWhere]]()
             libFilters:RequestUpdate( FCOIS.gFilterWhere )
             --end
@@ -105,7 +104,7 @@ local function UpdateCraftingInventory(filterPanelOverride)
 
     --Alchemy?
     if (locCraftType == CRAFTING_TYPE_ALCHEMY) then
-        if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[UpdateCraftingInventory] Alchemy refresh", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[UpdateCraftingInventory]","Alchemy refresh", true, FCOIS_DEBUG_DEPTH_NORMAL) end
         --Only refresh the scroll list
         FCOIS.preventerVars.isInventoryListUpdating = true
         ZO_ScrollList_RefreshVisible(FCOIS.ZOControlVars.ALCHEMY_STATION)
@@ -114,7 +113,7 @@ local function UpdateCraftingInventory(filterPanelOverride)
 
         --Enchanting?
     elseif (locCraftType == CRAFTING_TYPE_ENCHANTING) then
-        if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[UpdateCraftingInventory] Enchanting refresh", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[UpdateCraftingInventory]","Enchanting refresh", true, FCOIS_DEBUG_DEPTH_NORMAL) end
         --Only refresh the scroll list
         FCOIS.preventerVars.isInventoryListUpdating = true
         ZO_ScrollList_RefreshVisible(FCOIS.ZOControlVars.ENCHANTING_STATION)
@@ -126,7 +125,7 @@ local function UpdateCraftingInventory(filterPanelOverride)
 
         --Refinement
         if (FCOIS.gFilterWhere == LF_SMITHING_REFINE or FCOIS.gFilterWhere == LF_JEWELRY_REFINE or not FCOIS.ZOControlVars.REFINEMENT:IsHidden()) then
-            if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[UpdateCraftingInventory] (Jewelry) Refinement refresh", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+            if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[UpdateCraftingInventory]","(Jewelry) Refinement refresh", true, FCOIS_DEBUG_DEPTH_NORMAL) end
             --Are we at a refinement panel?
             --Only refresh the scroll list
             FCOIS.preventerVars.isInventoryListUpdating = true
@@ -136,7 +135,7 @@ local function UpdateCraftingInventory(filterPanelOverride)
 
             --Deconstruction
         elseif (FCOIS.gFilterWhere == LF_SMITHING_DECONSTRUCT or FCOIS.gFilterWhere == LF_JEWELRY_DECONSTRUCT) then
-            if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[UpdateCraftingInventory] (Jewelry) Deconstruction refresh", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+            if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[UpdateCraftingInventory]","(Jewelry) Deconstruction refresh", true, FCOIS_DEBUG_DEPTH_NORMAL) end
             --Are we at a deconstruction panel?
             --Only refresh the scroll list
             FCOIS.preventerVars.isInventoryListUpdating = true
@@ -146,7 +145,7 @@ local function UpdateCraftingInventory(filterPanelOverride)
 
             --Improvement
         elseif     (FCOIS.gFilterWhere == LF_SMITHING_IMPROVEMENT or FCOIS.gFilterWhere == LF_JEWELRY_IMPROVEMENT) then
-            if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[UpdateCraftingInventory] (Jewelry) Improvement refresh", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+            if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[UpdateCraftingInventory]","(Jewelry) Improvement refresh", true, FCOIS_DEBUG_DEPTH_NORMAL) end
             --Are we at an improvement panel?
             --Only refresh the scroll list
             FCOIS.preventerVars.isInventoryListUpdating = true
@@ -183,7 +182,7 @@ function FCOIS.FilterBasics(onlyPlayer)
         --we are in the player inventory (or in the banks at the deposit inventories, or at mail sending, or trading)
         onlyPlayer = true
     end
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[FCOIS.FilterBasics] onlyPlayer: " .. tostring(onlyPlayer), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[FilterBasics]","onlyPlayer: " .. tostring(onlyPlayer), true, FCOIS_DEBUG_DEPTH_NORMAL) end
 --d("[FCOIS]FilterBasics, onlyPlayer: " ..tostring(onlyPlayer))
 
     --Only update the lists if not currently already updating
@@ -218,7 +217,7 @@ function FCOIS.RefreshBackpack()
     local updateFilteredItemCount = false
     --Added with patch to API 100015 -> New craft bag
     if INVENTORY_CRAFT_BAG and not FCOIS.ZOControlVars.CRAFTBAG:IsHidden() then
-        if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[RefreshBackpack] Craftbag refresh", true, FCOIS_DEBUG_DEPTH_DETAILED) end
+        if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[RefreshBackpack]","Craftbag refresh", true, FCOIS_DEBUG_DEPTH_DETAILED) end
         FCOIS.preventerVars.isInventoryListUpdating = true
         PLAYER_INVENTORY:UpdateList(INVENTORY_CRAFT_BAG)
         FCOIS.preventerVars.isInventoryListUpdating = false
@@ -226,7 +225,7 @@ function FCOIS.RefreshBackpack()
     else
         --Refresh the normal inventory
         if not FCOIS.ZOControlVars.BACKPACK:IsHidden() then
-            if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[RefreshBackpack] Backpack refresh", true, FCOIS_DEBUG_DEPTH_DETAILED) end
+            if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[RefreshBackpack]","Backpack refresh", true, FCOIS_DEBUG_DEPTH_DETAILED) end
             FCOIS.preventerVars.isInventoryListUpdating = true
             ZO_ScrollList_RefreshVisible(FCOIS.ZOControlVars.BACKPACK)
             FCOIS.preventerVars.isInventoryListUpdating = false
@@ -240,13 +239,13 @@ end
 function FCOIS.RefreshBank()
     local updateFilteredItemCount = false
     if not FCOIS.ZOControlVars.BANK:IsHidden() then
-        if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[RefreshBank] Bank refresh", true, FCOIS_DEBUG_DEPTH_DETAILED) end
+        if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[RefreshBank]","Bank refresh", true, FCOIS_DEBUG_DEPTH_DETAILED) end
         FCOIS.preventerVars.isInventoryListUpdating = true
         ZO_ScrollList_RefreshVisible(FCOIS.ZOControlVars.BANK)
         FCOIS.preventerVars.isInventoryListUpdating = false
         updateFilteredItemCount = true
     elseif not FCOIS.ZOControlVars.HOUSE_BANK:IsHidden() then
-        if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[RefreshBank] House Bank refresh", true, FCOIS_DEBUG_DEPTH_DETAILED) end
+        if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[RefreshBank]","House Bank refresh", true, FCOIS_DEBUG_DEPTH_DETAILED) end
         FCOIS.preventerVars.isInventoryListUpdating = true
         ZO_ScrollList_RefreshVisible(FCOIS.ZOControlVars.HOUSE_BANK)
         FCOIS.preventerVars.isInventoryListUpdating = false
@@ -259,7 +258,7 @@ end
 function FCOIS.RefreshGuildBank()
     local updateFilteredItemCount = false
     if not FCOIS.ZOControlVars.GUILD_BANK:IsHidden() then
-        if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[RefreshGuildBank] Guild bank refresh", true, FCOIS_DEBUG_DEPTH_DETAILED) end
+        if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[RefreshGuildBank]","Guild bank refresh", true, FCOIS_DEBUG_DEPTH_DETAILED) end
         FCOIS.preventerVars.isInventoryListUpdating = true
         ZO_ScrollList_RefreshVisible(FCOIS.ZOControlVars.GUILD_BANK)
         FCOIS.preventerVars.isInventoryListUpdating = false
@@ -272,7 +271,7 @@ end
 function FCOIS.RefreshRepairList()
     local updateFilteredItemCount = false
     if not FCOIS.ZOControlVars.REPAIR_LIST:IsHidden() then
-        if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[RefreshRepairList] Repair list refresh", true, FCOIS_DEBUG_DEPTH_DETAILED) end
+        if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[RefreshRepairList]","Repair list refresh", true, FCOIS_DEBUG_DEPTH_DETAILED) end
         FCOIS.preventerVars.isInventoryListUpdating = true
         ZO_ScrollList_RefreshVisible(FCOIS.ZOControlVars.REPAIR_LIST)
         FCOIS.preventerVars.isInventoryListUpdating = false
@@ -285,7 +284,7 @@ end
 function FCOIS.RefreshQuickSlots()
     local updateFilteredItemCount = false
     if not FCOIS.ZOControlVars.QUICKSLOT_LIST:IsHidden() then
-        if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[RefreshQuickSlots] Quickslot refresh", true, FCOIS_DEBUG_DEPTH_DETAILED) end
+        if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[RefreshQuickSlots]","Quickslot refresh", true, FCOIS_DEBUG_DEPTH_DETAILED) end
         FCOIS.preventerVars.isInventoryListUpdating = true
         ZO_ScrollList_RefreshVisible(FCOIS.ZOControlVars.QUICKSLOT_LIST)
         FCOIS.preventerVars.isInventoryListUpdating = false
@@ -297,7 +296,7 @@ end
 function FCOIS.RefreshTransmutation()
     local updateFilteredItemCount = false
     if not FCOIS.ZOControlVars.RETRAIT_LIST:IsHidden() then
-        if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[RefreshTransmutation] Transmutation panel refresh", true, FCOIS_DEBUG_DEPTH_DETAILED) end
+        if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[RefreshTransmutation]","Transmutation panel refresh", true, FCOIS_DEBUG_DEPTH_DETAILED) end
         FCOIS.preventerVars.isInventoryListUpdating = true
         ZO_ScrollList_RefreshVisible(FCOIS.ZOControlVars.RETRAIT_LIST)
         FCOIS.preventerVars.isInventoryListUpdating = false
@@ -312,7 +311,7 @@ function FCOIS.RefreshListDialog(rebuildItems, filterPanelId)
 --d("[FCOIS]RefreshListDialog - rebuildItems: " .. tostring(rebuildItems) .. ", filterPanelId: " .. tostring(filterPanelId))
     local refreshListDialogNow = false
     if not FCOIS.ZOControlVars.LIST_DIALOG:IsHidden() then
-        if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[FCOIS.RefreshListDialog] List Dialog refresh", true, FCOIS_DEBUG_DEPTH_DETAILED) end
+        if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[FCOIS.RefreshListDialog]","List Dialog refresh", true, FCOIS_DEBUG_DEPTH_DETAILED) end
         FCOIS.preventerVars.isInventoryListUpdating = true
         --Rebuild the whole ZO_ListDialog1List ?
         if rebuildItems and filterPanelId ~= nil then

@@ -22,7 +22,7 @@ function FCOIS.getWhereAreWe(panelId, panelIdAtCall, bag, slot, isDragAndDrop, c
     --======= FUNCTIONs ============================================================
     --Function to check a single item's type and get the whereAreWe panel ID
     local function checkSingleItemProtection(p_bag, p_slotIndex, whereAreWeBefore)
-        if settings.debug then FCOIS.debugMessage( ">>checkSingleItemProtection - panelId: " .. tostring(panelId) .. ", whereAreWeBefore: " .. tostring(whereAreWeBefore .. ", calledFromExternalAddon: " ..tostring(calledFromExternalAddon)), true, FCOIS_DEBUG_DEPTH_ALL) end
+        if settings.debug then FCOIS.debugMessage( "[checkSingleItemProtection]","panelId: " .. tostring(panelId) .. ", whereAreWeBefore: " .. tostring(whereAreWeBefore .. ", calledFromExternalAddon: " ..tostring(calledFromExternalAddon)), true, FCOIS_DEBUG_DEPTH_ALL) end
         if p_bag == nil or p_slotIndex == nil then return false end
         local locWhereAreWe = FCOIS_CON_DESTROY
         --Are we trying to open a container with autoloot on?
@@ -65,7 +65,7 @@ function FCOIS.getWhereAreWe(panelId, panelIdAtCall, bag, slot, isDragAndDrop, c
                 end
             end
         end
-        if settings.debug then FCOIS.debugMessage( "<<< whereAreWeAfter: " .. tostring(locWhereAreWe), true, FCOIS_DEBUG_DEPTH_ALL) end
+        if settings.debug then FCOIS.debugMessage( "[checkSingleItemProtection]", "<<< whereAreWeAfter: " .. tostring(locWhereAreWe), true, FCOIS_DEBUG_DEPTH_ALL) end
         return locWhereAreWe
     end
 
@@ -274,7 +274,7 @@ end
 --Function to check if the currently shown panel is the craftbag
 function FCOIS.isCraftbagPanelShown()
     local retVar = INVENTORY_CRAFT_BAG and not FCOIS.ZOControlVars.CRAFTBAG:IsHidden()
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[FCOIS.isCraftbagPanelShown] result: " .. tostring(retVar), true, FCOIS_DEBUG_DEPTH_SPAM) end
+    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[isCraftbagPanelShown]", "result: " .. tostring(retVar), true, FCOIS_DEBUG_DEPTH_SPAM) end
     return retVar
 end
 
@@ -318,7 +318,7 @@ function FCOIS.checkActivePanel(comingFrom, overwriteFilterWhere)
         else
             oldFilterWhere = comingFrom
         end
-        FCOIS.debugMessage( "[FCOIS.checkActivePanel] Coming from/Before: " .. tostring(oldFilterWhere) .. ", overwriteFilterWhere: " .. tostring(overwriteFilterWhere) .. ", currentSceneName: " ..tostring(currentSceneName), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED)
+        FCOIS.debugMessage( "[checkActivePanel]","Coming from/Before: " .. tostring(oldFilterWhere) .. ", overwriteFilterWhere: " .. tostring(overwriteFilterWhere) .. ", currentSceneName: " ..tostring(currentSceneName), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED)
     end
 
 --d("[FCOIS.checkActivePanel] comingFrom/Before: " .. tostring(comingFrom) .. ", overwriteFilterWhere: " ..tostring(overwriteFilterWhere).. ", currentSceneName: " ..tostring(currentSceneName))
@@ -522,7 +522,7 @@ function FCOIS.checkActivePanel(comingFrom, overwriteFilterWhere)
         end
     end
 
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( ">> after: " .. tostring(FCOIS.gFilterWhere) .. ", inventoryName: " .. tostring(inventoryName) .. ", filterParentPanel: " .. tostring(panelType), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[checkActivePanel]",">> after: " .. tostring(FCOIS.gFilterWhere) .. ", inventoryName: " .. tostring(inventoryName) .. ", filterParentPanel: " .. tostring(panelType), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
 --d( ">> after: " .. tostring(FCOIS.gFilterWhere) .. ", inventoryName: " .. tostring(inventoryName) .. ", filterParentPanel: " .. tostring(panelType))
 
     --Return the found inventory variable (e.g. ZO_PlayerInventory) and the LibFilters filter panel ID (e.g. LF_BANK_WITHDRAW)

@@ -1896,7 +1896,7 @@ function FCOIS.BuildAddonMenu()
 		            setFunc = function(value)
 		                for i,v in pairs(languageOptions) do
 		                    if v == value then
-		                        if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[Settings language] v: " .. tostring(v) .. ", i: " .. tostring(i), false) end
+		                        if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[Settings]","language v: " .. tostring(v) .. ", i: " .. tostring(i), false) end
 		                    	FCOIS.settingsVars.defaultSettings.language = i
 		                        --Tell the FCOISsettings that you have manually chosen the language and want to keep it
 		                        --Read in function Localization() after ReloadUI()
@@ -1933,7 +1933,7 @@ function FCOIS.BuildAddonMenu()
 		            setFunc = function(value)
 		                for i,v in pairs(savedVariablesOptions) do
 		                    if v == value then
-		                        if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[Settings save mode] v: " .. tostring(v) .. ", i: " .. tostring(i), false) end
+		                        if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[Settings]","save mode v: " .. tostring(v) .. ", i: " .. tostring(i), false) end
 		                        FCOIS.settingsVars.defaultSettings.saveMode = i
 		                        --ReloadUI()
 		                    end

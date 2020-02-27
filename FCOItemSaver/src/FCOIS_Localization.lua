@@ -392,7 +392,7 @@ function FCOIS.Localization()
             defSettings.language = FCOIS_CON_LANG_EN
         end
     end
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[Localization] default settings, language: " .. tostring(defSettings.language), false) end
+    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[Localization]","default settings, language: " .. tostring(defSettings.language), false) end
     --d("[FCOIS] localization: default settings, language: " .. tostring(defSettings.language))
     --Get the localized texts from the localization file
     local locVars = FCOIS.localizationVars

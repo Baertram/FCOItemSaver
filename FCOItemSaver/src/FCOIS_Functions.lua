@@ -126,7 +126,7 @@ function FCOIS.MyGetItemInstanceIdNoControl(bagId, slotIndex, signToo)
         --Then use the unique item ID
         --Else use the non-unique item ID
         allowedItemType = FCOIS.allowedUniqueIdItemTypes[GetItemType(bagId, slotIndex)] or false
-        if settings.debug then FCOIS.debugMessage( "[FCOIS.MyGetItemInstanceINoControl] useUniqueIds: " .. tostring(settings.useUniqueIds) .. ", allowedItemType: " .. tostring(allowedItemType), true, FCOIS_DEBUG_DEPTH_ALL) end
+        if settings.debug then FCOIS.debugMessage( "[MyGetItemInstanceINoControl]","useUniqueIds: " .. tostring(settings.useUniqueIds) .. ", allowedItemType: " .. tostring(allowedItemType), true, FCOIS_DEBUG_DEPTH_ALL) end
         --d("[FCOIS.MyGetItemInstanceINoControl] useUniqueIds: " .. tostring(settings.useUniqueIds) .. ", allowedItemType: " .. tostring(allowedItemType))
         if settings.useUniqueIds and allowedItemType then
             itemId = zo_getSafeId64Key(GetItemUniqueId(bagId, slotIndex))
@@ -471,7 +471,7 @@ end
 --> The control's name is the addon name + a nilable additional parameter "controlNameAddition" + the markerIconId
 --> Used to create FCOIS marker icon texture controls with unique names in other addons like Inventory Insight from Ashes (IIfA)!
 function FCOIS.GetItemSaverControl(parent, controlId, useParentFallback, controlNameAddition)
-    --if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[FCOIS.GetItemSaverControl] Parent: " .. parent:GetName() .. ", ControlId: " .. tostring(controlId) .. ", useParentFallback: " .. tostring(useParentFallback), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[GetItemSaverControl]","Parent: " .. parent:GetName() .. ", ControlId: " .. tostring(controlId) .. ", useParentFallback: " .. tostring(useParentFallback), true, FCOIS_DEBUG_DEPTH_ALL) end
     local textureNameAddition = ""
     if controlNameAddition ~= nil then
         textureNameAddition = controlNameAddition
@@ -1175,7 +1175,7 @@ function FCOIS.GetItemQuality(bagId, slotIndex)
 end
 
 --Check which marker icons should be removed, if this marker icon gets set
-function FCOIS.getIconsToRemove(iconId)
+function FCOIS.getIconsToRemove()
     local iconsToRemove = {}
     local settings = FCOIS.settingsVars.settings
     --Auto de-mark sell, if other marker icon ist set?

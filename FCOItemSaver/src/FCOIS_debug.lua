@@ -3,17 +3,32 @@ if FCOIS == nil then FCOIS = {} end
 local FCOIS = FCOIS
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
-
+local preVars = FCOIS.preChatVars
+local addonVars = FCOIS.addonVars
 --==========================================================================================================================================
 --									FCOIS - Debugging
 --==========================================================================================================================================
 
+--Create the loggers for the different debug depths via LibDebugLogger
+function FCOIS.CreateLoggers()
+    if not LibDebugLogger then return end
+    FCOIS.loggers = {}
+    FCOIS.loggers[FCOIS_DEBUG_DEPTH_NORMAL] = LibDebugLogger(addonVars.gAddonName)
+    local loggerBase = FCOIS.loggers[FCOIS_DEBUG_DEPTH_NORMAL]
+    FCOIS.loggers[FCOIS_DEBUG_DEPTH_DETAILED] = {}
+    FCOIS.loggers[FCOIS_DEBUG_DEPTH_VERY_DETAILED] = {}
+    FCOIS.loggers[FCOIS_DEBUG_DEPTH_SPAM] = {}
+    FCOIS.loggers[FCOIS_DEBUG_DEPTH_ALL] = {}
+    FCOIS.loggers[FCOIS_DEBUG_DEPTH_DETAILED] = loggerBase:Create("DEBUG_DETAILED")
+    FCOIS.loggers[FCOIS_DEBUG_DEPTH_VERY_DETAILED] = loggerBase:Create("DEBUG_VERY_DETAILED")
+    FCOIS.loggers[FCOIS_DEBUG_DEPTH_SPAM] = loggerBase:Create("DEBUG_SPAM")
+    FCOIS.loggers[FCOIS_DEBUG_DEPTH_ALL] = loggerBase:Create("DEBUG_ALL")
+end
+
 --Output debug message in chat
-function FCOIS.debugMessage(msg_text, deep, depthNeeded)
+function FCOIS.debugMessage(msg_text_header, msg_text, deep, depthNeeded)
     depthNeeded = depthNeeded or FCOIS_DEBUG_DEPTH_ALL
     local settings = FCOIS.settingsVars.settings
-    local preVars = FCOIS.preChatVars
---d("[FCOIS.debugMessage] deep: " .. tostring(deep) ..", depthNeeded: " .. tostring(depthNeeded))
     if (deep and not settings.deepDebug) then
         return
     elseif (deep and settings.deepDebug) then
@@ -23,12 +38,49 @@ function FCOIS.debugMessage(msg_text, deep, depthNeeded)
         if depthNeeded > settings.debugDepth then return end
     end
     if (settings.debug == true) then
-        if deep then
-            --Blue colored "FCOIS" at the start of the string
-            d(preVars.preChatTextBlue .. msg_text)
+        if not msg_text_header and not msg_text or (msg_text_header ~= nil and msg_text_header == "") or (msg_text ~= nil and msg_text == "") then return end
+        --[[
+        logger:Debug("A debug message")
+        logger:Info("An", "info", "message") -- multiple arguments are passed through tostring and concatenated with a space in between
+        logger:Warn("A %s message: %d", "formatted", 123) -- if the first parameter contains formatting strings, the logger will pass all arguments through string.format instead
+        local subLogger = logger:Create("verbose") -- this will create a separate logger with a combined tag "MyAddon/verbose".
+        subLogger:SetEnabled(false) -- turn the new logger off
+        ]]
+        local loggers = FCOIS.loggers
+        local loggerBase = loggers[FCOIS_DEBUG_DEPTH_NORMAL]
+        if loggerBase then
+            if deep == true then
+                if loggers[depthNeeded] ~= nil then
+                    --A debug message header was given: Create a sublogger for it
+                    if msg_text_header and msg_text_header ~= "" then
+                        if loggers[depthNeeded][msg_text_header] == nil then
+                            loggers[depthNeeded][msg_text_header]:Create(msg_text_header)
+                        end
+                        loggers[depthNeeded][msg_text_header]:Debug(msg_text)
+                    else
+                        loggers[depthNeeded]:Debug(msg_text)
+                    end
+                else
+                    loggerBase:Debug(msg_text)
+                end
+            else
+                loggerBase:Debug(msg_text)
+            end
         else
-            --Green colored "FCOIS" at the start of the string
-            d(preVars.preChatTextGreen .. msg_text)
+            --Use old Chat debugging output
+            local msg = msg_text
+            local preColor
+            if msg_text_header and msg_text_header ~= "" then
+                msg = msg_text_header .. msg_text
+            end
+            if deep == true then
+                preColor = preVars.preChatTextBlue
+            else
+                preColor = preVars.preChatTextGreen
+            end
+            if msg and msg ~= "" then
+                d(preColor .. msg)
+            end
         end
     end
 end

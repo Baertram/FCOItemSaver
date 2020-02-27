@@ -361,11 +361,11 @@ function FCOIS.unregisterFilters(filterId, onlyPlayerInvFilter, filterPanelId)
     if filterPanelId ~= nil then
         forVar  = filterPanelId
         maxVar  = filterPanelId
-        if settings.debug then FCOIS.debugMessage( "[FCOIS.unregisterFilters] FilterPanelId: " .. tostring(filterPanelId) .. ", filterId: " .. tostring(filterId) .. ", OnlyPlayerInvFilter: " .. tostring(onlyPlayerInvFilter), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+        if settings.debug then FCOIS.debugMessage( "[unregisterFilters]","FilterPanelId: " .. tostring(filterPanelId) .. ", filterId: " .. tostring(filterId) .. ", OnlyPlayerInvFilter: " .. tostring(onlyPlayerInvFilter), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
     else
         forVar  = 1
         maxVar  = numFilterInventoryTypes
-        if settings.debug then FCOIS.debugMessage( "[FCOIS.unregisterFilters] From panel Id: " .. tostring(forVar) .. ", To panel Id: " .. tostring(maxVar) .. ", filterId: " .. tostring(filterId) .. ", OnlyPlayerInvFilter: " .. tostring(onlyPlayerInvFilter), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+        if settings.debug then FCOIS.debugMessage( "[unregisterFilters]","From panel Id: " .. tostring(forVar) .. ", To panel Id: " .. tostring(maxVar) .. ", filterId: " .. tostring(filterId) .. ", OnlyPlayerInvFilter: " .. tostring(onlyPlayerInvFilter), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
     end
 
     local unregisterArrayNew = {}
@@ -476,7 +476,7 @@ function FCOIS.registerFilters(filterId, onlyPlayerInvFilter, p_FilterPanelId)
         --New or old behaviour of filtering?
         if (settings.splitFilters == true) then
             --New filtering using panels
-            if settings.debug then FCOIS.debugMessage( "[FCOIS.registerFilters] Panel: " .. tostring(p_FilterPanelId) .. ", OnlyPlayerInv: " .. tostring(onlyPlayerInvFilter) .. ", filterId: " .. tostring(filterId), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+            if settings.debug then FCOIS.debugMessage( "[registerFilters]","Panel: " .. tostring(p_FilterPanelId) .. ", OnlyPlayerInv: " .. tostring(onlyPlayerInvFilter) .. ", filterId: " .. tostring(filterId), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
             --Register the filter for the given panel ID and filter ID
             registerFilterId(onlyPlayerInvFilter, filterId, p_FilterPanelId)
         end  --new filter method?
@@ -495,7 +495,7 @@ function FCOIS.registerFilters(filterId, onlyPlayerInvFilter, p_FilterPanelId)
             for filterIdLoop=1, numFilters, 1 do
                 for lFilterWhere=forVar, maxVar , 1 do
                     if activeFilterPanelIds[lFilterWhere] == true then
-                        if settings.debug then FCOIS.debugMessage( "[FCOIS.registerFilters] Panel: " .. tostring(forVar) .. ", filterIdLoop: " .. tostring(filterIdLoop) .. ", OnlyPlayerInv: " .. tostring(onlyPlayerInvFilter), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+                        if settings.debug then FCOIS.debugMessage( "[registerFilters]","Panel: " .. tostring(forVar) .. ", filterIdLoop: " .. tostring(filterIdLoop) .. ", OnlyPlayerInv: " .. tostring(onlyPlayerInvFilter), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
                         --register the filters for the given panels
                         registerfilterId(onlyPlayerInvFilter, filterIdLoop, lFilterWhere)
                     end

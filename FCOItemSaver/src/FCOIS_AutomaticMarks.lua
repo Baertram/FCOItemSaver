@@ -664,7 +664,7 @@ function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, do
             --d("<<<!!! Aborting inv. scan. Scan already active - bag: " .. tostring(bag) .. ", slot: " .. tostring(slot) .. " scanType: " .. tostring(scanType) .. " !!!>>>")
             if not settings.debug then return false, false else return abortChecksNow("Scanning inv already")  end
         end
---local itemLink = GetItemLink(bag, slot)
+        local itemLink
 --d("!!!!!> Scanning - bag: " .. tostring(bag) .. ", slot: " .. tostring(slot) .. " " .. itemLink .. " scanType: " .. tostring(scanType) .. " <!!!!!")
         FCOIS.preventerVars.gScanningInv = true
 
@@ -900,7 +900,7 @@ function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, do
             chatEnd = toDos.chatEnd
         end
         if chatOutput or doOverride then
-            local itemLink = GetItemLink(bag, slot)
+            itemLink = GetItemLink(bag, slot)
             --Show the marked item in the chat with the clickable itemLink
             if (itemLink ~= nil) then
                 d(chatBegin .. itemLink .. chatEnd)
@@ -912,7 +912,7 @@ function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, do
             --Show the marked item in the chat via debug message
             local scanTypeCapitalText
             scanTypeCapitalText = zo_strformat("<<C:1>>", scanType)
-            if settings.debug then FCOIS.debugMessage( "[ScanInventoryFor".. scanTypeCapitalText or tostring(scanType) .."]: " .. chatBegin .. itemLink .. chatEnd, false) end
+            if settings.debug then FCOIS.debugMessage( "[ScanInventoryFor".. scanTypeCapitalText or tostring(scanType) .."]", chatBegin .. itemLink .. chatEnd, false) end
         end
     end -- if bag ~= nil and slot ~= nil then
     --Return the functions return variables now
@@ -1200,7 +1200,7 @@ function FCOIS.scanInventorySingle(p_bagId, p_slotIndex)
     local updateInv = false
     local settings = FCOIS.settingsVars.settings
     if FCOIS.preventerVars.gScanningInv == false then
-        if settings.debug then FCOIS.debugMessage( "[ScanInventorySingle] Start", false, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+        if settings.debug then FCOIS.debugMessage( "[ScanInventorySingle]","Start", false, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
 --d("[ScanInventorySingle] Start")
         -- Update only one item in inventory
         -- bagId AND slotIndex are given?
@@ -1279,7 +1279,7 @@ function FCOIS.scanInventorySingle(p_bagId, p_slotIndex)
         --Inventory scan is latest finished here
         --FCOIS.preventerVars.gScanningInv = false
     end
-    if settings.debug then FCOIS.debugMessage( "[ScanInventorySingle] End", false, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+    if settings.debug then FCOIS.debugMessage( "[ScanInventorySingle]","End", false, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
 --d("[ScanInventorySingle] END, updateInv: " .. tostring(updateInv))
     return updateInv
 end
@@ -1318,7 +1318,7 @@ function FCOIS.scanInventory(p_bagId, p_slotIndex)
         -- Scan the whole inventory because no bagId and slotIndex are given
         if p_bagId == nil or p_slotIndex == nil then
 --d("[ScanInventory] Start ALL")
-            if settings.debug then FCOIS.debugMessage( "[ScanInventory] Start ALL", false, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+            if settings.debug then FCOIS.debugMessage( "[ScanInventory]","Start ALL", false, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
             --Check a whole inventory?
             local bagToCheck = p_bagId or BAG_BACKPACK
 --d("[FCOIS]--> Scan whole inventory, bag: " .. tostring(bagToCheck))
@@ -1331,7 +1331,7 @@ function FCOIS.scanInventory(p_bagId, p_slotIndex)
                 updateInvLoop = scanInventorySingle(data.bagId, data.slotIndex)
                 if not updateInv then updateInv = updateInvLoop end
             end
-            if settings.debug then FCOIS.debugMessage( "[ScanInventory] End ALL", false, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+            if settings.debug then FCOIS.debugMessage( "[ScanInventory]","End ALL", false, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
 --d("[ScanInventory] END ALL")
 
         else
@@ -1377,11 +1377,12 @@ function FCOIS.scanInventoriesForZOsLockedItems(allInventories, houseBankBagId)
     allInventories = allInventories or false
     if houseBankBagId ~= nil then
         allInventories = false
+        allInventories = false
     end
 
     --Only scan if not already scanning
     if FCOIS.preventerVars.gScanningInv then return false end
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[FCOIS.scanInventoriesForZOsLockedItemsAndTransfer] Start ALL, allInventories: " ..tostring(allInventories), false) end
+    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[scanInventoriesForZOsLockedItemsAndTransfer]","Start ALL, allInventories: " ..tostring(allInventories), false) end
     local atLeastOneZOsMarkedFound = false
     local allowedBagTypes = {}
     if allInventories then
@@ -1431,5 +1432,5 @@ function FCOIS.scanInventoriesForZOsLockedItems(allInventories, houseBankBagId)
     if atLeastOneZOsMarkedFound == true then
         FCOIS.FilterBasics(true)
     end
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[scanInventoriesForZOsLockedItems] End, allInventories: " ..tostring(allInventories), false) end
+    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[scanInventoriesForZOsLockedItems]", "End, allInventories: " ..tostring(allInventories), false) end
 end
