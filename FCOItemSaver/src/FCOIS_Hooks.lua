@@ -465,6 +465,12 @@ end
 --============================================================================================================================================================
 --===== HOOKS BEGIN ==========================================================================================================================================
 --============================================================================================================================================================
+local function specialContextMenuKeysCheckAndActions()
+    local contextMenuClearMarkesByShiftKey = FCOIS.settingsVars.settings.contextMenuClearMarkesByShiftKey
+    if contextMenuClearMarkesByShiftKey == true and lcm and lcm.EnableSpecialKeyContextMenu then lcm:EnableSpecialKeyContextMenu(KEY_SHIFT) end
+    return contextMenuClearMarkesByShiftKey
+end
+
 --Create the hooks & pre-hooks
 function FCOIS.CreateHooks()
     local settings = FCOIS.settingsVars.settings
@@ -481,10 +487,11 @@ function FCOIS.CreateHooks()
         --As this prehook is called before the character OnMouseUp function is called:
         --If the SHIFT+right mouse button option is enabled and the SHIFT key is pressed and the character is shown.
         --Then hide the context menu
-        local contextMenuClearMarkesByShiftKey = FCOIS.settingsVars.settings.contextMenuClearMarkesByShiftKey
+        local contextMenuClearMarkesByShiftKey = specialContextMenuKeysCheckAndActions()
+
         local isCharacterShown = not FCOIS.ZOControlVars.CHARACTER:IsHidden()
 
---d("[FCOIS]ZO_InventorySlot_ShowContextMenu - dontShowInvContextMenu: " ..tostring(FCOIS.preventerVars.dontShowInvContextMenu) .. ", isCharacterShown: " ..tostring(isCharacterShown))
+        --d("[FCOIS]ZO_InventorySlot_ShowContextMenu - dontShowInvContextMenu: " ..tostring(FCOIS.preventerVars.dontShowInvContextMenu) .. ", isCharacterShown: " ..tostring(isCharacterShown))
         --Clear the sub context menu entries
         FCOIS.customMenuVars.customMenuSubEntries = {}
         FCOIS.customMenuVars.customMenuDynSubEntries = {}
@@ -493,11 +500,11 @@ function FCOIS.CreateHooks()
         --if the context menu should not be shown, because all marker icons were removed
         -- hide it now
         if prevVars.dontShowInvContextMenu == false and isCharacterShown and contextMenuClearMarkesByShiftKey == true and ( shift == true and not (ctrl or alt or command) ) then
---d(">FCOIS context menu, shift key is down")
+            --d(">FCOIS context menu, shift key is down")
             FCOIS.preventerVars.dontShowInvContextMenu = true
         end
         if prevVars.dontShowInvContextMenu then
---d(">FCOIS context menu, hiding it!")
+            --d(">FCOIS context menu, hiding it!")
             FCOIS.preventerVars.dontShowInvContextMenu = false
             --Hide the context menu now by returning true in this preHook and not calling the "context menu show" function
             --Nil the current menu ZO_Menu so it does not show (anti-flickering)

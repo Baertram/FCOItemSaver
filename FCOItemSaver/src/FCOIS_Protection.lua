@@ -719,7 +719,7 @@ function FCOIS.DeconstructionSelectionHandler(bag, slot, echo, overrideChatOutpu
                 or FCOIS.isResearchListDialogShown()
                 or FCOIS.isRetraitStationShown()
         ) then
-            return FCOIS.callItemSelectionHandler(bag, slot, echo, false, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId)
+            return FCOIS.callItemSelectionHandler(bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId)
         else
             return false
         end

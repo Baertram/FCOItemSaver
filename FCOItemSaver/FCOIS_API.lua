@@ -84,11 +84,12 @@ local ItemSelectionHandler = FCOIS.ItemSelectionHandler
     Boolean parameters suppressChatOutput / suppressAlert: 		if true the FCOIs settings for the chat/alert message will be suppressed so no message is shown from your call.
     Boolean parameter calledFromExternalAddon: 					Must be true if the call comes from another addon than FCOIS. Otherwise the protective functions won't work properly! Must be true for these protective check functions too!
     Integer parameter panelId: 									libFilters 2.x filter constant LF_* for the panel where the check should be done. If this variable is nil FCOIS will detect the active panel automatically.
+    Boolean parameter isDragAndDrop: 	    					if true the item was dragged&dropped
 ]]
 --Function to call the itemSelectionHandler from other addons (e.g. DoItAll with FCOItemSaver support)
 --Return true:   Item is protected
 --Returns false: Item is not protected
-function FCOIS.callItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId)
+function FCOIS.callItemSelectionHandler(bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId, isDragAndDrop)
 	echo = echo or false
 	isDragAndDrop = isDragAndDrop or false
 	overrideChatOutput = overrideChatOutput or false
@@ -266,6 +267,7 @@ end
 -- FCOIS prevention for being researched
 function FCOIS.IsResearchLocked(bagId, slotIndex)
 	--Don't show chat output and don't show alert message
+	--bag, slot, echo, isDragAndDrop, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId
 	return FCOIScish(bagId, slotIndex, false, true, true, true, true, true, LF_SMITHING_RESEARCH)
 end
 
