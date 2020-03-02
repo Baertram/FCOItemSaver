@@ -63,6 +63,27 @@ local checkIfFCOISSettingsWereLoaded = FCOIS.checkIfFCOISSettingsWereLoaded
 local DeconstructionSelectionHandler = FCOIS.DeconstructionSelectionHandler
 local ItemSelectionHandler = FCOIS.ItemSelectionHandler
 
+
+
+--------------------------------------------------------------------------------
+-- Local helper functions
+-----------------------------------------------------------------------------------
+local function isAnJewelryItem(bagId, slotIndex)
+	local isJewelryItem = false
+	local craftingType = GetCraftingInteractionType()
+	if craftingType == CRAFTING_TYPE_JEWELRYCRAFTING then
+		isJewelryItem = true
+	end
+	if not isJewelryItem then
+		local equipType = (bagId and slotIndex and GetItemLinkEquipType(GetItemLink(bagId, slotIndex))) or nil
+		if equipType and (equipType == EQUIP_TYPE_NECK or equipType == EQUIP_TYPE_RING) then
+			isJewelryItem = true
+		end
+	end
+	return isJewelryItem
+end
+--------------------------------------------------------------------------------
+
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -247,32 +268,67 @@ function FCOIS.IsEnchantingCreationLocked(bagId, slotIndex)
 end
 
 -- FCOIS prevention for being refined
-function FCOIS.IsRefinementLocked(bagId, slotIndex)
+function FCOIS.IsRefinementLocked(bagId, slotIndex, doNotCheckJewelry)
+	doNotCheckJewelry = doNotCheckJewelry or false
+	if not doNotCheckJewelry then
+		local isJewelryCrafting = isAnJewelryItem(bagId, slotIndex)
+		if isJewelryCrafting == true then
+			return FCOIS.IsJewelryRefinementLocked(bagId, slotIndex)
+		end
+	end
 	--Don't show chat output and don't show alert message
 	return FCOIScish(bagId, slotIndex, false, true, true, true, true, true, LF_SMITHING_REFINE)
 end
 
 -- FCOIS prevention for being deconstructed
-function FCOIS.IsDeconstructionLocked(bagId, slotIndex)
+function FCOIS.IsDeconstructionLocked(bagId, slotIndex, doNotCheckJewelry)
+	doNotCheckJewelry = doNotCheckJewelry or false
+	if not doNotCheckJewelry then
+		local isJewelryCrafting = isAnJewelryItem(bagId, slotIndex)
+		if isJewelryCrafting == true then
+			return FCOIS.IsJewelryDeconstructionLocked(bagId, slotIndex)
+		end
+	end
 	--Don't show chat output and don't show alert message
 	return FCOIScdsh(bagId, slotIndex, false, true, true, true, true, true, LF_SMITHING_DECONSTRUCT)
 end
 
 -- FCOIS prevention for being improved
-function FCOIS.IsImprovementLocked(bagId, slotIndex)
+function FCOIS.IsImprovementLocked(bagId, slotIndex, doNotCheckJewelry)
+	doNotCheckJewelry = doNotCheckJewelry or false
+	if not doNotCheckJewelry then
+		local isJewelryCrafting = isAnJewelryItem(bagId, slotIndex)
+		if isJewelryCrafting == true then
+			return FCOIS.IsJewelryImprovementLocked(bagId, slotIndex)
+		end
+	end
 	--Don't show chat output and don't show alert message
 	return FCOIScish(bagId, slotIndex, false, true, true, true, true, true, LF_SMITHING_IMPROVEMENT)
 end
 
 -- FCOIS prevention for being researched
-function FCOIS.IsResearchLocked(bagId, slotIndex)
+function FCOIS.IsResearchLocked(bagId, slotIndex, doNotCheckJewelry)
+	doNotCheckJewelry = doNotCheckJewelry or false
+	if not doNotCheckJewelry then
+		local isJewelryCrafting = isAnJewelryItem(bagId, slotIndex)
+		if isJewelryCrafting == true then
+			return FCOIS.IsJewelryResearchLocked(bagId, slotIndex)
+		end
+	end
 	--Don't show chat output and don't show alert message
 	--bag, slot, echo, isDragAndDrop, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId
 	return FCOIScish(bagId, slotIndex, false, true, true, true, true, true, LF_SMITHING_RESEARCH)
 end
 
 -- FCOIS prevention for being researched at the research popup dialog
-function FCOIS.IsResearchDialogLocked(bagId, slotIndex)
+function FCOIS.IsResearchDialogLocked(bagId, slotIndex, doNotCheckJewelry)
+	doNotCheckJewelry = doNotCheckJewelry or false
+	if not doNotCheckJewelry then
+		local isJewelryCrafting = isAnJewelryItem(bagId, slotIndex)
+		if isJewelryCrafting == true then
+			return FCOIS.IsJewelryResearchDialogLocked(bagId, slotIndex)
+		end
+	end
 	--Don't show chat output and don't show alert message
 	return FCOIScish(bagId, slotIndex, false, true, true, true, true, true, LF_SMITHING_RESEARCH_DIALOG)
 end

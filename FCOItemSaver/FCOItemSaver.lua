@@ -19,7 +19,7 @@
 ---------------------------------------------------------------------
 --[ToDo list] --
 --____________________________
--- Current max bugs: 53
+-- Current max bugs: 54
 --____________________________
 
 -- 1) 2019-01-14 - Bugfix - Baertram
@@ -63,6 +63,27 @@ ZO_MenuItem1_MouseUp:4: in function '(main chunk)'
 --> GuildBank withdraw: ZO_GuildBankBackpackContents only got child ZO_GuildBankBackpackLandingArea, but not rows if you directly open the guild bank after login/reloadui.
 ---> Guild bank needs more time to build the rows initially. So we need to wait here until they are build to register the hook!
 --> If you switch to the guild bank deposit and back it got the rows then: ZO_GuildBankBackpack1RowN
+
+-- 54) 2020-03-02 - OneSkyGod comments withinF COIS @www.esoui.com
+-- Changing the 5th dynamic icon name -> lua error message
+--[[
+choices and choicesValues need to have the same size
+stack traceback:
+[C]: in function 'assert'
+user:/AddOns/Tom/Libs/LibAddonMenu-2.0/LibAddonMenu-2.0/controls/dropdown.lua:125: in function 'UpdateChoices'
+|caaaaaa<Locals> control = ud, choices = [table:1]{1 = "Lock"}, choicesValues = [table:2]{1 = 1}, choices = [table:1], choicesValues = [table:2], choicesTooltips = [table:3]{1 = "|c940000|t20:20:/esoui/art/cam..."} </Locals>|r
+user:/AddOns/FCOItemSaver/src/FCOIS_SettingsMenu.lua:223: in function 'updateIconListDropdownEntries'
+|caaaaaa<Locals> dropdownCtrlName = "FCOItemSaver_Settings_1_Invigo...", updateData = [table:4]{scrollable = T, choices = "standard"}, dropdownCtrl = ud, choices = [table:1], choicesValues = [table:2] </Locals>|r
+user:/AddOns/FCOItemSaver/src/FCOIS_SettingsMenu.lua:1084: in function 'setFunc'
+|caaaaaa<Locals> newValue = "PVP" </Locals>|r
+user:/AddOns/Tom/Libs/LibAddonMenu-2.0/LibAddonMenu-2.0/controls/editbox.lua:49: in function 'UpdateValue'
+|caaaaaa<Locals> control = ud, forceDefault = F, value = "PVP" </Locals>|r
+user:/AddOns/Tom/Libs/LibAddonMenu-2.0/LibAddonMenu-2.0/controls/editbox.lua:95: in function '(anonymous)'
+|caaaaaa<Locals> self = ud </Locals>|r
+[C]: in function 'LoseFocus'
+EsoUI/Libraries/Globals/Globals.lua:51: in function 'OnGlobalMouseDown'
+|caaaaaa<Locals> event = 65544, button = 1, focusEdit = ud </Locals>|r
+]]
 
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
