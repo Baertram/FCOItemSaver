@@ -201,7 +201,7 @@ function FCOIS.FilterBasics(onlyPlayer)
         onlyPlayer = true
     end
     if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[FilterBasics]","onlyPlayer: " .. tostring(onlyPlayer), true, FCOIS_DEBUG_DEPTH_NORMAL) end
-d("[FCOIS]FilterBasics, onlyPlayer: " ..tostring(onlyPlayer))
+--d("[FCOIS]FilterBasics, onlyPlayer: " ..tostring(onlyPlayer))
 
     --Only update the lists if not currently already updating
     if (FCOIS.preventerVars.gFilteringBasics == false) then
