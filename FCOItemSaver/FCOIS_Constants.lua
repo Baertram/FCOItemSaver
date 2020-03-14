@@ -777,6 +777,8 @@ FCOIS.otherAddons.LazyWritCreatorActive = false
 --For the QualitySort addon which is moving the "name" sort header to the left by n (currently 80) pixles
 FCOIS.otherAddons.qualitySortActive = false
 FCOIS.otherAddons.QualitySortOffsetX = 80 + 1 -- +1 as there seems to be a small space left compared to the other positions: Moving "name" sort header to the left on x axis by this pixels. See file QualitySort.lua, line 256ff (function QualitySort.addSortByQuality(flag))
+--For the AdvancedFilters plugin AF_FCODuplicateItemsFilter
+FCOIS.otherAddons.AFFCODuplicateItemFilter = false
 --For the Inventory Insight from ashes addon
 FCOIS.otherAddons.IIFAActive = false
 FCOIS.otherAddons.IIFAitemsListName = "IIFA_GUI_ListHolder"

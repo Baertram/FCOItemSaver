@@ -172,6 +172,24 @@ local function UpdateOtherAddonUIs()
         --IIfA:RefreshInventoryScroll() -- This will scroll to the top :-( We need to find a way to scroll back to the current scrollList index
         IIfA:SetDataLinesData()
     end
+
+    --Check if AdvancedFilters is enabled and if the filter plugin FCO duplicate items is enabeld:
+    --Update the dropdown box chosen filter
+    if AdvancedFilters ~= nil and AdvancedFilters.util ~= nil and FCOIS.otherAddons and FCOIS.otherAddons.AFFCODuplicateItemFilter == true then
+        local AF = AdvancedFilters
+        --Is the filterplugin
+        if AF.externalDropdownFilterPlugins and AF.externalDropdownFilterPlugins.AF_FCODuplicateItemsFilters then
+            local isFiltering = AF.externalDropdownFilterPlugins.AF_FCODuplicateItemsFilters.isFiltering
+--d(">UpdateOtherAddonUIs-AF_FCODuplicateItemsFilters found, isFiltering: " ..tostring(isFiltering))
+            if isFiltering then
+                if AF.util.ReApplyDropdownFilter then
+                    --Reselect the last selected dropdown filter to apply the filter and update the inventory items again
+                    AF.util.ReApplyDropdownFilter()
+                end
+            end
+        end
+    end
+
 end
 ------------------------------------------------------------------------------------------------------------------------
 
@@ -183,7 +201,7 @@ function FCOIS.FilterBasics(onlyPlayer)
         onlyPlayer = true
     end
     if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[FilterBasics]","onlyPlayer: " .. tostring(onlyPlayer), true, FCOIS_DEBUG_DEPTH_NORMAL) end
---d("[FCOIS]FilterBasics, onlyPlayer: " ..tostring(onlyPlayer))
+d("[FCOIS]FilterBasics, onlyPlayer: " ..tostring(onlyPlayer))
 
     --Only update the lists if not currently already updating
     if (FCOIS.preventerVars.gFilteringBasics == false) then
@@ -191,12 +209,15 @@ function FCOIS.FilterBasics(onlyPlayer)
         if (not FCOIS.ZOControlVars.QUICKSLOT_LIST:IsHidden() and onlyPlayer == false) then
             --UpdateInventories() -- NO FILTERS YET! So not needed to call libFilters:RequestUpdate(LF_QUICKSLOT)!
             UpdateQuickSlots()
+            --UpdateOtherAddonUIs()
         elseif (not FCOIS.ZOControlVars.REPAIR_LIST:IsHidden() and onlyPlayer == false) then
             --UpdateInventories() -- NO FILTERS YET! So not needed to call libFilters:RequestUpdate(LF_VENDOR_REPAIR)!
             UpdateRepairList()
+            --UpdateOtherAddonUIs()
         elseif (not FCOIS.ZOControlVars.RETRAIT_LIST:IsHidden() and onlyPlayer == false) then
             UpdateInventories()
             UpdateTransmutationList()
+            UpdateOtherAddonUIs()
         elseif (onlyPlayer == true) then
             UpdateInventories()
             --Try to update other addon's UIs

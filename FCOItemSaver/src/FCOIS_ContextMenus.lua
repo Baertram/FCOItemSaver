@@ -1061,7 +1061,7 @@ end
         end
 
         --Show the new added menu entries inside the context menu borders
-        ShowMenu(rowControl)
+        --ShowMenu(rowControl)
         --Last context menu entry was added?
         if preventerVars.buildingInvContextMenuEntries == false then
             --Reset the IIfA clicked row variables again if the last entry of the context menu was added!

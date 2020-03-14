@@ -93,6 +93,10 @@ function FCOIS.checkIfOtherAddonActive(addOnName)
         --Add entry to constants table for the keybinds/SHIFT+right mouse click inventory row patterns
         table.insert(FCOIS.checkVars.inventoryRowPatterns, "^" .. FCOIS.otherAddons.IIFAitemsListEntryPrePattern .. "*")         --Other addons: InventoryInsightFromAshes UI
     end
+    --AdvancedFilters: Plugin FCO DuplicateItemsFilter
+    if (addOnName == "AF_FCODuplicateItemsFilters" and AdvancedFilters ~= nil) then
+        FCOIS.otherAddons.AFFCODuplicateItemFilter = true
+    end
 end
 
 --Check for other addons and react on them
