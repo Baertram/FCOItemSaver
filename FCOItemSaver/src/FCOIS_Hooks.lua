@@ -590,7 +590,6 @@ function FCOIS.CreateHooks()
             --As the (dynamic) sub menu entries were build, show them now
             if useSubContextMenu or useDynSubContextMenu then
                 zo_callLater(function()
-                    --ClearMenu()
                     if FCOIS.customMenuVars.customMenuSubEntries ~= nil and #FCOIS.customMenuVars.customMenuSubEntries > 0 then
                         AddCustomSubMenuItem("|c22DD22FCO|r ItemSaver", FCOIS.customMenuVars.customMenuSubEntries)
                     else
@@ -927,7 +926,7 @@ function FCOIS.CreateHooks()
                 if contextMenuEntriesAdded > 0 then
                     --Reset the counter for the FCOIS.AddMark function
                     FCOIS.customMenuVars.customMenuCurrentCounter = 0
-                    --Clear the menu
+                    --Clear the menu completely (should be empty by default as it does not exist on the dialogs)
                     ClearMenu()
                     --Add the context menu entries now
                     for j = 1, numFilterIcons, 1 do

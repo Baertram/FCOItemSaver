@@ -1397,7 +1397,7 @@ function FCOIS.checkIfCraftedItemShouldBeMarked(craftSkill, overwrite)
     if notCreating then return false end
 
     --Writ marking of items takes place in another function from library libLazyCrafting -> See file src/FCOIS_OtherAddons.lua, function FCOIS.checkIfWritItemShouldBeMarked
-    --LibStub("LibLazyCrafting"):IsPerformingCraftProcess() --> returns boolean, type of crafting, addon that requested the craft
+    --LibLazyCrafting:IsPerformingCraftProcess() --> returns boolean, type of crafting, addon that requested the craft
     local writCreatedItem, _, _ = FCOIS.checkLazyWritCreatorCraftedItem()
     if writCreatedItem then return false end
 

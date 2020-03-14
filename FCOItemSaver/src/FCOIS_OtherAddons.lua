@@ -512,8 +512,8 @@ end
 --Function to check if an item is crafted via the addon Dolgubon's Lazy Writ Creator
 function FCOIS.checkLazyWritCreatorCraftedItem()
     local writCreatedItem, craftingType, addonRequester
-    if FCOIS.otherAddons.LazyWritCreatorActive and WritCreater ~= nil and FCOIS.settingsVars.settings.autoMarkCraftedWritItems then
-        writCreatedItem, craftingType, addonRequester = LibStub("LibLazyCrafting"):IsPerformingCraftProcess() --> returns boolean, type of crafting, addon that requested the craft
+    if FCOIS.otherAddons.LazyWritCreatorActive and WritCreater ~= nil and FCOIS.settingsVars.settings.autoMarkCraftedWritItems and LibLazyCrafting ~= nil then
+        writCreatedItem, craftingType, addonRequester = LibLazyCrafting:IsPerformingCraftProcess() --> returns boolean, type of crafting, addon that requested the craft
 --d("[FCOIS]checkLazyWritCreatorCraftedItem - writCreatedItem: " .. tostring(writCreatedItem) .. ", craftingType: " .. tostring(craftingType) .. ", addonRequester: " .. tostring(addonRequester))
         FCOIS.preventerVars.writCreatorCreatedItem = writCreatedItem and addonRequester == WritCreater.name
     end

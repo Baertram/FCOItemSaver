@@ -7,8 +7,8 @@ local FCOIS = FCOIS
 FCOIS.addonVars = {}
 local addonVars = FCOIS.addonVars
 --Addon variables
-addonVars.addonVersionOptions 		= '1.7.7' -- version shown in the settings panel
-addonVars.addonVersionOptionsNumber	= 1.77
+addonVars.addonVersionOptions 		= '1.7.8' -- version shown in the settings panel
+addonVars.addonVersionOptionsNumber	= 1.78
 addonVars.gAddonName				= "FCOItemSaver"
 addonVars.gAddonNameShort           = "FCOIS"
 addonVars.addonNameMenu				= "FCO ItemSaver"
@@ -89,15 +89,15 @@ local libMissingErrorText = FCOIS.errorTexts["libraryMissing"]
 
 --Load libLoadedAddons
 FCOIS.LIBLA = LibLoadedAddons
-if FCOIS.LIBLA == nil and LibStub then FCOIS.LIBLA = LibStub:GetLibrary("LibLoadedAddons", true) end
+--if FCOIS.LIBLA == nil and LibStub then FCOIS.LIBLA = LibStub:GetLibrary("LibLoadedAddons", true) end
 if FCOIS.LIBLA == nil then d(preVars.preChatTextRed .. string.format(libMissingErrorText, "LibLoadedAddons")) return end
 
 --Initiliaze the library LibCustomMenu
 if LibCustomMenu then FCOIS.LCM = LibCustomMenu else d(preVars.preChatTextRed .. string.format(libMissingErrorText, "LibCustomMenu")) return end
 
---Create the settings panel object of libAddonMenu 2.0
+--Create the settings panel object of LibAddonMenu 2.0
 FCOIS.LAM = LibAddonMenu2
-if FCOIS.LAM == nil and LibStub then FCOIS.LAM = LibStub('LibAddonMenu-2.0', true) end
+--if FCOIS.LAM == nil and LibStub then FCOIS.LAM = LibStub('LibAddonMenu-2.0', true) end
 if FCOIS.LAM == nil then d(preVars.preChatTextRed .. string.format(libMissingErrorText, "LibAddonMenu-2.0")) return end
 
 --The options panel of FCO ItemSaver
@@ -105,7 +105,7 @@ FCOIS.FCOSettingsPanel = nil
 
 --Create the libMainMenu 2.0 object
 FCOIS.LMM2 = LibMainMenu2
-if FCOIS.LMM2 == nil and LibStub then FCOIS.LMM2 = LibStub("LibMainMenu-2.0", true) end
+--if FCOIS.LMM2 == nil and LibStub then FCOIS.LMM2 = LibStub("LibMainMenu-2.0", true) end
 if FCOIS.LMM2 == nil then d(preVars.preChatTextRed .. string.format(libMissingErrorText, "LibMainMenu-2.0")) return end
 FCOIS.LMM2:Init()
 
@@ -118,12 +118,12 @@ FCOIS.libFilters:InitializeLibFilters()
 
 --Initialize the library LibDialog
 FCOIS.LDIALOG = LibDialog
-if FCOIS.LDIALOG == nil and LibStub then FCOIS.LDIALOG = LibStub('LibDialog', true) end
+--if FCOIS.LDIALOG == nil and LibStub then FCOIS.LDIALOG = LibStub('LibDialog', true) end
 if not FCOIS.LDIALOG then d(preVars.preChatTextRed .. string.format(libMissingErrorText, "LibDialog")) return end
 
 --Initialize the library LibFeedback
 FCOIS.libFeedback = LibFeedback
-if FCOIS.libFeedback == nil and LibStub then FCOIS.libFeedback = LibStub:GetLibrary('LibFeedback', true) end
+--if FCOIS.libFeedback == nil and LibStub then FCOIS.libFeedback = LibStub:GetLibrary('LibFeedback', true) end
 if not FCOIS.libFeedback then d(preVars.preChatTextRed .. string.format(libMissingErrorText, "LibFeedback")) return end
 
 --All libraries are loaded prolery?
