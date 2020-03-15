@@ -128,7 +128,7 @@ if not FCOIS.LDIALOG then d(preVars.preChatTextRed .. string.format(libMissingEr
 
 --Initialize the library LibFeedback
 FCOIS.libFeedback = LibFeedback
---if FCOIS.libFeedback == nil and LibStub then FCOIS.libFeedback = LibStub:GetLibrary('LibFeedback', true) end
+if FCOIS.libFeedback == nil and LibStub then FCOIS.libFeedback = LibStub:GetLibrary('LibFeedback', true) end
 if not FCOIS.libFeedback then d(preVars.preChatTextRed .. string.format(libMissingErrorText, "LibFeedback")) return end
 
 --All libraries are loaded prolery?
