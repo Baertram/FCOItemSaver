@@ -1060,9 +1060,8 @@ end
         end
 
         --Show the new added menu entries inside the context menu borders
-        -- TODO: Remove this as it prevents other addons from adding entries to the context menus with LibCustomMenu, at LibCustomMenu.CATEGORY_EARLY -> CATEGORY_QUARTERNARY
-        -- TODO: But if removed the submenu's headline "FCO ItemSaver" is not shown in th menu's bounds but below?
-        --ShowMenu(rowControl)
+        --Do not remove this or context menu is not working anymore in ZO_Dialog1 !
+        ShowMenu(rowControl)
         --Last context menu entry was added?
         if preventerVars.buildingInvContextMenuEntries == false then
             --Reset the IIfA clicked row variables again if the last entry of the context menu was added!
