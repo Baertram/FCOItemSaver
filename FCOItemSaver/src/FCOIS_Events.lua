@@ -526,7 +526,9 @@ local function FCOItemSaver_Inv_Single_Slot_Update(_, bagId, slotId, isNewItem, 
     --We don't need to scan it with our functions too at this case
     if IsUnderArrest() then return end
     --Do not execute if horse is changed
-    if SCENE_MANAGER:GetCurrentScene() == STABLES_SCENE then return end
+    --The current game's SCENE and name (used for determining bank/guild bank deposit)
+    local currentScene, _ = FCOIS.getCurrentSceneInfo()
+    if currentScene == STABLES_SCENE then return end
     --Check if item in slot is still there
     if GetItemType(bagId, slotId) == ITEMTYPE_NONE then return end
 --d(">3")

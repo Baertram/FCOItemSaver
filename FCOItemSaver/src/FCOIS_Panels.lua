@@ -13,8 +13,8 @@ local ctrlVars = FCOIS.ZOControlVars
 function FCOIS.getWhereAreWe(panelId, panelIdAtCall, bag, slot, isDragAndDrop, calledFromExternalAddon)
     --The number for the orientation (which filter panel ID and which sub-checks were done -> for the chat output and the alert message determination)
     local whereAreWe = FCOIS_CON_DESTROY
-    --The current game's SCENE name (used for determining bank/guild bank deposit)
-    local currentSceneName = SCENE_MANAGER.currentScene.name
+    --The current game's SCENE and name (used for determining bank/guild bank deposit)
+    local _, currentSceneName = FCOIS.getCurrentSceneInfo()
     --Local settings pointer
     local settings = FCOIS.settingsVars.settings
     local otherAddons = FCOIS.otherAddons
@@ -86,7 +86,7 @@ function FCOIS.getWhereAreWe(panelId, panelIdAtCall, bag, slot, isDragAndDrop, c
         elseif (not ctrlVars.PLAYER_TRADE.control:IsHidden() or FCOIS.gFilterWhereParent == LF_TRADE) then
             whereAreWe = FCOIS_CON_TRADE
             --Are we at the store scene
-        elseif currentSceneName == "store" then
+        elseif currentSceneName == ctrlVars.vendorSceneName then
             --Vendor buy
             if (FCOIS.gFilterWhereParent == LF_VENDOR_BUY or (not ctrlVars.STORE:IsHidden() and ctrlVars.BACKPACK_BAG:IsHidden() and ctrlVars.STORE_BUY_BACK:IsHidden() and ctrlVars.REPAIR_LIST:IsHidden())) then
                 whereAreWe = FCOIS_CON_BUY
@@ -150,7 +150,7 @@ function FCOIS.getWhereAreWe(panelId, panelIdAtCall, bag, slot, isDragAndDrop, c
         elseif (not ctrlVars.PLAYER_TRADE.control:IsHidden() or panelId == LF_TRADE) then
             whereAreWe = FCOIS_CON_TRADE
             --Are we at the store scene?
-        elseif currentSceneName == "store" or panelId == LF_VENDOR_BUY or panelId == LF_VENDOR_SELL or panelId == LF_VENDOR_BUYBACK or panelId == LF_VENDOR_REPAIR then
+        elseif currentSceneName == ctrlVars.vendorSceneName or panelId == LF_VENDOR_BUY or panelId == LF_VENDOR_SELL or panelId == LF_VENDOR_BUYBACK or panelId == LF_VENDOR_REPAIR then
             --Vendor buy
             if (panelId == LF_VENDOR_BUY or (not ctrlVars.STORE:IsHidden() and ctrlVars.BACKPACK_BAG:IsHidden() and ctrlVars.STORE_BUY_BACK:IsHidden() and ctrlVars.REPAIR_LIST:IsHidden())) then
                 whereAreWe = FCOIS_CON_BUY
@@ -165,7 +165,7 @@ function FCOIS.getWhereAreWe(panelId, panelIdAtCall, bag, slot, isDragAndDrop, c
                 whereAreWe = FCOIS_CON_REPAIR
             end
             --Fence/Launder scene
-        elseif currentSceneName == "fence_keyboard" or panelId == LF_FENCE_SELL or panelId == LF_FENCE_LAUNDER then
+        elseif currentSceneName == ctrlVars.FENCE_SCENE_NAME or panelId == LF_FENCE_SELL or panelId == LF_FENCE_LAUNDER then
             --Inside fence sell?
             if ((FENCE_KEYBOARD ~= nil and FENCE_KEYBOARD.mode ~= nil and FENCE_KEYBOARD.mode == ZO_MODE_STORE_SELL_STOLEN) or panelId == LF_FENCE_SELL) then
                 whereAreWe = FCOIS_CON_FENCE_SELL
@@ -308,7 +308,8 @@ function FCOIS.checkActivePanel(comingFrom, overwriteFilterWhere)
     local ctrlVars2 = FCOIS.ZOControlVars
 
     --Get the current scene's name to be able to distinguish between bank, guildbank, mail etc. when changing to CBE's craftbag panels
-    local currentSceneName = SCENE_MANAGER.currentScene.name
+    --The current game's SCENE and name (used for determining bank/guild bank deposit)
+    local currentScene, currentSceneName = FCOIS.getCurrentSceneInfo()
     --Debug
     if FCOIS.settingsVars.settings.debug then
         local oldFilterWhere

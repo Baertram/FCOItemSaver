@@ -1222,6 +1222,17 @@ end
 --======================================================================================================================
 -- Get functions
 --======================================================================================================================
+--Get the current scene and scene name
+--If no scene_manager is given or no scene can be determined the dummy scene FCOIS will be returned (table containing only a name)
+function FCOIS.getCurrentSceneInfo()
+    if not SCENE_MANAGER then return FCOIS.dummyScene, "" end
+    local currentScene = SCENE_MANAGER:GetCurrentScene()
+    local currentSceneName = ""
+    if not currentScene then currentScene = FCOIS.dummyScene end
+    currentSceneName = currentScene.name
+    return currentScene, currentSceneName
+end
+
 --Get the effective level of a unitTag and check if it's above or equals a specified "needed level".
 --Returns boolean true if level is above or equal the parameter neededLevel
 --Returns boolean false if level is below the parameter neededLevel

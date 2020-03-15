@@ -7,8 +7,8 @@ local FCOIS = FCOIS
 FCOIS.addonVars = {}
 local addonVars = FCOIS.addonVars
 --Addon variables
-addonVars.addonVersionOptions 		= '1.7.8' -- version shown in the settings panel
-addonVars.addonVersionOptionsNumber	= 1.78
+addonVars.addonVersionOptions 		= '1.8.0' -- version shown in the settings panel
+addonVars.addonVersionOptionsNumber	= 1.80
 addonVars.gAddonName				= "FCOItemSaver"
 addonVars.gAddonNameShort           = "FCOIS"
 addonVars.addonNameMenu				= "FCO ItemSaver"
@@ -26,6 +26,11 @@ addonVars.donation                  = "https://www.esoui.com/portal.php?id=136&a
 addonVars.gAddonLoaded				= false
 addonVars.gPlayerActivated			= false
 addonVars.gSettingsLoaded			= false
+
+--Dummy SCENE information for file FCOIS_functions.lua -> function FCOIS.getCurrentSceneInfo()
+FCOIS.dummyScene = {
+    ["name"] = addonVars.gAddonName
+}
 
 --SavedVariables constants
 addonVars.savedVarName				= addonVars.gAddonName .. "_Settings"
@@ -896,6 +901,7 @@ FCOIS.ZOControlVars.STORE_BUY_BACK_LIST         = ZO_BuyBackList
 --FCOIS.ZOControlVars.STORE_BUY_BACK_LIST_BAG     = ZO_BuyBackListContents
 FCOIS.ZOControlVars.VENDOR_MAINMENU_BUTTON_BAR  = ""
 --FCOIS.ZOControlVars.FENCE						= ZO_Fence_Keyboard_WindowMenu
+FCOIS.ZOControlVars.FENCE_SCENE_NAME            = "fence_keyboard"
 FCOIS.ZOControlVars.REPAIR                      = ZO_RepairWindow
 FCOIS.ZOControlVars.REPAIR_NAME                 = FCOIS.ZOControlVars.REPAIR:GetName()
 FCOIS.ZOControlVars.REPAIR_LIST				    = ZO_RepairWindowList

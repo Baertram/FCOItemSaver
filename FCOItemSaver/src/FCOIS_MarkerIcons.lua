@@ -205,7 +205,9 @@ function FCOIS.CreateTextures(whichTextures)
                 function(rowControl, slot)
                     hookedFunctions(rowControl, slot)
                     --Do not execute if horse is changed
-                    if SCENE_MANAGER:GetCurrentScene() ~= STABLES_SCENE then
+                    --The current game's SCENE and name (used for determining bank/guild bank deposit)
+                    local currentScene, _ = FCOIS.getCurrentSceneInfo()
+                    if currentScene ~= STABLES_SCENE then
                         -- for all filters: Create/Update the icons
                         for i=1, numFilterIcons, 1 do
                             --FCOIS.CreateMarkerControl(parent, controlId, pWidth, pHeight, pTexture, pIsEquipmentSlot, pCreateControlIfNotThere, pUpdateAllEquipmentTooltips, pArmorTypeIcon, pHideControl)
@@ -232,7 +234,9 @@ function FCOIS.CreateTextures(whichTextures)
                 hookedFunctions(rowControl, slot)
 
                 --Do not execute if horse is changed
-                if SCENE_MANAGER:GetCurrentScene() ~= STABLES_SCENE then
+                --The current game's SCENE and name (used for determining bank/guild bank deposit)
+                local currentScene, _ = FCOIS.getCurrentSceneInfo()
+                if currentScene ~= STABLES_SCENE then
                     -- for all filters: Create/Update the icons
                     for i=1, numFilterIcons, 1 do
                         FCOIS.CreateMarkerControl(rowControl, i, iconSettings[i].size, iconSettings[i].size, markerTextureVars[iconSettings[i].texture], false, doCreateMarkerControl)
@@ -262,7 +266,9 @@ function FCOIS.CreateTextures(whichTextures)
                 hookedFunctions(rowControl, slot)
 
                 --Do not execute if horse is changed
-                if SCENE_MANAGER:GetCurrentScene() ~= STABLES_SCENE then
+                --The current game's SCENE and name (used for determining bank/guild bank deposit)
+                local currentScene, _ = FCOIS.getCurrentSceneInfo()
+                if currentScene ~= STABLES_SCENE then
                     -- for all filters: Create/Update the icons
                     for i=1, numFilterIcons, 1 do
                         FCOIS.CreateMarkerControl(rowControl, i, iconSettings[i].size, iconSettings[i].size, markerTextureVars[iconSettings[i].texture], false, doCreateMarkerControl)
@@ -285,7 +291,9 @@ function FCOIS.CreateTextures(whichTextures)
                 hookedFunctions(rowControl, slot)
 
                 --Do not execute if horse is changed
-                if SCENE_MANAGER:GetCurrentScene() ~= STABLES_SCENE then
+                --The current game's SCENE and name (used for determining bank/guild bank deposit)
+                local currentScene, _ = FCOIS.getCurrentSceneInfo()
+                if currentScene ~= STABLES_SCENE then
                     -- for all filters: Create/Update the icons
                     for i=1, numFilterIcons, 1 do
                         FCOIS.CreateMarkerControl(rowControl, i, iconSettings[i].size, iconSettings[i].size, markerTextureVars[iconSettings[i].texture], false, doCreateMarkerControl)

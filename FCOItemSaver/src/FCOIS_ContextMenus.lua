@@ -45,6 +45,8 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
         end
     end
 
+    --The current game's SCENE and name (used for determining bank/guild bank deposit)
+    local currentScene, currentSceneName = FCOIS.getCurrentSceneInfo()
     local isNewSlot = self.m_inventorySlot ~= FCOIS.preventerVars.lastHoveredInvSlot
     if isNewSlot then
         FCOIS.preventerVars.lastHoveredInvSlot = self.m_inventorySlot
@@ -212,10 +214,8 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
 
         --Equip
     elseif actionStringId == SI_ITEM_ACTION_EQUIP then
-        --Check the current scene and see if we are at the store
-        local currentScene = SCENE_MANAGER.currentScene.name
-        local isStore = (currentScene and currentScene == "store") or false
-        local isFence = (SCENE_MANAGER.currentScene == FENCE_SCENE) or false
+        local isStore = currentSceneName == ctrlVars.vendorSceneName or false
+        local isFence = currentScene == FENCE_SCENE or false
         --Or are we in the guild store/trading house?
         local isCurrentlyShowingGuildStore = not ctrlVars.GUILD_STORE:IsHidden()
         --Or are we currently showing the mail send panel?
@@ -236,8 +236,7 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
     elseif actionStringId == SI_ITEM_ACTION_BANK_DEPOSIT then
         --Are we at the guild bank and is the protection setting for "non-withdrawable items" enabled?
         if settings.blockGuildBankWithoutWithdraw then
-            local currentScene = SCENE_MANAGER.currentScene.name
-            if (currentScene == ctrlVars.guildBankSceneName or currentScene == ctrlVars.guildBankGamepadSceneName) then
+            if (currentSceneName == ctrlVars.guildBankSceneName or currentSceneName == ctrlVars.guildBankGamepadSceneName) then
                 if FCOIS.guildBankVars.guildBankId == 0 then return true end
                 return not FCOIS.checkIfGuildBankWithdrawAllowed(FCOIS.guildBankVars.guildBankId)
             end
@@ -1061,6 +1060,8 @@ end
         end
 
         --Show the new added menu entries inside the context menu borders
+        -- TODO: Remove this as it prevents other addons from adding entries to the context menus with LibCustomMenu, at LibCustomMenu.CATEGORY_EARLY -> CATEGORY_QUARTERNARY
+        -- TODO: But if removed the submenu's headline "FCO ItemSaver" is not shown in th menu's bounds but below?
         --ShowMenu(rowControl)
         --Last context menu entry was added?
         if preventerVars.buildingInvContextMenuEntries == false then

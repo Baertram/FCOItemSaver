@@ -19,7 +19,7 @@
 ---------------------------------------------------------------------
 --[ToDo list] --
 --____________________________
--- Current max bugs: 54
+-- Current max bugs: 57
 --____________________________
 
 -- 1) 2019-01-14 - Bugfix - Baertram
@@ -64,7 +64,7 @@ ZO_MenuItem1_MouseUp:4: in function '(main chunk)'
 ---> Guild bank needs more time to build the rows initially. So we need to wait here until they are build to register the hook!
 --> If you switch to the guild bank deposit and back it got the rows then: ZO_GuildBankBackpack1RowN
 
--- 54) 2020-03-02 - OneSkyGod comments withinF COIS @www.esoui.com
+-- 54) 2020-03-02 - OneSkyGod comments within FCOIS @www.esoui.com
 -- Changing the 5th dynamic icon name -> lua error message
 --[[
 choices and choicesValues need to have the same size
@@ -85,13 +85,18 @@ EsoUI/Libraries/Globals/Globals.lua:51: in function 'OnGlobalMouseDown'
 |caaaaaa<Locals> event = 65544, button = 1, focusEdit = ud </Locals>|r
 ]]
 
+-- 55) 2020-03-10 - schaumamoi comments within game
+-- Recharging weapons does not work as marked soulgems in ZO_Dialog is protected
+
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
---Since last update 1.7.4 - New version: 1.7.5
+--Since last update 1.7.9 - New version: 1.8.0
 ---------------------------------------------------------------------
 --[Fixed]
---#53: API function CallItemSelectionHandler parameter isDragAndDrop moved to the last parameter as intended
+--#55: Soulgems are not protected in the weapon recharge dialog anymore, even if marked
+--#56: LibFeedback error message
+--#57: SCENE_MANAGER error message upon login, if other addons used the scanner like ResearchAssistant
 
 --[Added]
 --

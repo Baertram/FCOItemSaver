@@ -165,7 +165,9 @@ ZO_PreHook("ZO_Menu_OnHide", function()
         end
     end
     --Check if the character window is shown and if the current scene is the inventory scene
-    if not ctrlVars.CHARACTER:IsHidden() and SCENE_MANAGER.currentScene.name == ctrlVars.invSceneName  then
+    --The current game's SCENE and name (used for determining bank/guild bank deposit)
+    local _, currentSceneName = FCOIS.getCurrentSceneInfo()
+    if not ctrlVars.CHARACTER:IsHidden() and currentSceneName == ctrlVars.invSceneName  then
         --Show the PlayerProgressBar again as the context menu closes
         FCOIS.ShowPlayerProgressBar(true)
     end
@@ -858,6 +860,7 @@ function FCOIS.CreateHooks()
             end
 
         end -- for j = 1, numFilterIcons, 1 do
+
         --Set an attribute to the row which can be checked in other functions of the rowControl too!
         rowControl.disableControl = disableControl
 
@@ -943,11 +946,12 @@ function FCOIS.CreateHooks()
 
             --Mouse button was released on the row?
             if upInside then
+d("[FCOIS]upInside: " ..tostring(upInside) .. ", disable: " ..tostring(rowControl.disableControl) .. ", isSoulGem: " ..tostring(isSoulGem))
                 --Check if the clicked row got marker icons which protect this item!
                 FCOIS.refreshPopupDialogButtons(rowControl, false)
                 local dialog = ctrlVars.RepairItemDialog
                 --Should this row be protected and disabled buttons and keybindings
-                if rowControl.disableControl == true then
+                if rowControl.disableControl == true and not isSoulGem == true then
                     --d("MouseUpInside, rowControl.disableControl-> true")
                     --Do nothing (true tells the handler function that everything was achieved already in this function
                     --and the normal "hooked" functions don't need to be run afterwards)
