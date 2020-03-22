@@ -11,11 +11,14 @@ local ctrlVars = FCOIS.ZOControlVars
 
 --Compatibility functions
 local function menuVisibleCheck()
+    --New: Since API10030 - Typo was removed
+    if IsMenuVisible then
+         return IsMenuVisible()
     --Old: Before API10030 - Function name includes a typo!
-    if (IsMenuVisisble and IsMenuVisisble()) then return IsMenuVisisble()
-        --New: Since API10030 - Typo was removed
-    elseif (IsMenuVisible and IsMenuVisible()) then return IsMenuVisible() end
-    return nil
+    elseif IsMenuVisisble then
+        return IsMenuVisisble()
+    end
+    return false
 end
 
 --==========================================================================================================================================

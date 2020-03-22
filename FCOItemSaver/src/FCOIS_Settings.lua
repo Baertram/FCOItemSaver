@@ -559,11 +559,11 @@ function FCOIS.afterSettings()
     if settings.addonFCOISChangedDynIconMaxUsableSlider == nil then
         FCOIS.settingsVars.settings.addonFCOISChangedDynIconMaxUsableSlider = true
     end
+    local maxUsableDynIconNr = 0
     if settings.addonFCOISChangedDynIconMaxUsableSlider then
         --Check if the user got more dyn. icons enabled as the current value of the usable dyn. icons is set (standard value is: 10)
         --Loop over iconsEnabled in settings and check if the number of dynIcons is > then the currently total usable number
         --local firstDynIconNr = FCOIS.numVars.gFCONumNonDynamicAndGearIcons + 1 --Start at icon# 13 = Dyn. icon #1
-        local maxUsableDynIconNr = 0
         for dynIconNr, isEnabled in ipairs(settings.isIconEnabled) do
             if isEnabled then
                 maxUsableDynIconNr = icon2Dynamic[dynIconNr]
@@ -582,6 +582,15 @@ function FCOIS.afterSettings()
     --Reset the settings value to false so the checks won't be done on next change again!
     if settings.addonFCOISChangedDynIconMaxUsableSlider == true then
         FCOIS.settingsVars.settings.addonFCOISChangedDynIconMaxUsableSlider = false
+    end
+    --FCOIS v1.8.0
+    --Check if the currently set value of "show dynamic icons in submenus if enabled number of dynamic icons is > then x" is above the
+    --value of total enabled dynamic icons (currently set maximum usable dynamicIcons via the slider in the marker icons->dynamic settings).
+    --if so: Set it to the curerntly maximum enabled dynamic icons
+    if settings.useDynSubMenuMaxCount > 0 and settings.numMaxDynamicIconsUsable > 0 then
+        if settings.useDynSubMenuMaxCount > settings.numMaxDynamicIconsUsable then
+            settings.useDynSubMenuMaxCount = settings.numMaxDynamicIconsUsable
+        end
     end
 
     --Build the additional inventory "flag" context menu button data, which depends on the here before set values
@@ -667,7 +676,7 @@ function FCOIS.afterSettings()
         end
     end
 
-    ------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
 --  Build the additional inventory "flag" context menu button data
 ------------------------------------------------------------------------------------------------------------------------
     --Constants
@@ -677,13 +686,16 @@ function FCOIS.afterSettings()
     --Non changing values
     local showAddInvContextMenuFunc = FCOIS.showContextMenuForAddInvButtons
     local showAddInvContextMenuMouseUpFunc = FCOIS.onContextMenuForAddInvButtonsButtonMouseUp
+    --The "flag" textures
+    local invAddButtonVars = FCOIS.invAdditionalButtonVars
+    local texNormal = invAddButtonVars.texNormal
+    local texMouseOver = invAddButtonVars.texMouseOver
+    --Other variables
     local mouseButtonRight = MOUSE_BUTTON_INDEX_RIGHT
     local text
     local font
     local tooltip = locVars["button_context_menu_tooltip"]
     local anchorTooltip = RIGHT
-    local texNormal = "/esoui/art/ava/tabicon_bg_score_inactive.dds"
-    local texMouseOver = "/esoui/art/ava/tabicon_bg_score_disabled.dds"
     local texClicked = texMouseOver
     local width  = 32
     local height = 32

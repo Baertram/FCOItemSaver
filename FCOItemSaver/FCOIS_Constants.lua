@@ -2258,7 +2258,10 @@ for i=1, numVars.gFCONumFilterInventoryTypes, 1 do
     end
 end
 
---The mapping table for the additional inventory context menu invoker buttons, their name, their parent and their settings
+--The additional inventory "flag" context menu textures (-> the flag icon)
+invAddButtonVars.texNormal = "/esoui/art/ava/tabicon_bg_score_inactive.dds"
+invAddButtonVars.texMouseOver = "/esoui/art/ava/tabicon_bg_score_disabled.dds"
+--The mapping table for the additional inventory "flag" context menu invoker buttons, their name, their parent and their settings
 local additionalFCOISInvContextmenuButtonNameString = "ButtonFCOISAdditionalOptions"
 invAddButtonVars.playerInventoryFCOAdditionalOptionsButton = ctrlVars.INV_NAME .. additionalFCOISInvContextmenuButtonNameString
 invAddButtonVars.playerBankWithdrawButtonAdditionalOptions = "FCOIS_PlayerBankWithdraw" .. additionalFCOISInvContextmenuButtonNameString

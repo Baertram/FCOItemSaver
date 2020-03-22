@@ -185,7 +185,7 @@ FCOIS.textureVars.MARKER_TEXTURES = {
     [172] = [[/esoui/art/tutorial/guildstore-tradinghouse_listings_tabicon_up.dds]],
     [173] = [[/esoui/art/tutorial/progression_tabicon_fightersguild_up.dds]],
     [174] = [[/esoui/art/tutorial/progression_tabicon_magesguild_up.dds]],
-    [175] = [[/esoui/art/icons/store_thievesguilddlc_collectable_empty.dds]],
+    [175] = [[/esoui/art/icons/store_thievesguilddlc_collectable.dds]],
     [176] = [[/esoui/art/tutorial/tabicon_createguild_up.dds]],
     [177] = [[/esoui/art/voip/voip-guild.dds]],
     [178] = [[/esoui/art/death/death_timer_fill.dds]],
@@ -211,13 +211,14 @@ FCOIS.textureVars.MARKER_TEXTURES = {
     [198] = [[/esoui/art/battlegrounds/battlegroundscapturebar_teambadge_green.dds]],
     [199] = [[/esoui/art/battlegrounds/battlegroundscapturebar_teambadge_orange.dds]],
     [200] = [[/esoui/art/battlegrounds/battlegroundscapturebar_teambadge_purple.dds]],
+    [201] = [[/esoui/art/icons/store_battleground.dds]],
 }
 
 
 --The variable for the maximum of the texture icons
 FCOIS.numVars.maxTextureIcons = #FCOIS.textureVars.MARKER_TEXTURES
-if not FCOIS.numVars.maxTextureIcons or FCOIS.numVars.maxTextureIcons and FCOIS.numVars.maxTextureIcons <= 0 then
-    FCOIS.numVars.maxTextureIcons = 200
+if not FCOIS.numVars.maxTextureIcons or (FCOIS.numVars.maxTextureIcons and FCOIS.numVars.maxTextureIcons <= 0) then
+    FCOIS.numVars.maxTextureIcons = 201
 end
 
 --Additional size for the textures, if the texture got a special size
