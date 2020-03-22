@@ -2042,6 +2042,10 @@ function FCOIS.BuildAddonMenu()
 			controls =
             {
 --==============================================================================
+                {
+                    type = "description",
+                    text = locVars["options_icons_description"],
+                },
 				{
 	                type = "submenu",
 	                name = locVars["options_icons_non_gear"],
@@ -4222,6 +4226,17 @@ function FCOIS.BuildAddonMenu()
                         width="full",
                         default = FCOISdefaultSettings.contextMenuClearMarkesByShiftKey,
                     },
+                    {
+                        type = "checkbox",
+                        name = locVars["options_undo_use_different_filterpanels"],
+                        tooltip = locVars["options_undo_use_different_filterpanels_TT"],
+                        getFunc = function() return FCOISsettings.useDifferentUndoFilterPanels end,
+                        setFunc = function(value) FCOISsettings.useDifferentUndoFilterPanels = value
+                        end,
+                        disabled = function() return not FCOISsettings.showFCOISAdditionalInventoriesButton end,
+                        width="full",
+                        default = FCOISdefaultSettings.useDifferentUndoFilterPanels,
+                    },
                 },
             },
 
@@ -5423,222 +5438,6 @@ function FCOIS.BuildAddonMenu()
             controls =
             {
 
-        {
-            type = "submenu",
-            name = locVars["options_header_filters"],
-            controls =
-            {
-				{
-					type = "checkbox",
-					name = locVars["options_enable_filter_in_inventory"],
-					tooltip = locVars["options_enable_filter_in_inventory_TT"],
-					getFunc = function() return FCOISsettings.allowInventoryFilter end,
-					setFunc = function(value) FCOISsettings.allowInventoryFilter = value
-				        --Hide the filter buttons at the filter panel Id
-						FCOIS.updateFilterButtonsInInv(-1)
-		                --Unregister and reregister the inventory filter LF_INVENTORY
-		            	FCOIS.EnableFilters(-100)
-		            end,
-                    default = FCOISdefaultSettings.allowInventoryFilter,
-				},
-				{
-					type = "checkbox",
-					name = locVars["options_enable_filter_in_craftbag"],
-					tooltip = locVars["options_enable_filter_in_craftbag_TT"],
-					getFunc = function() return FCOISsettings.allowCraftBagFilter end,
-					setFunc = function(value) FCOISsettings.allowCraftBagFilter = value
-		            end,
-                    default = FCOISdefaultSettings.allowCraftBagFilter,
-				},
-				{
-					type = "checkbox",
-					name = locVars["options_enable_filter_in_bank"],
-					tooltip = locVars["options_enable_filter_in_bank_TT"],
-					getFunc = function() return FCOISsettings.allowBankFilter end,
-					setFunc = function(value) FCOISsettings.allowBankFilter = value
-		            end,
-                    default = FCOISdefaultSettings.allowBankFilter,
-				},
-				{
-					type = "checkbox",
-					name = locVars["options_enable_filter_in_guildbank"],
-					tooltip = locVars["options_enable_filter_in_guildbank_TT"],
-					getFunc = function() return FCOISsettings.allowGuildBankFilter end,
-					setFunc = function(value) FCOISsettings.allowGuildBankFilter = value
-		            end,
-                    default = FCOISdefaultSettings.allowGuildBankFilter,
-				},
-				{
-					type = "checkbox",
-					name = locVars["options_enable_filter_in_tradinghouse"],
-					tooltip = locVars["options_enable_filter_in_tradinghouse_TT"],
-					getFunc = function() return FCOISsettings.allowTradinghouseFilter end,
-					setFunc = function(value) FCOISsettings.allowTradinghouseFilter = value
-		            end,
-                    default = FCOISdefaultSettings.allowTradinghouseFilter,
-				},
-				{
-					type = "checkbox",
-					name = locVars["options_enable_filter_in_trade"],
-					tooltip = locVars["options_enable_filter_in_trade_TT"],
-					getFunc = function() return FCOISsettings.allowTradeFilter end,
-					setFunc = function(value) FCOISsettings.allowTradeFilter = value
-		            end,
-                    default = FCOISdefaultSettings.allowTradeFilter,
-				},
-				{
-					type = "checkbox",
-					name = locVars["options_enable_filter_in_mail"],
-					tooltip = locVars["options_enable_filter_in_mail_TT"],
-					getFunc = function() return FCOISsettings.allowMailFilter end,
-					setFunc = function(value) FCOISsettings.allowMailFilter = value
-		            end,
-                    default = FCOISdefaultSettings.allowMailFilter,
-				},
-				{
-					type = "checkbox",
-					name = locVars["options_enable_filter_in_store"],
-					tooltip = locVars["options_enable_filter_in_store_TT"],
-					getFunc = function() return FCOISsettings.allowVendorFilter end,
-					setFunc = function(value) FCOISsettings.allowVendorFilter = value
-		            end,
-                    default = FCOISdefaultSettings.allowVendorFilter,
-				},
-				{
-					type = "checkbox",
-					name = locVars["options_enable_filter_in_fence"],
-					tooltip = locVars["options_enable_filter_in_fence_TT"],
-					getFunc = function() return FCOISsettings.allowFenceFilter end,
-					setFunc = function(value) FCOISsettings.allowFenceFilter = value
-		            end,
-                    default = FCOISdefaultSettings.allowFenceFilter,
-				},
-				{
-					type = "checkbox",
-					name = locVars["options_enable_filter_in_launder"],
-					tooltip = locVars["options_enable_filter_in_launder_TT"],
-					getFunc = function() return FCOISsettings.allowLaunderFilter end,
-					setFunc = function(value) FCOISsettings.allowLaunderFilter = value
-		            end,
-                    default = FCOISdefaultSettings.allowLaunderFilter,
-				},
-				{
-					type = "checkbox",
-					name = locVars["options_enable_filter_in_refinement"],
-					tooltip = locVars["options_enable_filter_in_refinement_TT"],
-					getFunc = function() return FCOISsettings.allowRefinementFilter end,
-					setFunc = function(value) FCOISsettings.allowRefinementFilter = value
-		            end,
-                    default = FCOISdefaultSettings.allowRefinementFilter,
-				},
-                {
-                    type = "checkbox",
-                    name = locVars["options_enable_filter_in_jewelry_refinement"],
-                    tooltip = locVars["options_enable_filter_in_jewelry_refinement_TT"],
-                    getFunc = function() return FCOISsettings.allowJewelryRefinementFilter end,
-                    setFunc = function(value) FCOISsettings.allowJewelryRefinementFilter = value
-                    end,
-                    default = FCOISdefaultSettings.allowJewelryRefinementFilter,
-                },
-				{
-					type = "checkbox",
-					name = locVars["options_enable_filter_in_deconstruction"],
-					tooltip = locVars["options_enable_filter_in_deconstruction_TT"],
-					getFunc = function() return FCOISsettings.allowDeconstructionFilter end,
-					setFunc = function(value) FCOISsettings.allowDeconstructionFilter = value
-		            end,
-                    default = FCOISdefaultSettings.allowDeconstructionFilter,
-				},
-                {
-                    type = "checkbox",
-                    name = locVars["options_enable_filter_in_jewelry_deconstruction"],
-                    tooltip = locVars["options_enable_filter_in_jewelry_deconstruction_TT"],
-                    getFunc = function() return FCOISsettings.allowJewelryDeconstructionFilter end,
-                    setFunc = function(value) FCOISsettings.allowJewelryDeconstructionFilter = value
-                    end,
-                    default = FCOISdefaultSettings.allowJewelryDeconstructionFilter,
-                },
-				{
-					type = "checkbox",
-					name = locVars["options_enable_filter_in_improvement"],
-					tooltip = locVars["options_enable_filter_in_improvement_TT"],
-					getFunc = function() return FCOISsettings.allowImprovementFilter end,
-					setFunc = function(value) FCOISsettings.allowImprovementFilter = value
-		            end,
-                    default = FCOISdefaultSettings.allowImprovementFilter,
-				},
-                {
-                    type = "checkbox",
-                    name = locVars["options_enable_filter_in_jewelry_improvement"],
-                    tooltip = locVars["options_enable_filter_in_jewelry_improvement_TT"],
-                    getFunc = function() return FCOISsettings.allowJewelryImprovementFilter end,
-                    setFunc = function(value) FCOISsettings.allowJewelryImprovementFilter = value
-                    end,
-                    default = FCOISdefaultSettings.allowJewelryImprovementFilter,
-                },
-                {
-                    type = "checkbox",
-                    name = locVars["options_enable_filter_in_research"],
-                    tooltip = locVars["options_enable_filter_in_research_TT"],
-                    getFunc = function() return FCOISsettings.allowResearchFilter end,
-                    setFunc = function(value) FCOISsettings.allowResearchFilter = value
-                    end,
-                    default = FCOISdefaultSettings.allowResearchFilter,
-                },
-                {
-                    type = "checkbox",
-                    name = locVars["options_enable_filter_in_jewelry_research"],
-                    tooltip = locVars["options_enable_filter_in_jewelry_research_TT"],
-                    getFunc = function() return FCOISsettings.allowJewelryResearchFilter end,
-                    setFunc = function(value) FCOISsettings.allowJewelryResearchFilter = value
-                    end,
-                    default = FCOISdefaultSettings.allowJewelryResearchFilter,
-                },
-				{
-					type = "checkbox",
-					name = locVars["options_enable_filter_in_enchanting"],
-					tooltip = locVars["options_enable_filter_in_enchanting_TT"],
-					getFunc = function() return FCOISsettings.allowEnchantingFilter end,
-					setFunc = function(value) FCOISsettings.allowEnchantingFilter = value
-		            end,
-                    default = FCOISdefaultSettings.allowEnchantingFilter,
-				},
-				{
-					type = "checkbox",
-					name = locVars["options_enable_filter_in_alchemy"],
-					tooltip = locVars["options_enable_filter_in_alchemy_TT"],
-					getFunc = function() return FCOISsettings.allowAlchemyFilter end,
-					setFunc = function(value) FCOISsettings.allowAlchemyFilter = value
-		            end,
-                    default = FCOISdefaultSettings.allowAlchemyFilter,
-				},
-                {
-                    type = "checkbox",
-                    name = locVars["options_enable_filter_in_retrait"],
-                    tooltip = locVars["options_enable_filter_in_retrait_TT"],
-                    getFunc = function() return FCOISsettings.allowRetraitFilter end,
-                    setFunc = function(value) FCOISsettings.allowRetraitFilter = value
-                    end,
-                    default = FCOISdefaultSettings.allowRetraitFilter,
-                },
-		--==============================================================================
-				{
-		        	type = "header",
-					name = locVars["options_header_filter_chat"],
-			    },
-			    {
-					type = "checkbox",
-					name = locVars["options_chat_filter_status"],
-					tooltip = locVars["options_chat_filter_status_TT"],
-					getFunc = function() return FCOISsettings.showFilterStatusInChat end,
-					setFunc = function(value) FCOISsettings.showFilterStatusInChat = value
-		            end,
-                    default = FCOISdefaultSettings.showFilterStatusInChat,
-				},
-            } -- controls filters
-        }, -- submenu filters
-
-
 --==============================================================================
 --		Filter button positions
 --==============================================================================
@@ -5647,6 +5446,221 @@ function FCOIS.BuildAddonMenu()
 			name = locVars["options_header_filter_buttons"],
             controls =
             {
+                {
+                    type = "submenu",
+                    name = locVars["options_header_filters"],
+                    controls =
+                    {
+                        {
+                            type = "checkbox",
+                            name = locVars["options_enable_filter_in_inventory"],
+                            tooltip = locVars["options_enable_filter_in_inventory_TT"],
+                            getFunc = function() return FCOISsettings.allowInventoryFilter end,
+                            setFunc = function(value) FCOISsettings.allowInventoryFilter = value
+                                --Hide the filter buttons at the filter panel Id
+                                FCOIS.updateFilterButtonsInInv(-1)
+                                --Unregister and reregister the inventory filter LF_INVENTORY
+                                FCOIS.EnableFilters(-100)
+                            end,
+                            default = FCOISdefaultSettings.allowInventoryFilter,
+                        },
+                        {
+                            type = "checkbox",
+                            name = locVars["options_enable_filter_in_craftbag"],
+                            tooltip = locVars["options_enable_filter_in_craftbag_TT"],
+                            getFunc = function() return FCOISsettings.allowCraftBagFilter end,
+                            setFunc = function(value) FCOISsettings.allowCraftBagFilter = value
+                            end,
+                            default = FCOISdefaultSettings.allowCraftBagFilter,
+                        },
+                        {
+                            type = "checkbox",
+                            name = locVars["options_enable_filter_in_bank"],
+                            tooltip = locVars["options_enable_filter_in_bank_TT"],
+                            getFunc = function() return FCOISsettings.allowBankFilter end,
+                            setFunc = function(value) FCOISsettings.allowBankFilter = value
+                            end,
+                            default = FCOISdefaultSettings.allowBankFilter,
+                        },
+                        {
+                            type = "checkbox",
+                            name = locVars["options_enable_filter_in_guildbank"],
+                            tooltip = locVars["options_enable_filter_in_guildbank_TT"],
+                            getFunc = function() return FCOISsettings.allowGuildBankFilter end,
+                            setFunc = function(value) FCOISsettings.allowGuildBankFilter = value
+                            end,
+                            default = FCOISdefaultSettings.allowGuildBankFilter,
+                        },
+                        {
+                            type = "checkbox",
+                            name = locVars["options_enable_filter_in_tradinghouse"],
+                            tooltip = locVars["options_enable_filter_in_tradinghouse_TT"],
+                            getFunc = function() return FCOISsettings.allowTradinghouseFilter end,
+                            setFunc = function(value) FCOISsettings.allowTradinghouseFilter = value
+                            end,
+                            default = FCOISdefaultSettings.allowTradinghouseFilter,
+                        },
+                        {
+                            type = "checkbox",
+                            name = locVars["options_enable_filter_in_trade"],
+                            tooltip = locVars["options_enable_filter_in_trade_TT"],
+                            getFunc = function() return FCOISsettings.allowTradeFilter end,
+                            setFunc = function(value) FCOISsettings.allowTradeFilter = value
+                            end,
+                            default = FCOISdefaultSettings.allowTradeFilter,
+                        },
+                        {
+                            type = "checkbox",
+                            name = locVars["options_enable_filter_in_mail"],
+                            tooltip = locVars["options_enable_filter_in_mail_TT"],
+                            getFunc = function() return FCOISsettings.allowMailFilter end,
+                            setFunc = function(value) FCOISsettings.allowMailFilter = value
+                            end,
+                            default = FCOISdefaultSettings.allowMailFilter,
+                        },
+                        {
+                            type = "checkbox",
+                            name = locVars["options_enable_filter_in_store"],
+                            tooltip = locVars["options_enable_filter_in_store_TT"],
+                            getFunc = function() return FCOISsettings.allowVendorFilter end,
+                            setFunc = function(value) FCOISsettings.allowVendorFilter = value
+                            end,
+                            default = FCOISdefaultSettings.allowVendorFilter,
+                        },
+                        {
+                            type = "checkbox",
+                            name = locVars["options_enable_filter_in_fence"],
+                            tooltip = locVars["options_enable_filter_in_fence_TT"],
+                            getFunc = function() return FCOISsettings.allowFenceFilter end,
+                            setFunc = function(value) FCOISsettings.allowFenceFilter = value
+                            end,
+                            default = FCOISdefaultSettings.allowFenceFilter,
+                        },
+                        {
+                            type = "checkbox",
+                            name = locVars["options_enable_filter_in_launder"],
+                            tooltip = locVars["options_enable_filter_in_launder_TT"],
+                            getFunc = function() return FCOISsettings.allowLaunderFilter end,
+                            setFunc = function(value) FCOISsettings.allowLaunderFilter = value
+                            end,
+                            default = FCOISdefaultSettings.allowLaunderFilter,
+                        },
+                        {
+                            type = "checkbox",
+                            name = locVars["options_enable_filter_in_refinement"],
+                            tooltip = locVars["options_enable_filter_in_refinement_TT"],
+                            getFunc = function() return FCOISsettings.allowRefinementFilter end,
+                            setFunc = function(value) FCOISsettings.allowRefinementFilter = value
+                            end,
+                            default = FCOISdefaultSettings.allowRefinementFilter,
+                        },
+                        {
+                            type = "checkbox",
+                            name = locVars["options_enable_filter_in_jewelry_refinement"],
+                            tooltip = locVars["options_enable_filter_in_jewelry_refinement_TT"],
+                            getFunc = function() return FCOISsettings.allowJewelryRefinementFilter end,
+                            setFunc = function(value) FCOISsettings.allowJewelryRefinementFilter = value
+                            end,
+                            default = FCOISdefaultSettings.allowJewelryRefinementFilter,
+                        },
+                        {
+                            type = "checkbox",
+                            name = locVars["options_enable_filter_in_deconstruction"],
+                            tooltip = locVars["options_enable_filter_in_deconstruction_TT"],
+                            getFunc = function() return FCOISsettings.allowDeconstructionFilter end,
+                            setFunc = function(value) FCOISsettings.allowDeconstructionFilter = value
+                            end,
+                            default = FCOISdefaultSettings.allowDeconstructionFilter,
+                        },
+                        {
+                            type = "checkbox",
+                            name = locVars["options_enable_filter_in_jewelry_deconstruction"],
+                            tooltip = locVars["options_enable_filter_in_jewelry_deconstruction_TT"],
+                            getFunc = function() return FCOISsettings.allowJewelryDeconstructionFilter end,
+                            setFunc = function(value) FCOISsettings.allowJewelryDeconstructionFilter = value
+                            end,
+                            default = FCOISdefaultSettings.allowJewelryDeconstructionFilter,
+                        },
+                        {
+                            type = "checkbox",
+                            name = locVars["options_enable_filter_in_improvement"],
+                            tooltip = locVars["options_enable_filter_in_improvement_TT"],
+                            getFunc = function() return FCOISsettings.allowImprovementFilter end,
+                            setFunc = function(value) FCOISsettings.allowImprovementFilter = value
+                            end,
+                            default = FCOISdefaultSettings.allowImprovementFilter,
+                        },
+                        {
+                            type = "checkbox",
+                            name = locVars["options_enable_filter_in_jewelry_improvement"],
+                            tooltip = locVars["options_enable_filter_in_jewelry_improvement_TT"],
+                            getFunc = function() return FCOISsettings.allowJewelryImprovementFilter end,
+                            setFunc = function(value) FCOISsettings.allowJewelryImprovementFilter = value
+                            end,
+                            default = FCOISdefaultSettings.allowJewelryImprovementFilter,
+                        },
+                        {
+                            type = "checkbox",
+                            name = locVars["options_enable_filter_in_research"],
+                            tooltip = locVars["options_enable_filter_in_research_TT"],
+                            getFunc = function() return FCOISsettings.allowResearchFilter end,
+                            setFunc = function(value) FCOISsettings.allowResearchFilter = value
+                            end,
+                            default = FCOISdefaultSettings.allowResearchFilter,
+                        },
+                        {
+                            type = "checkbox",
+                            name = locVars["options_enable_filter_in_jewelry_research"],
+                            tooltip = locVars["options_enable_filter_in_jewelry_research_TT"],
+                            getFunc = function() return FCOISsettings.allowJewelryResearchFilter end,
+                            setFunc = function(value) FCOISsettings.allowJewelryResearchFilter = value
+                            end,
+                            default = FCOISdefaultSettings.allowJewelryResearchFilter,
+                        },
+                        {
+                            type = "checkbox",
+                            name = locVars["options_enable_filter_in_enchanting"],
+                            tooltip = locVars["options_enable_filter_in_enchanting_TT"],
+                            getFunc = function() return FCOISsettings.allowEnchantingFilter end,
+                            setFunc = function(value) FCOISsettings.allowEnchantingFilter = value
+                            end,
+                            default = FCOISdefaultSettings.allowEnchantingFilter,
+                        },
+                        {
+                            type = "checkbox",
+                            name = locVars["options_enable_filter_in_alchemy"],
+                            tooltip = locVars["options_enable_filter_in_alchemy_TT"],
+                            getFunc = function() return FCOISsettings.allowAlchemyFilter end,
+                            setFunc = function(value) FCOISsettings.allowAlchemyFilter = value
+                            end,
+                            default = FCOISdefaultSettings.allowAlchemyFilter,
+                        },
+                        {
+                            type = "checkbox",
+                            name = locVars["options_enable_filter_in_retrait"],
+                            tooltip = locVars["options_enable_filter_in_retrait_TT"],
+                            getFunc = function() return FCOISsettings.allowRetraitFilter end,
+                            setFunc = function(value) FCOISsettings.allowRetraitFilter = value
+                            end,
+                            default = FCOISdefaultSettings.allowRetraitFilter,
+                        },
+                --==============================================================================
+                        {
+                            type = "header",
+                            name = locVars["options_header_filter_chat"],
+                        },
+                        {
+                            type = "checkbox",
+                            name = locVars["options_chat_filter_status"],
+                            tooltip = locVars["options_chat_filter_status_TT"],
+                            getFunc = function() return FCOISsettings.showFilterStatusInChat end,
+                            setFunc = function(value) FCOISsettings.showFilterStatusInChat = value
+                            end,
+                            default = FCOISdefaultSettings.showFilterStatusInChat,
+                        },
+                    } -- controls filters
+                }, -- submenu filters
+
                 { -- Begin Submenu filter button position data
                     type = "submenu",
                     name = locVars["options_header_filter_buttons_position"],
@@ -6864,17 +6878,6 @@ function FCOIS.BuildAddonMenu()
                         disabled = function() return not FCOISsettings.showFCOISAdditionalInventoriesButton end,
 			            default = FCOISdefaultSettings.colorizeFCOISAdditionalInventoriesButton,
 					},
-                    {
-                        type = "checkbox",
-                        name = locVars["options_undo_use_different_filterpanels"],
-                        tooltip = locVars["options_undo_use_different_filterpanels_TT"],
-                        getFunc = function() return FCOISsettings.useDifferentUndoFilterPanels end,
-                        setFunc = function(value) FCOISsettings.useDifferentUndoFilterPanels = value
-                        end,
-                        disabled = function() return not FCOISsettings.showFCOISAdditionalInventoriesButton end,
-                        width="full",
-                        default = FCOISdefaultSettings.useDifferentUndoFilterPanels,
-                    },
 --[[
                     {
                         type = "slider",

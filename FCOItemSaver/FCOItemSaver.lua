@@ -19,7 +19,7 @@
 ---------------------------------------------------------------------
 --[ToDo list] --
 --____________________________
--- Current max bugs: 57
+-- Current max bugs: 58
 --____________________________
 
 -- 1) 2019-01-14 - Bugfix - Baertram
@@ -88,6 +88,10 @@ EsoUI/Libraries/Globals/Globals.lua:51: in function 'OnGlobalMouseDown'
 -- 55) 2020-03-10 - schaumamoi comments within game
 -- Recharging weapons does not work as marked soulgems in ZO_Dialog is protected
 
+-- 58) 2020-03-11 - wambo comments within esoui
+-- Using dynamic icons submenu will show the dynamic icons submenu out of bounds and not clickable
+
+
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
@@ -97,6 +101,13 @@ EsoUI/Libraries/Globals/Globals.lua:51: in function 'OnGlobalMouseDown'
 --#55: Soulgems are not protected in the weapon recharge dialog anymore, even if marked
 --#56: LibFeedback error message
 --#57: SCENE_MANAGER error message upon login, if other addons used the scanner like ResearchAssistant
+
+--[Changed]
+--Settings menu contains some more descriptions at the marker icons
+--Additional inventory context menu "flag" texts will show the flag icon in the text now
+--Changed colors and icons submenus to be the same for normal, gear and dynamic (1 submenu containing the icons, 1 to enable/disable them)
+--Changed some other settings to sue submenus as well, instead of endless long lists
+--Moved Undo settings from additonal buttons->additional invenmtory flag submenu to marks->undo submenu
 
 --[Added]
 --
