@@ -19,7 +19,7 @@
 ---------------------------------------------------------------------
 --[ToDo list] --
 --____________________________
--- Current max bugs: 61
+-- Current max bugs: 62
 --____________________________
 
 -- 1) 2019-01-14 - Bugfix - Baertram
@@ -98,20 +98,23 @@ EsoUI/Libraries/Globals/Globals.lua:51: in function 'OnGlobalMouseDown'
 --Since last update 1.7.9 - New version: 1.8.0
 ---------------------------------------------------------------------
 --[Fixed]
+--Fixed translations and typos in settings
 --#55: Soulgems are not protected in the weapon recharge dialog anymore, even if marked
 --#56: LibFeedback error message
 --#57: SCENE_MANAGER error message upon login, if other addons used the scanner like ResearchAssistant
 --#59: Junk all 'Sell' marked items keybind fixed
 --#60: Cycle 'standard' keybind fixed
 --#61: Keybinds will respect the researchability of an item and the research setting of the marker icon now (skips non-researchable items with researchable marker icons)
-
+--#62: Exchanged all for i=1 to numMarkerIcons to use the constant FCOIS_CON_ICON_LOCK instead of 1
 
 --[Changed]
---Settings menu contains some more descriptions at the marker icons
+--Settings menu contains some more descriptions at e.g. the marker icons
 --Additional inventory context menu "flag" texts will show the flag icon in the text now
 --Changed colors and icons submenus to be the same for normal, gear and dynamic (1 submenu containing the icons, 1 to enable/disable them)
---Changed some other settings to sue submenus as well, instead of endless long lists
---Moved Undo settings from additonal buttons->additional invenmtory flag submenu to marks->undo submenu
+--Changed some other settings to use submenus as well, instead of endless long lists
+--Moved Undo settings from additional buttons->additional invenmtory flag submenu to marks->undo submenu
+--Moved settings of keybinds to main settings page submenus
+--Moved settings of 'Deactivated marker icons' directly to 'Icons, colors, ...' submenu
 
 --[Added]
 --

@@ -1376,7 +1376,7 @@ FCOIS.localizationVars.localizationAll = {
         ["options_keybind_move_item_to_junk_enabled"] = "Zum Trödel schieben",
         ["options_keybind_move_item_to_junk_enabled_TT"] = "Tastenkombination aktivieren: Den ausgewählten Gegenstand zum Trödel veschieben.",
         ["options_keybind_move_item_to_junk_add_sell_icon"] = "Trödel: Auto. Verkaufen Symbol",
-        ["options_keybind_move_item_to_junk_add_sell_icon_TT"] = "Automatisch alle Markierungen entfernen und das Verkaufen Symbol auf dem Gegenstand setzen, welcher per Tastenkmbination zum Trödel verschoben wird.",
+        ["options_keybind_move_item_to_junk_add_sell_icon_TT"] = "Automatisch alle Markierungen entfernen und das Verkaufen Symbol auf dem Gegenstand setzen, welcher per Tastenkombination zum Trödel verschoben wird.",
 
 		["options_header_sort_order"]			= "Symbol Sortier Reihenfolge",
 		["options_icon_sort_order_TT"]     = "Selektiere das Symbol aus der Auswahlliste welches du an der Position (Nummer, welche links angezeigt wird) im Kontextmenü sehen möchtest.\n\nRote Zeilen sind deaktivierte Symbole. Diese werden nicht im Kontextmenü angezeigt!",
