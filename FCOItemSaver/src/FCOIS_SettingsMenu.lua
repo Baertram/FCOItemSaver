@@ -748,7 +748,7 @@ function FCOIS.BuildAddonMenu()
         local createdIconSortDDBoxes = {}
 		--Static values
 		--Static dropdown entries
-        for FCOISiconNr=1, numFilterIcons, 1 do
+        for FCOISiconNr=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
 			local name = locVars["options_icon_sort_" .. tostring(FCOISiconNr)]
 			local tooltip = locVars["options_icon_sort_order_TT"]
             if name ~= nil and name ~= "" then
@@ -797,7 +797,7 @@ function FCOIS.BuildAddonMenu()
 		--Static dropdown entries
         local choicesValuesList = {}
         local choicesTooltipsList = {}
-        for FCOISiconNr=1, numFilterIcons, 1 do
+        for FCOISiconNr=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
 			local iconDescription = "FCOItemSaver icon " .. tostring(FCOISiconNr)
 	        --Add each FCOIS icon description to the list
             choicesTooltipsList[FCOISiconNr] = iconDescription
@@ -1857,7 +1857,7 @@ function FCOIS.BuildAddonMenu()
         if panel == FCOIS.FCOSettingsPanel then
     --d("[FCOIS] SettingsPanel Created")
             --Update the filterIcon textures etc.
-            for i = 1, numFilterIcons do
+            for i = FCOIS_CON_ICON_LOCK, numFilterIcons do
                 InitPreviewIcon(i)
             end
             --Check if the user set ordering of context menu entries (marker icons) is valid, else use the default sorting
@@ -4024,7 +4024,7 @@ function FCOIS.BuildAddonMenu()
 			                width="full",
 			                disabled = function() return false end,
 			                default = FCOISdefaultSettings.numMaxDynamicIconsUsable,
-			                --requiresReload = true,
+			                requiresReload = true,
 			            },
 
 			--==============================================================================
@@ -4053,24 +4053,6 @@ function FCOIS.BuildAddonMenu()
 					name = locVars["options_header_icon_options"],
 					controls =
 					{
-				--========= DEACTIVATED ICONS OPTIONS============================================
-						{
-							type = "submenu",
-							name = locVars["options_header_deactivated_symbols"],
-				            controls =
-				            {
-								{
-									type = "checkbox",
-									name = locVars["options_deactivated_symbols_apply_anti_checks"],
-									tooltip = locVars["options_deactivated_symbols_apply_anti_checks_TT"],
-									getFunc = function() return FCOISsettings.checkDeactivatedIcons end,
-									setFunc = function(value) FCOISsettings.checkDeactivatedIcons = value
-						            end,
-			                        default = FCOISdefaultSettings.checkDeactivatedIcons,
-								},
-				            } -- controls deactivated items
-						}, -- submenu deactivated items
-
 			--========= ICON SORT OPTIONS ==================================================
 			-- FCOIS Icon sort order
 							{
@@ -4081,126 +4063,169 @@ function FCOIS.BuildAddonMenu()
 							},
 
 		    --========= ICON POSITIONS ==================================================
-						{
-							type = "submenu",
-							name = locVars["options_header_pos"],
-				            controls =
-				            {
-								{
-									type = "slider",
-									name = locVars["options_pos_inventories"],
-									tooltip = locVars["options_pos_inventories_TT"],
-									min = -10,
-									max = 540,
-			                        autoSelect = true,
-									getFunc = function() return FCOISsettings.iconPosition.x end,
-									setFunc = function(offset)
-											FCOISsettings.iconPosition.x = offset
-											--Set global variable to update the marker colors and textures
-							                FCOIS.preventerVars.gUpdateMarkersNow = true
-										end,
-						            width="full",
-			                        default = FCOISdefaultSettings.iconPosition.x,
-								},
-								{
-									type = "slider",
-									name = locVars["options_pos_crafting"],
-									tooltip = locVars["options_pos_crafting_TT"],
-									min = -10,
-									max = 540,
-			                        autoSelect = true,
-									getFunc = function() return FCOISsettings.iconPositionCrafting.x end,
-									setFunc = function(offset)
-											FCOISsettings.iconPositionCrafting.x = offset
-											--Set global variable to update the marker colors and textures
-							                FCOIS.preventerVars.gUpdateMarkersNow = true
-										end,
-						            width="full",
-			                        default = FCOISdefaultSettings.iconPositionCrafting.x,
-								},
-								{
-									type = "slider",
-									name = locVars["options_pos_character_x"],
-									tooltip = locVars["options_pos_character_x_TT"],
-									min = -15,
-									max = 40,
-			                        autoSelect = true,
-									getFunc = function() return FCOISsettings.iconPositionCharacter.x end,
-									setFunc = function(offset)
-											FCOISsettings.iconPositionCharacter.x = offset
-											--Set global variable to update the marker colors and textures
-							                FCOIS.preventerVars.gUpdateMarkersNow = true
-										end,
-						            width="half",
-			                        default = FCOISdefaultSettings.iconPositionCharacter.x,
-								},
-								{
-									type = "slider",
-									name = locVars["options_pos_character_y"],
-									tooltip = locVars["options_pos_character_y_TT"],
-									min = -40,
-									max = 15,
-			                        autoSelect = true,
-									getFunc = function() return FCOISsettings.iconPositionCharacter.y end,
-									setFunc = function(offset)
-											FCOISsettings.iconPositionCharacter.y = offset
-											--Set global variable to update the marker colors and textures
-							                FCOIS.preventerVars.gUpdateMarkersNow = true
-										end,
-						            width="half",
-			                        default = FCOISdefaultSettings.iconPositionCharacter.y,
-								},
-				            } -- controls positions
-						}, -- submenu positions
+                            {
+                                type = "submenu",
+                                name = locVars["options_header_pos"],
+                                controls =
+                                {
+                                    {
+                                        type = "slider",
+                                        name = locVars["options_pos_inventories"],
+                                        tooltip = locVars["options_pos_inventories_TT"],
+                                        min = -10,
+                                        max = 540,
+                                        autoSelect = true,
+                                        getFunc = function() return FCOISsettings.iconPosition.x end,
+                                        setFunc = function(offset)
+                                                FCOISsettings.iconPosition.x = offset
+                                                --Set global variable to update the marker colors and textures
+                                                FCOIS.preventerVars.gUpdateMarkersNow = true
+                                            end,
+                                        width="full",
+                                        default = FCOISdefaultSettings.iconPosition.x,
+                                    },
+                                    {
+                                        type = "slider",
+                                        name = locVars["options_pos_crafting"],
+                                        tooltip = locVars["options_pos_crafting_TT"],
+                                        min = -10,
+                                        max = 540,
+                                        autoSelect = true,
+                                        getFunc = function() return FCOISsettings.iconPositionCrafting.x end,
+                                        setFunc = function(offset)
+                                                FCOISsettings.iconPositionCrafting.x = offset
+                                                --Set global variable to update the marker colors and textures
+                                                FCOIS.preventerVars.gUpdateMarkersNow = true
+                                            end,
+                                        width="full",
+                                        default = FCOISdefaultSettings.iconPositionCrafting.x,
+                                    },
+                                    {
+                                        type = "slider",
+                                        name = locVars["options_pos_character_x"],
+                                        tooltip = locVars["options_pos_character_x_TT"],
+                                        min = -15,
+                                        max = 40,
+                                        autoSelect = true,
+                                        getFunc = function() return FCOISsettings.iconPositionCharacter.x end,
+                                        setFunc = function(offset)
+                                                FCOISsettings.iconPositionCharacter.x = offset
+                                                --Set global variable to update the marker colors and textures
+                                                FCOIS.preventerVars.gUpdateMarkersNow = true
+                                            end,
+                                        width="half",
+                                        default = FCOISdefaultSettings.iconPositionCharacter.x,
+                                    },
+                                    {
+                                        type = "slider",
+                                        name = locVars["options_pos_character_y"],
+                                        tooltip = locVars["options_pos_character_y_TT"],
+                                        min = -40,
+                                        max = 15,
+                                        autoSelect = true,
+                                        getFunc = function() return FCOISsettings.iconPositionCharacter.y end,
+                                        setFunc = function(offset)
+                                                FCOISsettings.iconPositionCharacter.y = offset
+                                                --Set global variable to update the marker colors and textures
+                                                FCOIS.preventerVars.gUpdateMarkersNow = true
+                                            end,
+                                        width="half",
+                                        default = FCOISdefaultSettings.iconPositionCharacter.y,
+                                    },
+                                } -- controls positions
+                            }, -- submenu positions
 
 			 		} -- controls icon options
 				}, -- submenu icon options
+    --========= DEACTIVATED ICONS OPTIONS============================================
 
-		--========= KEYBINDS =======================================================
-				{
-					type = "submenu",
-					name = locVars["options_header_keybind_options"],
-		            controls = {
-				        {
-							type = "checkbox",
-							name = locVars["options_icon_cycle_on_keybind"],
-							tooltip = locVars["options_icon_cycle_on_keybind_TT"],
-							getFunc = function() return FCOISsettings.cycleMarkerSymbolOnKeybind end,
-							setFunc = function(value) FCOISsettings.cycleMarkerSymbolOnKeybind = value
-				            end,
-				            width="full",
-						},
-						{
-							type = 'dropdown',
-							name = locVars["options_icon_standard_on_keybind"],
-							tooltip = locVars["options_icon_standard_on_keybind_TT"],
-							choices = iconsList,
-		                    choicesValues = iconsListValues,
-		                    scrollable = true,
-				            getFunc = function() return FCOISsettings.standardIconOnKeybind
-		                    end,
-				            setFunc = function(value)
-		                        FCOISsettings.standardIconOnKeybind = value
-				            end,
-				            default = iconsList[FCOISdefaultSettings.standardIconOnKeybind],
-				            reference = "FCOItemSaver_Standard_Icon_On_Keybind_Dropdown",
-						},
-		                --Keybind for "Move all 'marked for sell' to junk"
-		                {
-		                    type = "checkbox",
-		                    name = locVars["options_keybind_move_marked_for_sell_to_junk_enabled"],
-		                    tooltip = locVars["options_keybind_move_marked_for_sell_to_junk_enabled_TT"],
-		                    getFunc = function() return FCOISsettings.keybindMoveMarkedForSellToJunkEnabled end,
-		                    setFunc = function(value) FCOISsettings.keybindMoveMarkedForSellToJunkEnabled = value
-		                    end,
-		                    default = FCOISdefaultSettings.keybindMoveMarkedForSellToJunkEnabled,
-		                    width="full",
-		                },
-					},  -- controls keybinds
-		        },  -- submenu keybinds
+                {
+                    type = "submenu",
+                    name = locVars["options_header_deactivated_symbols"],
+                    controls =
+                    {
+                        {
+                            type = "checkbox",
+                            name = locVars["options_deactivated_symbols_apply_anti_checks"],
+                            tooltip = locVars["options_deactivated_symbols_apply_anti_checks_TT"],
+                            getFunc = function() return FCOISsettings.checkDeactivatedIcons end,
+                            setFunc = function(value) FCOISsettings.checkDeactivatedIcons = value
+                            end,
+                            default = FCOISdefaultSettings.checkDeactivatedIcons,
+                        },
+                    } -- controls deactivated items
+                }, -- submenu deactivated items
 
 			}, -- controls color and icons
 		}, -- submenu color and icons
+
+--==============================================================================
+-- KEBYINDs
+--==============================================================================
+        {
+            type = "submenu",
+            name = locVars["options_header_keybind_options"],
+            controls = {
+                {
+                    type = 'dropdown',
+                    name = locVars["options_icon_standard_on_keybind"],
+                    tooltip = locVars["options_icon_standard_on_keybind_TT"],
+                    choices = iconsList,
+                    choicesValues = iconsListValues,
+                    scrollable = true,
+                    getFunc = function() return FCOISsettings.standardIconOnKeybind
+                    end,
+                    setFunc = function(value)
+                        FCOISsettings.standardIconOnKeybind = value
+                    end,
+                    default = iconsList[FCOISdefaultSettings.standardIconOnKeybind],
+                    reference = "FCOItemSaver_Standard_Icon_On_Keybind_Dropdown",
+                    disabled = function() return FCOISsettings.cycleMarkerSymbolOnKeybind end,
+                },
+                {
+                    type = "checkbox",
+                    name = locVars["options_icon_cycle_on_keybind"],
+                    tooltip = locVars["options_icon_cycle_on_keybind_TT"],
+                    getFunc = function() return FCOISsettings.cycleMarkerSymbolOnKeybind end,
+                    setFunc = function(value) FCOISsettings.cycleMarkerSymbolOnKeybind = value
+                    end,
+                    width="full",
+                },
+                --Keybind for "Move all 'marked for sell' to junk"
+                {
+                    type = "checkbox",
+                    name = locVars["options_keybind_move_marked_for_sell_to_junk_enabled"],
+                    tooltip = locVars["options_keybind_move_marked_for_sell_to_junk_enabled_TT"],
+                    getFunc = function() return FCOISsettings.keybindMoveMarkedForSellToJunkEnabled end,
+                    setFunc = function(value) FCOISsettings.keybindMoveMarkedForSellToJunkEnabled = value
+                    end,
+                    default = FCOISdefaultSettings.keybindMoveMarkedForSellToJunkEnabled,
+                    width="full",
+                },
+                --Keybind for "Move item to junk"
+                {
+                    type = "checkbox",
+                    name = locVars["options_keybind_move_item_to_junk_enabled"],
+                    tooltip = locVars["options_keybind_move_item_to_junk_enabled_TT"],
+                    getFunc = function() return FCOISsettings.keybindMoveItemToJunkEnabled end,
+                    setFunc = function(value) FCOISsettings.keybindMoveItemToJunkEnabled = value
+                    end,
+                    default = FCOISdefaultSettings.keybindMoveItemToJunkEnabled,
+                    width="half",
+                },
+                {
+                    type = "checkbox",
+                    name = locVars["options_keybind_move_item_to_junk_add_sell_icon"],
+                    tooltip = locVars["options_keybind_move_item_to_junk_add_sell_icon_TT"],
+                    getFunc = function() return FCOISsettings.keybindMoveItemToJunkAddSellIcon end,
+                    setFunc = function(value) FCOISsettings.keybindMoveItemToJunkAddSellIcon = value
+                    end,
+                    default = FCOISdefaultSettings.keybindMoveItemToJunkAddSellIcon,
+                    width="half",
+                    disabled = function() return not FCOISsettings.keybindMoveItemToJunkEnabled end,
+                },
+            },  -- controls keybinds
+        },  -- submenu keybinds
 
 --==============================================================================
 -- MARKINGs

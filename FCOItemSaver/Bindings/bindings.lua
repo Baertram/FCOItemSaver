@@ -78,7 +78,7 @@ function FCOIS.InitializeInventoryKeybind()
         alignment = KEYBIND_STRIP_ALIGN_CENTER,
         {
             name = GetString(SI_BINDING_NAME_FCOIS_JUNK_ALL_SELL),
-            keybind = "JUNK_ALL_SELL",
+            keybind = "FCOIS_JUNK_ALL_SELL",
             callback = JunkAllSellMarkedItems,
             visible = UpdateAndDisplayJunkSellKeybind,
         },

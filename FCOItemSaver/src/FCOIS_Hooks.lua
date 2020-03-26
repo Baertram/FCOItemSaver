@@ -135,7 +135,7 @@ local function OnScrollListRowSetupCallback(rowControl, data)
     local settings = FCOIS.settingsVars.settings
     local iconVars = FCOIS.iconVars
     local textureVars = FCOIS.textureVars
-    for i = 1, numFilterIcons, 1 do
+    for i = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
         local iconData = settings.icon[i]
         FCOIS.CreateMarkerControl(rowControl, i, iconData.size or iconVars.gIconWidth, iconData.size or iconVars.gIconWidth, textureVars.MARKER_TEXTURES[iconData.texture])
     end
@@ -532,7 +532,7 @@ function FCOIS.CreateHooks()
         local useSubContextMenu     = settings.useSubContextMenu
         local _, countDynIconsEnabled = FCOIS.countMarkerIconsEnabled()
         local useDynSubContextMenu  = (settings.useDynSubMenuMaxCount > 0 and  countDynIconsEnabled >= settings.useDynSubMenuMaxCount) or false
-        for iconId = 1, numFilterIcons, 1 do
+        for iconId = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
             --Check if the icon (including gear sets) is enabled
             if settings.isIconEnabled[iconId] then
                 --Re-order the context menu entries by defaults, or with user settings
@@ -573,7 +573,7 @@ function FCOIS.CreateHooks()
         if contextMenuEntriesAdded > 0 then
             local addedCounter = 0
             FCOIS.preventerVars.buildingInvContextMenuEntries = true
-            for j = 1, numFilterIcons, 1 do
+            for j = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
                 if FCOcontextMenu[j] ~= nil then
                     addedCounter = addedCounter + 1
                     --Is the currently added entry with AddMark the "last one in this context menu"?
@@ -796,7 +796,7 @@ function FCOIS.CreateHooks()
         local textureVars = FCOIS.textureVars
 
         -- Create/Update all the icons for the current dialog row
-        for iconNumb = 1, numFilterIcons, 1 do
+        for iconNumb = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
             local iconData = settings.icon[iconNumb]
             FCOIS.CreateMarkerControl(rowControl, iconNumb, iconData.size or iconVars.gIconWidth, iconData.size or iconVars.gIconWidth, textureVars.MARKER_TEXTURES[iconData.texture])
         end -- for i = 1, numFilterIcons, 1 do
@@ -815,7 +815,7 @@ function FCOIS.CreateHooks()
         local disableControl = false
 
         -- Check the rowControl if the item is marked and update the OnMouseUp functions and the color of the item row then
-        for iconId = 1, numFilterIcons, 1 do
+        for iconId = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
             local iconIsProtected = FCOIS.checkIfItemIsProtected(iconId, myItemInstanceIdOfControl)
 
             --Special research icon handling
@@ -900,7 +900,7 @@ function FCOIS.CreateHooks()
                 local userOrderValid = FCOIS.checkIfUserContextMenuSortOrderValid()
                 local contextMenuEntriesAdded = 0
                 --check each iconId and build a sorted context menu then
-                for iconId = 1, numFilterIcons, 1 do
+                for iconId = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
                     --Check if the icon (including gear sets) is enabled
                     if settings.isIconEnabled[iconId] then
                         --Re-order the context menu entries by defaults, or with user settings
@@ -932,7 +932,7 @@ function FCOIS.CreateHooks()
                     --Clear the menu completely (should be empty by default as it does not exist on the dialogs)
                     ClearMenu()
                     --Add the context menu entries now
-                    for j = 1, numFilterIcons, 1 do
+                    for j = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
                         if FCOcontextMenu[j] ~= nil then
                             --FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, useSubMenu)
                             --Increase the global counter for the added context menu entries so the function FCOIS.AddMark can react on it

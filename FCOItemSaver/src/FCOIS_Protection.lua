@@ -349,7 +349,7 @@ function FCOIS.DestroySelectionHandler(bag, slot, echo, parentControl)
     local id = FCOIS.MyGetItemInstanceIdNoControl(bag, slot)
 
     -- if item is in any protection list, warn user
-    for iconIdToCheck=1, numFilterIcons, 1 do
+    for iconIdToCheck=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
         if( FCOIS.checkIfItemIsProtected(iconIdToCheck, id) ) then
             --Check if the anti-settings are enabled (and if a dynamic icon is used)
             local isProtectedIcon, isProtectedDestroyIcon = FCOIS.checkIfProtectedSettingsEnabled(FCOIS.gFilterWhere, iconIdToCheck)
@@ -534,7 +534,7 @@ function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChat
     -- If item is in any protection list, warn user.
     -- First check all marker icons on the item now:
     local mappedIsDynIcon = FCOIS.mappingVars.iconIsDynamic
-    for iconIdToCheck=1, numFilterIcons, 1 do
+    for iconIdToCheck=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
         if settings.debug then FCOIS.debugMessage("[ItemSelectionHandler]",">icon: " .. iconIdToCheck, true, FCOIS_DEBUG_DEPTH_SPAM) end
 --d("[FCOIS]ItemSelectionHandler - icon: " .. iconIdToCheck)
         --Check if the item is marked with the icon
@@ -748,7 +748,7 @@ function FCOIS.DeconstructionSelectionHandler(bag, slot, echo, overrideChatOutpu
     local isAnyIconProtected = false
     local markedWithOneIcon = false
     -- if item is in any protection list, warn user
-    for iconToCheck=1, numFilterIcons, 1 do
+    for iconToCheck=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
         --d(">checking icon: " .. iconToCheck)
         --Is the item marked with an icon?
         if FCOIS.checkIfItemIsProtected(iconToCheck, id) then

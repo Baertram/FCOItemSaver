@@ -291,6 +291,8 @@ function FCOIS.buildDefaultSettings()
 		autoMarkKnownRecipesIconNr = FCOIS_CON_ICON_SELL_AT_GUILDSTORE,
 		sortIconsInAdditionalInvFlagContextMenu = false,
 		keybindMoveMarkedForSellToJunkEnabled = true,
+		keybindMoveItemToJunkEnabled = false,
+		keybindMoveItemToJunkAddSellIcon = false,
     }
     --Local constant values for speed-up
     local numLibFiltersFilterPanelIds   = FCOIS.numVars.gFCONumFilterInventoryTypes
@@ -342,7 +344,7 @@ function FCOIS.buildDefaultSettings()
 		["left"] 	= 0,
 		["top"] 	= 0,
 	}
-	for filterIconHelper = 1, numFilterIcons, 1 do
+	for filterIconHelper = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
        --Marker icons in inventories
        	FCOIS.settingsVars.defaults.markedItems[filterIconHelper] 	= {}
         --Defaults for filter button offsets

@@ -19,7 +19,7 @@
 ---------------------------------------------------------------------
 --[ToDo list] --
 --____________________________
--- Current max bugs: 58
+-- Current max bugs: 61
 --____________________________
 
 -- 1) 2019-01-14 - Bugfix - Baertram
@@ -101,6 +101,10 @@ EsoUI/Libraries/Globals/Globals.lua:51: in function 'OnGlobalMouseDown'
 --#55: Soulgems are not protected in the weapon recharge dialog anymore, even if marked
 --#56: LibFeedback error message
 --#57: SCENE_MANAGER error message upon login, if other addons used the scanner like ResearchAssistant
+--#59: Junk all 'Sell' marked items keybind fixed
+--#60: Cycle 'standard' keybind fixed
+--#61: Keybinds will respect the researchability of an item and the research setting of the marker icon now (skips non-researchable items with researchable marker icons)
+
 
 --[Changed]
 --Settings menu contains some more descriptions at the marker icons
@@ -113,7 +117,7 @@ EsoUI/Libraries/Globals/Globals.lua:51: in function 'OnGlobalMouseDown'
 --
 
 --[Added on request]
---
+--Keybind to add item to junk
 
 --************************************************************************************************************************
 --************************************************************************************************************************

@@ -5,6 +5,11 @@ local FCOIS = FCOIS
 if not FCOIS.libsLoadedProperly then return end
 
 local numFilterIcons = FCOIS.numVars.gFCONumFilterIcons
+local checkIfFCOISSettingsWereLoaded = FCOIS.checkIfFCOISSettingsWereLoaded
+
+-- =====================================================================================================================
+--  Marker icon helper functions
+-- =====================================================================================================================
 
 -- =====================================================================================================================
 --  Marker control / textures functions
@@ -209,7 +214,7 @@ function FCOIS.CreateTextures(whichTextures)
                     local currentScene, _ = FCOIS.getCurrentSceneInfo()
                     if currentScene ~= STABLES_SCENE then
                         -- for all filters: Create/Update the icons
-                        for i=1, numFilterIcons, 1 do
+                        for i=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
                             --FCOIS.CreateMarkerControl(parent, controlId, pWidth, pHeight, pTexture, pIsEquipmentSlot, pCreateControlIfNotThere, pUpdateAllEquipmentTooltips, pArmorTypeIcon, pHideControl)
                             FCOIS.CreateMarkerControl(rowControl, i, iconSettings[i].size, iconSettings[i].size, markerTextureVars[iconSettings[i].texture], false, doCreateMarkerControl)
                         end
@@ -238,7 +243,7 @@ function FCOIS.CreateTextures(whichTextures)
                 local currentScene, _ = FCOIS.getCurrentSceneInfo()
                 if currentScene ~= STABLES_SCENE then
                     -- for all filters: Create/Update the icons
-                    for i=1, numFilterIcons, 1 do
+                    for i=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
                         FCOIS.CreateMarkerControl(rowControl, i, iconSettings[i].size, iconSettings[i].size, markerTextureVars[iconSettings[i].texture], false, doCreateMarkerControl)
                     end
                     --Add additional FCO point to the dataEntry.data slot
@@ -270,7 +275,7 @@ function FCOIS.CreateTextures(whichTextures)
                 local currentScene, _ = FCOIS.getCurrentSceneInfo()
                 if currentScene ~= STABLES_SCENE then
                     -- for all filters: Create/Update the icons
-                    for i=1, numFilterIcons, 1 do
+                    for i=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
                         FCOIS.CreateMarkerControl(rowControl, i, iconSettings[i].size, iconSettings[i].size, markerTextureVars[iconSettings[i].texture], false, doCreateMarkerControl)
                     end
                     --Add additional FCO point to the dataEntry.data slot
@@ -295,7 +300,7 @@ function FCOIS.CreateTextures(whichTextures)
                 local currentScene, _ = FCOIS.getCurrentSceneInfo()
                 if currentScene ~= STABLES_SCENE then
                     -- for all filters: Create/Update the icons
-                    for i=1, numFilterIcons, 1 do
+                    for i=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
                         FCOIS.CreateMarkerControl(rowControl, i, iconSettings[i].size, iconSettings[i].size, markerTextureVars[iconSettings[i].texture], false, doCreateMarkerControl)
                     end
                     --Add additional FCO point to the dataEntry.data slot
@@ -614,7 +619,7 @@ function FCOIS.RemoveEmptyWeaponEquipmentMarkers(delay)
                     --Check if the equipment control got something equipped or it's a backup weapon slot containing a 2hd weapon
                     if equipmentControl.stackCount == 0 or twoHandedWeaponOffHand then
                         --Remove the markers for the filter icons at the equipment slot
-                        for j=1, numFilterIcons, 1 do
+                        for j=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
                             --Last parameter = doHide (true)
                             FCOIS.CreateMarkerControl(equipmentControl, j, equipVars.gEquipmentIconWidth, equipVars.gEquipmentIconHeight, texVars.MARKER_TEXTURES[settings.icon[j].texture], true, false, false, false, true)
                         end
@@ -641,7 +646,7 @@ function FCOIS.RefreshEquipmentControl(equipmentControl, doCreateMarkerControl, 
         if p_markId == nil or p_markId == 0 then
             if settings.debug then FCOIS.debugMessage( "[RefreshEquipmentControl]","Control: " .. equipmentControl:GetName() .. ", Create: " .. tostring(doCreateMarkerControl) .. ", MarkId: ALL", true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
             --Add/Update the markers for the filter icons at the equipment slot
-            for j=1, numFilterIcons, 1 do
+            for j=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
                 FCOIS.CreateMarkerControl(equipmentControl, j, equipVars.gEquipmentIconWidth, equipVars.gEquipmentIconHeight, texVars.MARKER_TEXTURES[settings.icon[j].texture], true, doCreateMarkerControl, false)
             end
             --Only check a specific marker id

@@ -487,7 +487,7 @@ local function scanBagsAndTransferMarkerIcon(toUnique)
             if itemId ~= nil and itemIdNew ~= nil then
                 local increaseNumMigratedItems = true
                 --Check if the item is marked with any icon
-                for iconId = 1, FCOIS.numVars.gFCONumFilterIcons, 1 do
+                for iconId = FCOIS_CON_ICON_LOCK, FCOIS.numVars.gFCONumFilterIcons, 1 do
                     local isMarked = FCOIS.markedItems[iconId][itemId]
                     if isMarked == nil then isMarked = false end
                     --Is the icon marked?
@@ -601,7 +601,7 @@ function FCOIS.afterSettings()
     --Preset global variable for item destroying
     FCOIS.preventerVars.gAllowDestroyItem = not settings.blockDestroying
     -- Get the marked items for each filter from the settings (or defaults, if not set yet)
-    for filterIconId = 1, numFilterIcons, 1 do
+    for filterIconId = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
         FCOIS.markedItems[filterIconId] = settings.markedItems[filterIconId]
     end
     --The automatic set marker icon name was changed from autoMarkSetsGearIconNr to autoMarkSetsIconNr
@@ -747,7 +747,7 @@ function FCOIS.afterSettings()
     FCOIS.settingsVars.settings.blockVendorRepair   = false -- to block the destroy
     --Update the dynamic icons as well, but enable the protection by default to block destroying,
     --as drag&drop of an item at the vendor repair panel will try to destroy the item
-    for filterIconHelper = 1, numFilterIcons do
+    for filterIconHelper = FCOIS_CON_ICON_LOCK, numFilterIcons do
         if iconIsDynamic[filterIconHelper] then
             for filterIconHelperPanel = 1, numLibFiltersFilterPanelIds, 1 do
                 if filterIconHelperPanel == LF_VENDOR_BUY or filterIconHelperPanel == LF_VENDOR_BUYBACK or filterIconHelperPanel == LF_VENDOR_REPAIR then

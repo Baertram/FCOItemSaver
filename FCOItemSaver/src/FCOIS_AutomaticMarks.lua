@@ -316,7 +316,7 @@ local function automaticMarkingSetsAdditionalCheckFunc(p_itemData, p_checkFuncRe
             --If the option is enabled to check for all marker icons before checking SetTracker set icons: If the set part is alreay marked with
             --any of the marker icons it shouldn't be marked with another SetTracker set marker icon again
             if settings.autoMarkSetTrackerSetsCheckAllIcons then
-                for iconNr = 1, numFilterIcons, 1 do
+                for iconNr = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
                     table.insert(setTrackerIconIdArray, iconNr)
                 end
                 if setTrackerIconIdArray ~= nil and #setTrackerIconIdArray > 0 then
@@ -365,7 +365,7 @@ local function automaticMarkingSetsAdditionalCheckFunc(p_itemData, p_checkFuncRe
             checkOtherSetMarkerIcons = true
             --Add the gear set icons now
             local iconIsGear = settings.iconIsGear
-            for i=1, numFilterIcons, 1 do
+            for i=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
                 --Check if icon is a gear set icon and if it's enabled
                 if iconIsGear[i] then
                     table.insert(gearIconIdArray, i)
@@ -566,7 +566,7 @@ local function automaticMarkingSetsAdditionalCheckFunc(p_itemData, p_checkFuncRe
             if settings.autoMarkSetsWithTraitCheckAllIcons and not isMarkedWithAutomaticSetMarkerIcon then
                 local isMarkedWithAnyOtherIcon = false
                 local allMarkerIconsArray = {}
-                for iconNr = 1, numFilterIcons, 1 do
+                for iconNr = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
                     if iconNr ~= setsIconNr then
                         table.insert(allMarkerIconsArray, iconNr)
                     end
@@ -752,7 +752,7 @@ function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, do
                 if toDos.checkIfAnyIconIsMarkedAlready ~= nil and toDos.checkIfAnyIconIsMarkedAlready == true then
                     local iconIdArray = {}
                     local doAddIconNow = false
-                    for iconNr = 1, numFilterIcons, 1 do
+                    for iconNr = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
                         doAddIconNow = true
                         if iconIsMarkedAllreadyAllowed and iconNr == toDos.icon then doAddIconNow = false end
                         if doAddIconNow then
