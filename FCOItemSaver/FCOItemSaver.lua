@@ -120,7 +120,7 @@ EsoUI/Libraries/Globals/Globals.lua:51: in function 'OnGlobalMouseDown'
 --
 
 --[Added on request]
---Keybind to add item to junk
+--Keybind to add item to junk (non functional so far!)
 
 --************************************************************************************************************************
 --************************************************************************************************************************
