@@ -1400,7 +1400,7 @@ function FCOIS.MarkItemByKeybind(iconId, p_bagId, p_slotIndex, removeMarkers)
     --bag and slot could be retrieved?
     if bagId ~= nil and slotIndex ~= nil then
         if settings.debug then FCOIS.debugMessage( "[MarkItemByKeybind]","Bag: " .. tostring(bagId) .. ", slot: " .. tostring(slotIndex), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
-d("[FCOIS.MarkItemByKeybind] Bag: " .. tostring(bagId) .. ", slot: " .. tostring(slotIndex) .. ", controlBelowMouse: ".. tostring(controlBelowMouse) .. ", controlTypeBelowMouse: " .. tostring(controlTypeBelowMouse))
+--d("[FCOIS.MarkItemByKeybind] Bag: " .. tostring(bagId) .. ", slot: " .. tostring(slotIndex) .. ", controlBelowMouse: ".. tostring(controlBelowMouse) .. ", controlTypeBelowMouse: " .. tostring(controlTypeBelowMouse))
 		local mappingVars = FCOIS.mappingVars
         --Check if the item is currently marked with this icon, or not
         --Get the itemId of the bag, slot combination
@@ -1410,7 +1410,7 @@ d("[FCOIS.MarkItemByKeybind] Bag: " .. tostring(bagId) .. ", slot: " .. tostring
 			-- Equipment gear (1, 2, 3, 4, 5), Research, Improve, Deconstruct, Intricate or dynamic icons
 			--Check if the icon is allowed for research and if the research-enabled check is set in the settings
 			if not isResearchableCheck(iconId, bagId, slotIndex) == true then
-d("<Abort: Item not researchable")
+--d("<Abort: Item not researchable")
 				--Abort here if not researchable or not enabled to be marked even if not researchable in the dynamic icon settings
 				return false
 			end
@@ -2002,7 +2002,7 @@ end
 --Parameters: 	markerIconsToApply Table of marker icons or -1 for all
 --				commandToRun String defining the functions to run on the item
 function FCOIS.MarkAndRunOnItemByKeybind(markerIconsToApply, commandToRun)
-d("[FCOIS]MarkAndRunOnItemByKeybind-commandToRun: " ..tostring(commandToRun))
+--d("[FCOIS]MarkAndRunOnItemByKeybind-commandToRun: " ..tostring(commandToRun))
 	if markerIconsToApply == nil or commandToRun == nil or commandToRun == "" then return end
 	if not checkIfFCOISSettingsWereLoaded(true) then return nil end
 	local settings = FCOIS.settingsVars.settings
@@ -2018,7 +2018,7 @@ d("[FCOIS]MarkAndRunOnItemByKeybind-commandToRun: " ..tostring(commandToRun))
 			FCOIS.IIfAmouseOvered = nil
 		end
 		if bagId and slotIndex then
-d(">item: " .. GetItemLink(bagId, slotIndex))
+--d(">item: " .. GetItemLink(bagId, slotIndex))
 			if addSellIconAsAddToJunk == true then
 				FCOIS.MarkItemByKeybind(FCOIS_CON_ICON_SELL, bagId, slotIndex, true)
 			end

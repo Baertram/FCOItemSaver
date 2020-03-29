@@ -91,8 +91,6 @@ EsoUI/Libraries/Globals/Globals.lua:51: in function 'OnGlobalMouseDown'
 -- 58) 2020-03-11 - wambo comments within esoui
 -- Using dynamic icons submenu will show the dynamic icons submenu out of bounds and not clickable
 
--- 63) 2020-03-29 - Migration of ZOs locks to FCOIS lock icon will fail due to too many messages sent -> CLient logout by server
-
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
@@ -107,6 +105,7 @@ EsoUI/Libraries/Globals/Globals.lua:51: in function 'OnGlobalMouseDown'
 --#60: Cycle 'standard' keybind fixed
 --#61: Keybinds will respect the researchability of an item and the research setting of the marker icon now (skips non-researchable items with researchable marker icons)
 --#62: Exchanged all for i=1 to numMarkerIcons to use the constant FCOIS_CON_ICON_LOCK instead of 1
+-- 63) 2020-03-29 - Migration of ZOs locks to FCOIS lock icon will fail due to too many messages sent -> CLient logout by server
 
 --[Changed]
 --Settings menu contains some more descriptions at e.g. the marker icons
@@ -121,7 +120,7 @@ EsoUI/Libraries/Globals/Globals.lua:51: in function 'OnGlobalMouseDown'
 --
 
 --[Added on request]
---Keybind to add item to junk (non functional so far!)
+--Keybind to add item to junk
 
 --************************************************************************************************************************
 --************************************************************************************************************************
