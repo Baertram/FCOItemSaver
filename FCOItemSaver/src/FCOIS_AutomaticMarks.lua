@@ -1373,18 +1373,24 @@ end
 --Scan the inventory for ZOs locked items and transfer them to FCOIS marker icons
 function FCOIS.scanInventoriesForZOsLockedItems(allInventories, houseBankBagId)
     --Only run if the ZOs build in marker functions are disabled!
-    if FCOIS.settingsVars.settings.useZOsLockFunctions then return false end
+    if FCOIS.settingsVars.settings.useZOsLockFunctions == true then return false end
     allInventories = allInventories or false
     if houseBankBagId ~= nil then
         allInventories = false
         allInventories = false
     end
+    local debug = FCOIS.settingsVars.settings.debug
 
     --Only scan if not already scanning
-    if FCOIS.preventerVars.gScanningInv then return false end
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[scanInventoriesForZOsLockedItemsAndTransfer]","Start ALL, allInventories: " ..tostring(allInventories), false) end
+    if FCOIS.preventerVars.gScanningInv == true then return false end
+    if debug == true then
+        FCOIS.debugMessage("scanInventoriesForZOsLockedItemsAndTransfer","Start ALL, allInventories: " ..tostring(allInventories), false, FCOIS_DEBUG_DEPTH_NORMAL, true)
+    else
+        d("[FCOIS]scan inventories for ZOs locked items: START")
+    end
     local atLeastOneZOsMarkedFound = false
     local allowedBagTypes = {}
+    local allowedBagTypesCountMigrated = {}
     if allInventories then
         --Scan all the inventories of the player (bank, bag, guild bank, craftbag, etc.)
         allowedBagTypes = {
@@ -1414,23 +1420,64 @@ function FCOIS.scanInventoriesForZOsLockedItems(allInventories, houseBankBagId)
             }
         end
     end
+    --Check if LiBDebugLogger and the DebugLogViewer are active. Show their window/quicklot (depending on it's settings)
+    --or show the chat instead
+    FCOIS.checkAndShowDebugOutputWindow()
+
     --Scan every item in the bag
+    local itemDelay = 0
+    local countItemsScanned = 0
     for bagType, allowed in pairs(allowedBagTypes) do
-        if allowed then
-            --local bagCache = SHARED_INVENTORY:GenerateFullSlotData(nil, bagType)
-            local bagCache = SHARED_INVENTORY:GetOrCreateBagCache(bagType)
-            local foundAndTransferedOne = false
-            for _, data in pairs(bagCache) do
-                foundAndTransferedOne = FCOIS.scanInventoriesForZOsLockedItemsAndTransfer(data.bagId, data.slotIndex)
-                if foundAndTransferedOne then
-                    atLeastOneZOsMarkedFound = true
+        zo_callLater(function()
+            if allowed then
+                allowedBagTypesCountMigrated[bagType] = 0
+                zo_callLater(function()
+                    if debug == true then
+                        FCOIS.debugMessage("scanInventoriesForZOsLockedItemsAndTransfer",">Scanning bag ID: " ..tostring(bagType), false, FCOIS_DEBUG_DEPTH_NORMAL, true)
+                    else
+                        d(">Scanning bag ID: " ..tostring(bagType))
+                    end
+                    local bagCache = SHARED_INVENTORY:GetOrCreateBagCache(bagType)
+                    local foundAndTransferedOne = false
+                    for _, data in pairs(bagCache) do
+                        --Create batches of 50 items and then wait so the server won't kick us because of message spam
+                        --Delay the next scanned package of 50 items by 250 milliseconds
+                        zo_callLater(function()
+                            foundAndTransferedOne = FCOIS.scanInventoriesForZOsLockedItemsAndTransfer(data.bagId, data.slotIndex)
+                            countItemsScanned = countItemsScanned + 1
+                            --At each 100 items: Increase the delay by a half second
+                            if countItemsScanned % 50 == 0 then
+                                itemDelay = itemDelay + 250
+                            end
+                            --Any item was changed?
+                            if foundAndTransferedOne == true then
+                                allowedBagTypesCountMigrated[bagType] = allowedBagTypesCountMigrated[bagType] + 1
+                                atLeastOneZOsMarkedFound = true
+                            end
+                        end, itemDelay)
+                    end
+                end, itemDelay)
+            end
+        end, itemDelay)
+    end
+    --Update the inventories
+    zo_callLater(function()
+        local countItemsMigrated = 0
+        if atLeastOneZOsMarkedFound == true then
+            FCOIS.FilterBasics(true)
+            for bagType, lCountMigratedAtBagType in pairs(allowedBagTypesCountMigrated) do
+                countItemsMigrated = countItemsMigrated + lCountMigratedAtBagType
+                if debug == true then
+                    FCOIS.debugMessage("scanInventoriesForZOsLockedItemsAndTransfer", ">migrated at the bag "..tostring(bagType)..": " ..tostring(lCountMigratedAtBagType), false, FCOIS_DEBUG_DEPTH_NORMAL, true)
+                else
+                    d(">migrated at the bag "..tostring(bagType)..": " ..tostring(lCountMigratedAtBagType))
                 end
             end
         end
-    end
-    --Update the inventories
-    if atLeastOneZOsMarkedFound == true then
-        FCOIS.FilterBasics(true)
-    end
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[scanInventoriesForZOsLockedItems]", "End, allInventories: " ..tostring(allInventories), false) end
+        if debug == true then
+            FCOIS.debugMessage("scanInventoriesForZOsLockedItemsAndTransfer", "End, allInventories: " ..tostring(allInventories) .. ", migrated/scanned total: " ..tostring(countItemsMigrated) .."/"..tostring(countItemsScanned), false, FCOIS_DEBUG_DEPTH_NORMAL, true)
+        else
+            d("[FCOIS]scan inventories for ZOs locked items: FINISHED - migrated/scanned total: " ..tostring(countItemsMigrated) .."/"..tostring(countItemsScanned))
+        end
+    end, itemDelay + 2000)
 end

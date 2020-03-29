@@ -155,6 +155,9 @@
       <Action name="FCOIS_JUNK_ALL_SELL">
         <Down>FCOIS.JunkMarkedItems({FCOIS_CON_ICON_SELL}, BAG_BACKPACK)</Down>
       </Action>
+      <Action name="FCOIS_JUNK_AND_MARK_SELL_ITEM">
+        <Down>FCOIS.MarkAndRunOnItemByKeybind({FCOIS_CON_ICON_SELL}, 'junk')</Down>
+      </Action>
 
     </Category>
   </Layer>
@@ -315,6 +318,9 @@
       </Action>
       <Action name="FCOIS_JUNK_ALL_SELL_DIALOG" hideAction="true" inheritsBindFrom="FCOIS_JUNK_ALL_SELL">
         <Down>FCOIS.JunkMarkedItems({FCOIS_CON_ICON_SELL}, BAG_BACKPACK)</Down>
+      </Action>
+      <Action name="FCOIS_JUNK_AND_MARK_SELL_ITEM_DIALOG" hideAction="true" inheritsBindFrom="FCOIS_JUNK_ALL_SELL">
+        <Down>FCOIS.MarkAndRunOnItemByKeybind({FCOIS_CON_ICON_SELL}, 'junk')</Down>
       </Action>
 
     </Category>

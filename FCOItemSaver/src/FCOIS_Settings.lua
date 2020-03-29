@@ -436,7 +436,7 @@ end
 
 
 --Transfer the non-unique/unique to unique/non-unique marker icons at the items
---> Button in the FCOIS_SettingsMenu.lua, "General settings"
+--> Started by the button in the FCOIS_SettingsMenu.lua, "General settings"
 local function scanBagsAndTransferMarkerIcon(toUnique)
     if toUnique == nil then return false end
     --Check the bag
@@ -515,7 +515,7 @@ end
 --Migrate the marker icons from the non-unique ItemInstanceIds to the uniqueIds
 function FCOIS.migrateItemInstanceIdMarkersToUniqueIdMarkers()
     --Are the unique IDs enabled?
-    if FCOIS.settingsVars.settings.useUniqueIds then
+    if FCOIS.settingsVars.settings.useUniqueIds == true then
         scanBagsAndTransferMarkerIcon(true)
     end
 end

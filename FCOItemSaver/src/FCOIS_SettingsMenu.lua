@@ -5337,9 +5337,20 @@ function FCOIS.BuildAddonMenu()
 							},
 			            } -- controls quality
 					}, -- submenu quality
-	--==============================================================================
-    	-- Do not mark automatically again, if ....
 
+	            } -- controls marking
+			}, -- submenu marking
+
+
+	--==============================================================================
+	-- ITEM AUOMATIC MARKING - PREVENT
+	--==============================================================================
+        	-- Do not mark automatically again, if ....
+            {
+                type = "submenu",
+                name = locVars["options_header_items_prevent"],
+                controls =
+                {
 					-- Sell
 					{
 						type = "checkbox",
@@ -5377,8 +5388,9 @@ function FCOIS.BuildAddonMenu()
                         default = FCOISdefaultSettings.autoMarkPreventIfMarkedForDeconstruction,
 					},
 
-	            } -- controls marking
-			}, -- submenu marking
+                },
+
+            },
 
 	--==============================================================================
 	-- ITEM AUOMATIC DE-MARKING
@@ -5422,31 +5434,26 @@ function FCOIS.BuildAddonMenu()
                             },
                         },
                     },
+                    ----------------------------------------------------------------------------------------------------
+                    --Demark special
                     {
-                        type = "submenu",
-                        name = locVars["options_header_items_demark_sell"],
-                        controls =
-                        {
-                            {
-                                type = "checkbox",
-                                name = locVars["options_demark_sell_on_others"],
-                                tooltip = locVars["options_demark_sell_on_others_TT"],
-                                getFunc = function() return FCOISsettings.autoDeMarkSellOnOthers end,
-                                setFunc = function(value) FCOISsettings.autoDeMarkSellOnOthers = value
-                                end,
-                                default = FCOISdefaultSettings.autoDeMarkSellOnOthers,
-                            },
-                            {
-                                type = "checkbox",
-                                name = locVars["options_demark_sell_guild_store_on_others"],
-                                tooltip = locVars["options_demark_sell_guild_store_on_others_TT"],
-                                getFunc = function() return FCOISsettings.autoDeMarkSellGuildStoreOnOthers end,
-                                setFunc = function(value) FCOISsettings.autoDeMarkSellGuildStoreOnOthers = value
-                                end,
-                                default = FCOISdefaultSettings.autoDeMarkSellGuildStoreOnOthers,
-                            },
-                        }, -- controls de-marking sell
-                    }, -- submenu de-marking sell
+                        type = "checkbox",
+                        name = locVars["options_demark_sell_on_others"],
+                        tooltip = locVars["options_demark_sell_on_others_TT"],
+                        getFunc = function() return FCOISsettings.autoDeMarkSellOnOthers end,
+                        setFunc = function(value) FCOISsettings.autoDeMarkSellOnOthers = value
+                        end,
+                        default = FCOISdefaultSettings.autoDeMarkSellOnOthers,
+                    },
+                    {
+                        type = "checkbox",
+                        name = locVars["options_demark_sell_guild_store_on_others"],
+                        tooltip = locVars["options_demark_sell_guild_store_on_others_TT"],
+                        getFunc = function() return FCOISsettings.autoDeMarkSellGuildStoreOnOthers end,
+                        setFunc = function(value) FCOISsettings.autoDeMarkSellGuildStoreOnOthers = value
+                        end,
+                        default = FCOISdefaultSettings.autoDeMarkSellGuildStoreOnOthers,
+                    },
 
 	            } -- controls de-marking
 			}, -- submenu de-marking

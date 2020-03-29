@@ -84,15 +84,16 @@ local function isAnJewelryItem(bagId, slotIndex)
 end
 --------------------------------------------------------------------------------
 local function isResearchableCheck(p_iconId, p_bagId, p_slotIndex, p_itemLink)
-	if not p_iconId or not p_bagId or not p_slotIndex then return false end
+	if not p_iconId then return false end
+	if ((not p_bagId or not p_slotIndex) and not p_itemLink) then return false end
 	p_itemLink = p_itemLink or GetItemLink(p_bagId, p_slotIndex)
 	local mappingVars = FCOIS.mappingVars
 	if mappingVars.iconIsResearchable[p_iconId] or mappingVars.iconIsDynamic[p_iconId] then
-		-- Check if item is researchable (as only researchable items can work as equipment too)
-		local isResearchableItem = FCOIS.isItemLinkResearchable(p_itemLink, p_iconId, nil) or false
-		if isResearchableItem == true then return true end
+	-- Check if item is researchable (as only researchable items can work as equipment too)
+	local isResearchableItem = FCOIS.isItemLinkResearchable(p_itemLink, p_iconId, nil) or false
+	if isResearchableItem == true then return true end
 	else
-		return true
+	return true
 	end
 	return false
 end
@@ -1382,7 +1383,10 @@ function FCOIS.MarkItemByKeybind(iconId, p_bagId, p_slotIndex, removeMarkers)
 	if not isIconEnabled[iconId] then return false end
 	local isIIfAControlChanged = false
 	local bagId, slotIndex, controlBelowMouse, controlTypeBelowMouse
---d("[FCOIS.MarkItemByKeybind] Bag: " .. tostring(bagId) .. ", slot: " .. tostring(slotIndex))
+	local itemLink
+	local itemInstanceOrUniqueId
+	local itemId
+	--d("[FCOIS.MarkItemByKeybind] Bag: " .. tostring(bagId) .. ", slot: " .. tostring(slotIndex))
 	if p_bagId == nil or p_slotIndex == nil then
 		bagId, slotIndex, controlBelowMouse, controlTypeBelowMouse  = FCOIS.GetBagAndSlotFromControlUnderMouse()
 		--No valid bagId and slotIndex was found
@@ -1396,7 +1400,7 @@ function FCOIS.MarkItemByKeybind(iconId, p_bagId, p_slotIndex, removeMarkers)
     --bag and slot could be retrieved?
     if bagId ~= nil and slotIndex ~= nil then
         if settings.debug then FCOIS.debugMessage( "[MarkItemByKeybind]","Bag: " .. tostring(bagId) .. ", slot: " .. tostring(slotIndex), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
---d("[FCOIS.MarkItemByKeybind] Bag: " .. tostring(bagId) .. ", slot: " .. tostring(slotIndex) .. ", controlBelowMouse: ".. tostring(controlBelowMouse) .. ", controlTypeBelowMouse: " .. tostring(controlTypeBelowMouse))
+d("[FCOIS.MarkItemByKeybind] Bag: " .. tostring(bagId) .. ", slot: " .. tostring(slotIndex) .. ", controlBelowMouse: ".. tostring(controlBelowMouse) .. ", controlTypeBelowMouse: " .. tostring(controlTypeBelowMouse))
 		local mappingVars = FCOIS.mappingVars
         --Check if the item is currently marked with this icon, or not
         --Get the itemId of the bag, slot combination
@@ -1406,7 +1410,7 @@ function FCOIS.MarkItemByKeybind(iconId, p_bagId, p_slotIndex, removeMarkers)
 			-- Equipment gear (1, 2, 3, 4, 5), Research, Improve, Deconstruct, Intricate or dynamic icons
 			--Check if the icon is allowed for research and if the research-enabled check is set in the settings
 			if not isResearchableCheck(iconId, bagId, slotIndex) == true then
---d("<Abort: Item not researchable")
+d("<Abort: Item not researchable")
 				--Abort here if not researchable or not enabled to be marked even if not researchable in the dynamic icon settings
 				return false
 			end
@@ -1414,7 +1418,7 @@ function FCOIS.MarkItemByKeybind(iconId, p_bagId, p_slotIndex, removeMarkers)
             --Item is already un/marked?
 			local itemIsMarked
 			if removeMarkers == true then
-				--Remove the all marker icons on the item
+				--Remove all marker icons on the item
 				FCOIS.MarkItem(bagId, slotIndex, -1, false, false)
 				itemIsMarked = false
 			else
@@ -1438,20 +1442,20 @@ function FCOIS.MarkItemByKeybind(iconId, p_bagId, p_slotIndex, removeMarkers)
 --d("[FCOIS]MarkItemByKeybind-IIfA control found: " .. FCOIS.IIfAmouseOvered.itemLink)
 					local IIfAmouseOvered = FCOIS.IIfAmouseOvered
 					if IIfAmouseOvered.itemLink ~= nil and IIfAmouseOvered.itemInstanceOrUniqueId ~= nil then
-						local itemLink = IIfAmouseOvered.itemLink
-						local itemInstanceOrUniqueId = IIfAmouseOvered.itemInstanceOrUniqueId
+						itemLink = IIfAmouseOvered.itemLink
+						itemInstanceOrUniqueId = IIfAmouseOvered.itemInstanceOrUniqueId
 						--Get the item's id from the itemLink
-						local itemId = FCOIS.getItemIdFromItemLink(itemLink)
+						itemId = FCOIS.getItemIdFromItemLink(itemLink)
 						--Check if item is not researchable and research/gear/improve/deconstruct/intrictae icon is used, or if icon is a dynamic on and the research check is enabled
 						-- Equipment gear (1, 2, 3, 4, 5), Research, Improve, Deconstruct, Intricate or dynamic icons
 						--Check if the icon is allowed for research and if the research-enabled check is set in the settings
-						if not isResearchableCheck(iconId, bagId, slotIndex, itemLink) == true then
+						if not isResearchableCheck(iconId, nil, nil, itemLink) == true then
 							--Abort here if not researchable or not enabled to be marked even if not researchable in the dynamic icon settings
 							return false
 						end
 						--Item is already un/marked?
 						if removeMarkers == true then
-							--Remove the all marker icons on the item
+							--Remove all marker icons on the item
 							FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, -1, false, itemLink, itemId, nil, false)
 							itemIsMarked = false
 						else
@@ -1472,6 +1476,7 @@ function FCOIS.MarkItemByKeybind(iconId, p_bagId, p_slotIndex, removeMarkers)
 		end
         return false
     end
+	return bagId, slotIndex, itemInstanceOrUniqueId, itemLink, itemId
 end -- FCOIS.MarkItemByKeybind
 
 --Returns the next/previous enabled marker icon
@@ -1991,6 +1996,62 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons)
     end
     local iconsDropdownList, iconsDropdownValuesList = buildIconsChoicesList(type, withIcons), buildIconsChoicesValuesList(type)
     return iconsDropdownList, iconsDropdownValuesList
+end
+
+--Mark an item by a keybind and run a command (functions defined in this function) on it
+--Parameters: 	markerIconsToApply Table of marker icons or -1 for all
+--				commandToRun String defining the functions to run on the item
+function FCOIS.MarkAndRunOnItemByKeybind(markerIconsToApply, commandToRun)
+d("[FCOIS]MarkAndRunOnItemByKeybind-commandToRun: " ..tostring(commandToRun))
+	if markerIconsToApply == nil or commandToRun == nil or commandToRun == "" then return end
+	if not checkIfFCOISSettingsWereLoaded(true) then return nil end
+	local settings = FCOIS.settingsVars.settings
+
+	--Junk the item now via the keybind?
+	if commandToRun == "junk" then
+		--Add the 'sell' icon?
+		local addSellIconAsAddToJunk = settings.keybindMoveItemToJunkAddSellIcon
+		--Get bagId and slotIndex or the IIfA data of the item below the mouse
+		local bagId, slotIndex, mouseOverControl, controlTypeBelowMouse = FCOIS.GetBagAndSlotFromControlUnderMouse()
+		if bagId ~= false or slotIndex then
+			--No IIfA mouse over GUI was triggered, so clear the data again
+			FCOIS.IIfAmouseOvered = nil
+		end
+		if bagId and slotIndex then
+d(">item: " .. GetItemLink(bagId, slotIndex))
+			if addSellIconAsAddToJunk == true then
+				FCOIS.MarkItemByKeybind(FCOIS_CON_ICON_SELL, bagId, slotIndex, true)
+			end
+			SetItemIsJunk(bagId, slotIndex, true)
+		--[[
+		--Currently disabled as it would only work for items in your inventory and we cannot check this easily via teh IIfA UI
+		else
+			--Is the controlType below the mouse given?
+			if controlTypeBelowMouse ~= nil then
+				--Did we try to change a marker icon at the InventoryInsightFromAshes UI?
+				if controlTypeBelowMouse == FCOIS.otherAddons.IIFAitemsListEntryPrePattern then
+					if FCOIS.IIfAmouseOvered ~= nil then
+	--d("[FCOIS]MarkItemByKeybind-IIfA control found: " .. FCOIS.IIfAmouseOvered.itemLink)
+						local IIfAmouseOvered = FCOIS.IIfAmouseOvered
+						if IIfAmouseOvered.itemLink ~= nil and IIfAmouseOvered.itemInstanceOrUniqueId ~= nil then
+							local itemLink = IIfAmouseOvered.itemLink
+							local itemInstanceOrUniqueId = IIfAmouseOvered.itemInstanceOrUniqueId
+							--Get the item's id from the itemLink
+							local itemId = FCOIS.getItemIdFromItemLink(itemLink)
+							--Remove all marker icons on the item
+							FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, -1, false, itemLink, itemId, nil, false)
+							if addSellIconAsAddToJunk == true then
+								--FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon, itemLink, itemId, addonName, updateInventories)
+								FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, FCOIS_CON_ICON_SELL, true, itemLink, itemId, nil, true)
+							end
+							--SetItemIsJunk(bagId, slotIndex, true)
+						end
+					end
+				end
+			end
+		]]
+		end
+	end
 end
 
 --==========================================================================================================================================

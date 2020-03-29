@@ -19,7 +19,7 @@
 ---------------------------------------------------------------------
 --[ToDo list] --
 --____________________________
--- Current max bugs: 62
+-- Current max bugs: 63
 --____________________________
 
 -- 1) 2019-01-14 - Bugfix - Baertram
@@ -91,6 +91,7 @@ EsoUI/Libraries/Globals/Globals.lua:51: in function 'OnGlobalMouseDown'
 -- 58) 2020-03-11 - wambo comments within esoui
 -- Using dynamic icons submenu will show the dynamic icons submenu out of bounds and not clickable
 
+-- 63) 2020-03-29 - Migration of ZOs locks to FCOIS lock icon will fail due to too many messages sent -> CLient logout by server
 
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]

@@ -714,7 +714,7 @@ function FCOIS.checkForPlayerActivatedTasks()
     end
 
     --Was the item ID type changed to unique IDs: Show the migrate data from old item IDs to unique itemIDs now
-    if FCOIS.preventerVars.migrateItemMarkers then
+    if FCOIS.preventerVars.migrateItemMarkers == true then
         FCOIS.ShowAskBeforeMigrateDialog()
     end
 end

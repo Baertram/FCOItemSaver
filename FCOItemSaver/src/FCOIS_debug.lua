@@ -26,8 +26,9 @@ function FCOIS.CreateLoggers()
 end
 
 --Output debug message in chat
-function FCOIS.debugMessage(msg_text_header, msg_text, deep, depthNeeded)
+function FCOIS.debugMessage(msg_text_header, msg_text, deep, depthNeeded, isInfo)
     depthNeeded = depthNeeded or FCOIS_DEBUG_DEPTH_ALL
+    isInfo = isInfo or false
     local settings = FCOIS.settingsVars.settings
     if (deep and not settings.deepDebug) then
         return
@@ -36,6 +37,14 @@ function FCOIS.debugMessage(msg_text_header, msg_text, deep, depthNeeded)
         settings.debugDepth = settings.debugDepth or 1
         --If the needed debug depth is lower/equals the settings debug depth the message will be shown
         if depthNeeded > settings.debugDepth then return end
+    end
+    local function debugOrInfo(loggerInstance, msgTxt)
+        if loggerInstance == nil or msgTxt == nil or msgTxt == "" then return end
+        if isInfo == true then
+            loggerInstance:Info(msgTxt)
+        else
+            loggerInstance:Debug(msgTxt)
+        end
     end
     if (settings.debug == true) then
         if not msg_text_header and not msg_text or (msg_text_header ~= nil and msg_text_header == "") or (msg_text ~= nil and msg_text == "") then return end
@@ -56,15 +65,15 @@ function FCOIS.debugMessage(msg_text_header, msg_text, deep, depthNeeded)
                         if loggers[depthNeeded][msg_text_header] == nil then
                             loggers[depthNeeded][msg_text_header]:Create(msg_text_header)
                         end
-                        loggers[depthNeeded][msg_text_header]:Debug(msg_text)
+                        debugOrInfo(loggers[depthNeeded][msg_text_header], msg_text)
                     else
-                        loggers[depthNeeded]:Debug(msg_text)
+                        debugOrInfo(loggers[depthNeeded], msg_text)
                     end
                 else
-                    loggerBase:Debug(msg_text)
+                    debugOrInfo(loggerBase, msg_text)
                 end
             else
-                loggerBase:Debug(msg_text)
+                debugOrInfo(loggerBase, msg_text)
             end
         else
             --Use old Chat debugging output
@@ -143,4 +152,31 @@ function FCOIS.errorMessage2Chat(errorMessage, errorId, errorData)
     d("Please provide this info to @Baertram on the EU Megaserver and/or conact him via PM and/or comment to the FCOItemSaver addon at www.esoui.com.\n" ..
             "You can reach this website via the FCOItemSaver settings menu (at the top of the settings menu is the link to the website). Use chat command /fcoiss to open the settings menu!\nMany thanks.")
     d(preVars.preChatTextRed .. "<=================== ERROR ===================<")
+end
+
+--Check what debug output window should be used and show it
+function FCOIS.checkAndShowDebugOutputWindow()
+    --Is library LibDebugLogger active?
+    --Is the DebugLogViewer addon active?
+    if LibDebugLogger ~= nil and DebugLogViewer ~= nil and DebugLogViewer_Data ~= nil then
+        --Show the DebugLogViewer
+        local dlv = DebugLogViewer
+        local dlvSv = DebugLogViewer_Data[tostring(GetWorldName()..GetDisplayName())]
+        local isQuickLogEnabled = (dlvSv ~= nil and dlvSv.quickLog.enabled) or false
+        if not isQuickLogEnabled then
+            if dlv.ToggleWindow then
+                dlv:ToggleWindow()
+            end
+        --[[
+        --Nicht nötig da der Quicklog sich selbst anzeigt, wenn neue Nachrichten eingehen
+        else
+            if dlv.internal and dlv.internal.quickLog then
+                dlv.internal.quickLog:Show()
+            end
+        ]]
+        end
+    else
+        --Both not active: Show the chat now if it is minimized
+        if CHAT_SYSTEM and CHAT_SYSTEM.Maximize then CHAT_SYSTEM:Maximize() end
+    end
 end

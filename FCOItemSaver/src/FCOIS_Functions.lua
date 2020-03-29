@@ -1304,7 +1304,7 @@ function FCOIS.setItemIsJunk(bagId, slotIndex, isJunk)
     if bagId == nil or slotIndex == nil then return false end
     isJunk = isJunk or false
     --Mark as junk?
-    if isJunk then
+    if isJunk == true then
         --Are there any marker icons on the item?
         local anyMarkerIconSetOnItemToJunk, markerIconsOnItemToJunk = FCOIS.IsMarked(bagId, slotIndex, -1)
         if anyMarkerIconSetOnItemToJunk then

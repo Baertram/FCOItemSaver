@@ -27,6 +27,8 @@ ZO_CreateStringId("SI_BINDING_NAME_FCOIS_MARK_ITEM_11",                 FCOIS.Ge
 ZO_CreateStringId("SI_BINDING_NAME_FCOIS_MARK_ITEM_12",                 FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_MARK_ITEM_12", true))
 --Junk sell marked items
 ZO_CreateStringId("SI_BINDING_NAME_FCOIS_JUNK_ALL_SELL",                FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_JUNK_ALL_SELL", true))
+--Mark with sell icon (if enabled in settings) and junk item
+ZO_CreateStringId("SI_BINDING_NAME_FCOIS_JUNK_AND_MARK_SELL_ITEM",      FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_JUNK_AND_MARK_SELL_ITEM", true))
 
 
 --Generate the keybinding texts for the static gear set icons
@@ -51,6 +53,14 @@ function FCOIS.generateDynamicIconsKeybindingsTexts()
         local dynIconNr = dyn2Icon[dynNr]
         ZO_CreateStringId(dynKeybindString .. tostring(dynIconNr),      FCOIS.GetLocText(dynKeybindString .. tostring(dynIconNr), true))
     end
+end
+
+--Visibility function for the add item to junk keybind
+local function UpdateAndDisplayAddItemToJunkKeybind()
+    --Load the user settings, if not done already
+    if not FCOIS.checkIfFCOISSettingsWereLoaded(true) then return nil end
+    --Is the setting enabled to show the keybind?
+    return FCOIS.settingsVars.settings.keybindMoveItemToJunkEnabled
 end
 
 --Visibility function for the junk all sell marked items keybind
@@ -81,6 +91,15 @@ function FCOIS.InitializeInventoryKeybind()
             keybind = "FCOIS_JUNK_ALL_SELL",
             callback = JunkAllSellMarkedItems,
             visible = UpdateAndDisplayJunkSellKeybind,
+        },
+        {
+            name = GetString(SI_BINDING_NAME_FCOIS_JUNK_AND_MARK_SELL_ITEM),
+            keybind = "FCOIS_JUNK_AND_MARK_SELL_ITEM",
+            callback = function()
+                d("[FCOIS]Keybind pressed for 'Junk item'")
+                FCOIS.MarkAndRunOnItemByKeybind({FCOIS_CON_ICON_SELL}, 'junk')
+            end,
+            visible = UpdateAndDisplayAddItemToJunkKeybind,
         },
     }
     local invKeybinds = FCOIS.keybinds["inventory"]

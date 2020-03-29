@@ -200,6 +200,7 @@ function FCOIS.AskBeforeMigrateDialogInitialize(control)
         titleText = FCOIS.preChatVars.preChatTextRed .. localVars["options_migrate_uniqueids"]
     end
 
+    --The migrate non-unique/unique to unique/non-unique item IDs
     ZO_Dialogs_RegisterCustomDialog("FCOIS_ASK_BEFORE_MIGRATE_DIALOG", {
         customControl = control,
         title = { text = titleText  },
@@ -223,7 +224,7 @@ function FCOIS.AskBeforeMigrateDialogInitialize(control)
                 text = SI_DIALOG_ACCEPT,
                 keybind = "DIALOG_PRIMARY",
                 callback = function(dialog)
-                    if FCOIS.settingsVars.settings.useUniqueIds then
+                    if FCOIS.settingsVars.settings.useUniqueIds == true then
                         FCOIS.migrateItemInstanceIdMarkersToUniqueIdMarkers()
                     --else
                         --FCOIS.migrateUniqueIdMarkersToItemInstanceIdMarkers()
@@ -246,7 +247,7 @@ end
 --Show the ask before migrate dialog
 function FCOIS.ShowAskBeforeMigrateDialog()
     --TODO: Migration is currently only available from non-unique to unique items
-    if FCOIS.settingsVars.settings.useUniqueIds then
+    if FCOIS.settingsVars.settings.useUniqueIds == true then
         ZO_Dialogs_ShowDialog("FCOIS_ASK_BEFORE_MIGRATE_DIALOG", {})
     end
 end
