@@ -2010,6 +2010,7 @@ function FCOIS.MarkAndRunOnItemByKeybind(markerIconsToApply, commandToRun)
 	--Junk the item now via the keybind?
 	if commandToRun == "junk" then
 		--Add the 'sell' icon?
+		local isJunkNow
 		local addSellIconAsAddToJunk = settings.keybindMoveItemToJunkAddSellIcon
 		--Get bagId and slotIndex or the IIfA data of the item below the mouse
 		local bagId, slotIndex, mouseOverControl, controlTypeBelowMouse = FCOIS.GetBagAndSlotFromControlUnderMouse()
@@ -2018,11 +2019,23 @@ function FCOIS.MarkAndRunOnItemByKeybind(markerIconsToApply, commandToRun)
 			FCOIS.IIfAmouseOvered = nil
 		end
 		if bagId and slotIndex then
---d(">item: " .. GetItemLink(bagId, slotIndex))
-			if addSellIconAsAddToJunk == true then
-				FCOIS.MarkItemByKeybind(FCOIS_CON_ICON_SELL, bagId, slotIndex, true)
+			--Is the item already in the junk?
+			isJunkNow = IsItemJunk(bagId, slotIndex) or false
+			--Add the sell icon if it is not junked already
+			if not isJunkNow and addSellIconAsAddToJunk == true then
+				--Remove all marker icons
+				--Update not needed as it will be moved away to junk to another tab (tab change will update the visible inventory)
+				FCOIS.MarkItem(bagId, slotIndex, -1, false, false)
+				--Set the sell icon now
+				FCOIS.MarkItem(bagId, slotIndex, FCOIS_CON_ICON_SELL, true, false)
+			--If the item is already junked then remove all marker icons again and remove it from the junk
+			elseif isJunkNow == true then
+				--Remove all marker icons
+				--Update not needed as it will be moved away from junk to another tab (tab change will update the visible inventory)
+				FCOIS.MarkItem(bagId, slotIndex, -1, false, false)
 			end
-			SetItemIsJunk(bagId, slotIndex, true)
+			--Invert the junk state of the item now
+			SetItemIsJunk(bagId, slotIndex, not isJunkNow)
 		--[[
 		--Currently disabled as it would only work for items in your inventory and we cannot check this easily via teh IIfA UI
 		else
