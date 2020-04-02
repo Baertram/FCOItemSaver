@@ -105,7 +105,7 @@ EsoUI/Libraries/Globals/Globals.lua:51: in function 'OnGlobalMouseDown'
 --#60: Cycle 'standard' keybind fixed
 --#61: Keybinds will respect the researchability of an item and the research setting of the marker icon now (skips non-researchable items with researchable marker icons)
 --#62: Exchanged all for i=1 to numMarkerIcons to use the constant FCOIS_CON_ICON_LOCK instead of 1
--- 63) 2020-03-29 - Migration of ZOs locks to FCOIS lock icon will fail due to too many messages sent -> CLient logout by server
+--#63) Migration of ZOs locks to FCOIS lock icon will fail due to too many messages sent -> CLient logout by server
 
 --[Changed]
 --Settings menu contains some more descriptions at e.g. the marker icons
@@ -120,7 +120,9 @@ EsoUI/Libraries/Globals/Globals.lua:51: in function 'OnGlobalMouseDown'
 --
 
 --[Added on request]
---Keybind to add item to junk
+--Keybind to add item to junk. Junk keybind is multi-directional: Junked items will be unjunked/unjunked items will be junked
+--Also added a new setting depending on this keybind: Automatically mark junked item (via keybind) with the sell icon.
+--Attention: All marker icons will be removed if an item get's unjunked via this keybind (use the automatic marking scans of the inventory flag context menu to re add marks e.g.)
 
 --************************************************************************************************************************
 --************************************************************************************************************************
