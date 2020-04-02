@@ -44,7 +44,7 @@ FCOIS.localizationVars.localizationAll = {
 	--English
     [FCOIS_CON_LANG_EN] = {
 		-- Options menu
-        ["options_description"] = "FCO ItemSaver helps you to manage your items by help of icons. In addition it lets you hide/view and protect those items",
+        ["options_description"] = "FCOItemSaver helps you to manage your items by help of icons. In addition it lets you hide/view and protect those items",
 		["options_header1"] 			 		 = "General settings",
     	["options_language"] 					 = "Language",
 		["options_language_TT"] 			 = "Choose the language",
@@ -348,11 +348,13 @@ FCOIS.localizationVars.localizationAll = {
         ["options_context_menu_filter_buttons_max_icons"]           = "Show submenu: marker icon count",
         ["options_context_menu_filter_buttons_max_icons_TT"]   = "If the filter button context menu is enabled and if this number of marker icons, related to this filter button, are enabled:\nShow a sub menu to shorten the filter button context menu.\n\nThe value 0 disables the submenu!",
         ["options_use_subcontextmenu"]			 = "Use submenu in context menu",
-        ["options_use_subcontextmenu_TT"]	 = "With this setting enabled the possible FCOIS options for the item will bw shown beyond a 'FCO ItemSaver' submenu inside the context menu. With this option disabled all possible FCOIS options for this item are shown directly inside the context menu.",
+        ["options_use_subcontextmenu_TT"]	 = "With this setting enabled the possible FCOIS options for the item will bw shown beyond a 'FCOItemSaver' submenu inside the context menu. With this option disabled all possible FCOIS options for this item are shown directly inside the context menu.",
+        ["options_header_context_menu_divider"] = "FCOIS divider row",
+        ["options_header_context_menu_divider_TT"] = "The FCOIS divider row will only be shown if the normal submenu in the inventory context menu is not enabled!",
 		["options_show_contextmenu_divider"]	 = "Show context menu divider",
-		["options_show_contextmenu_divider_TT"] = "Show an informative divider above the FCO ItemSaver context menu entries to divide the item's standard options from the FCOIS options",
+		["options_show_contextmenu_divider_TT"] = "Show an informative divider above the FCOItemSaver context menu entries to divide the item's standard options from the FCOIS options",
 		["options_contextmenu_divider_opens_settings"] = "Divider shows settings",
-		["options_contextmenu_divider_opens_settings_TT"] = "If you click the divider the FCO ItemSaver settings panel will be opened",
+		["options_contextmenu_divider_opens_settings_TT"] = "If you click the divider the FCOItemSaver settings panel will be opened",
 		["options_contextmenu_divider_clears_all_markers"] = "Divider clears all icons",
 		["options_contextmenu_divider_clears_all_markers_TT"] = "If you click the divider the current item#s icons will be unmarked (a second click on the divider will remark the last used icons of this item)",
 		["options_contextmenu_leading_spaces"]				= "Entries use leading spaces",
@@ -494,7 +496,7 @@ FCOIS.localizationVars.localizationAll = {
 		["options_auto_mark_settrackersets"]						= "Automatically mark 'SetTracker' sets",
 		["options_auto_mark_settrackersets_TT"]				= "Automatically mark items tracked with 'SetTracker' with one of the FCOIS marker icons",
 		["options_auto_mark_settrackersets_to_fcois_icon"]			= "SetTracker index <<1>>: FCOIS icon",
-		["options_auto_mark_settrackersets_to_fcois_icon_TT"]	= "Specify the icon of FCO ItemSaver here which you want to use for each 'SetTracker' tracked state/sets.",
+		["options_auto_mark_settrackersets_to_fcois_icon_TT"]	= "Specify the icon of FCOItemSaver here which you want to use for each 'SetTracker' tracked state/sets.",
 		["options_auto_mark_settrackersets_show_tooltip_on_FCOIS_marker"]		  = "Show set note as tooltip",
 		["options_auto_mark_settrackersets_show_tooltip_on_FCOIS_marker_TT"] = "Show the SetTracker set note (if it was created) text inside the tooltip of FCOItemSaver marker icons in your inventories.",
 		["options_auto_mark_settrackersets_inv"]			= "Mark in inventory",
@@ -685,7 +687,7 @@ FCOIS.localizationVars.localizationAll = {
         --Additional buttons
         ["options_header_additional_buttons"]						 = "Additional buttons",
         ["options_additional_buttons_FCOIS_settings"] 				 = "FCO settings in main menu",
-        ["options_additional_buttons_FCOIS_settings_TT"] 		 = "Show an additonal button for the FCO ItemSaver settings inside the main menu of the game (right to the help button).\n\n[Attention] The button will only be shown if the addon settings button of the addon 'Votans Settings Menu' is not shown!",
+        ["options_additional_buttons_FCOIS_settings_TT"] 		 = "Show an additonal button for the FCOItemSaver settings inside the main menu of the game (right to the help button).\n\n[Attention] The button will only be shown if the addon settings button of the addon 'Votans Settings Menu' is not shown!",
         ["options_additional_buttons_FCOIS_additional_options"] 		= "Addit. options in inventories ("..addInvFlagIcon..")",
         ["options_additional_buttons_FCOIS_additional_options_TT"] = "Show an additional button for more options (mark all/unmark all/undo last change) in the inventories.\nThe button will be shown as a small \'flag\' ("..addInvFlagIcon..") symbol at the top-left edge of the inventories and it will show a context menu if you left click on it.\nIf you right click it it will change the protective state (anti-* setting) of the currently shown panel.",
         ["options_additional_buttons_FCOIS_additional_options_colorize"] 		= "Protection state as color at "..addInvFlagIcon,
@@ -695,7 +697,7 @@ FCOIS.localizationVars.localizationAll = {
         ["options_additional_buttons_FCOIS_additional_options_offsetx_TT"] = "Move the additional inventory \'flag\' ("..addInvFlagIcon..") button on the x axis. Standard value is 0.",
         ["options_additional_buttons_FCOIS_additional_options_offsety"]         = "Offset Y",
         ["options_additional_buttons_FCOIS_additional_options_offsety_TT"] = "Move the additional inventory \'flag\' ("..addInvFlagIcon..") button on the y axis. Standard value is 0.",
-        ["button_FCOIS_settings_TT"]							 = "Show FCO ItemSaver settings",
+        ["button_FCOIS_settings_TT"]							 = "Show FCOItemSaver settings",
 		--Anti equip
 		["options_header_anti_equip"]					= "Anti equip",
 		["options_askBeforeEquipBoundItems"]			= "Ask before binding items",
@@ -971,7 +973,7 @@ FCOIS.localizationVars.localizationAll = {
 		["SI_BINDING_NAME_FCOISFILTER2"]		 = "Change Filter 2",
 		["SI_BINDING_NAME_FCOISFILTER3"]		 = "Change Filter 3",
 		["SI_BINDING_NAME_FCOISFILTER4"]	 	 = "Change Filter 4",
-        ["SI_BINDING_NAME_FCOIS_SETTINGS_MENU"]  = "FCO ItemSaver settings",
+        ["SI_BINDING_NAME_FCOIS_SETTINGS_MENU"]  = "FCOItemSaver settings",
 		["SI_BINDING_NAME_FCOIS_MARK_ITEM_WITH_STANDARD_ICON"] = "Mark with standard icon",
         ["SI_BINDING_NAME_FCOIS_MARK_ITEM_CYCLE_UP"]   = "Mark with next icon",
         ["SI_BINDING_NAME_FCOIS_MARK_ITEM_CYCLE_DOWN"] = "Mark with previous icon",
@@ -993,7 +995,7 @@ FCOIS.localizationVars.localizationAll = {
         ["options_keybind_move_marked_for_sell_to_junk_enabled_TT"] = "Enable a keybind in the inventories to move all items marked for sell to the junk.",
         ["fcois_junked_item_count"] = "Junked %s item(s)",
         --Error messages
-        ["error_gamepad_mode_not_supported"]	= "FCO ItemSaver does not support the gamepad mode! Please change the mode to keyboard at the settings.",
+        ["error_gamepad_mode_not_supported"]	= "FCOItemSaver does not support the gamepad mode! Please change the mode to keyboard at the settings.",
 
         --Crown Store items
         ["options_header_crownstore"]                    = GetString(SI_ITEMTYPE57), --Crown item
@@ -1105,7 +1107,7 @@ FCOIS.localizationVars.localizationAll = {
 	--German / Deutsch
     [FCOIS_CON_LANG_DE] = {
         -- Options menu
-        ["options_description"] 				 = "FCO ItemSaver verschafft Ihnen mit Hilfe von Symbolen einen Überblick über Ihre Gegenstände und lässt Sie diese bequem ein-/ausblenden & absichern",
+        ["options_description"] 				 = "FCOItemSaver verschafft Ihnen mit Hilfe von Symbolen einen Überblick über Ihre Gegenstände und lässt Sie diese bequem ein-/ausblenden & absichern",
         ["options_header1"] 			 		 = "Generelle Einstellungen",
         ["options_language"] 					 = "Sprache",
         ["options_language_TT"] 			 = "Wählen Sie die Sprache aus",
@@ -1414,11 +1416,13 @@ FCOIS.localizationVars.localizationAll = {
         ["options_context_menu_filter_buttons_max_icons"]           = "Zeige Untermenü: ab Anzahl Symbole",
         ["options_context_menu_filter_buttons_max_icons_TT"]   = "Wenn die Kontextmenüs für Filter Knöpfe aktiviert sind und diese Anzahl der zugeordneten Markierungssymbole im Kontextmenü aktiviert sind:\nDann wird ein Untermenü im Kontextmenü erstellt, um das Kontextmenü zu verkürzen.\n\nDer Wert 0 aktiviert das Untermenü!",
         ["options_use_subcontextmenu"]			 = "Untermenü im Kontextmenü verwenden",
-        ["options_use_subcontextmenu_TT"]	 = "Ist diese Option an wird das Kontextmenü einen 'FCO ItemSaver' Untermenü Punkt enthalten, unter welchem alle FCOIS Optionen für den Gegegstand auswählbar sind. Ist diese Option aus werden alle FCOIS Optionen für den Gegenstand direkt im Kontextmenü angezeigt.",
+        ["options_use_subcontextmenu_TT"]	 = "Ist diese Option an wird das Kontextmenü einen 'FCOItemSaver' Untermenü Punkt enthalten, unter welchem alle FCOIS Optionen für den Gegegstand auswählbar sind. Ist diese Option aus werden alle FCOIS Optionen für den Gegenstand direkt im Kontextmenü angezeigt.",
+        ["options_header_context_menu_divider"] = "FCOIS Trenner Zeile",
+        ["options_header_context_menu_divider_TT"] = "Die FCOIS Trenner Zeile wird nur dann angezeigt, wenn das generelle Untermenü im Inventar Kontextmenü deaktiviert ist!",
 		["options_show_contextmenu_divider"]	 = "Füge Kontextmenü Trenner hinzu",
-		["options_show_contextmenu_divider_TT"] = "Zeigt einen informativen Trenner zwischen den Standard Gegenstand Optionen im Kontextmenü, und den FCO ItemSaver Kontextmenü einträgen an",
+		["options_show_contextmenu_divider_TT"] = "Zeigt einen informativen Trenner zwischen den Standard Gegenstand Optionen im Kontextmenü, und den FCOItemSaver Kontextmenü Einträgen an",
 		["options_contextmenu_divider_opens_settings"] = "Trenner öffnet Einstellungen",
-		["options_contextmenu_divider_opens_settings_TT"] = "Ein Klick auf den Trenner im Kontextmenü öffnet die FCO ItemSaver Einstellungen",
+		["options_contextmenu_divider_opens_settings_TT"] = "Ein Klick auf den Trenner im Kontextmenü öffnet die FCOItemSaver Einstellungen",
 		["options_contextmenu_divider_clears_all_markers"] = "Trenner entfernt alle Symbole",
 		["options_contextmenu_divider_clears_all_markers_TT"] = "Ein Klick auf den Trenner im Kontextmenü entfernt alle Markierungen/Symbole bei diesem Gegenstand (erneut auf den Trenner klicken, um die letzten Symbole wieder herzustellen)",
 		["options_contextmenu_leading_spaces"]				= "Einträge mit führ. Leerzeichen",
@@ -1709,7 +1713,7 @@ FCOIS.localizationVars.localizationAll = {
 		["options_auto_mark_settrackersets_rescan"]				= "Rescan & markiere erneut",
 		["options_auto_mark_settrackersets_rescan_TT"]		= "Beim Login/Oberfläche neuladen: Scanne die oben ausgewählten Inventare erneut nach mit Set Tracker verfolgten Setteilen und markiere diese automatisch, wenn kein FCOIS Symbol mehr gesetzt ist.",
 		["options_auto_mark_settrackersets_to_fcois_icon"]		= "SetTracker index <<1>>: FCOIS Symbol",
-		["options_auto_mark_settrackersets_to_fcois_icon_TT"]	= "Gebe das FCO ItemSaver Symbol an, welches du für jedes 'SetTracker' verfolgte Set benutzen möchtest.",
+		["options_auto_mark_settrackersets_to_fcois_icon_TT"]	= "Gebe das FCOItemSaver Symbol an, welches du für jedes 'SetTracker' verfolgte Set benutzen möchtest.",
 		["options_auto_mark_settrackersets_show_tooltip_on_FCOIS_marker"]		  = "Zeige Set Notiz als Tooltip",
 		["options_auto_mark_settrackersets_show_tooltip_on_FCOIS_marker_TT"] = "Zeige die SetTracker Set Notiz (sofern gegeben) in dem FCOItemSaver Tooltip für die MArkierungs Symbole.",
 		["options_enable_auto_mark_sets_settracker_icons"]			= "Prüfe SetTracker Sets",
@@ -1748,7 +1752,7 @@ FCOIS.localizationVars.localizationAll = {
         --Additional buttons
         ["options_header_additional_buttons"]						 = "Zusätzliche Knöpfe",
         ["options_additional_buttons_FCOIS_settings"] 				 = "FCO Einstellungen im Hauptmenu",
-        ["options_additional_buttons_FCOIS_settings_TT"] 		 = "Zeigt einen Knopf für die FCO ItemSaver Einstellungen im Hauptmenü an (rechts vom Hilfe Knopf).\n\n[Achtung] Der Knopf wird nur angezeigt, wenn der Einstellungsknopf im Addon 'Votans Settings Menu' nicht geladen ist!",
+        ["options_additional_buttons_FCOIS_settings_TT"] 		 = "Zeigt einen Knopf für die FCOItemSaver Einstellungen im Hauptmenü an (rechts vom Hilfe Knopf).\n\n[Achtung] Der Knopf wird nur angezeigt, wenn der Einstellungsknopf im Addon 'Votans Settings Menu' nicht geladen ist!",
         ["options_additional_buttons_FCOIS_additional_options"] 		= "Zusätzl. Optionen in Inventaren ("..addInvFlagIcon..")",
         ["options_additional_buttons_FCOIS_additional_options_TT"] = "Zeigt einen Knopf für zusätzliche Optionen (Alle markieren/Alle demarkieren/Rückgängig machen) in den Inventaren an.\nDer Knopf wird als kleine \'Flagge\' ("..addInvFlagIcon..") links oben im Inventar angezeigt und öffnet ein Kontextmenü, wenn man mit der Maus links darauf klickt.\nKlickt man rechts darauf so wechselt der Schutz-Status (Anti-* Schutz) des aktuell angezeigten Panels.",
         ["options_additional_buttons_FCOIS_additional_options_colorize"] 		= "Schutz Status als Farbe am "..addInvFlagIcon.." Knopf",
@@ -1758,7 +1762,7 @@ FCOIS.localizationVars.localizationAll = {
         ["options_additional_buttons_FCOIS_additional_options_offsetx_TT"] = "Verschiebe den zusätzliche Optionen "..addInvFlagIcon.." Knopf auf der X Achse. Standard Wert ist 0.",
         ["options_additional_buttons_FCOIS_additional_options_offsety"]         = "Position Y",
         ["options_additional_buttons_FCOIS_additional_options_offsety_TT"] = "Verschiebe den zusätzliche Optionen "..addInvFlagIcon.." Knopf auf der Y Achse. Standard Wert ist 0.",
-        ["button_FCOIS_settings_TT"]							 = "FCO ItemSaver Einstellungen anzeigen",
+        ["button_FCOIS_settings_TT"]							 = "FCOItemSaver Einstellungen anzeigen",
 		--Anti equip
 		["options_header_anti_equip"]					= "Anti Equip",
 		["options_askBeforeEquipBoundItems"]			= "Vor dem Binden fragen",
@@ -2036,7 +2040,7 @@ FCOIS.localizationVars.localizationAll = {
 		["SI_BINDING_NAME_FCOISFILTER2"] 		 = "Filter 2 ändern",
 		["SI_BINDING_NAME_FCOISFILTER3"] 		 = "Filter 3 ändern",
 		["SI_BINDING_NAME_FCOISFILTER4"] 		 = "Filter 4 ändern",
-        ["SI_BINDING_NAME_FCOIS_SETTINGS_MENU"]  = "FCO ItemSaver Einstellungen",
+        ["SI_BINDING_NAME_FCOIS_SETTINGS_MENU"]  = "FCOItemSaver Einstellungen",
 		["SI_BINDING_NAME_FCOIS_MARK_ITEM_WITH_STANDARD_ICON"] = "Markie mit Standard Symbol",
         ["SI_BINDING_NAME_FCOIS_MARK_ITEM_CYCLE_UP"]   = "Markiere mit nächstem Symbol",
         ["SI_BINDING_NAME_FCOIS_MARK_ITEM_CYCLE_DOWN"] = "Markiere mit vorherigem Symbol",
@@ -2058,7 +2062,7 @@ FCOIS.localizationVars.localizationAll = {
         ["options_keybind_move_marked_for_sell_to_junk_enabled_TT"] = "Aktiviere die Tastenkombination in den Inventaren mit der alle zum Verkauf markierte Gegenstände zum Trödel verschoben werden.",
         ["fcois_junked_item_count"] = "%s Gegenstände zum Trödel bewegt",
         --Error messages
-        ["error_gamepad_mode_not_supported"]	= "FCO ItemSaver unterstützt den Gamepad Modus nicht! Bitte wechsel in den Optionen zum Tastatur Modus.",
+        ["error_gamepad_mode_not_supported"]	= "FCOItemSaver unterstützt den Gamepad Modus nicht! Bitte wechsel in den Optionen zum Tastatur Modus.",
 
         --Crown Store items
         ["options_header_crownstore"]                    = GetString(SI_ITEMTYPE57), --Crown item
@@ -2155,7 +2159,7 @@ FCOIS.localizationVars.localizationAll = {
 --French / Französisch
 	[FCOIS_CON_LANG_FR] = {
 		-- Options menu
-		["options_description"] 						 = "FCO ItemSaver vous permet de gérer vos objets à l'aide d'icônes. Vous pouvez choisir de cacher les objets à conserver",
+		["options_description"] 						 = "FCOItemSaver vous permet de gérer vos objets à l'aide d'icônes. Vous pouvez choisir de cacher les objets à conserver",
 		["options_header1"] 							 = "Général",
 		["options_language"]							 = "Langue",
 		["options_language_TT"]					 = "Choisir la langue",
@@ -2358,11 +2362,11 @@ FCOIS.localizationVars.localizationAll = {
 		["options_armor_type_icon_heavy_short"]		= "Lo",
 		["options_header_context_menu"]          = "Menu contextuel",
 		["options_use_subcontextmenu"]           = "Utiliser un sous-menu",
-		["options_use_subcontextmenu_TT"]   = "Cette options activée, toutes les options possibles FCOIS des objets seront regroupées dans un sous menu 'FCO ItemSaver' dans le menu contextuel. Cette option désactivée, toutes les options possibles FCOIS des objets apparaitront directement dans le menu contextuel.",
+		["options_use_subcontextmenu_TT"]   = "Cette options activée, toutes les options possibles FCOIS des objets seront regroupées dans un sous menu 'FCOItemSaver' dans le menu contextuel. Cette option désactivée, toutes les options possibles FCOIS des objets apparaitront directement dans le menu contextuel.",
 		["options_show_contextmenu_divider"]     = "Afficher un menu séparateur",
-		["options_show_contextmenu_divider_TT"] = "Affiche un séparateur informatif au-dessus des entrées du menu de FCO ItemSaver pour séparer les options standards des objets des options de FCOIS.",
+		["options_show_contextmenu_divider_TT"] = "Affiche un séparateur informatif au-dessus des entrées du menu de FCOItemSaver pour séparer les options standards des objets des options de FCOIS.",
 		["options_contextmenu_divider_opens_settings"] = "Réglages via séparateur",
-		["options_contextmenu_divider_opens_settings_TT"] = "Si vous cliquez sur le séparateur le panneau de réglages de FCO ItemSaver s'ouvrira",
+		["options_contextmenu_divider_opens_settings_TT"] = "Si vous cliquez sur le séparateur le panneau de réglages de FCOItemSaver s'ouvrira",
 		["options_contextmenu_divider_clears_all_markers"] = "RàZ icônes via séparateur",
 		["options_contextmenu_divider_clears_all_markers_TT"] = "Si vous cliquez sur le séparateur les icônes d'objet seront désélectionnées (un deuxième clic sur le séparateur re-sélectionnera les dernières icônes utilisées pour ces objets)",
 		["options_contextmenu_use_custom_marked_normal_color"]          = "Marquage colorisé des entrées",
@@ -2446,7 +2450,7 @@ FCOIS.localizationVars.localizationAll = {
 		["options_auto_mark_settrackersets"]						= "Marquer automatiquement les ensembles 'SetTracker' ",
 		["options_auto_mark_settrackersets_TT"]				= "Marque automatiquement les objets recherchés avec 'SetTracker' d'une des icônes de marque de FCOIS",
 		["options_auto_mark_settrackersets_to_fcois_icon"]			= "Index SetTracker <<1>>: icône FCOIS",
-		["options_auto_mark_settrackersets_to_fcois_icon_TT"]	= "Défini l'icône de FCO ItemSaver qui sera utilisée pour chaque ensemble ou stat 'SetTracker' recherché.",
+		["options_auto_mark_settrackersets_to_fcois_icon_TT"]	= "Défini l'icône de FCOItemSaver qui sera utilisée pour chaque ensemble ou stat 'SetTracker' recherché.",
 		["options_enable_auto_mark_sets_settracker_icons"]			= "Cocher tous les sets SetTracker",
 		["options_enable_auto_mark_sets_settracker_icons_TT"]	= "Valide automatiquement tous les éléments d'équipements définis par SetTracker. Si un élément  SetTracker est déjà marqué, le marquage automatique ne sera pas appliqué !",
 		["options_enable_block_marked_disable_with_flag"]			= "Désactivation temporaire",
@@ -2638,12 +2642,12 @@ FCOIS.localizationVars.localizationAll = {
 		--Additional buttons
         ["options_header_additional_buttons"]						 = "Boutons additionnels",
         ["options_additional_buttons_FCOIS_settings"] 				 = "Options FCO dans le menu principal",
-        ["options_additional_buttons_FCOIS_settings_TT"] 		 = "Fait apparaître un bouton additionnel, pour FCO ItemSaver (Options) dans le menu principal (à droite du boutton Aide/Help)\n\n[Attention] The button will only be shown if the addon settings button of the addon 'Votans Settings Menu' is not show!",
+        ["options_additional_buttons_FCOIS_settings_TT"] 		 = "Fait apparaître un bouton additionnel, pour FCOItemSaver (Options) dans le menu principal (à droite du boutton Aide/Help)\n\n[Attention] The button will only be shown if the addon settings button of the addon 'Votans Settings Menu' is not show!",
         ["options_additional_buttons_FCOIS_additional_options"] 		= "Options additionnelles dans l'inventaire",
 		["options_additional_buttons_FCOIS_additional_options_TT"] = "Affiche un bouton supplémentaire pour plus d'options dans les inventaires (marquer tout, désélectionner tout, annuler la dernière modification). Ce bouton sera représenté par un ' drapeau' sur le bord supérieur gauche de l'inventaire et ouvrira un menu si vous cliquez dessus !",
 		["options_additional_buttons_FCOIS_additional_options_colorize"]        = "Coloriser options sup des inv.",
 		["options_additional_buttons_FCOIS_additional_options_colorize_TT"] = "Colorise le bouton Options supplémentaires en vert (protection activée) ou en rouge (protection désactivée).",
-        ["button_FCOIS_settings_TT"]							 = "Fait apparaitre les options de FCO ItemSaver",
+        ["button_FCOIS_settings_TT"]							 = "Fait apparaitre les options de FCOItemSaver",
 		--Anti equip
 		["options_header_anti_equip"]					= "Anti-équipé",
 		["options_askBeforeEquipBoundItems"]			= "Demander avant de lier un objet",
@@ -2883,7 +2887,7 @@ FCOIS.localizationVars.localizationAll = {
 		["SI_BINDING_NAME_FCOISFILTER2"] 			 = "Modifier filtre 2",
 		["SI_BINDING_NAME_FCOISFILTER3"] 			 = "Modifier filtre 3",
 		["SI_BINDING_NAME_FCOISFILTER4"] 			 = "Modifier filtre 4",
-        ["SI_BINDING_NAME_FCOIS_SETTINGS_MENU"]  	 = "Paramètres de FCO ItemSaver",
+        ["SI_BINDING_NAME_FCOIS_SETTINGS_MENU"]  	 = "Paramètres de FCOItemSaver",
 		["SI_BINDING_NAME_FCOIS_MARK_ITEM_WITH_STANDARD_ICON"] = "Marquer icône standard",
 		["SI_BINDING_NAME_FCOIS_MARK_ITEM_CYCLE_UP"]   = "Marquer icône suivante",
 		["SI_BINDING_NAME_FCOIS_MARK_ITEM_CYCLE_DOWN"] = "Marquer icône précédente",
@@ -2900,7 +2904,7 @@ FCOIS.localizationVars.localizationAll = {
 		["SI_BINDING_NAME_FCOIS_MARK_GEAR_SET_4"]    = "Marquer set équipement 4",
 		["SI_BINDING_NAME_FCOIS_MARK_GEAR_SET_5"]    = "Marquer set équipement 5",
         --Error messages
-        ["error_gamepad_mode_not_supported"]	= "FCO ItemSaver ne prend pas en charge le mode de gamepad! S'il vous plaît changer le mode de clavier au niveau des réglages.",
+        ["error_gamepad_mode_not_supported"]	= "FCOItemSaver ne prend pas en charge le mode de gamepad! S'il vous plaît changer le mode de clavier au niveau des réglages.",
         --Feedback
         ["feedbackInfo"] = "Ouvrez la FAQ (questions et réponses), le panneau des auteurs (fonctionnalités / bugs) ou envoyez un mail ingame si vous avez trouvé un bug, avez une demande ou souhaitez faire un don en jeu.",
 	},
@@ -2908,7 +2912,7 @@ FCOIS.localizationVars.localizationAll = {
 --Spanish
 	[FCOIS_CON_LANG_ES] = {
 		-- Options menu
-		["options_description"] 						 = "FCO ItemSaver te permite organizar tus posesiones identificándolas mediante iconos. Puedes decidir mostrar o no los objetos marcados.",
+		["options_description"] 						 = "FCOItemSaver te permite organizar tus posesiones identificándolas mediante iconos. Puedes decidir mostrar o no los objetos marcados.",
 		["options_header1"] 							 = "General",
 		["options_language"]							 = "Idioma",
 		["options_language_TT"]					 = "Elegir idioma",
@@ -3127,10 +3131,10 @@ FCOIS.localizationVars.localizationAll = {
         --Additional buttons
         ["options_header_additional_buttons"]						 = "Botones adicionales",
         ["options_additional_buttons_FCOIS_settings"] 				 = "Opciones FCO en menú principal",
-        ["options_additional_buttons_FCOIS_settings_TT"] 		 = "Muestra un botón adicional para la configuración de FCO ItemSaver en el menú principal del juego (a la derecha del botón de ayuda)\n\n[Attention] The button will only be shown if the addon settings button of the addon 'Votans Settings Menu' is not shown!",
+        ["options_additional_buttons_FCOIS_settings_TT"] 		 = "Muestra un botón adicional para la configuración de FCOItemSaver en el menú principal del juego (a la derecha del botón de ayuda)\n\n[Attention] The button will only be shown if the addon settings button of the addon 'Votans Settings Menu' is not shown!",
         ["options_additional_buttons_FCOIS_additional_options"] 		= "Opciones adicionales de inventario",
 
-        ["button_FCOIS_settings_TT"]							 = "Mostrar configuración de FCO ItemSaver",
+        ["button_FCOIS_settings_TT"]							 = "Mostrar configuración de FCOItemSaver",
 
 		--Right click item menu
 		["rightclick_menu_lock"] 									 = "Bloquear",
@@ -3291,10 +3295,10 @@ FCOIS.localizationVars.localizationAll = {
 		["SI_BINDING_NAME_FCOISFILTER2"] 			 = "Modificar filtro 2",
 		["SI_BINDING_NAME_FCOISFILTER3"] 			 = "Modificar filtro 3",
 		["SI_BINDING_NAME_FCOISFILTER4"] 			 = "Modificar filtro 4",
-        ["SI_BINDING_NAME_FCOIS_SETTINGS_MENU"]      = "Ajustes FCO ItemSaver",
+        ["SI_BINDING_NAME_FCOIS_SETTINGS_MENU"]      = "Ajustes FCOItemSaver",
 
         --Error messages
-        ["error_gamepad_mode_not_supported"]	= "FCO ItemSaver no es compatible con el modo de mando de juegos! Por favor, cambie el modo de teclado en la configuración.",
+        ["error_gamepad_mode_not_supported"]	= "FCOItemSaver no es compatible con el modo de mando de juegos! Por favor, cambie el modo de teclado en la configuración.",
 	},
 	--Italian
     [FCOIS_CON_LANG_IT] = {
@@ -3322,7 +3326,7 @@ FCOIS.localizationVars.localizationAll = {
     --Japanese
     [FCOIS_CON_LANG_JP] = {
         -- Options menu
-        ["options_description"] = "FCO ItemSaverはアイコンを使ってアイテムを整理するのを助けてくれます。追加機能として、それらのアイテムを非表示/表示することができます。",
+        ["options_description"] = "FCOItemSaverはアイコンを使ってアイテムを整理するのを助けてくれます。追加機能として、それらのアイテムを非表示/表示することができます。",
         ["options_header1"]                      = "一般設定",
         ["options_language"]                     = "言語",
         ["options_language_TT"]             = "言語を選んでください。",
@@ -3521,11 +3525,11 @@ FCOIS.localizationVars.localizationAll = {
 
         ["options_header_context_menu"]          = "インベントリのコンテキストメニュー",
         ["options_use_subcontextmenu"]           = "コンテキストメニューでサブメニューを使用",
-        ["options_use_subcontextmenu_TT"]   = "この設定が有効化されていると、そのアイテムで利用可能なFCOIS設定がコンテキストメニュー内'FCO ItemSaver'サブメニュー越しに表示されます。",
+        ["options_use_subcontextmenu_TT"]   = "この設定が有効化されていると、そのアイテムで利用可能なFCOIS設定がコンテキストメニュー内'FCOItemSaver'サブメニュー越しに表示されます。",
         ["options_show_contextmenu_divider"]     = "コンテキストメニューディバイダを表示",
-        ["options_show_contextmenu_divider_TT"] = "FCO ItemSaverコンテキストメニューエントリの上に、アイテムのスタンダードオプションとFCOISオプションの有益なディバイダを表示します",
+        ["options_show_contextmenu_divider_TT"] = "FCOItemSaverコンテキストメニューエントリの上に、アイテムのスタンダードオプションとFCOISオプションの有益なディバイダを表示します",
         ["options_contextmenu_divider_opens_settings"] = "ディバイダ表示設定",
-        ["options_contextmenu_divider_opens_settings_TT"] = "ディバイダをクリックした場合、FCO ItemSaver設定パネルが表示されます",
+        ["options_contextmenu_divider_opens_settings_TT"] = "ディバイダをクリックした場合、FCOItemSaver設定パネルが表示されます",
         ["options_contextmenu_divider_clears_all_markers"] = "ディバイダが全てのアイコンをクリア",
         ["options_contextmenu_divider_clears_all_markers_TT"] = "ディバイダをクリックすると、現在のアイテムアイコンのマークが外されます（ディバイダを2回クリックするとこのアイテムで最後に使用したアイコンを再度マークします）",
 		["options_contextmenu_leading_spaces"]				= "エントリ先頭の余白",
@@ -3617,7 +3621,7 @@ FCOIS.localizationVars.localizationAll = {
 		["options_auto_mark_settrackersets"]						= "自動的に'SetTracker'セットをマーク",
 		["options_auto_mark_settrackersets_TT"]				= "'SetTracker'でトラックされているアイテムをFCOISマーカーアイコンの一つで自動的にマークします。",
 		["options_auto_mark_settrackersets_to_fcois_icon"]			= "SetTrackerインデックス<<1>>: FCOISアイコン",
-		["options_auto_mark_settrackersets_to_fcois_icon_TT"]	= "'SetTracker'でトラックされたそれぞれの状態/セットで使いたいFCO ItemSaverのアイコンをここで指定します。",
+		["options_auto_mark_settrackersets_to_fcois_icon_TT"]	= "'SetTracker'でトラックされたそれぞれの状態/セットで使いたいFCOItemSaverのアイコンをここで指定します。",
 		["options_auto_mark_settrackersets_show_tooltip_on_FCOIS_marker"]		  = "設定されたノートをツールチップとして表示",
 		["options_auto_mark_settrackersets_show_tooltip_on_FCOIS_marker_TT"] = "インベントリ内のFCOItemSaverマーカーアイコンのツールチップ内のテキストにSetTrackerで設定されたノートを表示します。(ノートを作成していた場合)",
 		["options_auto_mark_settrackersets_inv"]			= "インベントリ内をマーク",
@@ -3774,12 +3778,12 @@ FCOIS.localizationVars.localizationAll = {
         --Additional buttons
         ["options_header_additional_buttons"]                        = "追加ボタン",
         ["options_additional_buttons_FCOIS_settings"]                = "メインメニューにFCO設定",
-        ["options_additional_buttons_FCOIS_settings_TT"]        = "ゲームのメインメニュー内にFCO ItemSaver設定の追加ボタンを表示します。（ヘルプボタンの右）\n\n[注意]このボタンはaddon 'Votan Setting Menu'のaddon設定ボタンがが表示されていない場合のみ表示されます！",
+        ["options_additional_buttons_FCOIS_settings_TT"]        = "ゲームのメインメニュー内にFCOItemSaver設定の追加ボタンを表示します。（ヘルプボタンの右）\n\n[注意]このボタンはaddon 'Votan Setting Menu'のaddon設定ボタンがが表示されていない場合のみ表示されます！",
         ["options_additional_buttons_FCOIS_additional_options"]         = "インベントリに追加オプション",
         ["options_additional_buttons_FCOIS_additional_options_TT"] = "インベントリ内にさらなるオプションを追加するボタンを表示します。（全てをマーク/マークを全て外す/やり直し）ボタンは小さな'フラッグ'シンボルでインベントリの左上の角に表示され、クリックするとコンテキストメニューが表示されます！",
         ["options_additional_buttons_FCOIS_additional_options_colorize"]        = "インベントリ内の追加ボタンを色付け",
         ["options_additional_buttons_FCOIS_additional_options_colorize_TT"] = "現在のパネルの保護機能が有効/無効化されている場合、追加オプションボタンを緑/赤に色付けします。",
-        ["button_FCOIS_settings_TT"]                            = "FCO ItemSaver設定を表示",
+        ["button_FCOIS_settings_TT"]                            = "FCOItemSaver設定を表示",
         --Anti equip
         ["options_header_anti_equip"]                   = "アンチ装備",
         ["options_askBeforeEquipBoundItems"]            = "アイテムを固定化する前に確認",
@@ -4025,7 +4029,7 @@ FCOIS.localizationVars.localizationAll = {
         ["SI_BINDING_NAME_FCOISFILTER2"]         = "フィルタ2を変更",
         ["SI_BINDING_NAME_FCOISFILTER3"]         = "フィルタ3を変更",
         ["SI_BINDING_NAME_FCOISFILTER4"]         = "フィルタ4を変更",
-        ["SI_BINDING_NAME_FCOIS_SETTINGS_MENU"]  = "FCO ItemSaver 設定",
+        ["SI_BINDING_NAME_FCOIS_SETTINGS_MENU"]  = "FCOItemSaver 設定",
         ["SI_BINDING_NAME_FCOIS_MARK_ITEM_WITH_STANDARD_ICON"] = "スタンダードアイコンでマーク",
         ["SI_BINDING_NAME_FCOIS_MARK_ITEM_CYCLE_UP"]   = "次のアイコンでマーク",
         ["SI_BINDING_NAME_FCOIS_MARK_ITEM_CYCLE_DOWN"] = "前のアイコンでマーク",
@@ -4042,13 +4046,13 @@ FCOIS.localizationVars.localizationAll = {
         ["SI_BINDING_NAME_FCOIS_MARK_GEAR_SET_4"]    = "ギアセット4でマーク",
         ["SI_BINDING_NAME_FCOIS_MARK_GEAR_SET_5"]    = "ギアセット5でマーク",
         --Error messages
-        ["error_gamepad_mode_not_supported"]    = "FCO ItemSaverはゲームパッドモードをサポートしません！設定でキーボードモードに変更してください。",
+        ["error_gamepad_mode_not_supported"]    = "FCOItemSaverはゲームパッドモードをサポートしません！設定でキーボードモードに変更してください。",
     },
 --==============================================================================
 	-- Russian
 	[FCOIS_CON_LANG_RU] = {
 		-- Options menu
-		["options_description"] = "FCO ItemSaver зaщищaeт пoмeчeнныe Вaми пpeдмeты.\nТaкжe вы мoжeтe cкpывaть/пoкaзывaть гpуппы пoмeчeнныx пpeдмeтoв.",
+		["options_description"] = "FCOItemSaver зaщищaeт пoмeчeнныe Вaми пpeдмeты.\nТaкжe вы мoжeтe cкpывaть/пoкaзывaть гpуппы пoмeчeнныx пpeдмeтoв.",
 		["options_header1"] = "Ocнoвныe нacтpoйки",
 		["options_language"] = "Язык",
 		["options_language_TT"] = "Выбepитe язык",
@@ -4251,11 +4255,11 @@ FCOIS.localizationVars.localizationAll = {
 		["options_armor_type_icon_heavy_short"]= "Т",
 		["options_header_context_menu"] = "Кoнтeкcтнoe мeню в инвeнтape",
 		["options_use_subcontextmenu"] = "Иcпoльзoвaть пoдмeню",
-		["options_use_subcontextmenu_TT"] = "Кoгдa включeнo, в кoнтeкcтнoe мeню дoбaвляeтcя oдин пункт - 'FCO ItemSaver', вызывaющий oтдeльнoe пoдмeню. Кoгдa oтключeнo - вce кoмaнды 'FCO ItemSaver' дoбaвляютcя нeпocpeдcтвeннo в кoнтeкcтнoe мeню.",
+		["options_use_subcontextmenu_TT"] = "Кoгдa включeнo, в кoнтeкcтнoe мeню дoбaвляeтcя oдин пункт - 'FCOItemSaver', вызывaющий oтдeльнoe пoдмeню. Кoгдa oтключeнo - вce кoмaнды 'FCOItemSaver' дoбaвляютcя нeпocpeдcтвeннo в кoнтeкcтнoe мeню.",
 		["options_show_contextmenu_divider"] = "Paздeлитeль в кoнтeкcтнoм мeню",
-		["options_show_contextmenu_divider_TT"] = "Пoкaзывaть в кoнтeкcтнoм мeню, вышe FCO ItemSaver, paздeлитeль, чтoбы oтдeлить cтaндapтныe oпции oт oпций FCOIS.",
+		["options_show_contextmenu_divider_TT"] = "Пoкaзывaть в кoнтeкcтнoм мeню, вышe FCOItemSaver, paздeлитeль, чтoбы oтдeлить cтaндapтныe oпции oт oпций FCOIS.",
 		["options_contextmenu_divider_opens_settings"] = "Paздeлитeль: Пoкaзaть нacтpoйки",
-		["options_contextmenu_divider_opens_settings_TT"] = "Пpи кликe нa paздeлитeлe oткpывaть пaнeль нacтpoeк FCO ItemSaver",
+		["options_contextmenu_divider_opens_settings_TT"] = "Пpи кликe нa paздeлитeлe oткpывaть пaнeль нacтpoeк FCOItemSaver",
 		["options_contextmenu_divider_clears_all_markers"] = "Paздeлитeль:  Cнять вce пoмeтки",
 		["options_contextmenu_divider_clears_all_markers_TT"] = "Пpи кликe нa paздeлитeлe cнять пoмeтки co вce пoкaзaнныx пpeдмeтoв (втopoй клик нa paздeлитeлe уcтaнoвит нa пpeдмeт пocлeднюю иcпoльзoвaвшуюcя пoмeтку)",
 		["options_contextmenu_leading_spaces"]              = "Пункты меню начинать с пробелов",
@@ -4354,7 +4358,7 @@ FCOIS.localizationVars.localizationAll = {
 		["options_auto_mark_settrackersets"]                        = "Автоматически помечать сеты 'SetTracker'",
 		["options_auto_mark_settrackersets_TT"]                = "Автоматически помечать предметы, отслеживаемые аддоном 'SetTracker', одной из пометок FCOIS",
 		["options_auto_mark_settrackersets_to_fcois_icon"]          = "SetTracker: <<1>> -> пометка FCOIS",
-		["options_auto_mark_settrackersets_to_fcois_icon_TT"]  = "Определяет, какую пометку FCO ItemSaver вы хотите использовать для каждого вида сетов, отслеживаемых 'SetTracker'.",
+		["options_auto_mark_settrackersets_to_fcois_icon_TT"]  = "Определяет, какую пометку FCOItemSaver вы хотите использовать для каждого вида сетов, отслеживаемых 'SetTracker'.",
 		["options_auto_mark_settrackersets_show_tooltip_on_FCOIS_marker"]         = "Показать примечание к сету",
 		["options_auto_mark_settrackersets_show_tooltip_on_FCOIS_marker_TT"] = "Показать текст примечания к сету от аддона SetTracker (если оно создано) во всплывающей подсказке пометки FCOItemSaver в вашем инвентаре.",
 		["options_auto_mark_settrackersets_inv"]            = "Помечать в инвентаре",
@@ -4523,12 +4527,12 @@ FCOIS.localizationVars.localizationAll = {
 		--Additional buttons
 		["options_header_additional_buttons"] = "Дoпoлнитeльныe кнoпки",
 		["options_additional_buttons_FCOIS_settings"] = "Нacтpoйки FCO в ocнoвнoм мeню",
-		["options_additional_buttons_FCOIS_settings_TT"] = "Пoкaзывaть дoпoлнитeльную кнoпку нacтpoeк FCO ItemSaver в ocнoвнoм мeню игpы (пpaвee кнoпки пoмoщи).\n\n[Внимaниe] Кнoпкa будeт пoкaзaнa тoлькo в тoм cлучae, кoгдa в нacтpoйкax дpугoгo aддoнa 'Votans Settings Menu' cтoит нe пoкaзывaть!",
+		["options_additional_buttons_FCOIS_settings_TT"] = "Пoкaзывaть дoпoлнитeльную кнoпку нacтpoeк FCOItemSaver в ocнoвнoм мeню игpы (пpaвee кнoпки пoмoщи).\n\n[Внимaниe] Кнoпкa будeт пoкaзaнa тoлькo в тoм cлучae, кoгдa в нacтpoйкax дpугoгo aддoнa 'Votans Settings Menu' cтoит нe пoкaзывaть!",
 		["options_additional_buttons_FCOIS_additional_options"] = "Дoп.вoзмoжнocти в инвeнтape",
 		["options_additional_buttons_FCOIS_additional_options_TT"] = "Пoкaзывaть кнoпку дoпoлнитeльныx вoзмoжнocтeй (пoмeтить вce/cнять вce пoмeтки/oтмeнить пocлeднee измeнeниe) в инвeнтape. Кнoпкa выглядит кaк мaлeнький 'флaг' в вepxнeй-лeвoй чacти oкнa инвeнтapя и пpи нaжaтии нa нee вывoдитcя кoнтeкcтнoe мeню!",
 		["options_additional_buttons_FCOIS_additional_options_colorize"] = "Pacцвeткa дoп.вoзмoжнocти в инвeнтape",
 		["options_additional_buttons_FCOIS_additional_options_colorize_TT"] = "Пoкaзaть кнoпки дoп.вoзмoжнocтeй зeлeным/кpacным цвeтoм в зaвиcимocти oт тoгo, вкл/выкл дaннaя зaщитa для тeкущeгo oкнa",
-		["button_FCOIS_settings_TT"] = "Пoкaзaть нacтpoйки FCO ItemSaver",
+		["button_FCOIS_settings_TT"] = "Пoкaзaть нacтpoйки FCOItemSaver",
 		--Anti equip
 		["options_header_anti_equip"]= "Зaпpeт экипиpoвки вeщeй",
 		["options_askBeforeEquipBoundItems"]= "Cпpocить пepeд пpивязкoй вeщeй",
@@ -4771,7 +4775,7 @@ FCOIS.localizationVars.localizationAll = {
 		["SI_BINDING_NAME_FCOISFILTER2"] = "Измeнить фильтp 2",
 		["SI_BINDING_NAME_FCOISFILTER3"] = "Измeнить фильтp 3",
 		["SI_BINDING_NAME_FCOISFILTER4"] = "Измeнить фильтp 4",
-		["SI_BINDING_NAME_FCOIS_SETTINGS_MENU"] = "Нacтpoйки FCO ItemSaver",
+		["SI_BINDING_NAME_FCOIS_SETTINGS_MENU"] = "Нacтpoйки FCOItemSaver",
 		["SI_BINDING_NAME_FCOIS_MARK_ITEM_WITH_STANDARD_ICON"] = "Пoмeтить cтaндapтнoй пoмeткoй",
 		["SI_BINDING_NAME_FCOIS_MARK_ITEM_CYCLE_UP"] = "Пoмeтить cлeдующeй пoмeткoй",
 		["SI_BINDING_NAME_FCOIS_MARK_ITEM_CYCLE_DOWN"] = "Пoмeтить пpeдидующeй пoмeткoй",
@@ -4788,7 +4792,7 @@ FCOIS.localizationVars.localizationAll = {
 		["SI_BINDING_NAME_FCOIS_MARK_GEAR_SET_4"] = "Пoмeтить кaк Нaбop 4",
 		["SI_BINDING_NAME_FCOIS_MARK_GEAR_SET_5"] = "Пoмeтить кaк Нaбop 5",
 		--Error messages
-		["error_gamepad_mode_not_supported"] = "FCO ItemSaver нe пoддepживaeт peжим гeймпaдa! Пoжaлуйcтa, cмeнитe в нacтpoйкax peжим нa клaвиaтуpу.",
+		["error_gamepad_mode_not_supported"] = "FCOItemSaver нe пoддepживaeт peжим гeймпaдa! Пoжaлуйcтa, cмeнитe в нacтpoйкax peжим нa клaвиaтуpу.",
         --Transmutation / Retrait
         ["options_header_transmutation"]          = "Трансмутация", --Is given ingame via GetString(SI_RETRAIT_STATION_ITEM_TO_RETRAIT_HEADER)
         --["filter_retrait"]                        = "[Смена особ.]", --< As variant, if need short text

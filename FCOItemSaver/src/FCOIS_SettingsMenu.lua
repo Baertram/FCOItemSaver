@@ -6529,6 +6529,75 @@ function FCOIS.BuildAddonMenu()
                     controls =
                     {
                         {
+                            type     = "submenu",
+                            name     = locVars["options_header_context_menu_divider"],
+                            tooltip = locVars["options_header_context_menu_divider_TT"],
+                            disabled = function() return FCOISsettings.useSubContextMenu end,
+                            controls =
+                            {
+                                {
+                                    type = "checkbox",
+                                    name = locVars["options_show_contextmenu_divider"],
+                                    tooltip = locVars["options_show_contextmenu_divider_TT"],
+                                    getFunc = function() return FCOISsettings.showContextMenuDivider end,
+                                    setFunc = function(value) FCOISsettings.showContextMenuDivider = value
+                                    end,
+                                    disabled = function() return FCOISsettings.useSubContextMenu end,
+                                    default = FCOISdefaultSettings.showContextMenuDivider,
+                                },
+                                {
+                                    type = "checkbox",
+                                    name = locVars["options_contextmenu_divider_opens_settings"],
+                                    tooltip = locVars["options_contextmenu_divider_opens_settings_TT"],
+                                    getFunc = function() return FCOISsettings.contextMenuDividerShowsSettings end,
+                                    setFunc = function(value)
+                                        FCOISsettings.contextMenuDividerShowsSettings = value
+                                        if FCOISsettings.contextMenuDividerShowsSettings then
+                                            FCOISsettings.contextMenuDividerClearsMarkers = false
+                                        end
+                                    end,
+                                    disabled = function()
+                                        if FCOISsettings.useSubContextMenu then
+                                            return true
+                                        else
+                                            if FCOISsettings.showContextMenuDivider then
+                                                return FCOISsettings.contextMenuDividerClearsMarkers
+                                            else
+                                                return true
+                                            end
+                                        end
+                                    end,
+                                    default = FCOISdefaultSettings.contextMenuDividerShowsSettings,
+                                },
+                                {
+                                    type = "checkbox",
+                                    name = locVars["options_contextmenu_divider_clears_all_markers"],
+                                    tooltip = locVars["options_contextmenu_divider_clears_all_markers_TT"],
+                                    getFunc = function() return FCOISsettings.contextMenuDividerClearsMarkers end,
+                                    setFunc = function(value)
+                                        FCOISsettings.contextMenuDividerClearsMarkers = value
+                                        if FCOISsettings.contextMenuDividerClearsMarkers then
+                                            FCOISsettings.contextMenuDividerShowsSettings = false
+                                        end
+                                    end,
+                                    disabled = function()
+                                        if FCOISsettings.useSubContextMenu then
+                                            return true
+                                        else
+                                            if FCOISsettings.showContextMenuDivider then
+                                                return FCOISsettings.contextMenuDividerShowsSettings
+                                            else
+                                                return true
+                                            end
+                                        end
+                                    end,
+                                    default = FCOISdefaultSettings.contextMenuDividerClearsMarkers,
+                                },
+
+                            } --controls divider in contextmenu
+                        }, --submenu divider in contextmenu
+
+                        {
                             type = "checkbox",
                             name = locVars["options_use_subcontextmenu"],
                             tooltip = locVars["options_use_subcontextmenu_TT"],
@@ -6557,64 +6626,6 @@ function FCOIS.BuildAddonMenu()
                             default = FCOISdefaultSettings.useDynSubMenuMaxCount,
                         },
 
-                        {
-                            type = "checkbox",
-                            name = locVars["options_show_contextmenu_divider"],
-                            tooltip = locVars["options_show_contextmenu_divider_TT"],
-                            getFunc = function() return FCOISsettings.showContextMenuDivider end,
-                            setFunc = function(value) FCOISsettings.showContextMenuDivider = value
-                            end,
-                            disabled = function() return FCOISsettings.useSubContextMenu end,
-                            default = FCOISdefaultSettings.showContextMenuDivider,
-                        },
-                        {
-                            type = "checkbox",
-                            name = locVars["options_contextmenu_divider_opens_settings"],
-                            tooltip = locVars["options_contextmenu_divider_opens_settings_TT"],
-                            getFunc = function() return FCOISsettings.contextMenuDividerShowsSettings end,
-                            setFunc = function(value)
-                                FCOISsettings.contextMenuDividerShowsSettings = value
-                                if FCOISsettings.contextMenuDividerShowsSettings then
-                                    FCOISsettings.contextMenuDividerClearsMarkers = false
-                                end
-                            end,
-                            disabled = function()
-                                if FCOISsettings.useSubContextMenu then
-                                    return true
-                                else
-                                    if FCOISsettings.showContextMenuDivider then
-                                        return FCOISsettings.contextMenuDividerClearsMarkers
-                                    else
-                                        return true
-                                    end
-                                end
-                            end,
-                            default = FCOISdefaultSettings.contextMenuDividerShowsSettings,
-                        },
-                        {
-                            type = "checkbox",
-                            name = locVars["options_contextmenu_divider_clears_all_markers"],
-                            tooltip = locVars["options_contextmenu_divider_clears_all_markers_TT"],
-                            getFunc = function() return FCOISsettings.contextMenuDividerClearsMarkers end,
-                            setFunc = function(value)
-                                FCOISsettings.contextMenuDividerClearsMarkers = value
-                                if FCOISsettings.contextMenuDividerClearsMarkers then
-                                    FCOISsettings.contextMenuDividerShowsSettings = false
-                                end
-                            end,
-                            disabled = function()
-                                if FCOISsettings.useSubContextMenu then
-                                    return true
-                                else
-                                    if FCOISsettings.showContextMenuDivider then
-                                        return FCOISsettings.contextMenuDividerShowsSettings
-                                    else
-                                        return true
-                                    end
-                                end
-                            end,
-                            default = FCOISdefaultSettings.contextMenuDividerClearsMarkers,
-                        },
                         {
                             type = "slider",
                             min  = 0,

@@ -592,8 +592,9 @@ function FCOIS.CreateHooks()
             --As the (dynamic) sub menu entries were build, show them now
             if useSubContextMenu or useDynSubContextMenu then
                 zo_callLater(function()
-                    if FCOIS.customMenuVars.customMenuSubEntries ~= nil and #FCOIS.customMenuVars.customMenuSubEntries > 0 then
-                        AddCustomSubMenuItem("|c22DD22FCO|r ItemSaver", FCOIS.customMenuVars.customMenuSubEntries)
+                    local customMenuSubEntries = FCOIS.customMenuVars.customMenuSubEntries
+                    if customMenuSubEntries ~= nil and #customMenuSubEntries > 0 then
+                        AddCustomSubMenuItem("|c22DD22FCO|r ItemSaver", customMenuSubEntries)
                     else
                         if FCOIS.customMenuVars.customMenuDynSubEntries ~= nil and #FCOIS.customMenuVars.customMenuDynSubEntries > 0 then
                             local dynamicSubMenuEntryHeaderText = locVars["options_icons_dynamic"]
@@ -603,7 +604,8 @@ function FCOIS.CreateHooks()
                             AddCustomSubMenuItem(dynamicSubMenuEntryHeaderText, FCOIS.customMenuVars.customMenuDynSubEntries)
                         end
                     end
-                    --ShowMenu(rowControl)
+                    --Do not remove or dynamic submenu in contextmenus will be missing boundaries!
+                    ShowMenu(rowControl)
                 end, 30)
             end
         end -- if contextMenuEntriesAdded > 0 then

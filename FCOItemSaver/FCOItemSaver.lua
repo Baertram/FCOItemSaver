@@ -85,12 +85,6 @@ EsoUI/Libraries/Globals/Globals.lua:51: in function 'OnGlobalMouseDown'
 |caaaaaa<Locals> event = 65544, button = 1, focusEdit = ud </Locals>|r
 ]]
 
--- 55) 2020-03-10 - schaumamoi comments within game
--- Recharging weapons does not work as marked soulgems in ZO_Dialog is protected
-
--- 58) 2020-03-11 - wambo comments within esoui
--- Using dynamic icons submenu will show the dynamic icons submenu out of bounds and not clickable
-
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
@@ -101,6 +95,7 @@ EsoUI/Libraries/Globals/Globals.lua:51: in function 'OnGlobalMouseDown'
 --#55: Soulgems are not protected in the weapon recharge dialog anymore, even if marked
 --#56: LibFeedback error message
 --#57: SCENE_MANAGER error message upon login, if other addons used the scanner like ResearchAssistant
+--#58: Using dynamic icons submenu will show the dynamic icons submenu out of bounds and not clickable
 --#59: Junk all 'Sell' marked items keybind fixed
 --#60: Cycle 'standard' keybind fixed
 --#61: Keybinds will respect the researchability of an item and the research setting of the marker icon now (skips non-researchable items with researchable marker icons)
