@@ -332,7 +332,8 @@ local function FCOItemSaver_Open_Player_Bank(event, bagId)
         --Scan the house bank for non marked items, or items that need to be transfered from ZOs marker icons to FCOIS marker icons
         zo_callLater(function()
             --Scan for items that are locked by ZOs and should be transfered to FCOIS
-            FCOIS.scanInventoriesForZOsLockedItems(false, bagId)
+            -->Disabled as this should only be done via the settings menu, manually!
+            --FCOIS.scanInventoriesForZOsLockedItems(false, bagId)
             --Scan if house bank got items that should be marked automatically
             scanInventory(bagId, nil)
         end, 250)

@@ -88,36 +88,17 @@ EsoUI/Libraries/Globals/Globals.lua:51: in function 'OnGlobalMouseDown'
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
---Since last update 1.7.9 - New version: 1.8.0
+--Since last update 1.8.1 - New version: 1.8.2
 ---------------------------------------------------------------------
 --[Fixed]
---Fixed translations and typos in settings
---#55: Soulgems are not protected in the weapon recharge dialog anymore, even if marked
---#56: LibFeedback error message
---#57: SCENE_MANAGER error message upon login, if other addons used the scanner like ResearchAssistant
---#58: Using dynamic icons submenu will show the dynamic icons submenu out of bounds and not clickable
---#59: Junk all 'Sell' marked items keybind fixed
---#60: Cycle 'standard' keybind fixed
---#61: Keybinds will respect the researchability of an item and the research setting of the marker icon now (skips non-researchable items with researchable marker icons)
---#62: Exchanged all for i=1 to numMarkerIcons to use the constant FCOIS_CON_ICON_LOCK instead of 1
---#63) Migration of ZOs locks to FCOIS lock icon will fail due to too many messages sent -> CLient logout by server
+--Fixed house bank detection for scan of ZOs locked items
 
 --[Changed]
---Settings menu contains some more descriptions at e.g. the marker icons
---Additional inventory context menu "flag" texts will show the flag icon in the text now
---Changed colors and icons submenus to be the same for normal, gear and dynamic (1 submenu containing the icons, 1 to enable/disable them)
---Changed some other settings to use submenus as well, instead of endless long lists
---Moved Undo settings from additional buttons->additional invenmtory flag submenu to marks->undo submenu
---Moved settings of keybinds to main settings page submenus
---Moved settings of 'Deactivated marker icons' directly to 'Icons, colors, ...' submenu
 
 --[Added]
 --
 
 --[Added on request]
---Keybind to add item to junk. Junk keybind is multi-directional: Junked items will be unjunked/unjunked items will be junked
---Also added a new setting depending on this keybind: Automatically mark junked item (via keybind) with the sell icon.
---Attention: All marker icons will be removed if an item get's unjunked via this keybind (use the automatic marking scans of the inventory flag context menu to re add marks e.g.)
 
 --************************************************************************************************************************
 --************************************************************************************************************************

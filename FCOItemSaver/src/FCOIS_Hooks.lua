@@ -948,7 +948,7 @@ function FCOIS.CreateHooks()
 
             --Mouse button was released on the row?
             if upInside then
-d("[FCOIS]upInside: " ..tostring(upInside) .. ", disable: " ..tostring(rowControl.disableControl) .. ", isSoulGem: " ..tostring(isSoulGem))
+--d("[FCOIS]upInside: " ..tostring(upInside) .. ", disable: " ..tostring(rowControl.disableControl) .. ", isSoulGem: " ..tostring(isSoulGem))
                 --Check if the clicked row got marker icons which protect this item!
                 FCOIS.refreshPopupDialogButtons(rowControl, false)
                 local dialog = ctrlVars.RepairItemDialog

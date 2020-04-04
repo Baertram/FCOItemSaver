@@ -1377,7 +1377,6 @@ function FCOIS.scanInventoriesForZOsLockedItems(allInventories, houseBankBagId)
     allInventories = allInventories or false
     if houseBankBagId ~= nil then
         allInventories = false
-        allInventories = false
     end
     local debug = FCOIS.settingsVars.settings.debug
 
@@ -1406,6 +1405,15 @@ function FCOIS.scanInventoriesForZOsLockedItems(allInventories, houseBankBagId)
             --Add the subscriber bank to the inventories to check
             if GetBagUseableSize(BAG_SUBSCRIBER_BANK) > 0 then
                 allowedBagTypes[BAG_SUBSCRIBER_BANK] = true
+            end
+        end
+        --Add house bank bagIds if we are in any of our houses
+        local isInHouse = (FCOIS.checkIfOwningHouse() == true and FCOIS.checkIfInHouse() == true) or false
+        if isInHouse == true then
+            for p_houseBankBagId = BAG_HOUSE_BANK_ONE, BAG_HOUSE_BANK_TEN, 1 do
+                if IsHouseBankBag(p_houseBankBagId) == true then
+                    allowedBagTypes[p_houseBankBagId] = true
+                end
             end
         end
 
@@ -1439,22 +1447,24 @@ function FCOIS.scanInventoriesForZOsLockedItems(allInventories, houseBankBagId)
                     end
                     local bagCache = SHARED_INVENTORY:GetOrCreateBagCache(bagType)
                     local foundAndTransferedOne = false
-                    for _, data in pairs(bagCache) do
-                        --Create batches of 50 items and then wait so the server won't kick us because of message spam
-                        --Delay the next scanned package of 50 items by 250 milliseconds
-                        zo_callLater(function()
-                            foundAndTransferedOne = FCOIS.scanInventoriesForZOsLockedItemsAndTransfer(data.bagId, data.slotIndex)
-                            countItemsScanned = countItemsScanned + 1
-                            --At each 100 items: Increase the delay by a half second
-                            if countItemsScanned % 50 == 0 then
-                                itemDelay = itemDelay + 250
-                            end
-                            --Any item was changed?
-                            if foundAndTransferedOne == true then
-                                allowedBagTypesCountMigrated[bagType] = allowedBagTypesCountMigrated[bagType] + 1
-                                atLeastOneZOsMarkedFound = true
-                            end
-                        end, itemDelay)
+                    if bagCache and #bagCache > 0 then
+                        for _, data in pairs(bagCache) do
+                            --Create batches of 50 items and then wait so the server won't kick us because of message spam
+                            --Delay the next scanned package of 50 items by 250 milliseconds
+                            zo_callLater(function()
+                                foundAndTransferedOne = FCOIS.scanInventoriesForZOsLockedItemsAndTransfer(data.bagId, data.slotIndex)
+                                countItemsScanned = countItemsScanned + 1
+                                --At each 100 items: Increase the delay by a half second
+                                if countItemsScanned % 50 == 0 then
+                                    itemDelay = itemDelay + 250
+                                end
+                                --Any item was changed?
+                                if foundAndTransferedOne == true then
+                                    allowedBagTypesCountMigrated[bagType] = allowedBagTypesCountMigrated[bagType] + 1
+                                    atLeastOneZOsMarkedFound = true
+                                end
+                            end, itemDelay)
+                        end
                     end
                 end, itemDelay)
             end
