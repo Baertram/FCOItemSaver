@@ -44,6 +44,7 @@ FCOIS.localizationVars.localizationAll = {
 	--English
     [FCOIS_CON_LANG_EN] = {
 		-- Options menu
+        ["options_description_lam_menu_is_loading"] = "|cFF0000!!!ATTNETION!!!\n\nThe FCOIS settings menu is currently being build. Please wait and do not change any settings until this icon vanished!\n\nESO could be laggy for a few seconds.\nAs soon as all settings are build this icon will vanish and you can start to change the settings.",
         ["options_description"] = "FCOItemSaver helps you to manage your items by help of icons. In addition it lets you hide/view and protect those items",
 		["options_header1"] 			 		 = "General settings",
     	["options_language"] 					 = "Language",
@@ -163,6 +164,8 @@ FCOIS.localizationVars.localizationAll = {
         ["options_header_color"]				 = "Colors & icons",
         ["options_icon_offset_left"]            = "Offset left",
         ["options_icon_offset_left_TT"]         = "Offset of the icon inside the inventories, on the x axis (from left)",
+        ["options_icon_scale"]                  = "Scale %",
+        ["options_icon_scale_TT"]               = "Scale the size of the icons in %",
         ["options_icon_offset_top"]             = "Offset top",
         ["options_icon_offset_top_TT"]          = "Offset of the icon inside the inventories, on the y axis (from top)",
         ["options_icon1_color"]					 = "Lock",
@@ -1091,6 +1094,8 @@ FCOIS.localizationVars.localizationAll = {
         ["options_migrate_settings_ask_before_to_server"] = "Your SavedVariables were migrated to server dependent settings.\nDo you want to reload the UI now to store the dta on the disk?\nIf you choose to abort the non-server data will be kept as they are and after the next ReloadUI/login you will see this reminder box again!\n-VERY IMPORTANT-\nPlease be sure you have a backup of your SavedVariables file \"FCOItemSaver.lua\" before you continue!\n\nAfter the ReloadUI you are able to copy the server settings to other servers via the FCOIS settings menu.",
         ["options_logged_in_char"]          = "Only logged in char",
         ["options_logged_in_char_TT"]  = "Only for the currently logged in character",
+        ["options_other_addons"]       = "Other AddOns",
+        ["options_preview"]             = "Preview",
         --Vendor buy, buyback and repair
         ["button_context_menu_toggle_anti_buy_on"]      = "Activate 'Anti-Buy'",
         ["button_context_menu_toggle_anti_buy_off"]     = "Deactivate 'Anti-Buy'",
@@ -1107,6 +1112,7 @@ FCOIS.localizationVars.localizationAll = {
 	--German / Deutsch
     [FCOIS_CON_LANG_DE] = {
         -- Options menu
+        ["options_description_lam_menu_is_loading"] = "|cFF0000!!!ACHTUNG!!!\n\nDas FCOIS Einstellungsmenü wird gerade geladen. Bitte warten und keine Einstellungen verändern bis dieses Symbol verschwindet!\n\nESO kann für einige Sekunden schlecht reagieren.\nSobald alle Einstellungen erstellt wurden verschwindet dieses Symbol und Sie können mit den Einstellungen arbeiten.",
         ["options_description"] 				 = "FCOItemSaver verschafft Ihnen mit Hilfe von Symbolen einen Überblick über Ihre Gegenstände und lässt Sie diese bequem ein-/ausblenden & absichern",
         ["options_header1"] 			 		 = "Generelle Einstellungen",
         ["options_language"] 					 = "Sprache",
@@ -1226,6 +1232,8 @@ FCOIS.localizationVars.localizationAll = {
 		["options_icons_gear5"]					 = "Set 5",
         ["options_icon_offset_left"]            = "Abstand links",
         ["options_icon_offset_left_TT"]         = "Abstand des Symbols in den Inventaren, auf der X-Achse (von links)",
+        ["options_icon_scale"]                  = "Skalierung %",
+        ["options_icon_scale_TT"]               = "Skalierung der Symbolgröße in %",
         ["options_icon_offset_top"]             = "Abstand oben",
         ["options_icon_offset_top_TT"]          = "Abstand des Symbols in den Inventaren, auf der Y-Achse (von oben)",
         ["options_header_color"]				 = "Farben & Symbole",
@@ -2146,6 +2154,8 @@ FCOIS.localizationVars.localizationAll = {
         ["options_migrate_settings_ask_before_to_server"] = "Deine SavedVariables (Einstellungen) wurden migriert zu Server abhängigen Daten.\nWillst du nun die Benutzeroberfläche neu laden, um die Daten auf die Platte zu speichern?\nSolltest du abbrechen werden die nicht-Server abhängigen Einstellungen weiter verwendet und du siehst dieses Popup nach dem nächsten ReloadUI/Login erneut.\n\n-SEHR WICHTIG-:\nBitte sichere die SavedVariables Datei \"FCOItemSaver.lua\" vorher manuell, bevor du weitermachst!\n\nNach dem Neuladen der UI kannst du in den FCOIS Einstellungen die Daten auf andere Sever übertragen.",
         ["options_logged_in_char"]          = "Nur eingeloggter Charakter",
         ["options_logged_in_char_TT"]  = "Gilt nur für den aktuell eingeloggten Charakter",
+        ["options_other_addons"]       = "Andere AddOns",
+        ["options_preview"]             = "Vorschau",
         --Vendor buy, buyback and repair
         ["button_context_menu_toggle_anti_buy_on"]      = "Aktiviere 'Anti-Kauf'",
         ["button_context_menu_toggle_anti_buy_off"]     = "Deaktiviere 'Anti- Kauf'",

@@ -685,7 +685,7 @@ end -- FCOIS.MarkItem
 -->Parameters:
 ---itemInstanceOrUniqueId (number):		The itemInstanceId or the uniqueId of the item to mark
 ---iconId (number|table): 		        Number: The iconId to change. Can be a value between 1 and FCOIS.numVars.gFCONumFilterIcons, or -1 for all.
----								        Table:	A table containing the icons to change. Table key must be a number (without gaps!) and the value must bve the marker icon Id
+---								        Table:	A table containing the icons to change. Table key must be a number (without gaps!) and the value must be the marker icon Id
 ---								        e.g. local myTableOfFCOISMarkerIcons = { [1] = FCOIS_CON_ICON_RSEARCH, [2] = FCOIS_CON_ICON_SELL }
 ---showIcon (boolean): 			        Flag to set if the item should be marked with the icon(s), or not
 ---itemLink (String):                   The itemLink of the item. Can be left NIL and will be determined via the itemId then. One of the two must be given though!
@@ -1001,6 +1001,7 @@ function FCOIS.IsMarkedByItemInstanceId(itemInstanceId, iconIds, excludeIconIds,
 	if not checkIfFCOISSettingsWereLoaded(true) then return false end
 	--Build the itemInstanceId (signed) by help of the itemId
 	local signedItemInstanceId = FCOIS.SignItemId(itemInstanceId, nil, true, addonName) -- only sign
+--d(">FCOIS.IsMarkedByItemInstanceId, itemInstanceId: " .. tostring(itemInstanceId) .. ", signedItemInstanceId: " ..tostring(signedItemInstanceId))
 	if signedItemInstanceId == nil then return nil, nil end
 	local isMarked = false
 	local markedIconsArray = {}

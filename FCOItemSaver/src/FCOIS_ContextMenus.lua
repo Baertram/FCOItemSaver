@@ -2346,13 +2346,10 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
     else
         --Inventory (mail, trade, etc.) or bank or craftbag (if other addons enabled the craftbag at mail panel etc.)
         --Get the current inventorytype
-        local inventoryType
-        --Is the craftbag active and additional addons like CraftBagExtended show the craftbag at the bank or mail panel?
-        if FCOIS.checkIfCBEorAGSActive(FCOIS.gFilterWhereParent, true) and INVENTORY_CRAFT_BAG and not ctrlVars.CRAFTBAG:IsHidden() then
-            inventoryType = INVENTORY_CRAFT_BAG
+        local inventoryType = FCOIS.GetInventoryTypeByFilterPanel(FCOIS.gFilterWhere)
+        if inventoryType == INVENTORY_CRAFT_BAG then
             contextmenuType = "CRAFTBAG"
         else
-            inventoryType = mappingVars.InvToInventoryType[FCOIS.gFilterWhere] or nil
             contextmenuType = "INVENTORY"
         end
         --All non-filtered items will be in this list here:

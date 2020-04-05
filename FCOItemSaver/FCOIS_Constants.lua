@@ -7,8 +7,8 @@ local FCOIS = FCOIS
 FCOIS.addonVars = {}
 local addonVars = FCOIS.addonVars
 --Addon variables
-addonVars.addonVersionOptions 		= '1.8.3' -- version shown in the settings panel
-addonVars.addonVersionOptionsNumber	= 1.83
+addonVars.addonVersionOptions 		= '1.8.4' -- version shown in the settings panel
+addonVars.addonVersionOptionsNumber	= 1.84
 addonVars.gAddonName				= "FCOItemSaver"
 addonVars.gAddonNameShort           = "FCOIS"
 addonVars.addonNameMenu				= "FCO ItemSaver"
@@ -744,6 +744,20 @@ filterButtonVars.buttonOffsetYImprovement = 7
 FCOIS.otherAddons.gGriedViewOffsetX			= 26
 --Variables for the test if the Addon "Inventory Gridview" is enabled
 FCOIS.otherAddons.GRIDVIEWBUTTON    		= "ZO_PlayerInventory_GridButton"
+--GridList addon
+FCOIS.otherAddons.GridListInventoryTypesList = {
+    [1]	= INVENTORY_BACKPACK,
+    [2] = INVENTORY_QUEST_ITEM,
+    [3] = INVENTORY_BANK,
+    [4] = INVENTORY_HOUSE_BANK,
+    [5] = INVENTORY_GUILD_BANK,
+    [6] = INVENTORY_CRAFT_BAG,
+    [7] = QUICKSLOT_WINDOW,
+    [8] = STORE_WINDOW,
+    [9] = BUY_BACK_WINDOW,
+    [10]= REPAIR_WINDOW,
+}
+
 FCOIS.otherAddons.inventoryGridViewActive = false
 --For the test, if the addon "Chat Merchant" is enabled
 FCOIS.otherAddons.CHATMERCHANTBUTTON 		= "ZO_PlayerInventory_CMbutton"
@@ -1298,7 +1312,8 @@ preventerVars.ZO_ListDialog1ResearchIsOpen = false
 preventerVars.splitItemStackDialogActive = false
 preventerVars.splitItemStackDialogButtonCallbacks = false
 preventerVars.useAdvancedFiltersItemCountInInventories = false
-preventerVars.dontUpdateFilteredItemCount = false
+preventerVars.dontUpdateFilteredItemCount                     = false
+preventerVars.lamMenuOpenAndShowingInvPreviewForGridListAddon = false
 
 --The event handler array for OnMouseDoubleClick, Drag&Drop, etc.
 FCOIS.eventHandlers = {}

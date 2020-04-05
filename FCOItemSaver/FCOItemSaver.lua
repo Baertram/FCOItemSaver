@@ -47,15 +47,6 @@ ZO_MenuItem1_MouseUp:4: in function '(main chunk)'
 --> src/FCOIS_Hooks.lua ->     ZO_PreHookHandler(ctrlVars.BACKPACK_BAG, "OnEffectivelyShown", FCOItemSaver_OnEffectivelyShown) -> FCOItemSaver_OnEffectivelyShown ->  ZO_PreHookHandler(childrenCtrl, "OnMouseUp", function(...)
 --> causes the error message!
 
--- 44) 2019-12-13 Change of code - Baertram
--- Try to use the listView's setupFunction instead of OnEffectivelyShown to register a secureposthook on the OnMouseUp etc. events to the inventory rows
-
--- 45) 2019-12-29 bug - Baertram
--- SHIFT + right mouse button will restore marker icons on items which got NEW into the inventory or got the same bagId + slotIndex like a before "saved"
--- (via shift+ right mouse) item had. But this item changed it's bagId and slotIndex now or even left the inventory (sold e.g.)
--- So the save should use the itemId/itemInstanceId or uniqueID instead and the restore as well!
---> File FCOIS_MarkerIcons.lua, function FCOIS.checkIfClearOrRestoreAllMarkers()
-
 -- 47) 2019-12-29 bug - Baertram
 -- SHIFT +right click directly in guild bank's withdraw row does not work if the inventory was not at least opened once before
 -- the guild bank was opened
@@ -88,10 +79,10 @@ EsoUI/Libraries/Globals/Globals.lua:51: in function 'OnGlobalMouseDown'
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
---Since last update 1.8.1 - New version: 1.8.2
+--Since last update 1.8.3 - New version: 1.8.4
 ---------------------------------------------------------------------
 --[Fixed]
---Fixed house bank detection for scan of ZOs locked items
+--#45 SHIFT + right mouse button remove & restore items via their FCOIS signed itemInstance or unique Id now to assure it will work with the same items in different bags
 
 --[Changed]
 

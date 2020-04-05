@@ -249,11 +249,11 @@ function FCOIS.SignItemId(itemId, allowedItemType, onlySign, addonName)
             return FCOIS.checkItemId(itemId, addonName)
         end
     end
-    --Only sign the itemId if it is a number
-    if type(itemId) == "number" then
+    --Only sign the itemId if it is a number and if it's a positive value (esle it was signed already!)
+    if itemId and type(itemId) == "number" and itemId > 0 then
         local SIGNED_INT_MAX = 2^32 / 2 - 1
         local INT_MAX 		 = 2^32
-        if(itemId and itemId > SIGNED_INT_MAX) then
+        if itemId > SIGNED_INT_MAX then
             itemId = itemId - INT_MAX
         end
     end
@@ -2039,4 +2039,19 @@ function FCOIS.JunkMarkedItems(markerIconsMarkedOnItems, bagId)
         d(string.format(FCOIS.preChatVars.preChatTextGreen .. locVarJunkedItemCount, tostring(junkedItemCount)))
     end
     return retVar
+end
+
+--Get the inventoryType by help of the LibFilters filterPanelId
+function FCOIS.GetInventoryTypeByFilterPanel(p_filterPanelId)
+    p_filterPanelId = p_filterPanelId or FCOIS.gFilterWhere
+    if p_filterPanelId == nil then return nil end
+    local inventoryType
+    local mappingVars = FCOIS.mappingVars
+    --Is the craftbag active and additional addons like CraftBagExtended show the craftbag at the bank or mail panel?
+    if FCOIS.checkIfCBEorAGSActive(FCOIS.gFilterWhereParent, true) and INVENTORY_CRAFT_BAG and not ctrlVars.CRAFTBAG:IsHidden() then
+        inventoryType = INVENTORY_CRAFT_BAG
+    else
+        inventoryType = mappingVars.InvToInventoryType[p_filterPanelId] or nil
+    end
+    return inventoryType
 end

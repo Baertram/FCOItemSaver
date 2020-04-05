@@ -293,6 +293,7 @@ function FCOIS.buildDefaultSettings()
 		keybindMoveMarkedForSellToJunkEnabled = true,
 		keybindMoveItemToJunkEnabled = false,
 		keybindMoveItemToJunkAddSellIcon = false,
+		markerIconOffset = {}
     }
     --Local constant values for speed-up
     local numLibFiltersFilterPanelIds   = FCOIS.numVars.gFCONumFilterInventoryTypes
@@ -597,4 +598,14 @@ function FCOIS.buildDefaultSettings()
             }
         end
     end
+
+    --Added with FCOIS v1.8.4
+    FCOIS.settingsVars.defaults.markerIconOffset = FCOIS.settingsVars.defaults.markerIconOffset or {}
+    --Add offsets for the marker icons in the inventories for some special addons like:
+	-->GridList
+    FCOIS.settingsVars.defaults.markerIconOffset["GridList"] = {
+		x 		= 12,
+		y 		= -12,
+		scale 	= 100,
+	}
 end
