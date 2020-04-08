@@ -87,7 +87,9 @@ EsoUI/Libraries/Globals/Globals.lua:51: in function 'OnGlobalMouseDown'
 --[Changed]
 
 --[Added]
---
+--Big red icon at the top right edge of the FCOIS panel as the FCOIS settings menu is build up. Please WAIT for the icon to disappear before you open or change ANY of the FCOIS settings!
+--Support for GridList addon: New submenu in settings->icons color&position->position->other addons. You are able to change the scale of the FCOIS marker icons and the positiomn in the grids.
+--You are also able to open a preview of the inventory. If you change the GridList grid size please do a reloadui in orer to let FCOIS adopt to the changed grid size properly!
 
 --[Added on request]
 
