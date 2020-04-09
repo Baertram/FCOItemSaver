@@ -79,19 +79,16 @@ EsoUI/Libraries/Globals/Globals.lua:51: in function 'OnGlobalMouseDown'
 -- 64) 2020-04-09, Baertram
 -- Keybindings for move sell marked to junk/sell should not show at trading house sell, and others where the junk tab is not shown (banks e.g.)
 
--- 65) 2020-04-10, Teva & Dminor in FCOIs comments at www.esoui.com
--- If SetTracker addon is enabled, shows this error message upon login & reloadui:
-
+-- 66) 2020-04-10, Baertram, Bug
+-- If GridList addon is disabled the marker icons scale is somehow smaller (especially in the character screen) than normal!
 
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
---Since last update 1.8.4 - New version: 1.8.5
+--Since last update 1.8.5 - New version: 1.8.6
 ---------------------------------------------------------------------
 --[Fixed]
---#65) If SetTracker addon is enabled, shows this error message upon login & reloadui. You can also install my fixed SetTracker version from this link to benefit from removed LibStub e.g.:
---  https://www.dropbox.com/s/8kyak0zj0eqdcdk/SetTracker_fixed_libraries_Greymoor-Baertram.zip?dl=0
-
+--
 
 --[Changed]
 

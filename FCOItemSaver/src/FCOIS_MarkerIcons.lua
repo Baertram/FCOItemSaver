@@ -155,13 +155,13 @@ function FCOIS.CreateMarkerControl(parent, controlId, pWidth, pHeight, pTexture,
             control:SetHidden(doHide)
             --Control should be shown?
             if not doHide then
-                control:SetDimensions(pWidth, pHeight)
                 control:SetTexture(pTexture)
                 local iconSettingsColor = settings.icon[controlId].color
                 control:SetColor(iconSettingsColor.r, iconSettingsColor.g, iconSettingsColor.b, iconSettingsColor.a)
                 --Marker was created/updated for the character equipment slots?
                 if pIsEquipmentSlot == true then
                     control:ClearAnchors()
+                    control:SetDimensions(pWidth, pHeight)
                     --Move the marker controls of equipment slots according to settings
                     --control:SetAnchor(BOTTOMLEFT, parent, BOTTOMLEFT, -6, 5)
                     local iconPositionCharacter = settings.iconPositionCharacter
@@ -171,9 +171,11 @@ function FCOIS.CreateMarkerControl(parent, controlId, pWidth, pHeight, pTexture,
                     control:SetDrawTier(DT_HIGH)
                     control:ClearAnchors()
                     if InventoryGridViewActivated == true then
+                        control:SetDimensions(pWidth, pHeight)
                         control:SetAnchor(CENTER, parent, BOTTOMLEFT, 12, -12)
                     else
                         local gridListNotActiveOrGridListGridNotActive = true
+                        control:SetDimensions(pWidth, pHeight)
                         --Is the GridList "GRID" view enabled?
                         if GridList ~= nil then
                             local filterPanelId = FCOIS.gFilterWhere
