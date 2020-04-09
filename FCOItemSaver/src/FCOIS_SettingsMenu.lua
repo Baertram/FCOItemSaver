@@ -786,6 +786,9 @@ function FCOIS.BuildAddonMenu()
     end
 
     --==================== SetTracker - BEGIN ======================================
+    --Load SetTracker variables needed (if not already done)
+    FCOIS.otherAddons.SetTracker.GetSetTrackerSettingsAndBuildFCOISSetTrackerData()
+
     --Function to build the SetTracker dropdown boxes
     local function buildSetTrackerDDBoxes()
         if not FCOIS.otherAddons.SetTracker.isActive or not SetTrack or not SetTrack.GetMaxTrackStates then return nil end

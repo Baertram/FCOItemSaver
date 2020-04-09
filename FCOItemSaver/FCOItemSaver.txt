@@ -1,13 +1,23 @@
 ##
 ## Title: |c00FF00FCO |cFFFF00ItemSaver|r
 ## Author: Baertram
-## Version: 1.8.4
-## AddOnVersion: 184
+## Version: 1.8.5
+## AddOnVersion: 185
 ## APIVersion: 100030 100031
 ## Description: Mark/demark your inventory items with different icons and filter them in inventories, during trading, banks, guild store, mail, enchanting, crafting, researching and stores. Save your marked items before destroying/deconstructing/researching/selling/sending/trading/using or equipping/binding them!
 ## SavedVariables: FCOItemSaver_Settings
 ## DependsOn: LibAddonMenu-2.0>=28 LibCustomMenu>=682 LibDialog>=123 LibFeedback LibFilters-3.0>=315 LibLoadedAddons>=14 LibMainMenu-2.0>=432
-## OptionalDependsOn: AdvancedDisableControllerUI AdvancedFilters AF_FCODuplicateItemsFilters ChatMerchant CraftBagExtended CraftedPotions DetailedResearchScrolls DolgubonsLazyWritCreator GridList InventoryGridView LibDebugLogger LibLazyCrafting>=2992 PotionMaker QualitySort ResearchAssistant SetTracker SousChef VotansSettingsMenu
+## OptionalDependsOn: LibDebugLogger LibLazyCrafting>=2992
+## OptionalDependsOn: AdvancedDisableControllerUI AdvancedFilters AF_FCODuplicateItemsFilters
+## OptionalDependsOn: ChatMerchant CraftBagExtended CraftedPotions
+## OptionalDependsOn: DetailedResearchScrolls DolgubonsLazyWritCreator
+## OptionalDependsOn: GridList
+## OptionalDependsOn: InventoryGridView
+## OptionalDependsOn: PotionMaker
+## OptionalDependsOn: QualitySort
+## OptionalDependsOn: ResearchAssistant
+## OptionalDependsOn: SetTracker SousChef
+## OptionalDependsOn: VotansSettingsMenu
 
 ##(Check file FCOIS_Constants.lua for local and global constant values
 ##(Check file FCOIS_API.lua for functions to use within your addon)

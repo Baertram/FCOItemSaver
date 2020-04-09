@@ -186,6 +186,32 @@ end
 -- ==================================================================
 --                      SetTracker
 -- ==================================================================
+--Get the SetTracker data from it's SavedVariables and build the FCOIS mapping table data etc.
+function FCOIS.otherAddons.SetTracker.GetSetTrackerSettingsAndBuildFCOISSetTrackerData()
+    if FCOIS.otherAddons.SetTracker.FCOISMappingWasDone == false then
+        --Support for addon 'SetTracker': Get the number of allowed indices of SetTracker and
+        --build a mapping array for SetTracker index -> FCOIS marker icon
+        if FCOIS.otherAddons.SetTracker.isActive and SetTrack and SetTrack.GetMaxTrackStates then
+            local STtrackingStates = SetTrack.GetMaxTrackStates()
+            for i=0, (STtrackingStates-1), 1 do
+                if FCOIS.settingsVars.settings.setTrackerIndexToFCOISIcon[i] == nil then
+                    FCOIS.settingsVars.settings.setTrackerIndexToFCOISIcon[i] = 1
+                end
+            end
+
+            --BagId to SetTracker addon settings in FCOIS
+            FCOIS.mappingVars.bagToSetTrackerSettings = {
+                [BAG_WORN]		        = FCOIS.settingsVars.settings.autoMarkSetTrackerSetsWorn,
+                [BAG_BACKPACK]	        = FCOIS.settingsVars.settings.autoMarkSetTrackerSetsInv,
+                [BAG_BANK]		        = FCOIS.settingsVars.settings.autoMarkSetTrackerSetsBank,
+                [BAG_GUILDBANK]	        = FCOIS.settingsVars.settings.autoMarkSetTrackerSetsGuildBank,
+                [BAG_SUBSCRIBER_BANK]   = FCOIS.settingsVars.settings.autoMarkSetTrackerSetsBank,
+            }
+        end
+        FCOIS.otherAddons.SetTracker.FCOISMappingWasDone = true
+    end
+end
+
 --Loop function to check the items in your inventories against a set name and mark them with FCOIS marker icon, if tracked with addon SetTracker
 local function checkSetTrackerTrackingStateAndMarkWithFCOISIcon(sSetName, setTrackerState, iTrackIndex, doShow, p_bagId, p_slotIndex)
     if not FCOIS.otherAddons.SetTracker.isActive or SetTrack == nil or SetTrack.GetTrackingInfo == nil or SetTrack.GetTrackStateInfo == nil
@@ -378,6 +404,9 @@ function FCOIS.otherAddons.SetTracker.checkAllItemsForSetTrackerTrackingState()
         --d("[FCOIS]checkAllItemsForSetTrackerTrackingState - Aborted!")
         return false
     end
+    --Was the SetTracker data mapping needed for FCOIS already loaded?
+    FCOIS.otherAddons.SetTracker.GetSetTrackerSettingsAndBuildFCOISSetTrackerData()
+
     --Initialize the found set names table (against double checked set names)
     local foundSetnames = {}
     --Bags to check for set items

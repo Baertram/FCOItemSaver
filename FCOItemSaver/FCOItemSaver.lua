@@ -19,7 +19,7 @@
 ---------------------------------------------------------------------
 --[ToDo list] --
 --____________________________
--- Current max bugs: 63
+-- Current max bugs: 65
 --____________________________
 
 -- 1) 2019-01-14 - Bugfix - Baertram
@@ -76,20 +76,29 @@ EsoUI/Libraries/Globals/Globals.lua:51: in function 'OnGlobalMouseDown'
 |caaaaaa<Locals> event = 65544, button = 1, focusEdit = ud </Locals>|r
 ]]
 
+-- 64) 2020-04-09, Baertram
+-- Keybindings for move sell marked to junk/sell should not show at trading house sell, and others where the junk tab is not shown (banks e.g.)
+
+-- 65) 2020-04-10, Teva & Dminor in FCOIs comments at www.esoui.com
+-- If SetTracker addon is enabled, shows this error message upon login & reloadui:
+
+
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
---Since last update 1.8.3 - New version: 1.8.4
+--Since last update 1.8.4 - New version: 1.8.5
 ---------------------------------------------------------------------
 --[Fixed]
---#45 SHIFT + right mouse button remove & restore items via their FCOIS signed itemInstance or unique Id now to assure it will work with the same items in different bags
+--#65) If SetTracker addon is enabled, shows this error message upon login & reloadui. You can also install my fixed SetTracker version from this link to benefit from removed LibStub e.g.:
+--  https://www.dropbox.com/s/8kyak0zj0eqdcdk/SetTracker_fixed_libraries_Greymoor-Baertram.zip?dl=0
+
 
 --[Changed]
 
 --[Added]
---Big red icon at the top right edge of the FCOIS panel as the FCOIS settings menu is build up. Please WAIT for the icon to disappear before you open or change ANY of the FCOIS settings!
---Support for GridList addon: New submenu in settings->icons color&position->position->other addons. You are able to change the scale of the FCOIS marker icons and the positiomn in the grids.
---You are also able to open a preview of the inventory. If you change the GridList grid size please do a reloadui in orer to let FCOIS adopt to the changed grid size properly!
+--
+--
+--
 
 --[Added on request]
 

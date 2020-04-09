@@ -7,8 +7,8 @@ local FCOIS = FCOIS
 FCOIS.addonVars = {}
 local addonVars = FCOIS.addonVars
 --Addon variables
-addonVars.addonVersionOptions 		= '1.8.4' -- version shown in the settings panel
-addonVars.addonVersionOptionsNumber	= 1.84
+addonVars.addonVersionOptions 		= '1.8.5' -- version shown in the settings panel
+addonVars.addonVersionOptionsNumber	= 1.85
 addonVars.gAddonName				= "FCOItemSaver"
 addonVars.gAddonNameShort           = "FCOIS"
 addonVars.addonNameMenu				= "FCO ItemSaver"
@@ -787,6 +787,7 @@ FCOIS.otherAddons.craftBagExtendedSupportedFilterPanels = {
 --For the addon SetTracker
 FCOIS.otherAddons.SetTracker = {}
 FCOIS.otherAddons.SetTracker.isActive = false
+FCOIS.otherAddons.SetTracker.FCOISMappingWasDone = false
 --For the addon AwesomeGuildStore (Craftbag support at guild sell tab) is enabled
 FCOIS.otherAddons.AGSActive = false
 --For the addon AdvancedDisableController UI is enabled

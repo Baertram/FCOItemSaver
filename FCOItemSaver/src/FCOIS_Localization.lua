@@ -334,8 +334,6 @@ local function afterLocalization()
         ctmVars[ctmName].buttonTemplate 		= ctmVars[ctmName].cmVars.buttonContextMenuToIconId
         ctmVars[ctmName].buttonTemplateIndex 	= ctmVars[ctmName].cmVars.buttonContextMenuToIconIdIndex
     end
-    --Do some updates to the SavedVariables before the addon menu is created
-    FCOIS.updateSettingsBeforeAddonMenu()
 end
 
 --Localized texts etc.
