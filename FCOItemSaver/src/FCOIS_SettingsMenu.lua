@@ -155,6 +155,24 @@ function FCOIS.BuildAddonMenu()
     }
     --The LibAddonMenu2.0 settings panel reference variable
     FCOIS.FCOSettingsPanel = FCOIS.LAM:RegisterAddonPanel(FCOIS.addonVars.gAddonName .. "_LAM", panelData)
+    local FCOSettingsPanel = FCOIS.FCOSettingsPanel
+
+    --Create and show the "FCOIS settings loading" texture (sand clock)
+    FCOIS_LAM_MENU_IS_LOADING = WINDOW_MANAGER:CreateControl(FCOSettingsPanel:GetName() .. "_FCOIS_LAM_MENU_IS_LOADING_TEXTURE", FCOSettingsPanel, CT_TEXTURE)
+    FCOIS_LAM_MENU_IS_LOADING:SetDimensions(64, 64)
+    FCOIS_LAM_MENU_IS_LOADING:SetTexture(FCOIS.textureVars.MARKER_TEXTURES[9]) --Sand clock
+    FCOIS_LAM_MENU_IS_LOADING:SetColor(1, 0, 0, 1)
+    FCOIS_LAM_MENU_IS_LOADING:SetDrawTier(DT_HIGH)
+    FCOIS_LAM_MENU_IS_LOADING:ClearAnchors()
+    FCOIS_LAM_MENU_IS_LOADING:SetAnchor(TOPRIGHT, panel, TOPRIGHT, -64, -32)
+    FCOIS_LAM_MENU_IS_LOADING:SetHandler("OnMouseEnter", function(ctrl)
+        ZO_Tooltips_ShowTextTooltip(ctrl, BOTTOM, locVars["options_description_lam_menu_is_loading"])
+    end)
+    FCOIS_LAM_MENU_IS_LOADING:SetHandler("OnMouseExit", function()
+        ZO_Tooltips_HideTextTooltip()
+    end)
+    FCOIS_LAM_MENU_IS_LOADING:SetMouseEnabled(true)
+    FCOIS_LAM_MENU_IS_LOADING:SetHidden(false)
 
     local apiVersion = FCOIS.APIversion or GetAPIVersion()
     --Backup variables
@@ -1918,34 +1936,22 @@ function FCOIS.BuildAddonMenu()
 
     --The panel opened callback function
     local function FCOLAMPanelOpened(panel)
+--d("[FCOIS] SettingsPanel Opened: " ..tostring(panel.data.name))
         if panel ~= FCOIS.FCOSettingsPanel then return end
-        --d("[FCOIS] SettingsPanel Opened")
-        if not FCOIS_LAM_MENU_IS_LOADING and not panel.controlsWereLoaded then
-            FCOIS_LAM_MENU_IS_LOADING = WINDOW_MANAGER:CreateControl(panel:GetName() .. "_FCOIS_LAM_MENU_IS_LOADING_TEXTURE", panel, CT_TEXTURE)
+        if not panel.controlsWereLoaded == true or not lamPanelCreationInitDone == true then
             if FCOIS_LAM_MENU_IS_LOADING then
-                FCOIS_LAM_MENU_IS_LOADING:SetDimensions(96, 96)
-                FCOIS_LAM_MENU_IS_LOADING:SetTexture(FCOIS.textureVars.MARKER_TEXTURES[9]) --Sand clock
-                FCOIS_LAM_MENU_IS_LOADING:SetColor(1, 0, 0, 1)
-                FCOIS_LAM_MENU_IS_LOADING:SetDrawTier(DT_HIGH)
-                FCOIS_LAM_MENU_IS_LOADING:ClearAnchors()
-                FCOIS_LAM_MENU_IS_LOADING:SetAnchor(TOPRIGHT, panel, TOPRIGHT, -96, -48)
-                FCOIS_LAM_MENU_IS_LOADING:SetHandler("OnMouseEnter", function(ctrl)
-                    ZO_Tooltips_ShowTextTooltip(ctrl, BOTTOM, locVars["options_description_lam_menu_is_loading"])
-                end)
-                FCOIS_LAM_MENU_IS_LOADING:SetHandler("OnMouseExit", function()
-                    ZO_Tooltips_HideTextTooltip()
-                end)
-                FCOIS_LAM_MENU_IS_LOADING:SetMouseEnabled(true)
+                FCOIS_LAM_MENU_IS_LOADING:SetHidden(false)
             end
         end
         --Were the controls all loaded meanwhile? Hide the loading texture again
-        if FCOIS_LAM_MENU_IS_LOADING and panel.controlsWereLoaded == true then
+        if FCOIS_LAM_MENU_IS_LOADING and panel.controlsWereLoaded == true and lamPanelCreationInitDone == true then
             FCOIS_LAM_MENU_IS_LOADING:SetHidden(true)
         end
     end
 
     --The panel opened callback function
     local function FCOLAMPanelClosed(panel)
+--d("[FCOIS] SettingsPanel Closed: " ..tostring(panel.data.name))
         if panel ~= FCOIS.FCOSettingsPanel then return end
         --d("[FCOIS] SettingsPanel Closed")
 
