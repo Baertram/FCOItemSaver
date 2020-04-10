@@ -767,25 +767,8 @@ end
 --Do some updates to the SavedVariables before the addon menu is created
 function FCOIS.updateSettingsBeforeAddonMenu()
     --SetTracker addon
-    --Support for addon 'SetTracker': Get the number of allowed indices of SetTracker and
-    --build a mapping array for SetTracker index -> FCOIS marker icon
-    if FCOIS.otherAddons.SetTracker.isActive and SetTrack and SetTrack.GetMaxTrackStates then
-        local STtrackingStates = SetTrack.GetMaxTrackStates()
-        for i=0, (STtrackingStates-1), 1 do
-            if FCOIS.settingsVars.settings.setTrackerIndexToFCOISIcon[i] == nil then
-                FCOIS.settingsVars.settings.setTrackerIndexToFCOISIcon[i] = 1
-            end
-        end
+    FCOIS.otherAddons.SetTracker.GetSetTrackerSettingsAndBuildFCOISSetTrackerData()
 
-        --BagId to SetTracker addon settings in FCOIS
-        FCOIS.mappingVars.bagToSetTrackerSettings = {
-            [BAG_WORN]		        = FCOIS.settingsVars.settings.autoMarkSetTrackerSetsWorn,
-            [BAG_BACKPACK]	        = FCOIS.settingsVars.settings.autoMarkSetTrackerSetsInv,
-            [BAG_BANK]		        = FCOIS.settingsVars.settings.autoMarkSetTrackerSetsBank,
-            [BAG_GUILDBANK]	        = FCOIS.settingsVars.settings.autoMarkSetTrackerSetsGuildBank,
-            [BAG_SUBSCRIBER_BANK]   = FCOIS.settingsVars.settings.autoMarkSetTrackerSetsBank,
-        }
-    end
     --Introduced with FCOIS v0.8.8b
     --Create the armor, jewelry and weapon trait automatic marking arrays and preset them with "true",
     --so all armor, jewelry and weapon set pats will be marked

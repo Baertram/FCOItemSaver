@@ -19,7 +19,7 @@
 ---------------------------------------------------------------------
 --[ToDo list] --
 --____________________________
--- Current max bugs: 65
+-- Current max bugs: 68
 --____________________________
 
 -- 1) 2019-01-14 - Bugfix - Baertram
@@ -79,8 +79,12 @@ EsoUI/Libraries/Globals/Globals.lua:51: in function 'OnGlobalMouseDown'
 -- 64) 2020-04-09, Baertram
 -- Keybindings for move sell marked to junk/sell should not show at trading house sell, and others where the junk tab is not shown (banks e.g.)
 
--- 66) 2020-04-10, Baertram, Bug
+-- 66) 2020-04-09, Baertram, Bug
 -- If GridList addon is disabled the marker icons scale is somehow smaller (especially in the character screen) than normal!
+
+--68) 2020-04-10, Baertram, Bug
+-- SetTracker Dropdownboxes in LAM settings cannot be created because of choices and choicesValues not equal!
+-- choices includes only the enabled marker icons and choicesValues includes ALL icons.
 
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
@@ -88,7 +92,8 @@ EsoUI/Libraries/Globals/Globals.lua:51: in function 'OnGlobalMouseDown'
 --Since last update 1.8.5 - New version: 1.8.6
 ---------------------------------------------------------------------
 --[Fixed]
---
+--#67: "Settings loading" texture will be showing up properly now, and was shrinked in size a bit
+--#68: Fixed FCOIS settings menu for SetTracker: Dropdown boxes for the FCOIS icon selection will be shown again now
 
 --[Changed]
 

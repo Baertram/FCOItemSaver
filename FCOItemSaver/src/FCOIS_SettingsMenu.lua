@@ -804,9 +804,6 @@ function FCOIS.BuildAddonMenu()
     end
 
     --==================== SetTracker - BEGIN ======================================
-    --Load SetTracker variables needed (if not already done)
-    FCOIS.otherAddons.SetTracker.GetSetTrackerSettingsAndBuildFCOISSetTrackerData()
-
     --Function to build the SetTracker dropdown boxes
     local function buildSetTrackerDDBoxes()
         if not FCOIS.otherAddons.SetTracker.isActive or not SetTrack or not SetTrack.GetMaxTrackStates then return nil end
@@ -820,14 +817,11 @@ function FCOIS.BuildAddonMenu()
         --Static values
         local disabledChecks = function() return not FCOIS.otherAddons.SetTracker.isActive or not FCOISsettings.autoMarkSetTrackerSets end
         --Static dropdown entries
-        local choicesValuesList = {}
         local choicesTooltipsList = {}
-        for FCOISiconNr=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
+        for _, FCOISiconNr in ipairs(iconsListValues) do
             local iconDescription = "FCOItemSaver icon " .. tostring(FCOISiconNr)
             --Add each FCOIS icon description to the list
             choicesTooltipsList[FCOISiconNr] = iconDescription
-            --Add each FCOIS icon number to the list
-            choicesValuesList[FCOISiconNr] = FCOISiconNr
         end
 
         --For each SetTracker tracking state (set) build one label with the description and one dropdown box with the FCOIS icons
@@ -860,7 +854,7 @@ function FCOIS.BuildAddonMenu()
                 local setFunc = function(value) FCOISsettings.setTrackerIndexToFCOISIcon[i] = value end
                 local defaultSettings = FCOISsettings.setTrackerIndexToFCOISIcon[i]
                 --Create the dropdownbox now
-                local createdSetTrackerDDBox = CreateDropdownBox(ref, name, tooltip, disabledChecks, getFunc, setFunc, defaultSettings, iconsList, choicesValuesList, choicesTooltipsList, nil, "full", true, true)
+                local createdSetTrackerDDBox = CreateDropdownBox(ref, name, tooltip, disabledChecks, getFunc, setFunc, defaultSettings, iconsList, iconsListValues, choicesTooltipsList, nil, "full", true, true)
                 if createdSetTrackerDDBox ~= nil then
                     table.insert(createdSetTrackerDDBoxes, createdSetTrackerDDBox)
                 end

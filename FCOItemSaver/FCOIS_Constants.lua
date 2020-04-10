@@ -787,7 +787,6 @@ FCOIS.otherAddons.craftBagExtendedSupportedFilterPanels = {
 --For the addon SetTracker
 FCOIS.otherAddons.SetTracker = {}
 FCOIS.otherAddons.SetTracker.isActive = false
-FCOIS.otherAddons.SetTracker.FCOISMappingWasDone = false
 --For the addon AwesomeGuildStore (Craftbag support at guild sell tab) is enabled
 FCOIS.otherAddons.AGSActive = false
 --For the addon AdvancedDisableController UI is enabled

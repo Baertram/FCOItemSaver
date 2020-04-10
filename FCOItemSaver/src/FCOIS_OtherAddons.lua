@@ -188,27 +188,24 @@ end
 -- ==================================================================
 --Get the SetTracker data from it's SavedVariables and build the FCOIS mapping table data etc.
 function FCOIS.otherAddons.SetTracker.GetSetTrackerSettingsAndBuildFCOISSetTrackerData()
-    if FCOIS.otherAddons.SetTracker.FCOISMappingWasDone == false then
-        --Support for addon 'SetTracker': Get the number of allowed indices of SetTracker and
-        --build a mapping array for SetTracker index -> FCOIS marker icon
-        if FCOIS.otherAddons.SetTracker.isActive and SetTrack and SetTrack.GetMaxTrackStates then
-            local STtrackingStates = SetTrack.GetMaxTrackStates()
-            for i=0, (STtrackingStates-1), 1 do
-                if FCOIS.settingsVars.settings.setTrackerIndexToFCOISIcon[i] == nil then
-                    FCOIS.settingsVars.settings.setTrackerIndexToFCOISIcon[i] = 1
-                end
+    --Support for addon 'SetTracker': Get the number of allowed indices of SetTracker and
+    --build a mapping array for SetTracker index -> FCOIS marker icon
+    if FCOIS.otherAddons.SetTracker.isActive and SetTrack and SetTrack.GetMaxTrackStates then
+        local STtrackingStates = SetTrack.GetMaxTrackStates()
+        for i=0, (STtrackingStates-1), 1 do
+            if FCOIS.settingsVars.settings.setTrackerIndexToFCOISIcon[i] == nil then
+                FCOIS.settingsVars.settings.setTrackerIndexToFCOISIcon[i] = 1
             end
-
-            --BagId to SetTracker addon settings in FCOIS
-            FCOIS.mappingVars.bagToSetTrackerSettings = {
-                [BAG_WORN]		        = FCOIS.settingsVars.settings.autoMarkSetTrackerSetsWorn,
-                [BAG_BACKPACK]	        = FCOIS.settingsVars.settings.autoMarkSetTrackerSetsInv,
-                [BAG_BANK]		        = FCOIS.settingsVars.settings.autoMarkSetTrackerSetsBank,
-                [BAG_GUILDBANK]	        = FCOIS.settingsVars.settings.autoMarkSetTrackerSetsGuildBank,
-                [BAG_SUBSCRIBER_BANK]   = FCOIS.settingsVars.settings.autoMarkSetTrackerSetsBank,
-            }
         end
-        FCOIS.otherAddons.SetTracker.FCOISMappingWasDone = true
+
+        --BagId to SetTracker addon settings in FCOIS
+        FCOIS.mappingVars.bagToSetTrackerSettings = {
+            [BAG_WORN]		        = FCOIS.settingsVars.settings.autoMarkSetTrackerSetsWorn,
+            [BAG_BACKPACK]	        = FCOIS.settingsVars.settings.autoMarkSetTrackerSetsInv,
+            [BAG_BANK]		        = FCOIS.settingsVars.settings.autoMarkSetTrackerSetsBank,
+            [BAG_GUILDBANK]	        = FCOIS.settingsVars.settings.autoMarkSetTrackerSetsGuildBank,
+            [BAG_SUBSCRIBER_BANK]   = FCOIS.settingsVars.settings.autoMarkSetTrackerSetsBank,
+        }
     end
 end
 
