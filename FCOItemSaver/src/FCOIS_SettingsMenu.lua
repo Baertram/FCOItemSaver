@@ -4248,7 +4248,7 @@ function FCOIS.BuildAddonMenu()
                                     name = locVars["options_size_character_TT"],
                                     tooltip = locVars["options_size_character_TT"],
                                     min = 10,
-                                    max = 100,
+                                    max = 64,
                                     autoSelect = true,
                                     getFunc = function() return FCOISsettings.iconSizeCharacter end,
                                     setFunc = function(size)
