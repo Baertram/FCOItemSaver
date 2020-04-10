@@ -776,9 +776,11 @@ function FCOIS.RemoveEmptyWeaponEquipmentMarkers(delay)
                     --Check if the equipment control got something equipped or it's a backup weapon slot containing a 2hd weapon
                     if equipmentControl.stackCount == 0 or twoHandedWeaponOffHand then
                         --Remove the markers for the filter icons at the equipment slot
+                        local width = settings.iconSizeCharacter or equipVars.gEquipmentIconWidth
+                        local height = settings.iconSizeCharacter or equipVars.gEquipmentIconHeight
                         for j=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
                             --Last parameter = doHide (true)
-                            FCOIS.CreateMarkerControl(equipmentControl, j, equipVars.gEquipmentIconWidth, equipVars.gEquipmentIconHeight, texVars.MARKER_TEXTURES[settings.icon[j].texture], true, false, false, false, true)
+                            FCOIS.CreateMarkerControl(equipmentControl, j, width, height, texVars.MARKER_TEXTURES[settings.icon[j].texture], true, false, false, false, true)
                         end
                     end
                 end
@@ -799,18 +801,20 @@ function FCOIS.RefreshEquipmentControl(equipmentControl, doCreateMarkerControl, 
 
     --is the equipment control already given?
     if equipmentControl ~= nil then
+        local width = settings.iconSizeCharacter or equipVars.gEquipmentIconWidth
+        local height = settings.iconSizeCharacter or equipVars.gEquipmentIconHeight
         --Check all marker ids?
         if p_markId == nil or p_markId == 0 then
             if settings.debug then FCOIS.debugMessage( "[RefreshEquipmentControl]","Control: " .. equipmentControl:GetName() .. ", Create: " .. tostring(doCreateMarkerControl) .. ", MarkId: ALL", true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
             --Add/Update the markers for the filter icons at the equipment slot
             for j=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
-                FCOIS.CreateMarkerControl(equipmentControl, j, equipVars.gEquipmentIconWidth, equipVars.gEquipmentIconHeight, texVars.MARKER_TEXTURES[settings.icon[j].texture], true, doCreateMarkerControl, false)
+                FCOIS.CreateMarkerControl(equipmentControl, j, width, height, texVars.MARKER_TEXTURES[settings.icon[j].texture], true, doCreateMarkerControl, false)
             end
             --Only check a specific marker id
         else
             if settings.debug then FCOIS.debugMessage( "[RefreshEquipmentControl]","Control: " .. equipmentControl:GetName() .. ", Create: " .. tostring(doCreateMarkerControl) .. ", MarkId: " .. tostring(p_markId), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
             --Add/Update the marker p_markId for the filter icons at the equipment slot
-            FCOIS.CreateMarkerControl(equipmentControl, p_markId, equipVars.gEquipmentIconWidth, equipVars.gEquipmentIconHeight, texVars.MARKER_TEXTURES[settings.icon[p_markId].texture], true, doCreateMarkerControl, true)
+            FCOIS.CreateMarkerControl(equipmentControl, p_markId, width, height, texVars.MARKER_TEXTURES[settings.icon[p_markId].texture], true, doCreateMarkerControl, true)
         end
 
         --Are we chaning equipped weapons? Update the markers and remove 2hd weapon markers

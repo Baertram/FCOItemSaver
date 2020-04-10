@@ -22,6 +22,7 @@ function FCOIS.buildDefaultSettings()
 		iconPosition				= {},
 		iconPositionCrafting		= {},
 		iconPositionCharacter		= {},
+		iconSizeCharacter			= 20,
 		iconSortOrder				= {},
 		filterButtonLeft			= {},
 		filterButtonTop				= {},

@@ -82,10 +82,6 @@ EsoUI/Libraries/Globals/Globals.lua:51: in function 'OnGlobalMouseDown'
 -- 66) 2020-04-09, Baertram, Bug
 -- If GridList addon is disabled the marker icons scale is somehow smaller (especially in the character screen) than normal!
 
---68) 2020-04-10, Baertram, Bug
--- SetTracker Dropdownboxes in LAM settings cannot be created because of choices and choicesValues not equal!
--- choices includes only the enabled marker icons and choicesValues includes ALL icons.
-
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
@@ -98,7 +94,7 @@ EsoUI/Libraries/Globals/Globals.lua:51: in function 'OnGlobalMouseDown'
 --[Changed]
 
 --[Added]
---
+-- Setting for the icon size at character screen: FCOIS settings->icons->icon position, sorting, etc.->icon positions
 --
 --
 

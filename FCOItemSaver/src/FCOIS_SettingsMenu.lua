@@ -4243,6 +4243,22 @@ function FCOIS.BuildAddonMenu()
                                     width="half",
                                     default = FCOISdefaultSettings.iconPositionCharacter.y,
                                 },
+                                {
+                                    type = "slider",
+                                    name = locVars["options_size_character_TT"],
+                                    tooltip = locVars["options_size_character_TT"],
+                                    min = 10,
+                                    max = 100,
+                                    autoSelect = true,
+                                    getFunc = function() return FCOISsettings.iconSizeCharacter end,
+                                    setFunc = function(size)
+                                        FCOISsettings.iconSizeCharacter = size
+                                        --Set global variable to update the marker colors and textures
+                                        FCOIS.preventerVars.gUpdateMarkersNow = true
+                                    end,
+                                    width="half",
+                                    default = FCOISdefaultSettings.iconSizeCharacter,
+                                },
                             } -- controls positions
                         }, -- submenu positions
 
