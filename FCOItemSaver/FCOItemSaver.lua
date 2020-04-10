@@ -79,9 +79,6 @@ EsoUI/Libraries/Globals/Globals.lua:51: in function 'OnGlobalMouseDown'
 -- 64) 2020-04-09, Baertram
 -- Keybindings for move sell marked to junk/sell should not show at trading house sell, and others where the junk tab is not shown (banks e.g.)
 
--- 66) 2020-04-09, Baertram, Bug
--- If GridList addon is disabled the marker icons scale is somehow smaller (especially in the character screen) than normal!
-
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
@@ -94,7 +91,7 @@ EsoUI/Libraries/Globals/Globals.lua:51: in function 'OnGlobalMouseDown'
 --[Changed]
 
 --[Added]
--- Setting for the icon size at character screen: FCOIS settings->icons->icon position, sorting, etc.->icon positions
+-- #66: Setting for the icon size at character screen: FCOIS settings->icons->icon position, sorting, etc.->icon positions
 --
 --
 
