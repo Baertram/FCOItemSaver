@@ -2047,11 +2047,19 @@ function FCOIS.GetInventoryTypeByFilterPanel(p_filterPanelId)
     if p_filterPanelId == nil then return nil end
     local inventoryType
     local mappingVars = FCOIS.mappingVars
+    local libFiltersPanelIdToCraftingPanelInventory = mappingVars.libFiltersPanelIdToCraftingPanelInventory
+    local libFiltersPanelIdToNormalInventory = mappingVars.libFiltersPanelIdToInventory
+
     --Is the craftbag active and additional addons like CraftBagExtended show the craftbag at the bank or mail panel?
     if FCOIS.checkIfCBEorAGSActive(FCOIS.gFilterWhereParent, true) and INVENTORY_CRAFT_BAG and not ctrlVars.CRAFTBAG:IsHidden() then
         inventoryType = INVENTORY_CRAFT_BAG
     else
-        inventoryType = mappingVars.InvToInventoryType[p_filterPanelId] or nil
+        --Is the filterpanelId a crafting table?
+        inventoryType = libFiltersPanelIdToCraftingPanelInventory[p_filterPanelId] or nil
+        --Else: Is it a normal panel
+        if inventoryType == nil then
+            inventoryType = libFiltersPanelIdToNormalInventory[p_filterPanelId] or nil
+        end
     end
     return inventoryType
 end

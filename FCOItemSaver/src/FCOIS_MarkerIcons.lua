@@ -15,23 +15,24 @@ local checkIfFCOISSettingsWereLoaded = FCOIS.checkIfFCOISSettingsWereLoaded
 -- GRID LIST: https://www.esoui.com/downloads/info2341-GridList.html ---
 --Get the GridList inventoryList
 local GridList_MODE_LIST, GridList_MODE_GRID = 1, 3
-local function GridList_GetList(inventoryType)
-    if not inventoryType then return nil end
-    local GridListInventoryTypesList = FCOIS.otherAddons.GridListInventoryTypesList
-    local inventoryList
-    if inventoryType > 6 then
-        inventoryList = GridListInventoryTypesList[inventoryType].list
-    else
-        inventoryList = PLAYER_INVENTORY.inventories[GridListInventoryTypesList[inventoryType]].listView
-    end
-    return inventoryList
-end
 local function GridList_GetMode(inventoryType)
     if not inventoryType then return nil end
-    local control = GridList_GetList(inventoryType)
+    if not GridList or not GridList.GetList then return end
+    local control = GridList.GetList(inventoryType)
     if not control then return nil end
     local mode = control.mode
     return mode
+end
+
+local function GridList_IsSupportedInventory(inventoryType)
+    if not inventoryType then return nil end
+    if not GridList then return end
+    local list = GridList.List
+    if not list then return end
+    for _, invToCompare in ipairs(list) do
+        if invToCompare == inventoryType then return true  end
+    end
+    return false
 end
 
 
@@ -160,6 +161,7 @@ function FCOIS.CreateMarkerControl(parent, controlId, pWidth, pHeight, pTexture,
                 local iconSettingsColor = settings.icon[controlId].color
                 control:SetColor(iconSettingsColor.r, iconSettingsColor.g, iconSettingsColor.b, iconSettingsColor.a)
                 --Marker was created/updated for the character equipment slots?
+                local gridIsEnabled = false
                 if pIsEquipmentSlot == true then
                     control:ClearAnchors()
                     control:SetDimensions(pWidth, pHeight)
@@ -171,13 +173,11 @@ function FCOIS.CreateMarkerControl(parent, controlId, pWidth, pHeight, pTexture,
                 else
                     control:SetDrawTier(DT_HIGH)
                     control:ClearAnchors()
-                    control:SetDimensions(pWidth, pHeight)
 
-                    local gridIsEnabled = false
                     --Is one of the grid addons enabled?
+                    local gridListOffSetLeft
+                    local gridListOffSetTop
                     if InventoryGridViewActivated == true or GridListActivated == true then
-                        local gridListOffSetLeft = 12
-                        local gridListOffSetTop = -12
                         if InventoryGridViewActivated == true then
                             gridIsEnabled = true
                         else
@@ -192,33 +192,39 @@ function FCOIS.CreateMarkerControl(parent, controlId, pWidth, pHeight, pTexture,
                                 if filterPanelId then
                                     local inventoryType = FCOIS.GetInventoryTypeByFilterPanel(filterPanelId)
                                     if inventoryType ~= nil then
-                                        local gridViewModeOfInventoryType = GridList_GetMode(inventoryType)
-                                        if gridViewModeOfInventoryType and gridViewModeOfInventoryType == GridList_MODE_GRID then
-                                            --GridList grid is enabled
-                                            gridIsEnabled = true
+                                        --Is the inventory type a supported GridList inventory type?
+                                        local isSupportedGridListInv = GridList_IsSupportedInventory(inventoryType)
+                                        if isSupportedGridListInv == true then
+                                            local gridViewModeOfInventoryType = GridList_GetMode(inventoryType)
+                                            if gridViewModeOfInventoryType and gridViewModeOfInventoryType == GridList_MODE_GRID then
+                                                --GridList grid is enabled
+                                                gridIsEnabled = true
+                                            end
                                         end
                                     end
                                 end
                             end
                         end
-                        --The grid of one the grid addons is currently enabled?
-                        if gridIsEnabled == true then
-                            gridListOffSetLeft = settings.markerIconOffset["GridList"].x
-                            gridListOffSetTop = settings.markerIconOffset["GridList"].y
-                            local scale = settings.markerIconOffset["GridList"].scale
-                            if scale <= 0 then scale = 1 end
-                            if scale > 100 then scale = 100 end
-                            if pWidth > 0 and pHeight > 0 then
-                                local newWidth = (pWidth / 100) * scale
-                                local newHeight = (pHeight / 100) * scale
-                                if newWidth ~= pWidth or newHeight ~= pHeight then
-                                    control:SetDimensions(newWidth, newHeight)
-                                end
+                    end
+
+                    --The grid of one the grid addons is currently enabled?
+                    if gridIsEnabled == true then
+                        gridListOffSetLeft = settings.markerIconOffset["GridList"].x
+                        gridListOffSetTop = settings.markerIconOffset["GridList"].y
+                        local scale = settings.markerIconOffset["GridList"].scale
+                        if scale <= 0 then scale = 1 end
+                        if scale > 100 then scale = 100 end
+                        if pWidth > 0 and pHeight > 0 then
+                            local newWidth = (pWidth / 100) * scale
+                            local newHeight = (pHeight / 100) * scale
+                            if newWidth ~= pWidth or newHeight ~= pHeight then
+                                control:SetDimensions(newWidth, newHeight)
                             end
                         end
                         control:SetAnchor(CENTER, parent, BOTTOMLEFT, gridListOffSetLeft, gridListOffSetTop)
-                    --Normal icons without InventoryGridView or GridList
                     else
+                        --Normal icons without InventoryGridView or GridList grid
+                        control:SetDimensions(pWidth, pHeight)
                         --Get the currently active filter panel ID and map the appropriate inventory for the icon X axis offset
                         local filterPanelIdToIconOffset = FCOIS.mappingVars.filterPanelIdToIconOffset
                         local iconPosition = settings.iconPosition
@@ -229,6 +235,7 @@ function FCOIS.CreateMarkerControl(parent, controlId, pWidth, pHeight, pTexture,
                         local totalOffSetTop = iconOffset.y + iconOffsetDefinedAtMarkerIcon["top"]
                         control:SetAnchor(LEFT, parent, LEFT, totalOffSetLeft, totalOffSetTop)
                     end
+
                     --Add the OnMouseDown event handler to open the context menu of the inventory if right clicking on a texture control
                     if control:GetHandler("OnMouseUp") == nil then
                         control:SetHandler("OnMouseUp", function(self, mouseButton, upInside, ctrlKey, altKey, shiftKey, ...)
@@ -258,6 +265,9 @@ function FCOIS.CreateMarkerControl(parent, controlId, pWidth, pHeight, pTexture,
 end
 
 --Create the textures inside inventories etc.
+--The inventories of the crafting tables are build inside function /src/FCOIS_Hook.lua
+--> See function OnScrollListRowSetupCallback(rowControl, data)
+--> for e.g. SecurePostHook(ctrlVars.DECONSTRUCTION.dataTypes[1], "setupCallback", OnScrollListRowSetupCallback)
 function FCOIS.CreateTextures(whichTextures)
 
     local doCreateMarkerControl = false
@@ -298,7 +308,7 @@ function FCOIS.CreateTextures(whichTextures)
             end
         end
     end
-    --Repair list
+     --Repair list
     if (whichTextures == 2 or doCreateAllTextures) then
         --Create textures in repair window
         local listView = FCOIS.ZOControlVars.REPAIR_LIST

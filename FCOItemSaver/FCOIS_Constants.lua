@@ -485,35 +485,6 @@ mappingVars.activeFilterPanelIds			= {
     [LF_JEWELRY_RESEARCH_DIALOG]   = true,
 }
 
---The mapping array for libFilter inventory type to inventory backpack type
-mappingVars.InvToInventoryType = {
-	[LF_INVENTORY] 					= INVENTORY_BACKPACK,
-	[LF_BANK_WITHDRAW] 				= INVENTORY_BANK,
-	[LF_BANK_DEPOSIT]				= INVENTORY_BACKPACK,
-	[LF_GUILDBANK_WITHDRAW] 		= INVENTORY_GUILD_BANK,
-	[LF_GUILDBANK_DEPOSIT]    		= INVENTORY_BACKPACK,
-	[LF_VENDOR_BUY] 				= INVENTORY_BACKPACK,
-    [LF_VENDOR_SELL] 				= INVENTORY_BACKPACK,
-    [LF_VENDOR_BUYBACK]				= INVENTORY_BACKPACK,
-    [LF_VENDOR_REPAIR] 				= INVENTORY_BACKPACK,
-	[LF_SMITHING_REFINE]  			= INVENTORY_BACKPACK,
-	[LF_SMITHING_DECONSTRUCT]  		= INVENTORY_BACKPACK,
-	[LF_SMITHING_IMPROVEMENT]		= INVENTORY_BACKPACK,
-	[LF_GUILDSTORE_SELL] 	 		= INVENTORY_BACKPACK,
-	[LF_MAIL_SEND] 					= INVENTORY_BACKPACK,
-	[LF_TRADE] 						= INVENTORY_BACKPACK,
-	[LF_ENCHANTING_CREATION]		= INVENTORY_BACKPACK,
-	[LF_ENCHANTING_EXTRACTION]		= INVENTORY_BACKPACK,
-	[LF_FENCE_SELL] 				= INVENTORY_BACKPACK,
-	[LF_FENCE_LAUNDER]				= INVENTORY_BACKPACK,
-    [LF_CRAFTBAG]					= INVENTORY_CRAFT_BAG,
-    [LF_RETRAIT]                    = INVENTORY_BACKPACK,
-    [LF_HOUSE_BANK_WITHDRAW]        = INVENTORY_HOUSE_BANK,
-    [LF_HOUSE_BANK_DEPOSIT]			= INVENTORY_BACKPACK,
-	[LF_JEWELRY_REFINE]		        = INVENTORY_BACKPACK,
-    [LF_JEWELRY_DECONSTRUCT]		= INVENTORY_BACKPACK,
-    [LF_JEWELRY_IMPROVEMENT]		= INVENTORY_BACKPACK,
-}
 --The LibFilters panelIds where deconstruction can happen
 mappingVars.panelIdToDeconstructable = {
     --Deconstructable
@@ -683,13 +654,14 @@ mappingVars.craftingModeAndCraftingTypeToFilterPanelId = {
     },
 }
 
---The supported vendor LibFilters 2.0 panel IDs
+--The supported vendor LibFilters panel IDs
 mappingVars.supportedVendorPanels = {
     [LF_VENDOR_BUY]     = true,
     [LF_VENDOR_SELL]    = true,
     [LF_VENDOR_BUYBACK] = true,
     [LF_VENDOR_REPAIR]  = true,
 }
+
 
 --Global variable to tell where the filtering is currently needed (Inventory, Bank, Crafting Station, Guild Bank, Guild Store, Mail, Trading, Vendor, Enchanting table, fence)
 -- Standard filtering: Inside player inventory (LF_INVENTORY)
@@ -749,19 +721,6 @@ filterButtonVars.buttonOffsetYImprovement = 7
 FCOIS.otherAddons.gGriedViewOffsetX			= 26
 --Variables for the test if the Addon "Inventory Gridview" is enabled
 FCOIS.otherAddons.GRIDVIEWBUTTON    		= "ZO_PlayerInventory_GridButton"
---GridList addon
-FCOIS.otherAddons.GridListInventoryTypesList = {
-    [1]	= INVENTORY_BACKPACK,
-    [2] = INVENTORY_QUEST_ITEM,
-    [3] = INVENTORY_BANK,
-    [4] = INVENTORY_HOUSE_BANK,
-    [5] = INVENTORY_GUILD_BANK,
-    [6] = INVENTORY_CRAFT_BAG,
-    [7] = QUICKSLOT_WINDOW,
-    [8] = STORE_WINDOW,
-    [9] = BUY_BACK_WINDOW,
-    [10]= REPAIR_WINDOW,
-}
 
 FCOIS.otherAddons.inventoryGridViewActive = false
 --For the test, if the addon "Chat Merchant" is enabled
@@ -1071,6 +1030,48 @@ FCOIS.ZOControlVars.ZODialog1                   = ZO_Dialog1
 FCOIS.ZOControlVars.mainMenuCategoryBar         = ZO_MainMenuCategoryBar
 local ctrlVars = FCOIS.ZOControlVars
 
+--The mapping array for libFilter inventory type to inventory backpack type
+--Used in function FCOIS.GetInventoryTypeByFilterPanel()
+mappingVars.libFiltersPanelIdToInventory = {
+	[LF_INVENTORY] 					= INVENTORY_BACKPACK,
+	[LF_BANK_WITHDRAW] 				= INVENTORY_BANK,
+	[LF_BANK_DEPOSIT]				= INVENTORY_BACKPACK,
+	[LF_GUILDBANK_WITHDRAW] 		= INVENTORY_GUILD_BANK,
+	[LF_GUILDBANK_DEPOSIT]    		= INVENTORY_BACKPACK,
+	[LF_VENDOR_BUY] 				= INVENTORY_BACKPACK,
+    [LF_VENDOR_SELL] 				= INVENTORY_BACKPACK,
+    [LF_VENDOR_BUYBACK]				= INVENTORY_BACKPACK,
+    [LF_VENDOR_REPAIR] 				= INVENTORY_BACKPACK,
+	[LF_GUILDSTORE_SELL] 	 		= INVENTORY_BACKPACK,
+	[LF_MAIL_SEND] 					= INVENTORY_BACKPACK,
+	[LF_TRADE] 						= INVENTORY_BACKPACK,
+	[LF_FENCE_SELL] 				= INVENTORY_BACKPACK,
+	[LF_FENCE_LAUNDER]				= INVENTORY_BACKPACK,
+    [LF_CRAFTBAG]					= INVENTORY_CRAFT_BAG,
+    [LF_HOUSE_BANK_WITHDRAW]        = INVENTORY_HOUSE_BANK,
+    [LF_HOUSE_BANK_DEPOSIT]			= INVENTORY_BACKPACK,
+    [LF_QUICKSLOT]                  = ctrlVars.QUICKSLOT_WINDOW,
+}
+
+--The mapping table between the LibFilters filterPaneLid constant and the crafting inventories
+--Used in function FCOIS.GetInventoryTypeByFilterPanel()
+mappingVars.libFiltersPanelIdToCraftingPanelInventory = {
+    [LF_ALCHEMY_CREATION]           = ctrlVars.ALCHEMY,
+    [LF_RETRAIT]                    = ctrlVars.RETRAIT_RETRAIT_PANEL,
+    [LF_SMITHING_REFINE]            = ctrlVars.SMITHING.refinementPanel,
+    [LF_SMITHING_CREATION]          = nil,
+    [LF_SMITHING_DECONSTRUCT]       = ctrlVars.SMITHING.deconstructionPanel,
+    [LF_SMITHING_IMPROVEMENT]       = ctrlVars.SMITHING.improvementPanel,
+    [LF_SMITHING_RESEARCH]          = nil,
+    [LF_SMITHING_RESEARCH_DIALOG]   = nil,
+    [LF_JEWELRY_REFINE]            = ctrlVars.SMITHING.refinementPanel,
+    [LF_JEWELRY_CREATION]          = nil,
+    [LF_JEWELRY_DECONSTRUCT]       = ctrlVars.SMITHING.deconstructionPanel,
+    [LF_JEWELRY_IMPROVEMENT]       = ctrlVars.SMITHING.improvementPanel,
+    [LF_JEWELRY_RESEARCH]          = nil,
+    [LF_JEWELRY_RESEARCH_DIALOG]   = nil,
+}
+
 --The crafting panelIds which should show FCOIS filter buttons
 mappingVars.craftingPanelsWithFCOISFilterButtons = {
     ["ALCHEMY"] = {
@@ -1087,6 +1088,23 @@ mappingVars.craftingPanelsWithFCOISFilterButtons = {
         [LF_SMITHING_RESEARCH]          = { usesFCOISFilterButtons = false, panelControl = nil},
         [LF_SMITHING_RESEARCH_DIALOG]   = { usesFCOISFilterButtons = false, panelControl = nil},
     },
+}
+--The mapping table between the LibFilters filterPaneLid constant and the crafting inventories
+mappingVars.libFiltersPanelIdToCraftingPanelInventory = {
+    [LF_ALCHEMY_CREATION]           = ctrlVars.ALCHEMY,
+    [LF_RETRAIT]                    = ctrlVars.RETRAIT_RETRAIT_PANEL,
+    [LF_SMITHING_REFINE]            = ctrlVars.SMITHING.refinementPanel,
+    [LF_SMITHING_CREATION]          = nil,
+    [LF_SMITHING_DECONSTRUCT]       = ctrlVars.SMITHING.deconstructionPanel,
+    [LF_SMITHING_IMPROVEMENT]       = ctrlVars.SMITHING.improvementPanel,
+    [LF_SMITHING_RESEARCH]          = nil,
+    [LF_SMITHING_RESEARCH_DIALOG]   = nil,
+    [LF_JEWELRY_REFINE]            = ctrlVars.SMITHING.refinementPanel,
+    [LF_JEWELRY_CREATION]          = nil,
+    [LF_JEWELRY_DECONSTRUCT]       = ctrlVars.SMITHING.deconstructionPanel,
+    [LF_JEWELRY_IMPROVEMENT]       = ctrlVars.SMITHING.improvementPanel,
+    [LF_JEWELRY_RESEARCH]          = nil,
+    [LF_JEWELRY_RESEARCH_DIALOG]   = nil,
 }
 
 --Mapping for the house bank BAG numbers
