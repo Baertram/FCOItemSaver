@@ -19,7 +19,7 @@
 ---------------------------------------------------------------------
 --[ToDo list] --
 --____________________________
--- Current max bugs: 71
+-- Current max bugs: 72
 --____________________________
 
 -- 1) 2019-01-14 - Bugfix - Baertram
@@ -83,9 +83,6 @@ EsoUI/Libraries/Globals/Globals.lua:51: in function 'OnGlobalMouseDown'
 -- InventoryGridView support like with GridList.
 --> File scr/FCOIS_MarkerIcons.lua, function FCOIS.CreateMarkerControl, lines 173ff
 
--- 71) 2020-04-15, Baertram
--- Automatic marking of set items etc. does not work anymore since local variables were "freed" again from surrounding if end clauses
-
 
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
@@ -93,12 +90,13 @@ EsoUI/Libraries/Globals/Globals.lua:51: in function 'OnGlobalMouseDown'
 --Since last update 1.8.8 - New version: 1.8.9
 ---------------------------------------------------------------------
 --[Fixed]
--- #70: InventoryGridView support added for the inventory icon position and scale
+-- #71: Automatic marking of set items will not use the SetTracker marker icons if any trait icon is applied.
+-- #72: SetTracker function FCOIS.updateSetTrackerMarker was missing and revived
 
 --[Changed]
 
 --[Added]
---
+-- #70: InventoryGridView support added for the inventory icon position and scale
 
 --[Added on request]
 -- #69: SetTracker addon: Add "None" entry to tracked set's FCOIS marker icon dropdown box to disable automatic marks for these SetTracker sets.

@@ -477,8 +477,7 @@ local function FCOItemSaver_Crafting_Interact(_, craftSkill)
     end
 end
 
-local updateSetTrackerMarker
-if FCOIS.otherAddons then updateSetTrackerMarker = FCOIS.otherAddons.SetTracker.updateSetTrackerMarker end
+local updateSetTrackerMarker = FCOIS.updateSetTrackerMarker
 --Inventory slot gets updated function
 local function FCOItemSaver_Inv_Single_Slot_Update(_, bagId, slotId, isNewItem, itemSoundCategory, updateReason)
     --Do not mark or scan inventory if writcreater addon is crafting items

@@ -11,11 +11,10 @@
 ## OptionalDependsOn: AdvancedDisableControllerUI AdvancedFilters AF_FCODuplicateItemsFilters
 ## OptionalDependsOn: CraftBagExtended
 ## OptionalDependsOn: DolgubonsLazyWritCreator
-## OptionalDependsOn: ResearchAssistant
 ## OptionalDependsOn: SetTracker SousChef
 
 ## These addons were in the OptionalDependsOn before but raised circular dependencies. They are kept as reference at the tag BetterWith.
-## BetterWith: ChatMerchant CraftedPotions DetailedResearchScrolls GridList InventoryGridView PotionMaker QualitySort VotansSettingsMenu
+## BetterWith: ChatMerchant CraftedPotions DetailedResearchScrolls GridList InventoryGridView PotionMaker QualitySort ResearchAssistant VotansSettingsMenu
 
 ##(Check file FCOIS_Constants.lua for local and global constant values
 ##(Check file FCOIS_API.lua for functions to use within your addon)
