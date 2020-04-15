@@ -102,7 +102,8 @@ function FCOIS.CreateMarkerControl(parent, controlId, pWidth, pHeight, pTexture,
     pArmorTypeIcon = pArmorTypeIcon or false
     pHideControl = pHideControl or false
 
-    local InventoryGridViewActivated = FCOIS.otherAddons.inventoryGridViewActive or false
+    local InventoryGridViewActivated = (FCOIS.otherAddons.inventoryGridViewActive or InventoryGridView ~= nil) or false
+    local GridListActivated          = GridList ~= nil
 
     --Preset the variable for control creation with false, if it is not given
     pCreateControlIfNotThere	= pCreateControlIfNotThere or false
@@ -170,55 +171,63 @@ function FCOIS.CreateMarkerControl(parent, controlId, pWidth, pHeight, pTexture,
                 else
                     control:SetDrawTier(DT_HIGH)
                     control:ClearAnchors()
-                    if InventoryGridViewActivated == true then
-                        control:SetDimensions(pWidth, pHeight)
-                        control:SetAnchor(CENTER, parent, BOTTOMLEFT, 12, -12)
-                    else
-                        local gridListNotActiveOrGridListGridNotActive = true
-                        control:SetDimensions(pWidth, pHeight)
-                        --Is the GridList "GRID" view enabled?
-                        if GridList ~= nil then
-                            local filterPanelId = FCOIS.gFilterWhere
-                            --Is the FCOIS LAM settings menu curerntly open and we show the preview of the inventory?
-                            if FCOIS.preventerVars.lamMenuOpenAndShowingInvPreviewForGridListAddon == true then
-                                filterPanelId = LF_INVENTORY
-                            end
-                            local gridListOffSetLeft
-                            local gridListOffSetTop
-                            local inventoryType = FCOIS.GetInventoryTypeByFilterPanel(filterPanelId)
-                            if inventoryType ~= nil then
-                                local gridViewModeOfInventoryType = GridList_GetMode(inventoryType)
-                                if gridViewModeOfInventoryType and gridViewModeOfInventoryType == GridList_MODE_GRID then
-                                    gridListNotActiveOrGridListGridNotActive = false
+                    control:SetDimensions(pWidth, pHeight)
 
-                                    gridListOffSetLeft = settings.markerIconOffset["GridList"].x
-                                    gridListOffSetTop = settings.markerIconOffset["GridList"].y
-                                    local scale = settings.markerIconOffset["GridList"].scale
-                                    if scale <= 0 then scale = 1 end
-                                    if scale > 100 then scale = 100 end
-                                    if pWidth > 0 and pHeight > 0 then
-                                        local newWidth = (pWidth / 100) * scale
-                                        local newHeight = (pHeight / 100) * scale
-                                        if newWidth ~= pWidth or newHeight ~= pHeight then
-                                            control:SetDimensions(newWidth, newHeight)
+                    local gridIsEnabled = false
+                    --Is one of the grid addons enabled?
+                    if InventoryGridViewActivated == true or GridListActivated == true then
+                        local gridListOffSetLeft = 12
+                        local gridListOffSetTop = -12
+                        if InventoryGridViewActivated == true then
+                            gridIsEnabled = true
+                        else
+                            --Only if GridList active: Check if it's GridMode is currently showing the grid or not
+                            if GridListActivated == true then
+                                --Is the GridList "GRID" view enabled?
+                                local filterPanelId = FCOIS.gFilterWhere
+                                --Is the FCOIS LAM settings menu curerntly open and we show the preview of the inventory?
+                                if FCOIS.preventerVars.lamMenuOpenAndShowingInvPreviewForGridListAddon == true then
+                                    filterPanelId = LF_INVENTORY
+                                end
+                                if filterPanelId then
+                                    local inventoryType = FCOIS.GetInventoryTypeByFilterPanel(filterPanelId)
+                                    if inventoryType ~= nil then
+                                        local gridViewModeOfInventoryType = GridList_GetMode(inventoryType)
+                                        if gridViewModeOfInventoryType and gridViewModeOfInventoryType == GridList_MODE_GRID then
+                                            --GridList grid is enabled
+                                            gridIsEnabled = true
                                         end
                                     end
                                 end
                             end
-                            control:SetAnchor(CENTER, parent, BOTTOMLEFT, gridListOffSetLeft, gridListOffSetTop)
                         end
-                        if gridListNotActiveOrGridListGridNotActive == true then
-                            --Get the currently active filter panel ID and map the appropriate inventory for the icon X axis offset
-                            local filterPanelIdToIconOffset = FCOIS.mappingVars.filterPanelIdToIconOffset
-                            local iconPosition = settings.iconPosition
-                            local iconOffset = filterPanelIdToIconOffset[FCOIS.gFilterWhere] or iconPosition
-                            --Now add the iconOffset defined at each marker icon too
-                            local iconOffsetDefinedAtMarkerIcon = settings.icon[controlId].offsets[LF_INVENTORY]
-                            local totalOffSetLeft = iconOffset.x + iconOffsetDefinedAtMarkerIcon["left"]
-                            local totalOffSetTop = iconOffset.y + iconOffsetDefinedAtMarkerIcon["top"]
-                            control:SetAnchor(LEFT, parent, LEFT, totalOffSetLeft, totalOffSetTop)
+                        --The grid of one the grid addons is currently enabled?
+                        if gridIsEnabled == true then
+                            gridListOffSetLeft = settings.markerIconOffset["GridList"].x
+                            gridListOffSetTop = settings.markerIconOffset["GridList"].y
+                            local scale = settings.markerIconOffset["GridList"].scale
+                            if scale <= 0 then scale = 1 end
+                            if scale > 100 then scale = 100 end
+                            if pWidth > 0 and pHeight > 0 then
+                                local newWidth = (pWidth / 100) * scale
+                                local newHeight = (pHeight / 100) * scale
+                                if newWidth ~= pWidth or newHeight ~= pHeight then
+                                    control:SetDimensions(newWidth, newHeight)
+                                end
+                            end
                         end
-
+                        control:SetAnchor(CENTER, parent, BOTTOMLEFT, gridListOffSetLeft, gridListOffSetTop)
+                    --Normal icons without InventoryGridView or GridList
+                    else
+                        --Get the currently active filter panel ID and map the appropriate inventory for the icon X axis offset
+                        local filterPanelIdToIconOffset = FCOIS.mappingVars.filterPanelIdToIconOffset
+                        local iconPosition = settings.iconPosition
+                        local iconOffset = filterPanelIdToIconOffset[FCOIS.gFilterWhere] or iconPosition
+                        --Now add the iconOffset defined at each marker icon too
+                        local iconOffsetDefinedAtMarkerIcon = settings.icon[controlId].offsets[LF_INVENTORY]
+                        local totalOffSetLeft = iconOffset.x + iconOffsetDefinedAtMarkerIcon["left"]
+                        local totalOffSetTop = iconOffset.y + iconOffsetDefinedAtMarkerIcon["top"]
+                        control:SetAnchor(LEFT, parent, LEFT, totalOffSetLeft, totalOffSetTop)
                     end
                     --Add the OnMouseDown event handler to open the context menu of the inventory if right clicking on a texture control
                     if control:GetHandler("OnMouseUp") == nil then

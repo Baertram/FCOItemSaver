@@ -1798,16 +1798,19 @@ end
 --------------------------------------------------------------------------------
 --=========== FCOIS LibAddonMenu 2.0 API functions ==========================
 --Function to build a LAM dropdown choices and choicesValues table for the available FCOIS marker icons
---> Type can be one of the following one:
+--> Type: String - can be one of the following one:
 ---> standard: A list with the marker icons, using the name from the settings, including the icon as texture (if "withIcons" = true) and disabled icons are marked red.
 ---> standardNonDisabled: A list with the marker icons, using the name from the settings, including the icon as texture (if "withIcons" = true) and disabled icons are not marked in any other way then enabled ones.
 ---> keybinds: A list with the marker icons, using the fixed name from the translations, including the icon as texture (if "withIcons" = true) and disabled icons are marked red.
 ---> gearSets: A list with only the gear set marker icons, using the name from the settings, including the icon as texture (if "withIcons" = true) and disabled icons are marked red.
 ---In all cases the icons added to the dropdown and dropdown values will only include the dynamic icons which are currently enabled via the settings slider
 ---"Max. dynamic icons"
-function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons)
+--> withIcons: Boolean - Add the textures of the marker icons to the list entries
+--> withNoneEntry: Boolean - Add a "- No icon selected -" entry to the dropdown box, as first entry, returning the value of FCOIS_CON_ICON_NONE (-100)
+function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons, withNoneEntry)
 	if type == nil then type = "standard" end
 	withIcons = withIcons or false
+	withNoneEntry = withNoneEntry or false
 	local FCOISlocVars            = FCOIS.localizationVars
 	if not checkIfFCOISSettingsWereLoaded(true) then return nil end
 	local settings = FCOIS.settingsVars.settings
@@ -1819,7 +1822,7 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons)
 	local numDynIconsUsable = settings.numMaxDynamicIconsUsable
 
 	--Build icons choicesValues list
-	local function buildIconsChoicesValuesList(typeToCheck)
+	local function buildIconsChoicesValuesList(typeToCheck, p_withNoneEntry)
 		--Shall the icons values list contain non-enabled icons?
         local typeToEnabledCheck = {
             ['standard']            = false,
@@ -1860,15 +1863,16 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons)
 				end
 			end
 		end
+		if p_withNoneEntry == true and (choicesValuesList and #choicesValuesList>0) then
+			table.insert(choicesValuesList, 1, FCOIS_CON_ICON_NONE)
+		end
         return choicesValuesList
 	end
 
 	--Build the icon lists for the options
-	local function buildIconsChoicesList(typeToCheck, p_withIcons)
-		typeToCheck = typeToCheck or 'standard'
-		p_withIcons = p_withIcons or false
+	local function buildIconsChoicesList(typeToCheck, p_withIcons, p_withNoneEntry)
 		local iconsList = {}
-		if typeToCheck == 'standard' then
+		if typeToCheck == 'standard' or typeToCheck == 'standardNone' then
 			for i=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
   				local goOn = false
 				local isGear = isGearIcon[i]
@@ -1993,9 +1997,13 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons)
 				end
 			end
         end
+		if p_withNoneEntry == true and (iconsList and #iconsList>0) then
+			table.insert(iconsList, 1, FCOISlocVars.fcois_loc["options_icon_none"])
+		end
+
 		return iconsList
     end
-    local iconsDropdownList, iconsDropdownValuesList = buildIconsChoicesList(type, withIcons), buildIconsChoicesValuesList(type)
+    local iconsDropdownList, iconsDropdownValuesList = buildIconsChoicesList(type, withIcons, withNoneEntry), buildIconsChoicesValuesList(type, withNoneEntry)
     return iconsDropdownList, iconsDropdownValuesList
 end
 

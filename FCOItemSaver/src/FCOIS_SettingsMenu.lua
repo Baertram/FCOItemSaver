@@ -130,7 +130,21 @@ function FCOIS.BuildAddonMenu()
 
     --Other addons
     --GridList
-    local GridListSlotSize = (GridList and GridList.SV and GridList.SV.slot_size) or 52 --Standard slot size is 52
+    local GridListActivated = GridList ~= nil or false
+    --InventoryGridView
+    local InventoryGridViewActivated = (FCOIS.otherAddons.inventoryGridViewActive == true or InventoryGridView ~= nil) or false
+    if InventoryGridViewActivated == true then FCOIS.otherAddons.inventoryGridViewActive = true end
+    local function getGridAddonIconSize()
+        --Slot size of the addon
+        local gridSlotSize = 60
+        if GridListActivated == true then
+            gridSlotSize = (GridList and GridList.SV and GridList.SV.slot_size) or 52 --Standard GridList slot size is 52
+        elseif InventoryGridViewActivated == true then
+            gridSlotSize = (InventoryGridView and InventoryGridView.settings and InventoryGridView.settings.vars and InventoryGridView.settings.vars.gridIconSize) or 60 --Standard IGV slot size is 60
+        end
+        return gridSlotSize
+    end
+
 
     --Local variables to speed up stuff a bit
     FCOISdefaultSettings    = FCOIS.settingsVars.defaults
@@ -146,7 +160,7 @@ function FCOIS.BuildAddonMenu()
         displayName 		= addonVars.addonNameMenuDisplay,
         author 				= addonVars.addonAuthor,
         version 			= addonVars.addonVersionOptions,
-        --registerForRefresh 	= true,
+        registerForRefresh 	= true,
         registerForDefaults = true,
         slashCommand 		= "/fcoiss",
         website             = addonVars.website,
@@ -164,7 +178,7 @@ function FCOIS.BuildAddonMenu()
     FCOIS_LAM_MENU_IS_LOADING:SetColor(1, 0, 0, 1)
     FCOIS_LAM_MENU_IS_LOADING:SetDrawTier(DT_HIGH)
     FCOIS_LAM_MENU_IS_LOADING:ClearAnchors()
-    FCOIS_LAM_MENU_IS_LOADING:SetAnchor(TOPRIGHT, panel, TOPRIGHT, -64, -32)
+    FCOIS_LAM_MENU_IS_LOADING:SetAnchor(TOPRIGHT, FCOSettingsPanel, TOPRIGHT, -64, -32)
     FCOIS_LAM_MENU_IS_LOADING:SetHandler("OnMouseEnter", function(ctrl)
         ZO_Tooltips_ShowTextTooltip(ctrl, BOTTOM, locVars["options_description_lam_menu_is_loading"])
     end)
@@ -217,9 +231,11 @@ function FCOIS.BuildAddonMenu()
     end
 
     --Build the icons & choicesValues list for the LAM icon dropdown boxes
-    local iconsList, iconsListValues = FCOIS.GetLAMMarkerIconsDropdown('standard', true)
+    local iconsList, iconsListValues = FCOIS.GetLAMMarkerIconsDropdown('standard', true, false)
+    --Build the icons list with a first entry "None"
+    local iconsListNone, iconsListValuesNone = FCOIS.GetLAMMarkerIconsDropdown('standard', true, true)
     --Build the icons list and the keybindings icons list
-    --local iconsListStandardIconOnKeybind = FCOIS.GetLAMMarkerIconsDropdown('keybinds', false)
+    --local iconsListStandardIconOnKeybind = FCOIS.GetLAMMarkerIconsDropdown('keybinds', false, false)
 
     --The table with all the LAM dropdown controls that should get updated
     local LAMdropdownsWithIconList = {
@@ -818,10 +834,13 @@ function FCOIS.BuildAddonMenu()
         local disabledChecks = function() return not FCOIS.otherAddons.SetTracker.isActive or not FCOISsettings.autoMarkSetTrackerSets end
         --Static dropdown entries
         local choicesTooltipsList = {}
+        choicesTooltipsList[1] = locVars["options_icon_none"]
         for _, FCOISiconNr in ipairs(iconsListValues) do
-            local iconDescription = "FCOItemSaver icon " .. tostring(FCOISiconNr)
+            --local iconDescription = "FCOItemSaver icon " .. tostring(FCOISiconNr)
+            local locNameStr = FCOISlocVars.iconEndStrArray[i]
+            local iconName = FCOIS.GetIconText(FCOISiconNr) or locVars["options_icon" .. tostring(FCOISiconNr) .. "_" .. locNameStr] or "Icon " .. tostring(FCOISiconNr)
             --Add each FCOIS icon description to the list
-            choicesTooltipsList[FCOISiconNr] = iconDescription
+            table.insert(choicesTooltipsList, iconName)
         end
 
         --For each SetTracker tracking state (set) build one label with the description and one dropdown box with the FCOIS icons
@@ -854,7 +873,7 @@ function FCOIS.BuildAddonMenu()
                 local setFunc = function(value) FCOISsettings.setTrackerIndexToFCOISIcon[i] = value end
                 local defaultSettings = FCOISsettings.setTrackerIndexToFCOISIcon[i]
                 --Create the dropdownbox now
-                local createdSetTrackerDDBox = CreateDropdownBox(ref, name, tooltip, disabledChecks, getFunc, setFunc, defaultSettings, iconsList, iconsListValues, choicesTooltipsList, nil, "full", true, true)
+                local createdSetTrackerDDBox = CreateDropdownBox(ref, name, tooltip, disabledChecks, getFunc, setFunc, defaultSettings, iconsListNone, iconsListValuesNone, choicesTooltipsList, nil, "full", true, true)
                 if createdSetTrackerDDBox ~= nil then
                     table.insert(createdSetTrackerDDBoxes, createdSetTrackerDDBox)
                 end
@@ -1859,18 +1878,6 @@ function FCOIS.BuildAddonMenu()
         end
     end
     --==================== LAM controls - BEGIN =====================================
-    --LAM 2.0 callback function if the panel was opened
-    --[[
-    local FCOLAMPanelOpened = function(panel)
-        if panel == FCOIS.FCOSettingsPanel then
-            LAMopenedCounter = LAMopenedCounter + 1
-            if LAMopenedCounter == 1 then
-                --Hide the LAM menu container now and show the "Please wait, loading..." label
-                ChangeFCOISLamMenuVisibleState(true)
-            end
-        end
-    end
-    ]]
     --LAM 2.0 callback function if the panel was created
     local lamPanelCreationInitDone = false
     local function FCOLAMPanelCreated(panel)
@@ -1930,8 +1937,12 @@ function FCOIS.BuildAddonMenu()
 
     --The panel opened callback function
     local function FCOLAMPanelOpened(panel)
---d("[FCOIS] SettingsPanel Opened: " ..tostring(panel.data.name))
+        --d("[FCOIS] SettingsPanel Opened: " ..tostring(panel.data.name))
         if panel ~= FCOIS.FCOSettingsPanel then return end
+
+        LAMopenedCounter = LAMopenedCounter + 1
+        FCOIS.checkIfOtherAddonActive()
+
         if not panel.controlsWereLoaded == true or not lamPanelCreationInitDone == true then
             if FCOIS_LAM_MENU_IS_LOADING then
                 FCOIS_LAM_MENU_IS_LOADING:SetHidden(false)
@@ -1945,12 +1956,12 @@ function FCOIS.BuildAddonMenu()
 
     --The panel opened callback function
     local function FCOLAMPanelClosed(panel)
---d("[FCOIS] SettingsPanel Closed: " ..tostring(panel.data.name))
+        --d("[FCOIS] SettingsPanel Closed: " ..tostring(panel.data.name))
         if panel ~= FCOIS.FCOSettingsPanel then return end
         --d("[FCOIS] SettingsPanel Closed")
 
         --Was the inventory scene for the GridList preview enabled and not disabled? Hide it now
-        if GridList ~= nil and FCOIS.preventerVars.lamMenuOpenAndShowingInvPreviewForGridListAddon == true then
+        if (GridListActivated == true or InventoryGridViewActivated == true) and FCOIS.preventerVars.lamMenuOpenAndShowingInvPreviewForGridListAddon == true then
             --Hide the inventory scene
             SCENE_MANAGER:GetScene('gameMenuInGame'):RemoveFragment(INVENTORY_FRAGMENT)
             SCENE_MANAGER:GetScene('gameMenuInGame'):RemoveFragment(RIGHT_PANEL_BG_FRAGMENT)
@@ -1969,7 +1980,7 @@ function FCOIS.BuildAddonMenu()
     --Preview the inventory fragment and background even in the LAM panel
     local function previewInventoryFragment()
         --Only if teh GridList addon is active and it's FCOIS settings submenu for the marker icons is currently opened
-        if GridList ~= nil and FCOIS_LAM_SUBMENU_OTHER_ADDONS_GRIDLIST and FCOIS_LAM_SUBMENU_OTHER_ADDONS_GRIDLIST.open == true then
+        if (GridListActivated == true or InventoryGridViewActivated == true) and FCOIS_LAM_SUBMENU_OTHER_ADDONS_GRIDLIST and FCOIS_LAM_SUBMENU_OTHER_ADDONS_GRIDLIST.open == true then
             if FCOIS.preventerVars.lamMenuOpenAndShowingInvPreviewForGridListAddon == false then
                 --Show the inventory scene
                 SCENE_MANAGER:GetScene('gameMenuInGame'):AddFragment(INVENTORY_FRAGMENT)
@@ -4272,17 +4283,17 @@ function FCOIS.BuildAddonMenu()
                                 --GridList
                                 {
                                     type = "submenu",
-                                    name = "AddOn: GridList",
-                                    disabled = function() return GridList == nil end,
+                                    name = "Grid AddOns",
+                                    disabled = function() return not InventoryGridViewActivated and not GridListActivated end,
                                     reference = "FCOIS_LAM_SUBMENU_OTHER_ADDONS_GRIDLIST",
                                     controls =
                                     {
                                         {
                                             type = "slider",
-                                            name = "GridList: " .. locVars["options_icon_offset_left"],
-                                            tooltip = "GridList: ".. locVars["options_icon_offset_left_TT"],
-                                            min = -GridListSlotSize,
-                                            max = GridListSlotSize,
+                                            name = "Grid AddOns: " .. locVars["options_icon_offset_left"],
+                                            tooltip = "Grid AddOns: ".. locVars["options_icon_offset_left_TT"],
+                                            min = getGridAddonIconSize() * -1,
+                                            max = getGridAddonIconSize(),
                                             autoSelect = true,
                                             getFunc = function() return FCOISsettings.markerIconOffset["GridList"].x end,
                                             setFunc = function(offset)
@@ -4297,10 +4308,10 @@ function FCOIS.BuildAddonMenu()
                                         },
                                         {
                                             type = "slider",
-                                            name = "GridList: " .. locVars["options_icon_offset_top"],
-                                            tooltip = "GridList: ".. locVars["options_icon_offset_top_TT"],
-                                            min = -GridListSlotSize,
-                                            max = GridListSlotSize,
+                                            name = "Grid AddOns: " .. locVars["options_icon_offset_top"],
+                                            tooltip = "Grid AddOns: ".. locVars["options_icon_offset_top_TT"],
+                                            min = getGridAddonIconSize() * -1,
+                                            max = getGridAddonIconSize(),
                                             autoSelect = true,
                                             getFunc = function() return FCOISsettings.markerIconOffset["GridList"].y end,
                                             setFunc = function(offset)
@@ -4315,8 +4326,8 @@ function FCOIS.BuildAddonMenu()
                                         },
                                         {
                                             type = "slider",
-                                            name = "GridList: " .. locVars["options_icon_scale"],
-                                            tooltip = "GridList: ".. locVars["options_icon_scale_TT"],
+                                            name = "Grid AddOns: " .. locVars["options_icon_scale"],
+                                            tooltip = "Grid AddOns: ".. locVars["options_icon_scale_TT"],
                                             min = 1,
                                             max = 100,
                                             autoSelect = true,

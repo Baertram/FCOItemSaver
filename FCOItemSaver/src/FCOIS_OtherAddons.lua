@@ -20,12 +20,13 @@ if not FCOIS.libsLoadedProperly then return end
 
 --Check if another addon name is found and thus active
 function FCOIS.checkIfOtherAddonActive(addOnName)
+    addOnName = addOnName or ""
     --Check if addon "Research Assistant" is active
     if(addOnName == "ResearchAssistant" or ResearchAssistant) then
         FCOIS.otherAddons.researchAssistantActive = true
     end
     --Check if addon "InventoryGridView" is active
-    if(addOnName == "InventoryGridView") then
+    if(addOnName == "InventoryGridView" or InventoryGridView) then
         FCOIS.otherAddons.inventoryGridViewActive = true
     end
     --Check if addon "ChatMerchant" is active
@@ -33,7 +34,7 @@ function FCOIS.checkIfOtherAddonActive(addOnName)
         FCOIS.otherAddons.chatMerchantActive = true
     end
     --Check if addon "PotionMaker" is active
-    if(addOnName == "PotionMaker") then
+    if(addOnName == "PotionMaker" or PotMaker) then
         FCOIS.otherAddons.potionMakerActive = true
     end
     --Check if addon "Votans Settings Menu" is active
@@ -41,31 +42,31 @@ function FCOIS.checkIfOtherAddonActive(addOnName)
         FCOIS.otherAddons.votansSettingsMenuActive = true
     end
     --Check if addon "SousChef" is active
-    if(addOnName == "SousChef" or SousChef ~= nil) then
+    if(addOnName == "SousChef" or SousChef) then
         FCOIS.otherAddons.sousChefActive = true
     end
     --Check if addon "CraftStoreFixedAndImproved" is active
-    if(addOnName == "CraftStoreFixedAndImproved" or CraftStoreFixedAndImprovedLongClassName ~= nil) then
+    if(addOnName == "CraftStoreFixedAndImproved" or CraftStoreFixedAndImprovedLongClassName) then
         FCOIS.otherAddons.craftStoreFixedAndImprovedActive = true
     end
     --Check if addon "CraftBagExtended" is active
-    if(addOnName == "CraftBagExtended" or CraftBagExtended ~= nil or CBE ~= nil) then
+    if(addOnName == "CraftBagExtended" or CraftBagExtended or CBE) then
         FCOIS.otherAddons.craftBagExtendedActive = true
     end
     --Check if addon "AwesomeGuildStore" is active
-    if(addOnName == "AwesomeGuildStore" or AwesomeGuildStore ~= nil) then
+    if(addOnName == "AwesomeGuildStore" or AwesomeGuildStore) then
         FCOIS.otherAddons.AGSActive = true
     end
     --Check if addon "SetTracker" is active
-    if(addOnName == "SetTracker" or SetTrack ~= nil or CBE ~= nil) then
+    if(addOnName == "SetTracker" or SetTrack) then
         FCOIS.otherAddons.SetTracker.isActive = true
     end
     --Check if addon "AdvancedDisableControllerUI" is active
-    if(addOnName == "AdvancedDisableControllerUI" or ADCUI ~= nil) then
+    if(addOnName == "AdvancedDisableControllerUI" or ADCUI) then
         FCOIS.otherAddons.ADCUIActive = true
     end
     --Check if addon "LazyWritCreator" is active
-    if(addOnName == "DolgubonsLazyWritCreator" or WritCreater ~= nil) then
+    if(addOnName == "DolgubonsLazyWritCreator" or WritCreater) then
         FCOIS.otherAddons.LazyWritCreatorActive = true
         --Overwrite the following functions to enabled automatic marking of writ created items!
         --WritCreater.masterWritCompletion = function(...) end -- Empty function, intended to be overwritten by other addons
@@ -84,17 +85,17 @@ function FCOIS.checkIfOtherAddonActive(addOnName)
         end
     end
     --Quality Sort
-    if (addOnName == "QualitySort" or QualitySort ~= nil) then
+    if (addOnName == "QualitySort" or QualitySort) then
         FCOIS.otherAddons.qualitySortActive = true
     end
     --Inventory Insight From Ashes (IIFA)
-    if (addOnName == "IIfA" or IIfA ~= nil) then
+    if (addOnName == "IIfA" or IIfA) then
         FCOIS.otherAddons.IIFAActive = true
         --Add entry to constants table for the keybinds/SHIFT+right mouse click inventory row patterns
         table.insert(FCOIS.checkVars.inventoryRowPatterns, "^" .. FCOIS.otherAddons.IIFAitemsListEntryPrePattern .. "*")         --Other addons: InventoryInsightFromAshes UI
     end
     --AdvancedFilters: Plugin FCO DuplicateItemsFilter
-    if (addOnName == "AF_FCODuplicateItemsFilters" and AdvancedFilters ~= nil) then
+    if (addOnName == "AF_FCODuplicateItemsFilters" and AdvancedFilters) then
         FCOIS.otherAddons.AFFCODuplicateItemFilter = true
     end
 end
@@ -104,7 +105,7 @@ function FCOIS.CheckIfOtherAddonsActiveAfterPlayerActivated()
     --Check if Inventory Gridview is active
     if (FCOIS.otherAddons.inventoryGridViewActive == false) then
         local gridViewControlName = WINDOW_MANAGER:GetControlByName(FCOIS.otherAddons.GRIDVIEWBUTTON, "")
-        if gridViewControlName ~=  nil then
+        if gridViewControlName ~= nil or InventoryGridView then
             if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[Other addons]", "Addon Inventory Gridview is active", false) end
             FCOIS.otherAddons.inventoryGridViewActive = true
         end
@@ -120,6 +121,7 @@ function FCOIS.CheckIfOtherAddonsActiveAfterPlayerActivated()
     end
     --Was ChatMerchant addon's control found now?
     if (FCOIS.otherAddons.chatMerchantActive == true) then
+        local chatMerchantControlName = WINDOW_MANAGER:GetControlByName(FCOIS.otherAddons.CHATMERCHANTBUTTON, "")
         if chatMerchantControlName ~=  nil then
             chatMerchantControlName:ClearAnchors()
             if (FCOIS.otherAddons.inventoryGridViewActive == true) then
@@ -194,7 +196,7 @@ function FCOIS.otherAddons.SetTracker.GetSetTrackerSettingsAndBuildFCOISSetTrack
         local STtrackingStates = SetTrack.GetMaxTrackStates()
         for i=0, (STtrackingStates-1), 1 do
             if FCOIS.settingsVars.settings.setTrackerIndexToFCOISIcon[i] == nil then
-                FCOIS.settingsVars.settings.setTrackerIndexToFCOISIcon[i] = 1
+                FCOIS.settingsVars.settings.setTrackerIndexToFCOISIcon[i] = FCOIS_CON_ICON_NONE
             end
         end
 
@@ -287,7 +289,7 @@ local function checkSetTrackerTrackingStateAndMarkWithFCOISIcon(sSetName, setTra
                         if setTrackerState ~= nil and doShow then
                             --Remove the old set tracker marker icon within FCOIS now
                             local FCOIS_OLD_MarkerIconForSetTracker = FCOIS.settingsVars.settings.setTrackerIndexToFCOISIcon[setTrackerState]
-                            if FCOIS_OLD_MarkerIconForSetTracker ~= nil then
+                            if FCOIS_OLD_MarkerIconForSetTracker ~= nil and FCOIS_OLD_MarkerIconForSetTracker ~= FCOIS_CON_ICON_NONE then
                                 --d(">Removing old marker icon first: " .. tostring(FCOIS_OLD_MarkerIconForSetTracker))
                                 FCOIS.markedItems[FCOIS_OLD_MarkerIconForSetTracker][itemId] = nil
                             end
@@ -347,7 +349,7 @@ local function checkSetTrackerTrackingStateAndMarkWithFCOISIcon(sSetName, setTra
                     if setTrackerState ~= nil and doShow then
                         --Remove the old set tracker marker icon within FCOIS now
                         local FCOIS_OLD_MarkerIconForSetTracker = FCOIS.settingsVars.settings.setTrackerIndexToFCOISIcon[setTrackerState]
-                        if FCOIS_OLD_MarkerIconForSetTracker ~= nil then
+                        if FCOIS_OLD_MarkerIconForSetTracker ~= nil and FCOIS_OLD_MarkerIconForSetTracker ~= FCOIS_CON_ICON_NONE  then
                             --d(">Removing old marker icon first: " .. tostring(FCOIS_OLD_MarkerIconForSetTracker))
                             FCOIS.markedItems[FCOIS_OLD_MarkerIconForSetTracker][itemId] = nil
                         end

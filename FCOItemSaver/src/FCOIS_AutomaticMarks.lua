@@ -264,7 +264,7 @@ local function automaticMarkingSetsAdditionalCheckFunc(p_itemData, p_checkFuncRe
             --Return the values "nil" and "nil" -> Needed to abort all further marker icons and chat messages now!
             --Changed on 2018-08-04 from false, nil. But until this time the first checkFunc aborted the 2snd additional checkfunc,
             --which is now always called via parameter "additionalCheckFuncForce = true" and thus the chat was spammed with Marked potion as set part...
---d("<<aborting!")
+--d("<<aborting due to: noFurtherChecksNeeded!")
             return nil, nil
         else
             isSetPartWithWishedTrait          =  p_itemData.fromCheckFunc["isSetPartWithWishedTrait"]
@@ -288,6 +288,10 @@ local function automaticMarkingSetsAdditionalCheckFunc(p_itemData, p_checkFuncRe
     local setTrackerIconIdArray = {}
     --The standard automatic marker icon for the sets
     local setsIconNr = settings.autoMarkSetsIconNr
+    local isMarkedWithAutomaticSetMarkerIcon
+    local isSellProtected
+    local isGearProtected
+    local isSetTrackerAndIsMarkedWithOtherIconAlready
 
 --=== Non-Wished set items check for characters below level 50 =========================================================
     if settings.autoMarkSetsNonWished and settings.isIconEnabled[settings.autoMarkSetsNonWishedIconNr] and settings.autoMarkSetsNonWishedIfCharBelowLevel then
@@ -310,11 +314,11 @@ local function automaticMarkingSetsAdditionalCheckFunc(p_itemData, p_checkFuncRe
 --==== SET TRACKER addon integration - START ===========================================================================
     if not skipAllOtherChecks then
 
-        local isSetTrackerAndIsMarkedWithOtherIconAlready = false
-        if SetTrack and SetTrack.GetMaxTrackStates and FCOIS.otherAddons.SetTracker.isActive then
+        isSetTrackerAndIsMarkedWithOtherIconAlready = false
+        if SetTrack and SetTrack.GetMaxTrackStates and FCOIS.otherAddons.SetTracker.isActive and settings.autoMarkSetTrackerSets then
             --d(">check SetTracker addon")
-            --If the option is enabled to check for all marker icons before checking SetTracker set icons: If the set part is alreay marked with
-            --any of the marker icons it shouldn't be marked with another SetTracker set marker icon again
+            --If the option is enabled to check for all marker icons before checking SetTracker set icons:
+            --If the set part is alreay marked with any of the marker icons it shouldn't be marked with another SetTracker set marker icon again
             if settings.autoMarkSetTrackerSetsCheckAllIcons then
                 for iconNr = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
                     table.insert(setTrackerIconIdArray, iconNr)
@@ -323,10 +327,10 @@ local function automaticMarkingSetsAdditionalCheckFunc(p_itemData, p_checkFuncRe
                     isSetTrackerAndIsMarkedWithOtherIconAlready = checkIfItemArrayIsProtected(setTrackerIconIdArray, itemId) or false
                 end
             end
-            --If the option is enabled to check for all SetTracker set icons: If the set part is alreay marked with
-            --any of the SetTracker set icons it shouldn't be marked with another set marker icon again.
+            --If the option is enabled to check for all SetTracker set icons:
+            --If the set part is alreay marked with any of the SetTracker set icons it shouldn't be marked with another set marker icon again.
             --If the option is enabled that the SetTracker marker should not be set if any other marker is already set this will be skipped too!
-            if not isSetTrackerAndIsMarkedWithOtherIconAlready and settings.autoMarkSetTrackerSets and settings.autoMarkSetsCheckAllSetTrackerIcons then
+            if not isSetTrackerAndIsMarkedWithOtherIconAlready and settings.autoMarkSetsCheckAllSetTrackerIcons then
                 --Set the variable to check other icons
                 checkOtherSetMarkerIcons = true
                 --Reset the variable for the SetTracker icon checks
@@ -337,7 +341,7 @@ local function automaticMarkingSetsAdditionalCheckFunc(p_itemData, p_checkFuncRe
                     --For each SetTracker tracking state (set) get the appropriate marker icon from FCOIS
                     for i=0, (STtrackingStates-1), 1 do
                         local setTrackerTrackingIcon = settings.setTrackerIndexToFCOISIcon[i]
-                        if setTrackerTrackingIcon ~= nil then
+                        if setTrackerTrackingIcon ~= nil and setTrackerTrackingIcon ~= FCOIS_CON_ICON_NONE then
                             table.insert(setTrackerIconIdArray, setTrackerTrackingIcon)
                         end
                     end
@@ -352,13 +356,13 @@ local function automaticMarkingSetsAdditionalCheckFunc(p_itemData, p_checkFuncRe
         --==== Normal set marker icon - BEGIN ==================================================================================
         --Check if the item is marked with the automatic set icon alreay
         --table.insert(iconIdArray, setsIconNr)
-        local isMarkedWithAutomaticSetMarkerIcon = FCOIS.checkIfItemIsProtected(setsIconNr, itemId) or false
+        isMarkedWithAutomaticSetMarkerIcon = FCOIS.checkIfItemIsProtected(setsIconNr, itemId) or false
         --==== Normal set marker icon - END ====================================================================================
 
         --==== Gear marker icons - BEGIN =======================================================================================
         --If the option is enabled to check for all gear set icons: If the set part is alreay marked with
         --any of the gear set icons it shouldn't be marked with another set marker icon again
-        local isGearProtected = false
+        isGearProtected = false
         if settings.autoMarkSetsCheckAllGearIcons then
             --d(">check all gear icons")
             --Set the variable to check other icons
@@ -381,7 +385,7 @@ local function automaticMarkingSetsAdditionalCheckFunc(p_itemData, p_checkFuncRe
         --==== Sell marker icons - BEGIN =======================================================================================
         --If the option is enabled to check for sell and sell in guild store icons: If the set part is alreay marked with
         --any of them it shouldn't be marked with another set marker icon again
-        local isSellProtected = false
+        isSellProtected = false
         if settings.autoMarkSetsCheckSellIcons and (settings.isIconEnabled[FCOIS_CON_ICON_SELL] or settings.isIconEnabled[FCOIS_CON_ICON_SELL_AT_GUILDSTORE]) then
             --d(">check sell icons")
             --Set the variable to check other icons
@@ -440,8 +444,9 @@ local function automaticMarkingSetsAdditionalCheckFunc(p_itemData, p_checkFuncRe
             --d(">non wished item trait check")
             if not nonWishedBecauseOfCharacterLevel then
                 --Quality, level or botch checks?
-                local doNonWishedQualityCheck   = (settings.autoMarkSetsNonWishedChecks==FCOIS_CON_NON_WISHED_ALL or settings.autoMarkSetsNonWishedChecks==FCOIS_CON_NON_WISHED_QUALITY) or false
-                local doNonWishedLevelCheck     = (settings.autoMarkSetsNonWishedChecks==FCOIS_CON_NON_WISHED_ALL or settings.autoMarkSetsNonWishedChecks==FCOIS_CON_NON_WISHED_LEVEL) or false
+                local autoMarkSetsNonWishedChecksAllEnabled = settings.autoMarkSetsNonWishedChecks==FCOIS_CON_NON_WISHED_ALL
+                local doNonWishedQualityCheck   = (autoMarkSetsNonWishedChecksAllEnabled or settings.autoMarkSetsNonWishedChecks==FCOIS_CON_NON_WISHED_QUALITY) or false
+                local doNonWishedLevelCheck     = (autoMarkSetsNonWishedChecksAllEnabled or settings.autoMarkSetsNonWishedChecks==FCOIS_CON_NON_WISHED_LEVEL) or false
 
                 --If the item is a s set part "Check the item's level" is activated?
                 if isSetPartAndIsValidAndGotTrait and doNonWishedLevelCheck and settings.autoMarkSetsNonWishedLevel ~= 1 then
@@ -921,15 +926,17 @@ function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, do
 end -- Single item scan function scanInventoryItemForAutomaticMarks(bag, slot, scanType)
 local scanInventoryItemForAutomaticMarks = FCOIS.scanInventoryItemForAutomaticMarks
 
---Function to check if the addtional checkFunction needs to be called for a call type
+--Function to check if the addtional checkFunction at the automatic item marker checks needs to be "forced" called for a call type
+--even if the normal checkFunc already returned a valid result/marker icon change
 local function getAdditionalCheckFuncForce(callType)
 --d("[FCOIS]getAdditionalCheckFuncForce, callType: " .. tostring(callType))
     if callType == nil then return false end
     local addCheckFuncNeedsToBeCalled = false
 
-    if callType == "sets" then
-        addCheckFuncNeedsToBeCalled = true
-    end
+    local callTypesToForceCheck = {
+        ["sets"]    = true,
+    }
+    addCheckFuncNeedsToBeCalled = callTypesToForceCheck[callType] or false
     return addCheckFuncNeedsToBeCalled
 end
 
@@ -1114,7 +1121,7 @@ function FCOIS.scanInventoryItemsForAutomaticMarks(bag, slot, scanType, updateIn
             checkOtherAddon		= nil,
             resultOtherAddon   	= nil,
             resultNotOtherAddon	= nil,
-            icon				=           settings.autoMarkSetsIconNr,
+            icon				= settings.autoMarkSetsIconNr,
             iconIsMarkedAllreadyAllowed = true,
             checkIfAnyIconIsMarkedAlready = settings.autoMarkSetsCheckAllIcons,
             checkFunc			= automaticMarkingSetsCheckFunc,

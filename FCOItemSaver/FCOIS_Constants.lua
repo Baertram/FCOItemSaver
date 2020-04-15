@@ -7,8 +7,8 @@ local FCOIS = FCOIS
 FCOIS.addonVars = {}
 local addonVars = FCOIS.addonVars
 --Addon variables
-addonVars.addonVersionOptions 		= '1.8.5' -- version shown in the settings panel
-addonVars.addonVersionOptionsNumber	= 1.85
+addonVars.addonVersionOptions 		= '1.8.9' -- version shown in the settings panel
+addonVars.addonVersionOptionsNumber	= 1.89
 addonVars.gAddonName				= "FCOItemSaver"
 addonVars.gAddonNameShort           = "FCOIS"
 addonVars.addonNameMenu				= "FCO ItemSaver"
@@ -274,6 +274,11 @@ for dynIconNr = 1, numMaxDynamicIcons, 1 do
 end
 --The maximum marker icons variable
 numVars.gFCONumFilterIcons = FCOIS_CON_ICON_DYNAMIC_30 --42, since FCOIS version 1.4.0
+--Special icon constants
+FCOIS_CON_ICON_ALL					= -1    --All marker icons
+FCOIS_CON_ICON_NONE					= -100  --No marker icon selected
+
+
 
 --Debug depth levels
 FCOIS_DEBUG_DEPTH_NORMAL        = 1

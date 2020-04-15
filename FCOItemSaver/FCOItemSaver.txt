@@ -1,23 +1,21 @@
 ##
 ## Title: |c00FF00FCO |cFFFF00ItemSaver|r
 ## Author: Baertram
-## Version: 1.8.5
-## AddOnVersion: 185
+## Version: 1.8.9
+## AddOnVersion: 189
 ## APIVersion: 100030 100031
 ## Description: Mark/demark your inventory items with different icons and filter them in inventories, during trading, banks, guild store, mail, enchanting, crafting, researching and stores. Save your marked items before destroying/deconstructing/researching/selling/sending/trading/using or equipping/binding them!
 ## SavedVariables: FCOItemSaver_Settings
 ## DependsOn: LibAddonMenu-2.0>=28 LibCustomMenu>=682 LibDialog>=123 LibFeedback LibFilters-3.0>=315 LibLoadedAddons>=14 LibMainMenu-2.0>=432
 ## OptionalDependsOn: LibDebugLogger LibLazyCrafting>=2992
 ## OptionalDependsOn: AdvancedDisableControllerUI AdvancedFilters AF_FCODuplicateItemsFilters
-## OptionalDependsOn: ChatMerchant CraftBagExtended CraftedPotions
-## OptionalDependsOn: DetailedResearchScrolls DolgubonsLazyWritCreator
-## OptionalDependsOn: GridList
-## OptionalDependsOn: InventoryGridView
-## OptionalDependsOn: PotionMaker
-## OptionalDependsOn: QualitySort
+## OptionalDependsOn: CraftBagExtended
+## OptionalDependsOn: DolgubonsLazyWritCreator
 ## OptionalDependsOn: ResearchAssistant
 ## OptionalDependsOn: SetTracker SousChef
-## OptionalDependsOn: VotansSettingsMenu
+
+## These addons were in the OptionalDependsOn before but raised circular dependencies. They are kept as reference at the tag BetterWith.
+## BetterWith: ChatMerchant CraftedPotions DetailedResearchScrolls GridList InventoryGridView PotionMaker QualitySort VotansSettingsMenu
 
 ##(Check file FCOIS_Constants.lua for local and global constant values
 ##(Check file FCOIS_API.lua for functions to use within your addon)
@@ -25,7 +23,7 @@
 ##Known addons with FCOIS function usage:
 ##-----------------------------------------------------------------
 ##AlphaGear 2
-##Auto Category
+##AutoCategory
 ##BankManagerRevived
 ##CDGBankStack
 ##CraftStoreFixedAndImproved

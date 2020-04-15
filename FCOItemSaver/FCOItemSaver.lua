@@ -19,7 +19,7 @@
 ---------------------------------------------------------------------
 --[ToDo list] --
 --____________________________
--- Current max bugs: 68
+-- Current max bugs: 71
 --____________________________
 
 -- 1) 2019-01-14 - Bugfix - Baertram
@@ -79,23 +79,29 @@ EsoUI/Libraries/Globals/Globals.lua:51: in function 'OnGlobalMouseDown'
 -- 64) 2020-04-09, Baertram
 -- Keybindings for move sell marked to junk/sell should not show at trading house sell, and others where the junk tab is not shown (banks e.g.)
 
+-- 70) 2020-04-15, Baertram
+-- InventoryGridView support like with GridList.
+--> File scr/FCOIS_MarkerIcons.lua, function FCOIS.CreateMarkerControl, lines 173ff
+
+-- 71) 2020-04-15, Baertram
+-- Automatic marking of set items etc. does not work anymore since local variables were "freed" again from surrounding if end clauses
+
+
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
---Since last update 1.8.5 - New version: 1.8.6
+--Since last update 1.8.8 - New version: 1.8.9
 ---------------------------------------------------------------------
 --[Fixed]
---#67: "Settings loading" texture will be showing up properly now, and was shrinked in size a bit
---#68: Fixed FCOIS settings menu for SetTracker: Dropdown boxes for the FCOIS icon selection will be shown again now
+-- #70: InventoryGridView support added for the inventory icon position and scale
 
 --[Changed]
 
 --[Added]
--- #66: Setting for the icon size at character screen: FCOIS settings->icons->icon position, sorting, etc.->icon positions
---
 --
 
 --[Added on request]
+-- #69: SetTracker addon: Add "None" entry to tracked set's FCOIS marker icon dropdown box to disable automatic marks for these SetTracker sets.
 
 --************************************************************************************************************************
 --************************************************************************************************************************
