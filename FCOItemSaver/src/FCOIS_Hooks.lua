@@ -103,7 +103,7 @@ end
 local function addOnMouseUpEventHandlerToRow(rowControl)
 --d("[FCOIS]addOnMouseUpEventHandlerToRow - rowControl: " ..tostring(rowControl:GetName()))
     if not rowControl then return end
-    --Only if the SHIFT + right click settings is enabled within FCOIS
+    --Only if the <modifier key> + right click settings is enabled within FCOIS
     local contextMenuClearMarkesByShiftKey = FCOIS.settingsVars.settings.contextMenuClearMarkesByShiftKey
     if contextMenuClearMarkesByShiftKey == true then
         local rowName = rowControl:GetName()
@@ -269,8 +269,10 @@ end
 function FCOIS.OnInventoryItemMouseUp(self, mouseButton, upInside, ctrlKey, altKey, shiftKey, ...)
     --d("[FCOIS]InventoryItem_OnMouseUp] mouseButton: " .. tostring(mouseButton) .. ", upInside: " .. tostring(upInside).. ", ctrlKey: " .. tostring(ctrlKey) .. ", altKey: " .. tostring(altKey).. ", shiftKey: " .. tostring(shiftKey))
     FCOIS.preventerVars.dontShowInvContextMenu = false
-    --Enable clearing all markers by help of the SHIFT+right click?
-    FCOIS.checkIfClearOrRestoreAllMarkers(self, shiftKey, upInside, mouseButton, false)
+    --Enable clearing all markers by help of the <modifier key>+right click?
+    local contextMenuClearMarkesKey = FCOIS.settingsVars.settings.contextMenuClearMarkesModifierKey
+    local isModifierKeyPressed = FCOIS.IsModifierKeyPressed(contextMenuClearMarkesKey)
+    FCOIS.checkIfClearOrRestoreAllMarkers(self, isModifierKeyPressed, upInside, mouseButton, false)
     --Call original callback function for event OnMouseUp of the iinventory item row/character equipment slot now
     return false
 end
@@ -282,8 +284,10 @@ local function FCOItemSaver_OnInventorySlot_DoPrimaryAction(inventorySlot)
     FCOIS.hideContextMenu(FCOIS.gFilterWhere)
     --Check if SHIFT key is pressed and if settings to use SHIFT key + right mouse to remove/restore marker icons on the inventory row is enabled
     -->Then do not call the double click handler here
-    local contextMenuClearMarkesByShiftKey = FCOIS.settingsVars.settings.contextMenuClearMarkesByShiftKey
-    if contextMenuClearMarkesByShiftKey == true and IsShiftKeyDown() then return false end
+    local settings = FCOIS.settingsVars.settings
+    local contextMenuClearMarkesByShiftKey = settings.contextMenuClearMarkesByShiftKey
+    local contextMenuClearMarkesKey = settings.contextMenuClearMarkesModifierKey
+    if contextMenuClearMarkesByShiftKey == true and FCOIS.IsModifierKeyPressed(contextMenuClearMarkesKey) then return false end
 
     --Check where we are
     local parent = inventorySlot:GetParent()
@@ -468,8 +472,10 @@ end
 --===== HOOKS BEGIN ==========================================================================================================================================
 --============================================================================================================================================================
 local function specialContextMenuKeysCheckAndActions()
-    local contextMenuClearMarkesByShiftKey = FCOIS.settingsVars.settings.contextMenuClearMarkesByShiftKey
-    if contextMenuClearMarkesByShiftKey == true and lcm and lcm.EnableSpecialKeyContextMenu then lcm:EnableSpecialKeyContextMenu(KEY_SHIFT) end
+    local settings = FCOIS.settingsVars.settings
+    local contextMenuClearMarkesByShiftKey = settings.contextMenuClearMarkesByShiftKey
+    local contextMenuClearMarkesKey = settings.contextMenuClearMarkesModifierKey
+    if contextMenuClearMarkesByShiftKey == true and lcm and lcm.EnableSpecialKeyContextMenu then lcm:EnableSpecialKeyContextMenu(contextMenuClearMarkesKey) end
     return contextMenuClearMarkesByShiftKey
 end
 
@@ -489,6 +495,7 @@ function FCOIS.CreateHooks()
         --As this prehook is called before the character OnMouseUp function is called:
         --If the SHIFT+right mouse button option is enabled and the SHIFT key is pressed and the character is shown.
         --Then hide the context menu
+        local contextMenuClearMarkesKey = settings.contextMenuClearMarkesModifierKey
         local contextMenuClearMarkesByShiftKey = specialContextMenuKeysCheckAndActions()
 
         local isCharacterShown = not FCOIS.ZOControlVars.CHARACTER:IsHidden()
@@ -501,7 +508,8 @@ function FCOIS.CreateHooks()
 
         --if the context menu should not be shown, because all marker icons were removed
         -- hide it now
-        if prevVars.dontShowInvContextMenu == false and isCharacterShown and contextMenuClearMarkesByShiftKey == true and ( shift == true and not (ctrl or alt or command) ) then
+        if prevVars.dontShowInvContextMenu == false and isCharacterShown and contextMenuClearMarkesByShiftKey == true
+                and (FCOIS.IsModifierKeyPressed(contextMenuClearMarkesKey) and FCOIS.IsNoOtherModifierKeyPressed(contextMenuClearMarkesKey)) then
             --d(">FCOIS context menu, shift key is down")
             FCOIS.preventerVars.dontShowInvContextMenu = true
         end
@@ -882,15 +890,16 @@ function FCOIS.CreateHooks()
 
             --Right click/mouse button 2 context menu hook part:
             if button == MOUSE_BUTTON_INDEX_RIGHT and upInside then
+                local contextMenuClearMarkesKey = FCOIS.settingsVars.settings.contextMenuClearMarkesModifierKey
+                local isModifierKeyPressed = FCOIS.IsModifierKeyPressed(contextMenuClearMarkesKey)
                 --Was the shift key clicked?
-                if shiftKey == true and not (ctrlKey or altKey or command) then
+                if isModifierKeyPressed == true and FCOIS.IsNoOtherModifierKeyPressed(contextMenuClearMarkesKey) then
                     --Right click/mouse button 2 context menu together with shift key: Clear/Restore all marker icons on the item?
                     --If the setting to remove/readd marker icons via shift+right mouse button is enabled:
-                    FCOIS.checkIfClearOrRestoreAllMarkers(rowControl, shiftKey, upInside, button, true)
+                    FCOIS.checkIfClearOrRestoreAllMarkers(rowControl, isModifierKeyPressed, upInside, button, true)
                     --If the context menu should not be shown, because all marker icons were removed
                     -- hide it now
-                    local contextMenuClearMarkesByShiftKey = FCOIS.settingsVars.settings.contextMenuClearMarkesByShiftKey
-                    if contextMenuClearMarkesByShiftKey == true and FCOIS.preventerVars.dontShowInvContextMenu then
+                    if FCOIS.ShouldInventoryContextMenuBeHiddden() then
                         FCOIS.preventerVars.dontShowInvContextMenu = false
                         --Hide the context menu now by returning true in this preHook and not calling the "context menu show" function
                         return true

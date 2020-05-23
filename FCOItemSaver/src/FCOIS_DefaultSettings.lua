@@ -214,6 +214,7 @@ function FCOIS.buildDefaultSettings()
 		autoDeMarkDeconstruct		= false,
 		autoMarkPreventIfMarkedForSell = false,
 		autoMarkPreventIfMarkedForDeconstruction = false,
+		autoMarkArmorWeaponJewelry = false,
 		showFilterStatusInChat  	= false,
 		showOrnateItemsInChat   	= false,
 		showIntricateItemsInChat     = false,
@@ -241,6 +242,7 @@ function FCOIS.buildDefaultSettings()
 		contextMenuDividerShowsSettings = false,
 		contextMenuDividerClearsMarkers = true,
 		contextMenuClearMarkesByShiftKey = false,
+		contextMenuClearMarkesModifierKey = KEY_SHIFT, --Shift key
 		addContextMenuLeadingSpaces	 = 0,
 		useContextMenuCustomMarkedNormalColor = true,
 		contextMenuCustomMarkedNormalColor = {["r"] = 1,["g"] = 0,["b"] = 0,["a"] = 1},
@@ -607,6 +609,6 @@ function FCOIS.buildDefaultSettings()
     FCOIS.settingsVars.defaults.markerIconOffset["GridList"] = {
 		x 		= 12,
 		y 		= -12,
-		scale 	= 100,
+		scale 	= 90,
 	}
 end

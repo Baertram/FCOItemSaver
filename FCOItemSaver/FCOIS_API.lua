@@ -1351,7 +1351,7 @@ end -- FCOGetIconText
 --------------------------------------------------------------------------------
 --=========== FCOIS localization API functions==========================
 --Global function to get text for the keybindings etc.
-function FCOIS.GetLocText(textName, isKeybindingText)
+function FCOIS.GetLocText(textName, isKeybindingText, placeHoldersTab)
 --d("[FCOIS.GetLocText] textName: " .. tostring(textName))
     isKeybindingText = isKeybindingText or false
 
@@ -1361,7 +1361,14 @@ function FCOIS.GetLocText(textName, isKeybindingText)
     FCOIS.Localization()
 
     if textName == nil or FCOIS.localizationVars.fcois_loc == nil or FCOIS.localizationVars.fcois_loc[textName] == nil then return "" end
-    return FCOIS.localizationVars.fcois_loc[textName]
+	local returnText = FCOIS.localizationVars.fcois_loc[textName]
+
+	if placeHoldersTab and #placeHoldersTab > 0 then
+		for _, placeHolderReplacement in ipairs(placeHoldersTab) do
+			returnText = string.format(returnText, tostring(placeHolderReplacement))
+		end
+	end
+    return returnText
 end -- FCOGetLocText
 
 

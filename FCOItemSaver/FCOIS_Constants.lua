@@ -7,8 +7,8 @@ local FCOIS = FCOIS
 FCOIS.addonVars = {}
 local addonVars = FCOIS.addonVars
 --Addon variables
-addonVars.addonVersionOptions 		= '1.8.9' -- version shown in the settings panel
-addonVars.addonVersionOptionsNumber	= 1.89
+addonVars.addonVersionOptions 		= '1.9.4' -- version shown in the settings panel
+addonVars.addonVersionOptionsNumber	= 1.94
 addonVars.gAddonName				= "FCOItemSaver"
 addonVars.gAddonNameShort           = "FCOIS"
 addonVars.addonNameMenu				= "FCO ItemSaver"

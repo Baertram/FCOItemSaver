@@ -223,6 +223,20 @@ function FCOIS.BuildAddonMenu()
     end
 
     -- Build options menu parts
+    --The modifier key dropdown choices and values
+    local choicesModifierKeys = {
+        locVars["KEY_SHIFT"],
+        locVars["KEY_ALT"],
+        locVars["KEY_CTRL"],
+        locVars["KEY_COMMAND"],
+    }
+    local choicesModifierKeysValues = {
+        KEY_SHIFT,
+        KEY_ALT,
+        KEY_CTRL,
+        KEY_COMMAND
+    }
+
     --The textures/marker icons names (just numbers)
     local texturesList = {}
     local maxTextureIcons = numVars.maxTextureIcons or 100
@@ -837,7 +851,7 @@ function FCOIS.BuildAddonMenu()
         choicesTooltipsList[1] = locVars["options_icon_none"]
         for _, FCOISiconNr in ipairs(iconsListValues) do
             --local iconDescription = "FCOItemSaver icon " .. tostring(FCOISiconNr)
-            local locNameStr = FCOISlocVars.iconEndStrArray[i]
+            local locNameStr = FCOISlocVars.iconEndStrArray[FCOISiconNr]
             local iconName = FCOIS.GetIconText(FCOISiconNr) or locVars["options_icon" .. tostring(FCOISiconNr) .. "_" .. locNameStr] or "Icon " .. tostring(FCOISiconNr)
             --Add each FCOIS icon description to the list
             table.insert(choicesTooltipsList, iconName)
@@ -2002,6 +2016,7 @@ function FCOIS.BuildAddonMenu()
             type = 'description',
             text = locVars["options_description"],
             reference = "FCOItemSaver_LAM_Settings_Description_Header",
+            --helpUrl = locVars["options_description"],
         },
 
         --==============================================================================
@@ -2032,6 +2047,7 @@ function FCOIS.BuildAddonMenu()
                     disabled = function() return FCOISsettings.alwaysUseClientLanguage end,
                     warning = locVars["options_language_description1"],
                     requiresReload = true,
+                    --helpUrl = locVars["options_language"],
                 },
                 {
                     type = "checkbox",
@@ -2045,6 +2061,7 @@ function FCOIS.BuildAddonMenu()
                     warning = locVars["options_language_description1"],
                     requiresReload = true,
                     default = FCOISdefaultSettings.alwaysUseClientLanguage,
+                    --helpUrl = locVars["options_language_use_client"],
                 },
 
                 {
@@ -2064,6 +2081,7 @@ function FCOIS.BuildAddonMenu()
                     end,
                     warning = locVars["options_language_description1"],
                     requiresReload = true,
+                    --helpUrl = locVars["options_savedvariables_TT"],
                     default = savedVariablesOptions[2], -- Account wide
                 },
                 --Unique ID switch
@@ -2131,6 +2149,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = 'header',
                     name = locVars["options_header_ZOsLock"],
+                    --helpUrl = locVars["options_header_ZOsLock"],
                 },
                 {
                     type = "checkbox",
@@ -2152,6 +2171,7 @@ function FCOIS.BuildAddonMenu()
                     disabled = function() return FCOISsettings.useZOsLockFunctions end,
                     warning = locVars["options_scan_ZOs_lock_functions_warning"],
                     width="half",
+                    --helpUrl = locVars["options_scan_ZOs_lock_functions"],
                 },
             } -- controls submenu general options
         }, -- submenu general options
@@ -4332,8 +4352,8 @@ function FCOIS.BuildAddonMenu()
                                             max = 100,
                                             autoSelect = true,
                                             getFunc = function() return FCOISsettings.markerIconOffset["GridList"].scale end,
-                                            setFunc = function(offset)
-                                                FCOISsettings.markerIconOffset["GridList"].scale = offset
+                                            setFunc = function(scale)
+                                                FCOISsettings.markerIconOffset["GridList"].scale = scale
                                                 --Set global variable to update the marker colors and textures
                                                 FCOIS.preventerVars.gUpdateMarkersNow = true
                                                 --Should we update the marker textures, size and color?
@@ -4464,13 +4484,25 @@ function FCOIS.BuildAddonMenu()
                     controls =
                     {
                         {
+                            type = "dropdown",
+                            name = locVars["options_modifier_key"],
+                            tooltip = locVars["options_modifier_key_TT"],
+                            choices = choicesModifierKeys,
+                            choicesValues = choicesModifierKeysValues,
+                            getFunc = function() return FCOISsettings.contextMenuClearMarkesModifierKey end,
+                            setFunc = function(value) FCOISsettings.contextMenuClearMarkesModifierKey = value
+                            end,
+                            width="half",
+                            default = FCOISdefaultSettings.contextMenuClearMarkesModifierKey,
+                        },
+                        {
                             type = "checkbox",
                             name = locVars["options_remove_all_markers_with_shift_rightclick"],
                             tooltip = locVars["options_remove_all_markers_with_shift_rightclick_TT"],
                             getFunc = function() return FCOISsettings.contextMenuClearMarkesByShiftKey end,
                             setFunc = function(value) FCOISsettings.contextMenuClearMarkesByShiftKey = value
                             end,
-                            width="full",
+                            width="half",
                             default = FCOISdefaultSettings.contextMenuClearMarkesByShiftKey,
                         },
                         {
@@ -4727,6 +4759,20 @@ function FCOIS.BuildAddonMenu()
                                 },
                             } -- controls research
                         }, -- submenu research
+
+                        --==============================================================================
+                        --[[
+                        {  -- Non sets armor, weapon, jewelry
+                            type = "submenu",
+                            name = locVars["options_enable_auto_mark_non_sets"],
+                            controls =
+                            {
+--autoMarkArmorWeaponJewelry
+                            },
+
+                        },
+                        ]]
+
                         --==============================================================================
                         {  -- Sets
                             type = "submenu",

@@ -26,7 +26,20 @@ ZO_CreateStringId("SI_BINDING_NAME_FCOIS_MARK_ITEM_10",                 FCOIS.Ge
 ZO_CreateStringId("SI_BINDING_NAME_FCOIS_MARK_ITEM_11",                 FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_MARK_ITEM_11", true))
 ZO_CreateStringId("SI_BINDING_NAME_FCOIS_MARK_ITEM_12",                 FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_MARK_ITEM_12", true))
 --Junk sell marked items
-ZO_CreateStringId("SI_BINDING_NAME_FCOIS_JUNK_ALL_SELL",                FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_JUNK_ALL_SELL", true))
+--Get the sell marker icon texture and replace the %s placeholder in SI_BINDING_NAME_FCOIS_JUNK_ALL_SELL with it
+--Load the user settings, if not done already
+FCOIS.checkIfFCOISSettingsWereLoaded(true)
+local sellIconData = FCOIS.settingsVars.settings.icon[FCOIS_CON_ICON_SELL]
+local sellMarkerIconTextueId = sellIconData.texture
+local sellIconTexture = FCOIS.textureVars.MARKER_TEXTURES[sellMarkerIconTextueId]
+local sellIconTextureText = ""
+if sellIconTexture then
+    --local sellIconColor = sellIconData.color
+    --local sellIconColorDef = ZO_ColorDef:New(sellIconColor.r, sellIconColor.g, sellIconColor.b, sellIconColor.a)
+    --sellIconTextureText = sellIconColorDef:Colorize(zo_iconFormat(sellIconTexture, 24, 24))
+    sellIconTextureText = zo_iconFormat(sellIconTexture, 32, 32)
+end
+ZO_CreateStringId("SI_BINDING_NAME_FCOIS_JUNK_ALL_SELL",                FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_JUNK_ALL_SELL", true, {sellIconTextureText}))
 --Mark with sell icon (if enabled in settings) and junk item
 ZO_CreateStringId("SI_BINDING_NAME_FCOIS_JUNK_AND_MARK_SELL_ITEM",      FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_JUNK_AND_MARK_SELL_ITEM", true))
 
@@ -55,6 +68,31 @@ function FCOIS.generateDynamicIconsKeybindingsTexts()
     end
 end
 
+--Check if a keybind of parameter "type" is allowed to be shown
+local function checkIfKeybindIsAllowedToShow(type)
+    if not type or type == "" then return end
+    local typeToNotAllowedScenes = {
+        ["moveSellMarkedToJunk"] = {
+            --"bank",
+            --"guildBank",
+            "tradinghouse",
+        }
+    }
+    local notAllwedSceneNamesOfType = typeToNotAllowedScenes[type]
+    if notAllwedSceneNamesOfType then
+        for _, notAllowedSceneName in ipairs(notAllwedSceneNamesOfType) do
+            local sceneToHook = SCENE_MANAGER:GetScene(notAllowedSceneName)
+            if sceneToHook and sceneToHook.state then
+                local state = sceneToHook.state
+                if state == SCENE_SHOWING or state == SCENE_SHOWN then
+                    return false
+                end
+            end
+        end
+    end
+    return true
+end
+
 --Visibility function for the add item to junk keybind
 local function UpdateAndDisplayAddItemToJunkKeybind()
     --Load the user settings, if not done already
@@ -67,6 +105,8 @@ end
 local function UpdateAndDisplayJunkSellKeybind()
     --Load the user settings, if not done already
     if not FCOIS.checkIfFCOISSettingsWereLoaded(true) then return nil end
+    --Check if the currently visible scene/menu etc. are allowed for the "move sell marked to junk" keybind
+    if not checkIfKeybindIsAllowedToShow("moveSellMarkedToJunk") then return false end
     --Is the setting enabled to show the keybind?
     return FCOIS.settingsVars.settings.keybindMoveMarkedForSellToJunkEnabled
 end

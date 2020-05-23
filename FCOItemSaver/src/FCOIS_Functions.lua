@@ -2063,3 +2063,37 @@ function FCOIS.GetInventoryTypeByFilterPanel(p_filterPanelId)
     end
     return inventoryType
 end
+
+
+--==========================================================================================================================================
+--                                          FCOIS - Keyboard helper functions
+--==========================================================================================================================================
+--Is a modifier key pressed? SHIFT, ALT, CTRL, COMMAND (only on MAC platform!)
+function FCOIS.IsModifierKeyPressed(modKey)
+    if modKey == nil then return end
+    if modKey == KEY_SHIFT then
+        return IsShiftKeyDown()
+    elseif modKey == KEY_ALT then
+        return IsAltKeyDown()
+    elseif modKey == KEY_CTRL then
+        return IsControlKeyDown()
+    elseif modKey == KEY_COMMAND then
+        return IsCommandKeyDown()
+    end
+    return false
+end
+
+--Check if no othe rmodifier key is pressed except the specified one
+function FCOIS.IsNoOtherModifierKeyPressed(modKey)
+    if modKey == nil then return end
+    if modKey == KEY_SHIFT then
+        return not IsAltKeyDown() and not IsControlKeyDown() and not IsCommandKeyDown()
+    elseif modKey == KEY_ALT then
+        return not IsShiftKeyDown() and not IsControlKeyDown() and not IsCommandKeyDown()
+    elseif modKey == KEY_CTRL then
+        return not IsAltKeyDown() and not IsShiftKeyDown() and not IsCommandKeyDown()
+    elseif modKey == KEY_COMMAND then
+        return not IsAltKeyDown() and not IsControlKeyDown() and not IsShiftKeyDown()
+    end
+    return false
+end

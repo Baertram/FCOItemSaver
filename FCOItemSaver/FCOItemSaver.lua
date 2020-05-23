@@ -19,7 +19,7 @@
 ---------------------------------------------------------------------
 --[ToDo list] --
 --____________________________
--- Current max bugs: 72
+-- Current max bugs: 76
 --____________________________
 
 -- 1) 2019-01-14 - Bugfix - Baertram
@@ -76,25 +76,41 @@ EsoUI/Libraries/Globals/Globals.lua:51: in function 'OnGlobalMouseDown'
 |caaaaaa<Locals> event = 65544, button = 1, focusEdit = ud </Locals>|r
 ]]
 
--- 64) 2020-04-09, Baertram
--- Keybindings for move sell marked to junk/sell should not show at trading house sell, and others where the junk tab is not shown (banks e.g.)
+-- 76) 2020-04-12, Baertram
+-- Open bank after login and try to remove/add a marker icon via keybind-> Insecure error call
+--See addon comments by TagCdog at 2020-04-11
+--[[
+If in this specific order I mark an item as deconstructable and then try to deposit that same item into the bank, I get this error:
+
+EsoUI/Ingame/Inventory/InventorySlot.lua:736: Attempt to access a private function 'PickupInventoryItem' from insecure code. The callstack became untrusted 1 stack frame(s) from the top.
+stack traceback:
+EsoUI/Ingame/Inventory/InventorySlot.lua:736: in function 'TryBankItem'
+|caaaaaa<Locals> inventorySlot = ud, bag = 1, index = 87, bankingBag = 2, canAlsoBePlacedInSubscriberBank = T </Locals>|r
+EsoUI/Ingame/Inventory/InventorySlot.lua:1608: in function 'INDEX_ACTION_CALLBACK'
+EsoUI/Ingame/Inventory/InventorySlotActions.lua:96: in function 'ZO_InventorySlotActions:DoPrimaryAction'
+|caaaaaa<Locals> self = [table:1]{m_contextMenuMode = F, m_hasActions = T, m_numContextMenuActions = 0}, primaryAction = [table:2]{1 = "Deposit"}, success = T </Locals>|r
+EsoUI/Ingame/Inventory/ItemSlotActionController.lua:30: in function 'callback'
+EsoUI/Libraries/ZO_KeybindStrip/ZO_KeybindStrip.lua:645: in function 'ZO_KeybindStrip:TryHandlingKeybindDown'
+|caaaaaa<Locals> self = [table:3]{allowDefaultExit = T, batchUpdating = F, insertionId = 678}, keybind = "UI_SHORTCUT_PRIMARY", buttonOrEtherealDescriptor = ud, keybindButtonDescriptor = [table:4]{order = 500, alignment = 3, keybind = "UI_SHORTCUT_PRIMARY", addedForSceneName = "bank", handledDown = T} </Locals>|r
+(tail call): ?
+(tail call): ?
+]]
 
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
---Since last update 1.8.8 - New version: 1.8.9
+--Since last update 1.9.2 - New version: 1.9.3
 ---------------------------------------------------------------------
 --[Fixed]
--- #71: Automatic marking of set items will not use the SetTracker marker icons if any trait icon is applied.
--- #72: SetTracker function FCOIS.updateSetTrackerMarker was missing and revived
+--
 
 --[Changed]
 
 --[Added]
--- #70: InventoryGridView support added for the inventory icon position and scale
+--
 
 --[Added on request]
--- #69: SetTracker addon: Add "None" entry to tracked set's FCOIS marker icon dropdown box to disable automatic marks for these SetTracker sets.
+-- #75 Added selection of modifier for the SHIFT+right mouse commands. Can be ALT, SHIFT, CTRL or COMMAND (only MAC!) now instead of a fixed SHIFT key.
 
 --************************************************************************************************************************
 --************************************************************************************************************************

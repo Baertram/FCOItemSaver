@@ -94,7 +94,7 @@ end
 
 --Create the marker controls, holding the icon textures
 --Will be created/updated as inventories get updated row by row (scrolling) -> by the help of function "CreateTextures()"
---Will also add/show/hide the small "is the set item already bound" icon at the top-right edge of the item's image (children "Button" of parent
+--Will also add/show/hide the small "is the set item already bound" icon at the top-right edge of the item's image (children "Button" of parent)
 -->Only adds the texture if it does not already exist and if the marker icon is enabled!
 function FCOIS.CreateMarkerControl(parent, controlId, pWidth, pHeight, pTexture, pIsEquipmentSlot, pCreateControlIfNotThere, pUpdateAllEquipmentTooltips, pArmorTypeIcon, pHideControl)
     --No parent? Abort here
@@ -217,7 +217,7 @@ function FCOIS.CreateMarkerControl(parent, controlId, pWidth, pHeight, pTexture,
                         if pWidth > 0 and pHeight > 0 then
                             local newWidth = (pWidth / 100) * scale
                             local newHeight = (pHeight / 100) * scale
-                            if newWidth ~= pWidth or newHeight ~= pHeight then
+                            if scale == 100 or (newWidth ~= pWidth or newHeight ~= pHeight) then
                                 control:SetDimensions(newWidth, newHeight)
                             end
                         end
@@ -622,11 +622,11 @@ function FCOIS.ClearOrRestoreAllMarkers(rowControl, bagId, slotIndex)
 end
 
 --Function to check if SHIFT+right mouse was used on an inventory row to clear/restore all the marker icons (from before -> undo table)
-function FCOIS.checkIfClearOrRestoreAllMarkers(clickedRow, shiftKey, upInside, mouseButton, refreshPopupDialogButons)
+function FCOIS.checkIfClearOrRestoreAllMarkers(clickedRow, modifierKeyPressed, upInside, mouseButton, refreshPopupDialogButons)
     --Enable clearing all markers by help of the SHIFT+right click?
     local contextMenuClearMarkesByShiftKey = FCOIS.settingsVars.settings.contextMenuClearMarkesByShiftKey
 --d("[FCOIS.checkIfClearOrRestoreAllMarkers]shiftKey: " ..tostring(shiftKey) .. ", upInside: " .. tostring(upInside) .. ", mouseButton: " .. tostring(mouseButton) .. ", setinGEnabled: " ..tostring(contextMenuClearMarkesByShiftKey))
-    if shiftKey == true and upInside and mouseButton == MOUSE_BUTTON_INDEX_RIGHT and contextMenuClearMarkesByShiftKey then
+    if modifierKeyPressed == true and upInside and mouseButton == MOUSE_BUTTON_INDEX_RIGHT and contextMenuClearMarkesByShiftKey then
         refreshPopupDialogButons = refreshPopupDialogButons or false
         -- make sure control contains an item
         local bagId, slotIndex = FCOIS.MyGetItemDetails(clickedRow)

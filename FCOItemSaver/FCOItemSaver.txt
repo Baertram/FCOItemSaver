@@ -1,13 +1,13 @@
 ##
 ## Title: |c00FF00FCO |cFFFF00ItemSaver|r
 ## Author: Baertram
-## Version: 1.8.9
-## AddOnVersion: 189
+## Version: 1.9.4
+## AddOnVersion: 194
 ## APIVersion: 100030 100031
 ## Description: Mark/demark your inventory items with different icons and filter them in inventories, during trading, banks, guild store, mail, enchanting, crafting, researching and stores. Save your marked items before destroying/deconstructing/researching/selling/sending/trading/using or equipping/binding them!
 ## SavedVariables: FCOItemSaver_Settings
-## DependsOn: LibAddonMenu-2.0>=28 LibCustomMenu>=682 LibDialog>=123 LibFeedback LibFilters-3.0>=315 LibLoadedAddons>=14 LibMainMenu-2.0>=432
-## OptionalDependsOn: LibDebugLogger LibLazyCrafting>=2992
+## DependsOn: LibAddonMenu-2.0>=28 LibCustomMenu>=692 LibDialog>=123 LibFeedback LibFilters-3.0>=315 LibLoadedAddons>=14 LibMainMenu-2.0>=432
+## OptionalDependsOn: LibDebugLogger LibLazyCrafting>=2998
 ## OptionalDependsOn: AdvancedDisableControllerUI AdvancedFilters AF_FCODuplicateItemsFilters
 ## OptionalDependsOn: CraftBagExtended
 ## OptionalDependsOn: DolgubonsLazyWritCreator
