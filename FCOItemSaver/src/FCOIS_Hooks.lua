@@ -894,12 +894,14 @@ function FCOIS.CreateHooks()
                 local isModifierKeyPressed = FCOIS.IsModifierKeyPressed(contextMenuClearMarkesKey)
                 --Was the shift key clicked?
                 if isModifierKeyPressed == true and FCOIS.IsNoOtherModifierKeyPressed(contextMenuClearMarkesKey) then
+                    FCOIS.preventerVars.isZoDialogContextMenu = true
                     --Right click/mouse button 2 context menu together with shift key: Clear/Restore all marker icons on the item?
                     --If the setting to remove/readd marker icons via shift+right mouse button is enabled:
                     FCOIS.checkIfClearOrRestoreAllMarkers(rowControl, isModifierKeyPressed, upInside, button, true)
                     --If the context menu should not be shown, because all marker icons were removed
                     -- hide it now
                     if FCOIS.ShouldInventoryContextMenuBeHiddden() then
+                        FCOIS.preventerVars.isZoDialogContextMenu = false
                         FCOIS.preventerVars.dontShowInvContextMenu = false
                         --Hide the context menu now by returning true in this preHook and not calling the "context menu show" function
                         return true
@@ -968,6 +970,7 @@ function FCOIS.CreateHooks()
                     --and the normal "hooked" functions don't need to be run afterwards)
                     -- -> All handling will be done in file src/FCOIS_ContextMenus.lua, function MarkMe() as the dialog list will be refreshed!
                     FCOIS.changeDialogButtonState(dialog, 1, false)
+                    FCOIS.preventerVars.isZoDialogContextMenu = false
                     return true
                 else -- if disableControl == false
                     --d("MouseUpInside, rowControl.disableControl-> false")
@@ -988,6 +991,7 @@ function FCOIS.CreateHooks()
                     end, 20)
                 end -- if disableControl == true
             end
+            FCOIS.preventerVars.isZoDialogContextMenu = false
         end) -- ZO_PreHookHandler(rowControl, "OnMouseUp"...
 
     end -- ctrlVars.LIST_DIALOG.dataTypes[1].setupCallback -> list dialog 1 pre-hook (e.g. research, repair item, enchant, charge, etc.)

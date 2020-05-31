@@ -2160,6 +2160,7 @@ function FCOIS.BuildAddonMenu()
                     end,
                     width="half",
                     default = FCOISdefaultSettings.useZOsLockFunctions,
+                    --helpUrl = locVars["options_scan_ZOs_lock_functions"],
                 },
                 {
                     type = "button",

@@ -42,7 +42,7 @@ end
 ZO_CreateStringId("SI_BINDING_NAME_FCOIS_JUNK_ALL_SELL",                FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_JUNK_ALL_SELL", true, {sellIconTextureText}))
 --Mark with sell icon (if enabled in settings) and junk item
 ZO_CreateStringId("SI_BINDING_NAME_FCOIS_JUNK_AND_MARK_SELL_ITEM",      FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_JUNK_AND_MARK_SELL_ITEM", true))
-
+ZO_CreateStringId("SI_BINDING_NAME_FCOIS_REMOVE_ALL_MARKER_ICONS_AND_UNDO", FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_REMOVE_ALL_MARKER_ICONS_AND_UNDO", true))
 
 --Generate the keybinding texts for the static gear set icons
 function FCOIS.generateStaticGearSetIconsKeybindingsTexts()

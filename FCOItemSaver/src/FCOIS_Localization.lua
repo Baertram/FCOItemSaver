@@ -344,7 +344,10 @@ function FCOIS.Localization()
 --d("[FCOIS] Localization - Start, keybindings: " .. tostring(preventerVars.KeyBindingTexts) ..", useClientLang: " .. tostring(FCOIS.settingsVars.settings.alwaysUseClientLanguage))
 
     --Was localization already done during keybindings? Then abort here
-    if preventerVars.KeyBindingTexts == true and preventerVars.gLocalizationDone == true then return end
+    if preventerVars.KeyBindingTexts == true and preventerVars.gLocalizationDone == true then
+        preventerVars.KeyBindingTexts = false
+        return
+    end
     --Fallback to english variable
     local fallbackToEnglish = false
     --Always use the client's language?
@@ -416,7 +419,10 @@ function FCOIS.Localization()
 
     preventerVars.gLocalizationDone = true
     --Abort here if we only needed the keybinding texts
-    if preventerVars.KeyBindingTexts == true then return end
+    if preventerVars.KeyBindingTexts == true then
+        preventerVars.KeyBindingTexts = false
+        return
+    end
 
     --Local variable for a faster array parsing
     local locTexts = locVars.fcois_loc

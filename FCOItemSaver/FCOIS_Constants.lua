@@ -1337,6 +1337,7 @@ preventerVars.splitItemStackDialogButtonCallbacks = false
 preventerVars.useAdvancedFiltersItemCountInInventories = false
 preventerVars.dontUpdateFilteredItemCount                     = false
 preventerVars.lamMenuOpenAndShowingInvPreviewForGridListAddon = false
+preventerVars.isZoDialogContextMenu = false
 
 --The event handler array for OnMouseDoubleClick, Drag&Drop, etc.
 FCOIS.eventHandlers = {}

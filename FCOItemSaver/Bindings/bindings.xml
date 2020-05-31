@@ -158,6 +158,9 @@
       <Action name="FCOIS_JUNK_AND_MARK_SELL_ITEM">
         <Down>FCOIS.MarkAndRunOnItemByKeybind({FCOIS_CON_ICON_SELL}, 'junk')</Down>
       </Action>
+      <Action name="FCOIS_REMOVE_ALL_MARKER_ICONS_AND_UNDO">
+        <Down>FCOIS.RemoveAllMarkerIconsOrUndo()</Down>
+      </Action>
 
     </Category>
   </Layer>
@@ -321,6 +324,9 @@
       </Action>
       <Action name="FCOIS_JUNK_AND_MARK_SELL_ITEM_DIALOG" hideAction="true" inheritsBindFrom="FCOIS_JUNK_ALL_SELL">
         <Down>FCOIS.MarkAndRunOnItemByKeybind({FCOIS_CON_ICON_SELL}, 'junk')</Down>
+      </Action>
+      <Action name="FCOIS_REMOVE_ALL_MARKER_ICONS_AND_UNDO_DIALOG" hideAction="true" inheritsBindFrom="FCOIS_REMOVE_ALL_MARKER_ICONS_AND_UNDO">
+        <Down>FCOIS.RemoveAllMarkerIconsOrUndo()</Down>
       </Action>
 
     </Category>

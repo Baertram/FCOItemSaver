@@ -1360,6 +1360,8 @@ function FCOIS.GetLocText(textName, isKeybindingText, placeHoldersTab)
     --Do the localization now
     FCOIS.Localization()
 
+	FCOIS.preventerVars.KeyBindingTexts = false
+
     if textName == nil or FCOIS.localizationVars.fcois_loc == nil or FCOIS.localizationVars.fcois_loc[textName] == nil then return "" end
 	local returnText = FCOIS.localizationVars.fcois_loc[textName]
 

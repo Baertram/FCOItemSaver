@@ -622,18 +622,21 @@ function FCOIS.ClearOrRestoreAllMarkers(rowControl, bagId, slotIndex)
 end
 
 --Function to check if SHIFT+right mouse was used on an inventory row to clear/restore all the marker icons (from before -> undo table)
-function FCOIS.checkIfClearOrRestoreAllMarkers(clickedRow, modifierKeyPressed, upInside, mouseButton, refreshPopupDialogButons)
+function FCOIS.checkIfClearOrRestoreAllMarkers(clickedRow, modifierKeyPressed, upInside, mouseButton, refreshPopupDialogButons, calledByKeybind)
+    calledByKeybind = calledByKeybind or false
     --Enable clearing all markers by help of the SHIFT+right click?
     local contextMenuClearMarkesByShiftKey = FCOIS.settingsVars.settings.contextMenuClearMarkesByShiftKey
 --d("[FCOIS.checkIfClearOrRestoreAllMarkers]shiftKey: " ..tostring(shiftKey) .. ", upInside: " .. tostring(upInside) .. ", mouseButton: " .. tostring(mouseButton) .. ", setinGEnabled: " ..tostring(contextMenuClearMarkesByShiftKey))
-    if modifierKeyPressed == true and upInside and mouseButton == MOUSE_BUTTON_INDEX_RIGHT and contextMenuClearMarkesByShiftKey then
+    if ( modifierKeyPressed == true and contextMenuClearMarkesByShiftKey ) and  (calledByKeybind == true or (upInside and mouseButton == MOUSE_BUTTON_INDEX_RIGHT))  then
         refreshPopupDialogButons = refreshPopupDialogButons or false
         -- make sure control contains an item
         local bagId, slotIndex = FCOIS.MyGetItemDetails(clickedRow)
         if bagId ~= nil and slotIndex ~= nil then
 --d("[FCOIS] Clearing/Restoring all markers of the current item now! bag: " .. bagId .. ", slotIndex: " .. slotIndex .. " " .. GetItemLink(bagId, slotIndex))
             --Set the preventer variable now to suppress the context menu of inventory items
-            FCOIS.preventerVars.dontShowInvContextMenu = true
+            if not calledByKeybind then
+                FCOIS.preventerVars.dontShowInvContextMenu = true
+            end
 --d("[FCOIS]checkIfClearOrRestoreAllMarkers - dontShowInvContextMenu: true")
             --Clear/Restore the markers now
             FCOIS.ClearOrRestoreAllMarkers(clickedRow, bagId, slotIndex)
@@ -644,11 +647,26 @@ function FCOIS.checkIfClearOrRestoreAllMarkers(clickedRow, modifierKeyPressed, u
             end
             --Is the character shown, then disable the context menu "hide" variable again as the order of hooks is not
             --the same like in the inventory and the context menu will be hidden twice in a row else!
-            local isCharacter = (bagId == BAG_WORN) and not FCOIS.ZOControlVars.CHARACTER:IsHidden()
-            if isCharacter then
-                FCOIS.preventerVars.dontShowInvContextMenu = false
+            if not calledByKeybind then
+                local isCharacter = (bagId == BAG_WORN) and not FCOIS.ZOControlVars.CHARACTER:IsHidden()
+                if isCharacter then
+                    FCOIS.preventerVars.dontShowInvContextMenu = false
+                end
             end
         end
+    end
+end
+
+--Called per keybind: Get the current row the mouse is above and then remove or restore all marker icons
+function FCOIS.RemoveAllMarkerIconsOrUndo()
+--d("[FCOIS]RemoveAllMarkerIconsOrUndo")
+    local mouseOverControl = WINDOW_MANAGER:GetMouseOverControl()
+    if mouseOverControl ~= nil then
+        local contextMenuClearMarkesKey = FCOIS.settingsVars.settings.contextMenuClearMarkesModifierKey
+        local isModifierKeyPressed = FCOIS.IsModifierKeyPressed(contextMenuClearMarkesKey)
+        local refreshPopupDialogButons = FCOIS.preventerVars.isZoDialogContextMenu
+--d(">mouseOverControl: " ..tostring(mouseOverControl:GetName()) ..", isModifierKeyPressed: " .. tostring(isModifierKeyPressed) .. ", refreshPopupDialogButons: " ..tostring(refreshPopupDialogButons))
+        FCOIS.checkIfClearOrRestoreAllMarkers(mouseOverControl, isModifierKeyPressed, nil, nil, refreshPopupDialogButons, true) -- calledByKeybind = true
     end
 end
 

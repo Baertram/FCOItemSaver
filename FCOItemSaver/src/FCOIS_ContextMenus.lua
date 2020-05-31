@@ -2856,8 +2856,15 @@ function FCOIS.showContextMenuForAddInvButtons(invAddContextMenuInvokerButton)
         FCOIS.hideContextMenu(panelId)
     else
         local settings = FCOIS.settingsVars.settings
+        --Fallback: Was the localization not done properly?
+        if FCOIS.localizationVars.contextEntries.menu_add_dynamic_text == nil or FCOIS.localizationVars.contextEntries.menu_remove_dynamic_text == nil
+           or FCOIS.localizationVars.contextEntries.menu_add_all_text == nil or FCOIS.localizationVars.contextEntries.menu_remove_all_text == nil then
+            FCOIS.preventerVars.KeyBindingTexts = false
+            FCOIS.Localization()
+        end
         local locVars = FCOIS.localizationVars.fcois_loc
         local locContextEntriesVars = FCOIS.localizationVars.contextEntries
+
         local _, countDynIconsEnabled = FCOIS.countMarkerIconsEnabled()
         local useDynSubMenu = (settings.useDynSubMenuMaxCount > 0 and countDynIconsEnabled >= settings.useDynSubMenuMaxCount) or false
         local icon2Gear = FCOIS.mappingVars.iconToGear
