@@ -315,7 +315,7 @@ function FCOIS.checkIfItemIsProtected(iconId, itemId, checkHandler, addonName)
             return false
         end
         --Check if the item is marked with the icon
-        itemIsMarked = FCOIS.markedItems[iconId][FCOIS.SignItemId(itemId, nil, nil, addonName)]
+        itemIsMarked = FCOIS.markedItems[iconId][FCOIS.SignItemId(itemId, nil, nil, addonName, nil, nil)]
     end
     if itemIsMarked == nil then itemIsMarked = false end
     --d("FCOIS.checkIfItemIsProtected - itemIsMarked: " .. tostring(itemIsMarked))

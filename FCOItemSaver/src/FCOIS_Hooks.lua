@@ -151,6 +151,46 @@ end
 --==============================================================================
 --			Context menu / right click / slot actions
 --==============================================================================
+--Check if the localization data of the context menu is given
+local function checkAndUpdateContextMenuLocalizationData()
+    local locVars = FCOIS.localizationVars
+    local doUpdateLocalization = false
+    if not locVars then
+        doUpdateLocalization = true
+    end
+    if not doUpdateLocalization then
+        local locEntriesToCheck = {
+            ["lTextEquipmentMark"] = true,
+            ["lTextEquipmentDemark"] = true,
+            ["lTextMark"] = true,
+            ["lTextDemark"] = true,
+        }
+        for key, isToCheck in pairs(locEntriesToCheck) do
+            if isToCheck == true and not doUpdateLocalization then
+                if locVars[key] == nil then
+                    doUpdateLocalization = true
+                    break
+                end
+                --Check if the texts for the filter icons exists
+                for iconId=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
+                    if locVars[key][iconId] == nil then
+                        doUpdateLocalization = true
+                        break
+                    end
+                end
+            end
+        end
+    end
+    --Should the localization be rebuild now?
+    if doUpdateLocalization == true then
+        --Re-Do the localization done variable and rebuild all localization
+        FCOIS.Localization()
+        --Overwrite the localized texts for the marker icons in the context menus
+        FCOIS.changeContextMenuEntryTexts(-1)
+    end
+end
+
+
 --PreHook the global ZO_Menu hide function to show the PlayerProgressBar again at the character panel
 ZO_PreHook("ZO_Menu_OnHide", function()
 --d("[FCOIS]ZO_Menu_OnHide")
@@ -581,6 +621,8 @@ function FCOIS.CreateHooks()
         if contextMenuEntriesAdded > 0 then
             local addedCounter = 0
             FCOIS.preventerVars.buildingInvContextMenuEntries = true
+            --Check if the localization data of the context menu is given
+            checkAndUpdateContextMenuLocalizationData()
             for j = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
                 if FCOcontextMenu[j] ~= nil then
                     addedCounter = addedCounter + 1
@@ -912,6 +954,8 @@ function FCOIS.CreateHooks()
                 --Check if the user set ordeirng is valid, else use the standard sorting
                 local userOrderValid = FCOIS.checkIfUserContextMenuSortOrderValid()
                 local contextMenuEntriesAdded = 0
+                --Check if the localization data of the context menu is given
+                checkAndUpdateContextMenuLocalizationData()
                 --check each iconId and build a sorted context menu then
                 for iconId = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
                     --Check if the icon (including gear sets) is enabled

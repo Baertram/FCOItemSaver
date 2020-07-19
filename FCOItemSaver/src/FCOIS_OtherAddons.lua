@@ -2,6 +2,7 @@
 if FCOIS == nil then FCOIS = {} end
 local FCOIS = FCOIS
 local mappingVars = FCOIS.mappingVars
+
 --==========================================================================================================================================
 --									FCOIS other addon functions
 --==========================================================================================================================================
@@ -652,26 +653,35 @@ function FCOIS.checkIfOtherAddonIIfAIsActive()
     end
 end
 
---Get the itemInstance or the unique ID
+--Get the itemInstance or the unique ID of an item at bagId and slotIndex, or at the itemLink
 function FCOIS.getItemInstanceOrUniqueId(bagId, slotIndex, itemLink)
     if bagId == nil or slotIndex == nil then return 0, false end
     local bagsToBuildIdFor = mappingVars.bagsToBuildItemInstanceOrUniqueIdFor
     local allowedUniqueIdItemTypes = FCOIS.allowedUniqueIdItemTypes
     local itemInstanceOrUniqueId = 0
     local isBagToBuildItemInstanceOrUniqueId = bagsToBuildIdFor[bagId] or false
-    --Should an itemInstance or unique ID be build for this bagId ?
-    if isBagToBuildItemInstanceOrUniqueId then
+    --Should an itemInstance or unique ID be build for this bagId?
+    if isBagToBuildItemInstanceOrUniqueId == true then
         itemLink = itemLink or GetItemLink(bagId,slotIndex)
         --d("[FCOIS.getItemInstanceOrUniqueId] " .. itemLink .. ", bagId: " .. tostring(bagId))
         local itemLinkItemType = GetItemLinkItemType(itemLink)
         local allowedUniqueIdItemType = allowedUniqueIdItemTypes[itemLinkItemType] or false
-        local useUniqueIds = false
-        --Is FCOItemSaver enabled and the settings to use unique IDs is enabled?
-        if FCOIS ~= nil and FCOIS.settingsVars ~= nil and FCOIS.settingsVars.settings ~= nil then
-            useUniqueIds = FCOIS.settingsVars.settings.useUniqueIds
-        end
-        if allowedUniqueIdItemType and useUniqueIds then
-            itemInstanceOrUniqueId = zo_getSafeId64Key(GetItemUniqueId(bagId, slotIndex))
+        --Are the FCOIS settings already loaded?
+        FCOIS.checkIfFCOISSettingsWereLoaded(false)
+        --Is the FCOIS setting enabled to use unique IDs?
+        local settings = FCOIS.settingsVars.settings
+        local useUniqueIds = settings.useUniqueIds or false
+        if allowedUniqueIdItemType == true and useUniqueIds == true then
+            local uniqueItemIdType = settings.uniqueItemIdType
+            if not uniqueItemIdType or uniqueItemIdType == FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE then
+                itemInstanceOrUniqueId = zo_getSafeId64Key(GetItemUniqueId(bagId, slotIndex))
+            elseif uniqueItemIdType and uniqueItemIdType == FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE then
+                --TODO: Do not use the unique ID here anymore ass it is real unique even for the same items,
+                --TODO: but create a unique ID like this: a , concatenated String of "<unsignedItemInstanceId>,<levelNumber>,<qualityId>,<traitId>,<styleId>,<enchantId>,<isStolen>,..."
+                local itemInstanceId = GetItemInstanceId(bagId, slotIndex)
+                itemInstanceOrUniqueId = FCOIS.CreateFCOISUniqueIdString(itemInstanceId, allowedUniqueIdItemType, bagId, slotIndex, itemLink)
+                if settings.debug then FCOIS.debugMessage( "[getItemInstanceOrUniqueId]", string.format("bag: %s, slot: %s, itemLink: %s, itemInstanceId: %s, FCOISUniqueId: %s", tostring(bagId), tostring(slotIndex), tostring(itemLink), tostring(itemInstanceId), tostring(itemInstanceOrUniqueId)), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+            end
         else
             itemInstanceOrUniqueId = GetItemInstanceId(bagId, slotIndex)
         end
@@ -947,13 +957,23 @@ function FCOIS.MyGetItemInstanceIdForIIfA(clickedDataLine, signToo)
         --Else use the non-unique item ID
         --d("[FCOIS.MyGetItemInstanceIdForIIfA] useUniqueIds: " .. tostring(settings.useUniqueIds) .. ", allowedItemType: " .. tostring(allowedItemType))
         if settings.useUniqueIds and allowedItemType then
-            itemId = zo_getSafeId64Key(GetItemUniqueId(bagId, slotIndex)) -- itemInstanceId contains the int64 value
+            local uniqueItemIdType = settings.uniqueItemIdType
+            if not uniqueItemIdType or uniqueItemIdType == FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE then
+                itemId = zo_getSafeId64Key(GetItemUniqueId(bagId, slotIndex)) -- itemInstanceId contains the int64 value
+            elseif uniqueItemIdType and uniqueItemIdType == FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE then
+                local itemInstanceId = GetItemInstanceId(bagId, slotIndex)
+                itemId = FCOIS.CreateFCOISUniqueIdString(itemInstanceId, allowedItemType, bagId, slotIndex, itemLink)
+                if settings.debug then FCOIS.debugMessage( "[MyGetItemInstanceIdForIIfA]", string.format("bag: %s, slot: %s, itemLink: %s, itemInstanceId: %s, FCOISUniqueId: %s", tostring(bagId), tostring(slotIndex), tostring(itemLink), tostring(itemInstanceId), tostring(itemId)), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+            end
         else
             itemId = GetItemInstanceId(bagId, slotIndex)
         end
     end
-    if signToo or (not ownedByLoggedInChar and not isItemInAccountWideBags) then
-        itemId = FCOIS.SignItemId(itemId, allowedItemType, nil, nil)
+    if signToo and (
+            (not settings.useUniqueIds or (settings.useUniqueIds == true and allowedItemType == true))
+            or (not ownedByLoggedInChar and not isItemInAccountWideBags)
+    ) then
+        itemId = FCOIS.SignItemId(itemId, allowedItemType, nil, nil, bagId, slotIndex)
     end
 --d("[FCOIS.MyGetItemInstanceIdForIIfA] itemIdOrLink: " .. itemIdOrLink .. ", itemInstanceOrUniqueId: " .. tostring(itemId) .. ", bagId: " .. tostring(bagId) .. ", slotIndex: " .. tostring(slotIndex))
     return itemId, bagId, slotIndex, itemFoundAtLocationTable, itemFoundAtLocationTableAccountWide

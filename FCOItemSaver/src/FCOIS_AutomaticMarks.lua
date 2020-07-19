@@ -663,7 +663,8 @@ end -- automaticMarkingSetsAdditionalCheckFunc
 --Function to scan a single item. Is needed so the return false won't abort scanning the whole inventory!
 function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, doOverride)
     doOverride = doOverride or false
-    --d("FCOIS]scanInventoryItemForAutomaticMarks-" .. il .. " bag: " ..tostring(bag) .. ", slot: " ..tostring(slot) .. ", scanType: " .. tostring(scanType) .. ", doOverride: " .. tostring(doOverride))
+    --local il = GetItemLink(bag, slot)
+    -- d("FCOIS]scanInventoryItemForAutomaticMarks-" .. il .. ", bag: " ..tostring(bag) .. ", slot: " ..tostring(slot) .. ", scanType: " .. tostring(scanType) .. ", doOverride: " .. tostring(doOverride))
     --------------------------------------------------------------------------------
     --					Function starts											  --
     --------------------------------------------------------------------------------
@@ -672,15 +673,19 @@ function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, do
     local atLeastOneMarkerIconWasSet = false
 
     local settings = FCOIS.settingsVars.settings
+    local debugMessage = FCOIS.debugMessage
 
     local function abortChecksNow(whereWasTheFunctionAborted)
-        if settings.debug then
-            whereWasTheFunctionAborted = whereWasTheFunctionAborted or "n/a"
-            if whereWasTheFunctionAborted ~= "" then
-                d("<<[FCOIS]ScanInvForAutomaticMarks \"" .. tostring(scanType) .. "\". Aborting! [" .. tostring(whereWasTheFunctionAborted) .. "]")
-            else
-                d("<<[FCOIS]ScanInvForAutomaticMarks \"" .. tostring(scanType) .. "\". Aborting!")
+        --For debugging only:
+        local specialCaseMet = false
+        --TODO:Remove again after testing. Added with FCOIS 1.9.6 on 2020-06-29
+        specialCaseMet = scanType == "quality"
+
+        if settings.debug or specialCaseMet == true then
+            if whereWasTheFunctionAborted then
+                whereWasTheFunctionAborted = " " .. tostring(whereWasTheFunctionAborted)
             end
+            debugMessage( "[ScanInvForAutomaticMarks]", string.format(tostring(scanType) .. ": Aborting!%s", tostring(whereWasTheFunctionAborted)), true, FCOIS_DEBUG_DEPTH_NORMAL)
         end
         return false, false
     end
@@ -689,14 +694,14 @@ function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, do
     --Check only one bag & slot, or a whole inventory?
     if bag ~= nil and slot ~= nil then
         --Are the TO DOs given?
-        if toDos == nil then if not settings.debug then return false, false else return abortChecksNow("ToDos are nil!") end end
+        if toDos == nil then return abortChecksNow("ToDos are nil!") end
         --d(">Todos found")
 
         --Check only one item slot
         --Is the inventory already scanned currently?
         if FCOIS.preventerVars.gScanningInv then
             --d("<<<!!! Aborting inv. scan. Scan already active - bag: " .. tostring(bag) .. ", slot: " .. tostring(slot) .. " scanType: " .. tostring(scanType) .. " !!!>>>")
-            if not settings.debug then return false, false else return abortChecksNow("Scanning inv already")  end
+            return abortChecksNow("Scanning inv already")
         end
         local itemLink
 --d("!!!!!> Scanning - bag: " .. tostring(bag) .. ", slot: " .. tostring(slot) .. " " .. itemLink .. " scanType: " .. tostring(scanType) .. " <!!!!!")
@@ -708,7 +713,7 @@ function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, do
         local forceAdditionalCheckFunc = false
         --1) Icon
         --Check if the marker icon is given and enabled
-        if not toDos.icon or not settings.isIconEnabled[toDos.icon] then if not settings.debug then return false, false else return abortChecksNow("Icon not given/not enabled: " ..tostring(toDos.icon)) end  end
+        if not toDos.icon or not settings.isIconEnabled[toDos.icon] then return abortChecksNow("Icon not given/not enabled: " ..tostring(toDos.icon)) end
         --d(">Active icon found for '" .. tostring(scanType) .. "': " .. tostring(toDos.icon))
 
         --2) Settings enabled?
@@ -724,14 +729,14 @@ function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, do
             --Result should equal the check variable
             if toDos.result ~= nil then
                 --Result does NOT equal check variable -> abort
-                if checkResult ~= toDos.result then if not settings.debug then return false, false else return abortChecksNow("Check value " .. tostring(checkResult) .. " <> result " ..tostring(toDos.result)) end  end
+                if checkResult ~= toDos.result then return abortChecksNow("Check value " .. tostring(checkResult) .. " <> result " ..tostring(toDos.result)) end
             --Result should NOT equal the check variable
             elseif toDos.resultNot ~= nil then
                 --Result equals check variable -> abort
-                if checkResult == toDos.resultNot then if not settings.debug then return false, false else return abortChecksNow("Check value " .. tostring(checkResult) .. " <> result NOT " ..tostring(toDos.resultNot)) end  end
+                if checkResult == toDos.resultNot then return abortChecksNow("Check value " .. tostring(checkResult) .. " <> result NOT " ..tostring(toDos.resultNot)) end
             else
                 --No expected result given? Abort
-                if not settings.debug then return false, false else return abortChecksNow("No expected result given")  end
+                return abortChecksNow("No expected result given")
             end
         end
 
@@ -748,14 +753,14 @@ function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, do
             --Result should equal the other addons check variable
             if toDos.resultOtherAddon ~= nil then
                 --Result does NOT equal other addons check variable -> abort
-                if checkOtherAddonResult ~= toDos.resultOtherAddon then if not settings.debug then return false, false else return abortChecksNow("Check other addon value " .. tostring(checkOtherAddonResult) .. " <> result other addon value " ..tostring(toDos.resultOtherAddon)) end  end
+                if checkOtherAddonResult ~= toDos.resultOtherAddon then return abortChecksNow("Check other addon value " .. tostring(checkOtherAddonResult) .. " <> result other addon value " ..tostring(toDos.resultOtherAddon)) end
             --Result should NOT equal the other addons check variable
             elseif toDos.resultNotOtherAddon ~= nil then
                 --Result equals other addons check variable -> abort
-                if checkOtherAddonResult == toDos.resultNotOtherAddon then if not settings.debug then return false, false else return abortChecksNow("Check other addon value " .. tostring(checkOtherAddonResult) .. " <> result NOT other addon value" ..tostring(toDos.resultNotOtherAddon)) end  end
+                if checkOtherAddonResult == toDos.resultNotOtherAddon then return abortChecksNow("Check other addon value " .. tostring(checkOtherAddonResult) .. " <> result NOT other addon value" ..tostring(toDos.resultNotOtherAddon)) end
             else
                 --No expected result given? Abort
-                if not settings.debug then return false, false else return abortChecksNow("No expected other addon result given") end
+                return abortChecksNow("No expected other addon result given")
             end
         end
 
@@ -805,7 +810,7 @@ function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, do
         end
         if itemId == nil or not canBeAutomaticallyMarked or isItemProtected	then
             --d("<-- ABORTED [".. itemLink .. "] - ItemId: " .. tostring(itemId) .. ", scanType: " .. tostring(scanType) .. ", FCOIS.checkIfItemIsProtected: " .. tostring(isItemProtected) .. " -> Should be: false, checkIfCanBeAutomaticallyMarked: (" .. tostring(canBeAutomaticallyMarked) .." -> Should be: true)")
-            if not settings.debug then return false, false else return abortChecksNow("ItemId nil?: " .. tostring(itemId) .. ", canBeAutomaticallyMarked false/nil?: " ..tostring(canBeAutomaticallyMarked) .. ", isItemProtected true?: " ..tostring(isItemProtected)) end
+            return abortChecksNow("ItemId nil?: " .. tostring(itemId) .. ", canBeAutomaticallyMarked false/nil?: " ..tostring(canBeAutomaticallyMarked) .. ", isItemProtected true?: " ..tostring(isItemProtected))
         end
 
         --5) Check function needs to be run?
@@ -830,19 +835,19 @@ function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, do
 
             --d(">Check func active: " .. tostring(checkFuncResult) .. " (" .. tostring(toDos.resultCheckFunc) .. "/" .. tostring(toDos.resultNotCheckFunc) .. "), forceAdditionalCheckFunc: " ..tostring(forceAdditionalCheckFunc))
             --Was the check successfull?
-            if checkFuncResult == nil and not forceAdditionalCheckFunc then if not settings.debug then return false, false else return abortChecksNow("CheckFuncResult is nil and no force to go on is active!") end  end
+            if checkFuncResult == nil and not forceAdditionalCheckFunc then return abortChecksNow("CheckFuncResult is nil and no force to go on is active!") end
             --Result should equal the check func result
             if not forceAdditionalCheckFunc then
                 if toDos.resultCheckFunc ~= nil then
                     --Result does NOT equal check func result -> abort
-                    if checkFuncResult ~= toDos.resultCheckFunc then if not settings.debug then return false, false else return abortChecksNow("CheckFunc " .. tostring(checkFuncResult) .. " <> CheckFuncResult " ..tostring(toDos.resultCheckFunc)) end  end
+                    if checkFuncResult ~= toDos.resultCheckFunc then return abortChecksNow("CheckFunc " .. tostring(checkFuncResult) .. " <> CheckFuncResult " ..tostring(toDos.resultCheckFunc)) end
                 --Result should NOT equal the check func result
                 elseif toDos.resultNotCheckFunc ~= nil then
                     --Result equals check func result -> abort
-                    if checkFuncResult == toDos.resultNotCheckFunc then if not settings.debug then return false, false else return abortChecksNow("CheckFunc " .. tostring(checkFuncResult) .. " <> NOT CheckFuncResult " ..tostring(toDos.resultNotCheckFunc)) end  end
+                    if checkFuncResult == toDos.resultNotCheckFunc then return abortChecksNow("CheckFunc " .. tostring(checkFuncResult) .. " <> NOT CheckFuncResult " ..tostring(toDos.resultNotCheckFunc)) end
                 else
                     --No expected result given? Abort
-                    if not settings.debug then return false, false else return abortChecksNow("Check func or result not used")  end
+                    return abortChecksNow("Check func or result not used")
                 end
             end
         end
@@ -861,7 +866,7 @@ function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, do
                     itemData.fromCheckFunc = {}
                     itemData.fromCheckFunc = checkFuncResultData
                 end
-                if itemData == nil then if not settings.debug then return false, false else return abortChecksNow("Additional check func, itemdata is nil!") end  end
+                if itemData == nil then return abortChecksNow("Additional check func, itemdata is nil!") end
                 --The check is a function, so call it with the itemData table and the current check func result variable
                 additionalCheckFuncResult, additionalCheckFuncResultData = toDos.additionalCheckFunc(itemData, checkFuncResult)
             else
@@ -870,18 +875,18 @@ function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, do
             end
 --d(">Add. check func active: " .. tostring(additionalCheckFuncResult) .. " (" .. tostring(toDos.resultAdditionalCheckFunc) .. "/" .. tostring(toDos.resultNotAdditionalCheckFunc) .. ")")
             --Was the check successfull?
-            if additionalCheckFuncResult == nil then if not settings.debug then return false, false else return abortChecksNow("Additional check func result is nil!") end  end
+            if additionalCheckFuncResult == nil then return abortChecksNow("Additional check func result is nil!") end
             --Result should equal the add. check func result
             if toDos.resultAdditionalCheckFunc ~= nil then
                 --Result does NOT equal add. check func result -> abort
-                if additionalCheckFuncResult ~= toDos.resultAdditionalCheckFunc then if not settings.debug then return false, false else return abortChecksNow("Additional check func " ..tostring(additionalCheckFuncResult) .. " <> Additional check func result " .. tostring(toDos.resultAdditionalCheckFunc)) end  end
+                if additionalCheckFuncResult ~= toDos.resultAdditionalCheckFunc then return abortChecksNow("Additional check func " ..tostring(additionalCheckFuncResult) .. " <> Additional check func result " .. tostring(toDos.resultAdditionalCheckFunc)) end
             --Result should NOT equal the add. check func result
             elseif toDos.resultNotAdditionalCheckFunc ~= nil then
                 --Result equals add. check func result -> abort
-                if additionalCheckFuncResult == toDos.resultNotAdditionalCheckFunc then if not settings.debug then return false, false else return abortChecksNow("Additional check func " ..tostring(additionalCheckFuncResult) .. " <> NOT Additional check func result " .. tostring(toDos.resultNotAdditionalCheckFunc)) end  end
+                if additionalCheckFuncResult == toDos.resultNotAdditionalCheckFunc then return abortChecksNow("Additional check func " ..tostring(additionalCheckFuncResult) .. " <> NOT Additional check func result " .. tostring(toDos.resultNotAdditionalCheckFunc)) end
             else
                 --No expected result given? Abort
-                if not settings.debug then return false, false else return abortChecksNow("Additional check func or result not given!")  end
+                return abortChecksNow("Additional check func or result not given!")
             end
         end
 --d(">got here, addCheckfuncMarkerIcon")
@@ -1324,7 +1329,7 @@ local scanInventorySingle = FCOIS.scanInventorySingle
 --Scan the inventory for ornate and/or researchable items
 function FCOIS.scanInventory(p_bagId, p_slotIndex)
     --Do not scan now if the unique item IDs got just enabled before the reloadui
-    if FCOIS.preventerVars.doNotScanInv then
+    if FCOIS.preventerVars.doNotScanInv == true then
         if FCOIS.settingsVars.settings.useUniqueIds then
             d(FCOIS.preChatVars.preChatTextRed .. FCOIS.localizationVars.fcois_loc["options_migrate_unique_inv_scan_not_done"])
         end
@@ -1397,7 +1402,7 @@ function FCOIS.scanInventoriesForZOsLockedItemsAndTransfer(p_bagId, p_slotIndex)
         if (itemId ~= nil and IsItemPlayerLocked(p_bagId, p_slotIndex)) then
             foundAndTransferedOne = true
             --Mark the item with FCOIS without checking if other markers should be removed etc. (see function FCOMarkMe())
-            FCOIS.markedItems[1][FCOIS.SignItemId(itemId, nil, nil, nil)] = true
+            FCOIS.markedItems[1][FCOIS.SignItemId(itemId, nil, nil, nil, p_bagId, p_slotIndex)] = true
             --Unmark the item with ZOs functions
             SetItemIsPlayerLocked(p_bagId, p_slotIndex, false)
         end

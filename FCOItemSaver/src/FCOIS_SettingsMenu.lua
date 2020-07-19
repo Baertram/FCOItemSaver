@@ -237,6 +237,20 @@ function FCOIS.BuildAddonMenu()
         KEY_COMMAND
     }
 
+    --FCOIS v1.9.6 - Unique itemId choices
+    local uniqueItemIdTypeChoices = {
+        [1] = locVars["options_unique_id_base_game"],
+        --[2] = locVars["options_uniqe_id_by_FCOIS"],
+    }
+    local uniqueItemIdTypeChoicesTT = {
+        [1] = locVars["options_unique_id_base_game_TT"],
+        --[2] = locVars["options_uniqe_id_by_FCOIS_TT"],
+    }
+    local uniqueItemIdTypeChoicesValues = {
+        [1] = FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE,
+        --0[2] = FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE,
+    }
+
     --The textures/marker icons names (just numbers)
     local texturesList = {}
     local maxTextureIcons = numVars.maxTextureIcons or 100
@@ -1126,7 +1140,10 @@ function FCOIS.BuildAddonMenu()
             --Add the name edit box
             name = locVars["options_icon" .. tostring(fcoisDynIconNr) .. "_color"]
             tooltip = ""
-            data = { type = "editbox", width = "half" }
+            data = {
+                     type = "editbox", width = "half",
+                     --helpUrl = locVars["options_icon" .. tostring(fcoisDynIconNr) .. "_color"],
+            }
             disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].name end
             setFunc = function(newValue)
@@ -2090,6 +2107,10 @@ function FCOIS.BuildAddonMenu()
                     name = locVars["options_header_uniqueids"],
                 },
                 {
+                    type = 'description',
+                    text = locVars["options_description_uniqueids"],
+                },
+                {
                     type = "checkbox",
                     name = locVars["options_use_uniqueids"],
                     tooltip = locVars["options_use_uniqueids_TT"],
@@ -2100,6 +2121,27 @@ function FCOIS.BuildAddonMenu()
                     warning = locVars["options_description_uniqueids"],
                     requiresReload = true,
                     default = FCOISdefaultSettings.useUniqueIds,
+                },
+                {
+                    type = 'dropdown',
+                    name = locVars["options_use_uniqueids_type"],
+                    tooltip = locVars["options_use_uniqueids_type_TT"],
+                    choices = uniqueItemIdTypeChoices,
+                    choicesValues = uniqueItemIdTypeChoicesValues,
+                    choicesTooltips = uniqueItemIdTypeChoicesTT,
+                    getFunc = function() return FCOISsettings.uniqueItemIdType end,
+                    setFunc = function(value)
+                        FCOISsettings.uniqueItemIdType = value
+                    end,
+                    requiresReload = true,
+                    --helpUrl = locVars["options_savedvariables_TT"],
+                    default = FCOISdefaultSettings.uniqueItemIdType,
+                    disabled = function()
+                        if FCOISsettings.useUniqueIdsToggle == true or FCOISsettings.useUniqueIds == true then
+                            return false
+                        end
+                        return true
+                    end
                 },
                 --Migrate the item markers from itemInstanceid to UniqueId
                 {

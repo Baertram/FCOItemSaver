@@ -77,7 +77,7 @@ FCOIS.localizationVars.localizationAll = {
         --["options_delete_sv_on_server"]           =   "Delete target server",
         --["options_delete_sv_on_server_TT"]   =   "Delete the SavedVariables on the target server.\nIf you are logged in to the target server with the chosen target account and character your user UI will reload afterwards!\n\nAttention: Existing target data will be deleted without any backup!",
 
-        ["options_description_copy_sv_account"]  = "This option is only available with a chosen server. Please read the tooltips of the account copy&delete buttons!",
+        ["options_description_copy_sv_account"]  = "This option is only available with a chosen server. |c75daffPlease read the tooltips of the account copy&delete buttons!|r",
         ["options_copy_sv_source_account"]       =   "Source account",
         ["options_copy_sv_target_account"]        =   "Target account",
         ["options_copy_sv_to_account"]           =   "Copy to account",
@@ -88,7 +88,7 @@ FCOIS.localizationVars.localizationAll = {
         ["options_delete_sv_account"]           =   "Delete target account",
         ["options_delete_sv_account_TT"]   =   "Delete the SavedVariables on the target server and target account.\nIf you are logged in to the target server with the chosen target account and character your user UI will reload afterwards!\n\nAttention: Existing target account data will be deleted without any backup!",
 
-        ["options_description_copy_sv_character"]  = "This option is only available with a chosen account name (not 'All accounts the same'). You need to have saved settings with the 'Each character' mode before in order to select these character names from the source character dropdown below. Please read the tooltips of the character copy&delete buttons!",
+        ["options_description_copy_sv_character"]  = "This option is only available with a chosen account name (not 'All accounts the same'). You need to have saved settings with the 'Each character' mode before in order to select these character names from the source character dropdown below. |c75daffPlease read the tooltips of the character copy&delete buttons!|r",
         ["options_copy_sv_source_character"]       =   "Source character",
         ["options_copy_sv_target_character"]        =   "Target character",
         ["options_copy_sv_to_character"]           =   "Copy to character",
@@ -103,9 +103,9 @@ FCOIS.localizationVars.localizationAll = {
         ["options_hint_backup_savedvariables_file"] = "Please logout and create a\nbackup of your file 'FCOItemSaver.lua'\n in the SavedVariables folder, before\n working with the SavedVariable copy/delete options!",
 
         ["options_header_uniqueids"]           = "Unique Item ID",
-        ["options_description_uniqueids"]   = "Your ingame items got an ID. This ID is the same if the item's name is the same (e.g. a lockpick and a stolen lockpick are equal). This is the standard behaviour of this addon!\n\nEach item got a unique item ID too. But the unique item ID is not the same, if the item is enchanted, got a different style or even if the item is stolen. Unique item IDs enable you to mark these items differently but it will need you to mark each of the items if they differ anywhere from other items with the same name.\n\nYou need to manually reload the user interface to change this option!",
+        ["options_description_uniqueids"]   = "Your ingame items got an ID. This ID is the same if some of the item's base data equals: like the name, level, quality (e.g. a lockpick and a stolen lockpick got the same ID). This is the standard behaviour of this addon!\n\nBut each item got a unique item ID too. Additional to the normal item ID differences the unique item ID is not the same, if the item is enchanted, got a different style, if it's stolen, etc. Unique item IDs enable you to mark these items differently but it will need you to mark EACH of the items if they differ anywhere from other items with the same values.\n\nYou got the non-unique ID + 2 unique ID types to save the marker icons on your items, by using these IDs. |c75daffPlease read the tooltip of the dropdown box \'Type of unique ID\'' entries for the info about the different unique IDs.|r\n\nYou need to manually reload the user interface to change this option!",
         ["options_use_uniqueids"]           = "Use unique item IDs",
-        ["options_use_uniqueids_TT"]   = "Enabled:\nUse unique item IDs.\n\nThis enables you to mark items that look the same, but got different enchantments/styles/levels etc. with different marker icons.\n\n\nDisabled:\nUse the normal item IDs and mark all items with the same name the same.\n\nAttention: Your already marked items will be saved for the used item ID save method. Switching the modes will show you the saved marker icons again!\n\nYou need to manually reload the user interface to change this option!",
+        ["options_use_uniqueids_TT"]   = "Enabled:\nUse unique item IDs.\n\nSee tooltip of option\"Unique Item ID\" for further details!\n\n\nDisabled:\nUse the normal item IDs and mark all items with the same base data the same.\n\nAttention: Your already marked items will be saved for the used item ID save method. Switching the modes will show you the saved marker icons again!\n\nYou need to manually reload the user interface to change this option!",
         ["options_migrate_uniqueids"]           = "Migrate markers",
         ["options_migrate_uniqueids_TT"]   = "Migrate the marked items from the non-unique to the unique IDs.\nThis will mark all the same icons that you have marked with the non-unique settings before.\nThis way all items are still saved and you only need to remove/change the marker icons.\n\n|cFF0000This option will be disabled until you have enabled the unique IDs AND you have done a reload of the user interface!\nCome back here and click this button afterwards!|r",
         ["options_migrate_uniqueids_warning"]   = "This will migrate all non-unique ID markers to the same items for the unique IDs.\nExisting marker icons will be kept and only new marker icons are added!\n\nThis migration cannot be undone! You'll need to remove the marked icons manually again.",
@@ -1119,6 +1119,13 @@ FCOIS.localizationVars.localizationAll = {
         ["filter_buyback"]  = "["..GetString(SI_ITEMFILTERTYPE8).."] ",
         ["filter_repair"]   = "["..GetString(SI_ITEM_ACTION_REPAIR).."] ",
         ["LAM_settings_are_currently_build"] = "                   - Please wait-\nSettings are currently build...",
+        ["options_use_uniqueids_type"]          = "Type of unique ID",
+        ["options_use_uniqueids_type_TT"]       = "Choose which type of the unique ID you want to use. The default type is the ZOs base game type.",
+        ["options_unique_id_base_game"]         = "Use ZOs unique ID",
+        ["options_unique_id_base_game_TT"]      = "If you enable this type of unique ID, FCOIS will simply use the base game's given unique ID.\nThe unique ID of ZOs is really unique, means exactly the same items are still different as their unique ID differs. This will result in marker icons not applied automatically to the exactly same items.",
+        ["options_uniqe_id_by_FCOIS"]           = "Use FCOIS unique ID",
+        ["options_uniqe_id_by_FCOIS_TT"]        = "If you enable this type of unique ID, FCOIS will create an unique ID on it's own.\nThe unique ID is based on the item's itemInstanceId or itemId, level, quality, trait, style, enchantment, stolen, crafted information.\nThis allows the addon to detect and mark the exactly same items properly with the same marker icons.",
+
     },
 --==============================================================================
 	--German / Deutsch
@@ -1157,7 +1164,7 @@ FCOIS.localizationVars.localizationAll = {
         --["options_delete_sv_on_server"]           =   "Delete target server",
         --["options_delete_sv_on_server_TT"]   =   "Delete the SavedVariables on the target server.\nIf you are logged in to the target server with the chosen target account and character your user UI will reload afterwards!\n\nAttention: Existing target data will be deleted without any backup!",
 
-        ["options_description_copy_sv_account"]  = "Diese Option ist nur verfügbar, wenn ein Server gewählt wurde. Bitte lies die Tooltips an den Account kopieren/löschen Knöpfen!",
+        ["options_description_copy_sv_account"]  = "Diese Option ist nur verfügbar, wenn ein Server gewählt wurde. |c75daffBitte lies die Tooltips an den Account kopieren/löschen Knöpfen!|r",
         ["options_copy_sv_source_account"]       =   "Quell-Account",
         ["options_copy_sv_target_account"]        =   "Ziel-Account",
         ["options_copy_sv_to_account"]           =   "Kopiere zu Account",
@@ -1168,7 +1175,7 @@ FCOIS.localizationVars.localizationAll = {
         ["options_delete_sv_account"]           =   "Lösche Ziel-Account",
         ["options_delete_sv_account_TT"]   =   "Löscht die SavedVariables auf dem Ziel-Server und Ziel-Account.\nWenn du auf dem Ziel-Server mit dem Ziel-Account und Ziel-Charakter eingeloggt bist, wird die Benutzeroberfläche im Anschluss neugeladen werden!\n\nAchtung: Existierende Ziel-Daten werden überschrieben!",
 
-        ["options_description_copy_sv_character"]  = "Diese Option ist nur verfügbar, wenn ein Account ausgewählt wurde (außer 'Alle Accounts gleich'). Du musst in der Vergangenheit bereits Charaktere mit der Einstellung 'Jeder Charakter' gespeichert haben, um diese Charaktere in der Quell-Charakter Liste weiter unten auswählen zu können. Bitte lies die Tooltips der Kopieren/Löschen Knöpfe!",
+        ["options_description_copy_sv_character"]  = "Diese Option ist nur verfügbar, wenn ein Account ausgewählt wurde (außer 'Alle Accounts gleich'). Du musst in der Vergangenheit bereits Charaktere mit der Einstellung 'Jeder Charakter' gespeichert haben, um diese Charaktere in der Quell-Charakter Liste weiter unten auswählen zu können. |c75daffBitte lies die Tooltips der Kopieren/Löschen Knöpfe!|r",
         ["options_copy_sv_source_character"]       =   "Quell-Charakter",
         ["options_copy_sv_target_character"]        =   "Ziel-Charakter",
         ["options_copy_sv_to_character"]           =   "Kopiere zu Charakter",
@@ -1182,10 +1189,10 @@ FCOIS.localizationVars.localizationAll = {
         ["options_hint_backup_savedvariables_file_title"] = "Backup SavedVariables!",
         ["options_hint_backup_savedvariables_file"] = "Bitte logge dich aus und erstelle\n ein Backup von deiner 'FCOItemSaver.lua'\n SavedVariables Datei, bevor du mit den\n SavedVariable Kopier/Löschen Optionen arbeitest!",
 
-        ["options_header_uniqueids"]           = "Eindeutige Gegenstands ID",
-        ["options_description_uniqueids"]       = "Deine Gegenstände im Spiel haben eine ID. Diese ID ist für alle Gegenstände mit demselben Namen identisch (nicht-eindeutige ID), z.B. für einen Dietrich und einen gestohlenen Dietrich. Dies ist das Standard Verhalten dieses AddOns!\n\nJeder Gegenstand besitzt aber auch noch eine eindeutige ID. Diese ist natülich eindeutig für jeden Gegenstand, also werden Verzauberungen, Level, Stil, etc. diese eindeutige ID verändern! Eindeutige Gegenstand IDs erlauben es dir dieselben Gegenstandsnamen unterschiedlich zu markieren, aber dies verlangt, dass du eben alle diese eindeutigen Gegenstände wieder neu markieren musst, wenn sie in einer noch nicht bekannten Form in dein Inventar gelangen.\n\nDu musst die Benutzeroberfläche neuladen (/reloadui), wenn du diese Option verändert hast!",
+        ["options_header_uniqueids"]           = "Eindeutige Gegenstand ID",
+        ["options_description_uniqueids"]       = "Deine Gegenstände im Spiel haben eine ID. Diese ID ist für alle Gegenstände mit ähnlichen Grunddaten identisch (nicht-eindeutige ID), z.B. Name, Level und Qualität. Ein Dietrich und ein gestohlener Dietrich z.B. wären solche identischen Grunddaten Gegenstände. Die nicht-eindeutigen IDs sind das Standard Verhalten dieses AddOns!\n\nJeder Gegenstand besitzt aber auch noch eine eindeutige ID. Diese ist natülich eindeutig für jeden Gegenstand, also werden Verzauberungen, Level, Stil, etc. diese eindeutige ID verändern! Eindeutige Gegenstand IDs erlauben es dir daher Gegenstände mit ähnlichen Grunddaten unterschiedlich zu markieren, aber dies verlangt, dass du eben alle diese eindeutigen Gegenstände wieder neu markieren musst, wenn sie in einer noch nicht bekannten Form in dein Inventar gelangen.\n\nDu hast die nicht eindeutige ID, und 2 Typen der eindeutigen IDs zur Auswahl, um die Markierungen an deinen Gegenständen zu speichern. |c75daffBitte lies die Tooltips der Einträge in der Aufklappbox \'Typ der eindeutigen ID\', um die Unterschiede der eindeutigen IDs zu erfahren.|r\n\nDu musst die Benutzeroberfläche neuladen (/reloadui), wenn du diese Option verändert hast!",
         ["options_use_uniqueids"]               = "Nutze eindeutige Gegenstands IDs",
-        ["options_use_uniqueids_TT"]       = "Aktiviert:\nNutze eindeutige Gegenstand IDs.\n\nDies erlaubt es dir Gegenstände, welche verschiedene Verzauberungen, Stile, Level, etc. haben auch unterschiedlich mit den Symbolen zu markieren.\n\n\nDeaktiviert:\nNutze die nicht-eindeutigen Gegenstand IDs und markiere alle Gegenstände mit demselben Namen identisch.\n\nAchtung: Deine bereits markierten Gegenstände werden gesichert und wenn du zwischen den eindeutigen und nicht-eindeutigen Gegenstand IDs umschaltest, sind die Markierungen weiterhin vorhanden.\n\nDu musst die Benutzeroberfläche neuladen (/reloadui), wenn du diese Option verändert hast!",
+        ["options_use_uniqueids_TT"]       = "Aktiviert:\nNutze eindeutige Gegenstand IDs.\n\nDeaktiviert:\nNutze die nicht-eindeutigen Gegenstand IDs und markiere alle Gegenstände mit denselben Grunddaten identisch.\n\nAchtung: Deine bereits markierten Gegenstände werden gesichert und wenn du zwischen den eindeutigen und nicht-eindeutigen Gegenstand IDs umschaltest, sind die Markierungen weiterhin vorhanden.\n\nDu musst die Benutzeroberfläche neuladen (/reloadui), wenn du diese Option verändert hast!",
         ["options_migrate_uniqueids"]           = "Migriere Markierungen",
         ["options_migrate_uniqueids_TT"]   = "Migriere die markierten Gegenstände von den nicht-eindeutigen zu den eindeutigen IDs.\nDies wird alle die Gegenstände mit denselben Markierungs-Symbolen markieren, welche du vorher mit den nicht-eindeutigen Einstellungen bereits markiert hattest.\nSo werden alle Gegenstände weiterhin gesichert und du musst die Markierungen nur ändern/entfernen.\n\n|cFF0000Diese Option ist solange deaktiviert, bis du die eindeutigen Gegenstand IDs aktiviert hast UND du die Benutzeroberfläche neugeladen (/reloadui) hast.!\nNutze anschließend das Migrations Popup, oder komme hierhin zurück, um die Migration zu starten.|r",
         ["options_migrate_uniqueids_warning"]   = "Dies migriert alle Markierungen deiner nicht-eindeutigen Gegenstand IDs zu denselben eindeutigen Gegenständen.\nExistierende Markierungen werden dabei nicht entfernt und neue werden lediglich hinzugefügt!\n\nDiese Migration ist nicht umkehrbar! Du musst die migrierten Markierungen anschließend selbst wieder entfernen.",
@@ -1220,7 +1227,7 @@ FCOIS.localizationVars.localizationAll = {
         ["options_scan_ZOs_lock_functions_warning"]	= "Wollen Sie wirklich den Gegenstands-Schutz vom Standard Schloss Symbol zum FCOItemSaver \'Schloss\' Symbol übertragen?\n\nGegenstände werden in 50er Paketen gescannt. Dies dauert etwas. Bitte beachte den Chat!",
         ["options_header_icon_options"]		 	 = "Symbol Position, Sortierung, etc.",
         ["options_header_marking_options"]		 = "Markierungen",
-        ["options_remove_all_markers_with_shift_rightclick"]	= "Alle entfernen: <Mod. Taste> + RMT",
+        ["options_remove_all_markers_with_shift_rightclick"]	= "Alle entfernen: <Mod. Taste> + RMT TEST LANG TEXT",
         ["options_remove_all_markers_with_shift_rightclick_TT"]	= "Entferne alle Markierungen von einem Gegenstand, wenn du diesen mit der rechten Maustaste anklickst während du die <Modifikator Taste> gedrückt hältst.\nWenn du die rechte Maustaste + <Modifikator Taste> erneut auf diesem Gegenstand drückst werden die letzten Markierungen wieder hergestellt.\n\nDies funktioniert nur bis zum nächsten Neuladen der Benutzeroberfläche/Logout!\n\nWenn manuelle Markierungen auf einem Gegenstand gesetzt/entfernt werden, der einen Undo Eintrag besitzt, so wird dieser Undo Eintrag geleert!",
 		["options_modifier_key"]			= "Modifikator Taste",
         ["options_modifier_key_TT"]         = "Die Modifikator Taste ALT, UMSCHALTEN, STRG or COMMAND (nur auf MAC!)",
@@ -1920,11 +1927,11 @@ FCOIS.localizationVars.localizationAll = {
         ["options_auto_reenable_block_jewelry_refinement"]          = "Reaktiviere Anti-Schmuck Veredeln automatisch",
         ["options_auto_reenable_block_jewelry_refinement_TT"]  = "Reaktiviert den Anti-Schmuck Veredeln Schutz automatisch, wenn die Handwerksstation geschlossen wird.",
 		["options_prevent_auto_marking_deconstruction"] 	= "Verhindere Auto-Mark. (Verwerten)",
-		["options_prevent_auto_marking_deconstruction_TT"] = "Verhindert das erneute automatiche Markieren von Gegenständen, wenn der Gegenstand mit dem 'Markiert zum Verwerten' Symbol markiert wurde.",
+		["options_prevent_auto_marking_deconstruction_TT"] = "Verhindert das erneute automatische Markieren von Gegenständen, wenn der Gegenstand mit dem 'Markiert zum Verwerten' Symbol markiert wurde.",
 		["options_prevent_auto_marking_sell"] 	= "Verhindere Auto-Mark. (Verkauf)",
-		["options_prevent_auto_marking_sell_TT"] = "Verhindert das erneute automatiche Markieren von Gegenständen, wenn der Gegenstand mit dem 'Verkaufen' Symbol markiert wurde.",
+		["options_prevent_auto_marking_sell_TT"] = "Verhindert das erneute automatische Markieren von Gegenständen, wenn der Gegenstand mit dem 'Verkaufen' Symbol markiert wurde.",
         ["options_prevent_auto_marking_sell_guild_store"] 	= "Verhindere Auto-Mark. (Verkauf Gildenladen)",
-        ["options_prevent_auto_marking_sell_guild_store_TT"] = "Verhindert das erneute automatiche Markieren von Gegenständen, wenn der Gegenstand mit dem 'Verkaufen im Gildenladen' Symbol markiert wurde.",
+        ["options_prevent_auto_marking_sell_guild_store_TT"] = "Verhindert das erneute automatische Markieren von Gegenständen, wenn der Gegenstand mit dem 'Verkaufen im Gildenladen' Symbol markiert wurde.",
         --Chat commands
         ["chatcommands_info"]					 = "|c00FF00FCO|cFFFF00Item Saver|cFFFFFF Symbole für Inventar/Bank-Gegenstände setzen und diese filtern",
         ["chatcommands_help"]					 = "|cFFFFFF'hilfe' / 'liste'|cFFFF00: Zeigt diese Information zum Addon an. Gib |cFFFFFF'feedback' / 'spende' / 'bug' / 'nachricht'|cFFFF00 ein um das Feedback Fenster anzuzeigen|r",
@@ -2188,6 +2195,12 @@ FCOIS.localizationVars.localizationAll = {
         ["button_context_menu_toggle_anti_repair_on"]   = "Aktiviere 'Anti-Reparieren'",
         ["button_context_menu_toggle_anti_repair_off"]  = "Deaktiviere 'Anti-Reparieren'",
         ["LAM_settings_are_currently_build"] = "                        - Bitte warten -\nEinstellungen werden gerade aufbereitet...",
+        ["options_use_uniqueids_type"]          = "Typ der eindeutigen ID",
+        ["options_use_uniqueids_type_TT"]       = "Wähle welchen Typ der eindeutigen ID du verwenden möchtest. Der Default Typ ist die eindeutige ID des ZOs Standard-Spiels.",
+        ["options_unique_id_base_game"]         = "Nutze ZO\'s eindeutige ID",
+        ["options_unique_id_base_game_TT"]      = "Wenn du diesen Typ der eindeutigen ID auswählst, dann verwendet FCOIS die eindeutige ID von ZOs.\nDie eindeutige ID von ZOs ist wirklich eindeutig, auch wenn genau identische Gegenstände vorliegen. Dies bedeutet, dass die Markierungssymbole bei diesen Gegenständen erneut gesetzt werden müssen, auch wenn der gleiche Gegenstand bereits einmal markiert wurde.",
+        ["options_uniqe_id_by_FCOIS"]           = "Nutze FCOIS\' eindeutige ID",
+        ["options_uniqe_id_by_FCOIS_TT"]        = "Wenn du diesen Typ der eindeutigen ID auswählst, dann verwendet FCOIS die eigen erstellten eindeutigen IDs.\nDiese eindeutigen IDs von FCOIS verwenden die Gegenstandsdaten wie die interne Id, Level, Qualität, Eigenschaft, Stil, Verzauberung, gestohlen & handwerklich hergestellt Status.\nDies ermöglicht dem AddOn identische Gegenstände auch automatisch erneut zu markieren.",
     },
 --==============================================================================
 --French / Französisch

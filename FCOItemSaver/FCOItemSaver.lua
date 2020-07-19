@@ -19,7 +19,7 @@
 ---------------------------------------------------------------------
 --[ToDo list] --
 --____________________________
--- Current max bugs: 78
+-- Current max bugs: 87
 --____________________________
 
 -- 1) 2019-01-14 - Bugfix - Baertram
@@ -96,33 +96,91 @@ EsoUI/Libraries/ZO_KeybindStrip/ZO_KeybindStrip.lua:645: in function 'ZO_Keybind
 (tail call): ?
 ]]
 
--- 77) 2020-05-28, Beartram
--- Clicking the additional inventory context menu button with left mouse -> lua error message
+-- 79) 2020-05-28, User m-ree via FCOIS addon panel, bug #2646
+-- Open a sealed writ from the inventory will throw an error message:
+--1. Login
+--2. Open inventory
+--3. Choose inventory tab Consumable (or just scroll down in the All)
+--4. Either hit E, or double-click, or R-click and select "Use" on a sealed writ
 --[[
-user:/AddOns/FCOItemSaver/src/FCOIS_ContextMenus.lua:3019: operator .. is not supported for string .. nil
-|rstack traceback:
-user:/AddOns/FCOItemSaver/src/FCOIS_ContextMenus.lua:3019: in function 'addSortedButtonDataTableEntries'
-|caaaaaa<Locals> sortedButtonData = [table:1]{index = 61, isDynamic = T, buttonNameStr = "ButtonContextMenu31", iconId = 16, isGear = F}, index = 61, buttonsIcon = 16, isGear = F, isDynamic = T, buttonData = [table:2]{iconId = 16, mark = T, anchorButton = "ButtonContextMenu30"}, buttonNameStr = "ButtonContextMenu31", dynamicNumber = 4 </Locals>|r
-user:/AddOns/FCOItemSaver/src/FCOIS_ContextMenus.lua:3111: in function 'FCOIS.showContextMenuForAddInvButtons'
-|caaaaaa<Locals> invAddContextMenuInvokerButton = ud, panelId = 1, settings = [table:3]{}, locVars = [table:4]{options_icon13_size_TT = "Größe des 1. dynamischen Fil...", button_context_menu_toggle_anti_deconstruct_on = "Aktiviere 'Anti-Verwerten'", options_header_settracker = "Set Tracker", button_context_menu_toggle_anti_buy_on = "Aktiviere 'Anti-Kauf'", rightclick_menu_add_all_gear5 = "Alle zu Gear 5 hinzufügen", options_auto_mark_settrackersets_worn = "Markiere Getragene", options_auto_mark_crafted_items_TT = "Wenn Sie diese Option aktivier...", chatcommands_status_filter4 = "Verkaufs Filter: AN", button_context_menu_mark_all_as_dynamic9 = "+ 9. dynamische", options_filter_button4_height = "Höhe:", options_enable_auto_mark_ornate_items_TT = "Automatisch Gegenstände mit h...", options_header_anti_output_options = "Ausgabe Optionen", options_filter_button3_width_TT = "Breite des Filter Knopf 3", options_armor_type_icon_medium_short = "M", options_header_additional_inv_flag_context_menu = "Zusätzl. Inventar |t24:24:/es...", options_icon27_TT = "Zeige Tooltip", options_icon22_size = "Größe", options_pos_inventories_TT = "Die X-Achsen Position der Symb...", button_context_menu_dont_improve_all = "- Aufwerten", options_icon11_activate_text = "Verkauf im Gildenladen aktivie...", options_icons_dynamic_usable_warning = "Dynamische Symbole sind die ni...", options_auto_mark_settrackersets_show_tooltip_on_FCOIS_marker_TT = "Zeige die SetTracker Set Notiz...", options_auto_mark_recipes_this_char_TT = "Wenn Sie diese Option aktivier...", options_icon19_tooltip_TT = "Zeige Tooltip am 7. dynamische...", options_libFiltersFilterPanelIdName_8 = "LibFilters - Filter Bereich 8...", options_header_additional_buttons = "Zusätzliche Knöpfe", options_icon23_texture_TT = "Symbol des 11. dynamischen Fil...", options_show_armor_type_header_text = "Zeige Rüstungsart Überschrif...", options_icon2_color = "Farbe", options_quality_normal = "Normal", options_contextmenu_divider_opens_settings_TT = "Ein Klick auf den Trenner im K...", options_icon4_activate_text = "Ausrüstung Set 2 aktivieren", options_icon7_activate_text = "Ausrüstung Set 4 aktivieren", options_contextmenu_use_dyn_submenu_TT = "Nutze ein Untermenü für die ...", options_auto_mark_crafted_writ_items_TT = "Wenn Sie diese Option aktivier...", options_auto_mark_crafted_items = "Markiere hergestellte Gegenstä...", rightclick_menu_add_all_gear4 = "Alle zu Gear 4 hinzufügen", ornate_item_found = "] als höherer Verkaufspreis g...", options_icon13_size = "Größe", button_context_menu_undo = "< Änderung rückgängig mache...", options_tooltipatchar_TT = "Zeige den Tooltip auch im Char...", filter_enchantingstation_creation = "[Verzauberungsstation Herstell...", options_icon6_color_TT = "Farbe für das Symbol der Gear...", options_enable_auto_mark_new_items_TT = "Automatisch neue Gegenstände ...", options_contextmenu_divider_clears_all_markers_TT = "Ein Klick auf den Trenner im K...", options_auto_mark_recipes_this_char = "Nur für diesen Charakter", options_icon22_size_TT = "Größe des 10. dynamischen Fi...", rightclick_menu_mark_dynamic5 = "Markiere mit 5. dynamischen", options_icon18_activate_text = "Aktiviere 6. dynamische", options_icon14_texture = "Symbol"}, locContextEntriesVars = [table:5]{menu_add_deconstruction_text = "Verwerten vormerken", menu_add_intricate_text = "Als aufwendig markieren", menu_remove_lock_text = "Sperre entfernen", menu_add_lock_text = "Sperre setzen", menu_add_research_text = "Analyse vormerken", menu_remove_intricate_text = "Aufwendig zurücknehmen", menu_remove_sell_text = "Verkauf zurücknehmen", menu_remove_deconstruction_text = "Verwerten zurücknehmen", menu_remove_research_text = "Analyse zurücknehmen", menu_remove_improvement_text = "Aufwerten zurücknehmen", menu_add_improvement_text = "Aufwerten vormerken", menu_add_sell_to_guild_text = "Zum Verkauf im Gildenladen vor...", menu_remove_sell_to_guild_text = "Verkauf im Gildenladen zurück...", menu_add_sell_text = "Zum Verkauf vormerken"}, _ = 26, countDynIconsEnabled = 14, useDynSubMenu = F, icon2Gear = [table:6]{2 = 1}, icon2Dynamic = [table:7]{32 = 20}, isIconGear = [table:8]{1 = F}, isIconDynamic = [table:9]{1 = F}, sortAddInvFlagContextMenu = T, parentName = "ZO_PlayerInventory", myFont = "ZoFontGame", textPrefix = [table:10]{(null) = "+ ", (null) = "- "}, subMenuEntriesGear = [table:11]{}, subMenuEntriesDynamic = [table:12]{}, subMenuEntriesDynamicAdd = [table:13]{}, subMenuEntriesDynamicRemove = [table:14]{} </Locals>|r
-user:/AddOns/FCOItemSaver/src/FCOIS_AdditionalButtons.lua:117: in function '(anonymous)'
+EsoUI/Ingame/Inventory/InventorySlot.lua:1101: Attempt to access a private function 'UseItem' from insecure code. The callstack became untrusted 1 stack frame(s) from the top.
+stack traceback:
+EsoUI/Ingame/Inventory/InventorySlot.lua:1101: in function 'TryUseItem'
+EsoUI/Ingame/Inventory/InventorySlot.lua:1323: in function '(anonymous)'
+(tail call): ?
+(tail call): ?
+EsoUI/Libraries/ZO_ContextMenus/ZO_ContextMenus.lua:451: in function 'ZO_Menu_ClickItem'
+ZO_MenuItem1_MouseUp:4: in function '(main chunk)'
 ]]
+
+--In progress: 2020-06-17
+-- 80) 2020-06-14, Beartram, UniqueIds do not work properly anymore as they are really unique and items with the same itemInstanceId, and everything else also the same,
+-- are still unique...
+-- For weapons, armor and jewelry: Change all uniqueId checks to check the item's itemLink maybe or at least infos generated from it like level, quality, itemId, trait, style and enchantmentId.
+
+--81) Upon login FCOIS will scan the SV once and remove "non marked" entries which are still stored with the value "false". This will lower the SV file size and speed up loading in the future.
+
+--84) 2020-06-27, Malvarot - Automatic marks Quality will also tag set items "again" if the checkbox "check all other markers" at the quality settings is enabled.
+--                           e.g. set item markes get applied and after that quality as well, allthough set item markers were applied already and "check others" should prevent this
+--   Order of checking these automatic marks:
+--      Sets (wichtig: trait erwünscht > trait egal > trait unerwünscht diese reihenfolge beibehalten),
+--      qualität
+--      research
+--      intricate
+--      ornate,
+--      Rest (gear). Neu kann bleiben, rest is separat
+--      Oder Reihenfolge wählbar für: sets, intricate, ornate, qualität, research
+--[[
+Also, gestern hab ich folgendes eingestellt:
+Automatic Marking -> Set -> automatic set marking: ON
+Automatic Marking -> Set -> dynamic mark 4 ("undefined")
+Automatic Marking -> Set -> only trait markers: ON
+Automatic Marking -> Set -> Trait -> Armor -> infused: ON: gear mark 3 ("good")
+Automatic Marking -> Set -> Trait -> Armor -> invigorating: OFF
+Automatic Marking -> Quality -> artifact (blau)*: dynamic mark 5** ("new")
+Automatic Marking -> Quality -> mark higher quality too: ON
+Automatic Marking -> Quality -> check all other markers: ON
+* soll eigentlich lila sein, zum testen auf blau da ich keine legendary items hab
+** soll eigentlich wie die set items, welche nicht via trait markiert werden, dynamic mark 4 ("undefined") bekommen, aber zum debuggen hab ich es auf 5 ("new") gestellt, damit es sich unterscheiden lässt.
+
+Verhalten:
+Grüne Rüstung ohne Set: kein Mark
+Grüne Set Rüstung mit invigorating: dynamic mark 4 ("undefined")
+Grüne Set Rüstung mit infused: gear mark 3 ("good)
+Blaue/Lila Rüstung ohne Set: dynamic mark 5 ("new")
+
+Falsch:
+Blaue/Lila Set Rüstung mit invigorating: dynamic mark 4 ("undefined") + dynamic mark 5 ("new")
+Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good) + dynamic mark 5 ("new")
+
+Erwartetes Verhalten:
+Blaue/Lila Set Rüstung mit invigorating: dynamic mark 4 ("undefined")
+Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
+]]
+
+--85) 2020-06-28, Piperman123 - Copying settings from character to account wide settings, and the other way around
+
+--86) 2020-06-30, Malvarot - Add to each dynamic icon: Checkbox for "Automatic marks - Prevent" so that items won't be re-marked
+--                           with any marker icon, once marked with this dynamic, just like
+--                           Automatic marks-> Automatic mark-Prevention (e.g. sell)
+
 
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
---Since last update 1.9.2 - New version: 1.9.3
+--Since last update 1.9.5 - New version: 1.9.6
 ---------------------------------------------------------------------
 --[Fixed]
---#77 Clicking the additional inventory context menu button with left mouse -> lua error message user:/AddOns/FCOItemSaver/src/FCOIS_ContextMenus.lua:3019: operator .. is not supported for string .. nil
+--#82 Default values for filter buttons were changed to move the filter buttons to the right of the inventory contents text (only default values for new installations of FCOIS)
 
 --[Changed]
+--#83 2020-06-17, Beartram, Improvement to golden will not try to re-apply the "improve marker icon" again as it is already at the max improved state
 
 --[Added]
 --
 
 --[Added on request]
---#78 Keybind to remove all marker icons/to restore removed marker icon (same like <modifier key> [CTRL/ALT/SHIFT]+right mouse in the settings->marks->undo)
+--
 
 --************************************************************************************************************************
 --************************************************************************************************************************

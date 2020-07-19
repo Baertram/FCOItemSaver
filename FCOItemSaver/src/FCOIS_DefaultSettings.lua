@@ -269,6 +269,7 @@ function FCOIS.buildDefaultSettings()
 		debugDepth					= 1,
 		useUniqueIds				= false,
         useUniqueIdsToggle          = nil,
+		uniqueItemIdType			= FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE, -- Realy unique ids by ZOS
 		showFilteredItemCount		= false,
 		showTransmutationGeodeLootDialog = true,
 		addContextMenuLeadingMarkerIcon = true,

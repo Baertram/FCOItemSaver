@@ -1314,16 +1314,19 @@ local function setSlotActionContextMenuTexts()
 --d("[FCOIS] setSlotActionContextMenuTexts")
     local locContEntries = FCOIS.localizationVars.contextEntries
     if locContEntries == nil then return false end
+    --Mapping vars
+    local mappingVars = FCOIS.mappingVars
+    local iconToGear = mappingVars.iconToGear
     --Set texts for the right-click item menus
     FCOIS.localizationVars.lTextMark = {
         locContEntries.menu_add_lock_text,
-        locContEntries.menu_add_gear_text[1],
+        locContEntries.menu_add_gear_text[iconToGear[FCOIS_CON_ICON_GEAR_1]],
         locContEntries.menu_add_research_text,
-        locContEntries.menu_add_gear_text[2],
+        locContEntries.menu_add_gear_text[iconToGear[FCOIS_CON_ICON_GEAR_2]],
         locContEntries.menu_add_sell_text,
-        locContEntries.menu_add_gear_text[3],
-        locContEntries.menu_add_gear_text[4],
-        locContEntries.menu_add_gear_text[5],
+        locContEntries.menu_add_gear_text[iconToGear[FCOIS_CON_ICON_GEAR_3]],
+        locContEntries.menu_add_gear_text[iconToGear[FCOIS_CON_ICON_GEAR_4]],
+        locContEntries.menu_add_gear_text[iconToGear[FCOIS_CON_ICON_GEAR_5]],
         locContEntries.menu_add_deconstruction_text,
         locContEntries.menu_add_improvement_text,
         locContEntries.menu_add_sell_to_guild_text,
@@ -1331,13 +1334,13 @@ local function setSlotActionContextMenuTexts()
     }
     FCOIS.localizationVars.lTextDemark = {
         locContEntries.menu_remove_lock_text,
-        locContEntries.menu_remove_gear_text[1],
+        locContEntries.menu_remove_gear_text[iconToGear[FCOIS_CON_ICON_GEAR_1]],
         locContEntries.menu_remove_research_text,
-        locContEntries.menu_remove_gear_text[2],
+        locContEntries.menu_remove_gear_text[iconToGear[FCOIS_CON_ICON_GEAR_2]],
         locContEntries.menu_remove_sell_text,
-        locContEntries.menu_remove_gear_text[3],
-        locContEntries.menu_remove_gear_text[4],
-        locContEntries.menu_remove_gear_text[5],
+        locContEntries.menu_remove_gear_text[iconToGear[FCOIS_CON_ICON_GEAR_3]],
+        locContEntries.menu_remove_gear_text[iconToGear[FCOIS_CON_ICON_GEAR_4]],
+        locContEntries.menu_remove_gear_text[iconToGear[FCOIS_CON_ICON_GEAR_5]],
         locContEntries.menu_remove_deconstruction_text,
         locContEntries.menu_remove_improvement_text,
         locContEntries.menu_remove_sell_to_guild_text,
@@ -1347,13 +1350,13 @@ local function setSlotActionContextMenuTexts()
     --Set texts for the right-click equipment item menus
     FCOIS.localizationVars.lTextEquipmentMark = {
         locContEntries.menu_add_lock_text,
-        locContEntries.menu_add_all_gear_text[1],
+        locContEntries.menu_add_all_gear_text[iconToGear[FCOIS_CON_ICON_GEAR_1]],
         locContEntries.menu_add_research_text,
-        locContEntries.menu_add_all_gear_text[2],
+        locContEntries.menu_add_all_gear_text[iconToGear[FCOIS_CON_ICON_GEAR_2]],
         locContEntries.menu_add_sell_text,
-        locContEntries.menu_add_all_gear_text[3],
-        locContEntries.menu_add_all_gear_text[4],
-        locContEntries.menu_add_all_gear_text[5],
+        locContEntries.menu_add_all_gear_text[iconToGear[FCOIS_CON_ICON_GEAR_3]],
+        locContEntries.menu_add_all_gear_text[iconToGear[FCOIS_CON_ICON_GEAR_4]],
+        locContEntries.menu_add_all_gear_text[iconToGear[FCOIS_CON_ICON_GEAR_5]],
         locContEntries.menu_add_deconstruction_text,
         locContEntries.menu_add_improvement_text,
         locContEntries.menu_add_sell_to_guild_text,
@@ -1361,13 +1364,13 @@ local function setSlotActionContextMenuTexts()
     }
     FCOIS.localizationVars.lTextEquipmentDemark = {
         locContEntries.menu_remove_lock_text,
-        locContEntries.menu_remove_all_gear_text[1],
+        locContEntries.menu_remove_all_gear_text[iconToGear[FCOIS_CON_ICON_GEAR_1]],
         locContEntries.menu_remove_research_text,
-        locContEntries.menu_remove_all_gear_text[2],
+        locContEntries.menu_remove_all_gear_text[iconToGear[FCOIS_CON_ICON_GEAR_2]],
         locContEntries.menu_remove_sell_text,
-        locContEntries.menu_remove_all_gear_text[3],
-        locContEntries.menu_remove_all_gear_text[4],
-        locContEntries.menu_remove_all_gear_text[5],
+        locContEntries.menu_remove_all_gear_text[iconToGear[FCOIS_CON_ICON_GEAR_3]],
+        locContEntries.menu_remove_all_gear_text[iconToGear[FCOIS_CON_ICON_GEAR_4]],
+        locContEntries.menu_remove_all_gear_text[iconToGear[FCOIS_CON_ICON_GEAR_5]],
         locContEntries.menu_remove_deconstruction_text,
         locContEntries.menu_remove_improvement_text,
         locContEntries.menu_remove_sell_to_guild_text,
@@ -1408,16 +1411,16 @@ end
 
 -- Change the inventories item right click menu texts to the chosen settings value
 function FCOIS.changeContextMenuEntryTexts(iconId)
---d("[FCOIS]changeContextMenuEntryTexts - iconId: " .. tostring(iconId))
+    local settings = FCOIS.settingsVars.settings
+    if settings.debug then FCOIS.debugMessage( "[changeContextMenuEntryTexts]","iconId: " .. tostring(iconId), true, FCOIS_DEBUG_DEPTH_ALL) end
     local locContEntries = FCOIS.localizationVars.contextEntries
     if locContEntries == nil then return false end
     --d("[FCOIS] FCOIS.changeContextMenuEntryTexts - iconId: " .. tostring(iconId))
     local updateSlotActionTextsNow = false
-    local settings = FCOIS.settingsVars.settings
     local locVars = FCOIS.localizationVars.fcois_loc
     local dynamicIcons = FCOIS.mappingVars.iconIsDynamic
     --local gearIcons = FCOIS.mappingVars.iconIsGear
-	local gearIcons = settings.iconIsGear
+    local gearIcons = settings.iconIsGear
 
     --Update all icon texts?
     if iconId == -1 then
@@ -1468,7 +1471,7 @@ function FCOIS.changeContextMenuEntryTexts(iconId)
         --Is the icon a gear set?
         if isGearIcon then
             local l_gearId = FCOIS.mappingVars.iconToGear[iconId]
---d("gearId: " .. tostring(l_gearId) .. ", name: " ..tostring(settings.icon[iconId].name))
+            --d("gearId: " .. tostring(l_gearId) .. ", name: " ..tostring(settings.icon[iconId].name))
             if l_gearId ~= nil then
                 if(settings.icon[iconId].name ~= nil and settings.icon[iconId].name ~= '' and settings.icon[iconId].name ~= locVars["rightclick_menu_add_gear" .. l_gearId]) then
                     locContEntries.menu_add_gear_text[l_gearId] 	    = locVars["rightclick_menu_add_start_gear"] .. settings.icon[iconId].name

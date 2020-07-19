@@ -7,8 +7,8 @@ local FCOIS = FCOIS
 FCOIS.addonVars = {}
 local addonVars = FCOIS.addonVars
 --Addon variables
-addonVars.addonVersionOptions 		= '1.9.4' -- version shown in the settings panel
-addonVars.addonVersionOptionsNumber	= 1.94
+addonVars.addonVersionOptions 		= '1.9.6' -- version shown in the settings panel
+addonVars.addonVersionOptionsNumber	= 1.96
 addonVars.gAddonName				= "FCOItemSaver"
 addonVars.gAddonNameShort           = "FCOIS"
 addonVars.addonNameMenu				= "FCO ItemSaver"
@@ -188,7 +188,8 @@ FCOIS_CON_FILTER_BUTTON_LOCKDYN			= 1
 FCOIS_CON_FILTER_BUTTON_GEARSETS		= 2
 FCOIS_CON_FILTER_BUTTON_RESDECIMP		= 3
 FCOIS_CON_FILTER_BUTTON_SELLGUILDINT	= 4
---The check variables/tables
+
+    --The check variables/tables
 FCOIS.checkVars = {}
 local checkVars = FCOIS.checkVars
 FCOIS.checkVars.filterButtonsToCheck = {
@@ -201,6 +202,11 @@ FCOIS.checkVars.filterButtonsToCheck = {
 FCOIS_CON_NON_WISHED_LEVEL      = 1
 FCOIS_CON_NON_WISHED_QUALITY    = 2
 FCOIS_CON_NON_WISHED_ALL        = 3
+
+--Constants for the unique itemId types
+--FCOIS v1.9.6
+FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE      = 1 --use base game's real uniqueIds by ZOs (even if items are totally the same, their id won't be the same)
+FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE    = 2 --use FCOIS calculated uniqueIds based on item values like level,quality,enchantment,style,trait etc.
 
 --The table of number variables
 FCOIS.numVars = {}
@@ -385,7 +391,7 @@ mappingVars.bagToPlayerInv = {
     [BAG_GUILDBANK]         = INVENTORY_GUILD_BANK,
     [BAG_VIRTUAL]           = INVENTORY_CRAFT_BAG,
 }
---The mapping table for the bagIds where an itemInstanceId or uniqueId should be build for in other addons in order
+--The mapping table for the bagIds where an itemInstanceId or uniqueId should be build for, in other addons, in order
 --to use these for the (un)marking of items (e.g. within addon Inventory Insight from ashes, IIfA)
 mappingVars.bagsToBuildItemInstanceOrUniqueIdFor =  {
     --non account wide, as it used bagId and slotIndex
@@ -709,10 +715,10 @@ filterButtonVars.maxFilterButtonHeight        = 128
 --Left and top of the filter buttons
 filterButtonVars.gFilterButtonTop				= 6
 filterButtonVars.gFilterButtonLeft	   		= {
- [FCOIS_CON_FILTER_BUTTON_LOCKDYN] 		= -70,
- [FCOIS_CON_FILTER_BUTTON_GEARSETS] 	= -46,
- [FCOIS_CON_FILTER_BUTTON_RESDECIMP] 	= -22,
- [FCOIS_CON_FILTER_BUTTON_SELLGUILDINT]	= 2,
+ [FCOIS_CON_FILTER_BUTTON_LOCKDYN] 		= 0,
+ [FCOIS_CON_FILTER_BUTTON_GEARSETS] 	= 24,
+ [FCOIS_CON_FILTER_BUTTON_RESDECIMP] 	= 48,
+ [FCOIS_CON_FILTER_BUTTON_SELLGUILDINT]	= 72,
 }
 --Filter button offset Y at the improvement panel bottom (due to the extra "improvement booster bar")
 filterButtonVars.buttonOffsetYImprovement = 7

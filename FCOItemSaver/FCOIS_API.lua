@@ -657,7 +657,7 @@ function FCOIS.MarkItem(bag, slot, iconId, showIcon, updateInventories)
 					--Shall we unmark the item? Then remove it from the SavedVars totally!
 					if itemIsMarked == false then itemIsMarked = nil end
 					--Un/Mark the item now
-					FCOIS.markedItems[iconId][FCOIS.SignItemId(itemId, nil, nil, nil)] = itemIsMarked
+					FCOIS.markedItems[iconId][FCOIS.SignItemId(itemId, nil, nil, nil, bag, slot)] = itemIsMarked
 					--d(">> new markedItem value: " .. tostring(FCOIS.markedItems[iconId][FCOIS.SignItemId(itemId, nil, nil, nil)]))
 				end
 			end --if itemId ~= nil
@@ -683,7 +683,8 @@ end -- FCOIS.MarkItem
 --IMPORTANT: The itemInstanceId or uniqueId must be unsigned! They will get signed in this function.
 --This function can be used to mark an item for a non-logged in character
 -->Parameters:
----itemInstanceOrUniqueId (number):		The itemInstanceId or the uniqueId of the item to mark
+---itemInstanceOrUniqueId (number):		The itemInstanceId or the uniqueId of the item to mark. Could be the realUniqueId64 or the id64String,
+---									    or since FCOIS v1.9.6 the , concatenated String of "<unsignedItemInstanceIdOrItemId>,<levelNumber>,<qualityId>,<traitId>,<styleId>,<enchantId>,<isStolen>,<isCrafted>..."
 ---iconId (number|table): 		        Number: The iconId to change. Can be a value between 1 and FCOIS.numVars.gFCONumFilterIcons, or -1 for all.
 ---								        Table:	A table containing the icons to change. Table key must be a number (without gaps!) and the value must be the marker icon Id
 ---								        e.g. local myTableOfFCOISMarkerIcons = { [1] = FCOIS_CON_ICON_RSEARCH, [2] = FCOIS_CON_ICON_SELL }
@@ -844,7 +845,7 @@ function FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon
                     --Shall we unmark the item? Then remove it from the SavedVars totally!
                     if itemIsMarked == false then itemIsMarked = nil end
                     --Un/Mark the item now
-					local signedItemInstanceOrUniqueId = FCOIS.SignItemId(itemInstanceOrUniqueId, nil, nil, addonName)
+					local signedItemInstanceOrUniqueId = FCOIS.SignItemId(itemInstanceOrUniqueId, nil, nil, addonName, nil, nil)
 --d(">itemId: " ..tostring(itemId) .. ", itemInstanceOrUniqueId: " .. tostring(itemInstanceOrUniqueId) .. ", signedItemInstanceOrUniqueId: " .. tostring(signedItemInstanceOrUniqueId))
 					FCOIS.markedItems[iconId][signedItemInstanceOrUniqueId] = itemIsMarked
 --d(">> new markedItem value: " .. tostring(FCOIS.markedItems[iconId][signedItemInstanceOrUniqueId]))
@@ -1000,7 +1001,7 @@ function FCOIS.IsMarkedByItemInstanceId(itemInstanceId, iconIds, excludeIconIds,
 	if itemInstanceId == nil then return nil, nil end
 	if not checkIfFCOISSettingsWereLoaded(true) then return false end
 	--Build the itemInstanceId (signed) by help of the itemId
-	local signedItemInstanceId = FCOIS.SignItemId(itemInstanceId, nil, true, addonName) -- only sign
+	local signedItemInstanceId = FCOIS.SignItemId(itemInstanceId, nil, true, addonName, nil, nil) -- only sign
 --d(">FCOIS.IsMarkedByItemInstanceId, itemInstanceId: " .. tostring(itemInstanceId) .. ", signedItemInstanceId: " ..tostring(signedItemInstanceId))
 	if signedItemInstanceId == nil then return nil, nil end
 	local isMarked = false
@@ -1042,7 +1043,7 @@ end -- FCOIS.IsMarked
 --->This function will return a boolean value to show if the temporary setting was enabled properly (true), or not (false).
 --addonName:	String	Your addon's unique name, which must be set in order to uniquely identify which checks should use the uniqueIds. Otherwise
 --				 FCOIS itsself or other addons would use uniqueIds in the "temporary timeframe" as well, where it is not wanted to happen!
---				Important: Be sure to use the SAME addonName within the FCOIS api functions FCOIS.IsMarkedByItemInstanceId (parameter "addonName")
+--				Important: Be sure to use the SAME addonName within the FCOIS API functions FCOIS.IsMarkedByItemInstanceId (parameter "addonName")
 --						    and/or FCOIS.MarkItemByItemInstanceId (parameter "addonName") AND specify a uniqueId then, instead of an itemInstanceId!
 --doUse:		Boolean true/false to enable/disable the temporary setting. Will be disabled automatically after reloadui/logout/zone change
 function FCOIS.UseTemporaryUniqueIds(addonName, doUse)

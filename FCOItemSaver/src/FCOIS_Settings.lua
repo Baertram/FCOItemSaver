@@ -455,6 +455,11 @@ local function scanBagsAndTransferMarkerIcon(toUnique)
         end
     end
     local locVars = FCOIS.localizationVars.fcois_loc
+    --Are the FCOIS settings already loaded?
+    FCOIS.checkIfFCOISSettingsWereLoaded(false)
+    local settings = FCOIS.settingsVars.settings
+    local uniqueItemIdType = settings.uniqueItemIdType
+
     --Loop over all bag types
     for _, bagToCheck in pairs(bagsToCheck) do
         local numMigratedIcons = 0
@@ -467,21 +472,32 @@ local function scanBagsAndTransferMarkerIcon(toUnique)
         for _, data in pairs(bagCache) do
             local itemId
             local itemIdNew
+            local itemInstanceId = GetItemInstanceId(data.bagId, data.slotIndex)
+            local bagId, slotIndex = data.bagId, data.slotIndex
             --Transfer marker icon to unique ID
             if toUnique then
                 --Build the item ID (ItemInstanceId)
-                local itemInstanceId = GetItemInstanceId(data.bagId, data.slotIndex)
-                itemId = FCOIS.SignItemId(itemInstanceId, false, true, nil)
-                local uniqueId = zo_getSafeId64Key(GetItemUniqueId(data.bagId, data.slotIndex))
+                itemId = FCOIS.SignItemId(itemInstanceId, false, true, nil, nil, nil)
+                local uniqueId
+                --Check which uniqueId type is setup in the FCOIS settings
+                if not uniqueItemIdType or uniqueItemIdType == FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE then
+                    uniqueId = zo_getSafeId64Key(GetItemUniqueId(bagId, slotIndex))
+                elseif uniqueItemIdType and uniqueItemIdType == FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE then
+                    uniqueId = FCOIS.CreateFCOISUniqueIdString(itemInstanceId, nil, bagId, slotIndex, nil)
+                end
                 itemIdNew = uniqueId
 
             --Transfer marker icon to non-unique ID
             else
-                local uniqueId = zo_getSafeId64Key(GetItemUniqueId(data.bagId, data.slotIndex))
+                --Check which uniqueId type is setup in the FCOIS settings
+                local uniqueId
+                if not uniqueItemIdType or uniqueItemIdType == FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE then
+                    uniqueId = zo_getSafeId64Key(GetItemUniqueId(bagId, slotIndex))
+                elseif uniqueItemIdType and uniqueItemIdType == FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE then
+                    uniqueId = FCOIS.CreateFCOISUniqueIdString(itemInstanceId, nil, bagId, slotIndex, nil)
+                end
                 itemId = uniqueId
-                local itemInstanceId = GetItemInstanceId(data.bagId, data.slotIndex)
-                itemIdNew = FCOIS.SignItemId(itemInstanceId, false, true, nil)
-
+                itemIdNew = FCOIS.SignItemId(itemInstanceId, false, true, nil, nil, nil)
             end
             --Is the itemId (unique or non-unique) given?
             if itemId ~= nil and itemIdNew ~= nil then
@@ -520,7 +536,7 @@ function FCOIS.migrateItemInstanceIdMarkersToUniqueIdMarkers()
     end
 end
 
---Migrate the marker icons from the non-unique ItemInstanceIds to the uniqueIds
+--Migrate the marker icons from the uniqueIds to the non-unique ItemInstanceIds
 function FCOIS.migrateUniqueIdMarkersToItemInstanceIdMarkers()
     --Are the unique IDs enabled?
     if not FCOIS.settingsVars.settings.useUniqueIds then
@@ -549,6 +565,10 @@ function FCOIS.afterSettings()
 
     --Set the split filters to true as old "non-split filters" method is not supported anymore!
     settings.splitFilters = true
+
+    --FCOIS v1.9.6 UniqueId changes to real unique by ZOs (ESO standard) or FCOIS unique (self made)
+    --Standard value: Really unique by ZOs
+    if settings.uniqueItemIdType == nil then settings.uniqueItemIdType = FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE end
 
     --Introduced with FCOIS version 1.5.2: Dynamic icons global settings slider to set dynamic icons max total count enabled.
     --Check if the current value of the settings slider was set due to an update of the addon and check if the user was using more than the
@@ -602,6 +622,13 @@ function FCOIS.afterSettings()
     FCOIS.preventerVars.gAllowDestroyItem = not settings.blockDestroying
     -- Get the marked items for each filter from the settings (or defaults, if not set yet)
     for filterIconId = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
+        -->FCOIS v1.9.6 - Remove old entries with FCOIS.markedItems[filterIconId][itemIdOrUniqueIdString] = false from SV
+        for itemOrUniqueId, isMarked in pairs(settings.markedItems[filterIconId]) do
+            if itemOrUniqueId ~= nil and isMarked == false then
+                FCOIS.settingsVars.settings.markedItems[filterIconId][itemOrUniqueId] = nil
+            end
+        end
+        -->Link FCOIS.markedItems to the SavedVariables
         FCOIS.markedItems[filterIconId] = settings.markedItems[filterIconId]
     end
     --The automatic set marker icon name was changed from autoMarkSetsGearIconNr to autoMarkSetsIconNr
@@ -676,9 +703,9 @@ function FCOIS.afterSettings()
         end
     end
 
-------------------------------------------------------------------------------------------------------------------------
---  Build the additional inventory "flag" context menu button data
-------------------------------------------------------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------------------------------------------
+    --  Build the additional inventory "flag" context menu button data
+    ------------------------------------------------------------------------------------------------------------------------
     --Constants
     local addInvBtnInvokers = FCOIS.contextMenuVars.filterPanelIdToContextMenuButtonInvoker
     local ancVars = FCOIS.anchorVars
