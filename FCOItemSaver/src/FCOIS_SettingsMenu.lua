@@ -608,23 +608,30 @@ function FCOIS.BuildAddonMenu()
             end
         end
         --Target characters
+        local targetServerName = serverNames[targServer]
+        local targetAccName = accountTargOptions[targAcc]
+        local targetAccNameClean = cleanName(targetAccName, "account", targAcc)
         --Add the no entry entry
         table.insert(characterTargOptions, noEntry)
         table.insert(characterTargOptionsValues, noEntryValue)
-        --Add the current character
-        table.insert(characterTargOptions, currentCharacterNameMarked)
+        --Add the current character (red if SV data is missing)
+        if FCOItemSaver_Settings == nil or FCOItemSaver_Settings[targetServerName] == nil or FCOItemSaver_Settings[targetServerName][targetAccNameClean] == nil or FCOItemSaver_Settings[targetServerName][targetAccNameClean][tostring(currentCharacterId)] == nil then
+            table.insert(characterTargOptions, "|cFF0000" .. currentCharacterNameMarked .. "|r")
+        else
+            table.insert(characterTargOptions, currentCharacterNameMarked)
+        end
         table.insert(characterTargOptionsValues, currentCharacterId)
+
         for charNameTarg, charIdTarg in pairs(charactersOfAccount) do
             if charIdTarg ~= currentCharacterId then
                 --Check if the character exists on the actually chosen server and account already.
                 --If not color the charactername red
-                local targetServerName = serverNames[targServer]
-                local targetAccName = accountTargOptions[targAcc]
-                local targetAccNameClean = cleanName(targetAccName, "account", targAcc)
                 if FCOItemSaver_Settings == nil or FCOItemSaver_Settings[targetServerName] == nil or FCOItemSaver_Settings[targetServerName][targetAccNameClean] == nil or FCOItemSaver_Settings[targetServerName][targetAccNameClean][tostring(charIdTarg)] == nil then
-                    charNameTarg = "|cff0000" .. charNameTarg .. "|r"
+                    local charNameWithColorActiveOrNot = "|cFF0000" .. charNameTarg .. "|r"
+                    table.insert(characterTargOptions, charNameWithColorActiveOrNot)
+                else
+                    table.insert(characterTargOptions, charNameTarg)
                 end
-                table.insert(characterTargOptions, charNameTarg)
                 table.insert(characterTargOptionsValues, charIdTarg)
             end
         end
@@ -639,6 +646,9 @@ function FCOIS.BuildAddonMenu()
         if updateSourceOrTarget == nil or updateSourceOrTarget == false then
             targChar = noEntryValue
             if FCOItemSaver_Settings_Copy_SV_Targ_Char then
+                --Update the choices in total, as the re-usbale entries (menu pool controls) still got the disabled colors "red"
+                FCOItemSaver_Settings_Copy_SV_Targ_Char.choices = {}
+                FCOItemSaver_Settings_Copy_SV_Targ_Char:UpdateChoices(characterTargOptions, characterTargOptionsValues)
                 FCOItemSaver_Settings_Copy_SV_Targ_Char:UpdateValue(targChar)
             end
         end
@@ -7673,10 +7683,10 @@ function FCOIS.BuildAddonMenu()
                         return srcAcc
                     end,
                     setFunc = function(value)
+                        srcAcc = value
                         if not doNotRunDropdownValueSetFunc then
                             reBuildCharacterOptions(true)
                         end
-                        srcAcc = value
                     end,
                     width = "half",
                     default = srcAcc,
@@ -7695,10 +7705,10 @@ function FCOIS.BuildAddonMenu()
                         return targAcc
                     end,
                     setFunc = function(value)
+                        targAcc = value
                         if not doNotRunDropdownValueSetFunc then
                             reBuildCharacterOptions(false)
                         end
-                        targAcc = value
                     end,
                     width = "half",
                     default = targAcc,
@@ -7727,22 +7737,29 @@ function FCOIS.BuildAddonMenu()
                     isDangerous = true,
                     disabled = function()
                         local srcServerName = serverNames[srcServer]
-                        local targetServerName = serverNames[targServer]
+                        --local targetServerName = serverNames[targServer]
                         local targetAccName = accountTargOptions[targAcc]
-                        local targetAccNameClean = cleanName(targetAccName, "account", targAcc)
+                        --local targetAccNameClean = cleanName(targetAccName, "account", targAcc)
                         local srcAccNameClean = cleanName(serverOptionsTarget[srcAcc], "account", srcAcc)
 
                         if ((FCOIS.settingsNonServerDependendFound and FCOIS.defSettingsNonServerDependendFound)
                                 or (srcServer == noEntryValue or targServer == noEntryValue or srcAcc == noEntryValue or targAcc == noEntryValue)
-                                or (srcServer == targServer and srcAcc == targAcc)
                                 or (FCOItemSaver_Settings[srcServerName] == nil or FCOItemSaver_Settings[srcServerName][srcAccNameClean] == nil)
                         ) then
                             return true
+                        else
+                            --Source server and account + target server & account are the same?
+                            --Only allow this if the source character is chosen and no target character is chosen!
+                            -->To copy source server + account + character to target server + account
+                            if srcServer == targServer and srcAcc == targAcc then
+                                if srcChar == noEntryValue or targChar ~= noEntryValue then return true end
+                            end
                         end
                         return false
                     end,
                     warning = locVars["options_copy_sv_to_server_warning"],
                     width = "half",
+                    reference = "FCOItemSaver_Settings_Copy_SV_Targ_Acc_Button_Copy"
                 },
 
                 {
@@ -7798,6 +7815,29 @@ function FCOIS.BuildAddonMenu()
                     end,
                     setFunc = function(value)
                         srcChar = value
+                        if FCOItemSaver_Settings_Copy_SV_Targ_Char_Copy_Button ~= nil and FCOItemSaver_Settings_Copy_SV_Targ_Char_Copy_Button.button ~= nil then
+                            if targChar == noEntryValue then
+                                --Copy character to account
+                                FCOItemSaver_Settings_Copy_SV_Targ_Char_Copy_Button.button:SetText(locVars["options_copy_sv_account_to_char"])
+                            else
+                                if srcChar ~= noEntryValue and targChar ~= noEntryValue then
+                                    --Copy character to character
+                                    FCOItemSaver_Settings_Copy_SV_Targ_Char_Copy_Button.button:SetText(locVars["options_copy_sv_to_character"])
+                                else
+                                    --Copy character to account
+                                    FCOItemSaver_Settings_Copy_SV_Targ_Char_Copy_Button.button:SetText(locVars["options_copy_sv_account_to_char"])
+                                end
+                            end
+                        end
+                        if FCOItemSaver_Settings_Copy_SV_Targ_Acc_Button_Copy ~= nil and FCOItemSaver_Settings_Copy_SV_Targ_Acc_Button_Copy.button ~= nil then
+                            if srcChar ~= noEntryValue and targChar == noEntryValue then
+                                --Copy character to account
+                                FCOItemSaver_Settings_Copy_SV_Targ_Acc_Button_Copy.button:SetText(locVars["options_copy_sv_char_to_account"])
+                            else
+                                --Copy character to character
+                                FCOItemSaver_Settings_Copy_SV_Targ_Acc_Button_Copy.button:SetText(locVars["options_copy_sv_to_account"])
+                            end
+                        end
                     end,
                     scrollable = true,
                     sort = "name-up",
@@ -7819,6 +7859,20 @@ function FCOIS.BuildAddonMenu()
                     end,
                     setFunc = function(value)
                         targChar = value
+                        if FCOItemSaver_Settings_Copy_SV_Targ_Char_Copy_Button ~= nil and FCOItemSaver_Settings_Copy_SV_Targ_Char_Copy_Button.button ~= nil then
+                            if targChar == noEntryValue then
+                                --Copy character to account
+                                FCOItemSaver_Settings_Copy_SV_Targ_Char_Copy_Button.button:SetText(locVars["options_copy_sv_account_to_char"])
+                            else
+                                if srcChar ~= noEntryValue and targChar ~= noEntryValue then
+                                    --Copy character to character
+                                    FCOItemSaver_Settings_Copy_SV_Targ_Char_Copy_Button.button:SetText(locVars["options_copy_sv_to_character"])
+                                else
+                                    --Copy character to account
+                                    FCOItemSaver_Settings_Copy_SV_Targ_Char_Copy_Button.button:SetText(locVars["options_copy_sv_account_to_char"])
+                                end
+                            end
+                        end
                     end,
                     scrollable = true,
                     sort = "name-up",
@@ -7831,7 +7885,7 @@ function FCOIS.BuildAddonMenu()
                 },
                 {
                     type = "button",
-                    name = locVars["options_copy_sv_to_character"],
+                    name = locVars["options_copy_sv_account_to_char"],
                     tooltip = locVars["options_copy_sv_to_character_TT"],
                     func = function()
                         if FCOISsettings.rememberUserAboutSavedVariablesBackup == true then
@@ -7841,7 +7895,13 @@ function FCOIS.BuildAddonMenu()
                             local targServerNameClean = cleanName(serverOptionsTarget[targServer], "server")
                             local srcAccNameClean = cleanName(serverOptionsTarget[srcAcc], "account", srcAcc)
                             local targAccNameClean = cleanName(serverOptionsTarget[targAcc], "account", targAcc)
-                            FCOIS.copySavedVars(srcServerNameClean, targServerNameClean, srcAccNameClean, targAccNameClean,  tostring(srcChar), tostring(targChar), false)
+                            --Copy account -> target character?
+                            if srcChar == nil or srcChar == "" then
+                                FCOIS.copySavedVars(srcServerNameClean, targServerNameClean, srcAccNameClean, targAccNameClean,  tostring(srcChar), tostring(targChar), false)
+                            else
+                                --Copy source char -> target char
+                                FCOIS.copySavedVars(srcServerNameClean, targServerNameClean, srcAccNameClean, targAccNameClean,  nil, tostring(targChar), false)
+                            end
                             reBuildCharacterOptions()
                         end
                     end,
@@ -7850,11 +7910,12 @@ function FCOIS.BuildAddonMenu()
                         return ((FCOIS.settingsNonServerDependendFound and FCOIS.defSettingsNonServerDependendFound)
                                 or (srcServer == noEntryValue or targServer == noEntryValue
                                 or srcAcc == noEntryValue or targAcc == noEntryValue
-                                or srcChar == noEntryValue or targChar == noEntryValue
+                                or targChar == noEntryValue --or srcChar == noEntryValue -> Needed since FCOIS v1.9.6: Copy account to char settings
                                 or (srcServer == targServer and srcAcc == targAcc and srcChar == targChar)))
                     end,
                     warning = locVars["options_copy_sv_to_server_warning"],
                     width = "half",
+                    reference = "FCOItemSaver_Settings_Copy_SV_Targ_Char_Copy_Button"
                 },
 
                 {
