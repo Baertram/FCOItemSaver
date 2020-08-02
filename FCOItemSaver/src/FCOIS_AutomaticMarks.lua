@@ -22,44 +22,52 @@ local function checkIfItemArrayIsProtected(iconIdArray, itemId)
     return isProtected
 end
 
---Function to check if an item is allowed to be marked automatically with an icon
+--Function to check if an item is allowed to be marked automatically with another icon, from any of the "automatic marks"
 local function checkIfCanBeAutomaticallyMarked(bagId, slotIndex, itemId, checkType)
 --d("[FCOIS] checkIfCanBeAutomaticallyMarked - bag: " .. tostring(bagId) .. ", slotIndex: " .. tostring(slotIndex) .. ", itemId: " .. tostring(itemId) .. ", checkType: " .. tostring(checkType))
     if (bagId == nil or slotIndex == nil) and itemId == nil then return false end
     if itemId == nil then
         itemId = FCOIS.MyGetItemInstanceIdNoControl(bagId, slotIndex)
     end
-    --Set the return variable
-    local retVar = true
     --Get all icons of the item
     local isMarkedWithOneIcon, markedIcons = FCOIS.IsMarked(bagId, slotIndex, -1)
     if isMarkedWithOneIcon and markedIcons then
         local settings = FCOIS.settingsVars.settings
+        local iconIdToIsDnamicIcon = FCOIS.mappingVars.iconIsDynamic
         --Loop over all icons of the item
         for iconId, iconIsMarked in pairs(markedIcons) do
             --Is the current icon marked?
-            if iconIsMarked then
-                --Do not automatically mark items if they got the deconstruction icon on them?
-                if iconId == FCOIS_CON_ICON_DECONSTRUCTION and settings.autoMarkPreventIfMarkedForDeconstruction then
-                    --d(">> Deconstruction item is marked and no others are allowed!")
-                    retVar = false
-                    break -- end the loop
-                --Do not automatically mark items if they got the sell icon on them?
-                elseif iconId == FCOIS_CON_ICON_SELL and settings.autoMarkPreventIfMarkedForSell then
-                    --d(">> Sell item is marked and no others are allowed!")
-                    retVar = false
-                    break -- end the loop
-                --Do not automatically mark items if they got the sell in guild store icon on them?
-                elseif iconId == FCOIS_CON_ICON_SELL_AT_GUILDSTORE and settings.autoMarkPreventIfMarkedForSellAtGuildStore then
-                    --d(">> Sell item at guild store is marked and no others are allowed!")
-                    retVar = false
-                    break -- end the loop
+            if iconIsMarked == true then
+                --Is the current icon an dynamic icon?
+                local isDynIcon = iconIdToIsDnamicIcon[iconId] or false
+                --Non dynamic icon
+                if not isDynIcon then
+                    --Do not automatically mark items if they got the deconstruction icon on them?
+                    if iconId == FCOIS_CON_ICON_DECONSTRUCTION and settings.autoMarkPreventIfMarkedForDeconstruction == true then
+                        --d(">> Deconstruction item is marked and no others are allowed!")
+                        return false
+                        --Do not automatically mark items if they got the sell icon on them?
+                    elseif iconId == FCOIS_CON_ICON_SELL and settings.autoMarkPreventIfMarkedForSell == true then
+                        --d(">> Sell item is marked and no others are allowed!")
+                        return false
+                        --Do not automatically mark items if they got the sell in guild store icon on them?
+                    elseif iconId == FCOIS_CON_ICON_SELL_AT_GUILDSTORE and settings.autoMarkPreventIfMarkedForSellAtGuildStore == true then
+                        --d(">> Sell item at guild store is marked and no others are allowed!")
+                        return false
+                    end
+
+                --Dynamic icons
+                else
+                    --Check if the dynamic icon got the "Prevent automatic mark again if this icon is set" checkbox enabled
+                    if settings.icon[iconId].autoMarkPreventIfMarkedWithThis == true then
+d("[FCOIS]AutomaticMarks-checkIfCanBeAutomaticallyMarked. DynIcon: " ..tostring(iconId) .. " prevents automatic marks!")
+                        return false
+                    end
                 end
             end
         end
     end
-    --d("<< checkIfCanBeAutomaticallyMarked: " .. tostring(retVar))
-    return retVar
+    return true
 end
 
 --Do the additional checks for researchabel items (other addons, etc.)

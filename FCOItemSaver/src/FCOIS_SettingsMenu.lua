@@ -1324,6 +1324,21 @@ function FCOIS.BuildAddonMenu()
                 table.insert(dynIconsSubMenusControls, createdControl)
             end
             ------------------------------------------------------------------------------------------------------------------------
+            --Add the "Prevent auto-marking  if marked with this icon" checkbox
+            name = locVars["options_prevent_auto_marking_if_this_icon_set"]
+            tooltip = locVars["options_prevent_auto_marking_if_this_icon_set_TT"]
+            data = { type = "checkbox", width = "half"}
+            disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
+            getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].autoMarkPreventIfMarkedWithThis end
+            setFunc = function(value)
+                FCOISsettings.icon[fcoisDynIconNr].autoMarkPreventIfMarkedWithThis = value
+            end
+            defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].autoMarkPreventIfMarkedWithThis
+            createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
+            if createdControl ~= nil then
+                table.insert(dynIconsSubMenusControls, createdControl)
+            end
+            ------------------------------------------------------------------------------------------------------------------------
             --Add the anti-destroy header
             name = locVars["options_header_anti_destroy"]
             data = { type = "header"}

@@ -55,27 +55,6 @@ ZO_MenuItem1_MouseUp:4: in function '(main chunk)'
 ---> Guild bank needs more time to build the rows initially. So we need to wait here until they are build to register the hook!
 --> If you switch to the guild bank deposit and back it got the rows then: ZO_GuildBankBackpack1RowN
 
--- 54) 2020-03-02 - OneSkyGod comments within FCOIS @www.esoui.com
--- Changing the 5th dynamic icon name -> lua error message
---[[
-choices and choicesValues need to have the same size
-stack traceback:
-[C]: in function 'assert'
-user:/AddOns/Tom/Libs/LibAddonMenu-2.0/LibAddonMenu-2.0/controls/dropdown.lua:125: in function 'UpdateChoices'
-|caaaaaa<Locals> control = ud, choices = [table:1]{1 = "Lock"}, choicesValues = [table:2]{1 = 1}, choices = [table:1], choicesValues = [table:2], choicesTooltips = [table:3]{1 = "|c940000|t20:20:/esoui/art/cam..."} </Locals>|r
-user:/AddOns/FCOItemSaver/src/FCOIS_SettingsMenu.lua:223: in function 'updateIconListDropdownEntries'
-|caaaaaa<Locals> dropdownCtrlName = "FCOItemSaver_Settings_1_Invigo...", updateData = [table:4]{scrollable = T, choices = "standard"}, dropdownCtrl = ud, choices = [table:1], choicesValues = [table:2] </Locals>|r
-user:/AddOns/FCOItemSaver/src/FCOIS_SettingsMenu.lua:1084: in function 'setFunc'
-|caaaaaa<Locals> newValue = "PVP" </Locals>|r
-user:/AddOns/Tom/Libs/LibAddonMenu-2.0/LibAddonMenu-2.0/controls/editbox.lua:49: in function 'UpdateValue'
-|caaaaaa<Locals> control = ud, forceDefault = F, value = "PVP" </Locals>|r
-user:/AddOns/Tom/Libs/LibAddonMenu-2.0/LibAddonMenu-2.0/controls/editbox.lua:95: in function '(anonymous)'
-|caaaaaa<Locals> self = ud </Locals>|r
-[C]: in function 'LoseFocus'
-EsoUI/Libraries/Globals/Globals.lua:51: in function 'OnGlobalMouseDown'
-|caaaaaa<Locals> event = 65544, button = 1, focusEdit = ud </Locals>|r
-]]
-
 -- 76) 2020-04-12, Baertram
 -- Open bank after login and try to remove/add a marker icon via keybind-> Insecure error call
 --See addon comments by TagCdog at 2020-04-11
@@ -118,7 +97,6 @@ ZO_MenuItem1_MouseUp:4: in function '(main chunk)'
 -- are still unique...
 -- For weapons, armor and jewelry: Change all uniqueId checks to check the item's itemLink maybe or at least infos generated from it like level, quality, itemId, trait, style and enchantmentId.
 
---81) Upon login FCOIS will scan the SV once and remove "non marked" entries which are still stored with the value "false". This will lower the SV file size and speed up loading in the future.
 
 --84) 2020-06-27, Malvarot - Automatic marks Quality will also tag set items "again" if the checkbox "check all other markers" at the quality settings is enabled.
 --                           e.g. set item markes get applied and after that quality as well, allthough set item markers were applied already and "check others" should prevent this
@@ -158,7 +136,7 @@ Blaue/Lila Set Rüstung mit invigorating: dynamic mark 4 ("undefined")
 Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 ]]
 
---85) 2020-06-28, Piperman123 - Copying settings from character to account wide settings, and the other way around
+--
 
 --86) 2020-06-30, Malvarot - Add to each dynamic icon: Checkbox for "Automatic marks - Prevent" so that items won't be re-marked
 --                           with any marker icon, once marked with this dynamic, just like
@@ -171,16 +149,17 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 --Since last update 1.9.5 - New version: 1.9.6
 ---------------------------------------------------------------------
 --[Fixed]
+--#81 Upon login FCOIS will scan the SV once and remove "non marked" entries which are still stored with the value "false". This will lower the SV file size and speed up loading.
 --#82 Default values for filter buttons were changed to move the filter buttons to the right of the inventory contents text (only default values for new installations of FCOIS)
 
 --[Changed]
---#83 2020-06-17, Beartram, Improvement to golden will not try to re-apply the "improve marker icon" again as it is already at the max improved state
+--#83 After improvement to golden FCOIS will not try to re-apply the "improve marker icon" again as it is already at the max improved state
 
 --[Added]
 --
 
 --[Added on request]
---
+--#85 Piperman123 - Copying settings from character to account wide settings, and the other way around
 
 --************************************************************************************************************************
 --************************************************************************************************************************

@@ -13,6 +13,7 @@
 ## OptionalDependsOn: CraftBagExtended
 ## OptionalDependsOn: DolgubonsLazyWritCreator
 ## OptionalDependsOn: SetTracker SousChef
+## OptionalDependsOn: LibSets>=000200 LibShifterbox>=13
 
 ## These addons were in the OptionalDependsOn before but raised circular dependencies. They are kept as reference at the tag BetterWith.
 ## BetterWith: ChatMerchant CraftedPotions DetailedResearchScrolls GridList InventoryGridView PotionMaker QualitySort ResearchAssistant VotansSettingsMenu

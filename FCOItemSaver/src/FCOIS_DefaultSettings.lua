@@ -350,6 +350,8 @@ function FCOIS.buildDefaultSettings()
 		["top"] 	= 0,
 	}
 	for filterIconHelper = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
+		local isIconDynamic = iconIsDynamic[filterIconHelper]
+
        --Marker icons in inventories
        	FCOIS.settingsVars.defaults.markedItems[filterIconHelper] 	= {}
         --Defaults for filter button offsets
@@ -379,11 +381,12 @@ function FCOIS.buildDefaultSettings()
 
         --Defaults for research check is "false", except for dynamic icons where it is "true"
 		local defResearchCheck = false
-		local isIconDynamic = iconIsDynamic[filterIconHelper]
 		if isIconDynamic then defResearchCheck = true end
         FCOIS.settingsVars.defaults.disableResearchCheck[filterIconHelper] = defResearchCheck
-        if isIconDynamic then
+        if isIconDynamic == true then
             FCOIS.settingsVars.defaults.icon[filterIconHelper].temporaryDisableByInventoryFlagIcon = false
+			--Added with FCOIS 1.9.6
+			FCOIS.settingsVars.defaults.icon[filterIconHelper].autoMarkPreventIfMarkedWithThis = false
         end
 
         --Defaults for the enabling/disabling of the icons
