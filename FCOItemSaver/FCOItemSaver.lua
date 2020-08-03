@@ -151,6 +151,8 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 
 --[Added]
 --#88 Dynamic icons got a new checkbox "Exclude normal icons from automatic icon removal"
+--#89 Auto de-mark got a new setting to auto de-mark the deconstruction marker icon if any other marker icon get's set, +
+--    an additionale exclusion for dynamic icons
 
 --[Added on request]
 --#85 Piperman123 - Copying settings from character to account wide settings, and the other way around

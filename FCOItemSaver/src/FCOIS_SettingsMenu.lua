@@ -5805,6 +5805,27 @@ function FCOIS.BuildAddonMenu()
                             end,
                             default = FCOISdefaultSettings.autoDeMarkSellGuildStoreOnOthers,
                         },
+                        {
+                            type = "checkbox",
+                            name = locVars["options_demark_deconstruction_on_others"],
+                            tooltip = locVars["options_demark_deconstruction_on_others_TT"],
+                            getFunc = function() return FCOISsettings.autoDeMarkDeconstructionOnOthers end,
+                            setFunc = function(value) FCOISsettings.autoDeMarkDeconstructionOnOthers = value
+                            end,
+                            width = "half",
+                            default = FCOISdefaultSettings.autoDeMarkDeconstructionOnOthers,
+                        },
+                        {
+                            type = "checkbox",
+                            name = locVars["options_demark_on_others_exclusion_dynamic"],
+                            tooltip = locVars["options_demark_on_others_exclusion_dynamic_TT"],
+                            getFunc = function() return FCOISsettings.autoDeMarkDeconstructionOnOthersExclusionDynamic end,
+                            setFunc = function(value) FCOISsettings.autoDeMarkDeconstructionOnOthersExclusionDynamic = value
+                            end,
+                            width = "half",
+                            default = FCOISdefaultSettings.autoDeMarkDeconstructionOnOthersExclusionDynamic,
+                            disabled = function() return not FCOISsettings.autoDeMarkDeconstructionOnOthers end,
+                        },
 
                     } -- controls de-marking
                 }, -- submenu de-marking

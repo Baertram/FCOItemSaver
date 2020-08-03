@@ -60,7 +60,7 @@ local function checkIfCanBeAutomaticallyMarked(bagId, slotIndex, itemId, checkTy
                 else
                     --Check if the dynamic icon got the "Prevent automatic mark again if this icon is set" checkbox enabled
                     if settings.icon[iconId].autoMarkPreventIfMarkedWithThis == true then
-d("[FCOIS]AutomaticMarks-checkIfCanBeAutomaticallyMarked. DynIcon: " ..tostring(iconId) .. " prevents automatic marks!")
+--d("[FCOIS]AutomaticMarks-checkIfCanBeAutomaticallyMarked. DynIcon: " ..tostring(iconId) .. " prevents automatic marks!")
                         return false
                     end
                 end

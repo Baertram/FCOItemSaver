@@ -211,6 +211,8 @@ function FCOIS.buildDefaultSettings()
 		autoDeMarkSellInGuildStore	= false,
 		autoDeMarkSellOnOthers		= false,
 		autoDeMarkSellGuildStoreOnOthers = false,
+		autoDeMarkDeconstructionOnOthers = false,
+		autoDeMarkDeconstructionOnOthersExclusionDynamic = false,
 		autoDeMarkDeconstruct		= false,
 		autoMarkPreventIfMarkedForSell = false,
 		autoMarkPreventIfMarkedForDeconstruction = false,
