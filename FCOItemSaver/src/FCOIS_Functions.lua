@@ -389,27 +389,22 @@ end
 --  Check that icon is not sell or sell at guild store
 --  and the setting to remove sell/sell at guild store is enabled if any other marker icon is set?
 function FCOIS.checkIfOtherDemarksSell(iconId)
-d("[FCOIS]checkIfOtherDemarksSell-iconId: " ..tostring(iconId))
     if iconId == nil then return false end
     local settings = FCOIS.settingsVars.settings
     local iconIsDynamic = FCOIS.mappingVars.iconIsDynamic[iconId]
     if iconId ~= FCOIS_CON_ICON_SELL and settings.autoDeMarkSellOnOthers == true then
-d(">1")
         --Dynamic exclusion is enabled?
         if settings.autoDeMarkSellOnOthersExclusionDynamic == true then
-d(">>>2")
             return not iconIsDynamic
         end
         return true
     elseif iconId ~= FCOIS_CON_ICON_SELL_AT_GUILDSTORE and settings.autoDeMarkSellGuildStoreOnOthers == true then
-d(">>>3")
         --Dynamic icon exclusion is enabled?
         if settings.autoDeMarkSellGuildStoreOnOthersExclusionDynamic == true then
             return not iconIsDynamic
         end
         return true
     end
-d(">>>4")
     return false
 end
 
@@ -417,20 +412,16 @@ end
 --  and the setting to remove deconstruction is enabled if any other marker icon is set?
 --  Also check the exclusion of dynamic icons!
 function FCOIS.checkIfOtherDemarksDeconstruction(iconId)
-d("[FCOIS]checkIfOtherDemarksDeconstruction-iconId: " ..tostring(iconId))
     if iconId == nil then return false end
     local settings = FCOIS.settingsVars.settings
     local iconIsDynamic = FCOIS.mappingVars.iconIsDynamic[iconId]
     if iconId ~= FCOIS_CON_ICON_DECONSTRUCTION and settings.autoDeMarkDeconstructionOnOthers == true then
-d(">1")
         --Dynamic icon exclusion is enabled?
         if settings.autoDeMarkDeconstructionOnOthersExclusionDynamic == true then
-d(">>>>2, iconIsDynamic: " ..tostring(iconIsDynamic))
             return not iconIsDynamic
         end
         return true
     end
-d(">3")
     return false
 end
 
