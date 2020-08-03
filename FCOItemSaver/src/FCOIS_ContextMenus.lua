@@ -2475,7 +2475,8 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                                         end
                                         --Check if the sell/sell at guild store icon should be demarked if this icon gets set
                                         local iconShouldDemarkSell = FCOIS.checkIfOtherDemarksSell(iconId)
-                                        if iconShouldDemarkSell then
+                                        local iconShouldDemarkDecon = FCOIS.checkIfOtherDemarksDeconstruction(iconId)
+                                        if iconShouldDemarkSell == true or iconShouldDemarkDecon == true then
                                             --Get the icons to remove
                                             local iconsToRemove = {}
                                             iconsToRemove = FCOIS.getIconsToRemove(iconId)

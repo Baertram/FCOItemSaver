@@ -150,7 +150,10 @@ function FCOIS.checkIfInventoryRowOfExternalAddonNeedsMarkerIconsUpdate(rowContr
     if FCOIS.checkIfItemShouldBeDemarked(markId)
         --  Icon is not sell or sell at guild store
         --  and is the setting to remove sell/sell at guild store enabled if any other marker icon is set?
-        or FCOIS.checkIfOtherDemarksSell(markId) then
+        or (
+            FCOIS.checkIfOtherDemarksSell(markId)
+            or FCOIS.checkIfOtherDemarksDeconstruction(markId)
+        ) then
         --d(">item should be demarked")
 
         --Other addons "Inventory Insight" integration:

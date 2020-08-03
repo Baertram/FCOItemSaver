@@ -398,6 +398,27 @@ function FCOIS.checkIfOtherDemarksSell(iconId)
     return false
 end
 
+--  Check that icon is not deconstruction
+--  and the setting to remove deconstruction is enabled if any other marker icon is set?
+--  Also check the exclusion of dynamic icons!
+function FCOIS.checkIfOtherDemarksDeconstruction(iconId)
+    if iconId == nil then return false end
+    local settings = FCOIS.settingsVars.settings
+    if iconId ~= FCOIS_CON_ICON_DECONSTRUCTION
+    and settings.autoDeMarkDeconstructionOnOthers then
+        --Dynamic exclusion is enabled?
+        if settings.autoDeMarkDeconstructionOnOthersExclusionDynamic == true then
+            --Is the other icon dynamic?
+            if FCOIS.mappingVars.iconIsDynamic[iconId] then
+                return true
+            end
+        else
+            return true
+        end
+    end
+    return false
+end
+
 --Check if all of the item's markers should be removed, if one marker icon "iconId" gets set
 function FCOIS.checkIfItemShouldBeDemarked(iconId)
     if iconId == nil then return false end
@@ -1311,6 +1332,10 @@ function FCOIS.getIconsToRemove()
     --Auto de-mark sell in guild store, if other marker icon ist set?
     if settings.autoDeMarkSellGuildStoreOnOthers then
         iconsToRemove[FCOIS_CON_ICON_SELL_AT_GUILDSTORE] = FCOIS_CON_ICON_SELL_AT_GUILDSTORE
+    end
+    --Auto de-mark deconstruction, if other marker icon ist set?
+    if settings.autoDeMarkDeconstructionOnOthers then
+        iconsToRemove[FCOIS_CON_ICON_DECONSTRUCTION] = FCOIS_CON_ICON_DECONSTRUCTION
     end
     --Return the marker icon ids now, that should be removed
     return iconsToRemove

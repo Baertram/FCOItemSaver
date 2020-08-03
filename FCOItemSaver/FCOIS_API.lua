@@ -635,7 +635,7 @@ function FCOIS.MarkItem(bag, slot, iconId, showIcon, updateInventories)
 							if not FCOIS.preventerVars.markItemAntiEndlessLoop and showIcon and (
 									--  Icon is not sell or sell at guild store
 									--  and is the setting to remove sell/sell at guild store enabled if any other marker icon is set?
-									FCOIS.checkIfOtherDemarksSell(iconId)
+									FCOIS.checkIfOtherDemarksSell(iconId) or FCOIS.checkIfOtherDemarksDeconstruction(iconId)
 							) then
 								--d(">remove sell/sell at guild store if any other marker icon is set")
 								--Get the icon to remove
@@ -824,7 +824,7 @@ function FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon
                         if not FCOIS.preventerVars.markItemAntiEndlessLoop and showIcon and (
                                 --  Icon is not sell or sell at guild store
                                 --  and is the setting to remove sell/sell at guild store enabled if any other marker icon is set?
-                                FCOIS.checkIfOtherDemarksSell(iconId)
+                                FCOIS.checkIfOtherDemarksSell(iconId) or FCOIS.checkIfOtherDemarksDeconstruction(iconId)
                         ) then
 --d(">2")
                             --Get the icon to remove
