@@ -5794,7 +5794,19 @@ function FCOIS.BuildAddonMenu()
                             getFunc = function() return FCOISsettings.autoDeMarkSellOnOthers end,
                             setFunc = function(value) FCOISsettings.autoDeMarkSellOnOthers = value
                             end,
+                            width = "half",
                             default = FCOISdefaultSettings.autoDeMarkSellOnOthers,
+                        },
+                        {
+                            type = "checkbox",
+                            name = locVars["options_demark_on_others_exclusion_dynamic"],
+                            tooltip = locVars["options_demark_on_others_exclusion_dynamic_TT"],
+                            getFunc = function() return FCOISsettings.autoDeMarkSellOnOthersExclusionDynamic end,
+                            setFunc = function(value) FCOISsettings.autoDeMarkSellOnOthersExclusionDynamic = value
+                            end,
+                            width = "half",
+                            default = FCOISdefaultSettings.autoDeMarkSellOnOthersExclusionDynamic,
+                            disabled = function() return not FCOISsettings.autoDeMarkSellOnOthers end,
                         },
                         {
                             type = "checkbox",
@@ -5803,7 +5815,19 @@ function FCOIS.BuildAddonMenu()
                             getFunc = function() return FCOISsettings.autoDeMarkSellGuildStoreOnOthers end,
                             setFunc = function(value) FCOISsettings.autoDeMarkSellGuildStoreOnOthers = value
                             end,
+                            width = "half",
                             default = FCOISdefaultSettings.autoDeMarkSellGuildStoreOnOthers,
+                        },
+                        {
+                            type = "checkbox",
+                            name = locVars["options_demark_on_others_exclusion_dynamic"],
+                            tooltip = locVars["options_demark_on_others_exclusion_dynamic_TT"],
+                            getFunc = function() return FCOISsettings.autoDeMarkSellGuildStoreOnOthersExclusionDynamic end,
+                            setFunc = function(value) FCOISsettings.autoDeMarkSellGuildStoreOnOthersExclusionDynamic = value
+                            end,
+                            width = "half",
+                            default = FCOISdefaultSettings.autoDeMarkSellGuildStoreOnOthersExclusionDynamic,
+                            disabled = function() return not FCOISsettings.autoDeMarkSellGuildStoreOnOthers end,
                         },
                         {
                             type = "checkbox",

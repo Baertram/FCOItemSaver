@@ -632,24 +632,26 @@ function FCOIS.MarkItem(bag, slot, iconId, showIcon, updateInventories)
 						else
 							--Prevent endless loop here as FCOIS.MarkItem will call itsself recursively
 							-- Should the item be marked?
-							if not FCOIS.preventerVars.markItemAntiEndlessLoop and showIcon and (
-									--  Icon is not sell or sell at guild store
-									--  and is the setting to remove sell/sell at guild store enabled if any other marker icon is set?
-									FCOIS.checkIfOtherDemarksSell(iconId) or FCOIS.checkIfOtherDemarksDeconstruction(iconId)
-							) then
-								--d(">remove sell/sell at guild store if any other marker icon is set")
-								--Get the icon to remove
-								local iconsToRemove = {}
-								iconsToRemove = FCOIS.getIconsToRemove(iconId)
-								--Is the item marked with any of the icons that should be removed?
-								if FCOIS.IsMarked(bag, slot, iconsToRemove) then
-									--For each icon that should be removed, do:
-									for _, iconToRemove in pairs(iconsToRemove) do
-										--d(">remove icon: " ..tostring(iconToRemove))
-										--Remove the sell/sell at guildstore/... marker icons now
-										--Is the character screen shown, then update the marker icons now?
-										FCOIS.MarkItem(bag, slot, iconToRemove, false, isCharShown)
-										FCOIS.preventerVars.markItemAntiEndlessLoop = false
+							if not FCOIS.preventerVars.markItemAntiEndlessLoop and showIcon then
+								--  Icon is not sell or sell at guild store
+								--  and is the setting to remove sell/sell at guild store/deconstruction enabled if any other marker icon is set?
+								local demarksSell = FCOIS.checkIfOtherDemarksSell(iconId)
+								local demarksDecon = FCOIS.checkIfOtherDemarksDeconstruction(iconId)
+								if demarksSell == true or demarksDecon == true then
+									--d(">remove sell/sell at guild store if any other marker icon is set")
+									--Get the icon to remove
+									local iconsToRemove = {}
+									iconsToRemove = FCOIS.getIconsToRemove(bag, slot, nil, iconId, demarksSell, demarksDecon)
+									--Is the item marked with any of the icons that should be removed?
+									if iconsToRemove ~= nil and FCOIS.IsMarked(bag, slot, iconsToRemove) then
+										--For each icon that should be removed, do:
+										for _, iconToRemove in pairs(iconsToRemove) do
+											--d(">remove icon: " ..tostring(iconToRemove))
+											--Remove the sell/sell at guildstore/... marker icons now
+											--Is the character screen shown, then update the marker icons now?
+											FCOIS.MarkItem(bag, slot, iconToRemove, false, isCharShown)
+											FCOIS.preventerVars.markItemAntiEndlessLoop = false
+										end
 									end
 								end
 							else
@@ -821,33 +823,35 @@ function FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon
 --d(">1")
                         --Prevent endless loop here as FCOIS.MarkItemByItemInstanceId will call itsself recursively
                         -- Should the item be marked?
-                        if not FCOIS.preventerVars.markItemAntiEndlessLoop and showIcon and (
-                                --  Icon is not sell or sell at guild store
-                                --  and is the setting to remove sell/sell at guild store enabled if any other marker icon is set?
-                                FCOIS.checkIfOtherDemarksSell(iconId) or FCOIS.checkIfOtherDemarksDeconstruction(iconId)
-                        ) then
---d(">2")
-                            --Get the icon to remove
-                            local iconsToRemove = {}
-                            iconsToRemove = FCOIS.getIconsToRemove(iconId)
-                            --Is the item marked with any of the icons that should be removed?
-                            if FCOIS.IsMarkedByItemInstanceId(itemInstanceOrUniqueId, iconsToRemove, addonName) then
-                                --For each icon that should be removed, do:
-                                for _, iconToRemove in pairs(iconsToRemove) do
-                                    --d(">remove icon: " ..tostring(iconToRemove))
-                                    --Remove the sell/sell at guildstore/... marker icons now
-                                    --Is the character screen shown, then update the marker icons now?
-                                    FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconToRemove, false, itemLink, itemId, addonName, false)
-                                    FCOIS.preventerVars.markItemAntiEndlessLoop = false
-                                end
-                            end
-                            --else
-                            --d(">>isCharShown: " ..tostring(isCharShown) .. ", antiEndlessLoop: " ..tostring(FCOIS.preventerVars.markItemAntiEndlessLoop) .. ", updateInventories: " ..tostring(updateInventories) .. ", doUpdateMarkerNow: " ..tostring(doUpdateMarkerNow))
-                            --Is the character shown, and we are inside a loop to demark everyhting?
-                            --Set the inventory to update now so the removed marker icons get updated properly at the character
-                            --if isCharShown and FCOIS.preventerVars.markItemAntiEndlessLoop then
-                            --end
-                        end
+						if not FCOIS.preventerVars.markItemAntiEndlessLoop and showIcon then
+							--d(">2")
+							--  Icon is not sell or sell at guild store
+							--  and is the setting to remove sell/sell at guild store/deconstruction enabled if any other marker icon is set?
+							local demarksSell = FCOIS.checkIfOtherDemarksSell(iconId)
+							local demarksDecon = FCOIS.checkIfOtherDemarksDeconstruction(iconId)
+							if demarksSell == true or demarksDecon == true then
+								--Get the icon to remove
+								local iconsToRemove = {}
+								iconsToRemove = FCOIS.getIconsToRemove(nil, nil, itemInstanceOrUniqueId, iconId, demarksSell, demarksDecon)
+								--Is the item marked with any of the icons that should be removed?
+								if iconsToRemove ~= nil and FCOIS.IsMarkedByItemInstanceId(itemInstanceOrUniqueId, iconsToRemove, addonName) then
+									--For each icon that should be removed, do:
+									for _, iconToRemove in pairs(iconsToRemove) do
+										--d(">remove icon: " ..tostring(iconToRemove))
+										--Remove the sell/sell at guildstore/... marker icons now
+										--Is the character screen shown, then update the marker icons now?
+										FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconToRemove, false, itemLink, itemId, addonName, false)
+										FCOIS.preventerVars.markItemAntiEndlessLoop = false
+									end
+								end
+							end
+							--else
+							--d(">>isCharShown: " ..tostring(isCharShown) .. ", antiEndlessLoop: " ..tostring(FCOIS.preventerVars.markItemAntiEndlessLoop) .. ", updateInventories: " ..tostring(updateInventories) .. ", doUpdateMarkerNow: " ..tostring(doUpdateMarkerNow))
+							--Is the character shown, and we are inside a loop to demark everyhting?
+							--Set the inventory to update now so the removed marker icons get updated properly at the character
+							--if isCharShown and FCOIS.preventerVars.markItemAntiEndlessLoop then
+							--end
+						end
                     end
 
 --d(">>itemIsMarked: " .. tostring(itemIsMarked))

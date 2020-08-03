@@ -389,12 +389,27 @@ end
 --  Check that icon is not sell or sell at guild store
 --  and the setting to remove sell/sell at guild store is enabled if any other marker icon is set?
 function FCOIS.checkIfOtherDemarksSell(iconId)
+d("[FCOIS]checkIfOtherDemarksSell-iconId: " ..tostring(iconId))
     if iconId == nil then return false end
     local settings = FCOIS.settingsVars.settings
-    if (iconId ~= FCOIS_CON_ICON_SELL and iconId ~= FCOIS_CON_ICON_SELL_AT_GUILDSTORE)
-    and (settings.autoDeMarkSellOnOthers or settings.autoDeMarkSellGuildStoreOnOthers) then
+    local iconIsDynamic = FCOIS.mappingVars.iconIsDynamic[iconId]
+    if iconId ~= FCOIS_CON_ICON_SELL and settings.autoDeMarkSellOnOthers == true then
+d(">1")
+        --Dynamic exclusion is enabled?
+        if settings.autoDeMarkSellOnOthersExclusionDynamic == true then
+d(">>>2")
+            return not iconIsDynamic
+        end
+        return true
+    elseif iconId ~= FCOIS_CON_ICON_SELL_AT_GUILDSTORE and settings.autoDeMarkSellGuildStoreOnOthers == true then
+d(">>>3")
+        --Dynamic icon exclusion is enabled?
+        if settings.autoDeMarkSellGuildStoreOnOthersExclusionDynamic == true then
+            return not iconIsDynamic
+        end
         return true
     end
+d(">>>4")
     return false
 end
 
@@ -402,20 +417,20 @@ end
 --  and the setting to remove deconstruction is enabled if any other marker icon is set?
 --  Also check the exclusion of dynamic icons!
 function FCOIS.checkIfOtherDemarksDeconstruction(iconId)
+d("[FCOIS]checkIfOtherDemarksDeconstruction-iconId: " ..tostring(iconId))
     if iconId == nil then return false end
     local settings = FCOIS.settingsVars.settings
-    if iconId ~= FCOIS_CON_ICON_DECONSTRUCTION
-    and settings.autoDeMarkDeconstructionOnOthers then
-        --Dynamic exclusion is enabled?
+    local iconIsDynamic = FCOIS.mappingVars.iconIsDynamic[iconId]
+    if iconId ~= FCOIS_CON_ICON_DECONSTRUCTION and settings.autoDeMarkDeconstructionOnOthers == true then
+d(">1")
+        --Dynamic icon exclusion is enabled?
         if settings.autoDeMarkDeconstructionOnOthersExclusionDynamic == true then
-            --Is the other icon dynamic?
-            if FCOIS.mappingVars.iconIsDynamic[iconId] then
-                return true
-            end
-        else
-            return true
+d(">>>>2, iconIsDynamic: " ..tostring(iconIsDynamic))
+            return not iconIsDynamic
         end
+        return true
     end
+d(">3")
     return false
 end
 
@@ -1322,20 +1337,33 @@ function FCOIS.GetItemQuality(bagId, slotIndex)
 end
 
 --Check which marker icons should be removed, if this marker icon gets set
-function FCOIS.getIconsToRemove()
+function FCOIS.getIconsToRemove(bag, slot, itemInstanceOrUniqueId, curentlyCheckedIconId, demarksSell, demarksDecon)
+    if (bag == nil or slot==nil) and itemInstanceOrUniqueId == nil then return end
     local iconsToRemove = {}
     local settings = FCOIS.settingsVars.settings
-    --Auto de-mark sell, if other marker icon ist set?
-    if settings.autoDeMarkSellOnOthers then
-        iconsToRemove[FCOIS_CON_ICON_SELL] = FCOIS_CON_ICON_SELL
+    demarksSell = demarksSell or FCOIS.checkIfOtherDemarksSell(curentlyCheckedIconId)
+    demarksDecon = demarksDecon or FCOIS.checkIfOtherDemarksDeconstruction(curentlyCheckedIconId)
+    if demarksSell == true then
+        if settings.autoDeMarkSellOnOthers == true and (
+                (bag and slot and FCOIS.IsMarked(bag, slot, { FCOIS_CON_ICON_SELL }))
+            or  (itemInstanceOrUniqueId and FCOIS.IsMarkedByItemInstanceId(itemInstanceOrUniqueId, { FCOIS_CON_ICON_SELL }))
+        ) then
+            iconsToRemove[FCOIS_CON_ICON_SELL] = FCOIS_CON_ICON_SELL
+        end
+        if settings.autoDeMarkSellGuildStoreOnOthers == true and (
+               (bag and slot and FCOIS.IsMarked(bag, slot, { FCOIS_CON_ICON_SELL_AT_GUILDSTORE }))
+            or (itemInstanceOrUniqueId and FCOIS.IsMarkedByItemInstanceId(itemInstanceOrUniqueId, { FCOIS_CON_ICON_SELL_AT_GUILDSTORE }))
+        ) then
+            iconsToRemove[FCOIS_CON_ICON_SELL_AT_GUILDSTORE] = FCOIS_CON_ICON_SELL_AT_GUILDSTORE
+        end
     end
-    --Auto de-mark sell in guild store, if other marker icon ist set?
-    if settings.autoDeMarkSellGuildStoreOnOthers then
-        iconsToRemove[FCOIS_CON_ICON_SELL_AT_GUILDSTORE] = FCOIS_CON_ICON_SELL_AT_GUILDSTORE
-    end
-    --Auto de-mark deconstruction, if other marker icon ist set?
-    if settings.autoDeMarkDeconstructionOnOthers then
-        iconsToRemove[FCOIS_CON_ICON_DECONSTRUCTION] = FCOIS_CON_ICON_DECONSTRUCTION
+    if demarksDecon == true then
+        if settings.autoDeMarkDeconstructionOnOthers == true and (
+                (bag and slot and FCOIS.IsMarked(bag, slot, { FCOIS_CON_ICON_DECONSTRUCTION }))
+                or (itemInstanceOrUniqueId and FCOIS.IsMarkedByItemInstanceId(itemInstanceOrUniqueId, { FCOIS_CON_ICON_DECONSTRUCTION }))
+        ) then
+            iconsToRemove[FCOIS_CON_ICON_DECONSTRUCTION] = FCOIS_CON_ICON_DECONSTRUCTION
+        end
     end
     --Return the marker icon ids now, that should be removed
     return iconsToRemove

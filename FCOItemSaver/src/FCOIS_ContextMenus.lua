@@ -2479,9 +2479,9 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                                         if iconShouldDemarkSell == true or iconShouldDemarkDecon == true then
                                             --Get the icons to remove
                                             local iconsToRemove = {}
-                                            iconsToRemove = FCOIS.getIconsToRemove(iconId)
+                                            iconsToRemove = FCOIS.getIconsToRemove(bagId, slotIndex, nil, iconId, iconShouldDemarkSell, iconShouldDemarkDecon)
                                             --Is the item marked with any of the icons that should be removed?
-                                            if FCOIS.IsMarked(bagId, slotIndex, iconsToRemove) then
+                                            if iconsToRemove ~= nil and FCOIS.IsMarked(bagId, slotIndex, iconsToRemove) then
                                                 --For each icon that should be removed, do:
                                                 for _, iconToRemove in pairs(iconsToRemove) do
                                                     --Add the icons which will get removed to the undo tab
