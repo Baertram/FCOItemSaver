@@ -19,7 +19,7 @@
 ---------------------------------------------------------------------
 --[ToDo list] --
 --____________________________
--- Current max bugs: 87
+-- Current max bugs: 88
 --____________________________
 
 -- 1) 2019-01-14 - Bugfix - Baertram
@@ -136,12 +136,6 @@ Blaue/Lila Set Rüstung mit invigorating: dynamic mark 4 ("undefined")
 Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 ]]
 
---
-
---86) 2020-06-30, Malvarot - Add to each dynamic icon: Checkbox for "Automatic marks - Prevent" so that items won't be re-marked
---                           with any marker icon, once marked with this dynamic, just like
---                           Automatic marks-> Automatic mark-Prevention (e.g. sell)
-
 
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
@@ -156,10 +150,11 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 --#83 After improvement to golden FCOIS will not try to re-apply the "improve marker icon" again as it is already at the max improved state
 
 --[Added]
---
+--#88 Dynamic icons got a new checkbox "Exclude normal icons from automatic icon removal"
 
 --[Added on request]
 --#85 Piperman123 - Copying settings from character to account wide settings, and the other way around
+--#86 Malvarot - Add to each dynamic icon: checkbox for "Prevent automatic marks if this icon is set"
 
 --************************************************************************************************************************
 --************************************************************************************************************************

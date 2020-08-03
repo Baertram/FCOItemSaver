@@ -1309,11 +1309,26 @@ function FCOIS.BuildAddonMenu()
                 table.insert(dynIconsSubMenusControls, createdControl)
             end
             ------------------------------------------------------------------------------------------------------------------------
-            --Add the exclude dnymic icons to the disable all other marker icons if this dyn. icon is set checkbox
+            --Add the exclude non-dynamic (normal) icons to the disable all other marker icons if this dyn. icon is set checkbox
+            name = locVars["options_demark_all_others_except_non_dynamic"]
+            tooltip = locVars["options_demark_all_others_except_non_dynamic_TT"]
+            data = { type = "checkbox", width = "half"}
+            disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] or not FCOISsettings.icon[fcoisDynIconNr].demarkAllOthers or FCOISsettings.icon[fcoisDynIconNr].demarkAllOthersExcludeDynamic end
+            getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].demarkAllOthersExcludeNormal end
+            setFunc = function(value)
+                FCOISsettings.icon[fcoisDynIconNr].demarkAllOthersExcludeNormal = value
+            end
+            defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].demarkAllOthersExcludeNormal
+            createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
+            if createdControl ~= nil then
+                table.insert(dynIconsSubMenusControls, createdControl)
+            end
+            ------------------------------------------------------------------------------------------------------------------------
+            --Add the exclude dnaymic icons to the disable all other marker icons if this dyn. icon is set checkbox
             name = locVars["options_demark_all_others_except_dynamic"]
             tooltip = locVars["options_demark_all_others_except_dynamic_TT"]
             data = { type = "checkbox", width = "half"}
-            disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] or not FCOISsettings.icon[fcoisDynIconNr].demarkAllOthers end
+            disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] or not FCOISsettings.icon[fcoisDynIconNr].demarkAllOthers or FCOISsettings.icon[fcoisDynIconNr].demarkAllOthersExcludeNormal end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].demarkAllOthersExcludeDynamic end
             setFunc = function(value)
                 FCOISsettings.icon[fcoisDynIconNr].demarkAllOthersExcludeDynamic = value

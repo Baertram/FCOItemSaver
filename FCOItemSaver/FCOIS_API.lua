@@ -594,17 +594,26 @@ function FCOIS.MarkItem(bag, slot, iconId, showIcon, updateInventories)
 							local iconsToRemoveViaAutomaticRemoveCheck = {}
 							local iconsToRemoveViaAutomaticRemoveCheckTmp = {}
 							local isMarkedForAutoRemoveCheck
-							if settings.icon[iconId].demarkAllOthersExcludeDynamic then
+							local iconSettings = settings.icon[iconId]
+							if iconSettings.demarkAllOthersExcludeDynamic or iconSettings.demarkAllOthersExcludeNormal then
 								--Get all marked icons (including dynamic icons)
 								isMarkedForAutoRemoveCheck, iconsToRemoveViaAutomaticRemoveCheck = FCOIS.IsMarked(bag, slot, -1)
-								--Check which ones are dynamic and remove them from the list
+								--Check which ones are normal/dynamic and remove them from the list
 								if isMarkedForAutoRemoveCheck then
 									if iconsToRemoveViaAutomaticRemoveCheck and #iconsToRemoveViaAutomaticRemoveCheck > 0 then
 										for iconIdForRemoveCheckLoop, isIconMarkedForRemoveCheckLoop in pairs(iconsToRemoveViaAutomaticRemoveCheck) do
 											if isIconMarkedForRemoveCheckLoop then
-												if not isDynamicIcon[iconIdForRemoveCheckLoop] then
-													--Add this icon to the automatic remove table!
-													table.insert(iconsToRemoveViaAutomaticRemoveCheckTmp, iconIdForRemoveCheckLoop)
+												local isDynamicIconCheck = isDynamicIcon[iconIdForRemoveCheckLoop]
+												if iconSettings.demarkAllOthersExcludeDynamic then
+													if not isDynamicIconCheck then
+														--Add this non-dynamic icon to the automatic remove table!
+														table.insert(iconsToRemoveViaAutomaticRemoveCheckTmp, iconIdForRemoveCheckLoop)
+													end
+												elseif iconSettings.demarkAllOthersExcludeNormal then
+													if isDynamicIconCheck then
+														--Add this dynamic icon to the automatic remove table!
+														table.insert(iconsToRemoveViaAutomaticRemoveCheckTmp, iconIdForRemoveCheckLoop)
+													end
 												end
 											end
 										end

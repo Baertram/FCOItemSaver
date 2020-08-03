@@ -363,6 +363,7 @@ function FCOIS.buildDefaultSettings()
 	    FCOIS.settingsVars.defaults.icon[filterIconHelper].antiCheckAtPanel = {}
 		FCOIS.settingsVars.defaults.icon[filterIconHelper].demarkAllOthers = false --added with FCOIS 1.5.2
 		FCOIS.settingsVars.defaults.icon[filterIconHelper].demarkAllOthersExcludeDynamic = false
+		FCOIS.settingsVars.defaults.icon[filterIconHelper].demarkAllOthersExcludeNormal = false -- added with FCOIS 1.9.6
 		--Icon offsets in inventories etc. (FCOIS v1.6.8)
 		FCOIS.settingsVars.defaults.icon[filterIconHelper].offsets = {}
 		--For each filterPanelId do some checks and add icon default settings data:
