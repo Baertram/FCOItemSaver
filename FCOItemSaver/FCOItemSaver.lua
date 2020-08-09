@@ -19,7 +19,7 @@
 ---------------------------------------------------------------------
 --[ToDo list] --
 --____________________________
--- Current max bugs: 88
+-- Current max bugs: 91
 --____________________________
 
 -- 1) 2019-01-14 - Bugfix - Baertram
@@ -145,12 +145,14 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 --[Fixed]
 --#81 Upon login FCOIS will scan the SV once and remove "non marked" entries which are still stored with the value "false". This will lower the SV file size and speed up loading.
 --#82 Default values for filter buttons were changed to move the filter buttons to the right of the inventory contents text (only default values for new installations of FCOIS)
+--#90 SavedVariables copy: Non-existing account names are properly shown red in source and target selections
+--#91 SavedVariables copy: Non-existing account names on the currently logged in server will not enable the delete button at the target server anymore
 
 --[Changed]
 --#83 After improvement to golden FCOIS will not try to re-apply the "improve marker icon" again as it is already at the max improved state
 
 --[Added]
---#88 Dynamic icons got a new checkbox "Exclude normal icons from automatic icon removal"
+--#88 Dynamic icons got a new checkbox "Exclude normal icons from automatic icon removal" (depending on the checkbox Auto. de-mark all other marker icons)
 --#89 Auto de-mark got a new setting to auto de-mark the deconstruction marker icon if any other marker icon get's set, +
 --    an additionale exclusion for dynamic icons
 

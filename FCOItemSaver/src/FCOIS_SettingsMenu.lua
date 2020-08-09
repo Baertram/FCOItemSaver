@@ -449,8 +449,9 @@ function FCOIS.BuildAddonMenu()
     local accountSrcOptionsValues = {}
     local accountTargOptions = {}
     local accountTargOptionsValues = {}
-    local allAccountsFoundInSV = false
     local function reBuildAccountOptions(updateSourceOrTarget)
+        local currentAccountFoundInSv = false
+        local allAccountsFoundInSV = false
         --Reset the account name and index tables
         accountSrcOptions = {}
         accountSrcOptionsValues = {}
@@ -462,9 +463,6 @@ function FCOIS.BuildAddonMenu()
         --Add the no entry entry
         table.insert(accountSrcOptions, noEntry)
         table.insert(accountSrcOptionsValues, noEntryValue)
-        --Get current acount name
-        table.insert(accountSrcOptions, currentAccountNameMarked)
-        table.insert(accountSrcOptionsValues, noEntryValue+1)
         if FCOItemSaver_Settings then
             local accCnt = 3 -- Preset with 3 so the 3rd item will be left empty for the "All accounts" entry
             --Get account names from the SavedVariables, for each server
@@ -476,6 +474,8 @@ function FCOIS.BuildAddonMenu()
                             accCnt = accCnt + 1
                             table.insert(accountSrcOptions, accountName)
                             table.insert(accountSrcOptionsValues, accCnt)
+                        elseif accountName == currentAccountName then
+                            currentAccountFoundInSv = true
                         elseif accountName == svAllAccountsName then
                             allAccountsFoundInSV = true
                         end
@@ -483,6 +483,13 @@ function FCOIS.BuildAddonMenu()
                 end
             end
         end
+        --Add current acount name at fixed positon 2! Color it red if it does not exist yet
+        local currentAccountText = currentAccountNameMarked
+        if not currentAccountFoundInSv then
+            currentAccountText = "|cff0000" .. currentAccountText .. "|r"
+        end
+        table.insert(accountSrcOptions, currentAccountText)
+        table.insert(accountSrcOptionsValues, noEntryValue+1)
         --Add all acounts name at fixed positon 3! Color it red if it does not exist yet
         local allAccountsText = locVars["options_savedVariables_dropdown_selection3"]
         if not allAccountsFoundInSV then
@@ -493,6 +500,7 @@ function FCOIS.BuildAddonMenu()
 
         --Target accounts
         allAccountsFoundInSV = false
+        currentAccountFoundInSv = false
         --Copy the source to the target accounts
         --accountTargOptions          = ZO_ShallowTableCopy(accountSrcOptions)
         --accountTargOptionsValues    = ZO_ShallowTableCopy(accountSrcOptionsValues)
@@ -501,9 +509,6 @@ function FCOIS.BuildAddonMenu()
         --Add the no entry entry
         table.insert(accountTargOptions, noEntry)
         table.insert(accountTargOptionsValues, noEntryValue)
-        --Get current acount name
-        table.insert(accountTargOptions, currentAccountNameMarked)
-        table.insert(accountTargOptionsValues, noEntryValue+1)
         if FCOItemSaver_Settings then
             local accCnt = 3 -- Preset with 3 so the 3rd item will be left empty for the "All accounts" entry
             --Get account names from the SavedVariables, for each server
@@ -516,6 +521,8 @@ function FCOIS.BuildAddonMenu()
                             local accNameTarg = accountName
                             table.insert(accountTargOptions, accNameTarg)
                             table.insert(accountTargOptionsValues, accCnt)
+                        elseif accountName == currentAccountName then
+                            allAccountsFoundInSV = true
                         elseif accountName == svAllAccountsName then
                             allAccountsFoundInSV = true
                         end
@@ -523,6 +530,13 @@ function FCOIS.BuildAddonMenu()
                 end
             end
         end
+        --Add current acount name at fixed positon 2! Color it red if it does not exist yet
+        currentAccountText = currentAccountNameMarked
+        if not currentAccountFoundInSv then
+            currentAccountText = "|cff0000" .. currentAccountText .. "|r"
+        end
+        table.insert(accountTargOptions, currentAccountText)
+        table.insert(accountTargOptionsValues, noEntryValue+1)
         --Add all acounts name at fixed positon 3! Color it red if it does not exist yet
         allAccountsText = locVars["options_savedVariables_dropdown_selection3"]
         if not allAccountsFoundInSV then
