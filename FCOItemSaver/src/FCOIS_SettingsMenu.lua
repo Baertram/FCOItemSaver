@@ -2142,7 +2142,7 @@ function FCOIS.BuildAddonMenu()
                     choices = savedVariablesOptions,
                     getFunc = function() return savedVariablesOptions[FCOIS.settingsVars.defaultSettings.saveMode] end,
                     setFunc = function(value)
-                        for i,v in pairs(savedVariablesOptions) do
+                        for i,v in ipairs(savedVariablesOptions) do
                             if v == value then
                                 if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[Settings]","save mode v: " .. tostring(v) .. ", i: " .. tostring(i), false) end
                                 FCOIS.settingsVars.defaultSettings.saveMode = i
@@ -7878,9 +7878,12 @@ function FCOIS.BuildAddonMenu()
                         local targetAccNameClean = cleanName(targetAccName, "account", targAcc)
                         if ((FCOIS.settingsNonServerDependendFound and FCOIS.defSettingsNonServerDependendFound)
                                 or (targServer == noEntryValue or targAcc == noEntryValue)
-                                or (targServer ~= noEntryValue and targAcc ~= noEntryValue
-                                and (FCOItemSaver_Settings[targetServerName] == nil or FCOItemSaver_Settings[targetServerName][targetAccNameClean] == nil)))
-                        then
+                                or ( targServer ~= noEntryValue and targAcc ~= noEntryValue
+                                    and (
+                                        FCOItemSaver_Settings[targetServerName] == nil or FCOItemSaver_Settings[targetServerName][targetAccNameClean] == nil
+                                    )
+                                )
+                        ) then
                             return true
                         end
                         return false

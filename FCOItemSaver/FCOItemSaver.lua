@@ -172,7 +172,7 @@ local FCOIS = FCOIS
 --  Gamepad functions
 -- =====================================================================================================================
 function FCOIS.resetPreventerVariableAfterTime(eventRegisterName, preventerVariableName, newValue, resetAfterTimeMS)
-    local eventNameStart = "FCOIS_PreventerVariableReset_"
+    local eventNameStart = FCOIS.preventerVars._prevVarReset --"FCOIS_PreventerVariableReset_"
     if eventRegisterName == nil or eventRegisterName == "" or preventerVariableName == nil or preventerVariableName == "" or resetAfterTimeMS == nil then return end
     local eventName = eventNameStart .. tostring(eventRegisterName)
     EVENT_MANAGER:UnregisterForUpdate(eventName)

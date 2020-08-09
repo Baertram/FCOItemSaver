@@ -1294,6 +1294,7 @@ FCOIS.dragAndDropVars.slot	= nil
 --Prevention variables
 FCOIS.preventerVars = {}
 local preventerVars = FCOIS.preventerVars
+preventerVars._prevVarReset = "FCOIS_PreventerVariableReset_"
 preventerVars.gLocalizationDone		= false
 preventerVars.KeyBindingTexts		= false
 preventerVars.gScanningInv	    	= false
