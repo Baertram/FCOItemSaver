@@ -457,6 +457,8 @@ function FCOIS.BuildAddonMenu()
         accountSrcOptionsValues = {}
         accountTargOptions = {}
         accountTargOptionsValues = {}
+--**********************************************************************************************************************
+--**********************************************************************************************************************
         --The source server name
         local sourceServerName = serverNames[srcServer]
         --Source accounts
@@ -497,7 +499,8 @@ function FCOIS.BuildAddonMenu()
         end
         table.insert(accountSrcOptions, allAccountsText)
         table.insert(accountSrcOptionsValues, noEntryValue+2)
-
+--**********************************************************************************************************************
+--**********************************************************************************************************************
         --Target accounts
         allAccountsFoundInSV = false
         currentAccountFoundInSv = false
@@ -522,7 +525,7 @@ function FCOIS.BuildAddonMenu()
                             table.insert(accountTargOptions, accNameTarg)
                             table.insert(accountTargOptionsValues, accCnt)
                         elseif accountName == currentAccountName then
-                            allAccountsFoundInSV = true
+                            currentAccountFoundInSv = true
                         elseif accountName == svAllAccountsName then
                             allAccountsFoundInSV = true
                         end

@@ -178,7 +178,7 @@ function FCOIS.CheckAndTransferFilterButtonDataByPanelId(libFiltersPanelId, filt
         local useOldFilterButtonDataWidth = false
         local useOldFilterButtonDataHeight = false
         --New settings
-        if settings.filterButtonData[p_filterButtonNr] ~= nil then
+        if settings.filterButtonData ~= nil and settings.filterButtonData[p_filterButtonNr] ~= nil then
             settings.filterButtonData[p_filterButtonNr][p_libFiltersPanelId] = settings.filterButtonData[p_filterButtonNr][p_libFiltersPanelId] or {}
             local filterButtonDataForPanelId = settings.filterButtonData[p_filterButtonNr][p_libFiltersPanelId]
             if filterButtonDataForPanelId["left"] ~= nil and filterButtonDataForPanelId["left"] ~= 0 then
@@ -209,6 +209,8 @@ function FCOIS.CheckAndTransferFilterButtonDataByPanelId(libFiltersPanelId, filt
         end
         --Determine filterButton data the old way (settings first, if not given: Use the default static values from constants)
         if useOldFilterButtonDataLeft or useOldFilterButtonDataTop then
+            settings.filterButtonData = settings.filterButtonData or {}
+            settings.filterButtonData[p_filterButtonNr] = settings.filterButtonData[p_filterButtonNr] or {}
             settings.filterButtonData[p_filterButtonNr][p_libFiltersPanelId] = settings.filterButtonData[p_filterButtonNr][p_libFiltersPanelId] or {}
             --Use the fallback value, and then clear the fallback value from the old settings
             if useOldFilterButtonDataLeft then

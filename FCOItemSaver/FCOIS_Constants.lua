@@ -133,8 +133,9 @@ if not FCOIS.libFeedback then d(preVars.preChatTextRed .. string.format(libMissi
 
 --All libraries are loaded prolery?
 FCOIS.libsLoadedProperly = true
-
---Optional libraries
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+--[Optional libraries]
 --LibSets
 if LibSets then FCOIS.libSets = LibSets end
 --LibShifterBox
