@@ -19,7 +19,7 @@
 ---------------------------------------------------------------------
 --[ToDo list] --
 --____________________________
--- Current max bugs: 91
+-- Current max bugs: 93
 --____________________________
 
 -- 1) 2019-01-14 - Bugfix - Baertram
@@ -136,6 +136,14 @@ Blaue/Lila Set Rüstung mit invigorating: dynamic mark 4 ("undefined")
 Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 ]]
 
+--#92: 2020-08-10, Baertram     SettingsForAll settings, which save if you are using accountwide, character or allaccountsthesame SavedVariables will get
+--     deleted if you delete the "Account wide" settings from the FCOIS settings menu "SavedVariables copy/delete" options submenu!
+--     E.g. use "AllAccountsTheSame" in the settings of accounbt @Baertram-> This setting is stored in AccountWide settings @Baertram, version 999.
+--     If you delete the account settings for @Baertram now, the chosen settings to sue AllAccountsTheSame gets deleted as well!
+--     These SettingsForAll need to migrate and be saved somewhere else, like in a special settings table "FCOItemSaver_Settings_General"!
+
+--#93: 2020-08-18, Baertram     Improvement of a staff to purple (no marker icons on that staff) will not remove the staff from the improvement slot,
+--     if marked with a protected icon (e.g. "Lock" icon) after improvement (with the item still slotted).
 
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
