@@ -7,8 +7,8 @@ local FCOIS = FCOIS
 FCOIS.addonVars = {}
 local addonVars = FCOIS.addonVars
 --Addon variables
-addonVars.addonVersionOptions 		= '1.9.6' -- version shown in the settings panel
-addonVars.addonVersionOptionsNumber	= 1.96
+addonVars.addonVersionOptions 		= '1.9.7' -- version shown in the settings panel
+addonVars.addonVersionOptionsNumber	= 1.97
 addonVars.gAddonName				= "FCOItemSaver"
 addonVars.gAddonNameShort           = "FCOIS"
 addonVars.addonNameMenu				= "FCO ItemSaver"
@@ -1083,6 +1083,17 @@ mappingVars.libFiltersPanelIdToCraftingPanelInventory = {
     [LF_JEWELRY_IMPROVEMENT]       = ctrlVars.SMITHING.improvementPanel,
     [LF_JEWELRY_RESEARCH]          = nil,
     [LF_JEWELRY_RESEARCH_DIALOG]   = nil,
+}
+
+--The filterPanelId to crafting table slot (extraction, deconstruction, refine, retrait, ...) control
+mappingVars.libFiltersPanelIdToCraftingPanelSlot = {
+    [LF_RETRAIT]                    = ctrlVars.RETRAIT_RETRAIT_PANEL.retraitSlot,
+    [LF_SMITHING_REFINE]            = ctrlVars.SMITHING.refinementPanel.extractionSlot,
+    [LF_SMITHING_DECONSTRUCT]       = ctrlVars.SMITHING.deconstructionPanel.extractionSlot,
+    [LF_SMITHING_IMPROVEMENT]       = ctrlVars.SMITHING.improvementPanel.improvementSlot,
+    [LF_JEWELRY_REFINE]             = ctrlVars.SMITHING.refinementPanel.extractionSlot,
+    [LF_JEWELRY_DECONSTRUCT]        = ctrlVars.SMITHING.deconstructionPanel.extractionSlot,
+    [LF_JEWELRY_IMPROVEMENT]        = ctrlVars.SMITHING.improvementPanel.improvementSlot,
 }
 
 --The crafting panelIds which should show FCOIS filter buttons

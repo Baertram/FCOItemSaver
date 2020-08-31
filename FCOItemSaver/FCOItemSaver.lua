@@ -19,7 +19,7 @@
 ---------------------------------------------------------------------
 --[ToDo list] --
 --____________________________
--- Current max bugs: 93
+-- Current max bugs: 94
 --____________________________
 
 -- 1) 2019-01-14 - Bugfix - Baertram
@@ -92,6 +92,8 @@ EsoUI/Libraries/ZO_ContextMenus/ZO_ContextMenus.lua:451: in function 'ZO_Menu_Cl
 ZO_MenuItem1_MouseUp:4: in function '(main chunk)'
 ]]
 
+
+
 --In progress: 2020-06-17
 -- 80) 2020-06-14, Beartram, UniqueIds do not work properly anymore as they are really unique and items with the same itemInstanceId, and everything else also the same,
 -- are still unique...
@@ -144,29 +146,23 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 
 --#93: 2020-08-18, Baertram     Improvement of a staff to purple (no marker icons on that staff) will not remove the staff from the improvement slot,
 --     if marked with a protected icon (e.g. "Lock" icon) after improvement (with the item still slotted).
+--     File src/FCOIS_Protection.lua -> FCOIS.craftingPrevention.RemoveItemFromRetraitSlot(bagId, slotIndex, isSlotted) -> isSlotted is false? Why?
 
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
---Since last update 1.9.5 - New version: 1.9.6
+--Since last update 1.9.6 - New version: 1.9.7
 ---------------------------------------------------------------------
 --[Fixed]
---#81 Upon login FCOIS will scan the SV once and remove "non marked" entries which are still stored with the value "false". This will lower the SV file size and speed up loading.
---#82 Default values for filter buttons were changed to move the filter buttons to the right of the inventory contents text (only default values for new installations of FCOIS)
---#90 SavedVariables copy: Non-existing account names are properly shown red in source and target selections
---#91 SavedVariables copy: Non-existing account names on the currently logged in server will not enable the delete button at the target server anymore
+-- #93: Marking an item at the improvement slot will automatically remove the item again if it's protected
+-- #94: Left click on additional inventory "flag" context menu raised an error in FCOIS_ContextMenu.lua, line 3300. Table textPrefix was somehow empty/null at the keys
 
 --[Changed]
---#83 After improvement to golden FCOIS will not try to re-apply the "improve marker icon" again as it is already at the max improved state
 
 --[Added]
---#88 Dynamic icons got a new checkbox "Exclude normal icons from automatic icon removal" (depending on the checkbox Auto. de-mark all other marker icons)
---#89 Auto de-mark got a new setting to auto de-mark the deconstruction marker icon if any other marker icon get's set, +
---    an additionale exclusion for dynamic icons
 
 --[Added on request]
---#85 Piperman123 - Copying settings from character to account wide settings, and the other way around
---#86 Malvarot - Add to each dynamic icon: checkbox for "Prevent automatic marks if this icon is set"
+
 
 --************************************************************************************************************************
 --************************************************************************************************************************

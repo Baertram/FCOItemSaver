@@ -2898,8 +2898,9 @@ function FCOIS.showContextMenuForAddInvButtons(invAddContextMenuInvokerButton)
         --Add the new entries
         --Dynamic entries first
         local textPrefix = {
-            [true]  = "+ ",
-            [false] = "- ",
+            ["nil"]   = "",
+            ["true"]  = "+ ",
+            ["false"] = "- ",
         }
         local subMenuEntriesGear = {}
         local subMenuEntriesDynamic = {}
@@ -3021,13 +3022,9 @@ function FCOIS.showContextMenuForAddInvButtons(invAddContextMenuInvokerButton)
                         local dynamicNumber = icon2Dynamic[buttonsIcon]
                         --Is the buttons text not given? Create it again
                         if not locContextEntriesVars.menu_add_dynamic_text or not locContextEntriesVars.menu_add_dynamic_text[dynamicNumber] then
-                            if GetDisplayName() == "@Baertram" then
-                                d("[FCOIS]showContextMenuForAddInvButtons-Dynamic icon: " ..tostring(buttonsIcon).."(" .. tostring(dynamicNumber).."), menu_add_dynamic_text: " ..tostring(locContextEntriesVars.menu_add_dynamic_text) .. ", menu_add_dynamic_text[dynamicNumber]: " ..tostring(locContextEntriesVars.menu_add_dynamic_text[dynamicNumber]))
-                            else
-                                FCOIS.changeContextMenuEntryTexts(buttonsIcon)
-                            end
+                            FCOIS.changeContextMenuEntryTexts(buttonsIcon)
                         end
-                        buttonText = textPrefix[buttonData.mark] .. locContextEntriesVars.menu_add_dynamic_text[dynamicNumber]
+                        buttonText = textPrefix[tostring(buttonData.mark)] .. locContextEntriesVars.menu_add_dynamic_text[dynamicNumber]
                         local subMenuEntryDynamic = {
                             label 		= buttonText,
                             callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, buttonsIcon, buttonData.mark, nil) end,
@@ -3073,7 +3070,7 @@ function FCOIS.showContextMenuForAddInvButtons(invAddContextMenuInvokerButton)
                                 FCOIS.changeContextMenuEntryTexts(buttonsIcon)
                             end
                         end
-                        buttonText = textPrefix[buttonData.mark] .. locContextEntriesVars.menu_remove_dynamic_text[dynamicNumber]
+                        buttonText = textPrefix[tostring(buttonData.mark)] .. locContextEntriesVars.menu_remove_dynamic_text[dynamicNumber]
                         local subMenuEntryDynamic = {
                             label 		= buttonText,
                             callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, buttonsIcon, buttonData.mark, nil) end,

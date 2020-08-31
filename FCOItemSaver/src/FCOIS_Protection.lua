@@ -834,19 +834,19 @@ function FCOIS.craftingPrevention.IsShowingEnchantment()
     return false
 end
 function FCOIS.craftingPrevention.IsShowingEnchantmentCreation()
-    return not ctrlVars.ENCHANTING_RUNE_CONTAINER:IsHidden()
+    return not ctrlVars.ENCHANTING_RUNE_CONTAINER:IsHidden() or ctrlVars.SMITHING:IsCreating()
 end
 function FCOIS.craftingPrevention.IsShowingEnchantmentExtraction()
     return not ctrlVars.ENCHANTING_EXTRACTION_SLOT:IsHidden()
 end
 function FCOIS.craftingPrevention.IsShowingDeconstruction()
-    return not ctrlVars.DECONSTRUCTION_SLOT:IsHidden()
+    return not ctrlVars.DECONSTRUCTION_SLOT:IsHidden() or ctrlVars.SMITHING:IsDeconstructing()
 end
 function FCOIS.craftingPrevention.IsShowingImprovement()
-    return not ctrlVars.IMPROVEMENT_SLOT:IsHidden()
+    return not ctrlVars.IMPROVEMENT_SLOT:IsHidden() or ctrlVars.SMITHING:IsImproving()
 end
 function FCOIS.craftingPrevention.IsShowingRefinement()
-    return not ctrlVars.REFINEMENT_SLOT:IsHidden()
+    return not ctrlVars.REFINEMENT_SLOT:IsHidden() or ctrlVars.SMITHING:IsExtracting()
 end
 function FCOIS.craftingPrevention.IsShowingResearch()
     return not ctrlVars.RESEARCH:IsHidden()
@@ -872,6 +872,96 @@ function FCOIS.craftingPrevention.IsShowingProvisionerBrew()
     return false
 end
 
+--Returns the crafting slot for the deconstruction, improvement, extraction, retrait etc.
+function FCOIS.craftingPrevention.GetCraftingSlotControl(libFiltersPanelId)
+--d("[FCOIS]craftingPrevention.GetCraftingSlotControl()")
+    local isRetraitShown = FCOIS.isRetraitStationShown()
+    local isCraftingStationShown = ZO_CraftingUtils_IsCraftingWindowOpen() and ctrlVars.RESEARCH:IsHidden() -- No crafting slot at research!
+    local isValidPanelShown = isRetraitShown or isCraftingStationShown
+    local craftingStationSlot
+    --local craftingStationSlots
+    --Crafting station shown?
+    if isValidPanelShown then
+        libFiltersPanelId = libFiltersPanelId or FCOIS.gFilterWhere
+        --[[
+            --Refinement
+            if FCOIS.gFilterWhere == LF_SMITHING_REFINE or FCOIS.gFilterWhere == LF_JEWELRY_REFINE then
+                craftingStationSlot = ctrlVars.SMITHING.refinementPanel.extractionSlot
+
+            --Deconstruction
+            elseif FCOIS.gFilterWhere == LF_SMITHING_DECONSTRUCT or FCOIS.gFilterWhere == LF_JEWELRY_DECONSTRUCT then
+                craftingStationSlot = ctrlVars.SMITHING.deconstructionPanel.extractionSlot
+
+            --Improvement
+            elseif FCOIS.gFilterWhere == LF_SMITHING_IMPROVEMENT or FCOIS.gFilterWhere == LF_JEWELRY_IMPROVEMENT then
+                craftingStationSlot = ctrlVars.SMITHING.improvementPanel.improvementSlot
+
+            --Enchanting creation
+            elseif FCOIS.gFilterWhere == LF_ENCHANTING_CREATION then
+                craftingStationSlots = ctrlVars.ENCHANTING.runeSlots
+
+            --Enchanting extraction
+            elseif FCOIS.gFilterWhere == LF_ENCHANTING_EXTRACTION then
+                craftingStationSlot = ctrlVars.ENCHANTING.extractionSlot
+            end
+        ]]
+        --[[
+            --Retrait station shown?
+            elseif isRetraitShown then
+                craftingStationSlot = ctrlVars.RETRAIT_RETRAIT_PANEL.retraitSlot
+            end
+        ]]
+--d(">searching crafting slot now for panelId: " ..tostring(libFiltersPanelId))
+        local craftingPanelSlots = FCOIS.mappingVars.libFiltersPanelIdToCraftingPanelSlot
+        craftingStationSlot = craftingPanelSlots[libFiltersPanelId]
+    end
+    return craftingStationSlot
+end
+local GetCraftingSlotControl = FCOIS.craftingPrevention.GetCraftingSlotControl
+
+--Returns the bagId and slotIndex of a slotted item in the deconstruction/improvement/refine/enchant extraction slot
+--With ESO update Scalebreaker the multi-craft and deconstruct/extract is supported by the game. You are able to add multiple items with a
+--left mouse click to the slot and the items added are then in the subtable "items" of the deconstruction/extraction slot.
+--This function checks if there are multiple items and returns the table of slotted items now as 3rd return parameter
+function FCOIS.craftingPrevention.GetSlottedItemBagAndSlot()
+--d("[FCOIS]craftingPrevention.GetSlottedItemBagAndSlot()")
+    local isRetraitShown = FCOIS.isRetraitStationShown()
+    local isCraftingStationShown = ZO_CraftingUtils_IsCraftingWindowOpen() and ctrlVars.RESEARCH:IsHidden() -- No crafting slot at research!
+    local isValidPanelShown = isRetraitShown or isCraftingStationShown
+    local bagId, slotIndex, slottedItems
+    local craftingStationSlot
+    --local craftingStationSlots
+    --Crafting station shown?
+    if isValidPanelShown then
+        craftingStationSlot = GetCraftingSlotControl(FCOIS.gFilterWhere)
+        --Is the crafting slot found, get the bagId and slotIndex of the slotted item now
+        if craftingStationSlot ~= nil then
+--d(">found slot")
+            --Enchanting creation got 3 slots, not only 1
+            if FCOIS.gFilterWhere == LF_ENCHANTING_CREATION then
+                if craftingStationSlot and type(craftingStationSlot) == "table" then
+                    slottedItems = {}
+                    for _, craftingStationSlotData in ipairs(craftingStationSlot) do
+                        if craftingStationSlotData and craftingStationSlotData.items and #craftingStationSlotData.items > 0 then
+                            for _, slottedItemData in ipairs(craftingStationSlotData.items) do
+                                table.insert(slottedItems, slottedItemData)
+                            end
+                        end
+                    end
+                end
+            else
+                --All others got just 1 slot
+                if craftingStationSlot.GetBagAndSlot then
+                    bagId, slotIndex = craftingStationSlot:GetBagAndSlot()
+                end
+                slottedItems = craftingStationSlot.items
+            end
+        end
+    end
+    return bagId, slotIndex, slottedItems
+end
+local GetSlottedItemBagAndSlot = FCOIS.craftingPrevention.GetSlottedItemBagAndSlot
+
 function FCOIS.craftingPrevention.GetExtractionSlotAndWhereAreWe()
     if FCOIS.craftingPrevention.IsShowingEnchantmentExtraction() then
         return ctrlVars.ENCHANTING_EXTRACTION_SLOT, FCOIS_CON_ENCHANT_EXTRACT
@@ -889,7 +979,7 @@ local GetExtractionSlotAndWhereAreWe = FCOIS.craftingPrevention.GetExtractionSlo
 
 --Remove an item from a crafting extraction/refinement slot
 function FCOIS.craftingPrevention.RemoveItemFromCraftSlot(bagId, slotIndex, isSlotted)
---d("[FCOIS]craftingPrevention.RemoveItemFromCraftSlot")
+--d("[FCOIS]craftingPrevention.RemoveItemFromCraftSlot - bagId: " ..tostring(bagId) .. ", slot: " ..tostring(slotIndex) .. ", isSlotted: " ..tostring(isSlotted))
     if bagId == nil or slotIndex == nil then return false end
     isSlotted = isSlotted or false
     --Get the "WhereAreWe" constant by the help of the active deconstruction/extraction crafting panel
@@ -921,6 +1011,18 @@ function FCOIS.craftingPrevention.RemoveItemFromCraftSlot(bagId, slotIndex, isSl
     --Check if the item is slotted at the crafting station
     if not isSlotted then
         isSlotted = craftingStationVar:IsItemAlreadySlottedToCraft(bagId, slotIndex)
+        --Bugfix #93 from 2020-08-18: After the improvement was done the function SMITHING:IsItemAlreadySlottedToCraft(bagId, slotIndex) will return false for
+        --and already soltted item. So we cannot rely on this result!
+        --We need to check if the slot control contains any item...
+        if not isSlotted then
+            --Manually check the slotted items and if found, set isSlotted to true
+            local slottedItems
+            bagId, slotIndex, slottedItems = GetSlottedItemBagAndSlot()
+            if slottedItems ~= nil then
+--d(">craftingSlot found")
+                isSlotted = true
+            end
+        end
     end
 --d(">whereAreWe: " .. tostring(whereAreWe) .. ", isSlotted: " ..tostring(isSlotted) .. ", craftingStationVar: " .. tostring(craftingStationVar.control:GetName()))
     --Item is not slotted so abort here
@@ -1023,63 +1125,6 @@ function FCOIS.craftingPrevention.RemoveItemFromRetraitSlot(bagId, slotIndex, is
 end
 local RemoveItemFromRetraitSlot = FCOIS.craftingPrevention.RemoveItemFromRetraitSlot
 
---Returns the bagId and slotIndex of a slotted item in the deconstruction/improvement/refine/enchant extraction slot
---With ESO update Scalebreaker the multi-craft and deconstruct/extract is supported by the game. You are able to add multiple items with a
---left mouse click to the slot and the items added are then in the subtable "items" of the deconstruction/extraction slot.
---This function checks if there are multiple items and returns the table of slotted items now as 3rd return parameter
-function FCOIS.craftingPrevention.GetSlottedItemBagAndSlot()
-    local isRetraitShown = FCOIS.isRetraitStationShown()
-    local isCraftingStationShown = ZO_CraftingUtils_IsCraftingWindowOpen() and ctrlVars.RESEARCH:IsHidden() -- No crafting slot at research!
-    local bagId, slotIndex, slottedItems
-    local craftingStationSlot
-    local craftingStationSlots
-        --Crafting station shown?
-    if isCraftingStationShown then
-        --Refinement
-        if FCOIS.gFilterWhere == LF_SMITHING_REFINE or FCOIS.gFilterWhere == LF_JEWELRY_REFINE then
-            craftingStationSlot = ctrlVars.SMITHING.refinementPanel.extractionSlot
-
-        --Deconstruction
-        elseif FCOIS.gFilterWhere == LF_SMITHING_DECONSTRUCT or FCOIS.gFilterWhere == LF_JEWELRY_DECONSTRUCT then
-            craftingStationSlot = ctrlVars.SMITHING.deconstructionPanel.extractionSlot
-
-        --Improvement
-        elseif FCOIS.gFilterWhere == LF_SMITHING_IMPROVEMENT or FCOIS.gFilterWhere == LF_JEWELRY_IMPROVEMENT then
-            craftingStationSlot = ctrlVars.SMITHING.improvementPanel.improvementSlot
-
-        --Enchanting creation
-        elseif FCOIS.gFilterWhere == LF_ENCHANTING_CREATION then
-            craftingStationSlots = ctrlVars.ENCHANTING.runeSlots
-
-        --Enchanting extraction
-        elseif FCOIS.gFilterWhere == LF_ENCHANTING_EXTRACTION then
-            craftingStationSlot = ctrlVars.ENCHANTING.extractionSlot
-        end
-
-    --Retrait station shown?
-    elseif isRetraitShown then
-        craftingStationSlot = ctrlVars.RETRAIT_RETRAIT_PANEL.retraitSlot
-    end
-    --Is the crafting slot found, get the bagId and slotIndex of the slotted item now
-    if craftingStationSlot ~= nil then
-        if craftingStationSlot.GetBagAndSlot then
-            bagId, slotIndex = craftingStationSlot:GetBagAndSlot()
-        end
-        slottedItems = craftingStationSlot.items
-    elseif craftingStationSlots ~= nil and type(craftingStationSlots) == "table" then
-        slottedItems = {}
-        for _, craftingStationSlotData in ipairs(craftingStationSlots) do
-            if craftingStationSlotData and craftingStationSlotData.items and #craftingStationSlotData.items > 0 then
-                for _, slottedItemData in ipairs(craftingStationSlotData.items) do
-                    table.insert(slottedItems, slottedItemData)
-                end
-            end
-        end
-    end
-    return bagId, slotIndex, slottedItems
-end
-local GetSlottedItemBagAndSlot = FCOIS.craftingPrevention.GetSlottedItemBagAndSlot
-
 --This function scans the currently shown inventory rows data for the same itemInstanceId which the bagId and slotIndex
 --given as parameters got. If another item with the same itemInstanceId is found the function returns the bagId and slotIndex.
 --As multiple same items could be found each found item will be added to the return table!
@@ -1142,6 +1187,7 @@ function FCOIS.craftingPrevention.IsItemProtectedAtACraftSlotNow(bagId, slotInde
                 --FCOIS.callDeconstructionSelectionHandler(bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon)
                 local isProtected = FCOIS.callDeconstructionSelectionHandler(p_bagId, p_slotIndex, false, false, true, false, true, false)
                 --Item is protected?
+--d(">item " .. GetItemLink(p_bagId, p_slotIndex) .. " is protected: " ..tostring(isProtected))
                 if isProtected then
                     if isRetraitShown then
                         --d("Item is protected! Remove it from the retrait slot and output error message now")
