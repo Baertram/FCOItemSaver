@@ -7,8 +7,8 @@ local FCOIS = FCOIS
 FCOIS.addonVars = {}
 local addonVars = FCOIS.addonVars
 --Addon variables
-addonVars.addonVersionOptions 		= '1.9.7' -- version shown in the settings panel
-addonVars.addonVersionOptionsNumber	= 1.97
+addonVars.addonVersionOptions 		= '1.9.8' -- version shown in the settings panel
+addonVars.addonVersionOptionsNumber	= 1.98
 addonVars.gAddonName				= "FCOItemSaver"
 addonVars.gAddonNameShort           = "FCOIS"
 addonVars.addonNameMenu				= "FCO ItemSaver"
@@ -1011,10 +1011,21 @@ FCOIS.ZOControlVars.CHARACTER					= ZO_Character
 FCOIS.ZOControlVars.CONTAINER_LOOT_LIST			= ZO_LootAlphaContainerList
 FCOIS.ZOControlVars.CONTAINER_LOOT_LIST_CONTENTS= ZO_LootAlphaContainerListContents
 FCOIS.ZOControlVars.CONTAINER_LOOT_LIST_CONTENTS_NAME= FCOIS.ZOControlVars.CONTAINER_LOOT_LIST_CONTENTS:GetName()
---Transmutation
+--Transmutation / Retrait
+if FCOIS.APIversion >= 100033 then
+    --Markarth or newer
+    FCOIS.ZOControlVars.RETRAIT_KEYBOARD            = ZO_RETRAIT_KEYBOARD
+    FCOIS.ZOControlVars.RETRAIT_STATION_KEYBOARD    = ZO_RETRAIT_STATION_KEYBOARD
+    FCOIS.ZOControlVars.RETRAIT_KEYBOARD_INTERACT_SCENE = FCOIS.ZOControlVars.RETRAIT_STATION_KEYBOARD.interactScene
+    FCOIS.ZOControlVars.RETRAIT_RETRAIT_PANEL	    = FCOIS.ZOControlVars.RETRAIT_KEYBOARD
+else
+    --Stonethorn or older
+    FCOIS.ZOControlVars.RETRAIT_KEYBOARD            = ZO_RETRAIT_STATION_KEYBOARD
+    FCOIS.ZOControlVars.RETRAIT_STATION_KEYBOARD    = FCOIS.ZOControlVars.RETRAIT_KEYBOARD
+    FCOIS.ZOControlVars.RETRAIT_KEYBOARD_INTERACT_SCENE = FCOIS.ZOControlVars.RETRAIT_STATION_KEYBOARD.interactScene
+    FCOIS.ZOControlVars.RETRAIT_RETRAIT_PANEL	    = FCOIS.ZOControlVars.RETRAIT_KEYBOARD.retraitPanel
+end
 FCOIS.ZOControlVars.RETRAIT					    = ZO_RetraitStation_Keyboard
-FCOIS.ZOControlVars.RETRAIT_KEYBOARD            = ZO_RETRAIT_STATION_KEYBOARD
-FCOIS.ZOControlVars.RETRAIT_RETRAIT_PANEL	    = FCOIS.ZOControlVars.RETRAIT_KEYBOARD.retraitPanel
 FCOIS.ZOControlVars.RETRAIT_INV                 = ZO_RetraitStation_KeyboardTopLevelRetraitPanelInventory
 FCOIS.ZOControlVars.RETRAIT_INV_NAME		    = FCOIS.ZOControlVars.RETRAIT_INV:GetName()
 FCOIS.ZOControlVars.RETRAIT_LIST			    = ZO_RetraitStation_KeyboardTopLevelRetraitPanelInventoryBackpack

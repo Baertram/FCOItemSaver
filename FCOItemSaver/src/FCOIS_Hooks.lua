@@ -1456,7 +1456,7 @@ function FCOIS.CreateHooks()
     end
     --======== RETRAIT ================================================================
     --Register a callback function for the siege bar scene
-    ctrlVars.RETRAIT_KEYBOARD.interactScene:RegisterCallback("StateChange", function(oldState, newState)
+    ctrlVars.RETRAIT_KEYBOARD_INTERACT_SCENE:RegisterCallback("StateChange", function(oldState, newState)
         if settings.debug then FCOIS.debugMessage( "[RETRAIT SCENE]","State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
         FCOIS.sceneCallbackHideContextMenu(oldState, newState)
         if     newState == SCENE_SHOWING then
@@ -1576,7 +1576,7 @@ function FCOIS.CreateHooks()
     ZO_PreHook(ctrlVars.SMITHING.deconstructionPanel.inventory,     "ChangeFilter", function() FCOIS.updateFilteredItemCountThrottled(nil, 50, "Smithing decon - ChangeFilter") end)
     ZO_PreHook(ctrlVars.SMITHING.improvementPanel.inventory,        "ChangeFilter", function() FCOIS.updateFilteredItemCountThrottled(nil, 50, "Smithing improve - ChangeFilter") end)
     --Retrait
-    ZO_PreHook(ctrlVars.RETRAIT_KEYBOARD.retraitPanel.inventory,    "ChangeFilter", function() FCOIS.updateFilteredItemCountThrottled(nil, 50, "Retrait - ChangeFilter") end)
+    ZO_PreHook(ctrlVars.RETRAIT_RETRAIT_PANEL.inventory,            "ChangeFilter", function() FCOIS.updateFilteredItemCountThrottled(nil, 50, "Retrait - ChangeFilter") end)
     --Enchanting
     ZO_PreHook(ctrlVars.ENCHANTING.inventory,                       "ChangeFilter", function() FCOIS.updateFilteredItemCountThrottled(nil, 50, "Enchanting - ChangeFilter") end)
     --PreHook the QuickSlotWindow change filter function

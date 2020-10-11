@@ -19,7 +19,7 @@
 ---------------------------------------------------------------------
 --[ToDo list] --
 --____________________________
--- Current max bugs: 94
+-- Current max bugs: 95
 --____________________________
 
 -- 1) 2019-01-14 - Bugfix - Baertram
@@ -151,11 +151,10 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
---Since last update 1.9.6 - New version: 1.9.7
+--Since last update 1.9.7 - New version: 1.9.8
 ---------------------------------------------------------------------
 --[Fixed]
--- #93: Marking an item at the improvement slot will automatically remove the item again if it's protected
--- #94: Left click on additional inventory "flag" context menu raised an error in FCOIS_ContextMenu.lua, line 3300. Table textPrefix was somehow empty/null at the keys
+-- #95: Fixed the retrait panel on PTS "Markarth" and made the addon compatible with live and PTS
 
 --[Changed]
 

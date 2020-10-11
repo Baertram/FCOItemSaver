@@ -7814,7 +7814,7 @@ function FCOIS.BuildAddonMenu()
                     name = locVars["options_copy_sv_to_account"],
                     tooltip = locVars["options_copy_sv_to_account_TT"],
                     func = function()
-                        if FCOISsettings.rememberUserAboutSavedVariablesBackup == true then
+                        if FCOISsettings.remindUserAboutSavedVariablesBackup == true then
                             FCOIS.ShowRememberUserAboutSavedVariablesBackupDialog()
                         else
                             local srcServerNameClean = cleanName(serverOptionsTarget[srcServer], "server")
@@ -7859,7 +7859,7 @@ function FCOIS.BuildAddonMenu()
                     name = locVars["options_delete_sv_account"],
                     tooltip = locVars["options_delete_sv_account_TT"],
                     func = function()
-                        if FCOISsettings.rememberUserAboutSavedVariablesBackup == true then
+                        if FCOISsettings.remindUserAboutSavedVariablesBackup == true then
                             FCOIS.ShowRememberUserAboutSavedVariablesBackupDialog()
                         else
                             local srcServerNameClean = cleanName(serverOptionsTarget[srcServer], "server")
@@ -7983,7 +7983,7 @@ function FCOIS.BuildAddonMenu()
                     name = locVars["options_copy_sv_account_to_char"],
                     tooltip = locVars["options_copy_sv_to_character_TT"],
                     func = function()
-                        if FCOISsettings.rememberUserAboutSavedVariablesBackup == true then
+                        if FCOISsettings.remindUserAboutSavedVariablesBackup == true then
                             FCOIS.ShowRememberUserAboutSavedVariablesBackupDialog()
                         else
                             local srcServerNameClean = cleanName(serverOptionsTarget[srcServer], "server")
@@ -8018,7 +8018,7 @@ function FCOIS.BuildAddonMenu()
                     name = locVars["options_delete_sv_character"],
                     tooltip = locVars["options_delete_sv_character_TT"],
                     func = function()
-                        if FCOISsettings.rememberUserAboutSavedVariablesBackup == true then
+                        if FCOISsettings.remindUserAboutSavedVariablesBackup == true then
                             FCOIS.ShowRememberUserAboutSavedVariablesBackupDialog()
                         else
                             local srcServerNameClean = cleanName(serverOptionsTarget[srcServer], "server")
