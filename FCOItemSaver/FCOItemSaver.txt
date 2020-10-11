@@ -1,9 +1,9 @@
 ##
 ## Title: |c00FF00FCO |cFFFF00ItemSaver|r
 ## Author: Baertram
-## Version: 1.9.7
-## AddOnVersion: 197
-## APIVersion: 100031 100032
+## Version: 1.9.8
+## AddOnVersion: 198
+## APIVersion: 100032 100033
 ## Description: Mark your items with different icons and filter them in inventories, trading, banks, guild store, mail, crafting, researching and stores. Protect your marked items against sell/deconstruct/extract etc.!
 ## SavedVariables: FCOItemSaver_Settings
 ## !!! Attention !!! -> 1 line here can only contain ~220 characters, so the depency lines need to be split up, or they won't be recognized properly!
@@ -13,7 +13,7 @@
 ## OptionalDependsOn: CraftBagExtended
 ## OptionalDependsOn: DolgubonsLazyWritCreator
 ## OptionalDependsOn: SetTracker SousChef
-## OptionalDependsOn: LibSets>=000200 LibShifterbox>=13
+## OptionalDependsOn: LibSets>=000202 LibShifterbox>=13
 
 ## These addons were in the OptionalDependsOn before but raised circular dependencies. They are kept as reference at the tag BetterWith.
 ## BetterWith: ChatMerchant CraftedPotions DetailedResearchScrolls GridList InventoryGridView PotionMaker QualitySort ResearchAssistant VotansSettingsMenu
