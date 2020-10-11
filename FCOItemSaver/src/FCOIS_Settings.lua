@@ -1068,6 +1068,7 @@ end
 
 --Copy SavedVariables from one server, account and/or character to another
 function FCOIS.copySavedVars(srcServer, targServer, srcAcc, targAcc, srcCharId, targCharId, onlyDelete, forceReloadUI)
+--d(string.format("[FCOIS]copySavedVars srcServer %s, targServer %s, srcAcc %s, targAcc %s, srcCharId %s, targCharId %s, onlyDelete %s, forceReloadUI %s", tostring(srcServer), tostring(targServer), tostring(srcAcc), tostring(targAcc), tostring(srcCharId), tostring(targCharId), tostring(onlyDelete), tostring(forceReloadUI)))
     onlyDelete = onlyDelete or false
     forceReloadUI = forceReloadUI or false
     local copyServer = false
@@ -1218,8 +1219,10 @@ function FCOIS.copySavedVars(srcServer, targServer, srcAcc, targAcc, srcCharId, 
     --------------------------------------------------------------------------------------------------------------------
     --Shall we delete something or were the tables to copy filled properly now?
     if not onlyDelete and svDefToCopy ~= nil and svToCopy ~= nil then
+--d(">go on with copy/delete!")
         --The default table got the language entry and the normal settings table got the markedItems entry?
         if svDefToCopy["language"] ~= nil and svToCopy["markedItems"] ~= nil then
+--d(">>found def language and markedItems")
             if FCOItemSaver_Settings[targServer] == nil then FCOItemSaver_Settings[targServer] = {} end
             --Source data is valid. Now build the target data
             if useAccountWideSV then
@@ -1237,6 +1240,7 @@ function FCOIS.copySavedVars(srcServer, targServer, srcAcc, targAcc, srcCharId, 
                     showReloadUIDialog = true
                     ]]
                 elseif copyAcc then
+--d(">>>copy account")
                     if FCOItemSaver_Settings[targServer][targAcc] == nil then FCOItemSaver_Settings[targServer][targAcc] = {} end
                     if FCOItemSaver_Settings[targServer][targAcc][svAccountWideName] == nil then FCOItemSaver_Settings[targServer][targAcc][svAccountWideName] = {} end
                     --Check if def settings are given and reset them, then set them to the source values
@@ -1374,7 +1378,10 @@ function FCOIS.copySavedVars(srcServer, targServer, srcAcc, targAcc, srcCharId, 
             end
             --Show confirmation dialog: ReloadUI now?
             --FCOIS.ShowConfirmationDialog(dialogName, title, body, callbackYes, callbackNo, data)
-            FCOIS.ShowConfirmationDialog("ReloadUIAfterSVServer2ServerCopyDialog", titleVar, questionVar, function() ReloadUI() end, function() end)
+            FCOIS.ShowConfirmationDialog("ReloadUIAfterSVServer2ServerCopyDialog", titleVar, questionVar,
+                    function() ReloadUI() end,
+                    function() end
+            )
         end
     end
     --------------------------------------------------------------------------------------------------------------------

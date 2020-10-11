@@ -16,7 +16,7 @@ function FCOIS.buildDefaultSettings()
     FCOIS.settingsVars.defaults = {
 		languageChosen				= false,
 		alwaysUseClientLanguage		= true,
-		rememberUserAboutSavedVariablesBackup = true,
+		remindUserAboutSavedVariablesBackup = true,
 		markedItems	 		    	= {},
 		icon		 		    	= {},
 		iconPosition				= {},
