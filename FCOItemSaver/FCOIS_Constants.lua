@@ -7,8 +7,8 @@ local FCOIS = FCOIS
 FCOIS.addonVars = {}
 local addonVars = FCOIS.addonVars
 --Addon variables
-addonVars.addonVersionOptions 		= '1.9.8' -- version shown in the settings panel
-addonVars.addonVersionOptionsNumber	= 1.98
+addonVars.addonVersionOptions 		= '1.9.9' -- version shown in the settings panel
+addonVars.addonVersionOptionsNumber	= 1.99
 addonVars.gAddonName				= "FCOItemSaver"
 addonVars.gAddonNameShort           = "FCOIS"
 addonVars.addonNameMenu				= "FCO ItemSaver"
@@ -40,6 +40,7 @@ FCOIS.svAccountWideName             = "$AccountWide"
 FCOIS.svAllAccountsName             = "$AllAccounts"
 FCOIS.svSettingsForAllName          = "SettingsForAll"
 FCOIS.svSettingsName                = "Settings"
+FCOIS.svSettingsForEachCharacterName= "SettingsForEachCharacter"
 
 --The global variable for the current mouseDown button
 FCOIS.gMouseButtonDown = {}
@@ -684,8 +685,6 @@ FCOIS.gFilterWhere		   		= LF_INVENTORY
 FCOIS.gFilterWhereParent		= nil
 --Global variable to tell which filter was clicked/used by chat command at last
 FCOIS.lastVars.gLastFilterId               = {}
---variable to override the changed "split filters" settings at function UnregisterFilters()
-FCOIS.overrideVars.gSplitFilterOverride		= false
 
 --Available languages
 FCOIS.langVars = {}
@@ -713,14 +712,14 @@ FCOIS.equipmentVars.gEquipmentArmorTypeIconHeight	= 16
 FCOIS.equipmentVars.gEquipmentArmorTypeIconWidth 	= 16
 --Width and height for the filter buttons - Default values
 -->Will be read within file /Src/FCOIS_FilterButtons.lua, function GetFilterButtonDataByPanelId(libFiltersPanelId)
-filterButtonVars.gFilterButtonWidth			= 24
-filterButtonVars.gFilterButtonHeight     		= 24
-filterButtonVars.minFilterButtonWidth         = 4
-filterButtonVars.maxFilterButtonWidth         = 128
-filterButtonVars.minFilterButtonHeight        = 4
-filterButtonVars.maxFilterButtonHeight        = 128
+filterButtonVars.gFilterButtonWidth			        = 24
+filterButtonVars.gFilterButtonHeight     	        = 24
+filterButtonVars.minFilterButtonWidth               = 4
+filterButtonVars.maxFilterButtonWidth               = 128
+filterButtonVars.minFilterButtonHeight              = 4
+filterButtonVars.maxFilterButtonHeight              = 128
 --Left and top of the filter buttons
-filterButtonVars.gFilterButtonTop				= 6
+filterButtonVars.gFilterButtonTop			        = 6
 filterButtonVars.gFilterButtonLeft	   		= {
  [FCOIS_CON_FILTER_BUTTON_LOCKDYN] 		= 0,
  [FCOIS_CON_FILTER_BUTTON_GEARSETS] 	= 24,
@@ -962,6 +961,7 @@ FCOIS.ZOControlVars.MAIL_SEND					= MAIL_SEND
 FCOIS.ZOControlVars.MAIL_SEND_SCENE             = MAIL_SEND_SCENE
 FCOIS.ZOControlVars.MAIL_SEND_NAME			    = FCOIS.ZOControlVars.MAIL_SEND.control:GetName()
 FCOIS.ZOControlVars.mailSendSceneName		    = "mailSend"
+FCOIS.ZOControlVars.MAIL_SEND_ATTACHMENT_SLOTS  = FCOIS.ZOControlVars.MAIL_SEND.attachmentSlots
 --FCOIS.ZOControlVars.MAIL_INBOX				= ZO_MailInbox
 FCOIS.ZOControlVars.MAIL_ATTACHMENTS			= FCOIS.ZOControlVars.MAIL_SEND.attachmentSlots
 --FCOIS.ZOControlVars.MAIL_MENUBAR_BUTTON_SEND  = ZO_MainMenuSceneGroupBarButton2
@@ -1287,9 +1287,11 @@ FCOIS.localizationVars.lTextEquipmentDemark = {}
 
 FCOIS.settingsVars	= {}
 FCOIS.settingsVars.settings			= {}
+FCOIS.settingsVars.accountWideButForEachCharacterSettings = {}
 FCOIS.settingsVars.defaultSettings	= {}
 FCOIS.settingsVars.firstRunSettings   = {}
 FCOIS.settingsVars.defaults			= {}
+FCOIS.settingsVars.accountWideButForEachCharacterDefaults = {}
 
 FCOIS.markedItems = {}
 for i = 1, numVars.gFCONumFilters, 1 do

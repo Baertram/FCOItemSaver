@@ -19,7 +19,7 @@
 ---------------------------------------------------------------------
 --[ToDo list] --
 --____________________________
--- Current max bugs: 95
+-- Current max bugs: 98
 --____________________________
 
 -- 1) 2019-01-14 - Bugfix - Baertram
@@ -28,11 +28,6 @@
 
 --23) 2019-08-17 Check - Baertram
 --Todo: Test if backup/restore is working properly with the "AllAccountsTheSame" settings enabled
-
---27) 2019-10-10 Bug - Baertram
--- Drag & drop of marked items directly from the CraftBagExtended panel to a mail slot works even if the FCOIS protection is enabled! Same for player2player trade.
---> 2020-02-02: ZOs code does not call the event to lock/unlock items if you drag start/drag stop an item from the guild bank, craftbag panels. Also destroy event is not raised.
---> Asked ZOs for a fix here:  https://www.esoui.com/forums/showthread.php?t=8938
 
 -- 40)  2019-11-04 Bug - Baertram
 --lua error message if you use the context menu to destroy an item from inventory:
@@ -144,17 +139,52 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 --     If you delete the account settings for @Baertram now, the chosen settings to sue AllAccountsTheSame gets deleted as well!
 --     These SettingsForAll need to migrate and be saved somewhere else, like in a special settings table "FCOItemSaver_Settings_General"!
 
---#93: 2020-08-18, Baertram     Improvement of a staff to purple (no marker icons on that staff) will not remove the staff from the improvement slot,
---     if marked with a protected icon (e.g. "Lock" icon) after improvement (with the item still slotted).
---     File src/FCOIS_Protection.lua -> FCOIS.craftingPrevention.RemoveItemFromRetraitSlot(bagId, slotIndex, isSlotted) -> isSlotted is false? Why?
+--#96: 2020-10-12, M-Ree   Trying to change dynamic icon name gives an error (https://www.esoui.com/portal.php?id=136&a=viewbug&bugid=3212)
+-- Tested on live NA 2020-10-18 and wa snot able to reproduce this error message. Asked for exact steps by email
+--[[
+When I try to change the dynamic icon's name, once hitting Enter, I get:
+Icon number -- 1, trying to change to "PvP".
+Did you change the slider "Max number of dynamic icons" in the settings before you changed the name of the dynamic icon?
+Yes, 3 to 5
+Did the game do a reloadui at this time automatically?
+Yes
+Did it finish that reloadui properly or was there some error message, or did your client crash e.g.?
+Yes, and the red "wait while stuff is built blah blah" hourglass vanished
+
+choices and choicesTooltips need to have the same size
+stack traceback:
+[C]: in function 'assert'
+user:/AddOns/HarvestMap/Libs/LibAddonMenu-2.0/LibAddonMenu-2.0/controls/dropdown.lua:137: in function 'UpdateChoices'
+|caaaaaa<Locals> control = ud, choices = [table:1]{1 = "Lock"}, choicesValues = [table:2]{1 = 1}, choices = [table:1], choicesValues = [table:2],
+choicesTooltips = [table:3]{1 = "- No icon -"} </Locals>|r
+user:/AddOns/FCOItemSaver/src/FCOIS_SettingsMenu.lua:289: in function 'updateIconListDropdownEntries'
+|caaaaaa<Locals> dropdownCtrlName = "FCOItemSaver_Settings_SetTrack...", updateData = [table:4]{scrollable = T, choices = "standard"},
+dropdownCtrl = ud, choices = [table:1], choicesValues = [table:2] </Locals>|r
+user:/AddOns/FCOItemSaver/src/FCOIS_SettingsMenu.lua:1180: in function 'setFunc'
+|caaaaaa<Locals> newValue = "1st dynamic" </Locals>|r
+user:/AddOns/HarvestMap/Libs/LibAddonMenu-2.0/LibAddonMenu-2.0/controls/editbox.lua:60: in function 'UpdateValue'
+|caaaaaa<Locals> control = ud, forceDefault = F, value = "1st dynamic" </Locals>|r
+user:/AddOns/HarvestMap/Libs/LibAddonMenu-2.0/LibAddonMenu-2.0/controls/editbox.lua:109: in function '(anonymous)'
+|caaaaaa<Locals> self = ud </Locals>|r
+[C]: in function 'LoseFocus'
+EsoUI/Libraries/Globals/Globals.lua:51: in function 'OnGlobalMouseDown'
+|caaaaaa<Locals> event = 65544, button = 1, focusEdit = ud </Locals>|r
+]]
+
+--#97: 2020-08-28, Piperman124  Set items get marked with impenetrable icon even though they were marked already before
+--Seems if I clear all marks and then run the auto marking for set parts it applies to everything not marked with
+--another set part item this way but running it again will add impen to everything even if it's already marked with divines etc.
+
 
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
---Since last update 1.9.7 - New version: 1.9.8
+--Since last update 1.9.8 - New version: 1.9.9
 ---------------------------------------------------------------------
 --[Fixed]
--- #95: Fixed the retrait panel on PTS "Markarth" and made the addon compatible with live and PTS
+--#27 Drag & drop of marked items directly from the CraftBagExtended panel to a mail/player trade slot works even if the FCOIS protection is enabled!
+--#98 Error message upon opening settings menu saying that LAM could not create a dropdown box of characters if you used SavedVariables containing characterId data from another account
+
 
 --[Changed]
 

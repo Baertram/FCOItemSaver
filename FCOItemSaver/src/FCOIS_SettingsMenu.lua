@@ -603,9 +603,9 @@ function FCOIS.BuildAddonMenu()
                 --For each accountName get the characters
                 for _, accountData in pairs(serverData) do
                     for characterId, _ in pairs(accountData) do
-                        -- Do not use the $AccountWide entry or entries with starting @
+                        -- Do not use the $AccountWide entry or entries with starting @ (other account names)
                         if characterId ~= FCOIS.svAccountWideName and string.sub(characterId, 1, 1) ~= "@" then
-                            --IS the read entry a number?
+                            --Is the read entry a character ID number?
                             local characterIdNumber = tonumber(characterId)
                             if characterIdNumber and characterIdNumber > 0 then
                                 --Get the character name for the characterId
@@ -616,8 +616,13 @@ function FCOIS.BuildAddonMenu()
                                 else
                                     characterName = currentCharacterName
                                 end
-                                table.insert(characterSrcOptions, characterName)
-                                table.insert(characterSrcOptionsValues, characterId)
+                                if characterName ~= nil and characterName ~= "" and characterId ~= nil then
+                                    table.insert(characterSrcOptions, characterName)
+                                    table.insert(characterSrcOptionsValues, characterId)
+                                else
+                                    --The characterId and/or name are not given or unknown to the account
+                                    d(string.format("%s CharacterId %s is not a known character of the account %s!", FCOIS.preChatVars.preChatTextRed, tostring(characterId), tostring(GetDisplayName())))
+                                end
                             end
                         end
                     end
@@ -5882,6 +5887,21 @@ function FCOIS.BuildAddonMenu()
             name = locVars["options_header_filters"],
             controls =
             {
+                {
+                    type = "checkbox",
+                    name = locVars["options_filter_buttons_save_for_character"],
+                    tooltip = locVars["options_filter_buttons_save_for_character_TT"],
+                    getFunc = function() return FCOIS.settingsVars.defaultSettings.filterButtonsSaveForCharacter end,
+                    setFunc = function(value) FCOIS.settingsVars.defaultSettings.filterButtonsSaveForCharacter = value
+                        ReloadUI("ingame")
+                    end,
+                    default = FCOIS.settingsVars.defaultSettings.filterButtonsSaveForCharacter,
+                    disabled = function()
+                        --If character savedvars are already enabled this option will be disabled
+                        return FCOIS.settingsVars.defaultSettings.saveMode == 1
+                    end,
+                    requiresReload = true,
+                },
 
                 --==============================================================================
                 --		Filter button positions
@@ -7176,7 +7196,6 @@ function FCOIS.BuildAddonMenu()
                                     FCOIS.FilterBasics(true)
                                 end
                             end,
-                            --disabled = function() return not FCOISsettings.splitFilters end,
                             default = FCOISdefaultSettings.splitLockDynFilter,
                         },
                         {
@@ -7192,7 +7211,6 @@ function FCOIS.BuildAddonMenu()
                                     FCOIS.FilterBasics(true)
                                 end
                             end,
-                            --disabled = function() return not FCOISsettings.splitFilters end,
                             default = FCOISdefaultSettings.splitGearSetsFilter,
                         },
                         {
@@ -7208,7 +7226,6 @@ function FCOIS.BuildAddonMenu()
                                     FCOIS.FilterBasics(true)
                                 end
                             end,
-                            --disabled = function() return not FCOISsettings.splitFilters end,
                             default = FCOISdefaultSettings.splitResearchDeconstructionImprovementFilter,
                         },
                         {
@@ -7224,7 +7241,6 @@ function FCOIS.BuildAddonMenu()
                                     FCOIS.FilterBasics(true)
                                 end
                             end,
-                            --disabled = function() return not FCOISsettings.splitFilters end,
                             default = FCOISdefaultSettings.splitSellGuildSellIntricateFilter,
                         },
 

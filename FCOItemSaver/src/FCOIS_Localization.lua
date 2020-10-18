@@ -144,6 +144,7 @@ end
 local function afterLocalization()
     --Local speed up variables
     local settings = FCOIS.settingsVars.settings
+    local settingsOfFilterButtonStateAndIcon = FCOIS.getAccountWideCharacterOrNormalCharacterSettings()
     local defaults = FCOIS.settingsVars.defaults
     local locVars = FCOIS.localizationVars.fcois_loc
 
@@ -303,28 +304,28 @@ local function afterLocalization()
     --LockDyn
     ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_LOCKDYN]].cmAtPanel 		    = contextMenu.LockDynFilter
     ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_LOCKDYN]].cmVars 			    = contextMenuVars.LockDynFilter
-    ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_LOCKDYN]].lastIcon 			= settings.lastLockDynFilterIconId
+    ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_LOCKDYN]].lastIcon 			= settingsOfFilterButtonStateAndIcon.lastLockDynFilterIconId
     ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_LOCKDYN]].cmFilterName 		= contextMenu.ContextMenuLockDynFilterName
     ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_LOCKDYN]].mappingIcons 		= mappingVars.lockDynToIcon
     ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_LOCKDYN]].pVars 			    = preventerVars.gLockDynFilterContextCreated
     --Gear
     ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_GEARSETS]].cmAtPanel 		    = contextMenu.GearSetFilter
     ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_GEARSETS]].cmVars 			= contextMenuVars.GearSetFilter
-    ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_GEARSETS]].lastIcon 		   	= settings.lastGearFilterIconId
+    ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_GEARSETS]].lastIcon 		   	= settingsOfFilterButtonStateAndIcon.lastGearFilterIconId
     ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_GEARSETS]].cmFilterName 		= contextMenu.ContextMenuGearSetFilterName
     ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_GEARSETS]].mappingIcons 		= mappingVars.gearToIcon
     ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_GEARSETS]].pVars 			    = preventerVars.gGearSetFilterContextCreated
     --ResDecImp
     ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_RESDECIMP]].cmAtPanel 		= contextMenu.ResDecImpFilter
     ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_RESDECIMP]].cmVars 			= contextMenuVars.ResDecImpFilter
-    ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_RESDECIMP]].lastIcon 		    = settings.lastResDecImpFilterIconId
+    ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_RESDECIMP]].lastIcon 		    = settingsOfFilterButtonStateAndIcon.lastResDecImpFilterIconId
     ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_RESDECIMP]].cmFilterName 	    = contextMenu.ContextMenuResDecImpFilterName
     ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_RESDECIMP]].mappingIcons 	    = mappingVars.resDecImpToIcon
     ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_RESDECIMP]].pVars 			= preventerVars.gResDecImpFilterContextCreated
     --SellGuildInt
     ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT]].cmAtPanel 	    = contextMenu.SellGuildIntFilter
     ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT]].cmVars 		= contextMenuVars.SellGuildIntFilter
-    ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT]].lastIcon 		= settings.lastSellGuildIntFilterIconId
+    ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT]].lastIcon 		= settingsOfFilterButtonStateAndIcon.lastSellGuildIntFilterIconId
     ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT]].cmFilterName	= contextMenu.ContextMenuSellGuildIntFilterName
     ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT]].mappingIcons	= mappingVars.sellGuildIntToIcon
     ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT]].pVars 		    = preventerVars.gSellGuildIntFilterContextCreated

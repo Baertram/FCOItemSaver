@@ -31,6 +31,11 @@ local function filterItemNow(slotItemInstanceId)
     local result = true
     local isFilterActivated
     local settings = FCOIS.settingsVars.settings
+    local settingsOfFilterButtonStateAndIcon = FCOIS.getAccountWideCharacterOrNormalCharacterSettings()
+    if settingsOfFilterButtonStateAndIcon == nil then
+        d("[FCOIS]ERROR - filterItemNow -> settingsOfFilterButtonStateAndIcon is NIL!")
+        return
+    end
     --Check each filter button and collect the "protected ones". Do not return or abort in between to assure that filters
     --at button 4 (e.g. says hide) will also be applied if button 3 already said "only show" -> Would result in show
     --instead of hide (due to filetr button 4).
@@ -41,7 +46,7 @@ local function filterItemNow(slotItemInstanceId)
 --Filter button 1-------------------------------------------------------------------------------------------------------
         --Special treatment for filter type 1 as it handels the lock & the 4 dynamic marker icons
         if filterId == FCOIS_CON_FILTER_BUTTON_LOCKDYN then
-            local lastLockDynFilterIconId = settings.lastLockDynFilterIconId[FCOIS.gFilterWhere]
+            local lastLockDynFilterIconId = settingsOfFilterButtonStateAndIcon.lastLockDynFilterIconId[FCOIS.gFilterWhere]
             --Lock & dynamic 1 - 10
             if lastLockDynFilterIconId == nil or lastLockDynFilterIconId == -1 or not settings.splitLockDynFilter then
 
@@ -94,7 +99,7 @@ local function filterItemNow(slotItemInstanceId)
             --Special treatment for filter type 2 as it handels "gear sets" marked items arrays 2, 4, 6, 7 and 8
         elseif filterId == FCOIS_CON_FILTER_BUTTON_GEARSETS then
             if result then
-                local lastGearFilterIconId = settings.lastGearFilterIconId[FCOIS.gFilterWhere]
+                local lastGearFilterIconId = settingsOfFilterButtonStateAndIcon.lastGearFilterIconId[FCOIS.gFilterWhere]
                 --Gear filter split disabled
                 if lastGearFilterIconId == nil or lastGearFilterIconId == -1 or not settings.splitGearSetsFilter then
 
@@ -145,7 +150,7 @@ local function filterItemNow(slotItemInstanceId)
             --Special treatment for filter type 3, as the marked items are 3, 9 and 10
         elseif filterId == FCOIS_CON_FILTER_BUTTON_RESDECIMP then
             if result then
-                local lastResDecImpFilterIconId = settings.lastResDecImpFilterIconId[FCOIS.gFilterWhere]
+                local lastResDecImpFilterIconId = settingsOfFilterButtonStateAndIcon.lastResDecImpFilterIconId[FCOIS.gFilterWhere]
                 --Research, Deconstruction, Improvement filter split disabled
                 if lastResDecImpFilterIconId == nil or lastResDecImpFilterIconId == -1 or not settings.splitResearchDeconstructionImprovementFilter then
 
@@ -201,7 +206,7 @@ local function filterItemNow(slotItemInstanceId)
             --Special treatment for filter type 4, as the marked items are 5, 11 and 12
         elseif filterId == FCOIS_CON_FILTER_BUTTON_SELLGUILDINT then
             if result then
-                local lastSellGuildIntFilterIconId = settings.lastSellGuildIntFilterIconId[FCOIS.gFilterWhere]
+                local lastSellGuildIntFilterIconId = settingsOfFilterButtonStateAndIcon.lastSellGuildIntFilterIconId[FCOIS.gFilterWhere]
                 -- Split Sell, Sell in guild store & Intricate not activated in settings
                 if lastSellGuildIntFilterIconId == nil or lastSellGuildIntFilterIconId == -1 or not settings.splitSellGuildSellIntricateFilter then
 
@@ -242,7 +247,7 @@ local function filterItemNow(slotItemInstanceId)
                         result = false
                         --Filter 4 "show only marked"
                     elseif( isFilterActivated == -99 ) then
-                        return FCOIS.checkIfItemIsProtected(settings.lastSellGuildIntFilterIconId[FCOIS.gFilterWhere], slotItemInstanceId)
+                        return FCOIS.checkIfItemIsProtected(lastSellGuildIntFilterIconId, slotItemInstanceId)
                         --Filter 4 off
                     else
                         if (result ~= false) then
@@ -308,7 +313,6 @@ end
 
 --Filter the player inventory
 local function FilterPlayerInventory(filterId, panelId)
-    local newFilterMethod = FCOIS.settingsVars.settings.splitFilters
     local allowInvFilter = FCOIS.settingsVars.settings.allowInventoryFilter
     panelId = panelId or FCOIS.gFilterWhere
 
@@ -316,34 +320,30 @@ local function FilterPlayerInventory(filterId, panelId)
     local invFilterStringPrefix = filterIds2Name[LF_INVENTORY] or filterIds2Name[FCOIS_CON_LIBFILTERS_STRING_PREFIX_BACKUP_ID]
     local filterNameInv = invFilterStringPrefix .. tostring(panelId) .. "_" .. tostring(filterId)
     if allowInvFilter == true then
-        if newFilterMethod == true then
-            --Register only 1 filter in the player inventory
-            if filterId ~= -1 then
-                if not libFilters:IsFilterRegistered(filterNameInv) then
+        --Register only 1 filter in the player inventory
+        if filterId ~= -1 then
+            if not libFilters:IsFilterRegistered(filterNameInv) then
+                libFilters:RegisterFilter(filterNameInv, LF_INVENTORY, FilterSavedItemsForSlot)
+            end
+        else
+            --Register all the filters in the player inventory
+            for i=1, numFilters, 1 do
+                local filterNameInvLoop = invFilterStringPrefix .. tostring(panelId) .. "_" .. tostring(i)
+                if not libFilters:IsFilterRegistered(filterNameInvLoop) then
                     libFilters:RegisterFilter(filterNameInv, LF_INVENTORY, FilterSavedItemsForSlot)
-                end
-            else
-                --Register all the filters in the player inventory
-                for i=1, numFilters, 1 do
-                    local filterNameInvLoop = invFilterStringPrefix .. tostring(panelId) .. "_" .. tostring(i)
-                    if not libFilters:IsFilterRegistered(filterNameInvLoop) then
-                        libFilters:RegisterFilter(filterNameInv, LF_INVENTORY, FilterSavedItemsForSlot)
-                    end
                 end
             end
         end
     else
         --Filtering inside inventory is NOT enabled in the settings: Unregister the filters
-        if newFilterMethod == true then
-            --UnRegister only 1 filter in the player inventory
-            if filterId ~= -1 then
-                libFilters:UnregisterFilter(filterNameInv, LF_INVENTORY)
-            else
-                --UnRegister all the filters in the player inventory
-                for i=1, numFilters, 1 do
-                    local filterNameInvLoop = invFilterStringPrefix .. tostring(panelId) .. "_" .. tostring(i)
-                    libFilters:UnregisterFilter(filterNameInvLoop, LF_INVENTORY)
-                end
+        --UnRegister only 1 filter in the player inventory
+        if filterId ~= -1 then
+            libFilters:UnregisterFilter(filterNameInv, LF_INVENTORY)
+        else
+            --UnRegister all the filters in the player inventory
+            for i=1, numFilters, 1 do
+                local filterNameInvLoop = invFilterStringPrefix .. tostring(panelId) .. "_" .. tostring(i)
+                libFilters:UnregisterFilter(filterNameInvLoop, LF_INVENTORY)
             end
         end
     end
@@ -371,64 +371,58 @@ function FCOIS.unregisterFilters(filterId, onlyPlayerInvFilter, filterPanelId)
     local unregisterArrayNew = {}
     --Unregister only 1 filter ID?
     if (filterId ~= nil and filterId ~= -1) then
-        if settings.splitFilters == true then
-            --New filter method
+        --New filter method
+        for lFilterWhere=forVar, maxVar , 1 do
+            if activeFilterPanelIds[lFilterWhere] == true then
+                if onlyPlayerInvFilter == true then
+                    local invFilterStringPrefix = filterIds2Name[LF_INVENTORY] or filterIds2Name[FCOIS_CON_LIBFILTERS_STRING_PREFIX_BACKUP_ID]
+                    libFilters:UnregisterFilter(invFilterStringPrefix .. tostring(lFilterWhere) .. "_" .. tostring(filterId))
+                else
+                    unregisterArrayNew = {}
+                    --Dynamically add the LibFilters panel IDs with their prefix string to the unregister array
+                    for libFiltersPanelId, filterNamePrefix in pairs(filterIds2Name) do
+                        --Do not add the BACKUP panelId!
+                        if libFiltersPanelId ~= FCOIS_CON_LIBFILTERS_STRING_PREFIX_BACKUP_ID then
+                            unregisterArrayNew[libFiltersPanelId] = filterNamePrefix .. tostring(lFilterWhere) .. "_" .. tostring(filterId)
+                        end
+                    end
+                    if libFilters:IsFilterRegistered(unregisterArrayNew[lFilterWhere], lFilterWhere) then
+                        --Unregister the registered filters for each panel
+                        libFilters:UnregisterFilter(unregisterArrayNew[lFilterWhere], lFilterWhere)
+                    end
+                end
+            end
+        end
+
+    else
+
+        -- Unregister all filter IDs
+        --New filter method
+        for filterIdLoop=1, numFilters, 1 do
             for lFilterWhere=forVar, maxVar , 1 do
                 if activeFilterPanelIds[lFilterWhere] == true then
-                    if onlyPlayerInvFilter == true then
+                    if (onlyPlayerInvFilter == true) then
                         local invFilterStringPrefix = filterIds2Name[LF_INVENTORY] or filterIds2Name[FCOIS_CON_LIBFILTERS_STRING_PREFIX_BACKUP_ID]
-                        libFilters:UnregisterFilter(invFilterStringPrefix .. tostring(lFilterWhere) .. "_" .. tostring(filterId))
+                        libFilters:UnregisterFilter(invFilterStringPrefix .. tostring(lFilterWhere) .. "_" .. tostring(filterIdLoop))
                     else
                         unregisterArrayNew = {}
                         --Dynamically add the LibFilters panel IDs with their prefix string to the unregister array
                         for libFiltersPanelId, filterNamePrefix in pairs(filterIds2Name) do
                             --Do not add the BACKUP panelId!
                             if libFiltersPanelId ~= FCOIS_CON_LIBFILTERS_STRING_PREFIX_BACKUP_ID then
-                                unregisterArrayNew[libFiltersPanelId] = filterNamePrefix .. tostring(lFilterWhere) .. "_" .. tostring(filterId)
+                                unregisterArrayNew[libFiltersPanelId] = filterNamePrefix .. tostring(lFilterWhere) .. "_" .. tostring(filterIdLoop)
                             end
                         end
-                        if libFilters:IsFilterRegistered(unregisterArrayNew[lFilterWhere], lFilterWhere) then
-                            --Unregister the registered filters for each panel
-                            libFilters:UnregisterFilter(unregisterArrayNew[lFilterWhere], lFilterWhere)
-                        end
+                        --Unregister the registered filters for each panel
+                        libFilters:UnregisterFilter(unregisterArrayNew[lFilterWhere], lFilterWhere)
                     end
                 end
             end
-
-        end
-
-    else
-
-        -- Unregister all filter IDs
-        if (settings.splitFilters == true or FCOIS.overrideVars.gSplitFilterOverride == true) then
-            --New filter method
-            for filterIdLoop=1, numFilters, 1 do
-                for lFilterWhere=forVar, maxVar , 1 do
-                    if activeFilterPanelIds[lFilterWhere] == true then
-                        if (onlyPlayerInvFilter == true) then
-                            local invFilterStringPrefix = filterIds2Name[LF_INVENTORY] or filterIds2Name[FCOIS_CON_LIBFILTERS_STRING_PREFIX_BACKUP_ID]
-                            libFilters:UnregisterFilter(invFilterStringPrefix .. tostring(lFilterWhere) .. "_" .. tostring(filterIdLoop))
-                        else
-                            unregisterArrayNew = {}
-                            --Dynamically add the LibFilters panel IDs with their prefix string to the unregister array
-                            for libFiltersPanelId, filterNamePrefix in pairs(filterIds2Name) do
-                                --Do not add the BACKUP panelId!
-                                if libFiltersPanelId ~= FCOIS_CON_LIBFILTERS_STRING_PREFIX_BACKUP_ID then
-                                    unregisterArrayNew[libFiltersPanelId] = filterNamePrefix .. tostring(lFilterWhere) .. "_" .. tostring(filterIdLoop)
-                                end
-                            end
-                            --Unregister the registered filters for each panel
-                            libFilters:UnregisterFilter(unregisterArrayNew[lFilterWhere], lFilterWhere)
-                        end
-                    end
-                end
-            end
-
         end
     end
 end
 
---Helper function for method FCOIS.registerFilters when FCOIS.settingsVars.settings.splitFilters == true
+--Helper function for method FCOIS.registerFilters
 local function registerFilterId(p_onlyPlayerInvFilter, p_filterId, p_panelId)
     --Get the current LAF (filter type, e.g. LF_INVENTORY, LF_BANK_WITHDRAW, etc.)
     --local lf = libFilters:GetCurrentLAF()
@@ -474,34 +468,30 @@ function FCOIS.registerFilters(filterId, onlyPlayerInvFilter, p_FilterPanelId)
         --Register only one filter ID
 
         --New or old behaviour of filtering?
-        if (settings.splitFilters == true) then
-            --New filtering using panels
-            if settings.debug then FCOIS.debugMessage( "[registerFilters]","Panel: " .. tostring(p_FilterPanelId) .. ", OnlyPlayerInv: " .. tostring(onlyPlayerInvFilter) .. ", filterId: " .. tostring(filterId), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
-            --Register the filter for the given panel ID and filter ID
-            registerFilterId(onlyPlayerInvFilter, filterId, p_FilterPanelId)
-        end  --new filter method?
+        --New filtering using panels
+        if settings.debug then FCOIS.debugMessage( "[registerFilters]","Panel: " .. tostring(p_FilterPanelId) .. ", OnlyPlayerInv: " .. tostring(onlyPlayerInvFilter) .. ", filterId: " .. tostring(filterId), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+        --Register the filter for the given panel ID and filter ID
+        registerFilterId(onlyPlayerInvFilter, filterId, p_FilterPanelId)
 
     else
         --Register all filter IDs
-        if settings.splitFilters == true then
-            --Using filters for each libFilters panel id
-            --Only update a special panel, or all?
-            local forVar, maxVar
-            if (p_FilterPanelId == nil) then
-                forVar  = 1
-                maxVar  = numFilterInventoryTypes
-            end
+        --Using filters for each libFilters panel id
+        --Only update a special panel, or all?
+        local forVar, maxVar
+        if (p_FilterPanelId == nil) then
+            forVar  = 1
+            maxVar  = numFilterInventoryTypes
+        end
 
-            for filterIdLoop=1, numFilters, 1 do
-                for lFilterWhere=forVar, maxVar , 1 do
-                    if activeFilterPanelIds[lFilterWhere] == true then
-                        if settings.debug then FCOIS.debugMessage( "[registerFilters]","Panel: " .. tostring(forVar) .. ", filterIdLoop: " .. tostring(filterIdLoop) .. ", OnlyPlayerInv: " .. tostring(onlyPlayerInvFilter), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
-                        --register the filters for the given panels
-                        registerfilterId(onlyPlayerInvFilter, filterIdLoop, lFilterWhere)
-                    end
+        for filterIdLoop=1, numFilters, 1 do
+            for lFilterWhere=forVar, maxVar , 1 do
+                if activeFilterPanelIds[lFilterWhere] == true then
+                    if settings.debug then FCOIS.debugMessage( "[registerFilters]","Panel: " .. tostring(forVar) .. ", filterIdLoop: " .. tostring(filterIdLoop) .. ", OnlyPlayerInv: " .. tostring(onlyPlayerInvFilter), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+                    --register the filters for the given panels
+                    -->TODO: Typo removed on 2020-10-18 at registerfilterId
+                    registerFilterId(onlyPlayerInvFilter, filterIdLoop, lFilterWhere)
                 end
             end
-
         end
 
     end -- only 1 filter ID or all filter IDs?

@@ -5,8 +5,8 @@ local FCOIS = FCOIS
 if not FCOIS.libsLoadedProperly then return end
 
 --Currently logged in account name
-local accName               = GetDisplayName()
-local currentCharName       = GetCurrentCharacterId()
+local accName             = GetDisplayName()
+local currentCharId       = GetCurrentCharacterId()
 
 --The SavedVariables local name
 local addonSVname       = FCOIS.addonVars.savedVarName
@@ -18,6 +18,7 @@ local svAccountWideName     = FCOIS.svAccountWideName
 local svAllAccTheSameAcc    = FCOIS.svAllAccountsName
 local svSettingsForAllName  = FCOIS.svSettingsForAllName
 local svSettingsName        = FCOIS.svSettingsName
+local svSettingsForEachCharacterName = FCOIS.svSettingsForEachCharacterName
 --==========================================================================================================================================
 -- 										FCOIS settings & saved variables functions
 --==========================================================================================================================================
@@ -54,34 +55,57 @@ end
 
 --==============================================================================
 
---Choose the filter type
-function FCOIS.getSettingsIsFilterOn(p_filterId, p_filterPanel)
-    local result
-    local settings = FCOIS.settingsVars.settings
-    if (settings.splitFilters == true) then
-        local p_filterPanelNew = p_filterPanel or FCOIS.gFilterWhere
-
-        --New behaviour with filters
-        settings.isFilterPanelOn[p_filterPanelNew] = settings.isFilterPanelOn[p_filterPanelNew] or {}
-        result = settings.isFilterPanelOn[p_filterPanelNew][p_filterId]
-        if result == nil then
-            return false
+--Returns either the account wide "for each character individually",
+--or the normal character saved "for each character", settings
+function FCOIS.getAccountWideCharacterOrNormalCharacterSettings()
+    local settingsForAll = FCOIS.settingsVars.defaultSettings
+    local saveMode = settingsForAll.saveMode
+--d("[FCOIS]getAccountWideCharacterOrNormalCharacterSettings - saveMode: " ..tostring(saveMode) .. ", filterForEachCharacter: " ..tostring(settingsForAll.filterButtonsSaveForCharacter))
+    local settingsSV
+    --Character SavedVariables
+    if saveMode == 1 then
+        settingsSV = FCOIS.settingsVars.settings
+    else
+        --Account wide and AllAccountsTheSame account wide SavedVariables
+        --FilterButton states are saved account wide but for each character individually?
+        if settingsForAll.filterButtonsSaveForCharacter == true then
+            local settingsSVBase = FCOIS.settingsVars.accountWideButForEachCharacterSettings
+            settingsSV = settingsSVBase and settingsSVBase[currentCharId]
+        else
+            settingsSV = FCOIS.settingsVars.settings
         end
-        if settings.debug then FCOIS.debugMessage( "[GetSettingsIsFilterOn]","Filter Panel: " .. tostring(p_filterPanelNew) .. ", FilterId: " .. tostring(p_filterId) .. ", Result: " .. tostring(result), true, FCOIS_DEBUG_DEPTH_SPAM) end
-        return result
     end
+    return settingsSV
+end
+local getAccountWideCharacterOrNormalCharacterSettings = FCOIS.getAccountWideCharacterOrNormalCharacterSettings
+
+
+--Check if the filterButton's state is on/off/-99 (Show only marked)
+function FCOIS.getSettingsIsFilterOn(p_filterId, p_filterPanel)
+    local p_filterPanelNew = p_filterPanel or FCOIS.gFilterWhere
+    local result
+    local baseSettings = FCOIS.settingsVars.settings
+    local settings = getAccountWideCharacterOrNormalCharacterSettings()
+
+    --New behaviour with filters
+    settings.isFilterPanelOn[p_filterPanelNew] = settings.isFilterPanelOn[p_filterPanelNew] or {}
+    result = settings.isFilterPanelOn[p_filterPanelNew][p_filterId]
+    if result == nil then
+        return false
+    end
+    if baseSettings.debug then FCOIS.debugMessage( "[GetSettingsIsFilterOn]","Filter Panel: " .. tostring(p_filterPanelNew) .. ", FilterId: " .. tostring(p_filterId) .. ", Result: " .. tostring(result), true, FCOIS_DEBUG_DEPTH_SPAM) end
+    return result
 end
 
 --Set the value of a filter type, and return it
 function FCOIS.setSettingsIsFilterOn(p_filterId, p_value, p_filterPanel)
     local p_filterPanelNew = p_filterPanel or FCOIS.gFilterWhere
-    local settings = FCOIS.settingsVars.settings
-    if (settings.splitFilters == true) then
-        --New behaviour with filters
-        settings.isFilterPanelOn[p_filterPanelNew] = settings.isFilterPanelOn[p_filterPanelNew] or {}
-        settings.isFilterPanelOn[p_filterPanelNew][p_filterId] = p_value
-        if settings.debug then FCOIS.debugMessage( "[SetSettingsIsFilterOn]","Filter Panel: " .. tostring(p_filterPanelNew) .. ", FilterId: " .. tostring(p_filterId) .. ", Value: " .. tostring(p_value), true, FCOIS_DEBUG_DEPTH_SPAM) end
-    end
+    local baseSettings = FCOIS.settingsVars.settings
+    local settings = getAccountWideCharacterOrNormalCharacterSettings()
+    --New behaviour with filters
+    settings.isFilterPanelOn[p_filterPanelNew] = settings.isFilterPanelOn[p_filterPanelNew] or {}
+    settings.isFilterPanelOn[p_filterPanelNew][p_filterId] = p_value
+    if baseSettings.debug then FCOIS.debugMessage( "[SetSettingsIsFilterOn]","Filter Panel: " .. tostring(p_filterPanelNew) .. ", FilterId: " .. tostring(p_filterId) .. ", Value: " .. tostring(p_value), true, FCOIS_DEBUG_DEPTH_SPAM) end
     --return the value
     return p_value
 end
@@ -567,8 +591,8 @@ function FCOIS.afterSettings()
     local iconIsDynamic = FCOIS.mappingVars.iconIsDynamic
     local mappingVars = FCOIS.mappingVars
 
-    --Set the split filters to true as old "non-split filters" method is not supported anymore!
-    settings.splitFilters = true
+    --Set the split filters to nil as it was removed years ago!
+    settings.splitFilters = nil
 
     --FCOIS v1.9.6 UniqueId changes to real unique by ZOs (ESO standard) or FCOIS unique (self made)
     --Standard value: Really unique by ZOs
@@ -695,6 +719,15 @@ function FCOIS.afterSettings()
         end
     end
 
+    --Added with FCOIS v1.9.9
+    FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId] = FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId] or {}
+    FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].isFilterPanelOn                = FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].isFilterPanelOn or {}
+    --Create the helper arrays for the filter button context menus
+    FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastLockDynFilterIconId        = FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastLockDynFilterIconId or {}
+    FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastGearFilterIconId           = FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastGearFilterIconId or {}
+    FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastResDecImpFilterIconId      = FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastResDecImpFilterIconId or {}
+    FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastSellGuildIntFilterIconId   = FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastSellGuildIntFilterIconId or {}
+
     --Added with FCOIS v1.7.4
     --For each panelId add an entry to for the non-deconstructable Libfilters panelIds
     local panelIdToDeconstructable = mappingVars.panelIdToDeconstructable
@@ -704,6 +737,13 @@ function FCOIS.afterSettings()
             if panelIdToDeconstructable[panelId] == nil then
                 FCOIS.mappingVars.panelIdToDeconstructable[panelId] = false
             end
+            --Added with FCOIS v1.9.9
+            FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].isFilterPanelOn[panelId]               = FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].isFilterPanelOn[panelId] or {false, false, false, false}
+            --Create the helper arrays for the filter button context menus
+            FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastLockDynFilterIconId[panelId]       = FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastLockDynFilterIconId[panelId] or -1
+            FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastGearFilterIconId[panelId]          = FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastGearFilterIconId[panelId] or -1
+            FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastResDecImpFilterIconId[panelId]     = FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastResDecImpFilterIconId[panelId] or -1
+            FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastSellGuildIntFilterIconId[panelId]  = FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastSellGuildIntFilterIconId[panelId] or -1
         end
     end
 
@@ -891,6 +931,7 @@ function FCOIS.LoadUserSettings(calledFromExternal)
         --=========== BEGIN - SAVED VARIABLES ==========================================
         FCOIS.settingsVars.defaultSettings = {}
         FCOIS.settingsVars.settings = {}
+        FCOIS.settingsVars.accountWideButForEachCharacterSettings = {}
         --------------------------------------------------------------------------------------------------------------------
         -- Migration of non-server dependent settings to server-dependent settings
         --------------------------------------------------------------------------------------------------------------------
@@ -1050,6 +1091,20 @@ function FCOIS.LoadUserSettings(calledFromExternal)
                     end
             )
         end
+
+        --The SettingsForAll was setup to save the filter buttons for each character individually?
+        if FCOIS.settingsVars.defaultSettings.filterButtonsSaveForCharacter == true then
+            local saveMode = FCOIS.settingsVars.defaultSettings.saveMode
+            --Character wide settings are enabled: Do nothing as it will be handled automatically
+
+            if saveMode == 2 or saveMode == 3 then
+                local accountNameToUse
+                if saveMode == 3 then accountNameToUse = svAllAccTheSameAcc end
+                --Account wide settings are enabled: Load the extra SavedVariables for the account wide "per character" settings
+                FCOIS.settingsVars.accountWideButForEachCharacterSettings = ZO_SavedVars:NewAccountWide(addonSVname, addonSVversion, svSettingsForEachCharacterName, FCOIS.settingsVars.accountWideButForEachCharacterDefaults, world, accountNameToUse)
+            end
+        end
+
         --=========== END - SAVED VARIABLES ============================================
 
         --Load the current needed workarounds/fixes

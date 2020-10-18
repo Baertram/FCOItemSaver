@@ -436,18 +436,21 @@ local function FCOItemSaver_OnDragStart(inventorySlot)
     FCOIS.dragAndDropVars.slot = slot
 end
 
---Callback function for receive a dragged inventory item
+--Callback function for receive a dragged inventory item. Used for:
+--1. Drop of an item at an equipment slot -> Aswk before bind dialog
+--2. If CraftBagExtended addon is enabled: Drop of any craftbag item at the mail send/player trade panel as the Drag function will not be
+--   executed properly for CraftBag rows. So we need to check if the item is protected and cancel the drop here!
 local function FCOItemSaver_OnReceiveDrag(inventorySlot)
     --FCOinvs = inventorySlot
     local cursorContentType = GetCursorContentType()
     if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[OnReceiveDrag]","cursorContentType: " .. tostring(cursorContentType) .. "/" .. tostring(MOUSE_CONTENT_INVENTORY_ITEM) .. ", invSlotType: " .. tostring(inventorySlot.slotType) .. "/" .. tostring(SLOT_TYPE_EQUIPMENT), true, FCOIS_DEBUG_DEPTH_NORMAL) end
---d("[FCOIS]FCOItemSaver_OnReceiveDrag, cursorContentType: " ..tostring(cursorContentType))
+d("[FCOIS]FCOItemSaver_OnReceiveDrag, cursorContentType: " ..tostring(cursorContentType))
 
     -- if there is an inventory item on the cursor:
     if cursorContentType ~= MOUSE_CONTENT_INVENTORY_ITEM and cursorContentType ~= MOUSE_CONTENT_EQUIPPED_ITEM then return end
-
+    local slotType = inventorySlot.slotType
     -- and the slot type we're dropping it on is an equip slot:
-    if inventorySlot.slotType == SLOT_TYPE_EQUIPMENT then
+    if slotType == SLOT_TYPE_EQUIPMENT then
         local bag
         local slot
         local dragAndDropVars = FCOIS.dragAndDropVars
@@ -487,6 +490,21 @@ local function FCOItemSaver_OnReceiveDrag(inventorySlot)
             ClearCursor()
         end
         return false
+    elseif slotType == SLOT_TYPE_MAIL_QUEUED_ATTACHMENT or slotType == SLOT_TYPE_MAIL_ATTACHMENT or slotType == SLOT_TYPE_MY_TRADE then
+        local bagId = GetCursorBagId()
+        local slotIndex = GetCursorSlotIndex()
+        if not bagId or not slotIndex then return false end
+        --CraftBag item was dragged and dropped?
+        if bagId == BAG_VIRTUAL then
+            --Check if the item is protected
+            --  bag, slot, echo, isDragAndDrop, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId
+            local isProtected = FCOIS.callItemSelectionHandler(bagId, slotIndex, true, true, false, false, false, false, false, nil)
+            if isProtected == true then
+                --Remove the picked item from drag&drop cursor
+                ClearCursor()
+                return true
+            end
+        end
     end
 end
 
@@ -1643,6 +1661,15 @@ function FCOIS.CreateHooks()
             FCOIS.updateFilteredItemCountThrottled(nil, 50, "UpdateInventorySlots")
         end
     end)
+
+    --[[
+    local mailSendAttachmentSlots = FCOIS.ZOControlVars.MAIL_SEND.attachmentSlots
+    if mailSendAttachmentSlots ~= nil then
+        for _, attachmentSlot in ipairs(mailSendAttachmentSlots) do
+
+        end
+    end
+    ]]
 
     --Test if CraftBag raises OnInventorySlotLocked as well
     --[[
