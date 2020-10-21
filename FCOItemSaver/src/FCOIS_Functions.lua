@@ -720,9 +720,18 @@ end
 --==============================================================================
 -- is Item functions
 --==============================================================================
-function FCOIS.isItemType(bag, slot, itemType)
-    if not itemType then return false end
-    return (GetItemType(bag, slot) == itemType)
+function FCOIS.isItemType(bag, slot, itemTypes)
+    if not itemTypes then return false end
+    local isItemTypeVar
+    if type(itemTypes) == "table" then
+        for _, itemType in ipairs(itemTypes) do
+            isItemTypeVar = (GetItemType(bag, slot) == itemType)
+            if isItemTypeVar == true then return true end
+        end
+    else
+        return (GetItemType(bag, slot) == itemTypes)
+    end
+    return false
 end
 
 function FCOIS.isItemAGlpyh(bag, slot)

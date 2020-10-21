@@ -19,7 +19,7 @@
 ---------------------------------------------------------------------
 --[ToDo list] --
 --____________________________
--- Current max bugs: 98
+-- Current max bugs: 99
 --____________________________
 
 -- 1) 2019-01-14 - Bugfix - Baertram
@@ -175,6 +175,9 @@ EsoUI/Libraries/Globals/Globals.lua:51: in function 'OnGlobalMouseDown'
 --Seems if I clear all marks and then run the auto marking for set parts it applies to everything not marked with
 --another set part item this way but running it again will add impen to everything even if it's already marked with divines etc.
 
+--#99: 2020-10-21, Caaraamon in ESOUI comments:  Drink items are not protected, but food is
+--I locked my Dubious Camoran Throne (drink) and it was used on double-click. Then tried my Lava Foot Soup-and-Saltrice
+--(food) and double-click was prevented. Essence of Health was also properly protected.
 
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
@@ -184,7 +187,7 @@ EsoUI/Libraries/Globals/Globals.lua:51: in function 'OnGlobalMouseDown'
 --[Fixed]
 --#27 Drag & drop of marked items directly from the CraftBagExtended panel to a mail/player trade slot works even if the FCOIS protection is enabled!
 --#98 Error message upon opening settings menu saying that LAM could not create a dropdown box of characters if you used SavedVariables containing characterId data from another account
-
+--#99 Drink items are now protected against usage in the inventory, if marked
 
 --[Changed]
 
