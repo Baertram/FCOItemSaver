@@ -444,7 +444,7 @@ local function FCOItemSaver_OnReceiveDrag(inventorySlot)
     --FCOinvs = inventorySlot
     local cursorContentType = GetCursorContentType()
     if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[OnReceiveDrag]","cursorContentType: " .. tostring(cursorContentType) .. "/" .. tostring(MOUSE_CONTENT_INVENTORY_ITEM) .. ", invSlotType: " .. tostring(inventorySlot.slotType) .. "/" .. tostring(SLOT_TYPE_EQUIPMENT), true, FCOIS_DEBUG_DEPTH_NORMAL) end
-d("[FCOIS]FCOItemSaver_OnReceiveDrag, cursorContentType: " ..tostring(cursorContentType))
+--d("[FCOIS]FCOItemSaver_OnReceiveDrag, cursorContentType: " ..tostring(cursorContentType))
 
     -- if there is an inventory item on the cursor:
     if cursorContentType ~= MOUSE_CONTENT_INVENTORY_ITEM and cursorContentType ~= MOUSE_CONTENT_EQUIPPED_ITEM then return end
