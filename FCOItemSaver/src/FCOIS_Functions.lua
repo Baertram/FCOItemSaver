@@ -2256,6 +2256,29 @@ function FCOIS.GetInventoryTypeByFilterPanel(p_filterPanelId)
     return inventoryType
 end
 
+--Check if any item moved to a bagId should run some "auto demark" checks
+function FCOIS.checkIfBagShouldAutoRemoveMarkerIcons(bagId, slotIndex)
+--d("[FCOIS]checkIfBagShouldAutoRemoveMarkerIcons")
+    if not bagId or not slotIndex or GetItemType(bagId, slotIndex) == ITEMTYPE_NONE then return end
+    local iconsToAutoRemove = {}
+    --Get the FCOIS marker icons at the item
+    local dynamicIconIds = FCOIS.mappingVars.dynamicToIcon
+    local isMarked, markedDynamicIcons = FCOIS.IsMarked(bagId, slotIndex, dynamicIconIds, nil)
+    if isMarked == true then
+        local settings = FCOIS.settingsVars.settings
+        --For each dynamic check if the setting to auto remove a marker icon is enabled
+        for dynamicIconId, isMarkedDnyIcon in ipairs(markedDynamicIcons) do
+            if isMarkedDnyIcon == true and settings.icon[dynamicIconId].autoRemoveMarkForBag[bagId] == true then
+--d(">checking bag: " ..tostring(bagId) .. "> " ..GetItemLink(bagId, slotIndex) .. ", dynIconShouldBeRemoved: " ..tostring(dynamicIconId))
+                table.insert(iconsToAutoRemove, dynamicIconId)
+            end
+        end
+        --Remove these marker icons now
+        if iconsToAutoRemove and #iconsToAutoRemove > 0 then
+            FCOIS.MarkItem(bagId, slotIndex, iconsToAutoRemove, false, true)
+        end
+    end
+end
 
 --==========================================================================================================================================
 --                                          FCOIS - Keyboard helper functions

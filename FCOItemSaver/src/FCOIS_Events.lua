@@ -280,10 +280,42 @@ local function FCOItemSaver_Close_Trading_House()
     FCOIS.autoReenableAntiSettingsCheck("GUILD_STORE")
 end
 
+--Bank and guild bank callback function if a slot updates
+local function FCOItemSaver_Inv_Single_Slot_Update_Bank(eventId, bagId, slotId, isNewItem, itemSoundCategory, inventoryUpdateReason, stackCountChange, triggeredByCharacterName, triggeredByDisplayName)
+--d("[FCOItemSaver_Inv_Single_Slot_Update_Bank]bagId: " ..tostring(bagId) .. ", slotIndex: " ..tostring(slotId))
+    FCOIS.checkIfBagShouldAutoRemoveMarkerIcons(bagId, slotId)
+end
+
+--Bank and guild bank callback function if a slot updates
+local function FCOItemSaver_GuildBankItemAdded(eventId, slotId, addedByLocalPlayer, itemSoundCategory)
+    --d("[FCOItemSaver_GuildBankItemAdded]bagId: " ..tostring(BAG_GUILDBANK) .. ", slotIndex: " ..tostring(slotId) .. ", addedByLocalPlayer: " ..tostring(addedByLocalPlayer))
+    if not addedByLocalPlayer then return end
+    FCOIS.checkIfBagShouldAutoRemoveMarkerIcons(BAG_GUILDBANK, slotId)
+end
+
+local function checkIfBankInventorySingleSlotUpdateEventNeedsToBeRegistered(bagId)
+    local dynamicIconIds = FCOIS.mappingVars.dynamicToIcon
+    local settings = FCOIS.settingsVars.settings
+    --For each dynamic check if the setting to auto remove a marker icon is enabled
+--d("[FCOIS]Register invSingleSlotUpdate check for bagId: " ..tostring(bagId))
+    for _, dynamicIconId in ipairs(dynamicIconIds) do
+        if settings.icon[dynamicIconId] and settings.icon[dynamicIconId].autoRemoveMarkForBag[bagId] and
+            settings.icon[dynamicIconId].autoRemoveMarkForBag[bagId] == true then
+            return true
+        end
+    end
+    return false
+end
+
 --Event upon opening of a guild bank
 local function FCOItemSaver_Open_Guild_Bank()
     FCOIS.preventerVars.gActiveFilterPanel = true
     if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[EVENT]","Open guild bank", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+
+    if checkIfBankInventorySingleSlotUpdateEventNeedsToBeRegistered(BAG_GUILDBANK) == true then
+        EVENT_MANAGER:RegisterForEvent(gAddonName.."_GUILDBANK", EVENT_GUILD_BANK_ITEM_ADDED, FCOItemSaver_GuildBankItemAdded)
+        EVENT_MANAGER:AddFilterForEvent(gAddonName.."_GUILDBANK", EVENT_GUILD_BANK_ITEM_ADDED, REGISTER_FILTER_UNIT_TAG, "player")
+    end
     --Reset the last clicked guild bank button as it will always be the withdraw tab if you open the guild bank, and if the
     --deposit button was the last one clicked it won't change the filter buttons as it thinks it is still active
     FCOIS.lastVars.gLastGuildBankButton = ctrlVars.GUILD_BANK_MENUBAR_BUTTON_WITHDRAW
@@ -297,6 +329,8 @@ end
 --Event upon closing of a guild bank
 local function FCOItemSaver_Close_Guild_Bank()
     if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[EVENT]","Close guild bank", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+
+    EVENT_MANAGER:UnregisterForEvent(gAddonName.."_GUILDBANK", EVENT_INVENTORY_SINGLE_SLOT_UPDATE)
 
     --Hide the context menu at last active panel
     FCOIS.hideContextMenu(FCOIS.gFilterWhere)
@@ -323,6 +357,13 @@ local function FCOItemSaver_Open_Player_Bank(event, bagId)
     local isHouseBank = IsHouseBankBag(bagId) or false
     FCOIS.preventerVars.gActiveFilterPanel = true
     if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[EVENT]","Open bank - bagId: " .. tostring(bagId) .. ", isHouseBank: " .. tostring(isHouseBank), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+
+    if checkIfBankInventorySingleSlotUpdateEventNeedsToBeRegistered(BAG_BANK) == true then
+        EVENT_MANAGER:RegisterForEvent(gAddonName.."_BANK", EVENT_INVENTORY_SINGLE_SLOT_UPDATE, FCOItemSaver_Inv_Single_Slot_Update_Bank)
+        EVENT_MANAGER:AddFilterForEvent(gAddonName.."_BANK", EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_UNIT_TAG, "player")
+        EVENT_MANAGER:AddFilterForEvent(gAddonName.."_BANK", EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_BAG_ID, BAG_BANK)
+    end
+
     local filterPanelId = LF_BANK_WITHDRAW
     if isHouseBank then
         --Reset the last clicked bank button as it will always be the withdraw tab if you open the bank, and if the
@@ -352,6 +393,8 @@ end
 --Event upon closing of a player bank
 local function FCOItemSaver_Close_Player_Bank()
     if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[EVENT]","Close bank", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+
+    EVENT_MANAGER:UnregisterForEvent(gAddonName.."_BANK", EVENT_INVENTORY_SINGLE_SLOT_UPDATE)
 
     --Hide the context menu at last active panel
     FCOIS.hideContextMenu(FCOIS.gFilterWhere)
@@ -479,12 +522,14 @@ end
 
 local updateSetTrackerMarker = FCOIS.updateSetTrackerMarker
 --Inventory slot gets updated function
-local function FCOItemSaver_Inv_Single_Slot_Update(_, bagId, slotId, isNewItem, itemSoundCategory, updateReason)
+local function FCOItemSaver_Inv_Single_Slot_Update(_, bagId, slotId, isNewItem, itemSoundCategory, updateReason, stackCountChange, triggeredByCharacterName, triggeredByDisplayName)
+    --Only updates for my own account!
+    if triggeredByDisplayName and triggeredByDisplayName ~= GetDisplayName() then return end
     --Do not mark or scan inventory if writcreater addon is crafting items
     if FCOIS.preventerVars.writCreatorCreatedItem then return false end
     local settings = FCOIS.settingsVars.settings
     --Scan new items in the player inventory and add markers OR update equipped/unequipped item markers
---d("[FCOItemSaver_Inv_Single_Slot_Update] bagId: " .. bagId .. ", slot: " .. slotId..", isNewItem: " .. tostring(isNewItem)..", updateReason: " .. tostring(updateReason) .. ", FCOIS.newItemCrafted: " .. tostring(FCOIS.preventerVars.newItemCrafted))
+    --d("[FCOItemSaver_Inv_Single_Slot_Update] bagId: " .. bagId .. ", slot: " .. slotId..", isNewItem: " .. tostring(isNewItem)..", updateReason: " .. tostring(updateReason) .. ", FCOIS.newItemCrafted: " .. tostring(FCOIS.preventerVars.newItemCrafted))
     -- ===== Do some abort checks first =====
     --Mark new crafted item with the lock (or the chosen) icon?
     if FCOIS.preventerVars.newItemCrafted and bagId ~= nil and slotId ~= nil and isNewItem then
@@ -492,7 +537,7 @@ local function FCOItemSaver_Inv_Single_Slot_Update(_, bagId, slotId, isNewItem, 
         local writOrNonWritMarkUponCreation, craftMarkerIcon = FCOIS.isWritOrNonWritItemCraftedAndIsAllowedToBeMarked()
         if writOrNonWritMarkUponCreation and craftMarkerIcon ~= nil then
             --local itemLink = GetItemLink(bagId, slotId)
---d("[FCOIS]FCOItemSaver_Inv_Single_Slot_Update: New crafted item: " .. itemLink .. ", isWritAddonCreatedItem: " ..tostring(isWritAddonCreatedItem) .. ", markerIcon: " .. tostring(craftMarkerIcon))
+            --d("[FCOIS]FCOItemSaver_Inv_Single_Slot_Update: New crafted item: " .. itemLink .. ", isWritAddonCreatedItem: " ..tostring(isWritAddonCreatedItem) .. ", markerIcon: " .. tostring(craftMarkerIcon))
             --Check slightly delayed if the crafted item should be marked
             zo_callLater(function()
                 local markNow = true
@@ -505,11 +550,11 @@ local function FCOItemSaver_Inv_Single_Slot_Update(_, bagId, slotId, isNewItem, 
                     end
                     markNow = isSetPart
                 end
---d("[FCOIS]FCOItemSaver_Inv_Single_Slot_Update: New crafted item: " .. itemLink .. ", markerIcon: " .. tostring(craftMarkerIcon) .. ", isSetPart: " ..tostring(isSetPart) .. ", onlyMarkCraftedSets: " ..tostring(settings.autoMarkCraftedItemsSets) .. ", markNow: " ..tostring(markNow))
+                --d("[FCOIS]FCOItemSaver_Inv_Single_Slot_Update: New crafted item: " .. itemLink .. ", markerIcon: " .. tostring(craftMarkerIcon) .. ", isSetPart: " ..tostring(isSetPart) .. ", onlyMarkCraftedSets: " ..tostring(settings.autoMarkCraftedItemsSets) .. ", markNow: " ..tostring(markNow))
 
                 --Mark item now?
                 if markNow then
---d(">Mark item " ..itemLink .. " with icon: " .. tostring(craftMarkerIcon))
+                    --d(">Mark item " ..itemLink .. " with icon: " .. tostring(craftMarkerIcon))
                     FCOIS.MarkItem(bagId, slotId, craftMarkerIcon, true, true)
                     --Prevent additional checks of the new crafted item
                     return false
@@ -518,10 +563,11 @@ local function FCOItemSaver_Inv_Single_Slot_Update(_, bagId, slotId, isNewItem, 
         end
     end
 
---d(">1")
+    --d(">1")
     --ignore durability/dye update
-    if updateReason ~= INVENTORY_UPDATE_REASON_DEFAULT then return end
---d(">2")
+    --Handled within eventFilters now!
+    --if updateReason ~= INVENTORY_UPDATE_REASON_DEFAULT then return end
+    --d(">2")
     --Abort here if we are arrested by a guard (thief system) as it will scan our inventory for stolen items and destroy them.
     --We don't need to scan it with our functions too at this case
     if IsUnderArrest() then return end
@@ -531,13 +577,13 @@ local function FCOItemSaver_Inv_Single_Slot_Update(_, bagId, slotId, isNewItem, 
     if currentScene == STABLES_SCENE then return end
     --Check if item in slot is still there
     if GetItemType(bagId, slotId) == ITEMTYPE_NONE then return end
---d(">3")
+    --d(">3")
 
     --All bags except the equipment
     if bagId ~= BAG_WORN then
         --Abort if not new item is added to inventory
         if (not isNewItem) then return end
---d(">4")
+        --d(">4")
 
         --Support for Roomba
         if Roomba and Roomba.WorkInProgress and Roomba.WorkInProgress() then return end
@@ -584,7 +630,7 @@ local function FCOItemSaver_Inv_Single_Slot_Update(_, bagId, slotId, isNewItem, 
             --end
         end
 
-    --Equipment bag:  BAG_WORN (character equipment)
+        --Equipment bag:  BAG_WORN (character equipment)
     else
         if slotId ~= nil then
             --Update the equipment slot control's markers
@@ -863,6 +909,7 @@ local function FCOItemSaver_Loaded(eventCode, addOnName)
             --Register for player inventory slot update
             EVENT_MANAGER:RegisterForEvent(gAddonName, EVENT_INVENTORY_SINGLE_SLOT_UPDATE, FCOItemSaver_Inv_Single_Slot_Update)
             EVENT_MANAGER:AddFilterForEvent(gAddonName, EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_UNIT_TAG, "player")
+            EVENT_MANAGER:AddFilterForEvent(gAddonName, EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_INVENTORY_UPDATE_REASON, INVENTORY_UPDATE_REASON_DEFAULT)
             --Register the callback function for an update of the inventory slots
             --SHARED_INVENTORY:RegisterCallback("SingleSlotInventoryUpdate", FCOItemSaver_OnSharedSingleSlotUpdate)
             --Events for destruction & destroy prevention

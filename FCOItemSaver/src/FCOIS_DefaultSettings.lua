@@ -416,6 +416,10 @@ function FCOIS.buildDefaultSettings()
 			FCOIS.settingsVars.defaults.icon[filterIconHelper].temporaryDisableByInventoryFlagIcon = false
 			--Added with FCOIS 1.9.6
 			FCOIS.settingsVars.defaults.icon[filterIconHelper].autoMarkPreventIfMarkedWithThis = false
+			--Added with FCOIS 1.9.9
+			FCOIS.settingsVars.defaults.icon[filterIconHelper].autoRemoveMarkForBag = {}
+			FCOIS.settingsVars.defaults.icon[filterIconHelper].autoRemoveMarkForBag[BAG_BANK] = false
+			FCOIS.settingsVars.defaults.icon[filterIconHelper].autoRemoveMarkForBag[BAG_GUILDBANK] = false
 		end
 
 		--Defaults for the enabling/disabling of the icons

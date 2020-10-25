@@ -192,6 +192,7 @@ EsoUI/Libraries/Globals/Globals.lua:51: in function 'OnGlobalMouseDown'
 --[Changed]
 
 --[Added]
+-- New settings at dynamic icons: Auto-remove marker icon upon (guild)bank deposit
 
 --[Added on request]
 

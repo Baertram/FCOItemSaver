@@ -1376,6 +1376,36 @@ function FCOIS.BuildAddonMenu()
                 table.insert(dynIconsSubMenusControls, createdControl)
             end
             ------------------------------------------------------------------------------------------------------------------------
+            --Add the "Auto-remove if banked" checkbox
+            name = locVars["options_auto_remove_if_banked"]
+            tooltip = locVars["options_auto_remove_if_banked_TT"]
+            data = { type = "checkbox", width = "half"}
+            disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
+            getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].autoRemoveMarkForBag[BAG_BANK] end
+            setFunc = function(value)
+                FCOISsettings.icon[fcoisDynIconNr].autoRemoveMarkForBag[BAG_BANK] = value
+            end
+            defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].autoRemoveMarkForBag[BAG_BANK]
+            createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
+            if createdControl ~= nil then
+                table.insert(dynIconsSubMenusControls, createdControl)
+            end
+            ------------------------------------------------------------------------------------------------------------------------
+            --Add the "Auto-remove if guild banked" checkbox
+            name = locVars["options_auto_remove_if_guild_banked"]
+            tooltip = locVars["options_auto_remove_if_guild_banked_TT"]
+            data = { type = "checkbox", width = "half"}
+            disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
+            getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].autoRemoveMarkForBag[BAG_GUILDBANK] end
+            setFunc = function(value)
+                FCOISsettings.icon[fcoisDynIconNr].autoRemoveMarkForBag[BAG_GUILDBANK] = value
+            end
+            defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].autoRemoveMarkForBag[BAG_GUILDBANK]
+            createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
+            if createdControl ~= nil then
+                table.insert(dynIconsSubMenusControls, createdControl)
+            end
+            ------------------------------------------------------------------------------------------------------------------------
             --Add the anti-destroy header
             name = locVars["options_header_anti_destroy"]
             data = { type = "header"}
