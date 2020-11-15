@@ -3,17 +3,16 @@
 ## Author: Baertram
 ## Version: 1.9.9
 ## AddOnVersion: 199
-## APIVersion: 100032 100033
+## APIVersion: 100033 100034
 ## Description: Mark your items with different icons and filter them in inventories, trading, banks, guild store, mail, crafting, researching and stores. Protect your marked items against sell/deconstruct/extract etc.!
 ## SavedVariables: FCOItemSaver_Settings
 ## !!! Attention !!! -> 1 line here can only contain ~220 characters, so the depency lines need to be split up, or they won't be recognized properly!
-## DependsOn: LibAddonMenu-2.0>=31 LibCustomMenu>=692 LibDialog>=123 LibFeedback LibFilters-3.0>=315 LibLoadedAddons>=14 LibMainMenu-2.0>=432
-## OptionalDependsOn: LibDebugLogger LibLazyCrafting>=2998
+## DependsOn: LibAddonMenu-2.0>=31 LibCustomMenu>=694 LibDialog>=123 LibFeedback LibFilters-3.0>=317 LibLoadedAddons>=14 LibMainMenu-2.0>=435
+## OptionalDependsOn: LibDebugLogger>=196 LibLazyCrafting>=3000
 ## OptionalDependsOn: AdvancedDisableControllerUI AdvancedFilters AF_FCODuplicateItemsFilters
 ## OptionalDependsOn: CraftBagExtended
 ## OptionalDependsOn: DolgubonsLazyWritCreator
 ## OptionalDependsOn: SetTracker SousChef
-## OptionalDependsOn: LibSets>=000202 LibShifterbox>=13
 
 ## These addons were in the OptionalDependsOn before but raised circular dependencies. They are kept as reference at the tag BetterWith.
 ## BetterWith: ChatMerchant CraftedPotions DetailedResearchScrolls GridList InventoryGridView PotionMaker QualitySort ResearchAssistant VotansSettingsMenu

@@ -175,9 +175,6 @@ EsoUI/Libraries/Globals/Globals.lua:51: in function 'OnGlobalMouseDown'
 --Seems if I clear all marks and then run the auto marking for set parts it applies to everything not marked with
 --another set part item this way but running it again will add impen to everything even if it's already marked with divines etc.
 
---#99: 2020-10-21, Caaraamon in ESOUI comments:  Drink items are not protected, but food is
---I locked my Dubious Camoran Throne (drink) and it was used on double-click. Then tried my Lava Foot Soup-and-Saltrice
---(food) and double-click was prevented. Essence of Health was also properly protected.
 
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
