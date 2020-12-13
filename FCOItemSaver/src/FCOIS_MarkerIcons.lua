@@ -307,6 +307,31 @@ function FCOIS.CreateTextures(whichTextures)
                 end
             end
         end
+
+        --[[
+        for _,v in pairs(PLAYER_INVENTORY.inventories) do
+            local listView = v.listView
+            --Do not hook quest items
+            if (listView and listView.dataTypes and listView.dataTypes[1] and (listView:GetName() ~= "ZO_PlayerInventoryQuest")) then
+                SecurePostHook(listView.dataTypes[1].setupCallback, function(rowControl, slot)
+                    --Do not execute if horse is changed
+                    --The current game's SCENE and name (used for determining bank/guild bank deposit)
+                    local currentScene, _ = FCOIS.getCurrentSceneInfo()
+                    if currentScene ~= STABLES_SCENE then
+                        -- for all filters: Create/Update the icons
+                        for i=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
+                            --FCOIS.CreateMarkerControl(parent, controlId, pWidth, pHeight, pTexture, pIsEquipmentSlot, pCreateControlIfNotThere, pUpdateAllEquipmentTooltips, pArmorTypeIcon, pHideControl)
+                            FCOIS.CreateMarkerControl(rowControl, i, iconSettings[i].size, iconSettings[i].size, markerTextureVars[iconSettings[i].texture], false, doCreateMarkerControl)
+                        end
+                        --Add additional FCO point to the dataEntry.data slot
+                        --FCOItemSaver_AddInfoToData(rowControl)
+                        --Create and show the "already bound" set parts texture at the top-right edge of the inventory item
+                        updateAlreadyBoundTexture(rowControl)
+                    end
+                end)
+            end
+        end
+        ]]
     end
      --Repair list
     if (whichTextures == 2 or doCreateAllTextures) then

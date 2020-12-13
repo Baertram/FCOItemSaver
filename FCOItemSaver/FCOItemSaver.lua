@@ -19,7 +19,7 @@
 ---------------------------------------------------------------------
 --[ToDo list] --
 --____________________________
--- Current max bugs: 99
+-- Current max bugs: 100
 --____________________________
 
 -- 1) 2019-01-14 - Bugfix - Baertram
@@ -175,16 +175,16 @@ EsoUI/Libraries/Globals/Globals.lua:51: in function 'OnGlobalMouseDown'
 --Seems if I clear all marks and then run the auto marking for set parts it applies to everything not marked with
 --another set part item this way but running it again will add impen to everything even if it's already marked with divines etc.
 
+--#100: 2020-12-13, Deadsoon  CraftStore automatic recipe marking will mark known recipes with the unknown marker icon
+
+
 
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
---Since last update 1.9.8 - New version: 1.9.9
+--Since last update 1.9.9 - New version: 2.0.0
 ---------------------------------------------------------------------
 --[Fixed]
---#27 Drag & drop of marked items directly from the CraftBagExtended panel to a mail/player trade slot works even if the FCOIS protection is enabled!
---#98 Error message upon opening settings menu saying that LAM could not create a dropdown box of characters if you used SavedVariables containing characterId data from another account
---#99 Drink items are now protected against usage in the inventory, if marked
 
 --[Changed]
 

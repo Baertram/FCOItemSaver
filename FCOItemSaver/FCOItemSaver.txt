@@ -1,8 +1,8 @@
 ##
 ## Title: |c00FF00FCO |cFFFF00ItemSaver|r
 ## Author: Baertram
-## Version: 1.9.9
-## AddOnVersion: 199
+## Version: 2.0.0
+## AddOnVersion: 200
 ## APIVersion: 100033 100034
 ## Description: Mark your items with different icons and filter them in inventories, trading, banks, guild store, mail, crafting, researching and stores. Protect your marked items against sell/deconstruct/extract etc.!
 ## SavedVariables: FCOItemSaver_Settings

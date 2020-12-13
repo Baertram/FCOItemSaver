@@ -1083,16 +1083,19 @@ end
 function FCOIS.getRecipeAddonUsed()
     local settings = FCOIS.settingsVars.settings
     local recipeAddonUsed = settings.recipeAddonUsed or 0
+    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage("getRecipeAddonUsed",tostring(recipeAddonUsed), true, FCOIS_DEBUG_DEPTH_SPAM, false) end
     return recipeAddonUsed
 end
 
 --Function to check which recipe addon handles the checks (enabled within the FCOIS settings)
 function FCOIS.checkIfRecipeAddonUsed()
     local retVar = false
-    if (FCOIS.otherAddons.sousChefActive and SousChef.settings.showAltKnowledge)
-    or (FCOIS.otherAddons.craftStoreFixedAndImprovedActive and CraftStoreFixedAndImprovedLongClassName ~= nil and CraftStoreFixedAndImprovedLongClassName.IsLearnable ~= nil) then
+    local otherAddons = FCOIS.otherAddons
+    if (otherAddons.sousChefActive and (SousChef and SousChef.settings and SousChef.settings.showAltKnowledge))
+    or (otherAddons.craftStoreFixedAndImprovedActive and CraftStoreFixedAndImprovedLongClassName ~= nil and CraftStoreFixedAndImprovedLongClassName.IsLearnable ~= nil) then
         retVar = true
     end
+    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage("checkIfRecipeAddonUsed", tostring(retVar), true, FCOIS_DEBUG_DEPTH_SPAM, false) end
     return retVar
 end
 
@@ -1107,6 +1110,7 @@ function FCOIS.checkIfChosenRecipeAddonActive(recipeAddonId)
     elseif recipeAddonId == FCOIS_RECIPE_ADDON_CSFAI then
         retVar = (FCOIS.otherAddons.craftStoreFixedAndImprovedActive and CraftStoreFixedAndImprovedLongClassName ~= nil and CraftStoreFixedAndImprovedLongClassName.IsLearnable ~= nil) or false
     end
+    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage("checkIfChosenRecipeAddonActive","recipeAddonId: "..tostring(recipeAddonId) .. ", retVar: " ..tostring(retVar), true, FCOIS_DEBUG_DEPTH_SPAM, false) end
     return retVar
 end
 

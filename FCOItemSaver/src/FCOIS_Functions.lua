@@ -840,9 +840,13 @@ function FCOIS.isRecipeKnown(bagId, slotIndex, expectedResult)
     local settings = settingsBase.settings
     local useAccountWideSettings = (settingsBase.defaultSettings.saveMode == 2) or false
     local autoMarkRecipesOnlyThisChar = settings.autoMarkRecipesOnlyThisChar
-    local recipeIconNr = settings.autoMarkRecipesIconNr
-    local currentCharName = GetUnitName("player")
-    local known = false
+    local recipeUnknownIconNr = settings.autoMarkRecipesIconNr
+    local recipeKnownIconNr = settings.autoMarkKnownRecipesIconNr
+    local currentCharName = ZO_CachedStrFormat(SI_UNIT_NAME, GetUnitName("player"))
+    local known = nil
+
+    if settings.debug then FCOIS.debugMessage("isRecipeKnown", GetItemLink(bagId, slotIndex) .. ", expectedResult: " ..tostring(expectedResult) .. ", recipeAddonUsed: " ..tostring(recipeAddonUsed) .. ", autoMarkRecipesOnlyThisChar: " ..tostring(autoMarkRecipesOnlyThisChar), true, FCOIS_DEBUG_DEPTH_SPAM, false) end
+--d("[FCOIS]isRecipeKnown ".. GetItemLink(bagId, slotIndex) .. ", expectedResult: " ..tostring(expectedResult) .. ", recipeAddonUsed: " ..tostring(recipeAddonUsed) .. ", autoMarkRecipesOnlyThisChar: " ..tostring(autoMarkRecipesOnlyThisChar))
 
     --SousChef
     if recipeAddonUsed == FCOIS_RECIPE_ADDON_SOUSCHEF then
@@ -869,69 +873,90 @@ function FCOIS.isRecipeKnown(bagId, slotIndex, expectedResult)
             end
             return known
         end
-------------------------------------------------------------------------------------------------------------------------
-    --CraftStoreFixedAndImproved
+        ------------------------------------------------------------------------------------------------------------------------
+        --CraftStoreFixedAndImproved
     elseif recipeAddonUsed == FCOIS_RECIPE_ADDON_CSFAI then
+--d("CraftStoreFixedAndImproved is used for recipes")
         --Get recipe info from Sous Chef addon
         if CraftStoreFixedAndImprovedLongClassName ~= nil and CraftStoreFixedAndImprovedLongClassName.IsLearnable ~= nil then
             --Data is returned as a table in the format of [index] = {[1] = name, [2] = can be learned}
             local knownByUsersTable = CraftStoreFixedAndImprovedLongClassName.IsLearnable(itemLink, autoMarkRecipesOnlyThisChar)
+--FCOIS._knownByUsersTable = knownByUsersTable
             local knownLoop
+            local isCraftStoreMainCrafterCharSet = false
             if knownByUsersTable ~= nil then
                 local currentCharacterName = ""
                 if autoMarkRecipesOnlyThisChar then
                     --Only check if recipe is known for the current character?
                     currentCharacterName = currentCharName
                 else
-                    --Check if recipe is known for your main provisioning character
-                    local recipeMainChar = CraftStoreFixedAndImprovedLongClassName.Account.mainchar or ""
+                    --Check if recipe is known for your main character. As CraftStore can only select 1 main char at the
+                    --character selection list (right click a char to set it as main) we will check this char.
+                    -->If no main char was selected all other chars will be checked!
+                    local recipeMainChar = CraftStoreFixedAndImprovedLongClassName.Account.mainchar
+                    if recipeMainChar == false then
+                        recipeMainChar = ""
+                    else
+                        isCraftStoreMainCrafterCharSet = true
+                    end
+--FCOIS._recipeMainChar = recipeMainChar
                     currentCharacterName = recipeMainChar
                 end
-                if currentCharacterName and currentCharacterName ~= "" then
+--FCOIS._currentCharacterName = currentCharacterName
+                if currentCharacterName ~= nil then
                     --Read table with characternames
-                    --table is in the format of [index] = {[1] = name, [2] = can be learned}
+                    --table is in the format of [index] = {[1] = String name, [2] = boolean canBeLearned}
                     for _, knownDataOfChar in ipairs(knownByUsersTable) do
-                        knownLoop = false
-                        --If autoMarkRecipesOnlyThisChar == true then the table only got 1 line with the current character!
-                        if autoMarkRecipesOnlyThisChar then
-                            knownLoop = not knownDataOfChar[2]
-                            return knownLoop
-                        else
-                            --Check if another char is able to learn the recipe
-                            if knownDataOfChar[1] ~= currentCharName then
-                                --Mark it for him but only possible if account wide settings are enabled
-                                --and the expected result of this function call equals the "known state" of the recipe
-                                if useAccountWideSettings then
-                                    knownLoop = not knownDataOfChar[2]
-                                    --Should an unkown recipe be marked?
-                                    if expectedResult == false then
-                                        if not knownLoop then
-                                            --Mark the item now as it can be learned on another char!
-                                            FCOIS.MarkItem(bagId, slotIndex, recipeIconNr)
-                                        end
-                                    --Should a known recipe be marked?
-                                    else
-                                        if knownLoop then
-                                            --Mark the item now as it can be learned on another char!
-                                            FCOIS.MarkItem(bagId, slotIndex, recipeIconNr)
-                                        end
-                                    end
-                                end
-                            --Row in the table is for the currently logged in char
+                        local needsAccountWideSettings = false
+                        local charToCheck = knownDataOfChar[1]
+                        --Check if another char is able to learn the recipe
+                        if charToCheck ~= currentCharName then
+                            needsAccountWideSettings = true
+                        end
+                        local isCraftStoreMainCrafterChar = (isCraftStoreMainCrafterCharSet and charToCheck == currentCharacterName) or false
+                        --Is the recipe know or unknown to the char?
+                        local isLearnable = knownDataOfChar[2]
+                        knownLoop = not isLearnable
+
+--d(">>checking char:  " ..tostring(charToCheck) .. ", isCraftStoreMainCrafterChar: " ..tostring(isCraftStoreMainCrafterChar) .. ", knownLoop: " ..tostring(knownLoop))
+                        --Is the expected result already the knownState of the recipe at this char? Then go on with the
+                        --next char
+                        if expectedResult ~= isLearnable then
+                            --Is the char the crafter main char? Or wasn't any main crafter set
+                            --If autoMarkRecipesOnlyThisChar == true then the table only got 1 line with the current character!
+                            if autoMarkRecipesOnlyThisChar then
+    --d("<<onlyThisChar -> knownLoop: " ..tostring(knownLoop))
+                                --Return the first line's known entry
+                                return knownLoop
                             else
-                                knownLoop = not knownDataOfChar[2]
-                                known = knownLoop
-                                --Should an unkown recipe be marked?
-                                if expectedResult == false then
-                                    if not knownLoop then
-                                        --Mark the item now as it can be learned on this char!
-                                        FCOIS.MarkItem(bagId, slotIndex, recipeIconNr)
-                                    end
-                                --Should a known recipe be marked?
-                                else
-                                    if knownLoop then
-                                        --Mark the item now as it can be learned on this char!
-                                        FCOIS.MarkItem(bagId, slotIndex, recipeIconNr)
+                                --Is the main Crafter set? Then only check his/her recipe's known/unknown state
+                                local goOn = true
+                                if isCraftStoreMainCrafterCharSet == true then
+--d(">>main crafter char is set")
+                                    goOn = isCraftStoreMainCrafterChar
+                                end
+--d(">>>goOn: " ..tostring(goOn))
+                                if goOn == true then
+                                    --Mark it for the other char, but only possible if account wide settings are enabled!
+                                    --And if the expected result of this function call equals the "known state" of the recipe
+                                    if needsAccountWideSettings == false or (needsAccountWideSettings == true and useAccountWideSettings == true) then
+                                        --Should an unkown recipe be marked and is the recipe not known for the current char in the loop?
+                                        if expectedResult == false and knownLoop == false then
+        --d(">>>>>marking item as UNknown recipe!")
+                                            --Mark the item now as it can be learned on another char!
+                                            --FCOIS.MarkItem(bagId, slotIndex, recipeUnknownIconNr)
+                                            --Abort the loop over the chars now as acount wide settings are enabled and the
+                                            --recipe was marked, or it was the currently logged in char
+                                            return false
+                                            --Should a known recipe be marked?
+                                        elseif expectedResult == true and knownLoop == true then
+        --d(">>>>>marking item as known recipe!")
+                                            --Mark the item now as it can be learned on another char!
+                                            --FCOIS.MarkItem(bagId, slotIndex, recipeKnownIconNr)
+                                            --Abort the loop over the chars now as acount wide settings are enabled and the
+                                            --recipe was marked, or it was the currently logged in char
+                                            return true
+                                        end
                                     end
                                 end
                             end
@@ -939,7 +964,6 @@ function FCOIS.isRecipeKnown(bagId, slotIndex, expectedResult)
                     end
                 end
             end
-            return known
         end
     end
     return nil

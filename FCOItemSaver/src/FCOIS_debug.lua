@@ -56,14 +56,15 @@ function FCOIS.debugMessage(msg_text_header, msg_text, deep, depthNeeded, isInfo
         subLogger:SetEnabled(false) -- turn the new logger off
         ]]
         local loggers = FCOIS.loggers
-        local loggerBase = loggers[FCOIS_DEBUG_DEPTH_NORMAL]
+        local loggerBase = loggers and loggers[FCOIS_DEBUG_DEPTH_NORMAL]
         if loggerBase then
             if deep == true then
                 if loggers[depthNeeded] ~= nil then
                     --A debug message header was given: Create a sublogger for it
                     if msg_text_header and msg_text_header ~= "" then
                         if loggers[depthNeeded][msg_text_header] == nil then
-                            loggers[depthNeeded][msg_text_header]:Create(msg_text_header)
+                            loggers[depthNeeded][msg_text_header] = {}
+                            loggers[depthNeeded][msg_text_header] = loggerBase:Create(msg_text_header)
                         end
                         debugOrInfo(loggers[depthNeeded][msg_text_header], msg_text)
                     else
