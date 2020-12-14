@@ -843,6 +843,7 @@ function FCOIS.isRecipeKnown(bagId, slotIndex, expectedResult)
     local recipeUnknownIconNr = settings.autoMarkRecipesIconNr
     local recipeKnownIconNr = settings.autoMarkKnownRecipesIconNr
     local currentCharName = ZO_CachedStrFormat(SI_UNIT_NAME, GetUnitName("player"))
+    local currentCharId = tostring(GetCurrentCharacterId())
     local known = nil
 
     if settings.debug then FCOIS.debugMessage("isRecipeKnown", GetItemLink(bagId, slotIndex) .. ", expectedResult: " ..tostring(expectedResult) .. ", recipeAddonUsed: " ..tostring(recipeAddonUsed) .. ", autoMarkRecipesOnlyThisChar: " ..tostring(autoMarkRecipesOnlyThisChar), true, FCOIS_DEBUG_DEPTH_SPAM, false) end
@@ -850,26 +851,31 @@ function FCOIS.isRecipeKnown(bagId, slotIndex, expectedResult)
 
     --SousChef
     if recipeAddonUsed == FCOIS_RECIPE_ADDON_SOUSCHEF then
+--d(">using SousChef")
         --Get recipe info from Sous Chef addon
         if SousChef and SousChef.settings and SousChef.settings.showAltKnowledge and SousChef.settings.Cookbook and SousChef.Utility then
             local resultLink = GetItemLinkRecipeResultItemLink(itemLink)
             local knownByUsersTable = SousChef.settings.Cookbook[SousChef.Utility.CleanString(GetItemLinkName(resultLink))]
+--FCOIS._knownByUsersTable = knownByUsersTable
             if knownByUsersTable ~= nil then
                 local currentCharacterName = ""
-                if autoMarkRecipesOnlyThisChar then
+                if autoMarkRecipesOnlyThisChar == true then
                     --Only check if recipe is known for the current character?
-                    currentCharacterName = currentCharName
+                    currentCharacterName = currentCharId
                 else
                     --Check if recipe is known for your main provisioning character
                     local recipeMainChar = SousChef.settings.mainChar
                     if recipeMainChar == "(current)" then
-                        recipeMainChar = currentCharName
+                        recipeMainChar = currentCharId
                     end
                     currentCharacterName = recipeMainChar
                 end
                 if currentCharacterName and currentCharacterName ~= "(current)" and currentCharacterName ~= "" then
                     known = knownByUsersTable[currentCharacterName] or false
                 end
+            else
+                --Not known yet by any char!
+                return false
             end
             return known
         end
