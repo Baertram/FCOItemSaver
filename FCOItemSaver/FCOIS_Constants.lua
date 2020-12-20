@@ -7,8 +7,8 @@ local FCOIS = FCOIS
 FCOIS.addonVars = {}
 local addonVars = FCOIS.addonVars
 --Addon variables
-addonVars.addonVersionOptions 		= '1.9.9' -- version shown in the settings panel
-addonVars.addonVersionOptionsNumber	= 1.99
+addonVars.addonVersionOptions 		= '2.0.1' -- version shown in the settings panel
+addonVars.addonVersionOptionsNumber	= 2.01
 addonVars.gAddonName				= "FCOItemSaver"
 addonVars.gAddonNameShort           = "FCOIS"
 addonVars.addonNameMenu				= "FCO ItemSaver"
@@ -313,6 +313,7 @@ checkVars.inventoryRowPatterns = {
 --See file src/FCOIS_Events.lua, call to function FCOIS.checkIfOtherAddonActive() -> See file
 -- src/FCOIS_OtherAddons.lua, function FCOIS.checkIfOtherAddonActive()
 }
+
 
 --Array for the mapping between variables and values
 FCOIS.mappingVars = {}
@@ -697,8 +698,8 @@ FCOIS.iconVars.gIconWidth							= 32
 FCOIS.iconVars.gIconHeight             				= 32
 FCOIS.iconVars.minIconOffsetLeft                    = -30
 FCOIS.iconVars.maxIconOffsetLeft                    = 525
-FCOIS.iconVars.minIconOffsetTop                     = -50
-FCOIS.iconVars.maxIconOffsetTop                     = 50
+FCOIS.iconVars.minIconOffsetTop                     = -30
+FCOIS.iconVars.maxIconOffsetTop                     = 30
 
 --Width and height for the equipment icons
 FCOIS.equipmentVars.gEquipmentIconWidth 			= 20
@@ -1049,6 +1050,36 @@ FCOIS.ZOControlVars.ZOMenu                      = ZO_Menu
 FCOIS.ZOControlVars.ZODialog1                   = ZO_Dialog1
 FCOIS.ZOControlVars.mainMenuCategoryBar         = ZO_MainMenuCategoryBar
 local ctrlVars = FCOIS.ZOControlVars
+
+
+--Array for the inventories data
+FCOIS.inventoryVars = {}
+local inventoryVars = FCOIS.inventoryVars
+--The inventory controls which get hooked for the marker texture controls.
+    ---hookListViewSetupCallback: Will be done in file /src/FCOIS_MarkerIcons.lua -> function FCOIS.CreateTextures(whichTextures)
+    ---called by file /src/FCOIS_Events.lua -> function FCOItemSaver_Loaded -> FCOIS.CreateTextures(-1)
+    ---hookScrollSetupCallback: Will be done in file /src/FCOIS_Hooks.lua -> function OnScrollListRowSetupCallback
+    ---called by file /src/FCOIS_Hooks.lua -> different SecurePosthooks to crafting inventories e.g.
+---Will be used to prevent duplicate marker texture icon apply calls.
+inventoryVars.markerControlInventories = {
+    ["hookListViewSetupCallback"] = {
+        --all PLAYER_INVENTORY.inventories
+        --+
+        [ctrlVars.REPAIR_LIST]          = true,
+        [ctrlVars.CHARACTER]            = true,
+        [ctrlVars.QUICKSLOT_LIST]       = true,
+        [ctrlVars.RETRAIT_LIST]         = true,
+    },
+-------------------------------------------------
+    ["hookScrollSetupCallback"] = {
+        [ctrlVars.REFINEMENT]           = true,
+        [ctrlVars.DECONSTRUCTION]       = true,
+        [ctrlVars.IMPROVEMENT]          = true,
+        [ctrlVars.ENCHANTING_STATION]   = true,
+        [ctrlVars.ALCHEMY_STATION]      = true,
+    },
+}
+
 
 --The mapping array for libFilter inventory type to inventory backpack type
 --Used in function FCOIS.GetInventoryTypeByFilterPanel()

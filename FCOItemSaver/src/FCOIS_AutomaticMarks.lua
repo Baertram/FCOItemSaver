@@ -166,7 +166,7 @@ local function automaticMarkingQualityCheckFunc(p_bagId, p_slotIndex)
     if not itemQuality then return false, nil end
     local settings = FCOIS.settingsVars.settings
     local autoMarkQuality = settings.autoMarkQuality
-    if settings.autoMarkHigherQuality and autoMarkQuality < ITEM_QUALITY_LEGENDARY then
+    if settings.autoMarkHigherQuality and autoMarkQuality < ITEM_DISPLAY_QUALITY_LEGENDARY then
         qualityCheck = itemQuality and itemQuality ~= false and itemQuality >= autoMarkQuality
     else
         qualityCheck = itemQuality and itemQuality ~= false and itemQuality == autoMarkQuality

@@ -679,18 +679,18 @@ function FCOIS.BuildAddonMenu()
     reBuildCharacterOptions()
 
     --Build the list of colored qualities for the settings
-    local colorMagic = GetItemQualityColor(ITEM_QUALITY_MAGIC)
-    local colorArcane = GetItemQualityColor(ITEM_QUALITY_ARCANE)
-    local colorArtifact = GetItemQualityColor(ITEM_QUALITY_ARTIFACT)
-    local colorLegendary = GetItemQualityColor(ITEM_QUALITY_LEGENDARY)
+    local colorMagic = GetItemQualityColor(ITEM_DISPLAY_QUALITY_MAGIC)
+    local colorArcane = GetItemQualityColor(ITEM_DISPLAY_QUALITY_ARCANE)
+    local colorArtifact = GetItemQualityColor(ITEM_DISPLAY_QUALITY_ARTIFACT)
+    local colorLegendary = GetItemQualityColor(ITEM_DISPLAY_QUALITY_LEGENDARY)
     local qualityList = {
-        --[ITEM_QUALITY_TRASH] = locVars["options_quality_trash"],
-        --[ITEM_QUALITY_NORMAL] = locVars["options_quality_normal"],
+        --[ITEM_DISPLAY_QUALITY_TRASH] = locVars["options_quality_trash"],
+        --[ITEM_DISPLAY_QUALITY_NORMAL] = locVars["options_quality_normal"],
         [1] = locVars["options_quality_OFF"],
-        [ITEM_QUALITY_MAGIC] 	 = colorMagic:Colorize(locVars["options_quality_magic"]),
-        [ITEM_QUALITY_ARCANE] 	 = colorArcane:Colorize(locVars["options_quality_arcane"]),
-        [ITEM_QUALITY_ARTIFACT]  = colorArtifact:Colorize(locVars["options_quality_artifact"]),
-        [ITEM_QUALITY_LEGENDARY] = colorLegendary:Colorize(locVars["options_quality_legendary"]),
+        [ITEM_DISPLAY_QUALITY_MAGIC] 	 = colorMagic:Colorize(locVars["options_quality_magic"]),
+        [ITEM_DISPLAY_QUALITY_ARCANE] 	 = colorArcane:Colorize(locVars["options_quality_arcane"]),
+        [ITEM_DISPLAY_QUALITY_ARTIFACT]  = colorArtifact:Colorize(locVars["options_quality_artifact"]),
+        [ITEM_DISPLAY_QUALITY_LEGENDARY] = colorLegendary:Colorize(locVars["options_quality_legendary"]),
     }
     local levelList = {
         [1] = locVars["options_quality_OFF"],
@@ -1253,6 +1253,39 @@ function FCOIS.BuildAddonMenu()
             if createdControl ~= nil then
                 table.insert(dynIconsSubMenusControls, createdControl)
             end
+
+            ------------------------------------------------------------------------------------------------------------------------
+            --Add the offsetX slider
+            name = locVars["options_icon" .. tostring(fcoisDynIconNr) .. "_offsetX"]
+            tooltip = locVars["options_icon" .. tostring(fcoisDynIconNr) .. "_offsetX_TT"]
+            data = { type = "slider", width = "half", min=minIconOffsetLeft, max=maxIconOffsetLeft, decimals=0, autoselect=true}
+            disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
+            getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].offsets[LF_INVENTORY].left end
+            setFunc = function(offsetX)
+                FCOISsettings.icon[fcoisDynIconNr].offsets[LF_INVENTORY].left = offsetX
+            end
+            defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].offsets[LF_INVENTORY].left
+            createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
+            if createdControl ~= nil then
+                table.insert(dynIconsSubMenusControls, createdControl)
+            end
+
+            ------------------------------------------------------------------------------------------------------------------------
+            --Add the offsetY slider
+            name = locVars["options_icon" .. tostring(fcoisDynIconNr) .. "_offsetY"]
+            tooltip = locVars["options_icon" .. tostring(fcoisDynIconNr) .. "_offsetY_TT"]
+            data = { type = "slider", width = "half", min=minIconOffsetTop, max=maxIconOffsetTop, decimals=0, autoselect=true}
+            disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
+            getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].offsets[LF_INVENTORY].top end
+            setFunc = function(offsetY)
+                FCOISsettings.icon[fcoisDynIconNr].offsets[LF_INVENTORY].top = offsetY
+            end
+            defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].offsets[LF_INVENTORY].top
+            createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
+            if createdControl ~= nil then
+                table.insert(dynIconsSubMenusControls, createdControl)
+            end
+
             ------------------------------------------------------------------------------------------------------------------------
             --Add the tooltip checkbox
             name = locVars["options_icon" .. tostring(fcoisDynIconNr) .. "_TT"]
@@ -2434,8 +2467,8 @@ function FCOIS.BuildAddonMenu()
                                             type = "slider",
                                             name = locVars["options_icon_offset_top"],
                                             tooltip = locVars["options_icon_offset_top_TT"],
-                                            min = minIconOffsetLeft,
-                                            max = maxIconOffsetLeft,
+                                            min = minIconOffsetTop,
+                                            max = maxIconOffsetTop,
                                             decimals = 0,
                                             autoSelect = true,
                                             getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_LOCK].offsets[LF_INVENTORY]["top"] end,
@@ -2547,8 +2580,8 @@ function FCOIS.BuildAddonMenu()
                                             type = "slider",
                                             name = locVars["options_icon_offset_top"],
                                             tooltip = locVars["options_icon_offset_top_TT"],
-                                            min = minIconOffsetLeft,
-                                            max = maxIconOffsetLeft,
+                                            min = minIconOffsetTop,
+                                            max = maxIconOffsetTop,
                                             decimals = 0,
                                             autoSelect = true,
                                             getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_RESEARCH].offsets[LF_INVENTORY]["top"] end,
@@ -2660,8 +2693,8 @@ function FCOIS.BuildAddonMenu()
                                             type = "slider",
                                             name = locVars["options_icon_offset_top"],
                                             tooltip = locVars["options_icon_offset_top_TT"],
-                                            min = minIconOffsetLeft,
-                                            max = maxIconOffsetLeft,
+                                            min = minIconOffsetTop,
+                                            max = maxIconOffsetTop,
                                             decimals = 0,
                                             autoSelect = true,
                                             getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_SELL].offsets[LF_INVENTORY]["top"] end,
@@ -2773,8 +2806,8 @@ function FCOIS.BuildAddonMenu()
                                             type = "slider",
                                             name = locVars["options_icon_offset_top"],
                                             tooltip = locVars["options_icon_offset_top_TT"],
-                                            min = minIconOffsetLeft,
-                                            max = maxIconOffsetLeft,
+                                            min = minIconOffsetTop,
+                                            max = maxIconOffsetTop,
                                             decimals = 0,
                                             autoSelect = true,
                                             getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_DECONSTRUCTION].offsets[LF_INVENTORY]["top"] end,
@@ -2886,8 +2919,8 @@ function FCOIS.BuildAddonMenu()
                                             type = "slider",
                                             name = locVars["options_icon_offset_top"],
                                             tooltip = locVars["options_icon_offset_top_TT"],
-                                            min = minIconOffsetLeft,
-                                            max = maxIconOffsetLeft,
+                                            min = minIconOffsetTop,
+                                            max = maxIconOffsetTop,
                                             decimals = 0,
                                             autoSelect = true,
                                             getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_IMPROVEMENT].offsets[LF_INVENTORY]["top"] end,
@@ -3010,8 +3043,8 @@ function FCOIS.BuildAddonMenu()
                                             type = "slider",
                                             name = locVars["options_icon_offset_top"],
                                             tooltip = locVars["options_icon_offset_top_TT"],
-                                            min = minIconOffsetLeft,
-                                            max = maxIconOffsetLeft,
+                                            min = minIconOffsetTop,
+                                            max = maxIconOffsetTop,
                                             decimals = 0,
                                             autoSelect = true,
                                             getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_SELL_AT_GUILDSTORE].offsets[LF_INVENTORY]["top"] end,
@@ -3123,8 +3156,8 @@ function FCOIS.BuildAddonMenu()
                                             type = "slider",
                                             name = locVars["options_icon_offset_top"],
                                             tooltip = locVars["options_icon_offset_top_TT"],
-                                            min = minIconOffsetLeft,
-                                            max = maxIconOffsetLeft,
+                                            min = minIconOffsetTop,
+                                            max = maxIconOffsetTop,
                                             decimals = 0,
                                             autoSelect = true,
                                             getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_INTRICATE].offsets[LF_INVENTORY]["top"] end,
@@ -3385,8 +3418,8 @@ function FCOIS.BuildAddonMenu()
                                             type       = "slider",
                                             name       = locVars["options_icon_offset_top"],
                                             tooltip    = locVars["options_icon_offset_top_TT"],
-                                            min        = minIconOffsetLeft,
-                                            max        = maxIconOffsetLeft,
+                                            min = minIconOffsetTop,
+                                            max = maxIconOffsetTop,
                                             decimals   = 0,
                                             autoSelect = true,
                                             getFunc    = function()
@@ -3558,8 +3591,8 @@ function FCOIS.BuildAddonMenu()
                                             type       = "slider",
                                             name       = locVars["options_icon_offset_top"],
                                             tooltip    = locVars["options_icon_offset_top_TT"],
-                                            min        = minIconOffsetLeft,
-                                            max        = maxIconOffsetLeft,
+                                            min = minIconOffsetTop,
+                                            max = maxIconOffsetTop,
                                             decimals   = 0,
                                             autoSelect = true,
                                             getFunc    = function()
@@ -3730,8 +3763,8 @@ function FCOIS.BuildAddonMenu()
                                             type       = "slider",
                                             name       = locVars["options_icon_offset_top"],
                                             tooltip    = locVars["options_icon_offset_top_TT"],
-                                            min        = minIconOffsetLeft,
-                                            max        = maxIconOffsetLeft,
+                                            min = minIconOffsetTop,
+                                            max = maxIconOffsetTop,
                                             decimals   = 0,
                                             autoSelect = true,
                                             getFunc    = function()
@@ -3901,8 +3934,8 @@ function FCOIS.BuildAddonMenu()
                                             type       = "slider",
                                             name       = locVars["options_icon_offset_top"],
                                             tooltip    = locVars["options_icon_offset_top_TT"],
-                                            min        = minIconOffsetLeft,
-                                            max        = maxIconOffsetLeft,
+                                            min = minIconOffsetTop,
+                                            max = maxIconOffsetTop,
                                             decimals   = 0,
                                             autoSelect = true,
                                             getFunc    = function()
@@ -4072,8 +4105,8 @@ function FCOIS.BuildAddonMenu()
                                             type       = "slider",
                                             name       = locVars["options_icon_offset_top"],
                                             tooltip    = locVars["options_icon_offset_top_TT"],
-                                            min        = minIconOffsetLeft,
-                                            max        = maxIconOffsetLeft,
+                                            min = minIconOffsetTop,
+                                            max = maxIconOffsetTop,
                                             decimals   = 0,
                                             autoSelect = true,
                                             getFunc    = function()
@@ -5688,11 +5721,11 @@ function FCOIS.BuildAddonMenu()
                                     getFunc = function() return FCOISsettings.autoMarkHigherQuality end,
                                     setFunc = function(value)
                                         FCOISsettings.autoMarkHigherQuality = value
-                                        if FCOISsettings.autoMarkHigherQuality and FCOISsettings.autoMarkQuality ~= 1 and FCOISsettings.autoMarkQuality ~= ITEM_QUALITY_LEGENDARY then
+                                        if FCOISsettings.autoMarkHigherQuality and FCOISsettings.autoMarkQuality ~= 1 and FCOISsettings.autoMarkQuality ~= ITEM_DISPLAY_QUALITY_LEGENDARY then
                                             FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "quality", false)
                                         end
                                     end,
-                                    disabled = function() return FCOISsettings.autoMarkQuality == 1 or not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkQualityIconNr] or FCOISsettings.autoMarkQuality == ITEM_QUALITY_LEGENDARY end,
+                                    disabled = function() return FCOISsettings.autoMarkQuality == 1 or not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkQualityIconNr] or FCOISsettings.autoMarkQuality == ITEM_DISPLAY_QUALITY_LEGENDARY end,
                                     width = "half",
                                     default = FCOISdefaultSettings.autoMarkHigherQuality,
                                 },

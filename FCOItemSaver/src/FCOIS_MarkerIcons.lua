@@ -229,10 +229,11 @@ function FCOIS.CreateMarkerControl(parent, controlId, pWidth, pHeight, pTexture,
                         local filterPanelIdToIconOffset = FCOIS.mappingVars.filterPanelIdToIconOffset
                         local iconPosition = settings.iconPosition
                         local iconOffset = filterPanelIdToIconOffset[FCOIS.gFilterWhere] or iconPosition
-                        --Now add the iconOffset defined at each marker icon too
-                        local iconOffsetDefinedAtMarkerIcon = settings.icon[controlId].offsets[LF_INVENTORY]
-                        local totalOffSetLeft = iconOffset.x + iconOffsetDefinedAtMarkerIcon["left"]
-                        local totalOffSetTop = iconOffset.y + iconOffsetDefinedAtMarkerIcon["top"]
+                        --get the offsets defined at the filterPanel for each icon (and defiend at the icon itsself for the inventory row)
+                        local iconOffsetDefinedAtPanel = settings.icon[controlId].offsets[LF_INVENTORY]
+                        --Now add the iconOffset defined at each panel
+                        local totalOffSetLeft = iconOffset.x + iconOffsetDefinedAtPanel.left
+                        local totalOffSetTop = iconOffset.y + iconOffsetDefinedAtPanel.top
                         control:SetAnchor(LEFT, parent, LEFT, totalOffSetLeft, totalOffSetTop)
                     end
 
@@ -294,6 +295,7 @@ function FCOIS.CreateTextures(whichTextures)
                     --The current game's SCENE and name (used for determining bank/guild bank deposit)
                     local currentScene, _ = FCOIS.getCurrentSceneInfo()
                     if currentScene ~= STABLES_SCENE then
+d("[FCOIS]PlayerInventory.listView.dataTypes[1].setupCallback")
                         -- for all filters: Create/Update the icons
                         for i=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
                             --FCOIS.CreateMarkerControl(parent, controlId, pWidth, pHeight, pTexture, pIsEquipmentSlot, pCreateControlIfNotThere, pUpdateAllEquipmentTooltips, pArmorTypeIcon, pHideControl)

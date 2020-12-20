@@ -127,17 +127,36 @@ end
 --A setupCallback function for the scrolllists of the inventories.
 --> Will add the FCOIS marker icons if they get visible and add the OnMouseUp handlers to the rows to support the SHIFT+right mouse button features
 local function OnScrollListRowSetupCallback(rowControl, data)
+    --d("[FCOIS]OnScrollListRow:SetupCallback")
     if not rowControl then
         d("[FCOIS]ERROR: OnScrollListRowSetupCallback - rowControl is missing!")
         return
     end
-    -- for all filters: Create/Update the icons
-    local settings = FCOIS.settingsVars.settings
-    local iconVars = FCOIS.iconVars
-    local textureVars = FCOIS.textureVars
-    for i = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
-        local iconData = settings.icon[i]
-        FCOIS.CreateMarkerControl(rowControl, i, iconData.size or iconVars.gIconWidth, iconData.size or iconVars.gIconWidth, textureVars.MARKER_TEXTURES[iconData.texture])
+    --Row is e.g. ZO_SmithingTopLevelRefinementPanelInventoryBackpack1Row1
+    --Parent will be ZO_SmithingTopLevelRefinementPanelInventoryBackpackContents
+    --It's parent will be ZO_SmithingTopLevelRefinementPanelInventoryBackpack
+    local inventoryListControl = rowControl:GetParent():GetParent()
+    if not inventoryListControl then
+        d("[FCOIS]ERROR: OnScrollListRowSetupCallback - inventoryListControl is missing!")
+        return
+    end
+
+    --Duplicate call to FCOIS.CreateMarkerControl or neede for "at least some" of the inventories,
+    --like the crafting tables? Yes. But we need to filter the update of the marker controls for the others
+    --like normal inventories!
+    -- For some inventories like crafting tables: Create/Update the icons
+    local inventoryVars = FCOIS.inventoryVars
+    local hookScrollSetupCallbacks = inventoryVars.markerControlInventories and inventoryVars.markerControlInventories.hookScrollSetupCallback
+    if hookScrollSetupCallbacks[inventoryListControl] ~= nil then
+--d(">>it's a valid scrollList setupCallback")
+        local settings = FCOIS.settingsVars.settings
+        local iconVars = FCOIS.iconVars
+        local textureVars = FCOIS.textureVars
+
+        for i = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
+            local iconData = settings.icon[i]
+            FCOIS.CreateMarkerControl(rowControl, i, iconData.size or iconVars.gIconWidth, iconData.size or iconVars.gIconWidth, textureVars.MARKER_TEXTURES[iconData.texture])
+        end
     end
 
     --Add additional FCO point to the dataEntry.data slot

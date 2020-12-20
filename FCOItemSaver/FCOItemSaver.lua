@@ -182,14 +182,19 @@ EsoUI/Libraries/Globals/Globals.lua:51: in function 'OnGlobalMouseDown'
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
---Since last update 1.9.9 - New version: 2.0.0
+--Since last update 2.0.0 - New version: 2.0.1 -> Updated 2020-12-20
 ---------------------------------------------------------------------
+
+
 --[Fixed]
+-- Performance improvement: Duplicate marker texture controls checks (create/reanchore/etc.) happened at some inventories
+-- if you have scrolled
 
 --[Changed]
 
 --[Added]
--- New settings at dynamic icons: Auto-remove marker icon upon (guild)bank deposit
+--Added: New settings at dynamic icons: Offset X / Offset Y for each dynamic icon, to position them differently to other
+--       marker icons
 
 --[Added on request]
 
