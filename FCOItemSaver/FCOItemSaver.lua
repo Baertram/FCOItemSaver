@@ -19,7 +19,7 @@
 ---------------------------------------------------------------------
 --[ToDo list] --
 --____________________________
--- Current max bugs/features/ToDos: 103
+-- Current max bugs/features/ToDos: 104
 --____________________________
 
 -- 1) 2019-01-14 - Bugfix - Baertram
@@ -158,6 +158,15 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 --       marker icons
 --#103 Support for Inventory GridView/Grid List addons: FCOIS bound items marker icon position and size within grid mode
 --     It will show at the top left edge of the grid item.
+-- #104 Performance tweak: Marker icon textures will not be created anymore "all" at "all rows" at the first inventory open,
+--      but only those will be created which marker icons are applied to the currently shown item.
+--      As you scroll the next texture controls will be checked and created, if needed. As rows of the inventory will be
+--      reused if you scroll (e.g. item1 will be out of view and new item 23 will be at the row where item 1 was before)
+--      the marker texture controls will stay at the row (once created) and will be reused for the items, as before.
+--      But if you only got a few marker icons active per item this should increase the performance of the first iventory
+--      open a lot! Could add some more littel lag to the scrolling though. Tell me please if you notice this, providing
+--      info at which inventory panel, which filters are activated and how I'm able to rebuild this.
+--      Grid addons like Inventory Grid View or Grid List should be much faster at the first inventory open now!
 
 --[Added on request]
 

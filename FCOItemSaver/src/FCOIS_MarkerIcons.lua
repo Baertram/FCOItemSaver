@@ -331,7 +331,10 @@ function FCOIS.CreateTextures(whichTextures)
     local doCreateMarkerControl = false
     local doCreateAllTextures = false
     if whichTextures == -1 then
-        doCreateMarkerControl = true
+        --Crate the texture controls for the marker icons?
+        --If this is set to true each inventory row will automatically get 1 new texture control child for each marker icon
+        --Todo: Test if creating them "On demand" (if shown, at scrolling) is more performant
+        --doCreateMarkerControl = true
         doCreateAllTextures = true
     end
     local iconSettings = FCOIS.settingsVars.settings.icon
