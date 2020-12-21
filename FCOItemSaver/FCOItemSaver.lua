@@ -19,15 +19,12 @@
 ---------------------------------------------------------------------
 --[ToDo list] --
 --____________________________
--- Current max bugs: 100
+-- Current max bugs/features/ToDos: 103
 --____________________________
 
 -- 1) 2019-01-14 - Bugfix - Baertram
 --Right clicking an item to show the context menu, and then left clicking somewhere else does not close the context menu on first click, but on 2nd click
 -->Todo: Bug within LibCustomMenu -> To be fixed by Votan?
-
---23) 2019-08-17 Check - Baertram
---Todo: Test if backup/restore is working properly with the "AllAccountsTheSame" settings enabled
 
 -- 40)  2019-11-04 Bug - Baertram
 --lua error message if you use the context menu to destroy an item from inventory:
@@ -41,14 +38,6 @@ ZO_MenuItem1_MouseUp:4: in function '(main chunk)'
 ]]
 --> src/FCOIS_Hooks.lua ->     ZO_PreHookHandler(ctrlVars.BACKPACK_BAG, "OnEffectivelyShown", FCOItemSaver_OnEffectivelyShown) -> FCOItemSaver_OnEffectivelyShown ->  ZO_PreHookHandler(childrenCtrl, "OnMouseUp", function(...)
 --> causes the error message!
-
--- 47) 2019-12-29 bug - Baertram
--- SHIFT +right click directly in guild bank's withdraw row does not work if the inventory was not at least opened once before
--- the guild bank was opened
---> File FCOIS_Hooks.lua, line 1332: ZO_PreHookHandler( ctrlVars.GUILD_BANK_BAG, "OnEffectivelyShown", FCOItemSaver_OnEffectivelyShown ) ->  function FCOItemSaver_OnEffectivelyShown -> function FCOItemSaver_InventoryItem_OnMouseUp
---> GuildBank withdraw: ZO_GuildBankBackpackContents only got child ZO_GuildBankBackpackLandingArea, but not rows if you directly open the guild bank after login/reloadui.
----> Guild bank needs more time to build the rows initially. So we need to wait here until they are build to register the hook!
---> If you switch to the guild bank deposit and back it got the rows then: ZO_GuildBankBackpack1RowN
 
 -- 76) 2020-04-12, Baertram
 -- Open bank after login and try to remove/add a marker icon via keybind-> Insecure error call
@@ -133,43 +122,12 @@ Blaue/Lila Set Rüstung mit invigorating: dynamic mark 4 ("undefined")
 Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 ]]
 
---#92: 2020-08-10, Baertram     SettingsForAll settings, which save if you are using accountwide, character or allaccountsthesame SavedVariables will get
+--#92: 2020-08-10, Baertram     SettingsForAll settings, which save if you are using accountwide, character or allAccountsTheSame SavedVariables will get
 --     deleted if you delete the "Account wide" settings from the FCOIS settings menu "SavedVariables copy/delete" options submenu!
---     E.g. use "AllAccountsTheSame" in the settings of accounbt @Baertram-> This setting is stored in AccountWide settings @Baertram, version 999.
---     If you delete the account settings for @Baertram now, the chosen settings to sue AllAccountsTheSame gets deleted as well!
+--     E.g. use "AllAccountsTheSame" in the settings of account @Baertram-> This setting is stored in AccountWide settings @Baertram, version 999.
+--     If you delete the account settings for @Baertram now, the chosen settings to use AllAccountsTheSame gets deleted as well!
 --     These SettingsForAll need to migrate and be saved somewhere else, like in a special settings table "FCOItemSaver_Settings_General"!
 
---#96: 2020-10-12, M-Ree   Trying to change dynamic icon name gives an error (https://www.esoui.com/portal.php?id=136&a=viewbug&bugid=3212)
--- Tested on live NA 2020-10-18 and wa snot able to reproduce this error message. Asked for exact steps by email
---[[
-When I try to change the dynamic icon's name, once hitting Enter, I get:
-Icon number -- 1, trying to change to "PvP".
-Did you change the slider "Max number of dynamic icons" in the settings before you changed the name of the dynamic icon?
-Yes, 3 to 5
-Did the game do a reloadui at this time automatically?
-Yes
-Did it finish that reloadui properly or was there some error message, or did your client crash e.g.?
-Yes, and the red "wait while stuff is built blah blah" hourglass vanished
-
-choices and choicesTooltips need to have the same size
-stack traceback:
-[C]: in function 'assert'
-user:/AddOns/HarvestMap/Libs/LibAddonMenu-2.0/LibAddonMenu-2.0/controls/dropdown.lua:137: in function 'UpdateChoices'
-|caaaaaa<Locals> control = ud, choices = [table:1]{1 = "Lock"}, choicesValues = [table:2]{1 = 1}, choices = [table:1], choicesValues = [table:2],
-choicesTooltips = [table:3]{1 = "- No icon -"} </Locals>|r
-user:/AddOns/FCOItemSaver/src/FCOIS_SettingsMenu.lua:289: in function 'updateIconListDropdownEntries'
-|caaaaaa<Locals> dropdownCtrlName = "FCOItemSaver_Settings_SetTrack...", updateData = [table:4]{scrollable = T, choices = "standard"},
-dropdownCtrl = ud, choices = [table:1], choicesValues = [table:2] </Locals>|r
-user:/AddOns/FCOItemSaver/src/FCOIS_SettingsMenu.lua:1180: in function 'setFunc'
-|caaaaaa<Locals> newValue = "1st dynamic" </Locals>|r
-user:/AddOns/HarvestMap/Libs/LibAddonMenu-2.0/LibAddonMenu-2.0/controls/editbox.lua:60: in function 'UpdateValue'
-|caaaaaa<Locals> control = ud, forceDefault = F, value = "1st dynamic" </Locals>|r
-user:/AddOns/HarvestMap/Libs/LibAddonMenu-2.0/LibAddonMenu-2.0/controls/editbox.lua:109: in function '(anonymous)'
-|caaaaaa<Locals> self = ud </Locals>|r
-[C]: in function 'LoseFocus'
-EsoUI/Libraries/Globals/Globals.lua:51: in function 'OnGlobalMouseDown'
-|caaaaaa<Locals> event = 65544, button = 1, focusEdit = ud </Locals>|r
-]]
 
 --#97: 2020-08-28, Piperman124  Set items get marked with impenetrable icon even though they were marked already before
 --Seems if I clear all marks and then run the auto marking for set parts it applies to everything not marked with
@@ -187,14 +145,19 @@ EsoUI/Libraries/Globals/Globals.lua:51: in function 'OnGlobalMouseDown'
 
 
 --[Fixed]
--- Performance improvement: Duplicate marker texture controls checks (create/reanchore/etc.) happened at some inventories
+-- #47 SHIFT +right click directly in guild bank's withdraw row does not work if the inventory was not at least opened once before
+-- the guild bank was opened
+-- #101 Performance improvement: Duplicate marker texture controls checks (create/reanchore/etc.) happened at some inventories
 -- if you have scrolled
+
 
 --[Changed]
 
 --[Added]
---Added: New settings at dynamic icons: Offset X / Offset Y for each dynamic icon, to position them differently to other
+--#102 Added: New settings at dynamic icons: Offset X / Offset Y for each dynamic icon, to position them differently to other
 --       marker icons
+--#103 Support for Inventory GridView/Grid List addons: FCOIS bound items marker icon position and size within grid mode
+--     It will show at the top left edge of the grid item.
 
 --[Added on request]
 

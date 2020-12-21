@@ -62,6 +62,10 @@ local function updateAlreadyBoundTexture(parent, pHideControl)
             doHide = not FCOIS.isItemAlreadyBound(bagId, slotIndex)
         end
     end
+
+    local InventoryGridViewActivated = (FCOIS.otherAddons.inventoryGridViewActive or InventoryGridView ~= nil) or false
+    local GridListActivated          = GridList ~= nil
+
     --If not an equipped item: Get the row's/parent's image -> "Children "Button" of parent
     local parentsImage = parent:GetNamedChild("Button")
     if parentsImage ~= nil then
@@ -80,12 +84,56 @@ local function updateAlreadyBoundTexture(parent, pHideControl)
                 --Hide or show the control now
                 setPartAlreadyBoundTexture:SetHidden(doHide)
                 if not doHide then
-                    setPartAlreadyBoundTexture:SetDimensions(48, 48)
                     setPartAlreadyBoundTexture:SetTexture(alreadyBoundTexture)
                     --setPartAlreadyBoundTexture:SetColor(1, 1, 1, 1)
                     setPartAlreadyBoundTexture:SetDrawTier(DT_HIGH)
                     setPartAlreadyBoundTexture:ClearAnchors()
-                    setPartAlreadyBoundTexture:SetAnchor(TOPLEFT, parentsImage, TOPRIGHT, -25, -8)
+
+                    local gridIsEnabled = false
+                    if InventoryGridViewActivated == true or GridListActivated == true then
+                        if InventoryGridViewActivated == true then
+                            gridIsEnabled = true
+                        else
+                            --Only if GridList active: Check if it's GridMode is currently showing the grid or not
+                            if GridListActivated == true then
+                                --Is the GridList "GRID" view enabled?
+                                local filterPanelId = FCOIS.gFilterWhere
+                                --Is the FCOIS LAM settings menu curerntly open and we show the preview of the inventory?
+                                if FCOIS.preventerVars.lamMenuOpenAndShowingInvPreviewForGridListAddon == true then
+                                    filterPanelId = LF_INVENTORY
+                                end
+                                if filterPanelId then
+                                    local inventoryType = FCOIS.GetInventoryTypeByFilterPanel(filterPanelId)
+                                    if inventoryType ~= nil then
+                                        --Is the inventory type a supported GridList inventory type?
+                                        local isSupportedGridListInv = GridList_IsSupportedInventory(inventoryType)
+                                        if isSupportedGridListInv == true then
+                                            local gridViewModeOfInventoryType = GridList_GetMode(inventoryType)
+                                            if gridViewModeOfInventoryType and gridViewModeOfInventoryType == GridList_MODE_GRID then
+                                                --GridList grid is enabled
+                                                gridIsEnabled = true
+                                            end
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end
+
+                    --The grid of one the grid addons is currently enabled?
+                    if gridIsEnabled == true then
+                        local parentAnchor = parent
+                        if GridListActivated == true then
+                            parentAnchor = GetControl(parent, "Backdrop")
+                        else
+                            parentAnchor= parent
+                        end
+                        setPartAlreadyBoundTexture:SetDimensions(96, 96)
+                        setPartAlreadyBoundTexture:SetAnchor(TOPLEFT, parentAnchor, TOPLEFT, -64, -16)
+                    else
+                        setPartAlreadyBoundTexture:SetDimensions(48, 48)
+                        setPartAlreadyBoundTexture:SetAnchor(TOPLEFT, parentsImage, TOPRIGHT, -25, -8)
+                    end
                 end
             end
         end
@@ -295,7 +343,7 @@ function FCOIS.CreateTextures(whichTextures)
                     --The current game's SCENE and name (used for determining bank/guild bank deposit)
                     local currentScene, _ = FCOIS.getCurrentSceneInfo()
                     if currentScene ~= STABLES_SCENE then
-d("[FCOIS]PlayerInventory.listView.dataTypes[1].setupCallback")
+--d("[FCOIS]PlayerInventory.listView.dataTypes[1].setupCallback")
                         -- for all filters: Create/Update the icons
                         for i=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
                             --FCOIS.CreateMarkerControl(parent, controlId, pWidth, pHeight, pTexture, pIsEquipmentSlot, pCreateControlIfNotThere, pUpdateAllEquipmentTooltips, pArmorTypeIcon, pHideControl)
