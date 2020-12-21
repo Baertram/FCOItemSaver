@@ -122,14 +122,23 @@ local function updateAlreadyBoundTexture(parent, pHideControl)
 
                     --The grid of one the grid addons is currently enabled?
                     if gridIsEnabled == true then
+                        local offsetX = 0
+                        local offsetY = 0
+                        local dimensions = 48
                         local parentAnchor = parent
                         if GridListActivated == true then
+                            dimensions = 96
                             parentAnchor = GetControl(parent, "Backdrop")
-                        else
-                            parentAnchor= parent
+                            offsetX = -62
+                            offsetY = -16
+                        elseif InventoryGridViewActivated == true then
+                            dimensions = 64
+                            parentAnchor = GetControl(parent, "Backdrop")
+                            offsetX = -44
+                            offsetY = -14
                         end
-                        setPartAlreadyBoundTexture:SetDimensions(96, 96)
-                        setPartAlreadyBoundTexture:SetAnchor(TOPLEFT, parentAnchor, TOPLEFT, -64, -16)
+                        setPartAlreadyBoundTexture:SetDimensions(dimensions, dimensions)
+                        setPartAlreadyBoundTexture:SetAnchor(TOPLEFT, parentAnchor, TOPLEFT, offsetX, offsetY)
                     else
                         setPartAlreadyBoundTexture:SetDimensions(48, 48)
                         setPartAlreadyBoundTexture:SetAnchor(TOPLEFT, parentsImage, TOPRIGHT, -25, -8)
