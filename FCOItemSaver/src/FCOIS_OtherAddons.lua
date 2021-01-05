@@ -3,6 +3,9 @@ if FCOIS == nil then FCOIS = {} end
 local FCOIS = FCOIS
 local mappingVars = FCOIS.mappingVars
 
+local getSavedVarsMarkedItemsTableName = FCOIS.getSavedVarsMarkedItemsTableName
+local GetFCOISMarkerIconSavedVariablesItemId = FCOIS.GetFCOISMarkerIconSavedVariablesItemId
+
 --==========================================================================================================================================
 --									FCOIS other addon functions
 --==========================================================================================================================================
@@ -312,7 +315,7 @@ local function checkSetTrackerTrackingStateAndMarkWithFCOISIcon(sSetName, setTra
                             FCOIS_OLD_MarkerIconForSetTracker = FCOIS.settingsVars.settings.setTrackerIndexToFCOISIcon[setTrackerState]
                             if FCOIS_OLD_MarkerIconForSetTracker ~= nil and FCOIS_OLD_MarkerIconForSetTracker ~= FCOIS_CON_ICON_NONE and FCOIS_OLD_MarkerIconForSetTracker ~= FCOIS_CON_ICON_ALL then
                                 --d(">Removing old marker icon first: " .. tostring(FCOIS_OLD_MarkerIconForSetTracker))
-                                FCOIS.markedItems[FCOIS_OLD_MarkerIconForSetTracker][itemId] = nil
+                                FCOIS[getSavedVarsMarkedItemsTableName()][FCOIS_OLD_MarkerIconForSetTracker][itemId] = nil
                             end
                         end
 
@@ -329,13 +332,13 @@ local function checkSetTrackerTrackingStateAndMarkWithFCOISIcon(sSetName, setTra
                             end
                             if fcoisMarkerIconsToRemove and #fcoisMarkerIconsToRemove > 0 then
                                 for _, markerIcon in ipairs(fcoisMarkerIconsToRemove) do
-                                    FCOIS.markedItems[markerIcon][itemId] = nil
+                                    FCOIS[getSavedVarsMarkedItemsTableName()][markerIcon][itemId] = nil
                                 end
                             end
                             retVarBoolLoop = true
                         else
                             --Check if item is already marked with this icon
-                            local isAlreadyMarked = FCOIS.markedItems[FCOISMarkerIconForSetTracker][itemId] or false
+                            local isAlreadyMarked = FCOIS[getSavedVarsMarkedItemsTableName()][FCOISMarkerIconForSetTracker][itemId] or false
                             --d(">isAlreadyMarked: " .. tostring(isAlreadyMarked))
                             --Item is tracked (unequals -1) and is not a crafted set part (unequals 100)
                             if (iTrackIndex ~= -1 and iTrackIndex ~= 100) and doShow then
@@ -346,7 +349,7 @@ local function checkSetTrackerTrackingStateAndMarkWithFCOISIcon(sSetName, setTra
                                 else
                                     --d("Marked item at bag " .. tostring(bag) .. ", slot: " .. tostring(slot))
                                     --Mark the item now
-                                    FCOIS.markedItems[FCOISMarkerIconForSetTracker][itemId] = true
+                                    FCOIS[getSavedVarsMarkedItemsTableName()][FCOISMarkerIconForSetTracker][itemId] = true
                                     retVarBoolLoop = true
                                 end
                                 --Item is not tracked  anymore (equals -1)
@@ -359,7 +362,7 @@ local function checkSetTrackerTrackingStateAndMarkWithFCOISIcon(sSetName, setTra
                                 else
                                     --d("Unmarked item at bag " .. tostring(bag) .. ", slot: " .. tostring(slot))
                                     --Unmark the item now
-                                    FCOIS.markedItems[FCOISMarkerIconForSetTracker][itemId] = nil
+                                    FCOIS[getSavedVarsMarkedItemsTableName()][FCOISMarkerIconForSetTracker][itemId] = nil
                                     retVarBoolLoop = true
                                 end
                             end
@@ -393,7 +396,7 @@ local function checkSetTrackerTrackingStateAndMarkWithFCOISIcon(sSetName, setTra
                         local FCOIS_OLD_MarkerIconForSetTracker = FCOIS.settingsVars.settings.setTrackerIndexToFCOISIcon[setTrackerState]
                         if FCOIS_OLD_MarkerIconForSetTracker ~= nil and FCOIS_OLD_MarkerIconForSetTracker ~= FCOIS_CON_ICON_NONE and FCOIS_OLD_MarkerIconForSetTracker < FCOIS.numVars.gFCONumFilterIcons then
                             --d(">Removing old marker icon first: " .. tostring(FCOIS_OLD_MarkerIconForSetTracker))
-                            FCOIS.markedItems[FCOIS_OLD_MarkerIconForSetTracker][itemId] = nil
+                            FCOIS[getSavedVarsMarkedItemsTableName()][FCOIS_OLD_MarkerIconForSetTracker][itemId] = nil
                         --Remove all marker icons?
                         elseif FCOIS_OLD_MarkerIconForSetTracker == FCOIS_CON_ICON_NONE then
                             removeAllSetTrackerFCOISMarkerIcons = true
@@ -411,13 +414,13 @@ local function checkSetTrackerTrackingStateAndMarkWithFCOISIcon(sSetName, setTra
                         end
                         if fcoisMarkerIconsToRemove and #fcoisMarkerIconsToRemove > 0 then
                             for _, markerIcon in ipairs(fcoisMarkerIconsToRemove) do
-                                FCOIS.markedItems[markerIcon][itemId] = nil
+                                FCOIS[getSavedVarsMarkedItemsTableName()][markerIcon][itemId] = nil
                             end
                         end
                         retVarBoolLoop = true
                     else
                         --Check if item is already marked with this icon
-                        local isAlreadyMarked = FCOIS.markedItems[FCOISMarkerIconForSetTracker][itemId] or false
+                        local isAlreadyMarked = FCOIS[getSavedVarsMarkedItemsTableName()][FCOISMarkerIconForSetTracker][itemId] or false
                         --d(">isAlreadyMarked: " .. tostring(isAlreadyMarked))
                         --Item is tracked (unequals -1) and is not a crafted set part (unequals 100)
                         if (iTrackIndex ~= -1 and iTrackIndex ~= 100) and doShow then
@@ -428,7 +431,7 @@ local function checkSetTrackerTrackingStateAndMarkWithFCOISIcon(sSetName, setTra
                             else
                                 --d("Marked item at bag " .. tostring(bag) .. ", slot: " .. tostring(slot))
                                 --Mark the item now
-                                FCOIS.markedItems[FCOISMarkerIconForSetTracker][itemId] = true
+                                FCOIS[getSavedVarsMarkedItemsTableName()][FCOISMarkerIconForSetTracker][itemId] = true
                                 retVarBoolLoop = true
                             end
                             --Item is not tracked  anymore (equals -1)
@@ -441,7 +444,7 @@ local function checkSetTrackerTrackingStateAndMarkWithFCOISIcon(sSetName, setTra
                             else
                                 --d("Unmarked item at bag " .. tostring(bag) .. ", slot: " .. tostring(slot))
                                 --Unmark the item now
-                                FCOIS.markedItems[FCOISMarkerIconForSetTracker][itemId] = nil
+                                FCOIS[getSavedVarsMarkedItemsTableName()][FCOISMarkerIconForSetTracker][itemId] = nil
                                 retVarBoolLoop = true
                             end
                         end
@@ -663,31 +666,35 @@ function FCOIS.getItemInstanceOrUniqueId(bagId, slotIndex, itemLink)
     local allowedUniqueIdItemTypes = FCOIS.allowedUniqueIdItemTypes
     local itemInstanceOrUniqueId = 0
     local isBagToBuildItemInstanceOrUniqueId = bagsToBuildIdFor[bagId] or false
+    local allowedItemType
     --Should an itemInstance or unique ID be build for this bagId?
     if isBagToBuildItemInstanceOrUniqueId == true then
         itemLink = itemLink or GetItemLink(bagId,slotIndex)
         --d("[FCOIS.getItemInstanceOrUniqueId] " .. itemLink .. ", bagId: " .. tostring(bagId))
-        local itemLinkItemType = GetItemLinkItemType(itemLink)
-        local allowedUniqueIdItemType = allowedUniqueIdItemTypes[itemLinkItemType] or false
         --Are the FCOIS settings already loaded?
         FCOIS.checkIfFCOISSettingsWereLoaded(false)
-        --Is the FCOIS setting enabled to use unique IDs?
         local settings = FCOIS.settingsVars.settings
         local useUniqueIds = settings.useUniqueIds or false
+        local uniqueItemIdType = settings.uniqueItemIdType
+    --[[
+        local itemLinkItemType = GetItemLinkItemType(itemLink)
+        local allowedUniqueIdItemType = allowedUniqueIdItemTypes[itemLinkItemType] or false
+        --Is the FCOIS setting enabled to use unique IDs?
         if allowedUniqueIdItemType == true and useUniqueIds == true then
-            local uniqueItemIdType = settings.uniqueItemIdType
             if not uniqueItemIdType or uniqueItemIdType == FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE then
                 itemInstanceOrUniqueId = zo_getSafeId64Key(GetItemUniqueId(bagId, slotIndex))
             elseif uniqueItemIdType and uniqueItemIdType == FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE then
-                --TODO: Do not use the unique ID here anymore ass it is real unique even for the same items,
-                --TODO: but create a unique ID like this: a , concatenated String of "<unsignedItemInstanceId>,<levelNumber>,<qualityId>,<traitId>,<styleId>,<enchantId>,<isStolen>,..."
-                local itemInstanceId = GetItemInstanceId(bagId, slotIndex)
+                --local itemInstanceId = GetItemInstanceId(bagId, slotIndex)
+                local itemInstanceId = GetItemId(bagId, slotIndex)
                 itemInstanceOrUniqueId = FCOIS.CreateFCOISUniqueIdString(itemInstanceId, allowedUniqueIdItemType, bagId, slotIndex, itemLink)
                 if settings.debug then FCOIS.debugMessage( "[getItemInstanceOrUniqueId]", string.format("bag: %s, slot: %s, itemLink: %s, itemInstanceId: %s, FCOISUniqueId: %s", tostring(bagId), tostring(slotIndex), tostring(itemLink), tostring(itemInstanceId), tostring(itemInstanceOrUniqueId)), true, FCOIS_DEBUG_DEPTH_NORMAL) end
             end
         else
             itemInstanceOrUniqueId = GetItemInstanceId(bagId, slotIndex)
         end
+        ]]
+        itemInstanceOrUniqueId, allowedItemType = GetFCOISMarkerIconSavedVariablesItemId(bagId, slotIndex, nil, useUniqueIds, uniqueItemIdType)
+        if settings.debug then FCOIS.debugMessage("[getItemInstanceOrUniqueId]", string.format("bag: %s, slot: %s, itemLink: %s, itemInstanceOrUniqueId: %s", tostring(bagId), tostring(slotIndex), tostring(itemLink), tostring(itemInstanceOrUniqueId)), true, FCOIS_DEBUG_DEPTH_NORMAL) end
     end
     return itemInstanceOrUniqueId, isBagToBuildItemInstanceOrUniqueId
 end
@@ -947,7 +954,9 @@ function FCOIS.MyGetItemInstanceIdForIIfA(clickedDataLine, signToo)
 
         end
     end
-    local allowedItemType = FCOIS.allowedUniqueIdItemTypes[GetItemLinkItemType(itemLink)] or false
+    local useUniqueIds = settings.useUniqueIds
+    local uniqueItemIdType = settings.uniqueItemIdType
+    local allowedItemType
     if settings.debug then FCOIS.debugMessage( "[MyGetItemInstanceIdForIIfA]","ownedByLoggedInChar: " .. tostring(ownedByLoggedInChar) .. ", useUniqueIds: " .. tostring(settings.useUniqueIds) .. ", allowedItemType: " .. tostring(allowedItemType) .. ", bagId: " .. tostring(bagId) .. ", slotIndex: " ..tostring(slotIndex) .. ", itemId: " ..tostring(itemId), true, FCOIS_DEBUG_DEPTH_ALL) end
     --Item owned by the currently logged in character,
     --or it's in the account wide bags and the itemId was not fetched yet (for guild bag items e.g.)
@@ -959,21 +968,25 @@ function FCOIS.MyGetItemInstanceIdForIIfA(clickedDataLine, signToo)
         --Then use the unique item ID
         --Else use the non-unique item ID
         --d("[FCOIS.MyGetItemInstanceIdForIIfA] useUniqueIds: " .. tostring(settings.useUniqueIds) .. ", allowedItemType: " .. tostring(allowedItemType))
+        --[[
         if settings.useUniqueIds and allowedItemType then
             local uniqueItemIdType = settings.uniqueItemIdType
             if not uniqueItemIdType or uniqueItemIdType == FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE then
                 itemId = zo_getSafeId64Key(GetItemUniqueId(bagId, slotIndex)) -- itemInstanceId contains the int64 value
             elseif uniqueItemIdType and uniqueItemIdType == FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE then
-                local itemInstanceId = GetItemInstanceId(bagId, slotIndex)
-                itemId = FCOIS.CreateFCOISUniqueIdString(itemInstanceId, allowedItemType, bagId, slotIndex, itemLink)
+                --local itemInstanceId = GetItemInstanceId(bagId, slotIndex)
+                local itemIdOfItem = GetItemId(bagId, slotIndex)
+                itemId = FCOIS.CreateFCOISUniqueIdString(itemIdOfItem, allowedItemType, bagId, slotIndex, itemLink)
                 if settings.debug then FCOIS.debugMessage( "[MyGetItemInstanceIdForIIfA]", string.format("bag: %s, slot: %s, itemLink: %s, itemInstanceId: %s, FCOISUniqueId: %s", tostring(bagId), tostring(slotIndex), tostring(itemLink), tostring(itemInstanceId), tostring(itemId)), true, FCOIS_DEBUG_DEPTH_NORMAL) end
             end
         else
             itemId = GetItemInstanceId(bagId, slotIndex)
         end
+        ]]
+        itemId, allowedItemType = GetFCOISMarkerIconSavedVariablesItemId(bagId, slotIndex, nil, useUniqueIds, uniqueItemIdType)
     end
     if signToo and (
-            (not settings.useUniqueIds or (settings.useUniqueIds == true and allowedItemType == true))
+            (not useUniqueIds or (useUniqueIds == true and allowedItemType == true))
             or (not ownedByLoggedInChar and not isItemInAccountWideBags)
     ) then
         itemId = FCOIS.SignItemId(itemId, allowedItemType, nil, nil, bagId, slotIndex)

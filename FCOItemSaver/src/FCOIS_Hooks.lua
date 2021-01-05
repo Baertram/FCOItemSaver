@@ -172,27 +172,32 @@ end
 --==============================================================================
 --Check if the localization data of the context menu is given
 local function checkAndUpdateContextMenuLocalizationData()
+--d("[FCOIS]checkAndUpdateContextMenuLocalizationData")
     local locVars = FCOIS.localizationVars
     local doUpdateLocalization = false
+    local settings = FCOIS.settingsVars.settings
     if not locVars then
         doUpdateLocalization = true
     end
     if not doUpdateLocalization then
         local locEntriesToCheck = {
-            ["lTextEquipmentMark"] = true,
-            ["lTextEquipmentDemark"] = true,
-            ["lTextMark"] = true,
-            ["lTextDemark"] = true,
+            ["lTextEquipmentMark"]      = true,
+            ["lTextEquipmentDemark"]    = true,
+            ["lTextMark"]               = true,
+            ["lTextDemark"]             = true,
         }
         for key, isToCheck in pairs(locEntriesToCheck) do
             if isToCheck == true and not doUpdateLocalization then
                 if locVars[key] == nil then
+--d(">key not found: " ..tostring(key))
                     doUpdateLocalization = true
                     break
                 end
                 --Check if the texts for the filter icons exists
                 for iconId=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
-                    if locVars[key][iconId] == nil then
+                    local isIconEnabled = settings.isIconEnabled[iconId]
+                    if locVars[key][iconId] == nil and isIconEnabled == true then
+--d(">key's iconId not found: " ..tostring(key) .. ", icon: " ..tostring(iconId) .. ", iconEnabled: " .. tostring(isIconEnabled))
                         doUpdateLocalization = true
                         break
                     end
@@ -202,6 +207,7 @@ local function checkAndUpdateContextMenuLocalizationData()
     end
     --Should the localization be rebuild now?
     if doUpdateLocalization == true then
+d("[FCOIS]checkAndUpdateContextMenuLocalizationData - Update the localization now")
         --Re-Do the localization done variable and rebuild all localization
         FCOIS.Localization()
         --Overwrite the localized texts for the marker icons in the context menus

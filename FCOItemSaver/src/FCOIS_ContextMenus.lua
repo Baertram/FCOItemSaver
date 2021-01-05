@@ -9,6 +9,8 @@ local myColorEnabled	= ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_TE
 local myColorDisabled	= ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_TEXT_COLORS, INTERFACE_TEXT_COLOR_DISABLED))
 local ctrlVars = FCOIS.ZOControlVars
 
+local getSavedVarsMarkedItemsTableName = FCOIS.getSavedVarsMarkedItemsTableName
+
 --Compatibility functions
 local function menuVisibleCheck()
     --New: Since API10030 - Typo was removed
@@ -2494,7 +2496,6 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                                                 end
                                             end
                                         end
-                                        --FCOIS.markedItems[iconId][FCOIS.SignItemId(myItemInstanceId, nil, nil, nil)] = true
                                         FCOIS.MarkItem(bagId, slotIndex, iconId, true, false)
                                         --Is the item protected at a craft station or the guild store sell tab now or marked as junk now?
                                         -->Enable 3rd parameter "bulk" for the additional inventory "flag" icon
@@ -2508,7 +2509,6 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                                 elseif doMark == false then
                                     --Check if the item is marked already
                                     if FCOIS.checkIfItemIsProtected(iconId, myItemInstanceId) then
-                                        --FCOIS.markedItems[iconId][FCOIS.SignItemId(myItemInstanceId, nil, nil, nil)] = nil
                                         FCOIS.MarkItem(bagId, slotIndex, iconId, false, false)
                                         atLeastOneMarkerChanged = true
                                         markerChangedAtBagAndSlot = true
@@ -2551,6 +2551,7 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
             --Is there a backup set for the current panelId ?
             if #contMenuVars.undoMarkedItems[filterPanelToSaveUndoTo] > 0 then
                 local myItemInstanceId
+                local savedVarsMarkedItemsTableName = getSavedVarsMarkedItemsTableName()
 
                 for i=1, #contMenuVars.undoMarkedItems[filterPanelToSaveUndoTo], 1 do
                     if   contMenuVars.undoMarkedItems[filterPanelToSaveUndoTo][i].bagId ~= nil
@@ -2562,7 +2563,7 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                         myItemInstanceId = FCOIS.MyGetItemInstanceIdNoControl(contMenuVars.undoMarkedItems[filterPanelToSaveUndoTo][i].bagId, contMenuVars.undoMarkedItems[filterPanelToSaveUndoTo][i].slotIndex, true)
                         if myItemInstanceId ~= nil then
                             --Undo the last changes now
-                            FCOIS.markedItems[contMenuVars.undoMarkedItems[filterPanelToSaveUndoTo][i].iconId][myItemInstanceId] = contMenuVars.undoMarkedItems[filterPanelToSaveUndoTo][i].marked
+                            FCOIS[savedVarsMarkedItemsTableName][contMenuVars.undoMarkedItems[filterPanelToSaveUndoTo][i].iconId][myItemInstanceId] = contMenuVars.undoMarkedItems[filterPanelToSaveUndoTo][i].marked
                             atLeastOneMarkerChanged = true
 
                             --Update the undo table with the previous "mark" value so we are able to redo the undo again
@@ -2626,7 +2627,6 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                                         --d("[REMOVE ALL GEARS] ADD slotIndex: " .. tostring(slotIndex) .. ", bag: " .. tostring(bagId) .. ", iconId: " .. tostring(iconIdLoop) .. ", marked: false")
 
                                         --Remove the marker for the current gear set item
-                                        --FCOIS.markedItems[iconIdLoop][FCOIS.SignItemId(myItemInstanceId, nil, nil, nil)] = nil
                                         FCOIS.MarkItem(bagId, slotIndex, iconIdLoop, false, false)
 
                                         --Set the old marker value in the undo table
@@ -2692,7 +2692,6 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                                     --d("[REMOVE ALL] ADD slotIndex: " .. tostring(slotIndex) .. ", bag: " .. tostring(bagId) .. ", iconId: " .. tostring(iconIdLoop) .. ", marked: false")
 
                                     --Remove the marker for the current gear set item
-                                    --FCOIS.markedItems[iconIdLoop][FCOIS.SignItemId(myItemInstanceId, nil, nil, nil)] = nil
                                     FCOIS.MarkItem(bagId, slotIndex, iconIdLoop, false, false)
 
                                     --Set the old marker value in the undo table
@@ -2864,6 +2863,8 @@ function FCOIS.showContextMenuForAddInvButtons(invAddContextMenuInvokerButton)
         if FCOIS.localizationVars.contextEntries.menu_add_dynamic_text == nil or FCOIS.localizationVars.contextEntries.menu_remove_dynamic_text == nil
            or FCOIS.localizationVars.contextEntries.menu_add_all_text == nil or FCOIS.localizationVars.contextEntries.menu_remove_all_text == nil then
             FCOIS.preventerVars.KeyBindingTexts = false
+            FCOIS.preventerVars.gLocalizationDone = false
+d("[FCOIS]showContextMenuForAddInvButtons -> Localization fix")
             FCOIS.Localization()
         end
         local locVars = FCOIS.localizationVars.fcois_loc

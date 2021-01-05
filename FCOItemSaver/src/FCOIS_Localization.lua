@@ -342,13 +342,14 @@ function FCOIS.Localization()
     local preventerVars = FCOIS.preventerVars
     local defSettings = FCOIS.settingsVars.defaultSettings
     local langVars = FCOIS.langVars
---d("[FCOIS] Localization - Start, keybindings: " .. tostring(preventerVars.KeyBindingTexts) ..", useClientLang: " .. tostring(FCOIS.settingsVars.settings.alwaysUseClientLanguage))
+d("[FCOIS] Localization - Start, keybindings: " .. tostring(preventerVars.KeyBindingTexts) ..", useClientLang: " .. tostring(FCOIS.settingsVars.settings.alwaysUseClientLanguage) .. ", localizationDone: " ..tostring(preventerVars.gLocalizationDone))
 
     --Was localization already done during keybindings? Then abort here
     if preventerVars.KeyBindingTexts == true and preventerVars.gLocalizationDone == true then
         preventerVars.KeyBindingTexts = false
         return
     end
+
     --Fallback to english variable
     local fallbackToEnglish = false
     --Always use the client's language?
@@ -543,6 +544,23 @@ function FCOIS.Localization()
         [FCOIS_CON_RETRAIT]	            =	locTexts["retrait_not_allowed"],
         [FCOIS_CON_FALLBACK]			=   locTexts["destroying_not_allowed"],  -- Fallback: Destroying not allowed (used at bank deposit, guild bank deposit, bank withdraw, guild bank withdraw, ...)
     }
+
+    --Add the local localized tables from the constants
+    local localLocalizationsVars = FCOIS.localLocalizationsVars
+    if localLocalizationsVars ~= nil then
+        for key, valueTab in pairs(localLocalizationsVars) do
+            if locVars.fcois_loc[key] == nil then
+                FCOIS.localizationVars.fcois_loc[key] = ZO_ShallowTableCopy(valueTab)
+            end
+        end
+        FCOIS.localLocalizationsVars = nil
+    end
+
+d(">Localitazion -> got here")
+
     --Do some "after localization" stuff
     afterLocalization()
+
+    --Reset the variable for the "force localization updte"
+    FCOIS.preventerVars.doUpdateLocalization = false
 end

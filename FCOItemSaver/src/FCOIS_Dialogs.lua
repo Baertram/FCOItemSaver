@@ -200,6 +200,12 @@ function FCOIS.AskBeforeMigrateDialogInitialize(control)
         titleText = FCOIS.preChatVars.preChatTextRed .. localVars["options_migrate_uniqueids"]
     end
 
+    local function resetMigrateMarkerIcons(p_dialog)
+        FCOIS.preventerVars.migrateItemMarkers = false
+        FCOIS.preventerVars.migrateToUniqueIds = false
+        FCOIS.preventerVars.migrateToItemInstanceIds = false
+    end
+
     --The migrate non-unique/unique to unique/non-unique item IDs
     ZO_Dialogs_RegisterCustomDialog("FCOIS_ASK_BEFORE_MIGRATE_DIALOG", {
         customControl = control,
@@ -207,16 +213,14 @@ function FCOIS.AskBeforeMigrateDialogInitialize(control)
         mainText = { text = "" },
         setup = function(_, data)
             local formattedText = ""
-            if FCOIS.settingsVars.settings.useUniqueIds then
+            if FCOIS.settingsVars.settings.useUniqueIds == true then
                 formattedText = localVars["options_migrate_uniqueids_dialog"]
             else
                 formattedText = localVars["options_migrate_nonuniqueids_dialog"]
             end
             descLabel:SetText(formattedText)
         end,
-        noChoiceCallback = function()
-            FCOIS.preventerVars.migrateItemMarkers = false
-        end,
+        noChoiceCallback = resetMigrateMarkerIcons,
         buttons =
         {
             {
@@ -224,21 +228,14 @@ function FCOIS.AskBeforeMigrateDialogInitialize(control)
                 text = SI_DIALOG_ACCEPT,
                 keybind = "DIALOG_PRIMARY",
                 callback = function(dialog)
-                    if FCOIS.settingsVars.settings.useUniqueIds == true then
-                        FCOIS.migrateItemInstanceIdMarkersToUniqueIdMarkers()
-                    --else
-                        --FCOIS.migrateUniqueIdMarkersToItemInstanceIdMarkers()
-                    end
-                    FCOIS.preventerVars.migrateItemMarkers = false
+                    FCOIS.migrateMarkerIcons()
                 end,
             },
             {
                 control = cancelBtn,
                 text = SI_DIALOG_CANCEL,
                 keybind = "DIALOG_NEGATIVE",
-                callback = function()
-                    FCOIS.preventerVars.migrateItemMarkers = false
-                end,
+                callback = resetMigrateMarkerIcons,
             },
         },
     })
@@ -246,10 +243,7 @@ end
 
 --Show the ask before migrate dialog
 function FCOIS.ShowAskBeforeMigrateDialog()
-    --TODO: Migration is currently only available from non-unique to unique items
-    if FCOIS.settingsVars.settings.useUniqueIds == true then
-        ZO_Dialogs_ShowDialog("FCOIS_ASK_BEFORE_MIGRATE_DIALOG", {})
-    end
+    ZO_Dialogs_ShowDialog("FCOIS_ASK_BEFORE_MIGRATE_DIALOG", {})
 end
 
 --==============================================================================

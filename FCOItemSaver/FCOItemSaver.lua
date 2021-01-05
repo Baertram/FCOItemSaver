@@ -19,8 +19,15 @@
 ---------------------------------------------------------------------
 --[ToDo list] --
 --____________________________
--- Current max bugs/features/ToDos: 104
+-- Current max bugs/features/ToDos: 105
 --____________________________
+
+--In progress: Since 2020-06-17
+-- 80) 2020-06-14, Beartram, UniqueIds do not work properly anymore as they are really unique and items with the same itemInstanceId, and everything else also the same,
+-- are still unique...
+-- For weapons, armor and jewelry: Change all uniqueId checks to check the item's itemLink maybe or at least infos generated from it like level, quality, itemId, trait, style and enchantmentId.
+
+------------------------------------------------------------------------------------------------------------------------
 
 -- 1) 2019-01-14 - Bugfix - Baertram
 --Right clicking an item to show the context menu, and then left clicking somewhere else does not close the context menu on first click, but on 2nd click
@@ -75,13 +82,6 @@ EsoUI/Ingame/Inventory/InventorySlot.lua:1323: in function '(anonymous)'
 EsoUI/Libraries/ZO_ContextMenus/ZO_ContextMenus.lua:451: in function 'ZO_Menu_ClickItem'
 ZO_MenuItem1_MouseUp:4: in function '(main chunk)'
 ]]
-
-
-
---In progress: 2020-06-17
--- 80) 2020-06-14, Beartram, UniqueIds do not work properly anymore as they are really unique and items with the same itemInstanceId, and everything else also the same,
--- are still unique...
--- For weapons, armor and jewelry: Change all uniqueId checks to check the item's itemLink maybe or at least infos generated from it like level, quality, itemId, trait, style and enchantmentId.
 
 
 --84) 2020-06-27, Malvarot - Automatic marks Quality will also tag set items "again" if the checkbox "check all other markers" at the quality settings is enabled.
@@ -140,9 +140,8 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
---Since last update 2.0.0 - New version: 2.0.1 -> Updated 2020-12-20
+--Since last update 2.0.0 - New version: 2.0.1 -> Updated 2021-01-06
 ---------------------------------------------------------------------
-
 
 --[Fixed]
 -- #47 SHIFT +right click directly in guild bank's withdraw row does not work if the inventory was not at least opened once before
@@ -152,6 +151,7 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 
 
 --[Changed]
+
 
 --[Added]
 --#102 Added: New settings at dynamic icons: Offset X / Offset Y for each dynamic icon, to position them differently to other
@@ -167,8 +167,12 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 --      open a lot! Could add some more littel lag to the scrolling though. Tell me please if you notice this, providing
 --      info at which inventory panel, which filters are activated and how I'm able to rebuild this.
 --      Grid addons like Inventory Grid View or Grid List should be much faster at the first inventory open now!
+-- #105 More dynamic LAM settings (marker icons, marker icons enable submenus) instead of redundant code lines
 
 --[Added on request]
+--#80 New selection of FCOIS custom created UniqueIds: Choose your criteria in the general settings, which define the uniqueId for you.
+--    It will use the itemId + the selected criteria (level, quality, enchantment, etc.) to create an own uniqueId.
+--    Only applies to weapons and armor so far. All other items still use the non-unique IDs.
 
 
 --************************************************************************************************************************

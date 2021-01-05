@@ -760,6 +760,8 @@ function FCOIS.checkForPlayerActivatedTasks()
     end
 
     --Was the item ID type changed to unique IDs: Show the migrate data from old item IDs to unique itemIDs now
+    -->Was set in src/FCIS_Settings.lua, function FCOIS.afterSettings() after a reloadui was done due to the LAM
+    -->settings uniqueId change
     if FCOIS.preventerVars.migrateItemMarkers == true then
         FCOIS.ShowAskBeforeMigrateDialog()
     end
@@ -770,6 +772,19 @@ local function FCOItemSaver_Player_Activated(...)
 --d("[FCOIS]EVENT_PLAYER_ACTIVATED")
     --Prevent this event to be fired again and again upon each zone change
     EVENT_MANAGER:UnregisterForEvent(gAddonName, EVENT_PLAYER_ACTIVATED)
+
+    --Reset cached values
+    FCOIS.MyGetItemInstanceIdLastBagId      = nil
+    FCOIS.MyGetItemInstanceIdLastSlotIndex  = nil
+    FCOIS.MyGetItemInstanceIdLastId         = nil
+    FCOIS.MyGetItemInstanceIdLastIdSigned   = nil
+
+    FCOIS.CreateFCOISUniqueIdStringLastLastUseType            = nil
+    FCOIS.CreateFCOISUniqueIdStringLastUnsignedItemInstanceId = nil
+    FCOIS.CreateFCOISUniqueIdStringLastBagId = nil
+    FCOIS.CreateFCOISUniqueIdStringLastSlotIndex = nil
+    FCOIS.CreateFCOISUniqueIdStringLastItemLink = nil
+    FCOIS.CreateFCOISUniqueIdStringLastFCOISCreatedUniqueId = nil
 
     --Do not go on if libraries are not loaded properly
     if not FCOIS.libsLoadedProperly then
@@ -854,6 +869,19 @@ end
 
 --Addon is now loading and building up
 local function FCOItemSaver_Loaded(eventCode, addOnName)
+    --Reset cached values
+    FCOIS.MyGetItemInstanceIdLastBagId      = nil
+    FCOIS.MyGetItemInstanceIdLastSlotIndex  = nil
+    FCOIS.MyGetItemInstanceIdLastId         = nil
+    FCOIS.MyGetItemInstanceIdLastIdSigned   = nil
+
+    FCOIS.CreateFCOISUniqueIdStringLastLastUseType = nil
+    FCOIS.CreateFCOISUniqueIdStringLastUnsignedItemInstanceId = nil
+    FCOIS.CreateFCOISUniqueIdStringLastBagId = nil
+    FCOIS.CreateFCOISUniqueIdStringLastSlotIndex = nil
+    FCOIS.CreateFCOISUniqueIdStringLastItemLink = nil
+    FCOIS.CreateFCOISUniqueIdStringLastFCOISCreatedUniqueId = nil
+
     --Libraries were loaded properly?
     if FCOIS.libsLoadedProperly then
         --Check if another addon name is found and thus active

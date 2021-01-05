@@ -1,14 +1,15 @@
 ##
-## Title: |c00FF00FCO |cFFFF00ItemSaver|r
+## Title: |t32:32:FCOItemSaver/FCOIS.dds|t|c00FF00FCO |cFFFF00ItemSaver|r
 ## Author: Baertram
 ## Version: 2.0.1
 ## AddOnVersion: 201
 ## APIVersion: 100033 100034
-## Description: Mark your items with different icons and filter them in inventories, trading, banks, guild store, mail, crafting, researching and stores. Protect your marked items against sell/deconstruct/extract etc.!
+## Description: FCOIS |t32:32:FCOItemSaver/FCOIS.dds|t Marks your items with different icons and filters them in the inventories/crafting. Protects your marked items against sell/deconstruct/extract etc., and provides many more features!
 ## SavedVariables: FCOItemSaver_Settings
 ## !!! Attention !!! -> 1 line here can only contain ~220 characters, so the depency lines need to be split up, or they won't be recognized properly!
 ## DependsOn: LibAddonMenu-2.0>=31 LibCustomMenu>=694 LibDialog>=123 LibFeedback LibFilters-3.0>=317 LibLoadedAddons>=14 LibMainMenu-2.0>=435
 ## OptionalDependsOn: LibDebugLogger>=196 LibLazyCrafting>=3000
+## OptionalDependsOn: LibShifterBox>=15
 ## OptionalDependsOn: AdvancedDisableControllerUI AdvancedFilters AF_FCODuplicateItemsFilters
 ## OptionalDependsOn: CraftBagExtended
 ## OptionalDependsOn: DolgubonsLazyWritCreator
@@ -115,9 +116,6 @@ FCOItemSaver.lua
 ## Addon feedback functions
 src/FCOIS_Feedback.lua
 
-## Addon LAM settings menu
-src/FCOIS_SettingsMenu.lua
-
 ## Addon anti-* protection methods
 src/FCOIS_Protection.lua
 
@@ -138,6 +136,9 @@ Bindings/bindings.xml
 
 ## Backup and restore
 src/FCOIS_Backup.lua
+
+## Addon LAM settings menu
+src/FCOIS_SettingsMenu.lua
 
 ; DISCLOSURE:
 ; This Add-on is not created by, affiliated with or sponsored by ZeniMax

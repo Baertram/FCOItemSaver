@@ -100,14 +100,16 @@ local function checkIfAddonNameHasTemporarilyEnabledUniqueIds(addonName)
     return false
 end
 
+--[[
 local function checkItemIdIsString(itemId)
     local retItemId = itemId
 
     return retItemId
 end
+]]
 
 --Check if the given item ID is already a converted id64String (real uniqueId stored as String)
---or if its a , concatenated String of "<itemId>,<levelNumber>,<qualityId>,<traitId>,<styleId>,<enchantId>" (uniqueId based on the data)
+--or if its a , concatenated String of "<itemId>,<levelNumber>,<qualityId>,<traitId>,<styleId>,<enchantId>, ...." (uniqueId based on the data)
 -->If not , concatenated String and uniqueIds are enabled: Convert it into an id64String
 function FCOIS.checkItemId(itemId, addonName)
     if itemId == nil then return end
@@ -123,14 +125,92 @@ function FCOIS.checkItemId(itemId, addonName)
     return retItemId
 end
 
+function FCOIS.getFCOISMarkerIconUniqueIdAllowedItemType(bagId, slotIndex, uniqueItemIdType)
+    local allowedItemtype
+    local settings = FCOIS.settingsVars.settings
+    if uniqueItemIdType == nil then
+        if settings.useUniqueIds == true then
+            uniqueItemIdType = settings.uniqueItemIdType
+            uniqueItemIdType = uniqueItemIdType or FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE
+        else
+            --Non-unique itemIds are enabled so all itemTypes are allowed for the itemInstanceId markers
+            return true
+        end
+    end
+    if uniqueItemIdType == FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE then -- ZOs real unique IDs
+        --Only armor and weapons and jewelry count as allowed itemType
+        allowedItemtype = FCOIS.allowedUniqueIdItemTypes[GetItemType(bagId, slotIndex)] or false
+    else
+        --All selected itemTypes at the settings of unique FCOIS marker icon IDs are allowed itemtypes
+        allowedItemtype = settings.allowedFCOISUniqueIdItemTypes[GetItemType(bagId, slotIndex)] or false
+    end
+    return allowedItemtype
+end
+local getFCOISMarkerIconUniqueIdAllowedItemType = FCOIS.getFCOISMarkerIconUniqueIdAllowedItemType
+
+--Get the itemInstanceId for non-unique or the unique ZOs id or the FCOIS created unique id, depending on the settings
+function FCOIS.GetFCOISMarkerIconSavedVariablesItemId(bagId, slotIndex, allowedItemType, useUniqueIds, uniqueItemIdType, signToo)
+    if bagId == nil or slotIndex == nil then
+        return nil, allowedItemType
+    end
+    signToo = signToo or false
+    local itemId
+    local useNormalItemInstanceId = true
+    if useUniqueIds == nil or uniqueItemIdType == nil then
+        local settings = FCOIS.settingsVars.settings
+        useUniqueIds = settings.useUniqueIds
+        uniqueItemIdType = settings.uniqueItemIdType
+    end
+    local useUniqueIdsForMarkerIcons = useUniqueIds
+    local uniqueIdsTypeForMarkerIcons = uniqueItemIdType
+
+    if useUniqueIdsForMarkerIcons == true then
+        allowedItemType = allowedItemType or getFCOISMarkerIconUniqueIdAllowedItemType(bagId, slotIndex, uniqueIdsTypeForMarkerIcons)
+        if allowedItemType == true then
+            useNormalItemInstanceId = false
+            if not uniqueIdsTypeForMarkerIcons or uniqueIdsTypeForMarkerIcons == FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE then -- ZOs real unique IDs
+                itemId = zo_getSafeId64Key(GetItemUniqueId(bagId, slotIndex))
+            elseif uniqueIdsTypeForMarkerIcons == FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE then --FCOIS onw build unique IDs
+                itemId = FCOIS.CreateFCOISUniqueIdString(GetItemId(bagId, slotIndex), allowedItemType, bagId, slotIndex, nil)
+            end
+        end
+    end
+    if useNormalItemInstanceId == true then
+        local itemInstanceId = GetItemInstanceId(bagId, slotIndex)
+        --Sign the itemInstanceId now
+        if signToo == true then
+            --3rd parameter onlySign == true will force to sign the itemInstanceId without further checks
+            itemId = FCOIS.SignItemId(itemInstanceId, allowedItemType, true, nil, bagId, slotIndex)
+        else
+            --Will be signed later on, e.g. if this function here was called via function FCOIS.MyGetItemInstanceIdNoControl(bagId, slotIndex, signToo)
+            --where signToo == true -> Then FCOIS.SignItemId will be called from that function + updates internal variables
+            itemId = itemInstanceId
+        end
+    end
+    return itemId, allowedItemType
+end
+local GetFCOISMarkerIconSavedVariablesItemId = FCOIS.GetFCOISMarkerIconSavedVariablesItemId
+
 --Get the item's instance id or unique ID
 --OLD function before "dragon bones" patch
 function FCOIS.MyGetItemInstanceIdNoControl(bagId, slotIndex, signToo)
+--d("[FCOIS]MyGetItemInstanceIdNoControl - bagId: " ..tostring(bagId) .. ", slotIndex: " ..tostring(slotIndex).. ", signToo: " ..tostring(signToo) )
     signToo = signToo or false
     --Support for base64 unique itemids (e.g. an enchanted armor got the same ItemInstanceId but can have different unique ids)
     local itemId
-    local settings = FCOIS.settingsVars.settings
     local allowedItemType
+    --Cache the last used bagId and slotIndex for the cached iteminstance or uniqueId
+    -->Reset the last ID if he bagId or slotIndex changes
+    if (bagId == nil or FCOIS.MyGetItemInstanceIdLastBagId == nil or FCOIS.MyGetItemInstanceIdLastBagId ~= bagId) or
+        (slotIndex == nil or FCOIS.MyGetItemInstanceIdLastSlotIndex== nil or FCOIS.MyGetItemInstanceIdLastSlotIndex ~= slotIndex) then
+--d(">resetting cached bag, slot and itemIds")
+        --Reset the cached last ID
+        FCOIS.MyGetItemInstanceIdLastId = nil
+        FCOIS.MyGetItemInstanceIdLastIdSigned = nil
+    end
+    FCOIS.MyGetItemInstanceIdLastBagId = bagId
+    FCOIS.MyGetItemInstanceIdLastSlotIndex = slotIndex
+
     --Is the bagId and slotIndex empty: Read the itemInstanceOrUniqueId from the FCOIS.IIfAclicked table (if filled)
     if bagId == nil or slotIndex == nil then
         local IIfAclicked = FCOIS.IIfAclicked
@@ -143,25 +223,32 @@ function FCOIS.MyGetItemInstanceIdNoControl(bagId, slotIndex, signToo)
         --Is the unique item ID enabled and the item's type is an allowed one(e.g. weapons, armor, ...)
         --Then use the unique item ID
         --Else use the non-unique item ID
-        allowedItemType = FCOIS.allowedUniqueIdItemTypes[GetItemType(bagId, slotIndex)] or false
+        local settings = FCOIS.settingsVars.settings
         if settings.debug then FCOIS.debugMessage( "[MyGetItemInstanceIdNoControl]","useUniqueIds: " .. tostring(settings.useUniqueIds) .. ", allowedItemType: " .. tostring(allowedItemType), true, FCOIS_DEBUG_DEPTH_ALL) end
         --d("[FCOIS.MyGetItemInstanceINoControl] useUniqueIds: " .. tostring(settings.useUniqueIds) .. ", allowedItemType: " .. tostring(allowedItemType))
-        if settings.useUniqueIds and allowedItemType then
-            local uniqueItemIdType = settings.uniqueItemIdType
-            if not uniqueItemIdType or uniqueItemIdType == FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE then -- ZOs real unique IDs
-                itemId = zo_getSafeId64Key(GetItemUniqueId(bagId, slotIndex))
-            elseif uniqueItemIdType == FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE then --FCOIS onw build unique IDs
-                local itemInstanceId = GetItemInstanceId(bagId, slotIndex)
-                itemId = FCOIS.CreateFCOISUniqueIdString(itemInstanceId, allowedItemType, bagId, slotIndex, nil)
-            end
+
+        --Use the cached itemId first
+        itemId = FCOIS.MyGetItemInstanceIdLastId
+        --If there was nothing cached: Build it new
+        if itemId == nil then
+            itemId, allowedItemType = GetFCOISMarkerIconSavedVariablesItemId(bagId, slotIndex, nil, settings.useUniqueIds, settings.uniqueItemIdType, not signToo)
+            --Cache the last ID so that loops won't rebuild the whole id for the same bagId + slotIndex (if all marker icons are checked)
+            FCOIS.MyGetItemInstanceIdLastId = itemId
+        end
+        if settings.useUniqueIds == true and allowedItemType == true then
+            --Prevent calling FCOIS.SignItemId:
             --Unique IDs do not need to be signed as only numbers get signed but uniqueIds are Strings
             return itemId
-        else
-            itemId = GetItemInstanceId(bagId, slotIndex)
         end
     end
-    if signToo then
-        itemId = FCOIS.SignItemId(itemId, allowedItemType, nil, nil, bagId, slotIndex)
+    if signToo == true then
+        if FCOIS.MyGetItemInstanceIdLastIdSigned == nil then
+            local itemInstanceIdSigned = FCOIS.SignItemId(itemId, allowedItemType, nil, nil, bagId, slotIndex)
+            FCOIS.MyGetItemInstanceIdLastIdSigned = itemInstanceIdSigned
+            return itemInstanceIdSigned
+        else
+            return FCOIS.MyGetItemInstanceIdLastIdSigned
+        end
     end
     return itemId
 end
@@ -257,78 +344,184 @@ function FCOIS.extractItemIdFromItemLink(itemLink)
 end
 
 --Create a unique String as "uniqueID" for an allowed itemtype of an item:
---"<unsignedItemInstanceId>,<levelNumber>,<qualityId>,<traitId>,<styleId>,<enchantId>,<isStolen>,..."
+--"<unsignedItemIdOrItemInstanceId>,<levelNumber>,<qualityId>,<traitId>,<styleId>,<enchantId>,<isStolen>,<isCrafted>,<craftedByName>"
+-->Depending on the chosen uniqeId "parts" settings and the itemType of the item!
 --Parameters bagId and slotIndex or itemLink must be given!
 --If only the parameter itemLink is given the parameter unsignedItemInstanceId must be given as well, as there is no GetItemLinkIteminstaceId function :-(
 -->TODO: Maybe, if only itemLink is given, use the itemId here instead of the ItemInstanceId then, as some addons like IventoryInsight from ashes do not provide bagId and slotIndex at all!
+-->Yes, changed to that way, also because the itemInstanceId always differs level/quality/enchantment etc. already and if we want to manually specify which parts the FCOIS uniqueId needs, we need to use the itemId as base!
 --If bagId and slotIndex are given unsignedItemInstanceId can be nil (will be rebuild internally then).
 --If allowedItemType (boolean) is not given then the itemType will be rebuild from the bagId & slotIndex, or the itemlink, and the value will be checked against FCOIS.allowedUniqueIdItemTypes[itemType] afterwards.
-function FCOIS.CreateFCOISUniqueIdString(unsignedItemInstanceId, allowedItemType, bagId, slotIndex, itemLink)
+function FCOIS.CreateFCOISUniqueIdString(itemId, bagId, slotIndex, itemLink)
+    --Either bag + slot or itemLink needs to be given
     if (not bagId or not slotIndex) and (not itemLink or itemLink == "") then return end
-    if not unsignedItemInstanceId and (not bagId or not slotIndex) then return end
-    local uniqueItemIdStringTemplate = "%s,%s,%s,%s,%s,%s" -- itemInstanceOrItemId,level,quality,trait,style,enchantment
-    local uniqueItemIdStolenTemplate = ",%s" --,isStolen
-    local uniqueItemIdCraftedTemplateWithoutCrafterName = ",%s" --,isCrafted
-    local uniqueItemIdCraftedTemplate = ",%s,%s" --,isCrafted,craftedByName
-    local uniqueItemIdString
     --Get or use the itemLink
     if bagId and slotIndex and not itemLink then
         itemLink = GetItemLink(bagId, slotIndex)
     end
+--d("[FCOIS]CreateFCOISUniqueIdString - " ..itemLink)
     if not itemLink or itemLink == "" then return end
-    --Check if the itemType is allowed to be checked for these uniqueIds
-    if not allowedItemType then
-        local itemType, _  = GetItemLinkItemType(itemLink)
-        allowedItemType = FCOIS.allowedUniqueIdItemTypes[itemType]
-    end
-    allowedItemType = allowedItemType or false
-    if not allowedItemType then return end
+
     --Get the item's base data like itemInstanceId, level, quality
-    if not unsignedItemInstanceId then
+    if not itemId then
         if bagId and slotIndex then
             --Use the ItemInstanceId
-            unsignedItemInstanceId = GetItemInstanceId(bagId, slotIndex)
+            --unsignedItemInstanceId = GetItemInstanceId(bagId, slotIndex)
+            --Use the itemId
+            itemId = GetItemId(bagId, slotIndex)
         else
-            --No bag or slot? Use the itemId of the itemLink
+            --No bag or slot? Use the itemId of the itemLink -> e..g Addon Inventory Insight From Ashes
             -->TODO: This might become buggy if one extracts the first value of the returned String (the itemId in this case) and tries to get entries in the SavedVariables
-            -->TODO: of "markedItems" using only this itemId, instead of the ItemInstanceId. One would need to check the inventory item's itemId and if it matches get bagId and slotIndex
-            --TODO: -> GetItemInstanceId(bag, slot) and sign this value then via FCOIS.SignItemId() -> then calling FCOIS.checkItemId(), BUT suppress a call to FCOIS.CreateFCOISUniqueIdString again then!!!
-            unsignedItemInstanceId = GetItemLinkItemId(itemLink)
+            -->TODO: of "markedItems" using only this itemId, instead of the "signed" ItemInstanceId. One would need to check the inventory item's signed itemId and if it
+            -->TODO: matches get bagId and slotIndex of that item to do further checks
+            itemId = GetItemLinkItemId(itemLink)
         end
     end
-    if not unsignedItemInstanceId then return end
+    if not itemId then return end
+
+    --------------------------------------------------------------------------------------------------------------------
+    --Cache the last used unsignedItemInstanceId + bagId  + slotIndex,
+    --or Cache the last used unsignedItemInstanceId + itemlink
+    -->Reset the last ID if the combination changes
+    --Last itemLink not known?
+    local lastUsedLastUsedType      = FCOIS.CreateFCOISUniqueIdStringLastLastUseType
+    if lastUsedLastUsedType == nil or lastUsedLastUsedType > 2 then
+--d(">resetting all variables")
+        --Reset all variables
+        FCOIS.CreateFCOISUniqueIdStringLastLastUseType              = nil
+        FCOIS.CreateFCOISUniqueIdStringLastUnsignedItemInstanceId   = nil
+        FCOIS.CreateFCOISUniqueIdStringLastBagId                    = nil
+        FCOIS.CreateFCOISUniqueIdStringLastSlotIndex                = nil
+        FCOIS.CreateFCOISUniqueIdStringLastItemLink                 = nil
+        FCOIS.CreateFCOISUniqueIdStringLastFCOISCreatedUniqueId     = nil
+    end
+
+    local lastUsedItemInstanceId    = FCOIS.CreateFCOISUniqueIdStringLastUnsignedItemInstanceId
+    local lastFCOISuniqueId         = FCOIS.CreateFCOISUniqueIdStringLastFCOISCreatedUniqueId
+    local lastBagId                 = FCOIS.CreateFCOISUniqueIdStringLastBagId
+    local lastSlotIndex             = FCOIS.CreateFCOISUniqueIdStringLastSlotIndex
+    local lastItemLink              = FCOIS.CreateFCOISUniqueIdStringLastItemLink
+
+    --Did we cache something already?
+    if lastUsedLastUsedType ~= nil and lastUsedItemInstanceId ~= nil and lastUsedItemInstanceId == itemId
+        and lastFCOISuniqueId ~= nil then
+        --unsignedItemInstanceId + bagId, slotIndex
+        if lastUsedLastUsedType == 1 then
+            if (bagId ~= nil and lastBagId ~= nil and bagId == lastBagId) and
+               (slotIndex ~= nil and lastSlotIndex ~= nil and slotIndex == lastSlotIndex) then
+--d("<returning cached bagId/slotIndex value: " ..tostring(lastFCOISuniqueId))
+                return lastFCOISuniqueId
+            end
+        --unsignedItemInstanceId + ItemLink
+        elseif lastUsedLastUsedType == 2 then
+            if (itemLink ~= nil and lastItemLink ~= nil and itemLink == lastItemLink) then
+--d("<returning cached itemLink value: " ..tostring(lastFCOISuniqueId))
+                return lastFCOISuniqueId
+            end
+        end
+    end
+
+    --------------------------------------------------------------------------------------------------------------------
+    --Get the values for the uniqueId parts, depending on the part settings
+    --Get the parts for the unique ID to build
+    local settings = FCOIS.settingsVars.settings
+    local uniqueIdParts = settings.uniqueIdParts
+    if not uniqueIdParts then return end
+
+    --Add item's level to the uniqueId?
     local level
-    local cpLevel = GetItemLinkRequiredChampionPoints(itemLink)
-    if cpLevel ~= nil then
-        level = cpLevel
-    else
-        level = GetItemLinkRequiredLevel(itemLink)
-    end
-    local quality = GetItemLinkFunctionalQuality(itemLink)
-    local trait,_ = GetItemLinkTraitInfo(itemLink)
-    local style = GetItemLinkItemStyle(itemLink)
-    local enchantment = GetItemLinkAppliedEnchantId(itemLink)
-    local isStolen = booleanToNumber(IsItemLinkStolen(itemLink))
-    local isCrafted = booleanToNumber(IsItemLinkCrafted(itemLink))
+    local quality
+    local trait
+    local style
+    local enchantment
+    local isStolen
+    local isCrafted
     local craftedByName
-    if bagId and slotIndex then
-        craftedByName = GetItemCreatorName(bagId, slotIndex)
-    end
 
-    --Get the other item's data like style, enchantment, isStolen, ...
-    --TODO: What other criteria makes the item unique? IsCrafted and CraftedByName maybe?
-
-    uniqueItemIdString = string.format(uniqueItemIdStringTemplate, unsignedItemInstanceId,level,quality,trait,style,enchantment)
-    if isStolen ~= nil then
-        uniqueItemIdString = uniqueItemIdString .. string.format(uniqueItemIdStolenTemplate, isStolen)
-    end
-    if isCrafted ~= nil then
-        if craftedByName and craftedByName ~= "" then
-            uniqueItemIdString = uniqueItemIdString .. string.format(uniqueItemIdCraftedTemplate, isCrafted, craftedByName)
+    if uniqueIdParts.level == true then
+        local cpLevel = GetItemLinkRequiredChampionPoints(itemLink)
+        if cpLevel ~= nil then
+            level = cpLevel
         else
-            uniqueItemIdString = uniqueItemIdString .. string.format(uniqueItemIdCraftedTemplateWithoutCrafterName, isCrafted)
+            level = GetItemLinkRequiredLevel(itemLink)
         end
     end
+    if level == nil then level = 0 end
+
+    --Add item's quality to the uniqueId?
+    if uniqueIdParts.quality == true then
+        quality = GetItemLinkFunctionalQuality(itemLink)
+    end
+    if quality == nil then quality = 0 end
+
+    --Get the values for the uniqueId parts depending on the itemType
+    if itemType == ITEMTYPE_ARMOR or itemType == ITEMTYPE_WEAPON then
+        --Add item's trait to the uniqueId?
+        if uniqueIdParts.trait == true then
+            trait = GetItemLinkTraitInfo(itemLink)
+        end
+        if trait == nil then trait = 0 end
+
+        --Add item's enchantment to the uniqueId?
+        if uniqueIdParts.enchantment == true then
+            enchantment = GetItemLinkAppliedEnchantId(itemLink)
+        end
+        if enchantment == nil then enchantment = 0 end
+
+        --Add item's style to the uniqueId?
+        if uniqueIdParts.style == true then
+            style = GetItemLinkItemStyle(itemLink)
+        end
+        if style == nil then style = 0 end
+
+        --Add item's isCrafted state to the uniqueId?
+        if uniqueIdParts.isCrafted == true then
+            isCrafted = booleanToNumber(IsItemLinkCrafted(itemLink))
+            if isCrafted == 1 then
+                if uniqueIdParts.isCraftedBy == true then
+                    if bagId and slotIndex then
+                        craftedByName = GetItemCreatorName(bagId, slotIndex)
+                    end
+                end
+            end
+        end
+        if isCrafted == nil then isCrafted = 0 end
+        if craftedByName == nil then craftedByName = "?"
+        else
+            craftedByName = HashString(craftedByName) --Create a hash number of the crafter's name
+        end
+    end
+
+    --Add item's isStolen state to the uniqueId?
+    if uniqueIdParts.isStolen == true then
+        isStolen = booleanToNumber(IsItemLinkStolen(itemLink))
+    end
+    if isStolen == nil then isStolen = 0 end
+    --------------------------------------------------------------------------------------------------------------------
+
+    --Build the uniqueId string now
+    local uniqueItemIdStringTemplate = "%s,%s,%s,%s,%s,%s,%s,%s,%s" -- itemInstanceOrItemId,level,quality,trait,style,enchantment,isStolen,isCrafted,craftedByName
+    local uniqueItemIdString
+    uniqueItemIdString = string.format(uniqueItemIdStringTemplate, itemId,tostring(level),tostring(quality),tostring(trait),tostring(style),tostring(enchantment),tostring(isStolen),tostring(isCrafted), tostring(craftedByName))
+
+    --------------------------------------------------------------------------------------------------------------------
+    --Cache the current values and set the last used type
+    FCOIS.CreateFCOISUniqueIdStringLastUnsignedItemInstanceId = itemId
+    if bagId ~= nil and slotIndex ~= nil then
+        FCOIS.CreateFCOISUniqueIdStringLastBagId        = bagId
+        FCOIS.CreateFCOISUniqueIdStringLastSlotIndex    = slotIndex
+        FCOIS.CreateFCOISUniqueIdStringLastItemLink     = nil
+        FCOIS.CreateFCOISUniqueIdStringLastLastUseType  = 1
+    elseif itemLink ~= nil then
+        FCOIS.CreateFCOISUniqueIdStringLastItemLink     = itemLink
+        FCOIS.CreateFCOISUniqueIdStringLastBagId        = nil
+        FCOIS.CreateFCOISUniqueIdStringLastSlotIndex    = nil
+        FCOIS.CreateFCOISUniqueIdStringLastLastUseType  = 2
+    end
+    FCOIS.CreateFCOISUniqueIdStringLastFCOISCreatedUniqueId = uniqueItemIdString
+    --------------------------------------------------------------------------------------------------------------------
+
+--d("<"..tostring(uniqueItemIdString) .. ", lastUsedType: " .. tostring(FCOIS.CreateFCOISUniqueIdStringLastLastUseType))
     return uniqueItemIdString
 end
 
@@ -351,7 +544,7 @@ function FCOIS.SignItemId(itemId, allowedItemType, onlySign, addonName, bagId, s
         --Support for base64 unique itemids (e.g. an enchanted armor got the same ItemInstanceId but can have different unique ids).
         --But only if the itemType was checked before and is an allowed itemtype for the unique ID checks (e.g. armor, weapons)
         --or the itemId is a string (which is the unique ID format)
-        if (settings.useUniqueIds and allowedItemType)
+        if (settings.useUniqueIds == true and allowedItemType == true)
             or checkIfAddonNameHasTemporarilyEnabledUniqueIds(addonName) == true
             or itemIDTypeIsString == true then
             --itemId as string could be the int64UniqueId stored as String (really unique for each item!),
@@ -359,18 +552,9 @@ function FCOIS.SignItemId(itemId, allowedItemType, onlySign, addonName, bagId, s
             --If it's not a string: Create one
             if not itemIDTypeIsString then
                 local uniqueItemIdType = settings.uniqueItemIdType
-                if not uniqueItemIdType or uniqueItemIdType == FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE then --Really ZOS unique IDs
-                    itemId = zo_getSafeId64Key(itemId)
-                elseif uniqueItemIdType == FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE then -- FCOIS own created unique IDs
-                    --ItemId could get nil here if bagId or slotIndex are nil! So prevent it from being set to nil and use the
-                    --itemId that was passed to the functiob FCOIS.SignItemId -> Could be e.g. an already created uniqueItemId from InventoryInsightFromAshes
-                    --or even from FCOIS
-                    if bagId and slotIndex then
-                        itemId = FCOIS.CreateFCOISUniqueIdString(nil, allowedItemType, bagId, slotIndex, nil)
-                    end
-                end
+                itemId, allowedItemType = GetFCOISMarkerIconSavedVariablesItemId(bagId, slotIndex, allowedItemType, settings.useUniqueIds, uniqueItemIdType)
             end
-            --Return given string "unique ID" itemId
+            --Return given string "unique ID" itemId without signing it. UniqueIds do not need a sign!
             return itemId
         end
     end
@@ -840,11 +1024,11 @@ function FCOIS.isRecipeKnown(bagId, slotIndex, expectedResult)
     local settings = settingsBase.settings
     local useAccountWideSettings = (settingsBase.defaultSettings.saveMode == 2) or false
     local autoMarkRecipesOnlyThisChar = settings.autoMarkRecipesOnlyThisChar
-    local recipeUnknownIconNr = settings.autoMarkRecipesIconNr
-    local recipeKnownIconNr = settings.autoMarkKnownRecipesIconNr
+    --local recipeUnknownIconNr = settings.autoMarkRecipesIconNr
+    --local recipeKnownIconNr = settings.autoMarkKnownRecipesIconNr
     local currentCharName = ZO_CachedStrFormat(SI_UNIT_NAME, GetUnitName("player"))
     local currentCharId = tostring(GetCurrentCharacterId())
-    local known = nil
+    local known
 
     if settings.debug then FCOIS.debugMessage("isRecipeKnown", GetItemLink(bagId, slotIndex) .. ", expectedResult: " ..tostring(expectedResult) .. ", recipeAddonUsed: " ..tostring(recipeAddonUsed) .. ", autoMarkRecipesOnlyThisChar: " ..tostring(autoMarkRecipesOnlyThisChar), true, FCOIS_DEBUG_DEPTH_SPAM, false) end
 --d("[FCOIS]isRecipeKnown ".. GetItemLink(bagId, slotIndex) .. ", expectedResult: " ..tostring(expectedResult) .. ", recipeAddonUsed: " ..tostring(recipeAddonUsed) .. ", autoMarkRecipesOnlyThisChar: " ..tostring(autoMarkRecipesOnlyThisChar))

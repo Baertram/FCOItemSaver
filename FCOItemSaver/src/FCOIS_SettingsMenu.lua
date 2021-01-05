@@ -1,15 +1,26 @@
 --Global array with all data of this addon
-if FCOIS == nil then FCOIS = {} end
+FCOIS = FCOIS or {}
 local FCOIS = FCOIS
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
 
 local fcoisLAMSettingsReferencePrefix = "FCOItemSaver_Settings_"
+--Control name parts, prefix, suffix, tooltip suffix
+local previewSelect = "Preview_Select"
+local filterButton = "Filter"
+local colorSuffix = "_color"
+local nameSuffix = "_name"
+local optionsIcon = "options_icon"
+local submenuSuffix = "_submenu"
+local tooltipSuffix = "_TT"
 local LAMopenedCounter = 0
 
 local FCOISdefaultSettings = {}
 local FCOISsettings = {}
 local FCOISlocVars = {}
+FCOISlocVars            = FCOIS.localizationVars
+local locVars           = FCOISlocVars.fcois_loc
+
 local mappingVars = FCOIS.mappingVars
 local preChatVars = FCOIS.preChatVars
 local noEntry = mappingVars.noEntry
@@ -27,6 +38,16 @@ local filterButtonsToCheck = FCOIS.checkVars.filterButtonsToCheck
 local numFilterIcons = numVars.gFCONumFilterIcons
 local numMaxDynIcons = numVars.gFCOMaxNumDynamicIcons
 local markerIconTextures = FCOIS.textureVars.MARKER_TEXTURES
+
+--The textures/marker icons names (just numbers)
+local texturesList = {}
+local maxTextureIcons = numVars.maxTextureIcons or 100
+for i=1, maxTextureIcons, 1 do
+    texturesList[i] = tostring(i)
+end
+
+local ZOsControlVars = FCOIS.ZOControlVars
+
 local minIconSize = FCOIS.iconVars.minIconSize
 local maxIconSize = FCOIS.iconVars.maxIconSize
 local minIconOffsetLeft = FCOIS.iconVars.minIconOffsetLeft
@@ -59,6 +80,51 @@ local editBoxesToSetTextTypes
 --Show the FCO ItemSaver FCOIS.settingsVars.settings panel
 function FCOIS.ShowFCOItemSaverSettings()
     FCOIS.LAM:OpenToPanel(FCOIS.FCOSettingsPanel)
+end
+
+-- ============= local helper functions - BEGIN ====================================================================
+--Get the preview control by help of the iconNr
+local function getPreviewControlByIconNr(previewType, iconNr)
+    return WINDOW_MANAGER:GetControlByName(fcoisLAMSettingsReferencePrefix .. tostring(previewType) .. tostring(iconNr) .. previewSelect, "")
+end
+
+local function changePreViewIconSize(previewType, iconNr, size, doNotUpdateMarkers)
+    doNotUpdateMarkers = doNotUpdateMarkers or false
+    local iconCtrl = getPreviewControlByIconNr(previewType, iconNr)
+    if not iconCtrl or not size then return end
+    iconCtrl:SetIconSize(size)
+    if not doNotUpdateMarkers then
+        --Set global variable to update the marker colors and textures
+        FCOIS.preventerVars.gUpdateMarkersNow = true
+    end
+end
+
+local function changePreviewIconColor(previewType, iconNr, r, g, b, a, doNotUpdateMarkers)
+    doNotUpdateMarkers = doNotUpdateMarkers or false
+    local iconCtrl = getPreviewControlByIconNr(previewType, iconNr)
+    if not iconCtrl or not r or not g or not g or not a then return end
+    iconCtrl:SetColor(ZO_ColorDef:New(r,g,b,a))
+    if not doNotUpdateMarkers then
+        --Set global variable to update the marker colors and textures
+        FCOIS.preventerVars.gUpdateMarkersNow = true
+    end
+end
+
+local function updateFilterButtonColorAndTexture(filterButtonNr, iconNr)
+    local p_button = WINDOW_MANAGER:GetControlByName(ZOsControlVars.FCOISfilterButtonNames[filterButtonNr], "")
+    if p_button == nil or filterButtonNr == nil or iconNr == nil then return end
+    FCOIS.UpdateButtonColorsAndTextures(iconNr, p_button, -999)
+end
+
+local function changePreviewLabelText(previewType, iconNr, text, doNotUpdateMarkers)
+    doNotUpdateMarkers = doNotUpdateMarkers or false
+    local iconCtrl = getPreviewControlByIconNr(previewType, iconNr)
+    if not iconCtrl or not iconCtrl.label or not text then return end
+    iconCtrl.label:SetText(locVars[optionsIcon..tostring(iconNr).."_texture"] .. ": " .. text)
+    if not doNotUpdateMarkers then
+        --Set global variable to update the marker colors and textures
+        FCOIS.preventerVars.gUpdateMarkersNow = true
+    end
 end
 
 --Map the texture path to the texture ID
@@ -113,6 +179,116 @@ local function cleanName(nameStr, nameType, nameValue)
     return nameCleaned
 end
 
+--Set the preview icon values (width, height, color, etc.)
+local function InitPreviewIcon(i)
+    local iconSettings = FCOISsettings.icon[i]
+    local preViewControl = _G[string.format(fcoisLAMSettingsReferencePrefix .. filterButton .. "%d" .. previewSelect, i)]
+    if preViewControl == nil then return false end
+    preViewControl:SetColor(ZO_ColorDef:New(iconSettings.color))
+    preViewControl:SetIconSize(iconSettings.size)
+    local text = string.format("%s: %s", locVars[string.format(optionsIcon .. "%d_texture", i)], texturesList[iconSettings.texture])
+    preViewControl.label:SetText(text)
+end
+
+--Set the text type of some edit boxes in the settings menu so the values entered are validated
+local function setSettingsMenuEditBoxTextTypes()
+    if not editBoxesToSetTextTypes then return end
+    for controlName, textType in pairs(editBoxesToSetTextTypes) do
+        if textType then
+            local control = WINDOW_MANAGER:GetControlByName(controlName, "")
+            if control then
+                if control.editbox and control.editbox.SetTextType then
+                    control.editbox:SetTextType(textType)
+                end
+            end
+        end
+    end
+end
+-- ============= local helper functions - END ======================================================================
+
+
+-- ============= local settings control create helper functions - BEGIN ===========================================
+    --Build the icons & choicesValues list for the LAM icon dropdown boxes
+    local iconsList, iconsListValues = FCOIS.GetLAMMarkerIconsDropdown('standard', true, false)
+    FCOIS.LAMiconsList = iconsList
+    FCOIS.LAMiconsListValues = iconsListValues
+    --Build the icons list with a first entry "None"
+    local iconsListNone, iconsListValuesNone = FCOIS.GetLAMMarkerIconsDropdown('standard', true, true)
+    FCOIS.LAMiconsListNone = iconsListNone
+    FCOIS.LAMiconsListValuesNone = iconsListValuesNone
+    --Build the icons list and the keybindings icons list
+    --local iconsListStandardIconOnKeybind = FCOIS.GetLAMMarkerIconsDropdown('keybinds', false, false)
+
+    --The table with all the LAM dropdown controls that should get updated
+    local LAMdropdownsWithIconList = {
+        ["FCOItemSaver_Standard_Icon_On_Keybind_Dropdown"]              = { ["choices"] = 'standard', ["choicesValues"] = iconsListValues, ["choicesTooltips"] = nil },
+        ["FCOItemSaver_Icon_On_Automatic_Set_Part_Dropdown"]            = { ["choices"] = 'standard', ["choicesValues"] = iconsListValues, ["choicesTooltips"] = nil },
+        ["FCOItemSaver_Icon_On_Automatic_Non_Wished_Set_Part_Dropdown"] = { ["choices"] = 'standard', ["choicesValues"] = iconsListValues, ["choicesTooltips"] = nil },
+        ["FCOItemSaver_Icon_On_Automatic_Crafted_Items_Dropdown"]       = { ["choices"] = 'standard', ["choicesValues"] = iconsListValues, ["choicesTooltips"] = nil },
+        ["FCOItemSaver_Icon_On_Automatic_Recipe_Dropdown"]              = { ["choices"] = 'standard', ["choicesValues"] = iconsListValues, ["choicesTooltips"] = nil },
+        ["FCOItemSaver_Icon_On_Automatic_Quality_Dropdown"]             = { ["choices"] = 'standard', ["choicesValues"] = iconsListValues, ["choicesTooltips"] = nil },
+    }
+
+    --Function to update the comboboxes of the LAM dropdowns holding the "iconList"/"iconsListStandardIconOnKeybind" entries
+    --if an icon gets disabled or renamed
+    local function updateIconListDropdownEntries()
+        FCOIS.preventerVars.gUpdateMarkersNow = true
+        if LAMdropdownsWithIconList == nil then return nil end
+        for dropdownCtrlName, updateData in pairs(LAMdropdownsWithIconList) do
+            local dropdownCtrl = WINDOW_MANAGER:GetControlByName(dropdownCtrlName, "")
+            if dropdownCtrl == nil or updateData == nil then return nil end
+            if updateData["choices"] == nil then updateData["choices"] = "standard" end
+            local choices, choicesValues, choicesTooltips = FCOIS.GetLAMMarkerIconsDropdown(updateData["choices"])
+            dropdownCtrl:UpdateChoices(choices, choicesValues, choicesTooltips)
+        end
+    end
+
+    --Function to create a LAM control
+    local function CreateControl(ref, name, tooltip, data, disabledChecks, getFunc, setFunc, defaultSettings, warning, isIconDropDown, scrollable)
+        scrollable = scrollable or false
+        if ref ~= nil then
+            if string.find(ref, fcoisLAMSettingsReferencePrefix, 1)  ~= 1 then
+                data.reference = fcoisLAMSettingsReferencePrefix .. ref
+            else
+                data.reference = ref
+            end
+        end
+        if data.type ~= "description" then
+            data.name = name
+            if data.type ~= "header" and data.type ~= "submenu" then
+                data.tooltip = tooltip
+                if data.type ~= "button" then
+                    data.getFunc = getFunc
+                    data.setFunc = setFunc
+                    data.default = defaultSettings
+                else
+                    data.func = setFunc
+                end
+                if disabledChecks ~= nil then
+                    data.disabled = disabledChecks
+                end
+                data.scrollable = scrollable
+                data.warning = warning
+                --Is the created control a dropdown box containing the FCOIS marker icons?
+                --Then add the reference to the list of dropboxes that need to be updated if an icon changes it's name or
+                if isIconDropDown then
+                    if LAMdropdownsWithIconList ~= nil then
+                        LAMdropdownsWithIconList[tostring(data.reference)] = { ["choices"] = 'standard', ["choicesValues"] = iconsListValues, ["choicesTooltips"] = nil, ["scrollable"] = true }
+                    end
+                end
+            end
+        end
+        return data
+    end
+
+    --Function to create a dropdown box for the LAM panel
+    local function CreateDropdownBox(ref, name, tooltip, disabledChecks, getFunc, setFunc, defaultSettings, choicesList, choicesValuesList, choicesTooltipsList, warning, width, isIconDropDown, isScrollable)
+        width = width or "full"
+        return CreateControl(ref, name, tooltip, { type = "dropdown", choices = choicesList, choicesValues = choicesValuesList, choicesTooltips = choicesTooltipsList, scrollable = isScrollable, width = width }, disabledChecks, getFunc, setFunc, defaultSettings, warning, isIconDropDown, isScrollable)
+    end
+-- ============= local settigngs control create helper functions - END =============================================
+
+
 -- Build the LAM options menu
 function FCOIS.BuildAddonMenu()
     --Update some settings for the libAddonMenu settings menu
@@ -149,8 +325,6 @@ function FCOIS.BuildAddonMenu()
     --Local variables to speed up stuff a bit
     FCOISdefaultSettings    = FCOIS.settingsVars.defaults
     FCOISsettings           = FCOIS.settingsVars.settings
-    FCOISlocVars            = FCOIS.localizationVars
-    local locVars           = FCOISlocVars.fcois_loc
 
     local numDynIcons       = FCOISsettings.numMaxDynamicIconsUsable
 
@@ -238,57 +412,27 @@ function FCOIS.BuildAddonMenu()
     }
 
     --FCOIS v1.9.6 - Unique itemId choices
+    local function uniqueIdIsEnabledAndSetToFCOIS()
+        local settings = FCOIS.settingsVars.settings
+        --if settings.useUniqueIdsToggle == true or settings.useUniqueIds == true then
+        if settings.useUniqueIds == true then
+            return (settings.uniqueItemIdType == FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE) or false
+        end
+        return false
+    end
+
     local uniqueItemIdTypeChoices = {
         [1] = locVars["options_unique_id_base_game"],
-        --[2] = locVars["options_uniqe_id_by_FCOIS"],
+        [2] = locVars["options_uniqe_id_by_FCOIS"],
     }
     local uniqueItemIdTypeChoicesTT = {
-        [1] = locVars["options_unique_id_base_game_TT"],
-        --[2] = locVars["options_uniqe_id_by_FCOIS_TT"],
+        [1] = locVars["options_unique_id_base_game" .. tooltipSuffix],
+        [2] = locVars["options_uniqe_id_by_FCOIS" .. tooltipSuffix],
     }
     local uniqueItemIdTypeChoicesValues = {
         [1] = FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE,
-        --0[2] = FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE,
+        [2] = FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE,
     }
-
-    --The textures/marker icons names (just numbers)
-    local texturesList = {}
-    local maxTextureIcons = numVars.maxTextureIcons or 100
-    for i=1, maxTextureIcons, 1 do
-        texturesList[i] = tostring(i)
-    end
-
-    --Build the icons & choicesValues list for the LAM icon dropdown boxes
-    local iconsList, iconsListValues = FCOIS.GetLAMMarkerIconsDropdown('standard', true, false)
-    --Build the icons list with a first entry "None"
-    local iconsListNone, iconsListValuesNone = FCOIS.GetLAMMarkerIconsDropdown('standard', true, true)
-    --Build the icons list and the keybindings icons list
-    --local iconsListStandardIconOnKeybind = FCOIS.GetLAMMarkerIconsDropdown('keybinds', false, false)
-
-    --The table with all the LAM dropdown controls that should get updated
-    local LAMdropdownsWithIconList = {
-        ["FCOItemSaver_Standard_Icon_On_Keybind_Dropdown"]              = { ["choices"] = 'standard', ["choicesValues"] = iconsListValues, ["choicesTooltips"] = nil },
-        ["FCOItemSaver_Icon_On_Automatic_Set_Part_Dropdown"]            = { ["choices"] = 'standard', ["choicesValues"] = iconsListValues, ["choicesTooltips"] = nil },
-        ["FCOItemSaver_Icon_On_Automatic_Non_Wished_Set_Part_Dropdown"] = { ["choices"] = 'standard', ["choicesValues"] = iconsListValues, ["choicesTooltips"] = nil },
-        ["FCOItemSaver_Icon_On_Automatic_Crafted_Items_Dropdown"]       = { ["choices"] = 'standard', ["choicesValues"] = iconsListValues, ["choicesTooltips"] = nil },
-        ["FCOItemSaver_Icon_On_Automatic_Recipe_Dropdown"]              = { ["choices"] = 'standard', ["choicesValues"] = iconsListValues, ["choicesTooltips"] = nil },
-        ["FCOItemSaver_Icon_On_Automatic_Quality_Dropdown"]             = { ["choices"] = 'standard', ["choicesValues"] = iconsListValues, ["choicesTooltips"] = nil },
-    }
-
-    --Function to update the comboboxes of the LAM dropdowns holding the "iconList"/"iconsListStandardIconOnKeybind" entries
-    --if an icon gets disabled or renamed
-    local function updateIconListDropdownEntries()
-        if LAMdropdownsWithIconList == nil then return nil end
-        for dropdownCtrlName, updateData in pairs(LAMdropdownsWithIconList) do
-            local dropdownCtrl = WINDOW_MANAGER:GetControlByName(dropdownCtrlName, "")
-            if dropdownCtrl == nil or updateData == nil then return nil end
-            if updateData["choices"] == nil then updateData["choices"] = "standard" end
-            local choices = FCOIS.GetLAMMarkerIconsDropdown(updateData["choices"])
-            local choicesValues = updateData["choicesValues"]
-            local choicesTooltips = updateData["choicesTooltips"]
-            dropdownCtrl:UpdateChoices(choices, choicesValues, choicesTooltips)
-        end
-    end
 
     --The list of recipe addons
     local recipeAddonsList = {}
@@ -314,49 +458,6 @@ function FCOIS.BuildAddonMenu()
     end
     buildResearchAddonsList()
 
-    --Function to create a LAM control
-    local function CreateControl(ref, name, tooltip, data, disabledChecks, getFunc, setFunc, defaultSettings, warning, isIconDropDown, scrollable)
-        scrollable = scrollable or false
-        if ref ~= nil then
-            if string.find(ref, fcoisLAMSettingsReferencePrefix, 1)  ~= 1 then
-                data.reference = fcoisLAMSettingsReferencePrefix .. ref
-            else
-                data.reference = ref
-            end
-        end
-        if data.type ~= "description" then
-            data.name = name
-            if data.type ~= "header" and data.type ~= "submenu" then
-                data.tooltip = tooltip
-                if data.type ~= "button" then
-                    data.getFunc = getFunc
-                    data.setFunc = setFunc
-                    data.default = defaultSettings
-                else
-                    data.func = setFunc
-                end
-                if disabledChecks ~= nil then
-                    data.disabled = disabledChecks
-                end
-                data.scrollable = scrollable
-                data.warning = warning
-                --Is the created control a dropdown box containing the FCOIS marker icons?
-                --Then add the reference to the list of dropboxes that need to be updated if an icon changes it's name or
-                if isIconDropDown then
-                    if LAMdropdownsWithIconList ~= nil then
-                        LAMdropdownsWithIconList[tostring(data.reference)] = { ["choices"] = 'standard', ["choicesValues"] = iconsListValues, ["choicesTooltips"] = nil, ["scrollable"] = true }
-                    end
-                end
-            end
-        end
-        return data
-    end
-
-    --Function to create a dropdown box for the LAM panel
-    local function CreateDropdownBox(ref, name, tooltip, disabledChecks, getFunc, setFunc, defaultSettings, choicesList, choicesValuesList, choicesTooltipsList, warning, width, isIconDropDown, isScrollable)
-        width = width or "full"
-        return CreateControl(ref, name, tooltip, { type = "dropdown", choices = choicesList, choicesValues = choicesValuesList, choicesTooltips = choicesTooltipsList, scrollable = isScrollable, width = width }, disabledChecks, getFunc, setFunc, defaultSettings, warning, isIconDropDown, isScrollable)
-    end
 
     -- !!! RU Patch Section START
     --  Add english language description behind language descriptions in other languages
@@ -457,8 +558,8 @@ function FCOIS.BuildAddonMenu()
         accountSrcOptionsValues = {}
         accountTargOptions = {}
         accountTargOptionsValues = {}
---**********************************************************************************************************************
---**********************************************************************************************************************
+        --**********************************************************************************************************************
+        --**********************************************************************************************************************
         --The source server name
         local sourceServerName = serverNames[srcServer]
         --Source accounts
@@ -499,8 +600,8 @@ function FCOIS.BuildAddonMenu()
         end
         table.insert(accountSrcOptions, allAccountsText)
         table.insert(accountSrcOptionsValues, noEntryValue+2)
---**********************************************************************************************************************
---**********************************************************************************************************************
+        --**********************************************************************************************************************
+        --**********************************************************************************************************************
         --Target accounts
         allAccountsFoundInSV = false
         currentAccountFoundInSv = false
@@ -825,7 +926,7 @@ function FCOIS.BuildAddonMenu()
                     --Add an additional dropdownbox for the icon, for each trait
                     --local settingsVarDD = typeToSettingsDD[traitType][traitTypeItemTrait]
                     local refDD = ref .. "_DD"
-                    local nameDD = traitTypeName .. " " .. locVars["options_icon1_texture"]
+                    local nameDD = traitTypeName .. " " .. locVars[optionsIcon .. "1_texture"]
                     local tooltipDD = "Icon " .. traitTypeName
                     local createdIconTraitDDBox = CreateDropdownBox(refDD, nameDD, tooltipDD, disabledFuncDD, getFuncDD, setFuncDD, defaultSettingsDD, iconsList, iconsListValues, iconsList, nil, "half", true, true)
                     if createdIconTraitDDBox ~= nil then
@@ -847,8 +948,8 @@ function FCOIS.BuildAddonMenu()
         --Static values
         --Static dropdown entries
         for FCOISiconNr=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
-            local name = locVars["options_icon_sort_" .. tostring(FCOISiconNr)]
-            local tooltip = locVars["options_icon_sort_order_TT"]
+            local name = locVars[optionsIcon .. "_sort_" .. tostring(FCOISiconNr)]
+            local tooltip = locVars[optionsIcon .. "_sort_order" .. tooltipSuffix]
             if name ~= nil and name ~= "" then
                 local ref = "Icon_Sort_Dropdown_" .. tostring(FCOISiconNr)
                 local getFunc = function() return FCOIS.settingsVars.settings.iconSortOrder[FCOISiconNr] end
@@ -868,16 +969,20 @@ function FCOIS.BuildAddonMenu()
         return createdIconSortDDBoxes
     end
 
-    --Set the preview icon values (width, height, color, etc.)
-    local function InitPreviewIcon(i)
-        local iconSettings = FCOISsettings.icon[i]
-        local preViewControl = _G[string.format("FCOItemSaver_Settings_Filter%dPreview_Select", i)]
-        if preViewControl == nil then return false end
-        preViewControl:SetColor(ZO_ColorDef:New(iconSettings.color))
-        preViewControl:SetIconSize(iconSettings.size)
-        local text = string.format("%s: %s", locVars[string.format("options_icon%d_texture", i)], texturesList[iconSettings.texture])
-        preViewControl.label:SetText(text)
+
+    --==================== UniqueId FCOIS created - itemTypes - BEGIN =======================================
+    local function buildUniqueIdItemTypesLibShifterbox()
+        if not FCOIS.libShifterBox then end
+        local itemTypeMax = numVars.maxItemType
+        local localizedItemTypes = locVars.ItemTypes
+        if localizedItemTypes ~= nil then
+            local uniqueIdItemTypesSubMenuControlsTable = {}
+            return uniqueIdItemTypesSubMenuControlsTable
+        end
     end
+    local uniqueIdItemTypesSubMenuControls = buildUniqueIdItemTypesLibShifterbox()
+    --==================== UniqueId FCOIS created - itemTypes - END =======================================
+
 
     --==================== SetTracker - BEGIN ======================================
     --Function to build the SetTracker dropdown boxes
@@ -894,11 +999,11 @@ function FCOIS.BuildAddonMenu()
         local disabledChecks = function() return not FCOIS.otherAddons.SetTracker.isActive or not FCOISsettings.autoMarkSetTrackerSets end
         --Static dropdown entries
         local choicesTooltipsList = {}
-        choicesTooltipsList[1] = locVars["options_icon_none"]
+        choicesTooltipsList[1] = locVars[optionsIcon .. "_none"]
         for _, FCOISiconNr in ipairs(iconsListValues) do
             --local iconDescription = "FCOItemSaver icon " .. tostring(FCOISiconNr)
             local locNameStr = FCOISlocVars.iconEndStrArray[FCOISiconNr]
-            local iconName = FCOIS.GetIconText(FCOISiconNr) or locVars["options_icon" .. tostring(FCOISiconNr) .. "_" .. locNameStr] or "Icon " .. tostring(FCOISiconNr)
+            local iconName = FCOIS.GetIconText(FCOISiconNr) or locVars[optionsIcon .. tostring(FCOISiconNr) .. "_" .. locNameStr] or "Icon " .. tostring(FCOISiconNr)
             --Add each FCOIS icon description to the list
             table.insert(choicesTooltipsList, iconName)
         end
@@ -920,9 +1025,9 @@ function FCOIS.BuildAddonMenu()
                     tooltip = alternativeNameText
                     --[[
 		                if string.len(sTrackName) > 40 then
-			                tooltip = locVars["options_auto_mark_settrackersets_to_fcois_icon_TT"]
+			                tooltip = locVars["options_auto_mark_settrackersets_to_fcois_icon" .. tooltipSuffix]
 		                else
-			                tooltip = sTrackName or locVars["options_auto_mark_settrackersets_to_fcois_icon_TT"]
+			                tooltip = sTrackName or locVars["options_auto_mark_settrackersets_to_fcois_icon" .. tooltipSuffix]
 		               	end
 	               ]]
                 end
@@ -952,7 +1057,7 @@ function FCOIS.BuildAddonMenu()
             local cbAutoMarkSetTracker = {
                 type = "checkbox",
                 name = locVars["options_auto_mark_settrackersets"],
-                tooltip = locVars["options_auto_mark_settrackersets_TT"],
+                tooltip = locVars["options_auto_mark_settrackersets" .. tooltipSuffix],
                 getFunc = function() return FCOISsettings.autoMarkSetTrackerSets end,
                 setFunc = function(value)
                     FCOISsettings.autoMarkSetTrackerSets = value
@@ -965,7 +1070,7 @@ function FCOIS.BuildAddonMenu()
             local cbAutoMarkSetTrackerCheckAllIcons = {
                 type = "checkbox",
                 name = locVars["options_enable_auto_mark_check_all_icons"],
-                tooltip = locVars["options_enable_auto_mark_check_all_icons_TT"],
+                tooltip = locVars["options_enable_auto_mark_check_all_icons" .. tooltipSuffix],
                 getFunc = function() return FCOISsettings.autoMarkSetTrackerSetsCheckAllIcons end,
                 setFunc = function(value)
                     FCOISsettings.autoMarkSetTrackerSetsCheckAllIcons = value
@@ -977,7 +1082,7 @@ function FCOIS.BuildAddonMenu()
             local cbAutoMarkSetTrackerTooltips = {
                 type = "checkbox",
                 name = locVars["options_auto_mark_settrackersets_show_tooltip_on_FCOIS_marker"],
-                tooltip = locVars["options_auto_mark_settrackersets_show_tooltip_on_FCOIS_marker_TT"],
+                tooltip = locVars["options_auto_mark_settrackersets_show_tooltip_on_FCOIS_marker" .. tooltipSuffix],
                 getFunc = function() return FCOISsettings.autoMarkSetTrackerSetsShowTooltip end,
                 setFunc = function(value)
                     FCOISsettings.autoMarkSetTrackerSetsShowTooltip = value
@@ -989,7 +1094,7 @@ function FCOIS.BuildAddonMenu()
             local cbAutoMarkSetTrackerInv = {
                 type = "checkbox",
                 name = locVars["options_auto_mark_settrackersets_inv"],
-                tooltip = locVars["options_auto_mark_settrackersets_inv_TT"],
+                tooltip = locVars["options_auto_mark_settrackersets_inv" .. tooltipSuffix],
                 getFunc = function() return FCOISsettings.autoMarkSetTrackerSetsInv end,
                 setFunc = function(value)
                     FCOISsettings.autoMarkSetTrackerSetsInv = value
@@ -1001,7 +1106,7 @@ function FCOIS.BuildAddonMenu()
             local cbAutoMarkSetTrackerWorn = {
                 type = "checkbox",
                 name = locVars["options_auto_mark_settrackersets_worn"],
-                tooltip = locVars["options_auto_mark_settrackersets_worn_TT"],
+                tooltip = locVars["options_auto_mark_settrackersets_worn" .. tooltipSuffix],
                 getFunc = function() return FCOISsettings.autoMarkSetTrackerSetsWorn end,
                 setFunc = function(value)
                     FCOISsettings.autoMarkSetTrackerSetsWorn = value
@@ -1013,7 +1118,7 @@ function FCOIS.BuildAddonMenu()
             local cbAutoMarkSetTrackerBank = {
                 type = "checkbox",
                 name = locVars["options_auto_mark_settrackersets_bank"],
-                tooltip = locVars["options_auto_mark_settrackersets_bank_TT"],
+                tooltip = locVars["options_auto_mark_settrackersets_bank" .. tooltipSuffix],
                 getFunc = function() return FCOISsettings.autoMarkSetTrackerSetsBank end,
                 setFunc = function(value)
                     FCOISsettings.autoMarkSetTrackerSetsBank = value
@@ -1025,7 +1130,7 @@ function FCOIS.BuildAddonMenu()
             local cbAutoMarkSetTrackerGuildBank = {
                 type = "checkbox",
                 name = locVars["options_auto_mark_settrackersets_guildbank"],
-                tooltip = locVars["options_auto_mark_settrackersets_guildbank_TT"],
+                tooltip = locVars["options_auto_mark_settrackersets_guildbank" .. tooltipSuffix],
                 getFunc = function() return FCOISsettings.autoMarkSetTrackerSetsGuildBank end,
                 setFunc = function(value)
                     FCOISsettings.autoMarkSetTrackerSetsGuildBank = value
@@ -1037,7 +1142,7 @@ function FCOIS.BuildAddonMenu()
             local cbAutoMarkSetTrackerRescan = {
                 type = "checkbox",
                 name = locVars["options_auto_mark_settrackersets_rescan"],
-                tooltip = locVars["options_auto_mark_settrackersets_rescan_TT"],
+                tooltip = locVars["options_auto_mark_settrackersets_rescan" .. tooltipSuffix],
                 getFunc = function() return FCOISsettings.autoMarkSetTrackerSetsRescan end,
                 setFunc = function(value)
                     FCOISsettings.autoMarkSetTrackerSetsRescan = value
@@ -1063,15 +1168,15 @@ function FCOIS.BuildAddonMenu()
             --Add the warning header
             local data = {}
             data.type = "description"
-            data.text = locVars["options_icon_sort_order_warning"]
+            data.text = locVars[optionsIcon .. "_sort_order_warning"]
             --Create the warning header control now
             local createdIconSortWarningHeader = CreateControl(nil, "", "", data)
             table.insert(submenuControls, createdIconSortWarningHeader)
 
             --Add the checkbox for additional inventory button "flag" context menu should be sorted too
             data = { type = "checkbox", width = "full" }
-            local name = locVars["options_icon_sort_order_add_inv_button_flag_too"]
-            local tooltip = locVars["options_icon_sort_order_add_inv_button_flag_too_TT"]
+            local name = locVars[optionsIcon .. "_sort_order_add_inv_button_flag_too"]
+            local tooltip = locVars[optionsIcon .. "_sort_order_add_inv_button_flag_too" .. tooltipSuffix]
             local getFunc = function() return FCOISsettings.sortIconsInAdditionalInvFlagContextMenu end
             local setFunc = function(value) FCOIS.settingsVars.settings.sortIconsInAdditionalInvFlagContextMenu = value end
             local disabledFunc = function() return false end
@@ -1099,33 +1204,343 @@ function FCOIS.BuildAddonMenu()
     --==================== SetTracker - END ========================================
 
 
+
+    --==================== Normal icons - BEGIN ===================================
+    --Build the complete submenus for the dynamic icons
+    local function buildNormalIconSubMenus(buildName)
+        local buildGear = buildName ~= nil and buildName == "gear"
+        local normalIconsSubMenus = {}
+        --[[
+        --Each submenu starts with this header...
+            {
+                type = "submenu",
+                name = locVars[optionsIcon .. "<iconNr>" .. colorSuffix],
+                reference = "FCOIS_OPTIONS_" .. locVars[optionsIcon .. "<iconNr>" .. colorSuffix].. submenuSuffix,
+                controls =
+                {
+                ...
+                },
+            },
+        ]]
+------------------------------------------------------------------------------------------------------------------------
+        --These LAM controls will be added at the end of the controls that are always added for all icons (e.g. color,
+        --size, position)
+        local specialControlsByIconId ={
+            --Sell at guildstore icon
+            [FCOIS_CON_ICON_SELL_AT_GUILDSTORE] = {
+                [1] = {
+                    --Only unbound items are allowed to be marked with this marker icon
+                    type = "checkbox",
+                    name = locVars[optionsIcon .. FCOIS_CON_ICON_SELL_AT_GUILDSTORE .."_only_unbound"],
+                    tooltip = locVars[optionsIcon .. FCOIS_CON_ICON_SELL_AT_GUILDSTORE .."_only_unbound" .. tooltipSuffix],
+                    getFunc = function() return FCOISsettings.allowOnlyUnbound[FCOIS_CON_ICON_SELL_AT_GUILDSTORE] end,
+                    setFunc = function(value) FCOISsettings.allowOnlyUnbound[FCOIS_CON_ICON_SELL_AT_GUILDSTORE] = value
+                    end,
+                    width="half",
+                    disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL_AT_GUILDSTORE] end,
+                    default = FCOISdefaultSettings.allowOnlyUnbound[FCOIS_CON_ICON_SELL_AT_GUILDSTORE],
+                },
+            },
+        }
+------------------------------------------------------------------------------------------------------------------------
+        --Create 1 submenu for each normal marker icon
+        for normalIconId=FCOIS_CON_ICON_LOCK, numVars.gFCONumNonDynamicAndGearIcons, 1 do
+            local isGearIcon = mappingVars.iconToGear[normalIconId] ~= nil or false
+            local addThisIcon = ((buildGear == true and isGearIcon == true) or (not buildGear and not isGearIcon)) or false
+            if addThisIcon == true then
+                --Clear the controls of the submenu
+                local normalIconsSubMenusControls = {}
+
+                --Variables
+                local name
+                local tooltip
+                local data = {}
+                local disabledFunc, getFunc, setFunc, defaultSettings, createdControl
+
+                local iconNameStart = optionsIcon .. tostring(normalIconId)
+                local iconSettings = FCOISsettings.icon[normalIconId]
+
+                --Is a gear icon?
+                if isGearIcon == true then
+                    ------------------------------------------------------------------------------------------------------------------------
+                    --Add the name edit box
+                    name = locVars[iconNameStart .. nameSuffix]
+                    tooltip = locVars[iconNameStart .. nameSuffix .. tooltipSuffix]
+                    data = {
+                        type = "editbox", width = "half",
+                        --helpUrl = locVars[dynIconNameStart .. colorSuffix],
+                    }
+                    disabledFunc = function() return not FCOISsettings.isIconEnabled[normalIconId] end
+                    getFunc = function() return FCOISsettings.icon[normalIconId].name end
+                    setFunc = function(newValue)
+                        FCOISsettings.icon[normalIconId].name = newValue
+                        FCOIS.preventerVars.doUpdateLocalization = true
+                        FCOIS.changeContextMenuEntryTexts(normalIconId)
+                        --Update the icon list dropdown entries (name, enabled state)
+                        updateIconListDropdownEntries()
+                    end
+                    defaultSettings = locVars[normalIconId .. nameSuffix]
+                    createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
+                    if createdControl ~= nil then
+                        table.insert(normalIconsSubMenusControls, createdControl)
+                    end
+                end
+
+                ------------------------------------------------------------------------------------------------------------------------
+                --Add the color picker
+                name = locVars[iconNameStart .. colorSuffix]
+                tooltip = locVars[iconNameStart .. colorSuffix .. tooltipSuffix]
+                data = { type = "colorpicker", width = "half" }
+                disabledFunc = function() return not FCOISsettings.isIconEnabled[normalIconId] end
+                getFunc = function() return iconSettings.color.r, iconSettings.color.g, iconSettings.color.b, iconSettings.color.a end
+                setFunc = function(r,g,b,a)
+                    FCOISsettings.icon[normalIconId].color = {["r"] = r, ["g"] = g, ["b"] = b, ["a"] = a}
+                    changePreviewIconColor(filterButton, normalIconId, r, g, b, a)
+                end
+                defaultSettings = FCOISdefaultSettings.icon[normalIconId].color
+                createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
+                if createdControl ~= nil then
+                    table.insert(normalIconsSubMenusControls, createdControl)
+                end
+
+                ------------------------------------------------------------------------------------------------------------------------
+                --Add the icon picker
+                local ref = fcoisLAMSettingsReferencePrefix .. filterButton.. tostring(normalIconId) ..  previewSelect
+                name = locVars[iconNameStart .. "_texture"]
+                tooltip = locVars[iconNameStart .. "_texture" .. tooltipSuffix]
+                data = { type = "iconpicker", width = "half", choices = markerIconTextures, choicesTooltips = texturesList, maxColumns=6, visibleRows=5, iconSize=iconSettings.size}
+                disabledFunc = function() return not FCOISsettings.isIconEnabled[normalIconId] end
+                getFunc = function() return markerIconTextures[iconSettings.texture] end
+                setFunc = function(texturePath)
+                    local textureId = GetFCOTextureId(texturePath)
+                    if textureId ~= 0 then
+                        FCOISsettings.icon[normalIconId].texture = textureId
+                        changePreviewLabelText(filterButton, normalIconId, texturesList[textureId])
+                        updateFilterButtonColorAndTexture(mappingVars.iconToFilterDefaults[normalIconId], normalIconId)
+                    end
+                end
+                defaultSettings = markerIconTextures[iconSettings.texture]
+                createdControl = CreateControl(ref, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
+                if createdControl ~= nil then
+                    table.insert(normalIconsSubMenusControls, createdControl)
+                end
+
+                ------------------------------------------------------------------------------------------------------------------------
+                --Add the offsetX slider
+                name = locVars["options_icon_offset_left"]
+                tooltip = locVars["options_icon_offset_left" .. tooltipSuffix]
+                data = { type = "slider", width = "half", min=minIconOffsetLeft, max=maxIconOffsetLeft, decimals=0, autoselect=true}
+                disabledFunc = function() return not FCOISsettings.isIconEnabled[normalIconId] end
+                getFunc = function() return iconSettings.offsets[LF_INVENTORY].left end
+                setFunc = function(offsetX)
+                    FCOISsettings.icon[normalIconId].offsets[LF_INVENTORY].left = offsetX
+                end
+                defaultSettings = FCOISdefaultSettings.icon[normalIconId].offsets[LF_INVENTORY].left
+                createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
+                if createdControl ~= nil then
+                    table.insert(normalIconsSubMenusControls, createdControl)
+                end
+
+                ------------------------------------------------------------------------------------------------------------------------
+                --Add the offsetY slider
+                name = locVars["options_icon_offset_top"]
+                tooltip = locVars["options_icon_offset_top" .. tooltipSuffix]
+                data = { type = "slider", width = "half", min=minIconOffsetTop, max=maxIconOffsetTop, decimals=0, autoselect=true}
+                disabledFunc = function() return not FCOISsettings.isIconEnabled[normalIconId] end
+                getFunc = function() return iconSettings.offsets[LF_INVENTORY].top end
+                setFunc = function(offsetY)
+                    FCOISsettings.icon[normalIconId].offsets[LF_INVENTORY].top = offsetY
+                end
+                defaultSettings = FCOISdefaultSettings.icon[normalIconId].offsets[LF_INVENTORY].top
+                createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
+                if createdControl ~= nil then
+                    table.insert(normalIconsSubMenusControls, createdControl)
+                end
+
+                ------------------------------------------------------------------------------------------------------------------------
+                --Add the size slider
+                name = locVars[iconNameStart .. "_size"]
+                tooltip = locVars[iconNameStart .. "_size" .. tooltipSuffix]
+                data = { type = "slider", width = "half", min=minIconSize, max=maxIconSize, decimals=0, autoselect=true}
+                disabledFunc = function() return not FCOISsettings.isIconEnabled[normalIconId] end
+                getFunc = function() return iconSettings.size end
+                setFunc = function(size)
+                    FCOISsettings.icon[normalIconId].size = size
+                    changePreViewIconSize(filterButton, normalIconId, size)
+                end
+                defaultSettings = FCOISdefaultSettings.icon[normalIconId].size
+                createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
+                if createdControl ~= nil then
+                    table.insert(normalIconsSubMenusControls, createdControl)
+                end
+
+                ------------------------------------------------------------------------------------------------------------------------
+                --Add the tooltip checkbox
+                name = locVars[iconNameStart .. tooltipSuffix]
+                tooltip = locVars[iconNameStart .. "_tooltip" .. tooltipSuffix]
+                data = { type = "checkbox", width = "half"}
+                disabledFunc = function() return not FCOISsettings.isIconEnabled[normalIconId] end
+                getFunc = function() return FCOISsettings.showMarkerTooltip[normalIconId] end
+                setFunc = function(value)
+                    FCOISsettings.icon[normalIconId].showMarkerTooltip[normalIconId] = value
+                    FCOIS.preventerVars.gUpdateMarkersNow = true
+                    FCOIS.preventerVars.doUpdateLocalization = true
+                end
+                defaultSettings = FCOISdefaultSettings.showMarkerTooltip[normalIconId]
+                createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
+                if createdControl ~= nil then
+                    table.insert(normalIconsSubMenusControls, createdControl)
+                end
+
+                --Is a gear icon?
+                if isGearIcon == true then
+                    ------------------------------------------------------------------------------------------------------------------------
+                    --Add the disable research (old: check for gear items) checkbox
+                    name = locVars["options_gear_disable_research_check"]
+                    tooltip = locVars["options_gear_disable_research_check" .. tooltipSuffix]
+                    data = { type = "checkbox", width = "half"}
+                    disabledFunc = function() return not FCOISsettings.isIconEnabled[normalIconId] end
+                    getFunc = function() return FCOISsettings.disableResearchCheck[normalIconId] end
+                    setFunc = function(value) FCOISsettings.disableResearchCheck[normalIconId] = value
+                    end
+                    defaultSettings = FCOISdefaultSettings.disableResearchCheck[normalIconId]
+                    createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
+                    if createdControl ~= nil then
+                        table.insert(normalIconsSubMenusControls, createdControl)
+                    end
+                end
+
+                ------------------------------------------------------------------------------------------------------------------------
+                --Any additional special controls to add?
+                local specialControlsForMarkerIcon = specialControlsByIconId[normalIconId]
+                if specialControlsForMarkerIcon ~= nil then
+                    for _, specialControlData in ipairs(specialControlsForMarkerIcon) do
+                        name = specialControlData.name
+                        data = { type = specialControlData.type, width = specialControlData.width }
+                        if name ~= nil and data ~= nil and data.type ~= nil then
+                            tooltip = specialControlData.tooltip
+                            disabledFunc = specialControlData.disabled
+                            getFunc = specialControlData.getFunc
+                            setFunc = specialControlData.setFunc
+                            defaultSettings = specialControlData.default
+                            createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
+                            if createdControl ~= nil then
+                                table.insert(normalIconsSubMenusControls, createdControl)
+                            end
+                        end
+                    end
+                end
+
+                ------------------------------------------------------------------------------------------------------------------------
+                --Create the submenu header for the normal icon and assign the before build controls to it
+                if normalIconsSubMenusControls ~= nil and #normalIconsSubMenusControls > 0 then
+                    if isGearIcon == true then
+                        name = locVars[optionsIcon .. "s_gear" .. tostring(mappingVars.iconToGear[normalIconId])]
+                        ref = "FCOIS_OPTIONS_" .. name .. submenuSuffix
+                    else
+                        name = locVars[iconNameStart .. colorSuffix]
+                        ref = "FCOIS_OPTIONS_" .. name .. submenuSuffix
+                    end
+                    tooltip = ""
+                    data = { type = "submenu", controls = normalIconsSubMenusControls }
+                    local createdNormalconSubMenuSurrounding = CreateControl(ref, name, tooltip, data, nil, nil, nil, nil, nil)
+                    table.insert(normalIconsSubMenus, createdNormalconSubMenuSurrounding)
+                end
+
+            end
+        end
+        return normalIconsSubMenus
+    end
+    local normalIconsSubMenus = buildNormalIconSubMenus()
+    local gearIconsSubMenus   = buildNormalIconSubMenus("gear")
+
+
+    --Build the enable/disable checkboxes submenu for the dynamic icons
+    local function buildNormalIconEnableCheckboxes(buildName)
+        local buildGear = buildName ~= nil and buildName == "gear"
+        local normalIconsEnabledCbs = {}
+        local standardSetFunc = function(p_iconId, p_value)
+            FCOISsettings.isIconEnabled[p_iconId] = p_value
+            if p_value == true then
+                --Update the color of the dynamic icons's icon picker texture again as it was grayed out
+                local iconSettings = FCOISsettings.icon[p_iconId]
+                local iconColorSettings = iconSettings.color
+                local r, g, b, a = iconColorSettings.r, iconColorSettings.g, iconColorSettings.b, iconColorSettings.a
+                changePreviewIconColor(filterButton, p_iconId, r, g, b, a, true)
+            end
+            updateIconListDropdownEntries()
+            FCOIS.preventerVars.doUpdateLocalization = true
+        end
+        --Create 1 checkbox for each normal/gear icon, to enable/disable the normal/gear icon
+        for normalIconId=FCOIS_CON_ICON_LOCK, numVars.gFCONumNonDynamicAndGearIcons, 1 do
+            local isGearIcon = mappingVars.iconToGear[normalIconId] ~= nil or false
+            local addThisIcon = ((buildGear == true and isGearIcon == true) or (not buildGear and not isGearIcon)) or false
+            if addThisIcon == true then
+                local name = locVars[optionsIcon .. normalIconId .. "_activate_text"]
+                local tooltip = locVars[optionsIcon .. "_activate_text" .. tooltipSuffix]
+                local data = { type = "checkbox", width = "half" }
+                local disabledFunc = function() return false end
+                local getFunc = function() return FCOISsettings.isIconEnabled[normalIconId] end
+                local setFunc
+                local defaultSettings = FCOISdefaultSettings.isIconEnabled[normalIconId]
+                if buildGear == true then
+                    setFunc = function(value)
+                        standardSetFunc(normalIconId, value)
+                        --Hide the textures for gear icon
+                        --Character equipment (create if not yet created and icon is enabled)
+                        FCOIS.RefreshEquipmentControl(nil, value, normalIconId)
+                        FCOIS.FilterBasics(true)
+                        FCOIS.preventerVars.gChangedGears = true
+                    end
+                else
+                    setFunc = function(value)
+                        standardSetFunc(normalIconId, value)
+                    end
+                end
+
+                --Create the checkbox now
+                local createdNormalIconEnableCB = CreateControl(name, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
+                if createdNormalIconEnableCB ~= nil then
+                    table.insert(normalIconsEnabledCbs, createdNormalIconEnableCB)
+                end
+            end
+        end
+        return normalIconsEnabledCbs
+    end
+    --The normal marker icon enable checkboxes
+    local normalIconsEnabledCheckboxes = buildNormalIconEnableCheckboxes()
+    --The gear set marker icon enable checkboxes
+    local gearIconsEnabledCheckboxes = buildNormalIconEnableCheckboxes("gear")
+
+    --==================== Normal icons - END ===================================
+
     --==================== Dynamic icons - BEGIN ===================================
     local iconId2FCOISIconNr            = mappingVars.dynamicToIcon
 
     --Build the enable/disable checkboxes submenu for the dynamic icons
     local function buildDynamicIconEnableCheckboxes()
         local dynamicIconsEnabledCbs = {}
-        --Create 1 checkbox to enable/disable the dynamic icons for each dynamic icon
+        --Create 1 checkbox for each dynamic icon, to enable/disable the dynamic icon
         for dynIconId=1, numDynIcons, 1 do
             local fcoisDynIconNr = iconId2FCOISIconNr[dynIconId] --e.g. dynamic icon 1 = FCOIS icon ID 13, 2 = 14, and so on
+            local iconSettings = FCOISsettings.icon[fcoisDynIconNr]
+            local iconColorSettings = iconSettings.color
             --local fcoisLockDynMenuIconNr = iconId2FCOISIconLockDynMenuNr[dynIconId] --e.g. dynamic icon 1 = 2, 2 = 3, and so on
 
-            local name = locVars["options_icon" .. tostring(fcoisDynIconNr) .. "_activate_text"]
-            local tooltip = locVars["options_icon_activate_text_TT"]
+            local name = locVars[optionsIcon .. tostring(fcoisDynIconNr) .. "_activate_text"]
+            local tooltip = locVars[optionsIcon .. "_activate_text" .. tooltipSuffix]
             local data = { type = "checkbox", width = "half" }
             local disabledFunc = function() return false end
             local getFunc = function() return FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             local setFunc = function(value)
                 FCOISsettings.isIconEnabled[fcoisDynIconNr] = value
                 if value == true then
-                    --Update the color of the dynamic icons's icon picker tetxure again as it was grayed out
-                    local ctrl = WINDOW_MANAGER:GetControlByName("FCOItemSaver_Settings_Filter" .. tostring(fcoisDynIconNr) .. "Preview_Select", "")
-                    if ctrl ~= nil then
-                        local r, g, b, a = FCOISsettings.icon[fcoisDynIconNr].color.r, FCOISsettings.icon[fcoisDynIconNr].color.g, FCOISsettings.icon[fcoisDynIconNr].color.b, FCOISsettings.icon[fcoisDynIconNr].color.a
-                        ctrl:SetColor(ZO_ColorDef:New(r,g,b,a))
-                    end
+                    --Update the color of the dynamic icons's icon picker texture again as it was grayed out
+                    local r, g, b, a = iconColorSettings.r, iconColorSettings.g, iconColorSettings.b, iconColorSettings.a
+                    changePreviewIconColor(filterButton, fcoisDynIconNr, r, g, b, a, true)
+                    updateIconListDropdownEntries()
                 end
-
+                FCOIS.preventerVars.doUpdateLocalization = true
             end
             local defaultSettings = FCOISdefaultSettings.isIconEnabled[fcoisDynIconNr]
             --Create the checkbox now
@@ -1133,10 +1548,11 @@ function FCOIS.BuildAddonMenu()
             if createdDynIconEnableCB ~= nil then
                 table.insert(dynamicIconsEnabledCbs, createdDynIconEnableCB)
             end
-        end -- for traitTypeName, traitTypeItemTrait in pairs(traitTypeData) do
+        end
         return dynamicIconsEnabledCbs
     end
     local dynIconsEnabledCheckboxes = buildDynamicIconEnableCheckboxes()
+
 
     --Build the complete submenus for the dynamic icons
     local function buildDynamicIconSubMenus()
@@ -1145,8 +1561,8 @@ function FCOIS.BuildAddonMenu()
         --Each submenu starts with this header...
             {
                 type = "submenu",
-                name = locVars["options_icon13_color"],
-                reference = "FCOIS_OPTIONS_" .. locVars["options_icon13_color"].."_submenu",
+                name = locVars[optionsIcon .. "<iconNrOfDynIcon>" .. colorSuffix],
+                reference = "FCOIS_OPTIONS_" .. locVars[optionsIcon .. "iconNrOfDynIcon" .. colorSuffix].. submenuSuffix,
                 controls =
                 {
                 ...
@@ -1154,7 +1570,7 @@ function FCOIS.BuildAddonMenu()
             },
         ]]
 
-        --Create 1 checkbox to enable/disable the dynamic icons for each dynamic icon
+        --Create 1 submenu for each dynamic icon
         for dynIconId=1, numDynIcons, 1 do
             local fcoisDynIconNr = iconId2FCOISIconNr[dynIconId] --e.g. dynamic icon 1 = FCOIS icon ID 13, 2 = 14, and so on
             --local fcoisLockDynMenuIconNr = iconId2FCOISIconLockDynMenuNr[dynIconId] --e.g. dynamic icon 1 = 2, 2 = 3, and so on
@@ -1168,23 +1584,26 @@ function FCOIS.BuildAddonMenu()
             local data = {}
             local disabledFunc, getFunc, setFunc, defaultSettings, createdControl
 
+            local dynIconNameStart = optionsIcon .. tostring(fcoisDynIconNr)
+
             ------------------------------------------------------------------------------------------------------------------------
             --Add the name edit box
-            name = locVars["options_icon" .. tostring(fcoisDynIconNr) .. "_color"]
+            name = locVars[dynIconNameStart .. colorSuffix]
             tooltip = ""
             data = {
-                     type = "editbox", width = "half",
-                     --helpUrl = locVars["options_icon" .. tostring(fcoisDynIconNr) .. "_color"],
+                type = "editbox", width = "half",
+                --helpUrl = locVars[dynIconNameStart .. colorSuffix],
             }
             disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].name end
             setFunc = function(newValue)
                 FCOISsettings.icon[fcoisDynIconNr].name = newValue
+                FCOIS.preventerVars.doUpdateLocalization = true
                 FCOIS.changeContextMenuEntryTexts(fcoisDynIconNr)
                 --Update the icon list dropdown entries (name, enabled state)
                 updateIconListDropdownEntries()
             end
-            defaultSettings = locVars["options_icon" .. tostring(fcoisDynIconNr) .. "_name"]
+            defaultSettings = locVars[dynIconNameStart .. nameSuffix]
             createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
             if createdControl ~= nil then
                 table.insert(dynIconsSubMenusControls, createdControl)
@@ -1192,17 +1611,14 @@ function FCOIS.BuildAddonMenu()
 
             ------------------------------------------------------------------------------------------------------------------------
             --Add the color picker
-            name = locVars["options_icon" .. tostring(fcoisDynIconNr) .. "_color"]
-            tooltip = locVars["options_icon" .. tostring(fcoisDynIconNr) .. "_color_TT"]
+            name = locVars[dynIconNameStart .. colorSuffix]
+            tooltip = locVars[dynIconNameStart .. colorSuffix .. tooltipSuffix]
             data = { type = "colorpicker", width = "half" }
             disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].color.r, FCOISsettings.icon[fcoisDynIconNr].color.g, FCOISsettings.icon[fcoisDynIconNr].color.b, FCOISsettings.icon[fcoisDynIconNr].color.a end
             setFunc = function(r,g,b,a)
                 FCOISsettings.icon[fcoisDynIconNr].color = {["r"] = r, ["g"] = g, ["b"] = b, ["a"] = a}
-                local ctrl = WINDOW_MANAGER:GetControlByName("FCOItemSaver_Settings_Filter" .. tostring(fcoisDynIconNr) .. "Preview_Select", "")
-                if ctrl ~= nil then ctrl:SetColor(ZO_ColorDef:New(r,g,b,a)) end
-                --Set global variable to update the marker colors and textures
-                FCOIS.preventerVars.gUpdateMarkersNow = true
+                changePreviewIconColor(filterButton, fcoisDynIconNr, r, g, b, a)
             end
             defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].color
             createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
@@ -1212,9 +1628,9 @@ function FCOIS.BuildAddonMenu()
 
             ------------------------------------------------------------------------------------------------------------------------
             --Add the icon picker
-            local ref = "FCOItemSaver_Settings_Filter".. tostring(fcoisDynIconNr) .. "Preview_Select"
-            name = locVars["options_icon" .. tostring(fcoisDynIconNr) .. "_texture"]
-            tooltip = locVars["options_icon" .. tostring(fcoisDynIconNr) .. "_texture_TT"]
+            local ref = fcoisLAMSettingsReferencePrefix .. filterButton.. tostring(fcoisDynIconNr) ..  previewSelect
+            name = locVars[dynIconNameStart .. "_texture"]
+            tooltip = locVars[dynIconNameStart .. "_texture" .. tooltipSuffix]
             data = { type = "iconpicker", width = "half", choices = markerIconTextures, choicesTooltips = texturesList, maxColumns=6, visibleRows=5, iconSize=FCOISsettings.icon[fcoisDynIconNr].size}
             disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return markerIconTextures[FCOISsettings.icon[fcoisDynIconNr].texture] end
@@ -1222,12 +1638,8 @@ function FCOIS.BuildAddonMenu()
                 local textureId = GetFCOTextureId(texturePath)
                 if textureId ~= 0 then
                     FCOISsettings.icon[fcoisDynIconNr].texture = textureId
-                    local ctrl = WINDOW_MANAGER:GetControlByName("FCOItemSaver_Settings_Filter" .. tostring(fcoisDynIconNr) .. "Preview_Select", "")
-                    if ctrl ~= nil then ctrl.label:SetText(locVars["options_icon"..tostring(fcoisDynIconNr).."_texture"] .. ": " .. texturesList[textureId]) end
-                    local p_button = WINDOW_MANAGER:GetControlByName(FCOIS.ZOControlVars.FCOISfilterButtonNames[FCOIS_CON_FILTER_BUTTON_LOCKDYN], "")
-                    if p_button ~= nil then FCOIS.UpdateButtonColorsAndTextures(1, p_button, -999) end
-                    --Set global variable to update the marker colors and textures
-                    FCOIS.preventerVars.gUpdateMarkersNow = true
+                    changePreviewLabelText(filterButton, fcoisDynIconNr, texturesList[textureId])
+                    updateFilterButtonColorAndTexture(FCOIS_CON_FILTER_BUTTON_LOCKDYN, FCOIS_CON_ICON_LOCK)
                 end
             end
             defaultSettings = markerIconTextures[FCOISsettings.icon[fcoisDynIconNr].texture]
@@ -1238,15 +1650,14 @@ function FCOIS.BuildAddonMenu()
 
             ------------------------------------------------------------------------------------------------------------------------
             --Add the size slider
-            name = locVars["options_icon" .. tostring(fcoisDynIconNr) .. "_size"]
-            tooltip = locVars["options_icon" .. tostring(fcoisDynIconNr) .. "_size_TT"]
+            name = locVars[dynIconNameStart .. "_size"]
+            tooltip = locVars[dynIconNameStart .. "_size" .. tooltipSuffix]
             data = { type = "slider", width = "half", min=minIconSize, max=maxIconSize, decimals=0, autoselect=true}
             disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].size end
             setFunc = function(size)
                 FCOISsettings.icon[fcoisDynIconNr].size = size
-                local ctrl = WINDOW_MANAGER:GetControlByName("FCOItemSaver_Settings_Filter" .. tostring(fcoisDynIconNr) .. "Preview_Select", "")
-                if ctrl ~= nil then ctrl:SetIconSize(size) end
+                changePreViewIconSize(filterButton, fcoisDynIconNr, size)
             end
             defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].size
             createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
@@ -1256,8 +1667,8 @@ function FCOIS.BuildAddonMenu()
 
             ------------------------------------------------------------------------------------------------------------------------
             --Add the offsetX slider
-            name = locVars["options_icon" .. tostring(fcoisDynIconNr) .. "_offsetX"]
-            tooltip = locVars["options_icon" .. tostring(fcoisDynIconNr) .. "_offsetX_TT"]
+            name = locVars[dynIconNameStart .. "_offsetX"]
+            tooltip = locVars[dynIconNameStart .. "_offsetX" .. tooltipSuffix]
             data = { type = "slider", width = "half", min=minIconOffsetLeft, max=maxIconOffsetLeft, decimals=0, autoselect=true}
             disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].offsets[LF_INVENTORY].left end
@@ -1272,8 +1683,8 @@ function FCOIS.BuildAddonMenu()
 
             ------------------------------------------------------------------------------------------------------------------------
             --Add the offsetY slider
-            name = locVars["options_icon" .. tostring(fcoisDynIconNr) .. "_offsetY"]
-            tooltip = locVars["options_icon" .. tostring(fcoisDynIconNr) .. "_offsetY_TT"]
+            name = locVars[dynIconNameStart .. "_offsetY"]
+            tooltip = locVars[dynIconNameStart .. "_offsetY" .. tooltipSuffix]
             data = { type = "slider", width = "half", min=minIconOffsetTop, max=maxIconOffsetTop, decimals=0, autoselect=true}
             disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].offsets[LF_INVENTORY].top end
@@ -1288,14 +1699,15 @@ function FCOIS.BuildAddonMenu()
 
             ------------------------------------------------------------------------------------------------------------------------
             --Add the tooltip checkbox
-            name = locVars["options_icon" .. tostring(fcoisDynIconNr) .. "_TT"]
-            tooltip = locVars["options_icon" .. tostring(fcoisDynIconNr) .. "_tooltip_TT"]
+            name = locVars[dynIconNameStart .. tooltipSuffix]
+            tooltip = locVars[dynIconNameStart .. "_tooltip" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
             disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.showMarkerTooltip[fcoisDynIconNr] end
             setFunc = function(value)
                 FCOISsettings.showMarkerTooltip[fcoisDynIconNr] = value
                 FCOIS.preventerVars.gUpdateMarkersNow = true
+                FCOIS.preventerVars.doUpdateLocalization = true
             end
             defaultSettings = FCOISdefaultSettings.showMarkerTooltip[fcoisDynIconNr]
             createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
@@ -1305,7 +1717,7 @@ function FCOIS.BuildAddonMenu()
             ------------------------------------------------------------------------------------------------------------------------
             --Add the disable research (old: check for gear items) checkbox
             name = locVars["options_gear_disable_research_check"]
-            tooltip = locVars["options_gear_disable_research_check_TT"]
+            tooltip = locVars["options_gear_disable_research_check" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
             disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.disableResearchCheck[fcoisDynIconNr] end
@@ -1319,7 +1731,7 @@ function FCOIS.BuildAddonMenu()
             ------------------------------------------------------------------------------------------------------------------------
             --Add the enable as gear checkbox
             name = locVars["options_gear_enable_as_gear"]
-            tooltip = locVars["options_gear_enable_as_gear_TT"]
+            tooltip = locVars["options_gear_enable_as_gear" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
             disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.iconIsGear[fcoisDynIconNr] end
@@ -1327,6 +1739,7 @@ function FCOIS.BuildAddonMenu()
                 FCOISsettings.iconIsGear[fcoisDynIconNr] = value
                 --Now rebuild all other gear set values
                 FCOIS.rebuildGearSetBaseVars(fcoisDynIconNr, value, false)
+                FCOIS.preventerVars.doUpdateLocalization = true
             end
             defaultSettings = FCOISdefaultSettings.iconIsGear[fcoisDynIconNr]
             createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
@@ -1336,7 +1749,7 @@ function FCOIS.BuildAddonMenu()
             ------------------------------------------------------------------------------------------------------------------------
             --Add the respect inventory flag icon state
             name = locVars["options_enable_block_marked_disable_with_flag"]
-            tooltip = locVars["options_enable_block_marked_disable_with_flag_TT"]
+            tooltip = locVars["options_enable_block_marked_disable_with_flag" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
             disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].temporaryDisableByInventoryFlagIcon end
@@ -1351,7 +1764,7 @@ function FCOIS.BuildAddonMenu()
             ------------------------------------------------------------------------------------------------------------------------
             --Add the disable all other marker icons if this dyn. icon is set checkbox
             name = locVars["options_demark_all_others"]
-            tooltip = locVars["options_demark_all_others_TT"]
+            tooltip = locVars["options_demark_all_others" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
             disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].demarkAllOthers end
@@ -1366,7 +1779,7 @@ function FCOIS.BuildAddonMenu()
             ------------------------------------------------------------------------------------------------------------------------
             --Add the exclude non-dynamic (normal) icons to the disable all other marker icons if this dyn. icon is set checkbox
             name = locVars["options_demark_all_others_except_non_dynamic"]
-            tooltip = locVars["options_demark_all_others_except_non_dynamic_TT"]
+            tooltip = locVars["options_demark_all_others_except_non_dynamic" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
             disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] or not FCOISsettings.icon[fcoisDynIconNr].demarkAllOthers or FCOISsettings.icon[fcoisDynIconNr].demarkAllOthersExcludeDynamic end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].demarkAllOthersExcludeNormal end
@@ -1381,7 +1794,7 @@ function FCOIS.BuildAddonMenu()
             ------------------------------------------------------------------------------------------------------------------------
             --Add the exclude dnaymic icons to the disable all other marker icons if this dyn. icon is set checkbox
             name = locVars["options_demark_all_others_except_dynamic"]
-            tooltip = locVars["options_demark_all_others_except_dynamic_TT"]
+            tooltip = locVars["options_demark_all_others_except_dynamic" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
             disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] or not FCOISsettings.icon[fcoisDynIconNr].demarkAllOthers or FCOISsettings.icon[fcoisDynIconNr].demarkAllOthersExcludeNormal end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].demarkAllOthersExcludeDynamic end
@@ -1396,7 +1809,7 @@ function FCOIS.BuildAddonMenu()
             ------------------------------------------------------------------------------------------------------------------------
             --Add the "Prevent auto-marking  if marked with this icon" checkbox
             name = locVars["options_prevent_auto_marking_if_this_icon_set"]
-            tooltip = locVars["options_prevent_auto_marking_if_this_icon_set_TT"]
+            tooltip = locVars["options_prevent_auto_marking_if_this_icon_set" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
             disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].autoMarkPreventIfMarkedWithThis end
@@ -1411,7 +1824,7 @@ function FCOIS.BuildAddonMenu()
             ------------------------------------------------------------------------------------------------------------------------
             --Add the "Auto-remove if banked" checkbox
             name = locVars["options_auto_remove_if_banked"]
-            tooltip = locVars["options_auto_remove_if_banked_TT"]
+            tooltip = locVars["options_auto_remove_if_banked" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
             disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].autoRemoveMarkForBag[BAG_BANK] end
@@ -1426,7 +1839,7 @@ function FCOIS.BuildAddonMenu()
             ------------------------------------------------------------------------------------------------------------------------
             --Add the "Auto-remove if guild banked" checkbox
             name = locVars["options_auto_remove_if_guild_banked"]
-            tooltip = locVars["options_auto_remove_if_guild_banked_TT"]
+            tooltip = locVars["options_auto_remove_if_guild_banked" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
             disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].autoRemoveMarkForBag[BAG_GUILDBANK] end
@@ -1449,7 +1862,7 @@ function FCOIS.BuildAddonMenu()
             ------------------------------------------------------------------------------------------------------------------------
             --Add the block destroy checkbox
             name = locVars["options_enable_block_destroying"]
-            tooltip = locVars["options_enable_block_destroying_TT"]
+            tooltip = locVars["options_enable_block_destroying" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
             disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_INVENTORY] end
@@ -1463,7 +1876,7 @@ function FCOIS.BuildAddonMenu()
             ------------------------------------------------------------------------------------------------------------------------
             --Add the block selling checkbox
             name = locVars["options_enable_block_selling"]
-            tooltip = locVars["options_enable_block_selling_TT"]
+            tooltip = locVars["options_enable_block_selling" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
             disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_VENDOR_SELL] end
@@ -1477,7 +1890,7 @@ function FCOIS.BuildAddonMenu()
             ------------------------------------------------------------------------------------------------------------------------
             --Add the block deconstruction checkbox
             name = locVars["options_enable_block_deconstruction"]
-            tooltip = locVars["options_enable_block_deconstruction_TT"]
+            tooltip = locVars["options_enable_block_deconstruction" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
             disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_SMITHING_DECONSTRUCT] end
@@ -1491,7 +1904,7 @@ function FCOIS.BuildAddonMenu()
             ------------------------------------------------------------------------------------------------------------------------
             --Add the block jewelry deconstruction checkbox
             name = locVars["options_enable_block_jewelry_deconstruction"]
-            tooltip = locVars["options_enable_block_jewelry_deconstruction_TT"]
+            tooltip = locVars["options_enable_block_jewelry_deconstruction" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
             disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_JEWELRY_DECONSTRUCT] end
@@ -1505,7 +1918,7 @@ function FCOIS.BuildAddonMenu()
             ------------------------------------------------------------------------------------------------------------------------
             --Add the block improvement checkbox
             name = locVars["options_enable_block_improvement"]
-            tooltip = locVars["options_enable_block_improvement_TT"]
+            tooltip = locVars["options_enable_block_improvement" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
             disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_SMITHING_IMPROVEMENT] end
@@ -1519,7 +1932,7 @@ function FCOIS.BuildAddonMenu()
             ------------------------------------------------------------------------------------------------------------------------
             --Add the block jewelry improvement checkbox
             name = locVars["options_enable_block_jewelry_improvement"]
-            tooltip = locVars["options_enable_block_jewelry_improvement_TT"]
+            tooltip = locVars["options_enable_block_jewelry_improvement" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
             disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_JEWELRY_IMPROVEMENT] end
@@ -1533,7 +1946,7 @@ function FCOIS.BuildAddonMenu()
             ------------------------------------------------------------------------------------------------------------------------
             --Add the block refinement checkbox
             name = locVars["options_enable_block_refinement"]
-            tooltip = locVars["options_enable_block_refinement_TT"]
+            tooltip = locVars["options_enable_block_refinement" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
             disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_SMITHING_REFINE] end
@@ -1547,7 +1960,7 @@ function FCOIS.BuildAddonMenu()
             ------------------------------------------------------------------------------------------------------------------------
             --Add the block jewelry refinement checkbox
             name = locVars["options_enable_block_jewelry_refinement"]
-            tooltip = locVars["options_enable_block_jewelry_refinement_TT"]
+            tooltip = locVars["options_enable_block_jewelry_refinement" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
             disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_JEWELRY_REFINE] end
@@ -1561,7 +1974,7 @@ function FCOIS.BuildAddonMenu()
             ------------------------------------------------------------------------------------------------------------------------
             --Add the block research checkbox
             name = locVars["options_enable_block_research"]
-            tooltip = locVars["options_enable_block_research_TT"]
+            tooltip = locVars["options_enable_block_research" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
             disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_SMITHING_RESEARCH_DIALOG] end
@@ -1575,7 +1988,7 @@ function FCOIS.BuildAddonMenu()
             ------------------------------------------------------------------------------------------------------------------------
             --Add the block jewelry research checkbox
             name = locVars["options_enable_block_jewelry_research"]
-            tooltip = locVars["options_enable_block_jewelry_research_TT"]
+            tooltip = locVars["options_enable_block_jewelry_research" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
             disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_JEWELRY_RESEARCH_DIALOG] end
@@ -1589,7 +2002,7 @@ function FCOIS.BuildAddonMenu()
             ------------------------------------------------------------------------------------------------------------------------
             --Add the block sell in guildstore checkbox
             name = locVars["options_enable_block_selling_guild_store"]
-            tooltip = locVars["options_enable_block_selling_guild_store_TT"]
+            tooltip = locVars["options_enable_block_selling_guild_store" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
             disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_GUILDSTORE_SELL] end
@@ -1603,7 +2016,7 @@ function FCOIS.BuildAddonMenu()
             ------------------------------------------------------------------------------------------------------------------------
             --Add the block enchanting creation checkbox
             name = locVars["options_enable_block_creation"]
-            tooltip = locVars["options_enable_block_creation_TT"]
+            tooltip = locVars["options_enable_block_creation" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
             disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_ENCHANTING_CREATION] end
@@ -1617,7 +2030,7 @@ function FCOIS.BuildAddonMenu()
             ------------------------------------------------------------------------------------------------------------------------
             --Add the block enchanting extraction checkbox
             name = locVars["options_enable_block_extraction"]
-            tooltip = locVars["options_enable_block_extraction_TT"]
+            tooltip = locVars["options_enable_block_extraction" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
             disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_ENCHANTING_EXTRACTION] end
@@ -1631,7 +2044,7 @@ function FCOIS.BuildAddonMenu()
             ------------------------------------------------------------------------------------------------------------------------
             --Add the block fence selling checkbox
             name = locVars["options_enable_block_fence_selling"]
-            tooltip = locVars["options_enable_block_fence_selling_TT"]
+            tooltip = locVars["options_enable_block_fence_selling" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
             disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_FENCE_SELL] end
@@ -1645,7 +2058,7 @@ function FCOIS.BuildAddonMenu()
             ------------------------------------------------------------------------------------------------------------------------
             --Add the block launder selling checkbox
             name = locVars["options_enable_block_launder_selling"]
-            tooltip = locVars["options_enable_block_launder_selling_TT"]
+            tooltip = locVars["options_enable_block_launder_selling" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
             disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_FENCE_LAUNDER] end
@@ -1659,7 +2072,7 @@ function FCOIS.BuildAddonMenu()
             ------------------------------------------------------------------------------------------------------------------------
             --Add the block trading checkbox
             name = locVars["options_enable_block_trading"]
-            tooltip = locVars["options_enable_block_trading_TT"]
+            tooltip = locVars["options_enable_block_trading" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
             disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_TRADE] end
@@ -1673,7 +2086,7 @@ function FCOIS.BuildAddonMenu()
             ------------------------------------------------------------------------------------------------------------------------
             --Add the block send by mail checkbox
             name = locVars["options_enable_block_sending_mail"]
-            tooltip = locVars["options_enable_block_sending_mail_TT"]
+            tooltip = locVars["options_enable_block_sending_mail" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
             disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_MAIL_SEND] end
@@ -1687,7 +2100,7 @@ function FCOIS.BuildAddonMenu()
             ------------------------------------------------------------------------------------------------------------------------
             --Add the block alchemy destroy checkbox
             name = locVars["options_enable_block_alchemy_destroy"]
-            tooltip = locVars["options_enable_block_alchemy_destroy_TT"]
+            tooltip = locVars["options_enable_block_alchemy_destroy" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
             disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_ALCHEMY_CREATION] end
@@ -1701,7 +2114,7 @@ function FCOIS.BuildAddonMenu()
             ------------------------------------------------------------------------------------------------------------------------
             --Add the block retrait checkbox
             name = locVars["options_enable_block_retrait"]
-            tooltip = locVars["options_enable_block_retrait_TT"]
+            tooltip = locVars["options_enable_block_retrait" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
             disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_RETRAIT] end
@@ -1715,8 +2128,8 @@ function FCOIS.BuildAddonMenu()
             ------------------------------------------------------------------------------------------------------------------------
             --Create the submenu header for the dynamic icon and assign the before build controls to it
             if dynIconsSubMenusControls ~= nil and #dynIconsSubMenusControls > 0 then
-                ref = "FCOIS_OPTIONS_" .. locVars["options_icon" .. tostring(fcoisDynIconNr) .. "_color"].."_submenu"
-                name = locVars["options_icon" .. tostring(fcoisDynIconNr) .. "_color"]
+                ref = "FCOIS_OPTIONS_" .. locVars[dynIconNameStart .. colorSuffix].. submenuSuffix
+                name = locVars[dynIconNameStart .. colorSuffix]
                 tooltip = ""
                 data = { type = "submenu", controls = dynIconsSubMenusControls }
                 local createdDynIconSubMenuSurrounding = CreateControl(ref, name, tooltip, data, nil, nil, nil, nil, nil)
@@ -1742,7 +2155,7 @@ function FCOIS.BuildAddonMenu()
         --Add 1 button to set all filter panel ID settings to an equal value, the one of LF_INVENTORY
         --Add the filter button left edit box
         local btnname    = locVars["options_filter_button_set_all_equal"]
-        local btntooltip = locVars["options_filter_button_set_all_equal_TT"]
+        local btntooltip = locVars["options_filter_button_set_all_equal" .. tooltipSuffix]
         local btndata = { type = "button", width = "full", isDangerous="true"}
         local btndisabledFunc = function()
             for _, filterButtonNr in ipairs(filterButtonsToCheck) do
@@ -1754,7 +2167,7 @@ function FCOIS.BuildAddonMenu()
         local btnFunc = function()
             FCOIS.setAllFilterButtonOffsetAndSizeSettingsEqual(LF_INVENTORY)
         end
-        local btncreatedControl = CreateControl(nil, btnname, btntooltip, btndata, btndisabledFunc, nil, btnFunc, nil, locVars["options_filter_button_set_all_equal_TT"])
+        local btncreatedControl = CreateControl(nil, btnname, btntooltip, btndata, btndisabledFunc, nil, btnFunc, nil, locVars["options_filter_button_set_all_equal" .. tooltipSuffix])
         if btncreatedControl ~= nil then
             table.insert(filterButtonsPositionsSubMenu, btncreatedControl)
         end
@@ -1784,7 +2197,7 @@ function FCOIS.BuildAddonMenu()
                     --Add the filter button left edit box
                     ref = fcoisLAMSettingsReferencePrefix .. "FilterButtonsPositionsAtPanel" .. tostring(filterPanelId) .. "_" .. tostring(filterButtonNr) .. "_LEFT"
                     name    = locVars["options_filter_button" .. tostring(filterButtonNr) .. "_left"]
-                    tooltip = locVars["options_filter_button" .. tostring(filterButtonNr) .. "_left_TT"]
+                    tooltip = locVars["options_filter_button" .. tostring(filterButtonNr) .. "_left" .. tooltipSuffix]
                     data = { type = "editbox", width = "half" }
                     disabledFunc = function() return false end
                     getFunc = function() return FCOISsettings.filterButtonData[filterButtonNr][filterPanelId]["left"] end
@@ -1802,7 +2215,7 @@ function FCOIS.BuildAddonMenu()
                     --Add the filter button top edit box
                     ref = fcoisLAMSettingsReferencePrefix .. "FilterButtonsPositionsAtPanel" .. tostring(filterPanelId) .. "_" .. tostring(filterButtonNr) .. "_TOP"
                     name    = locVars["options_filter_button" .. tostring(filterButtonNr) .. "_top"]
-                    tooltip = locVars["options_filter_button" .. tostring(filterButtonNr) .. "_top_TT"]
+                    tooltip = locVars["options_filter_button" .. tostring(filterButtonNr) .. "_top" .. tooltipSuffix]
                     data = { type = "editbox", width = "half" }
                     disabledFunc = function() return false end
                     getFunc = function() return FCOISsettings.filterButtonData[filterButtonNr][filterPanelId]["top"] end
@@ -1820,7 +2233,7 @@ function FCOIS.BuildAddonMenu()
                     --Add the filter button width edit box
                     ref = fcoisLAMSettingsReferencePrefix .. "FilterButtonsPositionsAtPanel" .. tostring(filterPanelId) .. "_" .. tostring(filterButtonNr) .. "_WIDTH"
                     name    = locVars["options_filter_button" .. tostring(filterButtonNr) .. "_width"]
-                    tooltip = locVars["options_filter_button" .. tostring(filterButtonNr) .. "_width_TT"]
+                    tooltip = locVars["options_filter_button" .. tostring(filterButtonNr) .. "_width" .. tooltipSuffix]
                     data = { type = "slider", width = "half", min = minFilterButtonWidth, max = maxFilterButtonWidth, decimals = 0, step = 1}
                     disabledFunc = function() return false end
                     getFunc = function() return FCOISsettings.filterButtonData[filterButtonNr][filterPanelId]["width"] end
@@ -1836,7 +2249,7 @@ function FCOIS.BuildAddonMenu()
                     --Add the filter button height edit box
                     ref = fcoisLAMSettingsReferencePrefix .. "FilterButtonsPositionsAtPanel" .. tostring(filterPanelId) .. "_" .. tostring(filterButtonNr) .. "_HEIGHT"
                     name    = locVars["options_filter_button" .. tostring(filterButtonNr) .. "_height"]
-                    tooltip = locVars["options_filter_button" .. tostring(filterButtonNr) .. "_height_TT"]
+                    tooltip = locVars["options_filter_button" .. tostring(filterButtonNr) .. "_height" .. tooltipSuffix]
                     data = { type = "slider", width = "half", min = minFilterButtonHeight, max = maxFilterButtonHeight, decimals = 0, step = 1}
                     disabledFunc = function() return false end
                     getFunc = function() return FCOISsettings.filterButtonData[filterButtonNr][filterPanelId]["height"] end
@@ -1853,7 +2266,7 @@ function FCOIS.BuildAddonMenu()
                 ------------------------------------------------------------------------------------------------------------------------
                 --Create the submenu header for the libFilters filterPanel ID and assign the before build edit controls to it
                 if filterButtonsPositionsSubMenuControls ~= nil and #filterButtonsPositionsSubMenuControls > 0 then
-                    local subMenuRef = fcoisLAMSettingsReferencePrefix .. "FilterButtonsPositionsAtPanel" .. tostring(filterPanelId) .. "_submenu"
+                    local subMenuRef = fcoisLAMSettingsReferencePrefix .. "FilterButtonsPositionsAtPanel" .. tostring(filterPanelId) .. submenuSuffix
                     --local subMenuName = locVars["options_libFiltersFilterPanelIdName_" .. tostring(filterPanelId)]
                     local subMenuName = locVars["FCOIS_LibFilters_PanelIds"][filterPanelId] or locVars["options_libFiltersFilterPanelIdName_" .. tostring(filterPanelId)]
                     local subMenuTooltip = ""
@@ -1876,7 +2289,7 @@ function FCOIS.BuildAddonMenu()
         --Add 1 button to set all filter panel ID settings to an equal value, the one of LF_INVENTORY
         --Add the filter button left edit box
         local btnname    = locVars["options_filter_button_set_all_equal"]
-        local btntooltip = locVars["options_add_inv_flag_button_set_all_equal_TT"]
+        local btntooltip = locVars["options_add_inv_flag_button_set_all_equal" .. tooltipSuffix]
         local btndata = { type = "button", width = "full", isDangerous="true"}
         local btndisabledFunc = function()
             return false
@@ -1884,7 +2297,7 @@ function FCOIS.BuildAddonMenu()
         local btnFunc = function()
             FCOIS.setAllAddInvFlagButtonOffsetSettingsEqual(LF_INVENTORY)
         end
-        local btncreatedControl = CreateControl(nil, btnname, btntooltip, btndata, btndisabledFunc, nil, btnFunc, nil, locVars["options_add_inv_flag_button_set_all_equal_TT"])
+        local btncreatedControl = CreateControl(nil, btnname, btntooltip, btndata, btndisabledFunc, nil, btnFunc, nil, locVars["options_add_inv_flag_button_set_all_equal" .. tooltipSuffix])
         if btncreatedControl ~= nil then
             table.insert(addInvFlagButtonsPositionsSubMenu, btncreatedControl)
         end
@@ -1924,7 +2337,7 @@ function FCOIS.BuildAddonMenu()
                 --Add the button top edit box
                 ref = fcoisLAMSettingsReferencePrefix .. "AddInvFlagButtonsPositionsAtPanel" .. tostring(filterPanelId) .. "_TOP"
                 name    = locVars["options_filter_button1_top"]
-                tooltip = locVars["options_filter_button1_top_TT"]
+                tooltip = locVars["options_filter_button1_top" .. tooltipSuffix]
                 data = { type = "editbox", width = "half"}
                 disabledFunc = function() return false end
                 getFunc = function() return FCOISsettings.FCOISAdditionalInventoriesButtonOffset[filterPanelId]["top"] end
@@ -1942,7 +2355,7 @@ function FCOIS.BuildAddonMenu()
                 ------------------------------------------------------------------------------------------------------------------------
                 --Create the submenu header for the libFilters filterPanel ID and assign the before build edit controls to it
                 if addInvFlagButtonsPositionsSubMenuControls ~= nil and #addInvFlagButtonsPositionsSubMenuControls > 0 then
-                    local subMenuRef = fcoisLAMSettingsReferencePrefix .. "AddInvFlagButtonsPositionsAtPanel" .. tostring(filterPanelId) .. "_submenu"
+                    local subMenuRef = fcoisLAMSettingsReferencePrefix .. "AddInvFlagButtonsPositionsAtPanel" .. tostring(filterPanelId) .. submenuSuffix
                     --local subMenuName = locVars["options_libFiltersFilterPanelIdName_" .. tostring(filterPanelId)]
                     local subMenuName = locVars["FCOIS_LibFilters_PanelIds"][filterPanelId] or locVars["options_libFiltersFilterPanelIdName_" .. tostring(filterPanelId)]
                     local subMenuTooltip = ""
@@ -1996,20 +2409,6 @@ function FCOIS.BuildAddonMenu()
     FCOIS.buildRestoreAPIVersionData(false)
     --==================== Restore API versions - END =======================================
 
-    --Set the text type of some edit boxes in the settings menu so the values entered are validated
-    local function setSettingsMenuEditBoxTextTypes()
-        if not editBoxesToSetTextTypes then return end
-        for controlName, textType in pairs(editBoxesToSetTextTypes) do
-            if textType then
-                local control = WINDOW_MANAGER:GetControlByName(controlName, "")
-                if control then
-                    if control.editbox and control.editbox.SetTextType then
-                        control.editbox:SetTextType(textType)
-                    end
-                end
-            end
-        end
-    end
 
     --Hide/Show the FCOIS LAM menu container now and show
     --a placeholder "Loading" meanwhile if the menu is hidden
@@ -2123,6 +2522,14 @@ function FCOIS.BuildAddonMenu()
             SCENE_MANAGER:GetScene('gameMenuInGame'):RemoveFragment(RIGHT_PANEL_BG_FRAGMENT)
             FCOIS.preventerVars.lamMenuOpenAndShowingInvPreviewForGridListAddon = false
         end
+
+        --Update the localization once if something changed that needs to update the localization
+        if FCOIS.preventerVars.doUpdateLocalization == true then
+            FCOIS.preventerVars.KeyBindingTexts = false
+            d("[FCOIS]LAM settings menu close: Update localization once")
+            FCOIS.Localization()
+            FCOIS.preventerVars.KeyBindingTexts = true
+        end
     end
 
     --[[
@@ -2170,7 +2577,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = 'dropdown',
                     name = locVars["options_language"],
-                    tooltip = locVars["options_language_TT"],
+                    tooltip = locVars["options_language" .. tooltipSuffix],
                     choices = languageOptions,
                     getFunc = function() return languageOptions[FCOIS.settingsVars.defaultSettings.language] end,
                     setFunc = function(value)
@@ -2194,7 +2601,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_language_use_client"],
-                    tooltip = locVars["options_language_use_client_TT"],
+                    tooltip = locVars["options_language_use_client" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.alwaysUseClientLanguage end,
                     setFunc = function(value)
                         FCOISsettings.alwaysUseClientLanguage = value
@@ -2209,7 +2616,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = 'dropdown',
                     name = locVars["options_savedvariables"],
-                    tooltip = locVars["options_savedvariables_TT"],
+                    tooltip = locVars["options_savedvariables" .. tooltipSuffix],
                     choices = savedVariablesOptions,
                     getFunc = function() return savedVariablesOptions[FCOIS.settingsVars.defaultSettings.saveMode] end,
                     setFunc = function(value)
@@ -2223,7 +2630,7 @@ function FCOIS.BuildAddonMenu()
                     end,
                     warning = locVars["options_language_description1"],
                     requiresReload = true,
-                    --helpUrl = locVars["options_savedvariables_TT"],
+                    --helpUrl = locVars["options_savedvariables" .. tooltipSuffix],
                     default = savedVariablesOptions[2], -- Account wide
                 },
                 --Unique ID switch
@@ -2238,49 +2645,218 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_use_uniqueids"],
-                    tooltip = locVars["options_use_uniqueids_TT"],
+                    tooltip = locVars["options_use_uniqueids" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.useUniqueIds end,
                     setFunc = function(value)
+                        --Remember the last used "is uniqueID enabled" state from before the change of this setting
+                        -->Used in file /src/FCOIS_settings.lua, function scanBagsAndTransferMarkerIcon()
+                        local lastUsedUniqueIdEnabled = FCOISsettings.useUniqueIds
+                        FCOISsettings.lastUsedUniqueIdEnabled = lastUsedUniqueIdEnabled
+
+
+                        --Old:
+                        --Only set the "toggle" variable which will be read in file /src/FCOIS_Settings.lua, function FCOIS.afterSettings()
+                        --and will change the variable FCOIS.settingsVars.settings.useUniqueIds then, after the reloadui has taken place!
+                        -->This variable will start the migration dialog after the reloadui! See variable FCOIS.preventerVars.migrateItemMarkers
+                        -->in file /src/FCOIS_Settings.lua, function FCOIS.afterSettings(), and file /src/FCOIS_Dialogs.lua, dialog "FCOIS_ASK_BEFORE_MIGRATE_DIALOG"
+                        -->and function FCOIS.migrateItemInstanceIdMarkersToUniqueIdMarkers() in file /src/FCOIS_Settings.lua
                         FCOISsettings.useUniqueIdsToggle = value
+
+
+                        --New: Also direct change of the variable as else the dropdown box below would re-set this checkbox here
+                        --if the LAM refresh for the cntrols is called (upon change of the dropdown box all other controls
+                        --will refresh as well -> variable useUniqueIdsToggle is not used for the getfunc and thus the checkbox
+                        --wil be disabled automatically again).
+                        --FCOISsettings.useUniqueIds = value
+                        --EDIT: Directly reload as this setting changes to make sure/safe the toggle variable is ONLY set
+                        --and the useUniqueIds variable will be set in file src/FCOIS_Settings.lua, function FCOIS.afterSettings()
+                        ReloadUI()
                     end,
                     warning = locVars["options_description_uniqueids"],
-                    requiresReload = true,
+                    --requiresReload = true,
                     default = FCOISdefaultSettings.useUniqueIds,
                 },
                 {
                     type = 'dropdown',
                     name = locVars["options_use_uniqueids_type"],
-                    tooltip = locVars["options_use_uniqueids_type_TT"],
+                    tooltip = locVars["options_use_uniqueids_type" .. tooltipSuffix],
                     choices = uniqueItemIdTypeChoices,
                     choicesValues = uniqueItemIdTypeChoicesValues,
                     choicesTooltips = uniqueItemIdTypeChoicesTT,
                     getFunc = function() return FCOISsettings.uniqueItemIdType end,
                     setFunc = function(value)
+                        --Remember the last used uniqueID type from before the change of this setting
+                        -->Used in file /src/FCOIS_settings.lua, function scanBagsAndTransferMarkerIcon()
+                        local lastUsedUniqueIdType = FCOISsettings.uniqueItemIdType
+                        FCOISsettings.lastUsedUniqueIdType = lastUsedUniqueIdType
+                        --Set the new unique type
                         FCOISsettings.uniqueItemIdType = value
+                        ReloadUI()
                     end,
-                    requiresReload = true,
-                    --helpUrl = locVars["options_savedvariables_TT"],
+                    --requiresReload = true,
+                    warning = locVars["options_use_uniqueids_type" .. tooltipSuffix],
+                    --helpUrl = locVars["options_savedvariables" .. tooltipSuffix],
                     default = FCOISdefaultSettings.uniqueItemIdType,
                     disabled = function()
-                        if FCOISsettings.useUniqueIdsToggle == true or FCOISsettings.useUniqueIds == true then
-                            return false
-                        end
-                        return true
+                        return not FCOISsettings.useUniqueIds
                     end
                 },
+                --==============================================================================
+                --The parts of the uniqueId (these will build the uniqueId if the user has chosen the FCOIS internally
+                --created uniqueId
+                {
+                    type = 'header',
+                    name = locVars["options_unique_id_parts_header"],
+                },
+                {
+                    type = "checkbox",
+                    name = locVars["options_unique_id_part_itemId"],
+                    tooltip = locVars["options_unique_id_part_itemId"],
+                    getFunc = function() return true end,
+                    setFunc = function(value)
+                    end,
+                    default = true,
+                    disabled = function() return true end, --this cannot be removed but should be "shown as a part of the uniqueID"
+                    width = "full",
+                },
+                {
+                    type = "checkbox",
+                    name = locVars["options_unique_id_part_level"],
+                    tooltip = locVars["options_unique_id_part_level"],
+                    getFunc = function() return FCOISsettings.uniqueIdParts.level end,
+                    setFunc = function(value)
+                        FCOISsettings.uniqueIdParts.level = value
+                    end,
+                    default = FCOISdefaultSettings.uniqueIdParts.level,
+                    disabled = function() return not uniqueIdIsEnabledAndSetToFCOIS() end,
+                    width = "half",
+                },
+                {
+                    type = "checkbox",
+                    name = locVars["options_unique_id_part_quality"],
+                    tooltip = locVars["options_unique_id_part_quality"],
+                    getFunc = function() return FCOISsettings.uniqueIdParts.quality end,
+                    setFunc = function(value)
+                        FCOISsettings.uniqueIdParts.quality = value
+                    end,
+                    default = FCOISdefaultSettings.uniqueIdParts.quality,
+                    disabled = function() return not uniqueIdIsEnabledAndSetToFCOIS() end,
+                    width = "half",
+                },
+                {
+                    type = "checkbox",
+                    name = locVars["options_unique_id_part_stolen"],
+                    tooltip = locVars["options_unique_id_part_stolen"],
+                    getFunc = function() return FCOISsettings.uniqueIdParts.isStolen end,
+                    setFunc = function(value)
+                        FCOISsettings.uniqueIdParts.isStolen = value
+                    end,
+                    default = FCOISdefaultSettings.uniqueIdParts.isStolen,
+                    disabled = function() return not uniqueIdIsEnabledAndSetToFCOIS() end,
+                    width = "half",
+                },
+                {
+                    type = "checkbox",
+                    name = locVars["options_unique_id_part_trait"],
+                    tooltip = locVars["options_unique_id_part_trait"],
+                    getFunc = function() return FCOISsettings.uniqueIdParts.trait end,
+                    setFunc = function(value)
+                        FCOISsettings.uniqueIdParts.trait = value
+                    end,
+                    default = FCOISdefaultSettings.uniqueIdParts.trait,
+                    disabled = function() return not uniqueIdIsEnabledAndSetToFCOIS() end,
+                    width = "half",
+                },
+                {
+                    type = "checkbox",
+                    name = locVars["options_unique_id_part_enchantment"],
+                    tooltip = locVars["options_unique_id_part_enchantment"],
+                    getFunc = function() return FCOISsettings.uniqueIdParts.enchantment end,
+                    setFunc = function(value)
+                        FCOISsettings.uniqueIdParts.enchantment = value
+                    end,
+                    default = FCOISdefaultSettings.uniqueIdParts.enchantment,
+                    disabled = function() return not uniqueIdIsEnabledAndSetToFCOIS() end,
+                    width = "half",
+                },
+                {
+                    type = "checkbox",
+                    name = locVars["options_unique_id_part_style"],
+                    tooltip = locVars["options_unique_id_part_style"],
+                    getFunc = function() return FCOISsettings.uniqueIdParts.style end,
+                    setFunc = function(value)
+                        FCOISsettings.uniqueIdParts.style = value
+                    end,
+                    default = FCOISdefaultSettings.uniqueIdParts.style,
+                    disabled = function() return not uniqueIdIsEnabledAndSetToFCOIS() end,
+                    width = "half",
+                },
+                {
+                    type = "checkbox",
+                    name = locVars["options_unique_id_part_crafted"],
+                    tooltip = locVars["options_unique_id_part_crafted"],
+                    getFunc = function() return FCOISsettings.uniqueIdParts.isCrafted end,
+                    setFunc = function(value)
+                        FCOISsettings.uniqueIdParts.isCrafted = value
+                    end,
+                    default = FCOISdefaultSettings.uniqueIdParts.isCrafted,
+                    disabled = function() return not uniqueIdIsEnabledAndSetToFCOIS() end,
+                    width = "half",
+                },
+                {
+                    type = "checkbox",
+                    name = locVars["options_unique_id_part_crafted_by"],
+                    tooltip = locVars["options_unique_id_part_crafted_by"],
+                    getFunc = function() return FCOISsettings.uniqueIdParts.isCraftedBy end,
+                    setFunc = function(value)
+                        FCOISsettings.uniqueIdParts.isCraftedBy = value
+                    end,
+                    default = FCOISdefaultSettings.uniqueIdParts.isCraftedBy,
+                    disabled = function() return not uniqueIdIsEnabledAndSetToFCOIS() or not FCOISsettings.uniqueIdParts.isCrafted end,
+                    width = "half",
+                },
+                --==============================================================================
+                --The parts of the uniqueId (these will build the uniqueId if the user has chosen the FCOIS internally
+                --created uniqueId
+                {
+                    type = 'header',
+                    name = locVars["options_header_migration_ids"],
+                },
+
                 --Migrate the item markers from itemInstanceid to UniqueId
                 {
                     type = "button",
                     name = locVars["options_migrate_uniqueids"],
-                    tooltip = locVars["options_migrate_uniqueids_TT"],
+                    tooltip = locVars["options_migrate_uniqueids" .. tooltipSuffix],
                     func = function()
-                        FCOIS.migrateItemInstanceIdMarkersToUniqueIdMarkers()
+                        if FCOISsettings.useUniqueIds == true then
+                            FCOIS.preventerVars.migrateToItemInstanceIds = false
+                            FCOIS.preventerVars.migrateToUniqueIds = true
+                            FCOIS.migrateMarkerIcons()
+                        end
                     end,
                     isDangerous = true,
                     disabled = function() return not FCOISsettings.useUniqueIds end,
                     warning = locVars["options_migrate_uniqueids_warning"],
                     width="half",
                 },
+                {
+                    type = "button",
+                    name = locVars["options_migrate_iteminstanceids"],
+                    tooltip = locVars["options_migrate_iteminstanceids" .. tooltipSuffix],
+                    func = function()
+                        if FCOISsettings.useUniqueIds == false then
+                            FCOIS.preventerVars.migrateToUniqueIds = false
+                            FCOIS.preventerVars.migrateToItemInstanceIds = true
+                            FCOIS.migrateMarkerIcons()
+                        end
+                    end,
+                    isDangerous = true,
+                    disabled = function() return FCOISsettings.useUniqueIds end,
+                    warning = locVars["options_migrate_iteminstanceids_warning"],
+                    width="half",
+                },
+                --[[
                 --ReloadUI button
                 {
                     type = "button",
@@ -2312,6 +2888,7 @@ function FCOIS.BuildAddonMenu()
                     end,
                     width="half",
                 },
+                ]]
 
                 {
                     type = 'header',
@@ -2321,7 +2898,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_use_ZOs_lock_functions"],
-                    tooltip = locVars["options_use_ZOs_lock_functions_TT"],
+                    tooltip = locVars["options_use_ZOs_lock_functions" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.useZOsLockFunctions end,
                     setFunc = function(value) FCOISsettings.useZOsLockFunctions = value
                     end,
@@ -2332,7 +2909,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "button",
                     name = locVars["options_scan_ZOs_lock_functions"],
-                    tooltip = locVars["options_scan_ZOs_lock_functions_TT"],
+                    tooltip = locVars["options_scan_ZOs_lock_functions" .. tooltipSuffix],
                     func = function() FCOIS.scanInventoriesForZOsLockedItems(true)
                     end,
                     isDangerous = true,
@@ -2348,931 +2925,36 @@ function FCOIS.BuildAddonMenu()
         --==============================================================================
         {
             type = "submenu",
-            name = locVars["options_header_color"],
+            name = locVars["options_header" .. colorSuffix],
             controls =
             {
                 --==============================================================================
                 {
                     type = "description",
-                    text = locVars["options_icons_description"],
+                    text = locVars[optionsIcon .. "s_description"],
                 },
                 {
                     type = "submenu",
-                    name = locVars["options_icons_non_gear"],
+                    name = locVars[optionsIcon .. "s_non_gear"],
                     controls =
                     {
                         {
                             type = "description",
-                            text = locVars["options_icons_non_gear_sets_description"],
+                            text = locVars[optionsIcon .. "s_non_gear_sets_description"],
                         },
-                        --===================================================================================
+                        --==============================================================================
+                        --The submenus for all the normal icons
                         {
                             type = "submenu",
-                            name = locVars["options_icons_non_gear"],
-                            controls =
-                            {
-                                {
-                                    type = "submenu",
-                                    name = locVars["options_icon1_color"],
-                                    reference = "FCOIS_OPTIONS_" .. locVars["options_icon1_color"].."_submenu",
-                                    controls =
-                                    {
-                                        {
-                                            type = "colorpicker",
-                                            name = locVars["options_icon1_color"],
-                                            tooltip = locVars["options_icon1_color_TT"],
-                                            getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_LOCK].color.r, FCOISsettings.icon[FCOIS_CON_ICON_LOCK].color.g, FCOISsettings.icon[FCOIS_CON_ICON_LOCK].color.b, FCOISsettings.icon[FCOIS_CON_ICON_LOCK].color.a end,
-                                            setFunc = function(r,g,b,a)
-                                                FCOISsettings.icon[FCOIS_CON_ICON_LOCK].color = {["r"] = r, ["g"] = g, ["b"] = b, ["a"] = a}
-                                                FCOItemSaver_Settings_Filter1Preview_Select:SetColor(ZO_ColorDef:New(r,g,b,a))
-                                                --Set global variable to update the marker colors and textures
-                                                FCOIS.preventerVars.gUpdateMarkersNow = true
-                                            end,
-                                            width="half",
-                                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_LOCK] end,
-                                            default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_LOCK].color,
-                                        },
-                                        {
-                                            type = "iconpicker",
-                                            name = locVars["options_icon1_texture"],
-                                            tooltip = locVars["options_icon1_texture_TT"],
-                                            choices = markerIconTextures,
-                                            choicesTooltips = texturesList,
-                                            getFunc = function() return markerIconTextures[FCOISsettings.icon[FCOIS_CON_ICON_LOCK].texture] end,
-                                            setFunc = function(texturePath)
-                                                local textureId = GetFCOTextureId(texturePath)
-                                                if textureId ~= 0 then
-                                                    FCOISsettings.icon[FCOIS_CON_ICON_LOCK].texture = textureId
-                                                    FCOItemSaver_Settings_Filter1Preview_Select.label:SetText(locVars["options_icon1_texture"] .. ": " .. texturesList[textureId])
-                                                    local p_button = WINDOW_MANAGER:GetControlByName(FCOIS.ZOControlVars.FCOISfilterButtonNames[FCOIS_CON_FILTER_BUTTON_LOCKDYN], "")
-                                                    FCOIS.UpdateButtonColorsAndTextures(FCOIS_CON_ICON_LOCK, p_button, -999)
-                                                    --Set global variable to update the marker colors and textures
-                                                    FCOIS.preventerVars.gUpdateMarkersNow = true
-                                                end
-                                            end,
-                                            maxColumns = 6,
-                                            visibleRows = 5,
-                                            iconSize = FCOISsettings.icon[FCOIS_CON_ICON_LOCK].size,
-                                            width = "half",
-                                            reference = "FCOItemSaver_Settings_Filter1Preview_Select",
-                                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_LOCK] end,
-                                            default = markerIconTextures[FCOISsettings.icon[FCOIS_CON_ICON_LOCK].texture],
-                                        },
-                                        {
-                                            type = "checkbox",
-                                            name = locVars["options_icon1_TT"],
-                                            tooltip = locVars["options_icon1_tooltip_TT"],
-                                            getFunc = function() return FCOISsettings.showMarkerTooltip[FCOIS_CON_ICON_LOCK] end,
-                                            setFunc = function(value) FCOISsettings.showMarkerTooltip[FCOIS_CON_ICON_LOCK] = value
-                                                FCOIS.preventerVars.gUpdateMarkersNow = true
-                                            end,
-                                            width="half",
-                                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_LOCK] end,
-                                            default = FCOISdefaultSettings.showMarkerTooltip[FCOIS_CON_ICON_LOCK],
-                                        },
-                                        {
-                                            type = "slider",
-                                            name = locVars["options_icon1_size"],
-                                            tooltip = locVars["options_icon1_size_TT"],
-                                            min = minIconSize,
-                                            max = maxIconSize,
-                                            decimals = 0,
-                                            autoSelect = true,
-                                            getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_LOCK].size end,
-                                            setFunc = function(size)
-                                                FCOISsettings.icon[FCOIS_CON_ICON_LOCK].size = size
-                                                FCOItemSaver_Settings_Filter1Preview_Select:SetIconSize(size)
-                                            end,
-                                            width="half",
-                                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_LOCK] end,
-                                            default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_LOCK].size,
-                                        },
-                                        {
-                                            type = "slider",
-                                            name = locVars["options_icon_offset_left"],
-                                            tooltip = locVars["options_icon_offset_left_TT"],
-                                            min = minIconOffsetLeft,
-                                            max = maxIconOffsetLeft,
-                                            decimals = 0,
-                                            autoSelect = true,
-                                            getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_LOCK].offsets[LF_INVENTORY]["left"] end,
-                                            setFunc = function(left)
-                                                FCOISsettings.icon[FCOIS_CON_ICON_LOCK].offsets[LF_INVENTORY]["left"] = left
-                                            end,
-                                            width="half",
-                                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_LOCK] end,
-                                            default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_LOCK].offsets[LF_INVENTORY]["left"],
-                                        },
-                                        {
-                                            type = "slider",
-                                            name = locVars["options_icon_offset_top"],
-                                            tooltip = locVars["options_icon_offset_top_TT"],
-                                            min = minIconOffsetTop,
-                                            max = maxIconOffsetTop,
-                                            decimals = 0,
-                                            autoSelect = true,
-                                            getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_LOCK].offsets[LF_INVENTORY]["top"] end,
-                                            setFunc = function(top)
-                                                FCOISsettings.icon[FCOIS_CON_ICON_LOCK].offsets[LF_INVENTORY]["top"] = top
-                                            end,
-                                            width="half",
-                                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_LOCK] end,
-                                            default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_LOCK].offsets[LF_INVENTORY]["top"],
-                                        },
-                                    } -- controls icon 1
-                                }, -- submenu icon 1
-                                --==============================================================================
-                                {
-                                    type = "submenu",
-                                    name = locVars["options_icon3_color"],
-                                    reference = "FCOIS_OPTIONS_" .. locVars["options_icon3_color"].."_submenu",
-                                    controls =
-                                    {
-                                        {
-                                            type = "colorpicker",
-                                            name = locVars["options_icon3_color"],
-                                            tooltip = locVars["options_icon3_color_TT"],
-                                            getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_RESEARCH].color.r, FCOISsettings.icon[FCOIS_CON_ICON_RESEARCH].color.g, FCOISsettings.icon[FCOIS_CON_ICON_RESEARCH].color.b, FCOISsettings.icon[FCOIS_CON_ICON_RESEARCH].color.a end,
-                                            setFunc = function(r,g,b,a)
-                                                FCOISsettings.icon[FCOIS_CON_ICON_RESEARCH].color = {["r"] = r, ["g"] = g, ["b"] = b, ["a"] = a}
-                                                FCOItemSaver_Settings_Filter3Preview_Select:SetColor(ZO_ColorDef:New(r,g,b,a))
-                                                --Set global variable to update the marker colors and textures
-                                                FCOIS.preventerVars.gUpdateMarkersNow = true
-                                            end,
-                                            width = "half",
-                                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_RESEARCH] end,
-                                            default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_RESEARCH].color,
-                                        },
-                                        {
-                                            type = "iconpicker",
-                                            name = locVars["options_icon3_texture"],
-                                            tooltip = locVars["options_icon3_texture_TT"],
-                                            choices = markerIconTextures,
-                                            choicesTooltips = texturesList,
-                                            getFunc = function() return markerIconTextures[FCOISsettings.icon[FCOIS_CON_ICON_RESEARCH].texture] end,
-                                            setFunc = function(texturePath)
-                                                local textureId = GetFCOTextureId(texturePath)
-                                                if textureId ~= 0 then
-                                                    FCOISsettings.icon[FCOIS_CON_ICON_RESEARCH].texture = textureId
-                                                    FCOItemSaver_Settings_Filter3Preview_Select.label:SetText(locVars["options_icon3_texture"] .. ": " .. texturesList[textureId])
-                                                    local p_button = WINDOW_MANAGER:GetControlByName(FCOIS.ZOControlVars.FCOISfilterButtonNames[FCOIS_CON_FILTER_BUTTON_RESDECIMP], "")
-                                                    FCOIS.UpdateButtonColorsAndTextures(FCOIS_CON_ICON_RESEARCH, p_button, -999)
-                                                    --Set global variable to update the marker colors and textures
-                                                    FCOIS.preventerVars.gUpdateMarkersNow = true
-                                                end
-                                            end,
-                                            maxColumns = 6,
-                                            visibleRows = 5,
-                                            iconSize = FCOISsettings.icon[FCOIS_CON_ICON_RESEARCH].size,
-                                            width = "half",
-                                            reference = "FCOItemSaver_Settings_Filter3Preview_Select",
-                                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_RESEARCH] end,
-                                            default = markerIconTextures[FCOISsettings.icon[FCOIS_CON_ICON_RESEARCH].texture],
-                                        },
-                                        {
-                                            type = "checkbox",
-                                            name = locVars["options_icon3_TT"],
-                                            tooltip = locVars["options_icon3_tooltip_TT"],
-                                            getFunc = function() return FCOISsettings.showMarkerTooltip[FCOIS_CON_ICON_RESEARCH] end,
-                                            setFunc = function(value) FCOISsettings.showMarkerTooltip[FCOIS_CON_ICON_RESEARCH] = value
-                                                FCOIS.preventerVars.gUpdateMarkersNow = true
-                                            end,
-                                            width="half",
-                                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_RESEARCH] end,
-                                            default = FCOISdefaultSettings.showMarkerTooltip[FCOIS_CON_ICON_RESEARCH],
-                                        },
-                                        {
-                                            type = "slider",
-                                            name = locVars["options_icon3_size"],
-                                            tooltip = locVars["options_icon3_size_TT"],
-                                            min = minIconSize,
-                                            max = maxIconSize,
-                                            decimals = 0,
-                                            autoSelect = true,
-                                            getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_RESEARCH].size end,
-                                            setFunc = function(size)
-                                                FCOISsettings.icon[FCOIS_CON_ICON_RESEARCH].size = size
-                                                FCOItemSaver_Settings_Filter3Preview_Select:SetIconSize(size)
-                                                --Set global variable to update the marker colors and textures
-                                                FCOIS.preventerVars.gUpdateMarkersNow = true
-                                            end,
-                                            width="half",
-                                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_RESEARCH] end,
-                                            default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_RESEARCH].size,
-                                        },
-                                        {
-                                            type = "slider",
-                                            name = locVars["options_icon_offset_left"],
-                                            tooltip = locVars["options_icon_offset_left_TT"],
-                                            min = minIconOffsetLeft,
-                                            max = maxIconOffsetLeft,
-                                            decimals = 0,
-                                            autoSelect = true,
-                                            getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_RESEARCH].offsets[LF_INVENTORY]["left"] end,
-                                            setFunc = function(left)
-                                                FCOISsettings.icon[FCOIS_CON_ICON_RESEARCH].offsets[LF_INVENTORY]["left"] = left
-                                            end,
-                                            width="half",
-                                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_RESEARCH] end,
-                                            default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_RESEARCH].offsets[LF_INVENTORY]["left"],
-                                        },
-                                        {
-                                            type = "slider",
-                                            name = locVars["options_icon_offset_top"],
-                                            tooltip = locVars["options_icon_offset_top_TT"],
-                                            min = minIconOffsetTop,
-                                            max = maxIconOffsetTop,
-                                            decimals = 0,
-                                            autoSelect = true,
-                                            getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_RESEARCH].offsets[LF_INVENTORY]["top"] end,
-                                            setFunc = function(top)
-                                                FCOISsettings.icon[FCOIS_CON_ICON_RESEARCH].offsets[LF_INVENTORY]["top"] = top
-                                            end,
-                                            width="half",
-                                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_RESEARCH] end,
-                                            default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_RESEARCH].offsets[LF_INVENTORY]["top"],
-                                        },
-                                    } -- controls icon 3
-                                }, -- submenu icon 3
-                                --==============================================================================
-                                {
-                                    type = "submenu",
-                                    name = locVars["options_icon5_color"],
-                                    reference = "FCOIS_OPTIONS_" .. locVars["options_icon5_color"].."_submenu",
-                                    controls =
-                                    {
-                                        {
-                                            type = "colorpicker",
-                                            name = locVars["options_icon5_color"],
-                                            tooltip = locVars["options_icon5_color_TT"],
-                                            getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_SELL].color.r, FCOISsettings.icon[FCOIS_CON_ICON_SELL].color.g, FCOISsettings.icon[FCOIS_CON_ICON_SELL].color.b, FCOISsettings.icon[FCOIS_CON_ICON_SELL].color.a end,
-                                            setFunc = function(r,g,b,a)
-                                                FCOISsettings.icon[FCOIS_CON_ICON_SELL].color = {["r"] = r, ["g"] = g, ["b"] = b, ["a"] = a}
-                                                FCOItemSaver_Settings_Filter5Preview_Select:SetColor(ZO_ColorDef:New(r,g,b,a))
-                                                --Set global variable to update the marker colors and textures
-                                                FCOIS.preventerVars.gUpdateMarkersNow = true
-                                            end,
-                                            width = "half",
-                                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL] end,
-                                            default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_SELL].color,
-                                        },
-                                        {
-                                            type = "iconpicker",
-                                            name = locVars["options_icon5_texture"],
-                                            tooltip = locVars["options_icon5_texture_TT"],
-                                            choices = markerIconTextures,
-                                            choicesTooltips = texturesList,
-                                            getFunc = function() return markerIconTextures[FCOISsettings.icon[FCOIS_CON_ICON_SELL].texture] end,
-                                            setFunc = function(texturePath)
-                                                local textureId = GetFCOTextureId(texturePath)
-                                                if textureId ~= 0 then
-                                                    FCOISsettings.icon[FCOIS_CON_ICON_SELL].texture = textureId
-                                                    FCOItemSaver_Settings_Filter5Preview_Select.label:SetText(locVars["options_icon5_texture"] .. ": " .. texturesList[textureId])
-                                                    local p_button = WINDOW_MANAGER:GetControlByName(FCOIS.ZOControlVars.FCOISfilterButtonNames[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT], "")
-                                                    FCOIS.UpdateButtonColorsAndTextures(FCOIS_CON_ICON_SELL, p_button, -999)
-                                                    --Set global variable to update the marker colors and textures
-                                                    FCOIS.preventerVars.gUpdateMarkersNow = true
-                                                end
-                                            end,
-                                            maxColumns = 6,
-                                            visibleRows = 5,
-                                            iconSize = FCOISsettings.icon[FCOIS_CON_ICON_SELL].size,
-                                            width = "half",
-                                            reference = "FCOItemSaver_Settings_Filter5Preview_Select",
-                                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL] end,
-                                            default = markerIconTextures[FCOISsettings.icon[FCOIS_CON_ICON_SELL].texture],
-                                        },
-                                        {
-                                            type = "checkbox",
-                                            name = locVars["options_icon5_TT"],
-                                            tooltip = locVars["options_icon5_tooltip_TT"],
-                                            getFunc = function() return FCOISsettings.showMarkerTooltip[FCOIS_CON_ICON_SELL] end,
-                                            setFunc = function(value) FCOISsettings.showMarkerTooltip[FCOIS_CON_ICON_SELL] = value
-                                                FCOIS.preventerVars.gUpdateMarkersNow = true
-                                            end,
-                                            width="half",
-                                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL] end,
-                                            default = FCOISdefaultSettings.showMarkerTooltip[FCOIS_CON_ICON_SELL],
-                                        },
-                                        {
-                                            type = "slider",
-                                            name = locVars["options_icon5_size"],
-                                            tooltip = locVars["options_icon5_size_TT"],
-                                            min = minIconSize,
-                                            max = maxIconSize,
-                                            decimals = 0,
-                                            autoSelect = true,
-                                            getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_SELL].size end,
-                                            setFunc = function(size)
-                                                FCOISsettings.icon[FCOIS_CON_ICON_SELL].size = size
-                                                FCOItemSaver_Settings_Filter5Preview_Select:SetIconSize(size)
-                                                --Set global variable to update the marker colors and textures
-                                                FCOIS.preventerVars.gUpdateMarkersNow = true
-                                            end,
-                                            width="half",
-                                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL] end,
-                                            default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_SELL].size,
-                                        },
-                                        {
-                                            type = "slider",
-                                            name = locVars["options_icon_offset_left"],
-                                            tooltip = locVars["options_icon_offset_left_TT"],
-                                            min = minIconOffsetLeft,
-                                            max = maxIconOffsetLeft,
-                                            decimals = 0,
-                                            autoSelect = true,
-                                            getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_SELL].offsets[LF_INVENTORY]["left"] end,
-                                            setFunc = function(left)
-                                                FCOISsettings.icon[FCOIS_CON_ICON_SELL].offsets[LF_INVENTORY]["left"] = left
-                                            end,
-                                            width="half",
-                                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL] end,
-                                            default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_SELL].offsets[LF_INVENTORY]["left"],
-                                        },
-                                        {
-                                            type = "slider",
-                                            name = locVars["options_icon_offset_top"],
-                                            tooltip = locVars["options_icon_offset_top_TT"],
-                                            min = minIconOffsetTop,
-                                            max = maxIconOffsetTop,
-                                            decimals = 0,
-                                            autoSelect = true,
-                                            getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_SELL].offsets[LF_INVENTORY]["top"] end,
-                                            setFunc = function(top)
-                                                FCOISsettings.icon[FCOIS_CON_ICON_SELL].offsets[LF_INVENTORY]["top"] = top
-                                            end,
-                                            width="half",
-                                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL] end,
-                                            default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_SELL].offsets[LF_INVENTORY]["top"],
-                                        },
-                                    } -- controls icon 5
-                                }, -- submenu icon 5
-                                --==============================================================================
-                                {
-                                    type = "submenu",
-                                    name = locVars["options_icon9_color"],
-                                    reference = "FCOIS_OPTIONS_" .. locVars["options_icon9_color"].."_submenu",
-                                    controls =
-                                    {
-                                        {
-                                            type = "colorpicker",
-                                            name = locVars["options_icon9_color"],
-                                            tooltip = locVars["options_icon9_color_TT"],
-                                            getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_DECONSTRUCTION].color.r, FCOISsettings.icon[FCOIS_CON_ICON_DECONSTRUCTION].color.g, FCOISsettings.icon[FCOIS_CON_ICON_DECONSTRUCTION].color.b, FCOISsettings.icon[FCOIS_CON_ICON_DECONSTRUCTION].color.a end,
-                                            setFunc = function(r,g,b,a)
-                                                FCOISsettings.icon[FCOIS_CON_ICON_DECONSTRUCTION].color = {["r"] = r, ["g"] = g, ["b"] = b, ["a"] = a}
-                                                FCOItemSaver_Settings_Filter9Preview_Select:SetColor(ZO_ColorDef:New(r,g,b,a))
-                                                --Set global variable to update the marker colors and textures
-                                                FCOIS.preventerVars.gUpdateMarkersNow = true
-                                            end,
-                                            width = "half",
-                                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_DECONSTRUCTION] end,
-                                            default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_DECONSTRUCTION].color,
-                                        },
-                                        {
-                                            type = "iconpicker",
-                                            name = locVars["options_icon9_texture"],
-                                            tooltip = locVars["options_icon9_texture_TT"],
-                                            choices = markerIconTextures,
-                                            choicesTooltips = texturesList,
-                                            getFunc = function() return markerIconTextures[FCOISsettings.icon[FCOIS_CON_ICON_DECONSTRUCTION].texture] end,
-                                            setFunc = function(texturePath)
-                                                local textureId = GetFCOTextureId(texturePath)
-                                                if textureId ~= 0 then
-                                                    FCOISsettings.icon[FCOIS_CON_ICON_DECONSTRUCTION].texture = textureId
-                                                    FCOItemSaver_Settings_Filter9Preview_Select.label:SetText(locVars["options_icon9_texture"] .. ": " .. texturesList[textureId])
-                                                    local p_button = WINDOW_MANAGER:GetControlByName(FCOIS.ZOControlVars.FCOISfilterButtonNames[FCOIS_CON_FILTER_BUTTON_RESDECIMP], "")
-                                                    FCOIS.UpdateButtonColorsAndTextures(FCOIS_CON_ICON_DECONSTRUCTION, p_button, -999)
-                                                    --Set global variable to update the marker colors and textures
-                                                    FCOIS.preventerVars.gUpdateMarkersNow = true
-                                                end
-                                            end,
-                                            maxColumns = 6,
-                                            visibleRows = 5,
-                                            iconSize = FCOISsettings.icon[FCOIS_CON_ICON_DECONSTRUCTION].size,
-                                            width = "half",
-                                            reference = "FCOItemSaver_Settings_Filter9Preview_Select",
-                                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_DECONSTRUCTION] end,
-                                            default = markerIconTextures[FCOISsettings.icon[FCOIS_CON_ICON_DECONSTRUCTION].texture],
-                                        },
-                                        {
-                                            type = "checkbox",
-                                            name = locVars["options_icon9_TT"],
-                                            tooltip = locVars["options_icon9_tooltip_TT"],
-                                            getFunc = function() return FCOISsettings.showMarkerTooltip[FCOIS_CON_ICON_DECONSTRUCTION] end,
-                                            setFunc = function(value) FCOISsettings.showMarkerTooltip[FCOIS_CON_ICON_DECONSTRUCTION] = value
-                                                FCOIS.preventerVars.gUpdateMarkersNow = true
-                                            end,
-                                            width="half",
-                                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_DECONSTRUCTION] end,
-                                            default = FCOISdefaultSettings.showMarkerTooltip[FCOIS_CON_ICON_DECONSTRUCTION],
-                                        },
-                                        {
-                                            type = "slider",
-                                            name = locVars["options_icon9_size"],
-                                            tooltip = locVars["options_icon9_size_TT"],
-                                            min = minIconSize,
-                                            max = maxIconSize,
-                                            decimals = 0,
-                                            autoSelect = true,
-                                            getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_DECONSTRUCTION].size end,
-                                            setFunc = function(size)
-                                                FCOISsettings.icon[FCOIS_CON_ICON_DECONSTRUCTION].size = size
-                                                FCOItemSaver_Settings_Filter9Preview_Select:SetIconSize(size)
-                                                --Set global variable to update the marker colors and textures
-                                                FCOIS.preventerVars.gUpdateMarkersNow = true
-                                            end,
-                                            width="half",
-                                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_DECONSTRUCTION] end,
-                                            default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_DECONSTRUCTION].size,
-                                        },
-                                        {
-                                            type = "slider",
-                                            name = locVars["options_icon_offset_left"],
-                                            tooltip = locVars["options_icon_offset_left_TT"],
-                                            min = minIconOffsetLeft,
-                                            max = maxIconOffsetLeft,
-                                            decimals = 0,
-                                            autoSelect = true,
-                                            getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_DECONSTRUCTION].offsets[LF_INVENTORY]["left"] end,
-                                            setFunc = function(left)
-                                                FCOISsettings.icon[FCOIS_CON_ICON_DECONSTRUCTION].offsets[LF_INVENTORY]["left"] = left
-                                            end,
-                                            width="half",
-                                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_DECONSTRUCTION] end,
-                                            default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_DECONSTRUCTION].offsets[LF_INVENTORY]["left"],
-                                        },
-                                        {
-                                            type = "slider",
-                                            name = locVars["options_icon_offset_top"],
-                                            tooltip = locVars["options_icon_offset_top_TT"],
-                                            min = minIconOffsetTop,
-                                            max = maxIconOffsetTop,
-                                            decimals = 0,
-                                            autoSelect = true,
-                                            getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_DECONSTRUCTION].offsets[LF_INVENTORY]["top"] end,
-                                            setFunc = function(top)
-                                                FCOISsettings.icon[FCOIS_CON_ICON_DECONSTRUCTION].offsets[LF_INVENTORY]["top"] = top
-                                            end,
-                                            width="half",
-                                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_DECONSTRUCTION] end,
-                                            default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_DECONSTRUCTION].offsets[LF_INVENTORY]["top"],
-                                        },
-                                    } -- controls icon 9
-                                }, -- submenu icon 9
-                                --==============================================================================
-                                {
-                                    type = "submenu",
-                                    name = locVars["options_icon10_color"],
-                                    reference = "FCOIS_OPTIONS_" .. locVars["options_icon10_color"].."_submenu",
-                                    controls =
-                                    {
-                                        {
-                                            type = "colorpicker",
-                                            name = locVars["options_icon10_color"],
-                                            tooltip = locVars["options_icon10_color_TT"],
-                                            getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_IMPROVEMENT].color.r, FCOISsettings.icon[FCOIS_CON_ICON_IMPROVEMENT].color.g, FCOISsettings.icon[FCOIS_CON_ICON_IMPROVEMENT].color.b, FCOISsettings.icon[FCOIS_CON_ICON_IMPROVEMENT].color.a end,
-                                            setFunc = function(r,g,b,a)
-                                                FCOISsettings.icon[FCOIS_CON_ICON_IMPROVEMENT].color = {["r"] = r, ["g"] = g, ["b"] = b, ["a"] = a}
-                                                FCOItemSaver_Settings_Filter10Preview_Select:SetColor(ZO_ColorDef:New(r,g,b,a))
-                                                --Set global variable to update the marker colors and textures
-                                                FCOIS.preventerVars.gUpdateMarkersNow = true
-                                            end,
-                                            width = "half",
-                                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_IMPROVEMENT] end,
-                                            default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_IMPROVEMENT].color,
-                                        },
-                                        {
-                                            type = "iconpicker",
-                                            name = locVars["options_icon10_texture"],
-                                            tooltip = locVars["options_icon10_texture_TT"],
-                                            choices = markerIconTextures,
-                                            choicesTooltips = texturesList,
-                                            getFunc = function() return markerIconTextures[FCOISsettings.icon[FCOIS_CON_ICON_IMPROVEMENT].texture] end,
-                                            setFunc = function(texturePath)
-                                                local textureId = GetFCOTextureId(texturePath)
-                                                if textureId ~= 0 then
-                                                    FCOISsettings.icon[FCOIS_CON_ICON_IMPROVEMENT].texture = textureId
-                                                    FCOItemSaver_Settings_Filter10Preview_Select.label:SetText(locVars["options_icon10_texture"] .. ": " .. texturesList[textureId])
-                                                    local p_button = WINDOW_MANAGER:GetControlByName(FCOIS.ZOControlVars.FCOISfilterButtonNames[FCOIS_CON_FILTER_BUTTON_RESDECIMP], "")
-                                                    FCOIS.UpdateButtonColorsAndTextures(FCOIS_CON_ICON_IMPROVEMENT, p_button, -999)
-                                                    --Set global variable to update the marker colors and textures
-                                                    FCOIS.preventerVars.gUpdateMarkersNow = true
-                                                end
-                                            end,
-                                            maxColumns = 6,
-                                            visibleRows = 5,
-                                            iconSize = FCOISsettings.icon[FCOIS_CON_ICON_IMPROVEMENT].size,
-                                            width = "half",
-                                            reference = "FCOItemSaver_Settings_Filter10Preview_Select",
-                                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_IMPROVEMENT] end,
-                                            default = markerIconTextures[FCOISsettings.icon[FCOIS_CON_ICON_IMPROVEMENT].texture],
-                                        },
-                                        {
-                                            type = "checkbox",
-                                            name = locVars["options_icon10_TT"],
-                                            tooltip = locVars["options_icon10_tooltip_TT"],
-                                            getFunc = function() return FCOISsettings.showMarkerTooltip[FCOIS_CON_ICON_IMPROVEMENT] end,
-                                            setFunc = function(value) FCOISsettings.showMarkerTooltip[FCOIS_CON_ICON_IMPROVEMENT] = value
-                                                FCOIS.preventerVars.gUpdateMarkersNow = true
-                                            end,
-                                            width="half",
-                                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_IMPROVEMENT] end,
-                                            default = FCOISdefaultSettings.showMarkerTooltip[FCOIS_CON_ICON_IMPROVEMENT],
-                                        },
-                                        {
-                                            type = "slider",
-                                            name = locVars["options_icon10_size"],
-                                            tooltip = locVars["options_icon10_size_TT"],
-                                            min = minIconSize,
-                                            max = maxIconSize,
-                                            decimals = 0,
-                                            autoSelect = true,
-                                            getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_IMPROVEMENT].size end,
-                                            setFunc = function(size)
-                                                FCOISsettings.icon[FCOIS_CON_ICON_IMPROVEMENT].size = size
-                                                FCOItemSaver_Settings_Filter10Preview_Select:SetIconSize(size)
-                                                --Set global variable to update the marker colors and textures
-                                                FCOIS.preventerVars.gUpdateMarkersNow = true
-                                            end,
-                                            width="half",
-                                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_IMPROVEMENT] end,
-                                            default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_IMPROVEMENT].size,
-                                        },
-                                        {
-                                            type = "slider",
-                                            name = locVars["options_icon_offset_left"],
-                                            tooltip = locVars["options_icon_offset_left_TT"],
-                                            min = minIconOffsetLeft,
-                                            max = maxIconOffsetLeft,
-                                            decimals = 0,
-                                            autoSelect = true,
-                                            getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_IMPROVEMENT].offsets[LF_INVENTORY]["left"] end,
-                                            setFunc = function(left)
-                                                FCOISsettings.icon[FCOIS_CON_ICON_IMPROVEMENT].offsets[LF_INVENTORY]["left"] = left
-                                            end,
-                                            width="half",
-                                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_IMPROVEMENT] end,
-                                            default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_IMPROVEMENT].offsets[LF_INVENTORY]["left"],
-                                        },
-                                        {
-                                            type = "slider",
-                                            name = locVars["options_icon_offset_top"],
-                                            tooltip = locVars["options_icon_offset_top_TT"],
-                                            min = minIconOffsetTop,
-                                            max = maxIconOffsetTop,
-                                            decimals = 0,
-                                            autoSelect = true,
-                                            getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_IMPROVEMENT].offsets[LF_INVENTORY]["top"] end,
-                                            setFunc = function(top)
-                                                FCOISsettings.icon[FCOIS_CON_ICON_IMPROVEMENT].offsets[LF_INVENTORY]["top"] = top
-                                            end,
-                                            width="half",
-                                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_IMPROVEMENT] end,
-                                            default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_IMPROVEMENT].offsets[LF_INVENTORY]["top"],
-                                        },
-                                    } -- controls icon 10
-                                }, -- submenu icon 10
-                                --==============================================================================
-                                {
-                                    type = "submenu",
-                                    name = locVars["options_icon11_color"],
-                                    reference = "FCOIS_OPTIONS_" .. locVars["options_icon11_color"].."_submenu",
-                                    controls =
-                                    {
-                                        {
-                                            type = "colorpicker",
-                                            name = locVars["options_icon11_color"],
-                                            tooltip = locVars["options_icon11_color_TT"],
-                                            getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_SELL_AT_GUILDSTORE].color.r, FCOISsettings.icon[FCOIS_CON_ICON_SELL_AT_GUILDSTORE].color.g, FCOISsettings.icon[FCOIS_CON_ICON_SELL_AT_GUILDSTORE].color.b, FCOISsettings.icon[FCOIS_CON_ICON_SELL_AT_GUILDSTORE].color.a end,
-                                            setFunc = function(r,g,b,a)
-                                                FCOISsettings.icon[FCOIS_CON_ICON_SELL_AT_GUILDSTORE].color = {["r"] = r, ["g"] = g, ["b"] = b, ["a"] = a}
-                                                FCOItemSaver_Settings_Filter11Preview_Select:SetColor(ZO_ColorDef:New(r,g,b,a))
-                                                --Set global variable to update the marker colors and textures
-                                                FCOIS.preventerVars.gUpdateMarkersNow = true
-                                            end,
-                                            width = "half",
-                                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL_AT_GUILDSTORE] end,
-                                            default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_SELL_AT_GUILDSTORE].color,
-                                        },
-                                        {
-                                            type = "iconpicker",
-                                            name = locVars["options_icon11_texture"],
-                                            tooltip = locVars["options_icon11_texture_TT"],
-                                            choices = markerIconTextures,
-                                            choicesTooltips = texturesList,
-                                            getFunc = function() return markerIconTextures[FCOISsettings.icon[FCOIS_CON_ICON_SELL_AT_GUILDSTORE].texture] end,
-                                            setFunc = function(texturePath)
-                                                local textureId = GetFCOTextureId(texturePath)
-                                                if textureId ~= 0 then
-                                                    FCOISsettings.icon[FCOIS_CON_ICON_SELL_AT_GUILDSTORE].texture = textureId
-                                                    FCOItemSaver_Settings_Filter11Preview_Select.label:SetText(locVars["options_icon11_texture"] .. ": " .. texturesList[textureId])
-                                                    local p_button = WINDOW_MANAGER:GetControlByName(FCOIS.ZOControlVars.FCOISfilterButtonNames[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT], "")
-                                                    FCOIS.UpdateButtonColorsAndTextures(FCOIS_CON_ICON_SELL_AT_GUILDSTORE, p_button, -999)
-                                                    --Set global variable to update the marker colors and textures
-                                                    FCOIS.preventerVars.gUpdateMarkersNow = true
-                                                end
-                                            end,
-                                            maxColumns = 6,
-                                            visibleRows = 5,
-                                            iconSize = FCOISsettings.icon[FCOIS_CON_ICON_SELL_AT_GUILDSTORE].size,
-                                            width = "half",
-                                            reference = "FCOItemSaver_Settings_Filter11Preview_Select",
-                                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL_AT_GUILDSTORE] end,
-                                            default = markerIconTextures[FCOISsettings.icon[FCOIS_CON_ICON_SELL_AT_GUILDSTORE].texture],
-                                        },
-                                        {
-                                            type = "checkbox",
-                                            name = locVars["options_icon11_TT"],
-                                            tooltip = locVars["options_icon11_tooltip_TT"],
-                                            getFunc = function() return FCOISsettings.showMarkerTooltip[FCOIS_CON_ICON_SELL_AT_GUILDSTORE] end,
-                                            setFunc = function(value) FCOISsettings.showMarkerTooltip[FCOIS_CON_ICON_SELL_AT_GUILDSTORE] = value
-                                                FCOIS.preventerVars.gUpdateMarkersNow = true
-                                            end,
-                                            width="half",
-                                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL_AT_GUILDSTORE] end,
-                                            default = FCOISdefaultSettings.showMarkerTooltip[FCOIS_CON_ICON_SELL_AT_GUILDSTORE],
-                                        },
-                                        {
-                                            type = "slider",
-                                            name = locVars["options_icon11_size"],
-                                            tooltip = locVars["options_icon11_size_TT"],
-                                            min = minIconSize,
-                                            max = maxIconSize,
-                                            decimals = 0,
-                                            autoSelect = true,
-                                            getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_SELL_AT_GUILDSTORE].size end,
-                                            setFunc = function(size)
-                                                FCOISsettings.icon[FCOIS_CON_ICON_SELL_AT_GUILDSTORE].size = size
-                                                FCOItemSaver_Settings_Filter11Preview_Select:SetIconSize(size)
-                                                --Set global variable to update the marker colors and textures
-                                                FCOIS.preventerVars.gUpdateMarkersNow = true
-                                            end,
-                                            width="half",
-                                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL_AT_GUILDSTORE] end,
-                                            default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_SELL_AT_GUILDSTORE].size,
-                                        },
-                                        {
-                                            type = "checkbox",
-                                            name = locVars["options_icon11_only_unbound"],
-                                            tooltip = locVars["options_icon11_only_unbound_TT"],
-                                            getFunc = function() return FCOISsettings.allowOnlyUnbound[FCOIS_CON_ICON_SELL_AT_GUILDSTORE] end,
-                                            setFunc = function(value) FCOISsettings.allowOnlyUnbound[FCOIS_CON_ICON_SELL_AT_GUILDSTORE] = value
-                                            end,
-                                            width="half",
-                                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL_AT_GUILDSTORE] end,
-                                            default = FCOISdefaultSettings.allowOnlyUnbound[FCOIS_CON_ICON_SELL_AT_GUILDSTORE],
-                                        },
-                                        {
-                                            type = "slider",
-                                            name = locVars["options_icon_offset_left"],
-                                            tooltip = locVars["options_icon_offset_left_TT"],
-                                            min = minIconOffsetLeft,
-                                            max = maxIconOffsetLeft,
-                                            decimals = 0,
-                                            autoSelect = true,
-                                            getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_SELL_AT_GUILDSTORE].offsets[LF_INVENTORY]["left"] end,
-                                            setFunc = function(left)
-                                                FCOISsettings.icon[FCOIS_CON_ICON_SELL_AT_GUILDSTORE].offsets[LF_INVENTORY]["left"] = left
-                                            end,
-                                            width="half",
-                                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL_AT_GUILDSTORE] end,
-                                            default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_SELL_AT_GUILDSTORE].offsets[LF_INVENTORY]["left"],
-                                        },
-                                        {
-                                            type = "slider",
-                                            name = locVars["options_icon_offset_top"],
-                                            tooltip = locVars["options_icon_offset_top_TT"],
-                                            min = minIconOffsetTop,
-                                            max = maxIconOffsetTop,
-                                            decimals = 0,
-                                            autoSelect = true,
-                                            getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_SELL_AT_GUILDSTORE].offsets[LF_INVENTORY]["top"] end,
-                                            setFunc = function(top)
-                                                FCOISsettings.icon[FCOIS_CON_ICON_SELL_AT_GUILDSTORE].offsets[LF_INVENTORY]["top"] = top
-                                            end,
-                                            width="half",
-                                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL_AT_GUILDSTORE] end,
-                                            default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_SELL_AT_GUILDSTORE].offsets[LF_INVENTORY]["top"],
-                                        },
-                                    } -- controls icon 11
-                                }, -- submenu icon 11
-                                --==============================================================================
-                                {
-                                    type = "submenu",
-                                    name = locVars["options_icon12_color"],
-                                    reference = "FCOIS_OPTIONS_" .. locVars["options_icon12_color"].."_submenu",
-                                    controls =
-                                    {
-                                        {
-                                            type = "colorpicker",
-                                            name = locVars["options_icon12_color"],
-                                            tooltip = locVars["options_icon12_color_TT"],
-                                            getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_INTRICATE].color.r, FCOISsettings.icon[FCOIS_CON_ICON_INTRICATE].color.g, FCOISsettings.icon[FCOIS_CON_ICON_INTRICATE].color.b, FCOISsettings.icon[FCOIS_CON_ICON_INTRICATE].color.a end,
-                                            setFunc = function(r,g,b,a)
-                                                FCOISsettings.icon[FCOIS_CON_ICON_INTRICATE].color = {["r"] = r, ["g"] = g, ["b"] = b, ["a"] = a}
-                                                FCOItemSaver_Settings_Filter12Preview_Select:SetColor(ZO_ColorDef:New(r,g,b,a))
-                                                --Set global variable to update the marker colors and textures
-                                                FCOIS.preventerVars.gUpdateMarkersNow = true
-                                            end,
-                                            width = "half",
-                                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_INTRICATE] end,
-                                            default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_INTRICATE].color,
-                                        },
-                                        {
-                                            type = "iconpicker",
-                                            name = locVars["options_icon12_texture"],
-                                            tooltip = locVars["options_icon12_texture_TT"],
-                                            choices = markerIconTextures,
-                                            choicesTooltips = texturesList,
-                                            getFunc = function() return markerIconTextures[FCOISsettings.icon[FCOIS_CON_ICON_INTRICATE].texture] end,
-                                            setFunc = function(texturePath)
-                                                local textureId = GetFCOTextureId(texturePath)
-                                                if textureId ~= 0 then
-                                                    FCOISsettings.icon[FCOIS_CON_ICON_INTRICATE].texture = textureId
-                                                    FCOItemSaver_Settings_Filter12Preview_Select.label:SetText(locVars["options_icon12_texture"] .. ": " .. texturesList[textureId])
-                                                    local p_button = WINDOW_MANAGER:GetControlByName(FCOIS.ZOControlVars.FCOISfilterButtonNames[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT], "")
-                                                    FCOIS.UpdateButtonColorsAndTextures(FCOIS_CON_ICON_INTRICATE, p_button, -999)
-                                                    --Set global variable to update the marker colors and textures
-                                                    FCOIS.preventerVars.gUpdateMarkersNow = true
-                                                end
-                                            end,
-                                            maxColumns = 6,
-                                            visibleRows = 5,
-                                            iconSize = FCOISsettings.icon[FCOIS_CON_ICON_INTRICATE].size,
-                                            width = "half",
-                                            reference = "FCOItemSaver_Settings_Filter12Preview_Select",
-                                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_INTRICATE] end,
-                                            default = markerIconTextures[FCOISsettings.icon[FCOIS_CON_ICON_INTRICATE].texture],
-                                        },
-                                        {
-                                            type = "checkbox",
-                                            name = locVars["options_icon12_TT"],
-                                            tooltip = locVars["options_icon12_tooltip_TT"],
-                                            getFunc = function() return FCOISsettings.showMarkerTooltip[FCOIS_CON_ICON_INTRICATE] end,
-                                            setFunc = function(value) FCOISsettings.showMarkerTooltip[FCOIS_CON_ICON_INTRICATE] = value
-                                                FCOIS.preventerVars.gUpdateMarkersNow = true
-                                            end,
-                                            width="half",
-                                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_INTRICATE] end,
-                                            default = FCOISdefaultSettings.showMarkerTooltip[FCOIS_CON_ICON_INTRICATE],
-                                        },
-                                        {
-                                            type = "slider",
-                                            name = locVars["options_icon12_size"],
-                                            tooltip = locVars["options_icon12_size_TT"],
-                                            min = minIconSize,
-                                            max = maxIconSize,
-                                            decimals = 0,
-                                            autoSelect = true,
-                                            getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_INTRICATE].size end,
-                                            setFunc = function(size)
-                                                FCOISsettings.icon[FCOIS_CON_ICON_INTRICATE].size = size
-                                                FCOItemSaver_Settings_Filter12Preview_Select:SetIconSize(size)
-                                                --Set global variable to update the marker colors and textures
-                                                FCOIS.preventerVars.gUpdateMarkersNow = true
-                                            end,
-                                            width="half",
-                                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_INTRICATE] end,
-                                            default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_INTRICATE].size,
-                                        },
-                                        {
-                                            type = "slider",
-                                            name = locVars["options_icon_offset_left"],
-                                            tooltip = locVars["options_icon_offset_left_TT"],
-                                            min = minIconOffsetLeft,
-                                            max = maxIconOffsetLeft,
-                                            decimals = 0,
-                                            autoSelect = true,
-                                            getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_INTRICATE].offsets[LF_INVENTORY]["left"] end,
-                                            setFunc = function(left)
-                                                FCOISsettings.icon[FCOIS_CON_ICON_INTRICATE].offsets[LF_INVENTORY]["left"] = left
-                                            end,
-                                            width="half",
-                                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_INTRICATE] end,
-                                            default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_INTRICATE].offsets[LF_INVENTORY]["left"],
-                                        },
-                                        {
-                                            type = "slider",
-                                            name = locVars["options_icon_offset_top"],
-                                            tooltip = locVars["options_icon_offset_top_TT"],
-                                            min = minIconOffsetTop,
-                                            max = maxIconOffsetTop,
-                                            decimals = 0,
-                                            autoSelect = true,
-                                            getFunc = function() return FCOISsettings.icon[FCOIS_CON_ICON_INTRICATE].offsets[LF_INVENTORY]["top"] end,
-                                            setFunc = function(top)
-                                                FCOISsettings.icon[FCOIS_CON_ICON_INTRICATE].offsets[LF_INVENTORY]["top"] = top
-                                            end,
-                                            width="half",
-                                            disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_INTRICATE] end,
-                                            default = FCOISdefaultSettings.icon[FCOIS_CON_ICON_INTRICATE].offsets[LF_INVENTORY]["top"],
-                                        },
-                                    } -- controls icon 12
-                                }, -- submenu icon 12
-
-                            }, -- control non-gear icons
+                            name = locVars[optionsIcon .. "s_non_gear"],
+                            controls = normalIconsSubMenus
                         }, -- submenu non-gear icons
                         --==============================================================================
                         -- NORMAL ICONS enabled/disabled
                         {
                             type = "submenu",
                             name = locVars["options_header_enable_disable"],
-                            controls =
-                            {
-
-                                {
-                                    type = "checkbox",
-                                    name = locVars["options_icon1_activate_text"],
-                                    tooltip = locVars["options_icon_activate_text_TT"],
-                                    getFunc = function() return FCOISsettings.isIconEnabled[FCOIS_CON_ICON_LOCK] end,
-                                    setFunc = function(value) FCOISsettings.isIconEnabled[FCOIS_CON_ICON_LOCK] = value
-                                        FCOIS.preventerVars.gUpdateMarkersNow = true
-                                        --Update the icon list dropdown entries (name, enabled state)
-                                        updateIconListDropdownEntries()
-                                    end,
-                                    width="full",
-                                    default = FCOISdefaultSettings.isIconEnabled[FCOIS_CON_ICON_LOCK],
-                                },
-                                {
-                                    type = "checkbox",
-                                    name = locVars["options_icon3_activate_text"],
-                                    tooltip = locVars["options_icon_activate_text_TT"],
-                                    getFunc = function() return FCOISsettings.isIconEnabled[FCOIS_CON_ICON_RESEARCH] end,
-                                    setFunc = function(value) FCOISsettings.isIconEnabled[FCOIS_CON_ICON_RESEARCH] = value
-                                        FCOIS.preventerVars.gUpdateMarkersNow = true
-                                        --Update the icon list dropdown entries (name, enabled state)
-                                        updateIconListDropdownEntries()
-                                    end,
-                                    width="full",
-                                    default = FCOISdefaultSettings.isIconEnabled[FCOIS_CON_ICON_RESEARCH],
-                                },
-                                {
-                                    type = "checkbox",
-                                    name = locVars["options_icon5_activate_text"],
-                                    tooltip = locVars["options_icon_activate_text_TT"],
-                                    getFunc = function() return FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL] end,
-                                    setFunc = function(value) FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL] = value
-                                        FCOIS.preventerVars.gUpdateMarkersNow = true
-                                        --Update the icon list dropdown entries (name, enabled state)
-                                        updateIconListDropdownEntries()
-                                    end,
-                                    width="full",
-                                    default = FCOISdefaultSettings.isIconEnabled[FCOIS_CON_ICON_SELL],
-                                },
-                                {
-                                    type = "checkbox",
-                                    name = locVars["options_icon9_activate_text"],
-                                    tooltip = locVars["options_icon_activate_text_TT"],
-                                    getFunc = function() return FCOISsettings.isIconEnabled[FCOIS_CON_ICON_DECONSTRUCTION] end,
-                                    setFunc = function(value) FCOISsettings.isIconEnabled[FCOIS_CON_ICON_DECONSTRUCTION] = value
-                                        FCOIS.preventerVars.gUpdateMarkersNow = true
-                                        --Update the icon list dropdown entries (name, enabled state)
-                                        updateIconListDropdownEntries()
-                                    end,
-                                    width="full",
-                                    default = FCOISdefaultSettings.isIconEnabled[FCOIS_CON_ICON_DECONSTRUCTION],
-                                },
-                                {
-                                    type = "checkbox",
-                                    name = locVars["options_icon10_activate_text"],
-                                    tooltip = locVars["options_icon_activate_text_TT"],
-                                    getFunc = function() return FCOISsettings.isIconEnabled[FCOIS_CON_ICON_IMPROVEMENT] end,
-                                    setFunc = function(value) FCOISsettings.isIconEnabled[FCOIS_CON_ICON_IMPROVEMENT] = value
-                                        FCOIS.preventerVars.gUpdateMarkersNow = true
-                                        --Update the icon list dropdown entries (name, enabled state)
-                                        updateIconListDropdownEntries()
-                                    end,
-                                    width="full",
-                                    default = FCOISdefaultSettings.isIconEnabled[FCOIS_CON_ICON_IMPROVEMENT],
-                                },
-                                {
-                                    type = "checkbox",
-                                    name = locVars["options_icon11_activate_text"],
-                                    tooltip = locVars["options_icon_activate_text_TT"],
-                                    getFunc = function() return FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL_AT_GUILDSTORE] end,
-                                    setFunc = function(value) FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL_AT_GUILDSTORE] = value
-                                        FCOIS.preventerVars.gUpdateMarkersNow = true
-                                        --Update the icon list dropdown entries (name, enabled state)
-                                        updateIconListDropdownEntries()
-                                    end,
-                                    width="full",
-                                    default = FCOISdefaultSettings.isIconEnabled[FCOIS_CON_ICON_SELL_AT_GUILDSTORE],
-                                },
-                                {
-                                    type = "checkbox",
-                                    name = locVars["options_icon12_activate_text"],
-                                    tooltip = locVars["options_icon_activate_text_TT"],
-                                    getFunc = function() return FCOISsettings.isIconEnabled[FCOIS_CON_ICON_INTRICATE] end,
-                                    setFunc = function(value) FCOISsettings.isIconEnabled[FCOIS_CON_ICON_INTRICATE] = value
-                                        FCOIS.preventerVars.gUpdateMarkersNow = true
-                                        --Update the icon list dropdown entries (name, enabled state)
-                                        updateIconListDropdownEntries()
-                                    end,
-                                    width="full",
-                                    default = FCOISdefaultSettings.isIconEnabled[FCOIS_CON_ICON_INTRICATE],
-                                },
-                            } -- controls normal icons enable/disable
+                            controls = normalIconsEnabledCheckboxes
                         }, -- submenu normal icons enable/disable
 
                     } -- controls non-gear (normal) icons
@@ -3284,1011 +2966,26 @@ function FCOIS.BuildAddonMenu()
                 --==============================================================================
                 {
                     type = "submenu",
-                    name = locVars["options_icons_gears"],
+                    name = locVars[optionsIcon .. "s_gears"],
                     controls =
                     {
                         {
                             type = "description",
-                            text = locVars["options_icons_gear_sets_description"],
+                            text = locVars[optionsIcon .. "s_gear_sets_description"],
                         },
-                        --===================================================================================
+                        --==============================================================================
+                        --The submenus for all the gear icons
                         {
                             type = "submenu",
-                            name = locVars["options_icons_gears"],
-                            controls =
-                            {
-                                {
-                                    type     = "submenu",
-                                    name     = locVars["options_icons_gear1"],
-                                    controls =
-                                    {
-                                        {
-                                            type     = "editbox",
-                                            name     = locVars["options_icon2_name"],
-                                            tooltip  = locVars["options_icon2_name_TT"],
-                                            getFunc  = function()
-                                                return FCOISsettings.icon[FCOIS_CON_ICON_GEAR_1].name
-                                            end,
-                                            setFunc  = function(newValue)
-                                                FCOISsettings.icon[FCOIS_CON_ICON_GEAR_1].name = newValue
-                                                FCOIS.changeContextMenuEntryTexts(FCOIS_CON_ICON_GEAR_1)
-                                                --Update the icon list dropdown entries (name, enabled state)
-                                                updateIconListDropdownEntries()
-                                            end,
-                                            width    = "half",
-                                            disabled = function()
-                                                return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[1]]
-                                            end,
-                                            default  = locVars["options_icon2_name"],
-                                        },
-                                        {
-                                            type     = "colorpicker",
-                                            name     = locVars["options_icon2_color"],
-                                            tooltip  = locVars["options_icon2_color_TT"],
-                                            getFunc  = function()
-                                                return FCOISsettings.icon[FCOIS_CON_ICON_GEAR_1].color.r, FCOISsettings.icon[FCOIS_CON_ICON_GEAR_1].color.g, FCOISsettings.icon[FCOIS_CON_ICON_GEAR_1].color.b, FCOISsettings.icon[FCOIS_CON_ICON_GEAR_1].color.a
-                                            end,
-                                            setFunc  = function(r, g, b, a)
-                                                FCOISsettings.icon[FCOIS_CON_ICON_GEAR_1].color = { ["r"] = r, ["g"] = g, ["b"] = b, ["a"] = a }
-                                                FCOItemSaver_Settings_Filter2Preview_Select:SetColor(ZO_ColorDef:New(r, g, b, a))
-
-                                                --Set global variable to update the marker colors and textures
-                                                FCOIS.preventerVars.gUpdateMarkersNow = true
-                                            end,
-                                            width    = "half",
-                                            disabled = function()
-                                                return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[1]]
-                                            end,
-                                            default  = FCOISdefaultSettings.icon[FCOIS_CON_ICON_GEAR_1].color,
-                                        },
-                                        {
-                                            type            = "iconpicker",
-                                            name            = locVars["options_icon2_texture"],
-                                            tooltip         = locVars["options_icon2_texture_TT"],
-                                            choices         = markerIconTextures,
-                                            choicesTooltips = texturesList,
-                                            getFunc         = function()
-                                                return markerIconTextures[FCOISsettings.icon[FCOIS_CON_ICON_GEAR_1].texture]
-                                            end,
-                                            setFunc         = function(texturePath)
-                                                local textureId = GetFCOTextureId(texturePath)
-                                                if textureId ~= 0 then
-                                                    FCOISsettings.icon[FCOIS_CON_ICON_GEAR_1].texture = textureId
-                                                    FCOItemSaver_Settings_Filter2Preview_Select.label:SetText(locVars["options_icon2_texture"] .. ": " .. texturesList[textureId])
-                                                    local p_button = WINDOW_MANAGER:GetControlByName(FCOIS.ZOControlVars.FCOISfilterButtonNames[FCOIS_CON_FILTER_BUTTON_GEARSETS], "")
-                                                    FCOIS.UpdateButtonColorsAndTextures(FCOIS_CON_ICON_GEAR_1, p_button, -999)
-                                                    --Set global variable to update the marker colors and textures
-                                                    FCOIS.preventerVars.gUpdateMarkersNow = true
-                                                end
-                                            end,
-                                            maxColumns      = 6,
-                                            visibleRows     = 5,
-                                            iconSize        = FCOISsettings.icon[FCOIS_CON_ICON_GEAR_1].size,
-                                            width           = "half",
-                                            reference       = "FCOItemSaver_Settings_Filter2Preview_Select",
-                                            disabled        = function()
-                                                return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[1]]
-                                            end,
-                                            default         = markerIconTextures[FCOISsettings.icon[FCOIS_CON_ICON_GEAR_1].texture],
-                                        },
-                                        {
-                                            type       = "slider",
-                                            name       = locVars["options_icon2_size"],
-                                            tooltip    = locVars["options_icon2_size_TT"],
-                                            min        = minIconSize,
-                                            max        = maxIconSize,
-                                            decimals   = 0,
-                                            autoSelect = true,
-                                            getFunc    = function()
-                                                return FCOISsettings.icon[FCOIS_CON_ICON_GEAR_1].size
-                                            end,
-                                            setFunc    = function(size)
-                                                FCOISsettings.icon[FCOIS_CON_ICON_GEAR_1].size = size
-                                                FCOItemSaver_Settings_Filter2Preview_Select:SetIconSize(size)
-                                                --Set global variable to update the marker colors and textures
-                                                FCOIS.preventerVars.gUpdateMarkersNow = true
-                                            end,
-                                            width      = "half",
-                                            disabled   = function()
-                                                return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[1]]
-                                            end,
-                                            default    = FCOISdefaultSettings.icon[FCOIS_CON_ICON_GEAR_1].size,
-                                        },
-                                        {
-                                            type       = "slider",
-                                            name       = locVars["options_icon_offset_left"],
-                                            tooltip    = locVars["options_icon_offset_left_TT"],
-                                            min        = minIconOffsetLeft,
-                                            max        = maxIconOffsetLeft,
-                                            decimals   = 0,
-                                            autoSelect = true,
-                                            getFunc    = function()
-                                                return FCOISsettings.icon[FCOIS_CON_ICON_GEAR_1].offsets[LF_INVENTORY]["left"]
-                                            end,
-                                            setFunc    = function(left)
-                                                FCOISsettings.icon[FCOIS_CON_ICON_GEAR_1].offsets[LF_INVENTORY]["left"] = left
-                                            end,
-                                            width      = "half",
-                                            disabled   = function()
-                                                return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_GEAR_1]
-                                            end,
-                                            default    = FCOISdefaultSettings.icon[FCOIS_CON_ICON_GEAR_1].offsets[LF_INVENTORY]["left"],
-                                        },
-                                        {
-                                            type       = "slider",
-                                            name       = locVars["options_icon_offset_top"],
-                                            tooltip    = locVars["options_icon_offset_top_TT"],
-                                            min = minIconOffsetTop,
-                                            max = maxIconOffsetTop,
-                                            decimals   = 0,
-                                            autoSelect = true,
-                                            getFunc    = function()
-                                                return FCOISsettings.icon[FCOIS_CON_ICON_GEAR_1].offsets[LF_INVENTORY]["top"]
-                                            end,
-                                            setFunc    = function(top)
-                                                FCOISsettings.icon[FCOIS_CON_ICON_GEAR_1].offsets[LF_INVENTORY]["top"] = top
-                                            end,
-                                            width      = "half",
-                                            disabled   = function()
-                                                return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_GEAR_1]
-                                            end,
-                                            default    = FCOISdefaultSettings.icon[FCOIS_CON_ICON_GEAR_1].offsets[LF_INVENTORY]["top"],
-                                        },
-                                        {
-                                            type     = "checkbox",
-                                            name     = locVars["options_icon2_TT"],
-                                            tooltip  = locVars["options_icon2_tooltip_TT"],
-                                            getFunc  = function()
-                                                return FCOISsettings.showMarkerTooltip[FCOIS_CON_ICON_GEAR_1]
-                                            end,
-                                            setFunc  = function(value)
-                                                FCOISsettings.showMarkerTooltip[FCOIS_CON_ICON_GEAR_1] = value
-                                                FCOIS.preventerVars.gUpdateMarkersNow                  = true
-                                            end,
-                                            width    = "half",
-                                            disabled = function()
-                                                return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[1]]
-                                            end,
-                                            default  = FCOISdefaultSettings.showMarkerTooltip[FCOIS_CON_ICON_GEAR_1],
-                                        },
-                                        {
-                                            type     = "checkbox",
-                                            name     = locVars["options_gear_disable_research_check"],
-                                            tooltip  = locVars["options_gear_disable_research_check_TT"],
-                                            getFunc  = function()
-                                                return FCOISsettings.disableResearchCheck[FCOIS_CON_ICON_GEAR_1]
-                                            end,
-                                            setFunc  = function(value)
-                                                FCOISsettings.disableResearchCheck[FCOIS_CON_ICON_GEAR_1] = value
-                                            end,
-                                            width    = "half",
-                                            disabled = function()
-                                                return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[1]]
-                                            end,
-                                            default  = FCOISdefaultSettings.disableResearchCheck[FCOIS_CON_ICON_GEAR_1],
-                                        },
-                                    } -- controls gear 1
-                                }, -- submenu gear 1
-
-                                --==============================================================================
-                                {
-                                    type     = "submenu",
-                                    name     = locVars["options_icons_gear2"],
-                                    controls = {
-                                        {
-                                            type     = "editbox",
-                                            name     = locVars["options_icon4_name"],
-                                            tooltip  = locVars["options_icon4_name_TT"],
-                                            getFunc  = function()
-                                                return FCOISsettings.icon[FCOIS_CON_ICON_GEAR_2].name
-                                            end,
-                                            setFunc  = function(newValue)
-                                                FCOISsettings.icon[FCOIS_CON_ICON_GEAR_2].name = newValue
-                                                FCOIS.changeContextMenuEntryTexts(FCOIS_CON_ICON_GEAR_2)
-                                                --Update the icon list dropdown entries (name, enabled state)
-                                                updateIconListDropdownEntries()
-                                            end,
-                                            width    = "half",
-                                            disabled = function()
-                                                return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[2]]
-                                            end,
-                                            default  = locVars["options_icon4_name"],
-                                        },
-                                        {
-                                            type     = "colorpicker",
-                                            name     = locVars["options_icon4_color"],
-                                            tooltip  = locVars["options_icon4_color_TT"],
-                                            getFunc  = function()
-                                                return FCOISsettings.icon[FCOIS_CON_ICON_GEAR_2].color.r, FCOISsettings.icon[FCOIS_CON_ICON_GEAR_2].color.g, FCOISsettings.icon[FCOIS_CON_ICON_GEAR_2].color.b, FCOISsettings.icon[FCOIS_CON_ICON_GEAR_2].color.a
-                                            end,
-                                            setFunc  = function(r, g, b, a)
-                                                FCOISsettings.icon[FCOIS_CON_ICON_GEAR_2].color = { ["r"] = r, ["g"] = g, ["b"] = b, ["a"] = a }
-                                                FCOItemSaver_Settings_Filter4Preview_Select:SetColor(ZO_ColorDef:New(r, g, b, a))
-
-                                                --Set global variable to update the marker colors and textures
-                                                FCOIS.preventerVars.gUpdateMarkersNow = true
-                                            end,
-                                            width    = "half",
-                                            disabled = function()
-                                                return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[2]]
-                                            end,
-                                            default  = FCOISdefaultSettings.icon[FCOIS_CON_ICON_GEAR_2].color,
-                                        },
-                                        {
-                                            type            = "iconpicker",
-                                            name            = locVars["options_icon4_texture"],
-                                            tooltip         = locVars["options_icon4_texture_TT"],
-                                            choices         = markerIconTextures,
-                                            choicesTooltips = texturesList,
-                                            getFunc         = function()
-                                                return markerIconTextures[FCOISsettings.icon[FCOIS_CON_ICON_GEAR_2].texture]
-                                            end,
-                                            setFunc         = function(texturePath)
-                                                local textureId = GetFCOTextureId(texturePath)
-                                                if textureId ~= 0 then
-                                                    FCOISsettings.icon[FCOIS_CON_ICON_GEAR_2].texture = textureId
-                                                    FCOItemSaver_Settings_Filter4Preview_Select.label:SetText(locVars["options_icon4_texture"] .. ": " .. texturesList[textureId])
-                                                    local p_button = WINDOW_MANAGER:GetControlByName(FCOIS.ZOControlVars.FCOISfilterButtonNames[FCOIS_CON_FILTER_BUTTON_GEARSETS], "")
-                                                    FCOIS.UpdateButtonColorsAndTextures(FCOIS_CON_ICON_GEAR_2, p_button, -999)
-                                                    --Set global variable to update the marker colors and textures
-                                                    FCOIS.preventerVars.gUpdateMarkersNow = true
-                                                end
-                                            end,
-                                            maxColumns      = 6,
-                                            visibleRows     = 5,
-                                            iconSize        = FCOISsettings.icon[FCOIS_CON_ICON_GEAR_2].size,
-                                            width           = "half",
-                                            reference       = "FCOItemSaver_Settings_Filter4Preview_Select",
-                                            disabled        = function()
-                                                return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[2]]
-                                            end,
-                                            default         = markerIconTextures[FCOISsettings.icon[FCOIS_CON_ICON_GEAR_2].texture],
-                                        },
-                                        {
-                                            type       = "slider",
-                                            name       = locVars["options_icon4_size"],
-                                            tooltip    = locVars["options_icon4_size_TT"],
-                                            min        = minIconSize,
-                                            max        = maxIconSize,
-                                            decimals   = 0,
-                                            autoSelect = true,
-                                            getFunc    = function()
-                                                return FCOISsettings.icon[FCOIS_CON_ICON_GEAR_2].size
-                                            end,
-                                            setFunc    = function(size)
-                                                FCOISsettings.icon[FCOIS_CON_ICON_GEAR_2].size = size
-                                                FCOItemSaver_Settings_Filter4Preview_Select:SetIconSize(size)
-                                                --Set global variable to update the marker colors and textures
-                                                FCOIS.preventerVars.gUpdateMarkersNow = true
-                                            end,
-                                            width      = "half",
-                                            disabled   = function()
-                                                return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[2]]
-                                            end,
-                                            default    = FCOISdefaultSettings.icon[FCOIS_CON_ICON_GEAR_2].size,
-                                        },
-                                        {
-                                            type       = "slider",
-                                            name       = locVars["options_icon_offset_left"],
-                                            tooltip    = locVars["options_icon_offset_left_TT"],
-                                            min        = minIconOffsetLeft,
-                                            max        = maxIconOffsetLeft,
-                                            decimals   = 0,
-                                            autoSelect = true,
-                                            getFunc    = function()
-                                                return FCOISsettings.icon[FCOIS_CON_ICON_GEAR_2].offsets[LF_INVENTORY]["left"]
-                                            end,
-                                            setFunc    = function(left)
-                                                FCOISsettings.icon[FCOIS_CON_ICON_GEAR_2].offsets[LF_INVENTORY]["left"] = left
-                                            end,
-                                            width      = "half",
-                                            disabled   = function()
-                                                return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_GEAR_2]
-                                            end,
-                                            default    = FCOISdefaultSettings.icon[FCOIS_CON_ICON_GEAR_2].offsets[LF_INVENTORY]["left"],
-                                        },
-                                        {
-                                            type       = "slider",
-                                            name       = locVars["options_icon_offset_top"],
-                                            tooltip    = locVars["options_icon_offset_top_TT"],
-                                            min = minIconOffsetTop,
-                                            max = maxIconOffsetTop,
-                                            decimals   = 0,
-                                            autoSelect = true,
-                                            getFunc    = function()
-                                                return FCOISsettings.icon[FCOIS_CON_ICON_GEAR_2].offsets[LF_INVENTORY]["top"]
-                                            end,
-                                            setFunc    = function(top)
-                                                FCOISsettings.icon[FCOIS_CON_ICON_GEAR_2].offsets[LF_INVENTORY]["top"] = top
-                                            end,
-                                            width      = "half",
-                                            disabled   = function()
-                                                return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_GEAR_2]
-                                            end,
-                                            default    = FCOISdefaultSettings.icon[FCOIS_CON_ICON_GEAR_2].offsets[LF_INVENTORY]["top"],
-                                        },
-                                        {
-                                            type     = "checkbox",
-                                            name     = locVars["options_icon4_TT"],
-                                            tooltip  = locVars["options_icon4_tooltip_TT"],
-                                            getFunc  = function()
-                                                return FCOISsettings.showMarkerTooltip[FCOIS_CON_ICON_GEAR_2]
-                                            end,
-                                            setFunc  = function(value)
-                                                FCOISsettings.showMarkerTooltip[FCOIS_CON_ICON_GEAR_2] = value
-                                                FCOIS.preventerVars.gUpdateMarkersNow                  = true
-                                            end,
-                                            width    = "half",
-                                            disabled = function()
-                                                return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[2]]
-                                            end,
-                                            default  = FCOISdefaultSettings.showMarkerTooltip[FCOIS_CON_ICON_GEAR_2],
-                                        },
-                                        {
-                                            type     = "checkbox",
-                                            name     = locVars["options_gear_disable_research_check"],
-                                            tooltip  = locVars["options_gear_disable_research_check_TT"],
-                                            getFunc  = function()
-                                                return FCOISsettings.disableResearchCheck[FCOIS_CON_ICON_GEAR_2]
-                                            end,
-                                            setFunc  = function(value)
-                                                FCOISsettings.disableResearchCheck[FCOIS_CON_ICON_GEAR_2] = value
-                                            end,
-                                            width    = "half",
-                                            disabled = function()
-                                                return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[2]]
-                                            end,
-                                            default  = FCOISdefaultSettings.disableResearchCheck[FCOIS_CON_ICON_GEAR_2],
-                                        },
-                                    } -- controls gear 2
-                                }, -- submenu gear 2
-
-                                --==============================================================================
-                                {
-                                    type     = "submenu",
-                                    name     = locVars["options_icons_gear3"],
-                                    controls = {
-                                        {
-                                            type     = "editbox",
-                                            name     = locVars["options_icon6_name"],
-                                            tooltip  = locVars["options_icon6_name_TT"],
-                                            getFunc  = function()
-                                                return FCOISsettings.icon[FCOIS_CON_ICON_GEAR_3].name
-                                            end,
-                                            setFunc  = function(newValue)
-                                                FCOISsettings.icon[FCOIS_CON_ICON_GEAR_3].name = newValue
-                                                FCOIS.changeContextMenuEntryTexts(FCOIS_CON_ICON_GEAR_3)
-                                                --Update the icon list dropdown entries (name, enabled state)
-                                                updateIconListDropdownEntries()
-                                            end,
-                                            width    = "half",
-                                            disabled = function()
-                                                return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[3]]
-                                            end,
-                                            default  = locVars["options_icon6_name"],
-                                        },
-                                        {
-                                            type     = "colorpicker",
-                                            name     = locVars["options_icon6_color"],
-                                            tooltip  = locVars["options_icon6_color_TT"],
-                                            getFunc  = function()
-                                                return FCOISsettings.icon[FCOIS_CON_ICON_GEAR_3].color.r, FCOISsettings.icon[FCOIS_CON_ICON_GEAR_3].color.g, FCOISsettings.icon[FCOIS_CON_ICON_GEAR_3].color.b, FCOISsettings.icon[FCOIS_CON_ICON_GEAR_3].color.a
-                                            end,
-                                            setFunc  = function(r, g, b, a)
-                                                FCOISsettings.icon[FCOIS_CON_ICON_GEAR_3].color = { ["r"] = r, ["g"] = g, ["b"] = b, ["a"] = a }
-                                                FCOItemSaver_Settings_Filter6Preview_Select:SetColor(ZO_ColorDef:New(r, g, b, a))
-                                                --Set global variable to update the marker colors and textures
-                                                FCOIS.preventerVars.gUpdateMarkersNow = true
-                                            end,
-                                            width    = "half",
-                                            disabled = function()
-                                                return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[3]]
-                                            end,
-                                            default  = FCOISdefaultSettings.icon[FCOIS_CON_ICON_GEAR_3].color,
-                                        },
-                                        {
-                                            type            = "iconpicker",
-                                            name            = locVars["options_icon6_texture"],
-                                            tooltip         = locVars["options_icon6_texture_TT"],
-                                            choices         = markerIconTextures,
-                                            choicesTooltips = texturesList,
-                                            getFunc         = function()
-                                                return markerIconTextures[FCOISsettings.icon[FCOIS_CON_ICON_GEAR_3].texture]
-                                            end,
-                                            setFunc         = function(texturePath)
-                                                local textureId = GetFCOTextureId(texturePath)
-                                                if textureId ~= 0 then
-                                                    FCOISsettings.icon[FCOIS_CON_ICON_GEAR_3].texture = textureId
-                                                    FCOItemSaver_Settings_Filter6Preview_Select.label:SetText(locVars["options_icon6_texture"] .. ": " .. texturesList[textureId])
-                                                    local p_button = WINDOW_MANAGER:GetControlByName(FCOIS.ZOControlVars.FCOISfilterButtonNames[FCOIS_CON_FILTER_BUTTON_GEARSETS], "")
-                                                    FCOIS.UpdateButtonColorsAndTextures(FCOIS_CON_ICON_GEAR_3, p_button, -999)
-                                                    --Set global variable to update the marker colors and textures
-                                                    FCOIS.preventerVars.gUpdateMarkersNow = true
-                                                end
-                                            end,
-                                            maxColumns      = 6,
-                                            visibleRows     = 5,
-                                            iconSize        = FCOISsettings.icon[FCOIS_CON_ICON_GEAR_3].size,
-                                            width           = "half",
-                                            reference       = "FCOItemSaver_Settings_Filter6Preview_Select",
-                                            disabled        = function()
-                                                return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[3]]
-                                            end,
-                                            default         = markerIconTextures[FCOISsettings.icon[FCOIS_CON_ICON_GEAR_3].texture],
-                                        },
-                                        {
-                                            type       = "slider",
-                                            name       = locVars["options_icon6_size"],
-                                            tooltip    = locVars["options_icon6_size_TT"],
-                                            min        = minIconSize,
-                                            max        = maxIconSize,
-                                            decimals   = 0,
-                                            autoSelect = true,
-                                            getFunc    = function()
-                                                return FCOISsettings.icon[FCOIS_CON_ICON_GEAR_3].size
-                                            end,
-                                            setFunc    = function(size)
-                                                FCOISsettings.icon[FCOIS_CON_ICON_GEAR_3].size = size
-                                                FCOItemSaver_Settings_Filter6Preview_Select:SetIconSize(size)
-                                                --Set global variable to update the marker colors and textures
-                                                FCOIS.preventerVars.gUpdateMarkersNow = true
-                                            end,
-                                            width      = "half",
-                                            disabled   = function()
-                                                return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[3]]
-                                            end,
-                                            default    = FCOISdefaultSettings.icon[FCOIS_CON_ICON_GEAR_3].size,
-                                        },
-                                        {
-                                            type       = "slider",
-                                            name       = locVars["options_icon_offset_left"],
-                                            tooltip    = locVars["options_icon_offset_left_TT"],
-                                            min        = minIconOffsetLeft,
-                                            max        = maxIconOffsetLeft,
-                                            decimals   = 0,
-                                            autoSelect = true,
-                                            getFunc    = function()
-                                                return FCOISsettings.icon[FCOIS_CON_ICON_GEAR_3].offsets[LF_INVENTORY]["left"]
-                                            end,
-                                            setFunc    = function(left)
-                                                FCOISsettings.icon[FCOIS_CON_ICON_GEAR_3].offsets[LF_INVENTORY]["left"] = left
-                                            end,
-                                            width      = "half",
-                                            disabled   = function()
-                                                return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_GEAR_3]
-                                            end,
-                                            default    = FCOISdefaultSettings.icon[FCOIS_CON_ICON_GEAR_3].offsets[LF_INVENTORY]["left"],
-                                        },
-                                        {
-                                            type       = "slider",
-                                            name       = locVars["options_icon_offset_top"],
-                                            tooltip    = locVars["options_icon_offset_top_TT"],
-                                            min = minIconOffsetTop,
-                                            max = maxIconOffsetTop,
-                                            decimals   = 0,
-                                            autoSelect = true,
-                                            getFunc    = function()
-                                                return FCOISsettings.icon[FCOIS_CON_ICON_GEAR_3].offsets[LF_INVENTORY]["top"]
-                                            end,
-                                            setFunc    = function(top)
-                                                FCOISsettings.icon[FCOIS_CON_ICON_GEAR_3].offsets[LF_INVENTORY]["top"] = top
-                                            end,
-                                            width      = "half",
-                                            disabled   = function()
-                                                return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_GEAR_3]
-                                            end,
-                                            default    = FCOISdefaultSettings.icon[FCOIS_CON_ICON_GEAR_3].offsets[LF_INVENTORY]["top"],
-                                        },
-                                        {
-                                            type     = "checkbox",
-                                            name     = locVars["options_icon6_TT"],
-                                            tooltip  = locVars["options_icon6_tooltip_TT"],
-                                            getFunc  = function()
-                                                return FCOISsettings.showMarkerTooltip[FCOIS_CON_ICON_GEAR_3]
-                                            end,
-                                            setFunc  = function(value)
-                                                FCOISsettings.showMarkerTooltip[FCOIS_CON_ICON_GEAR_3] = value
-                                                FCOIS.preventerVars.gUpdateMarkersNow                  = true
-                                            end,
-                                            width    = "half",
-                                            disabled = function()
-                                                return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[3]]
-                                            end,
-                                            default  = FCOISdefaultSettings.showMarkerTooltip[FCOIS_CON_ICON_GEAR_3],
-                                        },
-                                        {
-                                            type     = "checkbox",
-                                            name     = locVars["options_gear_disable_research_check"],
-                                            tooltip  = locVars["options_gear_disable_research_check_TT"],
-                                            getFunc  = function()
-                                                return FCOISsettings.disableResearchCheck[FCOIS_CON_ICON_GEAR_3]
-                                            end,
-                                            setFunc  = function(value)
-                                                FCOISsettings.disableResearchCheck[FCOIS_CON_ICON_GEAR_3] = value
-                                            end,
-                                            width    = "half",
-                                            disabled = function()
-                                                return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[3]]
-                                            end,
-                                            default  = FCOISdefaultSettings.disableResearchCheck[FCOIS_CON_ICON_GEAR_3],
-                                        },
-                                    } -- controls gear 3
-                                }, -- submenu gear 3
-                                --==============================================================================
-                                {
-                                    type     = "submenu",
-                                    name     = locVars["options_icons_gear4"],
-                                    controls = {
-                                        {
-                                            type     = "editbox",
-                                            name     = locVars["options_icon7_name"],
-                                            tooltip  = locVars["options_icon7_name_TT"],
-                                            getFunc  = function()
-                                                return FCOISsettings.icon[FCOIS_CON_ICON_GEAR_4].name
-                                            end,
-                                            setFunc  = function(newValue)
-                                                FCOISsettings.icon[FCOIS_CON_ICON_GEAR_4].name = newValue
-                                                FCOIS.changeContextMenuEntryTexts(FCOIS_CON_ICON_GEAR_4)
-                                                --Update the icon list dropdown entries (name, enabled state)
-                                                updateIconListDropdownEntries()
-                                            end,
-                                            width    = "half",
-                                            disabled = function()
-                                                return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[4]]
-                                            end,
-                                            default  = locVars["options_icon7_name"],
-                                        },
-                                        {
-                                            type     = "colorpicker",
-                                            name     = locVars["options_icon7_color"],
-                                            tooltip  = locVars["options_icon7_color_TT"],
-                                            getFunc  = function()
-                                                return FCOISsettings.icon[FCOIS_CON_ICON_GEAR_4].color.r, FCOISsettings.icon[FCOIS_CON_ICON_GEAR_4].color.g, FCOISsettings.icon[FCOIS_CON_ICON_GEAR_4].color.b, FCOISsettings.icon[FCOIS_CON_ICON_GEAR_4].color.a
-                                            end,
-                                            setFunc  = function(r, g, b, a)
-                                                FCOISsettings.icon[FCOIS_CON_ICON_GEAR_4].color = { ["r"] = r, ["g"] = g, ["b"] = b, ["a"] = a }
-                                                FCOItemSaver_Settings_Filter7Preview_Select:SetColor(ZO_ColorDef:New(r, g, b, a))
-                                                --Set global variable to update the marker colors and textures
-                                                FCOIS.preventerVars.gUpdateMarkersNow = true
-                                            end,
-                                            width    = "half",
-                                            disabled = function()
-                                                return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[4]]
-                                            end,
-                                            default  = FCOISdefaultSettings.icon[FCOIS_CON_ICON_GEAR_4].color,
-                                        },
-                                        {
-                                            type            = "iconpicker",
-                                            name            = locVars["options_icon7_texture"],
-                                            tooltip         = locVars["options_icon7_texture_TT"],
-                                            choices         = markerIconTextures,
-                                            choicesTooltips = texturesList,
-                                            getFunc         = function()
-                                                return markerIconTextures[FCOISsettings.icon[FCOIS_CON_ICON_GEAR_4].texture]
-                                            end,
-                                            setFunc         = function(texturePath)
-                                                local textureId = GetFCOTextureId(texturePath)
-                                                if textureId ~= 0 then
-                                                    FCOISsettings.icon[FCOIS_CON_ICON_GEAR_4].texture = textureId
-                                                    FCOItemSaver_Settings_Filter7Preview_Select.label:SetText(locVars["options_icon7_texture"] .. ": " .. texturesList[textureId])
-                                                    local p_button = WINDOW_MANAGER:GetControlByName(FCOIS.ZOControlVars.FCOISfilterButtonNames[FCOIS_CON_FILTER_BUTTON_GEARSETS], "")
-                                                    FCOIS.UpdateButtonColorsAndTextures(FCOIS_CON_ICON_GEAR_4, p_button, -999)
-                                                    --Set global variable to update the marker colors and textures
-                                                    FCOIS.preventerVars.gUpdateMarkersNow = true
-                                                end
-                                            end,
-                                            maxColumns      = 6,
-                                            visibleRows     = 5,
-                                            iconSize        = FCOISsettings.icon[FCOIS_CON_ICON_GEAR_4].size,
-                                            width           = "half",
-                                            reference       = "FCOItemSaver_Settings_Filter7Preview_Select",
-                                            disabled        = function()
-                                                return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[4]]
-                                            end,
-                                            default         = markerIconTextures[FCOISsettings.icon[FCOIS_CON_ICON_GEAR_4].texture],
-                                        },
-                                        {
-                                            type       = "slider",
-                                            name       = locVars["options_icon7_size"],
-                                            tooltip    = locVars["options_icon7_size_TT"],
-                                            min        = minIconSize,
-                                            max        = maxIconSize,
-                                            decimals   = 0,
-                                            autoSelect = true,
-                                            getFunc    = function()
-                                                return FCOISsettings.icon[FCOIS_CON_ICON_GEAR_4].size
-                                            end,
-                                            setFunc    = function(size)
-                                                FCOISsettings.icon[FCOIS_CON_ICON_GEAR_4].size = size
-                                                FCOItemSaver_Settings_Filter7Preview_Select:SetIconSize(size)
-                                                --Set global variable to update the marker colors and textures
-                                                FCOIS.preventerVars.gUpdateMarkersNow = true
-                                            end,
-                                            width      = "half",
-                                            disabled   = function()
-                                                return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[4]]
-                                            end,
-                                            default    = FCOISdefaultSettings.icon[FCOIS_CON_ICON_GEAR_4].size,
-                                        },
-                                        {
-                                            type       = "slider",
-                                            name       = locVars["options_icon_offset_left"],
-                                            tooltip    = locVars["options_icon_offset_left_TT"],
-                                            min        = minIconOffsetLeft,
-                                            max        = maxIconOffsetLeft,
-                                            decimals   = 0,
-                                            autoSelect = true,
-                                            getFunc    = function()
-                                                return FCOISsettings.icon[FCOIS_CON_ICON_GEAR_4].offsets[LF_INVENTORY]["left"]
-                                            end,
-                                            setFunc    = function(left)
-                                                FCOISsettings.icon[FCOIS_CON_ICON_GEAR_4].offsets[LF_INVENTORY]["left"] = left
-                                            end,
-                                            width      = "half",
-                                            disabled   = function()
-                                                return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_GEAR_4]
-                                            end,
-                                            default    = FCOISdefaultSettings.icon[FCOIS_CON_ICON_GEAR_4].offsets[LF_INVENTORY]["left"],
-                                        },
-                                        {
-                                            type       = "slider",
-                                            name       = locVars["options_icon_offset_top"],
-                                            tooltip    = locVars["options_icon_offset_top_TT"],
-                                            min = minIconOffsetTop,
-                                            max = maxIconOffsetTop,
-                                            decimals   = 0,
-                                            autoSelect = true,
-                                            getFunc    = function()
-                                                return FCOISsettings.icon[FCOIS_CON_ICON_GEAR_4].offsets[LF_INVENTORY]["top"]
-                                            end,
-                                            setFunc    = function(top)
-                                                FCOISsettings.icon[FCOIS_CON_ICON_GEAR_4].offsets[LF_INVENTORY]["top"] = top
-                                            end,
-                                            width      = "half",
-                                            disabled   = function()
-                                                return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_GEAR_4]
-                                            end,
-                                            default    = FCOISdefaultSettings.icon[FCOIS_CON_ICON_GEAR_4].offsets[LF_INVENTORY]["top"],
-                                        },
-                                        {
-                                            type     = "checkbox",
-                                            name     = locVars["options_icon7_TT"],
-                                            tooltip  = locVars["options_icon7_tooltip_TT"],
-                                            getFunc  = function()
-                                                return FCOISsettings.showMarkerTooltip[FCOIS_CON_ICON_GEAR_4]
-                                            end,
-                                            setFunc  = function(value)
-                                                FCOISsettings.showMarkerTooltip[FCOIS_CON_ICON_GEAR_4] = value
-                                                FCOIS.preventerVars.gUpdateMarkersNow                  = true
-                                            end,
-                                            width    = "half",
-                                            disabled = function()
-                                                return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[4]]
-                                            end,
-                                            default  = FCOISdefaultSettings.showMarkerTooltip[FCOIS_CON_ICON_GEAR_4],
-                                        },
-                                        {
-                                            type     = "checkbox",
-                                            name     = locVars["options_gear_disable_research_check"],
-                                            tooltip  = locVars["options_gear_disable_research_check_TT"],
-                                            getFunc  = function()
-                                                return FCOISsettings.disableResearchCheck[FCOIS_CON_ICON_GEAR_4]
-                                            end,
-                                            setFunc  = function(value)
-                                                FCOISsettings.disableResearchCheck[FCOIS_CON_ICON_GEAR_4] = value
-                                            end,
-                                            width    = "half",
-                                            disabled = function()
-                                                return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[4]]
-                                            end,
-                                            default  = FCOISdefaultSettings.disableResearchCheck[FCOIS_CON_ICON_GEAR_4],
-                                        },
-                                    } -- controls gear 4
-                                }, -- submenu gear 4
-                                --==============================================================================
-                                {
-                                    type     = "submenu",
-                                    name     = locVars["options_icons_gear5"],
-                                    controls = {
-                                        {
-                                            type     = "editbox",
-                                            name     = locVars["options_icon8_name"],
-                                            tooltip  = locVars["options_icon8_name_TT"],
-                                            getFunc  = function()
-                                                return FCOISsettings.icon[FCOIS_CON_ICON_GEAR_5].name
-                                            end,
-                                            setFunc  = function(newValue)
-                                                FCOISsettings.icon[FCOIS_CON_ICON_GEAR_5].name = newValue
-                                                FCOIS.changeContextMenuEntryTexts(FCOIS_CON_ICON_GEAR_5)
-                                                --Update the icon list dropdown entries (name, enabled state)
-                                                updateIconListDropdownEntries()
-                                            end,
-                                            width    = "half",
-                                            disabled = function()
-                                                return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[5]]
-                                            end,
-                                            default  = locVars["options_icon8_name"],
-                                        },
-                                        {
-                                            type     = "colorpicker",
-                                            name     = locVars["options_icon8_color"],
-                                            tooltip  = locVars["options_icon8_color_TT"],
-                                            getFunc  = function()
-                                                return FCOISsettings.icon[FCOIS_CON_ICON_GEAR_5].color.r, FCOISsettings.icon[FCOIS_CON_ICON_GEAR_5].color.g, FCOISsettings.icon[FCOIS_CON_ICON_GEAR_5].color.b, FCOISsettings.icon[FCOIS_CON_ICON_GEAR_5].color.a
-                                            end,
-                                            setFunc  = function(r, g, b, a)
-                                                FCOISsettings.icon[FCOIS_CON_ICON_GEAR_5].color = { ["r"] = r, ["g"] = g, ["b"] = b, ["a"] = a }
-                                                FCOItemSaver_Settings_Filter8Preview_Select:SetColor(ZO_ColorDef:New(r, g, b, a))
-                                                --Set global variable to update the marker colors and textures
-                                                FCOIS.preventerVars.gUpdateMarkersNow = true
-                                            end,
-                                            width    = "half",
-                                            disabled = function()
-                                                return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[5]]
-                                            end,
-                                            default  = FCOISdefaultSettings.icon[FCOIS_CON_ICON_GEAR_5].color,
-                                        },
-                                        {
-                                            type            = "iconpicker",
-                                            name            = locVars["options_icon8_texture"],
-                                            tooltip         = locVars["options_icon8_texture_TT"],
-                                            choices         = markerIconTextures,
-                                            choicesTooltips = texturesList,
-                                            getFunc         = function()
-                                                return markerIconTextures[FCOISsettings.icon[FCOIS_CON_ICON_GEAR_5].texture]
-                                            end,
-                                            setFunc         = function(texturePath)
-                                                local textureId = GetFCOTextureId(texturePath)
-                                                if textureId ~= 0 then
-                                                    FCOISsettings.icon[FCOIS_CON_ICON_GEAR_5].texture = textureId
-                                                    FCOItemSaver_Settings_Filter8Preview_Select.label:SetText(locVars["options_icon8_texture"] .. ": " .. texturesList[textureId])
-                                                    local p_button = WINDOW_MANAGER:GetControlByName(FCOIS.ZOControlVars.FCOISfilterButtonNames[FCOIS_CON_FILTER_BUTTON_GEARSETS], "")
-                                                    FCOIS.UpdateButtonColorsAndTextures(FCOIS_CON_ICON_GEAR_5, p_button, -999)
-                                                    --Set global variable to update the marker colors and textures
-                                                    FCOIS.preventerVars.gUpdateMarkersNow = true
-                                                end
-                                            end,
-                                            maxColumns      = 6,
-                                            visibleRows     = 5,
-                                            iconSize        = FCOISsettings.icon[FCOIS_CON_ICON_GEAR_5].size,
-                                            width           = "half",
-                                            reference       = "FCOItemSaver_Settings_Filter8Preview_Select",
-                                            disabled        = function()
-                                                return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[5]]
-                                            end,
-                                            default         = markerIconTextures[FCOISsettings.icon[FCOIS_CON_ICON_GEAR_5].texture],
-                                        },
-                                        {
-                                            type       = "slider",
-                                            name       = locVars["options_icon8_size"],
-                                            tooltip    = locVars["options_icon8_size_TT"],
-                                            min        = minIconSize,
-                                            max        = maxIconSize,
-                                            decimals   = 0,
-                                            autoSelect = true,
-                                            getFunc    = function()
-                                                return FCOISsettings.icon[FCOIS_CON_ICON_GEAR_5].size
-                                            end,
-                                            setFunc    = function(size)
-                                                FCOISsettings.icon[FCOIS_CON_ICON_GEAR_5].size = size
-                                                FCOItemSaver_Settings_Filter8Preview_Select:SetIconSize(size)
-                                                --Set global variable to update the marker colors and textures
-                                                FCOIS.preventerVars.gUpdateMarkersNow = true
-                                            end,
-                                            width      = "half",
-                                            disabled   = function()
-                                                return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[5]]
-                                            end,
-                                            default    = FCOISdefaultSettings.icon[FCOIS_CON_ICON_GEAR_5].size,
-                                        },
-                                        {
-                                            type       = "slider",
-                                            name       = locVars["options_icon_offset_left"],
-                                            tooltip    = locVars["options_icon_offset_left_TT"],
-                                            min        = minIconOffsetLeft,
-                                            max        = maxIconOffsetLeft,
-                                            decimals   = 0,
-                                            autoSelect = true,
-                                            getFunc    = function()
-                                                return FCOISsettings.icon[FCOIS_CON_ICON_GEAR_5].offsets[LF_INVENTORY]["left"]
-                                            end,
-                                            setFunc    = function(left)
-                                                FCOISsettings.icon[FCOIS_CON_ICON_GEAR_5].offsets[LF_INVENTORY]["left"] = left
-                                            end,
-                                            width      = "half",
-                                            disabled   = function()
-                                                return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_GEAR_5]
-                                            end,
-                                            default    = FCOISdefaultSettings.icon[FCOIS_CON_ICON_GEAR_5].offsets[LF_INVENTORY]["left"],
-                                        },
-                                        {
-                                            type       = "slider",
-                                            name       = locVars["options_icon_offset_top"],
-                                            tooltip    = locVars["options_icon_offset_top_TT"],
-                                            min = minIconOffsetTop,
-                                            max = maxIconOffsetTop,
-                                            decimals   = 0,
-                                            autoSelect = true,
-                                            getFunc    = function()
-                                                return FCOISsettings.icon[FCOIS_CON_ICON_GEAR_5].offsets[LF_INVENTORY]["top"]
-                                            end,
-                                            setFunc    = function(top)
-                                                FCOISsettings.icon[FCOIS_CON_ICON_GEAR_5].offsets[LF_INVENTORY]["top"] = top
-                                            end,
-                                            width      = "half",
-                                            disabled   = function()
-                                                return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_GEAR_5]
-                                            end,
-                                            default    = FCOISdefaultSettings.icon[FCOIS_CON_ICON_GEAR_5].offsets[LF_INVENTORY]["top"],
-                                        },
-                                        {
-                                            type     = "checkbox",
-                                            name     = locVars["options_icon8_TT"],
-                                            tooltip  = locVars["options_icon8_tooltip_TT"],
-                                            getFunc  = function()
-                                                return FCOISsettings.showMarkerTooltip[FCOIS_CON_ICON_GEAR_5]
-                                            end,
-                                            setFunc  = function(value)
-                                                FCOISsettings.showMarkerTooltip[FCOIS_CON_ICON_GEAR_5] = value
-                                                FCOIS.preventerVars.gUpdateMarkersNow                  = true
-                                            end,
-                                            width    = "half",
-                                            disabled = function()
-                                                return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[5]]
-                                            end,
-                                            default  = FCOISdefaultSettings.showMarkerTooltip[FCOIS_CON_ICON_GEAR_5],
-                                        },
-                                        {
-                                            type     = "checkbox",
-                                            name     = locVars["options_gear_disable_research_check"],
-                                            tooltip  = locVars["options_gear_disable_research_check_TT"],
-                                            getFunc  = function()
-                                                return FCOISsettings.disableResearchCheck[FCOIS_CON_ICON_GEAR_5]
-                                            end,
-                                            setFunc  = function(value)
-                                                FCOISsettings.disableResearchCheck[FCOIS_CON_ICON_GEAR_5] = value
-                                            end,
-                                            width    = "half",
-                                            disabled = function()
-                                                return not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[5]]
-                                            end,
-                                            default  = FCOISdefaultSettings.disableResearchCheck[FCOIS_CON_ICON_GEAR_5],
-                                        },
-                                    } -- controls gear 5
-                                }, -- submenu gear 5
-
-                            }, -- controls gear icons
+                            name = locVars[optionsIcon .. "s_gears"],
+                            controls = gearIconsSubMenus
                         }, -- submenu gear icons
                         --==============================================================================
                         -- GEAR SETS enabled/disabled
                         {
                             type = "submenu",
                             name = locVars["options_header_enable_disable"],
-                            controls =
-                            {
-
-                                {
-                                    type = "checkbox",
-                                    name = locVars["options_icon2_activate_text"],
-                                    tooltip = locVars["options_icon_activate_text_TT"],
-                                    getFunc = function() return FCOISsettings.isIconEnabled[mappingVars.gearToIcon[1]] end,
-                                    setFunc = function(value)
-                                        FCOISsettings.isIconEnabled[mappingVars.gearToIcon[1]] = value
-                                        --Hide the textures for gear 1
-                                        if not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[1]] then
-                                            --Character equipment
-                                            FCOIS.RefreshEquipmentControl(nil, false, 2)
-                                            FCOIS.FilterBasics(true)
-                                        else
-                                            --Character equipment, create if not yet created
-                                            FCOIS.RefreshEquipmentControl(nil, true, 2)
-                                            FCOIS.FilterBasics(true)
-                                        end
-                                        FCOIS.preventerVars.gChangedGears 	= true
-                                        FCOIS.preventerVars.gUpdateMarkersNow = true
-                                        --Update the icon list dropdown entries (name, enabled state)
-                                        updateIconListDropdownEntries()
-                                    end,
-                                    width="full",
-                                    default = FCOISdefaultSettings.isIconEnabled[mappingVars.gearToIcon[1]],
-                                },
-                                {
-                                    type = "checkbox",
-                                    name = locVars["options_icon4_activate_text"],
-                                    tooltip = locVars["options_icon_activate_text_TT"],
-                                    getFunc = function() return FCOISsettings.isIconEnabled[mappingVars.gearToIcon[2]] end,
-                                    setFunc = function(value) FCOISsettings.isIconEnabled[mappingVars.gearToIcon[2]] = value
-                                        --Hide the textures for gear 2
-                                        if not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[2]] then
-                                            --Character equipment
-                                            FCOIS.RefreshEquipmentControl(nil, false, 4)
-                                            FCOIS.FilterBasics(true)
-                                        else
-                                            --Character equipment, create if not yet created
-                                            FCOIS.RefreshEquipmentControl(nil, true, 4)
-                                            FCOIS.FilterBasics(true)
-                                        end
-                                        FCOIS.preventerVars.gChangedGears 	= true
-                                        FCOIS.preventerVars.gUpdateMarkersNow = true
-                                        --Update the icon list dropdown entries (name, enabled state)
-                                        updateIconListDropdownEntries()
-                                    end,
-                                    width="full",
-                                    default = FCOISdefaultSettings.isIconEnabled[mappingVars.gearToIcon[2]],
-                                },
-                                {
-                                    type = "checkbox",
-                                    name = locVars["options_icon6_activate_text"],
-                                    tooltip = locVars["options_icon_activate_text_TT"],
-                                    getFunc = function() return FCOISsettings.isIconEnabled[mappingVars.gearToIcon[3]] end,
-                                    setFunc = function(value) FCOISsettings.isIconEnabled[mappingVars.gearToIcon[3]] = value
-                                        --Hide the textures for gear 3
-                                        if not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[3]] then
-                                            --Character equipment
-                                            FCOIS.RefreshEquipmentControl(nil, false, 6)
-                                            FCOIS.FilterBasics(true)
-                                        else
-                                            --Character equipment, create if not yet created
-                                            FCOIS.RefreshEquipmentControl(nil, true, 6)
-                                            FCOIS.FilterBasics(true)
-                                        end
-                                        FCOIS.preventerVars.gChangedGears 	= true
-                                        FCOIS.preventerVars.gUpdateMarkersNow = true
-                                        --Update the icon list dropdown entries (name, enabled state)
-                                        updateIconListDropdownEntries()
-                                    end,
-                                    width="full",
-                                    default = FCOISdefaultSettings.isIconEnabled[mappingVars.gearToIcon[3]],
-                                },
-                                {
-                                    type = "checkbox",
-                                    name = locVars["options_icon7_activate_text"],
-                                    tooltip = locVars["options_icon_activate_text_TT"],
-                                    getFunc = function() return FCOISsettings.isIconEnabled[mappingVars.gearToIcon[4]] end,
-                                    setFunc = function(value) FCOISsettings.isIconEnabled[mappingVars.gearToIcon[4]] = value
-                                        --Hide the textures for gear 4
-                                        if not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[4]] then
-                                            --Character equipment
-                                            FCOIS.RefreshEquipmentControl(nil, false, 7)
-                                            FCOIS.FilterBasics(true)
-                                        else
-                                            --Character equipment, create if not yet created
-                                            FCOIS.RefreshEquipmentControl(nil, true, 7)
-                                            FCOIS.FilterBasics(true)
-                                        end
-                                        FCOIS.preventerVars.gChangedGears 	= true
-                                        FCOIS.preventerVars.gUpdateMarkersNow = true
-                                        --Update the icon list dropdown entries (name, enabled state)
-                                        updateIconListDropdownEntries()
-                                    end,
-                                    width="full",
-                                    default = FCOISdefaultSettings.isIconEnabled[mappingVars.gearToIcon[4]],
-                                },
-                                {
-                                    type = "checkbox",
-                                    name = locVars["options_icon8_activate_text"],
-                                    tooltip = locVars["options_icon_activate_text_TT"],
-                                    getFunc = function() return FCOISsettings.isIconEnabled[mappingVars.gearToIcon[5]] end,
-                                    setFunc = function(value) FCOISsettings.isIconEnabled[mappingVars.gearToIcon[5]] = value
-                                        --Hide the textures for gear 5
-                                        if not FCOISsettings.isIconEnabled[mappingVars.gearToIcon[5]] then
-                                            --Character equipment
-                                            FCOIS.RefreshEquipmentControl(nil, false, 8)
-                                            FCOIS.FilterBasics(true)
-                                        else
-                                            --Character equipment, create if not yet created
-                                            FCOIS.RefreshEquipmentControl(nil, true, 8)
-                                            FCOIS.FilterBasics(true)
-                                        end
-                                        FCOIS.preventerVars.gChangedGears 	= true
-                                        FCOIS.preventerVars.gUpdateMarkersNow = true
-                                        --Update the icon list dropdown entries (name, enabled state)
-                                        updateIconListDropdownEntries()
-                                    end,
-                                    width="full",
-                                    default = FCOISdefaultSettings.isIconEnabled[mappingVars.gearToIcon[5]],
-                                },
-                            }, -- controls gear sets enabled/disabled
+                            controls = gearIconsEnabledCheckboxes
                         }, -- submenu gear sets enabled/disabled
 
                     } -- controls gear sets
@@ -4303,20 +3000,20 @@ function FCOIS.BuildAddonMenu()
                 --==============================================================================
                 {
                     type = "submenu",
-                    name = locVars["options_icons_dynamic"],
+                    name = locVars[optionsIcon .. "s_dynamic"],
                     controls =
                     {
 
                         {
                             type = "description",
-                            text = locVars["options_icons_dynamic_usable_warning"],
+                            text = locVars[optionsIcon .. "s_dynamic_usable_warning"],
                         },
                         --==============================================================================
                         --Slider to change total possible dynamic icons -> Speedup for non-used dynamic icons (1-30)
                         {
                             type = "slider",
-                            name = locVars["options_icons_dynamic_usable"],
-                            tooltip = locVars["options_icons_dynamic_usable_TT"],
+                            name = locVars[optionsIcon .. "s_dynamic_usable"],
+                            tooltip = locVars[optionsIcon .. "s_dynamic_usable" .. tooltipSuffix],
                             min = 1,
                             max = numMaxDynIcons,
                             decimals = 0,
@@ -4341,7 +3038,7 @@ function FCOIS.BuildAddonMenu()
                         --The submenus for all the dynamic icons
                         {
                             type = "submenu",
-                            name = locVars["options_icons_dynamic"],
+                            name = locVars[optionsIcon .. "s_dynamic"],
                             controls = dynIconsSubMenus
                         },
                         --==============================================================================
@@ -4381,7 +3078,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "slider",
                                     name = locVars["options_pos_inventories"],
-                                    tooltip = locVars["options_pos_inventories_TT"],
+                                    tooltip = locVars["options_pos_inventories" .. tooltipSuffix],
                                     min = -10,
                                     max = 540,
                                     autoSelect = true,
@@ -4397,7 +3094,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "slider",
                                     name = locVars["options_pos_crafting"],
-                                    tooltip = locVars["options_pos_crafting_TT"],
+                                    tooltip = locVars["options_pos_crafting" .. tooltipSuffix],
                                     min = -10,
                                     max = 540,
                                     autoSelect = true,
@@ -4413,7 +3110,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "slider",
                                     name = locVars["options_pos_character_x"],
-                                    tooltip = locVars["options_pos_character_x_TT"],
+                                    tooltip = locVars["options_pos_character_x" .. tooltipSuffix],
                                     min = -15,
                                     max = 40,
                                     autoSelect = true,
@@ -4429,7 +3126,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "slider",
                                     name = locVars["options_pos_character_y"],
-                                    tooltip = locVars["options_pos_character_y_TT"],
+                                    tooltip = locVars["options_pos_character_y" .. tooltipSuffix],
                                     min = -40,
                                     max = 15,
                                     autoSelect = true,
@@ -4444,8 +3141,8 @@ function FCOIS.BuildAddonMenu()
                                 },
                                 {
                                     type = "slider",
-                                    name = locVars["options_size_character_TT"],
-                                    tooltip = locVars["options_size_character_TT"],
+                                    name = locVars["options_size_character" .. tooltipSuffix],
+                                    tooltip = locVars["options_size_character" .. tooltipSuffix],
                                     min = 10,
                                     max = 64,
                                     autoSelect = true,
@@ -4478,8 +3175,8 @@ function FCOIS.BuildAddonMenu()
                                     {
                                         {
                                             type = "slider",
-                                            name = "Grid AddOns: " .. locVars["options_icon_offset_left"],
-                                            tooltip = "Grid AddOns: ".. locVars["options_icon_offset_left_TT"],
+                                            name = "Grid AddOns: " .. locVars[optionsIcon .. "_offset_left"],
+                                            tooltip = "Grid AddOns: ".. locVars[optionsIcon .. "_offset_left" .. tooltipSuffix],
                                             min = getGridAddonIconSize() * -1,
                                             max = getGridAddonIconSize(),
                                             autoSelect = true,
@@ -4496,8 +3193,8 @@ function FCOIS.BuildAddonMenu()
                                         },
                                         {
                                             type = "slider",
-                                            name = "Grid AddOns: " .. locVars["options_icon_offset_top"],
-                                            tooltip = "Grid AddOns: ".. locVars["options_icon_offset_top_TT"],
+                                            name = "Grid AddOns: " .. locVars[optionsIcon .. "_offset_top"],
+                                            tooltip = "Grid AddOns: ".. locVars[optionsIcon .. "_offset_top" .. tooltipSuffix],
                                             min = getGridAddonIconSize() * -1,
                                             max = getGridAddonIconSize(),
                                             autoSelect = true,
@@ -4514,8 +3211,8 @@ function FCOIS.BuildAddonMenu()
                                         },
                                         {
                                             type = "slider",
-                                            name = "Grid AddOns: " .. locVars["options_icon_scale"],
-                                            tooltip = "Grid AddOns: ".. locVars["options_icon_scale_TT"],
+                                            name = "Grid AddOns: " .. locVars[optionsIcon .. "_scale"],
+                                            tooltip = "Grid AddOns: ".. locVars[optionsIcon .. "_scale" .. tooltipSuffix],
                                             min = 1,
                                             max = 100,
                                             autoSelect = true,
@@ -4557,7 +3254,7 @@ function FCOIS.BuildAddonMenu()
                         {
                             type = "checkbox",
                             name = locVars["options_deactivated_symbols_apply_anti_checks"],
-                            tooltip = locVars["options_deactivated_symbols_apply_anti_checks_TT"],
+                            tooltip = locVars["options_deactivated_symbols_apply_anti_checks" .. tooltipSuffix],
                             getFunc = function() return FCOISsettings.checkDeactivatedIcons end,
                             setFunc = function(value) FCOISsettings.checkDeactivatedIcons = value
                             end,
@@ -4578,8 +3275,8 @@ function FCOIS.BuildAddonMenu()
             controls = {
                 {
                     type = 'dropdown',
-                    name = locVars["options_icon_standard_on_keybind"],
-                    tooltip = locVars["options_icon_standard_on_keybind_TT"],
+                    name = locVars[optionsIcon .. "_standard_on_keybind"],
+                    tooltip = locVars[optionsIcon .. "_standard_on_keybind" .. tooltipSuffix],
                     choices = iconsList,
                     choicesValues = iconsListValues,
                     scrollable = true,
@@ -4594,8 +3291,8 @@ function FCOIS.BuildAddonMenu()
                 },
                 {
                     type = "checkbox",
-                    name = locVars["options_icon_cycle_on_keybind"],
-                    tooltip = locVars["options_icon_cycle_on_keybind_TT"],
+                    name = locVars[optionsIcon .. "_cycle_on_keybind"],
+                    tooltip = locVars[optionsIcon .. "_cycle_on_keybind" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.cycleMarkerSymbolOnKeybind end,
                     setFunc = function(value) FCOISsettings.cycleMarkerSymbolOnKeybind = value
                     end,
@@ -4605,7 +3302,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_keybind_move_marked_for_sell_to_junk_enabled"],
-                    tooltip = locVars["options_keybind_move_marked_for_sell_to_junk_enabled_TT"],
+                    tooltip = locVars["options_keybind_move_marked_for_sell_to_junk_enabled" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.keybindMoveMarkedForSellToJunkEnabled end,
                     setFunc = function(value) FCOISsettings.keybindMoveMarkedForSellToJunkEnabled = value
                     end,
@@ -4616,7 +3313,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_keybind_move_item_to_junk_enabled"],
-                    tooltip = locVars["options_keybind_move_item_to_junk_enabled_TT"],
+                    tooltip = locVars["options_keybind_move_item_to_junk_enabled" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.keybindMoveItemToJunkEnabled end,
                     setFunc = function(value) FCOISsettings.keybindMoveItemToJunkEnabled = value
                     end,
@@ -4626,7 +3323,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_keybind_move_item_to_junk_add_sell_icon"],
-                    tooltip = locVars["options_keybind_move_item_to_junk_add_sell_icon_TT"],
+                    tooltip = locVars["options_keybind_move_item_to_junk_add_sell_icon" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.keybindMoveItemToJunkAddSellIcon end,
                     setFunc = function(value) FCOISsettings.keybindMoveItemToJunkAddSellIcon = value
                     end,
@@ -4654,7 +3351,7 @@ function FCOIS.BuildAddonMenu()
                         {
                             type = "dropdown",
                             name = locVars["options_modifier_key"],
-                            tooltip = locVars["options_modifier_key_TT"],
+                            tooltip = locVars["options_modifier_key" .. tooltipSuffix],
                             choices = choicesModifierKeys,
                             choicesValues = choicesModifierKeysValues,
                             getFunc = function() return FCOISsettings.contextMenuClearMarkesModifierKey end,
@@ -4666,7 +3363,7 @@ function FCOIS.BuildAddonMenu()
                         {
                             type = "checkbox",
                             name = locVars["options_remove_all_markers_with_shift_rightclick"],
-                            tooltip = locVars["options_remove_all_markers_with_shift_rightclick_TT"],
+                            tooltip = locVars["options_remove_all_markers_with_shift_rightclick" .. tooltipSuffix],
                             getFunc = function() return FCOISsettings.contextMenuClearMarkesByShiftKey end,
                             setFunc = function(value) FCOISsettings.contextMenuClearMarkesByShiftKey = value
                             end,
@@ -4676,7 +3373,7 @@ function FCOIS.BuildAddonMenu()
                         {
                             type = "checkbox",
                             name = locVars["options_undo_use_different_filterpanels"],
-                            tooltip = locVars["options_undo_use_different_filterpanels_TT"],
+                            tooltip = locVars["options_undo_use_different_filterpanels" .. tooltipSuffix],
                             getFunc = function() return FCOISsettings.useDifferentUndoFilterPanels end,
                             setFunc = function(value) FCOISsettings.useDifferentUndoFilterPanels = value
                             end,
@@ -4704,7 +3401,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_equipment_markall_gear"],
-                                    tooltip = locVars["options_equipment_markall_gear_TT"],
+                                    tooltip = locVars["options_equipment_markall_gear" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.autoMarkAllEquipment end,
                                     setFunc = function(value) FCOISsettings.autoMarkAllEquipment = value
                                     end,
@@ -4713,7 +3410,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_equipment_markall_gear_add_weapons"],
-                                    tooltip = locVars["options_equipment_markall_gear_add_weapons_TT"],
+                                    tooltip = locVars["options_equipment_markall_gear_add_weapons" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.autoMarkAllWeapon end,
                                     setFunc = function(value) FCOISsettings.autoMarkAllWeapon = value
                                     end,
@@ -4723,7 +3420,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_equipment_markall_gear_add_jewelry"],
-                                    tooltip = locVars["options_equipment_markall_gear_add_jewelry_TT"],
+                                    tooltip = locVars["options_equipment_markall_gear_add_jewelry" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.autoMarkAllJewelry end,
                                     setFunc = function(value) FCOISsettings.autoMarkAllJewelry = value
                                     end,
@@ -4741,7 +3438,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_enable_auto_mark_ornate_items"],
-                                    tooltip = locVars["options_enable_auto_mark_ornate_items_TT"],
+                                    tooltip = locVars["options_enable_auto_mark_ornate_items" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.autoMarkOrnate end,
                                     setFunc = function(value)
                                         FCOISsettings.autoMarkOrnate = value
@@ -4756,7 +3453,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_enable_auto_mark_ornate_items_in_chat"],
-                                    tooltip = locVars["options_enable_auto_mark_ornate_items_in_chat_TT"],
+                                    tooltip = locVars["options_enable_auto_mark_ornate_items_in_chat" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.showOrnateItemsInChat end,
                                     setFunc = function(value)
                                         FCOISsettings.showOrnateItemsInChat = value
@@ -4776,7 +3473,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_enable_auto_mark_intricate_items"],
-                                    tooltip = locVars["options_enable_auto_mark_intricate_items_TT"],
+                                    tooltip = locVars["options_enable_auto_mark_intricate_items" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.autoMarkIntricate end,
                                     setFunc = function(value)
                                         FCOISsettings.autoMarkIntricate = value
@@ -4791,7 +3488,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_enable_auto_mark_intricate_items_in_chat"],
-                                    tooltip = locVars["options_enable_auto_mark_intricate_items_in_chat_TT"],
+                                    tooltip = locVars["options_enable_auto_mark_intricate_items_in_chat" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.showIntricateItemsInChat end,
                                     setFunc = function(value)
                                         FCOISsettings.showIntricateItemsInChat = value
@@ -4811,7 +3508,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = 'dropdown',
                                     name = locVars["options_auto_mark_addon"],
-                                    tooltip = zo_strformat(locVars["options_auto_mark_addon_TT"], GetString(SI_SMITHING_TAB_RESEARCH)),
+                                    tooltip = zo_strformat(locVars["options_auto_mark_addon" .. tooltipSuffix], GetString(SI_SMITHING_TAB_RESEARCH)),
                                     choices = researchAddonsList,
                                     choicesValues = researchAddonsListValues,
                                     --scrollable = true,
@@ -4828,7 +3525,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_enable_auto_mark_research_items"],
-                                    tooltip = locVars["options_enable_auto_mark_research_items_TT"],
+                                    tooltip = locVars["options_enable_auto_mark_research_items" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.autoMarkResearch end,
                                     setFunc = function(value)
                                         FCOISsettings.autoMarkResearch = value
@@ -4844,7 +3541,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_logged_in_char"],
-                                    tooltip = locVars["options_logged_in_char_TT"],
+                                    tooltip = locVars["options_logged_in_char" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.autoMarkResearchOnlyLoggedInChar end,
                                     setFunc = function(value)
                                         FCOISsettings.autoMarkResearchOnlyLoggedInChar = value
@@ -4860,7 +3557,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_enable_auto_mark_research_items_in_chat"],
-                                    tooltip = locVars["options_enable_auto_mark_research_items_in_chat_TT"],
+                                    tooltip = locVars["options_enable_auto_mark_research_items_in_chat" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.showResearchItemsInChat end,
                                     setFunc = function(value)
                                         FCOISsettings.showResearchItemsInChat = value
@@ -4873,7 +3570,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_enable_auto_mark_wasted_research_scrolls"],
-                                    tooltip = locVars["options_enable_auto_mark_wasted_research_scrolls_TT"],
+                                    tooltip = locVars["options_enable_auto_mark_wasted_research_scrolls" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.autoMarkWastedResearchScrolls end,
                                     setFunc = function(value)
                                         FCOISsettings.autoMarkWastedResearchScrolls = value
@@ -4896,7 +3593,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_enable_auto_mark_new_items"],
-                                    tooltip = locVars["options_enable_auto_mark_new_items_TT"],
+                                    tooltip = locVars["options_enable_auto_mark_new_items" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.autoMarkNewItems end,
                                     setFunc = function(value)
                                         FCOISsettings.autoMarkNewItems = value
@@ -4911,7 +3608,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = 'dropdown',
                                     name = locVars["options_auto_mark_new_items__icon"],
-                                    tooltip = locVars["options_auto_mark_new_items_icon_TT"],
+                                    tooltip = locVars["options_auto_mark_new_items_icon" .. tooltipSuffix],
                                     choices = iconsList,
                                     choicesValues = iconsListValues,
                                     scrollable = true,
@@ -4961,7 +3658,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_enable_auto_mark_sets"],
-                                    tooltip = locVars["options_enable_auto_mark_sets_TT"],
+                                    tooltip = locVars["options_enable_auto_mark_sets" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.autoMarkSets end,
                                     setFunc = function(value)
                                         FCOISsettings.autoMarkSets = value
@@ -4976,7 +3673,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = 'dropdown',
                                     name = locVars["options_auto_mark_sets_icon"],
-                                    tooltip = locVars["options_auto_mark_sets_icon_TT"],
+                                    tooltip = locVars["options_auto_mark_sets_icon" .. tooltipSuffix],
                                     choices = iconsList,
                                     choicesValues = iconsListValues,
                                     scrollable = true,
@@ -4993,7 +3690,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_enable_auto_mark_check_all_icons"],
-                                    tooltip = locVars["options_enable_auto_mark_check_all_icons_TT"],
+                                    tooltip = locVars["options_enable_auto_mark_check_all_icons" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.autoMarkSetsCheckAllIcons end,
                                     setFunc = function(value)
                                         FCOISsettings.autoMarkSetsCheckAllIcons = value
@@ -5008,7 +3705,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_enable_auto_mark_sets_all_gear_marker_icons"],
-                                    tooltip = locVars["options_enable_auto_mark_sets_all_gear_marker_icons_TT"],
+                                    tooltip = locVars["options_enable_auto_mark_sets_all_gear_marker_icons" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.autoMarkSetsCheckAllGearIcons end,
                                     setFunc = function(value)
                                         FCOISsettings.autoMarkSetsCheckAllGearIcons = value
@@ -5023,7 +3720,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_enable_auto_mark_sets_settracker_icons"],
-                                    tooltip = locVars["options_enable_auto_mark_sets_settracker_icons_TT"],
+                                    tooltip = locVars["options_enable_auto_mark_sets_settracker_icons" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.autoMarkSetsCheckAllSetTrackerIcons end,
                                     setFunc = function(value)
                                         FCOISsettings.autoMarkSetsCheckAllSetTrackerIcons = value
@@ -5038,7 +3735,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_enable_auto_mark_sets_sell_icon"],
-                                    tooltip = locVars["options_enable_auto_mark_sets_sell_icon_TT"],
+                                    tooltip = locVars["options_enable_auto_mark_sets_sell_icon" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.autoMarkSetsCheckSellIcons end,
                                     setFunc = function(value)
                                         FCOISsettings.autoMarkSetsCheckSellIcons = value
@@ -5053,7 +3750,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_auto_mark_traits_only"],
-                                    tooltip = locVars["options_auto_mark_traits_only_TT"],
+                                    tooltip = locVars["options_auto_mark_traits_only" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.autoMarkSetsOnlyTraits end,
                                     setFunc = function(value)
                                         FCOISsettings.autoMarkSetsOnlyTraits = value
@@ -5109,7 +3806,7 @@ function FCOIS.BuildAddonMenu()
                                                 {
                                                     type = "checkbox",
                                                     name = locVars["options_enable_auto_mark_sets_non_wished"],
-                                                    tooltip = locVars["options_enable_auto_mark_sets_non_wished_TT"],
+                                                    tooltip = locVars["options_enable_auto_mark_sets_non_wished" .. tooltipSuffix],
                                                     getFunc = function() return FCOISsettings.autoMarkSetsNonWished end,
                                                     setFunc = function(value)
                                                         FCOISsettings.autoMarkSetsNonWished = value
@@ -5125,7 +3822,7 @@ function FCOIS.BuildAddonMenu()
                                                 {
                                                     type = 'dropdown',
                                                     name = locVars["options_enable_auto_mark_sets_non_wished_icon"],
-                                                    tooltip = locVars["options_enable_auto_mark_sets_non_wished_icon_TT"],
+                                                    tooltip = locVars["options_enable_auto_mark_sets_non_wished_icon" .. tooltipSuffix],
                                                     choices = iconsList,
                                                     choicesValues = iconsListValues,
                                                     scrollable = true,
@@ -5143,7 +3840,7 @@ function FCOIS.BuildAddonMenu()
                                                 {
                                                     type = "checkbox",
                                                     name = locVars["options_enable_auto_mark_sets_non_wished_char_below_level_50"],
-                                                    tooltip = locVars["options_enable_auto_mark_sets_non_wished_char_below_level_50_TT"],
+                                                    tooltip = locVars["options_enable_auto_mark_sets_non_wished_char_below_level_50" .. tooltipSuffix],
                                                     getFunc = function() return FCOISsettings.autoMarkSetsNonWishedIfCharBelowLevel end,
                                                     setFunc = function(value)
                                                         FCOISsettings.autoMarkSetsNonWishedIfCharBelowLevel = value
@@ -5159,7 +3856,7 @@ function FCOIS.BuildAddonMenu()
                                                 {
                                                     type = 'dropdown',
                                                     name = locVars["options_enable_auto_mark_sets_non_wished_checks"],
-                                                    tooltip = locVars["options_enable_auto_mark_sets_non_wished_checks_TT"],
+                                                    tooltip = locVars["options_enable_auto_mark_sets_non_wished_checks" .. tooltipSuffix],
                                                     choices = nonWishedChecksList,
                                                     choicesValues = nonWishedChecksValuesList,
                                                     --scrollable = true,
@@ -5178,7 +3875,7 @@ function FCOIS.BuildAddonMenu()
                                                 {
                                                     type = 'dropdown',
                                                     name = locVars["options_enable_auto_mark_sets_non_wished_level"],
-                                                    tooltip = locVars["options_enable_auto_mark_sets_non_wished_level_TT"],
+                                                    tooltip = locVars["options_enable_auto_mark_sets_non_wished_level" .. tooltipSuffix],
                                                     choices = levelList,
                                                     scrollable = true,
                                                     getFunc = function() return levelList[FCOISsettings.autoMarkSetsNonWishedLevel] end,
@@ -5201,7 +3898,7 @@ function FCOIS.BuildAddonMenu()
                                                 {
                                                     type = 'dropdown',
                                                     name = locVars["options_enable_auto_mark_sets_non_wished_quality"],
-                                                    tooltip = locVars["options_enable_auto_mark_sets_non_wished_quality_TT"],
+                                                    tooltip = locVars["options_enable_auto_mark_sets_non_wished_quality" .. tooltipSuffix],
                                                     choices = qualityList,
                                                     getFunc = function() return qualityList[FCOISsettings.autoMarkSetsNonWishedQuality] end,
                                                     setFunc = function(value)
@@ -5222,7 +3919,7 @@ function FCOIS.BuildAddonMenu()
                                                 {
                                                     type = "checkbox",
                                                     name = locVars["options_enable_auto_mark_sets_non_wished_sell_others"],
-                                                    tooltip = locVars["options_enable_auto_mark_sets_non_wished_sell_others_TT"],
+                                                    tooltip = locVars["options_enable_auto_mark_sets_non_wished_sell_others" .. tooltipSuffix],
                                                     getFunc = function() return FCOISsettings.autoMarkSetsNonWishedSellOthers end,
                                                     setFunc = function(value)
                                                         FCOISsettings.autoMarkSetsNonWishedSellOthers = value
@@ -5240,7 +3937,7 @@ function FCOIS.BuildAddonMenu()
                                         {
                                             type = "checkbox",
                                             name = locVars["options_enable_auto_mark_check_all_icons"],
-                                            tooltip = locVars["options_enable_auto_mark_check_all_icons_TT"],
+                                            tooltip = locVars["options_enable_auto_mark_check_all_icons" .. tooltipSuffix],
                                             getFunc = function() return FCOISsettings.autoMarkSetsWithTraitCheckAllIcons end,
                                             setFunc = function(value)
                                                 FCOISsettings.autoMarkSetsWithTraitCheckAllIcons = value
@@ -5255,7 +3952,7 @@ function FCOIS.BuildAddonMenu()
                                         {
                                             type = "checkbox",
                                             name = locVars["options_enable_auto_mark_sets_all_gear_marker_icons"],
-                                            tooltip = locVars["options_enable_auto_mark_sets_all_gear_marker_icons_TT"],
+                                            tooltip = locVars["options_enable_auto_mark_sets_all_gear_marker_icons" .. tooltipSuffix],
                                             getFunc = function() return FCOISsettings.autoMarkSetsWithTraitCheckAllGearIcons end,
                                             setFunc = function(value)
                                                 FCOISsettings.autoMarkSetsWithTraitCheckAllGearIcons = value
@@ -5270,7 +3967,7 @@ function FCOIS.BuildAddonMenu()
                                         {
                                             type = "checkbox",
                                             name = locVars["options_enable_auto_mark_sets_settracker_icons"],
-                                            tooltip = locVars["options_enable_auto_mark_sets_settracker_icons_TT"],
+                                            tooltip = locVars["options_enable_auto_mark_sets_settracker_icons" .. tooltipSuffix],
                                             getFunc = function() return FCOISsettings.autoMarkSetsWithTraitCheckAllSetTrackerIcons end,
                                             setFunc = function(value)
                                                 FCOISsettings.autoMarkSetsWithTraitCheckAllSetTrackerIcons = value
@@ -5285,7 +3982,7 @@ function FCOIS.BuildAddonMenu()
                                         {
                                             type = "checkbox",
                                             name = locVars["options_enable_auto_mark_sets_sell_icon"],
-                                            tooltip = locVars["options_enable_auto_mark_sets_sell_icon_TT"],
+                                            tooltip = locVars["options_enable_auto_mark_sets_sell_icon" .. tooltipSuffix],
                                             getFunc = function() return FCOISsettings.autoMarkSetsWithTraitCheckSellIcons end,
                                             setFunc = function(value)
                                                 FCOISsettings.autoMarkSetsWithTraitCheckSellIcons = value
@@ -5300,7 +3997,7 @@ function FCOIS.BuildAddonMenu()
                                         {
                                             type = "checkbox",
                                             name = locVars["options_auto_mark_traits_with_set_too"],
-                                            tooltip = locVars["options_auto_mark_traits_with_set_too_TT"],
+                                            tooltip = locVars["options_auto_mark_traits_with_set_too" .. tooltipSuffix],
                                             getFunc = function() return FCOISsettings.autoMarkSetsWithTraitIfAutoSetMarked end,
                                             setFunc = function(value)
                                                 FCOISsettings.autoMarkSetsWithTraitIfAutoSetMarked = value
@@ -5319,7 +4016,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_enable_auto_mark_sets_already_bound"],
-                                    tooltip = locVars["options_enable_auto_mark_sets_already_bound_TT"],
+                                    tooltip = locVars["options_enable_auto_mark_sets_already_bound" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.showBoundItemMarker end,
                                     setFunc = function(value)
                                         FCOISsettings.showBoundItemMarker = value
@@ -5331,7 +4028,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_enable_auto_mark_sets_in_chat"],
-                                    tooltip = locVars["options_enable_auto_mark_sets_in_chat_TT"],
+                                    tooltip = locVars["options_enable_auto_mark_sets_in_chat" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.showSetsInChat end,
                                     setFunc = function(value)
                                         FCOISsettings.showSetsInChat = value
@@ -5356,7 +4053,7 @@ function FCOIS.BuildAddonMenu()
                                         {
                                             type = "checkbox",
                                             name = locVars["options_auto_mark_crafted_writ_items"],
-                                            tooltip = locVars["options_auto_mark_crafted_writ_items_TT"],
+                                            tooltip = locVars["options_auto_mark_crafted_writ_items" .. tooltipSuffix],
                                             getFunc = function() return FCOISsettings.autoMarkCraftedWritItems end,
                                             setFunc = function(value)
                                                 FCOISsettings.autoMarkCraftedWritItems = value
@@ -5371,7 +4068,7 @@ function FCOIS.BuildAddonMenu()
                                         {
                                             type = 'dropdown',
                                             name = locVars["options_auto_mark_crafted_writ_items_icon"],
-                                            tooltip = locVars["options_auto_mark_crafted_writ_items_icon_TT"],
+                                            tooltip = locVars["options_auto_mark_crafted_writ_items_icon" .. tooltipSuffix],
                                             choices = iconsList,
                                             choicesValues = iconsListValues,
                                             scrollable = true,
@@ -5392,7 +4089,7 @@ function FCOIS.BuildAddonMenu()
                                         {
                                             type = 'dropdown',
                                             name = locVars["options_auto_mark_crafted_masterwrit_items_icon"],
-                                            tooltip = locVars["options_auto_mark_crafted_masterwrit_items_icon_TT"],
+                                            tooltip = locVars["options_auto_mark_crafted_masterwrit_items_icon" .. tooltipSuffix],
                                             choices = iconsList,
                                             choicesValues = iconsListValues,
                                             scrollable = true,
@@ -5415,7 +4112,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_auto_mark_crafted_items"],
-                                    tooltip = locVars["options_auto_mark_crafted_items_TT"],
+                                    tooltip = locVars["options_auto_mark_crafted_items" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.autoMarkCraftedItems end,
                                     setFunc = function(value)
                                         FCOISsettings.autoMarkCraftedItems = value
@@ -5427,7 +4124,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = 'dropdown',
                                     name = locVars["options_auto_mark_crafted_items_icon"],
-                                    tooltip = locVars["options_auto_mark_crafted_items_icon_TT"],
+                                    tooltip = locVars["options_auto_mark_crafted_items_icon" .. tooltipSuffix],
                                     choices = iconsList,
                                     choicesValues = iconsListValues,
                                     scrollable = true,
@@ -5448,7 +4145,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_auto_mark_crafted_items_sets"],
-                                    tooltip = locVars["options_auto_mark_crafted_items_sets_TT"],
+                                    tooltip = locVars["options_auto_mark_crafted_items_sets" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.autoMarkCraftedItemsSets end,
                                     setFunc = function(value)
                                         FCOISsettings.autoMarkCraftedItemsSets = value
@@ -5461,7 +4158,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_auto_mark_crafted_items_panel_alchemy"],
-                                    tooltip = locVars["options_auto_mark_crafted_items_panel_alchemy_TT"],
+                                    tooltip = locVars["options_auto_mark_crafted_items_panel_alchemy" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_ALCHEMY] end,
                                     setFunc = function(value)
                                         FCOISsettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_ALCHEMY] = value
@@ -5474,7 +4171,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_auto_mark_crafted_items_panel_blacksmithing"],
-                                    tooltip = locVars["options_auto_mark_crafted_items_panel_blacksmithing_TT"],
+                                    tooltip = locVars["options_auto_mark_crafted_items_panel_blacksmithing" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_BLACKSMITHING] end,
                                     setFunc = function(value)
                                         FCOISsettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_BLACKSMITHING] = value
@@ -5487,7 +4184,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_auto_mark_crafted_items_panel_clothier"],
-                                    tooltip = locVars["options_auto_mark_crafted_items_panel_clothier_TT"],
+                                    tooltip = locVars["options_auto_mark_crafted_items_panel_clothier" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_CLOTHIER] end,
                                     setFunc = function(value)
                                         FCOISsettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_CLOTHIER] = value
@@ -5500,7 +4197,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_auto_mark_crafted_items_panel_enchanting"],
-                                    tooltip = locVars["options_auto_mark_crafted_items_panel_enchanting_TT"],
+                                    tooltip = locVars["options_auto_mark_crafted_items_panel_enchanting" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_ENCHANTING] end,
                                     setFunc = function(value)
                                         FCOISsettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_ENCHANTING] = value
@@ -5513,7 +4210,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_auto_mark_crafted_items_panel_provisioning"],
-                                    tooltip = locVars["options_auto_mark_crafted_items_panel_provisioning_TT"],
+                                    tooltip = locVars["options_auto_mark_crafted_items_panel_provisioning" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_PROVISIONING] end,
                                     setFunc = function(value)
                                         FCOISsettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_PROVISIONING] = value
@@ -5526,7 +4223,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_auto_mark_crafted_items_panel_woodworking"],
-                                    tooltip = locVars["options_auto_mark_crafted_items_panel_woodworking_TT"],
+                                    tooltip = locVars["options_auto_mark_crafted_items_panel_woodworking" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_WOODWORKING] end,
                                     setFunc = function(value)
                                         FCOISsettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_WOODWORKING] = value
@@ -5539,7 +4236,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_auto_mark_crafted_items_panel_jewelry"],
-                                    tooltip = locVars["options_auto_mark_crafted_items_panel_jewelry_TT"],
+                                    tooltip = locVars["options_auto_mark_crafted_items_panel_jewelry" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_JEWELRYCRAFTING] end,
                                     setFunc = function(value)
                                         FCOISsettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_JEWELRYCRAFTING] = value
@@ -5560,7 +4257,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = 'dropdown',
                                     name = locVars["options_auto_mark_addon"],
-                                    tooltip = zo_strformat(locVars["options_auto_mark_addon_TT"], GetString(SI_ITEMTYPE29)),
+                                    tooltip = zo_strformat(locVars["options_auto_mark_addon" .. tooltipSuffix], GetString(SI_ITEMTYPE29)),
                                     choices = recipeAddonsList,
                                     choicesValues = recipeAddonsListValues,
                                     --scrollable = true,
@@ -5577,7 +4274,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_enable_auto_mark_recipes"],
-                                    tooltip = locVars["options_enable_auto_mark_recipes_TT"],
+                                    tooltip = locVars["options_enable_auto_mark_recipes" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.autoMarkRecipes end,
                                     setFunc = function(value)
                                         FCOISsettings.autoMarkRecipes = value
@@ -5593,7 +4290,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = 'dropdown',
                                     name = locVars["options_auto_mark_recipes_icon"],
-                                    tooltip = locVars["options_auto_mark_recipes_icon_TT"],
+                                    tooltip = locVars["options_auto_mark_recipes_icon" .. tooltipSuffix],
                                     choices = iconsList,
                                     choicesValues = iconsListValues,
                                     scrollable = true,
@@ -5610,7 +4307,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_auto_mark_recipes_this_char"],
-                                    tooltip = locVars["options_auto_mark_recipes_this_char_TT"],
+                                    tooltip = locVars["options_auto_mark_recipes_this_char" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.autoMarkRecipesOnlyThisChar end,
                                     setFunc = function(value)
                                         FCOISsettings.autoMarkRecipesOnlyThisChar = value
@@ -5625,7 +4322,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_enable_auto_mark_known_recipes"],
-                                    tooltip = locVars["options_enable_auto_mark_known_recipes_TT"],
+                                    tooltip = locVars["options_enable_auto_mark_known_recipes" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.autoMarkKnownRecipes end,
                                     setFunc = function(value)
                                         FCOISsettings.autoMarkKnownRecipes = value
@@ -5641,7 +4338,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = 'dropdown',
                                     name = locVars["options_enable_auto_mark_known_recipes"],
-                                    tooltip = locVars["options_enable_auto_mark_known_recipes_TT"],
+                                    tooltip = locVars["options_enable_auto_mark_known_recipes" .. tooltipSuffix],
                                     choices = iconsList,
                                     choicesValues = iconsListValues,
                                     scrollable = true,
@@ -5658,7 +4355,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_enable_auto_mark_recipes_in_chat"],
-                                    tooltip = locVars["options_enable_auto_mark_recipes_in_chat_TT"],
+                                    tooltip = locVars["options_enable_auto_mark_recipes_in_chat" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.showRecipesInChat end,
                                     setFunc = function(value)
                                         FCOISsettings.showRecipesInChat = value
@@ -5680,7 +4377,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = 'dropdown',
                                     name = locVars["options_enable_auto_mark_quality_items"],
-                                    tooltip = locVars["options_enable_auto_mark_quality_items_TT"],
+                                    tooltip = locVars["options_enable_auto_mark_quality_items" .. tooltipSuffix],
                                     choices = qualityList,
                                     getFunc = function() return qualityList[FCOISsettings.autoMarkQuality] end,
                                     setFunc = function(value)
@@ -5700,7 +4397,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = 'dropdown',
                                     name = locVars["options_auto_mark_quality_icon"],
-                                    tooltip = locVars["options_auto_mark_quality_icon_TT"],
+                                    tooltip = locVars["options_auto_mark_quality_icon" .. tooltipSuffix],
                                     choices = iconsList,
                                     choicesValues = iconsListValues,
                                     scrollable = true,
@@ -5717,7 +4414,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_enable_auto_mark_higher_quality_items"],
-                                    tooltip = locVars["options_enable_auto_mark_higher_quality_items_TT"],
+                                    tooltip = locVars["options_enable_auto_mark_higher_quality_items" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.autoMarkHigherQuality end,
                                     setFunc = function(value)
                                         FCOISsettings.autoMarkHigherQuality = value
@@ -5732,7 +4429,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_auto_mark_quality_icon_no_armor"],
-                                    tooltip = locVars["options_auto_mark_quality_icon_no_armor_TT"],
+                                    tooltip = locVars["options_auto_mark_quality_icon_no_armor" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.autoMarkHigherQualityExcludeArmor end,
                                     setFunc = function(value)
                                         FCOISsettings.autoMarkHigherQualityExcludeArmor = value
@@ -5747,7 +4444,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_enable_auto_mark_check_all_icons"],
-                                    tooltip = locVars["options_enable_auto_mark_check_all_icons_TT"],
+                                    tooltip = locVars["options_enable_auto_mark_check_all_icons" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.autoMarkQualityCheckAllIcons end,
                                     setFunc = function(value)
                                         FCOISsettings.autoMarkQualityCheckAllIcons = value
@@ -5762,7 +4459,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_enable_auto_mark_quality_items_in_chat"],
-                                    tooltip = locVars["options_enable_auto_mark_quality_items_in_chat_TT"],
+                                    tooltip = locVars["options_enable_auto_mark_quality_items_in_chat" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.showQualityItemsInChat end,
                                     setFunc = function(value)
                                         FCOISsettings.showQualityItemsInChat = value
@@ -5781,7 +4478,7 @@ function FCOIS.BuildAddonMenu()
                 --==============================================================================
                 -- ITEM AUOMATIC MARKING - PREVENT
                 --==============================================================================
-                -- Do not mark automatically again, if ....
+                -- Do not mark automatically again, if ..
                 {
                     type = "submenu",
                     name = locVars["options_header_items_prevent"],
@@ -5791,7 +4488,7 @@ function FCOIS.BuildAddonMenu()
                         {
                             type = "checkbox",
                             name = locVars["options_prevent_auto_marking_sell"],
-                            tooltip = locVars["options_prevent_auto_marking_sell_TT"],
+                            tooltip = locVars["options_prevent_auto_marking_sell" .. tooltipSuffix],
                             getFunc = function() return FCOISsettings.autoMarkPreventIfMarkedForSell end,
                             setFunc = function(value)
                                 FCOISsettings.autoMarkPreventIfMarkedForSell = value
@@ -5803,7 +4500,7 @@ function FCOIS.BuildAddonMenu()
                         {
                             type = "checkbox",
                             name = locVars["options_prevent_auto_marking_sell_guild_store"],
-                            tooltip = locVars["options_prevent_auto_marking_sell_guild_store_TT"],
+                            tooltip = locVars["options_prevent_auto_marking_sell_guild_store" .. tooltipSuffix],
                             getFunc = function() return FCOISsettings.autoMarkPreventIfMarkedForSellAtGuildStore end,
                             setFunc = function(value)
                                 FCOISsettings.autoMarkPreventIfMarkedForSellAtGuildStore = value
@@ -5815,7 +4512,7 @@ function FCOIS.BuildAddonMenu()
                         {
                             type = "checkbox",
                             name = locVars["options_prevent_auto_marking_deconstruction"],
-                            tooltip = locVars["options_prevent_auto_marking_deconstruction_TT"],
+                            tooltip = locVars["options_prevent_auto_marking_deconstruction" .. tooltipSuffix],
                             getFunc = function() return FCOISsettings.autoMarkPreventIfMarkedForDeconstruction end,
                             setFunc = function(value)
                                 FCOISsettings.autoMarkPreventIfMarkedForDeconstruction = value
@@ -5844,7 +4541,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_demark_all_selling"],
-                                    tooltip = locVars["options_demark_all_selling_TT"],
+                                    tooltip = locVars["options_demark_all_selling" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.autoDeMarkSell end,
                                     setFunc = function(value) FCOISsettings.autoDeMarkSell = value
                                     end,
@@ -5853,7 +4550,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_demark_all_selling_guild_store"],
-                                    tooltip = locVars["options_demark_all_selling_guild_store_TT"],
+                                    tooltip = locVars["options_demark_all_selling_guild_store" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.autoDeMarkSellInGuildStore end,
                                     setFunc = function(value) FCOISsettings.autoDeMarkSellInGuildStore = value
                                     end,
@@ -5862,7 +4559,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_demark_all_deconstruct"],
-                                    tooltip = locVars["options_demark_all_deconstruct_TT"],
+                                    tooltip = locVars["options_demark_all_deconstruct" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.autoDeMarkDeconstruct end,
                                     setFunc = function(value) FCOISsettings.autoDeMarkDeconstruct = value
                                     end,
@@ -5875,7 +4572,7 @@ function FCOIS.BuildAddonMenu()
                         {
                             type = "checkbox",
                             name = locVars["options_demark_sell_on_others"],
-                            tooltip = locVars["options_demark_sell_on_others_TT"],
+                            tooltip = locVars["options_demark_sell_on_others" .. tooltipSuffix],
                             getFunc = function() return FCOISsettings.autoDeMarkSellOnOthers end,
                             setFunc = function(value) FCOISsettings.autoDeMarkSellOnOthers = value
                             end,
@@ -5885,7 +4582,7 @@ function FCOIS.BuildAddonMenu()
                         {
                             type = "checkbox",
                             name = locVars["options_demark_on_others_exclusion_dynamic"],
-                            tooltip = locVars["options_demark_on_others_exclusion_dynamic_TT"],
+                            tooltip = locVars["options_demark_on_others_exclusion_dynamic" .. tooltipSuffix],
                             getFunc = function() return FCOISsettings.autoDeMarkSellOnOthersExclusionDynamic end,
                             setFunc = function(value) FCOISsettings.autoDeMarkSellOnOthersExclusionDynamic = value
                             end,
@@ -5896,7 +4593,7 @@ function FCOIS.BuildAddonMenu()
                         {
                             type = "checkbox",
                             name = locVars["options_demark_sell_guild_store_on_others"],
-                            tooltip = locVars["options_demark_sell_guild_store_on_others_TT"],
+                            tooltip = locVars["options_demark_sell_guild_store_on_others" .. tooltipSuffix],
                             getFunc = function() return FCOISsettings.autoDeMarkSellGuildStoreOnOthers end,
                             setFunc = function(value) FCOISsettings.autoDeMarkSellGuildStoreOnOthers = value
                             end,
@@ -5906,7 +4603,7 @@ function FCOIS.BuildAddonMenu()
                         {
                             type = "checkbox",
                             name = locVars["options_demark_on_others_exclusion_dynamic"],
-                            tooltip = locVars["options_demark_on_others_exclusion_dynamic_TT"],
+                            tooltip = locVars["options_demark_on_others_exclusion_dynamic" .. tooltipSuffix],
                             getFunc = function() return FCOISsettings.autoDeMarkSellGuildStoreOnOthersExclusionDynamic end,
                             setFunc = function(value) FCOISsettings.autoDeMarkSellGuildStoreOnOthersExclusionDynamic = value
                             end,
@@ -5917,7 +4614,7 @@ function FCOIS.BuildAddonMenu()
                         {
                             type = "checkbox",
                             name = locVars["options_demark_deconstruction_on_others"],
-                            tooltip = locVars["options_demark_deconstruction_on_others_TT"],
+                            tooltip = locVars["options_demark_deconstruction_on_others" .. tooltipSuffix],
                             getFunc = function() return FCOISsettings.autoDeMarkDeconstructionOnOthers end,
                             setFunc = function(value) FCOISsettings.autoDeMarkDeconstructionOnOthers = value
                             end,
@@ -5927,7 +4624,7 @@ function FCOIS.BuildAddonMenu()
                         {
                             type = "checkbox",
                             name = locVars["options_demark_on_others_exclusion_dynamic"],
-                            tooltip = locVars["options_demark_on_others_exclusion_dynamic_TT"],
+                            tooltip = locVars["options_demark_on_others_exclusion_dynamic" .. tooltipSuffix],
                             getFunc = function() return FCOISsettings.autoDeMarkDeconstructionOnOthersExclusionDynamic end,
                             setFunc = function(value) FCOISsettings.autoDeMarkDeconstructionOnOthersExclusionDynamic = value
                             end,
@@ -5953,7 +4650,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_filter_buttons_save_for_character"],
-                    tooltip = locVars["options_filter_buttons_save_for_character_TT"],
+                    tooltip = locVars["options_filter_buttons_save_for_character" .. tooltipSuffix],
                     getFunc = function() return FCOIS.settingsVars.defaultSettings.filterButtonsSaveForCharacter end,
                     setFunc = function(value) FCOIS.settingsVars.defaultSettings.filterButtonsSaveForCharacter = value
                         ReloadUI("ingame")
@@ -5982,7 +4679,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_enable_filter_in_inventory"],
-                                    tooltip = locVars["options_enable_filter_in_inventory_TT"],
+                                    tooltip = locVars["options_enable_filter_in_inventory" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.allowInventoryFilter end,
                                     setFunc = function(value) FCOISsettings.allowInventoryFilter = value
                                         --Hide the filter buttons at the filter panel Id
@@ -5995,7 +4692,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_enable_filter_in_craftbag"],
-                                    tooltip = locVars["options_enable_filter_in_craftbag_TT"],
+                                    tooltip = locVars["options_enable_filter_in_craftbag" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.allowCraftBagFilter end,
                                     setFunc = function(value) FCOISsettings.allowCraftBagFilter = value
                                     end,
@@ -6004,7 +4701,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_enable_filter_in_bank"],
-                                    tooltip = locVars["options_enable_filter_in_bank_TT"],
+                                    tooltip = locVars["options_enable_filter_in_bank" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.allowBankFilter end,
                                     setFunc = function(value) FCOISsettings.allowBankFilter = value
                                     end,
@@ -6013,7 +4710,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_enable_filter_in_guildbank"],
-                                    tooltip = locVars["options_enable_filter_in_guildbank_TT"],
+                                    tooltip = locVars["options_enable_filter_in_guildbank" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.allowGuildBankFilter end,
                                     setFunc = function(value) FCOISsettings.allowGuildBankFilter = value
                                     end,
@@ -6022,7 +4719,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_enable_filter_in_tradinghouse"],
-                                    tooltip = locVars["options_enable_filter_in_tradinghouse_TT"],
+                                    tooltip = locVars["options_enable_filter_in_tradinghouse" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.allowTradinghouseFilter end,
                                     setFunc = function(value) FCOISsettings.allowTradinghouseFilter = value
                                     end,
@@ -6031,7 +4728,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_enable_filter_in_trade"],
-                                    tooltip = locVars["options_enable_filter_in_trade_TT"],
+                                    tooltip = locVars["options_enable_filter_in_trade" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.allowTradeFilter end,
                                     setFunc = function(value) FCOISsettings.allowTradeFilter = value
                                     end,
@@ -6040,7 +4737,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_enable_filter_in_mail"],
-                                    tooltip = locVars["options_enable_filter_in_mail_TT"],
+                                    tooltip = locVars["options_enable_filter_in_mail" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.allowMailFilter end,
                                     setFunc = function(value) FCOISsettings.allowMailFilter = value
                                     end,
@@ -6049,7 +4746,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_enable_filter_in_store"],
-                                    tooltip = locVars["options_enable_filter_in_store_TT"],
+                                    tooltip = locVars["options_enable_filter_in_store" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.allowVendorFilter end,
                                     setFunc = function(value) FCOISsettings.allowVendorFilter = value
                                     end,
@@ -6058,7 +4755,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_enable_filter_in_fence"],
-                                    tooltip = locVars["options_enable_filter_in_fence_TT"],
+                                    tooltip = locVars["options_enable_filter_in_fence" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.allowFenceFilter end,
                                     setFunc = function(value) FCOISsettings.allowFenceFilter = value
                                     end,
@@ -6067,7 +4764,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_enable_filter_in_launder"],
-                                    tooltip = locVars["options_enable_filter_in_launder_TT"],
+                                    tooltip = locVars["options_enable_filter_in_launder" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.allowLaunderFilter end,
                                     setFunc = function(value) FCOISsettings.allowLaunderFilter = value
                                     end,
@@ -6076,7 +4773,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_enable_filter_in_refinement"],
-                                    tooltip = locVars["options_enable_filter_in_refinement_TT"],
+                                    tooltip = locVars["options_enable_filter_in_refinement" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.allowRefinementFilter end,
                                     setFunc = function(value) FCOISsettings.allowRefinementFilter = value
                                     end,
@@ -6085,7 +4782,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_enable_filter_in_jewelry_refinement"],
-                                    tooltip = locVars["options_enable_filter_in_jewelry_refinement_TT"],
+                                    tooltip = locVars["options_enable_filter_in_jewelry_refinement" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.allowJewelryRefinementFilter end,
                                     setFunc = function(value) FCOISsettings.allowJewelryRefinementFilter = value
                                     end,
@@ -6094,7 +4791,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_enable_filter_in_deconstruction"],
-                                    tooltip = locVars["options_enable_filter_in_deconstruction_TT"],
+                                    tooltip = locVars["options_enable_filter_in_deconstruction" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.allowDeconstructionFilter end,
                                     setFunc = function(value) FCOISsettings.allowDeconstructionFilter = value
                                     end,
@@ -6103,7 +4800,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_enable_filter_in_jewelry_deconstruction"],
-                                    tooltip = locVars["options_enable_filter_in_jewelry_deconstruction_TT"],
+                                    tooltip = locVars["options_enable_filter_in_jewelry_deconstruction" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.allowJewelryDeconstructionFilter end,
                                     setFunc = function(value) FCOISsettings.allowJewelryDeconstructionFilter = value
                                     end,
@@ -6112,7 +4809,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_enable_filter_in_improvement"],
-                                    tooltip = locVars["options_enable_filter_in_improvement_TT"],
+                                    tooltip = locVars["options_enable_filter_in_improvement" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.allowImprovementFilter end,
                                     setFunc = function(value) FCOISsettings.allowImprovementFilter = value
                                     end,
@@ -6121,7 +4818,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_enable_filter_in_jewelry_improvement"],
-                                    tooltip = locVars["options_enable_filter_in_jewelry_improvement_TT"],
+                                    tooltip = locVars["options_enable_filter_in_jewelry_improvement" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.allowJewelryImprovementFilter end,
                                     setFunc = function(value) FCOISsettings.allowJewelryImprovementFilter = value
                                     end,
@@ -6130,7 +4827,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_enable_filter_in_research"],
-                                    tooltip = locVars["options_enable_filter_in_research_TT"],
+                                    tooltip = locVars["options_enable_filter_in_research" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.allowResearchFilter end,
                                     setFunc = function(value) FCOISsettings.allowResearchFilter = value
                                     end,
@@ -6139,7 +4836,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_enable_filter_in_jewelry_research"],
-                                    tooltip = locVars["options_enable_filter_in_jewelry_research_TT"],
+                                    tooltip = locVars["options_enable_filter_in_jewelry_research" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.allowJewelryResearchFilter end,
                                     setFunc = function(value) FCOISsettings.allowJewelryResearchFilter = value
                                     end,
@@ -6148,7 +4845,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_enable_filter_in_enchanting"],
-                                    tooltip = locVars["options_enable_filter_in_enchanting_TT"],
+                                    tooltip = locVars["options_enable_filter_in_enchanting" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.allowEnchantingFilter end,
                                     setFunc = function(value) FCOISsettings.allowEnchantingFilter = value
                                     end,
@@ -6157,7 +4854,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_enable_filter_in_alchemy"],
-                                    tooltip = locVars["options_enable_filter_in_alchemy_TT"],
+                                    tooltip = locVars["options_enable_filter_in_alchemy" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.allowAlchemyFilter end,
                                     setFunc = function(value) FCOISsettings.allowAlchemyFilter = value
                                     end,
@@ -6166,7 +4863,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_enable_filter_in_retrait"],
-                                    tooltip = locVars["options_enable_filter_in_retrait_TT"],
+                                    tooltip = locVars["options_enable_filter_in_retrait" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.allowRetraitFilter end,
                                     setFunc = function(value) FCOISsettings.allowRetraitFilter = value
                                     end,
@@ -6180,7 +4877,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_chat_filter_status"],
-                                    tooltip = locVars["options_chat_filter_status_TT"],
+                                    tooltip = locVars["options_chat_filter_status" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.showFilterStatusInChat end,
                                     setFunc = function(value) FCOISsettings.showFilterStatusInChat = value
                                     end,
@@ -6196,8 +4893,8 @@ function FCOIS.BuildAddonMenu()
                         }, -- End submenu - Filter button position data
                         {
                             type = "checkbox",
-                            name = locVars["options_filter_buttons_show_TT"],
-                            tooltip = locVars["options_filter_buttons_show_tooltip_TT"],
+                            name = locVars["options_filter_buttons_show" .. tooltipSuffix],
+                            tooltip = locVars["options_filter_buttons_show_tooltip" .. tooltipSuffix],
                             getFunc = function() return FCOISsettings.showFilterButtonTooltip end,
                             setFunc = function(value) FCOISsettings.showFilterButtonTooltip = value
                             end,
@@ -6209,7 +4906,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_enable_filtered_item_count"],
-                    tooltip = locVars["options_enable_filtered_item_count_TT"],
+                    tooltip = locVars["options_enable_filtered_item_count" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.showFilteredItemCount end,
                     setFunc = function(value)
                         FCOISsettings.showFilteredItemCount = value
@@ -6239,7 +4936,7 @@ function FCOIS.BuildAddonMenu()
                         {
                             type = "checkbox",
                             name = locVars["options_askBeforeEquipBoundItems"],
-                            tooltip = locVars["options_askBeforeEquipBoundItems_TT"],
+                            tooltip = locVars["options_askBeforeEquipBoundItems" .. tooltipSuffix],
                             getFunc = function() return FCOISsettings.askBeforeEquipBoundItems end,
                             setFunc = function(value) FCOISsettings.askBeforeEquipBoundItems = value
                             end,
@@ -6255,7 +4952,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_enable_block_destroying"],
-                    tooltip = locVars["options_enable_block_destroying_TT"],
+                    tooltip = locVars["options_enable_block_destroying" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.blockDestroying end,
                     setFunc = function(value) FCOISsettings.blockDestroying = value
                         FCOISsettings.autoReenable_blockDestroying = value
@@ -6265,7 +4962,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_auto_reenable_block_destroying"],
-                    tooltip = locVars["options_auto_reenable_block_destroying_TT"],
+                    tooltip = locVars["options_auto_reenable_block_destroying" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.autoReenable_blockDestroying end,
                     setFunc = function(value) FCOISsettings.autoReenable_blockDestroying = value
                     end,
@@ -6279,7 +4976,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_enable_block_refinement"],
-                    tooltip = locVars["options_enable_block_refinement_TT"],
+                    tooltip = locVars["options_enable_block_refinement" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.blockRefinement end,
                     setFunc = function(value) FCOISsettings.blockRefinement = value
                         FCOISsettings.autoReenable_blockRefinement = value
@@ -6289,7 +4986,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_auto_reenable_block_refinement"],
-                    tooltip = locVars["options_auto_reenable_block_refinement_TT"],
+                    tooltip = locVars["options_auto_reenable_block_refinement" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.autoReenable_blockRefinement end,
                     setFunc = function(value) FCOISsettings.autoReenable_blockRefinement = value
                     end,
@@ -6299,7 +4996,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_enable_block_jewelry_refinement"],
-                    tooltip = locVars["options_enable_block_jewelry_refinement_TT"],
+                    tooltip = locVars["options_enable_block_jewelry_refinement" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.blockJewelryRefinement end,
                     setFunc = function(value) FCOISsettings.blockJewelryRefinement = value
                         FCOISsettings.autoReenable_blockJewelryRefinement = value
@@ -6309,7 +5006,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_auto_reenable_block_jewelry_refinement"],
-                    tooltip = locVars["options_auto_reenable_block_jewelry_refinement_TT"],
+                    tooltip = locVars["options_auto_reenable_block_jewelry_refinement" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.autoReenable_blockJewelryRefinement end,
                     setFunc = function(value) FCOISsettings.autoReenable_blockJewelryRefinement = value
                     end,
@@ -6323,7 +5020,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_enable_block_deconstruction"],
-                    tooltip = locVars["options_enable_block_deconstruction_TT"],
+                    tooltip = locVars["options_enable_block_deconstruction" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.blockDeconstruction end,
                     setFunc = function(value) FCOISsettings.blockDeconstruction = value
                         FCOISsettings.autoReenable_blockDeconstruction = value
@@ -6333,7 +5030,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_auto_reenable_block_deconstruction"],
-                    tooltip = locVars["options_auto_reenable_block_deconstruction_TT"],
+                    tooltip = locVars["options_auto_reenable_block_deconstruction" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.autoReenable_blockDeconstruction end,
                     setFunc = function(value) FCOISsettings.autoReenable_blockDeconstruction = value
                     end,
@@ -6343,7 +5040,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_enable_block_jewelry_deconstruction"],
-                    tooltip = locVars["options_enable_block_jewelry_deconstruction_TT"],
+                    tooltip = locVars["options_enable_block_jewelry_deconstruction" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.blockJewelryDeconstruction end,
                     setFunc = function(value) FCOISsettings.blockJewelryDeconstruction = value
                         FCOISsettings.autoReenable_blockJewelryDeconstruction = value
@@ -6353,7 +5050,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_auto_reenable_block_jewelry_deconstruction"],
-                    tooltip = locVars["options_auto_reenable_block_jewelry_deconstruction_TT"],
+                    tooltip = locVars["options_auto_reenable_block_jewelry_deconstruction" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.autoReenable_blockJewelryDeconstruction end,
                     setFunc = function(value) FCOISsettings.autoReenable_blockJewelryDeconstruction = value
                     end,
@@ -6363,7 +5060,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_enable_block_deconstruction_exception_intricate"],
-                    tooltip = locVars["options_enable_block_deconstruction_exception_intricate_TT"],
+                    tooltip = locVars["options_enable_block_deconstruction_exception_intricate" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.allowDeconstructIntricate end,
                     setFunc = function(value) FCOISsettings.allowDeconstructIntricate = value
                     end,
@@ -6373,7 +5070,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_enable_block_deconstruction_exception_deconstruction"],
-                    tooltip = locVars["options_enable_block_deconstruction_exception_deconstruction_TT"],
+                    tooltip = locVars["options_enable_block_deconstruction_exception_deconstruction" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.allowDeconstructDeconstruction end,
                     setFunc = function(value) FCOISsettings.allowDeconstructDeconstruction = value
                     end,
@@ -6383,7 +5080,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_enable_block_deconstruction_exception_deconstruction_all_markers"],
-                    tooltip = locVars["options_enable_block_deconstruction_exception_deconstruction_all_markers_TT"],
+                    tooltip = locVars["options_enable_block_deconstruction_exception_deconstruction_all_markers" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.allowDeconstructDeconstructionWithMarkers end,
                     setFunc = function(value) FCOISsettings.allowDeconstructDeconstructionWithMarkers = value
                     end,
@@ -6397,7 +5094,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_enable_block_improvement"],
-                    tooltip = locVars["options_enable_block_improvement_TT"],
+                    tooltip = locVars["options_enable_block_improvement" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.blockImprovement end,
                     setFunc = function(value) FCOISsettings.blockImprovement = value
                         FCOISsettings.autoReenable_blockImprovement = value
@@ -6407,7 +5104,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_auto_reenable_block_improvement"],
-                    tooltip = locVars["options_auto_reenable_block_improvement_TT"],
+                    tooltip = locVars["options_auto_reenable_block_improvement" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.autoReenable_blockImprovement end,
                     setFunc = function(value) FCOISsettings.autoReenable_blockImprovement = value
                     end,
@@ -6417,7 +5114,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_enable_block_jewelry_improvement"],
-                    tooltip = locVars["options_enable_block_jewelry_improvement_TT"],
+                    tooltip = locVars["options_enable_block_jewelry_improvement" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.blockJewelryImprovement end,
                     setFunc = function(value) FCOISsettings.blockJewelryImprovement = value
                         FCOISsettings.autoReenable_blockJewelryImprovement = value
@@ -6427,7 +5124,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_auto_reenable_block_jewelry_improvement"],
-                    tooltip = locVars["options_auto_reenable_block_jewelry_improvement_TT"],
+                    tooltip = locVars["options_auto_reenable_block_jewelry_improvement" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.autoReenable_blockJewelryImprovement end,
                     setFunc = function(value) FCOISsettings.autoReenable_blockJewelryImprovement = value
                     end,
@@ -6437,7 +5134,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_enable_block_improvement_exception_improvement"],
-                    tooltip = locVars["options_enable_block_improvement_exception_improvement_TT"],
+                    tooltip = locVars["options_enable_block_improvement_exception_improvement" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.allowImproveImprovement end,
                     setFunc = function(value) FCOISsettings.allowImproveImprovement = value
                     end,
@@ -6451,7 +5148,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_enable_block_research"],
-                    tooltip = locVars["options_enable_block_research_TT"],
+                    tooltip = locVars["options_enable_block_research" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.blockResearchDialog end,
                     setFunc = function(value) FCOISsettings.blockResearchDialog = value
                     end,
@@ -6460,7 +5157,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_enable_block_jewelry_research"],
-                    tooltip = locVars["options_enable_block_jewelry_research_TT"],
+                    tooltip = locVars["options_enable_block_jewelry_research" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.blockJewelryResearchDialog end,
                     setFunc = function(value) FCOISsettings.blockJewelryResearchDialog = value
                     end,
@@ -6469,7 +5166,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_research_filter"],
-                    tooltip = locVars["options_research_filter_TT"],
+                    tooltip = locVars["options_research_filter" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.allowResearch end,
                     setFunc = function(value) FCOISsettings.allowResearch = value
                     end,
@@ -6483,7 +5180,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_allow_marked_repair"],
-                    tooltip = locVars["options_allow_marked_repair_TT"],
+                    tooltip = locVars["options_allow_marked_repair" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.blockMarkedRepairKits end,
                     setFunc = function(value) FCOISsettings.blockMarkedRepairKits = value
                     end,
@@ -6496,7 +5193,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_enable_block_creation"],
-                    tooltip = locVars["options_enable_block_creation_TT"],
+                    tooltip = locVars["options_enable_block_creation" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.blockEnchantingCreation end,
                     setFunc = function(value) FCOISsettings.blockEnchantingCreation = value
                         FCOISsettings.autoReenable_blockEnchantingCreation = value
@@ -6506,7 +5203,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_auto_reenable_block_creation"],
-                    tooltip = locVars["options_auto_reenable_block_creation_TT"],
+                    tooltip = locVars["options_auto_reenable_block_creation" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.autoReenable_blockEnchantingCreation end,
                     setFunc = function(value) FCOISsettings.autoReenable_blockEnchantingCreation = value
                     end,
@@ -6520,7 +5217,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_enable_block_extraction"],
-                    tooltip = locVars["options_enable_block_extraction_TT"],
+                    tooltip = locVars["options_enable_block_extraction" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.blockEnchantingExtraction end,
                     setFunc = function(value) FCOISsettings.blockEnchantingExtraction = value
                         FCOISsettings.autoReenable_blockEnchantingExtraction = value
@@ -6530,7 +5227,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_auto_reenable_block_extraction"],
-                    tooltip = locVars["options_auto_reenable_block_extraction_TT"],
+                    tooltip = locVars["options_auto_reenable_block_extraction" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.autoReenable_blockEnchantingExtraction end,
                     setFunc = function(value) FCOISsettings.autoReenable_blockEnchantingExtraction = value
                     end,
@@ -6544,7 +5241,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_enable_block_selling"],
-                    tooltip = locVars["options_enable_block_selling_TT"],
+                    tooltip = locVars["options_enable_block_selling" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.blockSelling end,
                     setFunc = function(value) FCOISsettings.blockSelling = value
                         FCOISsettings.autoReenable_blockSelling = value
@@ -6554,7 +5251,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_auto_reenable_block_selling"],
-                    tooltip = locVars["options_auto_reenable_block_selling_TT"],
+                    tooltip = locVars["options_auto_reenable_block_selling" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.autoReenable_blockSelling end,
                     setFunc = function(value) FCOISsettings.autoReenable_blockSelling = value
                     end,
@@ -6564,7 +5261,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_block_selling_exception"],
-                    tooltip = locVars["options_block_selling_exception_TT"],
+                    tooltip = locVars["options_block_selling_exception" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.allowSellingForBlocked end,
                     setFunc = function(value) FCOISsettings.allowSellingForBlocked = value
                     end,
@@ -6574,7 +5271,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_block_selling_exception_intricate"],
-                    tooltip = locVars["options_block_selling_exception_intricate_TT"],
+                    tooltip = locVars["options_block_selling_exception_intricate" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.allowSellingForBlockedIntricate end,
                     setFunc = function(value) FCOISsettings.allowSellingForBlockedIntricate = value
                     end,
@@ -6584,7 +5281,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_block_selling_exception_ornate"],
-                    tooltip = locVars["options_block_selling_exception_ornate_TT"],
+                    tooltip = locVars["options_block_selling_exception_ornate" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.allowSellingForBlockedOrnate end,
                     setFunc = function(value) FCOISsettings.allowSellingForBlockedOrnate = value
                     end,
@@ -6598,7 +5295,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_enable_block_selling_guild_store"],
-                    tooltip = locVars["options_enable_block_selling_guild_store_TT"],
+                    tooltip = locVars["options_enable_block_selling_guild_store" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.blockSellingGuildStore end,
                     setFunc = function(value) FCOISsettings.blockSellingGuildStore = value
                         FCOISsettings.autoReenable_blockSellingGuildStore = value
@@ -6608,7 +5305,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_auto_reenable_block_selling_guild_store"],
-                    tooltip = locVars["options_auto_reenable_block_selling_guild_store_TT"],
+                    tooltip = locVars["options_auto_reenable_block_selling_guild_store" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.autoReenable_blockSellingGuildStore end,
                     setFunc = function(value) FCOISsettings.autoReenable_blockSellingGuildStore = value
                     end,
@@ -6618,7 +5315,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_block_selling_exception_guild_store"],
-                    tooltip = locVars["options_block_selling_exception_guild_store_TT"],
+                    tooltip = locVars["options_block_selling_exception_guild_store" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.allowSellingInGuildStoreForBlocked end,
                     setFunc = function(value) FCOISsettings.allowSellingInGuildStoreForBlocked = value
                     end,
@@ -6628,7 +5325,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_block_selling_exception_intricate"],
-                    tooltip = locVars["options_block_selling_exception_intricate_TT"],
+                    tooltip = locVars["options_block_selling_exception_intricate" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.allowSellingGuildStoreForBlockedIntricate end,
                     setFunc = function(value) FCOISsettings.allowSellingGuildStoreForBlockedIntricate = value
                     end,
@@ -6642,7 +5339,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_enable_block_fence_selling"],
-                    tooltip = locVars["options_enable_block_fence_selling_TT"],
+                    tooltip = locVars["options_enable_block_fence_selling" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.blockFence end,
                     setFunc = function(value) FCOISsettings.blockFence = value
                         FCOISsettings.autoReenable_blockFenceSelling = value
@@ -6652,7 +5349,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_auto_reenable_block_fence_selling"],
-                    tooltip = locVars["options_auto_reenable_block_fence_selling_TT"],
+                    tooltip = locVars["options_auto_reenable_block_fence_selling" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.autoReenable_blockFenceSelling end,
                     setFunc = function(value) FCOISsettings.autoReenable_blockFenceSelling = value
                     end,
@@ -6666,7 +5363,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_enable_block_launder_selling"],
-                    tooltip = locVars["options_enable_block_launder_selling_TT"],
+                    tooltip = locVars["options_enable_block_launder_selling" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.blockLaunder end,
                     setFunc = function(value) FCOISsettings.blockLaunder = value
                         FCOISsettings.autoReenable_blockLaunderSelling = value
@@ -6676,7 +5373,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_auto_reenable_block_launder_selling"],
-                    tooltip = locVars["options_auto_reenable_block_launder_selling_TT"],
+                    tooltip = locVars["options_auto_reenable_block_launder_selling" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.autoReenable_blockLaunderSelling end,
                     setFunc = function(value) FCOISsettings.autoReenable_blockLaunderSelling = value
                     end,
@@ -6690,7 +5387,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_enable_block_trading"],
-                    tooltip = locVars["options_enable_block_trading_TT"],
+                    tooltip = locVars["options_enable_block_trading" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.blockTrading end,
                     setFunc = function(value) FCOISsettings.blockTrading = value
                         FCOISsettings.autoReenable_blockTrading = value
@@ -6700,7 +5397,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_auto_reenable_block_trading"],
-                    tooltip = locVars["options_auto_reenable_block_trading_TT"],
+                    tooltip = locVars["options_auto_reenable_block_trading" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.autoReenable_blockTrading end,
                     setFunc = function(value) FCOISsettings.autoReenable_blockTrading = value
                     end,
@@ -6714,7 +5411,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_enable_block_sending_mail"],
-                    tooltip = locVars["options_enable_block_sending_mail_TT"],
+                    tooltip = locVars["options_enable_block_sending_mail" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.blockSendingByMail end,
                     setFunc = function(value) FCOISsettings.blockSendingByMail = value
                         FCOISsettings.autoReenable_blockSendingByMail = value
@@ -6724,7 +5421,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_auto_reenable_block_sending_mail"],
-                    tooltip = locVars["options_auto_reenable_block_sending_mail_TT"],
+                    tooltip = locVars["options_auto_reenable_block_sending_mail" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.autoReenable_blockSendingByMail end,
                     setFunc = function(value) FCOISsettings.autoReenable_blockSendingByMail = value
                     end,
@@ -6738,7 +5435,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_enable_block_alchemy_destroy"],
-                    tooltip = locVars["options_enable_block_alchemy_destroy_TT"],
+                    tooltip = locVars["options_enable_block_alchemy_destroy" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.blockAlchemyDestroy end,
                     setFunc = function(value) FCOISsettings.blockAlchemyDestroy = value
                         FCOISsettings.autoReenable_blockAlchemyDestroy = value
@@ -6748,7 +5445,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_auto_reenable_block_alchemy_destroy"],
-                    tooltip = locVars["options_auto_reenable_block_alchemy_destroy_TT"],
+                    tooltip = locVars["options_auto_reenable_block_alchemy_destroy" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.autoReenable_blockAlchemyDestroy end,
                     setFunc = function(value) FCOISsettings.autoReenable_blockAlchemyDestroy = value
                     end,
@@ -6762,7 +5459,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_enable_block_autoloot_container"],
-                    tooltip = locVars["options_enable_block_autoloot_container_TT"],
+                    tooltip = locVars["options_enable_block_autoloot_container" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.blockAutoLootContainer end,
                     setFunc = function(value) FCOISsettings.blockAutoLootContainer = value
                     end,
@@ -6771,7 +5468,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_enable_block_marked_disable_with_flag"],
-                    tooltip = locVars["options_enable_block_marked_disable_with_flag_TT"],
+                    tooltip = locVars["options_enable_block_marked_disable_with_flag" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.blockMarkedAutoLootContainerDisableWithFlag end,
                     setFunc = function(value) FCOISsettings.blockMarkedAutoLootContainerDisableWithFlag = value
                     end,
@@ -6785,7 +5482,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_enable_block_marked_recipes"],
-                    tooltip = locVars["options_enable_block_marked_recipes_TT"],
+                    tooltip = locVars["options_enable_block_marked_recipes" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.blockMarkedRecipes end,
                     setFunc = function(value) FCOISsettings.blockMarkedRecipes = value
                     end,
@@ -6794,7 +5491,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_enable_block_marked_disable_with_flag"],
-                    tooltip = locVars["options_enable_block_marked_disable_with_flag_TT"],
+                    tooltip = locVars["options_enable_block_marked_disable_with_flag" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.blockMarkedRecipesDisableWithFlag end,
                     setFunc = function(value) FCOISsettings.blockMarkedRecipesDisableWithFlag = value
                     end,
@@ -6813,7 +5510,7 @@ function FCOIS.BuildAddonMenu()
                         {
                             type = "checkbox",
                             name = locVars["options_dont_unjunk_on_bulk_mark"],
-                            tooltip = locVars["options_dont_unjunk_on_bulk_mark_TT"],
+                            tooltip = locVars["options_dont_unjunk_on_bulk_mark" .. tooltipSuffix],
                             getFunc = function() return FCOISsettings.dontUnjunkOnBulkMark end,
                             setFunc = function(value) FCOISsettings.dontUnjunkOnBulkMark = value
                             end,
@@ -6822,7 +5519,7 @@ function FCOIS.BuildAddonMenu()
                         {
                             type = "checkbox",
                             name = locVars["options_junk_item_marked_to_be_sold"],
-                            tooltip = locVars["options_junk_item_marked_to_be_sold_TT"],
+                            tooltip = locVars["options_junk_item_marked_to_be_sold" .. tooltipSuffix],
                             getFunc = function() return FCOISsettings.junkItemsMarkedToBeSold end,
                             setFunc = function(value) FCOISsettings.junkItemsMarkedToBeSold = value
                             end,
@@ -6831,7 +5528,7 @@ function FCOIS.BuildAddonMenu()
                         {
                             type = "checkbox",
                             name = locVars["options_dont_unjunk_item_marked_to_be_sold"],
-                            tooltip = locVars["options_dont_unjunk_item_marked_to_be_sold_TT"],
+                            tooltip = locVars["options_dont_unjunk_item_marked_to_be_sold" .. tooltipSuffix],
                             getFunc = function() return FCOISsettings.dontUnJunkItemsMarkedToBeSold end,
                             setFunc = function(value) FCOISsettings.dontUnJunkItemsMarkedToBeSold = value
                             end,
@@ -6842,7 +5539,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_remove_context_menu_mark_as_junk"],
-                    tooltip = locVars["options_remove_context_menu_mark_as_junk_TT"],
+                    tooltip = locVars["options_remove_context_menu_mark_as_junk" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.removeMarkAsJunk end,
                     setFunc = function(value) FCOISsettings.removeMarkAsJunk = value
                     end,
@@ -6851,7 +5548,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_junk_item_marked_to_be_sold"],
-                    tooltip = locVars["options_junk_item_marked_to_be_sold_TT"],
+                    tooltip = locVars["options_junk_item_marked_to_be_sold" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.allowMarkAsJunkForMarkedToBeSold end,
                     setFunc = function(value) FCOISsettings.allowMarkAsJunkForMarkedToBeSold = value
                     end,
@@ -6861,7 +5558,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_dont_unjunk_on_normal_mark"],
-                    tooltip = locVars["options_dont_unjunk_on_normal_mark_TT"],
+                    tooltip = locVars["options_dont_unjunk_on_normal_mark" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.dontUnjunkOnNormalMark end,
                     setFunc = function(value) FCOISsettings.dontUnjunkOnNormalMark = value
                     end,
@@ -6874,7 +5571,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_enable_block_motifs"],
-                    tooltip = locVars["options_enable_block_motifs_TT"],
+                    tooltip = locVars["options_enable_block_motifs" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.blockMarkedMotifs end,
                     setFunc = function(value) FCOISsettings.blockMarkedMotifs = value
                     end,
@@ -6883,7 +5580,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_enable_block_marked_disable_with_flag"],
-                    tooltip = locVars["options_enable_block_marked_disable_with_flag_TT"],
+                    tooltip = locVars["options_enable_block_marked_disable_with_flag" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.blockMarkedMotifsDisableWithFlag end,
                     setFunc = function(value) FCOISsettings.blockMarkedMotifsDisableWithFlag = value
                     end,
@@ -6896,7 +5593,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_enable_block_potions"],
-                    tooltip = locVars["options_enable_block_potions_TT"],
+                    tooltip = locVars["options_enable_block_potions" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.blockMarkedPotions end,
                     setFunc = function(value) FCOISsettings.blockMarkedPotions = value
                     end,
@@ -6905,7 +5602,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_enable_block_food"],
-                    tooltip = locVars["options_enable_block_food_TT"],
+                    tooltip = locVars["options_enable_block_food" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.blockMarkedFood end,
                     setFunc = function(value) FCOISsettings.blockMarkedFood = value
                     end,
@@ -6914,7 +5611,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_enable_block_marked_disable_with_flag"],
-                    tooltip = locVars["options_enable_block_marked_disable_with_flag_TT"],
+                    tooltip = locVars["options_enable_block_marked_disable_with_flag" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.blockMarkedFoodDisableWithFlag end,
                     setFunc = function(value) FCOISsettings.blockMarkedFoodDisableWithFlag = value
                     end,
@@ -6927,7 +5624,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_enable_block_guild_bank_without_withdraw"],
-                    tooltip = locVars["options_enable_block_guild_bank_without_withdraw_TT"],
+                    tooltip = locVars["options_enable_block_guild_bank_without_withdraw" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.blockGuildBankWithoutWithdraw end,
                     setFunc = function(value) FCOISsettings.blockGuildBankWithoutWithdraw = value
                     end,
@@ -6936,7 +5633,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_auto_reenable_block_guild_bank_without_withdraw"],
-                    tooltip = locVars["options_auto_reenable_block_guild_bank_without_withdraw_TT"],
+                    tooltip = locVars["options_auto_reenable_block_guild_bank_without_withdraw" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.autoReenable_blockGuildBankWithoutWithdraw end,
                     setFunc = function(value) FCOISsettings.autoReenable_blockGuildBankWithoutWithdraw = value
                     end,
@@ -6946,7 +5643,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_enable_block_marked_disable_with_flag"],
-                    tooltip = locVars["options_enable_block_marked_disable_with_flag_TT"],
+                    tooltip = locVars["options_enable_block_marked_disable_with_flag" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.blockGuildBankWithoutWithdrawDisableWithFlag end,
                     setFunc = function(value) FCOISsettings.blockGuildBankWithoutWithdrawDisableWithFlag = value
                     end,
@@ -6959,7 +5656,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_enable_block_transmutation_dialog_max_withdraw"],
-                    tooltip = locVars["options_enable_block_transmutation_dialog_max_withdraw_TT"],
+                    tooltip = locVars["options_enable_block_transmutation_dialog_max_withdraw" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.showTransmutationGeodeLootDialog end,
                     setFunc = function(value) FCOISsettings.showTransmutationGeodeLootDialog = value
                     end,
@@ -6972,7 +5669,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_enable_block_crownstoreitems"],
-                    tooltip = locVars["options_enable_block_crownstoreitems_TT"],
+                    tooltip = locVars["options_enable_block_crownstoreitems" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.blockCrownStoreItems end,
                     setFunc = function(value) FCOISsettings.blockCrownStoreItems = value
                     end,
@@ -6981,7 +5678,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_enable_block_marked_disable_with_flag"],
-                    tooltip = locVars["options_enable_block_marked_disable_with_flag_TT"],
+                    tooltip = locVars["options_enable_block_marked_disable_with_flag" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.blockMarkedCrownStoreItemDisableWithFlag end,
                     setFunc = function(value) FCOISsettings.blockMarkedCrownStoreItemDisableWithFlag = value
                     end,
@@ -6994,7 +5691,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["show_anti_messages_in_chat"],
-                    tooltip = locVars["show_anti_messages_in_chat_TT"],
+                    tooltip = locVars["show_anti_messages_in_chat" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.showAntiMessageInChat end,
                     setFunc = function(value) FCOISsettings.showAntiMessageInChat = value
                     end,
@@ -7003,7 +5700,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["show_anti_messages_as_alert"],
-                    tooltip = locVars["show_anti_messages_as_alert_TT"],
+                    tooltip = locVars["show_anti_messages_as_alert" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.showAntiMessageAsAlert end,
                     setFunc = function(value) FCOISsettings.showAntiMessageAsAlert = value
                     end,
@@ -7027,14 +5724,14 @@ function FCOIS.BuildAddonMenu()
                         {
                             type     = "submenu",
                             name     = locVars["options_header_context_menu_divider"],
-                            tooltip = locVars["options_header_context_menu_divider_TT"],
+                            tooltip = locVars["options_header_context_menu_divider" .. tooltipSuffix],
                             disabled = function() return FCOISsettings.useSubContextMenu end,
                             controls =
                             {
                                 {
                                     type = "checkbox",
                                     name = locVars["options_show_contextmenu_divider"],
-                                    tooltip = locVars["options_show_contextmenu_divider_TT"],
+                                    tooltip = locVars["options_show_contextmenu_divider" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.showContextMenuDivider end,
                                     setFunc = function(value) FCOISsettings.showContextMenuDivider = value
                                     end,
@@ -7044,7 +5741,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_contextmenu_divider_opens_settings"],
-                                    tooltip = locVars["options_contextmenu_divider_opens_settings_TT"],
+                                    tooltip = locVars["options_contextmenu_divider_opens_settings" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.contextMenuDividerShowsSettings end,
                                     setFunc = function(value)
                                         FCOISsettings.contextMenuDividerShowsSettings = value
@@ -7068,7 +5765,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type = "checkbox",
                                     name = locVars["options_contextmenu_divider_clears_all_markers"],
-                                    tooltip = locVars["options_contextmenu_divider_clears_all_markers_TT"],
+                                    tooltip = locVars["options_contextmenu_divider_clears_all_markers" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.contextMenuDividerClearsMarkers end,
                                     setFunc = function(value)
                                         FCOISsettings.contextMenuDividerClearsMarkers = value
@@ -7096,7 +5793,7 @@ function FCOIS.BuildAddonMenu()
                         {
                             type = "checkbox",
                             name = locVars["options_use_subcontextmenu"],
-                            tooltip = locVars["options_use_subcontextmenu_TT"],
+                            tooltip = locVars["options_use_subcontextmenu" .. tooltipSuffix],
                             getFunc = function() return FCOISsettings.useSubContextMenu end,
                             setFunc = function(value) FCOISsettings.useSubContextMenu = value
                             end,
@@ -7111,7 +5808,7 @@ function FCOIS.BuildAddonMenu()
                             decimals = 0,
                             autoSelect = true,
                             name = locVars["options_contextmenu_use_dyn_submenu"],
-                            tooltip = locVars["options_contextmenu_use_dyn_submenu_TT"],
+                            tooltip = locVars["options_contextmenu_use_dyn_submenu" .. tooltipSuffix],
                             getFunc = function() return FCOISsettings.useDynSubMenuMaxCount end,
                             setFunc = function(value)
                                 FCOISsettings.useDynSubMenuMaxCount = value
@@ -7130,7 +5827,7 @@ function FCOIS.BuildAddonMenu()
                             decimals = 0,
                             autoSelect = true,
                             name = locVars["options_contextmenu_leading_spaces"],
-                            tooltip = locVars["options_contextmenu_leading_spaces_TT"],
+                            tooltip = locVars["options_contextmenu_leading_spaces" .. tooltipSuffix],
                             getFunc = function() return FCOISsettings.addContextMenuLeadingSpaces end,
                             setFunc = function(value)
                                 FCOISsettings.addContextMenuLeadingSpaces = value
@@ -7142,8 +5839,8 @@ function FCOIS.BuildAddonMenu()
                         },
                         {
                             type = "checkbox",
-                            name = locVars["options_contextmenu_use_custom_marked_normal_color"],
-                            tooltip = locVars["options_contextmenu_use_custom_marked_normal_color_TT"],
+                            name = locVars["options_contextmenu_use_custom_marked_normal" .. colorSuffix],
+                            tooltip = locVars["options_contextmenu_use_custom_marked_normal" .. colorSuffix .. tooltipSuffix],
                             getFunc = function() return FCOISsettings.useContextMenuCustomMarkedNormalColor end,
                             setFunc = function(value) FCOISsettings.useContextMenuCustomMarkedNormalColor = value
                             end,
@@ -7153,8 +5850,8 @@ function FCOIS.BuildAddonMenu()
                         },
                         {
                             type = "colorpicker",
-                            name = locVars["options_contextmenu_custom_marked_normal_color"],
-                            tooltip = locVars["options_contextmenu_custom_marked_normal_color_TT"],
+                            name = locVars["options_contextmenu_custom_marked_normal" .. colorSuffix],
+                            tooltip = locVars["options_contextmenu_custom_marked_normal" .. colorSuffix .. tooltipSuffix],
                             getFunc = function() return FCOISsettings.contextMenuCustomMarkedNormalColor.r, FCOISsettings.contextMenuCustomMarkedNormalColor.g, FCOISsettings.contextMenuCustomMarkedNormalColor.b, FCOISsettings.contextMenuCustomMarkedNormalColor.a end,
                             setFunc = function(r,g,b,a)
                                 FCOISsettings.contextMenuCustomMarkedNormalColor = {["r"] = r, ["g"] = g, ["b"] = b, ["a"] = a}
@@ -7166,7 +5863,7 @@ function FCOIS.BuildAddonMenu()
                         {
                             type = "checkbox",
                             name = locVars["options_contextmenu_leading_icon"],
-                            tooltip = locVars["options_contextmenu_leading_icon_TT"],
+                            tooltip = locVars["options_contextmenu_leading_icon" .. tooltipSuffix],
                             getFunc = function() return FCOISsettings.addContextMenuLeadingMarkerIcon end,
                             setFunc = function(value) FCOISsettings.addContextMenuLeadingMarkerIcon = value
                             end,
@@ -7175,8 +5872,8 @@ function FCOIS.BuildAddonMenu()
                         },
                         {
                             type = "checkbox",
-                            name = locVars["options_contextmenu_use_icon_color"],
-                            tooltip = locVars["options_contextmenu_use_icon_color_TT"],
+                            name = locVars["options_contextmenu_use_icon" .. colorSuffix],
+                            tooltip = locVars["options_contextmenu_use_icon" .. colorSuffix .. tooltipSuffix],
                             getFunc = function() return FCOISsettings.contextMenuEntryColorEqualsIconColor end,
                             setFunc = function(value) FCOISsettings.contextMenuEntryColorEqualsIconColor = value
                             end,
@@ -7191,7 +5888,7 @@ function FCOIS.BuildAddonMenu()
                             decimals = 0,
                             autoSelect = true,
                             name = locVars["options_contextmenu_leading_icon_size"],
-                            tooltip = locVars["options_contextmenu_leading_icon_size_TT"],
+                            tooltip = locVars["options_contextmenu_leading_icon_size" .. tooltipSuffix],
                             getFunc = function() return FCOISsettings.contextMenuLeadingIconSize end,
                             setFunc = function(value)
                                 FCOISsettings.contextMenuLeadingIconSize = value
@@ -7205,7 +5902,7 @@ function FCOIS.BuildAddonMenu()
                         {
                             type = "checkbox",
                             name = locVars["options_contextmenu_entries_enable_tooltip"],
-                            tooltip = locVars["options_contextmenu_entries_enable_tooltip_TT"],
+                            tooltip = locVars["options_contextmenu_entries_enable_tooltip" .. tooltipSuffix],
                             getFunc = function() return FCOISsettings.contextMenuItemEntryShowTooltip end,
                             setFunc = function(value) FCOISsettings.contextMenuItemEntryShowTooltip = value
                             end,
@@ -7215,7 +5912,7 @@ function FCOIS.BuildAddonMenu()
                         {
                             type = "checkbox",
                             name = locVars["options_contextmenu_entries_enable_tooltip_only_SHIFTkey"],
-                            tooltip = locVars["options_contextmenu_entries_enable_tooltip_only_SHIFTkey_TT"],
+                            tooltip = locVars["options_contextmenu_entries_enable_tooltip_only_SHIFTkey" .. tooltipSuffix],
                             getFunc = function() return FCOISsettings.contextMenuItemEntryShowTooltipWithSHIFTKeyOnly end,
                             setFunc = function(value) FCOISsettings.contextMenuItemEntryShowTooltipWithSHIFTKeyOnly = value
                             end,
@@ -7226,7 +5923,7 @@ function FCOIS.BuildAddonMenu()
                         {
                             type = "checkbox",
                             name = locVars["options_contextmenu_entries_tooltip_protectedpanels"],
-                            tooltip = locVars["options_contextmenu_entries_tooltip_protectedpanels_TT"],
+                            tooltip = locVars["options_contextmenu_entries_tooltip_protectedpanels" .. tooltipSuffix],
                             getFunc = function() return FCOISsettings.contextMenuItemEntryTooltipProtectedPanels end,
                             setFunc = function(value) FCOISsettings.contextMenuItemEntryTooltipProtectedPanels = value
                             end,
@@ -7249,7 +5946,7 @@ function FCOIS.BuildAddonMenu()
                         {
                             type = "checkbox",
                             name = locVars["options_split_lockdyn_filter"],
-                            tooltip = locVars["options_split_lockdyn_filter_TT"],
+                            tooltip = locVars["options_split_lockdyn_filter" .. tooltipSuffix],
                             getFunc = function() return FCOISsettings.splitLockDynFilter end,
                             setFunc = function(value) FCOISsettings.splitLockDynFilter = value
                                 --Change the gear sets filter context-menu button's texture
@@ -7264,7 +5961,7 @@ function FCOIS.BuildAddonMenu()
                         {
                             type = "checkbox",
                             name = locVars["options_split_gearsets_filter"],
-                            tooltip = locVars["options_split_gearsets_filter_TT"],
+                            tooltip = locVars["options_split_gearsets_filter" .. tooltipSuffix],
                             getFunc = function() return FCOISsettings.splitGearSetsFilter end,
                             setFunc = function(value) FCOISsettings.splitGearSetsFilter = value
                                 --Change the gear sets filter context-menu button's texture
@@ -7279,7 +5976,7 @@ function FCOIS.BuildAddonMenu()
                         {
                             type = "checkbox",
                             name = locVars["options_split_resdecimp_filter"],
-                            tooltip = locVars["options_split_resdecimp_filter_TT"],
+                            tooltip = locVars["options_split_resdecimp_filter" .. tooltipSuffix],
                             getFunc = function() return FCOISsettings.splitResearchDeconstructionImprovementFilter end,
                             setFunc = function(value) FCOISsettings.splitResearchDeconstructionImprovementFilter = value
                                 --Change the gear sets filter context-menu button's texture
@@ -7294,7 +5991,7 @@ function FCOIS.BuildAddonMenu()
                         {
                             type = "checkbox",
                             name = locVars["options_split_sellguildint_filter"],
-                            tooltip = locVars["options_split_sellguildint_filter_TT"],
+                            tooltip = locVars["options_split_sellguildint_filter" .. tooltipSuffix],
                             getFunc = function() return FCOISsettings.splitSellGuildSellIntricateFilter end,
                             setFunc = function(value) FCOISsettings.splitSellGuildSellIntricateFilter = value
                                 --Change the gear sets filter context-menu button's texture
@@ -7309,8 +6006,8 @@ function FCOIS.BuildAddonMenu()
 
                         {
                             type = "checkbox",
-                            name = locVars["options_filter_buttons_context_menu_show_TT"],
-                            tooltip = locVars["options_filter_buttons_context_menu_show_tooltip_TT"],
+                            name = locVars["options_filter_buttons_context_menu_show" .. tooltipSuffix],
+                            tooltip = locVars["options_filter_buttons_context_menu_show_tooltip" .. tooltipSuffix],
                             getFunc = function() return FCOISsettings.showFilterButtonContextTooltip end,
                             setFunc = function(value) FCOISsettings.showFilterButtonContextTooltip = value
                             end,
@@ -7335,7 +6032,7 @@ function FCOIS.BuildAddonMenu()
                             decimals = 0,
                             autoSelect = true,
                             name = locVars["options_context_menu_filter_buttons_max_icons"],
-                            tooltip = locVars["options_context_menu_filter_buttons_max_icons_TT"],
+                            tooltip = locVars["options_context_menu_filter_buttons_max_icons" .. tooltipSuffix],
                             getFunc = function() return FCOISsettings.filterButtonContextMenuMaxIcons end,
                             setFunc = function(value)
                                 FCOISsettings.filterButtonContextMenuMaxIcons = value
@@ -7368,7 +6065,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_additional_buttons_FCOIS_settings"],
-                    tooltip = locVars["options_additional_buttons_FCOIS_settings_TT"],
+                    tooltip = locVars["options_additional_buttons_FCOIS_settings" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.showFCOISMenuBarButton end,
                     setFunc = function(value) FCOISsettings.showFCOISMenuBarButton = value
                         --FCOIS.AddAdditionalButtons("FCOSettings")
@@ -7390,7 +6087,7 @@ function FCOIS.BuildAddonMenu()
                         {
                             type = "checkbox",
                             name = locVars["options_additional_buttons_FCOIS_additional_options"],
-                            tooltip = locVars["options_additional_buttons_FCOIS_additional_options_TT"],
+                            tooltip = locVars["options_additional_buttons_FCOIS_additional_options" .. tooltipSuffix],
                             getFunc = function() return FCOISsettings.showFCOISAdditionalInventoriesButton end,
                             setFunc = function(value) FCOISsettings.showFCOISAdditionalInventoriesButton = value
                                 if value == false then
@@ -7404,7 +6101,7 @@ function FCOIS.BuildAddonMenu()
                         {
                             type = "checkbox",
                             name = locVars["options_additional_buttons_FCOIS_additional_options_colorize"],
-                            tooltip = locVars["options_additional_buttons_FCOIS_additional_options_colorize_TT"],
+                            tooltip = locVars["options_additional_buttons_FCOIS_additional_options_colorize" .. tooltipSuffix],
                             getFunc = function() return FCOISsettings.colorizeFCOISAdditionalInventoriesButton end,
                             setFunc = function(value) FCOISsettings.colorizeFCOISAdditionalInventoriesButton = value
                                 --Change the button color of the context menu invoker
@@ -7422,7 +6119,7 @@ function FCOIS.BuildAddonMenu()
                         decimals = 0,
                         autoSelect = true,
                         name = locVars["options_additional_buttons_FCOIS_additional_options_offsetx"],
-                        tooltip = locVars["options_additional_buttons_FCOIS_additional_options_offsetx_TT"],
+                        tooltip = locVars["options_additional_buttons_FCOIS_additional_options_offsetx" .. tooltipSuffix],
                         getFunc = function() return FCOISsettings.FCOISAdditionalInventoriesButtonOffset.x end,
                         setFunc = function(value)
                             FCOISsettings.FCOISAdditionalInventoriesButtonOffset.x = value
@@ -7441,7 +6138,7 @@ function FCOIS.BuildAddonMenu()
                        decimals = 0,
                        autoSelect = true,
                        name = locVars["options_additional_buttons_FCOIS_additional_options_offsety"],
-                       tooltip = locVars["options_additional_buttons_FCOIS_additional_options_offsety_TT"],
+                       tooltip = locVars["options_additional_buttons_FCOIS_additional_options_offsety" .. tooltipSuffix],
                        getFunc = function() return FCOISsettings.FCOISAdditionalInventoriesButtonOffset.y end,
                        setFunc = function(value)
                            FCOISsettings.FCOISAdditionalInventoriesButtonOffset.y = value
@@ -7475,7 +6172,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_tooltipatchar"],
-                    tooltip = locVars["options_tooltipatchar_TT"],
+                    tooltip = locVars["options_tooltipatchar" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.showIconTooltipAtCharacter end,
                     setFunc = function(value) FCOISsettings.showIconTooltipAtCharacter = value
                     end,
@@ -7488,7 +6185,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_show_armor_type_icon"],
-                    tooltip = locVars["options_show_armor_type_icon_TT"],
+                    tooltip = locVars["options_show_armor_type_icon" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.showArmorTypeIconAtCharacter end,
                     setFunc = function(value) FCOISsettings.showArmorTypeIconAtCharacter = value
                     end,
@@ -7497,7 +6194,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "slider",
                     name = locVars["options_armor_type_icon_character_pos_x"],
-                    tooltip = locVars["options_armor_type_icon_character_pos_x_TT"],
+                    tooltip = locVars["options_armor_type_icon_character_pos_x" .. tooltipSuffix],
                     min = -15,
                     max = 40,
                     autoSelect = true,
@@ -7513,7 +6210,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "slider",
                     name = locVars["options_armor_type_icon_character_pos_y"],
-                    tooltip = locVars["options_armor_type_icon_character_pos_y_TT"],
+                    tooltip = locVars["options_armor_type_icon_character_pos_y" .. tooltipSuffix],
                     min = -15,
                     max = 40,
                     autoSelect = true,
@@ -7528,8 +6225,8 @@ function FCOIS.BuildAddonMenu()
                 },
                 {
                     type = "colorpicker",
-                    name = locVars["options_armor_type_icon_character_light_color"],
-                    tooltip = locVars["options_armor_type_icon_character_light_color_TT"],
+                    name = locVars["options_armor_type_icon_character_light" .. colorSuffix],
+                    tooltip = locVars["options_armor_type_icon_character_light" .. colorSuffix .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.armorTypeIconAtCharacterLightColor.r, FCOISsettings.armorTypeIconAtCharacterLightColor.g, FCOISsettings.armorTypeIconAtCharacterLightColor.b, FCOISsettings.armorTypeIconAtCharacterLightColor.a end,
                     setFunc = function(r,g,b,a)
                         FCOISsettings.armorTypeIconAtCharacterLightColor = {["r"] = r, ["g"] = g, ["b"] = b, ["a"] = a}
@@ -7541,8 +6238,8 @@ function FCOIS.BuildAddonMenu()
                 },
                 {
                     type = "colorpicker",
-                    name = locVars["options_armor_type_icon_character_medium_color"],
-                    tooltip = locVars["options_armor_type_icon_character_medium_color_TT"],
+                    name = locVars["options_armor_type_icon_character_medium" .. colorSuffix],
+                    tooltip = locVars["options_armor_type_icon_character_medium" .. colorSuffix .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.armorTypeIconAtCharacterMediumColor.r, FCOISsettings.armorTypeIconAtCharacterMediumColor.g, FCOISsettings.armorTypeIconAtCharacterMediumColor.b, FCOISsettings.armorTypeIconAtCharacterMediumColor.a end,
                     setFunc = function(r,g,b,a)
                         FCOISsettings.armorTypeIconAtCharacterMediumColor = {["r"] = r, ["g"] = g, ["b"] = b, ["a"] = a}
@@ -7554,8 +6251,8 @@ function FCOIS.BuildAddonMenu()
                 },
                 {
                     type = "colorpicker",
-                    name = locVars["options_armor_type_icon_character_heavy_color"],
-                    tooltip = locVars["options_armor_type_icon_character_heavy_color_TT"],
+                    name = locVars["options_armor_type_icon_character_heavy" .. colorSuffix],
+                    tooltip = locVars["options_armor_type_icon_character_heavy" .. colorSuffix .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.armorTypeIconAtCharacterHeavyColor.r, FCOISsettings.armorTypeIconAtCharacterHeavyColor.g, FCOISsettings.armorTypeIconAtCharacterHeavyColor.b, FCOISsettings.armorTypeIconAtCharacterHeavyColor.a end,
                     setFunc = function(r,g,b,a)
                         FCOISsettings.armorTypeIconAtCharacterHeavyColor = {["r"] = r, ["g"] = g, ["b"] = b, ["a"] = a}
@@ -7568,7 +6265,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "checkbox",
                     name = locVars["options_show_armor_type_header_text"],
-                    tooltip = locVars["options_show_armor_type_header_text_TT"],
+                    tooltip = locVars["options_show_armor_type_header_text" .. tooltipSuffix],
                     getFunc = function() return FCOISsettings.showArmorTypeHeaderTextAtCharacter end,
                     setFunc = function(value) FCOISsettings.showArmorTypeHeaderTextAtCharacter = value
                     end,
@@ -7596,7 +6293,7 @@ function FCOIS.BuildAddonMenu()
                         {
                             type = "checkbox",
                             name = locVars["options_backup_details"],
-                            tooltip = locVars["options_backup_details_TT"],
+                            tooltip = locVars["options_backup_details" .. tooltipSuffix],
                             getFunc = function() return fcoBackup.withDetails end,
                             setFunc = function(value) fcoBackup.withDetails = value
                             end,
@@ -7605,7 +6302,7 @@ function FCOIS.BuildAddonMenu()
                         {
                             type = "editbox",
                             name = locVars["options_backup_apiversion"],
-                            tooltip = locVars["options_backup_apiversion_TT"],
+                            tooltip = locVars["options_backup_apiversion" .. tooltipSuffix],
                             getFunc = function() return fcoBackup.apiVersion end,
                             setFunc = function(value)
                                 local resetToCurrentAPI = false
@@ -7641,7 +6338,7 @@ function FCOIS.BuildAddonMenu()
                         {
                             type = "checkbox",
                             name = locVars["options_backup_clear"],
-                            tooltip = locVars["options_backup_clear_TT"],
+                            tooltip = locVars["options_backup_clear" .. tooltipSuffix],
                             getFunc = function() return fcoBackup.doClearBackup end,
                             setFunc = function(value) fcoBackup.doClearBackup = value
                             end,
@@ -7651,7 +6348,7 @@ function FCOIS.BuildAddonMenu()
                         {
                             type = "button",
                             name = locVars["options_backup_marker_icons"],
-                            tooltip = locVars["options_backup_marker_icons_TT"],
+                            tooltip = locVars["options_backup_marker_icons" .. tooltipSuffix],
                             func = function()
                                 --Check the backup API version edit text and content
                                 if isBackupEditAPITextTooShort() then
@@ -7679,7 +6376,7 @@ function FCOIS.BuildAddonMenu()
                         {
                             type = "checkbox",
                             name = locVars["options_restore_details"],
-                            tooltip = locVars["options_restore_details_TT"],
+                            tooltip = locVars["options_restore_details" .. tooltipSuffix],
                             getFunc = function() return fcoRestore.withDetails end,
                             setFunc = function(value) fcoRestore.withDetails = value
                             end,
@@ -7688,7 +6385,7 @@ function FCOIS.BuildAddonMenu()
                         {
                             type = 'dropdown',
                             name = locVars["options_restore_apiversion"],
-                            tooltip = locVars["options_restore_apiversion_TT"],
+                            tooltip = locVars["options_restore_apiversion" .. tooltipSuffix],
                             choices = restoreChoices,
                             choicesValues = restoreChoicesValues,
                             getFunc = function() return fcoRestore.apiVersion end,
@@ -7702,7 +6399,7 @@ function FCOIS.BuildAddonMenu()
                         {
                             type = "button",
                             name = locVars["options_restore_marker_icons"],
-                            tooltip = locVars["options_restore_marker_icons_TT"],
+                            tooltip = locVars["options_restore_marker_icons" .. tooltipSuffix],
                             func = function()
                                 if fcoRestore.apiVersion ~= nil then
                                     --(restoreType, withDetails, apiVersion)
@@ -7722,7 +6419,7 @@ function FCOIS.BuildAddonMenu()
                         {
                             type = "button",
                             name = locVars["options_restore_marker_icons_delete_selected"],
-                            tooltip = locVars["options_restore_marker_icons_delete_selected_TT"],
+                            tooltip = locVars["options_restore_marker_icons_delete_selected" .. tooltipSuffix],
                             func = function()
                                 if fcoRestore.apiVersion ~= nil then
                                     local title = locVars["options_restore_marker_icons_delete_selected"] .. " - API "
@@ -7796,7 +6493,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "button",
                     name = locVars["options_copy_sv_to_server"],
-                    tooltip = locVars["options_copy_sv_to_server_TT"],
+                    tooltip = locVars["options_copy_sv_to_server" .. tooltipSuffix],
                     func = function()
                         local srcServerNameClean = cleanName(serverOptionsTarget[srcServer], "server")
                         local targServerNameClean = cleanName(serverOptionsTarget[targServer], "server")
@@ -7815,7 +6512,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "button",
                     name = locVars["options_delete_sv_on_server"],
-                    tooltip = locVars["options_delete_sv_on_server_TT"],
+                    tooltip = locVars["options_delete_sv_on_server" .. tooltipSuffix],
                     func = function()
                         local srcServerNameClean = cleanName(serverOptionsTarget[srcServer], "server")
                         local targServerNameClean = cleanName(serverOptionsTarget[targServer], "server")
@@ -7835,7 +6532,7 @@ function FCOIS.BuildAddonMenu()
                         end
                         return false
                     end,
-                    warning = locVars["options_delete_sv_on_server_TT"],
+                    warning = locVars["options_delete_sv_on_server" .. tooltipSuffix],
                     width = "half",
                 },
                 ]]
@@ -7891,7 +6588,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "button",
                     name = locVars["options_copy_sv_to_account"],
-                    tooltip = locVars["options_copy_sv_to_account_TT"],
+                    tooltip = locVars["options_copy_sv_to_account" .. tooltipSuffix],
                     func = function()
                         if FCOISsettings.remindUserAboutSavedVariablesBackup == true then
                             FCOIS.ShowRememberUserAboutSavedVariablesBackupDialog()
@@ -7936,7 +6633,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "button",
                     name = locVars["options_delete_sv_account"],
-                    tooltip = locVars["options_delete_sv_account_TT"],
+                    tooltip = locVars["options_delete_sv_account" .. tooltipSuffix],
                     func = function()
                         if FCOISsettings.remindUserAboutSavedVariablesBackup == true then
                             FCOIS.ShowRememberUserAboutSavedVariablesBackupDialog()
@@ -7961,16 +6658,16 @@ function FCOIS.BuildAddonMenu()
                         if ((FCOIS.settingsNonServerDependendFound and FCOIS.defSettingsNonServerDependendFound)
                                 or (targServer == noEntryValue or targAcc == noEntryValue)
                                 or ( targServer ~= noEntryValue and targAcc ~= noEntryValue
-                                    and (
-                                        FCOItemSaver_Settings[targetServerName] == nil or FCOItemSaver_Settings[targetServerName][targetAccNameClean] == nil
-                                    )
-                                )
+                                and (
+                                FCOItemSaver_Settings[targetServerName] == nil or FCOItemSaver_Settings[targetServerName][targetAccNameClean] == nil
+                        )
+                        )
                         ) then
                             return true
                         end
                         return false
                     end,
-                    warning = locVars["options_delete_sv_account_TT"],
+                    warning = locVars["options_delete_sv_account" .. tooltipSuffix],
                     width = "half",
                 },
                 --from character to character
@@ -8060,7 +6757,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "button",
                     name = locVars["options_copy_sv_account_to_char"],
-                    tooltip = locVars["options_copy_sv_to_character_TT"],
+                    tooltip = locVars["options_copy_sv_to_character" .. tooltipSuffix],
                     func = function()
                         if FCOISsettings.remindUserAboutSavedVariablesBackup == true then
                             FCOIS.ShowRememberUserAboutSavedVariablesBackupDialog()
@@ -8095,7 +6792,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "button",
                     name = locVars["options_delete_sv_character"],
-                    tooltip = locVars["options_delete_sv_character_TT"],
+                    tooltip = locVars["options_delete_sv_character" .. tooltipSuffix],
                     func = function()
                         if FCOISsettings.remindUserAboutSavedVariablesBackup == true then
                             FCOIS.ShowRememberUserAboutSavedVariablesBackupDialog()
@@ -8125,7 +6822,7 @@ function FCOIS.BuildAddonMenu()
                         end
                         return false
                     end,
-                    warning = locVars["options_delete_sv_character_TT"],
+                    warning = locVars["options_delete_sv_character" .. tooltipSuffix],
                     width = "half",
                 },
             }, --controls copy savedvars

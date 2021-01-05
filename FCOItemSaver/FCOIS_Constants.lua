@@ -7,22 +7,30 @@ local FCOIS = FCOIS
 FCOIS.addonVars = {}
 local addonVars = FCOIS.addonVars
 --Addon variables
-addonVars.addonVersionOptions 		= '2.0.1' -- version shown in the settings panel
-addonVars.addonVersionOptionsNumber	= 2.01
-addonVars.gAddonName				= "FCOItemSaver"
-addonVars.gAddonNameShort           = "FCOIS"
-addonVars.addonNameMenu				= "FCO ItemSaver"
-addonVars.addonNameMenuDisplay		= "|c00FF00FCO |cFFFF00ItemSaver|r"
-addonVars.addonNameContextMenuEntry = "     - |c22DD22FCO|r ItemSaver -"
-addonVars.addonAuthor 				= '|cFFFF00Baertram|r'
-addonVars.addonAuthorDisplayNameEU  = '@Baertram'
-addonVars.addonAuthorDisplayNameNA  = '@Baertram'
-addonVars.addonAuthorDisplayNamePTS = '@Baertram'
-addonVars.website 					= "https://www.esoui.com/downloads/info630-FCOItemSaver.html"
-addonVars.FAQwebsite                = "https://www.esoui.com/portal.php?id=136&a=faq"
-addonVars.authorPortal              = "https://www.esoui.com/portal.php?&id=136"
-addonVars.feedback                  = "https://www.esoui.com/portal.php?id=136&a=bugreport"
-addonVars.donation                  = "https://www.esoui.com/portal.php?id=136&a=faq&faqid=131"
+addonVars.addonVersionOptions 		    = '2.0.1' -- version shown in the settings panel
+addonVars.addonVersionOptionsNumber	    = 2.01
+--The addon name, normal and decorated with colors etc.
+addonVars.gAddonName				    = "FCOItemSaver"
+addonVars.gAddonNameShort               = "FCOIS"
+addonVars.addonNameMenu				    = "FCO ItemSaver"
+addonVars.addonNameMenuDisplay		    = "|t32:32:FCOItemSaver/FCOIS.dds|t |c00FF00FCO |cFFFF00ItemSaver|r"
+addonVars.addonNameContextMenuEntry     = "     - |c22DD22FCO|r ItemSaver -"
+addonVars.addonAuthor 				    = '|cFFFF00Baertram|r'
+local authorDisplayName                 = '@Baertram'
+addonVars.addonAuthorDisplayNameEU      = authorDisplayName
+addonVars.addonAuthorDisplayNameNA      = authorDisplayName
+addonVars.addonAuthorDisplayNamePTS     = authorDisplayName
+local esouiWWWAuthorId                  = 136 -- Baertram ddon authorId at www.esoui.com
+local esouiWWWAddonDonationId           = 131 -- FAQ etry Id for the donation
+local esouiWWW                          = "https://www.esoui.com"
+local esouiWWWAddonAuthorPortalFCOIS    = string.format(esouiWWW .. "/portal.php?&id=%s", tostring(esouiWWWAuthorId))
+addonVars.website 					    = esouiWWW .. "/downloads/info630-FCOItemSaver.html"
+addonVars.authorPortal                  = esouiWWWAddonAuthorPortalFCOIS
+addonVars.FAQwebsite                    = esouiWWWAddonAuthorPortalFCOIS .. "&a=faq"
+addonVars.feedback                      = esouiWWWAddonAuthorPortalFCOIS .. "&a=bugreport"
+addonVars.donation                      = string.format(addonVars.FAQwebsite .. "&faqid=%s", tostring(esouiWWWAddonDonationId))
+
+--Variables for the addon's load state
 addonVars.gAddonLoaded				= false
 addonVars.gPlayerActivated			= false
 addonVars.gSettingsLoaded			= false
@@ -32,9 +40,25 @@ FCOIS.dummyScene = {
     ["name"] = addonVars.gAddonName
 }
 
+--Constants for the unique itemId types
+--FCOIS v1.9.6
+FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE      = 1 --use base game's real uniqueIds by ZOs (even if items are totally the same, their id won't be the same)
+FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE    = 2 --use FCOIS calculated uniqueIds based on item values like level,quality,enchantment,style,trait etc.
+--The global variable for the use temporary "UniqueIds" API
+FCOIS.temporaryUseUniqueIds = {}
+
 --SavedVariables constants
+local savedVarsMarkedItems = "markedItems"
 addonVars.savedVarName				= addonVars.gAddonName .. "_Settings"
 addonVars.savedVarVersion		   	= 0.10 -- Changing this will reset all SavedVariables!
+--The subtables for the marked items. markedItems will be used for the non-unique and the ZOs really unique IDs.
+--markedItemsFCOISUnique will be used for the FCOIS created unique IDs.
+addonVars.savedVarsMarkedItemsNames = {
+    [false]                                         = savedVarsMarkedItems,
+    [FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE]    = savedVarsMarkedItems,
+    [FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE]  = savedVarsMarkedItems .. "FCOISUnique",
+}
+
 FCOIS.svDefaultName                 = "Default"
 FCOIS.svAccountWideName             = "$AccountWide"
 FCOIS.svAllAccountsName             = "$AllAccounts"
@@ -128,15 +152,13 @@ FCOIS.libFeedback = LibFeedback
 if FCOIS.libFeedback == nil and LibStub then FCOIS.libFeedback = LibStub:GetLibrary('LibFeedback', true) end
 if not FCOIS.libFeedback then d(preVars.preChatTextRed .. string.format(libMissingErrorText, "LibFeedback")) return end
 
+FCOIS.libShifterBox = LibShifterBox
+if not FCOIS.libShifterBox == nil then d(preVars.preChatTextRed .. string.format(libMissingErrorText, "LibShifterBox")) return end
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+
 --All libraries are loaded prolery?
 FCOIS.libsLoadedProperly = true
-------------------------------------------------------------------------------------------------------------------------
-------------------------------------------------------------------------------------------------------------------------
---[Optional libraries]
---LibSets
---if LibSets then FCOIS.libSets = LibSets end
---LibShifterBox
---if LibShifterBox then FCOIS.libShifterBox = LibShifterBox end
 
 --==========================================================================================================================================
 -- 															FCOIS CONSTANTS
@@ -207,12 +229,12 @@ FCOIS_CON_NON_WISHED_LEVEL      = 1
 FCOIS_CON_NON_WISHED_QUALITY    = 2
 FCOIS_CON_NON_WISHED_ALL        = 3
 
---Constants for the unique itemId types
---FCOIS v1.9.6
-FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE      = 1 --use base game's real uniqueIds by ZOs (even if items are totally the same, their id won't be the same)
-FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE    = 2 --use FCOIS calculated uniqueIds based on item values like level,quality,enchantment,style,trait etc.
 
---The table of number variables
+--Build local localization/language variables which will be transfered to the real localization vars in file /src/FCOIS_localization.lua,
+--in function Localization()
+FCOIS.localLocalizationsVars = {}
+
+    --The table of number variables
 FCOIS.numVars = {}
 local numVars = FCOIS.numVars
 --Global value: Number of filter icons to choose by right click menu
@@ -233,6 +255,25 @@ numVars.gFCOMaxNumDynamicIcons	= 30
 --Global value: Number of dynamic icons
 numVars.gFCONumDynamicIcons		= 10
 local numMaxDynamicIcons        = numVars.gFCOMaxNumDynamicIcons
+
+--The maximum number at the ITEMTYPE constants
+local itemTypeMaxFallback = ITEMTYPE_GROUP_REPAIR --71, 2020-12-25
+local itemTypeStringConstantPrefix = "SI_ITEMTYPE"
+FCOIS.localLocalizationsVars.ItemTypes = {}
+local maxItemTypesForLoop = 150
+local maxItemTypesFound
+--Now get all names of the ItemTypes, from 1 to maxItemTypesForLoop and check if the String constant exists.
+--If yes: Update the maximum itemTypes found. If not: Abort and use the maximum itemTypes found for the numVars.maxItemType
+for itemType = 1, maxItemTypesForLoop, 1 do
+    local itemTypeText = ZO_CachedStrFormat(SI_UNIT_NAME, GetString(itemTypeStringConstantPrefix, itemType))
+    if itemTypeText ~= nil and itemTypeText ~= 0 and itemTypeText ~= "" then
+        FCOIS.localLocalizationsVars.ItemTypes[itemType] = itemTypeText
+        maxItemTypesFound = itemType
+    else
+        break
+    end
+end
+numVars.maxItemType = maxItemTypesFound or itemTypeMaxFallback
 
 --Possible icon IDs
 --and possible context menus for the filter buttons: RESDECIMP and SELLGUILDINT
@@ -277,10 +318,11 @@ FCOIS_CON_ICON_INTRICATE			= 12
 --[[
 ----Changed to dynamically created variables and added to global namespace
 ]]
+local dynamicIconPrefix = "FCOIS_CON_ICON_DYNAMIC_"
 local markerIconsBefore = FCOIS_CON_ICON_INTRICATE --12
 for dynIconNr = 1, numMaxDynamicIcons, 1 do
 	markerIconsBefore = markerIconsBefore + 1
-	_G["FCOIS_CON_ICON_DYNAMIC_" .. tostring(dynIconNr)] = markerIconsBefore
+	_G[dynamicIconPrefix .. tostring(dynIconNr)] = markerIconsBefore
 end
 --The maximum marker icons variable
 numVars.gFCONumFilterIcons = FCOIS_CON_ICON_DYNAMIC_30 --42, since FCOIS version 1.4.0
@@ -291,6 +333,7 @@ FCOIS_CON_ICON_NONE					= -100  --No marker icon selected
 
 
 --Debug depth levels
+FCOIS_DEBUG_DEPTH_QUICK_DEBUG   = 0
 FCOIS_DEBUG_DEPTH_NORMAL        = 1
 FCOIS_DEBUG_DEPTH_DETAILED	    = 2
 FCOIS_DEBUG_DEPTH_VERY_DETAILED	= 3
@@ -1321,17 +1364,25 @@ FCOIS.settingsVars.defaults			= {}
 FCOIS.settingsVars.accountWideButForEachCharacterDefaults = {}
 
 FCOIS.markedItems = {}
-for i = 1, numVars.gFCONumFilters, 1 do
+FCOIS.markedItemsFCOISUnique = {}
+local numFilters = numVars.gFCONumFilters
+for i = 1, numFilters, 1 do
 	FCOIS.markedItems[i] = {}
+	FCOIS.markedItemsFCOISUnique[i] = {}
 end
 
---The itemtypes that are allowed to be marked with unique item IDs
---All not listed item types (or listed with "false") will be saved with the non-unique item ID
+--The itemtypes that are allowed to be marked with unique item IDs by ZOS uniqueIDs
+--All not listed item types (or listed with "false") will be saved with the non-unique itemInstanceId
 FCOIS.allowedUniqueIdItemTypes = {
     [ITEMTYPE_ARMOR]        =   true,
---    [ITEMTYPE_MASTER_WRIT]  =   true,
     [ITEMTYPE_WEAPON]       =   true,
 }
+--The itemtypes that are allowed to be marked with unique item IDs created by FCOIS uniqueIDs (chosen by the user in the
+--settings of the unique FCOIS itemId). All not listed item types (or listed with "false") will be saved with the
+--non-unique itemInstanceId
+--> See FCOIS.settingsVars.settings.allowedFCOISUniqueIdItemTypes
+--->    filled in file /src/FCOIS_DefaultSettings.lua, and then managed in file /src/FCOIS_SettingsMenu.lua
+
 --The allowed craftskills for automatic marking of "crafted" marker icon
 -->Filled in file src/FCOIS_Functions.lua, function FCOIS.rebuildAllowedCraftSkillsForCraftedMarking(craftType)
 --->Using SavedVariable settings (FCOIS.settingsVars.settings.allowedCraftSkillsForCraftedMarking) for the craftskills!
@@ -1381,6 +1432,8 @@ preventerVars.noGamePadModeSupportTextOutput = false
 preventerVars.contextMenuUpdateLoopLastLoop = false
 preventerVars.doNotScanInv = false
 preventerVars.migrateItemMarkers = false
+preventerVars.migrateToUniqueIds = false
+preventerVars.migrateToItemInstanceIds = false
 preventerVars.gAddonStartupInProgress = false
 preventerVars.lastHoveredInvSlot = nil
 preventerVars.createdMasterWrit= false
@@ -1428,7 +1481,8 @@ mappingVars.iconToFilterDefaults = {
 	[FCOIS_CON_ICON_IMPROVEMENT]   		= FCOIS_CON_FILTER_BUTTON_RESDECIMP,
 	[FCOIS_CON_ICON_SELL_AT_GUILDSTORE]	= FCOIS_CON_FILTER_BUTTON_SELLGUILDINT,
 	[FCOIS_CON_ICON_INTRICATE]			= FCOIS_CON_FILTER_BUTTON_SELLGUILDINT,
-	[FCOIS_CON_ICON_DYNAMIC_1]			= FCOIS_CON_FILTER_BUTTON_LOCKDYN,
+--[[
+    [FCOIS_CON_ICON_DYNAMIC_1]			= FCOIS_CON_FILTER_BUTTON_LOCKDYN,
 	[FCOIS_CON_ICON_DYNAMIC_2]			= FCOIS_CON_FILTER_BUTTON_LOCKDYN,
 	[FCOIS_CON_ICON_DYNAMIC_3]			= FCOIS_CON_FILTER_BUTTON_LOCKDYN,
 	[FCOIS_CON_ICON_DYNAMIC_4]			= FCOIS_CON_FILTER_BUTTON_LOCKDYN,
@@ -1458,6 +1512,7 @@ mappingVars.iconToFilterDefaults = {
 	[FCOIS_CON_ICON_DYNAMIC_28]			= FCOIS_CON_FILTER_BUTTON_LOCKDYN,
 	[FCOIS_CON_ICON_DYNAMIC_29]			= FCOIS_CON_FILTER_BUTTON_LOCKDYN,
 	[FCOIS_CON_ICON_DYNAMIC_30]			= FCOIS_CON_FILTER_BUTTON_LOCKDYN,
+]]
 }
 mappingVars.iconToFilter = {}
 
@@ -1479,7 +1534,8 @@ mappingVars.isStaticGearIcon = {
     [FCOIS_CON_ICON_GEAR_5] = true,
 }
 
---Table to map iconId to gearId
+--Table to map iconId to gearId. Will be enhanced by the dynamic icons which are enabled to be "gear"
+--by function FCOIS.rebuildGearSetBaseVars() (in /src/FCOIS_Functions.lua), in EVENT_PLAYER_ACTIVATED callback
 mappingVars.iconToGear = {
     [FCOIS_CON_ICON_GEAR_1] = 1,
     [FCOIS_CON_ICON_GEAR_2] = 2,
@@ -1488,7 +1544,8 @@ mappingVars.iconToGear = {
     [FCOIS_CON_ICON_GEAR_5] = 5,
 }
 
---Table to map gearId to iconId
+--Table to map gearId to iconId. Will be enhanced by the dynamic icons which are enabled to be "gear".
+--by function FCOIS.rebuildGearSetBaseVars() (in /src/FCOIS_Functions.lua), in EVENT_PLAYER_ACTIVATED callback
 mappingVars.gearToIcon = {
     [1] = FCOIS_CON_ICON_GEAR_1,
     [2] = FCOIS_CON_ICON_GEAR_2,
@@ -1524,40 +1581,16 @@ mappingVars.iconIsDynamic = {
 	[FCOIS_CON_ICON_IMPROVEMENT]   		= false,
 	[FCOIS_CON_ICON_SELL_AT_GUILDSTORE]	= false,
 	[FCOIS_CON_ICON_INTRICATE]			= false,
-	[FCOIS_CON_ICON_DYNAMIC_1]			= true,
-	[FCOIS_CON_ICON_DYNAMIC_2]			= true,
-	[FCOIS_CON_ICON_DYNAMIC_3]			= true,
-	[FCOIS_CON_ICON_DYNAMIC_4]			= true,
-	[FCOIS_CON_ICON_DYNAMIC_5]			= true,
-	[FCOIS_CON_ICON_DYNAMIC_6]			= true,
-	[FCOIS_CON_ICON_DYNAMIC_7]			= true,
-	[FCOIS_CON_ICON_DYNAMIC_8]			= true,
-	[FCOIS_CON_ICON_DYNAMIC_9]			= true,
-	[FCOIS_CON_ICON_DYNAMIC_10]			= true,
-    [FCOIS_CON_ICON_DYNAMIC_11]        = true,
-    [FCOIS_CON_ICON_DYNAMIC_12]        = true,
-    [FCOIS_CON_ICON_DYNAMIC_13]        = true,
-    [FCOIS_CON_ICON_DYNAMIC_14]        = true,
-    [FCOIS_CON_ICON_DYNAMIC_15]        = true,
-    [FCOIS_CON_ICON_DYNAMIC_16]        = true,
-    [FCOIS_CON_ICON_DYNAMIC_17]        = true,
-    [FCOIS_CON_ICON_DYNAMIC_18]        = true,
-    [FCOIS_CON_ICON_DYNAMIC_19]        = true,
-    [FCOIS_CON_ICON_DYNAMIC_20]        = true,
-    [FCOIS_CON_ICON_DYNAMIC_21]        = true,
-    [FCOIS_CON_ICON_DYNAMIC_22]        = true,
-    [FCOIS_CON_ICON_DYNAMIC_23]        = true,
-    [FCOIS_CON_ICON_DYNAMIC_24]        = true,
-    [FCOIS_CON_ICON_DYNAMIC_25]        = true,
-    [FCOIS_CON_ICON_DYNAMIC_26]        = true,
-    [FCOIS_CON_ICON_DYNAMIC_27]        = true,
-    [FCOIS_CON_ICON_DYNAMIC_28]        = true,
-    [FCOIS_CON_ICON_DYNAMIC_29]        = true,
-    [FCOIS_CON_ICON_DYNAMIC_30]        = true,
+--[[
+	[FCOIS_CON_ICON_DYNAMIC_1]          = true,
+	[FCOIS_CON_ICON_DYNAMIC_2]          = true,
+	..
+]]
 }
 
 --Table to map dynamicId to iconId
 mappingVars.dynamicToIcon = {
+--[[
 	[1] = FCOIS_CON_ICON_DYNAMIC_1,
 	[2] = FCOIS_CON_ICON_DYNAMIC_2,
 	[3] = FCOIS_CON_ICON_DYNAMIC_3,
@@ -1588,10 +1621,12 @@ mappingVars.dynamicToIcon = {
     [28] = FCOIS_CON_ICON_DYNAMIC_28,
     [29] = FCOIS_CON_ICON_DYNAMIC_29,
     [30] = FCOIS_CON_ICON_DYNAMIC_30,
+]]
 }
 
 --Table to map iconId to dynamicId
 mappingVars.iconToDynamic = {
+--[[
 	[FCOIS_CON_ICON_DYNAMIC_1] = 1,
 	[FCOIS_CON_ICON_DYNAMIC_2] = 2,
 	[FCOIS_CON_ICON_DYNAMIC_3] = 3,
@@ -1622,11 +1657,13 @@ mappingVars.iconToDynamic = {
     [FCOIS_CON_ICON_DYNAMIC_28]= 28,
     [FCOIS_CON_ICON_DYNAMIC_29]= 29,
     [FCOIS_CON_ICON_DYNAMIC_30]= 30,
+]]
 }
 
 --Mapping array for icon to lock & dynamic icons filter split
 mappingVars.iconToLockDyn = {
     [FCOIS_CON_ICON_LOCK	 ]  = 1,
+--[[
 	[FCOIS_CON_ICON_DYNAMIC_1]  = 2,
 	[FCOIS_CON_ICON_DYNAMIC_2]  = 3,
 	[FCOIS_CON_ICON_DYNAMIC_3]  = 4,
@@ -1657,10 +1694,12 @@ mappingVars.iconToLockDyn = {
     [FCOIS_CON_ICON_DYNAMIC_28]= 29,
     [FCOIS_CON_ICON_DYNAMIC_29]= 30,
     [FCOIS_CON_ICON_DYNAMIC_30]= 31,
+]]
 }
 --Mapping array for lock & dynamic icons filter split to it's icon
 mappingVars.lockDynToIcon = {
 	[1]  =  FCOIS_CON_ICON_LOCK,
+--[[
 	[2]  =  FCOIS_CON_ICON_DYNAMIC_1,
 	[3]  =  FCOIS_CON_ICON_DYNAMIC_2,
 	[4]  =  FCOIS_CON_ICON_DYNAMIC_3,
@@ -1691,7 +1730,20 @@ mappingVars.lockDynToIcon = {
     [29] = FCOIS_CON_ICON_DYNAMIC_28,
     [30] = FCOIS_CON_ICON_DYNAMIC_29,
     [31] = FCOIS_CON_ICON_DYNAMIC_30,
+]]
 }
+
+--Add the dynamic icons to the different mapping tables. Use a loop from dynamicIcon 1 to maximum of possible dynamic ones
+for dynIconNr=1, numMaxDynamicIcons do
+    local dynIconValue = _G[dynamicIconPrefix .. tostring(dynIconNr)]
+    mappingVars.iconToFilterDefaults[dynIconValue] = FCOIS_CON_FILTER_BUTTON_LOCKDYN
+    mappingVars.iconIsDynamic[dynIconValue] = true
+    mappingVars.dynamicToIcon[dynIconNr]    = dynIconValue
+    mappingVars.iconToDynamic[dynIconValue] = dynIconNr
+    mappingVars.iconToLockDyn[dynIconValue] = 1 + dynIconNr
+    mappingVars.lockDynToIcon[1 + dynIconNr] = dynIconValue
+end
+
 
 --Mapping array for icon to research/deconstruction/improvement filter split
 mappingVars.iconToResDecImp = {
@@ -1937,46 +1989,47 @@ checkVars.allowedCraftingPanelIdsForMarkerRechecks = {
 --The character equipment slots
 --Table with all equipment slot names which can be updated with markes for the icons
 --The index is the relating slotIndex of the bag BAG_WORN!
+local equipmentSlotPrefix = "ZO_CharacterEquipmentSlots"
 mappingVars.characterEquipmentSlotNameByIndex = {
-    [EQUIP_SLOT_HEAD]           = "ZO_CharacterEquipmentSlotsHead",
-    [EQUIP_SLOT_SHOULDERS]      = "ZO_CharacterEquipmentSlotsShoulder",
-    [EQUIP_SLOT_HAND]           = "ZO_CharacterEquipmentSlotsGlove",
-    [EQUIP_SLOT_LEGS]           = "ZO_CharacterEquipmentSlotsLeg",
-    [EQUIP_SLOT_CHEST]          = "ZO_CharacterEquipmentSlotsChest",
-    [EQUIP_SLOT_WAIST]          = "ZO_CharacterEquipmentSlotsBelt",
-    [EQUIP_SLOT_FEET]           = "ZO_CharacterEquipmentSlotsFoot",
-    [EQUIP_SLOT_COSTUME]        = "ZO_CharacterEquipmentSlotsCostume",
-    [EQUIP_SLOT_NECK]           = "ZO_CharacterEquipmentSlotsNeck",
-    [EQUIP_SLOT_RING1]          = "ZO_CharacterEquipmentSlotsRing1",
-    [EQUIP_SLOT_RING2]          = "ZO_CharacterEquipmentSlotsRing2",
-    [EQUIP_SLOT_MAIN_HAND]      = "ZO_CharacterEquipmentSlotsMainHand",
-    [EQUIP_SLOT_OFF_HAND]       = "ZO_CharacterEquipmentSlotsOffHand",
-    [EQUIP_SLOT_POISON]         = "ZO_CharacterEquipmentSlotsPoison",
-    [EQUIP_SLOT_BACKUP_MAIN]    = "ZO_CharacterEquipmentSlotsBackupMain",
-    [EQUIP_SLOT_BACKUP_OFF]     = "ZO_CharacterEquipmentSlotsBackupOff",
-    [EQUIP_SLOT_BACKUP_POISON]  = "ZO_CharacterEquipmentSlotsBackupPoison",
+    [EQUIP_SLOT_HEAD]           = equipmentSlotPrefix .. "Head",
+    [EQUIP_SLOT_SHOULDERS]      = equipmentSlotPrefix .. "Shoulder",
+    [EQUIP_SLOT_HAND]           = equipmentSlotPrefix .. "Glove",
+    [EQUIP_SLOT_LEGS]           = equipmentSlotPrefix .. "Leg",
+    [EQUIP_SLOT_CHEST]          = equipmentSlotPrefix .. "Chest",
+    [EQUIP_SLOT_WAIST]          = equipmentSlotPrefix .. "Belt",
+    [EQUIP_SLOT_FEET]           = equipmentSlotPrefix .. "Foot",
+    [EQUIP_SLOT_COSTUME]        = equipmentSlotPrefix .. "Costume",
+    [EQUIP_SLOT_NECK]           = equipmentSlotPrefix .. "Neck",
+    [EQUIP_SLOT_RING1]          = equipmentSlotPrefix .. "Ring1",
+    [EQUIP_SLOT_RING2]          = equipmentSlotPrefix .. "Ring2",
+    [EQUIP_SLOT_MAIN_HAND]      = equipmentSlotPrefix .. "MainHand",
+    [EQUIP_SLOT_OFF_HAND]       = equipmentSlotPrefix .. "OffHand",
+    [EQUIP_SLOT_POISON]         = equipmentSlotPrefix .. "Poison",
+    [EQUIP_SLOT_BACKUP_MAIN]    = equipmentSlotPrefix .. "BackupMain",
+    [EQUIP_SLOT_BACKUP_OFF]     = equipmentSlotPrefix .. "BackupOff",
+    [EQUIP_SLOT_BACKUP_POISON]  = equipmentSlotPrefix .. "BackupPoison",
 }
 local characterEquipmentSlotNameByIndex = mappingVars.characterEquipmentSlotNameByIndex
 
 --The mapping table for the character equipment slots: Speed find without string.find in EventHandlers
 mappingVars.characterEquipmentSlots = {
-    ["ZO_CharacterEquipmentSlotsHead"] = true,
-    ["ZO_CharacterEquipmentSlotsShoulder"] = true,
-    ["ZO_CharacterEquipmentSlotsGlove"] = true,
-    ["ZO_CharacterEquipmentSlotsLeg"] = true,
-    ["ZO_CharacterEquipmentSlotsChest"] = true,
-    ["ZO_CharacterEquipmentSlotsBelt"] = true,
-    ["ZO_CharacterEquipmentSlotsFoot"] = true,
-    ["ZO_CharacterEquipmentSlotsCostume"] = true,
-    ["ZO_CharacterEquipmentSlotsNeck"] = true,
-    ["ZO_CharacterEquipmentSlotsRing1"] = true,
-    ["ZO_CharacterEquipmentSlotsRing2"] = true,
-    ["ZO_CharacterEquipmentSlotsMainHand"] = true,
-    ["ZO_CharacterEquipmentSlotsOffHand"] = true,
-    ["ZO_CharacterEquipmentSlotsPoison"] = true,
-    ["ZO_CharacterEquipmentSlotsBackupMain"] = true,
-    ["ZO_CharacterEquipmentSlotsBackupOff"] = true,
-    ["ZO_CharacterEquipmentSlotsBackupPoison"] = true,
+    [equipmentSlotPrefix .. "Head"] = true,
+    [equipmentSlotPrefix .. "Shoulder"] = true,
+    [equipmentSlotPrefix .. "Glove"] = true,
+    [equipmentSlotPrefix .. "Leg"] = true,
+    [equipmentSlotPrefix .. "Chest"] = true,
+    [equipmentSlotPrefix .. "Belt"] = true,
+    [equipmentSlotPrefix .. "Foot"] = true,
+    [equipmentSlotPrefix .. "Costume"] = true,
+    [equipmentSlotPrefix .. "Neck"] = true,
+    [equipmentSlotPrefix .. "Ring1"] = true,
+    [equipmentSlotPrefix .. "Ring2"] = true,
+    [equipmentSlotPrefix .. "MainHand"] = true,
+    [equipmentSlotPrefix .. "OffHand"] = true,
+    [equipmentSlotPrefix .. "Poison"] = true,
+    [equipmentSlotPrefix .. "BackupMain"] = true,
+    [equipmentSlotPrefix .. "BackupOff"] = true,
+    [equipmentSlotPrefix .. "BackupPoison"] = true,
 }
 
 --Table with the eqipment slot control names which are armor
@@ -2319,7 +2372,7 @@ mappingVars.contextMenuFilterButtonTypeToSettings = {}
 mappingVars.contextMenuButtonClickedMenuToButton = {
 	[contextMenuVars.availableCtms[FCOIS_CON_FILTER_BUTTON_LOCKDYN]] 		= FCOIS_CON_FILTER_BUTTON_LOCKDYN,
 	[contextMenuVars.availableCtms[FCOIS_CON_FILTER_BUTTON_GEARSETS]]		= FCOIS_CON_FILTER_BUTTON_GEARSETS,
-	[contextMenuVars.availableCtms[FCOIS_CON_FILTER_BUTTON_RESDECIMP]] 	= FCOIS_CON_FILTER_BUTTON_RESDECIMP,
+	[contextMenuVars.availableCtms[FCOIS_CON_FILTER_BUTTON_RESDECIMP]] 	    = FCOIS_CON_FILTER_BUTTON_RESDECIMP,
 	[contextMenuVars.availableCtms[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT]]	= FCOIS_CON_FILTER_BUTTON_SELLGUILDINT,
 }
 
@@ -2579,35 +2632,36 @@ end
 mappingVars.allLevels = {}
 
 --The additional inventory flag context menu anti-* settings buttons
-local buttonContextMenuDestroy  = "button_context_menu_toggle_anti_destroy_"
-local buttonContextMenuSell     = "button_context_menu_toggle_anti_sell_"
-local buttonContextMenuRefine   = "button_context_menu_toggle_anti_refine_"
-local buttonContextMenuDecon    = "button_context_menu_toggle_anti_deconstruct_"
-local buttonContextMenuImprove  = "button_context_menu_toggle_anti_improve_"
+local buttonContextMenuToggleAntiPrefix = "button_context_menu_toggle_anti_"
+local buttonContextMenuDestroy  = buttonContextMenuToggleAntiPrefix .."destroy_"
+local buttonContextMenuSell     = buttonContextMenuToggleAntiPrefix .."sell_"
+local buttonContextMenuRefine   = buttonContextMenuToggleAntiPrefix .."refine_"
+local buttonContextMenuDecon    = buttonContextMenuToggleAntiPrefix .."deconstruct_"
+local buttonContextMenuImprove  = buttonContextMenuToggleAntiPrefix .."improve_"
 mappingVars.contextMenuAntiButtonsAtPanel = {
     [LF_INVENTORY] 				= buttonContextMenuDestroy,
     [LF_BANK_WITHDRAW] 			= buttonContextMenuDestroy,
     [LF_BANK_DEPOSIT] 			= buttonContextMenuDestroy,
     [LF_GUILDBANK_WITHDRAW] 	= buttonContextMenuDestroy,
     [LF_GUILDBANK_DEPOSIT]		= buttonContextMenuDestroy,
-    [LF_VENDOR_BUY] 			= "button_context_menu_toggle_anti_buy_",
+    [LF_VENDOR_BUY] 			= buttonContextMenuToggleAntiPrefix .."buy_",
     [LF_VENDOR_SELL] 			= buttonContextMenuSell,
-    [LF_VENDOR_BUYBACK] 		= "button_context_menu_toggle_anti_buyback_",
-    [LF_VENDOR_REPAIR] 			= "button_context_menu_toggle_anti_repair_",
+    [LF_VENDOR_BUYBACK] 		= buttonContextMenuToggleAntiPrefix .."buyback_",
+    [LF_VENDOR_REPAIR] 			= buttonContextMenuToggleAntiPrefix .."repair_",
     [LF_SMITHING_REFINE]  		= buttonContextMenuRefine,
     [LF_SMITHING_DECONSTRUCT]  	= buttonContextMenuDecon,
     [LF_SMITHING_IMPROVEMENT]	= buttonContextMenuImprove,
     [LF_SMITHING_RESEARCH]		= "",
     [LF_SMITHING_RESEARCH_DIALOG] = "",
     [LF_GUILDSTORE_SELL] 	 	= buttonContextMenuSell,
-    [LF_MAIL_SEND] 				= "button_context_menu_toggle_anti_mail_",
-    [LF_TRADE] 					= "button_context_menu_toggle_anti_trade_",
-    [LF_ENCHANTING_CREATION]	= "button_context_menu_toggle_anti_create_",
-    [LF_ENCHANTING_EXTRACTION]	= "button_context_menu_toggle_anti_extract_",
-    [LF_FENCE_SELL] 			= "button_context_menu_toggle_anti_fence_sell_",
-    [LF_FENCE_LAUNDER] 			= "button_context_menu_toggle_anti_launder_sell_",
+    [LF_MAIL_SEND] 				= buttonContextMenuToggleAntiPrefix .."mail_",
+    [LF_TRADE] 					= buttonContextMenuToggleAntiPrefix .."trade_",
+    [LF_ENCHANTING_CREATION]	= buttonContextMenuToggleAntiPrefix .."create_",
+    [LF_ENCHANTING_EXTRACTION]	= buttonContextMenuToggleAntiPrefix .."extract_",
+    [LF_FENCE_SELL] 			= buttonContextMenuToggleAntiPrefix .."fence_sell_",
+    [LF_FENCE_LAUNDER] 			= buttonContextMenuToggleAntiPrefix .."launder_sell_",
     [LF_CRAFTBAG]				= buttonContextMenuDestroy,
-    [LF_RETRAIT]				= "button_context_menu_toggle_anti_retrait_",
+    [LF_RETRAIT]				= buttonContextMenuToggleAntiPrefix .."retrait_",
     [LF_HOUSE_BANK_WITHDRAW]    = buttonContextMenuDestroy,
     [LF_HOUSE_BANK_DEPOSIT] 	= buttonContextMenuDestroy,
     [LF_JEWELRY_REFINE]  		= buttonContextMenuRefine,
@@ -2810,6 +2864,3 @@ mappingVars.iconNrToOrdinalStr = {
         [30] = "trentième",
     },
 }
-
---The global variable for the use temporary "UniqueIds" API
-FCOIS.temporaryUseUniqueIds = {}

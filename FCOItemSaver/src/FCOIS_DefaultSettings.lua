@@ -21,7 +21,7 @@ function FCOIS.buildDefaultSettings()
 		languageChosen				= false,
 		alwaysUseClientLanguage		= true,
 		remindUserAboutSavedVariablesBackup = true,
-		markedItems	 		    	= {},
+		--markedItems	 		    	= {}, --> moved down to use dynamic name of the table entry
 		icon		 		    	= {},
 		iconPosition				= {},
 		iconPositionCrafting		= {},
@@ -277,6 +277,24 @@ function FCOIS.buildDefaultSettings()
 		useUniqueIds				= false,
 		useUniqueIdsToggle          = nil,
 		uniqueItemIdType			= FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE, -- Realy unique ids by ZOS
+		uniqueIdParts				= {
+			level = true,
+			quality = true,
+			trait = true,
+			style = true,
+			enchantment = true,
+			isStolen = true,
+			isCrafted = true,
+			isCraftedBy = true,
+		},
+		allowedUniqueIdItemTypes = {
+			[ITEMTYPE_ARMOR]	= true,
+			[ITEMTYPE_WEAPON] 	= true,
+		},
+		allowedFCOISUniqueIdItemTypes = {
+			[ITEMTYPE_ARMOR]	= true,
+			[ITEMTYPE_WEAPON] 	= true,
+		}, --will be filled with all other available itemtypes further down below, value = false!
 		showFilteredItemCount		= false,
 		showTransmutationGeodeLootDialog = true,
 		addContextMenuLeadingMarkerIcon = true,
@@ -306,6 +324,17 @@ function FCOIS.buildDefaultSettings()
 		keybindMoveItemToJunkAddSellIcon = false,
 		markerIconOffset = {}
 	}
+	--The tables for the markedItems, non-unique and unique
+	local addonVars = FCOIS.addonVars
+	--Added with FCOIS v2.0.2
+	--Different tables for normal "signed" itemInstanceId/ZOs really uniqueId string markerIcons in the SavedVariables,
+	--or FCOIS created uniqueIds as string (containing different parts like level, quality, trait, crafted state, etc.)
+	local savedVarsMarkedItemsNames = addonVars.savedVarsMarkedItemsNames
+	--"markedItems" table for non-unique and ZOs unique (FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE) marker icons
+	FCOIS.settingsVars.defaults[savedVarsMarkedItemsNames[false]] = {}
+	--"markedItemsFCOISUnique" table for FCOIS unique (FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE) marker icons
+	FCOIS.settingsVars.defaults[savedVarsMarkedItemsNames[FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE]] = {}
+
 	--Local constant values for speed-up
 	local numLibFiltersFilterPanelIds   = FCOIS.numVars.gFCONumFilterInventoryTypes
 	local activeFilterPanelIds          = FCOIS.mappingVars.activeFilterPanelIds
@@ -380,8 +409,10 @@ function FCOIS.buildDefaultSettings()
 	for filterIconHelper = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
 		local isIconDynamic = iconIsDynamic[filterIconHelper]
 
-		--Marker icons in inventories
-		FCOIS.settingsVars.defaults.markedItems[filterIconHelper] 	= {}
+		--Marker icons in inventories - non-unique & unique
+		FCOIS.settingsVars.defaults[savedVarsMarkedItemsNames[false]][filterIconHelper] = {}
+		FCOIS.settingsVars.defaults[savedVarsMarkedItemsNames[FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE]][filterIconHelper] = {}
+
 		--Defaults for filter button offsets
 		FCOIS.settingsVars.defaults.filterButtonTop[filterIconHelper]  = FCOIS.filterButtonVars.gFilterButtonTop
 		FCOIS.settingsVars.defaults.filterButtonLeft[filterIconHelper] = FCOIS.filterButtonVars.gFilterButtonLeft[filterIconHelper]
@@ -648,4 +679,17 @@ function FCOIS.buildDefaultSettings()
 		y 		= -12,
 		scale 	= 90,
 	}
+
+	--Added with FCOIS v2.0.1
+	--UniqueId created by FCOIS -> allowed itemTypes.
+	--For all itemTypes: Add them as disabled in the defaults.
+	-->Armor and weapon are already defined at the table above as "true", so they will be skipped here
+	local itemTypeMax = FCOIS.numVars.maxItemType
+	--If not given set it to current maximum = 71 -> ITEMTYPE_GROUP_REPAIR
+	local allowedFCOISUniqueIdItemTypes = FCOIS.settingsVars.defaults.allowedFCOISUniqueIdItemTypes
+	for itemType=ITEMTYPE_NONE, itemTypeMax, 1 do
+		if itemType > 0 and allowedFCOISUniqueIdItemTypes[itemType] == nil then
+			FCOIS.settingsVars.defaults.allowedFCOISUniqueIdItemTypes[itemType] = false
+		end
+	end
 end

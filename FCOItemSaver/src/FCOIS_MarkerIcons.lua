@@ -6,7 +6,6 @@ if not FCOIS.libsLoadedProperly then return end
 
 local addonVars = FCOIS.addonVars
 local numFilterIcons = FCOIS.numVars.gFCONumFilterIcons
-local checkIfFCOISSettingsWereLoaded = FCOIS.checkIfFCOISSettingsWereLoaded
 
 -- =====================================================================================================================
 --  Other AddOns helper functions
@@ -1081,10 +1080,8 @@ function FCOIS.MarkAllEquipment(rowControl, markId, updateNow, doHide)
                     if markId ~= nil and bag ~= nil and slot ~= nil then
                         itemId = FCOIS.MyGetItemInstanceIdNoControl(bag, slot, true)
                         if doHide == true then
-                            --FCOIS.markedItems[markId][itemId] = nil
                             FCOIS.MarkItem(bag, slot, markId, false, false)
                         else
-                            --FCOIS.markedItems[markId][itemId] = true
                             FCOIS.MarkItem(bag, slot, markId, true, false)
                         end
                         --Update the texture, create it if not there yet
