@@ -157,7 +157,7 @@ local function updateLibShifterBox(parentCtrl, shifterBox, boxName)
 
     updateLibShifterBoxEntries(parentCtrl, shifterBox, boxName)
 
-    --updateLibShifterBoxState(parentCtrl, shifterBox, boxName)
+    updateLibShifterBoxState(parentCtrl, shifterBox, boxName)
 
     --Add the callback function to the entry was moved event
     shifterBox:RegisterCallback(lsb.EVENT_ENTRY_MOVED, myShifterBoxEventEntryMovedCallbackFunction)
