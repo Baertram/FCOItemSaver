@@ -238,7 +238,7 @@ function FCOIS.MyGetItemInstanceIdNoControl(bagId, slotIndex, signToo)
         if settings.useUniqueIds == true and allowedItemType == true then
             --Prevent calling FCOIS.SignItemId:
             --Unique IDs do not need to be signed as only numbers get signed but uniqueIds are Strings
-            return itemId
+            return itemId, allowedItemType
         end
     end
     if signToo == true then
@@ -250,7 +250,7 @@ function FCOIS.MyGetItemInstanceIdNoControl(bagId, slotIndex, signToo)
             return FCOIS.MyGetItemInstanceIdLastIdSigned
         end
     end
-    return itemId
+    return itemId, allowedItemType
 end
 
 --LAGGY if applied to multiple items at once! So only use for backup.

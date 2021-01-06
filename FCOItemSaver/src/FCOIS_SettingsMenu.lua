@@ -74,6 +74,10 @@ local svAllAccountsName = FCOIS.svAllAccountsName
 local doNotRunDropdownValueSetFunc = false
 
 local editBoxesToSetTextTypes
+
+local iconsList, iconsListValues
+local iconsListNone, iconsListValuesNone
+
 --==========================================================================================================================================
 --									FCOIS libAddonMenu 2.x settings menu
 --==========================================================================================================================================
@@ -204,29 +208,42 @@ local function setSettingsMenuEditBoxTextTypes()
         end
     end
 end
--- ============= local helper functions - END ======================================================================
 
+local function updateIconsList(typeToBuild, withIcons, withNoneEntry)
+    --Build the icons & choicesValues list for the LAM icon dropdown boxes
+    local iconsListTmp, iconsListValuesTmp = FCOIS.GetLAMMarkerIconsDropdown(typeToBuild, withIcons, withNoneEntry)
+    if typeToBuild == "standard" then
+        if withNoneEntry == true then
+            iconsListNone                   = iconsListTmp
+            iconsListValuesNone             = iconsListValuesTmp
+            FCOIS.LAMiconsListNone          = iconsListNone
+            FCOIS.LAMiconsListValuesNone    = iconsListValuesNone
+        else
+            iconsList                   = iconsListTmp
+            iconsListValues             = iconsListValuesTmp
+            FCOIS.LAMiconsList          = iconsList
+            FCOIS.LAMiconsListValues    = iconsListValues
+        end
+    end
+end
+
+-- ============= local helper functions - END ======================================================================
 
 -- ============= local settings control create helper functions - BEGIN ===========================================
     --Build the icons & choicesValues list for the LAM icon dropdown boxes
-    local iconsList, iconsListValues = FCOIS.GetLAMMarkerIconsDropdown('standard', true, false)
-    FCOIS.LAMiconsList = iconsList
-    FCOIS.LAMiconsListValues = iconsListValues
+    updateIconsList("standard", true, false)
     --Build the icons list with a first entry "None"
-    local iconsListNone, iconsListValuesNone = FCOIS.GetLAMMarkerIconsDropdown('standard', true, true)
-    FCOIS.LAMiconsListNone = iconsListNone
-    FCOIS.LAMiconsListValuesNone = iconsListValuesNone
-    --Build the icons list and the keybindings icons list
-    --local iconsListStandardIconOnKeybind = FCOIS.GetLAMMarkerIconsDropdown('keybinds', false, false)
+    updateIconsList("standard", true, true)
+
 
     --The table with all the LAM dropdown controls that should get updated
     local LAMdropdownsWithIconList = {
-        ["FCOItemSaver_Standard_Icon_On_Keybind_Dropdown"]              = { ["choices"] = 'standard', ["choicesValues"] = iconsListValues, ["choicesTooltips"] = nil },
-        ["FCOItemSaver_Icon_On_Automatic_Set_Part_Dropdown"]            = { ["choices"] = 'standard', ["choicesValues"] = iconsListValues, ["choicesTooltips"] = nil },
-        ["FCOItemSaver_Icon_On_Automatic_Non_Wished_Set_Part_Dropdown"] = { ["choices"] = 'standard', ["choicesValues"] = iconsListValues, ["choicesTooltips"] = nil },
-        ["FCOItemSaver_Icon_On_Automatic_Crafted_Items_Dropdown"]       = { ["choices"] = 'standard', ["choicesValues"] = iconsListValues, ["choicesTooltips"] = nil },
-        ["FCOItemSaver_Icon_On_Automatic_Recipe_Dropdown"]              = { ["choices"] = 'standard', ["choicesValues"] = iconsListValues, ["choicesTooltips"] = nil },
-        ["FCOItemSaver_Icon_On_Automatic_Quality_Dropdown"]             = { ["choices"] = 'standard', ["choicesValues"] = iconsListValues, ["choicesTooltips"] = nil },
+        ["FCOItemSaver_Standard_Icon_On_Keybind_Dropdown"]              = { ["choices"] = 'standard', ["choicesValues"] = iconsListValues, ["choicesTooltips"] = nil, ["withIcons"] = true, ["withNoneEntry"] = false, },
+        ["FCOItemSaver_Icon_On_Automatic_Set_Part_Dropdown"]            = { ["choices"] = 'standard', ["choicesValues"] = iconsListValues, ["choicesTooltips"] = nil, ["withIcons"] = true, ["withNoneEntry"] = false, },
+        ["FCOItemSaver_Icon_On_Automatic_Non_Wished_Set_Part_Dropdown"] = { ["choices"] = 'standard', ["choicesValues"] = iconsListValues, ["choicesTooltips"] = nil, ["withIcons"] = true, ["withNoneEntry"] = false,  },
+        ["FCOItemSaver_Icon_On_Automatic_Crafted_Items_Dropdown"]       = { ["choices"] = 'standard', ["choicesValues"] = iconsListValues, ["choicesTooltips"] = nil, ["withIcons"] = true, ["withNoneEntry"] = false,  },
+        ["FCOItemSaver_Icon_On_Automatic_Recipe_Dropdown"]              = { ["choices"] = 'standard', ["choicesValues"] = iconsListValues, ["choicesTooltips"] = nil, ["withIcons"] = true, ["withNoneEntry"] = false,  },
+        ["FCOItemSaver_Icon_On_Automatic_Quality_Dropdown"]             = { ["choices"] = 'standard', ["choicesValues"] = iconsListValues, ["choicesTooltips"] = nil, ["withIcons"] = true, ["withNoneEntry"] = false,  },
     }
 
     --Function to update the comboboxes of the LAM dropdowns holding the "iconList"/"iconsListStandardIconOnKeybind" entries
@@ -238,7 +255,7 @@ end
             local dropdownCtrl = WINDOW_MANAGER:GetControlByName(dropdownCtrlName, "")
             if dropdownCtrl == nil or updateData == nil then return nil end
             if updateData["choices"] == nil then updateData["choices"] = "standard" end
-            local choices, choicesValues, choicesTooltips = FCOIS.GetLAMMarkerIconsDropdown(updateData["choices"])
+            local choices, choicesValues, choicesTooltips = FCOIS.GetLAMMarkerIconsDropdown(updateData["choices"], updateData["withIcons"], updateData["withNoneEntry"])
             dropdownCtrl:UpdateChoices(choices, choicesValues, choicesTooltips)
         end
     end
@@ -293,6 +310,18 @@ end
 function FCOIS.BuildAddonMenu()
     --Update some settings for the libAddonMenu settings menu
     FCOIS.updateSettingsBeforeAddonMenu()
+
+    --Build the icons & choicesValues list for the LAM icon dropdown boxes
+    updateIconsList("standard", true, false)
+    --Build the icons list with a first entry "None"
+    updateIconsList("standard", true, true)
+
+    --LibShifterBox
+    local lsb = FCOIS.libShifterBox
+    local libShifterBoxes
+    if lsb then
+        libShifterBoxes = FCOIS.LibShifterBoxes
+    end
 
     --Variablen
     local srcServer     = noEntryValue
@@ -420,6 +449,7 @@ function FCOIS.BuildAddonMenu()
         end
         return false
     end
+    FCOIS.uniqueIdIsEnabledAndSetToFCOIS = uniqueIdIsEnabledAndSetToFCOIS
 
     local uniqueItemIdTypeChoices = {
         [1] = locVars["options_unique_id_base_game"],
@@ -991,6 +1021,9 @@ function FCOIS.BuildAddonMenu()
         --Get the amount of tracking states
         local STtrackingStates = SetTrack.GetMaxTrackStates()
         if STtrackingStates == nil or STtrackingStates <= 0 then return false end
+
+        --Build the icons list with a first entry "None"
+        updateIconsList("standard", true, true)
 
         --The return array for the LAM panel
         local createdSetTrackerDDBoxes = {}
@@ -2412,6 +2445,7 @@ function FCOIS.BuildAddonMenu()
 
     --Hide/Show the FCOIS LAM menu container now and show
     --a placeholder "Loading" meanwhile if the menu is hidden
+    --[[
     local function ChangeFCOISLamMenuVisibleState(doHide)
         if not FCOIS.FCOSettingsPanel then return end
         FCOIS.FCOSettingsPanel.container:SetHidden(doHide)
@@ -2432,6 +2466,7 @@ function FCOIS.BuildAddonMenu()
             fcoisCurrentlyLoadingPlaceHolderLable:SetHidden(not doHide)
         end
     end
+    ]]
     --==================== LAM controls - BEGIN =====================================
     --LAM 2.0 callback function if the panel was created
     local lamPanelCreationInitDone = false
@@ -2709,11 +2744,18 @@ function FCOIS.BuildAddonMenu()
                     name = locVars["options_unique_id_parts_header"],
                 },
                 {
+                    type = "description",
+                    text = locVars["options_unique_id_by_FCOIS_info"],
+                },
+                {
                     type = "checkbox",
                     name = locVars["options_unique_id_part_itemId"],
                     tooltip = locVars["options_unique_id_part_itemId"],
                     getFunc = function() return true end,
                     setFunc = function(value)
+                        --Currntly the box is disabled as the itemId always needs to be added
+                        --FCOISsettings.uniqueIdParts.itemId = value
+                        FCOISsettings.uniqueIdParts.itemId = true
                     end,
                     default = true,
                     disabled = function() return true end, --this cannot be removed but should be "shown as a part of the uniqueID"
@@ -2815,81 +2857,101 @@ function FCOIS.BuildAddonMenu()
                     disabled = function() return not uniqueIdIsEnabledAndSetToFCOIS() or not FCOISsettings.uniqueIdParts.isCrafted end,
                     width = "half",
                 },
+
+
                 --==============================================================================
-                --The parts of the uniqueId (these will build the uniqueId if the user has chosen the FCOIS internally
-                --created uniqueId
+                --LibShifterBox: ItemTypes for uniqueIds by FCOIS
                 {
-                    type = 'header',
-                    name = locVars["options_header_migration_ids"],
+                    type = "custom",
+                    reference = (lsb and libShifterBoxes["FCOISuniqueIdItemTypes"].name) or "FCOITEMSAVER_LAM_CUSTOM___FCOIS_UNIQUEID_ITEMTYPES",
+                    createFunc = function(customControl)
+                        if not lsb then return end
+                        FCOIS.createLibShifterBox(customControl, "FCOISuniqueIdItemTypes")
+                    end,
+                    width="full",
+                    minHeight = 220,
+                    disabled = function() return not uniqueIdIsEnabledAndSetToFCOIS() end,
                 },
 
-                --Migrate the item markers from itemInstanceid to UniqueId
-                {
-                    type = "button",
-                    name = locVars["options_migrate_uniqueids"],
-                    tooltip = locVars["options_migrate_uniqueids" .. tooltipSuffix],
-                    func = function()
-                        if FCOISsettings.useUniqueIds == true then
-                            FCOIS.preventerVars.migrateToItemInstanceIds = false
-                            FCOIS.preventerVars.migrateToUniqueIds = true
-                            FCOIS.migrateMarkerIcons()
-                        end
-                    end,
-                    isDangerous = true,
-                    disabled = function() return not FCOISsettings.useUniqueIds end,
-                    warning = locVars["options_migrate_uniqueids_warning"],
-                    width="half",
-                },
-                {
-                    type = "button",
-                    name = locVars["options_migrate_iteminstanceids"],
-                    tooltip = locVars["options_migrate_iteminstanceids" .. tooltipSuffix],
-                    func = function()
-                        if FCOISsettings.useUniqueIds == false then
-                            FCOIS.preventerVars.migrateToUniqueIds = false
-                            FCOIS.preventerVars.migrateToItemInstanceIds = true
-                            FCOIS.migrateMarkerIcons()
-                        end
-                    end,
-                    isDangerous = true,
-                    disabled = function() return FCOISsettings.useUniqueIds end,
-                    warning = locVars["options_migrate_iteminstanceids_warning"],
-                    width="half",
-                },
-                --[[
-                --ReloadUI button
-                {
-                    type = "button",
-                    name = "Reload UI",
-                    tooltip = "Reload UI",
-                    func = function()
-                        ReloadUI()
-                    end,
-                    isDangerous = true,
-                    disabled = function()
-                        if FCOISsettings.useUniqueIdsToggle == nil then return true end
-                        if FCOISsettings.useUniqueIdsToggle then
-                            if FCOISsettings.useUniqueIds then
-                                --Disable the ReloadUI button if the unique IDs should be used, and they are already enabled
-                                return true
-                            else
-                                --Enable the ReloadUI button if the unique IDs should be used, and they are not already enabled
-                                return false
-                            end
-                        else
-                            if FCOISsettings.useUniqueIds then
-                                --Enable the ReloadUI button if the unique IDs should not be used, and they are already enabled
-                                return false
-                            else
-                                --Disable the ReloadUI button if the unique IDs should not be used, and they are not already enabled
-                                return true
-                            end
-                        end
-                    end,
-                    width="half",
-                },
-                ]]
 
+                --==============================================================================
+                --Migration
+                {
+                    type = 'submenu',
+                    name = locVars["options_header_migration"],
+                    controls = {
+                        {
+                            type = 'header',
+                            name = locVars["options_header_migration_ids"],
+                            --helpUrl = locVars["options_header_ZOsLock"],
+                        },
+                        --Migrate the item markers from itemInstanceid to UniqueId
+                        {
+                            type = "button",
+                            name = locVars["options_migrate_uniqueids"],
+                            tooltip = locVars["options_migrate_uniqueids" .. tooltipSuffix],
+                            func = function()
+                                if FCOISsettings.useUniqueIds == true then
+                                    FCOIS.preventerVars.migrateToItemInstanceIds = false
+                                    FCOIS.preventerVars.migrateToUniqueIds = true
+                                    FCOIS.migrateMarkerIcons()
+                                end
+                            end,
+                            isDangerous = true,
+                            disabled = function() return not FCOISsettings.useUniqueIds end,
+                            warning = locVars["options_migrate_uniqueids_warning"],
+                            width="half",
+                        },
+                        {
+                            type = "button",
+                            name = locVars["options_migrate_iteminstanceids"],
+                            tooltip = locVars["options_migrate_iteminstanceids" .. tooltipSuffix],
+                            func = function()
+                                if FCOISsettings.useUniqueIds == false then
+                                    FCOIS.preventerVars.migrateToUniqueIds = false
+                                    FCOIS.preventerVars.migrateToItemInstanceIds = true
+                                    FCOIS.migrateMarkerIcons()
+                                end
+                            end,
+                            isDangerous = true,
+                            disabled = function() return FCOISsettings.useUniqueIds end,
+                            warning = locVars["options_migrate_iteminstanceids_warning"],
+                            width="half",
+                        },
+
+                        {
+                            type = 'header',
+                            name = locVars["options_header_ZOsLock"],
+                            --helpUrl = locVars["options_header_ZOsLock"],
+                        },
+                        {
+                            type = "button",
+                            name = locVars["options_scan_ZOs_lock_functions"],
+                            tooltip = locVars["options_scan_ZOs_lock_functions" .. tooltipSuffix],
+                            func = function() FCOIS.scanInventoriesForZOsLockedItems(true)
+                            end,
+                            isDangerous = true,
+                            --disabled = function() return FCOISsettings.useZOsLockFunctions end,
+                            warning = locVars["options_scan_ZOs_lock_functions_warning"],
+                            width="half",
+                            --helpUrl = locVars["options_scan_ZOs_lock_functions"],
+                        },
+
+                    }, -- submenu controls "migraion"
+                },-- submenu "migraion"
+
+            } -- controls submenu general options
+        }, -- submenu general options
+        --==============================================================================
+        -- vvv OTHER ICONS vvv
+        --==============================================================================
+        {
+            type = "submenu",
+            name = locVars["options_header" .. colorSuffix],
+            controls =
+            {
+                --==============================================================================
+                --TESO standard lock icon
                 {
                     type = 'header',
                     name = locVars["options_header_ZOsLock"],
@@ -2906,28 +2968,6 @@ function FCOIS.BuildAddonMenu()
                     default = FCOISdefaultSettings.useZOsLockFunctions,
                     --helpUrl = locVars["options_scan_ZOs_lock_functions"],
                 },
-                {
-                    type = "button",
-                    name = locVars["options_scan_ZOs_lock_functions"],
-                    tooltip = locVars["options_scan_ZOs_lock_functions" .. tooltipSuffix],
-                    func = function() FCOIS.scanInventoriesForZOsLockedItems(true)
-                    end,
-                    isDangerous = true,
-                    disabled = function() return FCOISsettings.useZOsLockFunctions end,
-                    warning = locVars["options_scan_ZOs_lock_functions_warning"],
-                    width="half",
-                    --helpUrl = locVars["options_scan_ZOs_lock_functions"],
-                },
-            } -- controls submenu general options
-        }, -- submenu general options
-        --==============================================================================
-        -- vvv OTHER ICONS vvv
-        --==============================================================================
-        {
-            type = "submenu",
-            name = locVars["options_header" .. colorSuffix],
-            controls =
-            {
                 --==============================================================================
                 {
                     type = "description",

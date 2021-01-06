@@ -17,6 +17,10 @@
    ä : \195\164    ö : \195\182    ü : \195\188
    ã : \195\163    õ : \195\181  				   \195\177 : \195\177
 ]]
+--The "lock" icon texturepath
+local lockIconPath = "FCOItemSaver/FCOIS.dds"
+local lockIcon = "|t32:32:"..lockIconPath.."|t"
+
 --Move the localization vars to the global data
 local FCOIS = FCOIS
 
@@ -111,7 +115,7 @@ FCOIS.localizationVars.localizationAll = {
         ["options_description_uniqueids"]   = "Your ingame items got an ID. This ID is the same if some of the item's base data equals: like the name, level, quality (e.g. a lockpick and a stolen lockpick got the same ID). These non-unique ID (named \'ItemInstanceId') is the standard behaviour of FCO ItemSaver to mark and remember the marked items!\n\nBut each item also got a unique ID too (named \'UniqueId'). Additional to the normal itemInstance ID's differences the unique item ID is not the same, if the item is enchanted, got a different style, trait, if it's stolen, etc. Unique item IDs enable you to mark these items differently but it will need you to mark each of the items you haven't marked already in the past with a given combination of the before mentioned criteria.\n\nYou are able to choose here between the non-unique ItemInstanceId, and some types of uniqueIds, to save the marker icons on your items. |c75daffPlease read the tooltip (open the dropdown box->move the mouse above the entries) of the dropdown box \'Type of unique ID\'' entries for the info about the different unique IDs. You need to enable the checkbox \'Use unique item IDs\' in order to be able to open the dropdownbox.|r\n\n|cFF0000Caution: Changing this option will reload te UI! You are able to define your uniqueId type below after that reload.|r",
         ["options_use_uniqueids"]           = "Use unique item IDs",
         ["options_use_uniqueids_TT"]        = "Enabled:\nUse uniqueIds.\n\nSee tooltip of option\"Unique Item ID\" for further details!\n\n\nDisabled:\nUse the normal itemIds and mark all items with the same base data the same.\n\nAttention: Your already marked items will be saved for the used ID save method. Switching the modes will show you the saved marker icons again, but they will NOT be synchronized between itemId and uniqueIds!\n\n|cFF0000Caution: Changing this option will reload the user interface automatically!|r",
-        ["options_migrate_uniqueids"]           = "Migrate >uniqueId",
+        ["options_migrate_uniqueids"]           = "Migrate>uniqueId",
         ["options_migrate_uniqueids_TT"]   = "Migrate the marked items from the non-unique to the unique IDs.\nThis will mark all the same icons that you have marked with the non-unique settings before.\nThis way all items are still saved and you only need to remove/change the marker icons.\n\n|cFF0000This option will be disabled until you have enabled the unique IDs AND you have done a reload of the user interface!\nCome back here and click this button afterwards!|r",
         ["options_migrate_uniqueids_warning"]   = "This will migrate all non-unique ID markers to the unique IDs, for the same items.\nExisting marker icons will be kept and only new marker icons are added!\n\nThis migration cannot be undone! You'll need to remove the marked icons manually again.",
         ["options_migrate_uniqueids_dialog"]   = "Migrate marked items from non-unique to unique now?\n This will only add marker icons.\nNo marker icons will be removed.",
@@ -138,14 +142,14 @@ FCOIS.localizationVars.localizationAll = {
         ["options_migrate_bag_type_" .. tostring(BAG_HOUSE_BANK_NINE)] = GetString(SI_COLLECTIBLECATEGORYTYPE25) .. " 9",
         ["options_migrate_bag_type_" .. tostring(BAG_HOUSE_BANK_TEN)] = GetString(SI_COLLECTIBLECATEGORYTYPE25) .. " 10",
 
-        ["options_migrate_iteminstanceids"]     = "Migrate >ItemInstanceID",
+        ["options_migrate_iteminstanceids"]     = "Migrate>ItemInstanceID",
         ["options_migrate_iteminstanceids_TT"]   = "Migrate the marked items from the unique to the non-unique IDs.\nThis will mark all the same icons that you have marked with the unique settings before.\nThis way all items are still saved and you only need to remove/change the marker icons.\n\n|cFF0000This option will be disabled until you have enabled the unique IDs AND you have done a reload of the user interface!\nCome back here and click this button afterwards!|r",
         ["options_migrate_iteminstanceids_warning"]   = "This will migrate all unique ID markers to the non-unique IDs, for the same items.\nExisting marker icons will be kept and only new marker icons are added!\n\nThis migration cannot be undone! You'll need to remove the marked icons manually again.",
 
         ["options_header_ZOsLock"]                  = "ZOs ingame item lock",
-		["options_use_ZOs_lock_functions"] 			= "Enable ingame item lock",
-		["options_use_ZOs_lock_functions_TT"]	= "Enable/Disable the ingame item lock functionality provided be ZOs.",
-		["options_scan_ZOs_lock_functions"]			= "Ingame lock -> FCOIS lock",
+		["options_use_ZOs_lock_functions"] 			= "Enable ingame item lock "..lockIcon,
+		["options_use_ZOs_lock_functions_TT"]	= "Enable/Disable the ingame item lock functionality provided be ZOs.\nIs this setting disabled then the lock icon " ..lockIcon .." will be hidden in the context menus and inventories.",
+        ["options_scan_ZOs_lock_functions"]			= "TESO "..lockIcon.."->FCOIS "..lockIcon,
         ["options_scan_ZOs_lock_functions_TT"] = "Transfer the items that you got locked with the ingame lock funcitonality (gray lock icon) to the FCOItemSaver icon 1. This will unmark the ingame marker and mark the same item with FCOIS \'lock\' marker icon.\nIf you want to migrate your house bank bags as well be sure to be inside one of your houses at the time you start the migration!\n\nItems will be scanned in packages of 50 items so the server will not kick you for spam. Please wait for it to finish and check the chat messages.",
         ["options_scan_ZOs_lock_functions_warning"]	= "Do you really want to remove the ingame locks on your items and transfer them to FCOItemSaver's \'lock\' marker icon?\n\nItems will be scanned in packages of 50 items so the server will not kick you for spam. Please wait for it to finish and check the chat messages.",
 		["options_header_icon_options"]		 	 = "Icon position, sort, etc.",
@@ -1150,9 +1154,10 @@ FCOIS.localizationVars.localizationAll = {
         ["options_use_uniqueids_type"]          = "Type of unique ID",
         ["options_use_uniqueids_type_TT"]       = "Choose which type of the unique ID you want to use. The default type is the ZOs base game type. An alternative are the FCOIS own created uniqueIds, see checkboxes to define the parts of the self-created uniqueId below.\nPlease read the tooltips of this dropdownbox entries for more information!\n\n|cFF0000Caution: Changing this setting will automatically reload the user interface (/reloadui)!|r",
         ["options_unique_id_base_game"]         = "Use ZOs unique ID",
-        ["options_unique_id_base_game_TT"]      = "If you enable this type of unique ID, FCOIS will simply use the base game's given unique ID.\nThe unique ID of ZOs is really unique, means exactly the same items are still different as their unique ID differs. This will result in marker icons not applied automatically to the exactly same items.",
+        ["options_unique_id_base_game_TT"]      = "If you enable this type of unique ID, FCOIS will simply use the base game's given unique ID.\nThe unique ID of ZOs is really unique, means exactly the same items are still different as their unique ID differs. This will result in marker icons not applied automatically to the exactly same items.\n\nThis will only apply to weapons and armor. All other items are handled as non-unique items!",
         ["options_uniqe_id_by_FCOIS"]           = "Use FCOIS unique ID",
-        ["options_uniqe_id_by_FCOIS_TT"]        = "If you enable this type of unique ID, FCOIS will create an unique ID on it's own.\nThe unique ID is based on the item's itemInstanceId or itemId, level, quality, trait, style, enchantment, stolen state, crafted state.\nThis allows the addon to detect and mark the exactly same items properly with the same marker icons. The criteria like enchantment and trait will only be applied to armor/weapons/jewelry.\nYou are able to select below via the checkboxes which criteria should be used to build the uniqueIDs for you.",
+        ["options_uniqe_id_by_FCOIS_TT"]        = "If you enable this type of unique ID, FCOIS will create an unique ID on it's own.\nThe unique ID is based on the item's itemInstanceId or itemId, level, quality, trait, style, enchantment, stolen state, crafted state.\nThis allows the addon to detect and mark the exactly same items properly with the same marker icons.\n\nYou are able to select below via the checkboxes which criteria should be used to build the uniqueIDs for you. In addition you are able to select the item types which should be used for the uniqueIds (standard item types are weapons and armor). E.g. a potion could aso be distinguished via it's level, is crafted flag and crafter name. But some items like crafting materials always only provide the level 1 so it does not make sense to use a uniqueId on them.",
+        ["options_unique_id_by_FCOIS_info"]     = "You are able to select below via the checkboxes which criteria should be used to build the uniqueIDs for you. In addition you are able to select the item types which should be used for the uniqueIds (standard item types are weapons and armor). E.g. a potion could aso be distinguished via it's level, is crafted flag and crafter name. But some items like crafting materials always only provide the level 1 so it does not make sense to use a uniqueId on them.",
         ["options_unique_id_parts_header"]      = "Parts of the unique ID",
         ["options_unique_id_part_itemId"]       = "Item ID", -- Item ID
         ["options_unique_id_part_level"]        = GetString(SI_TRADINGHOUSEFEATURECATEGORY2), -- Level
@@ -1163,7 +1168,18 @@ FCOIS.localizationVars.localizationAll = {
         ["options_unique_id_part_stolen"]       = GetString(SI_GAMEPAD_ITEM_STOLEN_LABEL), -- Stolen
         ["options_unique_id_part_crafted"]      = GetString(SI_ITEM_FORMAT_STR_CRAFTED), -- Crafted
         ["options_unique_id_part_crafted_by"]   = GetString(SI_ITEM_FORMAT_STR_CRAFTED) .. " by", -- Crafted by
+        ["options_header_migration"]            = "Migration",
         ["options_header_migration_ids"]        = "(Non-)Unique ID migration",
+        --Migrate ZOs locks to FCOIS locks
+        ["migrate_ZOs_locks_to_FCOIS_locks_start"]              = "[FCOIS]Scan inventories for ZOs locked items: START",
+        ["migrate_ZOs_locks_to_FCOIS_locks_bagId"]              = ">Scanning bag ID: %s",
+        ["migrate_ZOs_locks_to_FCOIS_locks_migrated_at_bag"]    = ">>migrated at the bag %s: %s",
+        ["migrate_ZOs_locks_to_FCOIS_locks_end"]                = "[FCOIS]Scan inventories for ZOs locked items: FINISHED - migrated/scanned total: %s / %s",
+
+        --LibShifterBoxes
+        --[FCOIS_UNIQUEID_ITEMTYPES]
+        ["LIBSHIFTERBOX_FCOIS_UNIQUEID_ITEMTYPES_TITLE_LEFT"]   = "Item types (all)",
+        ["LIBSHIFTERBOX_FCOIS_UNIQUEID_ITEMTYPES_TITLE_RIGHT"]  = "Chosen for FCOIS unique ID",
     },
 --==============================================================================
 	--German / Deutsch
@@ -1237,7 +1253,7 @@ FCOIS.localizationVars.localizationAll = {
         ["options_description_uniqueids"]       = "Deine Gegenstände im Spiel besitzen eine ID. Diese ID ist für alle Gegenstände mit ähnlichen Grunddaten identisch (nicht-eindeutige ID), z.B. Name, Level und Qualität. Ein Dietrich und ein gestohlener Dietrich z.B. wären solche identischen Grunddaten Gegenstände. Diese nicht-eindeutigen IDs verwendet FCO ItemSaver als Standard, um die Markierungen an Gegenständen zu setzen und sich zu merken (die sogenannte \'ItemInstanceId\')!\n\nJeder Gegenstand besitzt aber auch noch eine eindeutige ID (die sogenannte \'UniqueId\'). Bei dieser werden Verzauberungen, Level, Stil, Trait, etc. diese eindeutige ID verändern! Eindeutige Gegenstand IDs erlauben es dir daher Gegenstände mit ähnlichen Grunddaten unterschiedlich zu markieren, aber dies verlangt, dass du eben alle diese eindeutigen Gegenstände wieder neu markieren musst, wenn sie in einer noch nicht markierten Kombination in dein Inventar gelangen.\n\nDu hast hier die nicht eindeutige ItemInstance-ID, sowie mehrere Typen der Unique-IDs zur Auswahl, um die Markierungen an deinen Gegenständen zu speichern. |c75daffBitte lies die Tooltips der Einträge (Aufklappbox aufklappen -> Maus über die Einträge bewegen) in der Aufklappbox \'Typ der eindeutigen ID\', um die Unterschiede der eindeutigen IDs zu erfahren. Du musst den Haken bei \'Nutze eindeutige Gegenstands IDs\' setzen, damit die Aufklappbox eingabebereit wird.|r\n\n|cFF0000Achtung: Das Verändern dieser Option lädt die Benutzeroberfläche neu (/reloadui)! Danach kannst du hier drunter deinen EindeutigenID Typ bestimmen.|r",
         ["options_use_uniqueids"]               = "Nutze eindeutige Gegenstands IDs",
         ["options_use_uniqueids_TT"]       = "Aktiviert:\nNutze eindeutige Gegenstand IDs.\n\nDeaktiviert:\nNutze die nicht-eindeutigen Gegenstand IDs und markiere alle Gegenstände mit denselben Grunddaten identisch (itemInstanceId).\n\nAchtung: Deine bereits markierten Gegenstände werden gesichert und wenn du zwischen den eindeutigen und nicht-eindeutigen Gegenstand IDs umschaltest, sind die Markierungen weiterhin vorhanden, und werden bei einem Wechsel dieser Einstellung wieder angezeigt. Die itemInstanceIds und EindeutigenIds können jedoch NICHT synchronisiert werden!\n\n|cFF0000Achtung: Die Benutzeroberfläche wird automatisch neuladen (/reloadui), wenn du diese Option verändert hast!|r",
-        ["options_migrate_uniqueids"]           = "Migriere >EindeutigeID",
+        ["options_migrate_uniqueids"]           = "Migriere>EindeutigeID",
         ["options_migrate_uniqueids_TT"]   = "Migriere die markierten Gegenstände von den nicht-eindeutigen zu den eindeutigen IDs.\nDies wird alle die Gegenstände mit denselben Markierungs-Symbolen markieren, welche du vorher mit den nicht-eindeutigen Einstellungen bereits markiert hattest.\nSo werden alle Gegenstände weiterhin gesichert und du musst die Markierungen nur ändern/entfernen.\n\n|cFF0000Diese Option ist solange deaktiviert, bis du die eindeutigen Gegenstand IDs aktiviert hast UND du die Benutzeroberfläche neugeladen (/reloadui) hast!\nNutze anschließend das Migrations Popup, oder komme hierhin zurück, um die Migration zu starten.|r",
         ["options_migrate_uniqueids_warning"]   = "Dies migriert alle Markierungen deiner nicht-eindeutigen Gegenstand IDs zu den eindeutigen IDs derselben Gegenständen.\nExistierende Markierungen werden dabei nicht entfernt und neue werden lediglich hinzugefügt!\n\nDiese Migration ist nicht umkehrbar! Du musst die migrierten Markierungen anschließend selbst wieder entfernen.",
         ["options_migrate_unique_inv_scan_not_done"]   = "Du hast den Gegenstand Markierungs-Modus auf eindeutige IDs geändert.\nDie automatischen Markierungen werden daher 1x nicht durchgeführt, damit du die Migration deiner alten Markierungen nun starten kannst, wenn du möchtest!",
@@ -1263,14 +1279,14 @@ FCOIS.localizationVars.localizationAll = {
         ["options_migrate_bag_type_" .. tostring(BAG_HOUSE_BANK_TEN)] = GetString(SI_COLLECTIBLECATEGORYTYPE25) .. " 10",
         ["options_migrate_uniqueids_dialog"]   = "Migriere jetzt markierte nicht-eindeutige Gegenstände\nzu eindeutigen?\n\nEs werden nur Markierungen hinzugefügt.\nEs werden keine Markierungen entfernt.",
         ["options_migrate_nonuniqueids_dialog"]   = "Migriere jetzt markierte eindeutige Gegenstände\nzu nicht-eindeutigen?\n\nEs werden nur Markierungen hinzugefügt.\nEs werden keine Markierungen entfernt.",
-        ["options_migrate_iteminstanceids"]     = "Migriere >ItemInstanceID",
+        ["options_migrate_iteminstanceids"]     = "Migriere>ItemInstanceID",
         ["options_migrate_iteminstanceids_TT"]  = "Migriere die markierten Gegenstände von den eindeutigen zu den nicht-eindeutigen IDs.\nDies wird alle die Gegenstände mit denselben Markierungs-Symbolen markieren, welche du vorher mit den eindeutigen Einstellungen bereits markiert hattest.\nSo werden alle Gegenstände weiterhin gesichert und du musst die Markierungen nur ändern/entfernen.\n\n|cFF0000Diese Option ist solange deaktiviert, bis du die nicht-eindeutigen Gegenstand IDs aktiviert hast UND du die Benutzeroberfläche neugeladen (/reloadui) hast!\nNutze anschließend das Migrations Popup, oder komme hierhin zurück, um die Migration zu starten.|r",
         ["options_migrate_iteminstanceids_warning"]   = "Dies migriert alle Markierungen deiner eindeutigen Gegenstand IDs zu den nicht-eindeutigen Ids derselben Gegenstände.\nExistierende Markierungen werden dabei nicht entfernt und neue werden lediglich hinzugefügt!\n\nDiese Migration ist nicht umkehrbar! Du musst die migrierten Markierungen anschließend selbst wieder entfernen.",
 
         ["options_header_ZOsLock"]                  = "ZOs Gegenstand-Sperre",
-        ["options_use_ZOs_lock_functions"] 			= "Aktiviere TESO Gegenstand-Sperre",
-        ["options_use_ZOs_lock_functions_TT"]	= "Aktiviere/Deaktiviere die vom Spiel-Programmierer ZOs mitgebrachte Gegenstand Sperre (graues Schloss Symbol)",
-        ["options_scan_ZOs_lock_functions"]			= "TESO Schloß->FCOIS Schloß",
+        ["options_use_ZOs_lock_functions"] 			= "Aktiviere TESO Gegenstand-Sperre " ..lockIcon,
+        ["options_use_ZOs_lock_functions_TT"]	= "Aktiviere/Deaktiviere die vom Spiel-Programmierer ZOs mitgebrachte Gegenstand Sperre (graues Schloss Symbol "..lockIcon..").\nIst diese Option deaktiviert so wird der Eintrag im Kontextmenü, als auch die Symbole, in den Inventaren versteckt.",
+        ["options_scan_ZOs_lock_functions"]			= "TESO "..lockIcon.."->FCOIS "..lockIcon,
         ["options_scan_ZOs_lock_functions_TT"]      = "Transferiert die Gegenstände, welche im Spiel mit der standard Gegenstandssperre (graues Schloss) geschützt wurden zur FCOItemSaver \'Schloß\' Markierung. D.h. die bisher durch das Spiel markierten, und dadurch geschützten, Gegenstände verlieren die Spiel-Markierung und werden auf das FCOIS Symbol 1 (Schloss Symbol) gewechselt, so dass diese Gegenstände nun durch FCOIS umfangreicher geschützt werden.\nBitte beachte, dass du dich in deinem Haus befinden musst, wenn du die Haus Banken mit migrieren möchtest!\n\nGegenstände werden in 50er Paketen gescannt. Dies dauert etwas. Bitte beachte den Chat!",
         ["options_scan_ZOs_lock_functions_warning"]	= "Wollen Sie wirklich den Gegenstands-Schutz vom Standard Schloss Symbol zum FCOItemSaver \'Schloss\' Symbol übertragen?\n\nGegenstände werden in 50er Paketen gescannt. Dies dauert etwas. Bitte beachte den Chat!",
         ["options_header_icon_options"]		 	 = "Symbol Position, Sortierung, etc.",
@@ -2260,12 +2276,24 @@ FCOIS.localizationVars.localizationAll = {
         ["options_use_uniqueids_type"]          = "Typ der eindeutigen ID",
         ["options_use_uniqueids_type_TT"]       = "Wähle welchen Typ der eindeutigen ID du verwenden möchtest. Der Default Typ ist die eindeutige ID des ZOs Standard-Spiels. Eine Alternative sind die FCOIS selbst-erstellten Eindeutigen Ids, deren Aufbau/Bestandteile du mit den Auswahlfeldern hier drunter definieren kannst.\nBitte lies die Tooltips der Einträge in dieser Aufklappbox um mehr Informationen zu erhalten!\n\n|cFF0000Achtung: Das Verändern dieser Option wird die Benutzeroberfläche automatisch neu laden (/reloadui)!|r",
         ["options_unique_id_base_game"]         = "Nutze ZO\'s eindeutige ID",
-        ["options_unique_id_base_game_TT"]      = "Wenn du diesen Typ der eindeutigen ID auswählst, dann verwendet FCOIS die eindeutige ID von ZOs.\nDie eindeutige ID von ZOs ist wirklich eindeutig, auch wenn genau identische Gegenstände vorliegen. Dies bedeutet, dass die Markierungssymbole bei diesen Gegenständen erneut gesetzt werden müssen, auch wenn der gleiche Gegenstand bereits einmal markiert wurde.",
+        ["options_unique_id_base_game_TT"]      = "Wenn du diesen Typ der eindeutigen ID auswählst, dann verwendet FCOIS die eindeutige ID von ZOs.\nDie eindeutige ID von ZOs ist wirklich eindeutig, auch wenn genau identische Gegenstände vorliegen. Dies bedeutet, dass die Markierungssymbole bei diesen Gegenständen erneut gesetzt werden müssen, auch wenn der gleiche Gegenstand bereits einmal markiert wurde.\n\Dies wird jedoch nur auf Waffen und Rüstung angewendet. Alle anderen Gegenstände verwenden weiterhin die nicht-Eindeutigen IDs.",
         ["options_uniqe_id_by_FCOIS"]           = "Nutze FCOIS\' eindeutige ID",
-        ["options_uniqe_id_by_FCOIS_TT"]        = "Wenn du diesen Typ der eindeutigen ID auswählst, dann verwendet FCOIS die eigen erstellten eindeutigen IDs.\nDiese eindeutigen IDs von FCOIS verwenden die Gegenstandsdaten wie die interne Id, Level, Qualität, Eigenschaft, Stil, Verzauberung, gestohlen & handwerklich hergestellt Status, Handwerker Name.\nDies ermöglicht dem AddOn identische Gegenstände auch automatisch erneut zu markieren. Dabei werden Daten wie die Verzauberung, Eigenschaft auch nur bei Waffen/Rüstung/Schmuck entsprechend berücksichtigt.\nDu kannst hier drunter die Checkboxen markieren, welche für die Erstellung der eindeutigen ID herangezogen werden sollen.",
+        ["options_uniqe_id_by_FCOIS_TT"]        = "Wenn du diesen Typ der eindeutigen ID auswählst, dann verwendet FCOIS die eigen erstellten eindeutigen IDs.\nDiese eindeutigen IDs von FCOIS verwenden die Gegenstandsdaten wie die interne Id, Level, Qualität, Eigenschaft, Stil, Verzauberung, gestohlen & handwerklich hergestellt Status, Handwerker Name.\nDies ermöglicht dem AddOn identische Gegenstände auch automatisch erneut zu markieren.\n\nDu kannst hier drunter die Checkboxen markieren, welche für die Erstellung der eindeutigen ID herangezogen werden sollen. Ebenso kannst du dort die Gegenstandstypen definieren, welche per Eindeutiger ID behandelt werden sollen. Der (sinnvolle) Standard sind Waffen und Rüstung (inkl. Schmuck). Aber Tränke könnten z.B. ebenso per Level oder Handwerklich hergestellt Kennzeichen eine eindeutige ID erhalten. Aber wenn das Level vom Spiel z.B. immer als 1 ermittelt wird (Handwerkszutaten z.B.), dann macht es wiederum keinen Sinn das Level dafür zu verwenden.",
+        ["options_unique_id_by_FCOIS_info"]     = "Du kannst hier drunter die Checkboxen markieren, welche für die Erstellung der eindeutigen ID herangezogen werden sollen. Ebenso kannst du dort die Gegenstandstypen definieren, welche per Eindeutiger ID behandelt werden sollen. Der (sinnvolle) Standard sind Waffen und Rüstung (inkl. Schmuck). Aber Tränke könnten z.B. ebenso per Level oder Handwerklich hergestellt Kennzeichen eine eindeutige ID erhalten. Aber wenn das Level vom Spiel z.B. immer als 1 ermittelt wird (Handwerkszutaten z.B.), dann macht es wiederum keinen Sinn das Level dafür zu verwenden.",
         ["options_unique_id_parts_header"]      = "Teile der Eindeutigen ID",
+        ["options_header_migration"]            = "Migration",
         ["options_header_migration_ids"]        = "(Nicht-)Eindeutige ID Migration",
         ["options_unique_id_part_crafted_by"]   = GetString(SI_ITEM_FORMAT_STR_CRAFTED) .. " durch", -- Hergestellt durch
+        --Migrate ZOs locks to FCOIS locks
+        ["migrate_ZOs_locks_to_FCOIS_locks_start"]              = "[FCOIS]Durchsuche Inventare nach mit dem ZOs Schloß markierten Gegenständen: START",
+        ["migrate_ZOs_locks_to_FCOIS_locks_bagId"]              = ">Durchsuche Inventar (bagID): %s",
+        ["migrate_ZOs_locks_to_FCOIS_locks_migrated_at_bag"]    = ">>migriert im Inventar %s: %s",
+        ["migrate_ZOs_locks_to_FCOIS_locks_end"]                = "[FCOIS]Durchsuche Inventare nach mit dem ZOs Schloß markierten Gegenständen: ENDE - migriert/Insgesamt durchsucht: %s / %s",
+
+        --LibShifterBoxes
+        --[FCOIS_UNIQUEID_ITEMTYPES]
+        ["LIBSHIFTERBOX_FCOIS_UNIQUEID_ITEMTYPES_TITLE_LEFT"]   = "Gegenstandstypen (Alle)",
+        ["LIBSHIFTERBOX_FCOIS_UNIQUEID_ITEMTYPES_TITLE_RIGHT"]  = "Für FCOIS Eindeutige ID gewählt",
     },
 --==============================================================================
 --French / Französisch
@@ -2290,9 +2318,9 @@ FCOIS.localizationVars.localizationAll = {
 		["options_savedVariables_dropdown_selection1"]	 = "Individuellement",
 		["options_savedVariables_dropdown_selection2"]	 = "Compte",
         ["options_header_ZOsLock"]                  = "ZOs verrouillage d'objet",
-		["options_use_ZOs_lock_functions"]          = "Verrouillage objet en cours de partie",
-		["options_use_ZOs_lock_functions_TT"]  = "Active/désactive la fonctionnalité, prévu par le développeur 'ZOs' de jeu, du verrouillage des objet en cours de partie.",
-		["options_scan_ZOs_lock_functions"]         = "Ver. ZOs -> Ver. FCOIS",
+		["options_use_ZOs_lock_functions"]          = "Verrouillage objet en cours de partie" ..lockIcon,
+		["options_use_ZOs_lock_functions_TT"]  = "Active/désactive la fonctionnalité, prévu par le développeur 'ZOs' de jeu, du verrouillage des objet "..lockIcon.." en cours de partie.",
+        ["options_scan_ZOs_lock_functions"]			= "TESO "..lockIcon.."->FCOIS "..lockIcon,
 		["options_scan_ZOs_lock_functions_TT"] = "Transférer les objets que vous avez verrouillé avec le verrouillage en cours de partie (icône de verrou gris) vers l'icône 1 de FCOItemSaver. Cela effacera les icônes d'origine et les remplacera par les icônes 1 de FCOIS.",
 		["options_scan_ZOs_lock_functions_warning"] = "Voulez-vous vraiment enlever les verrouillages d'origine de vos objets et les transférer vers l'icône 1 de FCOItemSaver ?",
 		["options_header_marking_options"]		 		 = "Marques",
@@ -3881,9 +3909,9 @@ FCOIS.localizationVars.localizationAll = {
         ["options_header_containers"]           = "コンテナ",
         ["options_header_anti_output_options"]  = "オプションをアウトプット",
 
-		["options_use_ZOs_lock_functions"] 			= "インゲームアイテムロックを有効化",
+		["options_use_ZOs_lock_functions"] 			= "インゲームアイテムロックを有効化" ..lockIcon,
 		["options_use_ZOs_lock_functions_TT"]	= "ZOsによって提供されているインゲームアイテムロック機能を有効化/無効化します。",
-		["options_scan_ZOs_lock_functions"]			= "インゲームロック -> FCOISロック",
+        ["options_scan_ZOs_lock_functions"]			= "インゲーム "..lockIcon.."->FCOIS "..lockIcon,
         ["options_scan_ZOs_lock_functions_TT"] = "インゲームロック機能によってロックされたアイテム（グレーロックアイコン）をFCOItemSaverアイコン1に転送します。これによりインゲームマーカーは解除され、同じアイテムがFCOISマーカーアイコン1でマークされます。",
         ["options_scan_ZOs_lock_functions_warning"]	= "本当にあなたのアイテムのインゲームロックを解除し、FCOItemSaverのマーカーアイコン1に転送してもよろしいですか？?",
         --Additional buttons
