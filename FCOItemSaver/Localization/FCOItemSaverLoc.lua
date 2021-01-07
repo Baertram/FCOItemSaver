@@ -1176,7 +1176,16 @@ FCOIS.localizationVars.localizationAll = {
         ["migrate_ZOs_locks_to_FCOIS_locks_migrated_at_bag"]    = ">>migrated at the bag %s: %s",
         ["migrate_ZOs_locks_to_FCOIS_locks_end"]                = "[FCOIS]Scan inventories for ZOs locked items: FINISHED - migrated/scanned total: %s / %s",
 
-
+        ["options_enable_auto_mark_sets_collection"]    = "Automatic \'Set collection\' marking",
+        ["options_enable_auto_mark_sets_collection_TT"] = "Enable automatic \'Set collection\' marker icons",
+        ["options_only_current_account"]                = "Only current account",
+        ["options_only_current_account_TT"]             = "Only use currently logged in account for the checks",
+        ["options_auto_mark_sets_collection_addon"]     = "Addon for \'Set collection\' checks",
+        ["options_auto_mark_sets_collection_addon_TT"]  = "Choose the addon which should be used for the automatic set collection checks (known/unknown collected set items).\nThe ESO standard is not able to support other accounts as the currently logged in!",
+        ["options_auto_mark_sets_collection_known_icon"]    = "Known set collection item icon",
+        ["options_auto_mark_sets_collection_known_icon_TT"] = "Choose the icon for known set collection items.",
+        ["options_auto_mark_sets_collection_unknown_icon"]    = "Unknown set collection item icon",
+        ["options_auto_mark_sets_collection_unknown_icon_TT"] = "Choose the icon for unknown set collection items.",
 
         --LibShifterBoxes
         --[FCOIS_UNIQUEID_ITEMTYPES]
@@ -2292,6 +2301,17 @@ FCOIS.localizationVars.localizationAll = {
         ["migrate_ZOs_locks_to_FCOIS_locks_bagId"]              = ">Durchsuche Inventar (bagID): %s",
         ["migrate_ZOs_locks_to_FCOIS_locks_migrated_at_bag"]    = ">>migriert im Inventar %s: %s",
         ["migrate_ZOs_locks_to_FCOIS_locks_end"]                = "[FCOIS]Durchsuche Inventare nach mit dem ZOs Schloß markierten Gegenständen: ENDE - migriert/Insgesamt durchsucht: %s / %s",
+
+        ["options_enable_auto_mark_sets_collection"]    = "Automatische \'Set-Sammlung\' Markierung",
+        ["options_enable_auto_mark_sets_collection_TT"] = "Aktiviere die automatische Set-Sammlung Markierungen",
+        ["options_only_current_account"]                = "Nur aktueller Account",
+        ["options_only_current_account_TT"]             = "Nur der aktuelle Account wird bei den Prüfungen berücksichtigt.",
+        ["options_auto_mark_sets_collection_addon"]     = "Addon für Set-Sammlung Prüfungen",
+        ["options_auto_mark_sets_collection_addon_TT"]  = "Wähle das Addon aus, welches für die automatischen Set Sammlungs Prüfungen verwendet werden soll (unbekannte/bekannte Set Gegenstände).\n Das ESO Basis Spiel kann nur die Gegenstände des aktuell eingelogten Accounts prüfen!",
+        ["options_auto_mark_sets_collection_known_icon"]    = "Bekannte Set Sammlung Gegenstand Symbol",
+        ["options_auto_mark_sets_collection_known_icon_TT"] = "Wähle das Symbol für die bekannten Set-Sammlungen Gegenstände.",
+        ["options_auto_mark_sets_collection_unknown_icon"]    = "Unbekannte Set-Sammlung Gegenstand Symbol",
+        ["options_auto_mark_sets_collection_unknown_icon_TT"] = "Wähle das Symbol für die unbekannten Set-Sammlungen Gegenstände.",
 
         --LibShifterBoxes
         --[FCOIS_UNIQUEID_ITEMTYPES]

@@ -77,7 +77,6 @@ local editBoxesToSetTextTypes
 
 local iconsList, iconsListValues
 local iconsListNone, iconsListValuesNone
-
 --==========================================================================================================================================
 --									FCOIS libAddonMenu 2.x settings menu
 --==========================================================================================================================================
@@ -244,6 +243,8 @@ end
         ["FCOItemSaver_Icon_On_Automatic_Crafted_Items_Dropdown"]       = { ["choices"] = 'standard', ["choicesValues"] = iconsListValues, ["choicesTooltips"] = nil, ["withIcons"] = true, ["withNoneEntry"] = false,  },
         ["FCOItemSaver_Icon_On_Automatic_Recipe_Dropdown"]              = { ["choices"] = 'standard', ["choicesValues"] = iconsListValues, ["choicesTooltips"] = nil, ["withIcons"] = true, ["withNoneEntry"] = false,  },
         ["FCOItemSaver_Icon_On_Automatic_Quality_Dropdown"]             = { ["choices"] = 'standard', ["choicesValues"] = iconsListValues, ["choicesTooltips"] = nil, ["withIcons"] = true, ["withNoneEntry"] = false,  },
+        ["FCOItemSaver_Icon_On_Automatic_SetCollections_UnknownIcon_Dropdown"]  = { ["choices"] = 'standard', ["choicesValues"] = iconsListValuesNone, ["choicesTooltips"] = nil, ["withIcons"] = true, ["withNoneEntry"] = true, },
+        ["FCOItemSaver_Icon_On_Automatic_SetCollections_KnownIcon_Dropdown"]    = { ["choices"] = 'standard', ["choicesValues"] = iconsListValuesNone, ["choicesTooltips"] = nil, ["withIcons"] = true, ["withNoneEntry"] = true, },
     }
 
     --Function to update the comboboxes of the LAM dropdowns holding the "iconList"/"iconsListStandardIconOnKeybind" entries
@@ -488,6 +489,17 @@ function FCOIS.BuildAddonMenu()
     end
     buildResearchAddonsList()
 
+    --The list of Set collection addons
+    local setCollectionAddonsList = {}
+    local setCollectionAddonsListValues = {}
+    local function buildSetCollectionAddonsList()
+        local setCollectionAddonsAvailable = FCOIS.otherAddons.setCollectionBookAddonsSupported
+        for setCollectionAddonIdx, setCollectionAddonName in pairs(setCollectionAddonsAvailable) do
+            table.insert(setCollectionAddonsListValues, setCollectionAddonIdx)
+            table.insert(setCollectionAddonsList, setCollectionAddonName)
+        end
+    end
+    buildSetCollectionAddonsList()
 
     -- !!! RU Patch Section START
     --  Add english language description behind language descriptions in other languages
@@ -3684,7 +3696,114 @@ function FCOIS.BuildAddonMenu()
                             name = locVars["options_enable_auto_mark_sets"],
                             controls =
                             {
-
+                                --==============================================================================
+                                -- Set collection marker
+                                {
+                                    type = "submenu",
+                                    name = locVars["options_header_set_collections"],
+                                    reference = "FCOItemSaver_Settings_SetCollections_SubMenu",
+                                    controls = {
+                                        {
+                                            type = "checkbox",
+                                            name = locVars["options_enable_auto_mark_sets_collection"],
+                                            tooltip = locVars["options_enable_auto_mark_sets_collection" .. tooltipSuffix],
+                                            getFunc = function() return FCOISsettings.autoMarkSetsItemCollectionBook end,
+                                            setFunc = function(value)
+                                                FCOISsettings.autoMarkSetsItemCollectionBook = value
+                                                if (FCOISsettings.autoMarkSetsItemCollectionBook == true) then
+                                                    FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
+                                                end
+                                            end,
+                                            disabled = function() return not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkSetsItemCollectionBookMissingIcon] end,
+                                            width = "half",
+                                            default = FCOISdefaultSettings.autoMarkSetsItemCollectionBook,
+                                        },
+                                        {
+                                            type = 'dropdown',
+                                            name = locVars["options_auto_mark_sets_collection_unknown_icon"],
+                                            tooltip = locVars["options_auto_mark_sets_collection_unknown_icon" .. tooltipSuffix],
+                                            choices = iconsListNone,
+                                            choicesValues = iconsListValuesNone,
+                                            scrollable = true,
+                                            getFunc = function() return FCOISsettings.autoMarkSetsItemCollectionBookMissingIcon
+                                            end,
+                                            setFunc = function(value)
+                                                FCOISsettings.autoMarkSetsItemCollectionBookMissingIcon = value
+                                            end,
+                                            reference = "FCOItemSaver_Icon_On_Automatic_SetCollections_UnknownIcon_Dropdown",
+                                            disabled = function() return not FCOISsettings.autoMarkSetsItemCollectionBook end,
+                                            width = "half",
+                                            default = FCOISdefaultSettings.autoMarkSetsItemCollectionBookMissingIcon,
+                                        },
+                                        {
+                                            type = 'dropdown',
+                                            name = locVars["options_auto_mark_sets_collection_known_icon"],
+                                            tooltip = locVars["options_auto_mark_sets_collection_known_icon" .. tooltipSuffix],
+                                            choices = iconsListNone,
+                                            choicesValues = iconsListValuesNone,
+                                            scrollable = true,
+                                            getFunc = function() return FCOISsettings.autoMarkSetsItemCollectionBookNonMissingIcon
+                                            end,
+                                            setFunc = function(value)
+                                                FCOISsettings.autoMarkSetsItemCollectionBookNonMissingIcon = value
+                                            end,
+                                            reference = "FCOItemSaver_Icon_On_Automatic_SetCollections_KnownIcon_Dropdown",
+                                            disabled = function() return not FCOISsettings.autoMarkSetsItemCollectionBook end,
+                                            width = "half",
+                                            default = FCOISdefaultSettings.autoMarkSetsItemCollectionBookNonMissingIcon,
+                                        },
+                                        {
+                                            type = "checkbox",
+                                            name = locVars["options_enable_auto_mark_check_all_icons"],
+                                            tooltip = locVars["options_enable_auto_mark_check_all_icons" .. tooltipSuffix],
+                                            getFunc = function() return FCOISsettings.autoMarkSetsItemCollectionBookCheckAllIcons end,
+                                            setFunc = function(value)
+                                                FCOISsettings.autoMarkSetsItemCollectionBookCheckAllIcons = value
+                                                if (FCOISsettings.autoMarkSetsItemCollectionBookCheckAllIcons == true) then
+                                                    FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
+                                                end
+                                            end,
+                                            disabled = function() return not FCOISsettings.autoMarkSetsItemCollectionBook end,
+                                            width = "full",
+                                            default = FCOISdefaultSettings.autoMarkSetsItemCollectionBookCheckAllIcons,
+                                        },
+                                        {
+                                            type = 'dropdown',
+                                            name = locVars["options_auto_mark_sets_collection_addon"],
+                                            tooltip = locVars["options_auto_mark_sets_collection_addon" .. tooltipSuffix],
+                                            choices = setCollectionAddonsList,
+                                            choicesValues = setCollectionAddonsListValues,
+                                            scrollable = true,
+                                            getFunc = function() return FCOISsettings.autoMarkSetsItemCollectionBookAddonUsed
+                                            end,
+                                            setFunc = function(value)
+                                                FCOISsettings.autoMarkSetsItemCollectionBookAddonUsed = value
+                                            end,
+                                            reference = "FCOItemSaver_On_Automatic_SetCollections_Addon_Dropdown",
+                                            disabled = function() return not FCOISsettings.autoMarkSetsItemCollectionBook end,
+                                            width = "half",
+                                            default = FCOISdefaultSettings.autoMarkSetsItemCollectionBookAddonUsed,
+                                        },
+                                        {
+                                            type = "checkbox",
+                                            name = locVars["options_only_current_account"],
+                                            tooltip = locVars["options_only_current_account" .. tooltipSuffix],
+                                            getFunc = function() return FCOISsettings.autoMarkSetsItemCollectionBookCheckAllIcons end,
+                                            setFunc = function(value)
+                                                FCOISsettings.autoMarkSetsItemCollectionBookCheckAllIcons = value
+                                                if (FCOISsettings.autoMarkSetsItemCollectionBookCheckAllIcons == true) then
+                                                    FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
+                                                end
+                                            end,
+                                            disabled = function()
+                                                return not FCOISsettings.autoMarkSetsItemCollectionBook or FCOISsettings.autoMarkSetsItemCollectionBookAddonUsed ~= FCOIS_SETS_COLLECTION_ADDON_LIBMULTIACCOUNTSETS
+                                            end,
+                                            width = "full",
+                                            default = FCOISdefaultSettings.autoMarkSetsItemCollectionBookCheckAllIcons,
+                                        },
+                                    },
+                                },
+		autoMarkSetsItemCollectionBookOnlyCurrentAccount= true,
                                 --==============================================================================
                                 -- SetTracker auto-marking
                                 {

@@ -97,9 +97,9 @@ local function myShifterBoxEventEntryMovedCallbackFunction(shifterBox, key, valu
             FCOIS.settingsVars.settings.allowedFCOISUniqueIdItemTypes[key] = true
         end
     end
-
 end
 
+--[[
 local function myShifterBoxEventEntryHighlightedCallbackFunction(control, shifterBox, key, value, categoryId, isLeftList)
     if not shifterBox or not key then return end
     local boxName = getBoxName(shifterBox)
@@ -117,6 +117,7 @@ FCOIS._lsbHighlightedControl = control
         end
     end
 end
+]]
 
 local function updateLibShifterBoxEntries(parentCtrl, shifterBox, boxName)
     if not parentCtrl or not boxName or boxName == "" then return end
@@ -156,6 +157,7 @@ local function updateLibShifterBoxState(parentCtrl, shifterBox, boxName)
     if not shifterBox then return end
 
     local isEnabled = true
+    --FCOIS uniqueId itemTypes
     if boxName == FCOISuniqueIdItemTypes then
         isEnabled = FCOIS.uniqueIdIsEnabledAndSetToFCOIS()
     end
@@ -178,9 +180,9 @@ local function updateLibShifterBox(parentCtrl, shifterBox, boxName)
     shifterBox:SetAnchor(TOPLEFT, parentCtrl, TOPLEFT, 0, 0) -- will automatically call ClearAnchors
     shifterBox:SetDimensions(shifterBoxData.width, shifterBoxData.height)
 
+    --Add the entries to the left and right shifter box
     updateLibShifterBoxEntries(parentCtrl, shifterBox, boxName)
-
-    --TODO: Enable again after testing! 20210106
+    --Update the enabled state of the shifter box
     updateLibShifterBoxState(parentCtrl, shifterBox, boxName)
 
     --Add the callback function to the entry was moved event
@@ -200,6 +202,6 @@ function FCOIS.createLibShifterBox(customControl, boxName)
     libShifterBoxes[boxName].lamCustomControl = customControl
     local shifterBox = lsb(addonName, boxName .. "_LSB", customControl, boxData.customSettings)
     libShifterBoxes[boxName].control = shifterBox
-
+    --Update the shifter box entries and state
     updateLibShifterBox(customControl, shifterBox, boxName)
 end
