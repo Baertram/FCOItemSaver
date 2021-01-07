@@ -64,6 +64,16 @@ local function getBoxName(shifterBox)
     return nil
 end
 
+local function checkAndUpdateRightListDefaultEntries(shifterBox, rightListEntries, shifterBoxData)
+    if shifterBox and rightListEntries and NonContiguousCount(rightListEntries) == 0 then
+        d(FCOIS.preChatVars.preChatTextRed .. locVars["LIBSHIFTERBOX_FCOIS_UNIQUEID_ITEMTYPES_RIGHT_NON_EMPTY"])
+        local defaultRightListKeys = shifterBoxData and shifterBoxData.defaultRightListKeys
+        if defaultRightListKeys then
+            shifterBox:MoveEntriesToRightList(defaultRightListKeys)
+        end
+    end
+end
+
 local function myShifterBoxEventEntryMovedCallbackFunction(shifterBox, key, value, categoryId, isDestListLeftList)
     if not shifterBox or not key then return end
     local boxName = getBoxName(shifterBox)
@@ -78,14 +88,8 @@ local function myShifterBoxEventEntryMovedCallbackFunction(shifterBox, key, valu
             FCOIS.settingsVars.settings.allowedFCOISUniqueIdItemTypes[key] = false
             --Check if any entry is left in the right list. If not:
             --Add the default values weapons and armor again and output a chat message.
-            local rightEntries = shifterBox:GetRightListEntriesFull()
-            if rightEntries ~= nil and NonContiguousCount(rightEntries) == 0 then
-                d(FCOIS.preChatVars.preChatTextRed .. locVars["LIBSHIFTERBOX_FCOIS_UNIQUEID_ITEMTYPES_RIGHT_NON_EMPTY"])
-                local defaultRightListKeys = shifterBoxData and shifterBoxData.defaultRightListKeys
-                if defaultRightListKeys then
-                    shifterBox:MoveEntriesToRightList(defaultRightListKeys)
-                end
-            end
+            local rightListEntries = shifterBox:GetRightListEntriesFull()
+            checkAndUpdateRightListDefaultEntries(shifterBox, rightListEntries, shifterBoxData)
         end
     else
         if boxName == FCOISuniqueIdItemTypes then
@@ -141,6 +145,8 @@ local function updateLibShifterBoxEntries(parentCtrl, shifterBox, boxName)
 
     shifterBox:ClearRightList()
     shifterBox:AddEntriesToRightList(rightListEntries)
+
+    checkAndUpdateRightListDefaultEntries(shifterBox, rightListEntries, shifterBoxData)
 end
 
 local function updateLibShifterBoxState(parentCtrl, shifterBox, boxName)
@@ -175,7 +181,7 @@ local function updateLibShifterBox(parentCtrl, shifterBox, boxName)
     updateLibShifterBoxEntries(parentCtrl, shifterBox, boxName)
 
     --TODO: Enable again after testing! 20210106
-    --updateLibShifterBoxState(parentCtrl, shifterBox, boxName)
+    updateLibShifterBoxState(parentCtrl, shifterBox, boxName)
 
     --Add the callback function to the entry was moved event
     shifterBox:RegisterCallback(lsb.EVENT_ENTRY_MOVED, myShifterBoxEventEntryMovedCallbackFunction)
