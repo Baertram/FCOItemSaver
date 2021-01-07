@@ -79,7 +79,7 @@ local function myShifterBoxEventEntryMovedCallbackFunction(shifterBox, key, valu
             --Check if any entry is left in the right list. If not:
             --Add the default values weapons and armor again and output a chat message.
             local rightEntries = shifterBox:GetRightListEntriesFull()
-            if rightEntries and #rightEntries == 0 then
+            if rightEntries ~= nil and NonContiguousCount(rightEntries) == 0 then
                 d(FCOIS.preChatVars.preChatTextRed .. locVars["LIBSHIFTERBOX_FCOIS_UNIQUEID_ITEMTYPES_RIGHT_NON_EMPTY"])
                 local defaultRightListKeys = shifterBoxData and shifterBoxData.defaultRightListKeys
                 if defaultRightListKeys then
