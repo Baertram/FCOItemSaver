@@ -152,10 +152,15 @@ FCOIS.libFeedback = LibFeedback
 if FCOIS.libFeedback == nil and LibStub then FCOIS.libFeedback = LibStub:GetLibrary('LibFeedback', true) end
 if not FCOIS.libFeedback then d(preVars.preChatTextRed .. string.format(libMissingErrorText, "LibFeedback")) return end
 
+--Initialize the library LibShifterBox
 FCOIS.libShifterBox = LibShifterBox
 if not FCOIS.libShifterBox == nil then d(preVars.preChatTextRed .. string.format(libMissingErrorText, "LibShifterBox")) return end
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
+--Optional libraries
+--LibMultiAccountSets
+FCOIS.libMultiAccountSets = LibMultiAccountSets
+
 
 --All libraries are loaded prolery?
 FCOIS.libsLoadedProperly = true
@@ -843,6 +848,13 @@ FCOIS.otherAddons.researchAddonsSupported = {
     [FCOIS_RESEARCH_ADDON_RESEARCHASSISTANT]    = "ResearchAssistant",
 }
 
+--The sets colleciton book addons whicha re supported by FCOIS
+FCOIS_SETS_COLLECTION_ADDON_ESO_STANDARD        = 1
+FCOIS_SETS_COLLECTION_ADDON_LIBMULTIACCOUNTSETS = 2
+FCOIS.otherAddons.setCollectionBookAddonsSupported = {
+    [FCOIS_SETS_COLLECTION_ADDON_ESO_STANDARD]         = "ESO Standard",
+    [FCOIS_SETS_COLLECTION_ADDON_LIBMULTIACCOUNTSETS]  = "LibMultiAccountSets",
+}
 
 --Variables for the anti-extraction functions
 FCOIS.craftingPrevention = {}

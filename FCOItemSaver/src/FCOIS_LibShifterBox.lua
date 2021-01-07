@@ -33,6 +33,10 @@ FCOIS.LibShifterBoxes = {
         },
         width       = 580,
         height      = 200,
+        --List default entries
+        defaultRightListKeys = {
+          ITEMTYPE_WEAPON, ITEMTYPE_ARMOR
+        },
         --Controls
         lamCustomControl = nil,
         control = nil,
@@ -65,12 +69,23 @@ local function myShifterBoxEventEntryMovedCallbackFunction(shifterBox, key, valu
     local boxName = getBoxName(shifterBox)
 --d("LSB FCOIS, boxName: " ..tostring(boxName))
     if not boxName or boxName == "" then return end
+    local shifterBoxData = libShifterBoxes[boxName]
 
     --Moved to the ?
     if isDestListLeftList == true then
         if boxName == FCOISuniqueIdItemTypes then
             --Moved to the left? Set SavedVariables value false
             FCOIS.settingsVars.settings.allowedFCOISUniqueIdItemTypes[key] = false
+            --Check if any entry is left in the right list. If not:
+            --Add the default values weapons and armor again and output a chat message.
+            local rightEntries = shifterBox:GetRightListEntriesFull()
+            if rightEntries and #rightEntries == 0 then
+                d(FCOIS.preChatVars.preChatTextRed .. locVars["LIBSHIFTERBOX_FCOIS_UNIQUEID_ITEMTYPES_RIGHT_NON_EMPTY"])
+                local defaultRightListKeys = shifterBoxData and shifterBoxData.defaultRightListKeys
+                if defaultRightListKeys then
+                    shifterBox:MoveEntriesToRightList(defaultRightListKeys)
+                end
+            end
         end
     else
         if boxName == FCOISuniqueIdItemTypes then
@@ -85,6 +100,8 @@ local function myShifterBoxEventEntryHighlightedCallbackFunction(control, shifte
     if not shifterBox or not key then return end
     local boxName = getBoxName(shifterBox)
     if not boxName or boxName == "" then return end
+
+FCOIS._lsbHighlightedControl = control
 
     if isLeftList == true then
         if boxName == FCOISuniqueIdItemTypes then
@@ -157,7 +174,8 @@ local function updateLibShifterBox(parentCtrl, shifterBox, boxName)
 
     updateLibShifterBoxEntries(parentCtrl, shifterBox, boxName)
 
-    updateLibShifterBoxState(parentCtrl, shifterBox, boxName)
+    --TODO: Enable again after testing! 20210106
+    --updateLibShifterBoxState(parentCtrl, shifterBox, boxName)
 
     --Add the callback function to the entry was moved event
     shifterBox:RegisterCallback(lsb.EVENT_ENTRY_MOVED, myShifterBoxEventEntryMovedCallbackFunction)

@@ -4,9 +4,12 @@ local FCOIS = FCOIS
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
 
+local account = GetDisplayName()
+
 local numFilterIcons = FCOIS.numVars.gFCONumFilterIcons
 local getSavedVarsMarkedItemsTableName = FCOIS.getSavedVarsMarkedItemsTableName
 
+local lmas = FCOIS.libMultiAccountSets
 --==========================================================================================================================================
 --									FCOIS Inventory scanning & automatic item marking
 --==========================================================================================================================================
@@ -227,6 +230,153 @@ d("[FCOIS] checkIfAutomaticCraftedMarkerIconIsSet, creatingItem: " .. tostring(c
 end
 ]]
 
+--Set item collection book checks
+local function automaticMarkingSetsCollectionBookCheckFunc(p_bagId, p_slotIndex)
+    local settings = FCOIS.settingsVars.settings
+    local autoMarkSetsItemCollectionBookAddonUsed = settings.autoMarkSetsItemCollectionBookAddonUsed
+    local autoMarkSetsItemCollectionBookMissingIcon = settings.autoMarkSetsItemCollectionBookNonMissingIcon
+    local autoMarkSetsItemCollectionBookNonMissingIcon = settings.autoMarkSetsItemCollectionBookNonMissingIcon
+    local isIconEnabled = settings.isIconEnabled
+
+    if not settings.autoMarkSetsItemCollectionBook or
+            p_bagId == nil or p_slotIndex == nil or
+            autoMarkSetsItemCollectionBookAddonUsed == nil or
+            autoMarkSetsItemCollectionBookMissingIcon == nil or
+            autoMarkSetsItemCollectionBookNonMissingIcon == nil or
+            ( autoMarkSetsItemCollectionBookMissingIcon == 0 and autoMarkSetsItemCollectionBookNonMissingIcon == 0 ) or
+            ( autoMarkSetsItemCollectionBookMissingIcon > 0 and not isIconEnabled[autoMarkSetsItemCollectionBookMissingIcon] ) or
+            ( autoMarkSetsItemCollectionBookNonMissingIcon > 0 and not isIconEnabled[autoMarkSetsItemCollectionBookNonMissingIcon] )
+    then
+        return
+    end
+
+    local itemLink = GetItemLink(p_bagId, p_slotIndex)
+    --No self crafted set items!
+    if IsItemLinkCrafted(itemLink) then return false end
+
+    local wasMarkedForSetCollectionsBook = false
+
+    --Mark items for the sets collection book for the currently logegd in account's ESO standard API functions
+    if autoMarkSetsItemCollectionBookAddonUsed == FCOIS_SETS_COLLECTION_ADDON_ESO_STANDARD then
+        local isKnownSetCollectionItem = IsItemLinkSetCollectionPiece(itemLink) and IsItemSetCollectionPieceUnlocked(GetItemLinkItemId(itemLink))
+        local markerIcon
+        if isKnownSetCollectionItem == true then
+            --Non missing items?
+            markerIcon = autoMarkSetsItemCollectionBookNonMissingIcon > 0 and autoMarkSetsItemCollectionBookNonMissingIcon
+        else
+            --Missing items?
+            markerIcon = autoMarkSetsItemCollectionBookMissingIcon > 0 and autoMarkSetsItemCollectionBookMissingIcon
+        end
+
+        local isAlreadyMarked = false
+        if settings.autoMarkSetsItemCollectionBookCheckAllIcons == true then
+            --Check if any other icon is applied already
+            isAlreadyMarked = FCOIS.IsMarked(p_bagId, p_slotIndex, -1, nil)
+        end
+        if isAlreadyMarked == false and markerIcon ~= nil and markerIcon > 0  then
+            FCOIS.MarkItem(p_bagId, p_slotIndex, markerIcon)
+            wasMarkedForSetCollectionsBook = true
+        end
+
+------------------------------------------------------------------------------------------------------------------------
+    else
+        --Mark items for the sets collection book for the currently logegd in account's, or other existing accounts, via
+        --LibMultiAccountSets
+        if lmas ~= nil and autoMarkSetsItemCollectionBookAddonUsed == FCOIS_SETS_COLLECTION_ADDON_LIBMULTIACCOUNTSETS then
+
+            --[[
+                LibMultiAccountSets.GetNumItemSetCollectionSlotsUnlockedForAccount( account, itemSetId )
+                * Built-in counterpart: GetNumItemSetCollectionSlotsUnlocked
+
+                LibMultiAccountSets.IsItemSetCollectionSlotUnlockedForAccount( account, itemSetId, slot )
+                * Built-in counterpart: IsItemSetCollectionSlotUnlocked
+
+                LibMultiAccountSets.IsItemSetCollectionPieceUnlockedForAccount( account, pieceId )
+                * Built-in counterpart: IsItemSetCollectionPieceUnlocked
+
+                LibMultiAccountSets.GetItemReconstructionCurrencyOptionCostForAccount( account, itemSetId, currencyType )
+                * Built-in counterpart: GetItemReconstructionCurrencyOptionCost
+
+
+                LibMultiAccountSets.IsItemSetCollectionItemLinkUnlockedForAccount( account, itemLink )
+                * Return type: boolean
+
+                LibMultiAccountSets.GetAccountList( excludeCurrentAccount )
+                * Return type: table/array of strings
+
+                LibMultiAccountSets.GetItemCollectionAndTradabilityStatus( accounts, itemLink, itemSource )
+                * itemLink can be nil if itemSource is supplied
+                * itemSource is a table containing bagId, slotIndex, who, tradeIndex and/or lootId and can be omitted if itemLink is supplied
+                * If accounts is a single account string, the return will be one of the following values:
+                LibMultiAccountSets.ITEM_UNCOLLECTIBLE        -- Not a collectible set item
+                LibMultiAccountSets.ITEM_COLLECTED            -- Collected by the specified account
+                LibMultiAccountSets.ITEM_UNCOLLECTED_TRADE    -- Not collected by and tradeable with the specified account
+                LibMultiAccountSets.ITEM_UNCOLLECTED_NOTRADE  -- Not collected by and not tradeable with the specified account
+                LibMultiAccountSets.ITEM_UNCOLLECTED_UNKTRADE -- Not collected by the specified account, with unknown trade eligibility
+                * If accounts is a list of multiple accounts or is omitted (all accounts), the return be either:
+                LibMultiAccountSets.ITEM_UNCOLLECTIBLE, if the item is not a collectible set item
+                A table of status codes for each account (see above)
+
+                LibMultiAccountSets.OpenSettingsPanel( )
+                * Return type: N/A
+            ]]
+            --Only mark items for the currently logged in account?
+            if settings.autoMarkSetsItemCollectionBookOnlyCurrentAccount == true then
+                local isKnownSetCollectionItem = lmas.IsItemSetCollectionItemLinkUnlockedForAccount( account, itemLink )
+                local markerIcon
+                if isKnownSetCollectionItem == true then
+                    --Non missing items?
+                    markerIcon = autoMarkSetsItemCollectionBookNonMissingIcon > 0 and autoMarkSetsItemCollectionBookNonMissingIcon
+                else
+                    --Missing items?
+                    markerIcon = autoMarkSetsItemCollectionBookMissingIcon > 0 and autoMarkSetsItemCollectionBookMissingIcon
+                end
+
+                local isAlreadyMarked = false
+                if settings.autoMarkSetsItemCollectionBookCheckAllIcons == true then
+                    --Check if any other icon is applied already
+                    isAlreadyMarked = FCOIS.IsMarked(p_bagId, p_slotIndex, -1, nil)
+                end
+                if isAlreadyMarked == false and markerIcon ~= nil and markerIcon > 0  then
+                    FCOIS.MarkItem(p_bagId, p_slotIndex, markerIcon)
+                    wasMarkedForSetCollectionsBook = true
+                end
+            else
+                --Mark for all accounts
+                local myAccounts = lmas.GetAccountList()
+                if myAccounts == nil then return end
+
+                local wasMarkedForSetCollectionsBookLoop = false
+                local isAlreadyMarked = false
+                if settings.autoMarkSetsItemCollectionBookCheckAllIcons == true then
+                    --Check if any other icon is applied already
+                    isAlreadyMarked = FCOIS.IsMarked(p_bagId, p_slotIndex, -1, nil)
+                end
+
+                --Loop all accounts:
+                for _, accountName in ipairs(myAccounts) do
+                    local isKnownSetCollectionItem = lmas.IsItemSetCollectionItemLinkUnlockedForAccount( accountName, itemLink )
+                    local markerIcon
+                    if isKnownSetCollectionItem == true then
+                        --Non missing items?
+                        markerIcon = autoMarkSetsItemCollectionBookNonMissingIcon > 0 and autoMarkSetsItemCollectionBookNonMissingIcon
+                    else
+                        --Missing items?
+                        markerIcon = autoMarkSetsItemCollectionBookMissingIcon > 0 and autoMarkSetsItemCollectionBookMissingIcon
+                    end
+
+                    if isAlreadyMarked == false and markerIcon ~= nil and markerIcon > 0 then
+                        FCOIS.MarkItem(p_bagId, p_slotIndex, markerIcon)
+                        --Any account needs/already owns this item and a marker icon was applied to this item?
+                        return true
+                    end
+                end --for
+            end
+        end
+    end
+    return wasMarkedForSetCollectionsBook
+end
+
 --Do all the checks for the "automatic mark item as set"
 local function automaticMarkingSetsCheckFunc(p_bagId, p_slotIndex)
     --Todo :Remove after debugging!
@@ -238,16 +388,29 @@ local function automaticMarkingSetsCheckFunc(p_bagId, p_slotIndex)
     end
     ]]
 
+    --First check if the item is a special item like the Maelstrom weapon or shield, or The Master's weapon
+    local isSpecialItem = FCOIS.checkIfIsSpecialItem(p_bagId, p_slotIndex)
+
+    --The 2nd return parameter contains a variable called "noFurtherChecksNeeded" = true then!
+    local retDataNoFurtherChecksNeeded = {}
+    retDataNoFurtherChecksNeeded["noFurtherChecksNeeded"] = false
+
+    --Check if the item needs a set colleciton book marker icon
+    local wasMarkedForSetItemCollectionBook = automaticMarkingSetsCollectionBookCheckFunc(p_bagId, p_slotIndex)
+    if wasMarkedForSetItemCollectionBook == true then
+        --Shall we stop here (9 lines below) at some circumstances?
+        --isSpecialItem = true
+    end
+
     --Was the item crafted and the automatic "crafted" marker icon was set already, then abort here and do not set the "set" marker icon
     --if checkIfAutomaticCraftedMarkerIconIsSet() then return false end
     if isDebuggingCase then d("[FCOIS] automaticMarkingSetsCheckFunc - > go on...") end
-    --First check if the item is a special item like the Maelstrom weapon or shield, or The Master's weapon
-    local isSpecialItem = FCOIS.checkIfIsSpecialItem(p_bagId, p_slotIndex)
+
     --if the item is special it should be automatically marked as a set part, without any further checks!
-    --The 2nd return parameter contains a variable called "noFurtherChecksNeeded" = true then!
-    local retDataNoFurtherChecksNeeded = {}
-    retDataNoFurtherChecksNeeded["noFurtherChecksNeeded"] = true
-    if isSpecialItem then return true, retDataNoFurtherChecksNeeded end
+    if isSpecialItem then
+        retDataNoFurtherChecksNeeded["noFurtherChecksNeeded"] = true
+        return true, retDataNoFurtherChecksNeeded
+    end
 
     --Check if item is a set part with the wished trait
     local isSetPartWithWishedTrait, isSetPartAndIsValidAndGotTrait, setPartTraitMarkerIcon, isSet = FCOIS.isItemSetPartWithTraitNoControl(p_bagId, p_slotIndex)
@@ -668,6 +831,7 @@ local function automaticMarkingSetsAdditionalCheckFunc(p_itemData, p_checkFuncRe
     --Return true: No set marker icon will be set.
     return true, nil
 end -- automaticMarkingSetsAdditionalCheckFunc
+
 
 --Function to scan a single item. Is needed so the return false won't abort scanning the whole inventory!
 function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, doOverride)

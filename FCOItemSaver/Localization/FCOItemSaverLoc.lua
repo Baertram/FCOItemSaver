@@ -1176,10 +1176,13 @@ FCOIS.localizationVars.localizationAll = {
         ["migrate_ZOs_locks_to_FCOIS_locks_migrated_at_bag"]    = ">>migrated at the bag %s: %s",
         ["migrate_ZOs_locks_to_FCOIS_locks_end"]                = "[FCOIS]Scan inventories for ZOs locked items: FINISHED - migrated/scanned total: %s / %s",
 
+
+
         --LibShifterBoxes
         --[FCOIS_UNIQUEID_ITEMTYPES]
         ["LIBSHIFTERBOX_FCOIS_UNIQUEID_ITEMTYPES_TITLE_LEFT"]   = "Item types (all)",
         ["LIBSHIFTERBOX_FCOIS_UNIQUEID_ITEMTYPES_TITLE_RIGHT"]  = "Chosen for FCOIS unique ID",
+        ["LIBSHIFTERBOX_FCOIS_UNIQUEID_ITEMTYPES_RIGHT_NON_EMPTY"]  = "UniqueId itemTypes cannot be empty!\nPlease add at least one supported itemType, or the default values weapons and armor will be automatically pre-set again!"
     },
 --==============================================================================
 	--German / Deutsch
@@ -2294,6 +2297,7 @@ FCOIS.localizationVars.localizationAll = {
         --[FCOIS_UNIQUEID_ITEMTYPES]
         ["LIBSHIFTERBOX_FCOIS_UNIQUEID_ITEMTYPES_TITLE_LEFT"]   = "Gegenstandstypen (Alle)",
         ["LIBSHIFTERBOX_FCOIS_UNIQUEID_ITEMTYPES_TITLE_RIGHT"]  = "Für FCOIS Eindeutige ID gewählt",
+        ["LIBSHIFTERBOX_FCOIS_UNIQUEID_ITEMTYPES_RIGHT_NON_EMPTY"]  = "Eindeutige ID Gegenstandstypen können nicht leer sein!\nBitte wähle mindestens einen Typ aus. Ansonsten werden die Standard Werte Waffen und Rüstung automatich wieder hinzugefügt!"
     },
 --==============================================================================
 --French / Französisch

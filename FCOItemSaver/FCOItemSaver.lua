@@ -19,7 +19,7 @@
 ---------------------------------------------------------------------
 --[ToDo list] --
 --____________________________
--- Current max bugs/features/ToDos: 105
+-- Current max bugs/features/ToDos: 106
 --____________________________
 
 --In progress: Since 2020-06-17
@@ -168,6 +168,8 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 --      info at which inventory panel, which filters are activated and how I'm able to rebuild this.
 --      Grid addons like Inventory Grid View or Grid List should be much faster at the first inventory open now!
 -- #105 More dynamic LAM settings (marker icons, marker icons enable submenus) instead of redundant code lines
+-- #106 Added automatic marking of item set collection book -> Missing/Known. Supports ESO API for the currently logegd in account,
+--      or optionally LibMultiAccountSets for multi-account support
 
 --[Added on request]
 --#80 New selection of FCOIS custom created UniqueIds: Choose your criteria in the general settings, which define the uniqueId for you.
