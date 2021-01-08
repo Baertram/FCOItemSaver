@@ -243,7 +243,7 @@ local function automaticMarkingSetsCollectionBookCheckFunc(p_bagId, p_slotIndex)
             autoMarkSetsItemCollectionBookAddonUsed == nil or
             autoMarkSetsItemCollectionBookMissingIcon == nil or
             autoMarkSetsItemCollectionBookNonMissingIcon == nil or
-            ( autoMarkSetsItemCollectionBookMissingIcon == 0 and autoMarkSetsItemCollectionBookNonMissingIcon == 0 ) or
+            ( autoMarkSetsItemCollectionBookMissingIcon == FCOIS_CON_ICON_NONE and autoMarkSetsItemCollectionBookNonMissingIcon == FCOIS_CON_ICON_NONE ) or
             ( autoMarkSetsItemCollectionBookMissingIcon > 0 and not isIconEnabled[autoMarkSetsItemCollectionBookMissingIcon] ) or
             ( autoMarkSetsItemCollectionBookNonMissingIcon > 0 and not isIconEnabled[autoMarkSetsItemCollectionBookNonMissingIcon] )
     then

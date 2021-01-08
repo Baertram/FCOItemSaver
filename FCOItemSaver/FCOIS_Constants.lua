@@ -336,7 +336,6 @@ FCOIS_CON_ICON_ALL					= -1    --All marker icons
 FCOIS_CON_ICON_NONE					= -100  --No marker icon selected
 
 
-
 --Debug depth levels
 FCOIS_DEBUG_DEPTH_QUICK_DEBUG   = 0
 FCOIS_DEBUG_DEPTH_NORMAL        = 1
