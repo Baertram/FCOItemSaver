@@ -1176,6 +1176,7 @@ FCOIS.localizationVars.localizationAll = {
         ["migrate_ZOs_locks_to_FCOIS_locks_migrated_at_bag"]    = ">>migrated at the bag %s: %s",
         ["migrate_ZOs_locks_to_FCOIS_locks_end"]                = "[FCOIS]Scan inventories for ZOs locked items: FINISHED - migrated/scanned total: %s / %s",
 
+        ["options_header_set_collections"]              = "Set collections",
         ["options_enable_auto_mark_sets_collection"]    = "Automatic \'Set collection\' marking",
         ["options_enable_auto_mark_sets_collection_TT"] = "Enable automatic \'Set collection\' marker icons",
         ["options_only_current_account"]                = "Only current account",
@@ -2302,6 +2303,7 @@ FCOIS.localizationVars.localizationAll = {
         ["migrate_ZOs_locks_to_FCOIS_locks_migrated_at_bag"]    = ">>migriert im Inventar %s: %s",
         ["migrate_ZOs_locks_to_FCOIS_locks_end"]                = "[FCOIS]Durchsuche Inventare nach mit dem ZOs Schloß markierten Gegenständen: ENDE - migriert/Insgesamt durchsucht: %s / %s",
 
+        ["options_header_set_collections"]              = "Set-Sammlungen",
         ["options_enable_auto_mark_sets_collection"]    = "Automatische \'Set-Sammlung\' Markierung",
         ["options_enable_auto_mark_sets_collection_TT"] = "Aktiviere die automatische Set-Sammlung Markierungen",
         ["options_only_current_account"]                = "Nur aktueller Account",
