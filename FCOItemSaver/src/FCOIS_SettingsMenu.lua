@@ -3801,9 +3801,8 @@ function FCOIS.BuildAddonMenu()
                                             width = "full",
                                             default = FCOISdefaultSettings.autoMarkSetsItemCollectionBookCheckAllIcons,
                                         },
-                                    },
-                                },
-		autoMarkSetsItemCollectionBookOnlyCurrentAccount= true,
+                                    }, -- controls submenu set collections
+                                }, -- submenu set collections
                                 --==============================================================================
                                 -- SetTracker auto-marking
                                 {
