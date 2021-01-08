@@ -256,6 +256,12 @@ local function automaticMarkingSetsCollectionBookCheckFunc(p_bagId, p_slotIndex)
 
     local wasMarkedForSetCollectionsBook = false
 
+    local fcois_loc = FCOIS.localizationVars.fcois_loc
+    local chatBegin                 = fcois_loc["marked"]
+    local chatEnd
+    local markedUnknownTextFound    = fcois_loc["set_collection_part_unknown_found"]
+    local markedKnownTextFound      = fcois_loc["set_collection_part_known_found"]
+
     --Mark items for the sets collection book for the currently logegd in account's ESO standard API functions
     if autoMarkSetsItemCollectionBookAddonUsed == FCOIS_SETS_COLLECTION_ADDON_ESO_STANDARD then
         local isKnownSetCollectionItem = IsItemLinkSetCollectionPiece(itemLink) and IsItemSetCollectionPieceUnlocked(GetItemLinkItemId(itemLink))
@@ -263,9 +269,11 @@ local function automaticMarkingSetsCollectionBookCheckFunc(p_bagId, p_slotIndex)
         if isKnownSetCollectionItem == true then
             --Non missing items?
             markerIcon = autoMarkSetsItemCollectionBookNonMissingIcon > 0 and autoMarkSetsItemCollectionBookNonMissingIcon
+            chatEnd =  markedKnownTextFound
         else
             --Missing items?
             markerIcon = autoMarkSetsItemCollectionBookMissingIcon > 0 and autoMarkSetsItemCollectionBookMissingIcon
+            chatEnd =  markedUnknownTextFound
         end
 
         local isAlreadyMarked = false
@@ -327,9 +335,11 @@ local function automaticMarkingSetsCollectionBookCheckFunc(p_bagId, p_slotIndex)
                 if isKnownSetCollectionItem == true then
                     --Non missing items?
                     markerIcon = autoMarkSetsItemCollectionBookNonMissingIcon > 0 and autoMarkSetsItemCollectionBookNonMissingIcon
+                    chatEnd =  markedKnownTextFound
                 else
                     --Missing items?
                     markerIcon = autoMarkSetsItemCollectionBookMissingIcon > 0 and autoMarkSetsItemCollectionBookMissingIcon
+                    chatEnd =  markedUnknownTextFound
                 end
 
                 local isAlreadyMarked = false
@@ -360,18 +370,26 @@ local function automaticMarkingSetsCollectionBookCheckFunc(p_bagId, p_slotIndex)
                     if isKnownSetCollectionItem == true then
                         --Non missing items?
                         markerIcon = autoMarkSetsItemCollectionBookNonMissingIcon > 0 and autoMarkSetsItemCollectionBookNonMissingIcon
+                        chatEnd =  markedKnownTextFound
                     else
                         --Missing items?
                         markerIcon = autoMarkSetsItemCollectionBookMissingIcon > 0 and autoMarkSetsItemCollectionBookMissingIcon
+                        chatEnd =  markedUnknownTextFound
                     end
 
                     if isAlreadyMarked == false and markerIcon ~= nil and markerIcon > 0 then
                         FCOIS.MarkItem(p_bagId, p_slotIndex, markerIcon)
                         --Any account needs/already owns this item and a marker icon was applied to this item?
-                        return true
+                        wasMarkedForSetCollectionsBook = true
+                        break --leave the for ... loop
                     end
                 end --for
             end
+        end
+    end
+    if wasMarkedForSetCollectionsBook and settings.showSetsInChat then
+        if (itemLink ~= nil) then
+            d(chatBegin .. itemLink .. chatEnd)
         end
     end
     return wasMarkedForSetCollectionsBook
