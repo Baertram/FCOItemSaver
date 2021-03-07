@@ -3186,6 +3186,27 @@ d("[FCOIS]showContextMenuForAddInvButtons -> Localization fix")
             disabled	= function() return not settings.autoMarkSets or not settings.isIconEnabled[settings.autoMarkSetsIconNr] end,
         }
         table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
+        --Unknown set collection items
+        subMenuEntryAutomaticMarking = {
+            label 		= locVars["options_enable_auto_mark_unknown_set_collection_items"],
+            callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "setItemCollectionsUnknown") end,
+            disabled	= function() return not settings.autoMarkSetsItemCollectionBook or (settings.autoMarkSetsItemCollectionBookMissingIcon == FCOIS_CON_ICON_NONE or not settings.isIconEnabled[settings.autoMarkSetsItemCollectionBookMissingIcon] == true) end,
+        }
+        table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
+        --Known set collection items
+        subMenuEntryAutomaticMarking = {
+            label 		= locVars["options_enable_auto_mark_known_set_collection_items"],
+            callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "setItemCollectionsKnown") end,
+            disabled	= function() return not settings.autoMarkSetsItemCollectionBook or (settings.autoMarkSetsItemCollectionBookIcon == FCOIS_CON_ICON_NONE or not settings.isIconEnabled[settings.autoMarkSetsItemCollectionBookIcon] == true) end,
+        }
+        table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
+        --Sets
+        subMenuEntryAutomaticMarking = {
+            label 		= locVars["options_enable_auto_mark_sets"],
+            callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "sets") end,
+            disabled	= function() return not settings.autoMarkSets or not settings.isIconEnabled[settings.autoMarkSetsIconNr] end,
+        }
+        table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
         --Unknown recipes
         subMenuEntryAutomaticMarking = {
             label 		= GetString(SI_ITEM_FORMAT_STR_UNKNOWN_RECIPE),
