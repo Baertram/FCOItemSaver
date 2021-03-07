@@ -1609,7 +1609,7 @@ function FCOIS.scanInventory(p_bagId, p_slotIndex)
         FCOIS.preventerVars.doNotScanInv = false
         return false
     end
-d("[ScanInventory] bag: " .. tostring(p_bagId) .. ", slot: " .. tostring(p_slotIndex) .. ", scanningInv: " .. tostring(FCOIS.preventerVars.gScanningInv))
+--d("[ScanInventory] bag: " .. tostring(p_bagId) .. ", slot: " .. tostring(p_slotIndex) .. ", scanningInv: " .. tostring(FCOIS.preventerVars.gScanningInv))
     --Inventory scan is alreay active? Do not start another one!
     if FCOIS.preventerVars.gScanningInv == true then return end
 

@@ -507,7 +507,7 @@ function FCOIS.BuildAddonMenu()
     buildSetCollectionAddonsList()
 
     local function checkAndRunAutomaticSetItemCollectionMarkerApply(setCollectionsType)
-d("[FCOIS]checkAndRunAutomaticSetItemCollectionMarkerApply - setCollectionsType: " ..tostring(setCollectionsType))
+--d("[FCOIS]checkAndRunAutomaticSetItemCollectionMarkerApply - setCollectionsType: " ..tostring(setCollectionsType))
         if FCOISsettings.autoMarkSetsItemCollectionBook == true and
             (
                 (FCOISsettings.autoMarkSetsItemCollectionBookMissingIcon ~= FCOIS_CON_ICON_NONE and
@@ -516,7 +516,6 @@ d("[FCOIS]checkAndRunAutomaticSetItemCollectionMarkerApply - setCollectionsType:
                 FCOISsettings.isIconEnabled[FCOISsettings.autoMarkSetsItemCollectionBookNonMissingIcon] == true)
             )
         then
-d(">run")
             FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, setCollectionsType, false)
         end
     end
