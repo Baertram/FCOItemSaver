@@ -2294,14 +2294,16 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
     --Table for the allowed special button types, if iconId = nil and doMark = nil
     local settings = FCOIS.settingsVars.settings
     local allowedSpecialButtonTypes = {
-        ["quality"]         = {allowed = true, icon = settings.autoMarkQualityIconNr},
-        ["intricate"]       = {allowed = true, icon = FCOIS_CON_ICON_INTRICATE},
-        ["ornate"]          = {allowed = true, icon = FCOIS_CON_ICON_SELL},
-        ["research"]        = {allowed = true, icon = FCOIS_CON_ICON_RESEARCH},
-        ["researchScrolls"] = {allowed = true, icon = FCOIS_CON_ICON_LOCK},
-        ["recipes"]         = {allowed = true, icon = settings.autoMarkRecipesIconNr},
-        ["knownRecipes"]    = {allowed = true, icon = settings.autoMarkKnownRecipesIconNr},
-        ["sets"]            = {allowed = true, icon = settings.autoMarkSetsIconNr},
+        ["quality"]                     = {allowed = true, icon = settings.autoMarkQualityIconNr},
+        ["intricate"]                   = {allowed = true, icon = FCOIS_CON_ICON_INTRICATE},
+        ["ornate"]                      = {allowed = true, icon = FCOIS_CON_ICON_SELL},
+        ["research"]                    = {allowed = true, icon = FCOIS_CON_ICON_RESEARCH},
+        ["researchScrolls"]             = {allowed = true, icon = FCOIS_CON_ICON_LOCK},
+        ["recipes"]                     = {allowed = true, icon = settings.autoMarkRecipesIconNr},
+        ["knownRecipes"]                = {allowed = true, icon = settings.autoMarkKnownRecipesIconNr},
+        ["sets"]                        = {allowed = true, icon = settings.autoMarkSetsIconNr},
+        ["setItemCollectionsUnknown"]   = {allowed = true, icon = settings.autoMarkSetsItemCollectionBookMissingIcon},
+        ["setItemCollectionsKnown"]     = {allowed = true, icon = settings.autoMarkSetsItemCollectionBookNonMissingIcon},
     }
 
     local isUNDOButton 			 		= (specialButtonType == "UNDO") or false
@@ -3197,7 +3199,7 @@ d("[FCOIS]showContextMenuForAddInvButtons -> Localization fix")
         subMenuEntryAutomaticMarking = {
             label 		= locVars["options_enable_auto_mark_known_set_collection_items"],
             callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "setItemCollectionsKnown") end,
-            disabled	= function() return not settings.autoMarkSetsItemCollectionBook or (settings.autoMarkSetsItemCollectionBookIcon == FCOIS_CON_ICON_NONE or not settings.isIconEnabled[settings.autoMarkSetsItemCollectionBookIcon] == true) end,
+            disabled	= function() return not settings.autoMarkSetsItemCollectionBook or (settings.autoMarkSetsItemCollectionBookIcon == FCOIS_CON_ICON_NONE or not settings.isIconEnabled[settings.autoMarkSetsItemCollectionBookNonMissingIcon] == true) end,
         }
         table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
         --Sets
