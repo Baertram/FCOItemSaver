@@ -7,6 +7,8 @@ if not FCOIS.libsLoadedProperly then return end
 local numFilterIcons = FCOIS.numVars.gFCONumFilterIcons
 local ctrlVars = FCOIS.ZOControlVars
 
+local getSavedVarsMarkedItemsTableName = FCOIS.getSavedVarsMarkedItemsTableName
+
 --===================================================================================
 --	FCOIS Anti - *  - Methods to check if item is protected, or allowed to be ...
 --===================================================================================
@@ -262,9 +264,10 @@ end
 --3rd parameter allows a handler like "gear" or "dynamic" to check all gear set or all dyanmic icons at once (in a loop)
 --4th parameter addonName (String):	Can be left NIL! The unique addon name which was used to temporarily enable the uniqueIdm usage for the item checks.
 -----                               -> See FCOIS API function "FCOIS.UseTemporaryUniqueIds(addonName, doUse)"
-function FCOIS.checkIfItemIsProtected(iconId, itemId, checkHandler, addonName)
+function FCOIS.checkIfItemIsProtected(iconId, itemId, checkHandler, addonName, savedVarsTableNameForMarkers)
     if itemId == nil or (iconId == nil and checkHandler == nil) then return false end
 --d("FCOIS.checkIfItemIsProtected -  iconId: " .. tostring(iconId) .. ", itemId: " .. tostring(FCOIS.SignItemId(itemId)) .. ", checkHandler: " .. tostring(checkHandler) .. ", addonName: " .. tostring(addonName))
+    savedVarsTableNameForMarkers = savedVarsTableNameForMarkers or getSavedVarsMarkedItemsTableName()
     ------------------------------------------------------
     --	Check in a loop, for gear sets and dynamic icons:
     -------------------------------------------------------
@@ -278,7 +281,7 @@ function FCOIS.checkIfItemIsProtected(iconId, itemId, checkHandler, addonName)
             local gearIcons = FCOIS.mappingVars.gearToIcon
             for _, gearIconNr in pairs(gearIcons) do
                 if gearIconNr ~= nil then
-                    local itemIsProtectedWithGearLoop = FCOIS.checkIfItemIsProtected(gearIconNr, itemId, nil, addonName)
+                    local itemIsProtectedWithGearLoop = FCOIS.checkIfItemIsProtected(gearIconNr, itemId, nil, addonName, savedVarsTableNameForMarkers)
                     --Is the current gear's icon protecting the item then return "protected" (true)
                     if itemIsProtectedWithGearLoop then return true end
                 end
@@ -290,7 +293,7 @@ function FCOIS.checkIfItemIsProtected(iconId, itemId, checkHandler, addonName)
             local dynamicIcons = FCOIS.mappingVars.dynamicToIcon
             for _, dynamicIconNr in pairs(dynamicIcons) do
                 if dynamicIconNr ~= nil then
-                    local itemIsProtectedWithDynamicLoop = FCOIS.checkIfItemIsProtected(dynamicIconNr, itemId, nil, addonName)
+                    local itemIsProtectedWithDynamicLoop = FCOIS.checkIfItemIsProtected(dynamicIconNr, itemId, nil, addonName, savedVarsTableNameForMarkers)
                     --Is the current dynamic's icon protecting the item then return "protected" (true)
                     if itemIsProtectedWithDynamicLoop then return true end
                 end
@@ -315,7 +318,7 @@ function FCOIS.checkIfItemIsProtected(iconId, itemId, checkHandler, addonName)
             return false
         end
         --Check if the item is marked with the icon
-        itemIsMarked = FCOIS.markedItems[iconId][FCOIS.SignItemId(itemId, nil, nil, addonName, nil, nil)]
+        itemIsMarked = FCOIS[savedVarsTableNameForMarkers][iconId][FCOIS.SignItemId(itemId, nil, nil, addonName, nil, nil)]
     end
     if itemIsMarked == nil then itemIsMarked = false end
     --d("FCOIS.checkIfItemIsProtected - itemIsMarked: " .. tostring(itemIsMarked))

@@ -25,11 +25,27 @@ function FCOIS.CreateLoggers()
     FCOIS.loggers[FCOIS_DEBUG_DEPTH_ALL] = loggerBase:Create("DEBUG_ALL")
 end
 
---Output debug message in chat
-function FCOIS.debugMessage(msg_text_header, msg_text, deep, depthNeeded, isInfo)
+--Output debug message in chat or LibDebugLogger -> DebugLogViewer ingame UI.
+--Parameter deep boolean: Is it a deep debug message with more detail/special surrounding?
+--Parameter depthNeeded: Which depth is the deep message added to? FCOIS_DEBUG_DEPTH_ALL (show all debug messages) to FCOIS_DEBUG_DEPTH_NORMAL
+--Parameter boolean isInfo: Is the debug message just an information? A special logger and text will be used
+--Parameter boolean quickDebug: Use the deep and depthNeeded parameters FCOIS_DEBUG_DEPTH_QUICK_DEBUG to show only a few debug output message
+function FCOIS.debugMessage(msg_text_header, msg_text, deep, depthNeeded, isInfo, quickDebug)
     depthNeeded = depthNeeded or FCOIS_DEBUG_DEPTH_ALL
+    quickDebug = quickDebug or false
     isInfo = isInfo or false
-    local settings = FCOIS.settingsVars.settings
+    local settings= FCOIS.settingsVars.settings
+    local debugBefore = settings.debug
+    local deepDebugBefore = settings.deepDebug
+    local debugDepthBefore = settings.debugDepth
+    if quickDebug == true then
+        isInfo = false
+        deep = true
+        depthNeeded = FCOIS_DEBUG_DEPTH_QUICK_DEBUG
+        settings.debug = true
+        settings.deepDebug = true
+        settings.debugDepth = depthNeeded
+    end
     if (deep and not settings.deepDebug) then
         return
     elseif (deep and settings.deepDebug) then
@@ -56,14 +72,15 @@ function FCOIS.debugMessage(msg_text_header, msg_text, deep, depthNeeded, isInfo
         subLogger:SetEnabled(false) -- turn the new logger off
         ]]
         local loggers = FCOIS.loggers
-        local loggerBase = loggers[FCOIS_DEBUG_DEPTH_NORMAL]
+        local loggerBase = loggers and loggers[FCOIS_DEBUG_DEPTH_NORMAL]
         if loggerBase then
             if deep == true then
                 if loggers[depthNeeded] ~= nil then
                     --A debug message header was given: Create a sublogger for it
                     if msg_text_header and msg_text_header ~= "" then
                         if loggers[depthNeeded][msg_text_header] == nil then
-                            loggers[depthNeeded][msg_text_header]:Create(msg_text_header)
+                            loggers[depthNeeded][msg_text_header] = {}
+                            loggers[depthNeeded][msg_text_header] = loggerBase:Create(msg_text_header)
                         end
                         debugOrInfo(loggers[depthNeeded][msg_text_header], msg_text)
                     else
@@ -92,6 +109,11 @@ function FCOIS.debugMessage(msg_text_header, msg_text, deep, depthNeeded, isInfo
             end
         end
     end
+    if quickDebug == true then
+        settings.debug      = debugBefore
+        settings.deepDebug  = deepDebugBefore
+        settings.debugDepth = debugDepthBefore
+    end
 end
 
 --Debug function to show the current item's (below the mouse) iteminstance id (signed through FCOIS function FCOIS.SignItemId()) in chat
@@ -108,7 +130,7 @@ function FCOIS.debugItem(p_bagId, p_slotIndex)
         local itemId = FCOIS.MyGetItemInstanceIdNoControl(bag, slot, true)
         local itemLink = GetItemLink(bag, slot, LINK_STYLE_DEFAULT)
         d("[FCOIS] " .. itemLink .." - bag: " .. tostring(bag) .. ", slot: " .. tostring(slot) .. ", FCOIS_ItemId: " .. tostring(itemId))
-        ZO_ChatWindowTextEntryEditBox:SetText("/zgoo FCOIS.markedItems[<iconIdHere>]["..itemId.."]")
+        ZO_ChatWindowTextEntryEditBox:SetText("/zgoo FCOIS[FCOIS.getSavedVarsMarkedItemsTableName()][<iconIdHere>]["..itemId.."]")
     end
 end
 

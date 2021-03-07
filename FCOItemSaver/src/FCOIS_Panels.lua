@@ -38,7 +38,7 @@ function FCOIS.getWhereAreWe(panelId, panelIdAtCall, bag, slot, isDragAndDrop, c
         elseif (FCOIS.isItemType(p_bag, p_slotIndex, ITEMTYPE_POTION)) then
             locWhereAreWe = FCOIS_CON_POTION_USAGE
             --Eat food?
-        elseif (FCOIS.isItemType(p_bag, p_slotIndex, ITEMTYPE_FOOD)) then
+        elseif (FCOIS.isItemType(p_bag, p_slotIndex, {ITEMTYPE_FOOD, ITEMTYPE_DRINK})) then
             locWhereAreWe = FCOIS_CON_FOOD_USAGE
             --Use crown store item?
         elseif (FCOIS.isItemType(p_bag, p_slotIndex, ITEMTYPE_CROWN_ITEM) or FCOIS.isItemType(p_bag, p_slotIndex, ITEMTYPE_CROWN_REPAIR)) then

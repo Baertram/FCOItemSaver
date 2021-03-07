@@ -19,20 +19,19 @@
 ---------------------------------------------------------------------
 --[ToDo list] --
 --____________________________
--- Current max bugs: 95
+-- Current max bugs/features/ToDos: 107
 --____________________________
+
+--In progress: Since 2020-06-17
+-- 80) 2020-06-14, Beartram, UniqueIds do not work properly anymore as they are really unique and items with the same itemInstanceId, and everything else also the same,
+-- are still unique...
+-- For weapons, armor and jewelry: Change all uniqueId checks to check the item's itemLink maybe or at least infos generated from it like level, quality, itemId, trait, style and enchantmentId.
+
+------------------------------------------------------------------------------------------------------------------------
 
 -- 1) 2019-01-14 - Bugfix - Baertram
 --Right clicking an item to show the context menu, and then left clicking somewhere else does not close the context menu on first click, but on 2nd click
 -->Todo: Bug within LibCustomMenu -> To be fixed by Votan?
-
---23) 2019-08-17 Check - Baertram
---Todo: Test if backup/restore is working properly with the "AllAccountsTheSame" settings enabled
-
---27) 2019-10-10 Bug - Baertram
--- Drag & drop of marked items directly from the CraftBagExtended panel to a mail slot works even if the FCOIS protection is enabled! Same for player2player trade.
---> 2020-02-02: ZOs code does not call the event to lock/unlock items if you drag start/drag stop an item from the guild bank, craftbag panels. Also destroy event is not raised.
---> Asked ZOs for a fix here:  https://www.esoui.com/forums/showthread.php?t=8938
 
 -- 40)  2019-11-04 Bug - Baertram
 --lua error message if you use the context menu to destroy an item from inventory:
@@ -46,14 +45,6 @@ ZO_MenuItem1_MouseUp:4: in function '(main chunk)'
 ]]
 --> src/FCOIS_Hooks.lua ->     ZO_PreHookHandler(ctrlVars.BACKPACK_BAG, "OnEffectivelyShown", FCOItemSaver_OnEffectivelyShown) -> FCOItemSaver_OnEffectivelyShown ->  ZO_PreHookHandler(childrenCtrl, "OnMouseUp", function(...)
 --> causes the error message!
-
--- 47) 2019-12-29 bug - Baertram
--- SHIFT +right click directly in guild bank's withdraw row does not work if the inventory was not at least opened once before
--- the guild bank was opened
---> File FCOIS_Hooks.lua, line 1332: ZO_PreHookHandler( ctrlVars.GUILD_BANK_BAG, "OnEffectivelyShown", FCOItemSaver_OnEffectivelyShown ) ->  function FCOItemSaver_OnEffectivelyShown -> function FCOItemSaver_InventoryItem_OnMouseUp
---> GuildBank withdraw: ZO_GuildBankBackpackContents only got child ZO_GuildBankBackpackLandingArea, but not rows if you directly open the guild bank after login/reloadui.
----> Guild bank needs more time to build the rows initially. So we need to wait here until they are build to register the hook!
---> If you switch to the guild bank deposit and back it got the rows then: ZO_GuildBankBackpack1RowN
 
 -- 76) 2020-04-12, Baertram
 -- Open bank after login and try to remove/add a marker icon via keybind-> Insecure error call
@@ -91,13 +82,6 @@ EsoUI/Ingame/Inventory/InventorySlot.lua:1323: in function '(anonymous)'
 EsoUI/Libraries/ZO_ContextMenus/ZO_ContextMenus.lua:451: in function 'ZO_Menu_ClickItem'
 ZO_MenuItem1_MouseUp:4: in function '(main chunk)'
 ]]
-
-
-
---In progress: 2020-06-17
--- 80) 2020-06-14, Beartram, UniqueIds do not work properly anymore as they are really unique and items with the same itemInstanceId, and everything else also the same,
--- are still unique...
--- For weapons, armor and jewelry: Change all uniqueId checks to check the item's itemLink maybe or at least infos generated from it like level, quality, itemId, trait, style and enchantmentId.
 
 
 --84) 2020-06-27, Malvarot - Automatic marks Quality will also tag set items "again" if the checkbox "check all other markers" at the quality settings is enabled.
@@ -138,29 +122,61 @@ Blaue/Lila Set Rüstung mit invigorating: dynamic mark 4 ("undefined")
 Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 ]]
 
---#92: 2020-08-10, Baertram     SettingsForAll settings, which save if you are using accountwide, character or allaccountsthesame SavedVariables will get
+--#92: 2020-08-10, Baertram     SettingsForAll settings, which save if you are using accountwide, character or allAccountsTheSame SavedVariables will get
 --     deleted if you delete the "Account wide" settings from the FCOIS settings menu "SavedVariables copy/delete" options submenu!
---     E.g. use "AllAccountsTheSame" in the settings of accounbt @Baertram-> This setting is stored in AccountWide settings @Baertram, version 999.
---     If you delete the account settings for @Baertram now, the chosen settings to sue AllAccountsTheSame gets deleted as well!
+--     E.g. use "AllAccountsTheSame" in the settings of account @Baertram-> This setting is stored in AccountWide settings @Baertram, version 999.
+--     If you delete the account settings for @Baertram now, the chosen settings to use AllAccountsTheSame gets deleted as well!
 --     These SettingsForAll need to migrate and be saved somewhere else, like in a special settings table "FCOItemSaver_Settings_General"!
 
---#93: 2020-08-18, Baertram     Improvement of a staff to purple (no marker icons on that staff) will not remove the staff from the improvement slot,
---     if marked with a protected icon (e.g. "Lock" icon) after improvement (with the item still slotted).
---     File src/FCOIS_Protection.lua -> FCOIS.craftingPrevention.RemoveItemFromRetraitSlot(bagId, slotIndex, isSlotted) -> isSlotted is false? Why?
+
+--#97: 2020-08-28, Piperman124  Set items get marked with impenetrable icon even though they were marked already before
+--Seems if I clear all marks and then run the auto marking for set parts it applies to everything not marked with
+--another set part item this way but running it again will add impen to everything even if it's already marked with divines etc.
+
+--#100: 2020-12-13, Deadsoon  CraftStore automatic recipe marking will mark known recipes with the unknown marker icon
+
 
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
---Since last update 1.9.7 - New version: 1.9.8
+--Since last update 2.0.0 - New version: 2.0.1 -> Updated 2021-03-07
 ---------------------------------------------------------------------
+
 --[Fixed]
--- #95: Fixed the retrait panel on PTS "Markarth" and made the addon compatible with live and PTS
+-- #47 SHIFT +right click directly in guild bank's withdraw row does not work if the inventory was not at least opened once before
+-- the guild bank was opened
+-- #101 Performance improvement: Duplicate marker texture controls checks (create/reanchore/etc.) happened at some inventories
+-- if you have scrolled
+--
+--#107: Auto-reenable guild bank deposit check should only be re-enabled if the setting to block the guild bank deposit is
+--      enabled!
+
 
 --[Changed]
 
+
 --[Added]
+--#102 Added: New settings at dynamic icons: Offset X / Offset Y for each dynamic icon, to position them differently to other
+--       marker icons
+--#103 Support for Inventory GridView/Grid List addons: FCOIS bound items marker icon position and size within grid mode
+--     It will show at the top left edge of the grid item.
+-- #104 Performance tweak: Marker icon textures will not be created anymore "all" at "all rows" at the first inventory open,
+--      but only those will be created which marker icons are applied to the currently shown item.
+--      As you scroll the next texture controls will be checked and created, if needed. As rows of the inventory will be
+--      reused if you scroll (e.g. item1 will be out of view and new item 23 will be at the row where item 1 was before)
+--      the marker texture controls will stay at the row (once created) and will be reused for the items, as before.
+--      But if you only got a few marker icons active per item this should increase the performance of the first iventory
+--      open a lot! Could add some more littel lag to the scrolling though. Tell me please if you notice this, providing
+--      info at which inventory panel, which filters are activated and how I'm able to rebuild this.
+--      Grid addons like Inventory Grid View or Grid List should be much faster at the first inventory open now!
+-- #105 More dynamic LAM settings (marker icons, marker icons enable submenus) instead of redundant code lines
+-- #106 Added automatic marking of item set collection book -> Missing/Known. Supports ESO API for the currently logged in
+--      account, or optionally LibMultiAccountSets for multi-account support
 
 --[Added on request]
+--#80 New selection of FCOIS custom created UniqueIds: Choose your criteria in the general settings, which define the uniqueId for you.
+--    It will use the itemId + the selected criteria (level, quality, enchantment, etc.) to create an own uniqueId.
+--    Only applies to weapons and armor so far. All other items still use the non-unique IDs.
 
 
 --************************************************************************************************************************

@@ -7,16 +7,19 @@ if not FCOIS.libsLoadedProperly then return end
 
 local numFilters = FCOIS.numVars.gFCONumFilters
 local filterButtonsToCheck = FCOIS.checkVars.filterButtonsToCheck
+
 -- =====================================================================================================================
 --  Filter state & chat output functions
 -- =====================================================================================================================
 --Write the info about the current filter state into the chat
 --or build the tooltip text
-local function outputFilterState(p_outputToChat, p_newFilterMethod, p_panelId, p_filterId, p_stateText)
+local function outputFilterState(p_outputToChat, p_panelId, p_filterId, p_stateText)
     local filterText
     local preChatText
     local outputText
     local settings = FCOIS.settingsVars.settings
+    local settingsOfFilterButtonStateAndIcon = FCOIS.getAccountWideCharacterOrNormalCharacterSettings()
+    local mappingVars = FCOIS.mappingVars
 
     --Abort given because filter is/will be unregistered?
     if p_stateText == 'ABORT' then
@@ -36,81 +39,75 @@ local function outputFilterState(p_outputToChat, p_newFilterMethod, p_panelId, p
         preChatText = FCOIS.preChatVars.preChatTextGreen
     end
 
-    p_newFilterMethod = p_newFilterMethod or settings.splitFilters
-
-    if settings.debug then FCOIS.debugMessage( "[OutputFilterState]","OutputToChat: " .. tostring(p_outputToChat) ..", splitFilters: " ..tostring(p_newFilterMethod)..", filterPanelId: " ..tostring(p_panelId)..", filterId: "..tostring(p_filterId)..", stateText: " .. p_stateText, true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+    if settings.debug then FCOIS.debugMessage( "[OutputFilterState]","OutputToChat: " .. tostring(p_outputToChat) ..", filterPanelId: " ..tostring(p_panelId)..", filterId: "..tostring(p_filterId)..", stateText: " .. p_stateText, true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
     local locVars = FCOIS.localizationVars.fcois_loc
 
-    --New filter method activated?
-    if (p_newFilterMethod == true) then
-        if     (p_panelId == LF_INVENTORY or p_panelId == LF_BANK_DEPOSIT or p_panelId == LF_GUILDBANK_DEPOSIT or p_panelId == LF_HOUSE_BANK_DEPOSIT) then
-            outputText = preChatText .. locVars["filter_inventory"] .. locVars["filter" .. filterText .. p_stateText]
-        elseif (p_panelId == LF_CRAFTBAG) then
-            outputText = preChatText .. locVars["filter_craftbag"] .. locVars["filter" .. filterText .. p_stateText]
-        elseif (p_panelId == LF_GUILDBANK_WITHDRAW) then
-            outputText = preChatText .. locVars["filter_guildbank"] .. locVars["filter" .. filterText .. p_stateText]
-        elseif (p_panelId == LF_GUILDSTORE_SELL) then
-            outputText = preChatText .. locVars["filter_guildstore"] .. locVars["filter" .. filterText .. p_stateText]
-        elseif (p_panelId == LF_BANK_WITHDRAW) then
-            outputText = preChatText .. locVars["filter_bank"] .. locVars["filter" .. filterText .. p_stateText]
-        elseif (p_panelId == LF_SMITHING_REFINE) then
-            outputText = preChatText .. locVars["filter_refinement"] .. locVars["filter" .. filterText .. p_stateText]
-        elseif (p_panelId == LF_SMITHING_DECONSTRUCT) then
-            outputText = preChatText .. locVars["filter_deconstruction"] .. locVars["filter" .. filterText .. p_stateText]
-        elseif (p_panelId == LF_SMITHING_IMPROVEMENT) then
-            outputText = preChatText .. locVars["filter_improvement"] .. locVars["filter" .. filterText .. p_stateText]
-        elseif (p_panelId == LF_SMITHING_RESEARCH or p_panelId == LF_SMITHING_RESEARCH_DIALOG) then
-            outputText = preChatText .. locVars["filter_research"] .. locVars["filter" .. filterText .. p_stateText]
-        elseif (p_panelId == LF_JEWELRY_REFINE) then
-            outputText = preChatText .. locVars["filter_jewelry_refinement"] .. locVars["filter" .. filterText .. p_stateText]
-        elseif (p_panelId == LF_JEWELRY_DECONSTRUCT) then
-            outputText = preChatText .. locVars["filter_jewelry_deconstruction"] .. locVars["filter" .. filterText .. p_stateText]
-        elseif (p_panelId == LF_JEWELRY_IMPROVEMENT) then
-            outputText = preChatText .. locVars["filter_jewelry_improvement"] .. locVars["filter" .. filterText .. p_stateText]
-        elseif (p_panelId == LF_JEWELRY_RESEARCH or p_panelId == LF_JEWELRY_RESEARCH_DIALOG) then
-            outputText = preChatText .. locVars["filter_jewelry_research"] .. locVars["filter" .. filterText .. p_stateText]
-        elseif (p_panelId == LF_ENCHANTING_EXTRACTION) then
-            outputText = preChatText .. locVars["filter_enchantingstation_extraction"] .. locVars["filter" .. filterText .. p_stateText]
-        elseif (p_panelId == LF_ENCHANTING_CREATION) then
-            outputText = preChatText .. locVars["filter_enchantingstation_creation"] .. locVars["filter" .. filterText .. p_stateText]
-        elseif (p_panelId == LF_VENDOR_BUY) then
-            outputText = preChatText .. locVars["filter_buy"] .. locVars["filter" .. filterText .. p_stateText]
-        elseif (p_panelId == LF_VENDOR_SELL) then
-            outputText = preChatText .. locVars["filter_store"] .. locVars["filter" .. filterText .. p_stateText]
-        elseif (p_panelId == LF_VENDOR_BUYBACK) then
-            outputText = preChatText .. locVars["filter_buyback"] .. locVars["filter" .. filterText .. p_stateText]
-        elseif (p_panelId == LF_VENDOR_REPAIR) then
-            outputText = preChatText .. locVars["filter_repair"] .. locVars["filter" .. filterText .. p_stateText]
-        elseif (p_panelId == LF_FENCE_SELL) then
-            outputText = preChatText .. locVars["filter_fence"] .. locVars["filter" .. filterText .. p_stateText]
-        elseif (p_panelId == LF_FENCE_LAUNDER) then
-            outputText = preChatText .. locVars["filter_launder"] .. locVars["filter" .. filterText .. p_stateText]
-        elseif (p_panelId == LF_MAIL_SEND) then
-            outputText = preChatText .. locVars["filter_mail"] .. locVars["filter" .. filterText .. p_stateText]
-        elseif (p_panelId == LF_TRADE) then
-            outputText = preChatText .. locVars["filter_trade"] .. locVars["filter" .. filterText .. p_stateText]
-        elseif (p_panelId == LF_ALCHEMY_CREATION) then
-            outputText = preChatText .. locVars["filter_alchemy"] .. locVars["filter" .. filterText .. p_stateText]
-        elseif (p_panelId == LF_RETRAIT) then
-            outputText = preChatText .. locVars["filter_retrait"] .. locVars["filter" .. filterText .. p_stateText]
-        elseif (p_panelId == LF_HOUSE_BANK_WITHDRAW) then
-            outputText = preChatText .. locVars["filter_house_bank"] .. locVars["filter" .. filterText .. p_stateText]
-        end
-
-        --Old filter method activated?
-    else
-        outputText = preChatText .. locVars["filter" .. filterText .. p_stateText]
+    --TODO: 2020-10-18 Make this code below more dynamic, e.g. via a table
+    --Create the outputText
+    if     (p_panelId == LF_INVENTORY or p_panelId == LF_BANK_DEPOSIT or p_panelId == LF_GUILDBANK_DEPOSIT or p_panelId == LF_HOUSE_BANK_DEPOSIT) then
+        outputText = preChatText .. locVars["filter_inventory"] .. locVars["filter" .. filterText .. p_stateText]
+    elseif (p_panelId == LF_CRAFTBAG) then
+        outputText = preChatText .. locVars["filter_craftbag"] .. locVars["filter" .. filterText .. p_stateText]
+    elseif (p_panelId == LF_GUILDBANK_WITHDRAW) then
+        outputText = preChatText .. locVars["filter_guildbank"] .. locVars["filter" .. filterText .. p_stateText]
+    elseif (p_panelId == LF_GUILDSTORE_SELL) then
+        outputText = preChatText .. locVars["filter_guildstore"] .. locVars["filter" .. filterText .. p_stateText]
+    elseif (p_panelId == LF_BANK_WITHDRAW) then
+        outputText = preChatText .. locVars["filter_bank"] .. locVars["filter" .. filterText .. p_stateText]
+    elseif (p_panelId == LF_SMITHING_REFINE) then
+        outputText = preChatText .. locVars["filter_refinement"] .. locVars["filter" .. filterText .. p_stateText]
+    elseif (p_panelId == LF_SMITHING_DECONSTRUCT) then
+        outputText = preChatText .. locVars["filter_deconstruction"] .. locVars["filter" .. filterText .. p_stateText]
+    elseif (p_panelId == LF_SMITHING_IMPROVEMENT) then
+        outputText = preChatText .. locVars["filter_improvement"] .. locVars["filter" .. filterText .. p_stateText]
+    elseif (p_panelId == LF_SMITHING_RESEARCH or p_panelId == LF_SMITHING_RESEARCH_DIALOG) then
+        outputText = preChatText .. locVars["filter_research"] .. locVars["filter" .. filterText .. p_stateText]
+    elseif (p_panelId == LF_JEWELRY_REFINE) then
+        outputText = preChatText .. locVars["filter_jewelry_refinement"] .. locVars["filter" .. filterText .. p_stateText]
+    elseif (p_panelId == LF_JEWELRY_DECONSTRUCT) then
+        outputText = preChatText .. locVars["filter_jewelry_deconstruction"] .. locVars["filter" .. filterText .. p_stateText]
+    elseif (p_panelId == LF_JEWELRY_IMPROVEMENT) then
+        outputText = preChatText .. locVars["filter_jewelry_improvement"] .. locVars["filter" .. filterText .. p_stateText]
+    elseif (p_panelId == LF_JEWELRY_RESEARCH or p_panelId == LF_JEWELRY_RESEARCH_DIALOG) then
+        outputText = preChatText .. locVars["filter_jewelry_research"] .. locVars["filter" .. filterText .. p_stateText]
+    elseif (p_panelId == LF_ENCHANTING_EXTRACTION) then
+        outputText = preChatText .. locVars["filter_enchantingstation_extraction"] .. locVars["filter" .. filterText .. p_stateText]
+    elseif (p_panelId == LF_ENCHANTING_CREATION) then
+        outputText = preChatText .. locVars["filter_enchantingstation_creation"] .. locVars["filter" .. filterText .. p_stateText]
+    elseif (p_panelId == LF_VENDOR_BUY) then
+        outputText = preChatText .. locVars["filter_buy"] .. locVars["filter" .. filterText .. p_stateText]
+    elseif (p_panelId == LF_VENDOR_SELL) then
+        outputText = preChatText .. locVars["filter_store"] .. locVars["filter" .. filterText .. p_stateText]
+    elseif (p_panelId == LF_VENDOR_BUYBACK) then
+        outputText = preChatText .. locVars["filter_buyback"] .. locVars["filter" .. filterText .. p_stateText]
+    elseif (p_panelId == LF_VENDOR_REPAIR) then
+        outputText = preChatText .. locVars["filter_repair"] .. locVars["filter" .. filterText .. p_stateText]
+    elseif (p_panelId == LF_FENCE_SELL) then
+        outputText = preChatText .. locVars["filter_fence"] .. locVars["filter" .. filterText .. p_stateText]
+    elseif (p_panelId == LF_FENCE_LAUNDER) then
+        outputText = preChatText .. locVars["filter_launder"] .. locVars["filter" .. filterText .. p_stateText]
+    elseif (p_panelId == LF_MAIL_SEND) then
+        outputText = preChatText .. locVars["filter_mail"] .. locVars["filter" .. filterText .. p_stateText]
+    elseif (p_panelId == LF_TRADE) then
+        outputText = preChatText .. locVars["filter_trade"] .. locVars["filter" .. filterText .. p_stateText]
+    elseif (p_panelId == LF_ALCHEMY_CREATION) then
+        outputText = preChatText .. locVars["filter_alchemy"] .. locVars["filter" .. filterText .. p_stateText]
+    elseif (p_panelId == LF_RETRAIT) then
+        outputText = preChatText .. locVars["filter_retrait"] .. locVars["filter" .. filterText .. p_stateText]
+    elseif (p_panelId == LF_HOUSE_BANK_WITHDRAW) then
+        outputText = preChatText .. locVars["filter_house_bank"] .. locVars["filter" .. filterText .. p_stateText]
     end
 
     --Add another tooltip line with the currently selected lock & dynamic icons filter?
     if p_filterId == FCOIS_CON_FILTER_BUTTON_LOCKDYN and settings.splitLockDynFilter then
         outputText = outputText .. "\n"
-        if      settings.lastLockDynFilterIconId[FCOIS.gFilterWhere] == -1 then
+        local lastLockDynFilterIconId = settingsOfFilterButtonStateAndIcon.lastLockDynFilterIconId
+        if lastLockDynFilterIconId[FCOIS.gFilterWhere] == -1 then
             outputText = outputText .. locVars["filter_lockdyn_all"]
         else
-            local lockDynIconNr = settings.lastLockDynFilterIconId[FCOIS.gFilterWhere]
+            local lockDynIconNr = lastLockDynFilterIconId[FCOIS.gFilterWhere]
             --One of the dynamic icons was selected?
-            local isIconDynamic = FCOIS.mappingVars.iconIsDynamic
+            local isIconDynamic = mappingVars.iconIsDynamic
             if isIconDynamic[lockDynIconNr] then
                 outputText = outputText .. settings.icon[lockDynIconNr].name
                 --No dynamic icon selected (like icon 1, the "lock" icon)
@@ -122,26 +119,29 @@ local function outputFilterState(p_outputToChat, p_newFilterMethod, p_panelId, p
         --Add another tooltip line with the currently selected gear set filter?
     elseif p_filterId == FCOIS_CON_FILTER_BUTTON_GEARSETS and settings.splitGearSetsFilter then
         outputText = outputText .. "\n"
-        if      settings.lastGearFilterIconId[FCOIS.gFilterWhere] == -1 then
+        local lastGearFilterIconId = settingsOfFilterButtonStateAndIcon.lastGearFilterIconId
+        if lastGearFilterIconId[FCOIS.gFilterWhere] == -1 then
             outputText = outputText .. locVars["filter_gears_all"]
         else
-            outputText = outputText .. settings.icon[settings.lastGearFilterIconId[FCOIS.gFilterWhere]].name
+            outputText = outputText .. settings.icon[lastGearFilterIconId[FCOIS.gFilterWhere]].name
         end
 
     elseif p_filterId == FCOIS_CON_FILTER_BUTTON_RESDECIMP and settings.splitResearchDeconstructionImprovementFilter then
         outputText = outputText .. "\n"
-        if      settings.lastResDecImpFilterIconId[FCOIS.gFilterWhere] == -1 then
+        local lastResDecImpFilterIconId = settingsOfFilterButtonStateAndIcon.lastResDecImpFilterIconId
+        if lastResDecImpFilterIconId[FCOIS.gFilterWhere] == -1 then
             outputText = outputText .. locVars["filter_resdecimp_all"]
         else
-            outputText = outputText .. locVars["filter_resdecimp_" .. tostring(FCOIS.mappingVars.iconToResDecImp[settings.lastResDecImpFilterIconId[FCOIS.gFilterWhere]])]
+            outputText = outputText .. locVars["filter_resdecimp_" .. tostring(mappingVars.iconToResDecImp[lastResDecImpFilterIconId[FCOIS.gFilterWhere]])]
         end
 
     elseif p_filterId == FCOIS_CON_FILTER_BUTTON_SELLGUILDINT and settings.splitSellGuildSellIntricateFilter then
         outputText = outputText .. "\n"
-        if      settings.lastSellGuildIntFilterIconId[FCOIS.gFilterWhere] == -1 then
+        local lastSellGuildIntFilterIconId = settingsOfFilterButtonStateAndIcon.lastSellGuildIntFilterIconId
+        if lastSellGuildIntFilterIconId[FCOIS.gFilterWhere] == -1 then
             outputText = outputText .. locVars["filter_sellguildint_all"]
         else
-            outputText = outputText .. locVars["filter_sellguildint_" .. tostring(FCOIS.mappingVars.iconToSellGuildInt[settings.lastSellGuildIntFilterIconId[FCOIS.gFilterWhere]])]
+            outputText = outputText .. locVars["filter_sellguildint_" .. tostring(mappingVars.iconToSellGuildInt[lastSellGuildIntFilterIconId[FCOIS.gFilterWhere]])]
         end
     end
 
@@ -439,19 +439,14 @@ end
 --Update the filter button colors and textures, depending on the filters (and chosen sub-filter icons)
 function FCOIS.UpdateButtonColorsAndTextures(p_buttonId, p_button, p_status, p_filterPanelId)
     local p_statusText = p_status or "Not changed!"
+    p_filterPanelId = p_filterPanelId or FCOIS.gFilterWhere
     local settings = FCOIS.settingsVars.settings
+    local settingsOfFilterButtonStateAndIcon = FCOIS.getAccountWideCharacterOrNormalCharacterSettings()
+
     local mappingVars = FCOIS.mappingVars
     local texVars = FCOIS.textureVars
     local texMarkerVars = texVars.MARKER_TEXTURES
     local texMarkerVars_SIZE = texVars.MARKER_TEXTURES_SIZE
-    if(settings.splitFilters == true and p_filterPanelId ~= nil) then
-        -- New filter method
-        --If the filterPanelId parameter is empty use the global filter panel Id from events and button clicks
-        p_filterPanelId = p_filterPanelId or FCOIS.gFilterWhere
-    else
-        --Old filter method where only one filter 'LF_INVENTORY' was active for all panels
-        p_filterPanelId = LF_INVENTORY
-    end
 
     local updateTextureSizeIndex
     local btnName = ">< No button ><"
@@ -477,44 +472,48 @@ function FCOIS.UpdateButtonColorsAndTextures(p_buttonId, p_button, p_status, p_f
             --Is the gear sets split filter button context-menu active and are we trying to change the texture of the gear sets button?
             if p_buttonId == FCOIS_CON_FILTER_BUTTON_LOCKDYN and settings.splitLockDynFilter then
                 --Are all icons, lock & 4 dynamic ones, selected?
-                if settings.lastLockDynFilterIconId[p_filterPanelId] == -1 then
+                local lastLockDynFilterIconId = settingsOfFilterButtonStateAndIcon.lastLockDynFilterIconId
+                if lastLockDynFilterIconId[p_filterPanelId] == -1 then
                     texture:SetTexture(texVars.allLockDyn)
                     updateTextureSizeIndex = "LockDyn"
                     --Only one of the icons is selected
                 else
-                    texture:SetTexture(texMarkerVars[settings.icon[settings.lastLockDynFilterIconId[p_filterPanelId]].texture])
-                    updateTextureSizeIndex = settings.icon[settings.lastLockDynFilterIconId[p_filterPanelId]].texture
+                    texture:SetTexture(texMarkerVars[settings.icon[lastLockDynFilterIconId[p_filterPanelId]].texture])
+                    updateTextureSizeIndex = settings.icon[lastLockDynFilterIconId[p_filterPanelId]].texture
                 end
                 --Is the gear sets split filter button context-menu active and are we trying to change the texture of the gear sets button?
             elseif p_buttonId == FCOIS_CON_FILTER_BUTTON_GEARSETS and settings.splitGearSetsFilter then
                 --Are all gear sets selected?
-                if settings.lastGearFilterIconId[p_filterPanelId] == -1 then
+                local lastGearFilterIconId = settingsOfFilterButtonStateAndIcon.lastGearFilterIconId
+                if lastGearFilterIconId[p_filterPanelId] == -1 then
                     texture:SetTexture(texVars.allGearSets)
                     updateTextureSizeIndex = "Gear"
                     --Only one of the gear sets is selected
                 else
-                    texture:SetTexture(texMarkerVars[settings.icon[settings.lastGearFilterIconId[p_filterPanelId]].texture])
-                    updateTextureSizeIndex = settings.icon[settings.lastGearFilterIconId[p_filterPanelId]].texture
+                    texture:SetTexture(texMarkerVars[settings.icon[lastGearFilterIconId[p_filterPanelId]].texture])
+                    updateTextureSizeIndex = settings.icon[lastGearFilterIconId[p_filterPanelId]].texture
                 end
             elseif p_buttonId == FCOIS_CON_FILTER_BUTTON_RESDECIMP and settings.splitResearchDeconstructionImprovementFilter then
                 --Are all entries seleted (Research, Deconstruction, Improvement)?
-                if settings.lastResDecImpFilterIconId[p_filterPanelId] == -1 then
+                local lastResDecImpFilterIconId = settingsOfFilterButtonStateAndIcon.lastResDecImpFilterIconId
+                if lastResDecImpFilterIconId[p_filterPanelId] == -1 then
                     texture:SetTexture(texVars.allResDecImp)
                     updateTextureSizeIndex = "ResDecImp"
                     --Only one of the options is selected
                 else
-                    texture:SetTexture(texMarkerVars[settings.icon[settings.lastResDecImpFilterIconId[p_filterPanelId]].texture])
-                    updateTextureSizeIndex = settings.icon[settings.lastResDecImpFilterIconId[p_filterPanelId]].texture
+                    texture:SetTexture(texMarkerVars[settings.icon[lastResDecImpFilterIconId[p_filterPanelId]].texture])
+                    updateTextureSizeIndex = settings.icon[lastResDecImpFilterIconId[p_filterPanelId]].texture
                 end
             elseif p_buttonId == FCOIS_CON_FILTER_BUTTON_SELLGUILDINT and settings.splitSellGuildSellIntricateFilter then
                 --Are all entries seleted (Sell, Sell in guild store & Intricate)?
-                if settings.lastSellGuildIntFilterIconId[p_filterPanelId] == -1 then
+                local lastSellGuildIntFilterIconId = settingsOfFilterButtonStateAndIcon.lastSellGuildIntFilterIconId
+                if lastSellGuildIntFilterIconId[p_filterPanelId] == -1 then
                     texture:SetTexture(texVars.allSellGuildInt)
                     updateTextureSizeIndex = "SellGuildInt"
                     --Only one of the options is selected
                 else
-                    texture:SetTexture(texMarkerVars[settings.icon[settings.lastSellGuildIntFilterIconId[p_filterPanelId]].texture])
-                    updateTextureSizeIndex = settings.icon[settings.lastSellGuildIntFilterIconId[p_filterPanelId]].texture
+                    texture:SetTexture(texMarkerVars[settings.icon[lastSellGuildIntFilterIconId[p_filterPanelId]].texture])
+                    updateTextureSizeIndex = settings.icon[lastSellGuildIntFilterIconId[p_filterPanelId]].texture
                 end
             else
                 --Workaround to show at least a default texure, if none is found
@@ -625,9 +624,6 @@ local function doFilter(onoff, p_button, filterId, beQuiet, doFilterBasicsPlayer
     local settings = FCOIS.settingsVars.settings
     local lastVars = FCOIS.lastVars
 
-    --Are we using the old (only 1 panel) or new (different panels, split filters) filtering?
-    local newFilterMethod = settings.splitFilters
-
     --Set the last used filter Id
     lastVars.gLastFilterId[p_FilterPanelId] = filterId
 
@@ -657,7 +653,7 @@ local function doFilter(onoff, p_button, filterId, beQuiet, doFilterBasicsPlayer
 
         --Give chat output if beQuiet is false
         if beQuiet == false then
-            outputFilterState(true, newFilterMethod, p_FilterPanelId, filterId, 'ABORT')
+            outputFilterState(true, p_FilterPanelId, filterId, 'ABORT')
         end
 
         --Abort function here now
@@ -668,7 +664,7 @@ local function doFilter(onoff, p_button, filterId, beQuiet, doFilterBasicsPlayer
     if settings.debug then FCOIS.debugMessage( "[DoFilter]", "State: " .. onoff .. ", filterId: " ..filterId .. ", beQuiet: " .. tostring(beQuiet) .. ", doFilterBasiscsPlayer: " .. tostring(doFilterBasicsPlayer) .. ", doUpdateButtonColorsAndTextures: " .. tostring(doUpdateButtonColorsAndTextures) .. ", onlyPlayerInvFilter: " .. tostring(onlyPlayerInvFilter) .. ", FilterPanelId: " .. tostring(p_FilterPanelId), false) end
 
     --Fallback solution if filterPanelId is still empty
-    if ( settings.splitFilters == true and (p_FilterPanelId == nil or p_FilterPanelId == 0) ) then
+    if p_FilterPanelId == nil or p_FilterPanelId == 0 then
         d("[FCOIS] doFilter("..tostring(filterId).."): No filter panel ID given!")
         return
     end
@@ -713,79 +709,39 @@ local function doFilter(onoff, p_button, filterId, beQuiet, doFilterBasicsPlayer
         --Unregister all old filters if the addon is already loaded and filters have been registered before.
         --This happens only by function Enablefilters() called after addon has been fully loaded (e.g. the settings menu "Split filters")
         if FCOIS.addonVars.gAddonLoaded == true then
-            --Did we change the settings "Split filters" and have to unregister all old "split filter" panel filters?
-            if FCOIS.overrideVars.gSplitFilterOverride == true then
-                FCOIS.unregisterFilters(-1)
-            else
-                FCOIS.unregisterFilters(filterId)
-            end
+            FCOIS.unregisterFilters(filterId)
         end
 
-        --We are using filters with splitted panels
-        if (newFilterMethod == true) then
-            --Only update panel LF_INVENTORY (player inventory)
-            local panels = LF_INVENTORY
+        --Only update panel LF_INVENTORY (player inventory)
+        local panels = LF_INVENTORY
 
-            --Check for each panel if filters are enabled
-            isFilterActive = nil
-            isFilterActive = FCOIS.getSettingsIsFilterOn(filterId, panels)
+        --Check for each panel if filters are enabled
+        isFilterActive = nil
+        isFilterActive = FCOIS.getSettingsIsFilterOn(filterId, panels)
 
-            if    (isFilterActive == true) then
-                --Filter is ON
-                -- Set the filters to be registered
-                registerFiltersNow = true
-            elseif(isFilterActive == false) then
-                --Filter is OFF
-                -- Set the filters to stay unregistered
-                registerFiltersNow = false
-            else
-                --Filter is ONLY SHOWING MARKED ITEMS (-99)
-                -- Set the filters to be registered again
-                registerFiltersNow = true
-            end
-
-            --Register the filters now
-            if (registerFiltersNow == true) then
-                FCOIS.registerFilters(filterId, onlyPlayerInvFilter, panels)
-            end
-
-            -- Update the colors of the 4 "player inventory" filter buttons. All others will be updated upon opening (on event)
-            if (filterId == FCOIS_CON_FILTER_BUTTON_LOCKDYN and panels == LF_INVENTORY and doUpdateButtonColorsAndTextures == true) then
-                FCOIS.UpdateButtonColorsAndTextures(-1, nil, -1, LF_INVENTORY)
-            end
-
-        else -- if (newFilterMethod == true) then
-
-            --We are using filters for only 1 panel
-            isFilterActive = nil
-            isFilterActive = FCOIS.getSettingsIsFilterOn(filterId)
-
-            if    (isFilterActive == true) then
-                --Filter is ON
-                -- Set the filters to be registered
-                registerFiltersNow = true
-            elseif(isFilterActive == false) then
-                --Filter is OFF
-                -- Set the filters to stay unregistered
-                registerFiltersNow = false
-            else
-                --Filter is ONLY SHOWING MARKED ITEMS (-99)
-                -- Set the filters to be registered again
-                registerFiltersNow = true
-            end
-
-            --Register the filters now
-            if (registerFiltersNow == true) then
-                FCOIS.registerFilters(filterId, onlyPlayerInvFilter)
-            end
-
-            -- Update the colors of the 4 "player inventory" filter buttons. All others will be updated upon opening (on event)
-            if (filterId == FCOIS_CON_FILTER_BUTTON_LOCKDYN and doUpdateButtonColorsAndTextures == true) then
-                FCOIS.UpdateButtonColorsAndTextures(-1, nil, -1)
-            end
-
+        if    (isFilterActive == true) then
+            --Filter is ON
+            -- Set the filters to be registered
+            registerFiltersNow = true
+        elseif(isFilterActive == false) then
+            --Filter is OFF
+            -- Set the filters to stay unregistered
+            registerFiltersNow = false
+        else
+            --Filter is ONLY SHOWING MARKED ITEMS (-99)
+            -- Set the filters to be registered again
+            registerFiltersNow = true
         end
 
+        --Register the filters now
+        if (registerFiltersNow == true) then
+            FCOIS.registerFilters(filterId, onlyPlayerInvFilter, panels)
+        end
+
+        -- Update the colors of the 4 "player inventory" filter buttons. All others will be updated upon opening (on event)
+        if (filterId == FCOIS_CON_FILTER_BUTTON_LOCKDYN and panels == LF_INVENTORY and doUpdateButtonColorsAndTextures == true) then
+            FCOIS.UpdateButtonColorsAndTextures(-1, nil, -1, LF_INVENTORY)
+        end
 
         --------------------------------------------------------------------------------
         -- Responding to a filter button OnClicked() event or a chat command
@@ -809,7 +765,7 @@ local function doFilter(onoff, p_button, filterId, beQuiet, doFilterBasicsPlayer
 
             -- Output "filter off" text
             if (settings.deepDebug or (beQuiet == false and settings.showFilterStatusInChat == true)) then
-                outputFilterState(true, newFilterMethod, p_FilterPanelId, filterId, 'off')
+                outputFilterState(true, p_FilterPanelId, filterId, 'off')
             end
 
             -- Set the filters to stay unregistered
@@ -823,7 +779,7 @@ local function doFilter(onoff, p_button, filterId, beQuiet, doFilterBasicsPlayer
 
             -- Output "filter on" text
             if (settings.deepDebug or (beQuiet == false and settings.showFilterStatusInChat == true)) then
-                outputFilterState(true, newFilterMethod, p_FilterPanelId, filterId, 'on')
+                outputFilterState(true, p_FilterPanelId, filterId, 'on')
             end
 
             -- Unregister all old filters for the given filterId and panel
@@ -838,7 +794,7 @@ local function doFilter(onoff, p_button, filterId, beQuiet, doFilterBasicsPlayer
 
             -- Output "show only marked" text
             if (settings.deepDebug or (beQuiet == false and settings.showFilterStatusInChat == true)) then
-                outputFilterState(true, newFilterMethod, p_FilterPanelId, filterId, 'onlyfiltered')
+                outputFilterState(true, p_FilterPanelId, filterId, 'onlyfiltered')
             end
 
             -- Unregister all old filters for the given filterId and panel
@@ -883,8 +839,6 @@ function FCOIS.EnableFilters(p_onoff)
         --function doFilter(onoff, p_button, filterId, beQuiet, doFilterBasicsPlayer, doUpdateButtonColorsAndTextures, onlyPlayerInvFilter, p_FilterPanelId)
         doFilter(p_onoff, nil, filters, true, true, true, true)
     end
-    --Reset the override flag for unregistering all filters if FCOIS.settingsVars.settings "Split filters" has changed
-    FCOIS.overrideVars.gSplitFilterOverride = false
 end
 
 --Helper function for function filterStatus
@@ -910,146 +864,132 @@ local function filterStatusLoop(filterId, silent, givenArray, p_atLeastOneFilter
     -- Check only one filter
     local locVars = FCOIS.localizationVars.fcois_loc
     local settings = FCOIS.settingsVars.settings
-    if (settings.splitFilters == true) then
-        for j=1, numFilterInvTypes, 1 do
-            if activeFilterPanelIds[j] == true then
-                if(FCOIS.getSettingsIsFilterOn(filterId, j)) then
-                    returnArray[j][filterId] = true
-                    atLeastOneFilterActive = true
-                    if     (j == LF_INVENTORY or j == LF_BANK_DEPOSIT or j == LF_GUILDBANK_DEPOSIT or j == LF_HOUSE_BANK_DEPOSIT) then
-                        returnArray[j][filterId] = settings.allowInventoryFilter
-                        if (not silent) then
-                            d(locVars["filter_inventory"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
-                        end
-
-                    elseif (j == LF_CRAFTBAG) then
-                        returnArray[j][filterId] = settings.allowCraftBagFilter
-                        if (not silent) then
-                            d(locVars["filter_craftbag"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
-                        end
-
-                    elseif     (j == LF_VENDOR_BUY) then
-                        returnArray[j][filterId] = settings.allowVendorBuyFilter
-                        if (not silent) then
-                            d(locVars["filter_buy"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
-                        end
-                    elseif     (j == LF_VENDOR_SELL) then
-                        returnArray[j][filterId] = settings.allowVendorFilter
-                        if (not silent) then
-                            d(locVars["filter_store"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
-                        end
-                    elseif     (j == LF_VENDOR_BUYBACK) then
-                        returnArray[j][filterId] = settings.allowVendorBuybackFilter
-                        if (not silent) then
-                            d(locVars["filter_buyback"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
-                        end
-                    elseif     (j == LF_VENDOR_REPAIR) then
-                        returnArray[j][filterId] = settings.allowVendorRepairFilter
-                        if (not silent) then
-                            d(locVars["filter_repair"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
-                        end
-                    elseif     (j == LF_FENCE_SELL) then
-                        returnArray[j][filterId] = settings.allowFenceFilter
-                        if (not silent) then
-                            d(locVars["filter_fence"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
-                        end
-                    elseif     (j == LF_FENCE_LAUNDER) then
-                        returnArray[j][filterId] = settings.allowLaunderFilter
-                        if (not silent) then
-                            d(locVars["filter_launder"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
-                        end
-                    elseif (j == LF_GUILDBANK_WITHDRAW) then
-                        returnArray[j][filterId] = settings.allowGuildBankFilter
-                        if (not silent) then
-                            d(locVars["filter_guildbank"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
-                        end
-                    elseif (j == LF_GUILDSTORE_SELL) then
-                        returnArray[j][filterId] = settings.allowTradinghouseFilter
-                        if (not silent) then
-                            d(locVars["filter_guildstore"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
-                        end
-                    elseif (j == LF_BANK_WITHDRAW or j == LF_HOUSE_BANK_WITHDRAW) then
-                        returnArray[j][filterId] = settings.allowBankFilter
-                        if (not silent) then
-                            d(locVars["filter_bank"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
-                        end
-                    elseif (j == LF_SMITHING_REFINE) then
-                        returnArray[j][filterId] = settings.allowRefinementFilter
-                        if (not silent) then
-                            d(locVars["filter_refinement"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
-                        end
-                    elseif (j == LF_SMITHING_DECONSTRUCT) then
-                        returnArray[j][filterId] = settings.allowDeconstructionFilter
-                        if (not silent) then
-                            d(locVars["filter_deconstruction"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
-                        end
-                    elseif (j == LF_SMITHING_IMPROVEMENT) then
-                        returnArray[j][filterId] = settings.allowImprovementFilter
-                        if (not silent) then
-                            d(locVars["filter_improvement"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
-                        end
-                    elseif (j == LF_SMITHING_RESEARCH) then
-                        returnArray[j][filterId] = settings.allowResearchFilter
-                        if (not silent) then
-                            d(locVars["filter_research"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
-                        end
-                    elseif (j == LF_JEWELRY_REFINE) then
-                        returnArray[j][filterId] = settings.allowJewelryRefinementFilter
-                        if (not silent) then
-                            d(locVars["filter_jewelry_refinement"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
-                        end
-                    elseif (j == LF_JEWELRY_DECONSTRUCT) then
-                        returnArray[j][filterId] = settings.allowJewelryDeconstructionFilter
-                        if (not silent) then
-                            d(locVars["filter_jewelry_deconstruction"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
-                        end
-                    elseif (j == LF_JEWELRY_IMPROVEMENT) then
-                        returnArray[j][filterId] = settings.allowJewelryImprovementFilter
-                        if (not silent) then
-                            d(locVars["filter_jewelry_improvement"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
-                        end
-                    elseif (j == LF_JEWELRY_RESEARCH) then
-                        returnArray[j][filterId] = settings.allowJewelryResearchFilter
-                        if (not silent) then
-                            d(locVars["filter_jewelry_research"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
-                        end
-                    elseif (j == LF_MAIL_SEND) then
-                        returnArray[j][filterId] = settings.allowMailFilter
-                        if (not silent) then
-                            d(locVars["filter_mail"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
-                        end
-                    elseif (j == LF_TRADE) then
-                        returnArray[j][filterId] = settings.allowTradeFilter
-                        if (not silent) then
-                            d(locVars["filter_trade"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
-                        end
-                    elseif (j == LF_ENCHANTING_EXTRACTION) then
-                        returnArray[j][filterId] = settings.allowEnchantingFilter
-                        if (not silent) then
-                            d(locVars["filter_enchantingstation_extraction"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
-                        end
-                    elseif (j==LF_ENCHANTING_CREATION) then
-                        returnArray[j][filterId] = settings.allowEnchantingFilter
-                        if (not silent) then
-                            d(locVars["filter_enchantingstation_creation"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
-                        end
+    for j=1, numFilterInvTypes, 1 do
+        if activeFilterPanelIds[j] == true then
+            if(FCOIS.getSettingsIsFilterOn(filterId, j)) then
+                returnArray[j][filterId] = true
+                atLeastOneFilterActive = true
+                if     (j == LF_INVENTORY or j == LF_BANK_DEPOSIT or j == LF_GUILDBANK_DEPOSIT or j == LF_HOUSE_BANK_DEPOSIT) then
+                    returnArray[j][filterId] = settings.allowInventoryFilter
+                    if (not silent) then
+                        d(locVars["filter_inventory"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
                     end
-                end -- if(FCOIS.getSettingsIsFilterOn(filterId, j)) then
-            end
-        end -- for j=1, ...
 
-    else --if (settings.splitFilters == true)
+                elseif (j == LF_CRAFTBAG) then
+                    returnArray[j][filterId] = settings.allowCraftBagFilter
+                    if (not silent) then
+                        d(locVars["filter_craftbag"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
+                    end
 
-        if(FCOIS.getSettingsIsFilterOn(filterId)) then
-            returnArray[1][filterId] = true
-            atLeastOneFilterActive = true
-            if (not silent) then
-                d(locVars["chatcommands_status_filter" .. tostring(filterId)])
-            end
+                elseif     (j == LF_VENDOR_BUY) then
+                    returnArray[j][filterId] = settings.allowVendorBuyFilter
+                    if (not silent) then
+                        d(locVars["filter_buy"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
+                    end
+                elseif     (j == LF_VENDOR_SELL) then
+                    returnArray[j][filterId] = settings.allowVendorFilter
+                    if (not silent) then
+                        d(locVars["filter_store"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
+                    end
+                elseif     (j == LF_VENDOR_BUYBACK) then
+                    returnArray[j][filterId] = settings.allowVendorBuybackFilter
+                    if (not silent) then
+                        d(locVars["filter_buyback"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
+                    end
+                elseif     (j == LF_VENDOR_REPAIR) then
+                    returnArray[j][filterId] = settings.allowVendorRepairFilter
+                    if (not silent) then
+                        d(locVars["filter_repair"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
+                    end
+                elseif     (j == LF_FENCE_SELL) then
+                    returnArray[j][filterId] = settings.allowFenceFilter
+                    if (not silent) then
+                        d(locVars["filter_fence"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
+                    end
+                elseif     (j == LF_FENCE_LAUNDER) then
+                    returnArray[j][filterId] = settings.allowLaunderFilter
+                    if (not silent) then
+                        d(locVars["filter_launder"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
+                    end
+                elseif (j == LF_GUILDBANK_WITHDRAW) then
+                    returnArray[j][filterId] = settings.allowGuildBankFilter
+                    if (not silent) then
+                        d(locVars["filter_guildbank"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
+                    end
+                elseif (j == LF_GUILDSTORE_SELL) then
+                    returnArray[j][filterId] = settings.allowTradinghouseFilter
+                    if (not silent) then
+                        d(locVars["filter_guildstore"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
+                    end
+                elseif (j == LF_BANK_WITHDRAW or j == LF_HOUSE_BANK_WITHDRAW) then
+                    returnArray[j][filterId] = settings.allowBankFilter
+                    if (not silent) then
+                        d(locVars["filter_bank"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
+                    end
+                elseif (j == LF_SMITHING_REFINE) then
+                    returnArray[j][filterId] = settings.allowRefinementFilter
+                    if (not silent) then
+                        d(locVars["filter_refinement"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
+                    end
+                elseif (j == LF_SMITHING_DECONSTRUCT) then
+                    returnArray[j][filterId] = settings.allowDeconstructionFilter
+                    if (not silent) then
+                        d(locVars["filter_deconstruction"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
+                    end
+                elseif (j == LF_SMITHING_IMPROVEMENT) then
+                    returnArray[j][filterId] = settings.allowImprovementFilter
+                    if (not silent) then
+                        d(locVars["filter_improvement"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
+                    end
+                elseif (j == LF_SMITHING_RESEARCH) then
+                    returnArray[j][filterId] = settings.allowResearchFilter
+                    if (not silent) then
+                        d(locVars["filter_research"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
+                    end
+                elseif (j == LF_JEWELRY_REFINE) then
+                    returnArray[j][filterId] = settings.allowJewelryRefinementFilter
+                    if (not silent) then
+                        d(locVars["filter_jewelry_refinement"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
+                    end
+                elseif (j == LF_JEWELRY_DECONSTRUCT) then
+                    returnArray[j][filterId] = settings.allowJewelryDeconstructionFilter
+                    if (not silent) then
+                        d(locVars["filter_jewelry_deconstruction"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
+                    end
+                elseif (j == LF_JEWELRY_IMPROVEMENT) then
+                    returnArray[j][filterId] = settings.allowJewelryImprovementFilter
+                    if (not silent) then
+                        d(locVars["filter_jewelry_improvement"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
+                    end
+                elseif (j == LF_JEWELRY_RESEARCH) then
+                    returnArray[j][filterId] = settings.allowJewelryResearchFilter
+                    if (not silent) then
+                        d(locVars["filter_jewelry_research"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
+                    end
+                elseif (j == LF_MAIL_SEND) then
+                    returnArray[j][filterId] = settings.allowMailFilter
+                    if (not silent) then
+                        d(locVars["filter_mail"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
+                    end
+                elseif (j == LF_TRADE) then
+                    returnArray[j][filterId] = settings.allowTradeFilter
+                    if (not silent) then
+                        d(locVars["filter_trade"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
+                    end
+                elseif (j == LF_ENCHANTING_EXTRACTION) then
+                    returnArray[j][filterId] = settings.allowEnchantingFilter
+                    if (not silent) then
+                        d(locVars["filter_enchantingstation_extraction"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
+                    end
+                elseif (j==LF_ENCHANTING_CREATION) then
+                    returnArray[j][filterId] = settings.allowEnchantingFilter
+                    if (not silent) then
+                        d(locVars["filter_enchantingstation_creation"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
+                    end
+                end
+            end -- if(FCOIS.getSettingsIsFilterOn(filterId, j)) then
         end
-
-    end --if (settings.splitFilters == true)
-
+    end -- for j=1, ...
 
     return returnArray, atLeastOneFilterActive
 end
@@ -1156,7 +1096,7 @@ function FCOIS.AddOrChangeFilterButton(parentWindow, buttonId, pWidth, pHeight, 
     button:SetHandler("OnMouseEnter", function(self)
         if settings.showFilterButtonTooltip == true then
             local settingsFilterStateToText = FCOIS.mappingVars.settingsFilterStateToText
-            tooltipText = outputFilterState(false, settings.splitFilters, self.FCOfilterPanelId, self.FCObuttonId, settingsFilterStateToText[tostring(FCOIS.getSettingsIsFilterOn(self.FCObuttonId, self.FCOfilterPanelId))])
+            tooltipText = outputFilterState(false, self.FCOfilterPanelId, self.FCObuttonId, settingsFilterStateToText[tostring(FCOIS.getSettingsIsFilterOn(self.FCObuttonId, self.FCOfilterPanelId))])
             if tooltipText ~= "" then
                 local contextMenu = FCOIS.contextMenu
                 local showToolTip = true
@@ -1197,7 +1137,7 @@ function FCOIS.AddOrChangeFilterButton(parentWindow, buttonId, pWidth, pHeight, 
         doFilter(-1, self, self.FCObuttonId, false, false, true, false, self.FCOfilterPanelId)
         if settings.showFilterButtonTooltip then
             local settingsFilterStateToText = FCOIS.mappingVars.settingsFilterStateToText
-            tooltipText = outputFilterState(false, settings.splitFilters, self.FCOfilterPanelId, self.FCObuttonId, settingsFilterStateToText[tostring(FCOIS.getSettingsIsFilterOn(self.FCObuttonId, self.FCOfilterPanelId))])
+            tooltipText = outputFilterState(false, self.FCOfilterPanelId, self.FCObuttonId, settingsFilterStateToText[tostring(FCOIS.getSettingsIsFilterOn(self.FCObuttonId, self.FCOfilterPanelId))])
             if tooltipText ~= "" then
                 ZO_Tooltips_ShowTextTooltip(self, BOTTOM, tooltipText)
             end

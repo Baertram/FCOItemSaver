@@ -14,29 +14,17 @@ local function help()
     d("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
     d(locVars["chatcommands_help"])
     d(locVars["chatcommands_status"])
-    --d(locVars["chatcommands_split_filter"]) --Split filter was removed
-    if (FCOIS.settingsVars.settings.splitFilters == true) then
-        d(locVars["chatcommands_filterpanels"])
-        d(locVars["chatcommands_filterpanels2"])
-        d(locVars["chatcommands_filtervalues"])
-        d(locVars["chatcommands_filter1_new"])
-        d(locVars["chatcommands_filter2_new"])
-        d(locVars["chatcommands_filter3_new"])
-        d(locVars["chatcommands_filter4_new"])
-        d(locVars["chatcommands_filter_new"])
-        d(locVars["chatcommands_filteron_new"])
-        d(locVars["chatcommands_filteroff_new"])
-        d(locVars["chatcommands_filtershow_new"])
-    else
-        d(locVars["chatcommands_filter1"])
-        d(locVars["chatcommands_filter2"])
-        d(locVars["chatcommands_filter3"])
-        d(locVars["chatcommands_filter4"])
-        d(locVars["chatcommands_filter"])
-        d(locVars["chatcommands_filteron"])
-        d(locVars["chatcommands_filteroff"])
-        d(locVars["chatcommands_filtershow"])
-    end
+    d(locVars["chatcommands_filterpanels"])
+    d(locVars["chatcommands_filterpanels2"])
+    d(locVars["chatcommands_filtervalues"])
+    d(locVars["chatcommands_filter1_new"])
+    d(locVars["chatcommands_filter2_new"])
+    d(locVars["chatcommands_filter3_new"])
+    d(locVars["chatcommands_filter4_new"])
+    d(locVars["chatcommands_filter_new"])
+    d(locVars["chatcommands_filteron_new"])
+    d(locVars["chatcommands_filteroff_new"])
+    d(locVars["chatcommands_filtershow_new"])
     d(locVars["chatcommands_debug"])
 end
 
@@ -230,69 +218,41 @@ function FCOIS.command_handler(args)
                 end
             end
         elseif(options[1] == "allean" or options[1] == "allon" or options[1] == "touson") then
-            if (settings.splitFilters == true) then
-                for i=1, numFilters, 1 do
-                    for j=1, FCOIS.numVars.gFCONumFilterInventoryTypes, 1 do
-                        if actFilterPanelId[j] == true then
-                            if (options[2] ~= nil) then
-                                FCOIS.doFilter(1, nil, i, false, false, true, false, j, tonumber(options[2]))
-                            else
-                                FCOIS.doFilter(1, nil, i, false, false, true, false, j)
-                            end
+            for i=1, numFilters, 1 do
+                for j=1, FCOIS.numVars.gFCONumFilterInventoryTypes, 1 do
+                    if actFilterPanelId[j] == true then
+                        if (options[2] ~= nil) then
+                            FCOIS.doFilter(1, nil, i, false, false, true, false, j, tonumber(options[2]))
+                        else
+                            FCOIS.doFilter(1, nil, i, false, false, true, false, j)
                         end
                     end
-                end
-            else
-                for i=1, numFilters, 1 do
-                    FCOIS.doFilter(1, nil, i, false, false, true, false)
                 end
             end
         elseif(options[1] == "alleaus" or options[1] == "alloff" or options[1] == "tousoff") then
-            if (settings.splitFilters == true) then
-                for i=1, numFilters, 1 do
-                    for j=1, FCOIS.numVars.gFCONumFilterInventoryTypes, 1 do
-                        if actFilterPanelId[j] == true then
-                            if (options[2] ~= nil) then
-                                FCOIS.doFilter(2, nil, i, false, false, true, false, j, tonumber(options[2]))
-                            else
-                                FCOIS.doFilter(2, nil, i, false, false, true, false, j)
-                            end
+            for i=1, numFilters, 1 do
+                for j=1, FCOIS.numVars.gFCONumFilterInventoryTypes, 1 do
+                    if actFilterPanelId[j] == true then
+                        if (options[2] ~= nil) then
+                            FCOIS.doFilter(2, nil, i, false, false, true, false, j, tonumber(options[2]))
+                        else
+                            FCOIS.doFilter(2, nil, i, false, false, true, false, j)
                         end
                     end
-                end
-            else
-                for i=1, numFilters, 1 do
-                    FCOIS.doFilter(2, nil, i, false, false, true, false)
                 end
             end
         elseif(options[1] == "allezeigen" or options[1] == "allshow" or options[1] == "tousmontre") then
-            if (settings.splitFilters == true) then
-                for i=1, numFilters, 1 do
-                    for j=1, FCOIS.numVars.gFCONumFilterInventoryTypes, 1 do
-                        if actFilterPanelId[j] == true then
-                            if (options[2] ~= nil) then
-                                FCOIS.doFilter(-99, nil, i, false, false, true, false, j, tonumber(options[2]))
-                            else
-                                FCOIS.doFilter(-99, nil, i, false, false, true, false, j)
-                            end
+            for i=1, numFilters, 1 do
+                for j=1, FCOIS.numVars.gFCONumFilterInventoryTypes, 1 do
+                    if actFilterPanelId[j] == true then
+                        if (options[2] ~= nil) then
+                            FCOIS.doFilter(-99, nil, i, false, false, true, false, j, tonumber(options[2]))
+                        else
+                            FCOIS.doFilter(-99, nil, i, false, false, true, false, j)
                         end
                     end
                 end
-            else
-                for i=1, numFilters, 1 do
-                    FCOIS.doFilter(-99, nil, i, false, false, true, false)
-                end
             end
-        elseif(options[1] == "split") then
-            --[[
-                --Split filters were removed!
-                settings.splitFilters = not settings.splitFilters
-                --Set the global flag to override the function's FCOIS.unregisterFilters() unregister method
-                --because it will check for settings.SplitFilters and is called from function FCOIS.doFilter() at
-                --function EnableFilters(-100) below
-                FCOIS.overrideVars.gSplitFilterOverride = true
-                FCOIS.EnableFilters(-100)
-            ]]
         end
     end
 end

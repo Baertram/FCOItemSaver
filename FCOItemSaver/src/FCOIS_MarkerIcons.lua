@@ -6,7 +6,6 @@ if not FCOIS.libsLoadedProperly then return end
 
 local addonVars = FCOIS.addonVars
 local numFilterIcons = FCOIS.numVars.gFCONumFilterIcons
-local checkIfFCOISSettingsWereLoaded = FCOIS.checkIfFCOISSettingsWereLoaded
 
 -- =====================================================================================================================
 --  Other AddOns helper functions
@@ -62,6 +61,10 @@ local function updateAlreadyBoundTexture(parent, pHideControl)
             doHide = not FCOIS.isItemAlreadyBound(bagId, slotIndex)
         end
     end
+
+    local InventoryGridViewActivated = (FCOIS.otherAddons.inventoryGridViewActive or InventoryGridView ~= nil) or false
+    local GridListActivated          = GridList ~= nil
+
     --If not an equipped item: Get the row's/parent's image -> "Children "Button" of parent
     local parentsImage = parent:GetNamedChild("Button")
     if parentsImage ~= nil then
@@ -80,12 +83,65 @@ local function updateAlreadyBoundTexture(parent, pHideControl)
                 --Hide or show the control now
                 setPartAlreadyBoundTexture:SetHidden(doHide)
                 if not doHide then
-                    setPartAlreadyBoundTexture:SetDimensions(48, 48)
                     setPartAlreadyBoundTexture:SetTexture(alreadyBoundTexture)
                     --setPartAlreadyBoundTexture:SetColor(1, 1, 1, 1)
                     setPartAlreadyBoundTexture:SetDrawTier(DT_HIGH)
                     setPartAlreadyBoundTexture:ClearAnchors()
-                    setPartAlreadyBoundTexture:SetAnchor(TOPLEFT, parentsImage, TOPRIGHT, -25, -8)
+
+                    local gridIsEnabled = false
+                    if InventoryGridViewActivated == true or GridListActivated == true then
+                        if InventoryGridViewActivated == true then
+                            gridIsEnabled = true
+                        else
+                            --Only if GridList active: Check if it's GridMode is currently showing the grid or not
+                            if GridListActivated == true then
+                                --Is the GridList "GRID" view enabled?
+                                local filterPanelId = FCOIS.gFilterWhere
+                                --Is the FCOIS LAM settings menu curerntly open and we show the preview of the inventory?
+                                if FCOIS.preventerVars.lamMenuOpenAndShowingInvPreviewForGridListAddon == true then
+                                    filterPanelId = LF_INVENTORY
+                                end
+                                if filterPanelId then
+                                    local inventoryType = FCOIS.GetInventoryTypeByFilterPanel(filterPanelId)
+                                    if inventoryType ~= nil then
+                                        --Is the inventory type a supported GridList inventory type?
+                                        local isSupportedGridListInv = GridList_IsSupportedInventory(inventoryType)
+                                        if isSupportedGridListInv == true then
+                                            local gridViewModeOfInventoryType = GridList_GetMode(inventoryType)
+                                            if gridViewModeOfInventoryType and gridViewModeOfInventoryType == GridList_MODE_GRID then
+                                                --GridList grid is enabled
+                                                gridIsEnabled = true
+                                            end
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end
+
+                    --The grid of one the grid addons is currently enabled?
+                    if gridIsEnabled == true then
+                        local offsetX = 0
+                        local offsetY = 0
+                        local dimensions = 48
+                        local parentAnchor = parent
+                        if GridListActivated == true then
+                            dimensions = 96
+                            parentAnchor = GetControl(parent, "Backdrop")
+                            offsetX = -62
+                            offsetY = -16
+                        elseif InventoryGridViewActivated == true then
+                            dimensions = 64
+                            parentAnchor = GetControl(parent, "Backdrop")
+                            offsetX = -44
+                            offsetY = -14
+                        end
+                        setPartAlreadyBoundTexture:SetDimensions(dimensions, dimensions)
+                        setPartAlreadyBoundTexture:SetAnchor(TOPLEFT, parentAnchor, TOPLEFT, offsetX, offsetY)
+                    else
+                        setPartAlreadyBoundTexture:SetDimensions(48, 48)
+                        setPartAlreadyBoundTexture:SetAnchor(TOPLEFT, parentsImage, TOPRIGHT, -25, -8)
+                    end
                 end
             end
         end
@@ -229,10 +285,11 @@ function FCOIS.CreateMarkerControl(parent, controlId, pWidth, pHeight, pTexture,
                         local filterPanelIdToIconOffset = FCOIS.mappingVars.filterPanelIdToIconOffset
                         local iconPosition = settings.iconPosition
                         local iconOffset = filterPanelIdToIconOffset[FCOIS.gFilterWhere] or iconPosition
-                        --Now add the iconOffset defined at each marker icon too
-                        local iconOffsetDefinedAtMarkerIcon = settings.icon[controlId].offsets[LF_INVENTORY]
-                        local totalOffSetLeft = iconOffset.x + iconOffsetDefinedAtMarkerIcon["left"]
-                        local totalOffSetTop = iconOffset.y + iconOffsetDefinedAtMarkerIcon["top"]
+                        --get the offsets defined at the filterPanel for each icon (and defiend at the icon itsself for the inventory row)
+                        local iconOffsetDefinedAtPanel = settings.icon[controlId].offsets[LF_INVENTORY]
+                        --Now add the iconOffset defined at each panel
+                        local totalOffSetLeft = iconOffset.x + iconOffsetDefinedAtPanel.left
+                        local totalOffSetTop = iconOffset.y + iconOffsetDefinedAtPanel.top
                         control:SetAnchor(LEFT, parent, LEFT, totalOffSetLeft, totalOffSetTop)
                     end
 
@@ -273,7 +330,10 @@ function FCOIS.CreateTextures(whichTextures)
     local doCreateMarkerControl = false
     local doCreateAllTextures = false
     if whichTextures == -1 then
-        doCreateMarkerControl = true
+        --Crate the texture controls for the marker icons?
+        --If this is set to true each inventory row will automatically get 1 new texture control child for each marker icon
+        --Todo: Test if creating them "On demand" (if shown, at scrolling) is more performant
+        --doCreateMarkerControl = true
         doCreateAllTextures = true
     end
     local iconSettings = FCOIS.settingsVars.settings.icon
@@ -294,6 +354,7 @@ function FCOIS.CreateTextures(whichTextures)
                     --The current game's SCENE and name (used for determining bank/guild bank deposit)
                     local currentScene, _ = FCOIS.getCurrentSceneInfo()
                     if currentScene ~= STABLES_SCENE then
+--d("[FCOIS]PlayerInventory.listView.dataTypes[1].setupCallback")
                         -- for all filters: Create/Update the icons
                         for i=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
                             --FCOIS.CreateMarkerControl(parent, controlId, pWidth, pHeight, pTexture, pIsEquipmentSlot, pCreateControlIfNotThere, pUpdateAllEquipmentTooltips, pArmorTypeIcon, pHideControl)
@@ -307,6 +368,31 @@ function FCOIS.CreateTextures(whichTextures)
                 end
             end
         end
+
+        --[[
+        for _,v in pairs(PLAYER_INVENTORY.inventories) do
+            local listView = v.listView
+            --Do not hook quest items
+            if (listView and listView.dataTypes and listView.dataTypes[1] and (listView:GetName() ~= "ZO_PlayerInventoryQuest")) then
+                SecurePostHook(listView.dataTypes[1].setupCallback, function(rowControl, slot)
+                    --Do not execute if horse is changed
+                    --The current game's SCENE and name (used for determining bank/guild bank deposit)
+                    local currentScene, _ = FCOIS.getCurrentSceneInfo()
+                    if currentScene ~= STABLES_SCENE then
+                        -- for all filters: Create/Update the icons
+                        for i=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
+                            --FCOIS.CreateMarkerControl(parent, controlId, pWidth, pHeight, pTexture, pIsEquipmentSlot, pCreateControlIfNotThere, pUpdateAllEquipmentTooltips, pArmorTypeIcon, pHideControl)
+                            FCOIS.CreateMarkerControl(rowControl, i, iconSettings[i].size, iconSettings[i].size, markerTextureVars[iconSettings[i].texture], false, doCreateMarkerControl)
+                        end
+                        --Add additional FCO point to the dataEntry.data slot
+                        --FCOItemSaver_AddInfoToData(rowControl)
+                        --Create and show the "already bound" set parts texture at the top-right edge of the inventory item
+                        updateAlreadyBoundTexture(rowControl)
+                    end
+                end)
+            end
+        end
+        ]]
     end
      --Repair list
     if (whichTextures == 2 or doCreateAllTextures) then
@@ -994,10 +1080,8 @@ function FCOIS.MarkAllEquipment(rowControl, markId, updateNow, doHide)
                     if markId ~= nil and bag ~= nil and slot ~= nil then
                         itemId = FCOIS.MyGetItemInstanceIdNoControl(bag, slot, true)
                         if doHide == true then
-                            --FCOIS.markedItems[markId][itemId] = nil
                             FCOIS.MarkItem(bag, slot, markId, false, false)
                         else
-                            --FCOIS.markedItems[markId][itemId] = true
                             FCOIS.MarkItem(bag, slot, markId, true, false)
                         end
                         --Update the texture, create it if not there yet

@@ -5,12 +5,13 @@ local FCOIS = FCOIS
 if not FCOIS.libsLoadedProperly then return end
 
 --Currently logged in account name
-local accName               = GetDisplayName()
-local currentCharName       = GetCurrentCharacterId()
+local accName             = GetDisplayName()
+local currentCharId       = GetCurrentCharacterId()
 
 --The SavedVariables local name
-local addonSVname       = FCOIS.addonVars.savedVarName
-local addonSVversion    = FCOIS.addonVars.savedVarVersion
+local addonVars         = FCOIS.addonVars
+local addonSVname       = addonVars.savedVarName
+local addonSVversion    = addonVars.savedVarVersion
 
 --The allAccounts the same account name
 local svDefaultName         = FCOIS.svDefaultName
@@ -18,9 +19,27 @@ local svAccountWideName     = FCOIS.svAccountWideName
 local svAllAccTheSameAcc    = FCOIS.svAllAccountsName
 local svSettingsForAllName  = FCOIS.svSettingsForAllName
 local svSettingsName        = FCOIS.svSettingsName
+local svSettingsForEachCharacterName = FCOIS.svSettingsForEachCharacterName
+
+local GetFCOISMarkerIconSavedVariablesItemId = FCOIS.GetFCOISMarkerIconSavedVariablesItemId
 --==========================================================================================================================================
 -- 										FCOIS settings & saved variables functions
 --==========================================================================================================================================
+
+function FCOIS.getSavedVarsMarkedItemsTableName(override)
+    local markedItemsNames = addonVars.savedVarsMarkedItemsNames
+    local settings = FCOIS.settingsVars.settings
+    if override ~= nil then
+        return markedItemsNames[override]
+    else
+        if settings.useUniqueIds == true then
+            return markedItemsNames[settings.uniqueItemIdType]
+        else
+            return markedItemsNames[false]
+        end
+    end
+end
+local getSavedVarsMarkedItemsTableName = FCOIS.getSavedVarsMarkedItemsTableName
 
 
 local function NamesToIDSavedVars(serverWorldName)
@@ -54,34 +73,57 @@ end
 
 --==============================================================================
 
---Choose the filter type
-function FCOIS.getSettingsIsFilterOn(p_filterId, p_filterPanel)
-    local result
-    local settings = FCOIS.settingsVars.settings
-    if (settings.splitFilters == true) then
-        local p_filterPanelNew = p_filterPanel or FCOIS.gFilterWhere
-
-        --New behaviour with filters
-        settings.isFilterPanelOn[p_filterPanelNew] = settings.isFilterPanelOn[p_filterPanelNew] or {}
-        result = settings.isFilterPanelOn[p_filterPanelNew][p_filterId]
-        if result == nil then
-            return false
+--Returns either the account wide "for each character individually",
+--or the normal character saved "for each character", settings
+function FCOIS.getAccountWideCharacterOrNormalCharacterSettings()
+    local settingsForAll = FCOIS.settingsVars.defaultSettings
+    local saveMode = settingsForAll.saveMode
+--d("[FCOIS]getAccountWideCharacterOrNormalCharacterSettings - saveMode: " ..tostring(saveMode) .. ", filterForEachCharacter: " ..tostring(settingsForAll.filterButtonsSaveForCharacter))
+    local settingsSV
+    --Character SavedVariables
+    if saveMode == 1 then
+        settingsSV = FCOIS.settingsVars.settings
+    else
+        --Account wide and AllAccountsTheSame account wide SavedVariables
+        --FilterButton states are saved account wide but for each character individually?
+        if settingsForAll.filterButtonsSaveForCharacter == true then
+            local settingsSVBase = FCOIS.settingsVars.accountWideButForEachCharacterSettings
+            settingsSV = settingsSVBase and settingsSVBase[currentCharId]
+        else
+            settingsSV = FCOIS.settingsVars.settings
         end
-        if settings.debug then FCOIS.debugMessage( "[GetSettingsIsFilterOn]","Filter Panel: " .. tostring(p_filterPanelNew) .. ", FilterId: " .. tostring(p_filterId) .. ", Result: " .. tostring(result), true, FCOIS_DEBUG_DEPTH_SPAM) end
-        return result
     end
+    return settingsSV
+end
+local getAccountWideCharacterOrNormalCharacterSettings = FCOIS.getAccountWideCharacterOrNormalCharacterSettings
+
+
+--Check if the filterButton's state is on/off/-99 (Show only marked)
+function FCOIS.getSettingsIsFilterOn(p_filterId, p_filterPanel)
+    local p_filterPanelNew = p_filterPanel or FCOIS.gFilterWhere
+    local result
+    local baseSettings = FCOIS.settingsVars.settings
+    local settings = getAccountWideCharacterOrNormalCharacterSettings()
+
+    --New behaviour with filters
+    settings.isFilterPanelOn[p_filterPanelNew] = settings.isFilterPanelOn[p_filterPanelNew] or {}
+    result = settings.isFilterPanelOn[p_filterPanelNew][p_filterId]
+    if result == nil then
+        return false
+    end
+    if baseSettings.debug then FCOIS.debugMessage( "[GetSettingsIsFilterOn]","Filter Panel: " .. tostring(p_filterPanelNew) .. ", FilterId: " .. tostring(p_filterId) .. ", Result: " .. tostring(result), true, FCOIS_DEBUG_DEPTH_SPAM) end
+    return result
 end
 
 --Set the value of a filter type, and return it
 function FCOIS.setSettingsIsFilterOn(p_filterId, p_value, p_filterPanel)
     local p_filterPanelNew = p_filterPanel or FCOIS.gFilterWhere
-    local settings = FCOIS.settingsVars.settings
-    if (settings.splitFilters == true) then
-        --New behaviour with filters
-        settings.isFilterPanelOn[p_filterPanelNew] = settings.isFilterPanelOn[p_filterPanelNew] or {}
-        settings.isFilterPanelOn[p_filterPanelNew][p_filterId] = p_value
-        if settings.debug then FCOIS.debugMessage( "[SetSettingsIsFilterOn]","Filter Panel: " .. tostring(p_filterPanelNew) .. ", FilterId: " .. tostring(p_filterId) .. ", Value: " .. tostring(p_value), true, FCOIS_DEBUG_DEPTH_SPAM) end
-    end
+    local baseSettings = FCOIS.settingsVars.settings
+    local settings = getAccountWideCharacterOrNormalCharacterSettings()
+    --New behaviour with filters
+    settings.isFilterPanelOn[p_filterPanelNew] = settings.isFilterPanelOn[p_filterPanelNew] or {}
+    settings.isFilterPanelOn[p_filterPanelNew][p_filterId] = p_value
+    if baseSettings.debug then FCOIS.debugMessage( "[SetSettingsIsFilterOn]","Filter Panel: " .. tostring(p_filterPanelNew) .. ", FilterId: " .. tostring(p_filterId) .. ", Value: " .. tostring(p_value), true, FCOIS_DEBUG_DEPTH_SPAM) end
     --return the value
     return p_value
 end
@@ -421,9 +463,11 @@ function FCOIS.autoReenableAntiSettingsCheck(checkWhere)
         if settings.autoReenable_blockRetrait then
             settings.blockRetrait = true
         end
-    --"GUILDBANK"
+        --"GUILDBANK"
     elseif checkWhere == checksToDo[8] then
         --Reenable the Anti-guild bank deposit if no withdraw rights exists
+        --but only if it was enabled as the guild bank was opened (as it cannot be changed as the guildbank is open).
+        if FCOIS.preventerVars.blockGuildBankWithoutWithdrawAtGuildBankOpen == false then return end
         if settings.autoReenable_blockGuildBankWithoutWithdraw then
             settings.blockGuildBankWithoutWithdraw = true
         end
@@ -440,9 +484,102 @@ end
 
 
 --Transfer the non-unique/unique to unique/non-unique marker icons at the items
---> Started by the button in the FCOIS_SettingsMenu.lua, "General settings"
+--> Started by the button in the FCOIS_SettingsMenu.lua, "General settings",
+--> or via the dialog FCOIS_ASK_BEFORE_MIGRATE_DIALOG after a reloadui was done and the uniqueIds were enabled
 local function scanBagsAndTransferMarkerIcon(toUnique)
     if toUnique == nil then return false end
+
+    --Are the FCOIS settings already loaded?
+    FCOIS.checkIfFCOISSettingsWereLoaded(false)
+    local settings = FCOIS.settingsVars.settings
+    local locVars = FCOIS.localizationVars.fcois_loc
+
+    d(FCOIS.preChatVars.preChatTextGreen .. zo_strformat(locVars["options_migrate_start"], "->UniqueId: " ..tostring(toUnique)))
+
+------------------------------------------------------------------------------------------------------------------------
+    --The SavedVariables table name e.g. markedItems or markedItemsFCOISUnique
+    local savedVarsMarkedItemsTableNameOld
+    local savedVarsMarkedItemsTableNameNew
+    local uniqueIdWasLastEnabled    = settings.lastUsedUniqueIdEnabled
+    local uniqueIdTypeLastUsed      = settings.lastUsedUniqueIdType
+
+    local useUniqueIds = settings.useUniqueIds
+    local uniqueItemIdType = settings.uniqueItemIdType
+
+    if uniqueIdWasLastEnabled == nil then
+        --Unknown state of useUniqueId before reloadui -> Abort
+        d(FCOIS.preChatVars.preChatTextRed .. zo_strformat(locVars["options_migrate_end"], "ERROR - Unknown state of useUniqueId before reloadui"))
+        return
+    else
+        if uniqueIdTypeLastUsed == nil then
+            --Unknown state of uniqueItemIdType before reloadui -> Abort
+            d(FCOIS.preChatVars.preChatTextRed .. zo_strformat(locVars["options_migrate_end"], "ERROR - Unknown state of chosen uniqueIdType before reloadui"))
+            return
+        end
+    end
+
+    --Migrate to uniqueId (FCOISuniqueIds->ZOs uniqueIds / ZOsUniqueIds->FCOISuniqueIds / non-unique to ZOsunique / non-unique to FCOISunique
+    if toUnique == true then
+        if not useUniqueIds or uniqueItemIdType == nil then
+            --Non-unique ID enabled -> Abort
+            d(FCOIS.preChatVars.preChatTextRed .. zo_strformat(locVars["options_migrate_end"], "ERROR - Migration to uniqueId not possible if currently non-unique ID is enabled in the settings"))
+            return
+        end
+
+        --Was the uniqueID enabled before the migration? Migrating unique to unique then
+        if uniqueIdWasLastEnabled == true then
+            --Migrate from uniqueId to uniqueId: Check if the last used uniqueId type is not the same as now
+            if uniqueIdTypeLastUsed ~= uniqueItemIdType then
+                d(FCOIS.preChatVars.preChatTextBlue .. "Migration of unique IDs type: " .. tostring(uniqueIdTypeLastUsed) .."  to uniqueIds type: " ..tostring(uniqueItemIdType))
+                --Get the old "from" SavedVariables table name -> non-unique entry
+                savedVarsMarkedItemsTableNameOld = getSavedVarsMarkedItemsTableName(uniqueIdTypeLastUsed)
+            else
+                --Last used type was the same uniqueId type. No migration needed -> Abort
+                d(FCOIS.preChatVars.preChatTextRed .. zo_strformat(locVars["options_migrate_end"], "No migration needed - Last used type was the same uniqueId type"))
+                return
+            end
+        --UniqueId was not enabled before. Migrating non-unique to unique
+        else
+            d(FCOIS.preChatVars.preChatTextBlue .. "Migration of non-unique IDs to uniqueIds type: " ..tostring(uniqueItemIdType))
+            --Get the old "from" SavedVariables table name -> non-unique entry
+            savedVarsMarkedItemsTableNameOld = getSavedVarsMarkedItemsTableName(false)
+        end
+
+        --Migrate to SavedVariables NEW -> unique type from current settings
+        savedVarsMarkedItemsTableNameNew = getSavedVarsMarkedItemsTableName(settings.uniqueItemIdType)
+
+    --Migrate to non-uniqueId (FCOISuniqueIds->non-unique / ZOsUniqueIds->non-unique)
+    else
+        if useUniqueIds == true then
+            --Unique ID enabled -> Abort
+            d(FCOIS.preChatVars.preChatTextRed .. zo_strformat(locVars["options_migrate_end"], "ERROR - Migration to non-uniqueId not possible if currently unique ID is enabled in the settings"))
+            return
+        end
+
+        --Was the uniqueID enabled before the migration? Migrating unique to non-unique then
+        if uniqueIdWasLastEnabled == true then
+            d(FCOIS.preChatVars.preChatTextBlue .. "Migration of unique IDs type: " .. tostring(uniqueIdTypeLastUsed) .."  to non-uniqueIds")
+            --Get the old "from" SavedVariables table name -> non-unique entry
+            savedVarsMarkedItemsTableNameOld = getSavedVarsMarkedItemsTableName(uniqueIdTypeLastUsed)
+        --UniqueId was not enabled before. Migrating non-unique to non-unique
+        else
+            --Last used type was the same non-uniqueId type. No migration needed -> Abort
+            d(FCOIS.preChatVars.preChatTextRed .. zo_strformat(locVars["options_migrate_end"], "No migration needed - Last used was also non-unique ID"))
+            return
+        end
+
+        --Migrate to SavedVariables NEW -> Non-unique
+        savedVarsMarkedItemsTableNameNew = getSavedVarsMarkedItemsTableName(false)
+    end
+    if not savedVarsMarkedItemsTableNameOld then
+        d(FCOIS.preChatVars.preChatTextRed .. zo_strformat(locVars["options_migrate_end"], "ERROR - Last used SavedVariables table unknown"))
+        return
+    end
+    if not savedVarsMarkedItemsTableNameNew then
+        d(FCOIS.preChatVars.preChatTextRed .. zo_strformat(locVars["options_migrate_end"], "ERROR - New SavedVariables table unknown"))
+        return
+    end
+------------------------------------------------------------------------------------------------------------------------
     --Check the bag
     local bagsToCheck = {
         [0] = BAG_WORN,
@@ -458,11 +595,6 @@ local function scanBagsAndTransferMarkerIcon(toUnique)
             bagsToCheck[ind] = BAG_SUBSCRIBER_BANK
         end
     end
-    local locVars = FCOIS.localizationVars.fcois_loc
-    --Are the FCOIS settings already loaded?
-    FCOIS.checkIfFCOISSettingsWereLoaded(false)
-    local settings = FCOIS.settingsVars.settings
-    local uniqueItemIdType = settings.uniqueItemIdType
 
     --Loop over all bag types
     for _, bagToCheck in pairs(bagsToCheck) do
@@ -472,48 +604,103 @@ local function scanBagsAndTransferMarkerIcon(toUnique)
         d(FCOIS.preChatVars.preChatTextGreen .. zo_strformat(locVars["options_migrate_start"], locVars["options_migrate_bag_type_" .. bagToCheck]))
         --local bagCache = SHARED_INVENTORY:GenerateFullSlotData(nil, bagToCheck)
         local bagCache = SHARED_INVENTORY:GetOrCreateBagCache(bagToCheck)
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
         --Loop over the bag items and check each item in the bag for marker icons
         for _, data in pairs(bagCache) do
             local itemId
             local itemIdNew
-            local itemInstanceId = GetItemInstanceId(data.bagId, data.slotIndex)
             local bagId, slotIndex = data.bagId, data.slotIndex
+            local allowedItemType
+            local allowedItemTypeNew
+------------------------------------------------------------------------------------------------------------------------
             --Transfer marker icon to unique ID
-            if toUnique then
-                --Build the item ID (ItemInstanceId)
-                itemId = FCOIS.SignItemId(itemInstanceId, false, true, nil, nil, nil)
-                local uniqueId
-                --Check which uniqueId type is setup in the FCOIS settings
-                if not uniqueItemIdType or uniqueItemIdType == FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE then
-                    uniqueId = zo_getSafeId64Key(GetItemUniqueId(bagId, slotIndex))
-                elseif uniqueItemIdType and uniqueItemIdType == FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE then
-                    uniqueId = FCOIS.CreateFCOISUniqueIdString(itemInstanceId, nil, bagId, slotIndex, nil)
+            if toUnique == true then
+                --Build the itemID -> FROM
+                -->Could be a uniqueId or a non-unique itemInstanceId
+                itemId, allowedItemType = GetFCOISMarkerIconSavedVariablesItemId(bagId, slotIndex, nil, uniqueIdWasLastEnabled, uniqueIdTypeLastUsed)
+                --[[
+                if uniqueIdWasLastEnabled == true then
+                    --UniqueId -> FROM
+                    if allowedItemType == true then
+                        --Check which uniqueId type is currently setup in the FCOIS settings
+                        if not uniqueIdTypeLastUsed or uniqueIdTypeLastUsed == FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE then
+                            itemId = zo_getSafeId64Key(GetItemUniqueId(bagId, slotIndex))
+                        elseif uniqueIdTypeLastUsed and uniqueIdTypeLastUsed == FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE then
+                            local itemIdForUniqueId = GetItemId(bagId, slotIndex)
+                            itemId = FCOIS.CreateFCOISUniqueIdString(itemIdForUniqueId, nil, bagId, slotIndex, nil)
+                        end
+                    else
+                        --Non supported itemTypes will use the normal itemInstanceId
+                        itemId = itemInstanceIdSigned
+                    end
+                else
+                    --Non-uniqueId -> FROM
+                    itemId = itemInstanceIdSigned
                 end
-                itemIdNew = uniqueId
+                ]]
+                --Build the newItemId -> TO
+                itemIdNew, allowedItemTypeNew = GetFCOISMarkerIconSavedVariablesItemId(bagId, slotIndex, nil, useUniqueIds, uniqueItemIdType)
+                --[[
+                if allowedItemType == true then
+                    --Check which uniqueId type is currently setup in the FCOIS settings
+                    if not uniqueItemIdType or uniqueItemIdType == FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE then
+                        itemIdNew = zo_getSafeId64Key(GetItemUniqueId(bagId, slotIndex))
+                    elseif uniqueItemIdType and uniqueItemIdType == FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE then
+                        local itemIdForUniqueId = GetItemId(bagId, slotIndex)
+                        itemIdNew = FCOIS.CreateFCOISUniqueIdString(itemIdForUniqueId, nil, bagId, slotIndex, nil)
+                    end
+                else
+                    --Non supported itemTypes will use the normal itemInstanceId
+                    itemIdNew = itemInstanceIdSigned
+                end
+                ]]
 
+------------------------------------------------------------------------------------------------------------------------
             --Transfer marker icon to non-unique ID
             else
-                --Check which uniqueId type is setup in the FCOIS settings
-                local uniqueId
-                if not uniqueItemIdType or uniqueItemIdType == FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE then
-                    uniqueId = zo_getSafeId64Key(GetItemUniqueId(bagId, slotIndex))
-                elseif uniqueItemIdType and uniqueItemIdType == FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE then
-                    uniqueId = FCOIS.CreateFCOISUniqueIdString(itemInstanceId, nil, bagId, slotIndex, nil)
+                --Build the itemID -> FROM
+                -->Could be only a non-unique itemInstanceId
+                itemId, allowedItemType = GetFCOISMarkerIconSavedVariablesItemId(bagId, slotIndex, nil, uniqueIdWasLastEnabled, uniqueIdTypeLastUsed)
+                --[[
+                if allowedItemType == true then
+                    if not uniqueIdTypeLastUsed or uniqueIdTypeLastUsed == FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE then
+                        itemId = zo_getSafeId64Key(GetItemUniqueId(bagId, slotIndex))
+                    elseif uniqueIdTypeLastUsed and uniqueIdTypeLastUsed == FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE then
+                        local itemIdForUniqueId = GetItemId(bagId, slotIndex)
+                        itemId = FCOIS.CreateFCOISUniqueIdString(itemIdForUniqueId, nil, bagId, slotIndex, nil)
+                    end
+                else
+                    itemId = itemInstanceIdSigned
                 end
-                itemId = uniqueId
-                itemIdNew = FCOIS.SignItemId(itemInstanceId, false, true, nil, nil, nil)
+                ]]
+                --Build the newItemId -> TO
+                --Non uniqueId -> TO
+                local itemInstanceId = GetItemInstanceId(bagId, slotIndex)
+                local itemInstanceIdSigned = FCOIS.SignItemId(itemInstanceId, false, true, nil, bagId, slotIndex)
+                itemIdNew = itemInstanceIdSigned
             end
-            --Is the itemId (unique or non-unique) given?
+------------------------------------------------------------------------------------------------------------------------
+
+            --Is the itemId FROM and TO given?
+            -->Both IDs do not need to be different as the migration could use different SavedVariables subtables,
+            -->e.g. for nonUniqueIds "markedItems" and for uniqueIDsFCOIS the table "markedItemsFCOISUnique"
             if itemId ~= nil and itemIdNew ~= nil then
                 local increaseNumMigratedItems = true
+                local markedItemsVarOld = FCOIS[savedVarsMarkedItemsTableNameOld]
                 --Check if the item is marked with any icon
                 for iconId = FCOIS_CON_ICON_LOCK, FCOIS.numVars.gFCONumFilterIcons, 1 do
-                    local isMarked = FCOIS.markedItems[iconId][itemId]
+                    local isMarked = markedItemsVarOld[iconId][itemId]
                     if isMarked == nil then isMarked = false end
                     --Is the icon marked?
-                    if isMarked then
+                    if isMarked == true then
                         --Transfer the marker icon from the old one to the new one
-                        FCOIS.markedItems[iconId][itemIdNew] = true
+--TODO: Remove comment after migration tests finished
+                        --FCOIS[savedVarsMarkedItemsTableNameNew][iconId][itemIdNew] = true
+--TODO: Remove 3 lines below after migration tests finished
+FCOIS["_migrated" .. savedVarsMarkedItemsTableNameNew] = FCOIS["_migrated" .. savedVarsMarkedItemsTableNameNew] or {}
+FCOIS["_migrated" .. savedVarsMarkedItemsTableNameNew][iconId] = FCOIS["_migrated" .. savedVarsMarkedItemsTableNameNew][iconId] or {}
+FCOIS["_migrated" .. savedVarsMarkedItemsTableNameNew][iconId][itemIdNew] = true
                         numMigratedIcons = numMigratedIcons + 1
                         if increaseNumMigratedItems then
                             numMigratedItems = numMigratedItems + 1
@@ -523,6 +710,8 @@ local function scanBagsAndTransferMarkerIcon(toUnique)
                 end
             end
         end
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
         --Migration results for bag type
         d(FCOIS.preChatVars.preChatTextBlue .. zo_strformat(locVars["options_migrate_results"], numMigratedIcons, numMigratedItems))
         --Migration end for bag type
@@ -533,19 +722,18 @@ local function scanBagsAndTransferMarkerIcon(toUnique)
 end
 
 --Migrate the marker icons from the non-unique ItemInstanceIds to the uniqueIds
-function FCOIS.migrateItemInstanceIdMarkersToUniqueIdMarkers()
-    --Are the unique IDs enabled?
-    if FCOIS.settingsVars.settings.useUniqueIds == true then
+function FCOIS.migrateMarkerIcons()
+    local prevVars = FCOIS.preventerVars
+    local settings = FCOIS.settingsVars.settings
+    if prevVars.migrateToUniqueIds == true or settings.useUniqueIds == true then
         scanBagsAndTransferMarkerIcon(true)
-    end
-end
-
---Migrate the marker icons from the uniqueIds to the non-unique ItemInstanceIds
-function FCOIS.migrateUniqueIdMarkersToItemInstanceIdMarkers()
-    --Are the unique IDs enabled?
-    if not FCOIS.settingsVars.settings.useUniqueIds then
+    elseif prevVars.migrateToItemInstanceIds == true or settings.useUniqueIds == false then
         scanBagsAndTransferMarkerIcon(false)
     end
+    --Reset some variables
+    FCOIS.preventerVars.migrateItemMarkers = false
+    FCOIS.preventerVars.migrateToUniqueIds = false
+    FCOIS.preventerVars.migrateToItemInstanceIds = false
 end
 
 
@@ -567,8 +755,8 @@ function FCOIS.afterSettings()
     local iconIsDynamic = FCOIS.mappingVars.iconIsDynamic
     local mappingVars = FCOIS.mappingVars
 
-    --Set the split filters to true as old "non-split filters" method is not supported anymore!
-    settings.splitFilters = true
+    --Set the split filters to nil as it was removed years ago!
+    settings.splitFilters = nil
 
     --FCOIS v1.9.6 UniqueId changes to real unique by ZOs (ESO standard) or FCOIS unique (self made)
     --Standard value: Really unique by ZOs
@@ -624,16 +812,18 @@ function FCOIS.afterSettings()
 
     --Preset global variable for item destroying
     FCOIS.preventerVars.gAllowDestroyItem = not settings.blockDestroying
+    local savedVarsMarkedItemsTableName = getSavedVarsMarkedItemsTableName()
+
     -- Get the marked items for each filter from the settings (or defaults, if not set yet)
     for filterIconId = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
-        -->FCOIS v1.9.6 - Remove old entries with FCOIS.markedItems[filterIconId][itemIdOrUniqueIdString] = false from SV
-        for itemOrUniqueId, isMarked in pairs(settings.markedItems[filterIconId]) do
+        -->FCOIS v1.9.6 - Remove old entries with FCOIS[getSavedVarsMarkedItemsTableName()][filterIconId][itemIdOrUniqueIdString] = false from SV
+        for itemOrUniqueId, isMarked in pairs(settings[savedVarsMarkedItemsTableName][filterIconId]) do
             if itemOrUniqueId ~= nil and isMarked == false then
-                FCOIS.settingsVars.settings.markedItems[filterIconId][itemOrUniqueId] = nil
+                FCOIS.settingsVars.settings[savedVarsMarkedItemsTableName][filterIconId][itemOrUniqueId] = nil
             end
         end
-        -->Link FCOIS.markedItems to the SavedVariables
-        FCOIS.markedItems[filterIconId] = settings.markedItems[filterIconId]
+        -->Link FCOIS[getSavedVarsMarkedItemsTableName()] to the SavedVariables
+        FCOIS[savedVarsMarkedItemsTableName][filterIconId] = settings[savedVarsMarkedItemsTableName][filterIconId]
     end
     --The automatic set marker icon name was changed from autoMarkSetsGearIconNr to autoMarkSetsIconNr
     if settings.autoMarkSetsGearIconNr ~= nil then
@@ -695,6 +885,15 @@ function FCOIS.afterSettings()
         end
     end
 
+    --Added with FCOIS v1.9.9
+    FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId] = FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId] or {}
+    FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].isFilterPanelOn                = FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].isFilterPanelOn or {}
+    --Create the helper arrays for the filter button context menus
+    FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastLockDynFilterIconId        = FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastLockDynFilterIconId or {}
+    FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastGearFilterIconId           = FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastGearFilterIconId or {}
+    FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastResDecImpFilterIconId      = FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastResDecImpFilterIconId or {}
+    FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastSellGuildIntFilterIconId   = FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastSellGuildIntFilterIconId or {}
+
     --Added with FCOIS v1.7.4
     --For each panelId add an entry to for the non-deconstructable Libfilters panelIds
     local panelIdToDeconstructable = mappingVars.panelIdToDeconstructable
@@ -704,6 +903,13 @@ function FCOIS.afterSettings()
             if panelIdToDeconstructable[panelId] == nil then
                 FCOIS.mappingVars.panelIdToDeconstructable[panelId] = false
             end
+            --Added with FCOIS v1.9.9
+            FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].isFilterPanelOn[panelId]               = FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].isFilterPanelOn[panelId] or {false, false, false, false}
+            --Create the helper arrays for the filter button context menus
+            FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastLockDynFilterIconId[panelId]       = FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastLockDynFilterIconId[panelId] or -1
+            FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastGearFilterIconId[panelId]          = FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastGearFilterIconId[panelId] or -1
+            FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastResDecImpFilterIconId[panelId]     = FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastResDecImpFilterIconId[panelId] or -1
+            FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastSellGuildIntFilterIconId[panelId]  = FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastSellGuildIntFilterIconId[panelId] or -1
         end
     end
 
@@ -865,7 +1071,8 @@ end
 --Check if the FCOIS settings were loaded already, or load them
 function FCOIS.checkIfFCOISSettingsWereLoaded(calledFromExternal)
     calledFromExternal = calledFromExternal or false
-    if not calledFromExternal or (FCOIS and FCOIS.settingsVars and FCOIS.settingsVars.settings and FCOIS.settingsVars.settings.markedItems) then return true end
+    local savedVarsMarkedItemsTableName = getSavedVarsMarkedItemsTableName()
+    if not calledFromExternal or (FCOIS and FCOIS.settingsVars and FCOIS.settingsVars.settings and FCOIS.settingsVars.settings[savedVarsMarkedItemsTableName]) then return true end
     return FCOIS.LoadUserSettings(calledFromExternal)
 end
 
@@ -891,6 +1098,7 @@ function FCOIS.LoadUserSettings(calledFromExternal)
         --=========== BEGIN - SAVED VARIABLES ==========================================
         FCOIS.settingsVars.defaultSettings = {}
         FCOIS.settingsVars.settings = {}
+        FCOIS.settingsVars.accountWideButForEachCharacterSettings = {}
         --------------------------------------------------------------------------------------------------------------------
         -- Migration of non-server dependent settings to server-dependent settings
         --------------------------------------------------------------------------------------------------------------------
@@ -1050,6 +1258,20 @@ function FCOIS.LoadUserSettings(calledFromExternal)
                     end
             )
         end
+
+        --The SettingsForAll was setup to save the filter buttons for each character individually?
+        if FCOIS.settingsVars.defaultSettings.filterButtonsSaveForCharacter == true then
+            local saveMode = FCOIS.settingsVars.defaultSettings.saveMode
+            --Character wide settings are enabled: Do nothing as it will be handled automatically
+
+            if saveMode == 2 or saveMode == 3 then
+                local accountNameToUse
+                if saveMode == 3 then accountNameToUse = svAllAccTheSameAcc end
+                --Account wide settings are enabled: Load the extra SavedVariables for the account wide "per character" settings
+                FCOIS.settingsVars.accountWideButForEachCharacterSettings = ZO_SavedVars:NewAccountWide(addonSVname, addonSVversion, svSettingsForEachCharacterName, FCOIS.settingsVars.accountWideButForEachCharacterDefaults, world, accountNameToUse)
+            end
+        end
+
         --=========== END - SAVED VARIABLES ============================================
 
         --Load the current needed workarounds/fixes
@@ -1221,7 +1443,7 @@ function FCOIS.copySavedVars(srcServer, targServer, srcAcc, targAcc, srcCharId, 
     if not onlyDelete and svDefToCopy ~= nil and svToCopy ~= nil then
 --d(">go on with copy/delete!")
         --The default table got the language entry and the normal settings table got the markedItems entry?
-        if svDefToCopy["language"] ~= nil and svToCopy["markedItems"] ~= nil then
+        if svDefToCopy["language"] ~= nil and (svToCopy["markedItems"] ~= nil or svToCopy["markedItemsFCOISUnique"] ~= nil) then
 --d(">>found def language and markedItems")
             if FCOItemSaver_Settings[targServer] == nil then FCOItemSaver_Settings[targServer] = {} end
             --Source data is valid. Now build the target data

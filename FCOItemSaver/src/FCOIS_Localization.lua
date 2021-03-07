@@ -144,6 +144,7 @@ end
 local function afterLocalization()
     --Local speed up variables
     local settings = FCOIS.settingsVars.settings
+    local settingsOfFilterButtonStateAndIcon = FCOIS.getAccountWideCharacterOrNormalCharacterSettings()
     local defaults = FCOIS.settingsVars.defaults
     local locVars = FCOIS.localizationVars.fcois_loc
 
@@ -303,28 +304,28 @@ local function afterLocalization()
     --LockDyn
     ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_LOCKDYN]].cmAtPanel 		    = contextMenu.LockDynFilter
     ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_LOCKDYN]].cmVars 			    = contextMenuVars.LockDynFilter
-    ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_LOCKDYN]].lastIcon 			= settings.lastLockDynFilterIconId
+    ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_LOCKDYN]].lastIcon 			= settingsOfFilterButtonStateAndIcon.lastLockDynFilterIconId
     ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_LOCKDYN]].cmFilterName 		= contextMenu.ContextMenuLockDynFilterName
     ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_LOCKDYN]].mappingIcons 		= mappingVars.lockDynToIcon
     ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_LOCKDYN]].pVars 			    = preventerVars.gLockDynFilterContextCreated
     --Gear
     ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_GEARSETS]].cmAtPanel 		    = contextMenu.GearSetFilter
     ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_GEARSETS]].cmVars 			= contextMenuVars.GearSetFilter
-    ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_GEARSETS]].lastIcon 		   	= settings.lastGearFilterIconId
+    ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_GEARSETS]].lastIcon 		   	= settingsOfFilterButtonStateAndIcon.lastGearFilterIconId
     ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_GEARSETS]].cmFilterName 		= contextMenu.ContextMenuGearSetFilterName
     ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_GEARSETS]].mappingIcons 		= mappingVars.gearToIcon
     ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_GEARSETS]].pVars 			    = preventerVars.gGearSetFilterContextCreated
     --ResDecImp
     ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_RESDECIMP]].cmAtPanel 		= contextMenu.ResDecImpFilter
     ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_RESDECIMP]].cmVars 			= contextMenuVars.ResDecImpFilter
-    ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_RESDECIMP]].lastIcon 		    = settings.lastResDecImpFilterIconId
+    ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_RESDECIMP]].lastIcon 		    = settingsOfFilterButtonStateAndIcon.lastResDecImpFilterIconId
     ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_RESDECIMP]].cmFilterName 	    = contextMenu.ContextMenuResDecImpFilterName
     ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_RESDECIMP]].mappingIcons 	    = mappingVars.resDecImpToIcon
     ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_RESDECIMP]].pVars 			= preventerVars.gResDecImpFilterContextCreated
     --SellGuildInt
     ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT]].cmAtPanel 	    = contextMenu.SellGuildIntFilter
     ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT]].cmVars 		= contextMenuVars.SellGuildIntFilter
-    ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT]].lastIcon 		= settings.lastSellGuildIntFilterIconId
+    ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT]].lastIcon 		= settingsOfFilterButtonStateAndIcon.lastSellGuildIntFilterIconId
     ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT]].cmFilterName	= contextMenu.ContextMenuSellGuildIntFilterName
     ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT]].mappingIcons	= mappingVars.sellGuildIntToIcon
     ctmVars[availableCtms[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT]].pVars 		    = preventerVars.gSellGuildIntFilterContextCreated
@@ -341,13 +342,14 @@ function FCOIS.Localization()
     local preventerVars = FCOIS.preventerVars
     local defSettings = FCOIS.settingsVars.defaultSettings
     local langVars = FCOIS.langVars
---d("[FCOIS] Localization - Start, keybindings: " .. tostring(preventerVars.KeyBindingTexts) ..", useClientLang: " .. tostring(FCOIS.settingsVars.settings.alwaysUseClientLanguage))
+d("[FCOIS] Localization - Start, keybindings: " .. tostring(preventerVars.KeyBindingTexts) ..", useClientLang: " .. tostring(FCOIS.settingsVars.settings.alwaysUseClientLanguage) .. ", localizationDone: " ..tostring(preventerVars.gLocalizationDone))
 
     --Was localization already done during keybindings? Then abort here
     if preventerVars.KeyBindingTexts == true and preventerVars.gLocalizationDone == true then
         preventerVars.KeyBindingTexts = false
         return
     end
+
     --Fallback to english variable
     local fallbackToEnglish = false
     --Always use the client's language?
@@ -542,6 +544,23 @@ function FCOIS.Localization()
         [FCOIS_CON_RETRAIT]	            =	locTexts["retrait_not_allowed"],
         [FCOIS_CON_FALLBACK]			=   locTexts["destroying_not_allowed"],  -- Fallback: Destroying not allowed (used at bank deposit, guild bank deposit, bank withdraw, guild bank withdraw, ...)
     }
+
+    --Add the local localized tables from the constants
+    local localLocalizationsVars = FCOIS.localLocalizationsVars
+    if localLocalizationsVars ~= nil then
+        for key, valueTab in pairs(localLocalizationsVars) do
+            if locVars.fcois_loc[key] == nil then
+                FCOIS.localizationVars.fcois_loc[key] = ZO_ShallowTableCopy(valueTab)
+            end
+        end
+        FCOIS.localLocalizationsVars = nil
+    end
+
+d(">Localitazion -> got here")
+
     --Do some "after localization" stuff
     afterLocalization()
+
+    --Reset the variable for the "force localization updte"
+    FCOIS.preventerVars.doUpdateLocalization = false
 end

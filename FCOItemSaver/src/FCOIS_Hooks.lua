@@ -127,17 +127,36 @@ end
 --A setupCallback function for the scrolllists of the inventories.
 --> Will add the FCOIS marker icons if they get visible and add the OnMouseUp handlers to the rows to support the SHIFT+right mouse button features
 local function OnScrollListRowSetupCallback(rowControl, data)
+    --d("[FCOIS]OnScrollListRow:SetupCallback")
     if not rowControl then
         d("[FCOIS]ERROR: OnScrollListRowSetupCallback - rowControl is missing!")
         return
     end
-    -- for all filters: Create/Update the icons
-    local settings = FCOIS.settingsVars.settings
-    local iconVars = FCOIS.iconVars
-    local textureVars = FCOIS.textureVars
-    for i = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
-        local iconData = settings.icon[i]
-        FCOIS.CreateMarkerControl(rowControl, i, iconData.size or iconVars.gIconWidth, iconData.size or iconVars.gIconWidth, textureVars.MARKER_TEXTURES[iconData.texture])
+    --Row is e.g. ZO_SmithingTopLevelRefinementPanelInventoryBackpack1Row1
+    --Parent will be ZO_SmithingTopLevelRefinementPanelInventoryBackpackContents
+    --It's parent will be ZO_SmithingTopLevelRefinementPanelInventoryBackpack
+    local inventoryListControl = rowControl:GetParent():GetParent()
+    if not inventoryListControl then
+        d("[FCOIS]ERROR: OnScrollListRowSetupCallback - inventoryListControl is missing!")
+        return
+    end
+
+    --Duplicate call to FCOIS.CreateMarkerControl or neede for "at least some" of the inventories,
+    --like the crafting tables? Yes. But we need to filter the update of the marker controls for the others
+    --like normal inventories!
+    -- For some inventories like crafting tables: Create/Update the icons
+    local inventoryVars = FCOIS.inventoryVars
+    local hookScrollSetupCallbacks = inventoryVars.markerControlInventories and inventoryVars.markerControlInventories.hookScrollSetupCallback
+    if hookScrollSetupCallbacks[inventoryListControl] ~= nil then
+--d(">>it's a valid scrollList setupCallback")
+        local settings = FCOIS.settingsVars.settings
+        local iconVars = FCOIS.iconVars
+        local textureVars = FCOIS.textureVars
+
+        for i = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
+            local iconData = settings.icon[i]
+            FCOIS.CreateMarkerControl(rowControl, i, iconData.size or iconVars.gIconWidth, iconData.size or iconVars.gIconWidth, textureVars.MARKER_TEXTURES[iconData.texture])
+        end
     end
 
     --Add additional FCO point to the dataEntry.data slot
@@ -153,27 +172,32 @@ end
 --==============================================================================
 --Check if the localization data of the context menu is given
 local function checkAndUpdateContextMenuLocalizationData()
+--d("[FCOIS]checkAndUpdateContextMenuLocalizationData")
     local locVars = FCOIS.localizationVars
     local doUpdateLocalization = false
+    local settings = FCOIS.settingsVars.settings
     if not locVars then
         doUpdateLocalization = true
     end
     if not doUpdateLocalization then
         local locEntriesToCheck = {
-            ["lTextEquipmentMark"] = true,
-            ["lTextEquipmentDemark"] = true,
-            ["lTextMark"] = true,
-            ["lTextDemark"] = true,
+            ["lTextEquipmentMark"]      = true,
+            ["lTextEquipmentDemark"]    = true,
+            ["lTextMark"]               = true,
+            ["lTextDemark"]             = true,
         }
         for key, isToCheck in pairs(locEntriesToCheck) do
             if isToCheck == true and not doUpdateLocalization then
                 if locVars[key] == nil then
+--d(">key not found: " ..tostring(key))
                     doUpdateLocalization = true
                     break
                 end
                 --Check if the texts for the filter icons exists
                 for iconId=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
-                    if locVars[key][iconId] == nil then
+                    local isIconEnabled = settings.isIconEnabled[iconId]
+                    if locVars[key][iconId] == nil and isIconEnabled == true then
+--d(">key's iconId not found: " ..tostring(key) .. ", icon: " ..tostring(iconId) .. ", iconEnabled: " .. tostring(isIconEnabled))
                         doUpdateLocalization = true
                         break
                     end
@@ -183,6 +207,7 @@ local function checkAndUpdateContextMenuLocalizationData()
     end
     --Should the localization be rebuild now?
     if doUpdateLocalization == true then
+d("[FCOIS]checkAndUpdateContextMenuLocalizationData - Update the localization now")
         --Re-Do the localization done variable and rebuild all localization
         FCOIS.Localization()
         --Overwrite the localized texts for the marker icons in the context menus
@@ -436,7 +461,10 @@ local function FCOItemSaver_OnDragStart(inventorySlot)
     FCOIS.dragAndDropVars.slot = slot
 end
 
---Callback function for receive a dragged inventory item
+--Callback function for receive a dragged inventory item. Used for:
+--1. Drop of an item at an equipment slot -> Aswk before bind dialog
+--2. If CraftBagExtended addon is enabled: Drop of any craftbag item at the mail send/player trade panel as the Drag function will not be
+--   executed properly for CraftBag rows. So we need to check if the item is protected and cancel the drop here!
 local function FCOItemSaver_OnReceiveDrag(inventorySlot)
     --FCOinvs = inventorySlot
     local cursorContentType = GetCursorContentType()
@@ -445,9 +473,9 @@ local function FCOItemSaver_OnReceiveDrag(inventorySlot)
 
     -- if there is an inventory item on the cursor:
     if cursorContentType ~= MOUSE_CONTENT_INVENTORY_ITEM and cursorContentType ~= MOUSE_CONTENT_EQUIPPED_ITEM then return end
-
+    local slotType = inventorySlot.slotType
     -- and the slot type we're dropping it on is an equip slot:
-    if inventorySlot.slotType == SLOT_TYPE_EQUIPMENT then
+    if slotType == SLOT_TYPE_EQUIPMENT then
         local bag
         local slot
         local dragAndDropVars = FCOIS.dragAndDropVars
@@ -487,6 +515,21 @@ local function FCOItemSaver_OnReceiveDrag(inventorySlot)
             ClearCursor()
         end
         return false
+    elseif slotType == SLOT_TYPE_MAIL_QUEUED_ATTACHMENT or slotType == SLOT_TYPE_MAIL_ATTACHMENT or slotType == SLOT_TYPE_MY_TRADE then
+        local bagId = GetCursorBagId()
+        local slotIndex = GetCursorSlotIndex()
+        if not bagId or not slotIndex then return false end
+        --CraftBag item was dragged and dropped?
+        if bagId == BAG_VIRTUAL then
+            --Check if the item is protected
+            --  bag, slot, echo, isDragAndDrop, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId
+            local isProtected = FCOIS.callItemSelectionHandler(bagId, slotIndex, true, true, false, false, false, false, false, nil)
+            if isProtected == true then
+                --Remove the picked item from drag&drop cursor
+                ClearCursor()
+                return true
+            end
+        end
     end
 end
 
@@ -1643,6 +1686,15 @@ function FCOIS.CreateHooks()
             FCOIS.updateFilteredItemCountThrottled(nil, 50, "UpdateInventorySlots")
         end
     end)
+
+    --[[
+    local mailSendAttachmentSlots = FCOIS.ZOControlVars.MAIL_SEND.attachmentSlots
+    if mailSendAttachmentSlots ~= nil then
+        for _, attachmentSlot in ipairs(mailSendAttachmentSlots) do
+
+        end
+    end
+    ]]
 
     --Test if CraftBag raises OnInventorySlotLocked as well
     --[[
