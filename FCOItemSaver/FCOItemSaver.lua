@@ -19,7 +19,7 @@
 ---------------------------------------------------------------------
 --[ToDo list] --
 --____________________________
--- Current max bugs/features/ToDos: 107
+-- Current max bugs/features/ToDos: 108
 --____________________________
 
 --In progress: Since 2020-06-17
@@ -153,6 +153,10 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 
 
 --[Changed]
+--#108 The red "settings are currently loaded" sand-clock icon at the top right edge of the FCOIS settings panel  will show a
+--ping-pong size animation for 5 times now so the last ones not paying attention to it's existance might notice it now AND
+-- will keep their fingers away from the FCOIS settings menu until it disappears... Move the mouse above the icon to read the
+-- tooltip why it is there and why you should simply "wait" until it is gone.
 
 
 --[Added]

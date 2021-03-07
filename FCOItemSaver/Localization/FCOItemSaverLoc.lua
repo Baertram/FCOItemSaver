@@ -2312,11 +2312,11 @@ FCOIS.localizationVars.localizationAll = {
         ["options_enable_auto_mark_sets_collection_TT"] = "Aktiviere die automatische Set-Sammlung Markierungen",
         ["options_only_current_account"]                = "Nur aktueller Account",
         ["options_only_current_account_TT"]             = "Nur der aktuelle Account wird bei den Prüfungen berücksichtigt.",
-        ["options_auto_mark_sets_collection_addon"]     = "Addon für Set-Sammlung Prüfungen",
+        ["options_auto_mark_sets_collection_addon"]     = "Addon: Set-Sammlung Prüfungen",
         ["options_auto_mark_sets_collection_addon_TT"]  = "Wähle das Addon aus, welches für die automatischen Set Sammlungs Prüfungen verwendet werden soll (unbekannte/bekannte Set Gegenstände).\n Das ESO Basis Spiel kann nur die Gegenstände des aktuell eingelogten Accounts prüfen!",
-        ["options_auto_mark_sets_collection_known_icon"]    = "Bekannte Set Sammlung Gegenstand Symbol",
+        ["options_auto_mark_sets_collection_known_icon"]    = "Bekannte Set Sammlung Geg. Symbol",
         ["options_auto_mark_sets_collection_known_icon_TT"] = "Wähle das Symbol für die bekannten Set-Sammlungen Gegenstände.",
-        ["options_auto_mark_sets_collection_unknown_icon"]    = "Unbekannte Set-Sammlung Gegenstand Symbol",
+        ["options_auto_mark_sets_collection_unknown_icon"]    = "Unbekannte Set-Sammlung Geg. Symbol",
         ["options_auto_mark_sets_collection_unknown_icon_TT"] = "Wähle das Symbol für die unbekannten Set-Sammlungen Gegenstände.",
 
         --LibShifterBoxes
