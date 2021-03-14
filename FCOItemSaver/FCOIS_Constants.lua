@@ -155,6 +155,10 @@ if not FCOIS.libFeedback then d(preVars.preChatTextRed .. string.format(libMissi
 --Initialize the library LibShifterBox
 FCOIS.libShifterBox = LibShifterBox
 if not FCOIS.libShifterBox == nil then d(preVars.preChatTextRed .. string.format(libMissingErrorText, "LibShifterBox")) return end
+
+--Initialize the library LibSets
+FCOIS.libSets = LibSets
+
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 --Optional libraries
@@ -177,6 +181,8 @@ FCOIS_CON_LANG_IT = 5
 FCOIS_CON_LANG_JP = 6
 FCOIS_CON_LANG_RU = 7
 FCOIS_CON_LANG_MAX = FCOIS_CON_LANG_RU
+
+FCOIS.clientLanguage = GetCVar("language.2")
 
 --Constant values for the whereAreWe panels
 FCOIS_CON_DESTROY				= 71

@@ -1,0 +1,9 @@
+<GuiXml>
+    <Controls>
+		<TopLevelControl name="FCOISTooltipTopLevel" inherits="TooltipTopLevel">
+			<Controls>
+				<Tooltip name="FCOISItemTooltip" inherits="ZO_ItemIconTooltip" />
+			</Controls>
+		</TopLevelControl>
+    </Controls>
+</GuiXml>

@@ -488,8 +488,25 @@ function FCOIS.BuildAddonMenu()
     local function buildResearchAddonsList()
         local researchAddonsAvailable = FCOIS.otherAddons.researchAddonsSupported
         for researchAddonIdx, researchAddonName in pairs(researchAddonsAvailable) do
+            local researchAddonNameColored = researchAddonName
+            local colorRed = false
+            if researchAddonIdx ~= FCOIS_RESEARCH_ADDON_ESO_STANDARD then
+                if _G[researchAddonName] == nil then
+                    if researchAddonIdx == FCOIS_RESEARCH_ADDON_CSFAI then
+                        if not FCOIS.otherAddons.craftStoreFixedAndImprovedActive then
+                            colorRed = true
+                        end
+                    else
+                        colorRed = true
+                    end
+
+                end
+                if colorRed == true then
+                    researchAddonNameColored = "|cFF0000" .. researchAddonNameColored .. "|r"
+                end
+            end
             table.insert(researchAddonsListValues, researchAddonIdx)
-            table.insert(researchAddonsList, researchAddonName)
+            table.insert(researchAddonsList, researchAddonNameColored)
         end
     end
     buildResearchAddonsList()
@@ -3466,253 +3483,6 @@ function FCOIS.BuildAddonMenu()
                     {
 
                         --==============================================================================
-                        --Equipment auto-marking
-                        {   -- Equipment
-                            type = "submenu",
-                            name = locVars["options_header_equipment"],
-                            controls =
-                            {
-                                {
-                                    type = "checkbox",
-                                    name = locVars["options_equipment_markall_gear"],
-                                    tooltip = locVars["options_equipment_markall_gear" .. tooltipSuffix],
-                                    getFunc = function() return FCOISsettings.autoMarkAllEquipment end,
-                                    setFunc = function(value) FCOISsettings.autoMarkAllEquipment = value
-                                    end,
-                                    default = FCOISdefaultSettings.autoMarkAllEquipment,
-                                },
-                                {
-                                    type = "checkbox",
-                                    name = locVars["options_equipment_markall_gear_add_weapons"],
-                                    tooltip = locVars["options_equipment_markall_gear_add_weapons" .. tooltipSuffix],
-                                    getFunc = function() return FCOISsettings.autoMarkAllWeapon end,
-                                    setFunc = function(value) FCOISsettings.autoMarkAllWeapon = value
-                                    end,
-                                    disabled = function() return not FCOISsettings.autoMarkAllEquipment end,
-                                    default = FCOISdefaultSettings.autoMarkAllWeapon,
-                                },
-                                {
-                                    type = "checkbox",
-                                    name = locVars["options_equipment_markall_gear_add_jewelry"],
-                                    tooltip = locVars["options_equipment_markall_gear_add_jewelry" .. tooltipSuffix],
-                                    getFunc = function() return FCOISsettings.autoMarkAllJewelry end,
-                                    setFunc = function(value) FCOISsettings.autoMarkAllJewelry = value
-                                    end,
-                                    disabled = function() return not FCOISsettings.autoMarkAllEquipment end,
-                                    default = FCOISdefaultSettings.autoMarkAllJewelry,
-                                },
-                            }, -- controls equipment auto-marking
-                        }, -- submenu equipment auto-marking
-                        --==============================================================================
-                        {   -- Ornate
-                            type = "submenu",
-                            name = GetString(SI_ITEMTRAITTYPE10),
-                            controls =
-                            {
-                                {
-                                    type = "checkbox",
-                                    name = locVars["options_enable_auto_mark_ornate_items"],
-                                    tooltip = locVars["options_enable_auto_mark_ornate_items" .. tooltipSuffix],
-                                    getFunc = function() return FCOISsettings.autoMarkOrnate end,
-                                    setFunc = function(value)
-                                        FCOISsettings.autoMarkOrnate = value
-                                        if (FCOISsettings.autoMarkOrnate == true) then
-                                            FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "ornate", false)
-                                        end
-                                    end,
-                                    width = "half",
-                                    disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL] end,
-                                    default = FCOISdefaultSettings.autoMarkOrnate,
-                                },
-                                {
-                                    type = "checkbox",
-                                    name = locVars["options_enable_auto_mark_ornate_items_in_chat"],
-                                    tooltip = locVars["options_enable_auto_mark_ornate_items_in_chat" .. tooltipSuffix],
-                                    getFunc = function() return FCOISsettings.showOrnateItemsInChat end,
-                                    setFunc = function(value)
-                                        FCOISsettings.showOrnateItemsInChat = value
-                                    end,
-                                    disabled = function() return not FCOISsettings.autoMarkOrnate or not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL] end,
-                                    width = "half",
-                                    default = FCOISdefaultSettings.showOrnateItemsInChat,
-                                },
-                            } -- controls ornate
-                        }, -- submenu ornate
-                        --==============================================================================
-                        {   -- Intricate
-                            type = "submenu",
-                            name = GetString(SI_ITEMTRAITTYPE9),
-                            controls =
-                            {
-                                {
-                                    type = "checkbox",
-                                    name = locVars["options_enable_auto_mark_intricate_items"],
-                                    tooltip = locVars["options_enable_auto_mark_intricate_items" .. tooltipSuffix],
-                                    getFunc = function() return FCOISsettings.autoMarkIntricate end,
-                                    setFunc = function(value)
-                                        FCOISsettings.autoMarkIntricate = value
-                                        if (FCOISsettings.autoMarkIntricate == true) then
-                                            FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "intricate", false)
-                                        end
-                                    end,
-                                    width = "half",
-                                    disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_INTRICATE] end,
-                                    default = FCOISdefaultSettings.autoMarkIntricate,
-                                },
-                                {
-                                    type = "checkbox",
-                                    name = locVars["options_enable_auto_mark_intricate_items_in_chat"],
-                                    tooltip = locVars["options_enable_auto_mark_intricate_items_in_chat" .. tooltipSuffix],
-                                    getFunc = function() return FCOISsettings.showIntricateItemsInChat end,
-                                    setFunc = function(value)
-                                        FCOISsettings.showIntricateItemsInChat = value
-                                    end,
-                                    disabled = function() return not FCOISsettings.autoMarkIntricate or not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_INTRICATE] end,
-                                    width = "half",
-                                    default = FCOISdefaultSettings.showIntricateItemsInChat,
-                                },
-                            } -- controls intrictae
-                        }, -- submenu intrictae
-                        --==============================================================================
-                        {   -- Research
-                            type = "submenu",
-                            name = GetString(SI_SMITHING_TAB_RESEARCH),
-                            controls =
-                            {
-                                {
-                                    type = 'dropdown',
-                                    name = locVars["options_auto_mark_addon"],
-                                    tooltip = zo_strformat(locVars["options_auto_mark_addon" .. tooltipSuffix], GetString(SI_SMITHING_TAB_RESEARCH)),
-                                    choices = researchAddonsList,
-                                    choicesValues = researchAddonsListValues,
-                                    --scrollable = true,
-                                    getFunc = function() return FCOISsettings.researchAddonUsed
-                                    end,
-                                    setFunc = function(value)
-                                        FCOISsettings.researchAddonUsed = value
-
-                                    end,
-                                    --disabled = function() return not FCOISsettings.autoMarkResearch end,
-                                    width = "half",
-                                    default = FCOISdefaultSettings.researchAddonUsed,
-                                },
-                                {
-                                    type = "checkbox",
-                                    name = locVars["options_enable_auto_mark_research_items"],
-                                    tooltip = locVars["options_enable_auto_mark_research_items" .. tooltipSuffix],
-                                    getFunc = function() return FCOISsettings.autoMarkResearch end,
-                                    setFunc = function(value)
-                                        FCOISsettings.autoMarkResearch = value
-                                        if (FCOISsettings.autoMarkResearch == true and FCOIS.checkIfResearchAddonUsed() and FCOIS.checkIfChosenResearchAddonActive(FCOISsettings.researchAddonUsed)) then
-                                            FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "research", false)
-                                        end
-                                    end,
-                                    disabled = function() return not FCOIS.checkIfResearchAddonUsed() or not FCOIS.checkIfChosenResearchAddonActive(FCOISsettings.researchAddonUsed) or not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_RESEARCH] end,
-                                    warning = locVars["options_enable_auto_mark_research_items_hint"],
-                                    width = "half",
-                                    default = FCOISdefaultSettings.autoMarkResearch,
-                                },
-                                {
-                                    type = "checkbox",
-                                    name = locVars["options_logged_in_char"],
-                                    tooltip = locVars["options_logged_in_char" .. tooltipSuffix],
-                                    getFunc = function() return FCOISsettings.autoMarkResearchOnlyLoggedInChar end,
-                                    setFunc = function(value)
-                                        FCOISsettings.autoMarkResearchOnlyLoggedInChar = value
-                                        if (FCOISsettings.autoMarkResearch == true and FCOISsettings.autoMarkResearchOnlyLoggedInChar == true and FCOIS.checkIfResearchAddonUsed() and FCOIS.checkIfChosenResearchAddonActive(FCOISsettings.researchAddonUsed)) then
-                                            FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "research", false)
-                                        end
-                                    end,
-                                    disabled = function() return not FCOIS.checkIfResearchAddonUsed() or FCOISsettings.researchAddonUsed == FCOIS_RESEARCH_ADDON_ESO_STANDARD or FCOISsettings.researchAddonUsed == FCOIS_RESEARCH_ADDON_RESEARCHASSISTANT or not FCOIS.checkIfChosenResearchAddonActive(FCOISsettings.researchAddonUsed) or not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_RESEARCH] end,
-                                    warning = locVars["options_enable_auto_mark_research_items_hint_logged_in_char"],
-                                    width = "half",
-                                    default = FCOISdefaultSettings.autoMarkResearchOnlyLoggedInChar,
-                                },
-                                {
-                                    type = "checkbox",
-                                    name = locVars["options_enable_auto_mark_research_items_in_chat"],
-                                    tooltip = locVars["options_enable_auto_mark_research_items_in_chat" .. tooltipSuffix],
-                                    getFunc = function() return FCOISsettings.showResearchItemsInChat end,
-                                    setFunc = function(value)
-                                        FCOISsettings.showResearchItemsInChat = value
-                                    end,
-                                    disabled = function() return not FCOIS.checkIfResearchAddonUsed() or not FCOIS.checkIfChosenResearchAddonActive(FCOISsettings.researchAddonUsed) or not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_RESEARCH] or not FCOISsettings.autoMarkResearch end,
-                                    warning = locVars["options_enable_auto_mark_research_items_hint"],
-                                    width = "half",
-                                    default = FCOISdefaultSettings.showResearchItemsInChat,
-                                },
-                                {
-                                    type = "checkbox",
-                                    name = locVars["options_enable_auto_mark_wasted_research_scrolls"],
-                                    tooltip = locVars["options_enable_auto_mark_wasted_research_scrolls" .. tooltipSuffix],
-                                    getFunc = function() return FCOISsettings.autoMarkWastedResearchScrolls end,
-                                    setFunc = function(value)
-                                        FCOISsettings.autoMarkWastedResearchScrolls = value
-                                        if FCOISsettings.autoMarkWastedResearchScrolls then
-                                            FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "researchScrolls", false)
-                                        end
-                                    end,
-                                    disabled = function() return (DetailedResearchScrolls == nil or DetailedResearchScrolls.GetWarningLine == nil) or not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_LOCK] end,
-                                    width = "full",
-                                    default = FCOISdefaultSettings.autoMarkWastedResearchScrolls,
-                                },
-                            } -- controls research
-                        }, -- submenu research
-                        --==============================================================================
-                        {   -- New
-                            type = "submenu",
-                            name = locVars["options_header_items_mark_new"],
-                            controls =
-                            {
-                                {
-                                    type = "checkbox",
-                                    name = locVars["options_enable_auto_mark_new_items"],
-                                    tooltip = locVars["options_enable_auto_mark_new_items" .. tooltipSuffix],
-                                    getFunc = function() return FCOISsettings.autoMarkNewItems end,
-                                    setFunc = function(value)
-                                        FCOISsettings.autoMarkNewItems = value
-                                        if (FCOISsettings.autoMarkNewItems == true) then
-                                            FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "new", false)
-                                        end
-                                    end,
-                                    disabled = function() return not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkNewIconNr] end,
-                                    width = "half",
-                                    default = FCOISdefaultSettings.autoMarkNewItems,
-                                },
-                                {
-                                    type = 'dropdown',
-                                    name = locVars["options_auto_mark_new_items__icon"],
-                                    tooltip = locVars["options_auto_mark_new_items_icon" .. tooltipSuffix],
-                                    choices = iconsList,
-                                    choicesValues = iconsListValues,
-                                    scrollable = true,
-                                    getFunc = function() return FCOISsettings.autoMarkNewIconNr
-                                    end,
-                                    setFunc = function(value)
-                                        FCOISsettings.autoMarkNewIconNr = value
-                                    end,
-                                    reference = "FCOItemSaver_Icon_On_Automatic_New_Item_Dropdown",
-                                    disabled = function() return not FCOISsettings.autoMarkNewItems end,
-                                    width = "half",
-                                    default = FCOISdefaultSettings.autoMarkNewIconNr,
-                                },
-                            } -- controls research
-                        }, -- submenu research
-
-                        --==============================================================================
-                        --[[
-                        {  -- Non sets armor, weapon, jewelry
-                            type = "submenu",
-                            name = locVars["options_enable_auto_mark_non_sets"],
-                            controls =
-                            {
---autoMarkArmorWeaponJewelry
-                            },
-
-                        },
-                        ]]
-
-                        --==============================================================================
                         {  -- Sets
                             type = "submenu",
                             name = locVars["options_enable_auto_mark_sets"],
@@ -3875,6 +3645,34 @@ function FCOIS.BuildAddonMenu()
                                 },
                                 --==============================================================================
                                 -- Normal sets
+                                -- Exclude sets auto-marking
+                                {
+                                    type = "submenu",
+                                    name = locVars["options_header_exclude_sets"],
+                                    reference = "FCOItemSaver_Settings_ExcludeSets_SubMenu",
+                                    controls = {
+
+                                        {
+                                            type = "description",
+                                            text = locVars["options_exclude_automark_sets_list_TT"],
+                                        },
+
+                                        --LibShifterBox: Excluded sets
+                                        {
+                                            type = "custom",
+                                            reference = (lsb and libShifterBoxes["FCOISexcludedSets"].name) or "FCOITEMSAVER_LAM_CUSTOM___FCOIS_EXCLUDED_SETS",
+                                            createFunc = function(customControl)
+                                                if not lsb then return end
+                                                FCOIS.createLibShifterBox(customControl, "FCOISexcludedSets")
+                                            end,
+                                            width="full",
+                                            minHeight = 220,
+                                            disabled = function() return FCOIS.libSets == nil end,
+                                        },
+
+                                    } --controls
+                                }, --submenu
+
                                 {
                                     type = "checkbox",
                                     name = locVars["options_enable_auto_mark_sets"],
@@ -4259,215 +4057,226 @@ function FCOIS.BuildAddonMenu()
                                 },
                             } -- controls sets
                         }, -- submenu sets
+
                         --==============================================================================
-                        {   --Crafted
+                        --[[
+                        {  -- Non sets armor, weapon, jewelry
                             type = "submenu",
-                            name = GetString(SI_ITEM_FORMAT_STR_CRAFTED),
+                            name = locVars["options_enable_auto_mark_non_sets"],
                             controls =
                             {
-                                {   --Crafted "Writs"
-                                    type = "submenu",
-                                    name = "Writ Creator",
-                                    controls =
-                                    {
-                                        {
-                                            type = "checkbox",
-                                            name = locVars["options_auto_mark_crafted_writ_items"],
-                                            tooltip = locVars["options_auto_mark_crafted_writ_items" .. tooltipSuffix],
-                                            getFunc = function() return FCOISsettings.autoMarkCraftedWritItems end,
-                                            setFunc = function(value)
-                                                FCOISsettings.autoMarkCraftedWritItems = value
-                                            end,
-                                            disabled = function()
-                                                return  not FCOIS.otherAddons.LazyWritCreatorActive
-                                                        or (not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkCraftedWritCreatorItemsIconNr] and FCOISsettings.isIconEnabled[FCOISsettings.autoMarkCraftedWritCreatorMasterWritItemsIconNr])
-                                            end,
-                                            width = "full",
-                                            default = FCOISdefaultSettings.autoMarkCraftedWritItems,
-                                        },
-                                        {
-                                            type = 'dropdown',
-                                            name = locVars["options_auto_mark_crafted_writ_items_icon"],
-                                            tooltip = locVars["options_auto_mark_crafted_writ_items_icon" .. tooltipSuffix],
-                                            choices = iconsList,
-                                            choicesValues = iconsListValues,
-                                            scrollable = true,
-                                            getFunc = function() return FCOISsettings.autoMarkCraftedWritCreatorItemsIconNr
-                                            end,
-                                            setFunc = function(value)
-                                                FCOISsettings.autoMarkCraftedWritCreatorItemsIconNr = value
-                                                --Check if the icon needs to get the setting to skip the research check enabled
-                                                if value ~= nil then
-                                                    FCOIS.setDynamicIconAntiResearchCheck(value, true)
-                                                end
-                                            end,
-                                            reference = "FCOItemSaver_Icon_On_Automatic_Crafted_Writ_Items_Dropdown",
-                                            disabled = function() return not FCOIS.otherAddons.LazyWritCreatorActive or not FCOISsettings.autoMarkCraftedWritItems end,
-                                            width = "half",
-                                            default = FCOISdefaultSettings.autoMarkCraftedWritCreatorItemsIconNr,
-                                        },
-                                        {
-                                            type = 'dropdown',
-                                            name = locVars["options_auto_mark_crafted_masterwrit_items_icon"],
-                                            tooltip = locVars["options_auto_mark_crafted_masterwrit_items_icon" .. tooltipSuffix],
-                                            choices = iconsList,
-                                            choicesValues = iconsListValues,
-                                            scrollable = true,
-                                            getFunc = function() return FCOISsettings.autoMarkCraftedWritCreatorMasterWritItemsIconNr
-                                            end,
-                                            setFunc = function(value)
-                                                FCOISsettings.autoMarkCraftedWritCreatorMasterWritItemsIconNr = value
-                                                --Check if the icon needs to get the setting to skip the research check enabled
-                                                if value ~= nil then
-                                                    FCOIS.setDynamicIconAntiResearchCheck(value, true)
-                                                end
-                                            end,
-                                            reference = "FCOItemSaver_Icon_On_Automatic_Crafted_MasterWrit_Items_Dropdown",
-                                            disabled = function() return not FCOIS.otherAddons.LazyWritCreatorActive or not FCOISsettings.autoMarkCraftedWritItems end,
-                                            width = "half",
-                                            default = FCOISdefaultSettings.autoMarkCraftedWritCreatorMasterWritItemsIconNr,
-                                        },
-                                    },
-                                },
+--autoMarkArmorWeaponJewelry
+                            },
+
+                        },
+                        ]]
+
+                        --==============================================================================
+                        {   -- Ornate
+                            type = "submenu",
+                            name = GetString(SI_ITEMTRAITTYPE10),
+                            controls =
+                            {
                                 {
                                     type = "checkbox",
-                                    name = locVars["options_auto_mark_crafted_items"],
-                                    tooltip = locVars["options_auto_mark_crafted_items" .. tooltipSuffix],
-                                    getFunc = function() return FCOISsettings.autoMarkCraftedItems end,
+                                    name = locVars["options_enable_auto_mark_ornate_items"],
+                                    tooltip = locVars["options_enable_auto_mark_ornate_items" .. tooltipSuffix],
+                                    getFunc = function() return FCOISsettings.autoMarkOrnate end,
                                     setFunc = function(value)
-                                        FCOISsettings.autoMarkCraftedItems = value
-                                    end,
-                                    disabled = function() return not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkCraftedItemsIconNr] end,
-                                    width = "half",
-                                    default = FCOISdefaultSettings.autoMarkCraftedItems,
-                                },
-                                {
-                                    type = 'dropdown',
-                                    name = locVars["options_auto_mark_crafted_items_icon"],
-                                    tooltip = locVars["options_auto_mark_crafted_items_icon" .. tooltipSuffix],
-                                    choices = iconsList,
-                                    choicesValues = iconsListValues,
-                                    scrollable = true,
-                                    getFunc = function() return FCOISsettings.autoMarkCraftedItemsIconNr
-                                    end,
-                                    setFunc = function(value)
-                                        FCOISsettings.autoMarkCraftedItemsIconNr = value
-                                        --Check if the icon needs to get the setting to skip the research check enabled
-                                        if value ~= nil then
-                                            FCOIS.setDynamicIconAntiResearchCheck(value, true)
+                                        FCOISsettings.autoMarkOrnate = value
+                                        if (FCOISsettings.autoMarkOrnate == true) then
+                                            FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "ornate", false)
                                         end
                                     end,
-                                    reference = "FCOItemSaver_Icon_On_Automatic_Crafted_Items_Dropdown",
-                                    disabled = function() return not FCOISsettings.autoMarkCraftedItems end,
                                     width = "half",
-                                    default = FCOISdefaultSettings.autoMarkCraftedItemsIconNr,
+                                    disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL] end,
+                                    default = FCOISdefaultSettings.autoMarkOrnate,
                                 },
                                 {
                                     type = "checkbox",
-                                    name = locVars["options_auto_mark_crafted_items_sets"],
-                                    tooltip = locVars["options_auto_mark_crafted_items_sets" .. tooltipSuffix],
-                                    getFunc = function() return FCOISsettings.autoMarkCraftedItemsSets end,
+                                    name = locVars["options_enable_auto_mark_ornate_items_in_chat"],
+                                    tooltip = locVars["options_enable_auto_mark_ornate_items_in_chat" .. tooltipSuffix],
+                                    getFunc = function() return FCOISsettings.showOrnateItemsInChat end,
                                     setFunc = function(value)
-                                        FCOISsettings.autoMarkCraftedItemsSets = value
+                                        FCOISsettings.showOrnateItemsInChat = value
                                     end,
-                                    disabled = function() return not FCOISsettings.autoMarkCraftedItems or not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkCraftedItemsIconNr] end,
-                                    width = "full",
-                                    default = FCOISdefaultSettings.autoMarkCraftedItemsSets,
+                                    disabled = function() return not FCOISsettings.autoMarkOrnate or not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL] end,
+                                    width = "half",
+                                    default = FCOISdefaultSettings.showOrnateItemsInChat,
                                 },
+                            } -- controls ornate
+                        }, -- submenu ornate
+                        --==============================================================================
+                        {   -- Intricate
+                            type = "submenu",
+                            name = GetString(SI_ITEMTRAITTYPE9),
+                            controls =
+                            {
+                                {
+                                    type = "checkbox",
+                                    name = locVars["options_enable_auto_mark_intricate_items"],
+                                    tooltip = locVars["options_enable_auto_mark_intricate_items" .. tooltipSuffix],
+                                    getFunc = function() return FCOISsettings.autoMarkIntricate end,
+                                    setFunc = function(value)
+                                        FCOISsettings.autoMarkIntricate = value
+                                        if (FCOISsettings.autoMarkIntricate == true) then
+                                            FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "intricate", false)
+                                        end
+                                    end,
+                                    width = "half",
+                                    disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_INTRICATE] end,
+                                    default = FCOISdefaultSettings.autoMarkIntricate,
+                                },
+                                {
+                                    type = "checkbox",
+                                    name = locVars["options_enable_auto_mark_intricate_items_in_chat"],
+                                    tooltip = locVars["options_enable_auto_mark_intricate_items_in_chat" .. tooltipSuffix],
+                                    getFunc = function() return FCOISsettings.showIntricateItemsInChat end,
+                                    setFunc = function(value)
+                                        FCOISsettings.showIntricateItemsInChat = value
+                                    end,
+                                    disabled = function() return not FCOISsettings.autoMarkIntricate or not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_INTRICATE] end,
+                                    width = "half",
+                                    default = FCOISdefaultSettings.showIntricateItemsInChat,
+                                },
+                            } -- controls intrictae
+                        }, -- submenu intrictae
+                        --==============================================================================
+                        {   -- Research
+                            type = "submenu",
+                            name = GetString(SI_SMITHING_TAB_RESEARCH),
+                            controls =
+                            {
+                                {
+                                    type = 'dropdown',
+                                    name = locVars["options_auto_mark_addon"],
+                                    tooltip = zo_strformat(locVars["options_auto_mark_addon" .. tooltipSuffix], GetString(SI_SMITHING_TAB_RESEARCH)),
+                                    choices = researchAddonsList,
+                                    choicesValues = researchAddonsListValues,
+                                    --scrollable = true,
+                                    getFunc = function() return FCOISsettings.researchAddonUsed
+                                    end,
+                                    setFunc = function(value)
+                                        FCOISsettings.researchAddonUsed = value
 
-                                {
-                                    type = "checkbox",
-                                    name = locVars["options_auto_mark_crafted_items_panel_alchemy"],
-                                    tooltip = locVars["options_auto_mark_crafted_items_panel_alchemy" .. tooltipSuffix],
-                                    getFunc = function() return FCOISsettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_ALCHEMY] end,
-                                    setFunc = function(value)
-                                        FCOISsettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_ALCHEMY] = value
-                                        FCOIS.rebuildAllowedCraftSkillsForCraftedMarking(CRAFTING_TYPE_ALCHEMY)
                                     end,
-                                    disabled = function() return not FCOISsettings.autoMarkCraftedItems or not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkCraftedItemsIconNr] end,
-                                    width = "full",
-                                    default = FCOISdefaultSettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_ALCHEMY],
+                                    --disabled = function() return not FCOISsettings.autoMarkResearch end,
+                                    width = "half",
+                                    default = FCOISdefaultSettings.researchAddonUsed,
                                 },
                                 {
                                     type = "checkbox",
-                                    name = locVars["options_auto_mark_crafted_items_panel_blacksmithing"],
-                                    tooltip = locVars["options_auto_mark_crafted_items_panel_blacksmithing" .. tooltipSuffix],
-                                    getFunc = function() return FCOISsettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_BLACKSMITHING] end,
+                                    name = locVars["options_enable_auto_mark_research_items"],
+                                    tooltip = locVars["options_enable_auto_mark_research_items" .. tooltipSuffix],
+                                    getFunc = function() return FCOISsettings.autoMarkResearch end,
                                     setFunc = function(value)
-                                        FCOISsettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_BLACKSMITHING] = value
-                                        FCOIS.rebuildAllowedCraftSkillsForCraftedMarking(CRAFTING_TYPE_BLACKSMITHING)
+                                        FCOISsettings.autoMarkResearch = value
+                                        if (FCOISsettings.autoMarkResearch == true and FCOIS.checkIfResearchAddonUsed() and FCOIS.checkIfChosenResearchAddonActive(FCOISsettings.researchAddonUsed)) then
+                                            FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "research", false)
+                                        end
                                     end,
-                                    disabled = function() return not FCOISsettings.autoMarkCraftedItems or not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkCraftedItemsIconNr] end,
-                                    width = "full",
-                                    default = FCOISdefaultSettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_BLACKSMITHING],
+                                    disabled = function() return not FCOIS.checkIfResearchAddonUsed() or not FCOIS.checkIfChosenResearchAddonActive(FCOISsettings.researchAddonUsed) or not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_RESEARCH] end,
+                                    warning = locVars["options_enable_auto_mark_research_items_hint"],
+                                    width = "half",
+                                    default = FCOISdefaultSettings.autoMarkResearch,
                                 },
                                 {
                                     type = "checkbox",
-                                    name = locVars["options_auto_mark_crafted_items_panel_clothier"],
-                                    tooltip = locVars["options_auto_mark_crafted_items_panel_clothier" .. tooltipSuffix],
-                                    getFunc = function() return FCOISsettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_CLOTHIER] end,
+                                    name = locVars["options_logged_in_char"],
+                                    tooltip = locVars["options_logged_in_char" .. tooltipSuffix],
+                                    getFunc = function() return FCOISsettings.autoMarkResearchOnlyLoggedInChar end,
                                     setFunc = function(value)
-                                        FCOISsettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_CLOTHIER] = value
-                                        FCOIS.rebuildAllowedCraftSkillsForCraftedMarking(CRAFTING_TYPE_CLOTHIER)
+                                        FCOISsettings.autoMarkResearchOnlyLoggedInChar = value
+                                        if (FCOISsettings.autoMarkResearch == true and FCOISsettings.autoMarkResearchOnlyLoggedInChar == true and FCOIS.checkIfResearchAddonUsed() and FCOIS.checkIfChosenResearchAddonActive(FCOISsettings.researchAddonUsed)) then
+                                            FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "research", false)
+                                        end
                                     end,
-                                    disabled = function() return not FCOISsettings.autoMarkCraftedItems or not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkCraftedItemsIconNr] end,
-                                    width = "full",
-                                    default = FCOISdefaultSettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_CLOTHIER],
+                                    disabled = function() return not FCOIS.checkIfResearchAddonUsed() or FCOISsettings.researchAddonUsed == FCOIS_RESEARCH_ADDON_ESO_STANDARD or FCOISsettings.researchAddonUsed == FCOIS_RESEARCH_ADDON_RESEARCHASSISTANT or not FCOIS.checkIfChosenResearchAddonActive(FCOISsettings.researchAddonUsed) or not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_RESEARCH] end,
+                                    warning = locVars["options_enable_auto_mark_research_items_hint_logged_in_char"],
+                                    width = "half",
+                                    default = FCOISdefaultSettings.autoMarkResearchOnlyLoggedInChar,
                                 },
                                 {
                                     type = "checkbox",
-                                    name = locVars["options_auto_mark_crafted_items_panel_enchanting"],
-                                    tooltip = locVars["options_auto_mark_crafted_items_panel_enchanting" .. tooltipSuffix],
-                                    getFunc = function() return FCOISsettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_ENCHANTING] end,
+                                    name = locVars["options_enable_auto_mark_check_all_icons"],
+                                    tooltip = locVars["options_enable_auto_mark_check_all_icons" .. tooltipSuffix],
+                                    getFunc = function() return FCOISsettings.autoMarkResearchCheckAllIcons end,
                                     setFunc = function(value)
-                                        FCOISsettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_ENCHANTING] = value
-                                        FCOIS.rebuildAllowedCraftSkillsForCraftedMarking(CRAFTING_TYPE_ENCHANTING)
+                                        FCOISsettings.autoMarkResearchCheckAllIcons = value
                                     end,
-                                    disabled = function() return not FCOISsettings.autoMarkCraftedItems or not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkCraftedItemsIconNr] end,
-                                    width = "full",
-                                    default = FCOISdefaultSettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_ENCHANTING],
+                                    width = "half",
+                                    disabled = function() return not FCOIS.checkIfResearchAddonUsed() or not FCOIS.checkIfChosenResearchAddonActive(FCOISsettings.researchAddonUsed) or not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_RESEARCH] end,
                                 },
                                 {
                                     type = "checkbox",
-                                    name = locVars["options_auto_mark_crafted_items_panel_provisioning"],
-                                    tooltip = locVars["options_auto_mark_crafted_items_panel_provisioning" .. tooltipSuffix],
-                                    getFunc = function() return FCOISsettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_PROVISIONING] end,
+                                    name = locVars["options_enable_auto_mark_research_items_in_chat"],
+                                    tooltip = locVars["options_enable_auto_mark_research_items_in_chat" .. tooltipSuffix],
+                                    getFunc = function() return FCOISsettings.showResearchItemsInChat end,
                                     setFunc = function(value)
-                                        FCOISsettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_PROVISIONING] = value
-                                        FCOIS.rebuildAllowedCraftSkillsForCraftedMarking(CRAFTING_TYPE_PROVISIONING)
+                                        FCOISsettings.showResearchItemsInChat = value
                                     end,
-                                    disabled = function() return not FCOISsettings.autoMarkCraftedItems or not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkCraftedItemsIconNr] end,
-                                    width = "full",
-                                    default = FCOISdefaultSettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_PROVISIONING],
+                                    disabled = function() return not FCOIS.checkIfResearchAddonUsed() or not FCOIS.checkIfChosenResearchAddonActive(FCOISsettings.researchAddonUsed) or not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_RESEARCH] or not FCOISsettings.autoMarkResearch end,
+                                    warning = locVars["options_enable_auto_mark_research_items_hint"],
+                                    width = "half",
+                                    default = FCOISdefaultSettings.showResearchItemsInChat,
                                 },
                                 {
                                     type = "checkbox",
-                                    name = locVars["options_auto_mark_crafted_items_panel_woodworking"],
-                                    tooltip = locVars["options_auto_mark_crafted_items_panel_woodworking" .. tooltipSuffix],
-                                    getFunc = function() return FCOISsettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_WOODWORKING] end,
+                                    name = locVars["options_enable_auto_mark_wasted_research_scrolls"],
+                                    tooltip = locVars["options_enable_auto_mark_wasted_research_scrolls" .. tooltipSuffix],
+                                    getFunc = function() return FCOISsettings.autoMarkWastedResearchScrolls end,
                                     setFunc = function(value)
-                                        FCOISsettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_WOODWORKING] = value
-                                        FCOIS.rebuildAllowedCraftSkillsForCraftedMarking(CRAFTING_TYPE_WOODWORKING)
+                                        FCOISsettings.autoMarkWastedResearchScrolls = value
+                                        if FCOISsettings.autoMarkWastedResearchScrolls then
+                                            FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "researchScrolls", false)
+                                        end
                                     end,
-                                    disabled = function() return not FCOISsettings.autoMarkCraftedItems or not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkCraftedItemsIconNr] end,
+                                    disabled = function() return (DetailedResearchScrolls == nil or DetailedResearchScrolls.GetWarningLine == nil) or not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_LOCK] end,
                                     width = "full",
-                                    default = FCOISdefaultSettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_WOODWORKING],
+                                    default = FCOISdefaultSettings.autoMarkWastedResearchScrolls,
+                                },
+                            } -- controls research
+                        }, -- submenu research
+
+                        --==============================================================================
+                        --Equipment auto-marking
+                        {   -- Equipment
+                            type = "submenu",
+                            name = locVars["options_header_equipment"],
+                            controls =
+                            {
+                                {
+                                    type = "checkbox",
+                                    name = locVars["options_equipment_markall_gear"],
+                                    tooltip = locVars["options_equipment_markall_gear" .. tooltipSuffix],
+                                    getFunc = function() return FCOISsettings.autoMarkAllEquipment end,
+                                    setFunc = function(value) FCOISsettings.autoMarkAllEquipment = value
+                                    end,
+                                    default = FCOISdefaultSettings.autoMarkAllEquipment,
                                 },
                                 {
                                     type = "checkbox",
-                                    name = locVars["options_auto_mark_crafted_items_panel_jewelry"],
-                                    tooltip = locVars["options_auto_mark_crafted_items_panel_jewelry" .. tooltipSuffix],
-                                    getFunc = function() return FCOISsettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_JEWELRYCRAFTING] end,
-                                    setFunc = function(value)
-                                        FCOISsettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_JEWELRYCRAFTING] = value
-                                        FCOIS.rebuildAllowedCraftSkillsForCraftedMarking(CRAFTING_TYPE_JEWELRYCRAFTING)
+                                    name = locVars["options_equipment_markall_gear_add_weapons"],
+                                    tooltip = locVars["options_equipment_markall_gear_add_weapons" .. tooltipSuffix],
+                                    getFunc = function() return FCOISsettings.autoMarkAllWeapon end,
+                                    setFunc = function(value) FCOISsettings.autoMarkAllWeapon = value
                                     end,
-                                    disabled = function() return not FCOISsettings.autoMarkCraftedItems or not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkCraftedItemsIconNr] end,
-                                    width = "full",
-                                    default = FCOISdefaultSettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_JEWELRYCRAFTING],
+                                    disabled = function() return not FCOISsettings.autoMarkAllEquipment end,
+                                    default = FCOISdefaultSettings.autoMarkAllWeapon,
                                 },
-                            } -- controls crafted items
-                        }, -- submenu crafted items
+                                {
+                                    type = "checkbox",
+                                    name = locVars["options_equipment_markall_gear_add_jewelry"],
+                                    tooltip = locVars["options_equipment_markall_gear_add_jewelry" .. tooltipSuffix],
+                                    getFunc = function() return FCOISsettings.autoMarkAllJewelry end,
+                                    setFunc = function(value) FCOISsettings.autoMarkAllJewelry = value
+                                    end,
+                                    disabled = function() return not FCOISsettings.autoMarkAllEquipment end,
+                                    default = FCOISdefaultSettings.autoMarkAllJewelry,
+                                },
+                            }, -- controls equipment auto-marking
+                        }, -- submenu equipment auto-marking
+
                         --==============================================================================
                         {   -- Recipes
                             type = "submenu",
@@ -4690,6 +4499,259 @@ function FCOIS.BuildAddonMenu()
                                 },
                             } -- controls quality
                         }, -- submenu quality
+
+                        --==============================================================================
+                        {   --Crafted
+                            type = "submenu",
+                            name = GetString(SI_ITEM_FORMAT_STR_CRAFTED),
+                            controls =
+                            {
+                                {   --Crafted "Writs"
+                                    type = "submenu",
+                                    name = "Writ Creator",
+                                    controls =
+                                    {
+                                        {
+                                            type = "checkbox",
+                                            name = locVars["options_auto_mark_crafted_writ_items"],
+                                            tooltip = locVars["options_auto_mark_crafted_writ_items" .. tooltipSuffix],
+                                            getFunc = function() return FCOISsettings.autoMarkCraftedWritItems end,
+                                            setFunc = function(value)
+                                                FCOISsettings.autoMarkCraftedWritItems = value
+                                            end,
+                                            disabled = function()
+                                                return  not FCOIS.otherAddons.LazyWritCreatorActive
+                                                        or (not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkCraftedWritCreatorItemsIconNr] and FCOISsettings.isIconEnabled[FCOISsettings.autoMarkCraftedWritCreatorMasterWritItemsIconNr])
+                                            end,
+                                            width = "full",
+                                            default = FCOISdefaultSettings.autoMarkCraftedWritItems,
+                                        },
+                                        {
+                                            type = 'dropdown',
+                                            name = locVars["options_auto_mark_crafted_writ_items_icon"],
+                                            tooltip = locVars["options_auto_mark_crafted_writ_items_icon" .. tooltipSuffix],
+                                            choices = iconsList,
+                                            choicesValues = iconsListValues,
+                                            scrollable = true,
+                                            getFunc = function() return FCOISsettings.autoMarkCraftedWritCreatorItemsIconNr
+                                            end,
+                                            setFunc = function(value)
+                                                FCOISsettings.autoMarkCraftedWritCreatorItemsIconNr = value
+                                                --Check if the icon needs to get the setting to skip the research check enabled
+                                                if value ~= nil then
+                                                    FCOIS.setDynamicIconAntiResearchCheck(value, true)
+                                                end
+                                            end,
+                                            reference = "FCOItemSaver_Icon_On_Automatic_Crafted_Writ_Items_Dropdown",
+                                            disabled = function() return not FCOIS.otherAddons.LazyWritCreatorActive or not FCOISsettings.autoMarkCraftedWritItems end,
+                                            width = "half",
+                                            default = FCOISdefaultSettings.autoMarkCraftedWritCreatorItemsIconNr,
+                                        },
+                                        {
+                                            type = 'dropdown',
+                                            name = locVars["options_auto_mark_crafted_masterwrit_items_icon"],
+                                            tooltip = locVars["options_auto_mark_crafted_masterwrit_items_icon" .. tooltipSuffix],
+                                            choices = iconsList,
+                                            choicesValues = iconsListValues,
+                                            scrollable = true,
+                                            getFunc = function() return FCOISsettings.autoMarkCraftedWritCreatorMasterWritItemsIconNr
+                                            end,
+                                            setFunc = function(value)
+                                                FCOISsettings.autoMarkCraftedWritCreatorMasterWritItemsIconNr = value
+                                                --Check if the icon needs to get the setting to skip the research check enabled
+                                                if value ~= nil then
+                                                    FCOIS.setDynamicIconAntiResearchCheck(value, true)
+                                                end
+                                            end,
+                                            reference = "FCOItemSaver_Icon_On_Automatic_Crafted_MasterWrit_Items_Dropdown",
+                                            disabled = function() return not FCOIS.otherAddons.LazyWritCreatorActive or not FCOISsettings.autoMarkCraftedWritItems end,
+                                            width = "half",
+                                            default = FCOISdefaultSettings.autoMarkCraftedWritCreatorMasterWritItemsIconNr,
+                                        },
+                                    },
+                                },
+                                {
+                                    type = "checkbox",
+                                    name = locVars["options_auto_mark_crafted_items"],
+                                    tooltip = locVars["options_auto_mark_crafted_items" .. tooltipSuffix],
+                                    getFunc = function() return FCOISsettings.autoMarkCraftedItems end,
+                                    setFunc = function(value)
+                                        FCOISsettings.autoMarkCraftedItems = value
+                                    end,
+                                    disabled = function() return not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkCraftedItemsIconNr] end,
+                                    width = "half",
+                                    default = FCOISdefaultSettings.autoMarkCraftedItems,
+                                },
+                                {
+                                    type = 'dropdown',
+                                    name = locVars["options_auto_mark_crafted_items_icon"],
+                                    tooltip = locVars["options_auto_mark_crafted_items_icon" .. tooltipSuffix],
+                                    choices = iconsList,
+                                    choicesValues = iconsListValues,
+                                    scrollable = true,
+                                    getFunc = function() return FCOISsettings.autoMarkCraftedItemsIconNr
+                                    end,
+                                    setFunc = function(value)
+                                        FCOISsettings.autoMarkCraftedItemsIconNr = value
+                                        --Check if the icon needs to get the setting to skip the research check enabled
+                                        if value ~= nil then
+                                            FCOIS.setDynamicIconAntiResearchCheck(value, true)
+                                        end
+                                    end,
+                                    reference = "FCOItemSaver_Icon_On_Automatic_Crafted_Items_Dropdown",
+                                    disabled = function() return not FCOISsettings.autoMarkCraftedItems end,
+                                    width = "half",
+                                    default = FCOISdefaultSettings.autoMarkCraftedItemsIconNr,
+                                },
+                                {
+                                    type = "checkbox",
+                                    name = locVars["options_auto_mark_crafted_items_sets"],
+                                    tooltip = locVars["options_auto_mark_crafted_items_sets" .. tooltipSuffix],
+                                    getFunc = function() return FCOISsettings.autoMarkCraftedItemsSets end,
+                                    setFunc = function(value)
+                                        FCOISsettings.autoMarkCraftedItemsSets = value
+                                    end,
+                                    disabled = function() return not FCOISsettings.autoMarkCraftedItems or not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkCraftedItemsIconNr] end,
+                                    width = "full",
+                                    default = FCOISdefaultSettings.autoMarkCraftedItemsSets,
+                                },
+
+                                {
+                                    type = "checkbox",
+                                    name = locVars["options_auto_mark_crafted_items_panel_alchemy"],
+                                    tooltip = locVars["options_auto_mark_crafted_items_panel_alchemy" .. tooltipSuffix],
+                                    getFunc = function() return FCOISsettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_ALCHEMY] end,
+                                    setFunc = function(value)
+                                        FCOISsettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_ALCHEMY] = value
+                                        FCOIS.rebuildAllowedCraftSkillsForCraftedMarking(CRAFTING_TYPE_ALCHEMY)
+                                    end,
+                                    disabled = function() return not FCOISsettings.autoMarkCraftedItems or not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkCraftedItemsIconNr] end,
+                                    width = "full",
+                                    default = FCOISdefaultSettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_ALCHEMY],
+                                },
+                                {
+                                    type = "checkbox",
+                                    name = locVars["options_auto_mark_crafted_items_panel_blacksmithing"],
+                                    tooltip = locVars["options_auto_mark_crafted_items_panel_blacksmithing" .. tooltipSuffix],
+                                    getFunc = function() return FCOISsettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_BLACKSMITHING] end,
+                                    setFunc = function(value)
+                                        FCOISsettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_BLACKSMITHING] = value
+                                        FCOIS.rebuildAllowedCraftSkillsForCraftedMarking(CRAFTING_TYPE_BLACKSMITHING)
+                                    end,
+                                    disabled = function() return not FCOISsettings.autoMarkCraftedItems or not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkCraftedItemsIconNr] end,
+                                    width = "full",
+                                    default = FCOISdefaultSettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_BLACKSMITHING],
+                                },
+                                {
+                                    type = "checkbox",
+                                    name = locVars["options_auto_mark_crafted_items_panel_clothier"],
+                                    tooltip = locVars["options_auto_mark_crafted_items_panel_clothier" .. tooltipSuffix],
+                                    getFunc = function() return FCOISsettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_CLOTHIER] end,
+                                    setFunc = function(value)
+                                        FCOISsettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_CLOTHIER] = value
+                                        FCOIS.rebuildAllowedCraftSkillsForCraftedMarking(CRAFTING_TYPE_CLOTHIER)
+                                    end,
+                                    disabled = function() return not FCOISsettings.autoMarkCraftedItems or not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkCraftedItemsIconNr] end,
+                                    width = "full",
+                                    default = FCOISdefaultSettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_CLOTHIER],
+                                },
+                                {
+                                    type = "checkbox",
+                                    name = locVars["options_auto_mark_crafted_items_panel_enchanting"],
+                                    tooltip = locVars["options_auto_mark_crafted_items_panel_enchanting" .. tooltipSuffix],
+                                    getFunc = function() return FCOISsettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_ENCHANTING] end,
+                                    setFunc = function(value)
+                                        FCOISsettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_ENCHANTING] = value
+                                        FCOIS.rebuildAllowedCraftSkillsForCraftedMarking(CRAFTING_TYPE_ENCHANTING)
+                                    end,
+                                    disabled = function() return not FCOISsettings.autoMarkCraftedItems or not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkCraftedItemsIconNr] end,
+                                    width = "full",
+                                    default = FCOISdefaultSettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_ENCHANTING],
+                                },
+                                {
+                                    type = "checkbox",
+                                    name = locVars["options_auto_mark_crafted_items_panel_provisioning"],
+                                    tooltip = locVars["options_auto_mark_crafted_items_panel_provisioning" .. tooltipSuffix],
+                                    getFunc = function() return FCOISsettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_PROVISIONING] end,
+                                    setFunc = function(value)
+                                        FCOISsettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_PROVISIONING] = value
+                                        FCOIS.rebuildAllowedCraftSkillsForCraftedMarking(CRAFTING_TYPE_PROVISIONING)
+                                    end,
+                                    disabled = function() return not FCOISsettings.autoMarkCraftedItems or not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkCraftedItemsIconNr] end,
+                                    width = "full",
+                                    default = FCOISdefaultSettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_PROVISIONING],
+                                },
+                                {
+                                    type = "checkbox",
+                                    name = locVars["options_auto_mark_crafted_items_panel_woodworking"],
+                                    tooltip = locVars["options_auto_mark_crafted_items_panel_woodworking" .. tooltipSuffix],
+                                    getFunc = function() return FCOISsettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_WOODWORKING] end,
+                                    setFunc = function(value)
+                                        FCOISsettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_WOODWORKING] = value
+                                        FCOIS.rebuildAllowedCraftSkillsForCraftedMarking(CRAFTING_TYPE_WOODWORKING)
+                                    end,
+                                    disabled = function() return not FCOISsettings.autoMarkCraftedItems or not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkCraftedItemsIconNr] end,
+                                    width = "full",
+                                    default = FCOISdefaultSettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_WOODWORKING],
+                                },
+                                {
+                                    type = "checkbox",
+                                    name = locVars["options_auto_mark_crafted_items_panel_jewelry"],
+                                    tooltip = locVars["options_auto_mark_crafted_items_panel_jewelry" .. tooltipSuffix],
+                                    getFunc = function() return FCOISsettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_JEWELRYCRAFTING] end,
+                                    setFunc = function(value)
+                                        FCOISsettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_JEWELRYCRAFTING] = value
+                                        FCOIS.rebuildAllowedCraftSkillsForCraftedMarking(CRAFTING_TYPE_JEWELRYCRAFTING)
+                                    end,
+                                    disabled = function() return not FCOISsettings.autoMarkCraftedItems or not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkCraftedItemsIconNr] end,
+                                    width = "full",
+                                    default = FCOISdefaultSettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_JEWELRYCRAFTING],
+                                },
+                            } -- controls crafted items
+                        }, -- submenu crafted items
+
+                        --==============================================================================
+                        {   -- New
+                            type = "submenu",
+                            name = locVars["options_header_items_mark_new"],
+                            controls =
+                            {
+                                {
+                                    type = "checkbox",
+                                    name = locVars["options_enable_auto_mark_new_items"],
+                                    tooltip = locVars["options_enable_auto_mark_new_items" .. tooltipSuffix],
+                                    getFunc = function() return FCOISsettings.autoMarkNewItems end,
+                                    setFunc = function(value)
+                                        FCOISsettings.autoMarkNewItems = value
+                                        if (FCOISsettings.autoMarkNewItems == true) then
+                                            FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "new", false)
+                                        end
+                                    end,
+                                    disabled = function() return not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkNewIconNr] end,
+                                    width = "half",
+                                    default = FCOISdefaultSettings.autoMarkNewItems,
+                                },
+                                {
+                                    type = 'dropdown',
+                                    name = locVars["options_auto_mark_new_items__icon"],
+                                    tooltip = locVars["options_auto_mark_new_items_icon" .. tooltipSuffix],
+                                    choices = iconsList,
+                                    choicesValues = iconsListValues,
+                                    scrollable = true,
+                                    getFunc = function() return FCOISsettings.autoMarkNewIconNr
+                                    end,
+                                    setFunc = function(value)
+                                        FCOISsettings.autoMarkNewIconNr = value
+                                    end,
+                                    reference = "FCOItemSaver_Icon_On_Automatic_New_Item_Dropdown",
+                                    disabled = function() return not FCOISsettings.autoMarkNewItems end,
+                                    width = "half",
+                                    default = FCOISdefaultSettings.autoMarkNewIconNr,
+                                },
+                            } -- controls new
+                        }, -- submenu new
+
+                        --==============================================================================
 
                     } -- controls marking
                 }, -- submenu marking

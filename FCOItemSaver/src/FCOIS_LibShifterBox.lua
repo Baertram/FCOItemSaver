@@ -18,9 +18,11 @@ local locVars      = FCOISlocVars.fcois_loc
 --The LibShifterBoxes FCOIS uses:
 --The box for the LAM settings panel FCOIS uniqueId itemTypes
 local FCOISuniqueIdItemTypes = "FCOISuniqueIdItemTypes"
+local FCOISexcludedSets      = "FCOISexcludedSets"
 
 FCOIS.LibShifterBoxes = {
     --ShortName = LAM control global name/reference
+    --Itemtypes for FCOIS created uniqueIds
     [FCOISuniqueIdItemTypes] = {
         name = addonName .. "_LAM_CUSTOM___FCOIS_UNIQUEID_ITEMTYPES",
         customSettings = {
@@ -33,9 +35,29 @@ FCOIS.LibShifterBoxes = {
         },
         width       = 580,
         height      = 200,
-        --List default entries
+        --Right's list default entries
         defaultRightListKeys = {
           ITEMTYPE_WEAPON, ITEMTYPE_ARMOR
+        },
+        --Controls
+        lamCustomControl = nil,
+        control = nil,
+    },
+    --Exclude sets
+    [FCOISexcludedSets] = {
+        name = addonName .. "_LAM_CUSTOM___FCOIS_EXCLUDED_SETS",
+        customSettings = {
+            leftList = {
+                title = locVars["options_exclude_automark_sets_included"],
+            },
+            rightList = {
+                title = locVars["options_exclude_automark_sets_list"],
+            }
+        },
+        width       = 485,
+        height      = 200,
+        --Right's list default entries
+        defaultRightListKeys = {
         },
         --Controls
         lamCustomControl = nil,
@@ -68,7 +90,7 @@ local function checkAndUpdateRightListDefaultEntries(shifterBox, rightListEntrie
     if shifterBox and rightListEntries and NonContiguousCount(rightListEntries) == 0 then
         d(FCOIS.preChatVars.preChatTextRed .. locVars["LIBSHIFTERBOX_FCOIS_UNIQUEID_ITEMTYPES_RIGHT_NON_EMPTY"])
         local defaultRightListKeys = shifterBoxData and shifterBoxData.defaultRightListKeys
-        if defaultRightListKeys then
+        if defaultRightListKeys and #defaultRightListKeys > 0 then
             shifterBox:MoveEntriesToRightList(defaultRightListKeys)
         end
     end
@@ -84,17 +106,25 @@ local function myShifterBoxEventEntryMovedCallbackFunction(shifterBox, key, valu
     --Moved to the ?
     if isDestListLeftList == true then
         if boxName == FCOISuniqueIdItemTypes then
-            --Moved to the left? Set SavedVariables value false
-            FCOIS.settingsVars.settings.allowedFCOISUniqueIdItemTypes[key] = false
+            --Moved to the left? Set SavedVariables value nil
+            FCOIS.settingsVars.settings.allowedFCOISUniqueIdItemTypes[key] = nil
             --Check if any entry is left in the right list. If not:
             --Add the default values weapons and armor again and output a chat message.
             local rightListEntries = shifterBox:GetRightListEntriesFull()
             checkAndUpdateRightListDefaultEntries(shifterBox, rightListEntries, shifterBoxData)
+
+        elseif boxName == FCOISexcludedSets then
+            --Moved to the left? Set SavedVariables value nil
+            FCOIS.settingsVars.settings.autoMarkSetsExcludeSetsList[key] = nil
         end
     else
         if boxName == FCOISuniqueIdItemTypes then
             --Moved to the right? Save to SavedVariables with value true
             FCOIS.settingsVars.settings.allowedFCOISUniqueIdItemTypes[key] = true
+
+        elseif boxName == FCOISexcludedSets then
+            --Moved to the right? Save to SavedVariables with value true
+            FCOIS.settingsVars.settings.autoMarkSetsExcludeSetsList[key] = true
         end
     end
 end
@@ -129,6 +159,7 @@ local function updateLibShifterBoxEntries(parentCtrl, shifterBox, boxName)
     local leftListEntries = {}
     local rightListEntries = {}
 
+    --FCOIS custom UniqueId
     if boxName == FCOISuniqueIdItemTypes then
         if not locVars or not locVars.ItemTypes then return end
 
@@ -140,6 +171,24 @@ local function updateLibShifterBoxEntries(parentCtrl, shifterBox, boxName)
                 leftListEntries[k] = string.format("%s [%s]", locVars.ItemTypes[k], tostring(k))
             end
         end
+
+    --Excluded sets
+    elseif boxName == FCOISexcludedSets then
+        --LibSets is given?
+        if FCOIS.libSets then
+            local allSetNames = FCOIS.libSets:GetAllSetNames()
+            local clientLang = FCOIS.clientLanguage
+            if allSetNames ~= nil then
+                local autoMarkSetsExcludeSetsList = settings.autoMarkSetsExcludeSetsList
+                for setId, setNamesTable in pairs(allSetNames) do
+                    if autoMarkSetsExcludeSetsList[setId]~= nil then
+                        rightListEntries[setId] = setNamesTable[clientLang]
+                    else
+                        leftListEntries[setId] = setNamesTable[clientLang]
+                    end
+                end
+            end
+        end
     end
     shifterBox:ClearLeftList()
     shifterBox:AddEntriesToLeftList(leftListEntries)
@@ -147,7 +196,9 @@ local function updateLibShifterBoxEntries(parentCtrl, shifterBox, boxName)
     shifterBox:ClearRightList()
     shifterBox:AddEntriesToRightList(rightListEntries)
 
-    checkAndUpdateRightListDefaultEntries(shifterBox, rightListEntries, shifterBoxData)
+    if boxName == FCOISuniqueIdItemTypes then
+        checkAndUpdateRightListDefaultEntries(shifterBox, rightListEntries, shifterBoxData)
+    end
 end
 
 local function updateLibShifterBoxState(parentCtrl, shifterBox, boxName)
@@ -168,6 +219,28 @@ local function updateLibShifterBoxState(parentCtrl, shifterBox, boxName)
     shifterBox:SetEnabled(isEnabled)
 end
 
+local function myShifterBoxEventEntryHighlightedCallbackFunction(selectedRow, shifterBox, key, value, categoryId, isLeftList)
+    if not shifterBox or not key then return end
+    local boxName = getBoxName(shifterBox)
+df("LSB FCOIS, boxName: %s, key: %s, value: %s", tostring(boxName), tostring(key), tostring(value))
+    if not boxName or boxName == "" then return end
+
+    if boxName == FCOISexcludedSets then
+        FCOIS.showItemLinkTooltip(selectedRow, selectedRow, RIGHT, 5, 0, LEFT)
+    end
+end
+
+local function myShifterBoxEventEntryUnHighlightedCallbackFunction(selectedRow, shifterBox, key, value, categoryId, isLeftList)
+    if not shifterBox or not key then return end
+    local boxName = getBoxName(shifterBox)
+--d("LSB FCOIS, boxName: " ..tostring(boxName))
+    if not boxName or boxName == "" then return end
+
+    if boxName == FCOISexcludedSets then
+        ClearTooltip(ItemTooltip)
+    end
+end
+
 local function updateLibShifterBox(parentCtrl, shifterBox, boxName)
     if not parentCtrl or not boxName or boxName == "" then return end
     local shifterBoxData = libShifterBoxes[boxName]
@@ -186,9 +259,10 @@ local function updateLibShifterBox(parentCtrl, shifterBox, boxName)
     updateLibShifterBoxState(parentCtrl, shifterBox, boxName)
 
     --Add the callback function to the entry was moved event
-    shifterBox:RegisterCallback(lsb.EVENT_ENTRY_MOVED, myShifterBoxEventEntryMovedCallbackFunction)
+    shifterBox:RegisterCallback(lsb.EVENT_ENTRY_MOVED,          myShifterBoxEventEntryMovedCallbackFunction)
     --Add the callback as an entry was highlighted at the left side
-    --shifterBox:RegisterCallback(lsb.EVENT_ENTRY_HIGHLIGHTED, myShifterBoxEventEntryHighlightedCallbackFunction)
+    shifterBox:RegisterCallback(lsb.EVENT_ENTRY_HIGHLIGHTED,    myShifterBoxEventEntryHighlightedCallbackFunction)
+    shifterBox:RegisterCallback(lsb.EVENT_ENTRY_UNHIGHLIGHTED,  myShifterBoxEventEntryUnHighlightedCallbackFunction)
 end
 
 ------------------------------------------------------------------------------------------------------------------------

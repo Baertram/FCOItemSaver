@@ -1,9 +1,9 @@
 ##
-## Title: |c00FF00FCO |cFFFF00ItemSaver|r |t32:32:FCOItemSaver/FCOIS.dds|t
+## Title: |c00FF00FCO |cFFFF00ItemSaver|t32:32:FCOItemSaver/FCOIS.dds|t
 ## Author: Baertram
-## Version: 2.0.2
-## AddOnVersion: 202
-## APIVersion: 100033 100034
+## Version: 2.0.3
+## AddOnVersion: 203
+## APIVersion: 100034 100035
 ## Description: FCOIS |t32:32:FCOItemSaver/FCOIS.dds|t Marks your items with different icons and filters them in the inventories/crafting. Protects your marked items against sell/deconstruct/extract etc., and provides many more features!
 ## SavedVariables: FCOItemSaver_Settings
 ## !!! Attention !!! -> 1 line here can only contain ~220 characters, so the depency lines need to be split up, or they won't be recognized properly!
@@ -12,6 +12,7 @@
 ## DependsOn: LibMainMenu-2.0>=436 LibShifterBox>=16
 ## OptionalDependsOn: LibDebugLogger>=200 LibLazyCrafting>=3000
 ## OptionalDependsOn: LibMultiAccountSets>=10
+## OptionalDependsOn: LibSets>=000209
 ##
 ## OptionalDependsOn: AdvancedDisableControllerUI AdvancedFilters AF_FCODuplicateItemsFilters
 ## OptionalDependsOn: CraftBagExtended
@@ -148,6 +149,9 @@ src/FCOIS_LibShifterBox.lua
 
 ## Addon LAM settings menu
 src/FCOIS_SettingsMenu.lua
+
+## Addon XML - Tooltips
+src/XML/FCOIS_tooltips.xml
 
 ; DISCLOSURE:
 ; This Add-on is not created by, affiliated with or sponsored by ZeniMax
