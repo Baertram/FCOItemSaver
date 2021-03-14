@@ -1302,7 +1302,7 @@ end -- FCOGetIconText
 --=========== FCOIS localization API functions==========================
 --Global function to get text for the keybindings etc.
 function FCOIS.GetLocText(textName, isKeybindingText, placeHoldersTab)
-d("[FCOIS.GetLocText] textName: " .. tostring(textName))
+--d("[FCOIS.GetLocText] textName: " .. tostring(textName))
     isKeybindingText = isKeybindingText or false
 
     FCOIS.preventerVars.KeyBindingTexts = isKeybindingText

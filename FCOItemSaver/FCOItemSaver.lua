@@ -19,7 +19,7 @@
 ---------------------------------------------------------------------
 --[ToDo list] --
 --____________________________
--- Current max bugs/features/ToDos: 106
+-- Current max bugs/features/ToDos: 108
 --____________________________
 
 --In progress: Since 2020-06-17
@@ -136,11 +136,10 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 --#100: 2020-12-13, Deadsoon  CraftStore automatic recipe marking will mark known recipes with the unknown marker icon
 
 
-
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
---Since last update 2.0.0 - New version: 2.0.1 -> Updated 2021-01-06
+--Since last update 2.0.0 - New version: 2.0.1 -> Updated 2021-03-07
 ---------------------------------------------------------------------
 
 --[Fixed]
@@ -148,9 +147,16 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 -- the guild bank was opened
 -- #101 Performance improvement: Duplicate marker texture controls checks (create/reanchore/etc.) happened at some inventories
 -- if you have scrolled
+--
+--#107: Auto-reenable guild bank deposit check should only be re-enabled if the setting to block the guild bank deposit is
+--      enabled!
 
 
 --[Changed]
+--#108 The red "settings are currently loaded" sand-clock icon at the top right edge of the FCOIS settings panel  will show a
+--ping-pong size animation for 5 times now so the last ones not paying attention to it's existance might notice it now AND
+-- will keep their fingers away from the FCOIS settings menu until it disappears... Move the mouse above the icon to read the
+-- tooltip why it is there and why you should simply "wait" until it is gone.
 
 
 --[Added]
@@ -168,8 +174,8 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 --      info at which inventory panel, which filters are activated and how I'm able to rebuild this.
 --      Grid addons like Inventory Grid View or Grid List should be much faster at the first inventory open now!
 -- #105 More dynamic LAM settings (marker icons, marker icons enable submenus) instead of redundant code lines
--- #106 Added automatic marking of item set collection book -> Missing/Known. Supports ESO API for the currently logegd in account,
---      or optionally LibMultiAccountSets for multi-account support
+-- #106 Added automatic marking of item set collection book -> Missing/Known. Supports ESO API for the currently logged in
+--      account, or optionally LibMultiAccountSets for multi-account support
 
 --[Added on request]
 --#80 New selection of FCOIS custom created UniqueIds: Choose your criteria in the general settings, which define the uniqueId for you.

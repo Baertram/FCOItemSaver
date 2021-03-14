@@ -7,8 +7,8 @@ local FCOIS = FCOIS
 FCOIS.addonVars = {}
 local addonVars = FCOIS.addonVars
 --Addon variables
-addonVars.addonVersionOptions 		    = '2.0.1' -- version shown in the settings panel
-addonVars.addonVersionOptionsNumber	    = 2.01
+addonVars.addonVersionOptions 		    = '2.0.2' -- version shown in the settings panel
+addonVars.addonVersionOptionsNumber	    = 2.02
 --The addon name, normal and decorated with colors etc.
 addonVars.gAddonName				    = "FCOItemSaver"
 addonVars.gAddonNameShort               = "FCOIS"
@@ -245,7 +245,7 @@ local numVars = FCOIS.numVars
 --Global value: Number of filter icons to choose by right click menu
 numVars.languageCount = FCOIS_CON_LANG_MAX --English, German, French, Spanish, Italian, Japanese, Russian
 --Global: Count of available inventory filter types (LF_INVENTORY, LF_BANK_WITHDRAW, etc. -> see above)
-numVars.gFCONumFilterInventoryTypes = FCOIS.libFilters:GetMaxFilter() -- Maximum libFilters 2.0 filter types
+numVars.gFCONumFilterInventoryTypes = FCOIS.libFilters.GetMaxFilterTypes and FCOIS.libFilters:GetMaxFilterTypes() or FCOIS.libFilters:GetMaxFilter() -- Maximum libFilters 3.0 filter types
 --Global value: Number of filters
 numVars.gFCONumFilters			= #checkVars.filterButtonsToCheck
 --Global value: Number of non-dynamic and non gear set icons

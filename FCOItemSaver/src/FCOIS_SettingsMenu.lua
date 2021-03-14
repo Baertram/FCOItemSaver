@@ -377,7 +377,7 @@ function FCOIS.BuildAddonMenu()
 
     --Create and show the "FCOIS settings loading" texture (sand clock)
     FCOIS_LAM_MENU_IS_LOADING = WINDOW_MANAGER:CreateControl(FCOSettingsPanel:GetName() .. "_FCOIS_LAM_MENU_IS_LOADING_TEXTURE", FCOSettingsPanel, CT_TEXTURE)
-    FCOIS_LAM_MENU_IS_LOADING:SetDimensions(64, 64)
+    FCOIS_LAM_MENU_IS_LOADING:SetDimensions(56, 56)
     FCOIS_LAM_MENU_IS_LOADING:SetTexture(FCOIS.textureVars.MARKER_TEXTURES[9]) --Sand clock
     FCOIS_LAM_MENU_IS_LOADING:SetColor(1, 0, 0, 1)
     FCOIS_LAM_MENU_IS_LOADING:SetDrawTier(DT_HIGH)
@@ -391,6 +391,11 @@ function FCOIS.BuildAddonMenu()
     end)
     FCOIS_LAM_MENU_IS_LOADING:SetMouseEnabled(true)
     FCOIS_LAM_MENU_IS_LOADING:SetHidden(false)
+    local animation, timeline = CreateSimpleAnimation(ANIMATION_SCALE, FCOIS_LAM_MENU_IS_LOADING, 750)
+    animation:SetScaleValues(1, 1.75)
+    animation:SetDuration(200)
+    timeline:SetPlaybackType(ANIMATION_PLAYBACK_PING_PONG, 10)
+
 
     local apiVersion = FCOIS.APIversion or GetAPIVersion()
     --Backup variables
@@ -500,6 +505,20 @@ function FCOIS.BuildAddonMenu()
         end
     end
     buildSetCollectionAddonsList()
+
+    local function checkAndRunAutomaticSetItemCollectionMarkerApply(setCollectionsType)
+--d("[FCOIS]checkAndRunAutomaticSetItemCollectionMarkerApply - setCollectionsType: " ..tostring(setCollectionsType))
+        if FCOISsettings.autoMarkSetsItemCollectionBook == true and
+            (
+                (FCOISsettings.autoMarkSetsItemCollectionBookMissingIcon ~= FCOIS_CON_ICON_NONE and
+                FCOISsettings.isIconEnabled[FCOISsettings.autoMarkSetsItemCollectionBookMissingIcon] == true) or
+                (FCOISsettings.autoMarkSetsItemCollectionBookNonMissingIcon ~= FCOIS_CON_ICON_NONE and
+                FCOISsettings.isIconEnabled[FCOISsettings.autoMarkSetsItemCollectionBookNonMissingIcon] == true)
+            )
+        then
+            FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, setCollectionsType, false)
+        end
+    end
 
     -- !!! RU Patch Section START
     --  Add english language description behind language descriptions in other languages
@@ -2523,6 +2542,7 @@ function FCOIS.BuildAddonMenu()
             --Remove the "FCOIS LAM Panel is loading" sand clock texture at the top right corner of the LAM panel
             if FCOIS_LAM_MENU_IS_LOADING and not FCOIS_LAM_MENU_IS_LOADING:IsHidden() then
                 FCOIS_LAM_MENU_IS_LOADING:SetHidden(true)
+                timeline:Stop()
             end
 
             lamPanelCreationInitDone = true
@@ -2548,11 +2568,13 @@ function FCOIS.BuildAddonMenu()
         if not panel.controlsWereLoaded == true or not lamPanelCreationInitDone == true then
             if FCOIS_LAM_MENU_IS_LOADING then
                 FCOIS_LAM_MENU_IS_LOADING:SetHidden(false)
+                timeline:PlayFromStart()
             end
         end
         --Were the controls all loaded meanwhile? Hide the loading texture again
         if FCOIS_LAM_MENU_IS_LOADING and panel.controlsWereLoaded == true and lamPanelCreationInitDone == true then
             FCOIS_LAM_MENU_IS_LOADING:SetHidden(true)
+            timeline:Stop()
         end
     end
 
@@ -3710,12 +3732,12 @@ function FCOIS.BuildAddonMenu()
                                             getFunc = function() return FCOISsettings.autoMarkSetsItemCollectionBook end,
                                             setFunc = function(value)
                                                 FCOISsettings.autoMarkSetsItemCollectionBook = value
-                                                if (FCOISsettings.autoMarkSetsItemCollectionBook == true) then
-                                                    FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
+                                                if value == true then
+                                                    checkAndRunAutomaticSetItemCollectionMarkerApply("setItemCollectionsUnknown")
+                                                    checkAndRunAutomaticSetItemCollectionMarkerApply("setItemCollectionsKnown")
                                                 end
                                             end,
-                                            disabled = function() return not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkSetsItemCollectionBookMissingIcon] end,
-                                            width = "half",
+                                            width = "full",
                                             default = FCOISdefaultSettings.autoMarkSetsItemCollectionBook,
                                         },
                                         {
@@ -3729,10 +3751,11 @@ function FCOIS.BuildAddonMenu()
                                             end,
                                             setFunc = function(value)
                                                 FCOISsettings.autoMarkSetsItemCollectionBookMissingIcon = value
+                                                checkAndRunAutomaticSetItemCollectionMarkerApply("setItemCollectionsUnknown")
                                             end,
                                             reference = "FCOItemSaver_Icon_On_Automatic_SetCollections_UnknownIcon_Dropdown",
                                             disabled = function() return not FCOISsettings.autoMarkSetsItemCollectionBook end,
-                                            width = "half",
+                                            width = "full",
                                             default = FCOISdefaultSettings.autoMarkSetsItemCollectionBookMissingIcon,
                                         },
                                         {
@@ -3746,26 +3769,12 @@ function FCOIS.BuildAddonMenu()
                                             end,
                                             setFunc = function(value)
                                                 FCOISsettings.autoMarkSetsItemCollectionBookNonMissingIcon = value
+                                                checkAndRunAutomaticSetItemCollectionMarkerApply("setItemCollectionsKnown")
                                             end,
                                             reference = "FCOItemSaver_Icon_On_Automatic_SetCollections_KnownIcon_Dropdown",
                                             disabled = function() return not FCOISsettings.autoMarkSetsItemCollectionBook end,
-                                            width = "half",
-                                            default = FCOISdefaultSettings.autoMarkSetsItemCollectionBookNonMissingIcon,
-                                        },
-                                        {
-                                            type = "checkbox",
-                                            name = locVars["options_enable_auto_mark_check_all_icons"],
-                                            tooltip = locVars["options_enable_auto_mark_check_all_icons" .. tooltipSuffix],
-                                            getFunc = function() return FCOISsettings.autoMarkSetsItemCollectionBookCheckAllIcons end,
-                                            setFunc = function(value)
-                                                FCOISsettings.autoMarkSetsItemCollectionBookCheckAllIcons = value
-                                                if (FCOISsettings.autoMarkSetsItemCollectionBookCheckAllIcons == true) then
-                                                    FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
-                                                end
-                                            end,
-                                            disabled = function() return not FCOISsettings.autoMarkSetsItemCollectionBook end,
                                             width = "full",
-                                            default = FCOISdefaultSettings.autoMarkSetsItemCollectionBookCheckAllIcons,
+                                            default = FCOISdefaultSettings.autoMarkSetsItemCollectionBookNonMissingIcon,
                                         },
                                         {
                                             type = 'dropdown',
@@ -3778,9 +3787,23 @@ function FCOIS.BuildAddonMenu()
                                             end,
                                             setFunc = function(value)
                                                 FCOISsettings.autoMarkSetsItemCollectionBookAddonUsed = value
+                                                checkAndRunAutomaticSetItemCollectionMarkerApply("setItemCollectionsUnknown")
+                                                checkAndRunAutomaticSetItemCollectionMarkerApply("setItemCollectionsKnown")
                                             end,
                                             reference = "FCOItemSaver_On_Automatic_SetCollections_Addon_Dropdown",
-                                            disabled = function() return not FCOISsettings.autoMarkSetsItemCollectionBook end,
+                                            disabled = function()
+                                                if not FCOISsettings.autoMarkSetsItemCollectionBook then
+                                                    return true
+                                                else
+                                                    if (FCOISsettings.autoMarkSetsItemCollectionBookMissingIcon == FCOIS_CON_ICON_NONE or
+                                                        not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkSetsItemCollectionBookMissingIcon]) and
+                                                       (FCOISsettings.autoMarkSetsItemCollectionBookNonMissingIcon == FCOIS_CON_ICON_NONE or
+                                                        not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkSetsItemCollectionBookNonMissingIcon]) then
+                                                        return true
+                                                    end
+                                                end
+                                                return false
+                                            end,
                                             width = "half",
                                             default = FCOISdefaultSettings.autoMarkSetsItemCollectionBookAddonUsed,
                                         },
@@ -3788,19 +3811,58 @@ function FCOIS.BuildAddonMenu()
                                             type = "checkbox",
                                             name = locVars["options_only_current_account"],
                                             tooltip = locVars["options_only_current_account" .. tooltipSuffix],
-                                            getFunc = function() return FCOISsettings.autoMarkSetsItemCollectionBookCheckAllIcons end,
+                                            getFunc = function() return FCOISsettings.autoMarkSetsItemCollectionBookOnlyCurrentAccount end,
                                             setFunc = function(value)
-                                                FCOISsettings.autoMarkSetsItemCollectionBookCheckAllIcons = value
-                                                if (FCOISsettings.autoMarkSetsItemCollectionBookCheckAllIcons == true) then
-                                                    FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
-                                                end
+                                                FCOISsettings.autoMarkSetsItemCollectionBookOnlyCurrentAccount = value
+                                                checkAndRunAutomaticSetItemCollectionMarkerApply("setItemCollectionsUnknown")
+                                                checkAndRunAutomaticSetItemCollectionMarkerApply("setItemCollectionsKnown")
                                             end,
                                             disabled = function()
                                                 return not FCOISsettings.autoMarkSetsItemCollectionBook or FCOISsettings.autoMarkSetsItemCollectionBookAddonUsed ~= FCOIS_SETS_COLLECTION_ADDON_LIBMULTIACCOUNTSETS
                                             end,
-                                            width = "full",
+                                            width = "half",
+                                            default = FCOISdefaultSettings.autoMarkSetsItemCollectionBookOnlyCurrentAccount,
+                                        },
+                                        {
+                                            type = "checkbox",
+                                            name = locVars["options_enable_auto_mark_check_all_icons"],
+                                            tooltip = locVars["options_enable_auto_mark_check_all_icons" .. tooltipSuffix],
+                                            getFunc = function() return FCOISsettings.autoMarkSetsItemCollectionBookCheckAllIcons end,
+                                            setFunc = function(value)
+                                                FCOISsettings.autoMarkSetsItemCollectionBookCheckAllIcons = value
+                                                checkAndRunAutomaticSetItemCollectionMarkerApply("setItemCollectionsUnknown")
+                                                checkAndRunAutomaticSetItemCollectionMarkerApply("setItemCollectionsKnown")
+                                            end,
+                                            disabled = function() return not FCOISsettings.autoMarkSetsItemCollectionBook end,
+                                            width = "half",
                                             default = FCOISdefaultSettings.autoMarkSetsItemCollectionBookCheckAllIcons,
                                         },
+                                        {
+                                            type = "checkbox",
+                                            name = locVars["options_enable_auto_mark_sets_in_chat"],
+                                            tooltip = locVars["options_enable_auto_mark_sets_in_chat" .. tooltipSuffix],
+                                            getFunc = function() return FCOISsettings.showSetCollectionMarkedInChat end,
+                                            setFunc = function(value)
+                                                FCOISsettings.showSetCollectionMarkedInChat = value
+                                            end,
+                                            disabled = function()
+                                                if not FCOISsettings.autoMarkSetsItemCollectionBook then
+                                                    return true
+                                                else
+                                                    if (FCOISsettings.autoMarkSetsItemCollectionBookMissingIcon == FCOIS_CON_ICON_NONE or
+                                                        not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkSetsItemCollectionBookMissingIcon]) and
+                                                       (FCOISsettings.autoMarkSetsItemCollectionBookNonMissingIcon == FCOIS_CON_ICON_NONE or
+                                                        not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkSetsItemCollectionBookNonMissingIcon]) then
+                                                        return true
+                                                    end
+                                                end
+                                                return false
+                                            end,
+                                            width = "half",
+                                            default = FCOISdefaultSettings.showSetCollectionMarkedInChat,
+                                        },
+
+
                                     }, -- controls submenu set collections
                                 }, -- submenu set collections
                                 --==============================================================================

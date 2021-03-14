@@ -463,9 +463,11 @@ function FCOIS.autoReenableAntiSettingsCheck(checkWhere)
         if settings.autoReenable_blockRetrait then
             settings.blockRetrait = true
         end
-    --"GUILDBANK"
+        --"GUILDBANK"
     elseif checkWhere == checksToDo[8] then
         --Reenable the Anti-guild bank deposit if no withdraw rights exists
+        --but only if it was enabled as the guild bank was opened (as it cannot be changed as the guildbank is open).
+        if FCOIS.preventerVars.blockGuildBankWithoutWithdrawAtGuildBankOpen == false then return end
         if settings.autoReenable_blockGuildBankWithoutWithdraw then
             settings.blockGuildBankWithoutWithdraw = true
         end

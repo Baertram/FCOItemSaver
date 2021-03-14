@@ -342,7 +342,7 @@ function FCOIS.Localization()
     local preventerVars = FCOIS.preventerVars
     local defSettings = FCOIS.settingsVars.defaultSettings
     local langVars = FCOIS.langVars
-d("[FCOIS] Localization - Start, keybindings: " .. tostring(preventerVars.KeyBindingTexts) ..", useClientLang: " .. tostring(FCOIS.settingsVars.settings.alwaysUseClientLanguage) .. ", localizationDone: " ..tostring(preventerVars.gLocalizationDone))
+--d("[FCOIS] Localization - Start, keybindings: " .. tostring(preventerVars.KeyBindingTexts) ..", useClientLang: " .. tostring(FCOIS.settingsVars.settings.alwaysUseClientLanguage) .. ", localizationDone: " ..tostring(preventerVars.gLocalizationDone))
 
     --Was localization already done during keybindings? Then abort here
     if preventerVars.KeyBindingTexts == true and preventerVars.gLocalizationDone == true then
@@ -555,8 +555,6 @@ d("[FCOIS] Localization - Start, keybindings: " .. tostring(preventerVars.KeyBin
         end
         FCOIS.localLocalizationsVars = nil
     end
-
-d(">Localitazion -> got here")
 
     --Do some "after localization" stuff
     afterLocalization()

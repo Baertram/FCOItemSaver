@@ -310,7 +310,10 @@ end
 --Event upon opening of a guild bank
 local function FCOItemSaver_Open_Guild_Bank()
     FCOIS.preventerVars.gActiveFilterPanel = true
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[EVENT]","Open guild bank", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+    local settings = FCOIS.settingsVars.settings
+    if settings.debug then FCOIS.debugMessage( "[EVENT]","Open guild bank", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+
+    FCOIS.preventerVars.blockGuildBankWithoutWithdrawAtGuildBankOpen = settings.blockGuildBankWithoutWithdraw
 
     if checkIfBankInventorySingleSlotUpdateEventNeedsToBeRegistered(BAG_GUILDBANK) == true then
         EVENT_MANAGER:RegisterForEvent(gAddonName.."_GUILDBANK", EVENT_GUILD_BANK_ITEM_ADDED, FCOItemSaver_GuildBankItemAdded)
@@ -350,6 +353,8 @@ local function FCOItemSaver_Close_Guild_Bank()
     FCOIS.autoReenableAntiSettingsCheck("DESTROY")
     --Check the auto reenable Anti-* settings for the guild bank and react on them
     FCOIS.autoReenableAntiSettingsCheck("GUILDBANK")
+
+    FCOIS.preventerVars.blockGuildBankWithoutWithdrawAtGuildBankOpen = nil
 end
 
 --Event upon opening of a player bank

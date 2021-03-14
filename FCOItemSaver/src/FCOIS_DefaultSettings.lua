@@ -206,6 +206,7 @@ function FCOIS.buildDefaultSettings()
 		autoMarkSetsItemCollectionBookNonMissingIcon	= FCOIS_CON_ICON_NONE,
 		autoMarkSetsItemCollectionBookOnlyCurrentAccount= true,
 		autoMarkSetsItemCollectionBookCheckAllIcons		= false,
+		showSetCollectionMarkedInChat		= false,
 		autoMarkSetTrackerSets				= false,
 		autoMarkSetTrackerSetsCheckAllIcons = false,
 		autoMarkSetTrackerSetsInv			= true,
