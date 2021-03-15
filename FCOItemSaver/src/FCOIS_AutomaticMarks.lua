@@ -850,13 +850,15 @@ end -- automaticMarkingSetsAdditionalCheckFunc
 function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, doOverride)
     doOverride = doOverride or false
     --Debugging added with FCOIS v2.0.0
-    --TODO: Comment or set to false after debugging!
     local showDebug = false
+    --[[
+    --TODO: Comment after debugging!
     local il = GetItemLink(bag, slot)
     if scanType == "research" then
         showDebug = true
         d("FCOIS]scanInventoryItemForAutomaticMarks-" .. il .. ", bag: " ..tostring(bag) .. ", slot: " ..tostring(slot) .. ", scanType: " .. tostring(scanType) .. ", doOverride: " .. tostring(doOverride))
     end
+    ]]
     --------------------------------------------------------------------------------
     --					Function starts											  --
     --------------------------------------------------------------------------------
