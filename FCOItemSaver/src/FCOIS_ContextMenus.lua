@@ -3171,7 +3171,7 @@ d("[FCOIS]showContextMenuForAddInvButtons -> Localization fix")
         subMenuEntryAutomaticMarking = {
             label 		= GetString(SI_SMITHING_TAB_RESEARCH),
             callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "research") end,
-            disabled	= function() return not settings.autoMarkResearch or not FCOIS.otherAddons.researchAssistantActive or not settings.isIconEnabled[FCOIS_CON_ICON_RESEARCH] end,
+            disabled	= function() return not settings.autoMarkResearch or not settings.isIconEnabled[FCOIS_CON_ICON_RESEARCH] or (not FCOIS.checkIfResearchAddonUsed() or not FCOIS.checkIfChosenResearchAddonActive(settings.researchAddonUsed)) end,
         }
         table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
         --Research scrolls

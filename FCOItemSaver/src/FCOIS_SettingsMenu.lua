@@ -3659,6 +3659,19 @@ function FCOIS.BuildAddonMenu()
                                             text = locVars["options_exclude_automark_sets_list_TT"],
                                         },
 
+                                        {
+                                            type = "checkbox",
+                                            name = locVars["options_exclude_automark_sets_list"],
+                                            tooltip = locVars["options_exclude_automark_sets_list" .. tooltipSuffix],
+                                            getFunc = function() return FCOISsettings.autoMarkSetsExcludeSets end,
+                                            setFunc = function(value)
+                                                FCOISsettings.autoMarkSetsExcludeSets = value
+                                            end,
+                                            --disabled = function() end,
+                                            width = "half",
+                                            default = FCOISdefaultSettings.autoMarkSetsExcludeSets,
+                                        },
+
                                         --LibShifterBox: Excluded sets
                                         {
                                             type = "custom",
@@ -3669,7 +3682,7 @@ function FCOIS.BuildAddonMenu()
                                             end,
                                             width="full",
                                             minHeight = 220,
-                                            disabled = function() return FCOIS.libSets == nil end,
+                                            disabled = function() return FCOIS.libSets == nil or not FCOISsettings.autoMarkSetsExcludeSets end,
                                         },
 
                                     } --controls

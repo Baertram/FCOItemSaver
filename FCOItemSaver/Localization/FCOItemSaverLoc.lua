@@ -521,7 +521,7 @@ FCOIS.localizationVars.localizationAll = {
         ["options_enable_auto_mark_sets_already_bound_TT"] = "Mark the set parts that are already bound to your account with a small icon at the top-right edge of the set item's image",
         ["options_header_exclude_sets"] = "Excluded sets",
         ["options_exclude_automark_sets_list"] = "Excluded sets",
-        ["options_exclude_automark_sets_list_TT"] = "List of excluded sets. Left: All sets available / Right: Excluded sets. These sets will not be checked for automatic marks.\nMove the sets from left to right to exclude them.",
+        ["options_exclude_automark_sets_list_TT"] = "If setting is enabled use the list of excluded sets. Left: All sets available / Right: Excluded sets. These sets will not be checked for automatic marks.\nMove the sets from left to right to exclude them.",
         ["options_exclude_automark_sets_included"] = "Included sets",
 		["options_auto_mark_sets_icon"]			= "Set part icon",
 		["options_auto_mark_sets_icon_TT"]	= "Icon for the automatically marked set parts",
@@ -1832,7 +1832,7 @@ FCOIS.localizationVars.localizationAll = {
 
         ["options_header_exclude_sets"] = "Ausgeschlossene Sets",
         ["options_exclude_automark_sets_list"] = "Ausgeschlossene Sets",
-        ["options_exclude_automark_sets_list_TT"] = "Liste der ausgeschlossenen Sets. Links: Alle vefügbaren Sets / Rechts: Ausgeschlossene Sets. Diese Sets werden bei automatischen Set Markierungen übersprungen.\nBewege die Sets von links nach rechts, um diese auszuschließen.",
+        ["options_exclude_automark_sets_list_TT"] = "Wenn die Option eingeschaltet wird, nutze die Liste der ausgeschlossenen Sets. Links: Alle vefügbaren Sets / Rechts: Ausgeschlossene Sets. Diese Sets werden bei automatischen Set Markierungen übersprungen.\nBewege die Sets von links nach rechts, um diese auszuschließen.",
         ["options_exclude_automark_sets_included"] = "Eingeschlossene Sets",
 
 		["options_auto_mark_sets_icon"]			= "Set Teile Symbol",

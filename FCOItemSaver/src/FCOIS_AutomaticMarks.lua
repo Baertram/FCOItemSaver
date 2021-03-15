@@ -1463,7 +1463,7 @@ function FCOIS.scanInventoryItemsForAutomaticMarks(bag, slot, scanType, updateIn
             checkIfAnyIconIsMarkedAlready = settings.autoMarkSetsCheckAllIcons,
             preCheckFunc        = function(p_bagId, p_slotIndex)
                 --Check if item is a known recipe
-                return FCOIS.isItemSet(p_bagId, p_slotIndex), nil
+                return FCOIS.isItemSetAndNotExcluded(p_bagId, p_slotIndex), nil
             end,
             resultPreCheckFunc  = true,
             resultNotPreCheckFunc = nil,

@@ -114,6 +114,7 @@ local function myShifterBoxEventEntryMovedCallbackFunction(shifterBox, key, valu
             checkAndUpdateRightListDefaultEntries(shifterBox, rightListEntries, shifterBoxData)
 
         elseif boxName == FCOISexcludedSets then
+            FCOIS.hideItemLinkTooltip()
             --Moved to the left? Set SavedVariables value nil
             FCOIS.settingsVars.settings.autoMarkSetsExcludeSetsList[key] = nil
         end
@@ -123,6 +124,7 @@ local function myShifterBoxEventEntryMovedCallbackFunction(shifterBox, key, valu
             FCOIS.settingsVars.settings.allowedFCOISUniqueIdItemTypes[key] = true
 
         elseif boxName == FCOISexcludedSets then
+            FCOIS.hideItemLinkTooltip()
             --Moved to the right? Save to SavedVariables with value true
             FCOIS.settingsVars.settings.autoMarkSetsExcludeSetsList[key] = true
         end
@@ -226,7 +228,13 @@ local function myShifterBoxEventEntryHighlightedCallbackFunction(selectedRow, sh
     if not boxName or boxName == "" then return end
 
     if boxName == FCOISexcludedSets then
-        FCOIS.showItemLinkTooltip(selectedRow, selectedRow, RIGHT, 5, 0, LEFT)
+        local anchorVar1 = RIGHT
+        local anchorVar2 = LEFT
+        if not isLeftList then
+            anchorVar1 = LEFT
+            anchorVar2 = RIGHT
+        end
+        FCOIS.showItemLinkTooltip(selectedRow, selectedRow, anchorVar1, 5, 0, anchorVar2)
     end
 end
 

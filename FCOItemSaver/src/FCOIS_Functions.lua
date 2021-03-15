@@ -928,10 +928,19 @@ function FCOIS.isItemAGlpyh(bag, slot)
     return resultVar
 end
 
-function FCOIS.isItemSet(bag, slot)
+function FCOIS.isItemSetAndNotExcluded(bag, slot)
     if bag == nil or slot == nil then return false end
-    local hasSet = GetItemLinkSetInfo(GetItemLink(bag, slot), false)
-    return hasSet
+    local isAllowedSet, _, _, _, _, setId = GetItemLinkSetInfo(GetItemLink(bag, slot), false)
+    if isAllowedSet == true and setId ~= nil then
+        local settings = FCOIS.settingsVars.settings
+        if settings.autoMarkSetsExcludeSets == true then
+            local autoMarkSetsExcludeSetsList = settings.autoMarkSetsExcludeSetsList
+            if autoMarkSetsExcludeSetsList[setId] == true then
+                isAllowedSet = false
+            end
+        end
+    end
+    return isAllowedSet
 end
 
 
@@ -2510,21 +2519,16 @@ end
 local hideItemLinkTooltip = FCOIS.hideItemLinkTooltip
 
 function FCOIS.showItemLinkTooltip(control, parent, anchor1, offsetX, offsetY, anchor2)
-d("[FCOIS.showItemLinkTooltip]")
     if control == nil or control.dataEntry == nil or control.dataEntry.data == nil or control.dataEntry.data.key == nil then
-d("<abort!")
         hideItemLinkTooltip()
         return nil
     end
     local libSets = FCOIS.libSets
     if not libSets then return end
     local key = control.dataEntry.data.key
-d(">key: " ..tostring(key))
     local setItemId = libSets.GetSetItemId(key)
-d(">itemId: " ..tostring(setItemId))
     if setItemId ~= nil then
         local itemLinkOfSetItemId = libSets.buildItemLink(setItemId)
-d(">itemLink: " ..itemLinkOfSetItemId)
         if itemLinkOfSetItemId ~= nil and itemLinkOfSetItemId ~= "" then
             anchor1 = anchor1 or TOPRIGHT
             anchor2 = anchor2 or TOPLEFT
