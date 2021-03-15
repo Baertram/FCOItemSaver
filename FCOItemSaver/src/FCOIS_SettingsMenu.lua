@@ -2578,6 +2578,7 @@ function FCOIS.BuildAddonMenu()
     local function FCOLAMPanelOpened(panel)
         --d("[FCOIS] SettingsPanel Opened: " ..tostring(panel.data.name))
         if panel ~= FCOIS.FCOSettingsPanel then return end
+        FCOIS.hideItemLinkTooltip()
 
         LAMopenedCounter = LAMopenedCounter + 1
         FCOIS.checkIfOtherAddonActive()
@@ -2599,6 +2600,7 @@ function FCOIS.BuildAddonMenu()
     local function FCOLAMPanelClosed(panel)
         --d("[FCOIS] SettingsPanel Closed: " ..tostring(panel.data.name))
         if panel ~= FCOIS.FCOSettingsPanel then return end
+        FCOIS.hideItemLinkTooltip()
         --d("[FCOIS] SettingsPanel Closed")
 
         --Was the inventory scene for the GridList preview enabled and not disabled? Hide it now

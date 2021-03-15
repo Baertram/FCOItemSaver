@@ -176,7 +176,7 @@ local function updateLibShifterBoxEntries(parentCtrl, shifterBox, boxName)
     elseif boxName == FCOISexcludedSets then
         --LibSets is given?
         if FCOIS.libSets then
-            local allSetNames = FCOIS.libSets:GetAllSetNames()
+            local allSetNames = FCOIS.libSets.GetAllSetNames()
             local clientLang = FCOIS.clientLanguage
             if allSetNames ~= nil then
                 local autoMarkSetsExcludeSetsList = settings.autoMarkSetsExcludeSetsList
@@ -222,7 +222,7 @@ end
 local function myShifterBoxEventEntryHighlightedCallbackFunction(selectedRow, shifterBox, key, value, categoryId, isLeftList)
     if not shifterBox or not key then return end
     local boxName = getBoxName(shifterBox)
-df("LSB FCOIS, boxName: %s, key: %s, value: %s", tostring(boxName), tostring(key), tostring(value))
+--df("LSB FCOIS, boxName: %s, key: %s, value: %s", tostring(boxName), tostring(key), tostring(value))
     if not boxName or boxName == "" then return end
 
     if boxName == FCOISexcludedSets then
@@ -237,7 +237,7 @@ local function myShifterBoxEventEntryUnHighlightedCallbackFunction(selectedRow, 
     if not boxName or boxName == "" then return end
 
     if boxName == FCOISexcludedSets then
-        ClearTooltip(ItemTooltip)
+        FCOIS.hideItemLinkTooltip()
     end
 end
 
