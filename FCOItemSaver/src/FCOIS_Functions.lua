@@ -928,6 +928,22 @@ function FCOIS.isItemAGlpyh(bag, slot)
     return resultVar
 end
 
+function FCOIS.isItemSetAndNotExcluded(bag, slot)
+    if bag == nil or slot == nil then return false end
+    local isAllowedSet, _, _, _, _, setId = GetItemLinkSetInfo(GetItemLink(bag, slot), false)
+    if isAllowedSet == true and setId ~= nil then
+        local settings = FCOIS.settingsVars.settings
+        if settings.autoMarkSetsExcludeSets == true then
+            local autoMarkSetsExcludeSetsList = settings.autoMarkSetsExcludeSetsList
+            if autoMarkSetsExcludeSetsList[setId] == true then
+                isAllowedSet = false
+            end
+        end
+    end
+    return isAllowedSet
+end
+
+
 --Check if an item is already bound to your account
 function FCOIS.isItemAlreadyBound(bagId, slotIndex)
     --Only check bound set parts
@@ -1202,7 +1218,7 @@ function FCOIS.isItemSetPartNoControl(bagId, slotIndex)
             local allowed = allowedItemTypes[itemType] or false
             if allowed then
                 --Get the set item information
-                local hasSet, _, _, _, _ = GetItemLinkSetInfo(itemLink)
+                local hasSet, _, _, _, _ = GetItemLinkSetInfo(itemLink, false)
                 retVal = hasSet
             end
         end
@@ -2494,6 +2510,36 @@ function FCOIS.checkIfBagShouldAutoRemoveMarkerIcons(bagId, slotIndex)
     end
 end
 
+------------------------------------------------
+--- Tooltip functions
+------------------------------------------------
+function FCOIS.hideItemLinkTooltip()
+    ClearTooltip(FCOISItemTooltip)
+end
+local hideItemLinkTooltip = FCOIS.hideItemLinkTooltip
+
+function FCOIS.showItemLinkTooltip(control, parent, anchor1, offsetX, offsetY, anchor2)
+    if control == nil or control.dataEntry == nil or control.dataEntry.data == nil or control.dataEntry.data.key == nil then
+        hideItemLinkTooltip()
+        return nil
+    end
+    local libSets = FCOIS.libSets
+    if not libSets then return end
+    local key = control.dataEntry.data.key
+    local setItemId = libSets.GetSetItemId(key)
+    if setItemId ~= nil then
+        local itemLinkOfSetItemId = libSets.buildItemLink(setItemId)
+        if itemLinkOfSetItemId ~= nil and itemLinkOfSetItemId ~= "" then
+            anchor1 = anchor1 or TOPRIGHT
+            anchor2 = anchor2 or TOPLEFT
+            offsetX = offsetX or -100
+            offsetY = offsetY or 0
+            InitializeTooltip(FCOISItemTooltip, parent, anchor1, offsetX, offsetY, anchor2)
+            FCOISItemTooltip:SetLink(itemLinkOfSetItemId)
+        end
+    end
+end
+
 --==========================================================================================================================================
 --                                          FCOIS - Keyboard helper functions
 --==========================================================================================================================================
@@ -2526,3 +2572,4 @@ function FCOIS.IsNoOtherModifierKeyPressed(modKey)
     end
     return false
 end
+

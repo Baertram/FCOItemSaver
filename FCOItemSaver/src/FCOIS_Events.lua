@@ -847,7 +847,7 @@ local function FCOItemSaver_Player_Activated(...)
         --but only scan once as addon loads
         if FCOIS.preventerVars.gAddonStartupInProgress then
             FCOIS.preventerVars.gAddonStartupInProgress = false
-            --Delay the call to "scanInventory" so the other addons like CraftStore FixedAndImproved are working properly with their research/recipe functions
+            --Delay the call to "scanInventory" so the other addons like CraftStoreFixedAndImproved are working properly with their research/recipe functions
             zo_callLater(function() scanInventory() end, 500)
         end
 

@@ -146,6 +146,7 @@ function FCOIS.buildDefaultSettings()
 		autoMarkIntricate           = false,
 		autoMarkResearch			= false,
 		autoMarkResearchOnlyLoggedInChar = false,
+		autoMarkResearchCheckAllIcons = false,
 		researchAddonUsed			= FCOIS_RESEARCH_ADDON_RESEARCHASSISTANT, --Default research marking addon: ResearchAssistant
 		autoMarkQuality				= 1,
 		autoMarkQualityIconNr		= FCOIS_CON_ICON_LOCK,
@@ -216,6 +217,8 @@ function FCOIS.buildDefaultSettings()
 		autoMarkSetTrackerSetsShowTooltip	= false,
 		autoMarkSetTrackerSetsRescan		= false,
 		setTrackerIndexToFCOISIcon			= {},
+		autoMarkSetsExcludeSets = false,
+		autoMarkSetsExcludeSetsList = {},
 		autoMarkWastedResearchScrolls		= true,
 		autoDeMarkSell				= false,
 		autoDeMarkSellInGuildStore	= false,
