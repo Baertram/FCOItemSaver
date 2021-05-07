@@ -494,6 +494,11 @@ function FCOIS.checkActivePanel(comingFrom, overwriteFilterWhere)
         --Update the filterPanelId
         FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(LF_RETRAIT)
         inventoryName = ctrlVars2.RETRAIT_INV
+    --COmpanion inventory
+    elseif (not ctrlVars2.COMPANION_INV_CONTROL:IsHidden() or comingFrom == LF_INVENTORY_COMPANION) then
+        --Update the filterPanelId
+        FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(LF_INVENTORY_COMPANION)
+        inventoryName = ctrlVars2.COMPANION_INV_CONTROL
     --Player inventory
     elseif not ctrlVars2.INV:IsHidden() then
         --Update the filterPanelId

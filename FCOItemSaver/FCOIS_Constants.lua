@@ -149,7 +149,7 @@ if not FCOIS.LDIALOG then d(preVars.preChatTextRed .. string.format(libMissingEr
 
 --Initialize the library LibFeedback
 FCOIS.libFeedback = LibFeedback
-if FCOIS.libFeedback == nil and LibStub then FCOIS.libFeedback = LibStub:GetLibrary('LibFeedback', true) end
+--if FCOIS.libFeedback == nil and LibStub then FCOIS.libFeedback = LibStub:GetLibrary('LibFeedback', true) end
 if not FCOIS.libFeedback then d(preVars.preChatTextRed .. string.format(libMissingErrorText, "LibFeedback")) return end
 
 --Initialize the library LibShifterBox
@@ -217,6 +217,7 @@ FCOIS_CON_JEWELRY_RESEARCH		= 99
 FCOIS_CON_RESEARCH_DIALOG       = 100
 FCOIS_CON_JEWELRY_RESEARCH_DIALOG = 101
 FCOIS_CON_GUILDBANK_DEPOSIT     = 102
+FCOIS_CON_COMPANION_DESTROY     = 103
 FCOIS_CON_CROWN_ITEM            = 900
 FCOIS_CON_FALLBACK 				= 999
 
@@ -268,7 +269,7 @@ numVars.gFCONumDynamicIcons		= 10
 local numMaxDynamicIcons        = numVars.gFCOMaxNumDynamicIcons
 
 --The maximum number at the ITEMTYPE constants
-local itemTypeMaxFallback = ITEMTYPE_GROUP_REPAIR --71, 2020-12-25
+local itemTypeMaxFallback = ITEMTYPE_ITERATION_END -- should be 71 -> ITEMTYPE_GROUP_REPAIR at date 2021-05-06
 local itemTypeStringConstantPrefix = "SI_ITEMTYPE"
 FCOIS.localLocalizationsVars.ItemTypes = {}
 local maxItemTypesForLoop = 150
@@ -353,15 +354,17 @@ FCOIS_DEBUG_DEPTH_ALL			= 5
 --The inventory row patterns for the supported keybindings and MouseOverControl checks (SHIFT+right mouse functions e.g.)
 --See file src/FCOIS_Functions.lua, function FCOIS.GetBagAndSlotFromControlUnderMouse()
 checkVars.inventoryRowPatterns = {
-[1] = "^ZO_%a+Backpack%dRow%d%d*",                                          --Inventory backpack
-[2] = "^ZO_%a+InventoryList%dRow%d%d*",                                     --Inventory backpack
-[3] = "^ZO_CharacterEquipmentSlots.+$",                                     --Character
-[4] = "^ZO_CraftBagList%dRow%d%d*",                                         --CraftBag
-[5] = "^ZO_Smithing%aRefinementPanelInventoryBackpack%dRow%d%d*",           --Smithing refinement
-[6] = "^ZO_RetraitStation_%a+RetraitPanelInventoryBackpack%dRow%d%d*",      --Retrait
-[7] = "^ZO_QuickSlotList%dRow%d%d*",                                        --Quickslot
-[8] = "^ZO_RepairWindowList%dRow%d%d*",                                     --Repair at vendor
-[9] = "^ZO_ListDialog1List%dRow%d%d*",                                      --List dialog (Repair, Recharge, Enchant, Research)
+    "^ZO_%a+Backpack%dRow%d%d*",                                            --Inventory backpack
+    "^ZO_%a+InventoryList%dRow%d%d*",                                       --Inventory backpack
+    "^ZO_CharacterEquipmentSlots.+$",                                       --Character
+    "^ZO_CraftBagList%dRow%d%d*",                                           --CraftBag
+    "^ZO_Smithing%aRefinementPanelInventoryBackpack%dRow%d%d*",             --Smithing refinement
+    "^ZO_RetraitStation_%a+RetraitPanelInventoryBackpack%dRow%d%d*",        --Retrait
+    "^ZO_QuickSlotList%dRow%d%d*",                                          --Quickslot
+    "^ZO_RepairWindowList%dRow%d%d*",                                       --Repair at vendor
+    "^ZO_ListDialog1List%dRow%d%d*",                                        --List dialog (Repair, Recharge, Enchant, Research)
+    "^ZO_CompanionEquipment_Panel_.+List%dRow%d%d*",                        --Companion Inventory backpack
+    "^ZO_CompanionCharacterWindow_.+_TopLevelEquipmentSlots.+$"             --Companion character
 --Other adons like IIfA will be added dynamically at EVENT_ON_ADDON_LOADED callback function
 --See file src/FCOIS_Events.lua, call to function FCOIS.checkIfOtherAddonActive() -> See file
 -- src/FCOIS_OtherAddons.lua, function FCOIS.checkIfOtherAddonActive()
@@ -454,6 +457,7 @@ mappingVars.bagToPlayerInv = {
 mappingVars.bagsToBuildItemInstanceOrUniqueIdFor =  {
     --non account wide, as it used bagId and slotIndex
     [BAG_WORN]              = true,
+    [BAG_COMPANION_WORN]    = true,
     --non account wide, as it used bagId and slotIndex
     [BAG_BACKPACK]          = true,
     --Account wide but guild bank bag contents will be "flushed" everytime you change the guild bank so you need the ID to identify items of non-current guild banks too
@@ -504,6 +508,7 @@ mappingVars.whereAreWeToFilterPanelId = {
         [FCOIS_CON_JEWELRY_RESEARCH]	=   LF_JEWELRY_RESEARCH,
         [FCOIS_CON_RESEARCH_DIALOG]	    =   LF_SMITHING_RESEARCH_DIALOG,
         [FCOIS_CON_JEWELRY_RESEARCH_DIALOG] = LF_JEWELRY_RESEARCH_DIALOG,
+        [FCOIS_CON_COMPANION_DESTROY]   = LF_INVENTORY_COMPANION,
 }
 --The array for the mapping between the LibFilters FilterPanelId and the "WhereAreWe" (e.g. used in ItemSelectionHandler function)
 mappingVars.filterPanelIdToWhereAreWe = {}
@@ -546,7 +551,8 @@ mappingVars.activeFilterPanelIds			= {
 	[LF_JEWELRY_DECONSTRUCT]		= true,
 	[LF_JEWELRY_IMPROVEMENT]		= true,
     [LF_JEWELRY_RESEARCH]		    = false,  -- Disabled, as no filter buttons/marker icons needed atm.
-    [LF_JEWELRY_RESEARCH_DIALOG]   = true,
+    [LF_JEWELRY_RESEARCH_DIALOG]    = true,
+    [LF_INVENTORY_COMPANION]        = true,
 }
 
 --The LibFilters panelIds where deconstruction can happen
@@ -594,6 +600,7 @@ mappingVars.libFiltersIds2StringPrefix = {
     [LF_RETRAIT]                                = FCOIS_CON_LIBFILTERS_STRING_PREFIX_FCOIS .. "RetraitFilter_",
     [LF_HOUSE_BANK_WITHDRAW]                    = FCOIS_CON_LIBFILTERS_STRING_PREFIX_FCOIS .. "HouseBankFilter_",
     [LF_HOUSE_BANK_DEPOSIT]                     = FCOIS_CON_LIBFILTERS_STRING_PREFIX_FCOIS .. "HouseBankInventoryFilter_",
+    [LF_INVENTORY_COMPANION]                    = FCOIS_CON_LIBFILTERS_STRING_PREFIX_FCOIS .. "CompanionInventoryFilter_",
 }
 --Mapping array for the LibFilters filter panel ID to filter function
 --> This array will be filled in file src/FCOIS_Filters.lua, function "FCOIS.mapLibFiltersIds2FilterFunctionsNow()"
@@ -634,6 +641,7 @@ mappingVars.libFiltersId2BagId = {
     [LF_RETRAIT]                                = nil,
     [LF_HOUSE_BANK_WITHDRAW]                    = getHouseBankBagId(),
     [LF_HOUSE_BANK_DEPOSIT]                     = BAG_BACKPACK,
+    [LF_INVENTORY_COMPANION]                    = BAG_BACKPACK,
 }
 
 --The scene names to add register a callback for StateChange to hide the FCOIS context menu(s).
@@ -912,6 +920,15 @@ FCOIS.ZOControlVars.INV_MENUBAR_BUTTON_CRAFTBAG = ZO_PlayerInventoryMenuBarButto
 FCOIS.ZOControlVars.INV_MENUBAR_BUTTON_CURRENCIES = ZO_PlayerInventoryMenuBarButton3
 FCOIS.ZOControlVars.INV_MENUBAR_BUTTON_QUICKSLOTS = ZO_PlayerInventoryMenuBarButton4
 FCOIS.ZOControlVars.BACKPACK 		    		= ZO_PlayerInventoryBackpack
+
+FCOIS.ZOControlVars.companionInvSceneName       = "companionCharacterKeyboard"
+FCOIS.ZOControlVars.COMPANION_INV				= COMPANION_EQUIPMENT_KEYBOARD
+FCOIS.ZOControlVars.COMPANION_INV_CONTROL		= FCOIS.ZOControlVars.COMPANION_INV.control
+FCOIS.ZOControlVars.COMPANION_INV_NAME			= FCOIS.ZOControlVars.COMPANION_INV_CONTROL:GetName()
+FCOIS.ZOControlVars.COMPANION_INV_LIST          = FCOIS.ZOControlVars.COMPANION_INV.list
+FCOIS.ZOControlVars.COMPANION_INV_FRAGMENT      = COMPANION_EQUIPMENT_KEYBOARD_FRAGMENT
+FCOIS.ZOControlVars.COMPANION_CHARACTER         = ZO_CompanionCharacterWindow_Keyboard_TopLevel --EquipmentSlotsHead
+
 FCOIS.ZOControlVars.CRAFTBAG					= ZO_CraftBag
 FCOIS.ZOControlVars.CRAFTBAG_LIST 			    = ZO_CraftBagList
 FCOIS.ZOControlVars.CRAFTBAG_NAME				= FCOIS.ZOControlVars.CRAFTBAG:GetName()
@@ -1102,6 +1119,10 @@ FCOIS.ZOControlVars.equipmentSlotsName          = "ZO_CharacterEquipmentSlots"
 --Housing
 FCOIS.ZOControlVars.housingBook = HOUSING_BOOK_KEYBOARD
 FCOIS.ZOControlVars.housingBookNavigation = FCOIS.ZOControlVars.housingBook.navigationTree
+--Quest in inventory
+FCOIS.ZOControlVars.INVENTORY_QUEST_NAME        = "ZO_PlayerInventoryQuest"
+
+
 --Entries with "bought" houses within:
 --FCOIS.ZOControlVars.housingBookNavigation.rootNode.children[1].children[1].data:GetReferenceId() -> returns 31 e.g. the houesId which can be used to jump to
 -->collectibleId (e.g. 1090)
@@ -1141,7 +1162,7 @@ inventoryVars.markerControlInventories = {
 }
 
 
---The mapping array for libFilter inventory type to inventory backpack type
+--The mapping array for libFilter filterType to the inventory type
 --Used in function FCOIS.GetInventoryTypeByFilterPanel()
 mappingVars.libFiltersPanelIdToInventory = {
 	[LF_INVENTORY] 					= INVENTORY_BACKPACK,
@@ -1312,6 +1333,7 @@ local deconTextureName              = ctrlVars.DECONSTRUCTION_INV_NAME .. "_Filt
 local improveTextureName            = ctrlVars.IMPROVEMENT_INV_NAME .. "_FilterButton%sTexture"
 local researchTextureName           = ctrlVars.RESEARCH_NAME .. "_FilterButton%sTexture"
 local researchDialogTextureName     = ctrlVars.RESEARCH_POPUP_TOP_DIVIDER_NAME .. "_FilterButton%sTexture"
+local companionInvTextureName       = ctrlVars.COMPANION_INV_NAME .. "_FilterButton%sTexture"
 mappingVars.gFilterPanelIdToTextureName = {
 	[LF_INVENTORY] 					= invTextureName,
 	[LF_CRAFTBAG] 					= ctrlVars.CRAFTBAG_NAME .. "_FilterButton%sTexture",
@@ -1344,6 +1366,7 @@ mappingVars.gFilterPanelIdToTextureName = {
     [LF_JEWELRY_IMPROVEMENT]		= improveTextureName,
     [LF_JEWELRY_RESEARCH] 		    = researchTextureName,
     [LF_JEWELRY_RESEARCH_DIALOG]    = researchDialogTextureName,
+    [LF_INVENTORY_COMPANION]        = companionInvTextureName,
 }
 
 --The icons to choose from
@@ -2150,6 +2173,7 @@ checkVars.filterPanelIdsForAntiDestroy = {
     [LF_BANK_DEPOSIT]       = true,
     [LF_GUILDBANK_DEPOSIT]  = true,
     [LF_HOUSE_BANK_DEPOSIT] = true,
+    [LF_INVENTORY_COMPANION] = true,
 }
 
 --BagId to SetTracker addon settings in FCOIS
@@ -2447,6 +2471,8 @@ invAddButtonVars.enchantingTopLevelInventoryButtonAdditionalOptions = ctrlVars.E
 invAddButtonVars.craftBagInventoryButtonAdditionalOptions = ctrlVars.CRAFTBAG_NAME .. additionalFCOISInvContextmenuButtonNameString
 invAddButtonVars.retraitInventoryButtonAdditionalOptions = ctrlVars.RETRAIT_INV_NAME .. additionalFCOISInvContextmenuButtonNameString
 invAddButtonVars.houseBankInventoryButtonAdditionalOptions = ctrlVars.HOUSE_BANK_INV_NAME .. additionalFCOISInvContextmenuButtonNameString
+invAddButtonVars.companionInventoryFCOAdditionalOptionsButton = ctrlVars.COMPANION_INV_NAME .. additionalFCOISInvContextmenuButtonNameString
+
 --The mapping between the panel (libFilters filter ID LF_*) and the button data -> See file FCOIS_settings.lua -> function AfterSettings() for additional added data
 --and file FCOIS_constants.lua at the bottom for the anchorvars for each API version.
 --Entries without a parent and without "addInvButton" boolean == true will not be added again as another panel (like LF_INVENTORY) is reused for the button.
@@ -2561,7 +2587,11 @@ contextMenuVars.filterPanelIdToContextMenuButtonInvoker = {
         ["parent"]        = ctrlVars.IMPROVEMENT_INV,
         ["name"]          = invAddButtonVars.smithingTopLevelImprovementPanelInventoryButtonAdditionalOptions
     },
-
+	[LF_INVENTORY_COMPANION] 		= {
+        ["addInvButton"]  = true,
+        ["parent"]        = ctrlVars.COMPANION_INV_CONTROL,
+        ["name"]          = invAddButtonVars.companionInventoryFCOAdditionalOptionsButton
+    },
 }
 
 --Constants for the filter item number sort header entries "name" at the filter panels
@@ -2585,6 +2615,7 @@ local sortHeaderNames = {
     [LF_RETRAIT]                = ctrlVars.RETRAIT_INV_NAME .. sortByNameNameStr,
     [LF_HOUSE_BANK_WITHDRAW]	= ctrlVars.HOUSE_BANK_INV_NAME .. sortByNameNameStr,
     [LF_QUICKSLOT]              = ctrlVars.QUICKSLOT_NAME .. sortByNameNameStr,
+    [LF_INVENTORY_COMPANION]    = ctrlVars.COMPANION_INV_NAME .. sortByNameNameStr,
 }
 local sortHeaderInventoryName = sortHeaderNames[LF_INVENTORY]
 sortHeaderNames[LF_MAIL_SEND]              = sortHeaderInventoryName
@@ -2686,6 +2717,7 @@ mappingVars.contextMenuAntiButtonsAtPanel = {
     [LF_JEWELRY_IMPROVEMENT]	= buttonContextMenuImprove,
     [LF_JEWELRY_RESEARCH]		= "",
     [LF_JEWELRY_RESEARCH_DIALOG] = "",
+    [LF_INVENTORY_COMPANION]    = buttonContextMenuDestroy,
 }
 
 --Mapping for the Transmuation Geode container ItemIds (and flavor text)
@@ -2810,6 +2842,12 @@ anchorVarsAddInvButtonsFill[100021][LF_JEWELRY_IMPROVEMENT].left            = va
 anchorVarsAddInvButtonsFill[100021][LF_JEWELRY_IMPROVEMENT].top             = varY1
 anchorVarsAddInvButtonsFill[100021][LF_JEWELRY_IMPROVEMENT].defaultLeft     = varX2
 anchorVarsAddInvButtonsFill[100021][LF_JEWELRY_IMPROVEMENT].defaultTop      = varY1
+anchorVarsAddInvButtonsFill[100021][LF_INVENTORY_COMPANION] = {}
+anchorVarsAddInvButtonsFill[100021][LF_INVENTORY_COMPANION].anchorControl   = ctrlVars.COMPANION_INV_CONTROL
+anchorVarsAddInvButtonsFill[100021][LF_INVENTORY_COMPANION].left            = varX1
+anchorVarsAddInvButtonsFill[100021][LF_INVENTORY_COMPANION].top             = varY1
+anchorVarsAddInvButtonsFill[100021][LF_INVENTORY_COMPANION].defaultLeft     = varX1
+anchorVarsAddInvButtonsFill[100021][LF_INVENTORY_COMPANION].defaultTop      = varY1
 --Is the current API version unequal one of the above ones?
 if FCOIS.APIversion >= 100021 then
 	anchorVarsAddInvButtonsFill[FCOIS.APIversion] = {}

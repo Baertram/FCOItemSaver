@@ -194,6 +194,8 @@ function FCOIS.getFilterWhereBySettings(p_filterWhere, onlyAnti)
             FCOIS.settingsVars.settings.atPanelEnabled[p_filterWhere]["filters"] = settingsAllowed.allowJewelryResearchFilter
         elseif (p_filterWhere == LF_JEWELRY_RESEARCH_DIALOG ) then
             FCOIS.settingsVars.settings.atPanelEnabled[p_filterWhere]["filters"] = settingsAllowed.allowJewelryResearchFilter
+        elseif (p_filterWhere == LF_INVENTORY_COMPANION ) then
+            FCOIS.settingsVars.settings.atPanelEnabled[p_filterWhere]["filters"] = settingsAllowed.allowCompanionInventoryFilter
         end
     end
 
@@ -505,15 +507,16 @@ local function scanBagsAndTransferMarkerIcon(toUnique)
 
     local useUniqueIds = settings.useUniqueIds
     local uniqueItemIdType = settings.uniqueItemIdType
+    local preChatVars = FCOIS.preChatVars
 
     if uniqueIdWasLastEnabled == nil then
         --Unknown state of useUniqueId before reloadui -> Abort
-        d(FCOIS.preChatVars.preChatTextRed .. zo_strformat(locVars["options_migrate_end"], "ERROR - Unknown state of useUniqueId before reloadui"))
+        d(preChatVars.preChatTextRed .. zo_strformat(locVars["options_migrate_end"], "ERROR - Unknown state of useUniqueId before reloadui"))
         return
     else
         if uniqueIdTypeLastUsed == nil then
             --Unknown state of uniqueItemIdType before reloadui -> Abort
-            d(FCOIS.preChatVars.preChatTextRed .. zo_strformat(locVars["options_migrate_end"], "ERROR - Unknown state of chosen uniqueIdType before reloadui"))
+            d(preChatVars.preChatTextRed .. zo_strformat(locVars["options_migrate_end"], "ERROR - Unknown state of chosen uniqueIdType before reloadui"))
             return
         end
     end
@@ -522,7 +525,7 @@ local function scanBagsAndTransferMarkerIcon(toUnique)
     if toUnique == true then
         if not useUniqueIds or uniqueItemIdType == nil then
             --Non-unique ID enabled -> Abort
-            d(FCOIS.preChatVars.preChatTextRed .. zo_strformat(locVars["options_migrate_end"], "ERROR - Migration to uniqueId not possible if currently non-unique ID is enabled in the settings"))
+            d(preChatVars.preChatTextRed .. zo_strformat(locVars["options_migrate_end"], "ERROR - Migration to uniqueId not possible if currently non-unique ID is enabled in the settings"))
             return
         end
 
@@ -530,17 +533,17 @@ local function scanBagsAndTransferMarkerIcon(toUnique)
         if uniqueIdWasLastEnabled == true then
             --Migrate from uniqueId to uniqueId: Check if the last used uniqueId type is not the same as now
             if uniqueIdTypeLastUsed ~= uniqueItemIdType then
-                d(FCOIS.preChatVars.preChatTextBlue .. "Migration of unique IDs type: " .. tostring(uniqueIdTypeLastUsed) .."  to uniqueIds type: " ..tostring(uniqueItemIdType))
+                d(preChatVars.preChatTextBlue .. "Migration of unique IDs type: " .. tostring(uniqueIdTypeLastUsed) .."  to uniqueIds type: " ..tostring(uniqueItemIdType))
                 --Get the old "from" SavedVariables table name -> non-unique entry
                 savedVarsMarkedItemsTableNameOld = getSavedVarsMarkedItemsTableName(uniqueIdTypeLastUsed)
             else
                 --Last used type was the same uniqueId type. No migration needed -> Abort
-                d(FCOIS.preChatVars.preChatTextRed .. zo_strformat(locVars["options_migrate_end"], "No migration needed - Last used type was the same uniqueId type"))
+                d(preChatVars.preChatTextRed .. zo_strformat(locVars["options_migrate_end"], "No migration needed - Last used type was the same uniqueId type"))
                 return
             end
         --UniqueId was not enabled before. Migrating non-unique to unique
         else
-            d(FCOIS.preChatVars.preChatTextBlue .. "Migration of non-unique IDs to uniqueIds type: " ..tostring(uniqueItemIdType))
+            d(preChatVars.preChatTextBlue .. "Migration of non-unique IDs to uniqueIds type: " ..tostring(uniqueItemIdType))
             --Get the old "from" SavedVariables table name -> non-unique entry
             savedVarsMarkedItemsTableNameOld = getSavedVarsMarkedItemsTableName(false)
         end
@@ -552,19 +555,19 @@ local function scanBagsAndTransferMarkerIcon(toUnique)
     else
         if useUniqueIds == true then
             --Unique ID enabled -> Abort
-            d(FCOIS.preChatVars.preChatTextRed .. zo_strformat(locVars["options_migrate_end"], "ERROR - Migration to non-uniqueId not possible if currently unique ID is enabled in the settings"))
+            d(preChatVars.preChatTextRed .. zo_strformat(locVars["options_migrate_end"], "ERROR - Migration to non-uniqueId not possible if currently unique ID is enabled in the settings"))
             return
         end
 
         --Was the uniqueID enabled before the migration? Migrating unique to non-unique then
         if uniqueIdWasLastEnabled == true then
-            d(FCOIS.preChatVars.preChatTextBlue .. "Migration of unique IDs type: " .. tostring(uniqueIdTypeLastUsed) .."  to non-uniqueIds")
+            d(preChatVars.preChatTextBlue .. "Migration of unique IDs type: " .. tostring(uniqueIdTypeLastUsed) .."  to non-uniqueIds")
             --Get the old "from" SavedVariables table name -> non-unique entry
             savedVarsMarkedItemsTableNameOld = getSavedVarsMarkedItemsTableName(uniqueIdTypeLastUsed)
         --UniqueId was not enabled before. Migrating non-unique to non-unique
         else
             --Last used type was the same non-uniqueId type. No migration needed -> Abort
-            d(FCOIS.preChatVars.preChatTextRed .. zo_strformat(locVars["options_migrate_end"], "No migration needed - Last used was also non-unique ID"))
+            d(preChatVars.preChatTextRed .. zo_strformat(locVars["options_migrate_end"], "No migration needed - Last used was also non-unique ID"))
             return
         end
 
@@ -572,20 +575,21 @@ local function scanBagsAndTransferMarkerIcon(toUnique)
         savedVarsMarkedItemsTableNameNew = getSavedVarsMarkedItemsTableName(false)
     end
     if not savedVarsMarkedItemsTableNameOld then
-        d(FCOIS.preChatVars.preChatTextRed .. zo_strformat(locVars["options_migrate_end"], "ERROR - Last used SavedVariables table unknown"))
+        d(preChatVars.preChatTextRed .. zo_strformat(locVars["options_migrate_end"], "ERROR - Last used SavedVariables table unknown"))
         return
     end
     if not savedVarsMarkedItemsTableNameNew then
-        d(FCOIS.preChatVars.preChatTextRed .. zo_strformat(locVars["options_migrate_end"], "ERROR - New SavedVariables table unknown"))
+        d(preChatVars.preChatTextRed .. zo_strformat(locVars["options_migrate_end"], "ERROR - New SavedVariables table unknown"))
         return
     end
 ------------------------------------------------------------------------------------------------------------------------
     --Check the bag
     local bagsToCheck = {
-        [0] = BAG_WORN,
-        [1] = BAG_BACKPACK,
-        [2] = BAG_BANK,
-        --[3] = BAG_GUILDBANK,
+        BAG_WORN,
+        BAG_BACKPACK,
+        BAG_COMPANION_WORN,
+        BAG_BANK,
+        --BAG_GUILDBANK,
     }
     --Is the user an ESO+ subscriber?
     if IsESOPlusSubscriber() then
@@ -601,7 +605,7 @@ local function scanBagsAndTransferMarkerIcon(toUnique)
         local numMigratedIcons = 0
         local numMigratedItems = 0
         --Migration started for bag type
-        d(FCOIS.preChatVars.preChatTextGreen .. zo_strformat(locVars["options_migrate_start"], locVars["options_migrate_bag_type_" .. bagToCheck]))
+        d(preChatVars.preChatTextGreen .. zo_strformat(locVars["options_migrate_start"], locVars["options_migrate_bag_type_" .. bagToCheck]))
         --local bagCache = SHARED_INVENTORY:GenerateFullSlotData(nil, bagToCheck)
         local bagCache = SHARED_INVENTORY:GetOrCreateBagCache(bagToCheck)
 ------------------------------------------------------------------------------------------------------------------------
@@ -713,9 +717,9 @@ FCOIS["_migrated" .. savedVarsMarkedItemsTableNameNew][iconId][itemIdNew] = true
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
         --Migration results for bag type
-        d(FCOIS.preChatVars.preChatTextBlue .. zo_strformat(locVars["options_migrate_results"], numMigratedIcons, numMigratedItems))
+        d(preChatVars.preChatTextBlue .. zo_strformat(locVars["options_migrate_results"], numMigratedIcons, numMigratedItems))
         --Migration end for bag type
-        d(FCOIS.preChatVars.preChatTextRed .. zo_strformat(locVars["options_migrate_end"], locVars["options_migrate_bag_type_" .. bagToCheck]))
+        d(preChatVars.preChatTextRed .. zo_strformat(locVars["options_migrate_end"], locVars["options_migrate_bag_type_" .. bagToCheck]))
     end -- for bagType
     --Reset the "migration needs to be done" variable
     FCOIS.preventerVars.migrateItemMarkers = false

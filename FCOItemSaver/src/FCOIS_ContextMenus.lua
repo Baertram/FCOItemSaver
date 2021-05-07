@@ -2350,6 +2350,10 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
     --House Banks
         contextmenuType = "HOUSEBANK"
         INVENTORY_TO_SEARCH = ctrlVars.HOUSE_BANK
+    elseif FCOIS.gFilterWhere == LF_INVENTORY_COMPANION then
+    --Companion
+        contextmenuType = "COMPANION_INVENTORY"
+        INVENTORY_TO_SEARCH = ctrlVars.COMPANION_INV_LIST
     else
         --Inventory (mail, trade, etc.) or bank or craftbag (if other addons enabled the craftbag at mail panel etc.)
         --Get the current inventorytype

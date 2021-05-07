@@ -96,6 +96,8 @@ local function outputFilterState(p_outputToChat, p_panelId, p_filterId, p_stateT
         outputText = preChatText .. locVars["filter_retrait"] .. locVars["filter" .. filterText .. p_stateText]
     elseif (p_panelId == LF_HOUSE_BANK_WITHDRAW) then
         outputText = preChatText .. locVars["filter_house_bank"] .. locVars["filter" .. filterText .. p_stateText]
+    elseif (p_panelId == LF_INVENTORY_COMPANION) then
+        outputText = preChatText .. locVars["filter_companion_inventory"] .. locVars["filter" .. filterText .. p_stateText]
     end
 
     --Add another tooltip line with the currently selected lock & dynamic icons filter?

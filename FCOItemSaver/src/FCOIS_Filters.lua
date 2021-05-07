@@ -515,6 +515,7 @@ function FCOIS.mapLibFiltersIds2FilterFunctionsNow()
         [LF_CRAFTBAG]                               = FilterSavedItemsForSlot,
         [LF_HOUSE_BANK_WITHDRAW]                    = FilterSavedItemsForSlot,
         [LF_HOUSE_BANK_DEPOSIT]                     = FilterSavedItemsForSlot,
+        [LF_INVENTORY_COMPANION]                    = FilterSavedItemsForSlot,
         --Filter function with bagId and slotIndex
         [LF_SMITHING_REFINE]                        = FilterSavedItemsForBagIdAndSlotIndex,
         [LF_SMITHING_DECONSTRUCT]                   = FilterSavedItemsForBagIdAndSlotIndex,

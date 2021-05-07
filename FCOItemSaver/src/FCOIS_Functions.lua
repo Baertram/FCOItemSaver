@@ -2572,4 +2572,3 @@ function FCOIS.IsNoOtherModifierKeyPressed(modKey)
     end
     return false
 end
-

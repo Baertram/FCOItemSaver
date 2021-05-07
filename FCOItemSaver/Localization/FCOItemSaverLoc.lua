@@ -1059,6 +1059,7 @@ FCOIS.localizationVars.localizationAll = {
         --Transmutation / Retrait
         ["options_header_transmutation"]          = GetString(SI_RETRAIT_STATION_ITEM_TO_RETRAIT_HEADER), --Transmutation
         ["filter_retrait"]                        = "[Retrait]",
+        ["filter_companion_inventory"]            = "[" .. GetString(SI_UNIT_FRAME_NAME_COMPANION) .." inventory]",
         ["retrait_not_allowed"]                   = GetString(SI_RETRAIT_STATION_PERFORM_RETRAIT) .. " not allowed:",
         ["button_context_menu_toggle_anti_retrait_on"]  = "Activate 'Anti-Retrait'",
         ["button_context_menu_toggle_anti_retrait_off"] = "Deactivate 'Anti-Retrait'",
@@ -1066,6 +1067,8 @@ FCOIS.localizationVars.localizationAll = {
         ["options_enable_block_retrait_TT"]  = "Deactivate retraiting of marked items inside the transmutation stations",
         ["options_enable_filter_in_retrait"]		 = "Enable filter at ".. GetString(SI_RETRAIT_STATION_ITEM_TO_RETRAIT_HEADER).." station",
         ["options_enable_filter_in_retrait_TT"] = "Enables you to hide the marked items at a " .. GetString(SI_RETRAIT_STATION_ITEM_TO_RETRAIT_HEADER).. " station",
+        ["options_enable_filter_in_companion_inventory"]	= "Enable filter at ".. GetString(SI_UNIT_FRAME_NAME_COMPANION).." inventory",
+        ["options_enable_filter_in_companion_inventory_TT"] = "Enables you to hide the marked items at a " .. GetString(SI_UNIT_FRAME_NAME_COMPANION).. " inventory",
         --Master Writs
         ["options_auto_mark_crafted_writ_items"] 			= "Mark crafted writ items",
         ["options_auto_mark_crafted_writ_items_TT"] 	= "If you enable this setting the addon will automatically mark your crafted writ items, which you craft with the addon \'Dolgubons Lazy Writ Creator\', at a crafting station with the chosen icon from below.",
@@ -2224,7 +2227,8 @@ FCOIS.localizationVars.localizationAll = {
         ["options_enable_block_crownstoreitems_TT"] = "Verhindert, dass mit einem Symbol markierte " .. GetString(SI_ITEMTYPE57) .. " benutzt werden können.",
         --Transmutation / Retrait
         ["options_header_transmutation"]          = GetString(SI_RETRAIT_STATION_ITEM_TO_RETRAIT_HEADER), --Transmutation
-        ["filter_retrait"]                        = "[Retrait]",
+        ["filter_retrait"]                        = "[Transmutation]",
+        ["filter_companion_inventory"]            = "[" .. GetString(SI_UNIT_FRAME_NAME_COMPANION) .." Inventar]",
         ["retrait_not_allowed"]                   = GetString(SI_RETRAIT_STATION_PERFORM_RETRAIT) .. " nicht erlaubt:",
         ["button_context_menu_toggle_anti_retrait_on"]  = "Aktiviere 'Anti-Retrait'",
         ["button_context_menu_toggle_anti_retrait_off"] = "Deaktiviere 'Anti-Retrait'",
@@ -2232,6 +2236,8 @@ FCOIS.localizationVars.localizationAll = {
         ["options_enable_block_retrait_TT"]  = "Deaktiviert das Retraiting (Neu Vergeben von Eigenschaften auf Gegenständen) von markierten Gegenständen an den Transmutation Stationen",
         ["options_enable_filter_in_retrait"]		 = "Filter in " .. GetString(SI_RETRAIT_STATION_ITEM_TO_RETRAIT_HEADER) .. " Station aktivieren",
         ["options_enable_filter_in_retrait_TT"] = "Ermöglicht es dir die markierten Gegenstände auch in der " .. GetString(SI_RETRAIT_STATION_ITEM_TO_RETRAIT_HEADER) .. " Station zu verstecken",
+        ["options_enable_filter_in_companion_inventory"]	= "Filter in ".. GetString(SI_UNIT_FRAME_NAME_COMPANION).." Inventar",
+        ["options_enable_filter_in_companion_inventory_TT"] = "Ermöglicht es dir die markierten Gegenstände auch in dem " .. GetString(SI_UNIT_FRAME_NAME_COMPANION).. " Inventar zu verstecken",
         --Master Writs
         ["options_auto_mark_crafted_writ_items"] 			= "Markiere hergestellte Schrieb Gegenstände",
         ["options_auto_mark_crafted_writ_items_TT"] 	= "Wenn Sie diese Option aktivieren werden, nach dem Herstellen (Crafting) von Gegenständen aus Schrieben, welche mit dem AddOn \'Dolgubons Lazy Writ Creator\' hergestellt wurden, diese automatisch mit dem unten gewählten Symbol markiert.",

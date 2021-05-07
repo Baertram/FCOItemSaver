@@ -329,6 +329,8 @@ function FCOIS.CreateTextures(whichTextures)
 
     local doCreateMarkerControl = false
     local doCreateAllTextures = false
+    local ctrlVars = FCOIS.ZOControlVars
+
     if whichTextures == -1 then
         --Crate the texture controls for the marker icons?
         --If this is set to true each inventory row will automatically get 1 new texture control child for each marker icon
@@ -344,7 +346,8 @@ function FCOIS.CreateTextures(whichTextures)
         for _,v in pairs(PLAYER_INVENTORY.inventories) do
             local listView = v.listView
             --Do not hook quest items
-            if (listView and listView.dataTypes and listView.dataTypes[1] and (listView:GetName() ~= "ZO_PlayerInventoryQuest")) then
+            if (listView and listView.dataTypes and listView.dataTypes[1]
+                and (listView:GetName() ~= ctrlVars.INVENTORY_QUEST_NAME)) then
                 local hookedFunctions = listView.dataTypes[1].setupCallback
 
                 listView.dataTypes[1].setupCallback =
@@ -476,6 +479,32 @@ function FCOIS.CreateTextures(whichTextures)
             end
         end
     end
+    --COmpanion inventory
+    if (whichTextures == 6 or doCreateAllTextures) then
+        -- Marker function for companion inventory
+        local listView = FCOIS.ZOControlVars.COMPANION_INV_LIST
+        --ZO_CompanionEquipment_Panel_KeyboardList1Row1
+        if listView and listView.dataTypes and listView.dataTypes[1] then
+            local hookedFunctions = listView.dataTypes[1].setupCallback
+
+            listView.dataTypes[1].setupCallback =
+            function(rowControl, slot)
+                hookedFunctions(rowControl, slot)
+
+                --Do not execute if horse is changed
+                --The current game's SCENE and name (used for determining bank/guild bank deposit)
+                local currentScene, _ = FCOIS.getCurrentSceneInfo()
+                if currentScene ~= STABLES_SCENE then
+                    -- for all filters: Create/Update the icons
+                    for i=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
+                        FCOIS.CreateMarkerControl(rowControl, i, iconSettings[i].size, iconSettings[i].size, markerTextureVars[iconSettings[i].texture], false, doCreateMarkerControl)
+                    end
+                    --Add additional FCO point to the dataEntry.data slot
+                    --FCOItemSaver_AddInfoToData(rowControl)
+                end
+            end
+        end
+    end
 end
 
 --Check if marker textures on the inventories row should be refreshed
@@ -487,9 +516,8 @@ function FCOIS.checkMarker(markerId)
     --Should we update the marker textures, size and color?
     if FCOIS.preventerVars.gUpdateMarkersNow == true or FCOIS.preventerVars.gChangedGears == true then
         --Update the textures now
-        FCOIS.RefreshBackpack()
-        FCOIS.RefreshBank()
-        FCOIS.RefreshGuildBank()
+        FCOIS.RefreshBasics()
+
         if not FCOIS.preventerVars.gChangedGears then
             zo_callLater(function()
                 --d("character hidden: " .. tostring(FCOIS.ZOControlVars.CHARACTER:IsHidden()))

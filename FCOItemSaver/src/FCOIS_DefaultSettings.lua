@@ -67,6 +67,7 @@ function FCOIS.buildDefaultSettings()
 		allowJewelryResearchFilter  = true,
 		allowAlchemyFilter			= true,
 		allowRetraitFilter          = true,
+		allowCompanionInventoryFilter = true,
 		allowOnlyUnbound            = {},
 		blockMarkedRepairKits		= false,
 		blockDestroying				= true,

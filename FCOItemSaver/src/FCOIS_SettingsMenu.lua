@@ -5166,6 +5166,15 @@ function FCOIS.BuildAddonMenu()
                                     end,
                                     default = FCOISdefaultSettings.allowRetraitFilter,
                                 },
+                                {
+                                    type = "checkbox",
+                                    name = locVars["options_enable_filter_in_companion_inventory"],
+                                    tooltip = locVars["options_enable_filter_in_companion_inventory" .. tooltipSuffix],
+                                    getFunc = function() return FCOISsettings.allowCompanionInventoryFilter end,
+                                    setFunc = function(value) FCOISsettings.allowCompanionInventoryFilter = value
+                                    end,
+                                    default = FCOISdefaultSettings.allowCompanionInventoryFilter,
+                                },
                                 --==============================================================================
                                 {
                                     type = "header",

@@ -29,9 +29,10 @@ function FCOIS.outputItemProtectedMessage(bag, slot, whereAreWe, overrideChatOut
     overrideAlert = overrideAlert or false
     suppressAlert = suppressAlert or false
     local retVar = false
+    local settings = FCOIS.settingsVars.settings
     --Chat and/or alert message are enbaled or overwriting the settings is active?
-    local chatOutputWished = not suppressChatOutput and (overrideChatOutput or FCOIS.settingsVars.settings.showAntiMessageInChat == true)
-    local alertOutputWished = not suppressAlert and (overrideAlert or FCOIS.settingsVars.settings.showAntiMessageAsAlert == true)
+    local chatOutputWished = not suppressChatOutput and (overrideChatOutput or settings.showAntiMessageInChat == true)
+    local alertOutputWished = not suppressAlert and (overrideAlert or settings.showAntiMessageAsAlert == true)
     if chatOutputWished or alertOutputWished then
         --Get the itemLink
         local formattedItemName = GetItemLink(bag, slot)
@@ -95,6 +96,7 @@ function FCOIS.checkIfProtectedSettingsEnabled(checkType, iconNr, isDynamicIcon,
         [LF_MAIL_SEND] 					= {[LF_MAIL_SEND]=settings.blockSendingByMail, [LF_CRAFTBAG]=settings.blockSendingByMail},
         [LF_TRADE] 						= {[LF_TRADE]=settings.blockTrading, [LF_CRAFTBAG]=settings.blockTrading},
         [LF_RETRAIT] 					= {[LF_RETRAIT]=settings.blockRetrait},
+        --[LF_INVENTORY_COMPANION]        = {[LF_INVENTORY_COMPANION]=settings.blockDestroy},
         --Special entries for the call from ItemSelectionHandler() function's variable 'whereAreWe'
         [FCOIS_CON_CONTAINER_AUTOOLOOT]	= {[FCOIS_CON_CONTAINER_AUTOOLOOT]=settings.blockAutoLootContainer},	--Auto loot container
         [FCOIS_CON_RECIPE_USAGE]		= {[FCOIS_CON_RECIPE_USAGE]=settings.blockMarkedRecipes}, 		--Recipe
@@ -108,11 +110,15 @@ function FCOIS.checkIfProtectedSettingsEnabled(checkType, iconNr, isDynamicIcon,
     --For each entry in this anti-destroy check table add one line in libFiltersPanelIdToBlockSettings
     for libFiltersAntiDestroyCheckPanelId, _ in pairs(filterPanelIdsCheckForAntiDestroy) do
         --Check if there is already an entry in the protectionSettings table and add another subentry then
-        --e.g. LF_GUILDBANK_DEPOSIT got teh anti deposit if no rights to withdraw again + anti destroy settings!
+        --e.g. LF_GUILDBANK_DEPOSIT got the anti deposit if no rights to withdraw again + anti destroy settings!
+        local conDestroyWhere = FCOIS_CON_DESTROY
+        if libFiltersAntiDestroyCheckPanelId == LF_INVENTORY_COMPANION then
+            conDestroyWhere = FCOIS_CON_COMPANION_DESTROY
+        end
         if protectionSettings[libFiltersAntiDestroyCheckPanelId] then
-            protectionSettings[libFiltersAntiDestroyCheckPanelId][FCOIS_CON_DESTROY] = settings.blockDestroying
+            protectionSettings[libFiltersAntiDestroyCheckPanelId][conDestroyWhere] = settings.blockDestroying
         else
-            protectionSettings[libFiltersAntiDestroyCheckPanelId] = {[FCOIS_CON_DESTROY]=settings.blockDestroying}
+            protectionSettings[libFiltersAntiDestroyCheckPanelId] = {[conDestroyWhere]=settings.blockDestroying}
         end
     end
 
@@ -435,6 +441,7 @@ function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChat
         [FCOIS_CON_CROWN_ITEM]	   		= settings.blockCrownStoreItems, 		--Crown store items
         [FCOIS_CON_CRAFTBAG_DESTROY]	= settings.blockDestroying, 		    --Craftbag, destroying
         [FCOIS_CON_RETRAIT]	            = settings.blockRetrait, 			    --Retrait station, retrait
+        [FCOIS_CON_COMPANION_DESTROY]	= settings.blockDestroying,			    --Companion inventory destroying
         [FCOIS_CON_FALLBACK]			= false,							    --Always return false. Used e.g. for the bank/guild bank deposit checks
     }
     --Mapping array for the alertMessages
