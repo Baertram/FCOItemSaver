@@ -162,6 +162,9 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 --9) Quality
 
 --[Added]
+--Companion inventory marker icons support
+--Companion inventory additional flag context menu button
+--Companion inventory filter buttons
 
 --[Added on request]
 --#109 Added the possibilitiy to exclude sets from the automatic set markers. Check teh automatic marks -> sets submenu for the new submenu.
@@ -171,6 +174,14 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 --scroll the surrounding controls like the FCOIS settings panel. Just put the mouse above the lists and scroll and you'll see the entries again.
 --This is just a visual bug we cannot fix for now!
 --#110 Added a "Check all others" checkbox to the automatic set marker icons
+
+--[Todo] 2021-05-07
+--Additional inventoy flag icon at companion inventory: Still buggy with mass-marking! Needs to check for companion items ONLY as the BAG_BACKPACK is used to show the items at the companion inventory as well and mass marking would mass-mark all inventory items, not only companion items.
+--Fix additional inventory flag icon to include "anti destroy"
+--Fix additional inventory flag icon to show green/red state of anti-destroy
+--Fix additional inventory flag icon to change state of anti-destroy via right click
+--Add support for marker icons at the companion character equipment screen
+--Default companion invenory filter buttons positions (the 2nd, 3rd and 4th button are not next o the 1st, but way off to the right)
 
 --************************************************************************************************************************
 --************************************************************************************************************************
