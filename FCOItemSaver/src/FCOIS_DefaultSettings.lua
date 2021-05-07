@@ -650,7 +650,7 @@ function FCOIS.buildDefaultSettings()
 	FCOIS.settingsVars.defaults.iconPositionCharacter.x	=   0
 	FCOIS.settingsVars.defaults.iconPositionCharacter.y	=	0
 
-	--Update the "Gear sets" texts depending on locaization
+	--Update the "Gear sets" texts depending on localization
 	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_GEAR_1].name    = "Gear 1"
 	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_GEAR_2].name    = "Gear 2"
 	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_GEAR_3].name    = "Gear 3"

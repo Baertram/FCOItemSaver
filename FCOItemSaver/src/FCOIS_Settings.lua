@@ -758,6 +758,7 @@ function FCOIS.afterSettings()
     local icon2Dynamic = FCOIS.mappingVars.iconToDynamic
     local iconIsDynamic = FCOIS.mappingVars.iconIsDynamic
     local mappingVars = FCOIS.mappingVars
+    local ctrlVars = FCOIS.ZOControlVars
 
     --Set the split filters to nil as it was removed years ago!
     settings.splitFilters = nil
@@ -854,15 +855,16 @@ function FCOIS.afterSettings()
     FCOIS.getNumberOfFilteredItemsForEachPanel()
 
     --The crafting station creation panel controls or a function to check if it's currently active
+    local craftingCreationPanel = ctrlVars.CRAFTING_CREATION_PANEL
     FCOIS.craftingCreatePanelControlsOrFunction = {
         [CRAFTING_TYPE_ALCHEMY]         = FCOIS.IsAlchemyPanelCreationShown,
-        [CRAFTING_TYPE_BLACKSMITHING] 	= FCOIS.ZOControlVars.CRAFTING_CREATION_PANEL,
-        [CRAFTING_TYPE_CLOTHIER] 		= FCOIS.ZOControlVars.CRAFTING_CREATION_PANEL,
+        [CRAFTING_TYPE_BLACKSMITHING] 	= craftingCreationPanel,
+        [CRAFTING_TYPE_CLOTHIER] 		= craftingCreationPanel,
         [CRAFTING_TYPE_ENCHANTING] 		= FCOIS.IsEnchantingPanelCreationShown,
-        [CRAFTING_TYPE_INVALID] 		= FCOIS.ZOControlVars.CRAFTING_CREATION_PANEL,
-        [CRAFTING_TYPE_PROVISIONING] 	= FCOIS.ZOControlVars.PROVISIONER_PANEL,
-        [CRAFTING_TYPE_WOODWORKING] 	= FCOIS.ZOControlVars.CRAFTING_CREATION_PANEL,
-        [CRAFTING_TYPE_JEWELRYCRAFTING]	= FCOIS.ZOControlVars.CRAFTING_CREATION_PANEL,
+        [CRAFTING_TYPE_INVALID] 		= craftingCreationPanel,
+        [CRAFTING_TYPE_PROVISIONING] 	= ctrlVars.PROVISIONER_PANEL,
+        [CRAFTING_TYPE_WOODWORKING] 	= craftingCreationPanel,
+        [CRAFTING_TYPE_JEWELRYCRAFTING]	= craftingCreationPanel,
     }
 
     --Rebuild the allowed craft skills from the settings
@@ -1014,52 +1016,54 @@ function FCOIS.updateSettingsBeforeAddonMenu()
     --Create the armor, jewelry and weapon trait automatic marking arrays and preset them with "true",
     --so all armor, jewelry and weapon set pats will be marked
     --Armor
-    local armorTraits = FCOIS.mappingVars.traits.armorTraits
+    local traits = FCOIS.mappingVars.traits
+    local armorTraits = traits.armorTraits
     --Jewelry
-    local jewelryTraits = FCOIS.mappingVars.traits.jewelryTraits
+    local jewelryTraits = traits.jewelryTraits
     --Weapons
-    local weaponTraits = FCOIS.mappingVars.traits.weaponTraits
+    local weaponTraits = traits.weaponTraits
     --Shields
-    local weaponShieldTraits = FCOIS.mappingVars.traits.weaponShieldTraits
+    local weaponShieldTraits = traits.weaponShieldTraits
     --The chosne icon for the set parts
-    local chosenSetIcon = FCOIS.settingsVars.settings.autoMarkSetsIconNr
+    local settings = FCOIS.settingsVars.settings
+    local chosenSetIcon = settings.autoMarkSetsIconNr
     --Check armor
     for armorTraitNumber, _ in pairs(armorTraits) do
-        if FCOIS.settingsVars.settings.autoMarkSetsCheckArmorTrait[armorTraitNumber] == nil then
+        if settings.autoMarkSetsCheckArmorTrait[armorTraitNumber] == nil then
             FCOIS.settingsVars.settings.autoMarkSetsCheckArmorTrait[armorTraitNumber] = true
         end
         --Preset the icon for the trait, if not chosen yet
-        if FCOIS.settingsVars.settings.autoMarkSetsCheckArmorTraitIcon[armorTraitNumber] == nil then
+        if settings.autoMarkSetsCheckArmorTraitIcon[armorTraitNumber] == nil then
             FCOIS.settingsVars.settings.autoMarkSetsCheckArmorTraitIcon[armorTraitNumber] = chosenSetIcon
         end
     end
     --Check jewelry
     for jewelryTraitNumber, _ in pairs(jewelryTraits) do
-        if FCOIS.settingsVars.settings.autoMarkSetsCheckJewelryTrait[jewelryTraitNumber] == nil then
+        if settings.autoMarkSetsCheckJewelryTrait[jewelryTraitNumber] == nil then
             FCOIS.settingsVars.settings.autoMarkSetsCheckJewelryTrait[jewelryTraitNumber] = true
         end
         --Preset the icon for the trait, if not chosen yet
-        if FCOIS.settingsVars.settings.autoMarkSetsCheckJewelryTraitIcon[jewelryTraitNumber] == nil then
+        if settings.autoMarkSetsCheckJewelryTraitIcon[jewelryTraitNumber] == nil then
             FCOIS.settingsVars.settings.autoMarkSetsCheckJewelryTraitIcon[jewelryTraitNumber] = chosenSetIcon
         end
     end
     --Check weapons
     for weaponTraitNumber, _ in pairs(weaponTraits) do
-        if FCOIS.settingsVars.settings.autoMarkSetsCheckWeaponTrait[weaponTraitNumber] == nil then
+        if settings.autoMarkSetsCheckWeaponTrait[weaponTraitNumber] == nil then
             FCOIS.settingsVars.settings.autoMarkSetsCheckWeaponTrait[weaponTraitNumber] = true
         end
         --Preset the icon for the trait, if not chosen yet
-        if FCOIS.settingsVars.settings.autoMarkSetsCheckWeaponTraitIcon[weaponTraitNumber] == nil then
+        if settings.autoMarkSetsCheckWeaponTraitIcon[weaponTraitNumber] == nil then
             FCOIS.settingsVars.settings.autoMarkSetsCheckWeaponTraitIcon[weaponTraitNumber] = chosenSetIcon
         end
     end
     --Check shields
     for weaponShieldTraitNumber, _ in pairs(weaponShieldTraits) do
-        if FCOIS.settingsVars.settings.autoMarkSetsCheckWeaponTrait[weaponShieldTraitNumber] == nil then
+        if settings.autoMarkSetsCheckWeaponTrait[weaponShieldTraitNumber] == nil then
             FCOIS.settingsVars.settings.autoMarkSetsCheckWeaponTrait[weaponShieldTraitNumber] = true
         end
         --Preset the icon for the trait, if not chosen yet
-        if FCOIS.settingsVars.settings.autoMarkSetsCheckWeaponTraitIcon[weaponShieldTraitNumber] == nil then
+        if settings.autoMarkSetsCheckWeaponTraitIcon[weaponShieldTraitNumber] == nil then
             FCOIS.settingsVars.settings.autoMarkSetsCheckWeaponTraitIcon[weaponShieldTraitNumber] = chosenSetIcon
         end
     end

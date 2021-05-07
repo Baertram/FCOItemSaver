@@ -2310,13 +2310,14 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
         ["setItemCollectionsKnown"]     = {allowed = true, icon = settings.autoMarkSetsItemCollectionBookNonMissingIcon},
     }
 
+    local isCompanionInventory = false
+
     local isUNDOButton 			 		= (specialButtonType == "UNDO") or false
     local isREMOVEALLGEARSButton 		= (specialButtonType == "REMOVE_ALL_GEAR") or false
     local isREMOVEALLButton 	 		= (specialButtonType == "REMOVE_ALL") or false
     local isTOGGLEANTISETTINGSButton	= (specialButtonType == "ANTI_SETTINGS") or false
     local isMARKALLASJUNKButton	        = (specialButtonType == "JUNK_CHECK_ALL") or false
     local isMARKALLASNOJUNKButton	    = (specialButtonType == "UNJUNK_CHECK_ALL") or false
-
 
     local atLeastOneMarkerChanged = false
     --Get the filter panel for the undo stuff
@@ -2356,6 +2357,7 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
         INVENTORY_TO_SEARCH = ctrlVars.HOUSE_BANK
     elseif FCOIS.gFilterWhere == LF_INVENTORY_COMPANION then
     --Companion
+        isCompanionInventory = true
         contextmenuType = "COMPANION_INVENTORY"
         INVENTORY_TO_SEARCH = ctrlVars.COMPANION_INV_LIST
     else
@@ -2380,6 +2382,11 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
 
     --No inventory to search in given? Abort here!
     if INVENTORY_TO_SEARCH == nil then return end
+
+    local function doCompanionItemChecks(bagId, slotIndex)
+        if not isCompanionInventory then return true end
+        return (GetItemActorCategory(bagId, slotIndex) == GAMEPLAY_ACTOR_CATEGORY_COMPANION) or false
+    end
 
     --Are we marking/unmarking items or are we undoing the last change at this current panel?
     if not isUNDOButton and not isREMOVEALLGEARSButton and not isREMOVEALLButton
@@ -2425,7 +2432,7 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                     bagId     = data.bagId
                     slotIndex = data.slotIndex
                     if bagId ~= nil and slotIndex ~= nil then
---d("> " .. GetItemLink(bagId, slotIndex))
+                        --d("> " .. GetItemLink(bagId, slotIndex))
                         --Introduced with FCOIS version 1.0.6
                         --Check if an item is not-bound yet and only allow to mark it if it's unbound
                         --Only ehck if item should be marked!
@@ -2445,6 +2452,9 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                                 -- Check if item is researchable (as only researchable items can work as equipment too)
                                 allowedToMark = FCOIS.isItemResearchableNoControl(bagId, slotIndex, iconId)
                             end
+                        end
+                        if allowedToMark == true then
+                            allowedToMark = doCompanionItemChecks(bagId, slotIndex)
                         end
                         --Finally: Is the item allowed to be marked with this iconId?
                         if allowedToMark == true then
@@ -2515,7 +2525,7 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                                         --Old value: False
                                         undoEntry.marked = false
                                     end
-                                --Mark: False
+                                    --Mark: False
                                 elseif doMark == false then
                                     --Check if the item is marked already
                                     if FCOIS.checkIfItemIsProtected(iconId, myItemInstanceId) then
@@ -2525,7 +2535,7 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                                         --Old value: True
                                         undoEntry.marked = true
                                     end
-                                --Mark: nil & specialButtonType is given
+                                    --Mark: nil & specialButtonType is given
                                 elseif doMark == nil and specialButtonType ~= nil then
                                     local checksWereDoneLoop, atLeastOneMarkerChangedLoop = false, false
                                     checksWereDoneLoop, atLeastOneMarkerChangedLoop = FCOIS.scanInventoryItemsForAutomaticMarks(bagId, slotIndex, specialButtonType, true)
@@ -2614,54 +2624,56 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                     bagId     = data.bagId
                     slotIndex = data.slotIndex
                     if bagId ~= nil and slotIndex ~= nil then
-                        myItemInstanceId = FCOIS.MyGetItemInstanceIdNoControl(bagId, slotIndex)
-                        if myItemInstanceId ~= nil then
+                        allowedToMark = doCompanionItemChecks(bagId, slotIndex)
+                        if allowedToMark == true then
+                            myItemInstanceId = FCOIS.MyGetItemInstanceIdNoControl(bagId, slotIndex)
+                            if myItemInstanceId ~= nil then
 
-                            --Check all equipment gear icon IDs: 2, 4, 6, 7 and 8
-                            --Map the iconIds of the 5 gear sets to the actual counter
-                            for iconIdLoop, _ in pairs(mappingVars.iconToGear) do
-                                -- -v- NEW after implementing settings.disableResearchCheck
-                                allowedToMark = FCOIS.isItemResearchableNoControl(bagId, slotIndex, iconIdLoop)
-                                if allowedToMark then
+                                --Check all equipment gear icon IDs: 2, 4, 6, 7 and 8
+                                --Map the iconIds of the 5 gear sets to the actual counter
+                                for iconIdLoop, _ in pairs(mappingVars.iconToGear) do
+                                    -- -v- NEW after implementing settings.disableResearchCheck
+                                    allowedToMark = FCOIS.isItemResearchableNoControl(bagId, slotIndex, iconIdLoop)
+                                    if allowedToMark then
+                                        -- -^- NEW after implementing settings.disableResearchCheck
+
+                                        --Check if the item is marked already AND if the icon is enabled in the settings
+                                        if FCOIS.checkIfItemIsProtected(iconIdLoop, myItemInstanceId) then
+
+                                            --Clear the undo table once at the current panelId (keep all other panelIds !)
+                                            if not undoTableCleared then
+                                                contMenuVars.undoMarkedItems[filterPanelToSaveUndoTo] = {}
+                                                undoTableCleared = true
+                                            end
+
+                                            --d("[REMOVE ALL GEARS] ADD slotIndex: " .. tostring(slotIndex) .. ", bag: " .. tostring(bagId) .. ", iconId: " .. tostring(iconIdLoop) .. ", marked: false")
+
+                                            --Remove the marker for the current gear set item
+                                            FCOIS.MarkItem(bagId, slotIndex, iconIdLoop, false, false)
+
+                                            --Set the old marker value in the undo table
+                                            undoEntry = {}
+                                            undoEntry.bagId = bagId
+                                            undoEntry.slotIndex = slotIndex
+                                            undoEntry.iconId = iconIdLoop
+                                            undoEntry.marked = true
+                                            --Set the old marker value in the undo table
+                                            table.insert(contMenuVars.undoMarkedItems[filterPanelToSaveUndoTo], undoEntry)
+
+                                            atLeastOneMarkerChanged = true
+                                        end
+                                        -- -v- NEW after implementing settings.disableResearchCheck
+                                    end
                                     -- -^- NEW after implementing settings.disableResearchCheck
 
-                                    --Check if the item is marked already AND if the icon is enabled in the settings
-                                    if FCOIS.checkIfItemIsProtected(iconIdLoop, myItemInstanceId) then
-
-                                        --Clear the undo table once at the current panelId (keep all other panelIds !)
-                                        if not undoTableCleared then
-                                            contMenuVars.undoMarkedItems[filterPanelToSaveUndoTo] = {}
-                                            undoTableCleared = true
-                                        end
-
-                                        --d("[REMOVE ALL GEARS] ADD slotIndex: " .. tostring(slotIndex) .. ", bag: " .. tostring(bagId) .. ", iconId: " .. tostring(iconIdLoop) .. ", marked: false")
-
-                                        --Remove the marker for the current gear set item
-                                        FCOIS.MarkItem(bagId, slotIndex, iconIdLoop, false, false)
-
-                                        --Set the old marker value in the undo table
-                                        undoEntry = {}
-                                        undoEntry.bagId = bagId
-                                        undoEntry.slotIndex = slotIndex
-                                        undoEntry.iconId = iconIdLoop
-                                        undoEntry.marked = true
-                                        --Set the old marker value in the undo table
-                                        table.insert(contMenuVars.undoMarkedItems[filterPanelToSaveUndoTo], undoEntry)
-
-                                        atLeastOneMarkerChanged = true
-                                    end
-                                    -- -v- NEW after implementing settings.disableResearchCheck
-                                end
-                                -- -^- NEW after implementing settings.disableResearchCheck
-
-                            end -- for iconIdLoop, gearId ...
-                        end
+                                end -- for iconIdLoop, gearId ...
+                            end
+                        end --if allowedToMark == true then
                     end
                 end
             end --for _,v in pairs(PLAYER_INV...
 
-
-            --REMOVE ALL
+        --REMOVE ALL
         elseif isREMOVEALLButton then
 
             if settings.debug then FCOIS.debugMessage( "[ContextMenuForAddInvButtonsOnClicked]", "Clicked "..contextmenuType.." context menu button, Remove ALL", true, FCOIS_DEBUG_DEPTH_NORMAL) end
@@ -2676,6 +2688,7 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
             local myItemInstanceId
             local undoTableCleared = false
             local undoEntry
+            local allowedToMark = false
 
             --Loop over each not-filtered item data in the current inventory
             for _,v in pairs(INVENTORY_TO_SEARCH.data) do
@@ -2686,37 +2699,38 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                     bagId     = data.bagId
                     slotIndex = data.slotIndex
                     if bagId ~= nil and slotIndex ~= nil then
+                        allowedToMark = doCompanionItemChecks(bagId, slotIndex)
+                        if allowedToMark == true then
+                            myItemInstanceId = FCOIS.MyGetItemInstanceIdNoControl(bagId, slotIndex)
+                            if myItemInstanceId ~= nil then
+                                --Check all icon Ids
+                                for iconIdLoop = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
+                                    --Check if the item is marked already AND if the settings for this marker icon is activated
+                                    if FCOIS.checkIfItemIsProtected(iconIdLoop, myItemInstanceId) then
+                                        --Clear the undo table once at the current panelId (keep all other panelIds !)
+                                        if not undoTableCleared then
+                                            contMenuVars.undoMarkedItems[filterPanelToSaveUndoTo] = {}
+                                            undoTableCleared = true
+                                        end
 
-                        myItemInstanceId = FCOIS.MyGetItemInstanceIdNoControl(bagId, slotIndex)
-                        if myItemInstanceId ~= nil then
-                            --Check all icon Ids
-                            for iconIdLoop = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
-                                --Check if the item is marked already AND if the settings for this marker icon is activated
-                                if FCOIS.checkIfItemIsProtected(iconIdLoop, myItemInstanceId) then
-                                    --Clear the undo table once at the current panelId (keep all other panelIds !)
-                                    if not undoTableCleared then
-                                        contMenuVars.undoMarkedItems[filterPanelToSaveUndoTo] = {}
-                                        undoTableCleared = true
+                                        --d("[REMOVE ALL] ADD slotIndex: " .. tostring(slotIndex) .. ", bag: " .. tostring(bagId) .. ", iconId: " .. tostring(iconIdLoop) .. ", marked: false")
+
+                                        --Remove the marker for the current gear set item
+                                        FCOIS.MarkItem(bagId, slotIndex, iconIdLoop, false, false)
+
+                                        --Set the old marker value in the undo table
+                                        undoEntry = {}
+                                        undoEntry.bagId = bagId
+                                        undoEntry.slotIndex = slotIndex
+                                        undoEntry.iconId = iconIdLoop
+                                        undoEntry.marked = true
+                                        table.insert(contMenuVars.undoMarkedItems[filterPanelToSaveUndoTo], undoEntry)
+
+                                        atLeastOneMarkerChanged = true
                                     end
-
-                                    --d("[REMOVE ALL] ADD slotIndex: " .. tostring(slotIndex) .. ", bag: " .. tostring(bagId) .. ", iconId: " .. tostring(iconIdLoop) .. ", marked: false")
-
-                                    --Remove the marker for the current gear set item
-                                    FCOIS.MarkItem(bagId, slotIndex, iconIdLoop, false, false)
-
-                                    --Set the old marker value in the undo table
-                                    undoEntry = {}
-                                    undoEntry.bagId = bagId
-                                    undoEntry.slotIndex = slotIndex
-                                    undoEntry.iconId = iconIdLoop
-                                    undoEntry.marked = true
-                                    table.insert(contMenuVars.undoMarkedItems[filterPanelToSaveUndoTo], undoEntry)
-
-                                    atLeastOneMarkerChanged = true
-                                end
-                            end -- for iconIdLoop = 1, numFilterIcons, 1 do
-                        end
-
+                                end -- for iconIdLoop = 1, numFilterIcons, 1 do
+                            end
+                        end --if allowedToMark == true then
                     end
                 end
             end --for _,v in pairs(PLAYER_INV...
@@ -2888,6 +2902,7 @@ function FCOIS.showContextMenuForAddInvButtons(invAddContextMenuInvokerButton)
         local isIconGear = settings.iconIsGear
         local isIconDynamic = FCOIS.mappingVars.iconIsDynamic
         local sortAddInvFlagContextMenu = settings.sortIconsInAdditionalInvFlagContextMenu
+        local contextMenuVars = FCOIS.contextMenuVars
 
         --d("[FCOIS]showContextMenuForAddInvButtons, countDynIconsEnabled: " ..tostring(countDynIconsEnabled) .. ", useDynSubMenu: " ..tostring(useDynSubMenu) .. ", sortAddInvFlagContextMenu: " ..tostring(sortAddInvFlagContextMenu))
 
@@ -2920,14 +2935,14 @@ function FCOIS.showContextMenuForAddInvButtons(invAddContextMenuInvokerButton)
         local subMenuEntriesAutomaticMarking = {}
 
         --The inventory additional flag context menu invoker button
-        local btnCtrlName = FCOIS.contextMenuVars.filterPanelIdToContextMenuButtonInvoker[panelId].name
+        local btnCtrlName = contextMenuVars.filterPanelIdToContextMenuButtonInvoker[panelId].name
         local btnCtrl
         if btnCtrlName ~= nil and btnCtrlName ~= "" then
             btnCtrl = WINDOW_MANAGER:GetControlByName(btnCtrlName, "")
         end
         --Loop over the inventory context menu template table and build each button + anchor the following buttons to the ones before
-        local invContextMenuButtonTemplate = FCOIS.contextMenuVars.buttonContextMenuToIconId
-        local invContextMenuButtonTemplateIndex = FCOIS.contextMenuVars.buttonContextMenuToIconIdIndex
+        local invContextMenuButtonTemplate = contextMenuVars.buttonContextMenuToIconId
+        local invContextMenuButtonTemplateIndex = contextMenuVars.buttonContextMenuToIconIdIndex
         local gearAdded = false
         local dynamicAdded = false
         local otherAdded = false
@@ -2971,12 +2986,12 @@ function FCOIS.showContextMenuForAddInvButtons(invAddContextMenuInvokerButton)
                     if trueOrFalseInteger > -1 then
                         FCOAddInvFlagButtonContextMenuWithKeyGap[newOrderId][trueOrFalseInteger] = {}
                         --Is the current control an equipment control?
-                        FCOAddInvFlagButtonContextMenuWithKeyGap[newOrderId][trueOrFalseInteger].index	    = index
-                        FCOAddInvFlagButtonContextMenuWithKeyGap[newOrderId][trueOrFalseInteger].iconId	    = buttonsIcon
-                        FCOAddInvFlagButtonContextMenuWithKeyGap[newOrderId][trueOrFalseInteger].isGear       = isGear
-                        FCOAddInvFlagButtonContextMenuWithKeyGap[newOrderId][trueOrFalseInteger].isDynamic    = isDynamic
-                        FCOAddInvFlagButtonContextMenuWithKeyGap[newOrderId][trueOrFalseInteger].buttonData   = buttonData
-                        FCOAddInvFlagButtonContextMenuWithKeyGap[newOrderId][trueOrFalseInteger].buttonNameStr= buttonNameStr
+                        FCOAddInvFlagButtonContextMenuWithKeyGap[newOrderId][trueOrFalseInteger].index	        = index
+                        FCOAddInvFlagButtonContextMenuWithKeyGap[newOrderId][trueOrFalseInteger].iconId	        = buttonsIcon
+                        FCOAddInvFlagButtonContextMenuWithKeyGap[newOrderId][trueOrFalseInteger].isGear         = isGear
+                        FCOAddInvFlagButtonContextMenuWithKeyGap[newOrderId][trueOrFalseInteger].isDynamic      = isDynamic
+                        FCOAddInvFlagButtonContextMenuWithKeyGap[newOrderId][trueOrFalseInteger].buttonData     = buttonData
+                        FCOAddInvFlagButtonContextMenuWithKeyGap[newOrderId][trueOrFalseInteger].buttonNameStr  = buttonNameStr
                         --Increase the counter for added context menu entries
                         contextMenuEntriesAdded = contextMenuEntriesAdded + 1
                         --Remember the maximum sortOrder id
@@ -3111,8 +3126,8 @@ function FCOIS.showContextMenuForAddInvButtons(invAddContextMenuInvokerButton)
                     return nil
                 end
                 --is the button's text too long? Then shorten it and show ... at the end
-                if string.len(buttonText) > FCOIS.contextMenuVars.maxCharactersInLine then
-                    buttonText = string.sub(buttonText, 1, FCOIS.contextMenuVars.maxCharactersInLine) .. " ..."
+                if string.len(buttonText) > contextMenuVars.maxCharactersInLine then
+                    buttonText = string.sub(buttonText, 1, contextMenuVars.maxCharactersInLine) .. " ..."
                 end
                 --Add the non gear and non dynamic icons to the normal menu
                 if not isGear and not isDynamic then
@@ -3249,7 +3264,7 @@ function FCOIS.showContextMenuForAddInvButtons(invAddContextMenuInvokerButton)
         --Context menu buttons for "Anti-*" settings
         --Get the anti settings text for the current filter panel
         local antiButtonText, _ = FCOIS.getContextMenuAntiSettingsTextAndState(panelId, true)
-d("[FCOIS.showContextMenuForAddInvButtons]panelId: " ..tostring(panelId))
+--d("[FCOIS.showContextMenuForAddInvButtons]panelId: " ..tostring(panelId))
         if antiButtonText ~= nil and antiButtonText ~= "" then
             AddCustomMenuItem(antiButtonText, function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "ANTI_SETTINGS") end, MENU_ADD_OPTION_LABEL)
         end
@@ -3304,7 +3319,7 @@ d("[FCOIS.showContextMenuForAddInvButtons]panelId: " ..tostring(panelId))
         local undoButtonText = locVars["button_context_menu_undo"]
         local myColor
         --Is there a backup set for the current panelId ?
-        if #FCOIS.contextMenuVars.undoMarkedItems[panelId] > 0 then
+        if #contextMenuVars.undoMarkedItems[panelId] > 0 then
             myColor = myColorEnabled
         else
             myColor = myColorDisabled

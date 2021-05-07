@@ -252,7 +252,7 @@ local numVars = FCOIS.numVars
 --Global value: Number of filter icons to choose by right click menu
 numVars.languageCount = FCOIS_CON_LANG_MAX --English, German, French, Spanish, Italian, Japanese, Russian
 --Global: Count of available inventory filter types (LF_INVENTORY, LF_BANK_WITHDRAW, etc. -> see above)
-numVars.gFCONumFilterInventoryTypes = FCOIS.libFilters.GetMaxFilterTypes and FCOIS.libFilters:GetMaxFilterTypes() or FCOIS.libFilters:GetMaxFilter() -- Maximum libFilters 3.0 filter types
+numVars.gFCONumFilterInventoryTypes = (FCOIS.libFilters.GetMaxFilterTypes and FCOIS.libFilters:GetMaxFilterTypes()) or FCOIS.libFilters:GetMaxFilter() -- Maximum libFilters 3.0 filter types
 --Global value: Number of filters
 numVars.gFCONumFilters			= #checkVars.filterButtonsToCheck
 --Global value: Number of non-dynamic and non gear set icons
@@ -930,7 +930,7 @@ ctrlVars.COMPANION_INV_NAME			= ctrlVars.COMPANION_INV_CONTROL:GetName()
 ctrlVars.COMPANION_INV_LIST          = ctrlVars.COMPANION_INV.list
 ctrlVars.COMPANION_INV_FRAGMENT      = COMPANION_EQUIPMENT_KEYBOARD_FRAGMENT
 ctrlVars.COMPANION_CHARACTER         = ZO_CompanionCharacterWindow_Keyboard_TopLevel
-ctrlVars.COMPANION_CHARACTER_EQUIPMENT_SLOTS = GetControl(ctrlVars.COMPANION_CHARACTER, "EquipmentSlots")
+ctrlVars.COMPANION_CHARACTER_EQUIPMENT_SLOTS_NAME = "ZO_CompanionCharacterWindow_Keyboard_TopLevelEquipmentSlots"
 
 ctrlVars.CRAFTBAG					= ZO_CraftBag
 ctrlVars.CRAFTBAG_LIST 			    = ZO_CraftBagList
@@ -1085,12 +1085,12 @@ ctrlVars.RepairItemDialog            = ZO_ListDialog1
 ctrlVars.RepairItemDialogName    	= "REPAIR_ITEM"
 ctrlVars.RepairItemDialogTitle       = SI_REPAIR_KIT_TITLE
 ctrlVars.CHARACTER					= ZO_Character
-ctrlVars.CHARACTER_EQUIPMENT_SLOTS	= ZO_CharacterEquipmentSlots
+ctrlVars.CHARACTER_EQUIPMENT_SLOTS_NAME	= "ZO_CharacterEquipmentSlots"
 
 ctrlVars.PLAYER_PROGRESS_BAR         = ZO_PlayerProgress
 
 ctrlVars.CONTAINER_LOOT_LIST			= ZO_LootAlphaContainerList
-ctrlVars.CONTAINER_LOOT_LIST_CONTENTS= ZO_LootAlphaContainerListContents
+ctrlVars.CONTAINER_LOOT_LIST_CONTENTS   = GetControl(ctrlVars.CONTAINER_LOOT_LIST, "Contents")
 ctrlVars.CONTAINER_LOOT_LIST_CONTENTS_NAME= ctrlVars.CONTAINER_LOOT_LIST_CONTENTS:GetName()
 --Transmutation / Retrait
 if FCOIS.APIversion >= 100033 then
@@ -2064,8 +2064,8 @@ mappingVars.equipmentSlotToName = equipmentSlotToName
 --The character and companion equipment slots
 --Table with all equipment slot names which can be updated with markes for the icons
 --The index is the relating slotIndex of the bag BAG_WORN!
-local equipmentSlotPrefix = ctrlVars.CHARACTER_EQUIPMENT_SLOTS:GetName() --"ZO_CharacterEquipmentSlots"
-local equipmentSlotCompanionPrefix = ctrlVars.COMPANION_CHARACTER_EQUIPMENT_SLOTS:GetName() --ZO_CompanionCharacterWindow_Keyboard_TopLevelEquipmentSlots
+local equipmentSlotPrefix = ctrlVars.CHARACTER_EQUIPMENT_SLOTS_NAME --"ZO_CharacterEquipmentSlots"
+local equipmentSlotCompanionPrefix = ctrlVars.COMPANION_CHARACTER_EQUIPMENT_SLOTS_NAME --ZO_CompanionCharacterWindow_Keyboard_TopLevelEquipmentSlots
 
 mappingVars.characterEquipmentSlotNameByIndex = {}
 mappingVars.companionCharacterEquipmentSlotNameByIndex = {}
@@ -2075,7 +2075,7 @@ mappingVars.characterEquipmentSlots = {}
 
 for equipSlot, equipSlotName in pairs(equipmentSlotToName) do
     mappingVars.characterEquipmentSlotNameByIndex[equipSlot] = equipmentSlotPrefix .. equipSlotName
-    mappingVars.companionCharacterEquipmentSlotNameByIndex = equipmentSlotCompanionPrefix .. equipSlotName
+    mappingVars.companionCharacterEquipmentSlotNameByIndex[equipSlot] = equipmentSlotCompanionPrefix .. equipSlotName
 
     mappingVars.characterEquipmentSlots[equipmentSlotPrefix .. equipSlotName] = true
     mappingVars.characterEquipmentSlots[equipmentSlotCompanionPrefix .. equipSlotName] = true
@@ -2890,18 +2890,17 @@ anchorVarsAddInvButtonsFill[100021][LF_JEWELRY_IMPROVEMENT].defaultLeft     = va
 anchorVarsAddInvButtonsFill[100021][LF_JEWELRY_IMPROVEMENT].defaultTop      = varY1
 anchorVarsAddInvButtonsFill[100021][LF_INVENTORY_COMPANION] = {}
 anchorVarsAddInvButtonsFill[100021][LF_INVENTORY_COMPANION].anchorControl   = ctrlVars.COMPANION_INV_CONTROL
-anchorVarsAddInvButtonsFill[100021][LF_INVENTORY_COMPANION].left            = varX1
-anchorVarsAddInvButtonsFill[100021][LF_INVENTORY_COMPANION].top             = varY1
-anchorVarsAddInvButtonsFill[100021][LF_INVENTORY_COMPANION].defaultLeft     = varX1
-anchorVarsAddInvButtonsFill[100021][LF_INVENTORY_COMPANION].defaultTop      = varY1
+anchorVarsAddInvButtonsFill[100021][LF_INVENTORY_COMPANION].left            = -55
+anchorVarsAddInvButtonsFill[100021][LF_INVENTORY_COMPANION].top             = 110
+anchorVarsAddInvButtonsFill[100021][LF_INVENTORY_COMPANION].defaultLeft     = -55
+anchorVarsAddInvButtonsFill[100021][LF_INVENTORY_COMPANION].defaultTop      = 110
 --Is the current API version unequal one of the above ones?
 if FCOIS.APIversion >= 100021 then
 	anchorVarsAddInvButtonsFill[FCOIS.APIversion] = {}
-    local anchorVarsAddInvButtons = FCOIS.anchorVars.additionalInventoryFlagButton
     -->Not working with for in pairs loop :-( So we need to copy the contents!
     --Use the anchor controls and settings of API 100021
     --setmetatable(anchorVarsAddInvButtons[FCOIS.APIversion], {__index = anchorVarsAddInvButtons[100021]})
-    anchorVarsAddInvButtonsFill[FCOIS.APIversion] = anchorVarsAddInvButtons[100021]
+    anchorVarsAddInvButtonsFill[FCOIS.APIversion] = anchorVarsAddInvButtonsFill[100021]
 end
 
 --For the addon QualitySort: Add some panels where the x axis offset of the additional inventory "flag" button needs to be adjusted

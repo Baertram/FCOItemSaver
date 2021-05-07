@@ -183,7 +183,7 @@ function FCOIS.checkIfProtectedSettingsEnabled(checkType, iconNr, isDynamicIcon,
                 end
             else
                 --Anti destroy settings?
-                if key == FCOIS_CON_DESTROY then
+                if key == FCOIS_CON_DESTROY or key == FCOIS_CON_COMPANION_DESTROY then
                     protectionValDestroy = value
 --d(">Destroy protectionVal: " ..tostring(protectionValDestroy))
                 --Other panel anti settings?

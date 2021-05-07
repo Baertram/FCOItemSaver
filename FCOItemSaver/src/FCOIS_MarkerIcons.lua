@@ -1188,12 +1188,11 @@ function FCOIS.MarkAllEquipment(rowControl, markId, updateNow, doHide)
     local ctrlVars = FCOIS.ZOControlVars
 
     local characterCtrl = ctrlVars.CHARACTER
-    local equipmentSlotsCtrl = ctrlVars.CHARACTER_EQUIPMENT_SLOTS
+    local equipmentSlotsCtrlName = ctrlVars.CHARACTER_EQUIPMENT_SLOTS_NAME
     if isCompanionCharacter == true then
         characterCtrl = ctrlVars.COMPANION_CHARACTER
-        equipmentSlotsCtrl = ctrlVars.COMPANION_CHARACTER_EQUIPMENT_SLOTS
+        equipmentSlotsCtrlName = ctrlVars.COMPANION_CHARACTER_EQUIPMENT_SLOTS_NAME
     end
-    local equipmentSlotsCtrlName = equipmentSlotsCtrl:GetName()
 
     --Get each equipped item
     for i=1, characterCtrl:GetNumChildren() do
