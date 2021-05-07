@@ -2090,7 +2090,7 @@ function FCOIS.buildAdditionalInventoryFlagContextMenuData(calledFromFCOISSettin
                 iconIndex = iconIndex + 1
                 entryData.mark = false
             end
-            entryData. anchorButton = buttonNamePrefix .. tostring(anchorEntryIndex)
+            entryData.anchorButton = buttonNamePrefix .. tostring(anchorEntryIndex)
             if entryKey ~= nil and entryKey ~= "" and entryData ~= nil then
                 buttonContextMenuToIconIdTable[entryKey] = entryData
             end
@@ -2901,8 +2901,11 @@ function FCOIS.showContextMenuForAddInvButtons(invAddContextMenuInvokerButton)
         --local isIconGear	= FCOIS.mappingVars.iconIsGear
         local isIconGear = settings.iconIsGear
         local isIconDynamic = FCOIS.mappingVars.iconIsDynamic
+        local iconsDisabledAtCompanionInv = FCOIS.mappingVars.iconIsDisabledAtCompanion
         local sortAddInvFlagContextMenu = settings.sortIconsInAdditionalInvFlagContextMenu
         local contextMenuVars = FCOIS.contextMenuVars
+
+        local isCompanionInventory = (panelId == LF_INVENTORY_COMPANION) or false
 
         --d("[FCOIS]showContextMenuForAddInvButtons, countDynIconsEnabled: " ..tostring(countDynIconsEnabled) .. ", useDynSubMenu: " ..tostring(useDynSubMenu) .. ", sortAddInvFlagContextMenu: " ..tostring(sortAddInvFlagContextMenu))
 
@@ -2961,45 +2964,49 @@ function FCOIS.showContextMenuForAddInvButtons(invAddContextMenuInvokerButton)
         for index, buttonNameStr in ipairs(invContextMenuButtonTemplateIndex) do
             local buttonData = invContextMenuButtonTemplate[buttonNameStr]
             local newOrderId = 0
-            if buttonData ~= nil and (buttonData.iconId ~= nil and settings.isIconEnabled[buttonData.iconId]) and buttonData.mark ~= nil then
-                --The icon which the button affects -> Gets the text that should be displayed
+            if buttonData ~= nil then
                 local buttonsIcon = buttonData.iconId
-                local isGear	= isIconGear[buttonsIcon]
-                local isDynamic = isIconDynamic[buttonsIcon]
-                --Use the custom sort order as it is valid, or do not sort and use the iconId instead as sortIndex
-                if sortAddInvFlagContextMenu then
-                    newOrderId = settings.icon[buttonsIcon].sortOrder
-                else
-                    newOrderId = buttonsIcon
-                end
-                if newOrderId > 0 and newOrderId <= numFilterIcons then
-                    --Initialize the context menu entry at the new index
-                    --Entry could be one for "mark" (+) and one for "unmark" (-) so the table needs to be kept if it already exists
-                    FCOAddInvFlagButtonContextMenuWithKeyGap[newOrderId] = FCOAddInvFlagButtonContextMenuWithKeyGap[newOrderId] or {}
-                    --Add subtable for mark (1=true) and unmark (0=false)
-                    local trueOrFalseInteger = -1
-                    if buttonData.mark == true then
-                        trueOrFalseInteger = 1
-                    elseif buttonData.mark == false then
-                        trueOrFalseInteger = 0
-                    end
-                    if trueOrFalseInteger > -1 then
-                        FCOAddInvFlagButtonContextMenuWithKeyGap[newOrderId][trueOrFalseInteger] = {}
-                        --Is the current control an equipment control?
-                        FCOAddInvFlagButtonContextMenuWithKeyGap[newOrderId][trueOrFalseInteger].index	        = index
-                        FCOAddInvFlagButtonContextMenuWithKeyGap[newOrderId][trueOrFalseInteger].iconId	        = buttonsIcon
-                        FCOAddInvFlagButtonContextMenuWithKeyGap[newOrderId][trueOrFalseInteger].isGear         = isGear
-                        FCOAddInvFlagButtonContextMenuWithKeyGap[newOrderId][trueOrFalseInteger].isDynamic      = isDynamic
-                        FCOAddInvFlagButtonContextMenuWithKeyGap[newOrderId][trueOrFalseInteger].buttonData     = buttonData
-                        FCOAddInvFlagButtonContextMenuWithKeyGap[newOrderId][trueOrFalseInteger].buttonNameStr  = buttonNameStr
-                        --Increase the counter for added context menu entries
-                        contextMenuEntriesAdded = contextMenuEntriesAdded + 1
-                        --Remember the maximum sortOrder id
-                        if newOrderId > 0 and newOrderId > maxNewOrderId then maxNewOrderId = newOrderId end
-                    end
-                end
-
-            end -- if buttonNameStr ~= "" and buttonData ~= nil and buttonData.iconId ~= nil and buttonData.mark ~= nil then
+                if (buttonsIcon ~= nil and settings.isIconEnabled[buttonsIcon]) and buttonData.mark ~= nil then
+                    local isIconDisabledAtCompanionInv = (isCompanionInventory == true and iconsDisabledAtCompanionInv[buttonsIcon] == true) or false
+                    if not isIconDisabledAtCompanionInv then
+                        --The icon which the button affects -> Gets the text that should be displayed
+                        local isGear	= isIconGear[buttonsIcon]
+                        local isDynamic = isIconDynamic[buttonsIcon]
+                        --Use the custom sort order as it is valid, or do not sort and use the iconId instead as sortIndex
+                        if sortAddInvFlagContextMenu then
+                            newOrderId = settings.icon[buttonsIcon].sortOrder
+                        else
+                            newOrderId = buttonsIcon
+                        end
+                        if newOrderId > 0 and newOrderId <= numFilterIcons then
+                            --Initialize the context menu entry at the new index
+                            --Entry could be one for "mark" (+) and one for "unmark" (-) so the table needs to be kept if it already exists
+                            FCOAddInvFlagButtonContextMenuWithKeyGap[newOrderId] = FCOAddInvFlagButtonContextMenuWithKeyGap[newOrderId] or {}
+                            --Add subtable for mark (1=true) and unmark (0=false)
+                            local trueOrFalseInteger = -1
+                            if buttonData.mark == true then
+                                trueOrFalseInteger = 1
+                            elseif buttonData.mark == false then
+                                trueOrFalseInteger = 0
+                            end
+                            if trueOrFalseInteger > -1 then
+                                FCOAddInvFlagButtonContextMenuWithKeyGap[newOrderId][trueOrFalseInteger] = {}
+                                --Is the current control an equipment control?
+                                FCOAddInvFlagButtonContextMenuWithKeyGap[newOrderId][trueOrFalseInteger].index	        = index
+                                FCOAddInvFlagButtonContextMenuWithKeyGap[newOrderId][trueOrFalseInteger].iconId	        = buttonsIcon
+                                FCOAddInvFlagButtonContextMenuWithKeyGap[newOrderId][trueOrFalseInteger].isGear         = isGear
+                                FCOAddInvFlagButtonContextMenuWithKeyGap[newOrderId][trueOrFalseInteger].isDynamic      = isDynamic
+                                FCOAddInvFlagButtonContextMenuWithKeyGap[newOrderId][trueOrFalseInteger].buttonData     = buttonData
+                                FCOAddInvFlagButtonContextMenuWithKeyGap[newOrderId][trueOrFalseInteger].buttonNameStr  = buttonNameStr
+                                --Increase the counter for added context menu entries
+                                contextMenuEntriesAdded = contextMenuEntriesAdded + 1
+                                --Remember the maximum sortOrder id
+                                if newOrderId > 0 and newOrderId > maxNewOrderId then maxNewOrderId = newOrderId end
+                            end
+                        end
+                    end --if not isIconDisabledAtCompanionInv then
+                end -- if buttonNameStr ~= "" and buttonData ~= nil and buttonData.iconId ~= nil and buttonData.mark ~= nil then
+            end
         end -- for index, buttonNameStr in ipairs(invContextMenuButtonTemplateIndex) do
         --As the table FCOAddInvFlagButtonContextMenu could contain entries with "gaps" as key (icons could be disabled and therefor "skipped")
         --we need to rearrange the table key to be a non-gap integer value
@@ -3175,77 +3182,80 @@ function FCOIS.showContextMenuForAddInvButtons(invAddContextMenuInvokerButton)
             end
         end
 
-        --Add submenu for the automatic marking
-        --Ornate
-        local subMenuEntryAutomaticMarking = {
-            label 		= GetString(SI_ITEMTRAITTYPE10),
-            callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "ornate") end,
-            disabled	= function() return not settings.autoMarkOrnate or not settings.isIconEnabled[FCOIS_CON_ICON_SELL] end,
-        }
-        table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
-        --Intricate
-        subMenuEntryAutomaticMarking = {
-            label 		= GetString(SI_ITEMTRAITTYPE9),
-            callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "intricate") end,
-            disabled	= function() return not settings.autoMarkIntricate or not settings.isIconEnabled[FCOIS_CON_ICON_INTRICATE] end,
-        }
-        table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
-        --Research
-        subMenuEntryAutomaticMarking = {
-            label 		= GetString(SI_SMITHING_TAB_RESEARCH),
-            callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "research") end,
-            disabled	= function() return not settings.autoMarkResearch or not settings.isIconEnabled[FCOIS_CON_ICON_RESEARCH] or (not FCOIS.checkIfResearchAddonUsed() or not FCOIS.checkIfChosenResearchAddonActive(settings.researchAddonUsed)) end,
-        }
-        table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
-        --Research scrolls
-        subMenuEntryAutomaticMarking = {
-            label 		= GetString(SI_SMITHING_TAB_RESEARCH) .. " " .. GetString(SI_SPECIALIZEDITEMTYPE105),
-            callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "researchScrolls") end,
-            disabled	= function() return ((DetailedResearchScrolls == nil or DetailedResearchScrolls.GetWarningLine == nil) or not settings.autoMarkWastedResearchScrolls or not settings.isIconEnabled[FCOIS_CON_ICON_LOCK]) end,
-        }
-        table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
-        --Sets
-        subMenuEntryAutomaticMarking = {
-            label 		= locVars["options_enable_auto_mark_sets"],
-            callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "sets") end,
-            disabled	= function() return not settings.autoMarkSets or not settings.isIconEnabled[settings.autoMarkSetsIconNr] end,
-        }
-        table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
-        --Unknown set collection items
-        subMenuEntryAutomaticMarking = {
-            label 		= locVars["options_enable_auto_mark_unknown_set_collection_items"],
-            callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "setItemCollectionsUnknown") end,
-            disabled	= function() return not settings.autoMarkSetsItemCollectionBook or (settings.autoMarkSetsItemCollectionBookMissingIcon == FCOIS_CON_ICON_NONE or not settings.isIconEnabled[settings.autoMarkSetsItemCollectionBookMissingIcon] == true) end,
-        }
-        table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
-        --Known set collection items
-        subMenuEntryAutomaticMarking = {
-            label 		= locVars["options_enable_auto_mark_known_set_collection_items"],
-            callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "setItemCollectionsKnown") end,
-            disabled	= function() return not settings.autoMarkSetsItemCollectionBook or (settings.autoMarkSetsItemCollectionBookIcon == FCOIS_CON_ICON_NONE or not settings.isIconEnabled[settings.autoMarkSetsItemCollectionBookNonMissingIcon] == true) end,
-        }
-        table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
-        --Sets
-        subMenuEntryAutomaticMarking = {
-            label 		= locVars["options_enable_auto_mark_sets"],
-            callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "sets") end,
-            disabled	= function() return not settings.autoMarkSets or not settings.isIconEnabled[settings.autoMarkSetsIconNr] end,
-        }
-        table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
-        --Unknown recipes
-        subMenuEntryAutomaticMarking = {
-            label 		= GetString(SI_ITEM_FORMAT_STR_UNKNOWN_RECIPE),
-            callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "recipes") end,
-            disabled	= function() return not settings.autoMarkRecipes or not FCOIS.checkIfRecipeAddonUsed() or not settings.isIconEnabled[settings.autoMarkRecipesIconNr] end,
-        }
-        table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
-        --Known recipes
-        subMenuEntryAutomaticMarking = {
-            label 		= zo_strformat(GetString(SI_ITEM_FORMAT_STR_KNOWN_ITEM_TYPE), GetString(SI_ITEMTYPE29)),
-            callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "knownRecipes") end,
-            disabled	= function() return not settings.autoMarkKnownRecipes or not FCOIS.checkIfRecipeAddonUsed() or not settings.isIconEnabled[settings.autoMarkKnownRecipesIconNr] end,
-        }
-        table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
+        local subMenuEntryAutomaticMarking
+        if isCompanionInventory == false then
+            --Add submenu for the automatic marking
+            --Ornate
+            subMenuEntryAutomaticMarking = {
+                label 		= GetString(SI_ITEMTRAITTYPE10),
+                callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "ornate") end,
+                disabled	= function() return not settings.autoMarkOrnate or not settings.isIconEnabled[FCOIS_CON_ICON_SELL] end,
+            }
+            table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
+            --Intricate
+            subMenuEntryAutomaticMarking = {
+                label 		= GetString(SI_ITEMTRAITTYPE9),
+                callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "intricate") end,
+                disabled	= function() return not settings.autoMarkIntricate or not settings.isIconEnabled[FCOIS_CON_ICON_INTRICATE] end,
+            }
+            table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
+            --Research
+            subMenuEntryAutomaticMarking = {
+                label 		= GetString(SI_SMITHING_TAB_RESEARCH),
+                callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "research") end,
+                disabled	= function() return not settings.autoMarkResearch or not settings.isIconEnabled[FCOIS_CON_ICON_RESEARCH] or (not FCOIS.checkIfResearchAddonUsed() or not FCOIS.checkIfChosenResearchAddonActive(settings.researchAddonUsed)) end,
+            }
+            table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
+            --Research scrolls
+            subMenuEntryAutomaticMarking = {
+                label 		= GetString(SI_SMITHING_TAB_RESEARCH) .. " " .. GetString(SI_SPECIALIZEDITEMTYPE105),
+                callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "researchScrolls") end,
+                disabled	= function() return ((DetailedResearchScrolls == nil or DetailedResearchScrolls.GetWarningLine == nil) or not settings.autoMarkWastedResearchScrolls or not settings.isIconEnabled[FCOIS_CON_ICON_LOCK]) end,
+            }
+            table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
+            --Sets
+            subMenuEntryAutomaticMarking = {
+                label 		= locVars["options_enable_auto_mark_sets"],
+                callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "sets") end,
+                disabled	= function() return not settings.autoMarkSets or not settings.isIconEnabled[settings.autoMarkSetsIconNr] end,
+            }
+            table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
+            --Unknown set collection items
+            subMenuEntryAutomaticMarking = {
+                label 		= locVars["options_enable_auto_mark_unknown_set_collection_items"],
+                callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "setItemCollectionsUnknown") end,
+                disabled	= function() return not settings.autoMarkSetsItemCollectionBook or (settings.autoMarkSetsItemCollectionBookMissingIcon == FCOIS_CON_ICON_NONE or not settings.isIconEnabled[settings.autoMarkSetsItemCollectionBookMissingIcon] == true) end,
+            }
+            table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
+            --Known set collection items
+            subMenuEntryAutomaticMarking = {
+                label 		= locVars["options_enable_auto_mark_known_set_collection_items"],
+                callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "setItemCollectionsKnown") end,
+                disabled	= function() return not settings.autoMarkSetsItemCollectionBook or (settings.autoMarkSetsItemCollectionBookIcon == FCOIS_CON_ICON_NONE or not settings.isIconEnabled[settings.autoMarkSetsItemCollectionBookNonMissingIcon] == true) end,
+            }
+            table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
+            --Sets
+            subMenuEntryAutomaticMarking = {
+                label 		= locVars["options_enable_auto_mark_sets"],
+                callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "sets") end,
+                disabled	= function() return not settings.autoMarkSets or not settings.isIconEnabled[settings.autoMarkSetsIconNr] end,
+            }
+            table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
+            --Unknown recipes
+            subMenuEntryAutomaticMarking = {
+                label 		= GetString(SI_ITEM_FORMAT_STR_UNKNOWN_RECIPE),
+                callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "recipes") end,
+                disabled	= function() return not settings.autoMarkRecipes or not FCOIS.checkIfRecipeAddonUsed() or not settings.isIconEnabled[settings.autoMarkRecipesIconNr] end,
+            }
+            table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
+            --Known recipes
+            subMenuEntryAutomaticMarking = {
+                label 		= zo_strformat(GetString(SI_ITEM_FORMAT_STR_KNOWN_ITEM_TYPE), GetString(SI_ITEMTYPE29)),
+                callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "knownRecipes") end,
+                disabled	= function() return not settings.autoMarkKnownRecipes or not FCOIS.checkIfRecipeAddonUsed() or not settings.isIconEnabled[settings.autoMarkKnownRecipesIconNr] end,
+            }
+            table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
+        end
         --Quality
         subMenuEntryAutomaticMarking = {
             label 		= locVars["options_enable_auto_mark_quality_items"],

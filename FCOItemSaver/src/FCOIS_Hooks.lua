@@ -786,7 +786,7 @@ function FCOIS.CreateHooks()
         FCOIS.hideContextMenu(FCOIS.gFilterWhere)
 
         --Update the character's equipment markers, if the character/companion character screen is shown
-        if FCOIS.isCharacterShown() or FCOIS.isCOmpanionCharacterShown() then
+        if FCOIS.isCharacterShown() or FCOIS.isCompanionCharacterShown() then
             FCOIS.RefreshEquipmentControl()
         end
 
