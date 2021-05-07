@@ -232,7 +232,7 @@ ZO_PreHook("ZO_Menu_OnHide", function()
     --Check if the character window is shown and if the current scene is the inventory scene
     --The current game's SCENE and name (used for determining bank/guild bank deposit)
     local _, currentSceneName = FCOIS.getCurrentSceneInfo()
-    if not ctrlVars.CHARACTER:IsHidden() and currentSceneName == ctrlVars.invSceneName  then
+    if FCOIS.isCharacterShown() and currentSceneName == ctrlVars.invSceneName then
         --Show the PlayerProgressBar again as the context menu closes
         FCOIS.ShowPlayerProgressBar(true)
     end
@@ -401,10 +401,12 @@ local function FCOItemSaver_CharacterOnEffectivelyShown(self, ...)
     local contextMenuClearMarkesByShiftKey = FCOIS.settingsVars.settings.contextMenuClearMarkesByShiftKey
     local equipmentSlotName
     local characterEquipmentSlots = FCOIS.mappingVars.characterEquipmentSlots
+    local isCompanionCharacter = (ctrlVars.COMPANION_CHARACTER:IsHidden() == false) or false
+    local characterBaseCtrl = (isCompanionCharacter == true and ctrlVars.COMPANION_CHARACTER) or ctrlVars.CHARACTER
 --d("[FCOItemSaver_CharacterOnEffectivelyShown]: " .. self:GetName())
     for i = 1, self:GetNumChildren() do
         -- override OnMouseDoubleClick event of character window item controls, for each row (children)
-        equipmentSlotName = ctrlVars.CHARACTER:GetChild(i):GetName()
+        equipmentSlotName = characterBaseCtrl:GetChild(i):GetName()
         if equipmentSlotName ~= nil then
             local isEquipmentSlot = characterEquipmentSlots[equipmentSlotName] or false
             --if(string.find(equipmentSlotName, "ZO_CharacterEquipmentSlots")) then
@@ -496,7 +498,7 @@ local function FCOItemSaver_OnReceiveDrag(inventorySlot)
         if bag == nil or slot == nil then return end
         --Is item bindable and equipable?
         local doShowItemBindDialog = false
-        if ( not ctrlVars.CHARACTER:IsHidden() ) then
+        if ( FCOIS.isCharacterShown() or FCOIS.isCompanionCharacterShown() ) then
             local equipSucceeds, _ = IsEquipable(bag, slot)
             --Check if we need to show the "Ask before bind" dialog as the item get's dropped at an equipment slot
             if equipSucceeds and FCOIS.CheckBindableItems(bag, slot, nil, true) then
@@ -581,7 +583,7 @@ function FCOIS.CreateHooks()
         local contextMenuClearMarkesKey = settings.contextMenuClearMarkesModifierKey
         local contextMenuClearMarkesByShiftKey = specialContextMenuKeysCheckAndActions()
         --d("[FCOIS]contextMenuClearMarkesByShiftKey: " ..tostring(contextMenuClearMarkesByShiftKey))
-        local isCharacterShown = not FCOIS.ZOControlVars.CHARACTER:IsHidden()
+        local isCharacterShown = FCOIS.isCharacterShown()
 
         --d("[FCOIS]ZO_InventorySlot_ShowContextMenu - dontShowInvContextMenu: " ..tostring(FCOIS.preventerVars.dontShowInvContextMenu) .. ", isCharacterShown: " ..tostring(isCharacterShown))
         --Clear the sub context menu entries
@@ -770,7 +772,7 @@ function FCOIS.CreateHooks()
         if equipSlot ~= nil then
             if settings.debug then FCOIS.debugMessage( "[UnequipItem]","slotIndex: " .. equipSlot, true, FCOIS_DEBUG_DEPTH_NORMAL) end
             --If item was unequipped: Remove the armor type marker if necessary
-            FCOIS.removeArmorTypeMarker(BAG_WORN, equipSlot)
+            FCOIS.removeArmorTypeMarker(BAG_WORN, equipSlot) -->BAG_WORN will be updated to BAG_COMPANION_WORN internally!
             --Update the marker control of the new equipped item
             FCOIS.updateEquipmentSlotMarker(equipSlot, 1000)
         end
@@ -783,8 +785,8 @@ function FCOIS.CreateHooks()
         --Hide the context menu
         FCOIS.hideContextMenu(FCOIS.gFilterWhere)
 
-        --Update the character's equipment markers, if the character screen is shown
-        if not ctrlVars.CHARACTER:IsHidden() then
+        --Update the character's equipment markers, if the character/companion character screen is shown
+        if FCOIS.isCharacterShown() or FCOIS.isCOmpanionCharacterShown() then
             FCOIS.RefreshEquipmentControl()
         end
 
@@ -1134,6 +1136,10 @@ function FCOIS.CreateHooks()
     --======== CHARACTER ===========================================================
     --Pre Hook the character window for prevention methods
     ZO_PostHookHandler( ctrlVars.CHARACTER, "OnEffectivelyShown", FCOItemSaver_CharacterOnEffectivelyShown )
+
+    --======== COMPANION CHARACTER ===========================================================
+    --Pre Hook the companion character window for prevention methods
+    ZO_PostHookHandler( ctrlVars.COMPANION_CHARACTER, "OnEffectivelyShown", FCOItemSaver_CharacterOnEffectivelyShown )
 
     --======== RIGHT CLICK / CONTEXT MENU ==========================================
     --Pre Hook the right click/context menu addition of items

@@ -1916,6 +1916,22 @@ end
 --======================================================================================================================
 -- Is shown functions
 --======================================================================================================================
+--Is the character control shown
+function FCOIS.isCharacterShown()
+    return not ctrlVars.CHARACTER:IsHidden()
+end
+
+--Is the companion character control shown
+function FCOIS.isCompanionCharacterShown()
+    return not ctrlVars.COMPANION_CHARACTER:IsHidden()
+end
+
+--Is the companion iventory control shown
+function FCOIS.isCompanionInventoryShown()
+    return not ctrlVars.COMPANION_INV_CONTROL:IsHidden()
+end
+
+
 --Is the retrait station shown?
 function FCOIS.isRetraitStationShown()
     return ZO_RETRAIT_STATION_MANAGER:IsRetraitSceneShowing()
@@ -2010,8 +2026,9 @@ end
 --Show/Hide the player progress bar
 function FCOIS.ShowPlayerProgressBar(doShow)
     --d("[FCOIS] ShowPlayerProgressBar - doShow: " .. tostring(doShow))
-    if FCOIS.ZOControlVars.CHARACTER:IsHidden() then return false end
-    if ZO_PlayerProgress ~= nil then ZO_PlayerProgress:SetHidden(not doShow) end
+    if not FCOIS.isCharacterShown() then return false end
+    local playerProgressBar = ctrlVars.PLAYER_PROGRESS_BAR
+    if playerProgressBar ~= nil then playerProgressBar:SetHidden(not doShow) end
 end
 
 -- =====================================================================================================================

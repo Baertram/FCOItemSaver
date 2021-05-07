@@ -57,7 +57,7 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
         FCOIS.preventerVars.lastHoveredInvSlot = self.m_inventorySlot
     end
     local parentControl
-    local isShowingCharacter = not ctrlVars.CHARACTER:IsHidden()
+    local isShowingCharacter = FCOIS.isCharacterShown()
     --Chracter equipment, or normal slot?
     if (isShowingCharacter) then
         parentControl = self.m_inventorySlot
@@ -287,7 +287,8 @@ function FCOIS.contextMenuEntryTooltipFunc(control, inside, data)
     if not data then return end
     --Hide old text tooltips
     ZO_Tooltips_HideTextTooltip()
-    if not inside or not ZO_Menu.items or not control or not control:IsMouseEnabled() then return end
+    local zoMenu = ctrlVars.ZOMenu
+    if not inside or not zoMenu.items or not control or not control:IsMouseEnabled() then return end
     local settings = FCOIS.settingsVars.settings
     if not settings.contextMenuItemEntryShowTooltip then return end
     --Only show if SHIFT key is pressed?
@@ -297,7 +298,7 @@ function FCOIS.contextMenuEntryTooltipFunc(control, inside, data)
     --Check the selected menu index (row index)
     --index = zo_max(zo_min(index, #ZO_Menu.items), 1)
     --Check if the parentControl of the menu's item menu (e.g. the inventory row) is an allowed FCOIS control
-    local menuOwner = ZO_Menu.owner
+    local menuOwner = zoMenu.owner
     if menuOwner and menuOwner.GetName then
         local menuOwnerName = menuOwner:GetName()
         if not menuOwnerName then return false end
@@ -561,6 +562,8 @@ end
     local preventerVars = FCOIS.preventerVars
     local doResearchTraitCheck = FCOIS.checkVars.researchTraitCheck
     local addonVars = FCOIS.addonVars
+
+    local zoMenu = ctrlVars.ZOMenu
 
     --Define the font of the context menu entries
     if myFont == nil then
@@ -1075,7 +1078,7 @@ end
 
         --Modify the spacer context menu entry so it isn't enabled for the mouse
         if firstAdd and settings.showContextMenuDivider and contMenuVars ~= nil and contMenuVars.contextMenuIndex  ~= nil and contMenuVars.contextMenuIndex ~= -1 then
-            local contextMenuItemControl = ZO_Menu.items[contMenuVars.contextMenuIndex].item
+            local contextMenuItemControl = zoMenu.items[contMenuVars.contextMenuIndex].item
             if contextMenuItemControl ~= nil then
                 --Overwrite onMouseEnter events
                 if ( (contextMenuItemControl.creatingAddon and contextMenuItemControl.creatingAddon == addonVars.gAddonNameShort) and
@@ -1998,7 +2001,8 @@ function FCOIS.showContextMenuFilterButton(parentButton, p_FilterPanelId, contex
     --Show the context menu now
     ShowMenu(parentButton)
     --Reanchor the menu more to the left and bottom
-    reAnchorMenu(ZO_Menu, -5, -2)
+    local zoMenu = ctrlVars.ZOMenu
+    reAnchorMenu(zoMenu, -5, -2)
 end
 
 
@@ -2870,7 +2874,7 @@ function FCOIS.showContextMenuForAddInvButtons(invAddContextMenuInvokerButton)
            or FCOIS.localizationVars.contextEntries.menu_add_all_text == nil or FCOIS.localizationVars.contextEntries.menu_remove_all_text == nil then
             FCOIS.preventerVars.KeyBindingTexts = false
             FCOIS.preventerVars.gLocalizationDone = false
-d("[FCOIS]showContextMenuForAddInvButtons -> Localization fix")
+--d("[FCOIS]showContextMenuForAddInvButtons -> Localization fix")
             FCOIS.Localization()
         end
         local locVars = FCOIS.localizationVars.fcois_loc
@@ -3309,6 +3313,7 @@ d("[FCOIS]showContextMenuForAddInvButtons -> Localization fix")
         --Show the context menu at the clicked invoker button now
         ShowMenu(invAddContextMenuInvokerButton)
         --Reanchor the menu more to the left
-        reAnchorMenu(ZO_Menu, -5, 0)
+        local zoMenu = ctrlVars.ZOMenu
+        reAnchorMenu(zoMenu, -5, 0)
     end
 end

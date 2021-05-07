@@ -486,7 +486,7 @@ function FCOIS.MarkItem(bag, slot, iconId, showIcon, updateInventories)
 	if not checkIfFCOISSettingsWereLoaded(true) then return false end
 	--Are we restoring or clearing marker icons via SHIFT + right mouse button on an inventory row e.g.?
 	local isRestoringOrClearingMarkerIcons = (FCOIS.preventerVars.gRestoringMarkerIcons or FCOIS.preventerVars.gClearingMarkerIcons) or false
-	local isCharShown = (bag == BAG_WORN and not ZOsCtrlVars.CHARACTER:IsHidden())
+	local isCharShown = (bag == BAG_WORN and FCOIS.isCharacterShown())
 	local recurRetValTotal = true
 	--Check the type of iconId parameter
 	local iconIdType = type(iconId)

@@ -71,6 +71,8 @@ local currentCharacterNameMarked= currentStart..currentCharacterName..currentEnd
 local serverNames = mappingVars.serverNames
 local svAllAccountsName = FCOIS.svAllAccountsName
 
+local countAndUpdateEquippedArmorTypes = FCOIS.countAndUpdateEquippedArmorTypes
+
 local doNotRunDropdownValueSetFunc = false
 
 local editBoxesToSetTextTypes
@@ -6507,7 +6509,7 @@ function FCOIS.BuildAddonMenu()
                     getFunc = function() return FCOISsettings.armorTypeIconAtCharacterX end,
                     setFunc = function(offset)
                         FCOISsettings.armorTypeIconAtCharacterX = offset
-                        FCOIS.countAndUpdateEquippedArmorTypes()
+                        countAndUpdateEquippedArmorTypes()
                     end,
                     disabled = function() return not FCOISsettings.showArmorTypeIconAtCharacter end,
                     width="half",
@@ -6523,7 +6525,7 @@ function FCOIS.BuildAddonMenu()
                     getFunc = function() return FCOISsettings.armorTypeIconAtCharacterY end,
                     setFunc = function(offset)
                         FCOISsettings.armorTypeIconAtCharacterY = offset
-                        FCOIS.countAndUpdateEquippedArmorTypes()
+                        countAndUpdateEquippedArmorTypes()
                     end,
                     disabled = function() return not FCOISsettings.showArmorTypeIconAtCharacter end,
                     width="half",
@@ -6536,7 +6538,7 @@ function FCOIS.BuildAddonMenu()
                     getFunc = function() return FCOISsettings.armorTypeIconAtCharacterLightColor.r, FCOISsettings.armorTypeIconAtCharacterLightColor.g, FCOISsettings.armorTypeIconAtCharacterLightColor.b, FCOISsettings.armorTypeIconAtCharacterLightColor.a end,
                     setFunc = function(r,g,b,a)
                         FCOISsettings.armorTypeIconAtCharacterLightColor = {["r"] = r, ["g"] = g, ["b"] = b, ["a"] = a}
-                        FCOIS.countAndUpdateEquippedArmorTypes()
+                        countAndUpdateEquippedArmorTypes()
                     end,
                     width = "full",
                     disabled = function() return not FCOISsettings.showArmorTypeIconAtCharacter end,
@@ -6549,7 +6551,7 @@ function FCOIS.BuildAddonMenu()
                     getFunc = function() return FCOISsettings.armorTypeIconAtCharacterMediumColor.r, FCOISsettings.armorTypeIconAtCharacterMediumColor.g, FCOISsettings.armorTypeIconAtCharacterMediumColor.b, FCOISsettings.armorTypeIconAtCharacterMediumColor.a end,
                     setFunc = function(r,g,b,a)
                         FCOISsettings.armorTypeIconAtCharacterMediumColor = {["r"] = r, ["g"] = g, ["b"] = b, ["a"] = a}
-                        FCOIS.countAndUpdateEquippedArmorTypes()
+                        countAndUpdateEquippedArmorTypes()
                     end,
                     width = "full",
                     disabled = function() return not FCOISsettings.showArmorTypeIconAtCharacter end,
@@ -6562,7 +6564,7 @@ function FCOIS.BuildAddonMenu()
                     getFunc = function() return FCOISsettings.armorTypeIconAtCharacterHeavyColor.r, FCOISsettings.armorTypeIconAtCharacterHeavyColor.g, FCOISsettings.armorTypeIconAtCharacterHeavyColor.b, FCOISsettings.armorTypeIconAtCharacterHeavyColor.a end,
                     setFunc = function(r,g,b,a)
                         FCOISsettings.armorTypeIconAtCharacterHeavyColor = {["r"] = r, ["g"] = g, ["b"] = b, ["a"] = a}
-                        FCOIS.countAndUpdateEquippedArmorTypes()
+                        countAndUpdateEquippedArmorTypes()
                     end,
                     width = "full",
                     disabled = function() return not FCOISsettings.showArmorTypeIconAtCharacter end,

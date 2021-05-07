@@ -148,6 +148,18 @@ local function updateAlreadyBoundTexture(parent, pHideControl)
     end
 end
 
+local function resetCharacterArmorTypeNumbers()
+    --Reset the armor type counters
+    FCOIS.countVars.countLightArmor		= 0
+    FCOIS.countVars.countMediumArmor	= 0
+    FCOIS.countVars.countHeavyArmor		= 0
+    --Companion
+    FCOIS.countVars.countCompanionLightArmor	= 0
+    FCOIS.countVars.countCompanionMediumArmor	= 0
+    FCOIS.countVars.countCompanionHeavyArmor	= 0
+end
+
+
 --Create the marker controls, holding the icon textures
 --Will be created/updated as inventories get updated row by row (scrolling) -> by the help of function "CreateTextures()"
 --Will also add/show/hide the small "is the set item already bound" icon at the top-right edge of the item's image (children "Button" of parent)
@@ -422,10 +434,10 @@ function FCOIS.CreateTextures(whichTextures)
             end
         end
     end
-    --Player character
+    --Player character / Companion character
     if (whichTextures == 3 or doCreateAllTextures) then
         -- Marker function for character equipment if character window is shown
-        if (not FCOIS.ZOControlVars.CHARACTER:IsHidden() or FCOIS.addonVars.gAddonLoaded == false) then
+        if (FCOIS.isCharacterShown() or FCOIS.isCompanionCharacterShown() or FCOIS.addonVars.gAddonLoaded == false) then
             FCOIS.RefreshEquipmentControl()
         end
     end
@@ -521,7 +533,7 @@ function FCOIS.checkMarker(markerId)
         if not FCOIS.preventerVars.gChangedGears then
             zo_callLater(function()
                 --d("character hidden: " .. tostring(FCOIS.ZOControlVars.CHARACTER:IsHidden()))
-                if not FCOIS.ZOControlVars.CHARACTER:IsHidden() then
+                if FCOIS.isCharacterShown() or FCOIS.isCompanionCharacterShown() then
                     FCOIS.RefreshEquipmentControl()
                 end
             end, 100)
@@ -554,7 +566,8 @@ function FCOIS.ClearOrRestoreAllMarkers(rowControl, bagId, slotIndex)
         bagId, slotIndex = FCOIS.MyGetItemDetails(rowControl)
     end
     if bagId == nil or slotIndex == nil then return false end
-    local isCharacterShown = (bagId == BAG_WORN and not FCOIS.ZOControlVars.CHARACTER:IsHidden()) or false
+    local isCharacterShown = (bagId == BAG_WORN and FCOIS.isCharacterShown()) or false
+    local isCompanionCharacterShown = (bagId == BAG_COMPANION_WORN and FCOIS.isCompanionCharacterShown()) or false
     local lastMarkedIcons = FCOIS.lastMarkedIcons
     FCOIS.preventerVars.gOverrideInvUpdateAfterMarkItem = false
     FCOIS.preventerVars.gRestoringMarkerIcons = false
@@ -573,7 +586,7 @@ function FCOIS.ClearOrRestoreAllMarkers(rowControl, bagId, slotIndex)
             for iconId, iconIsMarked in pairs(alreadyRemovedMarkersForThatBagAndItem) do
                 --Reset all markers
                 --Refresh the control now to update the set marker icons?
-                local refreshNow = isCharacterShown or FCOIS.preventerVars.gOverrideInvUpdateAfterMarkItem
+                local refreshNow = isCharacterShown or isCompanionCharacterShown or FCOIS.preventerVars.gOverrideInvUpdateAfterMarkItem
     --d(">iconId: " ..tostring(iconId) .. ", isMarked: " .. tostring(iconIsMarked) .. ", refreshNow: " ..tostring(refreshNow))
                 --Set global preventer variable so no other marker icons will be set/removed during the restore
                 FCOIS.preventerVars.gRestoringMarkerIcons = true
@@ -633,7 +646,7 @@ function FCOIS.ClearOrRestoreAllMarkers(rowControl, bagId, slotIndex)
                 --Only save the last active marker icons if any marker icon was removed
                 if loc_marked_counter > 0 then
                     --Refresh the control now to update the cleared marker icons?
-                    local refreshNow = isCharacterShown or FCOIS.preventerVars.gOverrideInvUpdateAfterMarkItem
+                    local refreshNow = isCharacterShown or isCompanionCharacterShown or FCOIS.preventerVars.gOverrideInvUpdateAfterMarkItem
                     --Remove marker icon
 --d(">removing marker icon: " .. tostring(iconId))
                     --Set global preventer variable so no other marker icons will be set/removed during the clear
@@ -762,8 +775,9 @@ function FCOIS.checkIfClearOrRestoreAllMarkers(clickedRow, modifierKeyPressed, u
             --Is the character shown, then disable the context menu "hide" variable again as the order of hooks is not
             --the same like in the inventory and the context menu will be hidden twice in a row else!
             if not calledByKeybind then
-                local isCharacter = (bagId == BAG_WORN) and not FCOIS.ZOControlVars.CHARACTER:IsHidden()
-                if isCharacter then
+                local isCharacter = bagId == BAG_WORN and FCOIS.isCharacterShown()
+                local isCompanionCharacter = bagId == BAG_COMPANION_WORN and FCOIS.isCompanionCharacterShown()
+                if isCharacter == true or isCompanionCharacter == true then
                     FCOIS.preventerVars.dontShowInvContextMenu = false
                 end
             end
@@ -792,16 +806,22 @@ end
 local function AddArmorTypeIconToEquipmentSlot(equipmentSlotControl, armorType)
     if equipmentSlotControl == nil then return false end
     local characterEquipmentArmorSlots = FCOIS.mappingVars.characterEquipmentArmorSlots
+    local ctrlVars = FCOIS.ZOControlVars
+    local equipmentSlotName = equipmentSlotControl:GetName()
+
     --Check if the equipment slot control is an armor control
-    if not characterEquipmentArmorSlots[equipmentSlotControl:GetName()] then return false end
+    if not characterEquipmentArmorSlots[equipmentSlotName] then return false end
     if armorType == nil or armorType == ARMORTYPE_NONE then return false end
     local settings = FCOIS.settingsVars.settings
-    if settings.debug then FCOIS.debugMessage( "[AddArmorTypeIconToEquipmentSlot]","EquipmentSlot: " .. equipmentSlotControl:GetName() .. ", armorType: " .. tostring(armorType), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+    if settings.debug then FCOIS.debugMessage( "[AddArmorTypeIconToEquipmentSlot]","EquipmentSlot: " .. equipmentSlotName .. ", armorType: " .. tostring(armorType), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
 
-    local armorTypeLabel = WINDOW_MANAGER:GetControlByName("FCOIS_" .. equipmentSlotControl:GetName() .. "_ArmorTypeLabel")
+    local isCompanionCharacter = (equipmentSlotControl:GetParent() == ctrlVars.COMPANION_CHARACTER) or false
+--d(">equipmentSlotName: " ..tostring(equipmentSlotName) .. ", isCompanionCharacter: " ..tostring(isCompanionCharacter))
+
+    local armorTypeLabel = WINDOW_MANAGER:GetControlByName("FCOIS_" .. equipmentSlotName .. "_ArmorTypeLabel")
     if settings.showArmorTypeIconAtCharacter then
         if armorTypeLabel == nil then
-            armorTypeLabel = WINDOW_MANAGER:CreateControl("FCOIS_" .. equipmentSlotControl:GetName() .. "_ArmorTypeLabel", equipmentSlotControl, CT_LABEL)
+            armorTypeLabel = WINDOW_MANAGER:CreateControl("FCOIS_" .. equipmentSlotName .. "_ArmorTypeLabel", equipmentSlotControl, CT_LABEL)
         end
         if armorTypeLabel ~= nil then
             armorTypeLabel:SetFont("ZoFontAlert")
@@ -822,19 +842,31 @@ local function AddArmorTypeIconToEquipmentSlot(equipmentSlotControl, armorType)
     local locVars = FCOIS.localizationVars.fcois_loc
     --Count the different equipped armor parts and show the icon at the player doll, if enabled in the settings
     if 		armorType == ARMORTYPE_LIGHT then
-        FCOIS.countVars.countLightArmor = FCOIS.countVars.countLightArmor + 1
+        if isCompanionCharacter == true then
+            FCOIS.countVars.countCompanionLightArmor = FCOIS.countVars.countCompanionLightArmor + 1
+        else
+            FCOIS.countVars.countLightArmor = FCOIS.countVars.countLightArmor + 1
+        end
         if settings.showArmorTypeIconAtCharacter and armorTypeLabel ~= nil then
             armorTypeLabel:SetText(locVars["options_armor_type_icon_light_short"])
             armorTypeLabel:SetColor(settings.armorTypeIconAtCharacterLightColor.r, settings.armorTypeIconAtCharacterLightColor.g, settings.armorTypeIconAtCharacterLightColor.b, settings.armorTypeIconAtCharacterLightColor.a)
         end
     elseif	armorType == ARMORTYPE_MEDIUM then
-        FCOIS.countVars.countMediumArmor = FCOIS.countVars.countMediumArmor + 1
+        if isCompanionCharacter == true then
+            FCOIS.countVars.countCompanionMediumArmor = FCOIS.countVars.countCompanionMediumArmor + 1
+        else
+            FCOIS.countVars.countMediumArmor = FCOIS.countVars.countMediumArmor + 1
+        end
         if settings.showArmorTypeIconAtCharacter and armorTypeLabel ~= nil then
             armorTypeLabel:SetText(locVars["options_armor_type_icon_medium_short"])
             armorTypeLabel:SetColor(settings.armorTypeIconAtCharacterMediumColor.r, settings.armorTypeIconAtCharacterMediumColor.g, settings.armorTypeIconAtCharacterMediumColor.b, settings.armorTypeIconAtCharacterMediumColor.a)
         end
     elseif	armorType == ARMORTYPE_HEAVY then
-        FCOIS.countVars.countHeavyArmor = FCOIS.countVars.countHeavyArmor + 1
+        if isCompanionCharacter == true then
+            FCOIS.countVars.countCompanionHeavyArmor = FCOIS.countVars.countCompanionHeavyArmor + 1
+        else
+            FCOIS.countVars.countHeavyArmor = FCOIS.countVars.countHeavyArmor + 1
+        end
         if settings.showArmorTypeIconAtCharacter and armorTypeLabel ~= nil then
             armorTypeLabel:SetText(locVars["options_armor_type_icon_heavy_short"])
             armorTypeLabel:SetColor(settings.armorTypeIconAtCharacterHeavyColor.r, settings.armorTypeIconAtCharacterHeavyColor.g, settings.armorTypeIconAtCharacterHeavyColor.b, settings.armorTypeIconAtCharacterHeavyColor.a)
@@ -843,48 +875,98 @@ local function AddArmorTypeIconToEquipmentSlot(equipmentSlotControl, armorType)
 end
 
 --Update the equipment header text with the information about the amount of equipped armor types
-local function updateEquipmentHeaderCountText()
+local function updateEquipmentHeaderCountText(updateWhere)
+    local isCompanionCharacter = (updateWhere == "companion_character") or false
+    if isCompanionCharacter == true then
+        --Check all equipment controls -> Companion
+        if not FCOIS.isCompanionCharacterShown() then return end
+    end
+
     local showArmorTypeHeaderTextAtCharacter = FCOIS.settingsVars.settings.showArmorTypeHeaderTextAtCharacter
+    local updateWhereToCharacterApparelSection = FCOIS.mappingVars.characterApparelSection
+    local charApparelSectionCtrl = updateWhereToCharacterApparelSection[updateWhere]
+    if not charApparelSectionCtrl then return end
+
     if not showArmorTypeHeaderTextAtCharacter then
-        ZO_CharacterApparelSectionText:SetText(GetString(SI_CHARACTER_EQUIP_SECTION_APPAREL))
+        charApparelSectionCtrl:SetText(GetString(SI_CHARACTER_EQUIP_SECTION_APPAREL))
         return
     end
     local countVars = FCOIS.countVars
     local locVars = FCOIS.localizationVars.fcois_loc
-    if ZO_CharacterApparelSectionText ~= nil and
-            countVars.countLightArmor ~= nil and countVars.countMediumArmor ~= nil and countVars.countHeavyArmor ~= nil then
-        ZO_CharacterApparelSectionText:SetText(GetString(SI_CHARACTER_EQUIP_SECTION_APPAREL) .. " (" .. locVars["options_armor_type_icon_light_short"] .. ": " .. countVars.countLightArmor .. ", " .. locVars["options_armor_type_icon_medium_short"] .. ": " .. countVars.countMediumArmor .. ", " .. locVars["options_armor_type_icon_heavy_short"] .. ": " .. countVars.countHeavyArmor .. ")")
-    end
-end
-
---function to count and update the equipped aromor parts
-function FCOIS.countAndUpdateEquippedArmorTypes()
-    --Reset the armor type counters
-    FCOIS.countVars.countLightArmor		= 0
-    FCOIS.countVars.countMediumArmor	= 0
-    FCOIS.countVars.countHeavyArmor		= 0
-
-    --Check all equipment controls
-    local equipmentSlotControl
-    local characterEquipmentSlotNameByIndex = FCOIS.mappingVars.characterEquipmentSlotNameByIndex
-    for _, equipmentSlotName in pairs(characterEquipmentSlotNameByIndex) do
-        --Get the control of the equipment slot
-        equipmentSlotControl = WINDOW_MANAGER:GetControlByName(equipmentSlotName, "")
-        if equipmentSlotControl ~= nil then
-            --Show the armor type icons at the player doll?
-            AddArmorTypeIconToEquipmentSlot(equipmentSlotControl, FCOIS.GetArmorType(equipmentSlotControl))
+    if isCompanionCharacter == true then
+        if countVars.countCompanionLightArmor ~= nil or countVars.countCompanionMediumArmor ~= nil or countVars.countCompanionHeavyArmor ~= nil then
+            charApparelSectionCtrl:SetText(GetString(SI_CHARACTER_EQUIP_SECTION_APPAREL) .. " (" .. locVars["options_armor_type_icon_light_short"] .. ": " .. countVars.countCompanionLightArmor .. ", " .. locVars["options_armor_type_icon_medium_short"] .. ": " .. countVars.countCompanionMediumArmor .. ", " .. locVars["options_armor_type_icon_heavy_short"] .. ": " .. countVars.countCompanionHeavyArmor .. ")")
+        end
+    else
+        if countVars.countLightArmor ~= nil or countVars.countMediumArmor ~= nil or countVars.countHeavyArmor ~= nil then
+            charApparelSectionCtrl:SetText(GetString(SI_CHARACTER_EQUIP_SECTION_APPAREL) .. " (" .. locVars["options_armor_type_icon_light_short"] .. ": " .. countVars.countLightArmor .. ", " .. locVars["options_armor_type_icon_medium_short"] .. ": " .. countVars.countMediumArmor .. ", " .. locVars["options_armor_type_icon_heavy_short"] .. ": " .. countVars.countHeavyArmor .. ")")
         end
     end
-    --Update the equipment header text and show the amount of armor types equipped
-    updateEquipmentHeaderCountText()
 end
+
+--function to count and update the equipped armor parts of character and companion
+function FCOIS.countAndUpdateEquippedArmorTypes(doRefreshControl, doCreateMarkerControl, markerIconId)
+    doRefreshControl = doRefreshControl or false
+    local isCharacter = FCOIS.isCharacterShown()
+    local isCompanionCharacter = FCOIS.isCompanionCharacterShown()
+    if not isCharacter and not isCompanionCharacter then return end
+
+    --Reset the armor type counters
+    resetCharacterArmorTypeNumbers()
+
+    --Check all equipment controls -> Player
+    local equipmentSlotControl
+    local characterEquipmentSlotNameByIndex = FCOIS.mappingVars.characterEquipmentSlotNameByIndex
+    if isCharacter == true then
+        for _, equipmentSlotName in pairs(characterEquipmentSlotNameByIndex) do
+            --Get the control of the equipment slot
+            equipmentSlotControl = WINDOW_MANAGER:GetControlByName(equipmentSlotName, "")
+            if equipmentSlotControl ~= nil then
+                --Refresh each equipped item's marker icons
+                if doRefreshControl and markerIconId then
+                    FCOIS.RefreshEquipmentControl(equipmentSlotControl, doCreateMarkerControl, markerIconId)
+                end
+
+                --Show the armor type icons at the player doll?
+                AddArmorTypeIconToEquipmentSlot(equipmentSlotControl, FCOIS.GetArmorType(equipmentSlotControl))
+            end
+        end
+        --Update the equipment header text and show the amount of armor types equipped
+        updateEquipmentHeaderCountText("character")
+    end
+    ------------------------------------------------------------------------------------------------------------------------
+    --Check all equipment controls -> Companion
+    if isCompanionCharacter == true then
+        equipmentSlotControl = nil
+        local companionCharacterEquipmentSlotNameByIndex = FCOIS.mappingVars.companionCharacterEquipmentSlotNameByIndex
+        for _, equipmentSlotName in pairs(companionCharacterEquipmentSlotNameByIndex) do
+            --Get the control of the equipment slot
+            equipmentSlotControl = WINDOW_MANAGER:GetControlByName(equipmentSlotName, "")
+            if equipmentSlotControl ~= nil then
+                --Show the armor type icons at the player doll?
+                AddArmorTypeIconToEquipmentSlot(equipmentSlotControl, FCOIS.GetArmorType(equipmentSlotControl))
+            end
+        end
+        --Update the equipment header text and show the amount of armor types equipped
+        updateEquipmentHeaderCountText("companion_character")
+    end
+end
+local countAndUpdateEquippedArmorTypes = FCOIS.countAndUpdateEquippedArmorTypes
 
 --Remove the armor type marker from character doll
 function FCOIS.removeArmorTypeMarker(bagId, slotId)
     local settings = FCOIS.settingsVars.settings
-    local characterEquipmentSlotNameByIndex = FCOIS.mappingVars.characterEquipmentSlotNameByIndex
     if not settings.showArmorTypeIconAtCharacter then return false end
     if bagId == nil or slotId == nil then return false end
+    local characterEquipmentSlotNameByIndex
+
+    local isCompanionCharacter = FCOIS.isCompanionCharacterShown()
+    if isCompanionCharacter == true then
+        if bagId == BAG_WORN then bagId = BAG_COMPANION_WORN end
+        characterEquipmentSlotNameByIndex = FCOIS.mappingVars.companionCharacterEquipmentSlotNameByIndex
+    else
+        characterEquipmentSlotNameByIndex = FCOIS.mappingVars.characterEquipmentSlotNameByIndex
+    end
     local equipmentSlotControlName = characterEquipmentSlotNameByIndex[slotId]
     if equipmentSlotControlName == nil then return false end
     local equipmentSlotControl = WINDOW_MANAGER:GetControlByName(equipmentSlotControlName, "")
@@ -907,6 +989,10 @@ function FCOIS.RemoveEmptyWeaponEquipmentMarkers(delay)
     delay = delay or 0
     --Call delayed as the equipment needs to be unequipped first
     zo_callLater(function()
+        local isCharacter = FCOIS.isCharacterShown()
+        local isCompanionCharacter = FCOIS.isCompanionCharacterShown()
+        if not isCharacter and not isCompanionCharacter then return end
+
         local allowedCharacterEquipmentWeaponControlNames = FCOIS.checkVars.allowedCharacterEquipmentWeaponControlNames
         local allowedCharacterEquipmentWeaponBackupControlNames = FCOIS.checkVars.allowedCharacterEquipmentWeaponBackupControlNames
         local equipVars = FCOIS.equipmentVars
@@ -917,7 +1003,7 @@ function FCOIS.RemoveEmptyWeaponEquipmentMarkers(delay)
             if settings.debug then FCOIS.debugMessage( "[RemoveEmptyWeaponEquipmentMarkers]","equipmentControl: " .. equipmentControlName ..", delay: " .. delay, true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
             if equipmentControlName ~= nil and equipmentControlName ~= "" then
                 local equipmentControl = WINDOW_MANAGER:GetControlByName(equipmentControlName, "")
-                if equipmentControl ~= nil then
+                if equipmentControl ~= nil and equipmentControl:IsHidden() == false then
                     --Check if the current equipment slot name is a weapon backup slot
                     local twoHandedWeaponOffHand = false
                     if allowedCharacterEquipmentWeaponBackupControlNames[equipmentControlName] then
@@ -945,13 +1031,17 @@ function FCOIS.RefreshEquipmentControl(equipmentControl, doCreateMarkerControl, 
     dontCheckRings = dontCheckRings or false
     --Preset the value for "Create control if not existing yet" with false
     doCreateMarkerControl = doCreateMarkerControl or false
+    local isCharacter = FCOIS.isCharacterShown()
+    local isCompanionCharacter = FCOIS.isCompanionCharacterShown()
+    if not isCharacter and not isCompanionCharacter then return end
+
     local equipVars = FCOIS.equipmentVars
     local texVars = FCOIS.textureVars
     local settings = FCOIS.settingsVars.settings
     local checkVars = FCOIS.checkVars
 
     --is the equipment control already given?
-    if equipmentControl ~= nil then
+    if equipmentControl ~= nil and equipmentControl:IsHidden() == false then
         local width = settings.iconSizeCharacter or equipVars.gEquipmentIconWidth
         local height = settings.iconSizeCharacter or equipVars.gEquipmentIconHeight
         --Check all marker ids?
@@ -990,7 +1080,7 @@ function FCOIS.RefreshEquipmentControl(equipmentControl, doCreateMarkerControl, 
                 local otherRingSlotName = mappingOfRings[equipControlName]
                 local otherRingControl = WINDOW_MANAGER:GetControlByName(otherRingSlotName, "")
                 --Compare the item Ids/Unique itemIds (if enabled)
-                if otherRingControl ~= nil then
+                if otherRingControl ~= nil and otherRingControl:IsHidden() == false then
                     --Get the bag and slot
                     local bagRing2, slotRing2 = FCOIS.MyGetItemDetails(otherRingControl)
                     if bagRing2 ~= nil and slotRing2 ~= nil then
@@ -1011,10 +1101,9 @@ function FCOIS.RefreshEquipmentControl(equipmentControl, doCreateMarkerControl, 
     --Equipment control is not given yet, or unknown
     else
         if settings.debug then FCOIS.debugMessage( "[RefreshEquipmentControl]","ALL CONTROLS! Create: " .. tostring(doCreateMarkerControl) .. ", MarkId: " .. tostring(p_markId), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+        --[[
         --Reset the armor type counters
-        FCOIS.countVars.countLightArmor		= 0
-        FCOIS.countVars.countMediumArmor	= 0
-        FCOIS.countVars.countHeavyArmor		= 0
+        resetCharacterArmorTypeNumbers()
 
         --Check all equipment controls
         local equipmentSlotControl
@@ -1031,35 +1120,48 @@ function FCOIS.RefreshEquipmentControl(equipmentControl, doCreateMarkerControl, 
 
         --Update the equipment header text and show the amount of armor types equipped
         updateEquipmentHeaderCountText()
+        ]]
+        countAndUpdateEquippedArmorTypes(true, doCreateMarkerControl, p_markId)
     end
 end
 
 --Update one specific equipment slot by help of the slotIndex
 function FCOIS.updateEquipmentSlotMarker(slotIndex, delay)
-    local ctrlVars = FCOIS.ZOControlVars
+    local isCharacter = FCOIS.isCharacterShown()
+    local isCompanionCharacter = FCOIS.isCompanionCharacterShown()
+    if not isCharacter and not isCompanionCharacter then return end
+
     --Only execute if character window is shown
-    if (not ctrlVars.CHARACTER:IsHidden() and slotIndex ~= nil) then
+    if slotIndex ~= nil then
         local mappingVars = FCOIS.mappingVars
+        local armorSlots = mappingVars.characterEquipmentArmorSlots
+
         delay = delay or 0
         if delay > 0 then
             zo_callLater(function()
                 FCOIS.updateEquipmentSlotMarker(slotIndex, 0)
             end, delay)
         else
+            local equipSlotControlName
+            if isCompanionCharacter == true then
+                equipSlotControlName = mappingVars.companionCharacterEquipmentSlotNameByIndex[slotIndex]
+            else
+                equipSlotControlName = mappingVars.characterEquipmentSlotNameByIndex[slotIndex]
+            end
+
             --Get the equipment control by help of the slotIndex
-            local equipSlotControlName = mappingVars.characterEquipmentSlotNameByIndex[slotIndex]
             local equipSlotControl
             if equipSlotControlName ~= nil and equipSlotControlName ~= "" then
                 if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[updateEquipmentSlotMarker]","control name="..equipSlotControlName..", slotIndex: " .. slotIndex, true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
                 equipSlotControl = WINDOW_MANAGER:GetControlByName(equipSlotControlName, "")
             end
-            if equipSlotControl ~= nil then
+            if equipSlotControl ~= nil and equipSlotControl:IsHidden() == false then
                 --Add or refresh the equipped items, create marker control if not already there
                 FCOIS.RefreshEquipmentControl(equipSlotControl, true)
                 --Check if the equipment slot control is an armor control
-                if mappingVars.characterEquipmentArmorSlots[equipSlotControl:GetName()] then
+                if armorSlots[equipSlotControlName] ~= nil then
                     --Count the now equipped armor types and update the text at the character window armor header text
-                    FCOIS.countAndUpdateEquippedArmorTypes()
+                    countAndUpdateEquippedArmorTypes()
                 end
             end
         end
@@ -1069,6 +1171,11 @@ end
 --The callback function for the right click/context menus to mark all equipment items with one click
 function FCOIS.MarkAllEquipment(rowControl, markId, updateNow, doHide)
     if FCOIS.gFilterWhere == nil then return end
+
+    local isCharacter = FCOIS.isCharacterShown()
+    local isCompanionCharacter = FCOIS.isCompanionCharacterShown()
+    if not isCharacter and not isCompanionCharacter then return end
+
     --Set the last used filter Id
     FCOIS.lastVars.gLastFilterId[FCOIS.gFilterWhere] = FCOIS.mappingVars.iconToFilter[markId]
 
@@ -1080,14 +1187,23 @@ function FCOIS.MarkAllEquipment(rowControl, markId, updateNow, doHide)
     local checkVars = FCOIS.checkVars
     local ctrlVars = FCOIS.ZOControlVars
 
+    local characterCtrl = ctrlVars.CHARACTER
+    local equipmentSlotsCtrl = ctrlVars.CHARACTER_EQUIPMENT_SLOTS
+    if isCompanionCharacter == true then
+        characterCtrl = ctrlVars.COMPANION_CHARACTER
+        equipmentSlotsCtrl = ctrlVars.COMPANION_CHARACTER_EQUIPMENT_SLOTS
+    end
+    local equipmentSlotsCtrlName = equipmentSlotsCtrl:GetName()
+
     --Get each equipped item
-    for i=1, ctrlVars.CHARACTER:GetNumChildren() do
+    for i=1, characterCtrl:GetNumChildren() do
         dontChange = false
-        equipmentSlotName = ctrlVars.CHARACTER:GetChild(i):GetName()
+        equipmentControl = characterCtrl:GetChild(i)
+        equipmentSlotName = equipmentControl:GetName()
 --d("[FCOIS.MarkAllEquipment]equipmentSlotName: " ..tostring(equipmentSlotName))
         if settings.debug then FCOIS.debugMessage( "[MarkAllEquipment]","MarkId: " .. tostring(markId) .. ", EquipmentSlot: "..equipmentSlotName..", no_auto_mark: " .. tostring(checkVars.equipmentSlotsNames["no_auto_mark"][equipmentSlotName])) end
         --Is the current equipment slot a changeable one?
-        if(string.find(equipmentSlotName, ctrlVars.equipmentSlotsName)) then
+        if string.find(equipmentSlotName, equipmentSlotsCtrlName) then
             --Only mark weapons too if enabled in settings
             if ( (settings.autoMarkAllWeapon == false and checkVars.allowedCharacterEquipmentWeaponControlNames[equipmentSlotName] == true)
                     --Only mark jewelry too if enabled in settings
@@ -1099,22 +1215,18 @@ function FCOIS.MarkAllEquipment(rowControl, markId, updateNow, doHide)
                 dontChange = checkVars.equipmentSlotsNames["no_auto_mark"][equipmentSlotName] or false
             end
             --Are we allowed to change the marker?
-            if (dontChange == false) then
-                --get the control of the current equipment slot
-                equipmentControl = ctrlVars.CHARACTER:GetChild(i)
-                if (equipmentControl ~= nil) then
-                    --get the itemid
-                    local bag, slot = FCOIS.MyGetItemDetails(equipmentControl)
-                    if markId ~= nil and bag ~= nil and slot ~= nil then
-                        itemId = FCOIS.MyGetItemInstanceIdNoControl(bag, slot, true)
-                        if doHide == true then
-                            FCOIS.MarkItem(bag, slot, markId, false, false)
-                        else
-                            FCOIS.MarkItem(bag, slot, markId, true, false)
-                        end
-                        --Update the texture, create it if not there yet
-                        FCOIS.RefreshEquipmentControl(equipmentControl, true, markId)
+            if dontChange == false and equipmentControl ~= nil then
+                --get the itemid
+                local bag, slot = FCOIS.MyGetItemDetails(equipmentControl)
+                if markId ~= nil and bag ~= nil and slot ~= nil then
+                    itemId = FCOIS.MyGetItemInstanceIdNoControl(bag, slot, true)
+                    if doHide == true then
+                        FCOIS.MarkItem(bag, slot, markId, false, false)
+                    else
+                        FCOIS.MarkItem(bag, slot, markId, true, false)
                     end
+                    --Update the texture, create it if not there yet
+                    FCOIS.RefreshEquipmentControl(equipmentControl, true, markId)
                 end
             end
         end
