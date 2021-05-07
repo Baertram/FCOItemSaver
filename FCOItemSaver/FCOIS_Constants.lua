@@ -1821,9 +1821,11 @@ mappingVars.sellGuildIntToIcon = {
 
 --Mapping array for disabled marker icons at the companion inventory additional inventory "flag" context menu
 mappingVars.iconIsDisabledAtCompanion = {
-    [FCOIS_CON_ICON_DECONSTRUCTION] = true,
-    [FCOIS_CON_ICON_IMPROVEMENT]    = true,
-    [FCOIS_CON_ICON_RESEARCH]       = true,
+    [FCOIS_CON_ICON_DECONSTRUCTION]     = true,
+    [FCOIS_CON_ICON_IMPROVEMENT]        = true,
+    [FCOIS_CON_ICON_RESEARCH]           = true,
+    [FCOIS_CON_ICON_INTRICATE]          = true,
+    [FCOIS_CON_ICON_SELL_AT_GUILDSTORE] = true,
 }
 
 --Table with the weapon types for the main&offhand checks
