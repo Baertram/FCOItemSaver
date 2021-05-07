@@ -510,17 +510,21 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
     local controlName = rowControl:GetName()
     if parentName == nil or controlName == nil then return end
     local settings = FCOIS.settingsVars.settings
+    local mappingVars = FCOIS.mappingVars
+    local checkVars = FCOIS.checkVars
+
     local isIconEnabled = FCOIS.settingsVars.settings.isIconEnabled
     if not isIconEnabled[markId] then return false end
 
-    local isDynamicIcon = FCOIS.mappingVars.iconIsDynamic
-    --local isGearIcon = FCOIS.mappingVars.iconIsGear
+    local isDynamicIcon = mappingVars.iconIsDynamic
+    --local isGearIcon = mappingVars.iconIsGear
 	local isGearIcon = settings.iconIsGear
-    local notAllowedParentCtrls = FCOIS.checkVars.notAllowedContextMenuParentControls
-    local notAllowedCtls = FCOIS.checkVars.notAllowedContextMenuControls
-    local researchableIcons = FCOIS.mappingVars.iconIsResearchable
-    local allowedCharacterCtrls = FCOIS.checkVars.allowedCharacterEquipmentWeaponControlNames
-    local allowedCharacterJewelryControls = FCOIS.checkVars.allowedCharacterEquipmentJewelryControlNames
+    local notAllowedParentCtrls = checkVars.notAllowedContextMenuParentControls
+    local notAllowedCtls = checkVars.notAllowedContextMenuControls
+    local researchableIcons = mappingVars.iconIsResearchable
+    local iconsDisabledAtCompanion = mappingVars.iconIsDisabledAtCompanion
+    local allowedCharacterCtrls = checkVars.allowedCharacterEquipmentWeaponControlNames
+    local allowedCharacterJewelryControls = checkVars.allowedCharacterEquipmentJewelryControlNames
     local customMenuVars = FCOIS.customMenuVars
 
     --Initialization of variables
@@ -535,12 +539,14 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
     local isDynamic = isDynamicIcon[markId] or false
     local isGear = isGearIcon[markId] or false
     local isResearchAble = researchableIcons[markId] or false
+    local isIconDisabledAtCompanion = iconsDisabledAtCompanion[markId] or false
+
     local notAllowed = false
     local notAllowedCollectible = false
-    local dataEntryOfControl = rowControl.dataEntry
     --[[
     --Todo: --Why did I not allow collectibles here? Maybe as collectibles were inside the inventories and not directly moved to the collectibles?
     local collectibleId
+    local dataEntryOfControl = rowControl.dataEntry
     if dataEntryOfControl and dataEntryOfControl.data then
         collectibleId = dataEntryOfControl.data.collectibleId
         --Fix for Unboxer (and maybe other) addon(s): It always sets the collectibleId to 0 also for non collectible items! Normally it would be NIL.
@@ -560,7 +566,7 @@ end
     local contextMenuEntryTextPre = ""
     local contextMenuSubMenuEntryTextPre = ""
     local preventerVars = FCOIS.preventerVars
-    local doResearchTraitCheck = FCOIS.checkVars.researchTraitCheck
+    local doResearchTraitCheck = checkVars.researchTraitCheck
     local addonVars = FCOIS.addonVars
 
     local zoMenu = ctrlVars.ZOMenu
@@ -654,24 +660,31 @@ end
     end
 
     --Introduced with FCOIS version 1.0.6
-    --Check if an item is not-bound yet and only allow to mark it if it's still unbound
-    if doCheckOnlyUnbound then
-        --Check if the item is bound yet
-        local bag, slotId
-        --Were the bagId and slotIndex already set from IIfA savedvars?
-        if FCOIS.IIfAclicked ~= nil then
-            bag = FCOIS.IIfAclicked.bagId
-            slotId = FCOIS.IIfAclicked.slotIndex
-        else
-            bag, slotId = FCOIS.MyGetItemDetails(rowControl)
-        end
-        if bag ~= nil and slotId ~= nil then
+    --Check if the item is bound yet
+    local bag, slotId
+    --Were the bagId and slotIndex already set from IIfA savedvars?
+    if FCOIS.IIfAclicked ~= nil then
+        bag = FCOIS.IIfAclicked.bagId
+        slotId = FCOIS.IIfAclicked.slotIndex
+    else
+        bag, slotId = FCOIS.MyGetItemDetails(rowControl)
+    end
+
+    if bag ~= nil and slotId ~= nil then
+        --Check if an item is not-bound yet and only allow to mark it if it's still unbound
+        if doCheckOnlyUnbound then
             local isBound = FCOIS.isItemBound(bag, slotId) or false
             --The item is already bound but it should only be un-bound to allow the marker icon
             --> Remove the marker icon from the context menu
             if isBound then return false end
         end
+
+        --Companion owned item and possible icon that should not be applied to context menu?
+        if isIconDisabledAtCompanion == true and FCOIS.isItemOwnerCompanion(bag, slotId) == true then
+            return false
+        end
     end
+
 
     --Update the list / popup dialog list?
     if refreshPopupDialog == true then
@@ -2297,6 +2310,8 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
 --d("[FCOIS]ContextMenuForAddInvButtonsOnClicked - buttonCtrl: " .. tostring(buttonCtrl:GetName())  .. ", iconId: " .. tostring(iconId)  .. ", doMark: " .. tostring(doMark)  .. ", specialButtonType: " .. tostring(specialButtonType))
     --Table for the allowed special button types, if iconId = nil and doMark = nil
     local settings = FCOIS.settingsVars.settings
+    local mappingVars = FCOIS.mappingVars
+    local contMenuVars = FCOIS.contextMenuVars
     local allowedSpecialButtonTypes = {
         ["quality"]                     = {allowed = true, icon = settings.autoMarkQualityIconNr},
         ["intricate"]                   = {allowed = true, icon = FCOIS_CON_ICON_INTRICATE},
@@ -2311,6 +2326,7 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
     }
 
     local isCompanionInventory = false
+    local iconsDisabledAtCompanion = mappingVars.iconIsDisabledAtCompanion
 
     local isUNDOButton 			 		= (specialButtonType == "UNDO") or false
     local isREMOVEALLGEARSButton 		= (specialButtonType == "REMOVE_ALL_GEAR") or false
@@ -2325,8 +2341,6 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
 
     local INVENTORY_TO_SEARCH
     local contextmenuType
-    local mappingVars = FCOIS.mappingVars
-    local contMenuVars = FCOIS.contextMenuVars
     --(Jewelry) Refinement panel?
     if (FCOIS.gFilterWhere == LF_SMITHING_REFINE or FCOIS.gFilterWhere == LF_JEWELRY_REFINE) then
         INVENTORY_TO_SEARCH = ctrlVars.REFINEMENT
@@ -2383,9 +2397,18 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
     --No inventory to search in given? Abort here!
     if INVENTORY_TO_SEARCH == nil then return end
 
-    local function doCompanionItemChecks(bagId, slotIndex)
-        if not isCompanionInventory then return true end
-        return (GetItemActorCategory(bagId, slotIndex) == GAMEPLAY_ACTOR_CATEGORY_COMPANION) or false
+    local function doCompanionItemChecks(bagId, slotIndex, iconId)
+        if not isCompanionInventory then
+            --No icon id checks possible? Allow the chnage via the add. inv. "flag" context menu entry
+            if not iconId then return true end
+            --Icon that should not be applied to items via mass-marking from the add. inv. "flag" context menu entries?
+            local isIconDisabledAtCompanion = iconsDisabledAtCompanion[iconId] or false
+            if not isIconDisabledAtCompanion then
+                return true
+            end
+        end
+        local isCompanionOnwed = FCOIS.isItemOwnerCompanion(bagId, slotIndex)
+        return not isCompanionOnwed
     end
 
     --Are we marking/unmarking items or are we undoing the last change at this current panel?
@@ -2454,7 +2477,7 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                             end
                         end
                         if allowedToMark == true then
-                            allowedToMark = doCompanionItemChecks(bagId, slotIndex)
+                            allowedToMark = doCompanionItemChecks(bagId, slotIndex, iconId)
                         end
                         --Finally: Is the item allowed to be marked with this iconId?
                         if allowedToMark == true then
@@ -2624,7 +2647,7 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                     bagId     = data.bagId
                     slotIndex = data.slotIndex
                     if bagId ~= nil and slotIndex ~= nil then
-                        allowedToMark = doCompanionItemChecks(bagId, slotIndex)
+                        allowedToMark = doCompanionItemChecks(bagId, slotIndex, nil)
                         if allowedToMark == true then
                             myItemInstanceId = FCOIS.MyGetItemInstanceIdNoControl(bagId, slotIndex)
                             if myItemInstanceId ~= nil then
@@ -2699,7 +2722,7 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                     bagId     = data.bagId
                     slotIndex = data.slotIndex
                     if bagId ~= nil and slotIndex ~= nil then
-                        allowedToMark = doCompanionItemChecks(bagId, slotIndex)
+                        allowedToMark = doCompanionItemChecks(bagId, slotIndex, nil)
                         if allowedToMark == true then
                             myItemInstanceId = FCOIS.MyGetItemInstanceIdNoControl(bagId, slotIndex)
                             if myItemInstanceId ~= nil then
@@ -2877,6 +2900,10 @@ function FCOIS.showContextMenuForAddInvButtons(invAddContextMenuInvokerButton)
     --FCOIS v.0.8.8d
     --Add ZOs ZO_Menu contextMenu entries via addon library libCustomMenu
     local panelId = FCOIS.gFilterWhere
+    local mappingVars = FCOIS.mappingVars
+    local localizationVars = FCOIS.localizationVars
+    local locContextEntriesVars = localizationVars.contextEntries
+
     --Is a menu already shown?
     if (GetMenuOwner(invAddContextMenuInvokerButton) and menuVisibleCheck()==true) then
         --Hide the actual contextmenu first
@@ -2884,28 +2911,29 @@ function FCOIS.showContextMenuForAddInvButtons(invAddContextMenuInvokerButton)
     else
         local settings = FCOIS.settingsVars.settings
         --Fallback: Was the localization not done properly?
-        if FCOIS.localizationVars.contextEntries.menu_add_dynamic_text == nil or FCOIS.localizationVars.contextEntries.menu_remove_dynamic_text == nil
-           or FCOIS.localizationVars.contextEntries.menu_add_all_text == nil or FCOIS.localizationVars.contextEntries.menu_remove_all_text == nil then
+        if locContextEntriesVars.menu_add_dynamic_text == nil or locContextEntriesVars.menu_remove_dynamic_text == nil
+           or locContextEntriesVars.menu_add_all_text == nil or locContextEntriesVars.menu_remove_all_text == nil then
             FCOIS.preventerVars.KeyBindingTexts = false
             FCOIS.preventerVars.gLocalizationDone = false
 --d("[FCOIS]showContextMenuForAddInvButtons -> Localization fix")
             FCOIS.Localization()
         end
-        local locVars = FCOIS.localizationVars.fcois_loc
-        local locContextEntriesVars = FCOIS.localizationVars.contextEntries
+        local locVars = localizationVars.fcois_loc
 
         local _, countDynIconsEnabled = FCOIS.countMarkerIconsEnabled()
         local useDynSubMenu = (settings.useDynSubMenuMaxCount > 0 and countDynIconsEnabled >= settings.useDynSubMenuMaxCount) or false
-        local icon2Gear = FCOIS.mappingVars.iconToGear
-        local icon2Dynamic = FCOIS.mappingVars.iconToDynamic
-        --local isIconGear	= FCOIS.mappingVars.iconIsGear
+        local icon2Gear = mappingVars.iconToGear
+        local icon2Dynamic = mappingVars.iconToDynamic
+        --local isIconGear	= mappingVars.iconIsGear
         local isIconGear = settings.iconIsGear
-        local isIconDynamic = FCOIS.mappingVars.iconIsDynamic
-        local iconsDisabledAtCompanionInv = FCOIS.mappingVars.iconIsDisabledAtCompanion
+        local isIconDynamic = mappingVars.iconIsDynamic
+        local iconsDisabledAtCompanionInv = mappingVars.iconIsDisabledAtCompanion
         local sortAddInvFlagContextMenu = settings.sortIconsInAdditionalInvFlagContextMenu
         local contextMenuVars = FCOIS.contextMenuVars
+        local isCompanionSupportedPanel = mappingVars.isCompanionSupportedPanel
 
-        local isCompanionInventory = (panelId == LF_INVENTORY_COMPANION) or false
+        local isCompanionInventory = (panelId == LF_INVENTORY_COMPANION)
+                or (isCompanionSupportedPanel[panelId] and FCOIS.doesPlayerInventoryCurrentFilterEqualCompanion(panelId)) or false
 
         --d("[FCOIS]showContextMenuForAddInvButtons, countDynIconsEnabled: " ..tostring(countDynIconsEnabled) .. ", useDynSubMenu: " ..tostring(useDynSubMenu) .. ", sortAddInvFlagContextMenu: " ..tostring(sortAddInvFlagContextMenu))
 

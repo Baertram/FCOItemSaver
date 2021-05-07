@@ -1189,6 +1189,7 @@ mappingVars.libFiltersPanelIdToInventory = {
     [LF_HOUSE_BANK_WITHDRAW]        = INVENTORY_HOUSE_BANK,
     [LF_HOUSE_BANK_DEPOSIT]			= INVENTORY_BACKPACK,
     [LF_QUICKSLOT]                  = ctrlVars.QUICKSLOT_WINDOW,
+	[LF_COMPANION_INVENTORY]    	= INVENTORY_BACKPACK,
 }
 
 --The mapping table between the LibFilters filterPaneLid constant and the crafting inventories
@@ -1819,13 +1820,26 @@ mappingVars.sellGuildIntToIcon = {
     [3] = FCOIS_CON_ICON_INTRICATE,
 }
 
---Mapping array for disabled marker icons at the companion inventory additional inventory "flag" context menu
+--Mapping array for disabled marker icons at the companion inventory additional inventory "flag" context menu AND at the
+--normal context menus, as companion items should not be marked with these icons!
 mappingVars.iconIsDisabledAtCompanion = {
+    [FCOIS_CON_ICON_RESEARCH]           = true,
     [FCOIS_CON_ICON_DECONSTRUCTION]     = true,
     [FCOIS_CON_ICON_IMPROVEMENT]        = true,
-    [FCOIS_CON_ICON_RESEARCH]           = true,
-    [FCOIS_CON_ICON_INTRICATE]          = true,
     [FCOIS_CON_ICON_SELL_AT_GUILDSTORE] = true,
+    [FCOIS_CON_ICON_INTRICATE]          = true,
+}
+
+--LibFilters filterType constants of the panels that support the companion main filterbar button
+mappingVars.isCompanionSupportedPanel = {
+    [LF_INVENTORY]          = true,
+    [LF_MAIL_SEND]          = true,
+    [LF_TRADE]              = true,
+    [LF_BANK_DEPOSIT]       = true,
+    [LF_BANK_WITHDRAW]      = true,
+    [LF_GUILDBANK_DEPOSIT]  = true,
+    [LF_GUILDBANK_WITHDRAW] = true,
+    [LF_VENDOR_SELL]        = true,
 }
 
 --Table with the weapon types for the main&offhand checks

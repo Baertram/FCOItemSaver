@@ -902,8 +902,30 @@ function FCOIS.MyGetItemDetailsByBagAndSlot(bagId, slotIndex)
 end
 
 --==============================================================================
--- is Item functions
+-- Is Item functions
 --==============================================================================
+function FCOIS.doesPlayerInventoryCurrentFilterEqual(inventoryVar, currentFilter)
+    return (PLAYER_INVENTORY.inventories[inventoryVar].currentFilter == currentFilter) or false
+end
+local doesPlayerInventoryCurrentFilterEqual = FCOIS.doesPlayerInventoryCurrentFilterEqual
+
+function FCOIS.doesPlayerInventoryCurrentFilterEqualCompanion(panelId)
+    local libFiltersPanelIdToInventory = FCOIS.mappingVars.libFiltersPanelIdToInventory
+    local invType = libFiltersPanelIdToInventory[panelId]
+    if invType == nil then return end
+    return doesPlayerInventoryCurrentFilterEqual(invType, ITEM_TYPE_DISPLAY_CATEGORY_COMPANION)
+end
+
+-- Check if an item owner is a companion
+function FCOIS.isItemOwnerCompanion(bagId, slotIndex)
+    return (GetItemActorCategory(bagId, slotIndex) == GAMEPLAY_ACTOR_CATEGORY_COMPANION) or false
+end
+
+-- Check if an itemLink owner is a companion
+function FCOIS.isItemLinkOwnerCompanion(itemLink)
+    return (GetItemLinkActorCategory(itemLink) == GAMEPLAY_ACTOR_CATEGORY_COMPANION) or false
+end
+
 function FCOIS.isItemType(bag, slot, itemTypes)
     if not itemTypes then return false end
     local isItemTypeVar
