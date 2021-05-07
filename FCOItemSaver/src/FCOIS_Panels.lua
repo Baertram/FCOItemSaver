@@ -241,8 +241,10 @@ function FCOIS.getWhereAreWe(panelId, panelIdAtCall, bag, slot, isDragAndDrop, c
             whereAreWe = FCOIS_CON_FALLBACK
             --Are we at a transmutation/retrait station?
         elseif (FCOIS.isRetraitStationShown() or panelId == LF_RETRAIT) then
-            --Set whereAreWe to FCOIS_CON_FALLBACK so the anti-settings mapping function returns "false"
             whereAreWe = FCOIS_CON_RETRAIT
+            --Are we at a companion inventory?
+        elseif (FCOIS.isCompanionInventoryShown() or panelId == LF_INVENTORY_COMPANION) then
+            whereAreWe = FCOIS_CON_COMPANION_DESTROY
             --Are we at the inventory/bank/guild bank and trying to use/equip/deposit an item?
         elseif (not ctrlVars.BACKPACK:IsHidden() or panelId == LF_INVENTORY or panelId == LF_BANK_DEPOSIT or panelId == LF_GUILDBANK_DEPOSIT or panelId == LF_HOUSE_BANK_DEPOSIT) then
             --Check if player or guild bank is active by checking current scene in scene manager
@@ -495,7 +497,7 @@ function FCOIS.checkActivePanel(comingFrom, overwriteFilterWhere)
         FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(LF_RETRAIT)
         inventoryName = ctrlVars2.RETRAIT_INV
     --COmpanion inventory
-    elseif (not ctrlVars2.COMPANION_INV_CONTROL:IsHidden() or comingFrom == LF_INVENTORY_COMPANION) then
+    elseif (FCOIS.isCompanionInventoryShown() or comingFrom == LF_INVENTORY_COMPANION) then
         --Update the filterPanelId
         FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(LF_INVENTORY_COMPANION)
         inventoryName = ctrlVars2.COMPANION_INV_CONTROL

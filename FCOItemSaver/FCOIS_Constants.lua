@@ -2213,13 +2213,13 @@ checkVars.autoReenableAntiSettingsCheckWheres = {
 checkVars.autoReenableAntiSettingsCheckWheresAll = "-ALL-"
 --The filter panelÍds which need to be checked if anti-destroy is checked
 checkVars.filterPanelIdsForAntiDestroy = {
-    [LF_INVENTORY]          = true,
-    [LF_BANK_WITHDRAW]      = true,
-    [LF_HOUSE_BANK_WITHDRAW]= true,
-    [LF_BANK_DEPOSIT]       = true,
-    [LF_GUILDBANK_DEPOSIT]  = true,
-    [LF_HOUSE_BANK_DEPOSIT] = true,
-    [LF_INVENTORY_COMPANION] = true,
+    [LF_INVENTORY]              = true,
+    [LF_BANK_WITHDRAW]          = true,
+    [LF_HOUSE_BANK_WITHDRAW]    = true,
+    [LF_BANK_DEPOSIT]           = true,
+    [LF_GUILDBANK_DEPOSIT]      = true,
+    [LF_HOUSE_BANK_DEPOSIT]     = true,
+    [LF_INVENTORY_COMPANION]    = true,
 }
 
 --BagId to SetTracker addon settings in FCOIS

@@ -96,7 +96,6 @@ function FCOIS.checkIfProtectedSettingsEnabled(checkType, iconNr, isDynamicIcon,
         [LF_MAIL_SEND] 					= {[LF_MAIL_SEND]=settings.blockSendingByMail, [LF_CRAFTBAG]=settings.blockSendingByMail},
         [LF_TRADE] 						= {[LF_TRADE]=settings.blockTrading, [LF_CRAFTBAG]=settings.blockTrading},
         [LF_RETRAIT] 					= {[LF_RETRAIT]=settings.blockRetrait},
-        --[LF_INVENTORY_COMPANION]        = {[LF_INVENTORY_COMPANION]=settings.blockDestroy},
         --Special entries for the call from ItemSelectionHandler() function's variable 'whereAreWe'
         [FCOIS_CON_CONTAINER_AUTOOLOOT]	= {[FCOIS_CON_CONTAINER_AUTOOLOOT]=settings.blockAutoLootContainer},	--Auto loot container
         [FCOIS_CON_RECIPE_USAGE]		= {[FCOIS_CON_RECIPE_USAGE]=settings.blockMarkedRecipes}, 		--Recipe

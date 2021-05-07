@@ -3249,6 +3249,7 @@ function FCOIS.showContextMenuForAddInvButtons(invAddContextMenuInvokerButton)
         --Context menu buttons for "Anti-*" settings
         --Get the anti settings text for the current filter panel
         local antiButtonText, _ = FCOIS.getContextMenuAntiSettingsTextAndState(panelId, true)
+d("[FCOIS.showContextMenuForAddInvButtons]panelId: " ..tostring(panelId))
         if antiButtonText ~= nil and antiButtonText ~= "" then
             AddCustomMenuItem(antiButtonText, function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "ANTI_SETTINGS") end, MENU_ADD_OPTION_LABEL)
         end

@@ -517,6 +517,7 @@ function FCOIS.Localization()
     --Set the alert message texts as an item gets checked against anti-* (localized!)
     FCOIS.mappingVars.whereAreWeToAlertmessageText = {
         [FCOIS_CON_DESTROY]				=	locTexts["destroying_not_allowed"],
+        [FCOIS_CON_COMPANION_DESTROY]	=	locTexts["destroying_not_allowed"],
         [FCOIS_CON_MAIL]				=	locTexts["sendbymail_not_allowed"],
         [FCOIS_CON_TRADE]				=	locTexts["trading_not_allowed"],
         [FCOIS_CON_SELL]				=	locTexts["selling_not_allowed"],
@@ -542,7 +543,6 @@ function FCOIS.Localization()
         [FCOIS_CON_CROWN_ITEM]			=	locTexts["crown_item_usage_not_allowed"],
         [FCOIS_CON_CRAFTBAG_DESTROY]	=	locTexts["destroying_not_allowed"],
         [FCOIS_CON_RETRAIT]	            =	locTexts["retrait_not_allowed"],
-        [FCOIS_CON_COMPANION_DESTROY]	=	locTexts["destroying_not_allowed"],
         [FCOIS_CON_FALLBACK]			=   locTexts["destroying_not_allowed"],  -- Fallback: Destroying not allowed (used at bank deposit, guild bank deposit, bank withdraw, guild bank withdraw, ...)
     }
 

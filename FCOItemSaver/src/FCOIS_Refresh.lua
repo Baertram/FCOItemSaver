@@ -258,7 +258,7 @@ end
 function FCOIS.RefreshCompanionInventory()
     local updateFilteredItemCount = false
     local ZOsControlVars = FCOIS.ZOControlVars
-    if not ZOsControlVars.COMPANION_INV_CONTROL:IsHidden() then
+    if FCOIS.isCompanionInventoryShown() then
         if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[RefreshCompanionInventory]","Companion inv. refresh", true, FCOIS_DEBUG_DEPTH_DETAILED) end
         FCOIS.preventerVars.isInventoryListUpdating = true
         ZO_ScrollList_RefreshVisible(ZOsControlVars.COMPANION_INV_LIST)
