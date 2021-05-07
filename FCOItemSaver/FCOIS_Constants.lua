@@ -1189,7 +1189,7 @@ mappingVars.libFiltersPanelIdToInventory = {
     [LF_HOUSE_BANK_WITHDRAW]        = INVENTORY_HOUSE_BANK,
     [LF_HOUSE_BANK_DEPOSIT]			= INVENTORY_BACKPACK,
     [LF_QUICKSLOT]                  = ctrlVars.QUICKSLOT_WINDOW,
-	[LF_COMPANION_INVENTORY]    	= INVENTORY_BACKPACK,
+	[LF_INVENTORY_COMPANION]    	= INVENTORY_BACKPACK,
 }
 
 --The mapping table between the LibFilters filterPaneLid constant and the crafting inventories
