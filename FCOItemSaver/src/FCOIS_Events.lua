@@ -585,7 +585,7 @@ local function FCOItemSaver_Inv_Single_Slot_Update(_, bagId, slotId, isNewItem, 
     --d(">3")
 
     --All bags except the equipment
-    if bagId ~= BAG_WORN then
+    if bagId ~= BAG_WORN and bagId ~= BAG_COMPANION_WORN then
         --Abort if not new item is added to inventory
         if (not isNewItem) then return end
         --d(">4")
@@ -635,7 +635,7 @@ local function FCOItemSaver_Inv_Single_Slot_Update(_, bagId, slotId, isNewItem, 
             --end
         end
 
-        --Equipment bag:  BAG_WORN (character equipment)
+    --Equipment bag:  BAG_WORN (character equipment) or BAG_COMPANION_WORN (companion equipment)
     else
         if slotId ~= nil then
             --Update the equipment slot control's markers
@@ -650,7 +650,7 @@ end
 local function FCOItemSaver_OnInventorySlotUnLocked(self, bag, slot)
     if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[Event]","OnInventorySlotUnLocked: bag: " .. tostring(bag) .. ", slot: " .. tostring(slot), true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
-    if bag == BAG_WORN and FCOIS.preventerVars.gItemSlotIsLocked == true then
+    if (bag == BAG_WORN or bag == BAG_COMPANION_WORN) and FCOIS.preventerVars.gItemSlotIsLocked == true then
         --If item was unequipped: Remove the armor type marker if necessary
         FCOIS.removeArmorTypeMarker(bag, slot)
 

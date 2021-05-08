@@ -213,7 +213,7 @@ function FCOIS.otherAddons.SetTracker.GetSetTrackerSettingsAndBuildFCOISSetTrack
         --BagId to SetTracker addon settings in FCOIS
         FCOIS.mappingVars.bagToSetTrackerSettings = {
             [BAG_WORN]		        = FCOIS.settingsVars.settings.autoMarkSetTrackerSetsWorn,
-            [BAG_COMPANION_WORN]    = FCOIS.settingsVars.settings.autoMarkSetTrackerSetsWorn,
+            --[BAG_COMPANION_WORN]    = FCOIS.settingsVars.settings.autoMarkSetTrackerSetsWorn,
             [BAG_BACKPACK]	        = FCOIS.settingsVars.settings.autoMarkSetTrackerSetsInv,
             [BAG_BANK]		        = FCOIS.settingsVars.settings.autoMarkSetTrackerSetsBank,
             [BAG_GUILDBANK]	        = FCOIS.settingsVars.settings.autoMarkSetTrackerSetsGuildBank,
@@ -236,7 +236,7 @@ local function checkSetTrackerTrackingStateAndMarkWithFCOISIcon(sSetName, setTra
     local bagsToCheck = {
         [BAG_BACKPACK]	= settings.autoMarkSetTrackerSetsInv,
         [BAG_WORN]		= settings.autoMarkSetTrackerSetsWorn,
-        [BAG_COMPANION_WORN] = settings.autoMarkSetTrackerSetsWorn,
+        --[BAG_COMPANION_WORN] = settings.autoMarkSetTrackerSetsWorn,
         [BAG_BANK]		= settings.autoMarkSetTrackerSetsBank,
         [BAG_GUILDBANK]	= settings.autoMarkSetTrackerSetsGuildBank,
     }
@@ -479,9 +479,10 @@ function FCOIS.otherAddons.SetTracker.checkAllItemsForSetTrackerTrackingState()
     local foundSetnames = {}
     --Bags to check for set items
     local bagsToCheck = {
-        [BAG_BACKPACK]	= true,
-        [BAG_WORN]		= true,
-        [BAG_BANK]		= true,
+        [BAG_BACKPACK]	        = true,
+        [BAG_WORN]		        = true,
+        --[BAG_COMPANION_WORN]    = true,
+        [BAG_BANK]		        = true,
     }
     --Is the user an ESO+ subscriber?
     if IsESOPlusSubscriber() then
@@ -597,8 +598,9 @@ function FCOIS.otherAddons.SetTracker.updateSetTrackerMarker(bagId, slotIndex, s
     --Update the inventories now to show the new/hidden marker icon?
     if retVarBool and doUpdateInv then
         --RefreshBackpack, etc.
-        if (bagId == BAG_WORN and FCOIS.isCharacterShown()) or
-           (bagId == BAG_COMPANION_WORN and FCOIS.isCompanionCharacterShown()) then
+        if (bagId == BAG_WORN and FCOIS.isCharacterShown())
+          --or (bagId == BAG_COMPANION_WORN and FCOIS.isCompanionCharacterShown())
+        then
             FCOIS.RefreshEquipmentControl(nil, doShow, FCOISMarkerIconForSetTrackerTrackIndex)
         elseif bagId == BAG_BACKPACK or bagId == BAG_VIRTUAL
             or bagId == BAG_BANK or bagId == BAG_SUBSCRIBER_BANK

@@ -348,7 +348,7 @@ function FCOIS.DestroySelectionHandler(bag, slot, echo, parentControl)
     --Are we at the vendor repair panel?
     local isVendorRepair = FCOIS.IsVendorPanelShown(LF_VENDOR_REPAIR, false) or false
     --Are we coming from the character window?
-    if not isVendorRepair and (bag == BAG_WORN and parentControl ~= nil) then
+    if not isVendorRepair and ((bag == BAG_WORN or bag == BAG_COMPANION_WORN) and parentControl ~= nil) then
         FCOIS.preventerVars.gCheckEquipmentSlots = true
     end
 --d("[DestroySelectionHandler] Bag: " .. tostring(bag) .. ", Slot: " .. tostring(slot) ..", echo: " .. tostring(echo) .. ", filterPanelId: " .. tostring(FCOIS.gFilterWhere) .. ", isVendorRepair: " ..tostring(isVendorRepair) .. ", checkEquipmentSlots: " .. tostring(FCOIS.preventerVars.gCheckEquipmentSlots))

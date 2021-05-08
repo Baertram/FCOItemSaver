@@ -12,26 +12,28 @@ standardBackupAllowedBagTypes[BAG_BANK] 	= true
 standardBackupAllowedBagTypes[BAG_GUILDBANK]= true
 standardBackupAllowedBagTypes[BAG_BUYBACK] 	= true
 standardBackupAllowedBagTypes[BAG_VIRTUAL] 	= true --Craftbag
+standardBackupAllowedBagTypes[BAG_COMPANION_WORN] 	= true
 --The text for each bagtype
 local locVars = FCOIS.localizationVars.fcois_loc
 local bagIdToString = {
-    [BAG_WORN] 		= locVars["options_migrate_bag_type_" .. tostring(BAG_WORN)],
-    [BAG_BACKPACK] 	= locVars["options_migrate_bag_type_" .. tostring(BAG_BACKPACK)],
-    [BAG_BANK] 		= locVars["options_migrate_bag_type_" .. tostring(BAG_BANK)],
-    [BAG_GUILDBANK] = locVars["options_migrate_bag_type_" .. tostring(BAG_GUILDBANK)],
-    [BAG_BUYBACK] 	= locVars["options_migrate_bag_type_" .. tostring(BAG_BUYBACK)],
-    [BAG_VIRTUAL] 	= locVars["options_migrate_bag_type_" .. tostring(BAG_VIRTUAL)], --Craftbag
-    [BAG_SUBSCRIBER_BANK] = locVars["options_migrate_bag_type_" .. tostring(BAG_SUBSCRIBER_BANK)],
-    [BAG_HOUSE_BANK_ONE] = locVars["options_migrate_bag_type_" .. tostring(BAG_HOUSE_BANK_ONE)],
-    [BAG_HOUSE_BANK_TWO] = locVars["options_migrate_bag_type_" .. tostring(BAG_HOUSE_BANK_TWO)],
-    [BAG_HOUSE_BANK_THREE] = locVars["options_migrate_bag_type_" .. tostring(BAG_HOUSE_BANK_THREE)],
-    [BAG_HOUSE_BANK_FOUR] = locVars["options_migrate_bag_type_" .. tostring(BAG_HOUSE_BANK_FOUR)],
-    [BAG_HOUSE_BANK_FIVE] = locVars["options_migrate_bag_type_" .. tostring(BAG_HOUSE_BANK_FIVE)],
-    [BAG_HOUSE_BANK_SIX] = locVars["options_migrate_bag_type_" .. tostring(BAG_HOUSE_BANK_SIX)],
-    [BAG_HOUSE_BANK_SEVEN] = locVars["options_migrate_bag_type_" .. tostring(BAG_HOUSE_BANK_SEVEN)],
-    [BAG_HOUSE_BANK_EIGHT] = locVars["options_migrate_bag_type_" .. tostring(BAG_HOUSE_BANK_EIGHT)],
-    [BAG_HOUSE_BANK_NINE] = locVars["options_migrate_bag_type_" .. tostring(BAG_HOUSE_BANK_NINE)],
-    [BAG_HOUSE_BANK_TEN] = locVars["options_migrate_bag_type_" .. tostring(BAG_HOUSE_BANK_TEN)],
+    [BAG_WORN] 		        = locVars["options_migrate_bag_type_" .. tostring(BAG_WORN)],
+    [BAG_COMPANION_WORN]    = locVars["options_migrate_bag_type_" .. tostring(BAG_COMPANION_WORN)],
+    [BAG_BACKPACK]          = locVars["options_migrate_bag_type_" .. tostring(BAG_BACKPACK)],
+    [BAG_BANK] 		        = locVars["options_migrate_bag_type_" .. tostring(BAG_BANK)],
+    [BAG_GUILDBANK]         = locVars["options_migrate_bag_type_" .. tostring(BAG_GUILDBANK)],
+    [BAG_BUYBACK] 	        = locVars["options_migrate_bag_type_" .. tostring(BAG_BUYBACK)],
+    [BAG_VIRTUAL] 	        = locVars["options_migrate_bag_type_" .. tostring(BAG_VIRTUAL)], --Craftbag
+    [BAG_SUBSCRIBER_BANK]   = locVars["options_migrate_bag_type_" .. tostring(BAG_SUBSCRIBER_BANK)],
+    [BAG_HOUSE_BANK_ONE]    = locVars["options_migrate_bag_type_" .. tostring(BAG_HOUSE_BANK_ONE)],
+    [BAG_HOUSE_BANK_TWO]    = locVars["options_migrate_bag_type_" .. tostring(BAG_HOUSE_BANK_TWO)],
+    [BAG_HOUSE_BANK_THREE]  = locVars["options_migrate_bag_type_" .. tostring(BAG_HOUSE_BANK_THREE)],
+    [BAG_HOUSE_BANK_FOUR]   = locVars["options_migrate_bag_type_" .. tostring(BAG_HOUSE_BANK_FOUR)],
+    [BAG_HOUSE_BANK_FIVE]   = locVars["options_migrate_bag_type_" .. tostring(BAG_HOUSE_BANK_FIVE)],
+    [BAG_HOUSE_BANK_SIX]    = locVars["options_migrate_bag_type_" .. tostring(BAG_HOUSE_BANK_SIX)],
+    [BAG_HOUSE_BANK_SEVEN]  = locVars["options_migrate_bag_type_" .. tostring(BAG_HOUSE_BANK_SEVEN)],
+    [BAG_HOUSE_BANK_EIGHT]  = locVars["options_migrate_bag_type_" .. tostring(BAG_HOUSE_BANK_EIGHT)],
+    [BAG_HOUSE_BANK_NINE]   = locVars["options_migrate_bag_type_" .. tostring(BAG_HOUSE_BANK_NINE)],
+    [BAG_HOUSE_BANK_TEN]    = locVars["options_migrate_bag_type_" .. tostring(BAG_HOUSE_BANK_TEN)],
 }
 
 

@@ -587,9 +587,9 @@ local function scanBagsAndTransferMarkerIcon(toUnique)
     local bagsToCheck = {
         BAG_WORN,
         BAG_BACKPACK,
-        BAG_COMPANION_WORN,
         BAG_BANK,
         --BAG_GUILDBANK,
+        BAG_COMPANION_WORN,
     }
     --Is the user an ESO+ subscriber?
     if IsESOPlusSubscriber() then
