@@ -7,6 +7,11 @@ if not FCOIS.libsLoadedProperly then return end
 
 local numFilters = FCOIS.numVars.gFCONumFilters
 local filterButtonsToCheck = FCOIS.checkVars.filterButtonsToCheck
+local getSettingsIsFilterOn = FCOIS.getSettingsIsFilterOn
+local unregisterFilters = FCOIS.unregisterFilters
+local registerFilters = FCOIS.registerFilters
+local filterBasics = FCOIS.FilterBasics
+local refreshListDialog = FCOIS.RefreshListDialog
 
 -- =====================================================================================================================
 --  Filter state & chat output functions
@@ -20,11 +25,12 @@ local function outputFilterState(p_outputToChat, p_panelId, p_filterId, p_stateT
     local settings = FCOIS.settingsVars.settings
     local settingsOfFilterButtonStateAndIcon = FCOIS.getAccountWideCharacterOrNormalCharacterSettings()
     local mappingVars = FCOIS.mappingVars
+    local preChatVars = FCOIS.preChatVars
 
     --Abort given because filter is/will be unregistered?
     if p_stateText == 'ABORT' then
         filterText = "_"
-        preChatText = FCOIS.preChatVars.preChatTextRed
+        preChatText = preChatVars.preChatTextRed
     else
         --Not aborted
         filterText = tostring(p_filterId) .. "_"
@@ -36,69 +42,16 @@ local function outputFilterState(p_outputToChat, p_panelId, p_filterId, p_stateT
                 or (p_filterId == FCOIS_CON_FILTER_BUTTON_SELLGUILDINT and settings.splitSellGuildSellIntricateFilter) then
             filterText = filterText .. "split_"
         end
-        preChatText = FCOIS.preChatVars.preChatTextGreen
+        preChatText = preChatVars.preChatTextGreen
     end
 
     if settings.debug then FCOIS.debugMessage( "[OutputFilterState]","OutputToChat: " .. tostring(p_outputToChat) ..", filterPanelId: " ..tostring(p_panelId)..", filterId: "..tostring(p_filterId)..", stateText: " .. p_stateText, true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
-    local locVars = FCOIS.localizationVars.fcois_loc
-
-    --TODO: 2020-10-18 Make this code below more dynamic, e.g. via a table
+    local localizationVars = FCOIS.localizationVars
+    local locVars = localizationVars.fcois_loc
+    local filterStateText = locVars["filter" .. filterText .. p_stateText]
+    local filterPanelToMediumOutputText = mappingVars.filterPanelToFilterButtonMediumOutputText
     --Create the outputText
-    if     (p_panelId == LF_INVENTORY or p_panelId == LF_BANK_DEPOSIT or p_panelId == LF_GUILDBANK_DEPOSIT or p_panelId == LF_HOUSE_BANK_DEPOSIT) then
-        outputText = preChatText .. locVars["filter_inventory"] .. locVars["filter" .. filterText .. p_stateText]
-    elseif (p_panelId == LF_CRAFTBAG) then
-        outputText = preChatText .. locVars["filter_craftbag"] .. locVars["filter" .. filterText .. p_stateText]
-    elseif (p_panelId == LF_GUILDBANK_WITHDRAW) then
-        outputText = preChatText .. locVars["filter_guildbank"] .. locVars["filter" .. filterText .. p_stateText]
-    elseif (p_panelId == LF_GUILDSTORE_SELL) then
-        outputText = preChatText .. locVars["filter_guildstore"] .. locVars["filter" .. filterText .. p_stateText]
-    elseif (p_panelId == LF_BANK_WITHDRAW) then
-        outputText = preChatText .. locVars["filter_bank"] .. locVars["filter" .. filterText .. p_stateText]
-    elseif (p_panelId == LF_SMITHING_REFINE) then
-        outputText = preChatText .. locVars["filter_refinement"] .. locVars["filter" .. filterText .. p_stateText]
-    elseif (p_panelId == LF_SMITHING_DECONSTRUCT) then
-        outputText = preChatText .. locVars["filter_deconstruction"] .. locVars["filter" .. filterText .. p_stateText]
-    elseif (p_panelId == LF_SMITHING_IMPROVEMENT) then
-        outputText = preChatText .. locVars["filter_improvement"] .. locVars["filter" .. filterText .. p_stateText]
-    elseif (p_panelId == LF_SMITHING_RESEARCH or p_panelId == LF_SMITHING_RESEARCH_DIALOG) then
-        outputText = preChatText .. locVars["filter_research"] .. locVars["filter" .. filterText .. p_stateText]
-    elseif (p_panelId == LF_JEWELRY_REFINE) then
-        outputText = preChatText .. locVars["filter_jewelry_refinement"] .. locVars["filter" .. filterText .. p_stateText]
-    elseif (p_panelId == LF_JEWELRY_DECONSTRUCT) then
-        outputText = preChatText .. locVars["filter_jewelry_deconstruction"] .. locVars["filter" .. filterText .. p_stateText]
-    elseif (p_panelId == LF_JEWELRY_IMPROVEMENT) then
-        outputText = preChatText .. locVars["filter_jewelry_improvement"] .. locVars["filter" .. filterText .. p_stateText]
-    elseif (p_panelId == LF_JEWELRY_RESEARCH or p_panelId == LF_JEWELRY_RESEARCH_DIALOG) then
-        outputText = preChatText .. locVars["filter_jewelry_research"] .. locVars["filter" .. filterText .. p_stateText]
-    elseif (p_panelId == LF_ENCHANTING_EXTRACTION) then
-        outputText = preChatText .. locVars["filter_enchantingstation_extraction"] .. locVars["filter" .. filterText .. p_stateText]
-    elseif (p_panelId == LF_ENCHANTING_CREATION) then
-        outputText = preChatText .. locVars["filter_enchantingstation_creation"] .. locVars["filter" .. filterText .. p_stateText]
-    elseif (p_panelId == LF_VENDOR_BUY) then
-        outputText = preChatText .. locVars["filter_buy"] .. locVars["filter" .. filterText .. p_stateText]
-    elseif (p_panelId == LF_VENDOR_SELL) then
-        outputText = preChatText .. locVars["filter_store"] .. locVars["filter" .. filterText .. p_stateText]
-    elseif (p_panelId == LF_VENDOR_BUYBACK) then
-        outputText = preChatText .. locVars["filter_buyback"] .. locVars["filter" .. filterText .. p_stateText]
-    elseif (p_panelId == LF_VENDOR_REPAIR) then
-        outputText = preChatText .. locVars["filter_repair"] .. locVars["filter" .. filterText .. p_stateText]
-    elseif (p_panelId == LF_FENCE_SELL) then
-        outputText = preChatText .. locVars["filter_fence"] .. locVars["filter" .. filterText .. p_stateText]
-    elseif (p_panelId == LF_FENCE_LAUNDER) then
-        outputText = preChatText .. locVars["filter_launder"] .. locVars["filter" .. filterText .. p_stateText]
-    elseif (p_panelId == LF_MAIL_SEND) then
-        outputText = preChatText .. locVars["filter_mail"] .. locVars["filter" .. filterText .. p_stateText]
-    elseif (p_panelId == LF_TRADE) then
-        outputText = preChatText .. locVars["filter_trade"] .. locVars["filter" .. filterText .. p_stateText]
-    elseif (p_panelId == LF_ALCHEMY_CREATION) then
-        outputText = preChatText .. locVars["filter_alchemy"] .. locVars["filter" .. filterText .. p_stateText]
-    elseif (p_panelId == LF_RETRAIT) then
-        outputText = preChatText .. locVars["filter_retrait"] .. locVars["filter" .. filterText .. p_stateText]
-    elseif (p_panelId == LF_HOUSE_BANK_WITHDRAW) then
-        outputText = preChatText .. locVars["filter_house_bank"] .. locVars["filter" .. filterText .. p_stateText]
-    elseif (p_panelId == LF_INVENTORY_COMPANION) then
-        outputText = preChatText .. locVars["filter_companion_inventory"] .. locVars["filter" .. filterText .. p_stateText]
-    end
+    outputText = preChatText .. filterPanelToMediumOutputText[p_panelId] .. filterStateText
 
     --Add another tooltip line with the currently selected lock & dynamic icons filter?
     if p_filterId == FCOIS_CON_FILTER_BUTTON_LOCKDYN and settings.splitLockDynFilter then
@@ -369,75 +322,6 @@ function FCOIS.updateFCOISFilterButtonsAtInventory(buttonId)
     end
 end
 
---Check if the 4 filter buttons exist at the selected panel "panelId" and create them if they are missing
---Update the color and texture of the buttons too
-function FCOIS.CheckFCOISFilterButtonsAtPanel(doUpdateLists, panelId, overwriteFilterWhere, hideFilterButtons)
-    hideFilterButtons = hideFilterButtons or false
-    local settings = FCOIS.settingsVars.settings
-    if settings.debug then FCOIS.debugMessage( "[CheckFilterButtonsAtPanel]","Start - Check panel ID: " ..tostring(panelId) .. ", overwriteFilterWhere: " .. tostring(overwriteFilterWhere) .. ", hideFilterButtons: " .. tostring(hideFilterButtons), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
-
-    --Should we update the marker textures, size and color?
-    FCOIS.checkMarker(-1)
-
-    --Get the currently shown panel and update FCOIS.gFilterWhere
-    local buttonsParentCtrl, filterPanel = FCOIS.checkActivePanel(panelId, overwriteFilterWhere)
-
---d("[FCOIS.CheckFilterButtonsAtPanel - " .. tostring(buttonsParentCtrl:GetName()) .. ", FilterPanelId/ParentPanelId: " .. tostring(FCOIS.gFilterWhere) .. "/" .. tostring(filterPanel) .. ", UseFilters: " .. tostring(settings.atPanelEnabled[FCOIS.gFilterWhere]["filters"]) .. ", hideFilterButtons: " ..tostring(hideFilterButtons))
-
-    --Is an inventory found?
-    if buttonsParentCtrl ~= nil then
-        if settings.debug then FCOIS.debugMessage( "[CheckFilterButtonsAtPanel]", buttonsParentCtrl:GetName() .. ", FilterPanelId: " .. tostring(FCOIS.gFilterWhere) .. ", UseFilters: " .. tostring(settings.atPanelEnabled[FCOIS.gFilterWhere]["filters"]), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
-        --local filterButtonVars = FCOIS.filterButtonVars
-        --Is the setting enabled to use the filters at this panel?
-        local areFilterButtonEnabledAtPanelId = false
-        if not hideFilterButtons then areFilterButtonEnabledAtPanelId = (settings.atPanelEnabled[FCOIS.gFilterWhere]["filters"] == true) or false end
-        local filterBtn
-        local isFilterActivated
-        --Change the filter buttons & callback functions
-        for _, buttonNr in ipairs(filterButtonsToCheck) do
-            --Check the filter button's offsets, width and height at the given LibFilters panel ID
-            FCOIS.CheckAndTransferFCOISFilterButtonDataByPanelId(FCOIS.gFilterWhere, buttonNr)
-            local filterButtonData = settings.filterButtonData[buttonNr][FCOIS.gFilterWhere]
-            if filterButtonData ~= nil then
---d(">FilterButtonData at panel [" .. FCOIS.gFilterWhere  .. "] of button " ..tostring(buttonNr) .." - left: " .. tostring(filterButtonData["left"]).. ", top: " .. tostring(filterButtonData["top"]).. ", width: " .. tostring(filterButtonData["width"]).. ", height: " .. tostring(filterButtonData["height"]) .. ", filterButtonsEnabledAtPanel: " ..tostring(areFilterButtonEnabledAtPanelId))
-                --Get the filter button control (create or modify) and reanchor  it
-                filterBtn = FCOIS.AddOrChangeFCOISFilterButton(buttonsParentCtrl, buttonNr, filterButtonData["width"], filterButtonData["height"], filterButtonData["left"], filterButtonData["top"], not areFilterButtonEnabledAtPanelId, FCOIS.gFilterWhere)
-                if areFilterButtonEnabledAtPanelId then
-                    --Colorize the button and update the tooltips + filter functions
-                    if (filterBtn ~= nil) then
-                        --Get the filter's state
-                        isFilterActivated = FCOIS.getSettingsIsFilterOn(buttonNr, FCOIS.gFilterWhere)
-                        --Update the button's color
-                        FCOIS.UpdateFCOISFilterButtonColorsAndTextures(buttonNr, filterBtn, isFilterActivated, FCOIS.gFilterWhere)
-                        --(Re)register the filter (for the given panel)?
-                        if isFilterActivated == false then
-                            FCOIS.unregisterFilters(buttonNr, false, FCOIS.gFilterWhere)
-                        else
-                            FCOIS.registerFilters(buttonNr, false, FCOIS.gFilterWhere)
-                        end
-                    end
-                else
-                    --Unregister the filter as the settings don't want a button and filter here
-                    FCOIS.unregisterFilters(-1, false, FCOIS.gFilterWhere)
-                end
-            end
-        end
-
-        --Should the curent panel's iventory list be updated?
-        if (doUpdateLists == true and areFilterButtonEnabledAtPanelId) then
-            if FCOIS.gFilterWhere == LF_SMITHING_RESEARCH_DIALOG or FCOIS.gFilterWhere == LF_JEWELRY_RESEARCH_DIALOG then
-                FCOIS.RefreshListDialog(true, FCOIS.gFilterWhere)
-            else
-                FCOIS.FilterBasics(false)
-            end
-        end
-
-        --Update the itemCount before the sortHeader "name" at the new panel
-        FCOIS.inventoryChangeFilterHook(FCOIS.gFilterWhere, "[FCOIS]CheckFilterButtonsAtPanel")
-    end
-    return buttonsParentCtrl, filterPanel
-end
-
 --Update the filter button colors and textures, depending on the filters (and chosen sub-filter icons)
 function FCOIS.UpdateFCOISFilterButtonColorsAndTextures(p_buttonId, p_button, p_status, p_filterPanelId)
     local p_statusText = p_status or "Not changed!"
@@ -463,7 +347,7 @@ function FCOIS.UpdateFCOISFilterButtonColorsAndTextures(p_buttonId, p_button, p_
         -- for Schleife für 4 Buttons -> Initialisierung beim Laden des Addons
         -- Läd für die Ansicht p_filterPanelId die Farben der 4 Filter Buttons
         for i=1, numFilters, 1 do
-            FCOIS.UpdateFCOISFilterButtonColorsAndTextures(i, nil, FCOIS.getSettingsIsFilterOn(i, p_filterPanelId), p_filterPanelId)
+            FCOIS.UpdateFCOISFilterButtonColorsAndTextures(i, nil, getSettingsIsFilterOn(i, p_filterPanelId), p_filterPanelId)
         end
 
     else --if (p_buttonId == -1 or p_status == -1) then
@@ -536,7 +420,7 @@ function FCOIS.UpdateFCOISFilterButtonColorsAndTextures(p_buttonId, p_button, p_
             --Get current status and reset the current texture color
             if ((   p_buttonId == FCOIS_CON_FILTER_BUTTON_LOCKDYN or p_buttonId == FCOIS_CON_FILTER_BUTTON_GEARSETS
                     or p_buttonId == FCOIS_CON_FILTER_BUTTON_RESDECIMP or p_buttonId == FCOIS_CON_FILTER_BUTTON_SELLGUILDINT) and p_statusText == "Not changed!") then
-                p_status = FCOIS.getSettingsIsFilterOn(p_buttonId, p_filterPanelId)
+                p_status = getSettingsIsFilterOn(p_buttonId, p_filterPanelId)
             end
             --Only update colors if wished
             if (p_status ~= -999) then
@@ -608,6 +492,76 @@ function FCOIS.UpdateFCOISFilterButtonColorsAndTextures(p_buttonId, p_button, p_
         end
     end
 end
+local updateFCOISFilterButtonColorsAndTextures = FCOIS.UpdateFCOISFilterButtonColorsAndTextures
+
+--Check if the 4 filter buttons exist at the selected panel "panelId" and create them if they are missing
+--Update the color and texture of the buttons too
+function FCOIS.CheckFCOISFilterButtonsAtPanel(doUpdateLists, panelId, overwriteFilterWhere, hideFilterButtons)
+    hideFilterButtons = hideFilterButtons or false
+    local settings = FCOIS.settingsVars.settings
+    if settings.debug then FCOIS.debugMessage( "[CheckFilterButtonsAtPanel]","Start - Check panel ID: " ..tostring(panelId) .. ", overwriteFilterWhere: " .. tostring(overwriteFilterWhere) .. ", hideFilterButtons: " .. tostring(hideFilterButtons), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+
+    --Should we update the marker textures, size and color?
+    FCOIS.checkMarker(-1)
+
+    --Get the currently shown panel and update FCOIS.gFilterWhere
+    local buttonsParentCtrl, filterPanel = FCOIS.checkActivePanel(panelId, overwriteFilterWhere)
+
+--d("[FCOIS.CheckFilterButtonsAtPanel - " .. tostring(buttonsParentCtrl:GetName()) .. ", FilterPanelId/ParentPanelId: " .. tostring(FCOIS.gFilterWhere) .. "/" .. tostring(filterPanel) .. ", UseFilters: " .. tostring(settings.atPanelEnabled[FCOIS.gFilterWhere]["filters"]) .. ", hideFilterButtons: " ..tostring(hideFilterButtons))
+
+    --Is an inventory found?
+    if buttonsParentCtrl ~= nil then
+        if settings.debug then FCOIS.debugMessage( "[CheckFilterButtonsAtPanel]", buttonsParentCtrl:GetName() .. ", FilterPanelId: " .. tostring(FCOIS.gFilterWhere) .. ", UseFilters: " .. tostring(settings.atPanelEnabled[FCOIS.gFilterWhere]["filters"]), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+        --local filterButtonVars = FCOIS.filterButtonVars
+        --Is the setting enabled to use the filters at this panel?
+        local areFilterButtonEnabledAtPanelId = false
+        if not hideFilterButtons then areFilterButtonEnabledAtPanelId = (settings.atPanelEnabled[FCOIS.gFilterWhere]["filters"] == true) or false end
+        local filterBtn
+        local isFilterActivated
+        --Change the filter buttons & callback functions
+        for _, buttonNr in ipairs(filterButtonsToCheck) do
+            --Check the filter button's offsets, width and height at the given LibFilters panel ID
+            FCOIS.CheckAndTransferFCOISFilterButtonDataByPanelId(FCOIS.gFilterWhere, buttonNr)
+            local filterButtonData = settings.filterButtonData[buttonNr][FCOIS.gFilterWhere]
+            if filterButtonData ~= nil then
+--d(">FilterButtonData at panel [" .. FCOIS.gFilterWhere  .. "] of button " ..tostring(buttonNr) .." - left: " .. tostring(filterButtonData["left"]).. ", top: " .. tostring(filterButtonData["top"]).. ", width: " .. tostring(filterButtonData["width"]).. ", height: " .. tostring(filterButtonData["height"]) .. ", filterButtonsEnabledAtPanel: " ..tostring(areFilterButtonEnabledAtPanelId))
+                --Get the filter button control (create or modify) and reanchor  it
+                filterBtn = FCOIS.AddOrChangeFCOISFilterButton(buttonsParentCtrl, buttonNr, filterButtonData["width"], filterButtonData["height"], filterButtonData["left"], filterButtonData["top"], not areFilterButtonEnabledAtPanelId, FCOIS.gFilterWhere)
+                if areFilterButtonEnabledAtPanelId then
+                    --Colorize the button and update the tooltips + filter functions
+                    if (filterBtn ~= nil) then
+                        --Get the filter's state
+                        isFilterActivated = getSettingsIsFilterOn(buttonNr, FCOIS.gFilterWhere)
+                        --Update the button's color
+                        updateFCOISFilterButtonColorsAndTextures(buttonNr, filterBtn, isFilterActivated, FCOIS.gFilterWhere)
+                        --(Re)register the filter (for the given panel)?
+                        if isFilterActivated == false then
+                            unregisterFilters(buttonNr, false, FCOIS.gFilterWhere)
+                        else
+                            registerFilters(buttonNr, false, FCOIS.gFilterWhere)
+                        end
+                    end
+                else
+                    --Unregister the filter as the settings don't want a button and filter here
+                    unregisterFilters(-1, false, FCOIS.gFilterWhere)
+                end
+            end
+        end
+
+        --Should the curent panel's iventory list be updated?
+        if (doUpdateLists == true and areFilterButtonEnabledAtPanelId) then
+            if FCOIS.gFilterWhere == LF_SMITHING_RESEARCH_DIALOG or FCOIS.gFilterWhere == LF_JEWELRY_RESEARCH_DIALOG then
+                refreshListDialog(true, FCOIS.gFilterWhere)
+            else
+                filterBasics(false)
+            end
+        end
+
+        --Update the itemCount before the sortHeader "name" at the new panel
+        FCOIS.inventoryChangeFilterHook(FCOIS.gFilterWhere, "[FCOIS]CheckFilterButtonsAtPanel")
+    end
+    return buttonsParentCtrl, filterPanel
+end
 
 --Function is executed as the filter buttons in the inventories are pressed
 --Enable/Enable and only show marked items/Disable a filter or disable all filters
@@ -649,7 +603,7 @@ local function doFilter(onoff, p_button, filterId, beQuiet, doFilterBasicsPlayer
     --============================================================================
     if settings.atPanelEnabled[p_FilterPanelId]["filters"] == nil or settings.atPanelEnabled[p_FilterPanelId]["filters"] == false then
         --Unregister the filter
-        FCOIS.unregisterFilters(filterId, onlyPlayerInvFilter, p_FilterPanelId)
+        unregisterFilters(filterId, onlyPlayerInvFilter, p_FilterPanelId)
 
         if settings.debug then FCOIS.debugMessage( "[DoFilter]", "!!! ABORT !!! " .. onoff .. ", filterId: " ..filterId .. ", FilterPanelId: " .. tostring(p_FilterPanelId) .. ", beQuiet: " .. tostring(beQuiet), false) end
 
@@ -682,7 +636,7 @@ local function doFilter(onoff, p_button, filterId, beQuiet, doFilterBasicsPlayer
     else
         -- Should the filter be changed to next state?
         if (onoff == -1) then
-            isFilterActive = FCOIS.getSettingsIsFilterOn(filterId, p_FilterPanelId)
+            isFilterActive = getSettingsIsFilterOn(filterId, p_FilterPanelId)
 
             --Filter is on? Turn it off
             if (isFilterActive == true) then
@@ -711,7 +665,7 @@ local function doFilter(onoff, p_button, filterId, beQuiet, doFilterBasicsPlayer
         --Unregister all old filters if the addon is already loaded and filters have been registered before.
         --This happens only by function Enablefilters() called after addon has been fully loaded (e.g. the settings menu "Split filters")
         if FCOIS.addonVars.gAddonLoaded == true then
-            FCOIS.unregisterFilters(filterId)
+            unregisterFilters(filterId)
         end
 
         --Only update panel LF_INVENTORY (player inventory)
@@ -719,7 +673,7 @@ local function doFilter(onoff, p_button, filterId, beQuiet, doFilterBasicsPlayer
 
         --Check for each panel if filters are enabled
         isFilterActive = nil
-        isFilterActive = FCOIS.getSettingsIsFilterOn(filterId, panels)
+        isFilterActive = getSettingsIsFilterOn(filterId, panels)
 
         if    (isFilterActive == true) then
             --Filter is ON
@@ -737,12 +691,12 @@ local function doFilter(onoff, p_button, filterId, beQuiet, doFilterBasicsPlayer
 
         --Register the filters now
         if (registerFiltersNow == true) then
-            FCOIS.registerFilters(filterId, onlyPlayerInvFilter, panels)
+            registerFilters(filterId, onlyPlayerInvFilter, panels)
         end
 
         -- Update the colors of the 4 "player inventory" filter buttons. All others will be updated upon opening (on event)
         if (filterId == FCOIS_CON_FILTER_BUTTON_LOCKDYN and panels == LF_INVENTORY and doUpdateButtonColorsAndTextures == true) then
-            FCOIS.UpdateFCOISFilterButtonColorsAndTextures(-1, nil, -1, LF_INVENTORY)
+            updateFCOISFilterButtonColorsAndTextures(-1, nil, -1, LF_INVENTORY)
         end
 
         --------------------------------------------------------------------------------
@@ -755,7 +709,7 @@ local function doFilter(onoff, p_button, filterId, beQuiet, doFilterBasicsPlayer
         --The NEW filter status was set by function FCOIS.setSettingsIsFilterOn() at the beginning of this function
         --be determined here once again
         if isFilterActive == nil then
-            isFilterActive = FCOIS.getSettingsIsFilterOn(filterId, p_FilterPanelId)
+            isFilterActive = getSettingsIsFilterOn(filterId, p_FilterPanelId)
             --Is the new filter status still not set initialize it with "false"
             if isFilterActive == nil then
                 isFilterActive = FCOIS.setSettingsIsFilterOn(filterId, false, p_FilterPanelId)
@@ -774,7 +728,7 @@ local function doFilter(onoff, p_button, filterId, beQuiet, doFilterBasicsPlayer
             registerFiltersNow = false
 
             -- Unregister all old filters for the given filterId and panel
-            FCOIS.unregisterFilters(filterId, onlyPlayerInvFilter, p_FilterPanelId)
+            unregisterFilters(filterId, onlyPlayerInvFilter, p_FilterPanelId)
 
             -- Filter is "ON"
         elseif (isFilterActive == true) then
@@ -785,7 +739,7 @@ local function doFilter(onoff, p_button, filterId, beQuiet, doFilterBasicsPlayer
             end
 
             -- Unregister all old filters for the given filterId and panel
-            FCOIS.unregisterFilters(filterId, onlyPlayerInvFilter, p_FilterPanelId)
+            unregisterFilters(filterId, onlyPlayerInvFilter, p_FilterPanelId)
 
             -- Set the filters to be registered
             registerFiltersNow = true
@@ -800,7 +754,7 @@ local function doFilter(onoff, p_button, filterId, beQuiet, doFilterBasicsPlayer
             end
 
             -- Unregister all old filters for the given filterId and panel
-            FCOIS.unregisterFilters(filterId, onlyPlayerInvFilter, p_FilterPanelId)
+            unregisterFilters(filterId, onlyPlayerInvFilter, p_FilterPanelId)
 
             -- Set the filters to be registered again
             registerFiltersNow = true
@@ -811,7 +765,7 @@ local function doFilter(onoff, p_button, filterId, beQuiet, doFilterBasicsPlayer
         --Register filters now?
         if(registerFiltersNow == true) then
             --(Re)register the filter (for the given panel again)
-            FCOIS.registerFilters(filterId, onlyPlayerInvFilter, p_FilterPanelId)
+            registerFilters(filterId, onlyPlayerInvFilter, p_FilterPanelId)
         end
 
     end -- if (onoff == -100) then
@@ -822,13 +776,13 @@ local function doFilter(onoff, p_button, filterId, beQuiet, doFilterBasicsPlayer
     --from function enableFilters() (at initialization of this addon e.g.)
     if ( onoff ~= -100 or (onoff == -100 and filterId == numFilters) ) then
         --Update all inventories (false) / only the player inventory (true)
-        FCOIS.FilterBasics(doFilterBasicsPlayer)
+        filterBasics(doFilterBasicsPlayer)
     end
 
     --Update the colors of the changed buttons inside the inventory panels, but only
     --if we are not coming from addon initialization
     if (onoff ~= - 100 and doUpdateButtonColorsAndTextures == true) then
-        FCOIS.UpdateFCOISFilterButtonColorsAndTextures(filterId, nil, isFilterActive, p_FilterPanelId)
+        updateFCOISFilterButtonColorsAndTextures(filterId, nil, isFilterActive, p_FilterPanelId)
     end
     --FCOIS.updateFilteredItemCount(p_FilterPanelId)
 end
@@ -868,7 +822,7 @@ local function filterStatusLoop(filterId, silent, givenArray, p_atLeastOneFilter
     local settings = FCOIS.settingsVars.settings
     for j=1, numFilterInvTypes, 1 do
         if activeFilterPanelIds[j] == true then
-            if(FCOIS.getSettingsIsFilterOn(filterId, j)) then
+            if(getSettingsIsFilterOn(filterId, j)) then
                 returnArray[j][filterId] = true
                 atLeastOneFilterActive = true
                 local statusFilterIdText = locVars["chatcommands_status_filter" .. tostring(filterId)]
@@ -996,7 +950,7 @@ local function filterStatusLoop(filterId, silent, givenArray, p_atLeastOneFilter
                         d(locVars["filter_companion_inventory"] .. statusFilterIdText)
                     end
                 end
-            end -- if(FCOIS.getSettingsIsFilterOn(filterId, j)) then
+            end -- if(getSettingsIsFilterOn(filterId, j)) then
         end
     end -- for j=1, ...
 
@@ -1020,8 +974,8 @@ function FCOIS.filterStatus(filterId, silent, doReturnFilterStatus)
 
     --Was at least one active filter found and chat output is enabled?
     if atLeastOneFilterActive == false and silent == false then
-        local locVars = FCOIS.localizationVars.fcois_loc
-        d(locVars["chatcommands_status_nofilters"])
+        --local locVars = FCOIS.localizationVars.fcois_loc
+        d(FCOIS.localizationVars.fcois_loc["chatcommands_status_nofilters"])
     end
 
     --Return the array with filter states?
@@ -1038,9 +992,10 @@ function FCOIS.AddOrChangeFCOISFilterButton(parentWindow, buttonId, pWidth, pHei
     local settings = FCOIS.settingsVars.settings
     if settings.debug then FCOIS.debugMessage( "[AddOrChangeFilterButton]", parentWindow:GetName() .. ", buttonId: " .. buttonId .. ", filterPanelId: " .. p_FilterPanelId .. ", hide: " .. tostring(hide), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
 --d("[FCOIS.AddOrChangeFilterButton] " .. parentWindow:GetName() .. ", buttonId: " .. buttonId .. ", filterPanelId: " .. p_FilterPanelId .. ", hide: " .. tostring(hide))
-
+    local checkVars = FCOIS.checkVars
+    local filterButtonSuffix = checkVars.filterButtonSuffix
     local tooltipText
-    local button = parentWindow:GetNamedChild("_FilterButton" .. tostring(buttonId))
+    local button = parentWindow:GetNamedChild(filterButtonSuffix .. tostring(buttonId))
 
     --Hide the button?
     if hide then
@@ -1056,7 +1011,7 @@ function FCOIS.AddOrChangeFCOISFilterButton(parentWindow, buttonId, pWidth, pHei
     if not button then
         buttonExists = false
         -- create it
-        button = WINDOW_MANAGER:CreateControl(parentWindow:GetName() .. "_FilterButton" .. tostring(buttonId), parentWindow, CT_BUTTON)
+        button = WINDOW_MANAGER:CreateControl(parentWindow:GetName() .. filterButtonSuffix .. tostring(buttonId), parentWindow, CT_BUTTON)
         if not button then return nil end
         if settings.debug then FCOIS.debugMessage( "[AddOrChangeFilterButton]", "+++ ADD ButtonName=" .. button:GetName() .. ", Width/Height: " .. pWidth .. "/" .. pHeight .. ", Left/Top: " .. pLeft .. "/" .. pTop, true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
         local texVars = FCOIS.textureVars
@@ -1105,25 +1060,29 @@ function FCOIS.AddOrChangeFCOISFilterButton(parentWindow, buttonId, pWidth, pHei
     button:SetHandler("OnMouseEnter", function(self)
         if settings.showFilterButtonTooltip == true then
             local settingsFilterStateToText = FCOIS.mappingVars.settingsFilterStateToText
-            tooltipText = outputFilterState(false, self.FCOfilterPanelId, self.FCObuttonId, settingsFilterStateToText[tostring(FCOIS.getSettingsIsFilterOn(self.FCObuttonId, self.FCOfilterPanelId))])
+            tooltipText = outputFilterState(false, self.FCOfilterPanelId, self.FCObuttonId, settingsFilterStateToText[tostring(getSettingsIsFilterOn(self.FCObuttonId, self.FCOfilterPanelId))])
             if tooltipText ~= "" then
                 local contextMenu = FCOIS.contextMenu
                 local showToolTip = true
                 --Don't show a tooltip if the context menu for LOCKDYN is shown at the filter button
-                if contextMenu.LockDynFilter[FCOIS.gFilterWhere] ~= nil then
-                    showToolTip = contextMenu.LockDynFilter[FCOIS.gFilterWhere]:IsHidden()
+                local contextMenuFilterButton1 = contextMenu.LockDynFilter[FCOIS.gFilterWhere]
+                if contextMenuFilterButton1 ~= nil then
+                    showToolTip = contextMenuFilterButton1:IsHidden()
                 end
                 --Don't show a tooltip if the context menu for gear sets is shown at the filter button
-                if contextMenu.GearSetFilter[FCOIS.gFilterWhere] ~= nil then
-                    showToolTip = contextMenu.GearSetFilter[FCOIS.gFilterWhere]:IsHidden()
+                local contextMenuFilterButton2 = contextMenu.GearSetFilter[FCOIS.gFilterWhere]
+                if contextMenuFilterButton2 ~= nil then
+                    showToolTip = contextMenuFilterButton2:IsHidden()
                 end
                 --Don't show a tooltip if the context menu for research, deconstruction & improvement is shown at the filter button
-                if showToolTip and contextMenu.ResDecImpFilter[FCOIS.gFilterWhere] ~= nil then
-                    showToolTip = contextMenu.ResDecImpFilter[FCOIS.gFilterWhere]:IsHidden()
+                local contextMenuFilterButton3 = contextMenu.ResDecImpFilter[FCOIS.gFilterWhere]
+                if showToolTip and contextMenuFilterButton3 ~= nil then
+                    showToolTip = contextMenuFilterButton3:IsHidden()
                 end
                 --Don't show a tooltip if the context menu for sell, sell at guild store & intricate is shown at the filter button
-                if showToolTip and contextMenu.SellGuildIntFilter[FCOIS.gFilterWhere] ~= nil then
-                    showToolTip = contextMenu.SellGuildIntFilter[FCOIS.gFilterWhere]:IsHidden()
+                local contextMenuFilterButton4 = contextMenu.SellGuildIntFilter[FCOIS.gFilterWhere]
+                if showToolTip and contextMenuFilterButton4 ~= nil then
+                    showToolTip = contextMenuFilterButton4:IsHidden()
                 end
                 if showToolTip then
                     ZO_Tooltips_ShowTextTooltip(self, BOTTOM, tooltipText)
@@ -1147,7 +1106,7 @@ function FCOIS.AddOrChangeFCOISFilterButton(parentWindow, buttonId, pWidth, pHei
         --Show the tooltip at the filter button
         if settings.showFilterButtonTooltip then
             local settingsFilterStateToText = FCOIS.mappingVars.settingsFilterStateToText
-            tooltipText = outputFilterState(false, self.FCOfilterPanelId, self.FCObuttonId, settingsFilterStateToText[tostring(FCOIS.getSettingsIsFilterOn(self.FCObuttonId, self.FCOfilterPanelId))])
+            tooltipText = outputFilterState(false, self.FCOfilterPanelId, self.FCObuttonId, settingsFilterStateToText[tostring(getSettingsIsFilterOn(self.FCObuttonId, self.FCOfilterPanelId))])
             if tooltipText ~= "" then
                 ZO_Tooltips_ShowTextTooltip(self, BOTTOM, tooltipText)
             end
@@ -1173,9 +1132,10 @@ function FCOIS.AddOrChangeFCOISFilterButton(parentWindow, buttonId, pWidth, pHei
             --Only do this if the right mouse button was pressed and filter button ID is 1 (lock)
             if buttonId == FCOIS_CON_FILTER_BUTTON_LOCKDYN and settings.splitLockDynFilter then
                 --Hide the lockdyn split filter button context-menu
-                if contextMenu.LockDynFilter[FCOIS.gFilterWhere] ~= nil then
-                    if not contextMenu.LockDynFilter[FCOIS.gFilterWhere]:IsHidden() then
-                        contextMenu.LockDynFilter[FCOIS.gFilterWhere]:SetHidden(true)
+                local contextMenuFilterButton1 = contextMenu.LockDynFilter[FCOIS.gFilterWhere]
+                if contextMenuFilterButton1 ~= nil then
+                    if not contextMenuFilterButton1:IsHidden() then
+                        contextMenuFilterButton1:SetHidden(true)
                     else
                         doBuildContextMenu = true
                     end
@@ -1191,9 +1151,10 @@ function FCOIS.AddOrChangeFCOISFilterButton(parentWindow, buttonId, pWidth, pHei
                 --Only do this if the right mouse button was pressed and filter button ID is 2 (gear sets)
             elseif buttonId == FCOIS_CON_FILTER_BUTTON_GEARSETS and settings.splitGearSetsFilter then
                 --Hide the gear sets split filter button context-menu
-                if contextMenu.GearSetFilter[FCOIS.gFilterWhere] ~= nil then
-                    if not contextMenu.GearSetFilter[FCOIS.gFilterWhere]:IsHidden() then
-                        contextMenu.GearSetFilter[FCOIS.gFilterWhere]:SetHidden(true)
+                local contextMenuFilterButton2 = contextMenu.GearSetFilter[FCOIS.gFilterWhere]
+                if contextMenuFilterButton2 ~= nil then
+                    if not contextMenuFilterButton2:IsHidden() then
+                        contextMenuFilterButton2:SetHidden(true)
                     else
                         doBuildContextMenu = true
                     end
@@ -1209,9 +1170,10 @@ function FCOIS.AddOrChangeFCOISFilterButton(parentWindow, buttonId, pWidth, pHei
                 --Only do this if the right mouse button was pressed and filter button ID is 3 (research)
             elseif buttonId == FCOIS_CON_FILTER_BUTTON_RESDECIMP and settings.splitResearchDeconstructionImprovementFilter then
                 --Hide the RESEARCH & DECONSTRUCTION & IMPORVEMENT button context-menu
-                if contextMenu.ResDecImpFilter[FCOIS.gFilterWhere] ~= nil then
-                    if not contextMenu.ResDecImpFilter[FCOIS.gFilterWhere]:IsHidden() then
-                        contextMenu.ResDecImpFilter[FCOIS.gFilterWhere]:SetHidden(true)
+                local contextMenuFilterButton3 = contextMenu.ResDecImpFilter[FCOIS.gFilterWhere]
+                if contextMenuFilterButton3 ~= nil then
+                    if not contextMenuFilterButton3:IsHidden() then
+                        contextMenuFilterButton3:SetHidden(true)
                     else
                         doBuildContextMenu = true
                     end
@@ -1228,9 +1190,10 @@ function FCOIS.AddOrChangeFCOISFilterButton(parentWindow, buttonId, pWidth, pHei
                 --Only do this if the right mouse button was pressed and filter button ID is 4 (sell)
             elseif buttonId == FCOIS_CON_FILTER_BUTTON_SELLGUILDINT and settings.splitSellGuildSellIntricateFilter then
                 --Hide the SELL & SELL AT GUILD STORE & INTRICATE button context-menu
-                if contextMenu.SellGuildIntFilter[FCOIS.gFilterWhere] ~= nil then
-                    if not contextMenu.SellGuildIntFilter[FCOIS.gFilterWhere]:IsHidden() then
-                        contextMenu.SellGuildIntFilter[FCOIS.gFilterWhere]:SetHidden(true)
+                local contextMenuFilterButton4 = contextMenu.SellGuildIntFilter[FCOIS.gFilterWhere]
+                if contextMenuFilterButton4 ~= nil then
+                    if not contextMenuFilterButton4:IsHidden() then
+                        contextMenuFilterButton4:SetHidden(true)
                     else
                         doBuildContextMenu = true
                     end
@@ -1270,16 +1233,18 @@ function FCOIS.AddOrChangeFCOISFilterButton(parentWindow, buttonId, pWidth, pHei
     ) then
         pLeft = pLeft + FCOIS.otherAddons.gGriedViewOffsetX
     end
+
+    local ctrlVars = FCOIS.ZOControlVars
     --Place the buttons at the bottom of the inventory.
     --Special treatment for improvement panel here, because the "Booster container" is located at the bottom and the buttons
     --will be shown above him, not below (as he gives the BOTTOM anchor) of the inventory
     if (p_FilterPanelId == LF_SMITHING_IMPROVEMENT or p_FilterPanelId == LF_JEWELRY_IMPROVEMENT) then
         pTop = pTop + filterButtonVars.buttonOffsetYImprovement
-        button:SetAnchor(TOP, FCOIS.ZOControlVars.IMPROVEMENT_BOOSTER_CONTAINER, BOTTOM, pLeft, pTop)
+        button:SetAnchor(TOP, ctrlVars.IMPROVEMENT_BOOSTER_CONTAINER, BOTTOM, pLeft, pTop)
     --Special treatment for research "popup" panel here, because the filter buttons should be added to the top divider of the popup
     elseif (p_FilterPanelId == LF_SMITHING_RESEARCH or p_FilterPanelId == LF_JEWELRY_IMPROVEMENT) then
         pTop = pTop + filterButtonVars.buttonOffsetYImprovement
-        button:SetAnchor(TOP, FCOIS.ZOControlVars.RESEARCH_POPUP_TOP_DIVIDER, BOTTOM, pLeft, pTop)
+        button:SetAnchor(TOP, ctrlVars.RESEARCH_POPUP_TOP_DIVIDER, BOTTOM, pLeft, pTop)
     --All other inventories and panels
     else
         button:SetAnchor(TOP, parentWindow, BOTTOM, pLeft, pTop)
@@ -1302,36 +1267,31 @@ end
 -- =====================================================================================================================
 --  Filter button itemCount functions
 -- =====================================================================================================================
---Hook the inventorie's (and crafting inventory) UpdateFilter functions in order to
---update the itemCount at the sort headers properly
--->Will be called each time an inventory filter changes, e.g. from All to Armor, or from Weapons to Materials
-function FCOIS.inventoryChangeFilterHook(filterPanelId, calledFrom)
+--Get the sort header where the filtered item count should be added as pre-text
+function FCOIS.getSortHeaderControl(filterPanelId)
     filterPanelId = filterPanelId or FCOIS.gFilterWhere
-    --[[
-    if calledFrom ~= nil then
-        d("[FCOIS]inventoryChangeFilterHook, calledFrom: " .. tostring(calledFrom))
-    else
-        d("[FCOIS]inventoryChangeFilterHook")
-    end
-    ]]
-    --Only go on if the update for the item count is for the currently visible filterPanelId
-    if filterPanelId ~= FCOIS.gFilterWhere then
-        return end
-    FCOIS.updateFilteredItemCount(filterPanelId, calledFrom)
+    local sortHeaderVars = FCOIS.sortHeaderVars
+    local sortHeaderName = sortHeaderVars.name[filterPanelId]
+    if not sortHeaderName then return end
+    local sortHeaderCtrl = WINDOW_MANAGER:GetControlByName(sortHeaderName, "")
+    if sortHeaderCtrl == nil then return  end
+    return sortHeaderCtrl
 end
+local getSortHeaderControl = FCOIS.getSortHeaderControl
 
---Update the shown filteredItem count at the inventories, but throttled with a delay and only once if updates are tried
---to be done several times after another
-function FCOIS.updateFilteredItemCountThrottled(filterPanelId, delay, calledFromWhere)
+--Reset the sort header control for a giveb filterPanelId
+function FCOIS.resetSortHeaderCount(filterPanelId, sortHeaderCtrlToReset)
     filterPanelId = filterPanelId or FCOIS.gFilterWhere
-    delay = delay or 250
-    calledFromWhere = calledFromWhere or ""
---d("[FCOIS]updateFilteredItemCountThrottled->" .. calledFromWhere .. " - filterPanelId: " ..tostring(filterPanelId) .. ", delay: " ..tostring(delay))
-    --Only go on if the update for the item count is for the currently visible filterPanelId
-    if filterPanelId ~= FCOIS.gFilterWhere then return end
-    --Update the count of filtered/shown items before the sortHeader "name" text
-    FCOIS.ThrottledUpdate("FCOIS_UpdateItemCount_" .. filterPanelId, delay, FCOIS.inventoryChangeFilterHook, filterPanelId, "[FCOIS]updateFilteredItemCountThrottled->" .. calledFromWhere)
+    --d(">>[FCOIS]resetSortHeaderCount, filterPanelId: " .. tostring(filterPanelId))
+    if sortHeaderCtrlToReset == nil then
+        sortHeaderCtrlToReset = getSortHeaderControl(filterPanelId)
+    end
+    if sortHeaderCtrlToReset == nil then return false end
+    local origSortHeaderText = GetString(SI_INVENTORY_SORT_TYPE_NAME)
+    sortHeaderCtrlToReset:SetText(origSortHeaderText)
+    return true
 end
+local resetSortHeaderCount = FCOIS.resetSortHeaderCount
 
 --Get the currently shown items count of the filterPanelId
 function FCOIS.getFilteredItemCountAtPanel(libFiltersPanelId, panelIdOrInventoryTypeString)
@@ -1359,30 +1319,7 @@ function FCOIS.getFilteredItemCountAtPanel(libFiltersPanelId, panelIdOrInventory
     if not numberOfFilteredItems or numberOfFilteredItems <= 0 then return 0 end
     return numberOfFilteredItems
 end
-
---Get the sort header where the filtered item count should be added as pre-text
-function FCOIS.getSortHeaderControl(filterPanelId)
-    filterPanelId = filterPanelId or FCOIS.gFilterWhere
-    local sortHeaderVars = FCOIS.sortHeaderVars
-    local sortHeaderName = sortHeaderVars.name[filterPanelId]
-    if not sortHeaderName then return end
-    local sortHeaderCtrl = WINDOW_MANAGER:GetControlByName(sortHeaderName, "")
-    if sortHeaderCtrl == nil then return  end
-    return sortHeaderCtrl
-end
-
---Reset the sort header control for a giveb filterPanelId
-function FCOIS.resetSortHeaderCount(filterPanelId, sortHeaderCtrlToReset)
-    filterPanelId = filterPanelId or FCOIS.gFilterWhere
-    --d(">>[FCOIS]resetSortHeaderCount, filterPanelId: " .. tostring(filterPanelId))
-    if sortHeaderCtrlToReset == nil then
-        sortHeaderCtrlToReset = FCOIS.getSortHeaderControl(filterPanelId)
-    end
-    if sortHeaderCtrlToReset == nil then return false end
-    local origSortHeaderText = GetString(SI_INVENTORY_SORT_TYPE_NAME)
-    sortHeaderCtrlToReset:SetText(origSortHeaderText)
-    return true
-end
+local getFilteredItemCountAtPanel = FCOIS.getFilteredItemCountAtPanel
 
 --Update the filtered item count at the panel
 function FCOIS.updateFilteredItemCount(panelId, calledFrom)
@@ -1397,7 +1334,7 @@ function FCOIS.updateFilteredItemCount(panelId, calledFrom)
     --d(">[FCOIS]updateFilteredItemCount->".. calledFrom .. " - panelId: " ..tostring(panelId) .. ", libFiltersPanelId: " ..tostring(libFiltersPanelId) .. ", showFilteredItemCount: " .. tostring(showFilteredItemCount))
     local sortHeaderCtrl = FCOIS.getSortHeaderControl(libFiltersPanelId)
     --Reset the sortheader text to the original one
-    if sortHeaderCtrl then FCOIS.resetSortHeaderCount(libFiltersPanelId, sortHeaderCtrl) end
+    if sortHeaderCtrl then resetSortHeaderCount(libFiltersPanelId, sortHeaderCtrl) end
     --AdvancedFilters version 1.5.0.6 adds filtered item count at the bottom inventory lines. So FCOIS does not need to show this anymore if AdvancedFilters has enabled this setting.
     FCOIS.preventerVars.useAdvancedFiltersItemCountInInventories = FCOIS.checkIfAdvancedFiltersItemCountIsEnabled()
     if FCOIS.preventerVars.useAdvancedFiltersItemCountInInventories then
@@ -1422,7 +1359,7 @@ function FCOIS.updateFilteredItemCount(panelId, calledFrom)
         return false end
     --Get the item number of the current inventory, slightly delayed as the filters need to be run first
     zo_callLater(function()
-        local numberOfFilteredItems = FCOIS.getFilteredItemCountAtPanel(libFiltersPanelId, panelId)
+        local numberOfFilteredItems = getFilteredItemCountAtPanel(libFiltersPanelId, panelId)
         if not numberOfFilteredItems or numberOfFilteredItems <= 0 then
             --Sortheader text was reset already at the beginning of this function -> Abort here now
             return false
@@ -1432,4 +1369,36 @@ function FCOIS.updateFilteredItemCount(panelId, calledFrom)
         local origSortHeaderText = GetString(SI_INVENTORY_SORT_TYPE_NAME)
         sortHeaderCtrl:SetText(preTextIncludingFilteredItemNumber .. origSortHeaderText)
     end, 50)
+end
+local updateFilteredItemCount = FCOIS.updateFilteredItemCount
+
+--Hook the inventorie's (and crafting inventory) UpdateFilter functions in order to
+--update the itemCount at the sort headers properly
+-->Will be called each time an inventory filter changes, e.g. from All to Armor, or from Weapons to Materials
+function FCOIS.inventoryChangeFilterHook(filterPanelId, calledFrom)
+    filterPanelId = filterPanelId or FCOIS.gFilterWhere
+    --[[
+    if calledFrom ~= nil then
+        d("[FCOIS]inventoryChangeFilterHook, calledFrom: " .. tostring(calledFrom))
+    else
+        d("[FCOIS]inventoryChangeFilterHook")
+    end
+    ]]
+    --Only go on if the update for the item count is for the currently visible filterPanelId
+    if filterPanelId ~= FCOIS.gFilterWhere then return end
+    updateFilteredItemCount(filterPanelId, calledFrom)
+end
+local inventoryChangeFilterHook = FCOIS.inventoryChangeFilterHook
+
+--Update the shown filteredItem count at the inventories, but throttled with a delay and only once if updates are tried
+--to be done several times after another
+function FCOIS.updateFilteredItemCountThrottled(filterPanelId, delay, calledFromWhere)
+    filterPanelId = filterPanelId or FCOIS.gFilterWhere
+    delay = delay or 250
+    calledFromWhere = calledFromWhere or ""
+--d("[FCOIS]updateFilteredItemCountThrottled->" .. calledFromWhere .. " - filterPanelId: " ..tostring(filterPanelId) .. ", delay: " ..tostring(delay))
+    --Only go on if the update for the item count is for the currently visible filterPanelId
+    if filterPanelId ~= FCOIS.gFilterWhere then return end
+    --Update the count of filtered/shown items before the sortHeader "name" text
+    FCOIS.ThrottledUpdate("FCOIS_UpdateItemCount_" .. filterPanelId, delay, inventoryChangeFilterHook, filterPanelId, "[FCOIS]updateFilteredItemCountThrottled->" .. calledFromWhere)
 end

@@ -230,17 +230,18 @@ FCOIS_CON_FILTER_BUTTON_SELLGUILDINT	= 4
     --The check variables/tables
 FCOIS.checkVars = {}
 local checkVars = FCOIS.checkVars
-FCOIS.checkVars.filterButtonsToCheck = {
+checkVars.filterButtonsToCheck = {
     [1] = FCOIS_CON_FILTER_BUTTON_LOCKDYN,
     [2] = FCOIS_CON_FILTER_BUTTON_GEARSETS,
     [3] = FCOIS_CON_FILTER_BUTTON_RESDECIMP,
     [4] = FCOIS_CON_FILTER_BUTTON_SELLGUILDINT,
 }
+checkVars.filterButtonSuffix = "_FilterButton"
+
 --Constants for the automatic set item marking, non wished traits:
 FCOIS_CON_NON_WISHED_LEVEL      = 1
 FCOIS_CON_NON_WISHED_QUALITY    = 2
 FCOIS_CON_NON_WISHED_ALL        = 3
-
 
 --Build local localization/language variables which will be transfered to the real localization vars in file /src/FCOIS_localization.lua,
 --in function Localization()
@@ -517,7 +518,13 @@ for whereAreWe, filterPanelId in pairs(mappingVars.whereAreWeToFilterPanelId) do
 end
 
 --The array with the alert message texts for every filterPanel
+--> filled at src/FCOIS_Localization.lua, function FCOIS.Localization()
 mappingVars.whereAreWeToAlertmessageText = {}
+
+--The array with the medium text part for the context menu at filter buttons (e.g. tooltip)
+--> filled at src/FCOIS_Localization.lua, function FCOIS.Localization()
+mappingVars.filterPanelToFilterButtonMediumOutputText = {}
+
 
 --The active filter panel Ids (filter panel Id = inventory types above!)
 mappingVars.activeFilterPanelIds			= {
@@ -1400,7 +1407,7 @@ FCOIS.localizationVars.lTextMark 		    = {}
 FCOIS.localizationVars.lTextDemark 	        = {}
 FCOIS.localizationVars.contextEntries       = {}
 FCOIS.localizationVars.lTextEquipmentMark   = {}
-FCOIS.localizationVars.lTextEquipmentDemark = {}
+FCOIS.localizationVars.lTextEquipmentDemark                      = {}
 
 FCOIS.settingsVars	= {}
 FCOIS.settingsVars.settings			= {}
