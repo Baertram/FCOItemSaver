@@ -165,8 +165,8 @@ local function automaticMarkingQualityCheckFunc(p_bagId, p_slotIndex)
     --Check if item's quality is a selected, or higher one?
     local qualityCheck = false
     local itemQuality = FCOIS.GetItemQuality(p_bagId, p_slotIndex)
-    --local itemLink = GetItemLink(p_bagId, p_slotIndex)
-    --d(itemLink .. ", quality: " .. tostring(itemQuality))
+    local itemLink = GetItemLink(p_bagId, p_slotIndex)
+--d(itemLink .. ", quality: " .. tostring(itemQuality))
     if not itemQuality then return false, nil end
     local settings = FCOIS.settingsVars.settings
     local autoMarkQuality = settings.autoMarkQuality
@@ -1231,7 +1231,7 @@ function FCOIS.scanInventoryItemsForAutomaticMarks(bag, slot, scanType, updateIn
             checkOtherAddon		= nil,
             resultOtherAddon   	= nil,
             resultNotOtherAddon	= nil,
-            icon				=           settings.autoMarkQualityIconNr,
+            icon				= settings.autoMarkQualityIconNr,
             checkIfAnyIconIsMarkedAlready = settings.autoMarkQualityCheckAllIcons,
             checkFunc			= automaticMarkingQualityCheckFunc,
             resultCheckFunc 	= true,

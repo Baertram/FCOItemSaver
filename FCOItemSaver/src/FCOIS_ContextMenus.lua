@@ -2398,6 +2398,7 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
     if INVENTORY_TO_SEARCH == nil then return end
 
     local function doCompanionItemChecks(bagId, slotIndex, iconId)
+        local isCompanionOnwed = FCOIS.isItemOwnerCompanion(bagId, slotIndex)
         if not isCompanionInventory then
             --No icon id checks possible? Allow the chnage via the add. inv. "flag" context menu entry
             if not iconId then return true end
@@ -2406,9 +2407,10 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
             if not isIconDisabledAtCompanion then
                 return true
             end
+            return not isCompanionOnwed
+        else
+            return isCompanionOnwed
         end
-        local isCompanionOnwed = FCOIS.isItemOwnerCompanion(bagId, slotIndex)
-        return not isCompanionOnwed
     end
 
     --Are we marking/unmarking items or are we undoing the last change at this current panel?
@@ -2455,7 +2457,7 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                     bagId     = data.bagId
                     slotIndex = data.slotIndex
                     if bagId ~= nil and slotIndex ~= nil then
-                        --d("> " .. GetItemLink(bagId, slotIndex))
+--d("> " .. GetItemLink(bagId, slotIndex))
                         --Introduced with FCOIS version 1.0.6
                         --Check if an item is not-bound yet and only allow to mark it if it's unbound
                         --Only ehck if item should be marked!
@@ -2547,6 +2549,7 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                                         markerChangedAtBagAndSlot = true
                                         --Old value: False
                                         undoEntry.marked = false
+                                    else
                                     end
                                     --Mark: False
                                 elseif doMark == false then

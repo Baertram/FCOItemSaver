@@ -193,7 +193,8 @@ end
 --The function to update the inventories and lists after an item was un/marked
 function FCOIS.FilterBasics(onlyPlayer)
     --Check if we are in the player inventory
-    if not FCOIS.ZOControlVars.BACKPACK:IsHidden() then
+    local ctrlVars = FCOIS.ZOControlVars
+    if not ctrlVars.BACKPACK:IsHidden() then
         --we are in the player inventory (or in the banks at the deposit inventories, or at mail sending, or trading)
         onlyPlayer = true
     end
@@ -203,18 +204,20 @@ function FCOIS.FilterBasics(onlyPlayer)
     --Only update the lists if not currently already updating
     if (FCOIS.preventerVars.gFilteringBasics == false) then
         FCOIS.preventerVars.gFilteringBasics = true
-        if (not FCOIS.ZOControlVars.QUICKSLOT_LIST:IsHidden() and onlyPlayer == false) then
+        if (not ctrlVars.QUICKSLOT_LIST:IsHidden() and onlyPlayer == false) then
             --UpdateInventories() -- NO FILTERS YET! So not needed to call libFilters:RequestUpdate(LF_QUICKSLOT)!
             UpdateQuickSlots()
             --UpdateOtherAddonUIs()
-        elseif (not FCOIS.ZOControlVars.REPAIR_LIST:IsHidden() and onlyPlayer == false) then
+        elseif (not ctrlVars.REPAIR_LIST:IsHidden() and onlyPlayer == false) then
             --UpdateInventories() -- NO FILTERS YET! So not needed to call libFilters:RequestUpdate(LF_VENDOR_REPAIR)!
             UpdateRepairList()
             --UpdateOtherAddonUIs()
-        elseif (not FCOIS.ZOControlVars.RETRAIT_LIST:IsHidden() and onlyPlayer == false) then
+        elseif (not ctrlVars.RETRAIT_LIST:IsHidden() and onlyPlayer == false) then
             UpdateInventories()
             UpdateTransmutationList()
             UpdateOtherAddonUIs()
+        elseif (FCOIS.isCompanionInventoryShown() and onlyPlayer == false) then
+            UpdateInventories()
         elseif (onlyPlayer == true) then
             UpdateInventories()
             --Try to update other addon's UIs
