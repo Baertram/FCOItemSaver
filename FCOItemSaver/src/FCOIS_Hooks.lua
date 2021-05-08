@@ -402,18 +402,18 @@ local function FCOItemSaver_CharacterOnEffectivelyShown(self, ...)
     local equipmentSlotName
     local characterEquipmentSlots = FCOIS.mappingVars.characterEquipmentSlots
     local isCompanionCharacter = (ctrlVars.COMPANION_CHARACTER:IsHidden() == false) or false
-    local characterBaseCtrl = (isCompanionCharacter == true and ctrlVars.COMPANION_CHARACTER) or ctrlVars.CHARACTER
+    --local characterBaseCtrl = (isCompanionCharacter == true and ctrlVars.COMPANION_CHARACTER) or ctrlVars.CHARACTER
 --d("[FCOItemSaver_CharacterOnEffectivelyShown]: " .. self:GetName())
     for i = 1, self:GetNumChildren() do
         -- override OnMouseDoubleClick event of character window item controls, for each row (children)
-        equipmentSlotName = characterBaseCtrl:GetChild(i):GetName()
-        if equipmentSlotName ~= nil then
-            local isEquipmentSlot = characterEquipmentSlots[equipmentSlotName] or false
-            --if(string.find(equipmentSlotName, "ZO_CharacterEquipmentSlots")) then
-            if isEquipmentSlot == true then
+        local currentCharChild = self:GetChild(i)
+        if currentCharChild ~= nil then
+            equipmentSlotName = currentCharChild:GetName()
+            if equipmentSlotName ~= nil then
+                local isEquipmentSlot = characterEquipmentSlots[equipmentSlotName] or false
+                --if(string.find(equipmentSlotName, "ZO_CharacterEquipmentSlots")) then
+                if isEquipmentSlot == true then
 --d(">EquipmentSlot: " ..tostring(equipmentSlotName))
-                local currentCharChild = self:GetChild(i)
-                if currentCharChild ~= nil then
                     if contextMenuClearMarkesByShiftKey == true then
                         --Mouse up event for the SHIFT+right mouse button
                         if( not GetEventHandler("OnMouseUp", equipmentSlotName) ) then
@@ -646,7 +646,7 @@ function FCOIS.CreateHooks()
                     FCOcontextMenu[newOrderId] = nil
                     FCOcontextMenu[newOrderId] = {}
                     --Is the current control an equipment control?
-                    local isEquipControl = (parentControl == ctrlVars.CHARACTER)
+                    local isEquipControl = (parentControl == ctrlVars.CHARACTER or parentControl == ctrlVars.COMPANION_CHARACTER)
                     if(isEquipControl) then
                         FCOcontextMenu[newOrderId].control		= rowControl
                     else

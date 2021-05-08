@@ -513,7 +513,7 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
     local mappingVars = FCOIS.mappingVars
     local checkVars = FCOIS.checkVars
 
-    local isIconEnabled = FCOIS.settingsVars.settings.isIconEnabled
+    local isIconEnabled = settings.isIconEnabled
     if not isIconEnabled[markId] then return false end
 
     local isDynamicIcon = mappingVars.iconIsDynamic
