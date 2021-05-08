@@ -1003,7 +1003,7 @@ function FCOIS.RemoveEmptyWeaponEquipmentMarkers(delay)
             if settings.debug then FCOIS.debugMessage( "[RemoveEmptyWeaponEquipmentMarkers]","equipmentControl: " .. equipmentControlName ..", delay: " .. delay, true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
             if equipmentControlName ~= nil and equipmentControlName ~= "" then
                 local equipmentControl = WINDOW_MANAGER:GetControlByName(equipmentControlName, "")
-                if equipmentControl ~= nil and equipmentControl:IsHidden() == false then
+                if equipmentControl ~= nil then -- and equipmentControl:IsHidden() == false then
                     --Check if the current equipment slot name is a weapon backup slot
                     local twoHandedWeaponOffHand = false
                     if allowedCharacterEquipmentWeaponBackupControlNames[equipmentControlName] then
@@ -1041,7 +1041,7 @@ function FCOIS.RefreshEquipmentControl(equipmentControl, doCreateMarkerControl, 
     local checkVars = FCOIS.checkVars
 
     --is the equipment control already given?
-    if equipmentControl ~= nil and equipmentControl:IsHidden() == false then
+    if equipmentControl ~= nil then -- and equipmentControl:IsHidden() == false then
         local width = settings.iconSizeCharacter or equipVars.gEquipmentIconWidth
         local height = settings.iconSizeCharacter or equipVars.gEquipmentIconHeight
         --Check all marker ids?
@@ -1127,41 +1127,43 @@ end
 
 --Update one specific equipment slot by help of the slotIndex
 function FCOIS.updateEquipmentSlotMarker(slotIndex, delay)
-    local isCharacter = FCOIS.isCharacterShown()
-    local isCompanionCharacter = FCOIS.isCompanionCharacterShown()
-    if not isCharacter and not isCompanionCharacter then return end
-
+--d("[FCOIS]updateEquipmentSlotMarker-slotIndex: " ..tostring(slotIndex).. ", delay: " ..tostring(delay))
     --Only execute if character window is shown
     if slotIndex ~= nil then
-        local mappingVars = FCOIS.mappingVars
-        local armorSlots = mappingVars.characterEquipmentArmorSlots
-
         delay = delay or 0
         if delay > 0 then
             zo_callLater(function()
                 FCOIS.updateEquipmentSlotMarker(slotIndex, 0)
             end, delay)
         else
+            local isCharacter = FCOIS.isCharacterShown()
+            local isCompanionCharacter = FCOIS.isCompanionCharacterShown()
+            if not isCharacter and not isCompanionCharacter then return end
+
+            local mappingVars = FCOIS.mappingVars
+            local armorSlots = mappingVars.characterEquipmentArmorSlots
+
             local equipSlotControlName
             if isCompanionCharacter == true then
                 equipSlotControlName = mappingVars.companionCharacterEquipmentSlotNameByIndex[slotIndex]
             else
                 equipSlotControlName = mappingVars.characterEquipmentSlotNameByIndex[slotIndex]
             end
-
+--d(">equipSlotControlName: " ..tostring(equipSlotControlName))
             --Get the equipment control by help of the slotIndex
             local equipSlotControl
             if equipSlotControlName ~= nil and equipSlotControlName ~= "" then
                 if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[updateEquipmentSlotMarker]","control name="..equipSlotControlName..", slotIndex: " .. slotIndex, true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
                 equipSlotControl = WINDOW_MANAGER:GetControlByName(equipSlotControlName, "")
-            end
-            if equipSlotControl ~= nil and equipSlotControl:IsHidden() == false then
-                --Add or refresh the equipped items, create marker control if not already there
-                FCOIS.RefreshEquipmentControl(equipSlotControl, true)
-                --Check if the equipment slot control is an armor control
-                if armorSlots[equipSlotControlName] ~= nil then
-                    --Count the now equipped armor types and update the text at the character window armor header text
-                    countAndUpdateEquippedArmorTypes()
+--d(">>isHidden: " ..tostring(equipSlotControl:IsHidden()))
+                if equipSlotControl ~= nil then --and equipSlotControl:IsHidden() == false then
+                    --Add or refresh the equipped items, create marker control if not already there
+                    FCOIS.RefreshEquipmentControl(equipSlotControl, true)
+                    --Check if the equipment slot control is an armor control
+                    if armorSlots[equipSlotControlName] ~= nil then
+                        --Count the now equipped armor types and update the text at the character window armor header text
+                        countAndUpdateEquippedArmorTypes()
+                    end
                 end
             end
         end

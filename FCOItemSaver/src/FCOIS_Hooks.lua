@@ -771,10 +771,11 @@ function FCOIS.CreateHooks()
     ZO_PreHook("UnequipItem", function(equipSlot)
         if equipSlot ~= nil then
             if settings.debug then FCOIS.debugMessage( "[UnequipItem]","slotIndex: " .. equipSlot, true, FCOIS_DEBUG_DEPTH_NORMAL) end
+--d("[UnequipItem]slotIndex: " .. equipSlot)
             --If item was unequipped: Remove the armor type marker if necessary
             FCOIS.removeArmorTypeMarker(BAG_WORN, equipSlot) -->BAG_WORN will be updated to BAG_COMPANION_WORN internally!
             --Update the marker control of the new equipped item
-            FCOIS.updateEquipmentSlotMarker(equipSlot, 1000)
+            FCOIS.updateEquipmentSlotMarker(equipSlot, 500)
         end
     end)
     --========= MENU BARS ==========================================================
