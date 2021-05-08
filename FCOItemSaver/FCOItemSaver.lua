@@ -176,9 +176,8 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 --#110 Added a "Check all others" checkbox to the automatic set marker icons
 
 --[Todo] 2021-05-07
---Add support for marker icons at the companion character equipment screen
--->Fix companion character icons not updating non-"mark all as..." at teh companion equipment slots
--->Fix removing of companion character icons will hide the total equipment slot
+--Fix companion equipment cannot be equipped from companion inventory via doubleclick
+--Fix character/companion equipment not removing the marker icons if item get's unequipped
 --Default companion invenory filter buttons positions (the 2nd, 3rd and 4th button are not next o the 1st, but way off to the right)
 
 --************************************************************************************************************************

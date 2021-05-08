@@ -587,7 +587,7 @@ end
         firstAdd = true
         lastAdd = false
         --To prevent spamming only output the debug message once for the first added context menu item
-        if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[AddMark]", "Parent: " .. parentName .. ", Control: " .. controlName .. ", IsEquipmentSlot: " ..tostring(isEquipmentSlot) .. ", useSubMenu: " .. tostring(useSubMenu), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        if settings.debug then FCOIS.debugMessage( "[AddMark]", "Parent: " .. parentName .. ", Control: " .. controlName .. ", IsEquipmentSlot: " ..tostring(isEquipmentSlot) .. ", useSubMenu: " .. tostring(useSubMenu), true, FCOIS_DEBUG_DEPTH_NORMAL) end
         --d("[FCOIS.AddMark - Parent: " .. parentName .. ", Control: " .. controlName .. ", IsEquipmentSlot: " ..tostring(isEquipmentSlot) .. ", useSubMenu: " .. tostring(useSubMenu))
         --Check if we clicked a row within the IIfA addon.
         --Will clear (nil) and then fill the table FCOIS.IIfAclicked if itemLink, itemInstanceId, bagId and slotId were found
@@ -623,7 +623,7 @@ end
     if (notAllowed) then
         --Not allowed parent or control is given -> Abort here
         if firstAdd then
-            if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[AddMark]","Not allowed parent '" .. tostring(parentName) .. "' or control '" .. tostring(controlName) .. "' -> Aborted!", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+            if settings.debug then FCOIS.debugMessage( "[AddMark]","Not allowed parent '" .. tostring(parentName) .. "' or control '" .. tostring(controlName) .. "' -> Aborted!", true, FCOIS_DEBUG_DEPTH_NORMAL) end
         end
         return
     end
@@ -645,7 +645,7 @@ end
         if isEquipmentSlot == true and isGear then
             isEquipmentSlotContextmenu = true
             if settings.autoMarkAllWeapon == false then
-                if allowedCharCtrl  then
+                if allowedCharCtrl then
                     isEquipmentSlotContextmenu = false
                 end
             end
@@ -1166,7 +1166,7 @@ function FCOIS.MarkMe(rowControl, markId, updateNow, doUnmark, refreshPopupDialo
 
     --Is the marker icon Id given and we should got on?
     if markId ~= nil and doAbort == false then
-        --itemLink = GetItemLink(bagId, slotIndex)
+--itemLink = GetItemLink(bagId, slotIndex)
 --d("[FCOIS]MarkMe -  name: " .. rowControl:GetName() .. ", markId: " .. tostring(markId) .. ", doUnmark: " .. tostring(doUnmark) .. " [" .. itemLink .. "]")
 
         --bagId and slotIndex are given (for currently logged in character or craftbag)
@@ -1298,9 +1298,10 @@ function FCOIS.MarkMe(rowControl, markId, updateNow, doUnmark, refreshPopupDialo
                     end
                 else
                     --Inventories or character equipment?
-                    if rowControl:GetParent() == ctrlVars.CHARACTER then
+                    local parent = rowControl:GetParent()
+                    if parent == ctrlVars.CHARACTER or parent == ctrlVars.COMPANION_CHARACTER then
                         FCOIS.RefreshEquipmentControl(rowControl, not doUnmark, markId)
-                    elseif rowControl:GetParent():GetParent() == ctrlVars.QUICKSLOT_LIST then
+                    elseif parent:GetParent() == ctrlVars.QUICKSLOT_LIST then
                         FCOIS.FilterBasics(false)
                     else
                         FCOIS.FilterBasics(false)
