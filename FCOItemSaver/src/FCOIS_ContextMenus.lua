@@ -1682,7 +1682,7 @@ local function ContextMenuFilterButtonOnMouseEnter(button, contextMenuType, icon
 end
 
 --The filter button's context menu Onclicked callback function
-local function ContextMenuFilterButtonOnClicked(button, contextMenuType, iconId, filterPanelId)
+local function ContextMenuFCOISFilterButtonOnClicked(button, contextMenuType, iconId, filterPanelId)
     if button == nil then return end
     if contextMenuType == nil then return end
     if iconId == nil then return end
@@ -1710,7 +1710,7 @@ local function ContextMenuFilterButtonOnClicked(button, contextMenuType, iconId,
         FCOIS.FilterBasics()
         --Change the gear sets filter context-menu button's texture
         --FCOIS.UpdateButtonColorsAndTextures(p_buttonId, p_button, p_status, p_filterPanelId)
-        FCOIS.UpdateButtonColorsAndTextures(buttonNr, button, nil, FCOIS.gFilterWhere)
+        FCOIS.UpdateFCOISFilterButtonColorsAndTextures(buttonNr, button, nil, filterPanelId)--FCOIS.gFilterWhere)
     end
 end
 
@@ -1837,18 +1837,21 @@ local function sortContextMenuEntries(menuEntriesUnsorted)
     return menuEntriesSorted
 end
 
---Function that display the LOCKDYN context menu after the player right-clicks on the filter button on the inventory
+--Function that display the LOCKDYN context menu after the player right-clicks on the FCOIS filter button on the inventory
 --or shows the context menu for the GEARs, RESEARCH & DECONSTRUCTION & IMPORVEMENT or SELL & SELL AT GUILD STORE & INTRICATE filter button
-function FCOIS.showContextMenuFilterButton(parentButton, p_FilterPanelId, contextMenuType)
+function FCOIS.showContextMenuAtFCOISFilterButton(parentButton, p_FilterPanelId, contextMenuType)
 
     p_FilterPanelId = p_FilterPanelId or FCOIS.gFilterWhere
     if parentButton == nil or p_FilterPanelId == nil or p_FilterPanelId == 0 then return end
 
     if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[showContextMenuFilterButton]","Parent name: " .. parentButton:GetName() .. ", Type: " .. contextMenuType .. ", PanelId: " .. FCOIS.gFilterWhere, true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
 --d("[FCOIS.showContextMenuFilterButton] Parent name: " .. parentButton:GetName() .. ", Type: " .. contextMenuType .. ", PanelId: " .. FCOIS.gFilterWhere)
+--d("[FCOIS]showContextMenuAtFCOISFilterButton - panelId: " ..tostring(p_FilterPanelId))
+
+    local mappingVars = FCOIS.mappingVars
 
     --Get the settings for the filter button context menu type and check if the context menu is enabled at this filter button
-    local contextMenuFilterButtonsTypeToSettings = FCOIS.mappingVars.contextMenuFilterButtonTypeToSettings
+    local contextMenuFilterButtonsTypeToSettings = mappingVars.contextMenuFilterButtonTypeToSettings
     if not contextMenuFilterButtonsTypeToSettings[contextMenuType] then
         --ContextMenu is not enabled at the filterbutton: ABORT here!
         return
@@ -1943,14 +1946,14 @@ function FCOIS.showContextMenuFilterButton(parentButton, p_FilterPanelId, contex
             end
 
             --Is the icon a dynamic item?
-            local dynamicIcons = FCOIS.mappingVars.iconIsDynamic
+            local dynamicIcons = mappingVars.iconIsDynamic
             local isDynamic = dynamicIcons[buttonsIcon]
             if isDynamic then
                 --Use a submenu for the dynamic entries?
                 if useSubMenu then
                     local subMenuEntryDynamic = {
                         label 		    = buttonText,
-                        callback 	    = function() ContextMenuFilterButtonOnClicked(parentButton, contextMenuType, buttonsIcon, p_FilterPanelId) end,
+                        callback 	    = function() ContextMenuFCOISFilterButtonOnClicked(parentButton, contextMenuType, buttonsIcon, p_FilterPanelId) end,
                         myfont          = myFont,
                         normalColor     = colDef,
                         highlightColor  = colDef,
@@ -1972,7 +1975,7 @@ function FCOIS.showContextMenuFilterButton(parentButton, p_FilterPanelId, contex
                 --AddCustomMenuItem(buttonText, function() ContextMenuFilterButtonOnClicked(parentButton, contextMenuType, buttonsIcon, p_FilterPanelId) end, MENU_ADD_OPTION_LABEL, myFont, colDef, colDef)
                 local menuEntryToSort = {}
                 menuEntryToSort.mytext = buttonText
-                menuEntryToSort.myfunction = function() ContextMenuFilterButtonOnClicked(parentButton, contextMenuType, buttonsIcon, p_FilterPanelId) end
+                menuEntryToSort.myfunction = function() ContextMenuFCOISFilterButtonOnClicked(parentButton, contextMenuType, buttonsIcon, p_FilterPanelId) end
                 menuEntryToSort.itemType = MENU_ADD_OPTION_LABEL
                 menuEntryToSort.myfont = myFont
                 menuEntryToSort.normalColor = colDef

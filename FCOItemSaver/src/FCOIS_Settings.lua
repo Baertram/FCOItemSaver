@@ -978,7 +978,7 @@ function FCOIS.afterSettings()
     if filterButtonsToCheck ~= nil then
         for _, filterButtonNr in ipairs(filterButtonsToCheck) do
             for libFiltersPanelId = 1, numLibFiltersFilterPanelIds, 1 do
-                FCOIS.CheckAndTransferFilterButtonDataByPanelId(libFiltersPanelId, filterButtonNr)
+                FCOIS.CheckAndTransferFCOISFilterButtonDataByPanelId(libFiltersPanelId, filterButtonNr)
             end
         end -- for filterbuttonsToCheck ...
     end

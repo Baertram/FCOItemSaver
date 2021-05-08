@@ -35,9 +35,9 @@ local function FCOItemSaver_End_Crafting_Interact()
 
     if FCOIS.preventerVars.gNoCloseEvent == false then
         --Update the inventory filter buttons
-        FCOIS.updateFilterButtonsInInv(-1)
+        FCOIS.updateFCOISFilterButtonsAtInventory(-1)
         --Update the 4 inventory button's color
-        FCOIS.UpdateButtonColorsAndTextures(-1, nil, -1, LF_INVENTORY)
+        FCOIS.UpdateFCOISFilterButtonColorsAndTextures(-1, nil, -1, LF_INVENTORY)
         --Change the button color of the context menu invoker
         FCOIS.changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
     end
@@ -88,7 +88,7 @@ local function FCOItemSaver_Open_Store(p_storeIndicator)
             end
 
             --Check the current active panel and set FCOIS.gFilterWhere
-            FCOIS.CheckFilterButtonsAtPanel(true, nil)
+            FCOIS.CheckFCOISFilterButtonsAtPanel(true, nil)
 
             --Done inside the PreHookedHandler "OnMouseUp" callback functions:
             local function checkCurrentVendorTypeAndGetLibFiltersPanelId(currentVendorMenuBarbuttonToCheck)
@@ -150,7 +150,7 @@ local function FCOItemSaver_Open_Store(p_storeIndicator)
                         FCOIS.lastVars.gLastVendorButton = ctrlVars.VENDOR_MENUBAR_BUTTON_BUY
                         local fromPanelId = FCOIS.gFilterWhere or LF_INVENTORY
                         local toPanelId = checkCurrentVendorTypeAndGetLibFiltersPanelId(ctrlVars.VENDOR_MENUBAR_BUTTON_BUY)
-                        zo_callLater(function() FCOIS.PreHookButtonHandler(fromPanelId, toPanelId) end, 50)
+                        zo_callLater(function() FCOIS.PreHookMainMenuFilterButtonHandler(fromPanelId, toPanelId) end, 50)
                     end
                 end)
             end
@@ -164,7 +164,7 @@ local function FCOItemSaver_Open_Store(p_storeIndicator)
                         FCOIS.lastVars.gLastVendorButton = ctrlVars.VENDOR_MENUBAR_BUTTON_SELL
                         local fromPanelId = FCOIS.gFilterWhere or LF_INVENTORY
                         local toPanelId = checkCurrentVendorTypeAndGetLibFiltersPanelId(ctrlVars.VENDOR_MENUBAR_BUTTON_SELL)
-                        zo_callLater(function() FCOIS.PreHookButtonHandler(fromPanelId, toPanelId) end, 50)
+                        zo_callLater(function() FCOIS.PreHookMainMenuFilterButtonHandler(fromPanelId, toPanelId) end, 50)
                     end
                 end)
             end
@@ -178,7 +178,7 @@ local function FCOItemSaver_Open_Store(p_storeIndicator)
                         FCOIS.lastVars.gLastVendorButton = ctrlVars.VENDOR_MENUBAR_BUTTON_BUYBACK
                         local fromPanelId = FCOIS.gFilterWhere or LF_INVENTORY
                         local toPanelId = checkCurrentVendorTypeAndGetLibFiltersPanelId(ctrlVars.VENDOR_MENUBAR_BUTTON_BUYBACK)
-                        zo_callLater(function() FCOIS.PreHookButtonHandler(fromPanelId, toPanelId) end, 50)
+                        zo_callLater(function() FCOIS.PreHookMainMenuFilterButtonHandler(fromPanelId, toPanelId) end, 50)
                     end
                 end)
             end
@@ -192,7 +192,7 @@ local function FCOItemSaver_Open_Store(p_storeIndicator)
                         FCOIS.lastVars.gLastVendorButton = ctrlVars.VENDOR_MENUBAR_BUTTON_REPAIR
                         local fromPanelId = FCOIS.gFilterWhere or LF_INVENTORY
                         local toPanelId = checkCurrentVendorTypeAndGetLibFiltersPanelId(ctrlVars.VENDOR_MENUBAR_BUTTON_REPAIR)
-                        zo_callLater(function() FCOIS.PreHookButtonHandler(fromPanelId, toPanelId) end, 50)
+                        zo_callLater(function() FCOIS.PreHookMainMenuFilterButtonHandler(fromPanelId, toPanelId) end, 50)
                     end
                 end)
             end
@@ -210,9 +210,9 @@ local function FCOItemSaver_Close_Store()
 
     if FCOIS.preventerVars.gNoCloseEvent == false then
         --Update the inventory filter buttons
-        FCOIS.updateFilterButtonsInInv(-1)
+        FCOIS.updateFCOISFilterButtonsAtInventory(-1)
         --Update the 4 inventory button's color
-        FCOIS.UpdateButtonColorsAndTextures(-1, nil, -1, LF_INVENTORY)
+        FCOIS.UpdateFCOISFilterButtonColorsAndTextures(-1, nil, -1, LF_INVENTORY)
         --Change the button color of the context menu invoker
         FCOIS.changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
     end
@@ -231,7 +231,7 @@ local function FCOItemSaver_Open_Trading_House()
     --Change the button color of the context menu invoker
     FCOIS.changeContextMenuInvokerButtonColorByPanelId(LF_GUILDSTORE_SELL)
     --Check the filter buttons and create them if they are not there. Update the inventory afterwards too
-    FCOIS.CheckFilterButtonsAtPanel(true, LF_GUILDSTORE_SELL)
+    FCOIS.CheckFCOISFilterButtonsAtPanel(true, LF_GUILDSTORE_SELL)
 
     --======== GUILD STORE SEARCH ==============================================
     local function PreHookGuildStoreSearchButtonOnMouseUp()
@@ -267,9 +267,9 @@ local function FCOItemSaver_Close_Trading_House()
 
     if FCOIS.preventerVars.gNoCloseEvent == false then
         --Update the inventory filter buttons
-        FCOIS.updateFilterButtonsInInv(-1)
+        FCOIS.updateFCOISFilterButtonsAtInventory(-1)
         --Update the 4 inventory button's color
-        FCOIS.UpdateButtonColorsAndTextures(-1, nil, -1, LF_INVENTORY)
+        FCOIS.UpdateFCOISFilterButtonColorsAndTextures(-1, nil, -1, LF_INVENTORY)
         --Change the button color of the context menu invoker
         FCOIS.changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
     end
@@ -326,7 +326,7 @@ local function FCOItemSaver_Open_Guild_Bank()
     --Change the button color of the context menu invoker
     FCOIS.changeContextMenuInvokerButtonColorByPanelId(LF_GUILDBANK_WITHDRAW)
     --Check the filter buttons and create them if they are not there. Update the inventory afterwards too
-    FCOIS.CheckFilterButtonsAtPanel(true, LF_GUILDBANK_WITHDRAW)
+    FCOIS.CheckFCOISFilterButtonsAtPanel(true, LF_GUILDBANK_WITHDRAW)
 end
 
 --Event upon closing of a guild bank
@@ -340,9 +340,9 @@ local function FCOItemSaver_Close_Guild_Bank()
 
     if FCOIS.preventerVars.gNoCloseEvent == false then
         --Update the inventory filter buttons
-        FCOIS.updateFilterButtonsInInv(-1)
+        FCOIS.updateFCOISFilterButtonsAtInventory(-1)
         --Update the 4 inventory button's color
-        FCOIS.UpdateButtonColorsAndTextures(-1, nil, -1, LF_INVENTORY)
+        FCOIS.UpdateFCOISFilterButtonColorsAndTextures(-1, nil, -1, LF_INVENTORY)
         --Change the button color of the context menu invoker
         FCOIS.changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
     end
@@ -392,7 +392,7 @@ local function FCOItemSaver_Open_Player_Bank(event, bagId)
     --Change the button color of the context menu invoker
     FCOIS.changeContextMenuInvokerButtonColorByPanelId(filterPanelId)
     --Check the filter buttons and create them if they are not there. Update the inventory afterwards too
-    FCOIS.CheckFilterButtonsAtPanel(true, filterPanelId)
+    FCOIS.CheckFCOISFilterButtonsAtPanel(true, filterPanelId)
 end
 
 --Event upon closing of a player bank
@@ -406,9 +406,9 @@ local function FCOItemSaver_Close_Player_Bank()
 
     if FCOIS.preventerVars.gNoCloseEvent == false then
         --Update the inventory filter buttons
-        FCOIS.updateFilterButtonsInInv(-1)
+        FCOIS.updateFCOISFilterButtonsAtInventory(-1)
         --Update the 4 inventory button's color
-        FCOIS.UpdateButtonColorsAndTextures(-1, nil, -1, LF_INVENTORY)
+        FCOIS.UpdateFCOISFilterButtonColorsAndTextures(-1, nil, -1, LF_INVENTORY)
         --Change the button color of the context menu invoker
         FCOIS.changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
     end
@@ -427,7 +427,7 @@ local function FCOItemSaver_Open_Trade_Panel()
     --Change the button color of the context menu invoker
     FCOIS.changeContextMenuInvokerButtonColorByPanelId(LF_TRADE)
     --Check the filter buttons and create them if they are not there. Update the inventory afterwards too
-    FCOIS.CheckFilterButtonsAtPanel(true, LF_TRADE)
+    FCOIS.CheckFCOISFilterButtonsAtPanel(true, LF_TRADE)
 end
 
 --Event upon closing of the trade panel
@@ -439,9 +439,9 @@ local function FCOItemSaver_Close_Trade_Panel()
 
     if FCOIS.preventerVars.gNoCloseEvent == false then
         --Update the inventory filter buttons
-        FCOIS.updateFilterButtonsInInv(-1)
+        FCOIS.updateFCOISFilterButtonsAtInventory(-1)
         --Update the 4 inventory button's color
-        FCOIS.UpdateButtonColorsAndTextures(-1, nil, -1, LF_INVENTORY)
+        FCOIS.UpdateFCOISFilterButtonColorsAndTextures(-1, nil, -1, LF_INVENTORY)
         --Change the button color of the context menu invoker
         FCOIS.changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
     end
@@ -516,7 +516,7 @@ local function FCOItemSaver_Crafting_Interact(_, craftSkill)
             FCOIS.lastVars.gLastAlchemyButton = ctrlVars.ALCHEMY_STATION_MENUBAR_BUTTON_POTIONMAKER
         end
         --Show the filter buttons at the alchemy station
-        FCOIS.PreHookButtonHandler(nil, LF_ALCHEMY_CREATION)
+        FCOIS.PreHookMainMenuFilterButtonHandler(nil, LF_ALCHEMY_CREATION)
 
     else
         --d("[FCOItemSaver_Crafting_Interact] FCOIS.gFilterWhere: " .. FCOIS.gFilterWhere)
@@ -827,7 +827,7 @@ local function FCOItemSaver_Player_Activated(...)
 
         --Add/update the filter buttons, but only if not done already in addon initialization
         if FCOIS.addonVars.gAddonLoaded == false then
-            FCOIS.updateFilterButtonsInInv(-1)
+            FCOIS.updateFCOISFilterButtonsAtInventory(-1)
         end
         FCOIS.addonVars.gAddonLoaded = false
 
@@ -982,7 +982,7 @@ local function FCOItemSaver_Loaded(eventCode, addOnName)
             FCOIS.CreateHooks()
 
             --Build the inventory filter buttons and add them to the panels
-            FCOIS.updateFilterButtonsInInv(-1)
+            FCOIS.updateFCOISFilterButtonsAtInventory(-1)
 
             --Initialize the filters
             FCOIS.EnableFilters(-100)

@@ -867,7 +867,7 @@ function FCOIS.CreateHooks()
             if not FCOIS.isResearchListDialogShown() then return false end
             FCOIS.preventerVars.ZO_ListDialog1ResearchIsOpen = true
             --Check the filter buttons and create them if they are not there.
-            FCOIS.CheckFilterButtonsAtPanel(true, LF_SMITHING_RESEARCH_DIALOG)
+            FCOIS.CheckFCOISFilterButtonsAtPanel(true, LF_SMITHING_RESEARCH_DIALOG)
         end)
         ZO_PreHookHandler(researchPopupDialogCustomControl, "OnHide", function()
             --d("[FCOIS]SMITHING_RESEARCH_SELECT PreHook:OnHide")
@@ -876,7 +876,7 @@ function FCOIS.CreateHooks()
             FCOIS.preventerVars.ZO_ListDialog1ResearchIsOpen = false
             --Hide the filter buttons at LF_SMITHING_RESEARCH_DIALOG (or LF_JEWELRY_RESEARCH_DIALOG, which will be
             --determined dynamically within function FCOIS.CheckActivePanel in function FCOIS.CheckFilterButtonsAtPanel)
-            FCOIS.CheckFilterButtonsAtPanel(false, LF_SMITHING_RESEARCH_DIALOG, nil, true) -- Last parameter: Hide filter buttons
+            FCOIS.CheckFCOISFilterButtonsAtPanel(false, LF_SMITHING_RESEARCH_DIALOG, nil, true) -- Last parameter: Hide filter buttons
         end)
     end
     --========= RESEARCH LIST / ListDialog (also repair, enchant, charge, etc.) - ZO_Dialog1 ======================================================
@@ -1102,7 +1102,7 @@ function FCOIS.CreateHooks()
         --d("inv button 1, button: " .. button .. ", upInside: " .. tostring(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastInvButton:GetName())
         if (button == MOUSE_BUTTON_INDEX_LEFT and upInside and FCOIS.lastVars.gLastInvButton~=ctrlVars.INV_MENUBAR_BUTTON_ITEMS) then
             FCOIS.lastVars.gLastInvButton = ctrlVars.INV_MENUBAR_BUTTON_ITEMS
-            zo_callLater(function() FCOIS.PreHookButtonHandler(LF_CRAFTBAG, LF_INVENTORY) end, 50)
+            zo_callLater(function() FCOIS.PreHookMainMenuFilterButtonHandler(LF_CRAFTBAG, LF_INVENTORY) end, 50)
         end
     end)
     --[[
@@ -1182,10 +1182,10 @@ function FCOIS.CreateHooks()
     --======== FENCE & LAUNDER =====================================================
     --Pre Hook the fence and launder "enter" and "fence closed" functions
     ZO_PreHook(FENCE_MANAGER, "OnEnterSell", function(...)
-        zo_callLater(function() FCOIS.PreHookButtonHandler(LF_FENCE_LAUNDER, LF_FENCE_SELL) end, 50)
+        zo_callLater(function() FCOIS.PreHookMainMenuFilterButtonHandler(LF_FENCE_LAUNDER, LF_FENCE_SELL) end, 50)
     end)
     ZO_PreHook(FENCE_MANAGER, "OnEnterLaunder", function(...)
-        zo_callLater(function() FCOIS.PreHookButtonHandler(LF_FENCE_SELL, LF_FENCE_LAUNDER) end, 50)
+        zo_callLater(function() FCOIS.PreHookMainMenuFilterButtonHandler(LF_FENCE_SELL, LF_FENCE_LAUNDER) end, 50)
     end)
     ZO_PreHook(FENCE_MANAGER, "OnFenceClosed", function(...)
         if settings.debug then FCOIS.debugMessage( "[FENCE_MANAGER]", "OnFenceClosed", true, FCOIS_DEBUG_DEPTH_NORMAL) end
@@ -1214,14 +1214,14 @@ function FCOIS.CreateHooks()
         --d("bank button 1, button: " .. button .. ", upInside: " .. tostring(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastBankButton:GetName())
         if (button == MOUSE_BUTTON_INDEX_LEFT and upInside and FCOIS.lastVars.gLastBankButton~=ctrlVars.BANK_MENUBAR_BUTTON_WITHDRAW) then
             FCOIS.lastVars.gLastBankButton = ctrlVars.BANK_MENUBAR_BUTTON_WITHDRAW
-            zo_callLater(function() FCOIS.PreHookButtonHandler(LF_BANK_DEPOSIT, LF_BANK_WITHDRAW) end, 50)
+            zo_callLater(function() FCOIS.PreHookMainMenuFilterButtonHandler(LF_BANK_DEPOSIT, LF_BANK_WITHDRAW) end, 50)
         end
     end)
     ZO_PreHookHandler(ctrlVars.BANK_MENUBAR_BUTTON_DEPOSIT, "OnMouseUp", function(control, button, upInside)
         --d("bank button 2, button: " .. button .. ", upInside: " .. tostring(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastBankButton:GetName())
         if (button == MOUSE_BUTTON_INDEX_LEFT and upInside and FCOIS.lastVars.gLastBankButton~=ctrlVars.BANK_MENUBAR_BUTTON_DEPOSIT) then
             FCOIS.lastVars.gLastBankButton = ctrlVars.BANK_MENUBAR_BUTTON_DEPOSIT
-            zo_callLater(function() FCOIS.PreHookButtonHandler(LF_BANK_WITHDRAW, LF_BANK_DEPOSIT) end, 50)
+            zo_callLater(function() FCOIS.PreHookMainMenuFilterButtonHandler(LF_BANK_WITHDRAW, LF_BANK_DEPOSIT) end, 50)
         end
     end)
 
@@ -1234,14 +1234,14 @@ function FCOIS.CreateHooks()
         --d("house bank button 1, button: " .. button .. ", upInside: " .. tostring(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastBankButton:GetName())
         if (button == MOUSE_BUTTON_INDEX_LEFT and upInside and FCOIS.lastVars.gLastHouseBankButton~=ctrlVars.HOUSE_BANK_MENUBAR_BUTTON_WITHDRAW) then
             FCOIS.lastVars.gLastHouseBankButton = ctrlVars.HOUSE_BANK_MENUBAR_BUTTON_WITHDRAW
-            zo_callLater(function() FCOIS.PreHookButtonHandler(LF_HOUSE_BANK_DEPOSIT, LF_HOUSE_BANK_WITHDRAW) end, 50)
+            zo_callLater(function() FCOIS.PreHookMainMenuFilterButtonHandler(LF_HOUSE_BANK_DEPOSIT, LF_HOUSE_BANK_WITHDRAW) end, 50)
         end
     end)
     ZO_PreHookHandler(ctrlVars.HOUSE_BANK_MENUBAR_BUTTON_DEPOSIT, "OnMouseUp", function(control, button, upInside)
         --d("house bank button 2, button: " .. button .. ", upInside: " .. tostring(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastBankButton:GetName())
         if (button == MOUSE_BUTTON_INDEX_LEFT and upInside and FCOIS.lastVars.gLastHouseBankButton~=ctrlVars.HOUSE_BANK_MENUBAR_BUTTON_DEPOSIT) then
             FCOIS.lastVars.gLastHouseBankButton = ctrlVars.HOUSE_BANK_MENUBAR_BUTTON_DEPOSIT
-            zo_callLater(function() FCOIS.PreHookButtonHandler(LF_HOUSE_BANK_WITHDRAW, LF_HOUSE_BANK_DEPOSIT) end, 50)
+            zo_callLater(function() FCOIS.PreHookMainMenuFilterButtonHandler(LF_HOUSE_BANK_WITHDRAW, LF_HOUSE_BANK_DEPOSIT) end, 50)
         end
     end)
 
@@ -1254,14 +1254,14 @@ function FCOIS.CreateHooks()
         --d("guild bank button 1, button: " .. button .. ", upInside: " .. tostring(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastGuildBankButton:GetName())
         if (button == MOUSE_BUTTON_INDEX_LEFT and upInside and FCOIS.lastVars.gLastGuildBankButton~=ctrlVars.GUILD_BANK_MENUBAR_BUTTON_WITHDRAW) then
             FCOIS.lastVars.gLastGuildBankButton = ctrlVars.GUILD_BANK_MENUBAR_BUTTON_WITHDRAW
-            zo_callLater(function() FCOIS.PreHookButtonHandler(LF_GUILDBANK_DEPOSIT, LF_GUILDBANK_WITHDRAW) end, 50)
+            zo_callLater(function() FCOIS.PreHookMainMenuFilterButtonHandler(LF_GUILDBANK_DEPOSIT, LF_GUILDBANK_WITHDRAW) end, 50)
         end
     end)
     ZO_PreHookHandler(ctrlVars.GUILD_BANK_MENUBAR_BUTTON_DEPOSIT, "OnMouseUp", function(control, button, upInside)
         --d("guild bank button 2, button: " .. button .. ", upInside: " .. tostring(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastGuildBankButton:GetName())
         if (button == MOUSE_BUTTON_INDEX_LEFT and upInside and FCOIS.lastVars.gLastGuildBankButton~=ctrlVars.GUILD_BANK_MENUBAR_BUTTON_DEPOSIT) then
             FCOIS.lastVars.gLastGuildBankButton = ctrlVars.GUILD_BANK_MENUBAR_BUTTON_DEPOSIT
-            zo_callLater(function() FCOIS.PreHookButtonHandler(LF_GUILDBANK_WITHDRAW, LF_GUILDBANK_DEPOSIT) end, 50)
+            zo_callLater(function() FCOIS.PreHookMainMenuFilterButtonHandler(LF_GUILDBANK_WITHDRAW, LF_GUILDBANK_DEPOSIT) end, 50)
         end
     end)
     --======== SMITHING =============================================================
@@ -1298,7 +1298,7 @@ function FCOIS.CreateHooks()
         end
         if showFCOISFilterButtons == true and mode and FCOIS.gFilterWhere and filterPanelId then
             --d("[FCOIS]smithingSetMode- mode: " ..tostring(mode) .. ", craftType: " ..tostring(craftingType) .. ", filterPanelId: " ..tostring(filterPanelId) .. ", filterWhere: " ..tostring(FCOIS.gFilterWhere))
-            FCOIS.PreHookButtonHandler(FCOIS.gFilterWhere, filterPanelId)
+            FCOIS.PreHookMainMenuFilterButtonHandler(FCOIS.gFilterWhere, filterPanelId)
         end
     end
     --New with API100029 Dragonhold
@@ -1315,10 +1315,10 @@ function FCOIS.CreateHooks()
             --d("[FCOIS]Hook ZO_Enchanting.SetEnchantingMode/OnModeUpdated - Mode: " ..tostring(enchantingMode))
             --Creation
             if     enchantingMode == ENCHANTING_MODE_CREATION then
-                FCOIS.PreHookButtonHandler(LF_ENCHANTING_EXTRACTION, LF_ENCHANTING_CREATION)
+                FCOIS.PreHookMainMenuFilterButtonHandler(LF_ENCHANTING_EXTRACTION, LF_ENCHANTING_CREATION)
                 --Extraction
             elseif enchantingMode == ENCHANTING_MODE_EXTRACTION then
-                FCOIS.PreHookButtonHandler(LF_ENCHANTING_CREATION, LF_ENCHANTING_EXTRACTION)
+                FCOIS.PreHookMainMenuFilterButtonHandler(LF_ENCHANTING_CREATION, LF_ENCHANTING_EXTRACTION)
             end
         end
         --Go on with original function
@@ -1361,7 +1361,7 @@ function FCOIS.CreateHooks()
             FCOIS.gFilterWhereParent = nil
 
             --Check the filter buttons at the CraftBag panel and create them if they are not there. Return the parent filter panel ID if given (e.g. LF_MAIL)
-            local _, parentPanel = FCOIS.CheckFilterButtonsAtPanel(true, LF_CRAFTBAG, LF_CRAFTBAG) --overwrite with LF_CRAFTBAG so it'll create and update the buttons for the craftbag panel, and not the CBE subpanels (mail, trade, bank, vendor, guild bank, etc.)
+            local _, parentPanel = FCOIS.CheckFCOISFilterButtonsAtPanel(true, LF_CRAFTBAG, LF_CRAFTBAG) --overwrite with LF_CRAFTBAG so it'll create and update the buttons for the craftbag panel, and not the CBE subpanels (mail, trade, bank, vendor, guild bank, etc.)
             --Update the inventory context menu ("flag" icon) so it uses the correct "anti-settings" and the correct colour and right-click callback function
             --depending on the currently shown craftbag "parent" (inventory, mail send, guild bank, guild store)
             if parentPanel == nil then
@@ -1424,7 +1424,7 @@ function FCOIS.CreateHooks()
             --Get the new active filter panel ID -> FCOIS.gFilterWhere (in function CheckFilterButtonAtPanel the function FCOIS.checkActivePanel will be called!)
             --Check the filter buttons and create them if they are not there. Be sure to leave the filterPanelId = nil so it will be properly new determined
             --by help of the shown control (names), and not only the libFilters constant LF_*!
-            FCOIS.CheckFilterButtonsAtPanel(true, nil)
+            FCOIS.CheckFCOISFilterButtonsAtPanel(true, nil)
             if settings.debug then FCOIS.debugMessage( "[CRAFT_BAG_FRAGMENT]", ">new panel: " .. tostring(FCOIS.gFilterWhere), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
             --Change the additional context-menu button's color in the inventory (new active filter panel ID)
             --d("<CraftBag: SCENE_FRAGMENT_HIDDEN before changeContextMenuInvokerButtonColorByPanelId(" .. FCOIS.gFilterWhere .. ")")
@@ -1457,7 +1457,7 @@ function FCOIS.CreateHooks()
             --Change the button color of the context menu invoker
             FCOIS.changeContextMenuInvokerButtonColorByPanelId(FCOIS.gFilterWhere)
             --Check the filter buttons and create them if they are not there. Update the inventory afterwards too
-            FCOIS.CheckFilterButtonsAtPanel(true, FCOIS.gFilterWhere)
+            FCOIS.CheckFCOISFilterButtonsAtPanel(true, FCOIS.gFilterWhere)
 
             --When the mail send panel is hiding
         elseif newState == SCENE_HIDING then
@@ -1473,9 +1473,9 @@ function FCOIS.CreateHooks()
             --d("mail scene hidden")
 
             --Update the inventory filter buttons
-            FCOIS.updateFilterButtonsInInv(-1)
+            FCOIS.updateFCOISFilterButtonsAtInventory(-1)
             --Update the 4 inventory button's color
-            FCOIS.UpdateButtonColorsAndTextures(-1, nil, -1, LF_INVENTORY)
+            FCOIS.UpdateFCOISFilterButtonColorsAndTextures(-1, nil, -1, LF_INVENTORY)
 
             FCOIS.preventerVars.gActiveFilterPanel = false
             FCOIS.preventerVars.gNoCloseEvent = false
@@ -1522,7 +1522,7 @@ function FCOIS.CreateHooks()
             --Change the button color of the context menu invoker
             FCOIS.changeContextMenuInvokerButtonColorByPanelId(FCOIS.gFilterWhere)
             --Check the filter buttons and create them if they are not there. Update the inventory afterwards too
-            FCOIS.CheckFilterButtonsAtPanel(true, LF_RETRAIT)
+            FCOIS.CheckFCOISFilterButtonsAtPanel(true, LF_RETRAIT)
 
         elseif newState == SCENE_HIDING then
             --Update the current filter panel ID to "Retrait"
@@ -1534,9 +1534,9 @@ function FCOIS.CreateHooks()
             --When the mail send panel is hidden
         elseif newState == SCENE_HIDDEN then
             --Update the inventory filter buttons
-            FCOIS.updateFilterButtonsInInv(-1)
+            FCOIS.updateFCOISFilterButtonsAtInventory(-1)
             --Update the 4 inventory button's color
-            FCOIS.UpdateButtonColorsAndTextures(-1, nil, -1, LF_INVENTORY)
+            FCOIS.UpdateFCOISFilterButtonColorsAndTextures(-1, nil, -1, LF_INVENTORY)
 
             FCOIS.preventerVars.gActiveFilterPanel = false
             FCOIS.preventerVars.gNoCloseEvent = false
@@ -1566,7 +1566,7 @@ function FCOIS.CreateHooks()
             --Change the button color of the context menu invoker
             FCOIS.changeContextMenuInvokerButtonColorByPanelId(FCOIS.gFilterWhere)
             --Check the filter buttons and create them if they are not there. Update the inventory afterwards too
-            FCOIS.CheckFilterButtonsAtPanel(true, LF_INVENTORY_COMPANION)
+            FCOIS.CheckFCOISFilterButtonsAtPanel(true, LF_INVENTORY_COMPANION)
 
         elseif newState == SCENE_FRAGMENT_HIDING then
             --Update the current filter panel ID to "Retrait"
@@ -1578,9 +1578,9 @@ function FCOIS.CreateHooks()
             --When the mail send panel is hidden
         elseif newState == SCENE_FRAGMENT_HIDDEN then
             --Update the inventory filter buttons
-            FCOIS.updateFilterButtonsInInv(-1)
+            FCOIS.updateFCOISFilterButtonsAtInventory(-1)
             --Update the 4 inventory button's color
-            FCOIS.UpdateButtonColorsAndTextures(-1, nil, -1, LF_INVENTORY)
+            FCOIS.UpdateFCOISFilterButtonColorsAndTextures(-1, nil, -1, LF_INVENTORY)
 
             FCOIS.preventerVars.gActiveFilterPanel = false
             FCOIS.preventerVars.gNoCloseEvent = false

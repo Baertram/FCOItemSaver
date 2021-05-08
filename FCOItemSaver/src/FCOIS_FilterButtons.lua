@@ -161,7 +161,7 @@ end
 -- =====================================================================================================================
 --Get the filter button data for each LibFilters panel, to distinguish e.g. the size and positions of the filter buttons at LF_INVENTORY
 --from the site at LF_SMITHING_RESEARCH
-function FCOIS.CheckAndTransferFilterButtonDataByPanelId(libFiltersPanelId, filterButtonNr)
+function FCOIS.CheckAndTransferFCOISFilterButtonDataByPanelId(libFiltersPanelId, filterButtonNr)
     libFiltersPanelId = libFiltersPanelId or LF_INVENTORY
     local activeFilterPanelIds = FCOIS.mappingVars.activeFilterPanelIds
     local isActiveFilterPanelId = activeFilterPanelIds[libFiltersPanelId] or false
@@ -268,7 +268,7 @@ function FCOIS.CheckAndTransferFilterButtonDataByPanelId(libFiltersPanelId, filt
 end
 
 --Set all the filter button settings equal/to the same value of a given filter panel ID
-function FCOIS.setAllFilterButtonOffsetAndSizeSettingsEqual(filterPanelIdSource)
+function FCOIS.setAllFCOISFilterButtonOffsetAndSizeSettingsEqual(filterPanelIdSource)
     if filterPanelIdSource == nil then return false end
     --local filterButtonsToCheck = FCOIS.checkVars.filterButtonsToCheck
     if filterButtonsToCheck ~= nil then
@@ -295,8 +295,8 @@ function FCOIS.setAllFilterButtonOffsetAndSizeSettingsEqual(filterPanelIdSource)
     return false
 end
 
---PreHook function for the buttons at the top menus of banks, crafting stations, mail panel, trading, etc.
-function FCOIS.PreHookButtonHandler(comingFrom, goingTo)
+--PreHook function for panel menu buttons (vanilla UI filter buttons like "Armor", "Weapons",  etc.) at banks, crafting stations, mail panel, trading, etc.
+function FCOIS.PreHookMainMenuFilterButtonHandler(comingFrom, goingTo)
     FCOIS.preventerVars.gActiveFilterPanel = true
     FCOIS.preventerVars.gPreHookButtonHandlerCallActive = true
     if FCOIS.settingsVars.settings.debug then
@@ -328,7 +328,7 @@ function FCOIS.PreHookButtonHandler(comingFrom, goingTo)
     end
 
     --Check the filter buttons and create them if they are not there
-    FCOIS.CheckFilterButtonsAtPanel(true, goingTo)
+    FCOIS.CheckFCOISFilterButtonsAtPanel(true, goingTo)
 
     FCOIS.preventerVars.gPreHookButtonHandlerCallActive = false
 
@@ -336,8 +336,8 @@ function FCOIS.PreHookButtonHandler(comingFrom, goingTo)
     return false
 end
 
---Add/Change the filter buttons in inventory
-function FCOIS.updateFilterButtonsInInv(buttonId)
+--Add/Change the 4 FCOIS filter buttons at the inventory's bottom row
+function FCOIS.updateFCOISFilterButtonsAtInventory(buttonId)
     -- This function will only add the inventory buttons!
     -- All other buttons will be added as the relating panel (bank, store, deconstruction, etc.) will be shown the first time.
     local settings = FCOIS.settingsVars.settings
@@ -350,28 +350,28 @@ function FCOIS.updateFilterButtonsInInv(buttonId)
         --Change the filter buttons & callback functions
         for _, buttonNr in ipairs(filterButtonsToCheck) do
             --Check the filter button's offsets, width and height at the given LibFilters panel ID
-            FCOIS.CheckAndTransferFilterButtonDataByPanelId(FCOIS.gFilterWhere, buttonNr)
+            FCOIS.CheckAndTransferFCOISFilterButtonDataByPanelId(FCOIS.gFilterWhere, buttonNr)
             local filterButtonData = settings.filterButtonData[buttonNr][FCOIS.gFilterWhere]
             if filterButtonData ~= nil then
                 if settings.debug then FCOIS.debugMessage( "[updateFilterButtonsInInv]","Next buttonId " .. tostring(buttonNr) .. " at panel [" .. FCOIS.gFilterWhere  .. "]-left: " .. tostring(filterButtonData["left"]).. ", top: " .. tostring(filterButtonData["top"]).. ", width: " .. tostring(filterButtonData["width"]).. ", height: " .. tostring(filterButtonData["height"]), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
 --d(">FilterButtonData at panel [" .. FCOIS.gFilterWhere  .. "] of button " ..tostring(buttonNr) .." - left: " .. tostring(filterButtonData["left"]).. ", top: " .. tostring(filterButtonData["top"]).. ", width: " .. tostring(filterButtonData["width"]).. ", height: " .. tostring(filterButtonData["height"]))
                 --Get the filter button control (create or modify) and reanchor  it
-                FCOIS.AddOrChangeFilterButton(FCOIS.ZOControlVars.INV, buttonNr, filterButtonData["width"], filterButtonData["height"], filterButtonData["left"], filterButtonData["top"], not settings.allowInventoryFilter, FCOIS.gFilterWhere)
+                FCOIS.AddOrChangeFCOISFilterButton(FCOIS.ZOControlVars.INV, buttonNr, filterButtonData["width"], filterButtonData["height"], filterButtonData["left"], filterButtonData["top"], not settings.allowInventoryFilter, FCOIS.gFilterWhere)
             end
         end
     else
         --Check the filter button's offsets, width and height at the given LibFilters panel ID
-        FCOIS.CheckAndTransferFilterButtonDataByPanelId(FCOIS.gFilterWhere, buttonId)
+        FCOIS.CheckAndTransferFCOISFilterButtonDataByPanelId(FCOIS.gFilterWhere, buttonId)
         local filterButtonData = settings.filterButtonData[buttonId][FCOIS.gFilterWhere]
         if filterButtonData ~= nil then
-            FCOIS.AddOrChangeFilterButton(FCOIS.ZOControlVars.INV, buttonId, filterButtonData["width"], filterButtonData["height"], filterButtonData["left"], filterButtonData["top"], not settings.allowInventoryFilter, FCOIS.gFilterWhere)
+            FCOIS.AddOrChangeFCOISFilterButton(FCOIS.ZOControlVars.INV, buttonId, filterButtonData["width"], filterButtonData["height"], filterButtonData["left"], filterButtonData["top"], not settings.allowInventoryFilter, FCOIS.gFilterWhere)
         end
     end
 end
 
 --Check if the 4 filter buttons exist at the selected panel "panelId" and create them if they are missing
 --Update the color and texture of the buttons too
-function FCOIS.CheckFilterButtonsAtPanel(doUpdateLists, panelId, overwriteFilterWhere, hideFilterButtons)
+function FCOIS.CheckFCOISFilterButtonsAtPanel(doUpdateLists, panelId, overwriteFilterWhere, hideFilterButtons)
     hideFilterButtons = hideFilterButtons or false
     local settings = FCOIS.settingsVars.settings
     if settings.debug then FCOIS.debugMessage( "[CheckFilterButtonsAtPanel]","Start - Check panel ID: " ..tostring(panelId) .. ", overwriteFilterWhere: " .. tostring(overwriteFilterWhere) .. ", hideFilterButtons: " .. tostring(hideFilterButtons), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
@@ -396,19 +396,19 @@ function FCOIS.CheckFilterButtonsAtPanel(doUpdateLists, panelId, overwriteFilter
         --Change the filter buttons & callback functions
         for _, buttonNr in ipairs(filterButtonsToCheck) do
             --Check the filter button's offsets, width and height at the given LibFilters panel ID
-            FCOIS.CheckAndTransferFilterButtonDataByPanelId(FCOIS.gFilterWhere, buttonNr)
+            FCOIS.CheckAndTransferFCOISFilterButtonDataByPanelId(FCOIS.gFilterWhere, buttonNr)
             local filterButtonData = settings.filterButtonData[buttonNr][FCOIS.gFilterWhere]
             if filterButtonData ~= nil then
 --d(">FilterButtonData at panel [" .. FCOIS.gFilterWhere  .. "] of button " ..tostring(buttonNr) .." - left: " .. tostring(filterButtonData["left"]).. ", top: " .. tostring(filterButtonData["top"]).. ", width: " .. tostring(filterButtonData["width"]).. ", height: " .. tostring(filterButtonData["height"]) .. ", filterButtonsEnabledAtPanel: " ..tostring(areFilterButtonEnabledAtPanelId))
                 --Get the filter button control (create or modify) and reanchor  it
-                filterBtn = FCOIS.AddOrChangeFilterButton(buttonsParentCtrl, buttonNr, filterButtonData["width"], filterButtonData["height"], filterButtonData["left"], filterButtonData["top"], not areFilterButtonEnabledAtPanelId, FCOIS.gFilterWhere)
+                filterBtn = FCOIS.AddOrChangeFCOISFilterButton(buttonsParentCtrl, buttonNr, filterButtonData["width"], filterButtonData["height"], filterButtonData["left"], filterButtonData["top"], not areFilterButtonEnabledAtPanelId, FCOIS.gFilterWhere)
                 if areFilterButtonEnabledAtPanelId then
                     --Colorize the button and update the tooltips + filter functions
                     if (filterBtn ~= nil) then
                         --Get the filter's state
                         isFilterActivated = FCOIS.getSettingsIsFilterOn(buttonNr, FCOIS.gFilterWhere)
                         --Update the button's color
-                        FCOIS.UpdateButtonColorsAndTextures(buttonNr, filterBtn, isFilterActivated, FCOIS.gFilterWhere)
+                        FCOIS.UpdateFCOISFilterButtonColorsAndTextures(buttonNr, filterBtn, isFilterActivated, FCOIS.gFilterWhere)
                         --(Re)register the filter (for the given panel)?
                         if isFilterActivated == false then
                             FCOIS.unregisterFilters(buttonNr, false, FCOIS.gFilterWhere)
@@ -439,7 +439,7 @@ function FCOIS.CheckFilterButtonsAtPanel(doUpdateLists, panelId, overwriteFilter
 end
 
 --Update the filter button colors and textures, depending on the filters (and chosen sub-filter icons)
-function FCOIS.UpdateButtonColorsAndTextures(p_buttonId, p_button, p_status, p_filterPanelId)
+function FCOIS.UpdateFCOISFilterButtonColorsAndTextures(p_buttonId, p_button, p_status, p_filterPanelId)
     local p_statusText = p_status or "Not changed!"
     p_filterPanelId = p_filterPanelId or FCOIS.gFilterWhere
     local settings = FCOIS.settingsVars.settings
@@ -463,7 +463,7 @@ function FCOIS.UpdateButtonColorsAndTextures(p_buttonId, p_button, p_status, p_f
         -- for Schleife für 4 Buttons -> Initialisierung beim Laden des Addons
         -- Läd für die Ansicht p_filterPanelId die Farben der 4 Filter Buttons
         for i=1, numFilters, 1 do
-            FCOIS.UpdateButtonColorsAndTextures(i, nil, FCOIS.getSettingsIsFilterOn(i, p_filterPanelId), p_filterPanelId)
+            FCOIS.UpdateFCOISFilterButtonColorsAndTextures(i, nil, FCOIS.getSettingsIsFilterOn(i, p_filterPanelId), p_filterPanelId)
         end
 
     else --if (p_buttonId == -1 or p_status == -1) then
@@ -742,7 +742,7 @@ local function doFilter(onoff, p_button, filterId, beQuiet, doFilterBasicsPlayer
 
         -- Update the colors of the 4 "player inventory" filter buttons. All others will be updated upon opening (on event)
         if (filterId == FCOIS_CON_FILTER_BUTTON_LOCKDYN and panels == LF_INVENTORY and doUpdateButtonColorsAndTextures == true) then
-            FCOIS.UpdateButtonColorsAndTextures(-1, nil, -1, LF_INVENTORY)
+            FCOIS.UpdateFCOISFilterButtonColorsAndTextures(-1, nil, -1, LF_INVENTORY)
         end
 
         --------------------------------------------------------------------------------
@@ -828,7 +828,7 @@ local function doFilter(onoff, p_button, filterId, beQuiet, doFilterBasicsPlayer
     --Update the colors of the changed buttons inside the inventory panels, but only
     --if we are not coming from addon initialization
     if (onoff ~= - 100 and doUpdateButtonColorsAndTextures == true) then
-        FCOIS.UpdateButtonColorsAndTextures(filterId, nil, isFilterActive, p_FilterPanelId)
+        FCOIS.UpdateFCOISFilterButtonColorsAndTextures(filterId, nil, isFilterActive, p_FilterPanelId)
     end
     --FCOIS.updateFilteredItemCount(p_FilterPanelId)
 end
@@ -871,122 +871,129 @@ local function filterStatusLoop(filterId, silent, givenArray, p_atLeastOneFilter
             if(FCOIS.getSettingsIsFilterOn(filterId, j)) then
                 returnArray[j][filterId] = true
                 atLeastOneFilterActive = true
+                local statusFilterIdText = locVars["chatcommands_status_filter" .. tostring(filterId)]
+
                 if     (j == LF_INVENTORY or j == LF_BANK_DEPOSIT or j == LF_GUILDBANK_DEPOSIT or j == LF_HOUSE_BANK_DEPOSIT) then
                     returnArray[j][filterId] = settings.allowInventoryFilter
                     if (not silent) then
-                        d(locVars["filter_inventory"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
+                        d(locVars["filter_inventory"] .. statusFilterIdText)
                     end
 
                 elseif (j == LF_CRAFTBAG) then
                     returnArray[j][filterId] = settings.allowCraftBagFilter
                     if (not silent) then
-                        d(locVars["filter_craftbag"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
+                        d(locVars["filter_craftbag"] .. statusFilterIdText)
                     end
 
                 elseif     (j == LF_VENDOR_BUY) then
                     returnArray[j][filterId] = settings.allowVendorBuyFilter
                     if (not silent) then
-                        d(locVars["filter_buy"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
+                        d(locVars["filter_buy"] .. statusFilterIdText)
                     end
                 elseif     (j == LF_VENDOR_SELL) then
                     returnArray[j][filterId] = settings.allowVendorFilter
                     if (not silent) then
-                        d(locVars["filter_store"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
+                        d(locVars["filter_store"] .. statusFilterIdText)
                     end
                 elseif     (j == LF_VENDOR_BUYBACK) then
                     returnArray[j][filterId] = settings.allowVendorBuybackFilter
                     if (not silent) then
-                        d(locVars["filter_buyback"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
+                        d(locVars["filter_buyback"] .. statusFilterIdText)
                     end
                 elseif     (j == LF_VENDOR_REPAIR) then
                     returnArray[j][filterId] = settings.allowVendorRepairFilter
                     if (not silent) then
-                        d(locVars["filter_repair"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
+                        d(locVars["filter_repair"] .. statusFilterIdText)
                     end
                 elseif     (j == LF_FENCE_SELL) then
                     returnArray[j][filterId] = settings.allowFenceFilter
                     if (not silent) then
-                        d(locVars["filter_fence"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
+                        d(locVars["filter_fence"] .. statusFilterIdText)
                     end
                 elseif     (j == LF_FENCE_LAUNDER) then
                     returnArray[j][filterId] = settings.allowLaunderFilter
                     if (not silent) then
-                        d(locVars["filter_launder"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
+                        d(locVars["filter_launder"] .. statusFilterIdText)
                     end
                 elseif (j == LF_GUILDBANK_WITHDRAW) then
                     returnArray[j][filterId] = settings.allowGuildBankFilter
                     if (not silent) then
-                        d(locVars["filter_guildbank"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
+                        d(locVars["filter_guildbank"] .. statusFilterIdText)
                     end
                 elseif (j == LF_GUILDSTORE_SELL) then
                     returnArray[j][filterId] = settings.allowTradinghouseFilter
                     if (not silent) then
-                        d(locVars["filter_guildstore"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
+                        d(locVars["filter_guildstore"] .. statusFilterIdText)
                     end
                 elseif (j == LF_BANK_WITHDRAW or j == LF_HOUSE_BANK_WITHDRAW) then
                     returnArray[j][filterId] = settings.allowBankFilter
                     if (not silent) then
-                        d(locVars["filter_bank"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
+                        d(locVars["filter_bank"] .. statusFilterIdText)
                     end
                 elseif (j == LF_SMITHING_REFINE) then
                     returnArray[j][filterId] = settings.allowRefinementFilter
                     if (not silent) then
-                        d(locVars["filter_refinement"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
+                        d(locVars["filter_refinement"] .. statusFilterIdText)
                     end
                 elseif (j == LF_SMITHING_DECONSTRUCT) then
                     returnArray[j][filterId] = settings.allowDeconstructionFilter
                     if (not silent) then
-                        d(locVars["filter_deconstruction"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
+                        d(locVars["filter_deconstruction"] .. statusFilterIdText)
                     end
                 elseif (j == LF_SMITHING_IMPROVEMENT) then
                     returnArray[j][filterId] = settings.allowImprovementFilter
                     if (not silent) then
-                        d(locVars["filter_improvement"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
+                        d(locVars["filter_improvement"] .. statusFilterIdText)
                     end
                 elseif (j == LF_SMITHING_RESEARCH) then
                     returnArray[j][filterId] = settings.allowResearchFilter
                     if (not silent) then
-                        d(locVars["filter_research"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
+                        d(locVars["filter_research"] .. statusFilterIdText)
                     end
                 elseif (j == LF_JEWELRY_REFINE) then
                     returnArray[j][filterId] = settings.allowJewelryRefinementFilter
                     if (not silent) then
-                        d(locVars["filter_jewelry_refinement"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
+                        d(locVars["filter_jewelry_refinement"] .. statusFilterIdText)
                     end
                 elseif (j == LF_JEWELRY_DECONSTRUCT) then
                     returnArray[j][filterId] = settings.allowJewelryDeconstructionFilter
                     if (not silent) then
-                        d(locVars["filter_jewelry_deconstruction"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
+                        d(locVars["filter_jewelry_deconstruction"] .. statusFilterIdText)
                     end
                 elseif (j == LF_JEWELRY_IMPROVEMENT) then
                     returnArray[j][filterId] = settings.allowJewelryImprovementFilter
                     if (not silent) then
-                        d(locVars["filter_jewelry_improvement"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
+                        d(locVars["filter_jewelry_improvement"] .. statusFilterIdText)
                     end
                 elseif (j == LF_JEWELRY_RESEARCH) then
                     returnArray[j][filterId] = settings.allowJewelryResearchFilter
                     if (not silent) then
-                        d(locVars["filter_jewelry_research"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
+                        d(locVars["filter_jewelry_research"] .. statusFilterIdText)
                     end
                 elseif (j == LF_MAIL_SEND) then
                     returnArray[j][filterId] = settings.allowMailFilter
                     if (not silent) then
-                        d(locVars["filter_mail"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
+                        d(locVars["filter_mail"] .. statusFilterIdText)
                     end
                 elseif (j == LF_TRADE) then
                     returnArray[j][filterId] = settings.allowTradeFilter
                     if (not silent) then
-                        d(locVars["filter_trade"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
+                        d(locVars["filter_trade"] .. statusFilterIdText)
                     end
                 elseif (j == LF_ENCHANTING_EXTRACTION) then
                     returnArray[j][filterId] = settings.allowEnchantingFilter
                     if (not silent) then
-                        d(locVars["filter_enchantingstation_extraction"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
+                        d(locVars["filter_enchantingstation_extraction"] .. statusFilterIdText)
                     end
                 elseif (j==LF_ENCHANTING_CREATION) then
                     returnArray[j][filterId] = settings.allowEnchantingFilter
                     if (not silent) then
-                        d(locVars["filter_enchantingstation_creation"] .. locVars["chatcommands_status_filter" .. tostring(filterId)])
+                        d(locVars["filter_enchantingstation_creation"] .. statusFilterIdText)
+                    end
+                elseif (j == LF_INVENTORY_COMPANION) then
+                    returnArray[j][filterId] = settings.allowCompanionInventoryFilter
+                    if (not silent) then
+                        d(locVars["filter_companion_inventory"] .. statusFilterIdText)
                     end
                 end
             end -- if(FCOIS.getSettingsIsFilterOn(filterId, j)) then
@@ -1025,7 +1032,7 @@ end
 
 --Add the filter buttons to the inventory/bank/mail/trade/guild bank/guild store/crafting stations panels
 --and change them upon opening a new filter panel (update the button id, button filter panel, tooltips, callback functions)
-function FCOIS.AddOrChangeFilterButton(parentWindow, buttonId, pWidth, pHeight, pLeft, pTop, hide, p_FilterPanelId)
+function FCOIS.AddOrChangeFCOISFilterButton(parentWindow, buttonId, pWidth, pHeight, pLeft, pTop, hide, p_FilterPanelId)
     --Get the current filter panel Id
     p_FilterPanelId = p_FilterPanelId or FCOIS.gFilterWhere
     local settings = FCOIS.settingsVars.settings
@@ -1135,8 +1142,9 @@ function FCOIS.AddOrChangeFilterButton(parentWindow, buttonId, pWidth, pHeight, 
     button:SetHandler("OnClicked", function(self)
         if settings.debug then FCOIS.debugMessage( "[FilterButton OnClicked]", "=========>", true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
         if settings.debug then FCOIS.debugMessage( "[FilterButton OnClicked]", "ButtonName: " .. self:GetName() .. ", ButtonId: " .. self.FCObuttonId .. ", PanelId (global): " .. FCOIS.gFilterWhere .. ", PanelId (button): " .. self.FCOfilterPanelId, true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
-
+        --Change the filter according to the filter button's data
         doFilter(-1, self, self.FCObuttonId, false, false, true, false, self.FCOfilterPanelId)
+        --Show the tooltip at the filter button
         if settings.showFilterButtonTooltip then
             local settingsFilterStateToText = FCOIS.mappingVars.settingsFilterStateToText
             tooltipText = outputFilterState(false, self.FCOfilterPanelId, self.FCObuttonId, settingsFilterStateToText[tostring(FCOIS.getSettingsIsFilterOn(self.FCObuttonId, self.FCOfilterPanelId))])
@@ -1149,7 +1157,7 @@ function FCOIS.AddOrChangeFilterButton(parentWindow, buttonId, pWidth, pHeight, 
         end
     end)
 
-    --Set on mouse up handler for the button
+    --Set the mouse up handler for the filter button -> e.g. right click -> context menu to select one filter icon (or * for all)
     button:SetHandler("OnMouseUp", function(self, mouseButton, upInside)
         --button 1= left mouse button / 2= right mouse button
         local doBuildContextMenu = false
@@ -1157,6 +1165,8 @@ function FCOIS.AddOrChangeFilterButton(parentWindow, buttonId, pWidth, pHeight, 
         if mouseButton == MOUSE_BUTTON_INDEX_RIGHT and upInside then
             --Hide the tooltip
             ZO_Tooltips_HideTextTooltip()
+
+--d("[FCOIS]FilterButton right click handler - panelId: " ..tostring(FCOIS.gFilterWhere))
 
             local contextMenu = FCOIS.contextMenu
             --Build the context menu for the lock & dynamic icons
@@ -1174,7 +1184,7 @@ function FCOIS.AddOrChangeFilterButton(parentWindow, buttonId, pWidth, pHeight, 
                 end
                 if doBuildContextMenu then
                     --Build and show the context menu for the lockdyn
-                    FCOIS.showContextMenuFilterButton(self, self.FCOfilterPanelId, "LockDyn")
+                    FCOIS.showContextMenuAtFCOISFilterButton(self, self.FCOfilterPanelId, "LockDyn")
                 end
 
                 --Build the context menu for the gear sets filter button, if activated
@@ -1192,7 +1202,7 @@ function FCOIS.AddOrChangeFilterButton(parentWindow, buttonId, pWidth, pHeight, 
                 end
                 if doBuildContextMenu then
                     --Build and show the context menu for the gear sets
-                    FCOIS.showContextMenuFilterButton(self, self.FCOfilterPanelId, "Gear")
+                    FCOIS.showContextMenuAtFCOISFilterButton(self, self.FCOfilterPanelId, "Gear")
                 end
 
                 --Build the context menu for the research filter button, if activated
@@ -1211,7 +1221,7 @@ function FCOIS.AddOrChangeFilterButton(parentWindow, buttonId, pWidth, pHeight, 
 
                 if doBuildContextMenu then
                     --Build and show the context menu for the research, deconstruction & improvement icons
-                    FCOIS.showContextMenuFilterButton(self, self.FCOfilterPanelId, "ResDecImp")
+                    FCOIS.showContextMenuAtFCOISFilterButton(self, self.FCOfilterPanelId, "ResDecImp")
                 end
 
                 --Build the context menu for the sell filter button, if activated
@@ -1230,7 +1240,7 @@ function FCOIS.AddOrChangeFilterButton(parentWindow, buttonId, pWidth, pHeight, 
 
                 if doBuildContextMenu then
                     --Build and show the context menu for the sell, sell at guild store & intricate icons
-                    FCOIS.showContextMenuFilterButton(self, self.FCOfilterPanelId, "SellGuildInt")
+                    FCOIS.showContextMenuAtFCOISFilterButton(self, self.FCOfilterPanelId, "SellGuildInt")
                 end
             end
         end

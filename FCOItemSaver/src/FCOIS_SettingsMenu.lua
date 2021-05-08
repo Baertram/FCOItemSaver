@@ -118,7 +118,7 @@ end
 local function updateFilterButtonColorAndTexture(filterButtonNr, iconNr)
     local p_button = WINDOW_MANAGER:GetControlByName(ZOsControlVars.FCOISfilterButtonNames[filterButtonNr], "")
     if p_button == nil or filterButtonNr == nil or iconNr == nil then return end
-    FCOIS.UpdateButtonColorsAndTextures(iconNr, p_button, -999)
+    FCOIS.UpdateFCOISFilterButtonColorsAndTextures(iconNr, p_button, -999)
 end
 
 local function changePreviewLabelText(previewType, iconNr, text, doNotUpdateMarkers)
@@ -2230,7 +2230,7 @@ function FCOIS.BuildAddonMenu()
     local function buildFilterButtonsPositionsSubMenu()
         local function saveValueFilterButtonChecks(filterPanelId, filterButtonNr)
             if filterPanelId == LF_INVENTORY then
-                FCOIS.updateFilterButtonsInInv(filterButtonNr)
+                FCOIS.updateFCOISFilterButtonsAtInventory(filterButtonNr)
             end
         end
 
@@ -2248,7 +2248,7 @@ function FCOIS.BuildAddonMenu()
             return false
         end
         local btnFunc = function()
-            FCOIS.setAllFilterButtonOffsetAndSizeSettingsEqual(LF_INVENTORY)
+            FCOIS.setAllFCOISFilterButtonOffsetAndSizeSettingsEqual(LF_INVENTORY)
         end
         local btncreatedControl = CreateControl(nil, btnname, btntooltip, btndata, btndisabledFunc, nil, btnFunc, nil, locVars["options_filter_button_set_all_equal" .. tooltipSuffix])
         if btncreatedControl ~= nil then
@@ -4982,7 +4982,7 @@ function FCOIS.BuildAddonMenu()
                                     getFunc = function() return FCOISsettings.allowInventoryFilter end,
                                     setFunc = function(value) FCOISsettings.allowInventoryFilter = value
                                         --Hide the filter buttons at the filter panel Id
-                                        FCOIS.updateFilterButtonsInInv(-1)
+                                        FCOIS.updateFCOISFilterButtonsAtInventory(-1)
                                         --Unregister and reregister the inventory filter LF_INVENTORY
                                         FCOIS.EnableFilters(-100)
                                     end,
@@ -6260,7 +6260,7 @@ function FCOIS.BuildAddonMenu()
                                 --Change the gear sets filter context-menu button's texture
                                 local lockDynSplitFilterContextMenuButton = WINDOW_MANAGER:GetControlByName(FCOIS.ZOControlVars.FCOISfilterButtonNames[FCOIS_CON_FILTER_BUTTON_LOCKDYN], "")
                                 if lockDynSplitFilterContextMenuButton ~= nil then
-                                    FCOIS.UpdateButtonColorsAndTextures(1, lockDynSplitFilterContextMenuButton, nil, LF_INVENTORY)
+                                    FCOIS.UpdateFCOISFilterButtonColorsAndTextures(1, lockDynSplitFilterContextMenuButton, nil, LF_INVENTORY)
                                     FCOIS.FilterBasics(true)
                                 end
                             end,
@@ -6275,7 +6275,7 @@ function FCOIS.BuildAddonMenu()
                                 --Change the gear sets filter context-menu button's texture
                                 local gearSetSplitFilterContextMenuButton = WINDOW_MANAGER:GetControlByName(FCOIS.ZOControlVars.FCOISfilterButtonNames[FCOIS_CON_FILTER_BUTTON_GEARSETS], "")
                                 if gearSetSplitFilterContextMenuButton ~= nil then
-                                    FCOIS.UpdateButtonColorsAndTextures(2, gearSetSplitFilterContextMenuButton, nil, LF_INVENTORY)
+                                    FCOIS.UpdateFCOISFilterButtonColorsAndTextures(2, gearSetSplitFilterContextMenuButton, nil, LF_INVENTORY)
                                     FCOIS.FilterBasics(true)
                                 end
                             end,
@@ -6290,7 +6290,7 @@ function FCOIS.BuildAddonMenu()
                                 --Change the gear sets filter context-menu button's texture
                                 local resDecSplitFilterContextMenuButton = WINDOW_MANAGER:GetControlByName(FCOIS.ZOControlVars.FCOISfilterButtonNames[FCOIS_CON_FILTER_BUTTON_RESDECIMP], "")
                                 if resDecSplitFilterContextMenuButton ~= nil then
-                                    FCOIS.UpdateButtonColorsAndTextures(3, resDecSplitFilterContextMenuButton, nil, LF_INVENTORY)
+                                    FCOIS.UpdateFCOISFilterButtonColorsAndTextures(3, resDecSplitFilterContextMenuButton, nil, LF_INVENTORY)
                                     FCOIS.FilterBasics(true)
                                 end
                             end,
@@ -6305,7 +6305,7 @@ function FCOIS.BuildAddonMenu()
                                 --Change the gear sets filter context-menu button's texture
                                 local sellGuildIntSplitFilterContextMenuButton = WINDOW_MANAGER:GetControlByName(FCOIS.ZOControlVars.FCOISfilterButtonNames[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT], "")
                                 if sellGuildIntSplitFilterContextMenuButton ~= nil then
-                                    FCOIS.UpdateButtonColorsAndTextures(4, sellGuildIntSplitFilterContextMenuButton, nil, LF_INVENTORY)
+                                    FCOIS.UpdateFCOISFilterButtonColorsAndTextures(4, sellGuildIntSplitFilterContextMenuButton, nil, LF_INVENTORY)
                                     FCOIS.FilterBasics(true)
                                 end
                             end,

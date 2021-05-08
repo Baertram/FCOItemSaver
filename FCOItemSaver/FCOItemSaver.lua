@@ -19,7 +19,7 @@
 ---------------------------------------------------------------------
 --[ToDo list] --
 --____________________________
--- Current max bugs/features/ToDos: 110
+-- Current max bugs/features/ToDos: 111
 --____________________________
 
 --In progress: Since 2020-06-17
@@ -135,6 +135,8 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 
 --#100: 2020-12-13, Deadsoon  CraftStore automatic recipe marking will mark known recipes with the unknown marker icon
 
+--#101: 2021-05-08: At bank withdraw: Right click filter button and select an icon from the context menu will not update the filter button to show the selected button.
+--It's updated the next time that filter button is clicked
 
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
@@ -152,7 +154,7 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 --Some small performance improvements
 --Changed the order of automatic marks to use:
 --1) Set items
---2) Set colelctions
+--2) Set collections
 --3) Ornate
 --4) Intricate
 --5) Research
@@ -179,6 +181,7 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 --Fix companion equipment cannot be equipped from companion inventory via doubleclick
 --Fix character/companion equipment not removing the marker icons if item get's unequipped
 --Default companion invenory filter buttons positions (the 2nd, 3rd and 4th button are not next o the 1st, but way off to the right)
+--Fix bug #101: Filter button not updating at bank withdraw with selected context menu marker icon directly after chosing any
 
 --************************************************************************************************************************
 --************************************************************************************************************************
