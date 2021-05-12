@@ -1386,19 +1386,19 @@ end
 
 -- Is the item researchable?
 function FCOIS.isItemResearchableNoControl(bagId, slotIndex, markId, doTraitCheck)
-    if bagId == nil or slotIndex == nil then return false end
+    if bagId == nil or slotIndex == nil then return false, false end
     --Check if the item is virtually researchable as the settings is enabled to allow marking of non-researchable items as gear/dynamic
     markId = markId or nil
     local itemLink = GetItemLink(bagId, slotIndex)
-    local retVal = FCOIS.isItemLinkResearchable(itemLink, markId, doTraitCheck)
+    local retVal, retVal2 = FCOIS.isItemLinkResearchable(itemLink, markId, doTraitCheck), FCOIS.isItemLinkReconStructedOrRetraited(itemLink)
 --d("[FCOIS.isItemResearchableNoControl] retVal: " .. tostring(retVal))
-    return retVal
+    return retVal, retVal2
 end
 
 -- Is the item researchable?
 -- Is the item researchable?
 function FCOIS.isItemResearchable(p_rowControl, markId, doTraitCheck)
-    if p_rowControl == nil then return false end
+    if p_rowControl == nil then return false, false end
     local bag, slotIndex
     local retVal = false
     local retVal2 = false
@@ -1425,6 +1425,7 @@ function FCOIS.isItemResearchable(p_rowControl, markId, doTraitCheck)
     end
     return retVal, retVal2
 end
+
 -- Is the item an ornate one?
 function FCOIS.isItemOrnate(bagId, slotIndex)
     local isOrnate = false

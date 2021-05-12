@@ -1308,7 +1308,10 @@ function FCOIS.scanInventoryItemsForAutomaticMarks(bag, slot, scanType, updateIn
             checkIfAnyIconIsMarkedAlready = settings.autoMarkResearchCheckAllIcons,
             preCheckFunc        = function(p_bagId, p_slotIndex)
                 --Check if item is researchable
-                local isItemResearchable = FCOIS.isItemResearchableNoControl(p_bagId, p_slotIndex, nil)
+                local isItemResearchable, wasItemReconstructedOrRetraited = FCOIS.isItemResearchableNoControl(p_bagId, p_slotIndex, nil)
+                if isItemResearchable and wasItemReconstructedOrRetraited == true then
+                    isItemResearchable = false
+                end
 --d(">>>isItemResearchable: " ..tostring(isItemResearchable))
                 return isItemResearchable, nil
             end,

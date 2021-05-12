@@ -2439,8 +2439,12 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                         if allowedToMark == true then
                             -- Check if equipment gear 1, 2, 3, 4, 5 or research is possible
                             if iconId ~= nil and mappingVars.iconIsResearchable[iconId] then
+                                local wasItemReconstructedOrRetraited = false
                                 -- Check if item is researchable (as only researchable items can work as equipment too)
-                                allowedToMark = FCOIS.isItemResearchableNoControl(bagId, slotIndex, iconId)
+                                allowedToMark, wasItemReconstructedOrRetraited = FCOIS.isItemResearchableNoControl(bagId, slotIndex, iconId)
+                                if allowedToMark and wasItemReconstructedOrRetraited == true then
+                                    allowedToMark = false
+                                end
                             end
                         end
                         --Finally: Is the item allowed to be marked with this iconId?
