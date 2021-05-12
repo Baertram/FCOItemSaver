@@ -7,8 +7,8 @@ local FCOIS = FCOIS
 FCOIS.addonVars = {}
 local addonVars = FCOIS.addonVars
 --Addon variables
-addonVars.addonVersionOptions 		    = '2.0.2' -- version shown in the settings panel
-addonVars.addonVersionOptionsNumber	    = 2.02
+addonVars.addonVersionOptions 		    = '2.0.4' -- version shown in the settings panel
+addonVars.addonVersionOptionsNumber	    = 2.04
 --The addon name, normal and decorated with colors etc.
 addonVars.gAddonName				    = "FCOItemSaver"
 addonVars.gAddonNameShort               = "FCOIS"
@@ -28,6 +28,7 @@ addonVars.website 					    = esouiWWW .. "/downloads/info630-FCOItemSaver.html"
 addonVars.authorPortal                  = esouiWWWAddonAuthorPortalFCOIS
 addonVars.FAQwebsite                    = esouiWWWAddonAuthorPortalFCOIS .. "&a=faq"
 addonVars.feedback                      = esouiWWWAddonAuthorPortalFCOIS .. "&a=bugreport"
+addonVars.FAQentry                      = addonVars.FAQwebsite .. "&faqid=%s"
 addonVars.donation                      = string.format(addonVars.FAQwebsite .. "&faqid=%s", tostring(esouiWWWAddonDonationId))
 
 --Variables for the addon's load state
@@ -514,6 +515,11 @@ mappingVars.whereAreWeToFilterPanelId = {
 --The array for the mapping between the LibFilters FilterPanelId and the "WhereAreWe" (e.g. used in ItemSelectionHandler function)
 mappingVars.filterPanelIdToWhereAreWe = {}
 for whereAreWe, filterPanelId in pairs(mappingVars.whereAreWeToFilterPanelId) do
+    --For the companion: There is no extra "Anti companion destroy" option at dynamic icons, so just return the normal destroy constant
+    --for it as well! Else the tooltip always says the protection is disabled.
+    if filterPanelId == LF_INVENTORY_COMPANION then
+        whereAreWe = FCOIS_CON_DESTROY
+    end
     mappingVars.filterPanelIdToWhereAreWe[filterPanelId] = whereAreWe
 end
 
@@ -936,8 +942,10 @@ ctrlVars.COMPANION_INV_CONTROL		= ctrlVars.COMPANION_INV.control
 ctrlVars.COMPANION_INV_NAME			= ctrlVars.COMPANION_INV_CONTROL:GetName()
 ctrlVars.COMPANION_INV_LIST          = ctrlVars.COMPANION_INV.list
 ctrlVars.COMPANION_INV_FRAGMENT      = COMPANION_EQUIPMENT_KEYBOARD_FRAGMENT
+ctrlVars.COMPANION_CHARACTER_FRAGMENT = COMPANION_CHARACTER_WINDOW_FRAGMENT
 ctrlVars.COMPANION_CHARACTER         = ZO_CompanionCharacterWindow_Keyboard_TopLevel
 ctrlVars.COMPANION_CHARACTER_EQUIPMENT_SLOTS_NAME = "ZO_CompanionCharacterWindow_Keyboard_TopLevelEquipmentSlots"
+--ZO_CompanionEquipment_Panel_Keyboard
 
 ctrlVars.CRAFTBAG					= ZO_CraftBag
 ctrlVars.CRAFTBAG_LIST 			    = ZO_CraftBagList
@@ -2227,6 +2235,12 @@ checkVars.researchTraitCheckTraitsNotAllowed = {
     [ITEM_TRAIT_TYPE_JEWELRY_ORNATE]    = true,
     [ITEM_TRAIT_TYPE_WEAPON_ORNATE]     = true,
 }
+--The item trait informatin that is not allowed for research
+checkVars.itemTraitInformationNotResearchable = {
+    [ITEM_TRAIT_INFORMATION_RETRAITED]      = true,
+    [ITEM_TRAIT_INFORMATION_RECONSTRUCTED]  = true,
+}
+
 --The possible checkWere panels for the antiSettings reenable checks
 --See file src/FCOIS_Settings.lua, function FCOIS.autoReenableAntiSettingsCheck(checkWhere)
 checkVars.autoReenableAntiSettingsCheckWheres = {

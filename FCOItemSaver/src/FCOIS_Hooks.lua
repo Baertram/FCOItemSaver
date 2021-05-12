@@ -6,6 +6,9 @@ if not FCOIS.libsLoadedProperly then return end
 
 local ctrlVars = FCOIS.ZOControlVars
 local numFilterIcons = FCOIS.numVars.gFCONumFilterIcons
+
+local checkIfItemIsProtected = FCOIS.checkIfItemIsProtected
+
 --LibCustomMenu
 local lcm = FCOIS.LCM
 
@@ -771,7 +774,7 @@ function FCOIS.CreateHooks()
     ZO_PreHook("UnequipItem", function(equipSlot)
         if equipSlot ~= nil then
             if settings.debug then FCOIS.debugMessage( "[UnequipItem]","slotIndex: " .. equipSlot, true, FCOIS_DEBUG_DEPTH_NORMAL) end
---d("[UnequipItem]slotIndex: " .. equipSlot)
+            --d("[UnequipItem]slotIndex: " .. equipSlot)
             --If item was unequipped: Remove the armor type marker if necessary
             FCOIS.removeArmorTypeMarker(BAG_WORN, equipSlot) -->BAG_WORN will be updated to BAG_COMPANION_WORN internally!
             --Update the marker control of the new equipped item
@@ -914,7 +917,7 @@ function FCOIS.CreateHooks()
 
         -- Check the rowControl if the item is marked and update the OnMouseUp functions and the color of the item row then
         for iconId = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
-            local iconIsProtected = FCOIS.checkIfItemIsProtected(iconId, myItemInstanceIdOfControl)
+            local iconIsProtected = checkIfItemIsProtected(iconId, myItemInstanceIdOfControl)
 
             --Special research icon handling
             if iconId == FCOIS_CON_ICON_RESEARCH then
@@ -1049,7 +1052,7 @@ function FCOIS.CreateHooks()
 
             --Mouse button was released on the row?
             if upInside then
---d("[FCOIS]upInside: " ..tostring(upInside) .. ", disable: " ..tostring(rowControl.disableControl) .. ", isSoulGem: " ..tostring(isSoulGem))
+                --d("[FCOIS]upInside: " ..tostring(upInside) .. ", disable: " ..tostring(rowControl.disableControl) .. ", isSoulGem: " ..tostring(isSoulGem))
                 --Check if the clicked row got marker icons which protect this item!
                 FCOIS.refreshPopupDialogButtons(rowControl, false)
                 local dialog = ctrlVars.RepairItemDialog
@@ -1293,8 +1296,8 @@ function FCOIS.CreateHooks()
             filterPanelId = craftingModeAndCraftingTypeToFilterPanelId[mode][craftingType] or LF_SMITHING_IMPROVEMENT
             showFCOISFilterButtons = true
             --Research
-        --elseif mode == SMITHING_MODE_RESEARCH then
-        --FCOIS.PreHookButtonHandler(FCOIS.gFilterWhere, LF_SMITHING_RESEARCH)
+            --elseif mode == SMITHING_MODE_RESEARCH then
+            --FCOIS.PreHookButtonHandler(FCOIS.gFilterWhere, LF_SMITHING_RESEARCH)
         end
         if showFCOISFilterButtons == true and mode and FCOIS.gFilterWhere and filterPanelId then
             --d("[FCOIS]smithingSetMode- mode: " ..tostring(mode) .. ", craftType: " ..tostring(craftingType) .. ", filterPanelId: " ..tostring(filterPanelId) .. ", filterWhere: " ..tostring(FCOIS.gFilterWhere))
@@ -1505,7 +1508,7 @@ function FCOIS.CreateHooks()
         end
     end
     --======== RETRAIT ================================================================
-    --Register a callback function for the siege bar scene
+    --Register a callback function for the retrait scene
     ctrlVars.RETRAIT_KEYBOARD_INTERACT_SCENE:RegisterCallback("StateChange", function(oldState, newState)
         if settings.debug then FCOIS.debugMessage( "[RETRAIT SCENE]","State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
         FCOIS.sceneCallbackHideContextMenu(oldState, newState)
@@ -1528,10 +1531,10 @@ function FCOIS.CreateHooks()
             --Update the current filter panel ID to "Retrait"
             FCOIS.gFilterWhere = LF_RETRAIT
 
-            --Hide the context menu at mail panel
+            --Hide the context menu at the retrait panel
             FCOIS.hideContextMenu(FCOIS.gFilterWhere)
 
-            --When the mail send panel is hidden
+            --When the retrait panel is hidden
         elseif newState == SCENE_HIDDEN then
             --Update the inventory filter buttons
             FCOIS.updateFCOISFilterButtonsAtInventory(-1)
@@ -1548,15 +1551,19 @@ function FCOIS.CreateHooks()
         end
     end)
 
-     --======== COMPANION INVENTORY ================================================================
-    --Register a callback function for the siege bar scene
+    --======== COMPANION INVENTORY ================================================================
+    --Register a callback function for the companion inventory fragment
+    --Attention: This fragment will be showing AFTER the companion inventory rows get updated...
+    --So the active filterPanelId will be updated to LF_INVENTORY_COMPANION as the companion inventory rows are updated
+    -->See file src/FCOIS_MarkerIcons.lua, function FCOIS.CreateTextures with whichTextures = 6
     ctrlVars.COMPANION_INV_FRAGMENT:RegisterCallback("StateChange", function(oldState, newState)
         if settings.debug then FCOIS.debugMessage( "[COMPANION EQUIPMENT FRAGMENT]","State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+--d("[COMPANION EQUIPMENT FRAGMENT]","State: " .. tostring(newState))
         FCOIS.sceneCallbackHideContextMenu(oldState, newState)
         if     newState == SCENE_FRAGMENT_SHOWING then
             --Check if craftbag is active and change filter panel and parent panel accordingly
             FCOIS.gFilterWhere, FCOIS.gFilterWhereParent = FCOIS.checkCraftbagOrOtherActivePanel(LF_INVENTORY_COMPANION)
-
+--d(">FCOIS.gFilterWhere: " ..tostring(FCOIS.gFilterWhere))
             --Check if another filter panel was already opened and we are coming form there before the CLOSE EVENT function was called
             --if FCOIS.preventerVars.gActiveFilterPanel == true then
             --Set the "No Close Event" flag so the called close event won't override gFilterWhere and update the filter button colors and callback handlers
@@ -1569,13 +1576,13 @@ function FCOIS.CreateHooks()
             FCOIS.CheckFCOISFilterButtonsAtPanel(true, LF_INVENTORY_COMPANION)
 
         elseif newState == SCENE_FRAGMENT_HIDING then
-            --Update the current filter panel ID to "Retrait"
+            --Update the current filter panel ID to "Companion inventory"
             FCOIS.gFilterWhere = LF_INVENTORY_COMPANION
 
-            --Hide the context menu at mail panel
+            --Hide the context menu at companion inventory panel
             FCOIS.hideContextMenu(FCOIS.gFilterWhere)
 
-            --When the mail send panel is hidden
+            --When the companion inventory panel is hidden
         elseif newState == SCENE_FRAGMENT_HIDDEN then
             --Update the inventory filter buttons
             FCOIS.updateFCOISFilterButtonsAtInventory(-1)
@@ -1594,6 +1601,25 @@ function FCOIS.CreateHooks()
     --Register a secure posthook on visibility change of a scrolllist's row -> At the companion inventory list
     SecurePostHook(ctrlVars.COMPANION_INV_LIST.dataTypes[1], "setupCallback", OnScrollListRowSetupCallback)
 
+    --Register a fragment state change on the companion character window, to update it's equipment controls
+    ctrlVars.COMPANION_CHARACTER_FRAGMENT:RegisterCallback("StateChange", function(oldState, newState)
+        if settings.debug then FCOIS.debugMessage( "[COMPANION CHARACTER FRAGMENT]","State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        --d("[COMPANION CHARACTER FRAGMENT]","State: " .. tostring(newState))
+        if     newState == SCENE_FRAGMENT_SHOWING then
+            --Check if craftbag is active and change filter panel and parent panel accordingly
+            --FCOIS.gFilterWhere, FCOIS.gFilterWhereParent = FCOIS.checkCraftbagOrOtherActivePanel(LF_INVENTORY_COMPANION)
+
+            --TODO
+            --Update the companion equipped item markers, if needed
+
+        elseif newState == SCENE_FRAGMENT_HIDING then
+            --Update the current filter panel ID to "Companion inventory"
+            --FCOIS.gFilterWhere = LF_INVENTORY_COMPANION
+
+            --When the companion character panel is hidden
+        elseif newState == SCENE_FRAGMENT_HIDDEN then
+        end
+    end)
 
     --======== Extraction / Refinement / Deconstruction / Improvement functions =======================
     --PreHook the enchanting extract function to check if no marked item is currently in the extraction slot

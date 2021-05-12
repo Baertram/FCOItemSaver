@@ -10,6 +10,10 @@ local numFilterIcons = FCOIS.numVars.gFCONumFilterIcons
 local getSavedVarsMarkedItemsTableName = FCOIS.getSavedVarsMarkedItemsTableName
 
 local lmas = FCOIS.libMultiAccountSets
+
+local checkIfItemIsProtected = FCOIS.checkIfItemIsProtected
+local myGetItemInstanceIdNoControl = FCOIS.MyGetItemInstanceIdNoControl
+
 --==========================================================================================================================================
 --									FCOIS Inventory scanning & automatic item marking
 --==========================================================================================================================================
@@ -20,7 +24,7 @@ local function checkIfItemArrayIsProtected(iconIdArray, itemId)
     local isProtected = false
     --Check each iconId in the arry now for a protection
     for i=1, #iconIdArray, 1 do
-        isProtected = FCOIS.checkIfItemIsProtected(iconIdArray[i], itemId)
+        isProtected = checkIfItemIsProtected(iconIdArray[i], itemId)
         if isProtected then break end
     end
     return isProtected
@@ -31,7 +35,7 @@ local function checkIfCanBeAutomaticallyMarked(bagId, slotIndex, itemId, checkTy
 --d("[FCOIS] checkIfCanBeAutomaticallyMarked - bag: " .. tostring(bagId) .. ", slotIndex: " .. tostring(slotIndex) .. ", itemId: " .. tostring(itemId) .. ", checkType: " .. tostring(checkType))
     if (bagId == nil or slotIndex == nil) and itemId == nil then return false end
     if itemId == nil then
-        itemId = FCOIS.MyGetItemInstanceIdNoControl(bagId, slotIndex)
+        itemId = myGetItemInstanceIdNoControl(bagId, slotIndex)
     end
     --Get all icons of the item
     local isMarkedWithOneIcon, markedIcons = FCOIS.IsMarked(bagId, slotIndex, -1)
@@ -565,7 +569,7 @@ local function automaticMarkingSetsAdditionalCheckFunc(p_itemData, p_checkFuncRe
         --==== Normal set marker icon - BEGIN ==================================================================================
         --Check if the item is marked with the automatic set icon alreay
         --table.insert(iconIdArray, setsIconNr)
-        isMarkedWithAutomaticSetMarkerIcon = FCOIS.checkIfItemIsProtected(setsIconNr, itemId) or false
+        isMarkedWithAutomaticSetMarkerIcon = checkIfItemIsProtected(setsIconNr, itemId) or false
         --==== Normal set marker icon - END ====================================================================================
 
         --==== Gear marker icons - BEGIN =======================================================================================
@@ -1006,7 +1010,7 @@ function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, do
         local additionalCheckFuncResultData
         --The item's instance iD
         local itemId
-        itemId = FCOIS.MyGetItemInstanceIdNoControl(bag, slot, false)
+        itemId = myGetItemInstanceIdNoControl(bag, slot, false)
         --Is the itemInstanceId/uniqueId not given,
         --or the item cannot be automatically marked (anymore),
         --  or the item is already marked with the wished icon
@@ -1030,7 +1034,7 @@ function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, do
                     isItemProtected = checkIfItemArrayIsProtected(iconIdArray, itemId)
                 else
                     if not iconIsMarkedAllreadyAllowed then
-                        isItemProtected = FCOIS.checkIfItemIsProtected(toDos.icon, itemId)
+                        isItemProtected = checkIfItemIsProtected(toDos.icon, itemId)
                     else
                         isItemProtected = false
                     end
@@ -1039,7 +1043,7 @@ function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, do
         end
         if itemId == nil or not canBeAutomaticallyMarked or isItemProtected	then
             if showDebug then
-                d("<-- ABORTED [".. il .. "] - ItemId: " .. tostring(itemId) .. ", scanType: " .. tostring(scanType) .. ", FCOIS.checkIfItemIsProtected: " .. tostring(isItemProtected) .. " -> Should be: false, checkIfCanBeAutomaticallyMarked: (" .. tostring(canBeAutomaticallyMarked) .." -> Should be: true)")
+                d("<-- ABORTED [".. il .. "] - ItemId: " .. tostring(itemId) .. ", scanType: " .. tostring(scanType) .. ", checkIfItemIsProtected: " .. tostring(isItemProtected) .. " -> Should be: false, checkIfCanBeAutomaticallyMarked: (" .. tostring(canBeAutomaticallyMarked) .." -> Should be: true)")
             end
             return abortChecksNow("ItemId nil?: " .. tostring(itemId) .. ", canBeAutomaticallyMarked false/nil?: " ..tostring(canBeAutomaticallyMarked) .. ", isItemProtected true?: " ..tostring(isItemProtected))
         end
@@ -1308,7 +1312,10 @@ function FCOIS.scanInventoryItemsForAutomaticMarks(bag, slot, scanType, updateIn
             checkIfAnyIconIsMarkedAlready = settings.autoMarkResearchCheckAllIcons,
             preCheckFunc        = function(p_bagId, p_slotIndex)
                 --Check if item is researchable
-                local isItemResearchable = FCOIS.isItemResearchableNoControl(p_bagId, p_slotIndex, nil)
+                local isItemResearchable, wasItemReconstructedOrRetraited = FCOIS.isItemResearchableNoControl(p_bagId, p_slotIndex, nil)
+                if isItemResearchable and wasItemReconstructedOrRetraited == true then
+                    isItemResearchable = false
+                end
 --d(">>>isItemResearchable: " ..tostring(isItemResearchable))
                 return isItemResearchable, nil
             end,
@@ -1561,7 +1568,7 @@ function FCOIS.scanInventorySingle(p_bagId, p_slotIndex, checksAlreadyDoneTable)
         -- bagId AND slotIndex are given?
         if (p_bagId ~= nil and p_slotIndex ~= nil) then
             --Check if item is researchable
-            local itemId = FCOIS.MyGetItemInstanceIdNoControl(p_bagId, p_slotIndex, false)
+            local itemId = myGetItemInstanceIdNoControl(p_bagId, p_slotIndex, false)
             if (itemId ~= nil) then
 
                 --1)

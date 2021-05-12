@@ -563,7 +563,7 @@ FCOIS.localizationVars.localizationAll = {
 		["options_enable_auto_mark_recipes_in_chat"]	= "Show recipes in chat",
 		["options_enable_auto_mark_recipes_in_chat_TT"] = "Show automatically marked unknown recipes in the chat",
 		["options_auto_mark_recipes_this_char"]			= "Only for this character",
-		["options_auto_mark_recipes_this_char_TT"]	= "If you enable this setting the unknown recipes will only be marked for the currently loggedin character!\n\nIf this setting is disabled the unknown recipes will be marked for other non-logged in characters too, if you are suing the account wide settings:\n\n[SousChef]\nIf your SousChef 'Main Provisioner Character' does not know this recipe.\n[CraftStoreFixedAndImproved]\nIf the main crafting character is chosen (via right mouse button at the character list popup) only this char will be checked for the recipes. Else all characters will be checked.",
+		["options_auto_mark_recipes_this_char_TT"]	= "If you enable this setting the (un)known recipes will only be checked for the currently loggedin character!\n\nIf this setting is disabled the (un)known recipes will be checked for other (non-logged in) characters too, and the marker icon will be added to the recipe, if\n-you are using the account wide settings of FCOIS\n-and if the following rules apply:\n\n[Chosen recipe addon: \'SousChef\']\n-The setting \'List Characters Who Know Recipe\' must be enabled in the SousChef settings\n-Recipe checks will be done for the 'Main Provisioner Character' chosen in the SousChef settings only. A check for all of your characters is currently not possible via the addon SousChef!.\n\n[Chosen recipe addon: \'CraftStoreFixedAndImproved\']\nIf the main crafting character is chosen (via right mouse button at the CraftStore character list popup):\nOnly this char will be checked.\nElse all your characters will be checked.",
 		["options_enable_auto_mark_recipes_hint"]		= "This option needs the selected recipe addon activated.\n\n[SousChef]\nPlease enable the option 'List Characters Who Know Recipe' in the SousChef settings!",
 		["options_auto_mark_crafted_items"] 			= "Mark crafted items",
 		["options_auto_mark_crafted_items_TT"] 	= "If you enable this setting the addon will automatically mark your crafted items at a crafting station with the 'lock' icon.",
@@ -696,7 +696,7 @@ FCOIS.localizationVars.localizationAll = {
 
         ["options_header_equipment"] 			 = "Equipment",
         ["options_equipment_markall_gear"] 		 = "Allow mark all as gear",
-        ["options_equipment_markall_gear_TT"] = "Allow to mark all equipped items as gear at once",
+        ["options_equipment_markall_gear_TT"] = "Allow to mark all equipped items as gear at once, if you mark any equipped item with a gear marker icon",
         ["options_equipment_markall_gear_add_weapons"] 		 = "Mark weapons too",
         ["options_equipment_markall_gear_add_weapons_TT"] = "Automatically mark the weapons too",
         ["options_equipment_markall_gear_add_jewelry"] 		 = "Mark jewelry too",
@@ -1204,6 +1204,9 @@ FCOIS.localizationVars.localizationAll = {
         ["options_auto_mark_sets_collection_unknown_icon"]    = "Unknown set collection item icon",
         ["options_auto_mark_sets_collection_unknown_icon_TT"] = "Choose the icon for unknown set collection items.",
 
+        ["options_description_automatic_marks"] = "Automatic marks are automatically applied marker icons at your items, depending on your defined criteria. E.g. mark set items which got a wished trait (precise, divine, ...) with a wished marker icon, and mark all others with the sell/deconstruct icon. Or mark unknown recipies. The automatic marks may depend on other addons which you may need to install and setup.\nAutomatic marks will be checked and applied at each login/reloadui/zone change with loading screen and will be done for all items in your inventories!\nYou are also able to manually trigger them via the additional inventory \'flag\' icons at the inventories -> sub context menu \'Automatic marks\'. Attention: Triggering it from the flag icon will ONLY apply the marks to the currently visible (filtered) items, where the automatic marks after a login/reloadui will check all items in your inventories!\n\nPlease read the tooltips of each setting in the automatic mark submenus carefully!\n\nThe check and apply order of the automatic marks is:\n1) Set items\n2) Set collections\n3) Ornate\n4) Intricate\n5) Research\n6) Research scrolls\n7) Unknown recipes\n8) Known recipes\n9) Quality\nCrafted and new automatic marks are special and will only be applied as the item is crafted by yourself/get's as new item into your inventory.",
+        ["options_known"] = "known",
+
         --LibShifterBoxes
         --[FCOIS_UNIQUEID_ITEMTYPES]
         ["LIBSHIFTERBOX_FCOIS_UNIQUEID_ITEMTYPES_TITLE_LEFT"]   = "Item types (all)",
@@ -1654,7 +1657,7 @@ FCOIS.localizationVars.localizationAll = {
         ["options_auto_mark_addon"]             =   "Zu verwendendes Addon",
         ["options_auto_mark_addon_TT"]     =   "Addon, welches für die automatischen <<1>> Markierungen verwendet werden soll",
 		["options_auto_mark_recipes_this_char"]			= "Nur für diesen Charakter",
-		["options_auto_mark_recipes_this_char_TT"]	= "Wenn Sie diese Option aktivieren werden nur für den aktuellen Charakter unbekannte Rezepte markiert!\n\nWenn diese Option deaktiviert wird, werden die unbekannten Rezepte für andere Charaktere ebenfalls markiert, sofern Sie die Accountweiten Einstellungen verwenden.\n\n[SousChef]\nWerden für den SousChef 'Main Provisioner Character' markiert.\n[CraftStoreFixedAndImproved]\nWenn auf dem Charakter Auswahl Popup (mit der rechten Maustaste) ein Haupt Handwerks Charakter gewählt wurde, so wird nur dieser geprüft. Ansonsten werden alle anderen Charaktere geprüft.",
+		["options_auto_mark_recipes_this_char_TT"]	= "Wenn Sie diese Option aktivieren werden nur für den aktuell eingeloggten Charakter (un)bekannte Rezepte markiert!\n\nWenn diese Option deaktiviert wird, werden die (un)bekannten Rezepte für andere Charaktere ebenfalls markiert, sofern:\n-Die Accountweiten Einstellungen von FCOIS verwendet werden\n-Die folgenden Punkte zum gewählten Rezept AddOn zutreffen:\n\n[Gewähltes Rezept AddOn: \'SousChef\']\n-Die SousChef Einstellung \'Charakter Rezeptsammlung in Kurzinfos auflisten\' muss aktiviert sein\n-Nur der in den SousChef Einstelungen gewählte 'Haupt Koch Charakter' wird geprüft. Eine Prüfung aller anderen Charaktere ist aktuell nicht möglich mit dem AddOn SousChef!\n\n[Gewähltes Rezept AddOn: \'CraftStoreFixedAndImproved\']\nWenn auf dem CraftStore Charakter Auswahl Popup (mit der rechten Maustaste) ein Haupt Handwerks Charakter gewählt wurde:\nEs wird nur dieser Charakter geprüft.\nAnsonsten werden alle anderen Charaktere geprüft.",
 		["options_enable_auto_mark_recipes_hint"]		= "Diese Option ist nur aktiv, wenn das gewählte Rezepte Addon aktiviert wurde.\n\n[SousChef]\nIn den SousChef Einstellungen muss insbesondere die Option 'Charakter Rezeptsammlung in Kurzinfos auflisten' aktiviert werden!",
 		["options_auto_mark_crafted_items"] 			= "Markiere hergestellte Gegenstände",
 		["options_auto_mark_crafted_items_TT"] 	= "Wenn Sie diese Option aktivieren werden, nach dem Herstellen (Crafting) von Gegenständen, Gegenstände automatich mit dem 'Schloß' Symbol markiert.",
@@ -1788,7 +1791,7 @@ FCOIS.localizationVars.localizationAll = {
 		["options_enable_block_marked_disable_with_flag_TT"]	= "Deaktiviert die Anti-Benutzen/-Lesen/-Nehmen/-etc. Optionen temporär, wenn im Inventar auf das zusätzliche Optionen Flaggen ("..addInvFlagIcon..") Symbol rechts geklickt wird",
         ["options_header_equipment"] 			 = "Ausrüstung",
         ["options_equipment_markall_gear"] 		 = "Alles gleichzeitig markieren",
-        ["options_equipment_markall_gear_TT"] = "Erlaubt es alle getragene Ausrüstung gleichzeitig als Gear zu markieren",
+        ["options_equipment_markall_gear_TT"] = "Erlaubt es alle getragene Ausrüstung gleichzeitig als Gear zu markieren, wenn ein getragener Gegenstand als Gear markiert wird",
         ["options_equipment_markall_gear_add_weapons"] 		 = "Waffen mit markieren",
         ["options_equipment_markall_gear_add_weapons_TT"] = "Die Waffen werden automatisch mit markiert",
         ["options_equipment_markall_gear_add_jewelry"] 		 = "Schmuck mit markieren",
@@ -2346,6 +2349,9 @@ FCOIS.localizationVars.localizationAll = {
         ["options_auto_mark_sets_collection_known_icon_TT"] = "Wähle das Symbol für die bekannten Set-Sammlungen Gegenstände.",
         ["options_auto_mark_sets_collection_unknown_icon"]    = "Unbekannte Set-Sammlung Geg. Symbol",
         ["options_auto_mark_sets_collection_unknown_icon_TT"] = "Wähle das Symbol für die unbekannten Set-Sammlungen Gegenstände.",
+
+        ["options_description_automatic_marks"] = "Automatische Markierungen sind automatisch gesetzte Markierungs Symbole an deinen Gegenständen. Diese sind abhängig von deinen definierten Kriterien, z.B. markiere Set Gegenstände welche eine gewünschte Eigenschaft (Präzise, Göttlich, ...) besitzen mit dem gewünschtes Set Symbol, und alle anderen mit dem Verkaufen/Zerlegen Symbol. oder markiere unbekante Rezepte. Die automatischen Markierungen können von anderen AddOns abhängig sein, die du installieren und aktivieren musst.\nDie Autom. Markierungen werden bei jedem Login/Benutzeroberfläche neuladen oder Zonen Wechsel mit Ladebild für alle Gegenstände in deinen Inventaren durchgeführt.\nDu kannst diese aber auch manuell anstoßen, über den zusätzliche Inventar \'Flagge\' Knopf -> Kontext Menü -> Automatische Markierung. Achtung: Beim manuellen Anstoß per Flagge Knopf werden NUR die aktuell angezeigten/gefilterten Gegenstände geprüft, nicht wie bei der automatischen Prüfung alle Gegenstände in den Inventaren!\n\nBitte lies die Tooltips an den Einstellungen sorgfältig, da diese weitere Informationen zu anderen AddOns und deren Einstellungen, bzw. zu der Option selbst liefern!\n\nReihenfolge der autom. PrüfungenThe:\n1) Set Gegenstände\n2) Set Sammlung\n3) Wertvolle\n4) Intrikat (mehr XP beim Zerlegen)\n5) Analyse\n6) Analyse Schriftrollen\n7) Unbekannte Rezepte\n8) Bekannte Rezepte\n9) Qualität\nHandwerklich hergestellte und neue Gegenstände werden gesondert behandelt und werden dem entsprechend für von dir hergestellte, oder neue (gelootete) Gegenstände automatisch gesetzt.",
+        ["options_known"] = "bekannt",
 
         --LibShifterBoxes
         --[FCOIS_UNIQUEID_ITEMTYPES]

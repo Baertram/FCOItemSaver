@@ -141,47 +141,26 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
---Since last update 2.0.1 - New version: 2.0.3 -> Updated 2021-03-07
+--Since last update 2.0.3 - New version: 2.0.4 -> Updated 2021-06-xx ???
 ---------------------------------------------------------------------
 
 --[Fixed]
---#97 Set item marking won't be marked any longer as e.g. impenetrable if they were marked with another set related marker icon before AND the "Check all others"
---settings are enabled at the appropriate automatic mark settings
---#100 CraftStore automatic recipe marking will not mark known recipes as unknown anymore (wrong marker icon was assigned)
-
+--#101 At bank withdraw: Right click filter button and select an icon from the context menu will not update the filter button to show the selected button
+--Fixed character/companion equipment not removing the marker icons if companion item get's unequipped
 
 --[Changed]
---Some small performance improvements
---Changed the order of automatic marks to use:
---1) Set items
---2) Set collections
---3) Ornate
---4) Intricate
---5) Research
---6) Research scrolls
---7) Unknown recipes
---8) Known recipes
---9) Quality
 
 --[Added]
 --Companion inventory marker icons support
 --Companion inventory additional flag context menu button
 --Companion inventory filter buttons
+--More FAQ links and description texts at the settings
 
 --[Added on request]
---#109 Added the possibilitiy to exclude sets from the automatic set markers. Check teh automatic marks -> sets submenu for the new submenu.
--- The shown LibShifterBox provides 2 lists, left and right. Left: All available sets. Right: All excluded sets. You need to drag&drop or use the
--- < > arrows to move the sets between left&right.
---Attention: Due to a Zs bug the list somwtimes will show "black" even though there are entries in the lists! Tis is happening especially if you
---scroll the surrounding controls like the FCOIS settings panel. Just put the mouse above the lists and scroll and you'll see the entries again.
---This is just a visual bug we cannot fix for now!
---#110 Added a "Check all others" checkbox to the automatic set marker icons
 
---[Todo] 2021-05-07
---Fix companion equipment cannot be equipped from companion inventory via doubleclick
---Fix character/companion equipment not removing the marker icons if item get's unequipped
+--[Todo] 2021-05-12
+--Fix companion equipment cannot be equipped from companion inventory via doubleclick/drag&drop, if any non-dynamic icon is set
 --Default companion invenory filter buttons positions (the 2nd, 3rd and 4th button are not next o the 1st, but way off to the right)
---Fix bug #101: Filter button not updating at bank withdraw with selected context menu marker icon directly after chosing any
 
 --************************************************************************************************************************
 --************************************************************************************************************************

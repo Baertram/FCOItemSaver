@@ -10,6 +10,9 @@ local myColorDisabled	= ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_T
 local ctrlVars = FCOIS.ZOControlVars
 
 local getSavedVarsMarkedItemsTableName = FCOIS.getSavedVarsMarkedItemsTableName
+local getFilterWhereBySettings = FCOIS.getFilterWhereBySettings
+local checkIfProtectedSettingsEnabled = FCOIS.checkIfProtectedSettingsEnabled
+local checkIfItemIsProtected = FCOIS.checkIfItemIsProtected
 
 --Compatibility functions
 local function menuVisibleCheck()
@@ -634,7 +637,11 @@ end
     if isResearchAble or isDynamic then
         local doResearchItemGotTraitCheck = doResearchTraitCheck[markId] or false
         -- Check if item is researchable (as only researchable items can work as equipment too)
-        if not FCOIS.isItemResearchable(rowControl, markId, doResearchItemGotTraitCheck) then
+        local isResearchable, wasRetraitedOrReconstructed = FCOIS.isItemResearchable(rowControl, markId, doResearchItemGotTraitCheck)
+        if not isResearchable then
+            return false
+        end
+        if wasRetraitedOrReconstructed == true and markId == FCOIS_CON_ICON_RESEARCH then
             return false
         end
     end
@@ -808,7 +815,7 @@ end
     end
 
     --Is the current markId already set at the item?
-    local isMarkIdProtected = FCOIS.checkIfItemIsProtected(markId, FCOIS.MyGetItemInstanceId(rowControl))
+    local isMarkIdProtected = checkIfItemIsProtected(markId, FCOIS.MyGetItemInstanceId(rowControl))
     local newAddedMenuIndex
 
     --Build the tooltiptext for the current markId's menuItem
@@ -2169,7 +2176,7 @@ function FCOIS.getContextMenuAntiSettingsTextAndState(p_filterWhere, buildText)
         end
     end
 --d(">filterPanelToCheck: " ..tostring(filterPanelToCheck))
-    currentSettingsState, currentSettingsStateDestroy = FCOIS.checkIfProtectedSettingsEnabled(filterPanelToCheck)
+    currentSettingsState, currentSettingsStateDestroy = checkIfProtectedSettingsEnabled(filterPanelToCheck)
 --d(">currentSettingsState: " ..tostring(currentSettingsState) .. ", currentSettingsStateDestroy: " ..tostring(currentSettingsStateDestroy))
     if not currentSettingsState and currentSettingsStateDestroy ~= nil then
         currentSettingsState = currentSettingsStateDestroy
@@ -2478,8 +2485,12 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                         if allowedToMark == true then
                             -- Check if equipment gear 1, 2, 3, 4, 5 or research is possible
                             if iconId ~= nil and mappingVars.iconIsResearchable[iconId] then
+                                local wasItemReconstructedOrRetraited = false
                                 -- Check if item is researchable (as only researchable items can work as equipment too)
-                                allowedToMark = FCOIS.isItemResearchableNoControl(bagId, slotIndex, iconId)
+                                allowedToMark, wasItemReconstructedOrRetraited = FCOIS.isItemResearchableNoControl(bagId, slotIndex, iconId)
+                                if allowedToMark and wasItemReconstructedOrRetraited == true then
+                                    allowedToMark = false
+                                end
                             end
                         end
                         if allowedToMark == true then
@@ -2503,7 +2514,7 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                                 --Mark: True
                                 if doMark == true then
                                     --Check if the item is not marked already
-                                    if not FCOIS.checkIfItemIsProtected(iconId, myItemInstanceId) then
+                                    if not checkIfItemIsProtected(iconId, myItemInstanceId) then
                                         --Check if all icons should be demarked if this icon gets set
                                         local iconShouldDemarkAllOthers = FCOIS.checkIfItemShouldBeDemarked(iconId)
                                         if iconShouldDemarkAllOthers then
@@ -2558,7 +2569,7 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                                     --Mark: False
                                 elseif doMark == false then
                                     --Check if the item is marked already
-                                    if FCOIS.checkIfItemIsProtected(iconId, myItemInstanceId) then
+                                    if checkIfItemIsProtected(iconId, myItemInstanceId) then
                                         FCOIS.MarkItem(bagId, slotIndex, iconId, false, false)
                                         atLeastOneMarkerChanged = true
                                         markerChangedAtBagAndSlot = true
@@ -2668,7 +2679,7 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                                         -- -^- NEW after implementing settings.disableResearchCheck
 
                                         --Check if the item is marked already AND if the icon is enabled in the settings
-                                        if FCOIS.checkIfItemIsProtected(iconIdLoop, myItemInstanceId) then
+                                        if checkIfItemIsProtected(iconIdLoop, myItemInstanceId) then
 
                                             --Clear the undo table once at the current panelId (keep all other panelIds !)
                                             if not undoTableCleared then
@@ -2736,7 +2747,7 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                                 --Check all icon Ids
                                 for iconIdLoop = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
                                     --Check if the item is marked already AND if the settings for this marker icon is activated
-                                    if FCOIS.checkIfItemIsProtected(iconIdLoop, myItemInstanceId) then
+                                    if checkIfItemIsProtected(iconIdLoop, myItemInstanceId) then
                                         --Clear the undo table once at the current panelId (keep all other panelIds !)
                                         if not undoTableCleared then
                                             contMenuVars.undoMarkedItems[filterPanelToSaveUndoTo] = {}
@@ -3220,6 +3231,27 @@ function FCOIS.showContextMenuForAddInvButtons(invAddContextMenuInvokerButton)
         local subMenuEntryAutomaticMarking
         if isCompanionInventory == false then
             --Add submenu for the automatic marking
+            --Unknown set collection items
+            subMenuEntryAutomaticMarking = {
+                label 		= locVars["options_enable_auto_mark_unknown_set_collection_items"],
+                callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "setItemCollectionsUnknown") end,
+                disabled	= function() return not settings.autoMarkSetsItemCollectionBook or (settings.autoMarkSetsItemCollectionBookMissingIcon == FCOIS_CON_ICON_NONE or not settings.isIconEnabled[settings.autoMarkSetsItemCollectionBookMissingIcon] == true) end,
+            }
+            table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
+            --Known set collection items
+            subMenuEntryAutomaticMarking = {
+                label 		= locVars["options_enable_auto_mark_known_set_collection_items"],
+                callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "setItemCollectionsKnown") end,
+                disabled	= function() return not settings.autoMarkSetsItemCollectionBook or (settings.autoMarkSetsItemCollectionBookIcon == FCOIS_CON_ICON_NONE or not settings.isIconEnabled[settings.autoMarkSetsItemCollectionBookNonMissingIcon] == true) end,
+            }
+            table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
+            --Sets
+            subMenuEntryAutomaticMarking = {
+                label 		= locVars["options_enable_auto_mark_sets"],
+                callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "sets") end,
+                disabled	= function() return not settings.autoMarkSets or not settings.isIconEnabled[settings.autoMarkSetsIconNr] end,
+            }
+            table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
             --Ornate
             subMenuEntryAutomaticMarking = {
                 label 		= GetString(SI_ITEMTRAITTYPE10),
@@ -3246,34 +3278,6 @@ function FCOIS.showContextMenuForAddInvButtons(invAddContextMenuInvokerButton)
                 label 		= GetString(SI_SMITHING_TAB_RESEARCH) .. " " .. GetString(SI_SPECIALIZEDITEMTYPE105),
                 callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "researchScrolls") end,
                 disabled	= function() return ((DetailedResearchScrolls == nil or DetailedResearchScrolls.GetWarningLine == nil) or not settings.autoMarkWastedResearchScrolls or not settings.isIconEnabled[FCOIS_CON_ICON_LOCK]) end,
-            }
-            table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
-            --Sets
-            subMenuEntryAutomaticMarking = {
-                label 		= locVars["options_enable_auto_mark_sets"],
-                callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "sets") end,
-                disabled	= function() return not settings.autoMarkSets or not settings.isIconEnabled[settings.autoMarkSetsIconNr] end,
-            }
-            table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
-            --Unknown set collection items
-            subMenuEntryAutomaticMarking = {
-                label 		= locVars["options_enable_auto_mark_unknown_set_collection_items"],
-                callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "setItemCollectionsUnknown") end,
-                disabled	= function() return not settings.autoMarkSetsItemCollectionBook or (settings.autoMarkSetsItemCollectionBookMissingIcon == FCOIS_CON_ICON_NONE or not settings.isIconEnabled[settings.autoMarkSetsItemCollectionBookMissingIcon] == true) end,
-            }
-            table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
-            --Known set collection items
-            subMenuEntryAutomaticMarking = {
-                label 		= locVars["options_enable_auto_mark_known_set_collection_items"],
-                callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "setItemCollectionsKnown") end,
-                disabled	= function() return not settings.autoMarkSetsItemCollectionBook or (settings.autoMarkSetsItemCollectionBookIcon == FCOIS_CON_ICON_NONE or not settings.isIconEnabled[settings.autoMarkSetsItemCollectionBookNonMissingIcon] == true) end,
-            }
-            table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
-            --Sets
-            subMenuEntryAutomaticMarking = {
-                label 		= locVars["options_enable_auto_mark_sets"],
-                callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "sets") end,
-                disabled	= function() return not settings.autoMarkSets or not settings.isIconEnabled[settings.autoMarkSetsIconNr] end,
             }
             table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
             --Unknown recipes

@@ -4,6 +4,8 @@ local FCOIS = FCOIS
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
 
+local checkIfProtectedSettingsEnabled = FCOIS.checkIfProtectedSettingsEnabled
+
 -- =====================================================================================================================
 --  Tooltip functions
 -- =====================================================================================================================
@@ -56,6 +58,7 @@ function FCOIS.CreateToolTip(markerControl, markerId, doHide, pUpdateAllEquipmen
         local panelId = FCOIS.gFilterWhere
         local filterPanelIdToWhereAreWe = FCOIS.mappingVars.filterPanelIdToWhereAreWe
         local whereAreWe = filterPanelIdToWhereAreWe[panelId]
+d("[FCOIS]CreateToolTip - filterPanelid: " ..tostring(panelId) .. ", whereAreWe: " ..tostring(whereAreWe))
 
         --Are we adding a tooltip to an equipment slot?
         if settings.showIconTooltipAtCharacter and pUpdateAllEquipmentTooltips then
@@ -112,7 +115,7 @@ function FCOIS.CreateToolTip(markerControl, markerId, doHide, pUpdateAllEquipmen
                         markedGear = markedGear + 1
                         if tooltipGearText ~= "" then tooltipGearText = tooltipGearText .. "\n" end
                         local isDynamicGearIcon = FCOIS.isDynamicGearIcon(iconId) or false
-                        local gearSettingsEnabled, isDestroyProtected = FCOIS.checkIfProtectedSettingsEnabled(panelId, iconId, isDynamicGearIcon, true, whereAreWe)
+                        local gearSettingsEnabled, isDestroyProtected = checkIfProtectedSettingsEnabled(panelId, iconId, isDynamicGearIcon, true, whereAreWe)
                         if not gearSettingsEnabled and isDestroyProtected then
                             gearSettingsEnabled = isDestroyProtected
                         end
@@ -144,7 +147,7 @@ function FCOIS.CreateToolTip(markerControl, markerId, doHide, pUpdateAllEquipmen
                                 if externalAddonCall[IIfAaddonCallConst] == false then
                                     --Check if the current dynamic icons's settings are enabled at the given panel
                                     --Call with 3rd parameter "isDynamicIcon" = true to skip "is dynamic icon check" inside the function again
-                                    local dynamicSettingsEnabled, isDestroyProtected = FCOIS.checkIfProtectedSettingsEnabled(panelId, iconId, true, true, whereAreWe)
+                                    local dynamicSettingsEnabled, isDestroyProtected = checkIfProtectedSettingsEnabled(panelId, iconId, true, true, whereAreWe)
                                     if not dynamicSettingsEnabled and isDestroyProtected then
                                         dynamicSettingsEnabled = isDestroyProtected
                                     end
@@ -160,7 +163,7 @@ function FCOIS.CreateToolTip(markerControl, markerId, doHide, pUpdateAllEquipmen
                         --No gear and no dynamic icon -> Static icon!
                         else
                             local colorForText = ""
-                            local normalSettingsEnabled, isDestroyProtected = FCOIS.checkIfProtectedSettingsEnabled(panelId, iconId, nil, true, whereAreWe)
+                            local normalSettingsEnabled, isDestroyProtected = checkIfProtectedSettingsEnabled(panelId, iconId, nil, true, whereAreWe)
                             if not normalSettingsEnabled and isDestroyProtected then
                                 normalSettingsEnabled = isDestroyProtected
                             end
@@ -339,7 +342,7 @@ function FCOIS.buildMarkerIconProtectedWhereTooltip(markId)
             if filterPanelName and filterPanelName ~= "" then
                 --Check the protection of the markerIcon there
                 local whereAreWe = filterPanelIdToWhereAreWe[libFilterPanelId]
-                local isProtected, isDestroyProtected = FCOIS.checkIfProtectedSettingsEnabled(libFilterPanelId, markId, nil, true, whereAreWe)
+                local isProtected, isDestroyProtected = checkIfProtectedSettingsEnabled(libFilterPanelId, markId, nil, true, whereAreWe)
                 if not isProtected and isDestroyProtected then
                     isProtected = isDestroyProtected
                 end

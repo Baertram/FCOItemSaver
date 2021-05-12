@@ -65,6 +65,8 @@ local getSavedVarsMarkedItemsTableName	 = FCOIS.getSavedVarsMarkedItemsTableName
 local DeconstructionSelectionHandler 	= FCOIS.DeconstructionSelectionHandler
 local ItemSelectionHandler 				= FCOIS.ItemSelectionHandler
 
+local checkIfItemIsProtected = FCOIS.checkIfItemIsProtected
+
 --------------------------------------------------------------------------------
 -- Local helper functions
 -----------------------------------------------------------------------------------
@@ -108,9 +110,9 @@ end
 	Basically the protection check functions of this API (FCOIS.Is*****Locked) will call the function:
 	FCOIS.callDeconstructionSelectionHandler(integer bag, integer slot, boolean echo, boolean overrideChatOutput, boolean suppressChatOutput, boolean overrideAlert, boolean suppressAlert boolean calledFromExternalAddon, libFilters2.x->LF_filterPanelID panelId)
 
-	You need to give the function call the item's bag and slotId, and the libFilters 2.x filter panel ID of the desired panel that you want to check, e.g. the crafting improvement panel.
+	You need to give the function call the item's bag and slotId, and the LibFilters 3.x filter panel ID of the desired panel that you want to check, e.g. the crafting improvement panel.
     It will think we are at the improvement tab of the crafting station (and not at the crafting stations  create, deconstruct, or research tabs)
-    Improvement panel libFilters 2.x constant:    LF_SMITHING_IMPROVEMENT
+    Improvement panel LibFilters 3.x constant:    LF_SMITHING_IMPROVEMENT
 
     Function call parameters:
     Integer bag:                                                The bag index of the inventory/bank/guild bank/craft bag/equipment item
@@ -119,13 +121,14 @@ end
     Boolean parameters overrideChatOutput / overrideAlert: 	    if true the FCOIS settings for the chat/alert messages will be overwritten so they get shown from your call.
     Boolean parameters suppressChatOutput / suppressAlert: 		if true the FCOIs settings for the chat/alert message will be suppressed so no message is shown from your call.
     Boolean parameter calledFromExternalAddon: 					Must be true if the call comes from another addon than FCOIS. Otherwise the protective functions won't work properly! Must be true for these protective check functions too!
-    Integer parameter panelId: 									libFilters 2.x filter constant LF_* for the panel where the check should be done. If this variable is nil FCOIS will detect the active panel automatically.
+    Integer parameter panelId: 									LibFilters 3.x filter constant LF_* for the panel where the check should be done. If this variable is nil FCOIS will detect the active panel automatically. If the parameter calledFromExternalAddon is true ONLY the panelid will be used to determine the active protections, no control:IsHidden() will be checked to determine the active panel!
     Boolean parameter isDragAndDrop: 	    					if true the item was dragged&dropped
+    Integer parameter panelIdParent:							LibFilters 3.x filter constant LF_* for the parent panel at the CraftBag, if addon CraftBagExtended (or similar) is enabled which allows Mail/Trade etc. CraftBag panels as well. No automatic detection!
 ]]
 --Function to call the itemSelectionHandler from other addons (e.g. DoItAll with FCOItemSaver support)
 --Return true:   Item is protected
 --Returns false: Item is not protected
-function FCOIS.callItemSelectionHandler(bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId, isDragAndDrop)
+function FCOIS.callItemSelectionHandler(bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId, isDragAndDrop, panelIdParent)
 	echo = echo or false
 	isDragAndDrop = isDragAndDrop or false
 	overrideChatOutput = overrideChatOutput or false
@@ -137,7 +140,7 @@ function FCOIS.callItemSelectionHandler(bag, slot, echo, overrideChatOutput, sup
 	--Return true to "protect" an item, if the bag and slot are missing
 	if bag == nil or slot == nil then return true end
 	--Call the item selection handler method now for the item
-	return ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId)
+	return ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId, panelIdParent)
 end
 --Local function for speedup -> Anti-Item protection handler
 local FCOIScish = FCOIS.callItemSelectionHandler
@@ -559,7 +562,7 @@ function FCOIS.MarkItem(bag, slot, iconId, showIcon, updateInventories)
 				local itemIsMarked = showIcon
 				if itemIsMarked == nil then itemIsMarked = false end
 				--Item is already un/marked -> No need to change it
-				if FCOIS.checkIfItemIsProtected(iconId, itemId) == itemIsMarked then
+				if checkIfItemIsProtected(iconId, itemId) == itemIsMarked then
 					doUpdateMarkerNow = false
 				else
 					--Check if the item is a researchable one, but only if icon should be shown and bag + slot are given
@@ -791,7 +794,7 @@ function FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon
                 local itemIsMarked = showIcon
                 if itemIsMarked == nil then itemIsMarked = false end
                 --Item is already un/marked -> No need to change it
-                if FCOIS.checkIfItemIsProtected(iconId, itemInstanceOrUniqueId, nil, addonName) == itemIsMarked then
+                if checkIfItemIsProtected(iconId, itemInstanceOrUniqueId, nil, addonName) == itemIsMarked then
                     doUpdateMarkerNow = false
 --d(">changed doUpdateMarkerNow to: " ..tostring(doUpdateMarkerNow))
                 else
@@ -942,7 +945,7 @@ local function checkIfItemIsMarkedAndReturnMarkerIcons(instance, iconIds, exclud
 					--Only if iconIds contains the value -1 or {-1} do the excluded icon checks too
 					if not excludeIconIdsCheckTable[icoId] then
 						--Is the not-excluded icon ID protected?
-						if (FCOIS.checkIfItemIsProtected(icoId, instance, nil, addonName) == true) then
+						if (checkIfItemIsProtected(icoId, instance, nil, addonName) == true) then
 							--return true, if any icon is set
 							isMarked = true
 							markedArray[icoId] = true
@@ -962,7 +965,7 @@ local function checkIfItemIsMarkedAndReturnMarkerIcons(instance, iconIds, exclud
 					iconsChecked = iconsChecked + 1
 					--is the item marked with that iconId?
 					if (FCOIS[savedVarsMarkedItemsTableName][iconId] ~= nil) then
-						iconIsSet = FCOIS.checkIfItemIsProtected(iconId, instance, nil, addonName)
+						iconIsSet = checkIfItemIsProtected(iconId, instance, nil, addonName)
 						markedArray[iconId] = iconIsSet
 						if not isMarked then
 							isMarked = iconIsSet
@@ -978,7 +981,7 @@ local function checkIfItemIsMarkedAndReturnMarkerIcons(instance, iconIds, exclud
 		--iconIds is no array/table
 		--Check only 1 icon
 		if (iconIds ~= -1) then
-			isMarked = FCOIS[savedVarsMarkedItemsTableName][iconIds] ~= nil and FCOIS.checkIfItemIsProtected(iconIds, instance, nil, addonName)
+			isMarked = FCOIS[savedVarsMarkedItemsTableName][iconIds] ~= nil and checkIfItemIsProtected(iconIds, instance, nil, addonName)
 			if isMarked then
 				markedArray[iconIds] = true
 			end
@@ -989,7 +992,7 @@ local function checkIfItemIsMarkedAndReturnMarkerIcons(instance, iconIds, exclud
 				--Only if iconIds contains the value -1 or {-1} do the excluded icon checks too
 				if not excludeIconIdsCheckTable[icoId] then
 					--Is the not-excluded icon ID protected?
-					if (FCOIS.checkIfItemIsProtected(icoId, instance, nil, addonName) == true) then
+					if (checkIfItemIsProtected(icoId, instance, nil, addonName) == true) then
 						isMarked = true
 						markedArray[icoId] = true
 					end
@@ -1128,33 +1131,33 @@ function FCOIS.IsFiltered(bag, slot, filterId, filterPanelId)
 
 		if (filterId ~= -1) then
 			if (filterId == FCOIS_CON_FILTER_BUTTON_LOCKDYN) then
-				if (FCOIS.checkIfItemIsProtected(FCOIS_CON_ICON_LOCK, instance)  == true or
-						FCOIS.checkIfItemIsProtected(nil, instance, "dynamic") == true) then
+				if (checkIfItemIsProtected(FCOIS_CON_ICON_LOCK, instance)  == true or
+						checkIfItemIsProtected(nil, instance, "dynamic") == true) then
 					--Is the deconstruction filter activated?
 					if (filterStatusVar[filterPanelId][filterId] == true) then
 						return true
 					end
 				end
 			elseif (filterId == FCOIS_CON_FILTER_BUTTON_GEARSETS) then
-				if (FCOIS.checkIfItemIsProtected(nil, instance, "gear") == true) then
+				if (checkIfItemIsProtected(nil, instance, "gear") == true) then
 					--Is the deconstruction filter activated?
 					if (filterStatusVar[filterPanelId][filterId] == true) then
 						return true
 					end
 				end
 			elseif (filterId == FCOIS_CON_FILTER_BUTTON_RESDECIMP) then
-				if (FCOIS.checkIfItemIsProtected(FCOIS_CON_ICON_RESEARCH, instance) == true or
-						FCOIS.checkIfItemIsProtected(FCOIS_CON_ICON_DECONSTRUCTION, instance) == true or
-						FCOIS.checkIfItemIsProtected(FCOIS_CON_ICON_IMPROVEMENT, instance) == true    ) then
+				if (checkIfItemIsProtected(FCOIS_CON_ICON_RESEARCH, instance) == true or
+						checkIfItemIsProtected(FCOIS_CON_ICON_DECONSTRUCTION, instance) == true or
+						checkIfItemIsProtected(FCOIS_CON_ICON_IMPROVEMENT, instance) == true    ) then
 					--Is the research filter activated?
 					if (filterStatusVar[filterPanelId][filterId] == true) then
 						return true
 					end
 				end
 			elseif (filterId == FCOIS_CON_FILTER_BUTTON_SELLGUILDINT) then
-				if (FCOIS.checkIfItemIsProtected(FCOIS_CON_ICON_SELL, instance) == true or
-						FCOIS.checkIfItemIsProtected(FCOIS_CON_ICON_SELL_AT_GUILDSTORE, instance) == true or
-						FCOIS.checkIfItemIsProtected(FCOIS_CON_ICON_INTRICATE, instance) == true    ) then
+				if (checkIfItemIsProtected(FCOIS_CON_ICON_SELL, instance) == true or
+						checkIfItemIsProtected(FCOIS_CON_ICON_SELL_AT_GUILDSTORE, instance) == true or
+						checkIfItemIsProtected(FCOIS_CON_ICON_INTRICATE, instance) == true    ) then
 					--Is the sell filter activated?
 					--Attention: FilterId equals 4, but we need to check the value 5 here:
 					if (filterStatusVar[filterPanelId][5] == true) then
@@ -1162,7 +1165,7 @@ function FCOIS.IsFiltered(bag, slot, filterId, filterPanelId)
 					end
 				end
 			else
-				if (FCOIS[savedVarsMarkedItemsTableName][filterId] ~= nil and FCOIS.checkIfItemIsProtected(filterId, instance)) then
+				if (FCOIS[savedVarsMarkedItemsTableName][filterId] ~= nil and checkIfItemIsProtected(filterId, instance)) then
 					--Is the deconstruction filter activated?
 					if (filterStatusVar[filterPanelId][filterId] == true) then
 						return true
@@ -1173,33 +1176,33 @@ function FCOIS.IsFiltered(bag, slot, filterId, filterPanelId)
 			--Check for all filters if the item is marked. return true, if any filter applies
 			for filtId = 1, FCOIS.numVars.gFCONumFilters, 1 do
 				if (filtId == FCOIS_CON_FILTER_BUTTON_LOCKDYN) then
-					if (FCOIS.checkIfItemIsProtected(FCOIS_CON_ICON_LOCK, instance)  == true or
-							FCOIS.checkIfItemIsProtected(nil, instance, "dynamic") == true) then
+					if (checkIfItemIsProtected(FCOIS_CON_ICON_LOCK, instance)  == true or
+							checkIfItemIsProtected(nil, instance, "dynamic") == true) then
 						--Is the deconstruction filter activated?
 						if (filterStatusVar[filterPanelId][filtId] == true) then
 							return true
 						end
 					end
 				elseif (filtId == FCOIS_CON_FILTER_BUTTON_GEARSETS) then
-					if (FCOIS.checkIfItemIsProtected(nil, instance, "gear") == true) then
+					if (checkIfItemIsProtected(nil, instance, "gear") == true) then
 						--Is the deconstruction filter activated?
 						if (filterStatusVar[filterPanelId][filtId] == true) then
 							return true
 						end
 					end
 				elseif (filtId == FCOIS_CON_FILTER_BUTTON_RESDECIMP) then
-					if (FCOIS.checkIfItemIsProtected(FCOIS_CON_ICON_RESEARCH, instance) == true or
-							FCOIS.checkIfItemIsProtected(FCOIS_CON_ICON_DECONSTRUCTION, instance) == true or
-							FCOIS.checkIfItemIsProtected(FCOIS_CON_ICON_IMPROVEMENT, instance) == true    ) then
+					if (checkIfItemIsProtected(FCOIS_CON_ICON_RESEARCH, instance) == true or
+							checkIfItemIsProtected(FCOIS_CON_ICON_DECONSTRUCTION, instance) == true or
+							checkIfItemIsProtected(FCOIS_CON_ICON_IMPROVEMENT, instance) == true    ) then
 						--Is the research filter activated?
 						if (filterStatusVar[filterPanelId][filtId] == true) then
 							return true
 						end
 					end
 				elseif (filtId == FCOIS_CON_FILTER_BUTTON_SELLGUILDINT) then
-					if (FCOIS.checkIfItemIsProtected(FCOIS_CON_ICON_SELL, instance) == true or
-							FCOIS.checkIfItemIsProtected(FCOIS_CON_ICON_SELL_AT_GUILDSTORE, instance) == true or
-							FCOIS.checkIfItemIsProtected(FCOIS_CON_ICON_INTRICATE, instance) == true    ) then
+					if (checkIfItemIsProtected(FCOIS_CON_ICON_SELL, instance) == true or
+							checkIfItemIsProtected(FCOIS_CON_ICON_SELL_AT_GUILDSTORE, instance) == true or
+							checkIfItemIsProtected(FCOIS_CON_ICON_INTRICATE, instance) == true    ) then
 						--Is the sell filter activated?
 						--Attention: filtId equals 4, but we need to check the value 5 here:
 						if (filterStatusVar[filterPanelId][5] == true) then
@@ -1207,7 +1210,7 @@ function FCOIS.IsFiltered(bag, slot, filterId, filterPanelId)
 						end
 					end
 				else
-					if (FCOIS.checkIfItemIsProtected(filtId, instance) == true) then
+					if (checkIfItemIsProtected(filtId, instance) == true) then
 						--Is the deconstruction filter activated?
 						if (filterStatusVar[filterPanelId][filtId] == true) then
 							return true

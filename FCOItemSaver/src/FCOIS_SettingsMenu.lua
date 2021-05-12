@@ -335,6 +335,7 @@ function FCOIS.BuildAddonMenu()
     local targChar      = noEntryValue
 
     local addonVars = FCOIS.addonVars
+    local addonFAQentry = addonVars.FAQentry
 
     --Other addons
     --GridList
@@ -3479,13 +3480,56 @@ function FCOIS.BuildAddonMenu()
                     },
                 },
 
+                --==============================================================================
+                --Equipment auto-marking
+                {   -- Equipment
+                    type = "submenu",
+                    name = locVars["options_header_equipment"],
+                    controls =
+                    {
+                        {
+                            type = "checkbox",
+                            name = locVars["options_equipment_markall_gear"],
+                            tooltip = locVars["options_equipment_markall_gear" .. tooltipSuffix],
+                            getFunc = function() return FCOISsettings.autoMarkAllEquipment end,
+                            setFunc = function(value) FCOISsettings.autoMarkAllEquipment = value
+                            end,
+                            default = FCOISdefaultSettings.autoMarkAllEquipment,
+                        },
+                        {
+                            type = "checkbox",
+                            name = locVars["options_equipment_markall_gear_add_weapons"],
+                            tooltip = locVars["options_equipment_markall_gear_add_weapons" .. tooltipSuffix],
+                            getFunc = function() return FCOISsettings.autoMarkAllWeapon end,
+                            setFunc = function(value) FCOISsettings.autoMarkAllWeapon = value
+                            end,
+                            disabled = function() return not FCOISsettings.autoMarkAllEquipment end,
+                            default = FCOISdefaultSettings.autoMarkAllWeapon,
+                        },
+                        {
+                            type = "checkbox",
+                            name = locVars["options_equipment_markall_gear_add_jewelry"],
+                            tooltip = locVars["options_equipment_markall_gear_add_jewelry" .. tooltipSuffix],
+                            getFunc = function() return FCOISsettings.autoMarkAllJewelry end,
+                            setFunc = function(value) FCOISsettings.autoMarkAllJewelry = value
+                            end,
+                            disabled = function() return not FCOISsettings.autoMarkAllEquipment end,
+                            default = FCOISdefaultSettings.autoMarkAllJewelry,
+                        },
+                    }, -- controls equipment auto-marking
+                }, -- submenu equipment auto-marking
+
                 --======== ITEM AUTOMATIC MARKING ==============================================
                 {
                     type = "submenu",
                     name = locVars["options_header_items"],
                     controls =
                     {
-
+                        {
+                            type = "description",
+                            text = locVars["options_description_automatic_marks"],
+                            --helpUrl = string.format(addonFAQentry, tostring(???))
+                        },
                         --==============================================================================
                         {  -- Sets
                             type = "submenu",
@@ -4256,45 +4300,6 @@ function FCOIS.BuildAddonMenu()
                         }, -- submenu research
 
                         --==============================================================================
-                        --Equipment auto-marking
-                        {   -- Equipment
-                            type = "submenu",
-                            name = locVars["options_header_equipment"],
-                            controls =
-                            {
-                                {
-                                    type = "checkbox",
-                                    name = locVars["options_equipment_markall_gear"],
-                                    tooltip = locVars["options_equipment_markall_gear" .. tooltipSuffix],
-                                    getFunc = function() return FCOISsettings.autoMarkAllEquipment end,
-                                    setFunc = function(value) FCOISsettings.autoMarkAllEquipment = value
-                                    end,
-                                    default = FCOISdefaultSettings.autoMarkAllEquipment,
-                                },
-                                {
-                                    type = "checkbox",
-                                    name = locVars["options_equipment_markall_gear_add_weapons"],
-                                    tooltip = locVars["options_equipment_markall_gear_add_weapons" .. tooltipSuffix],
-                                    getFunc = function() return FCOISsettings.autoMarkAllWeapon end,
-                                    setFunc = function(value) FCOISsettings.autoMarkAllWeapon = value
-                                    end,
-                                    disabled = function() return not FCOISsettings.autoMarkAllEquipment end,
-                                    default = FCOISdefaultSettings.autoMarkAllWeapon,
-                                },
-                                {
-                                    type = "checkbox",
-                                    name = locVars["options_equipment_markall_gear_add_jewelry"],
-                                    tooltip = locVars["options_equipment_markall_gear_add_jewelry" .. tooltipSuffix],
-                                    getFunc = function() return FCOISsettings.autoMarkAllJewelry end,
-                                    setFunc = function(value) FCOISsettings.autoMarkAllJewelry = value
-                                    end,
-                                    disabled = function() return not FCOISsettings.autoMarkAllEquipment end,
-                                    default = FCOISdefaultSettings.autoMarkAllJewelry,
-                                },
-                            }, -- controls equipment auto-marking
-                        }, -- submenu equipment auto-marking
-
-                        --==============================================================================
                         {   -- Recipes
                             type = "submenu",
                             name = GetString(SI_ITEMTYPE29),
@@ -4316,6 +4321,7 @@ function FCOIS.BuildAddonMenu()
                                     --disabled = function() return not FCOISsettings.autoMarkRecipes end,
                                     width = "full",
                                     default = FCOISdefaultSettings.recipeAddonUsed,
+                                    warning = locVars["options_enable_auto_mark_recipes_hint"],
                                 },
                                 {
                                     type = "checkbox",
@@ -4364,6 +4370,7 @@ function FCOIS.BuildAddonMenu()
                                     disabled = function() return not FCOIS.isRecipeAutoMarkDoable(false, false, false) end,
                                     width = "full",
                                     default = FCOISdefaultSettings.autoMarkRecipesOnlyThisChar,
+                                    warning = locVars["options_auto_mark_recipes_this_char" .. tooltipSuffix],
                                 },
                                 {
                                     type = "checkbox",
@@ -6390,6 +6397,7 @@ function FCOIS.BuildAddonMenu()
                 {
                     type = "submenu",
                     name = locVars["options_additional_buttons_FCOIS_additional_options"],
+                    helpUrl = string.format(addonFAQentry, tostring(128)),
                     controls =
                     {
                         {
@@ -6462,7 +6470,7 @@ function FCOIS.BuildAddonMenu()
                         { -- Begin Submenu filter button position data
                             type = "submenu",
                             name = locVars["options_additional_buttons_FCOIS_additional_options_offsets"],
-                            controls = addInvFlagButtonsPositionsSubMenu
+                            controls = addInvFlagButtonsPositionsSubMenu,
                         }, -- End submenu - Filter button position data
 
                     } -- controls additional buttons in inventories
