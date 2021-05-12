@@ -19,7 +19,7 @@
 ---------------------------------------------------------------------
 --[ToDo list] --
 --____________________________
--- Current max bugs/features/ToDos: 108
+-- Current max bugs/features/ToDos: 110
 --____________________________
 
 --In progress: Since 2020-06-17
@@ -139,49 +139,41 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
---Since last update 2.0.0 - New version: 2.0.1 -> Updated 2021-03-07
+--Since last update 2.0.2 - New version: 2.0.3 -> Updated 2021-05-10
 ---------------------------------------------------------------------
 
 --[Fixed]
--- #47 SHIFT +right click directly in guild bank's withdraw row does not work if the inventory was not at least opened once before
--- the guild bank was opened
--- #101 Performance improvement: Duplicate marker texture controls checks (create/reanchore/etc.) happened at some inventories
--- if you have scrolled
---
---#107: Auto-reenable guild bank deposit check should only be re-enabled if the setting to block the guild bank deposit is
---      enabled!
+--#97 Set item marking won't be marked any longer as e.g. impenetrable if they were marked with another set related marker icon before AND the "Check all others"
+--settings are enabled at the appropriate automatic mark settings
+--#100 CraftStore automatic recipe marking will not mark known recipes as unknown anymore (wrong marker icon was assigned)
 
 
 --[Changed]
---#108 The red "settings are currently loaded" sand-clock icon at the top right edge of the FCOIS settings panel  will show a
---ping-pong size animation for 5 times now so the last ones not paying attention to it's existance might notice it now AND
--- will keep their fingers away from the FCOIS settings menu until it disappears... Move the mouse above the icon to read the
--- tooltip why it is there and why you should simply "wait" until it is gone.
-
+--Some small performance improvements
+--Changed the order of automatic marks to use:
+--1) Set items
+--2) Set collections
+--3) Ornate
+--4) Intricate
+--5) Research
+--6) Research scrolls
+--7) Unknown recipes
+--8) Known recipes
+--9) Quality
 
 --[Added]
---#102 Added: New settings at dynamic icons: Offset X / Offset Y for each dynamic icon, to position them differently to other
---       marker icons
---#103 Support for Inventory GridView/Grid List addons: FCOIS bound items marker icon position and size within grid mode
---     It will show at the top left edge of the grid item.
--- #104 Performance tweak: Marker icon textures will not be created anymore "all" at "all rows" at the first inventory open,
---      but only those will be created which marker icons are applied to the currently shown item.
---      As you scroll the next texture controls will be checked and created, if needed. As rows of the inventory will be
---      reused if you scroll (e.g. item1 will be out of view and new item 23 will be at the row where item 1 was before)
---      the marker texture controls will stay at the row (once created) and will be reused for the items, as before.
---      But if you only got a few marker icons active per item this should increase the performance of the first iventory
---      open a lot! Could add some more littel lag to the scrolling though. Tell me please if you notice this, providing
---      info at which inventory panel, which filters are activated and how I'm able to rebuild this.
---      Grid addons like Inventory Grid View or Grid List should be much faster at the first inventory open now!
--- #105 More dynamic LAM settings (marker icons, marker icons enable submenus) instead of redundant code lines
--- #106 Added automatic marking of item set collection book -> Missing/Known. Supports ESO API for the currently logged in
---      account, or optionally LibMultiAccountSets for multi-account support
+--Companion inventory marker icons support
+--Companion inventory additional flag context menu button
+--Companion inventory filter buttons
 
 --[Added on request]
---#80 New selection of FCOIS custom created UniqueIds: Choose your criteria in the general settings, which define the uniqueId for you.
---    It will use the itemId + the selected criteria (level, quality, enchantment, etc.) to create an own uniqueId.
---    Only applies to weapons and armor so far. All other items still use the non-unique IDs.
-
+--#109 Added the possibilitiy to exclude sets from the automatic set markers. Check teh automatic marks -> sets submenu for the new submenu.
+-- The shown LibShifterBox provides 2 lists, left and right. Left: All available sets. Right: All excluded sets. You need to drag&drop or use the
+-- < > arrows to move the sets between left&right.
+--Attention: Due to a Zs bug the list somwtimes will show "black" even though there are entries in the lists! Tis is happening especially if you
+--scroll the surrounding controls like the FCOIS settings panel. Just put the mouse above the lists and scroll and you'll see the entries again.
+--This is just a visual bug we cannot fix for now!
+--#110 Added a "Check all others" checkbox to the automatic set marker icons
 
 --************************************************************************************************************************
 --************************************************************************************************************************

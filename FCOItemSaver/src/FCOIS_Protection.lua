@@ -380,7 +380,7 @@ end
 --============================== ITEM SELECTION HANDLER ===================================================================================
 -- Fired when user selects an item by drag&drop, doubleclick etc.
 -- Warns user if the item is marked with any of the filter icons and if the marked icon protects the item at teh current filterPanelId
-function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId)
+function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId, panelIdParent)
     if bag == nil or slot == nil then return true end
     echo = echo or false
     isDragAndDrop = isDragAndDrop or false
@@ -389,12 +389,24 @@ function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChat
     overrideAlert = overrideAlert or false
     suppressAlert = suppressAlert or false
     calledFromExternalAddon = calledFromExternalAddon or false
+    --panelIdParent: Craftbag Extended panelId where the craftbag is shown, e.g. LF_MAIL_SEND or LF_TRADE
 
     local settings = FCOIS.settingsVars.settings
 
-    if settings.debug then FCOIS.debugMessage( "[ItemSelectionHandler]","Bag: " .. tostring(bag) .. ", Slot: " .. tostring(slot) .. ", echo: " .. tostring(echo) .. ", isDragAndDrop: " .. tostring(isDragAndDrop) .. ", overrideChatOutput: " .. tostring(overrideChatOutput) .. ", suppressChatOutput: " .. tostring(suppressChatOutput) .. ", overrideAlert: " .. tostring(overrideAlert) .. ", suppressAlert: " .. tostring(suppressAlert) .. ", calledFromExternalAddon: " .. tostring(calledFromExternalAddon) .. ", panelId: " .. tostring(panelId), true, FCOIS_DEBUG_DEPTH_SPAM) end
---d("[FCOIS]ItemSelectionHandler - Bag: " .. tostring(bag) .. ", Slot: " .. tostring(slot) .. ", Echo: " .. tostring(echo) .. ", overrideChatOutput: " .. tostring(overrideChatOutput) .. ", suppressChatOutput: " .. tostring(suppressChatOutput) .. ", overrideAlert: " .. tostring(overrideAlert) .. ", suppressAlert: " .. tostring(suppressAlert) .. ", calledFromExternalAddon: " .. tostring(calledFromExternalAddon) .. ", panelId: " .. tostring(panelId))
+    --TODO: For debugging only. Remove if not needed any longer
+--[[
+local doDebug = false
+if panelId == LF_SMITHING_RESEARCH then
+    doDebug = true
+end
+]]
 
+    if settings.debug then FCOIS.debugMessage( "[ItemSelectionHandler]","Bag: " .. tostring(bag) .. ", Slot: " .. tostring(slot) .. ", echo: " .. tostring(echo) .. ", isDragAndDrop: " .. tostring(isDragAndDrop) .. ", overrideChatOutput: " .. tostring(overrideChatOutput) .. ", suppressChatOutput: " .. tostring(suppressChatOutput) .. ", overrideAlert: " .. tostring(overrideAlert) .. ", suppressAlert: " .. tostring(suppressAlert) .. ", calledFromExternalAddon: " .. tostring(calledFromExternalAddon) .. ", panelId: " .. tostring(panelId), true, FCOIS_DEBUG_DEPTH_SPAM) end
+--[[
+    if doDebug then
+        d("[FCOIS]ItemSelectionHandler - Bag: " .. tostring(bag) .. ", Slot: " .. tostring(slot) .. ", Echo: " .. tostring(echo) .. ", overrideChatOutput: " .. tostring(overrideChatOutput) .. ", suppressChatOutput: " .. tostring(suppressChatOutput) .. ", overrideAlert: " .. tostring(overrideAlert) .. ", suppressAlert: " .. tostring(suppressAlert) .. ", calledFromExternalAddon: " .. tostring(calledFromExternalAddon) .. ", panelId: " .. tostring(panelId))
+    end
+]]
     --Panel at the call of the function
     local panelIdAtCall = panelId
 
@@ -464,7 +476,11 @@ function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChat
 
     --======= WHERE ARE WE? ========================================================
     --The number for the orientation (which filter panel ID and which sub-checks were done -> for the chat output and the alert message determination)
-    local whereAreWe = FCOIS.getWhereAreWe(panelId, panelIdAtCall, bag, slot, isDragAndDrop, calledFromExternalAddon)
+    local whereAreWe = FCOIS.getWhereAreWe(panelId, panelIdAtCall, panelIdParent, bag, slot, isDragAndDrop, calledFromExternalAddon)
+if doDebug then
+d(">>whereAreWe = " ..tostring(whereAreWe))
+end
+
     --Error: wheerAreWe is NIL!
     if whereAreWe == nil then
         local itemLink = "bag: " ..tostring(bag) .. ", slot: " .. tostring(slot)
@@ -692,10 +708,10 @@ function FCOIS.DeconstructionSelectionHandler(bag, slot, echo, overrideChatOutpu
     local craftingType
     if calledFromExternalAddon then
         local craftingTypesWithDeconstruction = {
-            [CRAFTING_TYPE_BLACKSMITHING] = true,
-            [CRAFTING_TYPE_CLOTHIER] = true,
+            [CRAFTING_TYPE_BLACKSMITHING]   = true,
+            [CRAFTING_TYPE_CLOTHIER]        = true,
             [CRAFTING_TYPE_JEWELRYCRAFTING] = true,
-            [CRAFTING_TYPE_WOODWORKING] = true,
+            [CRAFTING_TYPE_WOODWORKING]     = true,
         }
         craftingType = GetCraftingInteractionType()
         craftingTypeIsDeconstructable = craftingTypesWithDeconstruction[craftingType] or false
@@ -722,7 +738,7 @@ function FCOIS.DeconstructionSelectionHandler(bag, slot, echo, overrideChatOutpu
                 or FCOIS.isResearchListDialogShown()
                 or FCOIS.isRetraitStationShown()
         ) then
-            return FCOIS.callItemSelectionHandler(bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId)
+            return FCOIS.callItemSelectionHandler(bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId, nil, nil)
         else
             return false
         end

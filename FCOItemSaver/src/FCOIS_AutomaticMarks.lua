@@ -1366,7 +1366,7 @@ function FCOIS.scanInventoryItemsForAutomaticMarks(bag, slot, scanType, updateIn
                 --Check if item is an unknown recipe
                 return FCOIS.isRecipeKnown(p_bagId, p_slotIndex, false), nil
             end,
-            resultPreCheckFunc  = true,
+            resultPreCheckFunc  = false,
             resultNotPreCheckFunc = nil,
             checkFunc			= nil,
             resultCheckFunc 	= nil,

@@ -3152,9 +3152,31 @@ d("[FCOIS]showContextMenuForAddInvButtons -> Localization fix")
             end
         end
 
+        local subMenuEntryAutomaticMarking
         --Add submenu for the automatic marking
+        --Unknown set collection items
+        subMenuEntryAutomaticMarking = {
+            label 		= locVars["options_enable_auto_mark_unknown_set_collection_items"],
+            callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "setItemCollectionsUnknown") end,
+            disabled	= function() return not settings.autoMarkSetsItemCollectionBook or (settings.autoMarkSetsItemCollectionBookMissingIcon == FCOIS_CON_ICON_NONE or not settings.isIconEnabled[settings.autoMarkSetsItemCollectionBookMissingIcon] == true) end,
+        }
+        table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
+        --Known set collection items
+        subMenuEntryAutomaticMarking = {
+            label 		= locVars["options_enable_auto_mark_known_set_collection_items"],
+            callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "setItemCollectionsKnown") end,
+            disabled	= function() return not settings.autoMarkSetsItemCollectionBook or (settings.autoMarkSetsItemCollectionBookIcon == FCOIS_CON_ICON_NONE or not settings.isIconEnabled[settings.autoMarkSetsItemCollectionBookNonMissingIcon] == true) end,
+        }
+        table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
+        --Sets
+        subMenuEntryAutomaticMarking = {
+            label 		= locVars["options_enable_auto_mark_sets"],
+            callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "sets") end,
+            disabled	= function() return not settings.autoMarkSets or not settings.isIconEnabled[settings.autoMarkSetsIconNr] end,
+        }
+        table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
         --Ornate
-        local subMenuEntryAutomaticMarking = {
+        subMenuEntryAutomaticMarking = {
             label 		= GetString(SI_ITEMTRAITTYPE10),
             callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "ornate") end,
             disabled	= function() return not settings.autoMarkOrnate or not settings.isIconEnabled[FCOIS_CON_ICON_SELL] end,
@@ -3179,34 +3201,6 @@ d("[FCOIS]showContextMenuForAddInvButtons -> Localization fix")
             label 		= GetString(SI_SMITHING_TAB_RESEARCH) .. " " .. GetString(SI_SPECIALIZEDITEMTYPE105),
             callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "researchScrolls") end,
             disabled	= function() return ((DetailedResearchScrolls == nil or DetailedResearchScrolls.GetWarningLine == nil) or not settings.autoMarkWastedResearchScrolls or not settings.isIconEnabled[FCOIS_CON_ICON_LOCK]) end,
-        }
-        table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
-        --Sets
-        subMenuEntryAutomaticMarking = {
-            label 		= locVars["options_enable_auto_mark_sets"],
-            callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "sets") end,
-            disabled	= function() return not settings.autoMarkSets or not settings.isIconEnabled[settings.autoMarkSetsIconNr] end,
-        }
-        table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
-        --Unknown set collection items
-        subMenuEntryAutomaticMarking = {
-            label 		= locVars["options_enable_auto_mark_unknown_set_collection_items"],
-            callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "setItemCollectionsUnknown") end,
-            disabled	= function() return not settings.autoMarkSetsItemCollectionBook or (settings.autoMarkSetsItemCollectionBookMissingIcon == FCOIS_CON_ICON_NONE or not settings.isIconEnabled[settings.autoMarkSetsItemCollectionBookMissingIcon] == true) end,
-        }
-        table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
-        --Known set collection items
-        subMenuEntryAutomaticMarking = {
-            label 		= locVars["options_enable_auto_mark_known_set_collection_items"],
-            callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "setItemCollectionsKnown") end,
-            disabled	= function() return not settings.autoMarkSetsItemCollectionBook or (settings.autoMarkSetsItemCollectionBookIcon == FCOIS_CON_ICON_NONE or not settings.isIconEnabled[settings.autoMarkSetsItemCollectionBookNonMissingIcon] == true) end,
-        }
-        table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
-        --Sets
-        subMenuEntryAutomaticMarking = {
-            label 		= locVars["options_enable_auto_mark_sets"],
-            callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "sets") end,
-            disabled	= function() return not settings.autoMarkSets or not settings.isIconEnabled[settings.autoMarkSetsIconNr] end,
         }
         table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
         --Unknown recipes

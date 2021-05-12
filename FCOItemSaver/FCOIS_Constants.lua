@@ -7,8 +7,8 @@ local FCOIS = FCOIS
 FCOIS.addonVars = {}
 local addonVars = FCOIS.addonVars
 --Addon variables
-addonVars.addonVersionOptions 		    = '2.0.2' -- version shown in the settings panel
-addonVars.addonVersionOptionsNumber	    = 2.02
+addonVars.addonVersionOptions 		    = '2.0.3' -- version shown in the settings panel
+addonVars.addonVersionOptionsNumber	    = 2.03
 --The addon name, normal and decorated with colors etc.
 addonVars.gAddonName				    = "FCOItemSaver"
 addonVars.gAddonNameShort               = "FCOIS"
@@ -21,14 +21,15 @@ addonVars.addonAuthorDisplayNameEU      = authorDisplayName
 addonVars.addonAuthorDisplayNameNA      = authorDisplayName
 addonVars.addonAuthorDisplayNamePTS     = authorDisplayName
 local esouiWWWAuthorId                  = 136 -- Baertram ddon authorId at www.esoui.com
-local esouiWWWAddonDonationId           = 131 -- FAQ etry Id for the donation
+local esouiWWWAddonDonationId           = 131 -- FAQ entry Id for the donation
 local esouiWWW                          = "https://www.esoui.com"
 local esouiWWWAddonAuthorPortalFCOIS    = string.format(esouiWWW .. "/portal.php?&id=%s", tostring(esouiWWWAuthorId))
 addonVars.website 					    = esouiWWW .. "/downloads/info630-FCOItemSaver.html"
 addonVars.authorPortal                  = esouiWWWAddonAuthorPortalFCOIS
 addonVars.FAQwebsite                    = esouiWWWAddonAuthorPortalFCOIS .. "&a=faq"
 addonVars.feedback                      = esouiWWWAddonAuthorPortalFCOIS .. "&a=bugreport"
-addonVars.donation                      = string.format(addonVars.FAQwebsite .. "&faqid=%s", tostring(esouiWWWAddonDonationId))
+addonVars.FAQentry                      = addonVars.FAQwebsite .. "&faqid=%s"
+addonVars.donation                      = string.format(addonVars.FAQentry, tostring(esouiWWWAddonDonationId))
 
 --Variables for the addon's load state
 addonVars.gAddonLoaded				= false
@@ -2128,6 +2129,12 @@ checkVars.researchTraitCheckTraitsNotAllowed = {
     [ITEM_TRAIT_TYPE_JEWELRY_ORNATE]    = true,
     [ITEM_TRAIT_TYPE_WEAPON_ORNATE]     = true,
 }
+--The item trait informatin that is not allowed for research
+checkVars.itemTraitInformationNotResearchable = {
+    [ITEM_TRAIT_INFORMATION_RETRAITED]      = true,
+    [ITEM_TRAIT_INFORMATION_RECONSTRUCTED]  = true,
+}
+
 --The possible checkWere panels for the antiSettings reenable checks
 --See file src/FCOIS_Settings.lua, function FCOIS.autoReenableAntiSettingsCheck(checkWhere)
 checkVars.autoReenableAntiSettingsCheckWheres = {

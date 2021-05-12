@@ -108,9 +108,9 @@ end
 	Basically the protection check functions of this API (FCOIS.Is*****Locked) will call the function:
 	FCOIS.callDeconstructionSelectionHandler(integer bag, integer slot, boolean echo, boolean overrideChatOutput, boolean suppressChatOutput, boolean overrideAlert, boolean suppressAlert boolean calledFromExternalAddon, libFilters2.x->LF_filterPanelID panelId)
 
-	You need to give the function call the item's bag and slotId, and the libFilters 2.x filter panel ID of the desired panel that you want to check, e.g. the crafting improvement panel.
+	You need to give the function call the item's bag and slotId, and the LibFilters 3.x filter panel ID of the desired panel that you want to check, e.g. the crafting improvement panel.
     It will think we are at the improvement tab of the crafting station (and not at the crafting stations  create, deconstruct, or research tabs)
-    Improvement panel libFilters 2.x constant:    LF_SMITHING_IMPROVEMENT
+    Improvement panel LibFilters 3.x constant:    LF_SMITHING_IMPROVEMENT
 
     Function call parameters:
     Integer bag:                                                The bag index of the inventory/bank/guild bank/craft bag/equipment item
@@ -119,13 +119,14 @@ end
     Boolean parameters overrideChatOutput / overrideAlert: 	    if true the FCOIS settings for the chat/alert messages will be overwritten so they get shown from your call.
     Boolean parameters suppressChatOutput / suppressAlert: 		if true the FCOIs settings for the chat/alert message will be suppressed so no message is shown from your call.
     Boolean parameter calledFromExternalAddon: 					Must be true if the call comes from another addon than FCOIS. Otherwise the protective functions won't work properly! Must be true for these protective check functions too!
-    Integer parameter panelId: 									libFilters 2.x filter constant LF_* for the panel where the check should be done. If this variable is nil FCOIS will detect the active panel automatically.
+    Integer parameter panelId: 									LibFilters 3.x filter constant LF_* for the panel where the check should be done. If this variable is nil FCOIS will detect the active panel automatically. If the parameter calledFromExternalAddon is true ONLY the panelid will be used to determine the active protections, no control:IsHidden() will be checked to determine the active panel!
     Boolean parameter isDragAndDrop: 	    					if true the item was dragged&dropped
+    Integer parameter panelIdParent:							LibFilters 3.x filter constant LF_* for the parent panel at the CraftBag, if addon CraftBagExtended (or similar) is enabled which allows Mail/Trade etc. CraftBag panels as well. No automatic detection!
 ]]
 --Function to call the itemSelectionHandler from other addons (e.g. DoItAll with FCOItemSaver support)
 --Return true:   Item is protected
 --Returns false: Item is not protected
-function FCOIS.callItemSelectionHandler(bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId, isDragAndDrop)
+function FCOIS.callItemSelectionHandler(bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId, isDragAndDrop, panelIdParent)
 	echo = echo or false
 	isDragAndDrop = isDragAndDrop or false
 	overrideChatOutput = overrideChatOutput or false
@@ -137,7 +138,7 @@ function FCOIS.callItemSelectionHandler(bag, slot, echo, overrideChatOutput, sup
 	--Return true to "protect" an item, if the bag and slot are missing
 	if bag == nil or slot == nil then return true end
 	--Call the item selection handler method now for the item
-	return ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId)
+	return ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId, panelIdParent)
 end
 --Local function for speedup -> Anti-Item protection handler
 local FCOIScish = FCOIS.callItemSelectionHandler

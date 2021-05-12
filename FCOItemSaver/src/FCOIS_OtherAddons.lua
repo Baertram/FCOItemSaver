@@ -1096,7 +1096,7 @@ end
 function FCOIS.getRecipeAddonUsed()
     local settings = FCOIS.settingsVars.settings
     local recipeAddonUsed = settings.recipeAddonUsed or 0
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage("getRecipeAddonUsed",tostring(recipeAddonUsed), true, FCOIS_DEBUG_DEPTH_SPAM, false) end
+    if settings.debug then FCOIS.debugMessage("getRecipeAddonUsed",tostring(recipeAddonUsed), true, FCOIS_DEBUG_DEPTH_SPAM, false) end
     return recipeAddonUsed
 end
 

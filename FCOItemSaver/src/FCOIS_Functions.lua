@@ -1053,31 +1053,38 @@ function FCOIS.isRecipeKnown(bagId, slotIndex, expectedResult)
     if recipeAddonUsed == FCOIS_RECIPE_ADDON_SOUSCHEF then
 --d(">using SousChef")
         --Get recipe info from Sous Chef addon
-        if SousChef and SousChef.settings and SousChef.settings.showAltKnowledge and SousChef.settings.Cookbook and SousChef.Utility then
-            local resultLink = GetItemLinkRecipeResultItemLink(itemLink)
-            local knownByUsersTable = SousChef.settings.Cookbook[SousChef.Utility.CleanString(GetItemLinkName(resultLink))]
---FCOIS._knownByUsersTable = knownByUsersTable
-            if knownByUsersTable ~= nil then
-                local currentCharacterName = ""
-                if autoMarkRecipesOnlyThisChar == true then
-                    --Only check if recipe is known for the current character?
-                    currentCharacterName = currentCharId
-                else
-                    --Check if recipe is known for your main provisioning character
-                    local recipeMainChar = SousChef.settings.mainChar
-                    if recipeMainChar == "(current)" then
-                        recipeMainChar = currentCharId
+        if SousChef and SousChef.Utility then
+            local sousChefUtility = SousChef.Utility
+            local sousChefSettings = SousChef.settings
+            if sousChefSettings and sousChefSettings.showAltKnowledge and sousChefSettings.Cookbook then
+                local resultLink = GetItemLinkRecipeResultItemLink(itemLink)
+                local knownByUsersTable = sousChefSettings.Cookbook[sousChefUtility.CleanString(GetItemLinkName(resultLink))]
+                --FCOIS._knownByUsersTable = knownByUsersTable
+                if knownByUsersTable ~= nil then
+                    local currentCharacterName = ""
+                    if autoMarkRecipesOnlyThisChar == true then
+                        --Only check if recipe is known for the currently logged in unique character ID?
+                        currentCharacterName = currentCharId
+                    else
+                        --Check if recipe is known for any of your characters, not only the main provisioner char from SousChef settings ?!
+                        --TODO
+
+                        --Check if recipe is known for your main provisioning character
+                        local recipeMainChar = sousChefSettings.mainChar
+                        if recipeMainChar == "(current)" then
+                            recipeMainChar = currentCharId
+                        end
+                        currentCharacterName = recipeMainChar
                     end
-                    currentCharacterName = recipeMainChar
+                    if currentCharacterName and currentCharacterName ~= "(current)" and currentCharacterName ~= "" then
+                        known = knownByUsersTable[currentCharacterName] or false
+                    end
+                else
+                    --Not known yet by any char!
+                    known = false
                 end
-                if currentCharacterName and currentCharacterName ~= "(current)" and currentCharacterName ~= "" then
-                    known = knownByUsersTable[currentCharacterName] or false
-                end
-            else
-                --Not known yet by any char!
-                return false
+                return known
             end
-            return known
         end
         ------------------------------------------------------------------------------------------------------------------------
         --CraftStoreFixedAndImproved
@@ -1085,7 +1092,8 @@ function FCOIS.isRecipeKnown(bagId, slotIndex, expectedResult)
 --d("CraftStoreFixedAndImproved is used for recipes")
         --Get recipe info from Sous Chef addon
         if CraftStoreFixedAndImprovedLongClassName ~= nil and CraftStoreFixedAndImprovedLongClassName.IsLearnable ~= nil then
-            --Data is returned as a table in the format of [index] = {[1] = name, [2] = can be learned}
+            --Data is returned as a table in the format of [index] = {[1] = String name, [2] = Boolean can be learned}
+            -->If autoMarkRecipesOnlyThisChar == true then the table returned will only contain 1 line!
             local knownByUsersTable = CraftStoreFixedAndImprovedLongClassName.IsLearnable(itemLink, autoMarkRecipesOnlyThisChar)
 --FCOIS._knownByUsersTable = knownByUsersTable
             local knownLoop
@@ -1119,8 +1127,8 @@ function FCOIS.isRecipeKnown(bagId, slotIndex, expectedResult)
                         if charToCheck ~= currentCharName then
                             needsAccountWideSettings = true
                         end
-                        local isCraftStoreMainCrafterChar = (isCraftStoreMainCrafterCharSet and charToCheck == currentCharacterName) or false
-                        --Is the recipe know or unknown to the char?
+                        local isCraftStoreMainCrafterChar = (isCraftStoreMainCrafterCharSet == true and charToCheck == currentCharacterName) or false
+                        --Is the recipe known or unknown to the char?
                         local isLearnable = knownDataOfChar[2]
                         knownLoop = not isLearnable
 
@@ -1130,15 +1138,16 @@ function FCOIS.isRecipeKnown(bagId, slotIndex, expectedResult)
                         if expectedResult ~= isLearnable then
                             --Is the char the crafter main char? Or wasn't any main crafter set
                             --If autoMarkRecipesOnlyThisChar == true then the table only got 1 line with the current character!
-                            if autoMarkRecipesOnlyThisChar then
-    --d("<<onlyThisChar -> knownLoop: " ..tostring(knownLoop))
+                            if autoMarkRecipesOnlyThisChar == true then
+--d("<<onlyThisChar -> knownLoop: " ..tostring(knownLoop))
                                 --Return the first line's known entry
                                 return knownLoop
                             else
+                                --Check all other chars. Or only the main crafter char, if any is set at the CraftStore UI
                                 --Is the main Crafter set? Then only check his/her recipe's known/unknown state
                                 local goOn = true
                                 if isCraftStoreMainCrafterCharSet == true then
---d(">>main crafter char is set")
+--d(">>main crafter char is set: " ..tostring(FCOIS._recipeMainChar))
                                     goOn = isCraftStoreMainCrafterChar
                                 end
 --d(">>>goOn: " ..tostring(goOn))
@@ -1336,6 +1345,12 @@ end
 -- Check if an itemLink is researchable
 function FCOIS.isItemLinkResearchable(itemLink, markId, doTraitCheck)
     if itemLink == nil then return false end
+    local checkVars = FCOIS.checkVars
+    --Check if the item was reconstructed or retraited
+    local itemTraitInformationNotResearchable = checkVars.itemTraitInformationNotResearchable
+    local itemTraitInformation = GetItemTraitInformationFromItemLink(itemLink)
+    if itemTraitInformationNotResearchable[itemTraitInformation] then return false end
+
     local retVal = false
     doTraitCheck = doTraitCheck or false
     --Check if the item is virtually researchable as the settings is enabled to allow marking of non researchable items as gear/dynamic
@@ -1350,14 +1365,15 @@ function FCOIS.isItemLinkResearchable(itemLink, markId, doTraitCheck)
         if itemType == nil then return false end
         retVal = isResearchableItemTypeCheck(itemType, markId)
     end
-    --Check the item's trait (no trait-> No research)
+
+        --Check the item's trait (no trait-> No research)
     if retVal == true and doTraitCheck then
         local itemTraitType = GetItemLinkTraitInfo(itemLink)
-        local itemTraiTypesNotAllowedForResearch = FCOIS.checkVars.researchTraitCheckTraitsNotAllowed
+        local itemTraiTypesNotAllowedForResearch = checkVars.researchTraitCheckTraitsNotAllowed
         local itemTraitTypeNotAllowedForResearch = itemTraiTypesNotAllowedForResearch[itemTraitType] or false
         if itemTraitType == nil or itemTraitTypeNotAllowedForResearch then return false end
     end
---d("[FCOIS.isItemLinkResearchable] retVal: " .. tostring(retVal))
+    --d("[FCOIS.isItemLinkResearchable] retVal: " .. tostring(retVal))
     return retVal
 end
 
@@ -2572,4 +2588,3 @@ function FCOIS.IsNoOtherModifierKeyPressed(modKey)
     end
     return false
 end
-
