@@ -162,9 +162,7 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 --9) Quality
 
 --[Added]
---Companion inventory marker icons support
---Companion inventory additional flag context menu button
---Companion inventory filter buttons
+
 
 --[Added on request]
 --#109 Added the possibilitiy to exclude sets from the automatic set markers. Check teh automatic marks -> sets submenu for the new submenu.

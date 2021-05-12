@@ -1317,6 +1317,17 @@ function FCOIS.isItemSetPartWithTraitNoControl(bagId, slotIndex)
     return isSetPartWithWishedTrait, isSetPartAndIsValidAndGotTrait, setPartTraitIcon, isSet
 end
 
+--Function used to check if the item was retraited or reconstructed and thus cannot be researched anymore
+-->Will remove the research marker icon at context menus then
+function FCOIS.isItemLinkReconStructedOrRetraited(itemLink)
+    if itemLink == nil then return false end
+    local checkVars = FCOIS.checkVars
+    --Check if the item was reconstructed or retraited
+    local itemTraitInformationNotResearchable = checkVars.itemTraitInformationNotResearchable
+    local itemTraitInformation = GetItemTraitInformationFromItemLink(itemLink)
+    return itemTraitInformationNotResearchable[itemTraitInformation] or false
+end
+
 --Function used in FCOIS.isItemLinkResearchable() and FCOIS.isItemResearchableNoControl()
 local function isResearchableItemTypeCheck(itemType, markId)
     local retVal = false
@@ -1346,10 +1357,6 @@ end
 function FCOIS.isItemLinkResearchable(itemLink, markId, doTraitCheck)
     if itemLink == nil then return false end
     local checkVars = FCOIS.checkVars
-    --Check if the item was reconstructed or retraited
-    local itemTraitInformationNotResearchable = checkVars.itemTraitInformationNotResearchable
-    local itemTraitInformation = GetItemTraitInformationFromItemLink(itemLink)
-    if itemTraitInformationNotResearchable[itemTraitInformation] then return false end
 
     local retVal = false
     doTraitCheck = doTraitCheck or false
@@ -1389,10 +1396,12 @@ function FCOIS.isItemResearchableNoControl(bagId, slotIndex, markId, doTraitChec
 end
 
 -- Is the item researchable?
+-- Is the item researchable?
 function FCOIS.isItemResearchable(p_rowControl, markId, doTraitCheck)
     if p_rowControl == nil then return false end
     local bag, slotIndex
     local retVal = false
+    local retVal2 = false
     local IIfArowControlCheck = (FCOIS.IIfAclicked ~= nil) or false
 --d("[FCOIS.isItemResearchable] " ..tostring(p_rowControl:GetName()) .. ", markId: " ..tostring(markId) .. ", IIfArowCheck: " ..tostring(IIfArowControlCheck))
     --Inventory Insight from ashes support
@@ -1412,11 +1421,10 @@ function FCOIS.isItemResearchable(p_rowControl, markId, doTraitCheck)
         itemLink = GetItemLink(bag, slotIndex)
     end
     if itemLink ~= nil then
-        retVal = FCOIS.isItemLinkResearchable(itemLink, markId, doTraitCheck)
+        retVal, retVal2 = FCOIS.isItemLinkResearchable(itemLink, markId, doTraitCheck), FCOIS.isItemLinkReconStructedOrRetraited(itemLink)
     end
-    return retVal
+    return retVal, retVal2
 end
-
 -- Is the item an ornate one?
 function FCOIS.isItemOrnate(bagId, slotIndex)
     local isOrnate = false

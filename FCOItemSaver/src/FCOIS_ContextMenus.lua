@@ -625,7 +625,12 @@ end
     if isResearchAble or isDynamic then
         local doResearchItemGotTraitCheck = doResearchTraitCheck[markId] or false
         -- Check if item is researchable (as only researchable items can work as equipment too)
-        if not FCOIS.isItemResearchable(rowControl, markId, doResearchItemGotTraitCheck) then
+        -- Check if item is researchable (as only researchable items can work as equipment too)
+        local isResearchable, wasRetraitedOrReconstructed = FCOIS.isItemResearchable(rowControl, markId, doResearchItemGotTraitCheck)
+        if not isResearchable then
+            return false
+        end
+        if wasRetraitedOrReconstructed == true and markId == FCOIS_CON_ICON_RESEARCH then
             return false
         end
     end
