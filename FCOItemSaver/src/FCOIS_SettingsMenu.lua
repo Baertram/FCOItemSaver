@@ -1950,7 +1950,9 @@ function FCOIS.BuildAddonMenu()
             data = { type = "checkbox", width = "half"}
             disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_INVENTORY] end
-            setFunc = function(value) FCOIS.updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_INVENTORY, value)
+            setFunc = function(value)
+                FCOIS.updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_INVENTORY, value)
+                FCOIS.updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_INVENTORY_COMPANION, value)
             end
             defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_INVENTORY]
             createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)

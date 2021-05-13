@@ -77,7 +77,7 @@ function FCOIS.checkIfProtectedSettingsEnabled(checkType, iconNr, isDynamicIcon,
     if checkType == nil then return nil, false end
     isDynamicIcon = isDynamicIcon or false
     checkAntiDetails = checkAntiDetails or false
---d("[FCOIS.checkIfProtectedSettingsEnabled - checkType: " .. tostring(checkType) .. ", iconNr: " .. tostring(iconNr) .. ", isDynamicIcon: " .. tostring(isDynamicIcon) .. ", checkAntiDetails: " .. tostring(checkAntiDetails) .. ", whereAreWe: " .. tostring(whereAreWe))
+--d("[FCOIS.checkIfProtectedSettingsEnabled - checkType/filterPanelId: " .. tostring(checkType) .. ", iconNr: " .. tostring(iconNr) .. ", isDynamicIcon: " .. tostring(isDynamicIcon) .. ", checkAntiDetails: " .. tostring(checkAntiDetails) .. ", whereAreWe: " .. tostring(whereAreWe))
     local craftBagExtendedUsed = false
     local protectionVal
     local protectionValDestroy
@@ -150,7 +150,7 @@ function FCOIS.checkIfProtectedSettingsEnabled(checkType, iconNr, isDynamicIcon,
             --d("Dynamic icon")
             --Get the protection
             protectionVal = settings.icon[iconNr].antiCheckAtPanel[checkType]
---d(">iconNr: " .. tostring(iconNr) .. ", checkAtPanelChecks: " .. tostring(protectionVal))
+--d(">DynIconNr: " .. tostring(iconNr) .. ", checkAtPanelChecks: " .. tostring(protectionVal))
             --Is the dynamic icon protected at the current panel?
             if protectionVal == true then
                 --The protective functions are not enabled (red flag is set in the inventory additional options flag icon, or the current panel got no additional inventory button, e.g. the crafting research tab or the research popup dialog)?
@@ -502,7 +502,7 @@ function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChat
     local singleItemChecks = whereAreWeToSingleItemChecks[whereAreWe] or false
 
     if settings.debug then FCOIS.debugMessage( "[ItemSelectionHandler]",">Where are we: " .. tostring(whereAreWe) .. ", isBlocked: " .. tostring(isBlocked) .. ", singleItemChecks: " .. tostring(singleItemChecks) .. ", panelId: " .. tostring(panelId), true, FCOIS_DEBUG_DEPTH_SPAM) end
-d(">Where are we: " .. tostring(whereAreWe) .. ", isBlocked: " .. tostring(isBlocked) .. ", singleItemChecks: " .. tostring(singleItemChecks) .. ", panelId: " .. tostring(panelId) .. ", id: " ..tostring(itemId))
+--d(">Where are we: " .. tostring(whereAreWe) .. ", isBlocked: " .. tostring(isBlocked) .. ", singleItemChecks: " .. tostring(singleItemChecks) .. ", panelId: " .. tostring(panelId) .. ", id: " ..tostring(itemId))
 
     --======= SPECIAL CHECKS - RECIPES, STYLE MOTIFS, FOOD =========================
     -- Check if the recipe/style motif/food/crown store item is not protected because the current anti-destroy option is disabled
@@ -553,7 +553,7 @@ d(">Where are we: " .. tostring(whereAreWe) .. ", isBlocked: " .. tostring(isBlo
     local mappedIsDynIcon = FCOIS.mappingVars.iconIsDynamic
     for iconIdToCheck=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
         if settings.debug then FCOIS.debugMessage("[ItemSelectionHandler]",">icon: " .. iconIdToCheck, true, FCOIS_DEBUG_DEPTH_SPAM) end
-d("[FCOIS]ItemSelectionHandler - icon: " .. iconIdToCheck)
+--d("[FCOIS]ItemSelectionHandler - icon: " .. iconIdToCheck)
         --Check if the item is marked with the icon
         if checkIfItemIsProtected(iconIdToCheck, itemId) then
             markedWithOneIcon = true
@@ -673,18 +673,18 @@ d("[FCOIS]ItemSelectionHandler - icon: " .. iconIdToCheck)
     --Is the item marked with any of the marker icons? Don't block it
     if not markedWithOneIcon and (isBlockedLoop or isBlocked) then
         if settings.debug then FCOIS.debugMessage("[ItemSelectionHandler]","<not marked with one icon -> Abort 'false'", true, FCOIS_DEBUG_DEPTH_SPAM) end
-d("not marked with one icon -> Abort 'false'")
+--d("not marked with one icon -> Abort 'false'")
         return false
     end
     --Were all icons checked and everything was not blocked? Then return false to unblock the icon
     if not isBlockedLoop then
         if settings.debug then FCOIS.debugMessage("[ItemSelectionHandler]","<not blocked in loop -> Abort 'false'", true, FCOIS_DEBUG_DEPTH_SPAM) end
-d("not blocked in loop -> Abort 'false'")
+--d("not blocked in loop -> Abort 'false'")
         return false
     end
     --Else return the global block value from before the icon checks
     if settings.debug then FCOIS.debugMessage("[ItemSelectionHandler]","<return isBlocked: " .. tostring(isBlocked), true, FCOIS_DEBUG_DEPTH_SPAM) end
-d("return isBlocked: " .. tostring(isBlocked))
+--d("return isBlocked: " .. tostring(isBlocked))
     return isBlocked
 end -- ItemSelectionHandler
 

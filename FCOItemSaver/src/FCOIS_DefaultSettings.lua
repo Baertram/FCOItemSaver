@@ -443,8 +443,10 @@ function FCOIS.buildDefaultSettings()
 			FCOIS.settingsVars.defaults.icon[filterIconHelper].offsets[filterIconHelperPanel] = defaultIconOffsets
 
 			--FCOIS v.1.4.4 - Research dialog panels need to be protected as default value as they were added new with this version
+			--FCOIS v.2.0.4 - Companion inventory panel needs to be protected as default value as it was added new with this version
 			local valueToSet = false
-			if filterIconHelperPanel == LF_SMITHING_RESEARCH_DIALOG or filterIconHelperPanel == LF_JEWELRY_RESEARCH_DIALOG then
+			if filterIconHelperPanel == LF_SMITHING_RESEARCH_DIALOG or filterIconHelperPanel == LF_JEWELRY_RESEARCH_DIALOG or
+				filterIconHelperPanel == LF_INVENTORY_COMPANION then
 				valueToSet = true
 			end
 			FCOIS.settingsVars.defaults.icon[filterIconHelper].antiCheckAtPanel[filterIconHelperPanel] = valueToSet

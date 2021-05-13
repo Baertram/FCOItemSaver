@@ -90,13 +90,13 @@ function FCOIS.CreateToolTip(markerControl, markerId, doHide, pUpdateAllEquipmen
             bagId, slotIndex = myGetItemDetails(markersParentControl)
         end
         local iconIsDynamic = FCOIS.mappingVars.iconIsDynamic
-        --is the bagid and slotIndex given?
+        --is the bagId and slotIndex given?
         if bagId ~= nil or slotIndex ~= nil then
             --d("[FCOIS]CreateToolTip - bagId: " .. tostring(bagId) .. ", slotIndex: " .. tostring(slotIndex))
             --FCOIS.IsMarked(bag, slot, iconIds, excludeIconIds)
             local _, markedIconsBagSlot = FCOIS.IsMarked(bagId, slotIndex, -1, nil)
             markedIcons = markedIconsBagSlot
-            --is only the itemInstance or unique ID given?
+        --is only the itemInstance or unique ID given?
         elseif itemInstanceOrUniqueId ~= nil then
             --d("[FCOIS]CreateToolTip - itemInstanceOrUniqueId: " .. tostring(itemInstanceOrUniqueId))
             --FCOIS.IsMarkedByItemInstanceId(itemInstanceId, iconIds, excludeIconIds)
@@ -111,7 +111,7 @@ function FCOIS.CreateToolTip(markerControl, markerId, doHide, pUpdateAllEquipmen
                     markedCounter = markedCounter + 1
                     --Tooltip for any gear set?
                     local isGearIcon = settings.iconIsGear
-                    if (isGearIcon[iconId]) then
+                    if isGearIcon[iconId] then
                         local colorForText = ""
                         markedGear = markedGear + 1
                         if tooltipGearText ~= "" then tooltipGearText = tooltipGearText .. "\n" end
@@ -148,7 +148,9 @@ function FCOIS.CreateToolTip(markerControl, markerId, doHide, pUpdateAllEquipmen
                                 if externalAddonCall[IIfAaddonCallConst] == false then
                                     --Check if the current dynamic icons's settings are enabled at the given panel
                                     --Call with 3rd parameter "isDynamicIcon" = true to skip "is dynamic icon check" inside the function again
+--d(">TooltipDynIconCheck: " ..tostring(iconId) .. ", name: " ..tostring(iconName) .. ", panelId: " ..tostring(panelId) .. ", whereAreWe: " ..tostring(whereAreWe))
                                     local dynamicSettingsEnabled, isDestroyProtected = checkIfProtectedSettingsEnabled(panelId, iconId, true, true, whereAreWe)
+--d(">dynamicSettingsEnabled: " ..tostring(dynamicSettingsEnabled) .. ", isDestroyProtected: " ..tostring(isDestroyProtected))
                                     if not dynamicSettingsEnabled and isDestroyProtected then
                                         dynamicSettingsEnabled = isDestroyProtected
                                     end

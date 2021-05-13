@@ -115,7 +115,7 @@ end
 
 --Refresh the backpack list
 function FCOIS.RefreshBackpack()
-d("[FCOIS]RefreshBackpack")
+--d("[FCOIS]RefreshBackpack")
     local updateFilteredItemCount = false
     local ZOsControlVars = FCOIS.ZOControlVars
     --Added with patch to API 100015 -> New craft bag
@@ -126,10 +126,10 @@ d("[FCOIS]RefreshBackpack")
         FCOIS.preventerVars.isInventoryListUpdating = false
         updateFilteredItemCount = true
     else
-d(">normal inv")
+--d(">normal inv")
         --Refresh the normal inventory
         if not ZOsControlVars.BACKPACK:IsHidden() then
-d(">>refreshing")
+--d(">>refreshing")
             if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[RefreshBackpack]","Backpack refresh", true, FCOIS_DEBUG_DEPTH_DETAILED) end
             FCOIS.preventerVars.isInventoryListUpdating = true
             ZO_ScrollList_RefreshVisible(ZOsControlVars.BACKPACK)

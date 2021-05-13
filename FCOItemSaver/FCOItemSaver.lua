@@ -150,6 +150,8 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 --#113 Disable the context menus to add/remove markers at 2hd weapons' backup slots
 --#114 The character window does not show the set marker icons upon first open after a reloadUI
 --Fixed character/companion equipment not removing the marker icons if companion item get's unequipped
+--Fixed companion equipment cannot be equipped from companion inventory via doubleclick/drag&drop, if any non-dynamic icon is set
+--Fixed companion inventory drag&drop to destroy: Protection of dynamic icons enabled/disabled via the dynamic icon's "normal inventory" protection checkbox
 
 
 --[Changed]
@@ -163,9 +165,10 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 --[Added on request]
 
 --[Todo] 2021-05-13
---Fix companion equipment cannot be equipped from companion inventory via doubleclick/drag&drop, if any non-dynamic icon is set
 --Default companion invenory filter buttons positions (the 2nd, 3rd and 4th button are not next o the 1st, but way off to the right)
 --Test companion equipped items, 2hd items, marker icons, mark all together, etc.
+--Doubleclick e.g. head companion slot to unequpp an item won't remove the marker icon at the slot
+
 
 --************************************************************************************************************************
 --************************************************************************************************************************
