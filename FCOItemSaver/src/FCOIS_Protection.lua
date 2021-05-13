@@ -329,11 +329,10 @@ function FCOIS.checkIfItemIsProtected(iconId, itemId, checkHandler, addonName, s
     local settings = FCOIS.settingsVars.settings
     local isIconEnabled = settings.isIconEnabled[iconId]
     --Is the item enabled, or is the item disabled and the setting to check disabled icons too is enabled?
-    if (   (isIconEnabled)
-            or (not isIconEnabled and settings.checkDeactivatedIcons) ) then
+    if isIconEnabled or (not isIconEnabled and settings.checkDeactivatedIcons) then
         --Workaround to return a not-marked icon, if the icon is disabled, so the icon won't be removed
         -- >> Set & unset in function "FCOIS.ClearOrRestoreAllMarkers"
-        if (not isIconEnabled and FCOIS.preventerVars.doFalseOverride) then
+        if not isIconEnabled and FCOIS.preventerVars.doFalseOverride then
 --d("FCOIS.checkIfItemIsProtected - Icon is disabled -> will not be filtered here (but protected)!")
             return false
         end
@@ -581,7 +580,7 @@ function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChat
                         --Call with 3rd parameter "isDynamicIcon" = true to skip "is dynamic icon check" inside the function again
                         local filterPanelIdOfWhereAreWe = whereAreWeToFilterPanelId[whereAreWe]
                         isBlockedLoop, isBlockedLoopDestroy = checkIfProtectedSettingsEnabled(filterPanelIdOfWhereAreWe, iconIdToCheck, true)
-                        d(">dynIcon->checkIfProtectedSettingsEnabled-filterPanelIdOfWhereAreWe: " ..tostring(filterPanelIdOfWhereAreWe) .. ", panelId: " ..tostring(panelId) .. ",isBlockedLoop: " ..tostring(isBlockedLoop) .. ", isBlockedLoopDestroy: " ..tostring(isBlockedLoopDestroy))
+                        --d(">dynIcon->checkIfProtectedSettingsEnabled-filterPanelIdOfWhereAreWe: " ..tostring(filterPanelIdOfWhereAreWe) .. ", panelId: " ..tostring(panelId) .. ",isBlockedLoop: " ..tostring(isBlockedLoop) .. ", isBlockedLoopDestroy: " ..tostring(isBlockedLoopDestroy))
                         if not isBlockedLoop and isBlockedLoopDestroy == true then
                             isBlockedLoop = isBlockedLoopDestroy
                         end

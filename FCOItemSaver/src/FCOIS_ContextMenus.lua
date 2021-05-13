@@ -16,6 +16,8 @@ local checkIfItemIsProtected = FCOIS.checkIfItemIsProtected
 local myGetItemDetails = FCOIS.MyGetItemDetails
 local myGetItemInstanceIdNoControl = FCOIS.MyGetItemInstanceIdNoControl
 local isItemProtectedAtASlotNow = FCOIS.IsItemProtectedAtASlotNow
+local myGetItemInstanceId = FCOIS.MyGetItemInstanceId
+
 
 --Compatibility functions
 local function menuVisibleCheck()
@@ -64,8 +66,9 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
     end
     local parentControl
     local isShowingCharacter = FCOIS.isCharacterShown()
+    local isShowingCompanionCharacter = FCOIS.isCompanionCharacterShown()
     --Chracter equipment, or normal slot?
-    if (isShowingCharacter) then
+    if isShowingCharacter or isShowingCompanionCharacter then
         parentControl = self.m_inventorySlot
     else
         parentControl = self.m_inventorySlot:GetParent()
@@ -84,14 +87,16 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
         FCOIS.hideContextMenu(FCOIS.gFilterWhere)
 
         --Check if the character window is shown
-        if isShowingCharacter then
+        if isShowingCharacter or isShowingCompanionCharacter then
             --d("[FCOIS]FCOItemSaver_AddSlotAction - Char window shown, Parent: " .. tostring(parentName))
             --Check if the parent control is a character slot
             if mappingVars.characterEquipmentArmorSlots[parentName] or
                     mappingVars.characterEquipmentJewelrySlots[parentName] or
                     mappingVars.characterEquipmentWeaponSlots[parentName] then
                 --Hide the PlayerProgressBar so the context menu is shown completely
-                FCOIS.ShowPlayerProgressBar(false)
+                if isShowingCharacter then FCOIS.ShowPlayerProgressBar(false) end
+                --Hide the CompanionProgressBar so the context menu is shown completely
+                if isShowingCompanionCharacter then FCOIS.ShowCompanionProgressBar(false) end
             end
         end
     else
@@ -820,7 +825,7 @@ end
     end
 
     --Is the current markId already set at the item?
-    local isMarkIdProtected = checkIfItemIsProtected(markId, FCOIS.MyGetItemInstanceId(rowControl))
+    local isMarkIdProtected = checkIfItemIsProtected(markId, myGetItemInstanceId(rowControl))
     local newAddedMenuIndex
 
     --Build the tooltiptext for the current markId's menuItem

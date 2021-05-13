@@ -480,6 +480,7 @@ function FCOIS.MyGetItemInstanceId(rowControl, signToo)
     local itemId = myGetItemInstanceIdNoControl(bagId, slotIndex, signToo)
     return itemId
 end
+local myGetItemInstanceId = FCOIS.MyGetItemInstanceId
 
 function FCOIS.extractItemIdFromItemLink(itemLink)
     if GetItemLinkItemId ~= nil then
@@ -2078,6 +2079,15 @@ function FCOIS.ShowPlayerProgressBar(doShow)
     local playerProgressBar = ctrlVars.PLAYER_PROGRESS_BAR
     if playerProgressBar ~= nil then playerProgressBar:SetHidden(not doShow) end
 end
+
+--Show/Hide the companion progress bar
+function FCOIS.ShowCompanionProgressBar(doShow)
+    --d("[FCOIS] ShowCompanionProgressBar - doShow: " .. tostring(doShow))
+    if not FCOIS.isCompanionCharacterShown() then return false end
+    local companionProgressBar = ctrlVars.COMPANION_PROGRESS_BAR
+    if companionProgressBar ~= nil then companionProgressBar:SetHidden(not doShow) end
+end
+
 
 -- =====================================================================================================================
 --  House functions

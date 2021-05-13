@@ -11,6 +11,7 @@ local checkIfItemIsProtected = FCOIS.checkIfItemIsProtected
 local myGetItemDetails = FCOIS.MyGetItemDetails
 local isCraftBagItemDraggedToCraftingSlot = FCOIS.isCraftBagItemDraggedToCraftingSlot
 local checkPreventCrafting = FCOIS.craftingPrevention.CheckPreventCrafting
+local myGetItemInstanceId = FCOIS.MyGetItemInstanceId
 
 --LibCustomMenu
 local lcm = FCOIS.LCM
@@ -241,6 +242,9 @@ ZO_PreHook("ZO_Menu_OnHide", function()
     if FCOIS.isCharacterShown() and currentSceneName == ctrlVars.invSceneName then
         --Show the PlayerProgressBar again as the context menu closes
         FCOIS.ShowPlayerProgressBar(true)
+    elseif FCOIS.isCompanionCharacterShown() and currentSceneName == ctrlVars.companionInvSceneName then
+        --Show the CompanionProgressBar again as the context menu closes
+        FCOIS.ShowCompanionProgressBar(true)
     end
 end)
 
@@ -798,7 +802,7 @@ function FCOIS.CreateHooks()
             --If item was unequipped: Remove the armor type marker if necessary
             FCOIS.removeArmorTypeMarker(bagId, equipSlot) -->BAG_WORN will be updated to BAG_COMPANION_WORN internally!
             --Update the marker control of the new equipped item
-            FCOIS.updateEquipmentSlotMarker(equipSlot, 300)
+            FCOIS.updateEquipmentSlotMarker(equipSlot, 300, true)
             --Refresh the inventory, if shown, to update the marker icons at the unequipped item's inventory row
             FCOIS.FilterBasics(true)
         end
@@ -932,7 +936,7 @@ function FCOIS.CreateHooks()
         if bagId and slotIndex then
             isSoulGem = FCOIS.isSoulGem(bagId, slotIndex)
         end
-        local myItemInstanceIdOfControl = FCOIS.MyGetItemInstanceId(rowControl)
+        local myItemInstanceIdOfControl = myGetItemInstanceId(rowControl)
 
         --Current dialog is the repair item dialog?
         local isRepairDialog = FCOIS.isRepairDialogShown()

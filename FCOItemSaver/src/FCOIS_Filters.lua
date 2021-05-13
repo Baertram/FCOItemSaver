@@ -19,6 +19,7 @@ local getFilterWhereBySettings = FCOIS.getFilterWhereBySettings
 local getSettingsIsFilterOn = FCOIS.getSettingsIsFilterOn
 local checkIfItemIsProtected = FCOIS.checkIfItemIsProtected
 local myGetItemInstanceIdNoControl = FCOIS.MyGetItemInstanceIdNoControl
+local myGetItemInstanceId = FCOIS.MyGetItemInstanceId
 
 --==========================================================================================================================================
 --                                          FCOIS - Filter function for libFilters
@@ -309,7 +310,7 @@ local function FilterSavedItemsForSlot(slot)
     --true  - Show the slot
     --false - Hide the slot
     -- Return value variable initalization: Show the slot
-    local slotItemInstanceId = FCOIS.MyGetItemInstanceId(slot)
+    local slotItemInstanceId = myGetItemInstanceId(slot)
     --Get the filter result variable for the current item
     local itemIsShown = filterItemNow(slotItemInstanceId)
     -- Return the result if all filters were cross-checked and last filter is reached

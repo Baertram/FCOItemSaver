@@ -5255,6 +5255,7 @@ function FCOIS.GetLibFiltersPanelIdText(language, libFilterPanelId)
             [LF_JEWELRY_IMPROVEMENT]		= GetString(SI_ITEMFILTERTYPE24) .. " " .. GetString(SI_SMITHING_TAB_IMPROVEMENT),
             [LF_JEWELRY_RESEARCH]		    = GetString(SI_ITEMFILTERTYPE24) .. " " .. GetString(SI_SMITHING_TAB_RESEARCH),
             [LF_JEWELRY_RESEARCH_DIALOG ]   = GetString(SI_ITEMFILTERTYPE24) .. " " .. GetString(SI_SMITHING_TAB_RESEARCH) .. " Dialog",
+            [LF_INVENTORY_COMPANION]		= GetString(SI_UNIT_FRAME_NAME_COMPANION) .. " " .. GetString(SI_INVENTORY_MENU_INVENTORY),
         }
     --German
     else

@@ -1102,7 +1102,8 @@ ctrlVars.RepairItemDialogTitle       = SI_REPAIR_KIT_TITLE
 ctrlVars.CHARACTER					= ZO_Character
 ctrlVars.CHARACTER_EQUIPMENT_SLOTS_NAME	= "ZO_CharacterEquipmentSlots"
 
-ctrlVars.PLAYER_PROGRESS_BAR         = ZO_PlayerProgress
+ctrlVars.PLAYER_PROGRESS_BAR            = ZO_PlayerProgress
+ctrlVars.COMPANION_PROGRESS_BAR         = ZO_CompanionProgress_Keyboard_TopLevel
 
 ctrlVars.CONTAINER_LOOT_LIST			= ZO_LootAlphaContainerList
 ctrlVars.CONTAINER_LOOT_LIST_CONTENTS   = GetControl(ctrlVars.CONTAINER_LOOT_LIST, "Contents")
