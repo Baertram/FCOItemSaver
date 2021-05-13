@@ -794,11 +794,11 @@ function FCOIS.CreateHooks()
     SecurePostHook("RequestUnequipItem", function(bagId, equipSlot)
         if bagId ~= nil and equipSlot ~= nil then
             if settings.debug then FCOIS.debugMessage( "[RequestUnequipItem]","bagId: " ..tostring(bagId) .. ", equipSlotIndex: " .. equipSlot, true, FCOIS_DEBUG_DEPTH_NORMAL) end
-d("[UnequipItem]" .. GetItemLink(bagId, equipSlot))
+--d("[RequestUnequipItem]" .. GetItemLink(bagId, equipSlot))
             --If item was unequipped: Remove the armor type marker if necessary
             FCOIS.removeArmorTypeMarker(bagId, equipSlot) -->BAG_WORN will be updated to BAG_COMPANION_WORN internally!
             --Update the marker control of the new equipped item
-            FCOIS.updateEquipmentSlotMarker(equipSlot, 0)
+            FCOIS.updateEquipmentSlotMarker(equipSlot, 100)
             --Refresh the inventory, if shown, to update the marker icons at the unequipped item's inventory row
             FCOIS.FilterBasics(true)
         end
@@ -807,13 +807,13 @@ d("[UnequipItem]" .. GetItemLink(bagId, equipSlot))
     --Preehook the menu bar shown event to update the character equipment section if it is shown
     ZO_PreHookHandler(ctrlVars.mainMenuCategoryBar, "OnShow", function()
         if settings.debug then FCOIS.debugMessage( "[Main Menu Category Bar]","OnShow") end
-d("[Main Menu Category Bar]OnShow")
+--d("[Main Menu Category Bar]OnShow")
         --Hide the context menu
         FCOIS.hideContextMenu(FCOIS.gFilterWhere)
 
         --Update the character's equipment markers, if the character/companion character screen is shown
         if FCOIS.isCharacterShown() or FCOIS.isCompanionCharacterShown() then
-d(">RefreshEquipmentControl -> ALL")
+--d(">RefreshEquipmentControl -> ALL")
             FCOIS.RefreshEquipmentControl()
         end
 

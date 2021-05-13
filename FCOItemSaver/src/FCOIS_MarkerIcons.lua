@@ -928,7 +928,7 @@ end
 --equipment slots via function FCOIS.RefreshEquipmentControl, if the function FCOIS.RefreshEquipmentControl was called without
 --any equipmentSlot control, markerIconId etc., but parameter updateIfCharacterNotShown = true
 function FCOIS.countAndUpdateEquippedArmorTypes(doRefreshControl, doCreateMarkerControl, markerIconId, updateIfCharacterNotShown)
-d("[FCOIS]countAndUpdateEquippedArmorTypes - doRefreshControl: " ..tostring(doRefreshControl) .. ", markerIconId: " ..tostring(markerIconId))
+--d("[FCOIS]countAndUpdateEquippedArmorTypes - doRefreshControl: " ..tostring(doRefreshControl) .. ", markerIconId: " ..tostring(markerIconId))
     doRefreshControl = doRefreshControl or false
     updateIfCharacterNotShown = updateIfCharacterNotShown or false
     local isCharacter = FCOIS.isCharacterShown()
@@ -946,7 +946,7 @@ d("[FCOIS]countAndUpdateEquippedArmorTypes - doRefreshControl: " ..tostring(doRe
     local equipmentSlotControl
     local characterEquipmentSlotNameByIndex = FCOIS.mappingVars.characterEquipmentSlotNameByIndex
     if isCharacter == true then
-d(">character")
+--d(">character")
         for _, equipmentSlotName in pairs(characterEquipmentSlotNameByIndex) do
             --Get the control of the equipment slot
             equipmentSlotControl = WINDOW_MANAGER:GetControlByName(equipmentSlotName, "")
@@ -966,7 +966,7 @@ d(">character")
     ------------------------------------------------------------------------------------------------------------------------
     --Check all equipment controls -> Companion
     if isCompanionCharacter == true then
-d(">companion character")
+--d(">companion character")
         equipmentSlotControl = nil
         local companionCharacterEquipmentSlotNameByIndex = FCOIS.mappingVars.companionCharacterEquipmentSlotNameByIndex
         for _, equipmentSlotName in pairs(companionCharacterEquipmentSlotNameByIndex) do

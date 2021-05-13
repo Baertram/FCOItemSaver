@@ -147,13 +147,15 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
---Since last update 2.0.3 - New version: 2.0.4 -> Updated 2021-06-xx ???
+--Since last update 2.0.3 - New version: 2.0.4 -> Updated 2021-05-13
 ---------------------------------------------------------------------
 
 --[Fixed]
 --#111 At bank withdraw: Right click filter button and select an icon from the context menu will not update the filter button to show the selected button
---Fixed character/companion equipment not removing the marker icons if companion item get's unequipped
+--#112 At normal inventory: Un/Equipping an item via double click will not update the inventory row to show/hide the markers of the item at the inv row automatically
+--#113 Disable the context menus to add/remove markers at 2hd weapons' backup slots
 --#114 The character window does not show the set marker icons upon first open after a reloadUI
+--Fixed character/companion equipment not removing the marker icons if companion item get's unequipped
 
 
 --[Changed]
@@ -166,9 +168,10 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 
 --[Added on request]
 
---[Todo] 2021-05-12
+--[Todo] 2021-05-13
 --Fix companion equipment cannot be equipped from companion inventory via doubleclick/drag&drop, if any non-dynamic icon is set
 --Default companion invenory filter buttons positions (the 2nd, 3rd and 4th button are not next o the 1st, but way off to the right)
+--Test companion equipped items, 2hd items, marker icons, mark all together, etc.
 
 --************************************************************************************************************************
 --************************************************************************************************************************
