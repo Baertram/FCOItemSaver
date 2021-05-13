@@ -600,8 +600,8 @@ function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChat
                     end
                 end
                 --============== DYNAMIC ICON CHECKS - END =====================================
-            else
-                d(">WhereAreWe is: FCOIS_CON_FALLBACK -> No further checks were done!")
+            --else
+    --d(">WhereAreWe is: FCOIS_CON_FALLBACK -> No further checks were done!")
             end -- if not whereAreWe == FCOIS_CON_FALLBACK then
             --============== SPECIAL ITEM & ICON CHECKS - START (non-dynamic!) ====================================
             if not isDynamicIcon then

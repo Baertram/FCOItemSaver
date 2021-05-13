@@ -152,6 +152,7 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 --Fixed character/companion equipment not removing the marker icons if companion item get's unequipped
 --Fixed companion equipment cannot be equipped from companion inventory via doubleclick/drag&drop, if any non-dynamic icon is set
 --Fixed companion inventory drag&drop to destroy: Protection of dynamic icons enabled/disabled via the dynamic icon's "normal inventory" protection checkbox
+--Fixed Doubleclick/context menu "unequip" character/companion slot to unequipp an item won't remove the marker icon at the slot
 
 
 --[Changed]
@@ -166,8 +167,6 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 
 --[Todo] 2021-05-13
 --Default companion invenory filter buttons positions (the 2nd, 3rd and 4th button are not next o the 1st, but way off to the right)
---Test companion equipped items, 2hd items, marker icons, mark all together, etc.
---Doubleclick e.g. head companion slot to unequpp an item won't remove the marker icon at the slot
 
 
 --************************************************************************************************************************

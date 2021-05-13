@@ -798,7 +798,7 @@ function FCOIS.CreateHooks()
             --If item was unequipped: Remove the armor type marker if necessary
             FCOIS.removeArmorTypeMarker(bagId, equipSlot) -->BAG_WORN will be updated to BAG_COMPANION_WORN internally!
             --Update the marker control of the new equipped item
-            FCOIS.updateEquipmentSlotMarker(equipSlot, 100)
+            FCOIS.updateEquipmentSlotMarker(equipSlot, 300)
             --Refresh the inventory, if shown, to update the marker icons at the unequipped item's inventory row
             FCOIS.FilterBasics(true)
         end
