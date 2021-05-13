@@ -19,7 +19,7 @@
 ---------------------------------------------------------------------
 --[ToDo list] --
 --____________________________
--- Current max bugs/features/ToDos: 111
+-- Current max bugs/features/ToDos: 114
 --____________________________
 
 --In progress: Since 2020-06-17
@@ -135,8 +135,14 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 
 --#100: 2020-12-13, Deadsoon  CraftStore automatic recipe marking will mark known recipes with the unknown marker icon
 
---#101: 2021-05-08: At bank withdraw: Right click filter button and select an icon from the context menu will not update the filter button to show the selected button.
+--#111: 2021-05-08, Baertram  At bank withdraw: Right click filter button and select an icon from the context menu will not update the filter button to show the selected button.
 --It's updated the next time that filter button is clicked
+
+--#112: 2021-05-13, Baertram  At normal inventory: Un/Equipping an item via double click will not update the inventory row to show/hide the markers of the item at the inv row automatically
+
+--#113: 2021-05-13, Baertram  Disable the context menus to add/remove markers at 2hd weapons' backup slots
+
+--#114: 2021-05-13, Baertram  The character window does not show the set marker icons upon first open after a reloadUI
 
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
@@ -145,8 +151,10 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 ---------------------------------------------------------------------
 
 --[Fixed]
---#101 At bank withdraw: Right click filter button and select an icon from the context menu will not update the filter button to show the selected button
+--#111 At bank withdraw: Right click filter button and select an icon from the context menu will not update the filter button to show the selected button
 --Fixed character/companion equipment not removing the marker icons if companion item get's unequipped
+--#114 The character window does not show the set marker icons upon first open after a reloadUI
+
 
 --[Changed]
 

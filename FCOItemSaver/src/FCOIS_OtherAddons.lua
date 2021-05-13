@@ -3,8 +3,10 @@ if FCOIS == nil then FCOIS = {} end
 local FCOIS = FCOIS
 local mappingVars = FCOIS.mappingVars
 
-local getSavedVarsMarkedItemsTableName = FCOIS.getSavedVarsMarkedItemsTableName
-local GetFCOISMarkerIconSavedVariablesItemId = FCOIS.GetFCOISMarkerIconSavedVariablesItemId
+local getSavedVarsMarkedItemsTableName       = FCOIS.getSavedVarsMarkedItemsTableName
+local getFCOISMarkerIconSavedVariablesItemId = FCOIS.GetFCOISMarkerIconSavedVariablesItemId
+local signItemId                             = FCOIS.SignItemId
+local myGetItemInstanceIdNoControl           = FCOIS.MyGetItemInstanceIdNoControl
 
 --==========================================================================================================================================
 --									FCOIS other addon functions
@@ -309,7 +311,7 @@ local function checkSetTrackerTrackingStateAndMarkWithFCOISIcon(sSetName, setTra
                     local bIsSetItemLoop, sSetNameLoop = GetItemLinkSetInfo(itemLinkLoop, false)
                     --Is the scanned item a set and the name equals the given set part's name?
                     if bIsSetItemLoop and sSetNameLoop == sSetName then
-                        local itemId = FCOIS.MyGetItemInstanceIdNoControl(bag, slot, true)
+                        local itemId = myGetItemInstanceIdNoControl(bag, slot, true)
                         if itemId == nil then return false, nil end
 
                         --Is the Set tracker state changed from old to new?
@@ -389,7 +391,7 @@ local function checkSetTrackerTrackingStateAndMarkWithFCOISIcon(sSetName, setTra
                 local bIsSetItemLoop, sSetNameLoop = GetItemLinkSetInfo(itemLinkLoop, false)
                 --Is the scanned item a set and the name equals the given set part's name?
                 if bIsSetItemLoop and sSetNameLoop == sSetName then
-                    local itemId = FCOIS.MyGetItemInstanceIdNoControl(bag, slot, true)
+                    local itemId = myGetItemInstanceIdNoControl(bag, slot, true)
                     if itemId == nil then return false, nil end
 
                     local removeAllSetTrackerFCOISMarkerIcons = false
@@ -706,7 +708,7 @@ function FCOIS.getItemInstanceOrUniqueId(bagId, slotIndex, itemLink)
             itemInstanceOrUniqueId = GetItemInstanceId(bagId, slotIndex)
         end
         ]]
-        itemInstanceOrUniqueId, allowedItemType = GetFCOISMarkerIconSavedVariablesItemId(bagId, slotIndex, nil, useUniqueIds, uniqueItemIdType)
+        itemInstanceOrUniqueId, allowedItemType = getFCOISMarkerIconSavedVariablesItemId(bagId, slotIndex, nil, useUniqueIds, uniqueItemIdType)
         if settings.debug then FCOIS.debugMessage("[getItemInstanceOrUniqueId]", string.format("bag: %s, slot: %s, itemLink: %s, itemInstanceOrUniqueId: %s", tostring(bagId), tostring(slotIndex), tostring(itemLink), tostring(itemInstanceOrUniqueId)), true, FCOIS_DEBUG_DEPTH_NORMAL) end
     end
     return itemInstanceOrUniqueId, isBagToBuildItemInstanceOrUniqueId
@@ -996,13 +998,13 @@ function FCOIS.MyGetItemInstanceIdForIIfA(clickedDataLine, signToo)
             itemId = GetItemInstanceId(bagId, slotIndex)
         end
         ]]
-        itemId, allowedItemType = GetFCOISMarkerIconSavedVariablesItemId(bagId, slotIndex, nil, useUniqueIds, uniqueItemIdType)
+        itemId, allowedItemType = getFCOISMarkerIconSavedVariablesItemId(bagId, slotIndex, nil, useUniqueIds, uniqueItemIdType)
     end
     if signToo and (
             (not useUniqueIds or (useUniqueIds == true and allowedItemType == true))
             or (not ownedByLoggedInChar and not isItemInAccountWideBags)
     ) then
-        itemId = FCOIS.SignItemId(itemId, allowedItemType, nil, nil, bagId, slotIndex)
+        itemId = signItemId(itemId, allowedItemType, nil, nil, bagId, slotIndex)
     end
 --d("[FCOIS.MyGetItemInstanceIdForIIfA] itemIdOrLink: " .. itemIdOrLink .. ", itemInstanceOrUniqueId: " .. tostring(itemId) .. ", bagId: " .. tostring(bagId) .. ", slotIndex: " .. tostring(slotIndex))
     return itemId, bagId, slotIndex, itemFoundAtLocationTable, itemFoundAtLocationTableAccountWide

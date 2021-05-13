@@ -21,7 +21,7 @@ local svSettingsForAllName  = FCOIS.svSettingsForAllName
 local svSettingsName        = FCOIS.svSettingsName
 local svSettingsForEachCharacterName = FCOIS.svSettingsForEachCharacterName
 
-local GetFCOISMarkerIconSavedVariablesItemId = FCOIS.GetFCOISMarkerIconSavedVariablesItemId
+local getFCOISMarkerIconSavedVariablesItemId = FCOIS.GetFCOISMarkerIconSavedVariablesItemId
 --==========================================================================================================================================
 -- 										FCOIS settings & saved variables functions
 --==========================================================================================================================================
@@ -622,7 +622,7 @@ local function scanBagsAndTransferMarkerIcon(toUnique)
             if toUnique == true then
                 --Build the itemID -> FROM
                 -->Could be a uniqueId or a non-unique itemInstanceId
-                itemId, allowedItemType = GetFCOISMarkerIconSavedVariablesItemId(bagId, slotIndex, nil, uniqueIdWasLastEnabled, uniqueIdTypeLastUsed)
+                itemId, allowedItemType = getFCOISMarkerIconSavedVariablesItemId(bagId, slotIndex, nil, uniqueIdWasLastEnabled, uniqueIdTypeLastUsed)
                 --[[
                 if uniqueIdWasLastEnabled == true then
                     --UniqueId -> FROM
@@ -644,7 +644,7 @@ local function scanBagsAndTransferMarkerIcon(toUnique)
                 end
                 ]]
                 --Build the newItemId -> TO
-                itemIdNew, allowedItemTypeNew = GetFCOISMarkerIconSavedVariablesItemId(bagId, slotIndex, nil, useUniqueIds, uniqueItemIdType)
+                itemIdNew, allowedItemTypeNew = getFCOISMarkerIconSavedVariablesItemId(bagId, slotIndex, nil, useUniqueIds, uniqueItemIdType)
                 --[[
                 if allowedItemType == true then
                     --Check which uniqueId type is currently setup in the FCOIS settings
@@ -665,7 +665,7 @@ local function scanBagsAndTransferMarkerIcon(toUnique)
             else
                 --Build the itemID -> FROM
                 -->Could be only a non-unique itemInstanceId
-                itemId, allowedItemType = GetFCOISMarkerIconSavedVariablesItemId(bagId, slotIndex, nil, uniqueIdWasLastEnabled, uniqueIdTypeLastUsed)
+                itemId, allowedItemType = getFCOISMarkerIconSavedVariablesItemId(bagId, slotIndex, nil, uniqueIdWasLastEnabled, uniqueIdTypeLastUsed)
                 --[[
                 if allowedItemType == true then
                     if not uniqueIdTypeLastUsed or uniqueIdTypeLastUsed == FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE then

@@ -13,6 +13,9 @@ local getSavedVarsMarkedItemsTableName = FCOIS.getSavedVarsMarkedItemsTableName
 local getFilterWhereBySettings = FCOIS.getFilterWhereBySettings
 local checkIfProtectedSettingsEnabled = FCOIS.checkIfProtectedSettingsEnabled
 local checkIfItemIsProtected = FCOIS.checkIfItemIsProtected
+local myGetItemDetails = FCOIS.MyGetItemDetails
+local myGetItemInstanceIdNoControl = FCOIS.MyGetItemInstanceIdNoControl
+local isItemProtectedAtASlotNow = FCOIS.IsItemProtectedAtASlotNow
 
 --Compatibility functions
 local function menuVisibleCheck()
@@ -71,7 +74,7 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
     if parentControl == nil then return false end
     local parentName = parentControl:GetName()
 
-    local bag, slotIndex = FCOIS.MyGetItemDetails(parentControl)
+    local bag, slotIndex = myGetItemDetails(parentControl)
     --is the mouse only hovered over the item or was the right click mouse context menu shown?
     local mouseRightClickDone = self.m_contextMenuMode
     --Hide the inventory button contextMenu if shown and if we right clicked another item
@@ -96,6 +99,8 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
             if settings.debug then FCOIS.debugMessage( "[AddSlotAction]",">newSlot! Parent: " .. parentName, true, FCOIS_DEBUG_DEPTH_ALL) end
         end
     end
+
+    local callItemSelectionHandler = FCOIS.callItemSelectionHandler
 
     --Use item?
     if        actionStringId == SI_ITEM_ACTION_USE then
@@ -194,7 +199,7 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
             or actionStringId == SI_TRADING_HOUSE_ADD_ITEM_TO_LISTING then
         --Is item marked with any of the FCOItemSaver icons? Then don't show the actionStringId in the contextmenu
         --  bag, slot, echo, isDragAndDrop, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId
-        return FCOIS.callItemSelectionHandler(bag, slotIndex, false, false, false, false, false, false, false)
+        return callItemSelectionHandler(bag, slotIndex, false, false, false, false, false, false, false)
 
         --Should the "Junk item" context menu entry be hidden if any marker icon is set?
     elseif actionStringId == SI_ITEM_ACTION_MARK_AS_JUNK and settings.removeMarkAsJunk then
@@ -265,7 +270,7 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
             (actionStringId == SI_CBE_CRAFTBAG_MAIL_ATTACH or actionStringId == SI_CBE_CRAFTBAG_SELL_QUANTITY or actionStringId == SI_CBE_CRAFTBAG_TRADE_ADD) then
         --Is item marked with any of the FCOItemSaver icons? Then don't show the actionStringId in the contextmenu
         --  bag, slot, echo, isDragAndDrop, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId
-        return FCOIS.callItemSelectionHandler(bag, slotIndex, false, false, false, false, false, false, false)
+        return callItemSelectionHandler(bag, slotIndex, false, false, false, false, false, false, false)
 
         --De-comment to show the other slot actions
         --else
@@ -428,7 +433,7 @@ function FCOIS.refreshPopupDialogButtons(rowControl, override)
 
             --get the marked icons of the item
             if rowControl ~= nil and rowControl.dataEntry ~= nil and rowControl.dataEntry.data ~= nil then
-                local bagId, slotIndex = FCOIS.MyGetItemDetails(rowControl)
+                local bagId, slotIndex = myGetItemDetails(rowControl)
                 if bagId ~= nil and slotIndex ~= nil then
 --d(">bagId, slotIndex: " ..tostring(bagId) ..", " ..tostring(slotIndex) .. ", itemLink: " ..GetItemLink(bagId, slotIndex))
                     local _, markedIcons = FCOIS.IsMarked(bagId, slotIndex, -1)
@@ -674,7 +679,7 @@ end
         bag = FCOIS.IIfAclicked.bagId
         slotId = FCOIS.IIfAclicked.slotIndex
     else
-        bag, slotId = FCOIS.MyGetItemDetails(rowControl)
+        bag, slotId = myGetItemDetails(rowControl)
     end
 
     if bag ~= nil and slotId ~= nil then
@@ -809,7 +814,7 @@ end
             bagId = FCOIS.IIfAclicked.bagId
             slotIndex = FCOIS.IIfAclicked.slotIndex
         else
-            bagId, slotIndex = FCOIS.MyGetItemDetails(rowControl)
+            bagId, slotIndex = myGetItemDetails(rowControl)
         end
         AddCustomMenuItem("---[DEBUG>   Bag: " .. tostring(bagId) .. " / Slot: " .. tostring(slotIndex) .. " ]---", function() FCOIS.debugItem(bagId, slotIndex) end, MENU_ADD_OPTION_LABEL)
     end
@@ -1157,7 +1162,7 @@ function FCOIS.MarkMe(rowControl, markId, updateNow, doUnmark, refreshPopupDialo
         end
         IIfAclickedData = FCOIS.IIfAclicked
     end
-    local bagId, slotIndex = FCOIS.MyGetItemDetails(rowControl) -- will internally take bag and slot from IIfAclicked table, if this data is given!
+    local bagId, slotIndex = myGetItemDetails(rowControl) -- will internally take bag and slot from IIfAclicked table, if this data is given!
     --Bag and slotIndex are given, or is the bag a house bank and we are not in a house or not the owner of the house?
     if bagId == nil or slotIndex == nil then
 --d(">no bag and slotIndex")
@@ -1195,7 +1200,7 @@ function FCOIS.MarkMe(rowControl, markId, updateNow, doUnmark, refreshPopupDialo
                 --Are we marking an item inside a popup dialog, e.g. research or repair or enchant item?
                 if not refreshPopupDialog then
                     --Is the item protected at a craft station, or the guild store sell tab, or marked as junk now?
-                    FCOIS.IsItemProtectedAtASlotNow(bagId, slotIndex, false, true)
+                    isItemProtectedAtASlotNow(bagId, slotIndex, false, true)
                 end
                 --Check if the item mark removed other marks and if a row within another addon (like Inventory Insight) needs to be updated
                 FCOIS.checkIfInventoryRowOfExternalAddonNeedsMarkerIconsUpdate(rowControl, markId)
@@ -2052,7 +2057,7 @@ local function removeSlottedProtectedItemsAndUpdateTooltips(settingsStateAfterCh
     --Check if the protection got enabled again and if any items are shown at the different slots (extract, deconstruct, mail, trade, ...)
     if settingsStateAfterChange == true then
         --Let the function use bagId = nil and slotIndex = nil to automatically find the items at the different slots and remove them if needed
-        FCOIS.IsItemProtectedAtASlotNow(nil, nil, false, true)
+        isItemProtectedAtASlotNow(nil, nil, false, true)
     end
     --Update the tooltips at the items to reflect the protection state properly. But only update the currently visible ones
     --A refresh of the visible scroll list should be enough to refresh the marker icons and tooltips
@@ -2498,7 +2503,7 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                         end
                         --Finally: Is the item allowed to be marked with this iconId?
                         if allowedToMark == true then
-                            myItemInstanceId = FCOIS.MyGetItemInstanceIdNoControl(bagId, slotIndex)
+                            myItemInstanceId = myGetItemInstanceIdNoControl(bagId, slotIndex)
                             if myItemInstanceId ~= nil then
                                 --Clear the undo table once at the current panelId (keep all other panelIds !)
                                 if not undoTableCleared then
@@ -2559,7 +2564,7 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                                         FCOIS.MarkItem(bagId, slotIndex, iconId, true, false)
                                         --Is the item protected at a craft station or the guild store sell tab now or marked as junk now?
                                         -->Enable 3rd parameter "bulk" for the additional inventory "flag" icon
-                                        FCOIS.IsItemProtectedAtASlotNow(bagId, slotIndex, true, true)
+                                        isItemProtectedAtASlotNow(bagId, slotIndex, true, true)
                                         atLeastOneMarkerChanged = true
                                         markerChangedAtBagAndSlot = true
                                         --Old value: False
@@ -2621,7 +2626,7 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                             and contMenuVars.undoMarkedItems[filterPanelToSaveUndoTo][i].marked ~= nil then
 
                         --d("[UNDO] slotIndex: " .. tostring(contMenuVars.undoMarkedItems[filterPanelToSaveUndoTo][i].slotIndex) .. ", bag: " .. tostring(contMenuVars.undoMarkedItems[filterPanelToSaveUndoTo][i].bagId) .. ", iconId: " .. tostring(contMenuVars.undoMarkedItems[filterPanelToSaveUndoTo][i].iconId) .. ", marked: " .. tostring(contMenuVars.undoMarkedItems[filterPanelToSaveUndoTo][i].marked))
-                        myItemInstanceId = FCOIS.MyGetItemInstanceIdNoControl(contMenuVars.undoMarkedItems[filterPanelToSaveUndoTo][i].bagId, contMenuVars.undoMarkedItems[filterPanelToSaveUndoTo][i].slotIndex, true)
+                        myItemInstanceId = myGetItemInstanceIdNoControl(contMenuVars.undoMarkedItems[filterPanelToSaveUndoTo][i].bagId, contMenuVars.undoMarkedItems[filterPanelToSaveUndoTo][i].slotIndex, true)
                         if myItemInstanceId ~= nil then
                             --Undo the last changes now
                             FCOIS[savedVarsMarkedItemsTableName][contMenuVars.undoMarkedItems[filterPanelToSaveUndoTo][i].iconId][myItemInstanceId] = contMenuVars.undoMarkedItems[filterPanelToSaveUndoTo][i].marked
@@ -2667,7 +2672,7 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                     if bagId ~= nil and slotIndex ~= nil then
                         allowedToMark = doCompanionItemChecks(bagId, slotIndex, nil)
                         if allowedToMark == true then
-                            myItemInstanceId = FCOIS.MyGetItemInstanceIdNoControl(bagId, slotIndex)
+                            myItemInstanceId = myGetItemInstanceIdNoControl(bagId, slotIndex)
                             if myItemInstanceId ~= nil then
 
                                 --Check all equipment gear icon IDs: 2, 4, 6, 7 and 8
@@ -2742,7 +2747,7 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                     if bagId ~= nil and slotIndex ~= nil then
                         allowedToMark = doCompanionItemChecks(bagId, slotIndex, nil)
                         if allowedToMark == true then
-                            myItemInstanceId = FCOIS.MyGetItemInstanceIdNoControl(bagId, slotIndex)
+                            myItemInstanceId = myGetItemInstanceIdNoControl(bagId, slotIndex)
                             if myItemInstanceId ~= nil then
                                 --Check all icon Ids
                                 for iconIdLoop = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
@@ -2819,7 +2824,7 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                     bagId     = data.bagId
                     slotIndex = data.slotIndex
                     if bagId ~= nil and slotIndex ~= nil then
-                        myItemInstanceId = FCOIS.MyGetItemInstanceIdNoControl(bagId, slotIndex)
+                        myItemInstanceId = myGetItemInstanceIdNoControl(bagId, slotIndex)
                         if myItemInstanceId ~= nil then
                             local isProtectedWithIcon = false
                             --Mark all as junk

@@ -69,6 +69,19 @@ function FCOIS.getWhereAreWe(panelId, panelIdAtCall, panelIdParent, bag, slot, i
         return locWhereAreWe
     end
 
+    --Check if an item should be used or should be equipped (only LF_INVENTORY or LF_INVENTORY_COMPANION) via double click e.g.
+    --returns FCOIS_CON_FALLBACK as whereAreWe in that case and disables the further checks in ItemSelectionHandler this way
+    local function checkIfItemShouldBeUsedOrEquipped(p_whereAreWe, p_bag, p_slot)
+        if p_whereAreWe ~= FCOIS_CON_FALLBACK then
+            --Get the whereAreWe panel ID by checking the item's type etc. now and allow equipping items via double click e.g.
+            --by returning the FCOIS_CON_FALLBACK value
+            return checkSingleItemProtection(p_bag, p_slot)
+        else
+            return p_whereAreWe
+        end
+    end
+
+
     --======= WhereAreWe determination ============================================================
 --*********************************************************************************************************************************************************************************
     --------------------------------------------------------------------------------------------------------------------
@@ -244,9 +257,11 @@ function FCOIS.getWhereAreWe(panelId, panelIdAtCall, panelIdParent, bag, slot, i
         elseif (calledFromExternalAddon and panelId == LF_RETRAIT) or (not calledFromExternalAddon and (FCOIS.isRetraitStationShown() or panelId == LF_RETRAIT)) then
             --Set whereAreWe to FCOIS_CON_FALLBACK so the anti-settings mapping function returns "false"
             whereAreWe = FCOIS_CON_RETRAIT
-            --Are we at a companion inventory?
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+        --Are we at a companion inventory?
         elseif (calledFromExternalAddon and panelId == LF_INVENTORY_COMPANION) or (not calledFromExternalAddon and (FCOIS.isCompanionInventoryShown() or panelId == LF_INVENTORY_COMPANION)) then
             whereAreWe = FCOIS_CON_COMPANION_DESTROY
+            whereAreWe = checkIfItemShouldBeUsedOrEquipped(whereAreWe, bag, slot)
         --Are we at the inventory/bank/guild bank and trying to use/equip/deposit an item?
         elseif (calledFromExternalAddon and (panelId == LF_INVENTORY or panelId == LF_BANK_DEPOSIT or panelId == LF_GUILDBANK_DEPOSIT or panelId == LF_HOUSE_BANK_DEPOSIT)) or (not calledFromExternalAddon and (not ctrlVars.BACKPACK:IsHidden() or panelId == LF_INVENTORY or panelId == LF_BANK_DEPOSIT or panelId == LF_GUILDBANK_DEPOSIT or panelId == LF_HOUSE_BANK_DEPOSIT)) then
             --Check if player or guild bank is active by checking current scene in scene manager
@@ -262,11 +277,8 @@ function FCOIS.getWhereAreWe(panelId, panelIdAtCall, panelIdParent, bag, slot, i
                 end
             end
             --Only do the item checks if the item should not be deposited at a bank/guild bank/house bank
-            if whereAreWe ~= FCOIS_CON_FALLBACK then
-                --Get the whereAreWe panel ID by checking the item's type etc. now
-                whereAreWe = checkSingleItemProtection(bag, slot)
-            end
-            --All others: We are trying to destroy an item
+            whereAreWe = checkIfItemShouldBeUsedOrEquipped(whereAreWe, bag, slot)
+        --All others: We are trying to destroy an item
         else
             whereAreWe = FCOIS_CON_DESTROY
         end

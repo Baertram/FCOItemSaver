@@ -5,6 +5,7 @@ local FCOIS = FCOIS
 if not FCOIS.libsLoadedProperly then return end
 
 local checkIfProtectedSettingsEnabled = FCOIS.checkIfProtectedSettingsEnabled
+local myGetItemDetails = FCOIS.MyGetItemDetails
 
 -- =====================================================================================================================
 --  Tooltip functions
@@ -58,7 +59,7 @@ function FCOIS.CreateToolTip(markerControl, markerId, doHide, pUpdateAllEquipmen
         local panelId = FCOIS.gFilterWhere
         local filterPanelIdToWhereAreWe = FCOIS.mappingVars.filterPanelIdToWhereAreWe
         local whereAreWe = filterPanelIdToWhereAreWe[panelId]
-d("[FCOIS]CreateToolTip - filterPanelid: " ..tostring(panelId) .. ", whereAreWe: " ..tostring(whereAreWe))
+--d("[FCOIS]CreateToolTip - filterPanelId: " ..tostring(panelId) .. ", whereAreWe: " ..tostring(whereAreWe))
 
         --Are we adding a tooltip to an equipment slot?
         if settings.showIconTooltipAtCharacter and pUpdateAllEquipmentTooltips then
@@ -86,7 +87,7 @@ d("[FCOIS]CreateToolTip - filterPanelid: " ..tostring(panelId) .. ", whereAreWe:
                 itemLink, itemInstanceOrUniqueId, bagId, slotIndex = itemLinkIIfA, itemInstanceOrUniqueIdIIfA, bagIdIIfA, slotIndexIIfA
             end
         else
-            bagId, slotIndex = FCOIS.MyGetItemDetails(markersParentControl)
+            bagId, slotIndex = myGetItemDetails(markersParentControl)
         end
         local iconIsDynamic = FCOIS.mappingVars.iconIsDynamic
         --is the bagid and slotIndex given?

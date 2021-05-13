@@ -655,7 +655,10 @@ local function FCOItemSaver_OnInventorySlotUnLocked(self, bag, slot)
         FCOIS.removeArmorTypeMarker(bag, slot)
 
         --Check all weapon slots and remove empty markers
-        FCOIS.RemoveEmptyWeaponEquipmentMarkers(1200)
+        FCOIS.RemoveEmptyWeaponEquipmentMarkers()
+
+        --Update the player invenory row markers
+        FCOIS.FilterBasics(true)
     end
     FCOIS.preventerVars.gItemSlotIsLocked = false
     --Reset: Tell function ItemSelectionHandler that a drag&drop or doubleclick event was raised so it's not blocking the equip/use/etc. functions
