@@ -19,7 +19,7 @@
 ---------------------------------------------------------------------
 --[ToDo list] --
 --____________________________
--- Current max bugs/features/ToDos: 114
+-- Current max bugs/features/ToDos: 117
 --____________________________
 
 --In progress: Since 2020-06-17
@@ -137,6 +137,9 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 
 --#115: 2021-05-13, Baertram  Reposition the additional inventory "flag" icons at crafting tables: Refine, deconstruction, improvement.
 --                            and test if they also fit with AdvancedFilters enabled
+
+--#116: ResearchAssistant: Items won't get marked (red rectangle of RA) at the bank after changing settings/reloadUI
+--#117: Recipe addon icon dropdownbox should not show non-recipe applyable icons (like research, gear, etc.)
 
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
