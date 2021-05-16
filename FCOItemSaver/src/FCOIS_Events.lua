@@ -299,8 +299,8 @@ local function checkIfBankInventorySingleSlotUpdateEventNeedsToBeRegistered(bagI
     --For each dynamic check if the setting to auto remove a marker icon is enabled
 --d("[FCOIS]Register invSingleSlotUpdate check for bagId: " ..tostring(bagId))
     for _, dynamicIconId in ipairs(dynamicIconIds) do
-        if settings.icon[dynamicIconId] and settings.icon[dynamicIconId].autoRemoveMarkForBag[bagId] and
-            settings.icon[dynamicIconId].autoRemoveMarkForBag[bagId] == true then
+        local autoRemoveMarkForBagId = settings.icon[dynamicIconId].autoRemoveMarkForBag[bagId]
+        if settings.icon[dynamicIconId] and autoRemoveMarkForBagId and autoRemoveMarkForBagId == true then
             return true
         end
     end
@@ -363,10 +363,12 @@ local function FCOItemSaver_Open_Player_Bank(event, bagId)
     FCOIS.preventerVars.gActiveFilterPanel = true
     if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[EVENT]","Open bank - bagId: " .. tostring(bagId) .. ", isHouseBank: " .. tostring(isHouseBank), true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
-    if checkIfBankInventorySingleSlotUpdateEventNeedsToBeRegistered(BAG_BANK) == true then
-        EVENT_MANAGER:RegisterForEvent(gAddonName.."_BANK", EVENT_INVENTORY_SINGLE_SLOT_UPDATE, FCOItemSaver_Inv_Single_Slot_Update_Bank)
-        EVENT_MANAGER:AddFilterForEvent(gAddonName.."_BANK", EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_UNIT_TAG, "player")
-        EVENT_MANAGER:AddFilterForEvent(gAddonName.."_BANK", EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_BAG_ID, BAG_BANK)
+    if bagId == BAG_BANK or bagId == BAG_SUBSCRIBER_BANK then
+        if checkIfBankInventorySingleSlotUpdateEventNeedsToBeRegistered(BAG_BANK) == true then
+            EVENT_MANAGER:RegisterForEvent(gAddonName.."_BANK", EVENT_INVENTORY_SINGLE_SLOT_UPDATE, FCOItemSaver_Inv_Single_Slot_Update_Bank)
+            EVENT_MANAGER:AddFilterForEvent(gAddonName.."_BANK", EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_UNIT_TAG, "player")
+            EVENT_MANAGER:AddFilterForEvent(gAddonName.."_BANK", EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_BAG_ID, bagId)
+        end
     end
 
     local filterPanelId = LF_BANK_WITHDRAW
@@ -388,6 +390,10 @@ local function FCOItemSaver_Open_Player_Bank(event, bagId)
         --deposit button was the last one clicked it won't change the filter buttons as it thinks it is still active
         FCOIS.lastVars.gLastBankButton = ctrlVars.BANK_MENUBAR_BUTTON_WITHDRAW
         filterPanelId = LF_BANK_WITHDRAW
+        --Scan if player bank got items that should be marked automatically
+        zo_callLater(function()
+            scanInventory(bagId, nil)
+        end, 250)
     end
     --Change the button color of the context menu invoker
     FCOIS.changeContextMenuInvokerButtonColorByPanelId(filterPanelId)

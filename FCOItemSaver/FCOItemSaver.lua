@@ -19,7 +19,7 @@
 ---------------------------------------------------------------------
 --[ToDo list] --
 --____________________________
--- Current max bugs/features/ToDos: 110
+-- Current max bugs/features/ToDos: 117
 --____________________________
 
 --In progress: Since 2020-06-17
@@ -135,6 +135,8 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 
 --#100: 2020-12-13, Deadsoon  CraftStore automatic recipe marking will mark known recipes with the unknown marker icon
 
+--#116: ResearchAssistant: Items won't get marked (red rectangle of RA) at the bank after changing settings/reloadUI
+--#117: Recipe addon icon dropdownbox should not show non-recipe applyable icons (like research, gear, etc.)
 
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]

@@ -108,6 +108,15 @@ local function automaticMarkingResearchAdditionalCheckFunc(p_itemData, p_checkFu
                 end
             else
                 isResearchable = (itemDataEntry.researchAssistant ~= nil and itemDataEntry.researchAssistant == 'researchable')
+                --If this function was called from reloadui/login scanning the itemDataEntry.researchAssistant at the bank might be nil
+                if (not itemDataEntry.researchAssistant or isResearchable == false) and (bagId == BAG_BANK or bagId == BAG_SUBSCRIBER_BANK or bagId == BAG_GUILDBANK) then
+                    isResearchable = ResearchAssistant.IsItemResearchableOrDuplicateWithSettingsCharacter(bagId, slotIndex)
+                    --return value could be true, false or "duplicate"
+                    if isResearchable ~= true then isResearchable = false end
+                else
+                    isResearchable = (itemDataEntry.researchAssistant ~= nil and itemDataEntry.researchAssistant == 'researchable')
+                end
+--d("<isResearchable: " ..tostring(isResearchable))
             end
 
         --CraftStoreFixedAndImproved
@@ -1204,6 +1213,10 @@ function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, do
 end -- Single item scan function scanInventoryItemForAutomaticMarks(bag, slot, scanType)
 local scanInventoryItemForAutomaticMarks = FCOIS.scanInventoryItemForAutomaticMarks
 
+local function getBagsToScanForAutomaticMarks()
+    return FCOIS.settingsVars.settings.autoMarkBagsToScan
+end
+
 --Function to do the scans for automatic marker icons (multiple items)
 function FCOIS.scanInventoryItemsForAutomaticMarks(bag, slot, scanType, updateInv)
     updateInv = updateInv or false
@@ -1309,7 +1322,7 @@ function FCOIS.scanInventoryItemsForAutomaticMarks(bag, slot, scanType, updateIn
             preCheckFunc        = function(p_bagId, p_slotIndex)
                 --Check if item is researchable
                 local isItemResearchable, wasItemReconstructedOrRetraited = FCOIS.isItemResearchableNoControl(p_bagId, p_slotIndex, nil)
-                if isItemResearchable and wasItemReconstructedOrRetraited == true then
+                if isItemResearchable == true and wasItemReconstructedOrRetraited == true then
                     isItemResearchable = false
                 end
 --d(">>>isItemResearchable: " ..tostring(isItemResearchable))
@@ -1492,6 +1505,7 @@ function FCOIS.scanInventoryItemsForAutomaticMarks(bag, slot, scanType, updateIn
 --		Function start                                                        --
 --------------------------------------------------------------------------------
     --Local variables for the return
+    local onlyUpdatePlayerInv = true
     local checksWereDoneLoop			 = false
     local atLeastOneMarkerIconWasSetLoop = false
     --Is the scantype given: Get the todos ->
@@ -1505,33 +1519,57 @@ function FCOIS.scanInventoryItemsForAutomaticMarks(bag, slot, scanType, updateIn
         checksWereDoneLoop, atLeastOneMarkerIconWasSetLoop = scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos)
         FCOIS.preventerVars.gScanningInv = false
     else
-        --Check a whole inventory?
-        local bagToCheck = bag or BAG_BACKPACK
-        --d("[FCOIS]--> Scan whole inventory, bag: " .. tostring(bagToCheck))
-        --Get the bag cache (all entries in that bag)
-        --local bagCache = SHARED_INVENTORY:GenerateFullSlotData(nil, bagToCheck)
-        local bagCache = SHARED_INVENTORY:GetOrCreateBagCache(bagToCheck)
-        --Local variables for the for ... loop
-        local checksWereDoneInForLoop			 	= false
-        local atLeastOneMarkerIconWasSetInForLoop 	= false
+        --The bagids that should be scanned if no bagId was given as parameter p_bagId
+        local bagIdsToCheck = {}
+        --Check all bagIds?
+        if bag == nil and slot == nil then
+            local bagIdsToScan = getBagsToScanForAutomaticMarks()
+            for bagIdToScan, enabled in pairs(bagIdsToScan) do
+                if enabled == true then
+                    if bagIdToScan ~= BAG_BACKPACK then
+                        onlyUpdatePlayerInv = false
+                    end
+                    table.insert(bagIdsToCheck, bagIdToScan)
+                end
+            end
+        --Or is a bagId given?
+        elseif bag ~= nil then
+            table.insert(bagIdsToCheck, bag)
+            if bag ~= BAG_BACKPACK then
+                onlyUpdatePlayerInv = false
+            end
+            --Or is no bagId given but a slotIndex? -> Abort as this shouldn't happen
+        elseif bag == nil and slot ~= nil then
+            return
+        end
 
-        --For each item in that bag
-        for _, data in pairs(bagCache) do
-            local bagId 	= data.bagId
-            local slotIndex = data.slotIndex
-            if bagId ~= nil and slotIndex ~= nil then
-                checksWereDoneInForLoop			 		= false
-                atLeastOneMarkerIconWasSetInForLoop 	= false
-                --Recursively call this function here
-                checksWereDoneInForLoop, atLeastOneMarkerIconWasSetInForLoop = scanInventoryItemForAutomaticMarks(bagId, slotIndex, scanType, toDos)
---d(">Whole bag item check. checksWereDoneLoop: " ..tostring(checksWereDoneLoop) .. ", atLeastOneMarkerIconWasSetLoop: " ..tostring(atLeastOneMarkerIconWasSetLoop))
-                --Update the calling functions return variables
-                if not checksWereDoneLoop then checksWereDoneLoop = checksWereDoneInForLoop end
-                if not atLeastOneMarkerIconWasSetLoop then atLeastOneMarkerIconWasSetLoop = atLeastOneMarkerIconWasSetInForLoop end
-                --Reset the variable, that the inventories are not currently scanned
-                FCOIS.preventerVars.gScanningInv = false
+        local atLeastOneMarkerIconWasSetInForLoop 	= false
+        for _, bagToCheck in ipairs(bagIdsToCheck) do
+            --d("[FCOIS]--> Scan whole inventory, bag: " .. tostring(bagToCheck))
+            --Get the bag cache (all entries in that bag)
+            --local bagCache = SHARED_INVENTORY:GenerateFullSlotData(nil, bagToCheck)
+            local bagCache = SHARED_INVENTORY:GetOrCreateBagCache(bagToCheck)
+            --Local variables for the for ... loop
+            local checksWereDoneInForLoop			 	= false
+
+            --For each item in that bag
+            for _, data in pairs(bagCache) do
+                local bagId 	= data.bagId
+                local slotIndex = data.slotIndex
+                if bagId ~= nil and slotIndex ~= nil then
+                    checksWereDoneInForLoop			 		= false
+                    atLeastOneMarkerIconWasSetInForLoop 	= false
+                    --Recursively call this function here
+                    checksWereDoneInForLoop, atLeastOneMarkerIconWasSetInForLoop = scanInventoryItemForAutomaticMarks(bagId, slotIndex, scanType, toDos)
+                    --d(">Whole bag item check. checksWereDoneLoop: " ..tostring(checksWereDoneLoop) .. ", atLeastOneMarkerIconWasSetLoop: " ..tostring(atLeastOneMarkerIconWasSetLoop))
+                    --Update the calling functions return variables
+                    if not checksWereDoneLoop then checksWereDoneLoop = checksWereDoneInForLoop end
+                    if not atLeastOneMarkerIconWasSetLoop then atLeastOneMarkerIconWasSetLoop = atLeastOneMarkerIconWasSetInForLoop end
+                end
             end
         end
+        --Reset the variable, that the inventories are not currently scanned
+        FCOIS.preventerVars.gScanningInv = false
     end
     --------------------------------------------------------------------------------
     --				Function ends												  --
@@ -1541,7 +1579,7 @@ function FCOIS.scanInventoryItemsForAutomaticMarks(bag, slot, scanType, updateIn
     --Was at least one item found that could be marked?
     if updateInv and atLeastOneMarkerIconWasSetLoop == true then
         --Update the inventory tabs to show the marker textures
-        FCOIS.FilterBasics(true)
+        FCOIS.FilterBasics(onlyUpdatePlayerInv)
     end
 
     --------------------------------------------------------------------------------
@@ -1719,42 +1757,51 @@ function FCOIS.scanInventory(p_bagId, p_slotIndex)
             break -- leave the loop
         end
     end
-    --[[
-    local isCheckNecessary = (
-               (settings.autoMarkOrnate == true and settings.isIconEnabled[FCOIS_CON_ICON_SELL])
-            or (settings.autoMarkIntricate == true and settings.isIconEnabled[FCOIS_CON_ICON_INTRICATE])
-            or (isResearchAddonActive and settings.autoMarkResearch == true )
-            or (settings.autoMarkQuality ~= 1 and settings.isIconEnabled[settings.autoMarkQualityIconNr])
-            or (isRecipeAddonActive and settings.autoMarkRecipes == true and settings.isIconEnabled[settings.autoMarkRecipesIconNr])
-            or (isRecipeAddonActive and settings.autoMarkKnownRecipes == true and settings.isIconEnabled[settings.AutoMarkKnownRecipesIconNr])
-            or (settings.autoMarkSetsItemCollectionBook == true and
-                  (
-                      (settings.autoMarkSetsItemCollectionBookMissingIcon ~= FCOIS_CON_ICON_NONE and settings.isIconEnabled[settings.autoMarkSetsItemCollectionBookMissingIcon] == true) or
-                      (settings.autoMarkSetsItemCollectionBookNonMissingIcon ~= FCOIS_CON_ICON_NONE and settings.isIconEnabled[settings.autoMarkSetsItemCollectionBookNonMissingIcon] == true)
-                  )
-               )
-            or (settings.autoMarkSets == true and settings.isIconEnabled[settings.autoMarkSetsIconNr])
-            or (isResearchScrollsAddonActive and settings.autoMarkWastedResearchScrolls == true)
-            ) and FCOIS.preventerVars.gScanningInv == false
-    ]]
 
     if isCheckNecessary == true then
-
+        local onlyUpdatePlayerInv = true
         -- Scan the whole inventory because no bagId and slotIndex are given
         if p_bagId == nil or p_slotIndex == nil then
             --d("[ScanInventory] Start ALL")
             if settings.debug then FCOIS.debugMessage( "[ScanInventory]","Start ALL", false, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
-            --Check a whole inventory?
-            local bagToCheck = p_bagId or BAG_BACKPACK
+
+            --The bagids that should be scanned if no bagId was given as parameter p_bagId
+            local bagIdsToCheck = {}
+            --Check all bagIds?
+            if p_bagId == nil and p_slotIndex == nil then
+                local bagIdsToScan = getBagsToScanForAutomaticMarks()
+
+                for bagIdToScan, enabled in pairs(bagIdsToScan) do
+                    if enabled == true then
+                        if bagIdToScan ~= BAG_BACKPACK then
+                            onlyUpdatePlayerInv = false
+                        end
+                        table.insert(bagIdsToCheck, bagIdToScan)
+                    end
+                end
+            --Or is a bagId given?
+            elseif p_bagId ~= nil then
+                table.insert(bagIdsToCheck, p_bagId)
+                if p_bagId ~= BAG_BACKPACK then
+                    onlyUpdatePlayerInv = false
+                end
+            --Or is no bagId given but a slotIndex? -> Abort as this shouldn't happen
+            elseif p_bagId == nil and p_slotIndex ~= nil then
+                return
+            end
+
             --d("[FCOIS]--> Scan whole inventory, bag: " .. tostring(bagToCheck))
             --Get the bag cache (all entries in that bag)
             --local bagCache = SHARED_INVENTORY:GenerateFullSlotData(nil, bagToCheck)
-            local bagCache = SHARED_INVENTORY:GetOrCreateBagCache(bagToCheck)
-            local updateInvLoop = false
-            for _, data in pairs(bagCache) do
-                updateInvLoop = false
-                updateInvLoop = scanInventorySingle(data.bagId, data.slotIndex, checksAlreadyDoneTable)
-                if not updateInv then updateInv = updateInvLoop end
+            for _, bagToCheck in ipairs(bagIdsToCheck) do
+--d(">FCOIS.scanInventory-bagId: " ..tostring(bagToCheck))
+                local bagCache = SHARED_INVENTORY:GetOrCreateBagCache(bagToCheck)
+                local updateInvLoop = false
+                for _, data in pairs(bagCache) do
+                    updateInvLoop = false
+                    updateInvLoop = scanInventorySingle(data.bagId, data.slotIndex, checksAlreadyDoneTable)
+                    if not updateInv then updateInv = updateInvLoop end
+                end
             end
             if settings.debug then FCOIS.debugMessage( "[ScanInventory]","End ALL", false, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
             --d("[ScanInventory] END ALL")
@@ -1770,7 +1817,7 @@ function FCOIS.scanInventory(p_bagId, p_slotIndex)
 
         --Update the inventories?
         if updateInv == true then
-            FCOIS.FilterBasics(true)
+            FCOIS.FilterBasics(onlyUpdatePlayerInv)
         end
     end --if isCheckNecessary then
 end

@@ -140,6 +140,11 @@ function FCOIS.buildDefaultSettings()
 		autoReenable_blockAlchemyDestroy		= true,
 		autoReenable_blockRetrait				= true,
 		autoReenable_blockGuildBankWithoutWithdraw = true,
+		autoMarkBagsToScan = {
+			[BAG_BACKPACK] = true,
+			[BAG_BANK] = true,
+			[BAG_SUBSCRIBER_BANK] = true,
+		},
 		autoMarkNewItems			= false,
 		autoMarkNewIconNr           = FCOIS_CON_ICON_LOCK,
 		autoMarkOrnate 		    	= false,
@@ -332,7 +337,7 @@ function FCOIS.buildDefaultSettings()
 		keybindMoveMarkedForSellToJunkEnabled = true,
 		keybindMoveItemToJunkEnabled = false,
 		keybindMoveItemToJunkAddSellIcon = false,
-		markerIconOffset = {}
+		markerIconOffset = {},
 	}
 	--The tables for the markedItems, non-unique and unique
 	local addonVars = FCOIS.addonVars

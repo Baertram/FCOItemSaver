@@ -76,7 +76,7 @@ local doNotRunDropdownValueSetFunc = false
 local editBoxesToSetTextTypes
 
 local iconsList, iconsListValues
-local iconsListNone, iconsListValuesNone
+local iconsListNone, iconsListValuesNone, iconsListRecipe, iconsListValuesRecipe
 --==========================================================================================================================================
 --									FCOIS libAddonMenu 2.x settings menu
 --==========================================================================================================================================
@@ -218,11 +218,16 @@ local function updateIconsList(typeToBuild, withIcons, withNoneEntry)
             FCOIS.LAMiconsListNone          = iconsListNone
             FCOIS.LAMiconsListValuesNone    = iconsListValuesNone
         else
-            iconsList                   = iconsListTmp
-            iconsListValues             = iconsListValuesTmp
-            FCOIS.LAMiconsList          = iconsList
-            FCOIS.LAMiconsListValues    = iconsListValues
+            iconsList                       = iconsListTmp
+            iconsListValues                 = iconsListValuesTmp
+            FCOIS.LAMiconsList              = iconsList
+            FCOIS.LAMiconsListValues        = iconsListValues
         end
+    elseif typeToBuild == "recipe" then
+        iconsListRecipe                 = iconsListTmp
+        iconsListValuesRecipe           = iconsListValuesTmp
+        FCOIS.LAMiconsListRecipe              = iconsListRecipe
+        FCOIS.LAMiconsListValuesRecipe        = iconsListValuesRecipe
     end
 end
 
@@ -233,6 +238,8 @@ end
     updateIconsList("standard", true, false)
     --Build the icons list with a first entry "None"
     updateIconsList("standard", true, true)
+    --Build the icons list for recipes
+    updateIconsList("recipe", true, true)
 
 
     --The table with all the LAM dropdown controls that should get updated
@@ -316,6 +323,8 @@ function FCOIS.BuildAddonMenu()
     updateIconsList("standard", true, false)
     --Build the icons list with a first entry "None"
     updateIconsList("standard", true, true)
+    --Build the icons list for recipes
+    updateIconsList("recipe", true, true)
 
     --LibShifterBox
     local lsb = FCOIS.libShifterBox
@@ -3529,6 +3538,39 @@ function FCOIS.BuildAddonMenu()
                             --helpUrl = string.format(addonFAQentry, tostring(???))
                         },
                         --==============================================================================
+                        --Auto-marking bags to scan
+                        {
+                            type = "submenu",
+                            name = locVars["options_bags_to_scan"],
+                            controls = {
+                                {
+                                    type = "description",
+                                    text = locVars["options_bags_to_scan_automatic_marks_tt"],
+                                },
+                                {
+                                    type    = "checkbox",
+                                    name    = locVars["FCOIS_LibFilters_PanelIds"][LF_INVENTORY],
+                                    tooltip = locVars["FCOIS_LibFilters_PanelIds"][LF_INVENTORY],
+                                    getFunc = function() return FCOISsettings.autoMarkBagsToScan[BAG_BACKPACK] end,
+                                    setFunc = function(value) FCOISsettings.autoMarkBagsToScan[BAG_BACKPACK] = value
+                                    end,
+                                    default = FCOISdefaultSettings.autoMarkBagsToScan[BAG_BACKPACK],
+                                },
+                                {
+                                    type    = "checkbox",
+                                    name    = locVars["FCOIS_LibFilters_PanelIds"][LF_BANK_WITHDRAW],
+                                    tooltip = locVars["FCOIS_LibFilters_PanelIds"][LF_BANK_WITHDRAW],
+                                    getFunc = function() return FCOISsettings.autoMarkBagsToScan[BAG_BANK] end,
+                                    setFunc = function(value)
+                                        FCOISsettings.autoMarkBagsToScan[BAG_BANK] = value
+                                        FCOISsettings.autoMarkBagsToScan[BAG_SUBSCRIBER_BANK] = value
+                                    end,
+                                    default = FCOISdefaultSettings.autoMarkBagsToScan[BAG_BANK],
+                                },
+                            },
+                        },
+
+                        --==============================================================================
                         {  -- Sets
                             type = "submenu",
                             name = locVars["options_enable_auto_mark_sets"],
@@ -4217,7 +4259,6 @@ function FCOIS.BuildAddonMenu()
                                     end,
                                     setFunc = function(value)
                                         FCOISsettings.researchAddonUsed = value
-
                                     end,
                                     --disabled = function() return not FCOISsettings.autoMarkResearch end,
                                     width = "half",
@@ -4341,8 +4382,10 @@ function FCOIS.BuildAddonMenu()
                                     type = 'dropdown',
                                     name = string.format(locVars["options_auto_mark_recipes_icon"], GetString(SI_INPUT_LANGUAGE_UNKNOWN)),
                                     tooltip = string.format(locVars["options_auto_mark_recipes_icon" .. tooltipSuffix], GetString(SI_INPUT_LANGUAGE_UNKNOWN)),
-                                    choices = iconsList,
-                                    choicesValues = iconsListValues,
+                                    --choices = iconsList,
+                                    choices = iconsListRecipe,
+                                    --choicesValues = iconsListValues,
+                                    choicesValues = iconsListValuesRecipe,
                                     scrollable = true,
                                     getFunc = function() return FCOISsettings.autoMarkRecipesIconNr
                                     end,
@@ -4352,7 +4395,7 @@ function FCOIS.BuildAddonMenu()
                                     reference = "FCOItemSaver_Icon_On_Automatic_Recipe_Dropdown",
                                     disabled = function() return not FCOIS.isRecipeAutoMarkDoable(true, false, false) end,
                                     width = "half",
-                                    default = iconsList[FCOISdefaultSettings.autoMarkRecipesIconNr],
+                                    default = iconsListRecipe[FCOISdefaultSettings.autoMarkRecipesIconNr],
                                 },
                                 {
                                     type = "checkbox",
@@ -4374,8 +4417,10 @@ function FCOIS.BuildAddonMenu()
                                     type = 'dropdown',
                                     name = string.format(locVars["options_auto_mark_recipes_icon"], locVars["options_known"]),
                                     tooltip = string.format(locVars["options_auto_mark_recipes_icon"], locVars["options_known"]),
-                                    choices = iconsList,
-                                    choicesValues = iconsListValues,
+                                    --choices = iconsList,
+                                    choices = iconsListRecipe,
+                                    --choicesValues = iconsListValues,
+                                    choicesValues = iconsListValuesRecipe,
                                     scrollable = true,
                                     getFunc = function() return FCOISsettings.autoMarkKnownRecipesIconNr
                                     end,
@@ -4385,7 +4430,7 @@ function FCOIS.BuildAddonMenu()
                                     reference = "FCOItemSaver_Icon_On_Automatic_Known_Recipe_Dropdown",
                                     disabled = function() return not FCOISsettings.autoMarkKnownRecipes or not FCOIS.isRecipeAutoMarkDoable(false, false, false) end,
                                     width = "half",
-                                    default = iconsList[FCOISdefaultSettings.autoMarkKnownRecipesIconNr],
+                                    default = iconsListRecipe[FCOISdefaultSettings.autoMarkKnownRecipesIconNr],
                                 },
                                 {
                                     type = "checkbox",

@@ -1780,6 +1780,7 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons, withNoneEntry)
 	local isDynamicIcon = mappingVars.iconIsDynamic
 	local icon2DynIconCountNr = mappingVars.iconToDynamic
 	local numDynIconsUsable = settings.numMaxDynamicIconsUsable
+	local iconIsResearchable = mappingVars.iconIsResearchable
 
 	--Build icons choicesValues list
 	local function buildIconsChoicesValuesList(typeToCheck, p_withNoneEntry)
@@ -1789,9 +1790,11 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons, withNoneEntry)
             ['standardNonDisabled'] = true,
             ['keybinds']            = false,
             ['gearSets']            = false,
+			['recipe'] 				= true,
         }
         local choicesValuesList = {}
         local doCheckForEnabledIcons = typeToEnabledCheck[typeToCheck] or false
+		local isRecipe = typeToCheck == "recipe"
 		local counter = 0
 		for i=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
 			local goOn = false
@@ -1808,6 +1811,12 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons, withNoneEntry)
 				goOn = true
 			else
 				goOn = true
+			end
+			--Do not allow icons that are gear, or non-researchable ones as they cannot be applied t recipes
+			if isRecipe == true then
+				if isGear == true or iconIsResearchable[i] then
+					goOn = false
+				end
 			end
 			if goOn then
 				local doAddIconValueNow = true
@@ -1864,6 +1873,46 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons, withNoneEntry)
 					else
 						--Icon is not enabled, so color the entry red (or strike it through)
 						iconsList[i] = "|cFF0000" .. iconName .. "|r"
+					end
+				end
+			end
+
+		elseif typeToCheck == 'recipe' then
+			local counter = 0
+			for i=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
+  				local goOn = false
+				local isGear = isGearIcon[i]
+				if iconIsResearchable[i] or isGear == true then
+					goOn = false
+				else
+					local isDynamic = isDynamicIcon[i]
+					if isDynamic then
+						--Map the icon to the dynamic icon counter
+						local dynIconCountNr = icon2DynIconCountNr[i]
+						--Is the dynamic icon enabled or disabled via the slider "Max dynamic icons"?
+						if dynIconCountNr <= numDynIconsUsable then
+							goOn = true
+						end
+					else
+						goOn = true
+					end
+				end
+				if goOn then
+					counter = counter + 1
+					local locNameStr = FCOISlocVars.iconEndStrArray[i]
+					local iconIsEnabled = isIconEnabled[counter]
+					local iconName = FCOIS.GetIconText(i) or FCOISlocVars.fcois_loc["options_icon" .. tostring(i) .. "_" .. locNameStr] or "Icon " .. tostring(i)
+					--Should the icon be shown at the start of the text too?
+					if p_withIcons then
+						local iconNameWithIcon = FCOIS.buildIconText(iconName, i, false, not iconIsEnabled)
+						iconName = iconNameWithIcon
+					end
+					--Is the icon enabled?
+					if iconIsEnabled then
+						iconsList[counter] = iconName
+					else
+						--Icon is not enabled, so color the entry red (or strike it through)
+						iconsList[counter] = "|cFF0000" .. iconName .. "|r"
 					end
 				end
 			end
