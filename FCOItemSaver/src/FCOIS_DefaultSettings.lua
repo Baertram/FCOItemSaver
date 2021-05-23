@@ -147,8 +147,19 @@ function FCOIS.buildDefaultSettings()
 			[BAG_BANK] = true,
 		},
 		autoMarkBagsToScanOrder = {
-			[1] = BAG_BACKPACK,
-			[2] = BAG_BANK,
+			[1] = {
+				value 		= BAG_BACKPACK,
+				uniqueKey 	= BAG_BACKPACK,
+				--text  		= locVars["FCOIS_LibFilters_PanelIds"][LF_INVENTORY],
+				--tooltip 	= locVars["FCOIS_LibFilters_PanelIds"][LF_INVENTORY],
+
+			},
+			[2] = {
+				value 		= BAG_BANK,
+				uniqueKey 	= BAG_BANK,
+				--text  		= locVars["FCOIS_LibFilters_PanelIds"][LF_BANK_WITHDRAW],
+				--tooltip 	= locVars["FCOIS_LibFilters_PanelIds"][LF_BANK_WITHDRAW],
+			},
 		},
 		autoMarkNewItems			= false,
 		autoMarkNewIconNr           = FCOIS_CON_ICON_LOCK,

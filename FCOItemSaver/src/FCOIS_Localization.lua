@@ -370,6 +370,26 @@ local function afterLocalization()
     if not settings.iconSortOrderEntries or (settings.iconSortOrderEntries and #settings.iconSortOrderEntries == 0) then
         FCOIS.settingsVars.settings.iconSortOrderEntries = FCOIS.settingsVars.defaults.iconSortOrderEntries
     end
+
+    --Added with FCOIS v2.1.0 - Bag scan order for automatic marks
+	FCOIS.settingsVars.defaults.autoMarkBagsToScanOrder = {
+        [1] = {
+            value 		= BAG_BACKPACK,
+            uniqueKey 	= BAG_BACKPACK,
+            text  		= locVars["FCOIS_LibFilters_PanelIds"][LF_INVENTORY],
+            tooltip 	= locVars["FCOIS_LibFilters_PanelIds"][LF_INVENTORY],
+
+        },
+        [2] = {
+            value 		= BAG_BANK,
+            uniqueKey 	= BAG_BANK,
+            text  		= locVars["FCOIS_LibFilters_PanelIds"][LF_BANK_WITHDRAW],
+            tooltip 	= locVars["FCOIS_LibFilters_PanelIds"][LF_BANK_WITHDRAW],
+        },
+    }
+    if not settings.autoMarkBagsToScanOrder or (settings.autoMarkBagsToScanOrder and #settings.autoMarkBagsToScanOrder == 0) then
+        FCOIS.settingsVars.settings.autoMarkBagsToScanOrder = FCOIS.settingsVars.defaults.autoMarkBagsToScanOrder
+    end
 end
 
 --Localized texts etc.
