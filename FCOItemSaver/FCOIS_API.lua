@@ -70,6 +70,7 @@ local myGetItemInstanceIdNoControl = FCOIS.MyGetItemInstanceIdNoControl
 local isItemProtectedAtASlotNow = FCOIS.IsItemProtectedAtASlotNow
 local signItemId = FCOIS.SignItemId
 local refreshEquipmentControl = FCOIS.RefreshEquipmentControl
+local filterBasics = FCOIS.FilterBasics
 
 --------------------------------------------------------------------------------
 -- Local helper functions
@@ -690,7 +691,7 @@ function FCOIS.MarkItem(bag, slot, iconId, showIcon, updateInventories)
 				elseif bag == BAG_BACKPACK or bag == BAG_VIRTUAL
 					or bag == BAG_BANK or bag == BAG_SUBSCRIBER_BANK or bag == BAG_GUILDBANK or IsHouseBankBag(bag)
 					or (bag == BAG_WORN and FCOIS.IsVendorPanelShown(LF_VENDOR_REPAIR, false)) then
-					FCOIS.FilterBasics(false)
+					filterBasics(false)
 				end
 			end -- if updateInventories ...
 		end -- if iconId ~= -1
@@ -882,7 +883,7 @@ function FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon
 				if isCharShown then
 					refreshEquipmentControl(nil, showIcon, iconId)
 				else
-					FCOIS.FilterBasics(false)
+					filterBasics(false)
 				end
 			end -- if updateInventories ...
         end -- if iconId ~= -1

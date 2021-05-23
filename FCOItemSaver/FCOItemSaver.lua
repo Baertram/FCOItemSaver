@@ -144,7 +144,7 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
---Since last update 2.0.3 - New version: 2.0.4 -> Updated 2021-05-13
+--Since last update 2.0.3 - New version: 2.1.0 -> Updated 2021-05-23
 ---------------------------------------------------------------------
 
 --[Fixed]
@@ -171,7 +171,7 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 --[Added on request]
 
 --[Todo] 2021-05-13
---Default companion invenory filter buttons positions (the 2nd, 3rd and 4th button are not next o the 1st, but way off to the right)
+--Default companion invenory filter buttons positions (the 2nd, 3rd and 4th button are not next to the 1st, but way off to the right)
 
 
 --************************************************************************************************************************
@@ -182,6 +182,8 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 if FCOIS == nil then FCOIS = {} end
 local FCOIS = FCOIS
 
+local em = EVENT_MANAGAER
+
 -- =====================================================================================================================
 --  Gamepad functions
 -- =====================================================================================================================
@@ -189,9 +191,9 @@ function FCOIS.resetPreventerVariableAfterTime(eventRegisterName, preventerVaria
     local eventNameStart = FCOIS.preventerVars._prevVarReset --"FCOIS_PreventerVariableReset_"
     if eventRegisterName == nil or eventRegisterName == "" or preventerVariableName == nil or preventerVariableName == "" or resetAfterTimeMS == nil then return end
     local eventName = eventNameStart .. tostring(eventRegisterName)
-    EVENT_MANAGER:UnregisterForUpdate(eventName)
-    EVENT_MANAGER:RegisterForUpdate(eventName, resetAfterTimeMS, function()
-        EVENT_MANAGER:UnregisterForUpdate(eventName)
+    em:UnregisterForUpdate(eventName)
+    em:RegisterForUpdate(eventName, resetAfterTimeMS, function()
+        em:UnregisterForUpdate(eventName)
         if FCOIS.preventerVars == nil or FCOIS.preventerVars[preventerVariableName] == nil then return end
         FCOIS.preventerVars[preventerVariableName] = newValue
     end)

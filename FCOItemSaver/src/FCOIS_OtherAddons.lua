@@ -1,6 +1,8 @@
 --Global array with all data of this addon
 if FCOIS == nil then FCOIS = {} end
 local FCOIS = FCOIS
+
+local wm = WINDOW_MANAGER
 local mappingVars = FCOIS.mappingVars
 
 local getSavedVarsMarkedItemsTableName       = FCOIS.getSavedVarsMarkedItemsTableName
@@ -112,7 +114,7 @@ function FCOIS.CheckIfOtherAddonsActiveAfterPlayerActivated()
 
     --Check if Inventory Gridview is active
     if (FCOIS.otherAddons.inventoryGridViewActive == false) then
-        local gridViewControlName = WINDOW_MANAGER:GetControlByName(FCOIS.otherAddons.GRIDVIEWBUTTON, "")
+        local gridViewControlName = wm:GetControlByName(FCOIS.otherAddons.GRIDVIEWBUTTON, "")
         if gridViewControlName ~= nil or InventoryGridView then
             if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[Other addons]", "Addon Inventory Gridview is active", false) end
             FCOIS.otherAddons.inventoryGridViewActive = true
@@ -121,7 +123,7 @@ function FCOIS.CheckIfOtherAddonsActiveAfterPlayerActivated()
     --Check if Chat Merchant is active
     if (FCOIS.otherAddons.chatMerchantActive == false) then
         FCOIS.otherAddons.chatMerchantActive = false
-        local chatMerchantControlName = WINDOW_MANAGER:GetControlByName(FCOIS.otherAddons.CHATMERCHANTBUTTON, "")
+        local chatMerchantControlName = wm:GetControlByName(FCOIS.otherAddons.CHATMERCHANTBUTTON, "")
         if chatMerchantControlName ~=  nil then
             if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[Other addons]", "Addon ChatMerchant is active", false) end
             FCOIS.otherAddons.chatMerchantActive = true
@@ -129,7 +131,7 @@ function FCOIS.CheckIfOtherAddonsActiveAfterPlayerActivated()
     end
     --Was ChatMerchant addon's control found now?
     if (FCOIS.otherAddons.chatMerchantActive == true) then
-        local chatMerchantControlName = WINDOW_MANAGER:GetControlByName(FCOIS.otherAddons.CHATMERCHANTBUTTON, "")
+        local chatMerchantControlName = wm:GetControlByName(FCOIS.otherAddons.CHATMERCHANTBUTTON, "")
         if chatMerchantControlName ~=  nil then
             chatMerchantControlName:ClearAnchors()
             if (FCOIS.otherAddons.inventoryGridViewActive == true) then

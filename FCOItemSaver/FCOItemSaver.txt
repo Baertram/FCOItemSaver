@@ -112,11 +112,11 @@ src/FCOIS_FilterButtons.lua
 # Addon additional buttons in inventories (flag) and main menu
 src/FCOIS_AdditionalButtons.lua
 
-# Addon events
-src/FCOIS_Events.lua
-
 # Addon context menus (additional inv buttons, filter buttons)
 src/FCOIS_ContextMenus.lua
+
+# Addon events
+src/FCOIS_Events.lua
 
 # Addon slash commands
 src/FCOIS_SlashCmds.lua

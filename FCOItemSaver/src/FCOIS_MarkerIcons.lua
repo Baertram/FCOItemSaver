@@ -4,6 +4,7 @@ local FCOIS = FCOIS
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
 
+local wm = WINDOW_MANAGER
 local addonVars = FCOIS.addonVars
 local numFilterIcons = FCOIS.numVars.gFCONumFilterIcons
 
@@ -80,9 +81,9 @@ local function updateAlreadyBoundTexture(parent, pHideControl)
         local setPartAlreadyBoundName = parent:GetName() .. addonName .. "AlreadyBoundIcon"
         if alreadyBoundTexture ~= nil then
             local setPartAlreadyBoundTexture
-            setPartAlreadyBoundTexture = WINDOW_MANAGER:GetControlByName(setPartAlreadyBoundName, "")
+            setPartAlreadyBoundTexture = wm:GetControlByName(setPartAlreadyBoundName, "")
             if setPartAlreadyBoundTexture == nil then
-                setPartAlreadyBoundTexture = WINDOW_MANAGER:CreateControl(setPartAlreadyBoundName, parentsImage, CT_TEXTURE)
+                setPartAlreadyBoundTexture = wm:CreateControl(setPartAlreadyBoundName, parentsImage, CT_TEXTURE)
             end
             if setPartAlreadyBoundTexture ~= nil then
                 --d(">texture created")
@@ -229,7 +230,7 @@ function FCOIS.CreateMarkerControl(parent, markerIconId, pWidth, pHeight, pTextu
                 return
             end
             --If not aborted: Create the marker control now
-            control = WINDOW_MANAGER:CreateControl(parent:GetName() .. FCOIS.addonVars.gAddonName .. tostring(markerIconId), parent, CT_TEXTURE)
+            control = wm:CreateControl(parent:GetName() .. FCOIS.addonVars.gAddonName .. tostring(markerIconId), parent, CT_TEXTURE)
         end
         --Control did already exist or was created now
         if control ~= nil then
@@ -797,7 +798,7 @@ function FCOIS.checkIfClearOrRestoreAllMarkers(clickedRow, modifierKeyPressed, u
             if refreshPopupDialogButons then
                 --Unselect the item and disable the button of the popup dialog again
 --d("[FCOIS]checkIfClearOrRestoreAllMarkers - refreshPopupDialog now")
-                FCOIS.refreshPopupDialogButtons(clickedRow, false)
+                FCOIS.RefreshPopupDialogButtons(clickedRow, false)
             end
             --Is the character shown, then disable the context menu "hide" variable again as the order of hooks is not
             --the same like in the inventory and the context menu will be hidden twice in a row else!
@@ -815,7 +816,7 @@ end
 --Called per keybind: Get the current row the mouse is above and then remove or restore all marker icons
 function FCOIS.RemoveAllMarkerIconsOrUndo()
 --d("[FCOIS]RemoveAllMarkerIconsOrUndo")
-    local mouseOverControl = WINDOW_MANAGER:GetMouseOverControl()
+    local mouseOverControl = wm:GetMouseOverControl()
     if mouseOverControl ~= nil then
         local contextMenuClearMarkesKey = FCOIS.settingsVars.settings.contextMenuClearMarkesModifierKey
         local isModifierKeyPressed = FCOIS.IsModifierKeyPressed(contextMenuClearMarkesKey)
@@ -845,10 +846,10 @@ local function AddArmorTypeIconToEquipmentSlot(equipmentSlotControl, armorType)
     local isCompanionCharacter = (equipmentSlotControl:GetParent() == ctrlVars.COMPANION_CHARACTER) or false
 --d(">equipmentSlotName: " ..tostring(equipmentSlotName) .. ", isCompanionCharacter: " ..tostring(isCompanionCharacter))
 
-    local armorTypeLabel = WINDOW_MANAGER:GetControlByName("FCOIS_" .. equipmentSlotName .. "_ArmorTypeLabel")
+    local armorTypeLabel = wm:GetControlByName("FCOIS_" .. equipmentSlotName .. "_ArmorTypeLabel")
     if settings.showArmorTypeIconAtCharacter then
         if armorTypeLabel == nil then
-            armorTypeLabel = WINDOW_MANAGER:CreateControl("FCOIS_" .. equipmentSlotName .. "_ArmorTypeLabel", equipmentSlotControl, CT_LABEL)
+            armorTypeLabel = wm:CreateControl("FCOIS_" .. equipmentSlotName .. "_ArmorTypeLabel", equipmentSlotControl, CT_LABEL)
         end
         if armorTypeLabel ~= nil then
             armorTypeLabel:SetFont("ZoFontAlert")
@@ -956,7 +957,7 @@ function FCOIS.countAndUpdateEquippedArmorTypes(doRefreshControl, doCreateMarker
 --d(">character")
         for _, equipmentSlotName in pairs(characterEquipmentSlotNameByIndex) do
             --Get the control of the equipment slot
-            equipmentSlotControl = WINDOW_MANAGER:GetControlByName(equipmentSlotName, "")
+            equipmentSlotControl = wm:GetControlByName(equipmentSlotName, "")
             if equipmentSlotControl ~= nil then
                 --Refresh each equipped item's marker icons
                 if doRefreshControl then
@@ -978,7 +979,7 @@ function FCOIS.countAndUpdateEquippedArmorTypes(doRefreshControl, doCreateMarker
         local companionCharacterEquipmentSlotNameByIndex = FCOIS.mappingVars.companionCharacterEquipmentSlotNameByIndex
         for _, equipmentSlotName in pairs(companionCharacterEquipmentSlotNameByIndex) do
             --Get the control of the equipment slot
-            equipmentSlotControl = WINDOW_MANAGER:GetControlByName(equipmentSlotName, "")
+            equipmentSlotControl = wm:GetControlByName(equipmentSlotName, "")
             if equipmentSlotControl ~= nil then
                 --Refresh each equipped item's marker icons
                 if doRefreshControl then
@@ -1011,7 +1012,7 @@ function FCOIS.removeArmorTypeMarker(bagId, slotId)
     end
     local equipmentSlotControlName = characterEquipmentSlotNameByIndex[slotId]
     if equipmentSlotControlName == nil then return false end
-    local equipmentSlotControl = WINDOW_MANAGER:GetControlByName(equipmentSlotControlName, "")
+    local equipmentSlotControl = wm:GetControlByName(equipmentSlotControlName, "")
     if equipmentSlotControl == nil then return false end
 
     --Check slightly delayed if item is (still) equipped
@@ -1019,7 +1020,7 @@ function FCOIS.removeArmorTypeMarker(bagId, slotId)
     zo_callLater(function()
         if equipmentSlotControl.stackCount == 0 then
             --Hide the text control showing the armor type for this equipment slot
-            local armorTypeLabel = WINDOW_MANAGER:GetControlByName("FCOIS_" .. equipmentSlotControl:GetName() .. "_ArmorTypeLabel")
+            local armorTypeLabel = wm:GetControlByName("FCOIS_" .. equipmentSlotControl:GetName() .. "_ArmorTypeLabel")
             if armorTypeLabel == nil then return true end
             armorTypeLabel:SetHidden(true)
         end
@@ -1056,7 +1057,7 @@ function FCOIS.checkWeaponOffHand(controlName, weaponTypeName, doCheckOffHand, d
 --d(">doCheckOffHand")
         if (controlName == characterEquipmentSlotNameByIndex[EQUIP_SLOT_OFF_HAND]) then -- 'ZO_CharacterEquipmentSlotsOffHand'
             --Check if the weapon in the main slot is a 2hd weapon/staff
-            weaponControl = WINDOW_MANAGER:GetControlByName(characterEquipmentSlotNameByIndex[EQUIP_SLOT_MAIN_HAND], "") --"ZO_CharacterEquipmentSlotsMainHand"
+            weaponControl = wm:GetControlByName(characterEquipmentSlotNameByIndex[EQUIP_SLOT_MAIN_HAND], "") --"ZO_CharacterEquipmentSlotsMainHand"
             if weaponControl ~= nil then
 --d(">found weapon at main hand: " ..GetItemLink(weaponControl.bagId, weaponControl.slotIndex))
                 weaponType = GetItemWeaponType(weaponControl.bagId, weaponControl.slotIndex)
@@ -1072,7 +1073,7 @@ function FCOIS.checkWeaponOffHand(controlName, weaponTypeName, doCheckOffHand, d
 --d(">doCheckBackupOffHand")
         if (controlName == characterEquipmentSlotNameByIndex[EQUIP_SLOT_BACKUP_OFF]) then -- 'ZO_CharacterEquipmentSlotsBackupOff'
             --Check if the weapon in the backup slot is a 2hd weapon/staff
-            weaponControl = WINDOW_MANAGER:GetControlByName(characterEquipmentSlotNameByIndex[EQUIP_SLOT_BACKUP_MAIN], "") -- "ZO_CharacterEquipmentSlotsBackupMain"
+            weaponControl = wm:GetControlByName(characterEquipmentSlotNameByIndex[EQUIP_SLOT_BACKUP_MAIN], "") -- "ZO_CharacterEquipmentSlotsBackupMain"
             if weaponControl ~= nil then
 --d(">found weapon at backup main hand: " ..GetItemLink(weaponControl.bagId, weaponControl.slotIndex))
                 weaponType = GetItemWeaponType(weaponControl.bagId, weaponControl.slotIndex)
@@ -1112,7 +1113,7 @@ function FCOIS.RemoveEmptyWeaponEquipmentMarkers(delay)
             if settings.debug then FCOIS.debugMessage( "[RemoveEmptyWeaponEquipmentMarkers]","equipmentControl: " .. equipmentControlName ..", delay: " .. delay, true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
 --d(">>equipmentControl: " .. tostring(equipmentControlName))
             if equipmentControlName ~= nil and equipmentControlName ~= "" then
-                local equipmentControl = WINDOW_MANAGER:GetControlByName(equipmentControlName, "")
+                local equipmentControl = wm:GetControlByName(equipmentControlName, "")
                 if equipmentControl ~= nil then -- and equipmentControl:IsHidden() == false then
                     --Check if the current equipment slot name is a weapon backup slot
                     local twoHandedWeaponOffHand = false
@@ -1198,7 +1199,7 @@ function FCOIS.RefreshEquipmentControl(equipmentControl, doCreateMarkerControl, 
                 --Get the other ring
                 local mappingOfRings = FCOIS.mappingVars.equipmentJewelryRing2RingSlot
                 local otherRingSlotName = mappingOfRings[equipControlName]
-                local otherRingControl = WINDOW_MANAGER:GetControlByName(otherRingSlotName, "")
+                local otherRingControl = wm:GetControlByName(otherRingSlotName, "")
                 --Compare the item Ids/Unique itemIds (if enabled)
                 if otherRingControl ~= nil and otherRingControl:IsHidden() == false then
                     --Get the bag and slot
@@ -1229,7 +1230,7 @@ function FCOIS.RefreshEquipmentControl(equipmentControl, doCreateMarkerControl, 
         local equipmentSlotControl
         for _, equipmentSlotName in pairs(FCOIS.mappingVars.characterEquipmentSlotNameByIndex) do
             --Get the control of the equipment slot
-            equipmentSlotControl = WINDOW_MANAGER:GetControlByName(equipmentSlotName, "")
+            equipmentSlotControl = wm:GetControlByName(equipmentSlotName, "")
             if equipmentSlotControl ~= nil then
                 --Refresh each equipped item's marker icons
                 FCOIS.RefreshEquipmentControl(equipmentSlotControl, doCreateMarkerControl, p_markId)
@@ -1276,7 +1277,7 @@ function FCOIS.updateEquipmentSlotMarker(slotIndex, delay, unequipped)
             local equipSlotControl
             if equipSlotControlName ~= nil and equipSlotControlName ~= "" then
                 if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[updateEquipmentSlotMarker]","control name="..equipSlotControlName..", slotIndex: " .. slotIndex, true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
-                equipSlotControl = WINDOW_MANAGER:GetControlByName(equipSlotControlName, "")
+                equipSlotControl = wm:GetControlByName(equipSlotControlName, "")
 --d(">>isHidden: " ..tostring(equipSlotControl:IsHidden()))
                 if equipSlotControl ~= nil then --and equipSlotControl:IsHidden() == false then
                     --Add or refresh the equipped items, create marker control if not already there

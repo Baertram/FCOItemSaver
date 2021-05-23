@@ -4,6 +4,9 @@ local FCOIS = FCOIS
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
 
+local em = EVENT_MANAGAER
+local wm = WINDOW_MANAGER
+
 local ctrlVars = FCOIS.ZOControlVars
 
 --==========================================================================================================================================
@@ -25,11 +28,11 @@ function FCOIS.ThrottledUpdate(callbackName, timer, callback, ...)
 --d("[FCOIS]ThrottledUpdate, callbackName: " .. tostring(callbackName))
     local args = {...}
     local function Update()
-        EVENT_MANAGER:UnregisterForUpdate(callbackName)
+        em:UnregisterForUpdate(callbackName)
         callback(unpack(args))
     end
-    EVENT_MANAGER:UnregisterForUpdate(callbackName)
-    EVENT_MANAGER:RegisterForUpdate(callbackName, timer, Update)
+    em:UnregisterForUpdate(callbackName)
+    em:RegisterForUpdate(callbackName, timer, Update)
 end
 
 
@@ -748,13 +751,13 @@ function FCOIS.checkRepetivelyIfControlExists(controlName, callbackFunc, stepToc
     if FCOIS.preventerVars.isControlCheckActive[checkControlname] == nil then FCOIS.preventerVars.isControlCheckActive[checkControlname] = false end
     if FCOIS.preventerVars.controlCheckActiveCounter[checkControlname] == nil then FCOIS.preventerVars.controlCheckActiveCounter[checkControlname] = 0 end
     --Get the control by help of it's name
-    local control = WINDOW_MANAGER:GetControlByName(controlName, "")
+    local control = wm:GetControlByName(controlName, "")
     --Check if control exists
     if control == nil then
         --d("[FCOIS.checkRepetivelyIfControlExists - control " .. tostring(controlName) .. " does not exist so far...")
         --Control does not exist so check again in 10ms (variable -> stepTocheckMS)
         if FCOIS.preventerVars.isControlCheckActive[checkControlname] then
-            EVENT_MANAGER:UnregisterForUpdate(checkControlname)
+            em:UnregisterForUpdate(checkControlname)
             FCOIS.preventerVars.controlCheckActiveCounter[checkControlname] = FCOIS.preventerVars.controlCheckActiveCounter[checkControlname] + stepTocheckMS
             if FCOIS.preventerVars.controlCheckActiveCounter[checkControlname] >= autoAbortTimeMS then
                 --d("°°° [FCOIS.checkRepetivelyIfControlExists - control " .. tostring(controlName) .. " was not found until now. ABORTING after " .. autoAbortTimeMS .. " ms now!!!")
@@ -766,14 +769,14 @@ function FCOIS.checkRepetivelyIfControlExists(controlName, callbackFunc, stepToc
             FCOIS.preventerVars.controlCheckActiveCounter[checkControlname] = 0
             --d("[FCOIS.checkRepetivelyIfControlExists - START check " .. checkControlname)
         end
-        EVENT_MANAGER:RegisterForUpdate(checkControlname, checkMS, function()
+        em:RegisterForUpdate(checkControlname, checkMS, function()
             FCOIS.checkRepetivelyIfControlExists(controlName, callbackFunc, autoAbortTimeMS)
         end)
     else
         --d("[FCOIS.checkRepetivelyIfControlExists - control " .. tostring(controlName) .. " is finally here after " .. FCOIS.preventerVars.controlCheckActiveCounter[checkControlname] .. " ms!")
         --d("[FCOIS.checkRepetivelyIfControlExists - END check " .. checkControlname)
         --Control exists finally!
-        EVENT_MANAGER:UnregisterForUpdate(checkControlname)
+        em:UnregisterForUpdate(checkControlname)
         FCOIS.preventerVars.isControlCheckActive[checkControlname] = false
         --Execute the callback function now
         --d(">> Running callback function now...")
@@ -805,7 +808,7 @@ function FCOIS.GetBagAndSlotFromControlUnderMouse()
     --The control type below the mouse
     local controlTypeBelowMouse = false
     --Get the control below the mouse cursor
-    local mouseOverControl = WINDOW_MANAGER:GetMouseOverControl()
+    local mouseOverControl = wm:GetMouseOverControl()
     if mouseOverControl == nil then return end
 --d("[FCOIS.GetBagAndSlotFromControlUnderMouse] " .. mouseOverControl:GetName())
     local bagId
@@ -1594,7 +1597,7 @@ function FCOIS.changeDialogButtonState(dialog, buttonNr, stateBool)
 --d("[FCOIS]changeDialogButtonState-dialog: " ..tostring(dialog) .. ", button: " ..tostring(buttonNr) .. ", stateBool: " ..tostring(stateBool))
     if not dialog or not buttonNr then return end
     stateBool = stateBool or false
-    --WINDOW_MANAGER:GetControlByName(ctrlVars.RepairItemDialog, "Button" .. tostring(buttonNr)):SetEnabled(enableResearchButton)
+    --wm:GetControlByName(ctrlVars.RepairItemDialog, "Button" .. tostring(buttonNr)):SetEnabled(enableResearchButton)
     -- Activate or deactivate a button...use BSTATE_NORMAL to activate and BSTATE_DISABLED to deactivate
     local buttonState = (stateBool and BSTATE_NORMAL) or BSTATE_DISABLED
     ZO_Dialogs_UpdateButtonState(dialog, 1, buttonState)

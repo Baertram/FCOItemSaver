@@ -2,6 +2,8 @@
 if FCOIS == nil then FCOIS = {} end
 local FCOIS = FCOIS
 
+local em = EVENT_MANAGAER
+
 local gAddonName = FCOIS.addonVars.gAddonName
 local ctrlVars = FCOIS.ZOControlVars
 --==========================================================================================================================================
@@ -9,6 +11,13 @@ local ctrlVars = FCOIS.ZOControlVars
 --==========================================================================================================================================
 
 local scanInventory = FCOIS.scanInventory
+local preHookMainMenuFilterButtonHandler = FCOIS.PreHookMainMenuFilterButtonHandler
+local checkFCOISFilterButtonsAtPanel = FCOIS.CheckFCOISFilterButtonsAtPanel
+local updateFCOISFilterButtonsAtInventory = FCOIS.UpdateFCOISFilterButtonsAtInventory
+local updateFCOISFilterButtonColorsAndTextures = FCOIS.UpdateFCOISFilterButtonColorsAndTextures
+local changeContextMenuInvokerButtonColorByPanelId = FCOIS.ChangeContextMenuInvokerButtonColorByPanelId
+
+local hideContextMenu = FCOIS.HideContextMenu
 
 --==============================================================================
 --==================== START EVENT CALLBACK FUNCTIONS ==========================
@@ -31,15 +40,15 @@ local function FCOItemSaver_End_Crafting_Interact()
     if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[EVENT]","End crafting", true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
     --Hide the context menu at last active panel
-    FCOIS.hideContextMenu(FCOIS.gFilterWhere)
+    hideContextMenu(FCOIS.gFilterWhere)
 
     if FCOIS.preventerVars.gNoCloseEvent == false then
         --Update the inventory filter buttons
-        FCOIS.updateFCOISFilterButtonsAtInventory(-1)
+        updateFCOISFilterButtonsAtInventory(-1)
         --Update the 4 inventory button's color
-        FCOIS.UpdateFCOISFilterButtonColorsAndTextures(-1, nil, -1, LF_INVENTORY)
+        updateFCOISFilterButtonColorsAndTextures(-1, nil, -1, LF_INVENTORY)
         --Change the button color of the context menu invoker
-        FCOIS.changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
+        changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
     end
     FCOIS.preventerVars.gNoCloseEvent      = false
     FCOIS.preventerVars.gActiveFilterPanel = false
@@ -88,7 +97,7 @@ local function FCOItemSaver_Open_Store(p_storeIndicator)
             end
 
             --Check the current active panel and set FCOIS.gFilterWhere
-            FCOIS.CheckFCOISFilterButtonsAtPanel(true, nil)
+            checkFCOISFilterButtonsAtPanel(true, nil)
 
             --Done inside the PreHookedHandler "OnMouseUp" callback functions:
             local function checkCurrentVendorTypeAndGetLibFiltersPanelId(currentVendorMenuBarbuttonToCheck)
@@ -150,7 +159,7 @@ local function FCOItemSaver_Open_Store(p_storeIndicator)
                         FCOIS.lastVars.gLastVendorButton = ctrlVars.VENDOR_MENUBAR_BUTTON_BUY
                         local fromPanelId = FCOIS.gFilterWhere or LF_INVENTORY
                         local toPanelId = checkCurrentVendorTypeAndGetLibFiltersPanelId(ctrlVars.VENDOR_MENUBAR_BUTTON_BUY)
-                        zo_callLater(function() FCOIS.PreHookMainMenuFilterButtonHandler(fromPanelId, toPanelId) end, 50)
+                        zo_callLater(function() preHookMainMenuFilterButtonHandler(fromPanelId, toPanelId) end, 50)
                     end
                 end)
             end
@@ -164,7 +173,7 @@ local function FCOItemSaver_Open_Store(p_storeIndicator)
                         FCOIS.lastVars.gLastVendorButton = ctrlVars.VENDOR_MENUBAR_BUTTON_SELL
                         local fromPanelId = FCOIS.gFilterWhere or LF_INVENTORY
                         local toPanelId = checkCurrentVendorTypeAndGetLibFiltersPanelId(ctrlVars.VENDOR_MENUBAR_BUTTON_SELL)
-                        zo_callLater(function() FCOIS.PreHookMainMenuFilterButtonHandler(fromPanelId, toPanelId) end, 50)
+                        zo_callLater(function() preHookMainMenuFilterButtonHandler(fromPanelId, toPanelId) end, 50)
                     end
                 end)
             end
@@ -178,7 +187,7 @@ local function FCOItemSaver_Open_Store(p_storeIndicator)
                         FCOIS.lastVars.gLastVendorButton = ctrlVars.VENDOR_MENUBAR_BUTTON_BUYBACK
                         local fromPanelId = FCOIS.gFilterWhere or LF_INVENTORY
                         local toPanelId = checkCurrentVendorTypeAndGetLibFiltersPanelId(ctrlVars.VENDOR_MENUBAR_BUTTON_BUYBACK)
-                        zo_callLater(function() FCOIS.PreHookMainMenuFilterButtonHandler(fromPanelId, toPanelId) end, 50)
+                        zo_callLater(function() preHookMainMenuFilterButtonHandler(fromPanelId, toPanelId) end, 50)
                     end
                 end)
             end
@@ -192,7 +201,7 @@ local function FCOItemSaver_Open_Store(p_storeIndicator)
                         FCOIS.lastVars.gLastVendorButton = ctrlVars.VENDOR_MENUBAR_BUTTON_REPAIR
                         local fromPanelId = FCOIS.gFilterWhere or LF_INVENTORY
                         local toPanelId = checkCurrentVendorTypeAndGetLibFiltersPanelId(ctrlVars.VENDOR_MENUBAR_BUTTON_REPAIR)
-                        zo_callLater(function() FCOIS.PreHookMainMenuFilterButtonHandler(fromPanelId, toPanelId) end, 50)
+                        zo_callLater(function() preHookMainMenuFilterButtonHandler(fromPanelId, toPanelId) end, 50)
                     end
                 end)
             end
@@ -206,15 +215,15 @@ local function FCOItemSaver_Close_Store()
     if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[EVENT]","Close store", true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
     --Hide the context menu at last active panel
-    FCOIS.hideContextMenu(FCOIS.gFilterWhere)
+    hideContextMenu(FCOIS.gFilterWhere)
 
     if FCOIS.preventerVars.gNoCloseEvent == false then
         --Update the inventory filter buttons
-        FCOIS.updateFCOISFilterButtonsAtInventory(-1)
+        updateFCOISFilterButtonsAtInventory(-1)
         --Update the 4 inventory button's color
-        FCOIS.UpdateFCOISFilterButtonColorsAndTextures(-1, nil, -1, LF_INVENTORY)
+        updateFCOISFilterButtonColorsAndTextures(-1, nil, -1, LF_INVENTORY)
         --Change the button color of the context menu invoker
-        FCOIS.changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
+        changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
     end
     FCOIS.preventerVars.gNoCloseEvent 	 = false
     FCOIS.preventerVars.gActiveFilterPanel = false
@@ -229,9 +238,9 @@ local function FCOItemSaver_Open_Trading_House()
     if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[EVENT]","Open trading house", true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
     --Change the button color of the context menu invoker
-    FCOIS.changeContextMenuInvokerButtonColorByPanelId(LF_GUILDSTORE_SELL)
+    changeContextMenuInvokerButtonColorByPanelId(LF_GUILDSTORE_SELL)
     --Check the filter buttons and create them if they are not there. Update the inventory afterwards too
-    FCOIS.CheckFCOISFilterButtonsAtPanel(true, LF_GUILDSTORE_SELL)
+    checkFCOISFilterButtonsAtPanel(true, LF_GUILDSTORE_SELL)
 
     --======== GUILD STORE SEARCH ==============================================
     local function PreHookGuildStoreSearchButtonOnMouseUp()
@@ -249,7 +258,7 @@ local function FCOItemSaver_Open_Trading_House()
                 if button == 1 and upInside then
                     --FCOIS.lastVars.gLastGuildStoreButton = ctrlVars.GUILD_STORE_MENUBAR_BUTTON_SEARCH
                     --Close the contextMenu at the guild store sell window now
-                    FCOIS.hideContextMenu(LF_GUILDSTORE_SELL)
+                    hideContextMenu(LF_GUILDSTORE_SELL)
                 end
             end)
         end
@@ -263,15 +272,15 @@ local function FCOItemSaver_Close_Trading_House()
     if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[EVENT]","Close trading house", true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
     --Hide the context menu at last active panel
-    FCOIS.hideContextMenu(FCOIS.gFilterWhere)
+    hideContextMenu(FCOIS.gFilterWhere)
 
     if FCOIS.preventerVars.gNoCloseEvent == false then
         --Update the inventory filter buttons
-        FCOIS.updateFCOISFilterButtonsAtInventory(-1)
+        updateFCOISFilterButtonsAtInventory(-1)
         --Update the 4 inventory button's color
-        FCOIS.UpdateFCOISFilterButtonColorsAndTextures(-1, nil, -1, LF_INVENTORY)
+        updateFCOISFilterButtonColorsAndTextures(-1, nil, -1, LF_INVENTORY)
         --Change the button color of the context menu invoker
-        FCOIS.changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
+        changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
     end
     FCOIS.preventerVars.gNoCloseEvent 	 = false
     FCOIS.preventerVars.gActiveFilterPanel = false
@@ -316,35 +325,35 @@ local function FCOItemSaver_Open_Guild_Bank()
     FCOIS.preventerVars.blockGuildBankWithoutWithdrawAtGuildBankOpen = settings.blockGuildBankWithoutWithdraw
 
     if checkIfBankInventorySingleSlotUpdateEventNeedsToBeRegistered(BAG_GUILDBANK) == true then
-        EVENT_MANAGER:RegisterForEvent(gAddonName.."_GUILDBANK", EVENT_GUILD_BANK_ITEM_ADDED, FCOItemSaver_GuildBankItemAdded)
-        EVENT_MANAGER:AddFilterForEvent(gAddonName.."_GUILDBANK", EVENT_GUILD_BANK_ITEM_ADDED, REGISTER_FILTER_UNIT_TAG, "player")
+        em:RegisterForEvent(gAddonName.."_GUILDBANK", EVENT_GUILD_BANK_ITEM_ADDED, FCOItemSaver_GuildBankItemAdded)
+        em:AddFilterForEvent(gAddonName.."_GUILDBANK", EVENT_GUILD_BANK_ITEM_ADDED, REGISTER_FILTER_UNIT_TAG, "player")
     end
     --Reset the last clicked guild bank button as it will always be the withdraw tab if you open the guild bank, and if the
     --deposit button was the last one clicked it won't change the filter buttons as it thinks it is still active
     FCOIS.lastVars.gLastGuildBankButton = ctrlVars.GUILD_BANK_MENUBAR_BUTTON_WITHDRAW
 
     --Change the button color of the context menu invoker
-    FCOIS.changeContextMenuInvokerButtonColorByPanelId(LF_GUILDBANK_WITHDRAW)
+    changeContextMenuInvokerButtonColorByPanelId(LF_GUILDBANK_WITHDRAW)
     --Check the filter buttons and create them if they are not there. Update the inventory afterwards too
-    FCOIS.CheckFCOISFilterButtonsAtPanel(true, LF_GUILDBANK_WITHDRAW)
+    checkFCOISFilterButtonsAtPanel(true, LF_GUILDBANK_WITHDRAW)
 end
 
 --Event upon closing of a guild bank
 local function FCOItemSaver_Close_Guild_Bank()
     if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[EVENT]","Close guild bank", true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
-    EVENT_MANAGER:UnregisterForEvent(gAddonName.."_GUILDBANK", EVENT_INVENTORY_SINGLE_SLOT_UPDATE)
+    em:UnregisterForEvent(gAddonName.."_GUILDBANK", EVENT_INVENTORY_SINGLE_SLOT_UPDATE)
 
     --Hide the context menu at last active panel
-    FCOIS.hideContextMenu(FCOIS.gFilterWhere)
+    hideContextMenu(FCOIS.gFilterWhere)
 
     if FCOIS.preventerVars.gNoCloseEvent == false then
         --Update the inventory filter buttons
-        FCOIS.updateFCOISFilterButtonsAtInventory(-1)
+        updateFCOISFilterButtonsAtInventory(-1)
         --Update the 4 inventory button's color
-        FCOIS.UpdateFCOISFilterButtonColorsAndTextures(-1, nil, -1, LF_INVENTORY)
+        updateFCOISFilterButtonColorsAndTextures(-1, nil, -1, LF_INVENTORY)
         --Change the button color of the context menu invoker
-        FCOIS.changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
+        changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
     end
     FCOIS.preventerVars.gNoCloseEvent 	 = false
     FCOIS.preventerVars.gActiveFilterPanel = false
@@ -365,9 +374,9 @@ local function FCOItemSaver_Open_Player_Bank(event, bagId)
 
     if bagId == BAG_BANK or bagId == BAG_SUBSCRIBER_BANK then
         if checkIfBankInventorySingleSlotUpdateEventNeedsToBeRegistered(BAG_BANK) == true then
-            EVENT_MANAGER:RegisterForEvent(gAddonName.."_BANK", EVENT_INVENTORY_SINGLE_SLOT_UPDATE, FCOItemSaver_Inv_Single_Slot_Update_Bank)
-            EVENT_MANAGER:AddFilterForEvent(gAddonName.."_BANK", EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_UNIT_TAG, "player")
-            EVENT_MANAGER:AddFilterForEvent(gAddonName.."_BANK", EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_BAG_ID, bagId)
+            em:RegisterForEvent(gAddonName.."_BANK", EVENT_INVENTORY_SINGLE_SLOT_UPDATE, FCOItemSaver_Inv_Single_Slot_Update_Bank)
+            em:AddFilterForEvent(gAddonName.."_BANK", EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_UNIT_TAG, "player")
+            em:AddFilterForEvent(gAddonName.."_BANK", EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_BAG_ID, bagId)
         end
     end
 
@@ -396,27 +405,27 @@ local function FCOItemSaver_Open_Player_Bank(event, bagId)
         end, 250)
     end
     --Change the button color of the context menu invoker
-    FCOIS.changeContextMenuInvokerButtonColorByPanelId(filterPanelId)
+    changeContextMenuInvokerButtonColorByPanelId(filterPanelId)
     --Check the filter buttons and create them if they are not there. Update the inventory afterwards too
-    FCOIS.CheckFCOISFilterButtonsAtPanel(true, filterPanelId)
+    checkFCOISFilterButtonsAtPanel(true, filterPanelId)
 end
 
 --Event upon closing of a player bank
 local function FCOItemSaver_Close_Player_Bank()
     if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[EVENT]","Close bank", true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
-    EVENT_MANAGER:UnregisterForEvent(gAddonName.."_BANK", EVENT_INVENTORY_SINGLE_SLOT_UPDATE)
+    em:UnregisterForEvent(gAddonName.."_BANK", EVENT_INVENTORY_SINGLE_SLOT_UPDATE)
 
     --Hide the context menu at last active panel
-    FCOIS.hideContextMenu(FCOIS.gFilterWhere)
+    hideContextMenu(FCOIS.gFilterWhere)
 
     if FCOIS.preventerVars.gNoCloseEvent == false then
         --Update the inventory filter buttons
-        FCOIS.updateFCOISFilterButtonsAtInventory(-1)
+        updateFCOISFilterButtonsAtInventory(-1)
         --Update the 4 inventory button's color
-        FCOIS.UpdateFCOISFilterButtonColorsAndTextures(-1, nil, -1, LF_INVENTORY)
+        updateFCOISFilterButtonColorsAndTextures(-1, nil, -1, LF_INVENTORY)
         --Change the button color of the context menu invoker
-        FCOIS.changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
+        changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
     end
     FCOIS.preventerVars.gNoCloseEvent 	 = false
     FCOIS.preventerVars.gActiveFilterPanel = false
@@ -431,9 +440,9 @@ local function FCOItemSaver_Open_Trade_Panel()
     if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[EVENT]","Start trading", true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
     --Change the button color of the context menu invoker
-    FCOIS.changeContextMenuInvokerButtonColorByPanelId(LF_TRADE)
+    changeContextMenuInvokerButtonColorByPanelId(LF_TRADE)
     --Check the filter buttons and create them if they are not there. Update the inventory afterwards too
-    FCOIS.CheckFCOISFilterButtonsAtPanel(true, LF_TRADE)
+    checkFCOISFilterButtonsAtPanel(true, LF_TRADE)
 end
 
 --Event upon closing of the trade panel
@@ -441,15 +450,15 @@ local function FCOItemSaver_Close_Trade_Panel()
     if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[EVENT]","End trading", true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
     --Hide the context menu at last active panel
-    FCOIS.hideContextMenu(FCOIS.gFilterWhere)
+    hideContextMenu(FCOIS.gFilterWhere)
 
     if FCOIS.preventerVars.gNoCloseEvent == false then
         --Update the inventory filter buttons
-        FCOIS.updateFCOISFilterButtonsAtInventory(-1)
+        updateFCOISFilterButtonsAtInventory(-1)
         --Update the 4 inventory button's color
-        FCOIS.UpdateFCOISFilterButtonColorsAndTextures(-1, nil, -1, LF_INVENTORY)
+        updateFCOISFilterButtonColorsAndTextures(-1, nil, -1, LF_INVENTORY)
         --Change the button color of the context menu invoker
-        FCOIS.changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
+        changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
     end
     FCOIS.preventerVars.gNoCloseEvent 	 = false
     FCOIS.preventerVars.gActiveFilterPanel = false
@@ -466,7 +475,7 @@ local function FCOItemsaver_OnActionLayerPopped(layerIndex, activeLayerIndex)
     if activeLayerIndex == 3 then
         --Hide the context menu at last active panel
         --TODO 2016-08-06 Validate that the action layer is 3 and not 2 anymore, and see if the context menu closing cannot be forced elsewhere properly
-        --FCOIS.hideContextMenu(FCOIS.gFilterWhere)
+        --hideContextMenu(FCOIS.gFilterWhere)
     end
 end
 ]]
@@ -476,7 +485,7 @@ local function FCOItemsaver_OnGameCameraUIModeChanged()
     if not IsGameCameraUIModeActive() then
         --d("[FCOIS] GAME_CAMERA_UI_MODE_CHANGED")
         --Hide the contxt menu if still open
-        FCOIS.hideContextMenu(FCOIS.gFilterWhere)
+        hideContextMenu(FCOIS.gFilterWhere)
     end
 end
 
@@ -503,7 +512,7 @@ end
 --Event upon opening of a crafting station
 local function FCOItemSaver_Crafting_Interact(_, craftSkill)
     FCOIS.preventerVars.gActiveFilterPanel = true
-    --EVENT_MANAGER:RegisterForEvent(gAddonName, EVENT_END_CRAFTING_STATION_INTERACT, FCOItemSaver_End_Crafting_Interact)
+    --em:RegisterForEvent(gAddonName, EVENT_END_CRAFTING_STATION_INTERACT, FCOItemSaver_End_Crafting_Interact)
 
     --Abort if crafting station type is invalid
     if craftSkill == 0 then return end
@@ -513,7 +522,7 @@ local function FCOItemSaver_Crafting_Interact(_, craftSkill)
     if craftSkill == CRAFTING_TYPE_ALCHEMY then
         if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[EVENT]",">ALCHEMY Crafting station opened]", true, FCOIS_DEBUG_DEPTH_NORMAL) end
         --Hide the context menu at last active panel
-        FCOIS.hideContextMenu(FCOIS.gFilterWhere)
+        hideContextMenu(FCOIS.gFilterWhere)
 
         --If the addon PotionMaker is activated and got it's own Alchemy button activated too
         if FCOIS.otherAddons.potionMakerActive then
@@ -522,12 +531,12 @@ local function FCOItemSaver_Crafting_Interact(_, craftSkill)
             FCOIS.lastVars.gLastAlchemyButton = ctrlVars.ALCHEMY_STATION_MENUBAR_BUTTON_POTIONMAKER
         end
         --Show the filter buttons at the alchemy station
-        FCOIS.PreHookMainMenuFilterButtonHandler(nil, LF_ALCHEMY_CREATION)
+        preHookMainMenuFilterButtonHandler(nil, LF_ALCHEMY_CREATION)
 
     else
         --d("[FCOItemSaver_Crafting_Interact] FCOIS.gFilterWhere: " .. FCOIS.gFilterWhere)
         --Change the button color of the context menu invoker
-        FCOIS.changeContextMenuInvokerButtonColorByPanelId(FCOIS.gFilterWhere)
+        changeContextMenuInvokerButtonColorByPanelId(FCOIS.gFilterWhere)
     end
 end
 
@@ -730,7 +739,7 @@ local function FCOItemSaver_OnMouseRequestDestroyItem(_, bagId, slotIndex, _, _,
 --d("[FCOS]FCOItemSaver_OnMouseRequestDestroyItem")
     FCOIS.preventerVars.splitItemStackDialogActive = false
     --Hide the context menu at last active panel
-    FCOIS.hideContextMenu(FCOIS.gFilterWhere)
+    hideContextMenu(FCOIS.gFilterWhere)
 
     if not needsConfirm then
         FCOIS.preventerVars.gAllowDestroyItem = false
@@ -785,7 +794,7 @@ end
 local function FCOItemSaver_Player_Activated(...)
 --d("[FCOIS]EVENT_PLAYER_ACTIVATED")
     --Prevent this event to be fired again and again upon each zone change
-    EVENT_MANAGER:UnregisterForEvent(gAddonName, EVENT_PLAYER_ACTIVATED)
+    em:UnregisterForEvent(gAddonName, EVENT_PLAYER_ACTIVATED)
 
     --Reset cached values
     FCOIS.MyGetItemInstanceIdLastBagId      = nil
@@ -836,7 +845,7 @@ local function FCOItemSaver_Player_Activated(...)
 
         --Add/update the filter buttons, but only if not done already in addon initialization
         if FCOIS.addonVars.gAddonLoaded == false then
-            FCOIS.updateFCOISFilterButtonsAtInventory(-1)
+            updateFCOISFilterButtonsAtInventory(-1)
         end
         FCOIS.addonVars.gAddonLoaded = false
 
@@ -850,7 +859,7 @@ local function FCOItemSaver_Player_Activated(...)
         FCOIS.changeContextMenuEntryTexts(-1)
 
         --Change the button color of the context menu invoker
-        FCOIS.changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
+        changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
 
         --Check inventory for ornate, intricate, set parts, recipes, researchable items and mark them
         --but only scan once as addon loads
@@ -909,13 +918,13 @@ local function FCOItemSaver_Loaded(eventCode, addOnName)
         --d("[FCOIS -Event- FCOItemSaver_Loaded]")
 
         --Unregister this event again so it isn't fired again after this addon has beend recognized
-        EVENT_MANAGER:UnregisterForEvent(gAddonName, EVENT_ADD_ON_LOADED)
+        em:UnregisterForEvent(gAddonName, EVENT_ADD_ON_LOADED)
 
         --Create the LibDebugLogger loggers: See file src/FCOIS_debug.lua
         FCOIS.CreateLoggers()
 
         --Register for the zone change/player ready event
-        EVENT_MANAGER:RegisterForEvent(gAddonName, EVENT_PLAYER_ACTIVATED, FCOItemSaver_Player_Activated)
+        em:RegisterForEvent(gAddonName, EVENT_PLAYER_ACTIVATED, FCOItemSaver_Player_Activated)
 
         if not FCOIS.FCOItemSaver_CheckGamePadMode(true) then
 
@@ -927,49 +936,49 @@ local function FCOItemSaver_Loaded(eventCode, addOnName)
             FCOIS.LIBLA:RegisterAddon(gAddonName, FCOIS.addonVars.addonVersionOptionsNumber)
 
             --Register for Crafting stations opened & closed (integer eventCode,number craftSkill, boolean sameStation)
-            EVENT_MANAGER:RegisterForEvent(gAddonName, EVENT_CRAFTING_STATION_INTERACT, FCOItemSaver_Crafting_Interact)
-            EVENT_MANAGER:RegisterForEvent(gAddonName, EVENT_END_CRAFTING_STATION_INTERACT, FCOItemSaver_End_Crafting_Interact)
-            EVENT_MANAGER:RegisterForEvent(gAddonName, EVENT_CRAFT_STARTED, FCOItemSaver_Craft_Started)
-            EVENT_MANAGER:RegisterForEvent(gAddonName, EVENT_CRAFT_COMPLETED, FCOItemSaver_Craft_Completed)
+            em:RegisterForEvent(gAddonName, EVENT_CRAFTING_STATION_INTERACT, FCOItemSaver_Crafting_Interact)
+            em:RegisterForEvent(gAddonName, EVENT_END_CRAFTING_STATION_INTERACT, FCOItemSaver_End_Crafting_Interact)
+            em:RegisterForEvent(gAddonName, EVENT_CRAFT_STARTED, FCOItemSaver_Craft_Started)
+            em:RegisterForEvent(gAddonName, EVENT_CRAFT_COMPLETED, FCOItemSaver_Craft_Completed)
             --Register for Store opened & closed
-            EVENT_MANAGER:RegisterForEvent(gAddonName, EVENT_OPEN_STORE, function() FCOItemSaver_Open_Store("vendor") end)
-            EVENT_MANAGER:RegisterForEvent(gAddonName, EVENT_CLOSE_STORE, FCOItemSaver_Close_Store)
+            em:RegisterForEvent(gAddonName, EVENT_OPEN_STORE, function() FCOItemSaver_Open_Store("vendor") end)
+            em:RegisterForEvent(gAddonName, EVENT_CLOSE_STORE, FCOItemSaver_Close_Store)
             --Register for Trading house (guild store) opened & closed
-            EVENT_MANAGER:RegisterForEvent(gAddonName, EVENT_OPEN_TRADING_HOUSE, FCOItemSaver_Open_Trading_House)
-            EVENT_MANAGER:RegisterForEvent(gAddonName, EVENT_CLOSE_TRADING_HOUSE, FCOItemSaver_Close_Trading_House)
+            em:RegisterForEvent(gAddonName, EVENT_OPEN_TRADING_HOUSE, FCOItemSaver_Open_Trading_House)
+            em:RegisterForEvent(gAddonName, EVENT_CLOSE_TRADING_HOUSE, FCOItemSaver_Close_Trading_House)
             --Register for Guild Bank opened & closed
-            EVENT_MANAGER:RegisterForEvent(gAddonName, EVENT_OPEN_GUILD_BANK, FCOItemSaver_Open_Guild_Bank)
-            EVENT_MANAGER:RegisterForEvent(gAddonName, EVENT_CLOSE_GUILD_BANK, FCOItemSaver_Close_Guild_Bank)
+            em:RegisterForEvent(gAddonName, EVENT_OPEN_GUILD_BANK, FCOItemSaver_Open_Guild_Bank)
+            em:RegisterForEvent(gAddonName, EVENT_CLOSE_GUILD_BANK, FCOItemSaver_Close_Guild_Bank)
             --Register for Player's Bank opened & closed
-            EVENT_MANAGER:RegisterForEvent(gAddonName, EVENT_OPEN_BANK, FCOItemSaver_Open_Player_Bank)
-            EVENT_MANAGER:RegisterForEvent(gAddonName, EVENT_CLOSE_BANK, FCOItemSaver_Close_Player_Bank)
+            em:RegisterForEvent(gAddonName, EVENT_OPEN_BANK, FCOItemSaver_Open_Player_Bank)
+            em:RegisterForEvent(gAddonName, EVENT_CLOSE_BANK, FCOItemSaver_Close_Player_Bank)
             --Register for Trade panel opened & closed
-            EVENT_MANAGER:RegisterForEvent(gAddonName, EVENT_TRADE_INVITE_ACCEPTED, FCOItemSaver_Open_Trade_Panel)
-            EVENT_MANAGER:RegisterForEvent(gAddonName, EVENT_TRADE_CANCELED, FCOItemSaver_Close_Trade_Panel)
-            EVENT_MANAGER:RegisterForEvent(gAddonName, EVENT_TRADE_SUCCEEDED, FCOItemSaver_Close_Trade_Panel)
-            EVENT_MANAGER:RegisterForEvent(gAddonName, EVENT_TRADE_FAILED, FCOItemSaver_Close_Trade_Panel)
+            em:RegisterForEvent(gAddonName, EVENT_TRADE_INVITE_ACCEPTED, FCOItemSaver_Open_Trade_Panel)
+            em:RegisterForEvent(gAddonName, EVENT_TRADE_CANCELED, FCOItemSaver_Close_Trade_Panel)
+            em:RegisterForEvent(gAddonName, EVENT_TRADE_SUCCEEDED, FCOItemSaver_Close_Trade_Panel)
+            em:RegisterForEvent(gAddonName, EVENT_TRADE_FAILED, FCOItemSaver_Close_Trade_Panel)
             --Register for player inventory slot update
-            EVENT_MANAGER:RegisterForEvent(gAddonName, EVENT_INVENTORY_SINGLE_SLOT_UPDATE, FCOItemSaver_Inv_Single_Slot_Update)
-            EVENT_MANAGER:AddFilterForEvent(gAddonName, EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_UNIT_TAG, "player")
-            EVENT_MANAGER:AddFilterForEvent(gAddonName, EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_INVENTORY_UPDATE_REASON, INVENTORY_UPDATE_REASON_DEFAULT)
+            em:RegisterForEvent(gAddonName, EVENT_INVENTORY_SINGLE_SLOT_UPDATE, FCOItemSaver_Inv_Single_Slot_Update)
+            em:AddFilterForEvent(gAddonName, EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_UNIT_TAG, "player")
+            em:AddFilterForEvent(gAddonName, EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_INVENTORY_UPDATE_REASON, INVENTORY_UPDATE_REASON_DEFAULT)
             --Register the callback function for an update of the inventory slots
             --SHARED_INVENTORY:RegisterCallback("SingleSlotInventoryUpdate", FCOItemSaver_OnSharedSingleSlotUpdate)
             --Events for destruction & destroy prevention
-            EVENT_MANAGER:RegisterForEvent(gAddonName, EVENT_INVENTORY_SLOT_LOCKED, FCOItemSaver_OnInventorySlotLocked)
-            EVENT_MANAGER:RegisterForEvent(gAddonName, EVENT_INVENTORY_SLOT_UNLOCKED, FCOItemSaver_OnInventorySlotUnLocked)
-            EVENT_MANAGER:RegisterForEvent(gAddonName, EVENT_MOUSE_REQUEST_DESTROY_ITEM, FCOItemSaver_OnMouseRequestDestroyItem)
+            em:RegisterForEvent(gAddonName, EVENT_INVENTORY_SLOT_LOCKED, FCOItemSaver_OnInventorySlotLocked)
+            em:RegisterForEvent(gAddonName, EVENT_INVENTORY_SLOT_UNLOCKED, FCOItemSaver_OnInventorySlotUnLocked)
+            em:RegisterForEvent(gAddonName, EVENT_MOUSE_REQUEST_DESTROY_ITEM, FCOItemSaver_OnMouseRequestDestroyItem)
             --Event if an action layer changes
-            --EVENT_MANAGER:RegisterForEvent(gAddonName, EVENT_ACTION_LAYER_POPPED, FCOItemsaver_OnActionLayerPopped)
-            --EVENT_MANAGER:RegisterForEvent(gAddonName, EVENT_ACTION_LAYER_PUSHED, FCOItemsaver_OnActionLayerPushed)
-            EVENT_MANAGER:RegisterForEvent(gAddonName, EVENT_GAME_CAMERA_UI_MODE_CHANGED, FCOItemsaver_OnGameCameraUIModeChanged)
+            --em:RegisterForEvent(gAddonName, EVENT_ACTION_LAYER_POPPED, FCOItemsaver_OnActionLayerPopped)
+            --em:RegisterForEvent(gAddonName, EVENT_ACTION_LAYER_PUSHED, FCOItemsaver_OnActionLayerPushed)
+            em:RegisterForEvent(gAddonName, EVENT_GAME_CAMERA_UI_MODE_CHANGED, FCOItemsaver_OnGameCameraUIModeChanged)
             --Guild bank is selected
-            EVENT_MANAGER:RegisterForEvent(gAddonName, EVENT_GUILD_BANK_SELECTED, FCOItemsaver_SelectGuildBank)
+            em:RegisterForEvent(gAddonName, EVENT_GUILD_BANK_SELECTED, FCOItemsaver_SelectGuildBank)
             --Retrait station is interacted with
-            EVENT_MANAGER:RegisterForEvent(gAddonName, EVENT_RETRAIT_STATION_INTERACT_START, FCOItemsaver_RetraitStationInteract)
+            em:RegisterForEvent(gAddonName, EVENT_RETRAIT_STATION_INTERACT_START, FCOItemsaver_RetraitStationInteract)
             --Global mouse down/up event
             --[[
-            EVENT_MANAGER:RegisterForEvent(gAddonName, EVENT_GLOBAL_MOUSE_DOWN, FCOItemSaver_EventMouseButtonDown)
-            EVENT_MANAGER:RegisterForEvent(gAddonName, EVENT_GLOBAL_MOUSE_UP, FCOItemSaver_EventMouseButtonUp)
+            em:RegisterForEvent(gAddonName, EVENT_GLOBAL_MOUSE_DOWN, FCOItemSaver_EventMouseButtonDown)
+            em:RegisterForEvent(gAddonName, EVENT_GLOBAL_MOUSE_UP, FCOItemSaver_EventMouseButtonUp)
             ]]
 
             --=============================================================================================================
@@ -991,7 +1000,7 @@ local function FCOItemSaver_Loaded(eventCode, addOnName)
             FCOIS.CreateHooks()
 
             --Build the inventory filter buttons and add them to the panels
-            FCOIS.updateFCOISFilterButtonsAtInventory(-1)
+            updateFCOISFilterButtonsAtInventory(-1)
 
             --Initialize the filters
             FCOIS.EnableFilters(-100)
@@ -1038,5 +1047,5 @@ function FCOIS.setEventCallbackFunctions()
     -- EVENTs CALLBACK FUNCTIONS
     --==================================================================================================================================================================================================
     --Register the addon's loaded callback function
-    EVENT_MANAGER:RegisterForEvent(gAddonName, EVENT_ADD_ON_LOADED, FCOItemSaver_Loaded)
+    em:RegisterForEvent(gAddonName, EVENT_ADD_ON_LOADED, FCOItemSaver_Loaded)
 end

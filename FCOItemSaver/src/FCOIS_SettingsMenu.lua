@@ -4,6 +4,9 @@ local FCOIS = FCOIS
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
 
+local wm = WINDOW_MANAGER
+local cm = CALLBACK_MANAGER
+
 local fcoisLAMSettingsReferencePrefix = "FCOItemSaver_Settings_"
 --Control name parts, prefix, suffix, tooltip suffix
 local previewSelect = "Preview_Select"
@@ -77,6 +80,9 @@ local doNotRunDropdownValueSetFunc = false
 
 local editBoxesToSetTextTypes
 
+local updateFCOISFilterButtonColorsAndTextures = FCOIS.UpdateFCOISFilterButtonColorsAndTextures
+local changeContextMenuInvokerButtonColorByPanelId = FCOIS.ChangeContextMenuInvokerButtonColorByPanelId
+
 local iconsList, iconsListValues
 local iconsListNone, iconsListValuesNone, iconsListRecipe, iconsListValuesRecipe
 --==========================================================================================================================================
@@ -90,7 +96,7 @@ end
 -- ============= local helper functions - BEGIN ====================================================================
 --Get the preview control by help of the iconNr
 local function getPreviewControlByIconNr(previewType, iconNr)
-    return WINDOW_MANAGER:GetControlByName(fcoisLAMSettingsReferencePrefix .. tostring(previewType) .. tostring(iconNr) .. previewSelect, "")
+    return wm:GetControlByName(fcoisLAMSettingsReferencePrefix .. tostring(previewType) .. tostring(iconNr) .. previewSelect, "")
 end
 
 local function changePreViewIconSize(previewType, iconNr, size, doNotUpdateMarkers)
@@ -116,9 +122,9 @@ local function changePreviewIconColor(previewType, iconNr, r, g, b, a, doNotUpda
 end
 
 local function updateFilterButtonColorAndTexture(filterButtonNr, iconNr)
-    local p_button = WINDOW_MANAGER:GetControlByName(ZOsControlVars.FCOISfilterButtonNames[filterButtonNr], "")
+    local p_button = wm:GetControlByName(ZOsControlVars.FCOISfilterButtonNames[filterButtonNr], "")
     if p_button == nil or filterButtonNr == nil or iconNr == nil then return end
-    FCOIS.UpdateFCOISFilterButtonColorsAndTextures(iconNr, p_button, -999)
+    updateFCOISFilterButtonColorsAndTextures(iconNr, p_button, -999)
 end
 
 local function changePreviewLabelText(previewType, iconNr, text, doNotUpdateMarkers)
@@ -200,7 +206,7 @@ local function setSettingsMenuEditBoxTextTypes()
     if not editBoxesToSetTextTypes then return end
     for controlName, textType in pairs(editBoxesToSetTextTypes) do
         if textType then
-            local control = WINDOW_MANAGER:GetControlByName(controlName, "")
+            local control = wm:GetControlByName(controlName, "")
             if control then
                 if control.editbox and control.editbox.SetTextType then
                     control.editbox:SetTextType(textType)
@@ -262,7 +268,7 @@ end
         FCOIS.preventerVars.gUpdateMarkersNow = true
         if LAMdropdownsWithIconList == nil then return nil end
         for dropdownCtrlName, updateData in pairs(LAMdropdownsWithIconList) do
-            local dropdownCtrl = WINDOW_MANAGER:GetControlByName(dropdownCtrlName, "")
+            local dropdownCtrl = wm:GetControlByName(dropdownCtrlName, "")
             if dropdownCtrl == nil or updateData == nil then return nil end
             if updateData["choices"] == nil then updateData["choices"] = "standard" end
             local choices, choicesValues, choicesTooltips = FCOIS.GetLAMMarkerIconsDropdown(updateData["choices"], updateData["withIcons"], updateData["withNoneEntry"])
@@ -388,7 +394,7 @@ function FCOIS.BuildAddonMenu()
     local FCOSettingsPanel = FCOIS.FCOSettingsPanel
 
     --Create and show the "FCOIS settings loading" texture (sand clock)
-    FCOIS_LAM_MENU_IS_LOADING = WINDOW_MANAGER:CreateControl(FCOSettingsPanel:GetName() .. "_FCOIS_LAM_MENU_IS_LOADING_TEXTURE", FCOSettingsPanel, CT_TEXTURE)
+    FCOIS_LAM_MENU_IS_LOADING = wm:CreateControl(FCOSettingsPanel:GetName() .. "_FCOIS_LAM_MENU_IS_LOADING_TEXTURE", FCOSettingsPanel, CT_TEXTURE)
     FCOIS_LAM_MENU_IS_LOADING:SetDimensions(56, 56)
     FCOIS_LAM_MENU_IS_LOADING:SetTexture(FCOIS.textureVars.MARKER_TEXTURES[9]) --Sand clock
     FCOIS_LAM_MENU_IS_LOADING:SetColor(1, 0, 0, 1)
@@ -423,7 +429,7 @@ function FCOIS.BuildAddonMenu()
     local fcoRestore = FCOIS.restore
     --Function to reset the backup edit control in the LAM settings to the current API version text
     local function resetBackupEditToCurrentAPI()
-        local editCtrl = WINDOW_MANAGER:GetControlByName("FCOITEMSAVER_SETTINGS_BACKUP_API_VERSION_EDIT", "")
+        local editCtrl = wm:GetControlByName("FCOITEMSAVER_SETTINGS_BACKUP_API_VERSION_EDIT", "")
         if editCtrl ~= nil then
             editCtrl.editbox:SetText(apiVersion)
         end
@@ -432,7 +438,7 @@ function FCOIS.BuildAddonMenu()
     end
     --Function to check if the backup API version edit text is too short
     local function isBackupEditAPITextTooShort()
-        local editCtrl = WINDOW_MANAGER:GetControlByName("FCOITEMSAVER_SETTINGS_BACKUP_API_VERSION_EDIT", "")
+        local editCtrl = wm:GetControlByName("FCOITEMSAVER_SETTINGS_BACKUP_API_VERSION_EDIT", "")
         if editCtrl ~= nil then
             local editText = editCtrl.editbox:GetText()
             local apiVersionLength = FCOIS.APIVersionLength
@@ -2242,7 +2248,7 @@ function FCOIS.BuildAddonMenu()
     local function buildFilterButtonsPositionsSubMenu()
         local function saveValueFilterButtonChecks(filterPanelId, filterButtonNr)
             if filterPanelId == LF_INVENTORY then
-                FCOIS.updateFCOISFilterButtonsAtInventory(filterButtonNr)
+                FCOIS.UpdateFCOISFilterButtonsAtInventory(filterButtonNr)
             end
         end
 
@@ -2260,7 +2266,7 @@ function FCOIS.BuildAddonMenu()
             return false
         end
         local btnFunc = function()
-            FCOIS.setAllFCOISFilterButtonOffsetAndSizeSettingsEqual(LF_INVENTORY)
+            FCOIS.SetAllFCOISFilterButtonOffsetAndSizeSettingsEqual(LF_INVENTORY)
         end
         local btncreatedControl = CreateControl(nil, btnname, btntooltip, btndata, btndisabledFunc, nil, btnFunc, nil, locVars["options_filter_button_set_all_equal" .. tooltipSuffix])
         if btncreatedControl ~= nil then
@@ -2491,7 +2497,7 @@ function FCOIS.BuildAddonMenu()
             --Update the choices and choicesValues in the LAM restore API verison dropdown now
             --> only needed if manually clicked the "refresh restorable backups" button
             if doUpdateDropdownValues then
-                local restoreableBackupsDD = WINDOW_MANAGER:GetControlByName("FCOITEMSAVER_SETTINGS_RESTORE_API_VERSION_DROPDOWN", "")
+                local restoreableBackupsDD = wm:GetControlByName("FCOITEMSAVER_SETTINGS_RESTORE_API_VERSION_DROPDOWN", "")
                 if restoreableBackupsDD then
                     restoreableBackupsDD:UpdateChoices(restoreChoices, restoreChoicesValues)
                     fcoRestore.apiVersion = nil
@@ -2514,7 +2520,7 @@ function FCOIS.BuildAddonMenu()
         local fcoisCurrentlyLoadingPlaceHolderLableName = "FCOIS_LAM_CurrentlyLoadingLabel"
         local fcoisCurrentlyLoadingPlaceHolderLable = FCOIS.FCOSettingsPanel.fcoisCurrentlyLoadingPlaceHolderLable
         if not fcoisCurrentlyLoadingPlaceHolderLable then
-            fcoisCurrentlyLoadingPlaceHolderLable = WINDOW_MANAGER:CreateControl(fcoisCurrentlyLoadingPlaceHolderLableName, FCOIS.FCOSettingsPanel, CT_LABEL)
+            fcoisCurrentlyLoadingPlaceHolderLable = wm:CreateControl(fcoisCurrentlyLoadingPlaceHolderLableName, FCOIS.FCOSettingsPanel, CT_LABEL)
             fcoisCurrentlyLoadingPlaceHolderLable:SetAnchor(TOPLEFT, FCOIS.FCOSettingsPanel.container, CENTER, (FCOIS.FCOSettingsPanel.container:GetWidth()/3)*-1, 0)
             fcoisCurrentlyLoadingPlaceHolderLable:SetFont("ZoFontAlert")
             fcoisCurrentlyLoadingPlaceHolderLable:SetScale(1.0)
@@ -2585,7 +2591,7 @@ function FCOIS.BuildAddonMenu()
         end
         --Show the LAM menu container now
         --ChangeFCOISLamMenuVisibleState(false)
-        --CALLBACK_MANAGER:UnregisterCallback("LAM-PanelControlsCreated")
+        --cm:UnregisterCallback("LAM-PanelControlsCreated")
     end
 
     --The panel opened callback function
@@ -5087,7 +5093,7 @@ function FCOIS.BuildAddonMenu()
                                     getFunc = function() return FCOISsettings.allowInventoryFilter end,
                                     setFunc = function(value) FCOISsettings.allowInventoryFilter = value
                                         --Hide the filter buttons at the filter panel Id
-                                        FCOIS.updateFCOISFilterButtonsAtInventory(-1)
+                                        FCOIS.UpdateFCOISFilterButtonsAtInventory(-1)
                                         --Unregister and reregister the inventory filter LF_INVENTORY
                                         FCOIS.EnableFilters(-100)
                                     end,
@@ -6363,9 +6369,9 @@ function FCOIS.BuildAddonMenu()
                             getFunc = function() return FCOISsettings.splitLockDynFilter end,
                             setFunc = function(value) FCOISsettings.splitLockDynFilter = value
                                 --Change the gear sets filter context-menu button's texture
-                                local lockDynSplitFilterContextMenuButton = WINDOW_MANAGER:GetControlByName(FCOIS.ZOControlVars.FCOISfilterButtonNames[FCOIS_CON_FILTER_BUTTON_LOCKDYN], "")
+                                local lockDynSplitFilterContextMenuButton = wm:GetControlByName(FCOIS.ZOControlVars.FCOISfilterButtonNames[FCOIS_CON_FILTER_BUTTON_LOCKDYN], "")
                                 if lockDynSplitFilterContextMenuButton ~= nil then
-                                    FCOIS.UpdateFCOISFilterButtonColorsAndTextures(1, lockDynSplitFilterContextMenuButton, nil, LF_INVENTORY)
+                                    updateFCOISFilterButtonColorsAndTextures(1, lockDynSplitFilterContextMenuButton, nil, LF_INVENTORY)
                                     FCOIS.FilterBasics(true)
                                 end
                             end,
@@ -6378,9 +6384,9 @@ function FCOIS.BuildAddonMenu()
                             getFunc = function() return FCOISsettings.splitGearSetsFilter end,
                             setFunc = function(value) FCOISsettings.splitGearSetsFilter = value
                                 --Change the gear sets filter context-menu button's texture
-                                local gearSetSplitFilterContextMenuButton = WINDOW_MANAGER:GetControlByName(FCOIS.ZOControlVars.FCOISfilterButtonNames[FCOIS_CON_FILTER_BUTTON_GEARSETS], "")
+                                local gearSetSplitFilterContextMenuButton = wm:GetControlByName(FCOIS.ZOControlVars.FCOISfilterButtonNames[FCOIS_CON_FILTER_BUTTON_GEARSETS], "")
                                 if gearSetSplitFilterContextMenuButton ~= nil then
-                                    FCOIS.UpdateFCOISFilterButtonColorsAndTextures(2, gearSetSplitFilterContextMenuButton, nil, LF_INVENTORY)
+                                    updateFCOISFilterButtonColorsAndTextures(2, gearSetSplitFilterContextMenuButton, nil, LF_INVENTORY)
                                     FCOIS.FilterBasics(true)
                                 end
                             end,
@@ -6393,9 +6399,9 @@ function FCOIS.BuildAddonMenu()
                             getFunc = function() return FCOISsettings.splitResearchDeconstructionImprovementFilter end,
                             setFunc = function(value) FCOISsettings.splitResearchDeconstructionImprovementFilter = value
                                 --Change the gear sets filter context-menu button's texture
-                                local resDecSplitFilterContextMenuButton = WINDOW_MANAGER:GetControlByName(FCOIS.ZOControlVars.FCOISfilterButtonNames[FCOIS_CON_FILTER_BUTTON_RESDECIMP], "")
+                                local resDecSplitFilterContextMenuButton = wm:GetControlByName(FCOIS.ZOControlVars.FCOISfilterButtonNames[FCOIS_CON_FILTER_BUTTON_RESDECIMP], "")
                                 if resDecSplitFilterContextMenuButton ~= nil then
-                                    FCOIS.UpdateFCOISFilterButtonColorsAndTextures(3, resDecSplitFilterContextMenuButton, nil, LF_INVENTORY)
+                                    updateFCOISFilterButtonColorsAndTextures(3, resDecSplitFilterContextMenuButton, nil, LF_INVENTORY)
                                     FCOIS.FilterBasics(true)
                                 end
                             end,
@@ -6408,9 +6414,9 @@ function FCOIS.BuildAddonMenu()
                             getFunc = function() return FCOISsettings.splitSellGuildSellIntricateFilter end,
                             setFunc = function(value) FCOISsettings.splitSellGuildSellIntricateFilter = value
                                 --Change the gear sets filter context-menu button's texture
-                                local sellGuildIntSplitFilterContextMenuButton = WINDOW_MANAGER:GetControlByName(FCOIS.ZOControlVars.FCOISfilterButtonNames[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT], "")
+                                local sellGuildIntSplitFilterContextMenuButton = wm:GetControlByName(FCOIS.ZOControlVars.FCOISfilterButtonNames[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT], "")
                                 if sellGuildIntSplitFilterContextMenuButton ~= nil then
-                                    FCOIS.UpdateFCOISFilterButtonColorsAndTextures(4, sellGuildIntSplitFilterContextMenuButton, nil, LF_INVENTORY)
+                                    updateFCOISFilterButtonColorsAndTextures(4, sellGuildIntSplitFilterContextMenuButton, nil, LF_INVENTORY)
                                     FCOIS.FilterBasics(true)
                                 end
                             end,
@@ -6506,7 +6512,7 @@ function FCOIS.BuildAddonMenu()
                             setFunc = function(value) FCOISsettings.showFCOISAdditionalInventoriesButton = value
                                 if value == false then
                                     --Change the button color of the context menu invoker
-                                    FCOIS.changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
+                                    changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
                                 end
                                 FCOIS.AddAdditionalButtons("FCOInventoriesContextMenuButtons")
                             end,
@@ -6519,7 +6525,7 @@ function FCOIS.BuildAddonMenu()
                             getFunc = function() return FCOISsettings.colorizeFCOISAdditionalInventoriesButton end,
                             setFunc = function(value) FCOISsettings.colorizeFCOISAdditionalInventoriesButton = value
                                 --Change the button color of the context menu invoker
-                                FCOIS.changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
+                                changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
                             end,
                             disabled = function() return not FCOISsettings.showFCOISAdditionalInventoriesButton end,
                             default = FCOISdefaultSettings.colorizeFCOISAdditionalInventoriesButton,
@@ -7244,10 +7250,10 @@ function FCOIS.BuildAddonMenu()
 
 
     } -- END OF OPTIONS TABLE
-    CALLBACK_MANAGER:RegisterCallback("LAM-PanelControlsCreated", FCOLAMPanelCreated)
-    --CALLBACK_MANAGER:RegisterCallback("LAM-RefreshPanel", FCOLAMPanelRefreshed)
-    CALLBACK_MANAGER:RegisterCallback("LAM-PanelOpened", FCOLAMPanelOpened)
-    CALLBACK_MANAGER:RegisterCallback("LAM-PanelClosed", FCOLAMPanelClosed)
+    cm:RegisterCallback("LAM-PanelControlsCreated", FCOLAMPanelCreated)
+    --cm:RegisterCallback("LAM-RefreshPanel", FCOLAMPanelRefreshed)
+    cm:RegisterCallback("LAM-PanelOpened", FCOLAMPanelOpened)
+    cm:RegisterCallback("LAM-PanelClosed", FCOLAMPanelClosed)
 
 
     FCOIS.LAM:RegisterOptionControls(FCOIS.addonVars.gAddonName .. "_LAM", optionsTable)

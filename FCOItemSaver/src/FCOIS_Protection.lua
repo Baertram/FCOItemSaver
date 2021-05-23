@@ -154,7 +154,7 @@ function FCOIS.checkIfProtectedSettingsEnabled(checkType, iconNr, isDynamicIcon,
             --Is the dynamic icon protected at the current panel?
             if protectionVal == true then
                 --The protective functions are not enabled (red flag is set in the inventory additional options flag icon, or the current panel got no additional inventory button, e.g. the crafting research tab or the research popup dialog)?
-                local _, invAntiSettingsEnabled = FCOIS.getContextMenuAntiSettingsTextAndState(checkType, false)
+                local _, invAntiSettingsEnabled = FCOIS.GetContextMenuAntiSettingsTextAndState(checkType, false)
 --d(">invAntiSettingsEnabled: " ..tostring(invAntiSettingsEnabled))
                 if not invAntiSettingsEnabled then
                     --Check if the temporary disabling of the protection is enabled, if the user uses the inventory "flag" icon and sets it to red
@@ -509,7 +509,7 @@ function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChat
     if panelId == LF_INVENTORY and singleItemChecks then
         --See if the Anti-settings for the given panel are enabled or not
         --The protective functions are not enabled (red flag in the inventory additional options flag icon or the current panel got no additional inventory button, e.g. the crafting research tab)
-        local _, invAntiSettingsEnabled = FCOIS.getContextMenuAntiSettingsTextAndState(panelId, false)
+        local _, invAntiSettingsEnabled = FCOIS.GetContextMenuAntiSettingsTextAndState(panelId, false)
         if not invAntiSettingsEnabled then
             --Using/eating/drinking items for marked items is blocked, e.g. for recipes/style motifs?
             --If the settings allow it: Change the blocked state to unblocked upon right-clicking the inventory additional options flag icon

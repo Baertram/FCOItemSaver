@@ -4,6 +4,8 @@ local FCOIS = FCOIS
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
 
+local wm = WINDOW_MANAGER
+
 local checkIfProtectedSettingsEnabled = FCOIS.checkIfProtectedSettingsEnabled
 local myGetItemDetails = FCOIS.MyGetItemDetails
 
@@ -189,7 +191,7 @@ function FCOIS.CreateToolTip(markerControl, markerId, doHide, pUpdateAllEquipmen
                         --Replace current control name ending by the current iconId
                         local equipmentMarkerControlNewName = equipmentMarkerControlName .. tostring(iconId)
                         --get the control by it's name
-                        local equipmentMarkerControl = WINDOW_MANAGER:GetControlByName(equipmentMarkerControlNewName, "")
+                        local equipmentMarkerControl = wm:GetControlByName(equipmentMarkerControlNewName, "")
                         if equipmentMarkerControl ~= nil then
                             FCOIS.CreateToolTip(equipmentMarkerControl, iconId, doHide, false)
                         end

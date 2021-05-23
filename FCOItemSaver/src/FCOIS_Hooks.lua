@@ -359,7 +359,7 @@ local function FCOItemSaver_OnInventorySlot_DoPrimaryAction(inventorySlot)
 --d("FCOItemSaver_OnInventorySlot_DoPrimaryAction")
     local doNotCallOriginalZO_InventorySlot_DoPrimaryAction = false
     --Hide the context menu at last active panel
-    FCOIS.hideContextMenu(FCOIS.gFilterWhere)
+    FCOIS.HideContextMenu(FCOIS.gFilterWhere)
     --Check if SHIFT key is pressed and if settings to use SHIFT key + right mouse to remove/restore marker icons on the inventory row is enabled
     -->Then do not call the double click handler here
     local settings = FCOIS.settingsVars.settings
@@ -567,7 +567,7 @@ function FCOIS.sceneCallbackHideContextMenu(oldState, newState, overrideFilterPa
             overrideFilterPanel = FCOIS.gFilterWhere
         end
         --Hide the context menu at last active panel
-        FCOIS.hideContextMenu(overrideFilterPanel)
+        FCOIS.HideContextMenu(overrideFilterPanel)
     end
 end
 local sceneCallbackHideContextMenu = FCOIS.sceneCallbackHideContextMenu
@@ -591,6 +591,11 @@ function FCOIS.CreateHooks()
     local mappingVars = FCOIS.mappingVars
     
     local preHookMainMenuFilterButtonHandler = FCOIS.PreHookMainMenuFilterButtonHandler
+    local checkFCOISFilterButtonsAtPanel = FCOIS.CheckFCOISFilterButtonsAtPanel
+    local updateFCOISFilterButtonsAtInventory = FCOIS.UpdateFCOISFilterButtonsAtInventory
+    local updateFCOISFilterButtonColorsAndTextures = FCOIS.UpdateFCOISFilterButtonColorsAndTextures
+    local hideContextMenu = FCOIS.HideContextMenu
+    local changeContextMenuInvokerButtonColorByPanelId = FCOIS.ChangeContextMenuInvokerButtonColorByPanelId
 
     --========= INVENTORY SLOT - SHOW CONTEXT MENU =================================
     local function ZO_InventorySlot_ShowContextMenu_For_FCOItemSaver(rowControl, slotActions, ctrl, alt, shift, command)
@@ -813,7 +818,7 @@ function FCOIS.CreateHooks()
         if settings.debug then FCOIS.debugMessage( "[Main Menu Category Bar]","OnShow") end
 --d("[Main Menu Category Bar]OnShow")
         --Hide the context menu
-        FCOIS.hideContextMenu(FCOIS.gFilterWhere)
+        hideContextMenu(FCOIS.gFilterWhere)
 
         --Update the character's equipment markers, if the character/companion character screen is shown
         if FCOIS.isCharacterShown() or FCOIS.isCompanionCharacterShown() then
@@ -897,7 +902,7 @@ function FCOIS.CreateHooks()
             if not FCOIS.isResearchListDialogShown() then return false end
             FCOIS.preventerVars.ZO_ListDialog1ResearchIsOpen = true
             --Check the filter buttons and create them if they are not there.
-            FCOIS.CheckFCOISFilterButtonsAtPanel(true, LF_SMITHING_RESEARCH_DIALOG)
+            checkFCOISFilterButtonsAtPanel(true, LF_SMITHING_RESEARCH_DIALOG)
         end)
         ZO_PreHookHandler(researchPopupDialogCustomControl, "OnHide", function()
             --d("[FCOIS]SMITHING_RESEARCH_SELECT PreHook:OnHide")
@@ -906,7 +911,7 @@ function FCOIS.CreateHooks()
             FCOIS.preventerVars.ZO_ListDialog1ResearchIsOpen = false
             --Hide the filter buttons at LF_SMITHING_RESEARCH_DIALOG (or LF_JEWELRY_RESEARCH_DIALOG, which will be
             --determined dynamically within function FCOIS.CheckActivePanel in function FCOIS.CheckFilterButtonsAtPanel)
-            FCOIS.CheckFCOISFilterButtonsAtPanel(false, LF_SMITHING_RESEARCH_DIALOG, nil, true) -- Last parameter: Hide filter buttons
+            checkFCOISFilterButtonsAtPanel(false, LF_SMITHING_RESEARCH_DIALOG, nil, true) -- Last parameter: Hide filter buttons
         end)
     end
     --========= RESEARCH LIST / ListDialog (also repair, enchant, charge, etc.) - ZO_Dialog1 ======================================================
@@ -1081,7 +1086,7 @@ function FCOIS.CreateHooks()
             if upInside then
                 --d("[FCOIS]upInside: " ..tostring(upInside) .. ", disable: " ..tostring(rowControl.disableControl) .. ", isSoulGem: " ..tostring(isSoulGem))
                 --Check if the clicked row got marker icons which protect this item!
-                FCOIS.refreshPopupDialogButtons(rowControl, false)
+                FCOIS.RefreshPopupDialogButtons(rowControl, false)
                 local dialog = ctrlVars.RepairItemDialog
                 --Should this row be protected and disabled buttons and keybindings
                 if rowControl.disableControl == true and not isSoulGem == true then
@@ -1189,7 +1194,7 @@ function FCOIS.CreateHooks()
             FCOIS.gFilterWhere = LF_INVENTORY
             --Hide the context menus
             zo_callLater(function()
-                FCOIS.hideContextMenu(LF_INVENTORY)
+                hideContextMenu(LF_INVENTORY)
             end, 50)
         end
     end)
@@ -1203,7 +1208,7 @@ function FCOIS.CreateHooks()
             --Hide the context menus
             zo_callLater(function()
                 if not ctrlVars.QUICKSLOT_CIRCLE:IsHidden() then
-                    FCOIS.hideContextMenu(LF_INVENTORY)
+                    hideContextMenu(LF_INVENTORY)
                 end
             end, 50)
         end
@@ -1224,7 +1229,7 @@ function FCOIS.CreateHooks()
         if FCOIS.preventerVars.gNoCloseEvent == false then
             FCOIS.gFilterWhere = LF_INVENTORY
             --Change the button color of the context menu invoker
-            FCOIS.changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
+            changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
         end
     end)
 
@@ -1297,7 +1302,7 @@ function FCOIS.CreateHooks()
     --======== SMITHING =============================================================
     local function smithingSetModeHook(smithingCtrl, mode, ...)
         --Hide the context menu at last active panel
-        FCOIS.hideContextMenu(FCOIS.gFilterWhere)
+        hideContextMenu(FCOIS.gFilterWhere)
 
         if settings.debug then FCOIS.debugMessage( "[SMITHING:SetMode]","Mode: " .. tostring(mode), true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
@@ -1337,7 +1342,7 @@ function FCOIS.CreateHooks()
     --======== ENCHANTING =============================================================
     local function enchantingPreHook()
         --Hide the context menu at last active panel
-        FCOIS.hideContextMenu(FCOIS.gFilterWhere)
+        hideContextMenu(FCOIS.gFilterWhere)
         if ctrlVars.ENCHANTING:IsSceneShowing() then
             local enchantingMode = ctrlVars.ENCHANTING.enchantingMode
             if settings.debug then FCOIS.debugMessage( "[ENCHANTING:OnModeUpdated]","EnchantingMode: " .. tostring(enchantingMode), true, FCOIS_DEBUG_DEPTH_NORMAL) end
@@ -1391,7 +1396,7 @@ function FCOIS.CreateHooks()
             FCOIS.gFilterWhereParent = nil
 
             --Check the filter buttons at the CraftBag panel and create them if they are not there. Return the parent filter panel ID if given (e.g. LF_MAIL)
-            local _, parentPanel = FCOIS.CheckFCOISFilterButtonsAtPanel(true, LF_CRAFTBAG, LF_CRAFTBAG) --overwrite with LF_CRAFTBAG so it'll create and update the buttons for the craftbag panel, and not the CBE subpanels (mail, trade, bank, vendor, guild bank, etc.)
+            local _, parentPanel = checkFCOISFilterButtonsAtPanel(true, LF_CRAFTBAG, LF_CRAFTBAG) --overwrite with LF_CRAFTBAG so it'll create and update the buttons for the craftbag panel, and not the CBE subpanels (mail, trade, bank, vendor, guild bank, etc.)
             --Update the inventory context menu ("flag" icon) so it uses the correct "anti-settings" and the correct colour and right-click callback function
             --depending on the currently shown craftbag "parent" (inventory, mail send, guild bank, guild store)
             if parentPanel == nil then
@@ -1416,7 +1421,7 @@ function FCOIS.CreateHooks()
             end
             --Change the additional context-menu button's color in the inventory (Craft Bag button)
             --d("<CraftBag: SCENE_FRAGMENT_SHOWING, before changeContextMenuInvokerButtonColorByPanelId(LF_CRAFTBAG)")
-            FCOIS.changeContextMenuInvokerButtonColorByPanelId(LF_CRAFTBAG)
+            changeContextMenuInvokerButtonColorByPanelId(LF_CRAFTBAG)
 
             --				elseif 	newState == SCENE_FRAGMENT_SHOWN then
             --	d("Callback fragment CRAFTBAG: Shown")
@@ -1431,7 +1436,7 @@ function FCOIS.CreateHooks()
             --Reset the CraftBag filter parent panel ID
             FCOIS.gFilterWhereParent = nil
             --Hide the context menu at last active panel
-            FCOIS.hideContextMenu(LF_CRAFTBAG)
+            hideContextMenu(LF_CRAFTBAG)
 
             --Needs to be done here as changing the CraftBag at the mail panel e.g. will not call PreHookButtonHandler function!
             --So we need to get the active filter panel ID after the craftbag was closed again, and update the additional inventory flag icon at thius panel too.
@@ -1454,11 +1459,11 @@ function FCOIS.CreateHooks()
             --Get the new active filter panel ID -> FCOIS.gFilterWhere (in function CheckFilterButtonAtPanel the function FCOIS.checkActivePanel will be called!)
             --Check the filter buttons and create them if they are not there. Be sure to leave the filterPanelId = nil so it will be properly new determined
             --by help of the shown control (names), and not only the libFilters constant LF_*!
-            FCOIS.CheckFCOISFilterButtonsAtPanel(true, nil)
+            checkFCOISFilterButtonsAtPanel(true, nil)
             if settings.debug then FCOIS.debugMessage( "[CRAFT_BAG_FRAGMENT]", ">new panel: " .. tostring(FCOIS.gFilterWhere), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
             --Change the additional context-menu button's color in the inventory (new active filter panel ID)
             --d("<CraftBag: SCENE_FRAGMENT_HIDDEN before changeContextMenuInvokerButtonColorByPanelId(" .. FCOIS.gFilterWhere .. ")")
-            FCOIS.changeContextMenuInvokerButtonColorByPanelId(FCOIS.gFilterWhere)
+            changeContextMenuInvokerButtonColorByPanelId(FCOIS.gFilterWhere)
             --end, 50)
         end
     end)
@@ -1485,9 +1490,9 @@ function FCOIS.CreateHooks()
             end
 
             --Change the button color of the context menu invoker
-            FCOIS.changeContextMenuInvokerButtonColorByPanelId(FCOIS.gFilterWhere)
+            changeContextMenuInvokerButtonColorByPanelId(FCOIS.gFilterWhere)
             --Check the filter buttons and create them if they are not there. Update the inventory afterwards too
-            FCOIS.CheckFCOISFilterButtonsAtPanel(true, FCOIS.gFilterWhere)
+            checkFCOISFilterButtonsAtPanel(true, FCOIS.gFilterWhere)
 
             --When the mail send panel is hiding
         elseif newState == SCENE_HIDING then
@@ -1496,22 +1501,22 @@ function FCOIS.CreateHooks()
             FCOIS.gFilterWhere = LF_MAIL_SEND
 
             --Hide the context menu at mail panel
-            FCOIS.hideContextMenu(FCOIS.gFilterWhere)
+            hideContextMenu(FCOIS.gFilterWhere)
 
             --When the mail send panel is hidden
         elseif newState == SCENE_HIDDEN then
             --d("mail scene hidden")
 
             --Update the inventory filter buttons
-            FCOIS.updateFCOISFilterButtonsAtInventory(-1)
+            updateFCOISFilterButtonsAtInventory(-1)
             --Update the 4 inventory button's color
-            FCOIS.UpdateFCOISFilterButtonColorsAndTextures(-1, nil, -1, LF_INVENTORY)
+            updateFCOISFilterButtonsAtInventory(-1, nil, -1, LF_INVENTORY)
 
             FCOIS.preventerVars.gActiveFilterPanel = false
             FCOIS.preventerVars.gNoCloseEvent = false
 
             --Change the button color of the context menu invoker
-            FCOIS.changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
+            changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
             --Check, if the Anti-* checks need to be enabled again
             FCOIS.autoReenableAntiSettingsCheck("MAIL")
         end
@@ -1550,29 +1555,29 @@ function FCOIS.CreateHooks()
             --end
 
             --Change the button color of the context menu invoker
-            FCOIS.changeContextMenuInvokerButtonColorByPanelId(FCOIS.gFilterWhere)
+            changeContextMenuInvokerButtonColorByPanelId(FCOIS.gFilterWhere)
             --Check the filter buttons and create them if they are not there. Update the inventory afterwards too
-            FCOIS.CheckFCOISFilterButtonsAtPanel(true, LF_RETRAIT)
+            checkFCOISFilterButtonsAtPanel(true, LF_RETRAIT)
 
         elseif newState == SCENE_HIDING then
             --Update the current filter panel ID to "Retrait"
             FCOIS.gFilterWhere = LF_RETRAIT
 
             --Hide the context menu at the retrait panel
-            FCOIS.hideContextMenu(FCOIS.gFilterWhere)
+            hideContextMenu(FCOIS.gFilterWhere)
 
             --When the retrait panel is hidden
         elseif newState == SCENE_HIDDEN then
             --Update the inventory filter buttons
-            FCOIS.updateFCOISFilterButtonsAtInventory(-1)
+            updateFCOISFilterButtonsAtInventory(-1)
             --Update the 4 inventory button's color
-            FCOIS.UpdateFCOISFilterButtonColorsAndTextures(-1, nil, -1, LF_INVENTORY)
+            updateFCOISFilterButtonsAtInventory(-1, nil, -1, LF_INVENTORY)
 
             FCOIS.preventerVars.gActiveFilterPanel = false
             FCOIS.preventerVars.gNoCloseEvent = false
 
             --Change the button color of the context menu invoker
-            FCOIS.changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
+            changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
             --Check, if the Anti-* checks need to be enabled again
             FCOIS.autoReenableAntiSettingsCheck("RETRAIT")
         end
@@ -1598,29 +1603,29 @@ function FCOIS.CreateHooks()
             --end
 
             --Change the button color of the context menu invoker
-            FCOIS.changeContextMenuInvokerButtonColorByPanelId(FCOIS.gFilterWhere)
+            changeContextMenuInvokerButtonColorByPanelId(FCOIS.gFilterWhere)
             --Check the filter buttons and create them if they are not there. Update the inventory afterwards too
-            FCOIS.CheckFCOISFilterButtonsAtPanel(true, LF_INVENTORY_COMPANION)
+            checkFCOISFilterButtonsAtPanel(true, LF_INVENTORY_COMPANION)
 
         elseif newState == SCENE_FRAGMENT_HIDING then
             --Update the current filter panel ID to "Companion inventory"
             FCOIS.gFilterWhere = LF_INVENTORY_COMPANION
 
             --Hide the context menu at companion inventory panel
-            FCOIS.hideContextMenu(FCOIS.gFilterWhere)
+            hideContextMenu(FCOIS.gFilterWhere)
 
             --When the companion inventory panel is hidden
         elseif newState == SCENE_FRAGMENT_HIDDEN then
             --Update the inventory filter buttons
-            FCOIS.updateFCOISFilterButtonsAtInventory(-1)
+            updateFCOISFilterButtonsAtInventory(-1)
             --Update the 4 inventory button's color
-            FCOIS.UpdateFCOISFilterButtonColorsAndTextures(-1, nil, -1, LF_INVENTORY)
+            updateFCOISFilterButtonsAtInventory(-1, nil, -1, LF_INVENTORY)
 
             FCOIS.preventerVars.gActiveFilterPanel = false
             FCOIS.preventerVars.gNoCloseEvent = false
 
             --Change the button color of the context menu invoker
-            FCOIS.changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
+            changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
             --Check, if the Anti-* checks need to be enabled again
             FCOIS.autoReenableAntiSettingsCheck("DESTROY")
         end

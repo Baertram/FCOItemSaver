@@ -476,7 +476,7 @@ function FCOIS.autoReenableAntiSettingsCheck(checkWhere)
     end
     --Workaround to enable the correct additional inventory context menu invoker button color for the normal inventory again
     --as multiple panels are using the LF_INVENTORY flag (mail, trade, inventory, ...)
-    FCOIS.changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
+    FCOIS.ChangeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
 end
 
 

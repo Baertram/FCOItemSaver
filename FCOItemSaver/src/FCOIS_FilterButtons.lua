@@ -4,7 +4,7 @@ local FCOIS = FCOIS
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
 
-
+local wm = WINDOW_MANAGER
 local numFilters = FCOIS.numVars.gFCONumFilters
 local filterButtonsToCheck = FCOIS.checkVars.filterButtonsToCheck
 local getSettingsIsFilterOn = FCOIS.getSettingsIsFilterOn
@@ -219,9 +219,10 @@ function FCOIS.CheckAndTransferFCOISFilterButtonDataByPanelId(libFiltersPanelId,
     end
     return nil
 end
+local checkAndTransferFCOISFilterButtonDataByPanelId = FCOIS.CheckAndTransferFCOISFilterButtonDataByPanelId
 
 --Set all the filter button settings equal/to the same value of a given filter panel ID
-function FCOIS.setAllFCOISFilterButtonOffsetAndSizeSettingsEqual(filterPanelIdSource)
+function FCOIS.SetAllFCOISFilterButtonOffsetAndSizeSettingsEqual(filterPanelIdSource)
     if filterPanelIdSource == nil then return false end
     --local filterButtonsToCheck = FCOIS.checkVars.filterButtonsToCheck
     if filterButtonsToCheck ~= nil then
@@ -248,49 +249,8 @@ function FCOIS.setAllFCOISFilterButtonOffsetAndSizeSettingsEqual(filterPanelIdSo
     return false
 end
 
---PreHook function for panel menu buttons (vanilla UI filter buttons like "Armor", "Weapons",  etc.) at banks, crafting stations, mail panel, trading, etc.
-function FCOIS.PreHookMainMenuFilterButtonHandler(comingFrom, goingTo)
-    FCOIS.preventerVars.gActiveFilterPanel = true
-    FCOIS.preventerVars.gPreHookButtonHandlerCallActive = true
-    if FCOIS.settingsVars.settings.debug then
-        FCOIS.debugMessage( "[PreHookButtonHandler]",">>>~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~<<<", true, FCOIS_DEBUG_DEPTH_VERY_DETAILED)
-        FCOIS.debugMessage( "[PreHookButtonHandler]","Coming from panel ID: " ..tostring(comingFrom)..", going to panel ID: " .. tostring(goingTo), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED)
-    end
---d("[PreHookButtonHandler] Coming from panel ID: " ..tostring(comingFrom) .. ", going to panel ID: " .. tostring(goingTo))
-
-    --Hide the context menu at last active panel
-    FCOIS.hideContextMenu(comingFrom)
-
-    --Update the number of filtered items at the sort header "name"?
-    -->Shown within AdvancedFilters addon, at the inventory bottom line where the bagSpace and bankSpace items are shown!
-    --FCOIS.updateFilteredItemCount(goingTo)
-
-    --If the craftbag panel is shown: Abort here and let the callback function of the craftbag scene do the rest.
-    --> See file src/FCOIS_hooks.lua, function FCOIS.CreateHooks(), CRAFT_BAG_FRAGMENT:RegisterCallback("StateChange", ...)
-    if FCOIS.isCraftbagPanelShown() then
---d(">> Craftbag panel is shown -> abort!")
-        FCOIS.preventerVars.gPreHookButtonHandlerCallActive = false
-        return false
-    end
-
-    --Update context menu invoker buttons, except for these where no additional inventory "flag" button exists (e.g. Alchemy)
-    local contextMenuInventoryFlagInvokerData = FCOIS.contextMenuVars.filterPanelIdToContextMenuButtonInvoker
-    if contextMenuInventoryFlagInvokerData[comingFrom] then
-        --Change the button color of the context menu invoker button (flag)
-        FCOIS.changeContextMenuInvokerButtonColorByPanelId(goingTo)
-    end
-
-    --Check the filter buttons and create them if they are not there
-    FCOIS.CheckFCOISFilterButtonsAtPanel(true, goingTo)
-
-    FCOIS.preventerVars.gPreHookButtonHandlerCallActive = false
-
-    --Return false to call the normal callback handler of the button afterwards
-    return false
-end
-
 --Add/Change the 4 FCOIS filter buttons at the inventory's bottom row
-function FCOIS.updateFCOISFilterButtonsAtInventory(buttonId)
+function FCOIS.UpdateFCOISFilterButtonsAtInventory(buttonId)
     -- This function will only add the inventory buttons!
     -- All other buttons will be added as the relating panel (bank, store, deconstruction, etc.) will be shown the first time.
     local settings = FCOIS.settingsVars.settings
@@ -303,7 +263,7 @@ function FCOIS.updateFCOISFilterButtonsAtInventory(buttonId)
         --Change the filter buttons & callback functions
         for _, buttonNr in ipairs(filterButtonsToCheck) do
             --Check the filter button's offsets, width and height at the given LibFilters panel ID
-            FCOIS.CheckAndTransferFCOISFilterButtonDataByPanelId(FCOIS.gFilterWhere, buttonNr)
+            checkAndTransferFCOISFilterButtonDataByPanelId(FCOIS.gFilterWhere, buttonNr)
             local filterButtonData = settings.filterButtonData[buttonNr][FCOIS.gFilterWhere]
             if filterButtonData ~= nil then
                 if settings.debug then FCOIS.debugMessage( "[updateFilterButtonsInInv]","Next buttonId " .. tostring(buttonNr) .. " at panel [" .. FCOIS.gFilterWhere  .. "]-left: " .. tostring(filterButtonData["left"]).. ", top: " .. tostring(filterButtonData["top"]).. ", width: " .. tostring(filterButtonData["width"]).. ", height: " .. tostring(filterButtonData["height"]), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
@@ -314,7 +274,7 @@ function FCOIS.updateFCOISFilterButtonsAtInventory(buttonId)
         end
     else
         --Check the filter button's offsets, width and height at the given LibFilters panel ID
-        FCOIS.CheckAndTransferFCOISFilterButtonDataByPanelId(FCOIS.gFilterWhere, buttonId)
+        checkAndTransferFCOISFilterButtonDataByPanelId(FCOIS.gFilterWhere, buttonId)
         local filterButtonData = settings.filterButtonData[buttonId][FCOIS.gFilterWhere]
         if filterButtonData ~= nil then
             FCOIS.AddOrChangeFCOISFilterButton(FCOIS.ZOControlVars.INV, buttonId, filterButtonData["width"], filterButtonData["height"], filterButtonData["left"], filterButtonData["top"], not settings.allowInventoryFilter, FCOIS.gFilterWhere)
@@ -352,7 +312,7 @@ function FCOIS.UpdateFCOISFilterButtonColorsAndTextures(p_buttonId, p_button, p_
 
     else --if (p_buttonId == -1 or p_status == -1) then
 
-        texture  = WINDOW_MANAGER:GetControlByName(string.format(mappingVars.gFilterPanelIdToTextureName[p_filterPanelId], p_buttonId), "")
+        texture  = wm:GetControlByName(string.format(mappingVars.gFilterPanelIdToTextureName[p_filterPanelId], p_buttonId), "")
         --Does texture exist now?
         if(texture ~= nil) then
             --Is the gear sets split filter button context-menu active and are we trying to change the texture of the gear sets button?
@@ -521,7 +481,7 @@ function FCOIS.CheckFCOISFilterButtonsAtPanel(doUpdateLists, panelId, overwriteF
         --Change the filter buttons & callback functions
         for _, buttonNr in ipairs(filterButtonsToCheck) do
             --Check the filter button's offsets, width and height at the given LibFilters panel ID
-            FCOIS.CheckAndTransferFCOISFilterButtonDataByPanelId(FCOIS.gFilterWhere, buttonNr)
+            checkAndTransferFCOISFilterButtonDataByPanelId(FCOIS.gFilterWhere, buttonNr)
             local filterButtonData = settings.filterButtonData[buttonNr][FCOIS.gFilterWhere]
             if filterButtonData ~= nil then
 --d(">FilterButtonData at panel [" .. FCOIS.gFilterWhere  .. "] of button " ..tostring(buttonNr) .." - left: " .. tostring(filterButtonData["left"]).. ", top: " .. tostring(filterButtonData["top"]).. ", width: " .. tostring(filterButtonData["width"]).. ", height: " .. tostring(filterButtonData["height"]) .. ", filterButtonsEnabledAtPanel: " ..tostring(areFilterButtonEnabledAtPanelId))
@@ -562,6 +522,48 @@ function FCOIS.CheckFCOISFilterButtonsAtPanel(doUpdateLists, panelId, overwriteF
     end
     return buttonsParentCtrl, filterPanel
 end
+local checkFCOISFilterButtonsAtPanel = FCOIS.CheckFCOISFilterButtonsAtPanel
+
+--PreHook function for panel menu buttons (vanilla UI filter buttons like "Armor", "Weapons",  etc.) at banks, crafting stations, mail panel, trading, etc.
+function FCOIS.PreHookMainMenuFilterButtonHandler(comingFrom, goingTo)
+    FCOIS.preventerVars.gActiveFilterPanel = true
+    FCOIS.preventerVars.gPreHookButtonHandlerCallActive = true
+    if FCOIS.settingsVars.settings.debug then
+        FCOIS.debugMessage( "[PreHookButtonHandler]",">>>~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~<<<", true, FCOIS_DEBUG_DEPTH_VERY_DETAILED)
+        FCOIS.debugMessage( "[PreHookButtonHandler]","Coming from panel ID: " ..tostring(comingFrom)..", going to panel ID: " .. tostring(goingTo), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED)
+    end
+--d("[PreHookButtonHandler] Coming from panel ID: " ..tostring(comingFrom) .. ", going to panel ID: " .. tostring(goingTo))
+
+    --Hide the context menu at last active panel
+    FCOIS.HhideContextMenu(comingFrom)
+
+    --Update the number of filtered items at the sort header "name"?
+    -->Shown within AdvancedFilters addon, at the inventory bottom line where the bagSpace and bankSpace items are shown!
+    --FCOIS.updateFilteredItemCount(goingTo)
+
+    --If the craftbag panel is shown: Abort here and let the callback function of the craftbag scene do the rest.
+    --> See file src/FCOIS_hooks.lua, function FCOIS.CreateHooks(), CRAFT_BAG_FRAGMENT:RegisterCallback("StateChange", ...)
+    if FCOIS.isCraftbagPanelShown() then
+--d(">> Craftbag panel is shown -> abort!")
+        FCOIS.preventerVars.gPreHookButtonHandlerCallActive = false
+        return false
+    end
+
+    --Update context menu invoker buttons, except for these where no additional inventory "flag" button exists (e.g. Alchemy)
+    local contextMenuInventoryFlagInvokerData = FCOIS.contextMenuVars.filterPanelIdToContextMenuButtonInvoker
+    if contextMenuInventoryFlagInvokerData[comingFrom] then
+        --Change the button color of the context menu invoker button (flag)
+        FCOIS.changeContextMenuInvokerButtonColorByPanelId(goingTo)
+    end
+
+    --Check the filter buttons and create them if they are not there
+    checkFCOISFilterButtonsAtPanel(true, goingTo)
+
+    FCOIS.preventerVars.gPreHookButtonHandlerCallActive = false
+
+    --Return false to call the normal callback handler of the button afterwards
+    return false
+end
 
 --Function is executed as the filter buttons in the inventories are pressed
 --Enable/Enable and only show marked items/Disable a filter or disable all filters
@@ -585,7 +587,7 @@ local function doFilter(onoff, p_button, filterId, beQuiet, doFilterBasicsPlayer
 
     --Hide the button FCOIS.contextMenu if shown and button was clicked
     if p_button ~= nil then
-        FCOIS.hideContextMenu(p_FilterPanelId)
+        FCOIS.HideContextMenu(p_FilterPanelId)
     end
 
     --Only perform the check if we are not initializing the addon, called from function EnableFilters()
@@ -1011,7 +1013,7 @@ function FCOIS.AddOrChangeFCOISFilterButton(parentWindow, buttonId, pWidth, pHei
     if not button then
         buttonExists = false
         -- create it
-        button = WINDOW_MANAGER:CreateControl(parentWindow:GetName() .. filterButtonSuffix .. tostring(buttonId), parentWindow, CT_BUTTON)
+        button = wm:CreateControl(parentWindow:GetName() .. filterButtonSuffix .. tostring(buttonId), parentWindow, CT_BUTTON)
         if not button then return nil end
         if settings.debug then FCOIS.debugMessage( "[AddOrChangeFilterButton]", "+++ ADD ButtonName=" .. button:GetName() .. ", Width/Height: " .. pWidth .. "/" .. pHeight .. ", Left/Top: " .. pLeft .. "/" .. pTop, true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
         local texVars = FCOIS.textureVars
@@ -1020,7 +1022,7 @@ function FCOIS.AddOrChangeFCOISFilterButton(parentWindow, buttonId, pWidth, pHei
 --d(">+++ FCOIS.AddOrChangeFilterButton: ADD ButtonName=" .. button:GetName() .. ", Width/Height: " .. pWidth .. "/" .. pHeight .. ", Left/Top: " .. pLeft .. "/" .. pTop)
 
         --Create the texture for the button to hold the image
-        local texture = WINDOW_MANAGER:CreateControl(button:GetName() .. "Texture", button, CT_TEXTURE)
+        local texture = wm:CreateControl(button:GetName() .. "Texture", button, CT_TEXTURE)
         texture:SetAnchorFill()
         --Are the inventory filter buttons split into several filter ids + context menu?
         if settings.splitLockDynFilter and buttonId == FCOIS_CON_FILTER_BUTTON_LOCKDYN then
@@ -1273,7 +1275,7 @@ function FCOIS.getSortHeaderControl(filterPanelId)
     local sortHeaderVars = FCOIS.sortHeaderVars
     local sortHeaderName = sortHeaderVars.name[filterPanelId]
     if not sortHeaderName then return end
-    local sortHeaderCtrl = WINDOW_MANAGER:GetControlByName(sortHeaderName, "")
+    local sortHeaderCtrl = wm:GetControlByName(sortHeaderName, "")
     if sortHeaderCtrl == nil then return  end
     return sortHeaderCtrl
 end
