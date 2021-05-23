@@ -1223,8 +1223,8 @@ local function getBagsToScanForAutomaticMarks()
     if bagsToScan[BAG_BANK] == true then
         bagsToScan[BAG_SUBSCRIBER_BANK] = true
         local insertIdx
-        for scanIndex, bagId in ipairs(bagScanOrder) do
-            if bagId == BAG_BANK then
+        for scanIndex, bagData in ipairs(bagScanOrder) do
+            if bagData.value == BAG_BANK then
                 insertIdx = scanIndex
                 break
             end
@@ -1233,7 +1233,11 @@ local function getBagsToScanForAutomaticMarks()
             table.insert(bagScanOrder, insertIdx, BAG_SUBSCRIBER_BANK)
         end
     end
-    return bagsToScan, bagScanOrder
+    local bagScanOrderCleanBagIds = {}
+    for scanIndex, bagData in ipairs(bagScanOrder) do
+        bagScanOrderCleanBagIds[scanIndex] = bagData.value
+    end
+    return bagsToScan, bagScanOrderCleanBagIds
 end
 
 --Function to do the scans for automatic marker icons (multiple items)
@@ -1842,6 +1846,7 @@ function FCOIS.scanInventory(p_bagId, p_slotIndex)
             --d("[FCOIS]--> Scan whole inventory, bag: " .. tostring(bagToCheck))
             --Get the bag cache (all entries in that bag)
             --local bagCache = SHARED_INVENTORY:GenerateFullSlotData(nil, bagToCheck)
+FCOIS._bagIdsToScanNow = bagIdsToScanNow
             for _, bagToCheck in ipairs(bagIdsToScanNow) do
 --d(">FCOIS.scanInventory-bagId: " ..tostring(bagToCheck))
                 local bagCache = SHARED_INVENTORY:GetOrCreateBagCache(bagToCheck)

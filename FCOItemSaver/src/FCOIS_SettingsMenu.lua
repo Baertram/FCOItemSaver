@@ -3651,8 +3651,9 @@ function FCOIS.BuildAddonMenu()
                                     setFunc = function(orderedList)
                                         FCOISsettings.autoMarkBagsToScanOrder = orderedList
                                     end,
-                                    minHeight = 50,
+                                    minHeight = 100,
                                     maxHeight = 150,
+                                    showPosition = true,
                                     default = FCOISdefaultSettings.autoMarkBagsToScanOrder,
                                 },
                             },
