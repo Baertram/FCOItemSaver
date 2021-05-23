@@ -3169,13 +3169,64 @@ function FCOIS.BuildAddonMenu()
                     {
                         --========= ICON SORT OPTIONS ==================================================
                         -- FCOIS Icon sort order
+--[[
+                        --FCOIS version 2.0.3
                         {
                             type = "submenu",
                             name = locVars["options_header_sort_order"],
                             reference = "FCOItemSaver_Settings_IconSortOrder_SubMenu",
                             controls = IconSortOrderSubmenuControls, -- dynamically created dropdown controls for each FCOIS icon, for the sort order
                         },
+]]
+                        {
+                            type = "submenu",
+                            name = locVars["options_header_sort_order"],
+                            reference = "FCOItemSaver_Settings_IconSortOrder_SubMenu",
+                            controls = {
 
+                                --[[
+                                --FCOIS version 2.0.3
+                                ]]
+
+                                {
+                                    type =    "checkbox",
+                                    name =    locVars[optionsIcon .. "_sort_order_add_inv_button_flag_too"],
+                                    tooltip = locVars[optionsIcon .. "_sort_order_add_inv_button_flag_too" .. tooltipSuffix],
+                                    getFunc = function() return FCOISsettings.sortIconsInAdditionalInvFlagContextMenu end,
+                                    setFunc = function(value) FCOIS.settingsVars.settings.sortIconsInAdditionalInvFlagContextMenu = value
+                                    end,
+                                    default = FCOISdefaultSettings.sortIconsInAdditionalInvFlagContextMenu,
+                                },
+                                {
+                                    type = "orderlistbox",
+                                    name = locVars["options_header_sort_order"],
+                                    tooltip = locVars["options_header_sort_order"],
+                                    listEntries = FCOISsettings.iconSortOrderEntries,
+                                    getFunc = function() return FCOISsettings.iconSortOrderEntries end,
+                                    setFunc = function(sortedSortListEntries)
+                                        --[[
+        [1] = {
+            value = "Value of the entry", -- or number or boolean or function returning the value of this entry
+            uniqueKey = 1, --number of the unique key of this list entry. This will not change if the order changes. Will be used to identify the entry uniquely
+            text  = "Text of this entry", -- or string id or function returning a string (optional)
+            tooltip = "Tooltip text shown at this entry", -- or string id or function returning a string (optional)
+        },                                        ]]
+                                        for idx, data in ipairs(sortedSortListEntries) do
+                                            FCOIS.settingsVars.settings.icon[data.value].sortOrder = idx
+                                            FCOIS.settingsVars.settings.iconSortOrder[idx] = data.value
+                                        end
+                                    end,
+                                    width="full",
+                                    minHeight = 250,
+                                    maxHeight = 400,
+                                    disabled = function() return false  end,
+                                    reference = "FCOItemSaver_Settings_IconSortOrder_OrderListBox",
+                                    disabled = function() return not FCOISsettings.sortIconsInAdditionalInvFlagContextMenu end,
+                                    default = FCOISdefaultSettings.iconSortOrderEntries,
+                                },
+                            },
+
+                        },
                         --========= ICON POSITIONS ==================================================
                         {
                             type = "submenu",

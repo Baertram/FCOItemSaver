@@ -1889,12 +1889,13 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons, withNoneEntry)
 				end
 			end
 
-		elseif typeToCheck == 'recipe' then
+elseif typeToCheck == 'recipe' then
 			local counter = 0
 			for i=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
   				local goOn = false
 				local isGear = isGearIcon[i]
-				if iconIsResearchable[i] or isGear == true then
+				local iconIsEnabled = isIconEnabled[i]
+				if not iconIsEnabled or iconIsResearchable[i] or isGear == true then
 					goOn = false
 				else
 					local isDynamic = isDynamicIcon[i]
@@ -1912,20 +1913,13 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons, withNoneEntry)
 				if goOn then
 					counter = counter + 1
 					local locNameStr = FCOISlocVars.iconEndStrArray[i]
-					local iconIsEnabled = isIconEnabled[counter]
 					local iconName = FCOIS.GetIconText(i) or FCOISlocVars.fcois_loc["options_icon" .. tostring(i) .. "_" .. locNameStr] or "Icon " .. tostring(i)
 					--Should the icon be shown at the start of the text too?
 					if p_withIcons then
 						local iconNameWithIcon = FCOIS.buildIconText(iconName, i, false, not iconIsEnabled)
 						iconName = iconNameWithIcon
 					end
-					--Is the icon enabled?
-					if iconIsEnabled then
-						iconsList[counter] = iconName
-					else
-						--Icon is not enabled, so color the entry red (or strike it through)
-						iconsList[counter] = "|cFF0000" .. iconName .. "|r"
-					end
+					iconsList[counter] = iconName
 				end
 			end
 
@@ -2035,6 +2029,28 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons, withNoneEntry)
     --local iconsDropdownValuesTooltipsList = buildIconsChoicesValuesTooltipsList(type, withIcons, withNoneEntry)
 	local iconsDropdownValuesTooltipsList = iconsDropdownList
 
+	if iconsDropdownList and iconsDropdownValuesList and #iconsDropdownList ~= #iconsDropdownValuesList then
+		d(string.format("[FCOIS]ERROR: GetLAMMarkerIconsDropdown - typeToCheck: %s, withIcons: %s, withNoneEntry: %s -> count entries/values: %s/%s", tostring(type), tostring(withIcons), tostring(withNoneEntry), tostring(#iconsDropdownList), tostring(#iconsDropdownValuesList)))
+		--For debugging
+		if GetDisplayName() == "@Baertram" then
+			FCOIS._errorDropDownList = ZO_ShallowTableCopy(iconsDropdownList)
+			FCOIS._errorDropDownListValues = ZO_ShallowTableCopy(iconsDropdownValuesList)
+			--Equal the two table entry counts so that LAM is not erroring out
+			if #iconsDropdownValuesList > #iconsDropdownList then
+				for idx, iconText in ipairs(iconsDropdownValuesList) do
+					if idx > #iconsDropdownList then
+						table.remove(iconsDropdownValuesList, idx)
+					end
+				end
+			else
+				for idx, iconText in ipairs(iconsDropdownList) do
+					if idx > #iconsDropdownValuesList then
+						table.remove(iconsDropdownList, idx)
+					end
+				end
+			end
+		end
+	end
 	return iconsDropdownList, iconsDropdownValuesList, iconsDropdownValuesTooltipsList
 end
 

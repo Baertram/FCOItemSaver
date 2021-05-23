@@ -335,6 +335,41 @@ local function afterLocalization()
         ctmVars[ctmName].buttonTemplate 		= ctmVars[ctmName].cmVars.buttonContextMenuToIconId
         ctmVars[ctmName].buttonTemplateIndex 	= ctmVars[ctmName].cmVars.buttonContextMenuToIconIdIndex
     end
+
+	--Added with FCOIS v2.0.3
+	--Build the iconSortOrderEntries table for the settings menu -> LAM2 widget "order list box"
+    local optionsIcon = "options_icon"
+    local tooltipSuffix = "_TT"
+
+    local iconsListStandard, iconsListValuesStandard = FCOIS.GetLAMMarkerIconsDropdown("standard", true, false)
+	FCOIS.settingsVars.defaults.iconSortOrderEntries = {}
+	for currentSortIdx, iconNumber in ipairs(defaults.iconSortOrder) do
+        if settings.isIconEnabled[iconNumber] then
+            --[[
+                --Example entry
+                [1] = {
+                    value = "Value of the entry", -- or number or boolean or function returning the value of this entry
+                    uniqueKey = 1, --number of the unique key of this list entry. This will not change if the order changes. Will be used to identify the entry uniquely
+                    text  = "Text of this entry", -- or string id or function returning a string (optional)
+                    tooltip = "Tooltip text shown at this entry", -- or string id or function returning a string (optional)
+                },
+            ]]
+
+            local iconIndex = ZO_IndexOfElementInNumericallyIndexedTable(iconsListValuesStandard, iconNumber)
+            local name = iconsListStandard[iconIndex] or "Icon " ..tostring(iconNumber)
+            local tooltip = name
+
+            FCOIS.settingsVars.defaults.iconSortOrderEntries[currentSortIdx] = {
+                uniqueKey	= iconNumber,
+                value		= iconNumber,
+                text 		= name,
+                tooltip 	= tooltip,
+            }
+        end
+	end
+    if not settings.iconSortOrderEntries or (settings.iconSortOrderEntries and #settings.iconSortOrderEntries == 0) then
+        FCOIS.settingsVars.settings.iconSortOrderEntries = FCOIS.settingsVars.defaults.iconSortOrderEntries
+    end
 end
 
 --Localized texts etc.

@@ -36,7 +36,7 @@ function FCOIS.addFeedbackButtonToParent(parentCtrl, anchorTo, anchorBackup, off
             -- -- [2nd parameter]String to show as button text.
             -- -- [3rd parameter]Boolean send gold. True: Send mail with attached gold value from 1st parameter/False: Send normal mail without gold attached
             [1] = { 0,                         locVars.feedbackSendNote,                  false },    -- Send ingame mail text
-            [2] = { 10000,                     locVars.feedbackSendGold,                  true },     -- Send gold
+            [2] = { 5000,                      locVars.feedbackSendGold,                  true },     -- Send gold
             [3] = { addonVars.authorPortal,    locVars.feedbackOpenAddonAuthorWebsite,    false },    -- Open URL
             [4] = { addonVars.FAQwebsite,      locVars.feedbackOpenAddonFAQ,              false }     -- Open URL
         }, -- The button info.

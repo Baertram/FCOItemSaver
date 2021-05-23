@@ -1545,6 +1545,8 @@ function FCOIS.scanInventoryItemsForAutomaticMarks(bag, slot, scanType, updateIn
         elseif bag == nil and slot ~= nil then
             return
         end
+        --Sort the bags table so that inventory will be scanned before bank and subscriber bank
+        table.sort(bagIdsToCheck)
 
         local atLeastOneMarkerIconWasSetInForLoop 	= false
         for _, bagToCheck in ipairs(bagIdsToCheck) do
@@ -1792,6 +1794,8 @@ function FCOIS.scanInventory(p_bagId, p_slotIndex)
             elseif p_bagId == nil and p_slotIndex ~= nil then
                 return
             end
+            --Sort the bags table so that inventory will be scanned before bank and subscriber bank
+            table.sort(bagIdsToCheck)
 
             --d("[FCOIS]--> Scan whole inventory, bag: " .. tostring(bagToCheck))
             --Get the bag cache (all entries in that bag)
