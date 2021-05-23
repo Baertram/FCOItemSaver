@@ -2318,7 +2318,7 @@ function FCOIS.rebuildGearSetBaseVars(iconNr, value, calledFromEventPlayerActiva
             --but not if this function was called from Event_Player_Activated as the same function will be called just after
             --FCOIS.rebuildGearSetBaseVars for all icons (-1) already!
             if not calledFromEventPlayerActivated then
-                FCOIS.changeContextMenuEntryTexts(iconNrLoop)
+                FCOIS.ChangeContextMenuEntryTexts(iconNrLoop)
             end
         end -- for ... loop
 
@@ -2326,7 +2326,7 @@ function FCOIS.rebuildGearSetBaseVars(iconNr, value, calledFromEventPlayerActiva
         sortGearSetMappingTables()
 
         --Rebuild the context menu variables for the dynamic and gear icons
-        FCOIS.rebuildFilterButtonContextMenuVars()
+        FCOIS.RebuildFilterButtonContextMenuVars()
 
 ------------------------------------------------------------------------------------------------------------------------
 --Update only one entry
@@ -2385,13 +2385,13 @@ function FCOIS.rebuildGearSetBaseVars(iconNr, value, calledFromEventPlayerActiva
 --d(">newMaxGearSets: " ..tostring(FCOIS.numVars.gFCONumGearSets))
 
         --Update the context menu texts for this icon
-        FCOIS.changeContextMenuEntryTexts(iconNr)
+        FCOIS.ChangeContextMenuEntryTexts(iconNr)
 
         --Sort the tables iconToGear and gearToIcon again
         sortGearSetMappingTables()
 
         --Rebuild the context menu variables for the dynamic and gear icons
-        FCOIS.rebuildFilterButtonContextMenuVars()
+        FCOIS.RebuildFilterButtonContextMenuVars()
     end
 
 end

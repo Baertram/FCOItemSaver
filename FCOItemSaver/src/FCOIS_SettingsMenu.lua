@@ -82,6 +82,7 @@ local editBoxesToSetTextTypes
 
 local updateFCOISFilterButtonColorsAndTextures = FCOIS.UpdateFCOISFilterButtonColorsAndTextures
 local changeContextMenuInvokerButtonColorByPanelId = FCOIS.ChangeContextMenuInvokerButtonColorByPanelId
+local changeContextMenuEntryTexts = FCOIS.ChangeContextMenuEntryTexts
 
 local iconsList, iconsListValues
 local iconsListNone, iconsListValuesNone, iconsListRecipe, iconsListValuesRecipe
@@ -326,6 +327,13 @@ end
 function FCOIS.BuildAddonMenu()
     --Update some settings for the libAddonMenu settings menu
     FCOIS.updateSettingsBeforeAddonMenu()
+
+    --Check if the user set ordering of context menu entries (marker icons) is valid, else use the default sorting
+    -->With FCOIS 2.0.3 it should be always valid due to the usage of the LibAddonMenu-2.0 OrderListBox, and no dropdown boxes anymore!
+    -->But just in case run the function here once as the LAM panel creates -> See function FCOIS.BuildAddonMenu()
+    if FCOIS.CheckIfUserContextMenuSortOrderValid() == false then
+        FCOIS.ResetUserContextMenuSortOrder()
+    end
 
     --Build the icons & choicesValues list for the LAM icon dropdown boxes
     updateIconsList("standard", true, false)
@@ -1374,7 +1382,7 @@ function FCOIS.BuildAddonMenu()
                     setFunc = function(newValue)
                         FCOISsettings.icon[normalIconId].name = newValue
                         FCOIS.preventerVars.doUpdateLocalization = true
-                        FCOIS.changeContextMenuEntryTexts(normalIconId)
+                        changeContextMenuEntryTexts(normalIconId)
                         --Update the icon list dropdown entries (name, enabled state)
                         updateIconListDropdownEntries()
                     end
@@ -1698,7 +1706,7 @@ function FCOIS.BuildAddonMenu()
             setFunc = function(newValue)
                 FCOISsettings.icon[fcoisDynIconNr].name = newValue
                 FCOIS.preventerVars.doUpdateLocalization = true
-                FCOIS.changeContextMenuEntryTexts(fcoisDynIconNr)
+                changeContextMenuEntryTexts(fcoisDynIconNr)
                 --Update the icon list dropdown entries (name, enabled state)
                 updateIconListDropdownEntries()
             end
@@ -2586,9 +2594,13 @@ function FCOIS.BuildAddonMenu()
             panel.controlsWereLoaded = true
         end
         --Check if the user set ordering of context menu entries (marker icons) is valid, else use the default sorting
-        if FCOIS.checkIfUserContextMenuSortOrderValid() == false then
-            FCOIS.resetUserContextMenuSortOrder()
+        -->With FCOIS 2.0.3 it should be always valid due to the usage of the LibAddonMenu-2.0 OrderListBox, and no dropdown boxes anymore!
+        -->But just in case run the function here once as the LAM panel creates -> See function FCOIS.BuildAddonMenu()
+        --[[
+        if FCOIS.CheckIfUserContextMenuSortOrderValid() == false then
+            FCOIS.ResetUserContextMenuSortOrder()
         end
+        ]]
         --Show the LAM menu container now
         --ChangeFCOISLamMenuVisibleState(false)
         --cm:UnregisterCallback("LAM-PanelControlsCreated")

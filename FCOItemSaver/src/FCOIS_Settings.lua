@@ -813,7 +813,7 @@ function FCOIS.afterSettings()
     --Build the additional inventory "flag" context menu button data, which depends on the here before set values
     --FCOIS.numVars.gFCONumDynamicIcons and FCOIS.settingsVars.settings.numMaxDynamicIconsUsable
     --> See file src/FCOIS_ContextMenus.lua, function FCOIS.buildAdditionalInventoryFlagContextMenuData(calledFromFCOISSettings)
-    FCOIS.buildAdditionalInventoryFlagContextMenuData(true)
+    FCOIS.BuildAdditionalInventoryFlagContextMenuData(true)
 
     --Preset global variable for item destroying
     FCOIS.preventerVars.gAllowDestroyItem = not settings.blockDestroying
@@ -927,7 +927,7 @@ function FCOIS.afterSettings()
     local ancVars = FCOIS.anchorVars
     local locVars = FCOIS.localizationVars.fcois_loc
     --Non changing values
-    local showAddInvContextMenuFunc = FCOIS.showContextMenuForAddInvButtons
+    local showAddInvContextMenuFunc = FCOIS.ShowContextMenuForAddInvButtons
     local showAddInvContextMenuMouseUpFunc = FCOIS.onContextMenuForAddInvButtonsButtonMouseUp
     --The "flag" textures
     local invAddButtonVars = FCOIS.invAdditionalButtonVars

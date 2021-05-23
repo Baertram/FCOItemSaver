@@ -1061,28 +1061,29 @@ function FCOIS.AddOrChangeFCOISFilterButton(parentWindow, buttonId, pWidth, pHei
     --Set/Update a tooltip?
     button:SetHandler("OnMouseEnter", function(self)
         if settings.showFilterButtonTooltip == true then
+            local panelId = FCOIS.gFilterWhere
             local settingsFilterStateToText = FCOIS.mappingVars.settingsFilterStateToText
             tooltipText = outputFilterState(false, self.FCOfilterPanelId, self.FCObuttonId, settingsFilterStateToText[tostring(getSettingsIsFilterOn(self.FCObuttonId, self.FCOfilterPanelId))])
             if tooltipText ~= "" then
                 local contextMenu = FCOIS.contextMenu
                 local showToolTip = true
                 --Don't show a tooltip if the context menu for LOCKDYN is shown at the filter button
-                local contextMenuFilterButton1 = contextMenu.LockDynFilter[FCOIS.gFilterWhere]
+                local contextMenuFilterButton1 = contextMenu.LockDynFilter[panelId]
                 if contextMenuFilterButton1 ~= nil then
                     showToolTip = contextMenuFilterButton1:IsHidden()
                 end
                 --Don't show a tooltip if the context menu for gear sets is shown at the filter button
-                local contextMenuFilterButton2 = contextMenu.GearSetFilter[FCOIS.gFilterWhere]
+                local contextMenuFilterButton2 = contextMenu.GearSetFilter[panelId]
                 if contextMenuFilterButton2 ~= nil then
                     showToolTip = contextMenuFilterButton2:IsHidden()
                 end
                 --Don't show a tooltip if the context menu for research, deconstruction & improvement is shown at the filter button
-                local contextMenuFilterButton3 = contextMenu.ResDecImpFilter[FCOIS.gFilterWhere]
+                local contextMenuFilterButton3 = contextMenu.ResDecImpFilter[panelId]
                 if showToolTip and contextMenuFilterButton3 ~= nil then
                     showToolTip = contextMenuFilterButton3:IsHidden()
                 end
                 --Don't show a tooltip if the context menu for sell, sell at guild store & intricate is shown at the filter button
-                local contextMenuFilterButton4 = contextMenu.SellGuildIntFilter[FCOIS.gFilterWhere]
+                local contextMenuFilterButton4 = contextMenu.SellGuildIntFilter[panelId]
                 if showToolTip and contextMenuFilterButton4 ~= nil then
                     showToolTip = contextMenuFilterButton4:IsHidden()
                 end
@@ -1130,11 +1131,15 @@ function FCOIS.AddOrChangeFCOISFilterButton(parentWindow, buttonId, pWidth, pHei
 --d("[FCOIS]FilterButton right click handler - panelId: " ..tostring(FCOIS.gFilterWhere))
 
             local contextMenu = FCOIS.contextMenu
+            local showContextMenuAtFCOISFilterButton = FCOIS.ShowContextMenuAtFCOISFilterButton
+            local availableCtms = FCOIS.contextMenuVars.availableCtms
+            local panelId = FCOIS.gFilterWhere
+
             --Build the context menu for the lock & dynamic icons
             --Only do this if the right mouse button was pressed and filter button ID is 1 (lock)
             if buttonId == FCOIS_CON_FILTER_BUTTON_LOCKDYN and settings.splitLockDynFilter then
                 --Hide the lockdyn split filter button context-menu
-                local contextMenuFilterButton1 = contextMenu.LockDynFilter[FCOIS.gFilterWhere]
+                local contextMenuFilterButton1 = contextMenu.LockDynFilter[panelId]
                 if contextMenuFilterButton1 ~= nil then
                     if not contextMenuFilterButton1:IsHidden() then
                         contextMenuFilterButton1:SetHidden(true)
@@ -1144,16 +1149,11 @@ function FCOIS.AddOrChangeFCOISFilterButton(parentWindow, buttonId, pWidth, pHei
                 else
                     doBuildContextMenu = true
                 end
-                if doBuildContextMenu then
-                    --Build and show the context menu for the lockdyn
-                    FCOIS.showContextMenuAtFCOISFilterButton(self, self.FCOfilterPanelId, "LockDyn")
-                end
-
-                --Build the context menu for the gear sets filter button, if activated
-                --Only do this if the right mouse button was pressed and filter button ID is 2 (gear sets)
+            --Build the context menu for the gear sets filter button, if activated
+            --Only do this if the right mouse button was pressed and filter button ID is 2 (gear sets)
             elseif buttonId == FCOIS_CON_FILTER_BUTTON_GEARSETS and settings.splitGearSetsFilter then
                 --Hide the gear sets split filter button context-menu
-                local contextMenuFilterButton2 = contextMenu.GearSetFilter[FCOIS.gFilterWhere]
+                local contextMenuFilterButton2 = contextMenu.GearSetFilter[panelId]
                 if contextMenuFilterButton2 ~= nil then
                     if not contextMenuFilterButton2:IsHidden() then
                         contextMenuFilterButton2:SetHidden(true)
@@ -1163,16 +1163,11 @@ function FCOIS.AddOrChangeFCOISFilterButton(parentWindow, buttonId, pWidth, pHei
                 else
                     doBuildContextMenu = true
                 end
-                if doBuildContextMenu then
-                    --Build and show the context menu for the gear sets
-                    FCOIS.showContextMenuAtFCOISFilterButton(self, self.FCOfilterPanelId, "Gear")
-                end
-
-                --Build the context menu for the research filter button, if activated
-                --Only do this if the right mouse button was pressed and filter button ID is 3 (research)
+            --Build the context menu for the research filter button, if activated
+            --Only do this if the right mouse button was pressed and filter button ID is 3 (research)
             elseif buttonId == FCOIS_CON_FILTER_BUTTON_RESDECIMP and settings.splitResearchDeconstructionImprovementFilter then
                 --Hide the RESEARCH & DECONSTRUCTION & IMPORVEMENT button context-menu
-                local contextMenuFilterButton3 = contextMenu.ResDecImpFilter[FCOIS.gFilterWhere]
+                local contextMenuFilterButton3 = contextMenu.ResDecImpFilter[panelId]
                 if contextMenuFilterButton3 ~= nil then
                     if not contextMenuFilterButton3:IsHidden() then
                         contextMenuFilterButton3:SetHidden(true)
@@ -1182,17 +1177,11 @@ function FCOIS.AddOrChangeFCOISFilterButton(parentWindow, buttonId, pWidth, pHei
                 else
                     doBuildContextMenu = true
                 end
-
-                if doBuildContextMenu then
-                    --Build and show the context menu for the research, deconstruction & improvement icons
-                    FCOIS.showContextMenuAtFCOISFilterButton(self, self.FCOfilterPanelId, "ResDecImp")
-                end
-
-                --Build the context menu for the sell filter button, if activated
-                --Only do this if the right mouse button was pressed and filter button ID is 4 (sell)
+            --Build the context menu for the sell filter button, if activated
+            --Only do this if the right mouse button was pressed and filter button ID is 4 (sell)
             elseif buttonId == FCOIS_CON_FILTER_BUTTON_SELLGUILDINT and settings.splitSellGuildSellIntricateFilter then
                 --Hide the SELL & SELL AT GUILD STORE & INTRICATE button context-menu
-                local contextMenuFilterButton4 = contextMenu.SellGuildIntFilter[FCOIS.gFilterWhere]
+                local contextMenuFilterButton4 = contextMenu.SellGuildIntFilter[panelId]
                 if contextMenuFilterButton4 ~= nil then
                     if not contextMenuFilterButton4:IsHidden() then
                         contextMenuFilterButton4:SetHidden(true)
@@ -1202,10 +1191,13 @@ function FCOIS.AddOrChangeFCOISFilterButton(parentWindow, buttonId, pWidth, pHei
                 else
                     doBuildContextMenu = true
                 end
-
-                if doBuildContextMenu then
-                    --Build and show the context menu for the sell, sell at guild store & intricate icons
-                    FCOIS.showContextMenuAtFCOISFilterButton(self, self.FCOfilterPanelId, "SellGuildInt")
+            end
+            --Get the context menu type ("LockDyn", "Gear," ResDecImp" or "SellGuildInt") via the constant of the filterbutton
+            if doBuildContextMenu == true then
+                local filterButtonContextMenuType = availableCtms[buttonId]
+                if filterButtonContextMenuType ~= nil then
+                    --Build and show the context menu for the lockdyn
+                    showContextMenuAtFCOISFilterButton(self, self.FCOfilterPanelId, filterButtonContextMenuType)
                 end
             end
         end
@@ -1214,11 +1206,12 @@ function FCOIS.AddOrChangeFCOISFilterButton(parentWindow, buttonId, pWidth, pHei
     -- setup & modify button's size, position etc.
     button:SetDimensions(pWidth, pHeight)
     --Move the button more to the right, if standard left values are used and GridView Addon is activated
+    local panelId = FCOIS.gFilterWhere
     local filterButtonVars = FCOIS.filterButtonVars
-    local filterButtonDataLockDyn       = settings.filterButtonData[FCOIS_CON_FILTER_BUTTON_LOCKDYN][FCOIS.gFilterWhere]
-    local filterButtonDataGearSets      = settings.filterButtonData[FCOIS_CON_FILTER_BUTTON_GEARSETS][FCOIS.gFilterWhere]
-    local filterButtonDataResDecImp     = settings.filterButtonData[FCOIS_CON_FILTER_BUTTON_RESDECIMP][FCOIS.gFilterWhere]
-    local filterButtonDataSellGuildInt  = settings.filterButtonData[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT][FCOIS.gFilterWhere]
+    local filterButtonDataLockDyn       = settings.filterButtonData[FCOIS_CON_FILTER_BUTTON_LOCKDYN][panelId]
+    local filterButtonDataGearSets      = settings.filterButtonData[FCOIS_CON_FILTER_BUTTON_GEARSETS][panelId]
+    local filterButtonDataResDecImp     = settings.filterButtonData[FCOIS_CON_FILTER_BUTTON_RESDECIMP][panelId]
+    local filterButtonDataSellGuildInt  = settings.filterButtonData[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT][panelId]
     if (FCOIS.otherAddons.inventoryGridViewActive == true
             --[[
                 and ( settings.filterButtonLeft[FCOIS_CON_FILTER_BUTTON_LOCKDYN] == filterButtonVars.gFilterButtonLeft[FCOIS_CON_FILTER_BUTTON_LOCKDYN]

@@ -218,7 +218,7 @@ local function checkAndUpdateContextMenuLocalizationData()
         --Re-Do the localization done variable and rebuild all localization
         FCOIS.Localization()
         --Overwrite the localized texts for the marker icons in the context menus
-        FCOIS.changeContextMenuEntryTexts(-1)
+        FCOIS.ChangeContextMenuEntryTexts(-1)
     end
 end
 
@@ -644,7 +644,8 @@ function FCOIS.CreateHooks()
         local FCOcontextMenu = {}
 
         --Check if the user set ordering is valid, else use the default sorting
-        local userOrderValid = FCOIS.checkIfUserContextMenuSortOrderValid()
+        -->With FCOIS 2.0.3 it should be always valid due to the usage of the LibAddonMenu-2.0 OrderListBox, and no dropdown boxes anymore!
+        local userOrderValid = true --FCOIS.checkIfUserContextMenuSortOrderValid()
         local resetSortOrderDone = false
 
         local contextMenuEntriesAdded = 0
@@ -663,7 +664,7 @@ function FCOIS.CreateHooks()
                 else
                     --Reset the sort order to the default values now - Only once for the first icon where this happens
                     if not resetSortOrderDone then
-                        resetSortOrderDone = FCOIS.resetUserContextMenuSortOrder()
+                        resetSortOrderDone = FCOIS.ResetUserContextMenuSortOrder()
                     end
                     --Use the default sort order as the other one is not valid!
                     newOrderId = FCOIS.settingsVars.defaults.icon[iconId].sortOrder
@@ -1033,7 +1034,8 @@ function FCOIS.CreateHooks()
                 --Build the context menu for the research dialog now. Will be shown via function FCOIS.MarkMe then
                 local FCOcontextMenu = {}
                 --Check if the user set ordeirng is valid, else use the standard sorting
-                local userOrderValid = FCOIS.checkIfUserContextMenuSortOrderValid()
+                -->With FCOIS 2.0.3 it should be always valid due to the usage of the LibAddonMenu-2.0 OrderListBox, and no dropdown boxes anymore!
+                local userOrderValid = true --FCOIS.CheckIfUserContextMenuSortOrderValid()
                 local contextMenuEntriesAdded = 0
                 --Check if the localization data of the context menu is given
                 checkAndUpdateContextMenuLocalizationData()

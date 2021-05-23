@@ -856,7 +856,7 @@ local function FCOItemSaver_Player_Activated(...)
         FCOIS.rebuildGearSetBaseVars(nil, nil, true)
 
         --Overwrite the localized texts for the equipment gears, if changed in the settings
-        FCOIS.changeContextMenuEntryTexts(-1)
+        FCOIS.ChangeContextMenuEntryTexts(-1)
 
         --Change the button color of the context menu invoker
         changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
