@@ -1241,7 +1241,7 @@ function FCOIS.ChangeContextMenuEntryTexts(iconId)
         for p_iconId=FCOIS_CON_ICON_LOCK, numFilterIcons do
             FCOIS.preventerVars.buildingSlotActionTexts = true
             --Recursively call this function for each iconId
-            FCOIS.changeContextMenuEntryTexts(p_iconId)
+            FCOIS.ChangeContextMenuEntryTexts(p_iconId)
             FCOIS.preventerVars.buildingSlotActionTexts = false
             updateSlotActionTextsNow = true
         end
