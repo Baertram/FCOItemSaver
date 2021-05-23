@@ -389,6 +389,15 @@ local function afterLocalization()
     }
     if not settings.autoMarkBagsToScanOrder or (settings.autoMarkBagsToScanOrder and #settings.autoMarkBagsToScanOrder == 0) then
         FCOIS.settingsVars.settings.autoMarkBagsToScanOrder = FCOIS.settingsVars.defaults.autoMarkBagsToScanOrder
+    elseif settings.autoMarkBagsToScanOrder and #settings.autoMarkBagsToScanOrder > 0 then
+        for entryIdx, entryData in ipairs(settings.autoMarkBagsToScanOrder) do
+            local value = entryData.value
+            if value ~= nil and (entryData.text == nil or entryData.text == "") then
+                local textVar = locVars["FCOIS_LibFilters_PanelIds"][value]
+                entryData.text = textVar
+                entryData.tooltip = textVar
+            end
+        end
     end
 end
 
