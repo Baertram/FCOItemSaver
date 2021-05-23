@@ -145,7 +145,10 @@ function FCOIS.buildDefaultSettings()
 		autoMarkBagsToScan = {
 			[BAG_BACKPACK] = true,
 			[BAG_BANK] = true,
-			[BAG_SUBSCRIBER_BANK] = true,
+		},
+		autoMarkBagsToScanOrder = {
+			[1] = BAG_BACKPACK,
+			[2] = BAG_BANK,
 		},
 		autoMarkNewItems			= false,
 		autoMarkNewIconNr           = FCOIS_CON_ICON_LOCK,

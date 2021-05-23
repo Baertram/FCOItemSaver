@@ -1209,6 +1209,8 @@ FCOIS.localizationVars.localizationAll = {
         ["options_known"] = "known",
         ["options_bags_to_scan"]                        = "Inv. bags to scan",
         ["options_bags_to_scan_automatic_marks_tt"]     = "Inventory bags to scan for automatic marking as a ReloadUI/zone change with loading screen is done.\nManually triggered automatic markings via the add. inv. "..addInvFlagIcon.." context menu will only scan the currently visible items at the currently opened inventory!",
+        ["options_bags_to_scan_order"]                  = "Scan order",
+        ["options_bags_to_scan_order_tt"]               = "Choose the scan order for the inventory bags. Automatic markings scans will be processed from top to bottom",
 
         --LibShifterBoxes
         --[FCOIS_UNIQUEID_ITEMTYPES]
@@ -2357,6 +2359,8 @@ FCOIS.localizationVars.localizationAll = {
         ["options_known"] = "bekannt",
         ["options_bags_to_scan"]                        = "Zu prüfende Inventare",
         ["options_bags_to_scan_automatic_marks_tt"]     = "Inventare, die bei den automatischen Markierungen nach dem Login/Benutzeroberfläche Neuladen/Zonen Wechsel mit Ladebildschirm gescannt werden sollen.\nManuell ausgelöste automatische Markierungen über das zusätzl. Inventar "..addInvFlagIcon.." Kontextmenü werden nur die aktuell angezeigten Gegenstände im aktuell angezeigten Inventar prüfen!",
+        ["options_bags_to_scan_order"]                  = "Scan Reihenfolge",
+        ["options_bags_to_scan_order_tt"]               = "Wähle die Scan Reihenfolge für die Automatischen Markierungen. Die Markierungen werden in den Inventaren von oben nach unten geprüft und gesetzt.",
 
         --LibShifterBoxes
         --[FCOIS_UNIQUEID_ITEMTYPES]

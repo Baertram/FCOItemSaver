@@ -1217,7 +1217,23 @@ end -- Single item scan function scanInventoryItemForAutomaticMarks(bag, slot, s
 local scanInventoryItemForAutomaticMarks = FCOIS.scanInventoryItemForAutomaticMarks
 
 local function getBagsToScanForAutomaticMarks()
-    return FCOIS.settingsVars.settings.autoMarkBagsToScan
+    local settings = FCOIS.settingsVars.settings
+    local bagsToScan, bagScanOrder = ZO_ShallowTableCopy(settings.autoMarkBagsToScan), ZO_ShallowTableCopy(settings.autoMarkBagsToScanOrder)
+    --Scan the bank? Also scan the subscriber bank than!
+    if bagsToScan[BAG_BANK] == true then
+        bagsToScan[BAG_SUBSCRIBER_BANK] = true
+        local insertIdx
+        for scanIndex, bagId in ipairs(bagScanOrder) do
+            if bagId == BAG_BANK then
+                insertIdx = scanIndex
+                break
+            end
+        end
+        if insertIdx ~= nil then
+            table.insert(bagScanOrder, insertIdx, BAG_SUBSCRIBER_BANK)
+        end
+    end
+    return bagsToScan, bagScanOrder
 end
 
 --Function to do the scans for automatic marker icons (multiple items)
@@ -1523,10 +1539,10 @@ function FCOIS.scanInventoryItemsForAutomaticMarks(bag, slot, scanType, updateIn
         FCOIS.preventerVars.gScanningInv = false
     else
          --The bagids that should be scanned if no bagId was given as parameter p_bagId
-        local bagIdsToCheck = {}
+        local bagIdsToScan, bagIdsToCheck, bagIdsToScanNow, bagIdScanOrder = {}, {}, {}, nil
         --Check all bagIds?
         if bag == nil and slot == nil then
-            local bagIdsToScan = getBagsToScanForAutomaticMarks()
+            bagIdsToScan, bagIdScanOrder = getBagsToScanForAutomaticMarks()
             for bagIdToScan, enabled in pairs(bagIdsToScan) do
                 if enabled == true then
                     if bagIdToScan ~= BAG_BACKPACK then
@@ -1537,7 +1553,7 @@ function FCOIS.scanInventoryItemsForAutomaticMarks(bag, slot, scanType, updateIn
             end
         --Or is a bagId given?
         elseif bag ~= nil then
-            table.insert(bagIdsToCheck, bag)
+            table.insert(bagIdsToScanNow, bag)
             if bag ~= BAG_BACKPACK then
                 onlyUpdatePlayerInv = false
             end
@@ -1545,11 +1561,24 @@ function FCOIS.scanInventoryItemsForAutomaticMarks(bag, slot, scanType, updateIn
         elseif bag == nil and slot ~= nil then
             return
         end
-        --Sort the bags table so that inventory will be scanned before bank and subscriber bank
-        table.sort(bagIdsToCheck)
-
+        --Sort the bags table according to the chosen order of the settings
+        if #bagIdsToCheck > 0 and bagIdScanOrder ~= nil then
+            for _, bagValue in ipairs(bagIdsToCheck) do
+                for orderIdx, bagValueOrder in ipairs(bagIdScanOrder) do
+                    if bagValue == bagValueOrder then
+                        if orderIdx <= #bagIdsToScanNow then
+                            --Insert in between
+                            table.insert(bagIdsToScanNow, orderIdx, bagValueOrder)
+                        else
+                            --Append
+                            table.insert(bagIdsToScanNow, bagValueOrder)
+                        end
+                    end
+                end
+            end
+        end
         local atLeastOneMarkerIconWasSetInForLoop 	= false
-        for _, bagToCheck in ipairs(bagIdsToCheck) do
+        for _, bagToCheck in ipairs(bagIdsToScanNow) do
             --d("[FCOIS]--> Scan whole inventory, bag: " .. tostring(bagToCheck))
             --Get the bag cache (all entries in that bag)
             --local bagCache = SHARED_INVENTORY:GenerateFullSlotData(nil, bagToCheck)
@@ -1771,11 +1800,10 @@ function FCOIS.scanInventory(p_bagId, p_slotIndex)
             if settings.debug then FCOIS.debugMessage( "[ScanInventory]","Start ALL", false, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
 
             --The bagids that should be scanned if no bagId was given as parameter p_bagId
-            local bagIdsToCheck = {}
+            local bagIdsToScan, bagIdsToCheck, bagIdsToScanNow, bagIdScanOrder = {}, {}, {}, nil
             --Check all bagIds?
             if p_bagId == nil and p_slotIndex == nil then
-                local bagIdsToScan = getBagsToScanForAutomaticMarks()
-
+                bagIdsToScan, bagIdScanOrder = getBagsToScanForAutomaticMarks()
                 for bagIdToScan, enabled in pairs(bagIdsToScan) do
                     if enabled == true then
                         if bagIdToScan ~= BAG_BACKPACK then
@@ -1786,21 +1814,35 @@ function FCOIS.scanInventory(p_bagId, p_slotIndex)
                 end
             --Or is a bagId given?
             elseif p_bagId ~= nil then
-                table.insert(bagIdsToCheck, p_bagId)
+                table.insert(bagIdsToScanNow, p_bagId)
                 if p_bagId ~= BAG_BACKPACK then
                     onlyUpdatePlayerInv = false
                 end
-            --Or is no bagId given but a slotIndex? -> Abort as this shouldn't happen
+                --Or is no bagId given but a slotIndex? -> Abort as this shouldn't happen
             elseif p_bagId == nil and p_slotIndex ~= nil then
                 return
             end
-            --Sort the bags table so that inventory will be scanned before bank and subscriber bank
-            table.sort(bagIdsToCheck)
+            --Sort the bags table according to the chosen order of the settings
+            if #bagIdsToCheck > 0 and bagIdScanOrder ~= nil then
+                for _, bagValue in ipairs(bagIdsToCheck) do
+                    for orderIdx, bagValueOrder in ipairs(bagIdScanOrder) do
+                        if bagValue == bagValueOrder then
+                            if orderIdx <= #bagIdsToScanNow then
+                                --Insert in between
+                                table.insert(bagIdsToScanNow, orderIdx, bagValueOrder)
+                            else
+                                --Append
+                                table.insert(bagIdsToScanNow, bagValueOrder)
+                            end
+                        end
+                    end
+                end
+            end
 
             --d("[FCOIS]--> Scan whole inventory, bag: " .. tostring(bagToCheck))
             --Get the bag cache (all entries in that bag)
             --local bagCache = SHARED_INVENTORY:GenerateFullSlotData(nil, bagToCheck)
-            for _, bagToCheck in ipairs(bagIdsToCheck) do
+            for _, bagToCheck in ipairs(bagIdsToScanNow) do
 --d(">FCOIS.scanInventory-bagId: " ..tostring(bagToCheck))
                 local bagCache = SHARED_INVENTORY:GetOrCreateBagCache(bagToCheck)
                 local updateInvLoop = false
