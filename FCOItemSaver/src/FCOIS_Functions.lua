@@ -4,7 +4,7 @@ local FCOIS = FCOIS
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
 
-local em = EVENT_MANAGAER
+local em = EVENT_MANAGER
 local wm = WINDOW_MANAGER
 
 local ctrlVars = FCOIS.ZOControlVars

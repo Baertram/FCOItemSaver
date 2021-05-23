@@ -182,7 +182,7 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 if FCOIS == nil then FCOIS = {} end
 local FCOIS = FCOIS
 
-local em = EVENT_MANAGAER
+local em = EVENT_MANAGER
 
 -- =====================================================================================================================
 --  Gamepad functions
