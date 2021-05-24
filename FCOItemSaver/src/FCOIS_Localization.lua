@@ -336,14 +336,14 @@ local function afterLocalization()
         ctmVars[ctmName].buttonTemplateIndex 	= ctmVars[ctmName].cmVars.buttonContextMenuToIconIdIndex
     end
 
-	--Added with FCOIS v2.0.3
-	--Build the iconSortOrderEntries table for the settings menu -> LAM2 widget "order list box"
+    --Added with FCOIS v2.0.3
+    --Build the iconSortOrderEntries table for the settings menu -> LAM2 widget "order list box"
     local optionsIcon = "options_icon"
     local tooltipSuffix = "_TT"
 
     local iconsListStandard, iconsListValuesStandard = FCOIS.GetLAMMarkerIconsDropdown("standard", true, false)
-	FCOIS.settingsVars.defaults.iconSortOrderEntries = {}
-	for currentSortIdx, iconNumber in ipairs(defaults.iconSortOrder) do
+    FCOIS.settingsVars.defaults.iconSortOrderEntries = {}
+    for currentSortIdx, iconNumber in ipairs(defaults.iconSortOrder) do
         if settings.isIconEnabled[iconNumber] then
             --[[
                 --Example entry
@@ -366,36 +366,48 @@ local function afterLocalization()
                 tooltip 	= tooltip,
             }
         end
-	end
+    end
     if not settings.iconSortOrderEntries or (settings.iconSortOrderEntries and #settings.iconSortOrderEntries == 0) then
         FCOIS.settingsVars.settings.iconSortOrderEntries = FCOIS.settingsVars.defaults.iconSortOrderEntries
     end
 
     --Added with FCOIS v2.1.0 - Bag scan order for automatic marks
-	FCOIS.settingsVars.defaults.autoMarkBagsToScanOrder = {
-        [1] = {
-            value 		= BAG_BACKPACK,
-            uniqueKey 	= BAG_BACKPACK,
-            text  		= locVars["FCOIS_LibFilters_PanelIds"][LF_INVENTORY],
-            tooltip 	= locVars["FCOIS_LibFilters_PanelIds"][LF_INVENTORY],
+    for _, defaultData in ipairs(FCOIS.settingsVars.defaults.autoMarkBagsToScanOrder) do
+        if defaultData.uniqueKey ~= nil then
+            local textVar = locVars["FCOIS_LibFilters_PanelIds"][defaultData.uniqueKey]
+            defaultData.text = textVar
+            defaultData.tooltip = textVar
+        end
+    end
 
-        },
-        [2] = {
-            value 		= BAG_BANK,
-            uniqueKey 	= BAG_BANK,
-            text  		= locVars["FCOIS_LibFilters_PanelIds"][LF_BANK_WITHDRAW],
-            tooltip 	= locVars["FCOIS_LibFilters_PanelIds"][LF_BANK_WITHDRAW],
-        },
-    }
     if not settings.autoMarkBagsToScanOrder or (settings.autoMarkBagsToScanOrder and #settings.autoMarkBagsToScanOrder == 0) then
-        FCOIS.settingsVars.settings.autoMarkBagsToScanOrder = FCOIS.settingsVars.defaults.autoMarkBagsToScanOrder
-    elseif settings.autoMarkBagsToScanOrder and #settings.autoMarkBagsToScanOrder > 0 then
-        for entryIdx, entryData in ipairs(settings.autoMarkBagsToScanOrder) do
-            local value = entryData.value
-            if value ~= nil and (entryData.text == nil or entryData.text == "") then
-                local textVar = locVars["FCOIS_LibFilters_PanelIds"][value]
-                entryData.text = textVar
-                entryData.tooltip = textVar
+        FCOIS.settingsVars.settings.autoMarkBagsToScanOrder = ZO_ShallowTableCopy(FCOIS.settingsVars.defaults.autoMarkBagsToScanOrder)
+    else
+        if settings.autoMarkBagsToScanOrder and #settings.autoMarkBagsToScanOrder > 0 then
+            --Default values were added here and are missing in the settings? Add them
+            if #FCOIS.settingsVars.defaults.autoMarkBagsToScanOrder ~= #settings.autoMarkBagsToScanOrder then
+                for _, defaultData in ipairs(FCOIS.settingsVars.defaults.autoMarkBagsToScanOrder) do
+                    local found = false
+                    for _, settingsData in ipairs(settings.autoMarkBagsToScanOrder) do
+                        if not found and settingsData.uniqueKey == defaultData.uniqueKey then
+                            found = true
+                            break
+                        end
+                    end
+                    if found == false then
+                        table.insert(FCOIS.settingsVars.settings.autoMarkBagsToScanOrder, defaultData)
+                    end
+                end
+            end
+
+            --Update missing text and tooltips
+            for _, entryData in ipairs(settings.autoMarkBagsToScanOrder) do
+                local uniqueKey = entryData.uniqueKey
+                if uniqueKey ~= nil and (entryData.text == nil or entryData.text == "") then
+                    local textVar = locVars["FCOIS_LibFilters_PanelIds"][uniqueKey]
+                    entryData.text = textVar
+                    entryData.tooltip = textVar
+                end
             end
         end
     end

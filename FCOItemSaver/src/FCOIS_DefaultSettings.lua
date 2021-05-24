@@ -145,20 +145,34 @@ function FCOIS.buildDefaultSettings()
 		autoMarkBagsToScan = {
 			[BAG_BACKPACK] = true,
 			[BAG_BANK] = true,
+			[BAG_GUILDBANK] = true,
+			[BAG_HOUSE_BANK_ONE] = true,
 		},
 		autoMarkBagsToScanOrder = {
 			[1] = {
 				value 		= BAG_BACKPACK,
-				uniqueKey 	= BAG_BACKPACK,
+				uniqueKey 	= LF_INVENTORY,
 				--text  		= locVars["FCOIS_LibFilters_PanelIds"][LF_INVENTORY],
 				--tooltip 	= locVars["FCOIS_LibFilters_PanelIds"][LF_INVENTORY],
 
 			},
 			[2] = {
 				value 		= BAG_BANK,
-				uniqueKey 	= BAG_BANK,
+				uniqueKey 	= LF_BANK_WITHDRAW,
 				--text  		= locVars["FCOIS_LibFilters_PanelIds"][LF_BANK_WITHDRAW],
 				--tooltip 	= locVars["FCOIS_LibFilters_PanelIds"][LF_BANK_WITHDRAW],
+			},
+			[3] = {
+				value 		= BAG_GUILDBANK,
+				uniqueKey 	= LF_GUILDBANK_WITHDRAW,
+				--text  		= locVars["FCOIS_LibFilters_PanelIds"][LF_GUILDBANK_WITHDRAW],
+				--tooltip 	= locVars["FCOIS_LibFilters_PanelIds"][LF_GUILDBANK_WITHDRAW],
+			},
+			[4] = {
+				value 		= BAG_HOUSE_BANK_ONE,
+				uniqueKey 	= LF_HOUSE_BANK_WITHDRAW,
+				--text  		= locVars["FCOIS_LibFilters_PanelIds"][LF_HOUSE_BANK_WITHDRAW],
+				--tooltip 	= locVars["FCOIS_LibFilters_PanelIds"][LF_HOUSE_BANK_WITHDRAW],
 			},
 		},
 		autoMarkNewItems			= false,

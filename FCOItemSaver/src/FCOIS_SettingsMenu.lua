@@ -83,7 +83,9 @@ local editBoxesToSetTextTypes
 local updateFCOISFilterButtonColorsAndTextures = FCOIS.UpdateFCOISFilterButtonColorsAndTextures
 local changeContextMenuInvokerButtonColorByPanelId = FCOIS.ChangeContextMenuInvokerButtonColorByPanelId
 local changeContextMenuEntryTexts = FCOIS.ChangeContextMenuEntryTexts
-local scanInventoryItemsForAutomaticMarks = FCOIS.scanInventoryItemsForAutomaticMarks
+local scanInventoryItemsForAutomaticMarks = FCOIS.ScanInventoryItemsForAutomaticMarks
+local scanInventory = FCOIS.ScanInventory
+local checkIfAutomaticMarksAreDisabledAtBag = FCOIS.CheckIfAutomaticMarksAreDisabledAtBag
 
 local iconsList, iconsListValues
 local iconsListNone, iconsListValuesNone, iconsListRecipe, iconsListValuesRecipe
@@ -3644,6 +3646,26 @@ function FCOIS.BuildAddonMenu()
                                     default = FCOISdefaultSettings.autoMarkBagsToScan[BAG_BANK],
                                 },
                                 {
+                                    type    = "checkbox",
+                                    name    = locVars["FCOIS_LibFilters_PanelIds"][LF_GUILDBANK_WITHDRAW],
+                                    tooltip = locVars["FCOIS_LibFilters_PanelIds"][LF_GUILDBANK_WITHDRAW],
+                                    getFunc = function() return FCOISsettings.autoMarkBagsToScan[BAG_GUILDBANK] end,
+                                    setFunc = function(value)
+                                        FCOISsettings.autoMarkBagsToScan[BAG_GUILDBANK] = value
+                                    end,
+                                    default = FCOISdefaultSettings.autoMarkBagsToScan[BAG_GUILDBANK],
+                                },
+                                {
+                                    type    = "checkbox",
+                                    name    = locVars["FCOIS_LibFilters_PanelIds"][LF_HOUSE_BANK_WITHDRAW],
+                                    tooltip = locVars["FCOIS_LibFilters_PanelIds"][LF_HOUSE_BANK_WITHDRAW],
+                                    getFunc = function() return FCOISsettings.autoMarkBagsToScan[BAG_HOUSE_BANK_ONE] end,
+                                    setFunc = function(value)
+                                        FCOISsettings.autoMarkBagsToScan[BAG_HOUSE_BANK_ONE] = value
+                                    end,
+                                    default = FCOISdefaultSettings.autoMarkBagsToScan[BAG_HOUSE_BANK_ONE],
+                                },
+                                {
                                     type    = "orderlistbox",
                                     name    = locVars["options_bags_to_scan_order"],
                                     tooltip = locVars["options_bags_to_scan_order_tt"],
@@ -3652,9 +3674,22 @@ function FCOIS.BuildAddonMenu()
                                         FCOISsettings.autoMarkBagsToScanOrder = orderedList
                                     end,
                                     minHeight = 100,
-                                    maxHeight = 150,
+                                    maxHeight = 200,
+                                    isExtraWide = true,
                                     showPosition = true,
+                                    disabled = function() return checkIfAutomaticMarksAreDisabledAtBag() end,
                                     default = FCOISdefaultSettings.autoMarkBagsToScanOrder,
+                                },
+                                {
+                                    type = "button",
+                                    name = locVars["options_scan_automatic_marks_now"],
+                                    tooltip = locVars["options_scan_automatic_marks_now" .. tooltipSuffix],
+                                    func = function()
+                                        scanInventory()
+                                    end,
+                                    isDangerous = false,
+                                    disabled = function() return checkIfAutomaticMarksAreDisabledAtBag() end,
+                                    width="full",
                                 },
                             },
                         },

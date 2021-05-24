@@ -19,7 +19,7 @@ local myGetItemInstanceIdNoControl = FCOIS.MyGetItemInstanceIdNoControl
 local isItemProtectedAtASlotNow = FCOIS.IsItemProtectedAtASlotNow
 local myGetItemInstanceId = FCOIS.MyGetItemInstanceId
 local filterBasics = FCOIS.FilterBasics
-
+local scanInventoryItemsForAutomaticMarks = FCOIS.ScanInventoryItemsForAutomaticMarks
 
 --Compatibility functions
 local function menuVisibleCheck()
@@ -2356,7 +2356,7 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                                     --Mark: nil & specialButtonType is given
                                 elseif doMark == nil and specialButtonType ~= nil then
                                     local checksWereDoneLoop, atLeastOneMarkerChangedLoop = false, false
-                                    checksWereDoneLoop, atLeastOneMarkerChangedLoop = FCOIS.scanInventoryItemsForAutomaticMarks(bagId, slotIndex, specialButtonType, true)
+                                    checksWereDoneLoop, atLeastOneMarkerChangedLoop = scanInventoryItemsForAutomaticMarks(bagId, slotIndex, specialButtonType, true)
                                     --Old value:
                                     undoEntry.marked = not atLeastOneMarkerChangedLoop
                                     markerChangedAtBagAndSlot = atLeastOneMarkerChangedLoop

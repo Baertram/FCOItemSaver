@@ -10,14 +10,14 @@ local ctrlVars = FCOIS.ZOControlVars
 --													FCOIS EVENT callback functions
 --==========================================================================================================================================
 
-local scanInventory = FCOIS.scanInventory
+local scanInventory = FCOIS.ScanInventory
 local preHookMainMenuFilterButtonHandler = FCOIS.PreHookMainMenuFilterButtonHandler
 local checkFCOISFilterButtonsAtPanel = FCOIS.CheckFCOISFilterButtonsAtPanel
 local updateFCOISFilterButtonsAtInventory = FCOIS.UpdateFCOISFilterButtonsAtInventory
 local updateFCOISFilterButtonColorsAndTextures = FCOIS.UpdateFCOISFilterButtonColorsAndTextures
 local changeContextMenuInvokerButtonColorByPanelId = FCOIS.ChangeContextMenuInvokerButtonColorByPanelId
-
 local hideContextMenu = FCOIS.HideContextMenu
+local checkIfAutomaticMarksAreDisabledAtBag = FCOIS.CheckIfAutomaticMarksAreDisabledAtBag
 
 --==============================================================================
 --==================== START EVENT CALLBACK FUNCTIONS ==========================
@@ -316,6 +316,13 @@ local function checkIfBankInventorySingleSlotUpdateEventNeedsToBeRegistered(bagI
     return false
 end
 
+local function FCOItemSaver_Guild_Bank_Items_Ready(eventId)
+    --Scan if guild bank got items that should be marked automatically
+    if not checkIfAutomaticMarksAreDisabledAtBag(BAG_GUILDBANK) then
+        scanInventory(BAG_GUILDBANK, nil)
+    end
+end
+
 --Event upon opening of a guild bank
 local function FCOItemSaver_Open_Guild_Bank()
     FCOIS.preventerVars.gActiveFilterPanel = true
@@ -336,6 +343,8 @@ local function FCOItemSaver_Open_Guild_Bank()
     changeContextMenuInvokerButtonColorByPanelId(LF_GUILDBANK_WITHDRAW)
     --Check the filter buttons and create them if they are not there. Update the inventory afterwards too
     checkFCOISFilterButtonsAtPanel(true, LF_GUILDBANK_WITHDRAW)
+
+    em:RegisterForEvent(gAddonName.."_GUILDBANK_ITEMS_READY", EVENT_GUILD_BANK_ITEMS_READY, FCOItemSaver_Guild_Bank_Items_Ready)
 end
 
 --Event upon closing of a guild bank
@@ -343,6 +352,7 @@ local function FCOItemSaver_Close_Guild_Bank()
     if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[EVENT]","Close guild bank", true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
     em:UnregisterForEvent(gAddonName.."_GUILDBANK", EVENT_INVENTORY_SINGLE_SLOT_UPDATE)
+    em:UnregisterForEvent(gAddonName.."_GUILDBANK_ITEMS_READY", EVENT_GUILD_BANK_ITEMS_READY)
 
     --Hide the context menu at last active panel
     hideContextMenu(FCOIS.gFilterWhere)
@@ -387,22 +397,28 @@ local function FCOItemSaver_Open_Player_Bank(event, bagId)
         FCOIS.lastVars.gLastHouseBankButton = ctrlVars.HOUSE_BANK_MENUBAR_BUTTON_WITHDRAW
         filterPanelId = LF_HOUSE_BANK_WITHDRAW
         --Scan the house bank for non marked items, or items that need to be transfered from ZOs marker icons to FCOIS marker icons
-        zo_callLater(function()
-            --Scan for items that are locked by ZOs and should be transfered to FCOIS
-            -->Disabled as this should only be done via the settings menu, manually!
-            --FCOIS.scanInventoriesForZOsLockedItems(false, bagId)
-            --Scan if house bank got items that should be marked automatically
-            scanInventory(bagId, nil)
-        end, 250)
+        -->Only use BAG_HOUSE_BANK_ONE for the "isAutomaticMarksEnabled check" as only this 1 bagId will be used within the tables of the settings
+        -->and counts for all 10 possible house bank bags!
+        if not checkIfAutomaticMarksAreDisabledAtBag(BAG_HOUSE_BANK_ONE) then
+            zo_callLater(function()
+                --Scan for items that are locked by ZOs and should be transfered to FCOIS
+                -->Disabled as this should only be done via the settings menu, manually!
+                --FCOIS.scanInventoriesForZOsLockedItems(false, bagId)
+                --Scan if house bank got items that should be marked automatically
+                scanInventory(bagId, nil)
+            end, 250)
+        end
     else
         --Reset the last clicked bank button as it will always be the withdraw tab if you open the bank, and if the
         --deposit button was the last one clicked it won't change the filter buttons as it thinks it is still active
         FCOIS.lastVars.gLastBankButton = ctrlVars.BANK_MENUBAR_BUTTON_WITHDRAW
         filterPanelId = LF_BANK_WITHDRAW
         --Scan if player bank got items that should be marked automatically
-        zo_callLater(function()
-            scanInventory(bagId, nil)
-        end, 250)
+        if not checkIfAutomaticMarksAreDisabledAtBag(bagId) then
+            zo_callLater(function()
+                scanInventory(bagId, nil)
+            end, 250)
+        end
     end
     --Change the button color of the context menu invoker
     changeContextMenuInvokerButtonColorByPanelId(filterPanelId)
@@ -619,9 +635,11 @@ local function FCOItemSaver_Inv_Single_Slot_Update(_, bagId, slotId, isNewItem, 
             zo_callLater(function()
                 if settings.debug then FCOIS.debugMessage( "[EVENT]",">executed now! bagId=" .. bagId .. ", slotIndex=" .. slotId, true, FCOIS_DEBUG_DEPTH_NORMAL) end
                 --Scan the inventory item for automatic marker icons which should be set
-                FCOIS.preventerVars.eventInventorySingleSlotUpdate = true
-                scanInventory(bagId, slotId)
-                FCOIS.preventerVars.eventInventorySingleSlotUpdate = false
+                if not checkIfAutomaticMarksAreDisabledAtBag(bagId) then
+                    FCOIS.preventerVars.eventInventorySingleSlotUpdate = true
+                    scanInventory(bagId, slotId)
+                    FCOIS.preventerVars.eventInventorySingleSlotUpdate = false
+                end
 
                 -- ========================== SET TRACKER ===========================================================================================================================
                 if SetTrack ~= nil and SetTrack.GetTrackingInfo ~= nil and FCOIS.otherAddons.SetTracker.isActive and settings.autoMarkSetTrackerSets then

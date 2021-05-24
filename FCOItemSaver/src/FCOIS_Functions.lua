@@ -2135,6 +2135,14 @@ function FCOIS.checkIfHouseBankBagAndInOwnHouse(bagId)
     return retVar
 end
 
+--Check if I'm an owner of a house and I'm curerntly in a house
+function FCOIS.checkIfHouseOwnerAndInsideOwnHouse()
+    local retVar = (FCOIS.checkIfInHouse() and FCOIS.checkIfIsOwnerOfHouse) or false
+--d("[FCOIS.checkIfHouseBankBagAndInOwnHouse] bagId: " ..tostring(bagId) .. ", houseBankBagAndInOwnHouse: " ..tostring(retVar))
+    return retVar
+end
+
+
 --Jump to one of the players own houses
 function FCOIS.jumpToOwnHouse(backupType, withDetails, apiVersion, doClearBackup)
     --GetCurrentZoneHouseId() gets the id for the current house the player is in, and can be used for "RequestJumpToHouse" function
