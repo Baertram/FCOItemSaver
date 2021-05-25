@@ -4949,6 +4949,18 @@ function FCOIS.BuildAddonMenu()
                                     width = "half",
                                     default = FCOISdefaultSettings.autoMarkNewIconNr,
                                 },
+                                {
+                                    type = "checkbox",
+                                    name = locVars["options_enable_auto_mark_check_all_icons"],
+                                    tooltip = locVars["options_enable_auto_mark_check_all_icons" .. tooltipSuffix],
+                                    getFunc = function() return FCOISsettings.autoMarkNewItemsCheckOthers end,
+                                    setFunc = function(value)
+                                        FCOISsettings.autoMarkNewItemsCheckOthers = value
+                                    end,
+                                    disabled = function() return not FCOISsettings.autoMarkNewItems or not isIconEnabled[FCOISsettings.autoMarkNewIconNr] end,
+                                    width = "half",
+                                    default = FCOISdefaultSettings.autoMarkNewItemsCheckOthers,
+                                },
                             } -- controls new
                         }, -- submenu new
 

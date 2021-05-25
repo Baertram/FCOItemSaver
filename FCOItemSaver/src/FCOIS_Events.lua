@@ -569,7 +569,7 @@ local function FCOItemSaver_Inv_Single_Slot_Update(_, bagId, slotId, isNewItem, 
     --d("[FCOItemSaver_Inv_Single_Slot_Update] bagId: " .. bagId .. ", slot: " .. slotId..", isNewItem: " .. tostring(isNewItem)..", updateReason: " .. tostring(updateReason) .. ", FCOIS.newItemCrafted: " .. tostring(FCOIS.preventerVars.newItemCrafted))
     -- ===== Do some abort checks first =====
     --Mark new crafted item with the lock (or the chosen) icon?
-    if FCOIS.preventerVars.newItemCrafted and bagId ~= nil and slotId ~= nil and isNewItem then
+    if FCOIS.preventerVars.newItemCrafted and bagId ~= nil and slotId ~= nil then --and isNewItem then
         FCOIS.preventerVars.newItemCrafted = false
         local writOrNonWritMarkUponCreation, craftMarkerIcon = FCOIS.isWritOrNonWritItemCraftedAndIsAllowedToBeMarked()
         if writOrNonWritMarkUponCreation and craftMarkerIcon ~= nil then
@@ -619,14 +619,14 @@ local function FCOItemSaver_Inv_Single_Slot_Update(_, bagId, slotId, isNewItem, 
     --All bags except the equipment
     if bagId ~= BAG_WORN and bagId ~= BAG_COMPANION_WORN then
         --Abort if not new item is added to inventory
-        if (not isNewItem) then return end
+        --if (not isNewItem) then return end
         --d(">4")
 
         --Support for Roomba
         if Roomba and Roomba.WorkInProgress and Roomba.WorkInProgress() then return end
 
         --Only check for normal player inventory
-        if (bagId == BAG_BACKPACK) then
+        --if (bagId == BAG_BACKPACK) then
             if settings.debug then
                 FCOIS.debugMessage( "[EVENT]","InventorySingleSlotUpdated==============", true, FCOIS_DEBUG_DEPTH_NORMAL)
                 FCOIS.debugMessage( "[EVENT]",">NewItem=" .. tostring(isNewItem) .. ", bagId=" .. bagId .. ", slotIndex=" .. slotId .. ", updateReason=" .. tostring(updateReason), true, FCOIS_DEBUG_DEPTH_NORMAL)
@@ -674,7 +674,7 @@ local function FCOItemSaver_Inv_Single_Slot_Update(_, bagId, slotId, isNewItem, 
             end, 250)
             --FCOIS.preventerVars.canUpdateInv = true
             --end
-        end
+        --end
 
     --Equipment bag:  BAG_WORN (character equipment) or BAG_COMPANION_WORN (companion equipment)
     else
@@ -985,28 +985,17 @@ local function FCOItemSaver_Loaded(eventCode, addOnName)
             em:RegisterForEvent(gAddonName, EVENT_TRADE_SUCCEEDED, FCOItemSaver_Close_Trade_Panel)
             em:RegisterForEvent(gAddonName, EVENT_TRADE_FAILED, FCOItemSaver_Close_Trade_Panel)
             --Register for player inventory slot update
-            em:RegisterForEvent(gAddonName .. "_EVENT_INVENTORY_SINGLE_SLOT_UPDATE1", EVENT_INVENTORY_SINGLE_SLOT_UPDATE, FCOItemSaver_Inv_Single_Slot_Update)
-            em:AddFilterForEvent(gAddonName .. "_EVENT_INVENTORY_SINGLE_SLOT_UPDATE1", EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_UNIT_TAG, "player")
-            em:AddFilterForEvent(gAddonName .. "_EVENT_INVENTORY_SINGLE_SLOT_UPDATE1", EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_INVENTORY_UPDATE_REASON, INVENTORY_UPDATE_REASON_DEFAULT)
-            em:AddFilterForEvent(gAddonName .. "_EVENT_INVENTORY_SINGLE_SLOT_UPDATE1", EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_IS_NEW_ITEM, true)
-            --[[--Does not work as the event name space needs to be different!
-                em:AddFilterForEvent(gAddonName .. "_EVENT_INVENTORY_SINGLE_SLOT_UPDATE", EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_BAG_ID, BAG_BACKPACK)
-                em:AddFilterForEvent(gAddonName .. "_EVENT_INVENTORY_SINGLE_SLOT_UPDATE", EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_BAG_ID, BAG_WORN)
-                em:AddFilterForEvent(gAddonName .. "_EVENT_INVENTORY_SINGLE_SLOT_UPDATE", EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_BAG_ID, BAG_COMPANION_WORN)
-            ]]
-
             local bagIdsToFilterForInvSingleSlotUpdate = {
                 BAG_BACKPACK,
                 BAG_WORN,
                 BAG_COMPANION_WORN,
             }
-            local eventNameSpaceCounter = 1
-            for _, bagIdToFilter in ipairs(bagIdsToFilterForInvSingleSlotUpdate) do
-                if eventNameSpaceCounter > 1 then
-                    em:RegisterForEvent(gAddonName .. "_EVENT_INVENTORY_SINGLE_SLOT_UPDATE" ..tostring(eventNameSpaceCounter), EVENT_INVENTORY_SINGLE_SLOT_UPDATE, FCOItemSaver_Inv_Single_Slot_Update)
-                end
+            for eventNameSpaceCounter, bagIdToFilter in ipairs(bagIdsToFilterForInvSingleSlotUpdate) do
+                em:RegisterForEvent(gAddonName .. "_EVENT_INVENTORY_SINGLE_SLOT_UPDATE" ..tostring(eventNameSpaceCounter), EVENT_INVENTORY_SINGLE_SLOT_UPDATE, FCOItemSaver_Inv_Single_Slot_Update)
+                em:AddFilterForEvent(gAddonName .. "_EVENT_INVENTORY_SINGLE_SLOT_UPDATE" ..tostring(eventNameSpaceCounter), EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_UNIT_TAG, "player")
+                em:AddFilterForEvent(gAddonName .. "_EVENT_INVENTORY_SINGLE_SLOT_UPDATE" ..tostring(eventNameSpaceCounter), EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_INVENTORY_UPDATE_REASON, INVENTORY_UPDATE_REASON_DEFAULT)
+                em:AddFilterForEvent(gAddonName .. "_EVENT_INVENTORY_SINGLE_SLOT_UPDATE" ..tostring(eventNameSpaceCounter), EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_IS_NEW_ITEM, true)
                 em:AddFilterForEvent(gAddonName .. "_EVENT_INVENTORY_SINGLE_SLOT_UPDATE" ..tostring(eventNameSpaceCounter), EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_BAG_ID, bagIdToFilter)
-                eventNameSpaceCounter = eventNameSpaceCounter + 1
             end
             --Register the callback function for an update of the inventory slots
             --SHARED_INVENTORY:RegisterCallback("SingleSlotInventoryUpdate", FCOItemSaver_OnSharedSingleSlotUpdate)
