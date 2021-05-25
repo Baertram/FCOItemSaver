@@ -14,6 +14,8 @@ local lmas = FCOIS.libMultiAccountSets
 local checkIfItemIsProtected = FCOIS.checkIfItemIsProtected
 local myGetItemInstanceIdNoControl = FCOIS.MyGetItemInstanceIdNoControl
 local filterBasics = FCOIS.FilterBasics
+local getFilterPanelIdText = FCOIS.GetFilterPanelIdText
+local getFilterPanelIdByBagId = FCOIS.GetFilterPanelIdByBagId
 
 --==========================================================================================================================================
 --									FCOIS Inventory scanning & automatic item marking
@@ -1790,11 +1792,14 @@ function FCOIS.ScanInventorySingle(p_bagId, p_slotIndex, checksAlreadyDoneTable)
 end
 local scanInventorySingle = FCOIS.ScanInventorySingle
 
+
 --Scan the inventory for ornate and/or researchable items
-function FCOIS.ScanInventory(p_bagId, p_slotIndex)
+function FCOIS.ScanInventory(p_bagId, p_slotIndex, doEcho)
+    doEcho = doEcho or false
+    local settings = FCOIS.settingsVars.settings
     --Do not scan now if the unique item IDs got just enabled before the reloadui
     if FCOIS.preventerVars.doNotScanInv == true then
-        if FCOIS.settingsVars.settings.useUniqueIds then
+        if settings.useUniqueIds then
             d(FCOIS.preChatVars.preChatTextRed .. FCOIS.localizationVars.fcois_loc["options_migrate_unique_inv_scan_not_done"])
         end
         FCOIS.preventerVars.doNotScanInv = false
@@ -1805,7 +1810,6 @@ function FCOIS.ScanInventory(p_bagId, p_slotIndex)
     if FCOIS.preventerVars.gScanningInv == true then return end
 
     local updateInv = false
-    local settings = FCOIS.settingsVars.settings
     local isIconEnabledSettings = settings.isIconEnabled
 
     local isRecipeAddonActive = (FCOIS.checkIfRecipeAddonUsed() and FCOIS.checkIfChosenRecipeAddonActive()) or false
@@ -1835,6 +1839,10 @@ function FCOIS.ScanInventory(p_bagId, p_slotIndex)
 
     if isCheckNecessary == true then
 --d("-Scanning needed-")
+        local locVars = FCOIS.localizationVars.fcois_loc
+        local preVars = FCOIS.preChatVars
+        local prefixFCOISGreen = preVars.preChatTextGreen
+        local prefixFCOISRed = preVars.preChatTextRed
         local onlyUpdatePlayerInv = true
 
         -- Scan the whole inventory because no bagId and slotIndex are given
@@ -1849,19 +1857,30 @@ function FCOIS.ScanInventory(p_bagId, p_slotIndex)
             local bagIdsToScanNow
             --Get the bagIds that should be scanned, in teh user chosen order
             bagIdsToScanNow, onlyUpdatePlayerInv = getBagsToScanForAutomaticMarks(p_bagId)
---FCOIS._bagIdsToScanNow = bagIdsToScanNow
---FCOIS._onlyUpdatePlayerInv = onlyUpdatePlayerInv
+FCOIS._bagIdsToScanNow = bagIdsToScanNow
+FCOIS._onlyUpdatePlayerInv = onlyUpdatePlayerInv
 
             --Get the bag cache (all entries in that bag)
             --local bagCache = SHARED_INVENTORY:GenerateFullSlotData(nil, bagToCheck)
             for _, bagToCheck in ipairs(bagIdsToScanNow) do
---d("[FCOIS]--> Scan whole inventory, bag: " .. tostring(bagToCheck))
+                local filterPanelId, filterPanelText
+                if doEcho == true then
+                    filterPanelId = getFilterPanelIdByBagId(bagToCheck)
+                    filterPanelText = getFilterPanelIdText(filterPanelId)
+                    if bagToCheck == BAG_SUBSCRIBER_BANK then
+                        filterPanelText = filterPanelText .. " - ESO+"
+                    end
+                    d(string.format(prefixFCOISGreen .. " " .. locVars["options_scan_automatic_marks_scan_bag"], filterPanelText))
+                end
                 local bagCache = SHARED_INVENTORY:GetOrCreateBagCache(bagToCheck)
                 local updateInvLoop = false
                 for _, data in pairs(bagCache) do
                     updateInvLoop = false
                     updateInvLoop = scanInventorySingle(data.bagId, data.slotIndex, checksAlreadyDoneTable)
                     if not updateInv then updateInv = updateInvLoop end
+                end
+                if doEcho == true then
+                    d(string.format(prefixFCOISRed .. " " .. locVars["options_scan_automatic_marks_scan_bag_finished"], filterPanelText))
                 end
             end
             if settings.debug then FCOIS.debugMessage( "[ScanInventory]","End ALL", false, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end

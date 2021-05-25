@@ -2658,3 +2658,22 @@ function FCOIS.IsNoOtherModifierKeyPressed(modKey)
     end
     return false
 end
+
+--function to return the LibFilters 3.0 filterPanelId constant LF* by the help of the inventory bagId
+function FCOIS.GetFilterPanelIdByBagId(bagId)
+--d("[FCOIS]GetFilterPanelIdByBagId - bagId: " ..tostring(bagId))
+    if not bagId then return end
+    local mappingVars = FCOIS.mappingVars
+    local bagIdToFilterPanelId = mappingVars.bagId2LibFiltersId
+
+    if IsHouseBankBag(bagId) then bagId = BAG_HOUSE_BANK_ONE end
+    local filterPanelId = bagIdToFilterPanelId[bagId]
+    if filterPanelId == nil then
+        ---> Special filterPanelId checks via the currently opened panel controls e.g.
+        local comingFrom = FCOIS.gFilterWhere
+        local _, filterPanelIdNew = FCOIS.checkActivePanel(comingFrom, false)
+        filterPanelId = filterPanelIdNew
+    end
+--d("<filterPanelId: " ..tostring(filterPanelId))
+    return filterPanelId
+end

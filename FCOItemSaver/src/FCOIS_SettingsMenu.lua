@@ -3668,7 +3668,7 @@ function FCOIS.BuildAddonMenu()
                                 {
                                     type    = "orderlistbox",
                                     name    = locVars["options_bags_to_scan_order"],
-                                    tooltip = locVars["options_bags_to_scan_order_tt"],
+                                    tooltip = locVars["options_bags_to_scan_order" ..tooltipSuffix],
                                     getFunc = function() return FCOISsettings.autoMarkBagsToScanOrder end,
                                     setFunc = function(orderedList)
                                         FCOISsettings.autoMarkBagsToScanOrder = orderedList
@@ -3681,11 +3681,21 @@ function FCOIS.BuildAddonMenu()
                                     default = FCOISdefaultSettings.autoMarkBagsToScanOrder,
                                 },
                                 {
+                                    type    = "checkbox",
+                                    name    = locVars["options_bags_to_scan_chat_output"],
+                                    tooltip = locVars["options_bags_to_scan_chat_output" ..tooltipSuffix],
+                                    getFunc = function() return FCOISsettings.autoMarkBagsChatOutput end,
+                                    setFunc = function(value)
+                                        FCOISsettings.autoMarkBagsChatOutput = value
+                                    end,
+                                    default = FCOISdefaultSettings.autoMarkBagsChatOutput,
+                                },
+                                {
                                     type = "button",
                                     name = locVars["options_scan_automatic_marks_now"],
                                     tooltip = locVars["options_scan_automatic_marks_now" .. tooltipSuffix],
                                     func = function()
-                                        scanInventory()
+                                        scanInventory(nil, nil, FCOISsettings.autoMarkBagsChatOutput)
                                     end,
                                     isDangerous = false,
                                     disabled = function() return checkIfAutomaticMarksAreDisabledAtBag() end,

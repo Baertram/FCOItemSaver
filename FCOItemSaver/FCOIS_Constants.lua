@@ -657,6 +657,44 @@ mappingVars.libFiltersId2BagId = {
     [LF_INVENTORY_COMPANION]                    = BAG_BACKPACK,
 }
 
+--Mapping array for the inventory bag ID to the LibFilters filter panel ID (if relation is 1:1!)
+mappingVars.bagId2LibFiltersId = {
+    [BAG_BACKPACK]          = LF_INVENTORY,
+    [BAG_BANK]              = LF_BANK_WITHDRAW,
+    [BAG_SUBSCRIBER_BANK]   = LF_BANK_WITHDRAW,
+    [BAG_GUILDBANK]         = LF_GUILDBANK_WITHDRAW,
+    [BAG_HOUSE_BANK_ONE]    = LF_HOUSE_BANK_WITHDRAW, --static: Use the first house bank bagId
+    [BAG_VIRTUAL]           = LF_CRAFTBAG,
+    --The following filterPanelIds do not own a dedicated bagId. Either they got multiple of the above ones connected,
+    --or they also use only BAG_BACKPACK e.g.
+    --The correct filterPanelId needs to be determined via the shown controls e.g. or via LibFilters 3
+    --> See function FCOIS.GetFilterPanelIdByBagId() in file src/FCOIS_functions.lua
+    --[nil]                 = LF_GUILDBANK_DEPOSIT,
+    --[nil]                 = LF_BANK_DEPOSIT,
+    --[nil]                 = LF_VENDOR_SELL,
+    --[nil]                 = LF_SMITHING_REFINE,
+    --[nil]                 = LF_SMITHING_DECONSTRUCT,
+    --[nil]                 = LF_JEWELRY_REFIN,
+    --[nil]                 = LF_SMITHING_IMPROVEMENT,
+    --[nil]                 = LF_JEWELRY_DECONSTRUCT,
+    --[nil]                 = LF_JEWELRY_IMPROVEMENT,
+    --[nil]                 = LF_SMITHING_RESEARCH,
+    --[nil]                 = LF_SMITHING_RESEARCH_DIALOG,
+    --[nil]                 = LF_JEWELRY_RESEARCH,
+    --[nil]                 = LF_JEWELRY_RESEARCH_DIALOG,
+    --[nil]                 = LF_GUILDSTORE_SELL,
+    --[nil]                 = LF_MAIL_SEND,
+    --[nil]                 = LF_TRADE,
+    --[nil]                 = LF_ENCHANTING_EXTRACTION,
+    --[nil]                 = LF_ENCHANTING_CREATION,
+    --[nil]                 = LF_FENCE_SELL,
+    --[nil]                 = LF_FENCE_LAUNDER,
+    --[nil]                 = LF_ALCHEMY_CREATION,
+    --[nil]                 = LF_RETRAIT,
+    --[nil]                 = LF_HOUSE_BANK_DEPOSIT,
+    --[nil]                 = LF_INVENTORY_COMPANION,
+}
+
 --The scene names to add register a callback for StateChange to hide the FCOIS context menu(s).
 mappingVars.sceneControlsToRegisterStateChangeForContextMenu = {
     MAIL_INBOX_SCENE,

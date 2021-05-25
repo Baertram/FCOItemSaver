@@ -140,6 +140,7 @@ function FCOIS.buildLocalizedFilterButtonContextMenuEntries(contextMenuType)
     return localizedContextMenuEntries
 end
 
+
 --Do some "After localization" stuff
 local function afterLocalization()
     --Local speed up variables
@@ -674,4 +675,17 @@ function FCOIS.Localization()
 
     --Reset the variable for the "force localization updte"
     FCOIS.preventerVars.doUpdateLocalization = false
+end
+local localization = FCOIS.Localization
+
+--Get the localized filterPanel translation of the LibFilters 3.0 filterPanel constants LF*
+function FCOIS.GetFilterPanelIdText(filterPanelId)
+    filterPanelId = filterPanelId or FCOIS.gFilterWhere
+    local preventerVars = FCOIS.preventerVars
+    if not preventerVars.gLocalizationDone then
+        localization()
+    end
+    local locVars = FCOIS.localizationVars.fcois_loc
+    local retText = locVars and locVars["FCOIS_LibFilters_PanelIds"] and locVars["FCOIS_LibFilters_PanelIds"][filterPanelId] or "n/a"
+    return retText
 end

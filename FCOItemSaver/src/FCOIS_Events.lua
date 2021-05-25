@@ -319,7 +319,7 @@ end
 local function FCOItemSaver_Guild_Bank_Items_Ready(eventId)
     --Scan if guild bank got items that should be marked automatically
     if not checkIfAutomaticMarksAreDisabledAtBag(BAG_GUILDBANK) then
-        scanInventory(BAG_GUILDBANK, nil)
+        scanInventory(BAG_GUILDBANK, nil, FCOIS.settingsVars.settings.autoMarkBagsChatOutput)
     end
 end
 
@@ -380,7 +380,8 @@ end
 local function FCOItemSaver_Open_Player_Bank(event, bagId)
     local isHouseBank = IsHouseBankBag(bagId) or false
     FCOIS.preventerVars.gActiveFilterPanel = true
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[EVENT]","Open bank - bagId: " .. tostring(bagId) .. ", isHouseBank: " .. tostring(isHouseBank), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+    local settings = FCOIS.settingsVars.settings
+    if settings.debug then FCOIS.debugMessage( "[EVENT]","Open bank - bagId: " .. tostring(bagId) .. ", isHouseBank: " .. tostring(isHouseBank), true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
     if bagId == BAG_BANK or bagId == BAG_SUBSCRIBER_BANK then
         if checkIfBankInventorySingleSlotUpdateEventNeedsToBeRegistered(BAG_BANK) == true then
@@ -405,7 +406,7 @@ local function FCOItemSaver_Open_Player_Bank(event, bagId)
                 -->Disabled as this should only be done via the settings menu, manually!
                 --FCOIS.scanInventoriesForZOsLockedItems(false, bagId)
                 --Scan if house bank got items that should be marked automatically
-                scanInventory(bagId, nil)
+                scanInventory(bagId, nil, FCOIS.settingsVars.settings.autoMarkBagsChatOutput)
             end, 250)
         end
     else
@@ -416,7 +417,7 @@ local function FCOItemSaver_Open_Player_Bank(event, bagId)
         --Scan if player bank got items that should be marked automatically
         if not checkIfAutomaticMarksAreDisabledAtBag(bagId) then
             zo_callLater(function()
-                scanInventory(bagId, nil)
+                scanInventory(bagId, nil, settings.autoMarkBagsChatOutput)
             end, 250)
         end
     end
@@ -637,7 +638,7 @@ local function FCOItemSaver_Inv_Single_Slot_Update(_, bagId, slotId, isNewItem, 
                 --Scan the inventory item for automatic marker icons which should be set
                 if not checkIfAutomaticMarksAreDisabledAtBag(bagId) then
                     FCOIS.preventerVars.eventInventorySingleSlotUpdate = true
-                    scanInventory(bagId, slotId)
+                    scanInventory(bagId, slotId, false) --no chat output!
                     FCOIS.preventerVars.eventInventorySingleSlotUpdate = false
                 end
 
@@ -849,7 +850,8 @@ local function FCOItemSaver_Player_Activated(...)
 
     --Disable this addon if we are in GamePad mode
     if not FCOIS.FCOItemSaver_CheckGamePadMode(true) then
-        if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[EVENT]","Player activated", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        local settings = FCOIS.settingsVars.settings
+        if settings.debug then FCOIS.debugMessage( "[EVENT]","Player activated", true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
         --Get the currently logged in character name
         FCOIS.currentlyLoggedInCharName = zo_strformat(SI_UNIT_NAME, GetUnitName("player"))
@@ -884,7 +886,7 @@ local function FCOItemSaver_Player_Activated(...)
         if FCOIS.preventerVars.gAddonStartupInProgress then
             FCOIS.preventerVars.gAddonStartupInProgress = false
             --Delay the call to "scanInventory" so the other addons like CraftStoreFixedAndImproved are working properly with their research/recipe functions
-            zo_callLater(function() scanInventory() end, 500)
+            zo_callLater(function() scanInventory(nil, nil, settings.autoMarkBagsChatOutput) end, 500)
         end
 
         --Update the itemCount in the inventory sort headers, if needed
