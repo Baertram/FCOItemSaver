@@ -65,6 +65,13 @@ local getSavedVarsMarkedItemsTableName	 = FCOIS.getSavedVarsMarkedItemsTableName
 local DeconstructionSelectionHandler 	= FCOIS.DeconstructionSelectionHandler
 local ItemSelectionHandler 				= FCOIS.ItemSelectionHandler
 
+local checkIfItemIsProtected = FCOIS.checkIfItemIsProtected
+local myGetItemInstanceIdNoControl = FCOIS.MyGetItemInstanceIdNoControl
+local isItemProtectedAtASlotNow = FCOIS.IsItemProtectedAtASlotNow
+local signItemId = FCOIS.SignItemId
+local refreshEquipmentControl = FCOIS.RefreshEquipmentControl
+local filterBasics = FCOIS.FilterBasics
+
 --------------------------------------------------------------------------------
 -- Local helper functions
 -----------------------------------------------------------------------------------
@@ -487,7 +494,7 @@ function FCOIS.MarkItem(bag, slot, iconId, showIcon, updateInventories)
 	if not checkIfFCOISSettingsWereLoaded(true) then return false end
 	--Are we restoring or clearing marker icons via SHIFT + right mouse button on an inventory row e.g.?
 	local isRestoringOrClearingMarkerIcons = (FCOIS.preventerVars.gRestoringMarkerIcons or FCOIS.preventerVars.gClearingMarkerIcons) or false
-	local isCharShown = (bag == BAG_WORN and not ZOsCtrlVars.CHARACTER:IsHidden())
+	local isCharShown = ((bag == BAG_WORN and FCOIS.isCharacterShown()) or (bag == BAG_COMPANION_WORN and FCOIS.isCompanionCharacterShown())) or false
 	local recurRetValTotal = true
 	--Check the type of iconId parameter
 	local iconIdType = type(iconId)
@@ -552,7 +559,7 @@ function FCOIS.MarkItem(bag, slot, iconId, showIcon, updateInventories)
 			--Allow the update of the marker here, and change it later if no update is needed
 			local doUpdateMarkerNow = true
 			--Get/use the (given) item instance id
-			local itemId = FCOIS.MyGetItemInstanceIdNoControl(bag, slot)
+			local itemId = myGetItemInstanceIdNoControl(bag, slot)
 			if itemId ~= nil then
 				local savedVarsMarkedItemsTableName = getSavedVarsMarkedItemsTableName()
 
@@ -560,7 +567,7 @@ function FCOIS.MarkItem(bag, slot, iconId, showIcon, updateInventories)
 				local itemIsMarked = showIcon
 				if itemIsMarked == nil then itemIsMarked = false end
 				--Item is already un/marked -> No need to change it
-				if FCOIS.checkIfItemIsProtected(iconId, itemId) == itemIsMarked then
+				if checkIfItemIsProtected(iconId, itemId) == itemIsMarked then
 					doUpdateMarkerNow = false
 				else
 					--Check if the item is a researchable one, but only if icon should be shown and bag + slot are given
@@ -671,8 +678,8 @@ function FCOIS.MarkItem(bag, slot, iconId, showIcon, updateInventories)
 					--Shall we unmark the item? Then remove it from the SavedVars totally!
 					if itemIsMarked == false then itemIsMarked = nil end
 					--Un/Mark the item now
-					FCOIS[savedVarsMarkedItemsTableName][iconId][FCOIS.SignItemId(itemId, nil, nil, nil, bag, slot)] = itemIsMarked
-					--d(">> new markedItem value: " .. tostring(FCOIS[getSavedVarsMarkedItemsTableName()][iconId][FCOIS.SignItemId(itemId, nil, nil, nil)]))
+					FCOIS[savedVarsMarkedItemsTableName][iconId][signItemId(itemId, nil, nil, nil, bag, slot)] = itemIsMarked
+					--d(">> new markedItem value: " .. tostring(FCOIS[getSavedVarsMarkedItemsTableName()][iconId][signItemId(itemId, nil, nil, nil)]))
 				end
 			end --if itemId ~= nil
 			--Update inventories or character equipment, but only needed if marker was changed
@@ -680,11 +687,11 @@ function FCOIS.MarkItem(bag, slot, iconId, showIcon, updateInventories)
 				--d("<<UpdateInv: " ..tostring(updateInventories) .. ", doUpdateMarkerNow: " .. tostring(doUpdateMarkerNow) .. ", gOverrideInvUpdateAfterMarkItem: " ..tostring(FCOIS.preventerVars.gOverrideInvUpdateAfterMarkItem))
 				FCOIS.preventerVars.gOverrideInvUpdateAfterMarkItem = false
 				if isCharShown then
-					FCOIS.RefreshEquipmentControl(nil, showIcon, iconId)
+					refreshEquipmentControl(nil, showIcon, iconId)
 				elseif bag == BAG_BACKPACK or bag == BAG_VIRTUAL
 					or bag == BAG_BANK or bag == BAG_SUBSCRIBER_BANK or bag == BAG_GUILDBANK or IsHouseBankBag(bag)
 					or (bag == BAG_WORN and FCOIS.IsVendorPanelShown(LF_VENDOR_REPAIR, false)) then
-					FCOIS.FilterBasics(false)
+					filterBasics(false)
 				end
 			end -- if updateInventories ...
 		end -- if iconId ~= -1
@@ -715,7 +722,8 @@ function FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon
     if showIcon == nil then showIcon = true end
 	updateInventories = updateInventories or false
 	if not checkIfFCOISSettingsWereLoaded(true) then return false end
-	local isCharShown = not ZOsCtrlVars.CHARACTER:IsHidden()
+	local isCharShown = (FCOIS.isCharacterShown() or FCOIS.isCompanionCharacterShown()) or false
+
     --Use the given itemLink or the given itemId to build a generic itemLink from it
     if itemId ~= nil and itemLink == nil then
         --Build a generic itemLink from the itemId to test the itemType
@@ -792,7 +800,7 @@ function FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon
                 local itemIsMarked = showIcon
                 if itemIsMarked == nil then itemIsMarked = false end
                 --Item is already un/marked -> No need to change it
-                if FCOIS.checkIfItemIsProtected(iconId, itemInstanceOrUniqueId, nil, addonName) == itemIsMarked then
+                if checkIfItemIsProtected(iconId, itemInstanceOrUniqueId, nil, addonName) == itemIsMarked then
                     doUpdateMarkerNow = false
 --d(">changed doUpdateMarkerNow to: " ..tostring(doUpdateMarkerNow))
                 else
@@ -862,7 +870,7 @@ function FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon
                     --Shall we unmark the item? Then remove it from the SavedVars totally!
                     if itemIsMarked == false then itemIsMarked = nil end
                     --Un/Mark the item now
-					local signedItemInstanceOrUniqueId = FCOIS.SignItemId(itemInstanceOrUniqueId, nil, nil, addonName, nil, nil)
+					local signedItemInstanceOrUniqueId = signItemId(itemInstanceOrUniqueId, nil, nil, addonName, nil, nil)
 --d(">itemId: " ..tostring(itemId) .. ", itemInstanceOrUniqueId: " .. tostring(itemInstanceOrUniqueId) .. ", signedItemInstanceOrUniqueId: " .. tostring(signedItemInstanceOrUniqueId))
 					FCOIS[savedVarsMarkedItemsTableName][iconId][signedItemInstanceOrUniqueId] = itemIsMarked
 --d(">> new markedItem value: " .. tostring(FCOIS[getSavedVarsMarkedItemsTableName()][iconId][signedItemInstanceOrUniqueId]))
@@ -873,9 +881,9 @@ function FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon
 				--d("<<UpdateInv: " ..tostring(updateInventories) .. ", doUpdateMarkerNow: " .. tostring(doUpdateMarkerNow) .. ", gOverrideInvUpdateAfterMarkItem: " ..tostring(FCOIS.preventerVars.gOverrideInvUpdateAfterMarkItem))
 				FCOIS.preventerVars.gOverrideInvUpdateAfterMarkItem = false
 				if isCharShown then
-					FCOIS.RefreshEquipmentControl(nil, showIcon, iconId)
+					refreshEquipmentControl(nil, showIcon, iconId)
 				else
-					FCOIS.FilterBasics(false)
+					filterBasics(false)
 				end
 			end -- if updateInventories ...
         end -- if iconId ~= -1
@@ -943,7 +951,7 @@ local function checkIfItemIsMarkedAndReturnMarkerIcons(instance, iconIds, exclud
 					--Only if iconIds contains the value -1 or {-1} do the excluded icon checks too
 					if not excludeIconIdsCheckTable[icoId] then
 						--Is the not-excluded icon ID protected?
-						if (FCOIS.checkIfItemIsProtected(icoId, instance, nil, addonName) == true) then
+						if (checkIfItemIsProtected(icoId, instance, nil, addonName) == true) then
 							--return true, if any icon is set
 							isMarked = true
 							markedArray[icoId] = true
@@ -963,7 +971,7 @@ local function checkIfItemIsMarkedAndReturnMarkerIcons(instance, iconIds, exclud
 					iconsChecked = iconsChecked + 1
 					--is the item marked with that iconId?
 					if (FCOIS[savedVarsMarkedItemsTableName][iconId] ~= nil) then
-						iconIsSet = FCOIS.checkIfItemIsProtected(iconId, instance, nil, addonName)
+						iconIsSet = checkIfItemIsProtected(iconId, instance, nil, addonName)
 						markedArray[iconId] = iconIsSet
 						if not isMarked then
 							isMarked = iconIsSet
@@ -979,7 +987,7 @@ local function checkIfItemIsMarkedAndReturnMarkerIcons(instance, iconIds, exclud
 		--iconIds is no array/table
 		--Check only 1 icon
 		if (iconIds ~= -1) then
-			isMarked = FCOIS[savedVarsMarkedItemsTableName][iconIds] ~= nil and FCOIS.checkIfItemIsProtected(iconIds, instance, nil, addonName)
+			isMarked = FCOIS[savedVarsMarkedItemsTableName][iconIds] ~= nil and checkIfItemIsProtected(iconIds, instance, nil, addonName)
 			if isMarked then
 				markedArray[iconIds] = true
 			end
@@ -990,7 +998,7 @@ local function checkIfItemIsMarkedAndReturnMarkerIcons(instance, iconIds, exclud
 				--Only if iconIds contains the value -1 or {-1} do the excluded icon checks too
 				if not excludeIconIdsCheckTable[icoId] then
 					--Is the not-excluded icon ID protected?
-					if (FCOIS.checkIfItemIsProtected(icoId, instance, nil, addonName) == true) then
+					if (checkIfItemIsProtected(icoId, instance, nil, addonName) == true) then
 						isMarked = true
 						markedArray[icoId] = true
 					end
@@ -1020,7 +1028,7 @@ function FCOIS.IsMarkedByItemInstanceId(itemInstanceId, iconIds, excludeIconIds,
 	if itemInstanceId == nil then return nil, nil end
 	if not checkIfFCOISSettingsWereLoaded(true) then return false end
 	--Build the itemInstanceId (signed) by help of the itemId
-	local signedItemInstanceId = FCOIS.SignItemId(itemInstanceId, nil, true, addonName, nil, nil) -- only sign
+	local signedItemInstanceId = signItemId(itemInstanceId, nil, true, addonName, nil, nil) -- only sign
 --d(">FCOIS.IsMarkedByItemInstanceId, itemInstanceId: " .. tostring(itemInstanceId) .. ", signedItemInstanceId: " ..tostring(signedItemInstanceId))
 	if signedItemInstanceId == nil then return nil, nil end
 	local isMarked = false
@@ -1045,7 +1053,7 @@ function FCOIS.IsMarked(bag, slot, iconIds, excludeIconIds)
 	if not checkIfFCOISSettingsWereLoaded(true) then return false end
 	--At least one of the needed function parameters is missing. Return nil, nil
     if (bag == nil or slot == nil or iconIds == nil) then return nil, nil end
-	local signedItemInstanceId = FCOIS.MyGetItemInstanceIdNoControl(bag, slot)
+	local signedItemInstanceId = myGetItemInstanceIdNoControl(bag, slot)
 	if signedItemInstanceId == nil then return nil, nil end
 	local isMarked = false
 	local markedIconsArray = {}
@@ -1105,7 +1113,7 @@ end
 function FCOIS.IsFiltered(bag, slot, filterId, filterPanelId)
 	if not checkIfFCOISSettingsWereLoaded(true) then return false end
 	if (bag ~= nil and slot ~= nil and filterId ~= nil) then
-        local instance = FCOIS.MyGetItemInstanceIdNoControl(bag, slot)
+        local instance = myGetItemInstanceIdNoControl(bag, slot)
 		if instance == nil then return false end
 
 		local savedVarsMarkedItemsTableName = getSavedVarsMarkedItemsTableName()
@@ -1117,9 +1125,10 @@ function FCOIS.IsFiltered(bag, slot, filterId, filterPanelId)
 		end
 
 		local filterStatusVar = {}
+		local activeFilterPanelIds = FCOIS.mappingVars.activeFilterPanelIds
 		--Create 2-dimensional arrays for the filters
 		for h_inv = 1, FCOIS.numVars.gFCONumFilterInventoryTypes, 1 do
-			if FCOIS.mappingVars.activeFilterPanelIds[h_inv] == true then
+			if activeFilterPanelIds[h_inv] == true then
 				filterStatusVar[h_inv] = {false, false, false, false}
 			end
 		end
@@ -1129,33 +1138,33 @@ function FCOIS.IsFiltered(bag, slot, filterId, filterPanelId)
 
 		if (filterId ~= -1) then
 			if (filterId == FCOIS_CON_FILTER_BUTTON_LOCKDYN) then
-				if (FCOIS.checkIfItemIsProtected(FCOIS_CON_ICON_LOCK, instance)  == true or
-						FCOIS.checkIfItemIsProtected(nil, instance, "dynamic") == true) then
+				if (checkIfItemIsProtected(FCOIS_CON_ICON_LOCK, instance)  == true or
+						checkIfItemIsProtected(nil, instance, "dynamic") == true) then
 					--Is the deconstruction filter activated?
 					if (filterStatusVar[filterPanelId][filterId] == true) then
 						return true
 					end
 				end
 			elseif (filterId == FCOIS_CON_FILTER_BUTTON_GEARSETS) then
-				if (FCOIS.checkIfItemIsProtected(nil, instance, "gear") == true) then
+				if (checkIfItemIsProtected(nil, instance, "gear") == true) then
 					--Is the deconstruction filter activated?
 					if (filterStatusVar[filterPanelId][filterId] == true) then
 						return true
 					end
 				end
 			elseif (filterId == FCOIS_CON_FILTER_BUTTON_RESDECIMP) then
-				if (FCOIS.checkIfItemIsProtected(FCOIS_CON_ICON_RESEARCH, instance) == true or
-						FCOIS.checkIfItemIsProtected(FCOIS_CON_ICON_DECONSTRUCTION, instance) == true or
-						FCOIS.checkIfItemIsProtected(FCOIS_CON_ICON_IMPROVEMENT, instance) == true    ) then
+				if (checkIfItemIsProtected(FCOIS_CON_ICON_RESEARCH, instance) == true or
+						checkIfItemIsProtected(FCOIS_CON_ICON_DECONSTRUCTION, instance) == true or
+						checkIfItemIsProtected(FCOIS_CON_ICON_IMPROVEMENT, instance) == true    ) then
 					--Is the research filter activated?
 					if (filterStatusVar[filterPanelId][filterId] == true) then
 						return true
 					end
 				end
 			elseif (filterId == FCOIS_CON_FILTER_BUTTON_SELLGUILDINT) then
-				if (FCOIS.checkIfItemIsProtected(FCOIS_CON_ICON_SELL, instance) == true or
-						FCOIS.checkIfItemIsProtected(FCOIS_CON_ICON_SELL_AT_GUILDSTORE, instance) == true or
-						FCOIS.checkIfItemIsProtected(FCOIS_CON_ICON_INTRICATE, instance) == true    ) then
+				if (checkIfItemIsProtected(FCOIS_CON_ICON_SELL, instance) == true or
+						checkIfItemIsProtected(FCOIS_CON_ICON_SELL_AT_GUILDSTORE, instance) == true or
+						checkIfItemIsProtected(FCOIS_CON_ICON_INTRICATE, instance) == true    ) then
 					--Is the sell filter activated?
 					--Attention: FilterId equals 4, but we need to check the value 5 here:
 					if (filterStatusVar[filterPanelId][5] == true) then
@@ -1163,7 +1172,7 @@ function FCOIS.IsFiltered(bag, slot, filterId, filterPanelId)
 					end
 				end
 			else
-				if (FCOIS[savedVarsMarkedItemsTableName][filterId] ~= nil and FCOIS.checkIfItemIsProtected(filterId, instance)) then
+				if (FCOIS[savedVarsMarkedItemsTableName][filterId] ~= nil and checkIfItemIsProtected(filterId, instance)) then
 					--Is the deconstruction filter activated?
 					if (filterStatusVar[filterPanelId][filterId] == true) then
 						return true
@@ -1174,33 +1183,33 @@ function FCOIS.IsFiltered(bag, slot, filterId, filterPanelId)
 			--Check for all filters if the item is marked. return true, if any filter applies
 			for filtId = 1, FCOIS.numVars.gFCONumFilters, 1 do
 				if (filtId == FCOIS_CON_FILTER_BUTTON_LOCKDYN) then
-					if (FCOIS.checkIfItemIsProtected(FCOIS_CON_ICON_LOCK, instance)  == true or
-							FCOIS.checkIfItemIsProtected(nil, instance, "dynamic") == true) then
+					if (checkIfItemIsProtected(FCOIS_CON_ICON_LOCK, instance)  == true or
+							checkIfItemIsProtected(nil, instance, "dynamic") == true) then
 						--Is the deconstruction filter activated?
 						if (filterStatusVar[filterPanelId][filtId] == true) then
 							return true
 						end
 					end
 				elseif (filtId == FCOIS_CON_FILTER_BUTTON_GEARSETS) then
-					if (FCOIS.checkIfItemIsProtected(nil, instance, "gear") == true) then
+					if (checkIfItemIsProtected(nil, instance, "gear") == true) then
 						--Is the deconstruction filter activated?
 						if (filterStatusVar[filterPanelId][filtId] == true) then
 							return true
 						end
 					end
 				elseif (filtId == FCOIS_CON_FILTER_BUTTON_RESDECIMP) then
-					if (FCOIS.checkIfItemIsProtected(FCOIS_CON_ICON_RESEARCH, instance) == true or
-							FCOIS.checkIfItemIsProtected(FCOIS_CON_ICON_DECONSTRUCTION, instance) == true or
-							FCOIS.checkIfItemIsProtected(FCOIS_CON_ICON_IMPROVEMENT, instance) == true    ) then
+					if (checkIfItemIsProtected(FCOIS_CON_ICON_RESEARCH, instance) == true or
+							checkIfItemIsProtected(FCOIS_CON_ICON_DECONSTRUCTION, instance) == true or
+							checkIfItemIsProtected(FCOIS_CON_ICON_IMPROVEMENT, instance) == true    ) then
 						--Is the research filter activated?
 						if (filterStatusVar[filterPanelId][filtId] == true) then
 							return true
 						end
 					end
 				elseif (filtId == FCOIS_CON_FILTER_BUTTON_SELLGUILDINT) then
-					if (FCOIS.checkIfItemIsProtected(FCOIS_CON_ICON_SELL, instance) == true or
-							FCOIS.checkIfItemIsProtected(FCOIS_CON_ICON_SELL_AT_GUILDSTORE, instance) == true or
-							FCOIS.checkIfItemIsProtected(FCOIS_CON_ICON_INTRICATE, instance) == true    ) then
+					if (checkIfItemIsProtected(FCOIS_CON_ICON_SELL, instance) == true or
+							checkIfItemIsProtected(FCOIS_CON_ICON_SELL_AT_GUILDSTORE, instance) == true or
+							checkIfItemIsProtected(FCOIS_CON_ICON_INTRICATE, instance) == true    ) then
 						--Is the sell filter activated?
 						--Attention: filtId equals 4, but we need to check the value 5 here:
 						if (filterStatusVar[filterPanelId][5] == true) then
@@ -1208,7 +1217,7 @@ function FCOIS.IsFiltered(bag, slot, filterId, filterPanelId)
 						end
 					end
 				else
-					if (FCOIS.checkIfItemIsProtected(filtId, instance) == true) then
+					if (checkIfItemIsProtected(filtId, instance) == true) then
 						--Is the deconstruction filter activated?
 						if (filterStatusVar[filterPanelId][filtId] == true) then
 							return true
@@ -1228,17 +1237,19 @@ end -- FCOIS.IsFiltered
 function FCOIS.ChangeFilter(filterId, libFiltersFilterPanelId)
 	libFiltersFilterPanelId = libFiltersFilterPanelId or FCOIS.gFilterWhere
 	if not checkIfFCOISSettingsWereLoaded(true) then return false end
+	local numVars = FCOIS.numVars
 	--Valid filterId?
-	if filterId == nil or filterId <= 0 or filterId > FCOIS.numVars.gFCONumFilters then return end
+	if filterId == nil or filterId <= 0 or filterId > numVars.gFCONumFilters then return end
 	--Valid filterPanelId?
 	if libFiltersFilterPanelId == nil or libFiltersFilterPanelId <= 0
-			or libFiltersFilterPanelId > FCOIS.numVars.gFCONumFilterInventoryTypes then return end
+			or libFiltersFilterPanelId > numVars.gFCONumFilterInventoryTypes then return end
+	local settings = FCOIS.settingsVars.settings
 	--Is filtering at the current panel enabled?
-	if not FCOIS.settingsVars.settings.atPanelEnabled[libFiltersFilterPanelId]["filters"] then return end
+	if not settings.atPanelEnabled[libFiltersFilterPanelId]["filters"] then return end
 	--is the filterPanelId visible?
 	if FCOIS.mappingVars.gFilterPanelIdToInv[libFiltersFilterPanelId]:IsHidden() then return end
 
-	if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[ChangeFilter]","FilterId: " .. tostring(filterId) .. ", FilterPanelId: " .. tostring(libFiltersFilterPanelId) .. ", InventoryName: " .. FCOIS.mappingVars.gFilterPanelIdToInv[libFiltersFilterPanelId]:GetName(), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+	if settings.debug then FCOIS.debugMessage( "[ChangeFilter]","FilterId: " .. tostring(filterId) .. ", FilterPanelId: " .. tostring(libFiltersFilterPanelId) .. ", InventoryName: " .. FCOIS.mappingVars.gFilterPanelIdToInv[libFiltersFilterPanelId]:GetName(), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
 	--Use the chat command handler now to emulate a filter change
 	FCOIS.command_handler("filter" .. tostring(filterId) .. " " .. tostring(libFiltersFilterPanelId))
 end -- FCOChangeFilter
@@ -1275,8 +1286,9 @@ end -- FCOGetDynamicInfo
 --Global function to check if an item is a dynamic icon marked as gearset
 function FCOIS.isDynamicGearIcon(iconId)
 	if iconId == nil then return end
-	local iconToGear = FCOIS.mappingVars.iconToGear
-	local iconToDynamic = FCOIS.mappingVars.iconToDynamic
+	local mappingVars = FCOIS.mappingVars
+	local iconToGear = mappingVars.iconToGear
+	local iconToDynamic = mappingVars.iconToDynamic
 	if iconToDynamic and iconToGear and iconToGear[iconId] and iconToDynamic[iconId] then
 		return true
 	end
@@ -1289,11 +1301,12 @@ end
 function FCOIS.GetIconText(iconId)
 	--Load the user settings, if not done already
 	if not checkIfFCOISSettingsWereLoaded(true) then return nil end
-
-	if iconId ~= nil and FCOIS.settingsVars.settings.icon ~= nil and
-       FCOIS.settingsVars.settings.icon[iconId] ~= nil and FCOIS.settingsVars.settings.icon[iconId].name ~= nil and FCOIS.settingsVars.settings.icon[iconId].name ~= "" then
-	   	return FCOIS.settingsVars.settings.icon[iconId].name
-    end
+	if iconId == nil then return end
+	local settings = FCOIS.settingsVars.settings
+	local iconSettings = settings.icon and settings.icon[iconId]
+	if iconSettings ~= nil and iconSettings.name ~= nil and iconSettings.name ~= "" then
+		return iconSettings.name
+	end
 	return nil
 end -- FCOGetIconText
 
@@ -1365,7 +1378,7 @@ function FCOIS.MarkItemByKeybind(iconId, p_bagId, p_slotIndex, removeMarkers)
 		local mappingVars = FCOIS.mappingVars
         --Check if the item is currently marked with this icon, or not
         --Get the itemId of the bag, slot combination
-        local itemId = FCOIS.MyGetItemInstanceIdNoControl(bagId, slotIndex)
+        local itemId = myGetItemInstanceIdNoControl(bagId, slotIndex)
         if itemId ~= nil then
 			--Check if item is not researchable and research/gear/improve/deconstruct/intrictae icon is used, or if icon is a dynamic on and the research check is enabled
 			-- Equipment gear (1, 2, 3, 4, 5), Research, Improve, Deconstruct, Intricate or dynamic icons
@@ -1390,7 +1403,7 @@ function FCOIS.MarkItemByKeybind(iconId, p_bagId, p_slotIndex, removeMarkers)
             FCOIS.MarkItem(bagId, slotIndex, iconId, itemIsMarked, true)
             --If the item got marked: Check if the item is a junk item. Remove it from junk again then
             if itemIsMarked == true then
-				FCOIS.IsItemProtectedAtASlotNow(bagId, slotIndex, false, true)
+				isItemProtectedAtASlotNow(bagId, slotIndex, false, true)
             end
         end
     else
@@ -1431,7 +1444,7 @@ function FCOIS.MarkItemByKeybind(iconId, p_bagId, p_slotIndex, removeMarkers)
 				if itemIsMarked == true then
 					--Check if the item was marked wvia IIfA and this was opened at e.g. the carfting deconstruction panel and the same item was slotted currently there:
 					--Remove it from the slot then if it is protected now!
-					FCOIS.IsItemProtectedAtASlotNow(nil, nil, false, true)
+					isItemProtectedAtASlotNow(nil, nil, false, true)
 				end
 			end
 		end
@@ -1877,12 +1890,13 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons, withNoneEntry)
 				end
 			end
 
-		elseif typeToCheck == 'recipe' then
+elseif typeToCheck == 'recipe' then
 			local counter = 0
 			for i=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
   				local goOn = false
 				local isGear = isGearIcon[i]
-				if iconIsResearchable[i] or isGear == true then
+				local iconIsEnabled = isIconEnabled[i]
+				if not iconIsEnabled or iconIsResearchable[i] or isGear == true then
 					goOn = false
 				else
 					local isDynamic = isDynamicIcon[i]
@@ -1900,20 +1914,13 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons, withNoneEntry)
 				if goOn then
 					counter = counter + 1
 					local locNameStr = FCOISlocVars.iconEndStrArray[i]
-					local iconIsEnabled = isIconEnabled[counter]
 					local iconName = FCOIS.GetIconText(i) or FCOISlocVars.fcois_loc["options_icon" .. tostring(i) .. "_" .. locNameStr] or "Icon " .. tostring(i)
 					--Should the icon be shown at the start of the text too?
 					if p_withIcons then
 						local iconNameWithIcon = FCOIS.buildIconText(iconName, i, false, not iconIsEnabled)
 						iconName = iconNameWithIcon
 					end
-					--Is the icon enabled?
-					if iconIsEnabled then
-						iconsList[counter] = iconName
-					else
-						--Icon is not enabled, so color the entry red (or strike it through)
-						iconsList[counter] = "|cFF0000" .. iconName .. "|r"
-					end
+					iconsList[counter] = iconName
 				end
 			end
 
@@ -2023,6 +2030,28 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons, withNoneEntry)
     --local iconsDropdownValuesTooltipsList = buildIconsChoicesValuesTooltipsList(type, withIcons, withNoneEntry)
 	local iconsDropdownValuesTooltipsList = iconsDropdownList
 
+	if iconsDropdownList and iconsDropdownValuesList and #iconsDropdownList ~= #iconsDropdownValuesList then
+		d(string.format("[FCOIS]ERROR: GetLAMMarkerIconsDropdown - typeToCheck: %s, withIcons: %s, withNoneEntry: %s -> count entries/values: %s/%s", tostring(type), tostring(withIcons), tostring(withNoneEntry), tostring(#iconsDropdownList), tostring(#iconsDropdownValuesList)))
+		--For debugging
+		if GetDisplayName() == "@Baertram" then
+			FCOIS._errorDropDownList = ZO_ShallowTableCopy(iconsDropdownList)
+			FCOIS._errorDropDownListValues = ZO_ShallowTableCopy(iconsDropdownValuesList)
+			--Equal the two table entry counts so that LAM is not erroring out
+			if #iconsDropdownValuesList > #iconsDropdownList then
+				for idx, iconText in ipairs(iconsDropdownValuesList) do
+					if idx > #iconsDropdownList then
+						table.remove(iconsDropdownValuesList, idx)
+					end
+				end
+			else
+				for idx, iconText in ipairs(iconsDropdownList) do
+					if idx > #iconsDropdownValuesList then
+						table.remove(iconsDropdownList, idx)
+					end
+				end
+			end
+		end
+	end
 	return iconsDropdownList, iconsDropdownValuesList, iconsDropdownValuesTooltipsList
 end
 

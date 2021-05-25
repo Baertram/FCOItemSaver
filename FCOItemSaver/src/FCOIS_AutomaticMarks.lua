@@ -10,6 +10,13 @@ local numFilterIcons = FCOIS.numVars.gFCONumFilterIcons
 local getSavedVarsMarkedItemsTableName = FCOIS.getSavedVarsMarkedItemsTableName
 
 local lmas = FCOIS.libMultiAccountSets
+
+local checkIfItemIsProtected = FCOIS.checkIfItemIsProtected
+local myGetItemInstanceIdNoControl = FCOIS.MyGetItemInstanceIdNoControl
+local filterBasics = FCOIS.FilterBasics
+local getFilterPanelIdText = FCOIS.GetFilterPanelIdText
+local getFilterPanelIdByBagId = FCOIS.GetFilterPanelIdByBagId
+
 --==========================================================================================================================================
 --									FCOIS Inventory scanning & automatic item marking
 --==========================================================================================================================================
@@ -20,18 +27,35 @@ local function checkIfItemArrayIsProtected(iconIdArray, itemId)
     local isProtected = false
     --Check each iconId in the arry now for a protection
     for i=1, #iconIdArray, 1 do
-        isProtected = FCOIS.checkIfItemIsProtected(iconIdArray[i], itemId)
+        isProtected = checkIfItemIsProtected(iconIdArray[i], itemId)
         if isProtected then break end
     end
     return isProtected
 end
+
+--Function to return if the automatic markings at a chosen bagId (or if nil then all bagIds) is disabled
+function FCOIS.CheckIfAutomaticMarksAreDisabledAtBag(bagId)
+    FCOIS.LoadUserSettings()
+    local settings = FCOIS.settingsVars.settings
+    for bagIdToScan, isEnabled in pairs(settings.autoMarkBagsToScan) do
+        if bagId == nil then
+            if isEnabled == true then return false end
+        else
+            if bagIdToScan == bagId then
+                if isEnabled == true then return false end
+            end
+        end
+    end
+    return true
+end
+local checkIfAutomaticMarksAreDisabledAtBag = FCOIS.CheckIfAutomaticMarksAreDisabledAtBag
 
 --Function to check if an item is allowed to be marked automatically with another icon, from any of the "automatic marks"
 local function checkIfCanBeAutomaticallyMarked(bagId, slotIndex, itemId, checkType)
 --d("[FCOIS] checkIfCanBeAutomaticallyMarked - bag: " .. tostring(bagId) .. ", slotIndex: " .. tostring(slotIndex) .. ", itemId: " .. tostring(itemId) .. ", checkType: " .. tostring(checkType))
     if (bagId == nil or slotIndex == nil) and itemId == nil then return false end
     if itemId == nil then
-        itemId = FCOIS.MyGetItemInstanceIdNoControl(bagId, slotIndex)
+        itemId = myGetItemInstanceIdNoControl(bagId, slotIndex)
     end
     --Get all icons of the item
     local isMarkedWithOneIcon, markedIcons = FCOIS.IsMarked(bagId, slotIndex, -1)
@@ -116,7 +140,6 @@ local function automaticMarkingResearchAdditionalCheckFunc(p_itemData, p_checkFu
                 else
                     isResearchable = (itemDataEntry.researchAssistant ~= nil and itemDataEntry.researchAssistant == 'researchable')
                 end
---d("<isResearchable: " ..tostring(isResearchable))
             end
 
         --CraftStoreFixedAndImproved
@@ -174,8 +197,8 @@ local function automaticMarkingQualityCheckFunc(p_bagId, p_slotIndex)
     --Check if item's quality is a selected, or higher one?
     local qualityCheck = false
     local itemQuality = FCOIS.GetItemQuality(p_bagId, p_slotIndex)
-    --local itemLink = GetItemLink(p_bagId, p_slotIndex)
-    --d(itemLink .. ", quality: " .. tostring(itemQuality))
+    local itemLink = GetItemLink(p_bagId, p_slotIndex)
+--d(itemLink .. ", quality: " .. tostring(itemQuality))
     if not itemQuality then return false, nil end
     local settings = FCOIS.settingsVars.settings
     local autoMarkQuality = settings.autoMarkQuality
@@ -574,7 +597,7 @@ local function automaticMarkingSetsAdditionalCheckFunc(p_itemData, p_checkFuncRe
         --==== Normal set marker icon - BEGIN ==================================================================================
         --Check if the item is marked with the automatic set icon alreay
         --table.insert(iconIdArray, setsIconNr)
-        isMarkedWithAutomaticSetMarkerIcon = FCOIS.checkIfItemIsProtected(setsIconNr, itemId) or false
+        isMarkedWithAutomaticSetMarkerIcon = checkIfItemIsProtected(setsIconNr, itemId) or false
         --==== Normal set marker icon - END ====================================================================================
 
         --==== Gear marker icons - BEGIN =======================================================================================
@@ -1015,7 +1038,7 @@ function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, do
         local additionalCheckFuncResultData
         --The item's instance iD
         local itemId
-        itemId = FCOIS.MyGetItemInstanceIdNoControl(bag, slot, false)
+        itemId = myGetItemInstanceIdNoControl(bag, slot, false)
         --Is the itemInstanceId/uniqueId not given,
         --or the item cannot be automatically marked (anymore),
         --  or the item is already marked with the wished icon
@@ -1039,7 +1062,7 @@ function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, do
                     isItemProtected = checkIfItemArrayIsProtected(iconIdArray, itemId)
                 else
                     if not iconIsMarkedAllreadyAllowed then
-                        isItemProtected = FCOIS.checkIfItemIsProtected(toDos.icon, itemId)
+                        isItemProtected = checkIfItemIsProtected(toDos.icon, itemId)
                     else
                         isItemProtected = false
                     end
@@ -1048,7 +1071,7 @@ function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, do
         end
         if itemId == nil or not canBeAutomaticallyMarked or isItemProtected	then
             if showDebug then
-                d("<-- ABORTED [".. il .. "] - ItemId: " .. tostring(itemId) .. ", scanType: " .. tostring(scanType) .. ", FCOIS.checkIfItemIsProtected: " .. tostring(isItemProtected) .. " -> Should be: false, checkIfCanBeAutomaticallyMarked: (" .. tostring(canBeAutomaticallyMarked) .." -> Should be: true)")
+                d("<-- ABORTED [".. il .. "] - ItemId: " .. tostring(itemId) .. ", scanType: " .. tostring(scanType) .. ", checkIfItemIsProtected: " .. tostring(isItemProtected) .. " -> Should be: false, checkIfCanBeAutomaticallyMarked: (" .. tostring(canBeAutomaticallyMarked) .." -> Should be: true)")
             end
             return abortChecksNow("ItemId nil?: " .. tostring(itemId) .. ", canBeAutomaticallyMarked false/nil?: " ..tostring(canBeAutomaticallyMarked) .. ", isItemProtected true?: " ..tostring(isItemProtected))
         end
@@ -1213,12 +1236,82 @@ function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, do
 end -- Single item scan function scanInventoryItemForAutomaticMarks(bag, slot, scanType)
 local scanInventoryItemForAutomaticMarks = FCOIS.scanInventoryItemForAutomaticMarks
 
-local function getBagsToScanForAutomaticMarks()
-    return FCOIS.settingsVars.settings.autoMarkBagsToScan
+local function houseBankBagChecks(bagId)
+    if IsHouseBankBag(bagId) == true then
+        return FCOIS.checkIfHouseOwnerAndInsideOwnHouse()
+    end
+    return nil
+end
+
+local function getBagsToScanForAutomaticMarks(bag)
+--d("[FCOIS]getBagsToScanForAutomaticMarks - bagId: " ..tostring(bagId))
+    local onlyUpdatePlayerInv = true
+    local bagIdsToScanNow = {}
+    --Scan a dedicated bag
+    if bag ~= nil then
+        local houseCheckResult = houseBankBagChecks(bag)
+        if houseCheckResult == true then
+            table.insert(bagIdsToScanNow, bag)
+            onlyUpdatePlayerInv = false
+        --Not in an own house? No access to the own house bank then!
+        elseif houseCheckResult == nil then
+            table.insert(bagIdsToScanNow, bag)
+            if bag ~= BAG_BACKPACK then
+                if bag == BAG_BANK == true then
+                    table.insert(bagIdsToScanNow, BAG_SUBSCRIBER_BANK)
+                end
+                onlyUpdatePlayerInv = false
+            end
+        end
+
+    else
+        --Scan multiple bags -> Get the enbaled bags and the scan order
+        local settings = FCOIS.settingsVars.settings
+        local bagsToScan, bagScanOrder = ZO_ShallowTableCopy(settings.autoMarkBagsToScan), ZO_ShallowTableCopy(settings.autoMarkBagsToScanOrder)
+--FCOIS._settingsAutoMarkBagsToScan = bagsToScan
+--FCOIS._settingsAutoMarkBagsToScanOrder = bagScanOrder
+
+        --Scan the bank? Also scan the subscriber bank than!
+        if bagsToScan[BAG_BANK] == true then
+            --d(">found BAG_BANK -> Adding BAG_SUBSCRIBER_BANK")
+            bagsToScan[BAG_SUBSCRIBER_BANK] = true
+            local insertIdx
+            for scanIndex, bagData in ipairs(bagScanOrder) do
+                if bagData.value == BAG_BANK then
+                    insertIdx = scanIndex + 1
+                    --d(">insertIdx of BAG_SUBSCRIBER_BANK: " ..tostring(insertIdx))
+                    break
+                end
+            end
+            if insertIdx ~= nil then
+                table.insert(bagScanOrder, insertIdx, { value = BAG_SUBSCRIBER_BANK, uniqueKey = BAG_SUBSCRIBER_BANK, text = "BAG_SUBSCRIBER_BANK", tooltip = "BAG_SUBSCRIBER_BANK" })
+            end
+        end
+        --House bank bag should be scanned as well?
+        if bagsToScan[BAG_HOUSE_BANK_ONE] == true then
+            local houseCheckResult = houseBankBagChecks(BAG_HOUSE_BANK_ONE)
+            --Not in an own house? No access to the own house bank then!
+            if houseCheckResult == nil then
+                bagsToScan[BAG_HOUSE_BANK_ONE] = false
+            end
+        end
+        bagIdsToScanNow = {}
+        for scanIndex, bagData in ipairs(bagScanOrder) do
+            local bagValue = bagData.value
+            if bagsToScan[bagValue] == true then
+                table.insert(bagIdsToScanNow, bagValue)
+                if bagValue ~= BAG_BACKPACK then
+                    onlyUpdatePlayerInv = false
+                end
+            end
+        end
+    end
+
+    return bagIdsToScanNow, onlyUpdatePlayerInv
 end
 
 --Function to do the scans for automatic marker icons (multiple items)
-function FCOIS.scanInventoryItemsForAutomaticMarks(bag, slot, scanType, updateInv)
+function FCOIS.ScanInventoryItemsForAutomaticMarks(bag, slot, scanType, updateInv)
     updateInv = updateInv or false
     if not scanType then return false end
     local settings = FCOIS.settingsVars.settings
@@ -1244,7 +1337,7 @@ function FCOIS.scanInventoryItemsForAutomaticMarks(bag, slot, scanType, updateIn
             checkOtherAddon		= nil,
             resultOtherAddon   	= nil,
             resultNotOtherAddon	= nil,
-            icon				=           settings.autoMarkQualityIconNr,
+            icon				= settings.autoMarkQualityIconNr,
             checkIfAnyIconIsMarkedAlready = settings.autoMarkQualityCheckAllIcons,
             checkFunc			= automaticMarkingQualityCheckFunc,
             resultCheckFunc 	= true,
@@ -1322,7 +1415,7 @@ function FCOIS.scanInventoryItemsForAutomaticMarks(bag, slot, scanType, updateIn
             preCheckFunc        = function(p_bagId, p_slotIndex)
                 --Check if item is researchable
                 local isItemResearchable, wasItemReconstructedOrRetraited = FCOIS.isItemResearchableNoControl(p_bagId, p_slotIndex, nil)
-                if isItemResearchable == true and wasItemReconstructedOrRetraited == true then
+                if isItemResearchable and wasItemReconstructedOrRetraited == true then
                     isItemResearchable = false
                 end
 --d(">>>isItemResearchable: " ..tostring(isItemResearchable))
@@ -1382,7 +1475,7 @@ function FCOIS.scanInventoryItemsForAutomaticMarks(bag, slot, scanType, updateIn
                 --Check if item is an unknown recipe
                 return FCOIS.isRecipeKnown(p_bagId, p_slotIndex, false), nil
             end,
-            resultPreCheckFunc  = false,
+            resultPreCheckFunc  = true,
             resultNotPreCheckFunc = nil,
             checkFunc			= nil,
             resultCheckFunc 	= nil,
@@ -1519,32 +1612,14 @@ function FCOIS.scanInventoryItemsForAutomaticMarks(bag, slot, scanType, updateIn
         checksWereDoneLoop, atLeastOneMarkerIconWasSetLoop = scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos)
         FCOIS.preventerVars.gScanningInv = false
     else
-        --The bagids that should be scanned if no bagId was given as parameter p_bagId
-        local bagIdsToCheck = {}
-        --Check all bagIds?
-        if bag == nil and slot == nil then
-            local bagIdsToScan = getBagsToScanForAutomaticMarks()
-            for bagIdToScan, enabled in pairs(bagIdsToScan) do
-                if enabled == true then
-                    if bagIdToScan ~= BAG_BACKPACK then
-                        onlyUpdatePlayerInv = false
-                    end
-                    table.insert(bagIdsToCheck, bagIdToScan)
-                end
-            end
-        --Or is a bagId given?
-        elseif bag ~= nil then
-            table.insert(bagIdsToCheck, bag)
-            if bag ~= BAG_BACKPACK then
-                onlyUpdatePlayerInv = false
-            end
-            --Or is no bagId given but a slotIndex? -> Abort as this shouldn't happen
-        elseif bag == nil and slot ~= nil then
+        if bag == nil and slot ~= nil then
             return
         end
-
+        local bagIdsToScanNow
+         --Get the bagIds that should be scanned, in teh user chosen order
+        bagIdsToScanNow, onlyUpdatePlayerInv = getBagsToScanForAutomaticMarks(bag)
         local atLeastOneMarkerIconWasSetInForLoop 	= false
-        for _, bagToCheck in ipairs(bagIdsToCheck) do
+        for _, bagToCheck in ipairs(bagIdsToScanNow) do
             --d("[FCOIS]--> Scan whole inventory, bag: " .. tostring(bagToCheck))
             --Get the bag cache (all entries in that bag)
             --local bagCache = SHARED_INVENTORY:GenerateFullSlotData(nil, bagToCheck)
@@ -1579,7 +1654,7 @@ function FCOIS.scanInventoryItemsForAutomaticMarks(bag, slot, scanType, updateIn
     --Was at least one item found that could be marked?
     if updateInv and atLeastOneMarkerIconWasSetLoop == true then
         --Update the inventory tabs to show the marker textures
-        FCOIS.FilterBasics(onlyUpdatePlayerInv)
+        filterBasics(onlyUpdatePlayerInv)
     end
 
     --------------------------------------------------------------------------------
@@ -1587,14 +1662,15 @@ function FCOIS.scanInventoryItemsForAutomaticMarks(bag, slot, scanType, updateIn
     --d("<<< retun checksWereDoneLoop: " .. tostring(checksWereDoneLoop) .. ", atLeastOneMarkerIconWasSetLoop: " .. tostring(atLeastOneMarkerIconWasSetLoop) .. ", scanType: " .. tostring(scanType))
     return checksWereDoneLoop, atLeastOneMarkerIconWasSetLoop
 end
-local scanInventoryItemsForAutomaticMarks = FCOIS.scanInventoryItemsForAutomaticMarks
+local scanInventoryItemsForAutomaticMarks = FCOIS.ScanInventoryItemsForAutomaticMarks
 
 --Local function to scan a single inventory item
 -->checksAlreadyDoneTable was filled in function FCOIS.scanInventory with the results needed for the checks (performance gain!)
-function FCOIS.scanInventorySingle(p_bagId, p_slotIndex, checksAlreadyDoneTable)
+function FCOIS.ScanInventorySingle(p_bagId, p_slotIndex, checksAlreadyDoneTable)
 --d("[ScanInventorySingle] bag: " .. tostring(p_bagId) .. ", slot: " .. tostring(p_slotIndex) .. ", scanningInv: " .. tostring(FCOIS.preventerVars.gScanningInv))
     local updateInv = false
     local settings = FCOIS.settingsVars.settings
+    local isIconEnabledSettings = settings.isIconEnabled
     if FCOIS.preventerVars.gScanningInv == false then
         if settings.debug then FCOIS.debugMessage( "[ScanInventorySingle]","Start", false, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
 --d("[ScanInventorySingle] Start")
@@ -1602,13 +1678,13 @@ function FCOIS.scanInventorySingle(p_bagId, p_slotIndex, checksAlreadyDoneTable)
         -- bagId AND slotIndex are given?
         if (p_bagId ~= nil and p_slotIndex ~= nil) then
             --Check if item is researchable
-            local itemId = FCOIS.MyGetItemInstanceIdNoControl(p_bagId, p_slotIndex, false)
+            local itemId = myGetItemInstanceIdNoControl(p_bagId, p_slotIndex, false)
             if (itemId ~= nil) then
 
                 --1)
                 --Mark set items
                 if (checksAlreadyDoneTable ~= nil and checksAlreadyDoneTable["sets"] == true) or (
-                   (settings.autoMarkSets == true and settings.isIconEnabled[settings.autoMarkSetsIconNr])) then
+                   (settings.autoMarkSets == true and isIconEnabledSettings[settings.autoMarkSetsIconNr])) then
                     local _, setPartChanged = scanInventoryItemsForAutomaticMarks(p_bagId, p_slotIndex, "sets", false)
                     if not updateInv and setPartChanged then
                         updateInv = true
@@ -1621,12 +1697,12 @@ function FCOIS.scanInventorySingle(p_bagId, p_slotIndex, checksAlreadyDoneTable)
                     local _, setCollectionItemChanged
                     if (checksAlreadyDoneTable ~= nil and checksAlreadyDoneTable["setItemCollectionsUnknown"] == true) or (
                         settings.autoMarkSetsItemCollectionBookMissingIcon ~= FCOIS_CON_ICON_NONE and
-                            settings.isIconEnabled[settings.autoMarkSetsItemCollectionBookMissingIcon] == true) then
+                            isIconEnabledSettings[settings.autoMarkSetsItemCollectionBookMissingIcon] == true) then
                         _, setCollectionItemChanged = scanInventoryItemsForAutomaticMarks(p_bagId, p_slotIndex, "setItemCollectionsUnknown", false)
                     end
                     if (checksAlreadyDoneTable ~= nil and checksAlreadyDoneTable["setItemCollectionsKnown"] == true) or (
                         settings.autoMarkSetsItemCollectionBookNonMissingIcon ~= FCOIS_CON_ICON_NONE and
-                            settings.isIconEnabled[settings.autoMarkSetsItemCollectionBookNonMissingIcon] == true) then
+                            isIconEnabledSettings[settings.autoMarkSetsItemCollectionBookNonMissingIcon] == true) then
                         _, setCollectionItemChanged = scanInventoryItemsForAutomaticMarks(p_bagId, p_slotIndex, "setItemCollectionsKnown", false)
                     end
                     if not updateInv and setCollectionItemChanged then
@@ -1637,7 +1713,7 @@ function FCOIS.scanInventorySingle(p_bagId, p_slotIndex, checksAlreadyDoneTable)
                 --3)
                 --Update ornate items
                 if (checksAlreadyDoneTable ~= nil and checksAlreadyDoneTable["ornate"] == true) or (
-                   (settings.autoMarkOrnate == true and settings.isIconEnabled[FCOIS_CON_ICON_SELL]) ) then
+                   (settings.autoMarkOrnate == true and isIconEnabledSettings[FCOIS_CON_ICON_SELL]) ) then
                     local _, ornateChanged = scanInventoryItemsForAutomaticMarks(p_bagId, p_slotIndex, "ornate", false)
                     if not updateInv and ornateChanged then
                         updateInv = true
@@ -1647,7 +1723,7 @@ function FCOIS.scanInventorySingle(p_bagId, p_slotIndex, checksAlreadyDoneTable)
                 --4)
                 --Update intricate items
                 if (checksAlreadyDoneTable ~= nil and checksAlreadyDoneTable["intricate"] == true) or (
-                    (settings.autoMarkIntricate == true and settings.isIconEnabled[FCOIS_CON_ICON_INTRICATE])) then
+                    (settings.autoMarkIntricate == true and isIconEnabledSettings[FCOIS_CON_ICON_INTRICATE])) then
                     local _, intricateChanged = scanInventoryItemsForAutomaticMarks(p_bagId, p_slotIndex, "intricate", false)
                     if not updateInv and intricateChanged then
                         updateInv = true
@@ -1657,7 +1733,7 @@ function FCOIS.scanInventorySingle(p_bagId, p_slotIndex, checksAlreadyDoneTable)
                 --5)
                 --Update researchable items
                 if (checksAlreadyDoneTable ~= nil and checksAlreadyDoneTable["research"] == true) or (
-                   (settings.autoMarkResearch == true and FCOIS.checkIfResearchAddonUsed() and FCOIS.checkIfChosenResearchAddonActive() and settings.isIconEnabled[FCOIS_CON_ICON_RESEARCH])) then
+                   (settings.autoMarkResearch == true and FCOIS.checkIfResearchAddonUsed() and FCOIS.checkIfChosenResearchAddonActive() and isIconEnabledSettings[FCOIS_CON_ICON_RESEARCH])) then
 --local itemLink = GetItemLink(p_bagId, p_slotIndex)
 --d(">scanInvSingle, research scan reached for: " .. itemLink)
                     local _, researchableChanged = scanInventoryItemsForAutomaticMarks(p_bagId, p_slotIndex, "research", false)
@@ -1669,7 +1745,7 @@ function FCOIS.scanInventorySingle(p_bagId, p_slotIndex, checksAlreadyDoneTable)
                 --6)
                 --Update research scrolls (time reduction for crafting research) items
                 if (checksAlreadyDoneTable ~= nil and checksAlreadyDoneTable["researchScrolls"] == true) or (
-                    ((DetailedResearchScrolls ~= nil and DetailedResearchScrolls.GetWarningLine ~= nil) and settings.autoMarkWastedResearchScrolls == true and settings.isIconEnabled[FCOIS_CON_ICON_LOCK])) then
+                    ((DetailedResearchScrolls ~= nil and DetailedResearchScrolls.GetWarningLine ~= nil) and settings.autoMarkWastedResearchScrolls == true and isIconEnabledSettings[FCOIS_CON_ICON_LOCK])) then
                     local _, researchScrollWastedChanged = scanInventoryItemsForAutomaticMarks(p_bagId, p_slotIndex, "researchScrolls", false)
                     if not updateInv and researchScrollWastedChanged then
                         updateInv = true
@@ -1699,7 +1775,7 @@ function FCOIS.scanInventorySingle(p_bagId, p_slotIndex, checksAlreadyDoneTable)
                 --9)
                 --Check for item quality
                 if (checksAlreadyDoneTable ~= nil and checksAlreadyDoneTable["quality"] == true) or (
-                    (settings.autoMarkQuality ~= 1 and settings.isIconEnabled[settings.autoMarkQualityIconNr])) then
+                    (settings.autoMarkQuality ~= 1 and isIconEnabledSettings[settings.autoMarkQualityIconNr])) then
                     local _, qualityChanged = scanInventoryItemsForAutomaticMarks(p_bagId, p_slotIndex, "quality", false)
                     if not updateInv and qualityChanged then
                         updateInv = true
@@ -1714,13 +1790,16 @@ function FCOIS.scanInventorySingle(p_bagId, p_slotIndex, checksAlreadyDoneTable)
 --d("[ScanInventorySingle] END, updateInv: " .. tostring(updateInv))
     return updateInv
 end
-local scanInventorySingle = FCOIS.scanInventorySingle
+local scanInventorySingle = FCOIS.ScanInventorySingle
+
 
 --Scan the inventory for ornate and/or researchable items
-function FCOIS.scanInventory(p_bagId, p_slotIndex)
+function FCOIS.ScanInventory(p_bagId, p_slotIndex, doEcho)
+    doEcho = doEcho or false
+    local settings = FCOIS.settingsVars.settings
     --Do not scan now if the unique item IDs got just enabled before the reloadui
     if FCOIS.preventerVars.doNotScanInv == true then
-        if FCOIS.settingsVars.settings.useUniqueIds then
+        if settings.useUniqueIds then
             d(FCOIS.preChatVars.preChatTextRed .. FCOIS.localizationVars.fcois_loc["options_migrate_unique_inv_scan_not_done"])
         end
         FCOIS.preventerVars.doNotScanInv = false
@@ -1731,24 +1810,24 @@ function FCOIS.scanInventory(p_bagId, p_slotIndex)
     if FCOIS.preventerVars.gScanningInv == true then return end
 
     local updateInv = false
-    local settings = FCOIS.settingsVars.settings
+    local isIconEnabledSettings = settings.isIconEnabled
 
     local isRecipeAddonActive = (FCOIS.checkIfRecipeAddonUsed() and FCOIS.checkIfChosenRecipeAddonActive()) or false
-    local isResearchAddonActive = (FCOIS.checkIfResearchAddonUsed() and FCOIS.checkIfChosenResearchAddonActive() and settings.isIconEnabled[FCOIS_CON_ICON_RESEARCH]) or false
-    local isResearchScrollsAddonActive = (DetailedResearchScrolls ~= nil and DetailedResearchScrolls.GetWarningLine ~= nil and settings.autoMarkWastedResearchScrolls == true and settings.isIconEnabled[FCOIS_CON_ICON_LOCK]) or false
+    local isResearchAddonActive = (FCOIS.checkIfResearchAddonUsed() and FCOIS.checkIfChosenResearchAddonActive() and isIconEnabledSettings[FCOIS_CON_ICON_RESEARCH]) or false
+    local isResearchScrollsAddonActive = (DetailedResearchScrolls ~= nil and DetailedResearchScrolls.GetWarningLine ~= nil and settings.autoMarkWastedResearchScrolls == true and isIconEnabledSettings[FCOIS_CON_ICON_LOCK]) or false
 
     --Automatic marking of ornate, intricate, researchable items (researchAssistant or other research addon needed, or ESO base game marks for researchabel items), unknown recipes (SousChef or other recipe addon is needed!), set parts, quality items, set collection book items is activated?
     local checksAlreadyDoneTable = {}
-    checksAlreadyDoneTable["ornate"]                    = (settings.autoMarkOrnate == true and settings.isIconEnabled[FCOIS_CON_ICON_SELL])
-    checksAlreadyDoneTable["intricate"]                 = (settings.autoMarkIntricate == true and settings.isIconEnabled[FCOIS_CON_ICON_INTRICATE])
+    checksAlreadyDoneTable["ornate"]                    = (settings.autoMarkOrnate == true and isIconEnabledSettings[FCOIS_CON_ICON_SELL])
+    checksAlreadyDoneTable["intricate"]                 = (settings.autoMarkIntricate == true and isIconEnabledSettings[FCOIS_CON_ICON_INTRICATE])
     checksAlreadyDoneTable["research"]                  = (isResearchAddonActive and settings.autoMarkResearch == true)
     checksAlreadyDoneTable["researchScrolls"]           = isResearchScrollsAddonActive
-    checksAlreadyDoneTable["quality"]                   = (settings.autoMarkQuality ~= 1 and settings.isIconEnabled[settings.autoMarkQualityIconNr])
-    checksAlreadyDoneTable["recipes"]                   = (isRecipeAddonActive and settings.autoMarkRecipes == true and settings.isIconEnabled[settings.autoMarkRecipesIconNr])
-    checksAlreadyDoneTable["knownRecipes"]              = (isRecipeAddonActive and settings.autoMarkKnownRecipes == true and settings.isIconEnabled[settings.AutoMarkKnownRecipesIconNr])
-    checksAlreadyDoneTable["setItemCollectionsUnknown"] = (settings.autoMarkSetsItemCollectionBook == true and (settings.autoMarkSetsItemCollectionBookMissingIcon ~= FCOIS_CON_ICON_NONE and settings.isIconEnabled[settings.autoMarkSetsItemCollectionBookMissingIcon] == true))
-    checksAlreadyDoneTable["setItemCollectionsKnown"]   = (settings.autoMarkSetsItemCollectionBook == true and (settings.autoMarkSetsItemCollectionBookNonMissingIcon ~= FCOIS_CON_ICON_NONE and settings.isIconEnabled[settings.autoMarkSetsItemCollectionBookNonMissingIcon] == true))
-    checksAlreadyDoneTable["sets"]                      = (settings.autoMarkSets == true and settings.isIconEnabled[settings.autoMarkSetsIconNr])
+    checksAlreadyDoneTable["quality"]                   = (settings.autoMarkQuality ~= 1 and isIconEnabledSettings[settings.autoMarkQualityIconNr])
+    checksAlreadyDoneTable["recipes"]                   = (isRecipeAddonActive and settings.autoMarkRecipes == true and isIconEnabledSettings[settings.autoMarkRecipesIconNr])
+    checksAlreadyDoneTable["knownRecipes"]              = (isRecipeAddonActive and settings.autoMarkKnownRecipes == true and isIconEnabledSettings[settings.AutoMarkKnownRecipesIconNr])
+    checksAlreadyDoneTable["setItemCollectionsUnknown"] = (settings.autoMarkSetsItemCollectionBook == true and (settings.autoMarkSetsItemCollectionBookMissingIcon ~= FCOIS_CON_ICON_NONE and isIconEnabledSettings[settings.autoMarkSetsItemCollectionBookMissingIcon] == true))
+    checksAlreadyDoneTable["setItemCollectionsKnown"]   = (settings.autoMarkSetsItemCollectionBook == true and (settings.autoMarkSetsItemCollectionBookNonMissingIcon ~= FCOIS_CON_ICON_NONE and isIconEnabledSettings[settings.autoMarkSetsItemCollectionBookNonMissingIcon] == true))
+    checksAlreadyDoneTable["sets"]                      = (settings.autoMarkSets == true and isIconEnabledSettings[settings.autoMarkSetsIconNr])
 
     local isCheckNecessary = false
     for _, isCheckNecessaryAtCheckType in pairs(checksAlreadyDoneTable) do
@@ -1759,48 +1838,49 @@ function FCOIS.scanInventory(p_bagId, p_slotIndex)
     end
 
     if isCheckNecessary == true then
+--d("-Scanning needed-")
+        local locVars = FCOIS.localizationVars.fcois_loc
+        local preVars = FCOIS.preChatVars
+        local prefixFCOISGreen = preVars.preChatTextGreen
+        local prefixFCOISRed = preVars.preChatTextRed
         local onlyUpdatePlayerInv = true
+
         -- Scan the whole inventory because no bagId and slotIndex are given
         if p_bagId == nil or p_slotIndex == nil then
             --d("[ScanInventory] Start ALL")
             if settings.debug then FCOIS.debugMessage( "[ScanInventory]","Start ALL", false, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
 
-            --The bagids that should be scanned if no bagId was given as parameter p_bagId
-            local bagIdsToCheck = {}
-            --Check all bagIds?
-            if p_bagId == nil and p_slotIndex == nil then
-                local bagIdsToScan = getBagsToScanForAutomaticMarks()
-
-                for bagIdToScan, enabled in pairs(bagIdsToScan) do
-                    if enabled == true then
-                        if bagIdToScan ~= BAG_BACKPACK then
-                            onlyUpdatePlayerInv = false
-                        end
-                        table.insert(bagIdsToCheck, bagIdToScan)
-                    end
-                end
-            --Or is a bagId given?
-            elseif p_bagId ~= nil then
-                table.insert(bagIdsToCheck, p_bagId)
-                if p_bagId ~= BAG_BACKPACK then
-                    onlyUpdatePlayerInv = false
-                end
-            --Or is no bagId given but a slotIndex? -> Abort as this shouldn't happen
-            elseif p_bagId == nil and p_slotIndex ~= nil then
+            if p_bagId == nil and p_slotIndex ~= nil then
                 return
             end
 
-            --d("[FCOIS]--> Scan whole inventory, bag: " .. tostring(bagToCheck))
+            local bagIdsToScanNow
+            --Get the bagIds that should be scanned, in teh user chosen order
+            bagIdsToScanNow, onlyUpdatePlayerInv = getBagsToScanForAutomaticMarks(p_bagId)
+--FCOIS._bagIdsToScanNow = bagIdsToScanNow
+--FCOIS._onlyUpdatePlayerInv = onlyUpdatePlayerInv
+
             --Get the bag cache (all entries in that bag)
             --local bagCache = SHARED_INVENTORY:GenerateFullSlotData(nil, bagToCheck)
-            for _, bagToCheck in ipairs(bagIdsToCheck) do
---d(">FCOIS.scanInventory-bagId: " ..tostring(bagToCheck))
+            for _, bagToCheck in ipairs(bagIdsToScanNow) do
+                local filterPanelId, filterPanelText
+                if doEcho == true then
+                    filterPanelId = getFilterPanelIdByBagId(bagToCheck)
+                    filterPanelText = getFilterPanelIdText(filterPanelId)
+                    if bagToCheck == BAG_SUBSCRIBER_BANK then
+                        filterPanelText = filterPanelText .. " - ESO+"
+                    end
+                    d(string.format(prefixFCOISGreen .. " " .. locVars["options_scan_automatic_marks_scan_bag"], filterPanelText))
+                end
                 local bagCache = SHARED_INVENTORY:GetOrCreateBagCache(bagToCheck)
                 local updateInvLoop = false
                 for _, data in pairs(bagCache) do
                     updateInvLoop = false
                     updateInvLoop = scanInventorySingle(data.bagId, data.slotIndex, checksAlreadyDoneTable)
                     if not updateInv then updateInv = updateInvLoop end
+                end
+                if doEcho == true then
+                    d(string.format(prefixFCOISRed .. " " .. locVars["options_scan_automatic_marks_scan_bag_finished"], filterPanelText))
                 end
             end
             if settings.debug then FCOIS.debugMessage( "[ScanInventory]","End ALL", false, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
@@ -1817,7 +1897,7 @@ function FCOIS.scanInventory(p_bagId, p_slotIndex)
 
         --Update the inventories?
         if updateInv == true then
-            FCOIS.FilterBasics(onlyUpdatePlayerInv)
+            filterBasics(onlyUpdatePlayerInv)
         end
     end --if isCheckNecessary then
 end

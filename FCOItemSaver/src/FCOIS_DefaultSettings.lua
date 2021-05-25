@@ -28,6 +28,7 @@ function FCOIS.buildDefaultSettings()
 		iconPositionCharacter		= {},
 		iconSizeCharacter			= 20,
 		iconSortOrder				= {},
+		iconSortOrderEntries		= {},
 		filterButtonLeft			= {},
 		filterButtonTop				= {},
 		filterButtonData			= {},
@@ -67,6 +68,7 @@ function FCOIS.buildDefaultSettings()
 		allowJewelryResearchFilter  = true,
 		allowAlchemyFilter			= true,
 		allowRetraitFilter          = true,
+		allowCompanionInventoryFilter = true,
 		allowOnlyUnbound            = {},
 		blockMarkedRepairKits		= false,
 		blockDestroying				= true,
@@ -143,10 +145,40 @@ function FCOIS.buildDefaultSettings()
 		autoMarkBagsToScan = {
 			[BAG_BACKPACK] = true,
 			[BAG_BANK] = true,
-			[BAG_SUBSCRIBER_BANK] = true,
+			[BAG_GUILDBANK] = true,
+			[BAG_HOUSE_BANK_ONE] = true,
 		},
+		autoMarkBagsToScanOrder = {
+			[1] = {
+				value 		= BAG_BACKPACK,
+				uniqueKey 	= LF_INVENTORY,
+				--text  		= locVars["FCOIS_LibFilters_PanelIds"][LF_INVENTORY],
+				--tooltip 	= locVars["FCOIS_LibFilters_PanelIds"][LF_INVENTORY],
+
+			},
+			[2] = {
+				value 		= BAG_BANK,
+				uniqueKey 	= LF_BANK_WITHDRAW,
+				--text  		= locVars["FCOIS_LibFilters_PanelIds"][LF_BANK_WITHDRAW],
+				--tooltip 	= locVars["FCOIS_LibFilters_PanelIds"][LF_BANK_WITHDRAW],
+			},
+			[3] = {
+				value 		= BAG_GUILDBANK,
+				uniqueKey 	= LF_GUILDBANK_WITHDRAW,
+				--text  		= locVars["FCOIS_LibFilters_PanelIds"][LF_GUILDBANK_WITHDRAW],
+				--tooltip 	= locVars["FCOIS_LibFilters_PanelIds"][LF_GUILDBANK_WITHDRAW],
+			},
+			[4] = {
+				value 		= BAG_HOUSE_BANK_ONE,
+				uniqueKey 	= LF_HOUSE_BANK_WITHDRAW,
+				--text  		= locVars["FCOIS_LibFilters_PanelIds"][LF_HOUSE_BANK_WITHDRAW],
+				--tooltip 	= locVars["FCOIS_LibFilters_PanelIds"][LF_HOUSE_BANK_WITHDRAW],
+			},
+		},
+		autoMarkBagsChatOutput		= false,
 		autoMarkNewItems			= false,
 		autoMarkNewIconNr           = FCOIS_CON_ICON_LOCK,
+		autoMarkNewItemsCheckOthers = false,
 		autoMarkOrnate 		    	= false,
 		autoMarkIntricate           = false,
 		autoMarkResearch			= false,
@@ -338,6 +370,7 @@ function FCOIS.buildDefaultSettings()
 		keybindMoveItemToJunkEnabled = false,
 		keybindMoveItemToJunkAddSellIcon = false,
 		markerIconOffset = {},
+		enableKeybindChording = true,
 	}
 	--The tables for the markedItems, non-unique and unique
 	local addonVars = FCOIS.addonVars
@@ -447,8 +480,10 @@ function FCOIS.buildDefaultSettings()
 			FCOIS.settingsVars.defaults.icon[filterIconHelper].offsets[filterIconHelperPanel] = defaultIconOffsets
 
 			--FCOIS v.1.4.4 - Research dialog panels need to be protected as default value as they were added new with this version
+			--FCOIS v.2.0.4 - Companion inventory panel needs to be protected as default value as it was added new with this version
 			local valueToSet = false
-			if filterIconHelperPanel == LF_SMITHING_RESEARCH_DIALOG or filterIconHelperPanel == LF_JEWELRY_RESEARCH_DIALOG then
+			if filterIconHelperPanel == LF_SMITHING_RESEARCH_DIALOG or filterIconHelperPanel == LF_JEWELRY_RESEARCH_DIALOG or
+				filterIconHelperPanel == LF_INVENTORY_COMPANION then
 				valueToSet = true
 			end
 			FCOIS.settingsVars.defaults.icon[filterIconHelper].antiCheckAtPanel[filterIconHelperPanel] = valueToSet
@@ -654,7 +689,7 @@ function FCOIS.buildDefaultSettings()
 	FCOIS.settingsVars.defaults.iconPositionCharacter.x	=   0
 	FCOIS.settingsVars.defaults.iconPositionCharacter.y	=	0
 
-	--Update the "Gear sets" texts depending on locaization
+	--Update the "Gear sets" texts depending on localization
 	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_GEAR_1].name    = "Gear 1"
 	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_GEAR_2].name    = "Gear 2"
 	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_GEAR_3].name    = "Gear 3"

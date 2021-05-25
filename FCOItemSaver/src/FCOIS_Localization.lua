@@ -140,6 +140,7 @@ function FCOIS.buildLocalizedFilterButtonContextMenuEntries(contextMenuType)
     return localizedContextMenuEntries
 end
 
+
 --Do some "After localization" stuff
 local function afterLocalization()
     --Local speed up variables
@@ -335,6 +336,82 @@ local function afterLocalization()
         ctmVars[ctmName].buttonTemplate 		= ctmVars[ctmName].cmVars.buttonContextMenuToIconId
         ctmVars[ctmName].buttonTemplateIndex 	= ctmVars[ctmName].cmVars.buttonContextMenuToIconIdIndex
     end
+
+    --Added with FCOIS v2.0.3
+    --Build the iconSortOrderEntries table for the settings menu -> LAM2 widget "order list box"
+    local optionsIcon = "options_icon"
+    local tooltipSuffix = "_TT"
+
+    local iconsListStandard, iconsListValuesStandard = FCOIS.GetLAMMarkerIconsDropdown("standard", true, false)
+    FCOIS.settingsVars.defaults.iconSortOrderEntries = {}
+    for currentSortIdx, iconNumber in ipairs(defaults.iconSortOrder) do
+        if settings.isIconEnabled[iconNumber] then
+            --[[
+                --Example entry
+                [1] = {
+                    value = "Value of the entry", -- or number or boolean or function returning the value of this entry
+                    uniqueKey = 1, --number of the unique key of this list entry. This will not change if the order changes. Will be used to identify the entry uniquely
+                    text  = "Text of this entry", -- or string id or function returning a string (optional)
+                    tooltip = "Tooltip text shown at this entry", -- or string id or function returning a string (optional)
+                },
+            ]]
+
+            local iconIndex = ZO_IndexOfElementInNumericallyIndexedTable(iconsListValuesStandard, iconNumber)
+            local name = iconsListStandard[iconIndex] or "Icon " ..tostring(iconNumber)
+            local tooltip = name
+
+            FCOIS.settingsVars.defaults.iconSortOrderEntries[currentSortIdx] = {
+                uniqueKey	= iconNumber,
+                value		= iconNumber,
+                text 		= name,
+                tooltip 	= tooltip,
+            }
+        end
+    end
+    if not settings.iconSortOrderEntries or (settings.iconSortOrderEntries and #settings.iconSortOrderEntries == 0) then
+        FCOIS.settingsVars.settings.iconSortOrderEntries = FCOIS.settingsVars.defaults.iconSortOrderEntries
+    end
+
+    --Added with FCOIS v2.1.0 - Bag scan order for automatic marks
+    for _, defaultData in ipairs(FCOIS.settingsVars.defaults.autoMarkBagsToScanOrder) do
+        if defaultData.uniqueKey ~= nil then
+            local textVar = locVars["FCOIS_LibFilters_PanelIds"][defaultData.uniqueKey]
+            defaultData.text = textVar
+            defaultData.tooltip = textVar
+        end
+    end
+
+    if not settings.autoMarkBagsToScanOrder or (settings.autoMarkBagsToScanOrder and #settings.autoMarkBagsToScanOrder == 0) then
+        FCOIS.settingsVars.settings.autoMarkBagsToScanOrder = ZO_ShallowTableCopy(FCOIS.settingsVars.defaults.autoMarkBagsToScanOrder)
+    else
+        if settings.autoMarkBagsToScanOrder and #settings.autoMarkBagsToScanOrder > 0 then
+            --Default values were added here and are missing in the settings? Add them
+            if #FCOIS.settingsVars.defaults.autoMarkBagsToScanOrder ~= #settings.autoMarkBagsToScanOrder then
+                for _, defaultData in ipairs(FCOIS.settingsVars.defaults.autoMarkBagsToScanOrder) do
+                    local found = false
+                    for _, settingsData in ipairs(settings.autoMarkBagsToScanOrder) do
+                        if not found and settingsData.uniqueKey == defaultData.uniqueKey then
+                            found = true
+                            break
+                        end
+                    end
+                    if found == false then
+                        table.insert(FCOIS.settingsVars.settings.autoMarkBagsToScanOrder, defaultData)
+                    end
+                end
+            end
+
+            --Update missing text and tooltips
+            for _, entryData in ipairs(settings.autoMarkBagsToScanOrder) do
+                local uniqueKey = entryData.uniqueKey
+                if uniqueKey ~= nil and (entryData.text == nil or entryData.text == "") then
+                    local textVar = locVars["FCOIS_LibFilters_PanelIds"][uniqueKey]
+                    entryData.text = textVar
+                    entryData.tooltip = textVar
+                end
+            end
+        end
+    end
 end
 
 --Localized texts etc.
@@ -400,7 +477,7 @@ function FCOIS.Localization()
     --Get the localized texts from the localization file
     local locVars = FCOIS.localizationVars
     locVars.fcois_loc = locVars.localizationAll[defSettings.language]
-
+    
     --The localization end string array
     locVars.iconEndStrArray = {
         [1]  = "color",
@@ -517,6 +594,7 @@ function FCOIS.Localization()
     --Set the alert message texts as an item gets checked against anti-* (localized!)
     FCOIS.mappingVars.whereAreWeToAlertmessageText = {
         [FCOIS_CON_DESTROY]				=	locTexts["destroying_not_allowed"],
+        [FCOIS_CON_COMPANION_DESTROY]	=	locTexts["destroying_not_allowed"],
         [FCOIS_CON_MAIL]				=	locTexts["sendbymail_not_allowed"],
         [FCOIS_CON_TRADE]				=	locTexts["trading_not_allowed"],
         [FCOIS_CON_SELL]				=	locTexts["selling_not_allowed"],
@@ -545,6 +623,42 @@ function FCOIS.Localization()
         [FCOIS_CON_FALLBACK]			=   locTexts["destroying_not_allowed"],  -- Fallback: Destroying not allowed (used at bank deposit, guild bank deposit, bank withdraw, guild bank withdraw, ...)
     }
 
+    --The medium part of the outputText at the filterButtons (context menu tooltip e.g.)
+    FCOIS.mappingVars.filterPanelToFilterButtonMediumOutputText = {
+        [LF_INVENTORY]                          = locTexts["filter_inventory"],
+        [LF_BANK_DEPOSIT]                       = locTexts["filter_inventory"],
+        [LF_GUILDBANK_DEPOSIT]                  = locTexts["filter_inventory"],
+        [LF_HOUSE_BANK_DEPOSIT]                 = locTexts["filter_inventory"],
+        [LF_CRAFTBAG]                           = locTexts["filter_craftbag"],
+        [LF_GUILDBANK_WITHDRAW]                 = locTexts["filter_guildbank"],
+        [LF_GUILDSTORE_SELL]                    = locTexts["filter_guildstore"],
+        [LF_BANK_WITHDRAW]                      = locTexts["filter_bank"],
+        [LF_SMITHING_REFINE]                    = locTexts["filter_refinement"],
+        [LF_SMITHING_DECONSTRUCT]               = locTexts["filter_deconstruction"],
+        [LF_SMITHING_IMPROVEMENT]               = locTexts["filter_improvement"],
+        [LF_SMITHING_RESEARCH]                  = locTexts["filter_research"],
+        [LF_SMITHING_RESEARCH_DIALOG]           = locTexts["filter_research"],
+        [LF_JEWELRY_REFINE]                     = locTexts["filter_jewelry_refinement"],
+        [LF_JEWELRY_DECONSTRUCT]                = locTexts["filter_jewelry_deconstruction"],
+        [LF_JEWELRY_IMPROVEMENT]                = locTexts["filter_jewelry_improvement"],
+        [LF_JEWELRY_RESEARCH]                   = locTexts["filter_jewelry_research"],
+        [LF_JEWELRY_RESEARCH_DIALOG]            = locTexts["filter_jewelry_research"],
+        [LF_ENCHANTING_EXTRACTION]              = locTexts["filter_enchantingstation_extraction"],
+        [LF_ENCHANTING_CREATION]                = locTexts["filter_enchantingstation_creation"],
+        [LF_VENDOR_BUY]                         = locTexts["filter_buy"],
+        [LF_VENDOR_SELL]                        = locTexts["filter_store"],
+        [LF_VENDOR_BUYBACK]                     = locTexts["filter_buyback"],
+        [LF_VENDOR_REPAIR]                      = locTexts["filter_repair"],
+        [LF_FENCE_SELL]                         = locTexts["filter_fence"],
+        [LF_FENCE_LAUNDER]                      = locTexts["filter_launder"],
+        [LF_MAIL_SEND]                          = locTexts["filter_mail"],
+        [LF_TRADE]                              = locTexts["filter_trade"],
+        [LF_ALCHEMY_CREATION]                   = locTexts["filter_alchemy"],
+        [LF_RETRAIT]                            = locTexts["filter_retrait"],
+        [LF_HOUSE_BANK_WITHDRAW]                = locTexts["filter_house_bank"],
+        [LF_INVENTORY_COMPANION]                = locTexts["filter_companion_inventory"],
+    }
+
     --Add the local localized tables from the constants
     local localLocalizationsVars = FCOIS.localLocalizationsVars
     if localLocalizationsVars ~= nil then
@@ -561,4 +675,17 @@ function FCOIS.Localization()
 
     --Reset the variable for the "force localization updte"
     FCOIS.preventerVars.doUpdateLocalization = false
+end
+local localization = FCOIS.Localization
+
+--Get the localized filterPanel translation of the LibFilters 3.0 filterPanel constants LF*
+function FCOIS.GetFilterPanelIdText(filterPanelId)
+    filterPanelId = filterPanelId or FCOIS.gFilterWhere
+    local preventerVars = FCOIS.preventerVars
+    if not preventerVars.gLocalizationDone then
+        localization()
+    end
+    local locVars = FCOIS.localizationVars.fcois_loc
+    local retText = locVars and locVars["FCOIS_LibFilters_PanelIds"] and locVars["FCOIS_LibFilters_PanelIds"][filterPanelId] or "n/a"
+    return retText
 end

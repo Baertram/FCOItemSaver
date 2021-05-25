@@ -1,10 +1,14 @@
 --Global array with all data of this addon
 if FCOIS == nil then FCOIS = {} end
 local FCOIS = FCOIS
+
+local wm = WINDOW_MANAGER
 local mappingVars = FCOIS.mappingVars
 
-local getSavedVarsMarkedItemsTableName = FCOIS.getSavedVarsMarkedItemsTableName
-local GetFCOISMarkerIconSavedVariablesItemId = FCOIS.GetFCOISMarkerIconSavedVariablesItemId
+local getSavedVarsMarkedItemsTableName       = FCOIS.getSavedVarsMarkedItemsTableName
+local getFCOISMarkerIconSavedVariablesItemId = FCOIS.GetFCOISMarkerIconSavedVariablesItemId
+local signItemId                             = FCOIS.SignItemId
+local myGetItemInstanceIdNoControl           = FCOIS.MyGetItemInstanceIdNoControl
 
 --==========================================================================================================================================
 --									FCOIS other addon functions
@@ -110,7 +114,7 @@ function FCOIS.CheckIfOtherAddonsActiveAfterPlayerActivated()
 
     --Check if Inventory Gridview is active
     if (FCOIS.otherAddons.inventoryGridViewActive == false) then
-        local gridViewControlName = WINDOW_MANAGER:GetControlByName(FCOIS.otherAddons.GRIDVIEWBUTTON, "")
+        local gridViewControlName = wm:GetControlByName(FCOIS.otherAddons.GRIDVIEWBUTTON, "")
         if gridViewControlName ~= nil or InventoryGridView then
             if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[Other addons]", "Addon Inventory Gridview is active", false) end
             FCOIS.otherAddons.inventoryGridViewActive = true
@@ -119,7 +123,7 @@ function FCOIS.CheckIfOtherAddonsActiveAfterPlayerActivated()
     --Check if Chat Merchant is active
     if (FCOIS.otherAddons.chatMerchantActive == false) then
         FCOIS.otherAddons.chatMerchantActive = false
-        local chatMerchantControlName = WINDOW_MANAGER:GetControlByName(FCOIS.otherAddons.CHATMERCHANTBUTTON, "")
+        local chatMerchantControlName = wm:GetControlByName(FCOIS.otherAddons.CHATMERCHANTBUTTON, "")
         if chatMerchantControlName ~=  nil then
             if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[Other addons]", "Addon ChatMerchant is active", false) end
             FCOIS.otherAddons.chatMerchantActive = true
@@ -127,7 +131,7 @@ function FCOIS.CheckIfOtherAddonsActiveAfterPlayerActivated()
     end
     --Was ChatMerchant addon's control found now?
     if (FCOIS.otherAddons.chatMerchantActive == true) then
-        local chatMerchantControlName = WINDOW_MANAGER:GetControlByName(FCOIS.otherAddons.CHATMERCHANTBUTTON, "")
+        local chatMerchantControlName = wm:GetControlByName(FCOIS.otherAddons.CHATMERCHANTBUTTON, "")
         if chatMerchantControlName ~=  nil then
             chatMerchantControlName:ClearAnchors()
             if (FCOIS.otherAddons.inventoryGridViewActive == true) then
@@ -202,9 +206,10 @@ function FCOIS.otherAddons.SetTracker.GetSetTrackerSettingsAndBuildFCOISSetTrack
     --Support for addon 'SetTracker': Get the number of allowed indices of SetTracker and
     --build a mapping array for SetTracker index -> FCOIS marker icon
     if FCOIS.otherAddons.SetTracker.isActive and SetTrack and SetTrack.GetMaxTrackStates then
+        local settings = FCOIS.settingsVars.setting
         local STtrackingStates = SetTrack.GetMaxTrackStates()
         for i=0, (STtrackingStates-1), 1 do
-            if FCOIS.settingsVars.settings.setTrackerIndexToFCOISIcon[i] == nil then
+            if settings.setTrackerIndexToFCOISIcon[i] == nil then
                 FCOIS.settingsVars.settings.setTrackerIndexToFCOISIcon[i] = FCOIS_CON_ICON_NONE
             end
         end
@@ -212,6 +217,7 @@ function FCOIS.otherAddons.SetTracker.GetSetTrackerSettingsAndBuildFCOISSetTrack
         --BagId to SetTracker addon settings in FCOIS
         FCOIS.mappingVars.bagToSetTrackerSettings = {
             [BAG_WORN]		        = FCOIS.settingsVars.settings.autoMarkSetTrackerSetsWorn,
+            --[BAG_COMPANION_WORN]    = FCOIS.settingsVars.settings.autoMarkSetTrackerSetsWorn,
             [BAG_BACKPACK]	        = FCOIS.settingsVars.settings.autoMarkSetTrackerSetsInv,
             [BAG_BANK]		        = FCOIS.settingsVars.settings.autoMarkSetTrackerSetsBank,
             [BAG_GUILDBANK]	        = FCOIS.settingsVars.settings.autoMarkSetTrackerSetsGuildBank,
@@ -222,47 +228,49 @@ end
 
 --Loop function to check the items in your inventories against a set name and mark them with FCOIS marker icon, if tracked with addon SetTracker
 local function checkSetTrackerTrackingStateAndMarkWithFCOISIcon(sSetName, setTrackerState, iTrackIndex, doShow, p_bagId, p_slotIndex)
+    local settings = FCOIS.settingsVars.setting
     if SetTrack == nil or SetTrack.GetTrackingInfo == nil or SetTrack.GetTrackStateInfo == nil or not FCOIS.otherAddons.SetTracker.isActive
-            or FCOIS.settingsVars.settings.autoMarkSetTrackerSets == false
+            or settings.autoMarkSetTrackerSets == false
             or sSetName == nil or iTrackIndex == nil or doShow == nil then
         --d("[FCOIS]checkSetTrackerTrackingStateAndMarkWithFCOISIcon - Aborted")
-        return false
+        return false, nil
     end
     local retVar = true
     --Bags to check for items
     local bagsToCheck = {
-        [BAG_BACKPACK]	= FCOIS.settingsVars.settings.autoMarkSetTrackerSetsInv,
-        [BAG_WORN]		= FCOIS.settingsVars.settings.autoMarkSetTrackerSetsWorn,
-        [BAG_BANK]		= FCOIS.settingsVars.settings.autoMarkSetTrackerSetsBank,
-        [BAG_GUILDBANK]	= FCOIS.settingsVars.settings.autoMarkSetTrackerSetsGuildBank,
+        [BAG_BACKPACK]	= settings.autoMarkSetTrackerSetsInv,
+        [BAG_WORN]		= settings.autoMarkSetTrackerSetsWorn,
+        --[BAG_COMPANION_WORN] = settings.autoMarkSetTrackerSetsWorn,
+        [BAG_BANK]		= settings.autoMarkSetTrackerSetsBank,
+        [BAG_GUILDBANK]	= settings.autoMarkSetTrackerSetsGuildBank,
     }
     --Is the user an ESO+ subscriber?
     if IsESOPlusSubscriber() then
         --Add the subscriber bank to the inventories to check
         if GetBagUseableSize(BAG_SUBSCRIBER_BANK) > 0 then
-            bagsToCheck[BAG_SUBSCRIBER_BANK] = FCOIS.settingsVars.settings.autoMarkSetTrackerSetsBank
+            bagsToCheck[BAG_SUBSCRIBER_BANK] = settings.autoMarkSetTrackerSetsBank
         end
     end
     --Add the houes bank bags
     local houseBagIds = mappingVars.houseBankBagIdToBag
     for _, bagHouseBankNumber in ipairs(houseBagIds) do
         if IsHouseBankBag(bagHouseBankNumber) then
-            bagsToCheck[bagHouseBankNumber] = FCOIS.settingsVars.settings.autoMarkSetTrackerSetsBank
+            bagsToCheck[bagHouseBankNumber] = settings.autoMarkSetTrackerSetsBank
         end
     end
 
     local removeAllSetTrackerMarkerIcons = false
     local setTrackerPossibleFCOISMarkerIcons = {}
     --Get the marker icon from FCOIS for the current trackIndex and create/show the marker icon now
-    local FCOISMarkerIconForSetTracker = FCOIS.settingsVars.settings.setTrackerIndexToFCOISIcon[iTrackIndex]
-    if FCOISMarkerIconForSetTracker == nil or FCOISMarkerIconForSetTracker == FCOIS_CON_ICON_ALL or FCOISMarkerIconForSetTracker > FCOIS.numVars.gFCONumFilterIcons then return false end
+    local FCOISMarkerIconForSetTracker = settings.setTrackerIndexToFCOISIcon[iTrackIndex]
+    if FCOISMarkerIconForSetTracker == nil or FCOISMarkerIconForSetTracker == FCOIS_CON_ICON_ALL or FCOISMarkerIconForSetTracker > FCOIS.numVars.gFCONumFilterIcons then return false, nil end
     --No icon should be set via FCOIS (for SetTracker) so remove all curentlys et SetTracker marker icons
     if FCOISMarkerIconForSetTracker == FCOIS_CON_ICON_NONE then
         removeAllSetTrackerMarkerIcons = true
         --Get al SetTracker tracking states and the accordingly assigned FCOIS marker icons
         local STtrackingStates = SetTrack.GetMaxTrackStates()
         for i=0, (STtrackingStates-1), 1 do
-            local FCOISMarkerIconForSetTrackerState = FCOIS.settingsVars.settings.setTrackerIndexToFCOISIcon[i]
+            local FCOISMarkerIconForSetTrackerState = settings.setTrackerIndexToFCOISIcon[i]
             if FCOISMarkerIconForSetTrackerState ~= nil and FCOISMarkerIconForSetTrackerState ~= FCOIS_CON_ICON_NONE then
                 setTrackerPossibleFCOISMarkerIcons[FCOISMarkerIconForSetTrackerState] = true
             end
@@ -280,7 +288,7 @@ local function checkSetTrackerTrackingStateAndMarkWithFCOISIcon(sSetName, setTra
             [p_bagId]	= mappingVars.bagToSetTrackerSettings[p_bagId],
         }
         --No settings found? Abort here!
-        if bagsToCheckOnlyOneBag[p_bagId] == nil then return false end
+        if bagsToCheckOnlyOneBag[p_bagId] == nil then return false, nil end
         --Overwrite the bags to check with the given bag
         bagsToCheck = bagsToCheckOnlyOneBag
     end
@@ -299,20 +307,20 @@ local function checkSetTrackerTrackingStateAndMarkWithFCOISIcon(sSetName, setTra
                 for _, data in pairs(bagCache) do
                     local bag = data.bagId
                     local slot = data.slotIndex
-                    if bag == nil or slot == nil then return false end
+                    if bag == nil or slot == nil then return false, nil end
                     local itemLinkLoop = GetItemLink(bag, slot)
-                    if itemLinkLoop == nil then return false end
+                    if itemLinkLoop == nil then return false, nil end
                     local bIsSetItemLoop, sSetNameLoop = GetItemLinkSetInfo(itemLinkLoop, false)
                     --Is the scanned item a set and the name equals the given set part's name?
                     if bIsSetItemLoop and sSetNameLoop == sSetName then
-                        local itemId = FCOIS.MyGetItemInstanceIdNoControl(bag, slot, true)
-                        if itemId == nil then return false end
+                        local itemId = myGetItemInstanceIdNoControl(bag, slot, true)
+                        if itemId == nil then return false, nil end
 
                         --Is the Set tracker state changed from old to new?
                         local FCOIS_OLD_MarkerIconForSetTracker
                         if setTrackerState ~= nil and doShow == true then
                             --Remove the old set tracker marker icon within FCOIS now
-                            FCOIS_OLD_MarkerIconForSetTracker = FCOIS.settingsVars.settings.setTrackerIndexToFCOISIcon[setTrackerState]
+                            FCOIS_OLD_MarkerIconForSetTracker = settings.setTrackerIndexToFCOISIcon[setTrackerState]
                             if FCOIS_OLD_MarkerIconForSetTracker ~= nil and FCOIS_OLD_MarkerIconForSetTracker ~= FCOIS_CON_ICON_NONE and FCOIS_OLD_MarkerIconForSetTracker ~= FCOIS_CON_ICON_ALL then
                                 --d(">Removing old marker icon first: " .. tostring(FCOIS_OLD_MarkerIconForSetTracker))
                                 FCOIS[getSavedVarsMarkedItemsTableName()][FCOIS_OLD_MarkerIconForSetTracker][itemId] = nil
@@ -379,21 +387,21 @@ local function checkSetTrackerTrackingStateAndMarkWithFCOISIcon(sSetName, setTra
                 --Only check 1 slot in the bag p_bagId
                 local bag = p_bagId
                 local slot = p_slotIndex
-                if bag == nil or slot == nil then return false end
+                if bag == nil or slot == nil then return false, nil end
                 local itemLinkLoop = GetItemLink(bag, slot)
-                if itemLinkLoop == nil then return false end
+                if itemLinkLoop == nil then return false, nil end
                 local bIsSetItemLoop, sSetNameLoop = GetItemLinkSetInfo(itemLinkLoop, false)
                 --Is the scanned item a set and the name equals the given set part's name?
                 if bIsSetItemLoop and sSetNameLoop == sSetName then
-                    local itemId = FCOIS.MyGetItemInstanceIdNoControl(bag, slot, true)
-                    if itemId == nil then return false end
+                    local itemId = myGetItemInstanceIdNoControl(bag, slot, true)
+                    if itemId == nil then return false, nil end
 
                     local removeAllSetTrackerFCOISMarkerIcons = false
 
                     --Is the Set tracker state changed from old to new?
                     if setTrackerState ~= nil and doShow then
                         --Remove the old set tracker marker icon within FCOIS now
-                        local FCOIS_OLD_MarkerIconForSetTracker = FCOIS.settingsVars.settings.setTrackerIndexToFCOISIcon[setTrackerState]
+                        local FCOIS_OLD_MarkerIconForSetTracker = settings.setTrackerIndexToFCOISIcon[setTrackerState]
                         if FCOIS_OLD_MarkerIconForSetTracker ~= nil and FCOIS_OLD_MarkerIconForSetTracker ~= FCOIS_CON_ICON_NONE and FCOIS_OLD_MarkerIconForSetTracker < FCOIS.numVars.gFCONumFilterIcons then
                             --d(">Removing old marker icon first: " .. tostring(FCOIS_OLD_MarkerIconForSetTracker))
                             FCOIS[getSavedVarsMarkedItemsTableName()][FCOIS_OLD_MarkerIconForSetTracker][itemId] = nil
@@ -457,7 +465,7 @@ local function checkSetTrackerTrackingStateAndMarkWithFCOISIcon(sSetName, setTra
             --=========== END IF .. ELSE ... ===============================================
         end -- isEnabled
     end -- for in pairs ...
-    return retVar
+    return retVar, FCOISMarkerIconForSetTracker
 end
 
 --function to scan inventories for set parts and mark them, if SetTracker addon is active
@@ -475,9 +483,10 @@ function FCOIS.otherAddons.SetTracker.checkAllItemsForSetTrackerTrackingState()
     local foundSetnames = {}
     --Bags to check for set items
     local bagsToCheck = {
-        [BAG_BACKPACK]	= true,
-        [BAG_WORN]		= true,
-        [BAG_BANK]		= true,
+        [BAG_BACKPACK]	        = true,
+        [BAG_WORN]		        = true,
+        --[BAG_COMPANION_WORN]    = true,
+        [BAG_BANK]		        = true,
     }
     --Is the user an ESO+ subscriber?
     if IsESOPlusSubscriber() then
@@ -548,6 +557,7 @@ function FCOIS.otherAddons.SetTracker.updateSetTrackerMarker(bagId, slotIndex, s
     --d(">bag: " .. tostring(bagId) .. ", slot: " .. tostring(slotIndex) .. ", setTrackerState: " .. tostring(setTrackerState) .. ", doShow: " .. tostring(doShow) .. ", doUpdateInv: " .. tostring(doUpdateInv))
 
     local retVarBool = true
+    local FCOISMarkerIconForSetTrackerTrackIndex
     --Check if the item is a set part
     local itemLink = GetItemLink(bagId, slotIndex)
     if itemLink == nil then return false end
@@ -580,16 +590,23 @@ function FCOIS.otherAddons.SetTracker.updateSetTrackerMarker(bagId, slotIndex, s
             p_slotIndex	= slotIndex
         end
         --Check the SetTracker set trackings now and mark them with FCOIS marker icons
-        retVarBool = checkSetTrackerTrackingStateAndMarkWithFCOISIcon(sSetName, setTrackerState, iTrackIndex, doShow, p_bagId, p_slotIndex)
+        retVarBool, FCOISMarkerIconForSetTrackerTrackIndex = checkSetTrackerTrackingStateAndMarkWithFCOISIcon(
+                sSetName,
+                setTrackerState,
+                iTrackIndex,
+                doShow,
+                p_bagId, p_slotIndex
+        )
         if retVarBool == nil then retVarBool = false end
-
     end -- if is set item ...
     --Update the inventories now to show the new/hidden marker icon?
     if retVarBool and doUpdateInv then
         --RefreshBackpack, etc.
-        if bagId == BAG_WORN and not FCOIS.ZOControlVars.CHARACTER:IsHidden() then
-            FCOIS.RefreshEquipmentControl(nil, showIcon, iconId)
-        elseif bagId == BAG_BACKPACK or bag == BAG_VIRTUAL
+        if (bagId == BAG_WORN and FCOIS.isCharacterShown())
+          --or (bagId == BAG_COMPANION_WORN and FCOIS.isCompanionCharacterShown())
+        then
+            FCOIS.RefreshEquipmentControl(nil, doShow, FCOISMarkerIconForSetTrackerTrackIndex)
+        elseif bagId == BAG_BACKPACK or bagId == BAG_VIRTUAL
             or bagId == BAG_BANK or bagId == BAG_SUBSCRIBER_BANK
             or bagId == BAG_GUILDBANK or IsHouseBankBag(bagId) then
             FCOIS.FilterBasics(false)
@@ -693,7 +710,7 @@ function FCOIS.getItemInstanceOrUniqueId(bagId, slotIndex, itemLink)
             itemInstanceOrUniqueId = GetItemInstanceId(bagId, slotIndex)
         end
         ]]
-        itemInstanceOrUniqueId, allowedItemType = GetFCOISMarkerIconSavedVariablesItemId(bagId, slotIndex, nil, useUniqueIds, uniqueItemIdType)
+        itemInstanceOrUniqueId, allowedItemType = getFCOISMarkerIconSavedVariablesItemId(bagId, slotIndex, nil, useUniqueIds, uniqueItemIdType)
         if settings.debug then FCOIS.debugMessage("[getItemInstanceOrUniqueId]", string.format("bag: %s, slot: %s, itemLink: %s, itemInstanceOrUniqueId: %s", tostring(bagId), tostring(slotIndex), tostring(itemLink), tostring(itemInstanceOrUniqueId)), true, FCOIS_DEBUG_DEPTH_NORMAL) end
     end
     return itemInstanceOrUniqueId, isBagToBuildItemInstanceOrUniqueId
@@ -983,13 +1000,13 @@ function FCOIS.MyGetItemInstanceIdForIIfA(clickedDataLine, signToo)
             itemId = GetItemInstanceId(bagId, slotIndex)
         end
         ]]
-        itemId, allowedItemType = GetFCOISMarkerIconSavedVariablesItemId(bagId, slotIndex, nil, useUniqueIds, uniqueItemIdType)
+        itemId, allowedItemType = getFCOISMarkerIconSavedVariablesItemId(bagId, slotIndex, nil, useUniqueIds, uniqueItemIdType)
     end
     if signToo and (
             (not useUniqueIds or (useUniqueIds == true and allowedItemType == true))
             or (not ownedByLoggedInChar and not isItemInAccountWideBags)
     ) then
-        itemId = FCOIS.SignItemId(itemId, allowedItemType, nil, nil, bagId, slotIndex)
+        itemId = signItemId(itemId, allowedItemType, nil, nil, bagId, slotIndex)
     end
 --d("[FCOIS.MyGetItemInstanceIdForIIfA] itemIdOrLink: " .. itemIdOrLink .. ", itemInstanceOrUniqueId: " .. tostring(itemId) .. ", bagId: " .. tostring(bagId) .. ", slotIndex: " .. tostring(slotIndex))
     return itemId, bagId, slotIndex, itemFoundAtLocationTable, itemFoundAtLocationTableAccountWide
@@ -1096,7 +1113,7 @@ end
 function FCOIS.getRecipeAddonUsed()
     local settings = FCOIS.settingsVars.settings
     local recipeAddonUsed = settings.recipeAddonUsed or 0
-    if settings.debug then FCOIS.debugMessage("getRecipeAddonUsed",tostring(recipeAddonUsed), true, FCOIS_DEBUG_DEPTH_SPAM, false) end
+    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage("getRecipeAddonUsed",tostring(recipeAddonUsed), true, FCOIS_DEBUG_DEPTH_SPAM, false) end
     return recipeAddonUsed
 end
 

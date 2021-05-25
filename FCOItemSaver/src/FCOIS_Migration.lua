@@ -53,12 +53,13 @@ function FCOIS.scanInventoriesForZOsLockedItems(allInventories, houseBankBagId)
     if allInventories then
         --Scan all the inventories of the player (bank, bag, guild bank, craftbag, etc.)
         allowedBagTypes = {
-            [BAG_BACKPACK] 	= true,
-            [BAG_BANK] 		= true,
-            [BAG_BUYBACK] 	= false,
-            [BAG_GUILDBANK] = false,
-            [BAG_VIRTUAL] 	= false, --Craftbag
-            [BAG_WORN] 		= true,
+            [BAG_BACKPACK] 	        = true,
+            [BAG_BANK] 		        = true,
+            [BAG_BUYBACK] 	        = false,
+            [BAG_GUILDBANK]         = false,
+            [BAG_VIRTUAL] 	        = false, --Craftbag
+            [BAG_WORN] 		        = true,
+            [BAG_COMPANION_WORN]    = true,
         }
         --Is the user an ESO+ subscriber?
         if IsESOPlusSubscriber() then
