@@ -1126,8 +1126,6 @@ ctrlVars.ENCHANTING_RUNE_CONTAINER_POTENCY = ZO_EnchantingTopLevelRuneSlotContai
 ctrlVars.ENCHANTING_RUNE_CONTAINER_ESSENCE = ZO_EnchantingTopLevelRuneSlotContainerEssenceRune
 ctrlVars.ENCHANTING_RUNE_CONTAINER_ASPECT = ZO_EnchantingTopLevelRuneSlotContainerAspectRune
 ctrlVars.ALCHEMY                 = ALCHEMY
-GetGameCameraInteractableActionInfo
-
 ctrlVars.ALCHEMY_INV				= ZO_AlchemyTopLevelInventory
 ctrlVars.ALCHEMY_INV_NAME			= ctrlVars.ALCHEMY_INV:GetName()
 ctrlVars.ALCHEMY_STATION			= ZO_AlchemyTopLevelInventoryBackpack
