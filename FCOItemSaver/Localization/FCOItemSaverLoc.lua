@@ -1215,8 +1215,8 @@ FCOIS.localizationVars.localizationAll = {
         ["options_bags_to_scan_order_TT"]               = "Choose the scan order for the inventory bags. Automatic markings scans will be processed from top to bottom",
         ["options_scan_automatic_marks_now"]            = "Scan autom. mark.",
         ["options_scan_automatic_marks_now_TT"]         = "Scan the chosen invenories now for the automatic markings that can be applied",
-        ["options_scan_automatic_marks_scan_bag"]           = ">>>Scanning bag \'%s\' for autom. markings...",
-        ["options_scan_automatic_marks_scan_bag_finished"]  = "Scanning bag \'%s\' finished<<<",
+        ["options_scan_automatic_marks_scan_bag"]           = ">>>Scanning \'%s\' for Automatic Markings...",
+        ["options_scan_automatic_marks_scan_bag_finished"]  = "Scan of \'%s\' was finished<<<",
         ["options_bags_to_scan_chat_output"]             = "Show bag scan chat output",
         ["options_bags_to_scan_chat_output_TT"]          = "Show a chat output of each scanned bag, as the scanning of the bag starts and ends.",
 
@@ -2374,8 +2374,8 @@ FCOIS.localizationVars.localizationAll = {
         ["options_bags_to_scan_order_TT"]               = "Wähle die Scan Reihenfolge für die Automatischen Markierungen. Die Markierungen werden in den Inventaren von oben nach unten geprüft und gesetzt.",
         ["options_scan_automatic_marks_now"]            = "Autom. Mark. Scannen",
         ["options_scan_automatic_marks_now_TT"]         = "Scanne die ausgewählten Inventare nun, um die Automatischen Markierungen anzuwenden",
-        ["options_scan_automatic_marks_scan_bag"]           = ">>>Scanne Inventar \'%s\' nach autom. Markierungen...",
-        ["options_scan_automatic_marks_scan_bag_finished"]  = "Scan des Inventars \'%s\' beendet<<<",
+        ["options_scan_automatic_marks_scan_bag"]           = ">>>Scanne \'%s\' nach automatischen Markierungen...",
+        ["options_scan_automatic_marks_scan_bag_finished"]  = "Scan von \'%s\' wurde beendet<<<",
         ["options_bags_to_scan_chat_output"]             = "Zeige Chat Ausgabe pro Inventar",
         ["options_bags_to_scan_chat_output_TT"]          = "Zeige eine Ausgabe im Chat für jedes gescannte Inventar, zum Start und zum Ende.",
 

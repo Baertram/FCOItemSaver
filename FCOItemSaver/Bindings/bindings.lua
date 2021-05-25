@@ -131,16 +131,13 @@ function FCOIS.CheckKeybindingChording(isEnabled)
     if isEnabled == nil then
         isEnabled = FCOIS.settingsVars.settings.enableKeybindChording
     end
-d("[FCOIS.checkKeybindingChording]isEnabled: " .. tostring(isEnabled))
     if isEnabled == true then
         --esoui\ingame\keybindings\keyboard\keybindings.lua
         function KEYBINDING_MANAGER:IsChordingAlwaysEnabled()
-d("[KEYBINDING_MANAGER:IsChordingAlwaysEnabled]true")
             return true
         end
     else
         function KEYBINDING_MANAGER:IsChordingAlwaysEnabled()
-d("[KEYBINDING_MANAGER:IsChordingAlwaysEnabled]" ..tostring(KEYBINDING_MANAGER.chordingAlwaysEnabled))
             return KEYBINDING_MANAGER.chordingAlwaysEnabled
         end
     end

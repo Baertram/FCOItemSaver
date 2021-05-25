@@ -1312,7 +1312,7 @@ function FCOIS.BuildAddonMenu()
     -- Creating LAM optionPanel for the SetTracker addon
     local SetTrackerSubmenuControls = LAMSubmenu("SetTracker")
     -- Creating LAM optionPanel for the FCOIS icon sort order
-    local IconSortOrderSubmenuControls = LAMSubmenu("IconSortOrder")
+    --local IconSortOrderSubmenuControls = LAMSubmenu("IconSortOrder")
     --==================== SetTracker - END ========================================
 
 
@@ -3240,9 +3240,9 @@ function FCOIS.BuildAddonMenu()
                                         end
                                     end,
                                     width="full",
+                                    isExtraWide = true,
                                     minHeight = 250,
                                     maxHeight = 400,
-                                    disabled = function() return false  end,
                                     reference = "FCOItemSaver_Settings_IconSortOrder_OrderListBox",
                                     disabled = function() return not FCOISsettings.sortIconsInAdditionalInvFlagContextMenu end,
                                     default = FCOISdefaultSettings.iconSortOrderEntries,
