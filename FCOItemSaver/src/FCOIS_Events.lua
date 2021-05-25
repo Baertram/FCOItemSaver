@@ -661,8 +661,15 @@ local function FCOItemSaver_Inv_Single_Slot_Update(_, bagId, slotId, isNewItem, 
                 --New item
                 local settingsAutoMarkNewItems = (settings.autoMarkNewItems and settings.isIconEnabled[settings.autoMarkNewIconNr]) or false
                 if settingsAutoMarkNewItems == true then
-                    --New item should be marked with a FCOIS marker icon now
-                    FCOIS.MarkItem(bagId, slotId, settings.autoMarkNewIconNr, true, false)
+                    local markWithNewNow = true
+                    if settings.autoMarkNewItemsCheckOthers == true then
+                        local isMarked, _ = FCOIS.IsMarked(bagId, slotId, -1)
+                        if isMarked == true then markWithNewNow = false end
+                    end
+                    if markWithNewNow == true then
+                        --New item should be marked with a FCOIS marker icon now
+                        FCOIS.MarkItem(bagId, slotId, settings.autoMarkNewIconNr, true, false)
+                    end
                 end
             end, 250)
             --FCOIS.preventerVars.canUpdateInv = true
@@ -978,9 +985,29 @@ local function FCOItemSaver_Loaded(eventCode, addOnName)
             em:RegisterForEvent(gAddonName, EVENT_TRADE_SUCCEEDED, FCOItemSaver_Close_Trade_Panel)
             em:RegisterForEvent(gAddonName, EVENT_TRADE_FAILED, FCOItemSaver_Close_Trade_Panel)
             --Register for player inventory slot update
-            em:RegisterForEvent(gAddonName, EVENT_INVENTORY_SINGLE_SLOT_UPDATE, FCOItemSaver_Inv_Single_Slot_Update)
-            em:AddFilterForEvent(gAddonName, EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_UNIT_TAG, "player")
-            em:AddFilterForEvent(gAddonName, EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_INVENTORY_UPDATE_REASON, INVENTORY_UPDATE_REASON_DEFAULT)
+            em:RegisterForEvent(gAddonName .. "_EVENT_INVENTORY_SINGLE_SLOT_UPDATE1", EVENT_INVENTORY_SINGLE_SLOT_UPDATE, FCOItemSaver_Inv_Single_Slot_Update)
+            em:AddFilterForEvent(gAddonName .. "_EVENT_INVENTORY_SINGLE_SLOT_UPDATE1", EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_UNIT_TAG, "player")
+            em:AddFilterForEvent(gAddonName .. "_EVENT_INVENTORY_SINGLE_SLOT_UPDATE1", EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_INVENTORY_UPDATE_REASON, INVENTORY_UPDATE_REASON_DEFAULT)
+            em:AddFilterForEvent(gAddonName .. "_EVENT_INVENTORY_SINGLE_SLOT_UPDATE1", EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_IS_NEW_ITEM, true)
+            --[[--Does not work as the event name space needs to be different!
+                em:AddFilterForEvent(gAddonName .. "_EVENT_INVENTORY_SINGLE_SLOT_UPDATE", EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_BAG_ID, BAG_BACKPACK)
+                em:AddFilterForEvent(gAddonName .. "_EVENT_INVENTORY_SINGLE_SLOT_UPDATE", EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_BAG_ID, BAG_WORN)
+                em:AddFilterForEvent(gAddonName .. "_EVENT_INVENTORY_SINGLE_SLOT_UPDATE", EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_BAG_ID, BAG_COMPANION_WORN)
+            ]]
+
+            local bagIdsToFilterForInvSingleSlotUpdate = {
+                BAG_BACKPACK,
+                BAG_WORN,
+                BAG_COMPANION_WORN,
+            }
+            local eventNameSpaceCounter = 1
+            for _, bagIdToFilter in ipairs(bagIdsToFilterForInvSingleSlotUpdate) do
+                if eventNameSpaceCounter > 1 then
+                    em:RegisterForEvent(gAddonName .. "_EVENT_INVENTORY_SINGLE_SLOT_UPDATE" ..tostring(eventNameSpaceCounter), EVENT_INVENTORY_SINGLE_SLOT_UPDATE, FCOItemSaver_Inv_Single_Slot_Update)
+                end
+                em:AddFilterForEvent(gAddonName .. "_EVENT_INVENTORY_SINGLE_SLOT_UPDATE" ..tostring(eventNameSpaceCounter), EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_BAG_ID, bagIdToFilter)
+                eventNameSpaceCounter = eventNameSpaceCounter + 1
+            end
             --Register the callback function for an update of the inventory slots
             --SHARED_INVENTORY:RegisterCallback("SingleSlotInventoryUpdate", FCOItemSaver_OnSharedSingleSlotUpdate)
             --Events for destruction & destroy prevention

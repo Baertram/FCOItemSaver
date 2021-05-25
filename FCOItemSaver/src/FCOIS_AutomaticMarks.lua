@@ -1857,8 +1857,8 @@ function FCOIS.ScanInventory(p_bagId, p_slotIndex, doEcho)
             local bagIdsToScanNow
             --Get the bagIds that should be scanned, in teh user chosen order
             bagIdsToScanNow, onlyUpdatePlayerInv = getBagsToScanForAutomaticMarks(p_bagId)
-FCOIS._bagIdsToScanNow = bagIdsToScanNow
-FCOIS._onlyUpdatePlayerInv = onlyUpdatePlayerInv
+--FCOIS._bagIdsToScanNow = bagIdsToScanNow
+--FCOIS._onlyUpdatePlayerInv = onlyUpdatePlayerInv
 
             --Get the bag cache (all entries in that bag)
             --local bagCache = SHARED_INVENTORY:GenerateFullSlotData(nil, bagToCheck)
