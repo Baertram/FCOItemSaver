@@ -4,8 +4,6 @@ local FCOIS = FCOIS
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
 
-local wm = WINDOW_MANAGER
-
 -- =====================================================================================================================
 --  Additional inventory button functions ("flag" buttons / jump to settings button / etc.)
 -- =====================================================================================================================
@@ -22,12 +20,12 @@ local function AddButton(parent, name, callbackFunction, onMouseUpCallbackFuncti
 
     local button
     --Does the button already exist?
-    button = wm:GetControlByName(name, "")
+    button = WINDOW_MANAGER:GetControlByName(name, "")
     if button == nil then
         --Button does not exist yet and it should be hidden? Abort here!
         if hideButton == true then return nil end
         --Create the button control at the parent
-        button = wm:CreateControl(name, parent, CT_BUTTON)
+        button = WINDOW_MANAGER:CreateControl(name, parent, CT_BUTTON)
     end
     --Button was created?
     if button ~= nil then
@@ -75,10 +73,10 @@ local function AddButton(parent, name, callbackFunction, onMouseUpCallbackFuncti
                 local texture
 
                 --Check if texture exists
-                texture = wm:GetControlByName(name .. "Texture", "")
+                texture = WINDOW_MANAGER:GetControlByName(name .. "Texture", "")
                 if texture == nil then
                     --Create the texture for the button to hold the image
-                    texture = wm:CreateControl(name .. "Texture", button, CT_TEXTURE)
+                    texture = WINDOW_MANAGER:CreateControl(name .. "Texture", button, CT_TEXTURE)
                 end
                 texture:SetAnchorFill()
 
@@ -177,7 +175,7 @@ function FCOIS.reAnchorAdditionalInvButtons(filterPanelId)
                             if buttonData ~= nil and buttonData.addInvButton and buttonData.name ~= nil and buttonData.name ~= "" then
                                 --Check if the control exists already
                                 local btnName = buttonData.name
-                                local invAddCntBtnCtrl = wm:GetControlByName(btnName, "")
+                                local invAddCntBtnCtrl = WINDOW_MANAGER:GetControlByName(btnName, "")
                                 if invAddCntBtnCtrl ~= nil then
                                     --Get the button's data at the panel
                                     if anchorData ~= nil then

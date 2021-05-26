@@ -4,9 +4,6 @@ local FCOIS = FCOIS
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
 
-local wm = WINDOW_MANAGER
-local cm = CALLBACK_MANAGER
-
 local fcoisLAMSettingsReferencePrefix = "FCOItemSaver_Settings_"
 --Control name parts, prefix, suffix, tooltip suffix
 local previewSelect = "Preview_Select"
@@ -74,18 +71,9 @@ local currentCharacterNameMarked= currentStart..currentCharacterName..currentEnd
 local serverNames = mappingVars.serverNames
 local svAllAccountsName = FCOIS.svAllAccountsName
 
-local countAndUpdateEquippedArmorTypes = FCOIS.countAndUpdateEquippedArmorTypes
-
 local doNotRunDropdownValueSetFunc = false
 
 local editBoxesToSetTextTypes
-
-local updateFCOISFilterButtonColorsAndTextures = FCOIS.UpdateFCOISFilterButtonColorsAndTextures
-local changeContextMenuInvokerButtonColorByPanelId = FCOIS.ChangeContextMenuInvokerButtonColorByPanelId
-local changeContextMenuEntryTexts = FCOIS.ChangeContextMenuEntryTexts
-local scanInventoryItemsForAutomaticMarks = FCOIS.ScanInventoryItemsForAutomaticMarks
-local scanInventory = FCOIS.ScanInventory
-local checkIfAutomaticMarksAreDisabledAtBag = FCOIS.CheckIfAutomaticMarksAreDisabledAtBag
 
 local iconsList, iconsListValues
 local iconsListNone, iconsListValuesNone, iconsListRecipe, iconsListValuesRecipe
@@ -100,7 +88,7 @@ end
 -- ============= local helper functions - BEGIN ====================================================================
 --Get the preview control by help of the iconNr
 local function getPreviewControlByIconNr(previewType, iconNr)
-    return wm:GetControlByName(fcoisLAMSettingsReferencePrefix .. tostring(previewType) .. tostring(iconNr) .. previewSelect, "")
+    return WINDOW_MANAGER:GetControlByName(fcoisLAMSettingsReferencePrefix .. tostring(previewType) .. tostring(iconNr) .. previewSelect, "")
 end
 
 local function changePreViewIconSize(previewType, iconNr, size, doNotUpdateMarkers)
@@ -126,9 +114,9 @@ local function changePreviewIconColor(previewType, iconNr, r, g, b, a, doNotUpda
 end
 
 local function updateFilterButtonColorAndTexture(filterButtonNr, iconNr)
-    local p_button = wm:GetControlByName(ZOsControlVars.FCOISfilterButtonNames[filterButtonNr], "")
+    local p_button = WINDOW_MANAGER:GetControlByName(ZOsControlVars.FCOISfilterButtonNames[filterButtonNr], "")
     if p_button == nil or filterButtonNr == nil or iconNr == nil then return end
-    updateFCOISFilterButtonColorsAndTextures(iconNr, p_button, -999)
+    FCOIS.UpdateButtonColorsAndTextures(iconNr, p_button, -999)
 end
 
 local function changePreviewLabelText(previewType, iconNr, text, doNotUpdateMarkers)
@@ -210,7 +198,7 @@ local function setSettingsMenuEditBoxTextTypes()
     if not editBoxesToSetTextTypes then return end
     for controlName, textType in pairs(editBoxesToSetTextTypes) do
         if textType then
-            local control = wm:GetControlByName(controlName, "")
+            local control = WINDOW_MANAGER:GetControlByName(controlName, "")
             if control then
                 if control.editbox and control.editbox.SetTextType then
                     control.editbox:SetTextType(textType)
@@ -236,10 +224,10 @@ local function updateIconsList(typeToBuild, withIcons, withNoneEntry)
             FCOIS.LAMiconsListValues        = iconsListValues
         end
     elseif typeToBuild == "recipe" then
-        iconsListRecipe                 = iconsListTmp
-        iconsListValuesRecipe           = iconsListValuesTmp
-        FCOIS.LAMiconsListRecipe              = iconsListRecipe
-        FCOIS.LAMiconsListValuesRecipe        = iconsListValuesRecipe
+        iconsListRecipe                     = iconsListTmp
+        iconsListValuesRecipe               = iconsListValuesTmp
+        FCOIS.LAMiconsListRecipe            = iconsListRecipe
+        FCOIS.LAMiconsListValuesRecipe      = iconsListValuesRecipe
     end
 end
 
@@ -272,7 +260,7 @@ end
         FCOIS.preventerVars.gUpdateMarkersNow = true
         if LAMdropdownsWithIconList == nil then return nil end
         for dropdownCtrlName, updateData in pairs(LAMdropdownsWithIconList) do
-            local dropdownCtrl = wm:GetControlByName(dropdownCtrlName, "")
+            local dropdownCtrl = WINDOW_MANAGER:GetControlByName(dropdownCtrlName, "")
             if dropdownCtrl == nil or updateData == nil then return nil end
             if updateData["choices"] == nil then updateData["choices"] = "standard" end
             local choices, choicesValues, choicesTooltips = FCOIS.GetLAMMarkerIconsDropdown(updateData["choices"], updateData["withIcons"], updateData["withNoneEntry"])
@@ -331,13 +319,6 @@ function FCOIS.BuildAddonMenu()
     --Update some settings for the libAddonMenu settings menu
     FCOIS.updateSettingsBeforeAddonMenu()
 
-    --Check if the user set ordering of context menu entries (marker icons) is valid, else use the default sorting
-    -->With FCOIS 2.0.3 it should be always valid due to the usage of the LibAddonMenu-2.0 OrderListBox, and no dropdown boxes anymore!
-    -->But just in case run the function here once as the LAM panel creates -> See function FCOIS.BuildAddonMenu()
-    if FCOIS.CheckIfUserContextMenuSortOrderValid() == false then
-        FCOIS.ResetUserContextMenuSortOrder()
-    end
-
     --Build the icons & choicesValues list for the LAM icon dropdown boxes
     updateIconsList("standard", true, false)
     --Build the icons list with a first entry "None"
@@ -384,8 +365,6 @@ function FCOIS.BuildAddonMenu()
     --Local variables to speed up stuff a bit
     FCOISdefaultSettings    = FCOIS.settingsVars.defaults
     FCOISsettings           = FCOIS.settingsVars.settings
-    local isIconEnabled = FCOISsettings.isIconEnabled
-
 
     local numDynIcons       = FCOISsettings.numMaxDynamicIconsUsable
 
@@ -407,7 +386,7 @@ function FCOIS.BuildAddonMenu()
     local FCOSettingsPanel = FCOIS.FCOSettingsPanel
 
     --Create and show the "FCOIS settings loading" texture (sand clock)
-    FCOIS_LAM_MENU_IS_LOADING = wm:CreateControl(FCOSettingsPanel:GetName() .. "_FCOIS_LAM_MENU_IS_LOADING_TEXTURE", FCOSettingsPanel, CT_TEXTURE)
+    FCOIS_LAM_MENU_IS_LOADING = WINDOW_MANAGER:CreateControl(FCOSettingsPanel:GetName() .. "_FCOIS_LAM_MENU_IS_LOADING_TEXTURE", FCOSettingsPanel, CT_TEXTURE)
     FCOIS_LAM_MENU_IS_LOADING:SetDimensions(56, 56)
     FCOIS_LAM_MENU_IS_LOADING:SetTexture(FCOIS.textureVars.MARKER_TEXTURES[9]) --Sand clock
     FCOIS_LAM_MENU_IS_LOADING:SetColor(1, 0, 0, 1)
@@ -442,7 +421,7 @@ function FCOIS.BuildAddonMenu()
     local fcoRestore = FCOIS.restore
     --Function to reset the backup edit control in the LAM settings to the current API version text
     local function resetBackupEditToCurrentAPI()
-        local editCtrl = wm:GetControlByName("FCOITEMSAVER_SETTINGS_BACKUP_API_VERSION_EDIT", "")
+        local editCtrl = WINDOW_MANAGER:GetControlByName("FCOITEMSAVER_SETTINGS_BACKUP_API_VERSION_EDIT", "")
         if editCtrl ~= nil then
             editCtrl.editbox:SetText(apiVersion)
         end
@@ -451,7 +430,7 @@ function FCOIS.BuildAddonMenu()
     end
     --Function to check if the backup API version edit text is too short
     local function isBackupEditAPITextTooShort()
-        local editCtrl = wm:GetControlByName("FCOITEMSAVER_SETTINGS_BACKUP_API_VERSION_EDIT", "")
+        local editCtrl = WINDOW_MANAGER:GetControlByName("FCOITEMSAVER_SETTINGS_BACKUP_API_VERSION_EDIT", "")
         if editCtrl ~= nil then
             local editText = editCtrl.editbox:GetText()
             local apiVersionLength = FCOIS.APIVersionLength
@@ -559,12 +538,12 @@ function FCOIS.BuildAddonMenu()
         if FCOISsettings.autoMarkSetsItemCollectionBook == true and
             (
                 (FCOISsettings.autoMarkSetsItemCollectionBookMissingIcon ~= FCOIS_CON_ICON_NONE and
-                isIconEnabled[FCOISsettings.autoMarkSetsItemCollectionBookMissingIcon] == true) or
+                FCOISsettings.isIconEnabled[FCOISsettings.autoMarkSetsItemCollectionBookMissingIcon] == true) or
                 (FCOISsettings.autoMarkSetsItemCollectionBookNonMissingIcon ~= FCOIS_CON_ICON_NONE and
-                isIconEnabled[FCOISsettings.autoMarkSetsItemCollectionBookNonMissingIcon] == true)
+                FCOISsettings.isIconEnabled[FCOISsettings.autoMarkSetsItemCollectionBookNonMissingIcon] == true)
             )
         then
-            scanInventoryItemsForAutomaticMarks(nil, nil, setCollectionsType, false)
+            FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, setCollectionsType, false)
         end
     end
 
@@ -994,7 +973,7 @@ function FCOIS.BuildAddonMenu()
                     getFuncDD = function() return FCOISsettings.autoMarkSetsCheckArmorTraitIcon[traitTypeItemTrait] end
                     setFunc = function(value) FCOIS.settingsVars.settings.autoMarkSetsCheckArmorTrait[traitTypeItemTrait] = value
                         if value == true then
-                            scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
+                            FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
                         end
                     end
                     setFuncDD = function(value) FCOISsettings.autoMarkSetsCheckArmorTraitIcon[traitTypeItemTrait] = value end
@@ -1007,7 +986,7 @@ function FCOIS.BuildAddonMenu()
                     getFuncDD = function() return FCOISsettings.autoMarkSetsCheckJewelryTraitIcon[traitTypeItemTrait] end
                     setFunc = function(value) FCOIS.settingsVars.settings.autoMarkSetsCheckJewelryTrait[traitTypeItemTrait] = value
                         if value == true then
-                            scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
+                            FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
                         end
                     end
                     setFuncDD = function(value) FCOISsettings.autoMarkSetsCheckJewelryTraitIcon[traitTypeItemTrait] = value end
@@ -1020,7 +999,7 @@ function FCOIS.BuildAddonMenu()
                     getFuncDD = function() return FCOISsettings.autoMarkSetsCheckWeaponTraitIcon[traitTypeItemTrait] end
                     setFunc = function(value) FCOIS.settingsVars.settings.autoMarkSetsCheckWeaponTrait[traitTypeItemTrait] = value
                         if value == true then
-                            scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
+                            FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
                         end
                     end
                     setFuncDD = function(value) FCOISsettings.autoMarkSetsCheckWeaponTraitIcon[traitTypeItemTrait] = value end
@@ -1312,7 +1291,7 @@ function FCOIS.BuildAddonMenu()
     -- Creating LAM optionPanel for the SetTracker addon
     local SetTrackerSubmenuControls = LAMSubmenu("SetTracker")
     -- Creating LAM optionPanel for the FCOIS icon sort order
-    --local IconSortOrderSubmenuControls = LAMSubmenu("IconSortOrder")
+    local IconSortOrderSubmenuControls = LAMSubmenu("IconSortOrder")
     --==================== SetTracker - END ========================================
 
 
@@ -1349,7 +1328,7 @@ function FCOIS.BuildAddonMenu()
                     setFunc = function(value) FCOISsettings.allowOnlyUnbound[FCOIS_CON_ICON_SELL_AT_GUILDSTORE] = value
                     end,
                     width="half",
-                    disabled = function() return not isIconEnabled[FCOIS_CON_ICON_SELL_AT_GUILDSTORE] end,
+                    disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL_AT_GUILDSTORE] end,
                     default = FCOISdefaultSettings.allowOnlyUnbound[FCOIS_CON_ICON_SELL_AT_GUILDSTORE],
                 },
             },
@@ -1382,12 +1361,12 @@ function FCOIS.BuildAddonMenu()
                         type = "editbox", width = "half",
                         --helpUrl = locVars[dynIconNameStart .. colorSuffix],
                     }
-                    disabledFunc = function() return not isIconEnabled[normalIconId] end
+                    disabledFunc = function() return not FCOISsettings.isIconEnabled[normalIconId] end
                     getFunc = function() return FCOISsettings.icon[normalIconId].name end
                     setFunc = function(newValue)
                         FCOISsettings.icon[normalIconId].name = newValue
                         FCOIS.preventerVars.doUpdateLocalization = true
-                        changeContextMenuEntryTexts(normalIconId)
+                        FCOIS.changeContextMenuEntryTexts(normalIconId)
                         --Update the icon list dropdown entries (name, enabled state)
                         updateIconListDropdownEntries()
                     end
@@ -1403,7 +1382,7 @@ function FCOIS.BuildAddonMenu()
                 name = locVars[iconNameStart .. colorSuffix]
                 tooltip = locVars[iconNameStart .. colorSuffix .. tooltipSuffix]
                 data = { type = "colorpicker", width = "half" }
-                disabledFunc = function() return not isIconEnabled[normalIconId] end
+                disabledFunc = function() return not FCOISsettings.isIconEnabled[normalIconId] end
                 getFunc = function() return iconSettings.color.r, iconSettings.color.g, iconSettings.color.b, iconSettings.color.a end
                 setFunc = function(r,g,b,a)
                     FCOISsettings.icon[normalIconId].color = {["r"] = r, ["g"] = g, ["b"] = b, ["a"] = a}
@@ -1421,7 +1400,7 @@ function FCOIS.BuildAddonMenu()
                 name = locVars[iconNameStart .. "_texture"]
                 tooltip = locVars[iconNameStart .. "_texture" .. tooltipSuffix]
                 data = { type = "iconpicker", width = "half", choices = markerIconTextures, choicesTooltips = texturesList, maxColumns=6, visibleRows=5, iconSize=iconSettings.size}
-                disabledFunc = function() return not isIconEnabled[normalIconId] end
+                disabledFunc = function() return not FCOISsettings.isIconEnabled[normalIconId] end
                 getFunc = function() return markerIconTextures[iconSettings.texture] end
                 setFunc = function(texturePath)
                     local textureId = GetFCOTextureId(texturePath)
@@ -1442,7 +1421,7 @@ function FCOIS.BuildAddonMenu()
                 name = locVars["options_icon_offset_left"]
                 tooltip = locVars["options_icon_offset_left" .. tooltipSuffix]
                 data = { type = "slider", width = "half", min=minIconOffsetLeft, max=maxIconOffsetLeft, decimals=0, autoselect=true}
-                disabledFunc = function() return not isIconEnabled[normalIconId] end
+                disabledFunc = function() return not FCOISsettings.isIconEnabled[normalIconId] end
                 getFunc = function() return iconSettings.offsets[LF_INVENTORY].left end
                 setFunc = function(offsetX)
                     FCOISsettings.icon[normalIconId].offsets[LF_INVENTORY].left = offsetX
@@ -1458,7 +1437,7 @@ function FCOIS.BuildAddonMenu()
                 name = locVars["options_icon_offset_top"]
                 tooltip = locVars["options_icon_offset_top" .. tooltipSuffix]
                 data = { type = "slider", width = "half", min=minIconOffsetTop, max=maxIconOffsetTop, decimals=0, autoselect=true}
-                disabledFunc = function() return not isIconEnabled[normalIconId] end
+                disabledFunc = function() return not FCOISsettings.isIconEnabled[normalIconId] end
                 getFunc = function() return iconSettings.offsets[LF_INVENTORY].top end
                 setFunc = function(offsetY)
                     FCOISsettings.icon[normalIconId].offsets[LF_INVENTORY].top = offsetY
@@ -1474,7 +1453,7 @@ function FCOIS.BuildAddonMenu()
                 name = locVars[iconNameStart .. "_size"]
                 tooltip = locVars[iconNameStart .. "_size" .. tooltipSuffix]
                 data = { type = "slider", width = "half", min=minIconSize, max=maxIconSize, decimals=0, autoselect=true}
-                disabledFunc = function() return not isIconEnabled[normalIconId] end
+                disabledFunc = function() return not FCOISsettings.isIconEnabled[normalIconId] end
                 getFunc = function() return iconSettings.size end
                 setFunc = function(size)
                     FCOISsettings.icon[normalIconId].size = size
@@ -1491,7 +1470,7 @@ function FCOIS.BuildAddonMenu()
                 name = locVars[iconNameStart .. tooltipSuffix]
                 tooltip = locVars[iconNameStart .. "_tooltip" .. tooltipSuffix]
                 data = { type = "checkbox", width = "half"}
-                disabledFunc = function() return not isIconEnabled[normalIconId] end
+                disabledFunc = function() return not FCOISsettings.isIconEnabled[normalIconId] end
                 getFunc = function() return FCOISsettings.showMarkerTooltip[normalIconId] end
                 setFunc = function(value)
                     FCOISsettings.icon[normalIconId].showMarkerTooltip[normalIconId] = value
@@ -1511,7 +1490,7 @@ function FCOIS.BuildAddonMenu()
                     name = locVars["options_gear_disable_research_check"]
                     tooltip = locVars["options_gear_disable_research_check" .. tooltipSuffix]
                     data = { type = "checkbox", width = "half"}
-                    disabledFunc = function() return not isIconEnabled[normalIconId] end
+                    disabledFunc = function() return not FCOISsettings.isIconEnabled[normalIconId] end
                     getFunc = function() return FCOISsettings.disableResearchCheck[normalIconId] end
                     setFunc = function(value) FCOISsettings.disableResearchCheck[normalIconId] = value
                     end
@@ -1592,7 +1571,7 @@ function FCOIS.BuildAddonMenu()
                 local tooltip = locVars[optionsIcon .. "_activate_text" .. tooltipSuffix]
                 local data = { type = "checkbox", width = "half" }
                 local disabledFunc = function() return false end
-                local getFunc = function() return isIconEnabled[normalIconId] end
+                local getFunc = function() return FCOISsettings.isIconEnabled[normalIconId] end
                 local setFunc
                 local defaultSettings = FCOISdefaultSettings.isIconEnabled[normalIconId]
                 if buildGear == true then
@@ -1643,7 +1622,7 @@ function FCOIS.BuildAddonMenu()
             local tooltip = locVars[optionsIcon .. "_activate_text" .. tooltipSuffix]
             local data = { type = "checkbox", width = "half" }
             local disabledFunc = function() return false end
-            local getFunc = function() return isIconEnabled[fcoisDynIconNr] end
+            local getFunc = function() return FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             local setFunc = function(value)
                 FCOISsettings.isIconEnabled[fcoisDynIconNr] = value
                 if value == true then
@@ -1706,12 +1685,12 @@ function FCOIS.BuildAddonMenu()
                 type = "editbox", width = "half",
                 --helpUrl = locVars[dynIconNameStart .. colorSuffix],
             }
-            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+            disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].name end
             setFunc = function(newValue)
                 FCOISsettings.icon[fcoisDynIconNr].name = newValue
                 FCOIS.preventerVars.doUpdateLocalization = true
-                changeContextMenuEntryTexts(fcoisDynIconNr)
+                FCOIS.changeContextMenuEntryTexts(fcoisDynIconNr)
                 --Update the icon list dropdown entries (name, enabled state)
                 updateIconListDropdownEntries()
             end
@@ -1726,7 +1705,7 @@ function FCOIS.BuildAddonMenu()
             name = locVars[dynIconNameStart .. colorSuffix]
             tooltip = locVars[dynIconNameStart .. colorSuffix .. tooltipSuffix]
             data = { type = "colorpicker", width = "half" }
-            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+            disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].color.r, FCOISsettings.icon[fcoisDynIconNr].color.g, FCOISsettings.icon[fcoisDynIconNr].color.b, FCOISsettings.icon[fcoisDynIconNr].color.a end
             setFunc = function(r,g,b,a)
                 FCOISsettings.icon[fcoisDynIconNr].color = {["r"] = r, ["g"] = g, ["b"] = b, ["a"] = a}
@@ -1744,7 +1723,7 @@ function FCOIS.BuildAddonMenu()
             name = locVars[dynIconNameStart .. "_texture"]
             tooltip = locVars[dynIconNameStart .. "_texture" .. tooltipSuffix]
             data = { type = "iconpicker", width = "half", choices = markerIconTextures, choicesTooltips = texturesList, maxColumns=6, visibleRows=5, iconSize=FCOISsettings.icon[fcoisDynIconNr].size}
-            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+            disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return markerIconTextures[FCOISsettings.icon[fcoisDynIconNr].texture] end
             setFunc = function(texturePath)
                 local textureId = GetFCOTextureId(texturePath)
@@ -1765,7 +1744,7 @@ function FCOIS.BuildAddonMenu()
             name = locVars[dynIconNameStart .. "_size"]
             tooltip = locVars[dynIconNameStart .. "_size" .. tooltipSuffix]
             data = { type = "slider", width = "half", min=minIconSize, max=maxIconSize, decimals=0, autoselect=true}
-            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+            disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].size end
             setFunc = function(size)
                 FCOISsettings.icon[fcoisDynIconNr].size = size
@@ -1782,7 +1761,7 @@ function FCOIS.BuildAddonMenu()
             name = locVars[dynIconNameStart .. "_offsetX"]
             tooltip = locVars[dynIconNameStart .. "_offsetX" .. tooltipSuffix]
             data = { type = "slider", width = "half", min=minIconOffsetLeft, max=maxIconOffsetLeft, decimals=0, autoselect=true}
-            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+            disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].offsets[LF_INVENTORY].left end
             setFunc = function(offsetX)
                 FCOISsettings.icon[fcoisDynIconNr].offsets[LF_INVENTORY].left = offsetX
@@ -1798,7 +1777,7 @@ function FCOIS.BuildAddonMenu()
             name = locVars[dynIconNameStart .. "_offsetY"]
             tooltip = locVars[dynIconNameStart .. "_offsetY" .. tooltipSuffix]
             data = { type = "slider", width = "half", min=minIconOffsetTop, max=maxIconOffsetTop, decimals=0, autoselect=true}
-            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+            disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].offsets[LF_INVENTORY].top end
             setFunc = function(offsetY)
                 FCOISsettings.icon[fcoisDynIconNr].offsets[LF_INVENTORY].top = offsetY
@@ -1814,7 +1793,7 @@ function FCOIS.BuildAddonMenu()
             name = locVars[dynIconNameStart .. tooltipSuffix]
             tooltip = locVars[dynIconNameStart .. "_tooltip" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
-            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+            disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.showMarkerTooltip[fcoisDynIconNr] end
             setFunc = function(value)
                 FCOISsettings.showMarkerTooltip[fcoisDynIconNr] = value
@@ -1831,7 +1810,7 @@ function FCOIS.BuildAddonMenu()
             name = locVars["options_gear_disable_research_check"]
             tooltip = locVars["options_gear_disable_research_check" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
-            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+            disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.disableResearchCheck[fcoisDynIconNr] end
             setFunc = function(value) FCOISsettings.disableResearchCheck[fcoisDynIconNr] = value
             end
@@ -1845,7 +1824,7 @@ function FCOIS.BuildAddonMenu()
             name = locVars["options_gear_enable_as_gear"]
             tooltip = locVars["options_gear_enable_as_gear" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
-            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+            disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.iconIsGear[fcoisDynIconNr] end
             setFunc = function(value)
                 FCOISsettings.iconIsGear[fcoisDynIconNr] = value
@@ -1863,7 +1842,7 @@ function FCOIS.BuildAddonMenu()
             name = locVars["options_enable_block_marked_disable_with_flag"]
             tooltip = locVars["options_enable_block_marked_disable_with_flag" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
-            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+            disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].temporaryDisableByInventoryFlagIcon end
             setFunc = function(value)
                 FCOISsettings.icon[fcoisDynIconNr].temporaryDisableByInventoryFlagIcon = value
@@ -1878,7 +1857,7 @@ function FCOIS.BuildAddonMenu()
             name = locVars["options_demark_all_others"]
             tooltip = locVars["options_demark_all_others" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
-            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+            disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].demarkAllOthers end
             setFunc = function(value)
                 FCOISsettings.icon[fcoisDynIconNr].demarkAllOthers = value
@@ -1893,7 +1872,7 @@ function FCOIS.BuildAddonMenu()
             name = locVars["options_demark_all_others_except_non_dynamic"]
             tooltip = locVars["options_demark_all_others_except_non_dynamic" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
-            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] or not FCOISsettings.icon[fcoisDynIconNr].demarkAllOthers or FCOISsettings.icon[fcoisDynIconNr].demarkAllOthersExcludeDynamic end
+            disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] or not FCOISsettings.icon[fcoisDynIconNr].demarkAllOthers or FCOISsettings.icon[fcoisDynIconNr].demarkAllOthersExcludeDynamic end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].demarkAllOthersExcludeNormal end
             setFunc = function(value)
                 FCOISsettings.icon[fcoisDynIconNr].demarkAllOthersExcludeNormal = value
@@ -1908,7 +1887,7 @@ function FCOIS.BuildAddonMenu()
             name = locVars["options_demark_all_others_except_dynamic"]
             tooltip = locVars["options_demark_all_others_except_dynamic" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
-            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] or not FCOISsettings.icon[fcoisDynIconNr].demarkAllOthers or FCOISsettings.icon[fcoisDynIconNr].demarkAllOthersExcludeNormal end
+            disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] or not FCOISsettings.icon[fcoisDynIconNr].demarkAllOthers or FCOISsettings.icon[fcoisDynIconNr].demarkAllOthersExcludeNormal end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].demarkAllOthersExcludeDynamic end
             setFunc = function(value)
                 FCOISsettings.icon[fcoisDynIconNr].demarkAllOthersExcludeDynamic = value
@@ -1923,7 +1902,7 @@ function FCOIS.BuildAddonMenu()
             name = locVars["options_prevent_auto_marking_if_this_icon_set"]
             tooltip = locVars["options_prevent_auto_marking_if_this_icon_set" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
-            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+            disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].autoMarkPreventIfMarkedWithThis end
             setFunc = function(value)
                 FCOISsettings.icon[fcoisDynIconNr].autoMarkPreventIfMarkedWithThis = value
@@ -1938,7 +1917,7 @@ function FCOIS.BuildAddonMenu()
             name = locVars["options_auto_remove_if_banked"]
             tooltip = locVars["options_auto_remove_if_banked" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
-            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+            disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].autoRemoveMarkForBag[BAG_BANK] end
             setFunc = function(value)
                 FCOISsettings.icon[fcoisDynIconNr].autoRemoveMarkForBag[BAG_BANK] = value
@@ -1953,7 +1932,7 @@ function FCOIS.BuildAddonMenu()
             name = locVars["options_auto_remove_if_guild_banked"]
             tooltip = locVars["options_auto_remove_if_guild_banked" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
-            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+            disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].autoRemoveMarkForBag[BAG_GUILDBANK] end
             setFunc = function(value)
                 FCOISsettings.icon[fcoisDynIconNr].autoRemoveMarkForBag[BAG_GUILDBANK] = value
@@ -1976,11 +1955,9 @@ function FCOIS.BuildAddonMenu()
             name = locVars["options_enable_block_destroying"]
             tooltip = locVars["options_enable_block_destroying" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
-            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+            disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_INVENTORY] end
-            setFunc = function(value)
-                FCOIS.updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_INVENTORY, value)
-                FCOIS.updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_INVENTORY_COMPANION, value)
+            setFunc = function(value) FCOIS.updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_INVENTORY, value)
             end
             defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_INVENTORY]
             createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
@@ -1992,7 +1969,7 @@ function FCOIS.BuildAddonMenu()
             name = locVars["options_enable_block_selling"]
             tooltip = locVars["options_enable_block_selling" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
-            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+            disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_VENDOR_SELL] end
             setFunc = function(value) FCOIS.updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_VENDOR_SELL, value)
             end
@@ -2006,7 +1983,7 @@ function FCOIS.BuildAddonMenu()
             name = locVars["options_enable_block_deconstruction"]
             tooltip = locVars["options_enable_block_deconstruction" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
-            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+            disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_SMITHING_DECONSTRUCT] end
             setFunc = function(value) FCOIS.updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_SMITHING_DECONSTRUCT, value)
             end
@@ -2020,7 +1997,7 @@ function FCOIS.BuildAddonMenu()
             name = locVars["options_enable_block_jewelry_deconstruction"]
             tooltip = locVars["options_enable_block_jewelry_deconstruction" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
-            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+            disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_JEWELRY_DECONSTRUCT] end
             setFunc = function(value) FCOIS.updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_JEWELRY_DECONSTRUCT, value)
             end
@@ -2034,7 +2011,7 @@ function FCOIS.BuildAddonMenu()
             name = locVars["options_enable_block_improvement"]
             tooltip = locVars["options_enable_block_improvement" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
-            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+            disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_SMITHING_IMPROVEMENT] end
             setFunc = function(value) FCOIS.updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_SMITHING_IMPROVEMENT, value)
             end
@@ -2048,7 +2025,7 @@ function FCOIS.BuildAddonMenu()
             name = locVars["options_enable_block_jewelry_improvement"]
             tooltip = locVars["options_enable_block_jewelry_improvement" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
-            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+            disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_JEWELRY_IMPROVEMENT] end
             setFunc = function(value) FCOIS.updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_JEWELRY_IMPROVEMENT, value)
             end
@@ -2062,7 +2039,7 @@ function FCOIS.BuildAddonMenu()
             name = locVars["options_enable_block_refinement"]
             tooltip = locVars["options_enable_block_refinement" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
-            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+            disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_SMITHING_REFINE] end
             setFunc = function(value) FCOIS.updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_SMITHING_REFINE, value)
             end
@@ -2076,7 +2053,7 @@ function FCOIS.BuildAddonMenu()
             name = locVars["options_enable_block_jewelry_refinement"]
             tooltip = locVars["options_enable_block_jewelry_refinement" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
-            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+            disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_JEWELRY_REFINE] end
             setFunc = function(value) FCOIS.updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_JEWELRY_REFINE, value)
             end
@@ -2090,7 +2067,7 @@ function FCOIS.BuildAddonMenu()
             name = locVars["options_enable_block_research"]
             tooltip = locVars["options_enable_block_research" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
-            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+            disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_SMITHING_RESEARCH_DIALOG] end
             setFunc = function(value) FCOIS.updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_SMITHING_RESEARCH_DIALOG, value)
             end
@@ -2104,7 +2081,7 @@ function FCOIS.BuildAddonMenu()
             name = locVars["options_enable_block_jewelry_research"]
             tooltip = locVars["options_enable_block_jewelry_research" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
-            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+            disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_JEWELRY_RESEARCH_DIALOG] end
             setFunc = function(value) FCOIS.updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_JEWELRY_RESEARCH_DIALOG, value)
             end
@@ -2118,7 +2095,7 @@ function FCOIS.BuildAddonMenu()
             name = locVars["options_enable_block_selling_guild_store"]
             tooltip = locVars["options_enable_block_selling_guild_store" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
-            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+            disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_GUILDSTORE_SELL] end
             setFunc = function(value) FCOIS.updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_GUILDSTORE_SELL, value)
             end
@@ -2132,7 +2109,7 @@ function FCOIS.BuildAddonMenu()
             name = locVars["options_enable_block_creation"]
             tooltip = locVars["options_enable_block_creation" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
-            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+            disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_ENCHANTING_CREATION] end
             setFunc = function(value) FCOIS.updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_ENCHANTING_CREATION, value)
             end
@@ -2146,7 +2123,7 @@ function FCOIS.BuildAddonMenu()
             name = locVars["options_enable_block_extraction"]
             tooltip = locVars["options_enable_block_extraction" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
-            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+            disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_ENCHANTING_EXTRACTION] end
             setFunc = function(value) FCOIS.updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_ENCHANTING_EXTRACTION, value)
             end
@@ -2160,7 +2137,7 @@ function FCOIS.BuildAddonMenu()
             name = locVars["options_enable_block_fence_selling"]
             tooltip = locVars["options_enable_block_fence_selling" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
-            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+            disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_FENCE_SELL] end
             setFunc = function(value) FCOIS.updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_FENCE_SELL, value)
             end
@@ -2174,7 +2151,7 @@ function FCOIS.BuildAddonMenu()
             name = locVars["options_enable_block_launder_selling"]
             tooltip = locVars["options_enable_block_launder_selling" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
-            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+            disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_FENCE_LAUNDER] end
             setFunc = function(value) FCOIS.updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_FENCE_LAUNDER, value)
             end
@@ -2188,7 +2165,7 @@ function FCOIS.BuildAddonMenu()
             name = locVars["options_enable_block_trading"]
             tooltip = locVars["options_enable_block_trading" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
-            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+            disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_TRADE] end
             setFunc = function(value) FCOIS.updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_TRADE, value)
             end
@@ -2202,7 +2179,7 @@ function FCOIS.BuildAddonMenu()
             name = locVars["options_enable_block_sending_mail"]
             tooltip = locVars["options_enable_block_sending_mail" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
-            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+            disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_MAIL_SEND] end
             setFunc = function(value) FCOIS.updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_MAIL_SEND, value)
             end
@@ -2216,7 +2193,7 @@ function FCOIS.BuildAddonMenu()
             name = locVars["options_enable_block_alchemy_destroy"]
             tooltip = locVars["options_enable_block_alchemy_destroy" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
-            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+            disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_ALCHEMY_CREATION] end
             setFunc = function(value) FCOIS.updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_ALCHEMY_CREATION, value)
             end
@@ -2230,7 +2207,7 @@ function FCOIS.BuildAddonMenu()
             name = locVars["options_enable_block_retrait"]
             tooltip = locVars["options_enable_block_retrait" .. tooltipSuffix]
             data = { type = "checkbox", width = "half"}
-            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+            disabledFunc = function() return not FCOISsettings.isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_RETRAIT] end
             setFunc = function(value) FCOIS.updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_RETRAIT, value)
             end
@@ -2261,7 +2238,7 @@ function FCOIS.BuildAddonMenu()
     local function buildFilterButtonsPositionsSubMenu()
         local function saveValueFilterButtonChecks(filterPanelId, filterButtonNr)
             if filterPanelId == LF_INVENTORY then
-                FCOIS.UpdateFCOISFilterButtonsAtInventory(filterButtonNr)
+                FCOIS.updateFilterButtonsInInv(filterButtonNr)
             end
         end
 
@@ -2279,7 +2256,7 @@ function FCOIS.BuildAddonMenu()
             return false
         end
         local btnFunc = function()
-            FCOIS.SetAllFCOISFilterButtonOffsetAndSizeSettingsEqual(LF_INVENTORY)
+            FCOIS.setAllFilterButtonOffsetAndSizeSettingsEqual(LF_INVENTORY)
         end
         local btncreatedControl = CreateControl(nil, btnname, btntooltip, btndata, btndisabledFunc, nil, btnFunc, nil, locVars["options_filter_button_set_all_equal" .. tooltipSuffix])
         if btncreatedControl ~= nil then
@@ -2510,7 +2487,7 @@ function FCOIS.BuildAddonMenu()
             --Update the choices and choicesValues in the LAM restore API verison dropdown now
             --> only needed if manually clicked the "refresh restorable backups" button
             if doUpdateDropdownValues then
-                local restoreableBackupsDD = wm:GetControlByName("FCOITEMSAVER_SETTINGS_RESTORE_API_VERSION_DROPDOWN", "")
+                local restoreableBackupsDD = WINDOW_MANAGER:GetControlByName("FCOITEMSAVER_SETTINGS_RESTORE_API_VERSION_DROPDOWN", "")
                 if restoreableBackupsDD then
                     restoreableBackupsDD:UpdateChoices(restoreChoices, restoreChoicesValues)
                     fcoRestore.apiVersion = nil
@@ -2533,7 +2510,7 @@ function FCOIS.BuildAddonMenu()
         local fcoisCurrentlyLoadingPlaceHolderLableName = "FCOIS_LAM_CurrentlyLoadingLabel"
         local fcoisCurrentlyLoadingPlaceHolderLable = FCOIS.FCOSettingsPanel.fcoisCurrentlyLoadingPlaceHolderLable
         if not fcoisCurrentlyLoadingPlaceHolderLable then
-            fcoisCurrentlyLoadingPlaceHolderLable = wm:CreateControl(fcoisCurrentlyLoadingPlaceHolderLableName, FCOIS.FCOSettingsPanel, CT_LABEL)
+            fcoisCurrentlyLoadingPlaceHolderLable = WINDOW_MANAGER:CreateControl(fcoisCurrentlyLoadingPlaceHolderLableName, FCOIS.FCOSettingsPanel, CT_LABEL)
             fcoisCurrentlyLoadingPlaceHolderLable:SetAnchor(TOPLEFT, FCOIS.FCOSettingsPanel.container, CENTER, (FCOIS.FCOSettingsPanel.container:GetWidth()/3)*-1, 0)
             fcoisCurrentlyLoadingPlaceHolderLable:SetFont("ZoFontAlert")
             fcoisCurrentlyLoadingPlaceHolderLable:SetScale(1.0)
@@ -2599,16 +2576,12 @@ function FCOIS.BuildAddonMenu()
             panel.controlsWereLoaded = true
         end
         --Check if the user set ordering of context menu entries (marker icons) is valid, else use the default sorting
-        -->With FCOIS 2.0.3 it should be always valid due to the usage of the LibAddonMenu-2.0 OrderListBox, and no dropdown boxes anymore!
-        -->But just in case run the function here once as the LAM panel creates -> See function FCOIS.BuildAddonMenu()
-        --[[
-        if FCOIS.CheckIfUserContextMenuSortOrderValid() == false then
-            FCOIS.ResetUserContextMenuSortOrder()
+        if FCOIS.checkIfUserContextMenuSortOrderValid() == false then
+            FCOIS.resetUserContextMenuSortOrder()
         end
-        ]]
         --Show the LAM menu container now
         --ChangeFCOISLamMenuVisibleState(false)
-        --cm:UnregisterCallback("LAM-PanelControlsCreated")
+        --CALLBACK_MANAGER:UnregisterCallback("LAM-PanelControlsCreated")
     end
 
     --The panel opened callback function
@@ -3225,6 +3198,9 @@ function FCOIS.BuildAddonMenu()
                                     name = locVars["options_header_sort_order"],
                                     tooltip = locVars["options_header_sort_order"],
                                     listEntries = FCOISsettings.iconSortOrderEntries,
+                                    disableDrag = false,
+                                    disableButtons = false,
+                                    showPosition = false,
                                     getFunc = function() return FCOISsettings.iconSortOrderEntries end,
                                     setFunc = function(sortedSortListEntries)
                                         --[[
@@ -3243,13 +3219,16 @@ function FCOIS.BuildAddonMenu()
                                     isExtraWide = true,
                                     minHeight = 250,
                                     maxHeight = 400,
+                                    showPosition = false,
+                                    showValue = false,
+                                    showValueAtTooltip = false,
                                     reference = "FCOItemSaver_Settings_IconSortOrder_OrderListBox",
                                     disabled = function() return not FCOISsettings.sortIconsInAdditionalInvFlagContextMenu end,
                                     default = FCOISdefaultSettings.iconSortOrderEntries,
                                 },
                             },
-
                         },
+
                         --========= ICON POSITIONS ==================================================
                         {
                             type = "submenu",
@@ -3455,16 +3434,6 @@ function FCOIS.BuildAddonMenu()
             name = locVars["options_header_keybind_options"],
             controls = {
                 {
-                    type = "checkbox",
-                    name = locVars["options_keybind_enable_chording"],
-                    tooltip = locVars["options_keybind_enable_chording" .. tooltipSuffix],
-                    getFunc = function() return FCOISsettings.enableKeybindChording end,
-                    setFunc = function(value) FCOISsettings.enableKeybindChording = value
-                        FCOIS.CheckKeybindingChording(value)
-                    end,
-                    width="full",
-                },
-                {
                     type = 'dropdown',
                     name = locVars[optionsIcon .. "_standard_on_keybind"],
                     tooltip = locVars[optionsIcon .. "_standard_on_keybind" .. tooltipSuffix],
@@ -3655,64 +3624,9 @@ function FCOIS.BuildAddonMenu()
                                     end,
                                     default = FCOISdefaultSettings.autoMarkBagsToScan[BAG_BANK],
                                 },
-                                {
-                                    type    = "checkbox",
-                                    name    = locVars["FCOIS_LibFilters_PanelIds"][LF_GUILDBANK_WITHDRAW],
-                                    tooltip = locVars["FCOIS_LibFilters_PanelIds"][LF_GUILDBANK_WITHDRAW],
-                                    getFunc = function() return FCOISsettings.autoMarkBagsToScan[BAG_GUILDBANK] end,
-                                    setFunc = function(value)
-                                        FCOISsettings.autoMarkBagsToScan[BAG_GUILDBANK] = value
-                                    end,
-                                    default = FCOISdefaultSettings.autoMarkBagsToScan[BAG_GUILDBANK],
-                                },
-                                {
-                                    type    = "checkbox",
-                                    name    = locVars["FCOIS_LibFilters_PanelIds"][LF_HOUSE_BANK_WITHDRAW],
-                                    tooltip = locVars["FCOIS_LibFilters_PanelIds"][LF_HOUSE_BANK_WITHDRAW],
-                                    getFunc = function() return FCOISsettings.autoMarkBagsToScan[BAG_HOUSE_BANK_ONE] end,
-                                    setFunc = function(value)
-                                        FCOISsettings.autoMarkBagsToScan[BAG_HOUSE_BANK_ONE] = value
-                                    end,
-                                    default = FCOISdefaultSettings.autoMarkBagsToScan[BAG_HOUSE_BANK_ONE],
-                                },
-                                {
-                                    type    = "orderlistbox",
-                                    name    = locVars["options_bags_to_scan_order"],
-                                    tooltip = locVars["options_bags_to_scan_order" ..tooltipSuffix],
-                                    getFunc = function() return FCOISsettings.autoMarkBagsToScanOrder end,
-                                    setFunc = function(orderedList)
-                                        FCOISsettings.autoMarkBagsToScanOrder = orderedList
-                                    end,
-                                    minHeight = 100,
-                                    maxHeight = 200,
-                                    isExtraWide = true,
-                                    showPosition = true,
-                                    disabled = function() return checkIfAutomaticMarksAreDisabledAtBag() end,
-                                    default = FCOISdefaultSettings.autoMarkBagsToScanOrder,
-                                },
-                                {
-                                    type    = "checkbox",
-                                    name    = locVars["options_bags_to_scan_chat_output"],
-                                    tooltip = locVars["options_bags_to_scan_chat_output" ..tooltipSuffix],
-                                    getFunc = function() return FCOISsettings.autoMarkBagsChatOutput end,
-                                    setFunc = function(value)
-                                        FCOISsettings.autoMarkBagsChatOutput = value
-                                    end,
-                                    default = FCOISdefaultSettings.autoMarkBagsChatOutput,
-                                },
-                                {
-                                    type = "button",
-                                    name = locVars["options_scan_automatic_marks_now"],
-                                    tooltip = locVars["options_scan_automatic_marks_now" .. tooltipSuffix],
-                                    func = function()
-                                        scanInventory(nil, nil, FCOISsettings.autoMarkBagsChatOutput)
-                                    end,
-                                    isDangerous = false,
-                                    disabled = function() return checkIfAutomaticMarksAreDisabledAtBag() end,
-                                    width="full",
-                                },
                             },
                         },
+
                         --==============================================================================
                         {  -- Sets
                             type = "submenu",
@@ -3797,9 +3711,9 @@ function FCOIS.BuildAddonMenu()
                                                     return true
                                                 else
                                                     if (FCOISsettings.autoMarkSetsItemCollectionBookMissingIcon == FCOIS_CON_ICON_NONE or
-                                                        not isIconEnabled[FCOISsettings.autoMarkSetsItemCollectionBookMissingIcon]) and
+                                                        not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkSetsItemCollectionBookMissingIcon]) and
                                                        (FCOISsettings.autoMarkSetsItemCollectionBookNonMissingIcon == FCOIS_CON_ICON_NONE or
-                                                        not isIconEnabled[FCOISsettings.autoMarkSetsItemCollectionBookNonMissingIcon]) then
+                                                        not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkSetsItemCollectionBookNonMissingIcon]) then
                                                         return true
                                                     end
                                                 end
@@ -3851,9 +3765,9 @@ function FCOIS.BuildAddonMenu()
                                                     return true
                                                 else
                                                     if (FCOISsettings.autoMarkSetsItemCollectionBookMissingIcon == FCOIS_CON_ICON_NONE or
-                                                        not isIconEnabled[FCOISsettings.autoMarkSetsItemCollectionBookMissingIcon]) and
+                                                        not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkSetsItemCollectionBookMissingIcon]) and
                                                        (FCOISsettings.autoMarkSetsItemCollectionBookNonMissingIcon == FCOIS_CON_ICON_NONE or
-                                                        not isIconEnabled[FCOISsettings.autoMarkSetsItemCollectionBookNonMissingIcon]) then
+                                                        not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkSetsItemCollectionBookNonMissingIcon]) then
                                                         return true
                                                     end
                                                 end
@@ -3925,10 +3839,10 @@ function FCOIS.BuildAddonMenu()
                                     setFunc = function(value)
                                         FCOISsettings.autoMarkSets = value
                                         if (FCOISsettings.autoMarkSets == true) then
-                                            scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
+                                            FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
                                         end
                                     end,
-                                    disabled = function() return not isIconEnabled[FCOISsettings.autoMarkSetsIconNr] end,
+                                    disabled = function() return not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkSetsIconNr] end,
                                     width = "half",
                                     default = FCOISdefaultSettings.autoMarkSets,
                                 },
@@ -3957,7 +3871,7 @@ function FCOIS.BuildAddonMenu()
                                     setFunc = function(value)
                                         FCOISsettings.autoMarkSetsCheckAllIcons = value
                                         if (FCOISsettings.autoMarkSetsCheckAllIcons == true) then
-                                            scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
+                                            FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
                                         end
                                     end,
                                     disabled = function() return not FCOISsettings.autoMarkSets or FCOISsettings.autoMarkSetsOnlyTraits end,
@@ -3972,10 +3886,10 @@ function FCOIS.BuildAddonMenu()
                                     setFunc = function(value)
                                         FCOISsettings.autoMarkSetsCheckAllGearIcons = value
                                         if (FCOISsettings.autoMarkSetsCheckAllGearIcons == true) then
-                                            scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
+                                            FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
                                         end
                                     end,
-                                    disabled = function() return FCOISsettings.autoMarkSetsCheckAllIcons or (not isIconEnabled[FCOISsettings.autoMarkSetsIconNr] or not FCOISsettings.autoMarkSets) or FCOISsettings.autoMarkSetsOnlyTraits end,
+                                    disabled = function() return FCOISsettings.autoMarkSetsCheckAllIcons or (not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkSetsIconNr] or not FCOISsettings.autoMarkSets) or FCOISsettings.autoMarkSetsOnlyTraits end,
                                     width = "half",
                                     default = FCOISdefaultSettings.autoMarkSetsCheckAllGearIcons,
                                 },
@@ -3987,7 +3901,7 @@ function FCOIS.BuildAddonMenu()
                                     setFunc = function(value)
                                         FCOISsettings.autoMarkSetsCheckAllSetTrackerIcons = value
                                         if (FCOISsettings.autoMarkSetsCheckAllSetTrackerIcons == true) then
-                                            scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
+                                            FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
                                         end
                                     end,
                                     disabled = function() return not FCOISsettings.autoMarkSets or not FCOIS.otherAddons.SetTracker.isActive or not FCOISsettings.autoMarkSetTrackerSets or FCOISsettings.autoMarkSetsOnlyTraits end,
@@ -4002,10 +3916,10 @@ function FCOIS.BuildAddonMenu()
                                     setFunc = function(value)
                                         FCOISsettings.autoMarkSetsCheckSellIcons = value
                                         if (FCOISsettings.autoMarkSetsCheckSellIcons == true) then
-                                            scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
+                                            FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
                                         end
                                     end,
-                                    disabled = function() return FCOISsettings.autoMarkSetsCheckAllIcons or (not FCOISsettings.autoMarkSets or (not isIconEnabled[FCOIS_CON_ICON_SELL] and not isIconEnabled[FCOIS_CON_ICON_SELL_AT_GUILDSTORE])) or FCOISsettings.autoMarkSetsOnlyTraits end,
+                                    disabled = function() return FCOISsettings.autoMarkSetsCheckAllIcons or (not FCOISsettings.autoMarkSets or (not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL] and not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL_AT_GUILDSTORE])) or FCOISsettings.autoMarkSetsOnlyTraits end,
                                     width = "full",
                                     default = FCOISdefaultSettings.autoMarkSetsCheckSellIcons,
                                 },
@@ -4073,11 +3987,11 @@ function FCOIS.BuildAddonMenu()
                                                     setFunc = function(value)
                                                         FCOISsettings.autoMarkSetsNonWished = value
                                                         if (FCOISsettings.autoMarkSetsNonWished == true) then
-                                                            scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
+                                                            FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
                                                         end
 
                                                     end,
-                                                    disabled = function() return (not isIconEnabled[FCOISsettings.autoMarkSetsNonWishedIconNr] or not FCOISsettings.autoMarkSets) end,
+                                                    disabled = function() return (not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkSetsNonWishedIconNr] or not FCOISsettings.autoMarkSets) end,
                                                     width = "half",
                                                     default = FCOISdefaultSettings.autoMarkSetsNonWished,
                                                 },
@@ -4107,10 +4021,10 @@ function FCOIS.BuildAddonMenu()
                                                     setFunc = function(value)
                                                         FCOISsettings.autoMarkSetsNonWishedIfCharBelowLevel = value
                                                         if (FCOISsettings.autoMarkSetsNonWished == true) then
-                                                            scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
+                                                            FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
                                                         end
                                                     end,
-                                                    disabled = function() return (not FCOISsettings.autoMarkSetsNonWished or (not isIconEnabled[FCOISsettings.autoMarkSetsNonWishedIconNr] or not FCOISsettings.autoMarkSets)) end,
+                                                    disabled = function() return (not FCOISsettings.autoMarkSetsNonWished or (not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkSetsNonWishedIconNr] or not FCOISsettings.autoMarkSets)) end,
                                                     width = "full",
                                                     default = FCOISdefaultSettings.autoMarkSetsNonWishedIfCharBelowLevel,
                                                 },
@@ -4126,10 +4040,10 @@ function FCOIS.BuildAddonMenu()
                                                     setFunc = function(value)
                                                         FCOISsettings.autoMarkSetsNonWishedChecks = value
                                                         if (FCOISsettings.autoMarkSetsNonWishedChecks == true) then
-                                                            scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
+                                                            FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
                                                         end
                                                     end,
-                                                    disabled = function()return (FCOISsettings.autoMarkSetsNonWishedIfCharBelowLevel and not FCOIS.checkNeededLevel("player", 50)) or (not FCOISsettings.autoMarkSets or not FCOISsettings.autoMarkSetsNonWished or not isIconEnabled[FCOISsettings.autoMarkSetsNonWishedIconNr] or not isIconEnabled[FCOIS_CON_ICON_SELL]) end,
+                                                    disabled = function()return (FCOISsettings.autoMarkSetsNonWishedIfCharBelowLevel and not FCOIS.checkNeededLevel("player", 50)) or (not FCOISsettings.autoMarkSets or not FCOISsettings.autoMarkSetsNonWished or not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkSetsNonWishedIconNr] or not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL]) end,
                                                     width = "full",
                                                     default = FCOISdefaultSettings.autoMarkSetsNonWishedChecks,
                                                 },
@@ -4146,13 +4060,13 @@ function FCOIS.BuildAddonMenu()
                                                             if v == value then
                                                                 FCOISsettings.autoMarkSetsNonWishedLevel = i
                                                                 if i ~= 1 then
-                                                                    scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
+                                                                    FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
                                                                 end
                                                                 break
                                                             end
                                                         end
                                                     end,
-                                                    disabled = function()return (FCOISsettings.autoMarkSetsNonWishedIfCharBelowLevel and not FCOIS.checkNeededLevel("player", 50)) or (not FCOISsettings.autoMarkSets or not FCOISsettings.autoMarkSetsNonWished or not isIconEnabled[FCOISsettings.autoMarkSetsNonWishedIconNr] or not isIconEnabled[FCOIS_CON_ICON_SELL] or (FCOISsettings.autoMarkSetsNonWishedChecks~=FCOIS_CON_NON_WISHED_ALL and FCOISsettings.autoMarkSetsNonWishedChecks~=FCOIS_CON_NON_WISHED_LEVEL)) end,
+                                                    disabled = function()return (FCOISsettings.autoMarkSetsNonWishedIfCharBelowLevel and not FCOIS.checkNeededLevel("player", 50)) or (not FCOISsettings.autoMarkSets or not FCOISsettings.autoMarkSetsNonWished or not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkSetsNonWishedIconNr] or not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL] or (FCOISsettings.autoMarkSetsNonWishedChecks~=FCOIS_CON_NON_WISHED_ALL and FCOISsettings.autoMarkSetsNonWishedChecks~=FCOIS_CON_NON_WISHED_LEVEL)) end,
                                                     width = "full",
                                                     default = levelList[FCOISdefaultSettings.autoMarkSetsNonWishedLevel],
                                                 },
@@ -4168,13 +4082,13 @@ function FCOIS.BuildAddonMenu()
                                                             if v == value then
                                                                 FCOISsettings.autoMarkSetsNonWishedQuality = i
                                                                 if i ~= 1 then
-                                                                    scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
+                                                                    FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
                                                                 end
                                                                 break
                                                             end
                                                         end
                                                     end,
-                                                    disabled = function()return (FCOISsettings.autoMarkSetsNonWishedIfCharBelowLevel and not FCOIS.checkNeededLevel("player", 50)) or (not FCOISsettings.autoMarkSets or not FCOISsettings.autoMarkSetsNonWished or not isIconEnabled[FCOISsettings.autoMarkSetsNonWishedIconNr] or not isIconEnabled[FCOIS_CON_ICON_SELL] or (FCOISsettings.autoMarkSetsNonWishedChecks~=FCOIS_CON_NON_WISHED_ALL and FCOISsettings.autoMarkSetsNonWishedChecks~=FCOIS_CON_NON_WISHED_QUALITY)) end,
+                                                    disabled = function()return (FCOISsettings.autoMarkSetsNonWishedIfCharBelowLevel and not FCOIS.checkNeededLevel("player", 50)) or (not FCOISsettings.autoMarkSets or not FCOISsettings.autoMarkSetsNonWished or not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkSetsNonWishedIconNr] or not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL] or (FCOISsettings.autoMarkSetsNonWishedChecks~=FCOIS_CON_NON_WISHED_ALL and FCOISsettings.autoMarkSetsNonWishedChecks~=FCOIS_CON_NON_WISHED_QUALITY)) end,
                                                     width = "full",
                                                     default = qualityList[FCOISdefaultSettings.autoMarkSetsNonWishedQuality],
                                                 },
@@ -4186,10 +4100,10 @@ function FCOIS.BuildAddonMenu()
                                                     setFunc = function(value)
                                                         FCOISsettings.autoMarkSetsNonWishedSellOthers = value
                                                         if (FCOISsettings.autoMarkSetsNonWishedSellOthers == true) then
-                                                            scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
+                                                            FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
                                                         end
                                                     end,
-                                                    disabled = function() return (FCOISsettings.autoMarkSetsNonWishedIfCharBelowLevel and not FCOIS.checkNeededLevel("player", 50)) or (not FCOISsettings.autoMarkSets or not FCOISsettings.autoMarkSetsNonWished or not isIconEnabled[FCOIS_CON_ICON_SELL]) end,
+                                                    disabled = function() return (FCOISsettings.autoMarkSetsNonWishedIfCharBelowLevel and not FCOIS.checkNeededLevel("player", 50)) or (not FCOISsettings.autoMarkSets or not FCOISsettings.autoMarkSetsNonWished or not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL]) end,
                                                     width = "full",
                                                     default = FCOISdefaultSettings.autoMarkSetsNonWishedSellOthers,
                                                 },
@@ -4204,7 +4118,7 @@ function FCOIS.BuildAddonMenu()
                                             setFunc = function(value)
                                                 FCOISsettings.autoMarkSetsWithTraitCheckAllIcons = value
                                                 if (FCOISsettings.autoMarkSetsWithTraitCheckAllIcons == true) then
-                                                    scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
+                                                    FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
                                                 end
                                             end,
                                             disabled = function() return not FCOISsettings.autoMarkSets or not FCOISsettings.autoMarkSetsNonWished end,
@@ -4219,10 +4133,10 @@ function FCOIS.BuildAddonMenu()
                                             setFunc = function(value)
                                                 FCOISsettings.autoMarkSetsWithTraitCheckAllGearIcons = value
                                                 if (FCOISsettings.autoMarkSetsWithTraitCheckAllGearIcons == true) then
-                                                    scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
+                                                    FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
                                                 end
                                             end,
-                                            disabled = function() return FCOISsettings.autoMarkSetsWithTraitCheckAllIcons or (not isIconEnabled[FCOISsettings.autoMarkSetsIconNr] or not FCOISsettings.autoMarkSets or not FCOISsettings.autoMarkSetsNonWished) end,
+                                            disabled = function() return FCOISsettings.autoMarkSetsWithTraitCheckAllIcons or (not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkSetsIconNr] or not FCOISsettings.autoMarkSets or not FCOISsettings.autoMarkSetsNonWished) end,
                                             width = "half",
                                             default = FCOISdefaultSettings.autoMarkSetsWithTraitCheckAllGearIcons,
                                         },
@@ -4234,7 +4148,7 @@ function FCOIS.BuildAddonMenu()
                                             setFunc = function(value)
                                                 FCOISsettings.autoMarkSetsWithTraitCheckAllSetTrackerIcons = value
                                                 if (FCOISsettings.autoMarkSetsWithTraitCheckAllSetTrackerIcons == true) then
-                                                    scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
+                                                    FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
                                                 end
                                             end,
                                             disabled = function() return not FCOISsettings.autoMarkSets or not FCOIS.otherAddons.SetTracker.isActive or not FCOISsettings.autoMarkSetTrackerSets or not FCOISsettings.autoMarkSetsNonWished end,
@@ -4249,10 +4163,10 @@ function FCOIS.BuildAddonMenu()
                                             setFunc = function(value)
                                                 FCOISsettings.autoMarkSetsWithTraitCheckSellIcons = value
                                                 if (FCOISsettings.autoMarkSetsWithTraitCheckSellIcons == true) then
-                                                    scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
+                                                    FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
                                                 end
                                             end,
-                                            disabled = function() return FCOISsettings.autoMarkSetsWithTraitCheckAllIcons or (not FCOISsettings.autoMarkSets or (not isIconEnabled[FCOIS_CON_ICON_SELL] and not isIconEnabled[FCOIS_CON_ICON_SELL_AT_GUILDSTORE])) or not FCOISsettings.autoMarkSetsNonWished end,
+                                            disabled = function() return FCOISsettings.autoMarkSetsWithTraitCheckAllIcons or (not FCOISsettings.autoMarkSets or (not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL] and not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL_AT_GUILDSTORE])) or not FCOISsettings.autoMarkSetsNonWished end,
                                             width = "full",
                                             default = FCOISdefaultSettings.autoMarkSetsWithTraitCheckSellIcons,
                                         },
@@ -4264,11 +4178,11 @@ function FCOIS.BuildAddonMenu()
                                             setFunc = function(value)
                                                 FCOISsettings.autoMarkSetsWithTraitIfAutoSetMarked = value
                                                 if (FCOISsettings.autoMarkSetsWithTraitIfAutoSetMarked == true) then
-                                                    scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
+                                                    FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
                                                 end
                                             end,
                                             width = "half",
-                                            disabled = function() return FCOISsettings.autoMarkSetsWithTraitCheckAllIcons or (not isIconEnabled[FCOISsettings.autoMarkSetsIconNr] or not FCOISsettings.autoMarkSets) end,
+                                            disabled = function() return FCOISsettings.autoMarkSetsWithTraitCheckAllIcons or (not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkSetsIconNr] or not FCOISsettings.autoMarkSets) end,
                                             default = FCOISdefaultSettings.autoMarkSetsWithTraitIfAutoSetMarked,
                                         },
 
@@ -4295,7 +4209,7 @@ function FCOIS.BuildAddonMenu()
                                     setFunc = function(value)
                                         FCOISsettings.showSetsInChat = value
                                     end,
-                                    disabled = function() return not isIconEnabled[FCOISsettings.autoMarkSetsIconNr] or not FCOISsettings.autoMarkSets end,
+                                    disabled = function() return not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkSetsIconNr] or not FCOISsettings.autoMarkSets end,
                                     width = "half",
                                     default = FCOISdefaultSettings.showSetsInChat,
                                 },
@@ -4329,11 +4243,11 @@ function FCOIS.BuildAddonMenu()
                                     setFunc = function(value)
                                         FCOISsettings.autoMarkOrnate = value
                                         if (FCOISsettings.autoMarkOrnate == true) then
-                                            scanInventoryItemsForAutomaticMarks(nil, nil, "ornate", false)
+                                            FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "ornate", false)
                                         end
                                     end,
                                     width = "half",
-                                    disabled = function() return not isIconEnabled[FCOIS_CON_ICON_SELL] end,
+                                    disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL] end,
                                     default = FCOISdefaultSettings.autoMarkOrnate,
                                 },
                                 {
@@ -4344,7 +4258,7 @@ function FCOIS.BuildAddonMenu()
                                     setFunc = function(value)
                                         FCOISsettings.showOrnateItemsInChat = value
                                     end,
-                                    disabled = function() return not FCOISsettings.autoMarkOrnate or not isIconEnabled[FCOIS_CON_ICON_SELL] end,
+                                    disabled = function() return not FCOISsettings.autoMarkOrnate or not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL] end,
                                     width = "half",
                                     default = FCOISdefaultSettings.showOrnateItemsInChat,
                                 },
@@ -4364,11 +4278,11 @@ function FCOIS.BuildAddonMenu()
                                     setFunc = function(value)
                                         FCOISsettings.autoMarkIntricate = value
                                         if (FCOISsettings.autoMarkIntricate == true) then
-                                            scanInventoryItemsForAutomaticMarks(nil, nil, "intricate", false)
+                                            FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "intricate", false)
                                         end
                                     end,
                                     width = "half",
-                                    disabled = function() return not isIconEnabled[FCOIS_CON_ICON_INTRICATE] end,
+                                    disabled = function() return not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_INTRICATE] end,
                                     default = FCOISdefaultSettings.autoMarkIntricate,
                                 },
                                 {
@@ -4379,7 +4293,7 @@ function FCOIS.BuildAddonMenu()
                                     setFunc = function(value)
                                         FCOISsettings.showIntricateItemsInChat = value
                                     end,
-                                    disabled = function() return not FCOISsettings.autoMarkIntricate or not isIconEnabled[FCOIS_CON_ICON_INTRICATE] end,
+                                    disabled = function() return not FCOISsettings.autoMarkIntricate or not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_INTRICATE] end,
                                     width = "half",
                                     default = FCOISdefaultSettings.showIntricateItemsInChat,
                                 },
@@ -4402,7 +4316,6 @@ function FCOIS.BuildAddonMenu()
                                     end,
                                     setFunc = function(value)
                                         FCOISsettings.researchAddonUsed = value
-
                                     end,
                                     --disabled = function() return not FCOISsettings.autoMarkResearch end,
                                     width = "half",
@@ -4416,10 +4329,10 @@ function FCOIS.BuildAddonMenu()
                                     setFunc = function(value)
                                         FCOISsettings.autoMarkResearch = value
                                         if (FCOISsettings.autoMarkResearch == true and FCOIS.checkIfResearchAddonUsed() and FCOIS.checkIfChosenResearchAddonActive(FCOISsettings.researchAddonUsed)) then
-                                            scanInventoryItemsForAutomaticMarks(nil, nil, "research", false)
+                                            FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "research", false)
                                         end
                                     end,
-                                    disabled = function() return not FCOIS.checkIfResearchAddonUsed() or not FCOIS.checkIfChosenResearchAddonActive(FCOISsettings.researchAddonUsed) or not isIconEnabled[FCOIS_CON_ICON_RESEARCH] end,
+                                    disabled = function() return not FCOIS.checkIfResearchAddonUsed() or not FCOIS.checkIfChosenResearchAddonActive(FCOISsettings.researchAddonUsed) or not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_RESEARCH] end,
                                     warning = locVars["options_enable_auto_mark_research_items_hint"],
                                     width = "half",
                                     default = FCOISdefaultSettings.autoMarkResearch,
@@ -4432,10 +4345,10 @@ function FCOIS.BuildAddonMenu()
                                     setFunc = function(value)
                                         FCOISsettings.autoMarkResearchOnlyLoggedInChar = value
                                         if (FCOISsettings.autoMarkResearch == true and FCOISsettings.autoMarkResearchOnlyLoggedInChar == true and FCOIS.checkIfResearchAddonUsed() and FCOIS.checkIfChosenResearchAddonActive(FCOISsettings.researchAddonUsed)) then
-                                            scanInventoryItemsForAutomaticMarks(nil, nil, "research", false)
+                                            FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "research", false)
                                         end
                                     end,
-                                    disabled = function() return not FCOIS.checkIfResearchAddonUsed() or FCOISsettings.researchAddonUsed == FCOIS_RESEARCH_ADDON_ESO_STANDARD or FCOISsettings.researchAddonUsed == FCOIS_RESEARCH_ADDON_RESEARCHASSISTANT or not FCOIS.checkIfChosenResearchAddonActive(FCOISsettings.researchAddonUsed) or not isIconEnabled[FCOIS_CON_ICON_RESEARCH] end,
+                                    disabled = function() return not FCOIS.checkIfResearchAddonUsed() or FCOISsettings.researchAddonUsed == FCOIS_RESEARCH_ADDON_ESO_STANDARD or FCOISsettings.researchAddonUsed == FCOIS_RESEARCH_ADDON_RESEARCHASSISTANT or not FCOIS.checkIfChosenResearchAddonActive(FCOISsettings.researchAddonUsed) or not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_RESEARCH] end,
                                     warning = locVars["options_enable_auto_mark_research_items_hint_logged_in_char"],
                                     width = "half",
                                     default = FCOISdefaultSettings.autoMarkResearchOnlyLoggedInChar,
@@ -4449,7 +4362,7 @@ function FCOIS.BuildAddonMenu()
                                         FCOISsettings.autoMarkResearchCheckAllIcons = value
                                     end,
                                     width = "half",
-                                    disabled = function() return not FCOIS.checkIfResearchAddonUsed() or not FCOIS.checkIfChosenResearchAddonActive(FCOISsettings.researchAddonUsed) or not isIconEnabled[FCOIS_CON_ICON_RESEARCH] end,
+                                    disabled = function() return not FCOIS.checkIfResearchAddonUsed() or not FCOIS.checkIfChosenResearchAddonActive(FCOISsettings.researchAddonUsed) or not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_RESEARCH] end,
                                 },
                                 {
                                     type = "checkbox",
@@ -4459,7 +4372,7 @@ function FCOIS.BuildAddonMenu()
                                     setFunc = function(value)
                                         FCOISsettings.showResearchItemsInChat = value
                                     end,
-                                    disabled = function() return not FCOIS.checkIfResearchAddonUsed() or not FCOIS.checkIfChosenResearchAddonActive(FCOISsettings.researchAddonUsed) or not isIconEnabled[FCOIS_CON_ICON_RESEARCH] or not FCOISsettings.autoMarkResearch end,
+                                    disabled = function() return not FCOIS.checkIfResearchAddonUsed() or not FCOIS.checkIfChosenResearchAddonActive(FCOISsettings.researchAddonUsed) or not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_RESEARCH] or not FCOISsettings.autoMarkResearch end,
                                     warning = locVars["options_enable_auto_mark_research_items_hint"],
                                     width = "half",
                                     default = FCOISdefaultSettings.showResearchItemsInChat,
@@ -4472,10 +4385,10 @@ function FCOIS.BuildAddonMenu()
                                     setFunc = function(value)
                                         FCOISsettings.autoMarkWastedResearchScrolls = value
                                         if FCOISsettings.autoMarkWastedResearchScrolls then
-                                            scanInventoryItemsForAutomaticMarks(nil, nil, "researchScrolls", false)
+                                            FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "researchScrolls", false)
                                         end
                                     end,
-                                    disabled = function() return (DetailedResearchScrolls == nil or DetailedResearchScrolls.GetWarningLine == nil) or not isIconEnabled[FCOIS_CON_ICON_LOCK] end,
+                                    disabled = function() return (DetailedResearchScrolls == nil or DetailedResearchScrolls.GetWarningLine == nil) or not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_LOCK] end,
                                     width = "full",
                                     default = FCOISdefaultSettings.autoMarkWastedResearchScrolls,
                                 },
@@ -4514,7 +4427,7 @@ function FCOIS.BuildAddonMenu()
                                     setFunc = function(value)
                                         FCOISsettings.autoMarkRecipes = value
                                         if (FCOISsettings.autoMarkRecipes == true and FCOIS.checkIfRecipeAddonUsed() and FCOIS.checkIfChosenRecipeAddonActive(FCOISsettings.recipeAddonUsed)) then
-                                            scanInventoryItemsForAutomaticMarks(nil, nil, "recipes", false)
+                                            FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "recipes", false)
                                         end
                                     end,
                                     disabled = function() return not FCOIS.isRecipeAutoMarkDoable(false, false, false) end,
@@ -4543,29 +4456,13 @@ function FCOIS.BuildAddonMenu()
                                 },
                                 {
                                     type = "checkbox",
-                                    name = locVars["options_auto_mark_recipes_this_char"],
-                                    tooltip = locVars["options_auto_mark_recipes_this_char" .. tooltipSuffix],
-                                    getFunc = function() return FCOISsettings.autoMarkRecipesOnlyThisChar end,
-                                    setFunc = function(value)
-                                        FCOISsettings.autoMarkRecipesOnlyThisChar = value
-                                        if (FCOISsettings.autoMarkRecipes == true and FCOIS.checkIfRecipeAddonUsed()) then
-                                            scanInventoryItemsForAutomaticMarks(nil, nil, "recipes", false)
-                                        end
-                                    end,
-                                    disabled = function() return not FCOIS.isRecipeAutoMarkDoable(false, false, false) end,
-                                    width = "full",
-                                    default = FCOISdefaultSettings.autoMarkRecipesOnlyThisChar,
-                                    warning = locVars["options_auto_mark_recipes_this_char" .. tooltipSuffix],
-                                },
-                                {
-                                    type = "checkbox",
                                     name = locVars["options_enable_auto_mark_known_recipes"],
                                     tooltip = locVars["options_enable_auto_mark_known_recipes" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.autoMarkKnownRecipes end,
                                     setFunc = function(value)
                                         FCOISsettings.autoMarkKnownRecipes = value
                                         if (FCOISsettings.autoMarkKnownRecipes == true and FCOIS.checkIfRecipeAddonUsed()) then
-                                            scanInventoryItemsForAutomaticMarks(nil, nil, "knownRecipes", false)
+                                            FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "knownRecipes", false)
                                         end
                                     end,
                                     disabled = function() return not FCOIS.isRecipeAutoMarkDoable(false, false, false) end,
@@ -4591,6 +4488,22 @@ function FCOIS.BuildAddonMenu()
                                     disabled = function() return not FCOISsettings.autoMarkKnownRecipes or not FCOIS.isRecipeAutoMarkDoable(false, false, false) end,
                                     width = "half",
                                     default = iconsListRecipe[FCOISdefaultSettings.autoMarkKnownRecipesIconNr],
+                                },
+                                {
+                                    type = "checkbox",
+                                    name = locVars["options_auto_mark_recipes_this_char"],
+                                    tooltip = locVars["options_auto_mark_recipes_this_char" .. tooltipSuffix],
+                                    getFunc = function() return FCOISsettings.autoMarkRecipesOnlyThisChar end,
+                                    setFunc = function(value)
+                                        FCOISsettings.autoMarkRecipesOnlyThisChar = value
+                                        if (FCOISsettings.autoMarkRecipes == true and FCOIS.checkIfRecipeAddonUsed()) then
+                                            FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "recipes", false)
+                                        end
+                                    end,
+                                    disabled = function() return not FCOIS.isRecipeAutoMarkDoable(false, false, false) end,
+                                    width = "full",
+                                    default = FCOISdefaultSettings.autoMarkRecipesOnlyThisChar,
+                                    warning = locVars["options_auto_mark_recipes_this_char" .. tooltipSuffix],
                                 },
                                 {
                                     type = "checkbox",
@@ -4625,7 +4538,7 @@ function FCOIS.BuildAddonMenu()
                                             if v == value then
                                                 FCOISsettings.autoMarkQuality = i
                                                 if i ~= 1 then
-                                                    scanInventoryItemsForAutomaticMarks(nil, nil, "quality", false)
+                                                    FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "quality", false)
                                                 end
                                                 break
                                             end
@@ -4659,10 +4572,10 @@ function FCOIS.BuildAddonMenu()
                                     setFunc = function(value)
                                         FCOISsettings.autoMarkHigherQuality = value
                                         if FCOISsettings.autoMarkHigherQuality and FCOISsettings.autoMarkQuality ~= 1 and FCOISsettings.autoMarkQuality ~= ITEM_DISPLAY_QUALITY_LEGENDARY then
-                                            scanInventoryItemsForAutomaticMarks(nil, nil, "quality", false)
+                                            FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "quality", false)
                                         end
                                     end,
-                                    disabled = function() return FCOISsettings.autoMarkQuality == 1 or not isIconEnabled[FCOISsettings.autoMarkQualityIconNr] or FCOISsettings.autoMarkQuality == ITEM_DISPLAY_QUALITY_LEGENDARY end,
+                                    disabled = function() return FCOISsettings.autoMarkQuality == 1 or not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkQualityIconNr] or FCOISsettings.autoMarkQuality == ITEM_DISPLAY_QUALITY_LEGENDARY end,
                                     width = "half",
                                     default = FCOISdefaultSettings.autoMarkHigherQuality,
                                 },
@@ -4674,10 +4587,10 @@ function FCOIS.BuildAddonMenu()
                                     setFunc = function(value)
                                         FCOISsettings.autoMarkHigherQualityExcludeArmor = value
                                         if FCOISsettings.autoMarkHigherQuality and FCOISsettings.autoMarkQuality ~= 1 then
-                                            scanInventoryItemsForAutomaticMarks(nil, nil, "quality", false)
+                                            FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "quality", false)
                                         end
                                     end,
-                                    disabled = function() return FCOISsettings.autoMarkQuality == 1 or not isIconEnabled[FCOISsettings.autoMarkQualityIconNr] end,
+                                    disabled = function() return FCOISsettings.autoMarkQuality == 1 or not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkQualityIconNr] end,
                                     width = "half",
                                     default = FCOISdefaultSettings.autoMarkHigherQualityExcludeArmor,
                                 },
@@ -4689,10 +4602,10 @@ function FCOIS.BuildAddonMenu()
                                     setFunc = function(value)
                                         FCOISsettings.autoMarkQualityCheckAllIcons = value
                                         if (FCOISsettings.autoMarkQualityCheckAllIcons == true) then
-                                            scanInventoryItemsForAutomaticMarks(nil, nil, "quality", false)
+                                            FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "quality", false)
                                         end
                                     end,
-                                    disabled = function() return FCOISsettings.autoMarkQuality == 1 or not isIconEnabled[FCOISsettings.autoMarkQualityIconNr] end,
+                                    disabled = function() return FCOISsettings.autoMarkQuality == 1 or not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkQualityIconNr] end,
                                     width = "half",
                                     default = FCOISsettings.autoMarkQualityCheckAllIcons,
                                 },
@@ -4704,7 +4617,7 @@ function FCOIS.BuildAddonMenu()
                                     setFunc = function(value)
                                         FCOISsettings.showQualityItemsInChat = value
                                     end,
-                                    disabled = function() return FCOISsettings.autoMarkQuality == 1 or not isIconEnabled[FCOISsettings.autoMarkQualityIconNr] end,
+                                    disabled = function() return FCOISsettings.autoMarkQuality == 1 or not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkQualityIconNr] end,
                                     width = "half",
                                     default = FCOISdefaultSettings.showQualityItemsInChat,
                                 },
@@ -4732,7 +4645,7 @@ function FCOIS.BuildAddonMenu()
                                             end,
                                             disabled = function()
                                                 return  not FCOIS.otherAddons.LazyWritCreatorActive
-                                                        or (not isIconEnabled[FCOISsettings.autoMarkCraftedWritCreatorItemsIconNr] and isIconEnabled[FCOISsettings.autoMarkCraftedWritCreatorMasterWritItemsIconNr])
+                                                        or (not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkCraftedWritCreatorItemsIconNr] and FCOISsettings.isIconEnabled[FCOISsettings.autoMarkCraftedWritCreatorMasterWritItemsIconNr])
                                             end,
                                             width = "full",
                                             default = FCOISdefaultSettings.autoMarkCraftedWritItems,
@@ -4789,7 +4702,7 @@ function FCOIS.BuildAddonMenu()
                                     setFunc = function(value)
                                         FCOISsettings.autoMarkCraftedItems = value
                                     end,
-                                    disabled = function() return not isIconEnabled[FCOISsettings.autoMarkCraftedItemsIconNr] end,
+                                    disabled = function() return not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkCraftedItemsIconNr] end,
                                     width = "half",
                                     default = FCOISdefaultSettings.autoMarkCraftedItems,
                                 },
@@ -4822,7 +4735,7 @@ function FCOIS.BuildAddonMenu()
                                     setFunc = function(value)
                                         FCOISsettings.autoMarkCraftedItemsSets = value
                                     end,
-                                    disabled = function() return not FCOISsettings.autoMarkCraftedItems or not isIconEnabled[FCOISsettings.autoMarkCraftedItemsIconNr] end,
+                                    disabled = function() return not FCOISsettings.autoMarkCraftedItems or not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkCraftedItemsIconNr] end,
                                     width = "full",
                                     default = FCOISdefaultSettings.autoMarkCraftedItemsSets,
                                 },
@@ -4836,7 +4749,7 @@ function FCOIS.BuildAddonMenu()
                                         FCOISsettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_ALCHEMY] = value
                                         FCOIS.rebuildAllowedCraftSkillsForCraftedMarking(CRAFTING_TYPE_ALCHEMY)
                                     end,
-                                    disabled = function() return not FCOISsettings.autoMarkCraftedItems or not isIconEnabled[FCOISsettings.autoMarkCraftedItemsIconNr] end,
+                                    disabled = function() return not FCOISsettings.autoMarkCraftedItems or not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkCraftedItemsIconNr] end,
                                     width = "full",
                                     default = FCOISdefaultSettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_ALCHEMY],
                                 },
@@ -4849,7 +4762,7 @@ function FCOIS.BuildAddonMenu()
                                         FCOISsettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_BLACKSMITHING] = value
                                         FCOIS.rebuildAllowedCraftSkillsForCraftedMarking(CRAFTING_TYPE_BLACKSMITHING)
                                     end,
-                                    disabled = function() return not FCOISsettings.autoMarkCraftedItems or not isIconEnabled[FCOISsettings.autoMarkCraftedItemsIconNr] end,
+                                    disabled = function() return not FCOISsettings.autoMarkCraftedItems or not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkCraftedItemsIconNr] end,
                                     width = "full",
                                     default = FCOISdefaultSettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_BLACKSMITHING],
                                 },
@@ -4862,7 +4775,7 @@ function FCOIS.BuildAddonMenu()
                                         FCOISsettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_CLOTHIER] = value
                                         FCOIS.rebuildAllowedCraftSkillsForCraftedMarking(CRAFTING_TYPE_CLOTHIER)
                                     end,
-                                    disabled = function() return not FCOISsettings.autoMarkCraftedItems or not isIconEnabled[FCOISsettings.autoMarkCraftedItemsIconNr] end,
+                                    disabled = function() return not FCOISsettings.autoMarkCraftedItems or not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkCraftedItemsIconNr] end,
                                     width = "full",
                                     default = FCOISdefaultSettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_CLOTHIER],
                                 },
@@ -4875,7 +4788,7 @@ function FCOIS.BuildAddonMenu()
                                         FCOISsettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_ENCHANTING] = value
                                         FCOIS.rebuildAllowedCraftSkillsForCraftedMarking(CRAFTING_TYPE_ENCHANTING)
                                     end,
-                                    disabled = function() return not FCOISsettings.autoMarkCraftedItems or not isIconEnabled[FCOISsettings.autoMarkCraftedItemsIconNr] end,
+                                    disabled = function() return not FCOISsettings.autoMarkCraftedItems or not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkCraftedItemsIconNr] end,
                                     width = "full",
                                     default = FCOISdefaultSettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_ENCHANTING],
                                 },
@@ -4888,7 +4801,7 @@ function FCOIS.BuildAddonMenu()
                                         FCOISsettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_PROVISIONING] = value
                                         FCOIS.rebuildAllowedCraftSkillsForCraftedMarking(CRAFTING_TYPE_PROVISIONING)
                                     end,
-                                    disabled = function() return not FCOISsettings.autoMarkCraftedItems or not isIconEnabled[FCOISsettings.autoMarkCraftedItemsIconNr] end,
+                                    disabled = function() return not FCOISsettings.autoMarkCraftedItems or not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkCraftedItemsIconNr] end,
                                     width = "full",
                                     default = FCOISdefaultSettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_PROVISIONING],
                                 },
@@ -4901,7 +4814,7 @@ function FCOIS.BuildAddonMenu()
                                         FCOISsettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_WOODWORKING] = value
                                         FCOIS.rebuildAllowedCraftSkillsForCraftedMarking(CRAFTING_TYPE_WOODWORKING)
                                     end,
-                                    disabled = function() return not FCOISsettings.autoMarkCraftedItems or not isIconEnabled[FCOISsettings.autoMarkCraftedItemsIconNr] end,
+                                    disabled = function() return not FCOISsettings.autoMarkCraftedItems or not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkCraftedItemsIconNr] end,
                                     width = "full",
                                     default = FCOISdefaultSettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_WOODWORKING],
                                 },
@@ -4914,7 +4827,7 @@ function FCOIS.BuildAddonMenu()
                                         FCOISsettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_JEWELRYCRAFTING] = value
                                         FCOIS.rebuildAllowedCraftSkillsForCraftedMarking(CRAFTING_TYPE_JEWELRYCRAFTING)
                                     end,
-                                    disabled = function() return not FCOISsettings.autoMarkCraftedItems or not isIconEnabled[FCOISsettings.autoMarkCraftedItemsIconNr] end,
+                                    disabled = function() return not FCOISsettings.autoMarkCraftedItems or not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkCraftedItemsIconNr] end,
                                     width = "full",
                                     default = FCOISdefaultSettings.allowedCraftSkillsForCraftedMarking[CRAFTING_TYPE_JEWELRYCRAFTING],
                                 },
@@ -4935,10 +4848,10 @@ function FCOIS.BuildAddonMenu()
                                     setFunc = function(value)
                                         FCOISsettings.autoMarkNewItems = value
                                         if (FCOISsettings.autoMarkNewItems == true) then
-                                            scanInventoryItemsForAutomaticMarks(nil, nil, "new", false)
+                                            FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "new", false)
                                         end
                                     end,
-                                    disabled = function() return not isIconEnabled[FCOISsettings.autoMarkNewIconNr] end,
+                                    disabled = function() return not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkNewIconNr] end,
                                     width = "half",
                                     default = FCOISdefaultSettings.autoMarkNewItems,
                                 },
@@ -4958,18 +4871,6 @@ function FCOIS.BuildAddonMenu()
                                     disabled = function() return not FCOISsettings.autoMarkNewItems end,
                                     width = "half",
                                     default = FCOISdefaultSettings.autoMarkNewIconNr,
-                                },
-                                {
-                                    type = "checkbox",
-                                    name = locVars["options_enable_auto_mark_check_all_icons"],
-                                    tooltip = locVars["options_enable_auto_mark_check_all_icons" .. tooltipSuffix],
-                                    getFunc = function() return FCOISsettings.autoMarkNewItemsCheckOthers end,
-                                    setFunc = function(value)
-                                        FCOISsettings.autoMarkNewItemsCheckOthers = value
-                                    end,
-                                    disabled = function() return not FCOISsettings.autoMarkNewItems or not isIconEnabled[FCOISsettings.autoMarkNewIconNr] end,
-                                    width = "half",
-                                    default = FCOISdefaultSettings.autoMarkNewItemsCheckOthers,
                                 },
                             } -- controls new
                         }, -- submenu new
@@ -5188,7 +5089,7 @@ function FCOIS.BuildAddonMenu()
                                     getFunc = function() return FCOISsettings.allowInventoryFilter end,
                                     setFunc = function(value) FCOISsettings.allowInventoryFilter = value
                                         --Hide the filter buttons at the filter panel Id
-                                        FCOIS.UpdateFCOISFilterButtonsAtInventory(-1)
+                                        FCOIS.updateFilterButtonsInInv(-1)
                                         --Unregister and reregister the inventory filter LF_INVENTORY
                                         FCOIS.EnableFilters(-100)
                                     end,
@@ -5373,15 +5274,6 @@ function FCOIS.BuildAddonMenu()
                                     setFunc = function(value) FCOISsettings.allowRetraitFilter = value
                                     end,
                                     default = FCOISdefaultSettings.allowRetraitFilter,
-                                },
-                                {
-                                    type = "checkbox",
-                                    name = locVars["options_enable_filter_in_companion_inventory"],
-                                    tooltip = locVars["options_enable_filter_in_companion_inventory" .. tooltipSuffix],
-                                    getFunc = function() return FCOISsettings.allowCompanionInventoryFilter end,
-                                    setFunc = function(value) FCOISsettings.allowCompanionInventoryFilter = value
-                                    end,
-                                    default = FCOISdefaultSettings.allowCompanionInventoryFilter,
                                 },
                                 --==============================================================================
                                 {
@@ -6464,9 +6356,9 @@ function FCOIS.BuildAddonMenu()
                             getFunc = function() return FCOISsettings.splitLockDynFilter end,
                             setFunc = function(value) FCOISsettings.splitLockDynFilter = value
                                 --Change the gear sets filter context-menu button's texture
-                                local lockDynSplitFilterContextMenuButton = wm:GetControlByName(FCOIS.ZOControlVars.FCOISfilterButtonNames[FCOIS_CON_FILTER_BUTTON_LOCKDYN], "")
+                                local lockDynSplitFilterContextMenuButton = WINDOW_MANAGER:GetControlByName(FCOIS.ZOControlVars.FCOISfilterButtonNames[FCOIS_CON_FILTER_BUTTON_LOCKDYN], "")
                                 if lockDynSplitFilterContextMenuButton ~= nil then
-                                    updateFCOISFilterButtonColorsAndTextures(1, lockDynSplitFilterContextMenuButton, nil, LF_INVENTORY)
+                                    FCOIS.UpdateButtonColorsAndTextures(1, lockDynSplitFilterContextMenuButton, nil, LF_INVENTORY)
                                     FCOIS.FilterBasics(true)
                                 end
                             end,
@@ -6479,9 +6371,9 @@ function FCOIS.BuildAddonMenu()
                             getFunc = function() return FCOISsettings.splitGearSetsFilter end,
                             setFunc = function(value) FCOISsettings.splitGearSetsFilter = value
                                 --Change the gear sets filter context-menu button's texture
-                                local gearSetSplitFilterContextMenuButton = wm:GetControlByName(FCOIS.ZOControlVars.FCOISfilterButtonNames[FCOIS_CON_FILTER_BUTTON_GEARSETS], "")
+                                local gearSetSplitFilterContextMenuButton = WINDOW_MANAGER:GetControlByName(FCOIS.ZOControlVars.FCOISfilterButtonNames[FCOIS_CON_FILTER_BUTTON_GEARSETS], "")
                                 if gearSetSplitFilterContextMenuButton ~= nil then
-                                    updateFCOISFilterButtonColorsAndTextures(2, gearSetSplitFilterContextMenuButton, nil, LF_INVENTORY)
+                                    FCOIS.UpdateButtonColorsAndTextures(2, gearSetSplitFilterContextMenuButton, nil, LF_INVENTORY)
                                     FCOIS.FilterBasics(true)
                                 end
                             end,
@@ -6494,9 +6386,9 @@ function FCOIS.BuildAddonMenu()
                             getFunc = function() return FCOISsettings.splitResearchDeconstructionImprovementFilter end,
                             setFunc = function(value) FCOISsettings.splitResearchDeconstructionImprovementFilter = value
                                 --Change the gear sets filter context-menu button's texture
-                                local resDecSplitFilterContextMenuButton = wm:GetControlByName(FCOIS.ZOControlVars.FCOISfilterButtonNames[FCOIS_CON_FILTER_BUTTON_RESDECIMP], "")
+                                local resDecSplitFilterContextMenuButton = WINDOW_MANAGER:GetControlByName(FCOIS.ZOControlVars.FCOISfilterButtonNames[FCOIS_CON_FILTER_BUTTON_RESDECIMP], "")
                                 if resDecSplitFilterContextMenuButton ~= nil then
-                                    updateFCOISFilterButtonColorsAndTextures(3, resDecSplitFilterContextMenuButton, nil, LF_INVENTORY)
+                                    FCOIS.UpdateButtonColorsAndTextures(3, resDecSplitFilterContextMenuButton, nil, LF_INVENTORY)
                                     FCOIS.FilterBasics(true)
                                 end
                             end,
@@ -6509,9 +6401,9 @@ function FCOIS.BuildAddonMenu()
                             getFunc = function() return FCOISsettings.splitSellGuildSellIntricateFilter end,
                             setFunc = function(value) FCOISsettings.splitSellGuildSellIntricateFilter = value
                                 --Change the gear sets filter context-menu button's texture
-                                local sellGuildIntSplitFilterContextMenuButton = wm:GetControlByName(FCOIS.ZOControlVars.FCOISfilterButtonNames[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT], "")
+                                local sellGuildIntSplitFilterContextMenuButton = WINDOW_MANAGER:GetControlByName(FCOIS.ZOControlVars.FCOISfilterButtonNames[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT], "")
                                 if sellGuildIntSplitFilterContextMenuButton ~= nil then
-                                    updateFCOISFilterButtonColorsAndTextures(4, sellGuildIntSplitFilterContextMenuButton, nil, LF_INVENTORY)
+                                    FCOIS.UpdateButtonColorsAndTextures(4, sellGuildIntSplitFilterContextMenuButton, nil, LF_INVENTORY)
                                     FCOIS.FilterBasics(true)
                                 end
                             end,
@@ -6607,7 +6499,7 @@ function FCOIS.BuildAddonMenu()
                             setFunc = function(value) FCOISsettings.showFCOISAdditionalInventoriesButton = value
                                 if value == false then
                                     --Change the button color of the context menu invoker
-                                    changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
+                                    FCOIS.changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
                                 end
                                 FCOIS.AddAdditionalButtons("FCOInventoriesContextMenuButtons")
                             end,
@@ -6620,7 +6512,7 @@ function FCOIS.BuildAddonMenu()
                             getFunc = function() return FCOISsettings.colorizeFCOISAdditionalInventoriesButton end,
                             setFunc = function(value) FCOISsettings.colorizeFCOISAdditionalInventoriesButton = value
                                 --Change the button color of the context menu invoker
-                                changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
+                                FCOIS.changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
                             end,
                             disabled = function() return not FCOISsettings.showFCOISAdditionalInventoriesButton end,
                             default = FCOISdefaultSettings.colorizeFCOISAdditionalInventoriesButton,
@@ -6716,7 +6608,7 @@ function FCOIS.BuildAddonMenu()
                     getFunc = function() return FCOISsettings.armorTypeIconAtCharacterX end,
                     setFunc = function(offset)
                         FCOISsettings.armorTypeIconAtCharacterX = offset
-                        countAndUpdateEquippedArmorTypes()
+                        FCOIS.countAndUpdateEquippedArmorTypes()
                     end,
                     disabled = function() return not FCOISsettings.showArmorTypeIconAtCharacter end,
                     width="half",
@@ -6732,7 +6624,7 @@ function FCOIS.BuildAddonMenu()
                     getFunc = function() return FCOISsettings.armorTypeIconAtCharacterY end,
                     setFunc = function(offset)
                         FCOISsettings.armorTypeIconAtCharacterY = offset
-                        countAndUpdateEquippedArmorTypes()
+                        FCOIS.countAndUpdateEquippedArmorTypes()
                     end,
                     disabled = function() return not FCOISsettings.showArmorTypeIconAtCharacter end,
                     width="half",
@@ -6745,7 +6637,7 @@ function FCOIS.BuildAddonMenu()
                     getFunc = function() return FCOISsettings.armorTypeIconAtCharacterLightColor.r, FCOISsettings.armorTypeIconAtCharacterLightColor.g, FCOISsettings.armorTypeIconAtCharacterLightColor.b, FCOISsettings.armorTypeIconAtCharacterLightColor.a end,
                     setFunc = function(r,g,b,a)
                         FCOISsettings.armorTypeIconAtCharacterLightColor = {["r"] = r, ["g"] = g, ["b"] = b, ["a"] = a}
-                        countAndUpdateEquippedArmorTypes()
+                        FCOIS.countAndUpdateEquippedArmorTypes()
                     end,
                     width = "full",
                     disabled = function() return not FCOISsettings.showArmorTypeIconAtCharacter end,
@@ -6758,7 +6650,7 @@ function FCOIS.BuildAddonMenu()
                     getFunc = function() return FCOISsettings.armorTypeIconAtCharacterMediumColor.r, FCOISsettings.armorTypeIconAtCharacterMediumColor.g, FCOISsettings.armorTypeIconAtCharacterMediumColor.b, FCOISsettings.armorTypeIconAtCharacterMediumColor.a end,
                     setFunc = function(r,g,b,a)
                         FCOISsettings.armorTypeIconAtCharacterMediumColor = {["r"] = r, ["g"] = g, ["b"] = b, ["a"] = a}
-                        countAndUpdateEquippedArmorTypes()
+                        FCOIS.countAndUpdateEquippedArmorTypes()
                     end,
                     width = "full",
                     disabled = function() return not FCOISsettings.showArmorTypeIconAtCharacter end,
@@ -6771,7 +6663,7 @@ function FCOIS.BuildAddonMenu()
                     getFunc = function() return FCOISsettings.armorTypeIconAtCharacterHeavyColor.r, FCOISsettings.armorTypeIconAtCharacterHeavyColor.g, FCOISsettings.armorTypeIconAtCharacterHeavyColor.b, FCOISsettings.armorTypeIconAtCharacterHeavyColor.a end,
                     setFunc = function(r,g,b,a)
                         FCOISsettings.armorTypeIconAtCharacterHeavyColor = {["r"] = r, ["g"] = g, ["b"] = b, ["a"] = a}
-                        countAndUpdateEquippedArmorTypes()
+                        FCOIS.countAndUpdateEquippedArmorTypes()
                     end,
                     width = "full",
                     disabled = function() return not FCOISsettings.showArmorTypeIconAtCharacter end,
@@ -7345,10 +7237,10 @@ function FCOIS.BuildAddonMenu()
 
 
     } -- END OF OPTIONS TABLE
-    cm:RegisterCallback("LAM-PanelControlsCreated", FCOLAMPanelCreated)
-    --cm:RegisterCallback("LAM-RefreshPanel", FCOLAMPanelRefreshed)
-    cm:RegisterCallback("LAM-PanelOpened", FCOLAMPanelOpened)
-    cm:RegisterCallback("LAM-PanelClosed", FCOLAMPanelClosed)
+    CALLBACK_MANAGER:RegisterCallback("LAM-PanelControlsCreated", FCOLAMPanelCreated)
+    --CALLBACK_MANAGER:RegisterCallback("LAM-RefreshPanel", FCOLAMPanelRefreshed)
+    CALLBACK_MANAGER:RegisterCallback("LAM-PanelOpened", FCOLAMPanelOpened)
+    CALLBACK_MANAGER:RegisterCallback("LAM-PanelClosed", FCOLAMPanelClosed)
 
 
     FCOIS.LAM:RegisterOptionControls(FCOIS.addonVars.gAddonName .. "_LAM", optionsTable)

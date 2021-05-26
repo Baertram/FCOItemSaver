@@ -1,157 +1,156 @@
-#
+##
 ## Title: |c00FF00FCO |cFFFF00ItemSaver|t32:32:FCOItemSaver/FCOIS.dds|t
 ## Author: Baertram
-## Version: 2.1.0
-## AddOnVersion: 210
-## APIVersion: 100035 100036
+## Version: 2.0.3
+## AddOnVersion: 203
+## APIVersion: 100034 100035
 ## Description: FCOIS |t32:32:FCOItemSaver/FCOIS.dds|t Marks your items with different icons and filters them in the inventories/crafting. Protects your marked items against sell/deconstruct/extract etc., and provides many more features!
 ## SavedVariables: FCOItemSaver_Settings
-# !!! Attention !!! -> 1 line here can only contain ~220 characters, so the depency lines need to be split up, or they won't be recognized properly!
-#
-## DependsOn: LibAddonMenu-2.0>=32 LibCustomMenu>=695 LibDialog>=123 LibFeedback LibFilters-3.0>=321 LibLoadedAddons>=14
-## DependsOn: LibMainMenu-2.0>=436 LibShifterBox>=17 LibSets>=000209 LibAddonMenuOrderListBox
+## !!! Attention !!! -> 1 line here can only contain ~220 characters, so the dependency lines need to be split up, or they won't be recognized properly!
 ##
+## DependsOn: LibAddonMenu-2.0>=32 LibCustomMenu>=695 LibDialog>=123 LibFeedback LibFilters-3.0>=320 LibLoadedAddons>=14
+## DependsOn: LibMainMenu-2.0>=40400 LibShifterBox>=17 LibAddonMenuOrderListBox
 ## OptionalDependsOn: LibDebugLogger>=200 LibLazyCrafting>=3000
 ## OptionalDependsOn: LibMultiAccountSets>=10
-#
+## OptionalDependsOn: LibSets>=000300
+##
 ## OptionalDependsOn: AdvancedDisableControllerUI AdvancedFilters AF_FCODuplicateItemsFilters
 ## OptionalDependsOn: CraftBagExtended
 ## OptionalDependsOn: DolgubonsLazyWritCreator
 ## OptionalDependsOn: SetTracker SousChef
 
-# These addons were in the OptionalDependsOn before but raised circular dependencies. They are kept as reference at the tag BetterWith.
-# BetterWith: ChatMerchant CraftedPotions DetailedResearchScrolls GridList InventoryGridView PotionMaker QualitySort ResearchAssistant VotansSettingsMenu
+## These addons were in the OptionalDependsOn before but raised circular dependencies. They are kept as reference at the tag BetterWith.
+## BetterWith: ChatMerchant CraftedPotions DetailedResearchScrolls GridList InventoryGridView PotionMaker QualitySort ResearchAssistant VotansSettingsMenu
 
-#(Check file FCOIS_Constants.lua for local and global constant values
-#(Check file FCOIS_API.lua for functions to use within your addon)
+##(Check file FCOIS_Constants.lua for local and global constant values
+##(Check file FCOIS_API.lua for functions to use within your addon)
 
-#Known addons with FCOIS function usage:
-#-----------------------------------------------------------------
-#AlphaGear 2
-#AutoCategory
-#BankManagerRevived
-#CDGBankStack
-#CraftStoreFixedAndImproved
-#DoItAll
-#Dustman
-#GridList
-#Inventory Assistant
-#InventoryGridView
-#Inventory Insight (from Ashes -> IIfA)
-#InventoryManager
-#ItemTrig
-#KhrillMasterCook
-#KhrillMerlinTheEnchanter
-#MailerDemon
-#MassDeconstructor
-#PersonalAssistant (Banking, Junk, Loot, Repair)
-#PotionMaker
-#QuickEnchanter
-#RulebasedInventory
-#SetTracker
-#WishList
+##Known addons with FCOIS function usage:
+##-----------------------------------------------------------------
+##AlphaGear 2
+##AutoCategory
+##BankManagerRevived
+##CDGBankStack
+##CraftStoreFixedAndImproved
+##DoItAll
+##Dustman
+##GridList
+##Inventory Assistant
+##InventoryGridView
+##Inventory Insight (from Ashes -> IIfA)
+##InventoryManager
+##ItemTrig
+##KhrillMasterCook
+##KhrillMerlinTheEnchanter
+##MailerDemon
+##MassDeconstructor
+##PersonalAssistant (Banking, Junk, Loot, Repair)
+##PotionMaker
+##QuickEnchanter
+##RulebasedInventory
+##SetTracker
 
-# Addon variables & constants
+## Addon variables & constants
 FCOIS_Constants.lua
 
-# Addon textures
+## Addon textures
 src/FCOIS_Textures.lua
 
-# Addon debugging
+## Addon debugging
 src/FCOIS_Debug.lua
 
-# Addon default settings
+## Addon default settings
 src/FCOIS_DefaultSettings.lua
 
-# Addon workarounds
+## Addon workarounds
 src/FCOIS_Workarounds.lua
 
-# Addon Is, Get, Set functions
+## Addon Is, Get, Set functions
 src/FCOIS_Functions.lua
 
-# Addon settings
+## Addon settings
 src/FCOIS_Settings.lua
 
-# Addon localization
+## Addon localization
 src/FCOIS_Localization.lua
 
-# Addon anti-* protection methods
-src/FCOIS_Protection.lua
-
-# Addon dialogs
+## Addon dialogs
 src/FCOIS_Dialogs.lua
 
-# Addon Refresh functions for the inventories
+## Addon Refresh functions for the inventories
 src/FCOIS_Refresh.lua
 
-# Addon panel functions
+## Addon panel functions
 src/FCOIS_Panels.lua
 
-# Addon hook & pre-hook / scene & fragment callbacks
+## Addon hook & pre-hook / scene & fragment callbacks
 src/FCOIS_Hooks.lua
 
-# Other addons functions source
+## Other addons functions source
 src/FCOIS_OtherAddons.lua
 
-# Addon inventory scanning & automatic item marking
+## Addon inventory scanning & automatic item marking
 src/FCOIS_AutomaticMarks.lua
 
-# Migration of data
+## Migration of data
 src/FCOIS_Migration.lua
 
-# Addon marker controls & tooltips at inventories/equipment items
+## Addon marker controls & tooltips at inventories/equipment items
 src/FCOIS_Tooltips.lua
 src/FCOIS_MarkerIcons.lua
 
-# Addon filter functions
-src/FCOIS_Filters.lua
-
-# Addon filter buttons in inventories
+## Addon filter buttons in inventories
 src/FCOIS_FilterButtons.lua
 
-# Addon additional buttons in inventories (flag) and main menu
+## Addon additional buttons in inventories (flag) and main menu
 src/FCOIS_AdditionalButtons.lua
 
-# Addon context menus (additional inv buttons, filter buttons)
-src/FCOIS_ContextMenus.lua
-
-# Addon events
+## Addon events
 src/FCOIS_Events.lua
 
-# Addon slash commands
+## Addon context menus (additional inv buttons, filter buttons)
+src/FCOIS_ContextMenus.lua
+
+## Addon slash commands
 src/FCOIS_SlashCmds.lua
 
-# Addon main source
+## Addon filter functions
+src/FCOIS_Filters.lua
+
+## Addon source
 FCOItemSaver.lua
 
-# Addon feedback functions
+## Addon feedback functions
 src/FCOIS_Feedback.lua
 
-# Addon API functions source
+## Addon anti-* protection methods
+src/FCOIS_Protection.lua
+
+## Addon API functions source
 FCOIS_API.lua
 
-# Addon Dialogs XML
+## Addon Dialogs XML
 Dialogs/AskBeforeBind/FCOIS_AskBeforeBindDialog.xml
 Dialogs/AskBeforeMigrate/FCOIS_AskBeforeMigrateDialog.xml
 Dialogs/AskProtection/FCOIS_AskProtectionDialog.xml
 
-# Localization
+## Localization
 Localization/FCOItemSaverLoc.lua
 
-# Keybindings
+## Keybindings
 Bindings/bindings.lua
 Bindings/bindings.xml
 
-# Backup and restore
+## Backup and restore
 src/FCOIS_Backup.lua
 
-# LibShifterBox boxes and functions
+## LibShifterBox boxes and functions
 src/FCOIS_LibShifterBox.lua
 
-# Addon LAM settings menu
+## Addon LAM settings menu
 src/FCOIS_SettingsMenu.lua
 
-# Addon XML - Tooltips
+## Addon XML - Tooltips
 src/XML/FCOIS_tooltips.xml
 
 ; DISCLOSURE:

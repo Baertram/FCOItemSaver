@@ -60,8 +60,7 @@ function FCOIS.LoadWorkarounds()
 
     --FCOIS v0.8.7h
     --For dynamic icons:
-    --Update the anti settings at the panels where there is no own option to change it (bank deposit, guild bank deposit,
-    --bank withdraw, guild bank withdraw, ...)
+    --Update the anti settings at the panels where there is no own option to change it (bank deposit, guild bank deposit, bank withdraw, guild bank withdraw, ...)
     --so the Anti-Destroy and ItemSelectionHandler functions return the anti-settings "enabled"
     for iconNr, _ in pairs(FCOIS.mappingVars.iconToDynamic) do
         local invValue = settings.icon[iconNr].antiCheckAtPanel[LF_INVENTORY]
@@ -71,7 +70,5 @@ function FCOIS.LoadWorkarounds()
         FCOIS.updateAntiCheckAtPanelVariable(iconNr, LF_SMITHING_RESEARCH, true)
         --FCOIS v.1.4.4
         FCOIS.updateAntiCheckAtPanelVariable(iconNr, LF_JEWELRY_RESEARCH, true)
-        --FCOIS v.2.0.4
-        FCOIS.updateAntiCheckAtPanelVariable(iconNr, LF_INVENTORY_COMPANION, true)
     end
 end

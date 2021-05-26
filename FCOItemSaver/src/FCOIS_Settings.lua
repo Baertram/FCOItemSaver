@@ -21,7 +21,7 @@ local svSettingsForAllName  = FCOIS.svSettingsForAllName
 local svSettingsName        = FCOIS.svSettingsName
 local svSettingsForEachCharacterName = FCOIS.svSettingsForEachCharacterName
 
-local getFCOISMarkerIconSavedVariablesItemId = FCOIS.GetFCOISMarkerIconSavedVariablesItemId
+local GetFCOISMarkerIconSavedVariablesItemId = FCOIS.GetFCOISMarkerIconSavedVariablesItemId
 --==========================================================================================================================================
 -- 										FCOIS settings & saved variables functions
 --==========================================================================================================================================
@@ -194,8 +194,6 @@ function FCOIS.getFilterWhereBySettings(p_filterWhere, onlyAnti)
             FCOIS.settingsVars.settings.atPanelEnabled[p_filterWhere]["filters"] = settingsAllowed.allowJewelryResearchFilter
         elseif (p_filterWhere == LF_JEWELRY_RESEARCH_DIALOG ) then
             FCOIS.settingsVars.settings.atPanelEnabled[p_filterWhere]["filters"] = settingsAllowed.allowJewelryResearchFilter
-        elseif (p_filterWhere == LF_INVENTORY_COMPANION ) then
-            FCOIS.settingsVars.settings.atPanelEnabled[p_filterWhere]["filters"] = settingsAllowed.allowCompanionInventoryFilter
         end
     end
 
@@ -476,7 +474,7 @@ function FCOIS.autoReenableAntiSettingsCheck(checkWhere)
     end
     --Workaround to enable the correct additional inventory context menu invoker button color for the normal inventory again
     --as multiple panels are using the LF_INVENTORY flag (mail, trade, inventory, ...)
-    FCOIS.ChangeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
+    FCOIS.changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
 end
 
 
@@ -507,16 +505,15 @@ local function scanBagsAndTransferMarkerIcon(toUnique)
 
     local useUniqueIds = settings.useUniqueIds
     local uniqueItemIdType = settings.uniqueItemIdType
-    local preChatVars = FCOIS.preChatVars
 
     if uniqueIdWasLastEnabled == nil then
         --Unknown state of useUniqueId before reloadui -> Abort
-        d(preChatVars.preChatTextRed .. zo_strformat(locVars["options_migrate_end"], "ERROR - Unknown state of useUniqueId before reloadui"))
+        d(FCOIS.preChatVars.preChatTextRed .. zo_strformat(locVars["options_migrate_end"], "ERROR - Unknown state of useUniqueId before reloadui"))
         return
     else
         if uniqueIdTypeLastUsed == nil then
             --Unknown state of uniqueItemIdType before reloadui -> Abort
-            d(preChatVars.preChatTextRed .. zo_strformat(locVars["options_migrate_end"], "ERROR - Unknown state of chosen uniqueIdType before reloadui"))
+            d(FCOIS.preChatVars.preChatTextRed .. zo_strformat(locVars["options_migrate_end"], "ERROR - Unknown state of chosen uniqueIdType before reloadui"))
             return
         end
     end
@@ -525,7 +522,7 @@ local function scanBagsAndTransferMarkerIcon(toUnique)
     if toUnique == true then
         if not useUniqueIds or uniqueItemIdType == nil then
             --Non-unique ID enabled -> Abort
-            d(preChatVars.preChatTextRed .. zo_strformat(locVars["options_migrate_end"], "ERROR - Migration to uniqueId not possible if currently non-unique ID is enabled in the settings"))
+            d(FCOIS.preChatVars.preChatTextRed .. zo_strformat(locVars["options_migrate_end"], "ERROR - Migration to uniqueId not possible if currently non-unique ID is enabled in the settings"))
             return
         end
 
@@ -533,17 +530,17 @@ local function scanBagsAndTransferMarkerIcon(toUnique)
         if uniqueIdWasLastEnabled == true then
             --Migrate from uniqueId to uniqueId: Check if the last used uniqueId type is not the same as now
             if uniqueIdTypeLastUsed ~= uniqueItemIdType then
-                d(preChatVars.preChatTextBlue .. "Migration of unique IDs type: " .. tostring(uniqueIdTypeLastUsed) .."  to uniqueIds type: " ..tostring(uniqueItemIdType))
+                d(FCOIS.preChatVars.preChatTextBlue .. "Migration of unique IDs type: " .. tostring(uniqueIdTypeLastUsed) .."  to uniqueIds type: " ..tostring(uniqueItemIdType))
                 --Get the old "from" SavedVariables table name -> non-unique entry
                 savedVarsMarkedItemsTableNameOld = getSavedVarsMarkedItemsTableName(uniqueIdTypeLastUsed)
             else
                 --Last used type was the same uniqueId type. No migration needed -> Abort
-                d(preChatVars.preChatTextRed .. zo_strformat(locVars["options_migrate_end"], "No migration needed - Last used type was the same uniqueId type"))
+                d(FCOIS.preChatVars.preChatTextRed .. zo_strformat(locVars["options_migrate_end"], "No migration needed - Last used type was the same uniqueId type"))
                 return
             end
         --UniqueId was not enabled before. Migrating non-unique to unique
         else
-            d(preChatVars.preChatTextBlue .. "Migration of non-unique IDs to uniqueIds type: " ..tostring(uniqueItemIdType))
+            d(FCOIS.preChatVars.preChatTextBlue .. "Migration of non-unique IDs to uniqueIds type: " ..tostring(uniqueItemIdType))
             --Get the old "from" SavedVariables table name -> non-unique entry
             savedVarsMarkedItemsTableNameOld = getSavedVarsMarkedItemsTableName(false)
         end
@@ -555,19 +552,19 @@ local function scanBagsAndTransferMarkerIcon(toUnique)
     else
         if useUniqueIds == true then
             --Unique ID enabled -> Abort
-            d(preChatVars.preChatTextRed .. zo_strformat(locVars["options_migrate_end"], "ERROR - Migration to non-uniqueId not possible if currently unique ID is enabled in the settings"))
+            d(FCOIS.preChatVars.preChatTextRed .. zo_strformat(locVars["options_migrate_end"], "ERROR - Migration to non-uniqueId not possible if currently unique ID is enabled in the settings"))
             return
         end
 
         --Was the uniqueID enabled before the migration? Migrating unique to non-unique then
         if uniqueIdWasLastEnabled == true then
-            d(preChatVars.preChatTextBlue .. "Migration of unique IDs type: " .. tostring(uniqueIdTypeLastUsed) .."  to non-uniqueIds")
+            d(FCOIS.preChatVars.preChatTextBlue .. "Migration of unique IDs type: " .. tostring(uniqueIdTypeLastUsed) .."  to non-uniqueIds")
             --Get the old "from" SavedVariables table name -> non-unique entry
             savedVarsMarkedItemsTableNameOld = getSavedVarsMarkedItemsTableName(uniqueIdTypeLastUsed)
         --UniqueId was not enabled before. Migrating non-unique to non-unique
         else
             --Last used type was the same non-uniqueId type. No migration needed -> Abort
-            d(preChatVars.preChatTextRed .. zo_strformat(locVars["options_migrate_end"], "No migration needed - Last used was also non-unique ID"))
+            d(FCOIS.preChatVars.preChatTextRed .. zo_strformat(locVars["options_migrate_end"], "No migration needed - Last used was also non-unique ID"))
             return
         end
 
@@ -575,21 +572,20 @@ local function scanBagsAndTransferMarkerIcon(toUnique)
         savedVarsMarkedItemsTableNameNew = getSavedVarsMarkedItemsTableName(false)
     end
     if not savedVarsMarkedItemsTableNameOld then
-        d(preChatVars.preChatTextRed .. zo_strformat(locVars["options_migrate_end"], "ERROR - Last used SavedVariables table unknown"))
+        d(FCOIS.preChatVars.preChatTextRed .. zo_strformat(locVars["options_migrate_end"], "ERROR - Last used SavedVariables table unknown"))
         return
     end
     if not savedVarsMarkedItemsTableNameNew then
-        d(preChatVars.preChatTextRed .. zo_strformat(locVars["options_migrate_end"], "ERROR - New SavedVariables table unknown"))
+        d(FCOIS.preChatVars.preChatTextRed .. zo_strformat(locVars["options_migrate_end"], "ERROR - New SavedVariables table unknown"))
         return
     end
 ------------------------------------------------------------------------------------------------------------------------
     --Check the bag
     local bagsToCheck = {
-        BAG_WORN,
-        BAG_BACKPACK,
-        BAG_BANK,
-        --BAG_GUILDBANK,
-        BAG_COMPANION_WORN,
+        [0] = BAG_WORN,
+        [1] = BAG_BACKPACK,
+        [2] = BAG_BANK,
+        --[3] = BAG_GUILDBANK,
     }
     --Is the user an ESO+ subscriber?
     if IsESOPlusSubscriber() then
@@ -605,7 +601,7 @@ local function scanBagsAndTransferMarkerIcon(toUnique)
         local numMigratedIcons = 0
         local numMigratedItems = 0
         --Migration started for bag type
-        d(preChatVars.preChatTextGreen .. zo_strformat(locVars["options_migrate_start"], locVars["options_migrate_bag_type_" .. bagToCheck]))
+        d(FCOIS.preChatVars.preChatTextGreen .. zo_strformat(locVars["options_migrate_start"], locVars["options_migrate_bag_type_" .. bagToCheck]))
         --local bagCache = SHARED_INVENTORY:GenerateFullSlotData(nil, bagToCheck)
         local bagCache = SHARED_INVENTORY:GetOrCreateBagCache(bagToCheck)
 ------------------------------------------------------------------------------------------------------------------------
@@ -622,7 +618,7 @@ local function scanBagsAndTransferMarkerIcon(toUnique)
             if toUnique == true then
                 --Build the itemID -> FROM
                 -->Could be a uniqueId or a non-unique itemInstanceId
-                itemId, allowedItemType = getFCOISMarkerIconSavedVariablesItemId(bagId, slotIndex, nil, uniqueIdWasLastEnabled, uniqueIdTypeLastUsed)
+                itemId, allowedItemType = GetFCOISMarkerIconSavedVariablesItemId(bagId, slotIndex, nil, uniqueIdWasLastEnabled, uniqueIdTypeLastUsed)
                 --[[
                 if uniqueIdWasLastEnabled == true then
                     --UniqueId -> FROM
@@ -644,7 +640,7 @@ local function scanBagsAndTransferMarkerIcon(toUnique)
                 end
                 ]]
                 --Build the newItemId -> TO
-                itemIdNew, allowedItemTypeNew = getFCOISMarkerIconSavedVariablesItemId(bagId, slotIndex, nil, useUniqueIds, uniqueItemIdType)
+                itemIdNew, allowedItemTypeNew = GetFCOISMarkerIconSavedVariablesItemId(bagId, slotIndex, nil, useUniqueIds, uniqueItemIdType)
                 --[[
                 if allowedItemType == true then
                     --Check which uniqueId type is currently setup in the FCOIS settings
@@ -665,7 +661,7 @@ local function scanBagsAndTransferMarkerIcon(toUnique)
             else
                 --Build the itemID -> FROM
                 -->Could be only a non-unique itemInstanceId
-                itemId, allowedItemType = getFCOISMarkerIconSavedVariablesItemId(bagId, slotIndex, nil, uniqueIdWasLastEnabled, uniqueIdTypeLastUsed)
+                itemId, allowedItemType = GetFCOISMarkerIconSavedVariablesItemId(bagId, slotIndex, nil, uniqueIdWasLastEnabled, uniqueIdTypeLastUsed)
                 --[[
                 if allowedItemType == true then
                     if not uniqueIdTypeLastUsed or uniqueIdTypeLastUsed == FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE then
@@ -717,9 +713,9 @@ FCOIS["_migrated" .. savedVarsMarkedItemsTableNameNew][iconId][itemIdNew] = true
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
         --Migration results for bag type
-        d(preChatVars.preChatTextBlue .. zo_strformat(locVars["options_migrate_results"], numMigratedIcons, numMigratedItems))
+        d(FCOIS.preChatVars.preChatTextBlue .. zo_strformat(locVars["options_migrate_results"], numMigratedIcons, numMigratedItems))
         --Migration end for bag type
-        d(preChatVars.preChatTextRed .. zo_strformat(locVars["options_migrate_end"], locVars["options_migrate_bag_type_" .. bagToCheck]))
+        d(FCOIS.preChatVars.preChatTextRed .. zo_strformat(locVars["options_migrate_end"], locVars["options_migrate_bag_type_" .. bagToCheck]))
     end -- for bagType
     --Reset the "migration needs to be done" variable
     FCOIS.preventerVars.migrateItemMarkers = false
@@ -758,7 +754,6 @@ function FCOIS.afterSettings()
     local icon2Dynamic = FCOIS.mappingVars.iconToDynamic
     local iconIsDynamic = FCOIS.mappingVars.iconIsDynamic
     local mappingVars = FCOIS.mappingVars
-    local ctrlVars = FCOIS.ZOControlVars
 
     --Set the split filters to nil as it was removed years ago!
     settings.splitFilters = nil
@@ -813,7 +808,7 @@ function FCOIS.afterSettings()
     --Build the additional inventory "flag" context menu button data, which depends on the here before set values
     --FCOIS.numVars.gFCONumDynamicIcons and FCOIS.settingsVars.settings.numMaxDynamicIconsUsable
     --> See file src/FCOIS_ContextMenus.lua, function FCOIS.buildAdditionalInventoryFlagContextMenuData(calledFromFCOISSettings)
-    FCOIS.BuildAdditionalInventoryFlagContextMenuData(true)
+    FCOIS.buildAdditionalInventoryFlagContextMenuData(true)
 
     --Preset global variable for item destroying
     FCOIS.preventerVars.gAllowDestroyItem = not settings.blockDestroying
@@ -855,16 +850,15 @@ function FCOIS.afterSettings()
     FCOIS.getNumberOfFilteredItemsForEachPanel()
 
     --The crafting station creation panel controls or a function to check if it's currently active
-    local craftingCreationPanel = ctrlVars.CRAFTING_CREATION_PANEL
     FCOIS.craftingCreatePanelControlsOrFunction = {
         [CRAFTING_TYPE_ALCHEMY]         = FCOIS.IsAlchemyPanelCreationShown,
-        [CRAFTING_TYPE_BLACKSMITHING] 	= craftingCreationPanel,
-        [CRAFTING_TYPE_CLOTHIER] 		= craftingCreationPanel,
+        [CRAFTING_TYPE_BLACKSMITHING] 	= FCOIS.ZOControlVars.CRAFTING_CREATION_PANEL,
+        [CRAFTING_TYPE_CLOTHIER] 		= FCOIS.ZOControlVars.CRAFTING_CREATION_PANEL,
         [CRAFTING_TYPE_ENCHANTING] 		= FCOIS.IsEnchantingPanelCreationShown,
-        [CRAFTING_TYPE_INVALID] 		= craftingCreationPanel,
-        [CRAFTING_TYPE_PROVISIONING] 	= ctrlVars.PROVISIONER_PANEL,
-        [CRAFTING_TYPE_WOODWORKING] 	= craftingCreationPanel,
-        [CRAFTING_TYPE_JEWELRYCRAFTING]	= craftingCreationPanel,
+        [CRAFTING_TYPE_INVALID] 		= FCOIS.ZOControlVars.CRAFTING_CREATION_PANEL,
+        [CRAFTING_TYPE_PROVISIONING] 	= FCOIS.ZOControlVars.PROVISIONER_PANEL,
+        [CRAFTING_TYPE_WOODWORKING] 	= FCOIS.ZOControlVars.CRAFTING_CREATION_PANEL,
+        [CRAFTING_TYPE_JEWELRYCRAFTING]	= FCOIS.ZOControlVars.CRAFTING_CREATION_PANEL,
     }
 
     --Rebuild the allowed craft skills from the settings
@@ -927,7 +921,7 @@ function FCOIS.afterSettings()
     local ancVars = FCOIS.anchorVars
     local locVars = FCOIS.localizationVars.fcois_loc
     --Non changing values
-    local showAddInvContextMenuFunc = FCOIS.ShowContextMenuForAddInvButtons
+    local showAddInvContextMenuFunc = FCOIS.showContextMenuForAddInvButtons
     local showAddInvContextMenuMouseUpFunc = FCOIS.onContextMenuForAddInvButtonsButtonMouseUp
     --The "flag" textures
     local invAddButtonVars = FCOIS.invAdditionalButtonVars
@@ -978,7 +972,7 @@ function FCOIS.afterSettings()
     if filterButtonsToCheck ~= nil then
         for _, filterButtonNr in ipairs(filterButtonsToCheck) do
             for libFiltersPanelId = 1, numLibFiltersFilterPanelIds, 1 do
-                FCOIS.CheckAndTransferFCOISFilterButtonDataByPanelId(libFiltersPanelId, filterButtonNr)
+                FCOIS.CheckAndTransferFilterButtonDataByPanelId(libFiltersPanelId, filterButtonNr)
             end
         end -- for filterbuttonsToCheck ...
     end
@@ -1016,54 +1010,52 @@ function FCOIS.updateSettingsBeforeAddonMenu()
     --Create the armor, jewelry and weapon trait automatic marking arrays and preset them with "true",
     --so all armor, jewelry and weapon set pats will be marked
     --Armor
-    local traits = FCOIS.mappingVars.traits
-    local armorTraits = traits.armorTraits
+    local armorTraits = FCOIS.mappingVars.traits.armorTraits
     --Jewelry
-    local jewelryTraits = traits.jewelryTraits
+    local jewelryTraits = FCOIS.mappingVars.traits.jewelryTraits
     --Weapons
-    local weaponTraits = traits.weaponTraits
+    local weaponTraits = FCOIS.mappingVars.traits.weaponTraits
     --Shields
-    local weaponShieldTraits = traits.weaponShieldTraits
+    local weaponShieldTraits = FCOIS.mappingVars.traits.weaponShieldTraits
     --The chosne icon for the set parts
-    local settings = FCOIS.settingsVars.settings
-    local chosenSetIcon = settings.autoMarkSetsIconNr
+    local chosenSetIcon = FCOIS.settingsVars.settings.autoMarkSetsIconNr
     --Check armor
     for armorTraitNumber, _ in pairs(armorTraits) do
-        if settings.autoMarkSetsCheckArmorTrait[armorTraitNumber] == nil then
+        if FCOIS.settingsVars.settings.autoMarkSetsCheckArmorTrait[armorTraitNumber] == nil then
             FCOIS.settingsVars.settings.autoMarkSetsCheckArmorTrait[armorTraitNumber] = true
         end
         --Preset the icon for the trait, if not chosen yet
-        if settings.autoMarkSetsCheckArmorTraitIcon[armorTraitNumber] == nil then
+        if FCOIS.settingsVars.settings.autoMarkSetsCheckArmorTraitIcon[armorTraitNumber] == nil then
             FCOIS.settingsVars.settings.autoMarkSetsCheckArmorTraitIcon[armorTraitNumber] = chosenSetIcon
         end
     end
     --Check jewelry
     for jewelryTraitNumber, _ in pairs(jewelryTraits) do
-        if settings.autoMarkSetsCheckJewelryTrait[jewelryTraitNumber] == nil then
+        if FCOIS.settingsVars.settings.autoMarkSetsCheckJewelryTrait[jewelryTraitNumber] == nil then
             FCOIS.settingsVars.settings.autoMarkSetsCheckJewelryTrait[jewelryTraitNumber] = true
         end
         --Preset the icon for the trait, if not chosen yet
-        if settings.autoMarkSetsCheckJewelryTraitIcon[jewelryTraitNumber] == nil then
+        if FCOIS.settingsVars.settings.autoMarkSetsCheckJewelryTraitIcon[jewelryTraitNumber] == nil then
             FCOIS.settingsVars.settings.autoMarkSetsCheckJewelryTraitIcon[jewelryTraitNumber] = chosenSetIcon
         end
     end
     --Check weapons
     for weaponTraitNumber, _ in pairs(weaponTraits) do
-        if settings.autoMarkSetsCheckWeaponTrait[weaponTraitNumber] == nil then
+        if FCOIS.settingsVars.settings.autoMarkSetsCheckWeaponTrait[weaponTraitNumber] == nil then
             FCOIS.settingsVars.settings.autoMarkSetsCheckWeaponTrait[weaponTraitNumber] = true
         end
         --Preset the icon for the trait, if not chosen yet
-        if settings.autoMarkSetsCheckWeaponTraitIcon[weaponTraitNumber] == nil then
+        if FCOIS.settingsVars.settings.autoMarkSetsCheckWeaponTraitIcon[weaponTraitNumber] == nil then
             FCOIS.settingsVars.settings.autoMarkSetsCheckWeaponTraitIcon[weaponTraitNumber] = chosenSetIcon
         end
     end
     --Check shields
     for weaponShieldTraitNumber, _ in pairs(weaponShieldTraits) do
-        if settings.autoMarkSetsCheckWeaponTrait[weaponShieldTraitNumber] == nil then
+        if FCOIS.settingsVars.settings.autoMarkSetsCheckWeaponTrait[weaponShieldTraitNumber] == nil then
             FCOIS.settingsVars.settings.autoMarkSetsCheckWeaponTrait[weaponShieldTraitNumber] = true
         end
         --Preset the icon for the trait, if not chosen yet
-        if settings.autoMarkSetsCheckWeaponTraitIcon[weaponShieldTraitNumber] == nil then
+        if FCOIS.settingsVars.settings.autoMarkSetsCheckWeaponTraitIcon[weaponShieldTraitNumber] == nil then
             FCOIS.settingsVars.settings.autoMarkSetsCheckWeaponTraitIcon[weaponShieldTraitNumber] = chosenSetIcon
         end
     end
