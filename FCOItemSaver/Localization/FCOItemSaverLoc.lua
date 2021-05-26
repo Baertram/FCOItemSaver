@@ -338,6 +338,8 @@ FCOIS.localizationVars.localizationAll = {
         ["options_keybind_move_item_to_junk_enabled_TT"] = "Activate keybind to move selected item to junk.",
         ["options_keybind_move_item_to_junk_add_sell_icon"] = "Junk: Auto. mark w/ sell icon",
         ["options_keybind_move_item_to_junk_add_sell_icon_TT"] = "Remove all marker icons on the item which get's moved to junk via keybind, and apply the sell marker icon.",
+        ["options_keybind_enable_chording"]     = "Enable keybind modifier keys (SHIFT/CTRL/ALT)",
+        ["options_keybind_enable_chording_TT"]  = "Enable the modifier keys SHIFT/CTRL/ALT at the control settings for keybindings.",
 
 		["options_header_sort_order"]			= "Icons sort order",
 		["options_icon_sort_order_TT"]     = "Select the icon from the dropdown list which you would like to show at the sort position (number to the left) in the context menu.\n\nRed lines are disabled marker icons which will not be shown in the context menu!",
@@ -1213,8 +1215,8 @@ FCOIS.localizationVars.localizationAll = {
         ["options_bags_to_scan_order_TT"]               = "Choose the scan order for the inventory bags. Automatic markings scans will be processed from top to bottom",
         ["options_scan_automatic_marks_now"]            = "Scan autom. mark.",
         ["options_scan_automatic_marks_now_TT"]         = "Scan the chosen invenories now for the automatic markings that can be applied",
-        ["options_scan_automatic_marks_scan_bag"]           = ">>>Scanning bag \'%s\' for autom. markings...",
-        ["options_scan_automatic_marks_scan_bag_finished"]  = "Scanning bag \'%s\' finished<<<",
+        ["options_scan_automatic_marks_scan_bag"]           = ">>>Scanning \'%s\' for Automatic Markings...",
+        ["options_scan_automatic_marks_scan_bag_finished"]  = "Scan of \'%s\' was finished<<<",
         ["options_bags_to_scan_chat_output"]             = "Show bag scan chat output",
         ["options_bags_to_scan_chat_output_TT"]          = "Show a chat output of each scanned bag, as the scanning of the bag starts and ends.",
 
@@ -1522,6 +1524,9 @@ FCOIS.localizationVars.localizationAll = {
         ["options_keybind_move_item_to_junk_enabled_TT"] = "Tastenkombination aktivieren: Den ausgewählten Gegenstand zum Trödel veschieben.",
         ["options_keybind_move_item_to_junk_add_sell_icon"] = "Trödel: Auto. Verkaufen Symbol",
         ["options_keybind_move_item_to_junk_add_sell_icon_TT"] = "Automatisch alle Markierungen entfernen und das Verkaufen Symbol auf dem Gegenstand setzen, welcher per Tastenkombination zum Trödel verschoben wird.",
+        ["options_keybind_enable_chording"]     = "Aktiviere Tastenkomb. Tasten (SHIFT/STRG/ALT)",
+        ["options_keybind_enable_chording_TT"]  = "Aktiviere die zusätzlichen Tasten SHIFT/STRG/ALT für Tastenkombinationen in den Steuerung Optionen.",
+
 
         ["options_header_sort_order"]			= "Symbol Sortier Reihenfolge",
         ["options_icon_sort_order_TT"]     = "Selektiere das Symbol aus der Auswahlliste welches du an der Position (Nummer, welche links angezeigt wird) im Kontextmenü sehen möchtest.\n\nRote Zeilen sind deaktivierte Symbole. Diese werden nicht im Kontextmenü angezeigt!",
@@ -2369,8 +2374,8 @@ FCOIS.localizationVars.localizationAll = {
         ["options_bags_to_scan_order_TT"]               = "Wähle die Scan Reihenfolge für die Automatischen Markierungen. Die Markierungen werden in den Inventaren von oben nach unten geprüft und gesetzt.",
         ["options_scan_automatic_marks_now"]            = "Autom. Mark. Scannen",
         ["options_scan_automatic_marks_now_TT"]         = "Scanne die ausgewählten Inventare nun, um die Automatischen Markierungen anzuwenden",
-        ["options_scan_automatic_marks_scan_bag"]           = ">>>Scanne Inventar \'%s\' nach autom. Markierungen...",
-        ["options_scan_automatic_marks_scan_bag_finished"]  = "Scan des Inventars \'%s\' beendet<<<",
+        ["options_scan_automatic_marks_scan_bag"]           = ">>>Scanne \'%s\' nach automatischen Markierungen...",
+        ["options_scan_automatic_marks_scan_bag_finished"]  = "Scan von \'%s\' wurde beendet<<<",
         ["options_bags_to_scan_chat_output"]             = "Zeige Chat Ausgabe pro Inventar",
         ["options_bags_to_scan_chat_output_TT"]          = "Zeige eine Ausgabe im Chat für jedes gescannte Inventar, zum Start und zum Ende.",
 

@@ -1312,7 +1312,7 @@ function FCOIS.BuildAddonMenu()
     -- Creating LAM optionPanel for the SetTracker addon
     local SetTrackerSubmenuControls = LAMSubmenu("SetTracker")
     -- Creating LAM optionPanel for the FCOIS icon sort order
-    local IconSortOrderSubmenuControls = LAMSubmenu("IconSortOrder")
+    --local IconSortOrderSubmenuControls = LAMSubmenu("IconSortOrder")
     --==================== SetTracker - END ========================================
 
 
@@ -3240,9 +3240,9 @@ function FCOIS.BuildAddonMenu()
                                         end
                                     end,
                                     width="full",
+                                    isExtraWide = true,
                                     minHeight = 250,
                                     maxHeight = 400,
-                                    disabled = function() return false  end,
                                     reference = "FCOItemSaver_Settings_IconSortOrder_OrderListBox",
                                     disabled = function() return not FCOISsettings.sortIconsInAdditionalInvFlagContextMenu end,
                                     default = FCOISdefaultSettings.iconSortOrderEntries,
@@ -3454,6 +3454,16 @@ function FCOIS.BuildAddonMenu()
             type = "submenu",
             name = locVars["options_header_keybind_options"],
             controls = {
+                {
+                    type = "checkbox",
+                    name = locVars["options_keybind_enable_chording"],
+                    tooltip = locVars["options_keybind_enable_chording" .. tooltipSuffix],
+                    getFunc = function() return FCOISsettings.enableKeybindChording end,
+                    setFunc = function(value) FCOISsettings.enableKeybindChording = value
+                        FCOIS.CheckKeybindingChording(value)
+                    end,
+                    width="full",
+                },
                 {
                     type = 'dropdown',
                     name = locVars[optionsIcon .. "_standard_on_keybind"],

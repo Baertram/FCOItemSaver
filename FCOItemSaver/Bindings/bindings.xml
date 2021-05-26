@@ -165,7 +165,8 @@
     </Category>
   </Layer>
 
-  <!-- For ESO dialogs use the same keybinds again like above -->
+  <!-- For ESO dialogs use the same keybinds again like above, hiding their action (no keybind strip addition at the dialog)
+       and inheriting from the above ones via inheritsBindFrom -->
   <Layer name="SI_KEYBINDINGS_LAYER_DIALOG" allowFallthrough="false">
     <Category>
 

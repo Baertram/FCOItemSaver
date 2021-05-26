@@ -4,6 +4,9 @@ local FCOIS = FCOIS
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
 
+local addonVars = FCOIS.addonVars
+local addonName = addonVars.gAddonName
+
 local ctrlVars = FCOIS.ZOControlVars
 local numFilterIcons = FCOIS.numVars.gFCONumFilterIcons
 
@@ -15,6 +18,7 @@ local myGetItemInstanceId = FCOIS.MyGetItemInstanceId
 
 --LibCustomMenu
 local lcm = FCOIS.LCM
+
 
 --==========================================================================================================================================
 --									FCOIS Pre-Hooks & Hooks / Scene & Fragment callback functions
@@ -118,13 +122,20 @@ local function addOnMouseUpEventHandlerToRow(rowControl)
         local isInvRow, _ = FCOIS.IsSupportedInventoryRowPattern(rowName)
         if isInvRow == true then
             -- Append OnMouseUp event of inventory item controls, for each row (children), if it is not already set there before inside the if via SetEventHandler(...)
-            if( not GetEventHandler("OnMouseUp", rowName) ) then
+            if not GetEventHandler("OnMouseUp", rowName) then
                 --Speed up: Only set boolean value to prevent addition of handler on the same row again (as you scroll, as the same rows are re-used in a pool!)
                 SetEventHandler("OnMouseUp", rowName, true)
                 --Use ZOs function to PreHook the event handler now
+                -->Throws isnecure error message as you use the context menu to "Destroy" an item! -> Tainting the inventory row handler code as the function OnMouseUp is overwrritten with the
+                -->PreHook. So we use new ZOs way to do it via the additional applied handler with the own nameSpace "addonName" -> "FCOItemSaver"
+                --[[
                 ZO_PreHookHandler(rowControl, "OnMouseUp", function(...)
                     FCOIS.OnInventoryItemMouseUp(...)
                 end)
+                ]]
+                rowControl:SetHandler("OnMouseUp", function(...)
+                    FCOIS.OnInventoryItemMouseUp(...)
+                end, addonName)
             end
         end
     end
@@ -148,14 +159,14 @@ local function OnScrollListRowSetupCallback(rowControl, data)
         return
     end
 
-    --Duplicate call to FCOIS.CreateMarkerControl or neede for "at least some" of the inventories,
-    --like the crafting tables? Yes. But we need to filter the update of the marker controls for the others
+    --Duplicate call to FCOIS.CreateMarkerControl -> needed for "at least some" of the inventories,
+    --like the crafting tables. But we need to filter the update of the marker controls for the others,
     --like normal inventories!
     -- For some inventories like crafting tables: Create/Update the icons
     local inventoryVars = FCOIS.inventoryVars
     local hookScrollSetupCallbacks = inventoryVars.markerControlInventories and inventoryVars.markerControlInventories.hookScrollSetupCallback
     if hookScrollSetupCallbacks[inventoryListControl] ~= nil then
---d(">>it's a valid scrollList setupCallback")
+--d(">>it's a valid crafting inventory scrollList setupCallback")
         local settings = FCOIS.settingsVars.settings
         local iconVars = FCOIS.iconVars
         local textureVars = FCOIS.textureVars
@@ -343,13 +354,14 @@ local overrideUseAddSlotAction = FCOIS.OverrideUseAddSlotAction
 
 -- handler function for inventory item controls' OnMouseUp event
 function FCOIS.OnInventoryItemMouseUp(self, mouseButton, upInside, ctrlKey, altKey, shiftKey, ...)
-    --d("[FCOIS]InventoryItem_OnMouseUp] mouseButton: " .. tostring(mouseButton) .. ", upInside: " .. tostring(upInside).. ", ctrlKey: " .. tostring(ctrlKey) .. ", altKey: " .. tostring(altKey).. ", shiftKey: " .. tostring(shiftKey))
+--d("[FCOIS]InventoryItem_OnMouseUp] mouseButton: " .. tostring(mouseButton) .. ", upInside: " .. tostring(upInside).. ", ctrlKey: " .. tostring(ctrlKey) .. ", altKey: " .. tostring(altKey).. ", shiftKey: " .. tostring(shiftKey))
     FCOIS.preventerVars.dontShowInvContextMenu = false
     --Enable clearing all markers by help of the <modifier key>+right click?
     local contextMenuClearMarkesKey = FCOIS.settingsVars.settings.contextMenuClearMarkesModifierKey
     local isModifierKeyPressed = FCOIS.IsModifierKeyPressed(contextMenuClearMarkesKey)
     FCOIS.checkIfClearOrRestoreAllMarkers(self, isModifierKeyPressed, upInside, mouseButton, false)
     --Call original callback function for event OnMouseUp of the iinventory item row/character equipment slot now
+--d("<end OnMouseUp")
     return false
 end
 local onInventoryItemMouseUp = FCOIS.OnInventoryItemMouseUp

@@ -762,7 +762,7 @@ end
 
 --Executed if item should be destroyed manually
 local function FCOItemSaver_OnMouseRequestDestroyItem(_, bagId, slotIndex, _, _, needsConfirm)
---d("[FCOS]FCOItemSaver_OnMouseRequestDestroyItem")
+--d("[FCOS]FCOItemSaver_OnMouseRequestDestroyItem - needsConfirm: " ..tostring(needsConfirm) .. " - " .. GetItemLink(bagId, slotIndex))
     FCOIS.preventerVars.splitItemStackDialogActive = false
     --Hide the context menu at last active panel
     hideContextMenu(FCOIS.gFilterWhere)

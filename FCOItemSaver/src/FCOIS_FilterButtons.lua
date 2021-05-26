@@ -535,7 +535,7 @@ function FCOIS.PreHookMainMenuFilterButtonHandler(comingFrom, goingTo)
 --d("[PreHookButtonHandler] Coming from panel ID: " ..tostring(comingFrom) .. ", going to panel ID: " .. tostring(goingTo))
 
     --Hide the context menu at last active panel
-    FCOIS.HhideContextMenu(comingFrom)
+    FCOIS.HideContextMenu(comingFrom)
 
     --Update the number of filtered items at the sort header "name"?
     -->Shown within AdvancedFilters addon, at the inventory bottom line where the bagSpace and bankSpace items are shown!
@@ -553,7 +553,7 @@ function FCOIS.PreHookMainMenuFilterButtonHandler(comingFrom, goingTo)
     local contextMenuInventoryFlagInvokerData = FCOIS.contextMenuVars.filterPanelIdToContextMenuButtonInvoker
     if contextMenuInventoryFlagInvokerData[comingFrom] then
         --Change the button color of the context menu invoker button (flag)
-        FCOIS.changeContextMenuInvokerButtonColorByPanelId(goingTo)
+        FCOIS.ChangeContextMenuInvokerButtonColorByPanelId(goingTo)
     end
 
     --Check the filter buttons and create them if they are not there

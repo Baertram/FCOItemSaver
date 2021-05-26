@@ -369,7 +369,8 @@ function FCOIS.buildDefaultSettings()
 		keybindMoveMarkedForSellToJunkEnabled = true,
 		keybindMoveItemToJunkEnabled = false,
 		keybindMoveItemToJunkAddSellIcon = false,
-		markerIconOffset = {}
+		markerIconOffset = {},
+		enableKeybindChording = true,
 	}
 	--The tables for the markedItems, non-unique and unique
 	local addonVars = FCOIS.addonVars

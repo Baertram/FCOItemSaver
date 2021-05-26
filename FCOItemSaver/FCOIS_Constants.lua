@@ -928,6 +928,13 @@ FCOIS.craftingPrevention.extractWhereAreWe = nil
 FCOIS.ZOControlVars = {}
 local ctrlVars = FCOIS.ZOControlVars
 
+local listStr           = "List"
+local contentsStr       = "Contents"
+local backpackStr       = "Backpack"
+local inventoryStr      = "Inventory"
+local menuBarButtonStr  = "MenuBarButton%s"
+local tabsButtonStr     = "TabsButton%s"
+
 --Inventories and their searchBox controls
 local inventories =
 {
@@ -964,43 +971,45 @@ ctrlVars.FCOISfilterButtonNames = {
  [FCOIS_CON_FILTER_BUTTON_RESDECIMP] 	= "ZO_PlayerInventory_FilterButton3",
  [FCOIS_CON_FILTER_BUTTON_SELLGUILDINT]	= "ZO_PlayerInventory_FilterButton4",
 }
-ctrlVars.invSceneName                = "inventory"
-ctrlVars.INVENTORY_MANAGER           = ZO_InventoryManager
-ctrlVars.INV				        	= ZO_PlayerInventory
-ctrlVars.INV_NAME					= ctrlVars.INV:GetName()
-ctrlVars.INV_MENUBAR_BUTTON_ITEMS	= ZO_PlayerInventoryMenuBarButton1
-ctrlVars.INV_MENUBAR_BUTTON_CRAFTBAG = ZO_PlayerInventoryMenuBarButton2
-ctrlVars.INV_MENUBAR_BUTTON_CURRENCIES = ZO_PlayerInventoryMenuBarButton3
-ctrlVars.INV_MENUBAR_BUTTON_QUICKSLOTS = ZO_PlayerInventoryMenuBarButton4
-ctrlVars.BACKPACK 		    		= ZO_PlayerInventoryBackpack
+ctrlVars.invSceneName                   = "inventory"
+ctrlVars.INVENTORY_MANAGER              = ZO_InventoryManager
+ctrlVars.INV				            = ZO_PlayerInventory
+ctrlVars.INV_NAME					    = ctrlVars.INV:GetName()
+ctrlVars.BACKPACK_LIST 				    = GetControl(ctrlVars.INV, listStr) -- ZO_PlayerInventoryList
+ctrlVars.BACKPACK_BAG 				    = GetControl(ctrlVars.BACKPACK_LIST, contentsStr) -- ZO_PlayerInventoryListContents
+ctrlVars.INV_MENUBAR_BUTTON_ITEMS	    = GetControl(ctrlVars.INV, string.format(menuBarButtonStr, "1")) --ZO_PlayerInventoryMenuBarButton1
+ctrlVars.INV_MENUBAR_BUTTON_CRAFTBAG    = GetControl(ctrlVars.INV, string.format(menuBarButtonStr, "2")) --ZO_PlayerInventoryMenuBarButton2
+ctrlVars.INV_MENUBAR_BUTTON_CURRENCIES  = GetControl(ctrlVars.INV, string.format(menuBarButtonStr, "3")) --ZO_PlayerInventoryMenuBarButton3
+ctrlVars.INV_MENUBAR_BUTTON_QUICKSLOTS  = GetControl(ctrlVars.INV, string.format(menuBarButtonStr, "4")) --ZO_PlayerInventoryMenuBarButton4
+ctrlVars.BACKPACK 		    		    = GetControl(ctrlVars.INV, backpackStr) --ZO_PlayerInventoryBackpack
 
-ctrlVars.companionInvSceneName       = "companionCharacterKeyboard"
-ctrlVars.COMPANION_INV				= COMPANION_EQUIPMENT_KEYBOARD
-ctrlVars.COMPANION_INV_CONTROL		= ctrlVars.COMPANION_INV.control
-ctrlVars.COMPANION_INV_NAME			= ctrlVars.COMPANION_INV_CONTROL:GetName()
-ctrlVars.COMPANION_INV_LIST          = ctrlVars.COMPANION_INV.list
-ctrlVars.COMPANION_INV_FRAGMENT      = COMPANION_EQUIPMENT_KEYBOARD_FRAGMENT
-ctrlVars.COMPANION_CHARACTER_FRAGMENT = COMPANION_CHARACTER_WINDOW_FRAGMENT
-ctrlVars.COMPANION_CHARACTER         = ZO_CompanionCharacterWindow_Keyboard_TopLevel
+ctrlVars.companionInvSceneName          = "companionCharacterKeyboard"
+ctrlVars.COMPANION_INV				    = COMPANION_EQUIPMENT_KEYBOARD
+ctrlVars.COMPANION_INV_CONTROL		    = ctrlVars.COMPANION_INV.control
+ctrlVars.COMPANION_INV_NAME			    = ctrlVars.COMPANION_INV_CONTROL:GetName()
+ctrlVars.COMPANION_INV_LIST             = ctrlVars.COMPANION_INV.list
+ctrlVars.COMPANION_INV_FRAGMENT         = COMPANION_EQUIPMENT_KEYBOARD_FRAGMENT
+ctrlVars.COMPANION_CHARACTER_FRAGMENT   = COMPANION_CHARACTER_WINDOW_FRAGMENT
+ctrlVars.COMPANION_CHARACTER            = ZO_CompanionCharacterWindow_Keyboard_TopLevel
 ctrlVars.COMPANION_CHARACTER_EQUIPMENT_SLOTS_NAME = "ZO_CompanionCharacterWindow_Keyboard_TopLevelEquipmentSlots"
 --ZO_CompanionEquipment_Panel_Keyboard
 
 ctrlVars.CRAFTBAG					= ZO_CraftBag
-ctrlVars.CRAFTBAG_LIST 			    = ZO_CraftBagList
+ctrlVars.CRAFTBAG_LIST 			    = GetControl(ctrlVars.CRAFTBAG, listStr) -- ZO_CraftBagList
 ctrlVars.CRAFTBAG_NAME				= ctrlVars.CRAFTBAG:GetName()
-ctrlVars.CRAFTBAG_BAG				= ZO_CraftBagListContents
-ctrlVars.CRAFT_BAG_FRAGMENT          = CRAFT_BAG_FRAGMENT
-ctrlVars.BACKPACK_LIST 				= ZO_PlayerInventoryList
-ctrlVars.BACKPACK_BAG 				= ZO_PlayerInventoryListContents
-ctrlVars.VENDOR_SELL				    = ZO_StoreWindowListSellToVendorArea
-ctrlVars.vendorSceneName             = "store"
+ctrlVars.CRAFTBAG_BAG				= GetControl(ctrlVars.CRAFTBAG_LIST, contentsStr) -- ZO_CraftBagListContents
+ctrlVars.CRAFT_BAG_FRAGMENT         = CRAFT_BAG_FRAGMENT
+ctrlVars.STORE				        = ZO_StoreWindow
+ctrlVars.STORE_NAME                 = ctrlVars.STORE:GetName()
+ctrlVars.VENDOR_SELL				= GetControl(ctrlVars.STORE, "ListSellToVendorArea") --ZO_StoreWindowListSellToVendorArea
+ctrlVars.vendorSceneName            = "store"
 --ctrlVars.VENDOR_SELL_NAME			= ctrlVars.VENDOR_SELL:GetName()
 --> The following 4 controls/buttons & the depending table entries will be known first as the vendor gets opened the first time.
 --> So they will be re-assigned within EVENT_OPEN_STORE in src/FCOIS_events.lua, function "FCOItemSaver_Open_Store()"
-ctrlVars.VENDOR_MENUBAR_BUTTON_BUY       = ZO_StoreWindowMenuBarButton1
-ctrlVars.VENDOR_MENUBAR_BUTTON_SELL      = ZO_StoreWindowMenuBarButton2
-ctrlVars.VENDOR_MENUBAR_BUTTON_BUYBACK   = ZO_StoreWindowMenuBarButton3
-ctrlVars.VENDOR_MENUBAR_BUTTON_REPAIR    = ZO_StoreWindowMenuBarButton4
+ctrlVars.VENDOR_MENUBAR_BUTTON_BUY       = GetControl(ctrlVars.STORE, string.format(menuBarButtonStr, "1")) -- ZO_StoreWindowMenuBarButton1
+ctrlVars.VENDOR_MENUBAR_BUTTON_SELL      = GetControl(ctrlVars.STORE, string.format(menuBarButtonStr, "2")) -- ZO_StoreWindowMenuBarButton2
+ctrlVars.VENDOR_MENUBAR_BUTTON_BUYBACK   = GetControl(ctrlVars.STORE, string.format(menuBarButtonStr, "3")) -- ZO_StoreWindowMenuBarButton3
+ctrlVars.VENDOR_MENUBAR_BUTTON_REPAIR    = GetControl(ctrlVars.STORE, string.format(menuBarButtonStr, "4")) -- ZO_StoreWindowMenuBarButton4
 ctrlVars.vendorPanelMainMenuButtonControlSets = {
     ["Normal"] = {
         [1] = ctrlVars.VENDOR_MENUBAR_BUTTON_BUY,
@@ -1013,168 +1022,172 @@ ctrlVars.vendorPanelMainMenuButtonControlSets = {
         [2] = ctrlVars.VENDOR_MENUBAR_BUTTON_BUYBACK,
     },
 }
-ctrlVars.STORE                       = ZO_StoreWindow
-ctrlVars.STORE_NAME                  = ctrlVars.STORE:GetName()
 ctrlVars.STORE_BUY_BACK              = ZO_BuyBack
 ctrlVars.STORE_BUY_BACK_NAME         = ctrlVars.STORE_BUY_BACK:GetName()
-ctrlVars.STORE_BUY_BACK_LIST         = ZO_BuyBackList
+ctrlVars.STORE_BUY_BACK_LIST         = GetControl(ctrlVars.STORE_BUY_BACK, listStr) -- ZO_BuyBackList
 --ctrlVars.STORE_BUY_BACK_LIST_BAG     = ZO_BuyBackListContents
 ctrlVars.VENDOR_MAINMENU_BUTTON_BAR  = ""
 --ctrlVars.FENCE						= ZO_Fence_Keyboard_WindowMenu
 ctrlVars.FENCE_SCENE_NAME            = "fence_keyboard"
 ctrlVars.REPAIR                      = ZO_RepairWindow
 ctrlVars.REPAIR_NAME                 = ctrlVars.REPAIR:GetName()
-ctrlVars.REPAIR_LIST				    = ZO_RepairWindowList
-ctrlVars.REPAIR_LIST_BAG 		    = ZO_RepairWindowListContents
+ctrlVars.REPAIR_LIST				= GetControl(ctrlVars.REPAIR, listStr) -- ZO_RepairWindowList
+ctrlVars.REPAIR_LIST_BAG 		    = GetControl(ctrlVars.REPAIR_LIST, contentsStr) -- ZO_RepairWindowListContents
 ctrlVars.BANK_INV					= ZO_PlayerBank
 ctrlVars.BANK_INV_NAME				= ctrlVars.BANK_INV:GetName()
-ctrlVars.BANK			    		= ZO_PlayerBankBackpack
-ctrlVars.BANK_BAG		    		= ZO_PlayerBankBackpackContents
-ctrlVars.BANK_MENUBAR_BUTTON_WITHDRAW	= ZO_PlayerBankMenuBarButton1
-ctrlVars.BANK_MENUBAR_BUTTON_DEPOSIT = ZO_PlayerBankMenuBarButton2
+ctrlVars.BANK			    		= GetControl(ctrlVars.BANK_INV, backpackStr) -- ZO_PlayerBankBackpack
+ctrlVars.BANK_BAG		    		= GetControl(ctrlVars.BANK, contentsStr)
+ctrlVars.BANK_MENUBAR_BUTTON_WITHDRAW	= GetControl(ctrlVars.BANK_INV, string.format(menuBarButtonStr, "1")) -- ZO_PlayerBankMenuBarButton1
+ctrlVars.BANK_MENUBAR_BUTTON_DEPOSIT = GetControl(ctrlVars.BANK_INV, string.format(menuBarButtonStr, "2")) -- ZO_PlayerBankMenuBarButton2
 ctrlVars.bankSceneName				= "bank"
 ctrlVars.GUILD_BANK_INV 	    	= ZO_GuildBank
 ctrlVars.GUILD_BANK_INV_NAME		= ctrlVars.GUILD_BANK_INV:GetName()
-ctrlVars.GUILD_BANK 	    		= ZO_GuildBankBackpack
-ctrlVars.GUILD_BANK_BAG    		= ZO_GuildBankBackpackContents
-ctrlVars.GUILD_BANK_MENUBAR_BUTTON_WITHDRAW	= ZO_GuildBankMenuBarButton1
-ctrlVars.GUILD_BANK_MENUBAR_BUTTON_DEPOSIT = ZO_GuildBankMenuBarButton2
+ctrlVars.GUILD_BANK 	    		= GetControl(ctrlVars.GUILD_BANK_INV, backpackStr) -- ZO_GuildBankBackpack
+ctrlVars.GUILD_BANK_BAG    		    = GetControl(ctrlVars.GUILD_BANK, contentsStr) --ZO_GuildBankBackpackContents
+ctrlVars.GUILD_BANK_MENUBAR_BUTTON_WITHDRAW	= GetControl(ctrlVars.GUILD_BANK_INV, string.format(menuBarButtonStr, "1")) -- ZO_GuildBankMenuBarButton1
+ctrlVars.GUILD_BANK_MENUBAR_BUTTON_DEPOSIT = GetControl(ctrlVars.GUILD_BANK_INV, string.format(menuBarButtonStr, "2")) -- ZO_GuildBankMenuBarButton2
 ctrlVars.guildBankSceneName		    = "guildBank"
 ctrlVars.guildBankGamepadSceneName	= "gamepad_guild_bank"
-ctrlVars.GUILD_STORE_KEYBOARD	= TRADING_HOUSE
+ctrlVars.GUILD_STORE_KEYBOARD	    = TRADING_HOUSE
 ctrlVars.GUILD_STORE				= ZO_TradingHouse
-ctrlVars.tradingHouseSceneName	= "tradinghouse"
+ctrlVars.tradingHouseSceneName	    = "tradinghouse"
 ------------------------------------------------------------------------------------------------------------------------
 --2019-01-26: Support for API 100025 and 100026 controls!
-ctrlVars.GUILD_STORE_SELL_SLOT	= ZO_TradingHousePostItemPaneFormInfo
+ctrlVars.GUILD_STORE_SELL_SLOT	= GetControl(ctrlVars.GUILD_STORE, "PostItemPaneFormInfo") -- ZO_TradingHousePostItemPaneFormInfo
 ctrlVars.GUILD_STORE_SELL_SLOT_NAME	= ctrlVars.GUILD_STORE_SELL_SLOT:GetName()
-ctrlVars.GUILD_STORE_SELL_SLOT_ITEM	= ZO_TradingHousePostItemPaneFormInfoItem
+ctrlVars.GUILD_STORE_SELL_SLOT_ITEM	= GetControl(ctrlVars.GUILD_STORE_SELL_SLOT, "Item") -- ZO_TradingHousePostItemPaneFormInfoItem
 ------------------------------------------------------------------------------------------------------------------------
-ctrlVars.GUILD_STORE_MENUBAR_BUTTON_SEARCH = ZO_TradingHouseMenuBarButton1
+ctrlVars.GUILD_STORE_MENUBAR_BUTTON_SEARCH = GetControl(ctrlVars.GUILD_STORE, string.format(menuBarButtonStr, "1")) -- ZO_TradingHouseMenuBarButton1
 ctrlVars.GUILD_STORE_MENUBAR_BUTTON_SEARCH_NAME = "ZO_TradingHouseMenuBarButton1"
-ctrlVars.GUILD_STORE_MENUBAR_BUTTON_SELL = ZO_TradingHouseMenuBarButton2
-ctrlVars.GUILD_STORE_MENUBAR_BUTTON_LIST = ZO_TradingHouseMenuBarButton3
-ctrlVars.SMITHING                = SMITHING
-ctrlVars.SMITHING                = SMITHING
-ctrlVars.SMITHING_CLASS          = ZO_Smithing
-ctrlVars.SMITHING_PANEL          = ZO_SmithingTopLevel
-ctrlVars.CRAFTING_CREATION_PANEL = ZO_SmithingTopLevelCreationPanel
-ctrlVars.DECONSTRUCTION_INV		= ZO_SmithingTopLevelDeconstructionPanelInventory
+ctrlVars.GUILD_STORE_MENUBAR_BUTTON_SELL = GetControl(ctrlVars.GUILD_STORE, string.format(menuBarButtonStr, "2")) -- ZO_TradingHouseMenuBarButton2
+ctrlVars.GUILD_STORE_MENUBAR_BUTTON_LIST = GetControl(ctrlVars.GUILD_STORE, string.format(menuBarButtonStr, "3")) -- ZO_TradingHouseMenuBarButton3
+ctrlVars.SMITHING                   = SMITHING
+ctrlVars.SMITHING_CLASS             = ZO_Smithing
+ctrlVars.SMITHING_PANEL             = ZO_SmithingTopLevel
+ctrlVars.CRAFTING_CREATION_PANEL    = GetControl(ctrlVars.SMITHING_PANEL, "CreationPanel") -- ZO_SmithingTopLevelCreationPanel
+ctrlVars.DECONSTRUCTION_PANEL	    = GetControl(ctrlVars.SMITHING_PANEL, "DeconstructionPanel") -- ZO_SmithingTopLevelDeconstructionPanel
+ctrlVars.DECONSTRUCTION_INV		    = GetControl(ctrlVars.DECONSTRUCTION_PANEL, inventoryStr) -- ZO_SmithingTopLevelDeconstructionPanelInventory
 ctrlVars.DECONSTRUCTION_INV_NAME	= ctrlVars.DECONSTRUCTION_INV:GetName()
-ctrlVars.DECONSTRUCTION    		= ZO_SmithingTopLevelDeconstructionPanelInventoryBackpack
-ctrlVars.DECONSTRUCTION_BAG 		= ZO_SmithingTopLevelDeconstructionPanelInventoryBackpackContents
-ctrlVars.DECONSTRUCTION_SLOT 		= ZO_SmithingTopLevelDeconstructionPanelSlotContainerExtractionSlot
-ctrlVars.DECONSTRUCTION_BUTTON_WEAPONS = ZO_SmithingTopLevelDeconstructionPanelInventoryTabsButton2
-ctrlVars.DECONSTRUCTION_BUTTON_ARMOR   = ZO_SmithingTopLevelDeconstructionPanelInventoryTabsButton1
+ctrlVars.DECONSTRUCTION    		    = GetControl(ctrlVars.DECONSTRUCTION_INV, backpackStr) -- ZO_SmithingTopLevelDeconstructionPanelInventoryBackpack
+ctrlVars.DECONSTRUCTION_BAG 		= GetControl(ctrlVars.DECONSTRUCTION, contentsStr) -- ZO_SmithingTopLevelDeconstructionPanelInventoryBackpackContents
+ctrlVars.DECONSTRUCTION_SLOT 		= GetControl(ctrlVars.DECONSTRUCTION_PANEL, "SlotContainerExtractionSlot") --ZO_SmithingTopLevelDeconstructionPanelSlotContainerExtractionSlot
+ctrlVars.DECONSTRUCTION_BUTTON_ARMOR   = GetControl(ctrlVars.DECONSTRUCTION_INV, string.format(tabsButtonStr, "1")) --ZO_SmithingTopLevelDeconstructionPanelInventoryTabsButton1
+ctrlVars.DECONSTRUCTION_BUTTON_WEAPONS = GetControl(ctrlVars.DECONSTRUCTION_INV, string.format(tabsButtonStr, "2")) --ZO_SmithingTopLevelDeconstructionPanelInventoryTabsButton2
 --ctrlVars.SMITHING_MENUBAR_BUTTON_DECONSTRUCTION 		= ZO_SmithingTopLevelModeMenuBarButton3
-ctrlVars.REFINEMENT_INV			= ZO_SmithingTopLevelRefinementPanelInventory
+ctrlVars.REFINEMENT_PANEL		    = GetControl(ctrlVars.SMITHING_PANEL, "RefinementPanel") -- ZO_SmithingTopLevelRefinementPanel
+ctrlVars.REFINEMENT_INV			    = GetControl(ctrlVars.REFINEMENT_PANEL, inventoryStr) -- ZO_SmithingTopLevelRefinementPanelInventory
 ctrlVars.REFINEMENT_INV_NAME		= ctrlVars.REFINEMENT_INV:GetName()
-ctrlVars.REFINEMENT    			= ZO_SmithingTopLevelRefinementPanelInventoryBackpack
-ctrlVars.REFINEMENT_BAG 			= ZO_SmithingTopLevelRefinementPanelInventoryBackpackContents
-ctrlVars.REFINEMENT_SLOT = ZO_SmithingTopLevelRefinementPanelSlotContainerExtractionSlot
-ctrlVars.IMPROVEMENT_INV  			= ZO_SmithingTopLevelImprovementPanelInventory
+ctrlVars.REFINEMENT    			    = GetControl(ctrlVars.REFINEMENT_INV, backpackStr) -- ZO_SmithingTopLevelRefinementPanelInventoryBackpack
+ctrlVars.REFINEMENT_BAG 			= GetControl(ctrlVars.REFINEMENT, contentsStr) -- ZO_SmithingTopLevelRefinementPanelInventoryBackpackContents
+ctrlVars.REFINEMENT_SLOT            = GetControl(ctrlVars.REFINEMENT_PANEL, "SlotContainerExtractionSlot") -- ZO_SmithingTopLevelRefinementPanelSlotContainerExtractionSlot
+ctrlVars.IMPROVEMENT_PANEL          = GetControl(ctrlVars.SMITHING_PANEL, "ImprovementPanel") --ZO_SmithingTopLevelImprovementPanel
+ctrlVars.IMPROVEMENT_INV  			= GetControl(ctrlVars.IMPROVEMENT_PANEL, inventoryStr) --ZO_SmithingTopLevelImprovementPanelInventory
 ctrlVars.IMPROVEMENT_INV_NAME		= ctrlVars.IMPROVEMENT_INV:GetName()
-ctrlVars.IMPROVEMENT    			= ZO_SmithingTopLevelImprovementPanelInventoryBackpack
-ctrlVars.IMPROVEMENT_BAG  			= ZO_SmithingTopLevelImprovementPanelInventoryBackpackContents
-ctrlVars.IMPROVEMENT_BOOSTER_CONTAINER = ZO_SmithingTopLevelImprovementPanelBoosterContainer
-ctrlVars.IMPROVEMENT_SLOT 			= ZO_SmithingTopLevelImprovementPanelSlotContainerImprovementSlot
-ctrlVars.IMPROVEMENT_BUTTON_WEAPONS = ZO_SmithingTopLevelImprovementPanelInventoryTabsButton2
-ctrlVars.IMPROVEMENT_BUTTON_ARMOR   = ZO_SmithingTopLevelImprovementPanelInventoryTabsButton1
+ctrlVars.IMPROVEMENT    			= GetControl(ctrlVars.IMPROVEMENT_INV, backpackStr) --ZO_SmithingTopLevelImprovementPanelInventoryBackpack
+ctrlVars.IMPROVEMENT_BAG  			= GetControl(ctrlVars.IMPROVEMENT, contentsStr) --ZO_SmithingTopLevelImprovementPanelInventoryBackpackContents
+ctrlVars.IMPROVEMENT_BOOSTER_CONTAINER = GetControl(ctrlVars.IMPROVEMENT_PANEL, "BoosterContainer") --ZO_SmithingTopLevelImprovementPanelBoosterContainer
+ctrlVars.IMPROVEMENT_SLOT 			= GetControl(ctrlVars.IMPROVEMENT_PANEL, "SlotContainerImprovementSlot") --ZO_SmithingTopLevelImprovementPanelSlotContainerImprovementSlot
+ctrlVars.IMPROVEMENT_BUTTON_ARMOR   = GetControl(ctrlVars.IMPROVEMENT_INV, string.format(tabsButtonStr, "1")) --ZO_SmithingTopLevelImprovementPanelInventoryTabsButton1
+ctrlVars.IMPROVEMENT_BUTTON_WEAPONS = GetControl(ctrlVars.IMPROVEMENT_INV, string.format(tabsButtonStr, "2")) --ZO_SmithingTopLevelImprovementPanelInventoryTabsButton2
 --ctrlVars.SMITHING_MENUBAR_BUTTON_IMPROVEMENT 			= ZO_SmithingTopLevelModeMenuBarButton4
-ctrlVars.RESEARCH    				= ZO_SmithingTopLevelResearchPanel
+ctrlVars.RESEARCH    				= GetControl(ctrlVars.SMITHING_PANEL, "ResearchPanel") --ZO_SmithingTopLevelResearchPanel
 ctrlVars.RESEARCH_NAME 				= ctrlVars.RESEARCH:GetName()
-ctrlVars.RESEARCH_POPUP_TOP_DIVIDER       = ZO_ListDialog1Divider
+ctrlVars.LIST_DIALOG1               = ZO_ListDialog1
+ctrlVars.ZODialog1                  = ZO_Dialog1
+ctrlVars.RESEARCH_POPUP_TOP_DIVIDER       = GetControl(ctrlVars.LIST_DIALOG1, "Divider") --ZO_ListDialog1Divider
 ctrlVars.RESEARCH_POPUP_TOP_DIVIDER_NAME  = ctrlVars.RESEARCH_POPUP_TOP_DIVIDER:GetName()
-ctrlVars.LIST_DIALOG 	    		= ZO_ListDialog1List
-ctrlVars.DIALOG_SPLIT_STACK_NAME      = "SPLIT_STACK"
+ctrlVars.LIST_DIALOG 	    		= GetControl(ctrlVars.LIST_DIALOG1, listStr) --ZO_ListDialog1List
+ctrlVars.DIALOG_SPLIT_STACK_NAME    = "SPLIT_STACK"
 ctrlVars.MAIL_SEND					= MAIL_SEND
-ctrlVars.MAIL_SEND_SCENE             = MAIL_SEND_SCENE
+ctrlVars.MAIL_SEND_SCENE            = MAIL_SEND_SCENE
 ctrlVars.MAIL_SEND_NAME			    = ctrlVars.MAIL_SEND.control:GetName()
 ctrlVars.mailSendSceneName		    = "mailSend"
-ctrlVars.MAIL_SEND_ATTACHMENT_SLOTS  = ctrlVars.MAIL_SEND.attachmentSlots
+ctrlVars.MAIL_SEND_ATTACHMENT_SLOTS = ctrlVars.MAIL_SEND.attachmentSlots
 --ctrlVars.MAIL_INBOX				= ZO_MailInbox
 ctrlVars.MAIL_ATTACHMENTS			= ctrlVars.MAIL_SEND.attachmentSlots
 --ctrlVars.MAIL_MENUBAR_BUTTON_SEND  = ZO_MainMenuSceneGroupBarButton2
 ctrlVars.PLAYER_TRADE				= TRADE
-ctrlVars.PLAYER_TRADE_WINDOW         = TRADE_WINDOW
+ctrlVars.PLAYER_TRADE_WINDOW        = TRADE_WINDOW
 --ctrlVars.PLAYER_TRADE_NAME			= ctrlVars.PLAYER_TRADE.control:GetName()
-ctrlVars.PLAYER_TRADE_ATTACHMENTS    = ctrlVars.PLAYER_TRADE.Columns[TRADE_ME]
-ctrlVars.ENCHANTING                  = ENCHANTING
+ctrlVars.PLAYER_TRADE_ATTACHMENTS   = ctrlVars.PLAYER_TRADE.Columns[TRADE_ME]
+ctrlVars.ENCHANTING                 = ENCHANTING
 ctrlVars.ENCHANTING_CLASS    		= ZO_Enchanting
-ctrlVars.ENCHANTING_INV          = ZO_EnchantingTopLevelInventory
-ctrlVars.ENCHANTING_INV_NAME     = ctrlVars.ENCHANTING_INV:GetName()
-ctrlVars.ENCHANTING_STATION		= ZO_EnchantingTopLevelInventoryBackpack
+ctrlVars.ENCHANTING_PANEL           = ZO_EnchantingTopLevel
+ctrlVars.ENCHANTING_INV             = GetControl(ctrlVars.ENCHANTING_PANEL, inventoryStr) --ZO_EnchantingTopLevelInventory
+ctrlVars.ENCHANTING_INV_NAME        = ctrlVars.ENCHANTING_INV:GetName()
+ctrlVars.ENCHANTING_STATION		    = GetControl(ctrlVars.ENCHANTING_INV, backpackStr) --ZO_EnchantingTopLevelInventoryBackpack
 ctrlVars.ENCHANTING_STATION_NAME	= ctrlVars.ENCHANTING_STATION:GetName()
-ctrlVars.ENCHANTING_STATION_BAG	= ZO_EnchantingTopLevelInventoryBackpackContents
+ctrlVars.ENCHANTING_STATION_BAG 	= GetControl(ctrlVars.ENCHANTING_STATION, contentsStr) --ZO_EnchantingTopLevelInventoryBackpackContents
 --ctrlVars.ENCHANTING_STATION_MENUBAR_BUTTON_CREATION    = ZO_EnchantingTopLevelModeMenuBarButton1
 --ctrlVars.ENCHANTING_STATION_MENUBAR_BUTTON_EXTRACTION  = ZO_EnchantingTopLevelModeMenuBarButton2
-ctrlVars.ENCHANTING_RUNE_CONTAINER	= ZO_EnchantingTopLevelRuneSlotContainer
+ctrlVars.ENCHANTING_RUNE_CONTAINER	= GetControl(ctrlVars.ENCHANTING_PANEL, "RuneSlotContainer") --ZO_EnchantingTopLevelRuneSlotContainer
 ctrlVars.ENCHANTING_RUNE_CONTAINER_NAME	= ctrlVars.ENCHANTING_RUNE_CONTAINER:GetName()
-ctrlVars.ENCHANTING_EXTRACTION_SLOT	= ZO_EnchantingTopLevelExtractionSlotContainerExtractionSlot
-ctrlVars.ENCHANTING_EXTRACTION_SLOT_NAME = ctrlVars.ENCHANTING_EXTRACTION_SLOT:GetName()
-ctrlVars.ENCHANTING_RUNE_CONTAINER_POTENCY = ZO_EnchantingTopLevelRuneSlotContainerPotencyRune
-ctrlVars.ENCHANTING_RUNE_CONTAINER_ESSENCE = ZO_EnchantingTopLevelRuneSlotContainerEssenceRune
-ctrlVars.ENCHANTING_RUNE_CONTAINER_ASPECT = ZO_EnchantingTopLevelRuneSlotContainerAspectRune
-ctrlVars.ALCHEMY                 = ALCHEMY
-ctrlVars.ALCHEMY_INV				= ZO_AlchemyTopLevelInventory
-ctrlVars.ALCHEMY_INV_NAME			= ctrlVars.ALCHEMY_INV:GetName()
-ctrlVars.ALCHEMY_STATION			= ZO_AlchemyTopLevelInventoryBackpack
-ctrlVars.ALCHEMY_STATION_NAME		= ctrlVars.ALCHEMY_STATION:GetName()
-ctrlVars.ALCHEMY_STATION_BAG		= ZO_AlchemyTopLevelInventoryBackpackContents
-ctrlVars.ALCHEMY_STATION_MENUBAR_BUTTON_CREATION = ZO_AlchemyTopLevelModeMenuBarButton1
-ctrlVars.ALCHEMY_STATION_MENUBAR_BUTTON_POTIONMAKER = ZO_AlchemyTopLevelModeMenuBarButton2
-ctrlVars.ALCHEMY_SLOT_CONTAINER = ZO_AlchemyTopLevelSlotContainer
-ctrlVars.ALCHEMY_SLOT_CONTAINER_NAME = ctrlVars.ALCHEMY_SLOT_CONTAINER:GetName()
-ctrlVars.PROVISIONER             = PROVISIONER
-ctrlVars.PROVISIONER_PANEL = ctrlVars.PROVISIONER.control
-ctrlVars.QUICKSLOT               = ZO_QuickSlot
-ctrlVars.QUICKSLOT_WINDOW        = QUICKSLOT_WINDOW
-ctrlVars.QUICKSLOT_NAME          = ctrlVars.QUICKSLOT:GetName()
-ctrlVars.QUICKSLOT_CIRCLE  		= ZO_QuickSlotCircle
-ctrlVars.QUICKSLOT_LIST			= ZO_QuickSlotList
-ctrlVars.DestroyItemDialog    		= ESO_Dialogs["DESTROY_ITEM_PROMPT"]
-ctrlVars.RepairKits                  = REPAIR_KITS
-ctrlVars.RepairItemDialog            = ZO_ListDialog1
-ctrlVars.RepairItemDialogName    	= "REPAIR_ITEM"
-ctrlVars.RepairItemDialogTitle       = SI_REPAIR_KIT_TITLE
-ctrlVars.CHARACTER					= ZO_Character
-ctrlVars.CHARACTER_EQUIPMENT_SLOTS_NAME	= "ZO_CharacterEquipmentSlots"
+ctrlVars.ENCHANTING_EXTRACTION_SLOT	    = GetControl(ctrlVars.ENCHANTING_PANEL, "ExtractionSlotContainerExtractionSlot") --ZO_EnchantingTopLevelExtractionSlotContainerExtractionSlot
+ctrlVars.ENCHANTING_EXTRACTION_SLOT_NAME    = ctrlVars.ENCHANTING_EXTRACTION_SLOT:GetName()
+ctrlVars.ENCHANTING_RUNE_CONTAINER_POTENCY  = GetControl(ctrlVars.ENCHANTING_RUNE_CONTAINER, "PotencyRune") --ZO_EnchantingTopLevelRuneSlotContainerPotencyRune
+ctrlVars.ENCHANTING_RUNE_CONTAINER_ESSENCE  = GetControl(ctrlVars.ENCHANTING_RUNE_CONTAINER, "EssenceRune") --ZO_EnchantingTopLevelRuneSlotContainerEssenceRune
+ctrlVars.ENCHANTING_RUNE_CONTAINER_ASPECT   = GetControl(ctrlVars.ENCHANTING_RUNE_CONTAINER, "AspectRune") --ZO_EnchantingTopLevelRuneSlotContainerAspectRune
+ctrlVars.ALCHEMY                            = ALCHEMY
+ctrlVars.ALCHEMY_PANEL                      = ZO_AlchemyTopLevel
+ctrlVars.ALCHEMY_INV				        = GetControl(ctrlVars.ALCHEMY_PANEL, inventoryStr) --ZO_AlchemyTopLevelInventory
+ctrlVars.ALCHEMY_INV_NAME			        = ctrlVars.ALCHEMY_INV:GetName()
+ctrlVars.ALCHEMY_STATION			        = GetControl(ctrlVars.ALCHEMY_INV, backpackStr) --ZO_AlchemyTopLevelInventoryBackpack
+ctrlVars.ALCHEMY_STATION_NAME		        = ctrlVars.ALCHEMY_STATION:GetName()
+ctrlVars.ALCHEMY_STATION_BAG		        = GetControl(ctrlVars.ALCHEMY_STATION, contentsStr) --ZO_AlchemyTopLevelInventoryBackpackContents
+ctrlVars.ALCHEMY_STATION_MENUBAR_BUTTON_CREATION    = GetControl(ctrlVars.ALCHEMY_PANEL, "Mode" .. string.format(menuBarButtonStr, "1")) --ZO_AlchemyTopLevelModeMenuBarButton1
+ctrlVars.ALCHEMY_STATION_MENUBAR_BUTTON_POTIONMAKER = GetControl(ctrlVars.ALCHEMY_PANEL, "Mode" .. string.format(menuBarButtonStr, "2")) --ZO_AlchemyTopLevelModeMenuBarButton2
+ctrlVars.ALCHEMY_SLOT_CONTAINER             = GetControl(ctrlVars.ALCHEMY_PANEL, "SlotContainer") --ZO_AlchemyTopLevelSlotContainer
+ctrlVars.ALCHEMY_SLOT_CONTAINER_NAME        = ctrlVars.ALCHEMY_SLOT_CONTAINER:GetName()
+ctrlVars.PROVISIONER                        = PROVISIONER
+ctrlVars.PROVISIONER_PANEL                  = ctrlVars.PROVISIONER.control
+ctrlVars.QUICKSLOT                          = ZO_QuickSlot
+ctrlVars.QUICKSLOT_WINDOW                   = QUICKSLOT_WINDOW
+ctrlVars.QUICKSLOT_NAME                     = ctrlVars.QUICKSLOT:GetName()
+ctrlVars.QUICKSLOT_CIRCLE  		            = GetControl(ctrlVars.QUICKSLOT, "Circle") --ZO_QuickSlotCircle
+ctrlVars.QUICKSLOT_LIST			            = GetControl(ctrlVars.QUICKSLOT, listStr) --ZO_QuickSlotList
+ctrlVars.DestroyItemDialog    		        = ESO_Dialogs["DESTROY_ITEM_PROMPT"]
+ctrlVars.RepairKits                         = REPAIR_KITS
+ctrlVars.RepairItemDialog                   = ctrlVars.LIST_DIALOG1 --ZO_ListDialog1
+ctrlVars.RepairItemDialogName    	        = "REPAIR_ITEM"
+ctrlVars.RepairItemDialogTitle              = SI_REPAIR_KIT_TITLE
+ctrlVars.CHARACTER					        = ZO_Character
+ctrlVars.CHARACTER_EQUIPMENT_SLOTS_NAME	    = "ZO_CharacterEquipmentSlots"
 
-ctrlVars.PLAYER_PROGRESS_BAR            = ZO_PlayerProgress
-ctrlVars.COMPANION_PROGRESS_BAR         = ZO_CompanionProgress_Keyboard_TopLevel
+ctrlVars.PLAYER_PROGRESS_BAR                = ZO_PlayerProgress
+ctrlVars.COMPANION_PROGRESS_BAR             = ZO_CompanionProgress_Keyboard_TopLevel
 
-ctrlVars.CONTAINER_LOOT_LIST			= ZO_LootAlphaContainerList
-ctrlVars.CONTAINER_LOOT_LIST_CONTENTS   = GetControl(ctrlVars.CONTAINER_LOOT_LIST, "Contents")
-ctrlVars.CONTAINER_LOOT_LIST_CONTENTS_NAME= ctrlVars.CONTAINER_LOOT_LIST_CONTENTS:GetName()
+ctrlVars.CONTAINER_LOOT_LIST			    = ZO_LootAlphaContainerList
+ctrlVars.CONTAINER_LOOT_LIST_CONTENTS       = GetControl(ctrlVars.CONTAINER_LOOT_LIST, "Contents")
+ctrlVars.CONTAINER_LOOT_LIST_CONTENTS_NAME  = ctrlVars.CONTAINER_LOOT_LIST_CONTENTS:GetName()
 --Transmutation / Retrait
 if FCOIS.APIversion >= 100033 then
     --Markarth or newer
-    ctrlVars.RETRAIT_KEYBOARD            = ZO_RETRAIT_KEYBOARD
-    ctrlVars.RETRAIT_STATION_KEYBOARD    = ZO_RETRAIT_STATION_KEYBOARD
+    ctrlVars.RETRAIT_KEYBOARD               = ZO_RETRAIT_KEYBOARD
+    ctrlVars.RETRAIT_STATION_KEYBOARD       = ZO_RETRAIT_STATION_KEYBOARD
     ctrlVars.RETRAIT_KEYBOARD_INTERACT_SCENE = ctrlVars.RETRAIT_STATION_KEYBOARD.interactScene
-    ctrlVars.RETRAIT_RETRAIT_PANEL	    = ctrlVars.RETRAIT_KEYBOARD
+    ctrlVars.RETRAIT_RETRAIT_PANEL	        = ctrlVars.RETRAIT_KEYBOARD
 else
     --Stonethorn or older
-    ctrlVars.RETRAIT_KEYBOARD            = ZO_RETRAIT_STATION_KEYBOARD
-    ctrlVars.RETRAIT_STATION_KEYBOARD    = ctrlVars.RETRAIT_KEYBOARD
+    ctrlVars.RETRAIT_KEYBOARD               = ZO_RETRAIT_STATION_KEYBOARD
+    ctrlVars.RETRAIT_STATION_KEYBOARD       = ctrlVars.RETRAIT_KEYBOARD
     ctrlVars.RETRAIT_KEYBOARD_INTERACT_SCENE = ctrlVars.RETRAIT_STATION_KEYBOARD.interactScene
-    ctrlVars.RETRAIT_RETRAIT_PANEL	    = ctrlVars.RETRAIT_KEYBOARD.retraitPanel
+    ctrlVars.RETRAIT_RETRAIT_PANEL	        = ctrlVars.RETRAIT_KEYBOARD.retraitPanel
 end
 ctrlVars.RETRAIT					    = ZO_RetraitStation_Keyboard
-ctrlVars.RETRAIT_INV                 = ZO_RetraitStation_KeyboardTopLevelRetraitPanelInventory
-ctrlVars.RETRAIT_INV_NAME		    = ctrlVars.RETRAIT_INV:GetName()
-ctrlVars.RETRAIT_LIST			    = ZO_RetraitStation_KeyboardTopLevelRetraitPanelInventoryBackpack
-ctrlVars.RETRAIT_BAG					= ZO_RetraitStation_KeyboardTopLevelRetraitPanelInventoryBackpackContents
-ctrlVars.RETRAIT_PANEL  	            = ZO_RetraitStation_KeyboardTopLevelRetraitPanel
-ctrlVars.RETRAIT_PANEL_NAME          = ctrlVars.RETRAIT_PANEL:GetName()
+ctrlVars.RETRAIT_PANEL                  = ZO_RetraitStation_KeyboardTopLevelRetraitPanel
+ctrlVars.RETRAIT_PANEL_NAME             = ctrlVars.RETRAIT_PANEL:GetName()
+ctrlVars.RETRAIT_INV                    = GetControl(ctrlVars.RETRAIT_PANEL, inventoryStr) --ZO_RetraitStation_KeyboardTopLevelRetraitPanelInventory
+ctrlVars.RETRAIT_INV_NAME		        = ctrlVars.RETRAIT_INV:GetName()
+ctrlVars.RETRAIT_LIST			        = GetControl(ctrlVars.RETRAIT_INV, backpackStr) --ZO_RetraitStation_KeyboardTopLevelRetraitPanelInventoryBackpack
+ctrlVars.RETRAIT_BAG					= GetControl(ctrlVars.RETRAIT_LIST, contentsStr) --ZO_RetraitStation_KeyboardTopLevelRetraitPanelInventoryBackpackContents
 --House bank storage
-ctrlVars.HOUSE_BANK					= ZO_HouseBankBackpack
-ctrlVars.HOUSE_BANK_BAG				= ZO_HouseBankBackpackContents
-ctrlVars.HOUSE_BANK_INV				= ZO_HouseBank
+ctrlVars.HOUSE_BANK_INV				    = ZO_HouseBank
+ctrlVars.HOUSE_BANK					    = GetControl(ctrlVars.HOUSE_BANK_INV, backpackStr) --ZO_HouseBankBackpack
+ctrlVars.HOUSE_BANK_BAG				    = GetControl(ctrlVars.HOUSE_BANK, contentsStr) --ZO_HouseBankBackpackContents
 ctrlVars.HOUSE_BANK_INV_NAME			= ctrlVars.HOUSE_BANK_INV:GetName()
-ctrlVars.HOUSE_BANK_MENUBAR_BUTTON_WITHDRAW	= ZO_HouseBankMenuBarButton1
-ctrlVars.HOUSE_BANK_MENUBAR_BUTTON_DEPOSIT	= ZO_HouseBankMenuBarButton2
-ctrlVars.houseBankSceneName          = "houseBank"
+ctrlVars.HOUSE_BANK_MENUBAR_BUTTON_WITHDRAW	= GetControl(ctrlVars.HOUSE_BANK_INV, string.format(menuBarButtonStr, 1)) --ZO_HouseBankMenuBarButton1
+ctrlVars.HOUSE_BANK_MENUBAR_BUTTON_DEPOSIT	= GetControl(ctrlVars.HOUSE_BANK_INV, string.format(menuBarButtonStr, 2)) --ZO_HouseBankMenuBarButton2
+ctrlVars.houseBankSceneName             = "houseBank"
 --Equipment slots
 --ctrlVars.equipmentSlotsName          = "ZO_CharacterEquipmentSlots"
 --Housing
@@ -1188,20 +1201,22 @@ ctrlVars.INVENTORY_QUEST_NAME        = "ZO_PlayerInventoryQuest"
 --ctrlVars.housingBookNavigation.rootNode.children[1].children[1].data:GetReferenceId() -> returns 31 e.g. the houesId which can be used to jump to
 -->collectibleId (e.g. 1090)
 -->collectibleIndex (e.g. 5)
-ctrlVars.ZOMenu                      = ZO_Menu
-ctrlVars.ZODialog1                   = ZO_Dialog1
-ctrlVars.mainMenuCategoryBar         = ZO_MainMenuCategoryBar
+ctrlVars.ZOMenu                         = ZO_Menu
+ctrlVars.mainMenuCategoryBar            = ZO_MainMenuCategoryBar
 
 
 --Array for the inventories data
 FCOIS.inventoryVars = {}
 local inventoryVars = FCOIS.inventoryVars
 --The inventory controls which get hooked for the marker texture controls.
-    ---hookListViewSetupCallback: Will be done in file /src/FCOIS_MarkerIcons.lua -> function FCOIS.CreateTextures(whichTextures)
+    ---hookListViewSetupCallback: ---> Currently NOT used! 2021-05-25
+    -- Should be done in file /src/FCOIS_MarkerIcons.lua -> function FCOIS.CreateTextures(whichTextures)
     ---called by file /src/FCOIS_Events.lua -> function FCOItemSaver_Loaded -> FCOIS.CreateTextures(-1)
-    ---hookScrollSetupCallback: Will be done in file /src/FCOIS_Hooks.lua -> function OnScrollListRowSetupCallback
+    --
+    ---hookScrollSetupCallback: ---> Currently used
+    ---Will be done in file /src/FCOIS_Hooks.lua -> function OnScrollListRowSetupCallback
     ---called by file /src/FCOIS_Hooks.lua -> different SecurePosthooks to crafting inventories e.g.
----Will be used to prevent duplicate marker texture icon apply calls.
+    ---Will be used to prevent duplicate marker texture icon apply calls.
 inventoryVars.markerControlInventories = {
     ["hookListViewSetupCallback"] = {
         --all PLAYER_INVENTORY.inventories
