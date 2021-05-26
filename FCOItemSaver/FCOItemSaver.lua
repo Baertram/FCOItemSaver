@@ -19,7 +19,7 @@
 ---------------------------------------------------------------------
 --[ToDo list] --
 --____________________________
--- Current max bugs/features/ToDos: 118
+-- Current max bugs/features/ToDos: 120
 --____________________________
 
 --In progress: Since 2021-05-20
@@ -115,6 +115,7 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 
 --#116: ResearchAssistant: Items won't get marked (red rectangle of RA) at the bank after changing settings/reloadUI
 
+--#120: While inventory is open and character doll is shown: Removing/Adding ring marker icon updates character/inventory too
 
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
@@ -129,9 +130,10 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 --#112 At normal inventory: Un/Equipping an item via double click will not update the inventory row to show/hide the markers of the item at the inv row automatically
 --#113 Disable the context menus to add/remove markers at 2hd weapons' backup slots
 --#114 The character window does not show the set marker icons upon first open after a reloadUI
---#118 Fixed drag&drop from inv/char & companion inv/char to each other -> updating the marker icons at the char equipment slots now
 --#117 Recipe addon icon dropdownbox should not show non-recipe applyable icons (like research, gear, etc.)
+--#118 Fixed drag&drop from inv/char & companion inv/char to each other -> updating the marker icons at the char equipment slots now
 --#119 Fixed double click/context menu/keybind equip/unequip updating equipment slot marker icons
+
 --Fixed character/companion equipment not removing the marker icons if companion item get's unequipped
 --Fixed companion equipment cannot be equipped from companion inventory via doubleclick/drag&drop, if any non-dynamic icon is set
 --Fixed companion inventory drag&drop to destroy: Protection of dynamic icons enabled/disabled via the dynamic icon's "normal inventory" protection checkbox

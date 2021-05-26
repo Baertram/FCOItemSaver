@@ -806,12 +806,13 @@ end
 ]]
 
 
-local function updateEquipmentSlotOfDraggedItem(equipType, wasUnequipped, icCompanionChar)
+local function updateEquipmentSlotOfDraggedItem(equipSlot, equipType, wasUnequipped, icCompanionChar)
+d("updateEquipmentSlotOfDraggedItem")
     local unequippedToDropControl = {
         --Unequipped
         [true]  = {
-            [true] = ctrlVars.COMPANION_INV,            --Companion Inventory
-            [false] = ctrlVars.INV,                     --Player inventory
+            [true]  = ctrlVars.COMPANION_INV,           --Companion Inventory
+            [false] = ctrlVars.COMPANION_INV_CONTROL,   --Player inventory
         },
         --Equipped
         [false]  = {
@@ -821,15 +822,15 @@ local function updateEquipmentSlotOfDraggedItem(equipType, wasUnequipped, icComp
     }
     --Was the item dropped on a supported drop control?
     local dropToControl = unequippedToDropControl[wasUnequipped][icCompanionChar]
-    if not dropToControl or dropToControl:IsHidden() then return end
+    if not dropToControl or not dropToControl.IsHidden or dropToControl:IsHidden() then return end
     local mouseOverControl = moc()
---d(">dropToControl: " .. tostring(dropToControl:GetName()) ..", moc: " .. tostring(mouseOverControl:GetName()) .. ", mocOwner: " .. tostring(mouseOverControl:GetOwningWindow():GetName()))
+d(">dropToControl: " .. tostring(dropToControl:GetName()) ..", moc: " .. tostring(mouseOverControl:GetName()) .. ", mocOwner: " .. tostring(mouseOverControl:GetOwningWindow():GetName()))
     if not mouseOverControl or not mouseOverControl.GetOwningWindow then return end
     if mouseOverControl:GetOwningWindow() ~= dropToControl then return end
 
-    local equipSlot = FCOIS.mappingVars.equipTypeToSlot[equipType]
+    equipSlot = equipSlot or FCOIS.mappingVars.equipTypeToSlot[equipType]
     if not equipSlot then return end
---d(">>updating equipment slot: " ..tostring(equipSlot))
+d(">>updating equipment slot: " ..tostring(equipSlot))
     --Update the marker control of the new equipped item
     FCOIS.updateEquipmentSlotMarker(equipSlot, 300, wasUnequipped)
     --Refresh the inventory, if shown, to update the marker icons at the unequipped item's inventory row
@@ -837,13 +838,17 @@ local function updateEquipmentSlotOfDraggedItem(equipType, wasUnequipped, icComp
 end
 
 local function FCOItemSaver_OnCursorDropped(eventCode, cursorType, param1, param2, param3, param4, param5, param6)
---d("[FCOIS]FCOItemSaver_OnCursorDropped - cursorType: " ..tostring(MOUSE_CONTENT_EQUIPPED_ITEM) .. ", param1: " ..tostring(param1) .. ", param2: " ..tostring(param2) .. ", param3: " ..tostring(param3).. ", param4: " ..tostring(param4) .. ", param5: " ..tostring(param5) .. ", param6: " ..tostring(param6))
+d("[FCOIS]FCOItemSaver_OnCursorDropped - cursorType: " ..tostring(MOUSE_CONTENT_EQUIPPED_ITEM) .. ", param1: " ..tostring(param1) .. ", param2: " ..tostring(param2) .. ", param3: " ..tostring(param3).. ", param4: " ..tostring(param4) .. ", param5: " ..tostring(param5) .. ", param6: " ..tostring(param6))
     local charIsShown = FCOIS.isCharacterShown()
     local companionCharIsShown = FCOIS.isCompanionCharacterShown()
     if not charIsShown and not companionCharIsShown then return end
-    --Is the item a companion item? And is the companion character shown?
-    local bag, slotIndex = GetCursorBagId() or tonumber(param1), GetCursorSlotIndex() or tonumber(param2) --Dragged bagId, slotIndex (should be the same as param1 and param2)
---d(">droppedItem: "..GetItemLink(bag, slotIndex))
+    local bag, slotIndex
+    if cursorType == MOUSE_CONTENT_EQUIPPED_ITEM then
+        bag, slotIndex = GetCursorBagId() or ((companionCharIsShown and BAG_COMPANION_WORN) or BAG_WORN), GetCursorSlotIndex() or tonumber(param1)
+    elseif cursorType == MOUSE_CONTENT_INVENTORY_ITEM then
+        bag, slotIndex = GetCursorBagId() or tonumber(param1), GetCursorSlotIndex() or tonumber(param2) --Dragged bagId, slotIndex (should be the same as param1 and param2)
+    end
+d(">droppedItem: "..GetItemLink(bag, slotIndex))
     local equipType = GetItemEquipType(bag, slotIndex)
     if equipType == EQUIP_TYPE_INVALID then return end
     local isCompanionOwnedtem = GetItemActorCategory(bag, slotIndex) == GAMEPLAY_ACTOR_CATEGORY_COMPANION
@@ -852,16 +857,15 @@ local function FCOItemSaver_OnCursorDropped(eventCode, cursorType, param1, param
     else
         if isCompanionOwnedtem then return end
     end
-
     if cursorType == MOUSE_CONTENT_EQUIPPED_ITEM then
         --Character item dropped - Update the appropriate equipmentSlot of the itemType
---d(">Char item dropped")
-        updateEquipmentSlotOfDraggedItem(equipType, true, companionCharIsShown)
+d(">Char item dropped")
+        updateEquipmentSlotOfDraggedItem(slotIndex, equipType, true, companionCharIsShown)
 
     elseif cursorType == MOUSE_CONTENT_INVENTORY_ITEM then
         --Inventory item dropped on char? - Update the appropriate equipmentSlot of the itemType
---d(">Equippable inv item dropped")
-        updateEquipmentSlotOfDraggedItem(equipType, false, companionCharIsShown)
+d(">Equippable inv item dropped")
+        updateEquipmentSlotOfDraggedItem(nil, equipType, false, companionCharIsShown)
     end
 end
 
