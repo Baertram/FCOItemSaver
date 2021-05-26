@@ -778,6 +778,93 @@ local function FCOItemSaver_OnMouseRequestDestroyItem(_, bagId, slotIndex, _, _,
     end
 end
 
+--[[
+local function FCOItemSaver_OnCursorPickup(eventCode, cursorType, param1, param2, param3, param4, param5, param6, itemSoundCategory)
+d("[FCOIS]FCOItemSaver_OnCursorPickup - cursorType: " ..tostring(MOUSE_CONTENT_EQUIPPED_ITEM) .. ", param1: " ..tostring(param1) .. ", param2: " ..tostring(param2) .. ", param3: " ..tostring(param3).. ", param4: " ..tostring(param4) .. ", param5: " ..tostring(param5) .. ", param6: " ..tostring(param6))
+    local charIsShown = FCOIS.isCharacterShown()
+    local companionCharIsShown = FCOIS.isCompanionCharacterShown()
+    if not charIsShown and not companionCharIsShown then return end
+    if cursorType == MOUSE_CONTENT_EQUIPPED_ITEM then
+        --Character item picked up
+        d(">Character item picked up")
+
+    elseif cursorType == MOUSE_CONTENT_INVENTORY_ITEM then
+        --Inventory item picked up
+        local bag, slotIndex = GetCursorBagId() or tonumber(param1), GetCursorSlotIndex() or tonumber(param2) --Dragged bagId, slotIndex (should be the same as param1 and param2)
+d(">"..GetItemLink(bag, slotIndex))
+        if GetItemEquipType(bag, slotIndex) == EQUIP_TYPE_INVALID then return end
+        --Is the item a companion item? And is the companion character shown?
+        local isCompanionOwnedtem = GetItemActorCategory(bag, slotIndex) == GAMEPLAY_ACTOR_CATEGORY_COMPANION
+        if companionCharIsShown then
+            if not isCompanionOwnedtem then return end
+        else
+            if isCompanionOwnedtem then return end
+        end
+        d(">Equippable inv item picked up")
+    end
+end
+]]
+
+
+local function updateEquipmentSlotOfDraggedItem(equipType, wasUnequipped, icCompanionChar)
+    local unequippedToDropControl = {
+        --Unequipped
+        [true]  = {
+            [true] = ctrlVars.COMPANION_INV,            --Companion Inventory
+            [false] = ctrlVars.INV,                     --Player inventory
+        },
+        --Equipped
+        [false]  = {
+            [true]  = ctrlVars.COMPANION_CHARACTER,     --Companion character
+            [false] = ctrlVars.CHARACTER,               --Normal character
+        }
+    }
+    --Was the item dropped on a supported drop control?
+    local dropToControl = unequippedToDropControl[wasUnequipped][icCompanionChar]
+    if not dropToControl or dropToControl:IsHidden() then return end
+    local mouseOverControl = moc()
+--d(">dropToControl: " .. tostring(dropToControl:GetName()) ..", moc: " .. tostring(mouseOverControl:GetName()) .. ", mocOwner: " .. tostring(mouseOverControl:GetOwningWindow():GetName()))
+    if not mouseOverControl or not mouseOverControl.GetOwningWindow then return end
+    if mouseOverControl:GetOwningWindow() ~= dropToControl then return end
+
+    local equipSlot = FCOIS.mappingVars.equipTypeToSlot[equipType]
+    if not equipSlot then return end
+--d(">>updating equipment slot: " ..tostring(equipSlot))
+    --Update the marker control of the new equipped item
+    FCOIS.updateEquipmentSlotMarker(equipSlot, 300, wasUnequipped)
+    --Refresh the inventory, if shown, to update the marker icons at the unequipped item's inventory row
+    FCOIS.FilterBasics(true)
+end
+
+local function FCOItemSaver_OnCursorDropped(eventCode, cursorType, param1, param2, param3, param4, param5, param6)
+--d("[FCOIS]FCOItemSaver_OnCursorDropped - cursorType: " ..tostring(MOUSE_CONTENT_EQUIPPED_ITEM) .. ", param1: " ..tostring(param1) .. ", param2: " ..tostring(param2) .. ", param3: " ..tostring(param3).. ", param4: " ..tostring(param4) .. ", param5: " ..tostring(param5) .. ", param6: " ..tostring(param6))
+    local charIsShown = FCOIS.isCharacterShown()
+    local companionCharIsShown = FCOIS.isCompanionCharacterShown()
+    if not charIsShown and not companionCharIsShown then return end
+    --Is the item a companion item? And is the companion character shown?
+    local bag, slotIndex = GetCursorBagId() or tonumber(param1), GetCursorSlotIndex() or tonumber(param2) --Dragged bagId, slotIndex (should be the same as param1 and param2)
+--d(">droppedItem: "..GetItemLink(bag, slotIndex))
+    local equipType = GetItemEquipType(bag, slotIndex)
+    if equipType == EQUIP_TYPE_INVALID then return end
+    local isCompanionOwnedtem = GetItemActorCategory(bag, slotIndex) == GAMEPLAY_ACTOR_CATEGORY_COMPANION
+    if companionCharIsShown then
+        if not isCompanionOwnedtem then return end
+    else
+        if isCompanionOwnedtem then return end
+    end
+
+    if cursorType == MOUSE_CONTENT_EQUIPPED_ITEM then
+        --Character item dropped - Update the appropriate equipmentSlot of the itemType
+--d(">Char item dropped")
+        updateEquipmentSlotOfDraggedItem(equipType, true, companionCharIsShown)
+
+    elseif cursorType == MOUSE_CONTENT_INVENTORY_ITEM then
+        --Inventory item dropped on char? - Update the appropriate equipmentSlot of the itemType
+--d(">Equippable inv item dropped")
+        updateEquipmentSlotOfDraggedItem(equipType, false, companionCharIsShown)
+    end
+end
+
 --==============================================================================
 --===================== END EVENT CALLBACK FUNCTIONS============================
 --==============================================================================
@@ -1003,6 +1090,11 @@ local function FCOItemSaver_Loaded(eventCode, addOnName)
             em:RegisterForEvent(gAddonName, EVENT_INVENTORY_SLOT_LOCKED, FCOItemSaver_OnInventorySlotLocked)
             em:RegisterForEvent(gAddonName, EVENT_INVENTORY_SLOT_UNLOCKED, FCOItemSaver_OnInventorySlotUnLocked)
             em:RegisterForEvent(gAddonName, EVENT_MOUSE_REQUEST_DESTROY_ITEM, FCOItemSaver_OnMouseRequestDestroyItem)
+
+            --ZO_Character - Drag & drop of items
+            --em:RegisterForEvent(gAddonName, EVENT_CURSOR_PICKUP, FCOItemSaver_OnCursorPickup)
+            em:RegisterForEvent(gAddonName, EVENT_CURSOR_DROPPED, FCOItemSaver_OnCursorDropped)
+
             --Event if an action layer changes
             --em:RegisterForEvent(gAddonName, EVENT_ACTION_LAYER_POPPED, FCOItemsaver_OnActionLayerPopped)
             --em:RegisterForEvent(gAddonName, EVENT_ACTION_LAYER_PUSHED, FCOItemsaver_OnActionLayerPushed)

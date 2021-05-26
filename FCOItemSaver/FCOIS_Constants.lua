@@ -2153,6 +2153,43 @@ local equipmentSlotToName = {
 }
 mappingVars.equipmentSlotToName = equipmentSlotToName
 
+--Mapping between the equipmentType and the slot where it is placed
+local equipTypeToSlot = {
+--[[
+EQUIP_TYPE_CHEST = 3
+EQUIP_TYPE_COSTUME = 11
+EQUIP_TYPE_FEET = 10
+EQUIP_TYPE_HAND = 13
+EQUIP_TYPE_HEAD = 1
+EQUIP_TYPE_INVALID = 0
+EQUIP_TYPE_LEGS = 9
+EQUIP_TYPE_MAIN_HAND = 14
+EQUIP_TYPE_NECK = 2
+EQUIP_TYPE_OFF_HAND = 7
+EQUIP_TYPE_ONE_HAND = 5
+EQUIP_TYPE_POISON = 15
+EQUIP_TYPE_RING = 12
+EQUIP_TYPE_SHOULDERS = 4
+EQUIP_TYPE_TWO_HAND = 6
+EQUIP_TYPE_WAIST = 8
+]]
+    [EQUIP_TYPE_HEAD] = EQUIP_SLOT_HEAD,
+    [EQUIP_TYPE_SHOULDERS] = EQUIP_SLOT_SHOULDERS,
+    [EQUIP_TYPE_HAND] = EQUIP_SLOT_HAND,
+    [EQUIP_TYPE_LEGS] = EQUIP_SLOT_LEGS,
+    [EQUIP_TYPE_CHEST] = EQUIP_SLOT_CHEST,
+    [EQUIP_TYPE_WAIST] = EQUIP_SLOT_WAIST,
+    [EQUIP_TYPE_FEET] = EQUIP_SLOT_FEET,
+    [EQUIP_TYPE_COSTUME] = EQUIP_SLOT_COSTUME,
+    [EQUIP_TYPE_NECK] = EQUIP_SLOT_NECK,
+    [EQUIP_TYPE_RING] = EQUIP_SLOT_RING1,
+    [EQUIP_TYPE_ONE_HAND] = EQUIP_SLOT_MAIN_HAND,
+    [EQUIP_TYPE_TWO_HAND] = EQUIP_SLOT_MAIN_HAND,
+    [EQUIP_TYPE_OFF_HAND] = EQUIP_SLOT_OFF_HAND,
+    [EQUIP_TYPE_POISON] = EQUIP_SLOT_POISON,
+}
+mappingVars.equipTypeToSlot = equipTypeToSlot
+
 --The character and companion equipment slots
 --Table with all equipment slot names which can be updated with markes for the icons
 --The index is the relating slotIndex of the bag BAG_WORN!

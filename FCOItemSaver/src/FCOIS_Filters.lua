@@ -469,11 +469,6 @@ function FCOIS.registerFilters(filterId, onlyPlayerInvFilter, p_FilterPanelId)
     --Only register filters for player inventory?
     onlyPlayerInvFilter = onlyPlayerInvFilter or false
 
-if p_FilterPanelId == LF_CRAFTBAG then
-    d("[registerFilters]Panel: " .. tostring(p_FilterPanelId) .. ", OnlyPlayerInv: " .. tostring(onlyPlayerInvFilter) .. ", filterId: " .. tostring(filterId))
-end
-
-
     local settings = FCOIS.settingsVars.settings
     --Register only 1 filter ID?
     if (filterId ~= nil and filterId ~= -1) then

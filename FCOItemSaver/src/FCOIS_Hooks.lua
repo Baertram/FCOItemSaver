@@ -811,12 +811,26 @@ function FCOIS.CreateHooks()
         end
     end)
 
+    SecurePostHook("RequestEquipItem", function(bagId, slotIndex, bagWorn, equipSlot)
+        --No equipslot given? Determine it via the itemType
+        if equipSlot == nil and bagId ~= nil and slotIndex ~= nil then
+            local equipType = GetItemEquipType(bagId, slotIndex)
+            equipSlot = mappingVars.equipTypeToSlot[equipType]
+        end
+--d("[FCOIS]RequestEquipItem-bagId: " ..tostring(bagId) .. ", slotIndex: " ..tostring(slotIndex) .. ", bagWorn: " ..tostring(bagWorn) .. ", equipSlotIndex: " .. tostring(equipSlot) .. " " .. GetItemLink(bagId, slotIndex))
+        if settings.debug then FCOIS.debugMessage( "[RequestEquipItem]","bagId: " ..tostring(bagId) .. ", slotIndex: " ..tostring(slotIndex) .. ", bagWorn: " ..tostring(bagWorn) .. ", equipSlotIndex: " .. tostring(equipSlot), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        --Update the marker control of the new equipped item
+        FCOIS.updateEquipmentSlotMarker(equipSlot, 300, false)
+        --Refresh the inventory, if shown, to update the marker icons at the unequipped item's inventory row
+        FCOIS.FilterBasics(true)
+    end)
+
     --========= UNEQUIP ITEM =======================================================
     --ZO_PreHook("UnequipItem", function(equipSlot)
     SecurePostHook("RequestUnequipItem", function(bagId, equipSlot)
         if bagId ~= nil and equipSlot ~= nil then
             if settings.debug then FCOIS.debugMessage( "[RequestUnequipItem]","bagId: " ..tostring(bagId) .. ", equipSlotIndex: " .. equipSlot, true, FCOIS_DEBUG_DEPTH_NORMAL) end
---d("[RequestUnequipItem]" .. GetItemLink(bagId, equipSlot))
+--d("[FCOIS]RequestUnEquipItem-bagId: " ..tostring(bagId) .. ", equipSlotIndex: " .. tostring(equipSlot) .. " " .. GetItemLink(bagId, equipSlot))
             --If item was unequipped: Remove the armor type marker if necessary
             FCOIS.removeArmorTypeMarker(bagId, equipSlot) -->BAG_WORN will be updated to BAG_COMPANION_WORN internally!
             --Update the marker control of the new equipped item

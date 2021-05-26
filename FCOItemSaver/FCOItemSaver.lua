@@ -123,7 +123,12 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 --#116: ResearchAssistant: Items won't get marked (red rectangle of RA) at the bank after changing settings/reloadUI
 --#117: Recipe addon icon dropdownbox should not show non-recipe applyable icons (like research, gear, etc.)
 
---#118: CraftBag filters of LibFilters 3.0 are not working
+--#118: RequestUnequipItem and RequestEquipItem do not fire for drag&drop of/from items to/from ZO_Character equipment slots
+--[[
+    ZO_Character:RegisterForEvent(EVENT_CURSOR_PICKUP, HandleCursorPickup)
+    ZO_Character:RegisterForEvent(EVENT_CURSOR_DROPPED, HandleCursorCleared)
+]]
+
 
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
