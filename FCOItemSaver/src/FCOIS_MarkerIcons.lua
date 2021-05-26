@@ -1140,7 +1140,7 @@ local removeEmptyWeaponEquipmentMarkers = FCOIS.RemoveEmptyWeaponEquipmentMarker
 
 --The function to refresh the equipped items and their markers
 function FCOIS.RefreshEquipmentControl(equipmentControl, doCreateMarkerControl, p_markId, dontCheckRings, updateIfCharacterNotShown, unequipped)
-d("[FCOIS]RefreshEquipmentControl-doCreateMarkerControl: " ..tostring(doCreateMarkerControl) .. ", unequipped: " ..tostring(unequipped))
+--d("[FCOIS]RefreshEquipmentControl-doCreateMarkerControl: " ..tostring(doCreateMarkerControl) .. ", unequipped: " ..tostring(unequipped))
     dontCheckRings = dontCheckRings or false
     --Preset the value for "Create control if not existing yet" with false
     doCreateMarkerControl = doCreateMarkerControl or false
@@ -1149,7 +1149,7 @@ d("[FCOIS]RefreshEquipmentControl-doCreateMarkerControl: " ..tostring(doCreateMa
     local isCharacter = FCOIS.isCharacterShown()
     local isCompanionCharacter = FCOIS.isCompanionCharacterShown()
     if not updateIfCharacterNotShown and not isCharacter and not isCompanionCharacter then return end
-d(">1")
+--d(">1")
     local equipVars = FCOIS.equipmentVars
     local texVars = FCOIS.textureVars
     local settings = FCOIS.settingsVars.settings
@@ -1162,7 +1162,7 @@ d(">1")
         local height = settings.iconSizeCharacter or equipVars.gEquipmentIconHeight
         --Check all marker ids?
         if p_markId == nil or p_markId == 0 then
-d(">checkAllMarkerIcons")
+--d(">checkAllMarkerIcons")
             if settings.debug then FCOIS.debugMessage( "[RefreshEquipmentControl]","Control: " .. equipmentControl:GetName() .. ", Create: " .. tostring(doCreateMarkerControl) .. ", MarkId: ALL", true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
             --Add/Update the markers for the filter icons at the equipment slot
             hideControl = false
@@ -1172,7 +1172,7 @@ d(">checkAllMarkerIcons")
             end
         --Only check a specific marker id
         else
-d(">checkMarkerIcon: " ..tostring(p_markId))
+--d(">checkMarkerIcon: " ..tostring(p_markId))
             if settings.debug then FCOIS.debugMessage( "[RefreshEquipmentControl]","Control: " .. equipmentControl:GetName() .. ", Create: " .. tostring(doCreateMarkerControl) .. ", MarkId: " .. tostring(p_markId), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
             hideControl = true
             --Add/Update the marker p_markId for the filter icons at the equipment slot
@@ -1182,33 +1182,31 @@ d(">checkMarkerIcon: " ..tostring(p_markId))
         --Are we chaning equipped weapons? Update the markers and remove 2hd weapon markers
         local equipControlName = equipmentControl:GetName()
         if equipControlName ~= nil and equipControlName ~= "" then
-d("[FCOIS.RefreshEquipmentControl] name: " ..tostring(equipControlName))
+--d("[FCOIS.RefreshEquipmentControl] name: " ..tostring(equipControlName))
             if checkVars.allowedCharacterEquipmentWeaponControlNames[equipControlName] then
                 --Check if the offhand weapons are 2hd weapons and remove the markers then
                 removeEmptyWeaponEquipmentMarkers()
             end
 
             --Is the equipment slot a ring? Then check if the same ring is equipped at the other slot and update the marker icon visibility too
+            --But not if the 1st ring got unequipped, as the marker icon on still equipped rings need to be kept!
             local isRing = (not dontCheckRings and checkVars.allowedCharacterEquipmentJewelryRingControlNames[equipControlName]) or false
-d(">isRing: " ..tostring(isRing))
-            if isRing == true then
+--d(">isRing: " ..tostring(isRing))
+            if isRing == true and not unequipped  then
                 local bag, slot = myGetItemDetails(equipmentControl)
-d(">bag: " ..tostring(bag) .. ", slotIndex: " ..tostring(slot))
+--d(">bag: " ..tostring(bag) .. ", slotIndex: " ..tostring(slot))
                 if bag == nil or slot == nil then return false end
+                --Most unequips fail here as the slot got no data anymore and thus the itemId will be nil! This is why unequipping was disabled at the isring == true and not unequipped check!
                 local itemId = myGetItemInstanceIdNoControl(bag, slot, true)
-d(">itemId: " ..tostring(itemId))
+--d(">itemId: " ..tostring(itemId))
                 if itemId == nil then return false end
-                local doHide = unequipped
-                if not doHide then
-                    --doHide = not checkIfItemIsProtected(p_markId, itemId)
-                    local isRingMarked, _ = FCOIS.IsMarked(bag, slot, -1)
-                    doHide = not isRingMarked
-                end
-d(">doHide: " ..tostring(doHide))
+                local isRingMarked, _ = FCOIS.IsMarked(bag, slot, -1)
+                local doHide = not isRingMarked
+--d(">doHide: " ..tostring(doHide))
                 --Get the other ring
                 local mappingOfRings = FCOIS.mappingVars.equipmentJewelryRing2RingSlot
                 local otherRingSlotName = mappingOfRings[equipControlName]
-d(">otherRingSlotName: " ..tostring(otherRingSlotName))
+--d(">otherRingSlotName: " ..tostring(otherRingSlotName))
                 local otherRingControl = wm:GetControlByName(otherRingSlotName, "")
                 --Compare the item Ids/Unique itemIds (if enabled)
                 if otherRingControl ~= nil and otherRingControl:IsHidden() == false then
@@ -1217,7 +1215,7 @@ d(">otherRingSlotName: " ..tostring(otherRingSlotName))
                     if bagRing2 ~= nil and slotRing2 ~= nil then
                         --Get the itemId and compare it with the other ring
                         local itemIdOtherRing = myGetItemInstanceIdNoControl(bagRing2, slotRing2, true)
-d(">>other ring, itemId: " .. tostring(itemIdOtherRing) ..", " .. GetItemLink(bagRing2, slotRing2))
+--d(">>other ring, itemId: " .. tostring(itemIdOtherRing) ..", " .. GetItemLink(bagRing2, slotRing2))
                         if itemId == itemIdOtherRing then
                             --local doMarkRing = not doHide
                             --Marking of ring is not needed as it was marked already and the itemInstaceId/uniqueId should be the same ->
