@@ -22,7 +22,7 @@
 -- Current max bugs/features/ToDos: 118
 --____________________________
 
---In progress: Since 20xx-xx-xx
+--In progress: Since 2021-05-20
 
 ------------------------------------------------------------------------------------------------------------------------
 
@@ -110,24 +110,10 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 --     If you delete the account settings for @Baertram now, the chosen settings to use AllAccountsTheSame gets deleted as well!
 --     These SettingsForAll need to migrate and be saved somewhere else, like in a special settings table "FCOItemSaver_Settings_General"!
 
-
---#97: 2020-08-28, Piperman124  Set items get marked with impenetrable icon even though they were marked already before
---Seems if I clear all marks and then run the auto marking for set parts it applies to everything not marked with
---another set part item this way but running it again will add impen to everything even if it's already marked with divines etc.
-
---#100: 2020-12-13, Deadsoon  CraftStore automatic recipe marking will mark known recipes with the unknown marker icon
-
 --#115: 2021-05-13, Baertram  Reposition the additional inventory "flag" icons at crafting tables: Refine, deconstruction, improvement.
 --                            and test if they also fit with AdvancedFilters enabled
 
 --#116: ResearchAssistant: Items won't get marked (red rectangle of RA) at the bank after changing settings/reloadUI
---#117: Recipe addon icon dropdownbox should not show non-recipe applyable icons (like research, gear, etc.)
-
---#118: RequestUnequipItem and RequestEquipItem do not fire for drag&drop of/from items to/from ZO_Character equipment slots
---[[
-    ZO_Character:RegisterForEvent(EVENT_CURSOR_PICKUP, HandleCursorPickup)
-    ZO_Character:RegisterForEvent(EVENT_CURSOR_DROPPED, HandleCursorCleared)
-]]
 
 
 ---------------------------------------------------------------------
@@ -143,6 +129,9 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 --#112 At normal inventory: Un/Equipping an item via double click will not update the inventory row to show/hide the markers of the item at the inv row automatically
 --#113 Disable the context menus to add/remove markers at 2hd weapons' backup slots
 --#114 The character window does not show the set marker icons upon first open after a reloadUI
+--#118 Fixed drag&drop from inv/char & companion inv/char to each other -> updating the marker icons at the char equipment slots now
+--#117 Recipe addon icon dropdownbox should not show non-recipe applyable icons (like research, gear, etc.)
+--#119 Fixed double click/context menu/keybind equip/unequip updating equipment slot marker icons
 --Fixed character/companion equipment not removing the marker icons if companion item get's unequipped
 --Fixed companion equipment cannot be equipped from companion inventory via doubleclick/drag&drop, if any non-dynamic icon is set
 --Fixed companion inventory drag&drop to destroy: Protection of dynamic icons enabled/disabled via the dynamic icon's "normal inventory" protection checkbox
