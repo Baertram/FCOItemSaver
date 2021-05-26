@@ -276,9 +276,9 @@ local refreshCrafting = FCOIS.RefreshCrafting
 --Update the scroll list controls for the player inventories
 function FCOIS.RefreshBasics()
     refreshBackpack()
+    refreshCompanionInventory()
     refreshBank()
     refreshGuildBank()
-    refreshCompanionInventory()
 end
 local refreshBasics = FCOIS.RefreshBasics
 

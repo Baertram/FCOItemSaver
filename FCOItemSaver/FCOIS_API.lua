@@ -96,13 +96,14 @@ local function isResearchableCheck(p_iconId, p_bagId, p_slotIndex, p_itemLink)
 	p_itemLink = p_itemLink or GetItemLink(p_bagId, p_slotIndex)
 	local mappingVars = FCOIS.mappingVars
 	if mappingVars.iconIsResearchable[p_iconId] or mappingVars.iconIsDynamic[p_iconId] then
-	-- Check if item is researchable (as only researchable items can work as equipment too)
-	local isResearchableItem = FCOIS.isItemLinkResearchable(p_itemLink, p_iconId, nil) or false
-	if isResearchableItem == true then return true end
+		-- Check if item is researchable (as only researchable items can work as equipment too)
+		local isResearchableItem, isReconstructedOrRetraited = FCOIS.isItemLinkResearchable(p_itemLink, p_iconId, nil)
+		isResearchableItem = isResearchableItem or false
+		if isResearchableItem == true then return true, isReconstructedOrRetraited end
 	else
-	return true
+		return true, nil
 	end
-	return false
+	return false, nil
 end
 --------------------------------------------------------------------------------
 
@@ -1371,21 +1372,32 @@ function FCOIS.MarkItemByKeybind(iconId, p_bagId, p_slotIndex, removeMarkers)
 	else
 		bagId, slotIndex =  p_bagId, p_slotIndex
 	end
+	local doCompanionItemChecks = FCOIS.DoCompanionItemChecks
     --bag and slot could be retrieved?
     if bagId ~= nil and slotIndex ~= nil then
         if settings.debug then FCOIS.debugMessage( "[MarkItemByKeybind]","Bag: " .. tostring(bagId) .. ", slot: " .. tostring(slotIndex), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
 --d("[FCOIS.MarkItemByKeybind] Bag: " .. tostring(bagId) .. ", slot: " .. tostring(slotIndex) .. ", controlBelowMouse: ".. tostring(controlBelowMouse) .. ", controlTypeBelowMouse: " .. tostring(controlTypeBelowMouse))
-		local mappingVars = FCOIS.mappingVars
+		--local mappingVars = FCOIS.mappingVars
         --Check if the item is currently marked with this icon, or not
         --Get the itemId of the bag, slot combination
-        local itemId = myGetItemInstanceIdNoControl(bagId, slotIndex)
+        itemId = myGetItemInstanceIdNoControl(bagId, slotIndex)
         if itemId ~= nil then
 			--Check if item is not researchable and research/gear/improve/deconstruct/intrictae icon is used, or if icon is a dynamic on and the research check is enabled
 			-- Equipment gear (1, 2, 3, 4, 5), Research, Improve, Deconstruct, Intricate or dynamic icons
 			--Check if the icon is allowed for research and if the research-enabled check is set in the settings
-			if not isResearchableCheck(iconId, bagId, slotIndex) == true then
+			local isResearchable, wasRetraitedOrReconstructed = isResearchableCheck(iconId, bagId, slotIndex)
+			if not isResearchable == true then
 --d("<Abort: Item not researchable")
 				--Abort here if not researchable or not enabled to be marked even if not researchable in the dynamic icon settings
+				return false
+			end
+			--Retraited/Reconstructed and mark with research icon? Not possible
+			if wasRetraitedOrReconstructed == true and iconId == FCOIS_CON_ICON_RESEARCH then
+            	return false
+        	end
+			--Companion owned item and mark with e.g. deconstruct icon? Not possible
+			local isAllowed = doCompanionItemChecks(bagId, slotIndex, iconId, nil, true)
+			if not isAllowed then
 				return false
 			end
             --Set the marker here now
@@ -1423,8 +1435,18 @@ function FCOIS.MarkItemByKeybind(iconId, p_bagId, p_slotIndex, removeMarkers)
 						--Check if item is not researchable and research/gear/improve/deconstruct/intrictae icon is used, or if icon is a dynamic on and the research check is enabled
 						-- Equipment gear (1, 2, 3, 4, 5), Research, Improve, Deconstruct, Intricate or dynamic icons
 						--Check if the icon is allowed for research and if the research-enabled check is set in the settings
-						if not isResearchableCheck(iconId, nil, nil, itemLink) == true then
+						local isResearchable, wasRetraitedOrReconstructed = isResearchableCheck(iconId, nil, nil, itemLink)
+						if not isResearchable == true then
 							--Abort here if not researchable or not enabled to be marked even if not researchable in the dynamic icon settings
+							return false
+						end
+						--Retraited/Reconstructed and mark with research icon? Not possible
+						if wasRetraitedOrReconstructed == true and iconId == FCOIS_CON_ICON_RESEARCH then
+							return false
+						end
+						--Companion owned item and mark with e.g. deconstruct icon? Not possible
+						local isAllowed = doCompanionItemChecks(bagId, slotIndex, iconId, nil, true)
+						if not isAllowed then
 							return false
 						end
 						--Item is already un/marked?
@@ -1478,7 +1500,8 @@ local function getNextEnabledMarkerIcon(direction, currentSortOrderId, respectRe
 				--Found the next icon in sortOrder and it is enabled?
 				if icons[nextIconInDirection] ~= nil and isIconEnabled[nextIconInDirection] then
 					if respectResearchableCheck == true then
-						if isResearchableCheck(nextIconInDirection, bagId, slotIndex) == true then
+						local isResearchable, wasRetraitedOrReconstructed = isResearchableCheck(nextIconInDirection, bagId, slotIndex)
+						if isResearchable == true and (not wasRetraitedOrReconstructed or (wasRetraitedOrReconstructed and nextIconInDirection ~= FCOIS_CON_ICON_RESEARCH)) then
 							return nextIconInDirection
 						end
 					else
@@ -1495,7 +1518,8 @@ local function getNextEnabledMarkerIcon(direction, currentSortOrderId, respectRe
 				--Found the next icon in sortOrder and it is enabled?
 				if icons[nextIconInDirection] ~= nil and isIconEnabled[nextIconInDirection] then
 					if respectResearchableCheck == true then
-						if isResearchableCheck(nextIconInDirection, bagId, slotIndex) == true then
+						local isResearchable, wasRetraitedOrReconstructed = isResearchableCheck(nextIconInDirection, bagId, slotIndex)
+						if isResearchable == true and (not wasRetraitedOrReconstructed or (wasRetraitedOrReconstructed and nextIconInDirection ~= FCOIS_CON_ICON_RESEARCH)) then
 							return nextIconInDirection
 						end
 					else
@@ -1511,7 +1535,8 @@ local function getNextEnabledMarkerIcon(direction, currentSortOrderId, respectRe
 				--Found the prev icon in sortOrder and it is enabled?
 				if icons[nextIconInDirection] ~= nil and isIconEnabled[nextIconInDirection] then
 					if respectResearchableCheck == true then
-						if isResearchableCheck(nextIconInDirection, bagId, slotIndex) == true then
+						local isResearchable, wasRetraitedOrReconstructed = isResearchableCheck(nextIconInDirection, bagId, slotIndex)
+						if isResearchable == true and (not wasRetraitedOrReconstructed or (wasRetraitedOrReconstructed and nextIconInDirection ~= FCOIS_CON_ICON_RESEARCH)) then
 							return nextIconInDirection
 						end
 					else
@@ -1528,7 +1553,8 @@ local function getNextEnabledMarkerIcon(direction, currentSortOrderId, respectRe
 				--Found the prev icon in sortOrder and it is enabled?
 				if icons[nextIconInDirection] ~= nil and isIconEnabled[nextIconInDirection] then
 					if respectResearchableCheck == true then
-						if isResearchableCheck(nextIconInDirection, bagId, slotIndex) == true then
+						local isResearchable, wasRetraitedOrReconstructed = isResearchableCheck(nextIconInDirection, bagId, slotIndex)
+						if isResearchable == true and (not wasRetraitedOrReconstructed or (wasRetraitedOrReconstructed and nextIconInDirection ~= FCOIS_CON_ICON_RESEARCH)) then
 							return nextIconInDirection
 						end
 					else

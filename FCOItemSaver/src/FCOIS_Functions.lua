@@ -927,10 +927,36 @@ end
 function FCOIS.isItemOwnerCompanion(bagId, slotIndex)
     return (GetItemActorCategory(bagId, slotIndex) == GAMEPLAY_ACTOR_CATEGORY_COMPANION) or false
 end
+local isItemOwnerCompanion = FCOIS.isItemOwnerCompanion
 
 -- Check if an itemLink owner is a companion
 function FCOIS.isItemLinkOwnerCompanion(itemLink)
     return (GetItemLinkActorCategory(itemLink) == GAMEPLAY_ACTOR_CATEGORY_COMPANION) or false
+end
+
+--Check if the icon (if provided! Must be provided for keybind checks, can be nil for additional inventory "flag" context menu checks) is
+--one of the icons that cannot be applied to items that are companion owned (e.g. research, deconstruct, improve, sell at guildstore. intricate)
+--Return value will be "allowed" (=true) or "blocked" (=false)
+function FCOIS.DoCompanionItemChecks(bagId, slotIndex, iconId, isCompanionInventory, viaKeybind)
+    isCompanionInventory = isCompanionInventory or ((FCOIS.gFilterWhere == LF_INVENTORY_COMPANION or FCOIS.isCompanionInventoryShown()) or false)
+    viaKeybind = viaKeybind or false
+    --icon is not given but we try to apply a keybinding? Return "allowed" as fallback
+    if viaKeybind == true and iconId == nil then
+        return false --blocked
+    end
+    local isCompanionOnwed = isItemOwnerCompanion(bagId, slotIndex)
+--d("[FCOIS]DoCompanionItemChecks " ..GetItemLink(bagId, slotIndex) .. ", iconId: " ..tostring(iconId) .. ", isCompanionOnwed: " ..tostring(isCompanionOnwed) .. ", isCompanionInventory: " ..tostring(isCompanionInventory) .. ", viaKeybind: " ..tostring(viaKeybind))
+    if isCompanionOnwed == true then
+        --No icon given (via add. inv. "flag" context menu)
+        if iconId == nil then
+            return false --blocked
+        end
+        local iconsDisabledAtCompanion = FCOIS.mappingVars.iconIsDisabledAtCompanion
+        --Icon that should not be applied to companion owned items
+        local isIconDisabledAtCompanion = iconsDisabledAtCompanion[iconId] or false
+        return not isIconDisabledAtCompanion --"blocked" or "allowed" (if not in table FCOIS.mappingVars.iconIsDisabledAtCompanion)
+    end
+    return true --allowed
 end
 
 function FCOIS.isItemType(bag, slot, itemTypes)
@@ -1354,6 +1380,7 @@ function FCOIS.isItemLinkReconStructedOrRetraited(itemLink)
     local itemTraitInformation = GetItemTraitInformationFromItemLink(itemLink)
     return itemTraitInformationNotResearchable[itemTraitInformation] or false
 end
+local isItemLinkReconStructedOrRetraited = FCOIS.isItemLinkReconStructedOrRetraited
 
 --Function used in FCOIS.isItemLinkResearchable() and FCOIS.isItemResearchableNoControl()
 local function isResearchableItemTypeCheck(itemType, markId)
@@ -1386,6 +1413,8 @@ function FCOIS.isItemLinkResearchable(itemLink, markId, doTraitCheck)
     local checkVars = FCOIS.checkVars
 
     local retVal = false
+    local retValReconstructedOrRetraited = false
+    local retValReconstructedOrRetraited = false
     doTraitCheck = doTraitCheck or false
     --Check if the item is virtually researchable as the settings is enabled to allow marking of non researchable items as gear/dynamic
     markId = markId or nil
@@ -1393,10 +1422,11 @@ function FCOIS.isItemLinkResearchable(itemLink, markId, doTraitCheck)
         local settings = FCOIS.settingsVars.settings
         retVal = settings.disableResearchCheck[markId] or false
     end
+    retValReconstructedOrRetraited = isItemLinkReconStructedOrRetraited(itemLink)
     --Check the item's type (Armor, weapon, jewelry e.g. are researchable)
     if retVal == false then
         local itemType = GetItemLinkItemType(itemLink)
-        if itemType == nil then return false end
+        if itemType == nil then return false, retValReconstructedOrRetraited end
         retVal = isResearchableItemTypeCheck(itemType, markId)
     end
     --Check the item's trait (no trait-> No research)
@@ -1404,10 +1434,10 @@ function FCOIS.isItemLinkResearchable(itemLink, markId, doTraitCheck)
         local itemTraitType = GetItemLinkTraitInfo(itemLink)
         local itemTraiTypesNotAllowedForResearch = checkVars.researchTraitCheckTraitsNotAllowed
         local itemTraitTypeNotAllowedForResearch = itemTraiTypesNotAllowedForResearch[itemTraitType] or false
-        if itemTraitType == nil or itemTraitTypeNotAllowedForResearch then return false end
+        if itemTraitType == nil or itemTraitTypeNotAllowedForResearch then return false, retValReconstructedOrRetraited end
     end
 --d("[FCOIS.isItemLinkResearchable] retVal: " .. tostring(retVal))
-    return retVal
+    return retVal, retValReconstructedOrRetraited
 end
 
 -- Is the item researchable?
@@ -1416,7 +1446,7 @@ function FCOIS.isItemResearchableNoControl(bagId, slotIndex, markId, doTraitChec
     --Check if the item is virtually researchable as the settings is enabled to allow marking of non-researchable items as gear/dynamic
     markId = markId or nil
     local itemLink = GetItemLink(bagId, slotIndex)
-    local retVal, retVal2 = FCOIS.isItemLinkResearchable(itemLink, markId, doTraitCheck), FCOIS.isItemLinkReconStructedOrRetraited(itemLink)
+    local retVal, retVal2 = FCOIS.isItemLinkResearchable(itemLink, markId, doTraitCheck)
 --d("[FCOIS.isItemResearchableNoControl] retVal: " .. tostring(retVal))
     return retVal, retVal2
 end
@@ -1447,7 +1477,7 @@ function FCOIS.isItemResearchable(p_rowControl, markId, doTraitCheck)
         itemLink = GetItemLink(bag, slotIndex)
     end
     if itemLink ~= nil then
-        retVal, retVal2 = FCOIS.isItemLinkResearchable(itemLink, markId, doTraitCheck), FCOIS.isItemLinkReconStructedOrRetraited(itemLink)
+        retVal, retVal2 = FCOIS.isItemLinkResearchable(itemLink, markId, doTraitCheck)
     end
     return retVal, retVal2
 end

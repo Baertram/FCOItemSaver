@@ -1890,7 +1890,7 @@ mappingVars.sellGuildIntToIcon = {
 }
 
 --Mapping array for disabled marker icons at the companion inventory additional inventory "flag" context menu AND at the
---normal context menus, as companion items should not be marked with these icons!
+--normal context menus AND at the keybindings, as companion items should not be marked with these icons!
 mappingVars.iconIsDisabledAtCompanion = {
     [FCOIS_CON_ICON_RESEARCH]           = true,
     [FCOIS_CON_ICON_DECONSTRUCTION]     = true,
@@ -2106,7 +2106,7 @@ checkVars.allowedJunkFlagContextMenuFilterPanelIds = {
 }
 
 --Table with allowed panel IDs for the "crafting station"'s refinement/rune create/extraction/deconstruction/improvement/research slots
---that are checked inside function MarkMe(), as an item gets marked via the right-click context menu from the inventory,
+--that are checked inside src/FCOIS_ContextMenus.lua, function FCOIS.MarkMe(), as an item gets marked via the right-click context menu from the inventory,
 --or via a keybinding: If item is protected again it must be removed from the crafting / etc. slot again!
 --> See file src/FCOIS_Protection.lua, function FCOIS.craftingPrevention.IsItemProtectedAtACraftSlotNow(bagId, slotIndex)
 checkVars.allowedCraftingPanelIdsForMarkerRechecks = {
@@ -2155,24 +2155,6 @@ mappingVars.equipmentSlotToName = equipmentSlotToName
 
 --Mapping between the equipmentType and the slot where it is placed
 local equipTypeToSlot = {
---[[
-EQUIP_TYPE_CHEST = 3
-EQUIP_TYPE_COSTUME = 11
-EQUIP_TYPE_FEET = 10
-EQUIP_TYPE_HAND = 13
-EQUIP_TYPE_HEAD = 1
-EQUIP_TYPE_INVALID = 0
-EQUIP_TYPE_LEGS = 9
-EQUIP_TYPE_MAIN_HAND = 14
-EQUIP_TYPE_NECK = 2
-EQUIP_TYPE_OFF_HAND = 7
-EQUIP_TYPE_ONE_HAND = 5
-EQUIP_TYPE_POISON = 15
-EQUIP_TYPE_RING = 12
-EQUIP_TYPE_SHOULDERS = 4
-EQUIP_TYPE_TWO_HAND = 6
-EQUIP_TYPE_WAIST = 8
-]]
     [EQUIP_TYPE_HEAD] = EQUIP_SLOT_HEAD,
     [EQUIP_TYPE_SHOULDERS] = EQUIP_SLOT_SHOULDERS,
     [EQUIP_TYPE_HAND] = EQUIP_SLOT_HAND,
@@ -2257,6 +2239,16 @@ mappingVars.characterEquipmentJewelrySlots = {
     [companionCharacterEquipmentSlotNameByIndex[EQUIP_SLOT_NECK]] = true,
     [companionCharacterEquipmentSlotNameByIndex[EQUIP_SLOT_RING1]] = true,
     [companionCharacterEquipmentSlotNameByIndex[EQUIP_SLOT_RING2]] = true,
+}
+
+mappingVars.characterEquipmentRingSlots = {
+    [EQUIP_SLOT_RING1] = characterEquipmentSlotNameByIndex[EQUIP_SLOT_RING1],
+    [EQUIP_SLOT_RING2] = characterEquipmentSlotNameByIndex[EQUIP_SLOT_RING2],
+}
+mappingVars.characterCompanionEquipmentRingSlots = {
+    --Companion
+    [EQUIP_SLOT_RING1] = companionCharacterEquipmentSlotNameByIndex[EQUIP_SLOT_RING1],
+    [EQUIP_SLOT_RING2] = companionCharacterEquipmentSlotNameByIndex[EQUIP_SLOT_RING2],
 }
 
 --Mapping table fo one ring to the other

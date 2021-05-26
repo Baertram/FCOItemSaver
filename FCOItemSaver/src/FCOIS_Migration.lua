@@ -18,7 +18,7 @@ function FCOIS.scanInventoriesForZOsLockedItemsAndTransfer(p_bagId, p_slotIndex)
         --Is the item marked with ZOs marker function and not marked with FCOIS already
         if (itemId ~= nil and IsItemPlayerLocked(p_bagId, p_slotIndex)) then
             foundAndTransferedOne = true
-            --Mark the item with FCOIS without checking if other markers should be removed etc. (see function FCOMarkMe())
+            --Mark the item with FCOIS without checking if other markers should be removed etc. (see function FCOIS.MarkMe())
             FCOIS[getSavedVarsMarkedItemsTableName()][FCOIS_CON_ICON_LOCK][FCOIS.SignItemId(itemId, allowedItemType, nil, nil, p_bagId, p_slotIndex)] = true
             --Unmark the item with ZOs functions
             SetItemIsPlayerLocked(p_bagId, p_slotIndex, false)

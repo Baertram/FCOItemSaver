@@ -851,7 +851,7 @@ local function FCOItemSaver_OnCursorDropped(eventCode, cursorType, param1, param
 --d(">droppedItem: "..GetItemLink(bag, slotIndex))
     local equipType = GetItemEquipType(bag, slotIndex)
     if equipType == EQUIP_TYPE_INVALID then return end
-    local isCompanionOwnedtem = GetItemActorCategory(bag, slotIndex) == GAMEPLAY_ACTOR_CATEGORY_COMPANION
+    local isCompanionOwnedtem = FCOIS.isItemOwnerCompanion(bag, slotIndex)
     if companionCharIsShown then
         if not isCompanionOwnedtem then return end
     else

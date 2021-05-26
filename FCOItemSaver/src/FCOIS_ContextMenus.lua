@@ -20,6 +20,8 @@ local isItemProtectedAtASlotNow = FCOIS.IsItemProtectedAtASlotNow
 local myGetItemInstanceId = FCOIS.MyGetItemInstanceId
 local filterBasics = FCOIS.FilterBasics
 local scanInventoryItemsForAutomaticMarks = FCOIS.ScanInventoryItemsForAutomaticMarks
+local doCompanionItemChecks = FCOIS.DoCompanionItemChecks
+local isItemResearchableNoControl = FCOIS.isItemResearchableNoControl
 
 --Compatibility functions
 local function menuVisibleCheck()
@@ -893,6 +895,37 @@ end
     end
 end
 
+--Companion or char is shown? Check if the item was a ring: Update the character equipmentSlots of rings as well then
+--as 1 ring marked/unmarked at the inventory needs to update the visibility of the marker control at the character panel too
+function FCOIS.CheckIfCharOrInvNeedsRingUpdate(p_bagId, p_slotIndex, p_parent, p_doUnmark, p_markId)
+    local isCompanionCharShown = FCOIS.isCompanionCharacterShown()
+    local isCharShown = FCOIS.isCharacterShown()
+    if not isCharShown and not isCompanionCharShown then return end
+    local itemEquipTyp = GetItemEquipType(p_bagId, p_slotIndex)
+    if itemEquipTyp ~= EQUIP_TYPE_RING then return end
+    if p_parent == ctrlVars.CHARACTER or p_parent == ctrlVars.COMPANION_CHARACTER then
+        filterBasics(true)
+    else
+        --Get the ring equipment controls and update them
+        local ringEquipmentControlsTable
+        if isCharShown then
+            ringEquipmentControlsTable = FCOIS.mappingVars.characterEquipmentRingSlots
+        else
+            ringEquipmentControlsTable = FCOIS.mappingVars.characterCompanionEquipmentRingSlots
+        end
+        local ringControl1 = ringEquipmentControlsTable[EQUIP_SLOT_RING1] ~= nil and wm:GetControlByName(ringEquipmentControlsTable[EQUIP_SLOT_RING1])
+        if ringControl1 ~= nil then
+            FCOIS.RefreshEquipmentControl(ringControl1, not p_doUnmark,  p_markId, nil, nil, nil)
+        end
+        local ringControl2 = ringEquipmentControlsTable[EQUIP_SLOT_RING2] ~= nil and wm:GetControlByName(ringEquipmentControlsTable[EQUIP_SLOT_RING2])
+        if ringControl2 ~= nil then
+            FCOIS.RefreshEquipmentControl(ringControl2, not p_doUnmark,  p_markId, nil, nil, nil)
+        end
+    end
+end
+local checkIfCharOrInvNeedsRingUpdate = FCOIS.CheckIfCharOrInvNeedsRingUpdate
+
+
 --The "onClicked" callback function for the right click/context menus to (un)mark an item
 --> Called from file FCOIS_ContextMenu.lua, function "FCOIS.AddMark"
 function FCOIS.MarkMe(rowControl, markId, updateNow, doUnmark, refreshPopupDialog)
@@ -1086,11 +1119,12 @@ function FCOIS.MarkMe(rowControl, markId, updateNow, doUnmark, refreshPopupDialo
                     local parent = rowControl:GetParent()
                     if parent == ctrlVars.CHARACTER or parent == ctrlVars.COMPANION_CHARACTER then
                         FCOIS.RefreshEquipmentControl(rowControl, not doUnmark, markId)
-                    elseif parent:GetParent() == ctrlVars.QUICKSLOT_LIST then
-                        filterBasics(false)
+                    --elseif parent:GetParent() == ctrlVars.QUICKSLOT_LIST then
+                        --filterBasics(false)
                     else
                         filterBasics(false)
                     end
+                    checkIfCharOrInvNeedsRingUpdate(bagId, slotIndex, parent, doUnmark, markId)
                 end
             else
                 --Refresh the ZO_ListDialog1 popup now after right click/context menu was used?
@@ -2185,22 +2219,6 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
     --No inventory to search in given? Abort here!
     if INVENTORY_TO_SEARCH == nil then return end
 
-    local function doCompanionItemChecks(bagId, slotIndex, iconId)
-        local isCompanionOnwed = FCOIS.isItemOwnerCompanion(bagId, slotIndex)
-        if not isCompanionInventory then
-            --No icon id checks possible? Allow the chnage via the add. inv. "flag" context menu entry
-            if not iconId then return true end
-            --Icon that should not be applied to items via mass-marking from the add. inv. "flag" context menu entries?
-            local isIconDisabledAtCompanion = iconsDisabledAtCompanion[iconId] or false
-            if not isIconDisabledAtCompanion then
-                return true
-            end
-            return not isCompanionOnwed
-        else
-            return isCompanionOnwed
-        end
-    end
-
     --Are we marking/unmarking items or are we undoing the last change at this current panel?
     if not isUNDOButton and not isREMOVEALLGEARSButton and not isREMOVEALLButton
        and not isTOGGLEANTISETTINGSButton and not isMARKALLASJUNKButton and not isMARKALLASNOJUNKButton then
@@ -2264,14 +2282,14 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                             if iconId ~= nil and mappingVars.iconIsResearchable[iconId] then
                                 local wasItemReconstructedOrRetraited = false
                                 -- Check if item is researchable (as only researchable items can work as equipment too)
-                                allowedToMark, wasItemReconstructedOrRetraited = FCOIS.isItemResearchableNoControl(bagId, slotIndex, iconId)
+                                allowedToMark, wasItemReconstructedOrRetraited = isItemResearchableNoControl(bagId, slotIndex, iconId)
                                 if allowedToMark and wasItemReconstructedOrRetraited == true then
                                     allowedToMark = false
                                 end
                             end
                         end
                         if allowedToMark == true then
-                            allowedToMark = doCompanionItemChecks(bagId, slotIndex, iconId)
+                            allowedToMark = doCompanionItemChecks(bagId, slotIndex, iconId, isCompanionInventory, false)
                         end
                         --Finally: Is the item allowed to be marked with this iconId?
                         if allowedToMark == true then
@@ -2442,7 +2460,7 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                     bagId     = data.bagId
                     slotIndex = data.slotIndex
                     if bagId ~= nil and slotIndex ~= nil then
-                        allowedToMark = doCompanionItemChecks(bagId, slotIndex, nil)
+                        allowedToMark = doCompanionItemChecks(bagId, slotIndex, nil, isCompanionInventory, false)
                         if allowedToMark == true then
                             myItemInstanceId = myGetItemInstanceIdNoControl(bagId, slotIndex)
                             if myItemInstanceId ~= nil then
@@ -2451,7 +2469,7 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                                 --Map the iconIds of the 5 gear sets to the actual counter
                                 for iconIdLoop, _ in pairs(mappingVars.iconToGear) do
                                     -- -v- NEW after implementing settings.disableResearchCheck
-                                    allowedToMark = FCOIS.isItemResearchableNoControl(bagId, slotIndex, iconIdLoop)
+                                    allowedToMark = isItemResearchableNoControl(bagId, slotIndex, iconIdLoop)
                                     if allowedToMark then
                                         -- -^- NEW after implementing settings.disableResearchCheck
 
@@ -2517,7 +2535,7 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                     bagId     = data.bagId
                     slotIndex = data.slotIndex
                     if bagId ~= nil and slotIndex ~= nil then
-                        allowedToMark = doCompanionItemChecks(bagId, slotIndex, nil)
+                        allowedToMark = doCompanionItemChecks(bagId, slotIndex, nil, isCompanionInventory, false)
                         if allowedToMark == true then
                             myItemInstanceId = myGetItemInstanceIdNoControl(bagId, slotIndex)
                             if myItemInstanceId ~= nil then
