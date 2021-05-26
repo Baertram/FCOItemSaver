@@ -71,6 +71,7 @@ local isItemProtectedAtASlotNow = FCOIS.IsItemProtectedAtASlotNow
 local signItemId = FCOIS.SignItemId
 local refreshEquipmentControl = FCOIS.RefreshEquipmentControl
 local filterBasics = FCOIS.FilterBasics
+local checkIfCharOrInvNeedsRingUpdate = FCOIS.CheckIfCharOrInvNeedsRingUpdate
 
 --------------------------------------------------------------------------------
 -- Local helper functions
@@ -1417,11 +1418,14 @@ function FCOIS.MarkItemByKeybind(iconId, p_bagId, p_slotIndex, removeMarkers)
             if itemIsMarked == true then
 				isItemProtectedAtASlotNow(bagId, slotIndex, false, true)
             end
+			--Check if item is a ring and the char/inv needs an update on a same ring item
+			controlBelowMouse = controlBelowMouse or moc()
+			checkIfCharOrInvNeedsRingUpdate(bagId, slotIndex, controlBelowMouse:GetParent(), itemIsMarked, iconId)
         end
     else
 		--Is the controlType below the mouse given?
 		if controlTypeBelowMouse ~= nil then
-			--Did we try to change a marker icon at the InventoryInsightFromAshes UI?
+			--Did we try to change a marker icon at the IIfA (InventoryInsightFromAshes) UI?
 			if controlTypeBelowMouse == FCOIS.otherAddons.IIFAitemsListEntryPrePattern then
 				local itemIsMarked = false
 				if FCOIS.IIfAmouseOvered ~= nil then

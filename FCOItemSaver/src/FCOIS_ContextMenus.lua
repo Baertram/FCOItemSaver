@@ -22,6 +22,7 @@ local filterBasics = FCOIS.FilterBasics
 local scanInventoryItemsForAutomaticMarks = FCOIS.ScanInventoryItemsForAutomaticMarks
 local doCompanionItemChecks = FCOIS.DoCompanionItemChecks
 local isItemResearchableNoControl = FCOIS.isItemResearchableNoControl
+local checkIfCharOrInvNeedsRingUpdate = FCOIS.CheckIfCharOrInvNeedsRingUpdate
 
 --Compatibility functions
 local function menuVisibleCheck()
@@ -895,37 +896,6 @@ end
     end
 end
 
---Companion or char is shown? Check if the item was a ring: Update the character equipmentSlots of rings as well then
---as 1 ring marked/unmarked at the inventory needs to update the visibility of the marker control at the character panel too
-function FCOIS.CheckIfCharOrInvNeedsRingUpdate(p_bagId, p_slotIndex, p_parent, p_doUnmark, p_markId)
-    local isCompanionCharShown = FCOIS.isCompanionCharacterShown()
-    local isCharShown = FCOIS.isCharacterShown()
-    if not isCharShown and not isCompanionCharShown then return end
-    local itemEquipTyp = GetItemEquipType(p_bagId, p_slotIndex)
-    if itemEquipTyp ~= EQUIP_TYPE_RING then return end
-    if p_parent == ctrlVars.CHARACTER or p_parent == ctrlVars.COMPANION_CHARACTER then
-        filterBasics(true)
-    else
-        --Get the ring equipment controls and update them
-        local ringEquipmentControlsTable
-        if isCharShown then
-            ringEquipmentControlsTable = FCOIS.mappingVars.characterEquipmentRingSlots
-        else
-            ringEquipmentControlsTable = FCOIS.mappingVars.characterCompanionEquipmentRingSlots
-        end
-        local ringControl1 = ringEquipmentControlsTable[EQUIP_SLOT_RING1] ~= nil and wm:GetControlByName(ringEquipmentControlsTable[EQUIP_SLOT_RING1])
-        if ringControl1 ~= nil then
-            FCOIS.RefreshEquipmentControl(ringControl1, not p_doUnmark,  p_markId, nil, nil, nil)
-        end
-        local ringControl2 = ringEquipmentControlsTable[EQUIP_SLOT_RING2] ~= nil and wm:GetControlByName(ringEquipmentControlsTable[EQUIP_SLOT_RING2])
-        if ringControl2 ~= nil then
-            FCOIS.RefreshEquipmentControl(ringControl2, not p_doUnmark,  p_markId, nil, nil, nil)
-        end
-    end
-end
-local checkIfCharOrInvNeedsRingUpdate = FCOIS.CheckIfCharOrInvNeedsRingUpdate
-
-
 --The "onClicked" callback function for the right click/context menus to (un)mark an item
 --> Called from file FCOIS_ContextMenu.lua, function "FCOIS.AddMark"
 function FCOIS.MarkMe(rowControl, markId, updateNow, doUnmark, refreshPopupDialog)
@@ -1124,7 +1094,7 @@ function FCOIS.MarkMe(rowControl, markId, updateNow, doUnmark, refreshPopupDialo
                     else
                         filterBasics(false)
                     end
-                    checkIfCharOrInvNeedsRingUpdate(bagId, slotIndex, parent, doUnmark, markId)
+                    checkIfCharOrInvNeedsRingUpdate(bagId, slotIndex, parent, not doUnmark, markId)
                 end
             else
                 --Refresh the ZO_ListDialog1 popup now after right click/context menu was used?
