@@ -525,7 +525,7 @@ FCOIS.localizationVars.localizationAll = {
         ["options_enable_auto_mark_sets_already_bound_TT"] = "Mark the set parts that are already bound to your account with a small icon at the top-right edge of the set item's image",
         ["options_header_exclude_sets"] = "Excluded sets",
         ["options_exclude_automark_sets_list"] = "Excluded sets",
-        ["options_exclude_automark_sets_list_TT"] = "If setting is enabled use the list of excluded sets. Left: All sets available / Right: Excluded sets. These sets will not be checked for Automatic markings.\nMove the sets from left to right to exclude them.",
+        ["options_exclude_automark_sets_list_TT"] = "If setting is enabled use the list of excluded sets:\n\nLeft: All sets available\nRight: Excluded sets\nExcluded sets will not be checked for Automatic markings.\nMove the sets from left to right to exclude them, and to the left to include them into scans again.",
         ["options_exclude_automark_sets_included"] = "Included sets",
 		["options_auto_mark_sets_icon"]			= "Set part icon",
 		["options_auto_mark_sets_icon_TT"]	= "Icon for the automatically marked set parts",
@@ -1212,13 +1212,13 @@ FCOIS.localizationVars.localizationAll = {
         ["options_bags_to_scan"]                        = "Inv. bags to scan",
         ["options_bags_to_scan_automatic_marks_TT"]     = "Inventory bags to scan for automatic marking as a ReloadUI/zone change with loading screen is done/items get into your inventory (loot).\nManually triggered automatic markings via the add. inv. "..addInvFlagIcon.." context menu will only scan the currently visible items at the currently opened inventory, and as you manually trigger them they will scan the currently visible bag even if it is disabled below!",
         ["options_bags_to_scan_order"]                  = "Scan order",
-        ["options_bags_to_scan_order_TT"]               = "Choose the scan order for the inventory bags. Automatic markings scans will be processed from top to bottom",
+        ["options_bags_to_scan_order_TT"]               = "Choose the scan order for the inventory bags. Automatic markings scans will be processed and marked for the enabled \'Inv. bags to scan\' according to your scan order [from top 1) to bottom n)].",
         ["options_scan_automatic_marks_now"]            = "Scan autom. mark.",
         ["options_scan_automatic_marks_now_TT"]         = "Scan the chosen invenories now for the automatic markings that can be applied",
         ["options_scan_automatic_marks_scan_bag"]           = ">>>Scanning \'%s\' for Automatic Markings...",
         ["options_scan_automatic_marks_scan_bag_finished"]  = "Scan of \'%s\' was finished<<<",
         ["options_bags_to_scan_chat_output"]             = "Show bag scan chat output",
-        ["options_bags_to_scan_chat_output_TT"]          = "Show a chat output of each scanned bag, as the scanning of the bag starts and ends.",
+        ["options_bags_to_scan_chat_output_TT"]          = "Show a chat output of each scanned bag, as the scanning of the bag starts and ends. Marked items will be shown in the chat depending on each markings-submenu settings, independent on this setting here.",
 
         --LibShifterBoxes
         --[FCOIS_UNIQUEID_ITEMTYPES]
@@ -1856,7 +1856,7 @@ FCOIS.localizationVars.localizationAll = {
 
         ["options_header_exclude_sets"] = "Ausgeschlossene Sets",
         ["options_exclude_automark_sets_list"] = "Ausgeschlossene Sets",
-        ["options_exclude_automark_sets_list_TT"] = "Wenn die Option eingeschaltet wird, nutze die Liste der ausgeschlossenen Sets. Links: Alle vefügbaren Sets / Rechts: Ausgeschlossene Sets. Diese Sets werden bei automatischen Set Markierungen übersprungen.\nBewege die Sets von links nach rechts, um diese auszuschließen.",
+        ["options_exclude_automark_sets_list_TT"] = "Mit aktivierter Option wird die Liste der ausgeschlossenen Sets verwendet:\n\nLinks: Alle vefügbaren Sets\nRechts: Ausgeschlossene Sets.\nAusgeschl. Sets werden bei automatischen Set Markierungen übersprungen.\nBewege die Sets von links nach rechts, um diese auszuschließen, oder nach links, um diese wieder mit zu scannen.",
         ["options_exclude_automark_sets_included"] = "Eingeschlossene Sets",
 
         ["options_auto_mark_sets_icon"]			= "Set Teile Symbol",
@@ -1882,7 +1882,7 @@ FCOIS.localizationVars.localizationAll = {
         ["options_auto_mark_settrackersets_to_fcois_icon"]		= "SetTracker index <<1>>: FCOIS Symbol",
         ["options_auto_mark_settrackersets_to_fcois_icon_TT"]	= "Gebe das FCOItemSaver Symbol an, welches du für jedes 'SetTracker' verfolgte Set benutzen möchtest.",
         ["options_auto_mark_settrackersets_show_tooltip_on_FCOIS_marker"]		  = "Zeige Set Notiz als Tooltip",
-        ["options_auto_mark_settrackersets_show_tooltip_on_FCOIS_marker_TT"] = "Zeige die SetTracker Set Notiz (sofern gegeben) in dem FCOItemSaver Tooltip für die MArkierungs Symbole.",
+        ["options_auto_mark_settrackersets_show_tooltip_on_FCOIS_marker_TT"] = "Zeige die SetTracker Set Notiz (sofern gegeben) in dem FCOItemSaver Tooltip für die Markierungs Symbole.",
         ["options_enable_auto_mark_sets_settracker_icons"]			= "Nur ohne SetTracker Sets",
         ["options_enable_auto_mark_sets_settracker_icons_TT"]	= "Überprüfe alle Markierungs Symbole von verfolgten SetTracker Sets, wenn die automatische Set Markierung gesetzt werden soll. Wenn eine der SetTracker Markierungen bereits gesetzt wurde wird keine zusätzliche Set Markierung hinzugefügt!",
         ["options_auto_mark_recipes_icon"]				=	"Rezepte Symbol (%s)",
@@ -2371,13 +2371,13 @@ FCOIS.localizationVars.localizationAll = {
         ["options_bags_to_scan"]                        = "Zu prüfende Inventare",
         ["options_bags_to_scan_automatic_marks_TT"]     = "Inventare, die bei den automatischen Markierungen nach dem Login/Benutzeroberfläche Neuladen/Zonen Wechsel mit Ladebildschirm/neuem Inventar Gegenstand (Loot) gescannt werden sollen.\nManuell ausgelöste automatische Markierungen über das zusätzl. Inventar "..addInvFlagIcon.." Kontextmenü werden nur die aktuell angezeigten Gegenstände im aktuell angezeigten Inventar prüfen, und auch dann durchgeführt, wenn das Inventar hier drunter deaktiviert wurde!",
         ["options_bags_to_scan_order"]                  = "Scan Reihenfolge",
-        ["options_bags_to_scan_order_TT"]               = "Wähle die Scan Reihenfolge für die Automatischen Markierungen. Die Markierungen werden in den Inventaren von oben nach unten geprüft und gesetzt.",
+        ["options_bags_to_scan_order_TT"]               = "Wähle die Scan Reihenfolge für die Automatischen Markierungen. Die Markierungen werden dann für die aktivierten \'Zu prüfende Inventare\'. entsprechend deiner Reihenfolge [von oben 1) nach unten n)], geprüft und gesetzt.",
         ["options_scan_automatic_marks_now"]            = "Autom. Mark. Scannen",
         ["options_scan_automatic_marks_now_TT"]         = "Scanne die ausgewählten Inventare nun, um die Automatischen Markierungen anzuwenden",
         ["options_scan_automatic_marks_scan_bag"]           = ">>>Scanne \'%s\' nach automatischen Markierungen...",
         ["options_scan_automatic_marks_scan_bag_finished"]  = "Scan von \'%s\' wurde beendet<<<",
         ["options_bags_to_scan_chat_output"]             = "Zeige Chat Ausgabe pro Inventar",
-        ["options_bags_to_scan_chat_output_TT"]          = "Zeige eine Ausgabe im Chat für jedes gescannte Inventar, zum Start und zum Ende.",
+        ["options_bags_to_scan_chat_output_TT"]          = "Zeige eine Ausgabe im Chat für jedes gescannte Inventar, zum Start und zum Ende. Markierte Gegenstände werden unabhängig von dieser Einstellung, je nach Einstellung im jeweiligen Markierungs-Untermenü, im Chat ausgegeben.",
 
         --LibShifterBoxes
         --[FCOIS_UNIQUEID_ITEMTYPES]

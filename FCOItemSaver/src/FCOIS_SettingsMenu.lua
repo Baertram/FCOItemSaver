@@ -3911,7 +3911,7 @@ function FCOIS.BuildAddonMenu()
                                             end,
                                             width="full",
                                             minHeight = 220,
-                                            disabled = function() return FCOIS.libSets == nil or not FCOISsettings.autoMarkSetsExcludeSets end,
+                                            disabled = function() return not FCOISsettings.autoMarkSetsExcludeSets or not FCOIS.libSets end,
                                         },
 
                                     } --controls

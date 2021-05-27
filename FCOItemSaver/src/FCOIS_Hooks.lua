@@ -354,7 +354,7 @@ local overrideUseAddSlotAction = FCOIS.OverrideUseAddSlotAction
 
 -- handler function for inventory item controls' OnMouseUp event
 function FCOIS.OnInventoryItemMouseUp(self, mouseButton, upInside, ctrlKey, altKey, shiftKey, ...)
---d("[FCOIS]InventoryItem_OnMouseUp] mouseButton: " .. tostring(mouseButton) .. ", upInside: " .. tostring(upInside).. ", ctrlKey: " .. tostring(ctrlKey) .. ", altKey: " .. tostring(altKey).. ", shiftKey: " .. tostring(shiftKey))
+--d("[FCOIS]InventoryItem_OnMouseUp] mouseButton: " .. tostring(mouseButton) .. ", upInside: " .. tostring(upInside).. ", ctrlKey: " .. tostring(ctrlKey) .. ", altKey: " .. tostring(altKey).. ", shiftKey: " .. tostring(shiftKey) .. ", dontShowContextMenu: " ..tostring(FCOIS.preventerVars.dontShowInvContextMenu))
     FCOIS.preventerVars.dontShowInvContextMenu = false
     --Enable clearing all markers by help of the <modifier key>+right click?
     local contextMenuClearMarkesKey = FCOIS.settingsVars.settings.contextMenuClearMarkesModifierKey
@@ -611,6 +611,7 @@ function FCOIS.CreateHooks()
 
     --========= INVENTORY SLOT - SHOW CONTEXT MENU =================================
     local function ZO_InventorySlot_ShowContextMenu_For_FCOItemSaver(rowControl, slotActions, ctrl, alt, shift, command)
+--d("ZO_InventorySlot_ShowContextMenu_For_FCOItemSaver")
         shift = shift or IsShiftKeyDown()
         alt = alt or IsAltKeyDown()
         ctrl = ctrl or IsControlKeyDown()
@@ -623,6 +624,7 @@ function FCOIS.CreateHooks()
         local contextMenuClearMarkesByShiftKey = specialContextMenuKeysCheckAndActions()
         --d("[FCOIS]contextMenuClearMarkesByShiftKey: " ..tostring(contextMenuClearMarkesByShiftKey))
         local isCharacterShown = FCOIS.isCharacterShown()
+        local isCompanionCharacterShown = FCOIS.isCompanionCharacterShown()
 
         --d("[FCOIS]ZO_InventorySlot_ShowContextMenu - dontShowInvContextMenu: " ..tostring(FCOIS.preventerVars.dontShowInvContextMenu) .. ", isCharacterShown: " ..tostring(isCharacterShown))
         --Clear the sub context menu entries
@@ -632,13 +634,13 @@ function FCOIS.CreateHooks()
 
         --if the context menu should not be shown, because all marker icons were removed
         -- hide it now
-        if prevVars.dontShowInvContextMenu == false and isCharacterShown and contextMenuClearMarkesByShiftKey == true
+        if prevVars.dontShowInvContextMenu == false and (isCharacterShown or isCompanionCharacterShown) and contextMenuClearMarkesByShiftKey == true
                 and (FCOIS.IsModifierKeyPressed(contextMenuClearMarkesKey) and FCOIS.IsNoOtherModifierKeyPressed(contextMenuClearMarkesKey)) then
-            --d(">FCOIS context menu, shift key is down")
+--d(">FCOIS context menu, shift key is down")
             FCOIS.preventerVars.dontShowInvContextMenu = true
         end
         if prevVars.dontShowInvContextMenu then
-            --d(">FCOIS context menu, hiding it!")
+--d(">FCOIS context menu, hiding it!")
             FCOIS.preventerVars.dontShowInvContextMenu = false
             --Hide the context menu now by returning true in this preHook and not calling the "context menu show" function
             --Nil the current menu ZO_Menu so it does not show (anti-flickering)

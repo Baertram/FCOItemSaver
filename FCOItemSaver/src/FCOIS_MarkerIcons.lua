@@ -603,6 +603,7 @@ function FCOIS.checkIfClearOrRestoreAllMarkers(clickedRow, modifierKeyPressed, u
 --d("[FCOIS] Clearing/Restoring all markers of the current item now! bag: " .. bagId .. ", slotIndex: " .. slotIndex .. " " .. GetItemLink(bagId, slotIndex))
             --Set the preventer variable now to suppress the context menu of inventory items
             if not calledByKeybind then
+--d(">NO KEYBIND call: enabling dontShowInvContextMenu: true ")
                 FCOIS.preventerVars.dontShowInvContextMenu = true
             end
 --d("[FCOIS]checkIfClearOrRestoreAllMarkers - dontShowInvContextMenu: true")
@@ -616,11 +617,12 @@ function FCOIS.checkIfClearOrRestoreAllMarkers(clickedRow, modifierKeyPressed, u
             --Is the character shown, then disable the context menu "hide" variable again as the order of hooks is not
             --the same like in the inventory and the context menu will be hidden twice in a row else!
             if not calledByKeybind then
-                local isCharacter = bagId == BAG_WORN and isCharacterShown()
-                local isCompanionCharacter = bagId == BAG_COMPANION_WORN and isCompanionCharacterShown()
-                if isCharacter == true or isCompanionCharacter == true then
+                --local isCharacter = (bagId == BAG_WORN and isCharacterShown()) or false
+                --local isCompanionCharacter = (bagId == BAG_COMPANION_WORN and isCompanionCharacterShown()) or false
+                --if isCharacter == true or isCompanionCharacter == true then
+--d(">NO KEBIND call: changing dontShowInvContextMenu to false again!")
                     FCOIS.preventerVars.dontShowInvContextMenu = false
-                end
+                --end
             end
         end
     end

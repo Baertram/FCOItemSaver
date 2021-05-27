@@ -19,7 +19,7 @@
 ---------------------------------------------------------------------
 --[ToDo list] --
 --____________________________
--- Current max bugs/features/ToDos: 120
+-- Current max bugs/features/ToDos: 121
 --____________________________
 
 --In progress: Since 2021-05-20
@@ -115,7 +115,9 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 
 --#116: ResearchAssistant: Items won't get marked (red rectangle of RA) at the bank after changing settings/reloadUI
 
---#120: While inventory is open and character doll is shown: Removing/Adding ring marker icon updates character/inventory too
+--#121: Companion inventory does not show any marker icons at first open
+--#122: Compannion character: SHIFT+right click very often after another will somehow make the context menu all of sudden not disappear anymore
+--      (FCOIS.preventerVars.dontShowInvContextMenu is somehow false then)
 
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
@@ -133,6 +135,10 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 --#117 Recipe addon icon dropdownbox should not show non-recipe applyable icons (like research, gear, etc.)
 --#118 Fixed drag&drop from inv/char & companion inv/char to each other -> updating the marker icons at the char equipment slots now
 --#119 Fixed double click/context menu/keybind equip/unequip updating equipment slot marker icons
+--#120: While inventory is open and character doll is shown: Removing/Adding ring marker icon (keybind/context menu/...) updates character/inventory too (if the same ring is equipped/visible)
+
+--#123: The next normal context menu will not show after an inventory item was clicked via SHIFT+right mouse button (all marker icons on that item were cleared/restored)
+
 
 --Fixed character/companion equipment not removing the marker icons if companion item get's unequipped
 --Fixed companion equipment cannot be equipped from companion inventory via doubleclick/drag&drop, if any non-dynamic icon is set
