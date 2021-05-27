@@ -17,8 +17,8 @@ local locVars      = FCOISlocVars.fcois_loc
 
 --The LibShifterBoxes FCOIS uses:
 --The box for the LAM settings panel FCOIS uniqueId itemTypes
-local FCOISuniqueIdItemTypes = "FCOISuniqueIdItemTypes"
-local FCOISexcludedSets      = "FCOISexcludedSets"
+local FCOISuniqueIdItemTypes = FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES   --FCOISuniqueIdItemTypes
+local FCOISexcludedSets      = FCOIS_CON_LIBSHIFTERBOX_EXCLUDESETS              --FCOISexcludedSets
 
 FCOIS.LibShifterBoxes = {
     --ShortName = LAM control global name/reference
@@ -222,6 +222,7 @@ local function updateLibShifterBoxState(parentCtrl, shifterBox, boxName)
     shifterBox:SetHidden(false)
     shifterBox:SetEnabled(isEnabled)
 end
+FCOIS.updateLibShifterBoxState = updateLibShifterBoxState
 
 local function myShifterBoxEventEntryHighlightedCallbackFunction(selectedRow, shifterBox, key, value, categoryId, isLeftList)
     if not shifterBox or not key then return end

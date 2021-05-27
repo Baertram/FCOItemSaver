@@ -2953,14 +2953,23 @@ function FCOIS.BuildAddonMenu()
                 --LibShifterBox: ItemTypes for uniqueIds by FCOIS
                 {
                     type = "custom",
-                    reference = (lsb and libShifterBoxes["FCOISuniqueIdItemTypes"].name) or "FCOITEMSAVER_LAM_CUSTOM___FCOIS_UNIQUEID_ITEMTYPES",
+                    reference = (lsb and libShifterBoxes[FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES].name) or "FCOITEMSAVER_LAM_CUSTOM___FCOIS_UNIQUEID_ITEMTYPES",
                     createFunc = function(customControl)
                         if not lsb then return end
-                        FCOIS.createLibShifterBox(customControl, "FCOISuniqueIdItemTypes")
+                        FCOIS.createLibShifterBox(customControl, FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES)
+                        --[[
+                        --Currently not needed as a reloadui needs to be done to chnage the uniqueId and thus this disabled update will be done autoamtically at the LibShifterBox functions
+                        customControl.UpdateDisabled = function(customControl)
+d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES")
+                            if not uniqueIdIsEnabledAndSetToFCOIS() then
+
+                            end
+                        end
+                        ]]
                     end,
                     width="full",
                     minHeight = 220,
-                    disabled = function() return not uniqueIdIsEnabledAndSetToFCOIS() end,
+                    --disabled = function() return not uniqueIdIsEnabledAndSetToFCOIS() end,
                 },
 
 
@@ -3904,14 +3913,22 @@ function FCOIS.BuildAddonMenu()
                                         --LibShifterBox: Excluded sets
                                         {
                                             type = "custom",
-                                            reference = (lsb and libShifterBoxes["FCOISexcludedSets"].name) or "FCOITEMSAVER_LAM_CUSTOM___FCOIS_EXCLUDED_SETS",
+                                            reference = (lsb and libShifterBoxes[FCOIS_CON_LIBSHIFTERBOX_EXCLUDESETS].name) or "FCOITEMSAVER_LAM_CUSTOM___FCOIS_EXCLUDED_SETS",
                                             createFunc = function(customControl)
                                                 if not lsb then return end
-                                                FCOIS.createLibShifterBox(customControl, "FCOISexcludedSets")
+                                                FCOIS.createLibShifterBox(customControl, FCOIS_CON_LIBSHIFTERBOX_EXCLUDESETS)
+                                                --Will be called by the LAM panel automatically upon refresh of controls
+                                                customControl.UpdateDisabled = function(customControl)
+                                                    if not FCOISsettings.autoMarkSetsExcludeSets or not FCOIS.libSets then
+                                                        if lsb and libShifterBoxes[FCOIS_CON_LIBSHIFTERBOX_EXCLUDESETS] then
+                                                            FCOIS.updateLibShifterBoxState(libShifterBoxes[FCOIS_CON_LIBSHIFTERBOX_EXCLUDESETS].control, nil, FCOIS_CON_LIBSHIFTERBOX_EXCLUDESETS)
+                                                        end
+                                                    end
+                                                end
                                             end,
                                             width="full",
                                             minHeight = 220,
-                                            disabled = function() return not FCOISsettings.autoMarkSetsExcludeSets or not FCOIS.libSets end,
+                                            --disabled = function() return not FCOISsettings.autoMarkSetsExcludeSets or not FCOIS.libSets  end,
                                         },
 
                                     } --controls

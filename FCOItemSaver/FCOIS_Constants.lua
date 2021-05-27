@@ -67,6 +67,10 @@ FCOIS.svSettingsForAllName          = "SettingsForAll"
 FCOIS.svSettingsName                = "Settings"
 FCOIS.svSettingsForEachCharacterName= "SettingsForEachCharacter"
 
+--LibShifterBox boxName constants
+FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES  = "FCOISuniqueIdItemTypes"
+FCOIS_CON_LIBSHIFTERBOX_EXCLUDESETS             = "FCOISexcludedSets"
+
 --The global variable for the current mouseDown button
 FCOIS.gMouseButtonDown = {}
 
@@ -3046,10 +3050,10 @@ mappingVars.adjustAdditionalFlagButtonOffsetForPanel = {
 --The ordinal endings of the different languages
 mappingVars.iconNrToOrdinalStr = {
     --English
-    [1] =    {
-        [1] = "st",
-        [2] = "nd",
-        [3] = "rd",
+    [1] = {
+        [1]  = "st",
+        [2]  = "nd",
+        [3]  = "rd",
         [21] = "st",
         [22] = "nd",
         [23] = "rd",
@@ -3058,16 +3062,16 @@ mappingVars.iconNrToOrdinalStr = {
         [33] = "rd",
     },
     --French
-    [3] =    {
-        [1] = "premier",
-        [2] = "deuxième",
-        [3] = "troisième",
-        [4] = "quatrième",
-        [5] = "cinquième",
-        [6] = "sixième",
-        [7] = "septième",
-        [8] = "huitième",
-        [9] = "neuvième",
+    [3] = {
+        [1]  = "premier",
+        [2]  = "deuxième",
+        [3]  = "troisième",
+        [4]  = "quatrième",
+        [5]  = "cinquième",
+        [6]  = "sixième",
+        [7]  = "septième",
+        [8]  = "huitième",
+        [9]  = "neuvième",
         [10] = "dixième",
         [11] = "onzième",
         [12] = "douzième",

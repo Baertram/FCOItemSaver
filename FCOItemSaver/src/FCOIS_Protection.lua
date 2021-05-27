@@ -337,7 +337,12 @@ function FCOIS.checkIfItemIsProtected(iconId, itemId, checkHandler, addonName, s
             return false
         end
         --Check if the item is marked with the icon
-        itemIsMarked = FCOIS[savedVarsTableNameForMarkers][iconId][signItemId(itemId, nil, nil, addonName, nil, nil)]
+        if FCOIS[savedVarsTableNameForMarkers][iconId] then
+            itemIsMarked = FCOIS[savedVarsTableNameForMarkers][iconId][signItemId(itemId, nil, nil, addonName, nil, nil)]
+        else
+            --Error message
+            FCOIS.debugMessage("[checkIfItemIsProtected]","itemIsMarked = FCOIS[savedVarsTableNameForMarkers][iconId] -> Missing iconId ("..tostring(iconId)..") subtable for SV table ("..tostring(savedVarsTableNameForMarkers) ..")", false, FCOIS_DEBUG_DEPTH_NORMAL, false, true)
+        end
     end
     if itemIsMarked == nil then itemIsMarked = false end
     --d("FCOIS.checkIfItemIsProtected - itemIsMarked: " .. tostring(itemIsMarked))
