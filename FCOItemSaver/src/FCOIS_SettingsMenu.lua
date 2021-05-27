@@ -3919,10 +3919,8 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                                                 FCOIS.createLibShifterBox(customControl, FCOIS_CON_LIBSHIFTERBOX_EXCLUDESETS)
                                                 --Will be called by the LAM panel automatically upon refresh of controls
                                                 customControl.UpdateDisabled = function(customControl)
-                                                    if not FCOISsettings.autoMarkSetsExcludeSets or not FCOIS.libSets then
-                                                        if lsb and libShifterBoxes[FCOIS_CON_LIBSHIFTERBOX_EXCLUDESETS] then
-                                                            FCOIS.updateLibShifterBoxState(libShifterBoxes[FCOIS_CON_LIBSHIFTERBOX_EXCLUDESETS].control, nil, FCOIS_CON_LIBSHIFTERBOX_EXCLUDESETS)
-                                                        end
+                                                    if lsb and libShifterBoxes[FCOIS_CON_LIBSHIFTERBOX_EXCLUDESETS] then
+                                                        FCOIS.updateLibShifterBoxState(customControl, nil, FCOIS_CON_LIBSHIFTERBOX_EXCLUDESETS)
                                                     end
                                                 end
                                             end,

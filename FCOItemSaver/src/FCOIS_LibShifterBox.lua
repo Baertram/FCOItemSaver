@@ -214,7 +214,7 @@ local function updateLibShifterBoxState(parentCtrl, shifterBox, boxName)
     if boxName == FCOISuniqueIdItemTypes then
         isEnabled = FCOIS.uniqueIdIsEnabledAndSetToFCOIS()
     elseif boxName == FCOISexcludedSets then
-        isEnabled = FCOIS.settingsVars.settings.autoMarkSetsExcludeSets
+        isEnabled = (FCOIS.libSets ~= nil and FCOIS.settingsVars.settings.autoMarkSetsExcludeSets == true) or false
     end
 
     parentCtrl:SetHidden(false)
