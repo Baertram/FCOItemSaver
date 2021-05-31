@@ -2659,117 +2659,152 @@ contextMenuVars.filterPanelIdToContextMenuButtonInvoker = {
 	[LF_INVENTORY] 					= {
         ["addInvButton"]  = true,
         ["parent"]        = ctrlVars.INV,
-        ["name"]          = invAddButtonVars.playerInventoryFCOAdditionalOptionsButton
-    },
-	[LF_BANK_WITHDRAW] 				= {
-        ["addInvButton"]  = true,
-        ["parent"]        = ctrlVars.BANK_INV,
-        ["name"]          = invAddButtonVars.playerBankWithdrawButtonAdditionalOptions
-    },
-	[LF_BANK_DEPOSIT] 				= {
-        ["name"]          = invAddButtonVars.playerInventoryFCOAdditionalOptionsButton                      --Same like inventory
-    },
-	[LF_GUILDBANK_WITHDRAW] 		= {
-        ["addInvButton"]  = true,
-        ["parent"]        = ctrlVars.GUILD_BANK_INV,
-        ["name"]          = invAddButtonVars.guildBankFCOWithdrawButtonAdditionalOptions
-    },
-	[LF_GUILDBANK_DEPOSIT]			= {
-        ["name"]          = invAddButtonVars.playerInventoryFCOAdditionalOptionsButton                      --Same like inventory
-    },
-    [LF_VENDOR_BUY] 				= {
-        ["name"]          = invAddButtonVars.playerInventoryFCOAdditionalOptionsButton                      --Same like inventory
-    },
-    [LF_VENDOR_SELL] 				= {
-        ["name"]          = invAddButtonVars.playerInventoryFCOAdditionalOptionsButton                      --Same like inventory
-    },
-    [LF_VENDOR_BUYBACK] 				= {
-        ["name"]          = invAddButtonVars.playerInventoryFCOAdditionalOptionsButton                      --Same like inventory
-    },
-	[LF_VENDOR_REPAIR] 				= {
-        ["name"]          = invAddButtonVars.playerInventoryFCOAdditionalOptionsButton                      --Same like inventory
-    },
-    [LF_SMITHING_REFINE]		   	= {
-        ["addInvButton"]  = true,
-        ["parent"]        = ctrlVars.REFINEMENT_INV,
-        ["name"]          = invAddButtonVars.smithingTopLevelRefinementPanelInventoryButtonAdditionalOptions
-    },
-    [LF_SMITHING_DECONSTRUCT]  		= {
-        ["addInvButton"]  = true,
-        ["parent"]        = ctrlVars.DECONSTRUCTION_INV,
-        ["name"]          = invAddButtonVars.smithingTopLevelDeconstructionPanelInventoryButtonAdditionalOptions
-    },
-    [LF_SMITHING_IMPROVEMENT]		= {
-        ["addInvButton"]  = true,
-        ["parent"]        = ctrlVars.IMPROVEMENT_INV,
-        ["name"]          = invAddButtonVars.smithingTopLevelImprovementPanelInventoryButtonAdditionalOptions
-    },
-	[LF_GUILDSTORE_SELL] 	 		= {
-        ["name"]          = invAddButtonVars.playerInventoryFCOAdditionalOptionsButton                      --Same like inventory
-    },
-	[LF_MAIL_SEND] 					= {
-        ["name"]          = invAddButtonVars.playerInventoryFCOAdditionalOptionsButton                      --Same like inventory
-    },
-	[LF_TRADE] 						= {
-        ["name"]          = invAddButtonVars.playerInventoryFCOAdditionalOptionsButton                      --Same like inventory
-    },
-	[LF_ENCHANTING_CREATION]		= {
-        ["addInvButton"]  = true,
-        ["parent"]        = ctrlVars.ENCHANTING_INV,
-        ["name"]          = invAddButtonVars.enchantingTopLevelInventoryButtonAdditionalOptions
-    },
-	[LF_ENCHANTING_EXTRACTION]		= {
-        ["name"]          = invAddButtonVars.enchantingTopLevelInventoryButtonAdditionalOptions             --Same like enchanting creation
-    },
-	[LF_FENCE_SELL] 				= {
-        ["name"]          = invAddButtonVars.playerInventoryFCOAdditionalOptionsButton                      --Same like inventory
-    },
-	[LF_FENCE_LAUNDER] 				= {
-        ["name"]          = invAddButtonVars.playerInventoryFCOAdditionalOptionsButton                      --Same like inventory
+        ["name"]          = invAddButtonVars.playerInventoryFCOAdditionalOptionsButton,
+        ["sortIndex"]     = 1,
     },
     --Added with API 100015 for the crafting bags that you only got access too if you are an ESO+ subscriber
     [LF_CRAFTBAG]					= {
         ["addInvButton"]  = true,
         ["parent"]        = ctrlVars.CRAFTBAG,
-        ["name"]          = invAddButtonVars.craftBagInventoryButtonAdditionalOptions
+        ["name"]          = invAddButtonVars.craftBagInventoryButtonAdditionalOptions,
+        ["sortIndex"]     = 2,
     },
-    --Added with API 100021 Clockwork city: Retrait of items
-    [LF_RETRAIT]                    = {
+	[LF_MAIL_SEND] 					= {
+        ["name"]          = invAddButtonVars.playerInventoryFCOAdditionalOptionsButton,                      --Same like inventory
+        ["sortIndex"]     = 3,
+    },
+	[LF_TRADE] 						= {
+        ["name"]          = invAddButtonVars.playerInventoryFCOAdditionalOptionsButton,                      --Same like inventory
+        ["sortIndex"]     = 4,
+    },
+	[LF_BANK_WITHDRAW] 				= {
         ["addInvButton"]  = true,
-        ["parent"]        = ctrlVars.RETRAIT_INV,
-        ["name"]          = invAddButtonVars.retraitInventoryButtonAdditionalOptions
+        ["parent"]        = ctrlVars.BANK_INV,
+        ["name"]          = invAddButtonVars.playerBankWithdrawButtonAdditionalOptions,
+        ["sortIndex"]     = 5,
+    },
+	[LF_BANK_DEPOSIT] 				= {
+        ["name"]          = invAddButtonVars.playerInventoryFCOAdditionalOptionsButton,                      --Same like inventory
+        ["sortIndex"]     = 6,
+    },
+	[LF_GUILDBANK_WITHDRAW] 		= {
+        ["addInvButton"]  = true,
+        ["parent"]        = ctrlVars.GUILD_BANK_INV,
+        ["name"]          = invAddButtonVars.guildBankFCOWithdrawButtonAdditionalOptions,
+        ["sortIndex"]     = 7,
+    },
+	[LF_GUILDBANK_DEPOSIT]			= {
+        ["name"]          = invAddButtonVars.playerInventoryFCOAdditionalOptionsButton,                      --Same like inventory
+        ["sortIndex"]     = 8,
     },
     --Added with API 100022 Dragon bones: House storage, named House bank
     [LF_HOUSE_BANK_WITHDRAW]		= {
         ["addInvButton"]  = true,
         ["parent"]        = ctrlVars.HOUSE_BANK_INV,
-        ["name"]          = invAddButtonVars.houseBankInventoryButtonAdditionalOptions
+        ["name"]          = invAddButtonVars.houseBankInventoryButtonAdditionalOptions,
+        ["sortIndex"]     = 9,
     },
     [LF_HOUSE_BANK_DEPOSIT]			= {
-        ["name"]          = invAddButtonVars.playerInventoryFCOAdditionalOptionsButton                      --Same like inventory
+        ["name"]          = invAddButtonVars.playerInventoryFCOAdditionalOptionsButton,                      --Same like inventory
+        ["sortIndex"]     = 10,
+    },
+	[LF_GUILDSTORE_SELL] 	 		= {
+        ["name"]          = invAddButtonVars.playerInventoryFCOAdditionalOptionsButton,                      --Same like inventory
+        ["sortIndex"]     = 11,
+    },
+    [LF_VENDOR_BUY] 				= {
+        ["name"]          = invAddButtonVars.playerInventoryFCOAdditionalOptionsButton,                      --Same like inventory
+        ["sortIndex"]     = 12,
+    },
+    [LF_VENDOR_SELL] 				= {
+        ["name"]          = invAddButtonVars.playerInventoryFCOAdditionalOptionsButton,                     --Same like inventory
+        ["sortIndex"]     = 13,
+    },
+    [LF_VENDOR_BUYBACK] 				= {
+        ["name"]          = invAddButtonVars.playerInventoryFCOAdditionalOptionsButton,                      --Same like inventory
+        ["sortIndex"]     = 14,
+    },
+	[LF_VENDOR_REPAIR] 				= {
+        ["name"]          = invAddButtonVars.playerInventoryFCOAdditionalOptionsButton,                      --Same like inventory
+        ["sortIndex"]     = 15,
+    },
+	[LF_FENCE_SELL] 				= {
+        ["name"]          = invAddButtonVars.playerInventoryFCOAdditionalOptionsButton,                      --Same like inventory
+        ["sortIndex"]     = 16,
+    },
+	[LF_FENCE_LAUNDER] 				= {
+        ["name"]          = invAddButtonVars.playerInventoryFCOAdditionalOptionsButton,                      --Same like inventory
+        ["sortIndex"]     = 17,
+    },
+    [LF_SMITHING_REFINE]		   	= {
+        ["addInvButton"]  = true,
+        ["parent"]        = ctrlVars.REFINEMENT_INV,
+        ["name"]          = invAddButtonVars.smithingTopLevelRefinementPanelInventoryButtonAdditionalOptions,
+        ["sortIndex"]     = 18,
+    },
+    [LF_SMITHING_DECONSTRUCT]  		= {
+        ["addInvButton"]  = true,
+        ["parent"]        = ctrlVars.DECONSTRUCTION_INV,
+        ["name"]          = invAddButtonVars.smithingTopLevelDeconstructionPanelInventoryButtonAdditionalOptions,
+        ["sortIndex"]     = 19,
+    },
+    [LF_SMITHING_IMPROVEMENT]		= {
+        ["addInvButton"]  = true,
+        ["parent"]        = ctrlVars.IMPROVEMENT_INV,
+        ["name"]          = invAddButtonVars.smithingTopLevelImprovementPanelInventoryButtonAdditionalOptions,
+        ["sortIndex"]     = 20,
+    },
+	[LF_ENCHANTING_CREATION]		= {
+        ["addInvButton"]  = true,
+        ["parent"]        = ctrlVars.ENCHANTING_INV,
+        ["name"]          = invAddButtonVars.enchantingTopLevelInventoryButtonAdditionalOptions,
+        ["sortIndex"]     = 21,
+    },
+	[LF_ENCHANTING_EXTRACTION]		= {
+        ["name"]          = invAddButtonVars.enchantingTopLevelInventoryButtonAdditionalOptions,             --Same like enchanting creation
+        ["sortIndex"]     = 22,
+    },
+    --Added with API 100021 Clockwork city: Retrait of items
+    [LF_RETRAIT]                    = {
+        ["addInvButton"]  = true,
+        ["parent"]        = ctrlVars.RETRAIT_INV,
+        ["name"]          = invAddButtonVars.retraitInventoryButtonAdditionalOptions,
+        ["sortIndex"]     = 23,
     },
     --Added with API 100023 Summerset: SMITHING for jewelry
     [LF_JEWELRY_REFINE]		   	= {
         ["addInvButton"]  = true,
         ["parent"]        = ctrlVars.REFINEMENT_INV,
-        ["name"]          = invAddButtonVars.smithingTopLevelRefinementPanelInventoryButtonAdditionalOptions
+        ["name"]          = invAddButtonVars.smithingTopLevelRefinementPanelInventoryButtonAdditionalOptions,
+        ["sortIndex"]     = 24,
     },
     [LF_JEWELRY_DECONSTRUCT]  		= {
         ["addInvButton"]  = true,
         ["parent"]        = ctrlVars.DECONSTRUCTION_INV,
-        ["name"]          = invAddButtonVars.smithingTopLevelDeconstructionPanelInventoryButtonAdditionalOptions
+        ["name"]          = invAddButtonVars.smithingTopLevelDeconstructionPanelInventoryButtonAdditionalOptions,
+        ["sortIndex"]     = 25,
     },
     [LF_JEWELRY_IMPROVEMENT]		= {
         ["addInvButton"]  = true,
         ["parent"]        = ctrlVars.IMPROVEMENT_INV,
-        ["name"]          = invAddButtonVars.smithingTopLevelImprovementPanelInventoryButtonAdditionalOptions
+        ["name"]          = invAddButtonVars.smithingTopLevelImprovementPanelInventoryButtonAdditionalOptions,
+        ["sortIndex"]     = 26,
     },
 	[LF_INVENTORY_COMPANION] 		= {
         ["addInvButton"]  = true,
         ["parent"]        = ctrlVars.COMPANION_INV_CONTROL,
-        ["name"]          = invAddButtonVars.companionInventoryFCOAdditionalOptionsButton
+        ["name"]          = invAddButtonVars.companionInventoryFCOAdditionalOptionsButton,
+        ["sortIndex"]     = 27,
     },
 }
+--Resort the panels by their sort number attribut given
+local sortedAddInvBtnInvokersNoGapIndex = {}
+for filterPanelId, addInvBtnInvokerData in pairs(contextMenuVars.filterPanelIdToContextMenuButtonInvoker) do
+    addInvBtnInvokerData.filterPanelId = filterPanelId
+    table.insert(sortedAddInvBtnInvokersNoGapIndex, addInvBtnInvokerData)
+end
+table.sort(sortedAddInvBtnInvokersNoGapIndex, function(a, b) return a.sortIndex < b.sortIndex  end)
+contextMenuVars.sortedFilterPanelIdToContextMenuButtonInvoker = sortedAddInvBtnInvokersNoGapIndex
 
 --Constants for the filter item number sort header entries "name" at the filter panels
 FCOIS.sortHeaderVars = {}

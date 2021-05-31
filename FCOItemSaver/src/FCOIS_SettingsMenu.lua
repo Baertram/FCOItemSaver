@@ -2416,8 +2416,9 @@ function FCOIS.BuildAddonMenu()
             table.insert(addInvFlagButtonsPositionsSubMenu, btncreatedControl)
         end
         --Create a submenu for each LibFilters filter panel ID where the add. inv. context menu "flag" button is active
-        local addInvBtnInvokers = FCOIS.contextMenuVars.filterPanelIdToContextMenuButtonInvoker
-        for filterPanelId, addInvBtnInvokerData in pairs(addInvBtnInvokers) do
+        local sortedAddInvBtnInvokers = FCOIS.contextMenuVars.sortedFilterPanelIdToContextMenuButtonInvoker
+        for _, addInvBtnInvokerData in ipairs(sortedAddInvBtnInvokers) do
+            local filterPanelId = addInvBtnInvokerData.filterPanelId
             local isActiveFilterPanelId = activeFilterPanelIds[filterPanelId] or false
             if isActiveFilterPanelId and addInvBtnInvokerData and addInvBtnInvokerData.addInvButton then
                 --Clear the controls of the submenu

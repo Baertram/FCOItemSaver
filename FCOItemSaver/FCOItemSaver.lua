@@ -19,7 +19,7 @@
 ---------------------------------------------------------------------
 --[ToDo list] --
 --____________________________
--- Current max bugs/features/ToDos: 121
+-- Current max bugs/features/ToDos: 128
 --____________________________
 
 --In progress: Since 2021-05-20
@@ -115,12 +115,10 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 
 --#116: ResearchAssistant: Items won't get marked (red rectangle of RA) at the bank after changing settings/reloadUI
 
---#121: Companion inventory does not show any marker icons at first open
-
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
---Since last update 2.0.3 - New version: 2.1.0 -> Updated 2021-05-23
+--Since last update 2.0.3 - New version: 2.1.0 -> Updated 2021-06-01
 ---------------------------------------------------------------------
 
 --[Fixed]
@@ -134,16 +132,16 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 --#118 Fixed drag&drop from inv/char & companion inv/char to each other -> updating the marker icons at the char equipment slots now
 --#119 Fixed double click/context menu/keybind equip/unequip updating equipment slot marker icons
 --#120: While inventory is open and character doll is shown: Removing/Adding ring marker icon (keybind/context menu/...) updates character/inventory too (if the same ring is equipped/visible)
-
+--#121: Companion inventory does not show any marker icons at first open
 --#122: Compannion character: SHIFT+right click very often after another will somehow make the context menu all of sudden not disappear anymore
 --#123: The next normal context menu will not show after an inventory item was clicked via SHIFT+right mouse button (all marker icons on that item were cleared/restored)
 
 
---Fixed character/companion equipment not removing the marker icons if companion item get's unequipped
---Fixed companion equipment cannot be equipped from companion inventory via doubleclick/drag&drop, if any non-dynamic icon is set
---Fixed companion inventory drag&drop to destroy: Protection of dynamic icons enabled/disabled via the dynamic icon's "normal inventory" protection checkbox
---Fixed doubleclick/context menu "unequip" character/companion slot to unequipp an item won't remove the marker icon at the slot
---Fixed doubleclick/context menu "unequip" companion slot to unequipp an item, if the companion inventory is hidden (companion overview e.g.), won't remove the marker icon at the slot
+--#124 Fixed character/companion equipment not removing the marker icons if companion item get's unequipped
+--#125 Fixed companion equipment cannot be equipped from companion inventory via doubleclick/drag&drop, if any non-dynamic icon is set
+--#126 Fixed companion inventory drag&drop to destroy: Protection of dynamic icons enabled/disabled via the dynamic icon's "normal inventory" protection checkbox
+--#127 Fixed doubleclick/context menu "unequip" character/companion slot to unequipp an item won't remove the marker icon at the slot
+--#128 Fixed doubleclick/context menu "unequip" companion slot to unequipp an item, if the companion inventory is hidden (companion overview e.g.), won't remove the marker icon at the slot
 
 
 --[Changed]
