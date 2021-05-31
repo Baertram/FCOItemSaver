@@ -2641,8 +2641,8 @@ function FCOIS.showItemLinkTooltip(control, parent, anchor1, offsetX, offsetY, a
     end
     local libSets = FCOIS.libSets
     if not libSets then return end
-    local key = control.dataEntry.data.key
-    local setItemId = libSets.GetSetItemId(key)
+    local data = control.dataEntry.data
+    local setItemId = data.setItemId or libSets.GetSetItemId(data.key)
     if setItemId ~= nil then
         local itemLinkOfSetItemId = libSets.buildItemLink(setItemId)
         if itemLinkOfSetItemId ~= nil and itemLinkOfSetItemId ~= "" then

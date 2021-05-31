@@ -3876,6 +3876,439 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                                     }, -- controls submenu set collections
                                 }, -- submenu set collections
                                 --==============================================================================
+                                -- Normal sets
+                                {
+                                    type = "submenu",
+                                    name = locVars["options_enable_auto_mark_sets"],
+                                    reference = "FCOItemSaver_Settings_NormalSets_SubMenu",
+                                    controls = {
+                                        --==============================================================================
+                                        -- Exclude sets auto-marking
+                                        {
+                                            type = "submenu",
+                                            name = locVars["options_header_exclude_sets"],
+                                            reference = "FCOItemSaver_Settings_ExcludeSets_SubMenu",
+                                            controls = {
+
+                                                {
+                                                    type = "description",
+                                                    text = locVars["options_exclude_automark_sets_list_TT"],
+                                                },
+
+                                                {
+                                                    type = "checkbox",
+                                                    name = locVars["options_exclude_automark_sets_list"],
+                                                    tooltip = locVars["options_exclude_automark_sets_list" .. tooltipSuffix],
+                                                    getFunc = function() return FCOISsettings.autoMarkSetsExcludeSets end,
+                                                    setFunc = function(value)
+                                                        FCOISsettings.autoMarkSetsExcludeSets = value
+                                                    end,
+                                                    --disabled = function() end,
+                                                    width = "half",
+                                                    default = FCOISdefaultSettings.autoMarkSetsExcludeSets,
+                                                },
+
+                                                --LibShifterBox: Excluded sets
+                                                {
+                                                    type = "custom",
+                                                    reference = (lsb and libShifterBoxes[FCOIS_CON_LIBSHIFTERBOX_EXCLUDESETS].name) or "FCOITEMSAVER_LAM_CUSTOM___FCOIS_EXCLUDED_SETS",
+                                                    createFunc = function(customControl)
+                                                        if not lsb then return end
+                                                        FCOIS.createLibShifterBox(customControl, FCOIS_CON_LIBSHIFTERBOX_EXCLUDESETS)
+                                                        --Will be called by the LAM panel automatically upon refresh of controls
+                                                        customControl.UpdateDisabled = function(customControl)
+                                                            if lsb and libShifterBoxes[FCOIS_CON_LIBSHIFTERBOX_EXCLUDESETS] then
+                                                                FCOIS.updateLibShifterBoxState(customControl, nil, FCOIS_CON_LIBSHIFTERBOX_EXCLUDESETS)
+                                                            end
+                                                        end
+                                                    end,
+                                                    width="full",
+                                                    minHeight = 220,
+                                                    --disabled = function() return not FCOISsettings.autoMarkSetsExcludeSets or not FCOIS.libSets  end,
+                                                },
+
+                                            } -- -- Exclude sets auto-marking controls
+                                        }, ---- Exclude sets auto-marking submenu
+
+                                        --==============================================================================
+                                        {
+                                            type = "checkbox",
+                                            name = locVars["options_enable_auto_mark_sets"],
+                                            tooltip = locVars["options_enable_auto_mark_sets" .. tooltipSuffix],
+                                            getFunc = function() return FCOISsettings.autoMarkSets end,
+                                            setFunc = function(value)
+                                                FCOISsettings.autoMarkSets = value
+                                                if (FCOISsettings.autoMarkSets == true) then
+                                                    scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
+                                                end
+                                            end,
+                                            disabled = function() return not isIconEnabled[FCOISsettings.autoMarkSetsIconNr] end,
+                                            width = "half",
+                                            default = FCOISdefaultSettings.autoMarkSets,
+                                        },
+                                        {
+                                            type = 'dropdown',
+                                            name = locVars["options_auto_mark_sets_icon"],
+                                            tooltip = locVars["options_auto_mark_sets_icon" .. tooltipSuffix],
+                                            choices = iconsList,
+                                            choicesValues = iconsListValues,
+                                            scrollable = true,
+                                            getFunc = function() return FCOISsettings.autoMarkSetsIconNr
+                                            end,
+                                            setFunc = function(value)
+                                                FCOISsettings.autoMarkSetsIconNr = value
+                                            end,
+                                            reference = "FCOItemSaver_Icon_On_Automatic_Set_Part_Dropdown",
+                                            disabled = function() return not FCOISsettings.autoMarkSets or FCOISsettings.autoMarkSetsOnlyTraits end,
+                                            width = "half",
+                                            default = FCOISdefaultSettings.autoMarkSetsIconNr,
+                                        },
+                                        {
+                                            type = "checkbox",
+                                            name = locVars["options_enable_auto_mark_check_all_icons"],
+                                            tooltip = locVars["options_enable_auto_mark_check_all_icons" .. tooltipSuffix],
+                                            getFunc = function() return FCOISsettings.autoMarkSetsCheckAllIcons end,
+                                            setFunc = function(value)
+                                                FCOISsettings.autoMarkSetsCheckAllIcons = value
+                                                if (FCOISsettings.autoMarkSetsCheckAllIcons == true) then
+                                                    scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
+                                                end
+                                            end,
+                                            disabled = function() return not FCOISsettings.autoMarkSets or FCOISsettings.autoMarkSetsOnlyTraits end,
+                                            width = "full",
+                                            default = FCOISdefaultSettings.autoMarkSetsCheckAllIcons,
+                                        },
+                                        {
+                                            type = "checkbox",
+                                            name = locVars["options_enable_auto_mark_sets_all_gear_marker_icons"],
+                                            tooltip = locVars["options_enable_auto_mark_sets_all_gear_marker_icons" .. tooltipSuffix],
+                                            getFunc = function() return FCOISsettings.autoMarkSetsCheckAllGearIcons end,
+                                            setFunc = function(value)
+                                                FCOISsettings.autoMarkSetsCheckAllGearIcons = value
+                                                if (FCOISsettings.autoMarkSetsCheckAllGearIcons == true) then
+                                                    scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
+                                                end
+                                            end,
+                                            disabled = function() return FCOISsettings.autoMarkSetsCheckAllIcons or (not isIconEnabled[FCOISsettings.autoMarkSetsIconNr] or not FCOISsettings.autoMarkSets) or FCOISsettings.autoMarkSetsOnlyTraits end,
+                                            width = "half",
+                                            default = FCOISdefaultSettings.autoMarkSetsCheckAllGearIcons,
+                                        },
+                                        {
+                                            type = "checkbox",
+                                            name = locVars["options_enable_auto_mark_sets_settracker_icons"],
+                                            tooltip = locVars["options_enable_auto_mark_sets_settracker_icons" .. tooltipSuffix],
+                                            getFunc = function() return FCOISsettings.autoMarkSetsCheckAllSetTrackerIcons end,
+                                            setFunc = function(value)
+                                                FCOISsettings.autoMarkSetsCheckAllSetTrackerIcons = value
+                                                if (FCOISsettings.autoMarkSetsCheckAllSetTrackerIcons == true) then
+                                                    scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
+                                                end
+                                            end,
+                                            disabled = function() return not FCOISsettings.autoMarkSets or not FCOIS.otherAddons.SetTracker.isActive or not FCOISsettings.autoMarkSetTrackerSets or FCOISsettings.autoMarkSetsOnlyTraits end,
+                                            width = "half",
+                                            default = FCOISdefaultSettings.autoMarkSetsCheckAllSetTrackerIcons,
+                                        },
+                                        {
+                                            type = "checkbox",
+                                            name = locVars["options_enable_auto_mark_sets_sell_icon"],
+                                            tooltip = locVars["options_enable_auto_mark_sets_sell_icon" .. tooltipSuffix],
+                                            getFunc = function() return FCOISsettings.autoMarkSetsCheckSellIcons end,
+                                            setFunc = function(value)
+                                                FCOISsettings.autoMarkSetsCheckSellIcons = value
+                                                if (FCOISsettings.autoMarkSetsCheckSellIcons == true) then
+                                                    scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
+                                                end
+                                            end,
+                                            disabled = function() return FCOISsettings.autoMarkSetsCheckAllIcons or (not FCOISsettings.autoMarkSets or (not isIconEnabled[FCOIS_CON_ICON_SELL] and not isIconEnabled[FCOIS_CON_ICON_SELL_AT_GUILDSTORE])) or FCOISsettings.autoMarkSetsOnlyTraits end,
+                                            width = "full",
+                                            default = FCOISdefaultSettings.autoMarkSetsCheckSellIcons,
+                                        },
+                                        {
+                                            type = "checkbox",
+                                            name = locVars["options_auto_mark_traits_only"],
+                                            tooltip = locVars["options_auto_mark_traits_only" .. tooltipSuffix],
+                                            getFunc = function() return FCOISsettings.autoMarkSetsOnlyTraits end,
+                                            setFunc = function(value)
+                                                FCOISsettings.autoMarkSetsOnlyTraits = value
+                                            end,
+                                            disabled = function() return not FCOISsettings.autoMarkSets end,
+                                            width = "full",
+                                            default = FCOISdefaultSettings.autoMarkSetsOnlyTraits,
+                                        },
+
+                                        --==============================================================================
+                                        -- Sets - Traits
+                                        {
+                                            type = "submenu",
+                                            name = locVars["options_header_traits"],
+                                            reference = "FCOItemSaver_Settings_Set_Traits_SubMenu",
+                                            controls = {
+                                                --==============================================================================
+                                                -- Sets - Armor traits
+                                                {
+                                                    type = "submenu",
+                                                    name = GetString(SI_ITEMTYPE45),
+                                                    controls = armorTraitControls,
+                                                }, -- sub menu armor tarits
+                                                --==============================================================================
+                                                -- Sets - Jewelry traits
+                                                {
+                                                    type = "submenu",
+                                                    name = GetString(SI_GAMEPADITEMCATEGORY38) .. " " .. GetString(SI_SMITHING_HEADER_TRAIT),
+                                                    controls = jewelryTraitControls,
+                                                }, -- submenu jewelry traits
+                                                --==============================================================================
+                                                -- Sets - Weapon traits
+                                                {
+                                                    type = "submenu",
+                                                    name = GetString(SI_ITEMTYPE46),
+                                                    controls = weaponTraitControls,
+                                                }, -- submenu weapon traits
+                                                --==============================================================================
+                                                -- Sets - Shield traits
+                                                {
+                                                    type = "submenu",
+                                                    name = GetString(SI_TRADING_HOUSE_BROWSE_ARMOR_TYPE_SHIELD),
+                                                    controls = weaponShieldTraitControls,
+                                                }, -- submenu weapon traits
+                                                --==============================================================================
+                                                --Additional automatic-marking: Non-wished options
+                                                {
+                                                    type = "submenu",
+                                                    name = locVars["options_header_non_wished"],
+                                                    reference = "FCOItemSaver_Settings_Set_Traits_NonWished_SubMenu",
+                                                    controls = {
+
+                                                        {
+                                                            type = "checkbox",
+                                                            name = locVars["options_enable_auto_mark_sets_non_wished"],
+                                                            tooltip = locVars["options_enable_auto_mark_sets_non_wished" .. tooltipSuffix],
+                                                            getFunc = function() return FCOISsettings.autoMarkSetsNonWished end,
+                                                            setFunc = function(value)
+                                                                FCOISsettings.autoMarkSetsNonWished = value
+                                                                if (FCOISsettings.autoMarkSetsNonWished == true) then
+                                                                    scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
+                                                                end
+
+                                                            end,
+                                                            disabled = function() return (not isIconEnabled[FCOISsettings.autoMarkSetsNonWishedIconNr] or not FCOISsettings.autoMarkSets) end,
+                                                            width = "half",
+                                                            default = FCOISdefaultSettings.autoMarkSetsNonWished,
+                                                        },
+                                                        {
+                                                            type = 'dropdown',
+                                                            name = locVars["options_enable_auto_mark_sets_non_wished_icon"],
+                                                            tooltip = locVars["options_enable_auto_mark_sets_non_wished_icon" .. tooltipSuffix],
+                                                            choices = iconsList,
+                                                            choicesValues = iconsListValues,
+                                                            scrollable = true,
+                                                            getFunc = function() return FCOISsettings.autoMarkSetsNonWishedIconNr
+                                                            end,
+                                                            setFunc = function(value)
+                                                                FCOISsettings.autoMarkSetsNonWishedIconNr = value
+                                                            end,
+                                                            reference = "FCOItemSaver_Icon_On_Automatic_Non_Wished_Set_Part_Dropdown",
+                                                            disabled = function() return (not FCOISsettings.autoMarkSets or not FCOISsettings.autoMarkSetsNonWished) end,
+                                                            width = "half",
+                                                            default = FCOISdefaultSettings.autoMarkSetsNonWishedIconNr,
+                                                        },
+
+                                                        {
+                                                            type = "checkbox",
+                                                            name = locVars["options_enable_auto_mark_sets_non_wished_char_below_level_50"],
+                                                            tooltip = locVars["options_enable_auto_mark_sets_non_wished_char_below_level_50" .. tooltipSuffix],
+                                                            getFunc = function() return FCOISsettings.autoMarkSetsNonWishedIfCharBelowLevel end,
+                                                            setFunc = function(value)
+                                                                FCOISsettings.autoMarkSetsNonWishedIfCharBelowLevel = value
+                                                                if (FCOISsettings.autoMarkSetsNonWished == true) then
+                                                                    scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
+                                                                end
+                                                            end,
+                                                            disabled = function() return (not FCOISsettings.autoMarkSetsNonWished or (not isIconEnabled[FCOISsettings.autoMarkSetsNonWishedIconNr] or not FCOISsettings.autoMarkSets)) end,
+                                                            width = "full",
+                                                            default = FCOISdefaultSettings.autoMarkSetsNonWishedIfCharBelowLevel,
+                                                        },
+
+                                                        {
+                                                            type = 'dropdown',
+                                                            name = locVars["options_enable_auto_mark_sets_non_wished_checks"],
+                                                            tooltip = locVars["options_enable_auto_mark_sets_non_wished_checks" .. tooltipSuffix],
+                                                            choices = nonWishedChecksList,
+                                                            choicesValues = nonWishedChecksValuesList,
+                                                            --scrollable = true,
+                                                            getFunc = function() return FCOISsettings.autoMarkSetsNonWishedChecks end,
+                                                            setFunc = function(value)
+                                                                FCOISsettings.autoMarkSetsNonWishedChecks = value
+                                                                if (FCOISsettings.autoMarkSetsNonWishedChecks == true) then
+                                                                    scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
+                                                                end
+                                                            end,
+                                                            disabled = function()return (FCOISsettings.autoMarkSetsNonWishedIfCharBelowLevel and not FCOIS.checkNeededLevel("player", 50)) or (not FCOISsettings.autoMarkSets or not FCOISsettings.autoMarkSetsNonWished or not isIconEnabled[FCOISsettings.autoMarkSetsNonWishedIconNr] or not isIconEnabled[FCOIS_CON_ICON_SELL]) end,
+                                                            width = "full",
+                                                            default = FCOISdefaultSettings.autoMarkSetsNonWishedChecks,
+                                                        },
+
+                                                        {
+                                                            type = 'dropdown',
+                                                            name = locVars["options_enable_auto_mark_sets_non_wished_level"],
+                                                            tooltip = locVars["options_enable_auto_mark_sets_non_wished_level" .. tooltipSuffix],
+                                                            choices = levelList,
+                                                            scrollable = true,
+                                                            getFunc = function() return levelList[FCOISsettings.autoMarkSetsNonWishedLevel] end,
+                                                            setFunc = function(value)
+                                                                for i,v in pairs(levelList) do
+                                                                    if v == value then
+                                                                        FCOISsettings.autoMarkSetsNonWishedLevel = i
+                                                                        if i ~= 1 then
+                                                                            scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
+                                                                        end
+                                                                        break
+                                                                    end
+                                                                end
+                                                            end,
+                                                            disabled = function()return (FCOISsettings.autoMarkSetsNonWishedIfCharBelowLevel and not FCOIS.checkNeededLevel("player", 50)) or (not FCOISsettings.autoMarkSets or not FCOISsettings.autoMarkSetsNonWished or not isIconEnabled[FCOISsettings.autoMarkSetsNonWishedIconNr] or not isIconEnabled[FCOIS_CON_ICON_SELL] or (FCOISsettings.autoMarkSetsNonWishedChecks~=FCOIS_CON_NON_WISHED_ALL and FCOISsettings.autoMarkSetsNonWishedChecks~=FCOIS_CON_NON_WISHED_LEVEL)) end,
+                                                            width = "full",
+                                                            default = levelList[FCOISdefaultSettings.autoMarkSetsNonWishedLevel],
+                                                        },
+
+                                                        {
+                                                            type = 'dropdown',
+                                                            name = locVars["options_enable_auto_mark_sets_non_wished_quality"],
+                                                            tooltip = locVars["options_enable_auto_mark_sets_non_wished_quality" .. tooltipSuffix],
+                                                            choices = qualityList,
+                                                            getFunc = function() return qualityList[FCOISsettings.autoMarkSetsNonWishedQuality] end,
+                                                            setFunc = function(value)
+                                                                for i,v in pairs(qualityList) do
+                                                                    if v == value then
+                                                                        FCOISsettings.autoMarkSetsNonWishedQuality = i
+                                                                        if i ~= 1 then
+                                                                            scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
+                                                                        end
+                                                                        break
+                                                                    end
+                                                                end
+                                                            end,
+                                                            disabled = function()return (FCOISsettings.autoMarkSetsNonWishedIfCharBelowLevel and not FCOIS.checkNeededLevel("player", 50)) or (not FCOISsettings.autoMarkSets or not FCOISsettings.autoMarkSetsNonWished or not isIconEnabled[FCOISsettings.autoMarkSetsNonWishedIconNr] or not isIconEnabled[FCOIS_CON_ICON_SELL] or (FCOISsettings.autoMarkSetsNonWishedChecks~=FCOIS_CON_NON_WISHED_ALL and FCOISsettings.autoMarkSetsNonWishedChecks~=FCOIS_CON_NON_WISHED_QUALITY)) end,
+                                                            width = "full",
+                                                            default = qualityList[FCOISdefaultSettings.autoMarkSetsNonWishedQuality],
+                                                        },
+                                                        {
+                                                            type = "checkbox",
+                                                            name = locVars["options_enable_auto_mark_sets_non_wished_sell_others"],
+                                                            tooltip = locVars["options_enable_auto_mark_sets_non_wished_sell_others" .. tooltipSuffix],
+                                                            getFunc = function() return FCOISsettings.autoMarkSetsNonWishedSellOthers end,
+                                                            setFunc = function(value)
+                                                                FCOISsettings.autoMarkSetsNonWishedSellOthers = value
+                                                                if (FCOISsettings.autoMarkSetsNonWishedSellOthers == true) then
+                                                                    scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
+                                                                end
+                                                            end,
+                                                            disabled = function() return (FCOISsettings.autoMarkSetsNonWishedIfCharBelowLevel and not FCOIS.checkNeededLevel("player", 50)) or (not FCOISsettings.autoMarkSets or not FCOISsettings.autoMarkSetsNonWished or not isIconEnabled[FCOIS_CON_ICON_SELL]) end,
+                                                            width = "full",
+                                                            default = FCOISdefaultSettings.autoMarkSetsNonWishedSellOthers,
+                                                        },
+                                                    }, -- controls
+                                                }, -- submenu non-wished
+
+                                                {
+                                                    type = "checkbox",
+                                                    name = locVars["options_enable_auto_mark_check_all_icons"],
+                                                    tooltip = locVars["options_enable_auto_mark_check_all_icons" .. tooltipSuffix],
+                                                    getFunc = function() return FCOISsettings.autoMarkSetsWithTraitCheckAllIcons end,
+                                                    setFunc = function(value)
+                                                        FCOISsettings.autoMarkSetsWithTraitCheckAllIcons = value
+                                                        if (FCOISsettings.autoMarkSetsWithTraitCheckAllIcons == true) then
+                                                            scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
+                                                        end
+                                                    end,
+                                                    disabled = function() return not FCOISsettings.autoMarkSets or not FCOISsettings.autoMarkSetsNonWished end,
+                                                    width = "full",
+                                                    default = FCOISdefaultSettings.autoMarkSetsWithTraitCheckAllIcons,
+                                                },
+                                                {
+                                                    type = "checkbox",
+                                                    name = locVars["options_enable_auto_mark_sets_all_gear_marker_icons"],
+                                                    tooltip = locVars["options_enable_auto_mark_sets_all_gear_marker_icons" .. tooltipSuffix],
+                                                    getFunc = function() return FCOISsettings.autoMarkSetsWithTraitCheckAllGearIcons end,
+                                                    setFunc = function(value)
+                                                        FCOISsettings.autoMarkSetsWithTraitCheckAllGearIcons = value
+                                                        if (FCOISsettings.autoMarkSetsWithTraitCheckAllGearIcons == true) then
+                                                            scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
+                                                        end
+                                                    end,
+                                                    disabled = function() return FCOISsettings.autoMarkSetsWithTraitCheckAllIcons or (not isIconEnabled[FCOISsettings.autoMarkSetsIconNr] or not FCOISsettings.autoMarkSets or not FCOISsettings.autoMarkSetsNonWished) end,
+                                                    width = "half",
+                                                    default = FCOISdefaultSettings.autoMarkSetsWithTraitCheckAllGearIcons,
+                                                },
+                                                {
+                                                    type = "checkbox",
+                                                    name = locVars["options_enable_auto_mark_sets_settracker_icons"],
+                                                    tooltip = locVars["options_enable_auto_mark_sets_settracker_icons" .. tooltipSuffix],
+                                                    getFunc = function() return FCOISsettings.autoMarkSetsWithTraitCheckAllSetTrackerIcons end,
+                                                    setFunc = function(value)
+                                                        FCOISsettings.autoMarkSetsWithTraitCheckAllSetTrackerIcons = value
+                                                        if (FCOISsettings.autoMarkSetsWithTraitCheckAllSetTrackerIcons == true) then
+                                                            scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
+                                                        end
+                                                    end,
+                                                    disabled = function() return not FCOISsettings.autoMarkSets or not FCOIS.otherAddons.SetTracker.isActive or not FCOISsettings.autoMarkSetTrackerSets or not FCOISsettings.autoMarkSetsNonWished end,
+                                                    width = "half",
+                                                    default = FCOISdefaultSettings.autoMarkSetsWithTraitCheckAllSetTrackerIcons,
+                                                },
+                                                {
+                                                    type = "checkbox",
+                                                    name = locVars["options_enable_auto_mark_sets_sell_icon"],
+                                                    tooltip = locVars["options_enable_auto_mark_sets_sell_icon" .. tooltipSuffix],
+                                                    getFunc = function() return FCOISsettings.autoMarkSetsWithTraitCheckSellIcons end,
+                                                    setFunc = function(value)
+                                                        FCOISsettings.autoMarkSetsWithTraitCheckSellIcons = value
+                                                        if (FCOISsettings.autoMarkSetsWithTraitCheckSellIcons == true) then
+                                                            scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
+                                                        end
+                                                    end,
+                                                    disabled = function() return FCOISsettings.autoMarkSetsWithTraitCheckAllIcons or (not FCOISsettings.autoMarkSets or (not isIconEnabled[FCOIS_CON_ICON_SELL] and not isIconEnabled[FCOIS_CON_ICON_SELL_AT_GUILDSTORE])) or not FCOISsettings.autoMarkSetsNonWished end,
+                                                    width = "full",
+                                                    default = FCOISdefaultSettings.autoMarkSetsWithTraitCheckSellIcons,
+                                                },
+                                                {
+                                                    type = "checkbox",
+                                                    name = locVars["options_auto_mark_traits_with_set_too"],
+                                                    tooltip = locVars["options_auto_mark_traits_with_set_too" .. tooltipSuffix],
+                                                    getFunc = function() return FCOISsettings.autoMarkSetsWithTraitIfAutoSetMarked end,
+                                                    setFunc = function(value)
+                                                        FCOISsettings.autoMarkSetsWithTraitIfAutoSetMarked = value
+                                                        if (FCOISsettings.autoMarkSetsWithTraitIfAutoSetMarked == true) then
+                                                            scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
+                                                        end
+                                                    end,
+                                                    width = "half",
+                                                    disabled = function() return FCOISsettings.autoMarkSetsWithTraitCheckAllIcons or (not isIconEnabled[FCOISsettings.autoMarkSetsIconNr] or not FCOISsettings.autoMarkSets) end,
+                                                    default = FCOISdefaultSettings.autoMarkSetsWithTraitIfAutoSetMarked,
+                                                },
+
+                                            }, --Sets traits controls
+                                        }, --Sets traits submenu
+
+                                        {
+                                            type = "checkbox",
+                                            name = locVars["options_enable_auto_mark_sets_in_chat"],
+                                            tooltip = locVars["options_enable_auto_mark_sets_in_chat" .. tooltipSuffix],
+                                            getFunc = function() return FCOISsettings.showSetsInChat end,
+                                            setFunc = function(value)
+                                                FCOISsettings.showSetsInChat = value
+                                            end,
+                                            disabled = function() return not isIconEnabled[FCOISsettings.autoMarkSetsIconNr] or not FCOISsettings.autoMarkSets end,
+                                            width = "half",
+                                            default = FCOISdefaultSettings.showSetsInChat,
+                                        },
+
+
+                                    }, -- normal sets controls
+
+                                }, -- normal sets submenu
+
+
+                                --==============================================================================
                                 -- SetTracker auto-marking
                                 {
                                     type = "submenu",
@@ -3883,413 +4316,8 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                                     reference = "FCOItemSaver_Settings_SetTracker_SubMenu",
                                     controls = SetTrackerSubmenuControls, -- dynamically created dropdown controls for each SetTracker tracking state/index
                                 },
-                                --==============================================================================
-                                -- Normal sets
-                                -- Exclude sets auto-marking
-                                {
-                                    type = "submenu",
-                                    name = locVars["options_header_exclude_sets"],
-                                    reference = "FCOItemSaver_Settings_ExcludeSets_SubMenu",
-                                    controls = {
-
-                                        {
-                                            type = "description",
-                                            text = locVars["options_exclude_automark_sets_list_TT"],
-                                        },
-
-                                        {
-                                            type = "checkbox",
-                                            name = locVars["options_exclude_automark_sets_list"],
-                                            tooltip = locVars["options_exclude_automark_sets_list" .. tooltipSuffix],
-                                            getFunc = function() return FCOISsettings.autoMarkSetsExcludeSets end,
-                                            setFunc = function(value)
-                                                FCOISsettings.autoMarkSetsExcludeSets = value
-                                            end,
-                                            --disabled = function() end,
-                                            width = "half",
-                                            default = FCOISdefaultSettings.autoMarkSetsExcludeSets,
-                                        },
-
-                                        --LibShifterBox: Excluded sets
-                                        {
-                                            type = "custom",
-                                            reference = (lsb and libShifterBoxes[FCOIS_CON_LIBSHIFTERBOX_EXCLUDESETS].name) or "FCOITEMSAVER_LAM_CUSTOM___FCOIS_EXCLUDED_SETS",
-                                            createFunc = function(customControl)
-                                                if not lsb then return end
-                                                FCOIS.createLibShifterBox(customControl, FCOIS_CON_LIBSHIFTERBOX_EXCLUDESETS)
-                                                --Will be called by the LAM panel automatically upon refresh of controls
-                                                customControl.UpdateDisabled = function(customControl)
-                                                    if lsb and libShifterBoxes[FCOIS_CON_LIBSHIFTERBOX_EXCLUDESETS] then
-                                                        FCOIS.updateLibShifterBoxState(customControl, nil, FCOIS_CON_LIBSHIFTERBOX_EXCLUDESETS)
-                                                    end
-                                                end
-                                            end,
-                                            width="full",
-                                            minHeight = 220,
-                                            --disabled = function() return not FCOISsettings.autoMarkSetsExcludeSets or not FCOIS.libSets  end,
-                                        },
-
-                                    } --controls
-                                }, --submenu
-
-                                {
-                                    type = "checkbox",
-                                    name = locVars["options_enable_auto_mark_sets"],
-                                    tooltip = locVars["options_enable_auto_mark_sets" .. tooltipSuffix],
-                                    getFunc = function() return FCOISsettings.autoMarkSets end,
-                                    setFunc = function(value)
-                                        FCOISsettings.autoMarkSets = value
-                                        if (FCOISsettings.autoMarkSets == true) then
-                                            scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
-                                        end
-                                    end,
-                                    disabled = function() return not isIconEnabled[FCOISsettings.autoMarkSetsIconNr] end,
-                                    width = "half",
-                                    default = FCOISdefaultSettings.autoMarkSets,
-                                },
-                                {
-                                    type = 'dropdown',
-                                    name = locVars["options_auto_mark_sets_icon"],
-                                    tooltip = locVars["options_auto_mark_sets_icon" .. tooltipSuffix],
-                                    choices = iconsList,
-                                    choicesValues = iconsListValues,
-                                    scrollable = true,
-                                    getFunc = function() return FCOISsettings.autoMarkSetsIconNr
-                                    end,
-                                    setFunc = function(value)
-                                        FCOISsettings.autoMarkSetsIconNr = value
-                                    end,
-                                    reference = "FCOItemSaver_Icon_On_Automatic_Set_Part_Dropdown",
-                                    disabled = function() return not FCOISsettings.autoMarkSets or FCOISsettings.autoMarkSetsOnlyTraits end,
-                                    width = "half",
-                                    default = FCOISdefaultSettings.autoMarkSetsIconNr,
-                                },
-                                {
-                                    type = "checkbox",
-                                    name = locVars["options_enable_auto_mark_check_all_icons"],
-                                    tooltip = locVars["options_enable_auto_mark_check_all_icons" .. tooltipSuffix],
-                                    getFunc = function() return FCOISsettings.autoMarkSetsCheckAllIcons end,
-                                    setFunc = function(value)
-                                        FCOISsettings.autoMarkSetsCheckAllIcons = value
-                                        if (FCOISsettings.autoMarkSetsCheckAllIcons == true) then
-                                            scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
-                                        end
-                                    end,
-                                    disabled = function() return not FCOISsettings.autoMarkSets or FCOISsettings.autoMarkSetsOnlyTraits end,
-                                    width = "full",
-                                    default = FCOISdefaultSettings.autoMarkSetsCheckAllIcons,
-                                },
-                                {
-                                    type = "checkbox",
-                                    name = locVars["options_enable_auto_mark_sets_all_gear_marker_icons"],
-                                    tooltip = locVars["options_enable_auto_mark_sets_all_gear_marker_icons" .. tooltipSuffix],
-                                    getFunc = function() return FCOISsettings.autoMarkSetsCheckAllGearIcons end,
-                                    setFunc = function(value)
-                                        FCOISsettings.autoMarkSetsCheckAllGearIcons = value
-                                        if (FCOISsettings.autoMarkSetsCheckAllGearIcons == true) then
-                                            scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
-                                        end
-                                    end,
-                                    disabled = function() return FCOISsettings.autoMarkSetsCheckAllIcons or (not isIconEnabled[FCOISsettings.autoMarkSetsIconNr] or not FCOISsettings.autoMarkSets) or FCOISsettings.autoMarkSetsOnlyTraits end,
-                                    width = "half",
-                                    default = FCOISdefaultSettings.autoMarkSetsCheckAllGearIcons,
-                                },
-                                {
-                                    type = "checkbox",
-                                    name = locVars["options_enable_auto_mark_sets_settracker_icons"],
-                                    tooltip = locVars["options_enable_auto_mark_sets_settracker_icons" .. tooltipSuffix],
-                                    getFunc = function() return FCOISsettings.autoMarkSetsCheckAllSetTrackerIcons end,
-                                    setFunc = function(value)
-                                        FCOISsettings.autoMarkSetsCheckAllSetTrackerIcons = value
-                                        if (FCOISsettings.autoMarkSetsCheckAllSetTrackerIcons == true) then
-                                            scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
-                                        end
-                                    end,
-                                    disabled = function() return not FCOISsettings.autoMarkSets or not FCOIS.otherAddons.SetTracker.isActive or not FCOISsettings.autoMarkSetTrackerSets or FCOISsettings.autoMarkSetsOnlyTraits end,
-                                    width = "half",
-                                    default = FCOISdefaultSettings.autoMarkSetsCheckAllSetTrackerIcons,
-                                },
-                                {
-                                    type = "checkbox",
-                                    name = locVars["options_enable_auto_mark_sets_sell_icon"],
-                                    tooltip = locVars["options_enable_auto_mark_sets_sell_icon" .. tooltipSuffix],
-                                    getFunc = function() return FCOISsettings.autoMarkSetsCheckSellIcons end,
-                                    setFunc = function(value)
-                                        FCOISsettings.autoMarkSetsCheckSellIcons = value
-                                        if (FCOISsettings.autoMarkSetsCheckSellIcons == true) then
-                                            scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
-                                        end
-                                    end,
-                                    disabled = function() return FCOISsettings.autoMarkSetsCheckAllIcons or (not FCOISsettings.autoMarkSets or (not isIconEnabled[FCOIS_CON_ICON_SELL] and not isIconEnabled[FCOIS_CON_ICON_SELL_AT_GUILDSTORE])) or FCOISsettings.autoMarkSetsOnlyTraits end,
-                                    width = "full",
-                                    default = FCOISdefaultSettings.autoMarkSetsCheckSellIcons,
-                                },
-                                {
-                                    type = "checkbox",
-                                    name = locVars["options_auto_mark_traits_only"],
-                                    tooltip = locVars["options_auto_mark_traits_only" .. tooltipSuffix],
-                                    getFunc = function() return FCOISsettings.autoMarkSetsOnlyTraits end,
-                                    setFunc = function(value)
-                                        FCOISsettings.autoMarkSetsOnlyTraits = value
-                                    end,
-                                    disabled = function() return not FCOISsettings.autoMarkSets end,
-                                    width = "full",
-                                    default = FCOISdefaultSettings.autoMarkSetsOnlyTraits,
-                                },
 
                                 --==============================================================================
-                                -- Sets - Traits
-                                {
-                                    type = "submenu",
-                                    name = locVars["options_header_traits"],
-                                    reference = "FCOItemSaver_Settings_Set_Traits_SubMenu",
-                                    controls = {
-                                        --==============================================================================
-                                        -- Sets - Armor traits
-                                        {
-                                            type = "submenu",
-                                            name = GetString(SI_ITEMTYPE45),
-                                            controls = armorTraitControls,
-                                        }, -- sub menu armor tarits
-                                        --==============================================================================
-                                        -- Sets - Jewelry traits
-                                        {
-                                            type = "submenu",
-                                            name = GetString(SI_GAMEPADITEMCATEGORY38) .. " " .. GetString(SI_SMITHING_HEADER_TRAIT),
-                                            controls = jewelryTraitControls,
-                                        }, -- submenu jewelry traits
-                                        --==============================================================================
-                                        -- Sets - Weapon traits
-                                        {
-                                            type = "submenu",
-                                            name = GetString(SI_ITEMTYPE46),
-                                            controls = weaponTraitControls,
-                                        }, -- submenu weapon traits
-                                        --==============================================================================
-                                        -- Sets - Shield traits
-                                        {
-                                            type = "submenu",
-                                            name = GetString(SI_TRADING_HOUSE_BROWSE_ARMOR_TYPE_SHIELD),
-                                            controls = weaponShieldTraitControls,
-                                        }, -- submenu weapon traits
-                                        --==============================================================================
-                                        --Additional automatic-marking: Non-wished options
-                                        {
-                                            type = "submenu",
-                                            name = locVars["options_header_non_wished"],
-                                            reference = "FCOItemSaver_Settings_Set_Traits_NonWished_SubMenu",
-                                            controls = {
-
-                                                {
-                                                    type = "checkbox",
-                                                    name = locVars["options_enable_auto_mark_sets_non_wished"],
-                                                    tooltip = locVars["options_enable_auto_mark_sets_non_wished" .. tooltipSuffix],
-                                                    getFunc = function() return FCOISsettings.autoMarkSetsNonWished end,
-                                                    setFunc = function(value)
-                                                        FCOISsettings.autoMarkSetsNonWished = value
-                                                        if (FCOISsettings.autoMarkSetsNonWished == true) then
-                                                            scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
-                                                        end
-
-                                                    end,
-                                                    disabled = function() return (not isIconEnabled[FCOISsettings.autoMarkSetsNonWishedIconNr] or not FCOISsettings.autoMarkSets) end,
-                                                    width = "half",
-                                                    default = FCOISdefaultSettings.autoMarkSetsNonWished,
-                                                },
-                                                {
-                                                    type = 'dropdown',
-                                                    name = locVars["options_enable_auto_mark_sets_non_wished_icon"],
-                                                    tooltip = locVars["options_enable_auto_mark_sets_non_wished_icon" .. tooltipSuffix],
-                                                    choices = iconsList,
-                                                    choicesValues = iconsListValues,
-                                                    scrollable = true,
-                                                    getFunc = function() return FCOISsettings.autoMarkSetsNonWishedIconNr
-                                                    end,
-                                                    setFunc = function(value)
-                                                        FCOISsettings.autoMarkSetsNonWishedIconNr = value
-                                                    end,
-                                                    reference = "FCOItemSaver_Icon_On_Automatic_Non_Wished_Set_Part_Dropdown",
-                                                    disabled = function() return (not FCOISsettings.autoMarkSets or not FCOISsettings.autoMarkSetsNonWished) end,
-                                                    width = "half",
-                                                    default = FCOISdefaultSettings.autoMarkSetsNonWishedIconNr,
-                                                },
-
-                                                {
-                                                    type = "checkbox",
-                                                    name = locVars["options_enable_auto_mark_sets_non_wished_char_below_level_50"],
-                                                    tooltip = locVars["options_enable_auto_mark_sets_non_wished_char_below_level_50" .. tooltipSuffix],
-                                                    getFunc = function() return FCOISsettings.autoMarkSetsNonWishedIfCharBelowLevel end,
-                                                    setFunc = function(value)
-                                                        FCOISsettings.autoMarkSetsNonWishedIfCharBelowLevel = value
-                                                        if (FCOISsettings.autoMarkSetsNonWished == true) then
-                                                            scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
-                                                        end
-                                                    end,
-                                                    disabled = function() return (not FCOISsettings.autoMarkSetsNonWished or (not isIconEnabled[FCOISsettings.autoMarkSetsNonWishedIconNr] or not FCOISsettings.autoMarkSets)) end,
-                                                    width = "full",
-                                                    default = FCOISdefaultSettings.autoMarkSetsNonWishedIfCharBelowLevel,
-                                                },
-
-                                                {
-                                                    type = 'dropdown',
-                                                    name = locVars["options_enable_auto_mark_sets_non_wished_checks"],
-                                                    tooltip = locVars["options_enable_auto_mark_sets_non_wished_checks" .. tooltipSuffix],
-                                                    choices = nonWishedChecksList,
-                                                    choicesValues = nonWishedChecksValuesList,
-                                                    --scrollable = true,
-                                                    getFunc = function() return FCOISsettings.autoMarkSetsNonWishedChecks end,
-                                                    setFunc = function(value)
-                                                        FCOISsettings.autoMarkSetsNonWishedChecks = value
-                                                        if (FCOISsettings.autoMarkSetsNonWishedChecks == true) then
-                                                            scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
-                                                        end
-                                                    end,
-                                                    disabled = function()return (FCOISsettings.autoMarkSetsNonWishedIfCharBelowLevel and not FCOIS.checkNeededLevel("player", 50)) or (not FCOISsettings.autoMarkSets or not FCOISsettings.autoMarkSetsNonWished or not isIconEnabled[FCOISsettings.autoMarkSetsNonWishedIconNr] or not isIconEnabled[FCOIS_CON_ICON_SELL]) end,
-                                                    width = "full",
-                                                    default = FCOISdefaultSettings.autoMarkSetsNonWishedChecks,
-                                                },
-
-                                                {
-                                                    type = 'dropdown',
-                                                    name = locVars["options_enable_auto_mark_sets_non_wished_level"],
-                                                    tooltip = locVars["options_enable_auto_mark_sets_non_wished_level" .. tooltipSuffix],
-                                                    choices = levelList,
-                                                    scrollable = true,
-                                                    getFunc = function() return levelList[FCOISsettings.autoMarkSetsNonWishedLevel] end,
-                                                    setFunc = function(value)
-                                                        for i,v in pairs(levelList) do
-                                                            if v == value then
-                                                                FCOISsettings.autoMarkSetsNonWishedLevel = i
-                                                                if i ~= 1 then
-                                                                    scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
-                                                                end
-                                                                break
-                                                            end
-                                                        end
-                                                    end,
-                                                    disabled = function()return (FCOISsettings.autoMarkSetsNonWishedIfCharBelowLevel and not FCOIS.checkNeededLevel("player", 50)) or (not FCOISsettings.autoMarkSets or not FCOISsettings.autoMarkSetsNonWished or not isIconEnabled[FCOISsettings.autoMarkSetsNonWishedIconNr] or not isIconEnabled[FCOIS_CON_ICON_SELL] or (FCOISsettings.autoMarkSetsNonWishedChecks~=FCOIS_CON_NON_WISHED_ALL and FCOISsettings.autoMarkSetsNonWishedChecks~=FCOIS_CON_NON_WISHED_LEVEL)) end,
-                                                    width = "full",
-                                                    default = levelList[FCOISdefaultSettings.autoMarkSetsNonWishedLevel],
-                                                },
-
-                                                {
-                                                    type = 'dropdown',
-                                                    name = locVars["options_enable_auto_mark_sets_non_wished_quality"],
-                                                    tooltip = locVars["options_enable_auto_mark_sets_non_wished_quality" .. tooltipSuffix],
-                                                    choices = qualityList,
-                                                    getFunc = function() return qualityList[FCOISsettings.autoMarkSetsNonWishedQuality] end,
-                                                    setFunc = function(value)
-                                                        for i,v in pairs(qualityList) do
-                                                            if v == value then
-                                                                FCOISsettings.autoMarkSetsNonWishedQuality = i
-                                                                if i ~= 1 then
-                                                                    scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
-                                                                end
-                                                                break
-                                                            end
-                                                        end
-                                                    end,
-                                                    disabled = function()return (FCOISsettings.autoMarkSetsNonWishedIfCharBelowLevel and not FCOIS.checkNeededLevel("player", 50)) or (not FCOISsettings.autoMarkSets or not FCOISsettings.autoMarkSetsNonWished or not isIconEnabled[FCOISsettings.autoMarkSetsNonWishedIconNr] or not isIconEnabled[FCOIS_CON_ICON_SELL] or (FCOISsettings.autoMarkSetsNonWishedChecks~=FCOIS_CON_NON_WISHED_ALL and FCOISsettings.autoMarkSetsNonWishedChecks~=FCOIS_CON_NON_WISHED_QUALITY)) end,
-                                                    width = "full",
-                                                    default = qualityList[FCOISdefaultSettings.autoMarkSetsNonWishedQuality],
-                                                },
-                                                {
-                                                    type = "checkbox",
-                                                    name = locVars["options_enable_auto_mark_sets_non_wished_sell_others"],
-                                                    tooltip = locVars["options_enable_auto_mark_sets_non_wished_sell_others" .. tooltipSuffix],
-                                                    getFunc = function() return FCOISsettings.autoMarkSetsNonWishedSellOthers end,
-                                                    setFunc = function(value)
-                                                        FCOISsettings.autoMarkSetsNonWishedSellOthers = value
-                                                        if (FCOISsettings.autoMarkSetsNonWishedSellOthers == true) then
-                                                            scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
-                                                        end
-                                                    end,
-                                                    disabled = function() return (FCOISsettings.autoMarkSetsNonWishedIfCharBelowLevel and not FCOIS.checkNeededLevel("player", 50)) or (not FCOISsettings.autoMarkSets or not FCOISsettings.autoMarkSetsNonWished or not isIconEnabled[FCOIS_CON_ICON_SELL]) end,
-                                                    width = "full",
-                                                    default = FCOISdefaultSettings.autoMarkSetsNonWishedSellOthers,
-                                                },
-                                            }, -- controls
-                                        }, -- submenu non-wished
-
-                                        {
-                                            type = "checkbox",
-                                            name = locVars["options_enable_auto_mark_check_all_icons"],
-                                            tooltip = locVars["options_enable_auto_mark_check_all_icons" .. tooltipSuffix],
-                                            getFunc = function() return FCOISsettings.autoMarkSetsWithTraitCheckAllIcons end,
-                                            setFunc = function(value)
-                                                FCOISsettings.autoMarkSetsWithTraitCheckAllIcons = value
-                                                if (FCOISsettings.autoMarkSetsWithTraitCheckAllIcons == true) then
-                                                    scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
-                                                end
-                                            end,
-                                            disabled = function() return not FCOISsettings.autoMarkSets or not FCOISsettings.autoMarkSetsNonWished end,
-                                            width = "full",
-                                            default = FCOISdefaultSettings.autoMarkSetsWithTraitCheckAllIcons,
-                                        },
-                                        {
-                                            type = "checkbox",
-                                            name = locVars["options_enable_auto_mark_sets_all_gear_marker_icons"],
-                                            tooltip = locVars["options_enable_auto_mark_sets_all_gear_marker_icons" .. tooltipSuffix],
-                                            getFunc = function() return FCOISsettings.autoMarkSetsWithTraitCheckAllGearIcons end,
-                                            setFunc = function(value)
-                                                FCOISsettings.autoMarkSetsWithTraitCheckAllGearIcons = value
-                                                if (FCOISsettings.autoMarkSetsWithTraitCheckAllGearIcons == true) then
-                                                    scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
-                                                end
-                                            end,
-                                            disabled = function() return FCOISsettings.autoMarkSetsWithTraitCheckAllIcons or (not isIconEnabled[FCOISsettings.autoMarkSetsIconNr] or not FCOISsettings.autoMarkSets or not FCOISsettings.autoMarkSetsNonWished) end,
-                                            width = "half",
-                                            default = FCOISdefaultSettings.autoMarkSetsWithTraitCheckAllGearIcons,
-                                        },
-                                        {
-                                            type = "checkbox",
-                                            name = locVars["options_enable_auto_mark_sets_settracker_icons"],
-                                            tooltip = locVars["options_enable_auto_mark_sets_settracker_icons" .. tooltipSuffix],
-                                            getFunc = function() return FCOISsettings.autoMarkSetsWithTraitCheckAllSetTrackerIcons end,
-                                            setFunc = function(value)
-                                                FCOISsettings.autoMarkSetsWithTraitCheckAllSetTrackerIcons = value
-                                                if (FCOISsettings.autoMarkSetsWithTraitCheckAllSetTrackerIcons == true) then
-                                                    scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
-                                                end
-                                            end,
-                                            disabled = function() return not FCOISsettings.autoMarkSets or not FCOIS.otherAddons.SetTracker.isActive or not FCOISsettings.autoMarkSetTrackerSets or not FCOISsettings.autoMarkSetsNonWished end,
-                                            width = "half",
-                                            default = FCOISdefaultSettings.autoMarkSetsWithTraitCheckAllSetTrackerIcons,
-                                        },
-                                        {
-                                            type = "checkbox",
-                                            name = locVars["options_enable_auto_mark_sets_sell_icon"],
-                                            tooltip = locVars["options_enable_auto_mark_sets_sell_icon" .. tooltipSuffix],
-                                            getFunc = function() return FCOISsettings.autoMarkSetsWithTraitCheckSellIcons end,
-                                            setFunc = function(value)
-                                                FCOISsettings.autoMarkSetsWithTraitCheckSellIcons = value
-                                                if (FCOISsettings.autoMarkSetsWithTraitCheckSellIcons == true) then
-                                                    scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
-                                                end
-                                            end,
-                                            disabled = function() return FCOISsettings.autoMarkSetsWithTraitCheckAllIcons or (not FCOISsettings.autoMarkSets or (not isIconEnabled[FCOIS_CON_ICON_SELL] and not isIconEnabled[FCOIS_CON_ICON_SELL_AT_GUILDSTORE])) or not FCOISsettings.autoMarkSetsNonWished end,
-                                            width = "full",
-                                            default = FCOISdefaultSettings.autoMarkSetsWithTraitCheckSellIcons,
-                                        },
-                                        {
-                                            type = "checkbox",
-                                            name = locVars["options_auto_mark_traits_with_set_too"],
-                                            tooltip = locVars["options_auto_mark_traits_with_set_too" .. tooltipSuffix],
-                                            getFunc = function() return FCOISsettings.autoMarkSetsWithTraitIfAutoSetMarked end,
-                                            setFunc = function(value)
-                                                FCOISsettings.autoMarkSetsWithTraitIfAutoSetMarked = value
-                                                if (FCOISsettings.autoMarkSetsWithTraitIfAutoSetMarked == true) then
-                                                    scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
-                                                end
-                                            end,
-                                            width = "half",
-                                            disabled = function() return FCOISsettings.autoMarkSetsWithTraitCheckAllIcons or (not isIconEnabled[FCOISsettings.autoMarkSetsIconNr] or not FCOISsettings.autoMarkSets) end,
-                                            default = FCOISdefaultSettings.autoMarkSetsWithTraitIfAutoSetMarked,
-                                        },
-
-                                    },
-                                },
-
                                 {
                                     type = "checkbox",
                                     name = locVars["options_enable_auto_mark_sets_already_bound"],
@@ -4302,18 +4330,6 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                                     default = FCOISdefaultSettings.showBoundItemMarker,
                                 },
 
-                                {
-                                    type = "checkbox",
-                                    name = locVars["options_enable_auto_mark_sets_in_chat"],
-                                    tooltip = locVars["options_enable_auto_mark_sets_in_chat" .. tooltipSuffix],
-                                    getFunc = function() return FCOISsettings.showSetsInChat end,
-                                    setFunc = function(value)
-                                        FCOISsettings.showSetsInChat = value
-                                    end,
-                                    disabled = function() return not isIconEnabled[FCOISsettings.autoMarkSetsIconNr] or not FCOISsettings.autoMarkSets end,
-                                    width = "half",
-                                    default = FCOISdefaultSettings.showSetsInChat,
-                                },
                             } -- controls sets
                         }, -- submenu sets
 

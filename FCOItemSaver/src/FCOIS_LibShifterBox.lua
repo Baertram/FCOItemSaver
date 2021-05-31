@@ -54,7 +54,7 @@ FCOIS.LibShifterBoxes = {
                 title = locVars["options_exclude_automark_sets_list"],
             }
         },
-        width       = 485,
+        width       = 450,
         height      = 200,
         --Right's list default entries
         defaultRightListKeys = {
@@ -178,11 +178,15 @@ local function updateLibShifterBoxEntries(parentCtrl, shifterBox, boxName)
     elseif boxName == FCOISexcludedSets then
         --LibSets is given?
         if FCOIS.libSets then
-            local allSetNames = FCOIS.libSets.GetAllSetNames()
+            local libSets = FCOIS.libSets
+            local allSetNames = libSets.GetAllSetNames()
             local clientLang = FCOIS.clientLanguage
             if allSetNames ~= nil then
                 local autoMarkSetsExcludeSetsList = settings.autoMarkSetsExcludeSetsList
                 for setId, setNamesTable in pairs(allSetNames) do
+                    --local setItemId = libSets.GetSetItemId(setId)
+                    -->How to add this to the data table of setNamesTable[clientLang] which will be added via AddEntriesToLeftList
+                    -->Currently not possible with LibShifterBox
                     if autoMarkSetsExcludeSetsList[setId]~= nil then
                         rightListEntries[setId] = setNamesTable[clientLang]
                     else

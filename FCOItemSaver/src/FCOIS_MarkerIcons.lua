@@ -457,7 +457,7 @@ function FCOIS.CreateTextures(whichTextures)
     if (whichTextures == 3 or doCreateAllTextures) then
         -- Marker function for character equipment if character window is shown
         if ((isCharacterShown() or isCompanionCharacterShown()) or FCOIS.addonVars.gAddonLoaded == false) then
-            FCOIS.RefreshEquipmentControl(nil, nil, nil, nil, true)
+            FCOIS.RefreshEquipmentControl(nil, nil, nil, nil, true, nil)
         end
     end
     --Quickslot

@@ -849,10 +849,10 @@ function FCOIS.CreateHooks()
         --Hide the context menu
         hideContextMenu(FCOIS.gFilterWhere)
 
-        --Update the character's equipment markers, if the character/companion character screen is shown
-        if FCOIS.isCharacterShown() or FCOIS.isCompanionCharacterShown() then
+        --Update the character's equipment markers, if the character screen is shown
+        if FCOIS.isCharacterShown() then
 --d(">RefreshEquipmentControl -> ALL")
-            FCOIS.RefreshEquipmentControl()
+            FCOIS.RefreshEquipmentControl(nil, nil, nil, nil, nil, nil)
         end
 
         --Update the dialog button 1 to show and respond again, if an item was tried to destroyed
@@ -1663,16 +1663,22 @@ function FCOIS.CreateHooks()
     --Register a secure posthook on visibility change of a scrolllist's row -> At the companion inventory list
     SecurePostHook(ctrlVars.COMPANION_INV_LIST.dataTypes[1], "setupCallback", OnScrollListRowSetupCallback)
 
+
     --Register a fragment state change on the companion character window, to update it's equipment controls
+    local companionEquipmentMarkersWereCreated = false
     ctrlVars.COMPANION_CHARACTER_FRAGMENT:RegisterCallback("StateChange", function(oldState, newState)
         if settings.debug then FCOIS.debugMessage( "[COMPANION CHARACTER FRAGMENT]","State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
         --d("[COMPANION CHARACTER FRAGMENT]","State: " .. tostring(newState))
         if     newState == SCENE_FRAGMENT_SHOWING then
+            if not companionEquipmentMarkersWereCreated then
+                --Update the character's equipment markers, if the companion character screen is shown
+--d(">RefreshEquipmentControl -> COMPANION")
+                FCOIS.RefreshEquipmentControl(nil, nil, nil, nil, nil, nil)
+                companionEquipmentMarkersWereCreated = true
+            end
+
             --Check if craftbag is active and change filter panel and parent panel accordingly
             --FCOIS.gFilterWhere, FCOIS.gFilterWhereParent = FCOIS.checkCraftbagOrOtherActivePanel(LF_INVENTORY_COMPANION)
-
-            --TODO
-            --Update the companion equipped item markers, if needed
 
         elseif newState == SCENE_FRAGMENT_HIDING then
             --Update the current filter panel ID to "Companion inventory"
