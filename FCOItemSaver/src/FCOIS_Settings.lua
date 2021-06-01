@@ -513,12 +513,13 @@ end
 --> or via the dialog FCOIS_ASK_BEFORE_MIGRATE_DIALOG after a reloadui was done and the uniqueIds were enabled
 local function scanBagsAndTransferMarkerIcon(toUnique)
     if toUnique == nil then return end
+    local preChatVars = FCOIS.preChatVars
 
     --Are the FCOIS settings already loaded?
     FCOIS.checkIfFCOISSettingsWereLoaded(false)
     local settings = FCOIS.settingsVars.settings
     local locVars = FCOIS.localizationVars.fcois_loc
-    local migrationDebugLogLine = FCOIS.preChatVars.preChatTextGreen .. zo_strformat(locVars["options_migrate_start"], "->UniqueId: " ..tostring(toUnique))
+    local migrationDebugLogLine = "///~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\\\\n"..preChatVars.preChatTextGreen .. zo_strformat(locVars["options_migrate_start"], "->UniqueId: " ..tostring(toUnique))
     d(migrationDebugLogLine)
     addToMigrationDebugLog(true, migrationDebugLogLine)
 
@@ -531,7 +532,6 @@ local function scanBagsAndTransferMarkerIcon(toUnique)
 
     local useUniqueIds = settings.useUniqueIds
     local uniqueItemIdType = settings.uniqueItemIdType
-    local preChatVars = FCOIS.preChatVars
 
     if uniqueIdWasLastEnabled == nil then
         --Unknown state of useUniqueId before reloadui -> Abort
@@ -650,7 +650,7 @@ local function scanBagsAndTransferMarkerIcon(toUnique)
     local numMigratedItems = 0
     for _, bagToCheck in pairs(bagsToCheck) do
         --Migration started for bag type
-        migrationDebugLogLine = preChatVars.preChatTextGreen .. zo_strformat(locVars["options_migrate_start"], locVars["options_migrate_bag_type_" .. bagToCheck])
+        migrationDebugLogLine = ">>>-------------------->>>" .. preChatVars.preChatTextGreen .. zo_strformat(locVars["options_migrate_start"], locVars["options_migrate_bag_type_" .. bagToCheck])
         d(migrationDebugLogLine)
         addToMigrationDebugLog(false, migrationDebugLogLine)
         --local bagCache = SHARED_INVENTORY:GenerateFullSlotData(nil, bagToCheck)
@@ -768,7 +768,7 @@ local function scanBagsAndTransferMarkerIcon(toUnique)
         d(migrationDebugLogLine)
         addToMigrationDebugLog(false, migrationDebugLogLine)
         --Migration end for bag type
-        migrationDebugLogLine = preChatVars.preChatTextRed .. zo_strformat(locVars["options_migrate_end"], locVars["options_migrate_bag_type_" .. bagToCheck])
+        migrationDebugLogLine = "==============================" .. preChatVars.preChatTextRed .. zo_strformat(locVars["options_migrate_end"], locVars["options_migrate_bag_type_" .. bagToCheck])
         d(migrationDebugLogLine)
         addToMigrationDebugLog(false, migrationDebugLogLine)
     end -- for bagType
