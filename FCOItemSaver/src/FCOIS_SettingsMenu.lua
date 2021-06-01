@@ -2987,6 +2987,10 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                         },
                         --Migrate the item markers from itemInstanceid to UniqueId
                         {
+                            type = "description",
+                            text = locVars["options_migrate_ids_migration_log"],
+                        },
+                        {
                             type = "button",
                             name = locVars["options_migrate_uniqueids"],
                             tooltip = locVars["options_migrate_uniqueids" .. tooltipSuffix],

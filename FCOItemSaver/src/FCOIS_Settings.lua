@@ -512,7 +512,7 @@ end
 --> Started by the button in the FCOIS_SettingsMenu.lua, "General settings",
 --> or via the dialog FCOIS_ASK_BEFORE_MIGRATE_DIALOG after a reloadui was done and the uniqueIds were enabled
 local function scanBagsAndTransferMarkerIcon(toUnique)
-    if toUnique == nil then return false end
+    if toUnique == nil then return end
 
     --Are the FCOIS settings already loaded?
     FCOIS.checkIfFCOISSettingsWereLoaded(false)
@@ -646,9 +646,9 @@ local function scanBagsAndTransferMarkerIcon(toUnique)
     end
 
     --Loop over all bag types
+    local numMigratedIcons = 0
+    local numMigratedItems = 0
     for _, bagToCheck in pairs(bagsToCheck) do
-        local numMigratedIcons = 0
-        local numMigratedItems = 0
         --Migration started for bag type
         migrationDebugLogLine = preChatVars.preChatTextGreen .. zo_strformat(locVars["options_migrate_start"], locVars["options_migrate_bag_type_" .. bagToCheck])
         d(migrationDebugLogLine)
@@ -774,24 +774,33 @@ local function scanBagsAndTransferMarkerIcon(toUnique)
     end -- for bagType
     --Reset the "migration needs to be done" variable
     FCOIS.preventerVars.migrateItemMarkers = false
+
+    return numMigratedItems
 end
 
 --Migrate the marker icons from the non-unique ItemInstanceIds to the uniqueIds
 function FCOIS.migrateMarkerIcons()
     local prevVars = FCOIS.preventerVars
     local settings = FCOIS.settingsVars.settings
+    local itemsMigrated
     if prevVars.migrateToUniqueIds == true or settings.useUniqueIds == true then
-        scanBagsAndTransferMarkerIcon(true)
+        itemsMigrated = scanBagsAndTransferMarkerIcon(true)
     elseif prevVars.migrateToItemInstanceIds == true or settings.useUniqueIds == false then
-        scanBagsAndTransferMarkerIcon(false)
+        itemsMigrated = scanBagsAndTransferMarkerIcon(false)
     end
     --Reset some variables
     FCOIS.preventerVars.migrateItemMarkers = false
     FCOIS.preventerVars.migrateToUniqueIds = false
     FCOIS.preventerVars.migrateToItemInstanceIds = false
+
     --Reload the UI to update all settings table properly
-    d(FCOIS.preChatVars.preChatTextRed .. "")
-    zo_callLater(function() ReloadUI("ingame")  end, 3000)
+    if itemsMigrated ~= nil and itemsMigrated > 0 then
+        local locVars = FCOIS.localizationVars.fcois_loc
+        local reloadUIText = FCOIS.preChatVars.preChatTextRed .. " " .. string.format(locVars["reloadui"], "3")
+        d(reloadUIText)
+        ZO_Alert(UI_ALERT_CATEGORY_ALERT, SOUNDS.LOCKPICKING_CHAMBER_STRESS, reloadUIText)
+        zo_callLater(function() ReloadUI("ingame")  end, 3000)
+    end
 end
 
 
