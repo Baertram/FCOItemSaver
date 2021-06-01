@@ -40,6 +40,7 @@ function FCOIS.LoadWorkarounds()
         [LF_FENCE_LAUNDER] 				= settings.iconPosition,
         [LF_ALCHEMY_CREATION] 			= settings.iconPositionCrafting,
         [LF_CRAFTBAG] 					= settings.iconPosition, -- Workaround: Craftbag, added with API 100015
+        [LF_INVENTORY_COMPANION]		= settings.iconPosition, --Added with FCOIS v.2.1.0
     }
 
     --FCOIS v0.7.8b
@@ -71,7 +72,7 @@ function FCOIS.LoadWorkarounds()
         FCOIS.updateAntiCheckAtPanelVariable(iconNr, LF_SMITHING_RESEARCH, true)
         --FCOIS v.1.4.4
         FCOIS.updateAntiCheckAtPanelVariable(iconNr, LF_JEWELRY_RESEARCH, true)
-        --FCOIS v.2.0.4
+        --FCOIS v.2.1.0
         FCOIS.updateAntiCheckAtPanelVariable(iconNr, LF_INVENTORY_COMPANION, true)
     end
 end

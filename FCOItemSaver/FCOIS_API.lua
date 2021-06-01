@@ -680,7 +680,9 @@ function FCOIS.MarkItem(bag, slot, iconId, showIcon, updateInventories)
 					--Shall we unmark the item? Then remove it from the SavedVars totally!
 					if itemIsMarked == false then itemIsMarked = nil end
 					--Un/Mark the item now
-					FCOIS[savedVarsMarkedItemsTableName][iconId][signItemId(itemId, nil, nil, nil, bag, slot)] = itemIsMarked
+					if FCOIS[savedVarsMarkedItemsTableName] and FCOIS[savedVarsMarkedItemsTableName][iconId] then
+						FCOIS[savedVarsMarkedItemsTableName][iconId][signItemId(itemId, nil, nil, nil, bag, slot)] = itemIsMarked
+					end
 					--d(">> new markedItem value: " .. tostring(FCOIS[getSavedVarsMarkedItemsTableName()][iconId][signItemId(itemId, nil, nil, nil)]))
 				end
 			end --if itemId ~= nil
@@ -874,7 +876,9 @@ function FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon
                     --Un/Mark the item now
 					local signedItemInstanceOrUniqueId = signItemId(itemInstanceOrUniqueId, nil, nil, addonName, nil, nil)
 --d(">itemId: " ..tostring(itemId) .. ", itemInstanceOrUniqueId: " .. tostring(itemInstanceOrUniqueId) .. ", signedItemInstanceOrUniqueId: " .. tostring(signedItemInstanceOrUniqueId))
-					FCOIS[savedVarsMarkedItemsTableName][iconId][signedItemInstanceOrUniqueId] = itemIsMarked
+					if FCOIS[savedVarsMarkedItemsTableName] and FCOIS[savedVarsMarkedItemsTableName][iconId] then
+						FCOIS[savedVarsMarkedItemsTableName][iconId][signedItemInstanceOrUniqueId] = itemIsMarked
+					end
 --d(">> new markedItem value: " .. tostring(FCOIS[getSavedVarsMarkedItemsTableName()][iconId][signedItemInstanceOrUniqueId]))
                 end
             end --if itemId ~= nil

@@ -533,7 +533,7 @@ local function scanBagsAndTransferMarkerIcon(toUnique)
         if uniqueIdWasLastEnabled == true then
             --Migrate from uniqueId to uniqueId: Check if the last used uniqueId type is not the same as now
             if uniqueIdTypeLastUsed ~= uniqueItemIdType then
-                d(preChatVars.preChatTextBlue .. "Migration of unique IDs type: " .. tostring(uniqueIdTypeLastUsed) .."  to uniqueIds type: " ..tostring(uniqueItemIdType))
+                d(preChatVars.preChatTextBlue .. string.format(locVars["options_migrate_uniqueId_to_uniqueId"], tostring(uniqueIdTypeLastUsed), tostring(uniqueItemIdType)))
                 --Get the old "from" SavedVariables table name -> non-unique entry
                 savedVarsMarkedItemsTableNameOld = getSavedVarsMarkedItemsTableName(uniqueIdTypeLastUsed)
             else
@@ -543,7 +543,7 @@ local function scanBagsAndTransferMarkerIcon(toUnique)
             end
         --UniqueId was not enabled before. Migrating non-unique to unique
         else
-            d(preChatVars.preChatTextBlue .. "Migration of non-unique IDs to uniqueIds type: " ..tostring(uniqueItemIdType))
+            d(preChatVars.preChatTextBlue .. string.format(locVars["options_migrate_non_uniqueId_to_uniqueId"], tostring(uniqueItemIdType)))
             --Get the old "from" SavedVariables table name -> non-unique entry
             savedVarsMarkedItemsTableNameOld = getSavedVarsMarkedItemsTableName(false)
         end
@@ -561,7 +561,7 @@ local function scanBagsAndTransferMarkerIcon(toUnique)
 
         --Was the uniqueID enabled before the migration? Migrating unique to non-unique then
         if uniqueIdWasLastEnabled == true then
-            d(preChatVars.preChatTextBlue .. "Migration of unique IDs type: " .. tostring(uniqueIdTypeLastUsed) .."  to non-uniqueIds")
+            d(preChatVars.preChatTextBlue .. string.format(locVars["options_migrate_uniqueId_to_non_uniqueId"], tostring(uniqueIdTypeLastUsed)))
             --Get the old "from" SavedVariables table name -> non-unique entry
             savedVarsMarkedItemsTableNameOld = getSavedVarsMarkedItemsTableName(uniqueIdTypeLastUsed)
         --UniqueId was not enabled before. Migrating non-unique to non-unique
@@ -993,6 +993,7 @@ function FCOIS.afterSettings()
     for filterIconHelper = FCOIS_CON_ICON_LOCK, numFilterIcons do
         if iconIsDynamic[filterIconHelper] then
             for filterIconHelperPanel = 1, numLibFiltersFilterPanelIds, 1 do
+                --Disable some filter panel IDs at the vendor!
                 if filterIconHelperPanel == LF_VENDOR_BUY or filterIconHelperPanel == LF_VENDOR_BUYBACK or filterIconHelperPanel == LF_VENDOR_REPAIR then
                     FCOIS.settingsVars.settings.icon[filterIconHelper].antiCheckAtPanel[filterIconHelperPanel] = false
                 end

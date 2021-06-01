@@ -899,9 +899,8 @@ function FCOIS.checkForPlayerActivatedTasks()
         FCOIS.temporaryUseUniqueIds = {}
     end
 
-    --Was the item ID type changed to unique IDs: Show the migrate data from old item IDs to unique itemIDs now
-    -->Was set in src/FCIS_Settings.lua, function FCOIS.afterSettings() after a reloadui was done due to the LAM
-    -->settings uniqueId change
+    --Was the item ID type changed to (non) unique IDs: Show the migrate data from old item IDs to unique itemIDs/or from unique IDs to non-unique now.
+    -->Was set in src/FCIS_Settings.lua, function FCOIS.afterSettings() after a reloadui was done due to the LAM settings uniqueId change
     if FCOIS.preventerVars.migrateItemMarkers == true then
         FCOIS.ShowAskBeforeMigrateDialog()
     end
