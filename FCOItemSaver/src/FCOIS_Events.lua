@@ -903,6 +903,9 @@ function FCOIS.checkForPlayerActivatedTasks()
     -->Was set in src/FCIS_Settings.lua, function FCOIS.afterSettings() after a reloadui was done due to the LAM settings uniqueId change
     if FCOIS.preventerVars.migrateItemMarkers == true then
         FCOIS.ShowAskBeforeMigrateDialog()
+    else
+        --Was any migration done and the reloadui after that had happened? Show the migration log then
+        FCOIS.ShowMigrationDebugLog()
     end
 end
 

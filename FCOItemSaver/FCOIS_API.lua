@@ -682,6 +682,9 @@ function FCOIS.MarkItem(bag, slot, iconId, showIcon, updateInventories)
 					--Un/Mark the item now
 					if FCOIS[savedVarsMarkedItemsTableName] and FCOIS[savedVarsMarkedItemsTableName][iconId] then
 						FCOIS[savedVarsMarkedItemsTableName][iconId][signItemId(itemId, nil, nil, nil, bag, slot)] = itemIsMarked
+					else
+						--Error message
+						FCOIS.debugMessage("[MarkItem]","FCOIS[savedVarsMarkedItemsTableName][iconId] -> Missing iconId ("..tostring(iconId)..") subtable for SV table ("..tostring(savedVarsMarkedItemsTableName) ..")", false, FCOIS_DEBUG_DEPTH_NORMAL, false, true)
 					end
 					--d(">> new markedItem value: " .. tostring(FCOIS[getSavedVarsMarkedItemsTableName()][iconId][signItemId(itemId, nil, nil, nil)]))
 				end
@@ -878,6 +881,9 @@ function FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon
 --d(">itemId: " ..tostring(itemId) .. ", itemInstanceOrUniqueId: " .. tostring(itemInstanceOrUniqueId) .. ", signedItemInstanceOrUniqueId: " .. tostring(signedItemInstanceOrUniqueId))
 					if FCOIS[savedVarsMarkedItemsTableName] and FCOIS[savedVarsMarkedItemsTableName][iconId] then
 						FCOIS[savedVarsMarkedItemsTableName][iconId][signedItemInstanceOrUniqueId] = itemIsMarked
+					else
+						--Error message
+						FCOIS.debugMessage("[MarkItemByItemInstanceId]","FCOIS[savedVarsMarkedItemsTableName][iconId] -> Missing iconId ("..tostring(iconId)..") subtable for SV table ("..tostring(savedVarsMarkedItemsTableName) ..")", false, FCOIS_DEBUG_DEPTH_NORMAL, false, true)
 					end
 --d(">> new markedItem value: " .. tostring(FCOIS[getSavedVarsMarkedItemsTableName()][iconId][signedItemInstanceOrUniqueId]))
                 end

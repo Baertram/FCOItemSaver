@@ -19,7 +19,7 @@
 ---------------------------------------------------------------------
 --[ToDo list] --
 --____________________________
--- Current max bugs/features/ToDos: 128
+-- Current max bugs/features/ToDos: 130
 --____________________________
 
 --In progress: Since 2021-05-20
@@ -114,7 +114,7 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 --                            and test if they also fit with AdvancedFilters enabled
 
 --#116: ResearchAssistant: Items won't get marked (red rectangle of RA) at the bank after changing settings/reloadUI
-
+--#129: 2021-06-01: Removing all marker icons via the add. inv. "flag" context menu does not remove companion item's marker icons
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
@@ -142,6 +142,7 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 --#126 Fixed companion inventory drag&drop to destroy: Protection of dynamic icons enabled/disabled via the dynamic icon's "normal inventory" protection checkbox
 --#127 Fixed doubleclick/context menu "unequip" character/companion slot to unequipp an item won't remove the marker icon at the slot
 --#128 Fixed doubleclick/context menu "unequip" companion slot to unequipp an item, if the companion inventory is hidden (companion overview e.g.), won't remove the marker icon at the slot
+--#130 Fixed migration of (non)unique items to move the items to the SavedVariables, and updated translations
 
 
 --[Changed]
