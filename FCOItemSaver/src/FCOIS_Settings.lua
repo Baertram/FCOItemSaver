@@ -800,6 +800,8 @@ function FCOIS.migrateMarkerIcons()
         d(reloadUIText)
         ZO_Alert(UI_ALERT_CATEGORY_ALERT, SOUNDS.LOCKPICKING_CHAMBER_STRESS, reloadUIText)
         zo_callLater(function() ReloadUI("ingame")  end, 3000)
+    else
+        settings.migrationDebugLog = nil
     end
 end
 
