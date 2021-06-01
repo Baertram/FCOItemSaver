@@ -586,17 +586,16 @@ local function scanBagsAndTransferMarkerIcon(toUnique)
     --Check the bag
     local bagsToCheck = {
         BAG_WORN,
+        BAG_COMPANION_WORN,
         BAG_BACKPACK,
         BAG_BANK,
-        --BAG_GUILDBANK,
-        BAG_COMPANION_WORN,
+        BAG_GUILDBANK,
     }
     --Is the user an ESO+ subscriber?
     if IsESOPlusSubscriber() then
         --Add the subscriber bank to the inventories to check
         if GetBagUseableSize(BAG_SUBSCRIBER_BANK) > 0 then
-            local ind = #bagsToCheck + 1
-            bagsToCheck[ind] = BAG_SUBSCRIBER_BANK
+            table.insert(bagsToCheck, 5, BAG_SUBSCRIBER_BANK)
         end
     end
 
@@ -699,12 +698,12 @@ local function scanBagsAndTransferMarkerIcon(toUnique)
                     --Is the icon marked?
                     if isMarked == true then
                         --Transfer the marker icon from the old one to the new one
---TODO: Remove comment after migration tests finished
-                        --FCOIS[savedVarsMarkedItemsTableNameNew][iconId][itemIdNew] = true
+                        FCOIS[savedVarsMarkedItemsTableNameNew][iconId] = FCOIS[savedVarsMarkedItemsTableNameNew][iconId] or {}
+                        FCOIS[savedVarsMarkedItemsTableNameNew][iconId][itemIdNew] = true
 --TODO: Remove 3 lines below after migration tests finished
-FCOIS["_migrated" .. savedVarsMarkedItemsTableNameNew] = FCOIS["_migrated" .. savedVarsMarkedItemsTableNameNew] or {}
-FCOIS["_migrated" .. savedVarsMarkedItemsTableNameNew][iconId] = FCOIS["_migrated" .. savedVarsMarkedItemsTableNameNew][iconId] or {}
-FCOIS["_migrated" .. savedVarsMarkedItemsTableNameNew][iconId][itemIdNew] = true
+--FCOIS["_migrated" .. savedVarsMarkedItemsTableNameNew] = FCOIS["_migrated" .. savedVarsMarkedItemsTableNameNew] or {}
+--FCOIS["_migrated" .. savedVarsMarkedItemsTableNameNew][iconId] = FCOIS["_migrated" .. savedVarsMarkedItemsTableNameNew][iconId] or {}
+--FCOIS["_migrated" .. savedVarsMarkedItemsTableNameNew][iconId][itemIdNew] = true
                         numMigratedIcons = numMigratedIcons + 1
                         if increaseNumMigratedItems then
                             numMigratedItems = numMigratedItems + 1
