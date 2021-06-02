@@ -19,49 +19,31 @@
 ---------------------------------------------------------------------
 --[ToDo list] --
 --____________________________
--- Current max bugs/features/ToDos: 117
+-- Current max bugs/features/ToDos: 130
 --____________________________
 
---In progress: Since 2020-06-17
--- 80) 2020-06-14, Beartram, UniqueIds do not work properly anymore as they are really unique and items with the same itemInstanceId, and everything else also the same,
--- are still unique...
--- For weapons, armor and jewelry: Change all uniqueId checks to check the item's itemLink maybe or at least infos generated from it like level, quality, itemId, trait, style and enchantmentId.
+--In progress: Since 2021-05-20
 
 ------------------------------------------------------------------------------------------------------------------------
-
--- 1) 2019-01-14 - Bugfix - Baertram
---Right clicking an item to show the context menu, and then left clicking somewhere else does not close the context menu on first click, but on 2nd click
--->Todo: Bug within LibCustomMenu -> To be fixed by Votan?
-
--- 40)  2019-11-04 Bug - Baertram
---lua error message if you use the context menu to destroy an item from inventory:
---[[
-EsoUI/Ingame/Inventory/InventorySlot.lua:1060: Attempt to access a private function 'PickupInventoryItem' from insecure code. The callstack became untrusted 1 stack frame(s) from the top.
-stack traceback:
-EsoUI/Ingame/Inventory/InventorySlot.lua:1060: in function 'ZO_InventorySlot_InitiateDestroyItem'
-EsoUI/Ingame/Inventory/InventorySlot.lua:1700: in function 'OnSelect'
-EsoUI/Libraries/ZO_ContextMenus/ZO_ContextMenus.lua:453: in function 'ZO_Menu_ClickItem'
-ZO_MenuItem1_MouseUp:4: in function '(main chunk)'
-]]
---> src/FCOIS_Hooks.lua ->     ZO_PreHookHandler(ctrlVars.BACKPACK_BAG, "OnEffectivelyShown", FCOItemSaver_OnEffectivelyShown) -> FCOItemSaver_OnEffectivelyShown ->  ZO_PreHookHandler(childrenCtrl, "OnMouseUp", function(...)
---> causes the error message!
 
 -- 76) 2020-04-12, Baertram
 -- Open bank after login and try to remove/add a marker icon via keybind-> Insecure error call
 --See addon comments by TagCdog at 2020-04-11
 --[[
 If in this specific order I mark an item as deconstructable and then try to deposit that same item into the bank, I get this error:
+Again, it has to be in the bank's deposit tab with these back-to-back actions: Mark as deconstructable via keybind key -> Deposit via 'E' key.
+If I hover to any other item and then come back to the deconstructable item there is no error.
 
-EsoUI/Ingame/Inventory/InventorySlot.lua:736: Attempt to access a private function 'PickupInventoryItem' from insecure code. The callstack became untrusted 1 stack frame(s) from the top.
-stack traceback:
-EsoUI/Ingame/Inventory/InventorySlot.lua:736: in function 'TryBankItem'
-|caaaaaa<Locals> inventorySlot = ud, bag = 1, index = 87, bankingBag = 2, canAlsoBePlacedInSubscriberBank = T </Locals>|r
-EsoUI/Ingame/Inventory/InventorySlot.lua:1608: in function 'INDEX_ACTION_CALLBACK'
+EsoUI/Ingame/Inventory/InventorySlot.lua:741: Attempt to access a private function 'PickupInventoryItem' from insecure code. The callstack became untrusted 1 stack frame(s) from the top.
+|rstack traceback:
+EsoUI/Ingame/Inventory/InventorySlot.lua:741: in function 'TryBankItem'
+|caaaaaa<Locals> inventorySlot = ud, bag = 1, index = 45, bankingBag = 2, canAlsoBePlacedInSubscriberBank = T </Locals>|r
+EsoUI/Ingame/Inventory/InventorySlot.lua:1641: in function 'INDEX_ACTION_CALLBACK'
 EsoUI/Ingame/Inventory/InventorySlotActions.lua:96: in function 'ZO_InventorySlotActions:DoPrimaryAction'
-|caaaaaa<Locals> self = [table:1]{m_contextMenuMode = F, m_hasActions = T, m_numContextMenuActions = 0}, primaryAction = [table:2]{1 = "Deposit"}, success = T </Locals>|r
+|caaaaaa<Locals> self = [table:1]{m_numContextMenuActions = 0, m_contextMenuMode = F, m_hasActions = T}, primaryAction = [table:2]{1 = "Einlagern"}, success = T </Locals>|r
 EsoUI/Ingame/Inventory/ItemSlotActionController.lua:30: in function 'callback'
-EsoUI/Libraries/ZO_KeybindStrip/ZO_KeybindStrip.lua:645: in function 'ZO_KeybindStrip:TryHandlingKeybindDown'
-|caaaaaa<Locals> self = [table:3]{allowDefaultExit = T, batchUpdating = F, insertionId = 678}, keybind = "UI_SHORTCUT_PRIMARY", buttonOrEtherealDescriptor = ud, keybindButtonDescriptor = [table:4]{order = 500, alignment = 3, keybind = "UI_SHORTCUT_PRIMARY", addedForSceneName = "bank", handledDown = T} </Locals>|r
+EsoUI/Libraries/ZO_KeybindStrip/ZO_KeybindStrip.lua:679: in function 'ZO_KeybindStrip:TryHandlingKeybindDown'
+|caaaaaa<Locals> self = [table:3]{batchUpdating = F, allowDefaultExit = T, insertionId = 29}, keybind = "UI_SHORTCUT_PRIMARY", buttonOrEtherealDescriptor = ud, keybindButtonDescriptor = [table:4]{addedForSceneName = "bank", keybind = "UI_SHORTCUT_PRIMARY", order = 500, alignment = 3} </Locals>|r
 (tail call): ?
 (tail call): ?
 ]]
@@ -128,52 +110,56 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 --     If you delete the account settings for @Baertram now, the chosen settings to use AllAccountsTheSame gets deleted as well!
 --     These SettingsForAll need to migrate and be saved somewhere else, like in a special settings table "FCOItemSaver_Settings_General"!
 
+--#115: 2021-05-13, Baertram  Reposition the additional inventory "flag" icons at crafting tables: Refine, deconstruction, improvement.
+--                            and test if they also fit with AdvancedFilters enabled
 
---#97: 2020-08-28, Piperman124  Set items get marked with impenetrable icon even though they were marked already before
---Seems if I clear all marks and then run the auto marking for set parts it applies to everything not marked with
---another set part item this way but running it again will add impen to everything even if it's already marked with divines etc.
-
---#100: 2020-12-13, Deadsoon  CraftStore automatic recipe marking will mark known recipes with the unknown marker icon
-
-
+--#116: ResearchAssistant: Items won't get marked (red rectangle of RA) at the bank after changing settings/reloadUI
+--#129: 2021-06-01: Removing all marker icons via the add. inv. "flag" context menu does not remove companion item's marker icons
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
---Since last update 2.0.2 - New version: 2.0.3 -> Updated 2021-05-10
+--Since last update 2.0.3 - New version: 2.1.0 -> Updated 2021-06-01
 ---------------------------------------------------------------------
 
 --[Fixed]
---#97 Set item marking won't be marked any longer as e.g. impenetrable if they were marked with another set related marker icon before AND the "Check all others"
---settings are enabled at the appropriate automatic mark settings
---#100 CraftStore automatic recipe marking will not mark known recipes as unknown anymore (wrong marker icon was assigned)
---#116: ResearchAssistant: Items won't get marked (red rectangle of RA) at the bank after changing settings/reloadUI
---#117: Recipe addon icon dropdownbox should not show non-recipe applyable icons (like research, gear, etc.)
+--#40 lua error message if you use the context menu to destroy an item from inventory
+
+--#111 At bank withdraw: Right click filter button and select an icon from the context menu will not update the filter button to show the selected button
+--#112 At normal inventory: Un/Equipping an item via double click will not update the inventory row to show/hide the markers of the item at the inv row automatically
+--#113 Disable the context menus to add/remove markers at 2hd weapons' backup slots
+--#114 The character window does not show the set marker icons upon first open after a reloadUI
+--#117 Recipe addon icon dropdownbox should not show non-recipe applyable icons (like research, gear, etc.)
+--#118 Fixed drag&drop from inv/char & companion inv/char to each other -> updating the marker icons at the char equipment slots now
+--#119 Fixed double click/context menu/keybind equip/unequip updating equipment slot marker icons
+--#120: While inventory is open and character doll is shown: Removing/Adding ring marker icon (keybind/context menu/...) updates character/inventory too (if the same ring is equipped/visible)
+--#121: Companion inventory does not show any marker icons at first open
+--#122: Compannion character: SHIFT+right click very often after another will somehow make the context menu all of sudden not disappear anymore
+--#123: The next normal context menu will not show after an inventory item was clicked via SHIFT+right mouse button (all marker icons on that item were cleared/restored)
+
+
+--#124 Fixed character/companion equipment not removing the marker icons if companion item get's unequipped
+--#125 Fixed companion equipment cannot be equipped from companion inventory via doubleclick/drag&drop, if any non-dynamic icon is set
+--#126 Fixed companion inventory drag&drop to destroy: Protection of dynamic icons enabled/disabled via the dynamic icon's "normal inventory" protection checkbox
+--#127 Fixed doubleclick/context menu "unequip" character/companion slot to unequipp an item won't remove the marker icon at the slot
+--#128 Fixed doubleclick/context menu "unequip" companion slot to unequipp an item, if the companion inventory is hidden (companion overview e.g.), won't remove the marker icon at the slot
+--#130 Fixed migration of (non)unique items to move the items to the SavedVariables, and updated translations
 
 
 --[Changed]
---Some small performance improvements
---Changed the order of automatic marks to use:
---1) Set items
---2) Set collections
---3) Ornate
---4) Intricate
---5) Research
---6) Research scrolls
---7) Unknown recipes
---8) Known recipes
---9) Quality
 
 --[Added]
-
+--Keybind modifier keys SHIFT/CTRL/ALT can be enabled at the keybind settings
+--Companion inventory marker icons support
+--Companion inventory additional flag context menu button
+--Companion inventory filter buttons
+--Companion character progress bar will be hidden if equipment item's contextmenu is shown
+--More FAQ links and description texts at the settings
 
 --[Added on request]
---#109 Added the possibilitiy to exclude sets from the automatic set markers. Check teh automatic marks -> sets submenu for the new submenu.
--- The shown LibShifterBox provides 2 lists, left and right. Left: All available sets. Right: All excluded sets. You need to drag&drop or use the
--- < > arrows to move the sets between left&right.
---Attention: Due to a Zs bug the list somwtimes will show "black" even though there are entries in the lists! Tis is happening especially if you
---scroll the surrounding controls like the FCOIS settings panel. Just put the mouse above the lists and scroll and you'll see the entries again.
---This is just a visual bug we cannot fix for now!
---#110 Added a "Check all others" checkbox to the automatic set marker icons
+
+--[Todo] 2021-05-13
+--Default companion invenory filter buttons positions (the 2nd, 3rd and 4th button are not next to the 1st, but way off to the right)
+
 
 --************************************************************************************************************************
 --************************************************************************************************************************
@@ -183,6 +169,8 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 if FCOIS == nil then FCOIS = {} end
 local FCOIS = FCOIS
 
+local em = EVENT_MANAGER
+
 -- =====================================================================================================================
 --  Gamepad functions
 -- =====================================================================================================================
@@ -190,9 +178,9 @@ function FCOIS.resetPreventerVariableAfterTime(eventRegisterName, preventerVaria
     local eventNameStart = FCOIS.preventerVars._prevVarReset --"FCOIS_PreventerVariableReset_"
     if eventRegisterName == nil or eventRegisterName == "" or preventerVariableName == nil or preventerVariableName == "" or resetAfterTimeMS == nil then return end
     local eventName = eventNameStart .. tostring(eventRegisterName)
-    EVENT_MANAGER:UnregisterForUpdate(eventName)
-    EVENT_MANAGER:RegisterForUpdate(eventName, resetAfterTimeMS, function()
-        EVENT_MANAGER:UnregisterForUpdate(eventName)
+    em:UnregisterForUpdate(eventName)
+    em:RegisterForUpdate(eventName, resetAfterTimeMS, function()
+        em:UnregisterForUpdate(eventName)
         if FCOIS.preventerVars == nil or FCOIS.preventerVars[preventerVariableName] == nil then return end
         FCOIS.preventerVars[preventerVariableName] = newValue
     end)

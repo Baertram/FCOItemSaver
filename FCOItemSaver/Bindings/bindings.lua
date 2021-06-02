@@ -44,6 +44,7 @@ ZO_CreateStringId("SI_BINDING_NAME_FCOIS_JUNK_ALL_SELL",                FCOIS.Ge
 ZO_CreateStringId("SI_BINDING_NAME_FCOIS_JUNK_AND_MARK_SELL_ITEM",      FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_JUNK_AND_MARK_SELL_ITEM", true))
 ZO_CreateStringId("SI_BINDING_NAME_FCOIS_REMOVE_ALL_MARKER_ICONS_AND_UNDO", FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_REMOVE_ALL_MARKER_ICONS_AND_UNDO", true))
 
+
 --Generate the keybinding texts for the static gear set icons
 function FCOIS.generateStaticGearSetIconsKeybindingsTexts()
     --Gear sets
@@ -120,6 +121,30 @@ local function JunkAllSellMarkedItems()
     FCOIS.JunkMarkedItems({FCOIS_CON_ICON_SELL}, BAG_BACKPACK)
 end
 
+--Check if the keybindings modifier keys SHIFt/CTRL/ALT should be always enabled
+--[[
+    function KEYBINDING_MANAGER:IsChordingAlwaysEnabled()
+        return KEYBINDING_MANAGER.chordingAlwaysEnabled
+    end
+]]
+function FCOIS.CheckKeybindingChording(isEnabled)
+    if isEnabled == nil then
+        isEnabled = FCOIS.settingsVars.settings.enableKeybindChording
+    end
+    if isEnabled == true then
+        --esoui\ingame\keybindings\keyboard\keybindings.lua
+        function KEYBINDING_MANAGER:IsChordingAlwaysEnabled()
+            return true
+        end
+    else
+        function KEYBINDING_MANAGER:IsChordingAlwaysEnabled()
+            return KEYBINDING_MANAGER.chordingAlwaysEnabled
+        end
+    end
+end
+local checkKeybindingChording = FCOIS.CheckKeybindingChording
+
+
 --Inventory keybinds
 function FCOIS.InitializeInventoryKeybind()
     FCOIS.keybinds = FCOIS.keybinds or {}
@@ -154,4 +179,7 @@ function FCOIS.InitializeInventoryKeybind()
         end
     end
     INVENTORY_FRAGMENT:RegisterCallback("StateChange", OnStateChanged)
+
+    --Is the keybind chording enabled?
+    checkKeybindingChording(nil)
 end

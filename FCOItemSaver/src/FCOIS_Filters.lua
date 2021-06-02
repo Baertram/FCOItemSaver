@@ -15,6 +15,12 @@ local libFilters = FCOIS.libFilters
 --The filter string names for each ID
 local filterIds2Name = FCOIS.mappingVars.libFiltersIds2StringPrefix
 
+local getFilterWhereBySettings = FCOIS.getFilterWhereBySettings
+local getSettingsIsFilterOn = FCOIS.getSettingsIsFilterOn
+local checkIfItemIsProtected = FCOIS.checkIfItemIsProtected
+local myGetItemInstanceIdNoControl = FCOIS.MyGetItemInstanceIdNoControl
+local myGetItemInstanceId = FCOIS.MyGetItemInstanceId
+
 --==========================================================================================================================================
 --                                          FCOIS - Filter function for libFilters
 --==========================================================================================================================================
@@ -41,7 +47,7 @@ local function filterItemNow(slotItemInstanceId)
     --instead of hide (due to filetr button 4).
     for filterId=1, numFilters, 1 do
         --Check if filter is activated for current slot
-        isFilterActivated = FCOIS.getSettingsIsFilterOn(filterId)
+        isFilterActivated = getSettingsIsFilterOn(filterId)
         --d("[FCOIS]filterItemNow - isFilterActivated: " .. tostring(isFilterActivated) .. ", filterId: " .. filterId)
 --Filter button 1-------------------------------------------------------------------------------------------------------
         --Special treatment for filter type 1 as it handels the lock & the 4 dynamic marker icons
@@ -53,16 +59,16 @@ local function filterItemNow(slotItemInstanceId)
                 --Filter 1 on
                 if(isFilterActivated == true
                         and (
-                        FCOIS.checkIfItemIsProtected(FCOIS_CON_ICON_LOCK, slotItemInstanceId)
-                                or FCOIS.checkIfItemIsProtected(nil, slotItemInstanceId, "dynamic")
+                        checkIfItemIsProtected(FCOIS_CON_ICON_LOCK, slotItemInstanceId)
+                                or checkIfItemIsProtected(nil, slotItemInstanceId, "dynamic")
                 )
                 ) then
                     result = false
                     --Filter 1 "show only marked"
                 elseif(isFilterActivated == -99) then
                     if (
-                            FCOIS.checkIfItemIsProtected(FCOIS_CON_ICON_LOCK, slotItemInstanceId)
-                                    or FCOIS.checkIfItemIsProtected(nil, slotItemInstanceId, "dynamic")
+                            checkIfItemIsProtected(FCOIS_CON_ICON_LOCK, slotItemInstanceId)
+                                    or checkIfItemIsProtected(nil, slotItemInstanceId, "dynamic")
                     ) then
                         result = true
                     else
@@ -81,11 +87,11 @@ local function filterItemNow(slotItemInstanceId)
                 --Last used icon ID at the LockDyn filter split context menu is stored in variable settings.lastLockDynFilterIconId[panelId]
                 --Filter 1 on
                 if( isFilterActivated == true
-                        and (FCOIS.checkIfItemIsProtected(lastLockDynFilterIconId, slotItemInstanceId) and settings.isIconEnabled[lastLockDynFilterIconId]) ) then
+                        and (checkIfItemIsProtected(lastLockDynFilterIconId, slotItemInstanceId) and settings.isIconEnabled[lastLockDynFilterIconId]) ) then
                     result = false
                     --Filter 1 "show only marked"
                 elseif( isFilterActivated == -99 ) then
-                    result = FCOIS.checkIfItemIsProtected(lastLockDynFilterIconId, slotItemInstanceId)
+                    result = checkIfItemIsProtected(lastLockDynFilterIconId, slotItemInstanceId)
                     --Filter 1 off
                 else
                     if (result ~= false) then
@@ -106,14 +112,14 @@ local function filterItemNow(slotItemInstanceId)
                     --Filter 2 on
                     if(isFilterActivated == true
                             and (
-                            FCOIS.checkIfItemIsProtected(nil, slotItemInstanceId, "gear")
+                            checkIfItemIsProtected(nil, slotItemInstanceId, "gear")
                     )
                     ) then
                         result = false
                         --Filter 2 "show only marked"
                     elseif(isFilterActivated == -99) then
                         if (
-                                FCOIS.checkIfItemIsProtected(nil, slotItemInstanceId, "gear")
+                                checkIfItemIsProtected(nil, slotItemInstanceId, "gear")
                         ) then
                             result = true
                         else
@@ -132,11 +138,11 @@ local function filterItemNow(slotItemInstanceId)
                     --Last used icon ID at the gear filter split context menu is stored in variable settings.lastGearFilterIconId[panelId]
                     --Filter 2 on
                     if( isFilterActivated == true
-                            and ( FCOIS.checkIfItemIsProtected(lastGearFilterIconId, slotItemInstanceId) and settings.isIconEnabled[lastGearFilterIconId]) ) then
+                            and ( checkIfItemIsProtected(lastGearFilterIconId, slotItemInstanceId) and settings.isIconEnabled[lastGearFilterIconId]) ) then
                         result = false
                         --Filter 2 "show only marked"
                     elseif( isFilterActivated == -99 ) then
-                        result = FCOIS.checkIfItemIsProtected(lastGearFilterIconId, slotItemInstanceId)
+                        result = checkIfItemIsProtected(lastGearFilterIconId, slotItemInstanceId)
                         --Filter 2 off
                     else
                         if (result ~= false) then
@@ -157,18 +163,18 @@ local function filterItemNow(slotItemInstanceId)
                     --Filter 3 on
                     if(isFilterActivated == true
                             and (
-                            FCOIS.checkIfItemIsProtected(FCOIS_CON_ICON_RESEARCH, slotItemInstanceId)
-                                    or FCOIS.checkIfItemIsProtected(FCOIS_CON_ICON_DECONSTRUCTION, slotItemInstanceId)
-                                    or FCOIS.checkIfItemIsProtected(FCOIS_CON_ICON_IMPROVEMENT, slotItemInstanceId)
+                            checkIfItemIsProtected(FCOIS_CON_ICON_RESEARCH, slotItemInstanceId)
+                                    or checkIfItemIsProtected(FCOIS_CON_ICON_DECONSTRUCTION, slotItemInstanceId)
+                                    or checkIfItemIsProtected(FCOIS_CON_ICON_IMPROVEMENT, slotItemInstanceId)
                     )
                     ) then
                         result = false
                         --Filter 3 "show only marked"
                     elseif(isFilterActivated == -99) then
                         if (
-                                FCOIS.checkIfItemIsProtected(FCOIS_CON_ICON_RESEARCH, slotItemInstanceId)
-                                        or FCOIS.checkIfItemIsProtected(FCOIS_CON_ICON_DECONSTRUCTION, slotItemInstanceId)
-                                        or FCOIS.checkIfItemIsProtected(FCOIS_CON_ICON_IMPROVEMENT, slotItemInstanceId)
+                                checkIfItemIsProtected(FCOIS_CON_ICON_RESEARCH, slotItemInstanceId)
+                                        or checkIfItemIsProtected(FCOIS_CON_ICON_DECONSTRUCTION, slotItemInstanceId)
+                                        or checkIfItemIsProtected(FCOIS_CON_ICON_IMPROVEMENT, slotItemInstanceId)
                         ) then
                             result = true
                         else
@@ -187,11 +193,11 @@ local function filterItemNow(slotItemInstanceId)
                     --Last used icon ID at the research/deconstruction/improvement filter split context menu is stored in variable settings.lastResDecImpFilterIconId[panelId]
                     --Filter 3 on
                     if( isFilterActivated == true
-                            and (FCOIS.checkIfItemIsProtected(lastResDecImpFilterIconId, slotItemInstanceId) and settings.isIconEnabled[lastResDecImpFilterIconId]) ) then
+                            and (checkIfItemIsProtected(lastResDecImpFilterIconId, slotItemInstanceId) and settings.isIconEnabled[lastResDecImpFilterIconId]) ) then
                         return false
                         --Filter 3 "show only marked"
                     elseif( isFilterActivated == -99 ) then
-                        result = FCOIS.checkIfItemIsProtected(lastResDecImpFilterIconId, slotItemInstanceId)
+                        result = checkIfItemIsProtected(lastResDecImpFilterIconId, slotItemInstanceId)
                         --Filter 3 off
                     else
                         if (result ~= false) then
@@ -213,18 +219,18 @@ local function filterItemNow(slotItemInstanceId)
                     --Filter 4 on
                     if(isFilterActivated == true
                             and (
-                            FCOIS.checkIfItemIsProtected(FCOIS_CON_ICON_SELL, slotItemInstanceId)
-                                    or  FCOIS.checkIfItemIsProtected(FCOIS_CON_ICON_SELL_AT_GUILDSTORE, slotItemInstanceId)
-                                    or  FCOIS.checkIfItemIsProtected(FCOIS_CON_ICON_INTRICATE, slotItemInstanceId)
+                            checkIfItemIsProtected(FCOIS_CON_ICON_SELL, slotItemInstanceId)
+                                    or  checkIfItemIsProtected(FCOIS_CON_ICON_SELL_AT_GUILDSTORE, slotItemInstanceId)
+                                    or  checkIfItemIsProtected(FCOIS_CON_ICON_INTRICATE, slotItemInstanceId)
                     )
                     ) then
                         result = false
                         --Filter 4 "show only marked"
                     elseif(isFilterActivated == -99) then
                         if (
-                                FCOIS.checkIfItemIsProtected(FCOIS_CON_ICON_SELL, slotItemInstanceId)
-                                        or FCOIS.checkIfItemIsProtected(FCOIS_CON_ICON_SELL_AT_GUILDSTORE, slotItemInstanceId)
-                                        or FCOIS.checkIfItemIsProtected(FCOIS_CON_ICON_INTRICATE, slotItemInstanceId)
+                                checkIfItemIsProtected(FCOIS_CON_ICON_SELL, slotItemInstanceId)
+                                        or checkIfItemIsProtected(FCOIS_CON_ICON_SELL_AT_GUILDSTORE, slotItemInstanceId)
+                                        or checkIfItemIsProtected(FCOIS_CON_ICON_INTRICATE, slotItemInstanceId)
                         ) then
                             result = true
                         else
@@ -243,11 +249,11 @@ local function filterItemNow(slotItemInstanceId)
                     --Last used icon ID at the Sell, Sell in guild store & Intricate filter split context menu is stored in variable settings.lastSellGuildIntFilterIconId[panelId]
                     --Filter 4 on
                     if( isFilterActivated == true
-                            and FCOIS.checkIfItemIsProtected(lastSellGuildIntFilterIconId, slotItemInstanceId) and settings.isIconEnabled[lastSellGuildIntFilterIconId]) then
+                            and checkIfItemIsProtected(lastSellGuildIntFilterIconId, slotItemInstanceId) and settings.isIconEnabled[lastSellGuildIntFilterIconId]) then
                         result = false
                         --Filter 4 "show only marked"
                     elseif( isFilterActivated == -99 ) then
-                        return FCOIS.checkIfItemIsProtected(lastSellGuildIntFilterIconId, slotItemInstanceId)
+                        return checkIfItemIsProtected(lastSellGuildIntFilterIconId, slotItemInstanceId)
                         --Filter 4 off
                     else
                         if (result ~= false) then
@@ -262,11 +268,11 @@ local function filterItemNow(slotItemInstanceId)
         else
             if result then
                 -- Other filters
-                if(isFilterActivated == true and FCOIS.checkIfItemIsProtected(filterId, slotItemInstanceId)) then
+                if(isFilterActivated == true and checkIfItemIsProtected(filterId, slotItemInstanceId)) then
                     result = false
                     --Other filter "show only marked"
                 elseif(isFilterActivated == -99) then
-                    result = FCOIS.checkIfItemIsProtected(filterId, slotItemInstanceId)
+                    result = checkIfItemIsProtected(filterId, slotItemInstanceId)
                     --Other filters off
                 else
                     if (result ~= false) then
@@ -289,7 +295,7 @@ local function FilterSavedItemsForBagIdAndSlotIndex(bagId, slotIndex, ...)
     --true  - Show the slot
     --false - Hide the slot
     -- Return value variable initalization: Show the slot
-    local slotItemInstanceId = FCOIS.MyGetItemInstanceIdNoControl(bagId, slotIndex)
+    local slotItemInstanceId = myGetItemInstanceIdNoControl(bagId, slotIndex)
     --Get the filter result variable for the current item
     local itemIsShown = filterItemNow(slotItemInstanceId)
     -- Return the result if all filters were cross-checked and last filter is reached
@@ -304,7 +310,7 @@ local function FilterSavedItemsForSlot(slot)
     --true  - Show the slot
     --false - Hide the slot
     -- Return value variable initalization: Show the slot
-    local slotItemInstanceId = FCOIS.MyGetItemInstanceId(slot)
+    local slotItemInstanceId = myGetItemInstanceId(slot)
     --Get the filter result variable for the current item
     local itemIsShown = filterItemNow(slotItemInstanceId)
     -- Return the result if all filters were cross-checked and last filter is reached
@@ -434,7 +440,7 @@ local function registerFilterId(p_onlyPlayerInvFilter, p_filterId, p_panelId)
     else
         local settings = FCOIS.settingsVars.settings
         --Is the setting for the filter on? Check and update variable
-        FCOIS.getFilterWhereBySettings(p_panelId, false)
+        getFilterWhereBySettings(p_panelId, false)
         --Read the variable now
         local isFilteringAtPanelEnabled = settings.atPanelEnabled[p_panelId]["filters"] or false
         --Get the filter function now
@@ -462,6 +468,7 @@ end
 function FCOIS.registerFilters(filterId, onlyPlayerInvFilter, p_FilterPanelId)
     --Only register filters for player inventory?
     onlyPlayerInvFilter = onlyPlayerInvFilter or false
+
     local settings = FCOIS.settingsVars.settings
     --Register only 1 filter ID?
     if (filterId ~= nil and filterId ~= -1) then
@@ -488,7 +495,6 @@ function FCOIS.registerFilters(filterId, onlyPlayerInvFilter, p_FilterPanelId)
                 if activeFilterPanelIds[lFilterWhere] == true then
                     if settings.debug then FCOIS.debugMessage( "[registerFilters]","Panel: " .. tostring(forVar) .. ", filterIdLoop: " .. tostring(filterIdLoop) .. ", OnlyPlayerInv: " .. tostring(onlyPlayerInvFilter), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
                     --register the filters for the given panels
-                    -->TODO: Typo removed on 2020-10-18 at registerfilterId
                     registerFilterId(onlyPlayerInvFilter, filterIdLoop, lFilterWhere)
                 end
             end
@@ -515,6 +521,7 @@ function FCOIS.mapLibFiltersIds2FilterFunctionsNow()
         [LF_CRAFTBAG]                               = FilterSavedItemsForSlot,
         [LF_HOUSE_BANK_WITHDRAW]                    = FilterSavedItemsForSlot,
         [LF_HOUSE_BANK_DEPOSIT]                     = FilterSavedItemsForSlot,
+        [LF_INVENTORY_COMPANION]                    = FilterSavedItemsForSlot,
         --Filter function with bagId and slotIndex
         [LF_SMITHING_REFINE]                        = FilterSavedItemsForBagIdAndSlotIndex,
         [LF_SMITHING_DECONSTRUCT]                   = FilterSavedItemsForBagIdAndSlotIndex,

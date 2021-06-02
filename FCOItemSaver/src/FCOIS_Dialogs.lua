@@ -218,7 +218,7 @@ function FCOIS.AskBeforeMigrateDialogInitialize(control)
             else
                 formattedText = localVars["options_migrate_nonuniqueids_dialog"]
             end
-            descLabel:SetText(formattedText)
+            descLabel:SetText(formattedText .. "\n\n" .. localVars["options_migrate_ids_migration_log_dialog"])
         end,
         noChoiceCallback = resetMigrateMarkerIcons,
         buttons =

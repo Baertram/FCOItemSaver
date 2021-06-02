@@ -4,6 +4,11 @@ local FCOIS = FCOIS
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
 
+local wm = WINDOW_MANAGER
+
+local checkIfProtectedSettingsEnabled = FCOIS.checkIfProtectedSettingsEnabled
+local myGetItemDetails = FCOIS.MyGetItemDetails
+
 -- =====================================================================================================================
 --  Tooltip functions
 -- =====================================================================================================================
@@ -56,6 +61,7 @@ function FCOIS.CreateToolTip(markerControl, markerId, doHide, pUpdateAllEquipmen
         local panelId = FCOIS.gFilterWhere
         local filterPanelIdToWhereAreWe = FCOIS.mappingVars.filterPanelIdToWhereAreWe
         local whereAreWe = filterPanelIdToWhereAreWe[panelId]
+--d("[FCOIS]CreateToolTip - filterPanelId: " ..tostring(panelId) .. ", whereAreWe: " ..tostring(whereAreWe))
 
         --Are we adding a tooltip to an equipment slot?
         if settings.showIconTooltipAtCharacter and pUpdateAllEquipmentTooltips then
@@ -83,16 +89,16 @@ function FCOIS.CreateToolTip(markerControl, markerId, doHide, pUpdateAllEquipmen
                 itemLink, itemInstanceOrUniqueId, bagId, slotIndex = itemLinkIIfA, itemInstanceOrUniqueIdIIfA, bagIdIIfA, slotIndexIIfA
             end
         else
-            bagId, slotIndex = FCOIS.MyGetItemDetails(markersParentControl)
+            bagId, slotIndex = myGetItemDetails(markersParentControl)
         end
         local iconIsDynamic = FCOIS.mappingVars.iconIsDynamic
-        --is the bagid and slotIndex given?
+        --is the bagId and slotIndex given?
         if bagId ~= nil or slotIndex ~= nil then
             --d("[FCOIS]CreateToolTip - bagId: " .. tostring(bagId) .. ", slotIndex: " .. tostring(slotIndex))
             --FCOIS.IsMarked(bag, slot, iconIds, excludeIconIds)
             local _, markedIconsBagSlot = FCOIS.IsMarked(bagId, slotIndex, -1, nil)
             markedIcons = markedIconsBagSlot
-            --is only the itemInstance or unique ID given?
+        --is only the itemInstance or unique ID given?
         elseif itemInstanceOrUniqueId ~= nil then
             --d("[FCOIS]CreateToolTip - itemInstanceOrUniqueId: " .. tostring(itemInstanceOrUniqueId))
             --FCOIS.IsMarkedByItemInstanceId(itemInstanceId, iconIds, excludeIconIds)
@@ -107,12 +113,12 @@ function FCOIS.CreateToolTip(markerControl, markerId, doHide, pUpdateAllEquipmen
                     markedCounter = markedCounter + 1
                     --Tooltip for any gear set?
                     local isGearIcon = settings.iconIsGear
-                    if (isGearIcon[iconId]) then
+                    if isGearIcon[iconId] then
                         local colorForText = ""
                         markedGear = markedGear + 1
                         if tooltipGearText ~= "" then tooltipGearText = tooltipGearText .. "\n" end
                         local isDynamicGearIcon = FCOIS.isDynamicGearIcon(iconId) or false
-                        local gearSettingsEnabled, isDestroyProtected = FCOIS.checkIfProtectedSettingsEnabled(panelId, iconId, isDynamicGearIcon, true, whereAreWe)
+                        local gearSettingsEnabled, isDestroyProtected = checkIfProtectedSettingsEnabled(panelId, iconId, isDynamicGearIcon, true, whereAreWe)
                         if not gearSettingsEnabled and isDestroyProtected then
                             gearSettingsEnabled = isDestroyProtected
                         end
@@ -144,7 +150,9 @@ function FCOIS.CreateToolTip(markerControl, markerId, doHide, pUpdateAllEquipmen
                                 if externalAddonCall[IIfAaddonCallConst] == false then
                                     --Check if the current dynamic icons's settings are enabled at the given panel
                                     --Call with 3rd parameter "isDynamicIcon" = true to skip "is dynamic icon check" inside the function again
-                                    local dynamicSettingsEnabled, isDestroyProtected = FCOIS.checkIfProtectedSettingsEnabled(panelId, iconId, true, true, whereAreWe)
+--d(">TooltipDynIconCheck: " ..tostring(iconId) .. ", name: " ..tostring(iconName) .. ", panelId: " ..tostring(panelId) .. ", whereAreWe: " ..tostring(whereAreWe))
+                                    local dynamicSettingsEnabled, isDestroyProtected = checkIfProtectedSettingsEnabled(panelId, iconId, true, true, whereAreWe)
+--d(">dynamicSettingsEnabled: " ..tostring(dynamicSettingsEnabled) .. ", isDestroyProtected: " ..tostring(isDestroyProtected))
                                     if not dynamicSettingsEnabled and isDestroyProtected then
                                         dynamicSettingsEnabled = isDestroyProtected
                                     end
@@ -160,7 +168,7 @@ function FCOIS.CreateToolTip(markerControl, markerId, doHide, pUpdateAllEquipmen
                         --No gear and no dynamic icon -> Static icon!
                         else
                             local colorForText = ""
-                            local normalSettingsEnabled, isDestroyProtected = FCOIS.checkIfProtectedSettingsEnabled(panelId, iconId, nil, true, whereAreWe)
+                            local normalSettingsEnabled, isDestroyProtected = checkIfProtectedSettingsEnabled(panelId, iconId, nil, true, whereAreWe)
                             if not normalSettingsEnabled and isDestroyProtected then
                                 normalSettingsEnabled = isDestroyProtected
                             end
@@ -183,7 +191,7 @@ function FCOIS.CreateToolTip(markerControl, markerId, doHide, pUpdateAllEquipmen
                         --Replace current control name ending by the current iconId
                         local equipmentMarkerControlNewName = equipmentMarkerControlName .. tostring(iconId)
                         --get the control by it's name
-                        local equipmentMarkerControl = WINDOW_MANAGER:GetControlByName(equipmentMarkerControlNewName, "")
+                        local equipmentMarkerControl = wm:GetControlByName(equipmentMarkerControlNewName, "")
                         if equipmentMarkerControl ~= nil then
                             FCOIS.CreateToolTip(equipmentMarkerControl, iconId, doHide, false)
                         end
@@ -339,7 +347,7 @@ function FCOIS.buildMarkerIconProtectedWhereTooltip(markId)
             if filterPanelName and filterPanelName ~= "" then
                 --Check the protection of the markerIcon there
                 local whereAreWe = filterPanelIdToWhereAreWe[libFilterPanelId]
-                local isProtected, isDestroyProtected = FCOIS.checkIfProtectedSettingsEnabled(libFilterPanelId, markId, nil, true, whereAreWe)
+                local isProtected, isDestroyProtected = checkIfProtectedSettingsEnabled(libFilterPanelId, markId, nil, true, whereAreWe)
                 if not isProtected and isDestroyProtected then
                     isProtected = isDestroyProtected
                 end
