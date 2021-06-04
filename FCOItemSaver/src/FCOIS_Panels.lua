@@ -341,32 +341,32 @@ function FCOIS.checkActivePanel(comingFrom, overwriteFilterWhere)
 --d("[FCOIS.checkActivePanel] comingFrom/Before: " .. tostring(comingFrom) .. ", overwriteFilterWhere: " ..tostring(overwriteFilterWhere).. ", currentSceneName: " ..tostring(currentSceneName))
 
     --Player bank
-    if ((IsBankOpen() or (currentSceneName ~= nil and currentSceneName == ctrlVars2.bankSceneName)) and not ctrlVars2.BANK:IsHidden()) or comingFrom == LF_BANK_WITHDRAW then
+    if ((currentSceneName ~= nil and currentSceneName == ctrlVars2.bankSceneName) and not ctrlVars2.BANK:IsHidden()) or comingFrom == LF_BANK_WITHDRAW then
         --Update the filterPanelId
         FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(LF_BANK_WITHDRAW)
         inventoryName = ctrlVars2.BANK_INV
     --House bank
-    elseif ((--[[IsBankOpen() or]] (currentSceneName ~= nil and currentSceneName == ctrlVars2.houseBankSceneName)) and not ctrlVars2.HOUSE_BANK:IsHidden()) or comingFrom == LF_HOUSE_BANK_WITHDRAW then
+    elseif ((currentSceneName ~= nil and currentSceneName == ctrlVars2.houseBankSceneName) and not ctrlVars2.HOUSE_BANK:IsHidden()) or comingFrom == LF_HOUSE_BANK_WITHDRAW then
         --Update the filterPanelId
         FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(LF_HOUSE_BANK_WITHDRAW)
         inventoryName = ctrlVars2.HOUSE_BANK_INV
     --Player inventory at bank (deposit)
-    elseif (IsBankOpen() or (currentSceneName ~= nil and currentSceneName == ctrlVars2.bankSceneName) and ctrlVars2.BANK:IsHidden()) or comingFrom == LF_BANK_DEPOSIT then
+    elseif ((currentSceneName ~= nil and currentSceneName == ctrlVars2.bankSceneName) and ctrlVars2.BANK:IsHidden()) or comingFrom == LF_BANK_DEPOSIT then
         --Update the filterPanelId
         FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(LF_BANK_DEPOSIT)
         inventoryName = ctrlVars2.INV
     --Player inventory at house bank (deposit)
-    elseif (--[[IsBankOpen() or]] (currentSceneName ~= nil and currentSceneName == ctrlVars2.houseBankSceneName) and ctrlVars2.HOUSE_BANK:IsHidden()) or comingFrom == LF_HOUSE_BANK_DEPOSIT then
+    elseif ((currentSceneName ~= nil and currentSceneName == ctrlVars2.houseBankSceneName) and ctrlVars2.HOUSE_BANK:IsHidden()) or comingFrom == LF_HOUSE_BANK_DEPOSIT then
         --Update the filterPanelId
         FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(LF_HOUSE_BANK_DEPOSIT)
         inventoryName = ctrlVars2.INV
     --Guild bank
-    elseif (IsGuildBankOpen() or (currentSceneName ~= nil and currentSceneName == ctrlVars2.guildBankSceneName) and not ctrlVars2.GUILD_BANK:IsHidden()) or comingFrom == LF_GUILDBANK_WITHDRAW then
+    elseif ((currentSceneName ~= nil and currentSceneName == ctrlVars2.guildBankSceneName) and not ctrlVars2.GUILD_BANK:IsHidden()) or comingFrom == LF_GUILDBANK_WITHDRAW then
         --Update the filterPanelId
         FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(LF_GUILDBANK_WITHDRAW)
         inventoryName = ctrlVars2.GUILD_BANK_INV
     --Player inventory at guild bank (deposit)
-    elseif (IsGuildBankOpen() or (currentSceneName ~= nil and currentSceneName == ctrlVars2.guildBankSceneName) and ctrlVars2.GUILD_BANK:IsHidden()) or comingFrom == LF_GUILDBANK_DEPOSIT then
+    elseif ((currentSceneName ~= nil and currentSceneName == ctrlVars2.guildBankSceneName) and ctrlVars2.GUILD_BANK:IsHidden()) or comingFrom == LF_GUILDBANK_DEPOSIT then
         --Update the filterPanelId
         FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(LF_GUILDBANK_DEPOSIT)
         inventoryName = ctrlVars2.INV

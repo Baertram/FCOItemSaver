@@ -2176,12 +2176,12 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
             contextmenuType = "INVENTORY"
         end
         --All non-filtered items will be in this list here:
-        --PLAYER_INVENTORY.inventories[inventoryType].data[1-28].data   .bagId & ... .slotIndex
+        --ctrlVars.playerInventoryInvs[inventoryType].data[1-28].data   .bagId & ... .slotIndex
         if inventoryType == nil then
             d("[FCOIS] -ERROR- ContextMenuForAddInvButtonsOnClicked - Inventory type for filter panel ID \"" .. panelId .. "\" is not set!")
             return false
         end
-        INVENTORY_TO_SEARCH = PLAYER_INVENTORY.inventories[inventoryType].listView
+        INVENTORY_TO_SEARCH = ctrlVars.playerInventoryInvs[inventoryType].listView
     end
 
     --d("FCOIS]ContextMenuForAddInvButtonsOnClicked - INVENTORY_TO_SEARCH: " .. INVENTORY_TO_SEARCH:GetName() .. ", contextmenuType: " .. contextmenuType)
@@ -2409,7 +2409,7 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
             --Get the current inventorytype
             --local inventoryType = mappingVars.InvToInventoryType[panelId]
             --All non-filtered items will be in this list here:
-            --PLAYER_INVENTORY.inventories[inventoryType].data[1-28].data   .bagId & ... .slotIndex
+            --ctrlVars.playerInventoryInvs[inventoryType].data[1-28].data   .bagId & ... .slotIndex
             local data
             local bagId
             local slotIndex
@@ -2487,7 +2487,7 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
             --Get the current inventorytype
             --local inventoryType = mappingVars.InvToInventoryType[panelId]
             --All non-filtered items will be in this list here:
-            --PLAYER_INVENTORY.inventories[inventoryType].data[1-28].data   .bagId & ... .slotIndex
+            --ctrlVars.playerInventoryInvs[inventoryType].data[1-28].data   .bagId & ... .slotIndex
             local data
             local bagId
             local slotIndex
@@ -2567,7 +2567,7 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
             --Get the current inventorytype
             --local inventoryType = mappingVars.InvToInventoryType[panelId]
             --All non-filtered items will be in this list here:
-            --PLAYER_INVENTORY.inventories[inventoryType].data[1-28].data   .bagId & ... .slotIndex
+            --ctrlVars.playerInventoryInvs[inventoryType].data[1-28].data   .bagId & ... .slotIndex
             local data
             local bagId
             local slotIndex
@@ -3096,7 +3096,7 @@ function FCOIS.ShowContextMenuForAddInvButtons(invAddContextMenuInvokerButton)
             if activeBagId ~= nil then
                 local activeInvType = FCOIS.GetActiveInventoryTypeByBagId(activeBagId)
                 if activeInvType ~= nil then
-                    local currentInvFilter = PLAYER_INVENTORY.inventories[activeInvType].currentFilter or nil
+                    local currentInvFilter = ctrlVars.playerInventoryInvs[activeInvType].currentFilter or nil
                     if currentInvFilter ~= nil then
                         --Where should the context menu entry not be shown, e.g. quest items?
                         local doNotShowJunkAdditionalContextMenuEntryFilterTypes = FCOIS.checkVars.doNotShowJunkAdditionalContextMenuEntryFilterTypes

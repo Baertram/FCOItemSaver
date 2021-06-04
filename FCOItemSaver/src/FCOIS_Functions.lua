@@ -73,10 +73,8 @@ function FCOIS.getNumberOfFilteredItemsForEachPanel()
     FCOIS.numberOfFilteredItems[LF_JEWELRY_RESEARCH_DIALOG]= FCOIS.numberOfFilteredItems[LF_SMITHING_RESEARCH_DIALOG]
     FCOIS.numberOfFilteredItems[LF_QUICKSLOT]              = ctrlVars.QUICKSLOT_WINDOW.list.data
     --Special numbers for e.g. quest items in inventory
-    FCOIS.numberOfFilteredItems["INVENTORY_QUEST_ITEM"]    = PLAYER_INVENTORY.inventories[INVENTORY_QUEST_ITEM].listView.data
-
+    FCOIS.numberOfFilteredItems["INVENTORY_QUEST_ITEM"]    = ctrlVars.playerInventoryInvs[INVENTORY_QUEST_ITEM].listView.data
 end
-
 
 --==========================================================================================================================================
 --                                          FCOIS - Is, Get, Set functions
@@ -139,13 +137,14 @@ function FCOIS.MyGetItemNameNoControl(bagId, slotIndex)
     local bagIdToPlayerInv = FCOIS.mappingVars.bagToPlayerInv
     local playerInvId = bagIdToPlayerInv[bagId]
     if playerInvId == nil then return name end
+    local playerInvInvs = ctrlVars.playerInventoryInvs
     --CraftBag?
     if playerInvId == INVENTORY_CRAFT_BAG then
         local itemId = GetItemId(bagId, slotIndex)
         if itemId == nil or itemId == 0 then itemId = slotIndex end
-        itemData = PLAYER_INVENTORY.inventories[playerInvId].slots[BAG_VIRTUAL][itemId] --slotIndex is the itemId of the item, not the inv slotIndex!
+        itemData = playerInvInvs[playerInvId].slots[BAG_VIRTUAL][itemId] --slotIndex is the itemId of the item, not the inv slotIndex!
     else
-        itemData = PLAYER_INVENTORY.inventories[playerInvId].slots[bagId][slotIndex]
+        itemData = playerInvInvs[playerInvId].slots[bagId][slotIndex]
     end
     if(itemData ~= nil) then
         name = itemData.name
@@ -912,7 +911,7 @@ end
 -- Is Item functions
 --==============================================================================
 function FCOIS.doesPlayerInventoryCurrentFilterEqual(inventoryVar, currentFilter)
-    return (PLAYER_INVENTORY.inventories[inventoryVar].currentFilter == currentFilter) or false
+    return (ctrlVars.playerInventoryInvs[inventoryVar].currentFilter == currentFilter) or false
 end
 local doesPlayerInventoryCurrentFilterEqual = FCOIS.doesPlayerInventoryCurrentFilterEqual
 

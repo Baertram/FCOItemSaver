@@ -372,7 +372,8 @@ function FCOIS.CreateTextures(whichTextures)
     --All inventories
     if (whichTextures == 1 or doCreateAllTextures) then
         --Create textures in inventories
-        for _,v in pairs(PLAYER_INVENTORY.inventories) do
+        --for all PLAYER_INVENTORY.inventories do ...
+        for _,v in pairs(ctrlVars.playerInventoryInvs) do
             local listView = v.listView
             --Do not hook quest items
             if (listView and listView.dataTypes and listView.dataTypes[1]
@@ -403,7 +404,7 @@ function FCOIS.CreateTextures(whichTextures)
         end
 
         --[[
-        for _,v in pairs(PLAYER_INVENTORY.inventories) do
+        for _,v in pairs(ctrlVars.playerInventoryInvs) do
             local listView = v.listView
             --Do not hook quest items
             if (listView and listView.dataTypes and listView.dataTypes[1] and (listView:GetName() ~= "ZO_PlayerInventoryQuest")) then

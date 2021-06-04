@@ -11,6 +11,8 @@ local getSavedVarsMarkedItemsTableName = FCOIS.getSavedVarsMarkedItemsTableName
 
 local lmas = FCOIS.libMultiAccountSets
 
+local ctrlVars = FCOIS.ZOControlVars
+
 local checkIfItemIsProtected = FCOIS.checkIfItemIsProtected
 local myGetItemInstanceIdNoControl = FCOIS.MyGetItemInstanceIdNoControl
 local filterBasics = FCOIS.FilterBasics
@@ -106,7 +108,11 @@ local function automaticMarkingResearchAdditionalCheckFunc(p_itemData, p_checkFu
     local inv = bag2Inv[p_itemData.bagId]
     if inv == nil then return false, nil end
     --The inventory slots got moved one hierarchy down, as the slots got a subarray now
-    local inventorySlots = PLAYER_INVENTORY.inventories[inv].slots[p_itemData.bagId]
+    local playerInv = ctrlVars.playerInventoryInvs
+    local playerInvOfInvVar = playerInv and playerInv[inv]
+    local playerInvSlots = playerInvOfInvVar and playerInvOfInvVar.slots
+    if not playerInvSlots then return end
+    local inventorySlots = playerInvSlots[p_itemData.bagId]
     local retVar = false
     local itemDataEntry = inventorySlots[p_itemData.slotIndex]
     if itemDataEntry ~= nil then
@@ -121,7 +127,7 @@ local function automaticMarkingResearchAdditionalCheckFunc(p_itemData, p_checkFu
         local researchAddonId = FCOIS.getResearchAddonUsed()
         if researchAddonId == FCOIS_RESEARCH_ADDON_RESEARCHASSISTANT then
             if comingFromEventInvSingleSlotUpdate and ResearchAssistant ~= nil and
-                (ResearchAssistant.IsItemResearchableOrDuplicateWithSettingsCharacter ~= nil or ResearchAssistant.IsItemResearchableWithSettingsCharacter ~= nil) then
+                    (ResearchAssistant.IsItemResearchableOrDuplicateWithSettingsCharacter ~= nil or ResearchAssistant.IsItemResearchableWithSettingsCharacter ~= nil) then
                 isResearchable = false
                 if ResearchAssistant.IsItemResearchableOrDuplicateWithSettingsCharacter ~= nil then
                     isResearchable = ResearchAssistant.IsItemResearchableOrDuplicateWithSettingsCharacter(bagId, slotIndex)
@@ -142,7 +148,7 @@ local function automaticMarkingResearchAdditionalCheckFunc(p_itemData, p_checkFu
                 end
             end
 
-        --CraftStoreFixedAndImproved
+            --CraftStoreFixedAndImproved
         elseif researchAddonId == FCOIS_RESEARCH_ADDON_CSFAI then
             isResearchable = false
             if (FCOIS.otherAddons.craftStoreFixedAndImprovedActive and CraftStoreFixedAndImprovedLongClassName ~= nil and CraftStoreFixedAndImprovedLongClassName.IsResearchable ~= nil) then
@@ -175,7 +181,7 @@ local function automaticMarkingResearchAdditionalCheckFunc(p_itemData, p_checkFu
                 end
             end
 
-        --ESO standard research
+            --ESO standard research
         elseif researchAddonId == FCOIS_RESEARCH_ADDON_ESO_STANDARD then
             --d(">ESO standard research check")
             --Check if the item is researchable for currently logged in character via standard ESO function
@@ -1677,7 +1683,10 @@ function FCOIS.ScanInventorySingle(p_bagId, p_slotIndex, checksAlreadyDoneTable)
         -- Update only one item in inventory
         -- bagId AND slotIndex are given?
         if (p_bagId ~= nil and p_slotIndex ~= nil) then
-            --Check if item is researchable
+            --Is the bag a HouseBank then check if we own a house and are in any owned house at the moment
+            if houseBankBagChecks(BAG_HOUSE_BANK_ONE) == false then return end
+
+            --Get item's instance or uniqueId
             local itemId = myGetItemInstanceIdNoControl(p_bagId, p_slotIndex, false)
             if (itemId ~= nil) then
 
