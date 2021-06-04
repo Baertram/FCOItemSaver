@@ -181,9 +181,11 @@ local refreshBank = FCOIS.RefreshBank
 
 --Refresh the guild bank list
 function FCOIS.RefreshGuildBank()
+--d("[FCOIS]RefreshGuildBank")
     local updateFilteredItemCount = false
     
     if not ctrlVars.GUILD_BANK:IsHidden() then
+--d(">Guild bank refresh")
         if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[RefreshGuildBank]","Guild bank refresh", true, FCOIS_DEBUG_DEPTH_DETAILED) end
         FCOIS.preventerVars.isInventoryListUpdating = true
         ZO_ScrollList_RefreshVisible(ctrlVars.GUILD_BANK)
@@ -321,6 +323,7 @@ local function UpdateInventories()
         FCOIS.gFilterWhere = getFilterWhereBySettings(FCOIS.gFilterWhere, false)
         --Is the filter for this panel enabled in the settings?
         if settings.atPanelEnabled[FCOIS.gFilterWhere]["filters"] == true then
+--d("[FCOIS]UpdateInventories-libFiters:RequestUpdate("..tostring(FCOIS.gFilterWhere)..")")
             --Is the filter we have added the icon for currently enabled(registered)?
             --local isFilterEnabled = FCOIS.getSettingsIsFilterOn(FCOIS.lastVars.gLastFilterId[FCOIS.gFilterWhere], FCOIS.gFilterWhere)
             --if isFilterEnabled == true or isFilterEnabled == -99 then

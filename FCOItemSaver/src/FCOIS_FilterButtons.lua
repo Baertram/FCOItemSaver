@@ -557,7 +557,7 @@ function FCOIS.PreHookMainMenuFilterButtonHandler(comingFrom, goingTo)
     end
 
     --Check the filter buttons and create them if they are not there
-    checkFCOISFilterButtonsAtPanel(true, goingTo)
+    checkFCOISFilterButtonsAtPanel(true, goingTo, nil, nil)
 
     FCOIS.preventerVars.gPreHookButtonHandlerCallActive = false
 
@@ -777,6 +777,7 @@ local function doFilter(onoff, p_button, filterId, beQuiet, doFilterBasicsPlayer
     --Only update if button was clicked manually or this is the last call to this function dofilter()
     --from function enableFilters() (at initialization of this addon e.g.)
     if ( onoff ~= -100 or (onoff == -100 and filterId == numFilters) ) then
+--d("[FCOIS]DoFilterNow-filterPanelid: " ..FCOIS.gFilterWhere .. ", doFilterBasicsPlayer: " ..tostring(doFilterBasicsPlayer))
         --Update all inventories (false) / only the player inventory (true)
         filterBasics(doFilterBasicsPlayer)
     end

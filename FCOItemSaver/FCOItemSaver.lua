@@ -19,10 +19,10 @@
 ---------------------------------------------------------------------
 --[ToDo list] --
 --____________________________
--- Current max bugs/features/ToDos: 130
+-- Current max bugs/features/ToDos: 135
 --____________________________
 
---In progress: Since 2021-05-20
+--In progress: Since 2021-06-03
 
 ------------------------------------------------------------------------------------------------------------------------
 
@@ -115,50 +115,38 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 
 --#116: ResearchAssistant: Items won't get marked (red rectangle of RA) at the bank after changing settings/reloadUI
 --#129: 2021-06-01: Removing all marker icons via the add. inv. "flag" context menu does not remove companion item's marker icons
+--#131: Error message at login:
+--[[
+user:/AddOns/FCOItemSaver/src/FCOIS_SettingsMenu.lua:2445: attempt to index a nil value
+stack traceback:
+user:/AddOns/FCOItemSaver/src/FCOIS_SettingsMenu.lua:2445: in function 'buildAddInvContextMenuFlagButtonsPositionsSubMenu'
+|caaaaaa<Locals> addInvFlagButtonsPositionsSubMenu = [table:1]{}, btnname = "Set all equal", btntooltip = "This will set all the addition...", btndata = [table:2]{name = "Set all equal", width = "full", tooltip = "This will set all the addition...", warning = "This will set all the addition...", isDangerous = "true", scrollable = F, type = "button"}, btndisabledFunc = user:/AddOns/FCOItemSaver/src/FCOIS_SettingsMenu.lua:2408, btnFunc = user:/AddOns/FCOItemSaver/src/FCOIS_SettingsMenu.lua:2411, btncreatedControl = [table:2], sortedAddInvBtnInvokers = [table:3]{}, _ = 27, addInvBtnInvokerData = [table:4]{textureMouseOver = "/esoui/art/ava/tabicon_bg_scor...", name = "ZO_CompanionEquipment_Panel_Ke...", filterPanelId = 39, alignMain = 3, height = 32, textureNormal = "/esoui/art/ava/tabicon_bg_scor...", width = 32, alignBackup = 3, hideButton = T, tooltipAlign = 8, onMouseUpCallbackFunctionMouseButton = 2, textureClicked = "/esoui/art/ava/tabicon_bg_scor...", top = 110, left = -55, sortIndex = 27, addInvButton = T}, filterPanelId = 39, isActiveFilterPanelId = T, addInvFlagButtonsPositionsSubMenuControls = [table:5]{}, ref = "FCOItemSaver_Settings_AddInvFl...", name = "Left:", tooltip = "Left:", data = [table:6]{width = "half", type = "editbox"}, disabledFunc = user:/AddOns/FCOItemSaver/src/FCOIS_SettingsMenu.lua:2439, getFunc = user:/AddOns/FCOItemSaver/src/FCOIS_SettingsMenu.lua:2440, setFunc = user:/AddOns/FCOItemSaver/src/FCOIS_SettingsMenu.lua:2441 </Locals>|r
+user:/AddOns/FCOItemSaver/src/FCOIS_SettingsMenu.lua:2485: in function 'FCOIS.BuildAddonMenu'
+|caaaaaa<Locals> lsb = [table:7]{EVENT_ENTRY_MOVED = 3, DEFAULT_CATEGORY = "LSBDefCat", EVENT_LEFT_LIST_CLEARED = 4, EVENT_ENTRY_HIGHLIGHTED = 1, EVENT_RIGHT_LIST_CLEARED = 5, EVENT_ENTRY_UNHIGHLIGHTED = 2}, libShifterBoxes = [table:8]{}, srcServer = 1, targServer = 1, srcAcc = 1, targAcc = 1, srcChar = 1, targChar = 1, addonVars = [table:9]{FAQentry = "https://www.esoui.com/portal.p...", gAddonLoaded = F, addonVersionOptions = "2.1.1", authorPortal = "https://www.esoui.com/portal.p...", addonNameMenu = "FCO ItemSaver", addonAuthor = "|cFFFF00Baertram|r", addonNameContextMenuEntry = "     - |c22DD22FCO|r ItemSaver...", website = "https://www.esoui.com/download...", addonNameMenuDisplay = "|t32:32:FCOItemSaver/FCOIS.dds...", addonAuthorDisplayNamePTS = "@Baertram", gAddonNameShort = "FCOIS", addonAuthorDisplayNameNA = "@Baertram", addonVersionOptionsNumber = 2.11, savedVarVersion = 0.1, FAQwebsite = "https://www.esoui.com/portal.p...", gAddonName = "FCOItemSaver", savedVarName = "FCOItemSaver_Settings", gSettingsLoaded = T, feedback = "https://www.esoui.com/portal.p...", gPlayerActivated = F, addonAuthorDisplayNameEU = "@Baertram", donation = "https://www.esoui.com/portal.p..."}, addonFAQentry = "https://www.esoui.com/portal.p...", GridListActivated = F, InventoryGridViewActivated = T, getGridAddonIconSize = user:/AddOns/FCOItemSaver/src/FCOIS_SettingsMenu.lua:372, isIconEnabled = [table:10]{1 = T}, numDynIcons = 15, panelData = [table:11]{name = "FCO ItemSaver", registerForRefresh = T, author = "|cFFFF00Baertram|r", displayName = "|t32:32:FCOItemSaver/FCOIS.dds...", donation = "https://www.esoui.com/portal.p...", website = "https://www.esoui.com/download...", version = "2.1.1", slashCommand = "/fcoiss", registerForDefaults = T, type = "panel"}, FCOSettingsPanel = ud, animation = ud, timeline = ud, apiVersion = 100035 </Locals>|r
+user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_Loaded'
+|caaaaaa<Locals> eventCode = 65536, addOnName = "FCOItemSaver", bagIdsToFilterForInvSingleSlotUpdate = [table:12]{1 = 1} </Locals>|r
+]]
+--#132: House Bank Withdraw filters do not work
+
+
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
---Since last update 2.0.3 - New version: 2.1.0 -> Updated 2021-06-01
+--Since last update 2.1.0 - New version: 2.1.1 -> Updated 2021-06-04
 ---------------------------------------------------------------------
 
 --[Fixed]
---#40 lua error message if you use the context menu to destroy an item from inventory
-
---#111 At bank withdraw: Right click filter button and select an icon from the context menu will not update the filter button to show the selected button
---#112 At normal inventory: Un/Equipping an item via double click will not update the inventory row to show/hide the markers of the item at the inv row automatically
---#113 Disable the context menus to add/remove markers at 2hd weapons' backup slots
---#114 The character window does not show the set marker icons upon first open after a reloadUI
---#117 Recipe addon icon dropdownbox should not show non-recipe applyable icons (like research, gear, etc.)
---#118 Fixed drag&drop from inv/char & companion inv/char to each other -> updating the marker icons at the char equipment slots now
---#119 Fixed double click/context menu/keybind equip/unequip updating equipment slot marker icons
---#120: While inventory is open and character doll is shown: Removing/Adding ring marker icon (keybind/context menu/...) updates character/inventory too (if the same ring is equipped/visible)
---#121: Companion inventory does not show any marker icons at first open
---#122: Compannion character: SHIFT+right click very often after another will somehow make the context menu all of sudden not disappear anymore
---#123: The next normal context menu will not show after an inventory item was clicked via SHIFT+right mouse button (all marker icons on that item were cleared/restored)
-
-
---#124 Fixed character/companion equipment not removing the marker icons if companion item get's unequipped
---#125 Fixed companion equipment cannot be equipped from companion inventory via doubleclick/drag&drop, if any non-dynamic icon is set
---#126 Fixed companion inventory drag&drop to destroy: Protection of dynamic icons enabled/disabled via the dynamic icon's "normal inventory" protection checkbox
---#127 Fixed doubleclick/context menu "unequip" character/companion slot to unequipp an item won't remove the marker icon at the slot
---#128 Fixed doubleclick/context menu "unequip" companion slot to unequipp an item, if the companion inventory is hidden (companion overview e.g.), won't remove the marker icon at the slot
---#130 Fixed migration of (non)unique items to move the items to the SavedVariables, and updated translations
+--#133: Guild Bank Deposit filters do not work
+--#134: If SetTracker is enabled: Error message user:/AddOns/FCOItemSaver/src/FCOIS_OtherAddons.lua:212: attempt to index a nil value
+--#135: Error message if House bank items get scanned for autoamtic marks but the house bank is not ready (not in an own house or bank not ready yet) user:/AddOns/FCOItemSaver/src/FCOIS_AutomaticMarks.lua:109: attempt to index a nil value
 
 
 --[Changed]
 
 --[Added]
---Keybind modifier keys SHIFT/CTRL/ALT can be enabled at the keybind settings
---Companion inventory marker icons support
---Companion inventory additional flag context menu button
---Companion inventory filter buttons
---Companion character progress bar will be hidden if equipment item's contextmenu is shown
---More FAQ links and description texts at the settings
 
 --[Added on request]
 
---[Todo] 2021-05-13
---Default companion invenory filter buttons positions (the 2nd, 3rd and 4th button are not next to the 1st, but way off to the right)
 
 
 --************************************************************************************************************************
