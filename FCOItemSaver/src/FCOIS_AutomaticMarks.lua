@@ -1481,7 +1481,7 @@ function FCOIS.ScanInventoryItemsForAutomaticMarks(bag, slot, scanType, updateIn
                 --Check if item is an unknown recipe
                 return FCOIS.isRecipeKnown(p_bagId, p_slotIndex, false), nil
             end,
-            resultPreCheckFunc  = true,
+            resultPreCheckFunc  = false,
             resultNotPreCheckFunc = nil,
             checkFunc			= nil,
             resultCheckFunc 	= nil,
@@ -1679,16 +1679,17 @@ function FCOIS.ScanInventorySingle(p_bagId, p_slotIndex, checksAlreadyDoneTable)
     local isIconEnabledSettings = settings.isIconEnabled
     if FCOIS.preventerVars.gScanningInv == false then
         if settings.debug then FCOIS.debugMessage( "[ScanInventorySingle]","Start", false, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
---d("[ScanInventorySingle] Start")
+--d("[ScanInventorySingle] Start - checksAlreadyDoneTable['recipes']: " ..tostring(checksAlreadyDoneTable["recipes"]))
         -- Update only one item in inventory
         -- bagId AND slotIndex are given?
         if (p_bagId ~= nil and p_slotIndex ~= nil) then
             --Is the bag a HouseBank then check if we own a house and are in any owned house at the moment
-            if houseBankBagChecks(BAG_HOUSE_BANK_ONE) == false then return end
+            if houseBankBagChecks(p_bagId) == false then return end
 
             --Get item's instance or uniqueId
             local itemId = myGetItemInstanceIdNoControl(p_bagId, p_slotIndex, false)
-            if (itemId ~= nil) then
+--d(">itemId: " ..tostring(itemId))
+            if itemId ~= nil then
 
                 --1)
                 --Mark set items
@@ -1764,7 +1765,9 @@ function FCOIS.ScanInventorySingle(p_bagId, p_slotIndex, checksAlreadyDoneTable)
                 --7)
                 --Update unknown recipes
                 if (checksAlreadyDoneTable ~= nil and checksAlreadyDoneTable["recipes"] == true) or (
-                    FCOIS.isRecipeAutoMarkDoable(true, false, true)) then
+                        FCOIS.isRecipeAutoMarkDoable(true, false, true)) then
+--local itemLink = GetItemLink(p_bagId, p_slotIndex)
+--d(">scanInvSingle, unknown recipe scan reached for: " .. itemLink)
                     local _, recipeChanged = scanInventoryItemsForAutomaticMarks(p_bagId, p_slotIndex, "recipes", false)
                     if not updateInv and recipeChanged then
                         updateInv = true
@@ -1774,7 +1777,7 @@ function FCOIS.ScanInventorySingle(p_bagId, p_slotIndex, checksAlreadyDoneTable)
                 --8)
                 --Update known recipes
                 if (checksAlreadyDoneTable ~= nil and checksAlreadyDoneTable["knownRecipes"] == true) or (
-                    FCOIS.isRecipeAutoMarkDoable(false, true, true)) then
+                        FCOIS.isRecipeAutoMarkDoable(false, true, true)) then
                     local _, recipeChanged = scanInventoryItemsForAutomaticMarks(p_bagId, p_slotIndex, "knownRecipes", false)
                     if not updateInv and recipeChanged then
                         updateInv = true
@@ -1893,7 +1896,7 @@ function FCOIS.ScanInventory(p_bagId, p_slotIndex, doEcho)
                 end
             end
             if settings.debug then FCOIS.debugMessage( "[ScanInventory]","End ALL", false, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
-            --d("[ScanInventory] END ALL")
+--d("[ScanInventory] END ALL")
 
         else
             --d("[ScanInventory] Start ONE ITEM")

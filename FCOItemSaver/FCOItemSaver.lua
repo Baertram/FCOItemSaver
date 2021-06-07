@@ -19,10 +19,10 @@
 ---------------------------------------------------------------------
 --[ToDo list] --
 --____________________________
--- Current max bugs/features/ToDos: 135
+-- Current max bugs/features/ToDos: 138
 --____________________________
 
---In progress: Since 2021-06-03
+--In progress: Since 2021-06-07
 
 ------------------------------------------------------------------------------------------------------------------------
 
@@ -126,19 +126,17 @@ user:/AddOns/FCOItemSaver/src/FCOIS_SettingsMenu.lua:2485: in function 'FCOIS.Bu
 user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_Loaded'
 |caaaaaa<Locals> eventCode = 65536, addOnName = "FCOItemSaver", bagIdsToFilterForInvSingleSlotUpdate = [table:12]{1 = 1} </Locals>|r
 ]]
---#132: House Bank Withdraw filters do not work
 
 
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
---Since last update 2.1.0 - New version: 2.1.1 -> Updated 2021-06-04
+--Since last update 2.1.2 - New version: 2.1.3 -> Updated 2021-06-07
 ---------------------------------------------------------------------
 
 --[Fixed]
---#133: Guild Bank Deposit filters do not work
---#134: If SetTracker is enabled: Error message user:/AddOns/FCOItemSaver/src/FCOIS_OtherAddons.lua:212: attempt to index a nil value
---#135: Error message if House bank items get scanned for autoamtic marks but the house bank is not ready (not in an own house or bank not ready yet) user:/AddOns/FCOItemSaver/src/FCOIS_AutomaticMarks.lua:109: attempt to index a nil value
+--#131: Error message user:/AddOns/FCOItemSaver/src/FCOIS_SettingsMenu.lua:2445 at settings menu/login
+--#138: Error message as yu are using SetTracker
 
 
 --[Changed]

@@ -1192,7 +1192,7 @@ function FCOIS.isRecipeKnown(bagId, slotIndex, expectedResult)
                             --Is the char the crafter main char? Or wasn't any main crafter set
                             --If autoMarkRecipesOnlyThisChar == true then the table only got 1 line with the current character!
                             if autoMarkRecipesOnlyThisChar then
-    --d("<<onlyThisChar -> knownLoop: " ..tostring(knownLoop))
+--d("<<onlyThisChar -> knownLoop: " ..tostring(knownLoop))
                                 --Return the first line's known entry
                                 return knownLoop
                             else
@@ -1209,7 +1209,7 @@ function FCOIS.isRecipeKnown(bagId, slotIndex, expectedResult)
                                     if needsAccountWideSettings == false or (needsAccountWideSettings == true and useAccountWideSettings == true) then
                                         --Should an unkown recipe be marked and is the recipe not known for the current char in the loop?
                                         if expectedResult == false and knownLoop == false then
-        --d(">>>>>marking item as UNknown recipe!")
+--d(">>>>>marking item as UNknown recipe!")
                                             --Mark the item now as it can be learned on another char!
                                             --FCOIS.MarkItem(bagId, slotIndex, recipeUnknownIconNr)
                                             --Abort the loop over the chars now as acount wide settings are enabled and the
@@ -1217,7 +1217,7 @@ function FCOIS.isRecipeKnown(bagId, slotIndex, expectedResult)
                                             return false
                                             --Should a known recipe be marked?
                                         elseif expectedResult == true and knownLoop == true then
-        --d(">>>>>marking item as known recipe!")
+--d(">>>>>marking item as known recipe!")
                                             --Mark the item now as it can be learned on another char!
                                             --FCOIS.MarkItem(bagId, slotIndex, recipeKnownIconNr)
                                             --Abort the loop over the chars now as acount wide settings are enabled and the
@@ -1238,6 +1238,7 @@ end
 
 --Check if the recipe addon chosen is active, the marker icon too and the setting to automark it is enabled
 function FCOIS.isRecipeAutoMarkDoable(checkIfSettingToAutoMarkIsEnabled, knownRecipesIconCheck, doIconCheck)
+--d("[FCOIS]isRecipeAutoMarkDoable - knownRecipesIconCheck: "..tostring(knownRecipesIconCheck))
     checkIfSettingToAutoMarkIsEnabled = checkIfSettingToAutoMarkIsEnabled or false
     knownRecipesIconCheck = knownRecipesIconCheck or false
     doIconCheck = doIconCheck or false
@@ -1245,25 +1246,27 @@ function FCOIS.isRecipeAutoMarkDoable(checkIfSettingToAutoMarkIsEnabled, knownRe
     local retVar = false
     local iconCheck
     if doIconCheck then
-        if knownRecipesIconCheck then
+        if knownRecipesIconCheck == true then
             iconCheck = settings.isIconEnabled[settings.autoMarkKnownRecipesIconNr]
         else
             iconCheck = settings.isIconEnabled[settings.autoMarkRecipesIconNr]
         end
     end
-    local isRecipeAutoMarkPrerequisites = (FCOIS.checkIfRecipeAddonUsed() and FCOIS.checkIfChosenRecipeAddonActive(settings.recipeAddonUsed)) or false
-    if doIconCheck and isRecipeAutoMarkPrerequisites then
-        isRecipeAutoMarkPrerequisites = (isRecipeAutoMarkPrerequisites and iconCheck) or false
+    local isRecipeAutoMarkPrerequisitesMet = (FCOIS.checkIfRecipeAddonUsed() and FCOIS.checkIfChosenRecipeAddonActive(settings.recipeAddonUsed)) or false
+--d(">isRecipeAutoMarkPrerequisitesMet: " ..tostring(isRecipeAutoMarkPrerequisitesMet))
+    if doIconCheck and isRecipeAutoMarkPrerequisitesMet then
+        isRecipeAutoMarkPrerequisitesMet = (isRecipeAutoMarkPrerequisitesMet and iconCheck) or false
     end
     if checkIfSettingToAutoMarkIsEnabled and knownRecipesIconCheck then
-        retVar = isRecipeAutoMarkPrerequisites and (settings.autoMarkRecipes or settings.autoMarkKnownRecipes)
+        retVar = isRecipeAutoMarkPrerequisitesMet and (settings.autoMarkRecipes or settings.autoMarkKnownRecipes)
     elseif checkIfSettingToAutoMarkIsEnabled and not knownRecipesIconCheck then
-        retVar = isRecipeAutoMarkPrerequisites and settings.autoMarkRecipes
+        retVar = isRecipeAutoMarkPrerequisitesMet and settings.autoMarkRecipes
     elseif not checkIfSettingToAutoMarkIsEnabled and knownRecipesIconCheck then
-        retVar = isRecipeAutoMarkPrerequisites and settings.autoMarkKnownRecipes
+        retVar = isRecipeAutoMarkPrerequisitesMet and settings.autoMarkKnownRecipes
     else
-        retVar = isRecipeAutoMarkPrerequisites
+        retVar = isRecipeAutoMarkPrerequisitesMet
     end
+--d("<retVar: " ..tostring(retVar))
     return retVar
 end
 

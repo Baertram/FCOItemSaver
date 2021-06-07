@@ -875,6 +875,17 @@ function FCOIS.afterSettings()
         end
     end
 
+    --FCOIS 2.1.3 - Fix for missing default settings at Companion Inventory
+    if FCOIS.settingsVars.defaults.FCOISAdditionalInventoriesButtonOffset[LF_INVENTORY_COMPANION] == nil or
+            ( FCOIS.settingsVars.defaults.FCOISAdditionalInventoriesButtonOffset[LF_INVENTORY_COMPANION] ~= nil and
+                    (FCOIS.settingsVars.defaults.FCOISAdditionalInventoriesButtonOffset[LF_INVENTORY_COMPANION].top == nil or
+                            FCOIS.settingsVars.defaults.FCOISAdditionalInventoriesButtonOffset[LF_INVENTORY_COMPANION].left == nil)) then
+        FCOIS.settingsVars.defaults.FCOISAdditionalInventoriesButtonOffset[LF_INVENTORY_COMPANION] = {
+            ["top"] = 0,
+            ["left"] = 0,
+        }
+    end
+
     --Build the additional inventory "flag" context menu button data, which depends on the here before set values
     --FCOIS.numVars.gFCONumDynamicIcons and FCOIS.settingsVars.settings.numMaxDynamicIconsUsable
     --> See file src/FCOIS_ContextMenus.lua, function FCOIS.buildAdditionalInventoryFlagContextMenuData(calledFromFCOISSettings)
