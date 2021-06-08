@@ -19,10 +19,10 @@
 ---------------------------------------------------------------------
 --[ToDo list] --
 --____________________________
--- Current max bugs/features/ToDos: 138
+-- Current max bugs/features/ToDos: 140
 --____________________________
 
---In progress: Since 2021-06-07
+--In progress: Since 2021-06-08
 
 ------------------------------------------------------------------------------------------------------------------------
 
@@ -127,19 +127,24 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 |caaaaaa<Locals> eventCode = 65536, addOnName = "FCOItemSaver", bagIdsToFilterForInvSingleSlotUpdate = [table:12]{1 = 1} </Locals>|r
 ]]
 
+--#140: Error message at login -> related to fixed error 131
+-->Could not create editbox "Gauche:" FCOItemSaver_LAM
+-->Could not create editbox "Haute:" FCOItemSaver_LAM
+----> Seems the fixed error message user:/AddOns/FCOItemSaver/src/FCOIS_SettingsMenu.lua:2445: attempt to index a nil value is causing this now
 
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
---Since last update 2.1.2 - New version: 2.1.3 -> Updated 2021-06-07
+--Since last update 2.1.3 - New version: 2.1.4 -> Updated 2021-06-08
 ---------------------------------------------------------------------
 
 --[Fixed]
---#131: Error message user:/AddOns/FCOItemSaver/src/FCOIS_SettingsMenu.lua:2445 at settings menu/login
---#138: Error message as yu are using SetTracker
+--#139 Enabled the "sell at guildstore icon" (FCOIS_CON_ICON_SELL_AT_GUILDSTORE) for companion item's context menu
+--
 
 
 --[Changed]
+--
 
 --[Added]
 

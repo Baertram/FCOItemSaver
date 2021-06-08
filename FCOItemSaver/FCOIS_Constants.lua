@@ -7,8 +7,8 @@ local FCOIS = FCOIS
 FCOIS.addonVars = {}
 local addonVars = FCOIS.addonVars
 --Addon variables
-addonVars.addonVersionOptions 		    = '2.1.3' -- version shown in the settings panel
-addonVars.addonVersionOptionsNumber	    = 2.13
+addonVars.addonVersionOptions 		    = '2.1.4' -- version shown in the settings panel
+addonVars.addonVersionOptionsNumber	    = 2.14
 --The addon name, normal and decorated with colors etc.
 addonVars.gAddonName				    = "FCOItemSaver"
 addonVars.gAddonNameShort               = "FCOIS"
@@ -1901,11 +1901,11 @@ mappingVars.iconIsDisabledAtCompanion = {
     [FCOIS_CON_ICON_RESEARCH]           = true,
     [FCOIS_CON_ICON_DECONSTRUCTION]     = true,
     [FCOIS_CON_ICON_IMPROVEMENT]        = true,
-    [FCOIS_CON_ICON_SELL_AT_GUILDSTORE] = true,
+--    [FCOIS_CON_ICON_SELL_AT_GUILDSTORE] = false,
     [FCOIS_CON_ICON_INTRICATE]          = true,
 }
 
---LibFilters filterType constants of the panels that support the companion main filterbar button
+--LibFilters filterType constants of the panels that support the "companion items" inventory filterBar button
 mappingVars.isCompanionSupportedPanel = {
     [LF_INVENTORY]          = true,
     [LF_MAIL_SEND]          = true,
