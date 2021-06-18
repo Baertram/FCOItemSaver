@@ -1270,10 +1270,10 @@ end -- FCOChangeFilter
 --(special FCOIS behavior). If so the context menu will not be shown and other addons, which add context menu entries, shouldn't show
 --their context menu neither
 function FCOIS.ShouldInventoryContextMenuBeHiddden()
-d("[FCOIS]ShouldInventoryContextMenuBeHiddden")
+--d("[FCOIS]ShouldInventoryContextMenuBeHiddden")
 	if not checkIfFCOISSettingsWereLoaded(true) then return false end
 	local contextMenuClearMarkesByShiftKey = FCOIS.settingsVars.settings.contextMenuClearMarkesByShiftKey
-d(">contextMenuClearMarkesByShiftKey: " ..tostring(contextMenuClearMarkesByShiftKey) .. ", dontShowInvContextMenu: " ..tostring(FCOIS.preventerVars.dontShowInvContextMenu))
+--d(">contextMenuClearMarkesByShiftKey: " ..tostring(contextMenuClearMarkesByShiftKey) .. ", dontShowInvContextMenu: " ..tostring(FCOIS.preventerVars.dontShowInvContextMenu))
     return (contextMenuClearMarkesByShiftKey == true and FCOIS.preventerVars.dontShowInvContextMenu == true) or false
 end
 
