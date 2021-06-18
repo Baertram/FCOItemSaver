@@ -2419,66 +2419,74 @@ function FCOIS.BuildAddonMenu()
         local sortedAddInvBtnInvokers = FCOIS.contextMenuVars.sortedFilterPanelIdToContextMenuButtonInvoker
         for _, addInvBtnInvokerData in ipairs(sortedAddInvBtnInvokers) do
             local filterPanelId = addInvBtnInvokerData.filterPanelId
-            local isActiveFilterPanelId = activeFilterPanelIds[filterPanelId] or false
-            if isActiveFilterPanelId and addInvBtnInvokerData and addInvBtnInvokerData.addInvButton then
-                --Clear the controls of the submenu
-                local addInvFlagButtonsPositionsSubMenuControls = {}
-                --Create textfields for the add. inv. "flag" button positions left + top
-                --Variables
-                local ref
-                local name
-                local tooltip
-                local data = {}
-                local disabledFunc, getFunc, setFunc, defaultSettings, createdControl
-                ------------------------------------------------------------------------------------------------------------------------
-                --Add the button left edit box
-                ref = fcoisLAMSettingsReferencePrefix .. "AddInvFlagButtonsPositionsAtPanel" .. tostring(filterPanelId) .. "_LEFT"
-                name    = locVars["options_filter_button1_left"]
-                tooltip = locVars["options_filter_button1_left"]
-                data = { type = "editbox", width = "half"}
-                disabledFunc = function() return false end
-                getFunc = function() return FCOISsettings.FCOISAdditionalInventoriesButtonOffset[filterPanelId]["left"] end
-                setFunc = function(newValue)
-                    FCOISsettings.FCOISAdditionalInventoriesButtonOffset[filterPanelId]["left"] = newValue
-                    FCOIS.reAnchorAdditionalInvButtons(filterPanelId)
-                end
-                defaultSettings = FCOISdefaultSettings.FCOISAdditionalInventoriesButtonOffset[filterPanelId]["left"]
-                createdControl = CreateControl(ref, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
-                if createdControl ~= nil then
-                    table.insert(addInvFlagButtonsPositionsSubMenuControls, createdControl)
-                    editBoxesToSetTextTypes = editBoxesToSetTextTypes or {}
-                    editBoxesToSetTextTypes[ref] = TEXT_TYPE_NUMERIC
-                end
-                --Add the button top edit box
-                ref = fcoisLAMSettingsReferencePrefix .. "AddInvFlagButtonsPositionsAtPanel" .. tostring(filterPanelId) .. "_TOP"
-                name    = locVars["options_filter_button1_top"]
-                tooltip = locVars["options_filter_button1_top" .. tooltipSuffix]
-                data = { type = "editbox", width = "half"}
-                disabledFunc = function() return false end
-                getFunc = function() return FCOISsettings.FCOISAdditionalInventoriesButtonOffset[filterPanelId]["top"] end
-                setFunc = function(newValue)
-                    FCOISsettings.FCOISAdditionalInventoriesButtonOffset[filterPanelId]["top"] = newValue
-                    FCOIS.reAnchorAdditionalInvButtons(filterPanelId)
-                end
-                defaultSettings = FCOISdefaultSettings.FCOISAdditionalInventoriesButtonOffset[filterPanelId]["top"]
-                createdControl = CreateControl(ref, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
-                if createdControl ~= nil then
-                    table.insert(addInvFlagButtonsPositionsSubMenuControls, createdControl)
-                    editBoxesToSetTextTypes = editBoxesToSetTextTypes or {}
-                    editBoxesToSetTextTypes[ref] = TEXT_TYPE_NUMERIC
-                end
-                ------------------------------------------------------------------------------------------------------------------------
-                --Create the submenu header for the libFilters filterPanel ID and assign the before build edit controls to it
-                if addInvFlagButtonsPositionsSubMenuControls ~= nil and #addInvFlagButtonsPositionsSubMenuControls > 0 then
-                    local subMenuRef = fcoisLAMSettingsReferencePrefix .. "AddInvFlagButtonsPositionsAtPanel" .. tostring(filterPanelId) .. submenuSuffix
-                    --local subMenuName = locVars["options_libFiltersFilterPanelIdName_" .. tostring(filterPanelId)]
-                    local subMenuName = locVars["FCOIS_LibFilters_PanelIds"][filterPanelId] or locVars["options_libFiltersFilterPanelIdName_" .. tostring(filterPanelId)]
-                    local subMenuTooltip = ""
-                    local subMenuData = { type = "submenu", controls = addInvFlagButtonsPositionsSubMenuControls }
-                    local createdaddInvFlagButtonsPositionsSubMenuSurrounding = CreateControl(subMenuRef, subMenuName, subMenuTooltip, subMenuData, nil, nil, nil, nil, nil)
-                    table.insert(addInvFlagButtonsPositionsSubMenu, createdaddInvFlagButtonsPositionsSubMenuSurrounding)
-                end
-            end -- is active filter panel ID?
+            if filterPanelId == nil then
+--Added as FR client user (via email esobzh@gmail.com) always got an error in line 2445, and after adding some workaround fixes with FCOSI v2.1.3 at the default settings the error message is:
+--#140: Error message at login -> related to fixed error 131
+-->Could not create editbox "Gauche:" FCOItemSaver_LAM
+-->Could not create editbox "Haute:" FCOItemSaver_LAM
+d("[FCOIS]DEBUG-SettingsMenu 2422- filterPanelId is nil! addInvBtnInvokerData sortIndex/name: " ..tostring(addInvBtnInvokerData.sortIndex) .. "/" .. tostring(addInvBtnInvokerData.name))
+            else
+                local isActiveFilterPanelId = activeFilterPanelIds[filterPanelId] or false
+                if isActiveFilterPanelId and addInvBtnInvokerData and addInvBtnInvokerData.addInvButton then
+                    --Clear the controls of the submenu
+                    local addInvFlagButtonsPositionsSubMenuControls = {}
+                    --Create textfields for the add. inv. "flag" button positions left + top
+                    --Variables
+                    local ref
+                    local name
+                    local tooltip
+                    local data = {}
+                    local disabledFunc, getFunc, setFunc, defaultSettings, createdControl
+                    ------------------------------------------------------------------------------------------------------------------------
+                    --Add the button left edit box
+                    ref = fcoisLAMSettingsReferencePrefix .. "AddInvFlagButtonsPositionsAtPanel" .. tostring(filterPanelId) .. "_LEFT"
+                    name    = locVars["options_filter_button1_left"]
+                    tooltip = locVars["options_filter_button1_left"]
+                    data = { type = "editbox", width = "half"}
+                    disabledFunc = function() return false end
+                    getFunc = function() return FCOISsettings.FCOISAdditionalInventoriesButtonOffset[filterPanelId]["left"] end
+                    setFunc = function(newValue)
+                        FCOISsettings.FCOISAdditionalInventoriesButtonOffset[filterPanelId]["left"] = newValue
+                        FCOIS.reAnchorAdditionalInvButtons(filterPanelId)
+                    end
+                    defaultSettings = FCOISdefaultSettings.FCOISAdditionalInventoriesButtonOffset[filterPanelId]["left"]
+                    createdControl = CreateControl(ref, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
+                    if createdControl ~= nil then
+                        table.insert(addInvFlagButtonsPositionsSubMenuControls, createdControl)
+                        editBoxesToSetTextTypes = editBoxesToSetTextTypes or {}
+                        editBoxesToSetTextTypes[ref] = TEXT_TYPE_NUMERIC
+                    end
+                    --Add the button top edit box
+                    ref = fcoisLAMSettingsReferencePrefix .. "AddInvFlagButtonsPositionsAtPanel" .. tostring(filterPanelId) .. "_TOP"
+                    name    = locVars["options_filter_button1_top"]
+                    tooltip = locVars["options_filter_button1_top" .. tooltipSuffix]
+                    data = { type = "editbox", width = "half"}
+                    disabledFunc = function() return false end
+                    getFunc = function() return FCOISsettings.FCOISAdditionalInventoriesButtonOffset[filterPanelId]["top"] end
+                    setFunc = function(newValue)
+                        FCOISsettings.FCOISAdditionalInventoriesButtonOffset[filterPanelId]["top"] = newValue
+                        FCOIS.reAnchorAdditionalInvButtons(filterPanelId)
+                    end
+                    defaultSettings = FCOISdefaultSettings.FCOISAdditionalInventoriesButtonOffset[filterPanelId]["top"]
+                    createdControl = CreateControl(ref, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
+                    if createdControl ~= nil then
+                        table.insert(addInvFlagButtonsPositionsSubMenuControls, createdControl)
+                        editBoxesToSetTextTypes = editBoxesToSetTextTypes or {}
+                        editBoxesToSetTextTypes[ref] = TEXT_TYPE_NUMERIC
+                    end
+                    ------------------------------------------------------------------------------------------------------------------------
+                    --Create the submenu header for the libFilters filterPanel ID and assign the before build edit controls to it
+                    if addInvFlagButtonsPositionsSubMenuControls ~= nil and #addInvFlagButtonsPositionsSubMenuControls > 0 then
+                        local subMenuRef = fcoisLAMSettingsReferencePrefix .. "AddInvFlagButtonsPositionsAtPanel" .. tostring(filterPanelId) .. submenuSuffix
+                        --local subMenuName = locVars["options_libFiltersFilterPanelIdName_" .. tostring(filterPanelId)]
+                        local subMenuName = locVars["FCOIS_LibFilters_PanelIds"][filterPanelId] or locVars["options_libFiltersFilterPanelIdName_" .. tostring(filterPanelId)]
+                        local subMenuTooltip = ""
+                        local subMenuData = { type = "submenu", controls = addInvFlagButtonsPositionsSubMenuControls }
+                        local createdaddInvFlagButtonsPositionsSubMenuSurrounding = CreateControl(subMenuRef, subMenuName, subMenuTooltip, subMenuData, nil, nil, nil, nil, nil)
+                        table.insert(addInvFlagButtonsPositionsSubMenu, createdaddInvFlagButtonsPositionsSubMenuSurrounding)
+                    end
+                end -- is active filter panel ID?
+            end
         end -- for filterPanelId in addInvBtnInvokers
         return addInvFlagButtonsPositionsSubMenu
     end
@@ -5725,19 +5733,6 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                 },
                 {
                     type = "header",
-                    name = locVars["options_header_repair"],
-                },
-                {
-                    type = "checkbox",
-                    name = locVars["options_allow_marked_repair"],
-                    tooltip = locVars["options_allow_marked_repair" .. tooltipSuffix],
-                    getFunc = function() return FCOISsettings.blockMarkedRepairKits end,
-                    setFunc = function(value) FCOISsettings.blockMarkedRepairKits = value
-                    end,
-                    default = FCOISdefaultSettings.blockMarkedRepairKits,
-                },
-                {
-                    type = "header",
                     name = locVars["options_header_rune_creation"],
                 },
                 {
@@ -5884,6 +5879,38 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                 },
                 {
                     type = "header",
+                    name = locVars["options_header_guild_bank"],
+                },
+                {
+                    type = "checkbox",
+                    name = locVars["options_enable_block_guild_bank_without_withdraw"],
+                    tooltip = locVars["options_enable_block_guild_bank_without_withdraw" .. tooltipSuffix],
+                    getFunc = function() return FCOISsettings.blockGuildBankWithoutWithdraw end,
+                    setFunc = function(value) FCOISsettings.blockGuildBankWithoutWithdraw = value
+                    end,
+                    default = FCOISdefaultSettings.blockGuildBankWithoutWithdraw,
+                },
+                {
+                    type = "checkbox",
+                    name = locVars["options_auto_reenable_block_guild_bank_without_withdraw"],
+                    tooltip = locVars["options_auto_reenable_block_guild_bank_without_withdraw" .. tooltipSuffix],
+                    getFunc = function() return FCOISsettings.autoReenable_blockGuildBankWithoutWithdraw end,
+                    setFunc = function(value) FCOISsettings.autoReenable_blockGuildBankWithoutWithdraw = value
+                    end,
+                    default = FCOISdefaultSettings.autoReenable_blockGuildBankWithoutWithdraw,
+                    disabled = function() return not FCOISsettings.blockGuildBankWithoutWithdraw end,
+                },
+                {
+                    type = "checkbox",
+                    name = locVars["options_enable_block_marked_disable_with_flag"],
+                    tooltip = locVars["options_enable_block_marked_disable_with_flag" .. tooltipSuffix],
+                    getFunc = function() return FCOISsettings.blockGuildBankWithoutWithdrawDisableWithFlag end,
+                    setFunc = function(value) FCOISsettings.blockGuildBankWithoutWithdrawDisableWithFlag = value
+                    end,
+                    default = FCOISdefaultSettings.blockGuildBankWithoutWithdrawDisableWithFlag,
+                },
+                {
+                    type = "header",
                     name = locVars["options_header_fence"],
                 },
                 {
@@ -6004,6 +6031,55 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                 },
                 {
                     type = "header",
+                    name = locVars["options_header_transmutation"],
+                },
+                {
+                    type = "checkbox",
+                    name = locVars["options_enable_block_retrait"],
+                    tooltip = locVars["options_enable_block_retrait" .. tooltipSuffix],
+                    getFunc = function() return FCOISsettings.blockRetrait end,
+                    setFunc = function(value) FCOISsettings.blockRetrait = value
+                        FCOISsettings.autoReenable_blockRetrait = value
+                    end,
+                    default = FCOISdefaultSettings.blockRetrait,
+                },
+                {
+                    type = "checkbox",
+                    name = locVars["options_enable_block_transmutation_dialog_max_withdraw"],
+                    tooltip = locVars["options_enable_block_transmutation_dialog_max_withdraw" .. tooltipSuffix],
+                    getFunc = function() return FCOISsettings.showTransmutationGeodeLootDialog end,
+                    setFunc = function(value) FCOISsettings.showTransmutationGeodeLootDialog = value
+                    end,
+                    default = FCOISdefaultSettings.showTransmutationGeodeLootDialog,
+                },
+                {
+                    type = "header",
+                    name = locVars["options_header_repair"],
+                },
+                {
+                    type = "checkbox",
+                    name = locVars["options_allow_marked_repair"],
+                    tooltip = locVars["options_allow_marked_repair" .. tooltipSuffix],
+                    getFunc = function() return FCOISsettings.blockMarkedRepairKits end,
+                    setFunc = function(value) FCOISsettings.blockMarkedRepairKits = value
+                    end,
+                    default = FCOISdefaultSettings.blockMarkedRepairKits,
+                },
+                {
+                    type = "header",
+                    name = locVars["options_header_enchant"],
+                },
+                {
+                    type = "checkbox",
+                    name = locVars["options_allow_marked_enchant"],
+                    tooltip = locVars["options_allow_marked_enchant" .. tooltipSuffix],
+                    getFunc = function() return FCOISsettings.blockMarkedGlyphs end,
+                    setFunc = function(value) FCOISsettings.blockMarkedGlyphs = value
+                    end,
+                    default = FCOISdefaultSettings.blockMarkedGlyphs,
+                },
+                {
+                    type = "header",
                     name = locVars["options_header_containers"],
                 },
                 {
@@ -6047,7 +6123,81 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                     end,
                     default = FCOISdefaultSettings.blockMarkedRecipesDisableWithFlag,
                 },
-
+                {
+                    type = "header",
+                    name = locVars["options_header_motifs"],
+                },
+                {
+                    type = "checkbox",
+                    name = locVars["options_enable_block_motifs"],
+                    tooltip = locVars["options_enable_block_motifs" .. tooltipSuffix],
+                    getFunc = function() return FCOISsettings.blockMarkedMotifs end,
+                    setFunc = function(value) FCOISsettings.blockMarkedMotifs = value
+                    end,
+                    default = FCOISdefaultSettings.blockMarkedMotifs,
+                },
+                {
+                    type = "checkbox",
+                    name = locVars["options_enable_block_marked_disable_with_flag"],
+                    tooltip = locVars["options_enable_block_marked_disable_with_flag" .. tooltipSuffix],
+                    getFunc = function() return FCOISsettings.blockMarkedMotifsDisableWithFlag end,
+                    setFunc = function(value) FCOISsettings.blockMarkedMotifsDisableWithFlag = value
+                    end,
+                    default = FCOISdefaultSettings.blockMarkedMotifsDisableWithFlag,
+                },
+                {
+                    type = "header",
+                    name = locVars["options_header_food"],
+                },
+                {
+                    type = "checkbox",
+                    name = locVars["options_enable_block_potions"],
+                    tooltip = locVars["options_enable_block_potions" .. tooltipSuffix],
+                    getFunc = function() return FCOISsettings.blockMarkedPotions end,
+                    setFunc = function(value) FCOISsettings.blockMarkedPotions = value
+                    end,
+                    default = FCOISdefaultSettings.blockMarkedPotions,
+                },
+                {
+                    type = "checkbox",
+                    name = locVars["options_enable_block_food"],
+                    tooltip = locVars["options_enable_block_food" .. tooltipSuffix],
+                    getFunc = function() return FCOISsettings.blockMarkedFood end,
+                    setFunc = function(value) FCOISsettings.blockMarkedFood = value
+                    end,
+                    default = FCOISdefaultSettings.blockMarkedFood,
+                },
+                {
+                    type = "checkbox",
+                    name = locVars["options_enable_block_marked_disable_with_flag"],
+                    tooltip = locVars["options_enable_block_marked_disable_with_flag" .. tooltipSuffix],
+                    getFunc = function() return FCOISsettings.blockMarkedFoodDisableWithFlag end,
+                    setFunc = function(value) FCOISsettings.blockMarkedFoodDisableWithFlag = value
+                    end,
+                    default = FCOISdefaultSettings.blockMarkedFoodDisableWithFlag,
+                },
+                {
+                    type = "header",
+                    name = locVars["options_header_crownstore"],
+                },
+                {
+                    type = "checkbox",
+                    name = locVars["options_enable_block_crownstoreitems"],
+                    tooltip = locVars["options_enable_block_crownstoreitems" .. tooltipSuffix],
+                    getFunc = function() return FCOISsettings.blockCrownStoreItems end,
+                    setFunc = function(value) FCOISsettings.blockCrownStoreItems = value
+                    end,
+                    default = FCOISdefaultSettings.blockCrownStoreItems,
+                },
+                {
+                    type = "checkbox",
+                    name = locVars["options_enable_block_marked_disable_with_flag"],
+                    tooltip = locVars["options_enable_block_marked_disable_with_flag" .. tooltipSuffix],
+                    getFunc = function() return FCOISsettings.blockMarkedCrownStoreItemDisableWithFlag end,
+                    setFunc = function(value) FCOISsettings.blockMarkedCrownStoreItemDisableWithFlag = value
+                    end,
+                    default = FCOISdefaultSettings.blockMarkedCrownStoreItemDisableWithFlag,
+                },
                 {
                     type = "header",
                     name = locVars["options_header_junk"],
@@ -6113,126 +6263,6 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                     setFunc = function(value) FCOISsettings.dontUnjunkOnNormalMark = value
                     end,
                     default = FCOISdefaultSettings.dontUnjunkOnNormalMark,
-                },
-                {
-                    type = "header",
-                    name = locVars["options_header_motifs"],
-                },
-                {
-                    type = "checkbox",
-                    name = locVars["options_enable_block_motifs"],
-                    tooltip = locVars["options_enable_block_motifs" .. tooltipSuffix],
-                    getFunc = function() return FCOISsettings.blockMarkedMotifs end,
-                    setFunc = function(value) FCOISsettings.blockMarkedMotifs = value
-                    end,
-                    default = FCOISdefaultSettings.blockMarkedMotifs,
-                },
-                {
-                    type = "checkbox",
-                    name = locVars["options_enable_block_marked_disable_with_flag"],
-                    tooltip = locVars["options_enable_block_marked_disable_with_flag" .. tooltipSuffix],
-                    getFunc = function() return FCOISsettings.blockMarkedMotifsDisableWithFlag end,
-                    setFunc = function(value) FCOISsettings.blockMarkedMotifsDisableWithFlag = value
-                    end,
-                    default = FCOISdefaultSettings.blockMarkedMotifsDisableWithFlag,
-                },
-                {
-                    type = "header",
-                    name = locVars["options_header_food"],
-                },
-                {
-                    type = "checkbox",
-                    name = locVars["options_enable_block_potions"],
-                    tooltip = locVars["options_enable_block_potions" .. tooltipSuffix],
-                    getFunc = function() return FCOISsettings.blockMarkedPotions end,
-                    setFunc = function(value) FCOISsettings.blockMarkedPotions = value
-                    end,
-                    default = FCOISdefaultSettings.blockMarkedPotions,
-                },
-                {
-                    type = "checkbox",
-                    name = locVars["options_enable_block_food"],
-                    tooltip = locVars["options_enable_block_food" .. tooltipSuffix],
-                    getFunc = function() return FCOISsettings.blockMarkedFood end,
-                    setFunc = function(value) FCOISsettings.blockMarkedFood = value
-                    end,
-                    default = FCOISdefaultSettings.blockMarkedFood,
-                },
-                {
-                    type = "checkbox",
-                    name = locVars["options_enable_block_marked_disable_with_flag"],
-                    tooltip = locVars["options_enable_block_marked_disable_with_flag" .. tooltipSuffix],
-                    getFunc = function() return FCOISsettings.blockMarkedFoodDisableWithFlag end,
-                    setFunc = function(value) FCOISsettings.blockMarkedFoodDisableWithFlag = value
-                    end,
-                    default = FCOISdefaultSettings.blockMarkedFoodDisableWithFlag,
-                },
-                {
-                    type = "header",
-                    name = locVars["options_header_guild_bank"],
-                },
-                {
-                    type = "checkbox",
-                    name = locVars["options_enable_block_guild_bank_without_withdraw"],
-                    tooltip = locVars["options_enable_block_guild_bank_without_withdraw" .. tooltipSuffix],
-                    getFunc = function() return FCOISsettings.blockGuildBankWithoutWithdraw end,
-                    setFunc = function(value) FCOISsettings.blockGuildBankWithoutWithdraw = value
-                    end,
-                    default = FCOISdefaultSettings.blockGuildBankWithoutWithdraw,
-                },
-                {
-                    type = "checkbox",
-                    name = locVars["options_auto_reenable_block_guild_bank_without_withdraw"],
-                    tooltip = locVars["options_auto_reenable_block_guild_bank_without_withdraw" .. tooltipSuffix],
-                    getFunc = function() return FCOISsettings.autoReenable_blockGuildBankWithoutWithdraw end,
-                    setFunc = function(value) FCOISsettings.autoReenable_blockGuildBankWithoutWithdraw = value
-                    end,
-                    default = FCOISdefaultSettings.autoReenable_blockGuildBankWithoutWithdraw,
-                    disabled = function() return not FCOISsettings.blockGuildBankWithoutWithdraw end,
-                },
-                {
-                    type = "checkbox",
-                    name = locVars["options_enable_block_marked_disable_with_flag"],
-                    tooltip = locVars["options_enable_block_marked_disable_with_flag" .. tooltipSuffix],
-                    getFunc = function() return FCOISsettings.blockGuildBankWithoutWithdrawDisableWithFlag end,
-                    setFunc = function(value) FCOISsettings.blockGuildBankWithoutWithdrawDisableWithFlag = value
-                    end,
-                    default = FCOISdefaultSettings.blockGuildBankWithoutWithdrawDisableWithFlag,
-                },
-                {
-                    type = "header",
-                    name = locVars["options_header_transmutation"],
-                },
-                {
-                    type = "checkbox",
-                    name = locVars["options_enable_block_transmutation_dialog_max_withdraw"],
-                    tooltip = locVars["options_enable_block_transmutation_dialog_max_withdraw" .. tooltipSuffix],
-                    getFunc = function() return FCOISsettings.showTransmutationGeodeLootDialog end,
-                    setFunc = function(value) FCOISsettings.showTransmutationGeodeLootDialog = value
-                    end,
-                    default = FCOISdefaultSettings.showTransmutationGeodeLootDialog,
-                },
-                {
-                    type = "header",
-                    name = locVars["options_header_crownstore"],
-                },
-                {
-                    type = "checkbox",
-                    name = locVars["options_enable_block_crownstoreitems"],
-                    tooltip = locVars["options_enable_block_crownstoreitems" .. tooltipSuffix],
-                    getFunc = function() return FCOISsettings.blockCrownStoreItems end,
-                    setFunc = function(value) FCOISsettings.blockCrownStoreItems = value
-                    end,
-                    default = FCOISdefaultSettings.blockCrownStoreItems,
-                },
-                {
-                    type = "checkbox",
-                    name = locVars["options_enable_block_marked_disable_with_flag"],
-                    tooltip = locVars["options_enable_block_marked_disable_with_flag" .. tooltipSuffix],
-                    getFunc = function() return FCOISsettings.blockMarkedCrownStoreItemDisableWithFlag end,
-                    setFunc = function(value) FCOISsettings.blockMarkedCrownStoreItemDisableWithFlag = value
-                    end,
-                    default = FCOISdefaultSettings.blockMarkedCrownStoreItemDisableWithFlag,
                 },
                 {
                     type = "header",

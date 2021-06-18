@@ -49,7 +49,7 @@ FCOIS.localizationVars.localizationAll = {
 	--English
     [FCOIS_CON_LANG_EN] = {
 		-- Options menu
-        ["options_description_lam_menu_is_loading"] = "|cFF0000!!!ATTNETION!!!\n\nThe FCOIS settings menu is currently being build. Please wait and do not change any settings until this icon vanished!\n\nESO could be laggy for a few seconds.\nAs soon as all settings are build this icon will vanish and you can start to change the settings.",
+        ["options_description_lam_menu_is_loading"] = "|cFF0000!!!ATTENTION!!!\n\nThe FCOIS settings menu is currently being build. Please wait and do not change any settings until this icon vanished!\n\nESO could be laggy for a few seconds.\nAs soon as all settings are build this icon will vanish and you can start to change the settings.",
         ["options_description"] = "FCOItemSaver helps you to manage your items by help of icons. In addition it lets you hide/view and protect those items",
 		["options_header1"] 			 		 = "General settings",
     	["options_language"] 					 = "Language",
@@ -456,7 +456,9 @@ FCOIS.localizationVars.localizationAll = {
         ["options_deactivated_symbols_apply_anti_checks_TT"]	= "Also apply the normal anti-destroy/anti-deconstruct/anti-* checks for items marked with a disabled (and thus not visible) marker icon.\nTo unmark the item with the marker icon you still need to activate the symbol again!",
 		["options_header_repair"] = "Repair",
 		["options_allow_marked_repair"] = "Block marked repair kits",
-		["options_allow_marked_repair_TT"] = "Do not allow to use marked repair kits to repair your equipment",
+		["options_allow_marked_repair_TT"] = "Do not allow to use marked repair kits to repair your equipment.\nYou are still able to remove the marker icon in the repair dialog to allow the repair with that repair item!",
+		["options_allow_marked_enchant"] = "Block marked glyphs",
+		["options_allow_marked_enchant_TT"] = "Do not allow to use marked glyphs to enchant your equipment.\nYou are still able to remove the marker icon in the enchant dialog to allow the enchanting with that glyph!",
         ["options_enable_filtered_item_count"]	        = "Count of shown items at 'NAME'",
         ["options_enable_filtered_item_count_TT"]	= "Show the count of actually shown items in front of the sort header entry 'NAME' after each change of a filter",
 		--Other options
@@ -1647,7 +1649,9 @@ FCOIS.localizationVars.localizationAll = {
         ["options_deactivated_symbols_apply_anti_checks_TT"]	= "Es werden für Gegenstände, welche mit einem zur Zeit deaktivierten (und damit nicht sichtbarem) Symbol markiert wurden, ebenfalls die normalen Anti-Zerstören/Anti-Verwerten/Anti-* Überprüfungen durchgeführt!\nSollten Sie eine deaktivierte Markierung entfernen möchten, so müssen Sie das deaktivierte Symbol zunächst wieder aktivieren.",
         ["options_header_repair"] = "Reperatur",
         ["options_allow_marked_repair"] = "Deaktiviere Reperatur Set",
-        ["options_allow_marked_repair_TT"] = "Verhindere, dass mit einem Symbol markierte Reperaturmaterialien für die Reperatur deiner Ausrüstung verwendet werden können",
+        ["options_allow_marked_repair_TT"] = "Verhindere, dass mit einem Symbol markierte Reperaturmaterialien für die Reperatur deiner Ausrüstung verwendet werden können.\nDu kannst das Symbol im Reperatur Dialog jederzeit entfernen, um das Reperaturwerkzeug zu erlauben.",
+		["options_allow_marked_enchant"] = "Deaktiviere Glyphen Verzaubern",
+		["options_allow_marked_enchant_TT"] = "Verhindere, dass mit einem Symbol markierte Glyphen für das Verzaubern deiner Ausrüstung verwendet werden können.\nDu kannst das Symbol im Verzaubern Dialog jederzeit entfernen, um die Glyphe zum Verzaubern zu erlauben.",
         ["options_enable_filtered_item_count"]	        = "Anzahl angezeigte Gegenstände vor 'NAME'",
         ["options_enable_filtered_item_count_TT"]	= "Bei jeder Veränderung der Filter wird die Anzahl der aktuell angezeigten Gegenstände vor der Sortier Überschrift 'Name' angezeigt",
         --Other options
@@ -5143,10 +5147,14 @@ function FCOIS.generateLocalizedDynamicIconTexts()
             french["options_icon" .. tostring(fcoisDynIconNr).."_texture_TT"]		= "Définit l'icône du " .. iconToOrdinalStrFr .. "dynamique"
             french["options_icon" .. tostring(fcoisDynIconNr).."_size"]				    = "Taille"
             french["options_icon" .. tostring(fcoisDynIconNr).."_size_TT"]		    = "Définit la taille de l'icône du " .. iconToOrdinalStrFr .." dynamique"
+            french["options_icon" .. tostring(fcoisDynIconNr).."_offsetX"]				= "L'offset X"
+            french["options_icon" .. tostring(fcoisDynIconNr).."_offsetX_TT"]		= "L'offset X de " .. tostring(dynIconId) .. iconToOrdinalStrFr .. " icône de filtre dynamique"
+            french["options_icon" .. tostring(fcoisDynIconNr).."_offsetY"]				= "L'offset Y"
+            french["options_icon" .. tostring(fcoisDynIconNr).."_offsetY_TT"]		= "L'offset Y de " .. tostring(dynIconId) .. iconToOrdinalStrFr .. " icône de filtre dynamique"
             french["options_icon" .. tostring(fcoisDynIconNr).."_tooltip_text"]		    = "Marqué comme " .. iconToOrdinalStrFr .. ". dynamique"
             french["options_icon" .. tostring(fcoisDynIconNr).."_activate_text"]        = "Activé " .. iconToOrdinalStrFr .. ". dynamique"
             french["options_icon" .. tostring(fcoisDynIconNr).."_enabled"]				= "Activé " .. iconToOrdinalStrFr .. ". dynamique"
-            french["options_icon" .. tostring(fcoisDynIconNr).."_enabled_TT"]      = "The " .. iconToOrdinalStrFr .. "th dynamic icon is enabled and can be used to mark items. If you disable this setting the context menus won't show the entry and you cannot use the icon."
+            french["options_icon" .. tostring(fcoisDynIconNr).."_enabled_TT"]           = "La ".. iconToOrdinalStrFr .." icône dynamique est activée et peut être utilisée pour marquer des éléments. Si vous désactivez ce paramètre, les menus contextuels n'afficheront pas l'entrée et vous ne pourrez pas utiliser l'icône."
             french["rightclick_menu_mark_dynamic" .. iconToOrdinalStrFr]     	        = "Marquer avec la " .. iconToOrdinalStrFr .. ". dynamique"
             french["rightclick_menu_demark_dynamic" .. iconToOrdinalStrFr]   	        = "Dé-marquer la " .. iconToOrdinalStrFr .. ". dynamique"
             french["button_context_menu_mark_all_as_dynamic" .. iconToOrdinalStrFr]    = "+ " .. iconToOrdinalStrFr .. ". dynamique"

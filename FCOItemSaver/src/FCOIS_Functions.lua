@@ -1605,14 +1605,14 @@ end
 --Is the repair item dialog shown?
 function FCOIS.isRepairDialogShown()
     local isRepairDialogShown = false
-    local repairDialog = FCOIS.ZOControlVars.RepairItemDialog
+    local repairDialog = ctrlVars.RepairItemDialog
     --Fastest detection: Use the title of the dialog! The other both methods seem to need a small delay before the dialog data/control is updated :-(
     if repairDialog ~= nil then
-        isRepairDialogShown = (repairDialog.info and repairDialog.info.title and repairDialog.info.title.text and repairDialog.info.title.text == FCOIS.ZOControlVars.RepairItemDialogTitle) or false
+        isRepairDialogShown = (repairDialog.info and repairDialog.info.title and repairDialog.info.title.text and repairDialog.info.title.text == ctrlVars.RepairItemDialogTitle) or false
     else
         isRepairDialogShown = ZO_Dialogs_IsShowing(ctrlVars.RepairItemDialogName)
         if not isRepairDialogShown then
-            local repairKits = FCOIS.ZOControlVars.RepairKits
+            local repairKits = ctrlVars.RepairKits
             if repairKits and repairKits.control then
                 isRepairDialogShown = not repairKits.control:IsHidden()
             end
@@ -1620,6 +1620,26 @@ function FCOIS.isRepairDialogShown()
     end
     return isRepairDialogShown
 end
+
+--Is the enchant item dialog shown?
+function FCOIS.isEnchantDialogShown()
+    local isEnchantDialogShown = false
+    local enchantDialog = ctrlVars.EnchantItemDialog
+    --Fastest detection: Use the title of the dialog! The other both methods seem to need a small delay before the dialog data/control is updated :-(
+    if enchantDialog ~= nil then
+        isEnchantDialogShown = (enchantDialog.info and enchantDialog.info.title and enchantDialog.info.title.text and enchantDialog.info.title.text == ctrlVars.EnchantItemDialogTitle) or false
+    else
+        isEnchantDialogShown = ZO_Dialogs_IsShowing(ctrlVars.EnchantItemDialogName)
+        if not isEnchantDialogShown then
+            local enchantApply = ctrlVars.EnchantApply
+            if enchantApply and enchantApply.control then
+                isEnchantDialogShown = not enchantApply.control:IsHidden()
+            end
+        end
+    end
+    return isEnchantDialogShown
+end
+
 
 --==============================================================================
 -- Dialog functions

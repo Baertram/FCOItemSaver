@@ -200,6 +200,7 @@ function FCOIS.RefreshPopupDialogButtons(rowControl, override)
     --Button 1 must not be disabled if we are not inside the research popup (but inside the wayshrine port popup, or weapon enchant/charge popup, or the repair popup, ...)
     --Is the repair dialog shown?
     local isRepairItemDialog = FCOIS.isRepairDialogShown()
+    local isEnchantItemDialog = FCOIS.isEnchantDialogShown()
     local isResearchItemDialog = FCOIS.isResearchListDialogShown()
 
     if not ctrlVars.RepairItemDialog:IsHidden() then
@@ -219,7 +220,7 @@ function FCOIS.RefreshPopupDialogButtons(rowControl, override)
                             if iconIsMarked then
 --d(">markedIcon: " ..tostring(iconId))
                                 --Research (or at least NO repair item dialog!)
-                                if not isRepairItemDialog then
+                                if not isRepairItemDialog and not isEnchantItemDialog then
                                     --Was the marked icon the research icon?
                                     if iconId == FCOIS_CON_ICON_RESEARCH then
                                         --if researching of marked items is not allowed
@@ -232,13 +233,20 @@ function FCOIS.RefreshPopupDialogButtons(rowControl, override)
                                         --disableResearchNow = FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, true, nil) --leave the panelId empty so the addon will detect it automatically!
                                         --                   FCOIS.DeconstructionSelectionHandler(bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId)
                                         disableResearchNow = FCOIS.DeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, false, nil)
---d(">>RepairItemDialog,refreshPopupDialogButtons-callDeconstructionHandler: " .. tostring(disableResearchNow))
+                                        --d(">>RepairItemDialog,refreshPopupDialogButtons-callDeconstructionHandler: " .. tostring(disableResearchNow))
                                         if disableResearchNow == true then break else if not disableResearchNow then disableResearchNow = false end end
                                     end
-                                else
+                                elseif isRepairItemDialog then
                                     --Repair item dialog
                                     --if usage of marked repair kits is not allowed
                                     if settings.blockMarkedRepairKits then
+                                        disableResearchNow = true
+                                        break
+                                    end
+                                elseif isEnchantItemDialog then
+                                    --Enchant item dialog
+                                    --if usage of marked glyphs is not allowed
+                                    if settings.blockMarkedGlyphs then
                                         disableResearchNow = true
                                         break
                                     end

@@ -19,7 +19,7 @@
 ---------------------------------------------------------------------
 --[ToDo list] --
 --____________________________
--- Current max bugs/features/ToDos: 140
+-- Current max bugs/features/ToDos: 141
 --____________________________
 
 --In progress: Since 2021-06-08
@@ -135,12 +135,10 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
---Since last update 2.1.3 - New version: 2.1.4 -> Updated 2021-06-08
+--Since last update 2.1.4 - New version: 2.1.5 -> Updated 2021-06-08
 ---------------------------------------------------------------------
 
 --[Fixed]
---#139 Enabled the "sell at guildstore icon" (FCOIS_CON_ICON_SELL_AT_GUILDSTORE) for companion item's context menu
---
 
 
 --[Changed]
@@ -149,7 +147,9 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 --[Added]
 
 --[Added on request]
-
+--Added "glyph apply exclusion" setting in the "Anti methods" menu in order to allow the apply of glyphs via the enchant dialog,
+--even if they are marked with any marker icon. Attention: This will only work as exclusion if the maker icon is not a dynamic icon
+--(same like the repair exclusion)! Each dynamic icon defines it's protection itsself!
 
 
 --************************************************************************************************************************

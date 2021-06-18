@@ -71,6 +71,7 @@ function FCOIS.buildDefaultSettings()
 		allowCompanionInventoryFilter = true,
 		allowOnlyUnbound            = {},
 		blockMarkedRepairKits		= false,
+		blockMarkedGlyphs			= true,
 		blockDestroying				= true,
 		blockRefinement				= true,
 		blockDeconstruction			= true,

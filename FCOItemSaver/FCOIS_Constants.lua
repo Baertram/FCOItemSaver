@@ -7,8 +7,8 @@ local FCOIS = FCOIS
 FCOIS.addonVars = {}
 local addonVars = FCOIS.addonVars
 --Addon variables
-addonVars.addonVersionOptions 		    = '2.1.4' -- version shown in the settings panel
-addonVars.addonVersionOptionsNumber	    = 2.14
+addonVars.addonVersionOptions 		    = '2.1.5' -- version shown in the settings panel
+addonVars.addonVersionOptionsNumber	    = 2.15
 --The addon name, normal and decorated with colors etc.
 addonVars.gAddonName				    = "FCOItemSaver"
 addonVars.gAddonNameShort               = "FCOIS"
@@ -1156,6 +1156,10 @@ ctrlVars.RepairKits                         = REPAIR_KITS
 ctrlVars.RepairItemDialog                   = ctrlVars.LIST_DIALOG1 --ZO_ListDialog1
 ctrlVars.RepairItemDialogName    	        = "REPAIR_ITEM"
 ctrlVars.RepairItemDialogTitle              = SI_REPAIR_KIT_TITLE
+ctrlVars.EnchantApply                       = APPLY_ENCHANT
+ctrlVars.EnchantItemDialog                  = ctrlVars.LIST_DIALOG1 --ZO_ListDialog1
+ctrlVars.EnchantItemDialogName    	        = "ENCHANTING"
+ctrlVars.EnchantItemDialogTitle              = SI_ENCHANT_TITLE
 ctrlVars.CHARACTER					        = ZO_Character
 ctrlVars.CHARACTER_EQUIPMENT_SLOTS_NAME	    = "ZO_CharacterEquipmentSlots"
 
@@ -2801,7 +2805,7 @@ contextMenuVars.filterPanelIdToContextMenuButtonInvoker = {
 }
 --Resort the panels by their sort number attribut given
 local sortedAddInvBtnInvokersNoGapIndex = {}
-for filterPanelId, addInvBtnInvokerData in pairs(contextMenuVars.filterPanelIdToContextMenuButtonInvoker) do
+for filterPanelId, addInvBtnInvokerData in pairs(FCOIS.contextMenuVars.filterPanelIdToContextMenuButtonInvoker) do
     addInvBtnInvokerData.filterPanelId = filterPanelId
     table.insert(sortedAddInvBtnInvokersNoGapIndex, addInvBtnInvokerData)
 end

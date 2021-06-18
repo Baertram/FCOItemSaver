@@ -974,6 +974,7 @@ function FCOIS.CreateHooks()
 
         --Current dialog is the repair item dialog?
         local isRepairDialog = FCOIS.isRepairDialogShown()
+        local isEnchantDialog = FCOIS.isEnchantDialogShown()
         local disableControl = false
 
         -- Check the rowControl if the item is marked and update the OnMouseUp functions and the color of the item row then
@@ -985,7 +986,7 @@ function FCOIS.CreateHooks()
                 if(not isSoulGem and iconIsProtected) then
 
                     --Not inside the repair dialog and settings allow research of "marked for research" items?
-                    if not isRepairDialog and not settings.allowResearch then
+                    if (not isRepairDialog and not isEnchantDialog) and not settings.allowResearch then
                         disableControl = true
                         break -- leave for ... do loop
                     else
@@ -1005,7 +1006,10 @@ function FCOIS.CreateHooks()
                     if (isRepairDialog and settings.blockMarkedRepairKits) then
                         disableControl = true
                         break -- leave for ... do loop of iconIds
-                    elseif not isRepairDialog then
+                    elseif (isEnchantDialog and settings.blockMarkedGlyphs) then
+                        disableControl = true
+                        break -- leave for ... do loop of iconIds
+                    elseif not isRepairDialog and not isEnchantDialog then
                         --Is the icon a dynamic icon? Check if research at the popup dialog is allowed
                         disableControl = FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, false, nil) --leave the panelId empty so the addon will detect it automatically!
                         if disableControl == true then break else disableControl = false end
