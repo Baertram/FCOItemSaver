@@ -2002,118 +2002,6 @@ function FCOIS.BuildAddonMenu()
                 table.insert(dynIconsSubMenusControls, createdControl)
             end
             ------------------------------------------------------------------------------------------------------------------------
-            --Add the block deconstruction checkbox
-            name = locVars["options_enable_block_deconstruction"]
-            tooltip = locVars["options_enable_block_deconstruction" .. tooltipSuffix]
-            data = { type = "checkbox", width = "half"}
-            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
-            getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_SMITHING_DECONSTRUCT] end
-            setFunc = function(value) FCOIS.updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_SMITHING_DECONSTRUCT, value)
-            end
-            defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_SMITHING_DECONSTRUCT]
-            createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
-            if createdControl ~= nil then
-                table.insert(dynIconsSubMenusControls, createdControl)
-            end
-            ------------------------------------------------------------------------------------------------------------------------
-            --Add the block jewelry deconstruction checkbox
-            name = locVars["options_enable_block_jewelry_deconstruction"]
-            tooltip = locVars["options_enable_block_jewelry_deconstruction" .. tooltipSuffix]
-            data = { type = "checkbox", width = "half"}
-            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
-            getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_JEWELRY_DECONSTRUCT] end
-            setFunc = function(value) FCOIS.updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_JEWELRY_DECONSTRUCT, value)
-            end
-            defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_JEWELRY_DECONSTRUCT]
-            createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
-            if createdControl ~= nil then
-                table.insert(dynIconsSubMenusControls, createdControl)
-            end
-            ------------------------------------------------------------------------------------------------------------------------
-            --Add the block improvement checkbox
-            name = locVars["options_enable_block_improvement"]
-            tooltip = locVars["options_enable_block_improvement" .. tooltipSuffix]
-            data = { type = "checkbox", width = "half"}
-            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
-            getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_SMITHING_IMPROVEMENT] end
-            setFunc = function(value) FCOIS.updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_SMITHING_IMPROVEMENT, value)
-            end
-            defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_SMITHING_IMPROVEMENT]
-            createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
-            if createdControl ~= nil then
-                table.insert(dynIconsSubMenusControls, createdControl)
-            end
-            ------------------------------------------------------------------------------------------------------------------------
-            --Add the block jewelry improvement checkbox
-            name = locVars["options_enable_block_jewelry_improvement"]
-            tooltip = locVars["options_enable_block_jewelry_improvement" .. tooltipSuffix]
-            data = { type = "checkbox", width = "half"}
-            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
-            getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_JEWELRY_IMPROVEMENT] end
-            setFunc = function(value) FCOIS.updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_JEWELRY_IMPROVEMENT, value)
-            end
-            defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_JEWELRY_IMPROVEMENT]
-            createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
-            if createdControl ~= nil then
-                table.insert(dynIconsSubMenusControls, createdControl)
-            end
-            ------------------------------------------------------------------------------------------------------------------------
-            --Add the block refinement checkbox
-            name = locVars["options_enable_block_refinement"]
-            tooltip = locVars["options_enable_block_refinement" .. tooltipSuffix]
-            data = { type = "checkbox", width = "half"}
-            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
-            getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_SMITHING_REFINE] end
-            setFunc = function(value) FCOIS.updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_SMITHING_REFINE, value)
-            end
-            defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_SMITHING_REFINE]
-            createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
-            if createdControl ~= nil then
-                table.insert(dynIconsSubMenusControls, createdControl)
-            end
-            ------------------------------------------------------------------------------------------------------------------------
-            --Add the block jewelry refinement checkbox
-            name = locVars["options_enable_block_jewelry_refinement"]
-            tooltip = locVars["options_enable_block_jewelry_refinement" .. tooltipSuffix]
-            data = { type = "checkbox", width = "half"}
-            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
-            getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_JEWELRY_REFINE] end
-            setFunc = function(value) FCOIS.updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_JEWELRY_REFINE, value)
-            end
-            defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_JEWELRY_REFINE]
-            createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
-            if createdControl ~= nil then
-                table.insert(dynIconsSubMenusControls, createdControl)
-            end
-            ------------------------------------------------------------------------------------------------------------------------
-            --Add the block research checkbox
-            name = locVars["options_enable_block_research"]
-            tooltip = locVars["options_enable_block_research" .. tooltipSuffix]
-            data = { type = "checkbox", width = "half"}
-            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
-            getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_SMITHING_RESEARCH_DIALOG] end
-            setFunc = function(value) FCOIS.updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_SMITHING_RESEARCH_DIALOG, value)
-            end
-            defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_SMITHING_RESEARCH_DIALOG]
-            createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
-            if createdControl ~= nil then
-                table.insert(dynIconsSubMenusControls, createdControl)
-            end
-            ------------------------------------------------------------------------------------------------------------------------
-            --Add the block jewelry research checkbox
-            name = locVars["options_enable_block_jewelry_research"]
-            tooltip = locVars["options_enable_block_jewelry_research" .. tooltipSuffix]
-            data = { type = "checkbox", width = "half"}
-            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
-            getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_JEWELRY_RESEARCH_DIALOG] end
-            setFunc = function(value) FCOIS.updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_JEWELRY_RESEARCH_DIALOG, value)
-            end
-            defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_JEWELRY_RESEARCH_DIALOG]
-            createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
-            if createdControl ~= nil then
-                table.insert(dynIconsSubMenusControls, createdControl)
-            end
-            ------------------------------------------------------------------------------------------------------------------------
             --Add the block sell in guildstore checkbox
             name = locVars["options_enable_block_selling_guild_store"]
             tooltip = locVars["options_enable_block_selling_guild_store" .. tooltipSuffix]
@@ -2123,34 +2011,6 @@ function FCOIS.BuildAddonMenu()
             setFunc = function(value) FCOIS.updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_GUILDSTORE_SELL, value)
             end
             defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_GUILDSTORE_SELL]
-            createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
-            if createdControl ~= nil then
-                table.insert(dynIconsSubMenusControls, createdControl)
-            end
-            ------------------------------------------------------------------------------------------------------------------------
-            --Add the block enchanting creation checkbox
-            name = locVars["options_enable_block_creation"]
-            tooltip = locVars["options_enable_block_creation" .. tooltipSuffix]
-            data = { type = "checkbox", width = "half"}
-            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
-            getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_ENCHANTING_CREATION] end
-            setFunc = function(value) FCOIS.updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_ENCHANTING_CREATION, value)
-            end
-            defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_ENCHANTING_CREATION]
-            createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
-            if createdControl ~= nil then
-                table.insert(dynIconsSubMenusControls, createdControl)
-            end
-            ------------------------------------------------------------------------------------------------------------------------
-            --Add the block enchanting extraction checkbox
-            name = locVars["options_enable_block_extraction"]
-            tooltip = locVars["options_enable_block_extraction" .. tooltipSuffix]
-            data = { type = "checkbox", width = "half"}
-            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
-            getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_ENCHANTING_EXTRACTION] end
-            setFunc = function(value) FCOIS.updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_ENCHANTING_EXTRACTION, value)
-            end
-            defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_ENCHANTING_EXTRACTION]
             createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
             if createdControl ~= nil then
                 table.insert(dynIconsSubMenusControls, createdControl)
@@ -2207,6 +2067,155 @@ function FCOIS.BuildAddonMenu()
             setFunc = function(value) FCOIS.updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_MAIL_SEND, value)
             end
             defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_MAIL_SEND]
+            createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
+            if createdControl ~= nil then
+                table.insert(dynIconsSubMenusControls, createdControl)
+            end
+            ------------------------------------------------------------------------------------------------------------------------
+            --Add the headline "Crafting"
+            name = locVars["options_header_crafting"] .. " - " .. locVars["options_header_anti_destroy"]
+            tooltip = locVars["options_header_crafting"] .. " - " .. locVars["options_header_anti_destroy"]
+            data = { type = "header" }
+            createdControl = CreateControl(nil, name, tooltip, data, nil, nil, nil, nil, nil)
+            if createdControl ~= nil then
+                table.insert(dynIconsSubMenusControls, createdControl)
+            end
+            ------------------------------------------------------------------------------------------------------------------------
+            --Add the block refinement checkbox
+            name = locVars["options_enable_block_refinement"]
+            tooltip = locVars["options_enable_block_refinement" .. tooltipSuffix]
+            data = { type = "checkbox", width = "half"}
+            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+            getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_SMITHING_REFINE] end
+            setFunc = function(value) FCOIS.updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_SMITHING_REFINE, value)
+            end
+            defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_SMITHING_REFINE]
+            createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
+            if createdControl ~= nil then
+                table.insert(dynIconsSubMenusControls, createdControl)
+            end
+            ------------------------------------------------------------------------------------------------------------------------
+            --Add the block jewelry refinement checkbox
+            name = locVars["options_enable_block_jewelry_refinement"]
+            tooltip = locVars["options_enable_block_jewelry_refinement" .. tooltipSuffix]
+            data = { type = "checkbox", width = "half"}
+            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+            getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_JEWELRY_REFINE] end
+            setFunc = function(value) FCOIS.updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_JEWELRY_REFINE, value)
+            end
+            defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_JEWELRY_REFINE]
+            createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
+            if createdControl ~= nil then
+                table.insert(dynIconsSubMenusControls, createdControl)
+            end
+            ------------------------------------------------------------------------------------------------------------------------
+            --Add the block deconstruction checkbox
+            name = locVars["options_enable_block_deconstruction"]
+            tooltip = locVars["options_enable_block_deconstruction" .. tooltipSuffix]
+            data = { type = "checkbox", width = "half"}
+            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+            getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_SMITHING_DECONSTRUCT] end
+            setFunc = function(value) FCOIS.updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_SMITHING_DECONSTRUCT, value)
+            end
+            defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_SMITHING_DECONSTRUCT]
+            createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
+            if createdControl ~= nil then
+                table.insert(dynIconsSubMenusControls, createdControl)
+            end
+            ------------------------------------------------------------------------------------------------------------------------
+            --Add the block jewelry deconstruction checkbox
+            name = locVars["options_enable_block_jewelry_deconstruction"]
+            tooltip = locVars["options_enable_block_jewelry_deconstruction" .. tooltipSuffix]
+            data = { type = "checkbox", width = "half"}
+            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+            getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_JEWELRY_DECONSTRUCT] end
+            setFunc = function(value) FCOIS.updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_JEWELRY_DECONSTRUCT, value)
+            end
+            defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_JEWELRY_DECONSTRUCT]
+            createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
+            if createdControl ~= nil then
+                table.insert(dynIconsSubMenusControls, createdControl)
+            end
+            ------------------------------------------------------------------------------------------------------------------------
+            --Add the block improvement checkbox
+            name = locVars["options_enable_block_improvement"]
+            tooltip = locVars["options_enable_block_improvement" .. tooltipSuffix]
+            data = { type = "checkbox", width = "half"}
+            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+            getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_SMITHING_IMPROVEMENT] end
+            setFunc = function(value) FCOIS.updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_SMITHING_IMPROVEMENT, value)
+            end
+            defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_SMITHING_IMPROVEMENT]
+            createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
+            if createdControl ~= nil then
+                table.insert(dynIconsSubMenusControls, createdControl)
+            end
+            ------------------------------------------------------------------------------------------------------------------------
+            --Add the block jewelry improvement checkbox
+            name = locVars["options_enable_block_jewelry_improvement"]
+            tooltip = locVars["options_enable_block_jewelry_improvement" .. tooltipSuffix]
+            data = { type = "checkbox", width = "half"}
+            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+            getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_JEWELRY_IMPROVEMENT] end
+            setFunc = function(value) FCOIS.updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_JEWELRY_IMPROVEMENT, value)
+            end
+            defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_JEWELRY_IMPROVEMENT]
+            createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
+            if createdControl ~= nil then
+                table.insert(dynIconsSubMenusControls, createdControl)
+            end
+            ------------------------------------------------------------------------------------------------------------------------
+            --Add the block research checkbox
+            name = locVars["options_enable_block_research"]
+            tooltip = locVars["options_enable_block_research" .. tooltipSuffix]
+            data = { type = "checkbox", width = "half"}
+            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+            getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_SMITHING_RESEARCH_DIALOG] end
+            setFunc = function(value) FCOIS.updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_SMITHING_RESEARCH_DIALOG, value)
+            end
+            defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_SMITHING_RESEARCH_DIALOG]
+            createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
+            if createdControl ~= nil then
+                table.insert(dynIconsSubMenusControls, createdControl)
+            end
+            ------------------------------------------------------------------------------------------------------------------------
+            --Add the block jewelry research checkbox
+            name = locVars["options_enable_block_jewelry_research"]
+            tooltip = locVars["options_enable_block_jewelry_research" .. tooltipSuffix]
+            data = { type = "checkbox", width = "half"}
+            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+            getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_JEWELRY_RESEARCH_DIALOG] end
+            setFunc = function(value) FCOIS.updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_JEWELRY_RESEARCH_DIALOG, value)
+            end
+            defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_JEWELRY_RESEARCH_DIALOG]
+            createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
+            if createdControl ~= nil then
+                table.insert(dynIconsSubMenusControls, createdControl)
+            end
+            ------------------------------------------------------------------------------------------------------------------------
+            --Add the block enchanting creation checkbox
+            name = locVars["options_enable_block_creation"]
+            tooltip = locVars["options_enable_block_creation" .. tooltipSuffix]
+            data = { type = "checkbox", width = "half"}
+            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+            getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_ENCHANTING_CREATION] end
+            setFunc = function(value) FCOIS.updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_ENCHANTING_CREATION, value)
+            end
+            defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_ENCHANTING_CREATION]
+            createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
+            if createdControl ~= nil then
+                table.insert(dynIconsSubMenusControls, createdControl)
+            end
+            ------------------------------------------------------------------------------------------------------------------------
+            --Add the block enchanting extraction checkbox
+            name = locVars["options_enable_block_extraction"]
+            tooltip = locVars["options_enable_block_extraction" .. tooltipSuffix]
+            data = { type = "checkbox", width = "half"}
+            disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+            getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_ENCHANTING_EXTRACTION] end
+            setFunc = function(value) FCOIS.updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_ENCHANTING_EXTRACTION, value)
+            end
+            defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_ENCHANTING_EXTRACTION]
             createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
             if createdControl ~= nil then
                 table.insert(dynIconsSubMenusControls, createdControl)

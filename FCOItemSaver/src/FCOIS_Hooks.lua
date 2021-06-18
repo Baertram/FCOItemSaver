@@ -359,7 +359,7 @@ function FCOIS.OnInventoryItemMouseUp(self, mouseButton, upInside, ctrlKey, altK
     --Enable clearing all markers by help of the <modifier key>+right click?
     local contextMenuClearMarkesKey = FCOIS.settingsVars.settings.contextMenuClearMarkesModifierKey
     local isModifierKeyPressed = FCOIS.IsModifierKeyPressed(contextMenuClearMarkesKey)
-    FCOIS.checkIfClearOrRestoreAllMarkers(self, isModifierKeyPressed, upInside, mouseButton, false)
+    FCOIS.checkIfClearOrRestoreAllMarkers(self, isModifierKeyPressed, upInside, mouseButton, false, false)
     --Call original callback function for event OnMouseUp of the iinventory item row/character equipment slot now
 --d("<end OnMouseUp")
     return false
@@ -1048,12 +1048,13 @@ function FCOIS.CreateHooks()
             if button == MOUSE_BUTTON_INDEX_RIGHT and upInside then
                 local contextMenuClearMarkesKey = FCOIS.settingsVars.settings.contextMenuClearMarkesModifierKey
                 local isModifierKeyPressed = FCOIS.IsModifierKeyPressed(contextMenuClearMarkesKey)
+--d(">isModifierKeyPressed: " ..tostring(isModifierKeyPressed) .. ", noOthermodifierKeyPressed: " ..tostring(FCOIS.IsNoOtherModifierKeyPressed(contextMenuClearMarkesKey)))
                 --Was the shift key clicked?
                 if isModifierKeyPressed == true and FCOIS.IsNoOtherModifierKeyPressed(contextMenuClearMarkesKey) then
                     FCOIS.preventerVars.isZoDialogContextMenu = true
                     --Right click/mouse button 2 context menu together with shift key: Clear/Restore all marker icons on the item?
                     --If the setting to remove/readd marker icons via shift+right mouse button is enabled:
-                    FCOIS.checkIfClearOrRestoreAllMarkers(rowControl, isModifierKeyPressed, upInside, button, true)
+                    FCOIS.checkIfClearOrRestoreAllMarkers(rowControl, isModifierKeyPressed, upInside, button, true, false)
                     --If the context menu should not be shown, because all marker icons were removed
                     -- hide it now
                     if FCOIS.ShouldInventoryContextMenuBeHiddden() then

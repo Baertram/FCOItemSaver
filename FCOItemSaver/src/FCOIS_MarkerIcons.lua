@@ -595,7 +595,7 @@ function FCOIS.checkIfClearOrRestoreAllMarkers(clickedRow, modifierKeyPressed, u
     calledByKeybind = calledByKeybind or false
     --Enable clearing all markers by help of the SHIFT+right click?
     local contextMenuClearMarkesByShiftKey = FCOIS.settingsVars.settings.contextMenuClearMarkesByShiftKey
---d("[FCOIS.checkIfClearOrRestoreAllMarkers]shiftKey: " ..tostring(shiftKey) .. ", upInside: " .. tostring(upInside) .. ", mouseButton: " .. tostring(mouseButton) .. ", setinGEnabled: " ..tostring(contextMenuClearMarkesByShiftKey))
+--d("[FCOIS.checkIfClearOrRestoreAllMarkers]shiftKey: " ..tostring(IsShiftKeyDown()) .. ", upInside: " .. tostring(upInside) .. ", mouseButton: " .. tostring(mouseButton) .. ", setinGEnabled: " ..tostring(contextMenuClearMarkesByShiftKey))
     if ( modifierKeyPressed == true and contextMenuClearMarkesByShiftKey ) and  (calledByKeybind == true or (upInside and mouseButton == MOUSE_BUTTON_INDEX_RIGHT))  then
         refreshPopupDialogButons = refreshPopupDialogButons or false
         -- make sure control contains an item
@@ -617,11 +617,13 @@ function FCOIS.checkIfClearOrRestoreAllMarkers(clickedRow, modifierKeyPressed, u
             end
             --Is the character shown, then disable the context menu "hide" variable again as the order of hooks is not
             --the same like in the inventory and the context menu will be hidden twice in a row else!
-            if not calledByKeybind then
+            -->Only if no ZO_Dialog is used, as the variable FCOIS.preventerVars.dontShowInvContextMenu will be needed
+            -->in the calling row hook of the ZO_ListDialog, and reset to false there!
+            if not calledByKeybind and not refreshPopupDialogButons then
                 --local isCharacter = (bagId == BAG_WORN and isCharacterShown()) or false
                 --local isCompanionCharacter = (bagId == BAG_COMPANION_WORN and isCompanionCharacterShown()) or false
                 --if isCharacter == true or isCompanionCharacter == true then
---d(">NO KEBIND call: changing dontShowInvContextMenu to false again!")
+--d(">NO KEYBIND call: changing dontShowInvContextMenu to false again!")
                     FCOIS.preventerVars.dontShowInvContextMenu = false
                 --end
             end
