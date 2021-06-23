@@ -19,10 +19,8 @@
 ---------------------------------------------------------------------
 --[ToDo list] --
 --____________________________
--- Current max bugs/features/ToDos: 141
+-- Current max bugs/features/ToDos: 142
 --____________________________
-
---In progress: Since 2021-06-08
 
 ------------------------------------------------------------------------------------------------------------------------
 
@@ -132,10 +130,19 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 -->Could not create editbox "Haute:" FCOItemSaver_LAM
 ----> Seems the fixed error message user:/AddOns/FCOItemSaver/src/FCOIS_SettingsMenu.lua:2445: attempt to index a nil value is causing this now
 
+--#142: feature, 2021-06-23, Add "flag" icon for mass-mark to character section
+--#143: feature, 2021-06-23, Add "flag" icon for mass-mark to companin character section
+
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
---Since last update 2.1.4 - New version: 2.1.5 -> Updated 2021-06-08
+--In progress: Since 2021-06-23
+--#142
+--#143
+
+
+---------------------------------------------------------------------
+--Since last update 2.1.5 - New version: 2.1.6 -> Updated 2021-06-23
 ---------------------------------------------------------------------
 
 --[Fixed]
@@ -147,9 +154,6 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 --[Added]
 
 --[Added on request]
---Added "glyph apply exclusion" setting in the "Anti methods" menu in order to allow the apply of glyphs via the enchant dialog,
---even if they are marked with any marker icon. Attention: This will only work as exclusion if the maker icon is not a dynamic icon
---(same like the repair exclusion)! Each dynamic icon defines it's protection itsself!
 
 
 --************************************************************************************************************************

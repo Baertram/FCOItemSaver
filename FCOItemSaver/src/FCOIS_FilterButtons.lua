@@ -525,6 +525,8 @@ end
 local checkFCOISFilterButtonsAtPanel = FCOIS.CheckFCOISFilterButtonsAtPanel
 
 --PreHook function for panel menu buttons (vanilla UI filter buttons like "Armor", "Weapons",  etc.) at banks, crafting stations, mail panel, trading, etc.
+-->Used to update the 4 FCOIS filter buttons at the inventory -> checkFCOISFilterButtonsAtPanel
+-->and the additional "flag" inventory context menu buttons and their color (current protection enabled state) -> FCOIS.ChangeContextMenuInvokerButtonColorByPanelId
 function FCOIS.PreHookMainMenuFilterButtonHandler(comingFrom, goingTo)
     FCOIS.preventerVars.gActiveFilterPanel = true
     FCOIS.preventerVars.gPreHookButtonHandlerCallActive = true

@@ -937,7 +937,7 @@ end
 --one of the icons that cannot be applied to items that are companion owned (e.g. research, deconstruct, improve, sell at guildstore. intricate)
 --Return value will be "allowed" (=true) or "blocked" (=false)
 function FCOIS.DoCompanionItemChecks(bagId, slotIndex, iconId, isCompanionInventory, viaKeybind)
-    isCompanionInventory = isCompanionInventory or ((FCOIS.gFilterWhere == LF_INVENTORY_COMPANION or FCOIS.isCompanionInventoryShown()) or false)
+    --isCompanionInventory = isCompanionInventory or ((FCOIS.gFilterWhere == LF_INVENTORY_COMPANION or FCOIS.isCompanionInventoryShown()) or false)
     viaKeybind = viaKeybind or false
     --icon is not given but we try to apply a keybinding? Return "allowed" as fallback
     if viaKeybind == true and iconId == nil then
@@ -1787,14 +1787,15 @@ function FCOIS.GetCurrentVendorType(vendorPanelIsShown)
 end
 
 --Function to get the filter panel for the undo methods (SHIFT+right mouse on items)
-function FCOIS.getUndoFilterPanel()
-    local filterPanelNormal = LF_INVENTORY
+function FCOIS.getUndoFilterPanel(panelId)
     local settings = FCOIS.settingsVars.settings
     local undoFilterPanelSettings = settings.contextMenuClearMarkesByShiftKey and settings.useDifferentUndoFilterPanels
     if undoFilterPanelSettings then
-        return FCOIS.gFilterWhere
+        local actualFilterPanelId = panelId or FCOIS.gFilterWhere
+        return actualFilterPanelId
     end
-    return filterPanelNormal
+    --Fallback filterPanelId if settings for UNDO saved for different filterPanelIds is disabled or SHIFT+right mouse = undo/redo disabled
+    return LF_INVENTORY
 end
 
 --Function to get the armor type of an equipped item

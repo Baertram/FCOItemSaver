@@ -11,7 +11,7 @@ local wm = WINDOW_MANAGER
 -- =====================================================================================================================
 
 --Add a button to an existing parent control
-local function AddButton(parent, name, callbackFunction, onMouseUpCallbackFunction, onMouseUpCallbackFunctionMouseButton, text, font, tooltipText, tooltipAlign, textureNormal, textureMouseOver, textureClicked, width, height, left, top, alignMain, alignBackup, alignControl, hideButton)
+local function AddButton(buttonData, parent, name, callbackFunction, onMouseUpCallbackFunction, onMouseUpCallbackFunctionMouseButton, text, font, tooltipText, tooltipAlign, textureNormal, textureMouseOver, textureClicked, width, height, left, top, alignMain, alignBackup, alignControl, hideButton)
     --Abort needed?
     if  (parent == nil or name == nil or callbackFunction == nil
             or width <= 0 or height <= 0 or alignMain == nil or alignBackup == nil)
@@ -115,8 +115,10 @@ local function AddButton(parent, name, callbackFunction, onMouseUpCallbackFuncti
                 end)
             end
             --Set the callback function of the button
-            button:SetHandler("OnClicked", function(...)
-                callbackFunction(...)
+            button:SetHandler("OnClicked", function(clickedButtonCtrl)
+                --Calling FCOIS.ShowContextMenuForAddInvButtons
+                --FCOIS.ShowContextMenuForAddInvButtons(clickedButtonCtrl, buttonData)
+                callbackFunction(clickedButtonCtrl, buttonData)
             end)
             --Set the OnMouseUp callback function of the button
             if onMouseUpCallbackFunction ~= nil then
@@ -156,8 +158,8 @@ function FCOIS.reAnchorAdditionalInvButtons(filterPanelId)
     local addInvButtonOffsets = settings.FCOISAdditionalInventoriesButtonOffset
     local addInvBtnInvokers = FCOIS.contextMenuVars.filterPanelIdToContextMenuButtonInvoker
     if addInvButtonOffsets then
-        local alignMain = TOPLEFT
-        local alignBackup = TOPLEFT
+        local alignMyDefault = TOPLEFT
+        local alignToDefault = TOPLEFT
         local anchorVarsAddInvButtons = FCOIS.anchorVars.additionalInventoryFlagButton[apiVersion]
         --Loop over the anchorVars and get each panel of the additional inv buttons (e.g. LF_INVENTORY, LF_BANK_WITHDRAW, ...)
         if anchorVarsAddInvButtons then
@@ -180,12 +182,12 @@ function FCOIS.reAnchorAdditionalInvButtons(filterPanelId)
                                 local invAddCntBtnCtrl = wm:GetControlByName(btnName, "")
                                 if invAddCntBtnCtrl ~= nil then
                                     --Get the button's data at the panel
-                                    if anchorData ~= nil then
-                                        --Clear the anchors and reanchor it with the updated x and y offsets
-                                        invAddCntBtnCtrl:ClearAnchors()
-                                        --SetAnchor(point, relativeTo, relativePoint, offsetX, offsetY)
-                                        invAddCntBtnCtrl:SetAnchor(alignMain, anchorData.anchorControl, alignBackup, newX, newY)
-                                    end
+                                    --Clear the anchors and reanchor it with the updated x and y offsets
+                                    invAddCntBtnCtrl:ClearAnchors()
+                                    --SetAnchor(point, relativeTo, relativePoint, offsetX, offsetY)
+                                    local alignMy = anchorData.anchorMyPoint or alignMyDefault
+                                    local alignTo = anchorData.anchorToPoint or alignToDefault
+                                    invAddCntBtnCtrl:SetAnchor(alignMy, anchorData.anchorControl, alignTo, newX, newY)
                                 end
                             end
                         end
@@ -260,7 +262,8 @@ function FCOIS.AddAdditionalButtons(buttonName, buttonData)
         --Add a single additional inventory context menu "flag icon" button
         elseif buttonName == nil and buttonData ~= nil then
             --Add or hide a button to the player inventory sort bar
-            AddButton(buttonData.parent, buttonData.name, buttonData.callbackFunction, buttonData.onMouseUpCallbackFunction, buttonData.onMouseUpCallbackFunctionMouseButton, buttonData.text, buttonData.font, buttonData.tooltipText, buttonData.tooltipAlign, buttonData.textureNormal, buttonData.textureMouseOver, buttonData.textureClicked, buttonData.width, buttonData.height, buttonData.left, buttonData.top, buttonData.alignMain, buttonData.alignBackup, buttonData.alignControl, buttonData.hideButton)
+            -->buttonData.callbackFunction = FCOIS.ShowContextMenuForAddInvButtons, set within src/FCOIS_Settings.lua, function AfterSettings -> "Build the additional inventory "flag" context menu button data"
+            AddButton(buttonData, buttonData.parent, buttonData.name, buttonData.callbackFunction, buttonData.onMouseUpCallbackFunction, buttonData.onMouseUpCallbackFunctionMouseButton, buttonData.text, buttonData.font, buttonData.tooltipText, buttonData.tooltipAlign, buttonData.textureNormal, buttonData.textureMouseOver, buttonData.textureClicked, buttonData.width, buttonData.height, buttonData.left, buttonData.top, buttonData.alignMain, buttonData.alignBackup, buttonData.alignControl, buttonData.hideButton)
         end
     end
 end

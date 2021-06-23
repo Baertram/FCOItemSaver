@@ -721,7 +721,7 @@ end
 
 --Update the equipment header text with the information about the amount of equipped armor types
 local function updateEquipmentHeaderCountText(updateWhere)
-    local isCompanionCharacter = (updateWhere == "companion_character") or false
+    local isCompanionCharacter = (updateWhere == FCOIS_CON_LF_COMPANION_CHARACTER) or false
     if isCompanionCharacter == true then
         --Check all equipment controls -> Companion
         if not isCompanionCharacterShown() then return end
@@ -786,7 +786,7 @@ function FCOIS.countAndUpdateEquippedArmorTypes(doRefreshControl, doCreateMarker
             end
         end
         --Update the equipment header text and show the amount of armor types equipped
-        updateEquipmentHeaderCountText("character")
+        updateEquipmentHeaderCountText(FCOIS_CON_LF_CHARACTER)
     end
     ------------------------------------------------------------------------------------------------------------------------
     --Check all equipment controls -> Companion
@@ -808,7 +808,7 @@ function FCOIS.countAndUpdateEquippedArmorTypes(doRefreshControl, doCreateMarker
             end
         end
         --Update the equipment header text and show the amount of armor types equipped
-        updateEquipmentHeaderCountText("companion_character")
+        updateEquipmentHeaderCountText(FCOIS_CON_LF_COMPANION_CHARACTER)
     end
 end
 local countAndUpdateEquippedArmorTypes = FCOIS.countAndUpdateEquippedArmorTypes

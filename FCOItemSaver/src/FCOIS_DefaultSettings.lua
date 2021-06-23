@@ -743,4 +743,12 @@ function FCOIS.buildDefaultSettings()
 			FCOIS.settingsVars.defaults.allowedFCOISUniqueIdItemTypes[itemType] = false
 		end
 	end
+
+	--Added with FCOIS v2.1.6
+	-->Custom filterPanel Ids = non standard LibFilters filterPanels
+	local customFilterPanelIds = FCOIS.customFilterPanelIds
+	for _, FCOISCustomFilterPanelId in ipairs(customFilterPanelIds) do
+		--Create 2-dimensional array for the UNDO functions from the addiitonal inventory context menu (flag) menu
+		FCOIS.contextMenuVars.undoMarkedItems[FCOISCustomFilterPanelId] = {}
+	end
 end

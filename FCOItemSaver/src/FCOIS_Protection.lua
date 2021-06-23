@@ -71,13 +71,12 @@ end
 local ckeckFilterPanelForDestroyProtection = FCOIS.ckeckFilterPanelForDestroyProtection
 
 --Function to check if a normal icon is protected, or a dynamic icon is protected
---checktype is the filterPanelId or the whereAreWe type from function ItemSelectionHandler.
 --Will return the protection value (boolean) as 1st, and the anti-destroy protection value (boolean) as 2nd parameter
-function FCOIS.checkIfProtectedSettingsEnabled(checkType, iconNr, isDynamicIcon, checkAntiDetails, whereAreWe)
-    if checkType == nil then return nil, false end
+function FCOIS.checkIfProtectedSettingsEnabled(filterPanel, iconNr, isDynamicIcon, checkAntiDetails, whereAreWe)
+    if filterPanel == nil then return nil, false end
     isDynamicIcon = isDynamicIcon or false
     checkAntiDetails = checkAntiDetails or false
---d("[FCOIS.checkIfProtectedSettingsEnabled - checkType/filterPanelId: " .. tostring(checkType) .. ", iconNr: " .. tostring(iconNr) .. ", isDynamicIcon: " .. tostring(isDynamicIcon) .. ", checkAntiDetails: " .. tostring(checkAntiDetails) .. ", whereAreWe: " .. tostring(whereAreWe))
+--d("[FCOIS.checkIfProtectedSettingsEnabled - filterPanel: " .. tostring(filterPanel) .. ", iconNr: " .. tostring(iconNr) .. ", isDynamicIcon: " .. tostring(isDynamicIcon) .. ", checkAntiDetails: " .. tostring(checkAntiDetails) .. ", whereAreWe: " .. tostring(whereAreWe))
     local craftBagExtendedUsed = false
     local protectionVal
     local protectionValDestroy
@@ -139,7 +138,7 @@ function FCOIS.checkIfProtectedSettingsEnabled(checkType, iconNr, isDynamicIcon,
     if FCOIS.gFilterWhere == LF_CRAFTBAG and FCOIS.gFilterWhereParent ~= nil then
         craftBagExtendedUsed = true
 --d(">CBE filter parent panel active: " .. tostring(FCOIS.gFilterWhereParent))
-        checkType = FCOIS.gFilterWhereParent
+        filterPanel = FCOIS.gFilterWhereParent
     end
     --Do checks with the icon?
     if iconNr ~= nil then
@@ -149,12 +148,12 @@ function FCOIS.checkIfProtectedSettingsEnabled(checkType, iconNr, isDynamicIcon,
         if isDynamicIcon or icon2Dyn[iconNr] then
             --d("Dynamic icon")
             --Get the protection
-            protectionVal = settings.icon[iconNr].antiCheckAtPanel[checkType]
+            protectionVal = settings.icon[iconNr].antiCheckAtPanel[filterPanel]
 --d(">DynIconNr: " .. tostring(iconNr) .. ", checkAtPanelChecks: " .. tostring(protectionVal))
             --Is the dynamic icon protected at the current panel?
             if protectionVal == true then
                 --The protective functions are not enabled (red flag is set in the inventory additional options flag icon, or the current panel got no additional inventory button, e.g. the crafting research tab or the research popup dialog)?
-                local _, invAntiSettingsEnabled = FCOIS.GetContextMenuAntiSettingsTextAndState(checkType, false)
+                local _, invAntiSettingsEnabled = FCOIS.GetContextMenuAntiSettingsTextAndState(filterPanel, false)
 --d(">invAntiSettingsEnabled: " ..tostring(invAntiSettingsEnabled))
                 if not invAntiSettingsEnabled then
                     --Check if the temporary disabling of the protection is enabled, if the user uses the inventory "flag" icon and sets it to red
@@ -169,11 +168,11 @@ function FCOIS.checkIfProtectedSettingsEnabled(checkType, iconNr, isDynamicIcon,
         else
 --d("Non dynamic icon")
             --Non dynamic
-            protectionValues = protectionSettings[checkType]
+            protectionValues = protectionSettings[filterPanel]
         end
     else
 --d("No icon")
-        protectionValues = protectionSettings[checkType]
+        protectionValues = protectionSettings[filterPanel]
     end
     --============== SPECIAL ITEM & ICON CHECKS ====================================
     --Special treatment for the protectionValue and the AntiDestroy protectionValue
@@ -201,7 +200,7 @@ function FCOIS.checkIfProtectedSettingsEnabled(checkType, iconNr, isDynamicIcon,
                     protectionValDestroy = value
 --d(">Destroy protectionVal: " ..tostring(protectionValDestroy))
                 --Other panel anti settings?
-                elseif key == checkType then
+                elseif key == filterPanel then
                     protectionVal = value
 --d(">Anti: checkType: " .. tostring(checkType) .. ", protectionVal: " ..tostring(protectionVal))
                 end
@@ -371,7 +370,7 @@ function FCOIS.DestroySelectionHandler(bag, slot, echo, parentControl)
     for iconIdToCheck=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
         if( checkIfItemIsProtected(iconIdToCheck, itemId) ) then
             --Check if the anti-settings are enabled (and if a dynamic icon is used)
-            local isProtectedIcon, isProtectedDestroyIcon = checkIfProtectedSettingsEnabled(FCOIS.gFilterWhere, iconIdToCheck)
+            local isProtectedIcon, isProtectedDestroyIcon = checkIfProtectedSettingsEnabled(FCOIS.gFilterWhere, iconIdToCheck, nil, nil, nil)
             --FCOIS version 1.6.0
             --Local hack to change the protectionValue of icons to "true" if certain filterPanels are checked.
             --But only for the destroy checks!
@@ -584,7 +583,7 @@ function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChat
                         --Check the settings again now to see if this icon's dyanmic anti-settings are enabled for the given panel "whereAreWe"
                         --Call with 3rd parameter "isDynamicIcon" = true to skip "is dynamic icon check" inside the function again
                         local filterPanelIdOfWhereAreWe = whereAreWeToFilterPanelId[whereAreWe]
-                        isBlockedLoop, isBlockedLoopDestroy = checkIfProtectedSettingsEnabled(filterPanelIdOfWhereAreWe, iconIdToCheck, true)
+                        isBlockedLoop, isBlockedLoopDestroy = checkIfProtectedSettingsEnabled(filterPanelIdOfWhereAreWe, iconIdToCheck, true, nil, nil)
                         --d(">dynIcon->checkIfProtectedSettingsEnabled-filterPanelIdOfWhereAreWe: " ..tostring(filterPanelIdOfWhereAreWe) .. ", panelId: " ..tostring(panelId) .. ",isBlockedLoop: " ..tostring(isBlockedLoop) .. ", isBlockedLoopDestroy: " ..tostring(isBlockedLoopDestroy))
                         if not isBlockedLoop and isBlockedLoopDestroy == true then
                             isBlockedLoop = isBlockedLoopDestroy
@@ -787,7 +786,7 @@ function FCOIS.DeconstructionSelectionHandler(bag, slot, echo, overrideChatOutpu
             if isDynamicIcon then
                 --Check the settings again now to see if this icon's dyanmic anti-settings are enabled for the given panel "whereAreWe"
                 --Call with 3rd parameter "isDynamicIcon" = true to skip "is dynamic icon check" inside the function again
-                isBlockedLoop, isBlockedLoopDestroy = checkIfProtectedSettingsEnabled(panelId, iconToCheck, true) --panelId could be LF_SMITHING_DECONSTRUCT or LF_JEWELRY_DECONSTRUCT
+                isBlockedLoop, isBlockedLoopDestroy = checkIfProtectedSettingsEnabled(panelId, iconToCheck, true, nil, nil) --panelId could be LF_SMITHING_DECONSTRUCT or LF_JEWELRY_DECONSTRUCT
                 if not isBlockedLoop and isBlockedLoopDestroy then
                     isBlockedLoop = isBlockedLoopDestroy
                 end

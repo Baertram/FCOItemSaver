@@ -7,8 +7,8 @@ local FCOIS = FCOIS
 FCOIS.addonVars = {}
 local addonVars = FCOIS.addonVars
 --Addon variables
-addonVars.addonVersionOptions 		    = '2.1.5' -- version shown in the settings panel
-addonVars.addonVersionOptionsNumber	    = 2.15
+addonVars.addonVersionOptions 		    = '2.1.6' -- version shown in the settings panel
+addonVars.addonVersionOptionsNumber	    = 2.16
 --The addon name, normal and decorated with colors etc.
 addonVars.gAddonName				    = "FCOItemSaver"
 addonVars.gAddonNameShort               = "FCOIS"
@@ -232,7 +232,16 @@ FCOIS_CON_FILTER_BUTTON_GEARSETS		= 2
 FCOIS_CON_FILTER_BUTTON_RESDECIMP		= 3
 FCOIS_CON_FILTER_BUTTON_SELLGUILDINT	= 4
 
-    --The check variables/tables
+--Custom filterPanelIds, not offical of LibFilters, only given within FCOIS (for the "flag" context menu buttons e.g.)
+FCOIS_CON_LF_CHARACTER              = "character"
+FCOIS_CON_LF_COMPANION_CHARACTER    = "companion_character"
+
+FCOIS.customFilterPanelIds = {
+    FCOIS_CON_LF_CHARACTER,
+    FCOIS_CON_LF_COMPANION_CHARACTER
+}
+
+--The check variables/tables
 FCOIS.checkVars = {}
 local checkVars = FCOIS.checkVars
 checkVars.filterButtonsToCheck = {
@@ -997,6 +1006,7 @@ ctrlVars.COMPANION_INV_LIST             = ctrlVars.COMPANION_INV.list
 ctrlVars.COMPANION_INV_FRAGMENT         = COMPANION_EQUIPMENT_KEYBOARD_FRAGMENT
 ctrlVars.COMPANION_CHARACTER_FRAGMENT   = COMPANION_CHARACTER_WINDOW_FRAGMENT
 ctrlVars.COMPANION_CHARACTER            = ZO_CompanionCharacterWindow_Keyboard_TopLevel
+ctrlVars.COMPANION_CHARACTER_NAME       = ctrlVars.COMPANION_CHARACTER:GetName()
 ctrlVars.COMPANION_CHARACTER_EQUIPMENT_SLOTS_NAME = "ZO_CompanionCharacterWindow_Keyboard_TopLevelEquipmentSlots"
 --ZO_CompanionEquipment_Panel_Keyboard
 
@@ -1161,6 +1171,7 @@ ctrlVars.EnchantItemDialog                  = ctrlVars.LIST_DIALOG1 --ZO_ListDia
 ctrlVars.EnchantItemDialogName    	        = "ENCHANTING"
 ctrlVars.EnchantItemDialogTitle              = SI_ENCHANT_TITLE
 ctrlVars.CHARACTER					        = ZO_Character
+ctrlVars.CHARACTER_NAME 			        = ctrlVars.CHARACTER:GetName()
 ctrlVars.CHARACTER_EQUIPMENT_SLOTS_NAME	    = "ZO_CharacterEquipmentSlots"
 
 ctrlVars.PLAYER_PROGRESS_BAR                = ZO_PlayerProgress
@@ -2137,8 +2148,8 @@ checkVars.allowedCraftingPanelIdsForMarkerRechecks = {
 --Mapping of the character/companion character screen to the apparel control where the number of light/medium/heavy armor
 --pieces worn should be shown
 mappingVars.characterApparelSection = {
-    ["character"]           = GetControl(ctrlVars.CHARACTER,            "ApparelSectionText"),
-    ["companion_character"] = GetControl(ctrlVars.COMPANION_CHARACTER,  "ApparelSectionText"),
+    [FCOIS_CON_LF_CHARACTER]           = GetControl(ctrlVars.CHARACTER,            "ApparelSectionText"),
+    [FCOIS_CON_LF_COMPANION_CHARACTER] = GetControl(ctrlVars.COMPANION_CHARACTER,  "ApparelSectionText"),
 }
 
 --Mapping between equipment slot and it's name suffix
@@ -2357,6 +2368,9 @@ checkVars.filterPanelIdsForAntiDestroy = {
     [LF_GUILDBANK_DEPOSIT]      = true,
     [LF_HOUSE_BANK_DEPOSIT]     = true,
     [LF_INVENTORY_COMPANION]    = true,
+    --FCOIS custom LibFilters filterPanelId
+    [FCOIS_CON_LF_CHARACTER]            = true,
+    [FCOIS_CON_LF_COMPANION_CHARACTER]  = true,
 }
 
 --BagId to SetTracker addon settings in FCOIS
@@ -2463,8 +2477,10 @@ mappingVars.traits.weaponShieldTraits = {
 }
 
 --The mapping table for the additional inventory context menu buttons (flag icon) to icon id
+--> Filled in function FCOIS.BuildAdditionalInventoryFlagContextMenuData(calledFromFCOISSettings)
 contextMenuVars.buttonContextMenuToIconId = {}
 --The index of the mapping table for context menu buttons to icon id
+--> Filled in function FCOIS.BuildAdditionalInventoryFlagContextMenuData(calledFromFCOISSettings)
 contextMenuVars.buttonContextMenuToIconIdIndex = {}
 --The table for the context menu marker icons in the additional inventory "flag" context menu, but only non-dynamic icons
 contextMenuVars.buttonContextMenuNonDynamicIcons = {
@@ -2655,6 +2671,9 @@ invAddButtonVars.craftBagInventoryButtonAdditionalOptions = ctrlVars.CRAFTBAG_NA
 invAddButtonVars.retraitInventoryButtonAdditionalOptions = ctrlVars.RETRAIT_INV_NAME .. additionalFCOISInvContextmenuButtonNameString
 invAddButtonVars.houseBankInventoryButtonAdditionalOptions = ctrlVars.HOUSE_BANK_INV_NAME .. additionalFCOISInvContextmenuButtonNameString
 invAddButtonVars.companionInventoryFCOAdditionalOptionsButton = ctrlVars.COMPANION_INV_NAME .. additionalFCOISInvContextmenuButtonNameString
+invAddButtonVars.characterFCOAdditionalOptionsButton = ctrlVars.CHARACTER_NAME .. additionalFCOISInvContextmenuButtonNameString
+invAddButtonVars.companionCharacterFCOAdditionalOptionsButton = ctrlVars.COMPANION_CHARACTER_NAME .. additionalFCOISInvContextmenuButtonNameString
+
 
 --The mapping between the panel (libFilters filter ID LF_*) and the button data -> See file FCOIS_settings.lua -> function AfterSettings() for additional added data
 --and file FCOIS_constants.lua at the bottom for the anchorvars for each API version.
@@ -2802,12 +2821,35 @@ contextMenuVars.filterPanelIdToContextMenuButtonInvoker = {
         ["name"]          = invAddButtonVars.companionInventoryFCOAdditionalOptionsButton,
         ["sortIndex"]     = 27,
     },
+--======================================================================================================================
+    --Special entries without LibFilters filterPanelId -> FCOIS custom filterPanels
+    --Cannot be moved via settings so a sortIndex is not necessary -> Wont be added to table contextMenuVars.sortedFilterPanelIdToContextMenuButtonInvoker
+    --Character
+    [FCOIS_CON_LF_CHARACTER] = {
+        ["addInvButton"]  = true,
+        ["parent"]        = ctrlVars.CHARACTER,
+        ["name"]          = invAddButtonVars.characterFCOAdditionalOptionsButton,
+        ["filterPanelId"] = FCOIS_CON_LF_CHARACTER, --Used within function AddButton to provide the custom non-LibFilters filterPanelId to function FCOIS.ShowContextMenuForAddInvButtons
+    },
+    --Companion character
+    [FCOIS_CON_LF_COMPANION_CHARACTER] = {
+        ["addInvButton"]  = true,
+        ["parent"]        = ctrlVars.COMPANION_CHARACTER,
+        ["name"]          = invAddButtonVars.companionCharacterFCOAdditionalOptionsButton,
+        ["filterPanelId"] = FCOIS_CON_LF_COMPANION_CHARACTER, --Used within function AddButton to provide the custom non-LibFilters filterPanelId to function FCOIS.ShowContextMenuForAddInvButtons
+    },
 }
 --Resort the panels by their sort number attribut given
 local sortedAddInvBtnInvokersNoGapIndex = {}
 for filterPanelId, addInvBtnInvokerData in pairs(FCOIS.contextMenuVars.filterPanelIdToContextMenuButtonInvoker) do
-    addInvBtnInvokerData.filterPanelId = filterPanelId
-    table.insert(sortedAddInvBtnInvokersNoGapIndex, addInvBtnInvokerData)
+    local typeFilterPanelId = type(filterPanelId)
+    if typeFilterPanelId == "number" then
+        addInvBtnInvokerData.filterPanelId = filterPanelId
+        table.insert(sortedAddInvBtnInvokersNoGapIndex, addInvBtnInvokerData)
+    --else
+        --Special data for non LibFilters panels, e.g. character
+        -->Do not add to re-position sortIndex table as they cannot be moved via settings!
+    end
 end
 table.sort(sortedAddInvBtnInvokersNoGapIndex, function(a, b) return a.sortIndex < b.sortIndex  end)
 contextMenuVars.sortedFilterPanelIdToContextMenuButtonInvoker = sortedAddInvBtnInvokersNoGapIndex
@@ -2936,6 +2978,12 @@ mappingVars.contextMenuAntiButtonsAtPanel = {
     [LF_JEWELRY_RESEARCH]		= "",
     [LF_JEWELRY_RESEARCH_DIALOG] = "",
     [LF_INVENTORY_COMPANION]    = buttonContextMenuDestroy,
+--======================================================================================================================
+    --Special entries without LibFilters filterPanelId -> FCOIS custom filterPanels
+    --Character
+    [FCOIS_CON_LF_CHARACTER]            = buttonContextMenuDestroy,
+    --Companion character
+    [FCOIS_CON_LF_COMPANION_CHARACTER]  = buttonContextMenuDestroy,
 }
 
 --Mapping for the Transmuation Geode container ItemIds (and flavor text)
@@ -3066,6 +3114,22 @@ anchorVarsAddInvButtonsFill[100021][LF_INVENTORY_COMPANION].left            = -5
 anchorVarsAddInvButtonsFill[100021][LF_INVENTORY_COMPANION].top             = 110
 anchorVarsAddInvButtonsFill[100021][LF_INVENTORY_COMPANION].defaultLeft     = -55
 anchorVarsAddInvButtonsFill[100021][LF_INVENTORY_COMPANION].defaultTop      = 110
+anchorVarsAddInvButtonsFill[100021][FCOIS_CON_LF_CHARACTER] = {}
+anchorVarsAddInvButtonsFill[100021][FCOIS_CON_LF_CHARACTER].anchorControl   = ctrlVars.CHARACTER
+anchorVarsAddInvButtonsFill[100021][FCOIS_CON_LF_CHARACTER].anchorMyPoint   = TOPLEFT
+anchorVarsAddInvButtonsFill[100021][FCOIS_CON_LF_CHARACTER].anchorToPoint   = TOPRIGHT
+anchorVarsAddInvButtonsFill[100021][FCOIS_CON_LF_CHARACTER].left            = -16
+anchorVarsAddInvButtonsFill[100021][FCOIS_CON_LF_CHARACTER].top             = 0
+anchorVarsAddInvButtonsFill[100021][FCOIS_CON_LF_CHARACTER].defaultLeft     = -16
+anchorVarsAddInvButtonsFill[100021][FCOIS_CON_LF_CHARACTER].defaultTop      = 0
+anchorVarsAddInvButtonsFill[100021][FCOIS_CON_LF_COMPANION_CHARACTER] = {}
+anchorVarsAddInvButtonsFill[100021][FCOIS_CON_LF_COMPANION_CHARACTER].anchorControl   = ctrlVars.COMPANION_CHARACTER
+anchorVarsAddInvButtonsFill[100021][FCOIS_CON_LF_COMPANION_CHARACTER].anchorMyPoint   = TOPLEFT
+anchorVarsAddInvButtonsFill[100021][FCOIS_CON_LF_COMPANION_CHARACTER].anchorToPoint   = TOPRIGHT
+anchorVarsAddInvButtonsFill[100021][FCOIS_CON_LF_COMPANION_CHARACTER].left            = -16
+anchorVarsAddInvButtonsFill[100021][FCOIS_CON_LF_COMPANION_CHARACTER].top             = 0
+anchorVarsAddInvButtonsFill[100021][FCOIS_CON_LF_COMPANION_CHARACTER].defaultLeft     = -16
+anchorVarsAddInvButtonsFill[100021][FCOIS_CON_LF_COMPANION_CHARACTER].defaultTop      = 0
 --Is the current API version unequal one of the above ones?
 if FCOIS.APIversion >= 100021 then
 	anchorVarsAddInvButtonsFill[FCOIS.APIversion] = {}

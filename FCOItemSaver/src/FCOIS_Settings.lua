@@ -129,6 +129,7 @@ function FCOIS.setSettingsIsFilterOn(p_filterId, p_value, p_filterPanel)
 end
 
 -- Check the settings for the panels and return if they are enabled or disabled (e.g. the filter buttons [filters])
+-- If 2nd param onlyAnti == true: p_filterWhere will be used, and updated with teh current filterPanelId, if it was nil
 function FCOIS.getFilterWhereBySettings(p_filterWhere, onlyAnti)
     p_filterWhere = p_filterWhere or FCOIS.gFilterWhere
     onlyAnti = onlyAnti or false
@@ -1040,8 +1041,8 @@ function FCOIS.afterSettings()
             buttonData.height = height
             buttonData.left = ancVars.additionalInventoryFlagButton[apiVersion][panelId].left
             buttonData.top = ancVars.additionalInventoryFlagButton[apiVersion][panelId].top
-            buttonData.alignMain = alignMain
-            buttonData.alignBackup = alignBackup
+            buttonData.alignMain = ancVars.additionalInventoryFlagButton[apiVersion][panelId].anchorMyPoint or alignMain
+            buttonData.alignBackup = ancVars.additionalInventoryFlagButton[apiVersion][panelId].anchorToPoint or alignBackup
             buttonData.alignControl = ancVars.additionalInventoryFlagButton[apiVersion][panelId].anchorControl
             buttonData.hideButton = doHide
         end
