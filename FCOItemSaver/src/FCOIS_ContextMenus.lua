@@ -24,6 +24,7 @@ local scanInventoryItemsForAutomaticMarks = FCOIS.ScanInventoryItemsForAutomatic
 local doCompanionItemChecks = FCOIS.DoCompanionItemChecks
 local isItemResearchableNoControl = FCOIS.isItemResearchableNoControl
 local checkIfCharOrInvNeedsRingUpdate = FCOIS.CheckIfCharOrInvNeedsRingUpdate
+local refreshEquipmentControl = FCOIS.RefreshEquipmentControl
 
 --Compatibility functions
 local function menuVisibleCheck()
@@ -35,12 +36,10 @@ local function menuVisibleCheck()
 end
 
 --Return the first data table of a bagId
-local function getSingleBagData(bagId)
+local function getCharacterBagData(bagId)
     local bagCache = SHARED_INVENTORY:GetOrCreateBagCache(bagId)
     if bagCache and #bagCache > 0 then
-        for _, data in pairs(bagCache) do
-            return data
-        end
+        return bagCache
     end
 end
 
@@ -438,8 +437,10 @@ end
         if not isResearchable then
             return false
         end
-        if wasRetraitedOrReconstructed == true and markId == FCOIS_CON_ICON_RESEARCH then
-            return false
+        if wasRetraitedOrReconstructed == true then
+            if mappingVars.iconIsBlockedBecauseOfRetrait[iconId] == true then
+                return false
+            end
         end
     end
 
@@ -2113,7 +2114,7 @@ end
 
 --The context menu OnClicked callback function for the additional inventory flag context menu buttons/entries
 local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, specialButtonType, panelId)
---d("[FCOIS]ContextMenuForAddInvButtonsOnClicked - buttonCtrl: " .. tostring(buttonCtrl:GetName())  .. ", iconId: " .. tostring(iconId)  .. ", doMark: " .. tostring(doMark)  .. ", specialButtonType: " .. tostring(specialButtonType))
+d("[FCOIS]ContextMenuForAddInvButtonsOnClicked - buttonCtrl: " .. tostring(buttonCtrl:GetName())  .. ", iconId: " .. tostring(iconId)  .. ", doMark: " .. tostring(doMark)  .. ", specialButtonType: " .. tostring(specialButtonType) ..", panelId: " ..tostring(panelId))
     --Table for the allowed special button types, if iconId = nil and doMark = nil
     local settings = FCOIS.settingsVars.settings
     local mappingVars = FCOIS.mappingVars
@@ -2135,7 +2136,7 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
     }
 
     local isCompanionInventory = false
-    local iconsDisabledAtCompanion = mappingVars.iconIsDisabledAtCompanion
+    --local iconsDisabledAtCompanion = mappingVars.iconIsDisabledAtCompanion
     local isCharacter = (panelId == FCOIS_CON_LF_CHARACTER) or false
     local isCompanionCharacter = (panelId == FCOIS_CON_LF_COMPANION_CHARACTER) or false
 
@@ -2232,14 +2233,14 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
     if isSpecialFilterPanel == true then
         if isCharacter == true then
             --Get all equipment slots of the currently equipped items: BAG_WORN
-            inventoryData = getSingleBagData(BAG_WORN)
+            inventoryData = getCharacterBagData(BAG_WORN)
         elseif isCompanionCharacter == true then
             --Get all equipment slots of the currently equipped items of the companion: BAG_COMPANION_WORN
-            inventoryData = getSingleBagData(BAG_COMPANION_WORN)
+            inventoryData = getCharacterBagData(BAG_COMPANION_WORN)
         end
     end
+FCOIS._AddContextMenuFlagInventory = inventoryData
     if not inventoryData or (inventoryData and #inventoryData == 0) then return end
-
     --==================================================================================================================
     --==================================================================================================================
     --Are we marking/unmarking items or are we undoing the last change at this current panel?
@@ -2260,6 +2261,7 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
 
         --Check all "currently shown -> non filtered!" items in the given inventory
         if (iconId ~= nil and doMark ~= nil) or (specialButtonType ~= nil and allowedSpecialButtonTypes[specialButtonType].allowed) then
+d(">Checking bag data...")
             --Get the current inventorytype
             --local inventoryType = mappingVars.InvToInventoryType[panelId]
             --All non-filtered items will be in this list here:
@@ -2287,7 +2289,6 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                     bagId     = data.bagId
                     slotIndex = data.slotIndex
                     if bagId ~= nil and slotIndex ~= nil then
-                        --d("> " .. GetItemLink(bagId, slotIndex))
                         --Introduced with FCOIS version 1.0.6
                         --Check if an item is not-bound yet and only allow to mark it if it's unbound
                         --Only ehck if item should be marked!
@@ -2308,13 +2309,16 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                                 -- Check if item is researchable (as only researchable items can work as equipment too)
                                 allowedToMark, wasItemReconstructedOrRetraited = isItemResearchableNoControl(bagId, slotIndex, iconId)
                                 if allowedToMark and wasItemReconstructedOrRetraited == true then
-                                    allowedToMark = false
+                                    if mappingVars.iconIsBlockedBecauseOfRetrait[iconId] == true then
+                                        allowedToMark = false
+                                    end
                                 end
                             end
                         end
                         if allowedToMark == true then
                             allowedToMark = doCompanionItemChecks(bagId, slotIndex, iconId, isCompanionInventory, false)
                         end
+d("> " .. GetItemLink(bagId, slotIndex) .. ", allowedToMark: " ..tostring(allowedToMark))
                         --Finally: Is the item allowed to be marked with this iconId?
                         if allowedToMark == true then
                             myItemInstanceId = myGetItemInstanceIdNoControl(bagId, slotIndex)
@@ -2566,7 +2570,7 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                     bagId     = data.bagId
                     slotIndex = data.slotIndex
                     if bagId ~= nil and slotIndex ~= nil then
-                        allowedToMark = doCompanionItemChecks(bagId, slotIndex, nil, isCompanionInventory, false)
+                        allowedToMark = doCompanionItemChecks(bagId, slotIndex, nil, isCompanionInventory, false, true)
                         if allowedToMark == true then
                             myItemInstanceId = myGetItemInstanceIdNoControl(bagId, slotIndex)
                             if myItemInstanceId ~= nil then
@@ -2712,6 +2716,9 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
 
     --Did at least one marker change?
     if atLeastOneMarkerChanged == true then
+        if isCharacter or isCompanionCharacter then
+            refreshEquipmentControl(nil, doMark, iconId)
+        end
         --Update the inventory & markers
         filterBasics(false)
     end

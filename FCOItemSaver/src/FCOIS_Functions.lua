@@ -936,7 +936,7 @@ end
 --Check if the icon (if provided! Must be provided for keybind checks, can be nil for additional inventory "flag" context menu checks) is
 --one of the icons that cannot be applied to items that are companion owned (e.g. research, deconstruct, improve, sell at guildstore. intricate)
 --Return value will be "allowed" (=true) or "blocked" (=false)
-function FCOIS.DoCompanionItemChecks(bagId, slotIndex, iconId, isCompanionInventory, viaKeybind)
+function FCOIS.DoCompanionItemChecks(bagId, slotIndex, iconId, isCompanionInventory, viaKeybind, removeAll)
     --isCompanionInventory = isCompanionInventory or ((FCOIS.gFilterWhere == LF_INVENTORY_COMPANION or FCOIS.isCompanionInventoryShown()) or false)
     viaKeybind = viaKeybind or false
     --icon is not given but we try to apply a keybinding? Return "allowed" as fallback
@@ -948,6 +948,8 @@ function FCOIS.DoCompanionItemChecks(bagId, slotIndex, iconId, isCompanionInvent
     if isCompanionOnwed == true then
         --No icon given (via add. inv. "flag" context menu)
         if iconId == nil then
+            --All icons should be removed? Allow
+            if removeAll == true then return true end
             return false --blocked
         end
         local iconsDisabledAtCompanion = FCOIS.mappingVars.iconIsDisabledAtCompanion

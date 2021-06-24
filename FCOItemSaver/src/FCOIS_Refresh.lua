@@ -371,7 +371,6 @@ end
 --The function to update the inventories and lists after an item was un/marked
 function FCOIS.FilterBasics(onlyPlayer)
     --Check if we are in the player inventory
-    local ctrlVars = ctrlVars
     if not ctrlVars.BACKPACK:IsHidden() then
         --we are in the player inventory (or in the banks at the deposit inventories, or at mail sending, or trading)
         onlyPlayer = true

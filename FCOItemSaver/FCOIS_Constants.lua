@@ -1704,6 +1704,13 @@ mappingVars.iconIsResearchable = {
     [FCOIS_CON_ICON_INTRICATE]      = true,
 }
 
+--Table to see if the icon is blocked for usage if the item is reconstructed or retraited
+mappingVars.iconIsBlockedBecauseOfRetrait = {
+	[FCOIS_CON_ICON_RESEARCH]       = true,
+    [FCOIS_CON_ICON_INTRICATE]      = true,
+	[FCOIS_CON_ICON_SELL_AT_GUILDSTORE]	= true,
+}
+
 --Table to see if the icon is a dynamic icon
 mappingVars.iconIsDynamic = {
 	[FCOIS_CON_ICON_LOCK]				= false,
