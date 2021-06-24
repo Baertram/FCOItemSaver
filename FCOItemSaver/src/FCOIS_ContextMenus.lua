@@ -438,7 +438,7 @@ end
             return false
         end
         if wasRetraitedOrReconstructed == true then
-            if mappingVars.iconIsBlockedBecauseOfRetrait[iconId] == true then
+            if mappingVars.iconIsBlockedBecauseOfRetrait[markId] == true then
                 return false
             end
         end
@@ -2075,6 +2075,44 @@ local function getContextMenuInvokerButton(panelId)
     end
 end
 
+--Change the context menu invoker button's color by help of the button control and the anti-* settings state, but do not
+--change the given invoker button but other buttons also possibly shown at the current button's panel
+local function changeContextMenuInvokerButtonColorOfOtherButton(contextMenuInvokerButton, settingsEnabled)
+    if not contextMenuInvokerButton then return false end
+    local settingStateForColor
+    if settingsEnabled == nil then
+        settingStateForColor = "non_active"
+    else
+        settingStateForColor = settingsEnabled
+    end
+    local colR, colG, colB, colA = getContextMenuAntiSettingsColor(settingStateForColor)
+--d("[FCOIS]changeContextMenuInvokerButtonColorOfOtherButton - contextMenuInvokerButton: " .. contextMenuInvokerButton:GetName() .. ", settingsEnabled: " .. tostring(settingsEnabled))
+
+    --Check if the current invoker button's panel got other invoker buttons shown, or similar ones like the character or companion character at the inventory panel
+    local filterPanelIdToContextMenuButtonInvoker = FCOIS.contextMenuVars.filterPanelIdToContextMenuButtonInvoker
+    local updateOtherInvokerButtonsState = contextMenuInvokerButton.buttonData and contextMenuInvokerButton.buttonData.updateOtherInvokerButtonsState
+    if updateOtherInvokerButtonsState ~= nil then
+        for _, otherInvokerButtonDataToUpdate in pairs(updateOtherInvokerButtonsState) do
+            if otherInvokerButtonDataToUpdate.filterPanel ~= nil then
+                local goOn = true
+                if otherInvokerButtonDataToUpdate.requirementFunc ~= nil then
+                    goOn = otherInvokerButtonDataToUpdate.requirementFunc(otherInvokerButtonDataToUpdate)
+                end
+                if goOn == true then
+                    local otherButtonData = filterPanelIdToContextMenuButtonInvoker[otherInvokerButtonDataToUpdate.filterPanel]
+                    if otherButtonData ~= nil then
+                        --Update the other context menu "flag" button's color according to the current settings state
+                        local contInvButTexture = wm:GetControlByName(otherButtonData.name, "Texture")
+                        if contInvButTexture then
+                            contInvButTexture:SetColor(colR, colG, colB, colA)
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
 --Change the context menu invoker button's color by help of the button control and the anti-* settings state
 local function changeContextMenuInvokerButtonColor(contextMenuInvokerButton, settingsEnabled)
     if not contextMenuInvokerButton then return false end
@@ -2114,7 +2152,7 @@ end
 
 --The context menu OnClicked callback function for the additional inventory flag context menu buttons/entries
 local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, specialButtonType, panelId)
-d("[FCOIS]ContextMenuForAddInvButtonsOnClicked - buttonCtrl: " .. tostring(buttonCtrl:GetName())  .. ", iconId: " .. tostring(iconId)  .. ", doMark: " .. tostring(doMark)  .. ", specialButtonType: " .. tostring(specialButtonType) ..", panelId: " ..tostring(panelId))
+--d("[FCOIS]ContextMenuForAddInvButtonsOnClicked - buttonCtrl: " .. tostring(buttonCtrl:GetName())  .. ", iconId: " .. tostring(iconId)  .. ", doMark: " .. tostring(doMark)  .. ", specialButtonType: " .. tostring(specialButtonType) ..", panelId: " ..tostring(panelId))
     --Table for the allowed special button types, if iconId = nil and doMark = nil
     local settings = FCOIS.settingsVars.settings
     local mappingVars = FCOIS.mappingVars
@@ -2239,7 +2277,7 @@ d("[FCOIS]ContextMenuForAddInvButtonsOnClicked - buttonCtrl: " .. tostring(butto
             inventoryData = getCharacterBagData(BAG_COMPANION_WORN)
         end
     end
-FCOIS._AddContextMenuFlagInventory = inventoryData
+--FCOIS._AddContextMenuFlagInventory = inventoryData
     if not inventoryData or (inventoryData and #inventoryData == 0) then return end
     --==================================================================================================================
     --==================================================================================================================
@@ -2261,7 +2299,7 @@ FCOIS._AddContextMenuFlagInventory = inventoryData
 
         --Check all "currently shown -> non filtered!" items in the given inventory
         if (iconId ~= nil and doMark ~= nil) or (specialButtonType ~= nil and allowedSpecialButtonTypes[specialButtonType].allowed) then
-d(">Checking bag data...")
+--d(">Checking bag data...")
             --Get the current inventorytype
             --local inventoryType = mappingVars.InvToInventoryType[panelId]
             --All non-filtered items will be in this list here:
@@ -2318,7 +2356,7 @@ d(">Checking bag data...")
                         if allowedToMark == true then
                             allowedToMark = doCompanionItemChecks(bagId, slotIndex, iconId, isCompanionInventory, false)
                         end
-d("> " .. GetItemLink(bagId, slotIndex) .. ", allowedToMark: " ..tostring(allowedToMark))
+--d("> " .. GetItemLink(bagId, slotIndex) .. ", allowedToMark: " ..tostring(allowedToMark))
                         --Finally: Is the item allowed to be marked with this iconId?
                         if allowedToMark == true then
                             myItemInstanceId = myGetItemInstanceIdNoControl(bagId, slotIndex)
@@ -2739,6 +2777,7 @@ function FCOIS.onContextMenuForAddInvButtonsButtonMouseUp(inventoryAdditionalCon
         if settingsEnabled == nil then
             --Change the additional inventory context menu button's color to the "not active" state
             changeContextMenuInvokerButtonColor(inventoryAdditionalContextMenuInvokerButton, nil)
+            changeContextMenuInvokerButtonColorOfOtherButton(inventoryAdditionalContextMenuInvokerButton, nil)
             return false
         end
         --Invert the active setting (false->true / true->false)
@@ -2746,6 +2785,8 @@ function FCOIS.onContextMenuForAddInvButtonsButtonMouseUp(inventoryAdditionalCon
         local settingsStateAfterChange = not settingsEnabled
         --Change the additional inventory context menu button's color to the new anti-setting state
         changeContextMenuInvokerButtonColor(inventoryAdditionalContextMenuInvokerButton, settingsStateAfterChange)
+        --Check for other panels also active (FCOIS custom filterPanel Ids like the character), and updte it's protection color as well
+        changeContextMenuInvokerButtonColorOfOtherButton(inventoryAdditionalContextMenuInvokerButton, settingsStateAfterChange)
         --Update the items slotted and protected and the tooltips
         removeSlottedProtectedItemsAndUpdateTooltips(settingsStateAfterChange)
     end

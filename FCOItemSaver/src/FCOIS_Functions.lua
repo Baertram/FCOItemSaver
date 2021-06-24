@@ -2023,6 +2023,11 @@ end
 --======================================================================================================================
 -- Is shown functions
 --======================================================================================================================
+--Is the inventory control shown
+function FCOIS.isInventoryShown()
+    return not ctrlVars.INV:IsHidden()
+end
+
 --Is the character control shown
 function FCOIS.isCharacterShown()
     return not ctrlVars.CHARACTER:IsHidden()
@@ -2033,11 +2038,10 @@ function FCOIS.isCompanionCharacterShown()
     return not ctrlVars.COMPANION_CHARACTER:IsHidden()
 end
 
---Is the companion iventory control shown
+--Is the companion inventory control shown
 function FCOIS.isCompanionInventoryShown()
     return not ctrlVars.COMPANION_INV_CONTROL:IsHidden()
 end
-
 
 --Is the retrait station shown?
 function FCOIS.isRetraitStationShown()

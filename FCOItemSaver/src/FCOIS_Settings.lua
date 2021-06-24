@@ -1045,6 +1045,7 @@ function FCOIS.afterSettings()
             buttonData.alignBackup = ancVars.additionalInventoryFlagButton[apiVersion][panelId].anchorToPoint or alignBackup
             buttonData.alignControl = ancVars.additionalInventoryFlagButton[apiVersion][panelId].anchorControl
             buttonData.hideButton = doHide
+            --buttonData.updateOtherInvokerButtonsState
         end
     end
 

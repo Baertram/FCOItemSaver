@@ -28,6 +28,7 @@ local function AddButton(buttonData, parent, name, callbackFunction, onMouseUpCa
         if hideButton == true then return nil end
         --Create the button control at the parent
         button = wm:CreateControl(name, parent, CT_BUTTON)
+        button.buttonData = buttonData
     end
     --Button was created?
     if button ~= nil then

@@ -2693,6 +2693,12 @@ contextMenuVars.filterPanelIdToContextMenuButtonInvoker = {
         ["parent"]        = ctrlVars.INV,
         ["name"]          = invAddButtonVars.playerInventoryFCOAdditionalOptionsButton,
         ["sortIndex"]     = 1,
+        ["updateOtherInvokerButtonsState"] = {
+            [1] = {
+                filterPanel     = FCOIS_CON_LF_CHARACTER,
+                requirementFunc = function() return FCOIS.isCharacterShown() end,
+            }
+        }
     },
     --Added with API 100015 for the crafting bags that you only got access too if you are an ESO+ subscriber
     [LF_CRAFTBAG]					= {
@@ -2827,6 +2833,12 @@ contextMenuVars.filterPanelIdToContextMenuButtonInvoker = {
         ["parent"]        = ctrlVars.COMPANION_INV_CONTROL,
         ["name"]          = invAddButtonVars.companionInventoryFCOAdditionalOptionsButton,
         ["sortIndex"]     = 27,
+        ["updateOtherInvokerButtonsState"] = {
+            [1] = {
+                filterPanel     = FCOIS_CON_LF_COMPANION_CHARACTER,
+                requirementFunc = function() return FCOIS.isCompanionCharacterShown() end,
+            }
+        }
     },
 --======================================================================================================================
     --Special entries without LibFilters filterPanelId -> FCOIS custom filterPanels
@@ -2837,6 +2849,12 @@ contextMenuVars.filterPanelIdToContextMenuButtonInvoker = {
         ["parent"]        = ctrlVars.CHARACTER,
         ["name"]          = invAddButtonVars.characterFCOAdditionalOptionsButton,
         ["filterPanelId"] = FCOIS_CON_LF_CHARACTER, --Used within function AddButton to provide the custom non-LibFilters filterPanelId to function FCOIS.ShowContextMenuForAddInvButtons
+        ["updateOtherInvokerButtonsState"] = {
+            [1] = {
+                filterPanel     = LF_INVENTORY,
+                requirementFunc = function() return FCOIS.isInventoryShown() end,
+            }
+        }
     },
     --Companion character
     [FCOIS_CON_LF_COMPANION_CHARACTER] = {
@@ -2844,6 +2862,12 @@ contextMenuVars.filterPanelIdToContextMenuButtonInvoker = {
         ["parent"]        = ctrlVars.COMPANION_CHARACTER,
         ["name"]          = invAddButtonVars.companionCharacterFCOAdditionalOptionsButton,
         ["filterPanelId"] = FCOIS_CON_LF_COMPANION_CHARACTER, --Used within function AddButton to provide the custom non-LibFilters filterPanelId to function FCOIS.ShowContextMenuForAddInvButtons
+        ["updateOtherInvokerButtonsState"] = {
+            [1] = {
+                filterPanel     = LF_INVENTORY_COMPANION,
+                requirementFunc = function() return FCOIS.isCompanionInventoryShown() end,
+            }
+        }
     },
 }
 --Resort the panels by their sort number attribut given
