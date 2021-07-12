@@ -4,6 +4,10 @@ local FCOIS = FCOIS
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
 
+local checkIfIsOwnerOfHouse = FCOIS.CheckIfIsOwnerOfHouse
+local checkIfOwningHouse = FCOIS.CheckIfOwningHouse
+local checkIfInHouse = FCOIS.CheckIfInHouse
+
 --The standard allowed bags for the backup
 local standardBackupAllowedBagTypes = {}
 standardBackupAllowedBagTypes[BAG_WORN] 	= true
@@ -47,7 +51,7 @@ local function teleportToHouseAndBackupThen(backupType, withDetails, apiVersion,
     --Set variable so the backup is done after the jump to the house
     --FCOIS.settingsVars.settings.doBackupAfterJumpToHouse = true
     --Jump to the own house now
-    FCOIS.jumpToOwnHouse(backupType, withDetails, apiVersion, doClearBackup)
+    FCOIS.JumpToOwnHouse(backupType, withDetails, apiVersion, doClearBackup)
     --> Check EVENT_PLAYER_ACTIVATED in file FCOIS_events.lua now for the backup after jump to house!
 end
 
@@ -60,13 +64,13 @@ function FCOIS.preBackup(backupType, withDetails, apiVersion, doClearBackup)
     local preVars = FCOIS.preChatVars
     local doBackupNow = false
     local doAskForTeleportToOwnHouse = false
-    local isOwningAHouse = FCOIS.checkIfOwningHouse()
+    local isOwningAHouse = checkIfOwningHouse()
     if isOwningAHouse then
 --d(">Owning a house")
-        local isInHouse = FCOIS.checkIfInHouse()
+        local isInHouse = checkIfInHouse()
         if isInHouse then
 --d(">In house")
-            local isInOwnHouse = FCOIS.checkIfIsOwnerOfHouse()
+            local isInOwnHouse = checkIfIsOwnerOfHouse()
             if not isInOwnHouse then
 --d(">In another owner's house: Ask for teleport now")
                 doAskForTeleportToOwnHouse = true
@@ -128,8 +132,8 @@ function FCOIS.backupMarkerIcons(backupType, withDetails, apiVersion, doClearBac
         end
     end
     --Add the house banks
-    local isOwningAHouse = FCOIS.checkIfOwningHouse()
-    local isInOwnHouse = FCOIS.checkIfInHouse() and FCOIS.checkIfIsOwnerOfHouse()
+    local isOwningAHouse = checkIfOwningHouse()
+    local isInOwnHouse = checkIfInHouse() and checkIfIsOwnerOfHouse()
     if isOwningAHouse and isInOwnHouse then
         local houseBankBagIdToBag = FCOIS.mappingVars.houseBankBagIdToBag
         for _, houseBankBagId in ipairs(houseBankBagIdToBag) do
@@ -373,8 +377,8 @@ function FCOIS.restoreMarkerIcons(restoreType, withDetails, apiVersion)
             end
         end
         --Add the house banks
-        local isOwningAHouse = FCOIS.checkIfOwningHouse()
-        local isInOwnHouse = FCOIS.checkIfInHouse() and FCOIS.checkIfIsOwnerOfHouse()
+        local isOwningAHouse = checkIfOwningHouse()
+        local isInOwnHouse = checkIfInHouse() and checkIfIsOwnerOfHouse()
         if isOwningAHouse and isInOwnHouse then
             local houseBankBagIdToBag = FCOIS.mappingVars.houseBankBagIdToBag
             for _, houseBankBagId in ipairs(houseBankBagIdToBag) do

@@ -6,7 +6,7 @@ if not FCOIS.libsLoadedProperly then return end
 
 local wm = WINDOW_MANAGER
 
-local checkIfProtectedSettingsEnabled = FCOIS.checkIfProtectedSettingsEnabled
+local checkIfProtectedSettingsEnabled = FCOIS.CheckIfProtectedSettingsEnabled
 local myGetItemDetails = FCOIS.MyGetItemDetails
 
 -- =====================================================================================================================

@@ -4,15 +4,19 @@ local FCOIS = FCOIS
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
 
+local zo_strf = zo_strformat
+
+local isItemBindable = FCOIS.IsItemBindable
+
 --==============================================================================
 --			Dialog functions
 --==============================================================================
 
 --Format the text for the dialog
-local function GetFormattedDialogText(text, params)
+local function getFormattedDialogText(text, params)
     if (text) then
         if(params and #params > 0) then
-            text = zo_strformat(text, unpack(params))
+            text = zo_strf(text, unpack(params))
         elseif(type(text) == "number") then
             text = GetString(text)
         end
@@ -26,18 +30,19 @@ end
 --			Destroy dialog changes
 --==============================================================================
 --Modify the destroy dialog's YES button
-function FCOIS.overrideDialogYesButton(dialog)
+function FCOIS.OverrideDialogYesButton(dialog)
     --Get the "yes" button control of the destroy popup window
     --FCOdialog = dialog
     local button1 = dialog:GetNamedChild("Button1")
     if button1 == nil then return false end
     local ctrlVars = FCOIS.ZOControlVars
+    local destroyItemDialog = ctrlVars.DestroyItemDialog
 
-    if dialog.info == ctrlVars.DestroyItemDialog then
+    if dialog.info == destroyItemDialog then
         --Use standard behaviour of "YES" button in destroy dialog
         button1:SetText(GetString(SI_YES))
         button1:SetClickSound(SOUNDS.DIALOG_ACCEPT)
-        button1.m_callback = ctrlVars.DestroyItemDialog.buttons[1].callback
+        button1.m_callback = destroyItemDialog.buttons[1].callback
         button1:SetEnabled(true)
         button1:SetMouseEnabled(true)
         button1:SetHidden(false)
@@ -53,14 +58,14 @@ function FCOIS.overrideDialogYesButton(dialog)
             --using a keybind will press ESC key instead
             button1:SetText(GetString(SI_NO))
             button1:SetClickSound(SOUNDS.DIALOG_DECLINE)
-            button1.m_callback = ctrlVars.DestroyItemDialog.noChoiceCallback
+            button1.m_callback = destroyItemDialog.noChoiceCallback
             button1:SetMouseEnabled(false)
             button1:SetHidden(true)
             button1:SetKeybindEnabled(false)
         end
     else
         --All other dialogs
-        FCOIS.ZOControlVars.ZODialog1:SetKeyboardEnabled(false)
+        ctrlVars.ZODialog1:SetKeyboardEnabled(false)
         button1:SetEnabled(true)
         button1:SetMouseEnabled(true)
         button1:SetHidden(false)
@@ -108,7 +113,7 @@ function FCOIS.AskBeforeBindDialogInitialize(control)
             --Format the dialog text: Show the item's name inside
             local itemLink = GetItemLink(data.bag, data.slot)
             local params = {itemLink}
-            local formattedText = GetFormattedDialogText(FCOIS.localizationVars.fcois_loc["options_anti_equip_question"], params)
+            local formattedText = getFormattedDialogText(FCOIS.localizationVars.fcois_loc["options_anti_equip_question"], params)
             descLabel:SetText(formattedText)
         end,
         noChoiceCallback = function()
@@ -152,6 +157,7 @@ function FCOIS.AskBeforeBindDialogCallback(bagId, slotIndex, equipSlotIndex, con
         return false
     end
 end
+local askBeforeBindDialogCallback = FCOIS.AskBeforeBindDialogCallback
 
 --Function to check if item is bindable and show a question dialog then (used in file FCOIS_Hooks.lua in PreHook of function "EQUIP ITEM")
 --and at file FCOIS_hooks.lua in function "FCOItemSaver_OnReceiveDrag(inventorySlot)"
@@ -162,11 +168,11 @@ function FCOIS.CheckBindableItems(bagId, slotIndex, equipSlotIndex, dragAndDropp
 --d("[CheckBindableItems] settings: " .. tostring(FCOIS.settingsVars.settings.askBeforeEquipBoundItems) .. ", Preventer askBeforeEquipDialogRetVal: " .. tostring(FCOIS.preventerVars.askBeforeEquipDialogRetVal) .. "dragAndDropped: " ..tostring(dragAndDropped))
     if FCOIS.settingsVars.settings.askBeforeEquipBoundItems == true and FCOIS.preventerVars.askBeforeEquipDialogRetVal == false then
         --Is the ZOs function to ask before bind is returning false but the item is still unbound and bindable?
-        if not ZO_InventorySlot_WillItemBecomeBoundOnEquip(bagId, slotIndex) and FCOIS.isItemBindable(bagId, slotIndex) then
+        if not ZO_InventorySlot_WillItemBecomeBoundOnEquip(bagId, slotIndex) and isItemBindable(bagId, slotIndex) then
             --Check if the item is BOP but tradeable and return false, as ZOs is using it's own dialog to ask before bind here!
             --local stillBOPButTradeable = IsItemBoPAndTradeable(bagId, slotIndex) and (GetItemBoPTimeRemainingSeconds(bagId, slotIndex) > 0)
             --if stillBOPButTradeable then return false end
-            local retVal = FCOIS.AskBeforeBindDialogCallback(bagId, slotIndex, equipSlotIndex, true)
+            local retVal = askBeforeBindDialogCallback(bagId, slotIndex, equipSlotIndex, true)
             --Returning true will skip the "real" EquipItem(bag, slot) function! But the FCOIS dialog will be shown then
             return retVal
         else
@@ -228,7 +234,7 @@ function FCOIS.AskBeforeMigrateDialogInitialize(control)
                 text = SI_DIALOG_ACCEPT,
                 keybind = "DIALOG_PRIMARY",
                 callback = function(dialog)
-                    FCOIS.migrateMarkerIcons()
+                    FCOIS.MigrateMarkerIcons()
                 end,
             },
             {
@@ -309,7 +315,7 @@ end
 --Show a protection dialog with a question and dynamic text and callback function
 --Pressing yes will excute the data.callbackYes function
 --Pressing no will execute the data.callbackNo function
-function FCOIS.showProtectionDialog(titleVar, questionVar, data)
+function FCOIS.ShowProtectionDialog(titleVar, questionVar, data)
     if titleVar == nil or questionVar == nil or data == nil then return false end
     --Get the callback functions for the yes and no buttons
     local callbackYes
@@ -345,15 +351,15 @@ function FCOIS.showProtectionDialog(titleVar, questionVar, data)
             end
         end
         if     replaceVar5 ~= nil and replaceVar5 ~= "" then
-            questionVar = zo_strformat(questionVar, replaceVar1, replaceVar2, replaceVar3, replaceVar4, replaceVar5)
+            questionVar = zo_strf(questionVar, replaceVar1, replaceVar2, replaceVar3, replaceVar4, replaceVar5)
         elseif replaceVar4 ~= nil and replaceVar4 ~= "" then
-            questionVar = zo_strformat(questionVar, replaceVar1, replaceVar2, replaceVar3, replaceVar4)
+            questionVar = zo_strf(questionVar, replaceVar1, replaceVar2, replaceVar3, replaceVar4)
         elseif replaceVar3 ~= nil and replaceVar3 ~= "" then
-            questionVar = zo_strformat(questionVar, replaceVar1, replaceVar2, replaceVar3)
+            questionVar = zo_strf(questionVar, replaceVar1, replaceVar2, replaceVar3)
         elseif replaceVar2 ~= nil and replaceVar2 ~= "" then
-            questionVar = zo_strformat(questionVar, replaceVar1, replaceVar2)
+            questionVar = zo_strf(questionVar, replaceVar1, replaceVar2)
         elseif replaceVar1 ~= nil and replaceVar1 ~= "" then
-            questionVar = zo_strformat(questionVar, replaceVar1)
+            questionVar = zo_strf(questionVar, replaceVar1)
         end
     end
     --Show the dialog now

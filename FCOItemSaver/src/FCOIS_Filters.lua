@@ -15,9 +15,9 @@ local libFilters = FCOIS.libFilters
 --The filter string names for each ID
 local filterIds2Name = FCOIS.mappingVars.libFiltersIds2StringPrefix
 
-local getFilterWhereBySettings = FCOIS.getFilterWhereBySettings
-local getSettingsIsFilterOn = FCOIS.getSettingsIsFilterOn
-local checkIfItemIsProtected = FCOIS.checkIfItemIsProtected
+local getFilterWhereBySettings = FCOIS.GetFilterWhereBySettings
+local getSettingsIsFilterOn = FCOIS.GetSettingsIsFilterOn
+local checkIfItemIsProtected = FCOIS.CheckIfItemIsProtected
 local myGetItemInstanceIdNoControl = FCOIS.MyGetItemInstanceIdNoControl
 local myGetItemInstanceId = FCOIS.MyGetItemInstanceId
 
@@ -37,7 +37,7 @@ local function filterItemNow(slotItemInstanceId)
     local result = true
     local isFilterActivated
     local settings = FCOIS.settingsVars.settings
-    local settingsOfFilterButtonStateAndIcon = FCOIS.getAccountWideCharacterOrNormalCharacterSettings()
+    local settingsOfFilterButtonStateAndIcon = FCOIS.GetAccountWideCharacterOrNormalCharacterSettings()
     if settingsOfFilterButtonStateAndIcon == nil then
         d("[FCOIS]ERROR - filterItemNow -> settingsOfFilterButtonStateAndIcon is NIL!")
         return
@@ -453,7 +453,7 @@ local function registerFilterId(p_onlyPlayerInvFilter, p_filterId, p_panelId)
                 [1] = p_filterId,
                 [2] = p_panelId,
             }
-            FCOIS.errorMessage2Chat("registerFilterId", 1, errorData)
+            FCOIS.debugErrorMessage2Chat("registerFilterId", 1, errorData)
             return nil
         end
         --(Re)register the filter function at the panel_id now

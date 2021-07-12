@@ -7,7 +7,7 @@ if not FCOIS.libsLoadedProperly then return end
 local currentCharId       = GetCurrentCharacterId()
 
 --Function to set the default settings
-function FCOIS.buildDefaultSettings()
+function FCOIS.BuildDefaultSettings()
 	--The default values for the language and save mode
 	FCOIS.settingsVars.firstRunSettings = {
 		language 	 		    = 1, --Standard: English
@@ -750,5 +750,10 @@ function FCOIS.buildDefaultSettings()
 	for _, FCOISCustomFilterPanelId in ipairs(customFilterPanelIds) do
 		--Create 2-dimensional array for the UNDO functions from the addiitonal inventory context menu (flag) menu
 		FCOIS.contextMenuVars.undoMarkedItems[FCOISCustomFilterPanelId] = {}
+
+		FCOIS.settingsVars.defaults.FCOISAdditionalInventoriesButtonOffset[FCOISCustomFilterPanelId] = {
+			["top"] = 0,
+			["left"] = 0,
+		}
 	end
 end

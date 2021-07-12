@@ -5,6 +5,9 @@ local FCOIS = FCOIS
 if not FCOIS.libsLoadedProperly then return end
 local preVars = FCOIS.preChatVars
 local addonVars = FCOIS.addonVars
+
+local zo_strf = zo_strformat
+
 --==========================================================================================================================================
 --									FCOIS - Debugging
 --==========================================================================================================================================
@@ -139,35 +142,34 @@ end
 --errorMessage: The key of the array english["ERROR_MESSAGES"]
 --errorId:      The subtable of the array english["ERROR_MESSAGES"][errorMessage] -> english["ERROR_MESSAGES"][errorMessage][errorId)
 --errorData:    A table with number key from 1 to n, containing the placeholder replacement texts for the errorMessage within english["ERROR_MESSAGES"][errorMessage][errorId)
---              A placeholder must be defined like this in the errrorText: <<1>> or <<2>> and so on -> To support function zo_strformat
-function FCOIS.errorMessage2Chat(errorMessage, errorId, errorData)
+--              A placeholder must be defined like this in the errrorText: <<1>> or <<2>> and so on -> To support function zo_strf
+function FCOIS.debugErrorMessage2Chat(errorMessage, errorId, errorData)
     if errorMessage == nil or errorMessage == "" or errorId == nil or type(errorId) ~= "number" or errorData == nil then return nil end
-    local preVars           = FCOIS.preChatVars
     local FCOISlocVars      = FCOIS.localizationVars
     local locVars           = FCOISlocVars.fcois_loc
     local errorMessageToLongText = locVars["ERROR_MESSAGES"][errorMessage][errorId] or ""
     if errorMessageToLongText == nil or errorMessageToLongText == "" then return nil end
     local errorMessageWithVariables = ""
     if #errorData == 1 then
-        errorMessageWithVariables = zo_strformat(errorMessageToLongText, errorData[1])
+        errorMessageWithVariables = zo_strf(errorMessageToLongText, errorData[1])
     elseif #errorData == 2 then
-        errorMessageWithVariables = zo_strformat(errorMessageToLongText, errorData[1], errorData[1])
+        errorMessageWithVariables = zo_strf(errorMessageToLongText, errorData[1], errorData[1])
     elseif #errorData == 3 then
-        errorMessageWithVariables = zo_strformat(errorMessageToLongText, errorData[1], errorData[2], errorData[3])
+        errorMessageWithVariables = zo_strf(errorMessageToLongText, errorData[1], errorData[2], errorData[3])
     elseif #errorData == 4 then
-        errorMessageWithVariables = zo_strformat(errorMessageToLongText, errorData[1], errorData[2], errorData[3], errorData[4])
+        errorMessageWithVariables = zo_strf(errorMessageToLongText, errorData[1], errorData[2], errorData[3], errorData[4])
     elseif #errorData == 5 then
-        errorMessageWithVariables = zo_strformat(errorMessageToLongText, errorData[1], errorData[2], errorData[3], errorData[4], errorData[5])
+        errorMessageWithVariables = zo_strf(errorMessageToLongText, errorData[1], errorData[2], errorData[3], errorData[4], errorData[5])
     elseif #errorData == 6 then
-        errorMessageWithVariables = zo_strformat(errorMessageToLongText, errorData[1], errorData[2], errorData[3], errorData[4], errorData[5], errorData[6])
+        errorMessageWithVariables = zo_strf(errorMessageToLongText, errorData[1], errorData[2], errorData[3], errorData[4], errorData[5], errorData[6])
     elseif #errorData == 7 then
-        errorMessageWithVariables = zo_strformat(errorMessageToLongText, errorData[1], errorData[2], errorData[3], errorData[4], errorData[5], errorData[6], errorData[7])
+        errorMessageWithVariables = zo_strf(errorMessageToLongText, errorData[1], errorData[2], errorData[3], errorData[4], errorData[5], errorData[6], errorData[7])
     elseif #errorData == 8 then
-        errorMessageWithVariables = zo_strformat(errorMessageToLongText, errorData[1], errorData[2], errorData[3], errorData[4], errorData[5], errorData[6], errorData[7], errorData[8])
+        errorMessageWithVariables = zo_strf(errorMessageToLongText, errorData[1], errorData[2], errorData[3], errorData[4], errorData[5], errorData[6], errorData[7], errorData[8])
     elseif #errorData == 9 then
-        errorMessageWithVariables = zo_strformat(errorMessageToLongText, errorData[1], errorData[2], errorData[3], errorData[4], errorData[5], errorData[6], errorData[7], errorData[8], errorData[9])
+        errorMessageWithVariables = zo_strf(errorMessageToLongText, errorData[1], errorData[2], errorData[3], errorData[4], errorData[5], errorData[6], errorData[7], errorData[8], errorData[9])
     elseif #errorData == 10 then
-        errorMessageWithVariables = zo_strformat(errorMessageToLongText, errorData[1], errorData[2], errorData[3], errorData[4], errorData[5], errorData[6], errorData[7], errorData[8], errorData[9], errorData[10])
+        errorMessageWithVariables = zo_strf(errorMessageToLongText, errorData[1], errorData[2], errorData[3], errorData[4], errorData[5], errorData[6], errorData[7], errorData[8], errorData[9], errorData[10])
     end
     d(preVars.preChatTextRed .. ">=================== ERROR ===================>")
     d( errorMessageWithVariables)
@@ -177,7 +179,7 @@ function FCOIS.errorMessage2Chat(errorMessage, errorId, errorData)
 end
 
 --Check what debug output window should be used and show it
-function FCOIS.checkAndShowDebugOutputWindow()
+function FCOIS.debugCheckAndShowOutputWindow()
     --Is library LibDebugLogger active?
     --Is the DebugLogViewer addon active?
     if LibDebugLogger ~= nil and DebugLogViewer ~= nil and DebugLogViewer_Data ~= nil then

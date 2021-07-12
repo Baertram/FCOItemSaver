@@ -64,15 +64,16 @@ function FCOIS.LoadWorkarounds()
     --Update the anti settings at the panels where there is no own option to change it (bank deposit, guild bank deposit,
     --bank withdraw, guild bank withdraw, ...)
     --so the Anti-Destroy and ItemSelectionHandler functions return the anti-settings "enabled"
+    local updateAntiCheckAtPanelVariable = FCOIS.UpdateAntiCheckAtPanelVariable
     for iconNr, _ in pairs(FCOIS.mappingVars.iconToDynamic) do
         local invValue = settings.icon[iconNr].antiCheckAtPanel[LF_INVENTORY]
-        FCOIS.updateAntiCheckAtPanelVariable(iconNr, LF_INVENTORY, invValue)
+        updateAntiCheckAtPanelVariable(iconNr, LF_INVENTORY, invValue)
         --FCOIS v.0.8.8i
         --Also update the crafting station research panel and set it to true for all dynamic icons
-        FCOIS.updateAntiCheckAtPanelVariable(iconNr, LF_SMITHING_RESEARCH, true)
+        updateAntiCheckAtPanelVariable(iconNr, LF_SMITHING_RESEARCH, true)
         --FCOIS v.1.4.4
-        FCOIS.updateAntiCheckAtPanelVariable(iconNr, LF_JEWELRY_RESEARCH, true)
+        updateAntiCheckAtPanelVariable(iconNr, LF_JEWELRY_RESEARCH, true)
         --FCOIS v.2.1.0
-        FCOIS.updateAntiCheckAtPanelVariable(iconNr, LF_INVENTORY_COMPANION, true)
+        updateAntiCheckAtPanelVariable(iconNr, LF_INVENTORY_COMPANION, true)
     end
 end

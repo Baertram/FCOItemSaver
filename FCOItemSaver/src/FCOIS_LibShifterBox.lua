@@ -4,10 +4,14 @@ local FCOIS = FCOIS
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
 
+local strformat = string.format
+
 local addonVars = FCOIS.addonVars
 local addonName = addonVars.gAddonName
 local numFilterIcons = FCOIS.numVars.gFCONumFilterIcons
-local getSavedVarsMarkedItemsTableName = FCOIS.getSavedVarsMarkedItemsTableName
+local getSavedVarsMarkedItemsTableName = FCOIS.GetSavedVarsMarkedItemsTableName
+local showItemLinkTooltip = FCOIS.ShowItemLinkTooltip
+local hideItemLinkTooltip = FCOIS.HideItemLinkTooltip
 
 if not FCOIS.libShifterBox then return end
 local lsb = FCOIS.libShifterBox
@@ -114,7 +118,7 @@ local function myShifterBoxEventEntryMovedCallbackFunction(shifterBox, key, valu
             checkAndUpdateRightListDefaultEntries(shifterBox, rightListEntries, shifterBoxData)
 
         elseif boxName == FCOISexcludedSets then
-            FCOIS.hideItemLinkTooltip()
+            hideItemLinkTooltip()
             --Moved to the left? Set SavedVariables value nil
             FCOIS.settingsVars.settings.autoMarkSetsExcludeSetsList[key] = nil
         end
@@ -124,7 +128,7 @@ local function myShifterBoxEventEntryMovedCallbackFunction(shifterBox, key, valu
             FCOIS.settingsVars.settings.allowedFCOISUniqueIdItemTypes[key] = true
 
         elseif boxName == FCOISexcludedSets then
-            FCOIS.hideItemLinkTooltip()
+            hideItemLinkTooltip()
             --Moved to the right? Save to SavedVariables with value true
             FCOIS.settingsVars.settings.autoMarkSetsExcludeSetsList[key] = true
         end
@@ -168,9 +172,9 @@ local function updateLibShifterBoxEntries(parentCtrl, shifterBox, boxName)
         local allowedFCOISUniqueIdItemTypes = settings.allowedFCOISUniqueIdItemTypes
         for k,v in pairs(allowedFCOISUniqueIdItemTypes) do
             if v == true then
-                rightListEntries[k] = string.format("%s [%s]", locVars.ItemTypes[k], tostring(k))
+                rightListEntries[k] = strformat("%s [%s]", locVars.ItemTypes[k], tostring(k))
             else
-                leftListEntries[k] = string.format("%s [%s]", locVars.ItemTypes[k], tostring(k))
+                leftListEntries[k] = strformat("%s [%s]", locVars.ItemTypes[k], tostring(k))
             end
         end
 
@@ -241,7 +245,7 @@ local function myShifterBoxEventEntryHighlightedCallbackFunction(selectedRow, sh
             anchorVar1 = LEFT
             anchorVar2 = RIGHT
         end
-        FCOIS.showItemLinkTooltip(selectedRow, selectedRow, anchorVar1, 5, 0, anchorVar2)
+        showItemLinkTooltip(selectedRow, selectedRow, anchorVar1, 5, 0, anchorVar2)
     end
 end
 
@@ -252,7 +256,7 @@ local function myShifterBoxEventEntryUnHighlightedCallbackFunction(selectedRow, 
     if not boxName or boxName == "" then return end
 
     if boxName == FCOISexcludedSets then
-        FCOIS.hideItemLinkTooltip()
+        hideItemLinkTooltip()
     end
 end
 

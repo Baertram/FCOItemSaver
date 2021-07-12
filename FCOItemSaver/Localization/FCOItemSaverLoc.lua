@@ -5070,7 +5070,7 @@ local japanese  = FCOIS.localizationVars.localizationAll[FCOIS_CON_LANG_JP]
 local russian   = FCOIS.localizationVars.localizationAll[FCOIS_CON_LANG_RU]
 
 --Generate settingsmenu texts for the dynamic icons
-function FCOIS.generateLocalizedDynamicIconTexts()
+function FCOIS.GenerateLocalizedDynamicIconTexts()
     --Add texts for settings menu (the different languages)
 
     --Build texts etc. for non-dynamic icons
@@ -5313,6 +5313,8 @@ function FCOIS.GetLibFiltersPanelIdText(language, libFilterPanelId)
             [LF_JEWELRY_RESEARCH]		    = GetString(SI_ITEMFILTERTYPE24) .. " " .. GetString(SI_SMITHING_TAB_RESEARCH),
             [LF_JEWELRY_RESEARCH_DIALOG ]   = GetString(SI_ITEMFILTERTYPE24) .. " " .. GetString(SI_SMITHING_TAB_RESEARCH) .. " Dialog",
             [LF_INVENTORY_COMPANION]		= GetString(SI_UNIT_FRAME_NAME_COMPANION) .. " " .. GetString(SI_INVENTORY_MENU_INVENTORY),
+            [FCOIS_CON_LF_CHARACTER]        = GetString(SI_BINDING_NAME_TOGGLE_CHARACTER),
+            [FCOIS_CON_LF_COMPANION_CHARACTER] = GetString(SI_UNIT_FRAME_NAME_COMPANION) .. " " .. GetString(SI_BINDING_NAME_TOGGLE_CHARACTER),
         }
     --German
     else
@@ -5377,6 +5379,14 @@ for filterPanelId=1, numFilterPanels, 1 do
     german[optionsFilterPanelIdNameStart .. filterPanelIdStr]   = "LibFilters - Filter Bereich " .. filterPanelIdStr
     russian[optionsFilterPanelIdNameStart .. filterPanelIdStr]  = "LibFilters - Filter panel " .. filterPanelIdStr
     japanese[optionsFilterPanelIdNameStart .. filterPanelIdStr] = "LibFilters - Filter panel " .. filterPanelIdStr
+end
+--FCOIS custom filterPanelIds
+for _, customFCOISfilterPanelId in ipairs(FCOIS.customFilterPanelIds) do
+    english[optionsFilterPanelIdNameStart .. customFCOISfilterPanelId]  = "LibFilters - Filter panel " .. customFCOISfilterPanelId
+    french[optionsFilterPanelIdNameStart .. customFCOISfilterPanelId]   = "LibFilters - Panel de filtre " .. customFCOISfilterPanelId
+    german[optionsFilterPanelIdNameStart .. customFCOISfilterPanelId]   = "LibFilters - Filter Bereich " .. customFCOISfilterPanelId
+    russian[optionsFilterPanelIdNameStart .. customFCOISfilterPanelId]  = "LibFilters - Filter panel " .. customFCOISfilterPanelId
+    japanese[optionsFilterPanelIdNameStart .. customFCOISfilterPanelId] = "LibFilters - Filter panel " .. customFCOISfilterPanelId
 end
 
 --Error messages

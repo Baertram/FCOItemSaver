@@ -4,12 +4,18 @@ local FCOIS = FCOIS
 
 local em = EVENT_MANAGER
 
+local strformat = string.format
+local zo_strf = zo_strformat
+
 local gAddonName = FCOIS.addonVars.gAddonName
 local ctrlVars = FCOIS.ZOControlVars
 --==========================================================================================================================================
 --													FCOIS EVENT callback functions
 --==========================================================================================================================================
 
+local resetMyGetItemInstanceIdLastVars = FCOIS.ResetMyGetItemInstanceIdLastVars
+local resetCreateFCOISUniqueIdStringLastVars = FCOIS.ResetCreateFCOISUniqueIdStringLastVars
+local otherAddons = FCOIS.otherAddons
 local scanInventory = FCOIS.ScanInventory
 local preHookMainMenuFilterButtonHandler = FCOIS.PreHookMainMenuFilterButtonHandler
 local checkFCOISFilterButtonsAtPanel = FCOIS.CheckFCOISFilterButtonsAtPanel
@@ -18,6 +24,28 @@ local updateFCOISFilterButtonColorsAndTextures = FCOIS.UpdateFCOISFilterButtonCo
 local changeContextMenuInvokerButtonColorByPanelId = FCOIS.ChangeContextMenuInvokerButtonColorByPanelId
 local hideContextMenu = FCOIS.HideContextMenu
 local checkIfAutomaticMarksAreDisabledAtBag = FCOIS.CheckIfAutomaticMarksAreDisabledAtBag
+local checkIfIsImprovableCraftSkill = FCOIS.CheckIfIsImprovableCraftSkill
+local resetImprovementVarsForReMark = FCOIS.ResetImprovementVarsForReMark
+local checkIfImprovedItemShouldBeReMarked_AfterImprovement = FCOIS.CheckIfImprovedItemShouldBeReMarked_AfterImprovement
+local checkIfImprovedItemShouldBeReMarked_BeforeImprovement = FCOIS.CheckIfImprovedItemShouldBeReMarked_BeforeImprovement
+local checkIfCraftedItemShouldBeMarked = FCOIS.CheckIfCraftedItemShouldBeMarked
+local onClosePanel = FCOIS.OnClosePanel
+local autoReenableAntiSettingsCheck = FCOIS.AutoReenableAntiSettingsCheck
+local removeArmorTypeMarker = FCOIS.RemoveArmorTypeMarker
+local removeEmptyWeaponEquipmentMarkers = FCOIS.RemoveEmptyWeaponEquipmentMarkers
+local filterBasics = FCOIS.FilterBasics
+local updateEquipmentSlotMarker = FCOIS.UpdateEquipmentSlotMarker
+local overrideDialogYesButton = FCOIS.OverrideDialogYesButton
+local isWritOrNonWritItemCraftedAndIsAllowedToBeMarked = FCOIS.IsWritOrNonWritItemCraftedAndIsAllowedToBeMarked
+local getCurrentSceneInfo = FCOIS.GetCurrentSceneInfo
+local isItemSetPartNoControl = FCOIS.IsItemSetPartNoControl
+local isItemOwnerCompanion = FCOIS.IsItemOwnerCompanion
+local checkRepetivelyIfControlExists = FCOIS.CheckRepetivelyIfControlExists
+local isCharacterShown = FCOIS.IsCharacterShown
+local isCompanionCharacterShown = FCOIS.IsCompanionCharacterShown
+local rebuildGearSetBaseVars = FCOIS.RebuildGearSetBaseVars
+local checkIfBagShouldAutoRemoveMarkerIcons = FCOIS.CheckIfBagShouldAutoRemoveMarkerIcons
+local checkGamePadMode = FCOIS.FCOItemSaver_CheckGamePadMode
 
 --==============================================================================
 --==================== START EVENT CALLBACK FUNCTIONS ==========================
@@ -33,28 +61,6 @@ end
 local function FCOItemsaver_SelectGuildBank(_, guildBankId)
     --Store the current guild Id
     FCOIS.guildBankVars.guildBankId = guildBankId
-end
-
---Event upon closing of a crafting station
-local function FCOItemSaver_End_Crafting_Interact()
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[EVENT]","End crafting", true, FCOIS_DEBUG_DEPTH_NORMAL) end
-
-    --Hide the context menu at last active panel
-    hideContextMenu(FCOIS.gFilterWhere)
-
-    if FCOIS.preventerVars.gNoCloseEvent == false then
-        --Update the inventory filter buttons
-        updateFCOISFilterButtonsAtInventory(-1)
-        --Update the 4 inventory button's color
-        updateFCOISFilterButtonColorsAndTextures(-1, nil, -1, LF_INVENTORY)
-        --Change the button color of the context menu invoker
-        changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
-    end
-    FCOIS.preventerVars.gNoCloseEvent      = false
-    FCOIS.preventerVars.gActiveFilterPanel = false
-
-    --Check if the Anti-* functions need to be enabled again
-    FCOIS.autoReenableAntiSettingsCheck("CRAFTING_STATION")
 end
 
 --Event upon opening of a vendor store
@@ -214,22 +220,7 @@ end
 local function FCOItemSaver_Close_Store()
     if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[EVENT]","Close store", true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
-    --Hide the context menu at last active panel
-    hideContextMenu(FCOIS.gFilterWhere)
-
-    if FCOIS.preventerVars.gNoCloseEvent == false then
-        --Update the inventory filter buttons
-        updateFCOISFilterButtonsAtInventory(-1)
-        --Update the 4 inventory button's color
-        updateFCOISFilterButtonColorsAndTextures(-1, nil, -1, LF_INVENTORY)
-        --Change the button color of the context menu invoker
-        changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
-    end
-    FCOIS.preventerVars.gNoCloseEvent 	 = false
-    FCOIS.preventerVars.gActiveFilterPanel = false
-
-    --Check, if the Anti-* checks need to be enabled again
-    FCOIS.autoReenableAntiSettingsCheck("STORE")
+    onClosePanel(FCOIS.gFilterWhere, LF_INVENTORY, "STORE")
 end
 
 --Event upon opening of a guild store
@@ -245,10 +236,10 @@ local function FCOItemSaver_Open_Trading_House()
     --======== GUILD STORE SEARCH ==============================================
     local function PreHookGuildStoreSearchButtonOnMouseUp()
         --Update the ZOs control vars for FCOIS
-        ctrlVars.GUILD_STORE_MENUBAR_BUTTON_SEARCH = ZO_TradingHouseMenuBarButton1
-        FCOIS.lastVars.gLastGuildStoreButton				  = ctrlVars.GUILD_STORE_MENUBAR_BUTTON_SEARCH
-        ctrlVars.GUILD_STORE_MENUBAR_BUTTON_SELL   = ZO_TradingHouseMenuBarButton2
-        ctrlVars.GUILD_STORE_MENUBAR_BUTTON_LIST   = ZO_TradingHouseMenuBarButton3
+        ctrlVars.GUILD_STORE_MENUBAR_BUTTON_SEARCH  = ZO_TradingHouseMenuBarButton1
+        FCOIS.lastVars.gLastGuildStoreButton	    = ctrlVars.GUILD_STORE_MENUBAR_BUTTON_SEARCH
+        ctrlVars.GUILD_STORE_MENUBAR_BUTTON_SELL    = ZO_TradingHouseMenuBarButton2
+        ctrlVars.GUILD_STORE_MENUBAR_BUTTON_LIST    = ZO_TradingHouseMenuBarButton3
 
         if ctrlVars.GUILD_STORE_MENUBAR_BUTTON_SEARCH ~= nil then
             --Pre Hook the 2 menubar button's (search and sell) at the guild store
@@ -264,42 +255,27 @@ local function FCOItemSaver_Open_Trading_House()
         end
     end
     --Check as long until the control "ZO_TradingHouseMenuBarButton1" exists, and then call the function in the 2nd parameter
-    FCOIS.checkRepetivelyIfControlExists(ctrlVars.GUILD_STORE_MENUBAR_BUTTON_SEARCH_NAME, PreHookGuildStoreSearchButtonOnMouseUp, 100, 10000)
+    checkRepetivelyIfControlExists(ctrlVars.GUILD_STORE_MENUBAR_BUTTON_SEARCH_NAME, PreHookGuildStoreSearchButtonOnMouseUp, 100, 10000)
 end
 
 --Event upon closing of a guild store
 local function FCOItemSaver_Close_Trading_House()
     if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[EVENT]","Close trading house", true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
-    --Hide the context menu at last active panel
-    hideContextMenu(FCOIS.gFilterWhere)
-
-    if FCOIS.preventerVars.gNoCloseEvent == false then
-        --Update the inventory filter buttons
-        updateFCOISFilterButtonsAtInventory(-1)
-        --Update the 4 inventory button's color
-        updateFCOISFilterButtonColorsAndTextures(-1, nil, -1, LF_INVENTORY)
-        --Change the button color of the context menu invoker
-        changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
-    end
-    FCOIS.preventerVars.gNoCloseEvent 	 = false
-    FCOIS.preventerVars.gActiveFilterPanel = false
-
-    --Check, if the Anti-* checks need to be enabled again
-    FCOIS.autoReenableAntiSettingsCheck("GUILD_STORE")
+    onClosePanel(FCOIS.gFilterWhere, LF_INVENTORY, "GUILD_STORE")
 end
 
 --Bank and guild bank callback function if a slot updates
 local function FCOItemSaver_Inv_Single_Slot_Update_Bank(eventId, bagId, slotId, isNewItem, itemSoundCategory, inventoryUpdateReason, stackCountChange, triggeredByCharacterName, triggeredByDisplayName)
 --d("[FCOItemSaver_Inv_Single_Slot_Update_Bank]bagId: " ..tostring(bagId) .. ", slotIndex: " ..tostring(slotId))
-    FCOIS.checkIfBagShouldAutoRemoveMarkerIcons(bagId, slotId)
+    checkIfBagShouldAutoRemoveMarkerIcons(bagId, slotId)
 end
 
 --Bank and guild bank callback function if a slot updates
 local function FCOItemSaver_GuildBankItemAdded(eventId, slotId, addedByLocalPlayer, itemSoundCategory)
     --d("[FCOItemSaver_GuildBankItemAdded]bagId: " ..tostring(BAG_GUILDBANK) .. ", slotIndex: " ..tostring(slotId) .. ", addedByLocalPlayer: " ..tostring(addedByLocalPlayer))
     if not addedByLocalPlayer then return end
-    FCOIS.checkIfBagShouldAutoRemoveMarkerIcons(BAG_GUILDBANK, slotId)
+    checkIfBagShouldAutoRemoveMarkerIcons(BAG_GUILDBANK, slotId)
 end
 
 local function checkIfBankInventorySingleSlotUpdateEventNeedsToBeRegistered(bagId)
@@ -354,24 +330,7 @@ local function FCOItemSaver_Close_Guild_Bank()
     em:UnregisterForEvent(gAddonName.."_GUILDBANK", EVENT_INVENTORY_SINGLE_SLOT_UPDATE)
     em:UnregisterForEvent(gAddonName.."_GUILDBANK_ITEMS_READY", EVENT_GUILD_BANK_ITEMS_READY)
 
-    --Hide the context menu at last active panel
-    hideContextMenu(FCOIS.gFilterWhere)
-
-    if FCOIS.preventerVars.gNoCloseEvent == false then
-        --Update the inventory filter buttons
-        updateFCOISFilterButtonsAtInventory(-1)
-        --Update the 4 inventory button's color
-        updateFCOISFilterButtonColorsAndTextures(-1, nil, -1, LF_INVENTORY)
-        --Change the button color of the context menu invoker
-        changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
-    end
-    FCOIS.preventerVars.gNoCloseEvent 	 = false
-    FCOIS.preventerVars.gActiveFilterPanel = false
-
-    --Check, if the Anti-* checks need to be enabled again
-    FCOIS.autoReenableAntiSettingsCheck("DESTROY")
-    --Check the auto reenable Anti-* settings for the guild bank and react on them
-    FCOIS.autoReenableAntiSettingsCheck("GUILDBANK")
+    onClosePanel(FCOIS.gFilterWhere, LF_INVENTORY, {"DESTROY", "GUILDBANK"})
 
     FCOIS.preventerVars.blockGuildBankWithoutWithdrawAtGuildBankOpen = nil
 end
@@ -433,26 +392,25 @@ local function FCOItemSaver_Close_Player_Bank()
 
     em:UnregisterForEvent(gAddonName.."_BANK", EVENT_INVENTORY_SINGLE_SLOT_UPDATE)
 
-    --Hide the context menu at last active panel
-    hideContextMenu(FCOIS.gFilterWhere)
+    onClosePanel(FCOIS.gFilterWhere, LF_INVENTORY, "DESTROY")
+end
 
-    if FCOIS.preventerVars.gNoCloseEvent == false then
-        --Update the inventory filter buttons
-        updateFCOISFilterButtonsAtInventory(-1)
-        --Update the 4 inventory button's color
-        updateFCOISFilterButtonColorsAndTextures(-1, nil, -1, LF_INVENTORY)
-        --Change the button color of the context menu invoker
-        changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
-    end
-    FCOIS.preventerVars.gNoCloseEvent 	 = false
-    FCOIS.preventerVars.gActiveFilterPanel = false
+--Event upon closing of the trade panel
+local function FCOItemSaver_Close_Trade_Panel()
+    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[EVENT]","End trading", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+    em:UnregisterForEvent(gAddonName, EVENT_TRADE_CANCELED)
+    em:UnregisterForEvent(gAddonName, EVENT_TRADE_SUCCEEDED)
+    em:UnregisterForEvent(gAddonName, EVENT_TRADE_FAILED)
 
-    --Check, if the Anti-* checks need to be enabled again
-    FCOIS.autoReenableAntiSettingsCheck("DESTROY")
+    onClosePanel(FCOIS.gFilterWhere, LF_INVENTORY, "TRADE")
 end
 
 --Event upon opening of the trade panel
 local function FCOItemSaver_Open_Trade_Panel()
+    em:RegisterForEvent(gAddonName, EVENT_TRADE_CANCELED, FCOItemSaver_Close_Trade_Panel)
+    em:RegisterForEvent(gAddonName, EVENT_TRADE_SUCCEEDED, FCOItemSaver_Close_Trade_Panel)
+    em:RegisterForEvent(gAddonName, EVENT_TRADE_FAILED, FCOItemSaver_Close_Trade_Panel)
+
     FCOIS.preventerVars.gActiveFilterPanel = true
     if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[EVENT]","Start trading", true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
@@ -460,28 +418,6 @@ local function FCOItemSaver_Open_Trade_Panel()
     changeContextMenuInvokerButtonColorByPanelId(LF_TRADE)
     --Check the filter buttons and create them if they are not there. Update the inventory afterwards too
     checkFCOISFilterButtonsAtPanel(true, LF_TRADE)
-end
-
---Event upon closing of the trade panel
-local function FCOItemSaver_Close_Trade_Panel()
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[EVENT]","End trading", true, FCOIS_DEBUG_DEPTH_NORMAL) end
-
-    --Hide the context menu at last active panel
-    hideContextMenu(FCOIS.gFilterWhere)
-
-    if FCOIS.preventerVars.gNoCloseEvent == false then
-        --Update the inventory filter buttons
-        updateFCOISFilterButtonsAtInventory(-1)
-        --Update the 4 inventory button's color
-        updateFCOISFilterButtonColorsAndTextures(-1, nil, -1, LF_INVENTORY)
-        --Change the button color of the context menu invoker
-        changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
-    end
-    FCOIS.preventerVars.gNoCloseEvent 	 = false
-    FCOIS.preventerVars.gActiveFilterPanel = false
-
-    --Check, if the Anti-* checks need to be enabled again
-    FCOIS.autoReenableAntiSettingsCheck("TRADE")
 end
 
 --[[
@@ -506,24 +442,55 @@ local function FCOItemsaver_OnGameCameraUIModeChanged()
     end
 end
 
---event handler for EVENT_CRAFT_STARTED
-local function FCOItemSaver_Craft_Started(_, craftSkill)
---d("[FCOIS] EVENT CraftStarted - craftSkill: " .. tostring(craftSkill))
-    --Check if new crafted item should be marked with the "crafted" marker icon
-    FCOIS.checkIfCraftedItemShouldBeMarked(craftSkill)
-    --Check if item get's improved and if the marker icons from before improvement should be remembered
-    FCOIS.checkIfImprovedItemShouldBeReMarked_BeforeImprovement()
+local function unregisterCraftStartedEvents()
+    em:UnregisterForEvent(gAddonName, EVENT_CRAFT_COMPLETED)
+    em:UnregisterForEvent(gAddonName, EVENT_CRAFT_FAILED)
+    resetImprovementVarsForReMark()
+end
+
+local function FCOItemSaver_Craft_Failed(eventId, craftSkill)
+    unregisterCraftStartedEvents()
+end
+
+
+--Event upon closing of a crafting station
+local function FCOItemSaver_End_Crafting_Interact()
+    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[EVENT]","End crafting", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+    unregisterCraftStartedEvents()
+
+    onClosePanel(FCOIS.gFilterWhere, LF_INVENTORY, "CRAFTING_STATION")
 end
 
 --event handler for EVENT_CRAFT_COMPLETED
-local function FCOItemSaver_Craft_Completed()
---d("[FCOIS] EVENT CraftCompleted - newItemCrafted: " .. tostring(FCOIS.preventerVars.newItemCrafted))
+local function FCOItemSaver_Craft_Completed(eventId, craftSkill)
+    --d("[FCOIS] EVENT CraftCompleted - newItemCrafted: " .. tostring(FCOIS.preventerVars.newItemCrafted))
     --Reset the variable to know if an item is getting into our bag after crafting complete
     FCOIS.preventerVars.newItemCrafted = false
     FCOIS.preventerVars.createdMasterWrit = nil
     FCOIS.preventerVars.writCreatorCreatedItem  = false
+
     --Check if item got improved and if the marker icons from before improvement should be re-marked on the improved item
-    FCOIS.checkIfImprovedItemShouldBeReMarked_AfterImprovement()
+    if checkIfIsImprovableCraftSkill(craftSkill) == true then
+        checkIfImprovedItemShouldBeReMarked_AfterImprovement()
+    end
+
+    unregisterCraftStartedEvents()
+end
+
+--event handler for EVENT_CRAFT_STARTED
+local function FCOItemSaver_Craft_Started(_, craftSkill)
+    em:RegisterForEvent(gAddonName, EVENT_CRAFT_COMPLETED,  FCOItemSaver_Craft_Completed)
+    em:RegisterForEvent(gAddonName, EVENT_CRAFT_FAILED,     FCOItemSaver_Craft_Failed)
+
+--d("[FCOIS] EVENT CraftStarted - craftSkill: " .. tostring(craftSkill))
+    --Check if new crafted item should be marked with the "crafted" marker icon
+    checkIfCraftedItemShouldBeMarked(craftSkill)
+
+    --Check if item get's improved and if the marker icons from before improvement should be remembered
+    resetImprovementVarsForReMark()
+    if checkIfIsImprovableCraftSkill(craftSkill) == true then
+        checkIfImprovedItemShouldBeReMarked_BeforeImprovement()
+    end
 end
 
 --Event upon opening of a crafting station
@@ -542,7 +509,7 @@ local function FCOItemSaver_Crafting_Interact(_, craftSkill)
         hideContextMenu(FCOIS.gFilterWhere)
 
         --If the addon PotionMaker is activated and got it's own Alchemy button activated too
-        if FCOIS.otherAddons.potionMakerActive then
+        if otherAddons.potionMakerActive then
             --d("PotionMaker active and button exists -> Resetting last clicked button now")
             --Reset the variable for the last pressed button
             FCOIS.lastVars.gLastAlchemyButton = ctrlVars.ALCHEMY_STATION_MENUBAR_BUTTON_POTIONMAKER
@@ -571,14 +538,14 @@ local function FCOItemSaver_Inv_Single_Slot_Update(_, bagId, slotId, isNewItem, 
     --Mark new crafted item with the lock (or the chosen) icon?
     if FCOIS.preventerVars.newItemCrafted and bagId ~= nil and slotId ~= nil then --and isNewItem then
         FCOIS.preventerVars.newItemCrafted = false
-        local writOrNonWritMarkUponCreation, craftMarkerIcon = FCOIS.isWritOrNonWritItemCraftedAndIsAllowedToBeMarked()
+        local writOrNonWritMarkUponCreation, craftMarkerIcon = isWritOrNonWritItemCraftedAndIsAllowedToBeMarked()
         if writOrNonWritMarkUponCreation and craftMarkerIcon ~= nil then
             --local itemLink = GetItemLink(bagId, slotId)
             --d("[FCOIS]FCOItemSaver_Inv_Single_Slot_Update: New crafted item: " .. itemLink .. ", isWritAddonCreatedItem: " ..tostring(isWritAddonCreatedItem) .. ", markerIcon: " .. tostring(craftMarkerIcon))
             --Check slightly delayed if the crafted item should be marked
             zo_callLater(function()
                 local markNow = true
-                local isSetPart = FCOIS.isItemSetPartNoControl(bagId, slotId)
+                local isSetPart = isItemSetPartNoControl(bagId, slotId)
                 --Only mark crafted set parts?
                 if settings.autoMarkCraftedItemsSets then
                     --Only do this if not already set parts, which get "new" into your inventory, will get marked automatically
@@ -610,7 +577,7 @@ local function FCOItemSaver_Inv_Single_Slot_Update(_, bagId, slotId, isNewItem, 
     if IsUnderArrest() then return end
     --Do not execute if horse is changed
     --The current game's SCENE and name (used for determining bank/guild bank deposit)
-    local currentScene, _ = FCOIS.getCurrentSceneInfo()
+    local currentScene, _ = getCurrentSceneInfo()
     if currentScene == STABLES_SCENE then return end
     --Check if item in slot is still there
     if GetItemType(bagId, slotId) == ITEMTYPE_NONE then return end
@@ -643,19 +610,22 @@ local function FCOItemSaver_Inv_Single_Slot_Update(_, bagId, slotId, isNewItem, 
                 end
 
                 -- ========================== SET TRACKER ===========================================================================================================================
-                if SetTrack ~= nil and SetTrack.GetTrackingInfo ~= nil and FCOIS.otherAddons.SetTracker.isActive and settings.autoMarkSetTrackerSets then
-                    --d("[FCOItemSaver_Inv_Single_Slot_Update] SetTracker checks")
-                    --Check if item is a set part and update the marker icon if it's tracked with the addon "SetTracker"
-                    --Returns SetTracker data for the specified bag item as follows
-                    --iTrackIndex - track state index 0 - 14, -1 means the set is not tracked and 100 means the set is crafted
-                    --sTrackName - the user configured tracking name for the set
-                    --sTrackColour - the user configured colour for the set ("RRGGBB")
-                    --sTrackNotes - the user notes saved for the set
-                    local setTrackerState = SetTrack.GetTrackingInfo(bagId, slotId)				-- get SetTracker info about the current item at bagId, slotIndex
-                    local doShow = true 														-- show the SetTracker icon on that new item
-                    local doUpdateInv = true 													-- update the inventory if needed
-                    local calledFromFCOISEventSingleSlotInvUpdate = true 						-- yes, the function gets called from that actualy EVENT callback function
-                    updateSetTrackerMarker(bagId, slotId, setTrackerState, doShow, doUpdateInv, calledFromFCOISEventSingleSlotInvUpdate)
+                if SetTrack ~= nil and SetTrack.GetTrackingInfo ~= nil then
+                    local otherAddonsSetTracker = otherAddons.SetTracker
+                    if otherAddonsSetTracker.isActive and settings.autoMarkSetTrackerSets then
+                        --d("[FCOItemSaver_Inv_Single_Slot_Update] SetTracker checks")
+                        --Check if item is a set part and update the marker icon if it's tracked with the addon "SetTracker"
+                        --Returns SetTracker data for the specified bag item as follows
+                        --iTrackIndex - track state index 0 - 14, -1 means the set is not tracked and 100 means the set is crafted
+                        --sTrackName - the user configured tracking name for the set
+                        --sTrackColour - the user configured colour for the set ("RRGGBB")
+                        --sTrackNotes - the user notes saved for the set
+                        local setTrackerState = SetTrack.GetTrackingInfo(bagId, slotId)				-- get SetTracker info about the current item at bagId, slotIndex
+                        local doShow = true 														-- show the SetTracker icon on that new item
+                        local doUpdateInv = true 													-- update the inventory if needed
+                        local calledFromFCOISEventSingleSlotInvUpdate = true 						-- yes, the function gets called from that actualy EVENT callback function
+                        updateSetTrackerMarker(bagId, slotId, setTrackerState, doShow, doUpdateInv, calledFromFCOISEventSingleSlotInvUpdate)
+                    end
                 end
 
                 --New item
@@ -680,11 +650,10 @@ local function FCOItemSaver_Inv_Single_Slot_Update(_, bagId, slotId, isNewItem, 
     else
         if slotId ~= nil then
             --Update the equipment slot control's markers
-            FCOIS.updateEquipmentSlotMarker(slotId, 50)
+            updateEquipmentSlotMarker(slotId, 50)
         end
     end
 end
-
 
 -- handler function for EVENT_INVENTORY_SLOT_UNLOCKED global event
 -- will be fired (after EVENT_INVENTORY_SLOT_LOCKED) if you have pickuped an item (e.g. by drag&drop) and drop it again
@@ -693,13 +662,13 @@ local function FCOItemSaver_OnInventorySlotUnLocked(self, bag, slot)
 
     if (bag == BAG_WORN or bag == BAG_COMPANION_WORN) and FCOIS.preventerVars.gItemSlotIsLocked == true then
         --If item was unequipped: Remove the armor type marker if necessary
-        FCOIS.removeArmorTypeMarker(bag, slot)
+        removeArmorTypeMarker(bag, slot)
 
         --Check all weapon slots and remove empty markers
-        FCOIS.RemoveEmptyWeaponEquipmentMarkers()
+        removeEmptyWeaponEquipmentMarkers()
 
         --Update the player invenory row markers
-        FCOIS.FilterBasics(true)
+        filterBasics(true)
     end
     FCOIS.preventerVars.gItemSlotIsLocked = false
     --Reset: Tell function ItemSelectionHandler that a drag&drop or doubleclick event was raised so it's not blocking the equip/use/etc. functions
@@ -773,7 +742,7 @@ local function FCOItemSaver_OnMouseRequestDestroyItem(_, bagId, slotIndex, _, _,
         if( bagId and slotIndex ) then
             FCOIS.preventerVars.gAllowDestroyItem = not FCOIS.DestroySelectionHandler(bagId, slotIndex, true)
             --Hide the "YES" button of the destroy dialog and disable keybind
-            FCOIS.overrideDialogYesButton(FCOIS.ZOControlVars.ZODialog1)
+            overrideDialogYesButton(FCOIS.ZOControlVars.ZODialog1)
         end
     end
 end
@@ -781,8 +750,8 @@ end
 --[[
 local function FCOItemSaver_OnCursorPickup(eventCode, cursorType, param1, param2, param3, param4, param5, param6, itemSoundCategory)
 d("[FCOIS]FCOItemSaver_OnCursorPickup - cursorType: " ..tostring(MOUSE_CONTENT_EQUIPPED_ITEM) .. ", param1: " ..tostring(param1) .. ", param2: " ..tostring(param2) .. ", param3: " ..tostring(param3).. ", param4: " ..tostring(param4) .. ", param5: " ..tostring(param5) .. ", param6: " ..tostring(param6))
-    local charIsShown = FCOIS.isCharacterShown()
-    local companionCharIsShown = FCOIS.isCompanionCharacterShown()
+    local charIsShown = isCharacterShown()
+    local companionCharIsShown = isCompanionCharacterShown()
     if not charIsShown and not companionCharIsShown then return end
     if cursorType == MOUSE_CONTENT_EQUIPPED_ITEM then
         --Character item picked up
@@ -832,15 +801,15 @@ local function updateEquipmentSlotOfDraggedItem(equipSlot, equipType, wasUnequip
     if not equipSlot then return end
 --d(">>updating equipment slot: " ..tostring(equipSlot))
     --Update the marker control of the new equipped item
-    FCOIS.updateEquipmentSlotMarker(equipSlot, 300, wasUnequipped)
+    updateEquipmentSlotMarker(equipSlot, 300, wasUnequipped)
     --Refresh the inventory, if shown, to update the marker icons at the unequipped item's inventory row
-    FCOIS.FilterBasics(true)
+    filterBasics(true)
 end
 
 local function FCOItemSaver_OnCursorDropped(eventCode, cursorType, param1, param2, param3, param4, param5, param6)
 --d("[FCOIS]FCOItemSaver_OnCursorDropped - cursorType: " ..tostring(MOUSE_CONTENT_EQUIPPED_ITEM) .. ", param1: " ..tostring(param1) .. ", param2: " ..tostring(param2) .. ", param3: " ..tostring(param3).. ", param4: " ..tostring(param4) .. ", param5: " ..tostring(param5) .. ", param6: " ..tostring(param6))
-    local charIsShown = FCOIS.isCharacterShown()
-    local companionCharIsShown = FCOIS.isCompanionCharacterShown()
+    local charIsShown = isCharacterShown()
+    local companionCharIsShown = isCompanionCharacterShown()
     if not charIsShown and not companionCharIsShown then return end
     local bag, slotIndex
     if cursorType == MOUSE_CONTENT_EQUIPPED_ITEM then
@@ -851,7 +820,7 @@ local function FCOItemSaver_OnCursorDropped(eventCode, cursorType, param1, param
 --d(">droppedItem: "..GetItemLink(bag, slotIndex))
     local equipType = GetItemEquipType(bag, slotIndex)
     if equipType == EQUIP_TYPE_INVALID then return end
-    local isCompanionOwnedtem = FCOIS.isItemOwnerCompanion(bag, slotIndex)
+    local isCompanionOwnedtem = isItemOwnerCompanion(bag, slotIndex)
     if companionCharIsShown then
         if not isCompanionOwnedtem then return end
     else
@@ -884,13 +853,15 @@ end
 --Function to check if something should be done at Player Activated event (e.g. mark items in inventories etc.)
 function FCOIS.checkForPlayerActivatedTasks()
     --Set Tracker item marking - Scan inventories on login/reloadui?
-    local otherAddons = FCOIS.otherAddons
     local settings = FCOIS.settingsVars.settings
-    if settings.autoMarkSetTrackerSetsRescan and otherAddons.SetTracker.isActive
-            and SetTrack ~= nil and SetTrack.GetTrackingInfo ~= nil and SetTrack.GetTrackStateInfo ~= nil
-            and settings.autoMarkSetTrackerSets then
-        --d("[FCOIS.checkForPlayerActivatedTasks - Rescan for SetTracker set parts")
-        otherAddons.SetTracker.checkAllItemsForSetTrackerTrackingState()
+    if settings.autoMarkSetTrackerSetsRescan then
+        local otherAddonsSetTracker = otherAddons.SetTracker
+        if otherAddonsSetTracker.isActive
+                and SetTrack ~= nil and SetTrack.GetTrackingInfo ~= nil and SetTrack.GetTrackStateInfo ~= nil
+                and settings.autoMarkSetTrackerSets then
+            --d("[FCOIS.checkForPlayerActivatedTasks - Rescan for SetTracker set parts")
+            otherAddonsSetTracker.checkAllItemsForSetTrackerTrackingState()
+        end
     end
 
     --FCOIS version 1.4.8
@@ -916,17 +887,8 @@ local function FCOItemSaver_Player_Activated(...)
     em:UnregisterForEvent(gAddonName, EVENT_PLAYER_ACTIVATED)
 
     --Reset cached values
-    FCOIS.MyGetItemInstanceIdLastBagId      = nil
-    FCOIS.MyGetItemInstanceIdLastSlotIndex  = nil
-    FCOIS.MyGetItemInstanceIdLastId         = nil
-    FCOIS.MyGetItemInstanceIdLastIdSigned   = nil
-
-    FCOIS.CreateFCOISUniqueIdStringLastLastUseType            = nil
-    FCOIS.CreateFCOISUniqueIdStringLastUnsignedItemInstanceId = nil
-    FCOIS.CreateFCOISUniqueIdStringLastBagId = nil
-    FCOIS.CreateFCOISUniqueIdStringLastSlotIndex = nil
-    FCOIS.CreateFCOISUniqueIdStringLastItemLink = nil
-    FCOIS.CreateFCOISUniqueIdStringLastFCOISCreatedUniqueId = nil
+    resetMyGetItemInstanceIdLastVars()
+    resetCreateFCOISUniqueIdStringLastVars()
 
     --Do not go on if libraries are not loaded properly
     if not FCOIS.libsLoadedProperly then
@@ -934,27 +896,27 @@ local function FCOItemSaver_Player_Activated(...)
         local preVars = FCOIS.preChatVars
         local libMissingErrorText = FCOIS.errorTexts["libraryMissing"]
         --libLoadedAddons
-        if FCOIS.LIBLA == nil then d(preVars.preChatTextRed .. string.format(libMissingErrorText, "LibLoadedAddons")) end
+        if FCOIS.LIBLA == nil then d(preVars.preChatTextRed .. strformat(libMissingErrorText, "LibLoadedAddons")) end
         --LibAddonMenu 2.0
-        if FCOIS.LAM == nil then d(preVars.preChatTextRed .. string.format(libMissingErrorText, "LibAddonMenu-2.0")) end
+        if FCOIS.LAM == nil then d(preVars.preChatTextRed .. strformat(libMissingErrorText, "LibAddonMenu-2.0")) end
         --LibMainMenu 2.0
-        if FCOIS.LMM2 == nil then d(preVars.preChatTextRed .. string.format(libMissingErrorText, "LibMainMenu-2.0")) end
+        if FCOIS.LMM2 == nil then d(preVars.preChatTextRed .. strformat(libMissingErrorText, "LibMainMenu-2.0")) end
         --libFilters 3.x
-        if not FCOIS.libFilters then d(preVars.preChatTextRed .. string.format(libMissingErrorText, "LibFilters-3.0")) end
+        if not FCOIS.libFilters then d(preVars.preChatTextRed .. strformat(libMissingErrorText, "LibFilters-3.0")) end
         --LibDialog
-        if not FCOIS.LDIALOG then d(preVars.preChatTextRed .. string.format(libMissingErrorText, "LibDialog")) end
+        if not FCOIS.LDIALOG then d(preVars.preChatTextRed .. strformat(libMissingErrorText, "LibDialog")) end
         --LibFeedback
-        if not FCOIS.libFeedback then d(preVars.preChatTextRed .. string.format(libMissingErrorText, "LibFeedback")) end
+        if not FCOIS.libFeedback then d(preVars.preChatTextRed .. strformat(libMissingErrorText, "LibFeedback")) end
         return
     end
 
     --Disable this addon if we are in GamePad mode
-    if not FCOIS.FCOItemSaver_CheckGamePadMode(true) then
+    if not checkGamePadMode(true) then
         local settings = FCOIS.settingsVars.settings
         if settings.debug then FCOIS.debugMessage( "[EVENT]","Player activated", true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
         --Get the currently logged in character name
-        FCOIS.currentlyLoggedInCharName = zo_strformat(SI_UNIT_NAME, GetUnitName("player"))
+        FCOIS.currentlyLoggedInCharName = zo_strf(SI_UNIT_NAME, GetUnitName("player"))
 
         --Check if other Addons active now, as the addons should all have been loaded
         FCOIS.CheckIfOtherAddonsActiveAfterPlayerActivated()
@@ -973,7 +935,7 @@ local function FCOItemSaver_Player_Activated(...)
         --Must be called once before FCOIS.changeContextMenuEntryTexts(-1) to build the mapping tables + settings.iconIsGear!
         --3rd parameter "calledFromEventPlayerActivated" will tell the function to NOT call FCOIS.changeContextMenuEntryTexts internally
         --as it will be called with -1 (all icons) just below!
-        FCOIS.rebuildGearSetBaseVars(nil, nil, true)
+        rebuildGearSetBaseVars(nil, nil, true)
 
         --Overwrite the localized texts for the equipment gears, if changed in the settings
         FCOIS.ChangeContextMenuEntryTexts(-1)
@@ -1013,17 +975,8 @@ end
 --Addon is now loading and building up
 local function FCOItemSaver_Loaded(eventCode, addOnName)
     --Reset cached values
-    FCOIS.MyGetItemInstanceIdLastBagId      = nil
-    FCOIS.MyGetItemInstanceIdLastSlotIndex  = nil
-    FCOIS.MyGetItemInstanceIdLastId         = nil
-    FCOIS.MyGetItemInstanceIdLastIdSigned   = nil
-
-    FCOIS.CreateFCOISUniqueIdStringLastLastUseType = nil
-    FCOIS.CreateFCOISUniqueIdStringLastUnsignedItemInstanceId = nil
-    FCOIS.CreateFCOISUniqueIdStringLastBagId = nil
-    FCOIS.CreateFCOISUniqueIdStringLastSlotIndex = nil
-    FCOIS.CreateFCOISUniqueIdStringLastItemLink = nil
-    FCOIS.CreateFCOISUniqueIdStringLastFCOISCreatedUniqueId = nil
+    resetMyGetItemInstanceIdLastVars()
+    resetCreateFCOISUniqueIdStringLastVars()
 
     --Libraries were loaded properly?
     if FCOIS.libsLoadedProperly then
@@ -1046,7 +999,7 @@ local function FCOItemSaver_Loaded(eventCode, addOnName)
         --Register for the zone change/player ready event
         em:RegisterForEvent(gAddonName, EVENT_PLAYER_ACTIVATED, FCOItemSaver_Player_Activated)
 
-        if not FCOIS.FCOItemSaver_CheckGamePadMode(true) then
+        if not checkGamePadMode(true) then
 
             if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[EVENT]", "Addon loading begins...", true, FCOIS_DEBUG_DEPTH_NORMAL) end
             FCOIS.addonVars.gAddonLoaded = false
@@ -1059,7 +1012,6 @@ local function FCOItemSaver_Loaded(eventCode, addOnName)
             em:RegisterForEvent(gAddonName, EVENT_CRAFTING_STATION_INTERACT, FCOItemSaver_Crafting_Interact)
             em:RegisterForEvent(gAddonName, EVENT_END_CRAFTING_STATION_INTERACT, FCOItemSaver_End_Crafting_Interact)
             em:RegisterForEvent(gAddonName, EVENT_CRAFT_STARTED, FCOItemSaver_Craft_Started)
-            em:RegisterForEvent(gAddonName, EVENT_CRAFT_COMPLETED, FCOItemSaver_Craft_Completed)
             --Register for Store opened & closed
             em:RegisterForEvent(gAddonName, EVENT_OPEN_STORE, function() FCOItemSaver_Open_Store("vendor") end)
             em:RegisterForEvent(gAddonName, EVENT_CLOSE_STORE, FCOItemSaver_Close_Store)
@@ -1074,21 +1026,18 @@ local function FCOItemSaver_Loaded(eventCode, addOnName)
             em:RegisterForEvent(gAddonName, EVENT_CLOSE_BANK, FCOItemSaver_Close_Player_Bank)
             --Register for Trade panel opened & closed
             em:RegisterForEvent(gAddonName, EVENT_TRADE_INVITE_ACCEPTED, FCOItemSaver_Open_Trade_Panel)
-            em:RegisterForEvent(gAddonName, EVENT_TRADE_CANCELED, FCOItemSaver_Close_Trade_Panel)
-            em:RegisterForEvent(gAddonName, EVENT_TRADE_SUCCEEDED, FCOItemSaver_Close_Trade_Panel)
-            em:RegisterForEvent(gAddonName, EVENT_TRADE_FAILED, FCOItemSaver_Close_Trade_Panel)
             --Register for player inventory slot update
             local bagIdsToFilterForInvSingleSlotUpdate = {
                 BAG_BACKPACK,
                 BAG_WORN,
                 BAG_COMPANION_WORN,
             }
-            for eventNameSpaceCounter, bagIdToFilter in ipairs(bagIdsToFilterForInvSingleSlotUpdate) do
-                em:RegisterForEvent(gAddonName .. "_EVENT_INVENTORY_SINGLE_SLOT_UPDATE" ..tostring(eventNameSpaceCounter), EVENT_INVENTORY_SINGLE_SLOT_UPDATE, FCOItemSaver_Inv_Single_Slot_Update)
-                em:AddFilterForEvent(gAddonName .. "_EVENT_INVENTORY_SINGLE_SLOT_UPDATE" ..tostring(eventNameSpaceCounter), EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_UNIT_TAG, "player")
-                em:AddFilterForEvent(gAddonName .. "_EVENT_INVENTORY_SINGLE_SLOT_UPDATE" ..tostring(eventNameSpaceCounter), EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_INVENTORY_UPDATE_REASON, INVENTORY_UPDATE_REASON_DEFAULT)
-                em:AddFilterForEvent(gAddonName .. "_EVENT_INVENTORY_SINGLE_SLOT_UPDATE" ..tostring(eventNameSpaceCounter), EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_IS_NEW_ITEM, true)
-                em:AddFilterForEvent(gAddonName .. "_EVENT_INVENTORY_SINGLE_SLOT_UPDATE" ..tostring(eventNameSpaceCounter), EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_BAG_ID, bagIdToFilter)
+            for _, bagIdToFilter in ipairs(bagIdsToFilterForInvSingleSlotUpdate) do
+                em:RegisterForEvent(gAddonName .. "_EVENT_INVENTORY_SINGLE_SLOT_UPDATE" ..tostring(bagIdToFilter), EVENT_INVENTORY_SINGLE_SLOT_UPDATE, FCOItemSaver_Inv_Single_Slot_Update)
+                em:AddFilterForEvent(gAddonName .. "_EVENT_INVENTORY_SINGLE_SLOT_UPDATE" ..tostring(bagIdToFilter), EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_UNIT_TAG, "player")
+                em:AddFilterForEvent(gAddonName .. "_EVENT_INVENTORY_SINGLE_SLOT_UPDATE" ..tostring(bagIdToFilter), EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_INVENTORY_UPDATE_REASON, INVENTORY_UPDATE_REASON_DEFAULT)
+                em:AddFilterForEvent(gAddonName .. "_EVENT_INVENTORY_SINGLE_SLOT_UPDATE" ..tostring(bagIdToFilter), EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_IS_NEW_ITEM, true)
+                em:AddFilterForEvent(gAddonName .. "_EVENT_INVENTORY_SINGLE_SLOT_UPDATE" ..tostring(bagIdToFilter), EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_BAG_ID, bagIdToFilter)
             end
             --Register the callback function for an update of the inventory slots
             --SHARED_INVENTORY:RegisterCallback("SingleSlotInventoryUpdate", FCOItemSaver_OnSharedSingleSlotUpdate)
@@ -1155,7 +1104,7 @@ local function FCOItemSaver_Loaded(eventCode, addOnName)
             FCOIS.AskProtectionDialogInitialize(FCOISAskProtectionDialogXML)
 
             --Check the auto reenable Anti-* settings and react on them
-            FCOIS.autoReenableAntiSettingsCheck("-ALL-")
+            autoReenableAntiSettingsCheck("-ALL-")
 
             --Set the addon loaded variable
             FCOIS.addonVars.gAddonLoaded = true

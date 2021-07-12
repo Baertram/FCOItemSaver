@@ -5,13 +5,18 @@ local FCOIS = FCOIS
 if not FCOIS.libsLoadedProperly then return end
 
 local wm = WINDOW_MANAGER
+
+local strformat = string.format
+
 local numFilters = FCOIS.numVars.gFCONumFilters
 local filterButtonsToCheck = FCOIS.checkVars.filterButtonsToCheck
-local getSettingsIsFilterOn = FCOIS.getSettingsIsFilterOn
+local getSettingsIsFilterOn = FCOIS.GetSettingsIsFilterOn
 local unregisterFilters = FCOIS.unregisterFilters
 local registerFilters = FCOIS.registerFilters
 local filterBasics = FCOIS.FilterBasics
 local refreshListDialog = FCOIS.RefreshListDialog
+local getNumberOfFilteredItemsForEachPanel = FCOIS.GetNumberOfFilteredItemsForEachPanel
+local getFilterWhereBySettings = FCOIS.GetFilterWhereBySettings
 
 -- =====================================================================================================================
 --  Filter state & chat output functions
@@ -23,7 +28,7 @@ local function outputFilterState(p_outputToChat, p_panelId, p_filterId, p_stateT
     local preChatText
     local outputText
     local settings = FCOIS.settingsVars.settings
-    local settingsOfFilterButtonStateAndIcon = FCOIS.getAccountWideCharacterOrNormalCharacterSettings()
+    local settingsOfFilterButtonStateAndIcon = FCOIS.GetAccountWideCharacterOrNormalCharacterSettings()
     local mappingVars = FCOIS.mappingVars
     local preChatVars = FCOIS.preChatVars
 
@@ -255,7 +260,7 @@ function FCOIS.UpdateFCOISFilterButtonsAtInventory(buttonId)
     -- All other buttons will be added as the relating panel (bank, store, deconstruction, etc.) will be shown the first time.
     local settings = FCOIS.settingsVars.settings
     if settings.debug then FCOIS.debugMessage( "[updateFilterButtonsInInv]","buttonId: " .. tostring(buttonId) .. ", numFilters: ".. tostring(numFilters) .. ", InvFiltering: " .. tostring(settings.allowInventoryFilter), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
-    FCOIS.gFilterWhere = FCOIS.getFilterWhereBySettings(LF_INVENTORY)
+    FCOIS.gFilterWhere = getFilterWhereBySettings(LF_INVENTORY)
 --d("[FCOIS.updateFilterButtonsInInv] buttonId: " ..tostring(buttonId))
     -- Update the filter enable/disable buttons to the inventory, bank, crafting stations, enchantment station, guild store, guild bank, vendor, trade, alchemy and mail panels
     if (buttonId == nil or buttonId == -1) then
@@ -287,7 +292,7 @@ function FCOIS.UpdateFCOISFilterButtonColorsAndTextures(p_buttonId, p_button, p_
     local p_statusText = p_status or "Not changed!"
     p_filterPanelId = p_filterPanelId or FCOIS.gFilterWhere
     local settings = FCOIS.settingsVars.settings
-    local settingsOfFilterButtonStateAndIcon = FCOIS.getAccountWideCharacterOrNormalCharacterSettings()
+    local settingsOfFilterButtonStateAndIcon = FCOIS.GetAccountWideCharacterOrNormalCharacterSettings()
 
     local mappingVars = FCOIS.mappingVars
     local texVars = FCOIS.textureVars
@@ -312,7 +317,7 @@ function FCOIS.UpdateFCOISFilterButtonColorsAndTextures(p_buttonId, p_button, p_
 
     else --if (p_buttonId == -1 or p_status == -1) then
 
-        texture  = wm:GetControlByName(string.format(mappingVars.gFilterPanelIdToTextureName[p_filterPanelId], p_buttonId), "")
+        texture  = wm:GetControlByName(strformat(mappingVars.gFilterPanelIdToTextureName[p_filterPanelId], p_buttonId), "")
         --Does texture exist now?
         if(texture ~= nil) then
             --Is the gear sets split filter button context-menu active and are we trying to change the texture of the gear sets button?
@@ -580,7 +585,7 @@ local function doFilter(onoff, p_button, filterId, beQuiet, doFilterBasicsPlayer
         end
     end
     --Check if the settings are enabled for the current panel
-    p_FilterPanelId = FCOIS.getFilterWhereBySettings(p_FilterPanelId)
+    p_FilterPanelId = getFilterWhereBySettings(p_FilterPanelId)
     local settings = FCOIS.settingsVars.settings
     local lastVars = FCOIS.lastVars
 
@@ -632,11 +637,11 @@ local function doFilter(onoff, p_button, filterId, beQuiet, doFilterBasicsPlayer
     local isFilterActive
     -- change the filter value in the settings
     if (onoff == 1) then
-        isFilterActive = FCOIS.setSettingsIsFilterOn(filterId, true, p_FilterPanelId)
+        isFilterActive = FCOIS.SetSettingsIsFilterOn(filterId, true, p_FilterPanelId)
     elseif (onoff == 2) then
-        isFilterActive = FCOIS.setSettingsIsFilterOn(filterId, false, p_FilterPanelId)
+        isFilterActive = FCOIS.SetSettingsIsFilterOn(filterId, false, p_FilterPanelId)
     elseif (onoff == -99) then
-        isFilterActive = FCOIS.setSettingsIsFilterOn(filterId, -99, p_FilterPanelId)
+        isFilterActive = FCOIS.SetSettingsIsFilterOn(filterId, -99, p_FilterPanelId)
     else
         -- Should the filter be changed to next state?
         if (onoff == -1) then
@@ -644,13 +649,13 @@ local function doFilter(onoff, p_button, filterId, beQuiet, doFilterBasicsPlayer
 
             --Filter is on? Turn it off
             if (isFilterActive == true) then
-                isFilterActive = FCOIS.setSettingsIsFilterOn(filterId, false, p_FilterPanelId)
+                isFilterActive = FCOIS.SetSettingsIsFilterOn(filterId, false, p_FilterPanelId)
                 --Filter is off? Only show filtered
             elseif (isFilterActive == false) then
-                isFilterActive = FCOIS.setSettingsIsFilterOn(filterId, -99, p_FilterPanelId)
+                isFilterActive = FCOIS.SetSettingsIsFilterOn(filterId, -99, p_FilterPanelId)
                 --Filter only shows filtered? Turn it on
             else
-                isFilterActive = FCOIS.setSettingsIsFilterOn(filterId, true, p_FilterPanelId)
+                isFilterActive = FCOIS.SetSettingsIsFilterOn(filterId, true, p_FilterPanelId)
             end
             --elseif (onoff == -100) then
             --For initialization (onoff = -100) the filter will be kept as read from the settings
@@ -716,7 +721,7 @@ local function doFilter(onoff, p_button, filterId, beQuiet, doFilterBasicsPlayer
             isFilterActive = getSettingsIsFilterOn(filterId, p_FilterPanelId)
             --Is the new filter status still not set initialize it with "false"
             if isFilterActive == nil then
-                isFilterActive = FCOIS.setSettingsIsFilterOn(filterId, false, p_FilterPanelId)
+                isFilterActive = FCOIS.SetSettingsIsFilterOn(filterId, false, p_FilterPanelId)
             end
         end
 
@@ -1299,7 +1304,7 @@ function FCOIS.getFilteredItemCountAtPanel(libFiltersPanelId, panelIdOrInventory
     if panelIdOrInventoryTypeString ~= nil and libFiltersPanelId ~= panelIdOrInventoryTypeString and type(panelIdOrInventoryTypeString) == "string" then
         --Was the content of this table not build yet? Try to reload it now
         if FCOIS.numberOfFilteredItems[panelIdOrInventoryTypeString] == nil then
-            FCOIS.getNumberOfFilteredItemsForEachPanel()
+            getNumberOfFilteredItemsForEachPanel()
         end
         filteredItemsArray = FCOIS.numberOfFilteredItems[panelIdOrInventoryTypeString]
     else

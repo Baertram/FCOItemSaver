@@ -8,7 +8,7 @@ if not FCOIS.libsLoadedProperly then return end
 -- 															FCOIS LOCALIZATION
 --==========================================================================================================================================
 
-function FCOIS.buildLocalizedFilterButtonContextMenuEntries(contextMenuType)
+function FCOIS.BuildLocalizedFilterButtonContextMenuEntries(contextMenuType)
     local localizedContextMenuEntries = {}
 
     --Available context menus
@@ -139,13 +139,14 @@ function FCOIS.buildLocalizedFilterButtonContextMenuEntries(contextMenuType)
     --Return the build context menu entries
     return localizedContextMenuEntries
 end
+local buildLocalizedFilterButtonContextMenuEntries = FCOIS.BuildLocalizedFilterButtonContextMenuEntries
 
 
 --Do some "After localization" stuff
 local function afterLocalization()
     --Local speed up variables
     local settings = FCOIS.settingsVars.settings
-    local settingsOfFilterButtonStateAndIcon = FCOIS.getAccountWideCharacterOrNormalCharacterSettings()
+    local settingsOfFilterButtonStateAndIcon = FCOIS.GetAccountWideCharacterOrNormalCharacterSettings()
     local defaults = FCOIS.settingsVars.defaults
     local locVars = FCOIS.localizationVars.fcois_loc
 
@@ -180,21 +181,21 @@ local function afterLocalization()
 
     --Added with FCOIS v1.5.2
     --Dynamic icon texts localized
-    FCOIS.generateLocalizedDynamicIconTexts()
+    FCOIS.GenerateLocalizedDynamicIconTexts()
     --Static keybinding texts
-    FCOIS.generateStaticGearSetIconsKeybindingsTexts()
+    FCOIS.GenerateStaticGearSetIconsKeybindingsTexts()
     --Dynamic keybinding texts
-    FCOIS.generateDynamicIconsKeybindingsTexts()
+    FCOIS.GenerateDynamicIconsKeybindingsTexts()
 
     --Added with FCOIS v0.8.8d
     --Dynamic arrays for the inventory filter button's context menus:
     --The available contextmenus at the filter buttons
     local availableCtms = FCOIS.contextMenuVars.availableCtms
     --The array for the LockDyn filter button context menu entries
-    FCOIS.contextMenuVars.LockDynFilter.buttonContextMenuToIconId = FCOIS.buildLocalizedFilterButtonContextMenuEntries(FCOIS_CON_FILTER_BUTTON_LOCKDYN)
+    FCOIS.contextMenuVars.LockDynFilter.buttonContextMenuToIconId = buildLocalizedFilterButtonContextMenuEntries(FCOIS_CON_FILTER_BUTTON_LOCKDYN)
 
     --The mapping table for gear set split filter context menu buttons to icon id
-    FCOIS.contextMenuVars.GearSetFilter.buttonContextMenuToIconId = FCOIS.buildLocalizedFilterButtonContextMenuEntries(FCOIS_CON_FILTER_BUTTON_GEARSETS)
+    FCOIS.contextMenuVars.GearSetFilter.buttonContextMenuToIconId = buildLocalizedFilterButtonContextMenuEntries(FCOIS_CON_FILTER_BUTTON_GEARSETS)
 
     --The mapping table for RESEARCH & DECONSTRUCTION & IMPORVEMENT split filter context menu buttons to icon id
     FCOIS.contextMenuVars.ResDecImpFilter.buttonContextMenuToIconId = {
@@ -339,8 +340,8 @@ local function afterLocalization()
 
     --Added with FCOIS v2.0.3
     --Build the iconSortOrderEntries table for the settings menu -> LAM2 widget "order list box"
-    local optionsIcon = "options_icon"
-    local tooltipSuffix = "_TT"
+    --local optionsIcon = "options_icon"
+    --local tooltipSuffix = "_TT"
 
     local iconsListStandard, iconsListValuesStandard = FCOIS.GetLAMMarkerIconsDropdown("standard", true, false)
     FCOIS.settingsVars.defaults.iconSortOrderEntries = {}
@@ -452,25 +453,10 @@ function FCOIS.Localization()
     --Is the standard language english set?
     if FCOIS.settingsVars.settings.alwaysUseClientLanguage or (preventerVars.KeyBindingTexts or (defSettings.language == FCOIS_CON_LANG_EN and not FCOIS.settingsVars.settings.languageChosen)) then
         --d("[FCOIS] localization: Language chosen is false or always use client language is true!")
-        local lang = GetCVar("language.2")
         --Check for supported languages
-        if(lang == "de") then
-            defSettings.language = FCOIS_CON_LANG_DE
-        elseif (lang == "en") then
-            defSettings.language = FCOIS_CON_LANG_EN
-        elseif (lang == "fr") then
-            defSettings.language = FCOIS_CON_LANG_FR
-        elseif (lang == "es") then
-            defSettings.language = FCOIS_CON_LANG_ES
-        elseif (lang == "it") then
-            defSettings.language = FCOIS_CON_LANG_IT
-        elseif (lang == "jp") then
-            defSettings.language = FCOIS_CON_LANG_JP
-        elseif (lang == "ru") then
-            defSettings.language = FCOIS_CON_LANG_RU
-        else
-            defSettings.language = FCOIS_CON_LANG_EN
-        end
+        local lang = FCOIS.clientLanguage
+        local langStrToLangConstant = FCOIS.mappingVars.langStrToLangConstant
+        defSettings.language = langStrToLangConstant[lang] or FCOIS_CON_LANG_EN
     end
     if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[Localization]","default settings, language: " .. tostring(defSettings.language), false) end
     --d("[FCOIS] localization: default settings, language: " .. tostring(defSettings.language))

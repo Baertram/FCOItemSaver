@@ -19,7 +19,7 @@
 ---------------------------------------------------------------------
 --[ToDo list] --
 --____________________________
--- Current max bugs/features/ToDos: 142
+-- Current max bugs/features/ToDos: 146
 --____________________________
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -130,19 +130,61 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 -->Could not create editbox "Haute:" FCOItemSaver_LAM
 ----> Seems the fixed error message user:/AddOns/FCOItemSaver/src/FCOIS_SettingsMenu.lua:2445: attempt to index a nil value is causing this now
 
---#142: feature, 2021-06-23, Add "flag" icon for mass-mark to character section
---#143: feature, 2021-06-23, Add "flag" icon for mass-mark to companin character section
+--#144, 2021-07-03, wambo (esoui addon comments): Crafting a new item and then trying to craft a rune via CraftStore will show error message
+--> Only happens after improvement was done so maybe the EVENT_CRAFTING_END was not unregistered properly and the next event crafting end at the
+--> enchanting panel checks the item of improvement then again!
+--[[
+Ok, found some weird behaviour again.
+
+I crafted a clever alchemist belt, (it got the locked mark via FCOIS, not the ingame one), improved it.
+Then I went to the enchanting table to craft a the enchant for it...
+But that is prevented by FCOIS telling me "FCOIS Creation/Deconstruction not allowed: Belt of Clever Alchemist"
+
+I removed all marks from the belt - same result.
+It mustve been triggered by the creation of that item, bc just before I was crafting a jewel and weapon glyph (also disabled)
+I was suspecting it had to do with CraftstoreRune - but it also prevented the Rune Crafted by Dolgubons Lazy Writ Creator.
+
+
+Creation/Deconstruction not allowed: [|H0:item:72327:369:50:0:0:0:0:0:0:0:0:0:0:0:0:31:1:0:0:10000:0|h|h]hide stack
+1. user:/AddOns/LibDebugLogger/Initialization.lua:162: in function 'LogChatMessage'show
+2. EsoUI/Libraries/Utility/ZO_Hook.lua:18: in function 'AddDebugMessage'show
+3. EsoUI/Libraries/Globals/DebugUtils.lua:7: in function 'EmitMessage'show
+4. EsoUI/Libraries/Globals/DebugUtils.lua:43: in function 'd'show
+5. user:/AddOns/FCOItemSaver/src/FCOIS_Protection.lua:49: in function 'FCOIS.outputItemProtectedMessage'show
+6. user:/AddOns/FCOItemSaver/src/FCOIS_Protection.lua:666: in function 'FCOIS.ItemSelectionHandler'show
+7. (tail call): ?
+8. (tail call): ?
+9. (tail call): ?
+10. (tail call): ?
+11. (tail call): ?
+12. EsoUI/Libraries/Utility/ZO_Hook.lua:18: in function 'CraftEnchantingItem'show
+13. user:/AddOns/CraftStoreFixedAndImproved/CraftStore.lua:1674: in function 'CS.RuneCreate'show
+14. user:/AddOns/CraftStoreFixedAndImproved/CraftStore.lua:1799: in function '(anonymous)'
+]]
+
+--#145, 2021-07-08, demawi, FCOIS esoui comments, ContextMenu at bank get's vanilla items removed if FCOIS, Custom Item Preview and
+-- Auto Category are enabled
+--TODO Check if the menu's parent is a FCOIS flag invoker button and ONLY then return true!
+--> file src/FCOIS_ContextMenu.lua, function FCOIS.hideAdditionalInventoryFlagContextMenu(override) -> menuVisibleCheck
+--[[
+--Compatibility functions
+local function menuVisibleCheck()
+    --New: Since API10030 - Typo was removed
+    --TODO Check if the menu's parent is a FCOIS flag invoker button and ONLY then return true!
+]]
+
+--#146, 2021-07-10, Baertram, SHIFT + right mouse does not work at quickslots (inventory menu)
+
 
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
---In progress: Since 2021-06-23
---#142
---#143
+--In progress: Since 2021-07-04
+--#144
 
 
 ---------------------------------------------------------------------
---Since last update 2.1.5 - New version: 2.1.6 -> Updated 2021-06-23
+--Since last update 2.1.8 - New version: 2.1.9 -> Updated 2021-06-??
 ---------------------------------------------------------------------
 
 --[Fixed]

@@ -7,7 +7,8 @@ if not FCOIS.libsLoadedProperly then return end
 local ctrlVars = FCOIS.ZOControlVars
 local libFilters = FCOIS.libFilters
 
-local getFilterWhereBySettings = FCOIS.getFilterWhereBySettings
+local getFilterWhereBySettings = FCOIS.GetFilterWhereBySettings
+local isCompanionInventoryShown = FCOIS.IsCompanionInventoryShown
 
 -- =====================================================================================================================
 -- Refresh inventories etc. functions
@@ -20,7 +21,7 @@ local function updateFilteredItemCountCheck(updateFilteredItemCount)
     end
 end
 
-local function UpdateCraftingInventory(filterPanelOverride)
+local function updateCraftingInventory(filterPanelOverride)
     --Check if we are at a crafting station
     local locCraftType = GetCraftingInteractionType()
     local updateFilteredItemCount = false
@@ -146,7 +147,7 @@ local refreshBackpack = FCOIS.RefreshBackpack
 function FCOIS.RefreshCompanionInventory()
     local updateFilteredItemCount = false
     
-    if FCOIS.isCompanionInventoryShown() then
+    if isCompanionInventoryShown() then
         if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[RefreshCompanionInventory]","Companion inv. refresh", true, FCOIS_DEBUG_DEPTH_DETAILED) end
         FCOIS.preventerVars.isInventoryListUpdating = true
         ZO_ScrollList_RefreshVisible(ctrlVars.COMPANION_INV_LIST)
@@ -272,7 +273,7 @@ local refreshListDialog = FCOIS.RefreshListDialog
 
 --Refresh the crafting tables inventopry list
 function FCOIS.RefreshCrafting(filterPanelOverride)
-    UpdateCraftingInventory(filterPanelOverride)
+    updateCraftingInventory(filterPanelOverride)
 end
 local refreshCrafting = FCOIS.RefreshCrafting
 
@@ -286,28 +287,28 @@ end
 local refreshBasics = FCOIS.RefreshBasics
 
 --The function to update the repair list
-local function UpdateRepairList()
+local function updateRepairList()
     if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[Refresh]", "UpdateRepairList", true, FCOIS_DEBUG_DEPTH_NORMAL) end
     --Update the scroll list controls for the repair list
     refreshRepairList()
 end
 
 --The function to update the quickslots inventory
-local function UpdateQuickSlots()
+local function updateQuickSlots()
     if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[Refresh]", "UpdateQuickSlots", true, FCOIS_DEBUG_DEPTH_NORMAL) end
     --Update the scroll list controls for the quick slots inventory
     refreshQuickSlots()
 end
 
 --The function to update the transmutation inventory
-local function UpdateTransmutationList()
+local function updateTransmutationList()
     if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[Refresh]", "UpdateTransmutationList", true, FCOIS_DEBUG_DEPTH_NORMAL) end
     --Update the scroll list controls for the quick slots inventory
     refreshTransmutation()
 end
 
 --Refresh the scroll lists
-local function UpdateInventories()
+local function updateInventories()
     --Check if we are at a crafting station
     local craftInteractiontype = GetCraftingInteractionType()
     local settings = FCOIS.settingsVars.settings
@@ -339,7 +340,7 @@ local function UpdateInventories()
 end
 
 --Check if other addons with an UI are enabled and shown and update their rows to show/hide FCOIS marker icons now
-local function UpdateOtherAddonUIs()
+local function updateOtherAddonUIs()
    --Inventory Insight from Ashes
     FCOIS.checkIfOtherAddonIIfAIsActive()
     if IIfA ~= nil and IIFA_GUI ~= nil and not IIFA_GUI:IsHidden() and FCOIS.otherAddons.IIFAActive and IIfA.SetDataLinesData ~= nil then
@@ -383,26 +384,26 @@ function FCOIS.FilterBasics(onlyPlayer)
         FCOIS.preventerVars.gFilteringBasics = true
         if (not ctrlVars.QUICKSLOT_LIST:IsHidden() and onlyPlayer == false) then
             --UpdateInventories() -- NO FILTERS YET! So not needed to call libFilters:RequestUpdate(LF_QUICKSLOT)!
-            UpdateQuickSlots()
+            updateQuickSlots()
             --UpdateOtherAddonUIs()
         elseif (not ctrlVars.REPAIR_LIST:IsHidden() and onlyPlayer == false) then
             --UpdateInventories() -- NO FILTERS YET! So not needed to call libFilters:RequestUpdate(LF_VENDOR_REPAIR)!
-            UpdateRepairList()
+            updateRepairList()
             --UpdateOtherAddonUIs()
         elseif (not ctrlVars.RETRAIT_LIST:IsHidden() and onlyPlayer == false) then
-            UpdateInventories()
-            UpdateTransmutationList()
-            UpdateOtherAddonUIs()
-        elseif onlyPlayer == true or (FCOIS.isCompanionInventoryShown() and onlyPlayer == false) then
-            UpdateInventories()
+            updateInventories()
+            updateTransmutationList()
+            updateOtherAddonUIs()
+        elseif onlyPlayer == true or (isCompanionInventoryShown() and onlyPlayer == false) then
+            updateInventories()
             --Try to update other addon's UIs
-            UpdateOtherAddonUIs()
+            updateOtherAddonUIs()
         else
             --Try to update the normal and then the crafting inventories
-            UpdateInventories()
-            UpdateCraftingInventory()
+            updateInventories()
+            updateCraftingInventory()
             --Try to update other addon's UIs
-            UpdateOtherAddonUIs()
+            updateOtherAddonUIs()
         end
         FCOIS.preventerVars.gFilteringBasics = false
     end

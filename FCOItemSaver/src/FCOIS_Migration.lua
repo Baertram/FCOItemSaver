@@ -4,8 +4,11 @@ local FCOIS = FCOIS
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
 
-local numFilterIcons = FCOIS.numVars.gFCONumFilterIcons
-local getSavedVarsMarkedItemsTableName = FCOIS.getSavedVarsMarkedItemsTableName
+local strformat = string.format
+
+local getSavedVarsMarkedItemsTableName = FCOIS.GetSavedVarsMarkedItemsTableName
+local checkIfOwningHouse = FCOIS.CheckIfOwningHouse
+local checkIfInHouse = FCOIS.CheckIfInHouse
 
 
 --Check if the scanned item in function "scanInventoriesForZOsLockedItems" is marked with the ZOs saver icon (white/gray lock icon) and transfer it to FCOIS's icon 1 (lock)
@@ -69,7 +72,7 @@ function FCOIS.scanInventoriesForZOsLockedItems(allInventories, houseBankBagId)
             end
         end
         --Add house bank bagIds if we are in any of our houses
-        local isInHouse = (FCOIS.checkIfOwningHouse() == true and FCOIS.checkIfInHouse() == true) or false
+        local isInHouse = (checkIfOwningHouse() == true and checkIfInHouse() == true) or false
         if isInHouse == true then
             for p_houseBankBagId = BAG_HOUSE_BANK_ONE, BAG_HOUSE_BANK_TEN, 1 do
                 if IsHouseBankBag(p_houseBankBagId) == true then
@@ -91,7 +94,7 @@ function FCOIS.scanInventoriesForZOsLockedItems(allInventories, houseBankBagId)
     end
     --Check if LibDebugLogger and the DebugLogViewer are active. Show their window/quickwindow (depending on it's settings)
     --or show the chat instead
-    FCOIS.checkAndShowDebugOutputWindow()
+    FCOIS.debugCheckAndShowOutputWindow()
 
     --Scan every item in the bag
     local itemDelay = 0
@@ -104,7 +107,7 @@ function FCOIS.scanInventoriesForZOsLockedItems(allInventories, houseBankBagId)
                     if debug == true then
                         FCOIS.debugMessage("scanInventoriesForZOsLockedItemsAndTransfer",">Scanning bag ID: " ..tostring(bagType), false, FCOIS_DEBUG_DEPTH_NORMAL, true)
                     else
-                        d(string.format(locVars["migrate_ZOs_locks_to_FCOIS_locks_bagId"], tostring(bagType)))
+                        d(strformat(locVars["migrate_ZOs_locks_to_FCOIS_locks_bagId"], tostring(bagType)))
                     end
                     local bagCache = SHARED_INVENTORY:GetOrCreateBagCache(bagType)
                     local foundAndTransferedOne = false
@@ -141,14 +144,14 @@ function FCOIS.scanInventoriesForZOsLockedItems(allInventories, houseBankBagId)
                 if debug == true then
                     FCOIS.debugMessage("scanInventoriesForZOsLockedItemsAndTransfer", ">migrated at the bag "..tostring(bagType)..": " ..tostring(lCountMigratedAtBagType), false, FCOIS_DEBUG_DEPTH_NORMAL, true)
                 else
-                    d(string.format(locVars["migrate_ZOs_locks_to_FCOIS_locks_migrated_at_bag"], tostring(bagType), tostring(lCountMigratedAtBagType)))
+                    d(strformat(locVars["migrate_ZOs_locks_to_FCOIS_locks_migrated_at_bag"], tostring(bagType), tostring(lCountMigratedAtBagType)))
                 end
             end
         end
         if debug == true then
             FCOIS.debugMessage("scanInventoriesForZOsLockedItemsAndTransfer", "End, allInventories: " ..tostring(allInventories) .. ", migrated/scanned total: " ..tostring(countItemsMigrated) .."/"..tostring(countItemsScanned), false, FCOIS_DEBUG_DEPTH_NORMAL, true)
         else
-            d(string.format(locVars["migrate_ZOs_locks_to_FCOIS_locks_end"], tostring(countItemsMigrated), tostring(countItemsScanned)))
+            d(strformat(locVars["migrate_ZOs_locks_to_FCOIS_locks_end"], tostring(countItemsMigrated), tostring(countItemsScanned)))
         end
     end, itemDelay + 2000)
 end
