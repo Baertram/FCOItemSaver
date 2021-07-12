@@ -30,7 +30,6 @@ local resetInventoryAntiSettings = FCOIS.ResetInventoryAntiSettings
 local isSupportedInventoryRowPattern = FCOIS.IsSupportedInventoryRowPattern
 local isModifierKeyPressed = FCOIS.IsModifierKeyPressed
 local isNoOtherModifierKeyPressed = FCOIS.IsNoOtherModifierKeyPressed
-local checkIfClearOrRestoreAllMarkers = FCOIS.CheckIfClearOrRestoreAllMarkers
 
 --LibCustomMenu
 local lcm = FCOIS.LCM
@@ -108,9 +107,10 @@ end
 --==============================================================================
 -- gets handler from the event handler list
 local function getEventHandler(eventName, objName)
-    if not FCOIS.eventHandlers or not FCOIS.eventHandlers[eventName] then return nil end
+    local eventHandler = FCOIS.eventHandlers[eventName]
+    if not eventHandler then return nil end
     --Get the global event handler function of an object name
-    return FCOIS.eventHandlers[eventName][objName]
+    return eventHandler[objName]
 end
 
 -- adds handler to the event handler list
@@ -301,7 +301,7 @@ function FCOIS.OnInventoryItemMouseUp(self, mouseButton, upInside, ctrlKey, altK
     --Enable clearing all markers by help of the <modifier key>+right click?
     local contextMenuClearMarkesKey = FCOIS.settingsVars.settings.contextMenuClearMarkesModifierKey
     local isModifierKeyPressedNow = isModifierKeyPressed(contextMenuClearMarkesKey)
-    checkIfClearOrRestoreAllMarkers(self, isModifierKeyPressedNow, upInside, mouseButton, false, false)
+    FCOIS.CheckIfClearOrRestoreAllMarkers(self, isModifierKeyPressedNow, upInside, mouseButton, false, false)
     --Call original callback function for event OnMouseUp of the iinventory item row/character equipment slot now
 --d("<end OnMouseUp")
     return false
@@ -587,7 +587,7 @@ end
 --==============================================================================
 
 --Callback function for scenes to hide the context menu of inventory buttons
-function FCOIS.sceneCallbackHideContextMenu(oldState, newState, overrideFilterPanel)
+function FCOIS.SceneCallbackHideContextMenu(oldState, newState, overrideFilterPanel)
     --d("[FCOIS.sceneCallbackHideContextMenu")
     --When e.g. the mail inbox panel is showing up
     if newState == SCENE_SHOWING or SCENE_FRAGMENT_SHOWING then
@@ -598,7 +598,7 @@ function FCOIS.sceneCallbackHideContextMenu(oldState, newState, overrideFilterPa
         FCOIS.HideContextMenu(overrideFilterPanel)
     end
 end
-local sceneCallbackHideContextMenu = FCOIS.sceneCallbackHideContextMenu
+local sceneCallbackHideContextMenu = FCOIS.SceneCallbackHideContextMenu
 
 
 --============================================================================================================================================================
@@ -619,14 +619,27 @@ function FCOIS.CreateHooks()
     local mappingVars = FCOIS.mappingVars
     
     local preHookMainMenuFilterButtonHandler = FCOIS.PreHookMainMenuFilterButtonHandler
+    --Check if thesame mainMenuBarButton get's pressed twice or if a button was changed
+    local function mainMenuBarButtonFilterButtonHandler(mouseButon, isUpInside, lastButtonVar, buttonControlClicked, comingFrom, goingTo, delay)
+        if (mouseButon == MOUSE_BUTTON_INDEX_LEFT and isUpInside and FCOIS.lastVars[lastButtonVar]~=buttonControlClicked) then
+            FCOIS.lastVars[lastButtonVar] = buttonControlClicked
+            if comingFrom == nil or goingTo == nil or comingFrom == goingTo then return end
+            zo_callLater(function() preHookMainMenuFilterButtonHandler(comingFrom, goingTo) end, delay or 50)
+        end
+    end
+
     local checkFCOISFilterButtonsAtPanel = FCOIS.CheckFCOISFilterButtonsAtPanel
     local updateFCOISFilterButtonsAtInventory = FCOIS.UpdateFCOISFilterButtonsAtInventory
     local updateFCOISFilterButtonColorsAndTextures = FCOIS.UpdateFCOISFilterButtonColorsAndTextures
     local hideContextMenu = FCOIS.HideContextMenu
     local changeContextMenuInvokerButtonColorByPanelId = FCOIS.ChangeContextMenuInvokerButtonColorByPanelId
     local autoReenableAntiSettingsCheck = FCOIS.AutoReenableAntiSettingsCheck
+    local checkIfClearOrRestoreAllMarkers = FCOIS.CheckIfClearOrRestoreAllMarkers
 
     local isResearchListDialogShown = FCOIS.IsResearchListDialogShown
+    local refreshPopupDialogButtons = FCOIS.RefreshPopupDialogButtons
+
+    local checkCraftbagOrOtherActivePanel = FCOIS.CheckCraftbagOrOtherActivePanel
 
     --========= INVENTORY SLOT - SHOW CONTEXT MENU =================================
     local function ZO_InventorySlot_ShowContextMenu_For_FCOItemSaver(rowControl, slotActions, ctrl, alt, shift, command)
@@ -729,6 +742,7 @@ function FCOIS.CreateHooks()
             FCOIS.preventerVars.buildingInvContextMenuEntries = true
             --Check if the localization data of the context menu is given
             checkAndUpdateContextMenuLocalizationData()
+            local addMark = FCOIS.AddMark
             for j = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
                 local FCOcontextMenuEntry = FCOcontextMenu[j]
                 if FCOcontextMenuEntry ~= nil then
@@ -742,7 +756,7 @@ function FCOIS.CreateHooks()
                     --FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, useSubMenu)
                     --Increase the global counter for the added context menu entries so the function FCOIS.AddMark can react on it
                     FCOIS.customMenuVars.customMenuCurrentCounter = FCOIS.customMenuVars.customMenuCurrentCounter + 1
-                    FCOIS.AddMark(FCOcontextMenuEntry.control, FCOcontextMenuEntry.iconId, FCOcontextMenuEntry.isEquip, FCOcontextMenuEntry.refreshPopup, FCOcontextMenuEntry.useSubMenu)
+                    addMark(FCOcontextMenuEntry.control, FCOcontextMenuEntry.iconId, FCOcontextMenuEntry.isEquip, FCOcontextMenuEntry.refreshPopup, FCOcontextMenuEntry.useSubMenu)
                 end
             end
 
@@ -793,12 +807,13 @@ function FCOIS.CreateHooks()
     --Destroy item dialog button 2 ("Abort") hook
     ZO_PreHook(ctrlVars.DestroyItemDialog.buttons[2], "callback", function()
         --Get the "YES" button of the destroy dialog
-        local button1 = ctrlVars.ZODialog1:GetNamedChild("Button1")
+        local dialog1 = ctrlVars.ZODialog1
+        local button1 = dialog1:GetNamedChild("Button1")
         if button1 == nil then return false end
         --Reset the "YES" button of the dialog again after a few seconds
         zo_callLater(function()
-            if ctrlVars.ZODialog1 ~= nil and button1 ~= nil then
-                ctrlVars.ZODialog1:SetKeyboardEnabled(false)
+            if dialog1 ~= nil and button1 ~= nil then
+                dialog1:SetKeyboardEnabled(false)
                 button1:SetText(GetString(SI_YES))
                 button1:SetClickSound(SOUNDS.DIALOG_ACCEPT)
                 button1:SetEnabled(true)
@@ -1124,12 +1139,13 @@ function FCOIS.CreateHooks()
                     --Clear the menu completely (should be empty by default as it does not exist on the dialogs)
                     ClearMenu()
                     --Add the context menu entries now
+                    local addMark = FCOIS.AddMark
                     for j = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
                         if FCOcontextMenu[j] ~= nil then
                             --FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, useSubMenu)
                             --Increase the global counter for the added context menu entries so the function FCOIS.AddMark can react on it
                             FCOIS.customMenuVars.customMenuCurrentCounter = FCOIS.customMenuVars.customMenuCurrentCounter + 1
-                            FCOIS.AddMark(FCOcontextMenu[j].control, FCOcontextMenu[j].iconId, FCOcontextMenu[j].isEquip, FCOcontextMenu[j].refreshPopup, FCOcontextMenu[j].useSubMenu)
+                            addMark(FCOcontextMenu[j].control, FCOcontextMenu[j].iconId, FCOcontextMenu[j].isEquip, FCOcontextMenu[j].refreshPopup, FCOcontextMenu[j].useSubMenu)
                         end
                     end
                 end
@@ -1140,7 +1156,7 @@ function FCOIS.CreateHooks()
             if upInside then
                 --d("[FCOIS]upInside: " ..tostring(upInside) .. ", disable: " ..tostring(rowControl.disableControl) .. ", isSoulGem: " ..tostring(isSoulGem))
                 --Check if the clicked row got marker icons which protect this item!
-                FCOIS.RefreshPopupDialogButtons(rowControl, false)
+                refreshPopupDialogButtons(rowControl, false)
                 local dialog = ctrlVars.RepairItemDialog
                 --Should this row be protected and disabled buttons and keybindings
                 if rowControl.disableControl == true and not isSoulGemNow == true then
@@ -1189,10 +1205,7 @@ function FCOIS.CreateHooks()
     --Pre Hook the 2 menubar button's (items and crafting bag) handler at the inventory
     ZO_PreHookHandler(ctrlVars.INV_MENUBAR_BUTTON_ITEMS, "OnMouseUp", function(control, button, upInside)
         --d("inv button 1, button: " .. button .. ", upInside: " .. tostring(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastInvButton:GetName())
-        if (button == MOUSE_BUTTON_INDEX_LEFT and upInside and FCOIS.lastVars.gLastInvButton~=ctrlVars.INV_MENUBAR_BUTTON_ITEMS) then
-            FCOIS.lastVars.gLastInvButton = ctrlVars.INV_MENUBAR_BUTTON_ITEMS
-            zo_callLater(function() preHookMainMenuFilterButtonHandler(LF_CRAFTBAG, LF_INVENTORY) end, 50)
-        end
+        mainMenuBarButtonFilterButtonHandler(button, upInside, "gLastInvButton", ctrlVars.INV_MENUBAR_BUTTON_ITEMS, LF_CRAFTBAG, LF_INVENTORY, nil)
     end)
     --[[
     --API 100029 Dragonhold - Insecure call of ZO_StackSplitSource_DragStart if this PreHookHandler is used
@@ -1301,17 +1314,11 @@ function FCOIS.CreateHooks()
     --Pre Hook the 2 menubar button's (take and deposit) handler at the bank
     ZO_PreHookHandler(ctrlVars.BANK_MENUBAR_BUTTON_WITHDRAW, "OnMouseUp", function(control, button, upInside)
         --d("bank button 1, button: " .. button .. ", upInside: " .. tostring(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastBankButton:GetName())
-        if (button == MOUSE_BUTTON_INDEX_LEFT and upInside and FCOIS.lastVars.gLastBankButton~=ctrlVars.BANK_MENUBAR_BUTTON_WITHDRAW) then
-            FCOIS.lastVars.gLastBankButton = ctrlVars.BANK_MENUBAR_BUTTON_WITHDRAW
-            zo_callLater(function() preHookMainMenuFilterButtonHandler(LF_BANK_DEPOSIT, LF_BANK_WITHDRAW) end, 50)
-        end
+        mainMenuBarButtonFilterButtonHandler(button, upInside, "gLastBankButton", ctrlVars.BANK_MENUBAR_BUTTON_WITHDRAW, LF_BANK_DEPOSIT, LF_BANK_WITHDRAW, nil)
     end)
     ZO_PreHookHandler(ctrlVars.BANK_MENUBAR_BUTTON_DEPOSIT, "OnMouseUp", function(control, button, upInside)
         --d("bank button 2, button: " .. button .. ", upInside: " .. tostring(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastBankButton:GetName())
-        if (button == MOUSE_BUTTON_INDEX_LEFT and upInside and FCOIS.lastVars.gLastBankButton~=ctrlVars.BANK_MENUBAR_BUTTON_DEPOSIT) then
-            FCOIS.lastVars.gLastBankButton = ctrlVars.BANK_MENUBAR_BUTTON_DEPOSIT
-            zo_callLater(function() preHookMainMenuFilterButtonHandler(LF_BANK_WITHDRAW, LF_BANK_DEPOSIT) end, 50)
-        end
+        mainMenuBarButtonFilterButtonHandler(button, upInside, "gLastBankButton", ctrlVars.BANK_MENUBAR_BUTTON_DEPOSIT, LF_BANK_WITHDRAW, LF_BANK_DEPOSIT, nil)
     end)
 
     --======== HOUSE BANK ================================================================
@@ -1321,17 +1328,11 @@ function FCOIS.CreateHooks()
     --Pre Hook the 2 menubar button's (take and deposit) handler at the bank
     ZO_PreHookHandler(ctrlVars.HOUSE_BANK_MENUBAR_BUTTON_WITHDRAW, "OnMouseUp", function(control, button, upInside)
         --d("house bank button 1, button: " .. button .. ", upInside: " .. tostring(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastBankButton:GetName())
-        if (button == MOUSE_BUTTON_INDEX_LEFT and upInside and FCOIS.lastVars.gLastHouseBankButton~=ctrlVars.HOUSE_BANK_MENUBAR_BUTTON_WITHDRAW) then
-            FCOIS.lastVars.gLastHouseBankButton = ctrlVars.HOUSE_BANK_MENUBAR_BUTTON_WITHDRAW
-            zo_callLater(function() preHookMainMenuFilterButtonHandler(LF_HOUSE_BANK_DEPOSIT, LF_HOUSE_BANK_WITHDRAW) end, 50)
-        end
+        mainMenuBarButtonFilterButtonHandler(button, upInside, "gLastHouseBankButton", ctrlVars.HOUSE_BANK_MENUBAR_BUTTON_WITHDRAW, LF_HOUSE_BANK_DEPOSIT, LF_HOUSE_BANK_WITHDRAW, nil)
     end)
     ZO_PreHookHandler(ctrlVars.HOUSE_BANK_MENUBAR_BUTTON_DEPOSIT, "OnMouseUp", function(control, button, upInside)
         --d("house bank button 2, button: " .. button .. ", upInside: " .. tostring(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastBankButton:GetName())
-        if (button == MOUSE_BUTTON_INDEX_LEFT and upInside and FCOIS.lastVars.gLastHouseBankButton~=ctrlVars.HOUSE_BANK_MENUBAR_BUTTON_DEPOSIT) then
-            FCOIS.lastVars.gLastHouseBankButton = ctrlVars.HOUSE_BANK_MENUBAR_BUTTON_DEPOSIT
-            zo_callLater(function() preHookMainMenuFilterButtonHandler(LF_HOUSE_BANK_WITHDRAW, LF_HOUSE_BANK_DEPOSIT) end, 50)
-        end
+        mainMenuBarButtonFilterButtonHandler(button, upInside, "gLastHouseBankButton", ctrlVars.HOUSE_BANK_MENUBAR_BUTTON_DEPOSIT, LF_HOUSE_BANK_WITHDRAW, LF_HOUSE_BANK_DEPOSIT, nil)
     end)
 
     --======== GUILD BANK ==========================================================
@@ -1341,17 +1342,11 @@ function FCOIS.CreateHooks()
     --Pre Hook the 2 menubar button's (take and deposit) handler at the guild bank
     ZO_PreHookHandler(ctrlVars.GUILD_BANK_MENUBAR_BUTTON_WITHDRAW, "OnMouseUp", function(control, button, upInside)
 --d("guild bank button 1, button: " .. button .. ", upInside: " .. tostring(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastGuildBankButton:GetName())
-        if (button == MOUSE_BUTTON_INDEX_LEFT and upInside and FCOIS.lastVars.gLastGuildBankButton~=ctrlVars.GUILD_BANK_MENUBAR_BUTTON_WITHDRAW) then
-            FCOIS.lastVars.gLastGuildBankButton = ctrlVars.GUILD_BANK_MENUBAR_BUTTON_WITHDRAW
-            zo_callLater(function() preHookMainMenuFilterButtonHandler(LF_GUILDBANK_DEPOSIT, LF_GUILDBANK_WITHDRAW) end, 50)
-        end
+        mainMenuBarButtonFilterButtonHandler(button, upInside, "gLastGuildBankButton", ctrlVars.GUILD_BANK_MENUBAR_BUTTON_WITHDRAW, LF_GUILDBANK_DEPOSIT, LF_GUILDBANK_WITHDRAW, nil)
     end)
     ZO_PreHookHandler(ctrlVars.GUILD_BANK_MENUBAR_BUTTON_DEPOSIT, "OnMouseUp", function(control, button, upInside)
 --d("guild bank button 2, button: " .. button .. ", upInside: " .. tostring(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastGuildBankButton:GetName())
-        if (button == MOUSE_BUTTON_INDEX_LEFT and upInside and FCOIS.lastVars.gLastGuildBankButton~=ctrlVars.GUILD_BANK_MENUBAR_BUTTON_DEPOSIT) then
-            FCOIS.lastVars.gLastGuildBankButton = ctrlVars.GUILD_BANK_MENUBAR_BUTTON_DEPOSIT
-            zo_callLater(function() preHookMainMenuFilterButtonHandler(LF_GUILDBANK_WITHDRAW, LF_GUILDBANK_DEPOSIT) end, 50)
-        end
+        mainMenuBarButtonFilterButtonHandler(button, upInside, "gLastGuildBankButton", ctrlVars.GUILD_BANK_MENUBAR_BUTTON_DEPOSIT, LF_GUILDBANK_WITHDRAW, LF_GUILDBANK_DEPOSIT, nil)
     end)
     --======== SMITHING =============================================================
     local function smithingSetModeHook(smithingCtrl, mode, ...)
@@ -1397,8 +1392,9 @@ function FCOIS.CreateHooks()
     local function enchantingPreHook()
         --Hide the context menu at last active panel
         hideContextMenu(FCOIS.gFilterWhere)
-        if ctrlVars.ENCHANTING:IsSceneShowing() then
-            local enchantingMode = ctrlVars.ENCHANTING.enchantingMode
+        local enchantingCtrl = ctrlVars.ENCHANTING
+        if enchantingCtrl:IsSceneShowing() then
+            local enchantingMode = enchantingCtrl.enchantingMode
             if settings.debug then FCOIS.debugMessage( "[ENCHANTING:OnModeUpdated]","EnchantingMode: " .. tostring(enchantingMode), true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
             --d("[FCOIS]Hook ZO_Enchanting.SetEnchantingMode/OnModeUpdated - Mode: " ..tostring(enchantingMode))
@@ -1421,14 +1417,7 @@ function FCOIS.CreateHooks()
     --Prehook the alchemy function which gets executed as the alchemy tabs are changed
     ZO_PreHookHandler(ctrlVars.ALCHEMY_STATION_MENUBAR_BUTTON_CREATION, "OnMouseUp", function(control, button, upInside)
         --d("Alchemy button 1, button: " .. button .. ", upInside: " .. tostring(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastAlchemyButton:GetName())
-        if (button == MOUSE_BUTTON_INDEX_LEFT and upInside) then
-            if (FCOIS.otherAddons.potionMakerActive and FCOIS.lastVars.gLastAlchemyButton~=ctrlVars.ALCHEMY_STATION_MENUBAR_BUTTON_CREATION) then
-                FCOIS.lastVars.gLastAlchemyButton = ctrlVars.ALCHEMY_STATION_MENUBAR_BUTTON_CREATION
-                --zo_callLater(function() FCOIS.PreHookButtonHandler(nil, LF_ALCHEMY_CREATION) end, 50)
-            else
-                --zo_callLater(function() FCOIS.PreHookButtonHandler(nil, LF_ALCHEMY_CREATION) end, 50)
-            end
-        end
+        mainMenuBarButtonFilterButtonHandler(button, upInside, "gLastAlchemyButton", ctrlVars.ALCHEMY_STATION_MENUBAR_BUTTON_CREATION, LF_ALCHEMY_CREATION, nil, nil)
     end)
 
     --Another Prehook will be done at the event callback function for the crafting station interact, when the alchemy station
@@ -1535,7 +1524,7 @@ function FCOIS.CreateHooks()
         --When the mail send panel is showing up
         if newState == SCENE_SHOWING then
             --Check if craftbag is active and change filter panel and parent panel accordingly
-            FCOIS.gFilterWhere, FCOIS.gFilterWhereParent = FCOIS.checkCraftbagOrOtherActivePanel(LF_MAIL_SEND)
+            FCOIS.gFilterWhere, FCOIS.gFilterWhereParent = checkCraftbagOrOtherActivePanel(LF_MAIL_SEND)
 
             --Check if another filter panel was already opened and we are coming form there before the CLOSE EVENT function was called
             if FCOIS.preventerVars.gActiveFilterPanel == true then
@@ -1589,7 +1578,7 @@ function FCOIS.CreateHooks()
         sceneCallbackHideContextMenu(oldState, newState)
         if     newState == SCENE_SHOWING then
             --Check if craftbag is active and change filter panel and parent panel accordingly
-            FCOIS.gFilterWhere, FCOIS.gFilterWhereParent = FCOIS.checkCraftbagOrOtherActivePanel(LF_RETRAIT)
+            FCOIS.gFilterWhere, FCOIS.gFilterWhereParent = checkCraftbagOrOtherActivePanel(LF_RETRAIT)
 
             --Check if another filter panel was already opened and we are coming form there before the CLOSE EVENT function was called
             --if FCOIS.preventerVars.gActiveFilterPanel == true then
@@ -1626,7 +1615,7 @@ function FCOIS.CreateHooks()
         sceneCallbackHideContextMenu(oldState, newState)
         if     newState == SCENE_FRAGMENT_SHOWING then
             --Check if craftbag is active and change filter panel and parent panel accordingly
-            FCOIS.gFilterWhere, FCOIS.gFilterWhereParent = FCOIS.checkCraftbagOrOtherActivePanel(LF_INVENTORY_COMPANION)
+            FCOIS.gFilterWhere, FCOIS.gFilterWhereParent = checkCraftbagOrOtherActivePanel(LF_INVENTORY_COMPANION)
 --d(">FCOIS.gFilterWhere: " ..tostring(FCOIS.gFilterWhere))
             --Check if another filter panel was already opened and we are coming form there before the CLOSE EVENT function was called
             --if FCOIS.preventerVars.gActiveFilterPanel == true then
@@ -1670,7 +1659,7 @@ function FCOIS.CreateHooks()
             end
 
             --Check if craftbag is active and change filter panel and parent panel accordingly
-            --FCOIS.gFilterWhere, FCOIS.gFilterWhereParent = FCOIS.checkCraftbagOrOtherActivePanel(LF_INVENTORY_COMPANION)
+            --FCOIS.gFilterWhere, FCOIS.gFilterWhereParent = checkCraftbagOrOtherActivePanel(LF_INVENTORY_COMPANION)
 
         elseif newState == SCENE_FRAGMENT_HIDING then
             --Update the current filter panel ID to "Companion inventory"

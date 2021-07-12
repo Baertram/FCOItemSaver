@@ -310,7 +310,7 @@ local isCraftbagPanelShown = FCOIS.isCraftbagPanelShown
 
 --Check if the craftbag panel is currently active and change the panelid to craftbag, or the wished one.
 --Change the parentPanelId too (e.g. mail send, or bank deposit) if the craftbag is active!
-function FCOIS.checkCraftbagOrOtherActivePanel(wishedPanelId)
+function FCOIS.CheckCraftbagOrOtherActivePanel(wishedPanelId)
     if wishedPanelId == nil then return LF_INVENTORY, nil end
     local newPanelId
     local newParentPanelId
