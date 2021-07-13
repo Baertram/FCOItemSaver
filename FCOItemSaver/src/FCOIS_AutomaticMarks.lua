@@ -4,6 +4,7 @@ local FCOIS = FCOIS
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
 
+local debugMessage = FCOIS.debugMessage
 local strformat = string.format
 local zo_strf = zo_strformat
 
@@ -31,6 +32,11 @@ local isItemSetPartWithTraitNoControl = FCOIS.IsItemSetPartWithTraitNoControl
 local isRecipeAutoMarkDoable = FCOIS.IsRecipeAutoMarkDoable
 local isRecipeKnown = FCOIS.IsRecipeKnown
 local isItemSetAndNotExcluded = FCOIS.IsItemSetAndNotExcluded
+local checkIfRecipeAddonUsed = FCOIS.CheckIfRecipeAddonUsed
+local checkIfChosenRecipeAddonActive = FCOIS.CheckIfChosenRecipeAddonActive
+local getResearchAddonUsed = FCOIS.GetResearchAddonUsed
+local checkIfResearchAddonUsed = FCOIS.CheckIfResearchAddonUsed
+local checkIfChosenResearchAddonActive = FCOIS.CheckIfChosenResearchAddonActive
 
 local checkIfHouseOwnerAndInsideOwnHouse = FCOIS.CheckIfHouseOwnerAndInsideOwnHouse
 
@@ -139,7 +145,7 @@ local function automaticMarkingResearchAdditionalCheckFunc(p_itemData, p_checkFu
         --Added function to Research Assistant but addon update is not released yet?
         local comingFromEventInvSingleSlotUpdate = FCOIS.preventerVars.eventInventorySingleSlotUpdate
         --ResearchAssistant should be used?
-        local researchAddonId = FCOIS.getResearchAddonUsed()
+        local researchAddonId = getResearchAddonUsed()
         if researchAddonId == FCOIS_RESEARCH_ADDON_RESEARCHASSISTANT then
             if comingFromEventInvSingleSlotUpdate and ResearchAssistant ~= nil and
                     (ResearchAssistant.IsItemResearchableOrDuplicateWithSettingsCharacter ~= nil or ResearchAssistant.IsItemResearchableWithSettingsCharacter ~= nil) then
@@ -1428,7 +1434,7 @@ function FCOIS.ScanInventoryItemsForAutomaticMarks(bag, slot, scanType, updateIn
             check				= settings.autoMarkResearch,
             result 				= true,
             resultNot			= nil,
-            checkOtherAddon		= function() return (FCOIS.checkIfResearchAddonUsed() and FCOIS.checkIfChosenResearchAddonActive()) or false end,
+            checkOtherAddon		= function() return (checkIfResearchAddonUsed() and checkIfChosenResearchAddonActive()) or false end,
             resultOtherAddon   	= true,
             resultNotOtherAddon	= nil,
             icon				= FCOIS_CON_ICON_RESEARCH,
@@ -1487,7 +1493,7 @@ function FCOIS.ScanInventoryItemsForAutomaticMarks(bag, slot, scanType, updateIn
             check				= settings.autoMarkRecipes,
             result 				= true,
             resultNot			= nil,
-            checkOtherAddon		= function() return FCOIS.checkIfRecipeAddonUsed() and FCOIS.checkIfChosenRecipeAddonActive() end,
+            checkOtherAddon		= function() return checkIfRecipeAddonUsed() and checkIfChosenRecipeAddonActive() end,
             resultOtherAddon   	= true,
             resultNotOtherAddon	= nil,
             icon				= settings.autoMarkRecipesIconNr,
@@ -1514,7 +1520,7 @@ function FCOIS.ScanInventoryItemsForAutomaticMarks(bag, slot, scanType, updateIn
             check				= settings.autoMarkKnownRecipes,
             result 				= true,
             resultNot			= nil,
-            checkOtherAddon		= function() return FCOIS.checkIfRecipeAddonUsed() and FCOIS.checkIfChosenRecipeAddonActive() end,
+            checkOtherAddon		= function() return checkIfRecipeAddonUsed() and checkIfChosenRecipeAddonActive() end,
             resultOtherAddon   	= true,
             resultNotOtherAddon	= nil,
             icon				= settings.autoMarkKnownRecipesIconNr,
@@ -1758,7 +1764,7 @@ function FCOIS.ScanInventorySingle(p_bagId, p_slotIndex, checksAlreadyDoneTable)
                 --5)
                 --Update researchable items
                 if (checksAlreadyDoneTable ~= nil and checksAlreadyDoneTable["research"] == true) or (
-                   (settings.autoMarkResearch == true and FCOIS.checkIfResearchAddonUsed() and FCOIS.checkIfChosenResearchAddonActive() and isIconEnabledSettings[FCOIS_CON_ICON_RESEARCH])) then
+                   (settings.autoMarkResearch == true and checkIfResearchAddonUsed() and checkIfChosenResearchAddonActive() and isIconEnabledSettings[FCOIS_CON_ICON_RESEARCH])) then
 --local itemLink = GetItemLink(p_bagId, p_slotIndex)
 --d(">scanInvSingle, research scan reached for: " .. itemLink)
                     local _, researchableChanged = scanInventoryItemsForAutomaticMarks(p_bagId, p_slotIndex, "research", false)
@@ -1839,8 +1845,8 @@ function FCOIS.ScanInventory(p_bagId, p_slotIndex, doEcho)
     local updateInv = false
     local isIconEnabledSettings = settings.isIconEnabled
 
-    local isRecipeAddonActive = (FCOIS.checkIfRecipeAddonUsed() and FCOIS.checkIfChosenRecipeAddonActive()) or false
-    local isResearchAddonActive = (FCOIS.checkIfResearchAddonUsed() and FCOIS.checkIfChosenResearchAddonActive() and isIconEnabledSettings[FCOIS_CON_ICON_RESEARCH]) or false
+    local isRecipeAddonActive = (checkIfRecipeAddonUsed() and checkIfChosenRecipeAddonActive()) or false
+    local isResearchAddonActive = (checkIfResearchAddonUsed() and checkIfChosenResearchAddonActive() and isIconEnabledSettings[FCOIS_CON_ICON_RESEARCH]) or false
     local isResearchScrollsAddonActive = (DetailedResearchScrolls ~= nil and DetailedResearchScrolls.GetWarningLine ~= nil and settings.autoMarkWastedResearchScrolls == true and isIconEnabledSettings[FCOIS_CON_ICON_LOCK]) or false
 
     --Automatic marking of ornate, intricate, researchable items (researchAssistant or other research addon needed, or ESO base game marks for researchabel items), unknown recipes (SousChef or other recipe addon is needed!), set parts, quality items, set collection book items is activated?

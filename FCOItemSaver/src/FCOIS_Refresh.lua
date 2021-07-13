@@ -4,6 +4,8 @@ local FCOIS = FCOIS
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
 
+local debugMessage = FCOIS.debugMessage
+
 local ctrlVars = FCOIS.ZOControlVars
 local libFilters = FCOIS.libFilters
 
@@ -17,7 +19,7 @@ local isCompanionInventoryShown = FCOIS.IsCompanionInventoryShown
 local function updateFilteredItemCountCheck(updateFilteredItemCount)
     if updateFilteredItemCount == true then
 --d("[FCOIS]updateFilteredItemCountCheck - filterPaneldId: " ..tostring(FCOIS.gFilterWhere))
-        FCOIS.updateFilteredItemCountThrottled(FCOIS.gFilterWhere, 50)
+        FCOIS.UpdateFilteredItemCountThrottled(FCOIS.gFilterWhere, 50)
     end
 end
 
@@ -342,7 +344,7 @@ end
 --Check if other addons with an UI are enabled and shown and update their rows to show/hide FCOIS marker icons now
 local function updateOtherAddonUIs()
    --Inventory Insight from Ashes
-    FCOIS.checkIfOtherAddonIIfAIsActive()
+    FCOIS.CheckIfOtherAddonIIfAIsActive()
     if IIfA ~= nil and IIFA_GUI ~= nil and not IIFA_GUI:IsHidden() and FCOIS.otherAddons.IIFAActive and IIfA.SetDataLinesData ~= nil then
 --d(">UpdateOtherAddonUIs-IIfA found, trying to update now!")
         --IIfA:RefreshInventoryScroll() -- This will scroll to the top :-( We need to find a way to scroll back to the current scrollList index

@@ -4,9 +4,13 @@ local FCOIS = FCOIS
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
 
+local debugMessage = FCOIS.debugMessage
+
 local wm = WINDOW_MANAGER
 
 local strformat = string.format
+
+local throttledUpdate = FCOIS.ThrottledUpdate
 
 local numFilters = FCOIS.numVars.gFCONumFilters
 local filterButtonsToCheck = FCOIS.checkVars.filterButtonsToCheck
@@ -1339,7 +1343,7 @@ function FCOIS.updateFilteredItemCount(panelId, calledFrom)
     --Reset the sortheader text to the original one
     if sortHeaderCtrl then resetSortHeaderCount(libFiltersPanelId, sortHeaderCtrl) end
     --AdvancedFilters version 1.5.0.6 adds filtered item count at the bottom inventory lines. So FCOIS does not need to show this anymore if AdvancedFilters has enabled this setting.
-    FCOIS.preventerVars.useAdvancedFiltersItemCountInInventories = FCOIS.checkIfAdvancedFiltersItemCountIsEnabled()
+    FCOIS.preventerVars.useAdvancedFiltersItemCountInInventories = FCOIS.CheckIfAdvancedFiltersItemCountIsEnabled()
     if FCOIS.preventerVars.useAdvancedFiltersItemCountInInventories then
         --d(">>>[AF]filtered itemCount is used")
         --Update the AdvancedFilters item count
@@ -1395,7 +1399,7 @@ local inventoryChangeFilterHook = FCOIS.inventoryChangeFilterHook
 
 --Update the shown filteredItem count at the inventories, but throttled with a delay and only once if updates are tried
 --to be done several times after another
-function FCOIS.updateFilteredItemCountThrottled(filterPanelId, delay, calledFromWhere)
+function FCOIS.UpdateFilteredItemCountThrottled(filterPanelId, delay, calledFromWhere)
     filterPanelId = filterPanelId or FCOIS.gFilterWhere
     delay = delay or 250
     calledFromWhere = calledFromWhere or ""
@@ -1403,5 +1407,5 @@ function FCOIS.updateFilteredItemCountThrottled(filterPanelId, delay, calledFrom
     --Only go on if the update for the item count is for the currently visible filterPanelId
     if filterPanelId ~= FCOIS.gFilterWhere then return end
     --Update the count of filtered/shown items before the sortHeader "name" text
-    FCOIS.ThrottledUpdate("FCOIS_UpdateItemCount_" .. filterPanelId, delay, inventoryChangeFilterHook, filterPanelId, "[FCOIS]updateFilteredItemCountThrottled->" .. calledFromWhere)
+    throttledUpdate("FCOIS_UpdateItemCount_" .. filterPanelId, delay, inventoryChangeFilterHook, filterPanelId, "[FCOIS]updateFilteredItemCountThrottled->" .. calledFromWhere)
 end

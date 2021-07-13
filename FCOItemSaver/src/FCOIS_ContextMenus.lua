@@ -4,11 +4,14 @@ local FCOIS = FCOIS
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
 
-local wm = WINDOW_MANAGER
+local debugMessage = FCOIS.debugMessage
+local debugItem = FCOIS.debugItem
 
 local strsub = string.sub
 local strlen = string.len
 local zo_strf = zo_strformat
+
+local wm = WINDOW_MANAGER
 
 local numFilterIcons = FCOIS.numVars.gFCONumFilterIcons
 local myColorEnabled	= ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_TEXT_COLORS, INTERFACE_TEXT_COLOR_NORMAL))
@@ -62,8 +65,15 @@ local getCurrentlyLoggedInCharUniqueId = FCOIS.GetCurrentlyLoggedInCharUniqueId
 local changeAntiSettingsAccordingToFilterPanel = FCOIS.ChangeAntiSettingsAccordingToFilterPanel
 
 local buildLocalizedFilterButtonContextMenuEntries = FCOIS.BuildLocalizedFilterButtonContextMenuEntries
+local checkIfInventoryRowOfExternalAddonNeedsMarkerIconsUpdate = FCOIS.CheckIfInventoryRowOfExternalAddonNeedsMarkerIconsUpdate
+local checkAndClearLastMarkedIcons = FCOIS.CheckAndClearLastMarkedIcons
 
+local markAllEquipment = FCOIS.MarkAllEquipment
+local checkIfRecipeAddonUsed = FCOIS.CheckIfRecipeAddonUsed
+local checkIfResearchAddonUsed = FCOIS.CheckIfResearchAddonUsed
+local checkIfChosenResearchAddonActive = FCOIS.CheckIfChosenResearchAddonActive
 
+------------------------------------------------------------------------------------------------------------------------
 --Compatibility functions
 local function menuVisibleCheck()
     --New: Since API10030 - Typo was removed
@@ -147,14 +157,15 @@ local hideContextMenu = FCOIS.HideContextMenu
 --========= Normal context menus =================================
 --Create a table with additional context menu variables and values
 --+ the entry "creatingAddon" to identify the custom context menu entries and related addon
-function FCOIS.createContextMenuAdditionalData(additionalDataTable)
+function FCOIS.CreateContextMenuAdditionalData(additionalDataTable)
     local addonVars = FCOIS.addonVars
     additionalDataTable["creatingAddon"] = addonVars.gAddonNameShort
     return additionalDataTable
 end
+local createContextMenuAdditionalData = FCOIS.CreateContextMenuAdditionalData
 
 --Function to show the tooltip at a ZO_Menu context menu entry, using library LibCustomMenu's function "runTooltip(control, inside)"
-function FCOIS.contextMenuEntryTooltipFunc(control, inside, data)
+function FCOIS.ContextMenuEntryTooltipFunc(control, inside, data)
     --d("[FCOIS]FCOIS.contextMenuEntryTooltipFunc-control: " .. tostring(control:GetName()) .. ", inside: " ..tostring(inside))
     if not data then return end
     --Hide old text tooltips
@@ -198,17 +209,19 @@ function FCOIS.contextMenuEntryTooltipFunc(control, inside, data)
     end
     return true -- Set to true so LibCustomMenu's function "runTooltip" won't try to show the text tooltip again
 end
+local contextMenuEntryTooltipFunc = FCOIS.ContextMenuEntryTooltipFunc
 
 --Function to check if a tooltip should be added to a ZO_Menu item,
 --build/enhance the tooltip text then and return the
---so the function FCOIS.contextMenuEntryTooltipFunc(control, inside, data) can show the tooltip later on via LibCustomMenu
+--so the function contextMenuEntryTooltipFunc(control, inside, data) can show the tooltip later on via LibCustomMenu
 function FCOIS.CheckBuildAndAddCustomMenuTooltip(align, tooltipText)
     --d("[FCOIS]CheckBuildAndAddCustomMenuTooltip")
     if not tooltipText or tooltipText == "" then return end
     local settings = FCOIS.settingsVars.settings
     if not settings.contextMenuItemEntryShowTooltip then return end
-    return FCOIS.createContextMenuAdditionalData({["align"] = align, ["text"] = tooltipText})
+    return createContextMenuAdditionalData({ ["align"] = align, ["text"] = tooltipText})
 end
+local checkBuildAndAddCustomMenuTooltip = FCOIS.CheckBuildAndAddCustomMenuTooltip
 
 --Function to reanchor the ZO menu more to the left so it isn't shown above the inventory
 local function reAnchorMenu(menuCtrl, offsetX, offsetY)
@@ -341,6 +354,228 @@ function FCOIS.RefreshPopupDialogButtons(rowControl, override)
 end
 local refreshPopupDialogButtons = FCOIS.RefreshPopupDialogButtons
 
+--The "onClicked" callback function for the right click/context menus to (un)mark an item
+--> Called from file FCOIS_ContextMenu.lua, function "FCOIS.AddMark"
+function FCOIS.MarkMe(rowControl, markId, updateNow, doUnmark, refreshPopupDialog)
+--d("[FCOIS]MarkMe - refreshPopupDialog: " ..tostring(refreshPopupDialog))
+    local doAbort = false
+    local isNotInHouseAndBagIsHouseBankBag = false
+    local itemLink
+    local itemInstanceOrUniqueId
+    if FCOIS.settingsVars.settings.debug then debugMessage( "[MarkMe]","markId: " .. tostring(markId) .. ", updateNow: " .. tostring(updateNow) .. ", doUnmark: " .. tostring(doUnmark) .. ", refreshPopupDialog: " .. tostring(refreshPopupDialog), FCOIS_DEBUG_DEPTH_ALL) end
+    if FCOIS.gFilterWhere == nil then return end
+    --Set the last used filter Id at the current panel
+    local iconToFilter = FCOIS.mappingVars.iconToFilter
+    FCOIS.lastVars.gLastFilterId[FCOIS.gFilterWhere] = iconToFilter[markId]
+
+    --Reset the IIfA clicked variables
+    local IIfAclickedData
+    FCOIS.IIfAclicked = nil
+	FCOIS.IIfAmouseOvered = nil
+    --Get the rows bagId and slotIndex
+    local iifaItemLink, itemInstanceOrUniqueIdIIfA, bagIdIIfA, slotIndexIIfA, charsTableIIfA, inThisOtherBagsTableIIfA = FCOIS.CheckAndGetIIfAData(rowControl, rowControl:GetParent())
+    if itemInstanceOrUniqueIdIIfA ~= nil or (bagIdIIfA ~= nil and slotIndexIIfA ~= nil) then
+--d("[FCOIS.MarkMe] IIfA clicked")
+        FCOIS.IIfAclicked = {}
+        FCOIS.IIfAclicked.itemInstanceOrUniqueId = itemInstanceOrUniqueIdIIfA
+        FCOIS.IIfAclicked.itemLink = iifaItemLink
+        FCOIS.IIfAclicked.bagId = bagIdIIfA
+        FCOIS.IIfAclicked.slotIndex = slotIndexIIfA
+        FCOIS.IIfAclicked.ownedByChars = charsTableIIfA
+        FCOIS.IIfAclicked.inThisOtherBags = inThisOtherBagsTableIIfA
+        --House bank bag?
+        if IsHouseBankBag(bagIdIIfA) then
+            --Not the owner of the house we are in or not in a house? Reset the bagid and slotIndex now!
+            isNotInHouseAndBagIsHouseBankBag = not checkIfHouseBankBagAndInOwnHouse(bagIdIIfA)
+        end
+        --House bank bag but not in any house/not owner of the house we are in! -> Reset the bagId and slotIndex
+        if isNotInHouseAndBagIsHouseBankBag then
+--d(">house bank bag but not in any house/not owner of the house we are in!")
+            FCOIS.IIfAclicked.bagId = nil
+            FCOIS.IIfAclicked.slotIndex = nil
+        end
+        IIfAclickedData = FCOIS.IIfAclicked
+    end
+    local bagId, slotIndex = myGetItemDetails(rowControl) -- will internally take bag and slot from IIfAclicked table, if this data is given!
+    --Bag and slotIndex are given, or is the bag a house bank and we are not in a house or not the owner of the house?
+    if bagId == nil or slotIndex == nil then
+--d(">no bag and slotIndex")
+        --The addon Inventory Insight provided some data like the itemInstaceOrUniqueId from a right clicked row e.g.
+        if IIfAclickedData ~= nil then
+            if IIfAclickedData.itemInstanceOrUniqueId ~= nil then
+--d(">itemInstanceOrUniqueId found")
+                itemInstanceOrUniqueId = IIfAclickedData.itemInstanceOrUniqueId
+                itemLink = IIfAclickedData.itemLink
+            end
+        end
+    end
+
+    --Is the marker icon Id given and we should got on?
+    if markId ~= nil and doAbort == false then
+--itemLink = GetItemLink(bagId, slotIndex)
+--d("[FCOIS]MarkMe -  name: " .. rowControl:GetName() .. ", markId: " .. tostring(markId) .. ", doUnmark: " .. tostring(doUnmark) .. " [" .. itemLink .. "]")
+
+        --bagId and slotIndex are given (for currently logged in character or craftbag)
+        if bagId ~= nil and slotIndex ~= nil then
+--d(">bagId and slotIndex: mark")
+            --Unmark the item?
+            if doUnmark == true then
+                --UnMark the item now, and do not update inventory afterwards as it will be done further downwards!
+                FCOIS.preventerVars.markerIconChangedManually = true
+                FCOIS.MarkItem(bagId, slotIndex, markId, false, false)
+
+            --Mark the item
+            else
+                --Check if all markers should be removed prior to setting a new marker.
+                --Then set the new marker
+                --and do not update the inventory afterwards as it will be done further downwards!
+                FCOIS.preventerVars.markerIconChangedManually = true
+                FCOIS.MarkItem(bagId, slotIndex, markId, true, false)
+                --Are we marking an item inside a popup dialog, e.g. research or repair or enchant item?
+                if not refreshPopupDialog then
+                    --Is the item protected at a craft station, or the guild store sell tab, or marked as junk now?
+                    isItemProtectedAtASlotNow(bagId, slotIndex, false, true)
+                end
+                --Check if the item mark removed other marks and if a row within another addon (like Inventory Insight) needs to be updated
+                checkIfInventoryRowOfExternalAddonNeedsMarkerIconsUpdate(rowControl, markId)
+                --Check if the item got an entry in FCOIS.lastMarkedIcons (filled within file src/FCOIS_MarkerIcons.lua, function FCOIS.ClearOrRestoreAllMarkers...))
+                --and remove this entry now in order to be able to build a new entry properly via SHIFT + right mouse button
+                checkAndClearLastMarkedIcons(bagId, slotIndex)
+            end --if mark item ...
+
+        --ItemInstanceOrUniqueId is given (for not logged in character or guild or house bank)
+        elseif itemInstanceOrUniqueId ~= nil then
+--d(">itemInstanceOrUniqueId: mark")
+            --Unmark the item?
+            if doUnmark == true then
+                --UnMark the item now, and do not update inventory afterwards as the item is marked for a non-logged in character e.g.
+                FCOIS.preventerVars.markerIconChangedManually = true
+                FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, markId, false, itemLink)
+
+            --Mark the item
+            else
+                --Check if all markers should be removed prior to setting a new marker.
+                --Then set the new marker
+                --and do not update the inventory afterwards as as the item is marked for a non-logged in character e.g.
+                FCOIS.preventerVars.markerIconChangedManually = true
+                FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, markId, true, itemLink)
+                --Check if the item mark removed other marks and if a row within another addon (like Inventory Insight) needs to be updated
+                checkIfInventoryRowOfExternalAddonNeedsMarkerIconsUpdate(rowControl, markId)
+            end --if mark item ...
+
+
+        --Bag/slotIndex and itemInstanceOrUniqueId arte missing -> ABORT!
+        else
+--d("<<<ABORT: mark")
+            doAbort = true
+        end
+
+        --Should we go on with further checks and marker control changes?
+        if doAbort == false then
+            --Show/Hide the marker control for the texture but only if not an IIfA entry was clicked
+            local controlNameAddition = ""
+            if FCOIS.IIfAclicked ~= nil then
+                --Add the IIfA texture name part now -> See file AddOns/IIfA/plugins/FCOIS/IIfA_FCOIS.lua
+                if FCOIS_IIfA_TEXTURE_CONTROL_NAME ~= nil then
+                    controlNameAddition = FCOIS_IIfA_TEXTURE_CONTROL_NAME
+                end
+            end
+            --Get the texture's control for the markId and hide/show it now
+            getItemSaverControl(rowControl, markId, true, controlNameAddition):SetHidden(doUnmark)
+            --Update the inventories now?
+            if (updateNow == true) then
+                --Inventory Insight from Ashes update of clicked row needed?
+                if FCOIS.IIfAclicked ~= nil then
+                    --The function FCOIS.GetItemSaverControl above already determined the IIfA texture control and set the visible state accordingly
+                    --for the changed marker icon.
+                    --Update the texture for the control now:
+                    --Show the FCOIS marker icons at the line, if enabled in the settings (create them if needed)  -> File AddOns/IIfA/plugins/FCOIS/IIfA_FCOIS.lua
+                    if IIfA ~= nil and IIfA.UpdateFCOISMarkerIcons ~= nil then
+                        local showFCOISMarkerIcons = IIfA:GetSettings().FCOISshowMarkerIcons
+                        IIfA:UpdateFCOISMarkerIcons(rowControl, showFCOISMarkerIcons, showFCOISMarkerIcons, markId)
+
+                        --Now check if the inventory or character screen etc. are visible too (together with the IIfA inventory frame) and refresh these panels
+                        --then too!
+                        --Bag of clicked IIfA row is still given? This means the read data is from the currently logged in char, a craftbag item or a bank item.
+                        --All other items are determined via the itemInstanceId as the bagId and slotIndex are ONLY build as the character of the item is logged in!!!
+                        if FCOIS.IIfAclicked.bagId ~= nil then
+                            --Character bag?
+                            if FCOIS.IIfAclicked.bagId == BAG_WORN then
+                                if FCOIS.IIfAclicked.slotIndex ~= nil then
+                                    local ownedByLoggedInChar = false
+                                    --Check if the clicked row's item is from the currently logged in char
+                                    if FCOIS.IIfAclicked.ownedByChars ~= nil then
+                                        --Get the current char's unique ID and check if it's in the "worn by chars" table from the IIfA savedvars for this curently clicked item
+                                        if FCOIS.loggedInCharUniqueId == nil or FCOIS.loggedInCharUniqueId == "" then
+                                            FCOIS.loggedInCharUniqueId = getCurrentlyLoggedInCharUniqueId()
+                                        end
+                                        ownedByLoggedInChar = FCOIS.IIfAclicked.ownedByChars[FCOIS.loggedInCharUniqueId] or false
+                                    end
+                                    --Yes it is owned by the currently logged in char
+                                    if ownedByLoggedInChar then
+                                        --Refresh character's equipment slot of the clicked item
+                                        --Get the equipmentslot by the help of the slotIndex
+                                        local slotIndexToEquiptmentSlotControlName = FCOIS.mappingVars.characterEquipmentSlotNameByIndex
+                                        local equipmentSlotName = slotIndexToEquiptmentSlotControlName[FCOIS.IIfAclicked.slotIndex] or ""
+                                        if equipmentSlotName ~= "" then
+                                            local equipmentSlot = wm:GetControlByName(equipmentSlotName, "")
+                                            if equipmentSlot ~= nil then
+                                                --FCOIS.RefreshEquipmentControl(equipmentControl, doCreateMarkerControl, p_markId, dontCheckRings)
+                                                FCOIS.RefreshEquipmentControl(equipmentSlot, not doUnmark, markId)
+                                            end
+                                        end
+                                    end
+                                end
+                                --Inventory bag?
+                            elseif FCOIS.IIfAclicked.bagId == BAG_BACKPACK
+                                --Bank bag?
+                                or (FCOIS.IIfAclicked.bagId == BAG_BANK or FCOIS.IIfAclicked.bagId == BAG_SUBSCRIBER_BANK)
+                                --Guild bank bag?
+                                or FCOIS.IIfAclicked.bagId == BAG_GUILDBANK
+                                --House bank bag?
+                                or IsHouseBankBag(FCOIS.IIfAclicked.bagId)
+                                --CraftBag bag?
+                                or FCOIS.IIfAclicked.bagId == BAG_VIRTUAL
+                            then
+                                --Update the marker icons at the relevant bag's inventory list
+                                filterBasics(false)
+                            end
+                        end
+                    end
+                else
+                    --Inventories or character equipment?
+                    local parent = rowControl:GetParent()
+                    if parent == ctrlVars.CHARACTER or parent == ctrlVars.COMPANION_CHARACTER then
+                        FCOIS.RefreshEquipmentControl(rowControl, not doUnmark, markId)
+                    --elseif parent:GetParent() == ctrlVars.QUICKSLOT_LIST then
+                        --filterBasics(false)
+                    else
+                        filterBasics(false)
+                    end
+                    checkIfCharOrInvNeedsRingUpdate(bagId, slotIndex, parent, not doUnmark, markId)
+                end
+            else
+                --Refresh the ZO_ListDialog1 popup now after right click/context menu was used?
+                if refreshPopupDialog then
+                    --Is the research dialog shown?
+                    --[[
+                    if isResearchListDialogShown() then
+                        refreshListDialog(SMITHING_RESEARCH_SELECT)
+                    end
+                    ]]
+                    --Refresh the ZO_ListDialog1 buttons
+                    refreshPopupDialogButtons(rowControl, false)
+                end
+            end
+        end -- doAbort
+    end
+    --Reset the IIfAclicked table again
+    FCOIS.IIfAclicked = nil
+    --Reset the variable for external addons, so marker icons won't be added automatically again (e.g. AlphaGear)
+    FCOIS.preventerVars.markerIconChangedManually = false
+end
+local markMe = FCOIS.MarkMe
+
 --This function will add the FCOIS entries to the right-click context menu of e.g. inventory items
 --The function will be called multiple times, for each marker icon once. If you want to check if it was the first time it got called
 --you can use the boolean variable "firstAdd"
@@ -426,12 +661,12 @@ end
         firstAdd = true
         lastAdd = false
         --To prevent spamming only output the debug message once for the first added context menu item
-        if settings.debug then FCOIS.debugMessage( "[AddMark]", "Parent: " .. parentName .. ", Control: " .. controlName .. ", IsEquipmentSlot: " ..tostring(isEquipmentSlot) .. ", useSubMenu: " .. tostring(useSubMenu), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        if settings.debug then debugMessage( "[AddMark]", "Parent: " .. parentName .. ", Control: " .. controlName .. ", IsEquipmentSlot: " ..tostring(isEquipmentSlot) .. ", useSubMenu: " .. tostring(useSubMenu), true, FCOIS_DEBUG_DEPTH_NORMAL) end
         --d("[FCOIS.AddMark - Parent: " .. parentName .. ", Control: " .. controlName .. ", IsEquipmentSlot: " ..tostring(isEquipmentSlot) .. ", useSubMenu: " .. tostring(useSubMenu))
         --Check if we clicked a row within the IIfA addon.
         --Will clear (nil) and then fill the table FCOIS.IIfAclicked if itemLink, itemInstanceId, bagId and slotId were found
         --> See file FCOIS_OtherAddons.lua, IIfA
-        FCOIS.checkForIIfARightClickedRow(rowControl)
+        FCOIS.CheckForIIfARightClickedRow(rowControl)
     else
         if preventerVars.buildingInvContextMenuEntries == false then
             lastAdd = true
@@ -462,7 +697,7 @@ end
     if (notAllowed) then
         --Not allowed parent or control is given -> Abort here
         if firstAdd then
-            if settings.debug then FCOIS.debugMessage( "[AddMark]","Not allowed parent '" .. tostring(parentName) .. "' or control '" .. tostring(controlName) .. "' -> Aborted!", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+            if settings.debug then debugMessage( "[AddMark]","Not allowed parent '" .. tostring(parentName) .. "' or control '" .. tostring(controlName) .. "' -> Aborted!", true, FCOIS_DEBUG_DEPTH_NORMAL) end
         end
         return
     end
@@ -632,8 +867,8 @@ end
             contMenuVars.contextMenuIndex = AddCustomMenuItem(addonVars.addonNameContextMenuEntry, function() callbackFnc() end, menuItemType, nil, nil, nil, nil, nil)
             if tooltipText and tooltipText ~= "" then
                 AddCustomMenuTooltip(function(control, inside)
-                    local tooltipData=FCOIS.CheckBuildAndAddCustomMenuTooltip(tooltipAlign, tooltipText)
-                    FCOIS.contextMenuEntryTooltipFunc(control, inside, tooltipData) end,
+                    local tooltipData=checkBuildAndAddCustomMenuTooltip(tooltipAlign, tooltipText)
+                    contextMenuEntryTooltipFunc(control, inside, tooltipData) end,
                         contMenuVars.contextMenuIndex)
             end
         end
@@ -649,7 +884,7 @@ end
         else
             bagId, slotIndex = myGetItemDetails(rowControl)
         end
-        AddCustomMenuItem("---[DEBUG>   Bag: " .. tostring(bagId) .. " / Slot: " .. tostring(slotIndex) .. " ]---", function() FCOIS.debugItem(bagId, slotIndex) end, MENU_ADD_OPTION_LABEL)
+        AddCustomMenuItem("---[DEBUG>   Bag: " .. tostring(bagId) .. " / Slot: " .. tostring(slotIndex) .. " ]---", function() debugItem(bagId, slotIndex) end, MENU_ADD_OPTION_LABEL)
     end
 
     --Is the current markId already set at the item?
@@ -672,13 +907,13 @@ end
             if useSubMenu then
                 newSubEntry = {
                     label = contextMenuSubMenuEntryTextPre .. locVars.lTextEquipmentMark[markId],
-                    callback = function()  FCOIS.MarkAllEquipment(rowControl, markId, refreshList, false) end,
+                    callback = function()  markAllEquipment(rowControl, markId, refreshList, false) end,
                     myfont          = myFont,
                     normalColor     = colDef,
                     highlightColor  = colDef,
                     tooltip         = function(control, inside)
-                                        local data=FCOIS.CheckBuildAndAddCustomMenuTooltip(tooltipAlign, contextMenuSubMenuEntryTextPre .. locVars.lTextEquipmentMark[markId] .. "\n" .. tooltipText)
-                                        FCOIS.contextMenuEntryTooltipFunc(control, inside, data)
+                                        local data=checkBuildAndAddCustomMenuTooltip(tooltipAlign, contextMenuSubMenuEntryTextPre .. locVars.lTextEquipmentMark[markId] .. "\n" .. tooltipText)
+                                        contextMenuEntryTooltipFunc(control, inside, data)
                     end,
                 }
             else
@@ -686,23 +921,23 @@ end
                 if isDynamic and useDynSubMenu then
                     newDynSubEntry = {
                         label = contextMenuSubMenuEntryTextPre .. locVars.lTextEquipmentMark[markId],
-                        callback = function() FCOIS.MarkAllEquipment(rowControl, markId, refreshList, false) end,
+                        callback = function() markAllEquipment(rowControl, markId, refreshList, false) end,
                         myfont          = myFont,
                         normalColor     = colDef,
                         highlightColor  = colDef,
                         tooltip         = function(control, inside)
-                            local data=FCOIS.CheckBuildAndAddCustomMenuTooltip(tooltipAlign, contextMenuSubMenuEntryTextPre .. locVars.lTextEquipmentMark[markId] .. "\n" .. tooltipText)
-                            FCOIS.contextMenuEntryTooltipFunc(control, inside, data)
+                            local data=checkBuildAndAddCustomMenuTooltip(tooltipAlign, contextMenuSubMenuEntryTextPre .. locVars.lTextEquipmentMark[markId] .. "\n" .. tooltipText)
+                            contextMenuEntryTooltipFunc(control, inside, data)
                         end,
                     }
                 else
-                    --AddMenuItem(locVars.lTextEquipmentMark[markId], function() FCOIS.MarkAllEquipment(rowControl, markId, refreshList, false) end, MENU_ADD_OPTION_LABEL)
+                    --AddMenuItem(locVars.lTextEquipmentMark[markId], function() markAllEquipment(rowControl, markId, refreshList, false) end, MENU_ADD_OPTION_LABEL)
 --d("[FCOIS]AddMark - markId: " ..tostring(markId) .. ", text: " ..tostring(locVars.lTextEquipmentMark[markId]))
-                    newAddedMenuIndex = AddCustomMenuItem(contextMenuEntryTextPre .. locVars.lTextEquipmentMark[markId], function()  FCOIS.MarkAllEquipment(rowControl, markId, refreshList, false) end, MENU_ADD_OPTION_LABEL, myFont, colDef, colDef, nil, nil)
+                    newAddedMenuIndex = AddCustomMenuItem(contextMenuEntryTextPre .. locVars.lTextEquipmentMark[markId], function()  markAllEquipment(rowControl, markId, refreshList, false) end, MENU_ADD_OPTION_LABEL, myFont, colDef, colDef, nil, nil)
                     if tooltipText and tooltipText ~= "" then
                         AddCustomMenuTooltip(function(control, inside)
-                            local data=FCOIS.CheckBuildAndAddCustomMenuTooltip(tooltipAlign, contextMenuEntryTextPre .. locVars.lTextEquipmentMark[markId] .. "\n" .. tooltipText)
-                            FCOIS.contextMenuEntryTooltipFunc(control, inside, data) end,
+                            local data=checkBuildAndAddCustomMenuTooltip(tooltipAlign, contextMenuEntryTextPre .. locVars.lTextEquipmentMark[markId] .. "\n" .. tooltipText)
+                            contextMenuEntryTooltipFunc(control, inside, data) end,
                                 newAddedMenuIndex)
                     end
                 end
@@ -712,52 +947,52 @@ end
                 if settings.useContextMenuCustomMarkedNormalColor then
                     newSubEntry = {
                         label = contextMenuSubMenuEntryTextPre .. locVars.lTextEquipmentDemark[markId],
-                        callback = function() FCOIS.MarkAllEquipment(rowControl, markId, refreshList, true) end,
+                        callback = function() markAllEquipment(rowControl, markId, refreshList, true) end,
                         myfont = "ZoFontGame",
                         normalColor = ZO_ColorDef:New(settings.contextMenuCustomMarkedNormalColor),
                         myfont          = myFont,
                         highlightColor  = colDef,
                         tooltip         = function(control, inside)
-                            local data=FCOIS.CheckBuildAndAddCustomMenuTooltip(tooltipAlign, contextMenuSubMenuEntryTextPre .. locVars.lTextEquipmentDemark[markId] .. "\n" .. tooltipText)
-                            FCOIS.contextMenuEntryTooltipFunc(control, inside, data)
+                            local data=checkBuildAndAddCustomMenuTooltip(tooltipAlign, contextMenuSubMenuEntryTextPre .. locVars.lTextEquipmentDemark[markId] .. "\n" .. tooltipText)
+                            contextMenuEntryTooltipFunc(control, inside, data)
                         end,
                     }
                 else
                     newSubEntry = {
                         label = contextMenuSubMenuEntryTextPre .. locVars.lTextEquipmentDemark[markId],
-                        callback = function() FCOIS.MarkAllEquipment(rowControl, markId, refreshList, true) end,
+                        callback = function() markAllEquipment(rowControl, markId, refreshList, true) end,
                         myfont          = myFont,
                         normalColor     = colDef,
                         highlightColor  = colDef,
                         tooltip         = function(control, inside)
-                            local data=FCOIS.CheckBuildAndAddCustomMenuTooltip(tooltipAlign, contextMenuSubMenuEntryTextPre .. locVars.lTextEquipmentDemark[markId] .. "\n" .. tooltipText)
-                            FCOIS.contextMenuEntryTooltipFunc(control, inside, data)
+                            local data=checkBuildAndAddCustomMenuTooltip(tooltipAlign, contextMenuSubMenuEntryTextPre .. locVars.lTextEquipmentDemark[markId] .. "\n" .. tooltipText)
+                            contextMenuEntryTooltipFunc(control, inside, data)
                         end,
                     }
                 end
             else
-                --AddMenuItem(locVars.lTextEquipmentDemark[markId], function() FCOIS.MarkAllEquipment(rowControl, markId, refreshList, true) end, MENU_ADD_OPTION_LABEL)
+                --AddMenuItem(locVars.lTextEquipmentDemark[markId], function() markAllEquipment(rowControl, markId, refreshList, true) end, MENU_ADD_OPTION_LABEL)
                 if settings.useContextMenuCustomMarkedNormalColor then
                     --use the submenu for the dynamic icons?
                     if isDynamic and useDynSubMenu then
                         newDynSubEntry = {
                             label = contextMenuSubMenuEntryTextPre .. locVars.lTextEquipmentDemark[markId],
-                            callback = function() FCOIS.MarkAllEquipment(rowControl, markId, refreshList, true) end,
+                            callback = function() markAllEquipment(rowControl, markId, refreshList, true) end,
                             myfont = "ZoFontGame",
                             normalColor = ZO_ColorDef:New(settings.contextMenuCustomMarkedNormalColor),
                             myfont          = myFont,
                             highlightColor  = colDef,
                             tooltip         = function(control, inside)
-                                local data=FCOIS.CheckBuildAndAddCustomMenuTooltip(tooltipAlign, contextMenuSubMenuEntryTextPre .. locVars.lTextEquipmentDemark[markId] .. "\n" .. tooltipText)
-                                FCOIS.contextMenuEntryTooltipFunc(control, inside, data)
+                                local data=checkBuildAndAddCustomMenuTooltip(tooltipAlign, contextMenuSubMenuEntryTextPre .. locVars.lTextEquipmentDemark[markId] .. "\n" .. tooltipText)
+                                contextMenuEntryTooltipFunc(control, inside, data)
                             end,
                         }
                     else
-                        newAddedMenuIndex = AddCustomMenuItem(contextMenuEntryTextPre .. locVars.lTextEquipmentDemark[markId], function() FCOIS.MarkAllEquipment(rowControl, markId, refreshList, true) end, MENU_ADD_OPTION_LABEL, myFont, ZO_ColorDef:New(settings.contextMenuCustomMarkedNormalColor), colDef, nil, nil)
+                        newAddedMenuIndex = AddCustomMenuItem(contextMenuEntryTextPre .. locVars.lTextEquipmentDemark[markId], function() markAllEquipment(rowControl, markId, refreshList, true) end, MENU_ADD_OPTION_LABEL, myFont, ZO_ColorDef:New(settings.contextMenuCustomMarkedNormalColor), colDef, nil, nil)
                         if tooltipText and tooltipText ~= "" then
                             AddCustomMenuTooltip(function(control, inside)
-                                local data=FCOIS.CheckBuildAndAddCustomMenuTooltip(tooltipAlign, contextMenuEntryTextPre .. locVars.lTextEquipmentDemark[markId] .. "\n" .. tooltipText)
-                                FCOIS.contextMenuEntryTooltipFunc(control, inside, data) end,
+                                local data=checkBuildAndAddCustomMenuTooltip(tooltipAlign, contextMenuEntryTextPre .. locVars.lTextEquipmentDemark[markId] .. "\n" .. tooltipText)
+                                contextMenuEntryTooltipFunc(control, inside, data) end,
                                     newAddedMenuIndex)
                         end
                     end
@@ -766,21 +1001,21 @@ end
                     if isDynamic and useDynSubMenu then
                         newDynSubEntry = {
                             label = contextMenuSubMenuEntryTextPre .. locVars.lTextEquipmentDemark[markId],
-                            callback = function() FCOIS.MarkAllEquipment(rowControl, markId, refreshList, true) end,
+                            callback = function() markAllEquipment(rowControl, markId, refreshList, true) end,
                             myfont          = myFont,
                             normalColor     = colDef,
                             highlightColor  = colDef,
                             tooltip         = function(control, inside)
-                                local data=FCOIS.CheckBuildAndAddCustomMenuTooltip(tooltipAlign, contextMenuSubMenuEntryTextPre .. locVars.lTextEquipmentDemark[markId] .. "\n" .. tooltipText)
-                                FCOIS.contextMenuEntryTooltipFunc(control, inside, data)
+                                local data=checkBuildAndAddCustomMenuTooltip(tooltipAlign, contextMenuSubMenuEntryTextPre .. locVars.lTextEquipmentDemark[markId] .. "\n" .. tooltipText)
+                                contextMenuEntryTooltipFunc(control, inside, data)
                             end,
                         }
                     else
-                        newAddedMenuIndex = AddCustomMenuItem(contextMenuEntryTextPre .. locVars.lTextEquipmentDemark[markId], function() FCOIS.MarkAllEquipment(rowControl, markId, refreshList, true) end, MENU_ADD_OPTION_LABEL, myFont, colDef, colDef, nil, nil)
+                        newAddedMenuIndex = AddCustomMenuItem(contextMenuEntryTextPre .. locVars.lTextEquipmentDemark[markId], function() markAllEquipment(rowControl, markId, refreshList, true) end, MENU_ADD_OPTION_LABEL, myFont, colDef, colDef, nil, nil)
                         if tooltipText and tooltipText ~= "" then
                             AddCustomMenuTooltip(function(control, inside)
-                                local data=FCOIS.CheckBuildAndAddCustomMenuTooltip(tooltipAlign, contextMenuEntryTextPre .. locVars.lTextEquipmentDemark[markId] .. "\n" .. tooltipText)
-                                FCOIS.contextMenuEntryTooltipFunc(control, inside, data) end,
+                                local data=checkBuildAndAddCustomMenuTooltip(tooltipAlign, contextMenuEntryTextPre .. locVars.lTextEquipmentDemark[markId] .. "\n" .. tooltipText)
+                                contextMenuEntryTooltipFunc(control, inside, data) end,
                                     newAddedMenuIndex)
                         end
                     end
@@ -798,13 +1033,13 @@ end
             if useSubMenu then
                 newSubEntry = {
                     label = contextMenuSubMenuEntryTextPre .. locVars.lTextMark[markId],
-                    callback = function() FCOIS.MarkMe(rowControl, markId, refreshList, false, refreshPopupDialog) end,
+                    callback = function() markMe(rowControl, markId, refreshList, false, refreshPopupDialog) end,
                     myfont          = myFont,
                     normalColor     = colDef,
                     highlightColor  = colDef,
                     tooltip         = function(control, inside)
-                        local data=FCOIS.CheckBuildAndAddCustomMenuTooltip(tooltipAlign, contextMenuSubMenuEntryTextPre .. locVars.lTextMark[markId] .. "\n" .. tooltipText)
-                        FCOIS.contextMenuEntryTooltipFunc(control, inside, data)
+                        local data=checkBuildAndAddCustomMenuTooltip(tooltipAlign, contextMenuSubMenuEntryTextPre .. locVars.lTextMark[markId] .. "\n" .. tooltipText)
+                        contextMenuEntryTooltipFunc(control, inside, data)
                     end,
                 }
             else
@@ -812,22 +1047,22 @@ end
                 if isDynamic and useDynSubMenu then
                     newDynSubEntry = {
                         label = contextMenuSubMenuEntryTextPre .. locVars.lTextMark[markId],
-                        callback = function() FCOIS.MarkMe(rowControl, markId, refreshList, false, refreshPopupDialog) end,
+                        callback = function() markMe(rowControl, markId, refreshList, false, refreshPopupDialog) end,
                         myfont          = myFont,
                         normalColor     = colDef,
                         highlightColor  = colDef,
                         tooltip         = function(control, inside)
-                            local data=FCOIS.CheckBuildAndAddCustomMenuTooltip(tooltipAlign, contextMenuSubMenuEntryTextPre .. locVars.lTextMark[markId] .. "\n" .. tooltipText)
-                            FCOIS.contextMenuEntryTooltipFunc(control, inside, data)
+                            local data=checkBuildAndAddCustomMenuTooltip(tooltipAlign, contextMenuSubMenuEntryTextPre .. locVars.lTextMark[markId] .. "\n" .. tooltipText)
+                            contextMenuEntryTooltipFunc(control, inside, data)
                         end,
                     }
                 else
-                    --AddMenuItem(contextMenuEntryTextPre .. locVars.lTextMark[markId], function() FCOIS.MarkMe(rowControl, markId, refreshList, false, refreshPopupDialog) end, MENU_ADD_OPTION_LABEL)
-                    newAddedMenuIndex = AddCustomMenuItem(contextMenuEntryTextPre .. locVars.lTextMark[markId], function() FCOIS.MarkMe(rowControl, markId, refreshList, false, refreshPopupDialog) end, MENU_ADD_OPTION_LABEL, myFont, colDef, colDef, nil, nil)
+                    --AddMenuItem(contextMenuEntryTextPre .. locVars.lTextMark[markId], function() markMe(rowControl, markId, refreshList, false, refreshPopupDialog) end, MENU_ADD_OPTION_LABEL)
+                    newAddedMenuIndex = AddCustomMenuItem(contextMenuEntryTextPre .. locVars.lTextMark[markId], function() markMe(rowControl, markId, refreshList, false, refreshPopupDialog) end, MENU_ADD_OPTION_LABEL, myFont, colDef, colDef, nil, nil)
                     if tooltipText and tooltipText ~= "" then
                         AddCustomMenuTooltip(function(control, inside)
-                            local data=FCOIS.CheckBuildAndAddCustomMenuTooltip(tooltipAlign, contextMenuEntryTextPre .. locVars.lTextMark[markId] .. "\n" .. tooltipText)
-                            FCOIS.contextMenuEntryTooltipFunc(control, inside, data) end,
+                            local data=checkBuildAndAddCustomMenuTooltip(tooltipAlign, contextMenuEntryTextPre .. locVars.lTextMark[markId] .. "\n" .. tooltipText)
+                            contextMenuEntryTooltipFunc(control, inside, data) end,
                                 newAddedMenuIndex)
                     end
                 end
@@ -837,52 +1072,52 @@ end
                 if settings.useContextMenuCustomMarkedNormalColor then
                     newSubEntry = {
                         label = contextMenuSubMenuEntryTextPre .. locVars.lTextDemark[markId],
-                        callback = function() FCOIS.MarkMe(rowControl, markId, refreshList, true, refreshPopupDialog) end,
+                        callback = function() markMe(rowControl, markId, refreshList, true, refreshPopupDialog) end,
                         myfont = "ZoFontGame",
                         normalColor = ZO_ColorDef:New(settings.contextMenuCustomMarkedNormalColor),
                         myfont          = myFont,
                         highlightColor  = colDef,
                         tooltip         = function(control, inside)
-                            local data=FCOIS.CheckBuildAndAddCustomMenuTooltip(tooltipAlign, contextMenuSubMenuEntryTextPre .. locVars.lTextDemark[markId] .. "\n" .. tooltipText)
-                            FCOIS.contextMenuEntryTooltipFunc(control, inside, data)
+                            local data=checkBuildAndAddCustomMenuTooltip(tooltipAlign, contextMenuSubMenuEntryTextPre .. locVars.lTextDemark[markId] .. "\n" .. tooltipText)
+                            contextMenuEntryTooltipFunc(control, inside, data)
                         end,
                     }
                 else
                     newSubEntry = {
                         label = contextMenuSubMenuEntryTextPre .. locVars.lTextDemark[markId],
-                        callback = function() FCOIS.MarkMe(rowControl, markId, refreshList, true, refreshPopupDialog) end,
+                        callback = function() markMe(rowControl, markId, refreshList, true, refreshPopupDialog) end,
                         myfont          = myFont,
                         normalColor     = colDef,
                         highlightColor  = colDef,
                         tooltip         = function(control, inside)
-                            local data=FCOIS.CheckBuildAndAddCustomMenuTooltip(tooltipAlign, contextMenuSubMenuEntryTextPre .. locVars.lTextDemark[markId] .. "\n" .. tooltipText)
-                            FCOIS.contextMenuEntryTooltipFunc(control, inside, data)
+                            local data=checkBuildAndAddCustomMenuTooltip(tooltipAlign, contextMenuSubMenuEntryTextPre .. locVars.lTextDemark[markId] .. "\n" .. tooltipText)
+                            contextMenuEntryTooltipFunc(control, inside, data)
                         end,
                     }
                 end
             else
-                --AddMenuItem(locVars.lTextDemark[markId], function() FCOIS.MarkMe(rowControl, markId, refreshList, true, refreshPopupDialog) end, MENU_ADD_OPTION_LABEL)
+                --AddMenuItem(locVars.lTextDemark[markId], function() markMe(rowControl, markId, refreshList, true, refreshPopupDialog) end, MENU_ADD_OPTION_LABEL)
                 if settings.useContextMenuCustomMarkedNormalColor then
                     --use the submenu for the dynamic icons?
                     if isDynamic and useDynSubMenu then
                         newDynSubEntry = {
                             label = contextMenuSubMenuEntryTextPre .. locVars.lTextDemark[markId],
-                            callback = function() FCOIS.MarkMe(rowControl, markId, refreshList, true, refreshPopupDialog) end,
+                            callback = function() markMe(rowControl, markId, refreshList, true, refreshPopupDialog) end,
                             myfont = "ZoFontGame",
                             normalColor = ZO_ColorDef:New(settings.contextMenuCustomMarkedNormalColor),
                             myfont          = myFont,
                             highlightColor  = colDef,
                             tooltip         = function(control, inside)
-                                local data=FCOIS.CheckBuildAndAddCustomMenuTooltip(tooltipAlign, contextMenuSubMenuEntryTextPre .. locVars.lTextDemark[markId] .. "\n" .. tooltipText)
-                                FCOIS.contextMenuEntryTooltipFunc(control, inside, data)
+                                local data=checkBuildAndAddCustomMenuTooltip(tooltipAlign, contextMenuSubMenuEntryTextPre .. locVars.lTextDemark[markId] .. "\n" .. tooltipText)
+                                contextMenuEntryTooltipFunc(control, inside, data)
                             end,
                         }
                     else
-                        newAddedMenuIndex = AddCustomMenuItem(contextMenuEntryTextPre .. locVars.lTextDemark[markId], function() FCOIS.MarkMe(rowControl, markId, refreshList, true, refreshPopupDialog) end, MENU_ADD_OPTION_LABEL, myFont, ZO_ColorDef:New(settings.contextMenuCustomMarkedNormalColor), colDef, nil, nil)
+                        newAddedMenuIndex = AddCustomMenuItem(contextMenuEntryTextPre .. locVars.lTextDemark[markId], function() markMe(rowControl, markId, refreshList, true, refreshPopupDialog) end, MENU_ADD_OPTION_LABEL, myFont, ZO_ColorDef:New(settings.contextMenuCustomMarkedNormalColor), colDef, nil, nil)
                         if tooltipText and tooltipText ~= "" then
                             AddCustomMenuTooltip(function(control, inside)
-                                local data=FCOIS.CheckBuildAndAddCustomMenuTooltip(tooltipAlign, contextMenuEntryTextPre .. locVars.lTextDemark[markId] .. "\n" .. tooltipText)
-                                FCOIS.contextMenuEntryTooltipFunc(control, inside, data) end,
+                                local data=checkBuildAndAddCustomMenuTooltip(tooltipAlign, contextMenuEntryTextPre .. locVars.lTextDemark[markId] .. "\n" .. tooltipText)
+                                contextMenuEntryTooltipFunc(control, inside, data) end,
                                     newAddedMenuIndex)
                         end
                     end
@@ -891,21 +1126,21 @@ end
                     if isDynamic and useDynSubMenu then
                         newDynSubEntry = {
                             label = contextMenuSubMenuEntryTextPre .. locVars.lTextDemark[markId],
-                            callback = function() FCOIS.MarkMe(rowControl, markId, refreshList, true, refreshPopupDialog) end,
+                            callback = function() markMe(rowControl, markId, refreshList, true, refreshPopupDialog) end,
                             myfont          = myFont,
                             normalColor     = colDef,
                             highlightColor  = colDef,
                             tooltip         = function(control, inside)
-                                local data=FCOIS.CheckBuildAndAddCustomMenuTooltip(tooltipAlign, contextMenuSubMenuEntryTextPre .. locVars.lTextDemark[markId] .. "\n" .. tooltipText)
-                                FCOIS.contextMenuEntryTooltipFunc(control, inside, data)
+                                local data=checkBuildAndAddCustomMenuTooltip(tooltipAlign, contextMenuSubMenuEntryTextPre .. locVars.lTextDemark[markId] .. "\n" .. tooltipText)
+                                contextMenuEntryTooltipFunc(control, inside, data)
                             end,
                         }
                     else
-                        newAddedMenuIndex = AddCustomMenuItem(contextMenuEntryTextPre .. locVars.lTextDemark[markId], function() FCOIS.MarkMe(rowControl, markId, refreshList, true, refreshPopupDialog) end, MENU_ADD_OPTION_LABEL, myFont, colDef, colDef, nil, nil)
+                        newAddedMenuIndex = AddCustomMenuItem(contextMenuEntryTextPre .. locVars.lTextDemark[markId], function() markMe(rowControl, markId, refreshList, true, refreshPopupDialog) end, MENU_ADD_OPTION_LABEL, myFont, colDef, colDef, nil, nil)
                         if tooltipText and tooltipText ~= "" then
                             AddCustomMenuTooltip(function(control, inside)
-                                local data=FCOIS.CheckBuildAndAddCustomMenuTooltip(tooltipAlign, contextMenuEntryTextPre .. locVars.lTextDemark[markId] .. "\n" .. tooltipText)
-                                FCOIS.contextMenuEntryTooltipFunc(control, inside, data) end,
+                                local data=checkBuildAndAddCustomMenuTooltip(tooltipAlign, contextMenuEntryTextPre .. locVars.lTextDemark[markId] .. "\n" .. tooltipText)
+                                contextMenuEntryTooltipFunc(control, inside, data) end,
                                     newAddedMenuIndex)
                         end
                     end
@@ -951,227 +1186,6 @@ end
             end
         end
     end
-end
-
---The "onClicked" callback function for the right click/context menus to (un)mark an item
---> Called from file FCOIS_ContextMenu.lua, function "FCOIS.AddMark"
-function FCOIS.MarkMe(rowControl, markId, updateNow, doUnmark, refreshPopupDialog)
---d("[FCOIS]MarkMe - refreshPopupDialog: " ..tostring(refreshPopupDialog))
-    local doAbort = false
-    local isNotInHouseAndBagIsHouseBankBag = false
-    local itemLink
-    local itemInstanceOrUniqueId
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[MarkMe]","markId: " .. tostring(markId) .. ", updateNow: " .. tostring(updateNow) .. ", doUnmark: " .. tostring(doUnmark) .. ", refreshPopupDialog: " .. tostring(refreshPopupDialog), FCOIS_DEBUG_DEPTH_ALL) end
-    if FCOIS.gFilterWhere == nil then return end
-    --Set the last used filter Id at the current panel
-    local iconToFilter = FCOIS.mappingVars.iconToFilter
-    FCOIS.lastVars.gLastFilterId[FCOIS.gFilterWhere] = iconToFilter[markId]
-
-    --Reset the IIfA clicked variables
-    local IIfAclickedData
-    FCOIS.IIfAclicked = nil
-	FCOIS.IIfAmouseOvered = nil
-    --Get the rows bagId and slotIndex
-    local iifaItemLink, itemInstanceOrUniqueIdIIfA, bagIdIIfA, slotIndexIIfA, charsTableIIfA, inThisOtherBagsTableIIfA = FCOIS.checkAndGetIIfAData(rowControl, rowControl:GetParent())
-    if itemInstanceOrUniqueIdIIfA ~= nil or (bagIdIIfA ~= nil and slotIndexIIfA ~= nil) then
---d("[FCOIS.MarkMe] IIfA clicked")
-        FCOIS.IIfAclicked = {}
-        FCOIS.IIfAclicked.itemInstanceOrUniqueId = itemInstanceOrUniqueIdIIfA
-        FCOIS.IIfAclicked.itemLink = iifaItemLink
-        FCOIS.IIfAclicked.bagId = bagIdIIfA
-        FCOIS.IIfAclicked.slotIndex = slotIndexIIfA
-        FCOIS.IIfAclicked.ownedByChars = charsTableIIfA
-        FCOIS.IIfAclicked.inThisOtherBags = inThisOtherBagsTableIIfA
-        --House bank bag?
-        if IsHouseBankBag(bagIdIIfA) then
-            --Not the owner of the house we are in or not in a house? Reset the bagid and slotIndex now!
-            isNotInHouseAndBagIsHouseBankBag = not checkIfHouseBankBagAndInOwnHouse(bagIdIIfA)
-        end
-        --House bank bag but not in any house/not owner of the house we are in! -> Reset the bagId and slotIndex
-        if isNotInHouseAndBagIsHouseBankBag then
---d(">house bank bag but not in any house/not owner of the house we are in!")
-            FCOIS.IIfAclicked.bagId = nil
-            FCOIS.IIfAclicked.slotIndex = nil
-        end
-        IIfAclickedData = FCOIS.IIfAclicked
-    end
-    local bagId, slotIndex = myGetItemDetails(rowControl) -- will internally take bag and slot from IIfAclicked table, if this data is given!
-    --Bag and slotIndex are given, or is the bag a house bank and we are not in a house or not the owner of the house?
-    if bagId == nil or slotIndex == nil then
---d(">no bag and slotIndex")
-        --The addon Inventory Insight provided some data like the itemInstaceOrUniqueId from a right clicked row e.g.
-        if IIfAclickedData ~= nil then
-            if IIfAclickedData.itemInstanceOrUniqueId ~= nil then
---d(">itemInstanceOrUniqueId found")
-                itemInstanceOrUniqueId = IIfAclickedData.itemInstanceOrUniqueId
-                itemLink = IIfAclickedData.itemLink
-            end
-        end
-    end
-
-    --Is the marker icon Id given and we should got on?
-    if markId ~= nil and doAbort == false then
---itemLink = GetItemLink(bagId, slotIndex)
---d("[FCOIS]MarkMe -  name: " .. rowControl:GetName() .. ", markId: " .. tostring(markId) .. ", doUnmark: " .. tostring(doUnmark) .. " [" .. itemLink .. "]")
-
-        --bagId and slotIndex are given (for currently logged in character or craftbag)
-        if bagId ~= nil and slotIndex ~= nil then
---d(">bagId and slotIndex: mark")
-            --Unmark the item?
-            if doUnmark == true then
-                --UnMark the item now, and do not update inventory afterwards as it will be done further downwards!
-                FCOIS.preventerVars.markerIconChangedManually = true
-                FCOIS.MarkItem(bagId, slotIndex, markId, false, false)
-
-            --Mark the item
-            else
-                --Check if all markers should be removed prior to setting a new marker.
-                --Then set the new marker
-                --and do not update the inventory afterwards as it will be done further downwards!
-                FCOIS.preventerVars.markerIconChangedManually = true
-                FCOIS.MarkItem(bagId, slotIndex, markId, true, false)
-                --Are we marking an item inside a popup dialog, e.g. research or repair or enchant item?
-                if not refreshPopupDialog then
-                    --Is the item protected at a craft station, or the guild store sell tab, or marked as junk now?
-                    isItemProtectedAtASlotNow(bagId, slotIndex, false, true)
-                end
-                --Check if the item mark removed other marks and if a row within another addon (like Inventory Insight) needs to be updated
-                FCOIS.checkIfInventoryRowOfExternalAddonNeedsMarkerIconsUpdate(rowControl, markId)
-                --Check if the item got an entry in FCOIS.lastMarkedIcons (filled within file src/FCOIS_MarkerIcons.lua, function FCOIS.ClearOrRestoreAllMarkers...))
-                --and remove this entry now in order to be able to build a new entry properly via SHIFT + right mouse button
-                FCOIS.checkAndClearLastMarkedIcons(bagId, slotIndex)
-            end --if mark item ...
-
-        --ItemInstanceOrUniqueId is given (for not logged in character or guild or house bank)
-        elseif itemInstanceOrUniqueId ~= nil then
---d(">itemInstanceOrUniqueId: mark")
-            --Unmark the item?
-            if doUnmark == true then
-                --UnMark the item now, and do not update inventory afterwards as the item is marked for a non-logged in character e.g.
-                FCOIS.preventerVars.markerIconChangedManually = true
-                FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, markId, false, itemLink)
-
-            --Mark the item
-            else
-                --Check if all markers should be removed prior to setting a new marker.
-                --Then set the new marker
-                --and do not update the inventory afterwards as as the item is marked for a non-logged in character e.g.
-                FCOIS.preventerVars.markerIconChangedManually = true
-                FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, markId, true, itemLink)
-                --Check if the item mark removed other marks and if a row within another addon (like Inventory Insight) needs to be updated
-                FCOIS.checkIfInventoryRowOfExternalAddonNeedsMarkerIconsUpdate(rowControl, markId)
-            end --if mark item ...
-
-
-        --Bag/slotIndex and itemInstanceOrUniqueId arte missing -> ABORT!
-        else
---d("<<<ABORT: mark")
-            doAbort = true
-        end
-
-        --Should we go on with further checks and marker control changes?
-        if doAbort == false then
-            --Show/Hide the marker control for the texture but only if not an IIfA entry was clicked
-            local controlNameAddition = ""
-            if FCOIS.IIfAclicked ~= nil then
-                --Add the IIfA texture name part now -> See file AddOns/IIfA/plugins/FCOIS/IIfA_FCOIS.lua
-                if FCOIS_IIfA_TEXTURE_CONTROL_NAME ~= nil then
-                    controlNameAddition = FCOIS_IIfA_TEXTURE_CONTROL_NAME
-                end
-            end
-            --Get the texture's control for the markId and hide/show it now
-            getItemSaverControl(rowControl, markId, true, controlNameAddition):SetHidden(doUnmark)
-            --Update the inventories now?
-            if (updateNow == true) then
-                --Inventory Insight from Ashes update of clicked row needed?
-                if FCOIS.IIfAclicked ~= nil then
-                    --The function FCOIS.GetItemSaverControl above already determined the IIfA texture control and set the visible state accordingly
-                    --for the changed marker icon.
-                    --Update the texture for the control now:
-                    --Show the FCOIS marker icons at the line, if enabled in the settings (create them if needed)  -> File AddOns/IIfA/plugins/FCOIS/IIfA_FCOIS.lua
-                    if IIfA ~= nil and IIfA.UpdateFCOISMarkerIcons ~= nil then
-                        local showFCOISMarkerIcons = IIfA:GetSettings().FCOISshowMarkerIcons
-                        IIfA:UpdateFCOISMarkerIcons(rowControl, showFCOISMarkerIcons, showFCOISMarkerIcons, markId)
-
-                        --Now check if the inventory or character screen etc. are visible too (together with the IIfA inventory frame) and refresh these panels
-                        --then too!
-                        --Bag of clicked IIfA row is still given? This means the read data is from the currently logged in char, a craftbag item or a bank item.
-                        --All other items are determined via the itemInstanceId as the bagId and slotIndex are ONLY build as the character of the item is logged in!!!
-                        if FCOIS.IIfAclicked.bagId ~= nil then
-                            --Character bag?
-                            if FCOIS.IIfAclicked.bagId == BAG_WORN then
-                                if FCOIS.IIfAclicked.slotIndex ~= nil then
-                                    local ownedByLoggedInChar = false
-                                    --Check if the clicked row's item is from the currently logged in char
-                                    if FCOIS.IIfAclicked.ownedByChars ~= nil then
-                                        --Get the current char's unique ID and check if it's in the "worn by chars" table from the IIfA savedvars for this curently clicked item
-                                        if FCOIS.loggedInCharUniqueId == nil or FCOIS.loggedInCharUniqueId == "" then
-                                            FCOIS.loggedInCharUniqueId = getCurrentlyLoggedInCharUniqueId()
-                                        end
-                                        ownedByLoggedInChar = FCOIS.IIfAclicked.ownedByChars[FCOIS.loggedInCharUniqueId] or false
-                                    end
-                                    --Yes it is owned by the currently logged in char
-                                    if ownedByLoggedInChar then
-                                        --Refresh character's equipment slot of the clicked item
-                                        --Get the equipmentslot by the help of the slotIndex
-                                        local slotIndexToEquiptmentSlotControlName = FCOIS.mappingVars.characterEquipmentSlotNameByIndex
-                                        local equipmentSlotName = slotIndexToEquiptmentSlotControlName[FCOIS.IIfAclicked.slotIndex] or ""
-                                        if equipmentSlotName ~= "" then
-                                            local equipmentSlot = wm:GetControlByName(equipmentSlotName, "")
-                                            if equipmentSlot ~= nil then
-                                                --FCOIS.RefreshEquipmentControl(equipmentControl, doCreateMarkerControl, p_markId, dontCheckRings)
-                                                FCOIS.RefreshEquipmentControl(equipmentSlot, not doUnmark, markId)
-                                            end
-                                        end
-                                    end
-                                end
-                                --Inventory bag?
-                            elseif FCOIS.IIfAclicked.bagId == BAG_BACKPACK
-                                --Bank bag?
-                                or (FCOIS.IIfAclicked.bagId == BAG_BANK or FCOIS.IIfAclicked.bagId == BAG_SUBSCRIBER_BANK)
-                                --Guild bank bag?
-                                or FCOIS.IIfAclicked.bagId == BAG_GUILDBANK
-                                --House bank bag?
-                                or IsHouseBankBag(FCOIS.IIfAclicked.bagId)
-                                --CraftBag bag?
-                                or FCOIS.IIfAclicked.bagId == BAG_VIRTUAL
-                            then
-                                --Update the marker icons at the relevant bag's inventory list
-                                filterBasics(false)
-                            end
-                        end
-                    end
-                else
-                    --Inventories or character equipment?
-                    local parent = rowControl:GetParent()
-                    if parent == ctrlVars.CHARACTER or parent == ctrlVars.COMPANION_CHARACTER then
-                        FCOIS.RefreshEquipmentControl(rowControl, not doUnmark, markId)
-                    --elseif parent:GetParent() == ctrlVars.QUICKSLOT_LIST then
-                        --filterBasics(false)
-                    else
-                        filterBasics(false)
-                    end
-                    checkIfCharOrInvNeedsRingUpdate(bagId, slotIndex, parent, not doUnmark, markId)
-                end
-            else
-                --Refresh the ZO_ListDialog1 popup now after right click/context menu was used?
-                if refreshPopupDialog then
-                    --Is the research dialog shown?
-                    --[[
-                    if isResearchListDialogShown() then
-                        refreshListDialog(SMITHING_RESEARCH_SELECT)
-                    end
-                    ]]
-                    --Refresh the ZO_ListDialog1 buttons
-                    refreshPopupDialogButtons(rowControl, false)
-                end
-            end
-        end -- doAbort
-    end
-    --Reset the IIfAclicked table again
-    FCOIS.IIfAclicked = nil
-    --Reset the variable for external addons, so marker icons won't be added automatically again (e.g. AlphaGear)
-    FCOIS.preventerVars.markerIconChangedManually = false
 end
 
 --Function to update the localized strings for the right-click context menu entries in the slotActions
@@ -1277,7 +1291,7 @@ end
 -- Change the inventories item right click menu texts to the chosen settings value
 function FCOIS.ChangeContextMenuEntryTexts(iconId)
     local settings = FCOIS.settingsVars.settings
-    if settings.debug then FCOIS.debugMessage( "[changeContextMenuEntryTexts]","iconId: " .. tostring(iconId), true, FCOIS_DEBUG_DEPTH_ALL) end
+    if settings.debug then debugMessage( "[changeContextMenuEntryTexts]","iconId: " .. tostring(iconId), true, FCOIS_DEBUG_DEPTH_ALL) end
     local locContEntries = FCOIS.localizationVars.contextEntries
     if locContEntries == nil then return false end
     --d("[FCOIS] FCOIS.changeContextMenuEntryTexts - iconId: " .. tostring(iconId))
@@ -1380,7 +1394,7 @@ local changeContextMenuEntryTexts = FCOIS.ChangeContextMenuEntryTexts
 function FCOIS.ResetUserContextMenuSortOrder()
 --d("[FCOIS]resetUserContextMenuSortOrder")
     local settings = FCOIS.settingsVars.settings
-    if settings.debug then FCOIS.debugMessage( "[resetUserContextMenuSortOrder]", "executed", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+    if settings.debug then debugMessage( "[resetUserContextMenuSortOrder]", "executed", true, FCOIS_DEBUG_DEPTH_NORMAL) end
     local defaults = FCOIS.settingsVars.defaults
     local retVar = false
     --For each icon get the default sort order and reset it so the LAM dropdown boxes show the standard sort order again
@@ -1549,7 +1563,7 @@ local function ContextMenuFCOISFilterButtonOnClicked(button, contextMenuType, ic
     local ctmVars = FCOIS.ctmVars[contextMenuType]
     ctmVars.lastIcon[filterPanelId] = iconId
 
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[ContextMenuFilterButtonOnClicked]","ContextMenuType: " .. contextMenuType .. ", clicked button: " .. button:GetName() .. ", IconId: " .. tostring(iconId) .. ", filterPanelId: " .. tostring(filterPanelId), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+    if FCOIS.settingsVars.settings.debug then debugMessage( "[ContextMenuFilterButtonOnClicked]","ContextMenuType: " .. contextMenuType .. ", clicked button: " .. button:GetName() .. ", IconId: " .. tostring(iconId) .. ", filterPanelId: " .. tostring(filterPanelId), true, FCOIS_DEBUG_DEPTH_NORMAL) end
 --d("[FCOIS]ContextMenuFilterButtonOnClicked - ContextMenuType: " .. contextMenuType .. ", clicked button: " .. button:GetName() .. ", buttonNr: " .. tostring(buttonNr) ..", IconId: " .. tostring(iconId) .. ", filterPanelId: " .. tostring(filterPanelId))
     if iconId ~= nil then
         --Update the last filter ID (determined by the used icon) for the correct inventory refresh
@@ -1696,7 +1710,7 @@ function FCOIS.ShowContextMenuAtFCOISFilterButton(parentButton, p_FilterPanelId,
     p_FilterPanelId = p_FilterPanelId or FCOIS.gFilterWhere
     if parentButton == nil or p_FilterPanelId == nil or p_FilterPanelId == 0 then return end
 
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[showContextMenuFilterButton]","Parent name: " .. parentButton:GetName() .. ", Type: " .. contextMenuType .. ", PanelId: " .. FCOIS.gFilterWhere, true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+    if FCOIS.settingsVars.settings.debug then debugMessage( "[showContextMenuFilterButton]","Parent name: " .. parentButton:GetName() .. ", Type: " .. contextMenuType .. ", PanelId: " .. FCOIS.gFilterWhere, true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
 --d("[FCOIS.showContextMenuFilterButton] Parent name: " .. parentButton:GetName() .. ", Type: " .. contextMenuType .. ", PanelId: " .. FCOIS.gFilterWhere)
 --d("[FCOIS]showContextMenuAtFCOISFilterButton - panelId: " ..tostring(p_FilterPanelId))
 
@@ -1991,7 +2005,7 @@ function FCOIS.GetContextMenuAntiSettingsTextAndState(p_filterWhere, buildText)
     local filterPanelToCheck = p_filterWhere
 
     local settings = FCOIS.settingsVars.settings
-    if settings.debug then FCOIS.debugMessage( "[getContextMenuAntiSettingsTextAndState]","PanelId: " .. p_filterWhere .. ", BuildText: " .. tostring(buildText), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+    if settings.debug then debugMessage( "[getContextMenuAntiSettingsTextAndState]","PanelId: " .. p_filterWhere .. ", BuildText: " .. tostring(buildText), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
 
     --Update the Anti-* settings for the panel
     -->TODO 2021--06-23:
@@ -2176,7 +2190,7 @@ end
 --Change the context menu invoker button's color by help of the current panel ID
 function FCOIS.ChangeContextMenuInvokerButtonColorByPanelId(panelId)
     panelId = panelId or FCOIS.gFilterWhere
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[changeContextMenuInvokerButtonColorByPanelId]","PanelId: " .. panelId, true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+    if FCOIS.settingsVars.settings.debug then debugMessage( "[changeContextMenuInvokerButtonColorByPanelId]","PanelId: " .. panelId, true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
     if not panelId or panelId == 0 then return false end
     --Change the color of the context menu invoker button now
     --First see if the setitngs for the given panel are enabled or not
@@ -2192,7 +2206,7 @@ function FCOIS.ChangeContextMenuInvokerButtonColorByPanelId(panelId)
 end
 
 --The context menu OnClicked callback function for the additional inventory flag context menu buttons/entries
-local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, specialButtonType, panelId)
+local function contextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, specialButtonType, panelId)
 --d("[FCOIS]ContextMenuForAddInvButtonsOnClicked - buttonCtrl: " .. tostring(buttonCtrl:GetName())  .. ", iconId: " .. tostring(iconId)  .. ", doMark: " .. tostring(doMark)  .. ", specialButtonType: " .. tostring(specialButtonType) ..", panelId: " ..tostring(panelId))
     --Table for the allowed special button types, if iconId = nil and doMark = nil
     local settings = FCOIS.settingsVars.settings
@@ -2336,7 +2350,7 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
         else
             if specialButtonType == nil then return end
         end
-        if settings.debug then FCOIS.debugMessage( "[ContextMenuForAddInvButtonsOnClicked]", "Clicked "..contextmenuType.." context menu button, IconId: " .. tostring(iconId) .. ", Mark: " .. tostring(doMark) ..", specialButtonType: " .. tostring(specialButtonType), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        if settings.debug then debugMessage( "[ContextMenuForAddInvButtonsOnClicked]", "Clicked "..contextmenuType.." context menu button, IconId: " .. tostring(iconId) .. ", Mark: " .. tostring(doMark) ..", specialButtonType: " .. tostring(specialButtonType), true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
         --Check all "currently shown -> non filtered!" items in the given inventory
         if (iconId ~= nil and doMark ~= nil) or (specialButtonType ~= nil and allowedSpecialButtonTypes[specialButtonType].allowed) then
@@ -2509,7 +2523,7 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
         --UNDO
         if isUNDOButton then
             --Undo the last change at this panel Id
-            if settings.debug then FCOIS.debugMessage( "[ContextMenuForAddInvButtonsOnClicked]", "Clicked "..contextmenuType.." context menu button. Will undo last change at panel " .. tostring(panelId) .. " now!", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+            if settings.debug then debugMessage( "[ContextMenuForAddInvButtonsOnClicked]", "Clicked "..contextmenuType.." context menu button. Will undo last change at panel " .. tostring(panelId) .. " now!", true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
             atLeastOneMarkerChanged = false
             --local undoEntry
@@ -2545,7 +2559,7 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
         --REMOVE ALL GEARS
         elseif isREMOVEALLGEARSButton then
 
-            if settings.debug then FCOIS.debugMessage( "[ContextMenuForAddInvButtonsOnClicked]", "Clicked "..contextmenuType.." context menu button, Remove ALL GEARS", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+            if settings.debug then debugMessage( "[ContextMenuForAddInvButtonsOnClicked]", "Clicked "..contextmenuType.." context menu button, Remove ALL GEARS", true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
             --Get the current inventorytype
             --local inventoryType = mappingVars.InvToInventoryType[panelId]
@@ -2625,7 +2639,7 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
         --REMOVE ALL
         elseif isREMOVEALLButton then
 
-            if settings.debug then FCOIS.debugMessage( "[ContextMenuForAddInvButtonsOnClicked]", "Clicked "..contextmenuType.." context menu button, Remove ALL", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+            if settings.debug then debugMessage( "[ContextMenuForAddInvButtonsOnClicked]", "Clicked "..contextmenuType.." context menu button, Remove ALL", true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
             --Get the current inventorytype
             --local inventoryType = mappingVars.InvToInventoryType[panelId]
@@ -2689,7 +2703,7 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
         -- TOGGLEANTISETTINGS
         elseif isTOGGLEANTISETTINGSButton then
 
-            if settings.debug then FCOIS.debugMessage( "[ContextMenuForAddInvButtonsOnClicked]", "Clicked "..contextmenuType.." context menu button, TOGGLE ANTI SETTINGS", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+            if settings.debug then debugMessage( "[ContextMenuForAddInvButtonsOnClicked]", "Clicked "..contextmenuType.." context menu button, TOGGLE ANTI SETTINGS", true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
             --Invert the active anti-setting (false->true / true->false)
             local isSettingEnabledNew = changeAntiSettingsAccordingToFilterPanel()
@@ -2754,7 +2768,7 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                                 end
                                 --Check all icon Ids, if item is protected (only if item should be marked as junk! Not neccessary if item should be removed from junk)
                                 if not isProtectedWithIcon then
-                                    if settings.debug then FCOIS.debugMessage( "[ContextMenuForAddInvButtonsOnClicked]", "Clicked "..contextmenuType.." context menu button, MARK ALL AS JUNK", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+                                    if settings.debug then debugMessage( "[ContextMenuForAddInvButtonsOnClicked]", "Clicked "..contextmenuType.." context menu button, MARK ALL AS JUNK", true, FCOIS_DEBUG_DEPTH_NORMAL) end
                                     setItemIsJunk(bagId, slotIndex, true)
                                 end
                                 --UnMark all junk items
@@ -2779,7 +2793,7 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                                     end
                                 end
                                 if not isProtectedWithIcon then
-                                    if settings.debug then FCOIS.debugMessage( "[ContextMenuForAddInvButtonsOnClicked]", "Clicked "..contextmenuType.." context menu button, REMOVE ALL FROM JUNK", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+                                    if settings.debug then debugMessage( "[ContextMenuForAddInvButtonsOnClicked]", "Clicked "..contextmenuType.." context menu button, REMOVE ALL FROM JUNK", true, FCOIS_DEBUG_DEPTH_NORMAL) end
                                     setItemIsJunk(bagId, slotIndex, false)
                                 end
                             end
@@ -2806,7 +2820,7 @@ end
 --Function that is called upon OnMouseUp event on the additional inventory "flag" context menu button's right mouse click to change the protection
 function FCOIS.onContextMenuForAddInvButtonsButtonMouseUp(inventoryAdditionalContextMenuInvokerButton, mouseButton, upInside)
 --d("[FCOIS]onContextMenuForAddInvButtonsButtonMouseUp, invokerButton: " .. tostring(inventoryAdditionalContextMenuInvokerButton:GetName()))
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[onContextMenuForAddInvButtonsButtonMouseUp]","invokerButton: " .. tostring(inventoryAdditionalContextMenuInvokerButton:GetName()) .. ", panelId: " .. tostring(FCOIS.gFilterWhere) .. ", mouseButton: " .. tostring(mouseButton), true, FCOIS_DEBUG_DEPTH_ALL) end
+    if FCOIS.settingsVars.settings.debug then debugMessage( "[onContextMenuForAddInvButtonsButtonMouseUp]","invokerButton: " .. tostring(inventoryAdditionalContextMenuInvokerButton:GetName()) .. ", panelId: " .. tostring(FCOIS.gFilterWhere) .. ", mouseButton: " .. tostring(mouseButton), true, FCOIS_DEBUG_DEPTH_ALL) end
     --Only go on if the context menu is not currently shown
     local menuOwner = GetMenuOwner(inventoryAdditionalContextMenuInvokerButton)
     if (menuOwner == nil or not menuVisibleCheck()) then
@@ -2887,7 +2901,7 @@ function FCOIS.ShowContextMenuForAddInvButtons(invAddContextMenuInvokerButton, b
             end
         end
 
-        if settings.debug then FCOIS.debugMessage( "[showContextMenuForAddInvButtons]","invokerButton: " .. tostring(invAddContextMenuInvokerButton:GetName()) .. ", parentName: " .. tostring(parentName) .. ", panelId: " .. tostring(panelId), true, FCOIS_DEBUG_DEPTH_ALL) end
+        if settings.debug then debugMessage( "[showContextMenuForAddInvButtons]","invokerButton: " .. tostring(invAddContextMenuInvokerButton:GetName()) .. ", parentName: " .. tostring(parentName) .. ", panelId: " .. tostring(panelId), true, FCOIS_DEBUG_DEPTH_ALL) end
 
         --Clear the last context menu entries
         ClearMenu()
@@ -3013,7 +3027,7 @@ function FCOIS.ShowContextMenuForAddInvButtons(invAddContextMenuInvokerButton, b
                         buttonText = locContextEntriesVars.menu_add_all_gear_text[gearNumber]
                         local subMenuEntryGear = {
                             label 		= buttonText,
-                            callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, buttonsIcon, buttonData.mark, nil, panelId) end,
+                            callback 	= function() contextMenuForAddInvButtonsOnClicked(btnCtrl, buttonsIcon, buttonData.mark, nil, panelId) end,
                         }
                         table.insert(subMenuEntriesGear, subMenuEntryGear)
                         gearAdded = true
@@ -3028,7 +3042,7 @@ function FCOIS.ShowContextMenuForAddInvButtons(invAddContextMenuInvokerButton, b
                         buttonText = textPrefix[tostring(buttonData.mark)] .. locContextEntriesVars.menu_add_dynamic_text[dynamicNumber]
                         local subMenuEntryDynamic = {
                             label 		= buttonText,
-                            callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, buttonsIcon, buttonData.mark, nil, panelId) end,
+                            callback 	= function() contextMenuForAddInvButtonsOnClicked(btnCtrl, buttonsIcon, buttonData.mark, nil, panelId) end,
                         }
                         --Are too many dynamic icons enabled to show them in one context menu?
                         if useDynSubMenu then
@@ -3055,7 +3069,7 @@ function FCOIS.ShowContextMenuForAddInvButtons(invAddContextMenuInvokerButton, b
                         buttonText = locContextEntriesVars.menu_remove_all_gear_text[gearNumber]
                         local subMenuEntryGear = {
                             label 		= buttonText,
-                            callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, buttonsIcon, buttonData.mark, nil, panelId) end,
+                            callback 	= function() contextMenuForAddInvButtonsOnClicked(btnCtrl, buttonsIcon, buttonData.mark, nil, panelId) end,
                         }
                         table.insert(subMenuEntriesGear, subMenuEntryGear)
                         gearAdded = true
@@ -3074,7 +3088,7 @@ function FCOIS.ShowContextMenuForAddInvButtons(invAddContextMenuInvokerButton, b
                         buttonText = textPrefix[tostring(buttonData.mark)] .. locContextEntriesVars.menu_remove_dynamic_text[dynamicNumber]
                         local subMenuEntryDynamic = {
                             label 		= buttonText,
-                            callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, buttonsIcon, buttonData.mark, nil, panelId) end,
+                            callback 	= function() contextMenuForAddInvButtonsOnClicked(btnCtrl, buttonsIcon, buttonData.mark, nil, panelId) end,
                         }
                         --Are too many dynamic icons enabled to show them in one context menu?
                         if useDynSubMenu then
@@ -3107,7 +3121,7 @@ function FCOIS.ShowContextMenuForAddInvButtons(invAddContextMenuInvokerButton, b
                 --Add the non gear and non dynamic icons to the normal menu
                 if not isGear and not isDynamic then
                     --Add the entry for the context menu now
-                    AddCustomMenuItem(buttonText, function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, buttonsIcon, buttonData.mark, nil, panelId) end, MENU_ADD_OPTION_LABEL)
+                    AddCustomMenuItem(buttonText, function() contextMenuForAddInvButtonsOnClicked(btnCtrl, buttonsIcon, buttonData.mark, nil, panelId) end, MENU_ADD_OPTION_LABEL)
                     otherAdded = true
                 end
             end -- function addSortedButtonDataTableEntries()
@@ -3130,7 +3144,7 @@ function FCOIS.ShowContextMenuForAddInvButtons(invAddContextMenuInvokerButton, b
         if gearAdded then
             local subMenuEntryGear = {
                 label 		= locVars["button_context_menu_remove_all_gears"],
-                callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "REMOVE_ALL_GEAR", panelId) end,
+                callback 	= function() contextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "REMOVE_ALL_GEAR", panelId) end,
             }
             table.insert(subMenuEntriesGear, subMenuEntryGear)
             --Add the gear submenu
@@ -3156,43 +3170,43 @@ function FCOIS.ShowContextMenuForAddInvButtons(invAddContextMenuInvokerButton, b
             --Unknown set collection items
             subMenuEntryAutomaticMarking = {
                 label 		= locVars["options_enable_auto_mark_unknown_set_collection_items"],
-                callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "setItemCollectionsUnknown", panelId) end,
+                callback 	= function() contextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "setItemCollectionsUnknown", panelId) end,
                 disabled	= function() return not settings.autoMarkSetsItemCollectionBook or (settings.autoMarkSetsItemCollectionBookMissingIcon == FCOIS_CON_ICON_NONE or not settings.isIconEnabled[settings.autoMarkSetsItemCollectionBookMissingIcon] == true) end,
             }
             table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
             --Known set collection items
             subMenuEntryAutomaticMarking = {
                 label 		= locVars["options_enable_auto_mark_known_set_collection_items"],
-                callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "setItemCollectionsKnown", panelId) end,
+                callback 	= function() contextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "setItemCollectionsKnown", panelId) end,
                 disabled	= function() return not settings.autoMarkSetsItemCollectionBook or (settings.autoMarkSetsItemCollectionBookIcon == FCOIS_CON_ICON_NONE or not settings.isIconEnabled[settings.autoMarkSetsItemCollectionBookNonMissingIcon] == true) end,
             }
             table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
             --Sets
             subMenuEntryAutomaticMarking = {
                 label 		= locVars["options_enable_auto_mark_sets"],
-                callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "sets", panelId) end,
+                callback 	= function() contextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "sets", panelId) end,
                 disabled	= function() return not settings.autoMarkSets or not settings.isIconEnabled[settings.autoMarkSetsIconNr] end,
             }
             table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
             --Ornate
             subMenuEntryAutomaticMarking = {
                 label 		= GetString(SI_ITEMTRAITTYPE10),
-                callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "ornate", panelId) end,
+                callback 	= function() contextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "ornate", panelId) end,
                 disabled	= function() return not settings.autoMarkOrnate or not settings.isIconEnabled[FCOIS_CON_ICON_SELL] end,
             }
             table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
             --Intricate
             subMenuEntryAutomaticMarking = {
                 label 		= GetString(SI_ITEMTRAITTYPE9),
-                callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "intricate", panelId) end,
+                callback 	= function() contextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "intricate", panelId) end,
                 disabled	= function() return not settings.autoMarkIntricate or not settings.isIconEnabled[FCOIS_CON_ICON_INTRICATE] end,
             }
             table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
             --Research
             subMenuEntryAutomaticMarking = {
                 label 		= GetString(SI_SMITHING_TAB_RESEARCH),
-                callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "research", panelId) end,
-                disabled	= function() return not settings.autoMarkResearch or not settings.isIconEnabled[FCOIS_CON_ICON_RESEARCH] or (not FCOIS.checkIfResearchAddonUsed() or not FCOIS.checkIfChosenResearchAddonActive(settings.researchAddonUsed)) end,
+                callback 	= function() contextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "research", panelId) end,
+                disabled	= function() return not settings.autoMarkResearch or not settings.isIconEnabled[FCOIS_CON_ICON_RESEARCH] or (not checkIfResearchAddonUsed() or not checkIfChosenResearchAddonActive(settings.researchAddonUsed)) end,
             }
             table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
 
@@ -3200,22 +3214,22 @@ function FCOIS.ShowContextMenuForAddInvButtons(invAddContextMenuInvokerButton, b
                 --Research scrolls
                 subMenuEntryAutomaticMarking = {
                     label 		= GetString(SI_SMITHING_TAB_RESEARCH) .. " " .. GetString(SI_SPECIALIZEDITEMTYPE105),
-                    callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "researchScrolls", panelId) end,
+                    callback 	= function() contextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "researchScrolls", panelId) end,
                     disabled	= function() return ((DetailedResearchScrolls == nil or DetailedResearchScrolls.GetWarningLine == nil) or not settings.autoMarkWastedResearchScrolls or not settings.isIconEnabled[FCOIS_CON_ICON_LOCK]) end,
                 }
                 table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
                 --Unknown recipes
                 subMenuEntryAutomaticMarking = {
                     label 		= GetString(SI_ITEM_FORMAT_STR_UNKNOWN_RECIPE),
-                    callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "recipes", panelId) end,
-                    disabled	= function() return not settings.autoMarkRecipes or not FCOIS.checkIfRecipeAddonUsed() or not settings.isIconEnabled[settings.autoMarkRecipesIconNr] end,
+                    callback 	= function() contextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "recipes", panelId) end,
+                    disabled	= function() return not settings.autoMarkRecipes or not checkIfRecipeAddonUsed() or not settings.isIconEnabled[settings.autoMarkRecipesIconNr] end,
                 }
                 table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
                 --Known recipes
                 subMenuEntryAutomaticMarking = {
                     label 		= zo_strf(GetString(SI_ITEM_FORMAT_STR_KNOWN_ITEM_TYPE), GetString(SI_ITEMTYPE29)),
-                    callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "knownRecipes", panelId) end,
-                    disabled	= function() return not settings.autoMarkKnownRecipes or not FCOIS.checkIfRecipeAddonUsed() or not settings.isIconEnabled[settings.autoMarkKnownRecipesIconNr] end,
+                    callback 	= function() contextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "knownRecipes", panelId) end,
+                    disabled	= function() return not settings.autoMarkKnownRecipes or not checkIfRecipeAddonUsed() or not settings.isIconEnabled[settings.autoMarkKnownRecipesIconNr] end,
                 }
                 table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
             end
@@ -3223,7 +3237,7 @@ function FCOIS.ShowContextMenuForAddInvButtons(invAddContextMenuInvokerButton, b
         --Quality
         subMenuEntryAutomaticMarking = {
             label 		= locVars["options_enable_auto_mark_quality_items"],
-            callback 	= function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "quality", panelId) end,
+            callback 	= function() contextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "quality", panelId) end,
             disabled	= function() return not settings.autoMarkQuality or settings.autoMarkQuality == 1 or not settings.isIconEnabled[settings.autoMarkQualityIconNr] end,
         }
         table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
@@ -3232,7 +3246,7 @@ function FCOIS.ShowContextMenuForAddInvButtons(invAddContextMenuInvokerButton, b
 
         --Context menu button REMOVE ALL
         if gearAdded or dynamicAdded or otherAdded then
-            AddCustomMenuItem("|cFF0000" .. locVars["button_context_menu_demark_all"] .."|r", function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "REMOVE_ALL", panelId) end, MENU_ADD_OPTION_LABEL)
+            AddCustomMenuItem("|cFF0000" .. locVars["button_context_menu_demark_all"] .."|r", function() contextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "REMOVE_ALL", panelId) end, MENU_ADD_OPTION_LABEL)
         end
 
         --Context menu buttons for "Anti-*" settings
@@ -3240,7 +3254,7 @@ function FCOIS.ShowContextMenuForAddInvButtons(invAddContextMenuInvokerButton, b
         local antiButtonText, _ = getContextMenuAntiSettingsTextAndState(panelId, true)
         --d("[FCOIS.showContextMenuForAddInvButtons]panelId: " ..tostring(panelId))
         if antiButtonText ~= nil and antiButtonText ~= "" then
-            AddCustomMenuItem(antiButtonText, function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "ANTI_SETTINGS", panelId) end, MENU_ADD_OPTION_LABEL)
+            AddCustomMenuItem(antiButtonText, function() contextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "ANTI_SETTINGS", panelId) end, MENU_ADD_OPTION_LABEL)
         end
 
         --Context menu "Add all to junk" or "Remove all from junk" (if on the junk tab in inventories) button
@@ -3281,7 +3295,7 @@ function FCOIS.ShowContextMenuForAddInvButtons(invAddContextMenuInvokerButton, b
                             end
                             local myColor
                             myColor = myColorEnabled
-                            AddCustomMenuItem(addAllToJunkButtonText, function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, junkModificator, panelId) end, MENU_ADD_OPTION_LABEL, myFont, myColor)
+                            AddCustomMenuItem(addAllToJunkButtonText, function() contextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, junkModificator, panelId) end, MENU_ADD_OPTION_LABEL, myFont, myColor)
                         end
                     end
                 end
@@ -3298,7 +3312,7 @@ function FCOIS.ShowContextMenuForAddInvButtons(invAddContextMenuInvokerButton, b
         else
             myColor = myColorDisabled
         end
-        AddCustomMenuItem(undoButtonText, function() ContextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "UNDO", panelId) end, MENU_ADD_OPTION_LABEL, myFont, myColor)
+        AddCustomMenuItem(undoButtonText, function() contextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "UNDO", panelId) end, MENU_ADD_OPTION_LABEL, myFont, myColor)
 
         --Show the context menu at the clicked invoker button now
         ShowMenu(invAddContextMenuInvokerButton)
@@ -3358,7 +3372,7 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
     local mouseRightClickDone = self.m_contextMenuMode
     --Hide the inventory button contextMenu if shown and if we right clicked another item
     if mouseRightClickDone == true then
-        if settings.debug then FCOIS.debugMessage( "[AddSlotAction]","Parent: " .. parentName .. ", actionStringId: " .. tostring(actionStringId), true, FCOIS_DEBUG_DEPTH_ALL) end
+        if settings.debug then debugMessage( "[AddSlotAction]","Parent: " .. parentName .. ", actionStringId: " .. tostring(actionStringId), true, FCOIS_DEBUG_DEPTH_ALL) end
         --Hide the context menu at last active panel
         hideContextMenu(FCOIS.gFilterWhere)
 
@@ -3377,7 +3391,7 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
         end
     else
         if isNewSlot then
-            if settings.debug then FCOIS.debugMessage( "[AddSlotAction]",">newSlot! Parent: " .. parentName, true, FCOIS_DEBUG_DEPTH_ALL) end
+            if settings.debug then debugMessage( "[AddSlotAction]",">newSlot! Parent: " .. parentName, true, FCOIS_DEBUG_DEPTH_ALL) end
         end
     end
 

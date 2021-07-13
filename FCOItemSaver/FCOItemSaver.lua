@@ -18,6 +18,7 @@
 -- [Error/bug & feature messages to check - CHANGELOG since last version] --
 ---------------------------------------------------------------------
 --[ToDo list] --
+--Check for local speed ups. FCOItemSaver.txt was checked until src/FCOIS_OtherAddons.lua
 --____________________________
 -- Current max bugs/features/ToDos: 146
 --____________________________
@@ -231,7 +232,7 @@ function FCOIS.FCOItemSaver_CheckGamePadMode(showChatOutputOverride)
     if IsInGamepadPreferredMode() then
         --Gamepad enabled but addon AdvancedDisableControllerUI is enabled and is not showing the gamepad mode for the inventory,
         --but the normal inventory
-        if FCOIS.checkIfADCUIAndIsNotUsingGamepadMode() then
+        if FCOIS.CheckIfADCUIAndIsNotUsingGamepadMode() then
             return false
         else
             if showChatOutputOverride or FCOIS.preventerVars.noGamePadModeSupportTextOutput == false then

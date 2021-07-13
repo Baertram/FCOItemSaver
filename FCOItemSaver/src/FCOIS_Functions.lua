@@ -4,6 +4,8 @@ local FCOIS = FCOIS
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
 
+local debugMessage = FCOIS.debugMessage
+
 local em = EVENT_MANAGER
 local wm = WINDOW_MANAGER
 
@@ -869,7 +871,7 @@ function FCOIS.GetBagAndSlotFromControlUnderMouse()
         else
             --Special treatment for the addon InventoryInsightFromAshes
             controlTypeBelowMouse = IIFAitemsListEntryPrePattern
-            itemLink, itemInstanceOrUniqueIdIIfA, bagId, slotIndex = FCOIS.checkAndGetIIfAData(mouseOverControl, mouseOverControl:GetParent())
+            itemLink, itemInstanceOrUniqueIdIIfA, bagId, slotIndex = FCOIS.CheckAndGetIIfAData(mouseOverControl, mouseOverControl:GetParent())
             if bagId == nil or slotIndex == nil and itemInstanceOrUniqueIdIIfA ~= nil then
                 FCOIS.IIfAmouseOvered = {}
                 FCOIS.IIfAmouseOvered.itemLink = itemLink
@@ -1131,9 +1133,9 @@ end
 function FCOIS.IsRecipeKnown(bagId, slotIndex, expectedResult)
     expectedResult = expectedResult or false
     --Check if any recipe addon is used and available
-    if not FCOIS.checkIfRecipeAddonUsed() then return nil end
+    if not FCOIS.CheckIfRecipeAddonUsed() then return nil end
     --Get the recipe addon used to check for known/unknown state
-    local recipeAddonUsed = FCOIS.getRecipeAddonUsed()
+    local recipeAddonUsed = FCOIS.GetRecipeAddonUsed()
     if recipeAddonUsed == nil or recipeAddonUsed == "" then return nil end
     --Get the itemLink
     local itemLink = GetItemLink(bagId, slotIndex)
@@ -1302,7 +1304,7 @@ function FCOIS.IsRecipeAutoMarkDoable(checkIfSettingToAutoMarkIsEnabled, knownRe
             iconCheck = settings.isIconEnabled[settings.autoMarkRecipesIconNr]
         end
     end
-    local isRecipeAutoMarkPrerequisitesMet = (FCOIS.checkIfRecipeAddonUsed() and FCOIS.checkIfChosenRecipeAddonActive(settings.recipeAddonUsed)) or false
+    local isRecipeAutoMarkPrerequisitesMet = (FCOIS.CheckIfRecipeAddonUsed() and FCOIS.CheckIfChosenRecipeAddonActive(settings.recipeAddonUsed)) or false
 --d(">isRecipeAutoMarkPrerequisitesMet: " ..tostring(isRecipeAutoMarkPrerequisitesMet))
     if doIconCheck and isRecipeAutoMarkPrerequisitesMet then
         isRecipeAutoMarkPrerequisitesMet = (isRecipeAutoMarkPrerequisitesMet and iconCheck) or false
@@ -1981,7 +1983,7 @@ function FCOIS.CheckIfCraftedItemShouldBeMarked(craftSkill, overwrite)
 
     --Writ marking of items takes place in another function from library libLazyCrafting -> See file src/FCOIS_OtherAddons.lua, function FCOIS.checkIfWritItemShouldBeMarked
     --LibLazyCrafting:IsPerformingCraftProcess() --> returns boolean, type of crafting, addon that requested the craft
-    local writCreatedItem, _, _ = FCOIS.checkLazyWritCreatorCraftedItem()
+    local writCreatedItem, _, _ = FCOIS.CheckLazyWritCreatorCraftedItem()
     if writCreatedItem then return false end
 
     local craftingCreatePanel = FCOIS.craftingCreatePanelControlsOrFunction[craftSkill]

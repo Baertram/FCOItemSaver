@@ -4,6 +4,8 @@ local FCOIS = FCOIS
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
 
+local debugMessage = FCOIS.debugMessage
+
 local numFilterIcons = FCOIS.numVars.gFCONumFilterIcons
 local ctrlVars = FCOIS.ZOControlVars
 
@@ -382,6 +384,7 @@ function FCOIS.CheckIfItemIsProtected(iconId, itemId, checkHandler, addonName, s
     return itemIsMarked
 end
 checkIfItemIsProtected = FCOIS.CheckIfItemIsProtected
+FCOIS.checkIfItemIsProtected = checkIfItemIsProtected
 
 
 -- Fired when user selects an item to destroy.

@@ -4,6 +4,8 @@ local FCOIS = FCOIS
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
 
+local debugMessage = FCOIS.debugMessage
+
 local wm = WINDOW_MANAGER
 local cm = CALLBACK_MANAGER
 
@@ -105,6 +107,10 @@ local migrateMarkerIcons = FCOIS.MigrateMarkerIcons
 local copySavedVars = FCOIS.CopySavedVars
 local showConfirmationDialog = FCOIS.ShowConfirmationDialog
 local showRememberUserAboutSavedVariablesBackupDialog = FCOIS.ShowRememberUserAboutSavedVariablesBackupDialog
+local checkIfRecipeAddonUsed = FCOIS.CheckIfRecipeAddonUsed
+local checkIfChosenRecipeAddonActive = FCOIS.CheckIfChosenRecipeAddonActive
+local checkIfResearchAddonUsed = FCOIS.CheckIfResearchAddonUsed
+local checkIfChosenResearchAddonActive = FCOIS.CheckIfChosenResearchAddonActive
 
 local iconsList, iconsListValues
 local iconsListNone, iconsListValuesNone, iconsListRecipe, iconsListValuesRecipe
@@ -2661,7 +2667,7 @@ d("[FCOIS]DEBUG-SettingsMenu 2422- filterPanelId is nil! addInvBtnInvokerData so
         hideItemLinkTooltip()
 
         LAMopenedCounter = LAMopenedCounter + 1
-        FCOIS.checkIfOtherAddonActive()
+        FCOIS.CheckIfOtherAddonActive()
 
         if not panel.controlsWereLoaded == true or not lamPanelCreationInitDone == true then
             if FCOIS_LAM_MENU_IS_LOADING then
@@ -4493,11 +4499,11 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                                     getFunc = function() return FCOISsettings.autoMarkResearch end,
                                     setFunc = function(value)
                                         FCOISsettings.autoMarkResearch = value
-                                        if (FCOISsettings.autoMarkResearch == true and FCOIS.checkIfResearchAddonUsed() and FCOIS.checkIfChosenResearchAddonActive(FCOISsettings.researchAddonUsed)) then
+                                        if (FCOISsettings.autoMarkResearch == true and checkIfResearchAddonUsed() and checkIfChosenResearchAddonActive(FCOISsettings.researchAddonUsed)) then
                                             scanInventoryItemsForAutomaticMarks(nil, nil, "research", false)
                                         end
                                     end,
-                                    disabled = function() return not FCOIS.checkIfResearchAddonUsed() or not FCOIS.checkIfChosenResearchAddonActive(FCOISsettings.researchAddonUsed) or not isIconEnabled[FCOIS_CON_ICON_RESEARCH] end,
+                                    disabled = function() return not checkIfResearchAddonUsed() or not checkIfChosenResearchAddonActive(FCOISsettings.researchAddonUsed) or not isIconEnabled[FCOIS_CON_ICON_RESEARCH] end,
                                     warning = locVars["options_enable_auto_mark_research_items_hint"],
                                     width = "half",
                                     default = FCOISdefaultSettings.autoMarkResearch,
@@ -4509,11 +4515,11 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                                     getFunc = function() return FCOISsettings.autoMarkResearchOnlyLoggedInChar end,
                                     setFunc = function(value)
                                         FCOISsettings.autoMarkResearchOnlyLoggedInChar = value
-                                        if (FCOISsettings.autoMarkResearch == true and FCOISsettings.autoMarkResearchOnlyLoggedInChar == true and FCOIS.checkIfResearchAddonUsed() and FCOIS.checkIfChosenResearchAddonActive(FCOISsettings.researchAddonUsed)) then
+                                        if (FCOISsettings.autoMarkResearch == true and FCOISsettings.autoMarkResearchOnlyLoggedInChar == true and checkIfResearchAddonUsed() and checkIfChosenResearchAddonActive(FCOISsettings.researchAddonUsed)) then
                                             scanInventoryItemsForAutomaticMarks(nil, nil, "research", false)
                                         end
                                     end,
-                                    disabled = function() return not FCOIS.checkIfResearchAddonUsed() or FCOISsettings.researchAddonUsed == FCOIS_RESEARCH_ADDON_ESO_STANDARD or FCOISsettings.researchAddonUsed == FCOIS_RESEARCH_ADDON_RESEARCHASSISTANT or not FCOIS.checkIfChosenResearchAddonActive(FCOISsettings.researchAddonUsed) or not isIconEnabled[FCOIS_CON_ICON_RESEARCH] end,
+                                    disabled = function() return not checkIfResearchAddonUsed() or FCOISsettings.researchAddonUsed == FCOIS_RESEARCH_ADDON_ESO_STANDARD or FCOISsettings.researchAddonUsed == FCOIS_RESEARCH_ADDON_RESEARCHASSISTANT or not checkIfChosenResearchAddonActive(FCOISsettings.researchAddonUsed) or not isIconEnabled[FCOIS_CON_ICON_RESEARCH] end,
                                     warning = locVars["options_enable_auto_mark_research_items_hint_logged_in_char"],
                                     width = "half",
                                     default = FCOISdefaultSettings.autoMarkResearchOnlyLoggedInChar,
@@ -4527,7 +4533,7 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                                         FCOISsettings.autoMarkResearchCheckAllIcons = value
                                     end,
                                     width = "half",
-                                    disabled = function() return not FCOIS.checkIfResearchAddonUsed() or not FCOIS.checkIfChosenResearchAddonActive(FCOISsettings.researchAddonUsed) or not isIconEnabled[FCOIS_CON_ICON_RESEARCH] end,
+                                    disabled = function() return not checkIfResearchAddonUsed() or not checkIfChosenResearchAddonActive(FCOISsettings.researchAddonUsed) or not isIconEnabled[FCOIS_CON_ICON_RESEARCH] end,
                                 },
                                 {
                                     type = "checkbox",
@@ -4537,7 +4543,7 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                                     setFunc = function(value)
                                         FCOISsettings.showResearchItemsInChat = value
                                     end,
-                                    disabled = function() return not FCOIS.checkIfResearchAddonUsed() or not FCOIS.checkIfChosenResearchAddonActive(FCOISsettings.researchAddonUsed) or not isIconEnabled[FCOIS_CON_ICON_RESEARCH] or not FCOISsettings.autoMarkResearch end,
+                                    disabled = function() return not checkIfResearchAddonUsed() or not checkIfChosenResearchAddonActive(FCOISsettings.researchAddonUsed) or not isIconEnabled[FCOIS_CON_ICON_RESEARCH] or not FCOISsettings.autoMarkResearch end,
                                     warning = locVars["options_enable_auto_mark_research_items_hint"],
                                     width = "half",
                                     default = FCOISdefaultSettings.showResearchItemsInChat,
@@ -4591,7 +4597,7 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                                     getFunc = function() return FCOISsettings.autoMarkRecipes end,
                                     setFunc = function(value)
                                         FCOISsettings.autoMarkRecipes = value
-                                        if (FCOISsettings.autoMarkRecipes == true and FCOIS.checkIfRecipeAddonUsed() and FCOIS.checkIfChosenRecipeAddonActive(FCOISsettings.recipeAddonUsed)) then
+                                        if (FCOISsettings.autoMarkRecipes == true and checkIfRecipeAddonUsed() and checkIfChosenRecipeAddonActive(FCOISsettings.recipeAddonUsed)) then
                                             scanInventoryItemsForAutomaticMarks(nil, nil, "recipes", false)
                                         end
                                     end,
@@ -4626,7 +4632,7 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                                     getFunc = function() return FCOISsettings.autoMarkRecipesOnlyThisChar end,
                                     setFunc = function(value)
                                         FCOISsettings.autoMarkRecipesOnlyThisChar = value
-                                        if (FCOISsettings.autoMarkRecipes == true and FCOIS.checkIfRecipeAddonUsed()) then
+                                        if (FCOISsettings.autoMarkRecipes == true and checkIfRecipeAddonUsed()) then
                                             scanInventoryItemsForAutomaticMarks(nil, nil, "recipes", false)
                                         end
                                     end,
@@ -4642,7 +4648,7 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                                     getFunc = function() return FCOISsettings.autoMarkKnownRecipes end,
                                     setFunc = function(value)
                                         FCOISsettings.autoMarkKnownRecipes = value
-                                        if (FCOISsettings.autoMarkKnownRecipes == true and FCOIS.checkIfRecipeAddonUsed()) then
+                                        if (FCOISsettings.autoMarkKnownRecipes == true and checkIfRecipeAddonUsed()) then
                                             scanInventoryItemsForAutomaticMarks(nil, nil, "knownRecipes", false)
                                         end
                                     end,

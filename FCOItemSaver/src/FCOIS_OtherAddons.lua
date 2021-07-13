@@ -2,6 +2,8 @@
 if FCOIS == nil then FCOIS = {} end
 local FCOIS = FCOIS
 
+local debugMessage = FCOIS.debugMessage
+
 local wm = WINDOW_MANAGER
 
 local strformat = string.format
@@ -41,7 +43,7 @@ local checkIfFCOISSettingsWereLoaded = FCOIS.CheckIfFCOISSettingsWereLoaded
 -- ==================================================================
 --               AdvancedDisableControllerUI
 -- ==================================================================
-function FCOIS.checkIfADCUIAndIsNotUsingGamepadMode()
+function FCOIS.CheckIfADCUIAndIsNotUsingGamepadMode()
     return (otherAddons and otherAddons.ADCUIActive
             and ADCUI ~= nil and ADCUI.savedVariables ~= nil and ADCUI.savedVariables.useControllerUI == false) or false
 end
@@ -50,149 +52,49 @@ end
 if not FCOIS.libsLoadedProperly then return end
 
 
---Check if another addon name is found and thus active
-function FCOIS.checkIfOtherAddonActive(addOnName)
-    addOnName = addOnName or ""
-    --Check if addon "Research Assistant" is active
-    if(addOnName == "ResearchAssistant" or ResearchAssistant) then
-        FCOIS.otherAddons.researchAssistantActive = true
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+-- Dolgubon's Lazy Writ Creator
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+--Function to check if an item is crafted via the addon Dolgubon's Lazy Writ Creator
+function FCOIS.CheckLazyWritCreatorCraftedItem()
+    local writCreatedItem, craftingType, addonRequester
+    if otherAddons.LazyWritCreatorActive and WritCreater ~= nil and FCOIS.settingsVars.settings.autoMarkCraftedWritItems and LibLazyCrafting ~= nil then
+        writCreatedItem, craftingType, addonRequester = LibLazyCrafting:IsPerformingCraftProcess() --> returns boolean, type of crafting, addon that requested the craft
+--d("[FCOIS]checkLazyWritCreatorCraftedItem - writCreatedItem: " .. tostring(writCreatedItem) .. ", craftingType: " .. tostring(craftingType) .. ", addonRequester: " .. tostring(addonRequester))
+        FCOIS.preventerVars.writCreatorCreatedItem = writCreatedItem and addonRequester == WritCreater.name
     end
-    --Check if addon "InventoryGridView" is active
-    if(addOnName == "InventoryGridView" or InventoryGridView) then
-        FCOIS.otherAddons.inventoryGridViewActive = true
-    end
-    --Check if addon "ChatMerchant" is active
-    if(addOnName == "ChatMerchant") then
-        FCOIS.otherAddons.chatMerchantActive = true
-    end
-    --Check if addon "PotionMaker" is active
-    if(addOnName == "PotionMaker" or PotMaker) then
-        FCOIS.otherAddons.potionMakerActive = true
-    end
-    --Check if addon "Votans Settings Menu" is active
-    if(addOnName == "VotansSettingsMenu" or VOTANS_MENU_SETTINGS) then
-        FCOIS.otherAddons.votansSettingsMenuActive = true
-    end
-    --Check if addon "SousChef" is active
-    if(addOnName == "SousChef" or SousChef) then
-        FCOIS.otherAddons.sousChefActive = true
-    end
-    --Check if addon "CraftStoreFixedAndImproved" is active
-    if(addOnName == "CraftStoreFixedAndImproved" or CraftStoreFixedAndImprovedLongClassName) then
-        FCOIS.otherAddons.craftStoreFixedAndImprovedActive = true
-    end
-    --Check if addon "CraftBagExtended" is active
-    if(addOnName == "CraftBagExtended" or CraftBagExtended or CBE) then
-        FCOIS.otherAddons.craftBagExtendedActive = true
-    end
-    --Check if addon "AwesomeGuildStore" is active
-    if(addOnName == "AwesomeGuildStore" or AwesomeGuildStore) then
-        FCOIS.otherAddons.AGSActive = true
-    end
-    --Check if addon "SetTracker" is active
-    if(addOnName == "SetTracker" or SetTrack) then
-        FCOIS.otherAddons.SetTracker.isActive = true
-    end
-    --Check if addon "AdvancedDisableControllerUI" is active
-    if(addOnName == "AdvancedDisableControllerUI" or ADCUI) then
-        FCOIS.otherAddons.ADCUIActive = true
-    end
-    --Check if addon "LazyWritCreator" is active
-    if(addOnName == "DolgubonsLazyWritCreator" or WritCreater) then
-        FCOIS.otherAddons.LazyWritCreatorActive = true
-        --Overwrite the following functions to enabled automatic marking of writ created items!
-        --WritCreater.masterWritCompletion = function(...) end -- Empty function, intended to be overwritten by other addons
-        --WritCreater.writItemCompletion = function(...) end -- also empty
-        if WritCreater.masterWritCompletion then
-            WritCreater.masterWritCompletion = function(...)
-                FCOIS.preventerVars.createdMasterWrit = true
-                FCOIS.checkIfWritItemShouldBeMarked(...)
-            end
-        end
-        if WritCreater.writItemCompletion then
-            WritCreater.writItemCompletion = function(...)
-                FCOIS.preventerVars.createdMasterWrit = false
-                FCOIS.checkIfWritItemShouldBeMarked(...)
-            end
-        end
-    end
-    --Quality Sort
-    if (addOnName == "QualitySort" or QualitySort) then
-        FCOIS.otherAddons.qualitySortActive = true
-    end
-    --Inventory Insight From Ashes (IIFA)
-    if (addOnName == "IIfA" or IIfA) then
-        FCOIS.otherAddons.IIFAActive = true
-        --Add entry to constants table for the keybinds/SHIFT+right mouse click inventory row patterns
-        table.insert(FCOIS.checkVars.inventoryRowPatterns, "^" .. otherAddons.IIFAitemsListEntryPrePattern .. "*")         --Other addons: InventoryInsightFromAshes UI
-    end
-    --AdvancedFilters: Plugin FCO DuplicateItemsFilter
-    if (addOnName == "AF_FCODuplicateItemsFilters" and AdvancedFilters) then
-        FCOIS.otherAddons.AFFCODuplicateItemFilter = true
-    end
+    return writCreatedItem, craftingType, addonRequester
 end
 
---Check for other addons and react on them
-function FCOIS.CheckIfOtherAddonsActiveAfterPlayerActivated()
-    FCOIS.checkIfOtherAddonActive()
-    --Check if Inventory Gridview is active
-    if (otherAddons.inventoryGridViewActive == false) then
-        local gridViewControlName = wm:GetControlByName(otherAddons.GRIDVIEWBUTTON, "")
-        if gridViewControlName ~= nil or InventoryGridView then
-            if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[Other addons]", "Addon Inventory Gridview is active", false) end
-            FCOIS.otherAddons.inventoryGridViewActive = true
-        end
+--Should the new created item be marked with a marker icon of the WritCreatorAddon
+--Parameters: LLC_CRAFT_SUCCESS, station, {["bag"] = BAG_BACKPACK,["slot"] = currentCraftAttempt.slot,["reference"] = currentCraftAttempt.reference}
+function FCOIS.CheckIfWritItemShouldBeMarked(craftSuccess, craftSkill, craftData)
+    local isMasterWrit = FCOIS.preventerVars.createdMasterWrit or false
+--d("[FCOIS]checkIfWritItemShouldBeMarked - craftSuccess: " .. tostring(craftSuccess)  .. ", craftSkill: " .. tostring(craftSkill) .. ", bag: " .. tostring(craftData.bag) .. ", slotIndex: " .. tostring(craftData.slot) .. ", reference: " .. tostring(craftData.reference) .. ", isMasterWrit: " ..tostring(isMasterWrit))
+    --Check if the addon WritCreator is enabled and the settings are enabled to automatically mark writ items
+    if not otherAddons.LazyWritCreatorActive or WritCreater == nil or not FCOIS.settingsVars.settings.autoMarkCraftedWritItems or craftSuccess ~= LLC_CRAFT_SUCCESS then return false end
+    --Check the needed marker icon and if it's enabled in the settings
+    local writCreatorMarkerIcons = {
+        [true]  = FCOIS.settingsVars.settings.autoMarkCraftedWritCreatorMasterWritItemsIconNr,
+        [false] = FCOIS.settingsVars.settings.autoMarkCraftedWritCreatorItemsIconNr,
+    }
+    local writMarkerIcon = writCreatorMarkerIcons[isMasterWrit]
+    if not FCOIS.settingsVars.settings.isIconEnabled[writMarkerIcon] then return false end
+    --Get the actual craftskill and overwrite the variable FCOIS.preventerVars.newItemCrafted with true
+    --local craftSkill = GetCraftingInteractionType()
+    if craftSkill ~= CRAFTING_TYPE_INVALID then
+        local itemLink = GetItemLink(craftData.bag, craftData.slot)
+--d(">writCreator: Item " .. itemLink .. " will be marked now with marker icon " .. tostring(writMarkerIcon))
+        FCOIS.MarkItem(craftData.bag, craftData.slot, writMarkerIcon, true, true)
     end
-    --Check if Chat Merchant is active
-    if (otherAddons.chatMerchantActive == false) then
-        local chatMerchantControlName = wm:GetControlByName(otherAddons.CHATMERCHANTBUTTON, "")
-        if chatMerchantControlName ~=  nil then
-            if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[Other addons]", "Addon ChatMerchant is active", false) end
-            FCOIS.otherAddons.chatMerchantActive = true
-        end
-    end
-    --Was ChatMerchant addon's control found now?
-    if (otherAddons.chatMerchantActive == true) then
-        local chatMerchantControlName = wm:GetControlByName(otherAddons.CHATMERCHANTBUTTON, "")
-        if chatMerchantControlName ~=  nil then
-            chatMerchantControlName:ClearAnchors()
-            if (otherAddons.inventoryGridViewActive == true) then
-                -- With Inventory Grid View activated
-                chatMerchantControlName:SetAnchor(TOP, ZO_PlayerInventory, BOTTOM, -18, 6)
-            else
-                -- Without Inventory Grid View activated
-                chatMerchantControlName:SetAnchor(TOP, ZO_PlayerInventory, BOTTOM, -10, 6)
-            end
-        end
-    end
-    --Inventory Insight From Ashes (IIFA) loaded now?
-    FCOIS.checkIfOtherAddonIIfAIsActive()
+    FCOIS.preventerVars.createdMasterWrit = nil
 end
+local checkIfWritItemShouldBeMarked = FCOIS.CheckIfWritItemShouldBeMarked
 
--- ==================================================================
---  All external addons which have it's own inventory rows
--- ==================================================================
---Check if an update to the visible marker icons need to be done
-function FCOIS.checkIfInventoryRowOfExternalAddonNeedsMarkerIconsUpdate(rowControl, markId)
---d("[FCOIS]checkIfInventoryRowOfExternalAddonNeedsMarkerIconsUpdate-markId: " ..tostring(markId))
-    --Were all other marker icons removed as this marker icon got set?
-    local demarksSell   = checkIfOtherDemarksSell(markId)
-    local demarksDecon  = checkIfOtherDemarksDeconstruction(markId)
-    if checkIfItemShouldBeDemarked(markId)
-        --  Icon is not sell or sell at guild store
-        --  and is the setting to remove sell/sell at guild store enabled if any other marker icon is set?
-        or ( demarksSell == true or demarksDecon == true
-    ) then
-        --d(">item should be demarked")
-
-        --Other addons "Inventory Insight" integration:
-        --Update the complete row in the IIfA inventory frame
-        if IIfA ~= nil and FCOIS.IIfAclicked ~= nil and IIfA.UpdateFCOISMarkerIcons ~= nil then
-            local showFCOISMarkerIcons = IIfA:GetSettings().FCOISshowMarkerIcons
-            IIfA:UpdateFCOISMarkerIcons(rowControl, showFCOISMarkerIcons, false, -1)
-        end
-    end
-end
 
 -- ==================================================================
 --               CraftBagExtended & AwesomeGuildstore
@@ -302,6 +204,8 @@ local function checkSetTrackerTrackingStateAndMarkWithFCOISIcon(sSetName, setTra
 
     --d("[FCOIS]checkSetTrackerTrackingStateAndMarkWithFCOISIcon - Icon: " .. tostring(FCOISMarkerIconForSetTracker))
 
+    local FCOIS_sv = FCOIS[getSavedVarsMarkedItemsTableName()]
+
     --Only check one item given by bagId and slotIndex? Or all icons in a bag?
     if p_bagId ~= nil and p_slotIndex ~= nil then
         --Check only one specific item
@@ -345,7 +249,7 @@ local function checkSetTrackerTrackingStateAndMarkWithFCOISIcon(sSetName, setTra
                             FCOIS_OLD_MarkerIconForSetTracker = settings.setTrackerIndexToFCOISIcon[setTrackerState]
                             if FCOIS_OLD_MarkerIconForSetTracker ~= nil and FCOIS_OLD_MarkerIconForSetTracker ~= FCOIS_CON_ICON_NONE and FCOIS_OLD_MarkerIconForSetTracker ~= FCOIS_CON_ICON_ALL then
                                 --d(">Removing old marker icon first: " .. tostring(FCOIS_OLD_MarkerIconForSetTracker))
-                                FCOIS[getSavedVarsMarkedItemsTableName()][FCOIS_OLD_MarkerIconForSetTracker][itemId] = nil
+                                FCOIS_sv[FCOIS_OLD_MarkerIconForSetTracker][itemId] = nil
                             end
                         end
 
@@ -362,13 +266,13 @@ local function checkSetTrackerTrackingStateAndMarkWithFCOISIcon(sSetName, setTra
                             end
                             if fcoisMarkerIconsToRemove and #fcoisMarkerIconsToRemove > 0 then
                                 for _, markerIcon in ipairs(fcoisMarkerIconsToRemove) do
-                                    FCOIS[getSavedVarsMarkedItemsTableName()][markerIcon][itemId] = nil
+                                    FCOIS_sv[markerIcon][itemId] = nil
                                 end
                             end
                             retVarBoolLoop = true
                         else
                             --Check if item is already marked with this icon
-                            local isAlreadyMarked = FCOIS[getSavedVarsMarkedItemsTableName()][FCOISMarkerIconForSetTracker][itemId] or false
+                            local isAlreadyMarked = FCOIS_sv[FCOISMarkerIconForSetTracker][itemId] or false
                             --d(">isAlreadyMarked: " .. tostring(isAlreadyMarked))
                             --Item is tracked (unequals -1) and is not a crafted set part (unequals 100)
                             if (iTrackIndex ~= -1 and iTrackIndex ~= 100) and doShow then
@@ -379,7 +283,7 @@ local function checkSetTrackerTrackingStateAndMarkWithFCOISIcon(sSetName, setTra
                                 else
                                     --d("Marked item at bag " .. tostring(bag) .. ", slot: " .. tostring(slot))
                                     --Mark the item now
-                                    FCOIS[getSavedVarsMarkedItemsTableName()][FCOISMarkerIconForSetTracker][itemId] = true
+                                    FCOIS_sv[FCOISMarkerIconForSetTracker][itemId] = true
                                     retVarBoolLoop = true
                                 end
                                 --Item is not tracked  anymore (equals -1)
@@ -392,7 +296,7 @@ local function checkSetTrackerTrackingStateAndMarkWithFCOISIcon(sSetName, setTra
                                 else
                                     --d("Unmarked item at bag " .. tostring(bag) .. ", slot: " .. tostring(slot))
                                     --Unmark the item now
-                                    FCOIS[getSavedVarsMarkedItemsTableName()][FCOISMarkerIconForSetTracker][itemId] = nil
+                                    FCOIS_sv[FCOISMarkerIconForSetTracker][itemId] = nil
                                     retVarBoolLoop = true
                                 end
                             end
@@ -426,7 +330,7 @@ local function checkSetTrackerTrackingStateAndMarkWithFCOISIcon(sSetName, setTra
                         local FCOIS_OLD_MarkerIconForSetTracker = settings.setTrackerIndexToFCOISIcon[setTrackerState]
                         if FCOIS_OLD_MarkerIconForSetTracker ~= nil and FCOIS_OLD_MarkerIconForSetTracker ~= FCOIS_CON_ICON_NONE and FCOIS_OLD_MarkerIconForSetTracker < FCOIS.numVars.gFCONumFilterIcons then
                             --d(">Removing old marker icon first: " .. tostring(FCOIS_OLD_MarkerIconForSetTracker))
-                            FCOIS[getSavedVarsMarkedItemsTableName()][FCOIS_OLD_MarkerIconForSetTracker][itemId] = nil
+                            FCOIS_sv[FCOIS_OLD_MarkerIconForSetTracker][itemId] = nil
                         --Remove all marker icons?
                         elseif FCOIS_OLD_MarkerIconForSetTracker == FCOIS_CON_ICON_NONE then
                             removeAllSetTrackerFCOISMarkerIcons = true
@@ -444,13 +348,13 @@ local function checkSetTrackerTrackingStateAndMarkWithFCOISIcon(sSetName, setTra
                         end
                         if fcoisMarkerIconsToRemove and #fcoisMarkerIconsToRemove > 0 then
                             for _, markerIcon in ipairs(fcoisMarkerIconsToRemove) do
-                                FCOIS[getSavedVarsMarkedItemsTableName()][markerIcon][itemId] = nil
+                                FCOIS_sv[markerIcon][itemId] = nil
                             end
                         end
                         retVarBoolLoop = true
                     else
                         --Check if item is already marked with this icon
-                        local isAlreadyMarked = FCOIS[getSavedVarsMarkedItemsTableName()][FCOISMarkerIconForSetTracker][itemId] or false
+                        local isAlreadyMarked = FCOIS_sv[FCOISMarkerIconForSetTracker][itemId] or false
                         --d(">isAlreadyMarked: " .. tostring(isAlreadyMarked))
                         --Item is tracked (unequals -1) and is not a crafted set part (unequals 100)
                         if (iTrackIndex ~= -1 and iTrackIndex ~= 100) and doShow then
@@ -461,7 +365,7 @@ local function checkSetTrackerTrackingStateAndMarkWithFCOISIcon(sSetName, setTra
                             else
                                 --d("Marked item at bag " .. tostring(bag) .. ", slot: " .. tostring(slot))
                                 --Mark the item now
-                                FCOIS[getSavedVarsMarkedItemsTableName()][FCOISMarkerIconForSetTracker][itemId] = true
+                                FCOIS_sv[FCOISMarkerIconForSetTracker][itemId] = true
                                 retVarBoolLoop = true
                             end
                             --Item is not tracked  anymore (equals -1)
@@ -474,7 +378,7 @@ local function checkSetTrackerTrackingStateAndMarkWithFCOISIcon(sSetName, setTra
                             else
                                 --d("Unmarked item at bag " .. tostring(bag) .. ", slot: " .. tostring(slot))
                                 --Unmark the item now
-                                FCOIS[getSavedVarsMarkedItemsTableName()][FCOISMarkerIconForSetTracker][itemId] = nil
+                                FCOIS_sv[FCOISMarkerIconForSetTracker][itemId] = nil
                                 retVarBoolLoop = true
                             end
                         end
@@ -638,48 +542,6 @@ function otherAddonsSetTracker.updateSetTrackerMarker(bagId, slotIndex, setTrack
 end
 FCOIS.updateSetTrackerMarker = otherAddonsSetTracker.updateSetTrackerMarker
 
-------------------------------------------------------------------------------------------------------------------------
-------------------------------------------------------------------------------------------------------------------------
-------------------------------------------------------------------------------------------------------------------------
--- Dolgubon's Lazy Writ Creator
-------------------------------------------------------------------------------------------------------------------------
-------------------------------------------------------------------------------------------------------------------------
-------------------------------------------------------------------------------------------------------------------------
---Function to check if an item is crafted via the addon Dolgubon's Lazy Writ Creator
-function FCOIS.checkLazyWritCreatorCraftedItem()
-    local writCreatedItem, craftingType, addonRequester
-    if otherAddons.LazyWritCreatorActive and WritCreater ~= nil and FCOIS.settingsVars.settings.autoMarkCraftedWritItems and LibLazyCrafting ~= nil then
-        writCreatedItem, craftingType, addonRequester = LibLazyCrafting:IsPerformingCraftProcess() --> returns boolean, type of crafting, addon that requested the craft
---d("[FCOIS]checkLazyWritCreatorCraftedItem - writCreatedItem: " .. tostring(writCreatedItem) .. ", craftingType: " .. tostring(craftingType) .. ", addonRequester: " .. tostring(addonRequester))
-        FCOIS.preventerVars.writCreatorCreatedItem = writCreatedItem and addonRequester == WritCreater.name
-    end
-    return writCreatedItem, craftingType, addonRequester
-end
-
---Should the new created item be marked with a marker icon of the WritCreatorAddon
---Parameters: LLC_CRAFT_SUCCESS, station, {["bag"] = BAG_BACKPACK,["slot"] = currentCraftAttempt.slot,["reference"] = currentCraftAttempt.reference}
-function FCOIS.checkIfWritItemShouldBeMarked(craftSuccess, craftSkill, craftData)
-    local isMasterWrit = FCOIS.preventerVars.createdMasterWrit or false
---d("[FCOIS]checkIfWritItemShouldBeMarked - craftSuccess: " .. tostring(craftSuccess)  .. ", craftSkill: " .. tostring(craftSkill) .. ", bag: " .. tostring(craftData.bag) .. ", slotIndex: " .. tostring(craftData.slot) .. ", reference: " .. tostring(craftData.reference) .. ", isMasterWrit: " ..tostring(isMasterWrit))
-    --Check if the addon WritCreator is enabled and the settings are enabled to automatically mark writ items
-    if not otherAddons.LazyWritCreatorActive or WritCreater == nil or not FCOIS.settingsVars.settings.autoMarkCraftedWritItems or craftSuccess ~= LLC_CRAFT_SUCCESS then return false end
-    --Check the needed marker icon and if it's enabled in the settings
-    local writCreatorMarkerIcons = {
-        [true]  = FCOIS.settingsVars.settings.autoMarkCraftedWritCreatorMasterWritItemsIconNr,
-        [false] = FCOIS.settingsVars.settings.autoMarkCraftedWritCreatorItemsIconNr,
-    }
-    local writMarkerIcon = writCreatorMarkerIcons[isMasterWrit]
-    if not FCOIS.settingsVars.settings.isIconEnabled[writMarkerIcon] then return false end
-    --Get the actual craftskill and overwrite the variable FCOIS.preventerVars.newItemCrafted with true
-    --local craftSkill = GetCraftingInteractionType()
-    if craftSkill ~= CRAFTING_TYPE_INVALID then
-        local itemLink = GetItemLink(craftData.bag, craftData.slot)
---d(">writCreator: Item " .. itemLink .. " will be marked now with marker icon " .. tostring(writMarkerIcon))
-        FCOIS.MarkItem(craftData.bag, craftData.slot, writMarkerIcon, true, true)
-    end
-    FCOIS.preventerVars.createdMasterWrit = nil
-end
-
 
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
@@ -690,16 +552,17 @@ end
 ------------------------------------------------------------------------------------------------------------------------
 
 --Inventory Insight From Ashes (IIFA) loaded now?
-function FCOIS.checkIfOtherAddonIIfAIsActive()
+function FCOIS.CheckIfOtherAddonIIfAIsActive()
     if (IIfA ~= nil) then
         FCOIS.otherAddons.IIFAActive = true
     else
         FCOIS.otherAddons.IIFAActive = false
     end
 end
+local checkIfOtherAddonIIfAIsActive = FCOIS.CheckIfOtherAddonIIfAIsActive
 
 --Get the itemInstance or the unique ID of an item at bagId and slotIndex, or at the itemLink
-function FCOIS.getItemInstanceOrUniqueId(bagId, slotIndex, itemLink)
+function FCOIS.GetItemInstanceOrUniqueId(bagId, slotIndex, itemLink)
     if bagId == nil or slotIndex == nil then return 0, false end
     local bagsToBuildIdFor = mappingVars.bagsToBuildItemInstanceOrUniqueIdFor
     local allowedUniqueIdItemTypes = FCOIS.allowedUniqueIdItemTypes
@@ -737,6 +600,7 @@ function FCOIS.getItemInstanceOrUniqueId(bagId, slotIndex, itemLink)
     end
     return itemInstanceOrUniqueId, isBagToBuildItemInstanceOrUniqueId
 end
+FCOIS.getItemInstanceOrUniqueId = FCOIS.GetItemInstanceOrUniqueId
 
 --Function to support Inventory Insight from Ashes addon. clickedDataLine is the right clicked row within the IIfA inventory frame.
 --> Returns the itemInstance or uniqueId (signed or unsigned depending on parameter signToo),
@@ -1033,14 +897,15 @@ function FCOIS.MyGetItemInstanceIdForIIfA(clickedDataLine, signToo)
 --d("[FCOIS.MyGetItemInstanceIdForIIfA] itemIdOrLink: " .. itemIdOrLink .. ", itemInstanceOrUniqueId: " .. tostring(itemId) .. ", bagId: " .. tostring(bagId) .. ", slotIndex: " .. tostring(slotIndex))
     return itemId, bagId, slotIndex, itemFoundAtLocationTable, itemFoundAtLocationTableAccountWide
 end
+local myGetItemInstanceIdForIIfA = FCOIS.MyGetItemInstanceIdForIIfA
 
 --Is the addon InventoryInsight from Ashes active and is the current right-clicked row a row of this addon
 --then return the itemInstanceId/uniqueItemId (depending on the FCOIS settings and the item's type) +
 --bagId and slotIndex of the clicked item (from the IIfA savedvars) +
 --a table with the player unique ids where this item is located
-function FCOIS.checkAndGetIIfAData(rowControl, parentControl)
+function FCOIS.CheckAndGetIIfAData(rowControl, parentControl)
     --Set the variable of IIfA active/or not
-    FCOIS.checkIfOtherAddonIIfAIsActive()
+    checkIfOtherAddonIIfAIsActive()
     --Is IIfA active?
     if otherAddons.IIFAActive then
         --Get the itemLink from the dataLines
@@ -1082,7 +947,7 @@ function FCOIS.checkAndGetIIfAData(rowControl, parentControl)
             --Found the itemlink of the clicked item?
             if clickedDataLine ~= nil and iifaItemLink ~= "" then
                 --Get the itemInstanceId/uniqueItemId, bagId and slotIndex from the IIfA clicked dataLine
-                local unsignedItemInstanceOrUniqueId, bagId, slotIndex, itemFoundAtLocationTable, itemFoundAtLocationTableAccountWide = FCOIS.MyGetItemInstanceIdForIIfA(clickedDataLine, false) -- Do not sign as this will be done in other functions like FCOIS.MyGetItemDetails(bagId, slotIndex) or FCOIS.IsMarkedByItemInstanceId() later on!!!
+                local unsignedItemInstanceOrUniqueId, bagId, slotIndex, itemFoundAtLocationTable, itemFoundAtLocationTableAccountWide = myGetItemInstanceIdForIIfA(clickedDataLine, false) -- Do not sign as this will be done in other functions like FCOIS.MyGetItemDetails(bagId, slotIndex) or FCOIS.IsMarkedByItemInstanceId() later on!!!
                 if unsignedItemInstanceOrUniqueId ~= nil or (bagId ~= nil and slotIndex ~= nil) then
             ---d("[FCOIS]<<<found: "  .. unsignedItemInstanceOrUniqueId, bagId, slotIndex)
                     return iifaItemLink, unsignedItemInstanceOrUniqueId, bagId, slotIndex, itemFoundAtLocationTable, itemFoundAtLocationTableAccountWide
@@ -1092,13 +957,14 @@ function FCOIS.checkAndGetIIfAData(rowControl, parentControl)
     end
     return nil, nil, nil, nil, nil, nil
 end
+local checkAndGetIIfAData = FCOIS.CheckAndGetIIfAData
 
 --Check if any row within the IIfA addon was right clicked to show the context menu
 -->Called within file FCOIS_ContextMenu.lua, function FCOIS.AddMark()
-function FCOIS.checkForIIfARightClickedRow(rowControl)
+function FCOIS.CheckForIIfARightClickedRow(rowControl)
 --d("[FCOIS.checkForIIfARightClickedRow] rowControl: " .. tostring(rowControl:GetName()))
     --Check if an IIfA row was right clicked and if the needed data (itemInstace or uniqueId, bag and slot) are given for that row
-    local itemLinkIIfA, itemInstanceOrUniqueIdIIfA, bagIdIIfA, slotIndexIIfA, ownedByCharsTableIIfA, itemIsInThisOtherBagsTableIIfA = FCOIS.checkAndGetIIfAData(rowControl, rowControl:GetParent())
+    local itemLinkIIfA, itemInstanceOrUniqueIdIIfA, bagIdIIfA, slotIndexIIfA, ownedByCharsTableIIfA, itemIsInThisOtherBagsTableIIfA = checkAndGetIIfAData(rowControl, rowControl:GetParent())
     --Reset the IIfA clicked variables and set them again if correct values were determinded from IIfA savedvars
     FCOIS.IIfAclicked = nil
 --d(">id: " ..tostring(itemInstanceOrUniqueIdIIfA) .. ", bag: " .. tostring(bagIdIIfA) .. ", slot: " .. tostring(slotIndexIIfA))
@@ -1131,15 +997,16 @@ end
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 --Function to return the ID of the recipe addon used
-function FCOIS.getRecipeAddonUsed()
+function FCOIS.GetRecipeAddonUsed()
     local settings = FCOIS.settingsVars.settings
     local recipeAddonUsed = settings.recipeAddonUsed or 0
     if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage("getRecipeAddonUsed",tostring(recipeAddonUsed), true, FCOIS_DEBUG_DEPTH_SPAM, false) end
     return recipeAddonUsed
 end
+local getRecipeAddonUsed = FCOIS.GetRecipeAddonUsed
 
 --Function to check which recipe addon handles the checks (enabled within the FCOIS settings)
-function FCOIS.checkIfRecipeAddonUsed()
+function FCOIS.CheckIfRecipeAddonUsed()
     local retVar = false
     if (otherAddons.sousChefActive and (SousChef and SousChef.settings and SousChef.settings.showAltKnowledge))
     or (otherAddons.craftStoreFixedAndImprovedActive and CraftStoreFixedAndImprovedLongClassName ~= nil and CraftStoreFixedAndImprovedLongClassName.IsLearnable ~= nil) then
@@ -1150,8 +1017,8 @@ function FCOIS.checkIfRecipeAddonUsed()
 end
 
 --Function to check if the recipe addon is loaded
-function FCOIS.checkIfChosenRecipeAddonActive(recipeAddonId)
-    if recipeAddonId == nil then recipeAddonId = FCOIS.getRecipeAddonUsed() end
+function FCOIS.CheckIfChosenRecipeAddonActive(recipeAddonId)
+    if recipeAddonId == nil then recipeAddonId = getRecipeAddonUsed() end
     if recipeAddonId == 0 then return false end
     local retVar = false
 
@@ -1172,17 +1039,18 @@ end
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 --Function to return the ID of the research addon used
-function FCOIS.getResearchAddonUsed()
+function FCOIS.GetResearchAddonUsed()
     local settings = FCOIS.settingsVars.settings
     local researchAddonUsed = settings.researchAddonUsed or 0
     return researchAddonUsed
 end
+local getResearchAddonUsed = FCOIS.GetResearchAddonUsed
 
 --Function to check which research addon handles the checks (enabled within the FCOIS settings)
-function FCOIS.checkIfResearchAddonUsed()
+function FCOIS.CheckIfResearchAddonUsed()
     local retVar = false
     --Is the ESO standard setting chosen, then we do not need any additional addon enabled.
-    local researchAddonId = FCOIS.getResearchAddonUsed()
+    local researchAddonId = getResearchAddonUsed()
     if researchAddonId == FCOIS_RESEARCH_ADDON_ESO_STANDARD then
         retVar = true
     else
@@ -1195,8 +1063,8 @@ function FCOIS.checkIfResearchAddonUsed()
 end
 
 --Function to check if the research addon is loaded
-function FCOIS.checkIfChosenResearchAddonActive(researchAddonId)
-    if researchAddonId == nil then researchAddonId = FCOIS.getResearchAddonUsed() end
+function FCOIS.CheckIfChosenResearchAddonActive(researchAddonId)
+    if researchAddonId == nil then researchAddonId = getResearchAddonUsed() end
     if researchAddonId == 0 then return false end
     local retVar = false
 
@@ -1219,8 +1087,8 @@ end
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 
---Check if the itemCount addition to the invenmtory bagSpace is enabled in teh AdvancedFilters settings
-function FCOIS.checkIfAdvancedFiltersItemCountIsEnabled()
+--Check if the itemCount addition to the inventory bagSpace is enabled in the AdvancedFilters settings
+function FCOIS.CheckIfAdvancedFiltersItemCountIsEnabled()
     --Is the AddOnAdvancedFilters addon active and the function to refresh the shown item count below the inventory, at the "FreeSlot" label exists
     if AdvancedFilters ~= nil then
         local AF = AdvancedFilters
@@ -1234,4 +1102,150 @@ function FCOIS.checkIfAdvancedFiltersItemCountIsEnabled()
         end
     end
     return false
+end
+
+
+------------------------------------------------------------------------------------------------------------------------
+--Check if another addon name is found and thus active
+function FCOIS.CheckIfOtherAddonActive(addOnName)
+    addOnName = addOnName or ""
+    --Check if addon "Research Assistant" is active
+    if(addOnName == "ResearchAssistant" or ResearchAssistant) then
+        FCOIS.otherAddons.researchAssistantActive = true
+    end
+    --Check if addon "InventoryGridView" is active
+    if(addOnName == "InventoryGridView" or InventoryGridView) then
+        FCOIS.otherAddons.inventoryGridViewActive = true
+    end
+    --Check if addon "ChatMerchant" is active
+    if(addOnName == "ChatMerchant") then
+        FCOIS.otherAddons.chatMerchantActive = true
+    end
+    --Check if addon "PotionMaker" is active
+    if(addOnName == "PotionMaker" or PotMaker) then
+        FCOIS.otherAddons.potionMakerActive = true
+    end
+    --Check if addon "Votans Settings Menu" is active
+    if(addOnName == "VotansSettingsMenu" or VOTANS_MENU_SETTINGS) then
+        FCOIS.otherAddons.votansSettingsMenuActive = true
+    end
+    --Check if addon "SousChef" is active
+    if(addOnName == "SousChef" or SousChef) then
+        FCOIS.otherAddons.sousChefActive = true
+    end
+    --Check if addon "CraftStoreFixedAndImproved" is active
+    if(addOnName == "CraftStoreFixedAndImproved" or CraftStoreFixedAndImprovedLongClassName) then
+        FCOIS.otherAddons.craftStoreFixedAndImprovedActive = true
+    end
+    --Check if addon "CraftBagExtended" is active
+    if(addOnName == "CraftBagExtended" or CraftBagExtended or CBE) then
+        FCOIS.otherAddons.craftBagExtendedActive = true
+    end
+    --Check if addon "AwesomeGuildStore" is active
+    if(addOnName == "AwesomeGuildStore" or AwesomeGuildStore) then
+        FCOIS.otherAddons.AGSActive = true
+    end
+    --Check if addon "SetTracker" is active
+    if(addOnName == "SetTracker" or SetTrack) then
+        FCOIS.otherAddons.SetTracker.isActive = true
+    end
+    --Check if addon "AdvancedDisableControllerUI" is active
+    if(addOnName == "AdvancedDisableControllerUI" or ADCUI) then
+        FCOIS.otherAddons.ADCUIActive = true
+    end
+    --Check if addon "LazyWritCreator" is active
+    if(addOnName == "DolgubonsLazyWritCreator" or WritCreater) then
+        FCOIS.otherAddons.LazyWritCreatorActive = true
+        --Overwrite the following functions to enabled automatic marking of writ created items!
+        --WritCreater.masterWritCompletion = function(...) end -- Empty function, intended to be overwritten by other addons
+        --WritCreater.writItemCompletion = function(...) end -- also empty
+        if WritCreater.masterWritCompletion then
+            WritCreater.masterWritCompletion = function(...)
+                FCOIS.preventerVars.createdMasterWrit = true
+                checkIfWritItemShouldBeMarked(...)
+            end
+        end
+        if WritCreater.writItemCompletion then
+            WritCreater.writItemCompletion = function(...)
+                FCOIS.preventerVars.createdMasterWrit = false
+                checkIfWritItemShouldBeMarked(...)
+            end
+        end
+    end
+    --Quality Sort
+    if (addOnName == "QualitySort" or QualitySort) then
+        FCOIS.otherAddons.qualitySortActive = true
+    end
+    --Inventory Insight From Ashes (IIFA)
+    if (addOnName == "IIfA" or IIfA) then
+        FCOIS.otherAddons.IIFAActive = true
+        --Add entry to constants table for the keybinds/SHIFT+right mouse click inventory row patterns
+        table.insert(FCOIS.checkVars.inventoryRowPatterns, "^" .. otherAddons.IIFAitemsListEntryPrePattern .. "*")         --Other addons: InventoryInsightFromAshes UI
+    end
+    --AdvancedFilters: Plugin FCO DuplicateItemsFilter
+    if (addOnName == "AF_FCODuplicateItemsFilters" and AdvancedFilters) then
+        FCOIS.otherAddons.AFFCODuplicateItemFilter = true
+    end
+end
+
+--Check for other addons and react on them
+function FCOIS.CheckIfOtherAddonsActiveAfterPlayerActivated()
+    FCOIS.CheckIfOtherAddonActive()
+    --Check if Inventory Gridview is active
+    if (otherAddons.inventoryGridViewActive == false) then
+        local gridViewControlName = wm:GetControlByName(otherAddons.GRIDVIEWBUTTON, "")
+        if gridViewControlName ~= nil or InventoryGridView then
+            if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[Other addons]", "Addon Inventory Gridview is active", false) end
+            FCOIS.otherAddons.inventoryGridViewActive = true
+        end
+    end
+    --Check if Chat Merchant is active
+    if (otherAddons.chatMerchantActive == false) then
+        local chatMerchantControlName = wm:GetControlByName(otherAddons.CHATMERCHANTBUTTON, "")
+        if chatMerchantControlName ~=  nil then
+            if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[Other addons]", "Addon ChatMerchant is active", false) end
+            FCOIS.otherAddons.chatMerchantActive = true
+        end
+    end
+    --Was ChatMerchant addon's control found now?
+    if (otherAddons.chatMerchantActive == true) then
+        local chatMerchantControlName = wm:GetControlByName(otherAddons.CHATMERCHANTBUTTON, "")
+        if chatMerchantControlName ~=  nil then
+            chatMerchantControlName:ClearAnchors()
+            if (otherAddons.inventoryGridViewActive == true) then
+                -- With Inventory Grid View activated
+                chatMerchantControlName:SetAnchor(TOP, ZO_PlayerInventory, BOTTOM, -18, 6)
+            else
+                -- Without Inventory Grid View activated
+                chatMerchantControlName:SetAnchor(TOP, ZO_PlayerInventory, BOTTOM, -10, 6)
+            end
+        end
+    end
+    --Inventory Insight From Ashes (IIFA) loaded now?
+    checkIfOtherAddonIIfAIsActive()
+end
+
+-- ==================================================================
+--  All external addons which have it's own inventory rows
+-- ==================================================================
+--Check if an update to the visible marker icons need to be done
+function FCOIS.CheckIfInventoryRowOfExternalAddonNeedsMarkerIconsUpdate(rowControl, markId)
+--d("[FCOIS]checkIfInventoryRowOfExternalAddonNeedsMarkerIconsUpdate-markId: " ..tostring(markId))
+    --Were all other marker icons removed as this marker icon got set?
+    local demarksSell   = checkIfOtherDemarksSell(markId)
+    local demarksDecon  = checkIfOtherDemarksDeconstruction(markId)
+    if checkIfItemShouldBeDemarked(markId)
+        --  Icon is not sell or sell at guild store
+        --  and is the setting to remove sell/sell at guild store enabled if any other marker icon is set?
+        or ( demarksSell == true or demarksDecon == true
+    ) then
+        --d(">item should be demarked")
+
+        --Other addons "Inventory Insight" integration:
+        --Update the complete row in the IIfA inventory frame
+        if IIfA ~= nil and FCOIS.IIfAclicked ~= nil and IIfA.UpdateFCOISMarkerIcons ~= nil then
+            local showFCOISMarkerIcons = IIfA:GetSettings().FCOISshowMarkerIcons
+            IIfA:UpdateFCOISMarkerIcons(rowControl, showFCOISMarkerIcons, false, -1)
+        end
+    end
 end

@@ -4,6 +4,7 @@ local FCOIS = FCOIS
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
 
+local debugMessage = FCOIS.debugMessage
 local checkIfIsOwnerOfHouse = FCOIS.CheckIfIsOwnerOfHouse
 local checkIfOwningHouse = FCOIS.CheckIfOwningHouse
 local checkIfInHouse = FCOIS.CheckIfInHouse

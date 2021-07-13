@@ -1,8 +1,12 @@
 --Global array with all data of this addon
 if FCOIS == nil then FCOIS = {} end
 local FCOIS = FCOIS
+
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
+
+local debugMessage = FCOIS.debugMessage
+
 local ctrlVars = FCOIS.ZOControlVars
 local hideContextMenu = FCOIS.HideContextMenu
 local updateFCOISFilterButtonsAtInventory = FCOIS.UpdateFCOISFilterButtonsAtInventory

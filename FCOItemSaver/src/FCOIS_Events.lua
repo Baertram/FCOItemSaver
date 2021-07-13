@@ -2,10 +2,12 @@
 if FCOIS == nil then FCOIS = {} end
 local FCOIS = FCOIS
 
-local em = EVENT_MANAGER
+local debugMessage = FCOIS.debugMessage
 
 local strformat = string.format
 local zo_strf = zo_strformat
+
+local em = EVENT_MANAGER
 
 local gAddonName = FCOIS.addonVars.gAddonName
 local ctrlVars = FCOIS.ZOControlVars
@@ -45,7 +47,6 @@ local isCharacterShown = FCOIS.IsCharacterShown
 local isCompanionCharacterShown = FCOIS.IsCompanionCharacterShown
 local rebuildGearSetBaseVars = FCOIS.RebuildGearSetBaseVars
 local checkIfBagShouldAutoRemoveMarkerIcons = FCOIS.CheckIfBagShouldAutoRemoveMarkerIcons
-local checkGamePadMode = FCOIS.FCOItemSaver_CheckGamePadMode
 
 --==============================================================================
 --==================== START EVENT CALLBACK FUNCTIONS ==========================
@@ -911,7 +912,7 @@ local function FCOItemSaver_Player_Activated(...)
     end
 
     --Disable this addon if we are in GamePad mode
-    if not checkGamePadMode(true) then
+    if not FCOIS.FCOItemSaver_CheckGamePadMode(true) then
         local settings = FCOIS.settingsVars.settings
         if settings.debug then FCOIS.debugMessage( "[EVENT]","Player activated", true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
@@ -952,7 +953,7 @@ local function FCOItemSaver_Player_Activated(...)
         end
 
         --Update the itemCount in the inventory sort headers, if needed
-        FCOIS.updateFilteredItemCountThrottled(LF_INVENTORY, 50, "EVENT_Player_Activated")
+        FCOIS.UpdateFilteredItemCountThrottled(LF_INVENTORY, 50, "EVENT_Player_Activated")
 
         FCOIS.addonVars.gPlayerActivated = true
 
@@ -981,7 +982,7 @@ local function FCOItemSaver_Loaded(eventCode, addOnName)
     --Libraries were loaded properly?
     if FCOIS.libsLoadedProperly then
         --Check if another addon name is found and thus active
-        FCOIS.checkIfOtherAddonActive(addOnName)
+        FCOIS.CheckIfOtherAddonActive(addOnName)
         --Check if gamepad mode is deactivated?
         --Is this addon found?
         if(addOnName ~= gAddonName) then
@@ -999,7 +1000,7 @@ local function FCOItemSaver_Loaded(eventCode, addOnName)
         --Register for the zone change/player ready event
         em:RegisterForEvent(gAddonName, EVENT_PLAYER_ACTIVATED, FCOItemSaver_Player_Activated)
 
-        if not checkGamePadMode(true) then
+        if not FCOIS.FCOItemSaver_CheckGamePadMode(true) then
 
             if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[EVENT]", "Addon loading begins...", true, FCOIS_DEBUG_DEPTH_NORMAL) end
             FCOIS.addonVars.gAddonLoaded = false

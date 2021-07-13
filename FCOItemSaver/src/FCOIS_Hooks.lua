@@ -4,6 +4,8 @@ local FCOIS = FCOIS
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
 
+local debugMessage = FCOIS.debugMessage
+
 local strformat = string.format
 local strmatch = string.match
 
@@ -341,7 +343,7 @@ end
 
 --A setupCallback function for the scrolllists of the inventories.
 --> Will add the FCOIS marker icons if they get visible and add the OnMouseUp handlers to the rows to support the SHIFT+right mouse button features
-local function OnScrollListRowSetupCallback(rowControl, data)
+local function onScrollListRowSetupCallback(rowControl, data)
     --d("[FCOIS]OnScrollListRow:SetupCallback")
     if not rowControl then
         d("[FCOIS]ERROR: OnScrollListRowSetupCallback - rowControl is missing!")
@@ -638,8 +640,11 @@ function FCOIS.CreateHooks()
 
     local isResearchListDialogShown = FCOIS.IsResearchListDialogShown
     local refreshPopupDialogButtons = FCOIS.RefreshPopupDialogButtons
+    local refreshEquipmentControl = FCOIS.RefreshEquipmentControl
 
     local checkCraftbagOrOtherActivePanel = FCOIS.CheckCraftbagOrOtherActivePanel
+
+    local updateFilteredItemCountThrottled = FCOIS.UpdateFilteredItemCountThrottled
 
     --========= INVENTORY SLOT - SHOW CONTEXT MENU =================================
     local function ZO_InventorySlot_ShowContextMenu_For_FCOItemSaver(rowControl, slotActions, ctrl, alt, shift, command)
@@ -886,7 +891,7 @@ function FCOIS.CreateHooks()
         --Update the character's equipment markers, if the character screen is shown
         if isCharacterShown() then
 --d(">RefreshEquipmentControl -> ALL")
-            FCOIS.RefreshEquipmentControl(nil, nil, nil, nil, nil, nil)
+            refreshEquipmentControl(nil, nil, nil, nil, nil, nil)
         end
 
         --Update the dialog button 1 to show and respond again, if an item was tried to destroyed
@@ -915,18 +920,18 @@ function FCOIS.CreateHooks()
         return isCraftBagItemDraggedToCraftingSlot(LF_SMITHING_REFINE, bagId, slotIndex)
     end)
     --Register a secure posthook on visibility change of a scrolllist's row -> At the refine inventory list
-    SecurePostHook(ctrlVars.REFINEMENT.dataTypes[1], "setupCallback", OnScrollListRowSetupCallback)
+    SecurePostHook(ctrlVars.REFINEMENT.dataTypes[1], "setupCallback", onScrollListRowSetupCallback)
 
     --========= DECONSTRUCTION =====================================================
     --Pre Hook the deconstruction for prevention methods
     --Register a secure posthook on visibility change of a scrolllist's row -> At the deconstruction inventory list
-    SecurePostHook(ctrlVars.DECONSTRUCTION.dataTypes[1], "setupCallback", OnScrollListRowSetupCallback)
+    SecurePostHook(ctrlVars.DECONSTRUCTION.dataTypes[1], "setupCallback", onScrollListRowSetupCallback)
 
 
     --========= IMPROVEMENT ========================================================
     --Pre Hook the improvement for prevention methods
     --Register a secure posthook on visibility change of a scrolllist's row -> At the improvement inventory list
-    SecurePostHook(ctrlVars.IMPROVEMENT.dataTypes[1], "setupCallback", OnScrollListRowSetupCallback)
+    SecurePostHook(ctrlVars.IMPROVEMENT.dataTypes[1], "setupCallback", onScrollListRowSetupCallback)
 
     --========= ENCHANTING =========================================================
     --Pre Hook the enchanting table for prevention methods
@@ -937,7 +942,7 @@ function FCOIS.CreateHooks()
         return isCraftBagItemDraggedToCraftingSlot(LF_ENCHANTING_CREATION, bagId, slotIndex)
     end)
     --Register a secure posthook on visibility change of a scrolllist's row -> At the enchanting inventory list
-    SecurePostHook(ctrlVars.ENCHANTING_STATION.dataTypes[1], "setupCallback", OnScrollListRowSetupCallback)
+    SecurePostHook(ctrlVars.ENCHANTING_STATION.dataTypes[1], "setupCallback", onScrollListRowSetupCallback)
 
     --========= ALCHEMY ============================================================
     --PreHook the receiver function of drag&drop at the refinement panel as items from the craftbag won't fire
@@ -947,13 +952,13 @@ function FCOIS.CreateHooks()
         return isCraftBagItemDraggedToCraftingSlot(LF_ALCHEMY_CREATION, bagId, slotIndex)
     end)
     --Register a secure posthook on visibility change of a scrolllist's row -> At the alchemy solvent inventory list
-    SecurePostHook(ctrlVars.ALCHEMY_STATION.dataTypes[1], "setupCallback", OnScrollListRowSetupCallback)
+    SecurePostHook(ctrlVars.ALCHEMY_STATION.dataTypes[1], "setupCallback", onScrollListRowSetupCallback)
     --Register a secure posthook on visibility change of a scrolllist's row -> At the alchemy reagent inventory list
-    SecurePostHook(ctrlVars.ALCHEMY_STATION.dataTypes[2], "setupCallback", OnScrollListRowSetupCallback)
+    SecurePostHook(ctrlVars.ALCHEMY_STATION.dataTypes[2], "setupCallback", onScrollListRowSetupCallback)
 
     --========= RETRAIT =========================================================
     --Register a secure posthook on visibility change of a scrolllist's row -> At the retrait inventory list
-    SecurePostHook(ctrlVars.RETRAIT_LIST.dataTypes[1], "setupCallback", OnScrollListRowSetupCallback)
+    SecurePostHook(ctrlVars.RETRAIT_LIST.dataTypes[1], "setupCallback", onScrollListRowSetupCallback)
 
     --========= RESEARCH LIST / ListDialog OnShow/OnHide ======================================================
     local researchPopupDialogCustomControl = ESO_Dialogs["SMITHING_RESEARCH_SELECT"].customControl()
@@ -1194,13 +1199,13 @@ function FCOIS.CreateHooks()
     --======== INVENTORY ===========================================================
     --Pre Hook the inventory for prevention methods
     --Register a secure posthook on visibility change of a scrolllist's row -> At the backpack inventory list
-    SecurePostHook(ctrlVars.BACKPACK.dataTypes[1], "setupCallback", OnScrollListRowSetupCallback)
+    SecurePostHook(ctrlVars.BACKPACK.dataTypes[1], "setupCallback", onScrollListRowSetupCallback)
     --PreHook the primary action keybind in inventories
     ZO_PreHook("ZO_InventorySlot_DoPrimaryAction", FCOItemSaver_OnInventorySlot_DoPrimaryAction)
 
     --======== CRAFTBAG ===========================================================
     --Register a secure posthook on visibility change of a scrolllist's row -> At the craftbag inventory list
-    SecurePostHook(ctrlVars.CRAFTBAG_LIST.dataTypes[1], "setupCallback", OnScrollListRowSetupCallback)
+    SecurePostHook(ctrlVars.CRAFTBAG_LIST.dataTypes[1], "setupCallback", onScrollListRowSetupCallback)
     --ONLY if the craftbag is active
     --Pre Hook the 2 menubar button's (items and crafting bag) handler at the inventory
     ZO_PreHookHandler(ctrlVars.INV_MENUBAR_BUTTON_ITEMS, "OnMouseUp", function(control, button, upInside)
@@ -1305,11 +1310,11 @@ function FCOIS.CreateHooks()
     --> Will be done in event callback function for EVENT_OPEN_STORE + a delay as the buttons are not created before!
     ---> See file src/FCOIS_events.lua, function 'FCOItemSaver_OpenStore("vendor")'
     --Register a secure posthook on visibility change of a scrolllist's row -> At the vendor inventory list
-    SecurePostHook(ctrlVars.REPAIR_LIST.dataTypes[1], "setupCallback", OnScrollListRowSetupCallback)
+    SecurePostHook(ctrlVars.REPAIR_LIST.dataTypes[1], "setupCallback", onScrollListRowSetupCallback)
 
     --======== BANK ================================================================
     --Register a secure posthook on visibility change of a scrolllist's row -> At the bank inventory list
-    SecurePostHook(ctrlVars.BANK.dataTypes[1], "setupCallback", OnScrollListRowSetupCallback)
+    SecurePostHook(ctrlVars.BANK.dataTypes[1], "setupCallback", onScrollListRowSetupCallback)
 
     --Pre Hook the 2 menubar button's (take and deposit) handler at the bank
     ZO_PreHookHandler(ctrlVars.BANK_MENUBAR_BUTTON_WITHDRAW, "OnMouseUp", function(control, button, upInside)
@@ -1323,7 +1328,7 @@ function FCOIS.CreateHooks()
 
     --======== HOUSE BANK ================================================================
     --Register a secure posthook on visibility change of a scrolllist's row -> At the house bank inventory list
-    SecurePostHook(ctrlVars.HOUSE_BANK.dataTypes[1], "setupCallback", OnScrollListRowSetupCallback)
+    SecurePostHook(ctrlVars.HOUSE_BANK.dataTypes[1], "setupCallback", onScrollListRowSetupCallback)
 
     --Pre Hook the 2 menubar button's (take and deposit) handler at the bank
     ZO_PreHookHandler(ctrlVars.HOUSE_BANK_MENUBAR_BUTTON_WITHDRAW, "OnMouseUp", function(control, button, upInside)
@@ -1337,7 +1342,7 @@ function FCOIS.CreateHooks()
 
     --======== GUILD BANK ==========================================================
     --Register a secure posthook on visibility change of a scrolllist's row -> At the guld bank inventory list
-    SecurePostHook(ctrlVars.GUILD_BANK.dataTypes[1], "setupCallback", OnScrollListRowSetupCallback)
+    SecurePostHook(ctrlVars.GUILD_BANK.dataTypes[1], "setupCallback", onScrollListRowSetupCallback)
 
     --Pre Hook the 2 menubar button's (take and deposit) handler at the guild bank
     ZO_PreHookHandler(ctrlVars.GUILD_BANK_MENUBAR_BUTTON_WITHDRAW, "OnMouseUp", function(control, button, upInside)
@@ -1641,7 +1646,7 @@ function FCOIS.CreateHooks()
         end
     end)
     --Register a secure posthook on visibility change of a scrolllist's row -> At the companion inventory list
-    SecurePostHook(ctrlVars.COMPANION_INV_LIST.dataTypes[1], "setupCallback", OnScrollListRowSetupCallback)
+    SecurePostHook(ctrlVars.COMPANION_INV_LIST.dataTypes[1], "setupCallback", onScrollListRowSetupCallback)
 
 
     --Register a fragment state change on the companion character window, to update it's equipment controls
@@ -1654,7 +1659,7 @@ function FCOIS.CreateHooks()
             if not companionEquipmentMarkersWereCreated then
                 --Update the character's equipment markers, if the companion character screen is shown
 --d(">RefreshEquipmentControl -> COMPANION")
-                FCOIS.RefreshEquipmentControl(nil, nil, nil, nil, nil, nil)
+                refreshEquipmentControl(nil, nil, nil, nil, nil, nil)
                 companionEquipmentMarkersWereCreated = true
             end
 
@@ -1742,20 +1747,21 @@ function FCOIS.CreateHooks()
 
     --======== Hooks at the inventory and crafting filter functions ==================================
     --Player Inventory
-    --ZO_PreHook(ctrlVars.playerInventory, "ChangeFilter", function() d("[FCOIS]Player_Inventory ChangeFilter") FCOIS.updateFilteredItemCountThrottled(filterPanelId, delay) end)
+    --ZO_PreHook(ctrlVars.playerInventory, "ChangeFilter", function() d("[FCOIS]Player_Inventory ChangeFilter") updateFilteredItemCountThrottled(filterPanelId, delay) end)
     --Smithing
-    ZO_PreHook(ctrlVars.SMITHING.refinementPanel.inventory,         "ChangeFilter", function() FCOIS.updateFilteredItemCountThrottled(nil, 50, "Smithing refine - ChangeFilter") end)
-    ZO_PreHook(ctrlVars.SMITHING.deconstructionPanel.inventory,     "ChangeFilter", function() FCOIS.updateFilteredItemCountThrottled(nil, 50, "Smithing decon - ChangeFilter") end)
-    ZO_PreHook(ctrlVars.SMITHING.improvementPanel.inventory,        "ChangeFilter", function() FCOIS.updateFilteredItemCountThrottled(nil, 50, "Smithing improve - ChangeFilter") end)
+    local smithingCtrl = ctrlVars.SMITHING
+    ZO_PreHook(smithingCtrl.refinementPanel.inventory,         "ChangeFilter", function() updateFilteredItemCountThrottled(nil, 50, "Smithing refine - ChangeFilter") end)
+    ZO_PreHook(smithingCtrl.deconstructionPanel.inventory,     "ChangeFilter", function() updateFilteredItemCountThrottled(nil, 50, "Smithing decon - ChangeFilter") end)
+    ZO_PreHook(smithingCtrl.improvementPanel.inventory,        "ChangeFilter", function() updateFilteredItemCountThrottled(nil, 50, "Smithing improve - ChangeFilter") end)
     --Retrait
-    ZO_PreHook(ctrlVars.RETRAIT_RETRAIT_PANEL.inventory,            "ChangeFilter", function() FCOIS.updateFilteredItemCountThrottled(nil, 50, "Retrait - ChangeFilter") end)
+    ZO_PreHook(ctrlVars.RETRAIT_RETRAIT_PANEL.inventory,            "ChangeFilter", function() updateFilteredItemCountThrottled(nil, 50, "Retrait - ChangeFilter") end)
     --Enchanting
-    ZO_PreHook(ctrlVars.ENCHANTING.inventory,                       "ChangeFilter", function() FCOIS.updateFilteredItemCountThrottled(nil, 50, "Enchanting - ChangeFilter") end)
+    ZO_PreHook(ctrlVars.ENCHANTING.inventory,                       "ChangeFilter", function() updateFilteredItemCountThrottled(nil, 50, "Enchanting - ChangeFilter") end)
     --PreHook the QuickSlotWindow change filter function
-    local function ChangeFilterQuickSlot(self, filterData)
-        FCOIS.updateFilteredItemCountThrottled(LF_QUICKSLOT, 50, "Quickslots - ChangeFilter")
+    local function changeFilterQuickSlot(self, filterData)
+        updateFilteredItemCountThrottled(LF_QUICKSLOT, 50, "Quickslots - ChangeFilter")
     end
-    ZO_PreHook(ctrlVars.QUICKSLOT_WINDOW, "ChangeFilter", ChangeFilterQuickSlot)
+    ZO_PreHook(ctrlVars.QUICKSLOT_WINDOW, "ChangeFilter", changeFilterQuickSlot)
     --Update the count of items filtered if text search boxes are used (ZOs or Votans Search Box)
     ZO_PreHook(ctrlVars.INVENTORY_MANAGER, "UpdateEmptyBagLabel", function(ctrl, inventoryType, isEmptyList)
         local inventories = ctrlVars.inventories
@@ -1801,7 +1807,7 @@ function FCOIS.CreateHooks()
         if inventoryType == INVENTORY_QUEST_ITEM then
             filterPanelId = "INVENTORY_QUEST_ITEM"
         end
-        FCOIS.updateFilteredItemCountThrottled(filterPanelId, delay, "ZO_InventoryManager - UpdateEmptyBagLabel")
+        updateFilteredItemCountThrottled(filterPanelId, delay, "ZO_InventoryManager - UpdateEmptyBagLabel")
     end)
     --Update inventory slot labels
     ZO_PreHook("UpdateInventorySlots", function()
@@ -1810,9 +1816,9 @@ function FCOIS.CreateHooks()
         --if the addon AdvancedFilters is used, and the AF itemCount is enabled (next to the inventory free slots labels),
         --and FCOIS is calling the function AF.util.updateInventoryInfoBarCountLabel.
         -->Otherwise we would create an endless loop here which will be AF.util.updateInventoryInfoBarCountLabel -> UpdateInventorySlots ->
-        --PreHook in FCOIS to function UpdateInventorySlots -> FCOIS.updateFilteredItemCountThrottled -> FCOIS.updateFilteredItemCount -> AF.util.updateInventoryInfoBarCountLabel ...
+        --PreHook in FCOIS to function UpdateInventorySlots -> updateFilteredItemCountThrottled -> FCOIS.updateFilteredItemCount -> AF.util.updateInventoryInfoBarCountLabel ...
         if not FCOIS.preventerVars.dontUpdateFilteredItemCount then
-            FCOIS.updateFilteredItemCountThrottled(nil, 50, "UpdateInventorySlots")
+            updateFilteredItemCountThrottled(nil, 50, "UpdateInventorySlots")
         end
     end)
 

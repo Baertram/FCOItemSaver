@@ -1218,6 +1218,10 @@ ctrlVars.GUILD_STORE_MENUBAR_BUTTON_SEARCH_NAME = "ZO_TradingHouseMenuBarButton1
 ctrlVars.GUILD_STORE_MENUBAR_BUTTON_SELL = GetControl(ctrlVars.GUILD_STORE, strformat(menuBarButtonStr, "2")) -- ZO_TradingHouseMenuBarButton2
 ctrlVars.GUILD_STORE_MENUBAR_BUTTON_LIST = GetControl(ctrlVars.GUILD_STORE, strformat(menuBarButtonStr, "3")) -- ZO_TradingHouseMenuBarButton3
 ctrlVars.SMITHING                   = SMITHING
+local smithingCtrl = ctrlVars.SMITHING
+local refinementPanel = smithingCtrl.refinementPanel
+local deconstructionPanel = smithingCtrl.deconstructionPanel
+local improvementPanel = smithingCtrl.improvementPanel
 ctrlVars.SMITHING_CLASS             = ZO_Smithing
 ctrlVars.SMITHING_PANEL             = ZO_SmithingTopLevel
 ctrlVars.CRAFTING_CREATION_PANEL    = GetControl(ctrlVars.SMITHING_PANEL, "CreationPanel") -- ZO_SmithingTopLevelCreationPanel
@@ -1427,16 +1431,16 @@ mappingVars.libFiltersPanelIdToInventory = {
 mappingVars.libFiltersPanelIdToCraftingPanelInventory = {
     [LF_ALCHEMY_CREATION]           = ctrlVars.ALCHEMY,
     [LF_RETRAIT]                    = ctrlVars.RETRAIT_RETRAIT_PANEL,
-    [LF_SMITHING_REFINE]            = ctrlVars.SMITHING.refinementPanel,
+    [LF_SMITHING_REFINE]            = refinementPanel,
     [LF_SMITHING_CREATION]          = nil,
-    [LF_SMITHING_DECONSTRUCT]       = ctrlVars.SMITHING.deconstructionPanel,
-    [LF_SMITHING_IMPROVEMENT]       = ctrlVars.SMITHING.improvementPanel,
+    [LF_SMITHING_DECONSTRUCT]       = deconstructionPanel,
+    [LF_SMITHING_IMPROVEMENT]       = improvementPanel,
     [LF_SMITHING_RESEARCH]          = nil,
     [LF_SMITHING_RESEARCH_DIALOG]   = nil,
-    [LF_JEWELRY_REFINE]            = ctrlVars.SMITHING.refinementPanel,
+    [LF_JEWELRY_REFINE]            = refinementPanel,
     [LF_JEWELRY_CREATION]          = nil,
-    [LF_JEWELRY_DECONSTRUCT]       = ctrlVars.SMITHING.deconstructionPanel,
-    [LF_JEWELRY_IMPROVEMENT]       = ctrlVars.SMITHING.improvementPanel,
+    [LF_JEWELRY_DECONSTRUCT]       = deconstructionPanel,
+    [LF_JEWELRY_IMPROVEMENT]       = improvementPanel,
     [LF_JEWELRY_RESEARCH]          = nil,
     [LF_JEWELRY_RESEARCH_DIALOG]   = nil,
 }
@@ -1444,12 +1448,12 @@ mappingVars.libFiltersPanelIdToCraftingPanelInventory = {
 --The filterPanelId to crafting table slot (extraction, deconstruction, refine, retrait, ...) control
 mappingVars.libFiltersPanelIdToCraftingPanelSlot = {
     [LF_RETRAIT]                    = ctrlVars.RETRAIT_RETRAIT_PANEL.retraitSlot,
-    [LF_SMITHING_REFINE]            = ctrlVars.SMITHING.refinementPanel.extractionSlot,
-    [LF_SMITHING_DECONSTRUCT]       = ctrlVars.SMITHING.deconstructionPanel.extractionSlot,
-    [LF_SMITHING_IMPROVEMENT]       = ctrlVars.SMITHING.improvementPanel.improvementSlot,
-    [LF_JEWELRY_REFINE]             = ctrlVars.SMITHING.refinementPanel.extractionSlot,
-    [LF_JEWELRY_DECONSTRUCT]        = ctrlVars.SMITHING.deconstructionPanel.extractionSlot,
-    [LF_JEWELRY_IMPROVEMENT]        = ctrlVars.SMITHING.improvementPanel.improvementSlot,
+    [LF_SMITHING_REFINE]            = refinementPanel.extractionSlot,
+    [LF_SMITHING_DECONSTRUCT]       = deconstructionPanel.extractionSlot,
+    [LF_SMITHING_IMPROVEMENT]       = improvementPanel.improvementSlot,
+    [LF_JEWELRY_REFINE]             = refinementPanel.extractionSlot,
+    [LF_JEWELRY_DECONSTRUCT]        = deconstructionPanel.extractionSlot,
+    [LF_JEWELRY_IMPROVEMENT]        = improvementPanel.improvementSlot,
 }
 
 --The crafting panelIds which should show FCOIS filter buttons
@@ -1461,10 +1465,10 @@ mappingVars.craftingPanelsWithFCOISFilterButtons = {
         [LF_RETRAIT]                    = { usesFCOISFilterButtons = true,  panelControl = ctrlVars.RETRAIT_RETRAIT_PANEL }
     },
     ["SMITHING"] = {
-        [LF_SMITHING_REFINE]            = { usesFCOISFilterButtons = true,  panelControl = ctrlVars.SMITHING.refinementPanel},
+        [LF_SMITHING_REFINE]            = { usesFCOISFilterButtons = true,  panelControl = refinementPanel},
         [LF_SMITHING_CREATION]          = { usesFCOISFilterButtons = false, panelControl = nil},
-        [LF_SMITHING_DECONSTRUCT]       = { usesFCOISFilterButtons = true,  panelControl = ctrlVars.SMITHING.deconstructionPanel},
-        [LF_SMITHING_IMPROVEMENT]       = { usesFCOISFilterButtons = true,  panelControl = ctrlVars.SMITHING.improvementPanel},
+        [LF_SMITHING_DECONSTRUCT]       = { usesFCOISFilterButtons = true,  panelControl = deconstructionPanel},
+        [LF_SMITHING_IMPROVEMENT]       = { usesFCOISFilterButtons = true,  panelControl = improvementPanel},
         [LF_SMITHING_RESEARCH]          = { usesFCOISFilterButtons = false, panelControl = nil},
         [LF_SMITHING_RESEARCH_DIALOG]   = { usesFCOISFilterButtons = false, panelControl = nil},
     },
@@ -1473,16 +1477,16 @@ mappingVars.craftingPanelsWithFCOISFilterButtons = {
 mappingVars.libFiltersPanelIdToCraftingPanelInventory = {
     [LF_ALCHEMY_CREATION]           = ctrlVars.ALCHEMY,
     [LF_RETRAIT]                    = ctrlVars.RETRAIT_RETRAIT_PANEL,
-    [LF_SMITHING_REFINE]            = ctrlVars.SMITHING.refinementPanel,
+    [LF_SMITHING_REFINE]            = refinementPanel,
     [LF_SMITHING_CREATION]          = nil,
-    [LF_SMITHING_DECONSTRUCT]       = ctrlVars.SMITHING.deconstructionPanel,
-    [LF_SMITHING_IMPROVEMENT]       = ctrlVars.SMITHING.improvementPanel,
+    [LF_SMITHING_DECONSTRUCT]       = deconstructionPanel,
+    [LF_SMITHING_IMPROVEMENT]       = improvementPanel,
     [LF_SMITHING_RESEARCH]          = nil,
     [LF_SMITHING_RESEARCH_DIALOG]   = nil,
-    [LF_JEWELRY_REFINE]            = ctrlVars.SMITHING.refinementPanel,
+    [LF_JEWELRY_REFINE]            = refinementPanel,
     [LF_JEWELRY_CREATION]          = nil,
-    [LF_JEWELRY_DECONSTRUCT]       = ctrlVars.SMITHING.deconstructionPanel,
-    [LF_JEWELRY_IMPROVEMENT]       = ctrlVars.SMITHING.improvementPanel,
+    [LF_JEWELRY_DECONSTRUCT]       = deconstructionPanel,
+    [LF_JEWELRY_IMPROVEMENT]       = improvementPanel,
     [LF_JEWELRY_RESEARCH]          = nil,
     [LF_JEWELRY_RESEARCH_DIALOG]   = nil,
 }

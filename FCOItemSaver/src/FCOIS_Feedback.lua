@@ -4,6 +4,9 @@ local FCOIS = FCOIS
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
 
+local debugMessage = FCOIS.debugMessage
+
+
 --==========================================================================================================================================
 --													FCOIS FEEDBACK functions
 --==========================================================================================================================================

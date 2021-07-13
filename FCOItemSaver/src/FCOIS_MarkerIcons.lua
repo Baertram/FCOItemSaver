@@ -4,6 +4,8 @@ local FCOIS = FCOIS
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
 
+local debugMessage = FCOIS.debugMessage
+
 local wm = WINDOW_MANAGER
 
 local strfind = string.find
@@ -580,7 +582,7 @@ end
 
 --Check if the item got an entry in FCOIS.lastMarkedIcons (filled within file src/FCOIS_MarkerIcons.lua, function FCOIS.ClearOrRestoreAllMarkers...))
 --and remove this entry now in order to be able to build a new entry properly via SHIFT + right mouse button
-function FCOIS.checkAndClearLastMarkedIcons(bagId, slotIndex)
+function FCOIS.CheckAndClearLastMarkedIcons(bagId, slotIndex)
     if not FCOIS.settingsVars.settings.contextMenuClearMarkesByShiftKey then return false end
     if bagId == nil or slotIndex == nil then return false end
     local lastMarkedIcons = FCOIS.lastMarkedIcons
@@ -1261,7 +1263,7 @@ function FCOIS.ClearOrRestoreAllMarkers(rowControl, bagId, slotIndex)
                 --Reset the global preventer variable
                 FCOIS.preventerVars.gRestoringMarkerIcons = false
                 --Check if the item mark removed other marks and if a row within another addon (like Inventory Insight) needs to be updated
-                FCOIS.checkIfInventoryRowOfExternalAddonNeedsMarkerIconsUpdate(rowControl, iconId)
+                FCOIS.CheckIfInventoryRowOfExternalAddonNeedsMarkerIconsUpdate(rowControl, iconId)
                 loc_counter = loc_counter + 1
             end
             --Reset the last saved marker array for the current item
