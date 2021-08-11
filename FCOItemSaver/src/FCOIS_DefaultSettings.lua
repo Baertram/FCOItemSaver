@@ -7,7 +7,7 @@ if not FCOIS.libsLoadedProperly then return end
 local currentCharId       = GetCurrentCharacterId()
 
 --Function to set the default settings
-function FCOIS.buildDefaultSettings()
+function FCOIS.BuildDefaultSettings()
 	--The default values for the language and save mode
 	FCOIS.settingsVars.firstRunSettings = {
 		language 	 		    = 1, --Standard: English
@@ -71,6 +71,7 @@ function FCOIS.buildDefaultSettings()
 		allowCompanionInventoryFilter = true,
 		allowOnlyUnbound            = {},
 		blockMarkedRepairKits		= false,
+		blockMarkedGlyphs			= true,
 		blockDestroying				= true,
 		blockRefinement				= true,
 		blockDeconstruction			= true,
@@ -741,5 +742,18 @@ function FCOIS.buildDefaultSettings()
 		if itemType > 0 and allowedFCOISUniqueIdItemTypes[itemType] == nil then
 			FCOIS.settingsVars.defaults.allowedFCOISUniqueIdItemTypes[itemType] = false
 		end
+	end
+
+	--Added with FCOIS v2.1.6
+	-->Custom filterPanel Ids = non standard LibFilters filterPanels
+	local customFilterPanelIds = FCOIS.customFilterPanelIds
+	for _, FCOISCustomFilterPanelId in ipairs(customFilterPanelIds) do
+		--Create 2-dimensional array for the UNDO functions from the addiitonal inventory context menu (flag) menu
+		FCOIS.contextMenuVars.undoMarkedItems[FCOISCustomFilterPanelId] = {}
+
+		FCOIS.settingsVars.defaults.FCOISAdditionalInventoriesButtonOffset[FCOISCustomFilterPanelId] = {
+			["top"] = 0,
+			["left"] = 0,
+		}
 	end
 end

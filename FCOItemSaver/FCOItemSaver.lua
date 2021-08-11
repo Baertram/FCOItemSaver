@@ -18,11 +18,10 @@
 -- [Error/bug & feature messages to check - CHANGELOG since last version] --
 ---------------------------------------------------------------------
 --[ToDo list] --
+--Check for local speed ups. FCOItemSaver.txt was checked until src/FCOIS_OtherAddons.lua
 --____________________________
--- Current max bugs/features/ToDos: 135
+-- Current max bugs/features/ToDos: 150
 --____________________________
-
---In progress: Since 2021-06-03
 
 ------------------------------------------------------------------------------------------------------------------------
 
@@ -113,8 +112,9 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 --#115: 2021-05-13, Baertram  Reposition the additional inventory "flag" icons at crafting tables: Refine, deconstruction, improvement.
 --                            and test if they also fit with AdvancedFilters enabled
 
---#116: ResearchAssistant: Items won't get marked (red rectangle of RA) at the bank after changing settings/reloadUI
+--#116: 2021-05-24: ResearchAssistant: Items won't get marked (red rectangle of RA) at the bank after changing settings/reloadUI
 --#129: 2021-06-01: Removing all marker icons via the add. inv. "flag" context menu does not remove companion item's marker icons
+
 --#131: Error message at login:
 --[[
 user:/AddOns/FCOItemSaver/src/FCOIS_SettingsMenu.lua:2445: attempt to index a nil value
@@ -126,27 +126,60 @@ user:/AddOns/FCOItemSaver/src/FCOIS_SettingsMenu.lua:2485: in function 'FCOIS.Bu
 user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_Loaded'
 |caaaaaa<Locals> eventCode = 65536, addOnName = "FCOItemSaver", bagIdsToFilterForInvSingleSlotUpdate = [table:12]{1 = 1} </Locals>|r
 ]]
---#132: House Bank Withdraw filters do not work
 
+--#140: Error message at login -> related to fixed error 131
+-->Could not create editbox "Gauche:" FCOItemSaver_LAM
+-->Could not create editbox "Haute:" FCOItemSaver_LAM
+----> Seems the fixed error message user:/AddOns/FCOItemSaver/src/FCOIS_SettingsMenu.lua:2445: attempt to index a nil value is causing this now
+
+
+--#145, 2021-07-08, demawi, FCOIS esoui comments, ContextMenu at bank get's vanilla items removed if FCOIS, Custom Item Preview and
+-- Auto Category are enabled
+--TODO Check if the menu's parent is a FCOIS flag invoker button and ONLY then return true!
+--> file src/FCOIS_ContextMenu.lua, function FCOIS.hideAdditionalInventoryFlagContextMenu(override) -> menuVisibleCheck
+--[[
+--Compatibility functions
+local function menuVisibleCheck()
+    --New: Since API10030 - Typo was removed
+    --TODO Check if the menu's parent is a FCOIS flag invoker button and ONLY then return true!
+]]
+
+--#146, 2021-07-10, Baertram, SHIFT + right mouse does not work at quickslots (inventory menu)
+--#149, 2021-08-12, Baertram, Enchanting extraction, right click on add. inv. flag icon which turns protection on does not unslot protected items again!
+--#150, 2021-08-12, Baertram, Inventory, right click on add. inv. flag icon does not change the anti-destroy protection. It simply does nothing.
 
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
---Since last update 2.1.0 - New version: 2.1.1 -> Updated 2021-06-04
+--In progress: Since 2021-07-04
+--#144
+--#146
+--#147
+--#148
+--#149
+
+---------------------------------------------------------------------
+--Since last update 2.1.8 - New version: 2.1.9 -> Updated 2021-08-08
 ---------------------------------------------------------------------
 
 --[Fixed]
---#133: Guild Bank Deposit filters do not work
---#134: If SetTracker is enabled: Error message user:/AddOns/FCOItemSaver/src/FCOIS_OtherAddons.lua:212: attempt to index a nil value
---#135: Error message if House bank items get scanned for autoamtic marks but the house bank is not ready (not in an own house or bank not ready yet) user:/AddOns/FCOItemSaver/src/FCOIS_AutomaticMarks.lua:109: attempt to index a nil value
+--#144, Slotting anything to deconstruction/improvement, leaving the crafting table and trying to create a glyph via CraftStore showed the before slotted item as protected
+-- and prevented the glyph creation
 
 
 --[Changed]
+--#148, Use more local speed up variables in all FCOIS files
+
+
 
 --[Added]
+--#147 Added new API function FCOIS.IsGear(bag, slot)
+-->Global function to return boolean value, if an item is marked with any FCOIS gear marker icons (FCOIS_CON_ICON_GEAR_1 to 5, or dynamic icon defined as gear).
+--> + it will return an array as 2nd return parameter, containing boolean entries for each gear iconId (key). True (value) if item is marked with this gear iconId,
+--> false (value) if not.
+
 
 --[Added on request]
-
 
 
 --************************************************************************************************************************
@@ -182,7 +215,7 @@ function FCOIS.FCOItemSaver_CheckGamePadMode(showChatOutputOverride)
     if IsInGamepadPreferredMode() then
         --Gamepad enabled but addon AdvancedDisableControllerUI is enabled and is not showing the gamepad mode for the inventory,
         --but the normal inventory
-        if FCOIS.checkIfADCUIAndIsNotUsingGamepadMode() then
+        if FCOIS.CheckIfADCUIAndIsNotUsingGamepadMode() then
             return false
         else
             if showChatOutputOverride or FCOIS.preventerVars.noGamePadModeSupportTextOutput == false then

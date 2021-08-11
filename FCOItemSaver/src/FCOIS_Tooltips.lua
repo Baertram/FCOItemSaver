@@ -4,9 +4,11 @@ local FCOIS = FCOIS
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
 
+local debugMessage = FCOIS.debugMessage
+
 local wm = WINDOW_MANAGER
 
-local checkIfProtectedSettingsEnabled = FCOIS.checkIfProtectedSettingsEnabled
+local checkIfProtectedSettingsEnabled = FCOIS.CheckIfProtectedSettingsEnabled
 local myGetItemDetails = FCOIS.MyGetItemDetails
 
 -- =====================================================================================================================
@@ -85,7 +87,7 @@ function FCOIS.CreateToolTip(markerControl, markerId, doHide, pUpdateAllEquipmen
                 --Set variable for IIfAcall to true
                 externalAddonCall[IIfAaddonCallConst] = true
                 --Check if an IIfA row was right clicked and if the needed data (itemInstace or uniqueId, bag and slot) are given for that row
-                local itemLinkIIfA, itemInstanceOrUniqueIdIIfA, bagIdIIfA, slotIndexIIfA = FCOIS.checkAndGetIIfAData(markersParentControl, markersParentControl:GetParent())
+                local itemLinkIIfA, itemInstanceOrUniqueIdIIfA, bagIdIIfA, slotIndexIIfA = FCOIS.CheckAndGetIIfAData(markersParentControl, markersParentControl:GetParent())
                 itemLink, itemInstanceOrUniqueId, bagId, slotIndex = itemLinkIIfA, itemInstanceOrUniqueIdIIfA, bagIdIIfA, slotIndexIIfA
             end
         else

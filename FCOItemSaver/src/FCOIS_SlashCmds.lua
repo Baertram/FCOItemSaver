@@ -4,6 +4,12 @@ local FCOIS = FCOIS
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
 
+local debugMessage = FCOIS.debugMessage
+
+local strgmatch = string.gmatch
+local strlower = string.lower
+local strlen = string.len
+
 -- =====================================================================================================================
 --  Slash commands & command handler functions
 -- =====================================================================================================================
@@ -63,9 +69,9 @@ function FCOIS.command_handler(args)
     --Parse the arguments string
     local options = {}
     --local searchResult = {} --old: searchResult = { string.match(args, "^(%S*)%s*(.-)$") }
-    for param in string.gmatch(args, "([^%s]+)%s*") do
+    for param in strgmatch(args, "([^%s]+)%s*") do
         if (param ~= nil and param ~= "") then
-            options[#options+1] = string.lower(param)
+            options[#options+1] = strlower(param)
         end
     end
 
@@ -89,7 +95,7 @@ function FCOIS.command_handler(args)
         if options[2] ~= nil and options[2] ~= "" then
             withDetails = toboolean(tostring(options[2])) or false
         end
-        if options[3] ~= nil and options[3] ~= "" and string.len(options[3]) == FCOIS.APIVersionLength then
+        if options[3] ~= nil and options[3] ~= "" and strlen(options[3]) == FCOIS.APIVersionLength then
             apiVersion = tonumber(options[3])
         end
         if options[4] ~= nil and options[4] ~= "" then
@@ -106,7 +112,7 @@ function FCOIS.command_handler(args)
         if options[2] ~= nil and options[2] ~= "" then
             withDetails = true
         end
-        if options[3] ~= nil and options[3] ~= "" and string.len(options[3]) == FCOIS.APIVersionLength then
+        if options[3] ~= nil and options[3] ~= "" and strlen(options[3]) == FCOIS.APIVersionLength then
             apiVersion = tonumber(options[3])
         end
         local title = locVars["options_restore_marker_icons"] .. " - API " .. tostring(apiVersion)

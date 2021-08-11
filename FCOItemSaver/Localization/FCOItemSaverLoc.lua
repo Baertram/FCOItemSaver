@@ -49,7 +49,7 @@ FCOIS.localizationVars.localizationAll = {
 	--English
     [FCOIS_CON_LANG_EN] = {
 		-- Options menu
-        ["options_description_lam_menu_is_loading"] = "|cFF0000!!!ATTNETION!!!\n\nThe FCOIS settings menu is currently being build. Please wait and do not change any settings until this icon vanished!\n\nESO could be laggy for a few seconds.\nAs soon as all settings are build this icon will vanish and you can start to change the settings.",
+        ["options_description_lam_menu_is_loading"] = "|cFF0000!!!ATTENTION!!!\n\nThe FCOIS settings menu is currently being build. Please wait and do not change any settings until this icon vanished!\n\nESO could be laggy for a few seconds.\nAs soon as all settings are build this icon will vanish and you can start to change the settings.",
         ["options_description"] = "FCOItemSaver helps you to manage your items by help of icons. In addition it lets you hide/view and protect those items",
 		["options_header1"] 			 		 = "General settings",
     	["options_language"] 					 = "Language",
@@ -161,6 +161,7 @@ FCOIS.localizationVars.localizationAll = {
         ["options_scan_ZOs_lock_functions_warning"]	= "Do you really want to remove the ingame locks on your items and transfer them to FCOItemSaver's \'lock\' marker icon?\n\nItems will be scanned in packages of 50 items so the server will not kick you for spam. Please wait for it to finish and check the chat messages.",
 		["options_header_icon_options"]		 	 = "Icon position, sort, etc.",
 		["options_header_marking_options"]		 = "Marks",
+        ["options_header_crafting"]              = GetString(SI_SKILLTYPE8),
 		["options_remove_all_markers_with_shift_rightclick"]	= "Remove all: <mod. key> + RMB",
 		["options_remove_all_markers_with_shift_rightclick_TT"]	= "Remove all markers from an item as you right click the item while holding the <modifier key> (defined next to this setting) pressed.\n\nIf you <modifier key> + right click it again the last marker icons will be restored for that item!\n\nThis will only work until your next reload of the UI/logout!\n\nIf an item got an undo entry and you manually add/remove a marker icon the undo entry will be deleted!",
 		["options_modifier_key"]			= "Modifier key",
@@ -454,9 +455,12 @@ FCOIS.localizationVars.localizationAll = {
         ["options_header_deactivated_symbols"]						= "Deactivated icons",
         ["options_deactivated_symbols_apply_anti_checks"]			= "Apply anti-checks",
         ["options_deactivated_symbols_apply_anti_checks_TT"]	= "Also apply the normal anti-destroy/anti-deconstruct/anti-* checks for items marked with a disabled (and thus not visible) marker icon.\nTo unmark the item with the marker icon you still need to activate the symbol again!",
-		["options_header_repair"] = "Repair",
+        ["options_header_repair"] = GetString(SI_STORE_MODE_REPAIR),
+        ["options_header_enchant"] = GetString(SI_ITEMTYPEDISPLAYCATEGORY15),
 		["options_allow_marked_repair"] = "Block marked repair kits",
-		["options_allow_marked_repair_TT"] = "Do not allow to use marked repair kits to repair your equipment",
+		["options_allow_marked_repair_TT"] = "Do not allow to use marked repair kits to repair your equipment.\nYou are still able to remove the marker icon in the repair dialog to allow the repair with that repair item!",
+		["options_allow_marked_enchant"] = "Block marked glyphs",
+		["options_allow_marked_enchant_TT"] = "Do not allow to use marked glyphs to enchant your equipment.\nYou are still able to remove the marker icon in the enchant dialog to allow the enchanting with that glyph!",
         ["options_enable_filtered_item_count"]	        = "Count of shown items at 'NAME'",
         ["options_enable_filtered_item_count_TT"]	= "Show the count of actually shown items in front of the sort header entry 'NAME' after each change of a filter",
 		--Other options
@@ -1348,6 +1352,7 @@ FCOIS.localizationVars.localizationAll = {
         ["options_scan_ZOs_lock_functions_warning"]	= "Wollen Sie wirklich den Gegenstands-Schutz vom Standard Schloss Symbol zum FCOItemSaver \'Schloss\' Symbol übertragen?\n\nGegenstände werden in 50er Paketen gescannt. Dies dauert etwas. Bitte beachte den Chat!",
         ["options_header_icon_options"]		 	 = "Symbol Position, Sortierung, etc.",
         ["options_header_marking_options"]		 = "Markierungen",
+        ["options_header_crafting"]              = GetString(SI_SKILLTYPE8),
         ["options_remove_all_markers_with_shift_rightclick"]	= "Alle entfernen: <Mod. Taste> + RMT TEST LANG TEXT",
         ["options_remove_all_markers_with_shift_rightclick_TT"]	= "Entferne alle Markierungen von einem Gegenstand, wenn du diesen mit der rechten Maustaste anklickst während du die <Modifikator Taste> gedrückt hältst.\nWenn du die rechte Maustaste + <Modifikator Taste> erneut auf diesem Gegenstand drückst werden die letzten Markierungen wieder hergestellt.\n\nDies funktioniert nur bis zum nächsten Neuladen der Benutzeroberfläche/Logout!\n\nWenn manuelle Markierungen auf einem Gegenstand gesetzt/entfernt werden, der einen Undo Eintrag besitzt, so wird dieser Undo Eintrag geleert!",
         ["options_modifier_key"]			= "Modifikator Taste",
@@ -1645,9 +1650,12 @@ FCOIS.localizationVars.localizationAll = {
         ["options_header_deactivated_symbols"]						= "Deaktivierte Symbole",
         ["options_deactivated_symbols_apply_anti_checks"]			= "Wende Anti-Überprüfungen an",
         ["options_deactivated_symbols_apply_anti_checks_TT"]	= "Es werden für Gegenstände, welche mit einem zur Zeit deaktivierten (und damit nicht sichtbarem) Symbol markiert wurden, ebenfalls die normalen Anti-Zerstören/Anti-Verwerten/Anti-* Überprüfungen durchgeführt!\nSollten Sie eine deaktivierte Markierung entfernen möchten, so müssen Sie das deaktivierte Symbol zunächst wieder aktivieren.",
-        ["options_header_repair"] = "Reperatur",
+        ["options_header_repair"] = GetString(SI_STORE_MODE_REPAIR),
+        ["options_header_enchant"] = GetString(SI_ITEMTYPEDISPLAYCATEGORY15),
         ["options_allow_marked_repair"] = "Deaktiviere Reperatur Set",
-        ["options_allow_marked_repair_TT"] = "Verhindere, dass mit einem Symbol markierte Reperaturmaterialien für die Reperatur deiner Ausrüstung verwendet werden können",
+        ["options_allow_marked_repair_TT"] = "Verhindere, dass mit einem Symbol markierte Reperaturmaterialien für die Reperatur deiner Ausrüstung verwendet werden können.\nDu kannst das Symbol im Reperatur Dialog jederzeit entfernen, um das Reperaturwerkzeug zu erlauben.",
+		["options_allow_marked_enchant"] = "Deaktiviere Glyphen Verzaubern",
+		["options_allow_marked_enchant_TT"] = "Verhindere, dass mit einem Symbol markierte Glyphen für das Verzaubern deiner Ausrüstung verwendet werden können.\nDu kannst das Symbol im Verzaubern Dialog jederzeit entfernen, um die Glyphe zum Verzaubern zu erlauben.",
         ["options_enable_filtered_item_count"]	        = "Anzahl angezeigte Gegenstände vor 'NAME'",
         ["options_enable_filtered_item_count_TT"]	= "Bei jeder Veränderung der Filter wird die Anzahl der aktuell angezeigten Gegenstände vor der Sortier Überschrift 'Name' angezeigt",
         --Other options
@@ -2426,6 +2434,7 @@ FCOIS.localizationVars.localizationAll = {
 		["options_scan_ZOs_lock_functions_TT"] = "Transférer les objets que vous avez verrouillé avec le verrouillage en cours de partie (icône de verrou gris) vers l'icône 1 de FCOItemSaver. Cela effacera les icônes d'origine et les remplacera par les icônes 1 de FCOIS.",
 		["options_scan_ZOs_lock_functions_warning"] = "Voulez-vous vraiment enlever les verrouillages d'origine de vos objets et les transférer vers l'icône 1 de FCOItemSaver ?",
 		["options_header_marking_options"]		 		 = "Marques",
+        ["options_header_crafting"]              = GetString(SI_SKILLTYPE8),
 		["options_remove_all_markers_with_shift_rightclick"]            =    "Tout supprimer: SHIFT + BDS",
 	    ["options_remove_all_markers_with_shift_rightclick_TT"]    =    "Supprime tous les marqueurs d'un objet en effectuant un Shift + Clic droit sur celui-ci.\n\nSi vous cliquez à nouveau, les derniers marqueurs seront restaurés pour cet objet !",
 		["options_header_icon_options"]		 	 		 = "Position d'icône, triage, etc.",
@@ -2658,7 +2667,8 @@ FCOIS.localizationVars.localizationAll = {
 		["options_header_deactivated_symbols"]                      = "Désactivation symboles",
 		["options_deactivated_symbols_apply_anti_checks"]           = "Appliquez les contrôles anti",
 		["options_deactivated_symbols_apply_anti_checks_TT"]   = "Vous pouvez également appliquer le contrôle normal Anti-destruction / Anti-déconstruction / Anti-amélioration / Anti-courrier / Anti-commerce / Anti-Vente / Anti-Extraction / etc... pour les objets sélectionnés, même si le symbole de marque est désactivé actuellement. Pour sélectionner/désélectionner l'objet de nouveau vous devrez activer le symbole !",
-		["options_header_repair"] = "Réparer",
+        ["options_header_repair"] = GetString(SI_STORE_MODE_REPAIR),
+        ["options_header_enchant"] = GetString(SI_ITEMTYPEDISPLAYCATEGORY15),
 		["options_allow_marked_repair"] = "Kits de réparation marqués",
 		["options_allow_marked_repair_TT"] = "Interdit l'utilisation des kits de réparation d'équipement marqués",
 		--Other options
@@ -3174,6 +3184,7 @@ FCOIS.localizationVars.localizationAll = {
 
 		["options_header_icon_options"]		 	 = "Posición de icono, tipo, etc.",
 		["options_header_marking_options"]		 = "Marcas",
+        ["options_header_crafting"]              = GetString(SI_SKILLTYPE8),
 
 		["options_icons_dynamic"]				 		 = "Dynamic icons",
 		["options_icons_non_gear"]						 = "Normal icons",
@@ -3587,6 +3598,7 @@ FCOIS.localizationVars.localizationAll = {
         ["options_savedVariables_dropdown_selection2"] = "アカウントワイド",
 		["options_header_icon_options"]		 	 = "アイコンポジション、ソート、etc",
 		["options_header_marking_options"]		 = "マーク",
+        ["options_header_crafting"]              = GetString(SI_SKILLTYPE8),
     	["options_remove_all_markers_with_shift_rightclick"]			=	"すべて解除する: SHIFT + 右クリック",
 		["options_remove_all_markers_with_shift_rightclick_TT"]	=	"シフトキーを押している間、全ての右クリックしたアイテムからマーカーを解除します。\n\nアイテムを再度Shift+右クリックすると、前回のマーカーアイコンが復元されます！",
         ["options_research_filter"]              = "'研究予約'アイテムを許可",
@@ -3825,7 +3837,8 @@ FCOIS.localizationVars.localizationAll = {
         ["options_header_deactivated_symbols"]                      = "無効化されたアイコン",
         ["options_deactivated_symbols_apply_anti_checks"]           = "アンチ破壊とアンチ*チェックを適用",
         ["options_deactivated_symbols_apply_anti_checks_TT"]   = "これは現在マーカーシンボルが無効化されていても、マークされたアイテムのノーマルアンチ破壊/アンチ解体/アンチ改良/アンチメール/アンチトレード/アンチ売却/アンチ解凍/etc.チェックが適用されます。アイテムをマークする/しないためにはシンボルを再度有効化する必要があります！",
-        ["options_header_repair"] = "修理",
+        ["options_header_repair"] = GetString(SI_STORE_MODE_REPAIR),
+        ["options_header_enchant"] = GetString(SI_ITEMTYPEDISPLAYCATEGORY15),
         ["options_allow_marked_repair"] = "マークされた修理キットをブロック",
         ["options_allow_marked_repair_TT"] = "マークされた修理キットを装備の修理に使用するのを許可しません",
         --Other options
@@ -4313,6 +4326,7 @@ FCOIS.localizationVars.localizationAll = {
 		["options_savedVariables_dropdown_selection2"] = "Oбщиe нa aккaунт",
 		["options_header_icon_options"]          = "Положение икoнок, сортировка, и т.п.",
 		["options_header_marking_options"]		 = "пoмeткa",
+        ["options_header_crafting"]              = GetString(SI_SKILLTYPE8),
 		["options_remove_all_markers_with_shift_rightclick"]			=	"Снять все: SHIFT + RMB",
 		["options_remove_all_markers_with_shift_rightclick_TT"]	=	"Снять все пометки с предмета по клику правой кнопкой мыши на предмете при удерживаемой нажатой клавише SHIFT.\n\nПри повторном SHIFT + правый клик на предмет будет возвращена последняя пометка!",
 		["options_research_filter"] = "Paзpeшить иccлeдoвaниe пoмeчeнныx для нeгo",
@@ -4554,7 +4568,8 @@ FCOIS.localizationVars.localizationAll = {
 		["options_header_deactivated_symbols"]= "Oтключeнныe пoмeтки",
 		["options_deactivated_symbols_apply_anti_checks"]= "Пpимeнять зaпpeты Уничтoжeния и д.p.",
 		["options_deactivated_symbols_apply_anti_checks_TT"]= "Тaкжe пpимeнять пpaвилa Зaпpeтoв Уничтoжeния, Дeкoнcтpукции, Улучшeния, Oтпpaвки пoчтoй, Тopгoвли, Пpoдaжи и дp. к пoмeчeнным пpeдмeтaм, дaжe ecли этoт вид пoмeтки в дaнный мoмeнт oтключeн. Oднaкo, для уcтaнoвки/cнятия этoй пoмeтки вaм пpидeтcя в нacтpoйкax включить 'Иcпoльзoвaть пoмeтку ...'!",
-		["options_header_repair"] = "Пoчинкa",
+        ["options_header_repair"] = GetString(SI_STORE_MODE_REPAIR),
+        ["options_header_enchant"] = GetString(SI_ITEMTYPEDISPLAYCATEGORY15),
 		["options_allow_marked_repair"] = "Блoкиpoвaть пoмeчeнныe peмкoмплeкты",
 		["options_allow_marked_repair_TT"] = "Зaпpeтить иcпoльзoвaть пoмeчeнныe peмкoмплeкты для peмoнтa бpoни",
 		--Other options
@@ -5055,7 +5070,7 @@ local japanese  = FCOIS.localizationVars.localizationAll[FCOIS_CON_LANG_JP]
 local russian   = FCOIS.localizationVars.localizationAll[FCOIS_CON_LANG_RU]
 
 --Generate settingsmenu texts for the dynamic icons
-function FCOIS.generateLocalizedDynamicIconTexts()
+function FCOIS.GenerateLocalizedDynamicIconTexts()
     --Add texts for settings menu (the different languages)
 
     --Build texts etc. for non-dynamic icons
@@ -5120,10 +5135,10 @@ function FCOIS.generateLocalizedDynamicIconTexts()
             german["options_icon" .. tostring(fcoisDynIconNr).."_texture_TT"]		= "Symbol der " .. tostring(dynIconId) .. ". dynamischen Filter Markierung"
             german["options_icon" .. tostring(fcoisDynIconNr).."_size"]				    = "Größe"
             german["options_icon" .. tostring(fcoisDynIconNr).."_size_TT"]		    = "Größe des " .. tostring(dynIconId) .. ". dynamischen Filter Symbols"
-            english["options_icon" .. tostring(fcoisDynIconNr).."_offsetX"]				= "Abstand X"
-            english["options_icon" .. tostring(fcoisDynIconNr).."_offsetX_TT"]		= "Abstand der position auf der X-Achse des " .. tostring(dynIconId) .. ". dynamischen Filter Markierungssymbols"
-            english["options_icon" .. tostring(fcoisDynIconNr).."_offsetY"]				= "Abstand Y"
-            english["options_icon" .. tostring(fcoisDynIconNr).."_offsetY_TT"]		= "Abstand der Position auf der Y-Achse des " .. tostring(dynIconId) .. ". dynamischen Filter Markierungssymbols"
+            german["options_icon" .. tostring(fcoisDynIconNr).."_offsetX"]				= "Abstand X"
+            german["options_icon" .. tostring(fcoisDynIconNr).."_offsetX_TT"]		= "Abstand der position auf der X-Achse des " .. tostring(dynIconId) .. ". dynamischen Filter Markierungssymbols"
+            german["options_icon" .. tostring(fcoisDynIconNr).."_offsetY"]				= "Abstand Y"
+            german["options_icon" .. tostring(fcoisDynIconNr).."_offsetY_TT"]		= "Abstand der Position auf der Y-Achse des " .. tostring(dynIconId) .. ". dynamischen Filter Markierungssymbols"
             german["options_icon" .. tostring(fcoisDynIconNr).."_tooltip_text"]		    = "Markiert mit " .. tostring(dynIconId) .. ". dynamischen"
             german["options_icon" .. tostring(fcoisDynIconNr).."_activate_text"]        = "Aktiviere " .. tostring(dynIconId) .. ". dynamische"
             german["options_icon" .. tostring(fcoisDynIconNr).."_enabled"]				= tostring(dynIconId) .. ". dynamische aktivieren"
@@ -5143,10 +5158,14 @@ function FCOIS.generateLocalizedDynamicIconTexts()
             french["options_icon" .. tostring(fcoisDynIconNr).."_texture_TT"]		= "Définit l'icône du " .. iconToOrdinalStrFr .. "dynamique"
             french["options_icon" .. tostring(fcoisDynIconNr).."_size"]				    = "Taille"
             french["options_icon" .. tostring(fcoisDynIconNr).."_size_TT"]		    = "Définit la taille de l'icône du " .. iconToOrdinalStrFr .." dynamique"
+            french["options_icon" .. tostring(fcoisDynIconNr).."_offsetX"]				= "L'offset X"
+            french["options_icon" .. tostring(fcoisDynIconNr).."_offsetX_TT"]		= "L'offset X de " .. tostring(dynIconId) .. iconToOrdinalStrFr .. " icône de filtre dynamique"
+            french["options_icon" .. tostring(fcoisDynIconNr).."_offsetY"]				= "L'offset Y"
+            french["options_icon" .. tostring(fcoisDynIconNr).."_offsetY_TT"]		= "L'offset Y de " .. tostring(dynIconId) .. iconToOrdinalStrFr .. " icône de filtre dynamique"
             french["options_icon" .. tostring(fcoisDynIconNr).."_tooltip_text"]		    = "Marqué comme " .. iconToOrdinalStrFr .. ". dynamique"
             french["options_icon" .. tostring(fcoisDynIconNr).."_activate_text"]        = "Activé " .. iconToOrdinalStrFr .. ". dynamique"
             french["options_icon" .. tostring(fcoisDynIconNr).."_enabled"]				= "Activé " .. iconToOrdinalStrFr .. ". dynamique"
-            french["options_icon" .. tostring(fcoisDynIconNr).."_enabled_TT"]      = "The " .. iconToOrdinalStrFr .. "th dynamic icon is enabled and can be used to mark items. If you disable this setting the context menus won't show the entry and you cannot use the icon."
+            french["options_icon" .. tostring(fcoisDynIconNr).."_enabled_TT"]           = "La ".. iconToOrdinalStrFr .." icône dynamique est activée et peut être utilisée pour marquer des éléments. Si vous désactivez ce paramètre, les menus contextuels n'afficheront pas l'entrée et vous ne pourrez pas utiliser l'icône."
             french["rightclick_menu_mark_dynamic" .. iconToOrdinalStrFr]     	        = "Marquer avec la " .. iconToOrdinalStrFr .. ". dynamique"
             french["rightclick_menu_demark_dynamic" .. iconToOrdinalStrFr]   	        = "Dé-marquer la " .. iconToOrdinalStrFr .. ". dynamique"
             french["button_context_menu_mark_all_as_dynamic" .. iconToOrdinalStrFr]    = "+ " .. iconToOrdinalStrFr .. ". dynamique"
@@ -5294,6 +5313,8 @@ function FCOIS.GetLibFiltersPanelIdText(language, libFilterPanelId)
             [LF_JEWELRY_RESEARCH]		    = GetString(SI_ITEMFILTERTYPE24) .. " " .. GetString(SI_SMITHING_TAB_RESEARCH),
             [LF_JEWELRY_RESEARCH_DIALOG ]   = GetString(SI_ITEMFILTERTYPE24) .. " " .. GetString(SI_SMITHING_TAB_RESEARCH) .. " Dialog",
             [LF_INVENTORY_COMPANION]		= GetString(SI_UNIT_FRAME_NAME_COMPANION) .. " " .. GetString(SI_INVENTORY_MENU_INVENTORY),
+            [FCOIS_CON_LF_CHARACTER]        = GetString(SI_BINDING_NAME_TOGGLE_CHARACTER),
+            [FCOIS_CON_LF_COMPANION_CHARACTER] = GetString(SI_UNIT_FRAME_NAME_COMPANION) .. " " .. GetString(SI_BINDING_NAME_TOGGLE_CHARACTER),
         }
     --German
     else
@@ -5358,6 +5379,14 @@ for filterPanelId=1, numFilterPanels, 1 do
     german[optionsFilterPanelIdNameStart .. filterPanelIdStr]   = "LibFilters - Filter Bereich " .. filterPanelIdStr
     russian[optionsFilterPanelIdNameStart .. filterPanelIdStr]  = "LibFilters - Filter panel " .. filterPanelIdStr
     japanese[optionsFilterPanelIdNameStart .. filterPanelIdStr] = "LibFilters - Filter panel " .. filterPanelIdStr
+end
+--FCOIS custom filterPanelIds
+for _, customFCOISfilterPanelId in ipairs(FCOIS.customFilterPanelIds) do
+    english[optionsFilterPanelIdNameStart .. customFCOISfilterPanelId]  = "LibFilters - Filter panel " .. customFCOISfilterPanelId
+    french[optionsFilterPanelIdNameStart .. customFCOISfilterPanelId]   = "LibFilters - Panel de filtre " .. customFCOISfilterPanelId
+    german[optionsFilterPanelIdNameStart .. customFCOISfilterPanelId]   = "LibFilters - Filter Bereich " .. customFCOISfilterPanelId
+    russian[optionsFilterPanelIdNameStart .. customFCOISfilterPanelId]  = "LibFilters - Filter panel " .. customFCOISfilterPanelId
+    japanese[optionsFilterPanelIdNameStart .. customFCOISfilterPanelId] = "LibFilters - Filter panel " .. customFCOISfilterPanelId
 end
 
 --Error messages
