@@ -20,7 +20,7 @@
 --[ToDo list] --
 --Check for local speed ups. FCOItemSaver.txt was checked until src/FCOIS_OtherAddons.lua
 --____________________________
--- Current max bugs/features/ToDos: 150
+-- Current max bugs/features/ToDos: 151
 --____________________________
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -146,17 +146,19 @@ local function menuVisibleCheck()
 
 --#146, 2021-07-10, Baertram, SHIFT + right mouse does not work at quickslots (inventory menu)
 --#149, 2021-08-12, Baertram, Enchanting extraction, right click on add. inv. flag icon which turns protection on does not unslot protected items again!
---#150, 2021-08-12, Baertram, Inventory, right click on add. inv. flag icon does not change the anti-destroy protection. It simply does nothing.
+--#151, 2021-08-12, Baertram, Add setting to re-apply the marker icons after enchanting an item
 
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
 --In progress: Since 2021-07-04
 --#144
+--#145
 --#146
 --#147
 --#148
 --#149
+--#150
 
 ---------------------------------------------------------------------
 --Since last update 2.1.8 - New version: 2.1.9 -> Updated 2021-08-08
@@ -165,6 +167,8 @@ local function menuVisibleCheck()
 --[Fixed]
 --#144, Slotting anything to deconstruction/improvement, leaving the crafting table and trying to create a glyph via CraftStore showed the before slotted item as protected
 -- and prevented the glyph creation
+--#145, ContextMenu at bank get's vanilla items removed if FCOIS, Custom Item Preview and AutoCategory are enabled
+--#150, Inventory, right click on add. inv. flag icon does not change the anti-destroy protection.
 
 
 --[Changed]

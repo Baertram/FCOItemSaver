@@ -105,12 +105,14 @@ end
 --Is a ZO_Menu visible
 local function menuVisibleCheck(checkIfFCOISAddInvFlagOwner, menuOwnerControlToCheck)
     checkIfFCOISAddInvFlagOwner = checkIfFCOISAddInvFlagOwner or false
+--d("[FCOIS]menuVisibleCheck-checkIfFCOISAddInvFlagOwner: " ..tostring(checkIfFCOISAddInvFlagOwner) .. ", menuOwnerControlToCheck: " ..tostring(menuOwnerControlToCheck))
     if IsMenuVisible then
         local isVisible = IsMenuVisible()
         --Check if the menu's parent is a FCOIS flag invoker button and ONLY then return true!
         if isVisible and checkIfFCOISAddInvFlagOwner == true then
             isVisible = isMenuOwnerFCOISAdditionalFlagContextMenu(menuOwnerControlToCheck)
         end
+--d(">isVisible: " ..tostring(isVisible))
         return isVisible
     end
     return false

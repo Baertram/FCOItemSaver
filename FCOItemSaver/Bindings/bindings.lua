@@ -163,7 +163,7 @@ function FCOIS.InitializeInventoryKeybind()
             name = GetString(SI_BINDING_NAME_FCOIS_JUNK_AND_MARK_SELL_ITEM),
             keybind = "FCOIS_JUNK_AND_MARK_SELL_ITEM",
             callback = function()
-                d("[FCOIS]Keybind pressed for 'Junk item'")
+                --d("[FCOIS]Keybind pressed for 'Junk item'")
                 FCOIS.MarkAndRunOnItemByKeybind({FCOIS_CON_ICON_SELL}, 'junk')
             end,
             visible = UpdateAndDisplayAddItemToJunkKeybind,

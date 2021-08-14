@@ -1128,7 +1128,7 @@ local removeItemFromCraftSlot = craftPrev.RemoveItemFromCraftSlot
 
 --Function to check if items for extraction/deconstruction/improvement are currently saved (got saved after adding them to the extraction slot)
 function craftPrev.CheckPreventCrafting(override, extractSlot, extractWhereAreWe)
-d("[FCOIS]craftPrev.CheckPreventCrafting")
+--d("[FCOIS]craftPrev.CheckPreventCrafting")
     override = override or false
     --Initialize the return variable with false so this PreHook function won't abort the extraction
     local retVar = false
