@@ -1272,6 +1272,13 @@ function FCOIS.CreateHooks()
     end)
 
     --======== QUICK SLOTS =========================================================
+    --Pre Hook the quickslots for prevention methods
+    --Register a secure posthook on visibility change of a scrolllist's row -> At the backpack inventory list
+    --dataTypes[1] = normal inventory items
+    --dataTypes[2] = quest items
+    --dataTypes[3] = collectibles
+    SecurePostHook(ctrlVars.QUICKSLOT_LIST.dataTypes[1], "setupCallback", onScrollListRowSetupCallback)
+
     --Pre Hook the 4th menubar button (Quickslots) handler at the player inventory
     ZO_PreHookHandler(ctrlVars.INV_MENUBAR_BUTTON_QUICKSLOTS, "OnMouseUp", function(control, button, upInside)
         if (button == MOUSE_BUTTON_INDEX_LEFT and upInside) then

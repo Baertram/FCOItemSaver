@@ -627,10 +627,10 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
 
     local isDynamicIcon = mappingVars.iconIsDynamic
     --local isGearIcon = mappingVars.iconIsGear
-	local isGearIcon = settings.iconIsGear
+    local isGearIcon = settings.iconIsGear
     local notAllowedParentCtrls = checkVars.notAllowedContextMenuParentControls
-    local notAllowedCtls = checkVars.notAllowedContextMenuControls
-    local researchableIcons = mappingVars.iconIsResearchable
+    local notAllowedCtrls       = checkVars.notAllowedContextMenuControls
+    local researchableIcons     = mappingVars.iconIsResearchable
     local iconsDisabledAtCompanion = mappingVars.iconIsDisabledAtCompanion
     local allowedCharacterCtrls = checkVars.allowedCharacterEquipmentWeaponControlNames
     local allowedCharacterJewelryControls = checkVars.allowedCharacterEquipmentJewelryControlNames
@@ -650,6 +650,7 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
     local isResearchAble = researchableIcons[markId] or false
     local isIconDisabledAtCompanion = iconsDisabledAtCompanion[markId] or false
 
+    ------------------------------------------------------------------------------------------------------------------------
     local notAllowed = false
     local notAllowedCollectible = false
     --[[
@@ -662,12 +663,48 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
         notAllowedCollectible = (collectibleId and collectibleId > 0) or false
     end
     ]]
-    notAllowed = (notAllowedCollectible or notAllowedParentCtrls[parentName] or notAllowedCtls[controlName]) or false
---[[
-if customMenuVars.customMenuCurrentCounter == 1 then
-d("[FCOIS]AddMark - CollectibleId: " ..tostring(collectibleId) .. ", notAllowedCollectible: " ..tostring(notAllowedCollectible) .. ", notAllowed: " ..tostring(notAllowed))
-end
-]]
+    --If quickslots are shown and the collectibles subfilters are selected: Do not allow the FCOIS context menu
+    -->Will still show on quest items! So we need to extra check the currentFilter.descriptor
+    --Also do not show at normal inventory quest items
+    local quickSlotsHidden = ctrlVars.QUICKSLOT:IsHidden()
+    local quickSlotsCurrentFilter = ctrlVars.QUICKSLOT_WINDOW.currentFilter
+    local quickSlotsCurrentFilterDescriptor  = quickSlotsCurrentFilter and quickSlotsCurrentFilter.descriptor
+    local quickslotCurrentFilterIsNotAllowed = (quickSlotsCurrentFilter ~= nil and (quickSlotsCurrentFilter.extraInfo ~= nil or quickSlotsCurrentFilterDescriptor == 26)) or false
+
+    local questItemsInventoryShown = false --TODO
+
+    notAllowed                               = (notAllowedCollectible or notAllowedParentCtrls[parentName] or notAllowedCtrls[controlName]
+            --Quickslots
+            or ( not quickSlotsHidden and quickslotCurrentFilterIsNotAllowed)
+            --Inventory quest items
+            or questItemsInventoryShown
+        ) or false
+    --[[
+    if customMenuVars.customMenuCurrentCounter == 1 then
+    d("[FCOIS]AddMark - CollectibleId: " ..tostring(collectibleId) .. ", notAllowedCollectible: " ..tostring(notAllowedCollectible) .. ", notAllowed: " ..tostring(notAllowed))
+    end
+    ]]
+
+
+    ------------------------------------------------------------------------------------------------------------------------
+    --Introduced with FCOIS version 1.0.6
+    --Get bagId and slotIndex
+    local bag, slotId
+    if not notAllowed then
+        --Were the bagId and slotIndex already set from IIfA savedvars?
+        if FCOIS.IIfAclicked ~= nil then
+            bag = FCOIS.IIfAclicked.bagId
+            slotId = FCOIS.IIfAclicked.slotIndex
+        else
+            bag, slotId = myGetItemDetails(rowControl)
+        end
+        --Check if item is a quickslot item at the 'ALL' subfilter but got no bagId or no slotIndex
+        if bag == nil and slotId == nil and not quickSlotsHidden and quickSlotsCurrentFilterDescriptor == 0 then
+            notAllowed = true
+        end
+    end
+
+    ------------------------------------------------------------------------------------------------------------------------
     local allowedCharCtrl = allowedCharacterCtrls[controlName] or false
     local allowedCharJewelryControl = allowedCharacterJewelryControls[controlName] or false
     local doCheckOnlyUnbound = settings.allowOnlyUnbound[markId]
@@ -678,19 +715,8 @@ end
     local doResearchTraitCheck = checkVars.researchTraitCheck
     local addonVars = FCOIS.addonVars
 
-    --Define the font of the context menu entries
-    if myFont == nil then
-        if not IsInGamepadPreferredMode() then
-            myFont = "ZoFontGame"
-        else
-            myFont = "ZoFontGamepad22"
-        end
-    end
-    --Define the standard color of the context menu entries
-    colDef = ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_TEXT_COLORS, INTERFACE_TEXT_COLOR_NORMAL))
-
     --Are we adding the first new entry in the context menu?
-    if (customMenuVars.customMenuCurrentCounter == 1) then
+    if customMenuVars.customMenuCurrentCounter == 1 then
         firstAdd = true
         lastAdd = false
         --To prevent spamming only output the debug message once for the first added context menu item
@@ -710,30 +736,50 @@ end
         end
     end
 
+    ------------------------------------------------------------------------------------------------------------------------
     --For equipment slots:
     -- Only go on if markId == static gear marker icons 2, 4, 6, 7 or 8 (gear sets 1 to 5) or dynamic icons setup as gear
     --and an item is equipped (rowControl.stackCount ~= 0)
-    if (isEquipmentSlot == true) then
+    if isEquipmentSlot == true then
         if (not isGear and (rowControl.stackCount ~= nil and rowControl.stackCount == 0)) then
+            --<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
             return
+            --<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
         end
         --For 2handed weapons/staffs: Only go on if the current equipment slot is not
         --the 1st weapon set's backup or the 2nd weapon set's backup
         if FCOIS.checkWeaponOffHand(controlName, "2hdall", true, true, firstAdd) == true then return end
     end
 
+    ------------------------------------------------------------------------------------------------------------------------
     --===========================================================================================================
     --Check if the right click menu should be updated. Only allowed panels and menus apply!
     -- Check two tables for parent and control names. If current control and parent are not in the relating table
     -- the contextmenu will be enhanced with FCOItemSaver entries.
     --And check it the item is a collectibel (in quickslots e.g.) and then do not allow the FCOIS context menus
-    if (notAllowed) then
+    if notAllowed == true then
         --Not allowed parent or control is given -> Abort here
-        if firstAdd then
+        if firstAdd == true then
             if settings.debug then debugMessage( "[AddMark]","Not allowed parent '" .. tostring(parentName) .. "' or control '" .. tostring(controlName) .. "' -> Aborted!", true, FCOIS_DEBUG_DEPTH_NORMAL) end
         end
+        --<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
         return
+        --<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
     end
+    ------------------------------------------------------------------------------------------------------------------------
+
+    --Define the font of the context menu entries
+    if myFont == nil then
+        if not IsInGamepadPreferredMode() then
+            myFont = "ZoFontGame"
+        else
+            myFont = "ZoFontGamepad22"
+        end
+    end
+    --Define the standard color of the context menu entries
+    colDef = ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_TEXT_COLORS, INTERFACE_TEXT_COLOR_NORMAL))
+    ------------------------------------------------------------------------------------------------------------------------
+
 
     -- Equipment gear (static gear marker icons 1, 2, 3, 4, 5), Research, Improve, Deconstruct, Intricate or dynamic icons
     --Check if the icon is allowed for research and if the research-enabled check is set in the settings
@@ -772,17 +818,8 @@ end
         isEquipmentSlotContextmenu = false
     end
 
-    --Introduced with FCOIS version 1.0.6
-    --Check if the item is bound yet
-    local bag, slotId
-    --Were the bagId and slotIndex already set from IIfA savedvars?
-    if FCOIS.IIfAclicked ~= nil then
-        bag = FCOIS.IIfAclicked.bagId
-        slotId = FCOIS.IIfAclicked.slotIndex
-    else
-        bag, slotId = myGetItemDetails(rowControl)
-    end
-
+    ------------------------------------------------------------------------------------------------------------------------
+    --Check with item's bagId and slotIndex
     if bag ~= nil and slotId ~= nil then
         --Check if an item is not-bound yet and only allow to mark it if it's still unbound
         if doCheckOnlyUnbound then
@@ -798,7 +835,7 @@ end
         end
     end
 
-
+    ------------------------------------------------------------------------------------------------------------------------
     --Update the list / popup dialog list?
     if refreshPopupDialog == true then
         refreshList = false
@@ -806,6 +843,7 @@ end
         refreshList = true
     end
 
+    ------------------------------------------------------------------------------------------------------------------------
     --Add a divider as first item, between standard ESO and FCOIS context menu entries?
     --Use sub menu entries for the item's context menu?
     --If inside the context menu not the subMenu should be used: Indent the context menu entries with spaces for a better readability?
@@ -816,6 +854,7 @@ end
         end
     end
 
+    ------------------------------------------------------------------------------------------------------------------------
     --Colorize the entrys in the context menu with icon colors?
     if settings.contextMenuEntryColorEqualsIconColor then
         --Colorize the entries like the icon's color, or with the normal color?
@@ -861,6 +900,7 @@ end
         contextMenuEntryTextPre = contextMenuEntryTextPre .. buttonText
     end
 
+    ------------------------------------------------------------------------------------------------------------------------
     --Tooltip at context menu entry align
     local tooltipAlign = LEFT
     if isEquipmentSlot then
@@ -907,6 +947,7 @@ end
         end
     end
 
+    ------------------------------------------------------------------------------------------------------------------------
     --Is debugging enabled? Then add the current item's bagId and slotIndex to the context menu with a callback funciton to put the info into the chat for the ZGOO addon
     if firstAdd and settings.debug then
         local bagId, slotIndex
@@ -932,11 +973,12 @@ end
         end
     end
 
+    ------------------------------------------------------------------------------------------------------------------------
     --Add the equipment right click / context menu entries
-    if (isEquipmentSlotContextmenu == true) then
+    if isEquipmentSlotContextmenu == true then
 
         -- Add/Update the right click menu item for character slot now
-        if(not isMarkIdProtected) then
+        if not isMarkIdProtected then
             if useSubMenu then
                 newSubEntry = {
                     label = contextMenuSubMenuEntryTextPre .. locVars.lTextEquipmentMark[markId],
@@ -945,8 +987,8 @@ end
                     normalColor     = colDef,
                     highlightColor  = colDef,
                     tooltip         = function(control, inside)
-                                        local data=checkBuildAndAddCustomMenuTooltip(tooltipAlign, contextMenuSubMenuEntryTextPre .. locVars.lTextEquipmentMark[markId] .. "\n" .. tooltipText)
-                                        contextMenuEntryTooltipFunc(control, inside, data)
+                        local data=checkBuildAndAddCustomMenuTooltip(tooltipAlign, contextMenuSubMenuEntryTextPre .. locVars.lTextEquipmentMark[markId] .. "\n" .. tooltipText)
+                        contextMenuEntryTooltipFunc(control, inside, data)
                     end,
                 }
             else
@@ -965,7 +1007,7 @@ end
                     }
                 else
                     --AddMenuItem(locVars.lTextEquipmentMark[markId], function() markAllEquipment(rowControl, markId, refreshList, false) end, MENU_ADD_OPTION_LABEL)
---d("[FCOIS]AddMark - markId: " ..tostring(markId) .. ", text: " ..tostring(locVars.lTextEquipmentMark[markId]))
+                    --d("[FCOIS]AddMark - markId: " ..tostring(markId) .. ", text: " ..tostring(locVars.lTextEquipmentMark[markId]))
                     newAddedMenuIndex = AddCustomMenuItem(contextMenuEntryTextPre .. locVars.lTextEquipmentMark[markId], function()  markAllEquipment(rowControl, markId, refreshList, false) end, MENU_ADD_OPTION_LABEL, myFont, colDef, colDef, nil, nil)
                     if tooltipText and tooltipText ~= "" then
                         AddCustomMenuTooltip(function(control, inside)
@@ -1055,8 +1097,8 @@ end
                 end
             end
         end
-------------------------------------------------------------------------------------------------------------------------
-    --Add the normal (e.g. inventory) right click / context menu entries
+        ------------------------------------------------------------------------------------------------------------------------
+        --Add the normal (e.g. inventory) right click / context menu entries
     else
 
         --AddCustomMenuItem(mytext, myfunction, itemType, myfont, normalColor, highlightColor, itemYPad)
@@ -1182,6 +1224,7 @@ end
         end
 
     end
+    ------------------------------------------------------------------------------------------------------------------------
     --Show the menu now!
     if useSubMenu then
         --Add the submenu to the context menu
@@ -1208,8 +1251,8 @@ end
             if contextMenuItemControl ~= nil then
                 --Overwrite onMouseEnter events
                 if ( (contextMenuItemControl.creatingAddon and contextMenuItemControl.creatingAddon == addonVars.gAddonNameShort) and
-                     ((isEquipmentSlot) or (not ctrlVars.LIST_DIALOG:IsHidden())
-                  or (not settings.contextMenuDividerShowsSettings and not settings.contextMenuDividerClearsMarkers)) ) then
+                        ((isEquipmentSlot) or (not ctrlVars.LIST_DIALOG:IsHidden())
+                                or (not settings.contextMenuDividerShowsSettings and not settings.contextMenuDividerClearsMarkers)) ) then
                     contextMenuItemControl:SetMouseEnabled(false)
                     --Reenable the mouse for this menu item if the menu closes. See file /src/FCOIS_Hooks.lua, function  PreHook to ZO_Menu_OnHide
                     FCOIS.preventerVars.disabledContextMenuItemIndex = contMenuVars.contextMenuIndex

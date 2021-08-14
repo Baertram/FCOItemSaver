@@ -20,7 +20,7 @@
 --[ToDo list] --
 --Check for local speed ups. FCOItemSaver.txt was checked until src/FCOIS_OtherAddons.lua
 --____________________________
--- Current max bugs/features/ToDos: 151
+-- Current max bugs/features/ToDos: 153
 --____________________________
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -144,9 +144,8 @@ local function menuVisibleCheck()
     --TODO Check if the menu's parent is a FCOIS flag invoker button and ONLY then return true!
 ]]
 
---#146, 2021-07-10, Baertram, SHIFT + right mouse does not work at quickslots (inventory menu)
---#149, 2021-08-12, Baertram, Enchanting extraction, right click on add. inv. flag icon which turns protection on does not unslot protected items again!
 --#151, 2021-08-12, Baertram, Add setting to re-apply the marker icons after enchanting an item
+
 
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
@@ -159,17 +158,22 @@ local function menuVisibleCheck()
 --#148
 --#149
 --#150
+--#152
+--#153
 
 ---------------------------------------------------------------------
---Since last update 2.1.8 - New version: 2.1.9 -> Updated 2021-08-08
+--Since last update 2.1.8 - New version: 2.1.9 -> Updated 2021-08-14
 ---------------------------------------------------------------------
 
 --[Fixed]
 --#144, Slotting anything to deconstruction/improvement, leaving the crafting table and trying to create a glyph via CraftStore showed the before slotted item as protected
 -- and prevented the glyph creation
 --#145, ContextMenu at bank get's vanilla items removed if FCOIS, Custom Item Preview and AutoCategory are enabled
---#150, Inventory, right click on add. inv. flag icon does not change the anti-destroy protection.
-
+--#146, SHIFT + right mouse does not work at quickslots (inventory menu)
+--#149, Crafting: Right click on add. inv. flag icon which turns protection on does not unslot protected items again.
+--#150, Inventory: Right click on add. inv. flag icon does not change the anti-destroy protection.
+--#152, Quickslot's FCOIS right click context menu works for non-inventory items (collectibles e.g.)
+--#153, Inventory FCOIS right click context menu works for quest items
 
 --[Changed]
 --#148, Use more local speed up variables in all FCOIS files

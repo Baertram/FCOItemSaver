@@ -14,6 +14,9 @@ local strformat = string.format
 local strmatch = string.match
 local zo_strf = zo_strformat
 
+local checkVars = FCOIS.checkVars
+local inventoryRowPatterns = checkVars.inventoryRowPatterns
+
 --==========================================================================================================================================
 --                                          FCOIS - Base & helper functions
 --==========================================================================================================================================
@@ -829,7 +832,6 @@ end
 --Function returns as 1st return value a boolean isAnInventoryRowWithPattern, and as 2nd return value the pattern
 function FCOIS.IsSupportedInventoryRowPattern(controlName)
     if not controlName then return false, nil end
-    local inventoryRowPatterns = FCOIS.checkVars.inventoryRowPatterns
     if not inventoryRowPatterns then return false, nil end
     for _, patternToCheck in ipairs(inventoryRowPatterns) do
         if controlName:find(patternToCheck) ~= nil then
@@ -856,7 +858,7 @@ function FCOIS.GetBagAndSlotFromControlUnderMouse()
     local itemLink
     local itemInstanceOrUniqueIdIIfA
     FCOIS.IIfAmouseOvered = nil
-    local inventoryRowPatterns = FCOIS.checkVars.inventoryRowPatterns
+    local inventoryRowPatterns = checkVars.inventoryRowPatterns
     if inventoryRowPatterns == nil then return end
     --For each inventory row pattern check if the current control mouseOverControl's name matches this pattern
     local mouseOverControlName = mouseOverControl:GetName()
@@ -1052,7 +1054,7 @@ end
 function FCOIS.IsItemAlreadyBound(bagId, slotIndex)
     --Only check bound set parts
     local itemType = GetItemType(bagId, slotIndex)
-    local isAllowedItemType = FCOIS.checkVars.allowedSetItemTypes[itemType]
+    local isAllowedItemType = checkVars.allowedSetItemTypes[itemType]
     if not isAllowedItemType then return false end
     local itemLink = GetItemLink(bagId, slotIndex)
     if itemLink then
@@ -1330,7 +1332,7 @@ function FCOIS.IsItemSetPartNoControl(bagId, slotIndex)
         -- Get the item's type
         local itemType = GetItemLinkItemType(itemLink)
         if itemType ~= nil then
-            local allowedItemTypes = FCOIS.checkVars.allowedSetItemTypes
+            local allowedItemTypes = checkVars.allowedSetItemTypes
             local allowed = allowedItemTypes[itemType] or false
             if allowed then
                 --Get the set item information
@@ -1357,7 +1359,7 @@ function FCOIS.IsItemSetPartWithTraitNoControl(bagId, slotIndex)
         -- Get the item's type
         if itemType ~= nil then
 --d(">itemType: " ..tostring(itemType))
-            local allowedItemTypes = FCOIS.checkVars.allowedSetItemTypes
+            local allowedItemTypes = checkVars.allowedSetItemTypes
             local allowed = allowedItemTypes[itemType] or false
             if allowed then
 --d(">allowed")
@@ -1428,7 +1430,6 @@ end
 -->Will remove the research marker icon at context menus then
 function FCOIS.IsItemLinkReconStructedOrRetraited(itemLink)
     if itemLink == nil then return false end
-    local checkVars = FCOIS.checkVars
     --Check if the item was reconstructed or retraited
     local itemTraitInformationNotResearchable = checkVars.itemTraitInformationNotResearchable
     local itemTraitInformation = GetItemTraitInformationFromItemLink(itemLink)
@@ -1440,7 +1441,6 @@ local isItemLinkReconStructedOrRetraited = FCOIS.IsItemLinkReconStructedOrRetrai
 local function isResearchableItemTypeCheck(itemType, markId)
     local retVal = false
     local allowedTab = {}
-    local checkVars = FCOIS.checkVars
     allowedTab = checkVars.allowedResearchableItemTypes[itemType]
     if allowedTab == nil then return false end
     if markId == nil then
@@ -1464,7 +1464,6 @@ end
 -- Check if an itemLink is researchable
 function FCOIS.IsItemLinkResearchable(itemLink, markId, doTraitCheck)
     if itemLink == nil then return false end
-    local checkVars = FCOIS.checkVars
 
     local retVal = false
     local retValReconstructedOrRetraited = false
@@ -1541,7 +1540,7 @@ end
 function FCOIS.IsItemOrnate(bagId, slotIndex)
     local isOrnate = false
     local itemTrait = GetItemTrait(bagId, slotIndex)
-    local allowedOrnateItemTraits = FCOIS.checkVars.allowedOrnateItemTraits
+    local allowedOrnateItemTraits = checkVars.allowedOrnateItemTraits
     isOrnate = allowedOrnateItemTraits[itemTrait] or false
 --local itemLink = GetItemLink(bagId, slotIndex)
 --d("[FCOIS]isItemOrnate: " .. itemLink .. " -> " .. tostring(isOrnate))
@@ -1551,7 +1550,7 @@ end
 -- Is the item an intricate one?
 function FCOIS.IsItemIntricate(bagId, slotIndex)
     local isIntricate = false
-    local allowedIntricateItemTraits = FCOIS.checkVars.allowedIntricateItemTraits
+    local allowedIntricateItemTraits = checkVars.allowedIntricateItemTraits
     local itemTrait = GetItemTrait(bagId, slotIndex)
     isIntricate = allowedIntricateItemTraits[itemTrait] or false
 --local itemLink = GetItemLink(bagId, slotIndex)

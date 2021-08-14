@@ -2110,7 +2110,8 @@ checkVars.allowedSetItemTypes = {
 --Table with NOT allowed parent control names. These cannot use the FCOItemSaver right click context menu entries
 --for items (in the inventories)
 checkVars.notAllowedContextMenuParentControls = {
-	["ZO_StoreWindowListContents"] = true,
+	["ZO_QuestItemsListContents"] = true,
+    ["ZO_StoreWindowListContents"] = true,
 	["ZO_BuyBackListContents"] = true,
 	["ZO_PlayerInventoryQuestContents"] = true,
 	["ZO_SmithingTopLevelImprovementPanel"] = true,
