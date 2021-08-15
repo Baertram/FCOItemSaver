@@ -810,7 +810,7 @@ function FCOIS.DeconstructionSelectionHandler(bag, slot, echo, overrideChatOutpu
     --Is the panelId given? If not determine it
     local inventoryVar
     if panelId == nil then
-        inventoryVar, panelId = FCOIS.checkActivePanel(nil, false)
+        inventoryVar, panelId = FCOIS.CheckActivePanel(nil, false)
     end
     -- If anti-(jewelry) deconstruction is globally active
     local isBlocked = deconPanelToBlockSettings[panelId] or false

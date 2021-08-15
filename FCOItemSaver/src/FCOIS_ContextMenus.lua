@@ -73,13 +73,17 @@ local checkIfRecipeAddonUsed = FCOIS.CheckIfRecipeAddonUsed
 local checkIfResearchAddonUsed = FCOIS.CheckIfResearchAddonUsed
 local checkIfChosenResearchAddonActive = FCOIS.CheckIfChosenResearchAddonActive
 
+local destroySelectionHandler = FCOIS.DestroySelectionHandler
+local deconstructionSelectionHandler 	= FCOIS.DeconstructionSelectionHandler
+local checkIfGuildBankWithdrawAllowed = FCOIS.CheckIfGuildBankWithdrawAllowed
+
 ------------------------------------------------------------------------------------------------------------------------
 --Get the context menu invoker button by help of the panel Id
 local function getContextMenuInvokerButton(panelId)
     panelId = panelId or FCOIS.gFilterWhere
     if not panelId or panelId == 0 then return false end
     --Workaround: Craftbag stuff, check if active panel is the Craftbag
-    if FCOIS.isCraftbagPanelShown() then
+    if FCOIS.IsCraftbagPanelShown() then
         panelId = LF_CRAFTBAG
     end
     local contMenuVars = FCOIS.contextMenuVars
@@ -327,7 +331,7 @@ function FCOIS.RefreshPopupDialogButtons(rowControl, override)
                                         --Why not using internal function with "calledFromExternalAddon" false?
                                         --disableResearchNow = FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, true, nil) --leave the panelId empty so the addon will detect it automatically!
                                         --                   FCOIS.DeconstructionSelectionHandler(bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId)
-                                        disableResearchNow = FCOIS.DeconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, false, nil)
+                                        disableResearchNow = deconstructionSelectionHandler(bagId, slotIndex, false, true, true, true, true, false, nil)
                                         --d(">>RepairItemDialog,refreshPopupDialogButtons-callDeconstructionHandler: " .. tostring(disableResearchNow))
                                         if disableResearchNow == true then break else if not disableResearchNow then disableResearchNow = false end end
                                     end
@@ -3537,7 +3541,7 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
 
         --Abort if parent control cannot be found
         --Is item marked with any of the FCOItemSaver icons? Then don't show the actionStringId in the contextmenu
-        return FCOIS.DestroySelectionHandler(bag, slotIndex, false, parentControl)
+        return destroySelectionHandler(bag, slotIndex, false, parentControl)
 
     --Add item to crafting station, improvement, enchanting, retrait table
     elseif actionStringId == SI_ITEM_ACTION_ADD_TO_CRAFT or actionStringId == SI_ITEM_ACTION_RESEARCH then --or actionStringId == SI_ITEM_ACTION_ADD_TO_RETRAIT then
@@ -3605,7 +3609,7 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
             if (currentSceneName == ctrlVars.guildBankSceneName or currentSceneName == ctrlVars.guildBankGamepadSceneName) then
                 local currentGuildBankId = FCOIS.guildBankVars.guildBankId
                 if currentGuildBankId == 0 then return true end
-                return not FCOIS.CheckIfGuildBankWithdrawAllowed(currentGuildBankId)
+                return not checkIfGuildBankWithdrawAllowed(currentGuildBankId)
             end
         end
 

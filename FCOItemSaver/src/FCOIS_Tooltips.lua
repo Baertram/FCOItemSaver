@@ -8,21 +8,28 @@ local debugMessage = FCOIS.debugMessage
 
 local wm = WINDOW_MANAGER
 
+local mappingVars = FCOIS.mappingVars
+local otherAddons = FCOIS.otherAddons
+local preChatVars = FCOIS.preChatVars
+local preChatTextGreen = preChatVars.preChatTextGreen
+
 local checkIfProtectedSettingsEnabled = FCOIS.CheckIfProtectedSettingsEnabled
 local myGetItemDetails = FCOIS.MyGetItemDetails
+
 
 -- =====================================================================================================================
 --  Tooltip functions
 -- =====================================================================================================================
 
 --Create the tooltip for the marker texture - BuildTooltip
+local createToolTip
 function FCOIS.CreateToolTip(markerControl, markerId, doHide, pUpdateAllEquipmentTooltips, pIsEquipmentSlot, calledByExternalAddonName, tooltipAdditionText)
     local doAbort = false
     --IIfA addon call constant
-    local IIfAaddonCallConst = FCOIS.otherAddons.IIFAaddonCallName
+    local IIfAaddonCallConst = otherAddons.IIFAaddonCallName
     --Initialize the possible external addon call table
     local externalAddonCall = {}
-    local possibleExternalAddonCalls = FCOIS.otherAddons.possibleExternalAddonCalls
+    local possibleExternalAddonCalls = otherAddons.possibleExternalAddonCalls
     if possibleExternalAddonCalls ~= nil and #possibleExternalAddonCalls > 0 then
         for _, externalAddonName in ipairs(possibleExternalAddonCalls) do
             externalAddonCall[externalAddonName] = false
@@ -54,14 +61,16 @@ function FCOIS.CreateToolTip(markerControl, markerId, doHide, pUpdateAllEquipmen
         local markedCounter = 0
         local markedGear = 0
         local equipmentMarkerControlName
-        local locVars = FCOIS.localizationVars.fcois_loc
         local protectedData = FCOIS.protectedData
         local protectedColor = protectedData.colors
         local protectionEnabledColor = protectedColor[true]
         local protectionDisabledColor = protectedColor[false]
+        local fcoisLoc                = FCOIS.localizationVars.fcois_loc
+        local iconGearTooltipText     = fcoisLoc["options_icon_gear_tooltip_text"]
+        local iconGearsTooltipText    = fcoisLoc["options_icon_gears_tooltip_text"]
 
         local panelId = FCOIS.gFilterWhere
-        local filterPanelIdToWhereAreWe = FCOIS.mappingVars.filterPanelIdToWhereAreWe
+        local filterPanelIdToWhereAreWe = mappingVars.filterPanelIdToWhereAreWe
         local whereAreWe = filterPanelIdToWhereAreWe[panelId]
 --d("[FCOIS]CreateToolTip - filterPanelId: " ..tostring(panelId) .. ", whereAreWe: " ..tostring(whereAreWe))
 
@@ -93,7 +102,7 @@ function FCOIS.CreateToolTip(markerControl, markerId, doHide, pUpdateAllEquipmen
         else
             bagId, slotIndex = myGetItemDetails(markersParentControl)
         end
-        local iconIsDynamic = FCOIS.mappingVars.iconIsDynamic
+        local iconIsDynamic = mappingVars.iconIsDynamic
         --is the bagId and slotIndex given?
         if bagId ~= nil or slotIndex ~= nil then
             --d("[FCOIS]CreateToolTip - bagId: " .. tostring(bagId) .. ", slotIndex: " .. tostring(slotIndex))
@@ -179,7 +188,7 @@ function FCOIS.CreateToolTip(markerControl, markerId, doHide, pUpdateAllEquipmen
                             else
                                 colorForText = protectionDisabledColor
                             end
-                            iconName = colorForText .. locVars["options_icon" .. tostring(iconId) .. "_tooltip_text"] .. "|r"
+                            iconName = colorForText .. fcoisLoc["options_icon" .. tostring(iconId) .. "_tooltip_text"] .. "|r"
                         end
                         --Gray out disabled icon
                         if not iconIsEnabled then
@@ -195,50 +204,49 @@ function FCOIS.CreateToolTip(markerControl, markerId, doHide, pUpdateAllEquipmen
                         --get the control by it's name
                         local equipmentMarkerControl = wm:GetControlByName(equipmentMarkerControlNewName, "")
                         if equipmentMarkerControl ~= nil then
-                            FCOIS.CreateToolTip(equipmentMarkerControl, iconId, doHide, false)
+                            createToolTip(equipmentMarkerControl, iconId, doHide, false, nil, nil, nil)
                         end
                     end
                 end
             end -- for each marked icon ID
-            local preChatVars = FCOIS.preChatVars
             --Build the final tooltip text
             if markedCounter == 1 then
                 --Build the tooltip for only 1 marked icon
                 --Tooltip for any gear set?
-                --local iconIsGear = FCOIS.mappingVars.iconIsGear
+                --local iconIsGear = mappingVars.iconIsGear
                 local iconIsGear = settings.iconIsGear
                 --[[
                 if (iconIsGear[markerId]) then
-                    finalTooltipText = preChatVars.preChatTextGreen .. " " .. locVars["options_icon_gear_tooltip_text"] .. settings.icon[markerId].name
+                    finalTooltipText = preChatTextGreen .. " " .. iconGearTooltipText .. settings.icon[markerId].name
                 elseif (iconIsDynamic[markerId]) then
-                    finalTooltipText = preChatVars.preChatTextGreen .. " " .. tooltipText
+                    finalTooltipText = preChatTextGreen .. " " .. tooltipText
                 else
-                    finalTooltipText = preChatVars.preChatTextGreen .. " " .. locVars["options_icon" .. tostring(markerId) .. "_tooltip_text"]
+                    finalTooltipText = preChatTextGreen .. " " .. locVars["options_icon" .. tostring(markerId) .. "_tooltip_text"]
                 end
                 ]]
                 if (iconIsGear[markerId]) then
-                    finalTooltipText = preChatVars.preChatTextGreen .. " " .. locVars["options_icon_gear_tooltip_text"] .. tooltipGearText
+                    finalTooltipText = preChatTextGreen .. " " .. iconGearTooltipText .. tooltipGearText
                 elseif (iconIsDynamic[markerId]) then
-                    finalTooltipText = preChatVars.preChatTextGreen .. " " .. tooltipText
+                    finalTooltipText = preChatTextGreen .. " " .. tooltipText
                 else
-                    finalTooltipText = preChatVars.preChatTextGreen .. " " .. tooltipText
+                    finalTooltipText = preChatTextGreen .. " " .. tooltipText
                 end
             else
-                finalTooltipText = preChatVars.preChatTextGreen .. "\n"
+                finalTooltipText = preChatTextGreen .. "\n"
                 --Build the tooltip text for several marked icons
                 if     tooltipGearText ~= "" and tooltipText ~= "" then
                     finalTooltipText = finalTooltipText .. tooltipText .. "\n\n"
                     if markedGear > 1 then
-                        finalTooltipText = finalTooltipText .. locVars["options_icon_gears_tooltip_text"] .. "\n"
+                        finalTooltipText = finalTooltipText .. iconGearsTooltipText .. "\n"
                     else
-                        finalTooltipText = finalTooltipText .. locVars["options_icon_gear_tooltip_text"]
+                        finalTooltipText = finalTooltipText .. iconGearTooltipText
                     end
                     finalTooltipText = finalTooltipText .. tooltipGearText
                 elseif tooltipGearText ~= "" and tooltipText == "" then
                     if markedGear > 1 then
-                        finalTooltipText = finalTooltipText .. locVars["options_icon_gears_tooltip_text"] .. "\n"
+                        finalTooltipText = finalTooltipText .. iconGearsTooltipText .. "\n"
                     else
-                        finalTooltipText = finalTooltipText .. locVars["options_icon_gear_tooltip_text"]
+                        finalTooltipText = finalTooltipText .. iconGearTooltipText
                     end
                     finalTooltipText = finalTooltipText .. tooltipGearText
                 elseif tooltipGearText == "" and tooltipText ~= "" then
@@ -258,7 +266,7 @@ function FCOIS.CreateToolTip(markerControl, markerId, doHide, pUpdateAllEquipmen
                 -- SetTracker - BEGIN
                 --====================================================================================================================================
                 --SetTracker Addon is active and the set note should be added to FCOIS marker icon tooltips?
-                local isSetTrackerActive = FCOIS.otherAddons.SetTracker.isActive
+                local isSetTrackerActive = otherAddons.SetTracker.isActive
                 if    bagId ~= nil and slotIndex ~= nil and isSetTrackerActive and SetTrack ~= nil and SetTrack.GetTrackingInfo ~= nil
                         and settings.autoMarkSetTrackerSets and settings.autoMarkSetTrackerSetsShowTooltip then
                     --Get the set note text for the current item
@@ -266,7 +274,7 @@ function FCOIS.CreateToolTip(markerControl, markerId, doHide, pUpdateAllEquipmen
                     if iTrackIndex ~= -1 and iTrackIndex ~= 100 then
                         local setTrackerSetNote = sTrackNotes
                         if setTrackerSetNote and setTrackerSetNote ~= "" then
-                            local setTrackerHeadline = locVars["options_header_settracker"] or "Set Tracker"
+                            local setTrackerHeadline = fcoisLoc["options_header_settracker"] or "Set Tracker"
                             if sTrackName ~= nil and sTrackName ~= "" then
                                 if sTrackColour ~= nil and sTrackColour ~= "" then
                                     --Colorize the headline with the SetTracker trackingColor
@@ -328,18 +336,19 @@ function FCOIS.CreateToolTip(markerControl, markerId, doHide, pUpdateAllEquipmen
         ZO_Tooltips_HideTextTooltip()
     end
 end
+createToolTip = FCOIS.CreateToolTip
 
 --Build the tooltip for e.g. a marker icon's context menu entry and show which panel is protected at this marker icon
 function FCOIS.buildMarkerIconProtectedWhereTooltip(markId)
-    local icon2Dyn = FCOIS.mappingVars.iconIsDynamic
+    --local icon2Dyn = mappingVars.iconIsDynamic
     local locVars = FCOIS.localizationVars
     local locVarsFCO = locVars.fcois_loc
     local protectedAtStr = "[" .. locVarsFCO["protection_at_panel"] .. "]"
     local filterPanelNames = locVarsFCO["FCOIS_LibFilters_PanelIds"]
-    local activeFilterPanelIds = FCOIS.mappingVars.activeFilterPanelIds
+    local activeFilterPanelIds = mappingVars.activeFilterPanelIds
     local protectedColorPrefixes = FCOIS.protectedData.colors
     local protectedTextures = FCOIS.protectedData.textures
-    local filterPanelIdToWhereAreWe = FCOIS.mappingVars.filterPanelIdToWhereAreWe
+    local filterPanelIdToWhereAreWe = mappingVars.filterPanelIdToWhereAreWe
     local panelId = FCOIS.gFilterWhere
     --For each possible filterPanelId:
     for libFilterPanelId, isActivated in pairs(activeFilterPanelIds) do

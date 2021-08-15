@@ -48,6 +48,8 @@ local isCompanionCharacterShown = FCOIS.IsCompanionCharacterShown
 local rebuildGearSetBaseVars = FCOIS.RebuildGearSetBaseVars
 local checkIfBagShouldAutoRemoveMarkerIcons = FCOIS.CheckIfBagShouldAutoRemoveMarkerIcons
 
+local destroySelectionHandler = FCOIS.DestroySelectionHandler
+
 --==============================================================================
 --==================== START EVENT CALLBACK FUNCTIONS ==========================
 --==============================================================================
@@ -741,7 +743,7 @@ local function FCOItemSaver_OnMouseRequestDestroyItem(_, bagId, slotIndex, _, _,
         FCOIS.preventerVars.gAllowDestroyItem = false
 
         if( bagId and slotIndex ) then
-            FCOIS.preventerVars.gAllowDestroyItem = not FCOIS.DestroySelectionHandler(bagId, slotIndex, true)
+            FCOIS.preventerVars.gAllowDestroyItem = not destroySelectionHandler(bagId, slotIndex, true)
             --Hide the "YES" button of the destroy dialog and disable keybind
             overrideDialogYesButton(FCOIS.ZOControlVars.ZODialog1)
         end

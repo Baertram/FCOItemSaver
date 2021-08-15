@@ -1118,6 +1118,27 @@ function FCOIS.IsAutolootContainer(bag, slot)
     return (GetItemType(bag, slot) == ITEMTYPE_CONTAINER and GetSetting(SETTING_TYPE_LOOT, LOOT_SETTING_AUTO_LOOT)=="1")
 end
 
+function FCOIS.IsContainerCollectible(bag, slot)
+    local itemLink = GetItemLink(bag, slot)
+    if not itemLink then return false end
+    local itemtype, specializedItemType = GetItemLinkItemType(itemLink)
+    local specializedItemtypesOfContainers = {
+        [SPECIALIZED_ITEMTYPE_CONTAINER_STYLE_PAGE] = true,
+        [SPECIALIZED_ITEMTYPE_COLLECTIBLE_STYLE_PAGE] = true,
+        [SPECIALIZED_ITEMTYPE_CONTAINER] = true,
+
+    }
+    if not specializedItemtypesOfContainers[specializedItemType] then return false end
+
+    local containerCollectibleId = GetItemLinkContainerCollectibleId(itemLink)
+    local isValidForPlayer = IsCollectibleValidForPlayer(containerCollectibleId)
+    if isValidForPlayer then
+        --local isUnlocked = IsCollectibleUnlocked(containerCollectibleId)
+        return true
+    end
+    return false
+end
+
 --Function to check it the item is a soulgem
 function FCOIS.IsSoulGem(bagId, slotIndex)
     if bagId == nil or slotIndex == nil then return nil end
@@ -2031,6 +2052,7 @@ end
 function FCOIS.CheckIfImprovedItemShouldBeReMarked_BeforeImprovement()
     --Clear the remembered improvement marker icons
     resetImprovementVarsForReMark()
+    if not FCOIS.settingsVars.settings.reApplyIconsAfterImprovement then return end
     --Are we at smithing improvement
     if ctrlVars.IMPROVEMENT_INV:IsHidden() or ctrlVars.IMPROVEMENT_SLOT == nil then
         return false
@@ -2050,6 +2072,7 @@ end
 --Check if item get's improved and if the marker icons from before improvement should be remembered
 --End function to re-mark the marker icons after improvement
 function FCOIS.CheckIfImprovedItemShouldBeReMarked_AfterImprovement()
+    if not FCOIS.settingsVars.settings.reApplyIconsAfterImprovement then return end
     --Only at smithing improvement
     if ctrlVars.IMPROVEMENT_INV:IsHidden() then return false end
     local impVars = FCOIS.improvementVars
@@ -2082,6 +2105,61 @@ function FCOIS.CheckIfImprovedItemShouldBeReMarked_AfterImprovement()
     end
     --Reset the improvement remember variables again
     resetImprovementVarsForReMark()
+end
+
+--Enchanting of items in your inventory
+function FCOIS.ResetEnchantingInventoryVarsForReMark(bagId, slotIndex)
+    if FCOIS.enchantingVars.lastMarkerIcons[bagId] and FCOIS.enchantingVars.lastMarkerIcons[bagId][slotIndex] then
+        FCOIS.enchantingVars.lastMarkerIcons[bagId][slotIndex] = nil
+    end
+end
+local resetEnchantingInventoryVarsForReMark = FCOIS.ResetEnchantingInventoryVarsForReMark
+
+--Check if item get's improved and if the marker icons from before improvement should be remembered
+--Start function to remmeber the marker icons before improvement
+function FCOIS.CheckIfEnchantingItemShouldBeReMarked_BeforeEnchanting(bagId, slotIndex)
+    FCOIS.preventerVars.enchantItemActive = false
+    --Clear the remembered enchanting marker icons
+    resetEnchantingInventoryVarsForReMark(bagId, slotIndex)
+    --Remember the current marker icons if setting is enabled to re-apply old marker icons on enchanting
+    if not FCOIS.settingsVars.settings.reApplyIconsAfterEnchanting then return end
+
+    local isMarked, markerIcons = FCOIS.IsMarked(bagId, slotIndex, -1, nil)
+    if not isMarked then return end
+--d(">>marked with icons!")
+    FCOIS.enchantingVars.lastMarkerIcons[bagId] = FCOIS.enchantingVars.lastMarkerIcons[bagId] or {}
+    FCOIS.enchantingVars.lastMarkerIcons[bagId][slotIndex] = markerIcons
+end
+
+--Check if item get's improved and if the marker icons from before improvement should be remembered
+--End function to re-mark the marker icons after improvement
+function FCOIS.CheckIfEnchantingInventoryItemShouldBeReMarked_AfterEnchanting()
+    if not FCOIS.settingsVars.settings.reApplyIconsAfterEnchanting or not FCOIS.preventerVars.enchantItemActive then return end
+    FCOIS.preventerVars.enchantItemActive = false
+
+    local applyEnchant = ctrlVars.ENCHANTING_APPLY_ENCHANT
+    local bagId, slotIndex = applyEnchant.currentBag, applyEnchant.currentIndex
+    if not bagId or not slotIndex then return end
+--d(">item: " .. GetItemLink(bagId, slotIndex))
+    local enchantingVarsLastMarkerIcons = FCOIS.enchantingVars.lastMarkerIcons[bagId]
+    local oldMarkerIcons = enchantingVarsLastMarkerIcons[slotIndex]
+    if not oldMarkerIcons then return end
+    local newMarkerIcons = {}
+    for iconId, isMarked in pairs(oldMarkerIcons) do
+        if isMarked == true then
+            table.insert(newMarkerIcons, iconId)
+        end
+    end
+    if #newMarkerIcons == 0 then return end
+    --Re-Mark now and clear enchanted bagId and slotIndex slightly delayed
+    zo_callLater(function()
+--d(">>re-marking now: " ..GetItemLink(bagId, slotIndex))
+        FCOIS.MarkItem(bagId, slotIndex, newMarkerIcons, true, true)
+        FCOIS.enchantingVars.lastMarkerIcons[bagId][slotIndex] = nil
+        FCOIS.preventerVars.enchantItemActive = false
+        --Reset the improvement remember variables again
+        resetEnchantingInventoryVarsForReMark(bagId, slotIndex)
+    end, 200)
 end
 
 --======================================================================================================================
@@ -2805,7 +2883,7 @@ function FCOIS.GetFilterPanelIdByBagId(bagId)
     if filterPanelId == nil then
         ---> Special filterPanelId checks via the currently opened panel controls e.g.
         local comingFrom = FCOIS.gFilterWhere
-        local _, filterPanelIdNew = FCOIS.checkActivePanel(comingFrom, false)
+        local _, filterPanelIdNew = FCOIS.CheckActivePanel(comingFrom, false)
         filterPanelId = filterPanelIdNew
     end
 --d("<filterPanelId: " ..tostring(filterPanelId))

@@ -70,8 +70,8 @@ local mappingVars = FCOIS.mappingVars
 local checkIfFCOISSettingsWereLoaded 	= FCOIS.CheckIfFCOISSettingsWereLoaded
 local getSavedVarsMarkedItemsTableName	 = FCOIS.GetSavedVarsMarkedItemsTableName
 
-local DeconstructionSelectionHandler 	= FCOIS.DeconstructionSelectionHandler
-local ItemSelectionHandler 				= FCOIS.ItemSelectionHandler
+local deconstructionSelectionHandler = FCOIS.DeconstructionSelectionHandler
+local itemSelectionHandler           = FCOIS.ItemSelectionHandler
 
 local checkIfItemIsProtected = FCOIS.CheckIfItemIsProtected
 local myGetItemInstanceIdNoControl = FCOIS.MyGetItemInstanceIdNoControl
@@ -167,7 +167,7 @@ function FCOIS.callItemSelectionHandler(bag, slot, echo, overrideChatOutput, sup
 	--Return true to "protect" an item, if the bag and slot are missing
 	if bag == nil or slot == nil then return true end
 	--Call the item selection handler method now for the item
-	return ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId, panelIdParent)
+	return itemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId, panelIdParent)
 end
 --Local function for speedup -> Anti-Item protection handler
 local FCOIScish = FCOIS.callItemSelectionHandler
@@ -188,7 +188,7 @@ function FCOIS.callDeconstructionSelectionHandler(bag, slot, echo, overrideChatO
     --Return true to "protect" an item, if the bag and slot are missing
     if bag == nil or slot == nil then return true end
     --Call the item selection handler method now for the item
-    return DeconstructionSelectionHandler(bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId)
+    return deconstructionSelectionHandler(bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId)
 end
 --Local function for speedup -> Anti-Deconstruction protection handler
 local FCOIScdsh = FCOIS.callDeconstructionSelectionHandler
@@ -209,7 +209,7 @@ function FCOIS.callDeconstructionSelectionHandlerWithPanelTable(bag, slot, echo,
     --Call the item selection handler method now for the item, for each panel of the panelTable
 	local panelCheckResultLoop
 	for _, panelId in ipairs(panelTable) do
-		panelCheckResultLoop = DeconstructionSelectionHandler(bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId)
+		panelCheckResultLoop = deconstructionSelectionHandler(bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId)
 		if panelCheckResultLoop == true then return true end
 	end
 	return false
@@ -738,7 +738,7 @@ end
 ---bag (number):				The bagId of the item to mark
 ---slot (number): 				The slotId of the item to mark
 ---iconId (number|table): 		Number: The iconId to change. Can be a value between 1 and FCOIS.numVars.gFCONumFilterIcons, or -1 for all.
----								Table:	A table containing the icons to change. Table key must be a number (without gaps!) and the value must bve the marker icon Id
+---								Table:	A table containing the icons to change. Table key must be a number (without gaps!) and the value must be the marker icon Id
 ---								e.g. local myTableOfFCOISMarkerIcons = { [1] = FCOIS_CON_ICON_RSEARCH, [2] = FCOIS_CON_ICON_SELL }
 ---showIcon (boolean): 			Flag to set if the item should be marked with the icon(s), or not
 ---updateInventories (boolean):	Flag to set if the inventory lists should be updated, or not. Use this only "after updating the last marker icon", if you (de)mark many at once!

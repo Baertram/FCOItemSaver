@@ -73,7 +73,7 @@ function FCOIS.LoadWorkarounds()
         updateAntiCheckAtPanelVariable(iconNr, LF_SMITHING_RESEARCH, true)
         --FCOIS v.1.4.4
         updateAntiCheckAtPanelVariable(iconNr, LF_JEWELRY_RESEARCH, true)
-        --FCOIS v.2.1.0
-        updateAntiCheckAtPanelVariable(iconNr, LF_INVENTORY_COMPANION, true)
+        --FCOIS v.2.1.0 --> FCOIS 2.1.9: Done within updateAntiCheckAtPanelVariable for LF_INVENTORY!
+        --updateAntiCheckAtPanelVariable(iconNr, LF_INVENTORY_COMPANION, true)
     end
 end

@@ -26,6 +26,7 @@ local isCompanionCharacterShown = FCOIS.IsCompanionCharacterShown
 local isStableSceneShown = FCOIS.IsStableSceneShown
 local isItemAlreadyBound = FCOIS.IsItemAlreadyBound
 local getItemSaverControl = FCOIS.GetItemSaverControl
+local createToolTip = FCOIS.CreateToolTip
 
 
 -- =====================================================================================================================
@@ -348,7 +349,7 @@ function FCOIS.CreateMarkerControl(parent, markerIconId, pWidth, pHeight, pTextu
                 end
             end  -- if not doHide then
             --Set the tooltip if wished
-            FCOIS.CreateToolTip(control, markerIconId, doHide, pUpdateAllEquipmentTooltips, pIsEquipmentSlot)
+            createToolTip(control, markerIconId, doHide, pUpdateAllEquipmentTooltips, pIsEquipmentSlot, nil, nil)
             return control
         else
             return nil

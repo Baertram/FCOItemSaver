@@ -17,10 +17,9 @@
 ------------------------------------------------------------------
 -- [Error/bug & feature messages to check - CHANGELOG since last version] --
 ---------------------------------------------------------------------
---[ToDo list] --
---Check for local speed ups. FCOItemSaver.txt was checked until src/FCOIS_OtherAddons.lua
+
 --____________________________
--- Current max bugs/features/ToDos: 153
+-- Current max bugs/features/ToDos: 154
 --____________________________
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -144,13 +143,21 @@ local function menuVisibleCheck()
     --TODO Check if the menu's parent is a FCOIS flag invoker button and ONLY then return true!
 ]]
 
---#151, 2021-08-12, Baertram, Add setting to re-apply the marker icons after enchanting an item
+--#154, 2021-08-16, Baertram, bug: Improving an item does not re-apply the improve icon
+
+
+---------------------------------------------------------------------
+--[ToDo list] --
+--Check for local speed ups. FCOItemSaver.txt was checked until src/FCOIS_Tooltips.lua -> as of 2021-08-15
+--#129
+--#154
 
 
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
 --In progress: Since 2021-07-04
+--#129
 --#144
 --#145
 --#146
@@ -158,6 +165,7 @@ local function menuVisibleCheck()
 --#148
 --#149
 --#150
+--#151
 --#152
 --#153
 
@@ -185,7 +193,7 @@ local function menuVisibleCheck()
 -->Global function to return boolean value, if an item is marked with any FCOIS gear marker icons (FCOIS_CON_ICON_GEAR_1 to 5, or dynamic icon defined as gear).
 --> + it will return an array as 2nd return parameter, containing boolean entries for each gear iconId (key). True (value) if item is marked with this gear iconId,
 --> false (value) if not.
-
+--#151 Added setting to re-apply the marker icons after enchanting an item (was missing so far), or after improving an item (was always re-applied  automatically until today).
 
 --[Added on request]
 
