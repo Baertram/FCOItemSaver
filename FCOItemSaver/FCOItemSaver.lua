@@ -17,10 +17,9 @@
 ------------------------------------------------------------------
 -- [Error/bug & feature messages to check - CHANGELOG since last version] --
 ---------------------------------------------------------------------
---[ToDo list] --
---Check for local speed ups. FCOItemSaver.txt was checked until src/FCOIS_OtherAddons.lua
+
 --____________________________
--- Current max bugs/features/ToDos: 146
+-- Current max bugs/features/ToDos: 154
 --____________________________
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -112,8 +111,9 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 --#115: 2021-05-13, Baertram  Reposition the additional inventory "flag" icons at crafting tables: Refine, deconstruction, improvement.
 --                            and test if they also fit with AdvancedFilters enabled
 
---#116: ResearchAssistant: Items won't get marked (red rectangle of RA) at the bank after changing settings/reloadUI
+--#116: 2021-05-24: ResearchAssistant: Items won't get marked (red rectangle of RA) at the bank after changing settings/reloadUI
 --#129: 2021-06-01: Removing all marker icons via the add. inv. "flag" context menu does not remove companion item's marker icons
+
 --#131: Error message at login:
 --[[
 user:/AddOns/FCOItemSaver/src/FCOIS_SettingsMenu.lua:2445: attempt to index a nil value
@@ -131,37 +131,6 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 -->Could not create editbox "Haute:" FCOItemSaver_LAM
 ----> Seems the fixed error message user:/AddOns/FCOItemSaver/src/FCOIS_SettingsMenu.lua:2445: attempt to index a nil value is causing this now
 
---#144, 2021-07-03, wambo (esoui addon comments): Crafting a new item and then trying to craft a rune via CraftStore will show error message
---> Only happens after improvement was done so maybe the EVENT_CRAFTING_END was not unregistered properly and the next event crafting end at the
---> enchanting panel checks the item of improvement then again!
---[[
-Ok, found some weird behaviour again.
-
-I crafted a clever alchemist belt, (it got the locked mark via FCOIS, not the ingame one), improved it.
-Then I went to the enchanting table to craft a the enchant for it...
-But that is prevented by FCOIS telling me "FCOIS Creation/Deconstruction not allowed: Belt of Clever Alchemist"
-
-I removed all marks from the belt - same result.
-It mustve been triggered by the creation of that item, bc just before I was crafting a jewel and weapon glyph (also disabled)
-I was suspecting it had to do with CraftstoreRune - but it also prevented the Rune Crafted by Dolgubons Lazy Writ Creator.
-
-
-Creation/Deconstruction not allowed: [|H0:item:72327:369:50:0:0:0:0:0:0:0:0:0:0:0:0:31:1:0:0:10000:0|h|h]hide stack
-1. user:/AddOns/LibDebugLogger/Initialization.lua:162: in function 'LogChatMessage'show
-2. EsoUI/Libraries/Utility/ZO_Hook.lua:18: in function 'AddDebugMessage'show
-3. EsoUI/Libraries/Globals/DebugUtils.lua:7: in function 'EmitMessage'show
-4. EsoUI/Libraries/Globals/DebugUtils.lua:43: in function 'd'show
-5. user:/AddOns/FCOItemSaver/src/FCOIS_Protection.lua:49: in function 'FCOIS.outputItemProtectedMessage'show
-6. user:/AddOns/FCOItemSaver/src/FCOIS_Protection.lua:666: in function 'FCOIS.ItemSelectionHandler'show
-7. (tail call): ?
-8. (tail call): ?
-9. (tail call): ?
-10. (tail call): ?
-11. (tail call): ?
-12. EsoUI/Libraries/Utility/ZO_Hook.lua:18: in function 'CraftEnchantingItem'show
-13. user:/AddOns/CraftStoreFixedAndImproved/CraftStore.lua:1674: in function 'CS.RuneCreate'show
-14. user:/AddOns/CraftStoreFixedAndImproved/CraftStore.lua:1799: in function '(anonymous)'
-]]
 
 --#145, 2021-07-08, demawi, FCOIS esoui comments, ContextMenu at bank get's vanilla items removed if FCOIS, Custom Item Preview and
 -- Auto Category are enabled
@@ -174,27 +143,58 @@ local function menuVisibleCheck()
     --TODO Check if the menu's parent is a FCOIS flag invoker button and ONLY then return true!
 ]]
 
---#146, 2021-07-10, Baertram, SHIFT + right mouse does not work at quickslots (inventory menu)
+--#154, 2021-08-16, Baertram, bug: Improving an item does not re-apply the improve icon
+
+
+---------------------------------------------------------------------
+--[ToDo list] --
+--Check for local speed ups. FCOItemSaver.txt was checked until src/FCOIS_Tooltips.lua -> as of 2021-08-15
+--#129
+--#154
 
 
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
 --In progress: Since 2021-07-04
+--#129
 --#144
-
+--#145
+--#146
+--#147
+--#148
+--#149
+--#150
+--#151
+--#152
+--#153
 
 ---------------------------------------------------------------------
---Since last update 2.1.8 - New version: 2.1.9 -> Updated 2021-06-??
+--Since last update 2.1.8 - New version: 2.1.9 -> Updated 2021-08-14
 ---------------------------------------------------------------------
 
 --[Fixed]
-
+--#144, Slotting anything to deconstruction/improvement, leaving the crafting table and trying to create a glyph via CraftStore showed the before slotted item as protected
+-- and prevented the glyph creation
+--#145, ContextMenu at bank get's vanilla items removed if FCOIS, Custom Item Preview and AutoCategory are enabled
+--#146, SHIFT + right mouse does not work at quickslots (inventory menu)
+--#149, Crafting: Right click on add. inv. flag icon which turns protection on does not unslot protected items again.
+--#150, Inventory: Right click on add. inv. flag icon does not change the anti-destroy protection.
+--#152, Quickslot's FCOIS right click context menu works for non-inventory items (collectibles e.g.)
+--#153, Inventory FCOIS right click context menu works for quest items
+--#155, Deconstruction panel shows white filter icons and does not work properly anymore
 
 --[Changed]
---
+--#148, Use more local speed up variables in all FCOIS files
+
+
 
 --[Added]
+--#147 Added new API function FCOIS.IsGear(bag, slot)
+-->Global function to return boolean value, if an item is marked with any FCOIS gear marker icons (FCOIS_CON_ICON_GEAR_1 to 5, or dynamic icon defined as gear).
+--> + it will return an array as 2nd return parameter, containing boolean entries for each gear iconId (key). True (value) if item is marked with this gear iconId,
+--> false (value) if not.
+--#151 Added setting to re-apply the marker icons after enchanting an item (was missing so far), or after improving an item (was always re-applied  automatically until today).
 
 --[Added on request]
 

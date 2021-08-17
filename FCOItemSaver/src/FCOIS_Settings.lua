@@ -231,7 +231,7 @@ function FCOIS.ChangeAntiSettingsAccordingToFilterPanel()
     local filterPanelId = FCOIS.gFilterWhere
     if filterPanelId == nil then return nil end
     local parentPanel = FCOIS.gFilterWhereParent
-    --d("[FCOIS.changeAntiSettingsAccordingToFilterPanel - FilterPanel: " .. filterPanelId .. ", FilterPanelParent: " .. tostring(parentPanel))
+--d("[FCOIS.changeAntiSettingsAccordingToFilterPanel - FilterPanel: " .. filterPanelId .. ", FilterPanelParent: " .. tostring(parentPanel))
 
     local currentSettings = FCOIS.settingsVars.settings
     local filterPanelIdToBlockSettingName = FCOIS.mappingVars.filterPanelIdToBlockSettingName
@@ -243,33 +243,37 @@ function FCOIS.ChangeAntiSettingsAccordingToFilterPanel()
     --The filterPanelIds which need to be checked for anti-destroy
     local filterPanelIdsCheckForAntiDestroy = FCOIS.checkVars.filterPanelIdsForAntiDestroy
     --Get the current FCOIS.settingsVars.settings state and inverse them
+    --1st check if anti-destroy is given
     local isFilterPanelIdCheckForAntiDestroyNeeded = filterPanelIdsCheckForAntiDestroy[filterPanelId] or false
-    if isFilterPanelIdCheckForAntiDestroyNeeded then
+    if isFilterPanelIdCheckForAntiDestroyNeeded == true then
         settingNameToChange = "blockDestroying"
-    end
-    --------------------------------------------------------------------------------------------------------------------
-    local filterPanelIdToBlockSettingNameData = filterPanelIdToBlockSettingName[filterPanelId]
-    --Is there a "multi-table" for the filterPanelId (e.g. LF_CRAFTBAG with CraftBagExtended)
-    if type(filterPanelIdToBlockSettingNameData) == "table" then
-        --e.g. CraftBag + CraftBagExtended
-        local callbackFunc = filterPanelIdToBlockSettingNameData.callbackFunc
-        local filterPanelsToSettingsData = filterPanelIdToBlockSettingNameData.filterPanelToBlockSetting
-        if filterPanelsToSettingsData ~= nil then
-            local goOn = callbackFunc(parentPanel, filterPanelId)
-            if goOn == true then
-                settingNameToChange = filterPanelsToSettingsData[filterPanelId]
+    else
+        --If not anti-destroy: 2ndly check for others
+        local filterPanelIdToBlockSettingNameData = filterPanelIdToBlockSettingName[filterPanelId]
+        --Is there a "multi-table" for the filterPanelId (e.g. LF_CRAFTBAG with CraftBagExtended)
+        if filterPanelIdToBlockSettingNameData ~= nil then
+            if type(filterPanelIdToBlockSettingNameData) == "table" then
+                --e.g. CraftBag + CraftBagExtended
+                local callbackFunc = filterPanelIdToBlockSettingNameData.callbackFunc
+                local filterPanelsToSettingsData = filterPanelIdToBlockSettingNameData.filterPanelToBlockSetting
+                if filterPanelsToSettingsData ~= nil then
+                    local goOn = callbackFunc(parentPanel, filterPanelId)
+                    if goOn == true then
+                        settingNameToChange = filterPanelsToSettingsData[filterPanelId]
+                    end
+                end
+            else
+                --Single filterPanelId
+                settingNameToChange = filterPanelIdToBlockSettingNameData
             end
         end
-    else
-        --Single filterPanelId
-        settingNameToChange = filterPanelIdToBlockSettingNameData
     end
     --------------------------------------------------------------------------------------------------------------------
     if not settingNameToChange or settingNameToChange == "" then return end
     isSettingEnabled = not currentSettings[settingNameToChange]
     FCOIS.settingsVars.settings[settingNameToChange] = isSettingEnabled
     --------------------------------------------------------------------------------------------------------------------
-    --d(">isSettingEnabled: " ..tostring(isSettingEnabled))
+--d(">settingNameToChange: " .. tostring(settingNameToChange) .. ", isSettingEnabled: " ..tostring(isSettingEnabled))
     --Check if the settings are enabled now and if any item is slotted in the deconstruction/improvement/extraction/refine slot
     --> Then remove the item from the slot again if it's protected again now
     if isSettingEnabled then

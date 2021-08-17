@@ -112,6 +112,8 @@ local checkIfChosenRecipeAddonActive = FCOIS.CheckIfChosenRecipeAddonActive
 local checkIfResearchAddonUsed = FCOIS.CheckIfResearchAddonUsed
 local checkIfChosenResearchAddonActive = FCOIS.CheckIfChosenResearchAddonActive
 
+local updateAntiCheckAtPanelVariable = FCOIS.UpdateAntiCheckAtPanelVariable
+
 local iconsList, iconsListValues
 local iconsListNone, iconsListValuesNone, iconsListRecipe, iconsListValuesRecipe
 --==========================================================================================================================================
@@ -2004,8 +2006,8 @@ function FCOIS.BuildAddonMenu()
             disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_INVENTORY] end
             setFunc = function(value)
-                FCOIS.UpdateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_INVENTORY, value)
-                FCOIS.UpdateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_INVENTORY_COMPANION, value)
+                updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_INVENTORY, value)
+                --updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_INVENTORY_COMPANION, value)
             end
             defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_INVENTORY]
             createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
@@ -2019,7 +2021,7 @@ function FCOIS.BuildAddonMenu()
             data = { type = "checkbox", width = "half"}
             disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_VENDOR_SELL] end
-            setFunc = function(value) FCOIS.UpdateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_VENDOR_SELL, value)
+            setFunc = function(value) updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_VENDOR_SELL, value)
             end
             defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_VENDOR_SELL]
             createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
@@ -2033,7 +2035,7 @@ function FCOIS.BuildAddonMenu()
             data = { type = "checkbox", width = "half"}
             disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_GUILDSTORE_SELL] end
-            setFunc = function(value) FCOIS.UpdateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_GUILDSTORE_SELL, value)
+            setFunc = function(value) updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_GUILDSTORE_SELL, value)
             end
             defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_GUILDSTORE_SELL]
             createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
@@ -2047,7 +2049,7 @@ function FCOIS.BuildAddonMenu()
             data = { type = "checkbox", width = "half"}
             disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_FENCE_SELL] end
-            setFunc = function(value) FCOIS.UpdateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_FENCE_SELL, value)
+            setFunc = function(value) updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_FENCE_SELL, value)
             end
             defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_FENCE_SELL]
             createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
@@ -2061,7 +2063,7 @@ function FCOIS.BuildAddonMenu()
             data = { type = "checkbox", width = "half"}
             disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_FENCE_LAUNDER] end
-            setFunc = function(value) FCOIS.UpdateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_FENCE_LAUNDER, value)
+            setFunc = function(value) updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_FENCE_LAUNDER, value)
             end
             defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_FENCE_LAUNDER]
             createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
@@ -2075,7 +2077,7 @@ function FCOIS.BuildAddonMenu()
             data = { type = "checkbox", width = "half"}
             disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_TRADE] end
-            setFunc = function(value) FCOIS.UpdateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_TRADE, value)
+            setFunc = function(value) updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_TRADE, value)
             end
             defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_TRADE]
             createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
@@ -2089,7 +2091,7 @@ function FCOIS.BuildAddonMenu()
             data = { type = "checkbox", width = "half"}
             disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_MAIL_SEND] end
-            setFunc = function(value) FCOIS.UpdateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_MAIL_SEND, value)
+            setFunc = function(value) updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_MAIL_SEND, value)
             end
             defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_MAIL_SEND]
             createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
@@ -2112,7 +2114,7 @@ function FCOIS.BuildAddonMenu()
             data = { type = "checkbox", width = "half"}
             disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_SMITHING_REFINE] end
-            setFunc = function(value) FCOIS.UpdateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_SMITHING_REFINE, value)
+            setFunc = function(value) updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_SMITHING_REFINE, value)
             end
             defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_SMITHING_REFINE]
             createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
@@ -2126,7 +2128,7 @@ function FCOIS.BuildAddonMenu()
             data = { type = "checkbox", width = "half"}
             disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_JEWELRY_REFINE] end
-            setFunc = function(value) FCOIS.UpdateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_JEWELRY_REFINE, value)
+            setFunc = function(value) updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_JEWELRY_REFINE, value)
             end
             defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_JEWELRY_REFINE]
             createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
@@ -2140,7 +2142,7 @@ function FCOIS.BuildAddonMenu()
             data = { type = "checkbox", width = "half"}
             disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_SMITHING_DECONSTRUCT] end
-            setFunc = function(value) FCOIS.UpdateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_SMITHING_DECONSTRUCT, value)
+            setFunc = function(value) updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_SMITHING_DECONSTRUCT, value)
             end
             defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_SMITHING_DECONSTRUCT]
             createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
@@ -2154,7 +2156,7 @@ function FCOIS.BuildAddonMenu()
             data = { type = "checkbox", width = "half"}
             disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_JEWELRY_DECONSTRUCT] end
-            setFunc = function(value) FCOIS.UpdateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_JEWELRY_DECONSTRUCT, value)
+            setFunc = function(value) updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_JEWELRY_DECONSTRUCT, value)
             end
             defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_JEWELRY_DECONSTRUCT]
             createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
@@ -2168,7 +2170,7 @@ function FCOIS.BuildAddonMenu()
             data = { type = "checkbox", width = "half"}
             disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_SMITHING_IMPROVEMENT] end
-            setFunc = function(value) FCOIS.UpdateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_SMITHING_IMPROVEMENT, value)
+            setFunc = function(value) updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_SMITHING_IMPROVEMENT, value)
             end
             defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_SMITHING_IMPROVEMENT]
             createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
@@ -2182,7 +2184,7 @@ function FCOIS.BuildAddonMenu()
             data = { type = "checkbox", width = "half"}
             disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_JEWELRY_IMPROVEMENT] end
-            setFunc = function(value) FCOIS.UpdateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_JEWELRY_IMPROVEMENT, value)
+            setFunc = function(value) updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_JEWELRY_IMPROVEMENT, value)
             end
             defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_JEWELRY_IMPROVEMENT]
             createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
@@ -2196,7 +2198,7 @@ function FCOIS.BuildAddonMenu()
             data = { type = "checkbox", width = "half"}
             disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_SMITHING_RESEARCH_DIALOG] end
-            setFunc = function(value) FCOIS.UpdateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_SMITHING_RESEARCH_DIALOG, value)
+            setFunc = function(value) updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_SMITHING_RESEARCH_DIALOG, value)
             end
             defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_SMITHING_RESEARCH_DIALOG]
             createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
@@ -2210,7 +2212,7 @@ function FCOIS.BuildAddonMenu()
             data = { type = "checkbox", width = "half"}
             disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_JEWELRY_RESEARCH_DIALOG] end
-            setFunc = function(value) FCOIS.UpdateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_JEWELRY_RESEARCH_DIALOG, value)
+            setFunc = function(value) updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_JEWELRY_RESEARCH_DIALOG, value)
             end
             defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_JEWELRY_RESEARCH_DIALOG]
             createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
@@ -2224,7 +2226,7 @@ function FCOIS.BuildAddonMenu()
             data = { type = "checkbox", width = "half"}
             disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_ENCHANTING_CREATION] end
-            setFunc = function(value) FCOIS.UpdateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_ENCHANTING_CREATION, value)
+            setFunc = function(value) updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_ENCHANTING_CREATION, value)
             end
             defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_ENCHANTING_CREATION]
             createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
@@ -2238,7 +2240,7 @@ function FCOIS.BuildAddonMenu()
             data = { type = "checkbox", width = "half"}
             disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_ENCHANTING_EXTRACTION] end
-            setFunc = function(value) FCOIS.UpdateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_ENCHANTING_EXTRACTION, value)
+            setFunc = function(value) updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_ENCHANTING_EXTRACTION, value)
             end
             defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_ENCHANTING_EXTRACTION]
             createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
@@ -2252,7 +2254,7 @@ function FCOIS.BuildAddonMenu()
             data = { type = "checkbox", width = "half"}
             disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_ALCHEMY_CREATION] end
-            setFunc = function(value) FCOIS.UpdateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_ALCHEMY_CREATION, value)
+            setFunc = function(value) updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_ALCHEMY_CREATION, value)
             end
             defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_ALCHEMY_CREATION]
             createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
@@ -2266,7 +2268,7 @@ function FCOIS.BuildAddonMenu()
             data = { type = "checkbox", width = "half"}
             disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_RETRAIT] end
-            setFunc = function(value) FCOIS.UpdateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_RETRAIT, value)
+            setFunc = function(value) updateAntiCheckAtPanelVariable(fcoisDynIconNr, LF_RETRAIT, value)
             end
             defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].antiCheckAtPanel[LF_RETRAIT]
             createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
@@ -3080,7 +3082,7 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                             type = "button",
                             name = locVars["options_scan_ZOs_lock_functions"],
                             tooltip = locVars["options_scan_ZOs_lock_functions" .. tooltipSuffix],
-                            func = function() FCOIS.scanInventoriesForZOsLockedItems(true)
+                            func = function() FCOIS.ScanInventoriesForZOsLockedItems(true)
                             end,
                             isDangerous = true,
                             --disabled = function() return FCOISsettings.useZOsLockFunctions end,
@@ -5115,7 +5117,7 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                 },
 
                 --==============================================================================
-                -- ITEM AUOMATIC DE-MARKING
+                -- ITEM AUTOMATIC DE-MARKING
                 --==============================================================================
                 {
                     type = "submenu",
@@ -5224,6 +5226,40 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
 
                     } -- controls de-marking
                 }, -- submenu de-marking
+
+
+                --==============================================================================
+                -- ITEM AUTOMATIC RE-MARKING
+                --==============================================================================
+                {
+                    type = "submenu",
+                    name = locVars["options_header_items_remark"],
+                    controls = {
+                        {
+                            type = "checkbox",
+                            name = locVars["options_remark_on_enchant"],
+                            tooltip = locVars["options_remark_on_enchant" .. tooltipSuffix],
+                            getFunc = function() return FCOISsettings.reApplyIconsAfterEnchanting end,
+                            setFunc = function(value) FCOISsettings.reApplyIconsAfterEnchanting = value
+                            end,
+                            width = "half",
+                            default = FCOISdefaultSettings.reApplyIconsAfterEnchanting,
+                            disabled = function() return false end,
+                        },
+                        {
+                            type = "checkbox",
+                            name = locVars["options_remark_on_improvement"],
+                            tooltip = locVars["options_remark_on_improvement" .. tooltipSuffix],
+                            getFunc = function() return FCOISsettings.reApplyIconsAfterImprovement end,
+                            setFunc = function(value) FCOISsettings.reApplyIconsAfterImprovement = value
+                            end,
+                            width = "half",
+                            default = FCOISdefaultSettings.reApplyIconsAfterImprovement,
+                            disabled = function() return false end,
+                        },
+                    },
+
+                },
 
             }, -- controls marking
         }, -- submenu marking

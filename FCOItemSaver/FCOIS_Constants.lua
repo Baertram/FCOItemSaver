@@ -98,13 +98,14 @@ local protectionOnColor     = protectedColors[true]
 --Local pre chat color variables
 FCOIS.preChatVars = {}
 --Uncolored "FCOIS" pre chat text for the chat output
-FCOIS.preChatVars.preChatText = addonVars.gAddonNameShort
+local addonNameShort = addonVars.gAddonNameShort
+FCOIS.preChatVars.preChatText = addonNameShort
 --Green colored "FCOIS" pre text for the chat output
-FCOIS.preChatVars.preChatTextGreen = protectionOnColor..FCOIS.preChatVars.preChatText.."|r "
+FCOIS.preChatVars.preChatTextGreen = protectionOnColor..addonNameShort.."|r "
 --Red colored "FCOIS" pre text for the chat output
-FCOIS.preChatVars.preChatTextRed = protectionOffColor..FCOIS.preChatVars.preChatText.."|r "
+FCOIS.preChatVars.preChatTextRed = protectionOffColor..addonNameShort.."|r "
 --Blue colored "FCOIS" pre text for the chat output
-FCOIS.preChatVars.preChatTextBlue = "|c2222DD"..FCOIS.preChatVars.preChatText.."|r "
+FCOIS.preChatVars.preChatTextBlue = "|c2222DD"..addonNameShort.."|r "
 --Values for the "marked" entries
 FCOIS.preChatVars.currentStart = "> "
 FCOIS.preChatVars.currentEnd = " <"
@@ -434,6 +435,10 @@ local invAddButtonVars = FCOIS.invAdditionalButtonVars
 FCOIS.otherAddons = {}
 -- Local variables for improvement
 FCOIS.improvementVars = {}
+-- Local variables for enchanting
+FCOIS.enchantingVars = {}
+FCOIS.enchantingVars.lastMarkerIcons = {}
+
 --Handlers for the check functions (e.g. FCOIS.IsItemprotected() in file FCOIS_Protection.lua)
 FCOIS.checkHandlers = {}
 
@@ -549,6 +554,30 @@ for whereAreWe, filterPanelId in pairs(mappingVars.whereAreWeToFilterPanelId) do
     end
     mappingVars.filterPanelIdToWhereAreWe[filterPanelId] = whereAreWe
 end
+--Mapping of the filterPanelId to whereAreWe constant, repsecting the crafting type
+--2021-08-15 Only JewelryCrafting so far supported to differ refine, decon, improve, research and research dialog for normal/jewelry crafting
+mappingVars.filterPanelIdToFilterPanelIdRespectingCrafttype = {}
+mappingVars.filterPanelIdToFilterPanelIdRespectingCrafttype[CRAFTING_TYPE_JEWELRYCRAFTING] = {
+    [LF_SMITHING_REFINE]            = LF_JEWELRY_REFINE,
+    [LF_SMITHING_DECONSTRUCT]       = LF_JEWELRY_DECONSTRUCT,
+    [LF_SMITHING_IMPROVEMENT]       = LF_JEWELRY_IMPROVEMENT,
+    [LF_SMITHING_RESEARCH]          = LF_JEWELRY_RESEARCH,
+    [LF_SMITHING_RESEARCH_DIALOG]   = LF_JEWELRY_RESEARCH_DIALOG,
+}
+
+--Mapping of the filterPanelIds which should change the "Ant-isettings" automatically if a panelId is changed
+--> see file src/FCOIS_Panels.lua, function FCOIS.UpdateAntiCheckAtPanelVariable
+mappingVars.dependingAntiCheckPanelIdsAtPanelId = {
+    [LF_INVENTORY] = {
+        LF_BANK_DEPOSIT,
+        LF_GUILDBANK_DEPOSIT,
+        LF_HOUSE_BANK_DEPOSIT,
+        LF_BANK_WITHDRAW,
+        LF_GUILDBANK_WITHDRAW,
+        LF_HOUSE_BANK_WITHDRAW,
+        LF_INVENTORY_COMPANION
+    },
+}
 
 --Mapping of the filterPanelId to the block setting name
 local filterPanelIdToBlockSettingName = {
@@ -1287,6 +1316,7 @@ ctrlVars.ENCHANTING_EXTRACTION_SLOT_NAME    = ctrlVars.ENCHANTING_EXTRACTION_SLO
 ctrlVars.ENCHANTING_RUNE_CONTAINER_POTENCY  = GetControl(ctrlVars.ENCHANTING_RUNE_CONTAINER, "PotencyRune") --ZO_EnchantingTopLevelRuneSlotContainerPotencyRune
 ctrlVars.ENCHANTING_RUNE_CONTAINER_ESSENCE  = GetControl(ctrlVars.ENCHANTING_RUNE_CONTAINER, "EssenceRune") --ZO_EnchantingTopLevelRuneSlotContainerEssenceRune
 ctrlVars.ENCHANTING_RUNE_CONTAINER_ASPECT   = GetControl(ctrlVars.ENCHANTING_RUNE_CONTAINER, "AspectRune") --ZO_EnchantingTopLevelRuneSlotContainerAspectRune
+ctrlVars.ENCHANTING_APPLY_ENCHANT           = APPLY_ENCHANT
 ctrlVars.ALCHEMY                            = ALCHEMY
 ctrlVars.ALCHEMY_PANEL                      = ZO_AlchemyTopLevel
 ctrlVars.ALCHEMY_INV				        = GetControl(ctrlVars.ALCHEMY_PANEL, inventoryStr) --ZO_AlchemyTopLevelInventory
@@ -1737,6 +1767,7 @@ preventerVars.useAdvancedFiltersItemCountInInventories = false
 preventerVars.dontUpdateFilteredItemCount                     = false
 preventerVars.lamMenuOpenAndShowingInvPreviewForGridListAddon = false
 preventerVars.isZoDialogContextMenu = false
+preventerVars.enchantItemActive = false
 
 --The event handler array for OnMouseDoubleClick, Drag&Drop, etc.
 FCOIS.eventHandlers = {}
@@ -2110,7 +2141,8 @@ checkVars.allowedSetItemTypes = {
 --Table with NOT allowed parent control names. These cannot use the FCOItemSaver right click context menu entries
 --for items (in the inventories)
 checkVars.notAllowedContextMenuParentControls = {
-	["ZO_StoreWindowListContents"] = true,
+	["ZO_QuestItemsListContents"] = true,
+    ["ZO_StoreWindowListContents"] = true,
 	["ZO_BuyBackListContents"] = true,
 	["ZO_PlayerInventoryQuestContents"] = true,
 	["ZO_SmithingTopLevelImprovementPanel"] = true,

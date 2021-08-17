@@ -372,6 +372,8 @@ function FCOIS.BuildDefaultSettings()
 		keybindMoveItemToJunkAddSellIcon = false,
 		markerIconOffset = {},
 		enableKeybindChording = true,
+		reApplyIconsAfterEnchanting = true,
+		reApplyIconsAfterImprovement = true,
 	}
 	--The tables for the markedItems, non-unique and unique
 	local addonVars = FCOIS.addonVars

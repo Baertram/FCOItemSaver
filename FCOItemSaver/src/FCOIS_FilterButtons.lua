@@ -474,7 +474,7 @@ function FCOIS.CheckFCOISFilterButtonsAtPanel(doUpdateLists, panelId, overwriteF
     FCOIS.checkMarker(-1)
 
     --Get the currently shown panel and update FCOIS.gFilterWhere
-    local buttonsParentCtrl, filterPanel = FCOIS.checkActivePanel(panelId, overwriteFilterWhere)
+    local buttonsParentCtrl, filterPanel = FCOIS.CheckActivePanel(panelId, overwriteFilterWhere)
 
 --d("[FCOIS.CheckFilterButtonsAtPanel - " .. tostring(buttonsParentCtrl:GetName()) .. ", FilterPanelId/ParentPanelId: " .. tostring(FCOIS.gFilterWhere) .. "/" .. tostring(filterPanel) .. ", UseFilters: " .. tostring(settings.atPanelEnabled[FCOIS.gFilterWhere]["filters"]) .. ", hideFilterButtons: " ..tostring(hideFilterButtons))
 
@@ -554,7 +554,7 @@ function FCOIS.PreHookMainMenuFilterButtonHandler(comingFrom, goingTo)
 
     --If the craftbag panel is shown: Abort here and let the callback function of the craftbag scene do the rest.
     --> See file src/FCOIS_hooks.lua, function FCOIS.CreateHooks(), CRAFT_BAG_FRAGMENT:RegisterCallback("StateChange", ...)
-    if FCOIS.isCraftbagPanelShown() then
+    if FCOIS.IsCraftbagPanelShown() then
 --d(">> Craftbag panel is shown -> abort!")
         FCOIS.preventerVars.gPreHookButtonHandlerCallActive = false
         return false

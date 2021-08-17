@@ -619,7 +619,7 @@ function FCOIS.CreateHooks()
     local settings = FCOIS.settingsVars.settings
     local locVars = FCOIS.localizationVars.fcois_loc
     local mappingVars = FCOIS.mappingVars
-    
+
     local preHookMainMenuFilterButtonHandler = FCOIS.PreHookMainMenuFilterButtonHandler
     --Check if thesame mainMenuBarButton get's pressed twice or if a button was changed
     local function mainMenuBarButtonFilterButtonHandler(mouseButon, isUpInside, lastButtonVar, buttonControlClicked, comingFrom, goingTo, delay)
@@ -643,12 +643,12 @@ function FCOIS.CreateHooks()
     local refreshEquipmentControl = FCOIS.RefreshEquipmentControl
 
     local checkCraftbagOrOtherActivePanel = FCOIS.CheckCraftbagOrOtherActivePanel
-
     local updateFilteredItemCountThrottled = FCOIS.UpdateFilteredItemCountThrottled
+    local onClosePanel = FCOIS.OnClosePanel
 
     --========= INVENTORY SLOT - SHOW CONTEXT MENU =================================
     local function ZO_InventorySlot_ShowContextMenu_For_FCOItemSaver(rowControl, slotActions, ctrl, alt, shift, command)
---d("ZO_InventorySlot_ShowContextMenu_For_FCOItemSaver")
+        --d("ZO_InventorySlot_ShowContextMenu_For_FCOItemSaver")
         shift = shift or IsShiftKeyDown()
         alt = alt or IsAltKeyDown()
         ctrl = ctrl or IsControlKeyDown()
@@ -673,11 +673,11 @@ function FCOIS.CreateHooks()
         -- hide it now
         if prevVars.dontShowInvContextMenu == false and (isCharacterShownNow or isCompanionCharacterShownNow) and contextMenuClearMarkesByShiftKey == true
                 and (isModifierKeyPressed(contextMenuClearMarkesKey) and isNoOtherModifierKeyPressed(contextMenuClearMarkesKey)) then
---d(">FCOIS context menu, shift key is down")
+            --d(">FCOIS context menu, shift key is down")
             FCOIS.preventerVars.dontShowInvContextMenu = true
         end
         if prevVars.dontShowInvContextMenu then
---d(">FCOIS context menu, hiding it!")
+            --d(">FCOIS context menu, hiding it!")
             FCOIS.preventerVars.dontShowInvContextMenu = false
             --Hide the context menu now by returning true in this preHook and not calling the "context menu show" function
             --Nil the current menu ZO_Menu so it does not show (anti-flickering)
@@ -846,7 +846,7 @@ function FCOIS.CreateHooks()
         --So check if the item is still unbound and bindable and show an "Ask before equip" dialog if it's enabled in the settings
         if bagId ~= nil and slotIndex ~= nil then
             if settings.debug then FCOIS.debugMessage( "[EquipItem]","bagId: " .. bagId .. ", slotIndex: " .. slotIndex .. ", equipSlotIndex: " ..tostring(equipSlotIndex), true, FCOIS_DEBUG_DEPTH_NORMAL) end
---d("[EquipItem] bagId: " .. bagId .. ", slotIndex: " .. slotIndex .. ", equipSlotIndex: " ..tostring(equipSlotIndex))
+            --d("[EquipItem] bagId: " .. bagId .. ", slotIndex: " .. slotIndex .. ", equipSlotIndex: " ..tostring(equipSlotIndex))
             --Check if the item is bound on equip and show dialog to acceppt the binding before (if enabled in the settings)
             return FCOIS.CheckBindableItems(bagId, slotIndex, equipSlotIndex)
         end
@@ -858,7 +858,7 @@ function FCOIS.CreateHooks()
             local equipType = GetItemEquipType(bagId, slotIndex)
             equipSlot = mappingVars.equipTypeToSlot[equipType]
         end
---d("[FCOIS]RequestEquipItem-bagId: " ..tostring(bagId) .. ", slotIndex: " ..tostring(slotIndex) .. ", bagWorn: " ..tostring(bagWorn) .. ", equipSlotIndex: " .. tostring(equipSlot) .. " " .. GetItemLink(bagId, slotIndex))
+        --d("[FCOIS]RequestEquipItem-bagId: " ..tostring(bagId) .. ", slotIndex: " ..tostring(slotIndex) .. ", bagWorn: " ..tostring(bagWorn) .. ", equipSlotIndex: " .. tostring(equipSlot) .. " " .. GetItemLink(bagId, slotIndex))
         if settings.debug then FCOIS.debugMessage( "[RequestEquipItem]","bagId: " ..tostring(bagId) .. ", slotIndex: " ..tostring(slotIndex) .. ", bagWorn: " ..tostring(bagWorn) .. ", equipSlotIndex: " .. tostring(equipSlot), true, FCOIS_DEBUG_DEPTH_NORMAL) end
         --Update the marker control of the new equipped item
         FCOIS.UpdateEquipmentSlotMarker(equipSlot, 300, false)
@@ -871,7 +871,7 @@ function FCOIS.CreateHooks()
     SecurePostHook("RequestUnequipItem", function(bagId, equipSlot)
         if bagId ~= nil and equipSlot ~= nil then
             if settings.debug then FCOIS.debugMessage( "[RequestUnequipItem]","bagId: " ..tostring(bagId) .. ", equipSlotIndex: " .. equipSlot, true, FCOIS_DEBUG_DEPTH_NORMAL) end
---d("[FCOIS]RequestUnEquipItem-bagId: " ..tostring(bagId) .. ", equipSlotIndex: " .. tostring(equipSlot) .. " " .. GetItemLink(bagId, equipSlot))
+            --d("[FCOIS]RequestUnEquipItem-bagId: " ..tostring(bagId) .. ", equipSlotIndex: " .. tostring(equipSlot) .. " " .. GetItemLink(bagId, equipSlot))
             --If item was unequipped: Remove the armor type marker if necessary
             FCOIS.RemoveArmorTypeMarker(bagId, equipSlot) -->BAG_WORN will be updated to BAG_COMPANION_WORN internally!
             --Update the marker control of the new equipped item
@@ -884,13 +884,13 @@ function FCOIS.CreateHooks()
     --Preehook the menu bar shown event to update the character equipment section if it is shown
     ZO_PreHookHandler(ctrlVars.mainMenuCategoryBar, "OnShow", function()
         if settings.debug then FCOIS.debugMessage( "[Main Menu Category Bar]","OnShow") end
---d("[Main Menu Category Bar]OnShow")
+        --d("[Main Menu Category Bar]OnShow")
         --Hide the context menu
         hideContextMenu(FCOIS.gFilterWhere)
 
         --Update the character's equipment markers, if the character screen is shown
         if isCharacterShown() then
---d(">RefreshEquipmentControl -> ALL")
+            --d(">RefreshEquipmentControl -> ALL")
             refreshEquipmentControl(nil, nil, nil, nil, nil, nil)
         end
 
@@ -943,6 +943,24 @@ function FCOIS.CreateHooks()
     end)
     --Register a secure posthook on visibility change of a scrolllist's row -> At the enchanting inventory list
     SecurePostHook(ctrlVars.ENCHANTING_STATION.dataTypes[1], "setupCallback", onScrollListRowSetupCallback)
+    --PreHook the enchant function to re-apply marker icons on the same enchanted item
+    -->Before enchanting dialog will be called
+    ZO_PreHook(ctrlVars.ENCHANTING_APPLY_ENCHANT, "BeginItemImprovement", function (self, bagId, slotIndex)
+        FCOIS.CheckIfEnchantingItemShouldBeReMarked_BeforeEnchanting(bagId, slotIndex)
+    end)
+    SecurePostHook("EnchantItem", function(bagId, slotIndex, selectedDataBag, selectedDataIndex)
+        FCOIS.preventerVars.enchantItemActive = false
+        if not FCOIS.settingsVars.settings.reApplyIconsAfterEnchanting then return end
+        local enchantingVarsLastMarkerIcons = FCOIS.enchantingVars.lastMarkerIcons[bagId] and FCOIS.enchantingVars.lastMarkerIcons[bagId][slotIndex]
+        if enchantingVarsLastMarkerIcons == nil then return end
+        FCOIS.preventerVars.enchantItemActive = true
+    end)
+    local enchantPopupDialogCustomControl = ESO_Dialogs["ENCHANTING"].customControl()
+    if enchantPopupDialogCustomControl ~= nil then
+        ZO_PostHookHandler(enchantPopupDialogCustomControl, "OnHide", function()
+            FCOIS.CheckIfEnchantingInventoryItemShouldBeReMarked_AfterEnchanting()
+        end)
+    end
 
     --========= ALCHEMY ============================================================
     --PreHook the receiver function of drag&drop at the refinement panel as items from the craftbag won't fire
@@ -1087,7 +1105,7 @@ function FCOIS.CreateHooks()
             if button == MOUSE_BUTTON_INDEX_RIGHT and upInside then
                 local contextMenuClearMarkesKey = FCOIS.settingsVars.settings.contextMenuClearMarkesModifierKey
                 local isModifierKeyPressedNow = isModifierKeyPressed(contextMenuClearMarkesKey)
---d(">isModifierKeyPressed: " ..tostring(isModifierKeyPressedNow) .. ", noOthermodifierKeyPressed: " ..tostring(isNoOtherModifierKeyPressed(contextMenuClearMarkesKey)))
+                --d(">isModifierKeyPressed: " ..tostring(isModifierKeyPressedNow) .. ", noOthermodifierKeyPressed: " ..tostring(isNoOtherModifierKeyPressed(contextMenuClearMarkesKey)))
                 --Was the shift key clicked?
                 if isModifierKeyPressedNow == true and isNoOtherModifierKeyPressed(contextMenuClearMarkesKey) then
                     FCOIS.preventerVars.isZoDialogContextMenu = true
@@ -1272,6 +1290,13 @@ function FCOIS.CreateHooks()
     end)
 
     --======== QUICK SLOTS =========================================================
+    --Pre Hook the quickslots for prevention methods
+    --Register a secure posthook on visibility change of a scrolllist's row -> At the backpack inventory list
+    --dataTypes[1] = normal inventory items
+    --dataTypes[2] = quest items
+    --dataTypes[3] = collectibles
+    SecurePostHook(ctrlVars.QUICKSLOT_LIST.dataTypes[1], "setupCallback", onScrollListRowSetupCallback)
+
     --Pre Hook the 4th menubar button (Quickslots) handler at the player inventory
     ZO_PreHookHandler(ctrlVars.INV_MENUBAR_BUTTON_QUICKSLOTS, "OnMouseUp", function(control, button, upInside)
         if (button == MOUSE_BUTTON_INDEX_LEFT and upInside) then
@@ -1346,11 +1371,11 @@ function FCOIS.CreateHooks()
 
     --Pre Hook the 2 menubar button's (take and deposit) handler at the guild bank
     ZO_PreHookHandler(ctrlVars.GUILD_BANK_MENUBAR_BUTTON_WITHDRAW, "OnMouseUp", function(control, button, upInside)
---d("guild bank button 1, button: " .. button .. ", upInside: " .. tostring(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastGuildBankButton:GetName())
+        --d("guild bank button 1, button: " .. button .. ", upInside: " .. tostring(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastGuildBankButton:GetName())
         mainMenuBarButtonFilterButtonHandler(button, upInside, "gLastGuildBankButton", ctrlVars.GUILD_BANK_MENUBAR_BUTTON_WITHDRAW, LF_GUILDBANK_DEPOSIT, LF_GUILDBANK_WITHDRAW, nil)
     end)
     ZO_PreHookHandler(ctrlVars.GUILD_BANK_MENUBAR_BUTTON_DEPOSIT, "OnMouseUp", function(control, button, upInside)
---d("guild bank button 2, button: " .. button .. ", upInside: " .. tostring(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastGuildBankButton:GetName())
+        --d("guild bank button 2, button: " .. button .. ", upInside: " .. tostring(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastGuildBankButton:GetName())
         mainMenuBarButtonFilterButtonHandler(button, upInside, "gLastGuildBankButton", ctrlVars.GUILD_BANK_MENUBAR_BUTTON_DEPOSIT, LF_GUILDBANK_WITHDRAW, LF_GUILDBANK_DEPOSIT, nil)
     end)
     --======== SMITHING =============================================================
@@ -1448,7 +1473,7 @@ function FCOIS.CreateHooks()
             --Update the inventory context menu ("flag" icon) so it uses the correct "anti-settings" and the correct colour and right-click callback function
             --depending on the currently shown craftbag "parent" (inventory, mail send, guild bank, guild store)
             if parentPanel == nil then
-                _, parentPanel = FCOIS.checkActivePanel(FCOIS.gFilterWhere, LF_CRAFTBAG)
+                _, parentPanel = FCOIS.CheckActivePanel(FCOIS.gFilterWhere, LF_CRAFTBAG)
             end
 
             if settings.debug then FCOIS.debugMessage( "[CRAFT_BAG_FRAGMENT]", ">Parent panel: " .. tostring(parentPanel), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
@@ -1555,7 +1580,7 @@ function FCOIS.CreateHooks()
         elseif newState == SCENE_HIDDEN then
             --d("mail scene hidden")
 
-            FCOIS.OnClosePanel(nil, LF_INVENTORY, "MAIL")
+            onClosePanel(nil, LF_INVENTORY, "MAIL")
         end
     end)
     --======== SCENE CALLBACKS (see FCOIS.mappingVars.sceneControlsToRegisterStateChangeForContextMenu) ================
@@ -1605,7 +1630,7 @@ function FCOIS.CreateHooks()
 
             --When the retrait panel is hidden
         elseif newState == SCENE_HIDDEN then
-            FCOIS.OnClosePanel(nil, LF_INVENTORY, "RETRAIT")
+            onClosePanel(nil, LF_INVENTORY, "RETRAIT")
         end
     end)
 
@@ -1616,12 +1641,12 @@ function FCOIS.CreateHooks()
     -->See file src/FCOIS_MarkerIcons.lua, function FCOIS.CreateTextures with whichTextures = 6
     ctrlVars.COMPANION_INV_FRAGMENT:RegisterCallback("StateChange", function(oldState, newState)
         if settings.debug then FCOIS.debugMessage( "[COMPANION EQUIPMENT FRAGMENT]","State: " .. tostring(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
---d("[COMPANION EQUIPMENT FRAGMENT]","State: " .. tostring(newState))
+        --d("[COMPANION EQUIPMENT FRAGMENT]","State: " .. tostring(newState))
         sceneCallbackHideContextMenu(oldState, newState)
         if     newState == SCENE_FRAGMENT_SHOWING then
             --Check if craftbag is active and change filter panel and parent panel accordingly
             FCOIS.gFilterWhere, FCOIS.gFilterWhereParent = checkCraftbagOrOtherActivePanel(LF_INVENTORY_COMPANION)
---d(">FCOIS.gFilterWhere: " ..tostring(FCOIS.gFilterWhere))
+            --d(">FCOIS.gFilterWhere: " ..tostring(FCOIS.gFilterWhere))
             --Check if another filter panel was already opened and we are coming form there before the CLOSE EVENT function was called
             --if FCOIS.preventerVars.gActiveFilterPanel == true then
             --Set the "No Close Event" flag so the called close event won't override gFilterWhere and update the filter button colors and callback handlers
@@ -1642,7 +1667,7 @@ function FCOIS.CreateHooks()
 
             --When the companion inventory panel is hidden
         elseif newState == SCENE_FRAGMENT_HIDDEN then
-            FCOIS.OnClosePanel(nil, LF_INVENTORY, "DESTROY")
+            onClosePanel(nil, LF_INVENTORY, "DESTROY")
         end
     end)
     --Register a secure posthook on visibility change of a scrolllist's row -> At the companion inventory list
@@ -1658,7 +1683,7 @@ function FCOIS.CreateHooks()
             changeContextMenuInvokerButtonColorByPanelId(FCOIS_CON_LF_COMPANION_CHARACTER)
             if not companionEquipmentMarkersWereCreated then
                 --Update the character's equipment markers, if the companion character screen is shown
---d(">RefreshEquipmentControl -> COMPANION")
+                --d(">RefreshEquipmentControl -> COMPANION")
                 refreshEquipmentControl(nil, nil, nil, nil, nil, nil)
                 companionEquipmentMarkersWereCreated = true
             end

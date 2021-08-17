@@ -21,10 +21,37 @@ local isAutolootContainer = FCOIS.IsAutolootContainer
 local isItemType = FCOIS.IsItemType
 local isCompanionInventoryShown = FCOIS.IsCompanionInventoryShown
 local getFilterWhereBySettings = FCOIS.GetFilterWhereBySettings
+local mappingVars = FCOIS.mappingVars
 
 --==========================================================================================================================================
 --                                          FCOIS - Panel functions
 --==========================================================================================================================================
+
+local function getWhereAreWeOrFilterPanelIdByPanelIdRespectingCraftType(filterPanelId, getWhereAreWe)
+    if getWhereAreWe == nil then return end
+    local filterPanelIdToWhereAreWe
+    local whereAreWeDetermined
+    local filterPanelIdDetermined = filterPanelId
+    if getWhereAreWe == true then
+        filterPanelIdToWhereAreWe = mappingVars.filterPanelIdToWhereAreWe
+        whereAreWeDetermined = filterPanelIdToWhereAreWe[filterPanelIdDetermined]
+    end
+    local craftType = GetCraftingInteractionType()
+    if craftType ~= CRAFTING_TYPE_INVALID then
+        local filterPanelIdToFilterPanelIdRespectingCrafttype = mappingVars.filterPanelIdToFilterPanelIdRespectingCrafttype
+        local filterPanelIdByCraftType = filterPanelIdToFilterPanelIdRespectingCrafttype[filterPanelIdDetermined] and filterPanelIdToFilterPanelIdRespectingCrafttype[filterPanelIdDetermined][craftType]
+        filterPanelIdDetermined = filterPanelIdByCraftType or filterPanelIdDetermined
+        if getWhereAreWe == true then
+            local whereAreWeByCraftType = filterPanelIdToWhereAreWe[filterPanelIdByCraftType]
+            whereAreWeDetermined = whereAreWeByCraftType or whereAreWeDetermined
+        end
+    end
+    if getWhereAreWe == true then
+        return whereAreWeDetermined
+    else
+        return filterPanelIdDetermined
+    end
+end
 
 --Determine which filterPanelId is currently active and set the whereAreWe variable
 function FCOIS.GetWhereAreWe(panelId, panelIdAtCall, panelIdParent, bag, slot, isDragAndDrop, calledFromExternalAddon)
@@ -39,7 +66,7 @@ function FCOIS.GetWhereAreWe(panelId, panelIdAtCall, panelIdParent, bag, slot, i
     --======= FUNCTIONs ============================================================
     --Function to check a single item's type and get the whereAreWe ID
     local function checkSingleItemProtection(p_bag, p_slotIndex, whereAreWeBefore)
-        if settings.debug then FCOIS.debugMessage( "[checkSingleItemProtection]","panelId: " .. tostring(panelId) .. ", whereAreWeBefore: " .. tostring(whereAreWeBefore .. ", calledFromExternalAddon: " ..tostring(calledFromExternalAddon)), true, FCOIS_DEBUG_DEPTH_ALL) end
+        if settings.debug then debugMessage( "[checkSingleItemProtection]","panelId: " .. tostring(panelId) .. ", whereAreWeBefore: " .. tostring(whereAreWeBefore) .. ", calledFromExternalAddon: " ..tostring(calledFromExternalAddon), true, FCOIS_DEBUG_DEPTH_ALL) end
         if p_bag == nil or p_slotIndex == nil then return false end
         local locWhereAreWe = FCOIS_CON_DESTROY
         --Are we trying to open a container with autoloot on?
@@ -82,7 +109,7 @@ function FCOIS.GetWhereAreWe(panelId, panelIdAtCall, panelIdParent, bag, slot, i
                 end
             end
         end
-        if settings.debug then FCOIS.debugMessage( "[checkSingleItemProtection]", "<<< whereAreWeAfter: " .. tostring(locWhereAreWe), true, FCOIS_DEBUG_DEPTH_ALL) end
+        if settings.debug then debugMessage( "[checkSingleItemProtection]", "<<< whereAreWeAfter: " .. tostring(locWhereAreWe), true, FCOIS_DEBUG_DEPTH_ALL) end
         return locWhereAreWe
     end
 
@@ -206,44 +233,56 @@ function FCOIS.GetWhereAreWe(panelId, panelIdAtCall, panelIdParent, bag, slot, i
             end
             --Inside crafting station refinement
         elseif (calledFromExternalAddon and (panelId == LF_SMITHING_REFINE or panelId == LF_JEWELRY_REFINE)) or (not calledFromExternalAddon and (not ctrlVars.REFINEMENT:IsHidden() or (panelId == LF_SMITHING_REFINE or panelId == LF_JEWELRY_REFINE))) then
+            --[[
             local craftType = GetCraftingInteractionType()
             if craftType == CRAFTING_TYPE_JEWELRYCRAFTING then
                 whereAreWe = FCOIS_CON_JEWELRY_REFINE
             else
                 whereAreWe = FCOIS_CON_REFINE
             end
+            ]]
+            whereAreWe = getWhereAreWeOrFilterPanelIdByPanelIdRespectingCraftType(LF_SMITHING_REFINE, true)
             --Inside crafting station deconstruction
         elseif (calledFromExternalAddon and (panelId == LF_SMITHING_DECONSTRUCT or panelId == LF_JEWELRY_DECONSTRUCT)) or (not calledFromExternalAddon and (not ctrlVars.DECONSTRUCTION:IsHidden() or (panelId == LF_SMITHING_DECONSTRUCT or panelId == LF_JEWELRY_DECONSTRUCT))) then
+            --[[
             local craftType = GetCraftingInteractionType()
             if craftType == CRAFTING_TYPE_JEWELRYCRAFTING then
                 whereAreWe = FCOIS_CON_JEWELRY_DECONSTRUCT
             else
                 whereAreWe = FCOIS_CON_DECONSTRUCT
             end
+            ]]
+            whereAreWe = getWhereAreWeOrFilterPanelIdByPanelIdRespectingCraftType(LF_SMITHING_DECONSTRUCT, true)
             --Inside crafting station improvement
         elseif (calledFromExternalAddon and (panelId == LF_SMITHING_IMPROVEMENT or panelId == LF_JEWELRY_IMPROVEMENT)) or (not calledFromExternalAddon and (not ctrlVars.IMPROVEMENT:IsHidden() or (panelId == LF_SMITHING_IMPROVEMENT or panelId == LF_JEWELRY_IMPROVEMENT))) then
-            local craftType = GetCraftingInteractionType()
+            --[[local craftType = GetCraftingInteractionType()
             if craftType == CRAFTING_TYPE_JEWELRYCRAFTING then
                 whereAreWe = FCOIS_CON_JEWELRY_IMPROVE
             else
                 whereAreWe = FCOIS_CON_IMPROVE
             end
+            ]]
+            whereAreWe = getWhereAreWeOrFilterPanelIdByPanelIdRespectingCraftType(LF_SMITHING_IMPROVEMENT, true)
             --Are we at the crafting stations research panel's popup list dialog?
         elseif (calledFromExternalAddon and (panelId == LF_SMITHING_RESEARCH_DIALOG or panelId == LF_JEWELRY_RESEARCH_DIALOG)) or (not calledFromExternalAddon and (isResearchListDialogShown() or (panelId == LF_SMITHING_RESEARCH_DIALOG or panelId == LF_JEWELRY_RESEARCH_DIALOG))) then
-            local craftType = GetCraftingInteractionType()
+            --[[local craftType = GetCraftingInteractionType()
             if craftType == CRAFTING_TYPE_JEWELRYCRAFTING then
                 whereAreWe = FCOIS_CON_JEWELRY_RESEARCH_DIALOG
             else
                 whereAreWe = FCOIS_CON_RESEARCH_DIALOG
             end
+            ]]
+            whereAreWe = getWhereAreWeOrFilterPanelIdByPanelIdRespectingCraftType(LF_SMITHING_RESEARCH_DIALOG, true)
             --Are we at the crafting stations research panel?
         elseif (calledFromExternalAddon and (panelId == LF_SMITHING_RESEARCH or panelId == LF_JEWELRY_RESEARCH)) or (not calledFromExternalAddon and (not ctrlVars.RESEARCH:IsHidden() or (panelId == LF_SMITHING_RESEARCH or panelId == LF_JEWELRY_RESEARCH))) then
-            local craftType = GetCraftingInteractionType()
+            --[[local craftType = GetCraftingInteractionType()
             if craftType == CRAFTING_TYPE_JEWELRYCRAFTING then
                 whereAreWe = FCOIS_CON_JEWELRY_RESEARCH
             else
                 whereAreWe = FCOIS_CON_RESEARCH
             end
+            ]]
+            whereAreWe = getWhereAreWeOrFilterPanelIdByPanelIdRespectingCraftType(LF_SMITHING_RESEARCH, true)
             --Inside enchanting station
         elseif (calledFromExternalAddon and (panelId == LF_ENCHANTING_EXTRACTION or panelId == LF_ENCHANTING_CREATION)) or (not calledFromExternalAddon and (not ctrlVars.ENCHANTING_STATION:IsHidden() or (panelId == LF_ENCHANTING_EXTRACTION or panelId == LF_ENCHANTING_CREATION))) then
             --Enchanting Extraction panel?
@@ -301,16 +340,19 @@ function FCOIS.GetWhereAreWe(panelId, panelIdAtCall, panelIdParent, bag, slot, i
         end
     end --if FCOIS.otherAddons.craftBagExtendedActive and INVENTORY_CRAFT_BAG and (panelId == LF_CRAFTBAG or not ctrlVars.CRAFTBAG:IsHidden()) then
     --*********************************************************************************************************************************************************************************
+
+    --d("[FCOIS.GetWhereAreWe]panelId: " .. tostring(panelId) .. ", panelIdAtCall: " .. tostring(panelIdAtCall) .. ", calledFromExternalAddon: " ..tostring(calledFromExternalAddon))
+
     return whereAreWe
 end
 
 --Function to check if the currently shown panel is the craftbag
-function FCOIS.isCraftbagPanelShown()
+function FCOIS.IsCraftbagPanelShown()
     local retVar = INVENTORY_CRAFT_BAG and not FCOIS.ZOControlVars.CRAFTBAG:IsHidden()
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[isCraftbagPanelShown]", "result: " .. tostring(retVar), true, FCOIS_DEBUG_DEPTH_SPAM) end
+    if FCOIS.settingsVars.settings.debug then debugMessage( "[isCraftbagPanelShown]", "result: " .. tostring(retVar), true, FCOIS_DEBUG_DEPTH_SPAM) end
     return retVar
 end
-local isCraftbagPanelShown = FCOIS.isCraftbagPanelShown
+local isCraftbagPanelShown = FCOIS.IsCraftbagPanelShown
 
 --Check if the craftbag panel is currently active and change the panelid to craftbag, or the wished one.
 --Change the parentPanelId too (e.g. mail send, or bank deposit) if the craftbag is active!
@@ -336,7 +378,7 @@ end
 --Get the "real" active panel.
 --If you are at the bank e.g. panelId is 2 (FCOIS.gFilterWhere was set in event BANK_OPEN), but you could also be at the deposit tab which uses
 --the normal inventory filters of panelId = 1. The same applies for mail, trade, and others
-function FCOIS.checkActivePanel(comingFrom, overwriteFilterWhere)
+function FCOIS.CheckActivePanel(comingFrom, overwriteFilterWhere)
     if overwriteFilterWhere == nil then overwriteFilterWhere = false end
     local inventoryName
     local ctrlVars2 = FCOIS.ZOControlVars
@@ -353,7 +395,7 @@ function FCOIS.checkActivePanel(comingFrom, overwriteFilterWhere)
         else
             oldFilterWhere = comingFrom
         end
-        FCOIS.debugMessage( "[checkActivePanel]","Coming from/Before: " .. tostring(oldFilterWhere) .. ", overwriteFilterWhere: " .. tostring(overwriteFilterWhere) .. ", currentSceneName: " ..tostring(currentSceneName), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED)
+        debugMessage( "[checkActivePanel]","Coming from/Before: " .. tostring(oldFilterWhere) .. ", overwriteFilterWhere: " .. tostring(overwriteFilterWhere) .. ", currentSceneName: " ..tostring(currentSceneName), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED)
     end
 
 --d("[FCOIS.checkActivePanel] comingFrom/Before: " .. tostring(comingFrom) .. ", overwriteFilterWhere: " ..tostring(overwriteFilterWhere).. ", currentSceneName: " ..tostring(currentSceneName))
@@ -475,51 +517,66 @@ function FCOIS.checkActivePanel(comingFrom, overwriteFilterWhere)
         inventoryName = ctrlVars2.ALCHEMY_INV
     --Refinement
     elseif not ctrlVars2.REFINEMENT_INV:IsHidden() or (comingFrom == LF_SMITHING_REFINE or comingFrom == LF_JEWELRY_REFINE) then
+        --[[
         local craftType = GetCraftingInteractionType()
         local filterPanelId = LF_SMITHING_REFINE
         if craftType == CRAFTING_TYPE_JEWELRYCRAFTING then
             filterPanelId = LF_JEWELRY_REFINE
         end
+        ]]
+        local filterPanelId = getWhereAreWeOrFilterPanelIdByPanelIdRespectingCraftType(LF_SMITHING_REFINE, false)
         --Update the filterPanelId
         FCOIS.gFilterWhere = getFilterWhereBySettings(filterPanelId)
         inventoryName = ctrlVars2.REFINEMENT_INV
     --Deconstruction
     elseif not ctrlVars2.DECONSTRUCTION_INV:IsHidden() or (comingFrom == LF_SMITHING_DECONSTRUCT or comingFrom == LF_JEWELRY_DECONSTRUCT) then
+        --[[
         local craftType = GetCraftingInteractionType()
         local filterPanelId = LF_SMITHING_DECONSTRUCT
         if craftType == CRAFTING_TYPE_JEWELRYCRAFTING then
             filterPanelId = LF_JEWELRY_DECONSTRUCT
         end
+        ]]
+        local filterPanelId = getWhereAreWeOrFilterPanelIdByPanelIdRespectingCraftType(LF_SMITHING_DECONSTRUCT, false)
         --Update the filterPanelId
         FCOIS.gFilterWhere = getFilterWhereBySettings(filterPanelId)
         inventoryName = ctrlVars2.DECONSTRUCTION_INV
     --Improvement
     elseif not ctrlVars2.IMPROVEMENT_INV:IsHidden() or (comingFrom == LF_SMITHING_IMPROVEMENT or comingFrom == LF_JEWELRY_IMPROVEMENT) then
+        --[[
         local craftType = GetCraftingInteractionType()
         local filterPanelId = LF_SMITHING_IMPROVEMENT
         if craftType == CRAFTING_TYPE_JEWELRYCRAFTING then
             filterPanelId = LF_JEWELRY_IMPROVEMENT
         end
+        ]]
+        local filterPanelId = getWhereAreWeOrFilterPanelIdByPanelIdRespectingCraftType(LF_SMITHING_IMPROVEMENT, false)
         --Update the filterPanelId
         FCOIS.gFilterWhere = getFilterWhereBySettings(filterPanelId)
         inventoryName = ctrlVars2.IMPROVEMENT_INV
     --Research dialog
     elseif isResearchListDialogShown() or (comingFrom == LF_SMITHING_RESEARCH_DIALOG or comingFrom == LF_JEWELRY_RESEARCH_DIALOG) then
+        --[[
         local craftType = GetCraftingInteractionType()
         local filterPanelId = LF_SMITHING_RESEARCH_DIALOG
         if craftType == CRAFTING_TYPE_JEWELRYCRAFTING then
             filterPanelId = LF_JEWELRY_RESEARCH_DIALOG
         end
+        ]]
+        local filterPanelId = getWhereAreWeOrFilterPanelIdByPanelIdRespectingCraftType(LF_SMITHING_RESEARCH_DIALOG, false)
         --Update the filterPanelId
         FCOIS.gFilterWhere = getFilterWhereBySettings(filterPanelId)
         inventoryName = ctrlVars2.RESEARCH_POPUP_TOP_DIVIDER
     --Research
     elseif not ctrlVars2.RESEARCH:IsHidden() or (comingFrom == LF_SMITHING_RESEARCH or comingFrom == LF_JEWELRY_RESEARCH) then
+        --[[
         local craftType = GetCraftingInteractionType()
         local filterPanelId = LF_SMITHING_RESEARCH
         if craftType == CRAFTING_TYPE_JEWELRYCRAFTING then
             filterPanelId = LF_JEWELRY_RESEARCH
         end
+        ]]
+        local filterPanelId = getWhereAreWeOrFilterPanelIdByPanelIdRespectingCraftType(LF_SMITHING_RESEARCH, false)
         --Update the filterPanelId
         FCOIS.gFilterWhere = getFilterWhereBySettings(filterPanelId)
         inventoryName = ctrlVars2.RESEARCH
@@ -562,7 +619,8 @@ function FCOIS.checkActivePanel(comingFrom, overwriteFilterWhere)
         end
     end
 
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[checkActivePanel]",">> after: " .. tostring(FCOIS.gFilterWhere) .. ", inventoryName: " .. tostring(inventoryName) .. ", filterParentPanel: " .. tostring(panelType), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+    if FCOIS.settingsVars.settings.debug then debugMessage( "[checkActivePanel]",">> after: " .. tostring(FCOIS.gFilterWhere) .. ", inventoryName: " .. tostring(inventoryName) .. ", filterParentPanel: " .. tostring(panelType), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+    --d("[FCOIS.checkActivePanel]>> after: " .. tostring(FCOIS.gFilterWhere) .. ", inventoryName: " .. tostring(inventoryName) .. ", filterParentPanel: " .. tostring(panelType))
 --d( ">> after: " .. tostring(FCOIS.gFilterWhere) .. ", inventoryName: " .. tostring(inventoryName) .. ", filterParentPanel: " .. tostring(panelType))
 
     --Return the found inventory variable (e.g. ZO_PlayerInventory) and the LibFilters filter panel ID (e.g. LF_BANK_WITHDRAW)
@@ -576,6 +634,7 @@ function FCOIS.UpdateAntiCheckAtPanelVariable(iconNr, panelId, value)
     value = value or false
     if iconNr == nil or panelId == nil then return false end
     --Check depending panelIds
+    --[[
     --Inventory
     if panelId == LF_INVENTORY then
         --Must change the bank, guild bank and house bank withdraw/deposit panels as well
@@ -585,6 +644,14 @@ function FCOIS.UpdateAntiCheckAtPanelVariable(iconNr, panelId, value)
         FCOIS.settingsVars.settings.icon[iconNr].antiCheckAtPanel[LF_BANK_WITHDRAW] = value
         FCOIS.settingsVars.settings.icon[iconNr].antiCheckAtPanel[LF_GUILDBANK_WITHDRAW] = value
         FCOIS.settingsVars.settings.icon[iconNr].antiCheckAtPanel[LF_HOUSE_BANK_WITHDRAW] = value
+    end
+    ]]
+    local dependingAntiCheckPaneIldsAtPanelId = mappingVars.dependingAntiCheckPanelIdsAtPanelId
+    local dependingPanelIds = dependingAntiCheckPaneIldsAtPanelId[panelId]
+    if dependingPanelIds ~= nil then
+        for _, dependingPanelId in ipairs(dependingPanelIds) do
+            FCOIS.settingsVars.settings.icon[iconNr].antiCheckAtPanel[dependingPanelId] = value
+        end
     end
     --All others (including LF_INVENTORY)
     FCOIS.settingsVars.settings.icon[iconNr].antiCheckAtPanel[panelId] = value

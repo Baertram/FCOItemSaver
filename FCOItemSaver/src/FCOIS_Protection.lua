@@ -384,7 +384,7 @@ function FCOIS.CheckIfItemIsProtected(iconId, itemId, checkHandler, addonName, s
     return itemIsMarked
 end
 checkIfItemIsProtected = FCOIS.CheckIfItemIsProtected
-FCOIS.checkIfItemIsProtected = checkIfItemIsProtected
+FCOIS.checkIfItemIsProtected = checkIfItemIsProtected --backwards compatibility
 
 
 -- Fired when user selects an item to destroy.
@@ -810,7 +810,7 @@ function FCOIS.DeconstructionSelectionHandler(bag, slot, echo, overrideChatOutpu
     --Is the panelId given? If not determine it
     local inventoryVar
     if panelId == nil then
-        inventoryVar, panelId = FCOIS.checkActivePanel(nil, false)
+        inventoryVar, panelId = FCOIS.CheckActivePanel(nil, false)
     end
     -- If anti-(jewelry) deconstruction is globally active
     local isBlocked = deconPanelToBlockSettings[panelId] or false
@@ -918,15 +918,15 @@ function craftPrev.IsShowingEnchantment()
 end
 local isShowingEnchantment = craftPrev.IsShowingEnchantment
 function craftPrev.IsShowingDeconstruction()
-    return not ctrlVars.DECONSTRUCTION_SLOT:IsHidden() or ctrlVars.SMITHING:IsDeconstructing()
+    return not ctrlVars.DECONSTRUCTION_SLOT:IsHidden() --or ctrlVars.SMITHING:IsDeconstructing()
 end
 local isShowingDeconstruction = craftPrev.IsShowingDeconstruction
 function craftPrev.IsShowingImprovement()
-    return not ctrlVars.IMPROVEMENT_SLOT:IsHidden() or ctrlVars.SMITHING:IsImproving()
+    return not ctrlVars.IMPROVEMENT_SLOT:IsHidden() --or ctrlVars.SMITHING:IsImproving() --only checks if the tab is activated!
 end
 local isShowingImprovement = craftPrev.IsShowingImprovement
 function craftPrev.IsShowingRefinement()
-    return not ctrlVars.REFINEMENT_SLOT:IsHidden() or ctrlVars.SMITHING:IsExtracting()
+    return not ctrlVars.REFINEMENT_SLOT:IsHidden() --or ctrlVars.SMITHING:IsExtracting()
 end
 local isShowingRefinement = craftPrev.IsShowingRefinement
 function craftPrev.IsShowingResearch()
@@ -1048,17 +1048,18 @@ end
 local getSlottedItemBagAndSlot = craftPrev.GetSlottedItemBagAndSlot
 
 function craftPrev.GetExtractionSlotAndWhereAreWe()
-    if isShowingEnchantmentExtraction() then
+    local currentFilterId = FCOIS.gFilterWhere
+    if isShowingEnchantmentExtraction() or currentFilterId == LF_ENCHANTING_EXTRACTION then
         return ctrlVars.ENCHANTING_EXTRACTION_SLOT, FCOIS_CON_ENCHANT_EXTRACT, ctrlVars.ENCHANTING
-    elseif isShowingEnchantmentCreation() then
+    elseif isShowingEnchantmentCreation() or currentFilterId == LF_ENCHANTING_CREATION then
         return ctrlVars.ENCHANTING_RUNE_CONTAINER, FCOIS_CON_ENCHANT_CREATE, ctrlVars.ENCHANTING -- Is the parent control for potency, essence and aspect rune slots!
-    elseif isShowingDeconstruction() then
+    elseif isShowingDeconstruction() or currentFilterId == LF_SMITHING_DECONSTRUCT or currentFilterId == LF_JEWELRY_DECONSTRUCT then
         return ctrlVars.DECONSTRUCTION_SLOT, FCOIS_CON_DECONSTRUCT, ctrlVars.SMITHING
-    elseif isShowingImprovement() then
+    elseif isShowingImprovement() or currentFilterId == LF_SMITHING_IMPROVEMENT or currentFilterId == LF_JEWELRY_IMPROVEMENT then
         return ctrlVars.IMPROVEMENT_SLOT, FCOIS_CON_IMPROVE, ctrlVars.SMITHING
-    elseif isShowingRefinement() then
+    elseif isShowingRefinement() or currentFilterId == LF_SMITHING_REFINE or currentFilterId == LF_JEWELRY_REFINE then
         return ctrlVars.REFINEMENT_SLOT, FCOIS_CON_REFINE, ctrlVars.SMITHING
-    elseif isShowingAlchemy() then
+    elseif isShowingAlchemy() or currentFilterId == LF_ALCHEMY_CREATION then
         return ctrlVars.REFINEMENT_SLOT, FCOIS_CON_ALCHEMY_DESTROY, ctrlVars.ALCHEMY
     end
 end
@@ -1127,6 +1128,7 @@ local removeItemFromCraftSlot = craftPrev.RemoveItemFromCraftSlot
 
 --Function to check if items for extraction/deconstruction/improvement are currently saved (got saved after adding them to the extraction slot)
 function craftPrev.CheckPreventCrafting(override, extractSlot, extractWhereAreWe)
+--d("[FCOIS]craftPrev.CheckPreventCrafting")
     override = override or false
     --Initialize the return variable with false so this PreHook function won't abort the extraction
     local retVar = false
