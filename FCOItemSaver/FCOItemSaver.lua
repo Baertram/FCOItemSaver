@@ -182,6 +182,7 @@ local function menuVisibleCheck()
 --#150, Inventory: Right click on add. inv. flag icon does not change the anti-destroy protection.
 --#152, Quickslot's FCOIS right click context menu works for non-inventory items (collectibles e.g.)
 --#153, Inventory FCOIS right click context menu works for quest items
+--#155, Deconstruction panel shows white filter icons and does not work properly anymore
 
 --[Changed]
 --#148, Use more local speed up variables in all FCOIS files
