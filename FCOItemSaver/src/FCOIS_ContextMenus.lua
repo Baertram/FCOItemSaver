@@ -97,8 +97,13 @@ end
 
 --Is the owner of a ZO_Menu an FCOIS additional inventory flag button?
 local function isMenuOwnerFCOISAdditionalFlagContextMenu(menuOwnerControlToCheck)
-    menuOwnerControlToCheck = menuOwnerControlToCheck or getContextMenuInvokerButton()
-    local contInvButtonControl = wm:GetControlByName(menuOwnerControlToCheck, "")
+    local contInvButtonControl
+    if menuOwnerControlToCheck ~= nil then
+        contInvButtonControl = menuOwnerControlToCheck
+    else
+        local menuOwnerControlToCheckName = getContextMenuInvokerButton()
+        contInvButtonControl = wm:GetControlByName(menuOwnerControlToCheckName, "")
+    end
     if contInvButtonControl ~= nil then
         local menuOwner = GetMenuOwner()
         return (menuOwner ~= nil and menuOwner == contInvButtonControl) or false
@@ -2238,12 +2243,13 @@ local function changeContextMenuInvokerButtonColor(contextMenuInvokerButton, set
     else
         settingStateForColor = settingsEnabled
     end
---d("[FCOIS]changeContextMenuInvokerButtonColor - contextMenuInvokerButton: " .. contextMenuInvokerButton:GetName() .. ", settingsEnabled: " .. tostring(settingsEnabled))
+d("[FCOIS]changeContextMenuInvokerButtonColor - contextMenuInvokerButton: " .. contextMenuInvokerButton:GetName() .. ", settingsEnabled: " .. tostring(settingsEnabled))
 
     --Update the context menu "flag" button's color according to the current settings state
     local colR, colG, colB, colA = getContextMenuAntiSettingsColor(settingStateForColor)
     local contInvButTexture = wm:GetControlByName(contextMenuInvokerButton:GetName(), "Texture")
     if contInvButTexture then
+d(">found button's Texture -> Calling SetColor")
         contInvButTexture:SetColor(colR, colG, colB, colA)
     end
     --Check for other panels also active (FCOIS custom filterPanel Ids like the character), and updte it's protection color as well
@@ -2882,7 +2888,7 @@ end
 
 --Function that is called upon OnMouseUp event on the additional inventory "flag" context menu button's right mouse click to change the protection
 function FCOIS.onContextMenuForAddInvButtonsButtonMouseUp(inventoryAdditionalContextMenuInvokerButton, mouseButton, upInside)
---d("[FCOIS]onContextMenuForAddInvButtonsButtonMouseUp, invokerButton: " .. tostring(inventoryAdditionalContextMenuInvokerButton:GetName()))
+d("[FCOIS]onContextMenuForAddInvButtonsButtonMouseUp, invokerButton: " .. tostring(inventoryAdditionalContextMenuInvokerButton:GetName()))
     if FCOIS.settingsVars.settings.debug then debugMessage( "[onContextMenuForAddInvButtonsButtonMouseUp]","invokerButton: " .. tostring(inventoryAdditionalContextMenuInvokerButton:GetName()) .. ", panelId: " .. tostring(FCOIS.gFilterWhere) .. ", mouseButton: " .. tostring(mouseButton), true, FCOIS_DEBUG_DEPTH_ALL) end
     --Only go on if the context menu is not currently shown
     if not menuVisibleCheck(true, inventoryAdditionalContextMenuInvokerButton) then
@@ -2891,6 +2897,7 @@ function FCOIS.onContextMenuForAddInvButtonsButtonMouseUp(inventoryAdditionalCon
         hideContextMenu(filterPanel)
         --Check if the ANTI-settings are enabled at the current panel
         local _, settingsEnabled = getContextMenuAntiSettingsTextAndState(filterPanel, false)
+d(">filterPanel: " ..tostring(filterPanel) .. ", settingsEnabled: " ..tostring(settingsEnabled))
         if settingsEnabled == nil then
             --Change the additional inventory context menu button's color to the "not active" state
             changeContextMenuInvokerButtonColor(inventoryAdditionalContextMenuInvokerButton, nil)
@@ -2899,6 +2906,7 @@ function FCOIS.onContextMenuForAddInvButtonsButtonMouseUp(inventoryAdditionalCon
         --Invert the active setting (false->true / true->false)
         changeAntiSettingsAccordingToFilterPanel()
         local settingsStateAfterChange = not settingsEnabled
+d(">settingsStateAfterChange: " ..tostring(settingsStateAfterChange))
         --Change the additional inventory context menu button's color to the new anti-setting state
         changeContextMenuInvokerButtonColor(inventoryAdditionalContextMenuInvokerButton, settingsStateAfterChange)
         --Update the items slotted and protected and the tooltips

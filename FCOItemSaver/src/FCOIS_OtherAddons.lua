@@ -18,7 +18,6 @@ local signItemId                             = FCOIS.SignItemId
 local myGetItemInstanceIdNoControl           = FCOIS.MyGetItemInstanceIdNoControl
 
 local otherAddons = FCOIS.otherAddons
-local otherAddonsSetTracker = otherAddons.SetTracker
 
 local checkIfOtherDemarksSell = FCOIS.CheckIfOtherDemarksSell
 local checkIfOtherDemarksDeconstruction = FCOIS.CheckIfOtherDemarksSell
@@ -126,10 +125,10 @@ end
 --                      SetTracker
 -- ==================================================================
 --Get the SetTracker data from it's SavedVariables and build the FCOIS mapping table data etc.
-function otherAddonsSetTracker.GetSetTrackerSettingsAndBuildFCOISSetTrackerData()
+function otherAddons.SetTracker.GetSetTrackerSettingsAndBuildFCOISSetTrackerData()
     --Support for addon 'SetTracker': Get the number of allowed indices of SetTracker and
     --build a mapping array for SetTracker index -> FCOIS marker icon
-    if otherAddonsSetTracker.isActive and SetTrack and SetTrack.GetMaxTrackStates then
+    if otherAddons.SetTracker.isActive and SetTrack and SetTrack.GetMaxTrackStates then
         local settings = FCOIS.settingsVars.settings
         local STtrackingStates = SetTrack.GetMaxTrackStates()
         for i=0, (STtrackingStates-1), 1 do
@@ -153,7 +152,7 @@ end
 --Loop function to check the items in your inventories against a set name and mark them with FCOIS marker icon, if tracked with addon SetTracker
 local function checkSetTrackerTrackingStateAndMarkWithFCOISIcon(sSetName, setTrackerState, iTrackIndex, doShow, p_bagId, p_slotIndex)
     local settings = FCOIS.settingsVars.settings
-    if SetTrack == nil or SetTrack.GetTrackingInfo == nil or SetTrack.GetTrackStateInfo == nil or not otherAddonsSetTracker.isActive
+    if SetTrack == nil or SetTrack.GetTrackingInfo == nil or SetTrack.GetTrackStateInfo == nil or not otherAddons.SetTracker.isActive
             or settings.autoMarkSetTrackerSets == false
             or sSetName == nil or iTrackIndex == nil or doShow == nil then
         --d("[FCOIS]checkSetTrackerTrackingStateAndMarkWithFCOISIcon - Aborted")
@@ -395,15 +394,15 @@ local function checkSetTrackerTrackingStateAndMarkWithFCOISIcon(sSetName, setTra
 end
 
 --function to scan inventories for set parts and mark them, if SetTracker addon is active
-function otherAddonsSetTracker.checkAllItemsForSetTrackerTrackingState()
+function otherAddons.SetTracker.checkAllItemsForSetTrackerTrackingState()
     --Is the SetTracker addon active and the marking of tracked items with FCOIS icons is active and the scan for tarcked items at reloadui/login is enabled?
-    if SetTrack == nil or SetTrack.GetTrackingInfo == nil or not otherAddonsSetTracker.isActive
+    if SetTrack == nil or SetTrack.GetTrackingInfo == nil or not otherAddons.SetTracker.isActive
             or FCOIS.settingsVars.settings.autoMarkSetTrackerSets == false or FCOIS.settingsVars.settings.autoMarkSetTrackerSetsRescan == false then
         --d("[FCOIS]checkAllItemsForSetTrackerTrackingState - Aborted!")
         return false
     end
     --Was the SetTracker data mapping needed for FCOIS already loaded?
-    otherAddonsSetTracker.GetSetTrackerSettingsAndBuildFCOISSetTrackerData()
+    otherAddons.SetTracker.GetSetTrackerSettingsAndBuildFCOISSetTrackerData()
 
     --Initialize the found set names table (against double checked set names)
     local foundSetnames = {}
@@ -472,10 +471,10 @@ end
 
 --Called from external addon SetTracker to show/hide the FCOIS marker icons for tracked set parts
 -- or called from event EVENT_INVENTORY_SINGLE_SLOT_UPDATE callback function FCOItemSaver_Inv_Single_Slot_Update(...)
-function otherAddonsSetTracker.updateSetTrackerMarker(bagId, slotIndex, setTrackerState, doShow, doUpdateInv, calledFromFCOISEventSingleSlotInvUpdate)
+function otherAddons.SetTracker.updateSetTrackerMarker(bagId, slotIndex, setTrackerState, doShow, doUpdateInv, calledFromFCOISEventSingleSlotInvUpdate)
     calledFromFCOISEventSingleSlotInvUpdate = calledFromFCOISEventSingleSlotInvUpdate or false
     --d("[FCOIS.updateSetTrackerMarker] calledFromFCOISEventSingleSlotInvUpdate: " .. tostring(calledFromFCOISEventSingleSlotInvUpdate))
-    if bagId == nil or slotIndex == nil or SetTrack == nil or SetTrack.GetTrackingInfo == nil or SetTrack.GetTrackStateInfo == nil or not otherAddonsSetTracker.isActive
+    if bagId == nil or slotIndex == nil or SetTrack == nil or SetTrack.GetTrackingInfo == nil or SetTrack.GetTrackStateInfo == nil or not otherAddons.SetTracker.isActive
             or FCOIS.settingsVars.settings.autoMarkSetTrackerSets == false then return false end
     doShow = doShow or false
     doUpdateInv = doUpdateInv or false
@@ -540,7 +539,7 @@ function otherAddonsSetTracker.updateSetTrackerMarker(bagId, slotIndex, setTrack
     end
     return retVarBool
 end
-FCOIS.updateSetTrackerMarker = otherAddonsSetTracker.updateSetTrackerMarker
+FCOIS.updateSetTrackerMarker = otherAddons.SetTracker.updateSetTrackerMarker
 
 
 ------------------------------------------------------------------------------------------------------------------------

@@ -231,7 +231,7 @@ function FCOIS.ChangeAntiSettingsAccordingToFilterPanel()
     local filterPanelId = FCOIS.gFilterWhere
     if filterPanelId == nil then return nil end
     local parentPanel = FCOIS.gFilterWhereParent
---d("[FCOIS.changeAntiSettingsAccordingToFilterPanel - FilterPanel: " .. filterPanelId .. ", FilterPanelParent: " .. tostring(parentPanel))
+d("[FCOIS.changeAntiSettingsAccordingToFilterPanel - FilterPanel: " .. filterPanelId .. ", FilterPanelParent: " .. tostring(parentPanel))
 
     local currentSettings = FCOIS.settingsVars.settings
     local filterPanelIdToBlockSettingName = FCOIS.mappingVars.filterPanelIdToBlockSettingName

@@ -19,7 +19,7 @@
 ---------------------------------------------------------------------
 
 --____________________________
--- Current max bugs/features/ToDos: 154
+-- Current max bugs/features/ToDos: 161
 --____________________________
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -112,7 +112,6 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 --                            and test if they also fit with AdvancedFilters enabled
 
 --#116: 2021-05-24: ResearchAssistant: Items won't get marked (red rectangle of RA) at the bank after changing settings/reloadUI
---#129: 2021-06-01: Removing all marker icons via the add. inv. "flag" context menu does not remove companion item's marker icons
 
 --#131: Error message at login:
 --[[
@@ -143,58 +142,55 @@ local function menuVisibleCheck()
     --TODO Check if the menu's parent is a FCOIS flag invoker button and ONLY then return true!
 ]]
 
---#154, 2021-08-16, Baertram, bug: Improving an item does not re-apply the improve icon
+--#154, 2021-08-16, Baertram, bug: Improving an item does not re-apply the improve icon (if quality below gold)
+--#155, 2021-08-17, Baertram, bug: Improving an item does not re-apply the already marked icons
 
+--
 
 ---------------------------------------------------------------------
 --[ToDo list] --
---Check for local speed ups. FCOItemSaver.txt was checked until src/FCOIS_Tooltips.lua -> as of 2021-08-15
---#129
---#154
+--Check for local speed ups. FCOItemSaver.txt was checked until src/FCOIS_Tooltips.lua -> as of 2021-08-18
+--#129: 2021-06-01: Removing all marker icons via the add. inv. "flag" context menu does not remove companion item's marker icons
+--#154: 2021-08-16, Baertram, bug: Improving an item does not re-apply the improve icon (if quality below gold)
+--#155: 2021-08-17, Baertram, bug: Improving an item does not re-apply the already marked icons
+--#156: 2021-08-18, Baertram, bug: Enchanting an item does not re-apply the already marked icons (also consider icons that were saved for the items before? add setting for "Check all others")
+--#157: 2021-08-18, Baertram, bug: Character doll ring/weapon marker icons do not update properly (both 2 rings were unequipped via double click or drag and drop: on drag of 1 ring back to the right!!! slot the marker icons do not update, or equip 1 ring to the left and then use double click to equp the 2nd ring to the right slot).
+--And if you drag another ring to a slot where a ring was already equipped the marker icons do neither update all!
+--#158: 2021-08-18, Baertram, bug: Character doll ring/weapon marker icons do not remove all if SHIFT+right click is used on 1 ring (and the 2nd ring is identical)
 
 
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
---In progress: Since 2021-07-04
---#129
---#144
---#145
---#146
---#147
---#148
---#149
---#150
---#151
---#152
---#153
+--In progress: Since 2021-09-16
+--#160: 2021-09-06, ESOUI bug panel, EnigmaniteZ: Right clicked "flag" button, left clicked, right clicked again. error! guild bank settings set to: on, on, off.
+--[[
+Checking type on argument name failed in WindowManagerGetControlByNameLua
+stack traceback:
+[C]: in function 'GetControlByName'
+user:/AddOns/FCOItemSaver/src/FCOIS_ContextMenus.lua:101: in function 'isMenuOwnerFCOISAdditionalFlagContextMenu'
+|caaaaaa<Locals> menuOwnerControlToCheck = ud </Locals>|r
+user:/AddOns/FCOItemSaver/src/FCOIS_ContextMenus.lua:117: in function 'menuVisibleCheck'
+|caaaaaa<Locals> checkIfFCOISAddInvFlagOwner = T, menuOwnerControlToCheck = ud, isVisible = T </Locals>|r
+user:/AddOns/FCOItemSaver/src/FCOIS_ContextMenus.lua:2888: in function 'FCOIS.onContextMenuForAddInvButtonsButtonMouseUp'
+|caaaaaa<Locals> inventoryAdditionalContextMenuInvokerButton = ud, mouseButton = 2, upInside = T </Locals>|r
+user:/AddOns/FCOItemSaver/src/FCOIS_AdditionalButtons.lua:130: in function '(anonymous)'
+|caaaaaa<Locals> butn = ud, mouseButton = 2, upInside = T </Locals>|r
+]]
 
 ---------------------------------------------------------------------
---Since last update 2.1.8 - New version: 2.1.9 -> Updated 2021-08-14
+--Since last update 2.2.0 - New version: 2.2.1 -> Changelog updated last: 2021-09-15
 ---------------------------------------------------------------------
 
 --[Fixed]
---#144, Slotting anything to deconstruction/improvement, leaving the crafting table and trying to create a glyph via CraftStore showed the before slotted item as protected
--- and prevented the glyph creation
---#145, ContextMenu at bank get's vanilla items removed if FCOIS, Custom Item Preview and AutoCategory are enabled
---#146, SHIFT + right mouse does not work at quickslots (inventory menu)
---#149, Crafting: Right click on add. inv. flag icon which turns protection on does not unslot protected items again.
---#150, Inventory: Right click on add. inv. flag icon does not change the anti-destroy protection.
---#152, Quickslot's FCOIS right click context menu works for non-inventory items (collectibles e.g.)
---#153, Inventory FCOIS right click context menu works for quest items
---#155, Deconstruction panel shows white filter icons and does not work properly anymore
+--#160: 2021-09-06, ESOUI bug panel, EnigmaniteZ: Right clicked "flag" button, left clicked, right clicked again. error! guild bank settings set to: on, on, off.
+--#161: 2021-09-16, Baertram: Guild bank deposit "flag" button not updating it's sate color after 1st change (by right mouse click)
 
 --[Changed]
---#148, Use more local speed up variables in all FCOIS files
-
 
 
 --[Added]
---#147 Added new API function FCOIS.IsGear(bag, slot)
--->Global function to return boolean value, if an item is marked with any FCOIS gear marker icons (FCOIS_CON_ICON_GEAR_1 to 5, or dynamic icon defined as gear).
---> + it will return an array as 2nd return parameter, containing boolean entries for each gear iconId (key). True (value) if item is marked with this gear iconId,
---> false (value) if not.
---#151 Added setting to re-apply the marker icons after enchanting an item (was missing so far), or after improving an item (was always re-applied  automatically until today).
+
 
 --[Added on request]
 
