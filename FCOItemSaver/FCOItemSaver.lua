@@ -19,7 +19,7 @@
 ---------------------------------------------------------------------
 
 --____________________________
--- Current max bugs/features/ToDos: 161
+-- Current max bugs/features/ToDos: 163
 --____________________________
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -163,28 +163,20 @@ local function menuVisibleCheck()
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
 --In progress: Since 2021-09-16
---#160: 2021-09-06, ESOUI bug panel, EnigmaniteZ: Right clicked "flag" button, left clicked, right clicked again. error! guild bank settings set to: on, on, off.
---[[
-Checking type on argument name failed in WindowManagerGetControlByNameLua
-stack traceback:
-[C]: in function 'GetControlByName'
-user:/AddOns/FCOItemSaver/src/FCOIS_ContextMenus.lua:101: in function 'isMenuOwnerFCOISAdditionalFlagContextMenu'
-|caaaaaa<Locals> menuOwnerControlToCheck = ud </Locals>|r
-user:/AddOns/FCOItemSaver/src/FCOIS_ContextMenus.lua:117: in function 'menuVisibleCheck'
-|caaaaaa<Locals> checkIfFCOISAddInvFlagOwner = T, menuOwnerControlToCheck = ud, isVisible = T </Locals>|r
-user:/AddOns/FCOItemSaver/src/FCOIS_ContextMenus.lua:2888: in function 'FCOIS.onContextMenuForAddInvButtonsButtonMouseUp'
-|caaaaaa<Locals> inventoryAdditionalContextMenuInvokerButton = ud, mouseButton = 2, upInside = T </Locals>|r
-user:/AddOns/FCOItemSaver/src/FCOIS_AdditionalButtons.lua:130: in function '(anonymous)'
-|caaaaaa<Locals> butn = ud, mouseButton = 2, upInside = T </Locals>|r
-]]
+--#160
+--#161
+--#162
+--#163
 
 ---------------------------------------------------------------------
---Since last update 2.2.0 - New version: 2.2.1 -> Changelog updated last: 2021-09-15
+--Since last update 2.2.0 - New version: 2.2.1 -> Changelog updated last: 2021-09-17
 ---------------------------------------------------------------------
 
 --[Fixed]
 --#160: 2021-09-06, ESOUI bug panel, EnigmaniteZ: Right clicked "flag" button, left clicked, right clicked again. error! guild bank settings set to: on, on, off.
 --#161: 2021-09-16, Baertram: Guild bank deposit "flag" button not updating it's sate color after 1st change (by right mouse click)
+--#162: 2021-09-16, Baertram: CraftBag flag icon right click: lua error message due to nil function FCOIS.CheckIfCBEorAGSActive
+--#163: 2021-09-16, Baertram: Closing inventory and directly opening banks/vendors/trades will not reset the anti-destroy settings flag settings of normal inventory to "enabled" (if enabled in the settings)
 
 --[Changed]
 

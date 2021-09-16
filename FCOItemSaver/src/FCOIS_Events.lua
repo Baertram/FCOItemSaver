@@ -71,6 +71,10 @@ local function FCOItemSaver_Open_Store(p_storeIndicator)
     FCOIS.preventerVars.gActiveFilterPanel = true
     p_storeIndicator = p_storeIndicator or "vendor"
     if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage("[EVENT]","Open store: " .. p_storeIndicator, true, FCOIS_DEBUG_DEPTH_NORMAL) end
+
+    --Reset the anti-destroy settings if needed (e.g. bank was opened directly after inventory was closed, without calling other panels in between)
+    onClosePanel(LF_INVENTORY, nil, "DESTROY")
+
     zo_callLater(function()
         --> The following 4 controls/buttons & the depending table entries will be known first as the vendor gets opened the first time.
         --> So they will be re-assigned within EVENT_OPEN_STORE in src/FCOIS_events.lua, function "FCOItemSaver_Open_Store()"
@@ -231,6 +235,9 @@ local function FCOItemSaver_Open_Trading_House()
     FCOIS.preventerVars.gActiveFilterPanel = true
     if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[EVENT]","Open trading house", true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
+    --Reset the anti-destroy settings if needed (e.g. bank was opened directly after inventory was closed, without calling other panels in between)
+    onClosePanel(LF_INVENTORY, nil, "DESTROY")
+
     --Change the button color of the context menu invoker
     changeContextMenuInvokerButtonColorByPanelId(LF_GUILDSTORE_SELL)
     --Check the filter buttons and create them if they are not there. Update the inventory afterwards too
@@ -305,6 +312,9 @@ end
 --Event upon opening of a guild bank
 local function FCOItemSaver_Open_Guild_Bank()
     FCOIS.preventerVars.gActiveFilterPanel = true
+    --Reset the anti-destroy settings if needed (e.g. bank was opened directly after inventory was closed, without calling other panels in between)
+    onClosePanel(LF_INVENTORY, nil, "DESTROY")
+
     local settings = FCOIS.settingsVars.settings
     if settings.debug then FCOIS.debugMessage( "[EVENT]","Open guild bank", true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
@@ -344,6 +354,9 @@ local function FCOItemSaver_Open_Player_Bank(event, bagId)
     FCOIS.preventerVars.gActiveFilterPanel = true
     local settings = FCOIS.settingsVars.settings
     if settings.debug then FCOIS.debugMessage( "[EVENT]","Open bank - bagId: " .. tostring(bagId) .. ", isHouseBank: " .. tostring(isHouseBank), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+
+    --Reset the anti-destroy settings if needed (e.g. bank was opened directly after inventory was closed, without calling other panels in between)
+    onClosePanel(LF_INVENTORY, nil, "DESTROY")
 
     if bagId == BAG_BANK or bagId == BAG_SUBSCRIBER_BANK then
         if checkIfBankInventorySingleSlotUpdateEventNeedsToBeRegistered(BAG_BANK) == true then
@@ -410,12 +423,15 @@ end
 
 --Event upon opening of the trade panel
 local function FCOItemSaver_Open_Trade_Panel()
+    FCOIS.preventerVars.gActiveFilterPanel = true
+    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[EVENT]","Start trading", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+
+    --Reset the anti-destroy settings if needed (e.g. bank was opened directly after inventory was closed, without calling other panels in between)
+    onClosePanel(LF_INVENTORY, nil, "DESTROY")
+
     em:RegisterForEvent(gAddonName, EVENT_TRADE_CANCELED, FCOItemSaver_Close_Trade_Panel)
     em:RegisterForEvent(gAddonName, EVENT_TRADE_SUCCEEDED, FCOItemSaver_Close_Trade_Panel)
     em:RegisterForEvent(gAddonName, EVENT_TRADE_FAILED, FCOItemSaver_Close_Trade_Panel)
-
-    FCOIS.preventerVars.gActiveFilterPanel = true
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[EVENT]","Start trading", true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
     --Change the button color of the context menu invoker
     changeContextMenuInvokerButtonColorByPanelId(LF_TRADE)
@@ -504,6 +520,9 @@ local function FCOItemSaver_Crafting_Interact(_, craftSkill)
     --Abort if crafting station type is invalid
     if craftSkill == 0 then return end
     if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[EVENT]","Crafting Interact: Craft skill: ".. tostring(craftSkill), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+
+    --Reset the anti-destroy settings if needed (e.g. bank was opened directly after inventory was closed, without calling other panels in between)
+    onClosePanel(LF_INVENTORY, nil, "DESTROY")
 
     --ALCHEMY
     if craftSkill == CRAFTING_TYPE_ALCHEMY then

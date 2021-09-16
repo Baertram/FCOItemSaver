@@ -231,7 +231,7 @@ function FCOIS.ChangeAntiSettingsAccordingToFilterPanel()
     local filterPanelId = FCOIS.gFilterWhere
     if filterPanelId == nil then return nil end
     local parentPanel = FCOIS.gFilterWhereParent
-d("[FCOIS.changeAntiSettingsAccordingToFilterPanel - FilterPanel: " .. filterPanelId .. ", FilterPanelParent: " .. tostring(parentPanel))
+--d("[FCOIS.changeAntiSettingsAccordingToFilterPanel - FilterPanel: " .. filterPanelId .. ", FilterPanelParent: " .. tostring(parentPanel))
 
     local currentSettings = FCOIS.settingsVars.settings
     local filterPanelIdToBlockSettingName = FCOIS.mappingVars.filterPanelIdToBlockSettingName
@@ -239,7 +239,7 @@ d("[FCOIS.changeAntiSettingsAccordingToFilterPanel - FilterPanel: " .. filterPan
     local settingNameToChange
     --------------------------------------------------------------------------------------------------------------------
     --The anti-destroy settings will be always checked as there are panels like LF_GUILDBANK_DEPOSIT which use the anti-destroy
-    --AND anti guiild bank deposit if no rights to withdraw again settings.
+    --AND anti guild bank deposit if no rights to withdraw again settings.
     --The filterPanelIds which need to be checked for anti-destroy
     local filterPanelIdsCheckForAntiDestroy = FCOIS.checkVars.filterPanelIdsForAntiDestroy
     --Get the current FCOIS.settingsVars.settings state and inverse them

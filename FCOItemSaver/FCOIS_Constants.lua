@@ -615,7 +615,7 @@ local filterPanelIdToBlockSettingName = {
     -------------------------------------------------------------------
     -->CraftBag with CraftBageExtended active
         [LF_CRAFTBAG]                   = {
-            callbackFunc = FCOIS.CheckIfCBEorAGSActive,
+            callbackFunc = FCOIS.CheckIfCBEorAGSActive, --Will be nil at load but re-added at file src/FCOIS_OtherAddns.lua, below function FCOIS.CheckIfCBEorAGSActive!
             filterPanelToBlockSetting = {
                 [LF_MAIL_SEND]          = "blockSendingByMail",
                 [LF_GUILDSTORE_SELL]    = "blockSellingGuildStore",

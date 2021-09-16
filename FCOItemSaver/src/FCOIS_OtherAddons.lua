@@ -119,6 +119,9 @@ function FCOIS.CheckIfCBEorAGSActive(parentFilterPanelId, checkWithoutParentFilt
     if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[Other addons]", "checkIfCBEorAGSActive > addonActive: " .. tostring(addonActive), true, FCOIS_DEBUG_DEPTH_SPAM) end
     return addonActive
 end
+local checkIfCBEorAGSActive = FCOIS.CheckIfCBEorAGSActive
+--Fixing FCOIS_Constants.lua file here:
+FCOIS.mappingVars.filterPanelIdToBlockSettingName[LF_CRAFTBAG].callbackFunc = checkIfCBEorAGSActive
 
 
 -- ==================================================================
