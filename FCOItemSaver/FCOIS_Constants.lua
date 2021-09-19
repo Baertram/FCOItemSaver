@@ -2437,6 +2437,16 @@ checkVars.filterPanelIdsForAntiDestroy = {
     [FCOIS_CON_LF_COMPANION_CHARACTER]  = true,
 }
 
+--In anti-destroy checks always set the anti-destroy settings to "on" for these panels as there might be no setting switch or other needs
+checkVars.filterPanelIdsForAntiDestroySettingsAlwaysOn = {
+    [LF_VENDOR_REPAIR] = true,          --check anti-destroy as there is no other setting at vendor repair
+}
+
+--In anti-destroy checks do not use the other anti-* settings a panel might have. ONLY use anti-destroy!
+checkVars.filterPanelIdsForAntiDestroyDoNotUseOtherAntiSettings = {
+    [LF_GUILDBANK_DEPOSIT] = true,      --use anti-destroy at the destroy item handler as anti-deposit is the wrong setting :-) -> to reflect the "flag"'s icon color state
+}
+
 --BagId to SetTracker addon settings in FCOIS
 mappingVars.bagToSetTrackerSettings = {
 	--[[ Will be filled as the settings got loaded

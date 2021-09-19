@@ -8,6 +8,7 @@ local debugMessage = FCOIS.debugMessage
 
 local numFilterIcons = FCOIS.numVars.gFCONumFilterIcons
 local ctrlVars = FCOIS.ZOControlVars
+local checkVars = FCOIS.checkVars
 
 local getSavedVarsMarkedItemsTableName = FCOIS.GetSavedVarsMarkedItemsTableName
 local signItemId = FCOIS.SignItemId
@@ -70,10 +71,9 @@ local outputItemProtectedMessage = FCOIS.OutputItemProtectedMessage
 --Check the filterPanelId and if it should be protected against destroy, even if the currently protectedSettings are
 --different than "Anti destroy", and then set the anti-destroy value to "on" so it always is blocked
 function FCOIS.CheckFilterPanelForAlwaysOnDestroyProtection(filterPanelId)
-    local filterPanelToAntiDestroySetings = {
-        [LF_VENDOR_REPAIR] = true,          --check anti-destroy as there is no other setting at vendor repair
-    }
-    local isProtectedDestroyIcon = filterPanelToAntiDestroySetings[filterPanelId] or false
+--d(">CheckFilterPanelForAlwaysOnDestroyProtection")
+    local filterPanelToAlwaysOnAntiDestroySetings = checkVars.filterPanelIdsForAntiDestroySettingsAlwaysOn
+    local isProtectedDestroyIcon = filterPanelToAlwaysOnAntiDestroySetings[filterPanelId] or false
     return isProtectedDestroyIcon
 end
 local checkFilterPanelForAlwaysOnDestroyProtection = FCOIS.CheckFilterPanelForAlwaysOnDestroyProtection
@@ -81,9 +81,8 @@ local checkFilterPanelForAlwaysOnDestroyProtection = FCOIS.CheckFilterPanelForAl
 --Check the filterPanelId and if it should be protected against destroy, even if the currently protectedSettings are
 --different than "Anti destroy", and then use the current anti-destroy value for the proetction
 function FCOIS.CheckFilterPanelForDestroyProtection(filterPanelId)
-    local filterPanelToAntiDestroySetings = {
-        [LF_GUILDBANK_DEPOSIT] = true,          --use anti-destroy at the destroy item handler as anti-deposit is the wrong setting :-) -> to reflect the "flag"'s icon color state
-    }
+--d(">CheckFilterPanelForDestroyProtection")
+    local filterPanelToAntiDestroySetings = checkVars.filterPanelIdsForAntiDestroyDoNotUseOtherAntiSettings
     local isProtectedDestroyIcon = filterPanelToAntiDestroySetings[filterPanelId] or false
     return isProtectedDestroyIcon
 end
@@ -418,7 +417,7 @@ function FCOIS.DestroySelectionHandler(bag, slot, echo, parentControl)
     if not isVendorRepair and ((bag == BAG_WORN or bag == BAG_COMPANION_WORN) and parentControl ~= nil) then
         FCOIS.preventerVars.gCheckEquipmentSlots = true
     end
-d("[DestroySelectionHandler] Bag: " .. tostring(bag) .. ", Slot: " .. tostring(slot) ..", echo: " .. tostring(echo) .. ", filterPanelId: " .. tostring(FCOIS.gFilterWhere) .. ", isVendorRepair: " ..tostring(isVendorRepair) .. ", checkEquipmentSlots: " .. tostring(FCOIS.preventerVars.gCheckEquipmentSlots))
+--d("[DestroySelectionHandler] Bag: " .. tostring(bag) .. ", Slot: " .. tostring(slot) ..", echo: " .. tostring(echo) .. ", filterPanelId: " .. tostring(FCOIS.gFilterWhere) .. ", isVendorRepair: " ..tostring(isVendorRepair) .. ", checkEquipmentSlots: " .. tostring(FCOIS.preventerVars.gCheckEquipmentSlots))
 
     -- get (unique) instance id of the item
     local itemId = myGetItemInstanceIdNoControl(bag, slot)
@@ -429,24 +428,24 @@ d("[DestroySelectionHandler] Bag: " .. tostring(bag) .. ", Slot: " .. tostring(s
             local currentFilterPanelId = FCOIS.gFilterWhere
             --Check if the anti-settings are enabled (and if a dynamic icon is used)
             local isProtectedIcon, isProtectedDestroyIcon = checkIfProtectedSettingsEnabled(currentFilterPanelId, iconIdToCheck, nil, nil, nil)
+--d(">>isProtectedIcon: " .. tostring(isProtectedIcon) .. ", isProtectedDestroyIcon: " ..tostring(isProtectedDestroyIcon))
             --FCOIS version 1.6.0
             --Local hack to change the protectionValue of icons to "true" if certain filterPanels are checked.
             if not isProtectedDestroyIcon then isProtectedDestroyIcon = checkFilterPanelForAlwaysOnDestroyProtection(currentFilterPanelId) end
-
-            --Local hack to change the protectionValue of icons to the anti-destroy settings value if certain filterPanels are checked.
-            if not isProtectedDestroyIcon then isProtectedDestroyIcon = checkFilterPanelForDestroyProtection(currentFilterPanelId) end
+--d(">>isProtectedDestroyIconAlwaysOn: " ..tostring(isProtectedDestroyIcon))
 
             --If the anti-destroy settings, or the "always on" or the special panel checks all do not say "anti-destroy" is enabled: Use the normal panel's anti-* settings instead
             --to determine the anti-destroy state
-            -->TODO is this correct? I doubt it, as if there are not anti-destroy settings at a panel there should not be any block! So it was disabled for tests 2021-09-19
-            --[[
             if not isProtectedDestroyIcon then
-                isProtectedDestroyIcon = isProtectedIcon
+--d(">>>using isProtectedIcon as anti-destroy!")
+                --Check if the filterPanelid should ONLY use the anti-destroy settings and not other anti-settings (e.g. Guild bank deposit)
+                if not checkFilterPanelForDestroyProtection(currentFilterPanelId) then
+                    isProtectedDestroyIcon = isProtectedIcon
+                end
             end
-            ]]
 
             --Anti-destroy is enabled?
-            if isProtectedDestroyIcon then
+            if isProtectedDestroyIcon == true then
                 --Show alert message?
                 if (echo == true) then
                     --Check if alert or chat message should be shown
