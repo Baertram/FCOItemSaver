@@ -79,7 +79,7 @@ local checkIfGuildBankWithdrawAllowed = FCOIS.CheckIfGuildBankWithdrawAllowed
 
 ------------------------------------------------------------------------------------------------------------------------
 --Get the context menu invoker button by help of the panel Id
-local function getContextMenuInvokerButton(panelId)
+local function getContextMenuInvokerButtonName(panelId)
     panelId = panelId or FCOIS.gFilterWhere
     if not panelId or panelId == 0 then return false end
     --Workaround: Craftbag stuff, check if active panel is the Craftbag
@@ -97,8 +97,13 @@ end
 
 --Is the owner of a ZO_Menu an FCOIS additional inventory flag button?
 local function isMenuOwnerFCOISAdditionalFlagContextMenu(menuOwnerControlToCheck)
-    menuOwnerControlToCheck = menuOwnerControlToCheck or getContextMenuInvokerButton()
-    local contInvButtonControl = wm:GetControlByName(menuOwnerControlToCheck, "")
+    local contInvButtonControl
+    if menuOwnerControlToCheck ~= nil then
+        contInvButtonControl = menuOwnerControlToCheck
+    else
+        local menuOwnerControlToCheckName = getContextMenuInvokerButtonName()
+        contInvButtonControl = wm:GetControlByName(menuOwnerControlToCheckName, "")
+    end
     if contInvButtonControl ~= nil then
         local menuOwner = GetMenuOwner()
         return (menuOwner ~= nil and menuOwner == contInvButtonControl) or false
@@ -2088,8 +2093,8 @@ function FCOIS.GetContextMenuAntiSettingsTextAndState(p_filterWhere, buildText)
     if settings.debug then debugMessage( "[getContextMenuAntiSettingsTextAndState]","PanelId: " .. p_filterWhere .. ", BuildText: " .. tostring(buildText), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
 
     --Update the Anti-* settings for the panel
-    -->TODO 2021--06-23:
-    -->As the 2nd param is true this won#t update anything? Just will use p_filterWhere and do nothing with it?
+    -->TODO 2021-06-23:
+    -->As the 2nd param is true this won't update anything? Just will use p_filterWhere and do nothing with it?
     -->So this can be commented?
     --getFilterWhereBySettings(p_filterWhere, true)
 
@@ -2099,7 +2104,7 @@ function FCOIS.GetContextMenuAntiSettingsTextAndState(p_filterWhere, buildText)
         --As the CraftBag can be active at the mail send, trade, vendor sell, guild store sell and guild bank panels too we need to check if we are currently using the
         --addon CraftBagExtended and if the parent panel ID (FCOIS.gFilterWhereParent) is one of the above mentioned
         -- -> See callback function for CRAFT_BAG_FRAGMENT in the PreHooks section!
-        if FCOIS.CheckIfCBEorAGSActive(FCOIS.gFilterWhereParent) then
+        if FCOIS.CheckIfCBEorAGSActive(FCOIS.gFilterWhereParent, nil) then
             filterPanelToCheck = FCOIS.gFilterWhereParent
             useCraftBagExtendedPanel = true
         end
@@ -2108,6 +2113,7 @@ function FCOIS.GetContextMenuAntiSettingsTextAndState(p_filterWhere, buildText)
     currentSettingsState, currentSettingsStateDestroy = checkIfProtectedSettingsEnabled(filterPanelToCheck, nil, nil, nil, nil)
 --d(">currentSettingsState: " ..tostring(currentSettingsState) .. ", currentSettingsStateDestroy: " ..tostring(currentSettingsStateDestroy))
     if not currentSettingsState and currentSettingsStateDestroy ~= nil then
+--d(">>using destroy!")
         currentSettingsState = currentSettingsStateDestroy
     end
 
@@ -2152,6 +2158,8 @@ function FCOIS.GetContextMenuAntiSettingsTextAndState(p_filterWhere, buildText)
     return retStrVal, currentSettingsState
 end
 local getContextMenuAntiSettingsTextAndState = FCOIS.GetContextMenuAntiSettingsTextAndState
+
+
 
 --Returns the color for the context menu button if the "anti" settings is enabled or disabled
 local function getContextMenuAntiSettingsColor(settingIsEnabled, override)
@@ -2215,7 +2223,7 @@ local function changeContextMenuInvokerButtonColorOfOtherButton(contextMenuInvok
                     goOn = otherInvokerButtonDataToUpdate.requirementFunc(otherInvokerButtonDataToUpdate)
                 end
                 if goOn == true then
-                    local otherButtonDataName = getContextMenuInvokerButton(otherInvokerButtonDataToUpdate.filterPanel)
+                    local otherButtonDataName = getContextMenuInvokerButtonName(otherInvokerButtonDataToUpdate.filterPanel)
                     if otherButtonDataName ~= nil then
                         --Update the other context menu "flag" button's color according to the current settings state
                         local contInvButTexture = wm:GetControlByName(otherButtonDataName, "Texture")
@@ -2241,9 +2249,10 @@ local function changeContextMenuInvokerButtonColor(contextMenuInvokerButton, set
 --d("[FCOIS]changeContextMenuInvokerButtonColor - contextMenuInvokerButton: " .. contextMenuInvokerButton:GetName() .. ", settingsEnabled: " .. tostring(settingsEnabled))
 
     --Update the context menu "flag" button's color according to the current settings state
-    local colR, colG, colB, colA = getContextMenuAntiSettingsColor(settingStateForColor)
+    local colR, colG, colB, colA = getContextMenuAntiSettingsColor(settingStateForColor, nil)
     local contInvButTexture = wm:GetControlByName(contextMenuInvokerButton:GetName(), "Texture")
     if contInvButTexture then
+--d(">found button's Texture -> Calling SetColor")
         contInvButTexture:SetColor(colR, colG, colB, colA)
     end
     --Check for other panels also active (FCOIS custom filterPanel Ids like the character), and updte it's protection color as well
@@ -2258,15 +2267,35 @@ function FCOIS.ChangeContextMenuInvokerButtonColorByPanelId(panelId)
     --Change the color of the context menu invoker button now
     --First see if the setitngs for the given panel are enabled or not
     local _, settingsEnabled = getContextMenuAntiSettingsTextAndState(panelId, false)
-    local contextMenuInvokerButtonName = getContextMenuInvokerButton(panelId)
+    local contextMenuInvokerButtonName = getContextMenuInvokerButtonName(panelId)
     if contextMenuInvokerButtonName ~= "" and contextMenuInvokerButtonName ~= false then
---d("[FCOIS.ChangeContextMenuInvokerButtonColorByPanelId: " .. contextMenuInvokerButtonName .. ", settings: " .. tostring(settingsEnabled))
+--d("[FCOIS.ChangeContextMenuInvokerButtonColorByPanelId-panelId:" .. tostring(panelId) .. ", button: ".. contextMenuInvokerButtonName .. ", settings: " .. tostring(settingsEnabled))
         local contextMenuInvokerButton = wm:GetControlByName(contextMenuInvokerButtonName, "")
         if contextMenuInvokerButton then
             changeContextMenuInvokerButtonColor(contextMenuInvokerButton, settingsEnabled)
         end
     end
 end
+
+local function invertAdditionalInventoryFlagProtectionAndColor(p_panelId, p_buttonControl)
+--d("[FCOIS]invertAdditionalInventoryFlagProtectionAndColor-panelId: " ..tostring(p_panelId) .. ", button: " ..tostring(p_buttonControl:GetName()))
+    --Invert the active anti-setting (false->true / true->false)
+    local settingsStateAfterChange = changeAntiSettingsAccordingToFilterPanel()
+    local dummy, settingsEnabled
+    if settingsStateAfterChange ~= nil then
+        --Update the buttons text and get the settings state
+        dummy, settingsEnabled = getContextMenuAntiSettingsTextAndState(p_panelId, false)
+    else
+        settingsEnabled = nil
+    end
+    --Change the color of the context menu invoker button now
+    if p_buttonControl ~= nil then
+        changeContextMenuInvokerButtonColor(p_buttonControl, settingsEnabled)
+    end
+    --Remove protected items from a slot and update tooltips now
+    removeSlottedProtectedItemsAndUpdateTooltips(settingsStateAfterChange)
+end
+
 
 --The context menu OnClicked callback function for the additional inventory flag context menu buttons/entries
 local function contextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, specialButtonType, panelId)
@@ -2768,21 +2797,8 @@ local function contextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
 
             if settings.debug then debugMessage( "[ContextMenuForAddInvButtonsOnClicked]", "Clicked "..contextmenuType.." context menu button, TOGGLE ANTI SETTINGS", true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
-            --Invert the active anti-setting (false->true / true->false)
-            local isSettingEnabledNew = changeAntiSettingsAccordingToFilterPanel()
-            local dummy, settingsEnabled
-            if isSettingEnabledNew ~= nil then
-                --Update the buttons text and get the settings state
-                dummy, settingsEnabled = getContextMenuAntiSettingsTextAndState(panelId, false)
-            else
-                settingsEnabled = nil
-            end
-            --Change the color of the context menu invoker button now
-            if buttonCtrl ~= nil then
-                changeContextMenuInvokerButtonColor(buttonCtrl, settingsEnabled)
-            end
-            --Remove protected items from a slot and update tooltips now
-            removeSlottedProtectedItemsAndUpdateTooltips(isSettingEnabledNew)
+            invertAdditionalInventoryFlagProtectionAndColor(panelId, buttonCtrl)
+
 
     --==================================================================================================================
         --Mark all as junk/UNmark all junked
@@ -2889,31 +2905,45 @@ function FCOIS.onContextMenuForAddInvButtonsButtonMouseUp(inventoryAdditionalCon
         local filterPanel = FCOIS.gFilterWhere
         --Hide the other filter button context menus first
         hideContextMenu(filterPanel)
+
+--d(">filterPanel: " ..tostring(filterPanel))
+        --[[
         --Check if the ANTI-settings are enabled at the current panel
         local _, settingsEnabled = getContextMenuAntiSettingsTextAndState(filterPanel, false)
         if settingsEnabled == nil then
-            --Change the additional inventory context menu button's color to the "not active" state
+            --Change the additional inventory context menu button's color to the "not active" state as it got no state yet
             changeContextMenuInvokerButtonColor(inventoryAdditionalContextMenuInvokerButton, nil)
             return false
         end
         --Invert the active setting (false->true / true->false)
-        changeAntiSettingsAccordingToFilterPanel()
-        local settingsStateAfterChange = not settingsEnabled
+        local settingsStateAfterChange = changeAntiSettingsAccordingToFilterPanel()
+--d(">settingsStateAfterChange: " ..tostring(settingsStateAfterChange))
         --Change the additional inventory context menu button's color to the new anti-setting state
         changeContextMenuInvokerButtonColor(inventoryAdditionalContextMenuInvokerButton, settingsStateAfterChange)
         --Update the items slotted and protected and the tooltips
         removeSlottedProtectedItemsAndUpdateTooltips(settingsStateAfterChange)
+        ]]
+
+        invertAdditionalInventoryFlagProtectionAndColor(filterPanel, inventoryAdditionalContextMenuInvokerButton)
     end
 end
 
 --Function that display the context menu after the player clicks with left mouse button on the additional inventory "flag" button
 -- on the top left corner of the inventories (left to the "name" sort header)
 function FCOIS.ShowContextMenuForAddInvButtons(invAddContextMenuInvokerButton, buttonDataOfInvokerButton)
+--FCOIS._buttonDataOfInvokerButton = buttonDataOfInvokerButton
     --FCOIS v.0.8.8d
     --Add ZOs ZO_Menu contextMenu entries via addon library libCustomMenu
     local filterPanelIdOfButtonData = buttonDataOfInvokerButton and buttonDataOfInvokerButton.filterPanelId
     local panelId = filterPanelIdOfButtonData
+    --Should the active filterPanelId be re-read again as the flag context menu button used is e.g. the "inventory" button which is
+    --reused for many panels like mail, player2player trade, bank deposit etc.?
+    if buttonDataOfInvokerButton.updateActivePanelDataOnShowContextMenu ~= nil and buttonDataOfInvokerButton.updateActivePanelDataOnShowContextMenu == true then
+        panelId = FCOIS.gFilterWhere
+    end
+    --Else use the filterPanelId at the currently shown panel
     if panelId == nil then panelId = FCOIS.gFilterWhere end
+    --d(">panelId: " ..tostring(panelId) .. ", FCOIS.gFilterWhere: " .. tostring(FCOIS.gFilterWhere) .. ", buttonFilterPanel: " ..tostring(buttonDataOfInvokerButton.filterPanelId))
 
     local mappingVars = FCOIS.mappingVars
     local localizationVars = FCOIS.localizationVars
@@ -3314,7 +3344,7 @@ function FCOIS.ShowContextMenuForAddInvButtons(invAddContextMenuInvokerButton, b
         --Context menu buttons for "Anti-*" settings
         --Get the anti settings text for the current filter panel
         local antiButtonText, _ = getContextMenuAntiSettingsTextAndState(panelId, true)
-        --d("[FCOIS.showContextMenuForAddInvButtons]panelId: " ..tostring(panelId))
+    --d("[FCOIS.showContextMenuForAddInvButtons]panelId: " ..tostring(panelId))
         if antiButtonText ~= nil and antiButtonText ~= "" then
             AddCustomMenuItem(antiButtonText, function() contextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "ANTI_SETTINGS", panelId) end, MENU_ADD_OPTION_LABEL)
         end

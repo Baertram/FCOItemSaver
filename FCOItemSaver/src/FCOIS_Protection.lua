@@ -84,15 +84,24 @@ function FCOIS.CheckIfProtectedSettingsEnabled(filterPanel, iconNr, isDynamicIco
     if filterPanel == nil then return nil, false end
     isDynamicIcon = isDynamicIcon or false
     checkAntiDetails = checkAntiDetails or false
---d("[FCOIS.checkIfProtectedSettingsEnabled - filterPanel: " .. tostring(filterPanel) .. ", iconNr: " .. tostring(iconNr) .. ", isDynamicIcon: " .. tostring(isDynamicIcon) .. ", checkAntiDetails: " .. tostring(checkAntiDetails) .. ", whereAreWe: " .. tostring(whereAreWe))
     local craftBagExtendedUsed = false
     local protectionVal
     local protectionValDestroy
     local protectionValues
+------------------------------------------------------------------------------------------------------------------------
+    -- Is CraftBagExtended addon active and are we at a subfilter panel of CBE (e.g. the mail CBE panel, where the anti-mail settings must be checked, and not the craftbag settings)?
+    if FCOIS.gFilterWhere == LF_CRAFTBAG and FCOIS.gFilterWhereParent ~= nil then
+        craftBagExtendedUsed = true
+--d(">CBE filter parent panel active: " .. tostring(FCOIS.gFilterWhereParent))
+        filterPanel = FCOIS.gFilterWhereParent
+    end
+------------------------------------------------------------------------------------------------------------------------
+--d("[FCOIS.checkIfProtectedSettingsEnabled - filterPanel: " .. tostring(filterPanel) .. ", iconNr: " .. tostring(iconNr) .. ", isDynamicIcon: " .. tostring(isDynamicIcon) .. ", checkAntiDetails: " .. tostring(checkAntiDetails) .. ", whereAreWe: " .. tostring(whereAreWe))
+
     --Local mapping array for the filter panel ID -> the anti-settings
     local settings = FCOIS.settingsVars.settings
     local filterPanelIdToBlockSettingName = FCOIS.mappingVars.filterPanelIdToBlockSettingName
-    --local settingNameOfBlock = filterPanelIdToBlockSettingName[filterPanel]
+    --local filterPanelIdToBlockSettingNameOfFilterPanelId = filterPanelIdToBlockSettingName[filterPanel]
     local protectionSettings = {}
     for filterPanelId, blockSettingsData in pairs(filterPanelIdToBlockSettingName) do
         local typeOfData = type(blockSettingsData)
@@ -101,6 +110,7 @@ function FCOIS.CheckIfProtectedSettingsEnabled(filterPanel, iconNr, isDynamicIco
             protectionSettings[filterPanelId][filterPanelId] = settings[blockSettingsData]
             --e.g. protectionSettings[LF_MAIL_SEND] = {[LF_MAIL_SEND]="blockSendingByMail"}
         elseif typeOfData == "table" then
+            --If the given filterPanelId is a "parent" (like the craftbag) which can have multiple sub-filterPanelIds (inventory, mail, trade, guild store)
             if blockSettingsData.filterPanelToBlockSetting ~= nil then
                 for filterPanelIdOfBlockSettingsData, blockSettingsDataBlockStr in pairs(blockSettingsData.filterPanelToBlockSetting) do
                     protectionSettings[filterPanelIdOfBlockSettingsData] = protectionSettings[filterPanelIdOfBlockSettingsData] or {}
@@ -111,7 +121,7 @@ function FCOIS.CheckIfProtectedSettingsEnabled(filterPanel, iconNr, isDynamicIco
         end
     end
 ------------------------------------------------------------------------------------------------------------------------
-    --[[
+    --[[ OLD DATA before the for ... loop was created above!
     local protectionSettings = {
         --[LF_CRAFTBAG]   				= {[LF_CRAFTBAG]=settings.blockDestroying},
         [LF_VENDOR_BUY]   				= {[LF_VENDOR_BUY]=settings.blockVendorBuy},
@@ -162,13 +172,6 @@ function FCOIS.CheckIfProtectedSettingsEnabled(filterPanel, iconNr, isDynamicIco
         else
             protectionSettings[libFiltersAntiDestroyCheckPanelId] = {[conDestroyWhere]=settings.blockDestroying}
         end
-    end
-------------------------------------------------------------------------------------------------------------------------
-    -- Is CraftBagExtended addon active and are we at a subfilter panel of CBE (e.g. the mail CBE panel, where the anti-mail settings must be checked, and not the craftbag settings)?
-    if FCOIS.gFilterWhere == LF_CRAFTBAG and FCOIS.gFilterWhereParent ~= nil then
-        craftBagExtendedUsed = true
---d(">CBE filter parent panel active: " .. tostring(FCOIS.gFilterWhereParent))
-        filterPanel = FCOIS.gFilterWhereParent
     end
 ------------------------------------------------------------------------------------------------------------------------
     --Do checks with the icon?
@@ -309,6 +312,7 @@ function FCOIS.CheckIfProtectedSettingsEnabled(filterPanel, iconNr, isDynamicIco
     return protectionVal, protectionValDestroy
 end
 local checkIfProtectedSettingsEnabled = FCOIS.CheckIfProtectedSettingsEnabled
+
 
 --Function to check if the item is marked ("protected") with the icon number. The icon must be enabled or the settings must tell to check disabled icons as well, in order to
 --say the item is protected! No further settings are checked, so if you need to see if a marker icon is protected at a filterPanelId you need to use the function

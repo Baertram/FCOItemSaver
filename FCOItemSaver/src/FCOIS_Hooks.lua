@@ -909,6 +909,11 @@ function FCOIS.CreateHooks()
         end
 
         --Check, if the Anti-* checks need to be enabled again
+        --If mail send panel was opened the call order will be:
+        --fcois_hooks -> 1. 1552 resetInventoryAntiSettings , 2. 1566 changeContextMenuInvokerButtonColorByPanelId, 3. 912 ctrlVars.mainMenuCategoryBar:OnShow autoReenableAntiSettingsCheck
+        --As the button for the invenory, mail, player2player trade is physically the same it willupdate the button's color wrong according to anti-destroy instead of
+        --anti-mail settings then! So the call to autoReenableAntiSettingsCheck cannot be done here anymore, except if autoReenableAntiSettingsCheck
+        --would check if any panel (FCOIS.gFilterWhere) is shown which got the same "flag" button name as the LF_INVENTORY does
         autoReenableAntiSettingsCheck("DESTROY")
     end)
 

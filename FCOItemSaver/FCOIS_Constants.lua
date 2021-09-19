@@ -10,8 +10,8 @@ local strlen = string.len
 FCOIS.addonVars = {}
 local addonVars = FCOIS.addonVars
 --Addon variables
-addonVars.addonVersionOptions 		    = '2.1.9' -- version shown in the settings panel
-addonVars.addonVersionOptionsNumber	    = 2.19
+addonVars.addonVersionOptions 		    = '2.2.1' -- version shown in the settings panel
+addonVars.addonVersionOptionsNumber	    = 2.21
 --The addon name, normal and decorated with colors etc.
 addonVars.gAddonName				    = "FCOItemSaver"
 addonVars.gAddonNameShort               = "FCOIS"
@@ -615,7 +615,7 @@ local filterPanelIdToBlockSettingName = {
     -------------------------------------------------------------------
     -->CraftBag with CraftBageExtended active
         [LF_CRAFTBAG]                   = {
-            callbackFunc = FCOIS.CheckIfCBEorAGSActive,
+            callbackFunc = FCOIS.CheckIfCBEorAGSActive, --Will be nil at load but re-added at file src/FCOIS_OtherAddns.lua, below function FCOIS.CheckIfCBEorAGSActive!
             filterPanelToBlockSetting = {
                 [LF_MAIL_SEND]          = "blockSendingByMail",
                 [LF_GUILDSTORE_SELL]    = "blockSellingGuildStore",
@@ -2756,7 +2756,8 @@ contextMenuVars.filterPanelIdToContextMenuButtonInvoker = {
                 filterPanel     = FCOIS_CON_LF_CHARACTER,
                 requirementFunc = function() return FCOIS.IsCharacterShown() end,
             }
-        }
+        },
+        ["updateActivePanelDataOnShowContextMenu"] = true, --as the button is the same for LF_MAIL_SEND etc. we need to read fCOIS.gFilterWhere to get the active filterPanelId etc.
     },
     --Added with API 100015 for the crafting bags that you only got access too if you are an ESO+ subscriber
     [LF_CRAFTBAG]					= {
@@ -2855,6 +2856,7 @@ contextMenuVars.filterPanelIdToContextMenuButtonInvoker = {
         ["parent"]        = ctrlVars.ENCHANTING_INV,
         ["name"]          = invAddButtonVars.enchantingTopLevelInventoryButtonAdditionalOptions,
         ["sortIndex"]     = 21,
+        ["readCurrentActiveFilterPanelId"] = true,
     },
 	[LF_ENCHANTING_EXTRACTION]		= {
         ["name"]          = invAddButtonVars.enchantingTopLevelInventoryButtonAdditionalOptions,             --Same like enchanting creation
