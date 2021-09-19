@@ -2756,7 +2756,8 @@ contextMenuVars.filterPanelIdToContextMenuButtonInvoker = {
                 filterPanel     = FCOIS_CON_LF_CHARACTER,
                 requirementFunc = function() return FCOIS.IsCharacterShown() end,
             }
-        }
+        },
+        ["updateActivePanelDataOnShowContextMenu"] = true, --as the button is the same for LF_MAIL_SEND etc. we need to read fCOIS.gFilterWhere to get the active filterPanelId etc.
     },
     --Added with API 100015 for the crafting bags that you only got access too if you are an ESO+ subscriber
     [LF_CRAFTBAG]					= {
@@ -2855,6 +2856,7 @@ contextMenuVars.filterPanelIdToContextMenuButtonInvoker = {
         ["parent"]        = ctrlVars.ENCHANTING_INV,
         ["name"]          = invAddButtonVars.enchantingTopLevelInventoryButtonAdditionalOptions,
         ["sortIndex"]     = 21,
+        ["readCurrentActiveFilterPanelId"] = true,
     },
 	[LF_ENCHANTING_EXTRACTION]		= {
         ["name"]          = invAddButtonVars.enchantingTopLevelInventoryButtonAdditionalOptions,             --Same like enchanting creation

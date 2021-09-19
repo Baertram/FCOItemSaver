@@ -19,7 +19,7 @@
 ---------------------------------------------------------------------
 
 --____________________________
--- Current max bugs/features/ToDos: 163
+-- Current max bugs/features/ToDos: 166
 --____________________________
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -158,6 +158,7 @@ local function menuVisibleCheck()
 --And if you drag another ring to a slot where a ring was already equipped the marker icons do neither update all!
 --#158: 2021-08-18, Baertram, bug: Character doll ring/weapon marker icons do not remove all if SHIFT+right click is used on 1 ring (and the 2nd ring is identical)
 
+--#166: 2021-09-19, Baertram, bug: Refinement smithing is not removing items from slot if marker icon is applied (via context menu or keybind)
 
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
@@ -167,6 +168,7 @@ local function menuVisibleCheck()
 --#161
 --#162
 --#163
+--#164: 2021-09-16, Baertram: Switching from bank deposit to mail send will not update the flag color properly
 
 ---------------------------------------------------------------------
 --Since last update 2.2.0 - New version: 2.2.1 -> Changelog updated last: 2021-09-17
@@ -177,6 +179,7 @@ local function menuVisibleCheck()
 --#161: 2021-09-16, Baertram: Guild bank deposit "flag" button not updating it's sate color after 1st change (by right mouse click)
 --#162: 2021-09-16, Baertram: CraftBag flag icon right click: lua error message due to nil function FCOIS.CheckIfCBEorAGSActive
 --#163: 2021-09-16, Baertram: Closing inventory and directly opening banks/vendors/trades will not reset the anti-destroy settings flag settings of normal inventory to "enabled" (if enabled in the settings)
+--#165: 2021-09-15, Baertram: Mail send flag will only change anti-destroy as it thinks it is the inventory flag, and not the mail send panel
 
 --[Changed]
 
