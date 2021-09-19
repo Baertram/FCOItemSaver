@@ -660,7 +660,7 @@ end
 --Run some functions as a panel gets closed/hidden (e.g. sthe store, crafting tables etc.)
 --and re-enable the protection if it was disabled, and the setting to auto-reenable it is enabled
 function FCOIS.OnClosePanel(panelIdClosed, panelIdToShow, autoReEnableCheck)
-d("[FCOIS]OnClosePanel-panelIdClosed: " ..tostring(panelIdClosed) .. ", panelIdToShow: " ..tostring(panelIdToShow) .. ", autoReEnableCheck: " ..tostring(autoReEnableCheck))
+--d("[FCOIS]OnClosePanel-panelIdClosed: " ..tostring(panelIdClosed) .. ", panelIdToShow: " ..tostring(panelIdToShow) .. ", autoReEnableCheck: " ..tostring(autoReEnableCheck))
     --Hide the context menu at last active panel
     if panelIdClosed ~= nil then
         hideContextMenu(panelIdClosed)
