@@ -8,6 +8,7 @@ local debugMessage = FCOIS.debugMessage
 
 local numFilterIcons = FCOIS.numVars.gFCONumFilterIcons
 local ctrlVars = FCOIS.ZOControlVars
+local checkVars = FCOIS.checkVars
 
 local getSavedVarsMarkedItemsTableName = FCOIS.GetSavedVarsMarkedItemsTableName
 local signItemId = FCOIS.SignItemId
@@ -68,15 +69,25 @@ end
 local outputItemProtectedMessage = FCOIS.OutputItemProtectedMessage
 
 --Check the filterPanelId and if it should be protected against destroy, even if the currently protectedSettings are
---different than "Anti destroy"
-function FCOIS.CkeckFilterPanelForDestroyProtection(filterPanelId)
-    local filterPanelToAntiDestroySetings = {
-        [LF_VENDOR_REPAIR] = true,
-    }
+--different than "Anti destroy", and then set the anti-destroy value to "on" so it always is blocked
+function FCOIS.CheckFilterPanelForAlwaysOnDestroyProtection(filterPanelId)
+--d(">CheckFilterPanelForAlwaysOnDestroyProtection")
+    local filterPanelToAlwaysOnAntiDestroySetings = checkVars.filterPanelIdsForAntiDestroySettingsAlwaysOn
+    local isProtectedDestroyIcon = filterPanelToAlwaysOnAntiDestroySetings[filterPanelId] or false
+    return isProtectedDestroyIcon
+end
+local checkFilterPanelForAlwaysOnDestroyProtection = FCOIS.CheckFilterPanelForAlwaysOnDestroyProtection
+
+--Check the filterPanelId and if it should be protected against destroy, even if the currently protectedSettings are
+--different than "Anti destroy", and then use the current anti-destroy value for the proetction
+function FCOIS.CheckFilterPanelForDestroyProtection(filterPanelId)
+--d(">CheckFilterPanelForDestroyProtection")
+    local filterPanelToAntiDestroySetings = checkVars.filterPanelIdsForAntiDestroyDoNotUseOtherAntiSettings
     local isProtectedDestroyIcon = filterPanelToAntiDestroySetings[filterPanelId] or false
     return isProtectedDestroyIcon
 end
-local ckeckFilterPanelForDestroyProtection = FCOIS.CkeckFilterPanelForDestroyProtection
+local checkFilterPanelForDestroyProtection = FCOIS.CheckFilterPanelForDestroyProtection
+
 
 --Function to check if a normal icon is protected, or a dynamic icon is protected
 --Will return the protection value (boolean) as 1st, and the anti-destroy protection value (boolean) as 2nd parameter
@@ -213,6 +224,10 @@ function FCOIS.CheckIfProtectedSettingsEnabled(filterPanel, iconNr, isDynamicIco
     --Special treatment for the protectionValue and the AntiDestroy protectionValue
     --Found one or more protection values? Check each now to
     if protectionValues ~= nil then
+        local antiDestroyCons = {
+            [FCOIS_CON_DESTROY] = true,
+            [FCOIS_CON_COMPANION_DESTROY] = true,
+        }
 --d(">>>Anti-Destroy checks")
         --Entries look like this:
         --[LF_INVENTORY] 			        = {[FCOIS_CON_DESTROY]=settings.blockDestroying},
@@ -231,7 +246,7 @@ function FCOIS.CheckIfProtectedSettingsEnabled(filterPanel, iconNr, isDynamicIco
                 end
             else
                 --Anti destroy settings?
-                if key == FCOIS_CON_DESTROY or key == FCOIS_CON_COMPANION_DESTROY then
+                if antiDestroyCons[key] then
                     protectionValDestroy = value
 --d(">Destroy protectionVal: " ..tostring(protectionValDestroy))
                 --Other panel anti settings?
@@ -410,16 +425,27 @@ function FCOIS.DestroySelectionHandler(bag, slot, echo, parentControl)
     -- if item is in any protection list, warn user
     for iconIdToCheck=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
         if checkIfItemIsProtected(iconIdToCheck, itemId) then
+            local currentFilterPanelId = FCOIS.gFilterWhere
             --Check if the anti-settings are enabled (and if a dynamic icon is used)
-            local isProtectedIcon, isProtectedDestroyIcon = checkIfProtectedSettingsEnabled(FCOIS.gFilterWhere, iconIdToCheck, nil, nil, nil)
+            local isProtectedIcon, isProtectedDestroyIcon = checkIfProtectedSettingsEnabled(currentFilterPanelId, iconIdToCheck, nil, nil, nil)
+--d(">>isProtectedIcon: " .. tostring(isProtectedIcon) .. ", isProtectedDestroyIcon: " ..tostring(isProtectedDestroyIcon))
             --FCOIS version 1.6.0
             --Local hack to change the protectionValue of icons to "true" if certain filterPanels are checked.
-            --But only for the destroy checks!
-            if not isProtectedDestroyIcon then isProtectedDestroyIcon = ckeckFilterPanelForDestroyProtection(FCOIS.gFilterWhere) end
+            if not isProtectedDestroyIcon then isProtectedDestroyIcon = checkFilterPanelForAlwaysOnDestroyProtection(currentFilterPanelId) end
+--d(">>isProtectedDestroyIconAlwaysOn: " ..tostring(isProtectedDestroyIcon))
+
+            --If the anti-destroy settings, or the "always on" or the special panel checks all do not say "anti-destroy" is enabled: Use the normal panel's anti-* settings instead
+            --to determine the anti-destroy state
             if not isProtectedDestroyIcon then
-                isProtectedDestroyIcon = isProtectedIcon
+--d(">>>using isProtectedIcon as anti-destroy!")
+                --Check if the filterPanelid should ONLY use the anti-destroy settings and not other anti-settings (e.g. Guild bank deposit)
+                if not checkFilterPanelForDestroyProtection(currentFilterPanelId) then
+                    isProtectedDestroyIcon = isProtectedIcon
+                end
             end
-            if isProtectedDestroyIcon then
+
+            --Anti-destroy is enabled?
+            if isProtectedDestroyIcon == true then
                 --Show alert message?
                 if (echo == true) then
                     --Check if alert or chat message should be shown
@@ -1549,7 +1575,6 @@ function FCOIS.CheckIfGuildBankWithdrawAllowed(currentGuildBank)
     if not FCOIS.settingsVars.settings.blockGuildBankWithoutWithdraw then return false end
     --Check if the player got the rights to withdraw items from the guild bank
     local retVal = DoesPlayerHaveGuildPermission(currentGuildBank, GUILD_PERMISSION_BANK_WITHDRAW)
-    --d("[FCOIS] FCOIS.checkIfGuildBankWithdrawAllowed: " .. tostring(retVal))
     return retVal
 end
 
