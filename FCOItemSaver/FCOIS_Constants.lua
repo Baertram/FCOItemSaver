@@ -664,7 +664,6 @@ local filterPanelIdToBlockSettingName = {
 }
 mappingVars.filterPanelIdToBlockSettingName = filterPanelIdToBlockSettingName
 
-
 --The mapping array for the block settings at deconstruction
 --Used in function FCOIS.DeconstructionSelectionHandler in file src/FCOIS_Protection.lua
 local deconPanelToBlockSettingsTable = {

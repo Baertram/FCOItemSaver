@@ -19,7 +19,7 @@
 ---------------------------------------------------------------------
 
 --____________________________
--- Current max bugs/features/ToDos: 166
+-- Current max bugs/features/ToDos: 168
 --____________________________
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -158,12 +158,14 @@ local function menuVisibleCheck()
 --And if you drag another ring to a slot where a ring was already equipped the marker icons do neither update all!
 --#158: 2021-08-18, Baertram, bug: Character doll ring/weapon marker icons do not remove all if SHIFT+right click is used on 1 ring (and the 2nd ring is identical)
 
---#166: 2021-09-19, Baertram, bug: Refinement smithing is not removing items from slot if marker icon is applied (via context menu or keybind)
+--#168: 2021-09-19, Baertram, bug: Refinement smithing is not removing items from slot if marker icon is applied (via context menu or keybind)
 
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
 --In progress: Updated last 2021-09-19
+--#166: 2021-09-19, Baertram, bug: Guild bank withdraw right click on flag icon/left click to change anti-destroy settings does not work as it tries to change anti-deposit.
+--#167: 2021-09-19, Baertram, bug: Anti-* settings control the anti-destroy checks at panels where there is no anti-destroy setting. This was a wrong concept ad anti-destroy and anti-* (e.g guild bank deposit) were separated in the past
 
 ---------------------------------------------------------------------
 --Since last update 2.2.0 - New version: 2.2.1 -> Changelog updated last: 2021-09-17

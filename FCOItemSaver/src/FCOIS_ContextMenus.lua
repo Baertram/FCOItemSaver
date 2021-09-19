@@ -2112,8 +2112,13 @@ function FCOIS.GetContextMenuAntiSettingsTextAndState(p_filterWhere, buildText)
 --d(">filterPanelToCheck: " ..tostring(filterPanelToCheck))
     currentSettingsState, currentSettingsStateDestroy = checkIfProtectedSettingsEnabled(filterPanelToCheck, nil, nil, nil, nil)
 --d(">currentSettingsState: " ..tostring(currentSettingsState) .. ", currentSettingsStateDestroy: " ..tostring(currentSettingsStateDestroy))
-    if not currentSettingsState and currentSettingsStateDestroy ~= nil then
---d(">>using destroy!")
+    if currentSettingsState == nil and currentSettingsStateDestroy ~= nil then
+--d(">>other setting missing, using anti-destroy!")
+        currentSettingsState = currentSettingsStateDestroy
+    --If there are 2 settings, e.g. guild bak deposit: Anti-deposit checks and anti-destroy
+    --use the anti-destroy for the flag icon
+    elseif currentSettingsState ~= nil and currentSettingsStateDestroy ~= nil then
+--d(">>other setting given, but using destroy!")
         currentSettingsState = currentSettingsStateDestroy
     end
 
@@ -2246,13 +2251,13 @@ local function changeContextMenuInvokerButtonColor(contextMenuInvokerButton, set
     else
         settingStateForColor = settingsEnabled
     end
---d("[FCOIS]changeContextMenuInvokerButtonColor - contextMenuInvokerButton: " .. contextMenuInvokerButton:GetName() .. ", settingsEnabled: " .. tostring(settingsEnabled))
+d("[FCOIS]changeContextMenuInvokerButtonColor - contextMenuInvokerButton: " .. contextMenuInvokerButton:GetName() .. ", settingsEnabled: " .. tostring(settingsEnabled))
 
     --Update the context menu "flag" button's color according to the current settings state
     local colR, colG, colB, colA = getContextMenuAntiSettingsColor(settingStateForColor, nil)
     local contInvButTexture = wm:GetControlByName(contextMenuInvokerButton:GetName(), "Texture")
     if contInvButTexture then
---d(">found button's Texture -> Calling SetColor")
+d(">found button's Texture -> Calling SetColor")
         contInvButTexture:SetColor(colR, colG, colB, colA)
     end
     --Check for other panels also active (FCOIS custom filterPanel Ids like the character), and updte it's protection color as well
@@ -2269,7 +2274,7 @@ function FCOIS.ChangeContextMenuInvokerButtonColorByPanelId(panelId)
     local _, settingsEnabled = getContextMenuAntiSettingsTextAndState(panelId, false)
     local contextMenuInvokerButtonName = getContextMenuInvokerButtonName(panelId)
     if contextMenuInvokerButtonName ~= "" and contextMenuInvokerButtonName ~= false then
---d("[FCOIS.ChangeContextMenuInvokerButtonColorByPanelId-panelId:" .. tostring(panelId) .. ", button: ".. contextMenuInvokerButtonName .. ", settings: " .. tostring(settingsEnabled))
+d("[FCOIS.ChangeContextMenuInvokerButtonColorByPanelId-panelId:" .. tostring(panelId) .. ", button: ".. contextMenuInvokerButtonName .. ", settings: " .. tostring(settingsEnabled))
         local contextMenuInvokerButton = wm:GetControlByName(contextMenuInvokerButtonName, "")
         if contextMenuInvokerButton then
             changeContextMenuInvokerButtonColor(contextMenuInvokerButton, settingsEnabled)
@@ -2278,7 +2283,7 @@ function FCOIS.ChangeContextMenuInvokerButtonColorByPanelId(panelId)
 end
 
 local function invertAdditionalInventoryFlagProtectionAndColor(p_panelId, p_buttonControl)
---d("[FCOIS]invertAdditionalInventoryFlagProtectionAndColor-panelId: " ..tostring(p_panelId) .. ", button: " ..tostring(p_buttonControl:GetName()))
+d("[FCOIS]invertAdditionalInventoryFlagProtectionAndColor-panelId: " ..tostring(p_panelId) .. ", button: " ..tostring(p_buttonControl:GetName()))
     --Invert the active anti-setting (false->true / true->false)
     local settingsStateAfterChange = changeAntiSettingsAccordingToFilterPanel()
     local dummy, settingsEnabled

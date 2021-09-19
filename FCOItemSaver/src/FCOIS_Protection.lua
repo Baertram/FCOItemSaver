@@ -68,15 +68,27 @@ end
 local outputItemProtectedMessage = FCOIS.OutputItemProtectedMessage
 
 --Check the filterPanelId and if it should be protected against destroy, even if the currently protectedSettings are
---different than "Anti destroy"
-function FCOIS.CkeckFilterPanelForDestroyProtection(filterPanelId)
+--different than "Anti destroy", and then set the anti-destroy value to "on" so it always is blocked
+function FCOIS.CheckFilterPanelForAlwaysOnDestroyProtection(filterPanelId)
     local filterPanelToAntiDestroySetings = {
-        [LF_VENDOR_REPAIR] = true,
+        [LF_VENDOR_REPAIR] = true,          --check anti-destroy as there is no other setting at vendor repair
     }
     local isProtectedDestroyIcon = filterPanelToAntiDestroySetings[filterPanelId] or false
     return isProtectedDestroyIcon
 end
-local ckeckFilterPanelForDestroyProtection = FCOIS.CkeckFilterPanelForDestroyProtection
+local checkFilterPanelForAlwaysOnDestroyProtection = FCOIS.CheckFilterPanelForAlwaysOnDestroyProtection
+
+--Check the filterPanelId and if it should be protected against destroy, even if the currently protectedSettings are
+--different than "Anti destroy", and then use the current anti-destroy value for the proetction
+function FCOIS.CheckFilterPanelForDestroyProtection(filterPanelId)
+    local filterPanelToAntiDestroySetings = {
+        [LF_GUILDBANK_DEPOSIT] = true,          --use anti-destroy at the destroy item handler as anti-deposit is the wrong setting :-) -> to reflect the "flag"'s icon color state
+    }
+    local isProtectedDestroyIcon = filterPanelToAntiDestroySetings[filterPanelId] or false
+    return isProtectedDestroyIcon
+end
+local checkFilterPanelForDestroyProtection = FCOIS.CheckFilterPanelForDestroyProtection
+
 
 --Function to check if a normal icon is protected, or a dynamic icon is protected
 --Will return the protection value (boolean) as 1st, and the anti-destroy protection value (boolean) as 2nd parameter
@@ -213,6 +225,10 @@ function FCOIS.CheckIfProtectedSettingsEnabled(filterPanel, iconNr, isDynamicIco
     --Special treatment for the protectionValue and the AntiDestroy protectionValue
     --Found one or more protection values? Check each now to
     if protectionValues ~= nil then
+        local antiDestroyCons = {
+            [FCOIS_CON_DESTROY] = true,
+            [FCOIS_CON_COMPANION_DESTROY] = true,
+        }
 --d(">>>Anti-Destroy checks")
         --Entries look like this:
         --[LF_INVENTORY] 			        = {[FCOIS_CON_DESTROY]=settings.blockDestroying},
@@ -231,7 +247,7 @@ function FCOIS.CheckIfProtectedSettingsEnabled(filterPanel, iconNr, isDynamicIco
                 end
             else
                 --Anti destroy settings?
-                if key == FCOIS_CON_DESTROY or key == FCOIS_CON_COMPANION_DESTROY then
+                if antiDestroyCons[key] then
                     protectionValDestroy = value
 --d(">Destroy protectionVal: " ..tostring(protectionValDestroy))
                 --Other panel anti settings?
@@ -402,7 +418,7 @@ function FCOIS.DestroySelectionHandler(bag, slot, echo, parentControl)
     if not isVendorRepair and ((bag == BAG_WORN or bag == BAG_COMPANION_WORN) and parentControl ~= nil) then
         FCOIS.preventerVars.gCheckEquipmentSlots = true
     end
---d("[DestroySelectionHandler] Bag: " .. tostring(bag) .. ", Slot: " .. tostring(slot) ..", echo: " .. tostring(echo) .. ", filterPanelId: " .. tostring(FCOIS.gFilterWhere) .. ", isVendorRepair: " ..tostring(isVendorRepair) .. ", checkEquipmentSlots: " .. tostring(FCOIS.preventerVars.gCheckEquipmentSlots))
+d("[DestroySelectionHandler] Bag: " .. tostring(bag) .. ", Slot: " .. tostring(slot) ..", echo: " .. tostring(echo) .. ", filterPanelId: " .. tostring(FCOIS.gFilterWhere) .. ", isVendorRepair: " ..tostring(isVendorRepair) .. ", checkEquipmentSlots: " .. tostring(FCOIS.preventerVars.gCheckEquipmentSlots))
 
     -- get (unique) instance id of the item
     local itemId = myGetItemInstanceIdNoControl(bag, slot)
@@ -410,15 +426,26 @@ function FCOIS.DestroySelectionHandler(bag, slot, echo, parentControl)
     -- if item is in any protection list, warn user
     for iconIdToCheck=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
         if checkIfItemIsProtected(iconIdToCheck, itemId) then
+            local currentFilterPanelId = FCOIS.gFilterWhere
             --Check if the anti-settings are enabled (and if a dynamic icon is used)
-            local isProtectedIcon, isProtectedDestroyIcon = checkIfProtectedSettingsEnabled(FCOIS.gFilterWhere, iconIdToCheck, nil, nil, nil)
+            local isProtectedIcon, isProtectedDestroyIcon = checkIfProtectedSettingsEnabled(currentFilterPanelId, iconIdToCheck, nil, nil, nil)
             --FCOIS version 1.6.0
             --Local hack to change the protectionValue of icons to "true" if certain filterPanels are checked.
-            --But only for the destroy checks!
-            if not isProtectedDestroyIcon then isProtectedDestroyIcon = ckeckFilterPanelForDestroyProtection(FCOIS.gFilterWhere) end
+            if not isProtectedDestroyIcon then isProtectedDestroyIcon = checkFilterPanelForAlwaysOnDestroyProtection(currentFilterPanelId) end
+
+            --Local hack to change the protectionValue of icons to the anti-destroy settings value if certain filterPanels are checked.
+            if not isProtectedDestroyIcon then isProtectedDestroyIcon = checkFilterPanelForDestroyProtection(currentFilterPanelId) end
+
+            --If the anti-destroy settings, or the "always on" or the special panel checks all do not say "anti-destroy" is enabled: Use the normal panel's anti-* settings instead
+            --to determine the anti-destroy state
+            -->TODO is this correct? I doubt it, as if there are not anti-destroy settings at a panel there should not be any block! So it was disabled for tests 2021-09-19
+            --[[
             if not isProtectedDestroyIcon then
                 isProtectedDestroyIcon = isProtectedIcon
             end
+            ]]
+
+            --Anti-destroy is enabled?
             if isProtectedDestroyIcon then
                 --Show alert message?
                 if (echo == true) then
@@ -1549,7 +1576,6 @@ function FCOIS.CheckIfGuildBankWithdrawAllowed(currentGuildBank)
     if not FCOIS.settingsVars.settings.blockGuildBankWithoutWithdraw then return false end
     --Check if the player got the rights to withdraw items from the guild bank
     local retVal = DoesPlayerHaveGuildPermission(currentGuildBank, GUILD_PERMISSION_BANK_WITHDRAW)
-    --d("[FCOIS] FCOIS.checkIfGuildBankWithdrawAllowed: " .. tostring(retVal))
     return retVal
 end
 
