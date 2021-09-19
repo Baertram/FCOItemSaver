@@ -3088,6 +3088,16 @@ mappingVars.contextMenuAntiButtonsAtPanel = {
     [FCOIS_CON_LF_COMPANION_CHARACTER]  = buttonContextMenuDestroy,
 }
 
+--The mapping between filterPanelIds and there special Anti-Settings which need an own contextmenu entry
+mappingVars.filterPanelGotSpecialSettingsEntryInContextMenu = {
+    [LF_GUILDBANK_DEPOSIT] = "blockGuildBankWithoutWithdraw",
+}
+
+--The maping table for the text at the context menu that the special anti-settings should show there
+mappingVars.contextMenuSpecialAntiButtonsAtPanel = {
+    [LF_GUILDBANK_DEPOSIT] = buttonContextMenuToggleAntiPrefix .."guild_bank_deposit_without_withdraw_rights_",
+}
+
 --Mapping for the Transmuation Geode container ItemIds (and flavor text)
 mappingVars.containerTransmuation = {}
 --Using addon "Item finder" /finditem geode

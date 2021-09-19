@@ -862,6 +862,8 @@ FCOIS.localizationVars.localizationAll = {
 		["button_context_menu_toggle_anti_launder_sell_off"] = "Deactivate fence 'Anti-Launder'",
 		["button_context_menu_toggle_anti_trade_on"] = "Activate 'Anti-Trade'",
 		["button_context_menu_toggle_anti_trade_off"] = "Deactivate 'Anti-Trade'",
+        ["button_context_menu_toggle_anti_guild_bank_deposit_without_withdraw_rights_on"] = "Activate 'Anti-Deposit w/o withdraw rights'",
+        ["button_context_menu_toggle_anti_guild_bank_deposit_without_withdraw_rights_off"] = "Deactivate 'Anti-Deposit w/o withdraw rights'",
 
         ["button_context_menu_gear_sets_all"]	 	 = "*",
         ["button_context_menu_gear_sets_all_TT"]= "All gear sets",
@@ -2064,6 +2066,9 @@ FCOIS.localizationVars.localizationAll = {
         ["button_context_menu_toggle_anti_launder_sell_off"] = "Deaktiviere Hehler 'Anti-Wäsche'",
         ["button_context_menu_toggle_anti_trade_on"] = "Aktiviere 'Anti-Handel'",
         ["button_context_menu_toggle_anti_trade_off"] = "Deaktiviere 'Anti-Handel'",
+        ["button_context_menu_toggle_anti_guild_bank_deposit_without_withdraw_rights_on"] = "Aktiviere 'Anti-Einlagern o. Entn. Rechte'",
+        ["button_context_menu_toggle_anti_guild_bank_deposit_without_withdraw_rights_off"] = "Deaktiviere 'Anti-Einlagern o. Entn. Rechte'",
+
         ["button_context_menu_gear_sets_all"]	 	 = "*",
         ["button_context_menu_gear_sets_all_TT"]= "Alle Gear Sets",
         ["button_context_menu_all_markers_TT"]	 = "Alle Markierungen",

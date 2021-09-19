@@ -183,7 +183,7 @@ local function menuVisibleCheck()
 
 
 --[Added]
-
+--Additional inventory flag context menu entry to guild bank deposit: Toggle anti-deposit w/o withdraw rights
 
 --[Added on request]
 

@@ -2081,8 +2081,8 @@ end
 
 --Function to build the text for the toggle buttons (Anti-Deconstruct, Anti-Destroy, Anti-Sell, etc.)
 --The function will return as first parameter the text and as second parameter a boolean value: true if the protective setting for the current panel is enabled, and false if not
-function FCOIS.GetContextMenuAntiSettingsTextAndState(p_filterWhere, buildText)
---d("[FCOIS] FCOIS.getContextMenuAntiSettingsTextAndState - filterPanelIdAtCall: " ..tostring(p_filterWhere) .. ", buildText: " ..tostring(buildText))
+function FCOIS.GetContextMenuAntiSettingsTextAndState(p_filterWhere, buildText, isSpecialAntiSetting)
+--d("[FCOIS] FCOIS.getContextMenuAntiSettingsTextAndState - filterPanelIdAtCall: " ..tostring(p_filterWhere) .. ", buildText: " ..tostring(buildText) .. ", isSpecialAntiSetting: " ..tostring(isSpecialAntiSetting))
     if p_filterWhere == nil or p_filterWhere == 0 then p_filterWhere = FCOIS.gFilterWhere end
     if p_filterWhere == nil or p_filterWhere == 0 then return end
     buildText = buildText or false
@@ -2113,18 +2113,21 @@ function FCOIS.GetContextMenuAntiSettingsTextAndState(p_filterWhere, buildText)
     currentSettingsState, currentSettingsStateDestroy = checkIfProtectedSettingsEnabled(filterPanelToCheck, nil, nil, nil, nil)
 --d(">currentSettingsState: " ..tostring(currentSettingsState) .. ", currentSettingsStateDestroy: " ..tostring(currentSettingsStateDestroy))
     if currentSettingsState == nil and currentSettingsStateDestroy ~= nil then
---d(">>other setting missing, using anti-destroy!")
+        if isSpecialAntiSetting == true then return end
+        --d(">>other setting missing, using anti-destroy!")
         currentSettingsState = currentSettingsStateDestroy
-    --If there are 2 settings, e.g. guild bak deposit: Anti-deposit checks and anti-destroy
-    --use the anti-destroy for the flag icon
+        --If there are 2 settings, e.g. guild bak deposit: Anti-deposit checks and anti-destroy
+        --use the anti-destroy for the flag icon
     elseif currentSettingsState ~= nil and currentSettingsStateDestroy ~= nil then
---d(">>other setting given, but using destroy!")
-        currentSettingsState = currentSettingsStateDestroy
+        if not isSpecialAntiSetting then
+            --d(">>other setting given, but using destroy!")
+            currentSettingsState = currentSettingsStateDestroy
+        end
     end
 
     --Build the text too?
     local retStrVal = ""
-    if buildText then
+    if buildText == true then
         --No current settings state? Then return nil, for the text and the state
         if currentSettingsState == nil then
             return nil, nil
@@ -2138,7 +2141,12 @@ function FCOIS.GetContextMenuAntiSettingsTextAndState(p_filterWhere, buildText)
         local onOffText = mappingButtonOnOffText[tostring(currentSettingsState)]
         if onOffText ~= "" then
             --Mapping array for the localized button texts
-            local mappingButtonText = FCOIS.mappingVars.contextMenuAntiButtonsAtPanel
+            local mappingButtonText
+            if isSpecialAntiSetting == true then
+                mappingButtonText = FCOIS.mappingVars.contextMenuSpecialAntiButtonsAtPanel
+            else
+                mappingButtonText = FCOIS.mappingVars.contextMenuAntiButtonsAtPanel
+            end
             local btnText = ""
             --As the CraftBag can be active at the mail send, trade, sell, guild store sell and guild bank panels too we need to check if we are currently using the
             --addon CraftBagExtended and if the parent panel ID (FCOIS.gFilterWhereParent) is one of the above mentioned
@@ -2251,13 +2259,13 @@ local function changeContextMenuInvokerButtonColor(contextMenuInvokerButton, set
     else
         settingStateForColor = settingsEnabled
     end
-d("[FCOIS]changeContextMenuInvokerButtonColor - contextMenuInvokerButton: " .. contextMenuInvokerButton:GetName() .. ", settingsEnabled: " .. tostring(settingsEnabled))
+--d("[FCOIS]changeContextMenuInvokerButtonColor - contextMenuInvokerButton: " .. contextMenuInvokerButton:GetName() .. ", settingsEnabled: " .. tostring(settingsEnabled))
 
     --Update the context menu "flag" button's color according to the current settings state
     local colR, colG, colB, colA = getContextMenuAntiSettingsColor(settingStateForColor, nil)
     local contInvButTexture = wm:GetControlByName(contextMenuInvokerButton:GetName(), "Texture")
     if contInvButTexture then
-d(">found button's Texture -> Calling SetColor")
+--d(">found button's Texture -> Calling SetColor")
         contInvButTexture:SetColor(colR, colG, colB, colA)
     end
     --Check for other panels also active (FCOIS custom filterPanel Ids like the character), and updte it's protection color as well
@@ -2274,7 +2282,7 @@ function FCOIS.ChangeContextMenuInvokerButtonColorByPanelId(panelId)
     local _, settingsEnabled = getContextMenuAntiSettingsTextAndState(panelId, false)
     local contextMenuInvokerButtonName = getContextMenuInvokerButtonName(panelId)
     if contextMenuInvokerButtonName ~= "" and contextMenuInvokerButtonName ~= false then
-d("[FCOIS.ChangeContextMenuInvokerButtonColorByPanelId-panelId:" .. tostring(panelId) .. ", button: ".. contextMenuInvokerButtonName .. ", settings: " .. tostring(settingsEnabled))
+--d("[FCOIS.ChangeContextMenuInvokerButtonColorByPanelId-panelId:" .. tostring(panelId) .. ", button: ".. contextMenuInvokerButtonName .. ", settings: " .. tostring(settingsEnabled))
         local contextMenuInvokerButton = wm:GetControlByName(contextMenuInvokerButtonName, "")
         if contextMenuInvokerButton then
             changeContextMenuInvokerButtonColor(contextMenuInvokerButton, settingsEnabled)
@@ -2283,7 +2291,7 @@ d("[FCOIS.ChangeContextMenuInvokerButtonColorByPanelId-panelId:" .. tostring(pan
 end
 
 local function invertAdditionalInventoryFlagProtectionAndColor(p_panelId, p_buttonControl)
-d("[FCOIS]invertAdditionalInventoryFlagProtectionAndColor-panelId: " ..tostring(p_panelId) .. ", button: " ..tostring(p_buttonControl:GetName()))
+--d("[FCOIS]invertAdditionalInventoryFlagProtectionAndColor-panelId: " ..tostring(p_panelId) .. ", button: " ..tostring(p_buttonControl:GetName()))
     --Invert the active anti-setting (false->true / true->false)
     local settingsStateAfterChange = changeAntiSettingsAccordingToFilterPanel()
     local dummy, settingsEnabled
@@ -2334,6 +2342,7 @@ local function contextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
     local isREMOVEALLGEARSButton 		= (specialButtonType == "REMOVE_ALL_GEAR") or false
     local isREMOVEALLButton 	 		= (specialButtonType == "REMOVE_ALL") or false
     local isTOGGLEANTISETTINGSButton	= (specialButtonType == "ANTI_SETTINGS") or false
+    local isTOGGLEANTISETTINGSSPECIALButton = (specialButtonType == "ANTI_SETTINGS_SPECIAL") or false
     local isMARKALLASJUNKButton	        = (specialButtonType == "JUNK_CHECK_ALL") or false
     local isMARKALLASNOJUNKButton	    = (specialButtonType == "UNJUNK_CHECK_ALL") or false
 
@@ -2435,7 +2444,7 @@ local function contextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
     --==================================================================================================================
     --Are we marking/unmarking items or are we undoing the last change at this current panel?
     if not isUNDOButton and not isREMOVEALLGEARSButton and not isREMOVEALLButton
-       and not isTOGGLEANTISETTINGSButton and not isMARKALLASJUNKButton and not isMARKALLASNOJUNKButton then
+       and not isTOGGLEANTISETTINGSButton and not isTOGGLEANTISETTINGSSPECIALButton and not isMARKALLASJUNKButton and not isMARKALLASNOJUNKButton then
         --Check if this icon is enabled in the settings, or abort here
         if iconId == nil then
             if specialButtonType ~= nil and allowedSpecialButtonTypes[specialButtonType] ~= nil and allowedSpecialButtonTypes[specialButtonType].icon ~= nil then
@@ -2652,8 +2661,8 @@ local function contextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
 
             end --if contMenuVars.undoMarkedItems[filterPanelToSaveUndoTo] and #contMenuVars.undoMarkedItems[filterPanelToSaveUndoTo] > 0 then
 
-    --==================================================================================================================
-        --REMOVE ALL GEARS
+            --==================================================================================================================
+            --REMOVE ALL GEARS
         elseif isREMOVEALLGEARSButton then
 
             if settings.debug then debugMessage( "[ContextMenuForAddInvButtonsOnClicked]", "Clicked "..contextmenuType.." context menu button, Remove ALL GEARS", true, FCOIS_DEBUG_DEPTH_NORMAL) end
@@ -2732,8 +2741,8 @@ local function contextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                 end
             end --for _,v in pairs(PLAYER_INV...
 
-    --==================================================================================================================
-        --REMOVE ALL
+            --==================================================================================================================
+            --REMOVE ALL
         elseif isREMOVEALLButton then
 
             if settings.debug then debugMessage( "[ContextMenuForAddInvButtonsOnClicked]", "Clicked "..contextmenuType.." context menu button, Remove ALL", true, FCOIS_DEBUG_DEPTH_NORMAL) end
@@ -2796,16 +2805,29 @@ local function contextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                 end
             end --for _,v in pairs(PLAYER_INV...
 
-    --==================================================================================================================
-        -- TOGGLEANTISETTINGS
+            --==================================================================================================================
+            -- TOGGLEANTISETTINGS
         elseif isTOGGLEANTISETTINGSButton then
 
             if settings.debug then debugMessage( "[ContextMenuForAddInvButtonsOnClicked]", "Clicked "..contextmenuType.." context menu button, TOGGLE ANTI SETTINGS", true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
             invertAdditionalInventoryFlagProtectionAndColor(panelId, buttonCtrl)
 
+            --==================================================================================================================
+            -- TOGGLEANTISETTINGS
+        elseif isTOGGLEANTISETTINGSSPECIALButton then
 
-    --==================================================================================================================
+            if settings.debug then debugMessage( "[ContextMenuForAddInvButtonsOnClicked]", "Clicked "..contextmenuType.." context menu button, TOGGLE ANTI SETTINGS", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+
+            local filterPanelGotSpecialSettingsEntryInContextMenu = mappingVars.filterPanelGotSpecialSettingsEntryInContextMenu
+            local antiSettingsSpecial = filterPanelGotSpecialSettingsEntryInContextMenu[panelId]
+            if antiSettingsSpecial == nil then return end
+            local oldAntiSettingSpecial = FCOIS.settingsVars.settings[antiSettingsSpecial]
+            if oldAntiSettingSpecial ~= nil then
+                FCOIS.settingsVars.settings[antiSettingsSpecial] = not oldAntiSettingSpecial
+            end
+
+        --==================================================================================================================
         --Mark all as junk/UNmark all junked
         elseif isMARKALLASJUNKButton or isMARKALLASNOJUNKButton then
             --Get the current inventorytype
@@ -2980,6 +3002,7 @@ function FCOIS.ShowContextMenuForAddInvButtons(invAddContextMenuInvokerButton, b
         local iconsDisabledAtCompanionInv = mappingVars.iconIsDisabledAtCompanion
         local sortAddInvFlagContextMenu = settings.sortIconsInAdditionalInvFlagContextMenu
         local contextMenuVars = FCOIS.contextMenuVars
+        local filterPanelGotSpecialSettingsEntryInContextMenu = mappingVars.filterPanelGotSpecialSettingsEntryInContextMenu
         local isCompanionSupportedPanel = mappingVars.isCompanionSupportedPanel
 
         local isCompanionInventory = (panelId == LF_INVENTORY_COMPANION)
@@ -3037,6 +3060,8 @@ function FCOIS.ShowContextMenuForAddInvButtons(invAddContextMenuInvokerButton, b
         local contextMenuEntriesAdded = 0
         local FCOAddInvFlagButtonContextMenuWithKeyGap = {}
         local FCOAddInvFlagButtonContextMenu = {}
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
         --For each icon check if it is enabled and then add an entry to internal tables.
         --Check if the entries should be sorted and then add them in the chosen sort order (settings) order.
         --This internal tables will be added to the context menus afterwards
@@ -3098,6 +3123,7 @@ function FCOIS.ShowContextMenuForAddInvButtons(invAddContextMenuInvokerButton, b
             end
         end
 
+------------------------------------------------------------------------------------------------------------------------
         --Added with v1.5.5
         --Sorted table of normal, gear set and dynamic icons must be looped and added to the context menu then
         if FCOAddInvFlagButtonContextMenu ~= nil and #FCOAddInvFlagButtonContextMenu > 0 and contextMenuEntriesAdded > 0 then
@@ -3236,7 +3262,11 @@ function FCOIS.ShowContextMenuForAddInvButtons(invAddContextMenuInvokerButton, b
             end --for buttonsIcon, sortedButtonData in ipairs(FCOAddInvFlagButtonContextMenu) do
         end -- if contextMenuEntriesAdded > 0 then
 
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
         --Static entries at the end
+
+------------------------------------------------------------------------------------------------------------------------
         --Context menu button REMOVE ALL GEARS
         if gearAdded then
             local subMenuEntryGear = {
@@ -3248,6 +3278,7 @@ function FCOIS.ShowContextMenuForAddInvButtons(invAddContextMenuInvokerButton, b
             AddCustomSubMenuItem("  " .. locVars["options_icons_gears"], subMenuEntriesGear)
         end
 
+------------------------------------------------------------------------------------------------------------------------
         --Dynamic icons submenu
         if dynamicAdded then
             --Are too many dynamic icons enabled to show them in one context menu?
@@ -3261,9 +3292,12 @@ function FCOIS.ShowContextMenuForAddInvButtons(invAddContextMenuInvokerButton, b
             end
         end
 
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
         local subMenuEntryAutomaticMarking
         if isCompanionInventory == false and isCompanionCharacter == false then
             --Add submenu for the automatic marking
+------------------------------------------------------------------------------------------------------------------------
             --Unknown set collection items
             subMenuEntryAutomaticMarking = {
                 label 		= locVars["options_enable_auto_mark_unknown_set_collection_items"],
@@ -3271,6 +3305,7 @@ function FCOIS.ShowContextMenuForAddInvButtons(invAddContextMenuInvokerButton, b
                 disabled	= function() return not settings.autoMarkSetsItemCollectionBook or (settings.autoMarkSetsItemCollectionBookMissingIcon == FCOIS_CON_ICON_NONE or not settings.isIconEnabled[settings.autoMarkSetsItemCollectionBookMissingIcon] == true) end,
             }
             table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
+------------------------------------------------------------------------------------------------------------------------
             --Known set collection items
             subMenuEntryAutomaticMarking = {
                 label 		= locVars["options_enable_auto_mark_known_set_collection_items"],
@@ -3278,6 +3313,7 @@ function FCOIS.ShowContextMenuForAddInvButtons(invAddContextMenuInvokerButton, b
                 disabled	= function() return not settings.autoMarkSetsItemCollectionBook or (settings.autoMarkSetsItemCollectionBookIcon == FCOIS_CON_ICON_NONE or not settings.isIconEnabled[settings.autoMarkSetsItemCollectionBookNonMissingIcon] == true) end,
             }
             table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
+------------------------------------------------------------------------------------------------------------------------
             --Sets
             subMenuEntryAutomaticMarking = {
                 label 		= locVars["options_enable_auto_mark_sets"],
@@ -3285,6 +3321,7 @@ function FCOIS.ShowContextMenuForAddInvButtons(invAddContextMenuInvokerButton, b
                 disabled	= function() return not settings.autoMarkSets or not settings.isIconEnabled[settings.autoMarkSetsIconNr] end,
             }
             table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
+------------------------------------------------------------------------------------------------------------------------
             --Ornate
             subMenuEntryAutomaticMarking = {
                 label 		= GetString(SI_ITEMTRAITTYPE10),
@@ -3292,6 +3329,7 @@ function FCOIS.ShowContextMenuForAddInvButtons(invAddContextMenuInvokerButton, b
                 disabled	= function() return not settings.autoMarkOrnate or not settings.isIconEnabled[FCOIS_CON_ICON_SELL] end,
             }
             table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
+------------------------------------------------------------------------------------------------------------------------
             --Intricate
             subMenuEntryAutomaticMarking = {
                 label 		= GetString(SI_ITEMTRAITTYPE9),
@@ -3299,6 +3337,7 @@ function FCOIS.ShowContextMenuForAddInvButtons(invAddContextMenuInvokerButton, b
                 disabled	= function() return not settings.autoMarkIntricate or not settings.isIconEnabled[FCOIS_CON_ICON_INTRICATE] end,
             }
             table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
+------------------------------------------------------------------------------------------------------------------------
             --Research
             subMenuEntryAutomaticMarking = {
                 label 		= GetString(SI_SMITHING_TAB_RESEARCH),
@@ -3307,6 +3346,8 @@ function FCOIS.ShowContextMenuForAddInvButtons(invAddContextMenuInvokerButton, b
             }
             table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
 
+------------------------------------------------------------------------------------------------------------------------
+            --Character
             if isCharacter == false then
                 --Research scrolls
                 subMenuEntryAutomaticMarking = {
@@ -3331,6 +3372,9 @@ function FCOIS.ShowContextMenuForAddInvButtons(invAddContextMenuInvokerButton, b
                 table.insert(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
             end
         end
+
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
         --Quality
         subMenuEntryAutomaticMarking = {
             label 		= locVars["options_enable_auto_mark_quality_items"],
@@ -3341,19 +3385,35 @@ function FCOIS.ShowContextMenuForAddInvButtons(invAddContextMenuInvokerButton, b
         --Add the automatic marking submenu
         AddCustomSubMenuItem("  " .. locVars["options_header_items"], subMenuEntriesAutomaticMarking)
 
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
         --Context menu button REMOVE ALL
         if gearAdded or dynamicAdded or otherAdded then
             AddCustomMenuItem("|cFF0000" .. locVars["button_context_menu_demark_all"] .."|r", function() contextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "REMOVE_ALL", panelId) end, MENU_ADD_OPTION_LABEL)
         end
 
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
         --Context menu buttons for "Anti-*" settings
-        --Get the anti settings text for the current filter panel
-        local antiButtonText, _ = getContextMenuAntiSettingsTextAndState(panelId, true)
+        --Get the anti settings text for the current filter panel. This can be anti-destroy or anti-mail etc.
+        local antiButtonText, _ = getContextMenuAntiSettingsTextAndState(panelId, true, nil)
     --d("[FCOIS.showContextMenuForAddInvButtons]panelId: " ..tostring(panelId))
         if antiButtonText ~= nil and antiButtonText ~= "" then
             AddCustomMenuItem(antiButtonText, function() contextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "ANTI_SETTINGS", panelId) end, MENU_ADD_OPTION_LABEL)
         end
 
+        --Get the special anti-*  settings text for the current filter panel, if given.
+        --This can be anti-deposit into guld bank where you got no withdraw rights e.g.
+        if filterPanelGotSpecialSettingsEntryInContextMenu[panelId] ~= nil then
+--d(">special entry for flag contextMenu Anti-Settings found: " ..tostring(filterPanelGotSpecialSettingsEntryInContextMenu[panelId]))
+            local antiButtonSpecialText, _ = getContextMenuAntiSettingsTextAndState(panelId, true, true)
+--d(">>antiButtonSpecialText: " ..tostring(antiButtonSpecialText))
+            if antiButtonSpecialText ~= nil and antiButtonSpecialText ~= "" then
+                AddCustomMenuItem(antiButtonSpecialText, function() contextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "ANTI_SETTINGS_SPECIAL", panelId) end, MENU_ADD_OPTION_LABEL)
+            end
+        end
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
         --Context menu "Add all to junk" or "Remove all from junk" (if on the junk tab in inventories) button
         --> Only for allowed libFilters filterIds LF_*
         local allowedJunkFlagContextMenuFilterPanelIds = FCOIS.checkVars.allowedJunkFlagContextMenuFilterPanelIds
@@ -3399,6 +3459,8 @@ function FCOIS.ShowContextMenuForAddInvButtons(invAddContextMenuInvokerButton, b
             end
         end
 
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
         --Context menu UNDO button
         --AddCustomMenuItem(mytext, myfunction, itemType, myfont, normalColor, highlightColor, itemYPad)
         local undoButtonText = locVars["button_context_menu_undo"]
@@ -3411,6 +3473,8 @@ function FCOIS.ShowContextMenuForAddInvButtons(invAddContextMenuInvokerButton, b
         end
         AddCustomMenuItem(undoButtonText, function() contextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "UNDO", panelId) end, MENU_ADD_OPTION_LABEL, myFont, myColor)
 
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
         --Show the context menu at the clicked invoker button now
         ShowMenu(invAddContextMenuInvokerButton)
         --Reanchor the menu more to the left
