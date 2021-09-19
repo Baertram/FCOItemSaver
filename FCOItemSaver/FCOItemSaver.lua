@@ -163,12 +163,7 @@ local function menuVisibleCheck()
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
---In progress: Since 2021-09-16
---#160
---#161
---#162
---#163
---#164: 2021-09-16, Baertram: Switching from bank deposit to mail send will not update the flag color properly
+--In progress: Updated last 2021-09-19
 
 ---------------------------------------------------------------------
 --Since last update 2.2.0 - New version: 2.2.1 -> Changelog updated last: 2021-09-17
@@ -179,6 +174,7 @@ local function menuVisibleCheck()
 --#161: 2021-09-16, Baertram: Guild bank deposit "flag" button not updating it's sate color after 1st change (by right mouse click)
 --#162: 2021-09-16, Baertram: CraftBag flag icon right click: lua error message due to nil function FCOIS.CheckIfCBEorAGSActive
 --#163: 2021-09-16, Baertram: Closing inventory and directly opening banks/vendors/trades will not reset the anti-destroy settings flag settings of normal inventory to "enabled" (if enabled in the settings)
+--#164: 2021-09-16, Baertram: Switching from bank deposit to mail send/re-opening mail send after having it used last will not update the flag color properly
 --#165: 2021-09-15, Baertram: Mail send flag will only change anti-destroy as it thinks it is the inventory flag, and not the mail send panel
 
 --[Changed]

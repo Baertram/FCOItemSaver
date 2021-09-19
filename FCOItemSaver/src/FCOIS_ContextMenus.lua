@@ -2109,9 +2109,9 @@ function FCOIS.GetContextMenuAntiSettingsTextAndState(p_filterWhere, buildText)
             useCraftBagExtendedPanel = true
         end
     end
-d(">filterPanelToCheck: " ..tostring(filterPanelToCheck))
+--d(">filterPanelToCheck: " ..tostring(filterPanelToCheck))
     currentSettingsState, currentSettingsStateDestroy = checkIfProtectedSettingsEnabled(filterPanelToCheck, nil, nil, nil, nil)
-d(">currentSettingsState: " ..tostring(currentSettingsState) .. ", currentSettingsStateDestroy: " ..tostring(currentSettingsStateDestroy))
+--d(">currentSettingsState: " ..tostring(currentSettingsState) .. ", currentSettingsStateDestroy: " ..tostring(currentSettingsStateDestroy))
     if not currentSettingsState and currentSettingsStateDestroy ~= nil then
 --d(">>using destroy!")
         currentSettingsState = currentSettingsStateDestroy
@@ -2249,7 +2249,7 @@ local function changeContextMenuInvokerButtonColor(contextMenuInvokerButton, set
 --d("[FCOIS]changeContextMenuInvokerButtonColor - contextMenuInvokerButton: " .. contextMenuInvokerButton:GetName() .. ", settingsEnabled: " .. tostring(settingsEnabled))
 
     --Update the context menu "flag" button's color according to the current settings state
-    local colR, colG, colB, colA = getContextMenuAntiSettingsColor(settingStateForColor)
+    local colR, colG, colB, colA = getContextMenuAntiSettingsColor(settingStateForColor, nil)
     local contInvButTexture = wm:GetControlByName(contextMenuInvokerButton:GetName(), "Texture")
     if contInvButTexture then
 --d(">found button's Texture -> Calling SetColor")
@@ -2931,7 +2931,7 @@ end
 --Function that display the context menu after the player clicks with left mouse button on the additional inventory "flag" button
 -- on the top left corner of the inventories (left to the "name" sort header)
 function FCOIS.ShowContextMenuForAddInvButtons(invAddContextMenuInvokerButton, buttonDataOfInvokerButton)
-FCOIS._buttonDataOfInvokerButton = buttonDataOfInvokerButton
+--FCOIS._buttonDataOfInvokerButton = buttonDataOfInvokerButton
     --FCOIS v.0.8.8d
     --Add ZOs ZO_Menu contextMenu entries via addon library libCustomMenu
     local filterPanelIdOfButtonData = buttonDataOfInvokerButton and buttonDataOfInvokerButton.filterPanelId
@@ -3344,7 +3344,7 @@ FCOIS._buttonDataOfInvokerButton = buttonDataOfInvokerButton
         --Context menu buttons for "Anti-*" settings
         --Get the anti settings text for the current filter panel
         local antiButtonText, _ = getContextMenuAntiSettingsTextAndState(panelId, true)
-        d("[FCOIS.showContextMenuForAddInvButtons]panelId: " ..tostring(panelId))
+    --d("[FCOIS.showContextMenuForAddInvButtons]panelId: " ..tostring(panelId))
         if antiButtonText ~= nil and antiButtonText ~= "" then
             AddCustomMenuItem(antiButtonText, function() contextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "ANTI_SETTINGS", panelId) end, MENU_ADD_OPTION_LABEL)
         end

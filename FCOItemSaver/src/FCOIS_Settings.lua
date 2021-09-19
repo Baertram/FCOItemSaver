@@ -36,6 +36,7 @@ local getCharactersOfAccount = FCOIS.GetCharactersOfAccount
 local getCharacterName = FCOIS.GetCharacterName
 local showConfirmationDialog = FCOIS.ShowConfirmationDialog
 
+local onlyCallOnceInTime = FCOIS.OnlyCallOnceInTime
 
 --==========================================================================================================================================
 -- 										FCOIS settings & saved variables functions
@@ -282,9 +283,9 @@ function FCOIS.ChangeAntiSettingsAccordingToFilterPanel()
     return isSettingEnabled
 end
 
---Function to reenable the Anti-* settings again at a given check panel automatically (if the panel closes e.g.)
-function FCOIS.AutoReenableAntiSettingsCheck(checkWhere)
-    --d("[FCOIS.AutoReenableAntiSettingsCheck - checkWhere: " .. tostring(checkWhere) .. ", lootListIsHidden: " .. tostring(ZO_LootAlphaContainerList:IsHidden()) .. ", dontAutoReenableAntiSettings: " .. tostring(FCOIS.preventerVars.dontAutoReenableAntiSettingsInInventory))
+
+local function doAutoReenableAntiSettingsCheck(checkWhere)
+--d("[FCOIS]Only called once doAutoReenableAntiSettingsCheck-checkWhere: " ..tostring(checkWhere))
     if checkWhere == nil or checkWhere == "" then return false end
     local checksToDo = FCOIS.checkVars.autoReenableAntiSettingsCheckWheres
     local checksAll = FCOIS.checkVars.autoReenableAntiSettingsCheckWheresAll
@@ -411,6 +412,33 @@ function FCOIS.AutoReenableAntiSettingsCheck(checkWhere)
     --Workaround to enable the correct additional inventory context menu invoker button color for the normal inventory again
     --as multiple panels are using the LF_INVENTORY flag (mail, trade, inventory, ...)
     FCOIS.ChangeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
+end
+
+--Function to reenable the Anti-* settings again at a given check panel automatically (if the panel closes e.g.)
+function FCOIS.AutoReenableAntiSettingsCheck(checkWhere)
+    --d("[FCOIS.AutoReenableAntiSettingsCheck - checkWhere: " .. tostring(checkWhere) .. ", filterPanel: " .. tostring(FCOIS.gFilterWhere) .. ", lootListIsHidden: " .. tostring(ZO_LootAlphaContainerList:IsHidden()) .. ", dontAutoReenableAntiSettings: " .. tostring(FCOIS.preventerVars.dontAutoReenableAntiSettingsInInventory))
+
+    --If mail send panel was opened the call order will be:
+    --fcois_hooks -> 1. 1552 resetInventoryAntiSettings , 2. 1566 changeContextMenuInvokerButtonColorByPanelId, 3. 912 ctrlVars.mainMenuCategoryBar:OnShow autoReenableAntiSettingsCheck
+    --As the button for the invenory, mail, player2player trade is physically the same it willupdate the button's color wrong according to anti-destroy instead of
+    --anti-mail settings then! So the call to autoReenableAntiSettingsCheck cannot be done here anymore, except if autoReenableAntiSettingsCheck
+    --would check if any panel (FCOIS.gFilterWhere) is shown which got the same "flag" button name as the LF_INVENTORY does
+    local goOn = true
+    local flagButtonNames = FCOIS.contextMenuVars.filterPanelIdToContextMenuButtonInvoker
+    local filterPanelId = FCOIS.gFilterWhere
+    local currentPanelsFlagButton
+    if filterPanelId ~= LF_INVENTORY then
+        local inventoryFlagButton = flagButtonNames[LF_INVENTORY]
+        currentPanelsFlagButton = flagButtonNames[filterPanelId]
+        if currentPanelsFlagButton ~= nil and inventoryFlagButton.name == currentPanelsFlagButton.name then
+            goOn = false
+        end
+    else
+        currentPanelsFlagButton = flagButtonNames[LF_INVENTORY].name
+    end
+    if not goOn then return end
+    --Only call once for the same checkWere (e.g. DESTROY) and ButtonName and FilterPanel within 50ms
+    onlyCallOnceInTime("FCOIS_AutoReenableAntiSettingsCheck_" .. tostring(checkWhere) .. "_" .. tostring(filterPanelId) .. "_" .. tostring(currentPanelsFlagButton), 50, doAutoReenableAntiSettingsCheck, checkWhere)
 end
 local autoReenableAntiSettingsCheck = FCOIS.AutoReenableAntiSettingsCheck
 

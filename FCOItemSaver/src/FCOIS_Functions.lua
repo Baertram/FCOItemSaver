@@ -35,12 +35,31 @@ end
 function FCOIS.ThrottledUpdate(callbackName, timer, callback, ...)
 --d("[FCOIS]ThrottledUpdate, callbackName: " .. tostring(callbackName))
     local args = {...}
-    local function Update()
+    local function updateNow()
         em:UnregisterForUpdate(callbackName)
         callback(unpack(args))
     end
     em:UnregisterForUpdate(callbackName)
-    em:RegisterForUpdate(callbackName, timer, Update)
+    em:RegisterForUpdate(callbackName, timer, updateNow)
+end
+
+local alreadyActiveBlockedCallbackNames = {}
+function FCOIS.OnlyCallOnceInTime(callbackName, timeToBlock, callback, ...)
+    --d("[FCOIS]OnlyCallOnceInTime, callbackName: " .. tostring(callbackName))
+    --Do not call more than once if another same callbackName is active
+    if alreadyActiveBlockedCallbackNames[callbackName] ~= nil then return end
+
+    alreadyActiveBlockedCallbackNames[callbackName] = true
+
+    local function resetAgain()
+        em:UnregisterForUpdate(callbackName)
+        alreadyActiveBlockedCallbackNames[callbackName] = nil
+    end
+
+    em:UnregisterForUpdate(callbackName)
+    em:RegisterForUpdate(callbackName, timeToBlock, resetAgain)
+    local args = {...}
+    callback(unpack(args))
 end
 
 function FCOIS.ResetMyGetItemInstanceIdLastVars()
