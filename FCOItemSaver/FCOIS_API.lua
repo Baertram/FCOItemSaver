@@ -2016,7 +2016,7 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons, withNoneEntry)
 				end
 			end
 
-elseif typeToCheck == 'recipe' then
+		elseif typeToCheck == 'recipe' then
 			local counter = 0
 			for i=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
   				local goOn = false

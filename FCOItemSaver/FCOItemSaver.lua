@@ -19,7 +19,7 @@
 ---------------------------------------------------------------------
 
 --____________________________
--- Current max bugs/features/ToDos: 168
+-- Current max bugs/features/ToDos: 172
 --____________________________
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -145,45 +145,51 @@ local function menuVisibleCheck()
 --#154, 2021-08-16, Baertram, bug: Improving an item does not re-apply the improve icon (if quality below gold)
 --#155, 2021-08-17, Baertram, bug: Improving an item does not re-apply the already marked icons
 
---
+--#170, 2021-10-07, sirinsidiator, bug:
+--[[hey. ich hab mit FCOIS seit einer weile das problem, dass ich beim besuch einer crafting station gelockte items sehe, obwohl die eigentlich ausgeblendet wären.
+repro:
+1) crafting station besuchen
+2) crafting station verlassen
+3) crafting station sofort wieder öffnen
+wenn ich das mache, dann sehe ich alle gelockten items bis ich z.b. auf den refine tab und zurück wechsel
+]]
 
 ---------------------------------------------------------------------
 --[ToDo list] --
 --Check for local speed ups. FCOItemSaver.txt was checked until src/FCOIS_Tooltips.lua -> as of 2021-08-18
 --#129: 2021-06-01: Removing all marker icons via the add. inv. "flag" context menu does not remove companion item's marker icons
 --#154: 2021-08-16, Baertram, bug: Improving an item does not re-apply the improve icon (if quality below gold)
---#155: 2021-08-17, Baertram, bug: Improving an item does not re-apply the already marked icons
 --#156: 2021-08-18, Baertram, bug: Enchanting an item does not re-apply the already marked icons (also consider icons that were saved for the items before? add setting for "Check all others")
 --#157: 2021-08-18, Baertram, bug: Character doll ring/weapon marker icons do not update properly (both 2 rings were unequipped via double click or drag and drop: on drag of 1 ring back to the right!!! slot the marker icons do not update, or equip 1 ring to the left and then use double click to equp the 2nd ring to the right slot).
 --And if you drag another ring to a slot where a ring was already equipped the marker icons do neither update all!
 --#158: 2021-08-18, Baertram, bug: Character doll ring/weapon marker icons do not remove all if SHIFT+right click is used on 1 ring (and the 2nd ring is identical)
 
 --#168: 2021-09-19, Baertram, bug: Refinement smithing is not removing items from slot if marker icon is applied (via context menu or keybind)
+--#169: 2021-10-07, Baertram, bug: Refinement smithing/enchanting creation is not filtering the FCOIS filters at first open if AdvancedFilters and FCOCraftFilter are enabled as well
+--     (maybe even not without these enabled). Changing to e.g. enchanting extarction and back to creation fixes this?!
+--#170: 2021-10-07, sirinsidiator, bug: Crafting station re-opens shows locked items (filters do not seem to apply) until e.g. refine tab was opened, and other tab re-opened
+--#171: 2021-08-17, Baertram, bug: Improving an item does not re-apply the already marked icons
 
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
---In progress: Updated last 2021-09-19
---#166: 2021-09-19, Baertram, bug: Guild bank withdraw right click on flag icon/left click to change anti-destroy settings does not work as it tries to change anti-deposit.
---#167: 2021-09-19, Baertram, bug: Anti-* settings control the anti-destroy checks at panels where there is no anti-destroy setting. This was a wrong concept ad anti-destroy and anti-* (e.g guild bank deposit) were separated in the past
+--In progress: Updated last 2021-10-07
+--169
+--170
 
 ---------------------------------------------------------------------
---Since last update 2.2.0 - New version: 2.2.1 -> Changelog updated last: 2021-09-17
+--Since last update 2.2.1 - New version: 2.2.2 -> Changelog updated last: 2021-10-17
 ---------------------------------------------------------------------
 
 --[Fixed]
---#160: 2021-09-06, ESOUI bug panel, EnigmaniteZ: Right clicked "flag" button, left clicked, right clicked again. error! guild bank settings set to: on, on, off.
---#161: 2021-09-16, Baertram: Guild bank deposit "flag" button not updating it's sate color after 1st change (by right mouse click)
---#162: 2021-09-16, Baertram: CraftBag flag icon right click: lua error message due to nil function FCOIS.CheckIfCBEorAGSActive
---#163: 2021-09-16, Baertram: Closing inventory and directly opening banks/vendors/trades will not reset the anti-destroy settings flag settings of normal inventory to "enabled" (if enabled in the settings)
---#164: 2021-09-16, Baertram: Switching from bank deposit to mail send/re-opening mail send after having it used last will not update the flag color properly
---#165: 2021-09-15, Baertram: Mail send flag will only change anti-destroy as it thinks it is the inventory flag, and not the mail send panel
+--#172 Keybindings error if loaded with Gamepad mode active (which is not supported by FCOIS!)
+
 
 --[Changed]
-
+--Removed dependency to LibLoadedAddons
 
 --[Added]
---Additional inventory flag context menu entry to guild bank deposit: Toggle anti-deposit w/o withdraw rights
+
 
 --[Added on request]
 

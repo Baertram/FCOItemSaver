@@ -4,6 +4,10 @@ FCOIS = FCOIS or {}
 if not FCOIS.libsLoadedProperly then return end
 
 local checkIfFCOISSettingsWereLoaded = FCOIS.CheckIfFCOISSettingsWereLoaded
+--Load the user settings, if not done already
+checkIfFCOISSettingsWereLoaded(true)
+--Security check for gamepad mode!
+if not FCOIS.settingsVars or not FCOIS.settingsVars.settings then return end
 
 --Keybinding texts
 
@@ -28,21 +32,22 @@ ZO_CreateStringId("SI_BINDING_NAME_FCOIS_MARK_ITEM_9",                      FCOI
 ZO_CreateStringId("SI_BINDING_NAME_FCOIS_MARK_ITEM_10",                     FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_MARK_ITEM_10", true))
 ZO_CreateStringId("SI_BINDING_NAME_FCOIS_MARK_ITEM_11",                     FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_MARK_ITEM_11", true))
 ZO_CreateStringId("SI_BINDING_NAME_FCOIS_MARK_ITEM_12",                     FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_MARK_ITEM_12", true))
+
 --Junk sell marked items
 --Get the sell marker icon texture and replace the %s placeholder in SI_BINDING_NAME_FCOIS_JUNK_ALL_SELL with it
---Load the user settings, if not done already
-checkIfFCOISSettingsWereLoaded(true)
-local sellIconData = FCOIS.settingsVars.settings.icon[FCOIS_CON_ICON_SELL]
-local sellMarkerIconTextueId = sellIconData.texture
-local sellIconTexture = FCOIS.textureVars.MARKER_TEXTURES[sellMarkerIconTextueId]
-local sellIconTextureText = ""
-if sellIconTexture then
-    --local sellIconColor = sellIconData.color
-    --local sellIconColorDef = ZO_ColorDef:New(sellIconColor.r, sellIconColor.g, sellIconColor.b, sellIconColor.a)
-    --sellIconTextureText = sellIconColorDef:Colorize(zo_iconFormat(sellIconTexture, 24, 24))
-    sellIconTextureText = zo_iconFormat(sellIconTexture, 32, 32)
+if FCOIS.settingsVars.settings.icon then
+    local sellIconData = FCOIS.settingsVars.settings.icon[FCOIS_CON_ICON_SELL]
+    local sellMarkerIconTextueId = sellIconData.texture
+    local sellIconTexture = FCOIS.textureVars.MARKER_TEXTURES[sellMarkerIconTextueId]
+    local sellIconTextureText = ""
+    if sellIconTexture then
+        --local sellIconColor = sellIconData.color
+        --local sellIconColorDef = ZO_ColorDef:New(sellIconColor.r, sellIconColor.g, sellIconColor.b, sellIconColor.a)
+        --sellIconTextureText = sellIconColorDef:Colorize(zo_iconFormat(sellIconTexture, 24, 24))
+        sellIconTextureText = zo_iconFormat(sellIconTexture, 32, 32)
+        ZO_CreateStringId("SI_BINDING_NAME_FCOIS_JUNK_ALL_SELL",                    FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_JUNK_ALL_SELL", true, {sellIconTextureText}))
+    end
 end
-ZO_CreateStringId("SI_BINDING_NAME_FCOIS_JUNK_ALL_SELL",                    FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_JUNK_ALL_SELL", true, {sellIconTextureText}))
 --Mark with sell icon (if enabled in settings) and junk item
 ZO_CreateStringId("SI_BINDING_NAME_FCOIS_JUNK_AND_MARK_SELL_ITEM",          FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_JUNK_AND_MARK_SELL_ITEM", true))
 ZO_CreateStringId("SI_BINDING_NAME_FCOIS_REMOVE_ALL_MARKER_ICONS_AND_UNDO", FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_REMOVE_ALL_MARKER_ICONS_AND_UNDO", true))
