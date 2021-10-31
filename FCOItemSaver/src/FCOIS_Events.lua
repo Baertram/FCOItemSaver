@@ -917,8 +917,6 @@ local function FCOItemSaver_Player_Activated(...)
         --Output missing library text to chat
         local preVars = FCOIS.preChatVars
         local libMissingErrorText = FCOIS.errorTexts["libraryMissing"]
-        --libLoadedAddons
-        if FCOIS.LIBLA == nil then d(preVars.preChatTextRed .. strformat(libMissingErrorText, "LibLoadedAddons")) end
         --LibAddonMenu 2.0
         if FCOIS.LAM == nil then d(preVars.preChatTextRed .. strformat(libMissingErrorText, "LibAddonMenu-2.0")) end
         --LibMainMenu 2.0
@@ -1026,9 +1024,6 @@ local function FCOItemSaver_Loaded(eventCode, addOnName)
             if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[EVENT]", "Addon loading begins...", true, FCOIS_DEBUG_DEPTH_NORMAL) end
             FCOIS.addonVars.gAddonLoaded = false
             FCOIS.preventerVars.gAddonStartupInProgress = true
-
-            -- Registers addon to loadedAddon library LibLoadedAddons
-            FCOIS.LIBLA:RegisterAddon(gAddonName, FCOIS.addonVars.addonVersionOptionsNumber)
 
             --Register for Crafting stations opened & closed (integer eventCode,number craftSkill, boolean sameStation)
             em:RegisterForEvent(gAddonName, EVENT_CRAFTING_STATION_INTERACT, FCOItemSaver_Crafting_Interact)

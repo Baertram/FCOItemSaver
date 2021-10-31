@@ -601,7 +601,8 @@ function FCOIS.CheckIfClearOrRestoreAllMarkers(clickedRow, modifierKeyPressed, u
     --Enable clearing all markers by help of the SHIFT+right click?
     local contextMenuClearMarkesByShiftKey = FCOIS.settingsVars.settings.contextMenuClearMarkesByShiftKey
 --d("[FCOIS.checkIfClearOrRestoreAllMarkers]shiftKey: " ..tostring(IsShiftKeyDown()) .. ", upInside: " .. tostring(upInside) .. ", mouseButton: " .. tostring(mouseButton) .. ", setinGEnabled: " ..tostring(contextMenuClearMarkesByShiftKey))
-    if ( modifierKeyPressed == true and contextMenuClearMarkesByShiftKey ) and  (calledByKeybind == true or (upInside and mouseButton == MOUSE_BUTTON_INDEX_RIGHT))  then
+    if (modifierKeyPressed == true or calledByKeybind == true) and contextMenuClearMarkesByShiftKey
+            and (calledByKeybind == true or (upInside and mouseButton == MOUSE_BUTTON_INDEX_RIGHT))  then
         refreshPopupDialogButons = refreshPopupDialogButons or false
         -- make sure control contains an item
         local bagId, slotIndex = myGetItemDetails(clickedRow)

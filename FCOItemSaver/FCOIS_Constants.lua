@@ -10,8 +10,8 @@ local strlen = string.len
 FCOIS.addonVars = {}
 local addonVars = FCOIS.addonVars
 --Addon variables
-addonVars.addonVersionOptions 		    = '2.2.1' -- version shown in the settings panel
-addonVars.addonVersionOptionsNumber	    = 2.21
+addonVars.addonVersionOptions 		    = '2.2.2' -- version shown in the settings panel
+addonVars.addonVersionOptionsNumber	    = 2.22
 --The addon name, normal and decorated with colors etc.
 addonVars.gAddonName				    = "FCOItemSaver"
 addonVars.gAddonNameShort               = "FCOIS"
@@ -125,10 +125,6 @@ FCOIS.libsLoadedProperly = false
 
 local preVars = FCOIS.preChatVars
 local libMissingErrorText = FCOIS.errorTexts["libraryMissing"]
-
---Load libLoadedAddons
-FCOIS.LIBLA = LibLoadedAddons
-if FCOIS.LIBLA == nil then d(preVars.preChatTextRed .. strformat(libMissingErrorText, "LibLoadedAddons")) return end
 
 --Initiliaze the library LibCustomMenu
 if LibCustomMenu then FCOIS.LCM = LibCustomMenu else d(preVars.preChatTextRed .. strformat(libMissingErrorText, "LibCustomMenu")) return end
