@@ -1389,7 +1389,7 @@ function FCOIS.CreateHooks()
         hideContextMenu(FCOIS.gFilterWhere)
 
         if settings.debug then FCOIS.debugMessage( "[SMITHING:SetMode]","Mode: " .. tostring(mode), true, FCOIS_DEBUG_DEPTH_NORMAL) end
-d("[FCOIS]smithingSetModeHook-mode: " ..tostring(mode) .. ", filterPanel: " ..tostring(FCOIS.gFilterWhere))
+--d("[FCOIS]smithingSetModeHook-mode: " ..tostring(mode) .. ", filterPanel: " ..tostring(FCOIS.gFilterWhere))
         if not mode then return end
 
         --Get the filter panel ID by crafting type (to distinguish jewelry crafting and normal)
