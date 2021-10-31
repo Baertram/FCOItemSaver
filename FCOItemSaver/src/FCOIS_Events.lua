@@ -483,7 +483,7 @@ end
 
 --event handler for EVENT_CRAFT_COMPLETED
 local function FCOItemSaver_Craft_Completed(eventId, craftSkill)
-d("[FCOIS] EVENT CraftCompleted - newItemCrafted: " .. tostring(FCOIS.preventerVars.newItemCrafted))
+--d("[FCOIS] EVENT CraftCompleted - newItemCrafted: " .. tostring(FCOIS.preventerVars.newItemCrafted))
     --Reset the variable to know if an item is getting into our bag after crafting complete
     FCOIS.preventerVars.newItemCrafted = false
     FCOIS.preventerVars.createdMasterWrit = nil
@@ -504,14 +504,14 @@ local function FCOItemSaver_Craft_Started(_, craftSkill)
     em:RegisterForEvent(gAddonName, EVENT_CRAFT_COMPLETED,  FCOItemSaver_Craft_Completed)
     em:RegisterForEvent(gAddonName, EVENT_CRAFT_FAILED,     FCOItemSaver_Craft_Failed)
 
-d("[FCOIS] EVENT CraftStarted - craftSkill: " .. tostring(craftSkill))
+--d("[FCOIS] EVENT CraftStarted - craftSkill: " .. tostring(craftSkill))
     --Check if new crafted item should be marked with the "crafted" marker icon
     checkIfCraftedItemShouldBeMarked(craftSkill)
 
     --Check if item get's improved and if the marker icons from before improvement should be remembered
     resetImprovementVarsForReMark()
     if checkIfIsImprovableCraftSkill(craftSkill) == true then
-d(">>is improvable craftskill")
+--d(">>is improvable craftskill")
         checkIfImprovedItemShouldBeReMarked_BeforeImprovement()
     end
 end
