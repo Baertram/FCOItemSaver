@@ -19,7 +19,7 @@
 ---------------------------------------------------------------------
 
 --____________________________
--- Current max bugs/features/ToDos: 172
+-- Current max bugs/features/ToDos: 174
 --____________________________
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -158,7 +158,6 @@ wenn ich das mache, dann sehe ich alle gelockten items bis ich z.b. auf den refi
 --[ToDo list] --
 --Check for local speed ups. FCOItemSaver.txt was checked until src/FCOIS_Tooltips.lua -> as of 2021-08-18
 --#129: 2021-06-01: Removing all marker icons via the add. inv. "flag" context menu does not remove companion item's marker icons
---#154: 2021-08-16, Baertram, bug: Improving an item does not re-apply the improve icon (if quality below gold)
 --#156: 2021-08-18, Baertram, bug: Enchanting an item does not re-apply the already marked icons (also consider icons that were saved for the items before? add setting for "Check all others")
 --#157: 2021-08-18, Baertram, bug: Character doll ring/weapon marker icons do not update properly (both 2 rings were unequipped via double click or drag and drop: on drag of 1 ring back to the right!!! slot the marker icons do not update, or equip 1 ring to the left and then use double click to equp the 2nd ring to the right slot).
 --And if you drag another ring to a slot where a ring was already equipped the marker icons do neither update all!
@@ -168,25 +167,29 @@ wenn ich das mache, dann sehe ich alle gelockten items bis ich z.b. auf den refi
 --#169: 2021-10-07, Baertram, bug: Refinement smithing/enchanting creation is not filtering the FCOIS filters at first open if AdvancedFilters and FCOCraftFilter are enabled as well
 --     (maybe even not without these enabled). Changing to e.g. enchanting extarction and back to creation fixes this?!
 --#170: 2021-10-07, sirinsidiator, bug: Crafting station re-opens shows locked items (filters do not seem to apply) until e.g. refine tab was opened, and other tab re-opened
---#171: 2021-08-17, Baertram, bug: Improving an item does not re-apply the already marked icons
-
+--#174: 2021-10-31, Baertram, bug: If Iventory Insight from Ashes is enabled: Select "All" tab or any tab where items are shown which are on other characters. Find one item on another char
+--                                 having any iocn set e.g. "sell". Right click it remove the sell icon, and then set it again. Sometimes the worn items and inventory (maybe all items somehow)
+--                                 now show the removed/applied marker icon "sell" on them?!
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
---In progress: Updated last 2021-10-07
---169
---170
+--In progress: Updated last 2021-10-25
 
 ---------------------------------------------------------------------
---Since last update 2.2.1 - New version: 2.2.2 -> Changelog updated last: 2021-10-17
+--Since last update 2.2.2 - New version: 2.2.3 -> Changelog updated last: 2021-10-31
 ---------------------------------------------------------------------
 
 --[Fixed]
---#172 Keybindings error if loaded with Gamepad mode active (which is not supported by FCOIS!)
+--#154: Improving an item does not re-apply the improve icon (if quality below legendary)
+--#168: Refinement smithing is not removing items from slot if marker icon is applied (via context menu or keybind)
+--#169: First open of refinement/enchanting will not filter the filters properly
+--#170: Re-opening craft station will not apply filters properly
+--#171: Improving an item does not re-apply the already marked icons. Though the inventory shows the before applied marker icons until you scroll -> then they are gone
+--#173 Keybind for "RemoveAll"/"UndoAll" was not working if modifier key (e.g. SHIFT key) for <modifierKey>+RightMouseButton (FCOIS settings) was not used in the keybind too
 
 
 --[Changed]
---Removed dependency to LibLoadedAddons
+
 
 --[Added]
 

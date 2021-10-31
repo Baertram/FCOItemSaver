@@ -464,11 +464,11 @@ end
 local function unregisterCraftStartedEvents()
     em:UnregisterForEvent(gAddonName, EVENT_CRAFT_COMPLETED)
     em:UnregisterForEvent(gAddonName, EVENT_CRAFT_FAILED)
-    resetImprovementVarsForReMark()
 end
 
 local function FCOItemSaver_Craft_Failed(eventId, craftSkill)
     unregisterCraftStartedEvents()
+    resetImprovementVarsForReMark()
 end
 
 
@@ -476,13 +476,14 @@ end
 local function FCOItemSaver_End_Crafting_Interact()
     if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[EVENT]","End crafting", true, FCOIS_DEBUG_DEPTH_NORMAL) end
     unregisterCraftStartedEvents()
+    resetImprovementVarsForReMark()
 
     onClosePanel(FCOIS.gFilterWhere, LF_INVENTORY, "CRAFTING_STATION")
 end
 
 --event handler for EVENT_CRAFT_COMPLETED
 local function FCOItemSaver_Craft_Completed(eventId, craftSkill)
-    --d("[FCOIS] EVENT CraftCompleted - newItemCrafted: " .. tostring(FCOIS.preventerVars.newItemCrafted))
+--d("[FCOIS] EVENT CraftCompleted - newItemCrafted: " .. tostring(FCOIS.preventerVars.newItemCrafted))
     --Reset the variable to know if an item is getting into our bag after crafting complete
     FCOIS.preventerVars.newItemCrafted = false
     FCOIS.preventerVars.createdMasterWrit = nil
@@ -491,6 +492,8 @@ local function FCOItemSaver_Craft_Completed(eventId, craftSkill)
     --Check if item got improved and if the marker icons from before improvement should be re-marked on the improved item
     if checkIfIsImprovableCraftSkill(craftSkill) == true then
         checkIfImprovedItemShouldBeReMarked_AfterImprovement()
+    else
+        resetImprovementVarsForReMark()
     end
 
     unregisterCraftStartedEvents()
@@ -508,12 +511,14 @@ local function FCOItemSaver_Craft_Started(_, craftSkill)
     --Check if item get's improved and if the marker icons from before improvement should be remembered
     resetImprovementVarsForReMark()
     if checkIfIsImprovableCraftSkill(craftSkill) == true then
+--d(">>is improvable craftskill")
         checkIfImprovedItemShouldBeReMarked_BeforeImprovement()
     end
 end
 
 --Event upon opening of a crafting station
 local function FCOItemSaver_Crafting_Interact(_, craftSkill)
+--d("[FCOIS]EVENT_CRAFTING_STATION_INTERACT-craftSkill: " ..tostring(craftSkill))
     FCOIS.preventerVars.gActiveFilterPanel = true
     --em:RegisterForEvent(gAddonName, EVENT_END_CRAFTING_STATION_INTERACT, FCOItemSaver_End_Crafting_Interact)
 
@@ -943,7 +948,7 @@ local function FCOItemSaver_Player_Activated(...)
 
         --Map the LibFilters panel IDs to their filter functions
         --> See file src/FCOIS_Filters.lua, function "FCOIS.mapLibFiltersIds2FilterFunctionsNow()"
-        FCOIS.mapLibFiltersIds2FilterFunctionsNow()
+        FCOIS.MapLibFiltersIds2FilterFunctionsNow()
 
         --Add/update the filter buttons, but only if not done already in addon initialization
         if FCOIS.addonVars.gAddonLoaded == false then

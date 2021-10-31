@@ -6,15 +6,17 @@ if not FCOIS.libsLoadedProperly then return end
 
 local debugMessage = FCOIS.debugMessage
 
+local numVars = FCOIS.numVars
+local mappingVars = FCOIS.mappingVars
 local activeFilterPanelIds = FCOIS.mappingVars.activeFilterPanelIds
-local numFilters = FCOIS.numVars.gFCONumFilters
+local numFilters = numVars.gFCONumFilters
 local numFilterInventoryTypes = FCOIS.numVars.gFCONumFilterInventoryTypes
 
 --The local libFilters v2.x library instance
 local libFilters = FCOIS.libFilters
 
 --The filter string names for each ID
-local filterIds2Name = FCOIS.mappingVars.libFiltersIds2StringPrefix
+local filterIds2Name = mappingVars.libFiltersIds2StringPrefix
 
 local getFilterWhereBySettings = FCOIS.GetFilterWhereBySettings
 local getSettingsIsFilterOn = FCOIS.GetSettingsIsFilterOn
@@ -431,21 +433,21 @@ end
 
 --Helper function for method FCOIS.registerFilters
 local function registerFilterId(p_onlyPlayerInvFilter, p_filterId, p_panelId)
-    --Get the current LAF (filter type, e.g. LF_INVENTORY, LF_BANK_WITHDRAW, etc.)
-    --local lf = libFilters:GetCurrentLAF()
-
+--d("[FCOIS]registerFilterId - filterId: " ..tostring(p_filterId) .. ", panelId: " ..tostring(p_panelId) .. ", onlyPlayerInv: " ..tostring(p_onlyPlayerInvFilter))
     --Only register inventory filters?
     if (p_onlyPlayerInvFilter == true or p_panelId == LF_INVENTORY) then
         --Player inventory -> Only if activated in settings
         FilterPlayerInventory(p_filterId, p_panelId)
     else
         local settings = FCOIS.settingsVars.settings
+        --Debugging
+        --local isFilteringAtPanelEnabledBefore = settings.atPanelEnabled[p_panelId]["filters"] or false
         --Is the setting for the filter on? Check and update variable
         getFilterWhereBySettings(p_panelId, false)
         --Read the variable now
         local isFilteringAtPanelEnabled = settings.atPanelEnabled[p_panelId]["filters"] or false
         --Get the filter function now
-        local filterFunctions = FCOIS.mappingVars.libFiltersId2filterFunction
+        local filterFunctions = mappingVars.libFiltersId2filterFunction
         local filterFunction = filterFunctions[p_panelId]
         local filterIdStringPrefix = filterIds2Name[p_panelId] or filterIds2Name[FCOIS_CON_LIBFILTERS_STRING_PREFIX_BACKUP_ID]
         --Security checks
@@ -459,8 +461,11 @@ local function registerFilterId(p_onlyPlayerInvFilter, p_filterId, p_panelId)
         end
         --(Re)register the filter function at the panel_id now
         local filterString = filterIdStringPrefix .. tostring(p_panelId) .. "_" .. tostring(p_filterId)
-        if(not libFilters:IsFilterRegistered(filterString)) then
+--d(">filterEnabledBefore: " ..tostring(isFilteringAtPanelEnabledBefore) .. ", enabledNow: " ..tostring(isFilteringAtPanelEnabled) .. ", filterName: " ..filterString)
+        if not libFilters:IsFilterRegistered(filterString) then
             libFilters:RegisterFilter(filterString, p_panelId, filterFunction)
+--       else
+--d(">>>Filter is already registered!")
         end
     end
 end
@@ -505,38 +510,71 @@ function FCOIS.registerFilters(filterId, onlyPlayerInvFilter, p_FilterPanelId)
 end
 
 --Function to fill the filter functions for each LibFilters panel ID
-function FCOIS.mapLibFiltersIds2FilterFunctionsNow()
-    FCOIS.mappingVars.libFiltersId2filterFunction = {
-        --Filter function with inventorySlot
-        [LF_INVENTORY]                              = FilterSavedItemsForSlot,
-        [LF_BANK_WITHDRAW]                          = FilterSavedItemsForSlot,
-        [LF_BANK_DEPOSIT]                           = FilterSavedItemsForSlot,
-        [LF_GUILDBANK_WITHDRAW]                     = FilterSavedItemsForSlot,
-        [LF_GUILDBANK_DEPOSIT]                      = FilterSavedItemsForSlot,
-        [LF_VENDOR_SELL]                            = FilterSavedItemsForSlot,
-        [LF_GUILDSTORE_SELL]                        = FilterSavedItemsForSlot,
-        [LF_MAIL_SEND]                              = FilterSavedItemsForSlot,
-        [LF_TRADE]                                  = FilterSavedItemsForSlot,
-        [LF_FENCE_SELL]                             = FilterSavedItemsForSlot,
-        [LF_FENCE_LAUNDER]                          = FilterSavedItemsForSlot,
-        [LF_CRAFTBAG]                               = FilterSavedItemsForSlot,
-        [LF_HOUSE_BANK_WITHDRAW]                    = FilterSavedItemsForSlot,
-        [LF_HOUSE_BANK_DEPOSIT]                     = FilterSavedItemsForSlot,
-        [LF_INVENTORY_COMPANION]                    = FilterSavedItemsForSlot,
-        --Filter function with bagId and slotIndex
-        [LF_SMITHING_REFINE]                        = FilterSavedItemsForBagIdAndSlotIndex,
-        [LF_SMITHING_DECONSTRUCT]                   = FilterSavedItemsForBagIdAndSlotIndex,
-        [LF_SMITHING_IMPROVEMENT]                   = FilterSavedItemsForBagIdAndSlotIndex,
-        [LF_SMITHING_RESEARCH]                      = FilterSavedItemsForBagIdAndSlotIndex,
-        [LF_SMITHING_RESEARCH_DIALOG]               = FilterSavedItemsForBagIdAndSlotIndex,
-        [LF_JEWELRY_REFINE]                         = FilterSavedItemsForBagIdAndSlotIndex,
-        [LF_JEWELRY_DECONSTRUCT]                    = FilterSavedItemsForBagIdAndSlotIndex,
-        [LF_JEWELRY_IMPROVEMENT]                    = FilterSavedItemsForBagIdAndSlotIndex,
-        [LF_JEWELRY_RESEARCH]                       = FilterSavedItemsForBagIdAndSlotIndex,
-        [LF_JEWELRY_RESEARCH_DIALOG]                = FilterSavedItemsForBagIdAndSlotIndex,
-        [LF_ENCHANTING_CREATION]                    = FilterSavedItemsForBagIdAndSlotIndex,
-        [LF_ENCHANTING_EXTRACTION]                  = FilterSavedItemsForBagIdAndSlotIndex,
-        [LF_RETRAIT]                                = FilterSavedItemsForBagIdAndSlotIndex,
-        [LF_ALCHEMY_CREATION]                       = FilterSavedItemsForBagIdAndSlotIndex,
-    }
+function FCOIS.MapLibFiltersIds2FilterFunctionsNow()
+    FCOIS.mappingVars.libFiltersId2filterFunction = {}
+    local filterTypesUsingInventorySlotFilterFunction = {}
+    local filterTypesUsingBagIdAndSlotIndexFilterFunction = {}
+
+    --Dynamic code for LibFilters-3.0 version >= r3.0
+    local libFiltersMapping = FCOIS.libFilters.mapping
+    if libFiltersMapping then
+        filterTypesUsingInventorySlotFilterFunction =     libFiltersMapping.filterTypesUsingInventorySlotFilterFunction
+        filterTypesUsingBagIdAndSlotIndexFilterFunction = libFiltersMapping.filterTypesUsingBagIdAndSlotIndexFilterFunction
+    else
+        --Fixed code for LibFilters-3.0 version < r3.0
+        --Using function FilterSavedItemsForSlot
+        filterTypesUsingInventorySlotFilterFunction = {
+            [LF_INVENTORY]                              = true,
+            [LF_BANK_WITHDRAW]                          = true,
+            [LF_BANK_DEPOSIT]                           = true,
+            [LF_GUILDBANK_WITHDRAW]                     = true,
+            [LF_GUILDBANK_DEPOSIT]                      = true,
+            [LF_VENDOR_SELL]                            = true,
+            [LF_GUILDSTORE_SELL]                        = true,
+            [LF_MAIL_SEND]                              = true,
+            [LF_TRADE]                                  = true,
+            [LF_FENCE_SELL]                             = true,
+            [LF_FENCE_LAUNDER]                          = true,
+            [LF_CRAFTBAG]                               = true,
+            [LF_HOUSE_BANK_WITHDRAW]                    = true,
+            [LF_HOUSE_BANK_DEPOSIT]                     = true,
+            [LF_INVENTORY_COMPANION]                    = true,
+        }
+        --Using function FilterSavedItemsForBagIdAndSlotIndex
+        filterTypesUsingBagIdAndSlotIndexFilterFunction = {
+            [LF_SMITHING_REFINE]                        = true,
+            [LF_SMITHING_DECONSTRUCT]                   = true,
+            [LF_SMITHING_IMPROVEMENT]                   = true,
+            [LF_SMITHING_RESEARCH]                      = true,
+            [LF_SMITHING_RESEARCH_DIALOG]               = true,
+            [LF_JEWELRY_REFINE]                         = true,
+            [LF_JEWELRY_DECONSTRUCT]                    = true,
+            [LF_JEWELRY_IMPROVEMENT]                    = true,
+            [LF_JEWELRY_RESEARCH]                       = true,
+            [LF_JEWELRY_RESEARCH_DIALOG]                = true,
+            [LF_ENCHANTING_CREATION]                    = true,
+            [LF_ENCHANTING_EXTRACTION]                  = true,
+            [LF_RETRAIT]                                = true,
+            [LF_ALCHEMY_CREATION]                       = true,
+        }
+    end
+
+    if filterTypesUsingInventorySlotFilterFunction then
+        for filterPanelId, isUsing in pairs(filterTypesUsingInventorySlotFilterFunction) do
+            if isUsing then
+                FCOIS.mappingVars.libFiltersId2filterFunction[filterPanelId] = FilterSavedItemsForSlot
+            end
+        end
+    else
+        d("[FCOIS]ERROR - Filter function for filter types using inventorySlots were not found!")
+    end
+    if filterTypesUsingBagIdAndSlotIndexFilterFunction then
+        for filterPanelId, isUsing in pairs(filterTypesUsingBagIdAndSlotIndexFilterFunction) do
+            if isUsing then
+                FCOIS.mappingVars.libFiltersId2filterFunction[filterPanelId] = FilterSavedItemsForBagIdAndSlotIndex
+            end
+        end
+    else
+        d("[FCOIS]ERROR - Filter function for filter types using bagId&slotIndex were not found!")
+    end
 end

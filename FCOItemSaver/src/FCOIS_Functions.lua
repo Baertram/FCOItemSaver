@@ -16,6 +16,7 @@ local zo_strf = zo_strformat
 
 local checkVars = FCOIS.checkVars
 local inventoryRowPatterns = checkVars.inventoryRowPatterns
+local updateCraftingInventory = FCOIS.UpdateCraftingInventory --maybe nil here, will be updated further down in function FCOIS.CheckIfImprovedItemShouldBeReMarked_AfterImprovement()
 
 --==========================================================================================================================================
 --                                          FCOIS - Base & helper functions
@@ -2055,6 +2056,7 @@ end
 
 --Improvement--
 function FCOIS.ResetImprovementVarsForReMark()
+--d("[FCOIS]ResetImprovementVarsForReMark")
     FCOIS.improvementVars.improvementBagId = nil
     FCOIS.improvementVars.improvementSlotIndex = nil
     FCOIS.improvementVars.improvementMarkedIcons = nil
@@ -2069,21 +2071,25 @@ end
 --Check if item get's improved and if the marker icons from before improvement should be remembered
 --Start function to remmeber the marker icons before improvement
 function FCOIS.CheckIfImprovedItemShouldBeReMarked_BeforeImprovement()
+--d("[FCOIS]CheckIfImprovedItemShouldBeReMarked_BeforeImprovement")
     --Clear the remembered improvement marker icons
     resetImprovementVarsForReMark()
     if not FCOIS.settingsVars.settings.reApplyIconsAfterImprovement then return end
     --Are we at smithing improvement
-    if ctrlVars.IMPROVEMENT_INV:IsHidden() or ctrlVars.IMPROVEMENT_SLOT == nil then
+    local improvementSlot = ctrlVars.IMPROVEMENT_SLOT
+    if ctrlVars.IMPROVEMENT_INV:IsHidden() or improvementSlot == nil then
         return false
     end
+--d(">current item to improve: " .. GetItemLink(improvementSlot.bagId, improvementSlot.slotIndex))
     --Remember the bagId and slotIndex of the slotted item that will be improved
-    FCOIS.improvementVars.improvementBagId		= ctrlVars.IMPROVEMENT_SLOT.bagId
-    FCOIS.improvementVars.improvementSlotIndex	= ctrlVars.IMPROVEMENT_SLOT.slotIndex
+    FCOIS.improvementVars.improvementBagId		= improvementSlot.bagId
+    FCOIS.improvementVars.improvementSlotIndex	= improvementSlot.slotIndex
 
     --Check if the item is marked with several icons
     local impVars = FCOIS.improvementVars
     local isMarked, markedIcons = FCOIS.IsMarked(impVars.improvementBagId, impVars.improvementSlotIndex, -1)
     if isMarked == true then
+--d(">>item was marked")
         FCOIS.improvementVars.improvementMarkedIcons = markedIcons
     end
 end
@@ -2091,6 +2097,7 @@ end
 --Check if item get's improved and if the marker icons from before improvement should be remembered
 --End function to re-mark the marker icons after improvement
 function FCOIS.CheckIfImprovedItemShouldBeReMarked_AfterImprovement()
+--d("[FCOIS]CheckIfImprovedItemShouldBeReMarked_AfterImprovement")
     if not FCOIS.settingsVars.settings.reApplyIconsAfterImprovement then return end
     --Only at smithing improvement
     if ctrlVars.IMPROVEMENT_INV:IsHidden() then return false end
@@ -2099,31 +2106,47 @@ function FCOIS.CheckIfImprovedItemShouldBeReMarked_AfterImprovement()
             or impVars.improvementMarkedIcons == nil or #impVars.improvementMarkedIcons <= 0 then
         --Reset the remembered improvement marker icons
         resetImprovementVarsForReMark()
+        --d("<nothing to remark after improvement - abort")
         return false
     end
-    --For each marked icon of the currently improved item:
-    --Set the icons/markers of the previous item again (-> copy marker icons from before improvement to the improved item)
-    local bagId, slotIndex = impVars.improvementBagId, impVars.improvementSlotIndex
-    for iconId, iconIsMarked in pairs(impVars.improvementMarkedIcons) do
-        if iconIsMarked == true then
-            local doRemarkThisMarkerIcon = true
-            --Is the item the FCOIS improve marker icon?
-            if iconId == FCOIS_CON_ICON_IMPROVEMENT then
-                --Is the item already at the maximum quality?
-                local itemQuality = GetItemFunctionalQuality(bagId, slotIndex)
-                if itemQuality and itemQuality >= ITEM_FUNCTIONAL_QUALITY_LEGENDARY then
-                    --Then do not re-apply this marker icon!
-                    doRemarkThisMarkerIcon = false
+
+    --Delay the call here in order to re-mark the item after the quality has changed and the item's itemLink and data
+    --was rebuild so that the marker icons will apply to the correct itemInstance or uniqueId
+    zo_callLater(function()
+        --For each marked icon of the currently improved item:
+        --Set the icons/markers of the previous item again (-> copy marker icons from before improvement to the improved item)
+        local bagId, slotIndex = impVars.improvementBagId, impVars.improvementSlotIndex
+        local iconsRemarked = 0
+        for iconId, iconIsMarked in pairs(impVars.improvementMarkedIcons) do
+            if iconIsMarked == true then
+                local doRemarkThisMarkerIcon = true
+                --Is the item the FCOIS improve marker icon?
+                if iconId == FCOIS_CON_ICON_IMPROVEMENT then
+                    --Is the item already at the maximum quality?
+                    local itemQuality = GetItemFunctionalQuality(bagId, slotIndex)
+                    if itemQuality and itemQuality >= ITEM_FUNCTIONAL_QUALITY_LEGENDARY then
+                        --Then do not re-apply this marker icon!
+                        doRemarkThisMarkerIcon = false
+                    end
+                end
+    --d(">icon: " ..tostring(iconId) .. ", doRemarkThisMarkerIcon: " ..tostring(doRemarkThisMarkerIcon))
+                if doRemarkThisMarkerIcon == true then
+                    --Inventory update will be automatcally done after each improvement of an item
+                    FCOIS.MarkItem(bagId, slotIndex, iconId, true, false)
+                    iconsRemarked = iconsRemarked + 1
                 end
             end
-            if doRemarkThisMarkerIcon == true then
-                --Inventory update will be automatcally done after each improvement of an item
-                FCOIS.MarkItem(bagId, slotIndex, iconId, true, false)
-            end
         end
-    end
-    --Reset the improvement remember variables again
-    resetImprovementVarsForReMark()
+        --Reset the improvement remember variables again
+        resetImprovementVarsForReMark()
+
+        --Refresh the crafting inventory now
+        if iconsRemarked > 0 then
+    --d(">>reMarked icons: " ..tostring(iconsRemarked))
+            updateCraftingInventory = updateCraftingInventory or FCOIS.UpdateCraftingInventory
+            updateCraftingInventory()
+        end
+    end, 2000)
 end
 
 --Enchanting of items in your inventory

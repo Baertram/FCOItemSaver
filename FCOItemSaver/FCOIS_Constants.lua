@@ -739,6 +739,12 @@ mappingVars.panelIdToDeconstructable = {
     -->panelIds (from table mappingVars.activeFilterPanelIds above) as key, and the value = false
 }
 
+--FilterPanelIds which need the FCOIS.RefreshListDialog function
+mappingVars.filterPanelIdForRefreshDialog = {
+    [LF_SMITHING_RESEARCH_DIALOG] = true,
+    [LF_JEWELRY_RESEARCH_DIALOG] =  true,
+}
+
 --The mapping array between LibFilters IDs to their filter name string "prefix"
 FCOIS_CON_LIBFILTERS_STRING_PREFIX_BACKUP_ID    = 0
 FCOIS_CON_LIBFILTERS_STRING_PREFIX_FCOIS        = addonVars.gAddonNameShort .. "_"

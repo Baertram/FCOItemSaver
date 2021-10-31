@@ -158,11 +158,12 @@ local hideAdditionalInventoryFlagContextMenu = FCOIS.hideAdditionalInventoryFlag
 --Function that close the context-menu (if for example the user closes the inventory without
 --choosing a option on the context-menu)
 --This function also closes the filter button context-menus
+local hideContextMenu
 function FCOIS.HideContextMenu(whichContextMenu)
 --d("[FCOIS] FCOIS.hideContextMenu - whichContextMenu: " .. tostring(whichContextMenu))
     --Hide the context menus at the filter buttons
     if whichContextMenu == nil or whichContextMenu == -1 then
-        FCOIS.HideContextMenu(FCOIS.gFilterWhere)
+        hideContextMenu(FCOIS.gFilterWhere)
     else
         local contextMenu = FCOIS.contextMenu
         --Hide the lock & dynamic (LOCKDYN) split filter button context-menu
@@ -193,7 +194,7 @@ function FCOIS.HideContextMenu(whichContextMenu)
     --Hide the context menu at the additional inventory flag button, if visible
     hideAdditionalInventoryFlagContextMenu()
 end
-local hideContextMenu = FCOIS.HideContextMenu
+hideContextMenu = FCOIS.HideContextMenu
 
 
 --========= Normal context menus =================================

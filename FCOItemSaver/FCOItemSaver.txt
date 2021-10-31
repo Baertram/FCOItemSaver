@@ -1,15 +1,15 @@
 #
 ## Title: |c00FF00FCO |cFFFF00ItemSaver|t32:32:FCOItemSaver/FCOIS.dds|t
 ## Author: Baertram
-## Version: 2.2.2
-## AddOnVersion: 222
+## Version: 2.2.3
+## AddOnVersion: 223
 ## APIVersion: 101031 101032
 ## Description: FCOIS |t32:32:FCOItemSaver/FCOIS.dds|t Marks your items with different icons and filters them in the inventories/crafting. Protects your marked items against sell/deconstruct/extract etc., and provides many more features!
 ## SavedVariables: FCOItemSaver_Settings
 # !!! Attention !!! -> 1 line here can only contain ~220 characters, so the depency lines need to be split up, or they won't be recognized properly!
 #
-## DependsOn: LibAddonMenu-2.0>=32 LibCustomMenu>=695 LibDialog>=123 LibFeedback LibFilters-3.0>=321
-## DependsOn: LibMainMenu-2.0>=436 LibShifterBox>=17 LibSets>=000209 LibAddonMenuOrderListBox
+## DependsOn: LibAddonMenu-2.0>=32 LibCustomMenu>=712 LibDialog>=123 LibFeedback LibFilters-3.0>=322
+## DependsOn: LibMainMenu-2.0>=40400 LibShifterBox>=17 LibSets>=000306 LibAddonMenuOrderListBox
 ##
 ## OptionalDependsOn: LibDebugLogger>=200 LibLazyCrafting>=3000
 ## OptionalDependsOn: LibMultiAccountSets>=10

@@ -28,6 +28,7 @@ local isItemAlreadyBound = FCOIS.IsItemAlreadyBound
 local getItemSaverControl = FCOIS.GetItemSaverControl
 local createToolTip = FCOIS.CreateToolTip
 
+local clearOrRestoreAllMarkers
 
 -- =====================================================================================================================
 --  Other AddOns helper functions
@@ -600,8 +601,9 @@ function FCOIS.CheckIfClearOrRestoreAllMarkers(clickedRow, modifierKeyPressed, u
     calledByKeybind = calledByKeybind or false
     --Enable clearing all markers by help of the SHIFT+right click?
     local contextMenuClearMarkesByShiftKey = FCOIS.settingsVars.settings.contextMenuClearMarkesByShiftKey
---d("[FCOIS.checkIfClearOrRestoreAllMarkers]shiftKey: " ..tostring(IsShiftKeyDown()) .. ", upInside: " .. tostring(upInside) .. ", mouseButton: " .. tostring(mouseButton) .. ", setinGEnabled: " ..tostring(contextMenuClearMarkesByShiftKey))
-    if ( modifierKeyPressed == true and contextMenuClearMarkesByShiftKey ) and  (calledByKeybind == true or (upInside and mouseButton == MOUSE_BUTTON_INDEX_RIGHT))  then
+--d("[FCOIS.checkIfClearOrRestoreAllMarkers]shiftKey: " ..tostring(IsShiftKeyDown()) .. ", upInside: " .. tostring(upInside) .. ", mouseButton: " .. tostring(mouseButton) .. ", settingEnabled: " ..tostring(contextMenuClearMarkesByShiftKey) .. ", modifierKeyPressed: " ..tostring(modifierKeyPressed) .. ", calledByKeybind: " ..tostring(calledByKeybind))
+    if (modifierKeyPressed == true or calledByKeybind == true) and contextMenuClearMarkesByShiftKey
+            and (calledByKeybind == true or (upInside and mouseButton == MOUSE_BUTTON_INDEX_RIGHT))  then
         refreshPopupDialogButons = refreshPopupDialogButons or false
         -- make sure control contains an item
         local bagId, slotIndex = myGetItemDetails(clickedRow)
@@ -614,7 +616,7 @@ function FCOIS.CheckIfClearOrRestoreAllMarkers(clickedRow, modifierKeyPressed, u
             end
 --d("[FCOIS]checkIfClearOrRestoreAllMarkers - dontShowInvContextMenu: true")
             --Clear/Restore the markers now
-            FCOIS.ClearOrRestoreAllMarkers(clickedRow, bagId, slotIndex)
+            clearOrRestoreAllMarkers(clickedRow, bagId, slotIndex)
             if refreshPopupDialogButons then
                 --Unselect the item and disable the button of the popup dialog again
 --d("[FCOIS]checkIfClearOrRestoreAllMarkers - refreshPopupDialog now")
@@ -635,6 +637,7 @@ function FCOIS.CheckIfClearOrRestoreAllMarkers(clickedRow, modifierKeyPressed, u
         end
     end
 end
+local checkIfClearOrRestoreAllMarkers = FCOIS.CheckIfClearOrRestoreAllMarkers
 
 --Called per keybind: Get the current row the mouse is above and then remove or restore all marker icons
 function FCOIS.RemoveAllMarkerIconsOrUndo()
@@ -645,7 +648,7 @@ function FCOIS.RemoveAllMarkerIconsOrUndo()
         local isModifierKeyPressed = FCOIS.IsModifierKeyPressed(contextMenuClearMarkesKey)
         local refreshPopupDialogButons = FCOIS.preventerVars.isZoDialogContextMenu
 --d(">mouseOverControl: " ..tostring(mouseOverControl:GetName()) ..", isModifierKeyPressed: " .. tostring(isModifierKeyPressed) .. ", refreshPopupDialogButons: " ..tostring(refreshPopupDialogButons))
-        FCOIS.CheckIfClearOrRestoreAllMarkers(mouseOverControl, isModifierKeyPressed, nil, nil, refreshPopupDialogButons, true) -- calledByKeybind = true
+        checkIfClearOrRestoreAllMarkers(mouseOverControl, isModifierKeyPressed, nil, nil, refreshPopupDialogButons, true) -- calledByKeybind = true
     end
 end
 
@@ -1419,3 +1422,4 @@ function FCOIS.ClearOrRestoreAllMarkers(rowControl, bagId, slotIndex)
     FCOIS.preventerVars.gRestoringMarkerIcons = false
     FCOIS.preventerVars.gClearingMarkerIcons = false
 end
+clearOrRestoreAllMarkers = FCOIS.ClearOrRestoreAllMarkers
