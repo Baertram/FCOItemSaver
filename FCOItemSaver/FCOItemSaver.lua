@@ -176,14 +176,14 @@ wenn ich das mache, dann sehe ich alle gelockten items bis ich z.b. auf den refi
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
 --In progress: Updated last 2021-10-07
---169
---170
 
 ---------------------------------------------------------------------
 --Since last update 2.2.2 - New version: 2.2.3 -> Changelog updated last: 2021-10-31
 ---------------------------------------------------------------------
 
 --[Fixed]
+--#169 First open of refinement/enchanting will not filter the filters properly
+--#170 Re-opening craft station will not apply filters properly
 --#173 Keybind for "RemoveAll"/"UndoAll" was not working if modifier key (e.g. SHIFT key) for <modifierKey>+RightMouseButton (FCOIS settings) was not used in the keybind too
 
 

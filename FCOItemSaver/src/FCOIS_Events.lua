@@ -514,6 +514,7 @@ end
 
 --Event upon opening of a crafting station
 local function FCOItemSaver_Crafting_Interact(_, craftSkill)
+d("[FCOIS]EVENT_CRAFTING_STATION_INTERACT-craftSkill: " ..tostring(craftSkill))
     FCOIS.preventerVars.gActiveFilterPanel = true
     --em:RegisterForEvent(gAddonName, EVENT_END_CRAFTING_STATION_INTERACT, FCOItemSaver_End_Crafting_Interact)
 

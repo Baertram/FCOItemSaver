@@ -6,15 +6,17 @@ if not FCOIS.libsLoadedProperly then return end
 
 local debugMessage = FCOIS.debugMessage
 
+local numVars = FCOIS.numVars
+local mappingVars = FCOIS.mappingVars
 local activeFilterPanelIds = FCOIS.mappingVars.activeFilterPanelIds
-local numFilters = FCOIS.numVars.gFCONumFilters
+local numFilters = numVars.gFCONumFilters
 local numFilterInventoryTypes = FCOIS.numVars.gFCONumFilterInventoryTypes
 
 --The local libFilters v2.x library instance
 local libFilters = FCOIS.libFilters
 
 --The filter string names for each ID
-local filterIds2Name = FCOIS.mappingVars.libFiltersIds2StringPrefix
+local filterIds2Name = mappingVars.libFiltersIds2StringPrefix
 
 local getFilterWhereBySettings = FCOIS.GetFilterWhereBySettings
 local getSettingsIsFilterOn = FCOIS.GetSettingsIsFilterOn
@@ -431,21 +433,21 @@ end
 
 --Helper function for method FCOIS.registerFilters
 local function registerFilterId(p_onlyPlayerInvFilter, p_filterId, p_panelId)
-    --Get the current LAF (filter type, e.g. LF_INVENTORY, LF_BANK_WITHDRAW, etc.)
-    --local lf = libFilters:GetCurrentLAF()
-
+d("[FCOIS]registerFilterId - filterId: " ..tostring(p_filterId) .. ", panelId: " ..tostring(p_panelId) .. ", onlyPlayerInv: " ..tostring(p_onlyPlayerInvFilter))
     --Only register inventory filters?
     if (p_onlyPlayerInvFilter == true or p_panelId == LF_INVENTORY) then
         --Player inventory -> Only if activated in settings
         FilterPlayerInventory(p_filterId, p_panelId)
     else
         local settings = FCOIS.settingsVars.settings
+        --Debugging
+        --local isFilteringAtPanelEnabledBefore = settings.atPanelEnabled[p_panelId]["filters"] or false
         --Is the setting for the filter on? Check and update variable
         getFilterWhereBySettings(p_panelId, false)
         --Read the variable now
         local isFilteringAtPanelEnabled = settings.atPanelEnabled[p_panelId]["filters"] or false
         --Get the filter function now
-        local filterFunctions = FCOIS.mappingVars.libFiltersId2filterFunction
+        local filterFunctions = mappingVars.libFiltersId2filterFunction
         local filterFunction = filterFunctions[p_panelId]
         local filterIdStringPrefix = filterIds2Name[p_panelId] or filterIds2Name[FCOIS_CON_LIBFILTERS_STRING_PREFIX_BACKUP_ID]
         --Security checks
@@ -459,8 +461,11 @@ local function registerFilterId(p_onlyPlayerInvFilter, p_filterId, p_panelId)
         end
         --(Re)register the filter function at the panel_id now
         local filterString = filterIdStringPrefix .. tostring(p_panelId) .. "_" .. tostring(p_filterId)
-        if(not libFilters:IsFilterRegistered(filterString)) then
+--d(">filterEnabledBefore: " ..tostring(isFilteringAtPanelEnabledBefore) .. ", enabledNow: " ..tostring(isFilteringAtPanelEnabled) .. ", filterName: " ..filterString)
+        if not libFilters:IsFilterRegistered(filterString) then
             libFilters:RegisterFilter(filterString, p_panelId, filterFunction)
+--       else
+--d(">>>Filter is already registered!")
         end
     end
 end

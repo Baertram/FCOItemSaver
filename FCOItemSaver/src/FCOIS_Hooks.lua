@@ -940,7 +940,7 @@ function FCOIS.CreateHooks()
 
     --========= ENCHANTING =========================================================
     --Pre Hook the enchanting table for prevention methods
-    --PreHook the receiver function of drag&drop at the refinement panel as items from the craftbag won't fire
+    --PreHook the receiver function of drag&drop at the enchanting panel as items from the craftbag won't fire
     --the event EVENT_INVENTORY_SLOT_LOCKED :-(
     ZO_PreHook(ctrlVars.ENCHANTING, "OnItemReceiveDrag", function(ctrl, slotControl, bagId, slotIndex)
         --Rune creation & extraction!
@@ -968,7 +968,7 @@ function FCOIS.CreateHooks()
     end
 
     --========= ALCHEMY ============================================================
-    --PreHook the receiver function of drag&drop at the refinement panel as items from the craftbag won't fire
+    --PreHook the receiver function of drag&drop at the alchemy panel as items from the craftbag won't fire
     --the event EVENT_INVENTORY_SLOT_LOCKED :-(
     ZO_PreHook(ctrlVars.ALCHEMY, "OnItemReceiveDrag", function(ctrl, slotControl, bagId, slotIndex)
         --Alchemy creation
@@ -1389,9 +1389,11 @@ function FCOIS.CreateHooks()
         hideContextMenu(FCOIS.gFilterWhere)
 
         if settings.debug then FCOIS.debugMessage( "[SMITHING:SetMode]","Mode: " .. tostring(mode), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+d("[FCOIS]smithingSetModeHook-mode: " ..tostring(mode) .. ", filterPanel: " ..tostring(FCOIS.gFilterWhere))
+        if not mode then return end
 
         --Get the filter panel ID by crafting type (to distinguish jewelry crafting and normal)
-        local craftingModeAndCraftingTypeToFilterPanelId = FCOIS.mappingVars.craftingModeAndCraftingTypeToFilterPanelId
+        local craftingModeAndCraftingTypeToFilterPanelId = mappingVars.craftingModeAndCraftingTypeToFilterPanelId
         local craftingType = GetCraftingInteractionType()
         local filterPanelId
         local showFCOISFilterButtons = false
@@ -1415,9 +1417,13 @@ function FCOIS.CreateHooks()
             --elseif mode == SMITHING_MODE_RESEARCH then
             --FCOIS.PreHookButtonHandler(FCOIS.gFilterWhere, LF_SMITHING_RESEARCH)
         end
-        if showFCOISFilterButtons == true and mode and FCOIS.gFilterWhere and filterPanelId then
-            --d("[FCOIS]smithingSetMode- mode: " ..tostring(mode) .. ", craftType: " ..tostring(craftingType) .. ", filterPanelId: " ..tostring(filterPanelId) .. ", filterWhere: " ..tostring(FCOIS.gFilterWhere))
-            preHookMainMenuFilterButtonHandler(FCOIS.gFilterWhere, filterPanelId)
+        if showFCOISFilterButtons == true and FCOIS.gFilterWhere and filterPanelId then
+            --TODO: Test if delay of a few ms (or 0 to skip call to next frame) will fix the registered filters to properly
+            --apply to the crafting panel at re-open of the panel/at first open of the refinement panel
+            zo_callLater(function()
+                --d(">preHookMainMenuFilterButtonHandler, comingFrom: " ..tostring(FCOIS.gFilterWhere) .. ", goingTo: " ..tostring(filterPanelId))
+                preHookMainMenuFilterButtonHandler(FCOIS.gFilterWhere, filterPanelId)
+            end, 0)
         end
     end
     --New with API100029 Dragonhold
