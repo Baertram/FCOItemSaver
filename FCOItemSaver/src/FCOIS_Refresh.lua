@@ -123,6 +123,7 @@ local function updateCraftingInventory(filterPanelOverride)
         FCOIS.lastVars.gLastFilterId[FCOIS.gFilterWhere] = gLastFilterIdFilterWhere
     end
 end
+FCOIS.UpdateCraftingInventory = updateCraftingInventory
 
 --Refresh the backpack list
 function FCOIS.RefreshBackpack()

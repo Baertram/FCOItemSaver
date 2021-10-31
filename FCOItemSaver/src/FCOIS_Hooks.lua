@@ -1433,22 +1433,26 @@ function FCOIS.CreateHooks()
     local function enchantingPreHook()
         --Hide the context menu at last active panel
         hideContextMenu(FCOIS.gFilterWhere)
-        local enchantingCtrl = ctrlVars.ENCHANTING
-        if enchantingCtrl:IsSceneShowing() then
-            local enchantingMode = enchantingCtrl.enchantingMode
-            if settings.debug then FCOIS.debugMessage( "[ENCHANTING:OnModeUpdated]","EnchantingMode: " .. tostring(enchantingMode), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        --Call delayed with 0ms to call it on next frame in order to let the filterFunctions work properly in function
+        --preHookMainMenuFilterButtonHandler -> registerFilter and refresh of inventory
+        zo_callLater(function()
+            local enchantingCtrl = ctrlVars.ENCHANTING
+            if enchantingCtrl:IsSceneShowing() then
+                local enchantingMode = enchantingCtrl.enchantingMode
+                if settings.debug then FCOIS.debugMessage( "[ENCHANTING:OnModeUpdated]","EnchantingMode: " .. tostring(enchantingMode), true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
-            --d("[FCOIS]Hook ZO_Enchanting.SetEnchantingMode/OnModeUpdated - Mode: " ..tostring(enchantingMode))
-            --Creation
-            if     enchantingMode == ENCHANTING_MODE_CREATION then
-                preHookMainMenuFilterButtonHandler(LF_ENCHANTING_EXTRACTION, LF_ENCHANTING_CREATION)
-                --Extraction
-            elseif enchantingMode == ENCHANTING_MODE_EXTRACTION then
-                preHookMainMenuFilterButtonHandler(LF_ENCHANTING_CREATION, LF_ENCHANTING_EXTRACTION)
+                --d("[FCOIS]Hook ZO_Enchanting.SetEnchantingMode/OnModeUpdated - Mode: " ..tostring(enchantingMode))
+                --Creation
+                if     enchantingMode == ENCHANTING_MODE_CREATION then
+                    preHookMainMenuFilterButtonHandler(LF_ENCHANTING_EXTRACTION, LF_ENCHANTING_CREATION)
+                    --Extraction
+                elseif enchantingMode == ENCHANTING_MODE_EXTRACTION then
+                    preHookMainMenuFilterButtonHandler(LF_ENCHANTING_CREATION, LF_ENCHANTING_EXTRACTION)
+                end
             end
-        end
-        --Go on with original function
-        return false
+        end, 0)
+        --Go on with original function --> Only for PreHook!
+        --return false
     end
     --Posthook the enchanting function SetEnchantingMode() which gets executed as the enchanting tabs are changed
     --ZO_Enchanting:SetEnchantingMode does not exist anymore (PTS -> Scalebreaker) and was replaced by ZO_Enchanting:OnModeUpdated()

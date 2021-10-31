@@ -510,18 +510,16 @@ function FCOIS.registerFilters(filterId, onlyPlayerInvFilter, p_FilterPanelId)
 end
 
 --Function to fill the filter functions for each LibFilters panel ID
-function FCOIS.mapLibFiltersIds2FilterFunctionsNow()
+function FCOIS.MapLibFiltersIds2FilterFunctionsNow()
     FCOIS.mappingVars.libFiltersId2filterFunction = {}
-    local filterTypesUsingInventorySlotFilterFunction
-    local filterTypesUsingBagIdAndSlotIndexFilterFunction
+    local filterTypesUsingInventorySlotFilterFunction = {}
+    local filterTypesUsingBagIdAndSlotIndexFilterFunction = {}
 
     --Dynamic code for LibFilters-3.0 version >= r3.0
-    local libFiltersConstants = FCOIS.libFilters.constants
-    if libFiltersConstants then
-        local libFiltersFilterTypes = libFiltersConstants.filterTypes
-        filterTypesUsingInventorySlotFilterFunction =     libFiltersFilterTypes.UsingInventorySlotFilterFunction
-        filterTypesUsingBagIdAndSlotIndexFilterFunction = libFiltersFilterTypes.UsingBagIdAndSlotIndexFilterFunction
-
+    local libFiltersMapping = FCOIS.libFilters.mapping
+    if libFiltersMapping then
+        filterTypesUsingInventorySlotFilterFunction =     libFiltersMapping.filterTypesUsingInventorySlotFilterFunction
+        filterTypesUsingBagIdAndSlotIndexFilterFunction = libFiltersMapping.filterTypesUsingBagIdAndSlotIndexFilterFunction
     else
         --Fixed code for LibFilters-3.0 version < r3.0
         --Using function FilterSavedItemsForSlot
@@ -560,10 +558,23 @@ function FCOIS.mapLibFiltersIds2FilterFunctionsNow()
             [LF_ALCHEMY_CREATION]                       = true,
         }
     end
-    for filterPanelId, isUsing in pairs(filterTypesUsingInventorySlotFilterFunction) do
-        if isUsing then FCOIS.mappingVars.libFiltersId2filterFunction[filterPanelId] = FilterSavedItemsForSlot end
+
+    if filterTypesUsingInventorySlotFilterFunction then
+        for filterPanelId, isUsing in pairs(filterTypesUsingInventorySlotFilterFunction) do
+            if isUsing then
+                FCOIS.mappingVars.libFiltersId2filterFunction[filterPanelId] = FilterSavedItemsForSlot
+            end
+        end
+    else
+        d("[FCOIS]ERROR - Filter function for filter types using inventorySlots were not found!")
     end
-    for filterPanelId, isUsing in pairs(filterTypesUsingBagIdAndSlotIndexFilterFunction) do
-        if isUsing then FCOIS.mappingVars.libFiltersId2filterFunction[filterPanelId] = FilterSavedItemsForBagIdAndSlotIndex end
+    if filterTypesUsingBagIdAndSlotIndexFilterFunction then
+        for filterPanelId, isUsing in pairs(filterTypesUsingBagIdAndSlotIndexFilterFunction) do
+            if isUsing then
+                FCOIS.mappingVars.libFiltersId2filterFunction[filterPanelId] = FilterSavedItemsForBagIdAndSlotIndex
+            end
+        end
+    else
+        d("[FCOIS]ERROR - Filter function for filter types using bagId&slotIndex were not found!")
     end
 end
