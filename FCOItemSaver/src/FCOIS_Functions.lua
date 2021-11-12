@@ -9,12 +9,21 @@ local debugMessage = FCOIS.debugMessage
 local em = EVENT_MANAGER
 local wm = WINDOW_MANAGER
 
+local addonVars = FCOIS.addonVars
+local gAddonName = addonVars.gAddonName
 local ctrlVars = FCOIS.ZOControlVars
+local playerInvInvs = ctrlVars.playerInventoryInvs
+local mappingVars = FCOIS.mappingVars
+local bag2PlayerInv = mappingVars.bagToPlayerInv
+
+local checkVars = FCOIS.checkVars
+local allowedUniqueItemTypes = checkVars.uniqueIdItemTypes
+local allowedSetItemTypes = checkVars.setItemTypes
+
 local strformat = string.format
 local strmatch = string.match
 local zo_strf = zo_strformat
 
-local checkVars = FCOIS.checkVars
 local inventoryRowPatterns = checkVars.inventoryRowPatterns
 local updateCraftingInventory = FCOIS.UpdateCraftingInventory --maybe nil here, will be updated further down in function FCOIS.CheckIfImprovedItemShouldBeReMarked_AfterImprovement()
 
@@ -135,7 +144,7 @@ function FCOIS.GetNumberOfFilteredItemsForEachPanel()
     FCOIS.numberOfFilteredItems[LF_JEWELRY_RESEARCH_DIALOG]= FCOIS.numberOfFilteredItems[LF_SMITHING_RESEARCH_DIALOG]
     FCOIS.numberOfFilteredItems[LF_QUICKSLOT]              = ctrlVars.QUICKSLOT_WINDOW.list.data
     --Special numbers for e.g. quest items in inventory
-    FCOIS.numberOfFilteredItems["INVENTORY_QUEST_ITEM"]    = ctrlVars.playerInventoryInvs[INVENTORY_QUEST_ITEM].listView.data
+    FCOIS.numberOfFilteredItems["INVENTORY_QUEST_ITEM"]    = playerInvInvs[INVENTORY_QUEST_ITEM].listView.data
 end
 
 --==========================================================================================================================================
@@ -177,36 +186,27 @@ end
 --> Used to create FCOIS marker icon texture controls with unique names in other addons like Inventory Insight from Ashes (IIfA)!
 function FCOIS.GetItemSaverControl(parent, controlId, useParentFallback, controlNameAddition)
     if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[GetItemSaverControl]","Parent: " .. parent:GetName() .. ", ControlId: " .. tostring(controlId) .. ", useParentFallback: " .. tostring(useParentFallback), true, FCOIS_DEBUG_DEPTH_ALL) end
-    local textureNameAddition = ""
-    if controlNameAddition ~= nil then
-        textureNameAddition = controlNameAddition
-    end
-    local retControl = parent:GetNamedChild(FCOIS.addonVars.gAddonName .. textureNameAddition .. tostring(controlId))
-
+    local textureNameAddition = (controlNameAddition ~= nil and controlNameAddition) or ""
+    local retControl = parent:GetNamedChild(gAddonName .. textureNameAddition .. tostring(controlId))
     --Use the parent control as a fallback?
-    if useParentFallback == true then
-        --e.g. Inside enchanting the parent control is the correct one already
-        if (retControl == nil) then
-            retControl = parent
-        end
-    end
+    --e.g. Inside enchanting the parent control is the correct one already
+    retControl = (retControl ~= nil and retControl) or (useParentFallback == true and parent)
     return retControl
 end
 
 function FCOIS.MyGetItemNameNoControl(bagId, slotIndex)
     local name = "Not found"
     local itemData
-    local bagIdToPlayerInv = FCOIS.mappingVars.bagToPlayerInv
-    local playerInvId = bagIdToPlayerInv[bagId]
+    local playerInvId = bag2PlayerInv[bagId]
     if playerInvId == nil then return name end
-    local playerInvInvs = ctrlVars.playerInventoryInvs
+    local invSlots = playerInvInvs[playerInvId].slots
     --CraftBag?
     if playerInvId == INVENTORY_CRAFT_BAG then
         local itemId = GetItemId(bagId, slotIndex)
-        if itemId == nil or itemId == 0 then itemId = slotIndex end
-        itemData = playerInvInvs[playerInvId].slots[BAG_VIRTUAL][itemId] --slotIndex is the itemId of the item, not the inv slotIndex!
+        itemId = (itemId ~= nil and itemId ~= 0 and itemId) or slotIndex
+        itemData = invSlots[BAG_VIRTUAL][itemId] --CraftBag: slotIndex is the itemId of the item, not the inv slotIndex!
     else
-        itemData = playerInvInvs[playerInvId].slots[bagId][slotIndex]
+        itemData = invSlots[bagId][slotIndex]
     end
     if(itemData ~= nil) then
         name = itemData.name
@@ -215,47 +215,35 @@ function FCOIS.MyGetItemNameNoControl(bagId, slotIndex)
 end
 
 function FCOIS.MyGetItemName(rowControl)
-    --Inventory Insight from ashes support
-    if FCOIS.IIfAclicked ~= nil then
-        return GetItemName(FCOIS.IIfAclicked.bagId, FCOIS.IIfAclicked.slotIndex)
+    --Inventory Insight from Ashes support
+    local IIfAclicked = FCOIS.IIfAclicked
+    if IIfAclicked ~= nil then
+        return GetItemName(IIfAclicked.bagId, IIfAclicked.slotIndex)
     end
-    local name
-    if (rowControl == nil) then return end
-    local dataEntry = rowControl.dataEntry
 
-    --case to handle equiped items
-    if(not dataEntry) then
-        name = rowControl.name
-    else
-        name = dataEntry.data.name
-    end
-    return name
+    if rowControl == nil then return end
+    local dataEntry = rowControl.dataEntry
+    --use rowControl = case to handle equiped items
+    return (dataEntry == nil and rowControl.name) or dataEntry.data.name
 end
 
 function FCOIS.MyGetItemDetails(rowControl)
     --Inventory Insight from ashes support
-    if FCOIS.IIfAclicked ~= nil then
-        return FCOIS.IIfAclicked.bagId, FCOIS.IIfAclicked.slotIndex
+    local IIfAclicked = FCOIS.IIfAclicked
+    if IIfAclicked ~= nil then
+        return IIfAclicked.bagId, IIfAclicked.slotIndex
     end
     local bagId, slotIndex
 
     --gotta do this in case deconstruction, or player equipment
     local dataEntry = rowControl.dataEntry
+    local isDataEntryNil = dataEntry == nil or false
+    local dataEntryData = isDataEntryNil == false and dataEntry.data
 
-    --case to handle equiped items
-    if(not dataEntry) then
-        bagId = rowControl.bagId
-        slotIndex = rowControl.slotIndex
-    else
-        bagId = dataEntry.data.bagId
-        slotIndex = dataEntry.data.slotIndex
-    end
-
-    --case to handle list dialog, list dialog uses index instead of slotIndex and bag instead of bagId...?
-    if(dataEntry and not bagId and not slotIndex) then
-        bagId = rowControl.dataEntry.data.bag
-        slotIndex = rowControl.dataEntry.data.index
-    end
+    --use rowControl = case to handle equiped items
+    --bag/index = case to handle list dialog, list dialog uses index instead of slotIndex and bag instead of bagId...?
+    bagId = (isDataEntryNil and rowControl.bagId) or (not isDataEntryNil and (dataEntryData.bagId or dataEntryData.bag))
+    slotIndex = (isDataEntryNil and rowControl.slotIndex) or (not isDataEntryNil and (dataEntryData.slotIndex or dataEntryData.index))
 
     return bagId, slotIndex
 end
@@ -302,7 +290,7 @@ function FCOIS.GetFCOISMarkerIconUniqueIdAllowedItemType(bagId, slotIndex, uniqu
     end
     if uniqueItemIdType == FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE then -- ZOs real unique IDs
         --Only armor and weapons and jewelry count as allowed itemType
-        allowedItemtype = FCOIS.allowedUniqueIdItemTypes[GetItemType(bagId, slotIndex)] or false
+        allowedItemtype = allowedUniqueItemTypes[GetItemType(bagId, slotIndex)] or false
     else
         --All selected itemTypes at the settings of unique FCOIS marker icon IDs are allowed itemtypes
         allowedItemtype = settings.allowedFCOISUniqueIdItemTypes[GetItemType(bagId, slotIndex)] or false
@@ -494,7 +482,7 @@ local function getItemIdentifierForBackup(bagId, slotIndex)
         local level = GetItemLinkRequiredLevel(itemLink)
         local cp = GetItemLinkRequiredChampionPoints(itemLink)
         --Is the unique item ID enabled and the item's type is an allowed one(e.g. weapons, armor, ...)
-        local allowedItemType = FCOIS.allowedUniqueIdItemTypes[itemType] or false
+        local allowedItemType = allowedUniqueItemTypes[itemType] or false
         local useUniqueItemIdentifier = (settings.useUniqueIds and allowedItemType) or false
         local trait = GetItemLinkTraitInfo(itemLink)
         local quality = GetItemLinkFunctionalQuality(itemLink)
@@ -562,7 +550,7 @@ end
 -->TODO: Maybe, if only itemLink is given, use the itemId here instead of the ItemInstanceId then, as some addons like IventoryInsight from ashes do not provide bagId and slotIndex at all!
 -->Yes, changed to that way, also because the itemInstanceId always differs level/quality/enchantment etc. already and if we want to manually specify which parts the FCOIS uniqueId needs, we need to use the itemId as base!
 --If bagId and slotIndex are given unsignedItemInstanceId can be nil (will be rebuild internally then).
---If allowedItemType (boolean) is not given then the itemType will be rebuild from the bagId & slotIndex, or the itemlink, and the value will be checked against FCOIS.allowedUniqueIdItemTypes[itemType] afterwards.
+--If allowedItemType (boolean) is not given then the itemType will be rebuild from the bagId & slotIndex, or the itemlink, and the value will be checked against FCOIS.checkVars.uniqueIdItemTypes[itemType] afterwards.
 function FCOIS.CreateFCOISUniqueIdString(itemId, bagId, slotIndex, itemLink)
     --Either bag + slot or itemLink needs to be given
     if (not bagId or not slotIndex) and (not itemLink or itemLink == "") then return end
@@ -974,7 +962,7 @@ end
 -- Is Item functions
 --==============================================================================
 function FCOIS.DoesPlayerInventoryCurrentFilterEqual(inventoryVar, currentFilter)
-    return (ctrlVars.playerInventoryInvs[inventoryVar].currentFilter == currentFilter) or false
+    return (playerInvInvs[inventoryVar].currentFilter == currentFilter) or false
 end
 local doesPlayerInventoryCurrentFilterEqual = FCOIS.DoesPlayerInventoryCurrentFilterEqual
 
@@ -1074,7 +1062,7 @@ end
 function FCOIS.IsItemAlreadyBound(bagId, slotIndex)
     --Only check bound set parts
     local itemType = GetItemType(bagId, slotIndex)
-    local isAllowedItemType = checkVars.allowedSetItemTypes[itemType]
+    local isAllowedItemType = allowedSetItemTypes[itemType]
     if not isAllowedItemType then return false end
     local itemLink = GetItemLink(bagId, slotIndex)
     if itemLink then
@@ -1373,8 +1361,7 @@ function FCOIS.IsItemSetPartNoControl(bagId, slotIndex)
         -- Get the item's type
         local itemType = GetItemLinkItemType(itemLink)
         if itemType ~= nil then
-            local allowedItemTypes = checkVars.allowedSetItemTypes
-            local allowed = allowedItemTypes[itemType] or false
+            local allowed = allowedSetItemTypes[itemType] or false
             if allowed then
                 --Get the set item information
                 local hasSet, _, _, _, _ = GetItemLinkSetInfo(itemLink, false)
@@ -1400,8 +1387,7 @@ function FCOIS.IsItemSetPartWithTraitNoControl(bagId, slotIndex)
         -- Get the item's type
         if itemType ~= nil then
 --d(">itemType: " ..tostring(itemType))
-            local allowedItemTypes = checkVars.allowedSetItemTypes
-            local allowed = allowedItemTypes[itemType] or false
+            local allowed = allowedSetItemTypes[itemType] or false
             if allowed then
 --d(">allowed")
                 --Get the set item information
@@ -1482,7 +1468,7 @@ local isItemLinkReconStructedOrRetraited = FCOIS.IsItemLinkReconStructedOrRetrai
 local function isResearchableItemTypeCheck(itemType, markId)
     local retVal = false
     local allowedTab = {}
-    allowedTab = checkVars.allowedResearchableItemTypes[itemType]
+    allowedTab = checkVars.researchableItemTypes[itemType]
     if allowedTab == nil then return false end
     if markId == nil then
         retVal = allowedTab.allowed and not allowedTab.isGlpyh
@@ -1581,7 +1567,7 @@ end
 function FCOIS.IsItemOrnate(bagId, slotIndex)
     local isOrnate = false
     local itemTrait = GetItemTrait(bagId, slotIndex)
-    local allowedOrnateItemTraits = checkVars.allowedOrnateItemTraits
+    local allowedOrnateItemTraits = checkVars.ornateItemTraits
     isOrnate = allowedOrnateItemTraits[itemTrait] or false
 --local itemLink = GetItemLink(bagId, slotIndex)
 --d("[FCOIS]isItemOrnate: " .. itemLink .. " -> " .. tostring(isOrnate))
@@ -1591,7 +1577,7 @@ end
 -- Is the item an intricate one?
 function FCOIS.IsItemIntricate(bagId, slotIndex)
     local isIntricate = false
-    local allowedIntricateItemTraits = checkVars.allowedIntricateItemTraits
+    local allowedIntricateItemTraits = checkVars.intricateItemTraits
     local itemTrait = GetItemTrait(bagId, slotIndex)
     isIntricate = allowedIntricateItemTraits[itemTrait] or false
 --local itemLink = GetItemLink(bagId, slotIndex)
@@ -1947,21 +1933,21 @@ end
 
 --Rebuild the allowed craft skills from the settings
 function FCOIS.RebuildAllowedCraftSkillsForCraftedMarking(craftType)
+    local settings = FCOIS.settingsVars.settings
     if craftType == nil then
         --reset the table to keep only the crafting_type_invalid
-        FCOIS.allowedCraftSkillsForCraftedMarking = {
+        FCOIS.checkVars.craftSkillsForCraftedMarking = {
             [CRAFTING_TYPE_INVALID] 		= false,
         }
         --Then rebuild the other crafting_types from the settings and add them to the table
-        local craftSkillsAllowedForMarksAfterCrafted = FCOIS.settingsVars.settings.allowedCraftSkillsForCraftedMarking
-        for craftTypeLoop, value in ipairs(craftSkillsAllowedForMarksAfterCrafted) do
+        for craftTypeLoop, value in ipairs(settings.allowedCraftSkillsForCraftedMarking) do
             if craftTypeLoop ~= CRAFTING_TYPE_INVALID then
-                FCOIS.allowedCraftSkillsForCraftedMarking[craftTypeLoop] = value
+                FCOIS.checkVars.craftSkillsForCraftedMarking[craftTypeLoop] = value
             end
         end
     else
         --Only set the value for the wished craftType
-        FCOIS.allowedCraftSkillsForCraftedMarking[craftType] = FCOIS.settingsVars.settings.allowedCraftSkillsForCraftedMarking[craftType]
+        FCOIS.checkVars.craftSkillsForCraftedMarking[craftType] = settings.allowedCraftSkillsForCraftedMarking[craftType]
     end
 end
 
@@ -2012,7 +1998,7 @@ function FCOIS.CheckIfCraftedItemShouldBeMarked(craftSkill, overwrite)
     FCOIS.preventerVars.newItemCrafted = overwrite or false
 
     --Are we creating an item, is the setting for automark enabled and is the current crafting station allowed to mark the crafted items (set in the settings)?
-    local allowedCraftSkills = FCOIS.allowedCraftSkillsForCraftedMarking
+    local allowedCraftSkills = checkVars.craftSkillsForCraftedMarking
     local allowedCraftingSkill = allowedCraftSkills[craftSkill] or false
 --d(">allowedCraftingSkill: " .. tostring(allowedCraftingSkill))
     if not allowedCraftingSkill then return false end
@@ -2055,16 +2041,20 @@ function FCOIS.CheckIfCraftedItemShouldBeMarked(craftSkill, overwrite)
 end
 
 --Improvement--
-function FCOIS.ResetImprovementVarsForReMark()
---d("[FCOIS]ResetImprovementVarsForReMark")
-    FCOIS.improvementVars.improvementBagId = nil
-    FCOIS.improvementVars.improvementSlotIndex = nil
-    FCOIS.improvementVars.improvementMarkedIcons = nil
+function FCOIS.ResetImprovementVarsForReMark(bagId, slotIndex)
+    --d("[FCOIS]ResetImprovementVarsForReMark - " .. GetItemLink(bagId, slotIndex))
+
+    --Reset the remembered improvement vars for the bagId and slotIndex
+    if FCOIS.improvementVars[bagId] then
+        if FCOIS.improvementVars[bagId][slotIndex] then
+            FCOIS.improvementVars[bagId][slotIndex] = nil
+        end
+    end
 end
 local resetImprovementVarsForReMark = FCOIS.ResetImprovementVarsForReMark
 
 function FCOIS.CheckIfIsImprovableCraftSkill(craftSkill)
-    return FCOIS.mappingVars.isImprovementCraftSkill[craftSkill] or false
+    return mappingVars.isImprovementCraftSkill[craftSkill] or false
 end
 
 
@@ -2072,81 +2062,91 @@ end
 --Start function to remmeber the marker icons before improvement
 function FCOIS.CheckIfImprovedItemShouldBeReMarked_BeforeImprovement()
 --d("[FCOIS]CheckIfImprovedItemShouldBeReMarked_BeforeImprovement")
-    --Clear the remembered improvement marker icons
-    resetImprovementVarsForReMark()
     if not FCOIS.settingsVars.settings.reApplyIconsAfterImprovement then return end
     --Are we at smithing improvement
     local improvementSlot = ctrlVars.IMPROVEMENT_SLOT
     if ctrlVars.IMPROVEMENT_INV:IsHidden() or improvementSlot == nil then
         return false
     end
---d(">current item to improve: " .. GetItemLink(improvementSlot.bagId, improvementSlot.slotIndex))
-    --Remember the bagId and slotIndex of the slotted item that will be improved
-    FCOIS.improvementVars.improvementBagId		= improvementSlot.bagId
-    FCOIS.improvementVars.improvementSlotIndex	= improvementSlot.slotIndex
+    --Clear the remembered improvement marker icons
+    local bagId, slotIndex = improvementSlot.bagId, improvementSlot.slotIndex
+--d(">current item to improve: " .. GetItemLink(bagId, slotIndex))
+    resetImprovementVarsForReMark(bagId, slotIndex)
 
     --Check if the item is marked with several icons
-    local impVars = FCOIS.improvementVars
-    local isMarked, markedIcons = FCOIS.IsMarked(impVars.improvementBagId, impVars.improvementSlotIndex, -1)
+    local isMarked, markedIcons = FCOIS.IsMarked(bagId, slotIndex, -1)
     if isMarked == true then
 --d(">>item was marked")
-        FCOIS.improvementVars.improvementMarkedIcons = markedIcons
+        --Remember the bagId and slotIndex of the slotted item that will be improved
+        FCOIS.improvementVars[bagId] = FCOIS.improvementVars[bagId] or {}
+        FCOIS.improvementVars[bagId][slotIndex] = markedIcons
     end
 end
 
 --Check if item get's improved and if the marker icons from before improvement should be remembered
 --End function to re-mark the marker icons after improvement
 function FCOIS.CheckIfImprovedItemShouldBeReMarked_AfterImprovement()
---d("[FCOIS]CheckIfImprovedItemShouldBeReMarked_AfterImprovement")
+    --d("[FCOIS]CheckIfImprovedItemShouldBeReMarked_AfterImprovement")
     if not FCOIS.settingsVars.settings.reApplyIconsAfterImprovement then return end
-    --Only at smithing improvement
+    --Only at a shown smithing improvement table
     if ctrlVars.IMPROVEMENT_INV:IsHidden() then return false end
-    local impVars = FCOIS.improvementVars
-    if impVars.improvementBagId == nil or impVars.improvementSlotIndex == nil
-            or impVars.improvementMarkedIcons == nil or #impVars.improvementMarkedIcons <= 0 then
-        --Reset the remembered improvement marker icons
-        resetImprovementVarsForReMark()
-        --d("<nothing to remark after improvement - abort")
-        return false
-    end
 
-    --Delay the call here in order to re-mark the item after the quality has changed and the item's itemLink and data
-    --was rebuild so that the marker icons will apply to the correct itemInstance or uniqueId
-    zo_callLater(function()
-        --For each marked icon of the currently improved item:
-        --Set the icons/markers of the previous item again (-> copy marker icons from before improvement to the improved item)
-        local bagId, slotIndex = impVars.improvementBagId, impVars.improvementSlotIndex
+
+    local uniqueUpdaterName = gAddonName .. "_AutoReAddMarkerAfterImprove"
+    local function callDelayedReAddMarkerIconsAfterImproveNow()
+        em:UnregisterForUpdate(uniqueUpdaterName)
+
+        --Check the iprovement variables of the last improved items
         local iconsRemarked = 0
-        for iconId, iconIsMarked in pairs(impVars.improvementMarkedIcons) do
-            if iconIsMarked == true then
-                local doRemarkThisMarkerIcon = true
-                --Is the item the FCOIS improve marker icon?
-                if iconId == FCOIS_CON_ICON_IMPROVEMENT then
-                    --Is the item already at the maximum quality?
-                    local itemQuality = GetItemFunctionalQuality(bagId, slotIndex)
-                    if itemQuality and itemQuality >= ITEM_FUNCTIONAL_QUALITY_LEGENDARY then
-                        --Then do not re-apply this marker icon!
-                        doRemarkThisMarkerIcon = false
+        for bagId, slotIndices in pairs(FCOIS.improvementVars) do
+            if slotIndices == nil or NonContiguousCount(slotIndices) == 0 then
+                --Reset the improvement remember variables for the ones which do not need to be marked/are buggy
+                FCOIS.improvementVars[bagId] = nil
+            else
+                for slotIndex, markedIcons in pairs(slotIndices) do
+                    --For each marked icon of the currently improved item:
+                    --Set the icons/markers of the previous item again (-> copy marker icons from before improvement to the improved item)
+                    for iconId, iconIsMarked in pairs(markedIcons) do
+                        if iconIsMarked == true then
+                            local doRemarkThisMarkerIcon = true
+                            --Is the item the FCOIS improve marker icon?
+                            if iconId == FCOIS_CON_ICON_IMPROVEMENT then
+                                --Is the item already at the maximum quality?
+                                local itemQuality = GetItemFunctionalQuality(bagId, slotIndex)
+                                if itemQuality and itemQuality >= ITEM_FUNCTIONAL_QUALITY_LEGENDARY then
+                                    --Then do not re-apply this marker icon!
+                                    doRemarkThisMarkerIcon = false
+                                end
+                            end
+                            --d(">icon: " ..tostring(iconId) .. ", doRemarkThisMarkerIcon: " ..tostring(doRemarkThisMarkerIcon))
+                            if doRemarkThisMarkerIcon == true then
+                                --Inventory update will be automatcally done after each improvement of an item
+                                FCOIS.MarkItem(bagId, slotIndex, iconId, true, false)
+                                iconsRemarked = iconsRemarked + 1
+                            end
+                        end
                     end
-                end
-    --d(">icon: " ..tostring(iconId) .. ", doRemarkThisMarkerIcon: " ..tostring(doRemarkThisMarkerIcon))
-                if doRemarkThisMarkerIcon == true then
-                    --Inventory update will be automatcally done after each improvement of an item
-                    FCOIS.MarkItem(bagId, slotIndex, iconId, true, false)
-                    iconsRemarked = iconsRemarked + 1
+
+                    --Reset the improvement remember variables for the ones which were marked/were buggy (no marked icons table given)
+                    FCOIS.improvementVars[bagId][slotIndex] = nil
                 end
             end
         end
-        --Reset the improvement remember variables again
-        resetImprovementVarsForReMark()
-
         --Refresh the crafting inventory now
         if iconsRemarked > 0 then
-    --d(">>reMarked icons: " ..tostring(iconsRemarked))
+            if ctrlVars.IMPROVEMENT_INV:IsHidden() then return false end
+            --d(">>reMarked icons: " ..tostring(iconsRemarked))
             updateCraftingInventory = updateCraftingInventory or FCOIS.UpdateCraftingInventory
             updateCraftingInventory()
         end
-    end, 2000)
+    end --local function callDelayedNow()
+
+    --Delay the call here in order to re-mark the item after the quality has changed and the item's itemLink and data
+    --was rebuild so that the marker icons will apply to the correct itemInstance or uniqueId.
+    --Call a function once after 2 seconds. If another register happens in the same time because another item was improved
+    --during the 2 seconds wait time, the timer will reset and restart.
+    em:UnregisterForUpdate(uniqueUpdaterName)
+    em:RegisterForUpdate(uniqueUpdaterName, 2000, callDelayedReAddMarkerIconsAfterImproveNow)
 end
 
 --Enchanting of items in your inventory

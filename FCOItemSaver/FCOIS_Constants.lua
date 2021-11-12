@@ -10,8 +10,7 @@ local strlen = string.len
 FCOIS.addonVars = {}
 local addonVars = FCOIS.addonVars
 --Addon variables
-addonVars.addonVersionOptions 		    = '2.2.2' -- version shown in the settings panel
-addonVars.addonVersionOptionsNumber	    = 2.22
+addonVars.addonVersionOptions 		    = '2.2.4' -- version shown in the settings panel
 --The addon name, normal and decorated with colors etc.
 addonVars.gAddonName				    = "FCOItemSaver"
 addonVars.gAddonNameShort               = "FCOIS"
@@ -39,9 +38,11 @@ addonVars.gAddonLoaded				= false
 addonVars.gPlayerActivated			= false
 addonVars.gSettingsLoaded			= false
 
+local gAddonName = addonVars.gAddonName
+
 --Dummy SCENE information for file FCOIS_functions.lua -> function FCOIS.getCurrentSceneInfo()
 FCOIS.dummyScene = {
-    ["name"] = addonVars.gAddonName
+    ["name"] = gAddonName
 }
 
 --Constants for the unique itemId types
@@ -53,7 +54,7 @@ FCOIS.temporaryUseUniqueIds = {}
 
 --SavedVariables constants
 local savedVarsMarkedItems = "markedItems"
-addonVars.savedVarName				= addonVars.gAddonName .. "_Settings"
+addonVars.savedVarName				= gAddonName .. "_Settings"
 addonVars.savedVarVersion		   	= 0.10 -- Changing this will reset all SavedVariables!
 --The subtables for the marked items. markedItems will be used for the non-unique and the ZOs really unique IDs.
 --markedItemsFCOISUnique will be used for the FCOIS created unique IDs.
@@ -435,16 +436,8 @@ FCOIS.improvementVars = {}
 FCOIS.enchantingVars = {}
 FCOIS.enchantingVars.lastMarkerIcons = {}
 
---Handlers for the check functions (e.g. FCOIS.IsItemprotected() in file FCOIS_Protection.lua)
-FCOIS.checkHandlers = {}
-
 --Last item's markers (set by clicking the divider if enabled in the settings)
 FCOIS.lastMarkedIcons			= nil
-
---Improvement re-marking of items
-FCOIS.improvementVars.improvementBagId		= nil
-FCOIS.improvementVars.improvementSlotIndex	= nil
-FCOIS.improvementVars.improvementMarkedIcons = nil
 
 --Entries for the context menu submenu entries, and the dynamic icons submenu entries
 FCOIS.customMenuVars.customMenuSubEntries		= {}
@@ -452,9 +445,10 @@ FCOIS.customMenuVars.customMenuDynSubEntries	= {}
 FCOIS.customMenuVars.customMenuCurrentCounter 	= 0
 contextMenuVars.contextMenuIndex 			= -1
 
---The allowed check handlers (see function FCOIS.checkIfItemIsProtected() in file FCOIS_Protection.lua)
-FCOIS.checkHandlers["gear"]     = true
-FCOIS.checkHandlers["dynamic"]  = true
+--Handlers for the check functions (see function FCOIS.IsItemprotected() in file FCOIS_Protection.lua)
+checkVars.checkHandlers = {}
+checkVars.checkHandlers["gear"]     = true
+checkVars.checkHandlers["dynamic"]  = true
 
 --The mapping between the FCOIS settings ID and the real server name (for the SavedVars)
 mappingVars.serverNames = {
@@ -483,7 +477,7 @@ mappingVars.bagToPlayerInv = {
     [BAG_VIRTUAL]           = INVENTORY_CRAFT_BAG,
 }
 --The mapping table for the bagIds where an itemInstanceId or uniqueId should be build for, in other addons, in order
---to use these for the (un)marking of items (e.g. within addon Inventory Insight from ashes, IIfA)
+--to use these for the (un)marking of items (e.g. within addon Inventory Insight from Ashes, IIfA)
 mappingVars.bagsToBuildItemInstanceOrUniqueIdFor =  {
     --non account wide, as it used bagId and slotIndex
     [BAG_WORN]              = true,
@@ -1685,7 +1679,7 @@ end
 
 --The itemtypes that are allowed to be marked with unique item IDs by ZOS uniqueIDs
 --All not listed item types (or listed with "false") will be saved with the non-unique itemInstanceId
-FCOIS.allowedUniqueIdItemTypes = {
+checkVars.uniqueIdItemTypes = {
     [ITEMTYPE_ARMOR]        =   true,
     [ITEMTYPE_WEAPON]       =   true,
 }
@@ -1696,10 +1690,11 @@ FCOIS.allowedUniqueIdItemTypes = {
 --->    filled in file /src/FCOIS_DefaultSettings.lua, and then managed in file /src/FCOIS_SettingsMenu.lua
 
 --The allowed craftskills for automatic marking of "crafted" marker icon
--->Filled in file src/FCOIS_Functions.lua, function FCOIS.rebuildAllowedCraftSkillsForCraftedMarking(craftType)
+-->Filled in file src/FCOIS_Functions.lua, function FCOIS.RebuildAllowedCraftSkillsForCraftedMarking(craftType)
 --->Using SavedVariable settings (FCOIS.settingsVars.settings.allowedCraftSkillsForCraftedMarking) for the craftskills!
 ----> See file src/FCOIS_SettingsMenu.lua, function FCOIS.BuildAddonMenu, "options_auto_mark_crafted_items_panel_ ..."
-FCOIS.allowedCraftSkillsForCraftedMarking = {}
+checkVars.craftSkillsForCraftedMarking = {}
+
 --The crafting creation panels, or the functions to check if they are shown
 FCOIS.craftingCreatePanelControlsOrFunction = {}
 --Drag & drop variables
@@ -2073,19 +2068,19 @@ checkVars.weaponTypeCheckTable = {
    },
    }
 --Table with allowed item traits for ornate items
-checkVars.allowedOrnateItemTraits = {
+checkVars.ornateItemTraits = {
 	[ITEM_TRAIT_TYPE_ARMOR_ORNATE]   = true,
 	[ITEM_TRAIT_TYPE_JEWELRY_ORNATE] = true,
 	[ITEM_TRAIT_TYPE_WEAPON_ORNATE]  = true,
 }
 --Table with allowed item traits for intricate items
-checkVars.allowedIntricateItemTraits = {
+checkVars.intricateItemTraits = {
     [ITEM_TRAIT_TYPE_ARMOR_INTRICATE]   = true,
     [ITEM_TRAIT_TYPE_WEAPON_INTRICATE]  = true,
     [ITEM_TRAIT_TYPE_JEWELRY_INTRICATE] = true,
 }
 --Table with allowed item types for researching
-checkVars.allowedResearchableItemTypes = {
+checkVars.researchableItemTypes = {
    	[ITEMTYPE_ARMOR]			=
     {
     	allowed = true,
@@ -2134,7 +2129,7 @@ checkVars.allowedResearchableItemTypes = {
 }
 
 --Table with the allowed set item types
-checkVars.allowedSetItemTypes = {
+checkVars.setItemTypes = {
 	[ITEMTYPE_ARMOR]	= true,
 	[ITEMTYPE_WEAPON]	= true,
 }

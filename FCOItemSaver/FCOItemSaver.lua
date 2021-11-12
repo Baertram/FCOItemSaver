@@ -19,7 +19,7 @@
 ---------------------------------------------------------------------
 
 --____________________________
--- Current max bugs/features/ToDos: 174
+-- Current max bugs/features/ToDos: 175
 --____________________________
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -170,22 +170,40 @@ wenn ich das mache, dann sehe ich alle gelockten items bis ich z.b. auf den refi
 --#174: 2021-10-31, Baertram, bug: If Iventory Insight from Ashes is enabled: Select "All" tab or any tab where items are shown which are on other characters. Find one item on another char
 --                                 having any iocn set e.g. "sell". Right click it remove the sell icon, and then set it again. Sometimes the worn items and inventory (maybe all items somehow)
 --                                 now show the removed/applied marker icon "sell" on them?!
+--#175: 2021-11-06, silvereyes, bug:
+--[[
+bad argument #1 to 'pairs' (table/struct expected, got nil) ---> for iconId, iconIsMarked in pairs(impVars.improvementMarkedIcons) do
+stack traceback:
+[C]: in function 'pairs'
+user:/AddOns/FCOItemSaver/src/FCOIS_Functions.lua:2120: in function 'func'
+|caaaaaa<Locals> bagId = 1, slotIndex = 16, iconsRemarked = 0 </Locals>|r
+/EsoUI/Libraries/Globals/globalapi.lua:227: in function '(anonymous)'
+
+Steps to reproduce:
+Open a crafting station
+Go to the improvement tab
+Filter the items with a text filter so that only the item to improve is shown. Not sure if this is part of the base game, or Votan's Search Box, which I have installed.
+Mark the item with an FCOItemSaver mark, like selling at guild store.
+Deactivate anti improve
+Improve the item all the way to legendary so that it becomes ineligible to improve
+
+I'm guessing that the same sort of thing can happen any time a marked item becomes ineligible for the inventory list.
+For example, maybe after right click > bind a marked item in the guild store selling tab or mail send tab.
+I haven't tested that, though. Should be a fairly easy nil check either way.
+]]
+
+
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
---In progress: Updated last 2021-10-25
+--In progress: Updated last 2021-11-12
+--#175
 
 ---------------------------------------------------------------------
---Since last update 2.2.2 - New version: 2.2.3 -> Changelog updated last: 2021-10-31
+--Since last update 2.2.3 - New version: 2.2.4 -> Changelog updated last: 2021-11-12
 ---------------------------------------------------------------------
 
 --[Fixed]
---#154: Improving an item does not re-apply the improve icon (if quality below legendary)
---#168: Refinement smithing is not removing items from slot if marker icon is applied (via context menu or keybind)
---#169: First open of refinement/enchanting will not filter the filters properly
---#170: Re-opening craft station will not apply filters properly
---#171: Improving an item does not re-apply the already marked icons. Though the inventory shows the before applied marker icons until you scroll -> then they are gone
---#173 Keybind for "RemoveAll"/"UndoAll" was not working if modifier key (e.g. SHIFT key) for <modifierKey>+RightMouseButton (FCOIS settings) was not used in the keybind too
 
 
 --[Changed]

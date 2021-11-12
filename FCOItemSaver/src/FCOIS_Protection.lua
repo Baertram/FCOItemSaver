@@ -9,6 +9,7 @@ local debugMessage = FCOIS.debugMessage
 local numFilterIcons = FCOIS.numVars.gFCONumFilterIcons
 local ctrlVars = FCOIS.ZOControlVars
 local checkVars = FCOIS.checkVars
+local allowedCheckHandlers = checkVars.checkHandlers
 
 local getSavedVarsMarkedItemsTableName = FCOIS.GetSavedVarsMarkedItemsTableName
 local signItemId = FCOIS.SignItemId
@@ -346,7 +347,6 @@ function FCOIS.CheckIfItemIsProtected(iconId, itemId, checkHandler, addonName, s
     -------------------------------------------------------
     --If the check handler is given we need to check if it is an allowed one
     if checkHandler ~= nil and checkHandler ~= "" then
-        local allowedCheckHandlers = FCOIS.checkHandlers
         if not allowedCheckHandlers[checkHandler] then return false end
         checkIfItemIsProtected = FCOIS.CheckIfItemIsProtected
         --Recursively check all the marker icons from the check handler range, e.g. all gear sets or all dynamic icons
@@ -403,7 +403,7 @@ function FCOIS.CheckIfItemIsProtected(iconId, itemId, checkHandler, addonName, s
     return itemIsMarked
 end
 checkIfItemIsProtected = FCOIS.CheckIfItemIsProtected
-FCOIS.checkIfItemIsProtected = checkIfItemIsProtected --backwards compatibility
+FCOIS.checkIfItemIsProtected = checkIfItemIsProtected --backwards compatibility (lower case function name)
 
 
 -- Fired when user selects an item to destroy.

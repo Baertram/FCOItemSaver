@@ -11,6 +11,10 @@ local strlen = string.len
 local strsub = string.sub
 
 local mappingVars = FCOIS.mappingVars
+local bagsToBuildIdFor = mappingVars.bagsToBuildItemInstanceOrUniqueIdFor
+
+local checkVars = FCOIS.checkVars
+local allowedUniqueItemTypes = checkVars.uniqueIdItemTypes
 
 local getSavedVarsMarkedItemsTableName       = FCOIS.GetSavedVarsMarkedItemsTableName
 local getFCOISMarkerIconSavedVariablesItemId = FCOIS.GetFCOISMarkerIconSavedVariablesItemId
@@ -566,8 +570,6 @@ local checkIfOtherAddonIIfAIsActive = FCOIS.CheckIfOtherAddonIIfAIsActive
 --Get the itemInstance or the unique ID of an item at bagId and slotIndex, or at the itemLink
 function FCOIS.GetItemInstanceOrUniqueId(bagId, slotIndex, itemLink)
     if bagId == nil or slotIndex == nil then return 0, false end
-    local bagsToBuildIdFor = mappingVars.bagsToBuildItemInstanceOrUniqueIdFor
-    local allowedUniqueIdItemTypes = FCOIS.allowedUniqueIdItemTypes
     local itemInstanceOrUniqueId = 0
     local isBagToBuildItemInstanceOrUniqueId = bagsToBuildIdFor[bagId] or false
     local allowedItemType
@@ -973,12 +975,13 @@ function FCOIS.CheckForIIfARightClickedRow(rowControl)
     --Set the read IIfA saved variable data to the FCOIS global variable for the inventory right-clicked context menu row
     if itemInstanceOrUniqueIdIIfA ~= nil or (bagIdIIfA ~= nil and slotIndexIIfA ~= nil) then
         FCOIS.IIfAclicked = {}
-        FCOIS.IIfAclicked.itemInstanceOrUniqueId = itemInstanceOrUniqueIdIIfA
-        FCOIS.IIfAclicked.itemLink = itemLinkIIfA
-        FCOIS.IIfAclicked.bagId = bagIdIIfA
-        FCOIS.IIfAclicked.slotIndex = slotIndexIIfA
-        FCOIS.IIfAclicked.ownedByChars = ownedByCharsTableIIfA
-        FCOIS.IIfAclicked.inThisOtherBags = itemIsInThisOtherBagsTableIIfA
+        local IIfAclicked = FCOIS.IIfAclicked
+        IIfAclicked.itemInstanceOrUniqueId = itemInstanceOrUniqueIdIIfA
+        IIfAclicked.itemLink = itemLinkIIfA
+        IIfAclicked.bagId = bagIdIIfA
+        IIfAclicked.slotIndex = slotIndexIIfA
+        IIfAclicked.ownedByChars = ownedByCharsTableIIfA
+        IIfAclicked.inThisOtherBags = itemIsInThisOtherBagsTableIIfA
         --Not the owner of the house we are in or not in a house? Reset the bagid and slotIndex now!
         local isNotInHouseAndBagIsHouseBankBag = (bagIdIIfA ~= nil and IsHouseBankBag(bagIdIIfA) and (not checkIfInHouse() or not checkIfIsOwnerOfHouse()))
         --House bank bag but not in any house/not owner of the house we are in! -> Reset the bagId and slotIndex
@@ -1002,7 +1005,7 @@ end
 function FCOIS.GetRecipeAddonUsed()
     local settings = FCOIS.settingsVars.settings
     local recipeAddonUsed = settings.recipeAddonUsed or 0
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage("getRecipeAddonUsed",tostring(recipeAddonUsed), true, FCOIS_DEBUG_DEPTH_SPAM, false) end
+    if settings.debug then FCOIS.debugMessage("getRecipeAddonUsed",tostring(recipeAddonUsed), true, FCOIS_DEBUG_DEPTH_SPAM, false) end
     return recipeAddonUsed
 end
 local getRecipeAddonUsed = FCOIS.GetRecipeAddonUsed
@@ -1042,8 +1045,7 @@ end
 ------------------------------------------------------------------------------------------------------------------------
 --Function to return the ID of the research addon used
 function FCOIS.GetResearchAddonUsed()
-    local settings = FCOIS.settingsVars.settings
-    local researchAddonUsed = settings.researchAddonUsed or 0
+    local researchAddonUsed = FCOIS.settingsVars.settings.researchAddonUsed or 0
     return researchAddonUsed
 end
 local getResearchAddonUsed = FCOIS.GetResearchAddonUsed
@@ -1096,7 +1098,7 @@ function FCOIS.CheckIfAdvancedFiltersItemCountIsEnabled()
         local AF = AdvancedFilters
         local afUtil = AF.util
         if afUtil.updateInventoryInfoBarCountLabel ~= nil then
-            --AdvancedFilters settings to hide the itemsount in the inventories is disabled?
+            --AdvancedFilters settings to hide the itemCount in the inventories is disabled?
             if AF.settings and AF.settings.hideItemCount == false then
                 FCOIS.preventerVars.useAdvancedFiltersItemCountInInventories = true
                 return true

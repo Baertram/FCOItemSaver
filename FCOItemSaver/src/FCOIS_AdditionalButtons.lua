@@ -7,6 +7,9 @@ if not FCOIS.libsLoadedProperly then return end
 local debugMessage = FCOIS.debugMessage
 local wm = WINDOW_MANAGER
 
+local addonVars = FCOIS.addonVars
+local gAddonName = addonVars.gAddonName
+
 -- =====================================================================================================================
 --  Additional inventory button functions ("flag" buttons / jump to settings button / etc.)
 -- =====================================================================================================================
@@ -216,7 +219,7 @@ function FCOIS.AddAdditionalButtons(buttonName, buttonData)
             --Add or hide a button to the main menu category bar, right to the help button, if enabled in settings
             --AddButton(ZO_MainMenuCategoryBar, "ZO_MainMenuCategoryBarButtonFCOSettings", FCOIS.ShowFCOItemSaverSettings, nil, nil, nil, nil, locVars["button_FCOIS_settings_tooltip"], RIGHT, "/esoui/art/charactercreate/rotate_right_up.dds", "/esoui/art/charactercreate/rotate_right_over.dds", "/esoui/art/charactercreate/rotate_right_down.dds", 32, 32, ZO_MainMenuCategoryBarButton15:GetWidth() + 30, 35, BOTTOM, TOP, ZO_MainMenuCategoryBarButton15, not settings.showFCOISMenuBarButton)
 
-            local descriptor = FCOIS.addonVars.gAddonName
+            local descriptor = gAddonName
             local callbackFnc
             if not FCOIS.LAM then
                 callbackFnc = function() SCENE_MANAGER:Show("gameMenuInGame") end

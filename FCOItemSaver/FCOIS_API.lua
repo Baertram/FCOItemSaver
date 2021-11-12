@@ -1907,6 +1907,10 @@ end
 ---"Max. dynamic icons"
 --> withIcons: Boolean - Add the textures of the marker icons to the list entries
 --> withNoneEntry: Boolean - Add a "- No icon selected -" entry to the dropdown box, as first entry, returning the value of FCOIS_CON_ICON_NONE (-100)
+-->returns:
+--->table iconsDropdownList:				A table with key = non-gap number and value = the FCOIS gear icon text, including the icon and the "none" entry depending on the parameters of the function)
+--->table iconsDropdownValuesList:			A table with key = non-gap number and value = the FCOIS gear icon ID (e.g. FCOIS_CON_ICON_LOCK, etc.), including the icon and the "none" entry depending on the parameters of the function)
+--->table iconsDropdownValuesTooltipsList:	A table with key = non-gap number and value = the FCOIS gear icon tooltip text, including the icon and the "none" entry depending on the parameters of the function)
 function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons, withNoneEntry)
 	if type == nil then type = "standard" end
 	withIcons = withIcons or false
