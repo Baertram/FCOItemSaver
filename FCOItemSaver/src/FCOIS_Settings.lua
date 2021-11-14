@@ -27,6 +27,10 @@ local svSettingsForAllName  = FCOIS.svSettingsForAllName
 local svSettingsName        = FCOIS.svSettingsName
 local svSettingsForEachCharacterName = FCOIS.svSettingsForEachCharacterName
 
+local gMappingVars = FCOIS.mappingVars
+--local filterPanelToFilterButtonMediumOutputText = gMappingVars.filterPanelToFilterButtonMediumOutputText
+local filterPanelToFilterButtonFilterActiveSettingName = gMappingVars.filterPanelToFilterButtonFilterActiveSettingName
+
 local getFCOISMarkerIconSavedVariablesItemId = FCOIS.GetFCOISMarkerIconSavedVariablesItemId
 local rebuildAllowedCraftSkillsForCraftedMarking = FCOIS.RebuildAllowedCraftSkillsForCraftedMarking
 local getNumberOfFilteredItemsForEachPanel = FCOIS.GetNumberOfFilteredItemsForEachPanel
@@ -121,7 +125,7 @@ end
 local getAccountWideCharacterOrNormalCharacterSettings = FCOIS.GetAccountWideCharacterOrNormalCharacterSettings
 
 
---Check if the filterButton's state is on/off/-99 (Show only marked)
+--Check if the filterButton's state is on/off/FCOIS_CON_FILTER_BUTTON_STATE_YELLOW (Show only marked)
 function FCOIS.GetSettingsIsFilterOn(p_filterId, p_filterPanel)
     local p_filterPanelNew = p_filterPanel or FCOIS.gFilterWhere
     local result
@@ -134,7 +138,7 @@ function FCOIS.GetSettingsIsFilterOn(p_filterId, p_filterPanel)
     if result == nil then
         return false
     end
-    if baseSettings.debug then FCOIS.debugMessage( "[GetSettingsIsFilterOn]","Filter Panel: " .. tostring(p_filterPanelNew) .. ", FilterId: " .. tostring(p_filterId) .. ", Result: " .. tostring(result), true, FCOIS_DEBUG_DEPTH_SPAM) end
+    if baseSettings.debug then debugMessage( "[GetSettingsIsFilterOn]","Filter Panel: " .. tostring(p_filterPanelNew) .. ", FilterId: " .. tostring(p_filterId) .. ", Result: " .. tostring(result), true, FCOIS_DEBUG_DEPTH_SPAM) end
     return result
 end
 
@@ -146,7 +150,7 @@ function FCOIS.SetSettingsIsFilterOn(p_filterId, p_value, p_filterPanel)
     --New behaviour with filters
     settings.isFilterPanelOn[p_filterPanelNew] = settings.isFilterPanelOn[p_filterPanelNew] or {}
     settings.isFilterPanelOn[p_filterPanelNew][p_filterId] = p_value
-    if baseSettings.debug then FCOIS.debugMessage( "[SetSettingsIsFilterOn]","Filter Panel: " .. tostring(p_filterPanelNew) .. ", FilterId: " .. tostring(p_filterId) .. ", Value: " .. tostring(p_value), true, FCOIS_DEBUG_DEPTH_SPAM) end
+    if baseSettings.debug then debugMessage( "[SetSettingsIsFilterOn]","Filter Panel: " .. tostring(p_filterPanelNew) .. ", FilterId: " .. tostring(p_filterId) .. ", Value: " .. tostring(p_value), true, FCOIS_DEBUG_DEPTH_SPAM) end
     --return the value
     return p_value
 end
@@ -161,6 +165,11 @@ function FCOIS.GetFilterWhereBySettings(p_filterWhere, onlyAnti)
     if onlyAnti == false then
         FCOIS.settingsVars.settings.atPanelEnabled = FCOIS.settingsVars.settings.atPanelEnabled or {}
         FCOIS.settingsVars.settings.atPanelEnabled[p_filterWhere] = FCOIS.settingsVars.settings.atPanelEnabled[p_filterWhere] or {}
+        --FCOIS 2021-11-14 Get setting's Is filter allowed via mapping table filterPanelToFilterButtonFilterActiveSettingName
+        --Set the resultVar and update the FCOIS.settingsVars.settings.atPanelEnabled array
+        FCOIS.settingsVars.settings.atPanelEnabled[p_filterWhere]["filters"] = settingsAllowed[filterPanelToFilterButtonFilterActiveSettingName[p_filterWhere]]
+
+        --[[ Replaced by code above
         --Set the resultVar and update the FCOIS.settingsVars.settings.atPanelEnabled array
         if     (p_filterWhere == LF_INVENTORY or p_filterWhere == LF_BANK_DEPOSIT or p_filterWhere == LF_GUILDBANK_DEPOSIT or p_filterWhere == LF_HOUSE_BANK_DEPOSIT) then
             FCOIS.settingsVars.settings.atPanelEnabled[p_filterWhere]["filters"] = settingsAllowed.allowInventoryFilter
@@ -221,9 +230,10 @@ function FCOIS.GetFilterWhereBySettings(p_filterWhere, onlyAnti)
         elseif (p_filterWhere == LF_INVENTORY_COMPANION ) then
             FCOIS.settingsVars.settings.atPanelEnabled[p_filterWhere]["filters"] = settingsAllowed.allowCompanionInventoryFilter
         end
+        ]]
     end
 
-    if settingsAllowed.debug then FCOIS.debugMessage( "[getFilterWhereBySettings]", tostring(p_filterWhere) .. " = " .. tostring(settingsAllowed.atPanelEnabled[p_filterWhere]["filters"]), true, FCOIS_DEBUG_DEPTH_SPAM) end
+    if settingsAllowed.debug then debugMessage( "[getFilterWhereBySettings]", tostring(p_filterWhere) .. " = " .. tostring(settingsAllowed.atPanelEnabled[p_filterWhere]["filters"]), true, FCOIS_DEBUG_DEPTH_SPAM) end
     return p_filterWhere
 end
 
@@ -1209,7 +1219,7 @@ function FCOIS.LoadUserSettings(calledFromExternal)
         --If server dependent settings were found (or it's a new installation of FCOIS -> Server dependent variables will be used from the start)
         -->Use these ZO_SavedVariables now for the addon!
         if (FCOIS.defSettingsNonServerDependendFound == false and FCOIS.settingsNonServerDependendFound == false) then
-            FCOIS.debugMessage("LoadUserSettings", "Using server (" .. world .. ") dependent SavedVars", true, FCOIS_DEBUG_DEPTH_NORMAL)
+            debugMessage("LoadUserSettings", "Using server (" .. world .. ") dependent SavedVars", true, FCOIS_DEBUG_DEPTH_NORMAL)
             --Reset the old default non-server dependent settings, if they still exist
             --FCOItemSaver_Settings["Default"] = nil
             if FCOItemSaver_Settings[svDefaultName] then FCOItemSaver_Settings[svDefaultName] = nil end
@@ -1239,7 +1249,7 @@ function FCOIS.LoadUserSettings(calledFromExternal)
             d("|cFF0000>>=====================================================>>|r")
             local debugMsg = "[FCOIS]Found non-server dependent SavedVars -> Migrating them now to server (" .. world .. ") dependent settings"
             d(debugMsg)
-            FCOIS.debugMessage("LoadUserSettings", debugMsg, true, FCOIS_DEBUG_DEPTH_NORMAL)
+            debugMessage("LoadUserSettings", debugMsg, true, FCOIS_DEBUG_DEPTH_NORMAL)
             --First the settings for all
             --Copy the non-server dependent SV data determined above to a new table without "link"
             local oldDefSettings = FCOItemSaver_Settings[svDefaultName][displayName][svAccountWideName][svSettingsForAllName]

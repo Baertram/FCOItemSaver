@@ -50,10 +50,10 @@ local function updateCraftingInventory(filterPanelOverride)
         if settings.atPanelEnabled[FCOIS.gFilterWhere]["filters"] == true then
             --Is the filter we have added the icon for currently enabled(registered)?
             --local isFilterEnabled = FCOIS.getSettingsIsFilterOn(FCOIS.lastVars.gLastFilterId[FCOIS.gFilterWhere], FCOIS.gFilterWhere)
-            --if isFilterEnabled == true or isFilterEnabled == -99 then
+            --if isFilterEnabled == FCOIS_CON_FILTER_BUTTON_STATE_GREEN or isFilterEnabled == FCOIS_CON_FILTER_BUTTON_STATE_YELLOW then
             if settings.debug then debugMessage( "[UpdateCraftingInventory]", "Filter Id: " ..tostring(FCOIS.lastVars.gLastFilterId[FCOIS.gFilterWhere]) .. ", Filter panel Id: " .. tostring(FCOIS.gFilterWhere), true, FCOIS_DEBUG_DEPTH_NORMAL) end
             --libFilterVars.inventoryUpdaters[libFilterVars.filterTypeToUpdaterName[FCOIS.gFilterWhere]]()
-            libFilters:RequestUpdate( FCOIS.gFilterWhere )
+            libFilters:RequestUpdate(FCOIS.gFilterWhere)
             --end
         end
     end
@@ -337,10 +337,10 @@ local function updateInventories()
 --d("[FCOIS]UpdateInventories-libFiters:RequestUpdate("..tostring(FCOIS.gFilterWhere)..")")
             --Is the filter we have added the icon for currently enabled(registered)?
             --local isFilterEnabled = FCOIS.getSettingsIsFilterOn(FCOIS.lastVars.gLastFilterId[FCOIS.gFilterWhere], FCOIS.gFilterWhere)
-            --if isFilterEnabled == true or isFilterEnabled == -99 then
+            --if isFilterEnabled == FCOIS_CON_FILTER_BUTTON_STATE_GREEN or isFilterEnabled == FCOIS_CON_FILTER_BUTTON_STATE_YELLOW then
             --if settings.debug then debugMessage( "[UpdateInventories]", "UpdaterName: " .. libFilterVars.filterTypeToUpdaterName[FCOIS.gFilterWhere], true, FCOIS_DEBUG_DEPTH_NORMAL) end
             --libFilterVars.inventoryUpdaters[libFilterVars.filterTypeToUpdaterName[FCOIS.gFilterWhere]]()
-            libFilters:RequestUpdate( FCOIS.gFilterWhere )
+            libFilters:RequestUpdate(FCOIS.gFilterWhere)
             --end
         end
     end

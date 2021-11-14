@@ -5,6 +5,7 @@ local FCOIS = FCOIS
 --if not FCOIS.libsLoadedProperly then return end
 
 local strformat = string.format
+local debugMessage = FCOIS.debugMessage
 
 --==========================================================================================================================================
 -- 			README PLEASE		README PLEASE			-FCOIS API limitations-			README PLEASE		README PLEASE
@@ -92,7 +93,8 @@ local getItemLinkFromItemId = FCOIS.GetItemLinkFromItemId
 local isCharacterShown = FCOIS.IsCharacterShown
 local isCompanionCharacterShown = FCOIS.IsCompanionCharacterShown
 local buildIconText = FCOIS.BuildIconText
-
+local filterStatus = FCOIS.FilterStatus
+local commandHandler = FCOIS.Command_handler
 
 --------------------------------------------------------------------------------
 -- Local helper functions
@@ -937,7 +939,7 @@ function FCOIS.MarkItem(bag, slot, iconId, showIcon, updateInventories)
 						FCOIS[savedVarsMarkedItemsTableName][iconId][signItemId(itemId, nil, nil, nil, bag, slot)] = itemIsMarked
 					else
 						--Error message
-						FCOIS.debugMessage("[MarkItem]","FCOIS[savedVarsMarkedItemsTableName][iconId] -> Missing iconId ("..tostring(iconId)..") subtable for SV table ("..tostring(savedVarsMarkedItemsTableName) ..")", false, FCOIS_DEBUG_DEPTH_NORMAL, false, true)
+						debugMessage("[MarkItem]","FCOIS[savedVarsMarkedItemsTableName][iconId] -> Missing iconId ("..tostring(iconId)..") subtable for SV table ("..tostring(savedVarsMarkedItemsTableName) ..")", false, FCOIS_DEBUG_DEPTH_NORMAL, false, true)
 					end
 					--d(">> new markedItem value: " .. tostring(FCOIS[getSavedVarsMarkedItemsTableName()][iconId][signItemId(itemId, nil, nil, nil)]))
 				end
@@ -1137,7 +1139,7 @@ function FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon
 						FCOIS[savedVarsMarkedItemsTableName][iconId][signedItemInstanceOrUniqueId] = itemIsMarked
 					else
 						--Error message
-						FCOIS.debugMessage("[MarkItemByItemInstanceId]","FCOIS[savedVarsMarkedItemsTableName][iconId] -> Missing iconId ("..tostring(iconId)..") subtable for SV table ("..tostring(savedVarsMarkedItemsTableName) ..")", false, FCOIS_DEBUG_DEPTH_NORMAL, false, true)
+						debugMessage("[MarkItemByItemInstanceId]","FCOIS[savedVarsMarkedItemsTableName][iconId] -> Missing iconId ("..tostring(iconId)..") subtable for SV table ("..tostring(savedVarsMarkedItemsTableName) ..")", false, FCOIS_DEBUG_DEPTH_NORMAL, false, true)
 					end
 --d(">> new markedItem value: " .. tostring(FCOIS[getSavedVarsMarkedItemsTableName()][iconId][signedItemInstanceOrUniqueId]))
                 end
@@ -1231,7 +1233,7 @@ function FCOIS.IsFiltered(bag, slot, filterId, filterPanelId)
 		end
 
 		--Check all filters, silently (chat output: disabled)
-		filterStatusVar = FCOIS.filterStatus(-1, true, true)
+		filterStatusVar = filterStatus(-1, true, true)
 
 		if (filterId ~= -1) then
 			if (filterId == FCOIS_CON_FILTER_BUTTON_LOCKDYN) then
@@ -1345,9 +1347,9 @@ function FCOIS.ChangeFilter(filterId, libFiltersFilterPanelId)
 	--is the filterPanelId visible?
 	if mappingVars.gFilterPanelIdToInv[libFiltersFilterPanelId]:IsHidden() then return end
 
-	if settings.debug then FCOIS.debugMessage( "[ChangeFilter]","FilterId: " .. tostring(filterId) .. ", FilterPanelId: " .. tostring(libFiltersFilterPanelId) .. ", InventoryName: " .. mappingVars.gFilterPanelIdToInv[libFiltersFilterPanelId]:GetName(), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+	if settings.debug then debugMessage( "[ChangeFilter]","FilterId: " .. tostring(filterId) .. ", FilterPanelId: " .. tostring(libFiltersFilterPanelId) .. ", InventoryName: " .. mappingVars.gFilterPanelIdToInv[libFiltersFilterPanelId]:GetName(), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
 	--Use the chat command handler now to emulate a filter change
-	FCOIS.command_handler("filter" .. tostring(filterId) .. " " .. tostring(libFiltersFilterPanelId))
+	command_handler("filter" .. tostring(filterId) .. " " .. tostring(libFiltersFilterPanelId))
 end -- FCOChangeFilter
 
 --Function to check if the inventory context menu should not be shown as the user pressed the SHIFT key + right mouse button
@@ -1471,7 +1473,7 @@ function FCOIS.MarkItemByKeybind(iconId, p_bagId, p_slotIndex, removeMarkers)
 	local doCompanionItemChecks = FCOIS.DoCompanionItemChecks
     --bag and slot could be retrieved?
     if bagId ~= nil and slotIndex ~= nil then
-        if settings.debug then FCOIS.debugMessage( "[MarkItemByKeybind]","Bag: " .. tostring(bagId) .. ", slot: " .. tostring(slotIndex), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+        if settings.debug then debugMessage( "[MarkItemByKeybind]","Bag: " .. tostring(bagId) .. ", slot: " .. tostring(slotIndex), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
 --d("[FCOIS.MarkItemByKeybind] Bag: " .. tostring(bagId) .. ", slot: " .. tostring(slotIndex) .. ", controlBelowMouse: ".. tostring(controlBelowMouse) .. ", controlTypeBelowMouse: " .. tostring(controlTypeBelowMouse))
 		--local mappingVars = FCOIS.mappingVars
         --Check if the item is currently marked with this icon, or not
@@ -1907,6 +1909,10 @@ end
 ---"Max. dynamic icons"
 --> withIcons: Boolean - Add the textures of the marker icons to the list entries
 --> withNoneEntry: Boolean - Add a "- No icon selected -" entry to the dropdown box, as first entry, returning the value of FCOIS_CON_ICON_NONE (-100)
+-->returns:
+--->table iconsDropdownList:				A table with key = non-gap number and value = the FCOIS gear icon text, including the icon and the "none" entry depending on the parameters of the function)
+--->table iconsDropdownValuesList:			A table with key = non-gap number and value = the FCOIS gear icon ID (e.g. FCOIS_CON_ICON_LOCK, etc.), including the icon and the "none" entry depending on the parameters of the function)
+--->table iconsDropdownValuesTooltipsList:	A table with key = non-gap number and value = the FCOIS gear icon tooltip text, including the icon and the "none" entry depending on the parameters of the function)
 function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons, withNoneEntry)
 	if type == nil then type = "standard" end
 	withIcons = withIcons or false

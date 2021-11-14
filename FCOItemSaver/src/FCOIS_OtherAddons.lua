@@ -11,6 +11,10 @@ local strlen = string.len
 local strsub = string.sub
 
 local mappingVars = FCOIS.mappingVars
+local bagsToBuildIdFor = mappingVars.bagsToBuildItemInstanceOrUniqueIdFor
+
+local checkVars = FCOIS.checkVars
+local allowedUniqueItemTypes = checkVars.uniqueIdItemTypes
 
 local getSavedVarsMarkedItemsTableName       = FCOIS.GetSavedVarsMarkedItemsTableName
 local getFCOISMarkerIconSavedVariablesItemId = FCOIS.GetFCOISMarkerIconSavedVariablesItemId
@@ -101,7 +105,7 @@ local checkIfWritItemShouldBeMarked = FCOIS.CheckIfWritItemShouldBeMarked
 --Function to check if CraftBagExtended or AwesomeGuildStore are active
 function FCOIS.CheckIfCBEorAGSActive(parentFilterPanelId, checkWithoutParentFilterPanelId)
     checkWithoutParentFilterPanelId = checkWithoutParentFilterPanelId or false
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[Other addons]","checkIfCBEorAGSActive - parentFilterPanelId: " .. tostring(parentFilterPanelId) ..", checkWithoutParentFilterPanelId: " .. tostring(checkWithoutParentFilterPanelId), true, FCOIS_DEBUG_DEPTH_SPAM) end
+    if FCOIS.settingsVars.settings.debug then debugMessage( "[Other addons]","checkIfCBEorAGSActive - parentFilterPanelId: " .. tostring(parentFilterPanelId) ..", checkWithoutParentFilterPanelId: " .. tostring(checkWithoutParentFilterPanelId), true, FCOIS_DEBUG_DEPTH_SPAM) end
     local addonActive = false
     --Do the check only for the other addons enabled
     if checkWithoutParentFilterPanelId then
@@ -110,13 +114,13 @@ function FCOIS.CheckIfCBEorAGSActive(parentFilterPanelId, checkWithoutParentFilt
     else
         --Do the checks together for the other addons enabled AND the parent filter panel ID given from the craftbag's fragment callback function
         if parentFilterPanelId == nil then
-            if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[Other addons]","checkIfCBEorAGSActive <<< aborted", true, FCOIS_DEBUG_DEPTH_SPAM) end
+            if FCOIS.settingsVars.settings.debug then debugMessage( "[Other addons]","checkIfCBEorAGSActive <<< aborted", true, FCOIS_DEBUG_DEPTH_SPAM) end
             return false
         end
         --CraftBagExtended addon is active, or AwesomeGuildStore addon is active and we are at the CraftBag panel of AGS's guild store sell tab
         addonActive = otherAddons.craftBagExtendedActive or (otherAddons.AGSActive and parentFilterPanelId == LF_GUILDSTORE_SELL)
     end
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[Other addons]", "checkIfCBEorAGSActive > addonActive: " .. tostring(addonActive), true, FCOIS_DEBUG_DEPTH_SPAM) end
+    if FCOIS.settingsVars.settings.debug then debugMessage( "[Other addons]", "checkIfCBEorAGSActive > addonActive: " .. tostring(addonActive), true, FCOIS_DEBUG_DEPTH_SPAM) end
     return addonActive
 end
 local checkIfCBEorAGSActive = FCOIS.CheckIfCBEorAGSActive
@@ -566,8 +570,6 @@ local checkIfOtherAddonIIfAIsActive = FCOIS.CheckIfOtherAddonIIfAIsActive
 --Get the itemInstance or the unique ID of an item at bagId and slotIndex, or at the itemLink
 function FCOIS.GetItemInstanceOrUniqueId(bagId, slotIndex, itemLink)
     if bagId == nil or slotIndex == nil then return 0, false end
-    local bagsToBuildIdFor = mappingVars.bagsToBuildItemInstanceOrUniqueIdFor
-    local allowedUniqueIdItemTypes = FCOIS.allowedUniqueIdItemTypes
     local itemInstanceOrUniqueId = 0
     local isBagToBuildItemInstanceOrUniqueId = bagsToBuildIdFor[bagId] or false
     local allowedItemType
@@ -591,14 +593,14 @@ function FCOIS.GetItemInstanceOrUniqueId(bagId, slotIndex, itemLink)
                 --local itemInstanceId = GetItemInstanceId(bagId, slotIndex)
                 local itemInstanceId = GetItemId(bagId, slotIndex)
                 itemInstanceOrUniqueId = FCOIS.CreateFCOISUniqueIdString(itemInstanceId, allowedUniqueIdItemType, bagId, slotIndex, itemLink)
-                if settings.debug then FCOIS.debugMessage( "[getItemInstanceOrUniqueId]", strformat("bag: %s, slot: %s, itemLink: %s, itemInstanceId: %s, FCOISUniqueId: %s", tostring(bagId), tostring(slotIndex), tostring(itemLink), tostring(itemInstanceId), tostring(itemInstanceOrUniqueId)), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+                if settings.debug then debugMessage( "[getItemInstanceOrUniqueId]", strformat("bag: %s, slot: %s, itemLink: %s, itemInstanceId: %s, FCOISUniqueId: %s", tostring(bagId), tostring(slotIndex), tostring(itemLink), tostring(itemInstanceId), tostring(itemInstanceOrUniqueId)), true, FCOIS_DEBUG_DEPTH_NORMAL) end
             end
         else
             itemInstanceOrUniqueId = GetItemInstanceId(bagId, slotIndex)
         end
         ]]
         itemInstanceOrUniqueId, allowedItemType = getFCOISMarkerIconSavedVariablesItemId(bagId, slotIndex, nil, useUniqueIds, uniqueItemIdType)
-        if settings.debug then FCOIS.debugMessage("[getItemInstanceOrUniqueId]", strformat("bag: %s, slot: %s, itemLink: %s, itemInstanceOrUniqueId: %s", tostring(bagId), tostring(slotIndex), tostring(itemLink), tostring(itemInstanceOrUniqueId)), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        if settings.debug then debugMessage("[getItemInstanceOrUniqueId]", strformat("bag: %s, slot: %s, itemLink: %s, itemInstanceOrUniqueId: %s", tostring(bagId), tostring(slotIndex), tostring(itemLink), tostring(itemInstanceOrUniqueId)), true, FCOIS_DEBUG_DEPTH_NORMAL) end
     end
     return itemInstanceOrUniqueId, isBagToBuildItemInstanceOrUniqueId
 end
@@ -862,7 +864,7 @@ function FCOIS.MyGetItemInstanceIdForIIfA(clickedDataLine, signToo)
     local useUniqueIds = settings.useUniqueIds
     local uniqueItemIdType = settings.uniqueItemIdType
     local allowedItemType
-    if settings.debug then FCOIS.debugMessage( "[MyGetItemInstanceIdForIIfA]","ownedByLoggedInChar: " .. tostring(ownedByLoggedInChar) .. ", useUniqueIds: " .. tostring(settings.useUniqueIds) .. ", allowedItemType: " .. tostring(allowedItemType) .. ", bagId: " .. tostring(bagId) .. ", slotIndex: " ..tostring(slotIndex) .. ", itemId: " ..tostring(itemId), true, FCOIS_DEBUG_DEPTH_ALL) end
+    if settings.debug then debugMessage( "[MyGetItemInstanceIdForIIfA]","ownedByLoggedInChar: " .. tostring(ownedByLoggedInChar) .. ", useUniqueIds: " .. tostring(settings.useUniqueIds) .. ", allowedItemType: " .. tostring(allowedItemType) .. ", bagId: " .. tostring(bagId) .. ", slotIndex: " ..tostring(slotIndex) .. ", itemId: " ..tostring(itemId), true, FCOIS_DEBUG_DEPTH_ALL) end
     --Item owned by the currently logged in character,
     --or it's in the account wide bags and the itemId was not fetched yet (for guild bag items e.g.)
     --or the itemId is not fetched yet but bagId and slotIndex (to build it) are given, but bag is not worn or player inventory
@@ -882,7 +884,7 @@ function FCOIS.MyGetItemInstanceIdForIIfA(clickedDataLine, signToo)
                 --local itemInstanceId = GetItemInstanceId(bagId, slotIndex)
                 local itemIdOfItem = GetItemId(bagId, slotIndex)
                 itemId = FCOIS.CreateFCOISUniqueIdString(itemIdOfItem, allowedItemType, bagId, slotIndex, itemLink)
-                if settings.debug then FCOIS.debugMessage( "[MyGetItemInstanceIdForIIfA]", strformat("bag: %s, slot: %s, itemLink: %s, itemInstanceId: %s, FCOISUniqueId: %s", tostring(bagId), tostring(slotIndex), tostring(itemLink), tostring(itemInstanceId), tostring(itemId)), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+                if settings.debug then debugMessage( "[MyGetItemInstanceIdForIIfA]", strformat("bag: %s, slot: %s, itemLink: %s, itemInstanceId: %s, FCOISUniqueId: %s", tostring(bagId), tostring(slotIndex), tostring(itemLink), tostring(itemInstanceId), tostring(itemId)), true, FCOIS_DEBUG_DEPTH_NORMAL) end
             end
         else
             itemId = GetItemInstanceId(bagId, slotIndex)
@@ -973,12 +975,13 @@ function FCOIS.CheckForIIfARightClickedRow(rowControl)
     --Set the read IIfA saved variable data to the FCOIS global variable for the inventory right-clicked context menu row
     if itemInstanceOrUniqueIdIIfA ~= nil or (bagIdIIfA ~= nil and slotIndexIIfA ~= nil) then
         FCOIS.IIfAclicked = {}
-        FCOIS.IIfAclicked.itemInstanceOrUniqueId = itemInstanceOrUniqueIdIIfA
-        FCOIS.IIfAclicked.itemLink = itemLinkIIfA
-        FCOIS.IIfAclicked.bagId = bagIdIIfA
-        FCOIS.IIfAclicked.slotIndex = slotIndexIIfA
-        FCOIS.IIfAclicked.ownedByChars = ownedByCharsTableIIfA
-        FCOIS.IIfAclicked.inThisOtherBags = itemIsInThisOtherBagsTableIIfA
+        local IIfAclicked = FCOIS.IIfAclicked
+        IIfAclicked.itemInstanceOrUniqueId = itemInstanceOrUniqueIdIIfA
+        IIfAclicked.itemLink = itemLinkIIfA
+        IIfAclicked.bagId = bagIdIIfA
+        IIfAclicked.slotIndex = slotIndexIIfA
+        IIfAclicked.ownedByChars = ownedByCharsTableIIfA
+        IIfAclicked.inThisOtherBags = itemIsInThisOtherBagsTableIIfA
         --Not the owner of the house we are in or not in a house? Reset the bagid and slotIndex now!
         local isNotInHouseAndBagIsHouseBankBag = (bagIdIIfA ~= nil and IsHouseBankBag(bagIdIIfA) and (not checkIfInHouse() or not checkIfIsOwnerOfHouse()))
         --House bank bag but not in any house/not owner of the house we are in! -> Reset the bagId and slotIndex
@@ -1002,7 +1005,7 @@ end
 function FCOIS.GetRecipeAddonUsed()
     local settings = FCOIS.settingsVars.settings
     local recipeAddonUsed = settings.recipeAddonUsed or 0
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage("getRecipeAddonUsed",tostring(recipeAddonUsed), true, FCOIS_DEBUG_DEPTH_SPAM, false) end
+    if settings.debug then debugMessage("getRecipeAddonUsed",tostring(recipeAddonUsed), true, FCOIS_DEBUG_DEPTH_SPAM, false) end
     return recipeAddonUsed
 end
 local getRecipeAddonUsed = FCOIS.GetRecipeAddonUsed
@@ -1014,7 +1017,7 @@ function FCOIS.CheckIfRecipeAddonUsed()
     or (otherAddons.craftStoreFixedAndImprovedActive and CraftStoreFixedAndImprovedLongClassName ~= nil and CraftStoreFixedAndImprovedLongClassName.IsLearnable ~= nil) then
         retVar = true
     end
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage("checkIfRecipeAddonUsed", tostring(retVar), true, FCOIS_DEBUG_DEPTH_SPAM, false) end
+    if FCOIS.settingsVars.settings.debug then debugMessage("checkIfRecipeAddonUsed", tostring(retVar), true, FCOIS_DEBUG_DEPTH_SPAM, false) end
     return retVar
 end
 
@@ -1029,7 +1032,7 @@ function FCOIS.CheckIfChosenRecipeAddonActive(recipeAddonId)
     elseif recipeAddonId == FCOIS_RECIPE_ADDON_CSFAI then
         retVar = (otherAddons.craftStoreFixedAndImprovedActive and CraftStoreFixedAndImprovedLongClassName ~= nil and CraftStoreFixedAndImprovedLongClassName.IsLearnable ~= nil) or false
     end
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage("checkIfChosenRecipeAddonActive","recipeAddonId: "..tostring(recipeAddonId) .. ", retVar: " ..tostring(retVar), true, FCOIS_DEBUG_DEPTH_SPAM, false) end
+    if FCOIS.settingsVars.settings.debug then debugMessage("checkIfChosenRecipeAddonActive","recipeAddonId: "..tostring(recipeAddonId) .. ", retVar: " ..tostring(retVar), true, FCOIS_DEBUG_DEPTH_SPAM, false) end
     return retVar
 end
 
@@ -1042,8 +1045,7 @@ end
 ------------------------------------------------------------------------------------------------------------------------
 --Function to return the ID of the research addon used
 function FCOIS.GetResearchAddonUsed()
-    local settings = FCOIS.settingsVars.settings
-    local researchAddonUsed = settings.researchAddonUsed or 0
+    local researchAddonUsed = FCOIS.settingsVars.settings.researchAddonUsed or 0
     return researchAddonUsed
 end
 local getResearchAddonUsed = FCOIS.GetResearchAddonUsed
@@ -1096,7 +1098,7 @@ function FCOIS.CheckIfAdvancedFiltersItemCountIsEnabled()
         local AF = AdvancedFilters
         local afUtil = AF.util
         if afUtil.updateInventoryInfoBarCountLabel ~= nil then
-            --AdvancedFilters settings to hide the itemsount in the inventories is disabled?
+            --AdvancedFilters settings to hide the itemCount in the inventories is disabled?
             if AF.settings and AF.settings.hideItemCount == false then
                 FCOIS.preventerVars.useAdvancedFiltersItemCountInInventories = true
                 return true
@@ -1197,7 +1199,7 @@ function FCOIS.CheckIfOtherAddonsActiveAfterPlayerActivated()
     if (otherAddons.inventoryGridViewActive == false) then
         local gridViewControlName = wm:GetControlByName(otherAddons.GRIDVIEWBUTTON, "")
         if gridViewControlName ~= nil or InventoryGridView then
-            if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[Other addons]", "Addon Inventory Gridview is active", false) end
+            if FCOIS.settingsVars.settings.debug then debugMessage( "[Other addons]", "Addon Inventory Gridview is active", false) end
             FCOIS.otherAddons.inventoryGridViewActive = true
         end
     end
@@ -1205,7 +1207,7 @@ function FCOIS.CheckIfOtherAddonsActiveAfterPlayerActivated()
     if (otherAddons.chatMerchantActive == false) then
         local chatMerchantControlName = wm:GetControlByName(otherAddons.CHATMERCHANTBUTTON, "")
         if chatMerchantControlName ~=  nil then
-            if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[Other addons]", "Addon ChatMerchant is active", false) end
+            if FCOIS.settingsVars.settings.debug then debugMessage( "[Other addons]", "Addon ChatMerchant is active", false) end
             FCOIS.otherAddons.chatMerchantActive = true
         end
     end

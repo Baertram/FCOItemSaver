@@ -1276,7 +1276,7 @@ function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, do
             --Show the marked item in the chat via debug message
             local scanTypeCapitalText
             scanTypeCapitalText = zo_strf("<<C:1>>", scanType)
-            if settings.debug then FCOIS.debugMessage( "[ScanInventoryFor".. scanTypeCapitalText or ts(scanType) .."]", chatBegin .. itemLink .. chatEnd, false) end
+            if settings.debug then debugMessage( "[ScanInventoryFor".. scanTypeCapitalText or ts(scanType) .."]", chatBegin .. itemLink .. chatEnd, false) end
         end
     end -- if bag ~= nil and slot ~= nil then
     --Return the functions return variables now
@@ -1732,7 +1732,7 @@ function FCOIS.ScanInventorySingle(p_bagId, p_slotIndex, checksAlreadyDoneTable)
     local settings = FCOIS.settingsVars.settings
     local isIconEnabledSettings = settings.isIconEnabled
     if FCOIS.preventerVars.gScanningInv == false then
-        if settings.debug then FCOIS.debugMessage( "[ScanInventorySingle]","Start", false, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+        if settings.debug then debugMessage( "[ScanInventorySingle]","Start", false, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
 --d("[ScanInventorySingle] Start - checksAlreadyDoneTable['recipes']: " ..ts(checksAlreadyDoneTable["recipes"]))
         -- Update only one item in inventory
         -- bagId AND slotIndex are given?
@@ -1852,7 +1852,7 @@ function FCOIS.ScanInventorySingle(p_bagId, p_slotIndex, checksAlreadyDoneTable)
         --Inventory scan is latest finished here
         --FCOIS.preventerVars.gScanningInv = false
     end
-    if settings.debug then FCOIS.debugMessage( "[ScanInventorySingle]","End", false, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+    if settings.debug then debugMessage( "[ScanInventorySingle]","End", false, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
 --d("[ScanInventorySingle] END, updateInv: " .. ts(updateInv))
     return updateInv
 end
@@ -1914,7 +1914,7 @@ function FCOIS.ScanInventory(p_bagId, p_slotIndex, doEcho)
         -- Scan the whole inventory because no bagId and slotIndex are given
         if p_bagId == nil or p_slotIndex == nil then
             --d("[ScanInventory] Start ALL")
-            if settings.debug then FCOIS.debugMessage( "[ScanInventory]","Start ALL", false, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+            if settings.debug then debugMessage( "[ScanInventory]","Start ALL", false, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
 
             if p_bagId == nil and p_slotIndex ~= nil then
                 return
@@ -1949,7 +1949,7 @@ function FCOIS.ScanInventory(p_bagId, p_slotIndex, doEcho)
                     d(strformat(prefixFCOISRed .. " " .. fcoisLoc["options_scan_automatic_marks_scan_bag_finished"], filterPanelText))
                 end
             end
-            if settings.debug then FCOIS.debugMessage( "[ScanInventory]","End ALL", false, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+            if settings.debug then debugMessage( "[ScanInventory]","End ALL", false, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
 --d("[ScanInventory] END ALL")
 
         else

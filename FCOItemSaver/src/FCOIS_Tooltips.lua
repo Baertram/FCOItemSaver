@@ -44,9 +44,9 @@ function FCOIS.CreateToolTip(markerControl, markerId, doHide, pUpdateAllEquipmen
 
     --[[
     if not doAbort then
-        if settings.debug then FCOIS.debugMessage( "[CreateToolTip]","MarkerControl: " .. markerControl:GetName() .. ", markerId: " .. tostring(markerId) .. ", doHide: " .. tostring(doHide) .. "EquipmentSlot: " .. tostring(pIsEquipmentSlot), true, FCOIS_DEBUG_DEPTH_ALL) end
+        if settings.debug then debugMessage( "[CreateToolTip]","MarkerControl: " .. markerControl:GetName() .. ", markerId: " .. tostring(markerId) .. ", doHide: " .. tostring(doHide) .. "EquipmentSlot: " .. tostring(pIsEquipmentSlot), true, FCOIS_DEBUG_DEPTH_ALL) end
     else
-        if settings.debug then FCOIS.debugMessage( "[CreateToolTip]", "<<Aborting!", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        if settings.debug then debugMessage( "[CreateToolTip]", "<<Aborting!", true, FCOIS_DEBUG_DEPTH_NORMAL) end
     end
     ]]
 

@@ -9,7 +9,8 @@ local zo_strf = zo_strformat
 
 local em = EVENT_MANAGER
 
-local gAddonName = FCOIS.addonVars.gAddonName
+local addonVars = FCOIS.addonVars
+local gAddonName = addonVars.gAddonName
 local ctrlVars = FCOIS.ZOControlVars
 --==========================================================================================================================================
 --													FCOIS EVENT callback functions
@@ -27,7 +28,6 @@ local changeContextMenuInvokerButtonColorByPanelId = FCOIS.ChangeContextMenuInvo
 local hideContextMenu = FCOIS.HideContextMenu
 local checkIfAutomaticMarksAreDisabledAtBag = FCOIS.CheckIfAutomaticMarksAreDisabledAtBag
 local checkIfIsImprovableCraftSkill = FCOIS.CheckIfIsImprovableCraftSkill
-local resetImprovementVarsForReMark = FCOIS.ResetImprovementVarsForReMark
 local checkIfImprovedItemShouldBeReMarked_AfterImprovement = FCOIS.CheckIfImprovedItemShouldBeReMarked_AfterImprovement
 local checkIfImprovedItemShouldBeReMarked_BeforeImprovement = FCOIS.CheckIfImprovedItemShouldBeReMarked_BeforeImprovement
 local checkIfCraftedItemShouldBeMarked = FCOIS.CheckIfCraftedItemShouldBeMarked
@@ -56,7 +56,7 @@ local destroySelectionHandler = FCOIS.DestroySelectionHandler
 
 --Event callback function if a retrait station is opened
 local function FCOItemsaver_RetraitStationInteract(event)
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[EVENT]","Retrait station interact", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+    if FCOIS.settingsVars.settings.debug then debugMessage( "[EVENT]","Retrait station interact", true, FCOIS_DEBUG_DEPTH_NORMAL) end
     FCOIS.gFilterWhere = LF_RETRAIT
 end
 
@@ -70,7 +70,7 @@ end
 local function FCOItemSaver_Open_Store(p_storeIndicator)
     FCOIS.preventerVars.gActiveFilterPanel = true
     p_storeIndicator = p_storeIndicator or "vendor"
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage("[EVENT]","Open store: " .. p_storeIndicator, true, FCOIS_DEBUG_DEPTH_NORMAL) end
+    if FCOIS.settingsVars.settings.debug then debugMessage("[EVENT]","Open store: " .. p_storeIndicator, true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
     --Reset the anti-destroy settings if needed (e.g. bank was opened directly after inventory was closed, without calling other panels in between)
     onClosePanel(LF_INVENTORY, nil, "DESTROY")
@@ -225,7 +225,7 @@ end
 
 --Event upon closing of a vendor store
 local function FCOItemSaver_Close_Store()
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[EVENT]","Close store", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+    if FCOIS.settingsVars.settings.debug then debugMessage( "[EVENT]","Close store", true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
     onClosePanel(FCOIS.gFilterWhere, LF_INVENTORY, "STORE")
 end
@@ -233,7 +233,7 @@ end
 --Event upon opening of a guild store
 local function FCOItemSaver_Open_Trading_House()
     FCOIS.preventerVars.gActiveFilterPanel = true
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[EVENT]","Open trading house", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+    if FCOIS.settingsVars.settings.debug then debugMessage( "[EVENT]","Open trading house", true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
     --Reset the anti-destroy settings if needed (e.g. bank was opened directly after inventory was closed, without calling other panels in between)
     onClosePanel(LF_INVENTORY, nil, "DESTROY")
@@ -270,7 +270,7 @@ end
 
 --Event upon closing of a guild store
 local function FCOItemSaver_Close_Trading_House()
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[EVENT]","Close trading house", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+    if FCOIS.settingsVars.settings.debug then debugMessage( "[EVENT]","Close trading house", true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
     onClosePanel(FCOIS.gFilterWhere, LF_INVENTORY, "GUILD_STORE")
 end
@@ -316,7 +316,7 @@ local function FCOItemSaver_Open_Guild_Bank()
     onClosePanel(LF_INVENTORY, nil, "DESTROY")
 
     local settings = FCOIS.settingsVars.settings
-    if settings.debug then FCOIS.debugMessage( "[EVENT]","Open guild bank", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+    if settings.debug then debugMessage( "[EVENT]","Open guild bank", true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
     FCOIS.preventerVars.blockGuildBankWithoutWithdrawAtGuildBankOpen = settings.blockGuildBankWithoutWithdraw
 
@@ -338,7 +338,7 @@ end
 
 --Event upon closing of a guild bank
 local function FCOItemSaver_Close_Guild_Bank()
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[EVENT]","Close guild bank", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+    if FCOIS.settingsVars.settings.debug then debugMessage( "[EVENT]","Close guild bank", true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
     em:UnregisterForEvent(gAddonName.."_GUILDBANK", EVENT_INVENTORY_SINGLE_SLOT_UPDATE)
     em:UnregisterForEvent(gAddonName.."_GUILDBANK_ITEMS_READY", EVENT_GUILD_BANK_ITEMS_READY)
@@ -353,7 +353,7 @@ local function FCOItemSaver_Open_Player_Bank(event, bagId)
     local isHouseBank = IsHouseBankBag(bagId) or false
     FCOIS.preventerVars.gActiveFilterPanel = true
     local settings = FCOIS.settingsVars.settings
-    if settings.debug then FCOIS.debugMessage( "[EVENT]","Open bank - bagId: " .. tostring(bagId) .. ", isHouseBank: " .. tostring(isHouseBank), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+    if settings.debug then debugMessage( "[EVENT]","Open bank - bagId: " .. tostring(bagId) .. ", isHouseBank: " .. tostring(isHouseBank), true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
     --Reset the anti-destroy settings if needed (e.g. bank was opened directly after inventory was closed, without calling other panels in between)
     onClosePanel(LF_INVENTORY, nil, "DESTROY")
@@ -404,7 +404,7 @@ end
 
 --Event upon closing of a player bank
 local function FCOItemSaver_Close_Player_Bank()
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[EVENT]","Close bank", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+    if FCOIS.settingsVars.settings.debug then debugMessage( "[EVENT]","Close bank", true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
     em:UnregisterForEvent(gAddonName.."_BANK", EVENT_INVENTORY_SINGLE_SLOT_UPDATE)
 
@@ -413,7 +413,7 @@ end
 
 --Event upon closing of the trade panel
 local function FCOItemSaver_Close_Trade_Panel()
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[EVENT]","End trading", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+    if FCOIS.settingsVars.settings.debug then debugMessage( "[EVENT]","End trading", true, FCOIS_DEBUG_DEPTH_NORMAL) end
     em:UnregisterForEvent(gAddonName, EVENT_TRADE_CANCELED)
     em:UnregisterForEvent(gAddonName, EVENT_TRADE_SUCCEEDED)
     em:UnregisterForEvent(gAddonName, EVENT_TRADE_FAILED)
@@ -424,7 +424,7 @@ end
 --Event upon opening of the trade panel
 local function FCOItemSaver_Open_Trade_Panel()
     FCOIS.preventerVars.gActiveFilterPanel = true
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[EVENT]","Start trading", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+    if FCOIS.settingsVars.settings.debug then debugMessage( "[EVENT]","Start trading", true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
     --Reset the anti-destroy settings if needed (e.g. bank was opened directly after inventory was closed, without calling other panels in between)
     onClosePanel(LF_INVENTORY, nil, "DESTROY")
@@ -442,7 +442,7 @@ end
 --[[
 --event handler for ACTION LAYER POPPED
 local function FCOItemsaver_OnActionLayerPopped(layerIndex, activeLayerIndex)
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[Action layer]","Popped] LayerIndex: " .. tostring(layerIndex) .. ", ActiveLayerIndex: " .. tostring(activeLayerIndex), false) end
+    if FCOIS.settingsVars.settings.debug then debugMessage( "[Action layer]","Popped] LayerIndex: " .. tostring(layerIndex) .. ", ActiveLayerIndex: " .. tostring(activeLayerIndex), false) end
     --ActiveLayerIndex = 3 will be opened in most cases
     if activeLayerIndex == 3 then
         --Hide the context menu at last active panel
@@ -468,15 +468,13 @@ end
 
 local function FCOItemSaver_Craft_Failed(eventId, craftSkill)
     unregisterCraftStartedEvents()
-    resetImprovementVarsForReMark()
 end
 
 
 --Event upon closing of a crafting station
 local function FCOItemSaver_End_Crafting_Interact()
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[EVENT]","End crafting", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+    if FCOIS.settingsVars.settings.debug then debugMessage( "[EVENT]","End crafting", true, FCOIS_DEBUG_DEPTH_NORMAL) end
     unregisterCraftStartedEvents()
-    resetImprovementVarsForReMark()
 
     onClosePanel(FCOIS.gFilterWhere, LF_INVENTORY, "CRAFTING_STATION")
 end
@@ -492,24 +490,20 @@ local function FCOItemSaver_Craft_Completed(eventId, craftSkill)
     --Check if item got improved and if the marker icons from before improvement should be re-marked on the improved item
     if checkIfIsImprovableCraftSkill(craftSkill) == true then
         checkIfImprovedItemShouldBeReMarked_AfterImprovement()
-    else
-        resetImprovementVarsForReMark()
     end
-
     unregisterCraftStartedEvents()
 end
 
 --event handler for EVENT_CRAFT_STARTED
 local function FCOItemSaver_Craft_Started(_, craftSkill)
     em:RegisterForEvent(gAddonName, EVENT_CRAFT_COMPLETED,  FCOItemSaver_Craft_Completed)
-    em:RegisterForEvent(gAddonName, EVENT_CRAFT_FAILED,     FCOItemSaver_Craft_Failed)
+    em:RegisterForEvent(gAddonName, EVENT_CRAFT_FAILED, FCOItemSaver_Craft_Failed)
 
 --d("[FCOIS] EVENT CraftStarted - craftSkill: " .. tostring(craftSkill))
     --Check if new crafted item should be marked with the "crafted" marker icon
     checkIfCraftedItemShouldBeMarked(craftSkill)
 
     --Check if item get's improved and if the marker icons from before improvement should be remembered
-    resetImprovementVarsForReMark()
     if checkIfIsImprovableCraftSkill(craftSkill) == true then
 --d(">>is improvable craftskill")
         checkIfImprovedItemShouldBeReMarked_BeforeImprovement()
@@ -524,14 +518,14 @@ local function FCOItemSaver_Crafting_Interact(_, craftSkill)
 
     --Abort if crafting station type is invalid
     if craftSkill == 0 then return end
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[EVENT]","Crafting Interact: Craft skill: ".. tostring(craftSkill), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+    if FCOIS.settingsVars.settings.debug then debugMessage( "[EVENT]","Crafting Interact: Craft skill: ".. tostring(craftSkill), true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
     --Reset the anti-destroy settings if needed (e.g. bank was opened directly after inventory was closed, without calling other panels in between)
     onClosePanel(LF_INVENTORY, nil, "DESTROY")
 
     --ALCHEMY
     if craftSkill == CRAFTING_TYPE_ALCHEMY then
-        if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[EVENT]",">ALCHEMY Crafting station opened]", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        if FCOIS.settingsVars.settings.debug then debugMessage( "[EVENT]",">ALCHEMY Crafting station opened]", true, FCOIS_DEBUG_DEPTH_NORMAL) end
         --Hide the context menu at last active panel
         hideContextMenu(FCOIS.gFilterWhere)
 
@@ -622,13 +616,13 @@ local function FCOItemSaver_Inv_Single_Slot_Update(_, bagId, slotId, isNewItem, 
         --Only check for normal player inventory
         --if (bagId == BAG_BACKPACK) then
             if settings.debug then
-                FCOIS.debugMessage( "[EVENT]","InventorySingleSlotUpdated==============", true, FCOIS_DEBUG_DEPTH_NORMAL)
-                FCOIS.debugMessage( "[EVENT]",">NewItem=" .. tostring(isNewItem) .. ", bagId=" .. bagId .. ", slotIndex=" .. slotId .. ", updateReason=" .. tostring(updateReason), true, FCOIS_DEBUG_DEPTH_NORMAL)
+                debugMessage( "[EVENT]","InventorySingleSlotUpdated==============", true, FCOIS_DEBUG_DEPTH_NORMAL)
+                debugMessage( "[EVENT]",">NewItem=" .. tostring(isNewItem) .. ", bagId=" .. bagId .. ", slotIndex=" .. slotId .. ", updateReason=" .. tostring(updateReason), true, FCOIS_DEBUG_DEPTH_NORMAL)
             end
             --if(FCOIS.preventerVars.canUpdateInv == true) then
             --FCOIS.preventerVars.canUpdateInv = false
             zo_callLater(function()
-                if settings.debug then FCOIS.debugMessage( "[EVENT]",">executed now! bagId=" .. bagId .. ", slotIndex=" .. slotId, true, FCOIS_DEBUG_DEPTH_NORMAL) end
+                if settings.debug then debugMessage( "[EVENT]",">executed now! bagId=" .. bagId .. ", slotIndex=" .. slotId, true, FCOIS_DEBUG_DEPTH_NORMAL) end
                 --Scan the inventory item for automatic marker icons which should be set
                 if not checkIfAutomaticMarksAreDisabledAtBag(bagId) then
                     FCOIS.preventerVars.eventInventorySingleSlotUpdate = true
@@ -685,7 +679,7 @@ end
 -- handler function for EVENT_INVENTORY_SLOT_UNLOCKED global event
 -- will be fired (after EVENT_INVENTORY_SLOT_LOCKED) if you have pickuped an item (e.g. by drag&drop) and drop it again
 local function FCOItemSaver_OnInventorySlotUnLocked(self, bag, slot)
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[Event]","OnInventorySlotUnLocked: bag: " .. tostring(bag) .. ", slot: " .. tostring(slot), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+    if FCOIS.settingsVars.settings.debug then debugMessage( "[Event]","OnInventorySlotUnLocked: bag: " .. tostring(bag) .. ", slot: " .. tostring(slot), true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
     if (bag == BAG_WORN or bag == BAG_COMPANION_WORN) and FCOIS.preventerVars.gItemSlotIsLocked == true then
         --If item was unequipped: Remove the armor type marker if necessary
@@ -708,7 +702,7 @@ end
 --> First function called if you drag an item from the inventories:
 ----> Check file src/FCOIS_Hooks.lua, function FCOItemSaver_OnDragStart(...)
 local function FCOItemSaver_OnInventorySlotLocked(self, bag, slot)
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[Event]","OnInventorySlotLocked: bag: " .. tostring(bag) .. ", slot: " .. tostring(slot), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+    if FCOIS.settingsVars.settings.debug then debugMessage( "[Event]","OnInventorySlotLocked: bag: " .. tostring(bag) .. ", slot: " .. tostring(slot), true, FCOIS_DEBUG_DEPTH_NORMAL) end
 --d("[FCOIS]EVENT_INVENTORY_SLOT_LOCKED-bagId: " ..tostring(bag) ..", slotIndex: " ..tostring(slot))
 
     FCOIS.preventerVars.gItemSlotIsLocked = true
@@ -938,7 +932,7 @@ local function FCOItemSaver_Player_Activated(...)
     --Disable this addon if we are in GamePad mode
     if not FCOIS.FCOItemSaver_CheckGamePadMode(true) then
         local settings = FCOIS.settingsVars.settings
-        if settings.debug then FCOIS.debugMessage( "[EVENT]","Player activated", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        if settings.debug then debugMessage( "[EVENT]","Player activated", true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
         --Get the currently logged in character name
         FCOIS.currentlyLoggedInCharName = zo_strf(SI_UNIT_NAME, GetUnitName("player"))
@@ -1012,7 +1006,7 @@ local function FCOItemSaver_Loaded(eventCode, addOnName)
         if(addOnName ~= gAddonName) then
             return
         end
-        if FCOIS.settingsVars.settings ~= nil and FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[EVENT]","FCOItemSaver Loaded]", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        if FCOIS.settingsVars.settings ~= nil and FCOIS.settingsVars.settings.debug then debugMessage( "[EVENT]","FCOItemSaver Loaded]", true, FCOIS_DEBUG_DEPTH_NORMAL) end
         --d("[FCOIS -Event- FCOItemSaver_Loaded]")
 
         --Unregister this event again so it isn't fired again after this addon has beend recognized
@@ -1026,7 +1020,7 @@ local function FCOItemSaver_Loaded(eventCode, addOnName)
 
         if not FCOIS.FCOItemSaver_CheckGamePadMode(true) then
 
-            if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[EVENT]", "Addon loading begins...", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+            if FCOIS.settingsVars.settings.debug then debugMessage( "[EVENT]", "Addon loading begins...", true, FCOIS_DEBUG_DEPTH_NORMAL) end
             FCOIS.addonVars.gAddonLoaded = false
             FCOIS.preventerVars.gAddonStartupInProgress = true
 
@@ -1134,7 +1128,7 @@ local function FCOItemSaver_Loaded(eventCode, addOnName)
             --Do keybinding stuff
             FCOIS.InitializeInventoryKeybind()
 
-            if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[EVENT]", "Addon startup finished!", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+            if FCOIS.settingsVars.settings.debug then debugMessage( "[EVENT]", "Addon startup finished!", true, FCOIS_DEBUG_DEPTH_NORMAL) end
         end --gamepad active check
     else
         FCOIS.addonVars.gAddonLoaded = false

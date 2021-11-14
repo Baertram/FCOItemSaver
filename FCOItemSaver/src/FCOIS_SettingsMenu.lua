@@ -155,7 +155,7 @@ end
 local function updateFilterButtonColorAndTexture(filterButtonNr, iconNr)
     local p_button = wm:GetControlByName(ZOsControlVars.FCOISfilterButtonNames[filterButtonNr], "")
     if p_button == nil or filterButtonNr == nil or iconNr == nil then return end
-    updateFCOISFilterButtonColorsAndTextures(iconNr, p_button, -999)
+    updateFCOISFilterButtonColorsAndTextures(iconNr, p_button, FCOIS_CON_FILTER_BUTTON_STATE_DO_NOT_UPDATE_COLOR)
 end
 
 local function changePreviewLabelText(previewType, iconNr, text, doNotUpdateMarkers)
@@ -2759,7 +2759,7 @@ d("[FCOIS]DEBUG-SettingsMenu 2422- filterPanelId is nil! addInvBtnInvokerData so
                     setFunc = function(value)
                         for i,v in pairs(languageOptions) do
                             if v == value then
-                                if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[Settings]","language v: " .. tostring(v) .. ", i: " .. tostring(i), false) end
+                                if FCOIS.settingsVars.settings.debug then debugMessage( "[Settings]","language v: " .. tostring(v) .. ", i: " .. tostring(i), false) end
                                 FCOIS.settingsVars.defaultSettings.language = i
                                 --Tell the FCOISsettings that you have manually chosen the language and want to keep it
                                 --Read in function Localization() after ReloadUI()
@@ -2798,7 +2798,7 @@ d("[FCOIS]DEBUG-SettingsMenu 2422- filterPanelId is nil! addInvBtnInvokerData so
                     setFunc = function(value)
                         for i,v in ipairs(savedVariablesOptions) do
                             if v == value then
-                                if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[Settings]","save mode v: " .. tostring(v) .. ", i: " .. tostring(i), false) end
+                                if FCOIS.settingsVars.settings.debug then debugMessage( "[Settings]","save mode v: " .. tostring(v) .. ", i: " .. tostring(i), false) end
                                 FCOIS.settingsVars.defaultSettings.saveMode = i
                                 --ReloadUI()
                             end

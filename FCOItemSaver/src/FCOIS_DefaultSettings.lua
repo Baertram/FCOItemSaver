@@ -335,10 +335,15 @@ function FCOIS.BuildDefaultSettings()
 			isCrafted = true,
 			isCraftedBy = true,
 		},
+
+		--[[ FCOIS v2.2.4
 		allowedUniqueIdItemTypes = {
 			[ITEMTYPE_ARMOR]	= true,
 			[ITEMTYPE_WEAPON] 	= true,
 		},
+		]]
+		allowedUniqueIdItemTypes = nil, --set nil as it is not used anymore!
+
 		allowedFCOISUniqueIdItemTypes = {
 			[ITEMTYPE_ARMOR]	= true,
 			[ITEMTYPE_WEAPON] 	= true,

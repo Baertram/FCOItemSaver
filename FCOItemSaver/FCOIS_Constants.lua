@@ -2,6 +2,7 @@
 if FCOIS == nil then FCOIS = {} end
 local FCOIS = FCOIS
 
+local tos = tostring
 local strformat = string.format
 local strlen = string.len
 
@@ -10,8 +11,7 @@ local strlen = string.len
 FCOIS.addonVars = {}
 local addonVars = FCOIS.addonVars
 --Addon variables
-addonVars.addonVersionOptions 		    = '2.2.2' -- version shown in the settings panel
-addonVars.addonVersionOptionsNumber	    = 2.22
+addonVars.addonVersionOptions 		    = '2.2.4' -- version shown in the settings panel
 --The addon name, normal and decorated with colors etc.
 addonVars.gAddonName				    = "FCOItemSaver"
 addonVars.gAddonNameShort               = "FCOIS"
@@ -39,9 +39,11 @@ addonVars.gAddonLoaded				= false
 addonVars.gPlayerActivated			= false
 addonVars.gSettingsLoaded			= false
 
+local gAddonName = addonVars.gAddonName
+
 --Dummy SCENE information for file FCOIS_functions.lua -> function FCOIS.getCurrentSceneInfo()
 FCOIS.dummyScene = {
-    ["name"] = addonVars.gAddonName
+    ["name"] = gAddonName
 }
 
 --Constants for the unique itemId types
@@ -53,7 +55,7 @@ FCOIS.temporaryUseUniqueIds = {}
 
 --SavedVariables constants
 local savedVarsMarkedItems = "markedItems"
-addonVars.savedVarName				= addonVars.gAddonName .. "_Settings"
+addonVars.savedVarName				= gAddonName .. "_Settings"
 addonVars.savedVarVersion		   	= 0.10 -- Changing this will reset all SavedVariables!
 --The subtables for the marked items. markedItems will be used for the non-unique and the ZOs really unique IDs.
 --markedItemsFCOISUnique will be used for the FCOIS created unique IDs.
@@ -244,6 +246,19 @@ FCOIS_CON_FILTER_BUTTON_LOCKDYN			= 1
 FCOIS_CON_FILTER_BUTTON_GEARSETS		= 2
 FCOIS_CON_FILTER_BUTTON_RESDECIMP		= 3
 FCOIS_CON_FILTER_BUTTON_SELLGUILDINT	= 4
+--Filter button state
+FCOIS_CON_FILTER_BUTTON_STATE_GREEN     = true
+FCOIS_CON_FILTER_BUTTON_STATE_YELLOW    = -99
+FCOIS_CON_FILTER_BUTTON_STATE_RED       = false
+--Filter button special states
+FCOIS_CON_FILTER_BUTTON_STATE_DO_NOT_UPDATE_COLOR = -999 --Do not update the colors if called from FCOIS settings menu
+
+--Filter button color
+mappingVars.filterButtonColors = {
+    [FCOIS_CON_FILTER_BUTTON_STATE_GREEN]     = { 0, 1, 0, 1 },
+    [FCOIS_CON_FILTER_BUTTON_STATE_YELLOW]    = { 1, 1, 0, 1 },
+    [FCOIS_CON_FILTER_BUTTON_STATE_RED]       = { 1, 0, 0, 1 },
+}
 
 --Custom filterPanelIds, not offical of LibFilters, only given within FCOIS (for the "flag" context menu buttons e.g.)
 FCOIS_CON_LF_CHARACTER              = "character"
@@ -435,16 +450,8 @@ FCOIS.improvementVars = {}
 FCOIS.enchantingVars = {}
 FCOIS.enchantingVars.lastMarkerIcons = {}
 
---Handlers for the check functions (e.g. FCOIS.IsItemprotected() in file FCOIS_Protection.lua)
-FCOIS.checkHandlers = {}
-
 --Last item's markers (set by clicking the divider if enabled in the settings)
 FCOIS.lastMarkedIcons			= nil
-
---Improvement re-marking of items
-FCOIS.improvementVars.improvementBagId		= nil
-FCOIS.improvementVars.improvementSlotIndex	= nil
-FCOIS.improvementVars.improvementMarkedIcons = nil
 
 --Entries for the context menu submenu entries, and the dynamic icons submenu entries
 FCOIS.customMenuVars.customMenuSubEntries		= {}
@@ -452,9 +459,10 @@ FCOIS.customMenuVars.customMenuDynSubEntries	= {}
 FCOIS.customMenuVars.customMenuCurrentCounter 	= 0
 contextMenuVars.contextMenuIndex 			= -1
 
---The allowed check handlers (see function FCOIS.checkIfItemIsProtected() in file FCOIS_Protection.lua)
-FCOIS.checkHandlers["gear"]     = true
-FCOIS.checkHandlers["dynamic"]  = true
+--Handlers for the check functions (see function FCOIS.IsItemprotected() in file FCOIS_Protection.lua)
+checkVars.checkHandlers = {}
+checkVars.checkHandlers["gear"]     = true
+checkVars.checkHandlers["dynamic"]  = true
 
 --The mapping between the FCOIS settings ID and the real server name (for the SavedVars)
 mappingVars.serverNames = {
@@ -483,7 +491,7 @@ mappingVars.bagToPlayerInv = {
     [BAG_VIRTUAL]           = INVENTORY_CRAFT_BAG,
 }
 --The mapping table for the bagIds where an itemInstanceId or uniqueId should be build for, in other addons, in order
---to use these for the (un)marking of items (e.g. within addon Inventory Insight from ashes, IIfA)
+--to use these for the (un)marking of items (e.g. within addon Inventory Insight from Ashes, IIfA)
 mappingVars.bagsToBuildItemInstanceOrUniqueIdFor =  {
     --non account wide, as it used bagId and slotIndex
     [BAG_WORN]              = true,
@@ -691,6 +699,42 @@ mappingVars.whereAreWeToAlertmessageText = {}
 --The array with the medium text part for the context menu at filter buttons (e.g. tooltip)
 --> filled at src/FCOIS_Localization.lua, function FCOIS.Localization()
 mappingVars.filterPanelToFilterButtonMediumOutputText = {}
+
+--The array with the "is filter active" setting "text". Used to check if the filter button is enabled at the panel
+--via check to FCOIS.settingsVars.settings[FCOIS.mappingVars.filterPanelToFilterButtonFilterActiveSettingName[LF_*]]
+--> Used in files src/FCOIS_Settings.lua, function FCOIS.GetFilterWhereBySettings and
+--> src/FCOIS_FilterButtons.lua, local function filterStatusLoop (used in slash commands)
+local allowInvFilterStr =   "allowInventoryFilter"
+local allowEnchantFilter =  "allowEnchantingFilter"
+mappingVars.filterPanelToFilterButtonFilterActiveSettingName = {
+    [LF_INVENTORY] =                allowInvFilterStr,
+    [LF_BANK_DEPOSIT] =             allowInvFilterStr,
+    [LF_GUILDBANK_DEPOSIT] =        "allowInvFilterStr",
+    [LF_HOUSE_BANK_DEPOSIT] =       "allowInvFilterStr",
+    [LF_CRAFTBAG] =                 "allowCraftBagFilter",
+    [LF_VENDOR_BUY] =               "allowVendorBuyFilter",
+    [LF_VENDOR_BUYBACK] =           "allowVendorBuybackFilter",
+    [LF_VENDOR_REPAIR] =            "allowVendorRepairFilter",
+    [LF_FENCE_SELL] =               "allowFenceFilter",
+    [LF_FENCE_LAUNDER] =            "allowLaunderFilter",
+    [LF_GUILDBANK_WITHDRAW] =       "allowGuildBankFilter",
+    [LF_GUILDSTORE_SELL] =          "allowTradinghouseFilter",
+    [LF_BANK_WITHDRAW] =            "allowBankFilter",
+    [LF_HOUSE_BANK_WITHDRAW] =      "allowBankFilter",
+    [LF_SMITHING_REFINE] =          "allowRefinementFilter",
+    [LF_SMITHING_DECONSTRUCT] =     "allowDeconstructionFilter",
+    [LF_SMITHING_IMPROVEMENT] =     "allowImprovementFilter",
+    [LF_SMITHING_RESEARCH] =        "allowResearchFilter",
+    [LF_JEWELRY_REFINE] =           "allowJewelryRefinementFilter",
+    [LF_JEWELRY_DECONSTRUCT] =      "allowJewelryDeconstructionFilter",
+    [LF_JEWELRY_IMPROVEMENT] =      "allowJewelryImprovementFilter",
+    [LF_JEWELRY_RESEARCH] =         "allowJewelryResearchFilter",
+    [LF_MAIL_SEND] =                "allowMailFilter",
+    [LF_TRADE] =                    "allowTradeFilter",
+    [LF_ENCHANTING_EXTRACTION] =    allowEnchantFilter,
+    [LF_ENCHANTING_CREATION] =      allowEnchantFilter,
+    [LF_INVENTORY_COMPANION] =      "allowCompanionInventoryFilter",
+}
 
 
 --The active filter panel Ids (filter panel Id = inventory types above!)
@@ -1685,7 +1729,7 @@ end
 
 --The itemtypes that are allowed to be marked with unique item IDs by ZOS uniqueIDs
 --All not listed item types (or listed with "false") will be saved with the non-unique itemInstanceId
-FCOIS.allowedUniqueIdItemTypes = {
+checkVars.uniqueIdItemTypes = {
     [ITEMTYPE_ARMOR]        =   true,
     [ITEMTYPE_WEAPON]       =   true,
 }
@@ -1696,10 +1740,11 @@ FCOIS.allowedUniqueIdItemTypes = {
 --->    filled in file /src/FCOIS_DefaultSettings.lua, and then managed in file /src/FCOIS_SettingsMenu.lua
 
 --The allowed craftskills for automatic marking of "crafted" marker icon
--->Filled in file src/FCOIS_Functions.lua, function FCOIS.rebuildAllowedCraftSkillsForCraftedMarking(craftType)
+-->Filled in file src/FCOIS_Functions.lua, function FCOIS.RebuildAllowedCraftSkillsForCraftedMarking(craftType)
 --->Using SavedVariable settings (FCOIS.settingsVars.settings.allowedCraftSkillsForCraftedMarking) for the craftskills!
 ----> See file src/FCOIS_SettingsMenu.lua, function FCOIS.BuildAddonMenu, "options_auto_mark_crafted_items_panel_ ..."
-FCOIS.allowedCraftSkillsForCraftedMarking = {}
+checkVars.craftSkillsForCraftedMarking = {}
+
 --The crafting creation panels, or the functions to check if they are shown
 FCOIS.craftingCreatePanelControlsOrFunction = {}
 --Drag & drop variables
@@ -1775,9 +1820,9 @@ FCOIS.eventHandlers = {}
 
 --Table to map the FCOIS.settingsVars.settings filter state to the output text identifier
 mappingVars.settingsFilterStateToText = {
-	["true"]  = "on",
-    ["false"] = "off",
-    ["-99"]   = "onlyfiltered",
+	[tos(FCOIS_CON_FILTER_BUTTON_STATE_GREEN)]  = "on",
+    [tos(FCOIS_CON_FILTER_BUTTON_STATE_YELLOW)] = "onlyfiltered",
+    [tos(FCOIS_CON_FILTER_BUTTON_STATE_RED)]    = "off",
 }
 
 --Table to map iconId to relating filterId
@@ -2073,19 +2118,19 @@ checkVars.weaponTypeCheckTable = {
    },
    }
 --Table with allowed item traits for ornate items
-checkVars.allowedOrnateItemTraits = {
+checkVars.ornateItemTraits = {
 	[ITEM_TRAIT_TYPE_ARMOR_ORNATE]   = true,
 	[ITEM_TRAIT_TYPE_JEWELRY_ORNATE] = true,
 	[ITEM_TRAIT_TYPE_WEAPON_ORNATE]  = true,
 }
 --Table with allowed item traits for intricate items
-checkVars.allowedIntricateItemTraits = {
+checkVars.intricateItemTraits = {
     [ITEM_TRAIT_TYPE_ARMOR_INTRICATE]   = true,
     [ITEM_TRAIT_TYPE_WEAPON_INTRICATE]  = true,
     [ITEM_TRAIT_TYPE_JEWELRY_INTRICATE] = true,
 }
 --Table with allowed item types for researching
-checkVars.allowedResearchableItemTypes = {
+checkVars.researchableItemTypes = {
    	[ITEMTYPE_ARMOR]			=
     {
     	allowed = true,
@@ -2134,7 +2179,7 @@ checkVars.allowedResearchableItemTypes = {
 }
 
 --Table with the allowed set item types
-checkVars.allowedSetItemTypes = {
+checkVars.setItemTypes = {
 	[ITEMTYPE_ARMOR]	= true,
 	[ITEMTYPE_WEAPON]	= true,
 }

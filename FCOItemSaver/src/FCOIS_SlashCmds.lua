@@ -9,6 +9,13 @@ local debugMessage = FCOIS.debugMessage
 local strgmatch = string.gmatch
 local strlower = string.lower
 local strlen = string.len
+local tos = tostring
+local ton = tonumber
+
+local showConfirmationDialog = FCOIS.ShowConfirmationDialog
+
+local doFilter = FCOIS.DoFilter
+local filterStatus = FCOIS.FilterStatus
 
 -- =====================================================================================================================
 --  Slash commands & command handler functions
@@ -38,19 +45,13 @@ end
 local function status()
     local locVars = FCOIS.localizationVars.fcois_loc
     d(locVars["chatcommands_status_info"])
-
     --Check all filters, not silently (chat output: enabled)
-    FCOIS.filterStatus(-1, false, false)
-
-    if (FCOIS.settingsVars.settings.debug == true) then
-        d(locVars["chatcommands_debug_on"])
-    else
-        d(locVars["chatcommands_debug_off"])
-    end
+    filterStatus(-1, false, false)
+    d((FCOIS.settingsVars.settings.debug == true and locVars["chatcommands_debug_on"]) or locVars["chatcommands_debug_off"])
 end
 
 --Check the commands ppl type to the chat
-function FCOIS.command_handler(args)
+function FCOIS.Command_handler(args)
     local locVars = FCOIS.localizationVars.fcois_loc
     local preVars = FCOIS.preChatVars
     local settings = FCOIS.settingsVars.settings
@@ -93,18 +94,18 @@ function FCOIS.command_handler(args)
         local doClearBackup = false
         local apiVersion = FCOIS.APIversion
         if options[2] ~= nil and options[2] ~= "" then
-            withDetails = toboolean(tostring(options[2])) or false
+            withDetails = toboolean(tos(options[2])) or false
         end
         if options[3] ~= nil and options[3] ~= "" and strlen(options[3]) == FCOIS.APIVersionLength then
-            apiVersion = tonumber(options[3])
+            apiVersion = ton(options[3])
         end
         if options[4] ~= nil and options[4] ~= "" then
             doClearBackup = toboolean(options[4]) or false
         end
-        local title = locVars["options_backup_marker_icons"] .. " - API " .. tostring(apiVersion)
+        local title = locVars["options_backup_marker_icons"] .. " - API " .. tos(apiVersion)
         local body = locVars["options_backup_marker_icons_warning"]
         --Show confirmation dialog
-        FCOIS.ShowConfirmationDialog("BackupMarkerIconsDialog", title, body, function() FCOIS.preBackup("unique", withDetails, apiVersion, doClearBackup) end, nil, nil, nil, true)
+        showConfirmationDialog("BackupMarkerIconsDialog", title, body, function() FCOIS.preBackup("unique", withDetails, apiVersion, doClearBackup) end, nil, nil, nil, true)
     elseif options[1] == "restore" or options[1] == "widerherstellung" then
         --Restore
         local withDetails = false
@@ -113,12 +114,12 @@ function FCOIS.command_handler(args)
             withDetails = true
         end
         if options[3] ~= nil and options[3] ~= "" and strlen(options[3]) == FCOIS.APIVersionLength then
-            apiVersion = tonumber(options[3])
+            apiVersion = ton(options[3])
         end
-        local title = locVars["options_restore_marker_icons"] .. " - API " .. tostring(apiVersion)
+        local title = locVars["options_restore_marker_icons"] .. " - API " .. tos(apiVersion)
         local body = locVars["options_restore_marker_icons_warning"]
         --Show confirmation dialog
-        FCOIS.ShowConfirmationDialog("RestoreMarkerIconsDialog", title, body, function() FCOIS.preRestore("unique", withDetails, apiVersion) end, nil, nil, nil, true)
+        showConfirmationDialog("RestoreMarkerIconsDialog", title, body, function() FCOIS.preRestore("unique", withDetails, apiVersion) end, nil, nil, nil, true)
     --Debug chat commands
     elseif(options[1] == "debug" or options[1] == "d") then
         settings.debug = not settings.debug
@@ -143,17 +144,17 @@ function FCOIS.command_handler(args)
             if value < FCOIS_DEBUG_DEPTH_NORMAL then value = FCOIS_DEBUG_DEPTH_NORMAL end
             if value > FCOIS_DEBUG_DEPTH_ALL then value = FCOIS_DEBUG_DEPTH_ALL end
             settings.debugDepth = value
-            d(preVars.preChatTextGreen .. locVars["chatcommands_debugdepth"] .. tostring(value))
+            d(preVars.preChatTextGreen .. locVars["chatcommands_debugdepth"] .. tos(value))
         else
             local value = options[2] -- 2nd parameter is the debug depth
-            if value ~= nil then value = tonumber(value) end
+            if value ~= nil then value = ton(value) end
             if value == nil or type(value) ~= "number" then
                 value = 1
             end
             if value < FCOIS_DEBUG_DEPTH_NORMAL then value = FCOIS_DEBUG_DEPTH_NORMAL end
             if value > FCOIS_DEBUG_DEPTH_ALL then value = FCOIS_DEBUG_DEPTH_ALL end
             settings.debugDepth = value
-            d(preVars.preChatTextGreen .. locVars["chatcommands_debugdepth"] .. tostring(value))
+            d(preVars.preChatTextGreen .. locVars["chatcommands_debugdepth"] .. tos(value))
         end
     --Filter chat commands
     else
@@ -161,7 +162,7 @@ function FCOIS.command_handler(args)
         if (options[3] ~= nil and (options[3] == false or options[3] == true or options[3] == "show")) then
             opt3 = true
             if 	   (options[3]=="show" or options[3]=="montre" or options[3]=="zeigen") then
-                options[3] = -99
+                options[3] = FCOIS_CON_FILTER_BUTTON_STATE_YELLOW
             elseif (options[3]==true or options[3]=="true" or options[3]=="vrai" or options[3]=="an") then
                 options[3] = 1
             elseif (options[3]==false or options[3]=="false" or options[3]=="faux" or options[3]=="aus") then
@@ -171,55 +172,55 @@ function FCOIS.command_handler(args)
 
         if(options[1] == "filter1" or options[1] == "filtre1") then
             if (opt3) then
-                FCOIS.doFilter(tonumber(options[3]), nil, FCOIS_CON_FILTER_BUTTON_LOCKDYN, false, false, true, false, tonumber(options[2]))
+                doFilter(ton(options[3]), nil, FCOIS_CON_FILTER_BUTTON_LOCKDYN, false, false, true, false, ton(options[2]))
             else
                 if (options[2] ~= nil) then
-                    FCOIS.doFilter(-1, nil, FCOIS_CON_FILTER_BUTTON_LOCKDYN, false, false, true, false, tonumber(options[2]))
+                    doFilter(-1, nil, FCOIS_CON_FILTER_BUTTON_LOCKDYN, false, false, true, false, ton(options[2]))
                 else
-                    FCOIS.doFilter(-1, nil, FCOIS_CON_FILTER_BUTTON_LOCKDYN, false, false, true, false)
+                    doFilter(-1, nil, FCOIS_CON_FILTER_BUTTON_LOCKDYN, false, false, true, false)
                 end
             end
         elseif(options[1] == "filter2" or options[1] == "filtre2") then
             if (opt3) then
-                FCOIS.doFilter(tonumber(options[3]), nil, FCOIS_CON_FILTER_BUTTON_GEARSETS, false, false, true, false, tonumber(options[2]))
+                doFilter(ton(options[3]), nil, FCOIS_CON_FILTER_BUTTON_GEARSETS, false, false, true, false, ton(options[2]))
             else
                 if (options[2] ~= nil) then
-                    FCOIS.doFilter(-1, nil, FCOIS_CON_FILTER_BUTTON_GEARSETS, false, false, true, false, tonumber(options[2]))
+                    doFilter(-1, nil, FCOIS_CON_FILTER_BUTTON_GEARSETS, false, false, true, false, ton(options[2]))
                 else
-                    FCOIS.doFilter(-1, nil, FCOIS_CON_FILTER_BUTTON_GEARSETS, false, false, true, false)
+                    doFilter(-1, nil, FCOIS_CON_FILTER_BUTTON_GEARSETS, false, false, true, false)
                 end
             end
         elseif(options[1] == "filter3" or options[1] == "filtre3") then
             if (opt3) then
-                FCOIS.doFilter(tonumber(options[3]), nil, FCOIS_CON_FILTER_BUTTON_RESDECIMP, false, false, true, false, tonumber(options[2]))
+                doFilter(ton(options[3]), nil, FCOIS_CON_FILTER_BUTTON_RESDECIMP, false, false, true, false, ton(options[2]))
             else
                 if (options[2] ~= nil) then
-                    FCOIS.doFilter(-1, nil, FCOIS_CON_FILTER_BUTTON_RESDECIMP, false, false, true, false, tonumber(options[2]))
+                    doFilter(-1, nil, FCOIS_CON_FILTER_BUTTON_RESDECIMP, false, false, true, false, ton(options[2]))
                 else
-                    FCOIS.doFilter(-1, nil, FCOIS_CON_FILTER_BUTTON_RESDECIMP, false, false, true, false)
+                    doFilter(-1, nil, FCOIS_CON_FILTER_BUTTON_RESDECIMP, false, false, true, false)
                 end
             end
         elseif(options[1] == "filter4" or options[1] == "filtre4") then
             if (opt3) then
-                FCOIS.doFilter(tonumber(options[3]), nil, FCOIS_CON_FILTER_BUTTON_SELLGUILDINT, false, false, true, false, tonumber(options[2]))
+                doFilter(ton(options[3]), nil, FCOIS_CON_FILTER_BUTTON_SELLGUILDINT, false, false, true, false, ton(options[2]))
             else
                 if (options[2] ~= nil) then
-                    FCOIS.doFilter(-1, nil, FCOIS_CON_FILTER_BUTTON_SELLGUILDINT, false, false, true, false, tonumber(options[2]))
+                    doFilter(-1, nil, FCOIS_CON_FILTER_BUTTON_SELLGUILDINT, false, false, true, false, ton(options[2]))
                 else
-                    FCOIS.doFilter(-1, nil, FCOIS_CON_FILTER_BUTTON_SELLGUILDINT, false, false, true, false)
+                    doFilter(-1, nil, FCOIS_CON_FILTER_BUTTON_SELLGUILDINT, false, false, true, false)
                 end
             end
         elseif(options[1] == "filtern" or options[1] == "filter" or options[1] == "filtres") then
             if (opt3) then
                 for i=1, numFilters, 1 do
-                    FCOIS.doFilter(tonumber(options[3]), nil, i, false, false, true, false, tonumber(options[2]))
+                    doFilter(ton(options[3]), nil, i, false, false, true, false, ton(options[2]))
                 end
             else
                 for i=1, numFilters, 1 do
                     if (options[2] ~= nil) then
-                        FCOIS.doFilter(-1, nil, i, false, false, true, false, tonumber(options[2]))
+                        doFilter(-1, nil, i, false, false, true, false, ton(options[2]))
                     else
-                        FCOIS.doFilter(-1, nil, i, false, false, true, false)
+                        doFilter(-1, nil, i, false, false, true, false)
                     end
                 end
             end
@@ -228,9 +229,9 @@ function FCOIS.command_handler(args)
                 for j=1, FCOIS.numVars.gFCONumFilterInventoryTypes, 1 do
                     if actFilterPanelId[j] == true then
                         if (options[2] ~= nil) then
-                            FCOIS.doFilter(1, nil, i, false, false, true, false, j, tonumber(options[2]))
+                            doFilter(1, nil, i, false, false, true, false, j, ton(options[2]))
                         else
-                            FCOIS.doFilter(1, nil, i, false, false, true, false, j)
+                            doFilter(1, nil, i, false, false, true, false, j)
                         end
                     end
                 end
@@ -240,9 +241,9 @@ function FCOIS.command_handler(args)
                 for j=1, FCOIS.numVars.gFCONumFilterInventoryTypes, 1 do
                     if actFilterPanelId[j] == true then
                         if (options[2] ~= nil) then
-                            FCOIS.doFilter(2, nil, i, false, false, true, false, j, tonumber(options[2]))
+                            doFilter(2, nil, i, false, false, true, false, j, ton(options[2]))
                         else
-                            FCOIS.doFilter(2, nil, i, false, false, true, false, j)
+                            doFilter(2, nil, i, false, false, true, false, j)
                         end
                     end
                 end
@@ -252,9 +253,9 @@ function FCOIS.command_handler(args)
                 for j=1, FCOIS.numVars.gFCONumFilterInventoryTypes, 1 do
                     if actFilterPanelId[j] == true then
                         if (options[2] ~= nil) then
-                            FCOIS.doFilter(-99, nil, i, false, false, true, false, j, tonumber(options[2]))
+                            doFilter(FCOIS_CON_FILTER_BUTTON_STATE_YELLOW, nil, i, false, false, true, false, j, ton(options[2]))
                         else
-                            FCOIS.doFilter(-99, nil, i, false, false, true, false, j)
+                            doFilter(FCOIS_CON_FILTER_BUTTON_STATE_YELLOW, nil, i, false, false, true, false, j)
                         end
                     end
                 end
@@ -262,10 +263,11 @@ function FCOIS.command_handler(args)
         end
     end
 end
+local commandHandler = FCOIS.Command_handler
 
 --Register the slash commands
 function FCOIS.RegisterSlashCommands()
     -- Register slash commands
-    SLASH_COMMANDS["/fcoitemsaver"] = FCOIS.command_handler
-    SLASH_COMMANDS["/fcois"] 		= FCOIS.command_handler
+    SLASH_COMMANDS["/fcoitemsaver"] = commandHandler
+    SLASH_COMMANDS["/fcois"] 		= commandHandler
 end
