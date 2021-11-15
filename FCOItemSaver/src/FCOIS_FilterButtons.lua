@@ -85,6 +85,10 @@ local function outputFilterState(p_outputToChat, p_panelId, p_filterId, p_stateT
     --Create the outputText
     outputText = preChatText .. filterPanelToMediumOutputText[p_panelId] .. filterStateText
 
+    --FCOIS v2.2.4 - Add the logical AND or logical OR information
+    local filterButtonSettingsUseLogicalAND =  settings.filterButtonSettings[p_panelId][p_filterId]["filterWithLogicalAND"]
+    outputText = (filterButtonSettingsUseLogicalAND and outputText .. " AND") or  (outputText .. " OR")
+
     --Add another tooltip line with the currently selected lock & dynamic icons filter?
     if p_filterId == FCOIS_CON_FILTER_BUTTON_LOCKDYN and settings.splitLockDynFilter then
         outputText = outputText .. "\n"
@@ -1111,31 +1115,31 @@ function FCOIS.AddOrChangeFCOISFilterButton(parentWindow, buttonId, pWidth, pHei
     button:SetHandler("OnMouseEnter", function(self)
         if settings.showFilterButtonTooltip == true then
             local panelId = FCOIS.gFilterWhere
-            tooltipText = outputFilterState(false, self.FCOfilterPanelId, self.FCObuttonId, settingsFilterStateToText[tos(getSettingsIsFilterOn(self.FCObuttonId, self.FCOfilterPanelId))])
-            if tooltipText ~= "" then
-                local contextMenu = FCOIS.contextMenu
-                local showToolTip = true
-                --Don't show a tooltip if the context menu for LOCKDYN is shown at the filter button
-                local contextMenuFilterButton1 = contextMenu.LockDynFilter[panelId]
-                if contextMenuFilterButton1 ~= nil then
-                    showToolTip = contextMenuFilterButton1:IsHidden()
-                end
-                --Don't show a tooltip if the context menu for gear sets is shown at the filter button
-                local contextMenuFilterButton2 = contextMenu.GearSetFilter[panelId]
-                if contextMenuFilterButton2 ~= nil then
-                    showToolTip = contextMenuFilterButton2:IsHidden()
-                end
-                --Don't show a tooltip if the context menu for research, deconstruction & improvement is shown at the filter button
-                local contextMenuFilterButton3 = contextMenu.ResDecImpFilter[panelId]
-                if showToolTip and contextMenuFilterButton3 ~= nil then
-                    showToolTip = contextMenuFilterButton3:IsHidden()
-                end
-                --Don't show a tooltip if the context menu for sell, sell at guild store & intricate is shown at the filter button
-                local contextMenuFilterButton4 = contextMenu.SellGuildIntFilter[panelId]
-                if showToolTip and contextMenuFilterButton4 ~= nil then
-                    showToolTip = contextMenuFilterButton4:IsHidden()
-                end
-                if showToolTip then
+            local contextMenu = FCOIS.contextMenu
+            local showToolTip = true
+            --Don't show a tooltip if the context menu for LOCKDYN is shown at the filter button
+            local contextMenuFilterButton1 = contextMenu.LockDynFilter[panelId]
+            if contextMenuFilterButton1 ~= nil then
+                showToolTip = contextMenuFilterButton1:IsHidden()
+            end
+            --Don't show a tooltip if the context menu for gear sets is shown at the filter button
+            local contextMenuFilterButton2 = contextMenu.GearSetFilter[panelId]
+            if contextMenuFilterButton2 ~= nil then
+                showToolTip = contextMenuFilterButton2:IsHidden()
+            end
+            --Don't show a tooltip if the context menu for research, deconstruction & improvement is shown at the filter button
+            local contextMenuFilterButton3 = contextMenu.ResDecImpFilter[panelId]
+            if showToolTip and contextMenuFilterButton3 ~= nil then
+                showToolTip = contextMenuFilterButton3:IsHidden()
+            end
+            --Don't show a tooltip if the context menu for sell, sell at guild store & intricate is shown at the filter button
+            local contextMenuFilterButton4 = contextMenu.SellGuildIntFilter[panelId]
+            if showToolTip and contextMenuFilterButton4 ~= nil then
+                showToolTip = contextMenuFilterButton4:IsHidden()
+            end
+            if showToolTip then
+                tooltipText = outputFilterState(false, self.FCOfilterPanelId, self.FCObuttonId, settingsFilterStateToText[tos(getSettingsIsFilterOn(self.FCObuttonId, self.FCOfilterPanelId))])
+                if tooltipText ~= "" then
                     ZO_Tooltips_ShowTextTooltip(self, BOTTOM, tooltipText)
                 end
             end
@@ -1275,7 +1279,7 @@ function FCOIS.AddOrChangeFCOISFilterButton(parentWindow, buttonId, pWidth, pHei
         pLeft = pLeft + FCOIS.otherAddons.gGriedViewOffsetX
     end
 
-    local ctrlVars = FCOIS.ZOControlVars
+    --local ctrlVars = FCOIS.ZOControlVars
     --Place the buttons at the bottom of the inventory.
     --Special treatment for improvement panel here, because the "Booster container" is located at the bottom and the buttons
     --will be shown above him, not below (as he gives the BOTTOM anchor) of the inventory
