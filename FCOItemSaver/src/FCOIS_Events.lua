@@ -49,6 +49,7 @@ local rebuildGearSetBaseVars = FCOIS.RebuildGearSetBaseVars
 local checkIfBagShouldAutoRemoveMarkerIcons = FCOIS.CheckIfBagShouldAutoRemoveMarkerIcons
 
 local destroySelectionHandler = FCOIS.DestroySelectionHandler
+local getCurrentVendorType = FCOIS.GetCurrentVendorType
 
 --==============================================================================
 --==================== START EVENT CALLBACK FUNCTIONS ==========================
@@ -99,7 +100,7 @@ local function FCOItemSaver_Open_Store(p_storeIndicator)
         if p_storeIndicator == "vendor" then
             --Preset the last active vendor button as the different vendor types can have different button counts
             --> The first will be always activated!
-            local currentVendorType, vendorTypeButtonCount = FCOIS.GetCurrentVendorType(true)
+            local currentVendorType, vendorTypeButtonCount = getCurrentVendorType(true)
 --d("[FCOIS]FCOItemSaver_Open_Store, lastVendorButton. CurrentVendorType: " .. tostring(currentVendorType) .. ", vendorTypeButtonCount: " ..tostring(vendorTypeButtonCount))
             if currentVendorType ~= nil and currentVendorType ~= "" and vendorTypeButtonCount ~= nil then
                 if vendorTypeButtonCount <= 2 then
@@ -110,7 +111,7 @@ local function FCOItemSaver_Open_Store(p_storeIndicator)
             end
 
             --Check the current active panel and set FCOIS.gFilterWhere
-            checkFCOISFilterButtonsAtPanel(true, nil)
+            checkFCOISFilterButtonsAtPanel(true, nil, nil, nil) --(doUpdateLists, panelId, overwriteFilterWhere, hideFilterButtons
 
             --Done inside the PreHookedHandler "OnMouseUp" callback functions:
             local function checkCurrentVendorTypeAndGetLibFiltersPanelId(currentVendorMenuBarbuttonToCheck)
@@ -118,7 +119,7 @@ local function FCOItemSaver_Open_Store(p_storeIndicator)
                 if currentVendorMenuBarbuttonToCheck == nil then return false end
                 local libFiltersFilterPanelId
                 --Get the current vendor type and count of menu buttons
-                currentVendorType, vendorTypeButtonCount = FCOIS.GetCurrentVendorType(true)
+                currentVendorType, vendorTypeButtonCount = getCurrentVendorType(true)
                 if currentVendorType ~= nil and currentVendorType ~= "" and vendorTypeButtonCount ~= nil then
                     if vendorTypeButtonCount == 2 then
                         --The vendor type is e.g. Nuzhimeh with only sell and buyback menu buttons

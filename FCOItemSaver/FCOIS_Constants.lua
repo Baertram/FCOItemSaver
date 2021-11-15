@@ -704,36 +704,44 @@ mappingVars.filterPanelToFilterButtonMediumOutputText = {}
 --via check to FCOIS.settingsVars.settings[FCOIS.mappingVars.filterPanelToFilterButtonFilterActiveSettingName[LF_*]]
 --> Used in files src/FCOIS_Settings.lua, function FCOIS.GetFilterWhereBySettings and
 --> src/FCOIS_FilterButtons.lua, local function filterStatusLoop (used in slash commands)
-local allowInvFilterStr =   "allowInventoryFilter"
-local allowEnchantFilter =  "allowEnchantingFilter"
+local allowInvFilterStr =           "allowInventoryFilter"
+local allowEnchantFilter =          "allowEnchantingFilter"
+local allowResearchFilter =         "allowResearchFilter"
+local allowJewelryResearchFilter =  "allowJewelryResearchFilter"
 mappingVars.filterPanelToFilterButtonFilterActiveSettingName = {
     [LF_INVENTORY] =                allowInvFilterStr,
     [LF_BANK_DEPOSIT] =             allowInvFilterStr,
-    [LF_GUILDBANK_DEPOSIT] =        "allowInvFilterStr",
-    [LF_HOUSE_BANK_DEPOSIT] =       "allowInvFilterStr",
+    [LF_GUILDBANK_DEPOSIT] =        allowInvFilterStr,
+    [LF_HOUSE_BANK_DEPOSIT] =       allowInvFilterStr,
     [LF_CRAFTBAG] =                 "allowCraftBagFilter",
     [LF_VENDOR_BUY] =               "allowVendorBuyFilter",
+    [LF_VENDOR_SELL] =              "allowVendorFilter",
     [LF_VENDOR_BUYBACK] =           "allowVendorBuybackFilter",
     [LF_VENDOR_REPAIR] =            "allowVendorRepairFilter",
     [LF_FENCE_SELL] =               "allowFenceFilter",
     [LF_FENCE_LAUNDER] =            "allowLaunderFilter",
-    [LF_GUILDBANK_WITHDRAW] =       "allowGuildBankFilter",
-    [LF_GUILDSTORE_SELL] =          "allowTradinghouseFilter",
     [LF_BANK_WITHDRAW] =            "allowBankFilter",
+    [LF_GUILDBANK_WITHDRAW] =       "allowGuildBankFilter",
     [LF_HOUSE_BANK_WITHDRAW] =      "allowBankFilter",
+    [LF_GUILDSTORE_SELL] =          "allowTradinghouseFilter",
     [LF_SMITHING_REFINE] =          "allowRefinementFilter",
     [LF_SMITHING_DECONSTRUCT] =     "allowDeconstructionFilter",
     [LF_SMITHING_IMPROVEMENT] =     "allowImprovementFilter",
-    [LF_SMITHING_RESEARCH] =        "allowResearchFilter",
+    [LF_SMITHING_RESEARCH] =        allowResearchFilter,
+    [LF_SMITHING_RESEARCH_DIALOG] = allowResearchFilter,
     [LF_JEWELRY_REFINE] =           "allowJewelryRefinementFilter",
     [LF_JEWELRY_DECONSTRUCT] =      "allowJewelryDeconstructionFilter",
     [LF_JEWELRY_IMPROVEMENT] =      "allowJewelryImprovementFilter",
-    [LF_JEWELRY_RESEARCH] =         "allowJewelryResearchFilter",
+    [LF_JEWELRY_RESEARCH] =         allowJewelryResearchFilter,
+    [LF_JEWELRY_RESEARCH_DIALOG] =  allowJewelryResearchFilter,
     [LF_MAIL_SEND] =                "allowMailFilter",
     [LF_TRADE] =                    "allowTradeFilter",
     [LF_ENCHANTING_EXTRACTION] =    allowEnchantFilter,
     [LF_ENCHANTING_CREATION] =      allowEnchantFilter,
+    [LF_ALCHEMY_CREATION] =         "allowAlchemyFilter",
+    [LF_RETRAIT] =                  "allowRetraitFilter",
     [LF_INVENTORY_COMPANION] =      "allowCompanionInventoryFilter",
+
 }
 
 

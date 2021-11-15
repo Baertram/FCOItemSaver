@@ -52,7 +52,8 @@ local function filterItemNow(slotItemInstanceId)
     end
     --Check each filter button and collect the "protected ones". Do not return or abort in between to assure that filters
     --at button 4 (e.g. says hide) will also be applied if button 3 already said "only show" -> Would result in show
-    --instead of hide (due to filetr button 4).
+    --instead of hide (due to filter button 4).
+    --->
     for filterId=1, numFilters, 1 do
         --Check if filter is activated for current slot
         isFilterActivated = getSettingsIsFilterOn(filterId)
@@ -248,7 +249,7 @@ local function filterItemNow(slotItemInstanceId)
                             and checkIfItemIsProtected(lastSellGuildIntFilterIconId, slotItemInstanceId) and settings.isIconEnabled[lastSellGuildIntFilterIconId] then
                         result = false
                         --Filter 4 "show only marked"
-                    elseif isFilterActivated == -FCOIS_CON_FILTER_BUTTON_STATE_YELLOW then
+                    elseif isFilterActivated == FCOIS_CON_FILTER_BUTTON_STATE_YELLOW then
                         return checkIfItemIsProtected(lastSellGuildIntFilterIconId, slotItemInstanceId)
                         --Filter 4 off
                     else

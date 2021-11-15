@@ -8,8 +8,8 @@ local debugMessage = FCOIS.debugMessage
 
 local wm = WINDOW_MANAGER
 
-local strformat = string.format
-local tos = tostring
+local strfor = string.format
+local tos    = tostring
 
 local addonVars = FCOIS.addonVars
 local ctrlVars = FCOIS.ZOControlVars
@@ -41,6 +41,9 @@ local refreshFilteredInventory = FCOIS.RefreshFilteredInventory
 local addOrChangeFCOISFilterButton
 local hideContextMenu
 local showContextMenuAtFCOISFilterButton
+local updateFCOISFilterButtonColorsAndTextures
+local inventoryChangeFilterHook
+local checkActivePanel
 
 -- =====================================================================================================================
 --  Filter state & chat output functions
@@ -280,12 +283,13 @@ end
 
 --Add/Change the 4 FCOIS filter buttons at the inventory's bottom row
 function FCOIS.UpdateFCOISFilterButtonsAtInventory(buttonId)
+    addOrChangeFCOISFilterButton = addOrChangeFCOISFilterButton or FCOIS.AddOrChangeFCOISFilterButton
     -- This function will only add the inventory buttons!
     -- All other buttons will be added as the relating panel (bank, store, deconstruction, etc.) will be shown the first time.
     local settings = FCOIS.settingsVars.settings
     if settings.debug then debugMessage( "[updateFilterButtonsInInv]","buttonId: " .. tos(buttonId) .. ", numFilters: ".. tos(numFilters) .. ", InvFiltering: " .. tos(settings.allowInventoryFilter), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
     FCOIS.gFilterWhere = getFilterWhereBySettings(LF_INVENTORY)
---d("[FCOIS.updateFilterButtonsInInv] buttonId: " ..tos(buttonId))
+d("[FCOIS.updateFilterButtonsInInv] buttonId: " ..tos(buttonId) .. ", filterId: " ..tostring(FCOIS.gFilterWhere))
     -- Update the filter enable/disable buttons to the inventory, bank, crafting stations, enchantment station, guild store, guild bank, vendor, trade, alchemy and mail panels
     if buttonId == nil or buttonId == -1 then
 
@@ -312,7 +316,6 @@ function FCOIS.UpdateFCOISFilterButtonsAtInventory(buttonId)
 end
 
 --Update the filter button colors and textures, depending on the filters (and chosen sub-filter icons)
-local updateFCOISFilterButtonColorsAndTextures
 function FCOIS.UpdateFCOISFilterButtonColorsAndTextures(p_buttonId, p_button, p_status, p_filterPanelId)
     updateFCOISFilterButtonColorsAndTextures = updateFCOISFilterButtonColorsAndTextures or FCOIS.UpdateFCOISFilterButtonColorsAndTextures
     local p_statusText = p_status or "Not changed!"
@@ -332,6 +335,7 @@ function FCOIS.UpdateFCOISFilterButtonColorsAndTextures(p_buttonId, p_button, p_
     end
 
     if settings.debug then debugMessage( "[UpdateButtonColorsAndTextures]","Button: " .. btnName .. ", ButtonId: " .. tos(p_buttonId) .. ", Status: " .. tos(p_status) .. ", FilterPanelId: " .. tos(p_filterPanelId), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+d("[FCOIS]UpdateButtonColorsAndTextures-Button: " .. btnName .. ", ButtonId: " .. tos(p_buttonId) .. ", Status: " .. tos(p_status) .. ", FilterPanelId: " .. tos(p_filterPanelId))
     local texture
     --local offset
     if p_buttonId == -1 or p_status == -1 then
@@ -342,8 +346,8 @@ function FCOIS.UpdateFCOISFilterButtonColorsAndTextures(p_buttonId, p_button, p_
         end
 
     else --if (p_buttonId == -1 or p_status == -1) then
-
-        texture  = wm:GetControlByName(strformat(gFilterPanelIdToTextureName[p_filterPanelId], p_buttonId), "")
+        local textureNameOfFilterButton = strfor(gFilterPanelIdToTextureName[p_filterPanelId], p_buttonId)
+        texture  = wm:GetControlByName(textureNameOfFilterButton, "")
         --Does texture exist now?
         if texture ~= nil then
             --Is the gear sets split filter button context-menu active and are we trying to change the texture of the gear sets button?
@@ -419,6 +423,8 @@ function FCOIS.UpdateFCOISFilterButtonColorsAndTextures(p_buttonId, p_button, p_
                 --Update the color of the filterbutton dependend on the state (FCOIS_CON_FILTER_BUTTON_STATE_GREEN, FCOIS_CON_FILTER_BUTTON_STATE_YELLOW, FCOIS_CON_FILTER_BUTTON_STATE_RED
                 texture:SetColor(unpack(filterButtonColors[p_status]))
             end -- if p_status ~= -FCOIS_CON_FILTER_BUTTON_STATE_DO_NOT_UPDATE_COLOR then
+        else
+d("<<<[FCOIS]ERROR-FilterButton texture control not found: " ..tos(textureNameOfFilterButton))
         end -- iftexture ~= nil then
 
     end -- if p_buttonId == -1 or p_status == -1 then
@@ -479,6 +485,7 @@ updateFCOISFilterButtonColorsAndTextures = FCOIS.UpdateFCOISFilterButtonColorsAn
 --Update the color and texture of the buttons too
 function FCOIS.CheckFCOISFilterButtonsAtPanel(doUpdateLists, panelId, overwriteFilterWhere, hideFilterButtons)
     hideFilterButtons = hideFilterButtons or false
+    addOrChangeFCOISFilterButton = addOrChangeFCOISFilterButton or FCOIS.AddOrChangeFCOISFilterButton
     local settings = FCOIS.settingsVars.settings
     if settings.debug then debugMessage( "[CheckFilterButtonsAtPanel]","Start - Check panel ID: " ..tos(panelId) .. ", overwriteFilterWhere: " .. tos(overwriteFilterWhere) .. ", hideFilterButtons: " .. tos(hideFilterButtons), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
 --d("[FCOIS.CheckFilterButtonsAtPanel - panelId: " .. tos(panelId) .. ", gFilterWhere: " .. tos(FCOIS.gFilterWhere) .. ", UseFilters: " .. tos(settings.atPanelEnabled[FCOIS.gFilterWhere]["filters"]) .. ", hideFilterButtons: " ..tos(hideFilterButtons))
@@ -487,7 +494,8 @@ function FCOIS.CheckFCOISFilterButtonsAtPanel(doUpdateLists, panelId, overwriteF
     FCOIS.checkMarker(-1)
 
     --Get the currently shown panel and update FCOIS.gFilterWhere with the "goingTo" value (called from e.g. FCOIS.PreHookMainMenuFilterButtonHandler)
-    local buttonsParentCtrl, filterPanel = FCOIS.CheckActivePanel(panelId, overwriteFilterWhere)
+    checkActivePanel = checkActivePanel or FCOIS.CheckActivePanel
+    local buttonsParentCtrl, filterPanel = checkActivePanel(panelId, overwriteFilterWhere)
     local filterPanelIdToUse = FCOIS.gFilterWhere
 
 --d(">buttonName: " .. tos(buttonsParentCtrl:GetName()) .. ", FilterPanelId/ParentPanelId: " .. tos(filterPanelIdToUse) .. "/" .. tos(filterPanel))
@@ -539,7 +547,8 @@ function FCOIS.CheckFCOISFilterButtonsAtPanel(doUpdateLists, panelId, overwriteF
         end
 
         --Update the itemCount before the sortHeader "name" at the new panel
-        FCOIS.inventoryChangeFilterHook(filterPanelIdToUse, "[FCOIS]CheckFilterButtonsAtPanel")
+        inventoryChangeFilterHook = inventoryChangeFilterHook or FCOIS.inventoryChangeFilterHook
+        inventoryChangeFilterHook(filterPanelIdToUse, "[FCOIS]CheckFilterButtonsAtPanel")
     end
     return buttonsParentCtrl, filterPanel
 end
@@ -1421,7 +1430,7 @@ function FCOIS.inventoryChangeFilterHook(filterPanelId, calledFrom)
     if filterPanelId ~= FCOIS.gFilterWhere then return end
     updateFilteredItemCount(filterPanelId, calledFrom)
 end
-local inventoryChangeFilterHook = FCOIS.inventoryChangeFilterHook
+inventoryChangeFilterHook = FCOIS.inventoryChangeFilterHook
 
 --Update the shown filteredItem count at the inventories, but throttled with a delay and only once if updates are tried
 --to be done several times after another
