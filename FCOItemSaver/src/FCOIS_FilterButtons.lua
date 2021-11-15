@@ -289,7 +289,7 @@ function FCOIS.UpdateFCOISFilterButtonsAtInventory(buttonId)
     local settings = FCOIS.settingsVars.settings
     if settings.debug then debugMessage( "[updateFilterButtonsInInv]","buttonId: " .. tos(buttonId) .. ", numFilters: ".. tos(numFilters) .. ", InvFiltering: " .. tos(settings.allowInventoryFilter), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
     FCOIS.gFilterWhere = getFilterWhereBySettings(LF_INVENTORY)
-d("[FCOIS.updateFilterButtonsInInv] buttonId: " ..tos(buttonId) .. ", filterId: " ..tostring(FCOIS.gFilterWhere))
+--d("[FCOIS.updateFilterButtonsInInv] buttonId: " ..tos(buttonId) .. ", filterId: " ..tostring(FCOIS.gFilterWhere))
     -- Update the filter enable/disable buttons to the inventory, bank, crafting stations, enchantment station, guild store, guild bank, vendor, trade, alchemy and mail panels
     if buttonId == nil or buttonId == -1 then
 
@@ -335,7 +335,7 @@ function FCOIS.UpdateFCOISFilterButtonColorsAndTextures(p_buttonId, p_button, p_
     end
 
     if settings.debug then debugMessage( "[UpdateButtonColorsAndTextures]","Button: " .. btnName .. ", ButtonId: " .. tos(p_buttonId) .. ", Status: " .. tos(p_status) .. ", FilterPanelId: " .. tos(p_filterPanelId), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
-d("[FCOIS]UpdateButtonColorsAndTextures-Button: " .. btnName .. ", ButtonId: " .. tos(p_buttonId) .. ", Status: " .. tos(p_status) .. ", FilterPanelId: " .. tos(p_filterPanelId))
+--d("[FCOIS]UpdateButtonColorsAndTextures-Button: " .. btnName .. ", ButtonId: " .. tos(p_buttonId) .. ", Status: " .. tos(p_status) .. ", FilterPanelId: " .. tos(p_filterPanelId))
     local texture
     --local offset
     if p_buttonId == -1 or p_status == -1 then
