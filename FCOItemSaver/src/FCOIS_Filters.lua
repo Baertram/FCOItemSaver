@@ -68,10 +68,10 @@ local function filterItemNow(slotItemInstanceId)
                                         and resDecImpFilterWithLogicalAND == true and sellGuildIntFilterWithLogicalAND == true) or false
     --The results of the logical conjunction checks done at each filter button
     local filterButtonLogicalConjunctionResults = {
-        [FCOIS_CON_FILTER_BUTTON_LOCKDYN] =         false,
-		[FCOIS_CON_FILTER_BUTTON_GEARSETS] =        false,
-		[FCOIS_CON_FILTER_BUTTON_RESDECIMP] =       false,
-		[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT] =    false,
+        [FCOIS_CON_FILTER_BUTTON_LOCKDYN] =         true,
+		[FCOIS_CON_FILTER_BUTTON_GEARSETS] =        true,
+		[FCOIS_CON_FILTER_BUTTON_RESDECIMP] =       true,
+		[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT] =    true,
     }
 
     for filterId=1, numFilters, 1 do
@@ -81,13 +81,13 @@ local function filterItemNow(slotItemInstanceId)
 --Filter button 1-------------------------------------------------------------------------------------------------------
         --Special treatment for filter type 1 as it handels the lock & the 4 dynamic marker icons
         if filterId == FCOIS_CON_FILTER_BUTTON_LOCKDYN then
-            if result or not lockDynFilterWithLogicalAND then
+            if result or (not lockDynFilterWithLogicalAND and filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_LOCKDYN]) then
                 local lastLockDynFilterIconId = settingsOfFilterButtonStateAndIcon.lastLockDynFilterIconId[FCOIS.gFilterWhere]
                 --Lock & dynamic 1 - 10
                 if lastLockDynFilterIconId == nil or lastLockDynFilterIconId == -1 or not settings.splitLockDynFilter then
 
                     --Filter 1 on
-                    if isFilterActivated == true
+                    if isFilterActivated == FCOIS_CON_FILTER_BUTTON_STATE_GREEN
                             and ( checkIfItemIsProtected(FCOIS_CON_ICON_LOCK, slotItemInstanceId)
                                     or checkIfItemIsProtected(nil, slotItemInstanceId, "dynamic") ) then
                         result = false
@@ -111,7 +111,7 @@ local function filterItemNow(slotItemInstanceId)
                     --LockDyn split enabled
                     --Last used icon ID at the LockDyn filter split context menu is stored in variable settings.lastLockDynFilterIconId[panelId]
                     --Filter 1 on
-                    if isFilterActivated == true
+                    if isFilterActivated == FCOIS_CON_FILTER_BUTTON_STATE_GREEN
                             and (checkIfItemIsProtected(lastLockDynFilterIconId, slotItemInstanceId) and settings.isIconEnabled[lastLockDynFilterIconId]) then
                         result = false
                         --Filter 1 "show only marked"
@@ -126,18 +126,20 @@ local function filterItemNow(slotItemInstanceId)
 
                 end
             end
-            filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_LOCKDYN] = result
+            if not result and not lockDynFilterWithLogicalAND then
+                filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_LOCKDYN] = result
+            end
 
             --Filter button 2-------------------------------------------------------------------------------------------------------
             --Special treatment for filter type 2 as it handels "gear sets" marked items arrays 2, 4, 6, 7 and 8
         elseif filterId == FCOIS_CON_FILTER_BUTTON_GEARSETS then
-            if result or not gearSetsFilterWithLogicalAND then
+            if result or (not gearSetsFilterWithLogicalAND and filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_GEARSETS]) then
                 local lastGearFilterIconId = settingsOfFilterButtonStateAndIcon.lastGearFilterIconId[FCOIS.gFilterWhere]
                 --Gear filter split disabled
                 if lastGearFilterIconId == nil or lastGearFilterIconId == -1 or not settings.splitGearSetsFilter then
 
                     --Filter 2 on
-                    if isFilterActivated == true and (checkIfItemIsProtected(nil, slotItemInstanceId, "gear")) then
+                    if isFilterActivated == FCOIS_CON_FILTER_BUTTON_STATE_GREEN and (checkIfItemIsProtected(nil, slotItemInstanceId, "gear")) then
                         result = false
                         --Filter 2 "show only marked"
                     elseif isFilterActivated == FCOIS_CON_FILTER_BUTTON_STATE_YELLOW then
@@ -158,7 +160,7 @@ local function filterItemNow(slotItemInstanceId)
                     --Gear filter split enabled
                     --Last used icon ID at the gear filter split context menu is stored in variable settings.lastGearFilterIconId[panelId]
                     --Filter 2 on
-                    if isFilterActivated == true
+                    if isFilterActivated == FCOIS_CON_FILTER_BUTTON_STATE_GREEN
                             and (checkIfItemIsProtected(lastGearFilterIconId, slotItemInstanceId) and settings.isIconEnabled[lastGearFilterIconId]) then
                         result = false
                         --Filter 2 "show only marked"
@@ -173,18 +175,20 @@ local function filterItemNow(slotItemInstanceId)
 
                 end
             end
-            filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_GEARSETS] = result
+            if not result and not gearSetsFilterWithLogicalAND then
+                filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_GEARSETS] = result
+            end
 
             --Filter button 3-------------------------------------------------------------------------------------------------------
             --Special treatment for filter type 3, as the marked items are 3, 9 and 10
         elseif filterId == FCOIS_CON_FILTER_BUTTON_RESDECIMP then
-            if result or not resDecImpFilterWithLogicalAND then
+            if result or (not resDecImpFilterWithLogicalAND and filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_RESDECIMP]) then
                 local lastResDecImpFilterIconId = settingsOfFilterButtonStateAndIcon.lastResDecImpFilterIconId[FCOIS.gFilterWhere]
                 --Research, Deconstruction, Improvement filter split disabled
                 if lastResDecImpFilterIconId == nil or lastResDecImpFilterIconId == -1 or not settings.splitResearchDeconstructionImprovementFilter then
 
                     --Filter 3 on
-                    if isFilterActivated == true
+                    if isFilterActivated == FCOIS_CON_FILTER_BUTTON_STATE_GREEN
                             and (
                             checkIfItemIsProtected(FCOIS_CON_ICON_RESEARCH, slotItemInstanceId)
                                     or checkIfItemIsProtected(FCOIS_CON_ICON_DECONSTRUCTION, slotItemInstanceId)
@@ -215,7 +219,7 @@ local function filterItemNow(slotItemInstanceId)
                     --Research, Deconstruction, Improvement filter split ensabled
                     --Last used icon ID at the research/deconstruction/improvement filter split context menu is stored in variable settings.lastResDecImpFilterIconId[panelId]
                     --Filter 3 on
-                    if isFilterActivated == true
+                    if isFilterActivated == FCOIS_CON_FILTER_BUTTON_STATE_GREEN
                             and (checkIfItemIsProtected(lastResDecImpFilterIconId, slotItemInstanceId) and settings.isIconEnabled[lastResDecImpFilterIconId]) then
                         return false
                         --Filter 3 "show only marked"
@@ -230,19 +234,21 @@ local function filterItemNow(slotItemInstanceId)
 
                 end
             end
-            filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_RESDECIMP] = result
+            if not result and not resDecImpFilterWithLogicalAND then
+                filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_RESDECIMP] = result
+            end
 
 
 --Filter button 4-------------------------------------------------------------------------------------------------------
             --Special treatment for filter type 4, as the marked items are 5, 11 and 12
         elseif filterId == FCOIS_CON_FILTER_BUTTON_SELLGUILDINT then
-            if result or not sellGuildIntFilterWithLogicalAND then
+            if result or (not sellGuildIntFilterWithLogicalAND and filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT]) then
                 local lastSellGuildIntFilterIconId = settingsOfFilterButtonStateAndIcon.lastSellGuildIntFilterIconId[FCOIS.gFilterWhere]
                 -- Split Sell, Sell in guild store & Intricate not activated in settings
                 if lastSellGuildIntFilterIconId == nil or lastSellGuildIntFilterIconId == -1 or not settings.splitSellGuildSellIntricateFilter then
 
                     --Filter 4 on
-                    if isFilterActivated == true
+                    if isFilterActivated == FCOIS_CON_FILTER_BUTTON_STATE_GREEN
                             and (
                             checkIfItemIsProtected(FCOIS_CON_ICON_SELL, slotItemInstanceId)
                                     or checkIfItemIsProtected(FCOIS_CON_ICON_SELL_AT_GUILDSTORE, slotItemInstanceId)
@@ -272,7 +278,7 @@ local function filterItemNow(slotItemInstanceId)
                     --Sell, Sell in guild store & Intricate filter split disabled
                     --Last used icon ID at the Sell, Sell in guild store & Intricate filter split context menu is stored in variable settings.lastSellGuildIntFilterIconId[panelId]
                     --Filter 4 on
-                    if isFilterActivated == true
+                    if isFilterActivated == FCOIS_CON_FILTER_BUTTON_STATE_GREEN
                             and checkIfItemIsProtected(lastSellGuildIntFilterIconId, slotItemInstanceId) and settings.isIconEnabled[lastSellGuildIntFilterIconId] then
                         result = false
                         --Filter 4 "show only marked"
@@ -287,14 +293,16 @@ local function filterItemNow(slotItemInstanceId)
 
                 end
             end
-            filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT] = result
+            if not result and not sellGuildIntFilterWithLogicalAND then
+                filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT] = result
+            end
 
 -- Other----------------------------------------------------------------------------------------------------------------
         -- Normal treatment here
         else
             if result then
                 -- Other filters
-                if isFilterActivated == true and checkIfItemIsProtected(filterId, slotItemInstanceId) then
+                if isFilterActivated == FCOIS_CON_FILTER_BUTTON_STATE_GREEN and checkIfItemIsProtected(filterId, slotItemInstanceId) then
                     result = false
                     --Other filter "show only marked"
                 elseif isFilterActivated == FCOIS_CON_FILTER_BUTTON_STATE_YELLOW then
@@ -312,6 +320,7 @@ local function filterItemNow(slotItemInstanceId)
     --------------------------------------------------------------------------------------------------------------------
     -- Return the filter result and check for logical OR conjunctions, if needed
     --------------------------------------------------------------------------------------------------------------------
+    --All conjunctions are logically AND -> All checks were done above already. Return the result now
     if allLogicalConjunctionsAreAND == true then
         return result
     else
@@ -319,33 +328,172 @@ local function filterItemNow(slotItemInstanceId)
         local resultBeforeLogicalConjunction = result
         local resultAfterLogicalConjunction = true
         --Check which of the filterButton results were true and false, and combine them with the logical AND and ORs
-        -->
-
-        if filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_LOCKDYN] then
-
+        --[[
+        if filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_LOCKDYN] == true then
         end
-        if filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_GEARSETS] then
-
-        end
-        if filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_RESDECIMP] then
-
-        end
-        if filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT] then
-
-        end
-
-        if lockDynFilterWithLogicalAND then
+        if filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_GEARSETS] == true then
         else
         end
+        if filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_RESDECIMP] == true then
+        else
+        end
+        if filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT] == true then
+        else
+        end
+        ]]
+        --Filter button1
+        --Logical AND
+        if lockDynFilterWithLogicalAND then
+
+        else
+            --Logical OR
+        end
+
+        --Filter button2
+        --Logical AND
         if gearSetsFilterWithLogicalAND then
         else
+            --Logical OR
         end
+
+        --Filter button3
+        --Logical AND
         if resDecImpFilterWithLogicalAND then
         else
+            --Logical OR
         end
+
+        --Filter button4
+        --Logical AND
         if sellGuildIntFilterWithLogicalAND then
         else
+            --Logical OR
         end
+
+
+        --==========================
+        -- Logical AND
+        --==========================
+        ----------------------------
+        --3 buttons with logical AND
+        ----------------------------
+
+        ----------------------------
+        --2 buttons with logical AND
+        ----------------------------
+
+        ----------------------------
+        --1 button with logical AND
+        ----------------------------
+
+
+        --==========================
+        -- Logical OR
+        --==========================
+        ----------------------------
+        --4 buttons with logical OR
+        ----------------------------
+        if not lockDynFilterWithLogicalAND and not gearSetsFilterWithLogicalAND
+                and not resDecImpFilterWithLogicalAND and not sellGuildIntFilterWithLogicalAND then
+            resultAfterLogicalConjunction = filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_LOCKDYN]
+                        or filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_GEARSETS]
+                        or filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_RESDECIMP]
+                        or filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT]
+        else
+            ----------------------------
+            --3 buttons with logical OR
+            ----------------------------
+            if not lockDynFilterWithLogicalAND and not gearSetsFilterWithLogicalAND
+                    and not resDecImpFilterWithLogicalAND then
+                resultAfterLogicalConjunction = (filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_LOCKDYN]
+                        or filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_GEARSETS]
+                        or filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_RESDECIMP])
+                        and filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT]
+            else if not lockDynFilterWithLogicalAND and not gearSetsFilterWithLogicalAND
+                    and not sellGuildIntFilterWithLogicalAND then
+                resultAfterLogicalConjunction = (filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_LOCKDYN]
+                        or filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_GEARSETS]
+                        or filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT])
+                        and filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_RESDECIMP]
+            else if not lockDynFilterWithLogicalAND and not resDecImpFilterWithLogicalAND
+                    and not sellGuildIntFilterWithLogicalAND then
+                resultAfterLogicalConjunction = (filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_LOCKDYN]
+                        or filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_RESDECIMP]
+                        or filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT])
+                        and filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_GEARSETS]
+            else if not gearSetsFilterWithLogicalAND and not resDecImpFilterWithLogicalAND
+                    and not sellGuildIntFilterWithLogicalAND then
+                resultAfterLogicalConjunction = (filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_GEARSETS]
+                        or filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_RESDECIMP]
+                        or filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT])
+                        and filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_LOCKDYN]
+            end
+
+            ----------------------------
+            --2 buttons with logical OR
+            ----------------------------
+            if not lockDynFilterWithLogicalAND and not gearSetsFilterWithLogicalAND then
+                resultAfterLogicalConjunction = (filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_LOCKDYN]
+                        or filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_GEARSETS])
+                        and filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_RESDECIMP]
+                        and filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT]
+            else if not lockDynFilterWithLogicalAND and not resDecImpFilterWithLogicalAND then
+                resultAfterLogicalConjunction = (filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_LOCKDYN]
+                        or filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_RESDECIMP])
+                        and filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_GEARSETS]
+                        and filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT]
+            else if not lockDynFilterWithLogicalAND and not sellGuildIntFilterWithLogicalAND then
+                resultAfterLogicalConjunction = (filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_LOCKDYN]
+                        or filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT])
+                        and filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_GEARSETS]
+                        and filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_RESDECIMP]
+            else if not gearSetsFilterWithLogicalAND and not resDecImpFilterWithLogicalAND then
+                resultAfterLogicalConjunction = (filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_GEARSETS]
+                        or filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_RESDECIMP])
+                        and filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_LOCKDYN]
+                        and filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT]
+            else if not gearSetsFilterWithLogicalAND and not sellGuildIntFilterWithLogicalAND then
+                resultAfterLogicalConjunction = (filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_GEARSETS]
+                        or filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT])
+                        and filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_LOCKDYN]
+                        and filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_RESDECIMP]
+            else if not resDecImpFilterWithLogicalAND and not sellGuildIntFilterWithLogicalAND then
+                resultAfterLogicalConjunction = (filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_RESDECIMP]
+                        or filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT])
+                        and filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_LOCKDYN]
+                        and filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_GEARSETS]
+            end
+
+            ----------------------------
+            --1 button with logical OR
+            ----------------------------
+            if not lockDynFilterWithLogicalAND and not gearSetsFilterWithLogicalAND
+                    and not resDecImpFilterWithLogicalAND then
+                resultAfterLogicalConjunction = (filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_LOCKDYN]
+                        or filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_GEARSETS]
+                        or filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_RESDECIMP])
+                        and filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT]
+            else if not lockDynFilterWithLogicalAND and not gearSetsFilterWithLogicalAND
+                    and not sellGuildIntFilterWithLogicalAND then
+                resultAfterLogicalConjunction = (filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_LOCKDYN]
+                        or filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_GEARSETS]
+                        or filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT])
+                        and filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_RESDECIMP]
+            else if not lockDynFilterWithLogicalAND and not resDecImpFilterWithLogicalAND
+                    and not sellGuildIntFilterWithLogicalAND then
+                resultAfterLogicalConjunction = (filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_LOCKDYN]
+                        or filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_RESDECIMP]
+                        or filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT])
+                        and filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_GEARSETS]
+            else if not gearSetsFilterWithLogicalAND and not resDecImpFilterWithLogicalAND
+                    and not sellGuildIntFilterWithLogicalAND then
+                resultAfterLogicalConjunction = (filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_GEARSETS]
+                        or filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_RESDECIMP]
+                        or filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT])
+                        and filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_LOCKDYN]
+            end
+        end
+
 
         return resultAfterLogicalConjunction
     end
