@@ -87,7 +87,8 @@ local function outputFilterState(p_outputToChat, p_panelId, p_filterId, p_stateT
 
     --FCOIS v2.2.4 - Add the logical AND or logical OR information
     local filterButtonSettingsUseLogicalAND =  settings.filterButtonSettings[p_panelId][p_filterId]["filterWithLogicalAND"]
-    outputText = (filterButtonSettingsUseLogicalAND and outputText .. " AND") or  (outputText .. " OR")
+    local logicalAndText = (filterButtonSettingsUseLogicalAND and locVars["options_filter_button_settings_filterWithLogicalAND_and"]) or locVars["options_filter_button_settings_filterWithLogicalAND_or"]
+    outputText = outputText .. "  |c040404" .. logicalAndText .."|r"
 
     --Add another tooltip line with the currently selected lock & dynamic icons filter?
     if p_filterId == FCOIS_CON_FILTER_BUTTON_LOCKDYN and settings.splitLockDynFilter then
