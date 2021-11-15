@@ -1689,7 +1689,7 @@ local function ContextMenuFCOISFilterButtonSettingsOnClicked(button, contextMenu
     local ctmVars = FCOIS.ctmVars[contextMenuType]
     local settings = FCOIS.settingsVars.settings
     if settings.debug then debugMessage( "[ContextMenuFCOISFilterButtonSettingsOnClicked]","ContextMenuType: " .. contextMenuType .. ", clicked button: " .. button:GetName() .. ", settingsName: " .. tos(settingsName) .. ", filterPanelId: " .. tos(filterPanelId).. ", cbState: " .. tos(buttonCheckboxState) .. ", newValue: " ..tos(newValue), true, FCOIS_DEBUG_DEPTH_NORMAL) end
-d("[FCOIS]ContextMenuFCOISFilterButtonSettingsOnClicked-ContextMenuType: " .. contextMenuType .. ", clicked button: " .. button:GetName() .. ", settingsName: " .. tos(settingsName) .. ", filterPanelId: " .. tos(filterPanelId).. ", cbState: " .. tos(buttonCheckboxState) .. ", newValue: " ..tos(newValue))
+--d("[FCOIS]ContextMenuFCOISFilterButtonSettingsOnClicked-ContextMenuType: " .. contextMenuType .. ", clicked button: " .. button:GetName() .. ", settingsName: " .. tos(settingsName) .. ", filterPanelId: " .. tos(filterPanelId).. ", cbState: " .. tos(buttonCheckboxState) .. ", newValue: " ..tos(newValue))
 
     --Change the filter button filter setting now
     if settings.filterButtonSettings[filterPanelId] and settings.filterButtonSettings[filterPanelId][buttonNr] ~= nil then
