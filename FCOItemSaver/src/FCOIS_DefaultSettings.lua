@@ -33,18 +33,6 @@ function FCOIS.BuildDefaultSettings()
 		filterButtonTop				= {},
 		filterButtonData			= {},
 		filterButtonSettings  = { --FCOIS v2.2.4 2021-11-15
-			[FCOIS_CON_FILTER_BUTTON_LOCKDYN] = {
-				filterWithLogicalAND = true, --true: filter button will add with logical AND / false: filter button will add with logical OR
-			},
-			[FCOIS_CON_FILTER_BUTTON_GEARSETS] = {
-				filterWithLogicalAND = true,
-			},
-			[FCOIS_CON_FILTER_BUTTON_RESDECIMP] = {
-				filterWithLogicalAND = true,
-			},
-			[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT] = {
-				filterWithLogicalAND = true,
- 			},
 		},
 		isFilterOn   		   	 	= {false, false, false, false},
 		isFilterPanelOn				= {},
@@ -462,6 +450,22 @@ function FCOIS.BuildDefaultSettings()
 			FCOIS.settingsVars.accountWideButForEachCharacterDefaults[currentCharId].lastGearFilterIconId[libFiltersFilterPanelIdHelper] = -1
 			FCOIS.settingsVars.accountWideButForEachCharacterDefaults[currentCharId].lastResDecImpFilterIconId[libFiltersFilterPanelIdHelper] = -1
 			FCOIS.settingsVars.accountWideButForEachCharacterDefaults[currentCharId].lastSellGuildIntFilterIconId[libFiltersFilterPanelIdHelper] = -1
+
+			--Added with FCOIS v2.2.4
+			FCOIS.settingsVars.defaults.filterButtonSettings[libFiltersFilterPanelIdHelper] = {
+				[FCOIS_CON_FILTER_BUTTON_LOCKDYN]      = {
+					filterWithLogicalAND = true, --true: filter button will add with logical AND / false: filter button will add with logical OR
+				},
+				[FCOIS_CON_FILTER_BUTTON_GEARSETS]     = {
+					filterWithLogicalAND = true,
+				},
+				[FCOIS_CON_FILTER_BUTTON_RESDECIMP]    = {
+					filterWithLogicalAND = true,
+				},
+				[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT] = {
+					filterWithLogicalAND = true,
+				},
+			}
 		end
 		--FCOIS version 1.6.7
 		--Add the default additional inventory context menu "flag" button values for each filter panel ID
