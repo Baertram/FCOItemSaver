@@ -2642,13 +2642,14 @@ contextMenuVars.availableCtms = {
     [FCOIS_CON_FILTER_BUTTON_RESDECIMP]     = "ResDecImp",
     [FCOIS_CON_FILTER_BUTTON_SELLGUILDINT]  = "SellGuildInt",
 }
+local availableCtms = contextMenuVars.availableCtms
 
 --The self-build contextMenus (filter buttons)
 FCOIS.contextMenu = {}
 local fcoisContextMenu = FCOIS.contextMenu
 --The context menu for the lock & dynmic icons filter button
 fcoisContextMenu.LockDynFilter 	= {}
-fcoisContextMenu.LockDynFilterName = contextMenuVars.availableCtms[FCOIS_CON_FILTER_BUTTON_LOCKDYN] .. "Filter"
+fcoisContextMenu.LockDynFilterName = availableCtms[FCOIS_CON_FILTER_BUTTON_LOCKDYN] .. "Filter"
 fcoisContextMenu.ContextMenuLockDynFilterName = "ContextMenu" .. fcoisContextMenu.LockDynFilterName
 fcoisContextMenu.LockDynFilter.bdSelectedLine = {}
 --Lock & dynamic icons filter split context menu variables
@@ -2657,7 +2658,7 @@ contextMenuVars.LockDynFilter.maxWidth		= contextMenuVars.filterButtons.maxWidth
 contextMenuVars.LockDynFilter.maxHeight		= 288 -- OLD: 288 before additional 20 dynamic icons were added
 contextMenuVars.LockDynFilter.entryHeight	    = contextMenuVars.filterButtons.entryHeight
 --The prefix of the LockDynFilter entries
-contextMenuVars.LockDynFilter.buttonNamePrefix = contextMenuVars.availableCtms[FCOIS_CON_FILTER_BUTTON_LOCKDYN] .. "Filter"
+contextMenuVars.LockDynFilter.buttonNamePrefix = availableCtms[FCOIS_CON_FILTER_BUTTON_LOCKDYN] .. "Filter"
 --The entries in the following mapping array
 contextMenuVars.LockDynFilter.buttonContextMenuToIconIdEntries = 32 -- OLD: 12 before additional 20 dynamic icons were added
 --The index of the mapping table for context menu buttons to icon id
@@ -2668,7 +2669,7 @@ end
 
 --The context menu for the gear sets filter button
 fcoisContextMenu.GearSetFilter 	= {}
-fcoisContextMenu.GearSetFilterName = contextMenuVars.availableCtms[FCOIS_CON_FILTER_BUTTON_GEARSETS] .. "Filter"
+fcoisContextMenu.GearSetFilterName = availableCtms[FCOIS_CON_FILTER_BUTTON_GEARSETS] .. "Filter"
 fcoisContextMenu.ContextMenuGearSetFilterName = "ContextMenu" .. fcoisContextMenu.GearSetFilterName
 fcoisContextMenu.GearSetFilter.bdSelectedLine = {}
 --Gear set filter split context menu variables
@@ -2677,7 +2678,7 @@ contextMenuVars.GearSetFilter.maxWidth		= contextMenuVars.filterButtons.maxWidth
 contextMenuVars.GearSetFilter.maxHeight		= 144
 contextMenuVars.GearSetFilter.entryHeight	    = contextMenuVars.filterButtons.entryHeight
 --The prefix of the GearSetFilter entries
-contextMenuVars.GearSetFilter.buttonNamePrefix = contextMenuVars.availableCtms[FCOIS_CON_FILTER_BUTTON_GEARSETS] .. "Filter"
+contextMenuVars.GearSetFilter.buttonNamePrefix = availableCtms[FCOIS_CON_FILTER_BUTTON_GEARSETS] .. "Filter"
 --The entries in the following mapping array
 contextMenuVars.GearSetFilter.buttonContextMenuToIconIdEntries = 6
 --The index of the mapping table for context menu buttons to icon id
@@ -2688,7 +2689,7 @@ end
 
 --The context menu for the RESEARCH & DECONSTRUCTION & IMPORVEMENT filter button
 fcoisContextMenu.ResDecImpFilter 	= {}
-fcoisContextMenu.ResDecImpFilterName =  contextMenuVars.availableCtms[FCOIS_CON_FILTER_BUTTON_RESDECIMP] .. "Filter"
+fcoisContextMenu.ResDecImpFilterName =  availableCtms[FCOIS_CON_FILTER_BUTTON_RESDECIMP] .. "Filter"
 fcoisContextMenu.ContextMenuResDecImpFilterName = "ContextMenu" .. fcoisContextMenu.ResDecImpFilterName
 fcoisContextMenu.ResDecImpFilter.bdSelectedLine = {}
 --Research/Deconstruction filter split context menu variables
@@ -2697,7 +2698,7 @@ contextMenuVars.ResDecImpFilter.maxWidth      = contextMenuVars.filterButtons.ma
 contextMenuVars.ResDecImpFilter.maxHeight	    = 96
 contextMenuVars.ResDecImpFilter.entryHeight	= contextMenuVars.filterButtons.entryHeight
 --The prefix of the ResDecImpFilter entries
-contextMenuVars.ResDecImpFilter.buttonNamePrefix = contextMenuVars.availableCtms[FCOIS_CON_FILTER_BUTTON_RESDECIMP] .. "Filter"
+contextMenuVars.ResDecImpFilter.buttonNamePrefix = availableCtms[FCOIS_CON_FILTER_BUTTON_RESDECIMP] .. "Filter"
 --The entries in the following mapping array
 contextMenuVars.ResDecImpFilter.buttonContextMenuToIconIdEntries = 4
 --The index of the mapping table for context menu buttons to icon id
@@ -2708,7 +2709,7 @@ end
 
 --The context menu for the SELL & SELL IN GUILD STORE & INTRICATE  filter button
 fcoisContextMenu.SellGuildIntFilter 	= {}
-fcoisContextMenu.SellGuildIntFilterName = contextMenuVars.availableCtms[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT] .. "Filter"
+fcoisContextMenu.SellGuildIntFilterName = availableCtms[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT] .. "Filter"
 fcoisContextMenu.ContextMenuSellGuildIntFilterName = "ContextMenu" .. fcoisContextMenu.SellGuildIntFilterName
 fcoisContextMenu.SellGuildIntFilter.bdSelectedLine = {}
 --Sell/Guild sell/Intricate filter split context menu variables
@@ -2717,7 +2718,7 @@ contextMenuVars.SellGuildIntFilter.maxWidth       = contextMenuVars.filterButton
 contextMenuVars.SellGuildIntFilter.maxHeight      = 96
 contextMenuVars.SellGuildIntFilter.entryHeight    = contextMenuVars.filterButtons.entryHeight
 --The prefix of the SellGuildIntFilter entries
-contextMenuVars.SellGuildIntFilter.buttonNamePrefix = contextMenuVars.availableCtms[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT] .. "Filter"
+contextMenuVars.SellGuildIntFilter.buttonNamePrefix = availableCtms[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT] .. "Filter"
 --The entries in the following mapping array
 contextMenuVars.SellGuildIntFilter.buttonContextMenuToIconIdEntries = 4
 --The index of the mapping table for context menu buttons to icon id
@@ -2731,10 +2732,10 @@ mappingVars.contextMenuFilterButtonTypeToSettings = {}
 
 --Mapping for the context menu type to it's filter button
 mappingVars.contextMenuButtonClickedMenuToButton = {
-	[contextMenuVars.availableCtms[FCOIS_CON_FILTER_BUTTON_LOCKDYN]] 		= FCOIS_CON_FILTER_BUTTON_LOCKDYN,
-	[contextMenuVars.availableCtms[FCOIS_CON_FILTER_BUTTON_GEARSETS]]		= FCOIS_CON_FILTER_BUTTON_GEARSETS,
-	[contextMenuVars.availableCtms[FCOIS_CON_FILTER_BUTTON_RESDECIMP]] 	    = FCOIS_CON_FILTER_BUTTON_RESDECIMP,
-	[contextMenuVars.availableCtms[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT]]	= FCOIS_CON_FILTER_BUTTON_SELLGUILDINT,
+	[availableCtms[FCOIS_CON_FILTER_BUTTON_LOCKDYN]] 		= FCOIS_CON_FILTER_BUTTON_LOCKDYN,
+	[availableCtms[FCOIS_CON_FILTER_BUTTON_GEARSETS]]		= FCOIS_CON_FILTER_BUTTON_GEARSETS,
+	[availableCtms[FCOIS_CON_FILTER_BUTTON_RESDECIMP]] 	    = FCOIS_CON_FILTER_BUTTON_RESDECIMP,
+	[availableCtms[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT]]	= FCOIS_CON_FILTER_BUTTON_SELLGUILDINT,
 }
 
 --The textures for the button context menu, selected item

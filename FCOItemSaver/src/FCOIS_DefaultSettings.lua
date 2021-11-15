@@ -32,6 +32,20 @@ function FCOIS.BuildDefaultSettings()
 		filterButtonLeft			= {},
 		filterButtonTop				= {},
 		filterButtonData			= {},
+		filterButtonSettings  = { --FCOIS v2.2.4 2021-11-15
+			[FCOIS_CON_FILTER_BUTTON_LOCKDYN] = {
+				filterWithLogicalAND = true, --true: filter button will add with logical AND / false: filter button will add with logical OR
+			},
+			[FCOIS_CON_FILTER_BUTTON_GEARSETS] = {
+				filterWithLogicalAND = true,
+			},
+			[FCOIS_CON_FILTER_BUTTON_RESDECIMP] = {
+				filterWithLogicalAND = true,
+			},
+			[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT] = {
+				filterWithLogicalAND = true,
+ 			},
+		},
 		isFilterOn   		   	 	= {false, false, false, false},
 		isFilterPanelOn				= {},
 		atPanelEnabled				= {},

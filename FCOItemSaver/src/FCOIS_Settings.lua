@@ -1066,7 +1066,13 @@ function FCOIS.AfterSettings()
             end
         end
     end
-end
+
+    --Introduced with FCOIS v2.2.4 2021-11-15 Add default values for new filterButtonSettings, if they are missing
+    if FCOIS.settingsVars.settings.filterButtonSettings == nil then
+        FCOIS.settingsVars.settings.filterButtonSettings = ZO_ShallowTableCopy(FCOIS.settingsVars.defaults.filterButtonSettings)
+    end
+
+end -- AfterSettings
 
 --Do some updates to the SavedVariables before the addon menu is created
 function FCOIS.UpdateSettingsBeforeAddonMenu()

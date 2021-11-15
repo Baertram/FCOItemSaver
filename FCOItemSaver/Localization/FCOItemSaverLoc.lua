@@ -729,6 +729,10 @@ FCOIS.localizationVars.localizationAll = {
 		["options_filter_buttons_context_menu_show_tooltip_TT"] = "Show a tooltip identifying each entry of the filter context menus",
         ["options_filter_buttons_save_for_character"]    = "Filter button state saved for each character",
         ["options_filter_buttons_save_for_character_TT"] = "Enabled: Save the filter button state for each character individually even if account wide settings are enabled.\n\nThis setting will be disabled if account wide settings are disabled!",
+        --FCOIS v2.2.4 2021-11-15
+        ["options_filter_button_settings"] =                        "Filter settings",
+        ["options_filter_button_settings_filterWithLogicalAND"] =   "Use logical AND filter",
+
 		["options_header_filter_chat"] 			= "Filter & Chat",
         ["options_chat_filter_status"]			= "Filter status in chat",
         ["options_chat_filter_status_TT"] 	= "Show the filter status in chat, if changed?",
