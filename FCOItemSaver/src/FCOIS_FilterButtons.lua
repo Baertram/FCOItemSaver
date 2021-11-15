@@ -417,7 +417,7 @@ function FCOIS.UpdateFCOISFilterButtonColorsAndTextures(p_buttonId, p_button, p_
             --Only update colors if wished. FCOIS_CON_FILTER_BUTTON_STATE_DO_NOT_UPDATE_COLOR will be set in FCOIS settings menu e.g. when you update the filter button's color there
             if p_status ~= FCOIS_CON_FILTER_BUTTON_STATE_DO_NOT_UPDATE_COLOR then
                 --Update the color of the filterbutton dependend on the state (FCOIS_CON_FILTER_BUTTON_STATE_GREEN, FCOIS_CON_FILTER_BUTTON_STATE_YELLOW, FCOIS_CON_FILTER_BUTTON_STATE_RED
-                texture:SetColor(filterButtonColors[p_status])
+                texture:SetColor(unpack(filterButtonColors[p_status]))
             end -- if p_status ~= -FCOIS_CON_FILTER_BUTTON_STATE_DO_NOT_UPDATE_COLOR then
         end -- iftexture ~= nil then
 

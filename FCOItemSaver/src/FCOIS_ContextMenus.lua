@@ -1695,7 +1695,7 @@ d("[FCOIS]ContextMenuFCOISFilterButtonSettingsOnClicked-ContextMenuType: " .. co
     if settings.filterButtonSettings[buttonNr] ~= nil then
         if settings.filterButtonSettings[buttonNr][settingsName] ~= nil then
             --filterWithLogicalAND e.g.
-            settings.filterButtonSettings[buttonNr][settingsName] = newValue or buttonCheckboxState
+            settings.filterButtonSettings[buttonNr][settingsName] = buttonCheckboxState ~= nil and buttonCheckboxState or newValue
 
             if settings.filterButtonSettings[buttonNr][settingsName] == nil then return end
         end
@@ -2019,7 +2019,7 @@ function FCOIS.ShowContextMenuAtFCOISFilterButton(parentButton, p_FilterPanelId,
     table.insert(subMenuEntriesFilterButtonSettings,
         {
             label          = localizationVars["options_filter_button_settings_"..settingsName] ,
-            checked        = function() return settings.filterButtonSettings[buttonNr][settingsName] end,
+            checked        = function() return FCOIS.settingsVars.settings.filterButtonSettings[buttonNr][settingsName] end,
             callback       = function(state) ContextMenuFCOISFilterButtonSettingsOnClicked(parentButton, contextMenuType, settingsName, p_FilterPanelId, state, state) end,
             myfont         = myFont,
             normalColor    = myColorEnabled,

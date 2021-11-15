@@ -729,10 +729,8 @@ FCOIS.localizationVars.localizationAll = {
 		["options_filter_buttons_context_menu_show_tooltip_TT"] = "Show a tooltip identifying each entry of the filter context menus",
         ["options_filter_buttons_save_for_character"]    = "Filter button state saved for each character",
         ["options_filter_buttons_save_for_character_TT"] = "Enabled: Save the filter button state for each character individually even if account wide settings are enabled.\n\nThis setting will be disabled if account wide settings are disabled!",
-        --FCOIS v2.2.4 2021-11-15
         ["options_filter_button_settings"] =                        "Filter settings",
-        ["options_filter_button_settings_filterWithLogicalAND"] =   "Use logical AND filter",
-
+        ["options_filter_button_settings_filterWithLogicalAND"] =   "Logical AND (with other filter buttons)",
 		["options_header_filter_chat"] 			= "Filter & Chat",
         ["options_chat_filter_status"]			= "Filter status in chat",
         ["options_chat_filter_status_TT"] 	= "Show the filter status in chat, if changed?",
@@ -1934,6 +1932,8 @@ FCOIS.localizationVars.localizationAll = {
         ["options_filter_buttons_context_menu_show_tooltip_TT"] = "Zeigt einen Tooltip für jeden Eintrag in den Filter Knopf Kontextmenüs",
         ["options_filter_buttons_save_for_character"]    = "Filter Knopf Status für jeden Charakter speichern",
         ["options_filter_buttons_save_for_character_TT"] = "Aktiviert: Speichere den Status jedes Filter Knopfes individuell pro Charakter, auch wenn Account Weite Einstellungen aktiviert sind.\n\nSind die Pro Charakter Einstellungen aktiviert so ist diese Option deaktiviert!",
+        ["options_filter_button_settings"] =                        "Filter Einstellungen",
+        ["options_filter_button_settings_filterWithLogicalAND"] =   "Logisches UND (mit anderen Filter Knöpfen)",
         ["options_header_filter_chat"] 			= "Filter & Chat",
         ["options_chat_filter_status"]			= "Filter Status im Chat zeigen",
         ["options_chat_filter_status_TT"] 	= "Soll der Filter Status im Chat angezeigt werden, wenn dieser sich verändert?",
