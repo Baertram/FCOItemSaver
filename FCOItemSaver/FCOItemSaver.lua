@@ -194,7 +194,8 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
 For example, maybe after right click > bind a marked item in the guild store selling tab or mail send tab.
 I haven't tested that, though. Should be a fairly easy nil check either way.
 ]]
---#176: 2021-11-14, Baertram, feature: Add submenu to 4 filter buttons, with setting to change the filter between AND & OR behaviour (combined with the other 3 filter button's filters)
+--#176: 2021-11-14, Baertram, feature: Add submenu to 4 filter buttons, with setting to change the filter between AND & OR filter conjunction behaviour.
+--Remembers the state for each filterPanel
 
 
 ---------------------------------------------------------------------
@@ -203,6 +204,8 @@ I haven't tested that, though. Should be a fairly easy nil check either way.
 --In progress: Updated last 2021-11-14
 --#175
 --#176
+--Screenshot showing the new context menu "Filter settings" at the filter button: https://i.imgur.com/32AHUNS.png
+--Screenshot link for tooltip showing new logical conjunction AND/OR state: https://i.imgur.com/yj2UIOe.png
 
 ---------------------------------------------------------------------
 --Since last update 2.2.3 - New version: 2.2.4 -> Changelog updated last: 2021-11-12
