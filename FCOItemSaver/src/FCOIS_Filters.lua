@@ -50,17 +50,18 @@ local function filterItemNow(slotItemInstanceId)
         d("<<<[FCOIS]ERROR - filterItemNow -> settingsOfFilterButtonStateAndIcon is NIL!")
         return
     end
+    -------------------------------------------------------------------------------------------------------
     --Check each filter button and collect the "protected ones". Do not return or abort in between to assure that filters
     --at button 4 (e.g. says hide) will also be applied if button 3 already said "only show" -> Would result in show
     --instead of hide (due to filter button 4).
-
-    --->With FCOIS v2.2.4 new context menus with settings for the filter buttons where added at the filter buttons. You
+    ---NEW: With FCOIS v2.2.4 new context menus with settings for the filter buttons where added at the filter buttons. You
     --->are now able to swithc between logical conjunction AND or OR and thus the filter results here need to sum up
     --->according to these settings (AND means all must apply. OR means any of them must apply).
     local filterButtonSettings = settings.filterButtonSettings
     local currentFilterPanelId = FCOIS.gFilterWhere     -- The currently filtered panelId (inventry, bank withdraw, mail, trade, etc.)
-    --The 4 filter button's settings for the logical conjunction (true = AND, false = OR)
     local filterButtonSettingsForCurrentPanel = filterButtonSettings[currentFilterPanelId]
+    --The 4 filter button's settings for the logical conjunction (true = AND, false = OR)
+    -------------------------------------------------------------------------------------------------------
     local lockDynFilterWithLogicalAND =         filterButtonSettingsForCurrentPanel[FCOIS_CON_FILTER_BUTTON_LOCKDYN].filterWithLogicalAND
     local gearSetsFilterWithLogicalAND =        filterButtonSettingsForCurrentPanel[FCOIS_CON_FILTER_BUTTON_GEARSETS].filterWithLogicalAND
     local resDecImpFilterWithLogicalAND =       filterButtonSettingsForCurrentPanel[FCOIS_CON_FILTER_BUTTON_RESDECIMP].filterWithLogicalAND
@@ -68,6 +69,7 @@ local function filterItemNow(slotItemInstanceId)
     --Are all 4 filter buttons set to logical ALL conjunction?
     local allLogicalConjunctionsAreAND = (lockDynFilterWithLogicalAND == true and gearSetsFilterWithLogicalAND  == true
                                         and resDecImpFilterWithLogicalAND == true and sellGuildIntFilterWithLogicalAND == true) or false
+    -------------------------------------------------------------------------------------------------------
     local filterButtonLogicalConjunctionSettings = {
         [FCOIS_CON_FILTER_BUTTON_LOCKDYN] =         lockDynFilterWithLogicalAND,
 		[FCOIS_CON_FILTER_BUTTON_GEARSETS] =        gearSetsFilterWithLogicalAND,
@@ -82,6 +84,7 @@ local function filterItemNow(slotItemInstanceId)
 		[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT] =    true,
     }
 
+    -------------------------------------------------------------------------------------------------------
     --Helper function to check if the filterButton's filter checks need to be done now, or if the current return variable's ("result")
     --boolean value already prevents this
     local function preCheckIfFilterButtonsFilterCheckNeedsToBeDone(filterButtonId)
@@ -90,7 +93,7 @@ local function filterItemNow(slotItemInstanceId)
         return (allLogicalConjunctionsAreAND == true and result == true)
                 or (filterButtonLogicalConjunctionSettings[filterButtonId] == false and filterButtonLogicalConjunctionResults[filterButtonId] == true)
     end
-
+    -------------------------------------------------------------------------------------------------------
 
     for filterButtonId =1, numFilters, 1 do
         --Check if filter is activated for current filterButton
@@ -151,7 +154,7 @@ local function filterItemNow(slotItemInstanceId)
             --Filter button 2-------------------------------------------------------------------------------------------------------
             --Special treatment for filter type 2 as it handels "gear sets" marked items arrays 2, 4, 6, 7 and 8
         elseif filterButtonId == FCOIS_CON_FILTER_BUTTON_GEARSETS then
-            if result or (not gearSetsFilterWithLogicalAND and filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_GEARSETS]) then
+            if preCheckIfFilterButtonsFilterCheckNeedsToBeDone(filterButtonId) == true then
                 local lastGearFilterIconId = settingsOfFilterButtonStateAndIcon.lastGearFilterIconId[FCOIS.gFilterWhere]
                 --Gear filter split disabled
                 if lastGearFilterIconId == nil or lastGearFilterIconId == -1 or not settings.splitGearSetsFilter then
@@ -200,7 +203,7 @@ local function filterItemNow(slotItemInstanceId)
             --Filter button 3-------------------------------------------------------------------------------------------------------
             --Special treatment for filter type 3, as the marked items are 3, 9 and 10
         elseif filterButtonId == FCOIS_CON_FILTER_BUTTON_RESDECIMP then
-            if result or (not resDecImpFilterWithLogicalAND and filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_RESDECIMP]) then
+            if preCheckIfFilterButtonsFilterCheckNeedsToBeDone(filterButtonId) == true then
                 local lastResDecImpFilterIconId = settingsOfFilterButtonStateAndIcon.lastResDecImpFilterIconId[FCOIS.gFilterWhere]
                 --Research, Deconstruction, Improvement filter split disabled
                 if lastResDecImpFilterIconId == nil or lastResDecImpFilterIconId == -1 or not settings.splitResearchDeconstructionImprovementFilter then
@@ -260,7 +263,7 @@ local function filterItemNow(slotItemInstanceId)
 --Filter button 4-------------------------------------------------------------------------------------------------------
             --Special treatment for filter type 4, as the marked items are 5, 11 and 12
         elseif filterButtonId == FCOIS_CON_FILTER_BUTTON_SELLGUILDINT then
-            if result or (not sellGuildIntFilterWithLogicalAND and filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT]) then
+            if preCheckIfFilterButtonsFilterCheckNeedsToBeDone(filterButtonId) == true then
                 local lastSellGuildIntFilterIconId = settingsOfFilterButtonStateAndIcon.lastSellGuildIntFilterIconId[FCOIS.gFilterWhere]
                 -- Split Sell, Sell in guild store & Intricate not activated in settings
                 if lastSellGuildIntFilterIconId == nil or lastSellGuildIntFilterIconId == -1 or not settings.splitSellGuildSellIntricateFilter then
