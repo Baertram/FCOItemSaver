@@ -381,6 +381,8 @@ function FCOIS.BuildDefaultSettings()
 		enableKeybindChording = true,
 		reApplyIconsAfterEnchanting = true,
 		reApplyIconsAfterImprovement = true,
+		autoBindMissingSetCollectionPiecesOnLoot = false,
+		autoBindMissingSetCollectionPiecesOnLootToChat = false,
 	}
 	--The tables for the markedItems, non-unique and unique
 	local addonVars = FCOIS.addonVars

@@ -308,6 +308,7 @@ end
 ]]
 
 --Set item collection book checks
+local locVars
 local function automaticMarkingSetsCollectionBookCheckFunc(p_bagId, p_slotIndex, knownOrUnknown)
     if knownOrUnknown == nil then return end
     local settings = FCOIS.settingsVars.settings
@@ -352,6 +353,15 @@ local function automaticMarkingSetsCollectionBookCheckFunc(p_bagId, p_slotIndex,
         elseif not isKnownSetCollectionItem and autoMarkSetsItemCollectionBookMissingItems == true then
             --Missing items?
             markerIcon = autoMarkSetsItemCollectionBookMissingIcon
+
+            --Auto bind missing set collection pieces?
+            if settings.autoBindMissingSetCollectionPiecesOnLoot == true then
+                BindItem(p_bagId, p_slotIndex)
+                if settings.autoBindMissingSetCollectionPiecesOnLootToChat then
+                    locVars = locVars or FCOIS.localizationVars.fcois_loc
+                    d("[FCOIS]" .. strformat(locVars["chat_output_missing_set_collection_piece_was_bound"], itemLink))
+                end
+            end
         end
         if markerIcon == nil or markerIcon <= 0 then return end
 

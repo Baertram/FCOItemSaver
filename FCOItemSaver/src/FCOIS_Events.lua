@@ -9,6 +9,9 @@ local zo_strf = zo_strformat
 
 local em = EVENT_MANAGER
 
+local iilscpu   = IsItemSetCollectionPieceUnlocked
+local iilscp    = IsItemLinkSetCollectionPiece
+
 local addonVars = FCOIS.addonVars
 local gAddonName = addonVars.gAddonName
 local ctrlVars = FCOIS.ZOControlVars
@@ -616,59 +619,59 @@ local function FCOItemSaver_Inv_Single_Slot_Update(_, bagId, slotId, isNewItem, 
 
         --Only check for normal player inventory
         --if (bagId == BAG_BACKPACK) then
-            if settings.debug then
-                debugMessage( "[EVENT]","InventorySingleSlotUpdated==============", true, FCOIS_DEBUG_DEPTH_NORMAL)
-                debugMessage( "[EVENT]",">NewItem=" .. tostring(isNewItem) .. ", bagId=" .. bagId .. ", slotIndex=" .. slotId .. ", updateReason=" .. tostring(updateReason), true, FCOIS_DEBUG_DEPTH_NORMAL)
+        if settings.debug then
+            debugMessage( "[EVENT]","InventorySingleSlotUpdated==============", true, FCOIS_DEBUG_DEPTH_NORMAL)
+            debugMessage( "[EVENT]",">NewItem=" .. tostring(isNewItem) .. ", bagId=" .. bagId .. ", slotIndex=" .. slotId .. ", updateReason=" .. tostring(updateReason), true, FCOIS_DEBUG_DEPTH_NORMAL)
+        end
+        --if(FCOIS.preventerVars.canUpdateInv == true) then
+        --FCOIS.preventerVars.canUpdateInv = false
+        zo_callLater(function()
+            if settings.debug then debugMessage( "[EVENT]",">executed now! bagId=" .. bagId .. ", slotIndex=" .. slotId, true, FCOIS_DEBUG_DEPTH_NORMAL) end
+            --Scan the inventory item for automatic marker icons which should be set
+            if not checkIfAutomaticMarksAreDisabledAtBag(bagId) then
+                FCOIS.preventerVars.eventInventorySingleSlotUpdate = true
+                scanInventory(bagId, slotId, false) --no chat output!
+                FCOIS.preventerVars.eventInventorySingleSlotUpdate = false
             end
-            --if(FCOIS.preventerVars.canUpdateInv == true) then
-            --FCOIS.preventerVars.canUpdateInv = false
-            zo_callLater(function()
-                if settings.debug then debugMessage( "[EVENT]",">executed now! bagId=" .. bagId .. ", slotIndex=" .. slotId, true, FCOIS_DEBUG_DEPTH_NORMAL) end
-                --Scan the inventory item for automatic marker icons which should be set
-                if not checkIfAutomaticMarksAreDisabledAtBag(bagId) then
-                    FCOIS.preventerVars.eventInventorySingleSlotUpdate = true
-                    scanInventory(bagId, slotId, false) --no chat output!
-                    FCOIS.preventerVars.eventInventorySingleSlotUpdate = false
-                end
 
-                -- ========================== SET TRACKER ===========================================================================================================================
-                if SetTrack ~= nil and SetTrack.GetTrackingInfo ~= nil then
-                    local otherAddonsSetTracker = otherAddons.SetTracker
-                    if otherAddonsSetTracker.isActive and settings.autoMarkSetTrackerSets then
-                        --d("[FCOItemSaver_Inv_Single_Slot_Update] SetTracker checks")
-                        --Check if item is a set part and update the marker icon if it's tracked with the addon "SetTracker"
-                        --Returns SetTracker data for the specified bag item as follows
-                        --iTrackIndex - track state index 0 - 14, -1 means the set is not tracked and 100 means the set is crafted
-                        --sTrackName - the user configured tracking name for the set
-                        --sTrackColour - the user configured colour for the set ("RRGGBB")
-                        --sTrackNotes - the user notes saved for the set
-                        local setTrackerState = SetTrack.GetTrackingInfo(bagId, slotId)				-- get SetTracker info about the current item at bagId, slotIndex
-                        local doShow = true 														-- show the SetTracker icon on that new item
-                        local doUpdateInv = true 													-- update the inventory if needed
-                        local calledFromFCOISEventSingleSlotInvUpdate = true 						-- yes, the function gets called from that actualy EVENT callback function
-                        updateSetTrackerMarker(bagId, slotId, setTrackerState, doShow, doUpdateInv, calledFromFCOISEventSingleSlotInvUpdate)
-                    end
+            -- ========================== SET TRACKER ===========================================================================================================================
+            if SetTrack ~= nil and SetTrack.GetTrackingInfo ~= nil then
+                local otherAddonsSetTracker = otherAddons.SetTracker
+                if otherAddonsSetTracker.isActive and settings.autoMarkSetTrackerSets then
+                    --d("[FCOItemSaver_Inv_Single_Slot_Update] SetTracker checks")
+                    --Check if item is a set part and update the marker icon if it's tracked with the addon "SetTracker"
+                    --Returns SetTracker data for the specified bag item as follows
+                    --iTrackIndex - track state index 0 - 14, -1 means the set is not tracked and 100 means the set is crafted
+                    --sTrackName - the user configured tracking name for the set
+                    --sTrackColour - the user configured colour for the set ("RRGGBB")
+                    --sTrackNotes - the user notes saved for the set
+                    local setTrackerState = SetTrack.GetTrackingInfo(bagId, slotId)				-- get SetTracker info about the current item at bagId, slotIndex
+                    local doShow = true 														-- show the SetTracker icon on that new item
+                    local doUpdateInv = true 													-- update the inventory if needed
+                    local calledFromFCOISEventSingleSlotInvUpdate = true 						-- yes, the function gets called from that actualy EVENT callback function
+                    updateSetTrackerMarker(bagId, slotId, setTrackerState, doShow, doUpdateInv, calledFromFCOISEventSingleSlotInvUpdate)
                 end
+            end
 
-                --New item
-                local settingsAutoMarkNewItems = (settings.autoMarkNewItems and settings.isIconEnabled[settings.autoMarkNewIconNr]) or false
-                if settingsAutoMarkNewItems == true then
-                    local markWithNewNow = true
-                    if settings.autoMarkNewItemsCheckOthers == true then
-                        local isMarked, _ = FCOIS.IsMarked(bagId, slotId, -1)
-                        if isMarked == true then markWithNewNow = false end
-                    end
-                    if markWithNewNow == true then
-                        --New item should be marked with a FCOIS marker icon now
-                        FCOIS.MarkItem(bagId, slotId, settings.autoMarkNewIconNr, true, false)
-                    end
+            --New item
+            local settingsAutoMarkNewItems = (settings.autoMarkNewItems and settings.isIconEnabled[settings.autoMarkNewIconNr]) or false
+            if settingsAutoMarkNewItems == true then
+                local markWithNewNow = true
+                if settings.autoMarkNewItemsCheckOthers == true then
+                    local isMarked, _ = FCOIS.IsMarked(bagId, slotId, -1)
+                    if isMarked == true then markWithNewNow = false end
                 end
-            end, 250)
-            --FCOIS.preventerVars.canUpdateInv = true
-            --end
+                if markWithNewNow == true then
+                    --New item should be marked with a FCOIS marker icon now
+                    FCOIS.MarkItem(bagId, slotId, settings.autoMarkNewIconNr, true, false)
+                end
+            end
+        end, 250)
+        --FCOIS.preventerVars.canUpdateInv = true
+        --end
         --end
 
-    --Equipment bag:  BAG_WORN (character equipment) or BAG_COMPANION_WORN (companion equipment)
+        --Equipment bag:  BAG_WORN (character equipment) or BAG_COMPANION_WORN (companion equipment)
     else
         if slotId ~= nil then
             --Update the equipment slot control's markers

@@ -3824,6 +3824,28 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                                             default = FCOISdefaultSettings.autoMarkSetsItemCollectionBookMissingIcon,
                                         },
                                         {
+                                            type = "checkbox",
+                                            name = locVars["options_auto_bind_missing_set_collection_pieces"],
+                                            tooltip = locVars["options_auto_bind_missing_set_collection_pieces" .. tooltipSuffix],
+                                            getFunc = function() return FCOISsettings.autoBindMissingSetCollectionPiecesOnLoot end,
+                                            setFunc = function(value)
+                                                FCOISsettings.autoBindMissingSetCollectionPiecesOnLoot = value
+                                            end,
+                                            width = "half",
+                                            default = FCOISdefaultSettings.autoBindMissingSetCollectionPiecesOnLoot,
+                                        },
+                                        {
+                                            type = "checkbox",
+                                            name = locVars["options_auto_bind_missing_set_collection_pieces_to_chat"],
+                                            tooltip = locVars["options_auto_bind_missing_set_collection_pieces_to_chat" .. tooltipSuffix],
+                                            getFunc = function() return FCOISsettings.autoBindMissingSetCollectionPiecesOnLootToChat end,
+                                            setFunc = function(value)
+                                                FCOISsettings.autoBindMissingSetCollectionPiecesOnLootToChat = value
+                                            end,
+                                            width = "half",
+                                            default = FCOISdefaultSettings.autoBindMissingSetCollectionPiecesOnLootToChat,
+                                        },
+                                        {
                                             type = 'dropdown',
                                             name = locVars["options_auto_mark_sets_collection_known_icon"],
                                             tooltip = locVars["options_auto_mark_sets_collection_known_icon" .. tooltipSuffix],

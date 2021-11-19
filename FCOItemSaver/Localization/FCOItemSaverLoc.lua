@@ -1241,6 +1241,12 @@ FCOIS.localizationVars.localizationAll = {
         ["options_bags_to_scan_chat_output_TT"]          = "Show a chat output of each scanned bag, as the scanning of the bag starts and ends. Marked items will be shown in the chat depending on each markings-submenu settings, independent on this setting here.",
         ["reloadui"] = "CAUTION: The user interface will be reloaded in %s seconds!",
 
+        ["options_auto_bind_missing_set_collection_pieces"] = "Auto bind missing pieces",
+        ["options_auto_bind_missing_set_collection_pieces_TT"] = "Auto bind missing set collection pieces to your account.\nBound items will still get the \'unknown marker icon\' applied so you are able to filter them acordingly.\nOnly works with vanilla ESO missing set collection piece detection and with the logged in account!\n\nThis will be done each time the automatic set collection piece marks get applied (manually or upon looting items).\n\n|cFF0000Attention:|r There will be NO security dialog asking up in front if the item should be bound!",
+        ["options_auto_bind_missing_set_collection_pieces_to_chat"] = "Show in chat",
+        ["options_auto_bind_missing_set_collection_pieces_to_chat_TT"] = "Show the items that were auto bound in the chat",
+        ["chat_output_missing_set_collection_piece_was_bound"] = "Missing set collection piece was bound: %s",
+
         --LibShifterBoxes
         --[FCOIS_UNIQUEID_ITEMTYPES]
         ["LIBSHIFTERBOX_FCOIS_UNIQUEID_ITEMTYPES_TITLE_LEFT"]   = "Item types (all)",
@@ -2421,6 +2427,12 @@ FCOIS.localizationVars.localizationAll = {
         ["options_bags_to_scan_chat_output"]             = "Zeige Chat Ausgabe pro Inventar",
         ["options_bags_to_scan_chat_output_TT"]          = "Zeige eine Ausgabe im Chat für jedes gescannte Inventar, zum Start und zum Ende. Markierte Gegenstände werden unabhängig von dieser Einstellung, je nach Einstellung im jeweiligen Markierungs-Untermenü, im Chat ausgegeben.",
         ["reloadui"] = "ACHTUNG: Die Benutzeroberfläche wird neugeladen in %s Sekunden!",
+
+        ["options_auto_bind_missing_set_collection_pieces"] = "Auto binden: Unbekannte Teile",
+        ["options_auto_bind_missing_set_collection_pieces_TT"] = "Automatisches Binden von unbekannten Set Sammlungs-Teilen deines aktuellen Accounts.\nNeu gebundene Teile werden dennoch das \'unbekannt Symbol\' erhalten damit diese danach filterbar bleiben.\nFunktioniert nur mit den Standard ESO Set Sammlungs Prüfungen und nur für den aktuell eingeloggten Account!\n\nDieses Binden wird immer dann ausgeführt, wenn du die Automatischen Set Sammlungs-Prüfungen ausführst, oder wenn etwas gelootet wird.\n\n|cFF0000Achtung:|r Es wird KEIN Sicherheitsabfrage Dialog vor dem Binden angezeigt, den du bestätigen musst!",
+        ["options_auto_bind_missing_set_collection_pieces_to_chat"] = "Im Chat zeigen",
+        ["options_auto_bind_missing_set_collection_pieces_to_chat_TT"] = "Zeige die automatisch gebundenen Teile im Chat an",
+        ["chat_output_missing_set_collection_piece_was_bound"] = "Missing set collection piece was bound: %s",
 
         --LibShifterBoxes
         --[FCOIS_UNIQUEID_ITEMTYPES]

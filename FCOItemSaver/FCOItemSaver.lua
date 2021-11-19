@@ -224,7 +224,7 @@ I haven't tested that, though. Should be a fairly easy nil check either way.
 --[Added]
 --Added new constants for filter button states: FCOIS_CON_FILTER_BUTTON_STATE_RED, FCOIS_CON_FILTER_BUTTON_STATE_GREEN and FCOIS_CON_FILTER_BUTTON_STATE_YELLOW
 --Added new constant for special filter button state: Do not update colors = FCOIS_CON_FILTER_BUTTON_STATE_DO_NOT_UPDATE_COLOR
-
+--New looted missing set item pieces can be bound automatically (new setting)
 
 --[Added on request]
 
