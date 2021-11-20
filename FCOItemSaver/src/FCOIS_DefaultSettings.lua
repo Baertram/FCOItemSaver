@@ -382,6 +382,7 @@ function FCOIS.BuildDefaultSettings()
 		reApplyIconsAfterEnchanting = true,
 		reApplyIconsAfterImprovement = true,
 		autoBindMissingSetCollectionPiecesOnLoot = false,
+		autoBindMissingSetCollectionPiecesOnLootMarkKnown = false,
 		autoBindMissingSetCollectionPiecesOnLootToChat = false,
 	}
 	--The tables for the markedItems, non-unique and unique

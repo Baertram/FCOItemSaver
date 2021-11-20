@@ -582,14 +582,14 @@ function FCOIS.BuildAddonMenu()
     buildSetCollectionAddonsList()
 
     local function checkAndRunAutomaticSetItemCollectionMarkerApply(setCollectionsType)
---d("[FCOIS]checkAndRunAutomaticSetItemCollectionMarkerApply - setCollectionsType: " ..tostring(setCollectionsType))
+        --d("[FCOIS]checkAndRunAutomaticSetItemCollectionMarkerApply - setCollectionsType: " ..tostring(setCollectionsType))
         if FCOISsettings.autoMarkSetsItemCollectionBook == true and
-            (
-                (FCOISsettings.autoMarkSetsItemCollectionBookMissingIcon ~= FCOIS_CON_ICON_NONE and
-                isIconEnabled[FCOISsettings.autoMarkSetsItemCollectionBookMissingIcon] == true) or
-                (FCOISsettings.autoMarkSetsItemCollectionBookNonMissingIcon ~= FCOIS_CON_ICON_NONE and
-                isIconEnabled[FCOISsettings.autoMarkSetsItemCollectionBookNonMissingIcon] == true)
-            )
+                (
+                        (FCOISsettings.autoMarkSetsItemCollectionBookMissingIcon ~= FCOIS_CON_ICON_NONE and
+                                isIconEnabled[FCOISsettings.autoMarkSetsItemCollectionBookMissingIcon] == true) or
+                                (FCOISsettings.autoMarkSetsItemCollectionBookNonMissingIcon ~= FCOIS_CON_ICON_NONE and
+                                        isIconEnabled[FCOISsettings.autoMarkSetsItemCollectionBookNonMissingIcon] == true)
+                )
         then
             scanInventoryItemsForAutomaticMarks(nil, nil, setCollectionsType, false)
         end
@@ -1361,7 +1361,7 @@ function FCOIS.BuildAddonMenu()
                 },
             },
         ]]
-------------------------------------------------------------------------------------------------------------------------
+        ------------------------------------------------------------------------------------------------------------------------
         --These LAM controls will be added at the end of the controls that are always added for all icons (e.g. color,
         --size, position)
         local specialControlsByIconId ={
@@ -1381,7 +1381,7 @@ function FCOIS.BuildAddonMenu()
                 },
             },
         }
-------------------------------------------------------------------------------------------------------------------------
+        ------------------------------------------------------------------------------------------------------------------------
         --Create 1 submenu for each normal marker icon
         for normalIconId=FCOIS_CON_ICON_LOCK, numVars.gFCONumNonDynamicAndGearIcons, 1 do
             local isGearIcon = mappingVars.iconToGear[normalIconId] ~= nil or false
@@ -2456,11 +2456,11 @@ function FCOIS.BuildAddonMenu()
         for _, addInvBtnInvokerData in ipairs(sortedAddInvBtnInvokers) do
             local filterPanelId = addInvBtnInvokerData.filterPanelId
             if filterPanelId == nil then
---Added as FR client user (via email esobzh@gmail.com) always got an error in line 2445, and after adding some workaround fixes with FCOSI v2.1.3 at the default settings the error message is:
---#140: Error message at login -> related to fixed error 131
--->Could not create editbox "Gauche:" FCOItemSaver_LAM
--->Could not create editbox "Haute:" FCOItemSaver_LAM
-d("[FCOIS]DEBUG-SettingsMenu 2422- filterPanelId is nil! addInvBtnInvokerData sortIndex/name: " ..tostring(addInvBtnInvokerData.sortIndex) .. "/" .. tostring(addInvBtnInvokerData.name))
+                --Added as FR client user (via email esobzh@gmail.com) always got an error in line 2445, and after adding some workaround fixes with FCOSI v2.1.3 at the default settings the error message is:
+                --#140: Error message at login -> related to fixed error 131
+                -->Could not create editbox "Gauche:" FCOItemSaver_LAM
+                -->Could not create editbox "Haute:" FCOItemSaver_LAM
+                d("[FCOIS]DEBUG-SettingsMenu 2422- filterPanelId is nil! addInvBtnInvokerData sortIndex/name: " ..tostring(addInvBtnInvokerData.sortIndex) .. "/" .. tostring(addInvBtnInvokerData.name))
             else
                 local isFCOISCustomFilterPanelId = false
                 local typeFilterPanelId = type(filterPanelId)
@@ -3256,15 +3256,15 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                     {
                         --========= ICON SORT OPTIONS ==================================================
                         -- FCOIS Icon sort order
---[[
-                        --FCOIS version 2.0.3
-                        {
-                            type = "submenu",
-                            name = locVars["options_header_sort_order"],
-                            reference = "FCOItemSaver_Settings_IconSortOrder_SubMenu",
-                            controls = IconSortOrderSubmenuControls, -- dynamically created dropdown controls for each FCOIS icon, for the sort order
-                        },
-]]
+                        --[[
+                                                --FCOIS version 2.0.3
+                                                {
+                                                    type = "submenu",
+                                                    name = locVars["options_header_sort_order"],
+                                                    reference = "FCOItemSaver_Settings_IconSortOrder_SubMenu",
+                                                    controls = IconSortOrderSubmenuControls, -- dynamically created dropdown controls for each FCOIS icon, for the sort order
+                                                },
+                        ]]
                         {
                             type = "submenu",
                             name = locVars["options_header_sort_order"],
@@ -3833,6 +3833,22 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                                             end,
                                             width = "half",
                                             default = FCOISdefaultSettings.autoBindMissingSetCollectionPiecesOnLoot,
+                                            disabled = function() return not FCOISsettings.autoMarkSetsItemCollectionBook end,
+                                        },
+                                        {
+                                            type = "checkbox",
+                                            name = locVars["options_auto_bind_missing_set_collection_pieces_markKnown"],
+                                            tooltip = locVars["options_auto_bind_missing_set_collection_pieces_markKnown" .. tooltipSuffix],
+                                            getFunc = function() return FCOISsettings.autoBindMissingSetCollectionPiecesOnLootMarkKnown end,
+                                            setFunc = function(value)
+                                                FCOISsettings.autoBindMissingSetCollectionPiecesOnLootMarkKnown = value
+                                            end,
+                                            width = "half",
+                                            default = FCOISdefaultSettings.autoBindMissingSetCollectionPiecesOnLootMarkKnown,
+                                            disabled = function()
+                                                return not FCOISsettings.autoMarkSetsItemCollectionBook or not FCOISsettings.autoBindMissingSetCollectionPiecesOnLoot
+                                                    or not FCOISsettings.autoMarkSetsItemCollectionBookNonMissingIcon or FCOISsettings.autoMarkSetsItemCollectionBookNonMissingIcon == FCOIS_CON_ICON_NONE
+                                            end,
                                         },
                                         {
                                             type = "checkbox",
@@ -3844,6 +3860,7 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                                             end,
                                             width = "half",
                                             default = FCOISdefaultSettings.autoBindMissingSetCollectionPiecesOnLootToChat,
+                                            disabled = function() return not FCOISsettings.autoMarkSetsItemCollectionBook or not FCOISsettings.autoBindMissingSetCollectionPiecesOnLoot end,
                                         },
                                         {
                                             type = 'dropdown',

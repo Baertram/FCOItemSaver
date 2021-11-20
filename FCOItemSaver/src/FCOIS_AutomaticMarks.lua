@@ -361,6 +361,10 @@ local function automaticMarkingSetsCollectionBookCheckFunc(p_bagId, p_slotIndex,
                     locVars = locVars or FCOIS.localizationVars.fcois_loc
                     d("[FCOIS]" .. strformat(locVars["chat_output_missing_set_collection_piece_was_bound"], itemLink))
                 end
+                --Mark as known after bind now, instead of mark as unknown?
+                if settings.autoBindMissingSetCollectionPiecesOnLootMarkKnown then
+                    markerIcon = autoMarkSetsItemCollectionBookNonMissingIcon
+                end
             end
         end
         if markerIcon == nil or markerIcon <= 0 then return end
