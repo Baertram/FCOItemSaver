@@ -322,7 +322,7 @@ local function automaticMarkingSetsCollectionBookCheckFunc(p_bagId, p_slotIndex,
         autoMarkSetsItemCollectionBookAddonUsed == nil or
         ( autoMarkSetsItemCollectionBookMissingIcon == FCOIS_CON_ICON_NONE and autoMarkSetsItemCollectionBookNonMissingIcon == FCOIS_CON_ICON_NONE ) or
         (knownOrUnknown == false and autoMarkSetsItemCollectionBookMissingIcon == nil) or
-        (knownOrUnknown == true and autoMarkSetsItemCollectionBookNonMissingIcon == nil)
+        (knownOrUnknown == true and (autoMarkSetsItemCollectionBookNonMissingIcon == nil and not settings.autoBindMissingSetCollectionPiecesOnLoot))
     then
         return
     end
@@ -350,9 +350,11 @@ local function automaticMarkingSetsCollectionBookCheckFunc(p_bagId, p_slotIndex,
         if isKnownSetCollectionItem == true and autoMarkSetsItemCollectionBookKnownItems == true then
             --Non missing items?
             markerIcon = autoMarkSetsItemCollectionBookNonMissingIcon
-        elseif not isKnownSetCollectionItem and autoMarkSetsItemCollectionBookMissingItems == true then
-            --Missing items?
-            markerIcon = autoMarkSetsItemCollectionBookMissingIcon
+        elseif not isKnownSetCollectionItem then
+            if autoMarkSetsItemCollectionBookMissingItems == true then
+                --Missing items?
+                markerIcon = autoMarkSetsItemCollectionBookMissingIcon
+            end
 
             --Auto bind missing set collection pieces?
             if settings.autoBindMissingSetCollectionPiecesOnLoot == true then
@@ -362,7 +364,7 @@ local function automaticMarkingSetsCollectionBookCheckFunc(p_bagId, p_slotIndex,
                     d("[FCOIS]" .. strformat(locVars["chat_output_missing_set_collection_piece_was_bound"], itemLink))
                 end
                 --Mark as known after bind now, instead of mark as unknown?
-                if settings.autoBindMissingSetCollectionPiecesOnLootMarkKnown then
+                if settings.autoBindMissingSetCollectionPiecesOnLootMarkKnown and settings.autoMarkSetsItemCollectionBookNonMissingIcon ~= FCOIS_CON_ICON_NONE then
                     markerIcon = autoMarkSetsItemCollectionBookNonMissingIcon
                 end
             end

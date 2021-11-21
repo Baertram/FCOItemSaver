@@ -19,7 +19,7 @@
 ---------------------------------------------------------------------
 
 --____________________________
--- Current max bugs/features/ToDos: 176
+-- Current max bugs/features/ToDos: 177
 --____________________________
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -197,15 +197,13 @@ I haven't tested that, though. Should be a fairly easy nil check either way.
 --#176: 2021-11-14, Baertram, feature: Add submenu to 4 filter buttons, with setting to change the filter between AND & OR filter conjunction behaviour.
 --Remembers the state for each filterPanel
 
+--#177: 2021-11-20, Baertram, bug: With filterButton 1 and 2 at yellow state items without markerIcon of filter 1 (but being a dynamic gear of filter 2) will show up
 
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
 --In progress: Updated last 2021-11-14
 --#175
---#176
---Screenshot showing the new context menu "Filter settings" at the filter button: https://i.imgur.com/32AHUNS.png
---Screenshot link for tooltip showing new logical conjunction AND/OR state: https://i.imgur.com/yj2UIOe.png
 
 ---------------------------------------------------------------------
 --Since last update 2.2.3 - New version: 2.2.4 -> Changelog updated last: 2021-11-12
@@ -214,19 +212,25 @@ I haven't tested that, though. Should be a fairly easy nil check either way.
 --[Fixed]
 --Added debug file /src/FCOIS_Debug.lua to the txt file again
 --Debug functions will use local speed up variable now
---Added more local speed-us in several files
+--Added more local speed-ups in several files
+--Missing command handler function in API function FCOIS.ChangeFilter
+--#177: With filterButton 1 and 2 at yellow state items without markerIcon of filter 1 (but being a dynamic gear of filter 2) will show up
 
 --[Changed]
 --Changed load order of debug file to earlier loading
---Removed duplicate code and strings for the filter button's "allowed to filter" functions. Created new mapping table filterPanelToFilterButtonFilterActiveSettingName
-
+--Removed duplicate code and strings for the filter button's "allowed to filter" functions
+--FCOIS settings button at the main menu changed it's look from the -> arrow to the "FCOIS filter/lock icon" to dinstinguish it from other addons (e.g. Votans Settings Menu)
 
 --[Added]
 --Added new constants for filter button states: FCOIS_CON_FILTER_BUTTON_STATE_RED, FCOIS_CON_FILTER_BUTTON_STATE_GREEN and FCOIS_CON_FILTER_BUTTON_STATE_YELLOW
 --Added new constant for special filter button state: Do not update colors = FCOIS_CON_FILTER_BUTTON_STATE_DO_NOT_UPDATE_COLOR
---New looted missing set item pieces can be bound automatically (new setting)
+--New looted missing set item pieces can be bound automatically (new setting), shown in chat (new setting) and be marked as unknown (exisitng settings) or known (new setting) set colelction pieces
+--Added API function function FCOIS.GetGearIcons(onlyNonDynamicOnes, onlyDynamicOnes)
 
 --[Added on request]
+--#176 Add submenu to 4 filter buttons, with setting to change the filter between AND & OR filter conjunction behaviour. Remembers the state for each filterPanel
+--->Screenshot showing the new context menu "Filter settings" at the filter button: https://i.imgur.com/32AHUNS.png
+--->Screenshot link for tooltip showing new logical conjunction AND/OR state: https://i.imgur.com/yj2UIOe.png
 
 
 --************************************************************************************************************************

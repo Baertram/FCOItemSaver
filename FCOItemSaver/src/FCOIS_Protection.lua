@@ -335,10 +335,14 @@ local checkIfProtectedSettingsEnabled = FCOIS.CheckIfProtectedSettingsEnabled
 --checkIfProtectedSettingsEnabled(checkType, iconNr, isDynamicIcon, checkAntiDetails, whereAreWe) instead
 --2nd parameter itemId is the item's instance id or the unique item's id
 --3rd parameter allows a handler like "gear" or "dynamic" to check all gear set or all dyanmic icons at once (in a loop)
+-->Carefull: If "dynamic" is passed in as checkHandler it will return true for ALL dynamic icons, also if they belong to dynamic "gear" icons! You can change this by passing in the last parameter
+-->checkHandlerExcludeIcons
 --4th parameter addonName (String):	Can be left NIL! The unique addon name which was used to temporarily enable the uniqueIdm usage for the item checks.
 -----                               -> See FCOIS API function "FCOIS.UseTemporaryUniqueIds(addonName, doUse)"
+--5th parameter savedVarsTableNameForMarkers (String): The SavedVariables table name for the marker icons, if any special table is used
+--6th parameter checkHandlerExcludeIcons (table): Provide a table of key number <iconId> = value boolean <shouldBeExcluded> which should be excluded as the specialCheckHandler (3rd parameter) is used
 local checkIfItemIsProtected
-function FCOIS.CheckIfItemIsProtected(iconId, itemId, checkHandler, addonName, savedVarsTableNameForMarkers)
+function FCOIS.CheckIfItemIsProtected(iconId, itemId, checkHandler, addonName, savedVarsTableNameForMarkers, checkHandlerExcludeIcons)
     if itemId == nil or (iconId == nil and checkHandler == nil) then return false end
 --d("FCOIS.checkIfItemIsProtected -  iconId: " .. tostring(iconId) .. ", itemId: " .. tostring(signItemId(itemId)) .. ", checkHandler: " .. tostring(checkHandler) .. ", addonName: " .. tostring(addonName))
     savedVarsTableNameForMarkers = savedVarsTableNameForMarkers or getSavedVarsMarkedItemsTableName()
@@ -349,27 +353,32 @@ function FCOIS.CheckIfItemIsProtected(iconId, itemId, checkHandler, addonName, s
     if checkHandler ~= nil and checkHandler ~= "" then
         if not allowedCheckHandlers[checkHandler] then return false end
         checkIfItemIsProtected = FCOIS.CheckIfItemIsProtected
+        local mappingVars = FCOIS.mappingVars
         --Recursively check all the marker icons from the check handler range, e.g. all gear sets or all dynamic icons
         if checkHandler == "gear" then
             local itemIsProtectedWithGear = false
-            local gearIcons = FCOIS.mappingVars.gearToIcon
+            local gearIcons = mappingVars.gearToIcon
             for _, gearIconNr in pairs(gearIcons) do
                 if gearIconNr ~= nil then
-                    local itemIsProtectedWithGearLoop = checkIfItemIsProtected(gearIconNr, itemId, nil, addonName, savedVarsTableNameForMarkers)
-                    --Is the current gear's icon protecting the item then return "protected" (true)
-                    if itemIsProtectedWithGearLoop then return true end
+                    if not checkHandlerExcludeIcons or (checkHandlerExcludeIcons and not checkHandlerExcludeIcons[gearIconNr]) then
+                        local itemIsProtectedWithGearLoop = checkIfItemIsProtected(gearIconNr, itemId, nil, addonName, savedVarsTableNameForMarkers)
+                        --Is the current gear's icon protecting the item then return "protected" (true)
+                        if itemIsProtectedWithGearLoop then return true end
+                    end
                 end
             end
             return itemIsProtectedWithGear
 
         elseif checkHandler == "dynamic" then
             local itemIsProtectedWithDynamic = false
-            local dynamicIcons = FCOIS.mappingVars.dynamicToIcon
+            local dynamicIcons = mappingVars.dynamicToIcon
             for _, dynamicIconNr in pairs(dynamicIcons) do
                 if dynamicIconNr ~= nil then
-                    local itemIsProtectedWithDynamicLoop = checkIfItemIsProtected(dynamicIconNr, itemId, nil, addonName, savedVarsTableNameForMarkers)
-                    --Is the current dynamic's icon protecting the item then return "protected" (true)
-                    if itemIsProtectedWithDynamicLoop then return true end
+                    if not checkHandlerExcludeIcons or (checkHandlerExcludeIcons and not checkHandlerExcludeIcons[dynamicIconNr]) then
+                        local itemIsProtectedWithDynamicLoop = checkIfItemIsProtected(dynamicIconNr, itemId, nil, addonName, savedVarsTableNameForMarkers)
+                        --Is the current dynamic's icon protecting the item then return "protected" (true)
+                        if itemIsProtectedWithDynamicLoop then return true end
+                    end
                 end
             end
             return itemIsProtectedWithDynamic

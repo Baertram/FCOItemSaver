@@ -3833,7 +3833,7 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                                             end,
                                             width = "half",
                                             default = FCOISdefaultSettings.autoBindMissingSetCollectionPiecesOnLoot,
-                                            disabled = function() return not FCOISsettings.autoMarkSetsItemCollectionBook end,
+                                            disabled = function() return not FCOISsettings.autoMarkSetsItemCollectionBook or FCOISsettings.autoMarkSetsItemCollectionBookAddonUsed ~= FCOIS_SETS_COLLECTION_ADDON_ESO_STANDARD end,
                                         },
                                         {
                                             type = "checkbox",
@@ -3848,6 +3848,7 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                                             disabled = function()
                                                 return not FCOISsettings.autoMarkSetsItemCollectionBook or not FCOISsettings.autoBindMissingSetCollectionPiecesOnLoot
                                                     or not FCOISsettings.autoMarkSetsItemCollectionBookNonMissingIcon or FCOISsettings.autoMarkSetsItemCollectionBookNonMissingIcon == FCOIS_CON_ICON_NONE
+                                                    or FCOISsettings.autoMarkSetsItemCollectionBookAddonUsed ~= FCOIS_SETS_COLLECTION_ADDON_ESO_STANDARD
                                             end,
                                         },
                                         {
@@ -3860,7 +3861,9 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                                             end,
                                             width = "half",
                                             default = FCOISdefaultSettings.autoBindMissingSetCollectionPiecesOnLootToChat,
-                                            disabled = function() return not FCOISsettings.autoMarkSetsItemCollectionBook or not FCOISsettings.autoBindMissingSetCollectionPiecesOnLoot end,
+                                            disabled = function()
+                                                return not FCOISsettings.autoMarkSetsItemCollectionBook or not FCOISsettings.autoBindMissingSetCollectionPiecesOnLoot
+                                                        or FCOISsettings.autoMarkSetsItemCollectionBookAddonUsed ~= FCOIS_SETS_COLLECTION_ADDON_ESO_STANDARD end,
                                         },
                                         {
                                             type = 'dropdown',

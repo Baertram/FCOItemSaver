@@ -244,10 +244,16 @@ function FCOIS.AddAdditionalButtons(buttonName, buttonData)
                         return false
                     end
                 end,
+                --[[
                 normal    = "esoui/art/charactercreate/rotate_right_up.dds",
                 pressed   = "esoui/art/charactercreate/rotate_right_down.dds",
                 highlight = "esoui/art/charactercreate/rotate_right_over.dds",
                 disabled  = "esoui/art/charactercreate/rotate_right_disabled.dds",
+                ]]
+                normal    = "FCOItemSaver/FCOIS.dds",
+                pressed   = "FCOItemSaver/FCOIS.dds",
+                highlight = "FCOItemSaver/FCOIS.dds",
+                disabled  = "FCOItemSaver/FCOIS.dds",
             }
             FCOIS.LMM2:AddMenuItem(descriptor, categoryLayoutInfo)
 

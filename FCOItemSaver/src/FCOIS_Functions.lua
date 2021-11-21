@@ -27,6 +27,8 @@ local zo_strf = zo_strformat
 local inventoryRowPatterns = checkVars.inventoryRowPatterns
 local updateCraftingInventory = FCOIS.UpdateCraftingInventory --maybe nil here, will be updated further down in function FCOIS.CheckIfImprovedItemShouldBeReMarked_AfterImprovement()
 
+local getGearIcons = FCOIS.GetGearIcons --might be nil here as it is defined in FCOIS.API
+
 --==========================================================================================================================================
 --                                          FCOIS - Base & helper functions
 --==========================================================================================================================================
@@ -2508,7 +2510,8 @@ local function sortGearSetMappingTables()
     end
 end
 
---Function to rebuild the gear set values (icons, ids, names, context menu values, etc.)
+--Function to rebuild the gear set values (icons, ids, names, context menu values, dynamicGear, nonDynamicGear, etc.)
+--Called at event_player_activated and if some gear settings change in the settings menu (dynamic marker icons -> enabled as gear e.g.)
 function FCOIS.RebuildGearSetBaseVars(iconNr, value, calledFromEventPlayerActivated)
 --d("FCOIS]rebuildGearSetBaseVars-calledFromEventPlayerActivated: " ..tostring(calledFromEventPlayerActivated))
     calledFromEventPlayerActivated = calledFromEventPlayerActivated or false
@@ -2655,6 +2658,10 @@ function FCOIS.RebuildGearSetBaseVars(iconNr, value, calledFromEventPlayerActiva
         rebuildFilterButtonContextMenuVars()
     end
 
+    --Update FCOIS with the gear icons
+    getGearIcons = getGearIcons or FCOIS.GetGearIcons
+    FCOIS.mappingVars.iconToNonDynamicGear = getGearIcons(false, true)
+    FCOIS.mappingVars.iconToDynamicGear = getGearIcons(true, false)
 end
 
 -- =====================================================================================================================

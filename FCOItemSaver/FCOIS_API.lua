@@ -94,7 +94,7 @@ local isCharacterShown = FCOIS.IsCharacterShown
 local isCompanionCharacterShown = FCOIS.IsCompanionCharacterShown
 local buildIconText = FCOIS.BuildIconText
 local filterStatus = FCOIS.FilterStatus
-local commandHandler = FCOIS.Command_handler
+local command_handler = FCOIS.Command_handler
 
 --------------------------------------------------------------------------------
 -- Local helper functions
@@ -1388,12 +1388,33 @@ function FCOIS.isDynamicGearIcon(iconId)
 	if iconId == nil then return end
 	local iconToGear = mappingVars.iconToGear
 	local iconToDynamic = mappingVars.iconToDynamic
-	if iconToDynamic and iconToGear and iconToGear[iconId] and iconToDynamic[iconId] then
+	if iconToDynamic and iconToGear and iconToGear[iconId] ~= nil and iconToDynamic[iconId] ~= nil then
 		return true
 	end
 	return false
 end
 
+--Global function to get the FCOIS gear marker icons.
+--Optional boolean parameter "onlyDynamicOnes": nil = return all gear icons. true = the result table will contain the dynamic gear marker icons only,
+---false = the result it will contain the non-dynamic (static) ones only.
+--Returns a table with key number <gearIconNr> = value boolean true
+function FCOIS.GetGearIcons(onlyDynamicOnes)
+	local numGearIcons, gearIcons = FCOIS.GetGearSetInfo()
+	if numGearIcons <= 0 or gearIcons == nil then return end
+	local gearMarkerIcons = {}
+	for _, gearIconId in ipairs(gearIcons) do
+		local doAdd = true
+		if onlyDynamicOnes  ~= nil then
+			local isDynamicGearIcon = FCOIS.isDynamicGearIcon(gearIconId) or false
+			doAdd = (onlyDynamicOnes == true and isDynamicGearIcon == true and true)
+					or (onlyDynamicOnes == false and not isDynamicGearIcon and true) or false
+		end
+		if doAdd == true then
+			gearMarkerIcons[gearIconId] = true
+		end
+	end
+	return gearMarkerIcons
+end
 
 --Global function to get the for a given gear set's iconId (2, 4, 6, 7 or 8) or a dynamic icon id (13, 14, 15, 16, 17, 18, 19, 20, 21, 22)
 --> use the constants for the amrker icons please! e.g. FCOIS_CON_ICON_LOCK, FCOIS_CON_ICON_DYNAMIC_1 etc. Check file src/FCOIS_constants.lua for the available constants (top of the file)
