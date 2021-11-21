@@ -192,7 +192,9 @@ function FCOIS.GetItemSaverControl(parent, controlId, useParentFallback, control
     local retControl = parent:GetNamedChild(gAddonName .. textureNameAddition .. tostring(controlId))
     --Use the parent control as a fallback?
     --e.g. Inside enchanting the parent control is the correct one already
-    retControl = (retControl ~= nil and retControl) or (useParentFallback == true and parent)
+    if retControl == nil and useParentFallback == true then
+        return parent
+    end
     return retControl
 end
 
