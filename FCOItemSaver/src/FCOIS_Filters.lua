@@ -63,7 +63,7 @@ local function filterItemNow(slotItemInstanceId, slot)
     --TODO: For Debugging only! Remove again if not needed
     local doDebugOutput = false
     local bagId, slotIndex = FCOIS.MyGetItemDetails(slot)
-    if bagId == 1 and slotIndex == 61 then
+    if bagId == 1 and slotIndex == 149 then --2021-12-04, bag item at char Glacies: Heiliger Skal des Sul-Xan (Dolch)
         doDebugOutput = true
     end
     if doDebugOutput then
@@ -73,19 +73,21 @@ local function filterItemNow(slotItemInstanceId, slot)
     end
 
     --TODO 2021-11-21 Filtering with logical OR does not work properly that way.
-    --TODO We need to split this functions code below up so that OR filtering will be working differently in total!
+    --TODO We need to split this functions code below up so that OR (or AND & OR combined) filtering will be working differently in total!
     --TODO Else the "result" will mix and give false results in total.
 
     --[[
-    e.g. does not work yet:
-    All at logical OR (4x OR)
-    y/y/r/y: Does not show icons of resDecImp (button 3) in the list
-    ->
+    [Does work]
+    -4x logical AND: All combinations
 
-    g/g/g/g: Does not hide filter buttons 2, 3 and 4 (only 1 is hidden)
+    -4x logical OR: 1st filter button + no other filter button: All combinations
+    -4x logical OR: 1st filter button + 2nd filter button: 1st button yellow, 2nd button yellow (but not with 2nd button red? And onyl works with standard gear marker icons (not with dynamic gear marker icons!)
+    -4x logical OR: 1st filter button + 3rd filter button: 1st button yellow, 3rd button yellow (but not with 3rd button red?)
+    -4x logical OR: 1st filter button + 4th filter button: 1st button yellow, 4th button yellow (but not with 4th button red?)
+    -4x logical OR: 1st filter button + 2nd filter button + 3rd filter button + 4th filter button: All butons yellow (but does not work wit any of them red?)
 
-    r/<any combination here>: With filterButton 1 red no other filters seem to work
-
+    [Does not work]
+    -All other combinations
 
 
     ]]
@@ -231,7 +233,7 @@ local function filterItemNow(slotItemInstanceId, slot)
                     end
 
                 end
-if doDebugOutput then d(">>[" ..tos(filterButtonId) .. "] " .. tos(isFilterActivated) .." (icon: " .. (lastLockDynFilterIconId == nil and "*") or tos(lastLockDynFilterIconId) .."): "..tos(result)) end
+                if doDebugOutput then d(">>[" ..tos(filterButtonId) .. "] " .. tos(isFilterActivated) .." (icon: " .. (lastLockDynFilterIconId == nil and "*") or tos(lastLockDynFilterIconId) .."): "..tos(result)) end
                 updateLogicalConjunctionResultsOfFilterButton(FCOIS_CON_FILTER_BUTTON_LOCKDYN, result)
             end
 ------------------------------------------------------------------------------------------------------------------------------------------
@@ -282,7 +284,7 @@ if doDebugOutput then d(">>[" ..tos(filterButtonId) .. "] " .. tos(isFilterActiv
                     end
 
                 end
-if doDebugOutput then d(">>[" ..tos(filterButtonId) .. "] " .. tos(isFilterActivated) .." (icon: " .. (lastGearFilterIconId == nil and "*") or tos(lastGearFilterIconId) .."): "..tos(result)) end
+                if doDebugOutput then d(">>[" ..tos(filterButtonId) .. "] " .. tos(isFilterActivated) .." (icon: " .. (lastGearFilterIconId == nil and "*") or tos(lastGearFilterIconId) .."): "..tos(result)) end
                 updateLogicalConjunctionResultsOfFilterButton(FCOIS_CON_FILTER_BUTTON_GEARSETS, result)
             end
 
@@ -342,7 +344,7 @@ if doDebugOutput then d(">>[" ..tos(filterButtonId) .. "] " .. tos(isFilterActiv
                     end
 
                 end
-if doDebugOutput then d(">>[" ..tos(filterButtonId) .. "] " .. tos(isFilterActivated) .." (icon: " .. (lastResDecImpFilterIconId == nil and "*") or tos(lastResDecImpFilterIconId) .."): "..tos(result)) end
+                if doDebugOutput then d(">>[" ..tos(filterButtonId) .. "] " .. tos(isFilterActivated) .." (icon: " .. (lastResDecImpFilterIconId == nil and "*") or tos(lastResDecImpFilterIconId) .."): "..tos(result)) end
                 updateLogicalConjunctionResultsOfFilterButton(FCOIS_CON_FILTER_BUTTON_RESDECIMP, result)
             end
 
@@ -401,7 +403,7 @@ if doDebugOutput then d(">>[" ..tos(filterButtonId) .. "] " .. tos(isFilterActiv
                     end
 
                 end
-if doDebugOutput then d(">>[" ..tos(filterButtonId) .. "] " .. tos(isFilterActivated) .." (icon: " .. (lastSellGuildIntFilterIconId == nil and "*") or tos(lastSellGuildIntFilterIconId) .."): "..tos(result)) end
+                if doDebugOutput then d(">>[" ..tos(filterButtonId) .. "] " .. tos(isFilterActivated) .." (icon: " .. (lastSellGuildIntFilterIconId == nil and "*") or tos(lastSellGuildIntFilterIconId) .."): "..tos(result)) end
                 updateLogicalConjunctionResultsOfFilterButton(FCOIS_CON_FILTER_BUTTON_SELLGUILDINT, result)
             end
 
@@ -452,6 +454,7 @@ if doDebugOutput then d(">>[filterButton>4???] " .. tos(isFilterActivated) .. ":
         local filterButton3Result = filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_RESDECIMP]
         local filterButton4Result = filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT]
 
+        if doDebugOutput then d(string.format("[FCOIS]Filterbuttonresults: %s, %s, %s, %s",tos(filterButton1Result),tos(filterButton2Result),tos(filterButton3Result),tos(filterButton4Result))) end
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
         --==========================
@@ -462,7 +465,7 @@ if doDebugOutput then d(">>[filterButton>4???] " .. tos(isFilterActivated) .. ":
             ----------------------------
             --4 buttons with logical OR
             ----------------------------
-            if doDebugOutput then d(string.format("[FCOIS]====== 4x OR: %s, %s, %s, %s",tos(filterButton1Result),tos(filterButton2Result),tos(filterButton3Result),tos(filterButton4Result))) end
+            if doDebugOutput then d("[FCOIS]====== 4x OR") end
             resultAfterLogicalConjunction = filterButton1Result
                     or filterButton2Result
                     or filterButton3Result

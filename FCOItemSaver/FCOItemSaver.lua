@@ -14,10 +14,14 @@
 --************************************************************************************************************************
 --************************************************************************************************************************
 --************************************************************************************************************************
-------------------------------------------------------------------
+---------------------------------------------------------------------
 -- [TODO LONGTIME errors list -> find a way to reproduce/fix them] --
 ---------------------------------------------------------------------
--- #76) 2020-04-12, Baertram
+-- #58) bug, Using dynamic icons as submenu will show the dynamic icons submenu out of bounds and not clickable + sometimes hide other non-dynamic icons (e.g. sell in guildstore) in the normal context menu then
+---> Problem is that ZOs code is not raising the events like inside the normal inventories.
+--Asked for a fix/support [URL="https://www.esoui.com/forums/showthread.php?t=8938"]in this forum thread[/URL]
+
+-- #76) 2020-04-12, bug, Baertram
 -- Open bank after login and try to remove/add a marker icon via keybind-> Insecure error call
 --See addon comments by TagCdog at 2020-04-11
 --[[
@@ -39,7 +43,7 @@ EsoUI/Libraries/ZO_KeybindStrip/ZO_KeybindStrip.lua:679: in function 'ZO_Keybind
 (tail call): ?
 ]]
 
--- #79) 2020-05-28, User m-ree via FCOIS addon panel, bug #2646
+-- #79) 2020-05-28, bug, User m-ree via FCOIS addon panel, bug #2646
 -- Open a sealed writ from the inventory will throw an error message:
 --1. Login
 --2. Open inventory
@@ -57,7 +61,7 @@ ZO_MenuItem1_MouseUp:4: in function '(main chunk)'
 ]]
 
 
---#84) 2020-06-27, Malvarot - Automatic marks Quality will also tag set items "again" if the checkbox "check all other markers" at the quality settings is enabled.
+--#84) 2020-06-27, FEATURE - Malvarot - Automatic marks Quality will also tag set items "again" if the checkbox "check all other markers" at the quality settings is enabled.
 --                           e.g. set item markes get applied and after that quality as well, allthough set item markers were applied already and "check others" should prevent this
 --   Order of checking these automatic marks:
 --      Sets (wichtig: trait erwünscht > trait egal > trait unerwünscht diese reihenfolge beibehalten),
@@ -95,16 +99,16 @@ Blaue/Lila Set Rüstung mit invigorating: dynamic mark 4 ("undefined")
 Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 ]]
 
---#92: 2020-08-10, Baertram     SettingsForAll settings, which save if you are using accountwide, character or allAccountsTheSame SavedVariables will get
+--#92: 2020-08-10, bug, Baertram     SettingsForAll settings, which save if you are using accountwide, character or allAccountsTheSame SavedVariables will get
 --     deleted if you delete the "Account wide" settings from the FCOIS settings menu "SavedVariables copy/delete" options submenu!
 --     E.g. use "AllAccountsTheSame" in the settings of account @Baertram-> This setting is stored in AccountWide settings @Baertram, version 999.
 --     If you delete the account settings for @Baertram now, the chosen settings to use AllAccountsTheSame gets deleted as well!
 --     These SettingsForAll need to migrate and be saved somewhere else, like in a special settings table "FCOItemSaver_Settings_General"!
 
---#115: 2021-05-13, Baertram  Reposition the additional inventory "flag" icons at crafting tables: Refine, deconstruction, improvement.
+--#115: 2021-05-13, bug, Baertram  Reposition the additional inventory "flag" icons at crafting tables: Refine, deconstruction, improvement.
 --                            and test if they also fit with AdvancedFilters enabled
 
---#131: Error message at login:
+--#131: bug, Error message at login:
 --[[
 user:/AddOns/FCOItemSaver/src/FCOIS_SettingsMenu.lua:2445: attempt to index a nil value
 stack traceback:
@@ -116,10 +120,11 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 |caaaaaa<Locals> eventCode = 65536, addOnName = "FCOItemSaver", bagIdsToFilterForInvSingleSlotUpdate = [table:12]{1 = 1} </Locals>|r
 ]]
 
---#140: Error message at login -> related to fixed error 131
+--#140: bug, Error message at login -> related to fixed error 131
 -->Could not create editbox "Gauche:" FCOItemSaver_LAM
 -->Could not create editbox "Haute:" FCOItemSaver_LAM
 ----> Seems the fixed error message user:/AddOns/FCOItemSaver/src/FCOIS_SettingsMenu.lua:2445: attempt to index a nil value is causing this now
+--> Not reproducable?!
 
 
 ---------------------------------------------------------------------
