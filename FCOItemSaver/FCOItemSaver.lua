@@ -15,15 +15,8 @@
 --************************************************************************************************************************
 --************************************************************************************************************************
 ------------------------------------------------------------------
--- [Error/bug & feature messages to check - CHANGELOG since last version] --
+-- [TODO LONGTIME errors list -> find a way to reproduce/fix them] --
 ---------------------------------------------------------------------
-
---____________________________
--- Current max bugs/features/ToDos: 177
---____________________________
-
-------------------------------------------------------------------------------------------------------------------------
-
 -- #76) 2020-04-12, Baertram
 -- Open bank after login and try to remove/add a marker icon via keybind-> Insecure error call
 --See addon comments by TagCdog at 2020-04-11
@@ -128,9 +121,10 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 -->Could not create editbox "Haute:" FCOItemSaver_LAM
 ----> Seems the fixed error message user:/AddOns/FCOItemSaver/src/FCOIS_SettingsMenu.lua:2445: attempt to index a nil value is causing this now
 
+
 ---------------------------------------------------------------------
---[ToDo list] --
---Check for local speed ups. FCOItemSaver.txt was checked until src/FCOIS_Tooltips.lua -> as of 2021-08-18
+--[TODO Current Errors and features list - Find a way to reproduce/fix/add them] --
+--[General]Check for local speed ups. FCOItemSaver.txt was checked until src/FCOIS_Tooltips.lua -> as of 2021-08-18
 --#129: 2021-06-01: Removing all marker icons via the add. inv. "flag" context menu does not remove companion item's marker icons
 --#156: 2021-08-18, Baertram, bug: Enchanting an item does not re-apply the already marked icons (also consider icons that were saved for the items before? add setting for "Check all others")
 --#157: 2021-08-18, Baertram, bug: Character doll ring/weapon marker icons do not update properly (both 2 rings were unequipped via double click or drag and drop: on drag of 1 ring back to the right!!! slot the marker icons do not update, or equip 1 ring to the left and then use double click to equp the 2nd ring to the right slot).
@@ -170,16 +164,32 @@ I haven't tested that, though. Should be a fairly easy nil check either way.
 
 --#177: 2021-11-20, Baertram, bug: With filterButton 1 and 2 at yellow state items without markerIcon of filter 1 (but being a dynamic gear of filter 2) will show up
 
----------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed]
----------------------------------------------------------------------
---In progress: Updated last 2021-12-04
+--#178: 2021-12-03, Onigar (Addon comments), bug:
+--[[ So at the bank deposit tab you got only the "green lock" FCOIS filterbutton set (right clicked the filter button -> chose the "lock" icon explicitly ->
+    Then left clicked the filter button to turn it green -> will only filter out, hide, the lock marked items)?
+    Or is it the green * button (right click first filterButton and choose the most otp entry "*"-> then left click the filter button to turn it green ->
+    will filter out, hide, the lock and all dynamic icons).
+    And as you deposit (via keybind? via drag & drop? via double click? Any difference here?) some other items (do they need to be marked with any
+    FCOIS marker icon or could it also be any other non marked item?) all of sudden the filtered items with a lock/dynamic marker icon are shown in the
+    bank deposit list again.
+]]
+
+
+--____________________________
+-- Current max bugs/features/ToDos: 178
+--____________________________
+
+
+------------------------------------------------------------------------------------
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2021-12-04
+------------------------------------------------------------------------------------
 --#175 -> Test: Open
 --#176 -> Test: Errors occured with OR filters, and mixed AND + OR filters
 
----------------------------------------------------------------------
---Since last update 2.2.3 - New version: 2.2.4 -> Changelog updated last: 2021-11-12
----------------------------------------------------------------------
+
+-------------------------------------------------------------------------------------
+--Changelog (last version: 2.2.3 - New version: 2.2.4) -    Updated last: 2021-12-04
+-------------------------------------------------------------------------------------
 
 --[Fixed]
 --Added debug file /src/FCOIS_Debug.lua to the txt file again
@@ -208,6 +218,9 @@ I haven't tested that, though. Should be a fairly easy nil check either way.
 --************************************************************************************************************************
 --************************************************************************************************************************
 --************************************************************************************************************************
+
+------------------------------------------------------------------
+-- START OF ADDON CODE
 ------------------------------------------------------------------
 --Global array with all data of this addon
 if FCOIS == nil then FCOIS = {} end
