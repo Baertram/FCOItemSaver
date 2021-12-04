@@ -24,7 +24,7 @@
 
 ------------------------------------------------------------------------------------------------------------------------
 
--- 76) 2020-04-12, Baertram
+-- #76) 2020-04-12, Baertram
 -- Open bank after login and try to remove/add a marker icon via keybind-> Insecure error call
 --See addon comments by TagCdog at 2020-04-11
 --[[
@@ -46,7 +46,7 @@ EsoUI/Libraries/ZO_KeybindStrip/ZO_KeybindStrip.lua:679: in function 'ZO_Keybind
 (tail call): ?
 ]]
 
--- 79) 2020-05-28, User m-ree via FCOIS addon panel, bug #2646
+-- #79) 2020-05-28, User m-ree via FCOIS addon panel, bug #2646
 -- Open a sealed writ from the inventory will throw an error message:
 --1. Login
 --2. Open inventory
@@ -64,7 +64,7 @@ ZO_MenuItem1_MouseUp:4: in function '(main chunk)'
 ]]
 
 
---84) 2020-06-27, Malvarot - Automatic marks Quality will also tag set items "again" if the checkbox "check all other markers" at the quality settings is enabled.
+--#84) 2020-06-27, Malvarot - Automatic marks Quality will also tag set items "again" if the checkbox "check all other markers" at the quality settings is enabled.
 --                           e.g. set item markes get applied and after that quality as well, allthough set item markers were applied already and "check others" should prevent this
 --   Order of checking these automatic marks:
 --      Sets (wichtig: trait erwünscht > trait egal > trait unerwünscht diese reihenfolge beibehalten),
@@ -111,8 +111,6 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 --#115: 2021-05-13, Baertram  Reposition the additional inventory "flag" icons at crafting tables: Refine, deconstruction, improvement.
 --                            and test if they also fit with AdvancedFilters enabled
 
---#116: 2021-05-24: ResearchAssistant: Items won't get marked (red rectangle of RA) at the bank after changing settings/reloadUI
-
 --#131: Error message at login:
 --[[
 user:/AddOns/FCOItemSaver/src/FCOIS_SettingsMenu.lua:2445: attempt to index a nil value
@@ -130,30 +128,6 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 -->Could not create editbox "Haute:" FCOItemSaver_LAM
 ----> Seems the fixed error message user:/AddOns/FCOItemSaver/src/FCOIS_SettingsMenu.lua:2445: attempt to index a nil value is causing this now
 
-
---#145, 2021-07-08, demawi, FCOIS esoui comments, ContextMenu at bank get's vanilla items removed if FCOIS, Custom Item Preview and
--- Auto Category are enabled
---TODO Check if the menu's parent is a FCOIS flag invoker button and ONLY then return true!
---> file src/FCOIS_ContextMenu.lua, function FCOIS.hideAdditionalInventoryFlagContextMenu(override) -> menuVisibleCheck
---[[
---Compatibility functions
-local function menuVisibleCheck()
-    --New: Since API10030 - Typo was removed
-    --TODO Check if the menu's parent is a FCOIS flag invoker button and ONLY then return true!
-]]
-
---#154, 2021-08-16, Baertram, bug: Improving an item does not re-apply the improve icon (if quality below gold)
---#155, 2021-08-17, Baertram, bug: Improving an item does not re-apply the already marked icons
-
---#170, 2021-10-07, sirinsidiator, bug:
---[[hey. ich hab mit FCOIS seit einer weile das problem, dass ich beim besuch einer crafting station gelockte items sehe, obwohl die eigentlich ausgeblendet wären.
-repro:
-1) crafting station besuchen
-2) crafting station verlassen
-3) crafting station sofort wieder öffnen
-wenn ich das mache, dann sehe ich alle gelockten items bis ich z.b. auf den refine tab und zurück wechsel
-]]
-
 ---------------------------------------------------------------------
 --[ToDo list] --
 --Check for local speed ups. FCOItemSaver.txt was checked until src/FCOIS_Tooltips.lua -> as of 2021-08-18
@@ -163,11 +137,7 @@ wenn ich das mache, dann sehe ich alle gelockten items bis ich z.b. auf den refi
 --And if you drag another ring to a slot where a ring was already equipped the marker icons do neither update all!
 --#158: 2021-08-18, Baertram, bug: Character doll ring/weapon marker icons do not remove all if SHIFT+right click is used on 1 ring (and the 2nd ring is identical)
 
---#168: 2021-09-19, Baertram, bug: Refinement smithing is not removing items from slot if marker icon is applied (via context menu or keybind)
---#169: 2021-10-07, Baertram, bug: Refinement smithing/enchanting creation is not filtering the FCOIS filters at first open if AdvancedFilters and FCOCraftFilter are enabled as well
---     (maybe even not without these enabled). Changing to e.g. enchanting extarction and back to creation fixes this?!
---#170: 2021-10-07, sirinsidiator, bug: Crafting station re-opens shows locked items (filters do not seem to apply) until e.g. refine tab was opened, and other tab re-opened
---#174: 2021-10-31, Baertram, bug: If Iventory Insight from Ashes is enabled: Select "All" tab or any tab where items are shown which are on other characters. Find one item on another char
+--#174: 2021-10-31, Baertram, bug: If Inventory Insight from Ashes is enabled: Select "All" tab or any tab where items are shown which are on other characters. Find one item on another char
 --                                 having any iocn set e.g. "sell". Right click it remove the sell icon, and then set it again. Sometimes the worn items and inventory (maybe all items somehow)
 --                                 now show the removed/applied marker icon "sell" on them?!
 --#175: 2021-11-06, silvereyes, bug:
@@ -194,6 +164,7 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
 For example, maybe after right click > bind a marked item in the guild store selling tab or mail send tab.
 I haven't tested that, though. Should be a fairly easy nil check either way.
 ]]
+
 --#176: 2021-11-14, Baertram, feature: Add submenu to 4 filter buttons, with setting to change the filter between AND & OR filter conjunction behaviour.
 --Remembers the state for each filterPanel
 
@@ -202,8 +173,9 @@ I haven't tested that, though. Should be a fairly easy nil check either way.
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
---In progress: Updated last 2021-11-14
---#175
+--In progress: Updated last 2021-12-04
+--#175 -> Test: Open
+--#176 -> Test: Errors occured with OR filters, and mixed AND + OR filters
 
 ---------------------------------------------------------------------
 --Since last update 2.2.3 - New version: 2.2.4 -> Changelog updated last: 2021-11-12
