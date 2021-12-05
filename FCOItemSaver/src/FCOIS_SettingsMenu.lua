@@ -6703,6 +6703,11 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                         },
 
                         {
+                            type = "description",
+                            text = locVars["options_filter_button_settings_logical_conjunctions"],
+                        },
+
+                        {
                             type = "checkbox",
                             name = locVars["options_filter_buttons_context_menu_show" .. tooltipSuffix],
                             tooltip = locVars["options_filter_buttons_context_menu_show_tooltip" .. tooltipSuffix],
