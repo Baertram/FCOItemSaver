@@ -184,14 +184,23 @@ local function shouldItemBeShownAfterBeenFiltered(slotItemInstanceId, slot)
 
     --Helper function for the "red" filter button state
     local function getRedFilterButtonResult(filterButtonId, currentResult)
-        --Not all logical conjunctions are set to OR?
-        if not allLogicalConjunctionsAreOR then
+        --All filter button's logical conjunctions are set to AND?
+        if allLogicalConjunctionsAreAND then
+            --"Show" only the items if the currentResult (total result of all filter buttons checked already) is still "true"
             if currentResult ~= false then
                 return true
             end
         else
-            --If all buttons are set to logical OR conjunctions "Show" all red filter button's marker icons
-            return true
+            --Not all filter button's logical conjunctions are set to OR?
+            if not allLogicalConjunctionsAreOR then
+                --"Show" only the items if the currentResult (total result of all filter buttons checked already) is still "true"
+                if currentResult ~= false then
+                    return true
+                end
+            else
+                --If all filter button's logical conjunctions are set to logical OR: "Show" all red filter button's marker icons
+                return true
+            end
         end
         return currentResult
     end
@@ -199,13 +208,16 @@ local function shouldItemBeShownAfterBeenFiltered(slotItemInstanceId, slot)
 
     --Helper function for the "green" filter button state at any filter button, and check if the result at that button
     --is already "false", then hide the item
-    local function getAnyGreenFilterButtonResult(currentResult, p_isFilterActivated)
-        if currentResult == true then
+    local function getAnyGreenFilterButtonResult(currentResult)
+        --Only if overall result is currently still true (show items) and not all logical conjunctions are set to AND
+        if currentResult == true and not allLogicalConjunctionsAreAND then
             for filterButtonIdOfAllFilterButtons=1, numFilters, 1 do
                 --The filter buttons' logical conjunction is OR
                 if filterButtonSettingsForCurrentPanel[filterButtonIdOfAllFilterButtons].filterWithLogicalAND == false
-                    --and filter button state is "green" (hide): then return false
-                    and p_isFilterActivated == FCOIS_CON_FILTER_BUTTON_STATE_GREEN then
+                    --and filter button state is "green" (hide)
+                    and filterButtonStates[filterButtonIdOfAllFilterButtons] == FCOIS_CON_FILTER_BUTTON_STATE_GREEN
+                    and filterButtonLogicalConjunctionResults[filterButtonIdOfAllFilterButtons] == false then
+                    if doDebugOutput then d(">>>>getAnyGreenResult-["..tos(filterButtonIdOfAllFilterButtons).."]: false") end
                     return false
                 end
             end
@@ -215,20 +227,19 @@ local function shouldItemBeShownAfterBeenFiltered(slotItemInstanceId, slot)
 
     --Helper function to update the resuls of the logical OR conjunction filter button checks
     local function updateLogicalConjunctionResultsOfFilterButton(filterButtonId, newValue, p_isFilterActivated)
-        --Only update if any logical OR conjunction filter button is enabled
-        if not allLogicalConjunctionsAreAND then
-            newValue = getAnyGreenFilterButtonResult(newValue, p_isFilterActivated)
+        --Only update if any filter button's logical OR conjunction is enabled
+        if not allLogicalConjunctionsAreAND
+            --ALWAYS update the result of the filterButton checks to the table filterButtonLogicalConjunctionResults
 
-            --If the result of the filterButton checks is false (as default value at the filter button is true = showFilteredItem)
-            if ( newValue == false
-                    --and the current filterButton's logical conjunction is set to OR
-                    and filterButtonLogicalConjunctionSettings[filterButtonId] == false
+            ----if the result of the filterButton checks is false (as default value at the filter button is true = showFilteredItem)
+            --and newValue == false
+            ----and the current filterButton's logical conjunction is set to OR
+            --and filterButtonLogicalConjunctionSettings[filterButtonId] == false
                 ----and the current button's logical OR result is still true -> optional, as already checking for "newValue" being == false should be enough
                 ----and filterButtonLogicalConjunctionResults[filterButtonId] == true
-            ) then
-                if doDebugOutput then d(">>>updateLogicalResult: " .. tos(newValue)) end
-                filterButtonLogicalConjunctionResults[filterButtonId] = newValue
-            end
+        then
+            if doDebugOutput then d(">>>updateLogicalResult: " .. tos(newValue)) end
+            filterButtonLogicalConjunctionResults[filterButtonId] = newValue
         end
     end
 -------------------------------------------------------------------------------------------------------
@@ -254,16 +265,16 @@ local function shouldItemBeShownAfterBeenFiltered(slotItemInstanceId, slot)
                         if ( checkIfItemIsProtected(FCOIS_CON_ICON_LOCK, slotItemInstanceId)
                                 --Exclude dynmic icons marked as gear here as they belong to filterButton 2
                                 or checkIfItemIsProtected(nil, slotItemInstanceId, "dynamic", nil, nil, excludeDynamicGearIconsTab) ) then
-                            result = false
+                            result = false --always "hide", no matter if logical AND or OR is used!
                         end
                     --Filter 1 "show only marked"
                     elseif isFilterActivated == FCOIS_CON_FILTER_BUTTON_STATE_YELLOW then
                         if checkIfItemIsProtected(FCOIS_CON_ICON_LOCK, slotItemInstanceId)
                                 --Exclude dynmic icons "enabled to be gear" here as they belong to filterButton 2 (FCOIS_CON_FILTER_BUTTON_GEARSETS)
                                 or checkIfItemIsProtected(nil, slotItemInstanceId, "dynamic", nil, nil, excludeDynamicGearIconsTab) then
-                            result = true
+                            result = true --always "show", no matter if logical AND or OR is used!
                         else
-                            result = false
+                            result = (not lockDynFilterWithLogicalAND and true) or false --"hide" if logical AND, "show" if logical OR is used!
                         end
                     --Filter 1 off
                     elseif isFilterActivated == FCOIS_CON_FILTER_BUTTON_STATE_RED then
@@ -276,11 +287,15 @@ local function shouldItemBeShownAfterBeenFiltered(slotItemInstanceId, slot)
                     --Filter 1 on
                     if isFilterActivated == FCOIS_CON_FILTER_BUTTON_STATE_GREEN then
                         if checkIfItemIsProtected(lastLockDynFilterIconId, slotItemInstanceId) then --and isIconEnabled[lastLockDynFilterIconId] then
-                            result = false
+                            result = false --always "hide", no matter if logical AND or OR is used!
                         end
                         --Filter 1 "show only marked"
                     elseif isFilterActivated == FCOIS_CON_FILTER_BUTTON_STATE_YELLOW then
-                        result = checkIfItemIsProtected(lastLockDynFilterIconId, slotItemInstanceId)
+                        if checkIfItemIsProtected(lastLockDynFilterIconId, slotItemInstanceId) then
+                            result = true --always "show", no matter if logical AND or OR is used!
+                        else
+                            result = (not lockDynFilterWithLogicalAND and true) or false --"hide" if logical AND, "show" if logical OR is used!
+                        end
                         --Filter 1 off
                     elseif isFilterActivated == FCOIS_CON_FILTER_BUTTON_STATE_RED then
                         result = getRedFilterButtonResult(filterButtonId, result)
@@ -311,7 +326,7 @@ local function shouldItemBeShownAfterBeenFiltered(slotItemInstanceId, slot)
                         if checkIfItemIsProtected(nil, slotItemInstanceId, "gear") then
                             result = true
                         else
-                            result = false
+                            result = (not gearSetsFilterWithLogicalAND and true) or false --"hide" if logical AND, "show" if logical OR is used!
                         end
                         --Filter 2 off
                     elseif isFilterActivated == FCOIS_CON_FILTER_BUTTON_STATE_RED then
@@ -328,7 +343,11 @@ local function shouldItemBeShownAfterBeenFiltered(slotItemInstanceId, slot)
                         result = false
                         --Filter 2 "show only marked"
                     elseif isFilterActivated == FCOIS_CON_FILTER_BUTTON_STATE_YELLOW  then
-                        result = checkIfItemIsProtected(lastGearFilterIconId, slotItemInstanceId)
+                        if checkIfItemIsProtected(lastGearFilterIconId, slotItemInstanceId) then
+                            result = true
+                        else
+                            result = (not gearSetsFilterWithLogicalAND and true) or false --"hide" if logical AND, "show" if logical OR is used!
+                        end
                         --Filter 2 off
                     elseif isFilterActivated == FCOIS_CON_FILTER_BUTTON_STATE_RED then
                         result = getRedFilterButtonResult(filterButtonId, result)
@@ -367,7 +386,7 @@ local function shouldItemBeShownAfterBeenFiltered(slotItemInstanceId, slot)
                         ) then
                             result = true
                         else
-                            result = false
+                            result = (not resDecImpFilterWithLogicalAND and true) or false --"hide" if logical AND, "show" if logical OR is used!
                         end
                         --Filter 3 off
                     elseif isFilterActivated == FCOIS_CON_FILTER_BUTTON_STATE_RED then
@@ -384,7 +403,11 @@ local function shouldItemBeShownAfterBeenFiltered(slotItemInstanceId, slot)
                         return false
                         --Filter 3 "show only marked"
                     elseif isFilterActivated == FCOIS_CON_FILTER_BUTTON_STATE_YELLOW then
-                        result = checkIfItemIsProtected(lastResDecImpFilterIconId, slotItemInstanceId)
+                        if checkIfItemIsProtected(lastResDecImpFilterIconId, slotItemInstanceId) then
+                            return true
+                        else
+                            result = (not resDecImpFilterWithLogicalAND and true) or false --"hide" if logical AND, "show" if logical OR is used!
+                        end
                         --Filter 3 off
                     elseif isFilterActivated == FCOIS_CON_FILTER_BUTTON_STATE_RED then
                         result = getRedFilterButtonResult(filterButtonId, result)
@@ -420,9 +443,9 @@ local function shouldItemBeShownAfterBeenFiltered(slotItemInstanceId, slot)
                                         or checkIfItemIsProtected(FCOIS_CON_ICON_SELL_AT_GUILDSTORE, slotItemInstanceId)
                                         or checkIfItemIsProtected(FCOIS_CON_ICON_INTRICATE, slotItemInstanceId)
                         ) then
-                            result = true
+                            result = true --TODO: why was it returning here via return directly?
                         else
-                            result = false
+                            result = (not sellGuildIntFilterWithLogicalAND and true) or false --"hide" if logical AND, "show" if logical OR is used!
                         end
                         --Filter 4 off
                     elseif isFilterActivated == FCOIS_CON_FILTER_BUTTON_STATE_RED then
@@ -439,7 +462,11 @@ local function shouldItemBeShownAfterBeenFiltered(slotItemInstanceId, slot)
                         result = false
                         --Filter 4 "show only marked"
                     elseif isFilterActivated == FCOIS_CON_FILTER_BUTTON_STATE_YELLOW then
-                        return checkIfItemIsProtected(lastSellGuildIntFilterIconId, slotItemInstanceId)
+                        if checkIfItemIsProtected(lastSellGuildIntFilterIconId, slotItemInstanceId) then
+                            result = true --TODO: why was it returning here via return directly?
+                        else
+                            result = (not sellGuildIntFilterWithLogicalAND and true) or false --"hide" if logical AND, "show" if logical OR is used!
+                        end
                         --Filter 4 off
                     elseif isFilterActivated == FCOIS_CON_FILTER_BUTTON_STATE_RED then
                         result = getRedFilterButtonResult(filterButtonId, result)
@@ -483,7 +510,7 @@ if doDebugOutput then d(">>[filterButton>4???] " .. tos(isFilterActivated) .. ":
 --  -> return value "false" = Hide (filter) item
 ------------------------------------------------------------------------------------------------------------------------------------------
 
-    --All conjunctions are logically AND -> All checks were done above already. Return the overall result now
+    --All conjunctions are logically AND -> All checks were done above already. Return the overall "result" variable now
     if allLogicalConjunctionsAreAND == true then
         --==========================
         -- Logical AND at all 4 filter buttons
@@ -522,6 +549,8 @@ if doDebugOutput then d(">>[filterButton>4???] " .. tos(isFilterActivated) .. ":
                                                 filterButton2Result == true and
                                                 filterButton3Result == true and
                                                 filterButton4Result == true) or false
+        local logicalANDOfAllResults = filterButton1Result and filterButton2Result and filterButton3Result
+                                        and filterButton4Result
         local logicalOROfAllResults = filterButton1Result or filterButton2Result or filterButton3Result
                                         or filterButton4Result
 
@@ -539,7 +568,7 @@ if doDebugOutput then d(">>[filterButton>4???] " .. tos(isFilterActivated) .. ":
 
             --If all 4 filter buttons state's are set to "green" (hide): hide, or show if not marked at all -> Same as 4x logical AND conjunction
             if allFilterButtonStatesAreGreen then
-                resultAfterLogicalConjunction = result
+                resultAfterLogicalConjunction = logicalANDOfAllResults --result
             ------------------------------------------------------------------------------------------------------------------------
             --If all 4 filter buttons state's are set to "yellow" (show only): show, or hide if not marked at all -> Same as 4x logical AND conjunction
             elseif allFilterButtonStatesAreYellow then
@@ -557,19 +586,17 @@ if doDebugOutput then d(">>[filterButton>4???] " .. tos(isFilterActivated) .. ":
 
                 --Is any of the filter button's result "false" (hide item)?
                 else
-                    --Is the button where the "false" result applies to set to filter state "green" (hide)? Then hide
-                    --[[
-                    -->Should be handled in "getAnyGreenFilterButtonResult" above now -> written to logicalOROfAllResults this way
-                    if (filterButton1Result == false and filterButton1State == FCOIS_CON_FILTER_BUTTON_STATE_GREEN) or
-                        (filterButton2Result == false and filterButton2State == FCOIS_CON_FILTER_BUTTON_STATE_GREEN) or
-                        (filterButton3Result == false and filterButton3State == FCOIS_CON_FILTER_BUTTON_STATE_GREEN) or
-                        (filterButton4Result == false and filterButton4State == FCOIS_CON_FILTER_BUTTON_STATE_GREEN) then
-                        resultAfterLogicalConjunction = result
-                    else
-                    ]]
-                        --The filter buttons need to be combined with a logical OR conjunction
-                        resultAfterLogicalConjunction = logicalOROfAllResults
-                    --end
+                    --Check if any of the filter buttons' state is "green" and update the overall OR result
+                    --> TODO: Does not work if filter button states are:
+                    -- g, r, y, g: Button 2's items (red filter) are not shown?
+                    -- r, r, y, g: Button 1 and 2's items (red filter) are not shown?
+                    -- y, g, y, g: Button 1 and 3's items (yellow filter) are not shown?
+                    -- g, y, g, y: Button 4's items (yellow filter) are not shown?
+                    -- y, y, g, y: Button 1 and 4's items (yellow filter) are not shown?
+                    logicalOROfAllResults = getAnyGreenFilterButtonResult(logicalOROfAllResults)
+
+                    --The filter buttons need to be combined with a logical OR conjunction
+                    resultAfterLogicalConjunction = logicalOROfAllResults
                 end
             end
 ------------------------------------------------------------------------------------------------------------------------

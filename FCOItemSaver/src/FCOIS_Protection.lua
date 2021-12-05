@@ -344,7 +344,14 @@ local checkIfProtectedSettingsEnabled = FCOIS.CheckIfProtectedSettingsEnabled
 local checkIfItemIsProtected
 function FCOIS.CheckIfItemIsProtected(iconId, itemId, checkHandler, addonName, savedVarsTableNameForMarkers, checkHandlerExcludeIcons)
     if itemId == nil or (iconId == nil and checkHandler == nil) then return false end
+--===============================================================================================================================
+---v- ATTENTION ATTENTION ATTENTION ATTENTION ATTENTION ATTENTION ATTENTION ATTENTION ATTENTION ATTENTION ATTENTION ATTENTION -v-
+--    ATTENTION: Enabling this debug message will lag the client A LOT and even might crash it!
+--===============================================================================================================================
 --d("FCOIS.checkIfItemIsProtected -  iconId: " .. tostring(iconId) .. ", itemId: " .. tostring(signItemId(itemId)) .. ", checkHandler: " .. tostring(checkHandler) .. ", addonName: " .. tostring(addonName))
+--===============================================================================================================================
+---^- ATTENTION ATTENTION ATTENTION ATTENTION ATTENTION ATTENTION ATTENTION ATTENTION ATTENTION ATTENTION ATTENTION ATTENTION -^-
+--===============================================================================================================================
     savedVarsTableNameForMarkers = savedVarsTableNameForMarkers or getSavedVarsMarkedItemsTableName()
     ------------------------------------------------------
     --	Check in a loop, for gear sets and dynamic icons:
@@ -408,7 +415,7 @@ function FCOIS.CheckIfItemIsProtected(iconId, itemId, checkHandler, addonName, s
         end
     end
     if itemIsMarked == nil then itemIsMarked = false end
-    --d("FCOIS.checkIfItemIsProtected - itemIsMarked: " .. tostring(itemIsMarked))
+--d("FCOIS.checkIfItemIsProtected - itemIsMarked: " .. tostring(itemIsMarked))
     return itemIsMarked
 end
 checkIfItemIsProtected = FCOIS.CheckIfItemIsProtected
