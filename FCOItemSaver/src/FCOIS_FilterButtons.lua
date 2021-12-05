@@ -85,8 +85,8 @@ local function outputFilterState(p_outputToChat, p_panelId, p_filterId, p_stateT
     --Create the outputText
     outputText = preChatText .. filterPanelToMediumOutputText[p_panelId] .. filterStateText
 
-    --FCOIS v2.2.4 - Add the logical AND or logical OR information
-    local filterButtonSettingsUseLogicalAND =  settings.filterButtonSettings[p_panelId][p_filterId]["filterWithLogicalAND"]
+    --FCOIS v2.2.4 - Add the logical AND or logical OR conjunction information
+    local filterButtonSettingsUseLogicalAND = settings.filterButtonSettings[p_panelId][p_filterId]["filterWithLogicalAND"]
     local logicalAndText = (filterButtonSettingsUseLogicalAND and locVars["options_filter_button_settings_filterWithLogicalAND_and"]) or locVars["options_filter_button_settings_filterWithLogicalAND_or"]
     local logicalTextColor = (filterButtonSettingsUseLogicalAND and "8D8D8D") or "FAFAFA"
     outputText = outputText .. "  |c4D4D4D<|c" .. logicalTextColor .. logicalAndText .. "|c4D4D4D>|r"

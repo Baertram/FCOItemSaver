@@ -587,12 +587,6 @@ if doDebugOutput then d(">>[filterButton>4???] " .. tos(isFilterActivated) .. ":
                 --Is any of the filter button's result "false" (hide item)?
                 else
                     --Check if any of the filter buttons' state is "green" and update the overall OR result
-                    --> TODO: Does not work if filter button states are:
-                    -- g, r, y, g: Button 2's items (red filter) are not shown?
-                    -- r, r, y, g: Button 1 and 2's items (red filter) are not shown?
-                    -- y, g, y, g: Button 1 and 3's items (yellow filter) are not shown?
-                    -- g, y, g, y: Button 4's items (yellow filter) are not shown?
-                    -- y, y, g, y: Button 1 and 4's items (yellow filter) are not shown?
                     logicalOROfAllResults = getAnyGreenFilterButtonResult(logicalOROfAllResults)
 
                     --The filter buttons need to be combined with a logical OR conjunction
