@@ -67,6 +67,7 @@ local function shouldItemBeShownAfterBeenFiltered(slotItemInstanceId, slot)
     --2021-12-04, bag item at char Glacies:
     local isdebugSlotIndex = {
         [37] =  true,   --Rubeditstreitkolben
+        [44] =  true,   --Kronen Kampfmystikereintopf
         [47] =  true,   --Dornenherz Streitkolben
         [75] =  true,   --Heilungsstab des Totengräbers
         [149] = true,   --Heiliger Skal des Sul-Xan (Dolch)
@@ -184,7 +185,7 @@ local function shouldItemBeShownAfterBeenFiltered(slotItemInstanceId, slot)
     local function updateLogicalConjunctionResultsOfFilterButton(filterButtonId, newValue)
         --Only update if any logical OR conjunction filter button is enabled
         if (not allLogicalConjunctionsAreAND
-                --and the result of the filterButton checks is false (as default value at the filter button is true = showFilteredItem)
+                ----and the result of the filterButton checks is false (as default value at the filter button is true = showFilteredItem)
                 and newValue == false
                 --and the current filterButton's logical conjunction is set to OR
                 and filterButtonLogicalConjunctionSettings[filterButtonId] == false
@@ -466,7 +467,7 @@ if doDebugOutput then d(">>[filterButton>4???] " .. tos(isFilterActivated) .. ":
         return result
 ------------------------------------------------------------------------------------------------------------------------------------------
     else
-        --Not all logical concuntions are AND, some are OR
+        --Not all logical concuntions are AND, any/all is/are OR
 
         --The state at each filterButton
         local filterButton1State = filterButtonStates[FCOIS_CON_FILTER_BUTTON_LOCKDYN]
@@ -478,77 +479,76 @@ if doDebugOutput then d(">>[filterButton>4???] " .. tos(isFilterActivated) .. ":
                                                 filterButton2State == FCOIS_CON_FILTER_BUTTON_STATE_GREEN and
                                                 filterButton3State == FCOIS_CON_FILTER_BUTTON_STATE_GREEN and
                                                 filterButton4State == FCOIS_CON_FILTER_BUTTON_STATE_GREEN) or false
-        --Check the logical conjunctions now according to the filterButton settings
-        --local resultBeforeLogicalConjunction = result
-        local resultAfterLogicalConjunction = true -- Initial value: true = show the item (not filtered)
+        local allFilterButtonStatesAreYellow = (filterButton1State == FCOIS_CON_FILTER_BUTTON_STATE_YELLOW and
+                                                filterButton2State == FCOIS_CON_FILTER_BUTTON_STATE_YELLOW and
+                                                filterButton3State == FCOIS_CON_FILTER_BUTTON_STATE_YELLOW and
+                                                filterButton4State == FCOIS_CON_FILTER_BUTTON_STATE_YELLOW) or false
+        local allFilterButtonStatesAreRed = (filterButton1State == FCOIS_CON_FILTER_BUTTON_STATE_RED and
+                                                filterButton2State == FCOIS_CON_FILTER_BUTTON_STATE_RED and
+                                                filterButton3State == FCOIS_CON_FILTER_BUTTON_STATE_RED and
+                                                filterButton4State == FCOIS_CON_FILTER_BUTTON_STATE_RED) or false
         --The result at each filterButton
         local filterButton1Result = filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_LOCKDYN]
         local filterButton2Result = filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_GEARSETS]
         local filterButton3Result = filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_RESDECIMP]
         local filterButton4Result = filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT]
+        --All filter buttons equal "show" item?
+        local allFilterButtonResultsEqualShowItem = (filterButton1Result == true and
+                                                filterButton2Result == true and
+                                                filterButton3Result == true and
+                                                filterButton4Result == true) or false
+        local logicalOROfAllResults = filterButton1Result or filterButton2Result or filterButton3Result
+                                        or filterButton4Result
 
-        if doDebugOutput then d(string.format("[FCOIS]Button results: %s, %s, %s, %s",tos(filterButton1Result),tos(filterButton2Result),tos(filterButton3Result),tos(filterButton4Result))) end
+        local resultAfterLogicalConjunction = true -- Initial value: true = show the item (not filtered)
+        if doDebugOutput then d(string.format("[FCOIS]Button results: %s, %s, %s, %s - Result: %s, ORResult: %s",tos(filterButton1Result),tos(filterButton2Result),tos(filterButton3Result),tos(filterButton4Result),tos(result),tos(logicalOROfAllResults))) end
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
-        --Local helper function to check the logical AND and OR conjunctions' results, compared to the current filter
-        --button's state.
-        --e.g. if all 4 buttons are set to logical OR, the first valid entry would make all other items (even if false)
-        --show too. So the filter button's state needs to be checked for the items as well
-        local function checkLogicalConjunctionResultRespectingFilterButtonState()
-            local logicalConjunctionResultRespectingFilterButtonState = resultAfterLogicalConjunction
-            --if allLogicalConjunctionsAreOR then
-            --All filter buttons say "show" item? Okay -> Show it
-            if filterButton1Result == true and filterButton2Result == true and filterButton3Result == true and filterButton4Result == true then
-                logicalConjunctionResultRespectingFilterButtonState = true
-            else
-                --All 4 logical conjunctions are set to OR?
-                if allLogicalConjunctionsAreOR then
-                    --If all 4 filter buttons state's are set to "green" (hide): Hide all marked items
-                    if allFilterButtonStatesAreGreen then
-                        logicalConjunctionResultRespectingFilterButtonState = false -- hide
-                    else
-                        logicalConjunctionResultRespectingFilterButtonState = filterButton1Result or filterButton2Result
-                                or filterButton3Result or filterButton4Result
-                    end
-                else
-                    --TODO
-                end
-                --[[
-                --Filter button 1 says: "Hide" item
-                if filterButton1Result == false then
-                    --Check if any other of the filter buttons says "Show" item.
-                    --If so: Check if any of these other filter buttons' state is not "green" (= hide item)
-                end
-                ]]
-            end
-            return logicalConjunctionResultRespectingFilterButtonState
-        end
-------------------------------------------------------------------------------------------------------------------------
-
+        --Check the logical conjunctions now according to the filter button settings, state and the number of OR & AND
+        --conjunctions
         --==========================
         -- Logical OR at ALL of the 4 filter buttons
         --==========================
         if allLogicalConjunctionsAreOR then
-            ----------------------------
-            --4 buttons with logical OR
-            ----------------------------
             if doDebugOutput then d("[FCOIS]====== 4x OR") end
-            --[[
-            --Works except if all 4 filter buttons are set to green: All items except filter button 1 are shown?!
-            resultAfterLogicalConjunction = filterButton1Result or filterButton2Result or filterButton3Result
-                                            or filterButton4Result
-            --Does not work because if any of the return values is false the item will be hidden, regardless if the
-            --filterButton is e.g. "red" and thus all the items at that filter button should be shown (due to the logical OR)
-            if filterButton1Result == false or filterButton2Result == false or filterButton3Result == false or filterButton4Result == false then
-                resultAfterLogicalConjunction = false
-            end
-            ]]
-            --Todo and test
-            resultAfterLogicalConjunction = checkLogicalConjunctionResultRespectingFilterButtonState()
 
+            --If all 4 filter buttons state's are set to "green" (hide): hide, or show if not marked at all -> Same as 4x logical AND conjunction
+            if allFilterButtonStatesAreGreen then
+                resultAfterLogicalConjunction = result
+            ------------------------------------------------------------------------------------------------------------------------
+            --If all 4 filter buttons state's are set to "yellow" (show only): show, or hide if not marked at all -> Same as 4x logical AND conjunction
+            elseif allFilterButtonStatesAreYellow then
+                resultAfterLogicalConjunction = logicalOROfAllResults
+            ------------------------------------------------------------------------------------------------------------------------
+            --If all 4 filter buttons state's are set to "red" (show): Show it -> Same as 4x logical AND conjunction
+            elseif allFilterButtonStatesAreRed then
+                resultAfterLogicalConjunction = true
+            ------------------------------------------------------------------------------------------------------------------------
+            --If all 4 filter buttons state's are set to different states: Do further checks
+            else
+                --All filter buttons say "show" item? Okay -> Show it
+                if allFilterButtonResultsEqualShowItem then
+                    resultAfterLogicalConjunction = true -- show
+
+                    --Is any of the filter button's result "false" (hide item)?
+                else
+                    --Is the button where the "false" result applies to set to filter state "green" (hide)? Then hide
+                    if (filterButton1Result == false and filterButton1State == FCOIS_CON_FILTER_BUTTON_STATE_GREEN) or
+                        (filterButton2Result == false and filterButton2State == FCOIS_CON_FILTER_BUTTON_STATE_GREEN) or
+                        (filterButton3Result == false and filterButton3State == FCOIS_CON_FILTER_BUTTON_STATE_GREEN) or
+                        (filterButton4Result == false and filterButton4State == FCOIS_CON_FILTER_BUTTON_STATE_GREEN) then
+                        resultAfterLogicalConjunction = result
+                    else
+                        --The filter buttons need to be combined with a logical OR conjunction
+                        resultAfterLogicalConjunction = logicalOROfAllResults
+                    end
+                end
+            end
 ------------------------------------------------------------------------------------------------------------------------
         else
-        -- Logical OR at any of the 4 filter buttons
+            --==========================
+            -- Logical OR at ANY of the 4 filter buttons
+            --==========================
             ----------------------------
             --3 buttons with logical OR / 1 button with logical AND
             ----------------------------
@@ -652,7 +652,7 @@ if doDebugOutput then d(">>[filterButton>4???] " .. tos(isFilterActivated) .. ":
                         and filterButton2Result
                         and filterButton4Result)
             elseif not sellGuildIntFilterWithLogicalAND
-                and lockDynFilterWithLogicalAND == true and gearSetsFilterWithLogicalAND == true and resDecImpFilterWithLogicalAND == true then
+                    and lockDynFilterWithLogicalAND == true and gearSetsFilterWithLogicalAND == true and resDecImpFilterWithLogicalAND == true then
                 if doDebugOutput then d("[FCOIS]====== 1x OR 4") end
                 resultAfterLogicalConjunction = filterButton4Result
                         or (filterButton1Result
