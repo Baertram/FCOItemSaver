@@ -2,6 +2,8 @@
 if FCOIS == nil then FCOIS = {} end
 local FCOIS = FCOIS
 
+local libFilters = FCOIS.libFilters
+
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
 
@@ -38,12 +40,17 @@ local function getWhereAreWeOrFilterPanelIdByPanelIdRespectingCraftType(filterPa
     end
     local craftType = GetCraftingInteractionType()
     if craftType ~= CRAFTING_TYPE_INVALID then
-        local filterPanelIdToFilterPanelIdRespectingCrafttype = mappingVars.filterPanelIdToFilterPanelIdRespectingCrafttype
-        local filterPanelIdByCraftType = filterPanelIdToFilterPanelIdRespectingCrafttype[filterPanelIdDetermined] and filterPanelIdToFilterPanelIdRespectingCrafttype[filterPanelIdDetermined][craftType]
-        filterPanelIdDetermined = filterPanelIdByCraftType or filterPanelIdDetermined
+        local filterPanelIdByCraftType
+        if libFilters and libFilters.GetFilterTypeRespectingCraftType then
+            filterPanelIdByCraftType = libFilters:GetFilterTypeRespectingCraftType(filterPanelId, craftType)
+        else
+            local filterPanelIdToFilterPanelIdRespectingCrafttype = mappingVars.filterPanelIdToFilterPanelIdRespectingCrafttype
+            filterPanelIdByCraftType = filterPanelIdToFilterPanelIdRespectingCrafttype[craftType] and filterPanelIdToFilterPanelIdRespectingCrafttype[craftType][filterPanelIdDetermined]
+            if filterPanelIdByCraftType ~= nil then filterPanelIdDetermined = filterPanelIdByCraftType end
+        end
         if getWhereAreWe == true then
             local whereAreWeByCraftType = filterPanelIdToWhereAreWe[filterPanelIdByCraftType]
-            whereAreWeDetermined = whereAreWeByCraftType or whereAreWeDetermined
+            if whereAreWeByCraftType ~= nil then whereAreWeDetermined = whereAreWeByCraftType end
         end
     end
     if getWhereAreWe == true then
@@ -286,10 +293,11 @@ function FCOIS.GetWhereAreWe(panelId, panelIdAtCall, panelIdParent, bag, slot, i
             --Inside enchanting station
         elseif (calledFromExternalAddon and (panelId == LF_ENCHANTING_EXTRACTION or panelId == LF_ENCHANTING_CREATION)) or (not calledFromExternalAddon and (not ctrlVars.ENCHANTING_STATION:IsHidden() or (panelId == LF_ENCHANTING_EXTRACTION or panelId == LF_ENCHANTING_CREATION))) then
             --Enchanting Extraction panel?
-            if panelId == LF_ENCHANTING_EXTRACTION or ENCHANTING.enchantingMode == 2 then
+            local enchantingMode = ENCHANTING:GetEnchantingMode()
+            if panelId == LF_ENCHANTING_EXTRACTION or enchantingMode == ENCHANTING_MODE_EXTRACTION then
                 whereAreWe = FCOIS_CON_ENCHANT_EXTRACT
                 --Enchanting Creation panel?
-            elseif panelId == LF_ENCHANTING_CREATION or ENCHANTING.enchantingMode == 1 then
+            elseif panelId == LF_ENCHANTING_CREATION or enchantingMode == ENCHANTING_MODE_CREATION then
                 whereAreWe = FCOIS_CON_ENCHANT_CREATE
             end
             --Inside guild store selling?

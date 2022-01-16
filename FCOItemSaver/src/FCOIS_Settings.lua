@@ -25,6 +25,7 @@ local svAccountWideName     = FCOIS.svAccountWideName
 local svAllAccTheSameAcc    = FCOIS.svAllAccountsName
 local svSettingsForAllName  = FCOIS.svSettingsForAllName
 local svSettingsName        = FCOIS.svSettingsName
+local svAllServersTheSame   = FCOIS.svServerAllTheSameName
 local svSettingsForEachCharacterName = FCOIS.svSettingsForEachCharacterName
 
 local gMappingVars = FCOIS.mappingVars
@@ -1154,18 +1155,21 @@ function FCOIS.LoadUserSettings(calledFromExternal)
                 FCOIS.settingsNonServerDependendFound = true
             end
         end
+        --AccountName must start with @
         local displayName = accName
         if strfind(displayName, "@") ~= 1 then
             displayName = "@" .. displayName
         end
         ------------------------------------------------------------------------------------------------------------------------
-        --If server dependent settings were found (or it's a new installation of FCOIS -> Server dependent variables will be used from the start)
+        --If server dependent settings were found (or it's a new installation of FCOIS -> Server dependent variables will be used from the start, using default settings)
         -->Use these ZO_SavedVariables now for the addon!
         if (FCOIS.defSettingsNonServerDependendFound == false and FCOIS.settingsNonServerDependendFound == false) then
             debugMessage("LoadUserSettings", "Using server (" .. world .. ") dependent SavedVars", true, FCOIS_DEBUG_DEPTH_NORMAL)
             --Reset the old default non-server dependent settings, if they still exist
             --FCOItemSaver_Settings["Default"] = nil
             if FCOItemSaver_Settings[svDefaultName] then FCOItemSaver_Settings[svDefaultName] = nil end
+
+            local defaultSavedVariables = FCOIS.settingsVars.defaults
 
             --Get the new server dependent settings
             --Load the user's settings from SavedVariables file -> Account wide of basic version 999 at first
@@ -1174,15 +1178,18 @@ function FCOIS.LoadUserSettings(calledFromExternal)
             --Use the current addon version to read the FCOIS.settingsVars.settings now
             if (FCOIS.settingsVars.defaultSettings.saveMode == 1) then
                 --Changed: Use the saved variables for single characters from the unique character ID and not the name anymore, so they are character rename save!
-                FCOIS.settingsVars.settings = ZO_SavedVars:NewCharacterIdSettings(addonSVname, addonSVversion , svSettingsName, FCOIS.settingsVars.defaults, world)
+                FCOIS.settingsVars.settings = ZO_SavedVars:NewCharacterIdSettings(addonSVname, addonSVversion , svSettingsName, defaultSavedVariables, world)
                 --Transfer the data from the name to the unique ID SavedVars now
                 NamesToIDSavedVars(world)
-                --All accounts the same settings
-            elseif (FCOIS.settingsVars.defaultSettings.saveMode == 3) then
-                FCOIS.settingsVars.settings = ZO_SavedVars:NewAccountWide(addonSVname, addonSVversion, svSettingsName, FCOIS.settingsVars.defaults, world, svAllAccTheSameAcc)
+            elseif (FCOIS.settingsVars.defaultSettings.saveMode == 2) then
                 --Account wide settings
-            else --if (FCOIS.settingsVars.defaultSettings.saveMode == 2) then
-                FCOIS.settingsVars.settings = ZO_SavedVars:NewAccountWide(addonSVname, addonSVversion, svSettingsName, FCOIS.settingsVars.defaults, world, nil)
+                FCOIS.settingsVars.settings = ZO_SavedVars:NewAccountWide(addonSVname, addonSVversion, svSettingsName, defaultSavedVariables, world, nil)
+            elseif (FCOIS.settingsVars.defaultSettings.saveMode == 3) then
+                --All accounts the same settings
+                FCOIS.settingsVars.settings = ZO_SavedVars:NewAccountWide(addonSVname, addonSVversion, svSettingsName, defaultSavedVariables, world, svAllAccTheSameAcc)
+            elseif (FCOIS.settingsVars.defaultSettings.saveMode == 4) then
+                --All servers and accounts the same
+                FCOIS.settingsVars.settings = ZO_SavedVars:NewAccountWide(addonSVname, addonSVversion, svSettingsName, defaultSavedVariables, svAllServersTheSame, svAllAccTheSameAcc)
             end
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -1212,12 +1219,12 @@ function FCOIS.LoadUserSettings(calledFromExternal)
                 --Each character
                 --Changed: Use the saved variables for single characters from the unique character ID and not the name anymore, so they are character rename save!
                 FCOIS.settingsVars.settings = ZO_SavedVars:NewCharacterIdSettings(addonSVname, addonSVversion , svSettingsName, currentNonServerDependentSettingsCopy, world)
+            elseif (oldDefSettings.saveMode == 2) then
+                --Account wide
+                FCOIS.settingsVars.settings = ZO_SavedVars:NewAccountWide(addonSVname, addonSVversion, svSettingsName, currentNonServerDependentSettingsCopy, world, nil)
             elseif (oldDefSettings.saveMode == 3) then
                 --All accounts the same settings
                 FCOIS.settingsVars.settings = ZO_SavedVars:NewAccountWide(addonSVname, addonSVversion, svSettingsName, currentNonServerDependentSettingsCopy, world, svAllAccTheSameAcc)
-            else--if (oldDefSettings.saveMode == 2) then
-                --Account wide
-                FCOIS.settingsVars.settings = ZO_SavedVars:NewAccountWide(addonSVname, addonSVversion, svSettingsName, currentNonServerDependentSettingsCopy, world, nil)
             end
             --d("[FCOIS]SavedVars were migrated:\nPlease either type /reloadui into the chat and press the RETURN key,\n or logout now in order to save the data to your SavedVariables properly!")
             --Show UI dialog now too
@@ -1254,10 +1261,8 @@ function FCOIS.LoadUserSettings(calledFromExternal)
                         elseif (oldDefSettings.saveMode == 3) then
                             --All accounts the same settings
                             FCOIS.settingsVars.settings = ZO_SavedVars:NewAccountWide(addonSVname, addonSVversion, svSettingsName, currentNonServerDependentSettingsCopy, nil, svAllAccTheSameAcc)
-                        else
-                            FCOIS.settingsVars.settings = ZO_SavedVars:NewAccountWide(addonSVname, addonSVversion, svSettingsName, currentNonServerDependentSettingsCopy, nil, nil)
                         end
-                        d("[FCOIS]!!! SavedVars were not migrated now !!!\nYou are still using the non-server dependent settings!\nPlease reload the UI to see the migration dialog again.")
+                        d("[FCOIS]!!! SavedVars were not migrated yet !!!\nYou are still using the non-server dependent settings!\nPlease reload the UI to see the migration dialog again.")
                         d("|cFF0000<<=====================================================<<|r")
                     end
             )
@@ -1267,10 +1272,10 @@ function FCOIS.LoadUserSettings(calledFromExternal)
         if FCOIS.settingsVars.defaultSettings.filterButtonsSaveForCharacter == true then
             local saveMode = FCOIS.settingsVars.defaultSettings.saveMode
             --Character wide settings are enabled: Do nothing as it will be handled automatically
-
-            if saveMode == 2 or saveMode == 3 then
-                local accountNameToUse
-                if saveMode == 3 then accountNameToUse = svAllAccTheSameAcc end
+            --But for accountWide and AllAccountsTheSame and allServersAndAccountsTheSame
+            if saveMode == 2 or saveMode == 3 or saveMode == 4 then
+                local accountNameToUse --will be nil in case of SaveMode 2 to use the logged in @accountName
+                if saveMode == 3 or saveMode == 4 then accountNameToUse = svAllAccTheSameAcc end
                 --Account wide settings are enabled: Load the extra SavedVariables for the account wide "per character" settings
                 FCOIS.settingsVars.accountWideButForEachCharacterSettings = ZO_SavedVars:NewAccountWide(addonSVname, addonSVversion, svSettingsForEachCharacterName, FCOIS.settingsVars.accountWideButForEachCharacterDefaults, world, accountNameToUse)
             end

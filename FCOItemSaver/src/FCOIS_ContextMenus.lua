@@ -3591,6 +3591,10 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
     local parentName = parentControl:GetName()
 
     local bag, slotIndex = myGetItemDetails(parentControl)
+    --Error output
+    if bag == nil or slotIndex == nil then
+        debugMessage("[ERROR]InvContextMenuAddSlotAction", "bagId: " ..tos(bag) .. " or slotIndex: " ..tos(slotIndex) .. " is nil", false, FCOIS_DEBUG_DEPTH_ALL, false)
+    end
     --is the mouse only hovered over the item or was the right click mouse context menu shown?
     local mouseRightClickDone = self.m_contextMenuMode
     --Hide the inventory button contextMenu if shown and if we right clicked another item

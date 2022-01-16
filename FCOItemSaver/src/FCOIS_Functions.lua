@@ -1,6 +1,9 @@
 --Global array with all data of this addon
 if FCOIS == nil then FCOIS = {} end
 local FCOIS = FCOIS
+
+local libFilters = FCOIS.libFilters
+
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
 
@@ -241,13 +244,28 @@ function FCOIS.MyGetItemDetails(rowControl)
 
     --gotta do this in case deconstruction, or player equipment
     local dataEntry = rowControl.dataEntry
-    local isDataEntryNil = dataEntry == nil or false
-    local dataEntryData = isDataEntryNil == false and dataEntry.data
+    local isDataEntryNil = (dataEntry == nil and true) or false
+    local dataEntryData = (isDataEntryNil == false and dataEntry.data) or nil
 
     --use rowControl = case to handle equiped items
     --bag/index = case to handle list dialog, list dialog uses index instead of slotIndex and bag instead of bagId...?
-    bagId = (isDataEntryNil and rowControl.bagId) or (not isDataEntryNil and (dataEntryData.bagId or dataEntryData.bag))
-    slotIndex = (isDataEntryNil and rowControl.slotIndex) or (not isDataEntryNil and (dataEntryData.slotIndex or dataEntryData.index))
+    if isDataEntryNil == true then
+        bagId = rowControl.bagId
+        slotIndex = rowControl.slotIndex
+    else
+        bagId = dataEntryData.bagId
+        bagId = bagId or dataEntryData.bag
+        slotIndex = dataEntryData.slotIndex
+        slotIndex = slotIndex or dataEntryData.index
+    end
+    --Is the bagid still nil: Check if it's a questItem
+    if bagId == nil then
+        if rowControl.questIndex ~= nil then
+            local parentCtrl = rowControl:GetParent()
+            local parentDataEntry = parentCtrl.dataEntry.data
+            bagId, slotIndex = BAG_BACKPACK, parentDataEntry.slotIndex
+        end
+    end
 
     return bagId, slotIndex
 end
@@ -1678,11 +1696,16 @@ end
 
 --Is the research list dialog shown?
 function FCOIS.IsResearchListDialogShown()
-    local listDialog = ZO_InventorySlot_GetItemListDialog()
-    if listDialog == nil or listDialog.control == nil or listDialog.control.data == nil then return false end
-    local data = listDialog.control.data
-    if data.owner == nil or data.owner.control == nil then return false end
-    return not listDialog.control:IsHidden() and data.owner.control == ctrlVars.RESEARCH
+    if libFilters.IsListDialogShown then
+        return libFilters.IsListDialogShown(libFilters, nil, ctrlVars.RESEARCH)
+    else
+        local listDialog = ZO_InventorySlot_GetItemListDialog()
+        local data = listDialog and listDialog.control and listDialog.control.data
+        if data == nil then return false end
+        local owner = data.owner
+        if owner == nil or owner.control == nil then return false end
+        return owner.control == ctrlVars.RESEARCH and not listDialog.control:IsHidden()
+    end
 end
 
 --Is the repair item dialog shown?
@@ -2213,22 +2236,34 @@ end
 --======================================================================================================================
 --Is the inventory control shown
 function FCOIS.IsInventoryShown()
+    if libFilters.IsInventoryShown then
+        return libFilters:IsInventoryShown()
+    end
     return not ctrlVars.INV:IsHidden()
 end
 
 --Is the companion inventory control shown
 function FCOIS.IsCompanionInventoryShown()
+    if libFilters.IsCompanionInventoryShown then
+        return libFilters:IsCompanionInventoryShown()
+    end
     return not ctrlVars.COMPANION_INV_CONTROL:IsHidden()
 end
 
 --Is the character control shown
 function FCOIS.IsCharacterShown()
+    if libFilters.IsCharacterShown then
+        return libFilters:IsCharacterShown()
+    end
     return not ctrlVars.CHARACTER:IsHidden()
 end
 local isCharacterShown = FCOIS.IsCharacterShown
 
 --Is the companion character control shown
 function FCOIS.IsCompanionCharacterShown()
+    if libFilters.IsCompanionCharacterShown then
+        return libFilters:IsCompanionCharacterShown()
+    end
     return not ctrlVars.COMPANION_CHARACTER:IsHidden()
 end
 local isCompanionCharacterShown = FCOIS.IsCompanionCharacterShown
@@ -2236,12 +2271,18 @@ local isCompanionCharacterShown = FCOIS.IsCompanionCharacterShown
 
 --Is the retrait station shown?
 function FCOIS.IsRetraitStationShown()
+    if libFilters.IsRetraitStationShown then
+        return libFilters:IsRetraitStationShown()
+    end
     return ZO_RETRAIT_STATION_MANAGER:IsRetraitSceneShowing()
 end
 
 --Check if the Enchanting panel is shown
 function FCOIS.IsEnchantingPanelShown(enchantingMode)
     --d("[FCOIS]IsEnchantingPanelShown - enchantingMode: " ..tostring(enchantingMode))
+    if libFilters.IsEnchantingShown then
+        return libFilters:IsEnchantingShown(enchantingMode)
+    end
     if enchantingMode == ENCHANTING_MODE_NONE or (enchantingMode ~= ENCHANTING_MODE_CREATION and enchantingMode ~= ENCHANTING_MODE_EXTRACTION and enchantingMode ~= ENCHANTING_MODE_RECIPES) then return false end
     local retVar = false
     if ctrlVars.ENCHANTING_STATION ~= nil and not ctrlVars.ENCHANTING_STATION:IsHidden() then
@@ -2255,6 +2296,9 @@ end
 --Check if the Enchanting glyph creation panel is shown
 function FCOIS.IsEnchantingPanelCreationShown()
     --d("[FCOIS]IsEnchantingPanelShown")
+    if libFilters.IsEnchantingShown then
+        return libFilters:IsEnchantingShown(ENCHANTING_MODE_CREATION)
+    end
     local retVar = false
     if ctrlVars.ENCHANTING_STATION ~= nil and not ctrlVars.ENCHANTING_STATION:IsHidden() then
         if ctrlVars.ENCHANTING.GetEnchantingMode ~= nil then
@@ -2269,6 +2313,9 @@ end
 --Check if the Alchemy creation panel is shown
 function FCOIS.IsAlchemyPanelCreationShown()
     --d("[FCOIS]IsAlchemyPanelCreationShown")
+    if libFilters.IsAlchemyShown then
+        return libFilters:IsAlchemyShown(ZO_ALCHEMY_MODE_CREATION)
+    end
     local retVar = false
     if ctrlVars.ALCHEMY_INV ~= nil and not ctrlVars.ALCHEMY_INV:IsHidden() then
         if ctrlVars.ALCHEMY.mode ~= nil then

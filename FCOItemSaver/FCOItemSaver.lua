@@ -11,6 +11,28 @@
 ]]
 
 
+--==================================================================
+--ItemCooldownTracker API
+--==================================================================
+--[[
+CDT.GetRelevantItemIds()
+returns a table containing all itemIds that are potential relevant for the prevention of opening (quasi alle Behälter, die der User tracken könnte, aktuell ca. 10 IDs)
+
+ICDT.GetItemCooldown(itemId)
+for given itemId, returns
+-1                       --> item is not relevant (not trackable with addon)
+0                       --> item is tracked by current setting, but cooldown is expired
+number>0      --> cooldown is active, minutes left
+
+ICDT.FormatMinutes(minutesLeft)
+calculates the hours and minutes combination of given total minutes
+returns two values h, m
+Beispiel: ICDT.FormatMinutes(131)   ->   2, 11
+[22:45]
+Weiterhin zeige ich jetzt auch die Info im ItemTooltip an. Kannst es dir gerne bei Gelegenheit anschauen. Grundsätzlich nutze ich dieselbe Funktion wie zuvor.
+Bei 0 zeige ich dann sowas an wie "Cooldown ist abgelaufen" und bei >0 in rot der Hinweis, dass der Cooldown noch so und so lange aktiv ist.
+]]
+
 --************************************************************************************************************************
 --************************************************************************************************************************
 --************************************************************************************************************************
@@ -139,6 +161,7 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 --#174: 2021-10-31, Baertram, bug: If Inventory Insight from Ashes is enabled: Select "All" tab or any tab where items are shown which are on other characters. Find one item on another char
 --                                 having any iocn set e.g. "sell". Right click it remove the sell icon, and then set it again. Sometimes the worn items and inventory (maybe all items somehow)
 --                                 now show the removed/applied marker icon "sell" on them?!
+
 --#175: 2021-11-06, silvereyes, bug:
 --[[
 --> source line was: "for iconId, iconIsMarked in pairs(impVars.improvementMarkedIcons) do"
@@ -179,21 +202,62 @@ I haven't tested that, though. Should be a fairly easy nil check either way.
     bank deposit list again.
 ]]
 
+--# 179, 2021-12-06, SammiSakura, FCOIS comments, bug:
+-->Seems there were dynamic icons 1 to 5 without any nameand the names did not reset to the default values somehow
+--[[
+--!!!With version 2.2.3!!!
+Come across an odd one tonight. Changed a bunch of my dynamic icons around, and then on right clicking something in
+my inventory is only throwing an error, and no FCOIS icons are showing. Code below <3
+
+user:/AddOns/FCOItemSaver/src/FCOIS_ContextMenus.lua:1120: operator .. is not supported for string .. nil
+stack traceback:
+user:/AddOns/FCOItemSaver/src/FCOIS_ContextMenus.lua:1120: in function 'FCOIS.AddMark'
+|caaaaaa<Locals> rowControl = ud, markId = 23, isEquipmentSlot = F, refreshPopupDialog = F, useSubMenu = T, parentName = "ZO_PlayerInventoryListContents...", controlName = "ZO_PlayerInventoryList1Row4", settings = [table:1]{}, mappingVars = [table:2]{noEntryValue = 1, noEntry = "-------------", maxCPLevel = 160}, checkVars = [table:3]{autoReenableAntiSettingsCheckWheresAll = "-ALL-", filterButtonSuffix = "_FilterButton"}, isIconEnabled = [table:4]{1 = T}, isDynamicIcon = [table:5]{1 = F}, isGearIcon = [table:6]{1 = F}, notAllowedParentCtrls = [table:7]{ZO_QuestItemsListContents = T, ZO_MailInboxMessage = T, ZO_SmithingTopLevelCreationPanelTraitListList = T, ZO_PlayerInventoryQuestContents = T, ZO_RetraitStation_KeyboardTopLevelRetraitPanel = T, ZO_TradingHouseItemPaneSearchResultsContents = T, ZO_SmithingTopLevelCreationPanelMaterialListList = T, ZO_StoreWindowListContents = T, ZO_SmithingTopLevelImprovementPanel = T, ZO_SmithingTopLevelResearchPanelResearchLineListList = T, ZO_BuyBackListContents = T, ZO_LootAlphaContainerListContents = T, ZO_InventoryWalletListContents = T, ZO_TradingHousePostedItemsListContents = T, ZO_MailSend = T, ZO_SmithingTopLevelCreationPanelStyleListList = T, ZO_SmithingTopLevelCreationPanelPatternListList = T}, notAllowedCtrls = [table:8]{ZO_TradingHousePostItemPaneFormInfo = T, ZO_EnchantingTopLevelExtractionSlotContainerExtractionSlot = T, ZO_ApplyEnchantPanel = T, ZO_SoulGemItemChargerPanel = T, ZO_EnchantingTopLevelRuneSlotContainer = T, ZO_AlchemyTopLevelSlotContainer = T, ZO_SoulGemItemChargerPanelImprovementPreviewContainer = T, ZO_SmithingTopLevelRefinementPanelSlotContainer = T, ZO_SmithingTopLevelDeconstructionPanelSlotContainer = T}, researchableIcons = [table:9]{2 = T}, iconsDisabledAtCompanion = [table:10]{12 = T}, allowedCharacterCtrls = [table:11]{ZO_CharacterEquipmentSlotsBackupOff = T, ZO_CompanionCharacterWindow_Keyboard_TopLevelEquipmentSlotsBackupOff = T, ZO_CharacterEquipmentSlotsMainHand = T, ZO_CompanionCharacterWindow_Keyboard_TopLevelEquipmentSlotsMainHand = T, ZO_CharacterEquipmentSlotsOffHand = T, ZO_CharacterEquipmentSlotsBackupMain = T, ZO_CompanionCharacterWindow_Keyboard_TopLevelEquipmentSlotsOffHand = T, ZO_CompanionCharacterWindow_Keyboard_TopLevelEquipmentSlotsBackupMain = T}, allowedCharacterJewelryControls = [table:12]{ZO_CharacterEquipmentSlotsRing1 = T, ZO_CompanionCharacterWindow_Keyboard_TopLevelEquipmentSlotsNeck = T, ZO_CharacterEquipmentSlotsNeck = T, ZO_CompanionCharacterWindow_Keyboard_TopLevelEquipmentSlotsRing2 = T, ZO_CharacterEquipmentSlotsRing2 = T, ZO_CompanionCharacterWindow_Keyboard_TopLevelEquipmentSlotsRing1 = T}, customMenuVars = [table:13]{customMenuCurrentCounter = 17} </Locals>|r
+user:/AddOns/FCOItemSaver/src/FCOIS_Hooks.lua:764: in function 'ZO_InventorySlot_ShowContextMenu_For_FCOItemSaver'
+|caaaaaa<Locals> rowControl = ud, slotActions = [table:14]{m_numContextMenuActions = 8, craftBagExtendedPostHooked = T, craftBagExtendedHooked = T, m_hasActions = T, m_contextMenuMode = T}, ctrl = F, alt = F, shift = F, prevVars = [table:15]{useAdvancedFiltersItemCountInInventories = T, gAddonStartupInProgress = F, gFilteringBasics = F, gChangedGears = F, migrateToItemInstanceIds = F, gActiveFilterPanel = F, splitItemStackDialogButtonCallbacks = F, buildingInvContextMenuEntries = T, migrateToUniqueIds = F, dragAndDropOrDoubleClickItemSelectionHandler = F, gUpdateMarkersNow = F, gPreHookButtonHandlerCallActive = F, markerIconChangedManually = F, resetNonServerDependentSavedVars = F, craftBagSceneShowInProgress = F, createdMasterWrit = F, gNoCloseEvent = F, dontShowInvContextMenu = F, _prevVarReset = "FCOIS_PreventerVariableReset_...", markItemAntiEndlessLoop = F, gMarkItemLastIconInLoop = F, dontAutoReenableAntiSettingsInInventory = F, isInventoryListUpdating = F, writCreatorCreatedItem = F, lamMenuOpenAndShowingInvPreviewForGridListAddon = F, repairDialogOnRepairKitSelectedOverwrite = F, dontUpdateFilteredItemCount = F, gOverrideInvUpdateAfterMarkItem = F, splitItemStackDialogActive = F, askBeforeEquipDialogRetVal = F, ZO_ListDialog1ResearchIsOpen = F, gAllowDestroyItem = F, enchantItemActive = F, gClearingMarkerIcons = F, contextMenuUpdateLoopLastLoop = F, wasDestroyDone = F, newItemCrafted = F, gCheckEquipmentSlots = F, gRestoringMarkerIcons = F, isZoDialogContextMenu = F, doUpdateLocalization = F, KeyBindingTexts = F, eventInventorySingleSlotUpdate = F, migrateItemMarkers = F, doNotScanInv = F, buildingSlotActionTexts = F, gLocalizationDone = T, noGamePadModeSupportTextOutput = F, doFalseOverride = F, gScanningInv = F}, contextMenuClearMarkesKey = 7, contextMenuClearMarkesByShiftKey = F, isCharacterShownNow = T, isCompanionCharacterShownNow = F, parentControl = ud, FCOcontextMenu = [table:16]{}, userOrderValid = T, resetSortOrderDone = F, contextMenuEntriesAdded = 21, useSubContextMenu = T, _ = 21, countDynIconsEnabled = 9, useDynSubContextMenu = T, addedCounter = 17 </Locals>|r
+/EsoUI/Libraries/Utility/ZO_CallbackObject.lua:107: in function 'ZO_CallbackObjectMixin:FireCallbacks'
+|caaaaaa<Locals> self = [table:17]{fireCallbackDepth = 1}, eventName = 6, registry = [table:18]{}, callbackInfoIndex = 1, callbackInfo = [table:19]{3 = F}, callback = user:/AddOns/FCOItemSaver/src/FCOIS_Hooks.lua:650, deleted = F </Locals>|r
+user:/AddOns/LibCustomMenu/LibCustomMenu.lua:652: in function 'addCategory'
+user:/AddOns/LibCustomMenu/LibCustomMenu.lua:682: in function 'AppendToMenu'
+/EsoUI/Libraries/Utility/ZO_Hook.lua:18: in function '(anonymous)'
+(tail call): ?
+/EsoUI/Ingame/Inventory/InventorySlot.lua:2054: in function 'ZO_InventorySlot_ShowContextMenu'
+|caaaaaa<Locals> inventorySlot = ud </Locals>|r
+(tail call): ?
+(tail call): ?
+(tail call): ?
+(tail call): ?
+(tail call): ?
+(tail call): ?
+/EsoUI/Ingame/Inventory/InventorySlot.lua:2095: in function 'ZO_InventorySlot_OnSlotClicked'
+|caaaaaa<Locals> inventorySlot = ud, button = 2 </Locals>|r
+ZO_InventoryWalletList1Row1_MouseUp:4: in function '(main chunk)'
+|caaaaaa<Locals> self = ud, button = 2, upInside = T, ctrl = F, alt = F, shift = F, command = F </Locals>|r
+]]
+
+--#181, 2022-01-02, Baertram: Check filter slash command chat feedback: Does it show correct info about filter state and new logical conjuncions?
+
+--#182, 2022-01-16, playstyle, addon comments: I would like to mark lockpicks but not stolen ones. I enabled the FCOIS uniqe ID because it has a 'stolen'
+--option and i also tried adding the item type 'Tool'. But no matter what both kinds of lockpicks are getting marked at the same time. What am i doing wrong?
+
+--#183, 2022-01-16, Tim99, Discord: Feature request - Add new savedvariables saving independent to Server and AccountName
+
 
 --____________________________
--- Current max bugs/features/ToDos: 178
+-- Current max bugs/features/ToDos: 183
 --____________________________
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2021-12-04
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-01-02
 ------------------------------------------------------------------------------------
 --#175 -> Test: Open
 --#176 -> Test: Errors occured with OR filters, and mixed AND + OR filters
-
+--#179 -> Test: open
+--#183 -> In progress, todo: Add the new "AllServersAndAccountsTheSame" to "Copy settings routines" + Test: Open
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.2.3 - New version: 2.2.4) -    Updated last: 2021-12-04
+--Changelog (last version: 2.2.3 - New version: 2.2.4) -    Updated last: 2022-01-02
 -------------------------------------------------------------------------------------
 
 --[Fixed]
@@ -201,7 +265,9 @@ I haven't tested that, though. Should be a fairly easy nil check either way.
 --Debug functions will use local speed up variable now
 --Added more local speed-ups in several files
 --Missing command handler function in API function FCOIS.ChangeFilter
+--#175: lua error bad argument #1 to 'pairs' (table/struct expected, got nil) after improving items and leaving the improve station
 --#177: With filterButton 1 and 2 at yellow state items without markerIcon of filter 1 (but being a dynamic gear of filter 2) will show up
+--#180: GetItemInstanceId error upon mouse over at inventory quest items
 
 --[Changed]
 --Changed load order of debug file to earlier loading

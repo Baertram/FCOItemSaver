@@ -69,7 +69,7 @@ FCOIS.localizationVars.localizationAll = {
         ["options_savedVariables_dropdown_selection1"] = "Each character",
         ["options_savedVariables_dropdown_selection2"] = "Account wide",
         ["options_savedVariables_dropdown_selection3"] = "All accounts the same",
-
+        ["options_savedVariables_dropdown_selection4"] = "All servers & accounts the same",
         ["options_header_copy_sv"]              =   "Copy SavedVariables",
         ["options_description_copy_sv_server"]  = "|cff0000Before copy or delete of SavedVariables please LOGOUT and COPY THE SavedVariables FILE 'FCOItemSaver.lua' AS A BACKUP! Click on the '|c5959D5Feedback|r|cff0000' link above and then on the 'FAQ' button for an explanation how to do this.|r\n\nCopy savedvariables from a server to another. Choose the account or character below. Copying or deleting a total server is not possible!",
         ["options_copy_sv_source_server"]       =   "Source server",
@@ -1281,6 +1281,7 @@ FCOIS.localizationVars.localizationAll = {
         ["options_savedVariables_dropdown_selection1"] = "Jeder Charakter",
         ["options_savedVariables_dropdown_selection2"] = "Ganzer Account",
         ["options_savedVariables_dropdown_selection3"] = "Alle Accounts gleich",
+        ["options_savedVariables_dropdown_selection4"] = "Alle Server & Account gleich",
 
         ["options_header_copy_sv"]              =   "Kopiere SavedVariables",
         ["options_copy_sv_source_server"]       =   "Quell-Server",
@@ -2440,7 +2441,7 @@ FCOIS.localizationVars.localizationAll = {
         ["options_auto_bind_missing_set_collection_pieces_markKnown_TT"] = "Markiert die neu gebundenen als bekannte Set Sammlungs-Teile.\nFunktioniert nur, wenn die Automatische Set Sammlungs Markierung für bekanne Teile aktiviert ist.",
         ["options_auto_bind_missing_set_collection_pieces_to_chat"] = "Im Chat zeigen",
         ["options_auto_bind_missing_set_collection_pieces_to_chat_TT"] = "Zeige die automatisch gebundenen Teile im Chat an",
-        ["chat_output_missing_set_collection_piece_was_bound"] = "Missing set collection piece was bound: %s",
+        ["chat_output_missing_set_collection_piece_was_bound"] = "Fehlender Set-Sammlungs Gegenstand wurde gebunden: %s",
 
         --LibShifterBoxes
         --[FCOIS_UNIQUEID_ITEMTYPES]

@@ -71,6 +71,7 @@ FCOIS.svAllAccountsName             = "$AllAccounts"
 FCOIS.svSettingsForAllName          = "SettingsForAll"
 FCOIS.svSettingsName                = "Settings"
 FCOIS.svSettingsForEachCharacterName= "SettingsForEachCharacter"
+FCOIS.svServerAllTheSameName        = "AllServers"
 
 --LibShifterBox boxName constants
 FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES  = "FCOISuniqueIdItemTypes"
@@ -146,9 +147,10 @@ FCOIS.LMM2:Init()
 --Create the filter object for addon libFilters 3.x
 FCOIS.libFilters = {}
 FCOIS.libFilters = LibFilters3
-if not FCOIS.libFilters then d(preVars.preChatTextRed .. strformat(libMissingErrorText, "LibFilters-3.0")) return end
+local libFilters = FCOIS.libFilters
+if not libFilters then d(preVars.preChatTextRed .. strformat(libMissingErrorText, "LibFilters-3.0")) return end
 --Initialize the libFilters 3.x filters
-FCOIS.libFilters:InitializeLibFilters()
+libFilters:InitializeLibFilters()
 
 --Initialize the library LibDialog
 FCOIS.LDIALOG = LibDialog
@@ -334,17 +336,17 @@ numVars.maxItemType = maxItemTypesFound or itemTypeMaxFallback
 --and possible context menus for the filter buttons: RESDECIMP and SELLGUILDINT
 --[[
      1 = Lock symbol            (LOCK)
-     2 = Gear set 1
-     3 = Research					(RES)
-     4 = Gear set 2
-     5 = Sell							(SELL)
-     6 = Gear set 3
-     7 = Gear set 4
-     8 = Gear set 5
-     9 = Deconstruction				(DEC)
-    10 = Improvement				(IMP)
-    11 = Sell at guild store			(GUILD)
-    12 = Intricate						(INT)
+     2 = Gear set 1             (Gear static 1)
+     3 = Research				(RES)
+     4 = Gear set 2             (Gear static 2)
+     5 = Sell					(SELL)
+     6 = Gear set 3             (Gear static 3)
+     7 = Gear set 4             (Gear static 4)
+     8 = Gear set 5             (Gear static 5)
+     9 = Deconstruction			(DEC)
+    10 = Improvement			(IMP)
+    11 = Sell at guild store	(GUILD)
+    12 = Intricate				(INT)
     13 = Dynamic 1				(DYN)
     14 = Dynamic 2              (DYN)
     15 = Dynamic 3				(DYN)
@@ -353,9 +355,28 @@ numVars.maxItemType = maxItemTypesFound or itemTypeMaxFallback
     18 = Dynamic 6              (DYN)
     19 = Dynamic 7				(DYN)
     20 = Dynamic 8              (DYN)
-    22 = Dynamic 9              (DYN)
+    21 = Dynamic 9              (DYN)
     22 = Dynamic 10             (DYN)
-    23 .. 42 = Dynamic 11 -- Dynamic 30 (DYN)
+    23 = Dynamic 11             (DYN)
+    24 = Dynamic 12             (DYN)
+    25 = Dynamic 13             (DYN)
+    26 = Dynamic 14             (DYN)
+    27 = Dynamic 15             (DYN)
+    28 = Dynamic 16             (DYN)
+    29 = Dynamic 17             (DYN)
+    30 = Dynamic 18             (DYN)
+    31 = Dynamic 19             (DYN)
+    32 = Dynamic 20             (DYN)
+    33 = Dynamic 21             (DYN)
+    34 = Dynamic 22             (DYN)
+    35 = Dynamic 23             (DYN)
+    36 = Dynamic 24             (DYN)
+    37 = Dynamic 25             (DYN)
+    38 = Dynamic 26             (DYN)
+    39 = Dynamic 27             (DYN)
+    40 = Dynamic 28             (DYN)
+    41 = Dynamic 29             (DYN)
+    42 = Dynamic 30             (DYN)
 ]]
 --Constant values for the FCOItemSaver marker icons
 FCOIS_CON_ICON_LOCK					= 1
@@ -561,13 +582,17 @@ end
 --Mapping of the filterPanelId to whereAreWe constant, repsecting the crafting type
 --2021-08-15 Only JewelryCrafting so far supported to differ refine, decon, improve, research and research dialog for normal/jewelry crafting
 mappingVars.filterPanelIdToFilterPanelIdRespectingCrafttype = {}
-mappingVars.filterPanelIdToFilterPanelIdRespectingCrafttype[CRAFTING_TYPE_JEWELRYCRAFTING] = {
-    [LF_SMITHING_REFINE]            = LF_JEWELRY_REFINE,
-    [LF_SMITHING_DECONSTRUCT]       = LF_JEWELRY_DECONSTRUCT,
-    [LF_SMITHING_IMPROVEMENT]       = LF_JEWELRY_IMPROVEMENT,
-    [LF_SMITHING_RESEARCH]          = LF_JEWELRY_RESEARCH,
-    [LF_SMITHING_RESEARCH_DIALOG]   = LF_JEWELRY_RESEARCH_DIALOG,
-}
+    if libFilters.mapping and libFilters.mapping.filterTypeToFilterTypeRespectingCraftType ~= nil then
+        mappingVars.filterPanelIdToFilterPanelIdRespectingCrafttype[CRAFTING_TYPE_JEWELRYCRAFTING] = libFilters.mapping.filterTypeToFilterTypeRespectingCraftType
+    else
+        mappingVars.filterPanelIdToFilterPanelIdRespectingCrafttype[CRAFTING_TYPE_JEWELRYCRAFTING] = {
+            [LF_SMITHING_REFINE]            = LF_JEWELRY_REFINE,
+            [LF_SMITHING_DECONSTRUCT]       = LF_JEWELRY_DECONSTRUCT,
+            [LF_SMITHING_IMPROVEMENT]       = LF_JEWELRY_IMPROVEMENT,
+            [LF_SMITHING_RESEARCH]          = LF_JEWELRY_RESEARCH,
+            [LF_SMITHING_RESEARCH_DIALOG]   = LF_JEWELRY_RESEARCH_DIALOG,
+        }
+    end
 
 --Mapping of the filterPanelIds which should change the "Ant-isettings" automatically if a panelId is changed
 --> see file src/FCOIS_Panels.lua, function FCOIS.UpdateAntiCheckAtPanelVariable
@@ -619,7 +644,7 @@ local filterPanelIdToBlockSettingName = {
     -------------------------------------------------------------------
     -->CraftBag with CraftBageExtended active
         [LF_CRAFTBAG]                   = {
-            callbackFunc = FCOIS.CheckIfCBEorAGSActive, --Will be nil at load but re-added at file src/FCOIS_OtherAddns.lua, below function FCOIS.CheckIfCBEorAGSActive!
+            callbackFunc = FCOIS.CheckIfCBEorAGSActive, --Will be nil at load but re-added at file src/FCOIS_OtherAddons.lua, below function FCOIS.CheckIfCBEorAGSActive!
             filterPanelToBlockSetting = {
                 [LF_MAIL_SEND]          = "blockSendingByMail",
                 [LF_GUILDSTORE_SELL]    = "blockSellingGuildStore",
@@ -1097,7 +1122,7 @@ FCOIS.otherAddons.craftBagExtendedActive = false
 FCOIS.otherAddons.craftBagExtendedSupportedFilterPanels = {
     [LF_GUILDBANK_DEPOSIT]  =   true,
     [LF_BANK_DEPOSIT]       =   true,
-    [LF_GUILDBANK_WITHDRAW] =   true,
+    [LF_GUILDBANK_WITHDRAW] =   true, --Todo: Is this valid?
     [LF_MAIL_SEND]          =   true,
     [LF_GUILDSTORE_SELL]    =   true,
     [LF_TRADE]              =   true,
@@ -1371,7 +1396,7 @@ ctrlVars.ENCHANTING_RUNE_CONTAINER_ESSENCE  = GetControl(ctrlVars.ENCHANTING_RUN
 ctrlVars.ENCHANTING_RUNE_CONTAINER_ASPECT   = GetControl(ctrlVars.ENCHANTING_RUNE_CONTAINER, "AspectRune") --ZO_EnchantingTopLevelRuneSlotContainerAspectRune
 ctrlVars.ENCHANTING_APPLY_ENCHANT           = APPLY_ENCHANT
 ctrlVars.ALCHEMY                            = ALCHEMY
-ctrlVars.ALCHEMY_PANEL                      = ZO_AlchemyTopLevel
+ctrlVars.ALCHEMY_PANEL                      = ctrlVars.ALCHEMY.control --ZO_AlchemyTopLevel
 ctrlVars.ALCHEMY_INV				        = GetControl(ctrlVars.ALCHEMY_PANEL, inventoryStr) --ZO_AlchemyTopLevelInventory
 ctrlVars.ALCHEMY_INV_NAME			        = ctrlVars.ALCHEMY_INV:GetName()
 ctrlVars.ALCHEMY_STATION			        = GetControl(ctrlVars.ALCHEMY_INV, backpackStr) --ZO_AlchemyTopLevelInventoryBackpack
@@ -3355,3 +3380,5 @@ mappingVars.iconNrToOrdinalStr = {
         [30] = "trentième",
     },
 }
+
+    
