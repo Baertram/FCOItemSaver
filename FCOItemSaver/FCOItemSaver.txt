@@ -39,6 +39,7 @@
 #InventoryGridView
 #Inventory Insight (from Ashes -> IIfA)
 #InventoryManager
+#ItemCooldownTracker
 #ItemTrig
 #KhrillMasterCook
 #KhrillMerlinTheEnchanter

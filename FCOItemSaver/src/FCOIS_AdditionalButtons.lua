@@ -15,7 +15,7 @@ local gAddonName = addonVars.gAddonName
 -- =====================================================================================================================
 
 --Add a button to an existing parent control
-local function AddButton(buttonData, parent, name, callbackFunction, onMouseUpCallbackFunction, onMouseUpCallbackFunctionMouseButton, text, font, tooltipText, tooltipAlign, textureNormal, textureMouseOver, textureClicked, width, height, left, top, alignMain, alignBackup, alignControl, hideButton)
+local function addButtonToParentControl(buttonData, parent, name, callbackFunction, onMouseUpCallbackFunction, onMouseUpCallbackFunctionMouseButton, text, font, tooltipText, tooltipAlign, textureNormal, textureMouseOver, textureClicked, width, height, left, top, alignMain, alignBackup, alignControl, hideButton)
     --Abort needed?
     if  (parent == nil or name == nil or callbackFunction == nil
             or width <= 0 or height <= 0 or alignMain == nil or alignBackup == nil)
@@ -156,7 +156,7 @@ local function AddButton(buttonData, parent, name, callbackFunction, onMouseUpCa
 end
 
 --Reanchor the additional inventory "flag" buttons with the x and y offsets from the settings
-function FCOIS.reAnchorAdditionalInvButtons(filterPanelId)
+function FCOIS.ReAnchorAdditionalInvButtons(filterPanelId)
     --Add the offset X/Y from the settings to the anchor values of the additional inventory buttons
     local apiVersion = FCOIS.APIversion
     local settings = FCOIS.settingsVars.settings
@@ -202,6 +202,7 @@ function FCOIS.reAnchorAdditionalInvButtons(filterPanelId)
         end
     end
 end
+local reAnchorAdditionalInvButtons = FCOIS.ReAnchorAdditionalInvButtons
 
 --Add additonal buttons, controlled by the FCOIS settings
 function FCOIS.AddAdditionalButtons(buttonName, buttonData)
@@ -267,20 +268,27 @@ function FCOIS.AddAdditionalButtons(buttonName, buttonData)
                 end
             end
             --ReAnchor the additional inventory "flag" buttons with the x and y offsets from the settings
-            FCOIS.reAnchorAdditionalInvButtons(nil)
+            reAnchorAdditionalInvButtons(nil)
 
         --AddButton(parent, name, callbackFunction, onMouseUpCallbackFunction, onMouseUpCallbackFunctionMouseButton, text, font, tooltipText, tooltipAlign, textureNormal, textureMouseOver, textureClicked, width, height, left, top, alignMain, alignBackup, alignControl, hideButton)
         --Add a single additional inventory context menu "flag icon" button
         elseif buttonName == nil and buttonData ~= nil then
             --Add or hide a button to the player inventory sort bar
             -->buttonData.callbackFunction = FCOIS.ShowContextMenuForAddInvButtons, set within src/FCOIS_Settings.lua, function AfterSettings -> "Build the additional inventory "flag" context menu button data"
-            AddButton(buttonData, buttonData.parent, buttonData.name, buttonData.callbackFunction, buttonData.onMouseUpCallbackFunction, buttonData.onMouseUpCallbackFunctionMouseButton, buttonData.text, buttonData.font, buttonData.tooltipText, buttonData.tooltipAlign, buttonData.textureNormal, buttonData.textureMouseOver, buttonData.textureClicked, buttonData.width, buttonData.height, buttonData.left, buttonData.top, buttonData.alignMain, buttonData.alignBackup, buttonData.alignControl, buttonData.hideButton)
+            addButtonToParentControl(buttonData, buttonData.parent, buttonData.name,
+                    buttonData.callbackFunction, buttonData.onMouseUpCallbackFunction, buttonData.onMouseUpCallbackFunctionMouseButton,
+                    buttonData.text, buttonData.font,
+                    buttonData.tooltipText, buttonData.tooltipAlign,
+                    buttonData.textureNormal, buttonData.textureMouseOver, buttonData.textureClicked,
+                    buttonData.width, buttonData.height, buttonData.left, buttonData.top,
+                    buttonData.alignMain, buttonData.alignBackup, buttonData.alignControl,
+                    buttonData.hideButton)
         end
     end
 end
 
 --Set the additional inventory context menu "flag" bvutton offsets the same
-function FCOIS.setAllAddInvFlagButtonOffsetSettingsEqual(filterPanelIdSource)
+function FCOIS.SetAllAddInvFlagButtonOffsetSettingsEqual(filterPanelIdSource)
     if filterPanelIdSource == nil then return end
     local addInvBtnInvokers = FCOIS.contextMenuVars.filterPanelIdToContextMenuButtonInvoker
     --local filterButtonsToCheck = FCOIS.checkVars.filterButtonsToCheck

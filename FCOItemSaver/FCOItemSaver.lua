@@ -217,6 +217,8 @@ ZO_InventoryWalletList1Row1_MouseUp:4: in function '(main chunk)'
 
 --#182, 2022-01-16, playstyle, addon comments: I would like to mark lockpicks but not stolen ones. I enabled the FCOIS uniqe ID because it has a 'stolen'
 --option and i also tried adding the item type 'Tool'. But no matter what both kinds of lockpicks are getting marked at the same time. What am i doing wrong?
+--> See file src/FCOIS-functions.lua, function FCOIS.GetFCOISMarkerIconSavedVariablesItemId(bagId, slotIndex, allowedItemType, useUniqueIds, uniqueItemIdType, signToo)
+-- -> getFCOISMarkerIconUniqueIdAllowedItemType
 
 --#183, 2022-01-16, Tim99, Discord: Feature request - Add new savedvariables saving independent to Server and AccountName
 

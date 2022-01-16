@@ -32,6 +32,8 @@ local updateCraftingInventory = FCOIS.UpdateCraftingInventory --maybe nil here, 
 
 local getGearIcons = FCOIS.GetGearIcons --might be nil here as it is defined in FCOIS.API
 
+local createFCOISUniqueIdString
+
 --==========================================================================================================================================
 --                                          FCOIS - Base & helper functions
 --==========================================================================================================================================
@@ -338,13 +340,16 @@ function FCOIS.GetFCOISMarkerIconSavedVariablesItemId(bagId, slotIndex, allowedI
     local uniqueIdsTypeForMarkerIcons = uniqueItemIdType
 
     if useUniqueIdsForMarkerIcons == true then
+        --TODO: bug #182 -> Check function "getFCOISMarkerIconUniqueIdAllowedItemType" ! 2022-01-16
+        --#182, 2022-01-16, playstyle, addon comments: I would like to mark lockpicks but not stolen ones. I enabled the FCOIS uniqe ID because it has a 'stolen'
+        --option and i also tried adding the item type 'Tool'. But no matter what both kinds of lockpicks are getting marked at the same time. What am i doing wrong?
         allowedItemType = allowedItemType or getFCOISMarkerIconUniqueIdAllowedItemType(bagId, slotIndex, uniqueIdsTypeForMarkerIcons)
         if allowedItemType == true then
             useNormalItemInstanceId = false
             if not uniqueIdsTypeForMarkerIcons or uniqueIdsTypeForMarkerIcons == FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE then -- ZOs real unique IDs
                 itemId = zo_getSafeId64Key(GetItemUniqueId(bagId, slotIndex))
             elseif uniqueIdsTypeForMarkerIcons == FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE then --FCOIS onw build unique IDs
-                itemId = FCOIS.CreateFCOISUniqueIdString(GetItemId(bagId, slotIndex), allowedItemType, bagId, slotIndex, nil)
+                itemId = createFCOISUniqueIdString(GetItemId(bagId, slotIndex), allowedItemType, bagId, slotIndex, nil)
             end
         end
     end
@@ -574,6 +579,7 @@ end
 --If bagId and slotIndex are given unsignedItemInstanceId can be nil (will be rebuild internally then).
 --If allowedItemType (boolean) is not given then the itemType will be rebuild from the bagId & slotIndex, or the itemlink, and the value will be checked against FCOIS.checkVars.uniqueIdItemTypes[itemType] afterwards.
 function FCOIS.CreateFCOISUniqueIdString(itemId, bagId, slotIndex, itemLink)
+    createFCOISUniqueIdString = createFCOISUniqueIdString or FCOIS.CreateFCOISUniqueIdString
     --Either bag + slot or itemLink needs to be given
     if (not bagId or not slotIndex) and (not itemLink or itemLink == "") then return end
     --Get or use the itemLink
@@ -744,6 +750,7 @@ function FCOIS.CreateFCOISUniqueIdString(itemId, bagId, slotIndex, itemLink)
 --d("<"..tostring(uniqueItemIdString) .. ", lastUsedType: " .. tostring(FCOIS.CreateFCOISUniqueIdStringLastLastUseType))
     return uniqueItemIdString
 end
+createFCOISUniqueIdString = FCOIS.CreateFCOISUniqueIdString
 
 --  Check that icon is not sell or sell at guild store
 --  and the setting to remove sell/sell at guild store is enabled if any other marker icon is set?
