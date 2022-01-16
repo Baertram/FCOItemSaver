@@ -1632,7 +1632,7 @@ local function buildNormalIconSubMenus(buildName)
             if normalIconsSubMenusControls ~= nil and #normalIconsSubMenusControls > 0 then
                 ref = strformat(subMenuNamePattern, tos(normalIconId))
                 if isGearIcon == true then
-                    name = locVars[optionsIcon .. "s_gear" .. tos(mappingVars.iconToGear[normalIconId])]
+                    name = locVars[optionsIcon .. "s_gear" .. tos(mappingVars.iconToGear[normalIconId])] .. ": \'" .. iconSettings.name .. "\'"
                 else
                     name = locVars[iconNameStart .. colorSuffix]
                 end
@@ -2340,7 +2340,7 @@ local function buildDynamicIconSubMenus()
         if dynIconsSubMenusControls ~= nil and #dynIconsSubMenusControls > 0 then
             --ref = fcoisLAMSettingsReferencePrefix .. "DynamicIcon" ..tos(dynIconId) .. submenuSuffix
             ref = strformat(subMenuNamePattern, tos(fcoisDynIconNr))
-            name = locVars[dynIconNameStart .. colorSuffix]
+            name = locVars[dynIconNameStart .. colorSuffix] .. ": \'" .. FCOISsettings.icon[fcoisDynIconNr].name .. "\'"
             tooltip = ""
             data = { type = "submenu", controls = dynIconsSubMenusControls }
             local createdDynIconSubMenuSurrounding = CreateControl(ref, name, tooltip, data, nil, nil, nil, nil, nil)

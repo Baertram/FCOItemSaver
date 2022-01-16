@@ -247,7 +247,6 @@ ZO_InventoryWalletList1Row1_MouseUp:4: in function '(main chunk)'
 
 --#185, 2022-01-16, Baertram, feature: Add possibility to only reset the SavedVariables of stored marker icons, but keep the other settings
 
---#186, 2022-01-16, Baertram, feature: Updte the dynamic icons submenu to "nth dynamic icon" +": <chosen name of the dynamic icon"
 
 --____________________________
 -- Current max bugs/features/ToDos: 186
@@ -279,6 +278,8 @@ ZO_InventoryWalletList1Row1_MouseUp:4: in function '(main chunk)'
 --Changed load order of debug file to earlier loading
 --Removed duplicate code and strings for the filter button's "allowed to filter" functions
 --FCOIS settings button at the main menu changed it's look from the -> arrow to the "FCOIS filter/lock icon" to dinstinguish it from other addons (e.g. Votans Settings Menu)
+--#186 Update the gear and dynamic icons submenu to show the gear/dynamic icon name in the submenu text
+
 
 --[Added]
 --Added new constants for filter button states: FCOIS_CON_FILTER_BUTTON_STATE_RED, FCOIS_CON_FILTER_BUTTON_STATE_GREEN and FCOIS_CON_FILTER_BUTTON_STATE_YELLOW
