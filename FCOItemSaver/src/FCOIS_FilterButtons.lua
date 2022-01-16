@@ -353,7 +353,7 @@ function FCOIS.UpdateFCOISFilterButtonColorsAndTextures(p_buttonId, p_button, p_
 
     else --if (p_buttonId == -1 or p_status == -1) then
         local textureNameOfFilterButton = strfor(gFilterPanelIdToTextureName[p_filterPanelId], p_buttonId)
-        texture  = wm:GetControlByName(textureNameOfFilterButton, "")
+        texture  = GetControl(textureNameOfFilterButton) --wm:GetControlByName(textureNameOfFilterButton, "")
         --Does texture exist now?
         if texture ~= nil then
             --Is the gear sets split filter button context-menu active and are we trying to change the texture of the gear sets button?
@@ -1321,7 +1321,7 @@ function FCOIS.getSortHeaderControl(filterPanelId)
     local sortHeaderVars = FCOIS.sortHeaderVars
     local sortHeaderName = sortHeaderVars.name[filterPanelId]
     if not sortHeaderName then return end
-    local sortHeaderCtrl = wm:GetControlByName(sortHeaderName, "")
+    local sortHeaderCtrl = GetControl(sortHeaderName) --wm:GetControlByName(sortHeaderName, "")
     if sortHeaderCtrl == nil then return  end
     return sortHeaderCtrl
 end

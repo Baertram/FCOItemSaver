@@ -128,7 +128,7 @@ end
 -- ============= local helper functions - BEGIN ====================================================================
 --Get the preview control by help of the iconNr
 local function getPreviewControlByIconNr(previewType, iconNr)
-    return wm:GetControlByName(fcoisLAMSettingsReferencePrefix .. tos(previewType) .. tos(iconNr) .. previewSelect, "")
+    return GetControl(fcoisLAMSettingsReferencePrefix .. tos(previewType) .. tos(iconNr) .. previewSelect) --wm:GetControlByName(fcoisLAMSettingsReferencePrefix .. tos(previewType) .. tos(iconNr) .. previewSelect, "")
 end
 
 local function changePreViewIconSize(previewType, iconNr, size, doNotUpdateMarkers)
@@ -154,7 +154,7 @@ local function changePreviewIconColor(previewType, iconNr, r, g, b, a, doNotUpda
 end
 
 local function updateFilterButtonColorAndTexture(filterButtonNr, iconNr)
-    local p_button = wm:GetControlByName(ZOsControlVars.FCOISfilterButtonNames[filterButtonNr], "")
+    local p_button = GetControl(ZOsControlVars.FCOISfilterButtonNames[filterButtonNr]) --wm:GetControlByName(ZOsControlVars.FCOISfilterButtonNames[filterButtonNr], "")
     if p_button == nil or filterButtonNr == nil or iconNr == nil then return end
     updateFCOISFilterButtonColorsAndTextures(iconNr, p_button, FCOIS_CON_FILTER_BUTTON_STATE_DO_NOT_UPDATE_COLOR)
 end
@@ -238,7 +238,7 @@ local function setSettingsMenuEditBoxTextTypes()
     if not editBoxesToSetTextTypes then return end
     for controlName, textType in pairs(editBoxesToSetTextTypes) do
         if textType then
-            local control = wm:GetControlByName(controlName, "")
+            local control = GetControl(controlName) --wm:GetControlByName(controlName, "")
             if control then
                 if control.editbox and control.editbox.SetTextType then
                     control.editbox:SetTextType(textType)
@@ -307,7 +307,7 @@ updateAllIconsList()
         if LAMdropdownsWithIconList == nil then return nil end
 
         for dropdownCtrlName, updateData in pairs(LAMdropdownsWithIconList) do
-            local dropdownCtrl = wm:GetControlByName(dropdownCtrlName, "")
+            local dropdownCtrl = GetControl(dropdownCtrlName) --wm:GetControlByName(dropdownCtrlName, "")
             if dropdownCtrl == nil or updateData == nil then return nil end
             if updateData["choices"] == nil then updateData["choices"] = "standard" end
             local choices, choicesValues, choicesTooltips = FCOIS.GetLAMMarkerIconsDropdown(updateData["choices"], updateData["withIcons"], updateData["withNoneEntry"])
@@ -322,7 +322,7 @@ updateAllIconsList()
     local function CreateControl(ref, name, tooltip, data, disabledChecks, getFunc, setFunc, defaultSettings, warning, isIconDropDown, scrollable)
         scrollable = scrollable or false
         if ref ~= nil then
-            if strfind(ref, fcoisLAMSettingsReferencePrefix, 1)  ~= 1 then
+            if strfind(ref, fcoisLAMSettingsReferencePrefix, 1) ~= 1 then
                 data.reference = fcoisLAMSettingsReferencePrefix .. ref
             else
                 data.reference = ref
@@ -466,7 +466,7 @@ function FCOIS.BuildAddonMenu()
     timeline:SetPlaybackType(ANIMATION_PLAYBACK_PING_PONG, 10)
 
     --If name of the marker icon is missing,  reset it to a default
-    local function defaultIconNameCheck(iconName, iconId)
+    local function defaultIconNameCheck(refCtrlName, iconName, iconId)
         if iconName == nil or iconName == "" then
             if iconId ~= nil then
                 --Get the default icon Name
@@ -474,10 +474,21 @@ function FCOIS.BuildAddonMenu()
             end
             --if iconName is still nil or "" use a generic default name
             if iconName == nil or iconName == "" then
-                iconName = "Icon name missing, change please!"
+                iconName = "!!! ERROR: Icon name missing !!!"
             end
         end
-d("[FCOIS]defaultIconNameCheck: " ..tos(iconName))
+--d("[FCOIS]defaultIconNameCheck: " ..tos(iconName) .. ", refCtrlName: " ..tos(refCtrlName))
+        if refCtrlName ~= nil and refCtrlName ~= "" then
+            local refCtrl = GetControl(refCtrlName)
+            if refCtrl ~= nil and refCtrl.editbox ~= nil then
+--d(">ref was found, updating editbox now")
+                --Prevent that UpdateValue of the editbox will call SetFunc again and produce an endless loop!
+                FCOIS.preventerVars.doNotCheckForDefaultName = true
+                --refCtrl:UpdateValue(false, iconName)
+                refCtrl.editbox:SetText(iconName)
+            end
+        end
+        FCOIS.preventerVars.doNotCheckForDefaultName = false
         return iconName
     end
 
@@ -495,7 +506,7 @@ d("[FCOIS]defaultIconNameCheck: " ..tos(iconName))
     local fcoRestore = FCOIS.restore
     --Function to reset the backup edit control in the LAM settings to the current API version text
     local function resetBackupEditToCurrentAPI()
-        local editCtrl = wm:GetControlByName("FCOITEMSAVER_SETTINGS_BACKUP_API_VERSION_EDIT", "")
+        local editCtrl = GetControl("FCOITEMSAVER_SETTINGS_BACKUP_API_VERSION_EDIT") --wm:GetControlByName("FCOITEMSAVER_SETTINGS_BACKUP_API_VERSION_EDIT", "")
         if editCtrl ~= nil then
             editCtrl.editbox:SetText(apiVersion)
         end
@@ -504,7 +515,7 @@ d("[FCOIS]defaultIconNameCheck: " ..tos(iconName))
     end
     --Function to check if the backup API version edit text is too short
     local function isBackupEditAPITextTooShort()
-        local editCtrl = wm:GetControlByName("FCOITEMSAVER_SETTINGS_BACKUP_API_VERSION_EDIT", "")
+        local editCtrl = GetControl("FCOITEMSAVER_SETTINGS_BACKUP_API_VERSION_EDIT") --wm:GetControlByName("FCOITEMSAVER_SETTINGS_BACKUP_API_VERSION_EDIT", "")
         if editCtrl ~= nil then
             local editText = editCtrl.editbox:GetText()
             local apiVersionLength = FCOIS.APIVersionLength
@@ -1381,7 +1392,7 @@ d("[FCOIS]defaultIconNameCheck: " ..tos(iconName))
             {
                 type = "submenu",
                 name = locVars[optionsIcon .. "<iconNr>" .. colorSuffix],
-                reference = "FCOIS_OPTIONS_" .. locVars[optionsIcon .. "<iconNr>" .. colorSuffix].. submenuSuffix,
+                reference = "FCOItemSaver_Settings_" .. locVars[optionsIcon .. "<iconNr>" .. colorSuffix].. submenuSuffix,
                 controls =
                 {
                 ...
@@ -1411,13 +1422,15 @@ d("[FCOIS]defaultIconNameCheck: " ..tos(iconName))
         ------------------------------------------------------------------------------------------------------------------------
         --Create 1 submenu for each normal marker, dynamic, dynamic as gear icons
         for normalIconId=FCOIS_CON_ICON_LOCK, numVars.gFCONumNonDynamicAndGearIcons, 1 do
-            local isGearIcon = mappingVars.iconToGear[normalIconId] ~= nil or false
+            local gearIndex = mappingVars.iconToGear[normalIconId]
+            local isGearIcon = gearIndex ~= nil or false
             local addThisIcon = ((buildGear == true and isGearIcon == true) or (not buildGear and not isGearIcon)) or false
             if addThisIcon == true then
                 --Clear the controls of the submenu
                 local normalIconsSubMenusControls = {}
 
                 --Variables
+                local ref
                 local name
                 local tooltip
                 local data = {}
@@ -1431,24 +1444,27 @@ d("[FCOIS]defaultIconNameCheck: " ..tos(iconName))
                     ------------------------------------------------------------------------------------------------------------------------
                     --Add the name edit box
                     name = locVars[iconNameStart .. nameSuffix]
+                    local refOfGearIconEdit =  fcoisLAMSettingsReferencePrefix .. "GearSetNameEdit" .. gearIndex
                     tooltip = locVars[iconNameStart .. nameSuffix .. tooltipSuffix]
                     data = {
                         type = "editbox", width = "half",
                         --helpUrl = locVars[dynIconNameStart .. colorSuffix],
                     }
                     disabledFunc = function() return not isIconEnabled[normalIconId] end
-                    getFunc = function() return FCOISsettings.icon[normalIconId].name end
+                    getFunc = function() return iconSettings.name end
                     setFunc = function(newValue)
-                        --Name of the marker icon is missing, so reset it to a default name
-                        newValue = defaultIconNameCheck(newValue, normalIconId)
-                        FCOISsettings.icon[normalIconId].name = newValue
-                        FCOIS.preventerVars.doUpdateLocalization = true
-                        changeContextMenuEntryTexts(normalIconId)
-                        --Update the icon list dropdown entries (name, enabled state, icon)
-                        updateIconListDropdownEntries()
+                        if not FCOIS.preventerVars.doNotCheckForDefaultName then
+                            --Name of the marker icon is missing, so reset it to a default name
+                            newValue = defaultIconNameCheck(refOfGearIconEdit, newValue, normalIconId)
+                            FCOISsettings.icon[normalIconId].name = newValue
+                            FCOIS.preventerVars.doUpdateLocalization = true
+                            changeContextMenuEntryTexts(normalIconId)
+                            --Update the icon list dropdown entries (name, enabled state, icon)
+                            updateIconListDropdownEntries()
+                        end
                     end
                     defaultSettings = FCOISdefaultSettings.icon[normalIconId].name --locVars[normalIconId .. nameSuffix]
-                    createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
+                    createdControl = CreateControl(refOfGearIconEdit, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
                     if createdControl ~= nil then
                         table.insert(normalIconsSubMenusControls, createdControl)
                     end
@@ -1473,7 +1489,7 @@ d("[FCOIS]defaultIconNameCheck: " ..tos(iconName))
 
                 ------------------------------------------------------------------------------------------------------------------------
                 --Add the icon picker
-                local ref = fcoisLAMSettingsReferencePrefix .. filterButton.. tos(normalIconId) ..  previewSelect
+                ref = fcoisLAMSettingsReferencePrefix .. filterButton.. tos(normalIconId) ..  previewSelect
                 name = locVars[iconNameStart .. "_texture"]
                 tooltip = locVars[iconNameStart .. "_texture" .. tooltipSuffix]
                 data = { type = "iconpicker", width = "half", choices = markerIconTextures, choicesTooltips = texturesList, maxColumns=6, visibleRows=5, iconSize=iconSettings.size}
@@ -1606,10 +1622,10 @@ d("[FCOIS]defaultIconNameCheck: " ..tos(iconName))
                 if normalIconsSubMenusControls ~= nil and #normalIconsSubMenusControls > 0 then
                     if isGearIcon == true then
                         name = locVars[optionsIcon .. "s_gear" .. tos(mappingVars.iconToGear[normalIconId])]
-                        ref = "FCOIS_OPTIONS_" .. name .. submenuSuffix
+                        ref = fcoisLAMSettingsReferencePrefix  .. name .. submenuSuffix
                     else
                         name = locVars[iconNameStart .. colorSuffix]
-                        ref = "FCOIS_OPTIONS_" .. name .. submenuSuffix
+                        ref = fcoisLAMSettingsReferencePrefix .. name .. submenuSuffix
                     end
                     tooltip = ""
                     data = { type = "submenu", controls = normalIconsSubMenusControls }
@@ -1733,7 +1749,7 @@ d("[FCOIS]defaultIconNameCheck: " ..tos(iconName))
             {
                 type = "submenu",
                 name = locVars[optionsIcon .. "<iconNrOfDynIcon>" .. colorSuffix],
-                reference = "FCOIS_OPTIONS_" .. locVars[optionsIcon .. "iconNrOfDynIcon" .. colorSuffix].. submenuSuffix,
+                reference = "FCOItemSaver_Settings_" .. locVars[optionsIcon .. "iconNrOfDynIcon" .. colorSuffix].. submenuSuffix,
                 controls =
                 {
                 ...
@@ -1760,6 +1776,7 @@ d("[FCOIS]defaultIconNameCheck: " ..tos(iconName))
             ------------------------------------------------------------------------------------------------------------------------
             --Add the name edit box
             name = locVars[dynIconNameStart .. colorSuffix]
+            local refOfDynIconEditBox = fcoisLAMSettingsReferencePrefix .. "DynamicIconNameEdit" .. tos(dynIconId)
             tooltip = ""
             data = {
                 type = "editbox", width = "half",
@@ -1768,14 +1785,18 @@ d("[FCOIS]defaultIconNameCheck: " ..tos(iconName))
             disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
             getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].name end
             setFunc = function(newValue)
-                FCOISsettings.icon[fcoisDynIconNr].name = newValue
-                FCOIS.preventerVars.doUpdateLocalization = true
-                changeContextMenuEntryTexts(fcoisDynIconNr)
-                --Update the icon list dropdown entries (name, enabled state, icon)
-                updateIconListDropdownEntries()
+                if not FCOIS.preventerVars.doNotCheckForDefaultName then
+                    --Name of the marker icon is missing, so reset it to a default name
+                    newValue = defaultIconNameCheck(refOfDynIconEditBox, newValue, fcoisDynIconNr)
+                    FCOISsettings.icon[fcoisDynIconNr].name = newValue
+                    FCOIS.preventerVars.doUpdateLocalization = true
+                    changeContextMenuEntryTexts(fcoisDynIconNr)
+                    --Update the icon list dropdown entries (name, enabled state, icon)
+                    updateIconListDropdownEntries()
+                end
             end
-            defaultSettings = locVars[dynIconNameStart .. nameSuffix]
-            createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
+            defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].name --locVars[dynIconNameStart .. nameSuffix]
+            createdControl = CreateControl(refOfDynIconEditBox, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
             if createdControl ~= nil then
                 table.insert(dynIconsSubMenusControls, createdControl)
             end
@@ -2312,7 +2333,7 @@ d("[FCOIS]defaultIconNameCheck: " ..tos(iconName))
             ------------------------------------------------------------------------------------------------------------------------
             --Create the submenu header for the dynamic icon and assign the before build controls to it
             if dynIconsSubMenusControls ~= nil and #dynIconsSubMenusControls > 0 then
-                ref = "FCOIS_OPTIONS_" .. locVars[dynIconNameStart .. colorSuffix].. submenuSuffix
+                ref = fcoisLAMSettingsReferencePrefix .. "DynamicIcon" ..tos(dynIconId) .. submenuSuffix
                 name = locVars[dynIconNameStart .. colorSuffix]
                 tooltip = ""
                 data = { type = "submenu", controls = dynIconsSubMenusControls }
@@ -2324,6 +2345,11 @@ d("[FCOIS]defaultIconNameCheck: " ..tos(iconName))
 
     end
     local dynIconsSubMenus = buildDynamicIconSubMenus()
+
+    local function updateDynamicIconSubmenuName(dynIconId)
+        --pattern for the dynamic icon submenu refernece is: fcoisLAMSettingsReferencePrefix .. "DynamicIcon" ..tos(dynIconId) .. submenuSuffix
+        --TODO
+    end
     --==================== Dynamic icons - END =====================================
 
     --==================== Filter buttons positions - BEGIN =====================================
@@ -2595,7 +2621,7 @@ d("[FCOIS]defaultIconNameCheck: " ..tos(iconName))
             --Update the choices and choicesValues in the LAM restore API verison dropdown now
             --> only needed if manually clicked the "refresh restorable backups" button
             if doUpdateDropdownValues then
-                local restoreableBackupsDD = wm:GetControlByName("FCOITEMSAVER_SETTINGS_RESTORE_API_VERSION_DROPDOWN", "")
+                local restoreableBackupsDD = GetControl("FCOITEMSAVER_SETTINGS_RESTORE_API_VERSION_DROPDOWN") --wm:GetControlByName("FCOITEMSAVER_SETTINGS_RESTORE_API_VERSION_DROPDOWN", "")
                 if restoreableBackupsDD then
                     restoreableBackupsDD:UpdateChoices(restoreChoices, restoreChoicesValues)
                     fcoRestore.apiVersion = nil
@@ -2736,7 +2762,7 @@ d("[FCOIS]defaultIconNameCheck: " ..tos(iconName))
         --Update the localization once if something changed that needs to update the localization
         if FCOIS.preventerVars.doUpdateLocalization == true then
             FCOIS.preventerVars.KeyBindingTexts = false
-            d("[FCOIS]LAM settings menu close: Update localization once")
+            --d("[FCOIS]LAM settings menu close: Update localization once")
             FCOIS.Localization()
             FCOIS.preventerVars.KeyBindingTexts = true
         end
@@ -6682,7 +6708,7 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                             getFunc = function() return FCOISsettings.splitLockDynFilter end,
                             setFunc = function(value) FCOISsettings.splitLockDynFilter = value
                                 --Change the gear sets filter context-menu button's texture
-                                local lockDynSplitFilterContextMenuButton = wm:GetControlByName(FCOIS.ZOControlVars.FCOISfilterButtonNames[FCOIS_CON_FILTER_BUTTON_LOCKDYN], "")
+                                local lockDynSplitFilterContextMenuButton = GetControl(FCOIS.ZOControlVars.FCOISfilterButtonNames[FCOIS_CON_FILTER_BUTTON_LOCKDYN]) --wm:GetControlByName(FCOIS.ZOControlVars.FCOISfilterButtonNames[FCOIS_CON_FILTER_BUTTON_LOCKDYN], "")
                                 if lockDynSplitFilterContextMenuButton ~= nil then
                                     updateFCOISFilterButtonColorsAndTextures(1, lockDynSplitFilterContextMenuButton, nil, LF_INVENTORY)
                                     FCOIS.FilterBasics(true)
@@ -6697,7 +6723,7 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                             getFunc = function() return FCOISsettings.splitGearSetsFilter end,
                             setFunc = function(value) FCOISsettings.splitGearSetsFilter = value
                                 --Change the gear sets filter context-menu button's texture
-                                local gearSetSplitFilterContextMenuButton = wm:GetControlByName(FCOIS.ZOControlVars.FCOISfilterButtonNames[FCOIS_CON_FILTER_BUTTON_GEARSETS], "")
+                                local gearSetSplitFilterContextMenuButton = GetControl(FCOIS.ZOControlVars.FCOISfilterButtonNames[FCOIS_CON_FILTER_BUTTON_GEARSETS]) --wm:GetControlByName(FCOIS.ZOControlVars.FCOISfilterButtonNames[FCOIS_CON_FILTER_BUTTON_GEARSETS], "")
                                 if gearSetSplitFilterContextMenuButton ~= nil then
                                     updateFCOISFilterButtonColorsAndTextures(2, gearSetSplitFilterContextMenuButton, nil, LF_INVENTORY)
                                     FCOIS.FilterBasics(true)
@@ -6712,7 +6738,7 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                             getFunc = function() return FCOISsettings.splitResearchDeconstructionImprovementFilter end,
                             setFunc = function(value) FCOISsettings.splitResearchDeconstructionImprovementFilter = value
                                 --Change the gear sets filter context-menu button's texture
-                                local resDecSplitFilterContextMenuButton = wm:GetControlByName(FCOIS.ZOControlVars.FCOISfilterButtonNames[FCOIS_CON_FILTER_BUTTON_RESDECIMP], "")
+                                local resDecSplitFilterContextMenuButton = GetControl(FCOIS.ZOControlVars.FCOISfilterButtonNames[FCOIS_CON_FILTER_BUTTON_RESDECIMP]) --wm:GetControlByName(FCOIS.ZOControlVars.FCOISfilterButtonNames[FCOIS_CON_FILTER_BUTTON_RESDECIMP], "")
                                 if resDecSplitFilterContextMenuButton ~= nil then
                                     updateFCOISFilterButtonColorsAndTextures(3, resDecSplitFilterContextMenuButton, nil, LF_INVENTORY)
                                     FCOIS.FilterBasics(true)
@@ -6727,7 +6753,7 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                             getFunc = function() return FCOISsettings.splitSellGuildSellIntricateFilter end,
                             setFunc = function(value) FCOISsettings.splitSellGuildSellIntricateFilter = value
                                 --Change the gear sets filter context-menu button's texture
-                                local sellGuildIntSplitFilterContextMenuButton = wm:GetControlByName(FCOIS.ZOControlVars.FCOISfilterButtonNames[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT], "")
+                                local sellGuildIntSplitFilterContextMenuButton = GetControl(FCOIS.ZOControlVars.FCOISfilterButtonNames[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT]) --wm:GetControlByName(FCOIS.ZOControlVars.FCOISfilterButtonNames[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT], "")
                                 if sellGuildIntSplitFilterContextMenuButton ~= nil then
                                     updateFCOISFilterButtonColorsAndTextures(4, sellGuildIntSplitFilterContextMenuButton, nil, LF_INVENTORY)
                                     FCOIS.FilterBasics(true)

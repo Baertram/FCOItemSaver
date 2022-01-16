@@ -11,28 +11,6 @@
 ]]
 
 
---==================================================================
---ItemCooldownTracker API
---==================================================================
---[[
-CDT.GetRelevantItemIds()
-returns a table containing all itemIds that are potential relevant for the prevention of opening (quasi alle Behälter, die der User tracken könnte, aktuell ca. 10 IDs)
-
-ICDT.GetItemCooldown(itemId)
-for given itemId, returns
--1                       --> item is not relevant (not trackable with addon)
-0                       --> item is tracked by current setting, but cooldown is expired
-number>0      --> cooldown is active, minutes left
-
-ICDT.FormatMinutes(minutesLeft)
-calculates the hours and minutes combination of given total minutes
-returns two values h, m
-Beispiel: ICDT.FormatMinutes(131)   ->   2, 11
-[22:45]
-Weiterhin zeige ich jetzt auch die Info im ItemTooltip an. Kannst es dir gerne bei Gelegenheit anschauen. Grundsätzlich nutze ich dieselbe Funktion wie zuvor.
-Bei 0 zeige ich dann sowas an wie "Cooldown ist abgelaufen" und bei >0 in rot der Hinweis, dass der Cooldown noch so und so lange aktiv ist.
-]]
-
 --************************************************************************************************************************
 --************************************************************************************************************************
 --************************************************************************************************************************
@@ -242,9 +220,35 @@ ZO_InventoryWalletList1Row1_MouseUp:4: in function '(main chunk)'
 
 --#183, 2022-01-16, Tim99, Discord: Feature request - Add new savedvariables saving independent to Server and AccountName
 
+--#184, 2021-12-15, BAertram, feature: Add automatic marking of needed scrolls etc. with ItemCooldownTracker API
+--[[
+    --==================================================================
+    --ItemCooldownTracker API
+    --==================================================================
+    CDT.GetRelevantItemIds()
+    returns a table containing all itemIds that are potential relevant for the prevention of opening (quasi alle Behälter, die der User tracken könnte, aktuell ca. 10 IDs)
+
+    ICDT.GetItemCooldown(itemId)
+    for given itemId, returns
+    -1                       --> item is not relevant (not trackable with addon)
+    0                       --> item is tracked by current setting, but cooldown is expired
+    number>0      --> cooldown is active, minutes left
+
+    ICDT.FormatMinutes(minutesLeft)
+    calculates the hours and minutes combination of given total minutes
+    returns two values h, m
+    Beispiel: ICDT.FormatMinutes(131)   ->   2, 11
+    [22:45]
+    Weiterhin zeige ich jetzt auch die Info im ItemTooltip an. Kannst es dir gerne bei Gelegenheit anschauen. Grundsätzlich nutze ich dieselbe Funktion wie zuvor.
+    Bei 0 zeige ich dann sowas an wie "Cooldown ist abgelaufen" und bei >0 in rot der Hinweis, dass der Cooldown noch so und so lange aktiv ist.
+]]
+
+--#185, 2022-01-16, Baertram, feature: Add possibility to only reset the SavedVariables of stored marker icons, but keep the other settings
+
+--#186, 2022-01-16, Baertram, feature: Updte the dynamic icons submenu to "nth dynamic icon" +": <chosen name of the dynamic icon"
 
 --____________________________
--- Current max bugs/features/ToDos: 183
+-- Current max bugs/features/ToDos: 186
 --____________________________
 
 
@@ -253,7 +257,6 @@ ZO_InventoryWalletList1Row1_MouseUp:4: in function '(main chunk)'
 ------------------------------------------------------------------------------------
 --#175 -> Test: Open
 --#176 -> Test: Errors occured with OR filters, and mixed AND + OR filters
---#179 -> Test: open
 --#183 -> In progress, todo: Add the new "AllServersAndAccountsTheSame" to "Copy settings routines" + Test: Open
 
 -------------------------------------------------------------------------------------
@@ -267,6 +270,7 @@ ZO_InventoryWalletList1Row1_MouseUp:4: in function '(main chunk)'
 --Missing command handler function in API function FCOIS.ChangeFilter
 --#175: lua error bad argument #1 to 'pairs' (table/struct expected, got nil) after improving items and leaving the improve station
 --#177: With filterButton 1 and 2 at yellow state items without markerIcon of filter 1 (but being a dynamic gear of filter 2) will show up
+--#179: Gear or dynamic icons name could be empty and raise lua error messages. If left empty they will directly reset to the default name (English) now
 --#180: GetItemInstanceId error upon mouse over at inventory quest items
 
 --[Changed]

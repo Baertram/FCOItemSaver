@@ -1197,15 +1197,16 @@ function FCOIS.CheckIfOtherAddonsActiveAfterPlayerActivated()
     FCOIS.CheckIfOtherAddonActive()
     --Check if Inventory Gridview is active
     if (otherAddons.inventoryGridViewActive == false) then
-        local gridViewControlName = wm:GetControlByName(otherAddons.GRIDVIEWBUTTON, "")
+        local gridViewControlName = GetControl(otherAddons.GRIDVIEWBUTTON) --wm:GetControlByName(otherAddons.GRIDVIEWBUTTON, "")
         if gridViewControlName ~= nil or InventoryGridView then
             if FCOIS.settingsVars.settings.debug then debugMessage( "[Other addons]", "Addon Inventory Gridview is active", false) end
             FCOIS.otherAddons.inventoryGridViewActive = true
         end
     end
     --Check if Chat Merchant is active
+    local chatMerchantControlName
     if (otherAddons.chatMerchantActive == false) then
-        local chatMerchantControlName = wm:GetControlByName(otherAddons.CHATMERCHANTBUTTON, "")
+        chatMerchantControlName = GetControl(otherAddons.CHATMERCHANTBUTTON) --wm:GetControlByName(otherAddons.CHATMERCHANTBUTTON, "")
         if chatMerchantControlName ~=  nil then
             if FCOIS.settingsVars.settings.debug then debugMessage( "[Other addons]", "Addon ChatMerchant is active", false) end
             FCOIS.otherAddons.chatMerchantActive = true
@@ -1213,7 +1214,6 @@ function FCOIS.CheckIfOtherAddonsActiveAfterPlayerActivated()
     end
     --Was ChatMerchant addon's control found now?
     if (otherAddons.chatMerchantActive == true) then
-        local chatMerchantControlName = wm:GetControlByName(otherAddons.CHATMERCHANTBUTTON, "")
         if chatMerchantControlName ~=  nil then
             chatMerchantControlName:ClearAnchors()
             if (otherAddons.inventoryGridViewActive == true) then

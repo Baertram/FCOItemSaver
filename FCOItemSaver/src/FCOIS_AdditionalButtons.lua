@@ -26,7 +26,7 @@ local function AddButton(buttonData, parent, name, callbackFunction, onMouseUpCa
 
     local button
     --Does the button already exist?
-    button = wm:GetControlByName(name, "")
+    button = GetControl(name) --wm:GetControlByName(name, "")
     if button == nil then
         --Button does not exist yet and it should be hidden? Abort here!
         if hideButton == true then return nil end
@@ -80,7 +80,7 @@ local function AddButton(buttonData, parent, name, callbackFunction, onMouseUpCa
                 local texture
 
                 --Check if texture exists
-                texture = wm:GetControlByName(name .. "Texture", "")
+                texture =  GetControl(name, "Texture") --wm:GetControlByName(name .. "Texture", "")
                 if texture == nil then
                     --Create the texture for the button to hold the image
                     texture = wm:CreateControl(name .. "Texture", button, CT_TEXTURE)
@@ -184,7 +184,7 @@ function FCOIS.reAnchorAdditionalInvButtons(filterPanelId)
                             if buttonData ~= nil and buttonData.addInvButton and buttonData.name ~= nil and buttonData.name ~= "" then
                                 --Check if the control exists already
                                 local btnName = buttonData.name
-                                local invAddCntBtnCtrl = wm:GetControlByName(btnName, "")
+                                local invAddCntBtnCtrl = GetControl(btnName) --wm:GetControlByName(btnName, "")
                                 if invAddCntBtnCtrl ~= nil then
                                     --Get the button's data at the panel
                                     --Clear the anchors and reanchor it with the updated x and y offsets

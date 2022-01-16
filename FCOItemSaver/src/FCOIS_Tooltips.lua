@@ -202,7 +202,7 @@ function FCOIS.CreateToolTip(markerControl, markerId, doHide, pUpdateAllEquipmen
                         --Replace current control name ending by the current iconId
                         local equipmentMarkerControlNewName = equipmentMarkerControlName .. tostring(iconId)
                         --get the control by it's name
-                        local equipmentMarkerControl = wm:GetControlByName(equipmentMarkerControlNewName, "")
+                        local equipmentMarkerControl = GetControl(equipmentMarkerControlNewName) --wm:GetControlByName(equipmentMarkerControlNewName, "")
                         if equipmentMarkerControl ~= nil then
                             createToolTip(equipmentMarkerControl, iconId, doHide, false, nil, nil, nil)
                         end

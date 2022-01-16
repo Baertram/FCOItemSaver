@@ -824,7 +824,7 @@ function FCOIS.CheckRepetivelyIfControlExists(controlName, callbackFunc, stepToc
     if FCOIS.preventerVars.isControlCheckActive[checkControlname] == nil then FCOIS.preventerVars.isControlCheckActive[checkControlname] = false end
     if FCOIS.preventerVars.controlCheckActiveCounter[checkControlname] == nil then FCOIS.preventerVars.controlCheckActiveCounter[checkControlname] = 0 end
     --Get the control by help of it's name
-    local control = wm:GetControlByName(controlName, "")
+    local control = GetControl(controlName) --wm:GetControlByName(controlName, "")
     --Check if control exists
     if control == nil then
         --d("[FCOIS.checkRepetivelyIfControlExists - control " .. tostring(controlName) .. " does not exist so far...")
@@ -1755,7 +1755,7 @@ function FCOIS.ChangeDialogButtonState(dialog, buttonNr, stateBool)
 --d("[FCOIS]changeDialogButtonState-dialog: " ..tostring(dialog) .. ", button: " ..tostring(buttonNr) .. ", stateBool: " ..tostring(stateBool))
     if not dialog or not buttonNr then return end
     stateBool = stateBool or false
-    --wm:GetControlByName(ctrlVars.RepairItemDialog, "Button" .. tostring(buttonNr)):SetEnabled(enableResearchButton)
+    --GetControl(ctrlVars.RepairItemDialog, "Button" .. tostring(buttonNr)) --wm:GetControlByName(ctrlVars.RepairItemDialog, "Button" .. tostring(buttonNr)):SetEnabled(enableResearchButton)
     -- Activate or deactivate a button...use BSTATE_NORMAL to activate and BSTATE_DISABLED to deactivate
     local buttonState = (stateBool and BSTATE_NORMAL) or BSTATE_DISABLED
     ZO_Dialogs_UpdateButtonState(dialog, 1, buttonState)

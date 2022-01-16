@@ -97,7 +97,7 @@ local function updateAlreadyBoundTexture(parent, pHideControl)
         local setPartAlreadyBoundName = parent:GetName() .. addonName .. "AlreadyBoundIcon"
         if alreadyBoundTexture ~= nil then
             local setPartAlreadyBoundTexture
-            setPartAlreadyBoundTexture = wm:GetControlByName(setPartAlreadyBoundName, "")
+            setPartAlreadyBoundTexture = GetControl(setPartAlreadyBoundName) --wm:GetControlByName(setPartAlreadyBoundName, "")
             if setPartAlreadyBoundTexture == nil then
                 setPartAlreadyBoundTexture = wm:CreateControl(setPartAlreadyBoundName, parentsImage, CT_TEXTURE)
             end
@@ -671,7 +671,7 @@ local function AddArmorTypeIconToEquipmentSlot(equipmentSlotControl, armorType)
     local isCompanionCharacter = (equipmentSlotControl:GetParent() == ctrlVars.COMPANION_CHARACTER) or false
 --d(">equipmentSlotName: " ..tostring(equipmentSlotName) .. ", isCompanionCharacter: " ..tostring(isCompanionCharacter))
 
-    local armorTypeLabel = wm:GetControlByName("FCOIS_" .. equipmentSlotName .. "_ArmorTypeLabel")
+    local armorTypeLabel = GetControl("FCOIS_" .. equipmentSlotName .."_ArmorTypeLabel") --wm:GetControlByName("FCOIS_" .. equipmentSlotName .. "_ArmorTypeLabel")
     if settings.showArmorTypeIconAtCharacter then
         if armorTypeLabel == nil then
             armorTypeLabel = wm:CreateControl("FCOIS_" .. equipmentSlotName .. "_ArmorTypeLabel", equipmentSlotControl, CT_LABEL)
@@ -782,7 +782,7 @@ function FCOIS.countAndUpdateEquippedArmorTypes(doRefreshControl, doCreateMarker
 --d(">character")
         for _, equipmentSlotName in pairs(characterEquipmentSlotNameByIndex) do
             --Get the control of the equipment slot
-            equipmentSlotControl = wm:GetControlByName(equipmentSlotName, "")
+            equipmentSlotControl = GetControl(equipmentSlotName) --wm:GetControlByName(equipmentSlotName, "")
             if equipmentSlotControl ~= nil then
                 --Refresh each equipped item's marker icons
                 if doRefreshControl then
@@ -804,7 +804,7 @@ function FCOIS.countAndUpdateEquippedArmorTypes(doRefreshControl, doCreateMarker
         local companionCharacterEquipmentSlotNameByIndex = mappingVars.companionCharacterEquipmentSlotNameByIndex
         for _, equipmentSlotName in pairs(companionCharacterEquipmentSlotNameByIndex) do
             --Get the control of the equipment slot
-            equipmentSlotControl = wm:GetControlByName(equipmentSlotName, "")
+            equipmentSlotControl = GetControl(equipmentSlotName) --wm:GetControlByName(equipmentSlotName, "")
             if equipmentSlotControl ~= nil then
                 --Refresh each equipped item's marker icons
                 if doRefreshControl then
@@ -837,7 +837,7 @@ function FCOIS.RemoveArmorTypeMarker(bagId, slotId)
     end
     local equipmentSlotControlName = characterEquipmentSlotNameByIndex[slotId]
     if equipmentSlotControlName == nil then return false end
-    local equipmentSlotControl = wm:GetControlByName(equipmentSlotControlName, "")
+    local equipmentSlotControl = GetControl(equipmentSlotControlName) --wm:GetControlByName(equipmentSlotControlName, "")
     if equipmentSlotControl == nil then return false end
 
     --Check slightly delayed if item is (still) equipped
@@ -845,7 +845,7 @@ function FCOIS.RemoveArmorTypeMarker(bagId, slotId)
     zo_callLater(function()
         if equipmentSlotControl.stackCount == 0 then
             --Hide the text control showing the armor type for this equipment slot
-            local armorTypeLabel = wm:GetControlByName("FCOIS_" .. equipmentSlotControl:GetName() .. "_ArmorTypeLabel")
+            local armorTypeLabel = GetControl("FCOIS_" .. equipmentSlotControl:GetName() .. "_ArmorTypeLabel") --wm:GetControlByName("FCOIS_" .. equipmentSlotControl:GetName() .. "_ArmorTypeLabel")
             if armorTypeLabel == nil then return true end
             armorTypeLabel:SetHidden(true)
         end
@@ -882,7 +882,7 @@ function FCOIS.checkWeaponOffHand(controlName, weaponTypeName, doCheckOffHand, d
 --d(">doCheckOffHand")
         if (controlName == characterEquipmentSlotNameByIndex[EQUIP_SLOT_OFF_HAND]) then -- 'ZO_CharacterEquipmentSlotsOffHand'
             --Check if the weapon in the main slot is a 2hd weapon/staff
-            weaponControl = wm:GetControlByName(characterEquipmentSlotNameByIndex[EQUIP_SLOT_MAIN_HAND], "") --"ZO_CharacterEquipmentSlotsMainHand"
+            weaponControl = GetControl(characterEquipmentSlotNameByIndex[EQUIP_SLOT_MAIN_HAND]) --wm:GetControlByName(characterEquipmentSlotNameByIndex[EQUIP_SLOT_MAIN_HAND], "") --"ZO_CharacterEquipmentSlotsMainHand"
             if weaponControl ~= nil then
 --d(">found weapon at main hand: " ..GetItemLink(weaponControl.bagId, weaponControl.slotIndex))
                 weaponType = GetItemWeaponType(weaponControl.bagId, weaponControl.slotIndex)
@@ -898,7 +898,7 @@ function FCOIS.checkWeaponOffHand(controlName, weaponTypeName, doCheckOffHand, d
 --d(">doCheckBackupOffHand")
         if (controlName == characterEquipmentSlotNameByIndex[EQUIP_SLOT_BACKUP_OFF]) then -- 'ZO_CharacterEquipmentSlotsBackupOff'
             --Check if the weapon in the backup slot is a 2hd weapon/staff
-            weaponControl = wm:GetControlByName(characterEquipmentSlotNameByIndex[EQUIP_SLOT_BACKUP_MAIN], "") -- "ZO_CharacterEquipmentSlotsBackupMain"
+            weaponControl = GetControl(characterEquipmentSlotNameByIndex[EQUIP_SLOT_BACKUP_MAIN]) --wm:GetControlByName(characterEquipmentSlotNameByIndex[EQUIP_SLOT_BACKUP_MAIN], "") -- "ZO_CharacterEquipmentSlotsBackupMain"
             if weaponControl ~= nil then
 --d(">found weapon at backup main hand: " ..GetItemLink(weaponControl.bagId, weaponControl.slotIndex))
                 weaponType = GetItemWeaponType(weaponControl.bagId, weaponControl.slotIndex)
@@ -938,7 +938,7 @@ function FCOIS.RemoveEmptyWeaponEquipmentMarkers(delay)
             if settings.debug then debugMessage( "[RemoveEmptyWeaponEquipmentMarkers]","equipmentControl: " .. equipmentControlName ..", delay: " .. delay, true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
 --d(">>equipmentControl: " .. tostring(equipmentControlName))
             if equipmentControlName ~= nil and equipmentControlName ~= "" then
-                local equipmentControl = wm:GetControlByName(equipmentControlName, "")
+                local equipmentControl = GetControl(equipmentControlName) --wm:GetControlByName(equipmentControlName, "")
                 if equipmentControl ~= nil then -- and equipmentControl:IsHidden() == false then
                     --Check if the current equipment slot name is a weapon backup slot
                     local twoHandedWeaponOffHand = false
@@ -1032,7 +1032,7 @@ function FCOIS.RefreshEquipmentControl(equipmentControl, doCreateMarkerControl, 
                 local mappingOfRings = mappingVars.equipmentJewelryRing2RingSlot
                 local otherRingSlotName = mappingOfRings[equipControlName]
 --d(">otherRingSlotName: " ..tostring(otherRingSlotName))
-                local otherRingControl = wm:GetControlByName(otherRingSlotName, "")
+                local otherRingControl = GetControl(otherRingSlotName) --wm:GetControlByName(otherRingSlotName, "")
                 --Compare the item Ids/Unique itemIds (if enabled)
                 if otherRingControl ~= nil and otherRingControl:IsHidden() == false then
                     --Get the bag and slot
@@ -1067,7 +1067,7 @@ function FCOIS.RefreshEquipmentControl(equipmentControl, doCreateMarkerControl, 
         local equipmentSlotControl
         for _, equipmentSlotName in pairs(mappingVars.characterEquipmentSlotNameByIndex) do
             --Get the control of the equipment slot
-            equipmentSlotControl = wm:GetControlByName(equipmentSlotName, "")
+            equipmentSlotControl = GetControl(equipmentSlotName) --wm:GetControlByName(equipmentSlotName, "")
             if equipmentSlotControl ~= nil then
                 --Refresh each equipped item's marker icons
                 FCOIS.RefreshEquipmentControl(equipmentSlotControl, doCreateMarkerControl, p_markId)
@@ -1113,7 +1113,7 @@ function FCOIS.UpdateEquipmentSlotMarker(slotIndex, delay, unequipped)
             local equipSlotControl
             if equipSlotControlName ~= nil and equipSlotControlName ~= "" then
                 if FCOIS.settingsVars.settings.debug then debugMessage( "[updateEquipmentSlotMarker]","control name="..equipSlotControlName..", slotIndex: " .. slotIndex, true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
-                equipSlotControl = wm:GetControlByName(equipSlotControlName, "")
+                equipSlotControl = GetControl(equipSlotControlName) --wm:GetControlByName(equipSlotControlName, "")
 --d(">>isHidden: " ..tostring(equipSlotControl:IsHidden()))
                 if equipSlotControl ~= nil then --and equipSlotControl:IsHidden() == false then
                     --Add or refresh the equipped items, create marker control if not already there
@@ -1216,11 +1216,11 @@ function FCOIS.CheckIfCharOrInvNeedsRingUpdate(p_bagId, p_slotIndex, p_parent, p
         else
             ringEquipmentControlsTable = mappingVars.characterCompanionEquipmentRingSlots
         end
-        local ringControl1 = ringEquipmentControlsTable[EQUIP_SLOT_RING1] ~= nil and wm:GetControlByName(ringEquipmentControlsTable[EQUIP_SLOT_RING1])
+        local ringControl1 = ringEquipmentControlsTable[EQUIP_SLOT_RING1] ~= nil and GetControl(ringEquipmentControlsTable[EQUIP_SLOT_RING1]) --wm:GetControlByName(ringEquipmentControlsTable[EQUIP_SLOT_RING1])
         if ringControl1 ~= nil then
             refreshEquipmentControl(ringControl1, p_doMark,  p_markId, nil, nil, nil)
         end
-        local ringControl2 = ringEquipmentControlsTable[EQUIP_SLOT_RING2] ~= nil and wm:GetControlByName(ringEquipmentControlsTable[EQUIP_SLOT_RING2])
+        local ringControl2 = ringEquipmentControlsTable[EQUIP_SLOT_RING2] ~= nil and GetControl(ringEquipmentControlsTable[EQUIP_SLOT_RING2]) --wm:GetControlByName(ringEquipmentControlsTable[EQUIP_SLOT_RING2])
         if ringControl2 ~= nil then
             refreshEquipmentControl(ringControl2, p_doMark,  p_markId, nil, nil, nil)
         end

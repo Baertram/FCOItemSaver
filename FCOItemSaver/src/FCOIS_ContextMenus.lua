@@ -108,7 +108,7 @@ local function isMenuOwnerFCOISAdditionalFlagContextMenu(menuOwnerControlToCheck
         contInvButtonControl = menuOwnerControlToCheck
     else
         local menuOwnerControlToCheckName = getContextMenuInvokerButtonName()
-        contInvButtonControl = wm:GetControlByName(menuOwnerControlToCheckName, "")
+        contInvButtonControl = GetControl(menuOwnerControlToCheckName) --wm:GetControlByName(menuOwnerControlToCheckName, "")
     end
     if contInvButtonControl ~= nil then
         local menuOwner = GetMenuOwner()
@@ -567,7 +567,7 @@ function FCOIS.MarkMe(rowControl, markId, updateNow, doUnmark, refreshPopupDialo
                                         local slotIndexToEquiptmentSlotControlName = FCOIS.mappingVars.characterEquipmentSlotNameByIndex
                                         local equipmentSlotName = slotIndexToEquiptmentSlotControlName[FCOIS.IIfAclicked.slotIndex] or ""
                                         if equipmentSlotName ~= "" then
-                                            local equipmentSlot = wm:GetControlByName(equipmentSlotName, "")
+                                            local equipmentSlot = GetControl(equipmentSlotName) --wm:GetControlByName(equipmentSlotName, "")
                                             if equipmentSlot ~= nil then
                                                 --FCOIS.RefreshEquipmentControl(equipmentControl, doCreateMarkerControl, p_markId, dontCheckRings)
                                                 FCOIS.RefreshEquipmentControl(equipmentSlot, not doUnmark, markId)
@@ -2301,7 +2301,7 @@ local function changeContextMenuInvokerButtonColorOfOtherButton(contextMenuInvok
                     local otherButtonDataName = getContextMenuInvokerButtonName(otherInvokerButtonDataToUpdate.filterPanel)
                     if otherButtonDataName ~= nil then
                         --Update the other context menu "flag" button's color according to the current settings state
-                        local contInvButTexture = wm:GetControlByName(otherButtonDataName, "Texture")
+                        local contInvButTexture = GetControl(otherButtonDataName, "Texture") --wm:GetControlByName(otherButtonDataName, "Texture")
                         if contInvButTexture then
                             contInvButTexture:SetColor(colR, colG, colB, colA)
                         end
@@ -2325,7 +2325,7 @@ local function changeContextMenuInvokerButtonColor(contextMenuInvokerButton, set
 
     --Update the context menu "flag" button's color according to the current settings state
     local colR, colG, colB, colA = getContextMenuAntiSettingsColor(settingStateForColor, nil)
-    local contInvButTexture = wm:GetControlByName(contextMenuInvokerButton:GetName(), "Texture")
+    local contInvButTexture = GetControl(contextMenuInvokerButton:GetName(), "Texture") --wm:GetControlByName(contextMenuInvokerButton:GetName(), "Texture")
     if contInvButTexture then
 --d(">found button's Texture -> Calling SetColor")
         contInvButTexture:SetColor(colR, colG, colB, colA)
@@ -2345,7 +2345,7 @@ function FCOIS.ChangeContextMenuInvokerButtonColorByPanelId(panelId)
     local contextMenuInvokerButtonName = getContextMenuInvokerButtonName(panelId)
     if contextMenuInvokerButtonName ~= "" and contextMenuInvokerButtonName ~= false then
 --d("[FCOIS.ChangeContextMenuInvokerButtonColorByPanelId-panelId:" .. tos(panelId) .. ", button: ".. contextMenuInvokerButtonName .. ", settings: " .. tos(settingsEnabled))
-        local contextMenuInvokerButton = wm:GetControlByName(contextMenuInvokerButtonName, "")
+        local contextMenuInvokerButton = GetControl(contextMenuInvokerButtonName) --wm:GetControlByName(contextMenuInvokerButtonName, "")
         if contextMenuInvokerButton then
             changeContextMenuInvokerButtonColor(contextMenuInvokerButton, settingsEnabled)
         end
@@ -3105,7 +3105,7 @@ function FCOIS.ShowContextMenuForAddInvButtons(invAddContextMenuInvokerButton, b
         local btnCtrlName = contextMenuVars.filterPanelIdToContextMenuButtonInvoker[panelId].name
         local btnCtrl
         if btnCtrlName ~= nil and btnCtrlName ~= "" then
-            btnCtrl = wm:GetControlByName(btnCtrlName, "")
+            btnCtrl = GetControl(btnCtrlName) --wm:GetControlByName(btnCtrlName, "")
         end
         --Loop over the inventory context menu template table and build each button + anchor the following buttons to the ones before
         local invContextMenuButtonTemplate = contextMenuVars.buttonContextMenuToIconId
