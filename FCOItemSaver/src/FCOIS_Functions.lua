@@ -34,6 +34,7 @@ local updateCraftingInventory = FCOIS.UpdateCraftingInventory --maybe nil here, 
 local getGearIcons = FCOIS.GetGearIcons --might be nil here as it is defined in FCOIS.API
 
 local createFCOISUniqueIdString
+local signItemId
 
 --==========================================================================================================================================
 --                                          FCOIS - Base & helper functions
@@ -359,7 +360,7 @@ function FCOIS.GetFCOISMarkerIconSavedVariablesItemId(bagId, slotIndex, allowedI
         --Sign the itemInstanceId now
         if signToo == true then
             --3rd parameter onlySign == true will force to sign the itemInstanceId without further checks
-            itemId = FCOIS.SignItemId(itemInstanceId, allowedItemType, true, nil, bagId, slotIndex)
+            itemId = signItemId(itemInstanceId, allowedItemType, true, nil, bagId, slotIndex)
         else
             --Will be signed later on, e.g. if this function here was called via function FCOIS.MyGetItemInstanceIdNoControl(bagId, slotIndex, signToo)
             --where signToo == true -> Then FCOIS.SignItemId will be called from that function + updates internal variables
@@ -376,6 +377,7 @@ local getFCOISMarkerIconSavedVariablesItemId = FCOIS.GetFCOISMarkerIconSavedVari
 --If addonName parameter is given it will check if the temporary use of uniqueIds was enabled for this addon
 --and use the unique Id then for the checks (even if the FCOIS settings are not enabled to use uniqueIds).
 function FCOIS.SignItemId(itemId, allowedItemType, onlySign, addonName, bagId, slotIndex)
+    signItemId = signItemId or FCOIS.SignItemId
     allowedItemType = allowedItemType or false
     onlySign = onlySign or false
     local itemIDTypeIsString = (type(itemId) == "string") or false
@@ -414,7 +416,7 @@ function FCOIS.SignItemId(itemId, allowedItemType, onlySign, addonName, bagId, s
     end
     return itemId
 end
-local signItemId = FCOIS.SignItemId
+signItemId = FCOIS.SignItemId
 
 --Get the item's instance id or unique ID
 --OLD function before "dragon bones" patch
@@ -2456,7 +2458,7 @@ end
 
 
 --Jump to one of the players own houses
-function FCOIS.JumpToOwnHouse(backupType, withDetails, apiVersion, doClearBackup)
+function FCOIS.JumpToOwnHouse(withDetails, apiVersion, doClearBackup)
     --GetCurrentZoneHouseId() gets the id for the current house the player is in, and can be used for "RequestJumpToHouse" function
     --Jump to my own house
     --TODO: JumpToHouse(GetUnitDisplayName("player")) --not working for my own house, so how can I port to my own house via API?
@@ -2497,7 +2499,6 @@ function FCOIS.JumpToOwnHouse(backupType, withDetails, apiVersion, doClearBackup
                         if houseId ~= 0 then
                             --Save the parameters so we can use them after reloadui/jump to house in EVENT_PLAYER_ACTIVATED again
                             local backupParams = {}
-                            backupParams.backupType     = backupType
                             backupParams.withDetails    = withDetails
                             backupParams.apiVersion     = apiVersion
                             backupParams.doClearBackup  = doClearBackup

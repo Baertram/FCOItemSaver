@@ -759,7 +759,7 @@ local function buildRestoreAPIVersionData(doUpdateDropdownValues)
         end
         --Update the choices and choicesValues in the LAM restore API verison dropdown now
         --> only needed if manually clicked the "refresh restorable backups" button
-        if doUpdateDropdownValues then
+        if doUpdateDropdownValues == true then
             local restoreableBackupsDD = GetControl("FCOITEMSAVER_SETTINGS_RESTORE_API_VERSION_DROPDOWN") --wm:GetControlByName("FCOITEMSAVER_SETTINGS_RESTORE_API_VERSION_DROPDOWN", "")
             if restoreableBackupsDD then
                 restoreableBackupsDD:UpdateChoices(restoreChoices, restoreChoicesValues)
@@ -769,7 +769,7 @@ local function buildRestoreAPIVersionData(doUpdateDropdownValues)
     end
     return foundRestoreData
 end
-FCOIS.buildRestoreAPIVersionData = buildRestoreAPIVersionData
+FCOIS.BuildRestoreAPIVersionData = buildRestoreAPIVersionData
 
 --Backup / Restore - END --------------------------------------------------------------------
 
@@ -7182,7 +7182,11 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                                 local title = locVars["options_backup_marker_icons"] .. " - API "
                                 local body = locVars["options_backup_marker_icons_warning"]
                                 --Show confirmation dialog
-                                showConfirmationDialog("BackupMarkerIconsDialog", title .. tos(fcoBackup.apiVersion), body, function() FCOIS.preBackup("unique", fcoBackup.withDetails, fcoBackup.apiVersion, fcoBackup.doClearBackup) end, nil, nil, nil, true)
+                                showConfirmationDialog("BackupMarkerIconsDialog",
+                                        title .. tos(fcoBackup.apiVersion),
+                                        body,
+                                        function() FCOIS.PreBackup(fcoBackup.withDetails, fcoBackup.apiVersion, fcoBackup.doClearBackup) end,
+                                        nil, nil, nil, true)
                                 --backupType, withDetails, apiVersion, doClearBackup
                                 --FCOIS.preBackup("unique", fcoBackup.withDetails, fcoBackup.apiVersion, fcoBackup.doClearBackup)
                             end,
@@ -7228,11 +7232,15 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                             func = function()
                                 if fcoRestore.apiVersion ~= nil then
                                     --(restoreType, withDetails, apiVersion)
-                                    --FCOIS.restoreMarkerIcons("unique", fcoRestore.withDetails, fcoRestore.apiVersion)
+                                    --FCOIS.RestoreMarkerIcons("unique", fcoRestore.withDetails, fcoRestore.apiVersion)
                                     local title = locVars["options_restore_marker_icons"] .. " - API "
                                     local body = locVars["options_restore_marker_icons_warning"]
                                     --Show confirmation dialog
-                                    showConfirmationDialog("RestoreMarkerIconsDialog", title .. tos(fcoRestore.apiVersion), body, function() FCOIS.preRestore("unique", fcoRestore.withDetails, fcoRestore.apiVersion) end, nil, nil, nil, true)
+                                    showConfirmationDialog("RestoreMarkerIconsDialog",
+                                            title .. tos(fcoRestore.apiVersion),
+                                            body,
+                                            function() FCOIS.PreRestore(fcoRestore.withDetails, fcoRestore.apiVersion) end,
+                                            nil, nil, nil, true)
                                 end
                             end,
                             --isDangerous = false,
@@ -7250,7 +7258,11 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                                     local title = locVars["options_restore_marker_icons_delete_selected"] .. " - API "
                                     local body = locVars["options_restore_marker_icons_delete_selected_warning2"]
                                     --Show confirmation dialog
-                                    showConfirmationDialog("DeleteRestoreMarkerIconsDialog", title .. tos(fcoRestore.apiVersion), body, function() FCOIS.deleteBackup("unique", fcoRestore.apiVersion) end, nil, nil, nil, true)
+                                    showConfirmationDialog("DeleteRestoreMarkerIconsDialog",
+                                            title .. tos(fcoRestore.apiVersion),
+                                            body,
+                                            function() FCOIS.DeleteBackup(fcoRestore.apiVersion) end,
+                                            nil, nil, nil, true)
                                 end
                             end,
                             isDangerous = true,

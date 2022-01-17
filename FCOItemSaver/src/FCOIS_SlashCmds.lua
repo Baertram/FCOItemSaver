@@ -105,7 +105,7 @@ function FCOIS.Command_handler(args)
         local title = locVars["options_backup_marker_icons"] .. " - API " .. tos(apiVersion)
         local body = locVars["options_backup_marker_icons_warning"]
         --Show confirmation dialog
-        showConfirmationDialog("BackupMarkerIconsDialog", title, body, function() FCOIS.preBackup("unique", withDetails, apiVersion, doClearBackup) end, nil, nil, nil, true)
+        showConfirmationDialog("BackupMarkerIconsDialog", title, body, function() FCOIS.PreBackup(withDetails, apiVersion, doClearBackup) end, nil, nil, nil, true)
     elseif options[1] == "restore" or options[1] == "widerherstellung" then
         --Restore
         local withDetails = false
@@ -119,7 +119,7 @@ function FCOIS.Command_handler(args)
         local title = locVars["options_restore_marker_icons"] .. " - API " .. tos(apiVersion)
         local body = locVars["options_restore_marker_icons_warning"]
         --Show confirmation dialog
-        showConfirmationDialog("RestoreMarkerIconsDialog", title, body, function() FCOIS.preRestore("unique", withDetails, apiVersion) end, nil, nil, nil, true)
+        showConfirmationDialog("RestoreMarkerIconsDialog", title, body, function() FCOIS.PreRestore(withDetails, apiVersion) end, nil, nil, nil, true)
     --Debug chat commands
     elseif(options[1] == "debug" or options[1] == "d") then
         settings.debug = not settings.debug

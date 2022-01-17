@@ -46,12 +46,21 @@ FCOIS.dummyScene = {
     ["name"] = gAddonName
 }
 
+--The table of number variables
+FCOIS.numVars = {}
+local numVars = FCOIS.numVars
+
 --Constants for the unique itemId types
 --FCOIS v1.9.6
 FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE      = 1 --use base game's real uniqueIds by ZOs (even if items are totally the same, their id won't be the same)
 FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE    = 2 --use FCOIS calculated uniqueIds based on item values like level,quality,enchantment,style,trait etc.
+local maxIdTypes = FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE + 1
+--The different types of IDs that can be used within FCOIS to mark items
+numVars.idTypes                 = maxIdTypes
+
 --The global variable for the use temporary "UniqueIds" API
 FCOIS.temporaryUseUniqueIds = {}
+
 
 --SavedVariables constants
 local savedVarsMarkedItems = "markedItems"
@@ -291,9 +300,6 @@ FCOIS_CON_NON_WISHED_ALL        = 3
 --in function Localization()
 FCOIS.localLocalizationsVars = {}
 
-    --The table of number variables
-FCOIS.numVars = {}
-local numVars = FCOIS.numVars
 --Global value: Number of filter icons to choose by right click menu
 numVars.languageCount = FCOIS_CON_LANG_MAX --English, German, French, Spanish, Italian, Japanese, Russian
 --Global: Count of available inventory filter types (LF_INVENTORY, LF_BANK_WITHDRAW, etc. -> see above)
@@ -312,6 +318,7 @@ numVars.gFCOMaxNumDynamicIcons	= 30
 --Global value: Number of dynamic icons
 numVars.gFCONumDynamicIcons		= 10
 local numMaxDynamicIcons        = numVars.gFCOMaxNumDynamicIcons
+
 
 --The maximum number at the ITEMTYPE constants
 local itemTypeMaxFallback = ITEMTYPE_ITERATION_END -- should be 71 -> ITEMTYPE_GROUP_REPAIR at date 2021-05-06

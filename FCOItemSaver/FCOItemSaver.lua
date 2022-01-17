@@ -246,10 +246,12 @@ ZO_InventoryWalletList1Row1_MouseUp:4: in function '(main chunk)'
 ]]
 
 --#185, 2022-01-16, Baertram, feature: Add possibility to only reset the SavedVariables of stored marker icons, but keep the other settings
-
+--#188, 2022-01-16, Baertram, feature: Enable backup and restore for all 3 saved itemIds (non unique, ZOs unique and FCOIS unique)
+--#189, 2022-01-17, Baertram, bug: FCOIS uniqueIds item markers got saved into SavedVariables table "markedItems", but they should only be saved to "markedItemsFCOISUnique"
+--#190, 2022-01-17, Baertram, bug: non-unique item markers got saved into SavedVariables table "markedItemsFCOISUnique", but they should only be saved to "markedItems"
 
 --____________________________
--- Current max bugs/features/ToDos: 186
+-- Current max bugs/features/ToDos: 190
 --____________________________
 
 
@@ -258,6 +260,7 @@ ZO_InventoryWalletList1Row1_MouseUp:4: in function '(main chunk)'
 ------------------------------------------------------------------------------------
 --#176 -> Test: Errors occured with OR filters, and mixed AND + OR filters
 --#183 -> In progress, todo: Add the new "AllServersAndAccountsTheSame" to "Copy settings routines" + Test: Open
+--#188 -> Test: Needed
 
 -------------------------------------------------------------------------------------
 --Changelog (last version: 2.2.3 - New version: 2.2.4) -    Updated last: 2022-01-17
@@ -272,6 +275,7 @@ ZO_InventoryWalletList1Row1_MouseUp:4: in function '(main chunk)'
 --#177: With filterButton 1 and 2 at yellow state items without markerIcon of filter 1 (but being a dynamic gear of filter 2) will show up
 --#179: Gear or dynamic icons name could be empty and raise lua error messages. If left empty they will directly reset to the default name (English) now
 --#180: GetItemInstanceId error upon mouse over at inventory quest items
+--#187, Delete backuped markerIcons was not removing some API versions properly
 
 --[Changed]
 --Changed load order of debug file to earlier loading
