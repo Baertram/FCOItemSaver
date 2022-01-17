@@ -222,7 +222,7 @@ ZO_InventoryWalletList1Row1_MouseUp:4: in function '(main chunk)'
 
 --#183, 2022-01-16, Tim99, Discord: Feature request - Add new savedvariables saving independent to Server and AccountName
 
---#184, 2021-12-15, BAertram, feature: Add automatic marking of needed scrolls etc. with ItemCooldownTracker API
+--#184, 2021-12-15, Baertram, feature: Add automatic marking of needed scrolls etc. with ItemCooldownTracker API
 --[[
     --==================================================================
     --ItemCooldownTracker API
@@ -254,14 +254,13 @@ ZO_InventoryWalletList1Row1_MouseUp:4: in function '(main chunk)'
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-01-02
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-01-17
 ------------------------------------------------------------------------------------
---#175 -> Test: Open
 --#176 -> Test: Errors occured with OR filters, and mixed AND + OR filters
 --#183 -> In progress, todo: Add the new "AllServersAndAccountsTheSame" to "Copy settings routines" + Test: Open
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.2.3 - New version: 2.2.4) -    Updated last: 2022-01-02
+--Changelog (last version: 2.2.3 - New version: 2.2.4) -    Updated last: 2022-01-17
 -------------------------------------------------------------------------------------
 
 --[Fixed]
