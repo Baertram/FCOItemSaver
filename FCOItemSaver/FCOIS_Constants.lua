@@ -1831,6 +1831,7 @@ preventerVars.doNotScanInv = false
 preventerVars.migrateItemMarkers = false
 preventerVars.migrateToUniqueIds = false
 preventerVars.migrateToItemInstanceIds = false
+preventerVars.migrateItemMarkersCalledFromPlayerActivated = false
 preventerVars.gAddonStartupInProgress = false
 preventerVars.lastHoveredInvSlot = nil
 preventerVars.createdMasterWrit= false

@@ -251,7 +251,7 @@ ZO_InventoryWalletList1Row1_MouseUp:4: in function '(main chunk)'
 --#190, 2022-01-17, Baertram, bug: non-unique item markers got saved into SavedVariables table "markedItemsFCOISUnique", but they should only be saved to "markedItems"
 
 --____________________________
--- Current max bugs/features/ToDos: 190
+-- Current max bugs/features/ToDos: 191
 --____________________________
 
 
@@ -276,6 +276,7 @@ ZO_InventoryWalletList1Row1_MouseUp:4: in function '(main chunk)'
 --#179: Gear or dynamic icons name could be empty and raise lua error messages. If left empty they will directly reset to the default name (English) now
 --#180: GetItemInstanceId error upon mouse over at inventory quest items
 --#187, Delete backuped markerIcons was not removing some API versions properly
+--#191, Switching from FCOIS unique to non-unique item markers will not show ANY marker icon at the inventories. If the migration dialog appears and is aborted the UI will be reloaded to fix this
 
 --[Changed]
 --Changed load order of debug file to earlier loading

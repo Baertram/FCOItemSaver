@@ -897,7 +897,10 @@ function FCOIS.checkForPlayerActivatedTasks()
 
     --Was the item ID type changed to (non) unique IDs: Show the migrate data from old item IDs to unique itemIDs/or from unique IDs to non-unique now.
     -->Was set in src/FCIS_Settings.lua, function FCOIS.afterSettings() after a reloadui was done due to the LAM settings uniqueId change
+    FCOIS.preventerVars.migrateItemMarkersCalledFromPlayerActivated = false
     if FCOIS.preventerVars.migrateItemMarkers == true then
+        --this will raise a reloadui if you choose to not migrate any markers, so that the settings are updated properly and markers are shwown correctly
+        FCOIS.preventerVars.migrateItemMarkersCalledFromPlayerActivated = true
         FCOIS.ShowAskBeforeMigrateDialog()
     else
         --Was any migration done and the reloadui after that had happened? Show the migration log then

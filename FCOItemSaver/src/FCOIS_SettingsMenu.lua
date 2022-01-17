@@ -349,7 +349,6 @@ end
 --UniqueIDs - BEGIN ----------------------------------------------------------------------------------------------------
 local function uniqueIdIsEnabledAndSetToFCOIS()
     local settings = FCOIS.settingsVars.settings
-    --if settings.useUniqueIdsToggle == true or settings.useUniqueIds == true then
     if settings.useUniqueIds == true then
         return (settings.uniqueItemIdType == FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE) or false
     end
@@ -2969,11 +2968,12 @@ function FCOIS.BuildAddonMenu()
                         FCOISsettings.useUniqueIdsToggle = value
 
 
-                        --New: Also direct change of the variable as else the dropdown box below would re-set this checkbox here
-                        --if the LAM refresh for the cntrols is called (upon change of the dropdown box all other controls
+                        --New: NO DIRECT change of the variable as else the dropdown box below would re-set this checkbox here
+                        --if the LAM refresh for the controls is called (upon change of the dropdown box all other controls
                         --will refresh as well -> variable useUniqueIdsToggle is not used for the getfunc and thus the checkbox
                         --wil be disabled automatically again).
                         --FCOISsettings.useUniqueIds = value
+
                         --EDIT: Directly reload as this setting changes to make sure/safe the toggle variable is ONLY set
                         --and the useUniqueIds variable will be set in file src/FCOIS_Settings.lua, function FCOIS.afterSettings()
                         ReloadUI()

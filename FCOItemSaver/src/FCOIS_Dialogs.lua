@@ -211,6 +211,12 @@ function FCOIS.AskBeforeMigrateDialogInitialize(control)
         FCOIS.preventerVars.migrateItemMarkers = false
         FCOIS.preventerVars.migrateToUniqueIds = false
         FCOIS.preventerVars.migrateToItemInstanceIds = false
+        --If event player activated raised the migrate marker icon IDs dialog: A reloadUI is needed if we abort the
+        --dialog in order to update the settings properly and show the marker icons in the inventories properly
+        if FCOIS.preventerVars.migrateItemMarkersCalledFromPlayerActivated then
+            d("[FCOIS]Migration of marker icon IDs aborted. Reloading the UI now to update the settings properly!")
+            ReloadUI("ingame")
+        end
     end
 
     --The migrate non-unique/unique to unique/non-unique item IDs
