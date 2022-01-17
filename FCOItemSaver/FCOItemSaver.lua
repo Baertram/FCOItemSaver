@@ -249,9 +249,10 @@ ZO_InventoryWalletList1Row1_MouseUp:4: in function '(main chunk)'
 --#188, 2022-01-16, Baertram, feature: Enable backup and restore for all 3 saved itemIds (non unique, ZOs unique and FCOIS unique)
 --#189, 2022-01-17, Baertram, bug: FCOIS uniqueIds item markers got saved into SavedVariables table "markedItems", but they should only be saved to "markedItemsFCOISUnique"
 --#190, 2022-01-17, Baertram, bug: non-unique item markers got saved into SavedVariables table "markedItemsFCOISUnique", but they should only be saved to "markedItems"
+--#192, 2022-01-17, Baertram, bug: FCOIS unique item marker strings contain the text "nil". This should be changed to "". So scan all markedItemsFCOISUnique entries of all iconIds and change them
 
 --____________________________
--- Current max bugs/features/ToDos: 191
+-- Current max bugs/features/ToDos: 192
 --____________________________
 
 
@@ -277,6 +278,7 @@ ZO_InventoryWalletList1Row1_MouseUp:4: in function '(main chunk)'
 --#180: GetItemInstanceId error upon mouse over at inventory quest items
 --#187, Delete backuped markerIcons was not removing some API versions properly
 --#191, Switching from FCOIS unique to non-unique item markers will not show ANY marker icon at the inventories. If the migration dialog appears and is aborted the UI will be reloaded to fix this
+
 
 --[Changed]
 --Changed load order of debug file to earlier loading
