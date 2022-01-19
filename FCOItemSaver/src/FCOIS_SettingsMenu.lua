@@ -134,11 +134,14 @@ local InventoryGridViewActivated = false
 --The table with all the LAM dropdown controls that should get updated with marker icons and their name
 local LAMdropdownsWithIconList = {}
 --The table with all LAM submenus for marker icons where the name could be changed (gear, dynamic)
-local LAMsubmenusWithMarkerIconChangeableNames = {}
+--local LAMsubmenusWithMarkerIconChangeableNames = {}
 
 --Icons for keybinds, automatic marks etc.
 local iconsList, iconsListValues
-local iconsListNone, iconsListValuesNone, iconsListRecipe, iconsListValuesRecipe
+local iconsListNone, iconsListValuesNone, iconsListRecipe, iconsListValuesRecipe, iconsListWithAllEntry, iconsListWithAllEntryValues
+
+local noneEntryStr = locVars["options_dropdown_none"]
+local noneEntryValue = 0
 
 --The server/world/realm names dropdown
 local srcServer     = noEntryValue
@@ -173,7 +176,11 @@ local setCollectionAddonsListValues = {}
 --Backup & Restore & Restore from APIversion
 local restoreChoices = {}
 local restoreChoicesValues = {}
-
+--Delete marker icons
+local markerIconsToDeleteType = 0
+local markerIconTypeChoices = {}
+local markerIconTypeChoicesValues = {}
+local markerIconsToDeleteIcon = 0
 
 --Languages
 local languageOptions = {}
@@ -194,13 +201,15 @@ local savedVariablesOptions = {
     [1] = locVars["options_savedVariables_dropdown_selection1"], -- Each character
     [2] = locVars["options_savedVariables_dropdown_selection2"], -- Account wide
     [3] = locVars["options_savedVariables_dropdown_selection3"], -- Each account saved the same
-    [4] = locVars["options_savedVariables_dropdown_selection4"], -- Each server and account saved the same
+    --[4] = locVars["options_savedVariables_dropdown_selection4"], -- Each server and account saved the same --todo #183
 }
 -- Unique itemId choices
 local uniqueItemIdTypeChoices = {
     [1] = locVars["options_unique_id_base_game"],
     [2] = locVars["options_uniqe_id_by_FCOIS"],
 }
+locVars.uniqueItemIdTypeChoices = uniqueItemIdTypeChoices
+
 local uniqueItemIdTypeChoicesTT = {
     [1] = locVars["options_unique_id_base_game" .. tooltipSuffix],
     [2] = locVars["options_uniqe_id_by_FCOIS" .. tooltipSuffix],
@@ -446,7 +455,7 @@ local function reBuildServerOptions(updateSourceOrTarget)
                 table.insert(serverOptionsValues, serverIdx)
             end
         else
-            --Index 1: Always add it ("none" entry)
+            --Index 1: Always add "none" entry
             table.insert(serverOptions, serverName)
             table.insert(serverOptionsValues, serverIdx)
             table.insert(serverOptionsTarget, serverName)
@@ -769,8 +778,65 @@ local function buildRestoreAPIVersionData(doUpdateDropdownValues)
     return foundRestoreData
 end
 FCOIS.BuildRestoreAPIVersionData = buildRestoreAPIVersionData
-
 --Backup / Restore - END --------------------------------------------------------------------
+
+
+--Marker icon delete - BEGIN --------------------------------------------------------------------
+--Read all restorable API versions from the savedvars to get a table with the API
+--version and date + time when they were created
+local function buildMarkerIconsData(doUpdateDropdownValues)
+    doUpdateDropdownValues = doUpdateDropdownValues or false
+    --[[
+    addonVars.savedVarsMarkedItemsNames = {
+        [false]                                         = savedVarsMarkedItems,
+        [FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE]    = savedVarsMarkedItems,
+        [FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE]  = savedVarsMarkedItems .. "FCOISUnique",
+    }
+    ]]
+    markerIconTypeChoices = {}
+    markerIconTypeChoicesValues = {}
+
+    local savedVarsMarkedItemsNames = FCOIS.addonVars.savedVarsMarkedItemsNames
+    local subTablesAlreadyAdded = {}
+    --Add the unique-ID types with different subTable names in the FCOIS SV now -> Each table only once
+    for idx, saveIdType  in ipairs(uniqueItemIdTypeChoicesValues) do
+        --Do not add the really unique ZOs entry as it shares the same SV table as the non-uniques and will be added below
+        --together with the non-unique as a combined entry
+        if saveIdType ~= FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE then
+            local savedVarsMarkedItemsSubTableName = savedVarsMarkedItemsNames[saveIdType]
+            if savedVarsMarkedItemsSubTableName ~= nil and savedVarsMarkedItemsSubTableName ~= "" and not subTablesAlreadyAdded[savedVarsMarkedItemsSubTableName] then
+                local svMarkerIconsDataOfSaveIdType = FCOISsettings[savedVarsMarkedItemsSubTableName]
+                if svMarkerIconsDataOfSaveIdType ~= nil and NonContiguousCount(svMarkerIconsDataOfSaveIdType) > 0 then
+                    local savedIdTypeName = uniqueItemIdTypeChoices[saveIdType]
+                    table.insert(markerIconTypeChoices, savedIdTypeName)
+                    table.insert(markerIconTypeChoicesValues, saveIdType)
+                end
+            end
+        end
+    end
+    --Insert a none entry with value 0 at index 1
+    table.insert(markerIconTypeChoices, 1, noneEntryStr)
+    table.insert(markerIconTypeChoicesValues, 1, noneEntryValue)
+    local nonUniqueAndZOsUniqueSharedSVTable = savedVarsMarkedItemsNames[false]
+    local svOfNonUniqueAndZOsUnique = FCOISsettings[nonUniqueAndZOsUniqueSharedSVTable]
+    if svOfNonUniqueAndZOsUnique  ~= nil and NonContiguousCount(svOfNonUniqueAndZOsUnique) > 0 then
+        --Insert a "non unique" / really unique entry with value false at index 2
+        table.insert(markerIconTypeChoices, 2, locVars["options_non_unique_id"] .. "/" .. uniqueItemIdTypeChoices[FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE])
+        table.insert(markerIconTypeChoicesValues, 2, false)
+    end
+
+    --Update the choices and choicesValues in the LAM delete marker icons dropdown now
+    if doUpdateDropdownValues == true then
+        local deletableMarkerIconsDD = GetControl("FCOITEMSAVER_SETTINGS_DELETE_MARKER_ICON_TYPE_DROPDOWN") --wm:GetControlByName("FCOITEMSAVER_SETTINGS_DELETE_MARKER_ICON_TYPE_DROPDOWN", "")
+        if deletableMarkerIconsDD then
+            deletableMarkerIconsDD:UpdateChoices(markerIconTypeChoices, markerIconTypeChoicesValues)
+            markerIconsToDeleteType = noneEntryValue
+        end
+    end
+    return markerIconTypeChoices, markerIconTypeChoicesValues
+end
+FCOIS.BuildMarkerIconsData = buildMarkerIconsData
+--Marker icon delete - END --------------------------------------------------------------------
 
 
 --Other addons - BEGIN --------------------------------------------------------------------
@@ -1015,6 +1081,7 @@ end
 
 --Icon dropdown box sort order - BEGIN ---------------------------------------------------------------------------------
 --Build the dropdown boxes for the icon sort order
+--[[
 local function buildIconSortOrderDropdowns()
     if numFilterIcons <= 0 then return nil end
     --Get the FCOIS icon count
@@ -1043,6 +1110,7 @@ local function buildIconSortOrderDropdowns()
     end
     return createdIconSortDDBoxes
 end
+]]
 --Icon dropdown box sort order - END -----------------------------------------------------------------------------------
 
 
@@ -1064,6 +1132,14 @@ local function updateIconsList(typeToBuild, withIcons, withNoneEntry, iconsListT
             iconsListValues                 = iconsListValuesTmp
             FCOIS.LAMiconsList              = iconsList
             FCOIS.LAMiconsListValues        = iconsListValues
+
+            --Create/Update the iconsList with the all entries
+            table.insert(iconsListTmp, 1, locVars["options_dropdown_all"])
+            iconsListWithAllEntry           = iconsListTmp
+            table.insert(iconsListValuesTmp, 1, FCOIS_CON_ICON_ALL)
+            iconsListWithAllEntryValues     = iconsListValuesTmp
+            FCOIS.LAMiconsListWithAllEntry       = iconsListWithAllEntry
+            FCOIS.LAMiconsListWithAllEntryValues = iconsListWithAllEntryValues
         end
     elseif typeToBuild == "recipe" then
         iconsListRecipe                     =  iconsListTmp
@@ -2633,6 +2709,8 @@ end
 
 
 local function runOnceAsLAMPanelGetsCreated(lamPanel)
+    noneEntryStr = locVars["options_dropdown_none"]
+
     --Build the icons & choicesValues list for the LAM icon dropdown boxes (again)
     updateAllIconsList()
 
@@ -2748,6 +2826,9 @@ function FCOIS.BuildAddonMenu()
     --Build the dropdown box for the restorable API versions now
     buildRestoreAPIVersionData(false)
 
+    --Build the dropdown box for the marker icon delete now
+    buildMarkerIconsData(false)
+
     --[Submenus]
     --Other addons
     -- Creating LAM submenu for the SetTracker addon
@@ -2828,6 +2909,13 @@ function FCOIS.BuildAddonMenu()
         if FCOIS_LAM_MENU_IS_LOADING and panel.controlsWereLoaded == true and lamPanelCreationInitDone == true then
             FCOIS_LAM_MENU_IS_LOADING:SetHidden(true)
             FCOIS_LAM_SettingsMenuOpen_timeline:Stop()
+        end
+
+        --Workaround for LibFeedback (as jumping to any other scene like mail will hide the FCOIS lam panel but will not unhide it again at next showing)
+        local panelContainer = panel.container
+        if panelContainer ~= nil and panelContainer:IsHidden() then
+        --d(">FCOIS LAM panel container was unhidden again!")
+            panelContainer:SetHidden(false)
         end
     end
 
@@ -7099,10 +7187,10 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
             } -- controls character
         }, -- submenu chracter
         --=============================================================================================
-        -- BACKUP & RESTORE
+        -- BACKUP & RESTORE & Delete
         {
             type = "submenu",
-            name = locVars["options_header_backup_and_restore"],
+            name = locVars["options_header_backup_and_restore_and_delete"],
             controls =
             {
                 --Marker icons backup
@@ -7272,6 +7360,89 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                         },
                     },
                 },
+                -- Marker icons delete
+                {
+                    type = "submenu",
+                    name = locVars["options_delete_marker_icons_header"],
+                    controls = {
+                        {
+                            type = "description",
+                            text = locVars["options_delete_marker_icons_desc"],
+                        },
+                        --Select the marker icons to delete dropdown
+                        {
+                            type = 'dropdown',
+                            name = locVars["options_icon1_texture"],
+                            tooltip = locVars["options_icon1_texture"],
+                            choices = iconsListWithAllEntry,
+                            choicesValues = iconsListWithAllEntryValues,
+                            getFunc = function() return markerIconsToDeleteIcon end,
+                            setFunc = function(value)
+                                markerIconsToDeleteIcon = value
+                            end,
+                            reference = "FCOITEMSAVER_SETTINGS_DELETE_MARKER_ICON_DROPDOWN",
+                            default = markerIconsToDeleteIcon,
+                        },
+                        --Select the marker icons type to delete dropdown
+                        {
+                            type = 'dropdown',
+                            name = locVars["options_delete_marker_icons"],
+                            tooltip = locVars["options_delete_marker_icons" .. tooltipSuffix],
+                            choices = markerIconTypeChoices,
+                            choicesValues = markerIconTypeChoicesValues,
+                            getFunc = function() return markerIconsToDeleteType end,
+                            setFunc = function(value)
+                                markerIconsToDeleteType = value
+                            end,
+                            reference = "FCOITEMSAVER_SETTINGS_DELETE_MARKER_ICON_TYPE_DROPDOWN",
+                            default = markerIconsToDeleteType,
+                        },
+                        --Delete the selected marker icons button
+                        {
+                            type = "button",
+                            name = locVars["options_delete_marker_icons_button"],
+                            tooltip = locVars["options_delete_marker_icons_button" .. tooltipSuffix],
+                            func = function()
+                                if markerIconsToDeleteIcon ~= nil and markerIconsToDeleteIcon ~= 0
+                                        and markerIconsToDeleteType ~= nil and markerIconsToDeleteType ~= noneEntryValue then
+                                    local numIcons = 0
+                                    local numIconsStr = ""
+                                    local savedVarsMarkedItemsNames = FCOIS.addonVars.savedVarsMarkedItemsNames
+                                    local markerIconsToDeleteTypeTable = savedVarsMarkedItemsNames[markerIconsToDeleteType]
+                                    if markerIconsToDeleteTypeTable ~= nil and markerIconsToDeleteTypeTable ~= "" and FCOISsettings[markerIconsToDeleteTypeTable] ~= nil then
+                                        local isAllIcons = (markerIconsToDeleteIcon == FCOIS_CON_ICON_ALL) or false
+                                        if isAllIcons or FCOISsettings[markerIconsToDeleteTypeTable][markerIconsToDeleteIcon] ~= nil then
+                                            if not isAllIcons then
+                                                numIcons = NonContiguousCount(FCOISsettings[markerIconsToDeleteTypeTable][markerIconsToDeleteIcon])
+                                            end
+                                            if numIcons > 0  or isAllIcons then
+                                                if not isAllIcons then
+                                                    numIconsStr = " #" ..tos(numIcons)
+                                                end
+                                                local markerIconsToDeleteTypeStr = (type(markerIconsToDeleteType) == "number" and uniqueItemIdTypeChoices[markerIconsToDeleteType]) or (locVars["options_non_unique_id"] .. "/" .. uniqueItemIdTypeChoices[FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE])
+                                                local title = locVars["options_delete_marker_icons_button"]
+                                                local body = locVars["options_delete_marker_icons_warning2"]
+                                                local selectedIconName = FCOITEMSAVER_SETTINGS_DELETE_MARKER_ICON_DROPDOWN.combobox.m_comboBox.m_selectedItemText:GetText()
+                                                --Show confirmation dialog
+                                                showConfirmationDialog("DeleteMarkerIconsDialog",
+                                                        title .. " " .. tos(markerIconsToDeleteTypeStr),
+                                                        body .. "\nIcon: " ..tos(selectedIconName) .. tos(numIconsStr),
+                                                        function() FCOIS.DeleteMarkerIcons(markerIconsToDeleteType, markerIconsToDeleteIcon) end,
+                                                        nil, nil, nil, true)
+                                            end
+                                        end
+                                    end
+                                end
+                            end,
+                            isDangerous = true,
+                            disabled = function() return (markerIconsToDeleteIcon == nil or markerIconsToDeleteIcon == 0
+                                                            or markerIconsToDeleteType == nil or markerIconsToDeleteType == noneEntryValue) or false end,
+                            warning = locVars["options_delete_marker_icons_warning"],
+                            width="half",
+                        },
+                    }
+                },
+
             }, -- backup & restore controls
         }, -- backup & restore submenu
         --======================================================================================================================

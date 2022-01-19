@@ -143,8 +143,8 @@ Localization/FCOItemSaverLoc.lua
 Bindings/bindings.lua
 Bindings/bindings.xml
 
-# Backup and restore
-src/FCOIS_Backup.lua
+# Backup and restore and marker icons delete
+src/FCOIS_BackupRestoreDelete.lua
 
 # LibShifterBox boxes and functions
 src/FCOIS_LibShifterBox.lua

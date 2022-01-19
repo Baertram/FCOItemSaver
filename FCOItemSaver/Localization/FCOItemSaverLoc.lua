@@ -1148,7 +1148,7 @@ FCOIS.localizationVars.localizationAll = {
         ["options_contextmenu_use_dyn_submenu"]             = "Use submenu: Dynamic icons",
         ["options_contextmenu_use_dyn_submenu_TT"]     = "Use a submenu for the dynamic icons in context menus, if the enabled dynamic icons count equals or is higher than this value.\nThe value 0 disables the context-submenu for the dynamic icons.",
         --Backup & restore
-        ["options_header_backup_and_restore"]           = "Backup & Restore",
+        ["options_header_backup_and_restore_and_delete"] = "Backup & Restore & Delete",
         ["options_backup_marker_icons"]                 = "Backup",
         ["options_backup_marker_icons_TT"]         = "Backup your marker icons now.",
         ["options_restore_marker_icons"]                = "Restore",
@@ -1170,6 +1170,16 @@ FCOIS.localizationVars.localizationAll = {
         ["options_restore_marker_icons_delete_selected_TT"] = "Delete the selected backup from the restorable backups.\n\nAttention: After deleting the backup you are not able to restore it anymore!",
         ["options_restore_marker_icons_delete_selected_warning"] = "Attention: This will delete the selected backup!",
         ["options_restore_marker_icons_delete_selected_warning2"] = "Backup will be deleted and cannot be restored afterwards.\n\nAre you realy sure?",
+
+        ["options_delete_marker_icons_header"] =    "Delete",
+        ["options_delete_marker_icons_desc"] =      "Saved marker icons at the items will be deleted. They will be deleted from the currently set (server/account/character/all the same) SavedVariables settings (see \'General settings\').\nThe icon dropdown will control which marker icon will be deleted (use the -ALL- entry to delete all of them).\nThe marker icon type defines which subtable of the SavedVariables will be deleted (non-unique/unique).\n\nNon-unique and ZOs unique marker icons cannot be deleted separatley as they are combined in the same SavedVariables subtable.",
+        ["options_delete_marker_icons"] =           "Choose marker icon type",
+        ["options_delete_marker_icons_TT"] =        "Choose the marker icon type which should be deleted.",
+        ["options_delete_marker_icons_button"] =    "Delete marker icons",
+        ["options_delete_marker_icons_button_TT"] = "Delete the selected marker icons",
+        ["options_delete_marker_icons_warning"] =   "Attention: This will delete the selected marker icons!",
+        ["options_delete_marker_icons_warning2"] =  "Marker icons will be deleted and cannot be restored afterwards.\n\nAre you realy sure?",
+
         --Feedback
         ["feedbackSendNote"]                    =   "Send mail",
         ["feedbackSendGold"]                    =   "Send e.g. <<1>> gold",
@@ -1193,6 +1203,7 @@ FCOIS.localizationVars.localizationAll = {
         ["filter_buyback"]  = "["..GetString(SI_ITEMFILTERTYPE8).."] ",
         ["filter_repair"]   = "["..GetString(SI_ITEM_ACTION_REPAIR).."] ",
         ["LAM_settings_are_currently_build"] = "                   - Please wait-\nSettings are currently build...",
+        ["options_non_unique_id"]               = "Non-unique ID",
         ["options_use_uniqueids_type"]          = "Type of unique ID",
         ["options_use_uniqueids_type_TT"]       = "Choose which type of the unique ID you want to use. The default type is the ZOs base game type. An alternative are the FCOIS own created uniqueIds, see checkboxes to define the parts of the self-created uniqueId below.\nPlease read the tooltips of this dropdownbox entries for more information!\n\n|cFF0000Caution: Changing this setting will automatically reload the user interface (/reloadui)!|r",
         ["options_unique_id_base_game"]         = "Use ZOs unique ID",
@@ -1251,6 +1262,9 @@ FCOIS.localizationVars.localizationAll = {
         ["options_auto_bind_missing_set_collection_pieces_to_chat"] = "Show in chat",
         ["options_auto_bind_missing_set_collection_pieces_to_chat_TT"] = "Show the items that were auto bound in the chat",
         ["chat_output_missing_set_collection_piece_was_bound"] = "Missing set collection piece was bound: %s",
+
+        ["options_dropdown_none"] = "- None -",
+        ["options_dropdown_all"]  = "- ALL -",
 
         --LibShifterBoxes
         --[FCOIS_UNIQUEID_ITEMTYPES]
@@ -2351,7 +2365,7 @@ FCOIS.localizationVars.localizationAll = {
         ["options_contextmenu_use_dyn_submenu"]             = "Nutze Untermenü: Dynamische Symbole",
         ["options_contextmenu_use_dyn_submenu_TT"]     = "Nutze ein Untermenü für die dynamischen Symbole in den Kontextmenüs wenn die Anzahl der aktivierten dynamischen Symbole größer oder gleich diesem Wert ist.\nDer Wert 0 deaktiviert das Kontext-Untermenü für die dynamischen Symbole.",
         --Backup & restore
-        ["options_header_backup_and_restore"]           = "Sicherung & Wiederherstellung",
+        ["options_header_backup_and_restore_and_delete"] = "Sicherung & Wiederherstellung & Löschen",
         ["options_backup_marker_icons"]                 = "Sicherung",
         ["options_backup_marker_icons_TT"]         = "Sichere deine Markierungen an den Gegenständen nun.",
         ["options_restore_marker_icons"]                = "Wiederherstellung",
@@ -2373,6 +2387,16 @@ FCOIS.localizationVars.localizationAll = {
         ["options_restore_marker_icons_delete_selected_TT"] = "Lösche das ausgewählte Backup aus den wiederherstellbaren Backups.\n\nVorsicht: Nach dem Löschen kann dieses nicht wiederhergestellt werden!",
         ["options_restore_marker_icons_delete_selected_warning"] = "Vorsicht: Dies löscht das ausgewählte Backup!",
         ["options_restore_marker_icons_delete_selected_warning2"] = "Backup wird gelöscht und kann nicht wiederhergestellt werden!\n\nBist du wirklich sicher?",
+
+        ["options_delete_marker_icons_header"] =    "Löschen",
+        ["options_delete_marker_icons_desc"] =      "Es werden die Markierungen an den Gegenständen gelöscht. Dabei werden die aktuell verwendeten SavedVariables (siehe \'Generelle Einstellungen\') verwendet (d.h. Server/Account/Character/alle gleich)!\nEs wird dabei die Markierung gelöscht, welche in der Symbol Aufklappliste ausgewählt wurde. Der Eintrag -ALLE- löscht alle Symbole!\nDer Markierungstyp gibt an, in welcher SavedVariables Tabelle die Markierungssymbole gelöscht werden (non-unique, unique).\n\nNicht-eindeutige und ZOs eindeutige Ids können nicht getrennt voneinander gelöscht werden, da diese sich dieselbe SavedVariables Tabelle teilen.",
+        ["options_delete_marker_icons"] =           "Markierungstyp auswählen",
+        ["options_delete_marker_icons_TT"] =        "Wähle den Markierungstyp aus, welcher gelöscht werden soll.",
+        ["options_delete_marker_icons_button"] =    "Markierungen löschen",
+        ["options_delete_marker_icons_button_TT"] = "Die ausgewählten Markierungen löschen",
+        ["options_delete_marker_icons_warning"] =   "Vorsicht: Dies löscht die ausgewählten Markierungen!",
+        ["options_delete_marker_icons_warning2"] =  "Markierungen werden gelöscht und können nicht wiederhergestellt werden!\n\nBist du wirklich sicher?",
+
         --Feedback
         ["feedbackSendNote"]                    =   "Sende Mail",
         ["feedbackSendGold"]                    =   "Sende z.B. <<1>> Gold",
@@ -2393,6 +2417,7 @@ FCOIS.localizationVars.localizationAll = {
         ["button_context_menu_toggle_anti_repair_on"]   = "Aktiviere 'Anti-Reparieren'",
         ["button_context_menu_toggle_anti_repair_off"]  = "Deaktiviere 'Anti-Reparieren'",
         ["LAM_settings_are_currently_build"] = "                        - Bitte warten -\nEinstellungen werden gerade aufbereitet...",
+        ["options_non_unique_id"]               = "Nicht-eindeutige ID",
         ["options_use_uniqueids_type"]          = "Typ der eindeutigen ID",
         ["options_use_uniqueids_type_TT"]       = "Wähle welchen Typ der eindeutigen ID du verwenden möchtest. Der Default Typ ist die eindeutige ID des ZOs Standard-Spiels. Eine Alternative sind die FCOIS selbst-erstellten Eindeutigen Ids, deren Aufbau/Bestandteile du mit den Auswahlfeldern hier drunter definieren kannst.\nBitte lies die Tooltips der Einträge in dieser Aufklappbox um mehr Informationen zu erhalten!\n\n|cFF0000Achtung: Das Verändern dieser Option wird die Benutzeroberfläche automatisch neu laden (/reloadui)!|r",
         ["options_unique_id_base_game"]         = "Nutze ZO\'s eindeutige ID",
@@ -2443,6 +2468,9 @@ FCOIS.localizationVars.localizationAll = {
         ["options_auto_bind_missing_set_collection_pieces_to_chat"] = "Im Chat zeigen",
         ["options_auto_bind_missing_set_collection_pieces_to_chat_TT"] = "Zeige die automatisch gebundenen Teile im Chat an",
         ["chat_output_missing_set_collection_piece_was_bound"] = "Fehlender Set-Sammlungs Gegenstand wurde gebunden: %s",
+
+        ["options_dropdown_none"] = "- Nichts -",
+        ["options_dropdown_all"]  = "- ALLE -",
 
         --LibShifterBoxes
         --[FCOIS_UNIQUEID_ITEMTYPES]

@@ -245,26 +245,26 @@ ZO_InventoryWalletList1Row1_MouseUp:4: in function '(main chunk)'
     Bei 0 zeige ich dann sowas an wie "Cooldown ist abgelaufen" und bei >0 in rot der Hinweis, dass der Cooldown noch so und so lange aktiv ist.
 ]]
 
---#185, 2022-01-16, Baertram, feature: Add possibility to only reset the SavedVariables of stored marker icons, but keep the other settings
 --#188, 2022-01-16, Baertram, feature: Enable backup and restore for all 3 saved itemIds (non unique, ZOs unique and FCOIS unique)
 --#189, 2022-01-17, Baertram, bug: FCOIS uniqueIds item markers got saved into SavedVariables table "markedItems", but they should only be saved to "markedItemsFCOISUnique"
 --#190, 2022-01-17, Baertram, bug: non-unique item markers got saved into SavedVariables table "markedItemsFCOISUnique", but they should only be saved to "markedItems"
 --#192, 2022-01-17, Baertram, bug: FCOIS unique item marker strings contain the text "nil". This should be changed to "". So scan all markedItemsFCOISUnique entries of all iconIds and change them
 
 --____________________________
--- Current max bugs/features/ToDos: 192
+-- Current max bugs/features/ToDos: 193
 --____________________________
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-01-17
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-01-19
 ------------------------------------------------------------------------------------
 --#176 -> Test: Errors occured with OR filters, and mixed AND + OR filters
 --#183 -> In progress, todo: Add the new "AllServersAndAccountsTheSame" to "Copy settings routines" + Test: Open
+--#185 -> In progress, todo: Add settings menu and code
 --#188 -> Test: Needed
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.2.3 - New version: 2.2.4) -    Updated last: 2022-01-17
+--Changelog (last version: 2.2.3 - New version: 2.2.4) -    Updated last: 2022-01-19
 -------------------------------------------------------------------------------------
 
 --[Fixed]
@@ -278,6 +278,7 @@ ZO_InventoryWalletList1Row1_MouseUp:4: in function '(main chunk)'
 --#180: GetItemInstanceId error upon mouse over at inventory quest items
 --#187, Delete backuped markerIcons was not removing some API versions properly
 --#191, Switching from FCOIS unique to non-unique item markers will not show ANY marker icon at the inventories. If the migration dialog appears and is aborted the UI will be reloaded to fix this
+--#193, FCOIS settings menu disappears in total after using LibFeedbacks -> Send mail feature, and re-opening the settings a 2nd time after that
 
 
 --[Changed]
@@ -297,6 +298,7 @@ ZO_InventoryWalletList1Row1_MouseUp:4: in function '(main chunk)'
 --#176 Add submenu to 4 filter buttons, with setting to change the filter between AND & OR filter conjunction behaviour. Remembers the state for each filterPanel
 --->Screenshot showing the new context menu "Filter settings" at the filter button: https://i.imgur.com/32AHUNS.png
 --->Screenshot link for tooltip showing new logical conjunction AND/OR state: https://i.imgur.com/yj2UIOe.png
+--#185 Add possibility to only reset the SavedVariables of stored marker icons, but keep the other settings. See settings menu bakup & restored & delete -> new submenu "Delete"
 
 
 --************************************************************************************************************************
