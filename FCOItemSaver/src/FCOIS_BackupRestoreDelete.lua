@@ -600,7 +600,7 @@ function FCOIS.DeleteMarkerIcons(markerIconsToDeleteType, markerIconsToDeleteIco
     if wasDeleted == true then
         d(preVars.preChatTextGreen .. "?> Marker icons \'" .. iconStr .. "\' for specified ID type \'"..tos(markerIconsToDeleteTypeStr) .."\' were deleted from SV subtable \'" .. tos(markerIconsToDeleteTypeTable) .. "\'! \nYour UI will be reloaded now to update the SavedVariables properly. <<<")
         --Reload the UI now
-        --ReloadUI("ingame")
+        ReloadUI("ingame")
         return true
     end
 end
