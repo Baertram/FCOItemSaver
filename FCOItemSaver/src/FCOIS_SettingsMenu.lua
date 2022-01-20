@@ -177,6 +177,7 @@ local setCollectionAddonsListValues = {}
 local restoreChoices = {}
 local restoreChoicesValues = {}
 --Delete marker icons
+local numIconsToDelete = 0
 local markerIconsToDeleteType = 0
 local markerIconTypeChoices = {}
 local markerIconTypeChoicesValues = {}
@@ -836,6 +837,23 @@ local function buildMarkerIconsData(doUpdateDropdownValues)
     return markerIconTypeChoices, markerIconTypeChoicesValues
 end
 FCOIS.BuildMarkerIconsData = buildMarkerIconsData
+
+local function checkIfMarkerIconsToDeleteExist()
+    numIconsToDelete = 0
+    if markerIconsToDeleteIcon ~= nil and markerIconsToDeleteIcon ~= 0
+            and markerIconsToDeleteType ~= nil and markerIconsToDeleteType ~= noneEntryValue then
+        local isAllIcons = (markerIconsToDeleteIcon == FCOIS_CON_ICON_ALL) or false
+        if isAllIcons then return end
+
+        local savedVarsMarkedItemsNames = FCOIS.addonVars.savedVarsMarkedItemsNames
+        local markerIconsToDeleteTypeTable = savedVarsMarkedItemsNames[markerIconsToDeleteType]
+        if markerIconsToDeleteTypeTable ~= nil and markerIconsToDeleteTypeTable ~= "" and FCOISsettings[markerIconsToDeleteTypeTable] ~= nil then
+            if FCOISsettings[markerIconsToDeleteTypeTable][markerIconsToDeleteIcon] ~= nil then
+                numIconsToDelete = NonContiguousCount(FCOISsettings[markerIconsToDeleteTypeTable][markerIconsToDeleteIcon])
+            end
+        end
+    end
+end
 --Marker icon delete - END --------------------------------------------------------------------
 
 
@@ -7379,6 +7397,7 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                             getFunc = function() return markerIconsToDeleteIcon end,
                             setFunc = function(value)
                                 markerIconsToDeleteIcon = value
+                                checkIfMarkerIconsToDeleteExist()
                             end,
                             reference = "FCOITEMSAVER_SETTINGS_DELETE_MARKER_ICON_DROPDOWN",
                             default = markerIconsToDeleteIcon,
@@ -7393,6 +7412,7 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                             getFunc = function() return markerIconsToDeleteType end,
                             setFunc = function(value)
                                 markerIconsToDeleteType = value
+                                checkIfMarkerIconsToDeleteExist()
                             end,
                             reference = "FCOITEMSAVER_SETTINGS_DELETE_MARKER_ICON_TYPE_DROPDOWN",
                             default = markerIconsToDeleteType,
@@ -7403,40 +7423,31 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                             name = locVars["options_delete_marker_icons_button"],
                             tooltip = locVars["options_delete_marker_icons_button" .. tooltipSuffix],
                             func = function()
-                                if markerIconsToDeleteIcon ~= nil and markerIconsToDeleteIcon ~= 0
+                                local isAllIcons = (markerIconsToDeleteIcon == FCOIS_CON_ICON_ALL) or false
+                                if (numIconsToDelete > 0 or isAllIcons) or markerIconsToDeleteIcon ~= nil and markerIconsToDeleteIcon ~= 0
                                         and markerIconsToDeleteType ~= nil and markerIconsToDeleteType ~= noneEntryValue then
-                                    local numIcons = 0
                                     local numIconsStr = ""
-                                    local savedVarsMarkedItemsNames = FCOIS.addonVars.savedVarsMarkedItemsNames
-                                    local markerIconsToDeleteTypeTable = savedVarsMarkedItemsNames[markerIconsToDeleteType]
-                                    if markerIconsToDeleteTypeTable ~= nil and markerIconsToDeleteTypeTable ~= "" and FCOISsettings[markerIconsToDeleteTypeTable] ~= nil then
-                                        local isAllIcons = (markerIconsToDeleteIcon == FCOIS_CON_ICON_ALL) or false
-                                        if isAllIcons or FCOISsettings[markerIconsToDeleteTypeTable][markerIconsToDeleteIcon] ~= nil then
-                                            if not isAllIcons then
-                                                numIcons = NonContiguousCount(FCOISsettings[markerIconsToDeleteTypeTable][markerIconsToDeleteIcon])
-                                            end
-                                            if numIcons > 0  or isAllIcons then
-                                                if not isAllIcons then
-                                                    numIconsStr = " #" ..tos(numIcons)
-                                                end
-                                                local markerIconsToDeleteTypeStr = (type(markerIconsToDeleteType) == "number" and uniqueItemIdTypeChoices[markerIconsToDeleteType]) or (locVars["options_non_unique_id"] .. "/" .. uniqueItemIdTypeChoices[FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE])
-                                                local title = locVars["options_delete_marker_icons_button"]
-                                                local body = locVars["options_delete_marker_icons_warning2"]
-                                                local selectedIconName = FCOITEMSAVER_SETTINGS_DELETE_MARKER_ICON_DROPDOWN.combobox.m_comboBox.m_selectedItemText:GetText()
-                                                --Show confirmation dialog
-                                                showConfirmationDialog("DeleteMarkerIconsDialog",
-                                                        title .. " " .. tos(markerIconsToDeleteTypeStr),
-                                                        body .. "\nIcon: " ..tos(selectedIconName) .. tos(numIconsStr),
-                                                        function() FCOIS.DeleteMarkerIcons(markerIconsToDeleteType, markerIconsToDeleteIcon) end,
-                                                        nil, nil, nil, true)
-                                            end
-                                        end
+                                    if not isAllIcons then
+                                        numIconsStr = " #" ..tos(numIconsToDelete)
                                     end
+                                    local markerIconsToDeleteTypeStr = (type(markerIconsToDeleteType) == "number" and uniqueItemIdTypeChoices[markerIconsToDeleteType]) or (locVars["options_non_unique_id"] .. "/" .. uniqueItemIdTypeChoices[FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE])
+                                    local title = locVars["options_delete_marker_icons_button"]
+                                    local body = locVars["options_delete_marker_icons_warning2"]
+                                    local selectedIconName = FCOITEMSAVER_SETTINGS_DELETE_MARKER_ICON_DROPDOWN.combobox.m_comboBox.m_selectedItemText:GetText()
+                                    --Show confirmation dialog
+                                    showConfirmationDialog("DeleteMarkerIconsDialog",
+                                            title .. " " .. tos(markerIconsToDeleteTypeStr),
+                                            body .. "\nIcon: " ..tos(selectedIconName) .. tos(numIconsStr),
+                                            function() FCOIS.DeleteMarkerIcons(markerIconsToDeleteType, markerIconsToDeleteIcon) end,
+                                            nil, nil, nil, true)
                                 end
                             end,
                             isDangerous = true,
-                            disabled = function() return (markerIconsToDeleteIcon == nil or markerIconsToDeleteIcon == 0
-                                                            or markerIconsToDeleteType == nil or markerIconsToDeleteType == noneEntryValue) or false end,
+                            disabled = function()
+                                if not markerIconsToDeleteIcon or markerIconsToDeleteIcon == 0 then return true end
+                                local isAllIcons = (markerIconsToDeleteIcon == FCOIS_CON_ICON_ALL) or false
+                                return ((numIconsToDelete <= 0 and not isAllIcons) or markerIconsToDeleteType == nil or markerIconsToDeleteType == noneEntryValue) or false
+                            end,
                             warning = locVars["options_delete_marker_icons_warning"],
                             width="half",
                         },

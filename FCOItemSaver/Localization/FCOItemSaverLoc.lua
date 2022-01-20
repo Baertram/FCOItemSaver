@@ -1172,12 +1172,12 @@ FCOIS.localizationVars.localizationAll = {
         ["options_restore_marker_icons_delete_selected_warning2"] = "Backup will be deleted and cannot be restored afterwards.\n\nAre you realy sure?",
 
         ["options_delete_marker_icons_header"] =    "Delete",
-        ["options_delete_marker_icons_desc"] =      "Saved marker icons at the items will be deleted. They will be deleted from the currently set (server/account/character/all the same) SavedVariables settings (see \'General settings\').\nThe icon dropdown will control which marker icon will be deleted (use the -ALL- entry to delete all of them).\nThe marker icon type defines which subtable of the SavedVariables will be deleted (non-unique/unique).\n\nNon-unique and ZOs unique marker icons cannot be deleted separatley as they are combined in the same SavedVariables subtable.",
+        ["options_delete_marker_icons_desc"] =      "Saved marker icons at the items will be deleted. They will be deleted from the currently set (server/account/character/all the same) SavedVariables settings (see \'General settings\').\nThe icon dropdown will control which marker icon will be deleted (use the -ALL- entry to delete all of them).\nThe marker icon type defines which subtable of the SavedVariables will be deleted (non-unique/unique).\nThe Delete button is only enabled if there is at least 1 marked item saved for the chose marker icon, or if you have chosen -ALL- icons.\n\nNon-unique and ZOs unique marker icons cannot be deleted separatley as they are combined in the same SavedVariables subtable.",
         ["options_delete_marker_icons"] =           "Choose marker icon type",
         ["options_delete_marker_icons_TT"] =        "Choose the marker icon type which should be deleted.",
         ["options_delete_marker_icons_button"] =    "Delete marker icons",
         ["options_delete_marker_icons_button_TT"] = "Delete the selected marker icons",
-        ["options_delete_marker_icons_warning"] =   "Attention: This will delete the selected marker icons!",
+        ["options_delete_marker_icons_warning"] =   "Attention: This will delete the selected marker icons! The UI will be reloaded after deletion of markers.\n\nWatch the chat for error messages!",
         ["options_delete_marker_icons_warning2"] =  "Marker icons will be deleted and cannot be restored afterwards.\n\nAre you realy sure?",
 
         --Feedback
@@ -2389,12 +2389,12 @@ FCOIS.localizationVars.localizationAll = {
         ["options_restore_marker_icons_delete_selected_warning2"] = "Backup wird gelöscht und kann nicht wiederhergestellt werden!\n\nBist du wirklich sicher?",
 
         ["options_delete_marker_icons_header"] =    "Löschen",
-        ["options_delete_marker_icons_desc"] =      "Es werden die Markierungen an den Gegenständen gelöscht. Dabei werden die aktuell verwendeten SavedVariables (siehe \'Generelle Einstellungen\') verwendet (d.h. Server/Account/Character/alle gleich)!\nEs wird dabei die Markierung gelöscht, welche in der Symbol Aufklappliste ausgewählt wurde. Der Eintrag -ALLE- löscht alle Symbole!\nDer Markierungstyp gibt an, in welcher SavedVariables Tabelle die Markierungssymbole gelöscht werden (non-unique, unique).\n\nNicht-eindeutige und ZOs eindeutige Ids können nicht getrennt voneinander gelöscht werden, da diese sich dieselbe SavedVariables Tabelle teilen.",
+        ["options_delete_marker_icons_desc"] =      "Es werden die Markierungen an den Gegenständen gelöscht. Dabei werden die aktuell verwendeten SavedVariables (siehe \'Generelle Einstellungen\') verwendet (d.h. Server/Account/Character/alle gleich)!\nEs wird dabei die Markierung gelöscht, welche in der Symbol Aufklappliste ausgewählt wurde. Der Eintrag -ALLE- löscht alle Symbole!\nDer Markierungstyp gibt an, in welcher SavedVariables Tabelle die Markierungssymbole gelöscht werden (non-unique, unique).\nDer Löschen Knopf ist nur auswählbar, wenn mindestens 1 Markierung im gewählten ID Typ existiert, oder - ALLE - Markierungssymbole ausgewählt wurden!\n\nNicht-eindeutige und ZOs eindeutige Ids können nicht getrennt voneinander gelöscht werden, da diese sich dieselbe SavedVariables Tabelle teilen.",
         ["options_delete_marker_icons"] =           "Markierungstyp auswählen",
         ["options_delete_marker_icons_TT"] =        "Wähle den Markierungstyp aus, welcher gelöscht werden soll.",
         ["options_delete_marker_icons_button"] =    "Markierungen löschen",
         ["options_delete_marker_icons_button_TT"] = "Die ausgewählten Markierungen löschen",
-        ["options_delete_marker_icons_warning"] =   "Vorsicht: Dies löscht die ausgewählten Markierungen!",
+        ["options_delete_marker_icons_warning"] =   "Vorsicht: Dies löscht die ausgewählten Markierungen! Die Benutzeroberfläche wird neugeladen wenn Markierungen gelöscht werden.\nAchte auf den Chat für Fehlermeldungen.",
         ["options_delete_marker_icons_warning2"] =  "Markierungen werden gelöscht und können nicht wiederhergestellt werden!\n\nBist du wirklich sicher?",
 
         --Feedback
