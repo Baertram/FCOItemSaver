@@ -251,7 +251,7 @@ ZO_InventoryWalletList1Row1_MouseUp:4: in function '(main chunk)'
 --#192, 2022-01-17, Baertram, bug: FCOIS unique item marker strings contain the text "nil". This should be changed to "". So scan all markedItemsFCOISUnique entries of all iconIds and change them
 
 --____________________________
--- Current max bugs/features/ToDos: 194
+-- Current max bugs/features/ToDos: 195
 --____________________________
 
 
@@ -280,6 +280,7 @@ ZO_InventoryWalletList1Row1_MouseUp:4: in function '(main chunk)'
 --#191: Switching from FCOIS unique to non-unique item markers will not show ANY marker icon at the inventories. If the migration dialog appears and is aborted the UI will be reloaded to fix this
 --#193: FCOIS settings menu disappears in total after using LibFeedbacks -> Send mail feature, and re-opening the settings a 2nd time after that
 --#194: If the submenu for dynamic icons is enabled at the context menus: Using SHIFT+right mouse to remove/readd all marker icons to the item will still show the "Dynamic" submenu at banks/vendors/crafting
+--#195: Fixed detection of owned house (for backup auto port suggestion to house, to access the house storage data)
 
 
 --[Changed]

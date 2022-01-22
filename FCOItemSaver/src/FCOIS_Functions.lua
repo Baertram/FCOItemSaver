@@ -2407,10 +2407,57 @@ end
 -- =====================================================================================================================
 --  House functions
 -- =====================================================================================================================
+local function getFirstOwnedHouse()
+    local houseId
+    --GetCurrentZoneHouseId() gets the id for the current house the player is in, and can be used for "RequestJumpToHouse" function
+    --Jump to my own house
+    --TODO: JumpToHouse(GetUnitDisplayName("player")) --not working for my own house, so how can I port to my own house via API?
+    --TODO: * RequestJumpToHouse(*integer* _houseId_) --loop over all collectibles and check for houses and then get the houesId form the collectible?
+    --or:
+    --local node = ???
+    --local n_known, n_name, _, _, _, _, poi, _, _ = GetFastTravelNodeInfo(node)
+    --CHAT_SYSTEM:AddMessage("Porting to " .. n_name .. "!")
+    --FastTravelToNode(node) --where node is the wayshrine = house
+    --====================================================================================
+    --Entries with "bought" houses within the collecitons:
+    --FCOIS.ZOControlVars.housingBookNavigation.rootNode.children[1].children[1].data:GetReferenceId() -> returns 31 e.g. the houesId which can be used to jump to
+    -->collectibleId (e.g. 1090)
+    -->collectibleIndex (e.g. 5)
+    --The list of houses in the collections. 1st row should contain the bought ones, 2nd row the locked ones.
+    --If you do not own any the 1st row is the locked ones!
+    --Only way to distinguish them is by help of a text: Unlocked/Locked (German: Freigeschaltet/Nicht freigeschaltet)
+    --which is available at: FCOIS.ZOControlVars.housingBookNavigation.rootNode.children[1].data (or via function FCOIS.ZOControlVars.housingBookNavigation.rootNode.children[1]:GetData()) = "Freigeschaltet" (unlocked) / "Nicht freigeschaltet" (locked)
+    local housesListInCollections = FCOIS.ZOControlVars.housingBookNavigation.rootNode.children[1]
+    if housesListInCollections ~= nil then
+        --Check if the houselist contains an unlocked item
+        local houseListFirstEntryData = housesListInCollections:GetData() or ""
+        if houseListFirstEntryData ~= nil and houseListFirstEntryData ~= "" then
+            --Compare the text in the data with "Freigeschaltet" (unlocked) text
+            -->TODO: Constant for GetString(unlocked) needs to be determined from eso strings for the comparison
+            -- SI_COLLECTIBLEUNLOCKSTATE0: Locked
+            -- SI_COLLECTIBLEUNLOCKSTATE2: Unlocked
+            local compareTextForUnlocked = GetString(SI_COLLECTIBLEUNLOCKSTATE2)
+            if houseListFirstEntryData.name == compareTextForUnlocked then
+                --There is at least one unlocked house!
+                --Get the first entry of the unlocked houses now.
+                local firstUnlockedHouseRow = housesListInCollections.children[1]
+                if firstUnlockedHouseRow ~= nil then
+                    local firstUnlockedHouseData = firstUnlockedHouseRow.data
+                    if firstUnlockedHouseData ~= nil then
+                        --Get the reference ID of the house for the teleport
+                        houseId = firstUnlockedHouseData:GetReferenceId() or 0
+                    end
+                end
+            end
+        end
+    end
+    return houseId
+end
+
 --Is the player owning a house?
 function FCOIS.CheckIfOwningHouse()
     --List of all houses on the map, owned and not owned ones
-    --> The list will only be ther eif one has opened the map and clicked the "houses" tab at least once!!!
+    --> The list will only be there if one has opened the map and clicked the "houses" tab at least once!!!
     local housesOnMap = WORLD_MAP_HOUSES_DATA:GetHouseList()
     if housesOnMap and #housesOnMap > 0 then
         for _, houseData in ipairs(housesOnMap) do
@@ -2420,7 +2467,14 @@ function FCOIS.CheckIfOwningHouse()
         end
     end
     --Houses at map list was not build or no owned/unlocked house found, so check if a primary house is set
-    return  (GetHousingPrimaryHouse() ~= 0) or false
+    local houseId = GetHousingPrimaryHouse()
+    if houseId == 0 then
+        houseId = getFirstOwnedHouse()
+    end
+    if houseId == nil or houseId <= 0 then
+       return false
+    end
+    return true
 end
 
 --Check if the player is in a house
@@ -2456,63 +2510,24 @@ function FCOIS.CheckIfHouseOwnerAndInsideOwnHouse()
     return retVar
 end
 
-
 --Jump to one of the players own houses
 function FCOIS.JumpToOwnHouse(withDetails, apiVersion, doClearBackup)
-    --GetCurrentZoneHouseId() gets the id for the current house the player is in, and can be used for "RequestJumpToHouse" function
-    --Jump to my own house
-    --TODO: JumpToHouse(GetUnitDisplayName("player")) --not working for my own house, so how can I port to my own house via API?
-    --TODO: * RequestJumpToHouse(*integer* _houseId_) --loop over all collectibles and check for houses and then get the houesId form the collectible?
-    --or:
-    --local node = ???
-    --local n_known, n_name, _, _, _, _, poi, _, _ = GetFastTravelNodeInfo(node)
-    --CHAT_SYSTEM:AddMessage("Porting to " .. n_name .. "!")
-    --FastTravelToNode(node) --where node is the wayshrine = house
-    --====================================================================================
-    --Entries with "bought" houses within the collecitons:
-    --FCOIS.ZOControlVars.housingBookNavigation.rootNode.children[1].children[1].data:GetReferenceId() -> returns 31 e.g. the houesId which can be used to jump to
-    -->collectibleId (e.g. 1090)
-    -->collectibleIndex (e.g. 5)
-    --The list of houses in the collections. 1st row should contain the bought ones, 2nd row the locked ones.
-    --If you do not own any the 1st row is the locked ones!
-    --Only way to distinguish them is by help of a text: Unlocked/Locked (German: Freigeschaltet/Nicht freigeschaltet)
-    --which is available at: FCOIS.ZOControlVars.housingBookNavigation.rootNode.children[1].data (or via function FCOIS.ZOControlVars.housingBookNavigation.rootNode.children[1]:GetData()) = "Freigeschaltet" (unlocked) / "Nicht freigeschaltet" (locked)
-    local housesListInCollections = FCOIS.ZOControlVars.housingBookNavigation.rootNode.children[1]
-    if housesListInCollections ~= nil then
-        --Check if the houselist contains an unlocked item
-        local houseListFirstEntryData = housesListInCollections:GetData() or ""
-        if houseListFirstEntryData ~= nil and houseListFirstEntryData ~= "" then
-            --Compare the text in the data with "Freigeschaltet" (unlocked) text
-            -->TODO: Constant for GetString(unlocked) needs to be determined from eso strings for the comparison
-            -- SI_COLLECTIBLEUNLOCKSTATE0: Locked
-            -- SI_COLLECTIBLEUNLOCKSTATE2: Unlocked
-            local compareTextForUnlocked = GetString(SI_COLLECTIBLEUNLOCKSTATE2)
-            if houseListFirstEntryData == compareTextForUnlocked then
-                --There is at least one unlocked house!
-                --Get the first entry of the unlocked houses now.
-                local firstUnlockedHouseRow = housesListInCollections.children[1]
-                if firstUnlockedHouseRow ~= nil then
-                    local firstUnlockedHouseData = firstUnlockedHouseRow.data
-                    if firstUnlockedHouseData ~= nil then
-                        --Get the reference ID of the house for the teleport
-                        local houseId = firstUnlockedHouseData:GetReferenceId() or 0
-                        if houseId ~= 0 then
-                            --Save the parameters so we can use them after reloadui/jump to house in EVENT_PLAYER_ACTIVATED again
-                            local backupParams = {}
-                            backupParams.withDetails    = withDetails
-                            backupParams.apiVersion     = apiVersion
-                            backupParams.doClearBackup  = doClearBackup
-                            FCOIS.settingsVars.settings.backupParams = {}
-                            FCOIS.settingsVars.settings.backupParams = backupParams
-                            --Teleport nto the house id now
-                            RequestJumpToHouse(houseId)
-                        end
-                    end
-                end
-            end
-        end
+    if not CanJumpToHouseFromCurrentLocation() then
+        d("[FCOIS]You cannot jump to a house from your current location!")
+        return
     end
+    local houseId = checkIfOwnsHouse()
+    if houseId == nil or houseId <= 0 then return end
 
+    --Save the parameters so we can use them after reloadui/jump to house in EVENT_PLAYER_ACTIVATED again
+    local backupParams = {}
+    backupParams.withDetails    = withDetails
+    backupParams.apiVersion     = apiVersion
+    backupParams.doClearBackup  = doClearBackup
+    FCOIS.settingsVars.settings.backupParams = {}
+    FCOIS.settingsVars.settings.backupParams = backupParams
+    --Teleport nto the house id now
+    RequestJumpToHouse(houseId)
 end
 
 -- =====================================================================================================================

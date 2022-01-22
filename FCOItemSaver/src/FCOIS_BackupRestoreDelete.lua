@@ -128,7 +128,7 @@ function FCOIS.BackupMarkerIcons(withDetails, apiVersion, doClearBackup)
     d(preVars.preChatTextGreen .. ">>> Backup of marked items non-uniqueId/unique IDs (ZOs, FCOIS) started >>>")
     d(">Backup parameters: show details: " ..tos(withDetails) .. ", using API version " ..tos(apiVersionToUse) .. ", clear existing backup with same API version: " ..tos(doClearBackup))
     --FCOIS uniqueId part settings
-    d(">!!!Attention!!! The backup of the FCOIS uniqueIds will be done with the current FCOIS uiqueID settings! Restore is only working if you do not change the FCOIS uniqueId settings.")
+    d(">!!!Attention!!! The backup of the FCOIS uniqueIds will be done with the current FCOIS uiqueID settings!\nRestore would be working if you change the FCOIS uniqueId settings meanwhile BU your marker icons would not find the items anymore then!\nSo keep the FCOIS uniqueId settings untouched before your restore or you might loose markers.")
     d(">Current FCOIS uniqueId parts are: ")
     local uniqueIdParts = settings.uniqueIdParts
     for uniqueIdPartName, uniqueIdPartValue in pairs(uniqueIdParts) do
