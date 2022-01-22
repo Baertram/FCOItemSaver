@@ -528,8 +528,8 @@ end
 -- DELETE BACKUP
 ------------------------------------------------------------------------------------------------------------------------
 
-function FCOIS.DeleteBackup(backupType, apiVersionToDelete)
-    backupType = backupType or "unique"
+function FCOIS.DeleteBackup(apiVersionToDelete)
+--d("[FCOIS.DeleteBackup]apiVersion: " ..tos(apiVersionToDelete))
     if apiVersionToDelete == nil then return false end
     local settings = FCOIS.settingsVars.settings
     local backupData = settings.backupData
