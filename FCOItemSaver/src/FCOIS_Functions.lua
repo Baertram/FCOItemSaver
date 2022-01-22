@@ -2409,16 +2409,7 @@ end
 -- =====================================================================================================================
 local function getFirstOwnedHouse()
     local houseId
-    --GetCurrentZoneHouseId() gets the id for the current house the player is in, and can be used for "RequestJumpToHouse" function
-    --Jump to my own house
-    --TODO: JumpToHouse(GetUnitDisplayName("player")) --not working for my own house, so how can I port to my own house via API?
-    --TODO: * RequestJumpToHouse(*integer* _houseId_) --loop over all collectibles and check for houses and then get the houesId form the collectible?
-    --or:
-    --local node = ???
-    --local n_known, n_name, _, _, _, _, poi, _, _ = GetFastTravelNodeInfo(node)
-    --CHAT_SYSTEM:AddMessage("Porting to " .. n_name .. "!")
-    --FastTravelToNode(node) --where node is the wayshrine = house
-    --====================================================================================
+    --[[
     --Entries with "bought" houses within the collecitons:
     --FCOIS.ZOControlVars.housingBookNavigation.rootNode.children[1].children[1].data:GetReferenceId() -> returns 31 e.g. the houesId which can be used to jump to
     -->collectibleId (e.g. 1090)
@@ -2433,7 +2424,6 @@ local function getFirstOwnedHouse()
         local houseListFirstEntryData = housesListInCollections:GetData() or ""
         if houseListFirstEntryData ~= nil and houseListFirstEntryData ~= "" then
             --Compare the text in the data with "Freigeschaltet" (unlocked) text
-            -->TODO: Constant for GetString(unlocked) needs to be determined from eso strings for the comparison
             -- SI_COLLECTIBLEUNLOCKSTATE0: Locked
             -- SI_COLLECTIBLEUNLOCKSTATE2: Unlocked
             local compareTextForUnlocked = GetString(SI_COLLECTIBLEUNLOCKSTATE2)
@@ -2451,8 +2441,22 @@ local function getFirstOwnedHouse()
             end
         end
     end
+    ]]
+
+    --local hasPrimaryResidence = false
+    for collectibleId, collectibleData in pairs(ZO_COLLECTIBLE_DATA_MANAGER.collectibleIdToDataMap) do
+        if collectibleData.categoryType == COLLECTIBLE_CATEGORY_TYPE_HOUSE then
+            if collectibleData:IsUnlocked() then
+                return collectibleData.collectibleId
+            end
+            --if collectibleData:IsPrimaryResidence() then
+            --end
+        end
+    end
+
     return houseId
 end
+FCOIS.GetFirstOwnedHouse = getFirstOwnedHouse
 
 --Is the player owning a house?
 function FCOIS.CheckIfOwningHouse()

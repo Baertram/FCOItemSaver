@@ -350,12 +350,39 @@ end
 
 --Get the marked items count in a backup set of a bag
 local function getMarkedItemsInBackupSet(backupSetOfAPI)
-    if backupSetOfAPI == nil then return 0 end
-    local backupSetEntries = 0
-    for _, _ in pairs(backupSetOfAPI) do
-        backupSetEntries = backupSetEntries + 1
+    if backupSetOfAPI == nil then return 0, 0, 0, 0 end
+    local skipMe = {
+        ["FCOISuniqueIdParts"] =    true,
+        ["timestamp"] =             true,
+    }
+    local backupSetEntriesNonUnique = 0
+    local backupSetEntriesZOsUnique = 0
+    local backupSetEntriesFCOISUnique = 0
+    local backupSetEntriesTotal = 0
+    for key, _ in pairs(backupSetOfAPI) do
+d(">key: " ..tos(key))
+        if not skipMe[key] then
+            backupSetEntriesTotal = backupSetEntriesTotal + 1
+
+            local typeOfKey = type(key)
+            if typeOfKey == "number" then
+d(">number")
+                --Non-unique
+                backupSetEntriesNonUnique = backupSetEntriesNonUnique + 1
+            elseif typeOfKey == "string" then
+                if string.find(key, ",") ~= nil then
+d(">FCOIS unique")
+                    --FCOIS unique
+                    backupSetEntriesFCOISUnique = backupSetEntriesFCOISUnique + 1
+                else
+d(">ZOs unique")
+                    --ZOs unique
+                    backupSetEntriesZOsUnique = backupSetEntriesZOsUnique + 1
+                end
+            end
+        end
     end
-    return backupSetEntries
+    return backupSetEntriesTotal, backupSetEntriesNonUnique, backupSetEntriesZOsUnique, backupSetEntriesFCOISUnique
 end
 
 --Restore the marker icons from the saved variables. A backup is nedded in the savedvars, which can be manually triggered from the settings
@@ -407,8 +434,8 @@ function FCOIS.RestoreMarkerIcons(withDetails, apiVersion)
     apiVersionToUse = tonumber(apiVersionToUse)
 
     --Get the marked items in the backup set of this bag
-    local markedItemsInBackupSet = getMarkedItemsInBackupSet(backupData[apiVersionToUse]) or 0
-    d("!> Marked items in backup set: " ..tos(markedItemsInBackupSet))
+    local markedItemsInBackupSet, backupSetEntriesNonUnique, backupSetEntriesZOsUnique, backupSetEntriesFCOISUnique = getMarkedItemsInBackupSet(backupData[apiVersionToUse])
+    d(string.format("!> Marked items in backup set total: %s, non-unique: %s, ZOS unique: %s, FCOIS unique: %s", tos(markedItemsInBackupSet), tos(backupSetEntriesNonUnique), tos(backupSetEntriesZOsUnique),tos(backupSetEntriesFCOISUnique)))
 
     --Scan all the inventories of the player (bank, bag, guild bank, craftbag, buyback, ESO+ subscriber bank, house banks, etc.)
     local allowedBagTypes = standardBackupAllowedBagTypes
@@ -468,6 +495,7 @@ function FCOIS.RestoreMarkerIcons(withDetails, apiVersion)
                             [FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE]    = zosUniqueId,
                             [FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE]  = FCOISUniqueId,
                         }
+                        local firstFound = true
                         for idTypeIndex, markerIconItemIdToCheck in pairs(markerIconIdsToCheck) do
                             local itemIdMarkers = backupData[apiVersion][markerIconItemIdToCheck]
                             --Is the item in the backup data with this ID? Then retsore it
@@ -498,8 +526,11 @@ function FCOIS.RestoreMarkerIcons(withDetails, apiVersion)
                                     local idType = idTypeToName[idTypeIndex]
                                     d(strformat(">restored \'%s\' icons[%s] for %s", idType, iconsStr, itemLink))
                                 end
-                                --Increase the counter
-                                foundMarkedItems = foundMarkedItems + 1
+                                if firstFound then
+                                    --Increase the counter
+                                    foundMarkedItems = foundMarkedItems + 1
+                                    firstFound = false
+                                end
                             end
                         end
                         foundItemsInBag = foundItemsInBag + 1
@@ -514,7 +545,8 @@ function FCOIS.RestoreMarkerIcons(withDetails, apiVersion)
             end
         end
     end
-    d("!>>> Total re-marked/in backup set/found items: " .. tos(totalMarkedItems) .. "/" .. tos(markedItemsInBackupSet) .. "/" .. tos(totalItems))
+    d(string.format("!>> Marked items in backup set total: %s, non-unique: %s, ZOS unique: %s, FCOIS unique: %s", tos(markedItemsInBackupSet), tos(backupSetEntriesNonUnique), tos(backupSetEntriesZOsUnique),tos(backupSetEntriesFCOISUnique)))
+    d("!>>> Total re-marked/found items: " .. tos(totalMarkedItems) .. "/" .. tos(totalItems))
     d(preVars.preChatTextGreen .. "<<< Restore finished <<<")
     d("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
 end
