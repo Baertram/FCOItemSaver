@@ -689,7 +689,7 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
 
     local questItemsInventoryShown = false --TODO
 
-    notAllowed                               = (notAllowedCollectible or notAllowedParentCtrls[parentName] or notAllowedCtrls[controlName]
+    notAllowed = (notAllowedCollectible or notAllowedParentCtrls[parentName] or notAllowedCtrls[controlName]
             --Quickslots
             or ( not quickSlotsHidden and quickslotCurrentFilterIsNotAllowed)
             --Inventory quest items
@@ -1241,7 +1241,8 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
 
     end
     ------------------------------------------------------------------------------------------------------------------------
-    --Show the menu now!
+    --Finalize the menu now
+    -->Show the menu then
     if useSubMenu then
         --Add the submenu to the context menu
         table.insert(customMenuVars.customMenuSubEntries, newSubEntry)
@@ -1249,6 +1250,7 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
         --Is the submenu for the dynamic icons enabled?
         if useDynSubMenu then
             --Add the submenu of dynamic icons to the context menu now
+            -->Will be used in src/FCOIS_Hooks.lua, function ZO_InventorySlot_ShowContextMenu_For_FCOItemSaver
             table.insert(customMenuVars.customMenuDynSubEntries, newDynSubEntry)
         end
 
