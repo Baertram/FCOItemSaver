@@ -437,15 +437,15 @@ function FCOIS.RestoreMarkerIcons(withDetails, apiVersion)
     for uniqueIdPartName, uniqueIdPartValue in pairs(uniqueIdParts) do
         local uniqueIdPartsValueOfBackup = uniqueIdPartsOfBackup[uniqueIdPartName]
         if uniqueIdPartsValueOfBackup == nil then
-            d(string.format(">!!!ERROR \'%s\' was not backuped, but current value at settings is: %s", tos(uniqueIdPartName), tos(uniqueIdPartValue)))
+            d(string.format(">!!!|cFF0000ERROR|r \'%s\' was not backuped, but current value at settings is: %s", tos(uniqueIdPartName), tos(uniqueIdPartValue)))
             uniqueIdZOsSettingsDifferFromBackup = true
         elseif uniqueIdPartsValueOfBackup ~= uniqueIdPartValue then
-            d(string.format(">!!!ERROR \'%s\' was backuped with value %s, current value at settings is: %s", tos(uniqueIdPartName), tos(uniqueIdPartsValueOfBackup), tos(uniqueIdPartValue)))
+            d(string.format(">!!!|cFF0000ERROR|r \'%s\' was backuped with value %s, current value at settings is: %s", tos(uniqueIdPartName), tos(uniqueIdPartsValueOfBackup), tos(uniqueIdPartValue)))
             uniqueIdZOsSettingsDifferFromBackup = true
         end
     end
     if uniqueIdZOsSettingsDifferFromBackup == true then
-        d("<Aborting the restore as the FCOIS uniuqe-ID settings do not match the backup. Please change your current FCOIS unique settings to the above noted backup-settings first to restore these marker icons properly!")
+        d("<ERROR Aborting the restore as the FCOIS uniuqe-ID settings do not match the backup. Please change your current FCOIS unique settings to the above noted backup-settings first to restore these marker icons properly!")
         return
     end
 
