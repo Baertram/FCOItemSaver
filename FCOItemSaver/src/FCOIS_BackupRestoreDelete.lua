@@ -360,22 +360,18 @@ local function getMarkedItemsInBackupSet(backupSetOfAPI)
     local backupSetEntriesFCOISUnique = 0
     local backupSetEntriesTotal = 0
     for key, _ in pairs(backupSetOfAPI) do
-d(">key: " ..tos(key))
         if not skipMe[key] then
             backupSetEntriesTotal = backupSetEntriesTotal + 1
 
             local typeOfKey = type(key)
             if typeOfKey == "number" then
-d(">number")
                 --Non-unique
                 backupSetEntriesNonUnique = backupSetEntriesNonUnique + 1
             elseif typeOfKey == "string" then
                 if string.find(key, ",") ~= nil then
-d(">FCOIS unique")
                     --FCOIS unique
                     backupSetEntriesFCOISUnique = backupSetEntriesFCOISUnique + 1
                 else
-d(">ZOs unique")
                     --ZOs unique
                     backupSetEntriesZOsUnique = backupSetEntriesZOsUnique + 1
                 end
@@ -432,6 +428,24 @@ function FCOIS.RestoreMarkerIcons(withDetails, apiVersion)
         return false
     end
     apiVersionToUse = tonumber(apiVersionToUse)
+
+    --Check if current FCOIS uniqueId settings are the same as the backuped ones
+    local uniqueIdZOsSettingsDifferFromBackup = false
+    local uniqueIdParts = settings.uniqueIdParts
+    local uniqueIdPartsOfBackup = backupData[apiVersionToUse].FCOISuniqueIdParts
+    d(">Checking if your current FCOIS unique-Id settings (See \'General settings -> Unique ID -> Dropdown FCOIS unique and checkboxes below\') are matching the backuped data...")
+    for uniqueIdPartName, uniqueIdPartValue in pairs(uniqueIdParts) do
+        local uniqueIdPartsValueOfBackup = uniqueIdPartsOfBackup[uniqueIdPartName]
+        if uniqueIdPartsValueOfBackup == nil then
+            d(string.format(">\'%s\' was not backuped, but current value at settings is: %s", tos(uniqueIdPartName), tos(uniqueIdPartValue)))
+        elseif uniqueIdPartsValueOfBackup ~= uniqueIdPartValue then
+            d(string.format(">\'%s\' was backuped with value %s, current value at settings is: %s", tos(uniqueIdPartName), tos(uniqueIdPartsValueOfBackup), tos(uniqueIdPartValue)))
+        end
+    end
+    if uniqueIdZOsSettingsDifferFromBackup == true then
+        d("<Aborting the restore as the FCOIS uniuqe-ID settings do not match the backup. Please change your current FCOIS unique settings to the above noted backup-settings first to restore these marker icons properly!")
+        return
+    end
 
     --Get the marked items in the backup set of this bag
     local markedItemsInBackupSet, backupSetEntriesNonUnique, backupSetEntriesZOsUnique, backupSetEntriesFCOISUnique = getMarkedItemsInBackupSet(backupData[apiVersionToUse])

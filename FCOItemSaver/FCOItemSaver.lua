@@ -251,12 +251,12 @@ ZO_InventoryWalletList1Row1_MouseUp:4: in function '(main chunk)'
 --#192, 2022-01-17, Baertram, bug: FCOIS unique item marker strings contain the text "nil". This should be changed to "". So scan all markedItemsFCOISUnique entries of all iconIds and change them
 
 --____________________________
--- Current max bugs/features/ToDos: 195
+-- Current max bugs/features/ToDos: 196
 --____________________________
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-01-19
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-01-21
 ------------------------------------------------------------------------------------
 --#176 -> Test: Errors occured with OR filters, and mixed AND + OR filters
 --#183 -> In progress, todo: Add the new "AllServersAndAccountsTheSame" to "Copy settings routines" + Test: Open
@@ -264,7 +264,7 @@ ZO_InventoryWalletList1Row1_MouseUp:4: in function '(main chunk)'
 --#188 -> Test: Needed
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.2.3 - New version: 2.2.4) -    Updated last: 2022-01-19
+--Changelog (last version: 2.2.3 - New version: 2.2.4) -    Updated last: 2022-01-21
 -------------------------------------------------------------------------------------
 
 --[Fixed]

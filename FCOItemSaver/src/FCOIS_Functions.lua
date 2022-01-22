@@ -2456,29 +2456,30 @@ local function getFirstOwnedHouse()
 
     return houseId
 end
-FCOIS.GetFirstOwnedHouse = getFirstOwnedHouse
+
 
 --Is the player owning a house?
 function FCOIS.CheckIfOwningHouse()
-    --List of all houses on the map, owned and not owned ones
-    --> The list will only be there if one has opened the map and clicked the "houses" tab at least once!!!
-    local housesOnMap = WORLD_MAP_HOUSES_DATA:GetHouseList()
-    if housesOnMap and #housesOnMap > 0 then
-        for _, houseData in ipairs(housesOnMap) do
-            if houseData.unlocked ~= nil and houseData.unlocked == true then
-                return true
-            end
-        end
-    end
     --Houses at map list was not build or no owned/unlocked house found, so check if a primary house is set
     local houseId = GetHousingPrimaryHouse()
-    if houseId == 0 then
+    if houseId == nil or houseId <= 0 then
         houseId = getFirstOwnedHouse()
     end
     if houseId == nil or houseId <= 0 then
-       return false
+        --List of all houses on the map, owned and not owned ones
+        --> The list will only be there if one has opened the map and clicked the "houses" tab at least once!!!
+        local housesOnMap = WORLD_MAP_HOUSES_DATA:GetHouseList()
+        if housesOnMap and #housesOnMap > 0 then
+            for _, houseData in ipairs(housesOnMap) do
+                if houseData.unlocked ~= nil and houseData.unlocked == true then
+                    return true
+                end
+            end
+        end
+    else
+        return true
     end
-    return true
+    return false
 end
 
 --Check if the player is in a house
