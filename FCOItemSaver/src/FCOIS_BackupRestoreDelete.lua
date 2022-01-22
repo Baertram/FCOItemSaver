@@ -78,6 +78,7 @@ function FCOIS.BackupMarkerIcons(withDetails, apiVersion, doClearBackup)
     local secondsSinceMidnight = GetSecondsSinceMidnight()
     local currentTimeStamp = GetTimeStamp()
     local settings = FCOIS.settingsVars.settings
+    settings.backupData = settings.backupData or {}
     local backupData = settings.backupData
     local preVars = FCOIS.preChatVars
 
@@ -140,7 +141,7 @@ function FCOIS.BackupMarkerIcons(withDetails, apiVersion, doClearBackup)
 
     --Clear the last backup for the specified APIversion?
     if doClearBackup then
-        if backupData[apiVersionToUse] ~= nil then
+        if backupData and backupData[apiVersionToUse] ~= nil then
             backupData[apiVersionToUse] = nil
         end
     end
@@ -292,7 +293,7 @@ end
 local backupMarkerIcons = FCOIS.BackupMarkerIcons
 
 --Pre-Backup funciton to jump to your house or start the backup now if you do not own any house yet
-function FCOIS.PreBackup(backupType, withDetails, apiVersion, doClearBackup)
+function FCOIS.PreBackup(withDetails, apiVersion, doClearBackup)
 --d("[FCOIS]FCOIS.preBackup")
     --Reset the preventer variable always here to prevent endless port loop attempt from this function FCOIS.preBackup -> EVENT_PLAYER_ACTIVATED -> FCOIS.preBackup ...
     FCOIS.settingsVars.settings.doBackupAfterJumpToHouse = false
@@ -557,7 +558,7 @@ end
 function FCOIS.DeleteMarkerIcons(markerIconsToDeleteType, markerIconsToDeleteIcon)
     if markerIconsToDeleteType == nil or markerIconsToDeleteIcon == nil or markerIconsToDeleteIcon == 0 then return end
     local preVars = FCOIS.preChatVars
-    local locVars = FCOIS.localizationVars.fcois_loc
+    --local locVars = FCOIS.localizationVars.fcois_loc
     local uniqueItemIdTypeChoices = locVars.uniqueItemIdTypeChoices
     local savedVarsMarkedItemsNames = FCOIS.addonVars.savedVarsMarkedItemsNames
     local allIcons = markerIconsToDeleteIcon == FCOIS_CON_ICON_ALL or false
