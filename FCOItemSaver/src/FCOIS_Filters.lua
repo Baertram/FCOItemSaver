@@ -62,6 +62,7 @@ local function shouldItemBeShownAfterBeenFiltered(slotItemInstanceId, slot)
     --\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
     --TODO: For Debugging only! Remove again if not needed
     local doDebugOutput = false
+--[[
     local bagId, slotIndex = FCOIS.MyGetItemDetails(slot)
     local itemLink
     --2021-12-04, bag item at char Glacies:
@@ -80,6 +81,7 @@ local function shouldItemBeShownAfterBeenFiltered(slotItemInstanceId, slot)
         d(">================================================================>")
         d("[FCOIS]>=====>shouldItemBeShownAfterFilter: " ..tos(itemLink))
     end
+]]
 
     --TODO 2021-11-21 Filtering with logical OR does not work properly that way.
     --TODO We need to split this functions code below up so that OR (or AND & OR combined) filtering will be working differently in total!
