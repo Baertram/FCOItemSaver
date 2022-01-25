@@ -2442,18 +2442,19 @@ local function getFirstOwnedHouse()
         end
     end
     ]]
-
-    --local hasPrimaryResidence = false
-    for collectibleId, collectibleData in pairs(ZO_COLLECTIBLE_DATA_MANAGER.collectibleIdToDataMap) do
-        if collectibleData.categoryType == COLLECTIBLE_CATEGORY_TYPE_HOUSE then
-            if collectibleData:IsUnlocked() then
-                return collectibleData.collectibleId
+    houseId = GetHousingPrimaryHouse()
+    if houseId == nil or houseId <= 0 then
+        --local hasPrimaryResidence = false
+        for collectibleId, collectibleData in pairs(ZO_COLLECTIBLE_DATA_MANAGER.collectibleIdToDataMap) do
+            if collectibleData.categoryType == COLLECTIBLE_CATEGORY_TYPE_HOUSE then
+                if collectibleData:IsUnlocked() then
+                    return collectibleData.referenceId --> HouseId
+                end
+                --if collectibleData:IsPrimaryResidence() then
+                --end
             end
-            --if collectibleData:IsPrimaryResidence() then
-            --end
         end
     end
-
     return houseId
 end
 
@@ -2461,10 +2462,7 @@ end
 --Is the player owning a house?
 function FCOIS.CheckIfOwningHouse()
     --Houses at map list was not build or no owned/unlocked house found, so check if a primary house is set
-    local houseId = GetHousingPrimaryHouse()
-    if houseId == nil or houseId <= 0 then
-        houseId = getFirstOwnedHouse()
-    end
+    local houseId = getFirstOwnedHouse()
     if houseId == nil or houseId <= 0 then
         --List of all houses on the map, owned and not owned ones
         --> The list will only be there if one has opened the map and clicked the "houses" tab at least once!!!
@@ -2522,6 +2520,7 @@ function FCOIS.JumpToOwnHouse(withDetails, apiVersion, doClearBackup)
         return
     end
     local houseId = getFirstOwnedHouse()
+d("FCOIS.JumpToOwnHouse - houseId: " ..tos(houseId))
     if houseId == nil or houseId <= 0 then return end
 
     --Save the parameters so we can use them after reloadui/jump to house in EVENT_PLAYER_ACTIVATED again
@@ -2531,8 +2530,8 @@ function FCOIS.JumpToOwnHouse(withDetails, apiVersion, doClearBackup)
     backupParams.doClearBackup  = doClearBackup
     FCOIS.settingsVars.settings.backupParams = {}
     FCOIS.settingsVars.settings.backupParams = backupParams
-    --Teleport nto the house id now
-    RequestJumpToHouse(houseId)
+    --Teleport to the house id now
+    RequestJumpToHouse(houseId, false)
 end
 
 -- =====================================================================================================================
