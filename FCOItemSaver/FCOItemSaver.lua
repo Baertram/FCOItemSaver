@@ -140,31 +140,6 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 --                                 having any iocn set e.g. "sell". Right click it remove the sell icon, and then set it again. Sometimes the worn items and inventory (maybe all items somehow)
 --                                 now show the removed/applied marker icon "sell" on them?!
 
---#175: 2021-11-06, silvereyes, bug:
---[[
---> source line was: "for iconId, iconIsMarked in pairs(impVars.improvementMarkedIcons) do"
---> See file /src/FCOIS_Functions.lua, function FCOIS.CheckIfImprovedItemShouldBeReMarked_AfterImprovement()
-
-bad argument #1 to 'pairs' (table/struct expected, got nil)
-stack traceback:
-[C]: in function 'pairs'
-user:/AddOns/FCOItemSaver/src/FCOIS_Functions.lua:2120: in function 'func'
-|caaaaaa<Locals> bagId = 1, slotIndex = 16, iconsRemarked = 0 </Locals>|r
-/EsoUI/Libraries/Globals/globalapi.lua:227: in function '(anonymous)'
-
-Steps to reproduce:
-Open a crafting station
-Go to the improvement tab
-Filter the items with a text filter so that only the item to improve is shown. Not sure if this is part of the base game, or Votan's Search Box, which I have installed.
-Mark the item with an FCOItemSaver mark, like selling at guild store.
-Deactivate anti improve
-Improve the item all the way to legendary so that it becomes ineligible to improve
-
-I'm guessing that the same sort of thing can happen any time a marked item becomes ineligible for the inventory list.
-For example, maybe after right click > bind a marked item in the guild store selling tab or mail send tab.
-I haven't tested that, though. Should be a fairly easy nil check either way.
-]]
-
 --#176: 2021-11-14, Baertram, feature: Add submenu to 4 filter buttons, with setting to change the filter between AND & OR filter conjunction behaviour.
 --Remembers the state for each filterPanel
 
@@ -178,39 +153,6 @@ I haven't tested that, though. Should be a fairly easy nil check either way.
     And as you deposit (via keybind? via drag & drop? via double click? Any difference here?) some other items (do they need to be marked with any
     FCOIS marker icon or could it also be any other non marked item?) all of sudden the filtered items with a lock/dynamic marker icon are shown in the
     bank deposit list again.
-]]
-
---# 179, 2021-12-06, SammiSakura, FCOIS comments, bug:
--->Seems there were dynamic icons 1 to 5 without any nameand the names did not reset to the default values somehow
---[[
---!!!With version 2.2.3!!!
-Come across an odd one tonight. Changed a bunch of my dynamic icons around, and then on right clicking something in
-my inventory is only throwing an error, and no FCOIS icons are showing. Code below <3
-
-user:/AddOns/FCOItemSaver/src/FCOIS_ContextMenus.lua:1120: operator .. is not supported for string .. nil
-stack traceback:
-user:/AddOns/FCOItemSaver/src/FCOIS_ContextMenus.lua:1120: in function 'FCOIS.AddMark'
-|caaaaaa<Locals> rowControl = ud, markId = 23, isEquipmentSlot = F, refreshPopupDialog = F, useSubMenu = T, parentName = "ZO_PlayerInventoryListContents...", controlName = "ZO_PlayerInventoryList1Row4", settings = [table:1]{}, mappingVars = [table:2]{noEntryValue = 1, noEntry = "-------------", maxCPLevel = 160}, checkVars = [table:3]{autoReenableAntiSettingsCheckWheresAll = "-ALL-", filterButtonSuffix = "_FilterButton"}, isIconEnabled = [table:4]{1 = T}, isDynamicIcon = [table:5]{1 = F}, isGearIcon = [table:6]{1 = F}, notAllowedParentCtrls = [table:7]{ZO_QuestItemsListContents = T, ZO_MailInboxMessage = T, ZO_SmithingTopLevelCreationPanelTraitListList = T, ZO_PlayerInventoryQuestContents = T, ZO_RetraitStation_KeyboardTopLevelRetraitPanel = T, ZO_TradingHouseItemPaneSearchResultsContents = T, ZO_SmithingTopLevelCreationPanelMaterialListList = T, ZO_StoreWindowListContents = T, ZO_SmithingTopLevelImprovementPanel = T, ZO_SmithingTopLevelResearchPanelResearchLineListList = T, ZO_BuyBackListContents = T, ZO_LootAlphaContainerListContents = T, ZO_InventoryWalletListContents = T, ZO_TradingHousePostedItemsListContents = T, ZO_MailSend = T, ZO_SmithingTopLevelCreationPanelStyleListList = T, ZO_SmithingTopLevelCreationPanelPatternListList = T}, notAllowedCtrls = [table:8]{ZO_TradingHousePostItemPaneFormInfo = T, ZO_EnchantingTopLevelExtractionSlotContainerExtractionSlot = T, ZO_ApplyEnchantPanel = T, ZO_SoulGemItemChargerPanel = T, ZO_EnchantingTopLevelRuneSlotContainer = T, ZO_AlchemyTopLevelSlotContainer = T, ZO_SoulGemItemChargerPanelImprovementPreviewContainer = T, ZO_SmithingTopLevelRefinementPanelSlotContainer = T, ZO_SmithingTopLevelDeconstructionPanelSlotContainer = T}, researchableIcons = [table:9]{2 = T}, iconsDisabledAtCompanion = [table:10]{12 = T}, allowedCharacterCtrls = [table:11]{ZO_CharacterEquipmentSlotsBackupOff = T, ZO_CompanionCharacterWindow_Keyboard_TopLevelEquipmentSlotsBackupOff = T, ZO_CharacterEquipmentSlotsMainHand = T, ZO_CompanionCharacterWindow_Keyboard_TopLevelEquipmentSlotsMainHand = T, ZO_CharacterEquipmentSlotsOffHand = T, ZO_CharacterEquipmentSlotsBackupMain = T, ZO_CompanionCharacterWindow_Keyboard_TopLevelEquipmentSlotsOffHand = T, ZO_CompanionCharacterWindow_Keyboard_TopLevelEquipmentSlotsBackupMain = T}, allowedCharacterJewelryControls = [table:12]{ZO_CharacterEquipmentSlotsRing1 = T, ZO_CompanionCharacterWindow_Keyboard_TopLevelEquipmentSlotsNeck = T, ZO_CharacterEquipmentSlotsNeck = T, ZO_CompanionCharacterWindow_Keyboard_TopLevelEquipmentSlotsRing2 = T, ZO_CharacterEquipmentSlotsRing2 = T, ZO_CompanionCharacterWindow_Keyboard_TopLevelEquipmentSlotsRing1 = T}, customMenuVars = [table:13]{customMenuCurrentCounter = 17} </Locals>|r
-user:/AddOns/FCOItemSaver/src/FCOIS_Hooks.lua:764: in function 'ZO_InventorySlot_ShowContextMenu_For_FCOItemSaver'
-|caaaaaa<Locals> rowControl = ud, slotActions = [table:14]{m_numContextMenuActions = 8, craftBagExtendedPostHooked = T, craftBagExtendedHooked = T, m_hasActions = T, m_contextMenuMode = T}, ctrl = F, alt = F, shift = F, prevVars = [table:15]{useAdvancedFiltersItemCountInInventories = T, gAddonStartupInProgress = F, gFilteringBasics = F, gChangedGears = F, migrateToItemInstanceIds = F, gActiveFilterPanel = F, splitItemStackDialogButtonCallbacks = F, buildingInvContextMenuEntries = T, migrateToUniqueIds = F, dragAndDropOrDoubleClickItemSelectionHandler = F, gUpdateMarkersNow = F, gPreHookButtonHandlerCallActive = F, markerIconChangedManually = F, resetNonServerDependentSavedVars = F, craftBagSceneShowInProgress = F, createdMasterWrit = F, gNoCloseEvent = F, dontShowInvContextMenu = F, _prevVarReset = "FCOIS_PreventerVariableReset_...", markItemAntiEndlessLoop = F, gMarkItemLastIconInLoop = F, dontAutoReenableAntiSettingsInInventory = F, isInventoryListUpdating = F, writCreatorCreatedItem = F, lamMenuOpenAndShowingInvPreviewForGridListAddon = F, repairDialogOnRepairKitSelectedOverwrite = F, dontUpdateFilteredItemCount = F, gOverrideInvUpdateAfterMarkItem = F, splitItemStackDialogActive = F, askBeforeEquipDialogRetVal = F, ZO_ListDialog1ResearchIsOpen = F, gAllowDestroyItem = F, enchantItemActive = F, gClearingMarkerIcons = F, contextMenuUpdateLoopLastLoop = F, wasDestroyDone = F, newItemCrafted = F, gCheckEquipmentSlots = F, gRestoringMarkerIcons = F, isZoDialogContextMenu = F, doUpdateLocalization = F, KeyBindingTexts = F, eventInventorySingleSlotUpdate = F, migrateItemMarkers = F, doNotScanInv = F, buildingSlotActionTexts = F, gLocalizationDone = T, noGamePadModeSupportTextOutput = F, doFalseOverride = F, gScanningInv = F}, contextMenuClearMarkesKey = 7, contextMenuClearMarkesByShiftKey = F, isCharacterShownNow = T, isCompanionCharacterShownNow = F, parentControl = ud, FCOcontextMenu = [table:16]{}, userOrderValid = T, resetSortOrderDone = F, contextMenuEntriesAdded = 21, useSubContextMenu = T, _ = 21, countDynIconsEnabled = 9, useDynSubContextMenu = T, addedCounter = 17 </Locals>|r
-/EsoUI/Libraries/Utility/ZO_CallbackObject.lua:107: in function 'ZO_CallbackObjectMixin:FireCallbacks'
-|caaaaaa<Locals> self = [table:17]{fireCallbackDepth = 1}, eventName = 6, registry = [table:18]{}, callbackInfoIndex = 1, callbackInfo = [table:19]{3 = F}, callback = user:/AddOns/FCOItemSaver/src/FCOIS_Hooks.lua:650, deleted = F </Locals>|r
-user:/AddOns/LibCustomMenu/LibCustomMenu.lua:652: in function 'addCategory'
-user:/AddOns/LibCustomMenu/LibCustomMenu.lua:682: in function 'AppendToMenu'
-/EsoUI/Libraries/Utility/ZO_Hook.lua:18: in function '(anonymous)'
-(tail call): ?
-/EsoUI/Ingame/Inventory/InventorySlot.lua:2054: in function 'ZO_InventorySlot_ShowContextMenu'
-|caaaaaa<Locals> inventorySlot = ud </Locals>|r
-(tail call): ?
-(tail call): ?
-(tail call): ?
-(tail call): ?
-(tail call): ?
-(tail call): ?
-/EsoUI/Ingame/Inventory/InventorySlot.lua:2095: in function 'ZO_InventorySlot_OnSlotClicked'
-|caaaaaa<Locals> inventorySlot = ud, button = 2 </Locals>|r
-ZO_InventoryWalletList1Row1_MouseUp:4: in function '(main chunk)'
-|caaaaaa<Locals> self = ud, button = 2, upInside = T, ctrl = F, alt = F, shift = F, command = F </Locals>|r
 ]]
 
 --#181, 2022-01-02, Baertram: Check filter slash command chat feedback: Does it show correct info about filter state and new logical conjuncions?
@@ -260,7 +202,6 @@ ZO_InventoryWalletList1Row1_MouseUp:4: in function '(main chunk)'
 ------------------------------------------------------------------------------------
 --#176 -> Test: Errors occured with OR filters, and mixed AND + OR filters
 --#183 -> In progress, todo: Add the new "AllServersAndAccountsTheSame" to "Copy settings routines" + Test: Open
---#185 -> In progress, todo: Add settings menu and code
 --#188 -> Test: Needed
 
 -------------------------------------------------------------------------------------
@@ -272,8 +213,8 @@ ZO_InventoryWalletList1Row1_MouseUp:4: in function '(main chunk)'
 --Debug functions will use local speed up variable now
 --Added more local speed-ups in several files
 --Missing command handler function in API function FCOIS.ChangeFilter
---#175: lua error bad argument #1 to 'pairs' (table/struct expected, got nil) after improving items and leaving the improve station
---#177: With filterButton 1 and 2 at yellow state items without markerIcon of filter 1 (but being a dynamic gear of filter 2) will show up
+--#175: lua error bad argument #1 to 'pairs' (table/struct expected, got nil) after improving items and leaving the improve station directly. Important: If you do not wait ~1-2 seconds after improvement has visually finished the automatic re-applied marker icons might fail to apply if you have left the improvement table meanwhile!
+--#177: With filterButton 1 and 2 at yellow state: items without markerIcon of filter 1 (but being a dynamic gear of filter 2) will not filter (hide)
 --#179: Gear or dynamic icons name could be empty and raise lua error messages. If left empty they will directly reset to the default name (English) now
 --#180: GetItemInstanceId error upon mouse over at inventory quest items
 --#187: Delete backuped markerIcons was not removing some API versions properly

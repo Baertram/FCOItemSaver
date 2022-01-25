@@ -655,4 +655,3 @@ function FCOIS.DeleteMarkerIcons(markerIconsToDeleteType, markerIconsToDeleteIco
         return true
     end
 end
-

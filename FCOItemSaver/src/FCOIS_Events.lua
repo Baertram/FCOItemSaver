@@ -1155,3 +1155,4 @@ function FCOIS.setEventCallbackFunctions()
     --Register the addon's loaded callback function
     em:RegisterForEvent(gAddonName, EVENT_ADD_ON_LOADED, FCOItemSaver_Loaded)
 end
+

@@ -2521,7 +2521,7 @@ function FCOIS.JumpToOwnHouse(withDetails, apiVersion, doClearBackup)
         d("[FCOIS]You cannot jump to a house from your current location!")
         return
     end
-    local houseId = checkIfOwnsHouse()
+    local houseId = getFirstOwnedHouse()
     if houseId == nil or houseId <= 0 then return end
 
     --Save the parameters so we can use them after reloadui/jump to house in EVENT_PLAYER_ACTIVATED again

@@ -62,8 +62,9 @@ local function shouldItemBeShownAfterBeenFiltered(slotItemInstanceId, slot)
     --\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
     --TODO: For Debugging only! Remove again if not needed
     local doDebugOutput = false
---[[
-    local bagId, slotIndex = FCOIS.MyGetItemDetails(slot)
+    local bagId, slotIndex
+    --[[
+    bagId, slotIndex = FCOIS.MyGetItemDetails(slot)
     local itemLink
     --2021-12-04, bag item at char Glacies:
     local isdebugSlotIndex = {
