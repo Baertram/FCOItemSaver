@@ -187,9 +187,6 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
     Bei 0 zeige ich dann sowas an wie "Cooldown ist abgelaufen" und bei >0 in rot der Hinweis, dass der Cooldown noch so und so lange aktiv ist.
 ]]
 
---#189, 2022-01-17, Baertram, bug: FCOIS uniqueIds item markers got saved into SavedVariables table "markedItems", but they should only be saved to "markedItemsFCOISUnique"
---#190, 2022-01-17, Baertram, bug: non-unique item markers got saved into SavedVariables table "markedItemsFCOISUnique", but they should only be saved to "markedItems"
-
 
 --____________________________
 -- Current max bugs/features/ToDos: 197
@@ -202,7 +199,6 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 --#176 -> Test: Errors occured with OR filters, and mixed AND + OR filters
 --#182 FCOUS uniqueIds -> lockpicks itemtype tool should save differently to stolen lockpick items
 --#183 -> In progress, todo: Add the new "AllServersAndAccountsTheSame" to "Copy settings routines" + Test: Open
---#197 -> Test migration
 
 -------------------------------------------------------------------------------------
 --Changelog (last version: 2.2.3 - New version: 2.2.4) -    Updated last: 2022-01-26
@@ -221,6 +217,7 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 --Attention: You need to remove and re-apply the markers for your items if you want to save them properly with all data now! Else the old marker strings with the itemId and every other value "the same" will be kept and used!
 --You can use the new settings at "Backup &restore & delete", submenu "Delete" -> Delete all marker icons for FCOIS unique ones to mass-remove the old entries. And then use automatic marks like set items etc. to remark them new!
 --#187: Delete backuped markerIcons was not removing some API versions properly
+--#189: FCOIS uniqueIds item markers got saved into SavedVariables table "markedItems", but they should only be saved to "markedItemsFCOISUnique"
 --#191: Switching from FCOIS unique to non-unique item markers will not show ANY marker icon at the inventories. If the migration dialog appears and is aborted the UI will be reloaded to fix this
 --#192, FCOIS unique item marker strings contain the text "nil". This was changed to "" to reduce the size if the SVs
 --#193: FCOIS settings menu disappears in total after using LibFeedbacks -> Send mail feature, and re-opening the settings a 2nd time after that

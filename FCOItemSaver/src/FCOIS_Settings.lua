@@ -1024,42 +1024,61 @@ function FCOIS.AfterSettings()
     end
 
     --Added with FCOIS v2.2.4
-    --FCOIS uniqueIds contain "nil" strings which consume too much space. Change these to "" instead, as function FCOIS.CreateFCOISUniqueIdString uses too now
---         for loop over FCOIS.settingsVars.settings.markedItemsFCOISUnique[1] to numMarkerIcons -> check if value is of type String and if it contains any ",". Then split at ,
---         and loop over all parts and check if any is "nil" or "?" (Crafted by) -> replace with ""
+    --#189 FCOIS uniqueIds item markers got saved into SavedVariables table "markedItems", but they should only be saved to "markedItemsFCOISUnique"
+    if FCOIS.settingsVars.settings.cleanedFCOISUniqueInNonUnique == nil then
+        local markedItemsInSV = FCOIS.settingsVars.settings.markedItems
+        if markedItemsInSV ~= nil then
+            for markerIconNr, markedItemsData in ipairs(markedItemsInSV) do
+                for itemInstanceOrZOsUniqueId, isMarked in pairs(markedItemsInSV) do
+                    if isMarked == true and type(itemInstanceOrZOsUniqueId) == "string" and strfind(itemInstanceOrZOsUniqueId, ",") ~= nil then
+                        --FCOIS unique-ID saved to normal markerIcons table -> Delete
+                        --d(">Found FCOISUniqueID in normal markedItems table: " ..tos(itemInstanceOrZOsUniqueId))
+                        FCOIS.settingsVars.settings.markedItems[markerIconNr][itemInstanceOrZOsUniqueId] = nil
+                    end
+                end
+            end
+        end
+        FCOIS.settingsVars.settings.cleanedFCOISUniqueInNonUnique = true
+    end
 
-    local markedItemsFCOISUnique = FCOIS.settingsVars.settings.markedItemsFCOISUnique
-    local newPart = ""
-    if markedItemsFCOISUnique ~= nil then
-        for markerIconNr, markedItemsData in ipairs(markedItemsFCOISUnique) do
-            for FCOISuniqueIdOfItem, isMarked in pairs(markedItemsData) do
-                if isMarked == true and type(FCOISuniqueIdOfItem) == "string" and strfind(FCOISuniqueIdOfItem, ",") ~= nil then
-                    local partsOfFCOISUniqueId = splitStringWithDelimiter(FCOISuniqueIdOfItem, ",")
-                    if partsOfFCOISUniqueId ~= nil and #partsOfFCOISUniqueId > 0 then
-                        local newFCOISUniqueId = ""
-                        local wasFCOISUniqueIdChanged = false
-                        for idx, part in ipairs(partsOfFCOISUniqueId) do
-                            --Always keep the itemID at first part
-                            if idx > 1 and (part == "nil" or part == "?") then
-                                part = newPart
-                                wasFCOISUniqueIdChanged = true
+
+    --Added with FCOIS v2.2.4
+    --#192 FCOIS uniqueIds contain "nil" strings which consume too much space. Change these to "" instead, as function FCOIS.CreateFCOISUniqueIdString uses too now
+    if FCOIS.settingsVars.settings.cleanedFCOISUniqueNILEntries == nil then
+        local markedItemsFCOISUniqueInSV = FCOIS.settingsVars.settings.markedItemsFCOISUnique
+        local newPart                    = ""
+        if markedItemsFCOISUniqueInSV ~= nil then
+            for markerIconNr, markedItemsData in ipairs(markedItemsFCOISUniqueInSV) do
+                for FCOISuniqueIdOfItem, isMarked in pairs(markedItemsData) do
+                    if isMarked == true and type(FCOISuniqueIdOfItem) == "string" and strfind(FCOISuniqueIdOfItem, ",") ~= nil then
+                        local partsOfFCOISUniqueId = splitStringWithDelimiter(FCOISuniqueIdOfItem, ",")
+                        if partsOfFCOISUniqueId ~= nil and #partsOfFCOISUniqueId > 0 then
+                            local newFCOISUniqueId = ""
+                            local wasFCOISUniqueIdChanged = false
+                            for idx, part in ipairs(partsOfFCOISUniqueId) do
+                                --Always keep the itemID at first part
+                                if idx > 1 and (part == "nil" or part == "?") then
+                                    part = newPart
+                                    wasFCOISUniqueIdChanged = true
+                                end
+                                newFCOISUniqueId = newFCOISUniqueId .. part
+                                if idx < #partsOfFCOISUniqueId then
+                                    newFCOISUniqueId = newFCOISUniqueId .. ","
+                                end
                             end
-                            newFCOISUniqueId = newFCOISUniqueId .. part
-                            if idx < #partsOfFCOISUniqueId then
-                               newFCOISUniqueId = newFCOISUniqueId .. ","
+                            if wasFCOISUniqueIdChanged == true then
+                                --d(">changed FCOIS uniqueId from: " ..tos(FCOISuniqueIdOfItem) .. " to: " ..tos(newFCOISUniqueId))
+                                --Remove old FCOISUniqueId
+                                FCOIS.settingsVars.settings.markedItemsFCOISUnique[markerIconNr][FCOISuniqueIdOfItem] = nil
+                                --Add new corrected one
+                                FCOIS.settingsVars.settings.markedItemsFCOISUnique[markerIconNr][newFCOISUniqueId] = true
                             end
-                        end
-                        if wasFCOISUniqueIdChanged == true then
---d(">changed FCOIS uniqueId from: " ..tos(FCOISuniqueIdOfItem) .. " to: " ..tos(newFCOISUniqueId))
-                            --Remove old FCOISUniqueId
-                            FCOIS.settingsVars.settings.markedItemsFCOISUnique[markerIconNr][FCOISuniqueIdOfItem] = nil
-                            --Add new corrected one
-                            FCOIS.settingsVars.settings.markedItemsFCOISUnique[markerIconNr][newFCOISUniqueId] = true
                         end
                     end
                 end
             end
         end
+        FCOIS.settingsVars.settings.cleanedFCOISUniqueNILEntries = true
     end
 end -- AfterSettings
 
