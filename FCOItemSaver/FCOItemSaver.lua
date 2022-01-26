@@ -189,9 +189,6 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 
 --#189, 2022-01-17, Baertram, bug: FCOIS uniqueIds item markers got saved into SavedVariables table "markedItems", but they should only be saved to "markedItemsFCOISUnique"
 --#190, 2022-01-17, Baertram, bug: non-unique item markers got saved into SavedVariables table "markedItemsFCOISUnique", but they should only be saved to "markedItems"
---#192, 2022-01-17, Baertram, bug: FCOIS unique item marker strings contain the text "nil". This should be changed to "". So scan all markedItemsFCOISUnique entries of all iconIds and change them
---         for loop over FCOIS.settingsVars.settings.markedItemsFCOISUnique[1] to numMarkerIcons -> check if value is of type String and if it contains any ",". Then split at ,
---         and loop over all parts and check if any is "nil" or "?" (Crafted by) -> replace with ""
 
 --____________________________
 -- Current max bugs/features/ToDos: 196
@@ -223,6 +220,7 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 --Attention: You need to remove and re-apply the markers for your items if you want to save them properly with all data now! Else the old marker strings with the itemId and every other value "the same" will be kept and used!
 --#187: Delete backuped markerIcons was not removing some API versions properly
 --#191: Switching from FCOIS unique to non-unique item markers will not show ANY marker icon at the inventories. If the migration dialog appears and is aborted the UI will be reloaded to fix this
+--#192, FCOIS unique item marker strings contain the text "nil". This was changed to "" to reduce the size if the SVs
 --#193: FCOIS settings menu disappears in total after using LibFeedbacks -> Send mail feature, and re-opening the settings a 2nd time after that
 --#194: If the submenu for dynamic icons is enabled at the context menus: Using SHIFT+right mouse to remove/readd all marker icons to the item will still show the "Dynamic" submenu at banks/vendors/crafting
 --#195: Fixed detection of owned house (for backup auto port suggestion to house, to access the house storage data)

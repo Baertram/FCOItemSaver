@@ -6,9 +6,11 @@ if not FCOIS.libsLoadedProperly then return end
 
 local debugMessage = FCOIS.debugMessage
 
+local tos = tostring
 local strformat = string.format
 local strfind = string.find
 local zo_strf = zo_strformat
+local tabins = table.insert
 
 --Currently logged in account name
 local accName             = GetDisplayName()
@@ -46,6 +48,16 @@ local onlyCallOnceInTime = FCOIS.OnlyCallOnceInTime
 --==========================================================================================================================================
 -- 										FCOIS settings & saved variables functions
 --==========================================================================================================================================
+local function splitStringWithDelimiter(stringVar, delimiter)
+    if not stringVar or not delimiter then return end
+    local retTab = {}
+    for part in stringVar:gmatch("([^" .. delimiter .."]+)") do
+        tabins(retTab, part)
+    end
+    return retTab
+end
+
+
 
 function FCOIS.GetSavedVarsMarkedItemsTableName(override)
     local markedItemsNames = addonVars.savedVarsMarkedItemsNames
@@ -106,7 +118,7 @@ end
 function FCOIS.GetAccountWideCharacterOrNormalCharacterSettings()
     local settingsForAll = FCOIS.settingsVars.defaultSettings
     local saveMode = settingsForAll.saveMode
---d("[FCOIS]getAccountWideCharacterOrNormalCharacterSettings - saveMode: " ..tostring(saveMode) .. ", filterForEachCharacter: " ..tostring(settingsForAll.filterButtonsSaveForCharacter))
+--d("[FCOIS]getAccountWideCharacterOrNormalCharacterSettings - saveMode: " ..tos(saveMode) .. ", filterForEachCharacter: " ..tos(settingsForAll.filterButtonsSaveForCharacter))
     local settingsSV
     --Character SavedVariables
     if saveMode == 1 then
@@ -139,7 +151,7 @@ function FCOIS.GetSettingsIsFilterOn(p_filterId, p_filterPanel)
     if result == nil then
         return false
     end
-    if baseSettings.debug then debugMessage( "[GetSettingsIsFilterOn]","Filter Panel: " .. tostring(p_filterPanelNew) .. ", FilterId: " .. tostring(p_filterId) .. ", Result: " .. tostring(result), true, FCOIS_DEBUG_DEPTH_SPAM) end
+    if baseSettings.debug then debugMessage( "[GetSettingsIsFilterOn]","Filter Panel: " .. tos(p_filterPanelNew) .. ", FilterId: " .. tos(p_filterId) .. ", Result: " .. tos(result), true, FCOIS_DEBUG_DEPTH_SPAM) end
     return result
 end
 
@@ -151,7 +163,7 @@ function FCOIS.SetSettingsIsFilterOn(p_filterId, p_value, p_filterPanel)
     --New behaviour with filters
     settings.isFilterPanelOn[p_filterPanelNew] = settings.isFilterPanelOn[p_filterPanelNew] or {}
     settings.isFilterPanelOn[p_filterPanelNew][p_filterId] = p_value
-    if baseSettings.debug then debugMessage( "[SetSettingsIsFilterOn]","Filter Panel: " .. tostring(p_filterPanelNew) .. ", FilterId: " .. tostring(p_filterId) .. ", Value: " .. tostring(p_value), true, FCOIS_DEBUG_DEPTH_SPAM) end
+    if baseSettings.debug then debugMessage( "[SetSettingsIsFilterOn]","Filter Panel: " .. tos(p_filterPanelNew) .. ", FilterId: " .. tos(p_filterId) .. ", Value: " .. tos(p_value), true, FCOIS_DEBUG_DEPTH_SPAM) end
     --return the value
     return p_value
 end
@@ -171,7 +183,7 @@ function FCOIS.GetFilterWhereBySettings(p_filterWhere, onlyAnti)
         FCOIS.settingsVars.settings.atPanelEnabled[p_filterWhere]["filters"] = settingsAllowed[filterPanelToFilterButtonFilterActiveSettingName[p_filterWhere]]
     end
 
-    if settingsAllowed.debug then debugMessage( "[getFilterWhereBySettings]", tostring(p_filterWhere) .. " = " .. tostring(settingsAllowed.atPanelEnabled[p_filterWhere]["filters"]), true, FCOIS_DEBUG_DEPTH_SPAM) end
+    if settingsAllowed.debug then debugMessage( "[getFilterWhereBySettings]", tos(p_filterWhere) .. " = " .. tos(settingsAllowed.atPanelEnabled[p_filterWhere]["filters"]), true, FCOIS_DEBUG_DEPTH_SPAM) end
     return p_filterWhere
 end
 
@@ -180,7 +192,7 @@ function FCOIS.ChangeAntiSettingsAccordingToFilterPanel()
     local filterPanelId = FCOIS.gFilterWhere
     if filterPanelId == nil then return nil end
     local parentPanel = FCOIS.gFilterWhereParent
---d("[FCOIS.changeAntiSettingsAccordingToFilterPanel - FilterPanel: " .. filterPanelId .. ", FilterPanelParent: " .. tostring(parentPanel))
+--d("[FCOIS.changeAntiSettingsAccordingToFilterPanel - FilterPanel: " .. filterPanelId .. ", FilterPanelParent: " .. tos(parentPanel))
 
     local currentSettings = FCOIS.settingsVars.settings
     local filterPanelIdToBlockSettingName = FCOIS.mappingVars.filterPanelIdToBlockSettingName
@@ -222,7 +234,7 @@ function FCOIS.ChangeAntiSettingsAccordingToFilterPanel()
     isSettingEnabled = not currentSettings[settingNameToChange]
     FCOIS.settingsVars.settings[settingNameToChange] = isSettingEnabled
     --------------------------------------------------------------------------------------------------------------------
---d(">settingNameToChange: " .. tostring(settingNameToChange) .. ", isSettingEnabled: " ..tostring(isSettingEnabled))
+--d(">settingNameToChange: " .. tos(settingNameToChange) .. ", isSettingEnabled: " ..tos(isSettingEnabled))
     --Check if the settings are enabled now and if any item is slotted in the deconstruction/improvement/extraction/refine slot
     --> Then remove the item from the slot again if it's protected again now
     if isSettingEnabled then
@@ -233,7 +245,7 @@ end
 
 
 local function doAutoReenableAntiSettingsCheck(checkWhere)
---d("[FCOIS]Only called once doAutoReenableAntiSettingsCheck-checkWhere: " ..tostring(checkWhere))
+--d("[FCOIS]Only called once doAutoReenableAntiSettingsCheck-checkWhere: " ..tos(checkWhere))
     if checkWhere == nil or checkWhere == "" then return false end
     local checksToDo = FCOIS.checkVars.autoReenableAntiSettingsCheckWheres
     local checksAll = FCOIS.checkVars.autoReenableAntiSettingsCheckWheresAll
@@ -364,7 +376,7 @@ end
 
 --Function to reenable the Anti-* settings again at a given check panel automatically (if the panel closes e.g.)
 function FCOIS.AutoReenableAntiSettingsCheck(checkWhere)
-    --d("[FCOIS.AutoReenableAntiSettingsCheck - checkWhere: " .. tostring(checkWhere) .. ", filterPanel: " .. tostring(FCOIS.gFilterWhere) .. ", lootListIsHidden: " .. tostring(ZO_LootAlphaContainerList:IsHidden()) .. ", dontAutoReenableAntiSettings: " .. tostring(FCOIS.preventerVars.dontAutoReenableAntiSettingsInInventory))
+    --d("[FCOIS.AutoReenableAntiSettingsCheck - checkWhere: " .. tos(checkWhere) .. ", filterPanel: " .. tos(FCOIS.gFilterWhere) .. ", lootListIsHidden: " .. tos(ZO_LootAlphaContainerList:IsHidden()) .. ", dontAutoReenableAntiSettings: " .. tos(FCOIS.preventerVars.dontAutoReenableAntiSettingsInInventory))
 
     --If mail send panel was opened the call order will be:
     --fcois_hooks -> 1. 1552 resetInventoryAntiSettings , 2. 1566 changeContextMenuInvokerButtonColorByPanelId, 3. 912 ctrlVars.mainMenuCategoryBar:OnShow autoReenableAntiSettingsCheck
@@ -386,7 +398,7 @@ function FCOIS.AutoReenableAntiSettingsCheck(checkWhere)
     end
     if not goOn then return end
     --Only call once for the same checkWere (e.g. DESTROY) and ButtonName and FilterPanel within 50ms
-    onlyCallOnceInTime("FCOIS_AutoReenableAntiSettingsCheck_" .. tostring(checkWhere) .. "_" .. tostring(filterPanelId) .. "_" .. tostring(currentPanelsFlagButton), 50, doAutoReenableAntiSettingsCheck, checkWhere)
+    onlyCallOnceInTime("FCOIS_AutoReenableAntiSettingsCheck_" .. tos(checkWhere) .. "_" .. tos(filterPanelId) .. "_" .. tos(currentPanelsFlagButton), 50, doAutoReenableAntiSettingsCheck, checkWhere)
 end
 local autoReenableAntiSettingsCheck = FCOIS.AutoReenableAntiSettingsCheck
 
@@ -425,7 +437,7 @@ local function addToMigrationDebugLog(init, debugLogTextLine)
         settings.migrationDebugLog = {}
     end
     local migrationDebugLog = settings.migrationDebugLog
-    table.insert(migrationDebugLog, debugLogTextLine)
+    tabins(migrationDebugLog, debugLogTextLine)
 end
 
 --Transfer the non-unique/unique to unique/non-unique marker icons at the items
@@ -439,7 +451,7 @@ local function scanBagsAndTransferMarkerIcon(toUnique)
     FCOIS.CheckIfFCOISSettingsWereLoaded(false)
     local settings = FCOIS.settingsVars.settings
     local locVars = FCOIS.localizationVars.fcois_loc
-    local migrationDebugLogLine = "///~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\\\\n"..preChatVars.preChatTextGreen .. zo_strf(locVars["options_migrate_start"], "->UniqueId: " ..tostring(toUnique))
+    local migrationDebugLogLine = "///~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\\\\n"..preChatVars.preChatTextGreen .. zo_strf(locVars["options_migrate_start"], "->UniqueId: " ..tos(toUnique))
     d(migrationDebugLogLine)
     addToMigrationDebugLog(true, migrationDebugLogLine)
 
@@ -483,7 +495,7 @@ local function scanBagsAndTransferMarkerIcon(toUnique)
         if uniqueIdWasLastEnabled == true then
             --Migrate from uniqueId to uniqueId: Check if the last used uniqueId type is not the same as now
             if uniqueIdTypeLastUsed ~= uniqueItemIdType then
-                migrationDebugLogLine = preChatVars.preChatTextBlue .. strformat(locVars["options_migrate_uniqueId_to_uniqueId"], tostring(uniqueIdTypeLastUsed), tostring(uniqueItemIdType))
+                migrationDebugLogLine = preChatVars.preChatTextBlue .. strformat(locVars["options_migrate_uniqueId_to_uniqueId"], tos(uniqueIdTypeLastUsed), tos(uniqueItemIdType))
                 d(migrationDebugLogLine)
                 addToMigrationDebugLog(false, migrationDebugLogLine)
                 --Get the old "from" SavedVariables table name -> non-unique entry
@@ -497,7 +509,7 @@ local function scanBagsAndTransferMarkerIcon(toUnique)
             end
         --UniqueId was not enabled before. Migrating non-unique to unique
         else
-            migrationDebugLogLine = preChatVars.preChatTextBlue .. strformat(locVars["options_migrate_non_uniqueId_to_uniqueId"], tostring(uniqueItemIdType))
+            migrationDebugLogLine = preChatVars.preChatTextBlue .. strformat(locVars["options_migrate_non_uniqueId_to_uniqueId"], tos(uniqueItemIdType))
             d(migrationDebugLogLine)
             addToMigrationDebugLog(false, migrationDebugLogLine)
             --Get the old "from" SavedVariables table name -> non-unique entry
@@ -519,7 +531,7 @@ local function scanBagsAndTransferMarkerIcon(toUnique)
 
         --Was the uniqueID enabled before the migration? Migrating unique to non-unique then
         if uniqueIdWasLastEnabled == true then
-            migrationDebugLogLine = preChatVars.preChatTextBlue .. strformat(locVars["options_migrate_uniqueId_to_non_uniqueId"], tostring(uniqueIdTypeLastUsed))
+            migrationDebugLogLine = preChatVars.preChatTextBlue .. strformat(locVars["options_migrate_uniqueId_to_non_uniqueId"], tos(uniqueIdTypeLastUsed))
             d(migrationDebugLogLine)
             addToMigrationDebugLog(false, migrationDebugLogLine)
             --Get the old "from" SavedVariables table name -> non-unique entry
@@ -561,7 +573,7 @@ local function scanBagsAndTransferMarkerIcon(toUnique)
     if IsESOPlusSubscriber() then
         --Add the subscriber bank to the inventories to check
         if GetBagUseableSize(BAG_SUBSCRIBER_BANK) > 0 then
-            table.insert(bagsToCheck, 5, BAG_SUBSCRIBER_BANK)
+            tabins(bagsToCheck, 5, BAG_SUBSCRIBER_BANK)
         end
     end
 
@@ -1010,6 +1022,44 @@ function FCOIS.AfterSettings()
         FCOIS.settingsVars.settings.filterButtonSettings = ZO_ShallowTableCopy(FCOIS.settingsVars.defaults.filterButtonSettings)
     end
 
+    --Added with FCOIS v2.2.4
+    --FCOIS uniqueIds contain "nil" strings which consume too much space. Change these to "" instead, as function FCOIS.CreateFCOISUniqueIdString uses too now
+--         for loop over FCOIS.settingsVars.settings.markedItemsFCOISUnique[1] to numMarkerIcons -> check if value is of type String and if it contains any ",". Then split at ,
+--         and loop over all parts and check if any is "nil" or "?" (Crafted by) -> replace with ""
+
+    local markedItemsFCOISUnique = FCOIS.settingsVars.settings.markedItemsFCOISUnique
+    local newPart = ""
+    if markedItemsFCOISUnique ~= nil then
+        for markerIconNr, markedItemsData in ipairs(markedItemsFCOISUnique) do
+            for FCOISuniqueIdOfItem, isMarked in pairs(markedItemsData) do
+                if isMarked == true and type(FCOISuniqueIdOfItem) == "string" and strfind(FCOISuniqueIdOfItem, ",") ~= nil then
+                    local partsOfFCOISUniqueId = splitStringWithDelimiter(FCOISuniqueIdOfItem, ",")
+                    if partsOfFCOISUniqueId ~= nil and #partsOfFCOISUniqueId > 0 then
+                        local newFCOISUniqueId = ""
+                        local wasFCOISUniqueIdChanged = false
+                        for idx, part in ipairs(partsOfFCOISUniqueId) do
+                            --Always keep the itemID at first part
+                            if idx > 1 and (part == "nil" or part == "?") then
+                                part = newPart
+                                wasFCOISUniqueIdChanged = true
+                            end
+                            newFCOISUniqueId = newFCOISUniqueId .. part
+                            if idx < #partsOfFCOISUniqueId then
+                               newFCOISUniqueId = newFCOISUniqueId .. ","
+                            end
+                        end
+                        if wasFCOISUniqueIdChanged == true then
+--d(">changed FCOIS uniqueId from: " ..tos(FCOISuniqueIdOfItem) .. " to: " ..tos(newFCOISUniqueId))
+                            --Remove old FCOISUniqueId
+                            FCOIS.settingsVars.settings.markedItemsFCOISUnique[markerIconNr][FCOISuniqueIdOfItem] = nil
+                            --Add new corrected one
+                            FCOIS.settingsVars.settings.markedItemsFCOISUnique[markerIconNr][newFCOISUniqueId] = true
+                        end
+                    end
+                end
+            end
+        end
+    end
 end -- AfterSettings
 
 --Do some updates to the SavedVariables before the addon menu is created
@@ -1299,7 +1349,7 @@ end
 
 --Copy SavedVariables from one server, account and/or character to another
 function FCOIS.CopySavedVars(srcServer, targServer, srcAcc, targAcc, srcCharId, targCharId, onlyDelete, forceReloadUI)
---d(strformat("[FCOIS]copySavedVars srcServer %s, targServer %s, srcAcc %s, targAcc %s, srcCharId %s, targCharId %s, onlyDelete %s, forceReloadUI %s", tostring(srcServer), tostring(targServer), tostring(srcAcc), tostring(targAcc), tostring(srcCharId), tostring(targCharId), tostring(onlyDelete), tostring(forceReloadUI)))
+--d(strformat("[FCOIS]copySavedVars srcServer %s, targServer %s, srcAcc %s, targAcc %s, srcCharId %s, targCharId %s, onlyDelete %s, forceReloadUI %s", tos(srcServer), tos(targServer), tos(srcAcc), tos(targAcc), tos(srcCharId), tos(targCharId), tos(onlyDelete), tos(forceReloadUI)))
     onlyDelete = onlyDelete or false
     forceReloadUI = forceReloadUI or false
     local copyServer = false
@@ -1349,7 +1399,7 @@ function FCOIS.CopySavedVars(srcServer, targServer, srcAcc, targAcc, srcCharId, 
     --------------------------------------------------------------------------------------------------------------------
     local mappingVars = FCOIS.mappingVars
     local noEntry = mappingVars.noEntry
-    local noEntryValue = tostring(mappingVars.noEntryValue)
+    local noEntryValue = tos(mappingVars.noEntryValue)
     --Get some settings
     local settingsVars = FCOIS.settingsVars
     local useAccountWideSV      = (settingsVars.defaultSettings.saveMode == 2 or settingsVars.defaultSettings.saveMode == 3) or false
@@ -1364,8 +1414,8 @@ function FCOIS.CopySavedVars(srcServer, targServer, srcAcc, targAcc, srcCharId, 
     end
     local showReloadUIDialog = false
 
-    --d("[FCOIS.copySavedVars]srcServer: " .. tostring(srcServer) .. ", targServer: " ..tostring(targServer).. ", srcAccount: " .. tostring(srcAcc) .. ", targAccount: " ..tostring(targAcc).. ", srcChar: " .. tostring(srcCharId) .. ", targChar: " ..tostring(targCharId).. ", onlyDelete: " .. tostring(onlyDelete))
-    --d(">copyServer: " .. tostring(copyServer) .. ", deleteServer: " ..tostring(deleteServer).. ", copyAccount: " .. tostring(copyAcc) .. ", deleteAccount: " ..tostring(deleteAcc).. ", copyChar: " .. tostring(copyChar) .. ", deleteChar: " ..tostring(deleteChar))
+    --d("[FCOIS.copySavedVars]srcServer: " .. tos(srcServer) .. ", targServer: " ..tos(targServer).. ", srcAccount: " .. tos(srcAcc) .. ", targAccount: " ..tos(targAcc).. ", srcChar: " .. tos(srcCharId) .. ", targChar: " ..tos(targCharId).. ", onlyDelete: " .. tos(onlyDelete))
+    --d(">copyServer: " .. tos(copyServer) .. ", deleteServer: " ..tos(deleteServer).. ", copyAccount: " .. tos(copyAcc) .. ", deleteAccount: " ..tos(deleteAcc).. ", copyChar: " .. tos(copyChar) .. ", deleteChar: " ..tos(deleteChar))
 
     --Security check
     if ((srcServer == noEntry or targServer == noEntry) and onlyDelete == false) or (targServer == noEntry and onlyDelete == true) then return end
@@ -1576,15 +1626,15 @@ function FCOIS.CopySavedVars(srcServer, targServer, srcAcc, targAcc, srcCharId, 
             local questionVar = ""
             if copyServer or deleteServer then
                 if copyServer then
-                    questionVar = zo_strf(locVars["question_copy_sv_server_reloadui"], srcServer, targServer, tostring(useAccountWideSV))
+                    questionVar = zo_strf(locVars["question_copy_sv_server_reloadui"], srcServer, targServer, tos(useAccountWideSV))
                 else
-                    questionVar = zo_strf(locVars["question_delete_sv_server_reloadui"], targServer, tostring(useAccountWideSV))
+                    questionVar = zo_strf(locVars["question_delete_sv_server_reloadui"], targServer, tos(useAccountWideSV))
                 end
             elseif copyAcc or deleteAcc then
                 if copyAcc then
-                    questionVar = zo_strf(locVars["question_copy_sv_account_reloadui"], srcServer, srcAcc, targServer, targAcc, tostring(useAccountWideSV))
+                    questionVar = zo_strf(locVars["question_copy_sv_account_reloadui"], srcServer, srcAcc, targServer, targAcc, tos(useAccountWideSV))
                 else
-                    questionVar = zo_strf(locVars["question_delete_sv_account_reloadui"], targServer, targAcc, tostring(useAccountWideSV))
+                    questionVar = zo_strf(locVars["question_delete_sv_account_reloadui"], targServer, targAcc, tos(useAccountWideSV))
                 end
             elseif copyChar or deleteChar then
                 local characterTable = getCharactersOfAccount(false)
@@ -1592,20 +1642,20 @@ function FCOIS.CopySavedVars(srcServer, targServer, srcAcc, targAcc, srcCharId, 
                 local targCharName = getCharacterName(targCharId, characterTable)
                 if copyChar then
                     srcCharName = getCharacterName(srcCharId, characterTable)
-                    questionVar = zo_strf(locVars["question_copy_sv_character_reloadui"], srcServer, srcAcc, srcCharName, targServer, targAcc, targCharName, tostring(useAccountWideSV))
+                    questionVar = zo_strf(locVars["question_copy_sv_character_reloadui"], srcServer, srcAcc, srcCharName, targServer, targAcc, targCharName, tos(useAccountWideSV))
                 else
-                    questionVar = zo_strf(locVars["question_delete_sv_character_reloadui"], targServer, targAcc, targCharName, tostring(useAccountWideSV))
+                    questionVar = zo_strf(locVars["question_delete_sv_character_reloadui"], targServer, targAcc, targCharName, tos(useAccountWideSV))
                 end
             --Added with FCOIS v1.9.6: Copy account settings to character settings
             elseif copyAccToChar then
                 local characterTable = getCharactersOfAccount(false)
                 local targCharName = getCharacterName(targCharId, characterTable)
-                questionVar = zo_strf(locVars["question_copy_sv_account_to_char_reloadui"], srcServer, srcAcc, targServer, targAcc, targCharName, tostring(useAccountWideSV))
+                questionVar = zo_strf(locVars["question_copy_sv_account_to_char_reloadui"], srcServer, srcAcc, targServer, targAcc, targCharName, tos(useAccountWideSV))
             --Added with FCOIS v1.9.6: Copy character settings to account settings
             elseif copyCharToAcc then
                 local characterTable = getCharactersOfAccount(false)
                 local srcCharName = getCharacterName(srcCharId, characterTable)
-                questionVar = zo_strf(locVars["question_copy_sv_char_to_account_reloadui"], srcServer, srcAcc, srcCharName, targServer, targAcc, tostring(useAccountWideSV))
+                questionVar = zo_strf(locVars["question_copy_sv_char_to_account_reloadui"], srcServer, srcAcc, srcCharName, targServer, targAcc, tos(useAccountWideSV))
             end
             --Show confirmation dialog: ReloadUI now?
             --FCOIS.ShowConfirmationDialog(dialogName, title, body, callbackYes, callbackNo, data)
