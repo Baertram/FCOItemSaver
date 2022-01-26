@@ -305,21 +305,20 @@ end
 function FCOIS.GetFCOISMarkerIconUniqueIdAllowedItemType(bagId, slotIndex, uniqueItemIdType)
     local allowedItemtype
     local settings = FCOIS.settingsVars.settings
+    --Non-unique itemIds are enabled so all itemTypes are allowed for the itemInstanceId markers
+    if not settings.useUniqueIds then return true end
+
     if uniqueItemIdType == nil then
-        if settings.useUniqueIds == true then
-            uniqueItemIdType = settings.uniqueItemIdType
-            uniqueItemIdType = uniqueItemIdType or FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE
-        else
-            --Non-unique itemIds are enabled so all itemTypes are allowed for the itemInstanceId markers
-            return true
-        end
+        uniqueItemIdType = settings.uniqueItemIdType
+        uniqueItemIdType = uniqueItemIdType or FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE
     end
+    local itemType = GetItemType(bagId, slotIndex)
     if uniqueItemIdType == FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE then -- ZOs real unique IDs
         --Only armor and weapons and jewelry count as allowed itemType
-        allowedItemtype = allowedUniqueItemTypes[GetItemType(bagId, slotIndex)] or false
+        allowedItemtype = allowedUniqueItemTypes[itemType] or false
     else
         --All selected itemTypes at the settings of unique FCOIS marker icon IDs are allowed itemtypes
-        allowedItemtype = settings.allowedFCOISUniqueIdItemTypes[GetItemType(bagId, slotIndex)] or false
+        allowedItemtype = settings.allowedFCOISUniqueIdItemTypes[itemType] or false
     end
     return allowedItemtype
 end
@@ -351,7 +350,7 @@ function FCOIS.GetFCOISMarkerIconSavedVariablesItemId(bagId, slotIndex, allowedI
             if not uniqueIdsTypeForMarkerIcons or uniqueIdsTypeForMarkerIcons == FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE then -- ZOs real unique IDs
                 itemId = zo_getSafeId64Key(GetItemUniqueId(bagId, slotIndex))
             elseif uniqueIdsTypeForMarkerIcons == FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE then --FCOIS onw build unique IDs
-                itemId = createFCOISUniqueIdString(GetItemId(bagId, slotIndex), allowedItemType, bagId, slotIndex, nil)
+                itemId = createFCOISUniqueIdString(GetItemId(bagId, slotIndex), bagId, slotIndex, nil)
             end
         end
     end
@@ -388,9 +387,9 @@ function FCOIS.SignItemId(itemId, allowedItemType, onlySign, addonName, bagId, s
     --Shall the function not only sign an itemInstanceId, but check if the unique IDs need to be created/checked?
     if not onlySign then
         local settings = FCOIS.settingsVars.settings
-        --Support for base64 unique itemids (e.g. an enchanted armor got the same ItemInstanceId but can have different unique ids).
+        --Support for base64 unique itemIds (e.g. an enchanted armor got the same ItemInstanceId but can have different unique IDs).
         --But only if the itemType was checked before and is an allowed itemtype for the unique ID checks (e.g. armor, weapons)
-        --or the itemId is a string (which is the unique ID format)
+        --or the itemId is a string (which is the unique ID (ZOs and FCOIS) format)
         if (settings.useUniqueIds == true and allowedItemType == true)
             or checkIfAddonNameHasTemporarilyEnabledUniqueIds(addonName) == true
             or itemIDTypeIsString == true then
@@ -673,13 +672,13 @@ function FCOIS.CreateFCOISUniqueIdString(itemId, bagId, slotIndex, itemLink)
             level = GetItemLinkRequiredLevel(itemLink)
         end
     end
-    if level == nil then level = 0 end
+    if level == nil then level = "" end
 
     --Add item's quality to the uniqueId?
     if uniqueIdParts.quality == true then
         quality = GetItemLinkFunctionalQuality(itemLink)
     end
-    if quality == nil then quality = 0 end
+    if quality == nil then quality = "" end
 
     --Get the values for the uniqueId parts depending on the itemType
     itemType = GetItemLinkItemType(itemLink)
@@ -688,19 +687,19 @@ function FCOIS.CreateFCOISUniqueIdString(itemId, bagId, slotIndex, itemLink)
         if uniqueIdParts.trait == true then
             trait = GetItemLinkTraitInfo(itemLink)
         end
-        if trait == nil then trait = 0 end
+        if trait == nil then trait = "" end
 
         --Add item's enchantment to the uniqueId?
         if uniqueIdParts.enchantment == true then
             enchantment = GetItemLinkAppliedEnchantId(itemLink)
         end
-        if enchantment == nil then enchantment = 0 end
+        if enchantment == nil then enchantment = "" end
 
         --Add item's style to the uniqueId?
         if uniqueIdParts.style == true then
             style = GetItemLinkItemStyle(itemLink)
         end
-        if style == nil then style = 0 end
+        if style == nil then style = "" end
 
         --Add item's isCrafted state to the uniqueId?
         if uniqueIdParts.isCrafted == true then
@@ -714,7 +713,7 @@ function FCOIS.CreateFCOISUniqueIdString(itemId, bagId, slotIndex, itemLink)
             end
         end
         if isCrafted == nil then isCrafted = 0 end
-        if craftedByName == nil then craftedByName = "?"
+        if craftedByName == nil then craftedByName = ""
         else
             craftedByName = HashString(craftedByName) --Create a hash number of the crafter's name
         end
@@ -2520,7 +2519,6 @@ function FCOIS.JumpToOwnHouse(withDetails, apiVersion, doClearBackup)
         return
     end
     local houseId = getFirstOwnedHouse()
-d("FCOIS.JumpToOwnHouse - houseId: " ..tos(houseId))
     if houseId == nil or houseId <= 0 then return end
 
     --Save the parameters so we can use them after reloadui/jump to house in EVENT_PLAYER_ACTIVATED again

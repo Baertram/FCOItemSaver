@@ -159,7 +159,7 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 
 --#182, 2022-01-16, playstyle, addon comments: I would like to mark lockpicks but not stolen ones. I enabled the FCOIS uniqe ID because it has a 'stolen'
 --option and i also tried adding the item type 'Tool'. But no matter what both kinds of lockpicks are getting marked at the same time. What am i doing wrong?
---> See file src/FCOIS-functions.lua, function FCOIS.GetFCOISMarkerIconSavedVariablesItemId(bagId, slotIndex, allowedItemType, useUniqueIds, uniqueItemIdType, signToo)
+--> See file src/FCOIS_functions.lua, function FCOIS.GetFCOISMarkerIconSavedVariablesItemId(bagId, slotIndex, allowedItemType, useUniqueIds, uniqueItemIdType, signToo)
 -- -> getFCOISMarkerIconUniqueIdAllowedItemType
 
 --#183, 2022-01-16, Tim99, Discord: Feature request - Add new savedvariables saving independent to Server and AccountName
@@ -187,10 +187,11 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
     Bei 0 zeige ich dann sowas an wie "Cooldown ist abgelaufen" und bei >0 in rot der Hinweis, dass der Cooldown noch so und so lange aktiv ist.
 ]]
 
---#188, 2022-01-16, Baertram, feature: Enable backup and restore for all 3 saved itemIds (non unique, ZOs unique and FCOIS unique)
 --#189, 2022-01-17, Baertram, bug: FCOIS uniqueIds item markers got saved into SavedVariables table "markedItems", but they should only be saved to "markedItemsFCOISUnique"
 --#190, 2022-01-17, Baertram, bug: non-unique item markers got saved into SavedVariables table "markedItemsFCOISUnique", but they should only be saved to "markedItems"
 --#192, 2022-01-17, Baertram, bug: FCOIS unique item marker strings contain the text "nil". This should be changed to "". So scan all markedItemsFCOISUnique entries of all iconIds and change them
+--         for loop over FCOIS.settingsVars.settings.markedItemsFCOISUnique[1] to numMarkerIcons -> check if value is of type String and if it contains any ",". Then split at ,
+--         and loop over all parts and check if any is "nil" or "?" (Crafted by) -> replace with ""
 
 --____________________________
 -- Current max bugs/features/ToDos: 196
@@ -201,8 +202,9 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 -- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-01-21
 ------------------------------------------------------------------------------------
 --#176 -> Test: Errors occured with OR filters, and mixed AND + OR filters
+--#182 FCOUS uniqueIds -> lockpicks itemtype tool should save differently to stolen lockpick items
 --#183 -> In progress, todo: Add the new "AllServersAndAccountsTheSame" to "Copy settings routines" + Test: Open
---#188 -> Test: Needed
+
 
 -------------------------------------------------------------------------------------
 --Changelog (last version: 2.2.3 - New version: 2.2.4) -    Updated last: 2022-01-21
@@ -217,6 +219,8 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 --#177: With filterButton 1 and 2 at yellow state: items without markerIcon of filter 1 (but being a dynamic gear of filter 2) will not filter (hide)
 --#179: Gear or dynamic icons name could be empty and raise lua error messages. If left empty they will directly reset to the default name (English) now
 --#180: GetItemInstanceId error upon mouse over at inventory quest items
+--#182: FCOIS uniqueIds were saved with wrong values. Only the first parameter itemId was correct so they showed properly, but the differences like stolen, crafted, level, quality were never checked and saved properly.
+--Attention: You need to remove and re-apply the markers for your items if you want to save them properly with all data now! Else the old marker strings with the itemId and every other value "the same" will be kept and used!
 --#187: Delete backuped markerIcons was not removing some API versions properly
 --#191: Switching from FCOIS unique to non-unique item markers will not show ANY marker icon at the inventories. If the migration dialog appears and is aborted the UI will be reloaded to fix this
 --#193: FCOIS settings menu disappears in total after using LibFeedbacks -> Send mail feature, and re-opening the settings a 2nd time after that
@@ -236,6 +240,8 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 --Added new constant for special filter button state: Do not update colors = FCOIS_CON_FILTER_BUTTON_STATE_DO_NOT_UPDATE_COLOR
 --New looted missing set item pieces can be bound automatically (new setting), shown in chat (new setting) and be marked as unknown (exisitng settings) or known (new setting) set colelction pieces
 --Added API function function FCOIS.GetGearIcons(onlyNonDynamicOnes, onlyDynamicOnes)
+--#188 Enable backup and restore for all 3 saved itemIds (non unique, ZOs unique and FCOIS unique). ZOs unique and non-unique can only be saved and restored together!
+
 
 --[Added on request]
 --#176 Add submenu to 4 filter buttons, with setting to change the filter between AND & OR filter conjunction behaviour. Remembers the state for each filterPanel
