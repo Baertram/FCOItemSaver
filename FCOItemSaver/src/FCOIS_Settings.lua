@@ -481,7 +481,7 @@ local function scanBagsAndTransferMarkerIcon(toUnique)
         end
     end
 
-    --Migrate to uniqueId (FCOISuniqueIds->ZOs uniqueIds / ZOsUniqueIds->FCOISuniqueIds / non-unique to ZOsunique / non-unique to FCOISunique
+    --Migrate to uniqueId (FCOISuniqueIds->ZOs uniqueIds / ZOsUniqueIds->FCOISuniqueIds / non-unique to ZOs unique / non-unique to FCOISunique
     if toUnique == true then
         if not useUniqueIds or uniqueItemIdType == nil then
             --Non-unique ID enabled -> Abort
@@ -601,7 +601,7 @@ local function scanBagsAndTransferMarkerIcon(toUnique)
             if toUnique == true then
                 --Build the itemID -> FROM
                 -->Could be a uniqueId or a non-unique itemInstanceId
-                itemId, allowedItemType = getFCOISMarkerIconSavedVariablesItemId(bagId, slotIndex, nil, uniqueIdWasLastEnabled, uniqueIdTypeLastUsed)
+                itemId, allowedItemType = getFCOISMarkerIconSavedVariablesItemId(bagId, slotIndex, nil, uniqueIdWasLastEnabled, uniqueIdTypeLastUsed, nil)
                 --[[
                 if uniqueIdWasLastEnabled == true then
                     --UniqueId -> FROM
@@ -623,7 +623,8 @@ local function scanBagsAndTransferMarkerIcon(toUnique)
                 end
                 ]]
                 --Build the newItemId -> TO
-                itemIdNew, allowedItemTypeNew = getFCOISMarkerIconSavedVariablesItemId(bagId, slotIndex, nil, useUniqueIds, uniqueItemIdType)
+                itemIdNew, allowedItemTypeNew = getFCOISMarkerIconSavedVariablesItemId(bagId, slotIndex, nil, useUniqueIds, uniqueItemIdType, nil)
+d(">itemId: " ..tos(itemId)..", allowedItemType: " .. tos(allowedItemType) .. " - itemIdNew: " ..tos(itemIdNew)..", allowedItemTypeNew: " .. tos(allowedItemTypeNew))
                 --[[
                 if allowedItemType == true then
                     --Check which uniqueId type is currently setup in the FCOIS settings
@@ -670,7 +671,7 @@ local function scanBagsAndTransferMarkerIcon(toUnique)
             -->e.g. for nonUniqueIds "markedItems" and for uniqueIDsFCOIS the table "markedItemsFCOISUnique"
             if itemId ~= nil and itemIdNew ~= nil then
                 local increaseNumMigratedItems = true
-                local markedItemsVarOld = FCOIS[savedVarsMarkedItemsTableNameOld]
+                local markedItemsVarOld = FCOIS.settingsVars.settings[savedVarsMarkedItemsTableNameOld]
                 --Check if the item is marked with any icon
                 for iconId = FCOIS_CON_ICON_LOCK, FCOIS.numVars.gFCONumFilterIcons, 1 do
                     local isMarked = markedItemsVarOld[iconId][itemId]
@@ -678,8 +679,8 @@ local function scanBagsAndTransferMarkerIcon(toUnique)
                     --Is the icon marked?
                     if isMarked == true then
                         --Transfer the marker icon from the old one to the new one
-                        FCOIS[savedVarsMarkedItemsTableNameNew][iconId] = FCOIS[savedVarsMarkedItemsTableNameNew][iconId] or {}
-                        FCOIS[savedVarsMarkedItemsTableNameNew][iconId][itemIdNew] = true
+                        FCOIS.settingsVars.settings[savedVarsMarkedItemsTableNameNew][iconId] = FCOIS.settingsVars.settings[savedVarsMarkedItemsTableNameNew][iconId] or {}
+                        FCOIS.settingsVars.settings[savedVarsMarkedItemsTableNameNew][iconId][itemIdNew] = true
 --TODO: Remove 3 lines below after migration tests finished
 --FCOIS["_migrated" .. savedVarsMarkedItemsTableNameNew] = FCOIS["_migrated" .. savedVarsMarkedItemsTableNameNew] or {}
 --FCOIS["_migrated" .. savedVarsMarkedItemsTableNameNew][iconId] = FCOIS["_migrated" .. savedVarsMarkedItemsTableNameNew][iconId] or {}

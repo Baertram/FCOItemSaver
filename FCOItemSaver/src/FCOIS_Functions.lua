@@ -341,9 +341,6 @@ function FCOIS.GetFCOISMarkerIconSavedVariablesItemId(bagId, slotIndex, allowedI
     local uniqueIdsTypeForMarkerIcons = uniqueItemIdType
 
     if useUniqueIdsForMarkerIcons == true then
-        --TODO: bug #182 -> Check function "getFCOISMarkerIconUniqueIdAllowedItemType" ! 2022-01-16
-        --#182, 2022-01-16, playstyle, addon comments: I would like to mark lockpicks but not stolen ones. I enabled the FCOIS uniqe ID because it has a 'stolen'
-        --option and i also tried adding the item type 'Tool'. But no matter what both kinds of lockpicks are getting marked at the same time. What am i doing wrong?
         allowedItemType = allowedItemType or getFCOISMarkerIconUniqueIdAllowedItemType(bagId, slotIndex, uniqueIdsTypeForMarkerIcons)
         if allowedItemType == true then
             useNormalItemInstanceId = false

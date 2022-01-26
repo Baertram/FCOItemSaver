@@ -190,21 +190,22 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 --#189, 2022-01-17, Baertram, bug: FCOIS uniqueIds item markers got saved into SavedVariables table "markedItems", but they should only be saved to "markedItemsFCOISUnique"
 --#190, 2022-01-17, Baertram, bug: non-unique item markers got saved into SavedVariables table "markedItemsFCOISUnique", but they should only be saved to "markedItems"
 
+
 --____________________________
--- Current max bugs/features/ToDos: 196
+-- Current max bugs/features/ToDos: 197
 --____________________________
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-01-21
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-01-26
 ------------------------------------------------------------------------------------
 --#176 -> Test: Errors occured with OR filters, and mixed AND + OR filters
 --#182 FCOUS uniqueIds -> lockpicks itemtype tool should save differently to stolen lockpick items
 --#183 -> In progress, todo: Add the new "AllServersAndAccountsTheSame" to "Copy settings routines" + Test: Open
-
+--#197 -> Test migration
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.2.3 - New version: 2.2.4) -    Updated last: 2022-01-21
+--Changelog (last version: 2.2.3 - New version: 2.2.4) -    Updated last: 2022-01-26
 -------------------------------------------------------------------------------------
 
 --[Fixed]
@@ -225,6 +226,7 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 --#193: FCOIS settings menu disappears in total after using LibFeedbacks -> Send mail feature, and re-opening the settings a 2nd time after that
 --#194: If the submenu for dynamic icons is enabled at the context menus: Using SHIFT+right mouse to remove/readd all marker icons to the item will still show the "Dynamic" submenu at banks/vendors/crafting
 --#195: Fixed detection of owned house (for backup auto port suggestion to house, to access the house storage data)
+--#197: Migration of non-unique item markers to FCOISunique itemMarkers does not work properly
 
 
 --[Changed]
