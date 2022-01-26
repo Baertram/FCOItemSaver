@@ -218,6 +218,7 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 --#180: GetItemInstanceId error upon mouse over at inventory quest items
 --#182: FCOIS uniqueIds were saved with wrong values. Only the first parameter itemId was correct so they showed properly, but the differences like stolen, crafted, level, quality were never checked and saved properly.
 --Attention: You need to remove and re-apply the markers for your items if you want to save them properly with all data now! Else the old marker strings with the itemId and every other value "the same" will be kept and used!
+--You can use the new settings at "Backup &restore & delete", submenu "Delete" -> Delete all marker icons for FCOIS unique ones to mass-remove the old entries. And then use automatic marks like set items etc. to remark them new!
 --#187: Delete backuped markerIcons was not removing some API versions properly
 --#191: Switching from FCOIS unique to non-unique item markers will not show ANY marker icon at the inventories. If the migration dialog appears and is aborted the UI will be reloaded to fix this
 --#192, FCOIS unique item marker strings contain the text "nil". This was changed to "" to reduce the size if the SVs
