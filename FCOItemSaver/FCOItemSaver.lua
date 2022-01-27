@@ -187,21 +187,23 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
     Bei 0 zeige ich dann sowas an wie "Cooldown ist abgelaufen" und bei >0 in rot der Hinweis, dass der Cooldown noch so und so lange aktiv ist.
 ]]
 
+--#198, 2021-12-27, Baertram, bug: Enchanting is not protected properly as FCOIS.gFilterWhere is 1 (LF_INVENTORY)?
+
 
 --____________________________
--- Current max bugs/features/ToDos: 197
+-- Current max bugs/features/ToDos: 198
 --____________________________
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-01-26
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-01-27
 ------------------------------------------------------------------------------------
 --#176 -> Test: Errors occured with OR filters, and mixed AND + OR filters
---#182 FCOUS uniqueIds -> lockpicks itemtype tool should save differently to stolen lockpick items
 --#183 -> In progress, todo: Add the new "AllServersAndAccountsTheSame" to "Copy settings routines" + Test: Open
+--#198
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.2.3 - New version: 2.2.4) -    Updated last: 2022-01-26
+--Changelog (last version: 2.2.3 - New version: 2.2.4) -    Updated last: 2022-01-27
 -------------------------------------------------------------------------------------
 
 --[Fixed]
@@ -328,3 +330,4 @@ end
 --- Call the start function for this addon, so the initialization is done
 --------------------------------------------------------------------------------
 FCOItemSaver_Initialized()
+

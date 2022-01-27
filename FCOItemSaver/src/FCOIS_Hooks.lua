@@ -636,6 +636,7 @@ function FCOIS.CreateHooks()
     local updateFCOISFilterButtonColorsAndTextures = FCOIS.UpdateFCOISFilterButtonColorsAndTextures
     local hideContextMenu = FCOIS.HideContextMenu
     local changeContextMenuInvokerButtonColorByPanelId = FCOIS.ChangeContextMenuInvokerButtonColorByPanelId
+    local resetContextMenuInvokerButtonColorToDefaultPanelId = FCOIS.ResetContextMenuInvokerButtonColorToDefaultPanelId
     local autoReenableAntiSettingsCheck = FCOIS.AutoReenableAntiSettingsCheck
     local checkIfClearOrRestoreAllMarkers = FCOIS.CheckIfClearOrRestoreAllMarkers
 
@@ -1334,9 +1335,7 @@ function FCOIS.CreateHooks()
         --Avoid the filter panel ID change if the fence_manager is called from a normal vendor, which closes the store:
         --If you directly open the mail panel at the vendor the current panel ID will be reset to LF_INVENTORY and this would be not true!
         if FCOIS.preventerVars.gNoCloseEvent == false then
-            FCOIS.gFilterWhere = LF_INVENTORY
-            --Change the button color of the context menu invoker
-            changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
+            resetContextMenuInvokerButtonColorToDefaultPanelId()
         end
     end)
 
@@ -1440,28 +1439,32 @@ function FCOIS.CreateHooks()
         hideContextMenu(FCOIS.gFilterWhere)
         --Call delayed with 0ms to call it on next frame in order to let the filterFunctions work properly in function
         --preHookMainMenuFilterButtonHandler -> registerFilter and refresh of inventory
-        zo_callLater(function()
+        --zo_callLater(function()
             local enchantingCtrl = ctrlVars.ENCHANTING
             if enchantingCtrl:IsSceneShowing() then
-                local enchantingMode = enchantingCtrl.enchantingMode
+                --local enchantingMode = enchantingCtrl.enchantingMode
+                local enchantingMode = enchantingCtrl:GetEnchantingMode()
                 if settings.debug then debugMessage( "[ENCHANTING:OnModeUpdated]","EnchantingMode: " .. tos(enchantingMode), true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
-                --d("[FCOIS]Hook ZO_Enchanting.SetEnchantingMode/OnModeUpdated - Mode: " ..tos(enchantingMode))
+--d("[FCOIS]Hook ZO_Enchanting.SetEnchantingMode/OnModeUpdated - Mode: " ..tos(enchantingMode))
                 --Creation
                 if     enchantingMode == ENCHANTING_MODE_CREATION then
                     preHookMainMenuFilterButtonHandler(LF_ENCHANTING_EXTRACTION, LF_ENCHANTING_CREATION)
                     --Extraction
                 elseif enchantingMode == ENCHANTING_MODE_EXTRACTION then
                     preHookMainMenuFilterButtonHandler(LF_ENCHANTING_CREATION, LF_ENCHANTING_EXTRACTION)
+                else
+                    resetContextMenuInvokerButtonColorToDefaultPanelId()
                 end
             end
-        end, 0)
+        --end, 0)
         --Go on with original function --> Only for PreHook!
         --return false
     end
     --Posthook the enchanting function SetEnchantingMode() which gets executed as the enchanting tabs are changed
     --ZO_Enchanting:SetEnchantingMode does not exist anymore (PTS -> Scalebreaker) and was replaced by ZO_Enchanting:OnModeUpdated()
-    SecurePostHook(ctrlVars.ENCHANTING_CLASS, "OnModeUpdated", enchantingPreHook)
+    --SecurePostHook(ctrlVars.ENCHANTING_CLASS, "OnModeUpdated", enchantingPreHook)
+    SecurePostHook(ctrlVars.ENCHANTING, "OnModeUpdated", enchantingPreHook)
 
     --======== ALCHEMY =============================================================
     --Prehook the alchemy function which gets executed as the alchemy tabs are changed
@@ -1717,7 +1720,8 @@ function FCOIS.CreateHooks()
 
             --When the companion character panel is hidden
         elseif newState == SCENE_FRAGMENT_HIDDEN then
-            changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
+            --changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
+            resetContextMenuInvokerButtonColorToDefaultPanelId()
         end
     end)
 

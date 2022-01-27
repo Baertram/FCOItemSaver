@@ -1062,10 +1062,20 @@ end
 
 function FCOIS.IsItemAGlpyh(bag, slot)
     if bag == nil or slot == nil then return false end
-    local isArmorGlyph		= (GetItemType(bag, slot) == ITEMTYPE_GLYPH_ARMOR)
-    local isJewelryGlyph	= (GetItemType(bag, slot) == ITEMTYPE_GLYPH_JEWELRY)
-    local isWeaponGlyph		= (GetItemType(bag, slot) == ITEMTYPE_GLYPH_WEAPON)
+    local glypItemTypesAllowed = {
+        [ITEMTYPE_GLYPH_ARMOR] =    true,
+        [ITEMTYPE_GLYPH_JEWELRY] =  true,
+        [ITEMTYPE_GLYPH_WEAPON] =   true,
+
+    }
+    local itemType = GetItemType(bag, slot)
+    --[[
+    local isArmorGlyph		= (itemType == ITEMTYPE_GLYPH_ARMOR)
+    local isJewelryGlyph	= (itemType == ITEMTYPE_GLYPH_JEWELRY)
+    local isWeaponGlyph		= (itemType == ITEMTYPE_GLYPH_WEAPON)
     local resultVar = (isArmorGlyph or isJewelryGlyph or isWeaponGlyph)
+    ]]
+    local resultVar = glypItemTypesAllowed[itemType] or false
     --d("[FCOIS.isItemAGlpyh - isArmorGlyph: ".. tos(isArmorGlyph) .. ", isJewelryGlyph: " .. tos(isJewelryGlyph) .. ", isWeaponGlyph: " .. tos(isWeaponGlyph) .. " - return: " .. tos(resultVar))
     return resultVar
 end

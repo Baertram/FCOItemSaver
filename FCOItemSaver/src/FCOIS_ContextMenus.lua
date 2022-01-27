@@ -2353,6 +2353,13 @@ function FCOIS.ChangeContextMenuInvokerButtonColorByPanelId(panelId)
         end
     end
 end
+local changeContextMenuInvokerButtonColorByPanelId = FCOIS.ChangeContextMenuInvokerButtonColorByPanelId
+
+function FCOIS.ResetContextMenuInvokerButtonColorToDefaultPanelId()
+    FCOIS.gFilterWhere = LF_INVENTORY
+    --Change the button color of the context menu invoker
+    changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
+end
 
 local function invertAdditionalInventoryFlagProtectionAndColor(p_panelId, p_buttonControl)
 --d("[FCOIS]invertAdditionalInventoryFlagProtectionAndColor-panelId: " ..tos(p_panelId) .. ", button: " ..tos(p_buttonControl:GetName()))
