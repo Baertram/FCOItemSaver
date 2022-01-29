@@ -3,6 +3,8 @@ FCOIS = FCOIS or {}
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
 
+local getLocText = FCOIS.GetLocText
+
 local checkIfFCOISSettingsWereLoaded = FCOIS.CheckIfFCOISSettingsWereLoaded
 --Load the user settings, if not done already
 checkIfFCOISSettingsWereLoaded(true)
@@ -12,26 +14,26 @@ if not FCOIS.settingsVars or not FCOIS.settingsVars.settings then return end
 --Keybinding texts
 
 --Filters
-ZO_CreateStringId("SI_BINDING_NAME_FCOISFILTER1",                           FCOIS.GetLocText("SI_BINDING_NAME_FCOISFILTER1", true))
-ZO_CreateStringId("SI_BINDING_NAME_FCOISFILTER2",                           FCOIS.GetLocText("SI_BINDING_NAME_FCOISFILTER2", true))
-ZO_CreateStringId("SI_BINDING_NAME_FCOISFILTER3",                           FCOIS.GetLocText("SI_BINDING_NAME_FCOISFILTER3", true))
-ZO_CreateStringId("SI_BINDING_NAME_FCOISFILTER4",                           FCOIS.GetLocText("SI_BINDING_NAME_FCOISFILTER4", true))
+ZO_CreateStringId("SI_BINDING_NAME_FCOISFILTER1",                           getLocText("SI_BINDING_NAME_FCOISFILTER1", true))
+ZO_CreateStringId("SI_BINDING_NAME_FCOISFILTER2",                           getLocText("SI_BINDING_NAME_FCOISFILTER2", true))
+ZO_CreateStringId("SI_BINDING_NAME_FCOISFILTER3",                           getLocText("SI_BINDING_NAME_FCOISFILTER3", true))
+ZO_CreateStringId("SI_BINDING_NAME_FCOISFILTER4",                           getLocText("SI_BINDING_NAME_FCOISFILTER4", true))
 --Settings menu
-ZO_CreateStringId("SI_BINDING_NAME_FCOIS_SETTINGS_MENU",                    FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_SETTINGS_MENU", true))
+ZO_CreateStringId("SI_BINDING_NAME_FCOIS_SETTINGS_MENU",                    getLocText("SI_BINDING_NAME_FCOIS_SETTINGS_MENU", true))
 --Standard mark icon
-ZO_CreateStringId("SI_BINDING_NAME_FCOIS_MARK_ITEM_WITH_STANDARD_ICON",     FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_MARK_ITEM_WITH_STANDARD_ICON", true))
+ZO_CreateStringId("SI_BINDING_NAME_FCOIS_MARK_ITEM_WITH_STANDARD_ICON",     getLocText("SI_BINDING_NAME_FCOIS_MARK_ITEM_WITH_STANDARD_ICON", true))
 --Cycle marker icon up
-ZO_CreateStringId("SI_BINDING_NAME_FCOIS_MARK_ITEM_CYCLE_UP",               FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_MARK_ITEM_CYCLE_UP", true))
+ZO_CreateStringId("SI_BINDING_NAME_FCOIS_MARK_ITEM_CYCLE_UP",               getLocText("SI_BINDING_NAME_FCOIS_MARK_ITEM_CYCLE_UP", true))
 --Cycle marker icon down
-ZO_CreateStringId("SI_BINDING_NAME_FCOIS_MARK_ITEM_CYCLE_DOWN",             FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_MARK_ITEM_CYCLE_DOWN", true))
+ZO_CreateStringId("SI_BINDING_NAME_FCOIS_MARK_ITEM_CYCLE_DOWN",             getLocText("SI_BINDING_NAME_FCOIS_MARK_ITEM_CYCLE_DOWN", true))
 --Static icons
-ZO_CreateStringId("SI_BINDING_NAME_FCOIS_MARK_ITEM_1",                      FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_MARK_ITEM_1", true))
-ZO_CreateStringId("SI_BINDING_NAME_FCOIS_MARK_ITEM_3",                      FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_MARK_ITEM_3", true))
-ZO_CreateStringId("SI_BINDING_NAME_FCOIS_MARK_ITEM_5",                      FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_MARK_ITEM_5", true))
-ZO_CreateStringId("SI_BINDING_NAME_FCOIS_MARK_ITEM_9",                      FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_MARK_ITEM_9", true))
-ZO_CreateStringId("SI_BINDING_NAME_FCOIS_MARK_ITEM_10",                     FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_MARK_ITEM_10", true))
-ZO_CreateStringId("SI_BINDING_NAME_FCOIS_MARK_ITEM_11",                     FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_MARK_ITEM_11", true))
-ZO_CreateStringId("SI_BINDING_NAME_FCOIS_MARK_ITEM_12",                     FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_MARK_ITEM_12", true))
+ZO_CreateStringId("SI_BINDING_NAME_FCOIS_MARK_ITEM_1",                      getLocText("SI_BINDING_NAME_FCOIS_MARK_ITEM_1", true))
+ZO_CreateStringId("SI_BINDING_NAME_FCOIS_MARK_ITEM_3",                      getLocText("SI_BINDING_NAME_FCOIS_MARK_ITEM_3", true))
+ZO_CreateStringId("SI_BINDING_NAME_FCOIS_MARK_ITEM_5",                      getLocText("SI_BINDING_NAME_FCOIS_MARK_ITEM_5", true))
+ZO_CreateStringId("SI_BINDING_NAME_FCOIS_MARK_ITEM_9",                      getLocText("SI_BINDING_NAME_FCOIS_MARK_ITEM_9", true))
+ZO_CreateStringId("SI_BINDING_NAME_FCOIS_MARK_ITEM_10",                     getLocText("SI_BINDING_NAME_FCOIS_MARK_ITEM_10", true))
+ZO_CreateStringId("SI_BINDING_NAME_FCOIS_MARK_ITEM_11",                     getLocText("SI_BINDING_NAME_FCOIS_MARK_ITEM_11", true))
+ZO_CreateStringId("SI_BINDING_NAME_FCOIS_MARK_ITEM_12",                     getLocText("SI_BINDING_NAME_FCOIS_MARK_ITEM_12", true))
 
 --Junk sell marked items
 --Get the sell marker icon texture and replace the %s placeholder in SI_BINDING_NAME_FCOIS_JUNK_ALL_SELL with it
@@ -45,13 +47,12 @@ if FCOIS.settingsVars.settings.icon then
         --local sellIconColorDef = ZO_ColorDef:New(sellIconColor.r, sellIconColor.g, sellIconColor.b, sellIconColor.a)
         --sellIconTextureText = sellIconColorDef:Colorize(zo_iconFormat(sellIconTexture, 24, 24))
         sellIconTextureText = zo_iconFormat(sellIconTexture, 32, 32)
-        ZO_CreateStringId("SI_BINDING_NAME_FCOIS_JUNK_ALL_SELL",                    FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_JUNK_ALL_SELL", true, {sellIconTextureText}))
+        ZO_CreateStringId("SI_BINDING_NAME_FCOIS_JUNK_ALL_SELL",            getLocText("SI_BINDING_NAME_FCOIS_JUNK_ALL_SELL", true, {sellIconTextureText}))
     end
 end
 --Mark with sell icon (if enabled in settings) and junk item
-ZO_CreateStringId("SI_BINDING_NAME_FCOIS_JUNK_AND_MARK_SELL_ITEM",          FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_JUNK_AND_MARK_SELL_ITEM", true))
-ZO_CreateStringId("SI_BINDING_NAME_FCOIS_REMOVE_ALL_MARKER_ICONS_AND_UNDO", FCOIS.GetLocText("SI_BINDING_NAME_FCOIS_REMOVE_ALL_MARKER_ICONS_AND_UNDO", true))
-
+ZO_CreateStringId("SI_BINDING_NAME_FCOIS_JUNK_AND_MARK_SELL_ITEM",          getLocText("SI_BINDING_NAME_FCOIS_JUNK_AND_MARK_SELL_ITEM", true))
+ZO_CreateStringId("SI_BINDING_NAME_FCOIS_REMOVE_ALL_MARKER_ICONS_AND_UNDO", getLocText("SI_BINDING_NAME_FCOIS_REMOVE_ALL_MARKER_ICONS_AND_UNDO", true))
 
 --Generate the keybinding texts for the static gear set icons
 function FCOIS.GenerateStaticGearSetIconsKeybindingsTexts()
@@ -59,7 +60,7 @@ function FCOIS.GenerateStaticGearSetIconsKeybindingsTexts()
     local gearKeybindString = "SI_BINDING_NAME_FCOIS_MARK_GEAR_SET_"
     local numGearSets = FCOIS.numVars.gFCONumGearSets
     for gearNr = 1, numGearSets, 1 do
-        ZO_CreateStringId(gearKeybindString .. tostring(gearNr),            FCOIS.GetLocText(gearKeybindString .. tostring(gearNr), true))
+        ZO_CreateStringId(gearKeybindString .. tostring(gearNr),            getLocText(gearKeybindString .. tostring(gearNr), true))
     end
 end
 
@@ -72,7 +73,7 @@ function FCOIS.GenerateDynamicIconsKeybindingsTexts()
     local dyn2Icon          = FCOIS.mappingVars.dynamicToIcon
     for dynNr = 1, numDynIcons, 1 do
         local dynIconNr = dyn2Icon[dynNr]
-        ZO_CreateStringId(dynKeybindString .. tostring(dynIconNr),          FCOIS.GetLocText(dynKeybindString .. tostring(dynIconNr), true))
+        ZO_CreateStringId(dynKeybindString .. tostring(dynIconNr),          getLocText(dynKeybindString .. tostring(dynIconNr), true))
     end
 end
 

@@ -33,6 +33,9 @@ local LAMopenedCounter = 0
 
 local FCOISdefaultSettings
 local FCOISsettings
+
+--These localizations will contain keybinding texts only at this moment!
+-->Will be updated as LAM menu is created again
 local FCOISlocVars =    FCOIS.localizationVars
 local locVars =         FCOISlocVars.fcois_loc
 
@@ -40,8 +43,8 @@ local mappingVars = FCOIS.mappingVars
 local preChatVars = FCOIS.preChatVars
 local noEntry = mappingVars.noEntry
 local noEntryValue = mappingVars.noEntryValue
-local currentStart  = preChatVars.currentStart
-local currentEnd    = preChatVars.currentEnd
+local currentStart = preChatVars.currentStart
+local currentEnd   = preChatVars.currentEnd
 local isIconEnabled
 local numDynIcons
 local iconId2FCOISIconNr = mappingVars.dynamicToIcon
@@ -185,25 +188,39 @@ local markerIconsToDeleteIcon = 0
 
 --Languages
 local languageOptions = {}
+local languageOptionsValues = {}
 --  Add english language description behind language descriptions in other languages
 local function nvl(val) if val == nil then return "..." end return val end
 --local LV_Cur = locVars
 local LV_Eng = FCOISlocVars.localizationAll[FCOIS_CON_LANG_EN]
-for i=1, numVars.languageCount do
-    local s="options_language_dropdown_selection"..i
+for langId=1, numVars.languageCount do
+    local s="options_language_dropdown_selection".. tos(langId)
     if locVars==LV_Eng then
-        languageOptions[i] = nvl(locVars[s])
+        languageOptions[langId] = nvl(locVars[s])
     else
-        languageOptions[i] = nvl(locVars[s]) .. " (" .. nvl(LV_Eng[s]) .. ")"
+        languageOptions[langId] = nvl(locVars[s]) .. " (" .. nvl(LV_Eng[s]) .. ")"
     end
+
+    languageOptionsValues[langId] = langId
+    --[[
+    FCOIS_CON_LANG_EN = 1
+    FCOIS_CON_LANG_DE = 2
+    FCOIS_CON_LANG_FR = 3
+    FCOIS_CON_LANG_ES = 4
+    FCOIS_CON_LANG_IT = 5
+    FCOIS_CON_LANG_JP = 6
+    FCOIS_CON_LANG_RU = 7
+    ]]
 end
+
 --Saved variables
-local savedVariablesOptions = {
-    [1] = locVars["options_savedVariables_dropdown_selection1"], -- Each character
-    [2] = locVars["options_savedVariables_dropdown_selection2"], -- Account wide
-    [3] = locVars["options_savedVariables_dropdown_selection3"], -- Each account saved the same
-    --[4] = locVars["options_savedVariables_dropdown_selection4"], -- Each server and account saved the same --todo #183
-}
+local savedVariablesOptions = {}
+local savedVariablesOptionsValues = {}
+for saveModeType=1, FCOIS.addonVars.savedVarsNumSaveModeTypes do
+    savedVariablesOptions[saveModeType] = locVars["options_savedVariables_dropdown_selection" ..tos(saveModeType)]
+    savedVariablesOptionsValues[saveModeType] = saveModeType
+end
+
 -- Unique itemId choices
 local uniqueItemIdTypeChoices = {
     [1] = locVars["options_unique_id_base_game"],
@@ -2791,6 +2808,12 @@ end
 --~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 --~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 function FCOIS.BuildAddonMenu()
+--d("[FCOIS]BuildAddonMenu")
+    --Update the localizations as they might have been changed meanwhile
+    -->Init via keybinds and updated from SavedVariables at event_add_on_loaded
+    FCOISlocVars =    FCOIS.localizationVars
+    locVars =         FCOISlocVars.fcois_loc
+
     --Update some settings for the libAddonMenu settings menu
     FCOIS.UpdateSettingsBeforeAddonMenu()
 
@@ -2989,9 +3012,11 @@ function FCOIS.BuildAddonMenu()
                     type = 'dropdown',
                     name = locVars["options_language"],
                     tooltip = locVars["options_language" .. tooltipSuffix],
-                    choices = languageOptions,
-                    getFunc = function() return languageOptions[FCOIS.settingsVars.defaultSettings.language] end,
+                    choices =       languageOptions,
+                    choicesValues = languageOptionsValues,
+                    getFunc = function() return FCOIS.settingsVars.defaultSettings.language end,
                     setFunc = function(value)
+                        --[[
                         for i,v in pairs(languageOptions) do
                             if v == value then
                                 if FCOIS.settingsVars.settings.debug then debugMessage( "[Settings]","language v: " .. tos(v) .. ", i: " .. tos(i), false) end
@@ -3003,6 +3028,11 @@ function FCOIS.BuildAddonMenu()
                                 --ReloadUI()
                             end
                         end
+                        ]]
+                        FCOIS.settingsVars.defaultSettings.language = value
+                        --Tell the FCOISsettings that you have manually chosen the language and want to keep it
+                        --Read in function Localization() after ReloadUI()
+                        FCOISsettings.languageChosen = true
                     end,
                     disabled = function() return FCOISsettings.alwaysUseClientLanguage end,
                     warning = locVars["options_language_description1"],
@@ -3028,9 +3058,11 @@ function FCOIS.BuildAddonMenu()
                     type = 'dropdown',
                     name = locVars["options_savedvariables"],
                     tooltip = locVars["options_savedvariables" .. tooltipSuffix],
-                    choices = savedVariablesOptions,
-                    getFunc = function() return savedVariablesOptions[FCOIS.settingsVars.defaultSettings.saveMode] end,
+                    choices =       savedVariablesOptions,
+                    choicesValues = savedVariablesOptionsValues,
+                    getFunc = function() return FCOIS.settingsVars.defaultSettings.saveMode end,
                     setFunc = function(value)
+                        --[[
                         for i,v in ipairs(savedVariablesOptions) do
                             if v == value then
                                 if FCOIS.settingsVars.settings.debug then debugMessage( "[Settings]","save mode v: " .. tos(v) .. ", i: " .. tos(i), false) end
@@ -3038,11 +3070,13 @@ function FCOIS.BuildAddonMenu()
                                 --ReloadUI()
                             end
                         end
+                        ]]
+                        FCOIS.settingsVars.defaultSettings.saveMode = value
                     end,
                     warning = locVars["options_language_description1"],
                     requiresReload = true,
                     --helpUrl = locVars["options_savedvariables" .. tooltipSuffix],
-                    default = savedVariablesOptions[2], -- Account wide
+                    default = savedVariablesOptionsValues[2], -- Account wide
                 },
                 --Unique ID switch
                 {

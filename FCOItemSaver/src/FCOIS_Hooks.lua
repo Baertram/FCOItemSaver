@@ -1439,7 +1439,7 @@ function FCOIS.CreateHooks()
         hideContextMenu(FCOIS.gFilterWhere)
         --Call delayed with 0ms to call it on next frame in order to let the filterFunctions work properly in function
         --preHookMainMenuFilterButtonHandler -> registerFilter and refresh of inventory
-        --zo_callLater(function()
+        zo_callLater(function()
             local enchantingCtrl = ctrlVars.ENCHANTING
             if enchantingCtrl:IsSceneShowing() then
                 --local enchantingMode = enchantingCtrl.enchantingMode
@@ -1457,7 +1457,7 @@ function FCOIS.CreateHooks()
                     resetContextMenuInvokerButtonColorToDefaultPanelId()
                 end
             end
-        --end, 0)
+        end, 0)
         --Go on with original function --> Only for PreHook!
         --return false
     end

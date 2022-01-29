@@ -187,23 +187,24 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
     Bei 0 zeige ich dann sowas an wie "Cooldown ist abgelaufen" und bei >0 in rot der Hinweis, dass der Cooldown noch so und so lange aktiv ist.
 ]]
 
---#198, 2021-12-27, Baertram, bug: Enchanting is not protected properly as FCOIS.gFilterWhere is 1 (LF_INVENTORY)?
-
+--#199, 2021-12-28, Baertram, bug: Companion equipment character is not showing the armor type labels L/M/H
+--#200, 2021-12-29, Baertram, bug: The chosen language is not updated in localization properly
+-->Localization is first called during keybind text buildUp and after that SavedVariables are given first at EVENT_ADD_ON_LOADED), so the texts need at least one other update call!
 
 --____________________________
--- Current max bugs/features/ToDos: 198
+-- Current max bugs/features/ToDos: 200
 --____________________________
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-01-27
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-01-29
 ------------------------------------------------------------------------------------
 --#176 -> Test: Errors occured with OR filters, and mixed AND + OR filters
 --#183 -> In progress, todo: Add the new "AllServersAndAccountsTheSame" to "Copy settings routines" + Test: Open
---#198
+--#200
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.2.3 - New version: 2.2.4) -    Updated last: 2022-01-27
+--Changelog (last version: 2.2.3 - New version: 2.2.4) -    Updated last: 2022-01-29
 -------------------------------------------------------------------------------------
 
 --[Fixed]
@@ -226,6 +227,7 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 --#194: If the submenu for dynamic icons is enabled at the context menus: Using SHIFT+right mouse to remove/readd all marker icons to the item will still show the "Dynamic" submenu at banks/vendors/crafting
 --#195: Fixed detection of owned house (for backup auto port suggestion to house, to access the house storage data)
 --#197: Migration of non-unique item markers to FCOISunique itemMarkers does not work properly
+--#198: Enchanting did not recognize the filters correctly and was not always protecting the items at extraction as it thought it is LF_INVENTORY
 
 
 --[Changed]

@@ -66,6 +66,7 @@ FCOIS.temporaryUseUniqueIds = {}
 local savedVarsMarkedItems = "markedItems"
 addonVars.savedVarName				= gAddonName .. "_Settings"
 addonVars.savedVarVersion		   	= 0.10 -- Changing this will reset all SavedVariables!
+addonVars.savedVarsNumSaveModeTypes = 4 -- 1=Each character, 2=Account wide, 3=Each account saved the same, 4=Each server and account saved the same
 --The subtables for the marked items. markedItems will be used for the non-unique and the ZOs really unique IDs.
 --markedItemsFCOISUnique will be used for the FCOIS created unique IDs.
 addonVars.savedVarsMarkedItemsNames = {
@@ -318,7 +319,10 @@ numVars.gFCOMaxNumDynamicIcons	= 30
 --Global value: Number of dynamic icons
 numVars.gFCONumDynamicIcons		= 10
 local numMaxDynamicIcons        = numVars.gFCOMaxNumDynamicIcons
-
+--The amount of markerIcons below the resDecImp context menu
+numVars.resDecImpIconCount      = 3
+--The amount of markerIcons below the sellGuildInt context menu
+numVars.sellGuildIntIconCount   = 3
 
 --The maximum number at the ITEMTYPE constants
 local itemTypeMaxFallback = ITEMTYPE_ITERATION_END -- should be 71 -> ITEMTYPE_GROUP_REPAIR at date 2021-05-06
@@ -1797,6 +1801,7 @@ local preventerVars = FCOIS.preventerVars
 preventerVars._prevVarReset = "FCOIS_PreventerVariableReset_"
 preventerVars.gLocalizationDone		= false
 preventerVars.KeyBindingTexts		= false
+preventerVars.gKeybindingLocalizationDone = false
 preventerVars.gScanningInv	    	= false
 --preventerVars.canUpdateInv 	   		= true
 preventerVars.gFilteringBasics		= false
