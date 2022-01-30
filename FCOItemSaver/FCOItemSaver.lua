@@ -242,6 +242,8 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 --Added new constant for special filter button state: Do not update colors = FCOIS_CON_FILTER_BUTTON_STATE_DO_NOT_UPDATE_COLOR
 --New looted missing set item pieces can be bound automatically (new setting), shown in chat (new setting) and be marked as unknown (exisitng settings) or known (new setting) set colelction pieces
 --Added API function function FCOIS.GetGearIcons(onlyNonDynamicOnes, onlyDynamicOnes)
+--Added IsCrownItem to the possible FCOIS unique-ID parts
+--If you press SHIFT key and right mouse on the filter button this will reset the selected filter icon at the button to the * ("All") entry
 --#188 Enable backup and restore for all 3 saved itemIds (non unique, ZOs unique and FCOIS unique). ZOs unique and non-unique can only be saved and restored together!
 
 

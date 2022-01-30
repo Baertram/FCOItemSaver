@@ -1173,18 +1173,26 @@ function FCOIS.AddOrChangeFCOISFilterButton(parentWindow, buttonId, pWidth, pHei
     end)
 
     --Set the mouse up handler for the filter button -> e.g. right click -> context menu to select one filter icon (or * for all)
-    button:SetHandler("OnMouseUp", function(self, mouseButton, upInside)
+    button:SetHandler("OnMouseUp", function(self, mouseButton, upInside, ctrl, alt, shift, command)
         --button 1= left mouse button / 2= right mouse button
         local doBuildContextMenu = false
         --Right click/mouse button 2 context menu hook part:
         if mouseButton == MOUSE_BUTTON_INDEX_RIGHT and upInside then
+            local filterButtonContextMenuType = availableCtms[buttonId]
+            showContextMenuAtFCOISFilterButton = showContextMenuAtFCOISFilterButton or FCOIS.ShowContextMenuAtFCOISFilterButton
+
             --Hide the tooltip
             ZO_Tooltips_HideTextTooltip()
 
---d("[FCOIS]FilterButton right click handler - panelId: " ..tos(FCOIS.gFilterWhere))
+            local isShiftPressed = shift or IsShiftKeyDown()
+--d("[FCOIS]FilterButton right click handler - panelId: " ..tos(FCOIS.gFilterWhere) .. ", isShiftPressed: " ..tos(isShiftPressed))
+            if isShiftPressed == true then
+                --Reset the filterButtons selected filterIcon to * ("All")
+                showContextMenuAtFCOISFilterButton(self, self.FCOfilterPanelId, filterButtonContextMenuType, true)
+                return
+            end
 
             local contextMenu = FCOIS.contextMenu
-            showContextMenuAtFCOISFilterButton = showContextMenuAtFCOISFilterButton or FCOIS.ShowContextMenuAtFCOISFilterButton
             local panelId = FCOIS.gFilterWhere
 
             --Build the context menu for the lock & dynamic icons
@@ -1246,10 +1254,9 @@ function FCOIS.AddOrChangeFCOISFilterButton(parentWindow, buttonId, pWidth, pHei
             end
             --Get the context menu type ("LockDyn", "Gear," ResDecImp" or "SellGuildInt") via the constant of the filterbutton
             if doBuildContextMenu == true then
-                local filterButtonContextMenuType = availableCtms[buttonId]
                 if filterButtonContextMenuType ~= nil then
                     --Build and show the context menu for the lockdyn
-                    showContextMenuAtFCOISFilterButton(self, self.FCOfilterPanelId, filterButtonContextMenuType)
+                    showContextMenuAtFCOISFilterButton(self, self.FCOfilterPanelId, filterButtonContextMenuType, false)
                 end
             end
         end

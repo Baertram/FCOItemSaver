@@ -3271,6 +3271,18 @@ function FCOIS.BuildAddonMenu()
                     disabled = function() return not uniqueIdIsEnabledAndSetToFCOIS() or not FCOISsettings.uniqueIdParts.isCrafted end,
                     width = "half",
                 },
+                {
+                    type = "checkbox",
+                    name = locVars["options_unique_id_part_crownItem"],
+                    tooltip = locVars["options_unique_id_part_crownItem"],
+                    getFunc = function() return FCOISsettings.uniqueIdParts.isCrownItem end,
+                    setFunc = function(value)
+                        FCOISsettings.uniqueIdParts.isCrownItem = value
+                    end,
+                    default = FCOISdefaultSettings.uniqueIdParts.isCrownItem,
+                    disabled = function() return not uniqueIdIsEnabledAndSetToFCOIS() end,
+                    width = "half",
+                },
 
 
                 --==============================================================================

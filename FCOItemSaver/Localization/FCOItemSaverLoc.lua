@@ -2444,6 +2444,7 @@ FCOIS.localizationVars.localizationAll = {
         ["options_header_migration"]            = "Migration",
         ["options_header_migration_ids"]        = "(Nicht-)Eindeutige ID Migration",
         ["options_unique_id_part_crafted_by"]   = GetString(SI_ITEM_FORMAT_STR_CRAFTED) .. " durch", -- Hergestellt durch
+        ["options_unique_id_part_crownItem"]    = GetString(SI_ITEMTYPE57),
         --Migrate ZOs locks to FCOIS locks
         ["migrate_ZOs_locks_to_FCOIS_locks_start"]              = "[FCOIS]Durchsuche Inventare nach mit dem ZOs Schloß markierten Gegenständen: START",
         ["migrate_ZOs_locks_to_FCOIS_locks_bagId"]              = ">Durchsuche Inventar (bagID): %s",

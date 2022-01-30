@@ -660,6 +660,7 @@ function FCOIS.CreateFCOISUniqueIdString(itemId, bagId, slotIndex, itemLink)
     local isStolen
     local isCrafted
     local craftedByName
+    local isCrownItem
 
     if uniqueIdParts.level == true then
         local cpLevel = GetItemLinkRequiredChampionPoints(itemLink)
@@ -721,12 +722,20 @@ function FCOIS.CreateFCOISUniqueIdString(itemId, bagId, slotIndex, itemLink)
         isStolen = booleanToNumber(IsItemLinkStolen(itemLink))
     end
     if isStolen == nil then isStolen = 0 end
+
+    --If item is a crown item add it to the uniqueId?
+    if uniqueIdParts.isCrownItem == true then
+        local isCrownStoreItem = IsItemLinkFromCrownStore(itemLink) or IsItemLinkFromCrownCrate(itemLink)
+        isCrownItem = booleanToNumber(isCrownStoreItem)
+    end
+    if isCrownItem == nil then isCrownItem = 0 end
     --------------------------------------------------------------------------------------------------------------------
 
     --Build the uniqueId string now
-    local uniqueItemIdStringTemplate = "%s,%s,%s,%s,%s,%s,%s,%s,%s" -- itemInstanceOrItemId,level,quality,trait,style,enchantment,isStolen,isCrafted,craftedByName
+    local uniqueItemIdStringTemplate = "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s" -- itemInstanceOrItemId,level,quality,trait,style,enchantment,isStolen,isCrafted,craftedByName,isCrownItem
     local uniqueItemIdString
-    uniqueItemIdString = strformat(uniqueItemIdStringTemplate, itemId,tos(level),tos(quality),tos(trait),tos(style),tos(enchantment),tos(isStolen),tos(isCrafted), tos(craftedByName))
+    uniqueItemIdString = strformat(uniqueItemIdStringTemplate, itemId,
+            tos(level),tos(quality),tos(trait),tos(style),tos(enchantment),tos(isStolen),tos(isCrafted), tos(craftedByName), tos(isCrownItem))
 
     --------------------------------------------------------------------------------------------------------------------
     --Cache the current values and set the last used type

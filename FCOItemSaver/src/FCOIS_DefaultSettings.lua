@@ -338,6 +338,7 @@ function FCOIS.BuildDefaultSettings()
 			isStolen = true,
 			isCrafted = true,
 			isCraftedBy = true,
+			isCrownItem = false,
 		},
 
 		--[[ FCOIS v2.2.4

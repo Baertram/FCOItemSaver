@@ -1832,9 +1832,10 @@ end
 --Function that display the LOCKDYN context menu after the player right-clicks on the FCOIS filter button on the inventory
 --or shows the context menu for the GEARs, RESEARCH & DECONSTRUCTION & IMPORVEMENT or SELL & SELL AT GUILD STORE & INTRICATE filter button
 -->With FCOIS v2.2.4 there was added a new submenu for filter button settings (e.g. logical AND or OR of the filter, compared to the other 3 filter buttons)
-function FCOIS.ShowContextMenuAtFCOISFilterButton(parentButton, p_FilterPanelId, contextMenuType)
+function FCOIS.ShowContextMenuAtFCOISFilterButton(parentButton, p_FilterPanelId, contextMenuType, resetToAllEntry)
     p_FilterPanelId = p_FilterPanelId or FCOIS.gFilterWhere
     if parentButton == nil or p_FilterPanelId == nil or p_FilterPanelId == 0 then return end
+    resetToAllEntry = resetToAllEntry or false
 
     local settings = FCOIS.settingsVars.settings
     if settings.debug then debugMessage( "[showContextMenuFilterButton]","Parent name: " .. parentButton:GetName() .. ", Type: " .. contextMenuType .. ", PanelId: " .. FCOIS.gFilterWhere, true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
@@ -1847,6 +1848,12 @@ function FCOIS.ShowContextMenuAtFCOISFilterButton(parentButton, p_FilterPanelId,
     local contextMenuFilterButtonsTypeToSettings = mappingVars.contextMenuFilterButtonTypeToSettings
     if not contextMenuFilterButtonsTypeToSettings[contextMenuType] then
         --ContextMenu is not enabled at the filterbutton: ABORT here!
+        return
+    end
+
+    --Reset the filterButton's icon to the * ("All") entry
+    if resetToAllEntry == true then
+        ContextMenuFCOISFilterButtonOnClicked(parentButton, contextMenuType, -1, p_FilterPanelId)
         return
     end
 
@@ -2013,7 +2020,6 @@ function FCOIS.ShowContextMenuAtFCOISFilterButton(parentButton, p_FilterPanelId,
         end
     end
 
-    --TODO
     --FCOIS v2.2.4 - Add a divider/headline and a submenu for the settings for the filter at the filter button - 2021-11-15
     local subMenuEntriesFilterButtonSettings = {}
     --Logical AND or OR of the filter button's filter, compared to the other 3 filter buttons
