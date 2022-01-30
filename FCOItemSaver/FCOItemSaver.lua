@@ -188,8 +188,7 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 ]]
 
 --#199, 2021-12-28, Baertram, bug: Companion equipment character is not showing the armor type labels L/M/H
---#200, 2021-12-29, Baertram, bug: The chosen language is not updated in localization properly
--->Localization is first called during keybind text buildUp and after that SavedVariables are given first at EVENT_ADD_ON_LOADED), so the texts need at least one other update call!
+
 
 --____________________________
 -- Current max bugs/features/ToDos: 200
@@ -228,6 +227,7 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 --#195: Fixed detection of owned house (for backup auto port suggestion to house, to access the house storage data)
 --#197: Migration of non-unique item markers to FCOISunique itemMarkers does not work properly
 --#198: Enchanting did not recognize the filters correctly and was not always protecting the items at extraction as it thought it is LF_INVENTORY
+--#200: The chosen language is not updated in localization of the settings menu properly
 
 
 --[Changed]

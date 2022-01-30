@@ -265,13 +265,10 @@ local function afterLocalization()
     --The available contextmenus at the filter buttons
     --The array for the LockDyn filter button context menu entries
     FCOIS.contextMenuVars.LockDynFilter.buttonContextMenuToIconId = buildLocalizedFilterButtonContextMenuEntries(FCOIS_CON_FILTER_BUTTON_LOCKDYN)
-
     --The mapping table for gear set split filter context menu buttons to icon id
     FCOIS.contextMenuVars.GearSetFilter.buttonContextMenuToIconId = buildLocalizedFilterButtonContextMenuEntries(FCOIS_CON_FILTER_BUTTON_GEARSETS)
-
     --The mapping table for RESEARCH & DECONSTRUCTION & IMPROVEMENT split filter context menu buttons to icon id
     FCOIS.contextMenuVars.ResDecImpFilter.buttonContextMenuToIconId = buildLocalizedFilterButtonContextMenuEntries(FCOIS_CON_FILTER_BUTTON_RESDECIMP)
-
     --The mapping table for SELL & SELL IN GUILD STORE & INTRICATE split filter context menu buttons to icon id
     FCOIS.contextMenuVars.SellGuildIntFilter.buttonContextMenuToIconId = buildLocalizedFilterButtonContextMenuEntries(FCOIS_CON_FILTER_BUTTON_SELLGUILDINT)
 

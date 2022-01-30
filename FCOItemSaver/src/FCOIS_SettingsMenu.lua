@@ -19,6 +19,9 @@ local strgsub = string.gsub
 local strfind = string.find
 local zo_strf = zo_strformat
 
+local svAllServersTheSame   = FCOIS.svServerAllTheSameName
+local svAllAccTheSameAcc    = FCOIS.svAllAccountsName
+
 local fcoisLAMSettingsReferencePrefix = "FCOItemSaver_Settings_"
 --Control name parts, prefix, suffix, tooltip suffix
 local previewSelect = "Preview_Select"
@@ -7638,6 +7641,7 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                     end,
                     reference = "FCOItemSaver_Settings_Copy_SV_Targ_Acc"
                 },
+                --Copy SV account
                 {
                     type = "button",
                     name = locVars["options_copy_sv_to_account"],
@@ -7682,7 +7686,7 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                     width = "half",
                     reference = "FCOItemSaver_Settings_Copy_SV_Targ_Acc_Button_Copy"
                 },
-
+                --Delete SV account
                 {
                     type = "button",
                     name = locVars["options_delete_sv_account"],
@@ -7723,6 +7727,56 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                     warning = locVars["options_delete_sv_account" .. tooltipSuffix],
                     width = "half",
                 },
+                --Copy SV to AllServersAndAllAccounts the same
+                {
+                    type = "button",
+                    name = locVars["options_copy_sv_to_allserversallaccount"],
+                    tooltip = locVars["options_copy_sv_to_allserversallaccount" .. tooltipSuffix],
+                    func = function()
+                        if FCOISsettings.remindUserAboutSavedVariablesBackup == true then
+                            showRememberUserAboutSavedVariablesBackupDialog()
+                        else
+                            local srcServerNameClean = cleanName(serverOptionsTarget[srcServer], "server")
+                            local srcAccNameClean = cleanName(serverOptionsTarget[srcAcc], "account", srcAcc)
+                            copySavedVars(srcServerNameClean, nil, srcAccNameClean, nil, nil, nil, false, true, true)
+                        end
+                    end,
+                    isDangerous = true,
+                    disabled = function()
+                        local srcServerName = serverNames[srcServer]
+                        local srcAccNameClean = cleanName(serverOptionsTarget[srcAcc], "account", srcAcc)
+                        if ((FCOIS.settingsNonServerDependendFound and FCOIS.defSettingsNonServerDependendFound)
+                                or (srcServer == noEntryValue or srcAcc == noEntryValue)
+                                or (FCOItemSaver_Settings[srcServerName] == nil or FCOItemSaver_Settings[srcServerName][srcAccNameClean] == nil)
+                        ) then
+                            return true
+                        end
+                        return false
+                    end,
+                    warning = locVars["options_copy_sv_to_allserversallaccount_warning"],
+                    width = "half",
+                    reference = "FCOItemSaver_Settings_Copy_SV_To_AllServersndAccountsTheSame_Button_Copy"
+                },
+                --Delete SV AllServersAndAllAccounts the same
+                {
+                    type = "button",
+                    name = locVars["options_delete_sv_allserversallaccount"],
+                    tooltip = locVars["options_delete_sv_allserversallaccount" .. tooltipSuffix],
+                    func = function()
+                        if FCOISsettings.remindUserAboutSavedVariablesBackup == true then
+                            showRememberUserAboutSavedVariablesBackupDialog()
+                        else
+                            copySavedVars(nil, nil, nil, nil, nil, nil, true, true, true)
+                        end
+                    end,
+                    isDangerous = true,
+                    disabled = function()
+                        return FCOItemSaver_Settings[svAllServersTheSame] == nil or FCOItemSaver_Settings[svAllServersTheSame][svAllAccTheSameAcc] == nil
+                    end,
+                    warning = locVars["options_delete_sv_allserversallaccount" .. tooltipSuffix],
+                    width = "half",
+                },
+
                 --from character to character
                 {
                     type = 'description',

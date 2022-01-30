@@ -85,7 +85,7 @@ end
 local function NamesToIDSavedVars(serverWorldName)
     serverWorldName = serverWorldName or svDefaultName
     --Are the character settings enabled? If not abort here
-    if (FCOIS.settingsVars.defaultSettings.saveMode ~= 1) then return nil end
+    if FCOIS.settingsVars.defaultSettings.saveMode ~= 1 then return nil end
     --Did we move the character name settings to character ID settings already?
     if not FCOIS.settingsVars.settings.namesToIDSavedVars then
         local doMove
@@ -128,7 +128,7 @@ function FCOIS.GetAccountWideCharacterOrNormalCharacterSettings()
         --FilterButton states are saved account wide but for each character individually?
         if settingsForAll.filterButtonsSaveForCharacter == true then
             local settingsSVBase = FCOIS.settingsVars.accountWideButForEachCharacterSettings
-            settingsSV = settingsSVBase and settingsSVBase[currentCharId]
+            settingsSV = settingsSVBase ~= nil and settingsSVBase[currentCharId]
         else
             settingsSV = FCOIS.settingsVars.settings
         end
@@ -624,7 +624,7 @@ local function scanBagsAndTransferMarkerIcon(toUnique)
                 ]]
                 --Build the newItemId -> TO
                 itemIdNew, allowedItemTypeNew = getFCOISMarkerIconSavedVariablesItemId(bagId, slotIndex, nil, useUniqueIds, uniqueItemIdType, nil)
-d(">itemId: " ..tos(itemId)..", allowedItemType: " .. tos(allowedItemType) .. " - itemIdNew: " ..tos(itemIdNew)..", allowedItemTypeNew: " .. tos(allowedItemTypeNew))
+--d(">itemId: " ..tos(itemId)..", allowedItemType: " .. tos(allowedItemType) .. " - itemIdNew: " ..tos(itemIdNew)..", allowedItemTypeNew: " .. tos(allowedItemTypeNew))
                 --[[
                 if allowedItemType == true then
                     --Check which uniqueId type is currently setup in the FCOIS settings
@@ -1028,7 +1028,7 @@ function FCOIS.AfterSettings()
     if FCOIS.settingsVars.settings.cleanedFCOISUniqueInNonUnique == nil then
         local markedItemsInSV = FCOIS.settingsVars.settings.markedItems
         if markedItemsInSV ~= nil then
-            for markerIconNr, markedItemsData in ipairs(markedItemsInSV) do
+            for markerIconNr, _ in ipairs(markedItemsInSV) do
                 for itemInstanceOrZOsUniqueId, isMarked in pairs(markedItemsInSV) do
                     if isMarked == true and type(itemInstanceOrZOsUniqueId) == "string" and strfind(itemInstanceOrZOsUniqueId, ",") ~= nil then
                         --FCOIS unique-ID saved to normal markerIcons table -> Delete
@@ -1081,6 +1081,7 @@ function FCOIS.AfterSettings()
         FCOIS.settingsVars.settings.cleanedFCOISUniqueNILEntries = true
     end
 end -- AfterSettings
+
 
 --Do some updates to the SavedVariables before the addon menu is created
 function FCOIS.UpdateSettingsBeforeAddonMenu()
@@ -1196,17 +1197,17 @@ function FCOIS.LoadUserSettings(calledFromExternal)
         --Use the current addon version to read the FCOIS.settingsVars.settings now
         local oldSettings = {}
         --Load the old user's settings from SavedVariables file -> Account/Character data, depending on the old defaultSettings, without Servername as last parameter, to get existing data
-        if (oldDefaultSettings.saveMode == 1) then
+        if oldDefaultSettings.saveMode == 1 then
             --Each character of an account different
             --Changed: Use the saved variables for single characters from the unique character ID and not the name anymore, so they are character rename save!
             oldSettings = ZO_SavedVars:NewCharacterIdSettings(addonSVname, addonSVversion , svSettingsName, checkForMigrateDefaults, nil)
             --Transfer the data from the name to the unique ID SavedVars now
             NamesToIDSavedVars()
-        elseif (oldDefaultSettings.saveMode == 3) then
+        elseif oldDefaultSettings.saveMode == 3 then
             --All accounts the same settings
             oldSettings = ZO_SavedVars:NewAccountWide(addonSVname, addonSVversion, svSettingsName, checkForMigrateDefaults, nil, svAllAccTheSameAcc)
         --All others use account wide
-        else --if (oldDefaultSettings.saveMode == 2) then
+        else
             --Account wide settings
             oldSettings = ZO_SavedVars:NewAccountWide(addonSVname, addonSVversion, svSettingsName, checkForMigrateDefaults, nil, nil)
         end
@@ -1246,18 +1247,19 @@ function FCOIS.LoadUserSettings(calledFromExternal)
             FCOIS.settingsVars.defaultSettings = ZO_SavedVars:NewAccountWide(addonSVname, 999, svSettingsForAllName, FCOIS.settingsVars.firstRunSettings, world, nil)
             --Check, by help of basic version 999, if the settings should be loaded for each character or account wide
             --Use the current addon version to read the FCOIS.settingsVars.settings now
-            if (FCOIS.settingsVars.defaultSettings.saveMode == 1) then
+            if FCOIS.settingsVars.defaultSettings.saveMode == 1 then
                 --Changed: Use the saved variables for single characters from the unique character ID and not the name anymore, so they are character rename save!
                 FCOIS.settingsVars.settings = ZO_SavedVars:NewCharacterIdSettings(addonSVname, addonSVversion , svSettingsName, defaultSavedVariables, world)
                 --Transfer the data from the name to the unique ID SavedVars now
                 NamesToIDSavedVars(world)
-            elseif (FCOIS.settingsVars.defaultSettings.saveMode == 2) then
+            elseif FCOIS.settingsVars.defaultSettings.saveMode == 2 then
                 --Account wide settings
                 FCOIS.settingsVars.settings = ZO_SavedVars:NewAccountWide(addonSVname, addonSVversion, svSettingsName, defaultSavedVariables, world, nil)
-            elseif (FCOIS.settingsVars.defaultSettings.saveMode == 3) then
+            elseif FCOIS.settingsVars.defaultSettings.saveMode == 3 then
                 --All accounts the same settings
                 FCOIS.settingsVars.settings = ZO_SavedVars:NewAccountWide(addonSVname, addonSVversion, svSettingsName, defaultSavedVariables, world, svAllAccTheSameAcc)
-            elseif (FCOIS.settingsVars.defaultSettings.saveMode == 4) then
+            --Added with FCOIS version 2.2.4 Settings all the same for all Accounts and all servers
+            elseif FCOIS.settingsVars.defaultSettings.saveMode == 4 then
                 --All servers and accounts the same
                 FCOIS.settingsVars.settings = ZO_SavedVars:NewAccountWide(addonSVname, addonSVversion, svSettingsName, defaultSavedVariables, svAllServersTheSame, svAllAccTheSameAcc)
             end
@@ -1285,14 +1287,14 @@ function FCOIS.LoadUserSettings(calledFromExternal)
             --FCOItemSaver_Settings[svDefaultName] = nil --reset the whole table now
 
             --Initialize the server-dependent settings with no values
-            if (oldDefSettings.saveMode == 1) then
+            if oldDefSettings.saveMode == 1 then
                 --Each character
                 --Changed: Use the saved variables for single characters from the unique character ID and not the name anymore, so they are character rename save!
                 FCOIS.settingsVars.settings = ZO_SavedVars:NewCharacterIdSettings(addonSVname, addonSVversion , svSettingsName, currentNonServerDependentSettingsCopy, world)
-            elseif (oldDefSettings.saveMode == 2) then
+            elseif oldDefSettings.saveMode == 2 then
                 --Account wide
                 FCOIS.settingsVars.settings = ZO_SavedVars:NewAccountWide(addonSVname, addonSVversion, svSettingsName, currentNonServerDependentSettingsCopy, world, nil)
-            elseif (oldDefSettings.saveMode == 3) then
+            elseif oldDefSettings.saveMode == 3 then
                 --All accounts the same settings
                 FCOIS.settingsVars.settings = ZO_SavedVars:NewAccountWide(addonSVname, addonSVversion, svSettingsName, currentNonServerDependentSettingsCopy, world, svAllAccTheSameAcc)
             end
@@ -1321,14 +1323,14 @@ function FCOIS.LoadUserSettings(calledFromExternal)
                         FCOItemSaver_Settings[svDefaultName][displayName][svAccountWideName][svSettingsForAllName] = currentNonServerDependentDefSettingsCopy
                         FCOItemSaver_Settings[svDefaultName][displayName][svAccountWideName][svSettingsName]       = currentNonServerDependentSettingsCopy
                         --Assign the current SavedVards properly to the internally used variables of FCOIS again, but without server name (-> last parameter = nil, use svDefaultName table key!
-                        if (oldDefSettings.saveMode == 1) then
+                        if oldDefSettings.saveMode == 1 then
                             --Each charater
                             --Changed: Use the saved variables for single characters from the unique character ID and not the name anymore, so they are character rename save!
                             FCOIS.settingsVars.settings = ZO_SavedVars:NewCharacterIdSettings(addonSVname, addonSVversion , svSettingsName, currentNonServerDependentSettingsCopy, nil)
-                        elseif (oldDefSettings.saveMode == 2) then
+                        elseif oldDefSettings.saveMode == 2 then
                             --Account wide
                             FCOIS.settingsVars.settings = ZO_SavedVars:NewAccountWide(addonSVname, addonSVversion, svSettingsName, currentNonServerDependentSettingsCopy, nil, nil)
-                        elseif (oldDefSettings.saveMode == 3) then
+                        elseif oldDefSettings.saveMode == 3 then
                             --All accounts the same settings
                             FCOIS.settingsVars.settings = ZO_SavedVars:NewAccountWide(addonSVname, addonSVversion, svSettingsName, currentNonServerDependentSettingsCopy, nil, svAllAccTheSameAcc)
                         end
@@ -1345,9 +1347,12 @@ function FCOIS.LoadUserSettings(calledFromExternal)
             --But for accountWide and AllAccountsTheSame and allServersAndAccountsTheSame
             if saveMode == 2 or saveMode == 3 or saveMode == 4 then
                 local accountNameToUse --will be nil in case of SaveMode 2 to use the logged in @accountName
+                local worldToUse = world
                 if saveMode == 3 or saveMode == 4 then accountNameToUse = svAllAccTheSameAcc end
+                if saveMode == 4 then worldToUse = svAllServersTheSame end
+
                 --Account wide settings are enabled: Load the extra SavedVariables for the account wide "per character" settings
-                FCOIS.settingsVars.accountWideButForEachCharacterSettings = ZO_SavedVars:NewAccountWide(addonSVname, addonSVversion, svSettingsForEachCharacterName, FCOIS.settingsVars.accountWideButForEachCharacterDefaults, world, accountNameToUse)
+                FCOIS.settingsVars.accountWideButForEachCharacterSettings = ZO_SavedVars:NewAccountWide(addonSVname, addonSVversion, svSettingsForEachCharacterName, FCOIS.settingsVars.accountWideButForEachCharacterDefaults, worldToUse, accountNameToUse)
             end
         end
 
@@ -1368,8 +1373,9 @@ function FCOIS.LoadUserSettings(calledFromExternal)
 end
 
 --Copy SavedVariables from one server, account and/or character to another
-function FCOIS.CopySavedVars(srcServer, targServer, srcAcc, targAcc, srcCharId, targCharId, onlyDelete, forceReloadUI)
---d(strformat("[FCOIS]copySavedVars srcServer %s, targServer %s, srcAcc %s, targAcc %s, srcCharId %s, targCharId %s, onlyDelete %s, forceReloadUI %s", tos(srcServer), tos(targServer), tos(srcAcc), tos(targAcc), tos(srcCharId), tos(targCharId), tos(onlyDelete), tos(forceReloadUI)))
+function FCOIS.CopySavedVars(srcServer, targServer, srcAcc, targAcc, srcCharId, targCharId, onlyDelete, forceReloadUI, toAllServersAndAccountsTheSame)
+d(strformat("[FCOIS]copySavedVars srcServer %s, targServer %s, srcAcc %s, targAcc %s, srcCharId %s, targCharId %s, onlyDelete %s, forceReloadUI %s, toAllServersAndAccountsTheSame: %s",
+        tos(srcServer), tos(targServer), tos(srcAcc), tos(targAcc), tos(srcCharId), tos(targCharId), tos(onlyDelete), tos(forceReloadUI), tos(toAllServersAndAccountsTheSame)))
     onlyDelete = onlyDelete or false
     forceReloadUI = forceReloadUI or false
     local copyServer = false
@@ -1382,7 +1388,11 @@ function FCOIS.CopySavedVars(srcServer, targServer, srcAcc, targAcc, srcCharId, 
     local deleteChar = false
     --------------------------------------------------------------------------------------------------------------------
     --"What should be done" checks?
-    if srcServer == nil or targServer == nil then return nil end
+    if srcServer == nil or targServer == nil then
+        if not toAllServersAndAccountsTheSame then
+            return nil
+        end
+    end
     if srcCharId ~= nil and targCharId ~= nil then
         if onlyDelete then
             deleteChar = true
@@ -1413,6 +1423,14 @@ function FCOIS.CopySavedVars(srcServer, targServer, srcAcc, targAcc, srcCharId, 
             copyServer = true
         end
     end
+    if toAllServersAndAccountsTheSame == true then
+        if onlyDelete then
+            deleteServer = true
+        else
+            copyServer = true
+        end
+    end
+
     --Nothing to do? Abort here
     if not copyServer and not deleteServer and not copyAcc and not deleteAcc and not copyChar and not deleteChar and not copyAccToChar and not copyCharToAcc then return end
     --------------------------------------------------------------------------------------------------------------------
@@ -1422,8 +1440,9 @@ function FCOIS.CopySavedVars(srcServer, targServer, srcAcc, targAcc, srcCharId, 
     local noEntryValue = tos(mappingVars.noEntryValue)
     --Get some settings
     local settingsVars = FCOIS.settingsVars
-    local useAccountWideSV      = (settingsVars.defaultSettings.saveMode == 2 or settingsVars.defaultSettings.saveMode == 3) or false
-    local useAllAccountSameSV   = settingsVars.defaultSettings.saveMode == 3 or false
+    local defSettingsSaveMode = settingsVars.defaultSettings.saveMode
+    local useAccountWideSV      = (defSettingsSaveMode == 2 or defSettingsSaveMode == 3) or false
+    local useAllAccountSameSV   = defSettingsSaveMode == 3 or false
     local svDefToCopy
     local svToCopy
     local currentlyLoggedInUserId = getCurrentlyLoggedInCharUniqueId()
@@ -1444,18 +1463,24 @@ function FCOIS.CopySavedVars(srcServer, targServer, srcAcc, targAcc, srcCharId, 
     --Copy
     if not onlyDelete then
         if copyServer then
-            --[[
-                        --Account wide settings enabled?
-                        if useAccountWideSV then
-                            svDefToCopy = FCOItemSaver_Settings[srcServer][accountName][svAccountWideName][svSettingsForAllName]
-                            svToCopy    = FCOItemSaver_Settings[srcServer][accountName][svAccountWideName][svSettingsName]
-                        else
-                            --Character settings enabled. Get the currently logged in character ID
-                            if currentlyLoggedInUserId == nil or currentlyLoggedInUserId == 0 then return nil end
-                            svDefToCopy = FCOItemSaver_Settings[srcServer][displayName][svAccountWideName][svSettingsForAllName]
-                            svToCopy    = FCOItemSaver_Settings[srcServer][displayName][currentlyLoggedInUserId][svSettingsName]
-                        end
-            ]]
+            if toAllServersAndAccountsTheSame == true then
+                --TODO: 2022-01-30 #183 add "toAllServersAndAccountsTheSame" parameter to copy SV to profile svAllServersTheSame and account svAllAccTheSameAcc SavedVariables
+
+            --else
+                --[[
+                            --Account wide settings enabled?
+                            if useAccountWideSV then
+                                svDefToCopy = FCOItemSaver_Settings[srcServer][accountName][svAccountWideName][svSettingsForAllName]
+                                svToCopy    = FCOItemSaver_Settings[srcServer][accountName][svAccountWideName][svSettingsName]
+                            else
+                                --Character settings enabled. Get the currently logged in character ID
+                                if currentlyLoggedInUserId == nil or currentlyLoggedInUserId == 0 then return nil end
+                                svDefToCopy = FCOItemSaver_Settings[srcServer][displayName][svAccountWideName][svSettingsForAllName]
+                                svToCopy    = FCOItemSaver_Settings[srcServer][displayName][currentlyLoggedInUserId][svSettingsName]
+                            end
+                ]]
+            end
+
         elseif copyAcc then
             if srcAcc == noEntry or targAcc == noEntry then return end
             --DefaultForAll settings are always account wide!
@@ -1492,25 +1517,40 @@ function FCOIS.CopySavedVars(srcServer, targServer, srcAcc, targAcc, srcCharId, 
     --------------------------------------------------------------------------------------------------------------------
     else
         --Delete
-        if FCOItemSaver_Settings[targServer] ~= nil then
-            if deleteServer then
-                --[[
-                FCOItemSaver_Settings[targServer] = nil
-                showReloadUIDialog = true
-                ]]
-            elseif deleteAcc then
-                if targAcc == noEntry then return end
-                if FCOItemSaver_Settings[targServer][targAcc] ~= nil then
-                    FCOItemSaver_Settings[targServer][targAcc] = nil
-                    showReloadUIDialog = true
-                end
-            elseif deleteChar then
-                if targAcc == noEntry then return end
-                if targCharId == noEntryValue then return end
-                if FCOItemSaver_Settings[targServer][targAcc] ~= nil then
-                    if FCOItemSaver_Settings[targServer][targAcc][targCharId] ~= nil then
-                        FCOItemSaver_Settings[targServer][targAcc][targCharId] = nil
+        --Delete all servers and accounts the same
+        if toAllServersAndAccountsTheSame == true then
+            --2022-01-30 #183 add "toAllServersAndAccountsTheSame" parameter to copy SV to profile svAllServersTheSame and account svAllAccTheSameAcc SavedVariables
+            if FCOItemSaver_Settings[svAllServersTheSame] ~= nil then
+                if deleteServer then
+                    if FCOItemSaver_Settings[svAllServersTheSame][svAllAccTheSameAcc] ~= nil then
+                        FCOItemSaver_Settings[svAllServersTheSame][svAllAccTheSameAcc] = nil
+                        FCOItemSaver_Settings[svAllServersTheSame] = nil
                         showReloadUIDialog = true
+                    end
+                end
+            end
+        --Delete other (server, account, char)
+        else
+            if FCOItemSaver_Settings[targServer] ~= nil then
+                if deleteServer then
+                    --[[
+                    FCOItemSaver_Settings[targServer] = nil
+                    showReloadUIDialog = true
+                    ]]
+                elseif deleteAcc then
+                    if targAcc == noEntry then return end
+                    if FCOItemSaver_Settings[targServer][targAcc] ~= nil then
+                        FCOItemSaver_Settings[targServer][targAcc] = nil
+                        showReloadUIDialog = true
+                    end
+                elseif deleteChar then
+                    if targAcc == noEntry then return end
+                    if targCharId == noEntryValue then return end
+                    if FCOItemSaver_Settings[targServer][targAcc] ~= nil then
+                        if FCOItemSaver_Settings[targServer][targAcc][targCharId] ~= nil then
+                            FCOItemSaver_Settings[targServer][targAcc][targCharId] = nil
+                            showReloadUIDialog = true
+                        end
                     end
                 end
             end
@@ -1518,12 +1558,13 @@ function FCOIS.CopySavedVars(srcServer, targServer, srcAcc, targAcc, srcCharId, 
     end -- delete
 
     --------------------------------------------------------------------------------------------------------------------
-    --Shall we delete something or were the tables to copy filled properly now?
+    --Shall copy something?
+    --Server, account, char
     if not onlyDelete and svDefToCopy ~= nil and svToCopy ~= nil then
---d(">go on with copy/delete!")
+        --d(">go on with copy/delete!")
         --The default table got the language entry and the normal settings table got the markedItems entry?
         if svDefToCopy["language"] ~= nil and (svToCopy["markedItems"] ~= nil or svToCopy["markedItemsFCOISUnique"] ~= nil) then
---d(">>found def language and markedItems")
+            --d(">>found def language and markedItems")
             if FCOItemSaver_Settings[targServer] == nil then FCOItemSaver_Settings[targServer] = {} end
             --Source data is valid. Now build the target data
             if useAccountWideSV then
@@ -1541,7 +1582,7 @@ function FCOIS.CopySavedVars(srcServer, targServer, srcAcc, targAcc, srcCharId, 
                     showReloadUIDialog = true
                     ]]
                 elseif copyAcc then
---d(">>>copy account")
+                    --d(">>>copy account")
                     if FCOItemSaver_Settings[targServer][targAcc] == nil then FCOItemSaver_Settings[targServer][targAcc] = {} end
                     if FCOItemSaver_Settings[targServer][targAcc][svAccountWideName] == nil then FCOItemSaver_Settings[targServer][targAcc][svAccountWideName] = {} end
                     --Check if def settings are given and reset them, then set them to the source values
@@ -1561,7 +1602,7 @@ function FCOIS.CopySavedVars(srcServer, targServer, srcAcc, targAcc, srcCharId, 
                     if FCOItemSaver_Settings[targServer][targAcc][targCharId][svSettingsName] ~= nil then FCOItemSaver_Settings[targServer][targAcc][targCharId][svSettingsName] = nil end
                     FCOItemSaver_Settings[targServer][targAcc][targCharId][svSettingsName] = svToCopy
                     showReloadUIDialog = true
-                --Added with FCOIS v1.9.6: Copy account settings to character settings
+                    --Added with FCOIS v1.9.6: Copy account settings to character settings
                 elseif copyAccToChar then
                     if FCOItemSaver_Settings[targServer][targAcc] == nil then FCOItemSaver_Settings[targServer][targAcc] = {} end
                     if FCOItemSaver_Settings[targServer][targAcc][targCharId] == nil then FCOItemSaver_Settings[targServer][targAcc][targCharId] = {} end
@@ -1572,7 +1613,7 @@ function FCOIS.CopySavedVars(srcServer, targServer, srcAcc, targAcc, srcCharId, 
                     if FCOItemSaver_Settings[targServer][targAcc][targCharId][svSettingsName] ~= nil then FCOItemSaver_Settings[targServer][targAcc][targCharId][svSettingsName] = nil end
                     FCOItemSaver_Settings[targServer][targAcc][targCharId][svSettingsName] = svToCopy
                     showReloadUIDialog = true
-                --Added with FCOIS v1.9.6: Copy character settings to account settings
+                    --Added with FCOIS v1.9.6: Copy character settings to account settings
                 elseif copyCharToAcc then
                     if FCOItemSaver_Settings[targServer][targAcc] == nil then FCOItemSaver_Settings[targServer][targAcc] = {} end
                     if FCOItemSaver_Settings[targServer][targAcc][svAccountWideName] == nil then FCOItemSaver_Settings[targServer][targAcc][svAccountWideName] = {} end
@@ -1613,7 +1654,7 @@ function FCOIS.CopySavedVars(srcServer, targServer, srcAcc, targAcc, srcCharId, 
                     if FCOItemSaver_Settings[targServer][targAcc][targCharId][svSettingsName] ~= nil then FCOItemSaver_Settings[targServer][targAcc][targCharId][svSettingsName] = nil end
                     FCOItemSaver_Settings[targServer][targAcc][targCharId][svSettingsName] = svToCopy
                     showReloadUIDialog = true
-                --Added with FCOIS v1.9.6: Copy account settings to character settings
+                    --Added with FCOIS v1.9.6: Copy account settings to character settings
                 elseif copyAccToChar then
                     if FCOItemSaver_Settings[targServer][targAcc] == nil then FCOItemSaver_Settings[targServer][targAcc] = {} end
                     if FCOItemSaver_Settings[targServer][targAcc][targCharId] == nil then FCOItemSaver_Settings[targServer][targAcc][targCharId] = {} end
@@ -1621,7 +1662,7 @@ function FCOIS.CopySavedVars(srcServer, targServer, srcAcc, targAcc, srcCharId, 
                     if FCOItemSaver_Settings[targServer][targAcc][targCharId][svSettingsName] ~= nil then FCOItemSaver_Settings[targServer][targAcc][targCharId][svSettingsName] = nil end
                     FCOItemSaver_Settings[targServer][targAcc][targCharId][svSettingsName] = svToCopy
                     showReloadUIDialog = true
-                --Added with FCOIS v1.9.6: Copy character settings to account settings
+                    --Added with FCOIS v1.9.6: Copy character settings to account settings
                 elseif copyCharToAcc then
                     if FCOItemSaver_Settings[targServer][targAcc] == nil then FCOItemSaver_Settings[targServer][targAcc] = {} end
                     if FCOItemSaver_Settings[targServer][targAcc][currentlyLoggedInUserId] == nil then FCOItemSaver_Settings[targServer][targAcc][currentlyLoggedInUserId] = {} end
@@ -1632,57 +1673,75 @@ function FCOIS.CopySavedVars(srcServer, targServer, srcAcc, targAcc, srcCharId, 
                 end
             end
         end
+
+    --Copy to All servers and accounts the same
+    elseif not onlyDelete and toAllServersAndAccountsTheSame == true then
+        --TODO: 2022-01-30 #183 add "toAllServersAndAccountsTheSame" parameter to copy SV to profile svAllServersTheSame and account svAllAccTheSameAcc SavedVariables
+        svDefToCopy = FCOItemSaver_Settings[srcServer][srcAcc][svAccountWideName][svSettingsForAllName]
+        svToCopy    = FCOItemSaver_Settings[srcServer][srcAcc][svAccountWideName][svSettingsName]
+        if FCOItemSaver_Settings[svAllServersTheSame] == nil then FCOItemSaver_Settings[svAllServersTheSame] = {} end
+        if FCOItemSaver_Settings[svAllServersTheSame][svAllAccTheSameAcc] == nil then FCOItemSaver_Settings[svAllServersTheSame][svAllAccTheSameAcc] = {} end
+        if FCOItemSaver_Settings[svAllServersTheSame][svAllAccTheSameAcc][svAccountWideName] == nil then FCOItemSaver_Settings[svAllServersTheSame][svAllAccTheSameAcc][svAccountWideName] = {} end
+        --Check if def settings are given and reset them, then set them to the source values
+        if FCOItemSaver_Settings[svAllServersTheSame][svAllAccTheSameAcc][svAccountWideName][svSettingsForAllName] ~= nil then FCOItemSaver_Settings[svAllServersTheSame][svAllAccTheSameAcc][svAccountWideName][svSettingsForAllName] = nil end
+        FCOItemSaver_Settings[svAllServersTheSame][svAllAccTheSameAcc][svAccountWideName][svSettingsForAllName] = svDefToCopy
+        --Check if settings are given and reset them, then set them to the source values
+        if FCOItemSaver_Settings[svAllServersTheSame][svAllAccTheSameAcc][svAccountWideName][svSettingsName] ~= nil then FCOItemSaver_Settings[svAllServersTheSame][svAllAccTheSameAcc][svAccountWideName][svSettingsName] = nil end
+        FCOItemSaver_Settings[svAllServersTheSame][svAllAccTheSameAcc][svAccountWideName][svSettingsName] = svToCopy
+        showReloadUIDialog = true
     end
     --------------------------------------------------------------------------------------------------------------------
     --Now check if we are logged in to the target server and reload the user interface to get the copied data to the internal savedvars
     if showReloadUIDialog then
-        if forceReloadUI then ReloadUI() end
-        local world = GetWorldName()
-        if world == targServer then
-            local titleVar = "SavedVariables: "
-            if srcServer ~= noEntry then titleVar = titleVar .. "\"" .. srcServer ..  "\"" end
-            titleVar = titleVar .. " -> \"" .. targServer .. "\""
-            local locVars = FCOIS.localizationVars.fcois_loc
-            local questionVar = ""
-            if copyServer or deleteServer then
-                if copyServer then
-                    questionVar = zo_strf(locVars["question_copy_sv_server_reloadui"], srcServer, targServer, tos(useAccountWideSV))
-                else
-                    questionVar = zo_strf(locVars["question_delete_sv_server_reloadui"], targServer, tos(useAccountWideSV))
+        if forceReloadUI or toAllServersAndAccountsTheSame == true then ReloadUI() end
+        if toAllServersAndAccountsTheSame == false then
+            local world = GetWorldName()
+            if world == targServer then
+                local titleVar = "SavedVariables: "
+                if srcServer ~= noEntry then titleVar = titleVar .. "\"" .. srcServer ..  "\"" end
+                titleVar = titleVar .. " -> \"" .. targServer .. "\""
+                local locVars = FCOIS.localizationVars.fcois_loc
+                local questionVar = ""
+                if copyServer or deleteServer then
+                    if copyServer then
+                        questionVar = zo_strf(locVars["question_copy_sv_server_reloadui"], srcServer, targServer, tos(useAccountWideSV))
+                    else
+                        questionVar = zo_strf(locVars["question_delete_sv_server_reloadui"], targServer, tos(useAccountWideSV))
+                    end
+                elseif copyAcc or deleteAcc then
+                    if copyAcc then
+                        questionVar = zo_strf(locVars["question_copy_sv_account_reloadui"], srcServer, srcAcc, targServer, targAcc, tos(useAccountWideSV))
+                    else
+                        questionVar = zo_strf(locVars["question_delete_sv_account_reloadui"], targServer, targAcc, tos(useAccountWideSV))
+                    end
+                elseif copyChar or deleteChar then
+                    local characterTable = getCharactersOfAccount(false)
+                    local srcCharName
+                    local targCharName = getCharacterName(targCharId, characterTable)
+                    if copyChar then
+                        srcCharName = getCharacterName(srcCharId, characterTable)
+                        questionVar = zo_strf(locVars["question_copy_sv_character_reloadui"], srcServer, srcAcc, srcCharName, targServer, targAcc, targCharName, tos(useAccountWideSV))
+                    else
+                        questionVar = zo_strf(locVars["question_delete_sv_character_reloadui"], targServer, targAcc, targCharName, tos(useAccountWideSV))
+                    end
+                    --Added with FCOIS v1.9.6: Copy account settings to character settings
+                elseif copyAccToChar then
+                    local characterTable = getCharactersOfAccount(false)
+                    local targCharName = getCharacterName(targCharId, characterTable)
+                    questionVar = zo_strf(locVars["question_copy_sv_account_to_char_reloadui"], srcServer, srcAcc, targServer, targAcc, targCharName, tos(useAccountWideSV))
+                    --Added with FCOIS v1.9.6: Copy character settings to account settings
+                elseif copyCharToAcc then
+                    local characterTable = getCharactersOfAccount(false)
+                    local srcCharName = getCharacterName(srcCharId, characterTable)
+                    questionVar = zo_strf(locVars["question_copy_sv_char_to_account_reloadui"], srcServer, srcAcc, srcCharName, targServer, targAcc, tos(useAccountWideSV))
                 end
-            elseif copyAcc or deleteAcc then
-                if copyAcc then
-                    questionVar = zo_strf(locVars["question_copy_sv_account_reloadui"], srcServer, srcAcc, targServer, targAcc, tos(useAccountWideSV))
-                else
-                    questionVar = zo_strf(locVars["question_delete_sv_account_reloadui"], targServer, targAcc, tos(useAccountWideSV))
-                end
-            elseif copyChar or deleteChar then
-                local characterTable = getCharactersOfAccount(false)
-                local srcCharName
-                local targCharName = getCharacterName(targCharId, characterTable)
-                if copyChar then
-                    srcCharName = getCharacterName(srcCharId, characterTable)
-                    questionVar = zo_strf(locVars["question_copy_sv_character_reloadui"], srcServer, srcAcc, srcCharName, targServer, targAcc, targCharName, tos(useAccountWideSV))
-                else
-                    questionVar = zo_strf(locVars["question_delete_sv_character_reloadui"], targServer, targAcc, targCharName, tos(useAccountWideSV))
-                end
-            --Added with FCOIS v1.9.6: Copy account settings to character settings
-            elseif copyAccToChar then
-                local characterTable = getCharactersOfAccount(false)
-                local targCharName = getCharacterName(targCharId, characterTable)
-                questionVar = zo_strf(locVars["question_copy_sv_account_to_char_reloadui"], srcServer, srcAcc, targServer, targAcc, targCharName, tos(useAccountWideSV))
-            --Added with FCOIS v1.9.6: Copy character settings to account settings
-            elseif copyCharToAcc then
-                local characterTable = getCharactersOfAccount(false)
-                local srcCharName = getCharacterName(srcCharId, characterTable)
-                questionVar = zo_strf(locVars["question_copy_sv_char_to_account_reloadui"], srcServer, srcAcc, srcCharName, targServer, targAcc, tos(useAccountWideSV))
+                --Show confirmation dialog: ReloadUI now?
+                --FCOIS.ShowConfirmationDialog(dialogName, title, body, callbackYes, callbackNo, data)
+                showConfirmationDialog("ReloadUIAfterSVServer2ServerCopyDialog", titleVar, questionVar,
+                        function() ReloadUI() end,
+                        function() end
+                )
             end
-            --Show confirmation dialog: ReloadUI now?
-            --FCOIS.ShowConfirmationDialog(dialogName, title, body, callbackYes, callbackNo, data)
-            showConfirmationDialog("ReloadUIAfterSVServer2ServerCopyDialog", titleVar, questionVar,
-                    function() ReloadUI() end,
-                    function() end
-            )
         end
     end
     --------------------------------------------------------------------------------------------------------------------

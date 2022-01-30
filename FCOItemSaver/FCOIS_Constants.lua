@@ -81,7 +81,7 @@ FCOIS.svAllAccountsName             = "$AllAccounts"
 FCOIS.svSettingsForAllName          = "SettingsForAll"
 FCOIS.svSettingsName                = "Settings"
 FCOIS.svSettingsForEachCharacterName= "SettingsForEachCharacter"
-FCOIS.svServerAllTheSameName        = "AllServers"
+FCOIS.svServerAllTheSameName        = "$AllServers"
 
 --LibShifterBox boxName constants
 FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES  = "FCOISuniqueIdItemTypes"
