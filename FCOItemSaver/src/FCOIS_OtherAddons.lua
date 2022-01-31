@@ -1111,7 +1111,7 @@ local function getItemCooldownTrackerRelevantItemIds()
         relevantItemIds[itemIdOfRelevance] = true
     end
     --Todo: For debugging add style page book "The bretons" too:  itemId 16425
-    relevantItemIds[16425] = true
+    --relevantItemIds[16425] = true
 
     FCOIS.otherAddons.ItemCooldownTracker.relevantItemIds = relevantItemIds
 end
@@ -1162,21 +1162,23 @@ function FCOIS.CheckIfItemCooldownTrackerRelevantItemIdAndMarkItem(bagId, slotIn
 
     --Check the cooldown left
     local cooldownLeft = ICDT.GetItemCooldown(itemId)
+    --[[
+    --TODO For debugging
     if cooldownLeft == -1 and itemId == 16425 then
         cooldownLeft = 123
     end
-
-    local cooldownLeftStr = ""
+    ]]
+    --local cooldownLeftStr = ""
     if cooldownLeft == 0 then
         showIcon = false
-        cooldownLeftStr = "Cooldown left: None"
+        --cooldownLeftStr = "Cooldown left: None"
     elseif cooldownLeft > 0 then
         showIcon = true
-        local hoursLeft, minutesLeft = ICDT.FormatMinutes(cooldownLeft)
-        cooldownLeftStr = string.format("Cooldown left: %s hours, %s minutes", tos(hoursLeft), tos(minutesLeft))
+        --local hoursLeft, minutesLeft = ICDT.FormatMinutes(cooldownLeft)
+        --cooldownLeftStr = string.format("Cooldown left: %s hours, %s minutes", tos(hoursLeft), tos(minutesLeft))
     end
 
-d(">item: " .. itemLink .. ", showIcon: " ..tos(showIcon) .. ", cooldown: " ..tos(cooldownLeftStr))
+--d(">item: " .. itemLink .. ", showIcon: " ..tos(showIcon) .. ", cooldown: " ..tos(cooldownLeftStr))
 
     --Mark the item now
     if bagId == nil or slotIndex == nil then

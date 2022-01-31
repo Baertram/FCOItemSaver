@@ -1172,12 +1172,14 @@ local function updateIconsList(typeToBuild, withIcons, withNoneEntry, iconsListT
             FCOIS.LAMiconsListValues        = iconsListValues
 
             --Create/Update the iconsList with the all entries
-            table.insert(iconsListTmp, 1, locVars["options_dropdown_all"])
-            iconsListWithAllEntry           = iconsListTmp
-            table.insert(iconsListValuesTmp, 1, FCOIS_CON_ICON_ALL)
-            iconsListWithAllEntryValues     = iconsListValuesTmp
-            FCOIS.LAMiconsListWithAllEntry       = iconsListWithAllEntry
-            FCOIS.LAMiconsListWithAllEntryValues = iconsListWithAllEntryValues
+            local l_iconsListWithAllEntry =         ZO_ShallowTableCopy(iconsList)
+            table.insert(l_iconsListWithAllEntry, 1, locVars["options_dropdown_all"])
+            local l_iconsListWithAllEntryValues =   ZO_ShallowTableCopy(iconsListValues)
+            table.insert(l_iconsListWithAllEntryValues, 1, FCOIS_CON_ICON_ALL)
+            iconsListWithAllEntry           =       l_iconsListWithAllEntry
+            iconsListWithAllEntryValues     =       l_iconsListWithAllEntryValues
+            FCOIS.LAMiconsListWithAllEntry       =  iconsListWithAllEntry
+            FCOIS.LAMiconsListWithAllEntryValues =  iconsListWithAllEntryValues
         end
     elseif typeToBuild == "recipe" then
         iconsListRecipe                     =  iconsListTmp

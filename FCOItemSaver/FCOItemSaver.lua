@@ -190,7 +190,7 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 -- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-01-30
 ------------------------------------------------------------------------------------
 --#176 -> Test: Errors occured with OR filters, and mixed AND + OR filters
-
+--#184
 
 -------------------------------------------------------------------------------------
 --Changelog (last version: 2.2.3 - New version: 2.2.4) -    Updated last: 2022-01-30
