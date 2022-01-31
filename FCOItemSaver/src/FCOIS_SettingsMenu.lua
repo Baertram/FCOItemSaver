@@ -5379,6 +5379,44 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                         }, -- submenu new
 
                         --==============================================================================
+                        --Auto-marking "Item Cooldown Tracker"
+                        {
+                            type = "submenu",
+                            name = locVars["options_automark_itemcooldowntracker_header"],
+                            controls = {
+                                {
+                                    type = "checkbox",
+                                    name = locVars["options_automark_itemcooldowntracker"],
+                                    tooltip = locVars["options_automark_itemcooldowntracker" .. tooltipSuffix],
+                                    getFunc = function() return FCOISsettings.autoMarkItemCoolDownTrackerTrackedItems end,
+                                    setFunc = function(value)
+                                        FCOISsettings.autoMarkItemCoolDownTrackerTrackedItems = value
+                                    end,
+                                    width = "half",
+                                    default = FCOISdefaultSettings.autoMarkItemCoolDownTrackerTrackedItems,
+                                },
+                                {
+                                    type = 'dropdown',
+                                    name = locVars["options_icon1_texture"],
+                                    tooltip = locVars["options_automark_itemcooldowntracker_icon_TT" .. tooltipSuffix],
+                                    choices = iconsList,
+                                    choicesValues = iconsListValues,
+                                    scrollable = true,
+                                    getFunc = function() return FCOISsettings.itemCoolDownTrackerTrackedItemsMarkerIcon
+                                    end,
+                                    setFunc = function(value)
+                                        FCOISsettings.itemCoolDownTrackerTrackedItemsMarkerIcon = value
+                                    end,
+                                    reference = "FCOItemSaver_Icon_On_Automatic_ItemCooldownTracker_Dropdown",
+                                    disabled = function() return not FCOISsettings.autoMarkItemCoolDownTrackerTrackedItems end,
+                                    width = "half",
+                                    default = FCOISdefaultSettings.itemCoolDownTrackerTrackedItemsMarkerIcon,
+                                },
+
+                            }
+
+                        },
+
 
                     } -- controls marking
                 }, -- submenu marking

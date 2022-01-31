@@ -387,6 +387,8 @@ function FCOIS.BuildDefaultSettings()
 		autoBindMissingSetCollectionPiecesOnLoot = false,
 		autoBindMissingSetCollectionPiecesOnLootMarkKnown = false,
 		autoBindMissingSetCollectionPiecesOnLootToChat = false,
+		autoMarkItemCoolDownTrackerTrackedItems = false,
+		itemCoolDownTrackerTrackedItemsMarkerIcon = FCOIS_CON_ICON_LOCK,
 	}
 	--The tables for the markedItems, non-unique and unique
 	local addonVars = FCOIS.addonVars

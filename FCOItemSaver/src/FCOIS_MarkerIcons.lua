@@ -65,6 +65,16 @@ end
 -- =====================================================================================================================
 --  Marker control / textures functions
 -- =====================================================================================================================
+--Update marker icons for other addons that should add marker icons to inventory items
+local function updateOtherAddonsInventoryMarkers(parent)
+    --FCOIS v2.2.4 - ItemCooldownTracker
+    if ICDT ~= nil then
+        local bagId, slotIndex = myGetItemDetails(parent)
+        if bagId == nil or slotIndex == nil then return end
+        FCOIS.CheckIfItemCooldownTrackerRelevantItemIdAndMarkItem(bagId, slotIndex, nil)
+    end
+end
+
 --Update the "already bound set part" icon at the item's top right image edge
 local function updateAlreadyBoundTexture(parent, pHideControl)
     if parent == nil then return end
@@ -408,6 +418,8 @@ function FCOIS.CreateTextures(whichTextures)
                         --FCOItemSaver_AddInfoToData(rowControl)
                         --Create and show the "already bound" set parts texture at the top-right edge of the inventory item
                         updateAlreadyBoundTexture(rowControl)
+                        --Update marker icons for other addons that should add marker icons to inventory items
+                        updateOtherAddonsInventoryMarkers(rowControl)
                     end
                 end
             end
@@ -558,10 +570,10 @@ function FCOIS.CreateTextures(whichTextures)
 end
 
 --Check if marker textures on the inventories row should be refreshed
-function FCOIS.checkMarker(markerId)
+function FCOIS.CheckMarker(markerId)
     markerId = markerId or -1
     local doDebug = FCOIS.settingsVars.settings.debug
-    if doDebug then debugMessage( "[checkMarker]","MarkerId: " .. tostring(markerId) .. ", CheckNow: " .. tostring(FCOIS.preventerVars.gUpdateMarkersNow) .. ", Gears changed: " .. tostring(FCOIS.preventerVars.gChangedGears), true, FCOIS_DEBUG_DEPTH_ALL) end
+    if doDebug then debugMessage( "[CheckMarker]","MarkerId: " .. tostring(markerId) .. ", CheckNow: " .. tostring(FCOIS.preventerVars.gUpdateMarkersNow) .. ", Gears changed: " .. tostring(FCOIS.preventerVars.gChangedGears), true, FCOIS_DEBUG_DEPTH_ALL) end
 
     --Should we update the marker textures, size and color?
     if FCOIS.preventerVars.gUpdateMarkersNow == true or FCOIS.preventerVars.gChangedGears == true then
@@ -997,7 +1009,7 @@ function FCOIS.RefreshEquipmentControl(equipmentControl, doCreateMarkerControl, 
             end
         --Only check a specific marker id
         else
---d(">checkMarkerIcon: " ..tostring(p_markId))
+--d(">CheckMarkerIcon: " ..tostring(p_markId))
             if settings.debug then debugMessage( "[RefreshEquipmentControl]","Control: " .. equipmentControl:GetName() .. ", Create: " .. tostring(doCreateMarkerControl) .. ", MarkId: " .. tostring(p_markId), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
             hideControl = true
             --Add/Update the marker p_markId for the filter icons at the equipment slot

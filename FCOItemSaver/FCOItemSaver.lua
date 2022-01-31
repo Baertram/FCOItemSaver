@@ -131,7 +131,7 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 --[TODO Current Errors and features list - Find a way to reproduce/fix/add them] --
 --[General]Check for local speed ups. FCOItemSaver.txt was checked until src/FCOIS_Tooltips.lua -> as of 2021-08-18
 --#129: 2021-06-01: Removing all marker icons via the add. inv. "flag" context menu does not remove companion item's marker icons
---#156: 2021-08-18, Baertram, bug: Enchanting an item does not re-apply the already marked icons (also consider icons that were saved for the items before? add setting for "Check all others")
+--#156: 2021-08-18, Baertram, bug: Enchanting an item does not re-apply the already marked icons (also consider icons that were saved for the items before? Add setting for "Check all others")
 --#157: 2021-08-18, Baertram, bug: Character doll ring/weapon marker icons do not update properly (both 2 rings were unequipped via double click or drag and drop: on drag of 1 ring back to the right!!! slot the marker icons do not update, or equip 1 ring to the left and then use double click to equp the 2nd ring to the right slot).
 --And if you drag another ring to a slot where a ring was already equipped the marker icons do neither update all!
 --#158: 2021-08-18, Baertram, bug: Character doll ring/weapon marker icons do not remove all if SHIFT+right click is used on 1 ring (and the 2nd ring is identical)
@@ -142,8 +142,6 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 
 --#176: 2021-11-14, Baertram, feature: Add submenu to 4 filter buttons, with setting to change the filter between AND & OR filter conjunction behaviour.
 --Remembers the state for each filterPanel
-
---#177: 2021-11-20, Baertram, bug: With filterButton 1 and 2 at yellow state items without markerIcon of filter 1 (but being a dynamic gear of filter 2) will show up
 
 --#178: 2021-12-03, Onigar (Addon comments), bug:
 --[[ So at the bank deposit tab you got only the "green lock" FCOIS filterbutton set (right clicked the filter button -> chose the "lock" icon explicitly ->
@@ -157,19 +155,12 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 
 --#181, 2022-01-02, Baertram: Check filter slash command chat feedback: Does it show correct info about filter state and new logical conjuncions?
 
---#182, 2022-01-16, playstyle, addon comments: I would like to mark lockpicks but not stolen ones. I enabled the FCOIS uniqe ID because it has a 'stolen'
---option and i also tried adding the item type 'Tool'. But no matter what both kinds of lockpicks are getting marked at the same time. What am i doing wrong?
---> See file src/FCOIS_functions.lua, function FCOIS.GetFCOISMarkerIconSavedVariablesItemId(bagId, slotIndex, allowedItemType, useUniqueIds, uniqueItemIdType, signToo)
--- -> getFCOISMarkerIconUniqueIdAllowedItemType
-
---#183, 2022-01-16, Tim99, Discord: Feature request - Add new savedvariables saving independent to Server and AccountName
-
 --#184, 2021-12-15, Baertram, feature: Add automatic marking of needed scrolls etc. with ItemCooldownTracker API
 --[[
     --==================================================================
     --ItemCooldownTracker API
     --==================================================================
-    CDT.GetRelevantItemIds()
+    ICDT.GetRelevantItemIds()
     returns a table containing all itemIds that are potential relevant for the prevention of opening (quasi alle Behälter, die der User tracken könnte, aktuell ca. 10 IDs)
 
     ICDT.GetItemCooldown(itemId)
@@ -196,14 +187,13 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-01-29
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-01-30
 ------------------------------------------------------------------------------------
 --#176 -> Test: Errors occured with OR filters, and mixed AND + OR filters
---#183 -> In progress, todo: Add the new "AllServersAndAccountsTheSame" to "Copy settings routines" + Test: Open
---#200
+
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.2.3 - New version: 2.2.4) -    Updated last: 2022-01-29
+--Changelog (last version: 2.2.3 - New version: 2.2.4) -    Updated last: 2022-01-30
 -------------------------------------------------------------------------------------
 
 --[Fixed]
@@ -251,6 +241,7 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 --#176 Add submenu to 4 filter buttons, with setting to change the filter between AND & OR filter conjunction behaviour. Remembers the state for each filterPanel
 --->Screenshot showing the new context menu "Filter settings" at the filter button: https://i.imgur.com/32AHUNS.png
 --->Screenshot link for tooltip showing new logical conjunction AND/OR state: https://i.imgur.com/yj2UIOe.png
+--#183 Add new SavedVariables saving independent to Server and AccountName -> "All servers and accounts the same"
 --#185 Add possibility to only reset the SavedVariables of stored marker icons, but keep the other settings. See settings menu bakup & restored & delete -> new submenu "Delete"
 
 

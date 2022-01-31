@@ -1274,6 +1274,11 @@ FCOIS.localizationVars.localizationAll = {
         ["options_dropdown_none"] = "- None -",
         ["options_dropdown_all"]  = "- ALL -",
 
+        ["options_automark_itemcooldowntracker_header"] = "Item Cooldown Tracker",
+        ["options_automark_itemcooldowntracker"]        = "Mark \'Item Cooldown Tracker\' tracked",
+        ["options_automark_itemcooldowntracker_TT"]     = "Automatically mark items tracked via \'Item Cooldown Tracker\' with a marker icon.",
+        ["options_automark_itemcooldowntracker_icon_TT"] = "Choose the marker icon that should be applied on items that are tracked via \'Item Cooldown Tracker\'.",
+
         --LibShifterBoxes
         --[FCOIS_UNIQUEID_ITEMTYPES]
         ["LIBSHIFTERBOX_FCOIS_UNIQUEID_ITEMTYPES_TITLE_LEFT"]   = "Item types (all)",
@@ -2487,6 +2492,11 @@ FCOIS.localizationVars.localizationAll = {
 
         ["options_dropdown_none"] = "- Nichts -",
         ["options_dropdown_all"]  = "- ALLE -",
+
+        ["options_automark_itemcooldowntracker_header"]  = "Item Cooldown Tracker",
+        ["options_automark_itemcooldowntracker"]         = "Markiere \'Item Cooldown Tracker\' verfolgte",
+        ["options_automark_itemcooldowntracker_TT"]      = "Markiere Gegenstände, welche mit \'Item Cooldown Tracker\' verfolgt werden, mit einem Symbol.",
+        ["options_automark_itemcooldowntracker_icon_TT"] = "Wähle das Symbol, welches an durch \'Item Cooldown Tracker\' verfolgten Gegenständen markiert werden soll.",
 
         --LibShifterBoxes
         --[FCOIS_UNIQUEID_ITEMTYPES]

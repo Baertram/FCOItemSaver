@@ -978,8 +978,10 @@ local markItem = FCOIS.MarkItem
 ---addonName (String):					Can be left NIL! The unique addon name which was used to temporarily enable the uniqueId usage for the item checks.
 ---										-> See FCOIS API function "FCOIS.UseTemporaryUniqueIds(addonName, doUse)"
 ---updateInventories (boolean):    		Flag to set if the inventory lists should be updated, or not. Use this only "after updating the last marker icon", if you (de)mark many at once!
+local markItemByItemInstanceId
 function FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon, itemLink, itemId, addonName, updateInventories)
---d("[FCOIS.MarkItemByItemInstanceId] id " .. tostring(itemInstanceOrUniqueId) .. ", iconId: " .. tostring(iconId) .. ", show: " .. tostring(showIcon))
+	markItemByItemInstanceId = FCOIS.MarkItemByItemInstanceId
+	--d("[FCOIS.MarkItemByItemInstanceId] id " .. tostring(itemInstanceOrUniqueId) .. ", iconId: " .. tostring(iconId) .. ", show: " .. tostring(showIcon))
     if itemInstanceOrUniqueId == nil then return false end
     if itemLink == nil and itemId == nil then return false end
     if showIcon == nil then showIcon = true end
@@ -1018,7 +1020,7 @@ function FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon
 				FCOIS.preventerVars.gMarkItemLastIconInLoop = true
 			end
             --Recursively call this function again to change each marker icon at the item
-            recurRetVal = FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconIdInTable, showIcon, itemLink, itemId, addonName, doUpdateInvNow)
+            recurRetVal = markItemByItemInstanceId(itemInstanceOrUniqueId, iconIdInTable, showIcon, itemLink, itemId, addonName, doUpdateInvNow)
             if not recurRetVal then
                 recurRetValTotal = false
             end
@@ -1042,7 +1044,7 @@ function FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon
 					FCOIS.preventerVars.gMarkItemLastIconInLoop = true
 				end
                 --Recursively call this function again to change each marker icon at the item
-                recurRetVal = FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconNr, showIcon, itemLink, itemId, addonName, doUpdateInvNow)
+                recurRetVal = markItemByItemInstanceId(itemInstanceOrUniqueId, iconNr, showIcon, itemLink, itemId, addonName, doUpdateInvNow)
                 if not recurRetVal then
                     recurRetValTotal = false
                 end
@@ -1084,7 +1086,6 @@ function FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon
 --d("[FCOIS]MarkItemByItemInstanceId doUpdateMarkerNow: " ..tostring(doUpdateMarkerNow) ..", iconId: " ..tostring(iconId) .. ", show: " ..tostring(showIcon))
                 --Change the marker now?
                 if doUpdateMarkerNow then
-					local markItemByItemInstanceId = FCOIS.MarkItemByItemInstanceId
                     --Unmark all other markers before? Only if marker should be set
                     --Prevent endless loop here as FCOIS.MarkItemByItemInstanceId will call itsself recursively
                     if not FCOIS.preventerVars.markItemAntiEndlessLoop and showIcon and checkIfItemShouldBeDemarked(iconId) then
@@ -1159,7 +1160,7 @@ function FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon
     --Return value if icon was added/removed
     return recurRetValTotal
 end -- FCOIS.MarkItemByItemInstanceId
-local markItemByItemInstanceId = FCOIS.MarkItemByItemInstanceId
+markItemByItemInstanceId = FCOIS.MarkItemByItemInstanceId
 
 
 --Global function to temporarily set the addon to use UniqueItemIds for functions "FCOIS.IsMarkedByItemInstanceId" and "FCOIS.MarkItemByItemInstanceId"

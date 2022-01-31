@@ -497,7 +497,7 @@ function FCOIS.CheckFCOISFilterButtonsAtPanel(doUpdateLists, panelId, overwriteF
 --d("[FCOIS.CheckFilterButtonsAtPanel - panelId: " .. tos(panelId) .. ", gFilterWhere: " .. tos(FCOIS.gFilterWhere) .. ", UseFilters: " .. tos(settings.atPanelEnabled[FCOIS.gFilterWhere]["filters"]) .. ", hideFilterButtons: " ..tos(hideFilterButtons))
 
     --Should we update the marker textures, size and color?
-    FCOIS.checkMarker(-1)
+    FCOIS.CheckMarker(-1)
 
     --Get the currently shown panel and update FCOIS.gFilterWhere with the "goingTo" value (called from e.g. FCOIS.PreHookMainMenuFilterButtonHandler)
     checkActivePanel = checkActivePanel or FCOIS.CheckActivePanel
