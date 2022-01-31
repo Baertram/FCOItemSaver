@@ -155,29 +155,6 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 
 --#181, 2022-01-02, Baertram: Check filter slash command chat feedback: Does it show correct info about filter state and new logical conjuncions?
 
---#184, 2021-12-15, Baertram, feature: Add automatic marking of needed scrolls etc. with ItemCooldownTracker API
---[[
-    --==================================================================
-    --ItemCooldownTracker API
-    --==================================================================
-    ICDT.GetRelevantItemIds()
-    returns a table containing all itemIds that are potential relevant for the prevention of opening (quasi alle Behälter, die der User tracken könnte, aktuell ca. 10 IDs)
-
-    ICDT.GetItemCooldown(itemId)
-    for given itemId, returns
-    -1                       --> item is not relevant (not trackable with addon)
-    0                       --> item is tracked by current setting, but cooldown is expired
-    number>0      --> cooldown is active, minutes left
-
-    ICDT.FormatMinutes(minutesLeft)
-    calculates the hours and minutes combination of given total minutes
-    returns two values h, m
-    Beispiel: ICDT.FormatMinutes(131)   ->   2, 11
-    [22:45]
-    Weiterhin zeige ich jetzt auch die Info im ItemTooltip an. Kannst es dir gerne bei Gelegenheit anschauen. Grundsätzlich nutze ich dieselbe Funktion wie zuvor.
-    Bei 0 zeige ich dann sowas an wie "Cooldown ist abgelaufen" und bei >0 in rot der Hinweis, dass der Cooldown noch so und so lange aktiv ist.
-]]
-
 --#199, 2021-12-28, Baertram, bug: Companion equipment character is not showing the armor type labels L/M/H
 
 
@@ -187,13 +164,13 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-01-30
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-01-31
 ------------------------------------------------------------------------------------
 --#176 -> Test: Errors occured with OR filters, and mixed AND + OR filters
---#184
+
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.2.3 - New version: 2.2.4) -    Updated last: 2022-01-30
+--Changelog (last version: 2.2.3 - New version: 2.2.4) -    Updated last: 2022-01-31
 -------------------------------------------------------------------------------------
 
 --[Fixed]
@@ -234,6 +211,7 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 --Added API function function FCOIS.GetGearIcons(onlyNonDynamicOnes, onlyDynamicOnes)
 --Added IsCrownItem to the possible FCOIS unique-ID parts
 --If you press SHIFT key and right mouse on the filter button this will reset the selected filter icon at the button to the * ("All") entry
+--#184 Added automatic marking of needed scrolls etc. with ItemCooldownTracker API
 --#188 Enable backup and restore for all 3 saved itemIds (non unique, ZOs unique and FCOIS unique). ZOs unique and non-unique can only be saved and restored together!
 
 
