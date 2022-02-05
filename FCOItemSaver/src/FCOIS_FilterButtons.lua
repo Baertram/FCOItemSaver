@@ -295,28 +295,30 @@ function FCOIS.UpdateFCOISFilterButtonsAtInventory(buttonId)
     local settings = FCOIS.settingsVars.settings
     if settings.debug then debugMessage( "[updateFilterButtonsInInv]","buttonId: " .. tos(buttonId) .. ", numFilters: ".. tos(numFilters) .. ", InvFiltering: " .. tos(settings.allowInventoryFilter), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
     FCOIS.gFilterWhere = getFilterWhereBySettings(LF_INVENTORY)
---d("[FCOIS.updateFilterButtonsInInv] buttonId: " ..tos(buttonId) .. ", filterId: " ..tostring(FCOIS.gFilterWhere))
+    local currentFilterPanelId = FCOIS.gFilterWhere
+
+--d("[FCOIS.updateFilterButtonsInInv] buttonId: " ..tos(buttonId) .. ", filterId: " ..tostring(currentFilterPanelId))
     -- Update the filter enable/disable buttons to the inventory, bank, crafting stations, enchantment station, guild store, guild bank, vendor, trade, alchemy and mail panels
     if buttonId == nil or buttonId == -1 then
 
         --Change the filter buttons & callback functions
         for _, buttonNr in ipairs(filterButtonsToCheck) do
             --Check the filter button's offsets, width and height at the given LibFilters panel ID
-            checkAndTransferFCOISFilterButtonDataByPanelId(FCOIS.gFilterWhere, buttonNr)
-            local filterButtonData = settings.filterButtonData[buttonNr][FCOIS.gFilterWhere]
+            checkAndTransferFCOISFilterButtonDataByPanelId(currentFilterPanelId, buttonNr)
+            local filterButtonData = settings.filterButtonData[buttonNr][currentFilterPanelId]
             if filterButtonData ~= nil then
-                if settings.debug then debugMessage( "[updateFilterButtonsInInv]","Next buttonId " .. tos(buttonNr) .. " at panel [" .. FCOIS.gFilterWhere  .. "]-left: " .. tos(filterButtonData["left"]).. ", top: " .. tos(filterButtonData["top"]).. ", width: " .. tos(filterButtonData["width"]).. ", height: " .. tos(filterButtonData["height"]), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
---d(">FilterButtonData at panel [" .. FCOIS.gFilterWhere  .. "] of button " ..tos(buttonNr) .." - left: " .. tos(filterButtonData["left"]).. ", top: " .. tos(filterButtonData["top"]).. ", width: " .. tos(filterButtonData["width"]).. ", height: " .. tos(filterButtonData["height"]))
+                if settings.debug then debugMessage( "[updateFilterButtonsInInv]","Next buttonId " .. tos(buttonNr) .. " at panel [" .. currentFilterPanelId  .. "]-left: " .. tos(filterButtonData["left"]).. ", top: " .. tos(filterButtonData["top"]).. ", width: " .. tos(filterButtonData["width"]).. ", height: " .. tos(filterButtonData["height"]), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+--d(">FilterButtonData at panel [" .. currentFilterPanelId  .. "] of button " ..tos(buttonNr) .." - left: " .. tos(filterButtonData["left"]).. ", top: " .. tos(filterButtonData["top"]).. ", width: " .. tos(filterButtonData["width"]).. ", height: " .. tos(filterButtonData["height"]))
                 --Get the filter button control (create or modify) and reanchor  it
-                addOrChangeFCOISFilterButton(ctrlVarInv, buttonNr, filterButtonData["width"], filterButtonData["height"], filterButtonData["left"], filterButtonData["top"], not settings.allowInventoryFilter, FCOIS.gFilterWhere)
+                addOrChangeFCOISFilterButton(ctrlVarInv, buttonNr, filterButtonData["width"], filterButtonData["height"], filterButtonData["left"], filterButtonData["top"], not settings.allowInventoryFilter, currentFilterPanelId)
             end
         end
     else
         --Check the filter button's offsets, width and height at the given LibFilters panel ID
-        checkAndTransferFCOISFilterButtonDataByPanelId(FCOIS.gFilterWhere, buttonId)
-        local filterButtonData = settings.filterButtonData[buttonId][FCOIS.gFilterWhere]
+        checkAndTransferFCOISFilterButtonDataByPanelId(currentFilterPanelId, buttonId)
+        local filterButtonData = settings.filterButtonData[buttonId][currentFilterPanelId]
         if filterButtonData ~= nil then
-            addOrChangeFCOISFilterButton(ctrlVarInv, buttonId, filterButtonData["width"], filterButtonData["height"], filterButtonData["left"], filterButtonData["top"], not settings.allowInventoryFilter, FCOIS.gFilterWhere)
+            addOrChangeFCOISFilterButton(ctrlVarInv, buttonId, filterButtonData["width"], filterButtonData["height"], filterButtonData["left"], filterButtonData["top"], not settings.allowInventoryFilter, currentFilterPanelId)
         end
     end
 end
@@ -553,7 +555,7 @@ function FCOIS.CheckFCOISFilterButtonsAtPanel(doUpdateLists, panelId, overwriteF
         end
 
         --Update the itemCount before the sortHeader "name" at the new panel
-        inventoryChangeFilterHook = inventoryChangeFilterHook or FCOIS.inventoryChangeFilterHook
+        inventoryChangeFilterHook = inventoryChangeFilterHook or FCOIS.InventoryChangeFilterHook
         inventoryChangeFilterHook(filterPanelIdToUse, "[FCOIS]CheckFilterButtonsAtPanel")
     end
     return buttonsParentCtrl, filterPanel
@@ -1323,7 +1325,7 @@ addOrChangeFCOISFilterButton = FCOIS.AddOrChangeFCOISFilterButton
 --  Filter button itemCount functions
 -- =====================================================================================================================
 --Get the sort header where the filtered item count should be added as pre-text
-function FCOIS.getSortHeaderControl(filterPanelId)
+function FCOIS.GetSortHeaderControl(filterPanelId)
     filterPanelId = filterPanelId or FCOIS.gFilterWhere
     local sortHeaderVars = FCOIS.sortHeaderVars
     local sortHeaderName = sortHeaderVars.name[filterPanelId]
@@ -1332,10 +1334,10 @@ function FCOIS.getSortHeaderControl(filterPanelId)
     if sortHeaderCtrl == nil then return  end
     return sortHeaderCtrl
 end
-local getSortHeaderControl = FCOIS.getSortHeaderControl
+local getSortHeaderControl = FCOIS.GetSortHeaderControl
 
 --Reset the sort header control for a giveb filterPanelId
-function FCOIS.resetSortHeaderCount(filterPanelId, sortHeaderCtrlToReset)
+function FCOIS.ResetSortHeaderCount(filterPanelId, sortHeaderCtrlToReset)
     filterPanelId = filterPanelId or FCOIS.gFilterWhere
     --d(">>[FCOIS]resetSortHeaderCount, filterPanelId: " .. tos(filterPanelId))
     if sortHeaderCtrlToReset == nil then
@@ -1346,10 +1348,10 @@ function FCOIS.resetSortHeaderCount(filterPanelId, sortHeaderCtrlToReset)
     sortHeaderCtrlToReset:SetText(origSortHeaderText)
     return true
 end
-local resetSortHeaderCount = FCOIS.resetSortHeaderCount
+local resetSortHeaderCount = FCOIS.ResetSortHeaderCount
 
 --Get the currently shown items count of the filterPanelId
-function FCOIS.getFilteredItemCountAtPanel(libFiltersPanelId, panelIdOrInventoryTypeString)
+function FCOIS.GetFilteredItemCountAtPanel(libFiltersPanelId, panelIdOrInventoryTypeString)
     libFiltersPanelId = libFiltersPanelId or FCOIS.gFilterWhere
     local filteredItemsArray
     local numberOfFilteredItems = 0
@@ -1374,10 +1376,10 @@ function FCOIS.getFilteredItemCountAtPanel(libFiltersPanelId, panelIdOrInventory
     if not numberOfFilteredItems or numberOfFilteredItems <= 0 then return 0 end
     return numberOfFilteredItems
 end
-local getFilteredItemCountAtPanel = FCOIS.getFilteredItemCountAtPanel
+local getFilteredItemCountAtPanel = FCOIS.GetFilteredItemCountAtPanel
 
 --Update the filtered item count at the panel
-function FCOIS.updateFilteredItemCount(panelId, calledFrom)
+function FCOIS.UpdateFilteredItemCount(panelId, calledFrom)
     panelId = panelId or FCOIS.gFilterWhere
     calledFrom = calledFrom or ""
     local libFiltersPanelId = panelId
@@ -1387,7 +1389,7 @@ function FCOIS.updateFilteredItemCount(panelId, calledFrom)
     end
     local showFilteredItemCount = FCOIS.settingsVars.settings.showFilteredItemCount
     --d(">[FCOIS]updateFilteredItemCount->".. calledFrom .. " - panelId: " ..tos(panelId) .. ", libFiltersPanelId: " ..tos(libFiltersPanelId) .. ", showFilteredItemCount: " .. tos(showFilteredItemCount))
-    local sortHeaderCtrl = FCOIS.getSortHeaderControl(libFiltersPanelId)
+    local sortHeaderCtrl = FCOIS.GetSortHeaderControl(libFiltersPanelId)
     --Reset the sortheader text to the original one
     if sortHeaderCtrl then resetSortHeaderCount(libFiltersPanelId, sortHeaderCtrl) end
     --AdvancedFilters version 1.5.0.6 adds filtered item count at the bottom inventory lines. So FCOIS does not need to show this anymore if AdvancedFilters has enabled this setting.
@@ -1425,12 +1427,12 @@ function FCOIS.updateFilteredItemCount(panelId, calledFrom)
         sortHeaderCtrl:SetText(preTextIncludingFilteredItemNumber .. origSortHeaderText)
     end, 50)
 end
-local updateFilteredItemCount = FCOIS.updateFilteredItemCount
+local updateFilteredItemCount = FCOIS.UpdateFilteredItemCount
 
 --Hook the inventorie's (and crafting inventory) UpdateFilter functions in order to
 --update the itemCount at the sort headers properly
 -->Will be called each time an inventory filter changes, e.g. from All to Armor, or from Weapons to Materials
-function FCOIS.inventoryChangeFilterHook(filterPanelId, calledFrom)
+function FCOIS.InventoryChangeFilterHook(filterPanelId, calledFrom)
     filterPanelId = filterPanelId or FCOIS.gFilterWhere
     --[[
     if calledFrom ~= nil then
@@ -1443,7 +1445,7 @@ function FCOIS.inventoryChangeFilterHook(filterPanelId, calledFrom)
     if filterPanelId ~= FCOIS.gFilterWhere then return end
     updateFilteredItemCount(filterPanelId, calledFrom)
 end
-inventoryChangeFilterHook = FCOIS.inventoryChangeFilterHook
+inventoryChangeFilterHook = FCOIS.InventoryChangeFilterHook
 
 --Update the shown filteredItem count at the inventories, but throttled with a delay and only once if updates are tried
 --to be done several times after another

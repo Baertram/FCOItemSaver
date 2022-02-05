@@ -439,7 +439,8 @@ checkVars.inventoryRowPatterns = {
     "^ZO_RepairWindowList%dRow%d%d*",                                       --Repair at vendor
     "^ZO_ListDialog1List%dRow%d%d*",                                        --List dialog (Repair, Recharge, Enchant, Research)
     "^ZO_CompanionEquipment_Panel_.+List%dRow%d%d*",                        --Companion Inventory backpack
-    "^ZO_CompanionCharacterWindow_.+_TopLevelEquipmentSlots.+$"             --Companion character
+    "^ZO_CompanionCharacterWindow_.+_TopLevelEquipmentSlots.+$",            --Companion character
+    "^ZO_UniversalDeconstructionTopLevel_%aPanelInventoryBackpack%dRow%d%d",-- #202 Universal deconstruction
 --Other adons like IIfA will be added dynamically at EVENT_ON_ADDON_LOADED callback function
 --See file src/FCOIS_Events.lua, call to function FCOIS.checkIfOtherAddonActive() -> See file
 -- src/FCOIS_OtherAddons.lua, function FCOIS.checkIfOtherAddonActive()
@@ -827,11 +828,40 @@ mappingVars.panelIdToDeconstructable = {
     -->panelIds (from table mappingVars.activeFilterPanelIds above) as key, and the value = false
 }
 
+--#202 -v-
+--The LibFilters filterTypes which are supported at the deconstruction NPC e.g. 'Giladil'
+mappingVars.panelIdSupportedAtDeconNPC = {
+    [LF_SMITHING_DECONSTRUCT]   = true,
+    [LF_JEWELRY_DECONSTRUCT]    = true,
+    [LF_ENCHANTING_EXTRACTION]  = true,
+}
+local function getStringFromUniversalDeconstructionMenuBar(key)
+    local barToSearch = ZO_UNIVERSAL_DECONSTRUCTION_FILTER_TYPES
+    if barToSearch then
+        for _, v in ipairs(barToSearch) do
+            if v.key and v.key == key then
+                return v.displayName
+            end
+        end
+    end
+    return
+end
+
+--The NPC decon menuBars tab's buttons -> filterPanelId
+mappingVars.panelIdByDeconNPCMenuBarTabButtonName = {
+    [getStringFromUniversalDeconstructionMenuBar("enchantments")]   = LF_ENCHANTING_EXTRACTION, --Glyphs
+    [getStringFromUniversalDeconstructionMenuBar("jewelry")]        = LF_JEWELRY_DECONSTRUCT,   --Jewelry
+    [getStringFromUniversalDeconstructionMenuBar("armor")]          = LF_SMITHING_DECONSTRUCT,  --Armor
+    [getStringFromUniversalDeconstructionMenuBar("weapons")]        = LF_SMITHING_DECONSTRUCT,  --Weapons
+    [getStringFromUniversalDeconstructionMenuBar("all")]            = LF_SMITHING_DECONSTRUCT,  --All -> Not sure if deconstruction is the correct here? But use it for now
+}
+
 --FilterPanelIds which need the FCOIS.RefreshListDialog function
 mappingVars.filterPanelIdForRefreshDialog = {
     [LF_SMITHING_RESEARCH_DIALOG] = true,
     [LF_JEWELRY_RESEARCH_DIALOG] =  true,
 }
+---^- #202
 
 --The mapping array between LibFilters IDs to their filter name string "prefix"
 FCOIS_CON_LIBFILTERS_STRING_PREFIX_BACKUP_ID    = 0
@@ -1352,6 +1382,22 @@ ctrlVars.DECONSTRUCTION_SLOT 		= GetControl(ctrlVars.DECONSTRUCTION_PANEL, "Slot
 ctrlVars.DECONSTRUCTION_BUTTON_ARMOR   = GetControl(ctrlVars.DECONSTRUCTION_INV, strformat(tabsButtonStr, "1")) --ZO_SmithingTopLevelDeconstructionPanelInventoryTabsButton1
 ctrlVars.DECONSTRUCTION_BUTTON_WEAPONS = GetControl(ctrlVars.DECONSTRUCTION_INV, strformat(tabsButtonStr, "2")) --ZO_SmithingTopLevelDeconstructionPanelInventoryTabsButton2
 --ctrlVars.SMITHING_MENUBAR_BUTTON_DECONSTRUCTION 		= ZO_SmithingTopLevelModeMenuBarButton3
+--UniversalDeconstruction - API101033 "Ascending Tide" added via deconstruction NPC "Giladil"
+ctrlVars.UNIVERSAL_DECONSTRUCTION_BASE = ZO_UniversalDeconstructionTopLevel_Keyboard
+ctrlVars.UNIVERSAL_DECONSTRUCTION_PANEL = GetControl(ctrlVars.UNIVERSAL_DECONSTRUCTION_BASE, "Panel") ---ZO_UniversalDeconstructionTopLevel_KeyboardPanel
+ctrlVars.UNIVERSAL_DECONSTRUCTION_INV = GetControl(ctrlVars.UNIVERSAL_DECONSTRUCTION_PANEL, inventoryStr) ---ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventory
+ctrlVars.UNIVERSAL_DECONSTRUCTION_INV_NAME	= ctrlVars.DECONSTRUCTION_INV:GetName()
+ctrlVars.UNIVERSAL_DECONSTRUCTION_INV_BACKPACK = GetControl(ctrlVars.UNIVERSAL_DECONSTRUCTION_INV, backpackStr) -- ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventoryBackpack
+ctrlVars.UNIVERSAL_DECONSTRUCTION_BAG 		= GetControl(ctrlVars.UNIVERSAL_DECONSTRUCTION_INV_BACKPACK, contentsStr) -- ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventoryBackpackContents
+ctrlVars.UNIVERSAL_DECONSTRUCTION_SLOT 		= GetControl(ctrlVars.UNIVERSAL_DECONSTRUCTION_PANEL, "SlotContainerExtractionSlot") --ZO_UniversalDeconstructionTopLevel_KeyboardPanelSlotContainerExtractionSlot
+ctrlVars.UNIVERSAL_DECONSTRUCTION_MENUBAR_TABS = GetControl(ctrlVars.UNIVERSAL_DECONSTRUCTION_INV, "Tabs") --ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventoryTabs
+ctrlVars.UNIVERSAL_DECONSTRUCTION_BUTTON_ENCHANTING = GetControl(ctrlVars.UNIVERSAL_DECONSTRUCTION_INV, strformat(tabsButtonStr, "1")) --ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventoryTabsButton1
+ctrlVars.UNIVERSAL_DECONSTRUCTION_BUTTON_JEWELRY = GetControl(ctrlVars.UNIVERSAL_DECONSTRUCTION_INV, strformat(tabsButtonStr, "2")) --ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventoryTabsButton2
+ctrlVars.UNIVERSAL_DECONSTRUCTION_BUTTON_ARMOR = GetControl(ctrlVars.UNIVERSAL_DECONSTRUCTION_INV, strformat(tabsButtonStr, "3")) --ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventoryTabsButton3
+ctrlVars.UNIVERSAL_DECONSTRUCTION_BUTTON_WEAPONS = GetControl(ctrlVars.UNIVERSAL_DECONSTRUCTION_INV, strformat(tabsButtonStr, "4")) --ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventoryTabsButton4
+ctrlVars.UNIVERSAL_DECONSTRUCTION_BUTTON_ALL = GetControl(ctrlVars.UNIVERSAL_DECONSTRUCTION_INV, strformat(tabsButtonStr, "5")) --ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventoryTabsButton5
+ctrlVars.UNIVERSAL_DECONSTRUCTON_SCENE = UNIVERSAL_DECONSTRUCTION_KEYBOARD_SCENE
+
 ctrlVars.REFINEMENT_PANEL		    = GetControl(ctrlVars.SMITHING_PANEL, "RefinementPanel") -- ZO_SmithingTopLevelRefinementPanel
 ctrlVars.REFINEMENT_INV			    = GetControl(ctrlVars.REFINEMENT_PANEL, inventoryStr) -- ZO_SmithingTopLevelRefinementPanelInventory
 ctrlVars.REFINEMENT_INV_NAME		= ctrlVars.REFINEMENT_INV:GetName()
@@ -1514,6 +1560,7 @@ inventoryVars.markerControlInventories = {
     ["hookScrollSetupCallback"] = {
         [ctrlVars.REFINEMENT]           = true,
         [ctrlVars.DECONSTRUCTION]       = true,
+        [ctrlVars.UNIVERSAL_DECONSTRUCTION_INV_BACKPACK] = true, -- #202
         [ctrlVars.IMPROVEMENT]          = true,
         [ctrlVars.ENCHANTING_STATION]   = true,
         [ctrlVars.ALCHEMY_STATION]      = true,
@@ -1689,7 +1736,7 @@ mappingVars.gFilterPanelIdToInv = {
 local invTextureName                = ctrlVars.INV_NAME .. "_FilterButton%sTexture"
 local refineTextureName             = ctrlVars.REFINEMENT_INV_NAME .. "_FilterButton%sTexture"
 local enchantTextureName            = ctrlVars.ENCHANTING_STATION_NAME .. "_FilterButton%sTexture"
-local deconTextureName              = ctrlVars.DECONSTRUCTION_INV_NAME .. "_FilterButton%sTexture"
+local deconTextureName              = ctrlVars.DECONSTRUCTION_INV_NAME .. "_FilterButton%sTexture" --todo #202
 local improveTextureName            = ctrlVars.IMPROVEMENT_INV_NAME .. "_FilterButton%sTexture"
 local researchTextureName           = ctrlVars.RESEARCH_NAME .. "_FilterButton%sTexture"
 local researchDialogTextureName     = ctrlVars.RESEARCH_POPUP_TOP_DIVIDER_NAME .. "_FilterButton%sTexture"
@@ -2820,7 +2867,7 @@ invAddButtonVars.playerInventoryFCOAdditionalOptionsButton = ctrlVars.INV_NAME .
 invAddButtonVars.playerBankWithdrawButtonAdditionalOptions = "FCOIS_PlayerBankWithdraw" .. additionalFCOISInvContextmenuButtonNameString
 invAddButtonVars.guildBankFCOWithdrawButtonAdditionalOptions = "FCOIS_GuildBankWithdraw" .. additionalFCOISInvContextmenuButtonNameString
 invAddButtonVars.smithingTopLevelRefinementPanelInventoryButtonAdditionalOptions = ctrlVars.REFINEMENT_INV_NAME .. additionalFCOISInvContextmenuButtonNameString
-invAddButtonVars.smithingTopLevelDeconstructionPanelInventoryButtonAdditionalOptions = ctrlVars.DECONSTRUCTION_INV_NAME .. additionalFCOISInvContextmenuButtonNameString
+invAddButtonVars.smithingTopLevelDeconstructionPanelInventoryButtonAdditionalOptions = ctrlVars.DECONSTRUCTION_INV_NAME .. additionalFCOISInvContextmenuButtonNameString --todo #202
 invAddButtonVars.smithingTopLevelImprovementPanelInventoryButtonAdditionalOptions = ctrlVars.IMPROVEMENT_INV_NAME .. additionalFCOISInvContextmenuButtonNameString
 invAddButtonVars.enchantingTopLevelInventoryButtonAdditionalOptions = ctrlVars.ENCHANTING_INV_NAME .. additionalFCOISInvContextmenuButtonNameString
 invAddButtonVars.craftBagInventoryButtonAdditionalOptions = ctrlVars.CRAFTBAG_NAME .. additionalFCOISInvContextmenuButtonNameString
@@ -2932,7 +2979,7 @@ contextMenuVars.filterPanelIdToContextMenuButtonInvoker = {
     },
     [LF_SMITHING_DECONSTRUCT]  		= {
         ["addInvButton"]  = true,
-        ["parent"]        = ctrlVars.DECONSTRUCTION_INV,
+        ["parent"]        = ctrlVars.DECONSTRUCTION_INV, --todo #202
         ["name"]          = invAddButtonVars.smithingTopLevelDeconstructionPanelInventoryButtonAdditionalOptions,
         ["sortIndex"]     = 19,
     },
@@ -2969,7 +3016,7 @@ contextMenuVars.filterPanelIdToContextMenuButtonInvoker = {
     },
     [LF_JEWELRY_DECONSTRUCT]  		= {
         ["addInvButton"]  = true,
-        ["parent"]        = ctrlVars.DECONSTRUCTION_INV,
+        ["parent"]        = ctrlVars.DECONSTRUCTION_INV, --todo #202
         ["name"]          = invAddButtonVars.smithingTopLevelDeconstructionPanelInventoryButtonAdditionalOptions,
         ["sortIndex"]     = 25,
     },
@@ -3051,7 +3098,7 @@ local sortHeaderNames = {
     [LF_GUILDBANK_DEPOSIT]      = ctrlVars.INV_NAME .. sortByNameNameStr,
     [LF_GUILDBANK_WITHDRAW]     = ctrlVars.GUILD_BANK_INV_NAME .. sortByNameNameStr,
     [LF_SMITHING_REFINE]        = ctrlVars.REFINEMENT_INV_NAME .. sortByNameNameStr,
-    [LF_SMITHING_DECONSTRUCT]   = ctrlVars.DECONSTRUCTION_INV_NAME .. sortByNameNameStr,
+    [LF_SMITHING_DECONSTRUCT]   = ctrlVars.DECONSTRUCTION_INV_NAME .. sortByNameNameStr, --todo #202
     [LF_SMITHING_IMPROVEMENT]   = ctrlVars.IMPROVEMENT_INV_NAME .. sortByNameNameStr,
     [LF_ALCHEMY_CREATION]       = ctrlVars.ALCHEMY_INV_NAME .. sortByNameNameStr,
     [LF_ENCHANTING_CREATION]    = ctrlVars.ENCHANTING_INV_NAME .. sortByNameNameStr,
@@ -3249,7 +3296,7 @@ anchorVarsAddInvButtonsFill[100021][LF_SMITHING_REFINE].top                  = v
 anchorVarsAddInvButtonsFill[100021][LF_SMITHING_REFINE].defaultLeft          = varX2
 anchorVarsAddInvButtonsFill[100021][LF_SMITHING_REFINE].defaultTop           = varY1
 anchorVarsAddInvButtonsFill[100021][LF_SMITHING_DECONSTRUCT] = {}
-anchorVarsAddInvButtonsFill[100021][LF_SMITHING_DECONSTRUCT].anchorControl   = ctrlVars.DECONSTRUCTION_INV
+anchorVarsAddInvButtonsFill[100021][LF_SMITHING_DECONSTRUCT].anchorControl   = ctrlVars.DECONSTRUCTION_INV --todo #202
 anchorVarsAddInvButtonsFill[100021][LF_SMITHING_DECONSTRUCT].left            = varX2
 anchorVarsAddInvButtonsFill[100021][LF_SMITHING_DECONSTRUCT].top             = varY1
 anchorVarsAddInvButtonsFill[100021][LF_SMITHING_DECONSTRUCT].defaultLeft     = varX2
@@ -3291,7 +3338,7 @@ anchorVarsAddInvButtonsFill[100021][LF_JEWELRY_REFINE].top                  = va
 anchorVarsAddInvButtonsFill[100021][LF_JEWELRY_REFINE].defaultLeft          = varX2
 anchorVarsAddInvButtonsFill[100021][LF_JEWELRY_REFINE].defaultTop           = varY1
 anchorVarsAddInvButtonsFill[100021][LF_JEWELRY_DECONSTRUCT] = {}
-anchorVarsAddInvButtonsFill[100021][LF_JEWELRY_DECONSTRUCT].anchorControl   = ctrlVars.DECONSTRUCTION_INV
+anchorVarsAddInvButtonsFill[100021][LF_JEWELRY_DECONSTRUCT].anchorControl   = ctrlVars.DECONSTRUCTION_INV --todo #202
 anchorVarsAddInvButtonsFill[100021][LF_JEWELRY_DECONSTRUCT].left            = varX2
 anchorVarsAddInvButtonsFill[100021][LF_JEWELRY_DECONSTRUCT].top             = varY1
 anchorVarsAddInvButtonsFill[100021][LF_JEWELRY_DECONSTRUCT].defaultLeft     = varX2
@@ -3333,19 +3380,6 @@ if FCOIS.APIversion >= 100021 then
     anchorVarsAddInvButtonsFill[FCOIS.APIversion] = anchorVarsAddInvButtonsFill[100021]
 end
 
---For the addon QualitySort: Add some panels where the x axis offset of the additional inventory "flag" button needs to be adjusted
---[[
---FCOIS v1.6.7 - Deactivated
-mappingVars.adjustAdditionalFlagButtonOffsetForPanel = {
-    [ctrlVars.CRAFTBAG]     = true,
-    [ctrlVars.GUILD_BANK_INV]    = true,
-    [ctrlVars.REFINEMENT_INV]     = true,
-    [ctrlVars.DECONSTRUCTION_INV] = true,
-    [ctrlVars.IMPROVEMENT_INV]    = true,
-    [ctrlVars.ENCHANTING_INV] = true,
-    [ctrlVars.RETRAIT_INV] = true,
-}
-]]
 --The ordinal endings of the different languages
 mappingVars.iconNrToOrdinalStr = {
     --English

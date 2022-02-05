@@ -16,6 +16,7 @@ local signItemId = FCOIS.SignItemId
 local myGetItemInstanceIdNoControl = FCOIS.MyGetItemInstanceIdNoControl
 local isItemOrnate = FCOIS.IsItemOrnate
 local checkIfFilterPanelIsDeconstructable = FCOIS.CheckIfFilterPanelIsDeconstructable
+local checkIfDeconstructionNPC
 
 local isResearchListDialogShown = FCOIS.IsResearchListDialogShown
 local isRetraitStationShown = FCOIS.IsRetraitStationShown
@@ -791,6 +792,7 @@ end -- ItemSelectionHandler
 -- fired when user selects an item to deconstruct
 -- warns user if the item is marked with any of the filter icons
 function FCOIS.DeconstructionSelectionHandler(bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId)
+    checkIfDeconstructionNPC = checkIfDeconstructionNPC or FCOIS.CheckIfDeconstructionNPC
     if bag == nil or slot == nil then return true end
     echo = echo or false
     overrideChatOutput = overrideChatOutput or false
@@ -822,6 +824,7 @@ function FCOIS.DeconstructionSelectionHandler(bag, slot, echo, overrideChatOutpu
     local isDeconstructablePanelId = (panelId ~= nil and checkIfFilterPanelIsDeconstructable(panelId)) or false
     local noDeconstructionShouldBeDone = true
     if (ctrlVars.DECONSTRUCTION_BAG ~= nil and not ctrlVars.DECONSTRUCTION_BAG:IsHidden())
+            or checkIfDeconstructionNPC(panelId) -- #202
             or (calledFromExternalAddon and craftingTypeIsDeconstructable) or isDeconstructablePanelId == true then
         noDeconstructionShouldBeDone = false
     end

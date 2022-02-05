@@ -2,6 +2,8 @@
 if FCOIS == nil then FCOIS = {} end
 local FCOIS = FCOIS
 
+local tos = tostring
+
 local libFilters = FCOIS.libFilters
 
 --Do not go on if libraries are not loaded properly
@@ -24,6 +26,8 @@ local isItemType = FCOIS.IsItemType
 local isCompanionInventoryShown = FCOIS.IsCompanionInventoryShown
 local getFilterWhereBySettings = FCOIS.GetFilterWhereBySettings
 local mappingVars = FCOIS.mappingVars
+local panelIdSupportedAtDeconNPC = mappingVars.panelIdSupportedAtDeconNPC
+local panelIdByDeconNPCMenuBarTabButtonName = mappingVars.panelIdByDeconNPCMenuBarTabButtonName
 
 --==========================================================================================================================================
 --                                          FCOIS - Panel functions
@@ -73,7 +77,7 @@ function FCOIS.GetWhereAreWe(panelId, panelIdAtCall, panelIdParent, bag, slot, i
     --======= FUNCTIONs ============================================================
     --Function to check a single item's type and get the whereAreWe ID
     local function checkSingleItemProtection(p_bag, p_slotIndex, whereAreWeBefore)
-        if settings.debug then debugMessage( "[checkSingleItemProtection]","panelId: " .. tostring(panelId) .. ", whereAreWeBefore: " .. tostring(whereAreWeBefore) .. ", calledFromExternalAddon: " ..tostring(calledFromExternalAddon), true, FCOIS_DEBUG_DEPTH_ALL) end
+        if settings.debug then debugMessage( "[checkSingleItemProtection]","panelId: " .. tos(panelId) .. ", whereAreWeBefore: " .. tos(whereAreWeBefore) .. ", calledFromExternalAddon: " ..tos(calledFromExternalAddon), true, FCOIS_DEBUG_DEPTH_ALL) end
         if p_bag == nil or p_slotIndex == nil then return false end
         local locWhereAreWe = FCOIS_CON_DESTROY
         --Are we trying to open a container with autoloot on?
@@ -116,7 +120,7 @@ function FCOIS.GetWhereAreWe(panelId, panelIdAtCall, panelIdParent, bag, slot, i
                 end
             end
         end
-        if settings.debug then debugMessage( "[checkSingleItemProtection]", "<<< whereAreWeAfter: " .. tostring(locWhereAreWe), true, FCOIS_DEBUG_DEPTH_ALL) end
+        if settings.debug then debugMessage( "[checkSingleItemProtection]", "<<< whereAreWeAfter: " .. tos(locWhereAreWe), true, FCOIS_DEBUG_DEPTH_ALL) end
         return locWhereAreWe
     end
 
@@ -349,7 +353,7 @@ function FCOIS.GetWhereAreWe(panelId, panelIdAtCall, panelIdParent, bag, slot, i
     end --if FCOIS.otherAddons.craftBagExtendedActive and INVENTORY_CRAFT_BAG and (panelId == LF_CRAFTBAG or not ctrlVars.CRAFTBAG:IsHidden()) then
     --*********************************************************************************************************************************************************************************
 
-    --d("[FCOIS.GetWhereAreWe]panelId: " .. tostring(panelId) .. ", panelIdAtCall: " .. tostring(panelIdAtCall) .. ", calledFromExternalAddon: " ..tostring(calledFromExternalAddon))
+    --d("[FCOIS.GetWhereAreWe]panelId: " .. tos(panelId) .. ", panelIdAtCall: " .. tos(panelIdAtCall) .. ", calledFromExternalAddon: " ..tos(calledFromExternalAddon))
 
     return whereAreWe
 end
@@ -357,7 +361,7 @@ end
 --Function to check if the currently shown panel is the craftbag
 function FCOIS.IsCraftbagPanelShown()
     local retVar = INVENTORY_CRAFT_BAG and not FCOIS.ZOControlVars.CRAFTBAG:IsHidden()
-    if FCOIS.settingsVars.settings.debug then debugMessage( "[isCraftbagPanelShown]", "result: " .. tostring(retVar), true, FCOIS_DEBUG_DEPTH_SPAM) end
+    if FCOIS.settingsVars.settings.debug then debugMessage( "[isCraftbagPanelShown]", "result: " .. tos(retVar), true, FCOIS_DEBUG_DEPTH_SPAM) end
     return retVar
 end
 local isCraftbagPanelShown = FCOIS.IsCraftbagPanelShown
@@ -379,9 +383,51 @@ function FCOIS.CheckCraftbagOrOtherActivePanel(wishedPanelId)
     else
         newPanelId = wishedPanelId
     end
-    --d("[FCOIS.checkCraftbagOrOtherActivePanel - New panel id: " .. tostring(newPanelId) .. ", filterParent: " ..tostring(newParentPanelId))
+    --d("[FCOIS.checkCraftbagOrOtherActivePanel - New panel id: " .. tos(newPanelId) .. ", filterParent: " ..tos(newParentPanelId))
     return newPanelId, newParentPanelId
 end
+
+-- -v- #202
+--Check if Deconstruction NPC "Giladil"
+function FCOIS.CheckIfDeconstructionNPC(filterPanelIdComingFrom)
+    if not UNIVERSAL_DECONSTRUCTION then return false end
+    if ctrlVars.UNIVERSAL_DECONSTRUCTON_SCENE:IsShowing() then
+        local isDeconNPCControlShown = not ctrlVars.UNIVERSAL_DECONSTRUCTION_INV:IsHidden()
+        local isFilterPanelIdShown = isDeconNPCControlShown
+        if filterPanelIdComingFrom ~= nil then
+            isFilterPanelIdShown = panelIdSupportedAtDeconNPC[filterPanelIdComingFrom] or false
+        end
+        return isDeconNPCControlShown and isFilterPanelIdShown
+    end
+    return false
+end
+local checkIfDeconstructionNPC = FCOIS.CheckIfDeconstructionNPC
+
+function FCOIS.GetCurrentFilterPanelIdAtDeconNPC(filterPanelIdPassedIn)
+    local filterPanelIdDetected = filterPanelIdPassedIn
+d("[FCOIS]GetCurrentFilterPanelIdAtDeconNPC - filterPanel: " ..tos(filterPanelIdPassedIn))
+    local isDeconstuctionNPC = checkIfDeconstructionNPC(filterPanelIdPassedIn)
+d(">isDeconstuctionNPC: " ..tos(isDeconstuctionNPC))
+    if not isDeconstuctionNPC then return filterPanelIdPassedIn end
+
+    --Check which button is currently selected at the menuBar at the universal deconstruction panel
+    local clickedButton = ((ctrlVars.UNIVERSAL_DECONSTRUCTION_MENUBAR_TABS ~= nil and ctrlVars.UNIVERSAL_DECONSTRUCTION_MENUBAR_TABS.m_object ~= nil)
+            and ctrlVars.UNIVERSAL_DECONSTRUCTION_MENUBAR_TABS.m_object.m_clickedButton) or nil
+d(">Button clicked: " ..tos(clickedButton))
+    local buttonData = clickedButton and clickedButton.m_buttonData
+    if buttonData then
+        local activeTabText = buttonData.activeTabText
+d(">>button text: " ..tos(activeTabText))
+        if activeTabText and activeTabText ~= nil then
+            filterPanelIdDetected = panelIdByDeconNPCMenuBarTabButtonName[activeTabText]
+d(">>>filterPanelIdDetected: " ..tos(filterPanelIdDetected))
+            filterPanelIdDetected = filterPanelIdDetected or filterPanelIdPassedIn
+        end
+    end
+    return filterPanelIdDetected
+end
+local getCurrentFilterPanelIdAtDeconNPC = FCOIS.GetCurrentFilterPanelIdAtDeconNPC
+-- -^- #202
 
 --Get the "real" active panel.
 --If you are at the bank e.g. panelId is 2 (FCOIS.gFilterWhere was set in event BANK_OPEN), but you could also be at the deposit tab which uses
@@ -403,10 +449,11 @@ function FCOIS.CheckActivePanel(comingFrom, overwriteFilterWhere)
         else
             oldFilterWhere = comingFrom
         end
-        debugMessage( "[checkActivePanel]","Coming from/Before: " .. tostring(oldFilterWhere) .. ", overwriteFilterWhere: " .. tostring(overwriteFilterWhere) .. ", currentSceneName: " ..tostring(currentSceneName), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED)
+        debugMessage( "[checkActivePanel]","Coming from/Before: " .. tos(oldFilterWhere) .. ", overwriteFilterWhere: " .. tos(overwriteFilterWhere) .. ", currentSceneName: " ..tos(currentSceneName), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED)
     end
-
---d("[FCOIS.checkActivePanel] comingFrom/Before: " .. tostring(comingFrom) .. ", overwriteFilterWhere: " ..tostring(overwriteFilterWhere).. ", currentSceneName: " ..tostring(currentSceneName))
+    --#202 Universal deconstruction?
+    local isDeconNPC = checkIfDeconstructionNPC(comingFrom)
+--d("[FCOIS.checkActivePanel] comingFrom/Before: " .. tos(comingFrom) .. ", isDeconNPC: " .. tos(isDeconNPC) .. ", overwriteFilterWhere: " ..tos(overwriteFilterWhere).. ", currentSceneName: " ..tos(currentSceneName))
 
     --Player bank
     if ((currentSceneName ~= nil and currentSceneName == ctrlVars2.bankSceneName) and not ctrlVars2.BANK:IsHidden()) or comingFrom == LF_BANK_WITHDRAW then
@@ -498,12 +545,12 @@ function FCOIS.CheckActivePanel(comingFrom, overwriteFilterWhere)
         FCOIS.gFilterWhere = getFilterWhereBySettings(LF_ENCHANTING_CREATION)
         inventoryName = ctrlVars2.ENCHANTING_STATION
     --Enchanting extraction mode
-    elseif comingFrom == LF_ENCHANTING_EXTRACTION then
+    elseif not isDeconNPC and comingFrom == LF_ENCHANTING_EXTRACTION then
         --Update the filterPanelId
         FCOIS.gFilterWhere = getFilterWhereBySettings(LF_ENCHANTING_EXTRACTION)
         inventoryName = ctrlVars2.ENCHANTING_STATION
     --Enchanting
-    elseif comingFrom == "ENCHANTING" then
+    elseif not isDeconNPC and comingFrom == "ENCHANTING" then
         --Determine which enchanting mode is used
         --Enchanting creation mode
         if ctrlVars2.ENCHANTING.enchantingMode == 1 then
@@ -537,7 +584,7 @@ function FCOIS.CheckActivePanel(comingFrom, overwriteFilterWhere)
         FCOIS.gFilterWhere = getFilterWhereBySettings(filterPanelId)
         inventoryName = ctrlVars2.REFINEMENT_INV
     --Deconstruction
-    elseif not ctrlVars2.DECONSTRUCTION_INV:IsHidden() or (comingFrom == LF_SMITHING_DECONSTRUCT or comingFrom == LF_JEWELRY_DECONSTRUCT) then
+    elseif not isDeconNPC and (not ctrlVars2.DECONSTRUCTION_INV:IsHidden() or (comingFrom == LF_SMITHING_DECONSTRUCT or comingFrom == LF_JEWELRY_DECONSTRUCT)) then
         --[[
         local craftType = GetCraftingInteractionType()
         local filterPanelId = LF_SMITHING_DECONSTRUCT
@@ -608,6 +655,17 @@ function FCOIS.CheckActivePanel(comingFrom, overwriteFilterWhere)
         --Update the filterPanelId
         FCOIS.gFilterWhere = getFilterWhereBySettings(LF_CRAFTBAG)
         inventoryName = ctrlVars2.CRAFTBAG
+
+-- -v- #202
+    --Deconstruction NPC "Giladil"
+    elseif isDeconNPC == true then
+        --filterPanelId Could be deconstruction/jewelry decon or enchanting extract but was determined before at the panel
+        --local filterPanelIdAtDeconNPC = getCurrentFilterPanelIdAtDeconNPC(comingFrom)
+        --Update the filterPanelId
+        FCOIS.gFilterWhere = getFilterWhereBySettings(comingFrom)
+        inventoryName = ctrlVars2.UNIVERSAL_DECONSTRUCTION_INV
+-- -^- #202
+
     else
         --Update the filterPanelId with a standard value
         FCOIS.gFilterWhere = getFilterWhereBySettings(LF_INVENTORY)
@@ -627,9 +685,9 @@ function FCOIS.CheckActivePanel(comingFrom, overwriteFilterWhere)
         end
     end
 
-    if FCOIS.settingsVars.settings.debug then debugMessage( "[checkActivePanel]",">> after: " .. tostring(FCOIS.gFilterWhere) .. ", inventoryName: " .. tostring(inventoryName) .. ", filterParentPanel: " .. tostring(panelType), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
-    --d("[FCOIS.checkActivePanel]>> after: " .. tostring(FCOIS.gFilterWhere) .. ", inventoryName: " .. tostring(inventoryName) .. ", filterParentPanel: " .. tostring(panelType))
---d( ">> after: " .. tostring(FCOIS.gFilterWhere) .. ", inventoryName: " .. tostring(inventoryName) .. ", filterParentPanel: " .. tostring(panelType))
+    if FCOIS.settingsVars.settings.debug then debugMessage( "[checkActivePanel]",">> after: " .. tos(FCOIS.gFilterWhere) .. ", inventoryName: " .. tos(inventoryName) .. ", filterParentPanel: " .. tos(panelType), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+    --d("[FCOIS.checkActivePanel]>> after: " .. tos(FCOIS.gFilterWhere) .. ", inventoryName: " .. tos(inventoryName) .. ", filterParentPanel: " .. tos(panelType))
+--d( ">> after: " .. tos(FCOIS.gFilterWhere) .. ", inventoryName: " .. tos(inventoryName) .. ", filterParentPanel: " .. tos(panelType))
 
     --Return the found inventory variable (e.g. ZO_PlayerInventory) and the LibFilters filter panel ID (e.g. LF_BANK_WITHDRAW)
     return inventoryName, panelType
@@ -668,7 +726,7 @@ end
 --Run some functions as a panel gets closed/hidden (e.g. sthe store, crafting tables etc.)
 --and re-enable the protection if it was disabled, and the setting to auto-reenable it is enabled
 function FCOIS.OnClosePanel(panelIdClosed, panelIdToShow, autoReEnableCheck)
---d("[FCOIS]OnClosePanel-panelIdClosed: " ..tostring(panelIdClosed) .. ", panelIdToShow: " ..tostring(panelIdToShow) .. ", autoReEnableCheck: " ..tostring(autoReEnableCheck))
+--d("[FCOIS]OnClosePanel-panelIdClosed: " ..tos(panelIdClosed) .. ", panelIdToShow: " ..tos(panelIdToShow) .. ", autoReEnableCheck: " ..tos(autoReEnableCheck))
     --Hide the context menu at last active panel
     if panelIdClosed ~= nil then
         hideContextMenu(panelIdClosed)

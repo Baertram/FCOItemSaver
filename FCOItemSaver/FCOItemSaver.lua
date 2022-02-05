@@ -157,20 +157,27 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 
 --#199, 2021-12-28, Baertram, bug: Companion equipment character is not showing the armor type labels L/M/H
 
+--#201, 2022-02-04, Baertram, bug: Gear marker icon 1 (static) is displayed below all other dynamic icons in context menus?
+
+--#202, 2022-02-05, Baertram, bug: Add support for new deconstruction NPC "Giladil" (inventory markers, filterButtons, flag, context menus)
+--  todo: At best re-Use LF_SMITHING_DECONSTRUCTION for the filterPanelId? Or add a new LF_UNIVERSAL_DECONSTRUCTION to LibFilters?
+
+--#203, 2022-02-05, Hotelvit, bug, FCOIS comments at esoui: Mass moving to junk/removing from junk (100 items) will kick you from the server becase of message spam
 
 --____________________________
--- Current max bugs/features/ToDos: 200
+-- Current max bugs/features/ToDos: 202
 --____________________________
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-01-31
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-02-05
 ------------------------------------------------------------------------------------
 --#176 -> Test: Errors occured with OR filters, and mixed AND + OR filters
-
+--#201 -> Find reason
+--#202 --> Filter buttons show/hide and anchor to universal deconstruction/re anchor to default parents at smithing decon and enchanting extract needs to be added + TESTs
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.2.3 - New version: 2.2.4) -    Updated last: 2022-01-31
+--Changelog (last version: 2.2.3 - New version: 2.2.4) -    Updated last: 2022-02-05
 -------------------------------------------------------------------------------------
 
 --[Fixed]

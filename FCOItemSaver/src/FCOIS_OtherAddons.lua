@@ -1116,6 +1116,8 @@ local function getItemCooldownTrackerRelevantItemIds()
     FCOIS.otherAddons.ItemCooldownTracker.relevantItemIds = relevantItemIds
 end
 
+GetAchievementInfo()
+
 function FCOIS.CheckIfItemCooldownTrackerRelevantItemIdAndMarkItem(bagId, slotIndex, itemLink)
     --#184
 --d("[FCOIS]CheckIfItemCooldownTrackerRelevantItemIdAndMarkItem")
@@ -1178,7 +1180,7 @@ function FCOIS.CheckIfItemCooldownTrackerRelevantItemIdAndMarkItem(bagId, slotIn
         --cooldownLeftStr = string.format("Cooldown left: %s hours, %s minutes", tos(hoursLeft), tos(minutesLeft))
     end
 
---d(">item: " .. itemLink .. ", showIcon: " ..tos(showIcon) .. ", cooldown: " ..tos(cooldownLeftStr))
+--d(">item: " .. itemLink .. ", showIcon: " ..tos(showIcon) .. ", icon: " ..tos(itemCoolDownTrackerTrackedItemsMarkerIcon))
 
     --Mark the item now
     if bagId == nil or slotIndex == nil then
