@@ -856,6 +856,7 @@ mappingVars.panelIdByDeconNPCMenuBarTabButtonName = {
     [getStringFromUniversalDeconstructionMenuBar("all")]            = LF_SMITHING_DECONSTRUCT,  --All -> Not sure if deconstruction is the correct here? But use it for now
 }
 
+
 --FilterPanelIds which need the FCOIS.RefreshListDialog function
 mappingVars.filterPanelIdForRefreshDialog = {
     [LF_SMITHING_RESEARCH_DIALOG] = true,
@@ -1382,22 +1383,23 @@ ctrlVars.DECONSTRUCTION_SLOT 		= GetControl(ctrlVars.DECONSTRUCTION_PANEL, "Slot
 ctrlVars.DECONSTRUCTION_BUTTON_ARMOR   = GetControl(ctrlVars.DECONSTRUCTION_INV, strformat(tabsButtonStr, "1")) --ZO_SmithingTopLevelDeconstructionPanelInventoryTabsButton1
 ctrlVars.DECONSTRUCTION_BUTTON_WEAPONS = GetControl(ctrlVars.DECONSTRUCTION_INV, strformat(tabsButtonStr, "2")) --ZO_SmithingTopLevelDeconstructionPanelInventoryTabsButton2
 --ctrlVars.SMITHING_MENUBAR_BUTTON_DECONSTRUCTION 		= ZO_SmithingTopLevelModeMenuBarButton3
---UniversalDeconstruction - API101033 "Ascending Tide" added via deconstruction NPC "Giladil"
+-- -v- #202 UniversalDeconstruction - API101033 "Ascending Tide" added via deconstruction NPC "Giladil"
 ctrlVars.UNIVERSAL_DECONSTRUCTION_BASE = ZO_UniversalDeconstructionTopLevel_Keyboard
 ctrlVars.UNIVERSAL_DECONSTRUCTION_PANEL = GetControl(ctrlVars.UNIVERSAL_DECONSTRUCTION_BASE, "Panel") ---ZO_UniversalDeconstructionTopLevel_KeyboardPanel
 ctrlVars.UNIVERSAL_DECONSTRUCTION_INV = GetControl(ctrlVars.UNIVERSAL_DECONSTRUCTION_PANEL, inventoryStr) ---ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventory
-ctrlVars.UNIVERSAL_DECONSTRUCTION_INV_NAME	= ctrlVars.DECONSTRUCTION_INV:GetName()
-ctrlVars.UNIVERSAL_DECONSTRUCTION_INV_BACKPACK = GetControl(ctrlVars.UNIVERSAL_DECONSTRUCTION_INV, backpackStr) -- ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventoryBackpack
+local universalDeconInv = ctrlVars.UNIVERSAL_DECONSTRUCTION_INV
+ctrlVars.UNIVERSAL_DECONSTRUCTION_INV_NAME	= universalDeconInv:GetName()
+ctrlVars.UNIVERSAL_DECONSTRUCTION_INV_BACKPACK = GetControl(universalDeconInv, backpackStr) -- ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventoryBackpack
 ctrlVars.UNIVERSAL_DECONSTRUCTION_BAG 		= GetControl(ctrlVars.UNIVERSAL_DECONSTRUCTION_INV_BACKPACK, contentsStr) -- ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventoryBackpackContents
 ctrlVars.UNIVERSAL_DECONSTRUCTION_SLOT 		= GetControl(ctrlVars.UNIVERSAL_DECONSTRUCTION_PANEL, "SlotContainerExtractionSlot") --ZO_UniversalDeconstructionTopLevel_KeyboardPanelSlotContainerExtractionSlot
-ctrlVars.UNIVERSAL_DECONSTRUCTION_MENUBAR_TABS = GetControl(ctrlVars.UNIVERSAL_DECONSTRUCTION_INV, "Tabs") --ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventoryTabs
-ctrlVars.UNIVERSAL_DECONSTRUCTION_BUTTON_ENCHANTING = GetControl(ctrlVars.UNIVERSAL_DECONSTRUCTION_INV, strformat(tabsButtonStr, "1")) --ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventoryTabsButton1
-ctrlVars.UNIVERSAL_DECONSTRUCTION_BUTTON_JEWELRY = GetControl(ctrlVars.UNIVERSAL_DECONSTRUCTION_INV, strformat(tabsButtonStr, "2")) --ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventoryTabsButton2
-ctrlVars.UNIVERSAL_DECONSTRUCTION_BUTTON_ARMOR = GetControl(ctrlVars.UNIVERSAL_DECONSTRUCTION_INV, strformat(tabsButtonStr, "3")) --ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventoryTabsButton3
-ctrlVars.UNIVERSAL_DECONSTRUCTION_BUTTON_WEAPONS = GetControl(ctrlVars.UNIVERSAL_DECONSTRUCTION_INV, strformat(tabsButtonStr, "4")) --ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventoryTabsButton4
-ctrlVars.UNIVERSAL_DECONSTRUCTION_BUTTON_ALL = GetControl(ctrlVars.UNIVERSAL_DECONSTRUCTION_INV, strformat(tabsButtonStr, "5")) --ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventoryTabsButton5
+ctrlVars.UNIVERSAL_DECONSTRUCTION_MENUBAR_TABS = GetControl(universalDeconInv, "Tabs") --ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventoryTabs
+--ctrlVars.UNIVERSAL_DECONSTRUCTION_BUTTON_ENCHANTING = GetControl(universalDeconInv, strformat(tabsButtonStr, "1")) --ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventoryTabsButton1
+--ctrlVars.UNIVERSAL_DECONSTRUCTION_BUTTON_JEWELRY = GetControl(universalDeconInv, strformat(tabsButtonStr, "2")) --ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventoryTabsButton2
+--ctrlVars.UNIVERSAL_DECONSTRUCTION_BUTTON_ARMOR = GetControl(universalDeconInv, strformat(tabsButtonStr, "3")) --ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventoryTabsButton3
+--ctrlVars.UNIVERSAL_DECONSTRUCTION_BUTTON_WEAPONS = GetControl(universalDeconInv, strformat(tabsButtonStr, "4")) --ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventoryTabsButton4
+--ctrlVars.UNIVERSAL_DECONSTRUCTION_BUTTON_ALL = GetControl(universalDeconInv, strformat(tabsButtonStr, "5")) --ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventoryTabsButton5
 ctrlVars.UNIVERSAL_DECONSTRUCTON_SCENE = UNIVERSAL_DECONSTRUCTION_KEYBOARD_SCENE
-
+-- -^- #202
 ctrlVars.REFINEMENT_PANEL		    = GetControl(ctrlVars.SMITHING_PANEL, "RefinementPanel") -- ZO_SmithingTopLevelRefinementPanel
 ctrlVars.REFINEMENT_INV			    = GetControl(ctrlVars.REFINEMENT_PANEL, inventoryStr) -- ZO_SmithingTopLevelRefinementPanelInventory
 ctrlVars.REFINEMENT_INV_NAME		= ctrlVars.REFINEMENT_INV:GetName()
@@ -1533,6 +1535,23 @@ ctrlVars.INVENTORY_QUEST_NAME        = "ZO_PlayerInventoryQuest"
 -->collectibleIndex (e.g. 5)
 ctrlVars.ZOMenu                         = ZO_Menu
 ctrlVars.mainMenuCategoryBar            = ZO_MainMenuCategoryBar
+
+
+-- #202 The mapping between the filterPanelId and the universal deconstruction controls to parent and anchor to
+mappingVars.panelIdToUniversalDeconstructionParentData = {
+    [LF_SMITHING_DECONSTRUCT]   = {
+        parent      = universalDeconInv,
+        anchorTo    = universalDeconInv,
+    },
+    [LF_JEWELRY_DECONSTRUCT]   = {
+        parent      = universalDeconInv,
+        anchorTo    = universalDeconInv,
+    },
+    [LF_ENCHANTING_EXTRACTION]   = {
+        parent      = universalDeconInv,
+        anchorTo    = universalDeconInv,
+    },
+}
 
 
 --Array for the inventories data
@@ -3371,14 +3390,12 @@ anchorVarsAddInvButtonsFill[100021][FCOIS_CON_LF_COMPANION_CHARACTER].left      
 anchorVarsAddInvButtonsFill[100021][FCOIS_CON_LF_COMPANION_CHARACTER].top             = 0
 anchorVarsAddInvButtonsFill[100021][FCOIS_CON_LF_COMPANION_CHARACTER].defaultLeft     = -16
 anchorVarsAddInvButtonsFill[100021][FCOIS_CON_LF_COMPANION_CHARACTER].defaultTop      = 0
---Is the current API version unequal one of the above ones?
-if FCOIS.APIversion >= 100021 then
-	anchorVarsAddInvButtonsFill[FCOIS.APIversion] = {}
-    -->Not working with for in pairs loop :-( So we need to copy the contents!
-    --Use the anchor controls and settings of API 100021
-    --setmetatable(anchorVarsAddInvButtons[FCOIS.APIversion], {__index = anchorVarsAddInvButtons[100021]})
-    anchorVarsAddInvButtonsFill[FCOIS.APIversion] = anchorVarsAddInvButtonsFill[100021]
-end
+--Is the current API version unequal one of the above one?
+anchorVarsAddInvButtonsFill[FCOIS.APIversion] = {}
+-->Not working with for in pairs loop :-( So we need to copy the contents!
+--Use the anchor controls and settings of API 100021
+--setmetatable(anchorVarsAddInvButtons[FCOIS.APIversion], {__index = anchorVarsAddInvButtons[100021]})
+anchorVarsAddInvButtonsFill[FCOIS.APIversion] = anchorVarsAddInvButtonsFill[100021]
 
 --The ordinal endings of the different languages
 mappingVars.iconNrToOrdinalStr = {

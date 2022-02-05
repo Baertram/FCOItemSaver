@@ -637,6 +637,7 @@ function FCOIS.CreateHooks()
     local updateFCOISFilterButtonColorsAndTextures           = FCOIS.UpdateFCOISFilterButtonColorsAndTextures
     local hideContextMenu                                    = FCOIS.HideContextMenu
     local changeContextMenuInvokerButtonColorByPanelId       = FCOIS.ChangeContextMenuInvokerButtonColorByPanelId
+    local reParentAndAnchorContextMenuInvokerAndFilterButtons = FCOIS.ReParentAndAnchorContextMenuInvokerAndFilterButtons
     local resetContextMenuInvokerButtonColorToDefaultPanelId = FCOIS.ResetContextMenuInvokerButtonColorToDefaultPanelId
     local autoReenableAntiSettingsCheck                      = FCOIS.AutoReenableAntiSettingsCheck
     local checkIfClearOrRestoreAllMarkers                    = FCOIS.CheckIfClearOrRestoreAllMarkers
@@ -648,6 +649,16 @@ function FCOIS.CreateHooks()
     local checkCraftbagOrOtherActivePanel                    = FCOIS.CheckCraftbagOrOtherActivePanel
     local updateFilteredItemCountThrottled                   = FCOIS.UpdateFilteredItemCountThrottled
     local onClosePanel                                       = FCOIS.OnClosePanel
+
+
+    --Set the global filter panel ID to LF_INVENTORY again (otherwise it would stay the same like before, e.g. craftbag, and block the drag&drop!)
+    local function resetToInventoryAndHideContextMenu()
+        FCOIS.gFilterWhere = LF_INVENTORY
+        --Hide the context menus
+        zo_callLater(function()
+            hideContextMenu(LF_INVENTORY)
+        end, 50)
+    end
 
     --========= INVENTORY SLOT - SHOW CONTEXT MENU =================================
     local function ZO_InventorySlot_ShowContextMenu_For_FCOItemSaver(rowControl, slotActions, ctrl, alt, shift, command)
@@ -950,25 +961,36 @@ function FCOIS.CreateHooks()
     --at SHOWN detect the current panel and set FCOIS.gFilterWhere + add buttons + add flag icon (reanchor LF_SMITHING_DECONSTRUCT [buttons ALL, ARMOR, WEAPON]
     --and LF_JEWELRY_DECONSTRUCT [buttons JEWELRY] and LF_ENCHANTING_EXTRACT [buttons ENCHANTING], and at HIDING reanchor them to their normal parents
     -- and set FCOIS.gFilterWhere to LF_INVENTORY again)
-    local function updateFilterButtonsAtUniversalDeconstruction(resetToDefaults)
-        resetToDefaults = resetToDefaults or false
+    local function updateFilterButtonsAtUniversalDeconstruction(isHidden)
+        isHidden = isHidden or false
 
-        if not resetToDefaults then
-            local filterPanelId = FCOIS.GetCurrentFilterPanelIdAtDeconNPC(LF_SMITHING_DECONSTRUCT)
-            if filterPanelId ~= nil and FCOIS.gFilterWhere ~= filterPanelId then
-                FCOIS.gFilterWhere = filterPanelId
+        if not isHidden then
+            local currentFilterPanelIdAtUniversalDecon = FCOIS.GetCurrentFilterPanelIdAtDeconNPC(LF_SMITHING_DECONSTRUCT)
+            if currentFilterPanelIdAtUniversalDecon ~= nil and FCOIS.gFilterWhere ~= currentFilterPanelIdAtUniversalDecon then
+                FCOIS.gFilterWhere = currentFilterPanelIdAtUniversalDecon
 
-                --Todo re-anchor the filterButtons and the additional inventory flag button from their default parents at e.g.
+                --Re-anchor the filterButtons and the additional inventory flag button from their default parents at e.g.
                 --LF_SMITHING_DECONSTRUCT, LF_JEWELRY_DECONSTRUCT and LF_ENCHANTING_EXTRACTION to
                 --their new parent control UNIVERSAL_DECONSTRUCTION.control ...
-
+                -->Re-Parent and Re-Anchor he filterButtons and the additional inventory "flag" button from old panel to current panel
+                reParentAndAnchorContextMenuInvokerAndFilterButtons(nil, currentFilterPanelIdAtUniversalDecon)
+                --Change the button color of the context menu invoker
+                changeContextMenuInvokerButtonColorByPanelId(currentFilterPanelIdAtUniversalDecon)
+                --Check the filter buttons and create them if they are not there. Update the inventory afterwards too
+                checkFCOISFilterButtonsAtPanel(true, currentFilterPanelIdAtUniversalDecon)
             end
         else
-            FCOIS.gFilterWhere = LF_INVENTORY
 
-            --Todo reset the filterButtons and the additional inventory flag button to their default parents at e.g.
+            --Hide context menus and update inventory filterButtons + re-enable the ANTI deconstruction/ANTI enchanting protection if needed
+            onClosePanel(nil, LF_INVENTORY, "CRAFTING_STATION")
+
+            --Reset the filterButtons and the additional inventory flag button to their default parents at e.g.
             --LF_SMITHING_DECONSTRUCT, LF_JEWELRY_DECONSTRUCT and LF_ENCHANTING_EXTRACTION
+            local lastFilterPanelIdAtUniversalDecon = FCOIS.gFilterWhere
+            reParentAndAnchorContextMenuInvokerAndFilterButtons(lastFilterPanelIdAtUniversalDecon, nil)
 
+            --Reset the filterPanelId to inventory
+            FCOIS.gFilterWhere = LF_INVENTORY
         end
     end
 
@@ -999,10 +1021,12 @@ function FCOIS.CreateHooks()
             end
 
         end
-
+        --Normal scene shown/hidden callbacks to show/hide (& reanchor) the additional inventory flag buttons and the filterButtonss
         if newState == SCENE_SHOWN then
             updateFilterButtonsAtUniversalDeconstruction(false)
-
+        elseif newState == SCENE_HIDING then
+            --Hide the context menu at mail panel
+            hideContextMenu(FCOIS.gFilterWhere)
         elseif newState == SCENE_HIDDEN then
             updateFilterButtonsAtUniversalDeconstruction(true)
         end
@@ -1085,8 +1109,9 @@ function FCOIS.CreateHooks()
     --========= RESEARCH LIST / ListDialog (also repair, enchant, charge, etc.) - ZO_Dialog1 ======================================================
     --Original setupCallback function
     local hookedResearchListFunctions               = ctrlVars.LIST_DIALOG.dataTypes[1].setupCallback
-    --Pre-Hook the list dialog's rows
-    ctrlVars.LIST_DIALOG.dataTypes[1].setupCallback = function(rowControl, slot)
+
+    --function for the research list preHook
+    local function smithingResearchListDialogSetupCallback(rowControl, slot)
         --Call the original row's setupCallback function
         hookedResearchListFunctions(rowControl, slot)
         --d("[".. os.date("%c", GetTimeStamp()) .."]>enabling the control's row again")
@@ -1294,8 +1319,10 @@ function FCOIS.CreateHooks()
             end
             FCOIS.preventerVars.isZoDialogContextMenu = false
         end) -- ZO_PreHookHandler(rowControl, "OnMouseUp"...
+    end-- ctrlVars.LIST_DIALOG.dataTypes[1].setupCallback -> list dialog 1 pre-hook (e.g. research, repair item, enchant, charge, etc.)
 
-    end -- ctrlVars.LIST_DIALOG.dataTypes[1].setupCallback -> list dialog 1 pre-hook (e.g. research, repair item, enchant, charge, etc.)
+    --Pre-Hook the list dialog's rows
+    ctrlVars.LIST_DIALOG.dataTypes[1].setupCallback = smithingResearchListDialogSetupCallback
 
     --======== INVENTORY ===========================================================
     --Pre Hook the inventory for prevention methods
@@ -1362,13 +1389,8 @@ function FCOIS.CreateHooks()
     --======== CURRENCIES (in inventory) ===========================================
     --Pre Hook the 3rd menubar button (Currencies) handler at the player inventory
     ZO_PreHookHandler(ctrlVars.INV_MENUBAR_BUTTON_CURRENCIES, "OnMouseUp", function(control, button, upInside)
-        if (button == MOUSE_BUTTON_INDEX_LEFT and upInside) then
-            --Set the global filter panel ID to LF_INVENTORY again (otherwise it would stay the same like before, e.g. craftbag, and block the drag&drop!)
-            FCOIS.gFilterWhere = LF_INVENTORY
-            --Hide the context menus
-            zo_callLater(function()
-                hideContextMenu(LF_INVENTORY)
-            end, 50)
+        if button == MOUSE_BUTTON_INDEX_LEFT and upInside then
+            resetToInventoryAndHideContextMenu()
         end
     end)
 
@@ -1382,15 +1404,8 @@ function FCOIS.CreateHooks()
 
     --Pre Hook the 4th menubar button (Quickslots) handler at the player inventory
     ZO_PreHookHandler(ctrlVars.INV_MENUBAR_BUTTON_QUICKSLOTS, "OnMouseUp", function(control, button, upInside)
-        if (button == MOUSE_BUTTON_INDEX_LEFT and upInside) then
-            --Set the global filter panel ID to LF_INVENTORY again (otherwise it would stay the same like before, e.g. craftbag, and block the drag&drop!)
-            FCOIS.gFilterWhere = LF_INVENTORY
-            --Hide the context menus
-            zo_callLater(function()
-                if not ctrlVars.QUICKSLOT_CIRCLE:IsHidden() then
-                    hideContextMenu(LF_INVENTORY)
-                end
-            end, 50)
+        if button == MOUSE_BUTTON_INDEX_LEFT and upInside then
+            resetToInventoryAndHideContextMenu()
         end
     end)
 

@@ -6,6 +6,7 @@ if not FCOIS.libsLoadedProperly then return end
 
 local debugMessage = FCOIS.debugMessage
 local wm = WINDOW_MANAGER
+local tos = tostring
 
 local addonVars = FCOIS.addonVars
 local gAddonName = addonVars.gAddonName
@@ -155,48 +156,72 @@ local function addButtonToParentControl(buttonData, parent, name, callbackFuncti
     end
 end
 
+local function reAnchorAdditionalInvButtonNow(panelId, anchorData, addInvButtonOffsets, contMenuInvokerButton, newParent)
+d(">reAnchorAdditionalInvButtonNow - filterPanel: " ..tos(panelId) .. ", contMenuInvokerButton: " .. ((contMenuInvokerButton ~= nil and contMenuInvokerButton:GetName()) or "n/a"))
+    local alignMyDefault = TOPLEFT
+    local alignToDefault = TOPLEFT
+    local addInvBtnInvokers = FCOIS.contextMenuVars.filterPanelIdToContextMenuButtonInvoker
+
+    --Update filterPanelId
+    --panelId = e.g. LF_INVENTORY
+    --anchorData = e.g. table with anchorControl, left, top offsets
+    if panelId ~= nil and anchorData ~= nil then
+        local addInvButtonOffsetsForPanel = addInvButtonOffsets[panelId]
+        if addInvButtonOffsetsForPanel then
+            --Update the left and top offsets now
+            local newX = anchorData.defaultLeft + addInvButtonOffsetsForPanel.left
+            local newY = anchorData.defaultTop + addInvButtonOffsetsForPanel.top
+            --ReAnchor the controls if they are already created?
+            --Get the button's data at the panel
+            local buttonData = addInvBtnInvokers[panelId]
+            if buttonData ~= nil and buttonData.addInvButton and buttonData.name ~= nil and buttonData.name ~= "" then
+                --Check if the control exists already
+                local invAddCntBtnCtrl
+                --Was a button passed in already?
+                if contMenuInvokerButton ~= nil then
+                    invAddCntBtnCtrl = contMenuInvokerButton
+                else
+                    local btnName = buttonData.name
+                    invAddCntBtnCtrl = GetControl(btnName) --wm:GetControlByName(btnName, "")
+                end
+                if invAddCntBtnCtrl ~= nil then
+                    --ReParent as well?
+                    if newParent ~= nil then
+                        invAddCntBtnCtrl:SetParent(newParent)
+                    else
+                        if buttonData.parent == nil then return end
+                        invAddCntBtnCtrl:SetParent(buttonData.parent)
+                    end
+                    --Clear the anchors and reanchor it with the updated x and y offsets
+                    invAddCntBtnCtrl:ClearAnchors()
+                    --SetAnchor(point, relativeTo, relativePoint, offsetX, offsetY)
+                    local alignMy = anchorData.anchorMyPoint or alignMyDefault
+                    local alignTo = anchorData.anchorToPoint or alignToDefault
+                    invAddCntBtnCtrl:SetAnchor(alignMy, anchorData.anchorControl, alignTo, newX, newY)
+                end
+            end
+        end
+    end
+end
+
 --Reanchor the additional inventory "flag" buttons with the x and y offsets from the settings
-function FCOIS.ReAnchorAdditionalInvButtons(filterPanelId)
+function FCOIS.ReAnchorAdditionalInvButtons(filterPanelId, contMenuInvokerButton, newParent, newAnchorData)
+d("[FCOIS]ReAnchorAdditionalInvButtons - filterPanel: " ..tos(filterPanelId) .. ", newParent: " ..tos(newParent))
     --Add the offset X/Y from the settings to the anchor values of the additional inventory buttons
     local apiVersion = FCOIS.APIversion
     local settings = FCOIS.settingsVars.settings
     local addInvButtonOffsets = settings.FCOISAdditionalInventoriesButtonOffset
-    local addInvBtnInvokers = FCOIS.contextMenuVars.filterPanelIdToContextMenuButtonInvoker
     if addInvButtonOffsets then
-        local alignMyDefault = TOPLEFT
-        local alignToDefault = TOPLEFT
         local anchorVarsAddInvButtons = FCOIS.anchorVars.additionalInventoryFlagButton[apiVersion]
         --Loop over the anchorVars and get each panel of the additional inv buttons (e.g. LF_INVENTORY, LF_BANK_WITHDRAW, ...)
         if anchorVarsAddInvButtons then
-            for panelId, anchorData in pairs(anchorVarsAddInvButtons) do
-                --Update all or only a selected filterPanelId
-                if filterPanelId == nil or (filterPanelId ~= nil and filterPanelId == panelId) then
-                    --panelId = e.g. LF_INVENTORY
-                    --anchorData = e.g. table with anchorControl, left, top offsets
-                    if panelId ~= nil and anchorData ~= nil then
-                        local addInvButtonOffsetsForPanel = addInvButtonOffsets[panelId]
-                        if addInvButtonOffsetsForPanel then
-                            --Update the left and top offsets now
-                            local newX = anchorData.defaultLeft + addInvButtonOffsetsForPanel.left
-                            local newY = anchorData.defaultTop + addInvButtonOffsetsForPanel.top
-                            --ReAnchor the controls if they are already created?
-                            local buttonData = addInvBtnInvokers[panelId]
-                            if buttonData ~= nil and buttonData.addInvButton and buttonData.name ~= nil and buttonData.name ~= "" then
-                                --Check if the control exists already
-                                local btnName = buttonData.name
-                                local invAddCntBtnCtrl = GetControl(btnName) --wm:GetControlByName(btnName, "")
-                                if invAddCntBtnCtrl ~= nil then
-                                    --Get the button's data at the panel
-                                    --Clear the anchors and reanchor it with the updated x and y offsets
-                                    invAddCntBtnCtrl:ClearAnchors()
-                                    --SetAnchor(point, relativeTo, relativePoint, offsetX, offsetY)
-                                    local alignMy = anchorData.anchorMyPoint or alignMyDefault
-                                    local alignTo = anchorData.anchorToPoint or alignToDefault
-                                    invAddCntBtnCtrl:SetAnchor(alignMy, anchorData.anchorControl, alignTo, newX, newY)
-                                end
-                            end
-                        end
-                    end
+            if filterPanelId ~= nil then
+                local anchorData = newAnchorData or anchorVarsAddInvButtons[filterPanelId]
+                --Update only selected filterPanelId
+                reAnchorAdditionalInvButtonNow(filterPanelId, anchorData, addInvButtonOffsets, contMenuInvokerButton, newParent)
+            else
+                for panelId, anchorData in pairs(anchorVarsAddInvButtons) do
+                    reAnchorAdditionalInvButtonNow(panelId, anchorData, addInvButtonOffsets, nil, nil)
                 end
             end
         end
@@ -206,7 +231,7 @@ local reAnchorAdditionalInvButtons = FCOIS.ReAnchorAdditionalInvButtons
 
 --Add additonal buttons, controlled by the FCOIS settings
 function FCOIS.AddAdditionalButtons(buttonName, buttonData)
-    --d("FCOIS.AddAdditionalButtons - button: " .. tostring(buttonName))
+    --d("FCOIS.AddAdditionalButtons - button: " .. tos(buttonName))
     --Add all additional buttons
     if (buttonName == -1) then
         FCOIS.AddAdditionalButtons("FCOSettings")
@@ -257,8 +282,8 @@ function FCOIS.AddAdditionalButtons(buttonName, buttonData)
                 disabled  = "FCOItemSaver/FCOIS.dds",
             }
             FCOIS.LMM2:AddMenuItem(descriptor, categoryLayoutInfo)
-
-            --Add all additional inventory context menu "flag icon" buttons
+------------------------------------------------------------------------------------------------------------------------
+        --Add all additional inventory context menu "flag icon" buttons
         elseif buttonName == "FCOInventoriesContextMenuButtons" and buttonData == nil then
             --Add all additional inventory flag buttons
             local addInvBtnInvokers = FCOIS.contextMenuVars.filterPanelIdToContextMenuButtonInvoker

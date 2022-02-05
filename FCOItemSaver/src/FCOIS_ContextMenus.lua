@@ -22,6 +22,7 @@ local zoMenu = ctrlVars.ZOMenu
 
 local availableCtms = FCOIS.contextMenuVars.availableCtms
 local contextMenuButtonClickedMenuToButton = FCOIS.mappingVars.contextMenuButtonClickedMenuToButton
+local panelIdToUniversalDeconstructionParentData = FCOIS.mappingVars.panelIdToUniversalDeconstructionParentData
 
 local getSavedVarsMarkedItemsTableName = FCOIS.GetSavedVarsMarkedItemsTableName
 --local getFilterWhereBySettings = FCOIS.getFilterWhereBySettings
@@ -82,10 +83,11 @@ local deconstructionSelectionHandler 	= FCOIS.DeconstructionSelectionHandler
 local checkIfGuildBankWithdrawAllowed = FCOIS.CheckIfGuildBankWithdrawAllowed
 
 local updateFCOISFilterButtonColorsAndTextures = FCOIS.UpdateFCOISFilterButtonColorsAndTextures
+local reAnchorAdditionalInvButtons = FCOIS.ReAnchorAdditionalInvButtons
 
 ------------------------------------------------------------------------------------------------------------------------
---Get the context menu invoker button by help of the panel Id
-local function getContextMenuInvokerButtonName(panelId)
+--Get the context menu invoker button data by help of the panel Id
+local function getContextMenuInvokerButtonData(panelId)
     panelId = panelId or FCOIS.gFilterWhere
     if not panelId or panelId == 0 then return false end
     --Workaround: Craftbag stuff, check if active panel is the Craftbag
@@ -93,7 +95,16 @@ local function getContextMenuInvokerButtonName(panelId)
         panelId = LF_CRAFTBAG
     end
     local contMenuVars = FCOIS.contextMenuVars
-    local retVal = contMenuVars.filterPanelIdToContextMenuButtonInvoker[panelId].name
+    local retData = contMenuVars.filterPanelIdToContextMenuButtonInvoker[panelId]
+    return retData
+end
+
+--Get the context menu invoker button by help of the panel Id
+local function getContextMenuInvokerButtonName(panelId)
+    panelId = panelId or FCOIS.gFilterWhere
+    if not panelId or panelId == 0 then return false end
+    local contInvButtonData = getContextMenuInvokerButtonData(panelId)
+    local retVal = contInvButtonData ~= nil and contInvButtonData.name
     if retVal ~= nil and retVal ~= "" then
         return retVal
     else
@@ -2385,6 +2396,94 @@ local function invertAdditionalInventoryFlagProtectionAndColor(p_panelId, p_butt
     --Remove protected items from a slot and update tooltips now
     removeSlottedProtectedItemsAndUpdateTooltips(settingsStateAfterChange)
 end
+
+--# -v- 202
+--Re-anchor the filterButtons and the additional inventory flag button from their default parents at e.g.
+--LF_SMITHING_DECONSTRUCT, LF_JEWELRY_DECONSTRUCT and LF_ENCHANTING_EXTRACTION to
+--their new parent control UNIVERSAL_DECONSTRUCTION.control ...
+-->Re-Parent and Re-Anchor he filterButtons and the additional inventory "flag" button from old panel to current panel
+local function getAddInvFlagContextmenuButtonAnchorData(filterPanelId)
+    local additionalInventoryFlagButton = FCOIS.anchorVars.additionalInventoryFlagButton[FCOIS.APIversion]
+    local anchorData
+    if filterPanelId == LF_ENCHANTING_EXTRACTION then
+        anchorData = additionalInventoryFlagButton[LF_ENCHANTING_CREATION]
+    else
+        anchorData = additionalInventoryFlagButton[filterPanelId]
+    end
+    return anchorData
+end
+
+function FCOIS.ReParentAndAnchorContextMenuInvokerAndFilterButtons(fromPanelId, toPanelId)
+d("[FCOIS]ReParentAndAnchorContextMenuInvokerAndFilterButtons - fromPanelId: " ..tos(fromPanelId) .. ", toPanelId: " ..tos(toPanelId))
+    --Not known where it was anchored to last?
+    local contMenuInvokerButton
+    local newParent
+    local anchorData
+    local filterPanelId
+
+    if fromPanelId == nil then
+d(">from not given")
+        if toPanelId == nil then return end
+        filterPanelId = toPanelId
+        --No matter, just reParent and reAnchor to the new panelId of universal deconstruction
+        --[[
+            mappingVars.panelIdToUniversalDeconstructionParentData = {
+                [LF_SMITHING_DECONSTRUCT]   = {
+                    parent      = universalDeconInv,
+                    anchorTo    = universalDeconInv,
+                },
+        ]]
+        local newParentData = panelIdToUniversalDeconstructionParentData[filterPanelId]
+        if not newParentData then return end
+        --Enchanting extraction does not use an own additional inv. flag button but re-uses the enchanting creation button
+        --> So read the original data from the creation button!
+        anchorData = getAddInvFlagContextmenuButtonAnchorData(filterPanelId)
+        --Get parent and reanchor
+        newParent = newParentData.parent
+        anchorData.anchorControl = newParentData.anchorTo or newParent
+        local contMenuInvokerButtonName = getContextMenuInvokerButtonName(filterPanelId)
+        if contMenuInvokerButtonName == nil or contMenuInvokerButtonName == "" then return end
+        contMenuInvokerButton = GetControl(contMenuInvokerButtonName)
+
+    else
+d(">from given")
+        --Not known where it should be anchored to next?
+        if toPanelId == nil then
+            --Get the filterPanelId based on the fromPaneLId
+            filterPanelId = fromPanelId
+
+            --[[
+            FCOIS.contextMenuVars.filterPanelIdToContextMenuButtonInvoker = {
+            ...
+                [LF_SMITHING_DECONSTRUCT]  		= {
+                    ["addInvButton"]  = true,
+                    ["parent"]        = ctrlVars.DECONSTRUCTION_INV, --todo #202
+                    ["name"]          = invAddButtonVars.smithingTopLevelDeconstructionPanelInventoryButtonAdditionalOptions,
+                    ["sortIndex"]     = 19,
+                },
+            }
+            ]]
+            --Use the default parent and anchors then
+            local defParentData = getContextMenuInvokerButtonData(filterPanelId)
+            if defParentData == nil or defParentData.name or defParentData.parent == nil then return end
+d(">>from 1")
+            anchorData = getAddInvFlagContextmenuButtonAnchorData(filterPanelId)
+            --Get parent and reanchor
+            newParent = defParentData.parent
+            anchorData.anchorControl = defParentData.anchorTo or newParent
+            contMenuInvokerButton = GetControl(defParentData.name)
+        end
+    end
+
+    --Change parent and anchorTo now
+    if filterPanelId ~= nil and newParent == nil or contMenuInvokerButton == nil or anchorData == nil then return end
+d(">>>filterPanelId: " ..tos(filterPanelId) .. ", contMenuInvokerButton: " ..tos(contMenuInvokerButton:GetName()) .. ", newParent: "
+        ..tos(newParent:GetName()) .. ", anchorTo: " ..tos(anchorData.anchorControl:GetName()))
+FCOIS._newAnchorData = anchorData
+
+    reAnchorAdditionalInvButtons(filterPanelId, contMenuInvokerButton, newParent, anchorData)
+end
+--# -^- 202
 
 
 --The context menu OnClicked callback function for the additional inventory flag context menu buttons/entries
