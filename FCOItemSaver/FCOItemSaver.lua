@@ -159,7 +159,7 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 
 --#201, 2022-02-04, Baertram, bug: Gear marker icon 1 (static) is displayed below all other dynamic icons in context menus?
 
---#202, 2022-02-05, Baertram, bug: Add support for new deconstruction NPC "Giladil" (inventory markers, filterButtons, flag, context menus)
+--#202, 2022-02-05, Baertram, bug: Add support for new universal deconstruction NPC "Giladil" (inventory markers, filterButtons, flag, context menus)
 --  todo: At best re-Use LF_SMITHING_DECONSTRUCTION for the filterPanelId? Or add a new LF_UNIVERSAL_DECONSTRUCTION to LibFilters?
 
 --#203, 2022-02-05, Hotelvit, bug, FCOIS comments at esoui: Mass moving to junk/removing from junk (100 items) will kick you from the server becase of message spam

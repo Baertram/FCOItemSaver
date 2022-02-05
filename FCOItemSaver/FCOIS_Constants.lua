@@ -829,33 +829,34 @@ mappingVars.panelIdToDeconstructable = {
 }
 
 --#202 -v-
---The LibFilters filterTypes which are supported at the deconstruction NPC e.g. 'Giladil'
-mappingVars.panelIdSupportedAtDeconNPC = {
-    [LF_SMITHING_DECONSTRUCT]   = true,
-    [LF_JEWELRY_DECONSTRUCT]    = true,
-    [LF_ENCHANTING_EXTRACTION]  = true,
-}
-local function getStringFromUniversalDeconstructionMenuBar(key)
-    local barToSearch = ZO_UNIVERSAL_DECONSTRUCTION_FILTER_TYPES
-    if barToSearch then
-        for _, v in ipairs(barToSearch) do
-            if v.key and v.key == key then
-                return v.displayName
+if ZO_UNIVERSAL_DECONSTRUCTION_FILTER_TYPES ~= nil then
+    --The LibFilters filterTypes which are supported at the universal deconstruction NPC e.g. 'Giladil'
+    mappingVars.panelIdSupportedAtDeconNPC = {
+        [LF_SMITHING_DECONSTRUCT]   = true,
+        [LF_JEWELRY_DECONSTRUCT]    = true,
+        [LF_ENCHANTING_EXTRACTION]  = true,
+    }
+    local function getStringFromUniversalDeconstructionMenuBar(key)
+        local barToSearch = ZO_UNIVERSAL_DECONSTRUCTION_FILTER_TYPES
+        if barToSearch then
+            for _, v in ipairs(barToSearch) do
+                if v.key and v.key == key then
+                    return v.displayName
+                end
             end
         end
+        return
     end
-    return
-end
 
 --The NPC decon menuBars tab's buttons -> filterPanelId
-mappingVars.panelIdByDeconNPCMenuBarTabButtonName = {
-    [getStringFromUniversalDeconstructionMenuBar("enchantments")]   = LF_ENCHANTING_EXTRACTION, --Glyphs
-    [getStringFromUniversalDeconstructionMenuBar("jewelry")]        = LF_JEWELRY_DECONSTRUCT,   --Jewelry
-    [getStringFromUniversalDeconstructionMenuBar("armor")]          = LF_SMITHING_DECONSTRUCT,  --Armor
-    [getStringFromUniversalDeconstructionMenuBar("weapons")]        = LF_SMITHING_DECONSTRUCT,  --Weapons
-    [getStringFromUniversalDeconstructionMenuBar("all")]            = LF_SMITHING_DECONSTRUCT,  --All -> Not sure if deconstruction is the correct here? But use it for now
-}
-
+    mappingVars.panelIdByDeconNPCMenuBarTabButtonName = {
+        [getStringFromUniversalDeconstructionMenuBar("enchantments")]   = LF_ENCHANTING_EXTRACTION, --Glyphs
+        [getStringFromUniversalDeconstructionMenuBar("jewelry")]        = LF_JEWELRY_DECONSTRUCT,   --Jewelry
+        [getStringFromUniversalDeconstructionMenuBar("armor")]          = LF_SMITHING_DECONSTRUCT,  --Armor
+        [getStringFromUniversalDeconstructionMenuBar("weapons")]        = LF_SMITHING_DECONSTRUCT,  --Weapons
+        [getStringFromUniversalDeconstructionMenuBar("all")]            = LF_SMITHING_DECONSTRUCT,  --All -> Not sure if deconstruction is the correct here? But use it for now
+    }
+end
 
 --FilterPanelIds which need the FCOIS.RefreshListDialog function
 mappingVars.filterPanelIdForRefreshDialog = {
@@ -1383,22 +1384,24 @@ ctrlVars.DECONSTRUCTION_SLOT 		= GetControl(ctrlVars.DECONSTRUCTION_PANEL, "Slot
 ctrlVars.DECONSTRUCTION_BUTTON_ARMOR   = GetControl(ctrlVars.DECONSTRUCTION_INV, strformat(tabsButtonStr, "1")) --ZO_SmithingTopLevelDeconstructionPanelInventoryTabsButton1
 ctrlVars.DECONSTRUCTION_BUTTON_WEAPONS = GetControl(ctrlVars.DECONSTRUCTION_INV, strformat(tabsButtonStr, "2")) --ZO_SmithingTopLevelDeconstructionPanelInventoryTabsButton2
 --ctrlVars.SMITHING_MENUBAR_BUTTON_DECONSTRUCTION 		= ZO_SmithingTopLevelModeMenuBarButton3
--- -v- #202 UniversalDeconstruction - API101033 "Ascending Tide" added via deconstruction NPC "Giladil"
-ctrlVars.UNIVERSAL_DECONSTRUCTION_BASE = ZO_UniversalDeconstructionTopLevel_Keyboard
-ctrlVars.UNIVERSAL_DECONSTRUCTION_PANEL = GetControl(ctrlVars.UNIVERSAL_DECONSTRUCTION_BASE, "Panel") ---ZO_UniversalDeconstructionTopLevel_KeyboardPanel
-ctrlVars.UNIVERSAL_DECONSTRUCTION_INV = GetControl(ctrlVars.UNIVERSAL_DECONSTRUCTION_PANEL, inventoryStr) ---ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventory
-local universalDeconInv = ctrlVars.UNIVERSAL_DECONSTRUCTION_INV
-ctrlVars.UNIVERSAL_DECONSTRUCTION_INV_NAME	= universalDeconInv:GetName()
-ctrlVars.UNIVERSAL_DECONSTRUCTION_INV_BACKPACK = GetControl(universalDeconInv, backpackStr) -- ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventoryBackpack
-ctrlVars.UNIVERSAL_DECONSTRUCTION_BAG 		= GetControl(ctrlVars.UNIVERSAL_DECONSTRUCTION_INV_BACKPACK, contentsStr) -- ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventoryBackpackContents
-ctrlVars.UNIVERSAL_DECONSTRUCTION_SLOT 		= GetControl(ctrlVars.UNIVERSAL_DECONSTRUCTION_PANEL, "SlotContainerExtractionSlot") --ZO_UniversalDeconstructionTopLevel_KeyboardPanelSlotContainerExtractionSlot
-ctrlVars.UNIVERSAL_DECONSTRUCTION_MENUBAR_TABS = GetControl(universalDeconInv, "Tabs") --ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventoryTabs
---ctrlVars.UNIVERSAL_DECONSTRUCTION_BUTTON_ENCHANTING = GetControl(universalDeconInv, strformat(tabsButtonStr, "1")) --ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventoryTabsButton1
---ctrlVars.UNIVERSAL_DECONSTRUCTION_BUTTON_JEWELRY = GetControl(universalDeconInv, strformat(tabsButtonStr, "2")) --ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventoryTabsButton2
---ctrlVars.UNIVERSAL_DECONSTRUCTION_BUTTON_ARMOR = GetControl(universalDeconInv, strformat(tabsButtonStr, "3")) --ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventoryTabsButton3
---ctrlVars.UNIVERSAL_DECONSTRUCTION_BUTTON_WEAPONS = GetControl(universalDeconInv, strformat(tabsButtonStr, "4")) --ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventoryTabsButton4
---ctrlVars.UNIVERSAL_DECONSTRUCTION_BUTTON_ALL = GetControl(universalDeconInv, strformat(tabsButtonStr, "5")) --ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventoryTabsButton5
-ctrlVars.UNIVERSAL_DECONSTRUCTON_SCENE = UNIVERSAL_DECONSTRUCTION_KEYBOARD_SCENE
+-- -v- #202 UniversalDeconstruction - API101033 "Ascending Tide" added via universal deconstruction NPC "Giladil"
+if ZO_UNIVERSAL_DECONSTRUCTION_FILTER_TYPES ~= nil then
+    ctrlVars.UNIVERSAL_DECONSTRUCTION_BASE = ZO_UniversalDeconstructionTopLevel_Keyboard
+    ctrlVars.UNIVERSAL_DECONSTRUCTION_PANEL = GetControl(ctrlVars.UNIVERSAL_DECONSTRUCTION_BASE, "Panel") ---ZO_UniversalDeconstructionTopLevel_KeyboardPanel
+    ctrlVars.UNIVERSAL_DECONSTRUCTION_INV = GetControl(ctrlVars.UNIVERSAL_DECONSTRUCTION_PANEL, inventoryStr) ---ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventory
+    local universalDeconInv = ctrlVars.UNIVERSAL_DECONSTRUCTION_INV
+    ctrlVars.UNIVERSAL_DECONSTRUCTION_INV_NAME	= universalDeconInv:GetName()
+    ctrlVars.UNIVERSAL_DECONSTRUCTION_INV_BACKPACK = GetControl(universalDeconInv, backpackStr) -- ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventoryBackpack
+    ctrlVars.UNIVERSAL_DECONSTRUCTION_BAG 		= GetControl(ctrlVars.UNIVERSAL_DECONSTRUCTION_INV_BACKPACK, contentsStr) -- ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventoryBackpackContents
+    ctrlVars.UNIVERSAL_DECONSTRUCTION_SLOT 		= GetControl(ctrlVars.UNIVERSAL_DECONSTRUCTION_PANEL, "SlotContainerExtractionSlot") --ZO_UniversalDeconstructionTopLevel_KeyboardPanelSlotContainerExtractionSlot
+    ctrlVars.UNIVERSAL_DECONSTRUCTION_MENUBAR_TABS = GetControl(universalDeconInv, "Tabs") --ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventoryTabs
+    --ctrlVars.UNIVERSAL_DECONSTRUCTION_BUTTON_ENCHANTING = GetControl(universalDeconInv, strformat(tabsButtonStr, "1")) --ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventoryTabsButton1
+    --ctrlVars.UNIVERSAL_DECONSTRUCTION_BUTTON_JEWELRY = GetControl(universalDeconInv, strformat(tabsButtonStr, "2")) --ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventoryTabsButton2
+    --ctrlVars.UNIVERSAL_DECONSTRUCTION_BUTTON_ARMOR = GetControl(universalDeconInv, strformat(tabsButtonStr, "3")) --ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventoryTabsButton3
+    --ctrlVars.UNIVERSAL_DECONSTRUCTION_BUTTON_WEAPONS = GetControl(universalDeconInv, strformat(tabsButtonStr, "4")) --ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventoryTabsButton4
+    --ctrlVars.UNIVERSAL_DECONSTRUCTION_BUTTON_ALL = GetControl(universalDeconInv, strformat(tabsButtonStr, "5")) --ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventoryTabsButton5
+    ctrlVars.UNIVERSAL_DECONSTRUCTON_SCENE = UNIVERSAL_DECONSTRUCTION_KEYBOARD_SCENE
+end
 -- -^- #202
 ctrlVars.REFINEMENT_PANEL		    = GetControl(ctrlVars.SMITHING_PANEL, "RefinementPanel") -- ZO_SmithingTopLevelRefinementPanel
 ctrlVars.REFINEMENT_INV			    = GetControl(ctrlVars.REFINEMENT_PANEL, inventoryStr) -- ZO_SmithingTopLevelRefinementPanelInventory
@@ -1538,21 +1541,22 @@ ctrlVars.mainMenuCategoryBar            = ZO_MainMenuCategoryBar
 
 
 -- #202 The mapping between the filterPanelId and the universal deconstruction controls to parent and anchor to
-mappingVars.panelIdToUniversalDeconstructionParentData = {
-    [LF_SMITHING_DECONSTRUCT]   = {
-        parent      = universalDeconInv,
-        anchorTo    = universalDeconInv,
-    },
-    [LF_JEWELRY_DECONSTRUCT]   = {
-        parent      = universalDeconInv,
-        anchorTo    = universalDeconInv,
-    },
-    [LF_ENCHANTING_EXTRACTION]   = {
-        parent      = universalDeconInv,
-        anchorTo    = universalDeconInv,
-    },
-}
-
+if ZO_UNIVERSAL_DECONSTRUCTION_FILTER_TYPES ~= nil then
+    mappingVars.panelIdToUniversalDeconstructionParentData = {
+        [LF_SMITHING_DECONSTRUCT]   = {
+            parent      = universalDeconInv,
+            anchorTo    = universalDeconInv,
+        },
+        [LF_JEWELRY_DECONSTRUCT]   = {
+            parent      = universalDeconInv,
+            anchorTo    = universalDeconInv,
+        },
+        [LF_ENCHANTING_EXTRACTION]   = {
+            parent      = universalDeconInv,
+            anchorTo    = universalDeconInv,
+        },
+    }
+end
 
 --Array for the inventories data
 FCOIS.inventoryVars = {}

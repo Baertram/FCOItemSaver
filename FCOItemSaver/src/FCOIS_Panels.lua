@@ -33,7 +33,79 @@ local panelIdByDeconNPCMenuBarTabButtonName = mappingVars.panelIdByDeconNPCMenuB
 --                                          FCOIS - Panel functions
 --==========================================================================================================================================
 
-local function getWhereAreWeOrFilterPanelIdByPanelIdRespectingCraftType(filterPanelId, getWhereAreWe)
+--Function to check if the currently shown panel is the craftbag
+function FCOIS.IsCraftbagPanelShown()
+    local retVar = INVENTORY_CRAFT_BAG and not FCOIS.ZOControlVars.CRAFTBAG:IsHidden()
+    if FCOIS.settingsVars.settings.debug then debugMessage( "[isCraftbagPanelShown]", "result: " .. tos(retVar), true, FCOIS_DEBUG_DEPTH_SPAM) end
+    return retVar
+end
+local isCraftbagPanelShown = FCOIS.IsCraftbagPanelShown
+
+--Check if the craftbag panel is currently active and change the panelid to craftbag, or the wished one.
+--Change the parentPanelId too (e.g. mail send, or bank deposit) if the craftbag is active!
+function FCOIS.CheckCraftbagOrOtherActivePanel(wishedPanelId)
+    if wishedPanelId == nil then return LF_INVENTORY, nil end
+    local newPanelId
+    local newParentPanelId
+    --Workaround: Craftbag stuff, check if active panel is the Craftbag
+    if isCraftbagPanelShown() then
+        newPanelId = LF_CRAFTBAG
+        --Check if last active shown filter panel was the craftbag (e.g. at the bank deposit tab) and update the
+        --parent filter panel to mail now, because the craftbag scene "shown" callback function will not be called,
+        --if you directly switch to the mail sent panel via keybind (and the craftbag panel there was last used).
+        --The parent will be resettted to NIL again upon craftbag scene hiding which happens if you leave the mail sent panel.
+        newParentPanelId = wishedPanelId
+    else
+        newPanelId = wishedPanelId
+    end
+    --d("[FCOIS.checkCraftbagOrOtherActivePanel - New panel id: " .. tos(newPanelId) .. ", filterParent: " ..tos(newParentPanelId))
+    return newPanelId, newParentPanelId
+end
+
+-- -v- #202
+--Check if universal Deconstruction NPC "Giladil"
+function FCOIS.CheckIfDeconstructionNPC(filterPanelIdComingFrom)
+    if ZO_UNIVERSAL_DECONSTRUCTION_FILTER_TYPES == nil then return false end
+    if ctrlVars.UNIVERSAL_DECONSTRUCTON_SCENE:IsShowing() then
+        local isDeconNPCControlShown = not ctrlVars.UNIVERSAL_DECONSTRUCTION_INV:IsHidden()
+        local isFilterPanelIdShown = isDeconNPCControlShown
+        if filterPanelIdComingFrom ~= nil then
+            isFilterPanelIdShown = panelIdSupportedAtDeconNPC[filterPanelIdComingFrom] or false
+        end
+        return isDeconNPCControlShown and isFilterPanelIdShown
+    end
+    return false
+end
+local checkIfDeconstructionNPC = FCOIS.CheckIfDeconstructionNPC
+
+function FCOIS.GetCurrentFilterPanelIdAtDeconNPC(filterPanelIdPassedIn)
+    local filterPanelIdDetected = filterPanelIdPassedIn
+--d("[FCOIS]GetCurrentFilterPanelIdAtDeconNPC - filterPanel: " ..tos(filterPanelIdPassedIn))
+    local isDeconstuctionNPC = checkIfDeconstructionNPC(filterPanelIdPassedIn)
+--d(">isDeconstuctionNPC: " ..tos(isDeconstuctionNPC))
+    if not isDeconstuctionNPC then return filterPanelIdPassedIn end
+
+    --Check which button is currently selected at the menuBar at the universal deconstruction panel
+    local clickedButton = ((ctrlVars.UNIVERSAL_DECONSTRUCTION_MENUBAR_TABS ~= nil and ctrlVars.UNIVERSAL_DECONSTRUCTION_MENUBAR_TABS.m_object ~= nil)
+            and ctrlVars.UNIVERSAL_DECONSTRUCTION_MENUBAR_TABS.m_object.m_clickedButton) or nil
+--d(">Button clicked: " ..tos(clickedButton))
+    local buttonData = clickedButton and clickedButton.m_buttonData
+    if buttonData then
+        local activeTabText = buttonData.activeTabText
+--d(">>button text: " ..tos(activeTabText))
+        if activeTabText and activeTabText ~= nil then
+            filterPanelIdDetected = panelIdByDeconNPCMenuBarTabButtonName[activeTabText]
+--d(">>>filterPanelIdDetected: " ..tos(filterPanelIdDetected))
+            filterPanelIdDetected = filterPanelIdDetected or filterPanelIdPassedIn
+        end
+    end
+    return filterPanelIdDetected
+end
+--local getCurrentFilterPanelIdAtDeconNPC = FCOIS.GetCurrentFilterPanelIdAtDeconNPC
+-- -^- #202
+
+--Get the whereAreWe constant based on the passed in filterType, respecting the craftingType OR the 3rd "are we are a universal deconstruction NPC" parameter
+local function getWhereAreWeOrFilterPanelIdByPanelIdRespectingCraftType(filterPanelId, getWhereAreWe, isDeconNPC)
     if getWhereAreWe == nil then return end
     local filterPanelIdToWhereAreWe
     local whereAreWeDetermined
@@ -42,19 +114,21 @@ local function getWhereAreWeOrFilterPanelIdByPanelIdRespectingCraftType(filterPa
         filterPanelIdToWhereAreWe = mappingVars.filterPanelIdToWhereAreWe
         whereAreWeDetermined = filterPanelIdToWhereAreWe[filterPanelIdDetermined]
     end
-    local craftType = GetCraftingInteractionType()
-    if craftType ~= CRAFTING_TYPE_INVALID then
-        local filterPanelIdByCraftType
-        if libFilters and libFilters.GetFilterTypeRespectingCraftType then
-            filterPanelIdByCraftType = libFilters:GetFilterTypeRespectingCraftType(filterPanelId, craftType)
-        else
-            local filterPanelIdToFilterPanelIdRespectingCrafttype = mappingVars.filterPanelIdToFilterPanelIdRespectingCrafttype
-            filterPanelIdByCraftType = filterPanelIdToFilterPanelIdRespectingCrafttype[craftType] and filterPanelIdToFilterPanelIdRespectingCrafttype[craftType][filterPanelIdDetermined]
-            if filterPanelIdByCraftType ~= nil then filterPanelIdDetermined = filterPanelIdByCraftType end
-        end
-        if getWhereAreWe == true then
-            local whereAreWeByCraftType = filterPanelIdToWhereAreWe[filterPanelIdByCraftType]
-            if whereAreWeByCraftType ~= nil then whereAreWeDetermined = whereAreWeByCraftType end
+    if not isDeconNPC then
+        local craftType = GetCraftingInteractionType() --will be 0 if we are at a universal deconstruction NPC
+        if craftType ~= CRAFTING_TYPE_INVALID then
+            local filterPanelIdByCraftType
+            if libFilters and libFilters.GetFilterTypeRespectingCraftType then
+                filterPanelIdByCraftType = libFilters:GetFilterTypeRespectingCraftType(filterPanelId, craftType)
+            else
+                local filterPanelIdToFilterPanelIdRespectingCrafttype = mappingVars.filterPanelIdToFilterPanelIdRespectingCrafttype
+                filterPanelIdByCraftType = filterPanelIdToFilterPanelIdRespectingCrafttype[craftType] and filterPanelIdToFilterPanelIdRespectingCrafttype[craftType][filterPanelIdDetermined]
+                if filterPanelIdByCraftType ~= nil then filterPanelIdDetermined = filterPanelIdByCraftType end
+            end
+            if getWhereAreWe == true then
+                local whereAreWeByCraftType = filterPanelIdToWhereAreWe[filterPanelIdByCraftType]
+                if whereAreWeByCraftType ~= nil then whereAreWeDetermined = whereAreWeByCraftType end
+            end
         end
     end
     if getWhereAreWe == true then
@@ -136,6 +210,8 @@ function FCOIS.GetWhereAreWe(panelId, panelIdAtCall, panelIdParent, bag, slot, i
         end
     end
 
+    --universal Deconstruction NPC is used?
+    local isDeconNPC = checkIfDeconstructionNPC(panelId)
 
     --======= WhereAreWe determination ============================================================
 --*********************************************************************************************************************************************************************************
@@ -254,7 +330,7 @@ function FCOIS.GetWhereAreWe(panelId, panelIdAtCall, panelIdParent, bag, slot, i
             ]]
             whereAreWe = getWhereAreWeOrFilterPanelIdByPanelIdRespectingCraftType(LF_SMITHING_REFINE, true)
             --Inside crafting station deconstruction
-        elseif (calledFromExternalAddon and (panelId == LF_SMITHING_DECONSTRUCT or panelId == LF_JEWELRY_DECONSTRUCT)) or (not calledFromExternalAddon and (not ctrlVars.DECONSTRUCTION:IsHidden() or (panelId == LF_SMITHING_DECONSTRUCT or panelId == LF_JEWELRY_DECONSTRUCT))) then
+        elseif (calledFromExternalAddon and (panelId == LF_SMITHING_DECONSTRUCT or panelId == LF_JEWELRY_DECONSTRUCT)) or (not calledFromExternalAddon and not isDeconNPC and (not ctrlVars.DECONSTRUCTION:IsHidden() or (panelId == LF_SMITHING_DECONSTRUCT or panelId == LF_JEWELRY_DECONSTRUCT))) then
             --[[
             local craftType = GetCraftingInteractionType()
             if craftType == CRAFTING_TYPE_JEWELRYCRAFTING then
@@ -295,7 +371,7 @@ function FCOIS.GetWhereAreWe(panelId, panelIdAtCall, panelIdParent, bag, slot, i
             ]]
             whereAreWe = getWhereAreWeOrFilterPanelIdByPanelIdRespectingCraftType(LF_SMITHING_RESEARCH, true)
             --Inside enchanting station
-        elseif (calledFromExternalAddon and (panelId == LF_ENCHANTING_EXTRACTION or panelId == LF_ENCHANTING_CREATION)) or (not calledFromExternalAddon and (not ctrlVars.ENCHANTING_STATION:IsHidden() or (panelId == LF_ENCHANTING_EXTRACTION or panelId == LF_ENCHANTING_CREATION))) then
+        elseif (calledFromExternalAddon and (panelId == LF_ENCHANTING_EXTRACTION or panelId == LF_ENCHANTING_CREATION)) or (not calledFromExternalAddon and not isDeconNPC and (not ctrlVars.ENCHANTING_STATION:IsHidden() or (panelId == LF_ENCHANTING_EXTRACTION or panelId == LF_ENCHANTING_CREATION))) then
             --Enchanting Extraction panel?
             local enchantingMode = ENCHANTING:GetEnchantingMode()
             if panelId == LF_ENCHANTING_EXTRACTION or enchantingMode == ENCHANTING_MODE_EXTRACTION then
@@ -330,6 +406,11 @@ function FCOIS.GetWhereAreWe(panelId, panelIdAtCall, panelIdParent, bag, slot, i
         elseif (calledFromExternalAddon and panelId == LF_INVENTORY_COMPANION) or (not calledFromExternalAddon and (isCompanionInventoryShown() or panelId == LF_INVENTORY_COMPANION)) then
             whereAreWe = FCOIS_CON_COMPANION_DESTROY
             whereAreWe = checkIfItemShouldBeUsedOrEquipped(whereAreWe, bag, slot)
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+        --Are we at an universal deconstruction NPC?
+        elseif (not calledFromExternalAddon and isDeconNPC == true) then
+            whereAreWe = getWhereAreWeOrFilterPanelIdByPanelIdRespectingCraftType(panelId, true, isDeconNPC)
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
         --Are we at the inventory/bank/guild bank and trying to use/equip/deposit an item?
         elseif (calledFromExternalAddon and (panelId == LF_INVENTORY or panelId == LF_BANK_DEPOSIT or panelId == LF_GUILDBANK_DEPOSIT or panelId == LF_HOUSE_BANK_DEPOSIT)) or (not calledFromExternalAddon and (not ctrlVars.BACKPACK:IsHidden() or panelId == LF_INVENTORY or panelId == LF_BANK_DEPOSIT or panelId == LF_GUILDBANK_DEPOSIT or panelId == LF_HOUSE_BANK_DEPOSIT)) then
             --Check if player or guild bank is active by checking current scene in scene manager
@@ -358,76 +439,6 @@ function FCOIS.GetWhereAreWe(panelId, panelIdAtCall, panelIdParent, bag, slot, i
     return whereAreWe
 end
 
---Function to check if the currently shown panel is the craftbag
-function FCOIS.IsCraftbagPanelShown()
-    local retVar = INVENTORY_CRAFT_BAG and not FCOIS.ZOControlVars.CRAFTBAG:IsHidden()
-    if FCOIS.settingsVars.settings.debug then debugMessage( "[isCraftbagPanelShown]", "result: " .. tos(retVar), true, FCOIS_DEBUG_DEPTH_SPAM) end
-    return retVar
-end
-local isCraftbagPanelShown = FCOIS.IsCraftbagPanelShown
-
---Check if the craftbag panel is currently active and change the panelid to craftbag, or the wished one.
---Change the parentPanelId too (e.g. mail send, or bank deposit) if the craftbag is active!
-function FCOIS.CheckCraftbagOrOtherActivePanel(wishedPanelId)
-    if wishedPanelId == nil then return LF_INVENTORY, nil end
-    local newPanelId
-    local newParentPanelId
-    --Workaround: Craftbag stuff, check if active panel is the Craftbag
-    if isCraftbagPanelShown() then
-        newPanelId = LF_CRAFTBAG
-        --Check if last active shown filter panel was the craftbag (e.g. at the bank deposit tab) and update the
-        --parent filter panel to mail now, because the craftbag scene "shown" callback function will not be called,
-        --if you directly switch to the mail sent panel via keybind (and the craftbag panel there was last used).
-        --The parent will be resettted to NIL again upon craftbag scene hiding which happens if you leave the mail sent panel.
-        newParentPanelId = wishedPanelId
-    else
-        newPanelId = wishedPanelId
-    end
-    --d("[FCOIS.checkCraftbagOrOtherActivePanel - New panel id: " .. tos(newPanelId) .. ", filterParent: " ..tos(newParentPanelId))
-    return newPanelId, newParentPanelId
-end
-
--- -v- #202
---Check if Deconstruction NPC "Giladil"
-function FCOIS.CheckIfDeconstructionNPC(filterPanelIdComingFrom)
-    if not UNIVERSAL_DECONSTRUCTION then return false end
-    if ctrlVars.UNIVERSAL_DECONSTRUCTON_SCENE:IsShowing() then
-        local isDeconNPCControlShown = not ctrlVars.UNIVERSAL_DECONSTRUCTION_INV:IsHidden()
-        local isFilterPanelIdShown = isDeconNPCControlShown
-        if filterPanelIdComingFrom ~= nil then
-            isFilterPanelIdShown = panelIdSupportedAtDeconNPC[filterPanelIdComingFrom] or false
-        end
-        return isDeconNPCControlShown and isFilterPanelIdShown
-    end
-    return false
-end
-local checkIfDeconstructionNPC = FCOIS.CheckIfDeconstructionNPC
-
-function FCOIS.GetCurrentFilterPanelIdAtDeconNPC(filterPanelIdPassedIn)
-    local filterPanelIdDetected = filterPanelIdPassedIn
-d("[FCOIS]GetCurrentFilterPanelIdAtDeconNPC - filterPanel: " ..tos(filterPanelIdPassedIn))
-    local isDeconstuctionNPC = checkIfDeconstructionNPC(filterPanelIdPassedIn)
-d(">isDeconstuctionNPC: " ..tos(isDeconstuctionNPC))
-    if not isDeconstuctionNPC then return filterPanelIdPassedIn end
-
-    --Check which button is currently selected at the menuBar at the universal deconstruction panel
-    local clickedButton = ((ctrlVars.UNIVERSAL_DECONSTRUCTION_MENUBAR_TABS ~= nil and ctrlVars.UNIVERSAL_DECONSTRUCTION_MENUBAR_TABS.m_object ~= nil)
-            and ctrlVars.UNIVERSAL_DECONSTRUCTION_MENUBAR_TABS.m_object.m_clickedButton) or nil
-d(">Button clicked: " ..tos(clickedButton))
-    local buttonData = clickedButton and clickedButton.m_buttonData
-    if buttonData then
-        local activeTabText = buttonData.activeTabText
-d(">>button text: " ..tos(activeTabText))
-        if activeTabText and activeTabText ~= nil then
-            filterPanelIdDetected = panelIdByDeconNPCMenuBarTabButtonName[activeTabText]
-d(">>>filterPanelIdDetected: " ..tos(filterPanelIdDetected))
-            filterPanelIdDetected = filterPanelIdDetected or filterPanelIdPassedIn
-        end
-    end
-    return filterPanelIdDetected
-end
-local getCurrentFilterPanelIdAtDeconNPC = FCOIS.GetCurrentFilterPanelIdAtDeconNPC
--- -^- #202
 
 --Get the "real" active panel.
 --If you are at the bank e.g. panelId is 2 (FCOIS.gFilterWhere was set in event BANK_OPEN), but you could also be at the deposit tab which uses
@@ -657,7 +668,7 @@ function FCOIS.CheckActivePanel(comingFrom, overwriteFilterWhere)
         inventoryName = ctrlVars2.CRAFTBAG
 
 -- -v- #202
-    --Deconstruction NPC "Giladil"
+    --universal Deconstruction NPC "Giladil"
     elseif isDeconNPC == true then
         --filterPanelId Could be deconstruction/jewelry decon or enchanting extract but was determined before at the panel
         --local filterPanelIdAtDeconNPC = getCurrentFilterPanelIdAtDeconNPC(comingFrom)

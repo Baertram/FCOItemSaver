@@ -2414,7 +2414,7 @@ local function getAddInvFlagContextmenuButtonAnchorData(filterPanelId)
 end
 
 function FCOIS.ReParentAndAnchorContextMenuInvokerAndFilterButtons(fromPanelId, toPanelId)
-d("[FCOIS]ReParentAndAnchorContextMenuInvokerAndFilterButtons - fromPanelId: " ..tos(fromPanelId) .. ", toPanelId: " ..tos(toPanelId))
+--d("[FCOIS]ReParentAndAnchorContextMenuInvokerAndFilterButtons - fromPanelId: " ..tos(fromPanelId) .. ", toPanelId: " ..tos(toPanelId))
     --Not known where it was anchored to last?
     local contMenuInvokerButton
     local newParent
@@ -2422,7 +2422,7 @@ d("[FCOIS]ReParentAndAnchorContextMenuInvokerAndFilterButtons - fromPanelId: " .
     local filterPanelId
 
     if fromPanelId == nil then
-d(">from not given")
+--d(">from not given")
         if toPanelId == nil then return end
         filterPanelId = toPanelId
         --No matter, just reParent and reAnchor to the new panelId of universal deconstruction
@@ -2446,7 +2446,7 @@ d(">from not given")
         contMenuInvokerButton = GetControl(contMenuInvokerButtonName)
 
     else
-d(">from given")
+--d(">from given")
         --Not known where it should be anchored to next?
         if toPanelId == nil then
             --Get the filterPanelId based on the fromPaneLId
@@ -2465,8 +2465,8 @@ d(">from given")
             ]]
             --Use the default parent and anchors then
             local defParentData = getContextMenuInvokerButtonData(filterPanelId)
-            if defParentData == nil or defParentData.name or defParentData.parent == nil then return end
-d(">>from 1")
+            if defParentData == nil or defParentData.name == nil or defParentData.parent == nil then return end
+--d(">>from 1")
             anchorData = getAddInvFlagContextmenuButtonAnchorData(filterPanelId)
             --Get parent and reanchor
             newParent = defParentData.parent
@@ -2477,10 +2477,8 @@ d(">>from 1")
 
     --Change parent and anchorTo now
     if filterPanelId ~= nil and newParent == nil or contMenuInvokerButton == nil or anchorData == nil then return end
-d(">>>filterPanelId: " ..tos(filterPanelId) .. ", contMenuInvokerButton: " ..tos(contMenuInvokerButton:GetName()) .. ", newParent: "
-        ..tos(newParent:GetName()) .. ", anchorTo: " ..tos(anchorData.anchorControl:GetName()))
-FCOIS._newAnchorData = anchorData
-
+--d(">>>filterPanelId: " ..tos(filterPanelId) .. ", contMenuInvokerButton: " ..tos(contMenuInvokerButton:GetName()) .. ", newParent: "
+        --..tos(newParent:GetName()) .. ", anchorTo: " ..tos(anchorData.anchorControl:GetName()))
     reAnchorAdditionalInvButtons(filterPanelId, contMenuInvokerButton, newParent, anchorData)
 end
 --# -^- 202

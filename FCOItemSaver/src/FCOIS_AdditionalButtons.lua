@@ -157,7 +157,7 @@ local function addButtonToParentControl(buttonData, parent, name, callbackFuncti
 end
 
 local function reAnchorAdditionalInvButtonNow(panelId, anchorData, addInvButtonOffsets, contMenuInvokerButton, newParent)
-d(">reAnchorAdditionalInvButtonNow - filterPanel: " ..tos(panelId) .. ", contMenuInvokerButton: " .. ((contMenuInvokerButton ~= nil and contMenuInvokerButton:GetName()) or "n/a"))
+--d(">reAnchorAdditionalInvButtonNow - filterPanel: " ..tos(panelId) .. ", contMenuInvokerButton: " .. ((contMenuInvokerButton ~= nil and contMenuInvokerButton:GetName()) or "n/a"))
     local alignMyDefault = TOPLEFT
     local alignToDefault = TOPLEFT
     local addInvBtnInvokers = FCOIS.contextMenuVars.filterPanelIdToContextMenuButtonInvoker
@@ -206,7 +206,7 @@ end
 
 --Reanchor the additional inventory "flag" buttons with the x and y offsets from the settings
 function FCOIS.ReAnchorAdditionalInvButtons(filterPanelId, contMenuInvokerButton, newParent, newAnchorData)
-d("[FCOIS]ReAnchorAdditionalInvButtons - filterPanel: " ..tos(filterPanelId) .. ", newParent: " ..tos(newParent))
+--d("[FCOIS]ReAnchorAdditionalInvButtons - filterPanel: " ..tos(filterPanelId) .. ", newParent: " ..tos(newParent))
     --Add the offset X/Y from the settings to the anchor values of the additional inventory buttons
     local apiVersion = FCOIS.APIversion
     local settings = FCOIS.settingsVars.settings
