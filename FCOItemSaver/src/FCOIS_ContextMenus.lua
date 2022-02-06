@@ -22,7 +22,7 @@ local zoMenu = ctrlVars.ZOMenu
 
 local availableCtms = FCOIS.contextMenuVars.availableCtms
 local contextMenuButtonClickedMenuToButton = FCOIS.mappingVars.contextMenuButtonClickedMenuToButton
-local panelIdToUniversalDeconstructionParentData = FCOIS.mappingVars.panelIdToUniversalDeconstructionParentData
+local panelIdToUniversalDeconstructionParentData = FCOIS.mappingVars.panelIdToUniversalDeconstructionNPCParentData
 
 local getSavedVarsMarkedItemsTableName = FCOIS.GetSavedVarsMarkedItemsTableName
 --local getFilterWhereBySettings = FCOIS.getFilterWhereBySettings

@@ -831,7 +831,7 @@ mappingVars.panelIdToDeconstructable = {
 --#202 -v-
 if ZO_UNIVERSAL_DECONSTRUCTION_FILTER_TYPES ~= nil then
     --The LibFilters filterTypes which are supported at the universal deconstruction NPC e.g. 'Giladil'
-    mappingVars.panelIdSupportedAtDeconNPC = {
+    mappingVars.panelIdSupportedAtUniversalDeconstructionNPC = {
         [LF_SMITHING_DECONSTRUCT]   = true,
         [LF_JEWELRY_DECONSTRUCT]    = true,
         [LF_ENCHANTING_EXTRACTION]  = true,
@@ -848,8 +848,8 @@ if ZO_UNIVERSAL_DECONSTRUCTION_FILTER_TYPES ~= nil then
         return
     end
 
---The NPC decon menuBars tab's buttons -> filterPanelId
-    mappingVars.panelIdByDeconNPCMenuBarTabButtonName = {
+    --The NPC decon menuBars tab's buttons -> filterPanelId
+    mappingVars.panelIdByUniversalDeconstructionNPCMenuBarTabButtonName = {
         [getStringFromUniversalDeconstructionMenuBar("enchantments")]   = LF_ENCHANTING_EXTRACTION, --Glyphs
         [getStringFromUniversalDeconstructionMenuBar("jewelry")]        = LF_JEWELRY_DECONSTRUCT,   --Jewelry
         [getStringFromUniversalDeconstructionMenuBar("armor")]          = LF_SMITHING_DECONSTRUCT,  --Armor
@@ -1385,11 +1385,12 @@ ctrlVars.DECONSTRUCTION_BUTTON_ARMOR   = GetControl(ctrlVars.DECONSTRUCTION_INV,
 ctrlVars.DECONSTRUCTION_BUTTON_WEAPONS = GetControl(ctrlVars.DECONSTRUCTION_INV, strformat(tabsButtonStr, "2")) --ZO_SmithingTopLevelDeconstructionPanelInventoryTabsButton2
 --ctrlVars.SMITHING_MENUBAR_BUTTON_DECONSTRUCTION 		= ZO_SmithingTopLevelModeMenuBarButton3
 -- -v- #202 UniversalDeconstruction - API101033 "Ascending Tide" added via universal deconstruction NPC "Giladil"
+local universalDeconInv
 if ZO_UNIVERSAL_DECONSTRUCTION_FILTER_TYPES ~= nil then
     ctrlVars.UNIVERSAL_DECONSTRUCTION_BASE = ZO_UniversalDeconstructionTopLevel_Keyboard
     ctrlVars.UNIVERSAL_DECONSTRUCTION_PANEL = GetControl(ctrlVars.UNIVERSAL_DECONSTRUCTION_BASE, "Panel") ---ZO_UniversalDeconstructionTopLevel_KeyboardPanel
     ctrlVars.UNIVERSAL_DECONSTRUCTION_INV = GetControl(ctrlVars.UNIVERSAL_DECONSTRUCTION_PANEL, inventoryStr) ---ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventory
-    local universalDeconInv = ctrlVars.UNIVERSAL_DECONSTRUCTION_INV
+    universalDeconInv = ctrlVars.UNIVERSAL_DECONSTRUCTION_INV
     ctrlVars.UNIVERSAL_DECONSTRUCTION_INV_NAME	= universalDeconInv:GetName()
     ctrlVars.UNIVERSAL_DECONSTRUCTION_INV_BACKPACK = GetControl(universalDeconInv, backpackStr) -- ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventoryBackpack
     ctrlVars.UNIVERSAL_DECONSTRUCTION_BAG 		= GetControl(ctrlVars.UNIVERSAL_DECONSTRUCTION_INV_BACKPACK, contentsStr) -- ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventoryBackpackContents
@@ -1542,7 +1543,7 @@ ctrlVars.mainMenuCategoryBar            = ZO_MainMenuCategoryBar
 
 -- #202 The mapping between the filterPanelId and the universal deconstruction controls to parent and anchor to
 if ZO_UNIVERSAL_DECONSTRUCTION_FILTER_TYPES ~= nil then
-    mappingVars.panelIdToUniversalDeconstructionParentData = {
+    mappingVars.panelIdToUniversalDeconstructionNPCParentData = {
         [LF_SMITHING_DECONSTRUCT]   = {
             parent      = universalDeconInv,
             anchorTo    = universalDeconInv,
@@ -1555,6 +1556,13 @@ if ZO_UNIVERSAL_DECONSTRUCTION_FILTER_TYPES ~= nil then
             parent      = universalDeconInv,
             anchorTo    = universalDeconInv,
         },
+    }
+
+    --The NPC decon filterPanelId to inventory to update
+    mappingVars.universalDeconstructionNPCFilterPanelIdToInventory = {
+        [LF_ENCHANTING_EXTRACTION]  = nil, --todo
+        [LF_JEWELRY_DECONSTRUCT]    = nil, --todo
+        [LF_SMITHING_DECONSTRUCT]   = nil, --todo
     }
 end
 
@@ -1583,12 +1591,16 @@ inventoryVars.markerControlInventories = {
     ["hookScrollSetupCallback"] = {
         [ctrlVars.REFINEMENT]           = true,
         [ctrlVars.DECONSTRUCTION]       = true,
-        [ctrlVars.UNIVERSAL_DECONSTRUCTION_INV_BACKPACK] = true, -- #202
         [ctrlVars.IMPROVEMENT]          = true,
         [ctrlVars.ENCHANTING_STATION]   = true,
         [ctrlVars.ALCHEMY_STATION]      = true,
     },
 }
+-- -v- #202
+if ZO_UNIVERSAL_DECONSTRUCTION_FILTER_TYPES ~= nil then
+    inventoryVars.markerControlInventories["hookScrollSetupCallback"][ctrlVars.UNIVERSAL_DECONSTRUCTION_INV_BACKPACK] = true
+end
+-- -^- #202
 
 
 --The mapping array for libFilter filterType to the inventory type

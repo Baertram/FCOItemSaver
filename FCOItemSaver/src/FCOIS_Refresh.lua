@@ -285,7 +285,7 @@ local refreshListDialog = FCOIS.RefreshListDialog
 function FCOIS.RefreshCrafting(filterPanelOverride)
     updateCraftingInventory(filterPanelOverride)
 end
-local refreshCrafting = FCOIS.RefreshCrafting
+--local refreshCrafting = FCOIS.RefreshCrafting
 
 --Update the scroll list controls for the player inventories
 function FCOIS.RefreshBasics()
@@ -391,36 +391,46 @@ function FCOIS.FilterBasics(onlyPlayer)
 
     --Only update the lists if not currently already updating
     if (FCOIS.preventerVars.gFilteringBasics == false) then
+        local currentFilterPanelId = FCOIS.gFilterWhere
+
         FCOIS.preventerVars.gFilteringBasics = true
         if (not ctrlVars.QUICKSLOT_LIST:IsHidden() and onlyPlayer == false) then
---d(">>quickSlots")
+            --d(">>quickSlots")
             --UpdateInventories() -- NO FILTERS YET! So not needed to call libFilters:RequestUpdate(LF_QUICKSLOT)!
             updateQuickSlots()
             --UpdateOtherAddonUIs()
         elseif (not ctrlVars.REPAIR_LIST:IsHidden() and onlyPlayer == false) then
---d(">>repairList")
+            --d(">>repairList")
             --UpdateInventories() -- NO FILTERS YET! So not needed to call libFilters:RequestUpdate(LF_VENDOR_REPAIR)!
             updateRepairList()
             --UpdateOtherAddonUIs()
         elseif (not ctrlVars.RETRAIT_LIST:IsHidden() and onlyPlayer == false) then
---d(">>retraitList")
+            --d(">>retraitList")
             updateInventories()
             updateTransmutationList()
             updateOtherAddonUIs()
         elseif onlyPlayer == true or (isCompanionInventoryShown() and onlyPlayer == false) then
---d(">>onlyPlayer or companionInv")
+            --d(">>onlyPlayer or companionInv")
             updateInventories()
             --Try to update other addon's UIs
             updateOtherAddonUIs()
+            -- #202 Is the universal Deconstruction NPC shown?
+        elseif FCOIS.CheckIfDeconstructionNPC(currentFilterPanelId) then
+            --Update the currently shown inventory for that deconstruction
+            local universalDeconstructionNPCFilterPanelIdToInventory = FCOIS.mappingVars.universalDeconstructionNPCFilterPanelIdToInventory
+            local invToUpdate = universalDeconstructionNPCFilterPanelIdToInventory[currentFilterPanelId]
+            if not invToUpdate then return end
+            --todo update the inv!
+
         else
---d(">>inv, crafting inv")
+            --d(">>inv, crafting inv")
             --Try to update the normal and then the crafting inventories
             updateInventories()
             updateCraftingInventory()
             --Try to update other addon's UIs
             updateOtherAddonUIs()
         end
-        FCOIS.preventerVars.gFilteringBasics = false
+            FCOIS.preventerVars.gFilteringBasics = false
     end
 end
 local filterBasics = FCOIS.FilterBasics

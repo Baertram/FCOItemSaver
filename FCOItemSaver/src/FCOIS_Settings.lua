@@ -77,8 +77,14 @@ local getSavedVarsMarkedItemsTableName = FCOIS.GetSavedVarsMarkedItemsTableName
 --Check if the FCOIS settings were loaded already, or load them
 function FCOIS.CheckIfFCOISSettingsWereLoaded(calledFromExternal)
     calledFromExternal = calledFromExternal or false
-    local savedVarsMarkedItemsTableName = getSavedVarsMarkedItemsTableName()
-    if not calledFromExternal or (FCOIS and FCOIS.settingsVars and FCOIS.settingsVars.settings and FCOIS.settingsVars.settings[savedVarsMarkedItemsTableName]) then return true end
+    local isFCOISSettingsTableGiven = (FCOIS ~= nil and FCOIS.settingsVars ~= nil and FCOIS.settingsVars.settings ~= nil) or false
+    if isFCOISSettingsTableGiven or not calledFromExternal then
+        return true
+    end
+    if isFCOISSettingsTableGiven then
+        local savedVarsMarkedItemsTableName = getSavedVarsMarkedItemsTableName()
+        if FCOIS.settingsVars.settings[savedVarsMarkedItemsTableName] then return true end
+    end
     return FCOIS.LoadUserSettings(calledFromExternal)
 end
 

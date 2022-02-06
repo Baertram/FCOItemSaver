@@ -569,17 +569,18 @@ end
 local checkIfOtherAddonIIfAIsActive = FCOIS.CheckIfOtherAddonIIfAIsActive
 
 --Get the itemInstance or the unique ID of an item at bagId and slotIndex, or at the itemLink
-function FCOIS.GetItemInstanceOrUniqueId(bagId, slotIndex, itemLink)
+function FCOIS.GetItemInstanceOrUniqueId(bagId, slotIndex, itemLink, calledFromExternalAddon)
     if bagId == nil or slotIndex == nil then return 0, false end
+    calledFromExternalAddon = calledFromExternalAddon or false
     local itemInstanceOrUniqueId = 0
     local isBagToBuildItemInstanceOrUniqueId = bagsToBuildIdFor[bagId] or false
     local allowedItemType
     --Should an itemInstance or unique ID be build for this bagId?
     if isBagToBuildItemInstanceOrUniqueId == true then
         itemLink = itemLink or GetItemLink(bagId,slotIndex)
-        --d("[FCOIS.getItemInstanceOrUniqueId] " .. itemLink .. ", bagId: " .. tos(bagId))
+        --d("[FCOIS.GetItemInstanceOrUniqueId] " .. itemLink .. ", bagId: " .. tos(bagId))
         --Are the FCOIS settings already loaded?
-        checkIfFCOISSettingsWereLoaded(false)
+        checkIfFCOISSettingsWereLoaded(calledFromExternalAddon)
         local settings = FCOIS.settingsVars.settings
         local useUniqueIds = settings.useUniqueIds or false
         local uniqueItemIdType = settings.uniqueItemIdType
@@ -605,7 +606,12 @@ function FCOIS.GetItemInstanceOrUniqueId(bagId, slotIndex, itemLink)
     end
     return itemInstanceOrUniqueId, isBagToBuildItemInstanceOrUniqueId
 end
-FCOIS.getItemInstanceOrUniqueId = FCOIS.GetItemInstanceOrUniqueId
+local getItemInstanceOrUniqueId = FCOIS.GetItemInstanceOrUniqueId
+
+--compatibility function for other addons
+function FCOIS.getItemInstanceOrUniqueId(bagId, slotIndex, itemLink)
+    return getItemInstanceOrUniqueId(bagId, slotIndex, itemLink, true) --Change calledByExternalAddon always to true!
+end
 
 --Function to support Inventory Insight from Ashes addon. clickedDataLine is the right clicked row within the IIfA inventory frame.
 --> Returns the itemInstance or uniqueId (signed or unsigned depending on parameter signToo),
