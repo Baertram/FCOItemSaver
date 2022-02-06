@@ -1391,6 +1391,7 @@ if ZO_UNIVERSAL_DECONSTRUCTION_FILTER_TYPES ~= nil then
     ctrlVars.UNIVERSAL_DECONSTRUCTION_PANEL = GetControl(ctrlVars.UNIVERSAL_DECONSTRUCTION_BASE, "Panel") ---ZO_UniversalDeconstructionTopLevel_KeyboardPanel
     ctrlVars.UNIVERSAL_DECONSTRUCTION_INV = GetControl(ctrlVars.UNIVERSAL_DECONSTRUCTION_PANEL, inventoryStr) ---ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventory
     universalDeconInv = ctrlVars.UNIVERSAL_DECONSTRUCTION_INV
+    ctrlVars.UNIVERSAL_DECONSTRUCTION_INV_LIST  = universalDeconInv.list
     ctrlVars.UNIVERSAL_DECONSTRUCTION_INV_NAME	= universalDeconInv:GetName()
     ctrlVars.UNIVERSAL_DECONSTRUCTION_INV_BACKPACK = GetControl(universalDeconInv, backpackStr) -- ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventoryBackpack
     ctrlVars.UNIVERSAL_DECONSTRUCTION_BAG 		= GetControl(ctrlVars.UNIVERSAL_DECONSTRUCTION_INV_BACKPACK, contentsStr) -- ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventoryBackpackContents
@@ -1558,12 +1559,14 @@ if ZO_UNIVERSAL_DECONSTRUCTION_FILTER_TYPES ~= nil then
         },
     }
 
+    --[[
     --The NPC decon filterPanelId to inventory to update
     mappingVars.universalDeconstructionNPCFilterPanelIdToInventory = {
         [LF_ENCHANTING_EXTRACTION]  = nil, --todo
         [LF_JEWELRY_DECONSTRUCT]    = nil, --todo
         [LF_SMITHING_DECONSTRUCT]   = nil, --todo
     }
+    ]]
 end
 
 --Array for the inventories data
@@ -1881,6 +1884,7 @@ FCOIS.dragAndDropVars.slot	= nil
 FCOIS.preventerVars = {}
 local preventerVars = FCOIS.preventerVars
 preventerVars._prevVarReset = "FCOIS_PreventerVariableReset_"
+preventerVars.gCalledFromInternalFCOIS = false --is an API function (or other functions which could load the SavedVariables) called from FCOIS internally
 preventerVars.gLocalizationDone		= false
 preventerVars.KeyBindingTexts		= false
 preventerVars.gKeybindingLocalizationDone = false

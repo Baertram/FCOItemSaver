@@ -37,6 +37,7 @@ local isNoOtherModifierKeyPressed         = FCOIS.IsNoOtherModifierKeyPressed
 --LibCustomMenu
 local lcm                                 = FCOIS.LCM
 
+local checkIfUniversalDeconstructionNPC
 
 --==========================================================================================================================================
 --									FCOIS Pre-Hooks & Hooks / Scene & Fragment callback functions
@@ -387,6 +388,7 @@ end
 
 --Prehook function to ZO_InventorySlot_DoPrimaryAction to secure items as doubleclick or keybind of primary was raised
 local function FCOItemSaver_OnInventorySlot_DoPrimaryAction(inventorySlot)
+    checkIfUniversalDeconstructionNPC = checkIfUniversalDeconstructionNPC or FCOIS.CheckIfUniversalDeconstructionNPC
     --d("FCOItemSaver_OnInventorySlot_DoPrimaryAction")
     local doNotCallOriginalZO_InventorySlot_DoPrimaryAction = false
     --Hide the context menu at last active panel
@@ -413,7 +415,7 @@ local function FCOItemSaver_OnInventorySlot_DoPrimaryAction(inventorySlot)
             FCOIS.preventerVars.dragAndDropOrDoubleClickItemSelectionHandler = true
 
             -- Inside deconstruction?
-            if (not ctrlVars.DECONSTRUCTION_BAG:IsHidden() or FCOIS.CheckIfDeconstructionNPC()) then
+            if (not ctrlVars.DECONSTRUCTION_BAG:IsHidden() or checkIfUniversalDeconstructionNPC()) then -- #202
                 -- #202
                 -- check if deconstruction is forbidden
                 -- if so, return true to prevent call of the original function ZO_InventorySlot_DoPrimaryAction of the item
@@ -720,7 +722,8 @@ function FCOIS.CreateHooks()
         local contextMenuEntriesAdded = 0
         --check each iconId and build a sorted context menu then
         local useSubContextMenu       = settings.useSubContextMenu
-        local _, countDynIconsEnabled = FCOIS.countMarkerIconsEnabled()
+        FCOIS.preventerVars.gCalledFromInternalFCOIS = true
+        local _, countDynIconsEnabled = FCOIS.CountMarkerIconsEnabled()
         local useDynSubContextMenu    = (settings.useDynSubMenuMaxCount > 0 and countDynIconsEnabled >= settings.useDynSubMenuMaxCount) or false
         for iconId = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
             --Check if the icon (including gear sets) is enabled

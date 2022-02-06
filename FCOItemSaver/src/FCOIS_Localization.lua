@@ -252,6 +252,8 @@ local function afterLocalization()
         settings.standardIconNameOnKeybind = locIconNameStr
     end
 
+    --Added with FCOIS v2.2.4
+    FCOIS.LoadKeybindings()
     --Added with FCOIS v1.5.2
     --Dynamic icon texts localized
     FCOIS.GenerateLocalizedDynamicIconTexts()
@@ -345,7 +347,7 @@ local function afterLocalization()
     --Build the iconSortOrderEntries table for the settings menu -> LAM2 widget "order list box"
     --local optionsIcon = "options_icon"
     --local tooltipSuffix = "_TT"
-
+    FCOIS.preventerVars.gCalledFromInternalFCOIS = true
     local iconsListStandard, iconsListValuesStandard = FCOIS.GetLAMMarkerIconsDropdown("standard", true, false)
     FCOIS.settingsVars.defaults.iconSortOrderEntries = {}
     for currentSortIdx, iconNumber in ipairs(defaults.iconSortOrder) do

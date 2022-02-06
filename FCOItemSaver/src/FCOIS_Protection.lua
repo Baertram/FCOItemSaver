@@ -6,6 +6,8 @@ if not FCOIS.libsLoadedProperly then return end
 
 local debugMessage = FCOIS.debugMessage
 
+local gil = GetItemLink 
+
 local numFilterIcons = FCOIS.numVars.gFCONumFilterIcons
 local ctrlVars = FCOIS.ZOControlVars
 local checkVars = FCOIS.checkVars
@@ -48,7 +50,7 @@ function FCOIS.OutputItemProtectedMessage(bag, slot, whereAreWe, overrideChatOut
     local alertOutputWished = not suppressAlert and (overrideAlert or settings.showAntiMessageAsAlert == true)
     if chatOutputWished or alertOutputWished then
         --Get the itemLink
-        local formattedItemName = GetItemLink(bag, slot)
+        local formattedItemName = gil(bag, slot)
         --Get the "whereAreWe" message text
         local whereAreWeToAlertmessageText = FCOIS.mappingVars.whereAreWeToAlertmessageText
         local whereAreWeMsgText = whereAreWeToAlertmessageText[whereAreWe] or "ERROR: Not allowed!"
@@ -582,7 +584,7 @@ if doDebug then d("[FCOIS]ItemSelectionHandler - Bag: " .. tostring(bag) .. ", S
     if whereAreWe == nil then
         local itemLink = "bag: " ..tostring(bag) .. ", slot: " .. tostring(slot)
         if bag and slot then
-            itemLink = GetItemLink(bag, slot)
+            itemLink = gil(bag, slot)
         end
         local errorData = {
             [1] = panelId,
@@ -792,7 +794,7 @@ end -- ItemSelectionHandler
 -- fired when user selects an item to deconstruct
 -- warns user if the item is marked with any of the filter icons
 function FCOIS.DeconstructionSelectionHandler(bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId)
-    checkIfDeconstructionNPC = checkIfDeconstructionNPC or FCOIS.CheckIfDeconstructionNPC
+    checkIfDeconstructionNPC = checkIfDeconstructionNPC or FCOIS.CheckIfUniversalDeconstructionNPC
     if bag == nil or slot == nil then return true end
     echo = echo or false
     overrideChatOutput = overrideChatOutput or false
@@ -1310,7 +1312,7 @@ function craftPrev.IsItemProtectedAtACraftSlotNow(bagId, slotIndex, scanOtherInv
     scanOtherInvItemsIfSlotted = scanOtherInvItemsIfSlotted or false
     --[[
     if bagId and slotIndex then
-        local itemLink = GetItemLink(bagId, slotIndex)
+        local itemLink = gil(bagId, slotIndex)
         d("[FCOIS]craftingPrevention.IsItemProtectedAtACraftSlotNow: " ..itemLink)
     else
         d("[FCOIS]craftingPrevention.IsItemProtectedAtACraftSlotNow - No bagId or slotIndex given!")
@@ -1336,7 +1338,7 @@ function craftPrev.IsItemProtectedAtACraftSlotNow(bagId, slotIndex, scanOtherInv
                 --FCOIS.callDeconstructionSelectionHandler(bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon)
                 local isProtected = FCOIS.callDeconstructionSelectionHandler(p_bagId, p_slotIndex, false, false, true, false, true, false)
                 --Item is protected?
---d(">item " .. GetItemLink(p_bagId, p_slotIndex) .. " is protected: " ..tostring(isProtected))
+--d(">item " .. gil(p_bagId, p_slotIndex) .. " is protected: " ..tostring(isProtected))
                 if isProtected then
                     if isRetraitShown then
                         --d("Item is protected! Remove it from the retrait slot and output error message now")
@@ -1360,7 +1362,7 @@ function craftPrev.IsItemProtectedAtACraftSlotNow(bagId, slotIndex, scanOtherInv
                         --and got protected as you marked the currently checked item (which is not slotted).
                         -->Scan the currently visible inventory rows for such items and if they are slotted.
                         if scanOtherInvItemsIfSlotted then
---local itemLink = GetItemLink(slottedData.bagId, slottedData.slotIndex)
+--local itemLink = gil(slottedData.bagId, slottedData.slotIndex)
 --d(">checking slotted items: " ..itemLink)
 
                             local foundBagdIdAndSlotIndices = checkCurrentInventoryRowsDataForItemInstanceId(slottedData.bagId, slottedData.slotIndex)
@@ -1414,7 +1416,7 @@ function FCOIS.IsCraftBagItemDraggedToCraftingSlot(panelId, bagId, slotIndex)
     if checkFunc == nil then return false end
 --d("[FCOIS] Received item drag at crafting station")
     if checkFunc() and bagId ~= nil then
-        --local itemLink = GetItemLink(bagId, slotIndex)
+        --local itemLink = gil(bagId, slotIndex)
 --d(">" .. itemLink .. " - bag: " ..tostring(bagId) .. ", slotIndex: " ..tostring(slotIndex))
         --Is the item from the craftbag?
         if bagId == BAG_VIRTUAL then

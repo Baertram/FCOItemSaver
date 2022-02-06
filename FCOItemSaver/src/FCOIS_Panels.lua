@@ -29,6 +29,10 @@ local mappingVars = FCOIS.mappingVars
 local panelIdSupportedAtDeconNPC = mappingVars.panelIdSupportedAtUniversalDeconstructionNPC
 local panelIdByDeconNPCMenuBarTabButtonName = mappingVars.panelIdByUniversalDeconstructionNPCMenuBarTabButtonName
 
+local universalDeconInvCtrl = ctrlVars.UNIVERSAL_DECONSTRUCTION_INV
+local universaldDeconScene = ctrlVars.UNIVERSAL_DECONSTRUCTON_SCENE
+local universaldDeconMenuBarTabs = ctrlVars.UNIVERSAL_DECONSTRUCTION_MENUBAR_TABS
+
 --==========================================================================================================================================
 --                                          FCOIS - Panel functions
 --==========================================================================================================================================
@@ -126,10 +130,10 @@ end
 
 -- -v- #202
 --Check if universal Deconstruction NPC "Giladil"
-function FCOIS.CheckIfDeconstructionNPC(filterPanelIdComingFrom)
+function FCOIS.CheckIfUniversalDeconstructionNPC(filterPanelIdComingFrom)
     if ZO_UNIVERSAL_DECONSTRUCTION_FILTER_TYPES == nil then return false end
-    if ctrlVars.UNIVERSAL_DECONSTRUCTON_SCENE:IsShowing() then
-        local isDeconNPCControlShown = not ctrlVars.UNIVERSAL_DECONSTRUCTION_INV:IsHidden()
+    if universaldDeconScene:IsShowing() then
+        local isDeconNPCControlShown = not universalDeconInvCtrl:IsHidden()
         local isFilterPanelIdShown = isDeconNPCControlShown
         if filterPanelIdComingFrom ~= nil then
             isFilterPanelIdShown = panelIdSupportedAtDeconNPC[filterPanelIdComingFrom] or false
@@ -138,18 +142,18 @@ function FCOIS.CheckIfDeconstructionNPC(filterPanelIdComingFrom)
     end
     return false
 end
-local checkIfDeconstructionNPC = FCOIS.CheckIfDeconstructionNPC
+local checkIfUniversaldDeconstructionNPC = FCOIS.CheckIfUniversalDeconstructionNPC
 
 function FCOIS.GetCurrentFilterPanelIdAtDeconNPC(filterPanelIdPassedIn)
     local filterPanelIdDetected = filterPanelIdPassedIn
 --d("[FCOIS]GetCurrentFilterPanelIdAtDeconNPC - filterPanel: " ..tos(filterPanelIdPassedIn))
-    local isDeconstuctionNPC = checkIfDeconstructionNPC(filterPanelIdPassedIn)
+    local isDeconstuctionNPC = checkIfUniversaldDeconstructionNPC(filterPanelIdPassedIn)
 --d(">isDeconstuctionNPC: " ..tos(isDeconstuctionNPC))
     if not isDeconstuctionNPC then return filterPanelIdPassedIn end
 
     --Check which button is currently selected at the menuBar at the universal deconstruction panel
-    local clickedButton = ((ctrlVars.UNIVERSAL_DECONSTRUCTION_MENUBAR_TABS ~= nil and ctrlVars.UNIVERSAL_DECONSTRUCTION_MENUBAR_TABS.m_object ~= nil)
-            and ctrlVars.UNIVERSAL_DECONSTRUCTION_MENUBAR_TABS.m_object.m_clickedButton) or nil
+    local clickedButton = ((universaldDeconMenuBarTabs ~= nil and universaldDeconMenuBarTabs.m_object ~= nil)
+            and universaldDeconMenuBarTabs.m_object.m_clickedButton) or nil
 --d(">Button clicked: " ..tos(clickedButton))
     local buttonData = clickedButton and clickedButton.m_buttonData
     if buttonData then
@@ -211,7 +215,7 @@ function FCOIS.GetWhereAreWe(panelId, panelIdAtCall, panelIdParent, bag, slot, i
     local otherAddons = FCOIS.otherAddons
 
     --universal Deconstruction NPC is used?
-    local isDeconNPC = checkIfDeconstructionNPC(panelId)
+    local isDeconNPC = checkIfUniversaldDeconstructionNPC(panelId)
 
     --======= WhereAreWe determination ============================================================
     --*********************************************************************************************************************************************************************************
@@ -464,7 +468,7 @@ function FCOIS.CheckActivePanel(comingFrom, overwriteFilterWhere)
         debugMessage( "[checkActivePanel]","Coming from/Before: " .. tos(oldFilterWhere) .. ", overwriteFilterWhere: " .. tos(overwriteFilterWhere) .. ", currentSceneName: " ..tos(currentSceneName), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED)
     end
     --#202 Universal deconstruction?
-    local isDeconNPC = checkIfDeconstructionNPC(comingFrom)
+    local isDeconNPC = checkIfUniversaldDeconstructionNPC(comingFrom)
 --d("[FCOIS.checkActivePanel] comingFrom/Before: " .. tos(comingFrom) .. ", isDeconNPC: " .. tos(isDeconNPC) .. ", overwriteFilterWhere: " ..tos(overwriteFilterWhere).. ", currentSceneName: " ..tos(currentSceneName))
 
     --Player bank

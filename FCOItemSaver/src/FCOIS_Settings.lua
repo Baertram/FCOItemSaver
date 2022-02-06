@@ -57,14 +57,12 @@ local function splitStringWithDelimiter(stringVar, delimiter)
     return retTab
 end
 
-
-
 function FCOIS.GetSavedVarsMarkedItemsTableName(override)
     local markedItemsNames = addonVars.savedVarsMarkedItemsNames
-    local settings = FCOIS.settingsVars.settings
     if override ~= nil then
         return markedItemsNames[override]
     else
+        local settings = FCOIS.settingsVars.settings
         if settings.useUniqueIds == true then
             return markedItemsNames[settings.uniqueItemIdType]
         else
@@ -75,18 +73,48 @@ end
 local getSavedVarsMarkedItemsTableName = FCOIS.GetSavedVarsMarkedItemsTableName
 
 --Check if the FCOIS settings were loaded already, or load them
-function FCOIS.CheckIfFCOISSettingsWereLoaded(calledFromExternal)
+--If called from another addon the parameter calledFromExternal must be true!
+--If called internally before the addon's event_add_on_loaded (via keybinds e.g.) the parameter calledBeforeEventAddOnLoaded must be true:
+-->The settings will be using "default" values then (e.g. for the selected language etc.) as the SavedVariables table will be provided FIRST at EVENT_ADD_ON_LOADED!
+function FCOIS.CheckIfFCOISSettingsWereLoaded(calledFromExternal, calledBeforeEventAddOnLoaded)
     calledFromExternal = calledFromExternal or false
-    local isFCOISSettingsTableGiven = (FCOIS ~= nil and FCOIS.settingsVars ~= nil and FCOIS.settingsVars.settings ~= nil) or false
-    if isFCOISSettingsTableGiven or not calledFromExternal then
+    calledBeforeEventAddOnLoaded = calledBeforeEventAddOnLoaded or false
+    local gCalledFromInternalFCOIS = FCOIS.preventerVars.gCalledFromInternalFCOIS
+    --If the parameter says it was called from an external addon but the variable which says it was called from FCOIS internally is set,
+    --or the parameter says it was not called from an external addon but no internal FCOIS variable was set at the function call
+    -->Change the parameter
+    if calledFromExternal == true and gCalledFromInternalFCOIS == true then
+        calledFromExternal = false
+    elseif calledFromExternal == false and not gCalledFromInternalFCOIS then
+        calledFromExternal = true
+    end
+--d("[FCOIS]CheckIfFCOISSettingsWereLoaded - calledBeforeEventAddOnLoaded: " .. tos(calledBeforeEventAddOnLoaded) .. ", calledFromExternal: " ..tos(calledFromExternal) .. ", FCOISInternal: " ..tos(gCalledFromInternalFCOIS))
+    --Reset the "internal call" variable again
+    FCOIS.preventerVars.gCalledFromInternalFCOIS = false
+
+    local doSettingsChecks = true
+    if FCOIS.addonVars.gSettingsLoaded == true then
+        if not calledFromExternal then doSettingsChecks = false end
+    end
+    if doSettingsChecks == true then
+        local settingsVars = FCOIS.settingsVars
+        local settings = settingsVars ~= nil and settingsVars.settings
+        local isFCOISSettingsTableGiven = (settingsVars ~= nil and settings ~= nil) or false
+        if isFCOISSettingsTableGiven then
+            local savedVarsMarkedItemsTableName = getSavedVarsMarkedItemsTableName(nil)
+            if settings[savedVarsMarkedItemsTableName] ~= nil then
+--d("<settings already loaded!")
+                return true
+            end
+        end
+    else
+--d("<settings checks not needed, as settings were already loaded!")
         return true
     end
-    if isFCOISSettingsTableGiven then
-        local savedVarsMarkedItemsTableName = getSavedVarsMarkedItemsTableName()
-        if FCOIS.settingsVars.settings[savedVarsMarkedItemsTableName] then return true end
-    end
-    return FCOIS.LoadUserSettings(calledFromExternal)
+--d(">loading settings now...")
+    return FCOIS.LoadUserSettings(calledFromExternal, false)
 end
+local checkIfFCOISSettingsWereLoaded = FCOIS.CheckIfFCOISSettingsWereLoaded
 
 local function NamesToIDSavedVars(serverWorldName)
     serverWorldName = serverWorldName or svDefaultName
@@ -454,7 +482,7 @@ local function scanBagsAndTransferMarkerIcon(toUnique)
     local preChatVars = FCOIS.preChatVars
 
     --Are the FCOIS settings already loaded?
-    FCOIS.CheckIfFCOISSettingsWereLoaded(false)
+    checkIfFCOISSettingsWereLoaded(false, not addonVars.gAddonLoaded)
     local settings = FCOIS.settingsVars.settings
     local locVars = FCOIS.localizationVars.fcois_loc
     local migrationDebugLogLine = "///~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\\\\n"..preChatVars.preChatTextGreen .. zo_strf(locVars["options_migrate_start"], "->UniqueId: " ..tos(toUnique))
@@ -896,10 +924,10 @@ function FCOIS.AfterSettings()
         for panelId, _ in pairs(anchorVarsAddInvButtons) do
             local addInvButtonOffsetsForPanel = addInvButtonOffsets[panelId]
             if addInvButtonOffsetsForPanel then
-                if tonumber(addInvButtonOffsetsForPanel["left"]) == nil then
+                if type(addInvButtonOffsetsForPanel["left"]) == "string" or tonumber(addInvButtonOffsetsForPanel["left"]) == nil then
                     addInvButtonOffsetsForPanel["left"] = 0
                 end
-                if tonumber(addInvButtonOffsetsForPanel["top"]) == nil then
+                if type(addInvButtonOffsetsForPanel["top"]) == "string" or tonumber(addInvButtonOffsetsForPanel["top"]) == nil then
                     addInvButtonOffsetsForPanel["top"] = 0
                 end
             end
@@ -1160,13 +1188,16 @@ end
 ------------------------------------------------------------------------------------------------------------------------
 
 --Load the SavedVariables now
-function FCOIS.LoadUserSettings(calledFromExternal)
+function FCOIS.LoadUserSettings(calledFromExternal, isFromEventAddOnLoaded)
     calledFromExternal = calledFromExternal or false
-    if calledFromExternal then
+    isFromEventAddOnLoaded = isFromEventAddOnLoaded or false
+--TODO: Debugging
+if GetDisplayName() == "@Baertram" then d("[FCOIS]LoadUserSettings - calledFromExternal: " ..tos(calledFromExternal) .. ", isFromEventAddOnLoaded: " ..tos(isFromEventAddOnLoaded)) end
+    if calledFromExternal == true then
         FCOIS.addonVars.gSettingsLoaded = false
         if FCOIS.FCOItemSaver_CheckGamePadMode() then return false end
     end
-    if not FCOIS.addonVars.gSettingsLoaded then
+    if isFromEventAddOnLoaded == true or not FCOIS.addonVars.gSettingsLoaded then
         --Build the default settings
         FCOIS.BuildDefaultSettings()
 
@@ -1198,7 +1229,7 @@ function FCOIS.LoadUserSettings(calledFromExternal)
 
         --FCOIS v1.9.6: Get the old SV data w/o server dependent values
         local oldDefaultSettings = ZO_SavedVars:NewAccountWide(addonSVname, 999, svSettingsForAllName, checkForMigrateDefDefaults, nil)
---FCOIS._oldDefaultSettings = oldDefaultSettings
+        --FCOIS._oldDefaultSettings = oldDefaultSettings
         --Check, by help of basic version 999, if the settings should be loaded for each character or account wide
         --Use the current addon version to read the FCOIS.settingsVars.settings now
         local oldSettings = {}
@@ -1212,13 +1243,13 @@ function FCOIS.LoadUserSettings(calledFromExternal)
         elseif oldDefaultSettings.saveMode == 3 then
             --All accounts the same settings
             oldSettings = ZO_SavedVars:NewAccountWide(addonSVname, addonSVversion, svSettingsName, checkForMigrateDefaults, nil, svAllAccTheSameAcc)
-        --All others use account wide
+            --All others use account wide
         else
             --Account wide settings
             oldSettings = ZO_SavedVars:NewAccountWide(addonSVname, addonSVversion, svSettingsName, checkForMigrateDefaults, nil, nil)
         end
---FCOIS._oldSettings = oldSettings
-------------------------------------------------------------------------------------------------------------------------
+        --FCOIS._oldSettings = oldSettings
+        ------------------------------------------------------------------------------------------------------------------------
         --Check if existing non-server dependent settings were found
         -->The values of oldDefaultSettings["saveMode"] or oldSettings["alwaysUseClientLanguage"] would be different then 999
         -->which get's set by checkForMigrateDefDefaults or checkForMigrateDefaults above, if the tables were not existing before!
@@ -1264,14 +1295,14 @@ function FCOIS.LoadUserSettings(calledFromExternal)
             elseif FCOIS.settingsVars.defaultSettings.saveMode == 3 then
                 --All accounts the same settings
                 FCOIS.settingsVars.settings = ZO_SavedVars:NewAccountWide(addonSVname, addonSVversion, svSettingsName, defaultSavedVariables, world, svAllAccTheSameAcc)
-            --Added with FCOIS version 2.2.4 Settings all the same for all Accounts and all servers
+                --Added with FCOIS version 2.2.4 Settings all the same for all Accounts and all servers
             elseif FCOIS.settingsVars.defaultSettings.saveMode == 4 then
                 --All servers and accounts the same
                 FCOIS.settingsVars.settings = ZO_SavedVars:NewAccountWide(addonSVname, addonSVversion, svSettingsName, defaultSavedVariables, svAllServersTheSame, svAllAccTheSameAcc)
             end
 
-------------------------------------------------------------------------------------------------------------------------
-        --Non-server dependent settings were found. Migrate them to server dependent ones
+            ------------------------------------------------------------------------------------------------------------------------
+            --Non-server dependent settings were found. Migrate them to server dependent ones
         else
             -- Disable non-server dependent settings and save them to the server dependent ones now
             d("|cFF0000>>=====================================================>>|r")
@@ -1373,7 +1404,7 @@ function FCOIS.LoadUserSettings(calledFromExternal)
         --Set settings = loaded
         FCOIS.addonVars.gSettingsLoaded = true
     end
-    if calledFromExternal then FCOIS.addonVars.gSettingsLoaded = false end
+    if calledFromExternal == true then FCOIS.addonVars.gSettingsLoaded = false end
     --=============================================================================================================
     return true
 end

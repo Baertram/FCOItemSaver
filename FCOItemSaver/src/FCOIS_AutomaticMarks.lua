@@ -62,6 +62,9 @@ local checkIfHouseOwnerAndInsideOwnHouse = FCOIS.CheckIfHouseOwnerAndInsideOwnHo
 
 local getItemQuality = FCOIS.GetItemQuality
 
+local markItem
+local isMarked
+
 --==========================================================================================================================================
 --									FCOIS Inventory scanning & automatic item marking
 --==========================================================================================================================================
@@ -80,7 +83,7 @@ end
 
 --Function to return if the automatic markings at a chosen bagId (or if nil then all bagIds) is disabled
 function FCOIS.CheckIfAutomaticMarksAreDisabledAtBag(bagId)
-    FCOIS.LoadUserSettings()
+    FCOIS.LoadUserSettings(false, false)
     for bagIdToScan, isEnabled in pairs(FCOIS.settingsVars.settings.autoMarkBagsToScan) do
         if bagId == nil then
             if isEnabled == true then return false end
@@ -101,8 +104,12 @@ local function checkIfCanBeAutomaticallyMarked(bagId, slotIndex, itemId, checkTy
     if itemId == nil then
         itemId = myGetItemInstanceIdNoControl(bagId, slotIndex)
     end
+
+    isMarked = isMarked or FCOIS.IsMarked
+
     --Get all icons of the item
-    local isMarkedWithOneIcon, markedIcons = FCOIS.IsMarked(bagId, slotIndex, -1)
+    FCOIS.preventerVars.gCalledFromInternalFCOIS = true
+    local isMarkedWithOneIcon, markedIcons = isMarked(bagId, slotIndex, -1)
     if isMarkedWithOneIcon and markedIcons then
         local settings = FCOIS.settingsVars.settings
         local iconIdToIsDnamicIcon = mappingVars.iconIsDynamic
@@ -332,7 +339,7 @@ local function automaticMarkingSetsCollectionBookCheckFunc(p_bagId, p_slotIndex,
     local hasSet = gilsi(itemLink, false)
     if not hasSet then return false end
 
-    local isMarked = FCOIS.IsMarked
+    isMarked = isMarked or FCOIS.IsMarked
 
 --d(">automaticMarkingSetsCollectionBookCheckFunc: " ..ts(itemLink))
 
@@ -374,6 +381,7 @@ local function automaticMarkingSetsCollectionBookCheckFunc(p_bagId, p_slotIndex,
         local isAlreadyMarked = false
         if settings.autoMarkSetsItemCollectionBookCheckAllIcons == true then
             --Check if any other icon is applied already
+            FCOIS.preventerVars.gCalledFromInternalFCOIS = true
             isAlreadyMarked = isMarked(p_bagId, p_slotIndex, -1, nil)
         end
 --d(">>>isAlreadyMarked: " ..ts(isAlreadyMarked))
@@ -441,6 +449,7 @@ local function automaticMarkingSetsCollectionBookCheckFunc(p_bagId, p_slotIndex,
                 local isAlreadyMarked = false
                 if settings.autoMarkSetsItemCollectionBookCheckAllIcons == true then
                     --Check if any other icon is applied already
+                    FCOIS.preventerVars.gCalledFromInternalFCOIS = true
                     isAlreadyMarked = isMarked(p_bagId, p_slotIndex, -1, nil)
                 end
                 if isAlreadyMarked == false then
@@ -456,6 +465,7 @@ local function automaticMarkingSetsCollectionBookCheckFunc(p_bagId, p_slotIndex,
                 local isAlreadyMarked = false
                 if settings.autoMarkSetsItemCollectionBookCheckAllIcons == true then
                     --Check if any other icon is applied already
+                    FCOIS.preventerVars.gCalledFromInternalFCOIS = true
                     isAlreadyMarked = isMarked(p_bagId, p_slotIndex, -1, nil)
                 end
 
@@ -545,6 +555,7 @@ local function automaticMarkingSetsAdditionalCheckFunc(p_itemData, p_checkFuncRe
     local itemLink
 
     local isDebuggingCase = false
+    markItem = markItem or FCOIS.MarkItem
 
     if p_itemData ~= nil and p_itemData.bagId ~= nil and p_itemData.slotIndex ~= nil then
         itemLink = gil(p_itemData.bagId, p_itemData.slotIndex)
@@ -846,8 +857,9 @@ local function automaticMarkingSetsAdditionalCheckFunc(p_itemData, p_checkFuncRe
                 elseif markWithNonWishedSellIcon then
                     nonWishedMarkerIcon = FCOIS_CON_ICON_SELL
                 end
-                --Mark the item now
-                FCOIS.MarkItem(p_itemData.bagId, p_itemData.slotIndex, nonWishedMarkerIcon, true, true)
+                --FCOIS.MarkItem - Mark the item now
+                FCOIS.preventerVars.gCalledFromInternalFCOIS = true
+                markItem(p_itemData.bagId, p_itemData.slotIndex, nonWishedMarkerIcon, true, true)
                 --Show the marked item in the chat with the clickable itemLink
                 if settings.showSetsInChat then
                     if (itemLink ~= nil) then
@@ -919,8 +931,9 @@ local function automaticMarkingSetsAdditionalCheckFunc(p_itemData, p_checkFuncRe
         --    end
         --end
         if markWithTraitIcon then
-            --Mark the item with the trait marker icon now
-            FCOIS.MarkItem(p_itemData.bagId, p_itemData.slotIndex, newMarkerIcon, true, true)
+            --FCOIS.MarkItem - Mark the item with the trait marker icon now
+            FCOIS.preventerVars.gCalledFromInternalFCOIS = true
+            markItem(p_itemData.bagId, p_itemData.slotIndex, newMarkerIcon, true, true)
         end
         ------------------------------------------------------------------------------------------------------------------
         -- WISHED ITEM TRAIT CHECK - END
@@ -948,6 +961,9 @@ function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, do
     --Debugging added with FCOIS v2.0.0
     local showDebug = false
     local il
+
+    markItem = markItem or FCOIS.MarkItem
+
     --[[
     --TODO: Comment after debugging!
     il = gil(bag, slot)
@@ -1254,7 +1270,8 @@ function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, do
         --8) Mark the item now
         --Item was checked and should be marked now
         --FCOIS.MarkItem(bag, slot, iconId, showIcon, updateInventories)
-        FCOIS.MarkItem(bag, slot, newMarkerIcon, true, false)
+        FCOIS.preventerVars.gCalledFromInternalFCOIS = true
+        markItem(bag, slot, newMarkerIcon, true, false)
         --Set the return variable with the info, that at least one marker icon was set
         atLeastOneMarkerIconWasSet = true
         --8) Show chat output?

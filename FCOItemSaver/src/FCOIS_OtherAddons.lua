@@ -11,11 +11,14 @@ local strformat = string.format
 local strlen = string.len
 local strsub = string.sub
 
+local gil = GetItemLink 
+
+local addonVars = FCOIS.addonVars
 local mappingVars = FCOIS.mappingVars
 local bagsToBuildIdFor = mappingVars.bagsToBuildItemInstanceOrUniqueIdFor
 
 local checkVars = FCOIS.checkVars
-local allowedUniqueItemTypes = checkVars.uniqueIdItemTypes
+--local allowedUniqueItemTypes = checkVars.uniqueIdItemTypes
 
 local getSavedVarsMarkedItemsTableName       = FCOIS.GetSavedVarsMarkedItemsTableName
 local getFCOISMarkerIconSavedVariablesItemId = FCOIS.GetFCOISMarkerIconSavedVariablesItemId
@@ -91,7 +94,7 @@ function FCOIS.CheckIfWritItemShouldBeMarked(craftSuccess, craftSkill, craftData
     --Get the actual craftskill and overwrite the variable FCOIS.preventerVars.newItemCrafted with true
     --local craftSkill = GetCraftingInteractionType()
     if craftSkill ~= CRAFTING_TYPE_INVALID then
-        local itemLink = GetItemLink(craftData.bag, craftData.slot)
+        local itemLink = gil(craftData.bag, craftData.slot)
 --d(">writCreator: Item " .. itemLink .. " will be marked now with marker icon " .. tos(writMarkerIcon))
         FCOIS.MarkItem(craftData.bag, craftData.slot, writMarkerIcon, true, true)
     end
@@ -241,7 +244,7 @@ local function checkSetTrackerTrackingStateAndMarkWithFCOISIcon(sSetName, setTra
                     local bag = data.bagId
                     local slot = data.slotIndex
                     if bag == nil or slot == nil then return false, nil end
-                    local itemLinkLoop = GetItemLink(bag, slot)
+                    local itemLinkLoop = gil(bag, slot)
                     if itemLinkLoop == nil then return false, nil end
                     local bIsSetItemLoop, sSetNameLoop = GetItemLinkSetInfo(itemLinkLoop, false)
                     --Is the scanned item a set and the name equals the given set part's name?
@@ -321,7 +324,7 @@ local function checkSetTrackerTrackingStateAndMarkWithFCOISIcon(sSetName, setTra
                 local bag = p_bagId
                 local slot = p_slotIndex
                 if bag == nil or slot == nil then return false, nil end
-                local itemLinkLoop = GetItemLink(bag, slot)
+                local itemLinkLoop = gil(bag, slot)
                 if itemLinkLoop == nil then return false, nil end
                 local bIsSetItemLoop, sSetNameLoop = GetItemLinkSetInfo(itemLinkLoop, false)
                 --Is the scanned item a set and the name equals the given set part's name?
@@ -447,7 +450,7 @@ function otherAddons.SetTracker.checkAllItemsForSetTrackerTrackingState()
                 local bag = data.bagId
                 local slot = data.slotIndex
                 if bag == nil or slot == nil then return false end
-                local itemLinkLoop = GetItemLink(bag, slot)
+                local itemLinkLoop = gil(bag, slot)
                 if itemLinkLoop == nil then return false end
                 --is the item a set part?
                 local bIsSetItemLoop, sSetNameLoop = GetItemLinkSetInfo(itemLinkLoop, false)
@@ -492,7 +495,7 @@ function otherAddons.SetTracker.updateSetTrackerMarker(bagId, slotIndex, setTrac
     local retVarBool = true
     local FCOISMarkerIconForSetTrackerTrackIndex
     --Check if the item is a set part
-    local itemLink = GetItemLink(bagId, slotIndex)
+    local itemLink = gil(bagId, slotIndex)
     if itemLink == nil then return false end
     local bIsSetItem, sSetName, _, _, _ = GetItemLinkSetInfo(itemLink, false)
     --Is the item a set item?
@@ -577,10 +580,10 @@ function FCOIS.GetItemInstanceOrUniqueId(bagId, slotIndex, itemLink, calledFromE
     local allowedItemType
     --Should an itemInstance or unique ID be build for this bagId?
     if isBagToBuildItemInstanceOrUniqueId == true then
-        itemLink = itemLink or GetItemLink(bagId,slotIndex)
+        itemLink = itemLink or gil(bagId,slotIndex)
         --d("[FCOIS.GetItemInstanceOrUniqueId] " .. itemLink .. ", bagId: " .. tos(bagId))
         --Are the FCOIS settings already loaded?
-        checkIfFCOISSettingsWereLoaded(calledFromExternalAddon)
+        checkIfFCOISSettingsWereLoaded(calledFromExternalAddon, not addonVars.gAddonLoaded)
         local settings = FCOIS.settingsVars.settings
         local useUniqueIds = settings.useUniqueIds or false
         local uniqueItemIdType = settings.uniqueItemIdType
@@ -1165,7 +1168,7 @@ function FCOIS.CheckIfItemCooldownTrackerRelevantItemIdAndMarkItem(bagId, slotIn
 
     local showIcon = false
     if itemLink == nil then
-        itemLink = GetItemLink(bagId, slotIndex)
+        itemLink = gil(bagId, slotIndex)
     end
 
     --Check the cooldown left
@@ -1299,7 +1302,7 @@ function FCOIS.CheckIfOtherAddonActive(addOnName)
     if (addOnName == "IIfA" or IIfA) then
         FCOIS.otherAddons.IIFAActive = true
         --Add entry to constants table for the keybinds/SHIFT+right mouse click inventory row patterns
-        table.insert(FCOIS.checkVars.inventoryRowPatterns, "^" .. otherAddons.IIFAitemsListEntryPrePattern .. "*")         --Other addons: InventoryInsightFromAshes UI
+        table.insert(checkVars.inventoryRowPatterns, "^" .. otherAddons.IIFAitemsListEntryPrePattern .. "*")         --Other addons: InventoryInsightFromAshes UI
     end
     --AdvancedFilters: Plugin FCO DuplicateItemsFilter
     if (addOnName == "AF_FCODuplicateItemsFilters" and AdvancedFilters) then

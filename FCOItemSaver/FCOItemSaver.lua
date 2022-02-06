@@ -165,7 +165,7 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 --#203, 2022-02-05, Hotelvit, bug, FCOIS comments at esoui: Mass moving to junk/removing from junk (100 items) will kick you from the server becase of message spam
 
 --____________________________
--- Current max bugs/features/ToDos: 202
+-- Current max bugs/features/ToDos: 204
 --____________________________
 
 
@@ -202,7 +202,7 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 --#197: Migration of non-unique item markers to FCOISunique itemMarkers does not work properly
 --#198: Enchanting did not recognize the filters correctly and was not always protecting the items at extraction as it thought it is LF_INVENTORY
 --#200: The chosen language is not updated in localization of the settings menu properly
-
+--#204: Fixed error message in FCOIS.GetSavedVarsMarkedItemsTableName if loaded from other addons before FCOIS SavedVariables were loaded properly (e.g. IIfA)
 
 --[Changed]
 --Changed load order of debug file to earlier loading
@@ -310,4 +310,3 @@ end
 --- Call the start function for this addon, so the initialization is done
 --------------------------------------------------------------------------------
 FCOItemSaver_Initialized()
-

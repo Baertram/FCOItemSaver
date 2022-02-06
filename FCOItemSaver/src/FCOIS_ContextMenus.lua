@@ -85,6 +85,10 @@ local checkIfGuildBankWithdrawAllowed = FCOIS.CheckIfGuildBankWithdrawAllowed
 local updateFCOISFilterButtonColorsAndTextures = FCOIS.UpdateFCOISFilterButtonColorsAndTextures
 local reAnchorAdditionalInvButtons = FCOIS.ReAnchorAdditionalInvButtons
 
+local buildMarkerIconProtectedWhereTooltip
+
+local isMarked
+
 ------------------------------------------------------------------------------------------------------------------------
 --Get the context menu invoker button data by help of the panel Id
 local function getContextMenuInvokerButtonData(panelId)
@@ -325,6 +329,8 @@ function FCOIS.RefreshPopupDialogButtons(rowControl, override)
     local isEnchantItemDialog = isEnchantDialogShown()
     local isResearchItemDialog = isResearchListDialogShown()
 
+    isMarked = isMarked or FCOIS.IsMarked
+
     if not ctrlVars.RepairItemDialog:IsHidden() then
         local disableResearchNow = false
         if not override then
@@ -334,7 +340,8 @@ function FCOIS.RefreshPopupDialogButtons(rowControl, override)
                 local bagId, slotIndex = myGetItemDetails(rowControl)
                 if bagId ~= nil and slotIndex ~= nil then
 --d(">bagId, slotIndex: " ..tos(bagId) ..", " ..tos(slotIndex) .. ", itemLink: " ..GetItemLink(bagId, slotIndex))
-                    local _, markedIcons = FCOIS.IsMarked(bagId, slotIndex, -1)
+                    FCOIS.preventerVars.gCalledFromInternalFCOIS = true
+                    local _, markedIcons = isMarked(bagId, slotIndex, -1)
                     if markedIcons then
                         local settings = FCOIS.settingsVars.settings
                         for iconId, iconIsMarked in pairs(markedIcons) do
@@ -636,6 +643,7 @@ function FCOIS.MarkMe(rowControl, markId, updateNow, doUnmark, refreshPopupDialo
 end
 local markMe = FCOIS.MarkMe
 
+
 --This function will add the FCOIS entries to the right-click context menu of e.g. inventory items
 --The function will be called multiple times, for each marker icon once. If you want to check if it was the first time it got called
 --you can use the boolean variable "firstAdd"
@@ -670,7 +678,8 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
     local colDef
     local buttonText = ""
     local isEquipmentSlotContextmenu = false
-    local _, countDynIconsEnabled = FCOIS.countMarkerIconsEnabled()
+    FCOIS.preventerVars.gCalledFromInternalFCOIS = true
+    local _, countDynIconsEnabled = FCOIS.CountMarkerIconsEnabled()
     local useDynSubMenu = (settings.useDynSubMenuMaxCount > 0 and  countDynIconsEnabled >= settings.useDynSubMenuMaxCount) or false
     local isDynamic = isDynamicIcon[markId] or false
     local isGear = isGearIcon[markId] or false
@@ -996,7 +1005,8 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
     local tooltipText = ""
     if settings.contextMenuItemEntryShowTooltip then
         if settings.contextMenuItemEntryTooltipProtectedPanels then
-            tooltipText = FCOIS.buildMarkerIconProtectedWhereTooltip(markId)
+            buildMarkerIconProtectedWhereTooltip = buildMarkerIconProtectedWhereTooltip or FCOIS.BuildMarkerIconProtectedWhereTooltip
+            tooltipText = buildMarkerIconProtectedWhereTooltip(markId)
         end
     end
 
@@ -2493,6 +2503,7 @@ local function contextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
     local contMenuVars = FCOIS.contextMenuVars
 
     panelId = panelId or FCOIS.gFilterWhere
+    isMarked = isMarked or FCOIS.IsMarked
 
     local allowedSpecialButtonTypes = {
         ["quality"]                     = {allowed = true, icon = settings.autoMarkQualityIconNr},
@@ -2511,6 +2522,8 @@ local function contextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
     --local iconsDisabledAtCompanion = mappingVars.iconIsDisabledAtCompanion
     local isCharacter = (panelId == FCOIS_CON_LF_CHARACTER) or false
     local isCompanionCharacter = (panelId == FCOIS_CON_LF_COMPANION_CHARACTER) or false
+
+    local isUniversalDeconNPC = FCOIS.CheckIfUniversalDeconstructionNPC(panelId) -- #202
 
     local isUNDOButton 			 		= (specialButtonType == "UNDO") or false
     local isREMOVEALLGEARSButton 		= (specialButtonType == "REMOVE_ALL_GEAR") or false
@@ -2542,56 +2555,64 @@ local function contextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
 
     --==================================================================================================================
     else
-        --LibFilters panelIds:
-        --(Jewelry) Refinement panel?
-        if (panelId == LF_SMITHING_REFINE or panelId == LF_JEWELRY_REFINE) then
-            INVENTORY_TO_SEARCH = ctrlVars.REFINEMENT
-            contextmenuType = "REFINEMENT"
-            --(Jewelry) Deconstruction panel?
-        elseif (panelId == LF_SMITHING_DECONSTRUCT or panelId == LF_JEWELRY_DECONSTRUCT) then
-            INVENTORY_TO_SEARCH = ctrlVars.DECONSTRUCTION
-            contextmenuType = "DECONSTRUCTION"
-        elseif (panelId == LF_SMITHING_IMPROVEMENT or panelId == LF_JEWELRY_IMPROVEMENT) then
-            --(Jewelry) Improvement panel?
-            INVENTORY_TO_SEARCH = ctrlVars.IMPROVEMENT
-            contextmenuType = "IMPROVEMENT"
-        elseif panelId == LF_ENCHANTING_CREATION then
-            --Enchanting creation
-            INVENTORY_TO_SEARCH = ctrlVars.ENCHANTING_STATION
-            contextmenuType = "ENCHANTING CREATION"
-        elseif panelId == LF_ENCHANTING_EXTRACTION then
-            --Enchanting extraction
-            contextmenuType = "ENCHANTING EXTRACTION"
-            INVENTORY_TO_SEARCH = ctrlVars.ENCHANTING_STATION
-        elseif panelId == LF_RETRAIT then
-            --Retrait / Transmutation station
-            contextmenuType = "RETRAIT"
-            INVENTORY_TO_SEARCH = ctrlVars.RETRAIT_LIST
-        elseif panelId == LF_HOUSE_BANK_WITHDRAW then
-            --House Banks
-            contextmenuType = "HOUSEBANK"
-            INVENTORY_TO_SEARCH = ctrlVars.HOUSE_BANK
-        elseif panelId == LF_INVENTORY_COMPANION then
-            --Companion
-            isCompanionInventory = true
-            contextmenuType = "COMPANION_INVENTORY"
-            INVENTORY_TO_SEARCH = ctrlVars.COMPANION_INV_LIST
-        else
-            --Inventory (mail, trade, etc.) or bank or craftbag (if other addons enabled the craftbag at mail panel etc.)
-            --Get the current inventorytype
-            local inventoryType = FCOIS.GetInventoryTypeByFilterPanel(panelId)
-            if inventoryType == INVENTORY_CRAFT_BAG then
-                contextmenuType = "CRAFTBAG"
+        if not isUniversalDeconNPC then
+            --LibFilters panelIds:
+            --(Jewelry) Refinement panel?
+            if (panelId == LF_SMITHING_REFINE or panelId == LF_JEWELRY_REFINE) then
+                INVENTORY_TO_SEARCH = ctrlVars.REFINEMENT
+                contextmenuType = "REFINEMENT"
+                --(Jewelry) Deconstruction panel?
+            elseif (panelId == LF_SMITHING_DECONSTRUCT or panelId == LF_JEWELRY_DECONSTRUCT) then
+                INVENTORY_TO_SEARCH = ctrlVars.DECONSTRUCTION
+                contextmenuType = "DECONSTRUCTION"
+            elseif (panelId == LF_SMITHING_IMPROVEMENT or panelId == LF_JEWELRY_IMPROVEMENT) then
+                --(Jewelry) Improvement panel?
+                INVENTORY_TO_SEARCH = ctrlVars.IMPROVEMENT
+                contextmenuType = "IMPROVEMENT"
+            elseif panelId == LF_ENCHANTING_CREATION then
+                --Enchanting creation
+                INVENTORY_TO_SEARCH = ctrlVars.ENCHANTING_STATION
+                contextmenuType = "ENCHANTING CREATION"
+            elseif panelId == LF_ENCHANTING_EXTRACTION then
+                --Enchanting extraction
+                contextmenuType = "ENCHANTING EXTRACTION"
+                INVENTORY_TO_SEARCH = ctrlVars.ENCHANTING_STATION
+            elseif panelId == LF_RETRAIT then
+                --Retrait / Transmutation station
+                contextmenuType = "RETRAIT"
+                INVENTORY_TO_SEARCH = ctrlVars.RETRAIT_LIST
+            elseif panelId == LF_HOUSE_BANK_WITHDRAW then
+                --House Banks
+                contextmenuType = "HOUSEBANK"
+                INVENTORY_TO_SEARCH = ctrlVars.HOUSE_BANK
+            elseif panelId == LF_INVENTORY_COMPANION then
+                --Companion
+                isCompanionInventory = true
+                contextmenuType = "COMPANION_INVENTORY"
+                INVENTORY_TO_SEARCH = ctrlVars.COMPANION_INV_LIST
             else
-                contextmenuType = "INVENTORY"
+                --Inventory (mail, trade, etc.) or bank or craftbag (if other addons enabled the craftbag at mail panel etc.)
+                --Get the current inventorytype
+                local inventoryType = FCOIS.GetInventoryTypeByFilterPanel(panelId)
+                if inventoryType == INVENTORY_CRAFT_BAG then
+                    contextmenuType = "CRAFTBAG"
+                else
+                    contextmenuType = "INVENTORY"
+                end
+                --All non-filtered items will be in this list here:
+                --ctrlVars.playerInventoryInvs[inventoryType].data[1-28].data   .bagId & ... .slotIndex
+                if inventoryType == nil then
+                    d("[FCOIS] -ERROR- ContextMenuForAddInvButtonsOnClicked - Inventory type for filter panel ID \"" .. panelId .. "\" is not set!")
+                    return false
+                end
+                INVENTORY_TO_SEARCH = ctrlVars.playerInventoryInvs[inventoryType].listView
             end
-            --All non-filtered items will be in this list here:
-            --ctrlVars.playerInventoryInvs[inventoryType].data[1-28].data   .bagId & ... .slotIndex
-            if inventoryType == nil then
-                d("[FCOIS] -ERROR- ContextMenuForAddInvButtonsOnClicked - Inventory type for filter panel ID \"" .. panelId .. "\" is not set!")
-                return false
-            end
-            INVENTORY_TO_SEARCH = ctrlVars.playerInventoryInvs[inventoryType].listView
+------------------------------------------------------------------------------------------------------------------------
+        else
+            --#202 enable mass marking for the universald deconstruction NPC inventory
+            -->Which inventory does INVENTORY_TO_SEARCH need to be?
+            INVENTORY_TO_SEARCH = ctrlVars.UNIVERSAL_DECONSTRUCTION_INV_LIST
+            contextmenuType = "UNIVERSAL_DECONSTRUCTION"
         end
     end
     --==================================================================================================================
@@ -2715,9 +2736,10 @@ local function contextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                                         local iconShouldDemarkAllOthers = checkIfItemShouldBeDemarked(iconId)
                                         if iconShouldDemarkAllOthers then
                                             --Check if the item is marked with any icon (except the current one)
-                                            local isMarked, markedIconsArray = FCOIS.IsMarked(bagId, slotIndex, -1, iconId)
+                                            FCOIS.preventerVars.gCalledFromInternalFCOIS = true
+                                            local isMarkedWithIcon, markedIconsArray = isMarked(bagId, slotIndex, -1, iconId)
                                             --Add all other removed icons to the undo tab, if they are set
-                                            if isMarked then
+                                            if isMarkedWithIcon then
                                                 for iconNr, iconIsMarked in pairs(markedIconsArray) do
                                                     --Check if the icon is set
                                                     --Add the icon to the undo table now
@@ -2739,7 +2761,8 @@ local function contextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                                             local iconsToRemove = {}
                                             iconsToRemove = getIconsToRemove(bagId, slotIndex, nil, iconId, iconShouldDemarkSell, iconShouldDemarkDecon)
                                             --Is the item marked with any of the icons that should be removed?
-                                            if iconsToRemove ~= nil and FCOIS.IsMarked(bagId, slotIndex, iconsToRemove) then
+                                            FCOIS.preventerVars.gCalledFromInternalFCOIS = true
+                                            if iconsToRemove ~= nil and isMarked(bagId, slotIndex, iconsToRemove) then
                                                 --For each icon that should be removed, do:
                                                 for _, iconToRemove in pairs(iconsToRemove) do
                                                     --Add the icons which will get removed to the undo tab
@@ -2915,8 +2938,8 @@ local function contextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                 end
             end --for _,v in pairs(PLAYER_INV...
 
-            --==================================================================================================================
-            --REMOVE ALL
+        --==================================================================================================================
+        --REMOVE ALL
         elseif isREMOVEALLButton then
 
             if settings.debug then debugMessage( "[ContextMenuForAddInvButtonsOnClicked]", "Clicked "..contextmenuType.." context menu button, Remove ALL", true, FCOIS_DEBUG_DEPTH_NORMAL) end
@@ -3030,8 +3053,9 @@ local function contextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                             local isProtectedWithIcon = false
                             --Mark all as junk
                             if isMARKALLASJUNKButton then
-                                local isMarked, isMarkedWithIconsTable = FCOIS.IsMarked(bagId, slotIndex, -1)
-                                if isMarked and isMarkedWithIconsTable ~= nil then
+                                FCOIS.preventerVars.gCalledFromInternalFCOIS = true
+                                local isMarkedWithIcon, isMarkedWithIconsTable = isMarked(bagId, slotIndex, -1)
+                                if isMarkedWithIcon and isMarkedWithIconsTable ~= nil then
                                     --Check each marked marker icon. If any marker icon is set disallow the junk
                                     for iconNrLoop, isIconMarked in pairs(isMarkedWithIconsTable) do
                                         if isIconMarked then
@@ -3051,12 +3075,13 @@ local function contextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                                     if settings.debug then debugMessage( "[ContextMenuForAddInvButtonsOnClicked]", "Clicked "..contextmenuType.." context menu button, MARK ALL AS JUNK", true, FCOIS_DEBUG_DEPTH_NORMAL) end
                                     setItemIsJunk(bagId, slotIndex, true)
                                 end
-                                --UnMark all junk items
+                            --UnMark all junk items
                             elseif isMARKALLASNOJUNKButton then
                                 --Check if the setting to only unjunk items which are not being "marked to be sold" is enabled
                                 if settings.dontUnJunkItemsMarkedToBeSold then
-                                    local isMarked, isMarkedWithIconsTable = FCOIS.IsMarked(bagId, slotIndex, -1)
-                                    if isMarked and isMarkedWithIconsTable ~= nil then
+                                    FCOIS.preventerVars.gCalledFromInternalFCOIS = true
+                                    local isMarkedWithIcon, isMarkedWithIconsTable = isMarked(bagId, slotIndex, -1)
+                                    if isMarkedWithIcon and isMarkedWithIconsTable ~= nil then
                                         --Check each marked marker icon. If only the "sell icon" is set disallow the unjunk!
                                         for iconNrLoop, isIconMarked in pairs(isMarkedWithIconsTable) do
                                             if isIconMarked then
@@ -3166,7 +3191,8 @@ function FCOIS.ShowContextMenuForAddInvButtons(invAddContextMenuInvokerButton, b
         end
         local locVars = localizationVars.fcois_loc
 
-        local _, countDynIconsEnabled = FCOIS.countMarkerIconsEnabled()
+        FCOIS.preventerVars.gCalledFromInternalFCOIS = true
+        local _, countDynIconsEnabled = FCOIS.CountMarkerIconsEnabled()
         local useDynSubMenu = (settings.useDynSubMenuMaxCount > 0 and countDynIconsEnabled >= settings.useDynSubMenuMaxCount) or false
         local icon2Gear = mappingVars.iconToGear
         local icon2Dynamic = mappingVars.iconToDynamic
@@ -3683,6 +3709,8 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
         end
     end
 
+    isMarked = isMarked or FCOIS.IsMarked
+
     --The current game's SCENE and name (used for determining bank/guild bank deposit)
     local currentScene, currentSceneName = getCurrentSceneInfo()
     local isNewSlot = self.m_inventorySlot ~= FCOIS.preventerVars.lastHoveredInvSlot
@@ -3739,7 +3767,8 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
     --Use item?
     if        actionStringId == SI_ITEM_ACTION_USE then
         --Is the item protected with any icon?
-        local marked, _ = FCOIS.IsMarked(bag, slotIndex, -1)
+        FCOIS.preventerVars.gCalledFromInternalFCOIS = true
+        local marked, _ = isMarked(bag, slotIndex, -1)
         if marked and IsItemUsable(bag, slotIndex) then
             --If mail send or player trade panel is activated
             local isCurrentlyShowingMailSend 	= not ctrlVars.MAIL_SEND.control:IsHidden() and settings.blockSendingByMail
@@ -3838,7 +3867,8 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
         --Should the "Junk item" context menu entry be hidden if any marker icon is set?
     elseif actionStringId == SI_ITEM_ACTION_MARK_AS_JUNK and settings.removeMarkAsJunk then
         --Check the marker icons
-        local isMarkedJunk, markedWithThisIconsJunk = FCOIS.IsMarked(bag, slotIndex, -1)
+        FCOIS.preventerVars.gCalledFromInternalFCOIS = true
+        local isMarkedJunk, markedWithThisIconsJunk = isMarked(bag, slotIndex, -1)
         if isMarkedJunk then
             --Allowed to junk if only marked with the junk icon?
             if settings.allowMarkAsJunkForMarkedToBeSold then
@@ -3872,7 +3902,8 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
         --Disable the "equip" entry for the above checked panels now so the standard keybind is not the "equip" one
         if isStore or isFence or isCurrentlyShowingGuildStore or isMailSend or isPlayer2PlayerTrade then
             --Is the item protected with any icon?
-            local marked, _ = FCOIS.IsMarked(bag, slotIndex, -1)
+            FCOIS.preventerVars.gCalledFromInternalFCOIS = true
+            local marked, _ = isMarked(bag, slotIndex, -1)
             if marked then
                 --remove the context-menu entry for "equip" (and the keybinding)
                 return true

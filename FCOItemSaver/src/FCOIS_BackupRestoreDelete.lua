@@ -8,6 +8,7 @@ local ton = tonumber
 local tos = tostring
 local strformat = string.format
 
+local gil = GetItemLink 
 --local numIdTypes = FCOIS.numVars.idTypes
 
 --local debugMessage = FCOIS.debugMessage
@@ -17,6 +18,9 @@ local checkIfInHouse = FCOIS.CheckIfInHouse
 local showConfirmationDialog = FCOIS.ShowConfirmationDialog
 local createFCOISUniqueIdString = FCOIS.CreateFCOISUniqueIdString
 local signItemId = FCOIS.SignItemId
+
+local isMarked
+local isMarkedByItemInstanceId
 
 
 --The standard allowed bags for the backup
@@ -81,6 +85,9 @@ function FCOIS.BackupMarkerIcons(withDetails, apiVersion, doClearBackup)
     settings.backupData = settings.backupData or {}
     local backupData = settings.backupData
     local preVars = FCOIS.preChatVars
+
+    isMarked = isMarked or FCOIS.IsMarked
+    isMarkedByItemInstanceId = isMarkedByItemInstanceId or FCOIS.IsMarkedByItemInstanceId
 
     --Get the current API version of the server, to distinguish code differences dependant on the API version
     FCOIS.APIversion = GetAPIVersion()
@@ -187,13 +194,15 @@ function FCOIS.BackupMarkerIcons(withDetails, apiVersion, doClearBackup)
                         local markedIcons
                         --Is the bagtype not the craftbag? As the craftbag's slotIndex is the item's itemId!
                         if bagType ~= BAG_VIRTUAL then
-                            isItemMarked, markedIcons = FCOIS.IsMarked(bagId, slotIndex, -1)
+                            FCOIS.preventerVars.gCalledFromInternalFCOIS = true
+                            isItemMarked, markedIcons = isMarked(bagId, slotIndex, -1)
                         else
                             --Craftbag. Item's slotIndex is the itemId.
                             -->Overwrite it with the itemInstanceid
                             --Use another function here to check if item is marked and which marker icons are set (itemInstanceId get#s signed in there!)
+                            FCOIS.preventerVars.gCalledFromInternalFCOIS = true
                             local itemInstanceId = data.itemInstanceId
-                            isItemMarked, markedIcons = FCOIS.IsMarkedByItemInstanceId(itemInstanceId, -1)
+                            isItemMarked, markedIcons = isMarkedByItemInstanceId(itemInstanceId, -1)
                         end
                         --Is the item marked with any marker icon?
                         if isItemMarked then
@@ -230,7 +239,7 @@ function FCOIS.BackupMarkerIcons(withDetails, apiVersion, doClearBackup)
                                     if withDetails and counterLoops == 1 then
                                         iconsStr = ""
                                         --if bagType ~= BAG_VIRTUAL then
-                                        itemLink = GetItemLink(bagId, slotIndex)
+                                        itemLink = gil(bagId, slotIndex)
                                         --else
                                         --CraftBag, slotIndex is the itemId. So get the itemLink from the data.
                                         --    itemLink = data.lnk
@@ -245,9 +254,9 @@ function FCOIS.BackupMarkerIcons(withDetails, apiVersion, doClearBackup)
                                         backupData[apiVersionToUse][markerIconItemIdToSave] = {}
                                     end
                                     --Now add all found set marker icons of this item below the uniqueItemId
-                                    for iconId, isMarked in pairs(markedIcons) do
+                                    for iconId, isMarkedIcon in pairs(markedIcons) do
                                         --Is the icon marked for this item? Then save it to the backup data
-                                        if isMarked == true then
+                                        if isMarkedIcon == true then
                                             backupData[apiVersionToUse][markerIconItemIdToSave][iconId] = true
                                             if counterLoops == 1 then
                                                 foundMarkedMarkerIconsOnItems = foundMarkedMarkerIconsOnItems + 1
@@ -522,7 +531,7 @@ function FCOIS.RestoreMarkerIcons(withDetails, apiVersion)
                                 local itemLink
                                 if withDetails then
                                     iconsStr = ""
-                                    itemLink = GetItemLink(bagId, slotIndex)
+                                    itemLink = gil(bagId, slotIndex)
                                 end
                                 for iconId, isMarked in pairs(itemIdMarkers) do
                                     if isMarked == true and type(iconId) == "number" then

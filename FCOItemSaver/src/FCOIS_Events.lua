@@ -955,7 +955,7 @@ local function FCOItemSaver_Player_Activated(...)
         if FCOIS.addonVars.gAddonLoaded == false then
             updateFCOISFilterButtonsAtInventory(-1)
         end
-        FCOIS.addonVars.gAddonLoaded = false
+        --FCOIS.addonVars.gAddonLoaded = false --If disabled here the LoadSettings function will get wrong values!
 
         --Rebuild the gear set variables like the mapping tables for the filter buttons, etc.
         --Must be called once before FCOIS.changeContextMenuEntryTexts(-1) to build the mapping tables + settings.iconIsGear!
@@ -1090,7 +1090,7 @@ local function FCOItemSaver_Loaded(eventCode, addOnName)
             --=============================================================================================================
             --	LOAD USER SETTINGS
             --=============================================================================================================
-            FCOIS.LoadUserSettings()
+            FCOIS.LoadUserSettings(false, true) --force load the settings again, if they were loaded before by any external addon
 
             -- Set Localization
             FCOIS.preventerVars.KeyBindingTexts = false
@@ -1132,7 +1132,7 @@ local function FCOItemSaver_Loaded(eventCode, addOnName)
             --Set the addon loaded variable
             FCOIS.addonVars.gAddonLoaded = true
 
-            --Do keybinding stuff
+            --Do inventory keybinding stuff (for junk mark etc.)
             FCOIS.InitializeInventoryKeybind()
 
             if FCOIS.settingsVars.settings.debug then debugMessage( "[EVENT]", "Addon startup finished!", true, FCOIS_DEBUG_DEPTH_NORMAL) end

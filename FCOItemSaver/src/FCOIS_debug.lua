@@ -10,6 +10,8 @@ local zo_strf = zo_strformat
 local strfor = string.format
 local tos = tostring
 
+local gil = GetItemLink 
+
 --==========================================================================================================================================
 --									FCOIS - Debugging
 --==========================================================================================================================================
@@ -133,7 +135,7 @@ function FCOIS.debugItem(p_bagId, p_slotIndex)
     if bag and slot then
         --local itemName = FCOIS.MyGetItemNameNoControl(bag, slot)
         local itemId = FCOIS.MyGetItemInstanceIdNoControl(bag, slot, true)
-        local itemLink = GetItemLink(bag, slot, LINK_STYLE_DEFAULT)
+        local itemLink = gil(bag, slot, LINK_STYLE_DEFAULT)
         d("[FCOIS] " .. itemLink .." - bag: " .. tos(bag) .. ", slot: " .. tos(slot) .. ", FCOIS_ItemId: " .. tos(itemId))
         --ZO_ChatWindowTextEntryEditBox:SetText("/zgoo FCOIS[FCOIS.getSavedVarsMarkedItemsTableName()][<iconIdHere>]["..itemId.."]")
         local debugTextTemplate = "/%s FCOIS[FCOIS.getSavedVarsMarkedItemsTableName()][<iconIdHere>]["..itemId.."]"

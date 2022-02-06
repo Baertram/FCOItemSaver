@@ -166,39 +166,36 @@ local function reAnchorAdditionalInvButtonNow(panelId, anchorData, addInvButtonO
     --panelId = e.g. LF_INVENTORY
     --anchorData = e.g. table with anchorControl, left, top offsets
     if panelId ~= nil and anchorData ~= nil then
-        local addInvButtonOffsetsForPanel = addInvButtonOffsets[panelId]
-        if addInvButtonOffsetsForPanel then
-            --Update the left and top offsets now
-            local newX = anchorData.defaultLeft + addInvButtonOffsetsForPanel.left
-            local newY = anchorData.defaultTop + addInvButtonOffsetsForPanel.top
-            --ReAnchor the controls if they are already created?
-            --Get the button's data at the panel
-            local buttonData = addInvBtnInvokers[panelId]
-            if buttonData ~= nil and buttonData.addInvButton and buttonData.name ~= nil and buttonData.name ~= "" then
-                --Check if the control exists already
-                local invAddCntBtnCtrl
-                --Was a button passed in already?
-                if contMenuInvokerButton ~= nil then
-                    invAddCntBtnCtrl = contMenuInvokerButton
+        --Update the left and top offsets now
+        local newX = anchorData.defaultLeft + addInvButtonOffsets.left
+        local newY = anchorData.defaultTop + addInvButtonOffsets.top
+        --ReAnchor the controls if they are already created?
+        --Get the button's data at the panel
+        local buttonData = addInvBtnInvokers[panelId]
+        if buttonData ~= nil and buttonData.addInvButton and buttonData.name ~= nil and buttonData.name ~= "" then
+            --Check if the control exists already
+            local invAddCntBtnCtrl
+            --Was a button passed in already?
+            if contMenuInvokerButton ~= nil then
+                invAddCntBtnCtrl = contMenuInvokerButton
+            else
+                local btnName = buttonData.name
+                invAddCntBtnCtrl = GetControl(btnName) --wm:GetControlByName(btnName, "")
+            end
+            if invAddCntBtnCtrl ~= nil then
+                --ReParent as well?
+                if newParent ~= nil then
+                    invAddCntBtnCtrl:SetParent(newParent)
                 else
-                    local btnName = buttonData.name
-                    invAddCntBtnCtrl = GetControl(btnName) --wm:GetControlByName(btnName, "")
+                    if buttonData.parent == nil then return end
+                    invAddCntBtnCtrl:SetParent(buttonData.parent)
                 end
-                if invAddCntBtnCtrl ~= nil then
-                    --ReParent as well?
-                    if newParent ~= nil then
-                        invAddCntBtnCtrl:SetParent(newParent)
-                    else
-                        if buttonData.parent == nil then return end
-                        invAddCntBtnCtrl:SetParent(buttonData.parent)
-                    end
-                    --Clear the anchors and reanchor it with the updated x and y offsets
-                    invAddCntBtnCtrl:ClearAnchors()
-                    --SetAnchor(point, relativeTo, relativePoint, offsetX, offsetY)
-                    local alignMy = anchorData.anchorMyPoint or alignMyDefault
-                    local alignTo = anchorData.anchorToPoint or alignToDefault
-                    invAddCntBtnCtrl:SetAnchor(alignMy, anchorData.anchorControl, alignTo, newX, newY)
-                end
+                --Clear the anchors and reanchor it with the updated x and y offsets
+                invAddCntBtnCtrl:ClearAnchors()
+                --SetAnchor(point, relativeTo, relativePoint, offsetX, offsetY)
+                local alignMy = anchorData.anchorMyPoint or alignMyDefault
+                local alignTo = anchorData.anchorToPoint or alignToDefault
+                invAddCntBtnCtrl:SetAnchor(alignMy, anchorData.anchorControl, alignTo, newX, newY)
             end
         end
     end
@@ -210,7 +207,7 @@ function FCOIS.ReAnchorAdditionalInvButtons(filterPanelId, contMenuInvokerButton
     --Add the offset X/Y from the settings to the anchor values of the additional inventory buttons
     local apiVersion = FCOIS.APIversion
     local settings = FCOIS.settingsVars.settings
-    local addInvButtonOffsets = settings.FCOISAdditionalInventoriesButtonOffset
+    local addInvButtonOffsets = settings.FCOISAdditionalInventoriesButtonOffset[filterPanelId]
     if addInvButtonOffsets then
         local anchorVarsAddInvButtons = FCOIS.anchorVars.additionalInventoryFlagButton[apiVersion]
         --Loop over the anchorVars and get each panel of the additional inv buttons (e.g. LF_INVENTORY, LF_BANK_WITHDRAW, ...)
