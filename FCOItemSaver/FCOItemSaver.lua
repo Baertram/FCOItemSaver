@@ -175,6 +175,7 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 --#176 -> Test: Errors occured with OR filters, and mixed AND + OR filters
 --#201 -> Find reason
 --#202 --> Filter buttons show/hide and anchor to universal deconstruction/re anchor to default parents at smithing decon and enchanting extract needs to be added + TESTs
+--Added checks if functions/API functions are called internally or from external (other addons) -> Still ongoing TODO
 
 -------------------------------------------------------------------------------------
 --Changelog (last version: 2.2.3 - New version: 2.2.4) -    Updated last: 2022-02-05
@@ -185,7 +186,10 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 --Debug functions will use local speed up variable now
 --Added more local speed-ups in several files
 --Missing command handler function in API function FCOIS.ChangeFilter
---#175: lua error bad argument #1 to 'pairs' (table/struct expected, got nil) after improving items and leaving the improve station directly. Important: If you do not wait ~1-2 seconds after improvement has visually finished the automatic re-applied marker icons might fail to apply if you have left the improvement table meanwhile!
+--Removed duplicate calls to localization
+--Removed duplicate calls to settings loading
+--Added more speed-up local variables (tooltips, marker icons, API function calls)
+--Fixed LAM settings menu editboxes for number values to disallow strings/empty strings and reset to default number if value is wrong--#175: lua error bad argument #1 to 'pairs' (table/struct expected, got nil) after improving items and leaving the improve station directly. Important: If you do not wait ~1-2 seconds after improvement has visually finished the automatic re-applied marker icons might fail to apply if you have left the improvement table meanwhile!
 --#177: With filterButton 1 and 2 at yellow state: items without markerIcon of filter 1 (but being a dynamic gear of filter 2) will not filter (hide)
 --#179: Gear or dynamic icons name could be empty and raise lua error messages. If left empty they will directly reset to the default name (English) now
 --#180: GetItemInstanceId error upon mouse over at inventory quest items

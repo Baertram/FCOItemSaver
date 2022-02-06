@@ -919,16 +919,18 @@ function FCOIS.AfterSettings()
     local apiVersion = FCOIS.APIversion
     local addInvButtonOffsets = settings.FCOISAdditionalInventoriesButtonOffset
     local anchorVarsAddInvButtons = FCOIS.anchorVars.additionalInventoryFlagButton[apiVersion]
+    FCOIS.settingsVars.settings.FCOISAdditionalInventoriesButtonOffset["left"] = nil --remove wrong added values
+    FCOIS.settingsVars.settings.FCOISAdditionalInventoriesButtonOffset["top"] = nil --remove wrong added values
     --Loop over the anchorVars and get each panel of the additional inv buttons (e.g. LF_INVENTORY, LF_BANK_WITHDRAW, ...)
     if anchorVarsAddInvButtons then
         for panelId, _ in pairs(anchorVarsAddInvButtons) do
             local addInvButtonOffsetsForPanel = addInvButtonOffsets[panelId]
             if addInvButtonOffsetsForPanel then
-                if type(addInvButtonOffsetsForPanel["left"]) == "string" or tonumber(addInvButtonOffsetsForPanel["left"]) == nil then
-                    addInvButtonOffsetsForPanel["left"] = 0
+                if addInvButtonOffsetsForPanel["left"] == "" or type(addInvButtonOffsetsForPanel["left"]) == "string" or tonumber(addInvButtonOffsetsForPanel["left"]) == nil then
+                    FCOIS.settingsVars.settings.FCOISAdditionalInventoriesButtonOffset[panelId]["left"] = 0
                 end
-                if type(addInvButtonOffsetsForPanel["top"]) == "string" or tonumber(addInvButtonOffsetsForPanel["top"]) == nil then
-                    addInvButtonOffsetsForPanel["top"] = 0
+                if addInvButtonOffsetsForPanel["top"] or type(addInvButtonOffsetsForPanel["top"]) == "string" or tonumber(addInvButtonOffsetsForPanel["top"]) == nil then
+                    FCOIS.settingsVars.settings.FCOISAdditionalInventoriesButtonOffset[panelId]["top"] = 0
                 end
             end
         end
