@@ -836,6 +836,12 @@ if ZO_UNIVERSAL_DECONSTRUCTION_FILTER_TYPES ~= nil then
         [LF_JEWELRY_DECONSTRUCT]    = true,
         [LF_ENCHANTING_EXTRACTION]  = true,
     }
+    mappingVars.universalDeconFilterPanelIdToWhereAreWe = {
+        [LF_SMITHING_DECONSTRUCT]   = FCOIS_CON_DECONSTRUCT,
+        [LF_JEWELRY_DECONSTRUCT]    = FCOIS_CON_DECONSTRUCT,
+        [LF_ENCHANTING_EXTRACTION]  = FCOIS_CON_ENCHANT_EXTRACT,
+    }
+
     local function getStringFromUniversalDeconstructionMenuBar(key)
         local barToSearch = ZO_UNIVERSAL_DECONSTRUCTION_FILTER_TYPES
         if barToSearch then
@@ -847,7 +853,6 @@ if ZO_UNIVERSAL_DECONSTRUCTION_FILTER_TYPES ~= nil then
         end
         return
     end
-
     --The NPC decon menuBars tab's buttons -> filterPanelId
     mappingVars.panelIdByUniversalDeconstructionNPCMenuBarTabButtonName = {
         [getStringFromUniversalDeconstructionMenuBar("enchantments")]   = LF_ENCHANTING_EXTRACTION, --Glyphs
@@ -1385,13 +1390,15 @@ ctrlVars.DECONSTRUCTION_BUTTON_ARMOR   = GetControl(ctrlVars.DECONSTRUCTION_INV,
 ctrlVars.DECONSTRUCTION_BUTTON_WEAPONS = GetControl(ctrlVars.DECONSTRUCTION_INV, strformat(tabsButtonStr, "2")) --ZO_SmithingTopLevelDeconstructionPanelInventoryTabsButton2
 --ctrlVars.SMITHING_MENUBAR_BUTTON_DECONSTRUCTION 		= ZO_SmithingTopLevelModeMenuBarButton3
 -- -v- #202 UniversalDeconstruction - API101033 "Ascending Tide" added via universal deconstruction NPC "Giladil"
-local universalDeconInv
+local universalDeconInv, universalDeconstructionPanel
 if ZO_UNIVERSAL_DECONSTRUCTION_FILTER_TYPES ~= nil then
+    ctrlVars.UNIVERSAL_DECONSTRUCTION_GLOBAL = UNIVERSAL_DECONSTRUCTION
+    universalDeconstructionPanel = ctrlVars.UNIVERSAL_DECONSTRUCTION_GLOBAL.deconstructionPanel
     ctrlVars.UNIVERSAL_DECONSTRUCTION_BASE = ZO_UniversalDeconstructionTopLevel_Keyboard
     ctrlVars.UNIVERSAL_DECONSTRUCTION_PANEL = GetControl(ctrlVars.UNIVERSAL_DECONSTRUCTION_BASE, "Panel") ---ZO_UniversalDeconstructionTopLevel_KeyboardPanel
     ctrlVars.UNIVERSAL_DECONSTRUCTION_INV = GetControl(ctrlVars.UNIVERSAL_DECONSTRUCTION_PANEL, inventoryStr) ---ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventory
     universalDeconInv = ctrlVars.UNIVERSAL_DECONSTRUCTION_INV
-    ctrlVars.UNIVERSAL_DECONSTRUCTION_INV_LIST  = universalDeconInv.list
+    --ctrlVars.UNIVERSAL_DECONSTRUCTION_INV_LIST  = universalDeconInv.list -> not existing!
     ctrlVars.UNIVERSAL_DECONSTRUCTION_INV_NAME	= universalDeconInv:GetName()
     ctrlVars.UNIVERSAL_DECONSTRUCTION_INV_BACKPACK = GetControl(universalDeconInv, backpackStr) -- ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventoryBackpack
     ctrlVars.UNIVERSAL_DECONSTRUCTION_BAG 		= GetControl(ctrlVars.UNIVERSAL_DECONSTRUCTION_INV_BACKPACK, contentsStr) -- ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventoryBackpackContents
@@ -1659,6 +1666,13 @@ mappingVars.libFiltersPanelIdToCraftingPanelSlot = {
     [LF_JEWELRY_DECONSTRUCT]        = deconstructionPanel.extractionSlot,
     [LF_JEWELRY_IMPROVEMENT]        = improvementPanel.improvementSlot,
 }
+if ZO_UNIVERSAL_DECONSTRUCTION_FILTER_TYPES ~= nil then
+    mappingVars.libFiltersPanelIdToUniversalCraftingPanelSlot = {
+        [LF_SMITHING_DECONSTRUCT]       = universalDeconstructionPanel.extractionSlot,
+        [LF_JEWELRY_DECONSTRUCT]        = universalDeconstructionPanel.extractionSlot,
+        [LF_ENCHANTING_EXTRACTION]      = universalDeconstructionPanel.extractionSlot,
+    }
+end
 
 --The crafting panelIds which should show FCOIS filter buttons
 mappingVars.craftingPanelsWithFCOISFilterButtons = {

@@ -365,12 +365,13 @@ local function updateInventories()
 end
 
 local function updateUniversalDeconstructionInventory(currentFilterPanelId)
+--d("FCOIS]updateUniversalDeconstructionInventory - currentFilterPanelId: " ..tos(currentFilterPanelId))
     currentFilterPanelId = currentFilterPanelId or FCOIS.gFilterWhere
     --Update the currently shown inventory for that deconstruction
     --local universalDeconstructionNPCFilterPanelIdToInventory = FCOIS.mappingVars.universalDeconstructionNPCFilterPanelIdToInventory
     --local invToUpdate = universalDeconstructionNPCFilterPanelIdToInventory[currentFilterPanelId]
     --if not invToUpdate then return end
-    updateCraftingInventory(currentFilterPanelId, true)
+    updateCraftingInventory(currentFilterPanelId, ZO_UNIVERSAL_DECONSTRUCTION_FILTER_TYPES ~= nil)
 end
 
 --Check if other addons with an UI are enabled and shown and update their rows to show/hide FCOIS marker icons now
@@ -406,6 +407,7 @@ end
 --The function to update the inventories and lists after an item was un/marked
 local checkIfDeconstructionNPC
 function FCOIS.FilterBasics(onlyPlayer)
+    local currentFilterPanelId = FCOIS.gFilterWhere
     checkIfDeconstructionNPC = checkIfDeconstructionNPC or FCOIS.CheckIfUniversalDeconstructionNPC
 
     --Check if we are in the player inventory
@@ -414,45 +416,53 @@ function FCOIS.FilterBasics(onlyPlayer)
         onlyPlayer = true
     end
     if FCOIS.settingsVars.settings.debug then debugMessage( "[FilterBasics]","onlyPlayer: " .. tos(onlyPlayer), true, FCOIS_DEBUG_DEPTH_NORMAL) end
---d("[FCOIS]FilterBasics, onlyPlayer: " ..tos(onlyPlayer))
+--d("[FCOIS]FilterBasics, onlyPlayer: " ..tos(onlyPlayer) .. ", filterPanel: " ..tos(currentFilterPanelId))
 
     --Only update the lists if not currently already updating
-    if (FCOIS.preventerVars.gFilteringBasics == false) then
-        local currentFilterPanelId = FCOIS.gFilterWhere
+    if FCOIS.preventerVars.gFilteringBasics == false then
 
         FCOIS.preventerVars.gFilteringBasics = true
-        if (not ctrlVars.QUICKSLOT_LIST:IsHidden() and onlyPlayer == false) then
-            --d(">>quickSlots")
-            --UpdateInventories() -- NO FILTERS YET! So not needed to call libFilters:RequestUpdate(LF_QUICKSLOT)!
-            updateQuickSlots()
-            --UpdateOtherAddonUIs()
-        elseif (not ctrlVars.REPAIR_LIST:IsHidden() and onlyPlayer == false) then
-            --d(">>repairList")
-            --UpdateInventories() -- NO FILTERS YET! So not needed to call libFilters:RequestUpdate(LF_VENDOR_REPAIR)!
-            updateRepairList()
-            --UpdateOtherAddonUIs()
-        elseif (not ctrlVars.RETRAIT_LIST:IsHidden() and onlyPlayer == false) then
-            --d(">>retraitList")
-            updateInventories()
-            updateTransmutationList()
-            updateOtherAddonUIs()
-        elseif onlyPlayer == true or (isCompanionInventoryShown() and onlyPlayer == false) then
+        if onlyPlayer == true then
             --d(">>onlyPlayer or companionInv")
             updateInventories()
             --Try to update other addon's UIs
             updateOtherAddonUIs()
-        -- #202 Is the universal Deconstruction NPC shown?
-        elseif checkIfDeconstructionNPC(currentFilterPanelId) then
-            updateUniversalDeconstructionInventory(currentFilterPanelId)
         else
-            --d(">>inv, crafting inv")
-            --Try to update the normal and then the crafting inventories
-            updateInventories()
-            updateCraftingInventory(nil, false)
-            --Try to update other addon's UIs
-            updateOtherAddonUIs()
+            -- #202 Is the universal Deconstruction NPC shown?
+            if checkIfDeconstructionNPC(currentFilterPanelId) then
+                updateUniversalDeconstructionInventory(currentFilterPanelId)
+            -------------------------------------------------------------------
+            elseif not ctrlVars.QUICKSLOT_LIST:IsHidden() then
+                --d(">>quickSlots")
+                --UpdateInventories() -- NO FILTERS YET! So not needed to call libFilters:RequestUpdate(LF_QUICKSLOT)!
+                updateQuickSlots()
+                --UpdateOtherAddonUIs()
+            elseif not ctrlVars.REPAIR_LIST:IsHidden() then
+                --d(">>repairList")
+                --UpdateInventories() -- NO FILTERS YET! So not needed to call libFilters:RequestUpdate(LF_VENDOR_REPAIR)!
+                updateRepairList()
+                --UpdateOtherAddonUIs()
+            elseif not ctrlVars.RETRAIT_LIST:IsHidden() then
+                --d(">>retraitList")
+                updateInventories()
+                updateTransmutationList()
+                updateOtherAddonUIs()
+            elseif isCompanionInventoryShown() then
+                --d(">>onlyPlayer or companionInv")
+                updateInventories()
+                --Try to update other addon's UIs
+                updateOtherAddonUIs()
+            else
+                --d(">>inv, crafting inv")
+                --Try to update the normal and then the crafting inventories
+                updateInventories()
+                updateCraftingInventory(nil, false)
+                --Try to update other addon's UIs
+                updateOtherAddonUIs()
+            end
+
         end
-            FCOIS.preventerVars.gFilteringBasics = false
+        FCOIS.preventerVars.gFilteringBasics = false
     end
 end
 local filterBasics = FCOIS.FilterBasics

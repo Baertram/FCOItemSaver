@@ -175,6 +175,10 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 --#176 -> Test: Errors occured with OR filters, and mixed AND + OR filters
 --#201 -> Find reason
 --#202 --> Filter buttons show/hide and anchor to universal deconstruction/re anchor to default parents at smithing decon and enchanting extract needs to be added + TESTs
+--> Filter buttons are white? Textures are missing as the controls are re-parent to e.g. ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventory and the controlName is
+--> ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventory_FilterButton1 to 4 then
+--> SHIFT+right click does not work
+--> Drag&Drop of any marked item, even if unprotected, does not work and says it is protected!
 --Added checks if functions/API functions are called internally or from external (other addons) -> Still ongoing TODO
 
 -------------------------------------------------------------------------------------

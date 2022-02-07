@@ -13,6 +13,8 @@ local ctrlVars = FCOIS.ZOControlVars
 local checkVars = FCOIS.checkVars
 local allowedCheckHandlers = checkVars.checkHandlers
 
+local universalDeconFilterPanelIdToWhereAreWe = FCOIS.mappingVars.universalDeconFilterPanelIdToWhereAreWe
+
 local getSavedVarsMarkedItemsTableName = FCOIS.GetSavedVarsMarkedItemsTableName
 local signItemId = FCOIS.SignItemId
 local myGetItemInstanceIdNoControl = FCOIS.MyGetItemInstanceIdNoControl
@@ -23,6 +25,9 @@ local checkIfDeconstructionNPC
 local isResearchListDialogShown = FCOIS.IsResearchListDialogShown
 local isRetraitStationShown = FCOIS.IsRetraitStationShown
 local isItemAGlpyh = FCOIS.IsItemAGlpyh
+
+local checkIfUniversaldDeconstructionNPC
+local checkActivePanel
 
 --===================================================================================
 --	FCOIS Anti - *  - Methods to check if item is protected, or allowed to be ...
@@ -867,7 +872,8 @@ function FCOIS.DeconstructionSelectionHandler(bag, slot, echo, overrideChatOutpu
     --Is the panelId given? If not determine it
     local inventoryVar
     if panelId == nil then
-        inventoryVar, panelId = FCOIS.CheckActivePanel(nil, false)
+        checkActivePanel = checkActivePanel or FCOIS.CheckActivePanel
+        inventoryVar, panelId = checkActivePanel(nil, false)
     end
     -- If anti-(jewelry) deconstruction is globally active
     local isBlocked = deconPanelToBlockSettings[panelId] or false
@@ -1026,36 +1032,15 @@ function craftPrev.GetCraftingSlotControl(libFiltersPanelId)
     --Crafting station shown?
     if isValidPanelShown then
         libFiltersPanelId = libFiltersPanelId or FCOIS.gFilterWhere
-        --[[
-            --Refinement
-            if FCOIS.gFilterWhere == LF_SMITHING_REFINE or FCOIS.gFilterWhere == LF_JEWELRY_REFINE then
-                craftingStationSlot = ctrlVars.SMITHING.refinementPanel.extractionSlot
-
-            --Deconstruction
-            elseif FCOIS.gFilterWhere == LF_SMITHING_DECONSTRUCT or FCOIS.gFilterWhere == LF_JEWELRY_DECONSTRUCT then
-                craftingStationSlot = ctrlVars.SMITHING.deconstructionPanel.extractionSlot
-
-            --Improvement
-            elseif FCOIS.gFilterWhere == LF_SMITHING_IMPROVEMENT or FCOIS.gFilterWhere == LF_JEWELRY_IMPROVEMENT then
-                craftingStationSlot = ctrlVars.SMITHING.improvementPanel.improvementSlot
-
-            --Enchanting creation
-            elseif FCOIS.gFilterWhere == LF_ENCHANTING_CREATION then
-                craftingStationSlots = ctrlVars.ENCHANTING.runeSlots
-
-            --Enchanting extraction
-            elseif FCOIS.gFilterWhere == LF_ENCHANTING_EXTRACTION then
-                craftingStationSlot = ctrlVars.ENCHANTING.extractionSlot
-            end
-        ]]
-        --[[
-            --Retrait station shown?
-            elseif isRetraitShown then
-                craftingStationSlot = ctrlVars.RETRAIT_RETRAIT_PANEL.retraitSlot
-            end
-        ]]
+        checkIfUniversaldDeconstructionNPC = checkIfUniversaldDeconstructionNPC or FCOIS.CheckIfUniversalDeconstructionNPC
+        local isUniversalDeconNPC = checkIfUniversaldDeconstructionNPC(libFiltersPanelId)
+        local craftingPanelSlots
 --d(">searching crafting slot now for panelId: " ..tostring(libFiltersPanelId))
-        local craftingPanelSlots = FCOIS.mappingVars.libFiltersPanelIdToCraftingPanelSlot
+        if not isUniversalDeconNPC then
+            craftingPanelSlots = FCOIS.mappingVars.libFiltersPanelIdToCraftingPanelSlot
+        else
+            craftingPanelSlots = FCOIS.mappingVars.libFiltersPanelIdToUniversalCraftingPanelSlot
+        end
         craftingStationSlot = craftingPanelSlots[libFiltersPanelId]
     end
     return craftingStationSlot
@@ -1076,12 +1061,13 @@ function craftPrev.GetSlottedItemBagAndSlot()
     --local craftingStationSlots
     --Crafting station shown?
     if isValidPanelShown then
-        craftingStationSlot = getCraftingSlotControl(FCOIS.gFilterWhere)
+        local currentFilterPanelId = FCOIS.gFilterWhere
+        craftingStationSlot = getCraftingSlotControl(currentFilterPanelId)
         --Is the crafting slot found, get the bagId and slotIndex of the slotted item now
         if craftingStationSlot ~= nil then
 --d(">found slot")
             --Enchanting creation got 3 slots, not only 1
-            if FCOIS.gFilterWhere == LF_ENCHANTING_CREATION then
+            if currentFilterPanelId == LF_ENCHANTING_CREATION then
                 if craftingStationSlot and type(craftingStationSlot) == "table" then
                     slottedItems = {}
                     for _, craftingStationSlotData in ipairs(craftingStationSlot) do
@@ -1106,8 +1092,12 @@ end
 local getSlottedItemBagAndSlot = craftPrev.GetSlottedItemBagAndSlot
 
 function craftPrev.GetExtractionSlotAndWhereAreWe()
+    checkIfUniversaldDeconstructionNPC = checkIfUniversaldDeconstructionNPC or FCOIS.CheckIfUniversalDeconstructionNPC
     local currentFilterId = FCOIS.gFilterWhere
-    if isShowingEnchantmentExtraction() or currentFilterId == LF_ENCHANTING_EXTRACTION then
+    if checkIfUniversaldDeconstructionNPC(currentFilterId) then
+        local whereAreWeAtUniversalDecon = universalDeconFilterPanelIdToWhereAreWe[currentFilterId]
+        return ctrlVars.UNIVERSAL_DECONSTRUCTION_SLOT, whereAreWeAtUniversalDecon, ctrlVars.UNIVERSAL_DECONSTRUCTION_GLOBAL
+    elseif isShowingEnchantmentExtraction() or currentFilterId == LF_ENCHANTING_EXTRACTION then
         return ctrlVars.ENCHANTING_EXTRACTION_SLOT, FCOIS_CON_ENCHANT_EXTRACT, ctrlVars.ENCHANTING
     elseif isShowingEnchantmentCreation() or currentFilterId == LF_ENCHANTING_CREATION then
         return ctrlVars.ENCHANTING_RUNE_CONTAINER, FCOIS_CON_ENCHANT_CREATE, ctrlVars.ENCHANTING -- Is the parent control for potency, essence and aspect rune slots!
@@ -1133,28 +1123,6 @@ function craftPrev.RemoveItemFromCraftSlot(bagId, slotIndex, isSlotted)
     --The global crafting stations variable
     local craftingSlotVar
     local craftingStationVar
-    --Are we at an enchanting station?
-    --[[
-    if craftPrev.IsShowingEnchantmentExtraction() then
-        craftingStationVar = ctrlVars.ENCHANTING
-        whereAreWe = FCOIS_CON_ENCHANT_EXTRACT
-    elseif craftPrev.IsShowingEnchantmentCreation() then
-        craftingStationVar = ctrlVars.ENCHANTING
-        whereAreWe = FCOIS_CON_ENCHANT_CREATE
-    elseif craftPrev.IsShowingDeconstruction() then
-        craftingStationVar = ctrlVars.SMITHING
-        whereAreWe = FCOIS_CON_DECONSTRUCT
-    elseif craftPrev.IsShowingImprovement() then
-        craftingStationVar = ctrlVars.SMITHING
-        whereAreWe = FCOIS_CON_IMPROVE
-    elseif craftPrev.IsShowingRefinement() then
-        craftingStationVar = ctrlVars.SMITHING
-        whereAreWe = FCOIS_CON_REFINE
-    elseif craftPrev.IsShowingAlchemy() then
-        craftingStationVar = ctrlVars.ALCHEMY
-        whereAreWe = FCOIS_CON_ALCHEMY_DESTROY
-    end
-    ]]
     craftingSlotVar, whereAreWe, craftingStationVar = getExtractionSlotAndWhereAreWe()
     if craftingStationVar == nil then return false end
     --Check if the item is slotted at the crafting station

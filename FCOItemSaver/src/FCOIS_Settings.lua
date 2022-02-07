@@ -43,7 +43,11 @@ local getCharactersOfAccount = FCOIS.GetCharactersOfAccount
 local getCharacterName = FCOIS.GetCharacterName
 local showConfirmationDialog = FCOIS.ShowConfirmationDialog
 
+local showContextMenuForAddInvButtons
+local onContextMenuForAddInvButtonsButtonMouseUp
+
 local onlyCallOnceInTime = FCOIS.OnlyCallOnceInTime
+local isItemProtectedAtASlotNow
 
 --==========================================================================================================================================
 -- 										FCOIS settings & saved variables functions
@@ -203,7 +207,7 @@ function FCOIS.SetSettingsIsFilterOn(p_filterId, p_value, p_filterPanel)
 end
 
 -- Check the settings for the panels and return if they are enabled or disabled (e.g. the filter buttons [filters])
--- If 2nd param onlyAnti == true: p_filterWhere will be used, and updated with teh current filterPanelId, if it was nil
+-- If 2nd param onlyAnti == true: p_filterWhere will be used, and updated with the current filterPanelId, if it was nil
 function FCOIS.GetFilterWhereBySettings(p_filterWhere, onlyAnti)
     p_filterWhere = p_filterWhere or FCOIS.gFilterWhere
     onlyAnti = onlyAnti or false
@@ -225,8 +229,9 @@ end
 function FCOIS.ChangeAntiSettingsAccordingToFilterPanel()
     local filterPanelId = FCOIS.gFilterWhere
     if filterPanelId == nil then return nil end
+    isItemProtectedAtASlotNow = isItemProtectedAtASlotNow or FCOIS.IsItemProtectedAtASlotNow
     local parentPanel = FCOIS.gFilterWhereParent
---d("[FCOIS.changeAntiSettingsAccordingToFilterPanel - FilterPanel: " .. filterPanelId .. ", FilterPanelParent: " .. tos(parentPanel))
+d("[FCOIS.changeAntiSettingsAccordingToFilterPanel - FilterPanel: " .. filterPanelId .. ", FilterPanelParent: " .. tos(parentPanel))
 
     local currentSettings = FCOIS.settingsVars.settings
     local filterPanelIdToBlockSettingName = FCOIS.mappingVars.filterPanelIdToBlockSettingName
@@ -268,11 +273,11 @@ function FCOIS.ChangeAntiSettingsAccordingToFilterPanel()
     isSettingEnabled = not currentSettings[settingNameToChange]
     FCOIS.settingsVars.settings[settingNameToChange] = isSettingEnabled
     --------------------------------------------------------------------------------------------------------------------
---d(">settingNameToChange: " .. tos(settingNameToChange) .. ", isSettingEnabled: " ..tos(isSettingEnabled))
-    --Check if the settings are enabled now and if any item is slotted in the deconstruction/improvement/extraction/refine slot
+d(">settingNameToChange: " .. tos(settingNameToChange) .. ", isSettingEnabled: " ..tos(isSettingEnabled))
+    --Check if the settings are enabled now and if any item is slotted in the deconstruction/improvement/extraction/refine/retrait slot
     --> Then remove the item from the slot again if it's protected again now
     if isSettingEnabled then
-        FCOIS.IsItemProtectedAtASlotNow(nil, nil, false, true)
+        isItemProtectedAtASlotNow(nil, nil, false, true)
     end
     return isSettingEnabled
 end
@@ -784,6 +789,9 @@ end
 
 --Do some "after settings" stuff
 function FCOIS.AfterSettings()
+    showContextMenuForAddInvButtons = showContextMenuForAddInvButtons or FCOIS.ShowContextMenuForAddInvButtons
+    onContextMenuForAddInvButtonsButtonMouseUp = onContextMenuForAddInvButtonsButtonMouseUp or FCOIS.OnContextMenuForAddInvButtonsButtonMouseUp
+
     local settings = FCOIS.settingsVars.settings
     local numLibFiltersFilterPanelIds = FCOIS.numVars.gFCONumFilterInventoryTypes
     local numFilterIcons = FCOIS.numVars.gFCONumFilterIcons
@@ -922,17 +930,25 @@ function FCOIS.AfterSettings()
     FCOIS.settingsVars.settings.FCOISAdditionalInventoriesButtonOffset["left"] = nil --remove wrong added values
     FCOIS.settingsVars.settings.FCOISAdditionalInventoriesButtonOffset["top"] = nil --remove wrong added values
     --Loop over the anchorVars and get each panel of the additional inv buttons (e.g. LF_INVENTORY, LF_BANK_WITHDRAW, ...)
+    local function fixAnchorVarsLeftAndTopOffsets(p_addInvButtonOffsetsForPanel, p_panelId)
+        if p_addInvButtonOffsetsForPanel["left"] == "" or type(p_addInvButtonOffsetsForPanel["left"]) == "string" or tonumber(p_addInvButtonOffsetsForPanel["left"]) == nil then
+            FCOIS.settingsVars.settings.FCOISAdditionalInventoriesButtonOffset[p_panelId]["left"] = 0
+        end
+        if p_addInvButtonOffsetsForPanel["top"] or type(p_addInvButtonOffsetsForPanel["top"]) == "string" or tonumber(p_addInvButtonOffsetsForPanel["top"]) == nil then
+            FCOIS.settingsVars.settings.FCOISAdditionalInventoriesButtonOffset[p_panelId]["top"] = 0
+        end
+    end
     if anchorVarsAddInvButtons then
         for panelId, _ in pairs(anchorVarsAddInvButtons) do
             local addInvButtonOffsetsForPanel = addInvButtonOffsets[panelId]
             if addInvButtonOffsetsForPanel then
-                if addInvButtonOffsetsForPanel["left"] == "" or type(addInvButtonOffsetsForPanel["left"]) == "string" or tonumber(addInvButtonOffsetsForPanel["left"]) == nil then
-                    FCOIS.settingsVars.settings.FCOISAdditionalInventoriesButtonOffset[panelId]["left"] = 0
-                end
-                if addInvButtonOffsetsForPanel["top"] or type(addInvButtonOffsetsForPanel["top"]) == "string" or tonumber(addInvButtonOffsetsForPanel["top"]) == nil then
-                    FCOIS.settingsVars.settings.FCOISAdditionalInventoriesButtonOffset[panelId]["top"] = 0
-                end
+                fixAnchorVarsLeftAndTopOffsets(addInvButtonOffsetsForPanel, panelId)
             end
+        end
+        --1 extra call to LF_ENCHANTING_EXTRACTION as it is not added to FCOIS.anchorVars.additionalInventoryFlagButton[apiVersion], because it re-usess LF_ENCHANTING_CREATION
+        local addInvButtonOffsetsForPanel = addInvButtonOffsets[LF_ENCHANTING_EXTRACTION]
+        if addInvButtonOffsetsForPanel then
+            fixAnchorVarsLeftAndTopOffsets(addInvButtonOffsetsForPanel, LF_ENCHANTING_EXTRACTION)
         end
     end
 
@@ -972,8 +988,8 @@ function FCOIS.AfterSettings()
     local ancVars = FCOIS.anchorVars
     local locVars = FCOIS.localizationVars.fcois_loc
     --Non changing values
-    local showAddInvContextMenuFunc = FCOIS.ShowContextMenuForAddInvButtons
-    local showAddInvContextMenuMouseUpFunc = FCOIS.onContextMenuForAddInvButtonsButtonMouseUp
+    local showAddInvContextMenuFunc = showContextMenuForAddInvButtons
+    local showAddInvContextMenuMouseUpFunc = onContextMenuForAddInvButtonsButtonMouseUp
     --The "flag" textures
     local invAddButtonVars = FCOIS.invAdditionalButtonVars
     local texNormal = invAddButtonVars.texNormal

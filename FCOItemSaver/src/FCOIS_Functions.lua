@@ -37,6 +37,7 @@ local getGearIcons
 
 local createFCOISUniqueIdString
 local signItemId
+local checkActivePanel
 
 local isMarked
 local isMarkedByItemInstanceId
@@ -3036,9 +3037,10 @@ function FCOIS.GetFilterPanelIdByBagId(bagId)
     if IsHouseBankBag(bagId) then bagId = BAG_HOUSE_BANK_ONE end
     local filterPanelId = bagIdToFilterPanelId[bagId]
     if filterPanelId == nil then
+        checkActivePanel = checkActivePanel or FCOIS.CheckActivePanel
         ---> Special filterPanelId checks via the currently opened panel controls e.g.
         local comingFrom = FCOIS.gFilterWhere
-        local _, filterPanelIdNew = FCOIS.CheckActivePanel(comingFrom, false)
+        local _, filterPanelIdNew = checkActivePanel(comingFrom, false)
         filterPanelId = filterPanelIdNew
     end
 --d("<filterPanelId: " ..tos(filterPanelId))
