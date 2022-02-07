@@ -175,6 +175,8 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 --#176 -> Test: Errors occured with OR filters, and mixed AND + OR filters
 --#201 -> Find reason
 --#202 --> Filter buttons show/hide and anchor to universal deconstruction/re anchor to default parents at smithing decon and enchanting extract needs to be added + TESTs
+-->OnMouseEnter at the universal deconstruction list row sets FCOIS.gFilterWhere to 1?
+-->FilterButtons do not work at universal deconstruction - LibFilters update?
 --> Filter buttons are white? Textures are missing as the controls are re-parent to e.g. ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventory and the controlName is
 --> ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventory_FilterButton1 to 4 then
 --> SHIFT+right click does not work
