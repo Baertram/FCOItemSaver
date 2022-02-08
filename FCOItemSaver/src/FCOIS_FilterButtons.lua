@@ -142,7 +142,7 @@ local function outputFilterState(p_outputToChat, p_panelId, p_filterId, p_stateT
         end
     end
 
-d("<<p_panelId/gFilterWhere: " ..tos(p_panelId) .. "/" .. tos(FCOIS.gFilterWhere))
+--d("<<p_panelId/gFilterWhere: " ..tos(p_panelId) .. "/" .. tos(FCOIS.gFilterWhere))
 
     --Output to chat or return text only?
     if p_outputToChat == true then
