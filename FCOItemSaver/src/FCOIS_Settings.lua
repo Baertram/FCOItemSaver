@@ -20,6 +20,9 @@ local currentCharId       = GetCurrentCharacterId()
 local addonVars         = FCOIS.addonVars
 local addonSVname       = addonVars.savedVarName
 local addonSVversion    = addonVars.savedVarVersion
+local checkVars = FCOIS.checkVars
+local checksToDo = checkVars.autoReenableAntiSettingsCheckWheres
+local checksAll = checkVars.autoReenableAntiSettingsCheckWheresAll
 
 --The allAccounts the same account name
 local svDefaultName         = FCOIS.svDefaultName
@@ -48,6 +51,7 @@ local onContextMenuForAddInvButtonsButtonMouseUp
 
 local onlyCallOnceInTime = FCOIS.OnlyCallOnceInTime
 local isItemProtectedAtASlotNow
+local autoReenableAntiSettingsCheck
 
 --==========================================================================================================================================
 -- 										FCOIS settings & saved variables functions
@@ -231,7 +235,7 @@ function FCOIS.ChangeAntiSettingsAccordingToFilterPanel()
     if filterPanelId == nil then return nil end
     isItemProtectedAtASlotNow = isItemProtectedAtASlotNow or FCOIS.IsItemProtectedAtASlotNow
     local parentPanel = FCOIS.gFilterWhereParent
-d("[FCOIS.changeAntiSettingsAccordingToFilterPanel - FilterPanel: " .. filterPanelId .. ", FilterPanelParent: " .. tos(parentPanel))
+--d("[FCOIS.changeAntiSettingsAccordingToFilterPanel - FilterPanel: " .. filterPanelId .. ", FilterPanelParent: " .. tos(parentPanel))
 
     local currentSettings = FCOIS.settingsVars.settings
     local filterPanelIdToBlockSettingName = FCOIS.mappingVars.filterPanelIdToBlockSettingName
@@ -241,7 +245,7 @@ d("[FCOIS.changeAntiSettingsAccordingToFilterPanel - FilterPanel: " .. filterPan
     --The anti-destroy settings will be always checked as there are panels like LF_GUILDBANK_DEPOSIT which use the anti-destroy
     --AND anti guild bank deposit if no rights to withdraw again settings.
     --The filterPanelIds which need to be checked for anti-destroy
-    local filterPanelIdsCheckForAntiDestroy = FCOIS.checkVars.filterPanelIdsForAntiDestroy
+    local filterPanelIdsCheckForAntiDestroy = checkVars.filterPanelIdsForAntiDestroy
     --Get the current FCOIS.settingsVars.settings state and inverse them
     --1st check if anti-destroy is given
     local isFilterPanelIdCheckForAntiDestroyNeeded = filterPanelIdsCheckForAntiDestroy[filterPanelId] or false
@@ -273,7 +277,7 @@ d("[FCOIS.changeAntiSettingsAccordingToFilterPanel - FilterPanel: " .. filterPan
     isSettingEnabled = not currentSettings[settingNameToChange]
     FCOIS.settingsVars.settings[settingNameToChange] = isSettingEnabled
     --------------------------------------------------------------------------------------------------------------------
-d(">settingNameToChange: " .. tos(settingNameToChange) .. ", isSettingEnabled: " ..tos(isSettingEnabled))
+--d(">settingNameToChange: " .. tos(settingNameToChange) .. ", isSettingEnabled: " ..tos(isSettingEnabled))
     --Check if the settings are enabled now and if any item is slotted in the deconstruction/improvement/extraction/refine/retrait slot
     --> Then remove the item from the slot again if it's protected again now
     if isSettingEnabled then
@@ -286,14 +290,13 @@ end
 local function doAutoReenableAntiSettingsCheck(checkWhere)
 --d("[FCOIS]Only called once doAutoReenableAntiSettingsCheck-checkWhere: " ..tos(checkWhere))
     if checkWhere == nil or checkWhere == "" then return false end
-    local checksToDo = FCOIS.checkVars.autoReenableAntiSettingsCheckWheres
-    local checksAll = FCOIS.checkVars.autoReenableAntiSettingsCheckWheresAll
     --Should all checks be done now?
     if checkWhere == checksAll then
+        autoReenableAntiSettingsCheck = autoReenableAntiSettingsCheck or FCOIS.AutoReenableAntiSettingsCheck
         --Get the checks to do and run them all after each other
         for _, checkWhereNow in ipairs(checksToDo) do
             if checkWhereNow ~= checksAll then
-                FCOIS.AutoReenableAntiSettingsCheck(checkWhereNow)
+                autoReenableAntiSettingsCheck(checkWhereNow)
             end
         end
         return true
@@ -415,6 +418,7 @@ end
 
 --Function to reenable the Anti-* settings again at a given check panel automatically (if the panel closes e.g.)
 function FCOIS.AutoReenableAntiSettingsCheck(checkWhere)
+    autoReenableAntiSettingsCheck = autoReenableAntiSettingsCheck or FCOIS.AutoReenableAntiSettingsCheck
     --d("[FCOIS.AutoReenableAntiSettingsCheck - checkWhere: " .. tos(checkWhere) .. ", filterPanel: " .. tos(FCOIS.gFilterWhere) .. ", lootListIsHidden: " .. tos(ZO_LootAlphaContainerList:IsHidden()) .. ", dontAutoReenableAntiSettings: " .. tos(FCOIS.preventerVars.dontAutoReenableAntiSettingsInInventory))
 
     --If mail send panel was opened the call order will be:
@@ -439,7 +443,7 @@ function FCOIS.AutoReenableAntiSettingsCheck(checkWhere)
     --Only call once for the same checkWere (e.g. DESTROY) and ButtonName and FilterPanel within 50ms
     onlyCallOnceInTime("FCOIS_AutoReenableAntiSettingsCheck_" .. tos(checkWhere) .. "_" .. tos(filterPanelId) .. "_" .. tos(currentPanelsFlagButton), 50, doAutoReenableAntiSettingsCheck, checkWhere)
 end
-local autoReenableAntiSettingsCheck = FCOIS.AutoReenableAntiSettingsCheck
+autoReenableAntiSettingsCheck = FCOIS.AutoReenableAntiSettingsCheck
 
 --Function to reset the ANTI settings for the normal inventory
 function FCOIS.ResetInventoryAntiSettings(currentSceneState)
@@ -1037,7 +1041,7 @@ function FCOIS.AfterSettings()
     --Transfer old settings of filter button offsets, width and height to the new settings structure
     -->See file src/FCOIS_FilterButtons.lua, function FCOIS.CheckAndTransferFilterButtonDataByPanelId(libFiltersPanelId, filterButtonNr)
     local checkAndTransferFCOISFilterButtonDataByPanelId = FCOIS.CheckAndTransferFCOISFilterButtonDataByPanelId
-    local filterButtonsToCheck = FCOIS.checkVars.filterButtonsToCheck
+    local filterButtonsToCheck = checkVars.filterButtonsToCheck
     if filterButtonsToCheck ~= nil then
         for _, filterButtonNr in ipairs(filterButtonsToCheck) do
             for libFiltersPanelId = 1, numLibFiltersFilterPanelIds, 1 do

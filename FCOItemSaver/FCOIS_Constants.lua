@@ -2602,7 +2602,7 @@ checkVars.autoReenableAntiSettingsCheckWheres = {
 }
 --The entry for "all" the antisettings reenable panel checks above
 checkVars.autoReenableAntiSettingsCheckWheresAll = "-ALL-"
---The filter panelÍds which need to be checked if anti-destroy is checked
+--The filter panelIds which need to be checked if anti-destroy is checked
 checkVars.filterPanelIdsForAntiDestroy = {
     [LF_INVENTORY]              = true,
     [LF_BANK_WITHDRAW]          = true,
