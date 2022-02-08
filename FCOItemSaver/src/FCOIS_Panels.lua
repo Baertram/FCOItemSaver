@@ -148,7 +148,7 @@ local checkIfUniversaldDeconstructionNPC = FCOIS.CheckIfUniversalDeconstructionN
 
 function FCOIS.GetCurrentFilterPanelIdAtDeconNPC(filterPanelIdPassedIn)
     local filterPanelIdDetected = filterPanelIdPassedIn
-d("[FCOIS]GetCurrentFilterPanelIdAtDeconNPC - filterPanel: " ..tos(filterPanelIdPassedIn))
+--d("[FCOIS]GetCurrentFilterPanelIdAtDeconNPC - filterPanel: " ..tos(filterPanelIdPassedIn))
     local isDeconstuctionNPC = checkIfUniversaldDeconstructionNPC(filterPanelIdPassedIn)
 --d(">isDeconstuctionNPC: " ..tos(isDeconstuctionNPC))
     if not isDeconstuctionNPC then return filterPanelIdPassedIn end
@@ -163,7 +163,7 @@ d("[FCOIS]GetCurrentFilterPanelIdAtDeconNPC - filterPanel: " ..tos(filterPanelId
 --d(">>button text: " ..tos(activeTabText))
         if activeTabText and activeTabText ~= nil then
             filterPanelIdDetected = panelIdByDeconNPCMenuBarTabButtonName[activeTabText]
-d(">>>filterPanelIdDetected: " ..tos(filterPanelIdDetected))
+--d(">>>filterPanelIdDetected: " ..tos(filterPanelIdDetected))
             filterPanelIdDetected = filterPanelIdDetected or filterPanelIdPassedIn
             universalDeconGlobal.FCOIScurrentFilterPanelId = filterPanelIdDetected
         end
