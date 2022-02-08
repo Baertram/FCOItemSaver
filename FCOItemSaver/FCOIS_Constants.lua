@@ -87,6 +87,10 @@ FCOIS.svServerAllTheSameName        = "$AllServers"
 FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES  = "FCOISuniqueIdItemTypes"
 FCOIS_CON_LIBSHIFTERBOX_EXCLUDESETS             = "FCOISexcludedSets"
 
+--The vendor type constants
+FCOIS_CON_VENDOR_TYPE_NORMAL_NPC    = 1
+FCOIS_CON_VENDOR_TYPE_PORTABLE      = 2
+
 --The global variable for the current mouseDown button
 FCOIS.gMouseButtonDown = {}
 
@@ -440,7 +444,7 @@ checkVars.inventoryRowPatterns = {
     "^ZO_ListDialog1List%dRow%d%d*",                                        --List dialog (Repair, Recharge, Enchant, Research)
     "^ZO_CompanionEquipment_Panel_.+List%dRow%d%d*",                        --Companion Inventory backpack
     "^ZO_CompanionCharacterWindow_.+_TopLevelEquipmentSlots.+$",            --Companion character
-    "^ZO_UniversalDeconstructionTopLevel_%aPanelInventoryBackpack%dRow%d%d",-- #202 Universal deconstruction
+    "^ZO_UniversalDeconstructionTopLevel_%a+PanelInventoryBackpack%dRow%d%d*",-- #202 Universal deconstruction
 --Other adons like IIfA will be added dynamically at EVENT_ON_ADDON_LOADED callback function
 --See file src/FCOIS_Events.lua, call to function FCOIS.checkIfOtherAddonActive() -> See file
 -- src/FCOIS_OtherAddons.lua, function FCOIS.checkIfOtherAddonActive()
@@ -829,6 +833,18 @@ mappingVars.panelIdToDeconstructable = {
 }
 
 --#202 -v-
+local function getDataFromUniversalDeconstructionMenuBar(key)
+    local barToSearch = ZO_UNIVERSAL_DECONSTRUCTION_FILTER_TYPES
+    if barToSearch then
+        for _, v in ipairs(barToSearch) do
+            if v.key and v.key == key then
+                return v
+            end
+        end
+    end
+    return
+end
+FCOIS.GetDataFromUniversalDeconstructionMenuBar = getDataFromUniversalDeconstructionMenuBar
 if ZO_UNIVERSAL_DECONSTRUCTION_FILTER_TYPES ~= nil then
     --The LibFilters filterTypes which are supported at the universal deconstruction NPC e.g. 'Giladil'
     mappingVars.panelIdSupportedAtUniversalDeconstructionNPC = {
@@ -842,24 +858,14 @@ if ZO_UNIVERSAL_DECONSTRUCTION_FILTER_TYPES ~= nil then
         [LF_ENCHANTING_EXTRACTION]  = FCOIS_CON_ENCHANT_EXTRACT,
     }
 
-    local function getStringFromUniversalDeconstructionMenuBar(key)
-        local barToSearch = ZO_UNIVERSAL_DECONSTRUCTION_FILTER_TYPES
-        if barToSearch then
-            for _, v in ipairs(barToSearch) do
-                if v.key and v.key == key then
-                    return v.displayName
-                end
-            end
-        end
-        return
-    end
+
     --The NPC decon menuBars tab's buttons -> filterPanelId
     mappingVars.panelIdByUniversalDeconstructionNPCMenuBarTabButtonName = {
-        [getStringFromUniversalDeconstructionMenuBar("enchantments")]   = LF_ENCHANTING_EXTRACTION, --Glyphs
-        [getStringFromUniversalDeconstructionMenuBar("jewelry")]        = LF_JEWELRY_DECONSTRUCT,   --Jewelry
-        [getStringFromUniversalDeconstructionMenuBar("armor")]          = LF_SMITHING_DECONSTRUCT,  --Armor
-        [getStringFromUniversalDeconstructionMenuBar("weapons")]        = LF_SMITHING_DECONSTRUCT,  --Weapons
-        [getStringFromUniversalDeconstructionMenuBar("all")]            = LF_SMITHING_DECONSTRUCT,  --All -> Not sure if deconstruction is the correct here? But use it for now
+        [getDataFromUniversalDeconstructionMenuBar("enchantments").displayName]   = LF_ENCHANTING_EXTRACTION, --Glyphs
+        [getDataFromUniversalDeconstructionMenuBar("jewelry").displayName]        = LF_JEWELRY_DECONSTRUCT,   --Jewelry
+        [getDataFromUniversalDeconstructionMenuBar("armor").displayName]          = LF_SMITHING_DECONSTRUCT,  --Armor
+        [getDataFromUniversalDeconstructionMenuBar("weapons").displayName]        = LF_SMITHING_DECONSTRUCT,  --Weapons
+        [getDataFromUniversalDeconstructionMenuBar("all").displayName]            = LF_SMITHING_DECONSTRUCT,  --All -> Not sure if deconstruction is the correct here? But use it for now
     }
 end
 
@@ -1322,16 +1328,8 @@ ctrlVars.VENDOR_MENUBAR_BUTTON_SELL      = GetControl(ctrlVars.STORE, strformat(
 ctrlVars.VENDOR_MENUBAR_BUTTON_BUYBACK   = GetControl(ctrlVars.STORE, strformat(menuBarButtonStr, "3")) -- ZO_StoreWindowMenuBarButton3
 ctrlVars.VENDOR_MENUBAR_BUTTON_REPAIR    = GetControl(ctrlVars.STORE, strformat(menuBarButtonStr, "4")) -- ZO_StoreWindowMenuBarButton4
 ctrlVars.vendorPanelMainMenuButtonControlSets = {
-    ["Normal"] = {
-        [1] = ctrlVars.VENDOR_MENUBAR_BUTTON_BUY,
-        [2] = ctrlVars.VENDOR_MENUBAR_BUTTON_SELL,
-        [3] = ctrlVars.VENDOR_MENUBAR_BUTTON_BUYBACK,
-        [4] = ctrlVars.VENDOR_MENUBAR_BUTTON_REPAIR,
-    },
-    ["Nuzhimeh"] = {
-        [1] = ctrlVars.VENDOR_MENUBAR_BUTTON_SELL,
-        [2] = ctrlVars.VENDOR_MENUBAR_BUTTON_BUYBACK,
-    },
+    [FCOIS_CON_VENDOR_TYPE_NORMAL_NPC]  = {}, --4 buttons by default
+    [FCOIS_CON_VENDOR_TYPE_PORTABLE]    = {}, --2 buttons by default
 }
 ctrlVars.STORE_BUY_BACK              = ZO_BuyBack
 ctrlVars.STORE_BUY_BACK_NAME         = ctrlVars.STORE_BUY_BACK:GetName()
@@ -3278,6 +3276,15 @@ mappingVars.filterPanelGotSpecialSettingsEntryInContextMenu = {
 --The maping table for the text at the context menu that the special anti-settings should show there
 mappingVars.contextMenuSpecialAntiButtonsAtPanel = {
     [LF_GUILDBANK_DEPOSIT] = buttonContextMenuToggleAntiPrefix .."guild_bank_deposit_without_withdraw_rights_",
+}
+
+
+--The mapping table of the automatic DeMark icon to it's settings variable
+-->Checked in /src/FCOIS_Functions.lua, function FCOIS.CheckIfItemShouldBeDemarked(iconId)
+mappingVars.automaticDeMarkSettings = {
+    [FCOIS_CON_ICON_SELL] =                 "autoDeMarkSell",
+    [FCOIS_CON_ICON_SELL_AT_GUILDSTORE] =   "autoDeMarkSellInGuildStore",
+    [FCOIS_CON_ICON_DECONSTRUCTION] =       "autoDeMarkDeconstruct",
 }
 
 --Mapping for the Transmuation Geode container ItemIds (and flavor text)

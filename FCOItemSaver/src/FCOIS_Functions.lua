@@ -9,10 +9,65 @@ if not FCOIS.libsLoadedProperly then return end
 
 local debugMessage = FCOIS.debugMessage
 
+--local lua
+local tos = tostring
+local ton = tonumber
+local strformat = string.format
+local strmatch = string.match
+local tins = table.insert
+local trem = table.remove
+local tsort = table.sort
+
 local em = EVENT_MANAGER
 local wm = WINDOW_MANAGER
 
-local gil = GetItemLink 
+--Local ZOs API
+local gccharid = GetCurrentCharacterId
+local zo_strf = zo_strformat
+local zostrspl = zo_strsplit
+local zocstrfor = ZO_CachedStrFormat
+local hashstr = HashString
+local zogsid64 = zo_getSafeId64Key
+
+local giid = GetItemId
+local giiid = GetItemInstanceId
+local giuid = GetItemUniqueId
+local gin = GetItemName
+local git = GetItemType
+local gicn = GetItemCreatorName
+local giac = GetItemActorCategory
+local gitrait = GetItemTrait
+
+local gil = GetItemLink
+local giliid = GetItemLinkItemId
+local gilit = GetItemLinkItemType
+local gilrl = GetItemLinkRequiredLevel
+local gilrcp = GetItemLinkRequiredChampionPoints
+local gilti = GetItemLinkTraitInfo
+local gilfq = GetItemLinkFunctionalQuality
+local gilis = GetItemLinkItemStyle
+local gilaeid = GetItemLinkAppliedEnchantId
+local gilac = GetItemLinkActorCategory
+local gilsetinf = GetItemLinkSetInfo
+local gilbt = GetItemLinkBindType
+local gilna = GetItemLinkName
+local gilrril = GetItemLinkRecipeResultItemLink
+local gilccid = GetItemLinkContainerCollectibleId
+local giltinf = GetItemTraitInformationFromItemLink
+local gilinf = GetItemLinkInfo
+
+local gsgiinf = GetSoulGemItemInfo
+
+local getUnitLvl = GetUnitLevel
+local canStoreRepairFunc = CanStoreRepair
+local isStoreEmptyFunc = IsStoreEmpty
+
+local isilcr = IsItemLinkCrafted
+local isilst = IsItemLinkStolen
+local isilfcs = IsItemLinkFromCrownStore
+local isilfcc = IsItemLinkFromCrownCrate
+local isilbo = IsItemLinkBound
+local iscvfplayer = IsCollectibleValidForPlayer
 
 local addonVars = FCOIS.addonVars
 local gAddonName = addonVars.gAddonName
@@ -20,17 +75,19 @@ local ctrlVars = FCOIS.ZOControlVars
 local playerInvInvs = ctrlVars.playerInventoryInvs
 local mappingVars = FCOIS.mappingVars
 local bag2PlayerInv = mappingVars.bagToPlayerInv
+local libFiltersPanelIdToInventory = mappingVars.libFiltersPanelIdToInventory
 
 local checkVars = FCOIS.checkVars
-local allowedUniqueItemTypes = checkVars.uniqueIdItemTypes
 local allowedSetItemTypes = checkVars.setItemTypes
 
-local tos = tostring
-local strformat = string.format
-local strmatch = string.match
-local zo_strf = zo_strformat
+local uniqueItemIdStringTemplate = "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s" -- itemInstanceOrItemId,level,quality,trait,style,enchantment,isStolen,isCrafted,craftedByName,isCrownItem
+local allowedUniqueItemTypes = checkVars.uniqueIdItemTypes
 
 local inventoryRowPatterns = checkVars.inventoryRowPatterns
+local otherAddons = FCOIS.otherAddons
+local IIFAitemsListEntryPrePattern = otherAddons.IIFAitemsListEntryPrePattern
+local IIfAInvRowPatternToCheck = "^" .. IIFAitemsListEntryPrePattern .. "*"
+
 local updateCraftingInventory = FCOIS.UpdateCraftingInventory --maybe nil here, will be updated further down in function FCOIS.CheckIfImprovedItemShouldBeReMarked_AfterImprovement()
 
 local getGearIcons
@@ -38,6 +95,8 @@ local getGearIcons
 local createFCOISUniqueIdString
 local signItemId
 local checkActivePanel
+local checkRepetitivelyIfControlExists
+local isVendorPanelShown
 
 local isMarked
 local isMarkedByItemInstanceId
@@ -176,7 +235,7 @@ end
 
 --Function to get the itemId from an itemLink
 function FCOIS.GetItemIdFromItemLink(itemLink)
-    return GetItemLinkItemId(itemLink)
+    return giliid(itemLink)
 end
 
 --Check if the given addonName had enabled the temporary uniqueId checks
@@ -219,7 +278,7 @@ function FCOIS.MyGetItemNameNoControl(bagId, slotIndex)
     local invSlots = playerInvInvs[playerInvId].slots
     --CraftBag?
     if playerInvId == INVENTORY_CRAFT_BAG then
-        local itemId = GetItemId(bagId, slotIndex)
+        local itemId = giid(bagId, slotIndex)
         itemId = (itemId ~= nil and itemId ~= 0 and itemId) or slotIndex
         itemData = invSlots[BAG_VIRTUAL][itemId] --CraftBag: slotIndex is the itemId of the item, not the inv slotIndex!
     else
@@ -231,11 +290,11 @@ function FCOIS.MyGetItemNameNoControl(bagId, slotIndex)
     return name
 end
 
-function FCOIS.MyGetItemName(rowControl)
+function FCOIS.Mygin(rowControl)
     --Inventory Insight from Ashes support
     local IIfAclicked = FCOIS.IIfAclicked
     if IIfAclicked ~= nil then
-        return GetItemName(IIfAclicked.bagId, IIfAclicked.slotIndex)
+        return gin(IIfAclicked.bagId, IIfAclicked.slotIndex)
     end
 
     if rowControl == nil then return end
@@ -301,7 +360,7 @@ function FCOIS.CheckItemId(itemId, addonName)
     if FCOIS.settingsVars.settings.useUniqueIds or checkIfAddonNameHasTemporarilyEnabledUniqueIds(addonName) == true then
         --Check if the given uniqueID is already transfered to the string, and if not do so
         if type(itemId) ~= "string" then
-            retItemId = zo_getSafeId64Key(itemId)
+            retItemId = zogsid64(itemId)
         end
     end
     --d("FCOIS.checkItemId: " ..tos(retItemId))
@@ -318,7 +377,7 @@ function FCOIS.GetFCOISMarkerIconUniqueIdAllowedItemType(bagId, slotIndex, uniqu
         uniqueItemIdType = settings.uniqueItemIdType
         uniqueItemIdType = uniqueItemIdType or FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE
     end
-    local itemType = GetItemType(bagId, slotIndex)
+    local itemType = git(bagId, slotIndex)
     if uniqueItemIdType == FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE then -- ZOs real unique IDs
         --Only armor and weapons and jewelry count as allowed itemType
         allowedItemtype = allowedUniqueItemTypes[itemType] or false
@@ -351,14 +410,14 @@ function FCOIS.GetFCOISMarkerIconSavedVariablesItemId(bagId, slotIndex, allowedI
         if allowedItemType == true then
             useNormalItemInstanceId = false
             if not uniqueIdsTypeForMarkerIcons or uniqueIdsTypeForMarkerIcons == FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE then -- ZOs real unique IDs
-                itemId = zo_getSafeId64Key(GetItemUniqueId(bagId, slotIndex))
+                itemId = zogsid64(giuid(bagId, slotIndex))
             elseif uniqueIdsTypeForMarkerIcons == FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE then --FCOIS onw build unique IDs
-                itemId = createFCOISUniqueIdString(GetItemId(bagId, slotIndex), bagId, slotIndex, nil)
+                itemId = createFCOISUniqueIdString(giid(bagId, slotIndex), bagId, slotIndex, nil)
             end
         end
     end
     if useNormalItemInstanceId == true then
-        local itemInstanceId = GetItemInstanceId(bagId, slotIndex)
+        local itemInstanceId = giiid(bagId, slotIndex)
         --Sign the itemInstanceId now
         if signToo == true then
             --3rd parameter onlySign == true will force to sign the itemInstanceId without further checks
@@ -494,10 +553,10 @@ local function getItemIdentifierForBackup(bagId, slotIndex)
     local itemLink = gil(bagId, slotIndex)
     if itemLink == nil or itemLink == "" then return nil end
     local itemId
-    if GetItemLinkItemId ~= nil then
-        itemId = tonumber(GetItemLinkItemId(itemLink)) -- Function will be added soon, ZOS_ChipHilseberg added it on 14.02.2018 to the dev system internally
+    if giliid ~= nil then
+        itemId = ton(giliid(itemLink)) -- Function will be added soon, ZOS_ChipHilseberg added it on 14.02.2018 to the dev system internally
     else
-        itemId = tonumber(GetItemId(bagId, slotIndex))
+        itemId = ton(giid(bagId, slotIndex))
     end
     --These itemTypes use different qualities
     local hasDifferentQualities = {
@@ -509,20 +568,20 @@ local function getItemIdentifierForBackup(bagId, slotIndex)
     }
     local settings = FCOIS.settingsVars.settings
     --Get the item type and some info about enchantment and level etc.
-    local itemType = GetItemLinkItemType(itemLink)
+    local itemType = gilit(itemLink)
     if(itemType == ITEMTYPE_WEAPON or itemType == ITEMTYPE_ARMOR) then
-        local level = GetItemLinkRequiredLevel(itemLink)
-        local cp = GetItemLinkRequiredChampionPoints(itemLink)
+        local level = gilrl(itemLink)
+        local cp = gilrcp(itemLink)
         --Is the unique item ID enabled and the item's type is an allowed one(e.g. weapons, armor, ...)
         local allowedItemType = allowedUniqueItemTypes[itemType] or false
         local useUniqueItemIdentifier = (settings.useUniqueIds and allowedItemType) or false
-        local trait = GetItemLinkTraitInfo(itemLink)
-        local quality = GetItemLinkFunctionalQuality(itemLink)
+        local trait = gilti(itemLink)
+        local quality = gilfq(itemLink)
         if useUniqueItemIdentifier then
             --Then check the enchantment + quality + level too
             --:socketItem: = 6, :socketItemQuality: = 7, :socketRequiredLevel: = 8
-            local itemStyle = GetItemLinkItemStyle(itemLink)
-            local data = {zo_strsplit(":", itemLink:match("|H(.-)|h.-|h"))}
+            local itemStyle = gilis(itemLink)
+            local data = {zostrspl(":", itemLink:match("|H(.-)|h.-|h"))}
             local enchantment = tos(data[6]) ..",".. tos(data[7]).."," .. tos(data[8])
             --local quality = data[4]
             return strformat("%d,%d,%d,%d,%d,%d,%s", itemId, quality, trait, level, cp, itemStyle, enchantment)
@@ -531,12 +590,12 @@ local function getItemIdentifierForBackup(bagId, slotIndex)
             return strformat("%d,%d,%d,%d,%d", itemId, quality, trait, level, cp)
         end
     elseif(itemType == ITEMTYPE_POISON or itemType == ITEMTYPE_POTION) then
-        local level = GetItemLinkRequiredLevel(itemLink)
-        local cp = GetItemLinkRequiredChampionPoints(itemLink)
-        local data = {zo_strsplit(":", itemLink:match("|H(.-)|h.-|h"))}
+        local level = gilrl(itemLink)
+        local cp = gilrcp(itemLink)
+        local data = {zostrspl(":", itemLink:match("|H(.-)|h.-|h"))}
         return strformat("%d,%d,%d,%s", itemId, level, cp, data[23])
     elseif(hasDifferentQualities[itemType]) then
-        local quality = GetItemLinkFunctionalQuality(itemLink)
+        local quality = gilfq(itemLink)
         return strformat("%d,%d", itemId, quality)
     else
         return itemId
@@ -567,11 +626,11 @@ function FCOIS.MyGetItemInstanceId(rowControl, signToo)
 end
 
 function FCOIS.ExtractItemIdFromItemLink(itemLink)
-    if GetItemLinkItemId ~= nil then
-        return GetItemLinkItemId(itemLink)
-    else
-        return tonumber(strmatch(itemLink,"|H%d:item:(%d+)"))
-    end
+    --if giliid ~= nil then
+        return giliid(itemLink)
+    --else
+        --return ton(strmatch(itemLink,"|H%d:item:(%d+)"))
+    --end
 end
 
 --Create a unique String as "uniqueID" for an allowed itemtype of an item:
@@ -598,15 +657,15 @@ function FCOIS.CreateFCOISUniqueIdString(itemId, bagId, slotIndex, itemLink)
     if not itemId then
         if bagId and slotIndex then
             --Use the ItemInstanceId
-            --unsignedItemInstanceId = GetItemInstanceId(bagId, slotIndex)
+            --unsignedItemInstanceId = giiid(bagId, slotIndex)
             --Use the itemId
-            itemId = GetItemId(bagId, slotIndex)
+            itemId = giid(bagId, slotIndex)
         else
             --No bag or slot? Use the itemId of the itemLink -> e.g. Addon Inventory Insight From Ashes
             -->TODO: This might become buggy if one extracts the first value of the returned String (the itemId in this case) and tries to get entries in the SavedVariables
             -->TODO: of "markedItems" using only this itemId, instead of the "signed" ItemInstanceId. One would need to check the inventory item's signed itemId and if it
             -->TODO: matches get bagId and slotIndex of that item to do further checks
-            itemId = GetItemLinkItemId(itemLink)
+            itemId = giliid(itemLink)
         end
     end
     if not itemId then return end
@@ -669,49 +728,49 @@ function FCOIS.CreateFCOISUniqueIdString(itemId, bagId, slotIndex, itemLink)
     local isCrownItem
 
     if uniqueIdParts.level == true then
-        local cpLevel = GetItemLinkRequiredChampionPoints(itemLink)
+        local cpLevel = gilrcp(itemLink)
         if cpLevel ~= nil then
             level = cpLevel
         else
-            level = GetItemLinkRequiredLevel(itemLink)
+            level = gilrl(itemLink)
         end
     end
     if level == nil then level = "" end
 
     --Add item's quality to the uniqueId?
     if uniqueIdParts.quality == true then
-        quality = GetItemLinkFunctionalQuality(itemLink)
+        quality = gilfq(itemLink)
     end
     if quality == nil then quality = "" end
 
     --Get the values for the uniqueId parts depending on the itemType
-    itemType = GetItemLinkItemType(itemLink)
+    itemType = gilit(itemLink)
     if itemType == ITEMTYPE_ARMOR or itemType == ITEMTYPE_WEAPON then
         --Add item's trait to the uniqueId?
         if uniqueIdParts.trait == true then
-            trait = GetItemLinkTraitInfo(itemLink)
+            trait = gilti(itemLink)
         end
         if trait == nil then trait = "" end
 
         --Add item's enchantment to the uniqueId?
         if uniqueIdParts.enchantment == true then
-            enchantment = GetItemLinkAppliedEnchantId(itemLink)
+            enchantment = gilaeid(itemLink)
         end
         if enchantment == nil then enchantment = "" end
 
         --Add item's style to the uniqueId?
         if uniqueIdParts.style == true then
-            style = GetItemLinkItemStyle(itemLink)
+            style = gilis(itemLink)
         end
         if style == nil then style = "" end
 
         --Add item's isCrafted state to the uniqueId?
         if uniqueIdParts.isCrafted == true then
-            isCrafted = booleanToNumber(IsItemLinkCrafted(itemLink))
+            isCrafted = booleanToNumber(isilcr(itemLink))
             if isCrafted == 1 then
                 if uniqueIdParts.isCraftedBy == true then
                     if bagId and slotIndex then
-                        craftedByName = GetItemCreatorName(bagId, slotIndex)
+                        craftedByName = gicn(bagId, slotIndex)
                     end
                 end
             end
@@ -719,46 +778,49 @@ function FCOIS.CreateFCOISUniqueIdString(itemId, bagId, slotIndex, itemLink)
         if isCrafted == nil then isCrafted = 0 end
         if craftedByName == nil then craftedByName = ""
         else
-            craftedByName = HashString(craftedByName) --Create a hash number of the crafter's name
+            craftedByName = hashstr(craftedByName) --Create a hash number of the crafter's name
         end
     end
 
     --Add item's isStolen state to the uniqueId?
     if uniqueIdParts.isStolen == true then
-        isStolen = booleanToNumber(IsItemLinkStolen(itemLink))
+        isStolen = booleanToNumber(isilst(itemLink))
     end
     if isStolen == nil then isStolen = 0 end
 
     --If item is a crown item add it to the uniqueId?
     if uniqueIdParts.isCrownItem == true then
-        local isCrownStoreItem = IsItemLinkFromCrownStore(itemLink) or IsItemLinkFromCrownCrate(itemLink)
+        local isCrownStoreItem = isilfcs(itemLink) or isilfcc(itemLink)
         isCrownItem = booleanToNumber(isCrownStoreItem)
     end
     if isCrownItem == nil then isCrownItem = 0 end
     --------------------------------------------------------------------------------------------------------------------
 
     --Build the uniqueId string now
-    local uniqueItemIdStringTemplate = "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s" -- itemInstanceOrItemId,level,quality,trait,style,enchantment,isStolen,isCrafted,craftedByName,isCrownItem
-    local uniqueItemIdString
-    uniqueItemIdString = strformat(uniqueItemIdStringTemplate, itemId,
-            tos(level),tos(quality),tos(trait),tos(style),tos(enchantment),tos(isStolen),tos(isCrafted), tos(craftedByName), tos(isCrownItem))
+    local uniqueItemIdString = strformat(uniqueItemIdStringTemplate, itemId,
+            tos(level),tos(quality),tos(trait),tos(style),tos(enchantment),
+            tos(isStolen),
+            tos(isCrafted),tos(craftedByName),
+            tos(isCrownItem)
+    )
 
     --------------------------------------------------------------------------------------------------------------------
     --Cache the current values and set the last used type
     resetCreateFCOISUniqueIdStringLastVars()
-    FCOIS.CreateFCOISUniqueIdStringLast.UnsignedItemInstanceId = itemId
+    local lastCreatedUniqueIDStringData = FCOIS.CreateFCOISUniqueIdStringLast
+    lastCreatedUniqueIDStringData.UnsignedItemInstanceId = itemId
     if bagId ~= nil and slotIndex ~= nil then
-        FCOIS.CreateFCOISUniqueIdStringLast.BagId        = bagId
-        FCOIS.CreateFCOISUniqueIdStringLast.SlotIndex    = slotIndex
-        FCOIS.CreateFCOISUniqueIdStringLast.ItemLink     = nil
-        FCOIS.CreateFCOISUniqueIdStringLast.LastUseType  = 1
+        lastCreatedUniqueIDStringData.BagId        = bagId
+        lastCreatedUniqueIDStringData.SlotIndex    = slotIndex
+        lastCreatedUniqueIDStringData.ItemLink     = nil
+        lastCreatedUniqueIDStringData.LastUseType  = 1
     elseif itemLink ~= nil then
-        FCOIS.CreateFCOISUniqueIdStringLast.ItemLink     = itemLink
-        FCOIS.CreateFCOISUniqueIdStringLast.BagId        = nil
-        FCOIS.CreateFCOISUniqueIdStringLast.SlotIndex    = nil
-        FCOIS.CreateFCOISUniqueIdStringLast.LastUseType  = 2
+        lastCreatedUniqueIDStringData.ItemLink     = itemLink
+        lastCreatedUniqueIDStringData.BagId        = nil
+        lastCreatedUniqueIDStringData.SlotIndex    = nil
+        lastCreatedUniqueIDStringData.LastUseType  = 2
     end
-    FCOIS.CreateFCOISUniqueIdStringLast.FCOISCreatedUniqueId = uniqueItemIdString
+    lastCreatedUniqueIDStringData.FCOISCreatedUniqueId = uniqueItemIdString
     --------------------------------------------------------------------------------------------------------------------
 
 --d("<"..tos(uniqueItemIdString) .. ", lastUsedType: " .. tos(FCOIS.CreateFCOISUniqueIdStringLastLastUseType))
@@ -816,15 +878,14 @@ function FCOIS.CheckIfItemShouldBeDemarked(iconId)
     if settings.icon[iconId].demarkAllOthers then
         return true
     end
-    --Sell icon and remove all other marker icons set
-    if (iconId == FCOIS_CON_ICON_SELL and settings.autoDeMarkSell)
-            --Sell in guild store icon and remove all other marker icons set
-            or	(iconId == FCOIS_CON_ICON_SELL_AT_GUILDSTORE and settings.autoDeMarkSellInGuildStore)
-            --Deconstruction
-            or 	(iconId == FCOIS_CON_ICON_DECONSTRUCTION and settings.autoDeMarkDeconstruct) then
+    local automaticDeMarkSettings = FCOIS.mappingVars.automaticDeMarkSettings
+    local automaticDeMarkData = automaticDeMarkSettings[iconId]
+    if not automaticDeMarkData then return false end
+    if not settings[automaticDeMarkData] then
+        return false
+    else
         return true
     end
-    return false
 end
 
 --==============================================================================
@@ -833,14 +894,15 @@ end
 --Check as long until the control with the name controlName exists, and then call the function 'callbackFunc' in the 2nd parameter
 --The checks will be done every 10ms or every 3rd parameter stepTocheckMS
 --This function will automatically abort itsself after 4rd parameter 'autoAbortTimeMS' time in ms has passed. Standard value is 30 seconds
-function FCOIS.CheckRepetivelyIfControlExists(controlName, callbackFunc, stepTocheckMS, autoAbortTimeMS)
+function FCOIS.CheckRepetitivelyIfControlExists(controlName, callbackFunc, stepTocheckMS, autoAbortTimeMS)
     if not callbackFunc or callbackFunc == nil then return false end
+    checkRepetitivelyIfControlExists = checkRepetitivelyIfControlExists or FCOIS.CheckRepetitivelyIfControlExists
     --Automatically abort this repetively check-function after this time in milliseconds
     autoAbortTimeMS = autoAbortTimeMS or 30000
     --The milliseconds to wait for the next check
     stepTocheckMS = stepTocheckMS or 10
     --Build the event manager uinque control check updater name
-    local checkControlname = FCOIS.addonVars.gAddonName .. "___" .. tos(controlName)
+    local checkControlname = addonVars.gAddonName .. "___" .. tos(controlName)
     --Build needed global variables
     if FCOIS.preventerVars.isControlCheckActive[checkControlname] == nil then FCOIS.preventerVars.isControlCheckActive[checkControlname] = false end
     if FCOIS.preventerVars.controlCheckActiveCounter[checkControlname] == nil then FCOIS.preventerVars.controlCheckActiveCounter[checkControlname] = 0 end
@@ -864,7 +926,7 @@ function FCOIS.CheckRepetivelyIfControlExists(controlName, callbackFunc, stepToc
             --d("[FCOIS.checkRepetivelyIfControlExists - START check " .. checkControlname)
         end
         em:RegisterForUpdate(checkControlname, stepTocheckMS, function()
-            FCOIS.CheckRepetivelyIfControlExists(controlName, callbackFunc, stepTocheckMS, autoAbortTimeMS)
+            checkRepetitivelyIfControlExists(controlName, callbackFunc, stepTocheckMS, autoAbortTimeMS)
         end)
     else
         --d("[FCOIS.checkRepetivelyIfControlExists - control " .. tos(controlName) .. " is finally here after " .. FCOIS.preventerVars.controlCheckActiveCounter[checkControlname] .. " ms!")
@@ -878,6 +940,7 @@ function FCOIS.CheckRepetivelyIfControlExists(controlName, callbackFunc, stepToc
         return true
     end
 end
+checkRepetitivelyIfControlExists = FCOIS.CheckRepetitivelyIfControlExists
 
 --Check if a controlName is an inventory row pattern defined in file FCOIS_Constants.lua, table FCOIS.checkVars.inventoryRowPatterns
 --Function returns as 1st return value a boolean isAnInventoryRowWithPattern, and as 2nd return value the pattern
@@ -909,19 +972,13 @@ function FCOIS.GetBagAndSlotFromControlUnderMouse()
     local itemLink
     local itemInstanceOrUniqueIdIIfA
     FCOIS.IIfAmouseOvered = nil
-    local inventoryRowPatterns = checkVars.inventoryRowPatterns
     if inventoryRowPatterns == nil then return end
     --For each inventory row pattern check if the current control mouseOverControl's name matches this pattern
     local mouseOverControlName = mouseOverControl:GetName()
-    local otherAddons = FCOIS.otherAddons
-    local IIFAitemsListEntryPrePattern = otherAddons.IIFAitemsListEntryPrePattern
-    local IIfAInvRowPatternToCheck = "^" .. IIFAitemsListEntryPrePattern .. "*"
 --d(">found pattern: " ..tos(patternToCheck) .. " in row " .. tos(mouseOverControlName))
     local isInvRow, patternToCheck = isSupportedInventoryRowPattern(mouseOverControlName)
     if isInvRow == true then
-        if patternToCheck ~= IIfAInvRowPatternToCheck then
-            bagId, slotIndex = myGetItemDetails(mouseOverControl)
-        else
+        if patternToCheck == IIfAInvRowPatternToCheck then
             --Special treatment for the addon InventoryInsightFromAshes
             controlTypeBelowMouse = IIFAitemsListEntryPrePattern
             itemLink, itemInstanceOrUniqueIdIIfA, bagId, slotIndex = FCOIS.CheckAndGetIIfAData(mouseOverControl, mouseOverControl:GetParent())
@@ -930,70 +987,10 @@ function FCOIS.GetBagAndSlotFromControlUnderMouse()
                 FCOIS.IIfAmouseOvered.itemLink = itemLink
                 FCOIS.IIfAmouseOvered.itemInstanceOrUniqueId = itemInstanceOrUniqueIdIIfA
             end
+        else
+            bagId, slotIndex = myGetItemDetails(mouseOverControl)
         end
     end
---[[
-    --if it's a backpack row or child of one -> PRE API 1000015
-    if mouseOverControl:GetName():find("^ZO_%a+Backpack%dRow%d%d*") then
-        if mouseOverControl:GetName():find("^ZO_%a+Backpack%dRow%d%d*$") then
-            bagId, slotIndex = myGetItemDetails(mouseOverControl)
-        else
-            mouseOverControl = mouseOverControl:GetParent()
-            if mouseOverControl:GetName():find("^ZO_%a+Backpack%dRow%d%d*$") then
-                bagId, slotIndex = myGetItemDetails(mouseOverControl)
-            end
-        end
-        --if it's a backpack row or child of one -> Since API 1000015
-    elseif mouseOverControl:GetName():find("^ZO_%a+InventoryList%dRow%d%d*") then
-        if mouseOverControl:GetName():find("^ZO_%a+InventoryList%dRow%d%d*$") then
-            bagId, slotIndex = myGetItemDetails(mouseOverControl)
-        else
-            mouseOverControl = mouseOverControl:GetParent()
-            if mouseOverControl:GetName():find("^ZO_%a+InventoryList%dRow%d%d*$") then
-                bagId, slotIndex = myGetItemDetails(mouseOverControl)
-            end
-        end
-        --CRAFTBAG: if it's a backpack row or child of one -> Since API 1000015
-    elseif mouseOverControl:GetName():find("^ZO_CraftBagList%dRow%d%d*") then
-        if mouseOverControl:GetName():find("^ZO_CraftBagList%dRow%d%d*$") then
-            bagId, slotIndex = myGetItemDetails(mouseOverControl)
-        else
-            mouseOverControl = mouseOverControl:GetParent()
-            if mouseOverControl:GetName():find("^ZO_CraftBagList%dRow%d%d*$") then
-                bagId, slotIndex = myGetItemDetails(mouseOverControl)
-            end
-        end
-        --if it's a RETRAIT station row or child of one -> Since API 1000015
-        --ZO_RetraitStation_KeyboardTopLevelRetraitPanelInventoryBackpack1Row1
-    elseif mouseOverControl:GetName():find("^ZO_RetraitStation_%a+RetraitPanelInventoryBackpack%dRow%d%d*") then
-        if mouseOverControl:GetName():find("^ZO_RetraitStation_%a+RetraitPanelInventoryBackpack%dRow%d%d*$") then
-            bagId, slotIndex = myGetItemDetails(mouseOverControl)
-        else
-            mouseOverControl = mouseOverControl:GetParent()
-            if mouseOverControl:GetName():find("^ZO_RetraitStation_%a+RetraitPanelInventoryBackpack%dRow%d%d*$") then
-                bagId, slotIndex = myGetItemDetails(mouseOverControl)
-            end
-        end
-        --Character
-    elseif mouseOverControl:GetName():find("^ZO_CharacterEquipmentSlots.+$") then
-        bagId, slotIndex = myGetItemDetails(mouseOverControl)
-        --Quickslot
-    elseif mouseOverControl:GetName():find("^ZO_QuickSlotList%dRow%d%d*") then
-        bagId, slotIndex = myGetItemDetails(mouseOverControl)
-        --Vendor rebuy
-    elseif mouseOverControl:GetName():find("^ZO_RepairWindowList%dRow%d%d*") then
-        bagId, slotIndex = myGetItemDetails(mouseOverControl)
-        --IIfA support
-    elseif mouseOverControl:GetName():find("^" .. FCOIS.otherAddons.IIFAitemsListEntryPrePattern .. "*") then
-        controlTypeBelowMouse = FCOIS.otherAddons.IIFAitemsListEntryPrePattern
-        itemLink, itemInstanceOrUniqueIdIIfA, bagId, slotIndex = FCOIS.checkAndGetIIfAData(mouseOverControl, mouseOverControl:GetParent())
-        if bagId == nil or slotIndex == nil and itemInstanceOrUniqueIdIIfA ~= nil then
-            FCOIS.IIfAmouseOvered = {}
-            FCOIS.IIfAmouseOvered.itemLink = itemLink
-            FCOIS.IIfAmouseOvered.itemInstanceOrUniqueId = itemInstanceOrUniqueIdIIfA
-        end
-    end
-]]
     if bagId ~= nil and slotIndex ~= nil then
         return bagId, slotIndex, mouseOverControl, controlTypeBelowMouse
     else
@@ -1010,7 +1007,6 @@ end
 local doesPlayerInventoryCurrentFilterEqual = FCOIS.DoesPlayerInventoryCurrentFilterEqual
 
 function FCOIS.DoesPlayerInventoryCurrentFilterEqualCompanion(panelId)
-    local libFiltersPanelIdToInventory = FCOIS.mappingVars.libFiltersPanelIdToInventory
     local invType = libFiltersPanelIdToInventory[panelId]
     if invType == nil then return end
     return doesPlayerInventoryCurrentFilterEqual(invType, ITEM_TYPE_DISPLAY_CATEGORY_COMPANION)
@@ -1018,14 +1014,14 @@ end
 
 -- Check if an itemLink owner is a companion
 function FCOIS.IsItemLinkOwnerCompanion(itemLink)
-    return (GetItemLinkActorCategory(itemLink) == GAMEPLAY_ACTOR_CATEGORY_COMPANION) or false
+    return (gilac(itemLink) == GAMEPLAY_ACTOR_CATEGORY_COMPANION) or false
 end
 local isItemLinkOwnerCompanion = FCOIS.IsItemLinkOwnerCompanion
 
 -- Check if an item owner is a companion
 function FCOIS.IsItemOwnerCompanion(bagId, slotIndex, itemLink)
     if bagId ~= nil and slotIndex ~= nil then
-        return (GetItemActorCategory(bagId, slotIndex) == GAMEPLAY_ACTOR_CATEGORY_COMPANION) or false
+        return (giac(bagId, slotIndex) == GAMEPLAY_ACTOR_CATEGORY_COMPANION) or false
     elseif itemLink ~= nil then
         return isItemLinkOwnerCompanion(itemLink)
     end
@@ -1066,11 +1062,11 @@ function FCOIS.IsItemType(bag, slot, itemTypes)
     local isItemTypeVar
     if type(itemTypes) == "table" then
         for _, itemType in ipairs(itemTypes) do
-            isItemTypeVar = (GetItemType(bag, slot) == itemType)
+            isItemTypeVar = (git(bag, slot) == itemType)
             if isItemTypeVar == true then return true end
         end
     else
-        return (GetItemType(bag, slot) == itemTypes)
+        return (git(bag, slot) == itemTypes)
     end
     return false
 end
@@ -1083,7 +1079,7 @@ function FCOIS.IsItemAGlpyh(bag, slot)
         [ITEMTYPE_GLYPH_WEAPON] =   true,
 
     }
-    local itemType = GetItemType(bag, slot)
+    local itemType = git(bag, slot)
     --[[
     local isArmorGlyph		= (itemType == ITEMTYPE_GLYPH_ARMOR)
     local isJewelryGlyph	= (itemType == ITEMTYPE_GLYPH_JEWELRY)
@@ -1097,7 +1093,7 @@ end
 
 function FCOIS.IsItemSetAndNotExcluded(bag, slot)
     if bag == nil or slot == nil then return false end
-    local isAllowedSet, _, _, _, _, setId = GetItemLinkSetInfo(gil(bag, slot), false)
+    local isAllowedSet, _, _, _, _, setId = gilsetinf(gil(bag, slot), false)
     if isAllowedSet == true and setId ~= nil then
         local settings = FCOIS.settingsVars.settings
         if settings.autoMarkSetsExcludeSets == true then
@@ -1114,13 +1110,13 @@ end
 --Check if an item is already bound to your account
 function FCOIS.IsItemAlreadyBound(bagId, slotIndex)
     --Only check bound set parts
-    local itemType = GetItemType(bagId, slotIndex)
+    local itemType = git(bagId, slotIndex)
     local isAllowedItemType = allowedSetItemTypes[itemType]
     if not isAllowedItemType then return false end
     local itemLink = gil(bagId, slotIndex)
     if itemLink then
         --Is the item bound?
-        return  IsItemLinkBound(itemLink)
+        return isilbo(itemLink)
     else
         return nil
     end
@@ -1131,8 +1127,8 @@ function FCOIS.IsItemBindableAtAll(bagId, slotIndex)
     local itemLink = gil(bagId, slotIndex)
     if itemLink then
         --Is item a bindable type
-        local bindType = GetItemLinkBindType(itemLink)
-        if(bindType ~= BIND_TYPE_NONE and bindType ~= BIND_TYPE_UNSET) then
+        local bindType = gilbt(itemLink)
+        if bindType ~= BIND_TYPE_NONE and bindType ~= BIND_TYPE_UNSET then
             --Item can still be bound
             return true
         else
@@ -1150,7 +1146,7 @@ function FCOIS.IsItemBound(bagId, slotIndex)
     local itemLink = gil(bagId, slotIndex)
     if itemLink then
         --Bound?
-        return IsItemLinkBound(itemLink)
+        return isilbo(itemLink)
     else
         return nil
     end
@@ -1176,13 +1172,13 @@ end
 
 --Is the item a container and is autoloot enabled in the ESO settings
 function FCOIS.IsAutolootContainer(bag, slot)
-    return (GetItemType(bag, slot) == ITEMTYPE_CONTAINER and GetSetting(SETTING_TYPE_LOOT, LOOT_SETTING_AUTO_LOOT)=="1")
+    return (git(bag, slot) == ITEMTYPE_CONTAINER and GetSetting(SETTING_TYPE_LOOT, LOOT_SETTING_AUTO_LOOT)=="1")
 end
 
 function FCOIS.IsContainerCollectible(bag, slot)
     local itemLink = gil(bag, slot)
     if not itemLink then return false end
-    local itemtype, specializedItemType = GetItemLinkItemType(itemLink)
+    local itemtype, specializedItemType = gilit(itemLink)
     local specializedItemtypesOfContainers = {
         [SPECIALIZED_ITEMTYPE_CONTAINER_STYLE_PAGE] = true,
         [SPECIALIZED_ITEMTYPE_COLLECTIBLE_STYLE_PAGE] = true,
@@ -1191,8 +1187,8 @@ function FCOIS.IsContainerCollectible(bag, slot)
     }
     if not specializedItemtypesOfContainers[specializedItemType] then return false end
 
-    local containerCollectibleId = GetItemLinkContainerCollectibleId(itemLink)
-    local isValidForPlayer = IsCollectibleValidForPlayer(containerCollectibleId)
+    local containerCollectibleId = gilccid(itemLink)
+    local isValidForPlayer = iscvfplayer(containerCollectibleId)
     if isValidForPlayer then
         --local isUnlocked = IsCollectibleUnlocked(containerCollectibleId)
         return true
@@ -1203,10 +1199,10 @@ end
 --Function to check it the item is a soulgem
 function FCOIS.IsSoulGem(bagId, slotIndex)
     if bagId == nil or slotIndex == nil then return nil end
-    local isSoulGem = (GetSoulGemItemInfo(bagId, slotIndex) > 0) or false
+    local isSoulGem = (gsgiinf(bagId, slotIndex) > 0) or false
     if not isSoulGem then
         --Special check for crown store soul gems as GetSoulGemItemInfo returns 0 for them...
-        local itemType, specializedItemType = GetItemType(bagId, slotIndex)
+        local itemType, specializedItemType = git(bagId, slotIndex)
         if itemType == ITEMTYPE_SOUL_GEM and specializedItemType == SPECIALIZED_ITEMTYPE_SOUL_GEM then isSoulGem = true end
     end
     return isSoulGem
@@ -1225,15 +1221,15 @@ function FCOIS.IsRecipeKnown(bagId, slotIndex, expectedResult)
     local itemLink = gil(bagId, slotIndex)
     if itemLink == "" then return nil end
     -- item is a recipe
-    if GetItemLinkItemType(itemLink) ~= ITEMTYPE_RECIPE then return nil end
+    if gilit(itemLink) ~= ITEMTYPE_RECIPE then return nil end
     local settingsBase = FCOIS.settingsVars
     local settings = settingsBase.settings
     local useAccountWideSettings = (settingsBase.defaultSettings.saveMode == 2) or false
     local autoMarkRecipesOnlyThisChar = settings.autoMarkRecipesOnlyThisChar
     --local recipeUnknownIconNr = settings.autoMarkRecipesIconNr
     --local recipeKnownIconNr = settings.autoMarkKnownRecipesIconNr
-    local currentCharName = ZO_CachedStrFormat(SI_UNIT_NAME, GetUnitName("player"))
-    local currentCharId = tos(GetCurrentCharacterId())
+    local currentCharName = zocstrfor(SI_UNIT_NAME, GetUnitName("player"))
+    local currentCharId = tos(gccharid())
     local known
 
     if settings.debug then debugMessage("isRecipeKnown", gil(bagId, slotIndex) .. ", expectedResult: " ..tos(expectedResult) .. ", recipeAddonUsed: " ..tos(recipeAddonUsed) .. ", autoMarkRecipesOnlyThisChar: " ..tos(autoMarkRecipesOnlyThisChar), true, FCOIS_DEBUG_DEPTH_SPAM, false) end
@@ -1247,8 +1243,8 @@ function FCOIS.IsRecipeKnown(bagId, slotIndex, expectedResult)
             local sousChefUtility = SousChef.Utility
             local sousChefSettings = SousChef.settings
             if sousChefSettings and sousChefSettings.showAltKnowledge and sousChefSettings.Cookbook then
-                local resultLink = GetItemLinkRecipeResultItemLink(itemLink)
-                local knownByUsersTable = sousChefSettings.Cookbook[sousChefUtility.CleanString(GetItemLinkName(resultLink))]
+                local resultLink = gilrril(itemLink)
+                local knownByUsersTable = sousChefSettings.Cookbook[sousChefUtility.CleanString(gilna(resultLink))]
                 --FCOIS._knownByUsersTable = knownByUsersTable
                 if knownByUsersTable ~= nil then
                     local currentCharacterName = ""
@@ -1412,12 +1408,12 @@ function FCOIS.IsItemSetPartNoControl(bagId, slotIndex)
     local itemLink = gil(bagId, slotIndex)
     if itemLink ~= "" then
         -- Get the item's type
-        local itemType = GetItemLinkItemType(itemLink)
+        local itemType = gilit(itemLink)
         if itemType ~= nil then
             local allowed = allowedSetItemTypes[itemType] or false
             if allowed then
                 --Get the set item information
-                local hasSet, _, _, _, _ = GetItemLinkSetInfo(itemLink, false)
+                local hasSet, _, _, _, _ = gilsetinf(itemLink, false)
                 retVal = hasSet
             end
         end
@@ -1436,7 +1432,7 @@ function FCOIS.IsItemSetPartWithTraitNoControl(bagId, slotIndex)
     local itemLink = gil(bagId, slotIndex)
     if itemLink ~= "" then
 --d(">Item: " .. itemLink)
-        local itemType = GetItemLinkItemType(itemLink)
+        local itemType = gilit(itemLink)
         -- Get the item's type
         if itemType ~= nil then
 --d(">itemType: " ..tos(itemType))
@@ -1444,17 +1440,17 @@ function FCOIS.IsItemSetPartWithTraitNoControl(bagId, slotIndex)
             if allowed then
 --d(">allowed")
                 --Get the set item information
-                local hasSet = GetItemLinkSetInfo(itemLink)
+                local hasSet = gilsetinf(itemLink)
                 -- item is a set
                 if hasSet then
                     isSet = true
 --d(">has set")
                     --Check the item's trait now, according to it's item type
                     --[[
-                        * GetItemLinkTraitInfo(*string* _itemLink_)
+                        * gilti(*string* _itemLink_)
                         ** _Returns:_ *[ItemTraitType|#ItemTraitType]* _traitType_, *string* _traitDescription_, *integer* _traitSubtype_, *string* _traitSubtypeName_, *string* _traitSubtypeDescription_
                     ]]
-                    local itemTraitType = GetItemLinkTraitInfo(itemLink)
+                    local itemTraitType = gilti(itemLink)
                     if itemTraitType ~= nil then
 --d(">itemTraitType: " ..tos(itemTraitType))
                         --Armor / Jewelry
@@ -1463,10 +1459,10 @@ function FCOIS.IsItemSetPartWithTraitNoControl(bagId, slotIndex)
                             --[[
                                 * EQUIP_TYPE_NECK
                                 * EQUIP_TYPE_RING
-                                * GetItemLinkInfo(*string* _itemLink_)
+                                * gilinf((*string* _itemLink_)
                                 ** _Returns:_ *string* _icon_, *integer* _sellPrice_, *bool* _meetsUsageRequirement_, *integer* _equipType_, *integer* _itemStyle_
                             ]]
-                            local _, _, _, equipType = GetItemLinkInfo(itemLink)
+                            local _, _, _, equipType = gilinf(itemLink)
                             if equipType ~= nil then
                                 if equipType == EQUIP_TYPE_NECK or equipType == EQUIP_TYPE_RING then
                                     --Jewelry
@@ -1512,7 +1508,7 @@ function FCOIS.IsItemLinkReconStructedOrRetraited(itemLink)
     if itemLink == nil then return false end
     --Check if the item was reconstructed or retraited
     local itemTraitInformationNotResearchable = checkVars.itemTraitInformationNotResearchable
-    local itemTraitInformation = GetItemTraitInformationFromItemLink(itemLink)
+    local itemTraitInformation = giltinf(itemLink)
     return itemTraitInformationNotResearchable[itemTraitInformation] or false
 end
 local isItemLinkReconStructedOrRetraited = FCOIS.IsItemLinkReconStructedOrRetraited
@@ -1557,13 +1553,13 @@ function FCOIS.IsItemLinkResearchable(itemLink, markId, doTraitCheck)
     retValReconstructedOrRetraited = isItemLinkReconStructedOrRetraited(itemLink)
     --Check the item's type (Armor, weapon, jewelry e.g. are researchable)
     if retVal == false then
-        local itemType = GetItemLinkItemType(itemLink)
+        local itemType = gilit(itemLink)
         if itemType == nil then return false, retValReconstructedOrRetraited end
         retVal = isResearchableItemTypeCheck(itemType, markId)
     end
     --Check the item's trait (no trait-> No research)
     if retVal == true and doTraitCheck then
-        local itemTraitType = GetItemLinkTraitInfo(itemLink)
+        local itemTraitType = gilti(itemLink)
         local itemTraiTypesNotAllowedForResearch = checkVars.researchTraitCheckTraitsNotAllowed
         local itemTraitTypeNotAllowedForResearch = itemTraiTypesNotAllowedForResearch[itemTraitType] or false
         if itemTraitType == nil or itemTraitTypeNotAllowedForResearch then return false, retValReconstructedOrRetraited end
@@ -1619,7 +1615,7 @@ end
 -- Is the item an ornate one?
 function FCOIS.IsItemOrnate(bagId, slotIndex)
     local isOrnate = false
-    local itemTrait = GetItemTrait(bagId, slotIndex)
+    local itemTrait = gitrait(bagId, slotIndex)
     local allowedOrnateItemTraits = checkVars.ornateItemTraits
     isOrnate = allowedOrnateItemTraits[itemTrait] or false
 --local itemLink = gil(bagId, slotIndex)
@@ -1631,7 +1627,7 @@ end
 function FCOIS.IsItemIntricate(bagId, slotIndex)
     local isIntricate = false
     local allowedIntricateItemTraits = checkVars.intricateItemTraits
-    local itemTrait = GetItemTrait(bagId, slotIndex)
+    local itemTrait = gitrait(bagId, slotIndex)
     isIntricate = allowedIntricateItemTraits[itemTrait] or false
 --local itemLink = gil(bagId, slotIndex)
 --d("[FCOIS]isItemIntricate: " .. itemLink .. " -> " .. tos(isIntricate))
@@ -1642,7 +1638,7 @@ end
 function FCOIS.IsItemSuperitem(bagId, slotIndex)
     if bagId == nil or slotIndex == nil then return false end
     local itemLink = gil(bagId, slotIndex)
-    local hasSet, _, numBonuses = GetItemLinkSetInfo(itemLink, false)
+    local hasSet, _, numBonuses = gilsetinf(itemLink, false)
     if hasSet and numBonuses == 1 then
         -- Superitem
         return true
@@ -1802,7 +1798,7 @@ function FCOIS.GetItemQuality(bagId, slotIndex)
     local itemLink = gil(bagId, slotIndex)
     if itemLink == nil then return false end
     -- Gets the item quality
-    local itemQuality = GetItemLinkFunctionalQuality(itemLink)
+    local itemQuality = gilfq(itemLink)
     if not itemQuality then return false end
     return itemQuality
 end
@@ -1820,8 +1816,8 @@ function FCOIS.GetIconsToRemove(bag, slot, itemInstanceOrUniqueId, curentlyCheck
     demarksDecon = demarksDecon or checkIfOtherDemarksDeconstruction(curentlyCheckedIconId)
     if demarksSell == true then
         if settings.autoDeMarkSellOnOthers == true and (
-                (bag and slot and FCOIS.IsMarked(bag, slot, { FCOIS_CON_ICON_SELL }))
-            or  (itemInstanceOrUniqueId and FCOIS.IsMarkedByItemInstanceId(itemInstanceOrUniqueId, { FCOIS_CON_ICON_SELL }))
+                (bag and slot and isMarked(bag, slot, { FCOIS_CON_ICON_SELL }))
+            or  (itemInstanceOrUniqueId and isMarkedByItemInstanceId(itemInstanceOrUniqueId, { FCOIS_CON_ICON_SELL }))
         ) then
             iconsToRemove[FCOIS_CON_ICON_SELL] = FCOIS_CON_ICON_SELL
         end
@@ -1900,36 +1896,38 @@ end
 function FCOIS.CheckNeededLevel(unitTag, neededLevel)
     if unitTag == nil or neededLevel == nil or type(neededLevel) ~= "number" then return false end
     local gotNeededLevel = false
-    local charLevel = GetUnitLevel(unitTag)
+    local charLevel = getUnitLvl(unitTag)
     if not charLevel then return false end
     gotNeededLevel = (charLevel >= neededLevel) or false
     return gotNeededLevel
 end
 
 --Get the type of the vendor used currently.
--- "Normal"     = NPC vendor
--- "Nuzhimeh"   = The mobile vendor you can buy in the crown store, called Nuzhimeh
+-- FCOIS_CON_VENDOR_TYPE_NORMAL_NPC = NPC vendor
+-- FCOIS_CON_VENDOR_TYPE_PORTABLE   = The mobile vendor you can buy in the crown store, called Nuzhimeh
 function FCOIS.GetCurrentVendorType(vendorPanelIsShown)
     vendorPanelIsShown = vendorPanelIsShown or false
-    local isVendorPanelShown = FCOIS.IsVendorPanelShown(nil, vendorPanelIsShown)
-    if not isVendorPanelShown then
+    isVendorPanelShown = isVendorPanelShown or FCOIS.IsVendorPanelShown
+    local isVendorPanelShownNow = isVendorPanelShown(nil, vendorPanelIsShown)
+    if not isVendorPanelShownNow then
 --d("[FCOIS]GetCurrentVendorType: No vendor panel shown. >Abort!")
-        return "" end
+        return ""
+    end
     local retVar = ""
     local vendorButtonCount = 2
     --Are we able to buy something in this store?
-    if not IsStoreEmpty() then vendorButtonCount = vendorButtonCount +1 end
+    if not isStoreEmptyFunc() then vendorButtonCount = vendorButtonCount +1 end
     --Are we able to repair something in this store?
-    if CanStoreRepair() then vendorButtonCount = vendorButtonCount +1 end
+    if canStoreRepairFunc() then vendorButtonCount = vendorButtonCount +1 end
     --Are there 4 buttons at the vendor menu bar?
     if vendorButtonCount == 4 then
-        retVar = "Normal"
+        retVar = FCOIS_CON_VENDOR_TYPE_NORMAL_NPC
     --Are there only 3 buttons at the vendor menu bar?
     elseif vendorButtonCount == 3 then
-        retVar = "Nuzhimeh"
+        retVar = FCOIS_CON_VENDOR_TYPE_PORTABLE
     --Are there only 2 buttons at the vendor menu bar?
     elseif vendorButtonCount == 2 then
-        retVar = "Nuzhimeh"
+        retVar = FCOIS_CON_VENDOR_TYPE_PORTABLE
     end
     return retVar, vendorButtonCount
 end
@@ -1968,7 +1966,8 @@ function FCOIS.SetItemIsJunk(bagId, slotIndex, isJunk)
     --Mark as junk?
     if isJunk == true then
         --Are there any marker icons on the item?
-        local anyMarkerIconSetOnItemToJunk, markerIconsOnItemToJunk = FCOIS.IsMarked(bagId, slotIndex, -1)
+        isMarked = isMarked or FCOIS.IsMarked
+        local anyMarkerIconSetOnItemToJunk, markerIconsOnItemToJunk = isMarked(bagId, slotIndex, -1)
         if anyMarkerIconSetOnItemToJunk then
             --Check if item can be junked
             --Remove all marker icons
@@ -2024,7 +2023,7 @@ end
 function FCOIS.CheckIfIsSpecialItem(p_bagId, p_slotIndex)
     if p_bagId == nil or  p_slotIndex == nil then return nil end
     local specialItems = FCOIS.specialItems
-    local itemId = GetItemId(p_bagId, p_slotIndex)
+    local itemId = giid(p_bagId, p_slotIndex)
     if itemId == nil then return nil end
     if specialItems[itemId] then
         return true
@@ -2139,8 +2138,9 @@ function FCOIS.CheckIfImprovedItemShouldBeReMarked_BeforeImprovement()
     resetImprovementVarsForReMark(bagId, slotIndex)
 
     --Check if the item is marked with several icons
-    local isMarked, markedIcons = FCOIS.IsMarked(bagId, slotIndex, -1)
-    if isMarked == true then
+    isMarked = isMarked or FCOIS.IsMarked
+    local isMarkedIcon, markedIcons = isMarked(bagId, slotIndex, -1)
+    if isMarkedIcon == true then
 --d(">>item was marked before improvement")
         --Remember the bagId and slotIndex of the slotted item that will be improved
         FCOIS.improvementVars[bagId] = FCOIS.improvementVars[bagId] or {}
@@ -2233,8 +2233,9 @@ function FCOIS.CheckIfEnchantingItemShouldBeReMarked_BeforeEnchanting(bagId, slo
     --Remember the current marker icons if setting is enabled to re-apply old marker icons on enchanting
     if not FCOIS.settingsVars.settings.reApplyIconsAfterEnchanting then return end
 
-    local isMarked, markerIcons = FCOIS.IsMarked(bagId, slotIndex, -1, nil)
-    if not isMarked then return end
+    isMarked = isMarked or FCOIS.IsMarked
+    local isMarkedIcon, markerIcons = isMarked(bagId, slotIndex, -1, nil)
+    if not isMarkedIcon then return end
 --d(">>marked with icons!")
     FCOIS.enchantingVars.lastMarkerIcons[bagId] = FCOIS.enchantingVars.lastMarkerIcons[bagId] or {}
     FCOIS.enchantingVars.lastMarkerIcons[bagId][slotIndex] = markerIcons
@@ -2254,9 +2255,9 @@ function FCOIS.CheckIfEnchantingInventoryItemShouldBeReMarked_AfterEnchanting()
     local oldMarkerIcons = enchantingVarsLastMarkerIcons[slotIndex]
     if not oldMarkerIcons then return end
     local newMarkerIcons = {}
-    for iconId, isMarked in pairs(oldMarkerIcons) do
-        if isMarked == true then
-            table.insert(newMarkerIcons, iconId)
+    for iconId, isMarkedIcon in pairs(oldMarkerIcons) do
+        if isMarkedIcon == true then
+            tins(newMarkerIcons, iconId)
         end
     end
     if #newMarkerIcons == 0 then return end
@@ -2370,6 +2371,7 @@ end
 --Check if any of the vendor panels (buy, sell, buyback, repair) are shown
 function FCOIS.IsVendorPanelShown(vendorPanelId, overwrite)
     overwrite = overwrite or false
+    isVendorPanelShown = isVendorPanelShown or FCOIS.IsVendorPanelShown
 --d("FCOIS.IsVendorPanelShown, vendorPanelId: " .. tos(vendorPanelId) .. ", overwrite: " .. tos(overwrite))
     if overwrite then return true end
     --Check the scene name if it is the "vendor" scene
@@ -2407,6 +2409,7 @@ function FCOIS.IsVendorPanelShown(vendorPanelId, overwrite)
 --d("<retVar: " ..tos(retVar))
     return retVar
 end
+isVendorPanelShown = FCOIS.IsVendorPanelShown
 
 
 -- =====================================================================================================================
@@ -2587,7 +2590,7 @@ end
 --> [3] = 6,
 --> [4] = 7,
 --> [5] = 8,
-----> Sort by value and rebuild key via table.sort(FCOIS.mappingVars.gearToIcon)
+----> Sort by value and rebuild key via tsort(FCOIS.mappingVars.gearToIcon)
 -------------------------------------------------
 -->Will sort table FCOIS.mappingVars.iconToGear:
 --> key = value
@@ -2605,7 +2608,7 @@ end
 local function sortGearSetMappingTables()
     if FCOIS.mappingVars.gearToIcon == nil then return false end
     --Sort the table to sort from
-    table.sort(FCOIS.mappingVars.gearToIcon)
+    tsort(FCOIS.mappingVars.gearToIcon)
     local tableToCopyFrom = FCOIS.mappingVars.gearToIcon
     --Clear the table to sort
     FCOIS.mappingVars.iconToGear = {}
@@ -2672,12 +2675,12 @@ function FCOIS.RebuildGearSetBaseVars(iconNr, value, calledFromEventPlayerActiva
                 if FCOIS.mappingVars.iconToGear[iconNrLoop] ~= nil then
                     gearNr = FCOIS.mappingVars.iconToGear[iconNrLoop]
                     FCOIS.mappingVars.iconToGear[iconNrLoop] = nil -- as the table got no consistent digit key table.remove does not work
-					--table.remove(FCOIS.mappingVars.iconToGear, iconNrLoop) -- to retain table indices
+					--trem(FCOIS.mappingVars.iconToGear, iconNrLoop) -- to retain table indices
                 end
                 --Reset the mapping of gear number to icon
                 if gearNr ~= nil and gearNr > 0 and FCOIS.mappingVars.gearToIcon[gearNr] ~= nil then
                     --FCOIS.mappingVars.gearToIcon[gearNr] = nil
-					table.remove(FCOIS.mappingVars.gearToIcon, gearNr) -- to retain table indices
+					trem(FCOIS.mappingVars.gearToIcon, gearNr) -- to retain table indices
                 end
 --d(">>NOT a gear! gearNr: " .. tos(gearNr) .. ", newMaxGearSets: " ..tos(currentMaxGearSets))
             end
@@ -2732,12 +2735,12 @@ function FCOIS.RebuildGearSetBaseVars(iconNr, value, calledFromEventPlayerActiva
             if FCOIS.mappingVars.iconToGear[iconNr] ~= nil then
                 gearNr = FCOIS.mappingVars.iconToGear[iconNr]
                 FCOIS.mappingVars.iconToGear[iconNr] = nil -- as the table got no consistent digit key table.remove does not work
-				--table.remove(FCOIS.mappingVars.iconToGear, iconNr) -- to retain table indices
+				--trem(FCOIS.mappingVars.iconToGear, iconNr) -- to retain table indices
             end
             --Reset the mapping of gear number to icon
             if gearNr ~= nil and gearNr > 0 and FCOIS.mappingVars.gearToIcon[gearNr] ~= nil then
                 --FCOIS.mappingVars.gearToIcon[gearNr] = nil
-				table.remove(FCOIS.mappingVars.gearToIcon, gearNr) -- to retain table indices
+				trem(FCOIS.mappingVars.gearToIcon, gearNr) -- to retain table indices
             end
         end
 
@@ -2826,7 +2829,7 @@ function FCOIS.GetCurrentlyLoggedInCharUniqueId()
         end
         return tos(loggedInCharUniqueId)
         ]]
-    return GetCurrentCharacterId()
+    return gccharid()
 end
 
 --Get the currently logged in account's characters as table, with the name as key and the characterId as value,
@@ -2903,8 +2906,9 @@ function FCOIS.JunkMarkedItems(markerIconsMarkedOnItems, bagId)
     local retVar = false
     local junkedItemCount = 0
     for _, data in pairs(bagCache) do
-        local isMarked, _ = FCOIS.IsMarked(data.bagId, data.slotIndex, markerIconsMarkedOnItems, nil)
-        if isMarked and isMarked == true and not IsItemJunk(data.bagId, data.slotIndex) then
+        isMarked = isMarked or FCOIS.IsMarked
+        local isMarkedIcon, _ = isMarked(data.bagId, data.slotIndex, markerIconsMarkedOnItems, nil)
+        if isMarkedIcon and not IsItemJunk(data.bagId, data.slotIndex) then
             SetItemIsJunk(data.bagId, data.slotIndex, true)
             junkedItemCount = junkedItemCount + 1
             retVar = true
@@ -2922,7 +2926,7 @@ function FCOIS.GetInventoryTypeByFilterPanel(p_filterPanelId)
     p_filterPanelId = p_filterPanelId or FCOIS.gFilterWhere
     if p_filterPanelId == nil then return nil end
     local inventoryType
-    local mappingVars = FCOIS.mappingVars
+    mappingVars = FCOIS.mappingVars
     local libFiltersPanelIdToCraftingPanelInventory = mappingVars.libFiltersPanelIdToCraftingPanelInventory
     local libFiltersPanelIdToNormalInventory = mappingVars.libFiltersPanelIdToInventory
 
@@ -2943,18 +2947,19 @@ end
 --Check if any item moved to a bagId should run some "auto demark" checks
 function FCOIS.CheckIfBagShouldAutoRemoveMarkerIcons(bagId, slotIndex)
 --d("[FCOIS]checkIfBagShouldAutoRemoveMarkerIcons")
-    if not bagId or not slotIndex or GetItemType(bagId, slotIndex) == ITEMTYPE_NONE then return end
+    if not bagId or not slotIndex or git(bagId, slotIndex) == ITEMTYPE_NONE then return end
     local iconsToAutoRemove = {}
     --Get the FCOIS marker icons at the item
     local dynamicIconIds = FCOIS.mappingVars.dynamicToIcon
-    local isMarked, markedDynamicIcons = FCOIS.IsMarked(bagId, slotIndex, dynamicIconIds, nil)
-    if isMarked == true then
+    isMarked = isMarked or FCOIS.IsMarked
+    local isMarkedIcon, markedDynamicIcons = isMarked(bagId, slotIndex, dynamicIconIds, nil)
+    if isMarkedIcon == true then
         local settings = FCOIS.settingsVars.settings
         --For each dynamic check if the setting to auto remove a marker icon is enabled
         for dynamicIconId, isMarkedDnyIcon in ipairs(markedDynamicIcons) do
             if isMarkedDnyIcon == true and settings.icon[dynamicIconId].autoRemoveMarkForBag[bagId] == true then
 --d(">checking bag: " ..tos(bagId) .. "> " ..gil(bagId, slotIndex) .. ", dynIconShouldBeRemoved: " ..tos(dynamicIconId))
-                table.insert(iconsToAutoRemove, dynamicIconId)
+                tins(iconsToAutoRemove, dynamicIconId)
             end
         end
         --Remove these marker icons now

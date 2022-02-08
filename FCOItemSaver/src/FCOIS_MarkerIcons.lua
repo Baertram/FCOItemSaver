@@ -16,6 +16,7 @@ local addonVars = FCOIS.addonVars
 local numFilterIcons = FCOIS.numVars.gFCONumFilterIcons
 local ctrlVars = FCOIS.ZOControlVars
 local mappingVars = FCOIS.mappingVars
+local otherAddons = FCOIS.otherAddons
 
 local checkIfItemIsProtected = FCOIS.CheckIfItemIsProtected
 local myGetItemDetails = FCOIS.MyGetItemDetails
@@ -106,7 +107,7 @@ local function updateAlreadyBoundTexture(parent, pHideControl)
         end
     end
 
-    local InventoryGridViewActivated = (FCOIS.otherAddons.inventoryGridViewActive or InventoryGridView ~= nil) or false
+    local InventoryGridViewActivated = (otherAddons.inventoryGridViewActive or InventoryGridView ~= nil) or false
     local GridListActivated          = GridList ~= nil
 
     --If not an equipped item: Get the row's/parent's image -> "Children "Button" of parent
@@ -215,7 +216,7 @@ function FCOIS.CreateMarkerControl(parent, markerIconId, pWidth, pHeight, pTextu
     pArmorTypeIcon = pArmorTypeIcon or false
     pHideControl = pHideControl or false
 
-    local InventoryGridViewActivated = (FCOIS.otherAddons.inventoryGridViewActive or InventoryGridView ~= nil) or false
+    local InventoryGridViewActivated = (otherAddons.inventoryGridViewActive or InventoryGridView ~= nil) or false
     local GridListActivated          = GridList ~= nil
 
     --Preset the variable for control creation with false, if it is not given

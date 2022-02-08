@@ -28,15 +28,17 @@ local isItemAGlpyh = FCOIS.IsItemAGlpyh
 
 local checkIfUniversaldDeconstructionNPC
 local checkActivePanel
+local isVendorPanelShown
 
 --===================================================================================
 --	FCOIS Anti - *  - Methods to check if item is protected, or allowed to be ...
 --===================================================================================
 
 --Show an alert message
-function FCOIS.showAlert(alertMsg)
+function FCOIS.ShowAlert(alertMsg)
     ZO_Alert(UI_ALERT_CATEGORY_ERROR, SOUNDS.NEGATIVE_CLICK, FCOIS.preChatVars.preChatTextRed .. alertMsg)
 end
+local showAlert = FCOIS.ShowAlert
 
 --Function to show an chat error message and/or alert message that the item is protected
 --Check if alert or chat message should be shown
@@ -69,7 +71,7 @@ function FCOIS.OutputItemProtectedMessage(bag, slot, whereAreWe, overrideChatOut
         end
         --Show the message as alert message at the top-right corner?
         if alertOutputWished then
-            FCOIS.showAlert(protectedMsg)
+            showAlert(protectedMsg)
             retVar = true
         end
     end
@@ -436,7 +438,8 @@ function FCOIS.DestroySelectionHandler(bag, slot, echo, parentControl)
     echo = echo or false
     if FCOIS.settingsVars.settings.debug then debugMessage( "[DestroySelectionHandler]","Bag: " .. tostring(bag) .. ", Slot: " .. tostring(slot) ..", filterPanelId: " .. tostring(FCOIS.gFilterWhere), true, FCOIS_DEBUG_DEPTH_SPAM) end
     --Are we at the vendor repair panel?
-    local isVendorRepair = FCOIS.IsVendorPanelShown(LF_VENDOR_REPAIR, false) or false
+    isVendorPanelShown = isVendorPanelShown or FCOIS.IsVendorPanelShown
+    local isVendorRepair = isVendorPanelShown(LF_VENDOR_REPAIR, false) or false
     --Are we coming from the character window?
     if not isVendorRepair and ((bag == BAG_WORN or bag == BAG_COMPANION_WORN) and parentControl ~= nil) then
         FCOIS.preventerVars.gCheckEquipmentSlots = true

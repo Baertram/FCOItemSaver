@@ -4,38 +4,84 @@ local FCOIS = FCOIS
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
 
-local debugMessage                        = FCOIS.debugMessage
+local debugMessage                          = FCOIS.debugMessage
 
-local tos                                 = tostring
-local strformat                           = string.format
-local strmatch                            = string.match
+local tos                                   = tostring
+local strformat                             = string.format
+local strmatch                              = string.match
+local tins                                  = table.insert
 
-local addonVars                           = FCOIS.addonVars
-local addonName                           = addonVars.gAddonName
+local giid                                  = GetItemId
+local gil                                   = GetItemLink
+local giet                                  = GetItemEquipType
 
-local ctrlVars                            = FCOIS.ZOControlVars
-local numFilterIcons                      = FCOIS.numVars.gFCONumFilterIcons
+local addonVars                             = FCOIS.addonVars
+local addonName                             = addonVars.gAddonName
 
-local checkIfItemIsProtected              = FCOIS.CheckIfItemIsProtected
-local myGetItemDetails                    = FCOIS.MyGetItemDetails
-local isCraftBagItemDraggedToCraftingSlot = FCOIS.IsCraftBagItemDraggedToCraftingSlot
-local checkPreventCrafting                = FCOIS.craftingPrevention.CheckPreventCrafting
-local myGetItemInstanceId                 = FCOIS.MyGetItemInstanceId
-local getCurrentSceneInfo                 = FCOIS.GetCurrentSceneInfo
-local changeDialogButtonState             = FCOIS.ChangeDialogButtonState
-local isRepairDialogShown                 = FCOIS.IsRepairDialogShown
-local isEnchantDialogShown                = FCOIS.IsEnchantDialogShown
-local isSoulGem                           = FCOIS.IsSoulGem
-local isItemType                          = FCOIS.IsItemType
-local isCharacterShown                    = FCOIS.IsCharacterShown
-local isCompanionCharacterShown           = FCOIS.IsCompanionCharacterShown
-local resetInventoryAntiSettings          = FCOIS.ResetInventoryAntiSettings
-local isSupportedInventoryRowPattern      = FCOIS.IsSupportedInventoryRowPattern
-local isModifierKeyPressed                = FCOIS.IsModifierKeyPressed
-local isNoOtherModifierKeyPressed         = FCOIS.IsNoOtherModifierKeyPressed
+local ctrlVars                              = FCOIS.ZOControlVars
+local backpackCtrl =            ctrlVars.BACKPACK
+local characterCtrl =           ctrlVars.CHARACTER
+local companionCharacterCtrl =  ctrlVars.COMPANION_CHARACTER
+local houseBankCtrl =           ctrlVars.HOUSE_BANK_BAG
+local guildBankCtrl =           ctrlVars.GUILD_BANK_BAG
+local bankCtrl =                ctrlVars.BANK_BAG
+local deconstructionCtrl =      ctrlVars.DECONSTRUCTION_BAG
+local universalDeconGlobal =    ctrlVars.UNIVERSAL_DECONSTRUCTION_GLOBAL
+
+local numFilterIcons                        = FCOIS.numVars.gFCONumFilterIcons
+local mappingVarsTransm                     = FCOIS.mappingVars.containerTransmuation
+
+local checkBindableItems
+local checkIfItemIsProtected                = FCOIS.CheckIfItemIsProtected
+local myGetItemDetails                      = FCOIS.MyGetItemDetails
+local isCraftBagItemDraggedToCraftingSlot   = FCOIS.IsCraftBagItemDraggedToCraftingSlot
+local checkPreventCrafting                  = FCOIS.craftingPrevention.CheckPreventCrafting
+local myGetItemInstanceId                   = FCOIS.MyGetItemInstanceId
+local getCurrentSceneInfo                   = FCOIS.GetCurrentSceneInfo
+local changeDialogButtonState               = FCOIS.ChangeDialogButtonState
+local isRepairDialogShown                   = FCOIS.IsRepairDialogShown
+local isEnchantDialogShown                  = FCOIS.IsEnchantDialogShown
+local isSoulGem                             = FCOIS.IsSoulGem
+local isItemType                            = FCOIS.IsItemType
+local isCharacterShown                      = FCOIS.IsCharacterShown
+local isCompanionCharacterShown             = FCOIS.IsCompanionCharacterShown
+local resetInventoryAntiSettings            = FCOIS.ResetInventoryAntiSettings
+local isSupportedInventoryRowPattern        = FCOIS.IsSupportedInventoryRowPattern
+local isModifierKeyPressed                  = FCOIS.IsModifierKeyPressed
+local isNoOtherModifierKeyPressed           = FCOIS.IsNoOtherModifierKeyPressed
+local showProtectionDialog                  = FCOIS.ShowProtectionDialog
+local showCompanionProgressBar              = FCOIS.ShowCompanionProgressBar
+local showPlayerProgressBar                 = FCOIS.ShowPlayerProgressBar
+
+-- -v- #202 Universal Deconstruction - Butonly for the inperformant ChangeFilter hook which Cardinal05 provided
+-->Disabled for now! Until ZOs provides a callback for the tab change we will PostHook the menuBar tab buttons OnMouseUp
+--[[
+local getDataFromUniversalDeconstructionMenuBar
+local enchantingItemTypes
+local universalDeconstructionPanel
+if ZO_UNIVERSAL_DECONSTRUCTION_FILTER_TYPES ~= nil then
+    universalDeconstructionPanel = ctrlVars.UNIVERSAL_DECONSTRUCTION_GLOBAL.deconstructionPanel
+    getDataFromUniversalDeconstructionMenuBar = FCOIS.GetDataFromUniversalDeconstructionMenuBar
+    enchantingItemTypes = getDataFromUniversalDeconstructionMenuBar("enchantments").filter.itemTypes
+end
+]]
+-- -^- #202
+
+local removeArmorTypeMarker
+local updateEquipmentSlotMarker
+local filterBasics
+local changeContextMenuEntryTexts
+local localization
+local checkAndShowTransmutationGeodeLootDialog
+local checkIfClearOrRestoreAllMarkers
+local hideContextMenu
+local isVendorPanelShown
+local callDeconstructionSelectionHandler
+local callItemSelectionHandler
 
 --LibCustomMenu
 local lcm                                 = FCOIS.LCM
+
 
 local checkIfUniversalDeconstructionNPC
 local getCurrentFilterPanelIdAtDeconNPC
@@ -173,9 +219,11 @@ local function checkAndUpdateContextMenuLocalizationData()
     if doUpdateLocalization == true then
         --d("[FCOIS]checkAndUpdateContextMenuLocalizationData - Update the localization now")
         --Re-Do the localization done variable and rebuild all localization
-        FCOIS.Localization()
+        localization = localization or FCOIS.Localization
+        localization()
         --Overwrite the localized texts for the marker icons in the context menus
-        FCOIS.ChangeContextMenuEntryTexts(-1)
+        changeContextMenuEntryTexts = changeContextMenuEntryTexts or FCOIS.ChangeContextMenuEntryTexts
+        changeContextMenuEntryTexts(-1)
     end
 end
 
@@ -198,10 +246,10 @@ ZO_PreHook("ZO_Menu_OnHide", function()
     local _, currentSceneName = getCurrentSceneInfo()
     if isCharacterShown() and currentSceneName == ctrlVars.invSceneName then
         --Show the PlayerProgressBar again as the context menu closes
-        FCOIS.ShowPlayerProgressBar(true)
+        showPlayerProgressBar(true)
     elseif isCompanionCharacterShown() and currentSceneName == ctrlVars.companionInvSceneName then
         --Show the CompanionProgressBar again as the context menu closes
-        FCOIS.ShowCompanionProgressBar(true)
+        showCompanionProgressBar(true)
     end
 end)
 
@@ -215,8 +263,8 @@ function FCOIS.UseAddSlotActionCallbackFunc(self)
         local bag, slotIndex
         local dataEntryData = self.dataEntry and self.dataEntry.data
         if dataEntryData then
-            bag       = self.dataEntry.data.bagId
-            slotIndex = self.dataEntry.data.slotIndex
+            bag       = dataEntryData.bagId
+            slotIndex = dataEntryData.slotIndex
         end
         if bag == nil or slotIndex == nil and self.m_inventorySlot ~= nil then
             bag, slotIndex = ZO_Inventory_GetBagAndIndex(self.m_inventorySlot)
@@ -226,23 +274,22 @@ function FCOIS.UseAddSlotActionCallbackFunc(self)
         local isContainer = isItemType(bag, slotIndex, ITEMTYPE_CONTAINER) or false
         --d(">Item is a container: " .. tos(isContainer))
         if isContainer == true then
-            --local itemLink = GetItemLink(bag, slotIndex)
-            local mappingVarsTransm = FCOIS.mappingVars.containerTransmuation
-            if mappingVarsTransm == nil then return false end
+            --local itemLink = gil(bag, slotIndex)
             local transmGeodenIds = mappingVarsTransm.geodeItemIds
             if transmGeodenIds == nil then return false end
-            local itemId = GetItemId(bag, slotIndex)
+            local itemId = giid(bag, slotIndex)
             --d(">itemId: " ..tos(itemId))
             if itemId == nil then return false end
             --Check the itemIds of the possible transmuation geodes against the current item
             if transmGeodenIds[itemId] then
-                local doShowTransmuationProtectionDialog, currentTransmCrystalCount, maxTransmCrystalCount = FCOIS.CheckAndShowTransmutationGeodeLootDialog()
+                checkAndShowTransmutationGeodeLootDialog = checkAndShowTransmutationGeodeLootDialog or FCOIS.CheckAndShowTransmutationGeodeLootDialog
+                local doShowTransmuationProtectionDialog, currentTransmCrystalCount, maxTransmCrystalCount = checkAndShowTransmutationGeodeLootDialog()
                 --d(">doShowTransmuationProtectionDialog: " ..tos(doShowTransmuationProtectionDialog) .. ", current/max: " ..tos(currentTransmCrystalCount) .. "/" .. tos(maxTransmCrystalCount))
                 if doShowTransmuationProtectionDialog == true then
                     local data       = {}
                     data.replaceVars = {}
-                    table.insert(data.replaceVars, currentTransmCrystalCount)
-                    table.insert(data.replaceVars, maxTransmCrystalCount)
+                    tins(data.replaceVars, currentTransmCrystalCount)
+                    tins(data.replaceVars, maxTransmCrystalCount)
                     data.callbackYes = function()
                         FCOIS.preventerVars.doNotShowProtectDialog = true
                         if IsProtectedFunction("UseItem") then
@@ -255,7 +302,7 @@ function FCOIS.UseAddSlotActionCallbackFunc(self)
                     data.callbackNo  = function() return true end
                     --Show the ask dialog now
                     local locVar     = FCOIS.localizationVars.fcois_loc
-                    FCOIS.ShowProtectionDialog(locVar["options_enable_block_transmutation_dialog_title"], locVar["options_enable_block_transmutation_dialog_question"], data)
+                    showProtectionDialog(locVar["options_enable_block_transmutation_dialog_title"], locVar["options_enable_block_transmutation_dialog_question"], data)
                     return true -- Abort the original use function here!
                 end
             end
@@ -283,7 +330,7 @@ end
 function FCOIS.OverrideUseAddSlotAction(parentFunc, self, actionStringId, actionCallback, ...)
     --d("[FCOIS.OverrideUseAddSlotAction]")
     --Is the item a container
-    if (not ctrlVars.BACKPACK:IsHidden() and actionStringId == SI_ITEM_ACTION_USE) then
+    if (not backpackCtrl:IsHidden() and actionStringId == SI_ITEM_ACTION_USE) then
         return parentFunc(
                 self, SI_ITEM_ACTION_USE,
                 function(...) return FCOIS_preUseAddSlotActionCallbackFunc(self, actionCallback, ...) end,
@@ -301,12 +348,13 @@ local overrideUseAddSlotAction = FCOIS.OverrideUseAddSlotAction
 
 -- handler function for inventory item controls' OnMouseUp event
 function FCOIS.OnInventoryItemMouseUp(self, mouseButton, upInside, ctrlKey, altKey, shiftKey, ...)
-    --d("[FCOIS]InventoryItem_OnMouseUp] mouseButton: " .. tos(mouseButton) .. ", upInside: " .. tos(upInside).. ", ctrlKey: " .. tos(ctrlKey) .. ", altKey: " .. tos(altKey).. ", shiftKey: " .. tos(shiftKey) .. ", dontShowContextMenu: " ..tos(FCOIS.preventerVars.dontShowInvContextMenu))
+d("[FCOIS]InventoryItem_OnMouseUp] mouseButton: " .. tos(mouseButton) .. ", upInside: " .. tos(upInside).. ", ctrlKey: " .. tos(ctrlKey) .. ", altKey: " .. tos(altKey).. ", shiftKey: " .. tos(shiftKey) .. ", dontShowContextMenu: " ..tos(FCOIS.preventerVars.dontShowInvContextMenu))
     FCOIS.preventerVars.dontShowInvContextMenu = false
     --Enable clearing all markers by help of the <modifier key>+right click?
     local contextMenuClearMarkesKey            = FCOIS.settingsVars.settings.contextMenuClearMarkesModifierKey
     local isModifierKeyPressedNow              = isModifierKeyPressed(contextMenuClearMarkesKey)
-    FCOIS.CheckIfClearOrRestoreAllMarkers(self, isModifierKeyPressedNow, upInside, mouseButton, false, false)
+    checkIfClearOrRestoreAllMarkers = checkIfClearOrRestoreAllMarkers or FCOIS.CheckIfClearOrRestoreAllMarkers
+    checkIfClearOrRestoreAllMarkers(self, isModifierKeyPressedNow, upInside, mouseButton, false, false)
     --Call original callback function for event OnMouseUp of the iinventory item row/character equipment slot now
     --d("<end OnMouseUp")
     return false
@@ -315,7 +363,7 @@ local onInventoryItemMouseUp = FCOIS.OnInventoryItemMouseUp
 
 --Add the OnMouseUp event handler to the scroll list's row control
 local function addOnMouseUpEventHandlerToRow(rowControl)
-    --d("[FCOIS]addOnMouseUpEventHandlerToRow - rowControl: " ..tos(rowControl:GetName()))
+d("[FCOIS]addOnMouseUpEventHandlerToRow - rowControl: " ..tos(rowControl:GetName()) .. ", gFilterWhere: " ..tos(FCOIS.gFilterWhere))
     if not rowControl then return end
     --Only if the <modifier key> + right click settings is enabled within FCOIS
     local contextMenuClearMarkesByShiftKey = FCOIS.settingsVars.settings.contextMenuClearMarkesByShiftKey
@@ -324,6 +372,7 @@ local function addOnMouseUpEventHandlerToRow(rowControl)
         --Is the row a supported inventory row pattern?
         local isInvRow, _ = isSupportedInventoryRowPattern(rowName)
         if isInvRow == true then
+--d(">rowPattern is supported")
             -- Append OnMouseUp event of inventory item controls, for each row (children), if it is not already set there before inside the if via SetEventHandler(...)
             if not getEventHandler("OnMouseUp", rowName) then
                 --Speed up: Only set boolean value to prevent addition of handler on the same row again (as you scroll, as the same rows are re-used in a pool!)
@@ -333,7 +382,7 @@ local function addOnMouseUpEventHandlerToRow(rowControl)
                 -->PreHook. So we use new ZOs way to do it via the additional applied handler with the own nameSpace "addonName" -> "FCOItemSaver"
                 --[[
                 ZO_PreHookHandler(rowControl, "OnMouseUp", function(...)
-                    FCOIS.OnInventoryItemMouseUp(...)
+                    onInventoryItemMouseUp(...)
                 end)
                 ]]
                 rowControl:SetHandler("OnMouseUp", function(...)
@@ -347,7 +396,7 @@ end
 --A setupCallback function for the scrolllists of the inventories.
 --> Will add the FCOIS marker icons if they get visible and add the OnMouseUp handlers to the rows to support the SHIFT+right mouse button features
 local function onScrollListRowSetupCallback(rowControl, data)
-    --d("[FCOIS]OnScrollListRow:SetupCallback")
+    d("[FCOIS]OnScrollListRow:SetupCallback - gFilterWhere: " ..tos(FCOIS.gFilterWhere))
     if not rowControl then
         d("[FCOIS]ERROR: OnScrollListRowSetupCallback - rowControl is missing!")
         return
@@ -370,15 +419,18 @@ local function onScrollListRowSetupCallback(rowControl, data)
     if hookScrollSetupCallbacks[inventoryListControl] ~= nil then
         --d(">>it's a valid crafting inventory scrollList setupCallback")
         local settings            = FCOIS.settingsVars.settings
+        local iconSettings        = settings.icon
         local iconVars            = FCOIS.iconVars
         local textureVars         = FCOIS.textureVars
 
         local createMarkerControl = FCOIS.CreateMarkerControl
         for i = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
-            local iconData = settings.icon[i]
+            local iconData = iconSettings[i]
             createMarkerControl(rowControl, i, iconData.size or iconVars.gIconWidth, iconData.size or iconVars.gIconWidth, textureVars.MARKER_TEXTURES[iconData.texture])
         end
     end
+
+    d(">>gFilterWhere: " ..tos(FCOIS.gFilterWhere))
 
     --Add additional FCO point to the dataEntry.data slot
     --FCOItemSaver_AddInfoToData(rowControl)
@@ -393,7 +445,8 @@ local function FCOItemSaver_OnInventorySlot_DoPrimaryAction(inventorySlot)
     --d("FCOItemSaver_OnInventorySlot_DoPrimaryAction")
     local doNotCallOriginalZO_InventorySlot_DoPrimaryAction = false
     --Hide the context menu at last active panel
-    FCOIS.HideContextMenu(FCOIS.gFilterWhere)
+    hideContextMenu = hideContextMenu or FCOIS.HideContextMenu
+    hideContextMenu(FCOIS.gFilterWhere)
     --Check if SHIFT key is pressed and if settings to use SHIFT key + right mouse to remove/restore marker icons on the inventory row is enabled
     -->Then do not call the double click handler here
     local settings                         = FCOIS.settingsVars.settings
@@ -403,31 +456,34 @@ local function FCOItemSaver_OnInventorySlot_DoPrimaryAction(inventorySlot)
 
     --Check where we are
     local parent          = inventorySlot:GetParent()
-    local isABankWithdraw = (parent == ctrlVars.BANK_BAG or parent == ctrlVars.GUILD_BANK_BAG or parent == ctrlVars.HOUSE_BANK_BAG)
-    local isCharacter     = (parent == ctrlVars.CHARACTER) or false
-    local isVendorRepair  = FCOIS.IsVendorPanelShown(LF_VENDOR_REPAIR, false) or false
+    local isABankWithdraw = (parent == bankCtrl or parent == guildBankCtrl or parent == houseBankCtrl)
+    local isCharacter     = (parent == characterCtrl) or false
+    isVendorPanelShown = isVendorPanelShown or FCOIS.IsVendorPanelShown
+    local isVendorRepair  = isVendorPanelShown(LF_VENDOR_REPAIR, false) or false
     --Do not add protection double click functions to bank/guild bank withdraw and character, and vendor repair
-    --d(">[FCOIS]FCOItemSaver_OnInventorySlot_DoPrimaryAction - " .. tos(inventorySlot:GetName()) .. ", isBankWithdraw: " ..tos(isABankWithdraw) .. ", isCharacter: " ..tos(isCharacter) .. ", isVendorRepair: " ..tos(isVendorRepair))
+d(">[FCOIS]FCOItemSaver_OnInventorySlot_DoPrimaryAction - " .. tos(inventorySlot:GetName()) .. ", isBankWithdraw: " ..tos(isABankWithdraw) .. ", isCharacter: " ..tos(isCharacter) .. ", isVendorRepair: " ..tos(isVendorRepair))
     if not isABankWithdraw and not isCharacter and not isVendorRepair then
         --Get the slected inv. row's dataEntry.data with bagId and slotIndex
         local bagId, slotId = myGetItemDetails(inventorySlot)
-        if (bagId ~= nil and slotId ~= nil) then
+        if bagId ~= nil and slotId ~= nil then
             --Set: Tell function ItemSelectionHandler that a drag&drop or doubleclick event was raised so it's not blocking the equip/use/etc. functions
             FCOIS.preventerVars.dragAndDropOrDoubleClickItemSelectionHandler = true
 
             -- Inside deconstruction?
-            if (not ctrlVars.DECONSTRUCTION_BAG:IsHidden() or checkIfUniversalDeconstructionNPC()) then -- #202
+            if (not deconstructionCtrl:IsHidden() or checkIfUniversalDeconstructionNPC()) then -- #202
                 -- #202
                 -- check if deconstruction is forbidden
                 -- if so, return true to prevent call of the original function ZO_InventorySlot_DoPrimaryAction of the item
-                if (FCOIS.callDeconstructionSelectionHandler(bagId, slotId, true)) then
+                callDeconstructionSelectionHandler = callDeconstructionSelectionHandler or FCOIS.callDeconstructionSelectionHandler
+                if callDeconstructionSelectionHandler(bagId, slotId, true) == true then
                     doNotCallOriginalZO_InventorySlot_DoPrimaryAction = true
                 end
                 --Others
             else
                 --check if item interaction is forbidden
                 --  bag, slot, echo, isDragAndDrop, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId
-                if (FCOIS.callItemSelectionHandler(bagId, slotId, true, false, false, false, false, false, false)) then
+                callItemSelectionHandler = callItemSelectionHandler or FCOIS.callItemSelectionHandler
+                if callItemSelectionHandler(bagId, slotId, true, false, false, false, false, false, false) then
                     -- item is not allowed to work with, prevent call of the original function ZO_InventorySlot_DoPrimaryAction of the item
                     doNotCallOriginalZO_InventorySlot_DoPrimaryAction = true
                 end
@@ -440,7 +496,8 @@ local function FCOItemSaver_OnInventorySlot_DoPrimaryAction(inventorySlot)
             ClearCursor()
             --else
             --Refresh the visible inventory row
-            --FCOIS.FilterBasics(true)
+            --filterBasics = filterBasics or FCOIS.FilterBasics
+            --filterBasics(true)
         end
     end
     return doNotCallOriginalZO_InventorySlot_DoPrimaryAction
@@ -452,8 +509,8 @@ local function FCOItemSaver_CharacterOnEffectivelyShown(self, ...)
     local contextMenuClearMarkesByShiftKey = FCOIS.settingsVars.settings.contextMenuClearMarkesByShiftKey
     local equipmentSlotName
     local characterEquipmentSlots          = FCOIS.mappingVars.characterEquipmentSlots
-    local isCompanionCharacter             = (ctrlVars.COMPANION_CHARACTER:IsHidden() == false) or false
-    --local characterBaseCtrl = (isCompanionCharacter == true and ctrlVars.COMPANION_CHARACTER) or ctrlVars.CHARACTER
+    local isCompanionCharacter             = (companionCharacterCtrl:IsHidden() == false) or false
+    --local characterBaseCtrl = (isCompanionCharacter == true and companionCharacterCtrl) or characterCtrl
     --d("[FCOItemSaver_CharacterOnEffectivelyShown]: " .. self:GetName())
     for i = 1, self:GetNumChildren() do
         -- override OnMouseDoubleClick event of character window item controls, for each row (children)
@@ -498,7 +555,7 @@ end
 local function FCOItemSaver_OnDragStart(inventorySlot)
     if inventorySlot == nil then return end
     local cursorContentType = GetCursorContentType()
-    --d("[FCOIS]FCOItemSaver_OnDragStart-cursorContentType: " .. tos(cursorContentType) .. "/" .. tos(MOUSE_CONTENT_INVENTORY_ITEM))
+d("[FCOIS]FCOItemSaver_OnDragStart-cursorContentType: " .. tos(cursorContentType) .. "/" .. tos(MOUSE_CONTENT_INVENTORY_ITEM))
     --cursorContentType is in 99% of the cases = MOUSE_CONTENT_EMPTY, even if an inventory item gets dragged
     if cursorContentType == MOUSE_CONTENT_EMPTY then
         inventorySlot = ZO_InventorySlot_GetInventorySlotComponents(inventorySlot)
@@ -506,7 +563,7 @@ local function FCOItemSaver_OnDragStart(inventorySlot)
     --FCOIS._inventorySlot=inventorySlot
     FCOIS.dragAndDropVars.bag  = nil
     FCOIS.dragAndDropVars.slot = nil
-    local bag, slot            = myGetItemDetails(inventorySlot)
+    local bag, slot = myGetItemDetails(inventorySlot)
     if bag == nil or slot == nil then bag, slot = ZO_Inventory_GetBagAndIndex(inventorySlot) end
     --d(">bag, slot: " .. tos(bag) .. ", " .. tos(slot))
     if bag == nil or slot == nil then return end
@@ -522,7 +579,7 @@ local function FCOItemSaver_OnReceiveDrag(inventorySlot)
     --FCOinvs = inventorySlot
     local cursorContentType = GetCursorContentType()
     if FCOIS.settingsVars.settings.debug then debugMessage("[OnReceiveDrag]", "cursorContentType: " .. tos(cursorContentType) .. "/" .. tos(MOUSE_CONTENT_INVENTORY_ITEM) .. ", invSlotType: " .. tos(inventorySlot.slotType) .. "/" .. tos(SLOT_TYPE_EQUIPMENT), true, FCOIS_DEBUG_DEPTH_NORMAL) end
-    --d("[FCOIS]FCOItemSaver_OnReceiveDrag, cursorContentType: " ..tos(cursorContentType))
+d("[FCOIS]FCOItemSaver_OnReceiveDrag, cursorContentType: " ..tos(cursorContentType))
 
     -- if there is an inventory item on the cursor:
     if cursorContentType ~= MOUSE_CONTENT_INVENTORY_ITEM and cursorContentType ~= MOUSE_CONTENT_EQUIPPED_ITEM then return end
@@ -552,10 +609,11 @@ local function FCOItemSaver_OnReceiveDrag(inventorySlot)
         --only return true/show the dialog of FCOIS if it's enabled in the settings and the ZOs functions somehow returned
         --false
         local doShowItemBindDialog = false
-        if (isCharacterShown() or isCompanionCharacterShown()) then
+        if isCharacterShown() or isCompanionCharacterShown() then
             local equipSucceeds, _ = IsEquipable(bag, slot)
             --Check if we need to show the "Ask before bind" dialog as the item get's dropped at an equipment slot
-            if equipSucceeds and FCOIS.CheckBindableItems(bag, slot, nil, true) then
+            checkBindableItems = checkBindableItems or FCOIS.CheckBindableItems
+            if equipSucceeds and checkBindableItems(bag, slot, nil, true) then
                 doShowItemBindDialog = true
             end
         end
@@ -566,7 +624,7 @@ local function FCOItemSaver_OnReceiveDrag(inventorySlot)
         -- check if destroying, improvement, sending or trading is forbidden
         -- and check if item is bindable (above)
         -- if so, clear item hold by cursor
-        if (doShowItemBindDialog) then
+        if doShowItemBindDialog then
             --Remove the picked item from drag&drop cursor
             ClearCursor()
         end
@@ -579,7 +637,8 @@ local function FCOItemSaver_OnReceiveDrag(inventorySlot)
         if bagId == BAG_VIRTUAL then
             --Check if the item is protected
             --  bag, slot, echo, isDragAndDrop, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId
-            local isProtected = FCOIS.callItemSelectionHandler(bagId, slotIndex, true, true, false, false, false, false, false, nil)
+            callItemSelectionHandler = callItemSelectionHandler or FCOIS.callItemSelectionHandler
+            local isProtected = callItemSelectionHandler(bagId, slotIndex, true, true, false, false, false, false, false, nil)
             if isProtected == true then
                 --Remove the picked item from drag&drop cursor
                 ClearCursor()
@@ -602,7 +661,8 @@ function FCOIS.SceneCallbackHideContextMenu(oldState, newState, overrideFilterPa
             overrideFilterPanel = FCOIS.gFilterWhere
         end
         --Hide the context menu at last active panel
-        FCOIS.HideContextMenu(overrideFilterPanel)
+        hideContextMenu = hideContextMenu or FCOIS.HideContextMenu
+        hideContextMenu(overrideFilterPanel)
     end
 end
 local sceneCallbackHideContextMenu = FCOIS.SceneCallbackHideContextMenu
@@ -636,14 +696,14 @@ function FCOIS.CreateHooks()
     end
 
     local checkFCOISFilterButtonsAtPanel                     = FCOIS.CheckFCOISFilterButtonsAtPanel
-    local updateFCOISFilterButtonsAtInventory                = FCOIS.UpdateFCOISFilterButtonsAtInventory
-    local updateFCOISFilterButtonColorsAndTextures           = FCOIS.UpdateFCOISFilterButtonColorsAndTextures
-    local hideContextMenu                                    = FCOIS.HideContextMenu
+    --local updateFCOISFilterButtonsAtInventory                = FCOIS.UpdateFCOISFilterButtonsAtInventory
+    --local updateFCOISFilterButtonColorsAndTextures           = FCOIS.UpdateFCOISFilterButtonColorsAndTextures
+    hideContextMenu = hideContextMenu or FCOIS.HideContextMenu
     local changeContextMenuInvokerButtonColorByPanelId       = FCOIS.ChangeContextMenuInvokerButtonColorByPanelId
     local reParentAndAnchorContextMenuInvokerButtons         = FCOIS.ReParentAndAnchorContextMenuInvokerButtons
     local resetContextMenuInvokerButtonColorToDefaultPanelId = FCOIS.ResetContextMenuInvokerButtonColorToDefaultPanelId
     local autoReenableAntiSettingsCheck                      = FCOIS.AutoReenableAntiSettingsCheck
-    local checkIfClearOrRestoreAllMarkers                    = FCOIS.CheckIfClearOrRestoreAllMarkers
+    checkIfClearOrRestoreAllMarkers = checkIfClearOrRestoreAllMarkers or FCOIS.CheckIfClearOrRestoreAllMarkers
 
     local isResearchListDialogShown                          = FCOIS.IsResearchListDialogShown
     local refreshPopupDialogButtons                          = FCOIS.RefreshPopupDialogButtons
@@ -681,7 +741,7 @@ function FCOIS.CreateHooks()
         --local isCharacterShownNow = isCharacterShown()
         --local isCompanionCharacterShownNow = isCompanionCharacterShown()
 
-        --d("[FCOIS]ZO_InventorySlot_ShowContextMenu - isCharacterShown: " ..tos(isCharacterShownNow) ..", isCompanionCharacterShown: " ..tos(isCompanionCharacterShownNow))
+    d("[FCOIS]ZO_InventorySlot_ShowContextMenu - filterPanel: " .. tos(FCOIS.gFilterWhere))
         --Clear the sub context menu entries
         FCOIS.customMenuVars.customMenuSubEntries         = {}
         FCOIS.customMenuVars.customMenuDynSubEntries      = {}
@@ -721,7 +781,7 @@ function FCOIS.CreateHooks()
         local resetSortOrderDone      = false
 
         local contextMenuEntriesAdded = 0
-        --check each iconId and build a sorted context menu then
+        --Check each iconId and build a sorted context menu then
         local useSubContextMenu       = settings.useSubContextMenu
         FCOIS.preventerVars.gCalledFromInternalFCOIS = true
         local _, countDynIconsEnabled = FCOIS.CountMarkerIconsEnabled()
@@ -747,7 +807,7 @@ function FCOIS.CreateHooks()
                     FCOcontextMenu[newOrderId] = nil
                     FCOcontextMenu[newOrderId] = {}
                     --Is the current control an equipment control?
-                    local isEquipControl       = (parentControl == ctrlVars.CHARACTER or parentControl == ctrlVars.COMPANION_CHARACTER)
+                    local isEquipControl       = (parentControl == characterCtrl or parentControl == companionCharacterCtrl)
                     if (isEquipControl) then
                         FCOcontextMenu[newOrderId].control = rowControl
                     else
@@ -870,22 +930,25 @@ function FCOIS.CreateHooks()
             if settings.debug then debugMessage("[EquipItem]", "bagId: " .. bagId .. ", slotIndex: " .. slotIndex .. ", equipSlotIndex: " .. tos(equipSlotIndex), true, FCOIS_DEBUG_DEPTH_NORMAL) end
             --d("[EquipItem] bagId: " .. bagId .. ", slotIndex: " .. slotIndex .. ", equipSlotIndex: " ..tos(equipSlotIndex))
             --Check if the item is bound on equip and show dialog to acceppt the binding before (if enabled in the settings)
-            return FCOIS.CheckBindableItems(bagId, slotIndex, equipSlotIndex)
+            checkBindableItems = checkBindableItems or FCOIS.CheckBindableItems
+            return checkBindableItems(bagId, slotIndex, equipSlotIndex)
         end
     end)
 
     SecurePostHook("RequestEquipItem", function(bagId, slotIndex, bagWorn, equipSlot)
         --No equipslot given? Determine it via the itemType
         if equipSlot == nil and bagId ~= nil and slotIndex ~= nil then
-            local equipType = GetItemEquipType(bagId, slotIndex)
+            local equipType = giet(bagId, slotIndex)
             equipSlot       = mappingVars.equipTypeToSlot[equipType]
         end
-        --d("[FCOIS]RequestEquipItem-bagId: " ..tos(bagId) .. ", slotIndex: " ..tos(slotIndex) .. ", bagWorn: " ..tos(bagWorn) .. ", equipSlotIndex: " .. tos(equipSlot) .. " " .. GetItemLink(bagId, slotIndex))
+        --d("[FCOIS]RequestEquipItem-bagId: " ..tos(bagId) .. ", slotIndex: " ..tos(slotIndex) .. ", bagWorn: " ..tos(bagWorn) .. ", equipSlotIndex: " .. tos(equipSlot) .. " " .. gil(bagId, slotIndex))
         if settings.debug then debugMessage("[RequestEquipItem]", "bagId: " .. tos(bagId) .. ", slotIndex: " .. tos(slotIndex) .. ", bagWorn: " .. tos(bagWorn) .. ", equipSlotIndex: " .. tos(equipSlot), true, FCOIS_DEBUG_DEPTH_NORMAL) end
         --Update the marker control of the new equipped item
-        FCOIS.UpdateEquipmentSlotMarker(equipSlot, 300, false)
+        updateEquipmentSlotMarker = updateEquipmentSlotMarker or FCOIS.UpdateEquipmentSlotMarker
+        updateEquipmentSlotMarker(equipSlot, 300, false)
         --Refresh the inventory, if shown, to update the marker icons at the unequipped item's inventory row
-        FCOIS.FilterBasics(true)
+        filterBasics = filterBasics or FCOIS.FilterBasics
+        filterBasics(true)
     end)
 
     --========= UNEQUIP ITEM =======================================================
@@ -893,13 +956,16 @@ function FCOIS.CreateHooks()
     SecurePostHook("RequestUnequipItem", function(bagId, equipSlot)
         if bagId ~= nil and equipSlot ~= nil then
             if settings.debug then debugMessage("[RequestUnequipItem]", "bagId: " .. tos(bagId) .. ", equipSlotIndex: " .. equipSlot, true, FCOIS_DEBUG_DEPTH_NORMAL) end
-            --d("[FCOIS]RequestUnEquipItem-bagId: " ..tos(bagId) .. ", equipSlotIndex: " .. tos(equipSlot) .. " " .. GetItemLink(bagId, equipSlot))
+            --d("[FCOIS]RequestUnEquipItem-bagId: " ..tos(bagId) .. ", equipSlotIndex: " .. tos(equipSlot) .. " " .. gil(bagId, equipSlot))
             --If item was unequipped: Remove the armor type marker if necessary
-            FCOIS.RemoveArmorTypeMarker(bagId, equipSlot) -->BAG_WORN will be updated to BAG_COMPANION_WORN internally!
+            removeArmorTypeMarker = removeArmorTypeMarker or FCOIS.RemoveArmorTypeMarker
+            removeArmorTypeMarker(bagId, equipSlot) -->BAG_WORN will be updated to BAG_COMPANION_WORN internally!
             --Update the marker control of the new equipped item
-            FCOIS.UpdateEquipmentSlotMarker(equipSlot, 300, true)
+            updateEquipmentSlotMarker = updateEquipmentSlotMarker or FCOIS.UpdateEquipmentSlotMarker
+            updateEquipmentSlotMarker(equipSlot, 300, true)
             --Refresh the inventory, if shown, to update the marker icons at the unequipped item's inventory row
-            FCOIS.FilterBasics(true)
+            filterBasics = filterBasics or FCOIS.FilterBasics
+            filterBasics(true)
         end
     end)
     --========= MENU BARS ==========================================================
@@ -973,10 +1039,12 @@ function FCOIS.CreateHooks()
 
             if not isHidden then
                 --LF_SMITHING_DECONSTRUCT needs to be passed in as valid filterPanel! It maybe not the correct filterPanel, so it is determined internally
-                local currentFilterPanelIdAtUniversalDecon = getCurrentFilterPanelIdAtDeconNPC(LF_SMITHING_DECONSTRUCT)
+                local filterPanelIdPassedIn = universalDeconGlobal.FCOIScurrentFilterPanelId
+                filterPanelIdPassedIn = filterPanelIdPassedIn or LF_SMITHING_DECONSTRUCT
+                local currentFilterPanelIdAtUniversalDecon = getCurrentFilterPanelIdAtDeconNPC(filterPanelIdPassedIn)
                 if currentFilterPanelIdAtUniversalDecon ~= nil and FCOIS.gFilterWhere ~= currentFilterPanelIdAtUniversalDecon then
+d("[FCOIS]UniversalDecon - Setting filterPanelId to: " ..tos(currentFilterPanelIdAtUniversalDecon))
                     FCOIS.gFilterWhere = currentFilterPanelIdAtUniversalDecon
-
                     --Re-anchor the filterButtons and the additional inventory flag button from their default parents at e.g.
                     --LF_SMITHING_DECONSTRUCT, LF_JEWELRY_DECONSTRUCT and LF_ENCHANTING_EXTRACTION to
                     --their new parent control UNIVERSAL_DECONSTRUCTION.control ...
@@ -989,7 +1057,8 @@ function FCOIS.CreateHooks()
                     checkFCOISFilterButtonsAtPanel(true, currentFilterPanelIdAtUniversalDecon, nil, nil, true) --#202 universal deconstruction
                 end
             else
-                local lastFilterPanelIdAtUniversalDecon = FCOIS.gFilterWhere
+                local lastFilterPanelIdAtUniversalDecon = universalDeconGlobal.FCOIScurrentFilterPanelId
+                lastFilterPanelIdAtUniversalDecon = lastFilterPanelIdAtUniversalDecon or FCOIS.gFilterWhere
                 --d(">[FCOIS]lastFilterPanelIdAtUniversalDecon: " ..tos(lastFilterPanelIdAtUniversalDecon))
                 --Hide context menus and update inventory filterButtons + re-enable the ANTI deconstruction/ANTI enchanting protection if needed
                 onClosePanel(nil, LF_INVENTORY, "CRAFTING_STATION")
@@ -999,51 +1068,99 @@ function FCOIS.CreateHooks()
                 reParentAndAnchorContextMenuInvokerButtons(lastFilterPanelIdAtUniversalDecon, nil)
 
                 --Reset the filterPanelId to inventory
+d("[FCOIS]UniversalDecon HIDDEN - resetting filterPanelId to LF_INVENTORY")
                 FCOIS.gFilterWhere = LF_INVENTORY
             end
         end
 
         local universalDeconButtonsHooked = false
         ctrlVars.UNIVERSAL_DECONSTRUCTON_SCENE:RegisterCallback("StateChange", function(oldState, newState)
-            --d("[FCOIS] UniversalDeconstruction Scene state change")
+d("[FCOIS] UniversalDeconstruction Scene state change to: " ..tos(newState))
             --Hide the context menu at the active panel
             sceneCallbackHideContextMenu(oldState, newState)
 
-            if not universalDeconButtonsHooked and newState == SCENE_SHOWING then
-                --Hook the buttons' OnClick handler of the universal deconstruction bar
-                local buttonsToHook = ctrlVars.UNIVERSAL_DECONSTRUCTION_MENUBAR_TABS.m_object.m_buttons
-                --d("[FCOIS]Universal deconstruction menu bar button hooks: " ..tos(buttonsToHook))
-                if buttonsToHook ~= nil then
-                    for _, buttonRef in ipairs(buttonsToHook) do
-                        if buttonRef ~= nil and buttonRef[1] ~= nil and buttonRef[1].SetHandler ~= nil then
-                            --d(">hooked button: " ..tos(idx))
-                            ZO_PostHookHandler(buttonRef[1], "OnMouseUp", function(clickedButtonRef, mouseButton, upInside)
-                                --d("[FCOIS]OnMouseUp universal deconstruction menu bar button")
-                                if not mouseButton == MOUSE_BUTTON_INDEX_LEFT or not upInside then return end
-                                zo_callLater(function()
-                                    updateFilterAndAddInvFlagButtonsAtUniversalDeconstruction(false)
-                                end, 0) --delay by 1 frame to update the menu buttons properly
-                            end)
+            if newState == SCENE_SHOWING then
+                if not not universalDeconButtonsHooked then
+                    --Hook the buttons' OnClick handler of the universal deconstruction bar
+                    local buttonsToHook = ctrlVars.UNIVERSAL_DECONSTRUCTION_MENUBAR_TABS.m_object.m_buttons
+                    --d("[FCOIS]Universal deconstruction menu bar button hooks: " ..tos(buttonsToHook))
+                    if buttonsToHook ~= nil then
+                        for _, buttonRef in ipairs(buttonsToHook) do
+                            if buttonRef ~= nil and buttonRef[1] ~= nil and buttonRef[1].SetHandler ~= nil then
+                                --d(">hooked button: " ..tos(idx))
+                                ZO_PostHookHandler(buttonRef[1], "OnMouseUp", function(clickedButtonRef, mouseButton, upInside)
+                                    --d("[FCOIS]OnMouseUp universal deconstruction menu bar button")
+                                    if not mouseButton == MOUSE_BUTTON_INDEX_LEFT or not upInside then return end
+                                    zo_callLater(function()
+                                        updateFilterAndAddInvFlagButtonsAtUniversalDeconstruction(false)
+                                    end, 0) --delay by 1 frame to update the menu buttons properly
+                                end)
+                            end
+                            universalDeconButtonsHooked = true
                         end
-                        universalDeconButtonsHooked = true
                     end
                 end
-
             end
             --Normal scene shown/hidden callbacks to show/hide (& reanchor) the additional inventory flag buttons and the filterButtonss
             if newState == SCENE_SHOWN then
+                --Set the filterPanelId to last opened one or default for "all" tab directly so that functions at the inventory list will use
+                --the correct filterPanelId
+d(">>>SHOWN - Setting filterPanelId to: " ..tos(universalDeconGlobal.FCOIScurrentFilterPanelId) .. ", or to \'ALL\' tab")
+                FCOIS.gFilterWhere = universalDeconGlobal.FCOIScurrentFilterPanelId
+                FCOIS.gFilterWhere = FCOIS.gFilterWhere or LF_SMITHING_DECONSTRUCT
+
                 --Delay by a few ms to update the controls etc. properly
                 zo_callLater(function()
                     updateFilterAndAddInvFlagButtonsAtUniversalDeconstruction(false)
                 end, 10)
             elseif newState == SCENE_HIDING then
                 --Hide the context menu at mail panel
-                hideContextMenu(FCOIS.gFilterWhere)
+                local filterTypeToHide = universalDeconGlobal.FCOIScurrentFilterPanelId
+                filterTypeToHide = filterTypeToHide or LF_SMITHING_DECONSTRUCT
+                hideContextMenu(filterTypeToHide)
             elseif newState == SCENE_HIDDEN then
                 updateFilterAndAddInvFlagButtonsAtUniversalDeconstruction(true)
             end
         end)
     end
+
+    --[[
+
+    --Another approach to detect the current active panel, but this will fire also if the dropdown filters are changed!
+    SecurePostHook(universalDeconstructionPanel, "OnFilterChanged", function(panel)
+        -- Returns any CRAFTING_TYPE filter value(s) selected from ZO_UNIVERSAL_DECONSTRUCTION_CRAFTING_TYPES by the player.
+        local craftingTypes = panel:GetSavedCraftingTypeFilters()
+        if craftingTypes then
+            -- One or more keys from the set {CRAFTING_TYPE_BLACKSMITHING, CRAFTING_TYPE_CLOTHIER,
+            --CRAFTING_TYPE_ENCHANTING, CRAFTING_TYPE_JEWELRYCRAFTING, CRAFTING_TYPE_WOODWORKING}
+FCOIS._universalDeconCraftingTypes = craftingTypes
+        end
+
+        -- Returns the ITEMTYPE or ITEMFILTERTYPE value(s) shown by the current tab.
+        local filterData = panel.inventory:GetCurrentFilterType()
+        if filterData then
+            -- If itemTypes exists, it is a table with one or more ITEMTYPE_* values indicating which item types are shown.
+            -- For example: {ITEMTYPE_GLYPH_ARMOR, ITEMTYPE_GLYPH_JEWELRY, ITEMTYPE_GLYPH_WEAPON}
+            local itemTypes = filterData.itemTypes
+FCOIS._universalDeconItemTypes = itemTypes
+            if itemTypes and enchantingItemTypes and itemTypes == enchantingItemTypes then
+                d(">Enchating tab active")
+            else
+                -- If itemFilterTypes exists, it is a table with one or more ITEMFILTERTYPE_* values indicating which item filter types are shown.
+                -- For example: {ITEMFILTERTYPE_WEAPONS}
+                local itemFilterTypes = filterData.itemFilterTypes
+FCOIS._universalDeconItemFilterTypes = itemFilterTypes
+                if itemFilterTypes then
+
+                end
+            end
+
+        else
+            -- Otherwise, the current tab is the "All" tab; all items that can be deconstructed are shown.
+
+        end
+    end)
+    ]]
     -- -^- #202
 
 
@@ -1340,7 +1457,7 @@ function FCOIS.CreateHooks()
     --======== INVENTORY ===========================================================
     --Pre Hook the inventory for prevention methods
     --Register a secure posthook on visibility change of a scrolllist's row -> At the backpack inventory list
-    SecurePostHook(ctrlVars.BACKPACK.dataTypes[1], "setupCallback", onScrollListRowSetupCallback)
+    SecurePostHook(backpackCtrl.dataTypes[1], "setupCallback", onScrollListRowSetupCallback)
     --PreHook the primary action keybind in inventories
     ZO_PreHook("ZO_InventorySlot_DoPrimaryAction", FCOItemSaver_OnInventorySlot_DoPrimaryAction)
 
@@ -1384,11 +1501,11 @@ function FCOIS.CreateHooks()
 
     --======== CHARACTER ===========================================================
     --Pre Hook the character window for prevention methods
-    ZO_PostHookHandler(ctrlVars.CHARACTER, "OnEffectivelyShown", FCOItemSaver_CharacterOnEffectivelyShown)
+    ZO_PostHookHandler(characterCtrl, "OnEffectivelyShown", FCOItemSaver_CharacterOnEffectivelyShown)
 
     --======== COMPANION CHARACTER ===========================================================
     --Pre Hook the companion character window for prevention methods
-    ZO_PostHookHandler(ctrlVars.COMPANION_CHARACTER, "OnEffectivelyShown", FCOItemSaver_CharacterOnEffectivelyShown)
+    ZO_PostHookHandler(companionCharacterCtrl, "OnEffectivelyShown", FCOItemSaver_CharacterOnEffectivelyShown)
 
     --======== RIGHT CLICK / CONTEXT MENU ==========================================
     --Pre Hook the right click/context menu addition of items
