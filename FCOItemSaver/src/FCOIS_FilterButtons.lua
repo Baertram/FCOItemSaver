@@ -81,7 +81,7 @@ local function outputFilterState(p_outputToChat, p_panelId, p_filterId, p_stateT
     end
 
     if settings.debug then debugMessage( "[OutputFilterState]","OutputToChat: " .. tos(p_outputToChat) ..", filterPanelId: " ..tos(p_panelId)..", filterId: "..tos(p_filterId)..", stateText: " .. p_stateText, true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
-d("[FCOIS]OutputFilterState-OutputToChat: " .. tos(p_outputToChat) ..", filterPanelId: " ..tos(p_panelId)..", filterId: "..tos(p_filterId)..", stateText: " .. p_stateText)
+--d("[FCOIS]OutputFilterState-OutputToChat: " .. tos(p_outputToChat) ..", filterPanelId: " ..tos(p_panelId)..", filterId: "..tos(p_filterId)..", stateText: " .. p_stateText)
     local localizationVars = FCOIS.localizationVars
     local locVars = localizationVars.fcois_loc
     local filterStateText = locVars["filter" .. filterText .. p_stateText]
@@ -621,7 +621,7 @@ end
 --Function is executed as the filter buttons in the inventories are pressed
 --Enable/Enable and only show marked items/Disable a filter or disable all filters
 local function doFilter(onoff, p_button, filterButtonId, beQuiet, doFilterBasicsPlayer, doUpdateButtonColorsAndTextures, onlyPlayerInvFilter, p_FilterPanelId, isUniversalDecon)
-d("[FCOIS]DoFilter - filterButtonId: " ..tos(filterButtonId) .. ", filterPanelId/gFilterWhere: " ..tos(p_FilterPanelId) .. "/" ..tos(FCOIS.gFilterWhere) ..", isUniversalDecon: " ..tos(isUniversalDecon))
+--d("[FCOIS]DoFilter - filterButtonId: " ..tos(filterButtonId) .. ", filterPanelId/gFilterWhere: " ..tos(p_FilterPanelId) .. "/" ..tos(FCOIS.gFilterWhere) ..", isUniversalDecon: " ..tos(isUniversalDecon))
     --Check if the current filter panel Id is given
     if p_FilterPanelId == nil then
         --For initialization, called from function EnableFilters()
@@ -641,7 +641,7 @@ d("[FCOIS]DoFilter - filterButtonId: " ..tos(filterButtonId) .. ", filterPanelId
 
     --Check if the settings are enabled for the current panel
     p_FilterPanelId = getFilterWhereBySettings(p_FilterPanelId, false)
-d(">p_FilterPanelId: " ..tos(p_FilterPanelId))
+--d(">p_FilterPanelId: " ..tos(p_FilterPanelId))
     local settings = FCOIS.settingsVars.settings
     local lastVars = FCOIS.lastVars
 

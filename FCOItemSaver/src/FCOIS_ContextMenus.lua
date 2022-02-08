@@ -13,12 +13,14 @@ local strlen = string.len
 local zo_strf = zo_strformat
 
 local wm = WINDOW_MANAGER
+local isiuse = IsItemUsable
 
 local numFilterIcons = FCOIS.numVars.gFCONumFilterIcons
 local myColorEnabled	= ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_TEXT_COLORS, INTERFACE_TEXT_COLOR_NORMAL))
 local myColorDisabled	= ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_TEXT_COLORS, INTERFACE_TEXT_COLOR_DISABLED))
 local ctrlVars = FCOIS.ZOControlVars
 local zoMenu = ctrlVars.ZOMenu
+local otherAddons = FCOIS.otherAddons
 
 local availableCtms = FCOIS.contextMenuVars.availableCtms
 local contextMenuButtonClickedMenuToButton = FCOIS.mappingVars.contextMenuButtonClickedMenuToButton
@@ -90,6 +92,8 @@ local buildMarkerIconProtectedWhereTooltip
 local checkIfUniversaldDeconstructionNPC
 
 local isMarked
+local callItemSelectionHandler
+local callDeconstructionSelectionHandler
 
 ------------------------------------------------------------------------------------------------------------------------
 --Get the context menu invoker button data by help of the panel Id
@@ -3681,7 +3685,7 @@ end
 function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
     local settings = FCOIS.settingsVars.settings
     local mappingVars = FCOIS.mappingVars
-    --d(">[FCOIS]FCOIS.InvContextMenuAddSlotAction-actionStringId: " ..tos(actionStringId))
+--d(">[FCOIS]FCOIS.InvContextMenuAddSlotAction-actionStringId: " ..tos(actionStringId) .. ", gFilterWhere: " ..tos(FCOIS.gFilterWhere))
     --Is the ZOs player lock item functionality enabled?
     if not settings.useZOsLockFunctions then
         --Only execute if context menu is visible?
@@ -3692,7 +3696,6 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
             end
         end
     end
-
     isMarked = isMarked or FCOIS.IsMarked
 
     --The current game's SCENE and name (used for determining bank/guild bank deposit)
@@ -3741,19 +3744,18 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
             end
         end
     else
-        if isNewSlot then
-            if settings.debug then debugMessage( "[AddSlotAction]",">newSlot! Parent: " .. parentName, true, FCOIS_DEBUG_DEPTH_ALL) end
-        end
+        if isNewSlot and settings.debug then debugMessage( "[AddSlotAction]",">newSlot! Parent: " .. parentName, true, FCOIS_DEBUG_DEPTH_ALL) end
     end
 
-    local callItemSelectionHandler = FCOIS.callItemSelectionHandler
+    callItemSelectionHandler = callItemSelectionHandler or FCOIS.callItemSelectionHandler
+    callDeconstructionSelectionHandler = callDeconstructionSelectionHandler or FCOIS.callDeconstructionSelectionHandler
 
     --Use item?
-    if        actionStringId == SI_ITEM_ACTION_USE then
+    if actionStringId == SI_ITEM_ACTION_USE then
         --Is the item protected with any icon?
         FCOIS.preventerVars.gCalledFromInternalFCOIS = true
         local marked, _ = isMarked(bag, slotIndex, -1)
-        if marked and IsItemUsable(bag, slotIndex) then
+        if marked and isiuse(bag, slotIndex) then
             --If mail send or player trade panel is activated
             local isCurrentlyShowingMailSend 	= not ctrlVars.MAIL_SEND.control:IsHidden() and settings.blockSendingByMail
             local isCurrentlyShowingPlayerTrade = not ctrlVars.PLAYER_TRADE.control:IsHidden() and settings.blockTrading
@@ -3765,7 +3767,7 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
             --local isARepairKit				  = isItemType(bag, slot, ITEMTYPE_TOOL)
             local isACrownStoreItem             = (isItemType(bag, slotIndex, ITEMTYPE_CROWN_ITEM) or isItemType(bag, slotIndex, ITEMTYPE_CROWN_REPAIR)) and settings.blockCrownStoreItems
 
-            --d("[FCOIS]FCOItemSaver_AddSlotAction - PanelId: " .. tos(FCOIS.gFilterWhere) .. ", isARecipe: " .. tos(isARecipe) .. ", isAStyleMotif: " .. tos(isAStyleMotif) .. ", isAFood: " .. tos(isAFood))
+--d("[FCOIS]FCOItemSaver_AddSlotAction - PanelId: " .. tos(FCOIS.gFilterWhere) .. ", isARecipe: " .. tos(isARecipe) .. ", isAStyleMotif: " .. tos(isAStyleMotif) .. ", isAFood: " .. tos(isAFood))
             --Only if we are in the inventory
             if FCOIS.gFilterWhere == LF_INVENTORY then
                 --See if the Anti-settings for the given panel is enabled or not
@@ -3812,7 +3814,7 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
             end
         end
 
-        --Enchant
+    --Enchant
     elseif actionStringId == SI_ITEM_ACTION_ENCHANT then
         --Remove enchant possibility for The Master's and Maelstrom weapons & shields
         if settings.blockSpecialItemsEnchantment then
@@ -3821,7 +3823,7 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
         end
 
     --Destroy item
-    elseif    actionStringId == SI_ITEM_ACTION_DESTROY then
+    elseif actionStringId == SI_ITEM_ACTION_DESTROY then
 
         --Only execute if context menu is visible?
         if mouseRightClickDone == false then
@@ -3836,19 +3838,20 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
     --Add item to crafting station, improvement, enchanting, retrait table
     elseif actionStringId == SI_ITEM_ACTION_ADD_TO_CRAFT or actionStringId == SI_ITEM_ACTION_RESEARCH then --or actionStringId == SI_ITEM_ACTION_ADD_TO_RETRAIT then
         --Is item marked with any of the FCOItemSaver icons? Then don't show the actionStringId in the contextmenu
-        return FCOIS.callDeconstructionSelectionHandler(bag, slotIndex, false)
+        --bag, slotIndex, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId
+        return callDeconstructionSelectionHandler(bag, slotIndex, false, false, false, false, false, false, nil)
 
-        --Trade an item, mark item as junk, attach item to mail, sell item, launder item, add to trading house listing (sell there) or add to crafting station
+    --Trade an item, mark item as junk, attach item to mail, sell item, launder item, add to trading house listing (sell there) or add to crafting station
     elseif actionStringId == SI_ITEM_ACTION_TRADE_ADD
             or actionStringId == SI_ITEM_ACTION_MAIL_ATTACH or actionStringId == SI_ITEM_ACTION_SELL
             or actionStringId == SI_ITEM_ACTION_LAUNDER
             --Anbieten / sell in guild shop
             or actionStringId == SI_TRADING_HOUSE_ADD_ITEM_TO_LISTING then
         --Is item marked with any of the FCOItemSaver icons? Then don't show the actionStringId in the contextmenu
-        --  bag, slot, echo, isDragAndDrop, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId
-        return callItemSelectionHandler(bag, slotIndex, false, false, false, false, false, false, false)
+        --  bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId, isDragAndDrop, panelIdParent
+        return callItemSelectionHandler(bag, slotIndex, false, false, false, false, false, false, nil, nil, nil)
 
-        --Should the "Junk item" context menu entry be hidden if any marker icon is set?
+    --Should the "Junk item" context menu entry be hidden if any marker icon is set?
     elseif actionStringId == SI_ITEM_ACTION_MARK_AS_JUNK and settings.removeMarkAsJunk then
         --Check the marker icons
         FCOIS.preventerVars.gCalledFromInternalFCOIS = true
@@ -3898,7 +3901,7 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
     elseif actionStringId == SI_ITEM_ACTION_BANK_DEPOSIT then
         --Are we at the guild bank and is the protection setting for "non-withdrawable items" enabled?
         if settings.blockGuildBankWithoutWithdraw then
-            if (currentSceneName == ctrlVars.guildBankSceneName or currentSceneName == ctrlVars.guildBankGamepadSceneName) then
+            if currentSceneName == ctrlVars.guildBankSceneName then -- or currentSceneName == ctrlVars.guildBankGamepadSceneName then
                 local currentGuildBankId = FCOIS.guildBankVars.guildBankId
                 if currentGuildBankId == 0 then return true end
                 return not checkIfGuildBankWithdrawAllowed(currentGuildBankId)
@@ -3917,11 +3920,11 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
     ]]
 
         --CraftBagExtended: Unpack item and add to mail, sell, trade
-    elseif FCOIS.otherAddons.craftBagExtendedActive and
+    elseif CraftBagExtended or CBE or otherAddons.craftBagExtendedActive and
             (actionStringId == SI_CBE_CRAFTBAG_MAIL_ATTACH or actionStringId == SI_CBE_CRAFTBAG_SELL_QUANTITY or actionStringId == SI_CBE_CRAFTBAG_TRADE_ADD) then
         --Is item marked with any of the FCOItemSaver icons? Then don't show the actionStringId in the contextmenu
-        --  bag, slot, echo, isDragAndDrop, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId
-        return callItemSelectionHandler(bag, slotIndex, false, false, false, false, false, false, false)
+        --  bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId, isDragAndDrop, panelIdParent
+        return callItemSelectionHandler(bag, slotIndex, false, false, false, false, false, false, nil, nil, nil)
 
         --De-comment to show the other slot actions
         --else

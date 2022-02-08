@@ -4,7 +4,10 @@ local FCOIS = FCOIS
 --Do not go on if libraries are not loaded properly
 --if not FCOIS.libsLoadedProperly then return end
 
+local tos = tostring
+local tins = table.insert
 local strformat = string.format
+
 local debugMessage = FCOIS.debugMessage
 
 local gil = GetItemLink 
@@ -494,7 +497,7 @@ end
 function FCOIS.IsIconEnabled(markerIconId, calledFromExternalAddon)
 	calledFromExternalAddon = calledFromExternalAddon or false
 	if markerIconId == nil or markerIconId <= 0 or markerIconId > numFilterIcons then return nil end
---d("[FCOIS.IsIconEnabled] markerIconId: " .. tostring(markerIconId))
+--d("[FCOIS.IsIconEnabled] markerIconId: " .. tos(markerIconId))
     FCOIS.preventerVars.gCalledFromInternalFCOIS = calledFromExternalAddon
 	if not checkIfFCOISSettingsWereLoaded(calledFromExternalAddon, not addonVars.gAddonLoaded) then return false end
     --Check if the icon is enabled
@@ -641,7 +644,7 @@ function FCOIS.IsMarkedByItemInstanceId(itemInstanceId, iconIds, excludeIconIds,
 	if not checkIfFCOISSettingsWereLoaded(FCOIS.preventerVars.gCalledFromInternalFCOIS, not addonVars.gAddonLoaded) then return false end
 	--Build the itemInstanceId (signed) by help of the itemId
 	local signedItemInstanceId = signItemId(itemInstanceId, nil, true, addonName, nil, nil) -- only sign
---d(">FCOIS.IsMarkedByItemInstanceId, itemInstanceId: " .. tostring(itemInstanceId) .. ", signedItemInstanceId: " ..tostring(signedItemInstanceId))
+--d(">FCOIS.IsMarkedByItemInstanceId, itemInstanceId: " .. tos(itemInstanceId) .. ", signedItemInstanceId: " ..tos(signedItemInstanceId))
 	if signedItemInstanceId == nil then return nil, nil end
 	local itemIsMarked = false
 	local markedIconsArray = {}
@@ -736,10 +739,10 @@ function FCOIS.IsGear(bag, slot)
 	local gearIconIds = {}
 	for gearIconId, isGearIconId in pairs(isGearIcon) do
 		if isGearIconId == true then
-			table.insert(gearIconIds, gearIconId)
+			tins(gearIconIds, gearIconId)
 		end
 	end
-	return FCOIS.IsMarked(bag, slot, gearIconIds, nil)
+	return isMarked(bag, slot, gearIconIds, nil)
 end
 
 --------------------------------------------------------------------------------
@@ -757,7 +760,7 @@ end
 ---showIcon (boolean): 			Flag to set if the item should be marked with the icon(s), or not
 ---updateInventories (boolean):	Flag to set if the inventory lists should be updated, or not. Use this only "after updating the last marker icon", if you (de)mark many at once!
 function FCOIS.MarkItem(bag, slot, iconId, showIcon, updateInventories)
---d("[FCOIS.MarkItem] bag " .. tostring(bag) .. ", slot: " .. tostring(slot) .. ", iconId: " .. tostring(iconId) .. ", show: " .. tostring(showIcon) .. ", updateInv: " .. tostring(updateInventories))
+--d("[FCOIS.MarkItem] bag " .. tos(bag) .. ", slot: " .. tos(slot) .. ", iconId: " .. tos(iconId) .. ", show: " .. tos(showIcon) .. ", updateInv: " .. tos(updateInventories))
 	if bag == nil or slot == nil or iconId == nil then return false end
 	if showIcon == nil then showIcon = true end
 	updateInventories = updateInventories or false
@@ -772,7 +775,7 @@ function FCOIS.MarkItem(bag, slot, iconId, showIcon, updateInventories)
 	if iconIdType == "number" then
 		if ((iconId > numFilterIcons) or (iconId < FCOIS_CON_ICON_LOCK and iconId ~= -1)) then return false end
 	elseif iconIdType == "table" then
---d("[FCOIS]MarkItem - IconId is a table with " .. tostring(#iconId) .. " entries!")
+--d("[FCOIS]MarkItem - IconId is a table with " .. tos(#iconId) .. " entries!")
 		--IconId is a table. Set the variable so no marker icons will be changed with this 1st call of the function FCOIS.MarkItem
 		iconIdTypeIsATable = true
 		--Set preventing variable against endless loop
@@ -858,7 +861,7 @@ function FCOIS.MarkItem(bag, slot, iconId, showIcon, updateInventories)
 					end
 				end
 
---d("[FCOIS]MarkItem - updateInventories: " .. tostring(updateInventories) .. ", doUpdateMarkerNow: " ..tostring(doUpdateMarkerNow) ..", iconId: " ..tostring(iconId) .. ", show: " ..tostring(showIcon) .. ", isRestoringOrClearingMarkerIcons: " .. tostring(isRestoringOrClearingMarkerIcons))
+--d("[FCOIS]MarkItem - updateInventories: " .. tos(updateInventories) .. ", doUpdateMarkerNow: " ..tos(doUpdateMarkerNow) ..", iconId: " ..tos(iconId) .. ", show: " ..tos(showIcon) .. ", isRestoringOrClearingMarkerIcons: " .. tos(isRestoringOrClearingMarkerIcons))
 				--Change the marker now?
 				if doUpdateMarkerNow then
 					local settings = FCOIS.settingsVars.settings
@@ -867,7 +870,7 @@ function FCOIS.MarkItem(bag, slot, iconId, showIcon, updateInventories)
 						--Unmark all other markers before? Only if marker should be set
 						--Prevent endless loop here as FCOIS.MarkItem will call itsself recursively
 						if not FCOIS.preventerVars.markItemAntiEndlessLoop and showIcon and checkIfItemShouldBeDemarked(iconId) then
---d(">remove all markers now, isCharShown: " ..tostring(isCharShown) .. ", bag: " ..tostring(bag) .. ", charCtrlHidden: " .. tostring(ZOsCtrlVars.CHARACTER:IsHidden()))
+--d(">remove all markers now, isCharShown: " ..tos(isCharShown) .. ", bag: " ..tos(bag) .. ", charCtrlHidden: " .. tos(ZOsCtrlVars.CHARACTER:IsHidden()))
 							--Check if dynamic marker items should not be removed
 							local isDynamicIcon = mappingVars.iconIsDynamic
 							local iconsToRemoveViaAutomaticRemoveCheck = {}
@@ -886,12 +889,12 @@ function FCOIS.MarkItem(bag, slot, iconId, showIcon, updateInventories)
 												if iconSettings.demarkAllOthersExcludeDynamic then
 													if not isDynamicIconCheck then
 														--Add this non-dynamic icon to the automatic remove table!
-														table.insert(iconsToRemoveViaAutomaticRemoveCheckTmp, iconIdForRemoveCheckLoop)
+														tins(iconsToRemoveViaAutomaticRemoveCheckTmp, iconIdForRemoveCheckLoop)
 													end
 												elseif iconSettings.demarkAllOthersExcludeNormal then
 													if isDynamicIconCheck then
 														--Add this dynamic icon to the automatic remove table!
-														table.insert(iconsToRemoveViaAutomaticRemoveCheckTmp, iconIdForRemoveCheckLoop)
+														tins(iconsToRemoveViaAutomaticRemoveCheckTmp, iconIdForRemoveCheckLoop)
 													end
 												end
 											end
@@ -925,7 +928,7 @@ function FCOIS.MarkItem(bag, slot, iconId, showIcon, updateInventories)
 									if iconsToRemove ~= nil and isMarked(bag, slot, iconsToRemove) then
 										--For each icon that should be removed, do:
 										for _, iconToRemove in pairs(iconsToRemove) do
-											--d(">remove icon: " ..tostring(iconToRemove))
+											--d(">remove icon: " ..tos(iconToRemove))
 											--Remove the sell/sell at guildstore/... marker icons now
 											--Is the character screen shown, then update the marker icons now?
 											FCOIS.MarkItem(bag, slot, iconToRemove, false, isCharShown)
@@ -934,7 +937,7 @@ function FCOIS.MarkItem(bag, slot, iconId, showIcon, updateInventories)
 									end
 								end
 							else
-								--d(">>isCharShown: " ..tostring(isCharShown) .. ", antiEndlessLoop: " ..tostring(FCOIS.preventerVars.markItemAntiEndlessLoop) .. ", updateInventories: " ..tostring(updateInventories) .. ", doUpdateMarkerNow: " ..tostring(doUpdateMarkerNow))
+								--d(">>isCharShown: " ..tos(isCharShown) .. ", antiEndlessLoop: " ..tos(FCOIS.preventerVars.markItemAntiEndlessLoop) .. ", updateInventories: " ..tos(updateInventories) .. ", doUpdateMarkerNow: " ..tos(doUpdateMarkerNow))
 								--Is the character shown, and we are inside a loop to demark everyhting?
 								--Set the inventory to update now so the removed marker icons get updated properly at the character
 								if isCharShown and FCOIS.preventerVars.markItemAntiEndlessLoop and updateInventories == false then
@@ -943,7 +946,7 @@ function FCOIS.MarkItem(bag, slot, iconId, showIcon, updateInventories)
 							end
 						end
 					end -- if not isRestoringOrClearingMarkerIcons
-					--d(">>itemIsMarked: " .. tostring(itemIsMarked))
+					--d(">>itemIsMarked: " .. tos(itemIsMarked))
 					--Shall we unmark the item? Then remove it from the SavedVars totally!
 					if itemIsMarked == false then itemIsMarked = nil end
 					--Un/Mark the item now
@@ -951,14 +954,14 @@ function FCOIS.MarkItem(bag, slot, iconId, showIcon, updateInventories)
 						FCOIS[savedVarsMarkedItemsTableName][iconId][signItemId(itemId, nil, nil, nil, bag, slot)] = itemIsMarked
 					else
 						--Error message
-						debugMessage("[MarkItem]","FCOIS[savedVarsMarkedItemsTableName][iconId] -> Missing iconId ("..tostring(iconId)..") subtable for SV table ("..tostring(savedVarsMarkedItemsTableName) ..")", false, FCOIS_DEBUG_DEPTH_NORMAL, false, true)
+						debugMessage("[MarkItem]","FCOIS[savedVarsMarkedItemsTableName][iconId] -> Missing iconId ("..tos(iconId)..") subtable for SV table ("..tos(savedVarsMarkedItemsTableName) ..")", false, FCOIS_DEBUG_DEPTH_NORMAL, false, true)
 					end
-					--d(">> new markedItem value: " .. tostring(FCOIS[getSavedVarsMarkedItemsTableName()][iconId][signItemId(itemId, nil, nil, nil)]))
+					--d(">> new markedItem value: " .. tos(FCOIS[getSavedVarsMarkedItemsTableName()][iconId][signItemId(itemId, nil, nil, nil)]))
 				end
 			end --if itemId ~= nil
 			--Update inventories or character equipment, but only needed if marker was changed
 			if ( (updateInventories and doUpdateMarkerNow) or (FCOIS.preventerVars.gOverrideInvUpdateAfterMarkItem) ) then
-				--d("<<UpdateInv: " ..tostring(updateInventories) .. ", doUpdateMarkerNow: " .. tostring(doUpdateMarkerNow) .. ", gOverrideInvUpdateAfterMarkItem: " ..tostring(FCOIS.preventerVars.gOverrideInvUpdateAfterMarkItem))
+				--d("<<UpdateInv: " ..tos(updateInventories) .. ", doUpdateMarkerNow: " .. tos(doUpdateMarkerNow) .. ", gOverrideInvUpdateAfterMarkItem: " ..tos(FCOIS.preventerVars.gOverrideInvUpdateAfterMarkItem))
 				FCOIS.preventerVars.gOverrideInvUpdateAfterMarkItem = false
 				if isCharShown then
 					refreshEquipmentControl(nil, showIcon, iconId)
@@ -993,7 +996,7 @@ local markItem = FCOIS.MarkItem
 local markItemByItemInstanceId
 function FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon, itemLink, itemId, addonName, updateInventories)
 	markItemByItemInstanceId = FCOIS.MarkItemByItemInstanceId
-	--d("[FCOIS.MarkItemByItemInstanceId] id " .. tostring(itemInstanceOrUniqueId) .. ", iconId: " .. tostring(iconId) .. ", show: " .. tostring(showIcon))
+	--d("[FCOIS.MarkItemByItemInstanceId] id " .. tos(itemInstanceOrUniqueId) .. ", iconId: " .. tos(iconId) .. ", show: " .. tos(showIcon))
     if itemInstanceOrUniqueId == nil then return false end
     if itemLink == nil and itemId == nil then return false end
     if showIcon == nil then showIcon = true end
@@ -1014,7 +1017,7 @@ function FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon
     if iconIdType == "number" then
         if ((iconId > numFilterIcons) or (iconId < FCOIS_CON_ICON_LOCK and iconId ~= -1)) then return false end
     elseif iconIdType == "table" then
-        --d("[FCOIS]MarkItemByItemInstanceId - IconId is a table with " .. tostring(#iconId) .. " entries!")
+        --d("[FCOIS]MarkItemByItemInstanceId - IconId is a table with " .. tos(#iconId) .. " entries!")
         --IconId is a table. Set the variable so no marker icons will be changed with this 1st call of the function FCOIS.MarkItemByItemInstanceId
         iconIdTypeIsATable = true
         --Set preventing variable against endless loop
@@ -1079,7 +1082,7 @@ function FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon
                 --Item is already un/marked -> No need to change it
                 if checkIfItemIsProtected(iconId, itemInstanceOrUniqueId, nil, addonName) == itemIsMarked then
                     doUpdateMarkerNow = false
---d(">changed doUpdateMarkerNow to: " ..tostring(doUpdateMarkerNow))
+--d(">changed doUpdateMarkerNow to: " ..tos(doUpdateMarkerNow))
                 else
                     --Check if the item is a researchable one, but only if icon should be shown and bag + slot are given
                     -- Equipment gear 1, 2, 3, 4, 5, Research, Improve, Deconstruct or Intricate
@@ -1088,20 +1091,20 @@ function FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon
                         researchableItem = true
                         -- Check if item is researchable (as only researchable items can work as equipment too)
                         if (not isItemLinkResearchable(itemLink, iconId)) then
---d(">Item is not researchable. Changed doUpdateMarkerNow to: " ..tostring(doUpdateMarkerNow))
+--d(">Item is not researchable. Changed doUpdateMarkerNow to: " ..tos(doUpdateMarkerNow))
                             doUpdateMarkerNow = false
                             recurRetValTotal = false
                         end
                     end
                 end
 
---d("[FCOIS]MarkItemByItemInstanceId doUpdateMarkerNow: " ..tostring(doUpdateMarkerNow) ..", iconId: " ..tostring(iconId) .. ", show: " ..tostring(showIcon))
+--d("[FCOIS]MarkItemByItemInstanceId doUpdateMarkerNow: " ..tos(doUpdateMarkerNow) ..", iconId: " ..tos(iconId) .. ", show: " ..tos(showIcon))
                 --Change the marker now?
                 if doUpdateMarkerNow then
                     --Unmark all other markers before? Only if marker should be set
                     --Prevent endless loop here as FCOIS.MarkItemByItemInstanceId will call itsself recursively
                     if not FCOIS.preventerVars.markItemAntiEndlessLoop and showIcon and checkIfItemShouldBeDemarked(iconId) then
---d(">remove all markers now, isCharShown: " ..tostring(isCharShown) .. ", bag: " ..tostring(bag) .. ", charCtrlHidden: " .. tostring(ZOsCtrlVars.CHARACTER:IsHidden()))
+--d(">remove all markers now, isCharShown: " ..tos(isCharShown) .. ", bag: " ..tos(bag) .. ", charCtrlHidden: " .. tos(ZOsCtrlVars.CHARACTER:IsHidden()))
                         --Remove all markers now
                         markItemByItemInstanceId(itemInstanceOrUniqueId, -1, false, itemLink, itemId, addonName, false)
                         FCOIS.preventerVars.markItemAntiEndlessLoop = false
@@ -1125,7 +1128,7 @@ function FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon
 								if iconsToRemove ~= nil and isMarkedByItemInstanceId(itemInstanceOrUniqueId, iconsToRemove, addonName) then
 									--For each icon that should be removed, do:
 									for _, iconToRemove in pairs(iconsToRemove) do
-										--d(">remove icon: " ..tostring(iconToRemove))
+										--d(">remove icon: " ..tos(iconToRemove))
 										--Remove the sell/sell at guildstore/... marker icons now
 										--Is the character screen shown, then update the marker icons now?
 										markItemByItemInstanceId(itemInstanceOrUniqueId, iconToRemove, false, itemLink, itemId, addonName, false)
@@ -1134,7 +1137,7 @@ function FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon
 								end
 							end
 							--else
-							--d(">>isCharShown: " ..tostring(isCharShown) .. ", antiEndlessLoop: " ..tostring(FCOIS.preventerVars.markItemAntiEndlessLoop) .. ", updateInventories: " ..tostring(updateInventories) .. ", doUpdateMarkerNow: " ..tostring(doUpdateMarkerNow))
+							--d(">>isCharShown: " ..tos(isCharShown) .. ", antiEndlessLoop: " ..tos(FCOIS.preventerVars.markItemAntiEndlessLoop) .. ", updateInventories: " ..tos(updateInventories) .. ", doUpdateMarkerNow: " ..tos(doUpdateMarkerNow))
 							--Is the character shown, and we are inside a loop to demark everyhting?
 							--Set the inventory to update now so the removed marker icons get updated properly at the character
 							--if isCharShown and FCOIS.preventerVars.markItemAntiEndlessLoop then
@@ -1142,24 +1145,24 @@ function FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon
 						end
                     end
 
---d(">>itemIsMarked: " .. tostring(itemIsMarked))
+--d(">>itemIsMarked: " .. tos(itemIsMarked))
                     --Shall we unmark the item? Then remove it from the SavedVars totally!
                     if itemIsMarked == false then itemIsMarked = nil end
                     --Un/Mark the item now
 					local signedItemInstanceOrUniqueId = signItemId(itemInstanceOrUniqueId, nil, nil, addonName, nil, nil)
---d(">itemId: " ..tostring(itemId) .. ", itemInstanceOrUniqueId: " .. tostring(itemInstanceOrUniqueId) .. ", signedItemInstanceOrUniqueId: " .. tostring(signedItemInstanceOrUniqueId))
+--d(">itemId: " ..tos(itemId) .. ", itemInstanceOrUniqueId: " .. tos(itemInstanceOrUniqueId) .. ", signedItemInstanceOrUniqueId: " .. tos(signedItemInstanceOrUniqueId))
 					if FCOIS[savedVarsMarkedItemsTableName] and FCOIS[savedVarsMarkedItemsTableName][iconId] then
 						FCOIS[savedVarsMarkedItemsTableName][iconId][signedItemInstanceOrUniqueId] = itemIsMarked
 					else
 						--Error message
-						debugMessage("[MarkItemByItemInstanceId]","FCOIS[savedVarsMarkedItemsTableName][iconId] -> Missing iconId ("..tostring(iconId)..") subtable for SV table ("..tostring(savedVarsMarkedItemsTableName) ..")", false, FCOIS_DEBUG_DEPTH_NORMAL, false, true)
+						debugMessage("[MarkItemByItemInstanceId]","FCOIS[savedVarsMarkedItemsTableName][iconId] -> Missing iconId ("..tos(iconId)..") subtable for SV table ("..tos(savedVarsMarkedItemsTableName) ..")", false, FCOIS_DEBUG_DEPTH_NORMAL, false, true)
 					end
---d(">> new markedItem value: " .. tostring(FCOIS[getSavedVarsMarkedItemsTableName()][iconId][signedItemInstanceOrUniqueId]))
+--d(">> new markedItem value: " .. tos(FCOIS[getSavedVarsMarkedItemsTableName()][iconId][signedItemInstanceOrUniqueId]))
                 end
             end --if itemId ~= nil
 			--Update inventories or character equipment, but only needed if marker was changed
 			if ( (updateInventories and doUpdateMarkerNow) or (FCOIS.preventerVars.gOverrideInvUpdateAfterMarkItem) ) then
-				--d("<<UpdateInv: " ..tostring(updateInventories) .. ", doUpdateMarkerNow: " .. tostring(doUpdateMarkerNow) .. ", gOverrideInvUpdateAfterMarkItem: " ..tostring(FCOIS.preventerVars.gOverrideInvUpdateAfterMarkItem))
+				--d("<<UpdateInv: " ..tos(updateInventories) .. ", doUpdateMarkerNow: " .. tos(doUpdateMarkerNow) .. ", gOverrideInvUpdateAfterMarkItem: " ..tos(FCOIS.preventerVars.gOverrideInvUpdateAfterMarkItem))
 				FCOIS.preventerVars.gOverrideInvUpdateAfterMarkItem = false
 				if isCharShown then
 					refreshEquipmentControl(nil, showIcon, iconId)
@@ -1360,9 +1363,9 @@ function FCOIS.ChangeFilter(filterId, libFiltersFilterPanelId)
 	--is the filterPanelId visible?
 	if mappingVars.gFilterPanelIdToInv[libFiltersFilterPanelId]:IsHidden() then return end
 
-	if settings.debug then debugMessage( "[ChangeFilter]","FilterId: " .. tostring(filterId) .. ", FilterPanelId: " .. tostring(libFiltersFilterPanelId) .. ", InventoryName: " .. mappingVars.gFilterPanelIdToInv[libFiltersFilterPanelId]:GetName(), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+	if settings.debug then debugMessage( "[ChangeFilter]","FilterId: " .. tos(filterId) .. ", FilterPanelId: " .. tos(libFiltersFilterPanelId) .. ", InventoryName: " .. mappingVars.gFilterPanelIdToInv[libFiltersFilterPanelId]:GetName(), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
 	--Use the chat command handler now to emulate a filter change
-	command_handler("filter" .. tostring(filterId) .. " " .. tostring(libFiltersFilterPanelId))
+	command_handler("filter" .. tos(filterId) .. " " .. tos(libFiltersFilterPanelId))
 end -- FCOChangeFilter
 
 --Function to check if the inventory context menu should not be shown as the user pressed the SHIFT key + right mouse button
@@ -1372,7 +1375,7 @@ function FCOIS.ShouldInventoryContextMenuBeHiddden()
 --d("[FCOIS]ShouldInventoryContextMenuBeHiddden")
 	if not checkIfFCOISSettingsWereLoaded(FCOIS.preventerVars.gCalledFromInternalFCOIS, not addonVars.gAddonLoaded) then return false end
 	local contextMenuClearMarkesByShiftKey = FCOIS.settingsVars.settings.contextMenuClearMarkesByShiftKey
---d(">contextMenuClearMarkesByShiftKey: " ..tostring(contextMenuClearMarkesByShiftKey) .. ", dontShowInvContextMenu: " ..tostring(FCOIS.preventerVars.dontShowInvContextMenu))
+--d(">contextMenuClearMarkesByShiftKey: " ..tos(contextMenuClearMarkesByShiftKey) .. ", dontShowInvContextMenu: " ..tos(FCOIS.preventerVars.dontShowInvContextMenu))
     return (contextMenuClearMarkesByShiftKey == true and FCOIS.preventerVars.dontShowInvContextMenu == true) or false
 end
 
@@ -1452,7 +1455,7 @@ local getIconText = FCOIS.GetIconText
 --=========== FCOIS localization API functions==========================
 --Global function to get text for the keybindings etc.
 function FCOIS.GetLocText(textName, isKeybindingText, placeHoldersTab)
---d("[FCOIS.GetLocText] textName: " .. tostring(textName))
+--d("[FCOIS.GetLocText] textName: " .. tos(textName))
     isKeybindingText = isKeybindingText or false
 	local prevVars = FCOIS.preventerVars
     prevVars.KeyBindingTexts = isKeybindingText
@@ -1470,7 +1473,7 @@ function FCOIS.GetLocText(textName, isKeybindingText, placeHoldersTab)
 
 	if placeHoldersTab ~= nil and #placeHoldersTab > 0 then
 		for _, placeHolderReplacement in ipairs(placeHoldersTab) do
-			returnText = strformat(returnText, tostring(placeHolderReplacement))
+			returnText = strformat(returnText, tos(placeHolderReplacement))
 		end
 	end
     return returnText
@@ -1499,7 +1502,7 @@ function FCOIS.MarkItemByKeybind(iconId, p_bagId, p_slotIndex, removeMarkers)
 	local itemLink
 	local itemInstanceOrUniqueId
 	local itemId
-	--d("[FCOIS.MarkItemByKeybind] Bag: " .. tostring(bagId) .. ", slot: " .. tostring(slotIndex))
+	--d("[FCOIS.MarkItemByKeybind] Bag: " .. tos(bagId) .. ", slot: " .. tos(slotIndex))
 	if p_bagId == nil or p_slotIndex == nil then
 		bagId, slotIndex, controlBelowMouse, controlTypeBelowMouse  = FCOIS.GetBagAndSlotFromControlUnderMouse()
 		--No valid bagId and slotIndex was found
@@ -1513,8 +1516,8 @@ function FCOIS.MarkItemByKeybind(iconId, p_bagId, p_slotIndex, removeMarkers)
 	local doCompanionItemChecks = FCOIS.DoCompanionItemChecks
     --bag and slot could be retrieved?
     if bagId ~= nil and slotIndex ~= nil then
-        if settings.debug then debugMessage( "[MarkItemByKeybind]","Bag: " .. tostring(bagId) .. ", slot: " .. tostring(slotIndex), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
---d("[FCOIS.MarkItemByKeybind] Bag: " .. tostring(bagId) .. ", slot: " .. tostring(slotIndex) .. ", controlBelowMouse: ".. tostring(controlBelowMouse) .. ", controlTypeBelowMouse: " .. tostring(controlTypeBelowMouse))
+        if settings.debug then debugMessage( "[MarkItemByKeybind]","Bag: " .. tos(bagId) .. ", slot: " .. tos(slotIndex), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+--d("[FCOIS.MarkItemByKeybind] Bag: " .. tos(bagId) .. ", slot: " .. tos(slotIndex) .. ", controlBelowMouse: ".. tos(controlBelowMouse) .. ", controlTypeBelowMouse: " .. tos(controlTypeBelowMouse))
 		--local mappingVars = FCOIS.mappingVars
         --Check if the item is currently marked with this icon, or not
         --Get the itemId of the bag, slot combination
@@ -1800,7 +1803,7 @@ function FCOIS.MarkItemCycle(direction)
 			next = getFirstEnabledMarkerIcon(false, true)
 			prev = getLastEnabledMarkerIcon(true)
 		end
---d("next: "..tostring(next) ..", prev: " ..tostring(prev))
+--d("next: "..tos(next) ..", prev: " ..tos(prev))
 		--Return the next and previous iconId
 		return next, prev, currentIconId
 	end
@@ -1834,7 +1837,7 @@ function FCOIS.MarkItemCycle(direction)
 --d("Mark item with next markersymbol")
 		if iconSortOrder ~= nil and icons ~= nil then
 			local bagId, slotIndex = FCOIS.GetBagAndSlotFromControlUnderMouse()
---d("bag, slot: " ..tostring(bagId) .. ", " .. tostring(slotIndex))
+--d("bag, slot: " ..tos(bagId) .. ", " .. tos(slotIndex))
 			if bagId and slotIndex then
 				--Check if only one marker icon is set, remove it, get the next and previous marker icon IDs
 				local next, _ = checkRemoveAndGetIconToMark(bagId, slotIndex)
@@ -2009,7 +2012,7 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons, withNoneEntry)
 			end
 		end
 		if p_withNoneEntry == true and (choicesValuesList and #choicesValuesList>0) then
-			table.insert(choicesValuesList, 1, FCOIS_CON_ICON_NONE)
+			tins(choicesValuesList, 1, FCOIS_CON_ICON_NONE)
 		end
         return choicesValuesList
 	end
@@ -2038,7 +2041,7 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons, withNoneEntry)
 					local locNameStr = FCOISlocVars.iconEndStrArray[i]
 					local iconIsEnabled = isIconEnabled[i]
 					FCOIS.preventerVars.gCalledFromInternalFCOIS = true
-					local iconName = getIconText(i) or FCOISlocVars.fcois_loc["options_icon" .. tostring(i) .. "_" .. locNameStr] or "Icon " .. tostring(i)
+					local iconName = getIconText(i) or FCOISlocVars.fcois_loc["options_icon" .. tos(i) .. "_" .. locNameStr] or "Icon " .. tos(i)
 					--Should the icon be shown at the start of the text too?
 					if p_withIcons then
 						local iconNameWithIcon = buildIconText(iconName, i, false, not iconIsEnabled)
@@ -2079,7 +2082,7 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons, withNoneEntry)
 					counter = counter + 1
 					local locNameStr = FCOISlocVars.iconEndStrArray[i]
 					FCOIS.preventerVars.gCalledFromInternalFCOIS = true
-					local iconName = getIconText(i) or FCOISlocVars.fcois_loc["options_icon" .. tostring(i) .. "_" .. locNameStr] or "Icon " .. tostring(i)
+					local iconName = getIconText(i) or FCOISlocVars.fcois_loc["options_icon" .. tos(i) .. "_" .. locNameStr] or "Icon " .. tos(i)
 					--Should the icon be shown at the start of the text too?
 					if p_withIcons then
 						local iconNameWithIcon = buildIconText(iconName, i, false, not iconIsEnabled)
@@ -2093,7 +2096,7 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons, withNoneEntry)
 			for i=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
 				if isIconEnabled[i] then
 					local locNameStr = FCOISlocVars.iconEndStrArray[i]
-					local iconName = FCOISlocVars.fcois_loc["options_icon" .. tostring(i) .. "_" .. locNameStr]
+					local iconName = FCOISlocVars.fcois_loc["options_icon" .. tos(i) .. "_" .. locNameStr]
 					--Should the icon be shown at the start of the text too?
 					if p_withIcons then
 						local iconNameWithIcon = buildIconText(iconName, i, false, true) -- no color as row is completely red
@@ -2122,7 +2125,7 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons, withNoneEntry)
 				end
 				if goOn then
 					local locNameStr = FCOISlocVars.iconEndStrArray[i]
-					local iconName = FCOISlocVars.fcois_loc["options_icon" .. tostring(i) .. "_" .. locNameStr]
+					local iconName = FCOISlocVars.fcois_loc["options_icon" .. tos(i) .. "_" .. locNameStr]
 					local iconIsEnabled = isIconEnabled[i]
 					--Should the icon be shown at the start of the text too?
 					if p_withIcons then
@@ -2161,7 +2164,7 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons, withNoneEntry)
 						local iconIsEnabled = isIconEnabled[i]
 						local locNameStr = FCOISlocVars.iconEndStrArray[i]
 			            FCOIS.preventerVars.gCalledFromInternalFCOIS = true
-						local iconName = getIconText(i) or FCOISlocVars.fcois_loc["options_icon" .. tostring(i) .. "_" .. locNameStr] or "Icon " .. tostring(i)
+						local iconName = getIconText(i) or FCOISlocVars.fcois_loc["options_icon" .. tos(i) .. "_" .. locNameStr] or "Icon " .. tos(i)
 						--Should the icon be shown at the start of the text too?
 						if p_withIcons then
 							local iconNameWithIcon = buildIconText(iconName, i, false, not iconIsEnabled)
@@ -2180,7 +2183,7 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons, withNoneEntry)
 			end
         end
 		if p_withNoneEntry == true and (iconsList and #iconsList>0) then
-			table.insert(iconsList, 1, FCOISlocVars.fcois_loc["options_icon_none"])
+			tins(iconsList, 1, FCOISlocVars.fcois_loc["options_icon_none"])
 		end
 
 		return iconsList
@@ -2197,7 +2200,7 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons, withNoneEntry)
 	local iconsDropdownValuesTooltipsList = iconsDropdownList
 
 	if iconsDropdownList and iconsDropdownValuesList and #iconsDropdownList ~= #iconsDropdownValuesList then
-		d(strformat("[FCOIS]ERROR: GetLAMMarkerIconsDropdown - typeToCheck: %s, withIcons: %s, withNoneEntry: %s -> count entries/values: %s/%s", tostring(type), tostring(withIcons), tostring(withNoneEntry), tostring(#iconsDropdownList), tostring(#iconsDropdownValuesList)))
+		d(strformat("[FCOIS]ERROR: GetLAMMarkerIconsDropdown - typeToCheck: %s, withIcons: %s, withNoneEntry: %s -> count entries/values: %s/%s", tos(type), tos(withIcons), tos(withNoneEntry), tos(#iconsDropdownList), tos(#iconsDropdownValuesList)))
 		--For debugging
 		if GetDisplayName() == "@Baertram" then
 			FCOIS._errorDropDownList = ZO_ShallowTableCopy(iconsDropdownList)
@@ -2225,7 +2228,7 @@ end
 --Parameters: 	markerIconsToApply Table of marker icons or -1 for all
 --				commandToRun String defining the functions to run on the item
 function FCOIS.MarkAndRunOnItemByKeybind(markerIconsToApply, commandToRun)
---d("[FCOIS]MarkAndRunOnItemByKeybind-commandToRun: " ..tostring(commandToRun))
+--d("[FCOIS]MarkAndRunOnItemByKeybind-commandToRun: " ..tos(commandToRun))
 	if markerIconsToApply == nil or commandToRun == nil or commandToRun == "" then return end
 	if not checkIfFCOISSettingsWereLoaded(FCOIS.preventerVars.gCalledFromInternalFCOIS, not addonVars.gAddonLoaded) then return nil end
 	local settings = FCOIS.settingsVars.settings

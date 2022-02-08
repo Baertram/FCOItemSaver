@@ -710,6 +710,7 @@ function FCOIS.CreateHooks()
     local checkCraftbagOrOtherActivePanel                    = FCOIS.CheckCraftbagOrOtherActivePanel
     local updateFilteredItemCountThrottled                   = FCOIS.UpdateFilteredItemCountThrottled
     local onClosePanel                                       = FCOIS.OnClosePanel
+    local invContextMenuAddSlotAction                        = FCOIS.InvContextMenuAddSlotAction
 
 
     --Set the global filter panel ID to LF_INVENTORY again (otherwise it would stay the same like before, e.g. craftbag, and block the drag&drop!)
@@ -1504,7 +1505,7 @@ FCOIS._universalDeconItemFilterTypes = itemFilterTypes
 
     --======== RIGHT CLICK / CONTEXT MENU ==========================================
     --Pre Hook the right click/context menu addition of items
-    ZO_PreHook(ZO_InventorySlotActions, "AddSlotAction", FCOIS.InvContextMenuAddSlotAction)
+    ZO_PreHook(ZO_InventorySlotActions, "AddSlotAction", invContextMenuAddSlotAction)
 
     --Override ZO_InventorySlotActions:AddSlotAction with own function FCOIS.OverrideUseAddSlotAction,
     --which will call the original function, but wil do some checks before (e.g. if it is a container
