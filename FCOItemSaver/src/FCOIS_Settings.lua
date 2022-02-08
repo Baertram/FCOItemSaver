@@ -1210,7 +1210,7 @@ function FCOIS.LoadUserSettings(calledFromExternal, isFromEventAddOnLoaded)
     calledFromExternal = calledFromExternal or false
     isFromEventAddOnLoaded = isFromEventAddOnLoaded or false
 --TODO: Debugging
-if GetDisplayName() == "@Baertram" then d("[FCOIS]LoadUserSettings - calledFromExternal: " ..tos(calledFromExternal) .. ", isFromEventAddOnLoaded: " ..tos(isFromEventAddOnLoaded)) end
+--if GetDisplayName() == "@Baertram" then d("[FCOIS]LoadUserSettings - calledFromExternal: " ..tos(calledFromExternal) .. ", isFromEventAddOnLoaded: " ..tos(isFromEventAddOnLoaded)) end
     if calledFromExternal == true then
         FCOIS.addonVars.gSettingsLoaded = false
         if FCOIS.FCOItemSaver_CheckGamePadMode() then return false end

@@ -1090,7 +1090,7 @@ function FCOIS.AddOrChangeFCOISFilterButton(parentCtrl, buttonId, pWidth, pHeigh
         parentName = parentName or parentCtrl:GetName()
         debugMessage( "[AddOrChangeFilterButton]", parentName .. ", buttonId: " .. buttonId .. ", filterPanelId: " .. p_FilterPanelId .. ", hide: " .. tos(hide), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED)
     end
-d("[FCOIS.AddOrChangeFilterButton] " .. parentCtrl:GetName() .. ", buttonId: " .. buttonId .. ", filterPanelId: " .. p_FilterPanelId .. ", hide: " .. tos(hide) .. ", isUniversalDeconNPC: " ..tos(isUniversalDeconNPC))
+--d("[FCOIS.AddOrChangeFilterButton] " .. parentCtrl:GetName() .. ", buttonId: " .. buttonId .. ", filterPanelId: " .. p_FilterPanelId .. ", hide: " .. tos(hide) .. ", isUniversalDeconNPC: " ..tos(isUniversalDeconNPC))
     local checkVars = FCOIS.checkVars
     local filterButtonSuffix = checkVars.filterButtonSuffix
     local tooltipText
@@ -1195,7 +1195,7 @@ d("[FCOIS.AddOrChangeFilterButton] " .. parentCtrl:GetName() .. ", buttonId: " .
         if settings.showFilterButtonTooltip == true then
             --local panelId = FCOIS.gFilterWhere -- #202
             local panelId = buttonMouseEntered.FCOfilterPanelId or FCOIS.gFilterWhere -- #202
-d(">FilterButton:OnMouseEnter - panelId: " ..tos(panelId))
+--d(">FilterButton:OnMouseEnter - panelId: " ..tos(panelId))
             local contextMenu = FCOIS.contextMenu
             local showToolTip = true
             --Don't show a tooltip if the context menu for LOCKDYN is shown at the filter button
