@@ -1528,9 +1528,10 @@ FCOIS._universalDeconItemFilterTypes = itemFilterTypes
     --dataTypes[3] = collectibles
     SecurePostHook(ctrlVars.QUICKSLOT_LIST.dataTypes[1], "setupCallback", onScrollListRowSetupCallback)
 
-    --Pre Hook the 4th menubar button (Quickslots) handler at the player inventory
+    --Pre Hook the 5th menubar button (Quickslots) handler at the player inventory
     ZO_PreHookHandler(ctrlVars.INV_MENUBAR_BUTTON_QUICKSLOTS, "OnMouseUp", function(control, button, upInside)
         if button == MOUSE_BUTTON_INDEX_LEFT and upInside then
+            --todo add inventory filter buttons for quickslot filtering?
             resetToInventoryAndHideContextMenu()
         end
     end)

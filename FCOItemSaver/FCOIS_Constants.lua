@@ -1296,7 +1296,8 @@ ctrlVars.BACKPACK_BAG 				    = GetControl(ctrlVars.BACKPACK_LIST, contentsStr) 
 ctrlVars.INV_MENUBAR_BUTTON_ITEMS	    = GetControl(ctrlVars.INV, strformat(menuBarButtonStr, "1")) --ZO_PlayerInventoryMenuBarButton1
 ctrlVars.INV_MENUBAR_BUTTON_CRAFTBAG    = GetControl(ctrlVars.INV, strformat(menuBarButtonStr, "2")) --ZO_PlayerInventoryMenuBarButton2
 ctrlVars.INV_MENUBAR_BUTTON_CURRENCIES  = GetControl(ctrlVars.INV, strformat(menuBarButtonStr, "3")) --ZO_PlayerInventoryMenuBarButton3
-ctrlVars.INV_MENUBAR_BUTTON_QUICKSLOTS  = GetControl(ctrlVars.INV, strformat(menuBarButtonStr, "4")) --ZO_PlayerInventoryMenuBarButton4
+ctrlVars.INV_MENUBAR_BUTTON_QUESTS      = GetControl(ctrlVars.INV, strformat(menuBarButtonStr, "4")) --ZO_PlayerInventoryMenuBarButton4
+ctrlVars.INV_MENUBAR_BUTTON_QUICKSLOTS  = GetControl(ctrlVars.INV, strformat(menuBarButtonStr, "5")) --ZO_PlayerInventoryMenuBarButton5
 ctrlVars.BACKPACK 		    		    = GetControl(ctrlVars.INV, backpackStr) --ZO_PlayerInventoryBackpack
 
 ctrlVars.companionInvSceneName          = "companionCharacterKeyboard"

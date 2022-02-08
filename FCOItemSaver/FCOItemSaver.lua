@@ -162,7 +162,7 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 --#202, 2022-02-05, Baertram, bug: Add support for new universal deconstruction NPC "Giladil" (inventory markers, filterButtons, flag, context menus)
 --  todo: At best re-Use LF_SMITHING_DECONSTRUCTION for the filterPanelId? Or add a new LF_UNIVERSAL_DECONSTRUCTION to LibFilters?
 
---#203, 2022-02-05, Hotelvit, bug, FCOIS comments at esoui: Mass moving to junk/removing from junk (100 items) will kick you from the server becase of message spam
+--#203, 2022-02-05, Hotzelvit, bug, FCOIS comments at esoui: Mass moving to junk/removing from junk (100 items) will kick you from the server becase of message spam
 
 --____________________________
 -- Current max bugs/features/ToDos: 204
@@ -173,14 +173,9 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 -- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-02-05
 ------------------------------------------------------------------------------------
 --#176 -> Test: Errors occured with OR filters, and mixed AND + OR filters
---#201 -> Find reason
+--#201 -> Find reason -> PTS is okay. MAybe bug on live? -> Sort order changed in settings?
 --#202 --> Filter buttons show/hide and anchor to universal deconstruction/re anchor to default parents at smithing decon and enchanting extract needs to be added + TESTs
--->OnMouseEnter at the universal deconstruction list row sets FCOIS.gFilterWhere to 1?
--->FilterButtons do not work at universal deconstruction - LibFilters update?
---> Filter buttons are white? Textures are missing as the controls are re-parent to e.g. ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventory and the controlName is
---> ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventory_FilterButton1 to 4 then
---> SHIFT+right click does not work
---> Drag&Drop of any marked item, even if unprotected, does not work and says it is protected!
+--> TODO: Drag&Drop of any marked item, even if unprotected, does not work and says it is protected!
 --Added checks if functions/API functions are called internally or from external (other addons) -> Still ongoing TODO
 
 -------------------------------------------------------------------------------------
