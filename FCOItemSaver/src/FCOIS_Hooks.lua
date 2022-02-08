@@ -363,7 +363,7 @@ local onInventoryItemMouseUp = FCOIS.OnInventoryItemMouseUp
 
 --Add the OnMouseUp event handler to the scroll list's row control
 local function addOnMouseUpEventHandlerToRow(rowControl)
-d("[FCOIS]addOnMouseUpEventHandlerToRow - rowControl: " ..tos(rowControl:GetName()) .. ", gFilterWhere: " ..tos(FCOIS.gFilterWhere))
+--d("[FCOIS]addOnMouseUpEventHandlerToRow - rowControl: " ..tos(rowControl:GetName()) .. ", gFilterWhere: " ..tos(FCOIS.gFilterWhere))
     if not rowControl then return end
     --Only if the <modifier key> + right click settings is enabled within FCOIS
     local contextMenuClearMarkesByShiftKey = FCOIS.settingsVars.settings.contextMenuClearMarkesByShiftKey
@@ -396,7 +396,7 @@ end
 --A setupCallback function for the scrolllists of the inventories.
 --> Will add the FCOIS marker icons if they get visible and add the OnMouseUp handlers to the rows to support the SHIFT+right mouse button features
 local function onScrollListRowSetupCallback(rowControl, data)
-    d("[FCOIS]OnScrollListRow:SetupCallback - gFilterWhere: " ..tos(FCOIS.gFilterWhere))
+    --d("[FCOIS]OnScrollListRow:SetupCallback - gFilterWhere: " ..tos(FCOIS.gFilterWhere))
     if not rowControl then
         d("[FCOIS]ERROR: OnScrollListRowSetupCallback - rowControl is missing!")
         return
@@ -429,8 +429,6 @@ local function onScrollListRowSetupCallback(rowControl, data)
             createMarkerControl(rowControl, i, iconData.size or iconVars.gIconWidth, iconData.size or iconVars.gIconWidth, textureVars.MARKER_TEXTURES[iconData.texture])
         end
     end
-
-    d(">>gFilterWhere: " ..tos(FCOIS.gFilterWhere))
 
     --Add additional FCO point to the dataEntry.data slot
     --FCOItemSaver_AddInfoToData(rowControl)
@@ -1040,10 +1038,10 @@ function FCOIS.CreateHooks()
             if not isHidden then
                 --LF_SMITHING_DECONSTRUCT needs to be passed in as valid filterPanel! It maybe not the correct filterPanel, so it is determined internally
                 local filterPanelIdPassedIn = universalDeconGlobal.FCOIScurrentFilterPanelId
-                filterPanelIdPassedIn = filterPanelIdPassedIn or LF_SMITHING_DECONSTRUCT
+                if filterPanelIdPassedIn == nil then filterPanelIdPassedIn = LF_SMITHING_DECONSTRUCT end
                 local currentFilterPanelIdAtUniversalDecon = getCurrentFilterPanelIdAtDeconNPC(filterPanelIdPassedIn)
                 if currentFilterPanelIdAtUniversalDecon ~= nil and FCOIS.gFilterWhere ~= currentFilterPanelIdAtUniversalDecon then
-d("[FCOIS]UniversalDecon - Setting filterPanelId to: " ..tos(currentFilterPanelIdAtUniversalDecon))
+                    d("[FCOIS]UniversalDecon - Setting filterPanelId to: " ..tos(currentFilterPanelIdAtUniversalDecon))
                     FCOIS.gFilterWhere = currentFilterPanelIdAtUniversalDecon
                     --Re-anchor the filterButtons and the additional inventory flag button from their default parents at e.g.
                     --LF_SMITHING_DECONSTRUCT, LF_JEWELRY_DECONSTRUCT and LF_ENCHANTING_EXTRACTION to
@@ -1058,7 +1056,7 @@ d("[FCOIS]UniversalDecon - Setting filterPanelId to: " ..tos(currentFilterPanelI
                 end
             else
                 local lastFilterPanelIdAtUniversalDecon = universalDeconGlobal.FCOIScurrentFilterPanelId
-                lastFilterPanelIdAtUniversalDecon = lastFilterPanelIdAtUniversalDecon or FCOIS.gFilterWhere
+                if lastFilterPanelIdAtUniversalDecon == nil then lastFilterPanelIdAtUniversalDecon = FCOIS.gFilterWhere end
                 --d(">[FCOIS]lastFilterPanelIdAtUniversalDecon: " ..tos(lastFilterPanelIdAtUniversalDecon))
                 --Hide context menus and update inventory filterButtons + re-enable the ANTI deconstruction/ANTI enchanting protection if needed
                 onClosePanel(nil, LF_INVENTORY, "CRAFTING_STATION")
@@ -1068,7 +1066,7 @@ d("[FCOIS]UniversalDecon - Setting filterPanelId to: " ..tos(currentFilterPanelI
                 reParentAndAnchorContextMenuInvokerButtons(lastFilterPanelIdAtUniversalDecon, nil)
 
                 --Reset the filterPanelId to inventory
-d("[FCOIS]UniversalDecon HIDDEN - resetting filterPanelId to LF_INVENTORY")
+                d("[FCOIS]UniversalDecon HIDDEN - resetting filterPanelId to LF_INVENTORY")
                 FCOIS.gFilterWhere = LF_INVENTORY
             end
         end
@@ -1106,9 +1104,6 @@ d("[FCOIS] UniversalDeconstruction Scene state change to: " ..tos(newState))
                 --Set the filterPanelId to last opened one or default for "all" tab directly so that functions at the inventory list will use
                 --the correct filterPanelId
 d(">>>SHOWN - Setting filterPanelId to: " ..tos(universalDeconGlobal.FCOIScurrentFilterPanelId) .. ", or to \'ALL\' tab")
-                FCOIS.gFilterWhere = universalDeconGlobal.FCOIScurrentFilterPanelId
-                FCOIS.gFilterWhere = FCOIS.gFilterWhere or LF_SMITHING_DECONSTRUCT
-
                 --Delay by a few ms to update the controls etc. properly
                 zo_callLater(function()
                     updateFilterAndAddInvFlagButtonsAtUniversalDeconstruction(false)
