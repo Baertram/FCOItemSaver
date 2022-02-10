@@ -498,7 +498,12 @@ end
 -- Warns user if the item is marked with any of the filter icons and if the marked icon protects the item at teh current filterPanelId
 function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId, panelIdParent)
     if bag == nil or slot == nil then return true end
-    local doDebug = false --TODO: enable to show d messages for debugging
+    local doDebug = false
+    --TODO: enable to show d messages for debugging
+    if FCOIS.preventerVars.doDebugItemSelectionHandler == true then
+        doDebug = true
+        FCOIS.preventerVars.doDebugItemSelectionHandler = false
+    end
 
     echo = echo or false
     isDragAndDrop = isDragAndDrop or false
@@ -817,6 +822,10 @@ function FCOIS.DeconstructionSelectionHandler(bag, slot, echo, overrideChatOutpu
     suppressAlert = suppressAlert or false
 
     local doDebug = false --TODO: enable to show d messages for debugging
+    if FCOIS.preventerVars.doDebugDeconstructionSelectionHandler then
+        doDebug = true
+        FCOIS.preventerVars.doDebugDeconstructionSelectionHandler = false
+    end
 
     local settings = FCOIS.settingsVars.settings
     local mappingVars = FCOIS.mappingVars
@@ -860,6 +869,9 @@ function FCOIS.DeconstructionSelectionHandler(bag, slot, echo, overrideChatOutpu
                 or isResearchListDialogShown()
                 or isRetraitStationShown()
         ) then
+            if doDebug == true then
+                FCOIS.preventerVars.doDebugItemSelectionHandler = true
+            end
             callItemSelectionHandler = callItemSelectionHandler or FCOIS.callItemSelectionHandler
             return callItemSelectionHandler(bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId, nil, nil)
         else

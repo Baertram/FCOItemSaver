@@ -164,8 +164,9 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 
 --#203, 2022-02-05, Hotzelvit, bug, FCOIS comments at esoui: Mass moving to junk/removing from junk (100 items) will kick you from the server becase of message spam
 
+
 --____________________________
--- Current max bugs/features/ToDos: 204
+-- Current max bugs/features/ToDos: 206
 --____________________________
 
 
@@ -175,7 +176,8 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 --#176 -> Test: Errors occured with OR filters, and mixed AND + OR filters
 --#201 -> Find reason -> PTS is okay. MAybe bug on live? -> Sort order changed in settings?
 --#202 --> Filter buttons show/hide and anchor to universal deconstruction/re anchor to default parents at smithing decon and enchanting extract needs to be added + TESTs
---> TODO: Drag&Drop of any marked item, even if unprotected, does not work and says it is protected!
+--> TODO: -Drag&Drop of any marked item, even if unprotected, does not work and says it is protected!
+--        -Enchanting tab#s filterButtons still show deconstruction filterButtons. Why aren't the "extract" filter buttons shown? Maybe because LF_ENCHANTING_CREATION and extraction share the same?
 --Added checks if functions/API functions are called internally or from external (other addons) -> Still ongoing TODO
 
 -------------------------------------------------------------------------------------

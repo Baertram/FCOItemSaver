@@ -330,7 +330,7 @@ end
 function FCOIS.OverrideUseAddSlotAction(parentFunc, self, actionStringId, actionCallback, ...)
     --d("[FCOIS.OverrideUseAddSlotAction]")
     --Is the item a container
-    if (not backpackCtrl:IsHidden() and actionStringId == SI_ITEM_ACTION_USE) then
+    if (actionStringId == SI_ITEM_ACTION_USE and not backpackCtrl:IsHidden()) then
         return parentFunc(
                 self, SI_ITEM_ACTION_USE,
                 function(...) return FCOIS_preUseAddSlotActionCallbackFunc(self, actionCallback, ...) end,
@@ -1039,10 +1039,11 @@ function FCOIS.CreateHooks()
             if not isHidden then
                 --LF_SMITHING_DECONSTRUCT needs to be passed in as valid filterPanel! It maybe not the correct filterPanel, so it is determined internally
                 local filterPanelIdPassedIn = universalDeconGlobal.FCOIScurrentFilterPanelId
+--d("[FCOIS]UniversalDecon - Setting filterPanelId to: " ..tos(filterPanelIdPassedIn))
                 if filterPanelIdPassedIn == nil then filterPanelIdPassedIn = LF_SMITHING_DECONSTRUCT end
                 local currentFilterPanelIdAtUniversalDecon = getCurrentFilterPanelIdAtDeconNPC(filterPanelIdPassedIn)
                 if currentFilterPanelIdAtUniversalDecon ~= nil and FCOIS.gFilterWhere ~= currentFilterPanelIdAtUniversalDecon then
---d("[FCOIS]UniversalDecon - Setting filterPanelId to: " ..tos(currentFilterPanelIdAtUniversalDecon))
+--d(">Setting filterPanelId to: " ..tos(currentFilterPanelIdAtUniversalDecon))
                     FCOIS.gFilterWhere = currentFilterPanelIdAtUniversalDecon
                     --Re-anchor the filterButtons and the additional inventory flag button from their default parents at e.g.
                     --LF_SMITHING_DECONSTRUCT, LF_JEWELRY_DECONSTRUCT and LF_ENCHANTING_EXTRACTION to
@@ -1053,7 +1054,8 @@ function FCOIS.CreateHooks()
                     changeContextMenuInvokerButtonColorByPanelId(currentFilterPanelIdAtUniversalDecon)
                     --Check the filter buttons and create them if they are not there. Update the inventory afterwards too
                     -->Will reParent and reAnchor the filterButtons too!
-                    checkFCOISFilterButtonsAtPanel(true, currentFilterPanelIdAtUniversalDecon, nil, nil, true) --#202 universal deconstruction
+                    --doUpdateLists, panelId, overwriteFilterWhere, hideFilterButtons, isUniversalDeconNPC
+                    checkFCOISFilterButtonsAtPanel(true, currentFilterPanelIdAtUniversalDecon, nil, nil, true, filterPanelIdPassedIn) --#202 universal deconstruction
                 end
             else
                 local lastFilterPanelIdAtUniversalDecon = universalDeconGlobal.FCOIScurrentFilterPanelId
@@ -1079,7 +1081,7 @@ function FCOIS.CreateHooks()
             sceneCallbackHideContextMenu(oldState, newState)
 
             if newState == SCENE_SHOWING then
-                if not not universalDeconButtonsHooked then
+                if not universalDeconButtonsHooked then
                     --Hook the buttons' OnClick handler of the universal deconstruction bar
                     local buttonsToHook = ctrlVars.UNIVERSAL_DECONSTRUCTION_MENUBAR_TABS.m_object.m_buttons
                     --d("[FCOIS]Universal deconstruction menu bar button hooks: " ..tos(buttonsToHook))
@@ -1104,7 +1106,7 @@ function FCOIS.CreateHooks()
             if newState == SCENE_SHOWN then
                 --Set the filterPanelId to last opened one or default for "all" tab directly so that functions at the inventory list will use
                 --the correct filterPanelId
---d(">>>SHOWN - Setting filterPanelId to: " ..tos(universalDeconGlobal.FCOIScurrentFilterPanelId) .. ", or to \'ALL\' tab")
+                --d(">>>SHOWN - Setting filterPanelId to: " ..tos(universalDeconGlobal.FCOIScurrentFilterPanelId) .. ", or to \'ALL\' tab")
                 --Delay by a few ms to update the controls etc. properly
                 zo_callLater(function()
                     updateFilterAndAddInvFlagButtonsAtUniversalDeconstruction(false)
@@ -1112,7 +1114,7 @@ function FCOIS.CreateHooks()
             elseif newState == SCENE_HIDING then
                 --Hide the context menu at mail panel
                 local filterTypeToHide = universalDeconGlobal.FCOIScurrentFilterPanelId
-                filterTypeToHide = filterTypeToHide or LF_SMITHING_DECONSTRUCT
+                if filterTypeToHide == nil then filterTypeToHide = LF_SMITHING_DECONSTRUCT end
                 hideContextMenu(filterTypeToHide)
             elseif newState == SCENE_HIDDEN then
                 updateFilterAndAddInvFlagButtonsAtUniversalDeconstruction(true)

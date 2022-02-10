@@ -9,6 +9,8 @@ local tos = tostring
 local debugMessage = FCOIS.debugMessage
 
 local ctrlVars = FCOIS.ZOControlVars
+local backpackCtrl = ctrlVars.BACKPACK
+
 local libFilters = FCOIS.libFilters
 
 local getFilterWhereBySettings = FCOIS.GetFilterWhereBySettings
@@ -28,6 +30,7 @@ end
 local function updateCraftingInventory(filterPanelOverride, isUniversalDeconNPC)
     isUniversalDeconNPC = isUniversalDeconNPC or false
     --Check if we are at a crafting station
+    local filterType = FCOIS.gFilterWhere
     local locCraftType = GetCraftingInteractionType()
     local updateFilteredItemCount = false
     local settings = FCOIS.settingsVars.settings
@@ -44,19 +47,22 @@ local function updateCraftingInventory(filterPanelOverride, isUniversalDeconNPC)
         FCOIS.gFilterWhere = filterPanelOverride
         FCOIS.lastVars.gLastFilterId[FCOIS.gFilterWhere] = filterPanelOverride
     end
+    filterType = FCOIS.gFilterWhere
     --Update the current shown inventory
-    if libFilters ~= nil and FCOIS.gFilterWhere ~= nil and FCOIS.lastVars.gLastFilterId[FCOIS.gFilterWhere] ~= nil then
+    if libFilters ~= nil and filterType ~= nil and FCOIS.lastVars.gLastFilterId[filterType] ~= nil then
         --Get the current set settings for the filter panels
-        FCOIS.gFilterWhere = getFilterWhereBySettings(FCOIS.gFilterWhere, false)
---d(">FCOIS.gFilterWhere: " ..tos(FCOIS.gFilterWhere))
+        FCOIS.gFilterWhere = getFilterWhereBySettings(filterType, false)
+        filterType = FCOIS.gFilterWhere
+
+--d(">FCOIS.gFilterWhere: " ..tos(filterType))
         --Is the filter for this panel enabled in the settings?
-        if settings.atPanelEnabled[FCOIS.gFilterWhere]["filters"] == true then
+        if settings.atPanelEnabled[filterType]["filters"] == true then
             --Is the filter we have added the icon for currently enabled(registered)?
             --local isFilterEnabled = FCOIS.getSettingsIsFilterOn(FCOIS.lastVars.gLastFilterId[FCOIS.gFilterWhere], FCOIS.gFilterWhere)
             --if isFilterEnabled == FCOIS_CON_FILTER_BUTTON_STATE_GREEN or isFilterEnabled == FCOIS_CON_FILTER_BUTTON_STATE_YELLOW then
-            if settings.debug then debugMessage( "[UpdateCraftingInventory]", "Filter Id: " ..tos(FCOIS.lastVars.gLastFilterId[FCOIS.gFilterWhere]) .. ", Filter panel Id: " .. tos(FCOIS.gFilterWhere), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+            if settings.debug then debugMessage( "[UpdateCraftingInventory]", "Filter Id: " ..tos(FCOIS.lastVars.gLastFilterId[filterType]) .. ", Filter panel Id: " .. tos(filterType), true, FCOIS_DEBUG_DEPTH_NORMAL) end
             --libFilterVars.inventoryUpdaters[libFilterVars.filterTypeToUpdaterName[FCOIS.gFilterWhere]]()
-            libFilters:RequestUpdate(FCOIS.gFilterWhere)
+            libFilters:RequestUpdate(filterType)
             --end
         end
     end
@@ -71,8 +77,8 @@ local function updateCraftingInventory(filterPanelOverride, isUniversalDeconNPC)
         FCOIS.preventerVars.isInventoryListUpdating = false
         --updateFilteredItemCount = true -- TODO: Enable once alchemy filters are added!
 
-        --Enchanting?
-    elseif (not isUniversalDeconNPC and locCraftType == CRAFTING_TYPE_ENCHANTING) or (isUniversalDeconNPC and FCOIS.gFilterWhere == LF_ENCHANTING_EXTRACTION) then
+    --Enchanting?
+    elseif (not isUniversalDeconNPC and locCraftType == CRAFTING_TYPE_ENCHANTING) or (isUniversalDeconNPC and filterType == LF_ENCHANTING_EXTRACTION) then
 --d(">enchanting refresh")
         if settings.debug then debugMessage( "[UpdateCraftingInventory]","Enchanting refresh", true, FCOIS_DEBUG_DEPTH_NORMAL) end
         --Only refresh the scroll list
@@ -91,7 +97,7 @@ local function updateCraftingInventory(filterPanelOverride, isUniversalDeconNPC)
         --Other crafting stations
 
         --Refinement
-        if FCOIS.gFilterWhere == LF_SMITHING_REFINE or FCOIS.gFilterWhere == LF_JEWELRY_REFINE or not ctrlVars.REFINEMENT:IsHidden() then
+        if filterType == LF_SMITHING_REFINE or filterType == LF_JEWELRY_REFINE or not ctrlVars.REFINEMENT:IsHidden() then
 --d(">refinement refresh")
             if settings.debug then debugMessage( "[UpdateCraftingInventory]","(Jewelry) Refinement refresh", true, FCOIS_DEBUG_DEPTH_NORMAL) end
             --Are we at a refinement panel?
@@ -102,7 +108,7 @@ local function updateCraftingInventory(filterPanelOverride, isUniversalDeconNPC)
             updateFilteredItemCount = true
 
         --Deconstruction
-        elseif FCOIS.gFilterWhere == LF_SMITHING_DECONSTRUCT or FCOIS.gFilterWhere == LF_JEWELRY_DECONSTRUCT then
+        elseif filterType == LF_SMITHING_DECONSTRUCT or filterType == LF_JEWELRY_DECONSTRUCT then
 --d(">deconstruction refresh")
             if settings.debug then debugMessage( "[UpdateCraftingInventory]","(Jewelry) Deconstruction refresh", true, FCOIS_DEBUG_DEPTH_NORMAL) end
             --Are we at a deconstruction panel?
@@ -119,7 +125,7 @@ local function updateCraftingInventory(filterPanelOverride, isUniversalDeconNPC)
             updateFilteredItemCount = true
 
             --Improvement
-        elseif FCOIS.gFilterWhere == LF_SMITHING_IMPROVEMENT or FCOIS.gFilterWhere == LF_JEWELRY_IMPROVEMENT then
+        elseif filterType == LF_SMITHING_IMPROVEMENT or filterType == LF_JEWELRY_IMPROVEMENT then
 --d(">improvement refresh")
             if settings.debug then debugMessage( "[UpdateCraftingInventory]","(Jewelry) Improvement refresh", true, FCOIS_DEBUG_DEPTH_NORMAL) end
             --Are we at an improvement panel?
@@ -155,11 +161,11 @@ function FCOIS.RefreshBackpack()
     else
 --d(">normal inv")
         --Refresh the normal inventory
-        if not ctrlVars.BACKPACK:IsHidden() then
+        if not backpackCtrl:IsHidden() then
 --d(">>refreshing")
             if FCOIS.settingsVars.settings.debug then debugMessage( "[RefreshBackpack]","Backpack refresh", true, FCOIS_DEBUG_DEPTH_DETAILED) end
             FCOIS.preventerVars.isInventoryListUpdating = true
-            ZO_ScrollList_RefreshVisible(ctrlVars.BACKPACK)
+            ZO_ScrollList_RefreshVisible(backpackCtrl)
             FCOIS.preventerVars.isInventoryListUpdating = false
             updateFilteredItemCount = true
         end
@@ -365,7 +371,7 @@ local function updateInventories()
 end
 
 local function updateUniversalDeconstructionInventory(currentFilterPanelId)
---d("FCOIS]updateUniversalDeconstructionInventory - currentFilterPanelId: " ..tos(currentFilterPanelId))
+d("FCOIS]updateUniversalDeconstructionInventory - currentFilterPanelId: " ..tos(currentFilterPanelId))
     currentFilterPanelId = currentFilterPanelId or FCOIS.gFilterWhere
     --Update the currently shown inventory for that deconstruction
     --local universalDeconstructionNPCFilterPanelIdToInventory = FCOIS.mappingVars.universalDeconstructionNPCFilterPanelIdToInventory
@@ -411,7 +417,7 @@ function FCOIS.FilterBasics(onlyPlayer, isUniversalDeconNPC)
     checkIfDeconstructionNPC = checkIfDeconstructionNPC or FCOIS.CheckIfUniversalDeconstructionNPC
 
     --Check if we are in the player inventory
-    if not ctrlVars.BACKPACK:IsHidden() then
+    if not backpackCtrl:IsHidden() then
         --we are in the player inventory (or in the banks at the deposit inventories, or at mail sending, or trading)
         onlyPlayer = true
     end

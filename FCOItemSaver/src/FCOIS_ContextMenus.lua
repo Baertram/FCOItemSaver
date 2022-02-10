@@ -20,6 +20,11 @@ local myColorEnabled	= ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_TE
 local myColorDisabled	= ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_TEXT_COLORS, INTERFACE_TEXT_COLOR_DISABLED))
 local ctrlVars = FCOIS.ZOControlVars
 local zoMenu = ctrlVars.ZOMenu
+
+local playerTrade = ctrlVars.PLAYER_TRADE
+local mailSend = ctrlVars.MAIL_SEND
+local guildStore = ctrlVars.GUILD_STORE
+
 local otherAddons = FCOIS.otherAddons
 
 local availableCtms = FCOIS.contextMenuVars.availableCtms
@@ -86,6 +91,9 @@ local checkIfGuildBankWithdrawAllowed = FCOIS.CheckIfGuildBankWithdrawAllowed
 
 local updateFCOISFilterButtonColorsAndTextures = FCOIS.UpdateFCOISFilterButtonColorsAndTextures
 local reAnchorAdditionalInvButtons = FCOIS.ReAnchorAdditionalInvButtons
+
+local showCompanionProgressBar = FCOIS.ShowCompanionProgressBar
+local showPlayerProgressBar = FCOIS.ShowPlayerProgressBar
 
 local buildMarkerIconProtectedWhereTooltip
 
@@ -3682,16 +3690,42 @@ end
 --AND if you open the context menu by a mouse righ-click
 --To distinguish these two "events" you can use: if self.m_contextMenuMode == true then
 --true: Context-menu is open, false: Only mouse hoevered over the item
+
+local lockedZOsStrings = {
+    [SI_ITEM_ACTION_MARK_AS_LOCKED] =           true,
+    [SI_ITEM_ACTION_UNMARK_AS_LOCKED] =         true,
+}
+local craftbagExtendedActiveStrings = {}
+if SI_CBE_CRAFTBAG_MAIL_ATTACH ~= nil then
+    craftbagExtendedActiveStrings = {
+        [SI_CBE_CRAFTBAG_MAIL_ATTACH] =             true,
+        [SI_CBE_CRAFTBAG_SELL_QUANTITY] =           true,
+        [SI_CBE_CRAFTBAG_TRADE_ADD] =               true,
+    }
+end
+local addToCraftResearchStrings = {
+    [SI_ITEM_ACTION_ADD_TO_CRAFT] =             true,
+    [SI_ITEM_ACTION_RESEARCH] =                 true,
+   --[SI_ITEM_ACTION_ADD_TO_RETRAIT] =           true,
+}
+local mailTradeSellLaunderListStrings = {
+    [SI_ITEM_ACTION_TRADE_ADD] =                true,
+    [SI_ITEM_ACTION_MAIL_ATTACH] =              true,
+    [SI_ITEM_ACTION_SELL] =                     true,
+    [SI_ITEM_ACTION_LAUNDER] =                  true,
+    [SI_TRADING_HOUSE_ADD_ITEM_TO_LISTING] =    true,
+}
+
 function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
     local settings = FCOIS.settingsVars.settings
     local mappingVars = FCOIS.mappingVars
---d(">[FCOIS]FCOIS.InvContextMenuAddSlotAction-actionStringId: " ..tos(actionStringId) .. ", gFilterWhere: " ..tos(FCOIS.gFilterWhere))
+--d(">[FCOIS]FCOIS.InvContextMenuAddSlotAction-actionStringId: " ..GetString(actionStringId) .. "/"..tos(actionStringId) .. ", gFilterWhere: " ..tos(FCOIS.gFilterWhere))
     --Is the ZOs player lock item functionality enabled?
     if not settings.useZOsLockFunctions then
         --Only execute if context menu is visible?
         if self.m_contextMenuMode then
             --Hide the context menu entry ZOs added to lock/unlock items
-            if actionStringId == SI_ITEM_ACTION_MARK_AS_LOCKED or actionStringId == SI_ITEM_ACTION_UNMARK_AS_LOCKED then
+            if lockedZOsStrings[actionStringId] then
                 return true
             end
         end
@@ -3718,8 +3752,11 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
     local parentName = parentControl:GetName()
 
     local bag, slotIndex = myGetItemDetails(parentControl)
+
+--local il = (bag~=nil and GetItemLink(bag, slotIndex)) or GetStoreItemLink(slotIndex)
+--d(">item: " .. il)
     --Error output
-    if bag == nil or slotIndex == nil then
+    if (bag == nil or slotIndex == nil) and settings.debug then
         debugMessage("[ERROR]InvContextMenuAddSlotAction", "bagId: " ..tos(bag) .. " or slotIndex: " ..tos(slotIndex) .. " is nil", false, FCOIS_DEBUG_DEPTH_ALL, false)
     end
     --is the mouse only hovered over the item or was the right click mouse context menu shown?
@@ -3738,9 +3775,9 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
                     mappingVars.characterEquipmentJewelrySlots[parentName] or
                     mappingVars.characterEquipmentWeaponSlots[parentName] then
                 --Hide the PlayerProgressBar so the context menu is shown completely
-                if isShowingCharacter then FCOIS.ShowPlayerProgressBar(false) end
+                if isShowingCharacter then showPlayerProgressBar(false) end
                 --Hide the CompanionProgressBar so the context menu is shown completely
-                if isShowingCompanionCharacter then FCOIS.ShowCompanionProgressBar(false) end
+                if isShowingCompanionCharacter then showCompanionProgressBar(false) end
             end
         end
     else
@@ -3749,16 +3786,17 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
 
     callItemSelectionHandler = callItemSelectionHandler or FCOIS.callItemSelectionHandler
     callDeconstructionSelectionHandler = callDeconstructionSelectionHandler or FCOIS.callDeconstructionSelectionHandler
-
+--d(">1")
     --Use item?
     if actionStringId == SI_ITEM_ACTION_USE then
+--d(">use")
         --Is the item protected with any icon?
         FCOIS.preventerVars.gCalledFromInternalFCOIS = true
         local marked, _ = isMarked(bag, slotIndex, -1)
         if marked and isiuse(bag, slotIndex) then
             --If mail send or player trade panel is activated
-            local isCurrentlyShowingMailSend 	= not ctrlVars.MAIL_SEND.control:IsHidden() and settings.blockSendingByMail
-            local isCurrentlyShowingPlayerTrade = not ctrlVars.PLAYER_TRADE.control:IsHidden() and settings.blockTrading
+            local isCurrentlyShowingMailSend 	= not mailSend.control:IsHidden() and settings.blockSendingByMail
+            local isCurrentlyShowingPlayerTrade = not playerTrade.control:IsHidden() and settings.blockTrading
             local isContainerWithAutoLootEnabled= isAutolootContainer(bag, slotIndex) and settings.blockAutoLootContainer
             local isARecipe		 				= isItemType(bag, slotIndex, ITEMTYPE_RECIPE) and settings.blockMarkedRecipes
             local isAStyleMotif					= isItemType(bag, slotIndex, ITEMTYPE_RACIAL_STYLE_MOTIF) and settings.blockMarkedMotifs
@@ -3816,6 +3854,7 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
 
     --Enchant
     elseif actionStringId == SI_ITEM_ACTION_ENCHANT then
+--d(">enchant")
         --Remove enchant possibility for The Master's and Maelstrom weapons & shields
         if settings.blockSpecialItemsEnchantment then
             local isSpecialItem = checkIfIsSpecialItem(bag, slotIndex) or false
@@ -3824,6 +3863,7 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
 
     --Destroy item
     elseif actionStringId == SI_ITEM_ACTION_DESTROY then
+--d(">destroy")
 
         --Only execute if context menu is visible?
         if mouseRightClickDone == false then
@@ -3836,23 +3876,24 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
         return destroySelectionHandler(bag, slotIndex, false, parentControl)
 
     --Add item to crafting station, improvement, enchanting, retrait table
-    elseif actionStringId == SI_ITEM_ACTION_ADD_TO_CRAFT or actionStringId == SI_ITEM_ACTION_RESEARCH then --or actionStringId == SI_ITEM_ACTION_ADD_TO_RETRAIT then
+    elseif addToCraftResearchStrings[actionStringId] then
+--d(">add to craft")
         --Is item marked with any of the FCOItemSaver icons? Then don't show the actionStringId in the contextmenu
         --bag, slotIndex, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId
+        --FCOIS.preventerVars.doDebugDeconstructionSelectionHandler = true --todo for debugging
         return callDeconstructionSelectionHandler(bag, slotIndex, false, false, false, false, false, false, nil)
 
     --Trade an item, mark item as junk, attach item to mail, sell item, launder item, add to trading house listing (sell there) or add to crafting station
-    elseif actionStringId == SI_ITEM_ACTION_TRADE_ADD
-            or actionStringId == SI_ITEM_ACTION_MAIL_ATTACH or actionStringId == SI_ITEM_ACTION_SELL
-            or actionStringId == SI_ITEM_ACTION_LAUNDER
-            --Anbieten / sell in guild shop
-            or actionStringId == SI_TRADING_HOUSE_ADD_ITEM_TO_LISTING then
+    elseif mailTradeSellLaunderListStrings[actionStringId] then
+--d(">trade/mail attach/sell/launder/add to listing")
         --Is item marked with any of the FCOItemSaver icons? Then don't show the actionStringId in the contextmenu
         --  bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId, isDragAndDrop, panelIdParent
+        --FCOIS.preventerVars.doDebugItemSelectionHandler = true --todo for debugging
         return callItemSelectionHandler(bag, slotIndex, false, false, false, false, false, false, nil, nil, nil)
 
     --Should the "Junk item" context menu entry be hidden if any marker icon is set?
     elseif actionStringId == SI_ITEM_ACTION_MARK_AS_JUNK and settings.removeMarkAsJunk then
+--d(">mark as junk")
         --Check the marker icons
         FCOIS.preventerVars.gCalledFromInternalFCOIS = true
         local isMarkedJunk, markedWithThisIconsJunk = isMarked(bag, slotIndex, -1)
@@ -3876,16 +3917,17 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
             end
         end
 
-        --Equip
+    --Equip
     elseif actionStringId == SI_ITEM_ACTION_EQUIP then
+--d(">equip")
         local isStore = currentSceneName == ctrlVars.vendorSceneName or false
         local isFence = currentScene == FENCE_SCENE or false
         --Or are we in the guild store/trading house?
-        local isCurrentlyShowingGuildStore = not ctrlVars.GUILD_STORE:IsHidden()
+        local isCurrentlyShowingGuildStore = not guildStore:IsHidden()
         --Or are we currently showing the mail send panel?
-        local isMailSend = not ctrlVars.MAIL_SEND.control:IsHidden()
+        local isMailSend = not mailSend.control:IsHidden()
         --Or the player2player trade scene is shown?
-        local isPlayer2PlayerTrade = not ctrlVars.PLAYER_TRADE.control:IsHidden()
+        local isPlayer2PlayerTrade = not playerTrade.control:IsHidden()
         --Disable the "equip" entry for the above checked panels now so the standard keybind is not the "equip" one
         if isStore or isFence or isCurrentlyShowingGuildStore or isMailSend or isPlayer2PlayerTrade then
             --Is the item protected with any icon?
@@ -3897,8 +3939,9 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
             end
         end
 
-        --Guild bank/Bank deposit
+    --Guild bank/Bank deposit
     elseif actionStringId == SI_ITEM_ACTION_BANK_DEPOSIT then
+--d(">bank deposit")
         --Are we at the guild bank and is the protection setting for "non-withdrawable items" enabled?
         if settings.blockGuildBankWithoutWithdraw then
             if currentSceneName == ctrlVars.guildBankSceneName then -- or currentSceneName == ctrlVars.guildBankGamepadSceneName then
@@ -3919,9 +3962,9 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
     elseif actionStringId == SI_ITEM_ACTION_REPAIR then
     ]]
 
-        --CraftBagExtended: Unpack item and add to mail, sell, trade
-    elseif CraftBagExtended or CBE or otherAddons.craftBagExtendedActive and
-            (actionStringId == SI_CBE_CRAFTBAG_MAIL_ATTACH or actionStringId == SI_CBE_CRAFTBAG_SELL_QUANTITY or actionStringId == SI_CBE_CRAFTBAG_TRADE_ADD) then
+    --CraftBagExtended: Unpack item and add to mail, sell, trade
+    elseif (CraftBagExtended or CBE or otherAddons.craftBagExtendedActive) and craftbagExtendedActiveStrings[actionStringId] then
+--d(">CraftBagExtended")
         --Is item marked with any of the FCOItemSaver icons? Then don't show the actionStringId in the contextmenu
         --  bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId, isDragAndDrop, panelIdParent
         return callItemSelectionHandler(bag, slotIndex, false, false, false, false, false, false, nil, nil, nil)

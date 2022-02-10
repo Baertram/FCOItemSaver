@@ -172,7 +172,7 @@ function FCOIS.callItemSelectionHandler(bag, slot, echo, overrideChatOutput, sup
 	overrideAlert = overrideAlert or false
 	suppressAlert = suppressAlert or false
 	calledFromExternalAddon = calledFromExternalAddon or false
-    FCOIS.preventerVars.gCalledFromInternalFCOIS = calledFromExternalAddon
+    FCOIS.preventerVars.gCalledFromInternalFCOIS = not calledFromExternalAddon
 	if not checkIfFCOISSettingsWereLoaded(calledFromExternalAddon, not addonVars.gAddonLoaded) then return true end
 	--Return true to "protect" an item, if the bag and slot are missing
 	if bag == nil or slot == nil then return true end
@@ -194,7 +194,7 @@ function FCOIS.callDeconstructionSelectionHandler(bag, slot, echo, overrideChatO
     overrideAlert = overrideAlert or false
     suppressAlert = suppressAlert or false
     calledFromExternalAddon	= calledFromExternalAddon or false
-    FCOIS.preventerVars.gCalledFromInternalFCOIS = calledFromExternalAddon
+    FCOIS.preventerVars.gCalledFromInternalFCOIS = not calledFromExternalAddon
 	if not checkIfFCOISSettingsWereLoaded(calledFromExternalAddon, not addonVars.gAddonLoaded) then return true end
     --Return true to "protect" an item, if the bag and slot are missing
     if bag == nil or slot == nil then return true end

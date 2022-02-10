@@ -1133,6 +1133,8 @@ FCOIS.equipmentVars.gEquipmentIconHeight			= 20
 --Width and height for the equipment armor type icons
 FCOIS.equipmentVars.gEquipmentArmorTypeIconHeight	= 16
 FCOIS.equipmentVars.gEquipmentArmorTypeIconWidth 	= 16
+--The created filterButtons will be saved here, for each filterPanelId
+filterButtonVars.filterButtons = {}
 --Width and height for the filter buttons - Default values
 -->Will be read within file /Src/FCOIS_FilterButtons.lua, function GetFilterButtonDataByPanelId(libFiltersPanelId)
 filterButtonVars.gFilterButtonWidth			        = 24
@@ -1549,6 +1551,7 @@ ctrlVars.mainMenuCategoryBar            = ZO_MainMenuCategoryBar
 
 
 -- #202 The mapping between the filterPanelId and the universal deconstruction controls to parent and anchor to
+mappingVars.panelIdToUniversalDeconstructionNPCParentData = {}
 if ZO_UNIVERSAL_DECONSTRUCTION_FILTER_TYPES ~= nil then
     mappingVars.panelIdToUniversalDeconstructionNPCParentData = {
         [LF_SMITHING_DECONSTRUCT]   = {
