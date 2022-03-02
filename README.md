@@ -5,16 +5,13 @@ AddOn for the game Elder Scrolls Online: Saving your items so you do not acciden
 ==Changelog for current PTS API101033==
 ```
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-02-12
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-03-02
 ------------------------------------------------------------------------------------
 --#176 -> Test: Errors occured with OR filters, and mixed AND + OR filters
---#202 --> Filter buttons show/hide and anchor to universal deconstruction/re anchor to default parents at smithing decon and enchanting extract needs to be added + TESTs
---> TODO: -Drag&Drop of any marked item, even if unprotected, does not work and says it is protected!
---        -Enchanting tab#s filterButtons still show deconstruction filterButtons. Why aren't the "extract" filter buttons shown? Maybe because LF_ENCHANTING_CREATION and extraction share the same?
 --Added checks if functions/API functions are called internally or from external (other addons) -> Still ongoing TODO
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.2.3 - New version: 2.2.4) -    Updated last: 2022-02-12
+--Changelog (last version: 2.2.3 - New version: 2.2.4) -    Updated last: 2022-03-02
 -------------------------------------------------------------------------------------
 --[Fixed]
 --Added debug file /src/FCOIS_Debug.lua to the txt file again
@@ -59,7 +56,9 @@ AddOn for the game Elder Scrolls Online: Saving your items so you do not acciden
 --If you press SHIFT key and right mouse on the filter button this will reset the selected filter icon at the button to the * ("All") entry
 --#184 Added automatic marking of needed scrolls etc. with ItemCooldownTracker API
 --#188 Enable backup and restore for all 3 saved itemIds (non unique, ZOs unique and FCOIS unique). ZOs unique and non-unique can only be saved and restored together!
-
+--#202 FilterButtons and addiitonal inventory flag context menu button added to universal deconstruction panel. The filter's and filterButtons and contextMenus re-use the selected protection
+--     methods etc. of smithing deconstuction/jewelry deconstruction/enchanting extraction! If the "All" tab is selected at the universal decon panel, which includes all types of the
+--     deconstructable/extractable item types, the smithing deconstruction buttons and context menu buttons are show, but the checks will still be done "per item", so that glyphs are protected too!
 
 --[Added on request]
 --#176 Add submenu to 4 filter buttons, with setting to change the filter between AND & OR filter conjunction behaviour. Remembers the state for each filterPanel
