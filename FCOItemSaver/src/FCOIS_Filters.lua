@@ -113,7 +113,7 @@ local function shouldItemBeShownAfterBeenFiltered(slotItemInstanceId, slot)
     --->are now able to swithc between logical conjunction AND or OR and thus the filter results here need to sum up
     --->according to these settings (AND means all must apply. OR means any of them must apply).
     local filterButtonSettings = settings.filterButtonSettings
-    local currentFilterPanelId = FCOIS.gFilterWhere     -- The currently filtered panelId (inventry, bank withdraw, mail, trade, etc.)
+    local currentFilterPanelId = FCOIS.gFilterWhere     -- The currently filtered panelId (inventory, bank withdraw, mail, trade, etc.)
     local filterButtonSettingsForCurrentPanel = filterButtonSettings[currentFilterPanelId]
     --The 4 filter button's settings for the logical conjunction (true = AND, false = OR)
     -------------------------------------------------------------------------------------------------------

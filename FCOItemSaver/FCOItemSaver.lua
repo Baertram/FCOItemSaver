@@ -155,9 +155,7 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 
 --#181, 2022-01-02, Baertram: Check filter slash command chat feedback: Does it show correct info about filter state and new logical conjuncions?
 
---#199, 2021-12-28, Baertram, bug: Companion equipment character is not showing the armor type labels L/M/H
-
---#201, 2022-02-04, Baertram, bug: Gear marker icon 1 (static) is displayed below all other dynamic icons in context menus?
+--#199, 2021-12-28, Baertram, bug: Companion equipment character sometimes is not showing the armor type labels L/M/H
 
 --#202, 2022-02-05, Baertram, bug: Add support for new universal deconstruction NPC "Giladil" (inventory markers, filterButtons, flag, context menus)
 --  todo: At best re-Use LF_SMITHING_DECONSTRUCTION for the filterPanelId? Or add a new LF_UNIVERSAL_DECONSTRUCTION to LibFilters?
@@ -171,19 +169,17 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-02-05
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-02-12
 ------------------------------------------------------------------------------------
 --#176 -> Test: Errors occured with OR filters, and mixed AND + OR filters
---#201 -> Find reason -> PTS is okay. MAybe bug on live? -> Sort order changed in settings?
 --#202 --> Filter buttons show/hide and anchor to universal deconstruction/re anchor to default parents at smithing decon and enchanting extract needs to be added + TESTs
 --> TODO: -Drag&Drop of any marked item, even if unprotected, does not work and says it is protected!
 --        -Enchanting tab#s filterButtons still show deconstruction filterButtons. Why aren't the "extract" filter buttons shown? Maybe because LF_ENCHANTING_CREATION and extraction share the same?
 --Added checks if functions/API functions are called internally or from external (other addons) -> Still ongoing TODO
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.2.3 - New version: 2.2.4) -    Updated last: 2022-02-05
+--Changelog (last version: 2.2.3 - New version: 2.2.4) -    Updated last: 2022-02-12
 -------------------------------------------------------------------------------------
-
 --[Fixed]
 --Added debug file /src/FCOIS_Debug.lua to the txt file again
 --Debug functions will use local speed up variable now

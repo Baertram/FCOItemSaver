@@ -4,6 +4,8 @@ local FCOIS = FCOIS
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
 
+local libFilters = FCOIS.libFilters
+
 local debugMessage                          = FCOIS.debugMessage
 
 local tos                                   = tostring
@@ -553,7 +555,7 @@ end
 local function FCOItemSaver_OnDragStart(inventorySlot)
     if inventorySlot == nil then return end
     local cursorContentType = GetCursorContentType()
---d("[FCOIS]FCOItemSaver_OnDragStart-cursorContentType: " .. tos(cursorContentType) .. "/" .. tos(MOUSE_CONTENT_INVENTORY_ITEM))
+d("[FCOIS]FCOItemSaver_OnDragStart-cursorContentType: " .. tos(cursorContentType) .. "/" .. tos(MOUSE_CONTENT_INVENTORY_ITEM))
     --cursorContentType is in 99% of the cases = MOUSE_CONTENT_EMPTY, even if an inventory item gets dragged
     if cursorContentType == MOUSE_CONTENT_EMPTY then
         inventorySlot = ZO_InventorySlot_GetInventorySlotComponents(inventorySlot)
@@ -573,15 +575,21 @@ end
 --1. Drop of an item at an equipment slot -> Aswk before bind dialog
 --2. If CraftBagExtended addon is enabled: Drop of any craftbag item at the mail send/player trade panel as the Drag function will not be
 --   executed properly for CraftBag rows. So we need to check if the item is protected and cancel the drop here!
+local slotTypeMailOrTrade = {
+    [SLOT_TYPE_MAIL_QUEUED_ATTACHMENT] = true,
+    [SLOT_TYPE_MAIL_ATTACHMENT] = true,
+    [SLOT_TYPE_MY_TRADE] = true
+}
 local function FCOItemSaver_OnReceiveDrag(inventorySlot)
     --FCOinvs = inventorySlot
     local cursorContentType = GetCursorContentType()
     if FCOIS.settingsVars.settings.debug then debugMessage("[OnReceiveDrag]", "cursorContentType: " .. tos(cursorContentType) .. "/" .. tos(MOUSE_CONTENT_INVENTORY_ITEM) .. ", invSlotType: " .. tos(inventorySlot.slotType) .. "/" .. tos(SLOT_TYPE_EQUIPMENT), true, FCOIS_DEBUG_DEPTH_NORMAL) end
---d("[FCOIS]FCOItemSaver_OnReceiveDrag, cursorContentType: " ..tos(cursorContentType))
+d("[FCOIS]FCOItemSaver_OnReceiveDrag, cursorContentType: " ..tos(cursorContentType))
 
     -- if there is an inventory item on the cursor:
     if cursorContentType ~= MOUSE_CONTENT_INVENTORY_ITEM and cursorContentType ~= MOUSE_CONTENT_EQUIPPED_ITEM then return end
     local slotType = inventorySlot.slotType
+    local isMailOrTradeSlotType = slotTypeMailOrTrade[slotType] or false
     -- and the slot type we're dropping it on is an equip slot:
     if slotType == SLOT_TYPE_EQUIPMENT then
         local bag
@@ -627,7 +635,8 @@ local function FCOItemSaver_OnReceiveDrag(inventorySlot)
             ClearCursor()
         end
         return false
-    elseif slotType == SLOT_TYPE_MAIL_QUEUED_ATTACHMENT or slotType == SLOT_TYPE_MAIL_ATTACHMENT or slotType == SLOT_TYPE_MY_TRADE then
+        --elseif slotType == SLOT_TYPE_MAIL_QUEUED_ATTACHMENT or slotType == SLOT_TYPE_MAIL_ATTACHMENT or slotType == SLOT_TYPE_MY_TRADE then
+    elseif isMailOrTradeSlotType == true then
         local bagId     = GetCursorBagId()
         local slotIndex = GetCursorSlotIndex()
         if not bagId or not slotIndex then return false end
@@ -1024,6 +1033,8 @@ function FCOIS.CreateHooks()
     -- -v- #202
     if ZO_UNIVERSAL_DECONSTRUCTION_FILTER_TYPES ~= nil then
         getCurrentFilterPanelIdAtDeconNPC = getCurrentFilterPanelIdAtDeconNPC or FCOIS.GetCurrentFilterPanelIdAtDeconNPC
+        local universalDeconstructionPanel = universalDeconGlobal.deconstructionPanel
+        local detectActiveUniversalDeconstructionTab = libFilters.DetectActiveUniversalDeconstructionTab
 
         --Pre Hook the universal deconstruction for prevention methods
         --Register a secure posthook on visibility change of a scrolllist's row -> At the universald deconstruction inventory list
@@ -1039,11 +1050,11 @@ function FCOIS.CreateHooks()
             if not isHidden then
                 --LF_SMITHING_DECONSTRUCT needs to be passed in as valid filterPanel! It maybe not the correct filterPanel, so it is determined internally
                 local filterPanelIdPassedIn = universalDeconGlobal.FCOIScurrentFilterPanelId
---d("[FCOIS]UniversalDecon - Setting filterPanelId to: " ..tos(filterPanelIdPassedIn))
+                --d("[FCOIS]UniversalDecon - Setting filterPanelId to: " ..tos(filterPanelIdPassedIn))
                 if filterPanelIdPassedIn == nil then filterPanelIdPassedIn = LF_SMITHING_DECONSTRUCT end
                 local currentFilterPanelIdAtUniversalDecon = getCurrentFilterPanelIdAtDeconNPC(filterPanelIdPassedIn)
                 if currentFilterPanelIdAtUniversalDecon ~= nil and FCOIS.gFilterWhere ~= currentFilterPanelIdAtUniversalDecon then
---d(">Setting filterPanelId to: " ..tos(currentFilterPanelIdAtUniversalDecon))
+                    --d(">Setting filterPanelId to: " ..tos(currentFilterPanelIdAtUniversalDecon))
                     FCOIS.gFilterWhere = currentFilterPanelIdAtUniversalDecon
                     --Re-anchor the filterButtons and the additional inventory flag button from their default parents at e.g.
                     --LF_SMITHING_DECONSTRUCT, LF_JEWELRY_DECONSTRUCT and LF_ENCHANTING_EXTRACTION to
@@ -1060,7 +1071,7 @@ function FCOIS.CreateHooks()
             else
                 local lastFilterPanelIdAtUniversalDecon = universalDeconGlobal.FCOIScurrentFilterPanelId
                 if lastFilterPanelIdAtUniversalDecon == nil then lastFilterPanelIdAtUniversalDecon = FCOIS.gFilterWhere end
---d(">[FCOIS]lastFilterPanelIdAtUniversalDecon: " ..tos(lastFilterPanelIdAtUniversalDecon))
+                --d(">[FCOIS]lastFilterPanelIdAtUniversalDecon: " ..tos(lastFilterPanelIdAtUniversalDecon))
                 --Hide context menus and update inventory filterButtons + re-enable the ANTI deconstruction/ANTI enchanting protection if needed
                 onClosePanel(nil, LF_INVENTORY, "CRAFTING_STATION")
 
@@ -1069,7 +1080,7 @@ function FCOIS.CreateHooks()
                 reParentAndAnchorContextMenuInvokerButtons(lastFilterPanelIdAtUniversalDecon, nil)
 
                 --Reset the filterPanelId to inventory
---d("[FCOIS]UniversalDecon HIDDEN - resetting filterPanelId to LF_INVENTORY")
+                --d("[FCOIS]UniversalDecon HIDDEN - resetting filterPanelId to LF_INVENTORY")
                 FCOIS.gFilterWhere = LF_INVENTORY
             end
         end
@@ -1080,6 +1091,7 @@ function FCOIS.CreateHooks()
             --Hide the context menu at the active panel
             sceneCallbackHideContextMenu(oldState, newState)
 
+            --[[
             if newState == SCENE_SHOWING then
                 if not universalDeconButtonsHooked then
                     --Hook the buttons' OnClick handler of the universal deconstruction bar
@@ -1102,6 +1114,8 @@ function FCOIS.CreateHooks()
                     end
                 end
             end
+            ]]
+            --[[
             --Normal scene shown/hidden callbacks to show/hide (& reanchor) the additional inventory flag buttons and the filterButtonss
             if newState == SCENE_SHOWN then
                 --Set the filterPanelId to last opened one or default for "all" tab directly so that functions at the inventory list will use
@@ -1111,7 +1125,9 @@ function FCOIS.CreateHooks()
                 zo_callLater(function()
                     updateFilterAndAddInvFlagButtonsAtUniversalDeconstruction(false)
                 end, 10)
-            elseif newState == SCENE_HIDING then
+            else
+            ]]
+            if newState == SCENE_HIDING then
                 --Hide the context menu at mail panel
                 local filterTypeToHide = universalDeconGlobal.FCOIScurrentFilterPanelId
                 if filterTypeToHide == nil then filterTypeToHide = LF_SMITHING_DECONSTRUCT end
@@ -1120,45 +1136,52 @@ function FCOIS.CreateHooks()
                 updateFilterAndAddInvFlagButtonsAtUniversalDeconstruction(true)
             end
         end)
-    end
 
-    --[[
+        --Another approach to detect the current active panel, but this will fire also if the dropdown filters are changed!
+        SecurePostHook(universalDeconstructionPanel, "OnFilterChanged", function(tab, craftingTypes, includeBanked)
+            --[[
+                -- Returns any CRAFTING_TYPE filter value(s) selected from ZO_UNIVERSAL_DECONSTRUCTION_CRAFTING_TYPES by the player.
+                local craftingTypes = panel:GetSavedCraftingTypeFilters()
+                if craftingTypes then
+                    -- One or more keys from the set {CRAFTING_TYPE_BLACKSMITHING, CRAFTING_TYPE_CLOTHIER,
+                    --CRAFTING_TYPE_ENCHANTING, CRAFTING_TYPE_JEWELRYCRAFTING, CRAFTING_TYPE_WOODWORKING}
+        FCOIS._universalDeconCraftingTypes = craftingTypes
+                end
 
-    --Another approach to detect the current active panel, but this will fire also if the dropdown filters are changed!
-    SecurePostHook(universalDeconstructionPanel, "OnFilterChanged", function(panel)
-        -- Returns any CRAFTING_TYPE filter value(s) selected from ZO_UNIVERSAL_DECONSTRUCTION_CRAFTING_TYPES by the player.
-        local craftingTypes = panel:GetSavedCraftingTypeFilters()
-        if craftingTypes then
-            -- One or more keys from the set {CRAFTING_TYPE_BLACKSMITHING, CRAFTING_TYPE_CLOTHIER,
-            --CRAFTING_TYPE_ENCHANTING, CRAFTING_TYPE_JEWELRYCRAFTING, CRAFTING_TYPE_WOODWORKING}
-FCOIS._universalDeconCraftingTypes = craftingTypes
-        end
+                -- Returns the ITEMTYPE or ITEMFILTERTYPE value(s) shown by the current tab.
+                local filterData = panel.inventory:GetCurrentFilterType()
+                if filterData then
+                    -- If itemTypes exists, it is a table with one or more ITEMTYPE_* values indicating which item types are shown.
+                    -- For example: {ITEMTYPE_GLYPH_ARMOR, ITEMTYPE_GLYPH_JEWELRY, ITEMTYPE_GLYPH_WEAPON}
+                    local itemTypes = filterData.itemTypes
+        FCOIS._universalDeconItemTypes = itemTypes
+                    if itemTypes and enchantingItemTypes and itemTypes == enchantingItemTypes then
+                        d(">Enchating tab active")
+                    else
+                        -- If itemFilterTypes exists, it is a table with one or more ITEMFILTERTYPE_* values indicating which item filter types are shown.
+                        -- For example: {ITEMFILTERTYPE_WEAPONS}
+                        local itemFilterTypes = filterData.itemFilterTypes
+        FCOIS._universalDeconItemFilterTypes = itemFilterTypes
+                        if itemFilterTypes then
 
-        -- Returns the ITEMTYPE or ITEMFILTERTYPE value(s) shown by the current tab.
-        local filterData = panel.inventory:GetCurrentFilterType()
-        if filterData then
-            -- If itemTypes exists, it is a table with one or more ITEMTYPE_* values indicating which item types are shown.
-            -- For example: {ITEMTYPE_GLYPH_ARMOR, ITEMTYPE_GLYPH_JEWELRY, ITEMTYPE_GLYPH_WEAPON}
-            local itemTypes = filterData.itemTypes
-FCOIS._universalDeconItemTypes = itemTypes
-            if itemTypes and enchantingItemTypes and itemTypes == enchantingItemTypes then
-                d(">Enchating tab active")
-            else
-                -- If itemFilterTypes exists, it is a table with one or more ITEMFILTERTYPE_* values indicating which item filter types are shown.
-                -- For example: {ITEMFILTERTYPE_WEAPONS}
-                local itemFilterTypes = filterData.itemFilterTypes
-FCOIS._universalDeconItemFilterTypes = itemFilterTypes
-                if itemFilterTypes then
+                        end
+                    end
+
+                else
+                    -- Otherwise, the current tab is the "All" tab; all items that can be deconstructed are shown.
 
                 end
-            end
+                ]]
+                detectActiveUniversalDeconstructionTab = detectActiveUniversalDeconstructionTab or libFilters.DetectActiveUniversalDeconstructionTab
 
-        else
-            -- Otherwise, the current tab is the "All" tab; all items that can be deconstructed are shown.
+                local libFiltersFilterType = detectActiveUniversalDeconstructionTab(nil, tab.key)
+                if libFiltersFilterType ~= nil then
+                    universalDeconGlobal.FCOIScurrentFilterPanelId = libFiltersFilterType
+                    updateFilterAndAddInvFlagButtonsAtUniversalDeconstruction(false)
+                end
+        end)
 
-        end
-    end)
-    ]]
+    end
     -- -^- #202
 
 

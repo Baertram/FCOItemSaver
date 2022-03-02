@@ -3490,5 +3490,3 @@ mappingVars.iconNrToOrdinalStr = {
         [30] = "trentième",
     },
 }
-
-    

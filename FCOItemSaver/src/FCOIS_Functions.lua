@@ -337,6 +337,15 @@ function FCOIS.MyGetItemDetails(rowControl)
         elseif rowControl.slotType == SLOT_TYPE_STORE_BUY or rowControl.slotType == SLOT_TYPE_BUY_MULTIPLE then
             bagId = nil
             slotIndex = dataEntryData.slotIndex
+            --[[
+        elseif rowControl.index and rowControl.slotType then
+            if rowControl.slotType == SLOT_TYPE_STORE_BUY or rowControl.slotType == SLOT_TYPE_BUY_MULTIPLE then
+                return GetStoreItemLink(rowControl.index, LINK_STYLE_BRACKETS)
+
+            elseif rowControl.slotType == SLOT_TYPE_STORE_BUYBACK then
+                return GetBuybackItemLink(rowControl.index, LINK_STYLE_BRACKETS)
+            end
+]]
         end
     end
     return bagId, slotIndex
