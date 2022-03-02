@@ -162,23 +162,32 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 
 --#203, 2022-02-05, Hotzelvit, bug, FCOIS comments at esoui: Mass moving to junk/removing from junk (100 items) will kick you from the server becase of message spam
 
+--#207, 2022-02-27, FCOIS comments, bug: Companion equipment character markers will be automatically removed if you unequip the companion's items?
 
 --____________________________
--- Current max bugs/features/ToDos: 206
+-- Current max bugs/features/ToDos: 207
 --____________________________
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-02-12
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-03-02
 ------------------------------------------------------------------------------------
 --#176 -> Test: Errors occured with OR filters, and mixed AND + OR filters
 --#202 --> Filter buttons show/hide and anchor to universal deconstruction/re anchor to default parents at smithing decon and enchanting extract needs to be added + TESTs
 --> TODO: -Drag&Drop of any marked item, even if unprotected, does not work and says it is protected!
---        -Enchanting tab#s filterButtons still show deconstruction filterButtons. Why aren't the "extract" filter buttons shown? Maybe because LF_ENCHANTING_CREATION and extraction share the same?
+--        -Jewelry deconstruction protects a green ging with deconstruction marker icon if double clicked/dragged, but not via the context menu "Add"?
+--          Why is the itemSelecttionHandler called and not the deconstruction handler?
+--[[        user:/AddOns/FCOItemSaver/src/FCOIS_Protection.lua:784: in function 'FCOIS.ItemSelectionHandler'
+|caaaaaa<Locals> bag = 1, slot = 40, echo = T, isDragAndDrop = F, overrideChatOutput = F, suppressChatOutput = F, overrideAlert = F, suppressAlert = F, calledFromExternalAddon = F, panelId = 33, doDebug = F, settings = [table:1], mappingVars = [table:3]{noEntryValue = 1, noEntry = "-------------", maxCPLevel = 160}, panelIdAtCall = F, whereAreWeToFilterPanelId = [table:4]{960 = 31}, whereAreWeToIsBlocked = [table:5]{960 = T}, filterPanelIdToBlockSettingName = [table:6]{960 = "blockJewelryRefinement"}, whereAreWeToSingleItemChecks = [table:7]{880 = T}, isBlocked = T, itemId = -873102038 </Locals>|r
+(tail call): ?
+user:/AddOns/FCOItemSaver/src/FCOIS_Hooks.lua:486: in function 'FCOItemSaver_OnInventorySlot_DoPrimaryAction'
+|caaaaaa<Locals> inventorySlot = ud, doNotCallOriginalZO_InventorySlot_DoPrimaryAction = F, settings = [table:1], contextMenuClearMarkesByShiftKey = T, contextMenuClearMarkesKey = 7, parent = ud, isABankWithdraw = F, isCharacter = F, isVendorRepair = F, bagId = 1, slotId = 40 </Locals>|r
+/EsoUI/Libraries/Utility/ZO_Hook.lua:18: in function 'ZO_InventorySlot_DoPrimaryAction'
+]]
 --Added checks if functions/API functions are called internally or from external (other addons) -> Still ongoing TODO
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.2.3 - New version: 2.2.4) -    Updated last: 2022-02-12
+--Changelog (last version: 2.2.3 - New version: 2.2.4) -    Updated last: 2022-03-02
 -------------------------------------------------------------------------------------
 --[Fixed]
 --Added debug file /src/FCOIS_Debug.lua to the txt file again

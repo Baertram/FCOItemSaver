@@ -371,7 +371,7 @@ local function updateInventories()
 end
 
 local function updateUniversalDeconstructionInventory(currentFilterPanelId)
-d("FCOIS]updateUniversalDeconstructionInventory - currentFilterPanelId: " ..tos(currentFilterPanelId))
+--d("FCOIS]updateUniversalDeconstructionInventory - currentFilterPanelId: " ..tos(currentFilterPanelId))
     currentFilterPanelId = currentFilterPanelId or FCOIS.gFilterWhere
     --Update the currently shown inventory for that deconstruction
     --local universalDeconstructionNPCFilterPanelIdToInventory = FCOIS.mappingVars.universalDeconstructionNPCFilterPanelIdToInventory

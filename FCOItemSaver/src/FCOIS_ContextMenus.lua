@@ -2423,11 +2423,7 @@ end
 local function getAddInvFlagContextmenuButtonAnchorData(filterPanelId)
     local additionalInventoryFlagButton = FCOIS.anchorVars.additionalInventoryFlagButton[FCOIS.APIversion]
     local anchorData
-    if filterPanelId == LF_ENCHANTING_EXTRACTION then
-        anchorData = additionalInventoryFlagButton[LF_ENCHANTING_CREATION]
-    else
-        anchorData = additionalInventoryFlagButton[filterPanelId]
-    end
+    anchorData = additionalInventoryFlagButton[filterPanelId]
     return anchorData
 end
 
@@ -2453,6 +2449,10 @@ function FCOIS.ReParentAndAnchorContextMenuInvokerButtons(fromPanelId, toPanelId
         ]]
         local newParentData = panelIdToUniversalDeconstructionParentData[filterPanelId]
         if not newParentData then return end
+        --Workaround for enchanting extraction as it got no own additionalFlag or filterButtons, they are re-used from creation!
+        if filterPanelId == LF_ENCHANTING_EXTRACTION then
+            filterPanelId = LF_ENCHANTING_CREATION
+        end
         --Enchanting extraction does not use an own additional inv. flag button but re-uses the enchanting creation button
         --> So read the original data from the creation button!
         anchorData = getAddInvFlagContextmenuButtonAnchorData(filterPanelId)
@@ -2469,6 +2469,10 @@ function FCOIS.ReParentAndAnchorContextMenuInvokerButtons(fromPanelId, toPanelId
         if toPanelId == nil then
             --Get the filterPanelId based on the fromPaneLId
             filterPanelId = fromPanelId
+            --Workaround for enchanting extraction as it got no own additionalFlag or filterButtons, they are re-used from creation!
+            if filterPanelId == LF_ENCHANTING_EXTRACTION then
+                filterPanelId = LF_ENCHANTING_CREATION
+            end
 
             --[[
             FCOIS.contextMenuVars.filterPanelIdToContextMenuButtonInvoker = {
