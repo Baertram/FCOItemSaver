@@ -52,8 +52,9 @@ local isCompanionCharacterShown = FCOIS.IsCompanionCharacterShown
 local rebuildGearSetBaseVars = FCOIS.RebuildGearSetBaseVars
 local checkIfBagShouldAutoRemoveMarkerIcons = FCOIS.CheckIfBagShouldAutoRemoveMarkerIcons
 
-local destroySelectionHandler = FCOIS.DestroySelectionHandler
-local getCurrentVendorType = FCOIS.GetCurrentVendorType
+local destroySelectionHandler =         FCOIS.DestroySelectionHandler
+local getCurrentVendorType =            FCOIS.GetCurrentVendorType
+local isDeconstructionHandlerNeeded =   FCOIS.IsDeconstructionHandlerNeeded
 
 --==============================================================================
 --==================== START EVENT CALLBACK FUNCTIONS ==========================
@@ -704,6 +705,7 @@ local function FCOItemSaver_OnInventorySlotUnLocked(self, bag, slot)
     FCOIS.preventerVars.dragAndDropOrDoubleClickItemSelectionHandler = false
 end
 
+
 -- handler function for EVENT_INVENTORY_SLOT_LOCKED global event
 -- will be fired (before EVENT_CURSOR_PICKUP) if you pickup an item (e.g. by drag&drop)
 -- Throws and error message if you try to drag&drop an item to a slot (mail, trade, ...)
@@ -725,7 +727,7 @@ local function FCOItemSaver_OnInventorySlotLocked(self, bag, slot)
     end
 
     --Deconstruction at crafting station?
-    if(not ctrlVars.DECONSTRUCTION_BAG:IsHidden() ) then
+    if isDeconstructionHandlerNeeded() then
 --d(">got here, calling deconstruction selection handler")
         -- check if deconstruction is forbidden
         -- if so, clear item hold by cursor

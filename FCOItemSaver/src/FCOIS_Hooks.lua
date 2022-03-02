@@ -54,6 +54,7 @@ local isNoOtherModifierKeyPressed           = FCOIS.IsNoOtherModifierKeyPressed
 local showProtectionDialog                  = FCOIS.ShowProtectionDialog
 local showCompanionProgressBar              = FCOIS.ShowCompanionProgressBar
 local showPlayerProgressBar                 = FCOIS.ShowPlayerProgressBar
+local isDeconstructionHandlerNeeded         = FCOIS.IsDeconstructionHandlerNeeded
 
 -- -v- #202 Universal Deconstruction - Butonly for the inperformant ChangeFilter hook which Cardinal05 provided
 -->Disabled for now! Until ZOs provides a callback for the tab change we will PostHook the menuBar tab buttons OnMouseUp
@@ -461,7 +462,7 @@ local function FCOItemSaver_OnInventorySlot_DoPrimaryAction(inventorySlot)
     isVendorPanelShown = isVendorPanelShown or FCOIS.IsVendorPanelShown
     local isVendorRepair  = isVendorPanelShown(LF_VENDOR_REPAIR, false) or false
     --Do not add protection double click functions to bank/guild bank withdraw and character, and vendor repair
-d(">[FCOIS]FCOItemSaver_OnInventorySlot_DoPrimaryAction - " .. tos(inventorySlot:GetName()) .. ", isBankWithdraw: " ..tos(isABankWithdraw) .. ", isCharacter: " ..tos(isCharacter) .. ", isVendorRepair: " ..tos(isVendorRepair))
+--d(">[FCOIS]FCOItemSaver_OnInventorySlot_DoPrimaryAction - " .. tos(inventorySlot:GetName()) .. ", isBankWithdraw: " ..tos(isABankWithdraw) .. ", isCharacter: " ..tos(isCharacter) .. ", isVendorRepair: " ..tos(isVendorRepair))
     if not isABankWithdraw and not isCharacter and not isVendorRepair then
         --Get the slected inv. row's dataEntry.data with bagId and slotIndex
         local bagId, slotId = myGetItemDetails(inventorySlot)
@@ -470,7 +471,7 @@ d(">[FCOIS]FCOItemSaver_OnInventorySlot_DoPrimaryAction - " .. tos(inventorySlot
             FCOIS.preventerVars.dragAndDropOrDoubleClickItemSelectionHandler = true
 
             -- Inside deconstruction?
-            if (not deconstructionCtrl:IsHidden() or checkIfUniversalDeconstructionNPC()) then -- #202
+            if isDeconstructionHandlerNeeded() then -- #202
                 -- #202
                 -- check if deconstruction is forbidden
                 -- if so, return true to prevent call of the original function ZO_InventorySlot_DoPrimaryAction of the item
@@ -555,7 +556,7 @@ end
 local function FCOItemSaver_OnDragStart(inventorySlot)
     if inventorySlot == nil then return end
     local cursorContentType = GetCursorContentType()
-d("[FCOIS]FCOItemSaver_OnDragStart-cursorContentType: " .. tos(cursorContentType) .. "/" .. tos(MOUSE_CONTENT_INVENTORY_ITEM))
+--d("[FCOIS]FCOItemSaver_OnDragStart-cursorContentType: " .. tos(cursorContentType) .. "/" .. tos(MOUSE_CONTENT_INVENTORY_ITEM))
     --cursorContentType is in 99% of the cases = MOUSE_CONTENT_EMPTY, even if an inventory item gets dragged
     if cursorContentType == MOUSE_CONTENT_EMPTY then
         inventorySlot = ZO_InventorySlot_GetInventorySlotComponents(inventorySlot)
@@ -584,7 +585,7 @@ local function FCOItemSaver_OnReceiveDrag(inventorySlot)
     --FCOinvs = inventorySlot
     local cursorContentType = GetCursorContentType()
     if FCOIS.settingsVars.settings.debug then debugMessage("[OnReceiveDrag]", "cursorContentType: " .. tos(cursorContentType) .. "/" .. tos(MOUSE_CONTENT_INVENTORY_ITEM) .. ", invSlotType: " .. tos(inventorySlot.slotType) .. "/" .. tos(SLOT_TYPE_EQUIPMENT), true, FCOIS_DEBUG_DEPTH_NORMAL) end
-d("[FCOIS]FCOItemSaver_OnReceiveDrag, cursorContentType: " ..tos(cursorContentType))
+--d("[FCOIS]FCOItemSaver_OnReceiveDrag, cursorContentType: " ..tos(cursorContentType))
 
     -- if there is an inventory item on the cursor:
     if cursorContentType ~= MOUSE_CONTENT_INVENTORY_ITEM and cursorContentType ~= MOUSE_CONTENT_EQUIPPED_ITEM then return end

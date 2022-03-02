@@ -100,6 +100,7 @@ local isVendorPanelShown
 
 local isMarked
 local isMarkedByItemInstanceId
+local checkIfUniversalDeconstructionNPC
 
 --==========================================================================================================================================
 --                                          FCOIS - Base & helper functions
@@ -1697,6 +1698,11 @@ function FCOIS.CheckIfFilterPanelIsDeconstructable(panelId)
     local deconstructablePanels = FCOIS.mappingVars.panelIdToDeconstructable
     local panelIsDeconstructable = deconstructablePanels[panelId] or false
     return panelIsDeconstructable
+end
+
+function FCOIS.IsDeconstructionHandlerNeeded() --#202
+    checkIfUniversalDeconstructionNPC = checkIfUniversalDeconstructionNPC or FCOIS.CheckIfUniversalDeconstructionNPC
+    return not ctrlVars.DECONSTRUCTION_BAG:IsHidden() or checkIfUniversalDeconstructionNPC()
 end
 
 --Check if the writ or non-writ item is crafted and should be marked wih the "crafted" marker icon

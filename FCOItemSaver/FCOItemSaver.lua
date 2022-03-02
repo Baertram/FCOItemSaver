@@ -173,17 +173,6 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 -- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-03-02
 ------------------------------------------------------------------------------------
 --#176 -> Test: Errors occured with OR filters, and mixed AND + OR filters
---#202 --> Filter buttons show/hide and anchor to universal deconstruction/re anchor to default parents at smithing decon and enchanting extract needs to be added + TESTs
---> TODO: -Drag&Drop of any marked item, even if unprotected, does not work and says it is protected!
---        -Jewelry deconstruction protects a green ging with deconstruction marker icon if double clicked/dragged, but not via the context menu "Add"?
---          Why is the itemSelecttionHandler called and not the deconstruction handler?
---[[        user:/AddOns/FCOItemSaver/src/FCOIS_Protection.lua:784: in function 'FCOIS.ItemSelectionHandler'
-|caaaaaa<Locals> bag = 1, slot = 40, echo = T, isDragAndDrop = F, overrideChatOutput = F, suppressChatOutput = F, overrideAlert = F, suppressAlert = F, calledFromExternalAddon = F, panelId = 33, doDebug = F, settings = [table:1], mappingVars = [table:3]{noEntryValue = 1, noEntry = "-------------", maxCPLevel = 160}, panelIdAtCall = F, whereAreWeToFilterPanelId = [table:4]{960 = 31}, whereAreWeToIsBlocked = [table:5]{960 = T}, filterPanelIdToBlockSettingName = [table:6]{960 = "blockJewelryRefinement"}, whereAreWeToSingleItemChecks = [table:7]{880 = T}, isBlocked = T, itemId = -873102038 </Locals>|r
-(tail call): ?
-user:/AddOns/FCOItemSaver/src/FCOIS_Hooks.lua:486: in function 'FCOItemSaver_OnInventorySlot_DoPrimaryAction'
-|caaaaaa<Locals> inventorySlot = ud, doNotCallOriginalZO_InventorySlot_DoPrimaryAction = F, settings = [table:1], contextMenuClearMarkesByShiftKey = T, contextMenuClearMarkesKey = 7, parent = ud, isABankWithdraw = F, isCharacter = F, isVendorRepair = F, bagId = 1, slotId = 40 </Locals>|r
-/EsoUI/Libraries/Utility/ZO_Hook.lua:18: in function 'ZO_InventorySlot_DoPrimaryAction'
-]]
 --Added checks if functions/API functions are called internally or from external (other addons) -> Still ongoing TODO
 
 -------------------------------------------------------------------------------------
@@ -232,7 +221,9 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Hooks.lua:486: in function 'FCOItemSaver_OnI
 --If you press SHIFT key and right mouse on the filter button this will reset the selected filter icon at the button to the * ("All") entry
 --#184 Added automatic marking of needed scrolls etc. with ItemCooldownTracker API
 --#188 Enable backup and restore for all 3 saved itemIds (non unique, ZOs unique and FCOIS unique). ZOs unique and non-unique can only be saved and restored together!
-
+--#202 FilterButtons and addiitonal inventory flag context menu button added to universal deconstruction panel. The filter's and filterButtons and contextMenus re-use the selected protection
+--     methods etc. of smithing deconstuction/jewelry deconstruction/enchanting extraction! If the "All" tab is selected at the universal decon panel, which includes all types of the
+--     deconstructable/extractable item types, the smithing deconstruction buttons and context menu buttons are show, but the checks will still be done "per item", so that glyphs are protected too!
 
 --[Added on request]
 --#176 Add submenu to 4 filter buttons, with setting to change the filter between AND & OR filter conjunction behaviour. Remembers the state for each filterPanel
