@@ -141,7 +141,7 @@ function FCOIS.CheckIfUniversalDeconstructionNPC(filterPanelIdComingFrom)
             detectActiveUniversalDeconstructionTab = detectActiveUniversalDeconstructionTab or libFilters.DetectActiveUniversalDeconstructionTab
             universalDeconPanel = universalDeconPanel or universalDeconGlobal.deconstructionPanel
             local universalDeconSelectedTab = universalDeconPanel.inventory:GetCurrentFilter()
-            if not universalDeconSelectedTab then reurn false end
+            if not universalDeconSelectedTab then return false end
             filterPanelIdComingFrom = detectActiveUniversalDeconstructionTab(nil, universalDeconSelectedTab.key)
         end
         return panelIdSupportedAtDeconNPC[filterPanelIdComingFrom] or false
