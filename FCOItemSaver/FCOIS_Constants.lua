@@ -1963,6 +1963,7 @@ preventerVars.lamMenuOpenAndShowingInvPreviewForGridListAddon = false
 preventerVars.isZoDialogContextMenu = false
 preventerVars.enchantItemActive = false
 preventerVars.doNotCheckForDefaultName = false
+preventerVars.universalDeconSceneHidden = false
 
 --The event handler array for OnMouseDoubleClick, Drag&Drop, etc.
 FCOIS.eventHandlers = {}

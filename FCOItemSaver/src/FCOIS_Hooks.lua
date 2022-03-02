@@ -29,6 +29,7 @@ local guildBankCtrl =           ctrlVars.GUILD_BANK_BAG
 local bankCtrl =                ctrlVars.BANK_BAG
 local deconstructionCtrl =      ctrlVars.DECONSTRUCTION_BAG
 local universalDeconGlobal =    ctrlVars.UNIVERSAL_DECONSTRUCTION_GLOBAL
+local universalDeconPanel =     universalDeconGlobal.deconstructionPanel
 
 local numFilterIcons                        = FCOIS.numVars.gFCONumFilterIcons
 local mappingVarsTransm                     = FCOIS.mappingVars.containerTransmuation
@@ -1130,27 +1131,40 @@ function FCOIS.CreateHooks()
                         end
                     end
                 end
-            end
             ]]
-            --[[
+
             --Normal scene shown/hidden callbacks to show/hide (& reanchor) the additional inventory flag buttons and the filterButtonss
             if newState == SCENE_SHOWN then
-                --Set the filterPanelId to last opened one or default for "all" tab directly so that functions at the inventory list will use
-                --the correct filterPanelId
-                --d(">>>SHOWN - Setting filterPanelId to: " ..tos(universalDeconGlobal.FCOIScurrentFilterPanelId) .. ", or to \'ALL\' tab")
-                --Delay by a few ms to update the controls etc. properly
-                zo_callLater(function()
-                    updateFilterAndAddInvFlagButtonsAtUniversalDeconstruction(false)
-                end, 10)
-            else
-            ]]
-            if newState == SCENE_HIDING then
+                --[[
+                    --Set the filterPanelId to last opened one or default for "all" tab directly so that functions at the inventory list will use
+                    --the correct filterPanelId
+                    --d(">>>SHOWN - Setting filterPanelId to: " ..tos(universalDeconGlobal.FCOIScurrentFilterPanelId) .. ", or to \'ALL\' tab")
+                    --Delay by a few ms to update the controls etc. properly
+                    zo_callLater(function()
+                        updateFilterAndAddInvFlagButtonsAtUniversalDeconstruction(false)
+                    end, 10)
+                ]]
+                --Was the scene hidden before?
+                if FCOIS.preventerVars.universalDeconSceneHidden then
+                    FCOIS.preventerVars.universalDeconSceneHidden = false
+                    --Set the currently opened panel again as the OnFilterChanged callback might not fire
+                    universalDeconPanel = universalDeconPanel or universalDeconGlobal.deconstructionPanel
+                    local universalDeconSelectedTab = universalDeconPanel.inventory:GetCurrentFilter()
+                    local libFiltersFilterType = detectActiveUniversalDeconstructionTab(nil, universalDeconSelectedTab.key)
+--d("[FCOIS]universalDeconstructionPanel SCENE OnShown - " ..tos(universalDeconSelectedTab.key) .. ", LibFiltersFilterType: " ..tos(libFiltersFilterType))
+                    updateFilterAndAddInvFlagButtonsAtUniversalDeconstruction(false, libFiltersFilterType)
+                end
+
+            elseif newState == SCENE_HIDING then
                 --Hide the context menu at mail panel
                 local filterTypeToHide = universalDeconGlobal.FCOIScurrentFilterPanelId
                 if filterTypeToHide == nil then filterTypeToHide = LF_SMITHING_DECONSTRUCT end
                 hideContextMenu(filterTypeToHide)
             elseif newState == SCENE_HIDDEN then
                 updateFilterAndAddInvFlagButtonsAtUniversalDeconstruction(true, nil)
+
+                universalDeconGlobal.FCOIScurrentFilterPanelId = nil
+                FCOIS.preventerVars.universalDeconSceneHidden = true
             end
         end)
 
