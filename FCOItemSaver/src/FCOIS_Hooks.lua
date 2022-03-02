@@ -1050,11 +1050,12 @@ function FCOIS.CreateHooks()
             if not isHidden then
                 --LF_SMITHING_DECONSTRUCT needs to be passed in as valid filterPanel! It maybe not the correct filterPanel, so it is determined internally
                 local filterPanelIdPassedIn = universalDeconGlobal.FCOIScurrentFilterPanelId
-                --d("[FCOIS]UniversalDecon - Setting filterPanelId to: " ..tos(filterPanelIdPassedIn))
+    d("[FCOIS]UniversalDecon - Setting filterPanelId to: " ..tos(filterPanelIdPassedIn))
                 if filterPanelIdPassedIn == nil then filterPanelIdPassedIn = LF_SMITHING_DECONSTRUCT end
+                --Update universalDeconGlobal.FCOIScurrentFilterPanelId
                 local currentFilterPanelIdAtUniversalDecon = getCurrentFilterPanelIdAtDeconNPC(filterPanelIdPassedIn)
                 if currentFilterPanelIdAtUniversalDecon ~= nil and FCOIS.gFilterWhere ~= currentFilterPanelIdAtUniversalDecon then
-                    --d(">Setting filterPanelId to: " ..tos(currentFilterPanelIdAtUniversalDecon))
+    d(">Setting filterPanelId to: " ..tos(currentFilterPanelIdAtUniversalDecon))
                     FCOIS.gFilterWhere = currentFilterPanelIdAtUniversalDecon
                     --Re-anchor the filterButtons and the additional inventory flag button from their default parents at e.g.
                     --LF_SMITHING_DECONSTRUCT, LF_JEWELRY_DECONSTRUCT and LF_ENCHANTING_EXTRACTION to
@@ -1173,12 +1174,9 @@ function FCOIS.CreateHooks()
                 end
                 ]]
                 detectActiveUniversalDeconstructionTab = detectActiveUniversalDeconstructionTab or libFilters.DetectActiveUniversalDeconstructionTab
-
                 local libFiltersFilterType = detectActiveUniversalDeconstructionTab(nil, tab.key)
-                if libFiltersFilterType ~= nil then
-                    universalDeconGlobal.FCOIScurrentFilterPanelId = libFiltersFilterType
-                    updateFilterAndAddInvFlagButtonsAtUniversalDeconstruction(false)
-                end
+d("[FCOIS]universalDeconstructionPanel:OnFilterChanged - " ..tos(tab.key) .. ", LibFiltersFilterType: " ..tos(libFiltersFilterType))
+                updateFilterAndAddInvFlagButtonsAtUniversalDeconstruction(false)
         end)
 
     end

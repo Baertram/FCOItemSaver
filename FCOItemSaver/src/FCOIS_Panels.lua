@@ -133,9 +133,11 @@ end
 -- -v- #202
 --Check if universal Deconstruction NPC "Giladil"
 function FCOIS.CheckIfUniversalDeconstructionNPC(filterPanelIdComingFrom)
+d("[FCOIS]CheckIfUniversalDeconstructionNPC")
     if ZO_UNIVERSAL_DECONSTRUCTION_FILTER_TYPES == nil then return false end
     if universaldDeconScene:IsShowing() then
         local isDeconNPCControlShown = not universalDeconInvCtrl:IsHidden()
+d(">scene is showing, isDeconNPCControlShown: " ..tos(isDeconNPCControlShown))
         local isFilterPanelIdShown = isDeconNPCControlShown
         if filterPanelIdComingFrom ~= nil then
             isFilterPanelIdShown = panelIdSupportedAtDeconNPC[filterPanelIdComingFrom] or false
@@ -148,26 +150,29 @@ local checkIfUniversaldDeconstructionNPC = FCOIS.CheckIfUniversalDeconstructionN
 
 function FCOIS.GetCurrentFilterPanelIdAtDeconNPC(filterPanelIdPassedIn)
     local filterPanelIdDetected = filterPanelIdPassedIn
---d("[FCOIS]GetCurrentFilterPanelIdAtDeconNPC - filterPanel: " ..tos(filterPanelIdPassedIn))
+d("[FCOIS]GetCurrentFilterPanelIdAtDeconNPC - filterPanel: " ..tos(filterPanelIdPassedIn))
     local isDeconstuctionNPC = checkIfUniversaldDeconstructionNPC(filterPanelIdPassedIn)
---d(">isDeconstuctionNPC: " ..tos(isDeconstuctionNPC))
+d(">isDeconstuctionNPC: " ..tos(isDeconstuctionNPC))
     if not isDeconstuctionNPC then return filterPanelIdPassedIn end
-
+    universalDeconGlobal.FCOIScurrentFilterPanelId = filterPanelIdDetected
+--[[
+    --Not needed anymore as the universalDeconPanel:OnFilterChanged callback was added:
     --Check which button is currently selected at the menuBar at the universal deconstruction panel
     local clickedButton = ((universaldDeconMenuBarTabs ~= nil and universaldDeconMenuBarTabs.m_object ~= nil)
             and universaldDeconMenuBarTabs.m_object.m_clickedButton) or nil
---d(">Button clicked: " ..tos(clickedButton))
+d(">Button clicked: " ..tos(clickedButton))
     local buttonData = clickedButton and clickedButton.m_buttonData
     if buttonData then
         local activeTabText = buttonData.activeTabText
---d(">>button text: " ..tos(activeTabText))
+d(">>button text: " ..tos(activeTabText))
         if activeTabText and activeTabText ~= nil then
             filterPanelIdDetected = panelIdByDeconNPCMenuBarTabButtonName[activeTabText]
---d(">>>filterPanelIdDetected: " ..tos(filterPanelIdDetected))
+d(">>>filterPanelIdDetected: " ..tos(filterPanelIdDetected))
             filterPanelIdDetected = filterPanelIdDetected or filterPanelIdPassedIn
             universalDeconGlobal.FCOIScurrentFilterPanelId = filterPanelIdDetected
         end
     end
+    ]]
     return filterPanelIdDetected
 end
 local getCurrentFilterPanelIdAtDeconNPC = FCOIS.GetCurrentFilterPanelIdAtDeconNPC
