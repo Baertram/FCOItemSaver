@@ -115,6 +115,9 @@ local function shouldItemBeShownAfterBeenFiltered(slotItemInstanceId, slot)
     local filterButtonSettings = settings.filterButtonSettings
     local currentFilterPanelId = FCOIS.gFilterWhere     -- The currently filtered panelId (inventory, bank withdraw, mail, trade, etc.)
     local filterButtonSettingsForCurrentPanel = filterButtonSettings[currentFilterPanelId]
+
+--d(">FCOIS.gFilterWhere: " ..tos(currentFilterPanelId) .. ", filterButtonSettingsForCurrentPanel: " ..tos(filterButtonSettingsForCurrentPanel))
+
     --The 4 filter button's settings for the logical conjunction (true = AND, false = OR)
     -------------------------------------------------------------------------------------------------------
     local lockDynFilterWithLogicalAND =         filterButtonSettingsForCurrentPanel[FCOIS_CON_FILTER_BUTTON_LOCKDYN].filterWithLogicalAND

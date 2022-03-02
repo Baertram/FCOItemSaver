@@ -4,6 +4,7 @@ local FCOIS = FCOIS
 
 local debugMessage = FCOIS.debugMessage
 
+local tos = tostring
 local strformat = string.format
 local zo_strf = zo_strformat
 
@@ -73,6 +74,8 @@ local function FCOItemsaver_SelectGuildBank(_, guildBankId)
 end
 
 --Event upon opening of a vendor store
+local vendorCheckFuncInitialized = false
+local checkCurrentVendorTypeAndGetLibFiltersPanelId
 local function FCOItemSaver_Open_Store(p_storeIndicator)
     FCOIS.preventerVars.gActiveFilterPanel = true
     p_storeIndicator = p_storeIndicator or "vendor"
@@ -88,25 +91,83 @@ local function FCOItemSaver_Open_Store(p_storeIndicator)
         FCOIS.ZOControlVars.VENDOR_MENUBAR_BUTTON_SELL      = ZO_StoreWindowMenuBarButton2
         FCOIS.ZOControlVars.VENDOR_MENUBAR_BUTTON_BUYBACK   = ZO_StoreWindowMenuBarButton3
         FCOIS.ZOControlVars.VENDOR_MENUBAR_BUTTON_REPAIR    = ZO_StoreWindowMenuBarButton4
-        FCOIS.ZOControlVars.vendorPanelMainMenuButtonControlSets = {
+        local ctrlVarsVendor = FCOIS.ZOControlVars
+        ctrlVarsVendor.vendorPanelMainMenuButtonControlSets = {
             [FCOIS_CON_VENDOR_TYPE_NORMAL_NPC] = {
-                [1] = FCOIS.ZOControlVars.VENDOR_MENUBAR_BUTTON_BUY,
-                [2] = FCOIS.ZOControlVars.VENDOR_MENUBAR_BUTTON_SELL,
-                [3] = FCOIS.ZOControlVars.VENDOR_MENUBAR_BUTTON_BUYBACK,
-                [4] = FCOIS.ZOControlVars.VENDOR_MENUBAR_BUTTON_REPAIR,
+                [1] = ctrlVarsVendor.VENDOR_MENUBAR_BUTTON_BUY,
+                [2] = ctrlVarsVendor.VENDOR_MENUBAR_BUTTON_SELL,
+                [3] = ctrlVarsVendor.VENDOR_MENUBAR_BUTTON_BUYBACK,
+                [4] = ctrlVarsVendor.VENDOR_MENUBAR_BUTTON_REPAIR,
             },
             [FCOIS_CON_VENDOR_TYPE_PORTABLE] = {
-                [1] = FCOIS.ZOControlVars.VENDOR_MENUBAR_BUTTON_SELL,
-                [2] = FCOIS.ZOControlVars.VENDOR_MENUBAR_BUTTON_BUYBACK,
+                [1] = ctrlVarsVendor.VENDOR_MENUBAR_BUTTON_SELL,
+                [2] = ctrlVarsVendor.VENDOR_MENUBAR_BUTTON_BUYBACK,
             },
         }
+
+
         --Check the filter buttons and create them if they are not there. Update the inventory afterwards too
         if p_storeIndicator == "vendor" then
+            local preHookButtonDoneCheck = FCOIS.preventerVars.preHookButtonDone
+
+            local vendorBuyButton = ctrlVarsVendor.VENDOR_MENUBAR_BUTTON_BUY
+            local vendorBuyButtonName = vendorBuyButton and vendorBuyButton:GetName()
+            local vendorSellButton = ctrlVarsVendor.VENDOR_MENUBAR_BUTTON_SELL
+            local vendorSellButtonName = vendorSellButton and vendorSellButton:GetName()
+            local vendorBuyBackButton = ctrlVarsVendor.VENDOR_MENUBAR_BUTTON_BUYBACK
+            local vendorBuyBackButtonName = vendorBuyBackButton and vendorBuyBackButton:GetName()
+            local vendorRepairButton = ctrlVarsVendor.VENDOR_MENUBAR_BUTTON_REPAIR
+            local vendorRepairButtonName = vendorRepairButton and vendorRepairButton:GetName()
+
+            if not vendorCheckFuncInitialized then
+                function checkCurrentVendorTypeAndGetLibFiltersPanelId(currentVendorMenuBarButtonToCheck)
+                    --d("[FCOIS]checkCurrentVendorTypeAndGetLibFiltersPanelId: " .. tos(currentVendorMenuBarbuttonToCheck:GetName()))
+                    if currentVendorMenuBarButtonToCheck == nil then return end
+                    local libFiltersFilterPanelId
+                    --Get the current vendor type and count of menu buttons
+                    local currentVendorType, vendorTypeButtonCount = getCurrentVendorType(true)
+                    if currentVendorType ~= nil and currentVendorType ~= "" and vendorTypeButtonCount ~= nil then
+                        if vendorTypeButtonCount == 2 then
+                            --The vendor type is e.g. Nuzhimeh with only sell and buyback menu buttons
+                            if currentVendorMenuBarButtonToCheck == vendorBuyButton then
+                                libFiltersFilterPanelId = LF_VENDOR_SELL
+                            elseif currentVendorMenuBarButtonToCheck == vendorSellButton then
+                                libFiltersFilterPanelId = LF_VENDOR_BUYBACK
+                            end
+                        elseif vendorTypeButtonCount == 3 then
+                            --The vendor type is e.g. ??? with only buy, sell and buyback menu buttons, but no repair button.
+                            if currentVendorMenuBarButtonToCheck == vendorBuyButton then
+                                libFiltersFilterPanelId = LF_VENDOR_BUY
+                            elseif currentVendorMenuBarButtonToCheck == vendorSellButton then
+                                libFiltersFilterPanelId = LF_VENDOR_SELL
+                            elseif currentVendorMenuBarButtonToCheck == vendorBuyBackButton then
+                                libFiltersFilterPanelId = LF_VENDOR_BUYBACK
+                            end
+
+                        elseif vendorTypeButtonCount == 4 then
+                            --The vendor type is e.g. Normal NPC with buy, sell, buyback and repair menu buttons.
+                            if currentVendorMenuBarButtonToCheck == vendorBuyButton then
+                                libFiltersFilterPanelId = LF_VENDOR_BUY
+                            elseif currentVendorMenuBarButtonToCheck == vendorSellButton then
+                                libFiltersFilterPanelId = LF_VENDOR_SELL
+                            elseif currentVendorMenuBarButtonToCheck == vendorBuyBackButton then
+                                libFiltersFilterPanelId = LF_VENDOR_BUYBACK
+                            elseif currentVendorMenuBarButtonToCheck == vendorRepairButton then
+                                libFiltersFilterPanelId = LF_VENDOR_REPAIR
+                            end
+                        end
+                    end
+                    --d("<libFiltersFilterPanelId: " ..tos(libFiltersFilterPanelId))
+                    return libFiltersFilterPanelId
+                end
+                vendorCheckFuncInitialized = true
+            end
+
             --Preset the last active vendor button as the different vendor types can have different button counts
             --> The first will be always activated!
             --[[
             local currentVendorType, vendorTypeButtonCount = getCurrentVendorType(true)
-            --d("[FCOIS]FCOItemSaver_Open_Store, lastVendorButton. CurrentVendorType: " .. tostring(currentVendorType) .. ", vendorTypeButtonCount: " ..tostring(vendorTypeButtonCount))
+            --d("[FCOIS]FCOItemSaver_Open_Store, lastVendorButton. CurrentVendorType: " .. tos(currentVendorType) .. ", vendorTypeButtonCount: " ..tos(vendorTypeButtonCount))
             if currentVendorType ~= nil and currentVendorType ~= "" and vendorTypeButtonCount ~= nil then
                 if vendorTypeButtonCount <= 2 then
                     FCOIS.lastVars.gLastVendorButton = ctrlVars.VENDOR_MENUBAR_BUTTON_BUY
@@ -115,53 +176,14 @@ local function FCOItemSaver_Open_Store(p_storeIndicator)
                 end
             end
             ]]
-            local currentVendorType, vendorTypeButtonCount
-            FCOIS.lastVars.gLastVendorButton = ctrlVars.VENDOR_MENUBAR_BUTTON_BUY
+            FCOIS.lastVars.gLastVendorButton = ctrlVarsVendor.VENDOR_MENUBAR_BUTTON_BUY
+            local lastVars = FCOIS.lastVars
 
             --Check the current active panel and set FCOIS.gFilterWhere
-            checkFCOISFilterButtonsAtPanel(true, nil, nil, nil) --(doUpdateLists, panelId, overwriteFilterWhere, hideFilterButtons
+            -- doUpdateLists, panelId, overwriteFilterWhere, hideFilterButtons, isUniversalDeconNPC, universalDeconFilterPanelIdBefore
+            checkFCOISFilterButtonsAtPanel(true, nil, nil, nil, nil, nil)
 
-            --Done inside the PreHookedHandler "OnMouseUp" callback functions:
-            local function checkCurrentVendorTypeAndGetLibFiltersPanelId(currentVendorMenuBarbuttonToCheck)
-                --d("[FCOIS]checkCurrentVendorTypeAndGetLibFiltersPanelId: " .. tostring(currentVendorMenuBarbuttonToCheck:GetName()))
-                if currentVendorMenuBarbuttonToCheck == nil then return false end
-                local libFiltersFilterPanelId
-                --Get the current vendor type and count of menu buttons
-                currentVendorType, vendorTypeButtonCount = getCurrentVendorType(true)
-                if currentVendorType ~= nil and currentVendorType ~= "" and vendorTypeButtonCount ~= nil then
-                    if vendorTypeButtonCount == 2 then
-                        --The vendor type is e.g. Nuzhimeh with only sell and buyback menu buttons
-                        if currentVendorMenuBarbuttonToCheck == ctrlVars.VENDOR_MENUBAR_BUTTON_BUY then
-                            libFiltersFilterPanelId = LF_VENDOR_SELL
-                        elseif currentVendorMenuBarbuttonToCheck == ctrlVars.VENDOR_MENUBAR_BUTTON_SELL then
-                            libFiltersFilterPanelId = LF_VENDOR_BUYBACK
-                        end
-                    elseif vendorTypeButtonCount == 3 then
-                        --The vendor type is e.g. ??? with only buy, sell and buyback menu buttons, but no repair button.
-                        if currentVendorMenuBarbuttonToCheck == ctrlVars.VENDOR_MENUBAR_BUTTON_BUY then
-                            libFiltersFilterPanelId = LF_VENDOR_BUY
-                        elseif currentVendorMenuBarbuttonToCheck == ctrlVars.VENDOR_MENUBAR_BUTTON_SELL then
-                            libFiltersFilterPanelId = LF_VENDOR_SELL
-                        elseif currentVendorMenuBarbuttonToCheck == ctrlVars.VENDOR_MENUBAR_BUTTON_BUYBACK then
-                            libFiltersFilterPanelId = LF_VENDOR_BUYBACK
-                        end
 
-                    elseif vendorTypeButtonCount == 4 then
-                        --The vendor type is e.g. Normal NPC with buy, sell, buyback and repair menu buttons.
-                        if currentVendorMenuBarbuttonToCheck == ctrlVars.VENDOR_MENUBAR_BUTTON_BUY then
-                            libFiltersFilterPanelId = LF_VENDOR_BUY
-                        elseif currentVendorMenuBarbuttonToCheck == ctrlVars.VENDOR_MENUBAR_BUTTON_SELL then
-                            libFiltersFilterPanelId = LF_VENDOR_SELL
-                        elseif currentVendorMenuBarbuttonToCheck == ctrlVars.VENDOR_MENUBAR_BUTTON_BUYBACK then
-                            libFiltersFilterPanelId = LF_VENDOR_BUYBACK
-                        elseif currentVendorMenuBarbuttonToCheck == ctrlVars.VENDOR_MENUBAR_BUTTON_REPAIR then
-                            libFiltersFilterPanelId = LF_VENDOR_REPAIR
-                        end
-                    end
-                end
-                --d("<libFiltersFilterPanelId: " ..tostring(libFiltersFilterPanelId))
-                return libFiltersFilterPanelId
-            end
             --Check if there are shown 4 buttons in the vendor's menu bar (then it is a real vendor).
             --Or if there are only 2 buttons (it's the mobile vendor e.g. "Nuzhimeh" then).
             --> This needs to be done here in order to "move" the pressed button names:
@@ -169,62 +191,60 @@ local function FCOItemSaver_Open_Store(p_storeIndicator)
             --> If a mobile vendor is used the button name 1 is the "sell" tab (and not the buy tab) and the button name 2 is the "buyback" tab and not the
             --> sell tab.
             --======== VENDOR =====================================================
+
+            local function updateVendorPanelByButtonControl(buttonControl, mouseButton, upInside)
+                    if (mouseButton == MOUSE_BUTTON_INDEX_LEFT and upInside and lastVars.gLastVendorButton~=buttonControl) then
+                        FCOIS.lastVars.gLastVendorButton = buttonControl
+                        local fromPanelId = FCOIS.gFilterWhere
+                        fromPanelId = fromPanelId or LF_INVENTORY
+                        local toPanelId = checkCurrentVendorTypeAndGetLibFiltersPanelId(buttonControl)
+--d(">fromPanelId: " ..tos(fromPanelId) .. ", toPanelId: " ..tos(toPanelId))
+                        --Bugfix #208 Update the current filterType already to the global FCOIS variable in order to let any "refresh" of the vendor UI
+                        --use the correct one already! Else the scene/fragment shown callback will raise a LibFilters refresh -> which then calls runFilters
+                        --and thus the FCOIS registered filtercallback function at /src/FCOIS_Filters.lua -> function shouldItemBeShownAfterBeenFiltered
+                        --which will fail with a lua error as LF_VENDOR_BUY would be stilla ctive even though we switched to LF_VENDOR_SELL already
+                        if toPanelId ~= nil then
+                            FCOIS.gFilterWhere = toPanelId
+                        end
+                        --FCOIS.gFilterWhere will be normally updated here, delayed, so that the FCOIS.CheckActivePanel function detects the UI etc. propelry!
+                        zo_callLater(function() preHookMainMenuFilterButtonHandler(fromPanelId, toPanelId) end, 50)
+                    end
+            end
+
             --Pre Hook the menubar button's (buy, sell, buyback, repair) handler at the vendor
-            local preHookButtonDoneCheck = FCOIS.preventerVars.preHookButtonDone
-            if ctrlVars.VENDOR_MENUBAR_BUTTON_BUY ~= nil and not preHookButtonDoneCheck[ctrlVars.VENDOR_MENUBAR_BUTTON_BUY:GetName()] then
-                --d("Vendor button 1 name: " .. tostring(ctrlVars.VENDOR_MENUBAR_BUTTON_BUY:GetName()))
+            if vendorBuyButton ~= nil and not preHookButtonDoneCheck[vendorBuyButtonName] then
+                --d("Vendor button 1 name: " .. tos(ctrlVarsVendor.VENDOR_MENUBAR_BUTTON_BUY:GetName()))
                 --d(">Vendor button 1 found")
-                preHookButtonDoneCheck[ctrlVars.VENDOR_MENUBAR_BUTTON_BUY:GetName()] = true
-                ZO_PreHookHandler(ctrlVars.VENDOR_MENUBAR_BUTTON_BUY, "OnMouseUp", function(control, button, upInside)
-                    --d(">====================>\nvendor button 1, button: " .. button .. ", upInside: " .. tostring(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastVendorButton:GetName())
-                    if (button == MOUSE_BUTTON_INDEX_LEFT and upInside and FCOIS.lastVars.gLastVendorButton~=ctrlVars.VENDOR_MENUBAR_BUTTON_BUY) then
-                        FCOIS.lastVars.gLastVendorButton = ctrlVars.VENDOR_MENUBAR_BUTTON_BUY
-                        local fromPanelId = FCOIS.gFilterWhere or LF_INVENTORY
-                        local toPanelId = checkCurrentVendorTypeAndGetLibFiltersPanelId(ctrlVars.VENDOR_MENUBAR_BUTTON_BUY)
-                        zo_callLater(function() preHookMainMenuFilterButtonHandler(fromPanelId, toPanelId) end, 50)
-                    end
+                preHookButtonDoneCheck[vendorBuyButtonName] = true
+                ZO_PreHookHandler(vendorBuyButton, "OnMouseUp", function(control, button, upInside)
+                    updateVendorPanelByButtonControl(control, button, upInside)
                 end)
             end
-            if ctrlVars.VENDOR_MENUBAR_BUTTON_SELL ~= nil and not preHookButtonDoneCheck[ctrlVars.VENDOR_MENUBAR_BUTTON_SELL:GetName()] then
-                --d("Vendor button 2 name: " .. tostring(ctrlVars.VENDOR_MENUBAR_BUTTON_SELL:GetName()))
+            if vendorSellButton ~= nil and not preHookButtonDoneCheck[vendorSellButtonName] then
+                --d("Vendor button 2 name: " .. tos(ctrlVarsVendor.VENDOR_MENUBAR_BUTTON_SELL:GetName()))
                 --d(">Vendor button 2 found")
-                preHookButtonDoneCheck[ctrlVars.VENDOR_MENUBAR_BUTTON_SELL:GetName()] = true
-                ZO_PreHookHandler(ctrlVars.VENDOR_MENUBAR_BUTTON_SELL, "OnMouseUp", function(control, button, upInside)
-                    --d(">====================>\nvendor button 2, button: " .. button .. ", upInside: " .. tostring(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastVendorButton:GetName())
-                    if (button == MOUSE_BUTTON_INDEX_LEFT and upInside and FCOIS.lastVars.gLastVendorButton~=ctrlVars.VENDOR_MENUBAR_BUTTON_SELL) then
-                        FCOIS.lastVars.gLastVendorButton = ctrlVars.VENDOR_MENUBAR_BUTTON_SELL
-                        local fromPanelId = FCOIS.gFilterWhere or LF_INVENTORY
-                        local toPanelId = checkCurrentVendorTypeAndGetLibFiltersPanelId(ctrlVars.VENDOR_MENUBAR_BUTTON_SELL)
-                        zo_callLater(function() preHookMainMenuFilterButtonHandler(fromPanelId, toPanelId) end, 50)
-                    end
+                preHookButtonDoneCheck[vendorSellButtonName] = true
+                ZO_PreHookHandler(vendorSellButton, "OnMouseUp", function(control, button, upInside)
+                    --d(">====================>\nvendor button 2, button: " .. button .. ", upInside: " .. tos(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastVendorButton:GetName())
+                    updateVendorPanelByButtonControl(control, button, upInside)
                 end)
             end
-            if ctrlVars.VENDOR_MENUBAR_BUTTON_BUYBACK ~= nil and not preHookButtonDoneCheck[ctrlVars.VENDOR_MENUBAR_BUTTON_BUYBACK:GetName()] then
-                --d("Vendor button 3 name: " .. tostring(ctrlVars.VENDOR_MENUBAR_BUTTON_BUYBACK:GetName()))
+            if vendorBuyBackButton ~= nil and not preHookButtonDoneCheck[vendorBuyBackButtonName] then
+                --d("Vendor button 3 name: " .. tos(ctrlVarsVendor.VENDOR_MENUBAR_BUTTON_BUYBACK:GetName()))
                 --d(">Vendor button 3 found")
-                preHookButtonDoneCheck[ctrlVars.VENDOR_MENUBAR_BUTTON_BUYBACK:GetName()] = true
-                ZO_PreHookHandler(ctrlVars.VENDOR_MENUBAR_BUTTON_BUYBACK, "OnMouseUp", function(control, button, upInside)
-                    --d(">====================>\nvendor button 3, button: " .. button .. ", upInside: " .. tostring(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastVendorButton:GetName())
-                    if (button == MOUSE_BUTTON_INDEX_LEFT and upInside and FCOIS.lastVars.gLastVendorButton~=ctrlVars.VENDOR_MENUBAR_BUTTON_BUYBACK) then
-                        FCOIS.lastVars.gLastVendorButton = ctrlVars.VENDOR_MENUBAR_BUTTON_BUYBACK
-                        local fromPanelId = FCOIS.gFilterWhere or LF_INVENTORY
-                        local toPanelId = checkCurrentVendorTypeAndGetLibFiltersPanelId(ctrlVars.VENDOR_MENUBAR_BUTTON_BUYBACK)
-                        zo_callLater(function() preHookMainMenuFilterButtonHandler(fromPanelId, toPanelId) end, 50)
-                    end
+                preHookButtonDoneCheck[vendorBuyBackButtonName] = true
+                ZO_PreHookHandler(vendorBuyBackButton, "OnMouseUp", function(control, button, upInside)
+                    --d(">====================>\nvendor button 3, button: " .. button .. ", upInside: " .. tos(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastVendorButton:GetName())
+                    updateVendorPanelByButtonControl(control, button, upInside)
                 end)
             end
-            if ctrlVars.VENDOR_MENUBAR_BUTTON_REPAIR ~= nil and not preHookButtonDoneCheck[ctrlVars.VENDOR_MENUBAR_BUTTON_REPAIR:GetName()] then
-                --d("Vendor button 4 name: " .. tostring(ctrlVars.VENDOR_MENUBAR_BUTTON_REPAIR:GetName()))
+            if vendorRepairButton ~= nil and not preHookButtonDoneCheck[vendorRepairButtonName] then
+                --d("Vendor button 4 name: " .. tos(ctrlVarsVendor.VENDOR_MENUBAR_BUTTON_REPAIR:GetName()))
                 --d(">Vendor button 4 found")
-                preHookButtonDoneCheck[ctrlVars.VENDOR_MENUBAR_BUTTON_REPAIR:GetName()] = true
-                ZO_PreHookHandler(ctrlVars.VENDOR_MENUBAR_BUTTON_REPAIR, "OnMouseUp", function(control, button, upInside)
-                    --d(">====================>\nvendor button 4, button: " .. button .. ", upInside: " .. tostring(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastVendorButton:GetName())
-                    if (button == MOUSE_BUTTON_INDEX_LEFT and upInside and FCOIS.lastVars.gLastVendorButton~=ctrlVars.VENDOR_MENUBAR_BUTTON_REPAIR) then
-                        FCOIS.lastVars.gLastVendorButton = ctrlVars.VENDOR_MENUBAR_BUTTON_REPAIR
-                        local fromPanelId = FCOIS.gFilterWhere or LF_INVENTORY
-                        local toPanelId = checkCurrentVendorTypeAndGetLibFiltersPanelId(ctrlVars.VENDOR_MENUBAR_BUTTON_REPAIR)
-                        zo_callLater(function() preHookMainMenuFilterButtonHandler(fromPanelId, toPanelId) end, 50)
-                    end
+                preHookButtonDoneCheck[vendorRepairButtonName] = true
+                ZO_PreHookHandler(vendorRepairButton, "OnMouseUp", function(control, button, upInside)
+                    --d(">====================>\nvendor button 4, button: " .. button .. ", upInside: " .. tos(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastVendorButton:GetName())
+                    updateVendorPanelByButtonControl(control, button, upInside)
                 end)
             end
 
@@ -263,7 +283,7 @@ local function FCOItemSaver_Open_Trading_House()
         if ctrlVars.GUILD_STORE_MENUBAR_BUTTON_SEARCH ~= nil then
             --Pre Hook the 2 menubar button's (search and sell) at the guild store
             ZO_PreHookHandler(ctrlVars.GUILD_STORE_MENUBAR_BUTTON_SEARCH, "OnMouseUp", function(_, button, upInside)
-                --d("guild store button 1, button: " .. button .. ", upInside: " .. tostring(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastGuildStoreButton:GetName())
+                --d("guild store button 1, button: " .. button .. ", upInside: " .. tos(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastGuildStoreButton:GetName())
                 --if (button == 1 and upInside and FCOIS.lastVars.gLastGuildStoreButton~=ctrlVars.GUILD_STORE_MENUBAR_BUTTON_SEARCH) then
                 if button == 1 and upInside then
                     --FCOIS.lastVars.gLastGuildStoreButton = ctrlVars.GUILD_STORE_MENUBAR_BUTTON_SEARCH
@@ -286,13 +306,13 @@ end
 
 --Bank and guild bank callback function if a slot updates
 local function FCOItemSaver_Inv_Single_Slot_Update_Bank(eventId, bagId, slotId, isNewItem, itemSoundCategory, inventoryUpdateReason, stackCountChange, triggeredByCharacterName, triggeredByDisplayName)
---d("[FCOItemSaver_Inv_Single_Slot_Update_Bank]bagId: " ..tostring(bagId) .. ", slotIndex: " ..tostring(slotId))
+--d("[FCOItemSaver_Inv_Single_Slot_Update_Bank]bagId: " ..tos(bagId) .. ", slotIndex: " ..tos(slotId))
     checkIfBagShouldAutoRemoveMarkerIcons(bagId, slotId)
 end
 
 --Bank and guild bank callback function if a slot updates
 local function FCOItemSaver_GuildBankItemAdded(eventId, slotId, addedByLocalPlayer, itemSoundCategory)
-    --d("[FCOItemSaver_GuildBankItemAdded]bagId: " ..tostring(BAG_GUILDBANK) .. ", slotIndex: " ..tostring(slotId) .. ", addedByLocalPlayer: " ..tostring(addedByLocalPlayer))
+    --d("[FCOItemSaver_GuildBankItemAdded]bagId: " ..tos(BAG_GUILDBANK) .. ", slotIndex: " ..tos(slotId) .. ", addedByLocalPlayer: " ..tos(addedByLocalPlayer))
     if not addedByLocalPlayer then return end
     checkIfBagShouldAutoRemoveMarkerIcons(BAG_GUILDBANK, slotId)
 end
@@ -301,7 +321,7 @@ local function checkIfBankInventorySingleSlotUpdateEventNeedsToBeRegistered(bagI
     local dynamicIconIds = FCOIS.mappingVars.dynamicToIcon
     local settings = FCOIS.settingsVars.settings
     --For each dynamic check if the setting to auto remove a marker icon is enabled
---d("[FCOIS]Register invSingleSlotUpdate check for bagId: " ..tostring(bagId))
+--d("[FCOIS]Register invSingleSlotUpdate check for bagId: " ..tos(bagId))
     for _, dynamicIconId in ipairs(dynamicIconIds) do
         if settings.icon[dynamicIconId] and settings.icon[dynamicIconId].autoRemoveMarkForBag[bagId] and
             settings.icon[dynamicIconId].autoRemoveMarkForBag[bagId] == true then
@@ -362,7 +382,7 @@ local function FCOItemSaver_Open_Player_Bank(event, bagId)
     local isHouseBank = IsHouseBankBag(bagId) or false
     FCOIS.preventerVars.gActiveFilterPanel = true
     local settings = FCOIS.settingsVars.settings
-    if settings.debug then debugMessage( "[EVENT]","Open bank - bagId: " .. tostring(bagId) .. ", isHouseBank: " .. tostring(isHouseBank), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+    if settings.debug then debugMessage( "[EVENT]","Open bank - bagId: " .. tos(bagId) .. ", isHouseBank: " .. tos(isHouseBank), true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
     --Reset the anti-destroy settings if needed (e.g. bank was opened directly after inventory was closed, without calling other panels in between)
     onClosePanel(LF_INVENTORY, nil, "DESTROY")
@@ -451,7 +471,7 @@ end
 --[[
 --event handler for ACTION LAYER POPPED
 local function FCOItemsaver_OnActionLayerPopped(layerIndex, activeLayerIndex)
-    if FCOIS.settingsVars.settings.debug then debugMessage( "[Action layer]","Popped] LayerIndex: " .. tostring(layerIndex) .. ", ActiveLayerIndex: " .. tostring(activeLayerIndex), false) end
+    if FCOIS.settingsVars.settings.debug then debugMessage( "[Action layer]","Popped] LayerIndex: " .. tos(layerIndex) .. ", ActiveLayerIndex: " .. tos(activeLayerIndex), false) end
     --ActiveLayerIndex = 3 will be opened in most cases
     if activeLayerIndex == 3 then
         --Hide the context menu at last active panel
@@ -490,7 +510,7 @@ end
 
 --event handler for EVENT_CRAFT_COMPLETED
 local function FCOItemSaver_Craft_Completed(eventId, craftSkill)
---d("[FCOIS] EVENT CraftCompleted - newItemCrafted: " .. tostring(FCOIS.preventerVars.newItemCrafted))
+--d("[FCOIS] EVENT CraftCompleted - newItemCrafted: " .. tos(FCOIS.preventerVars.newItemCrafted))
     --Reset the variable to know if an item is getting into our bag after crafting complete
     FCOIS.preventerVars.newItemCrafted = false
     FCOIS.preventerVars.createdMasterWrit = nil
@@ -508,7 +528,7 @@ local function FCOItemSaver_Craft_Started(_, craftSkill)
     em:RegisterForEvent(gAddonName, EVENT_CRAFT_COMPLETED,  FCOItemSaver_Craft_Completed)
     em:RegisterForEvent(gAddonName, EVENT_CRAFT_FAILED, FCOItemSaver_Craft_Failed)
 
---d("[FCOIS] EVENT CraftStarted - craftSkill: " .. tostring(craftSkill))
+--d("[FCOIS] EVENT CraftStarted - craftSkill: " .. tos(craftSkill))
     --Check if new crafted item should be marked with the "crafted" marker icon
     checkIfCraftedItemShouldBeMarked(craftSkill)
 
@@ -521,13 +541,13 @@ end
 
 --Event upon opening of a crafting station
 local function FCOItemSaver_Crafting_Interact(_, craftSkill)
---d("[FCOIS]EVENT_CRAFTING_STATION_INTERACT-craftSkill: " ..tostring(craftSkill))
+--d("[FCOIS]EVENT_CRAFTING_STATION_INTERACT-craftSkill: " ..tos(craftSkill))
     FCOIS.preventerVars.gActiveFilterPanel = true
     --em:RegisterForEvent(gAddonName, EVENT_END_CRAFTING_STATION_INTERACT, FCOItemSaver_End_Crafting_Interact)
 
     --Abort if crafting station type is invalid
     if craftSkill == 0 then return end
-    if FCOIS.settingsVars.settings.debug then debugMessage( "[EVENT]","Crafting Interact: Craft skill: ".. tostring(craftSkill), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+    if FCOIS.settingsVars.settings.debug then debugMessage( "[EVENT]","Crafting Interact: Craft skill: ".. tos(craftSkill), true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
     --Reset the anti-destroy settings if needed (e.g. bank was opened directly after inventory was closed, without calling other panels in between)
     onClosePanel(LF_INVENTORY, nil, "DESTROY")
@@ -563,7 +583,7 @@ local function FCOItemSaver_Inv_Single_Slot_Update(_, bagId, slotId, isNewItem, 
     if FCOIS.preventerVars.writCreatorCreatedItem then return false end
     local settings = FCOIS.settingsVars.settings
     --Scan new items in the player inventory and add markers OR update equipped/unequipped item markers
-    --d("[FCOItemSaver_Inv_Single_Slot_Update] bagId: " .. bagId .. ", slot: " .. slotId..", isNewItem: " .. tostring(isNewItem)..", updateReason: " .. tostring(updateReason) .. ", FCOIS.newItemCrafted: " .. tostring(FCOIS.preventerVars.newItemCrafted))
+    --d("[FCOItemSaver_Inv_Single_Slot_Update] bagId: " .. bagId .. ", slot: " .. slotId..", isNewItem: " .. tos(isNewItem)..", updateReason: " .. tos(updateReason) .. ", FCOIS.newItemCrafted: " .. tos(FCOIS.preventerVars.newItemCrafted))
     -- ===== Do some abort checks first =====
     --Mark new crafted item with the lock (or the chosen) icon?
     if FCOIS.preventerVars.newItemCrafted and bagId ~= nil and slotId ~= nil then --and isNewItem then
@@ -571,7 +591,7 @@ local function FCOItemSaver_Inv_Single_Slot_Update(_, bagId, slotId, isNewItem, 
         local writOrNonWritMarkUponCreation, craftMarkerIcon = isWritOrNonWritItemCraftedAndIsAllowedToBeMarked()
         if writOrNonWritMarkUponCreation and craftMarkerIcon ~= nil then
             --local itemLink = GetItemLink(bagId, slotId)
-            --d("[FCOIS]FCOItemSaver_Inv_Single_Slot_Update: New crafted item: " .. itemLink .. ", isWritAddonCreatedItem: " ..tostring(isWritAddonCreatedItem) .. ", markerIcon: " .. tostring(craftMarkerIcon))
+            --d("[FCOIS]FCOItemSaver_Inv_Single_Slot_Update: New crafted item: " .. itemLink .. ", isWritAddonCreatedItem: " ..tos(isWritAddonCreatedItem) .. ", markerIcon: " .. tos(craftMarkerIcon))
             --Check slightly delayed if the crafted item should be marked
             zo_callLater(function()
                 local markNow = true
@@ -584,11 +604,11 @@ local function FCOItemSaver_Inv_Single_Slot_Update(_, bagId, slotId, isNewItem, 
                     end
                     markNow = isSetPart
                 end
-                --d("[FCOIS]FCOItemSaver_Inv_Single_Slot_Update: New crafted item: " .. itemLink .. ", markerIcon: " .. tostring(craftMarkerIcon) .. ", isSetPart: " ..tostring(isSetPart) .. ", onlyMarkCraftedSets: " ..tostring(settings.autoMarkCraftedItemsSets) .. ", markNow: " ..tostring(markNow))
+                --d("[FCOIS]FCOItemSaver_Inv_Single_Slot_Update: New crafted item: " .. itemLink .. ", markerIcon: " .. tos(craftMarkerIcon) .. ", isSetPart: " ..tos(isSetPart) .. ", onlyMarkCraftedSets: " ..tos(settings.autoMarkCraftedItemsSets) .. ", markNow: " ..tos(markNow))
 
                 --Mark item now?
                 if markNow then
-                    --d(">Mark item " ..itemLink .. " with icon: " .. tostring(craftMarkerIcon))
+                    --d(">Mark item " ..itemLink .. " with icon: " .. tos(craftMarkerIcon))
                     FCOIS.MarkItem(bagId, slotId, craftMarkerIcon, true, true)
                     --Prevent additional checks of the new crafted item
                     return false
@@ -626,7 +646,7 @@ local function FCOItemSaver_Inv_Single_Slot_Update(_, bagId, slotId, isNewItem, 
         --if (bagId == BAG_BACKPACK) then
         if settings.debug then
             debugMessage( "[EVENT]","InventorySingleSlotUpdated==============", true, FCOIS_DEBUG_DEPTH_NORMAL)
-            debugMessage( "[EVENT]",">NewItem=" .. tostring(isNewItem) .. ", bagId=" .. bagId .. ", slotIndex=" .. slotId .. ", updateReason=" .. tostring(updateReason), true, FCOIS_DEBUG_DEPTH_NORMAL)
+            debugMessage( "[EVENT]",">NewItem=" .. tos(isNewItem) .. ", bagId=" .. bagId .. ", slotIndex=" .. slotId .. ", updateReason=" .. tos(updateReason), true, FCOIS_DEBUG_DEPTH_NORMAL)
         end
         --if(FCOIS.preventerVars.canUpdateInv == true) then
         --FCOIS.preventerVars.canUpdateInv = false
@@ -688,7 +708,7 @@ end
 -- handler function for EVENT_INVENTORY_SLOT_UNLOCKED global event
 -- will be fired (after EVENT_INVENTORY_SLOT_LOCKED) if you have pickuped an item (e.g. by drag&drop) and drop it again
 local function FCOItemSaver_OnInventorySlotUnLocked(self, bag, slot)
-    if FCOIS.settingsVars.settings.debug then debugMessage( "[Event]","OnInventorySlotUnLocked: bag: " .. tostring(bag) .. ", slot: " .. tostring(slot), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+    if FCOIS.settingsVars.settings.debug then debugMessage( "[Event]","OnInventorySlotUnLocked: bag: " .. tos(bag) .. ", slot: " .. tos(slot), true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
     if (bag == BAG_WORN or bag == BAG_COMPANION_WORN) and FCOIS.preventerVars.gItemSlotIsLocked == true then
         --If item was unequipped: Remove the armor type marker if necessary
@@ -712,8 +732,8 @@ end
 --> First function called if you drag an item from the inventories:
 ----> Check file src/FCOIS_Hooks.lua, function FCOItemSaver_OnDragStart(...)
 local function FCOItemSaver_OnInventorySlotLocked(self, bag, slot)
-    if FCOIS.settingsVars.settings.debug then debugMessage( "[Event]","OnInventorySlotLocked: bag: " .. tostring(bag) .. ", slot: " .. tostring(slot), true, FCOIS_DEBUG_DEPTH_NORMAL) end
---d("[FCOIS]EVENT_INVENTORY_SLOT_LOCKED-bagId: " ..tostring(bag) ..", slotIndex: " ..tostring(slot))
+    if FCOIS.settingsVars.settings.debug then debugMessage( "[Event]","OnInventorySlotLocked: bag: " .. tos(bag) .. ", slot: " .. tos(slot), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+--d("[FCOIS]EVENT_INVENTORY_SLOT_LOCKED-bagId: " ..tos(bag) ..", slotIndex: " ..tos(slot))
 
     FCOIS.preventerVars.gItemSlotIsLocked = true
     --Set: Tell function ItemSelectionHandler that a drag&drop or doubleclick event was raised so it's not blocking the equip/use/etc. functions
@@ -762,7 +782,7 @@ end
 
 --Executed if item should be destroyed manually
 local function FCOItemSaver_OnMouseRequestDestroyItem(_, bagId, slotIndex, _, _, needsConfirm)
---d("[FCOS]FCOItemSaver_OnMouseRequestDestroyItem - needsConfirm: " ..tostring(needsConfirm) .. " - " .. GetItemLink(bagId, slotIndex))
+--d("[FCOS]FCOItemSaver_OnMouseRequestDestroyItem - needsConfirm: " ..tos(needsConfirm) .. " - " .. GetItemLink(bagId, slotIndex))
     FCOIS.preventerVars.splitItemStackDialogActive = false
     --Hide the context menu at last active panel
     hideContextMenu(FCOIS.gFilterWhere)
@@ -780,7 +800,7 @@ end
 
 --[[
 local function FCOItemSaver_OnCursorPickup(eventCode, cursorType, param1, param2, param3, param4, param5, param6, itemSoundCategory)
-d("[FCOIS]FCOItemSaver_OnCursorPickup - cursorType: " ..tostring(MOUSE_CONTENT_EQUIPPED_ITEM) .. ", param1: " ..tostring(param1) .. ", param2: " ..tostring(param2) .. ", param3: " ..tostring(param3).. ", param4: " ..tostring(param4) .. ", param5: " ..tostring(param5) .. ", param6: " ..tostring(param6))
+d("[FCOIS]FCOItemSaver_OnCursorPickup - cursorType: " ..tos(MOUSE_CONTENT_EQUIPPED_ITEM) .. ", param1: " ..tos(param1) .. ", param2: " ..tos(param2) .. ", param3: " ..tos(param3).. ", param4: " ..tos(param4) .. ", param5: " ..tos(param5) .. ", param6: " ..tos(param6))
     local charIsShown = isCharacterShown()
     local companionCharIsShown = isCompanionCharacterShown()
     if not charIsShown and not companionCharIsShown then return end
@@ -824,13 +844,13 @@ local function updateEquipmentSlotOfDraggedItem(equipSlot, equipType, wasUnequip
     local dropToControl = unequippedToDropControl[wasUnequipped][icCompanionChar]
     if not dropToControl or not dropToControl.IsHidden or dropToControl:IsHidden() then return end
     local mouseOverControl = moc()
---d(">dropToControl: " .. tostring(dropToControl:GetName()) ..", moc: " .. tostring(mouseOverControl:GetName()) .. ", mocOwner: " .. tostring(mouseOverControl:GetOwningWindow():GetName()))
+--d(">dropToControl: " .. tos(dropToControl:GetName()) ..", moc: " .. tos(mouseOverControl:GetName()) .. ", mocOwner: " .. tos(mouseOverControl:GetOwningWindow():GetName()))
     if not mouseOverControl or not mouseOverControl.GetOwningWindow then return end
     if mouseOverControl:GetOwningWindow() ~= dropToControl then return end
 
     equipSlot = equipSlot or FCOIS.mappingVars.equipTypeToSlot[equipType]
     if not equipSlot then return end
---d(">>updating equipment slot: " ..tostring(equipSlot))
+--d(">>updating equipment slot: " ..tos(equipSlot))
     --Update the marker control of the new equipped item
     updateEquipmentSlotMarker(equipSlot, 300, wasUnequipped)
     --Refresh the inventory, if shown, to update the marker icons at the unequipped item's inventory row
@@ -838,7 +858,7 @@ local function updateEquipmentSlotOfDraggedItem(equipSlot, equipType, wasUnequip
 end
 
 local function FCOItemSaver_OnCursorDropped(eventCode, cursorType, param1, param2, param3, param4, param5, param6)
---d("[FCOIS]FCOItemSaver_OnCursorDropped - cursorType: " ..tostring(MOUSE_CONTENT_EQUIPPED_ITEM) .. ", param1: " ..tostring(param1) .. ", param2: " ..tostring(param2) .. ", param3: " ..tostring(param3).. ", param4: " ..tostring(param4) .. ", param5: " ..tostring(param5) .. ", param6: " ..tostring(param6))
+--d("[FCOIS]FCOItemSaver_OnCursorDropped - cursorType: " ..tos(MOUSE_CONTENT_EQUIPPED_ITEM) .. ", param1: " ..tos(param1) .. ", param2: " ..tos(param2) .. ", param3: " ..tos(param3).. ", param4: " ..tos(param4) .. ", param5: " ..tos(param5) .. ", param6: " ..tos(param6))
     local charIsShown = isCharacterShown()
     local companionCharIsShown = isCompanionCharacterShown()
     if not charIsShown and not companionCharIsShown then return end
@@ -1062,11 +1082,11 @@ local function FCOItemSaver_Loaded(eventCode, addOnName)
                 BAG_COMPANION_WORN,
             }
             for _, bagIdToFilter in ipairs(bagIdsToFilterForInvSingleSlotUpdate) do
-                em:RegisterForEvent(gAddonName .. "_EVENT_INVENTORY_SINGLE_SLOT_UPDATE" ..tostring(bagIdToFilter), EVENT_INVENTORY_SINGLE_SLOT_UPDATE, FCOItemSaver_Inv_Single_Slot_Update)
-                em:AddFilterForEvent(gAddonName .. "_EVENT_INVENTORY_SINGLE_SLOT_UPDATE" ..tostring(bagIdToFilter), EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_UNIT_TAG, "player")
-                em:AddFilterForEvent(gAddonName .. "_EVENT_INVENTORY_SINGLE_SLOT_UPDATE" ..tostring(bagIdToFilter), EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_INVENTORY_UPDATE_REASON, INVENTORY_UPDATE_REASON_DEFAULT)
-                em:AddFilterForEvent(gAddonName .. "_EVENT_INVENTORY_SINGLE_SLOT_UPDATE" ..tostring(bagIdToFilter), EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_IS_NEW_ITEM, true)
-                em:AddFilterForEvent(gAddonName .. "_EVENT_INVENTORY_SINGLE_SLOT_UPDATE" ..tostring(bagIdToFilter), EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_BAG_ID, bagIdToFilter)
+                em:RegisterForEvent(gAddonName .. "_EVENT_INVENTORY_SINGLE_SLOT_UPDATE" ..tos(bagIdToFilter), EVENT_INVENTORY_SINGLE_SLOT_UPDATE, FCOItemSaver_Inv_Single_Slot_Update)
+                em:AddFilterForEvent(gAddonName .. "_EVENT_INVENTORY_SINGLE_SLOT_UPDATE" ..tos(bagIdToFilter), EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_UNIT_TAG, "player")
+                em:AddFilterForEvent(gAddonName .. "_EVENT_INVENTORY_SINGLE_SLOT_UPDATE" ..tos(bagIdToFilter), EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_INVENTORY_UPDATE_REASON, INVENTORY_UPDATE_REASON_DEFAULT)
+                em:AddFilterForEvent(gAddonName .. "_EVENT_INVENTORY_SINGLE_SLOT_UPDATE" ..tos(bagIdToFilter), EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_IS_NEW_ITEM, true)
+                em:AddFilterForEvent(gAddonName .. "_EVENT_INVENTORY_SINGLE_SLOT_UPDATE" ..tos(bagIdToFilter), EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_BAG_ID, bagIdToFilter)
             end
             --Register the callback function for an update of the inventory slots
             --SHARED_INVENTORY:RegisterCallback("SingleSlotInventoryUpdate", FCOItemSaver_OnSharedSingleSlotUpdate)

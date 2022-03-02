@@ -157,15 +157,20 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 
 --#199, 2021-12-28, Baertram, bug: Companion equipment character sometimes is not showing the armor type labels L/M/H
 
---#202, 2022-02-05, Baertram, bug: Add support for new universal deconstruction NPC "Giladil" (inventory markers, filterButtons, flag, context menus)
---  todo: At best re-Use LF_SMITHING_DECONSTRUCTION for the filterPanelId? Or add a new LF_UNIVERSAL_DECONSTRUCTION to LibFilters?
+--#203, 2022-02-05, Hotzelvit, bug, FCOIS comments at esoui: Mass moving to junk/removing from junk (100 items) will kick you from the server because of message spam
 
---#203, 2022-02-05, Hotzelvit, bug, FCOIS comments at esoui: Mass moving to junk/removing from junk (100 items) will kick you from the server becase of message spam
-
---#207, 2022-02-27, FCOIS comments, bug: Companion equipment character markers will be automatically removed if you unequip the companion's items?
+--#207, 2022-02-27, A_Darklore, bug, FCOIS comments at esoui: Companion equipment character markers will be automatically removed if you unequip the companion's items?
+--#208, 2022-02-18, @DeadSoon, bug, private message: Leider bekomme ich immer noch den (gleichen) Fehler. Ganz klar reproduzieren lässt er sich wenn ich einfach beim
+--Händler mehrmals zwischen Kauf und Verkauf wechsle. Meistens kommt der Fehler dann nach dem 3. oder 4. mal (oder mal den Dialog verlassen und wieder neu "ansprechen").
+--Tatsächlich tritt der Fehler nur auf, wenn ich meine vorhandene savedVars nutze. Wenn ich meine mal lösche, dann war es mir nicht möglich den Fehler zu reproduzieren.
+--SV Datei: https://www.dropbox.com/sh/gwqi1avig...HLBMHjm_a?dl=0
+--Fehlermeldung:
+--[[
+FCOIS_Filters.lua:120: attempt to index a nil value
+]]
 
 --____________________________
--- Current max bugs/features/ToDos: 207
+-- Current max bugs/features/ToDos: 208
 --____________________________
 
 

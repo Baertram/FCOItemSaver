@@ -641,7 +641,7 @@ function FCOIS.PreHookMainMenuFilterButtonHandler(comingFrom, goingTo)
     end
 
     --Check the filter buttons and create them if they are not there
-    checkFCOISFilterButtonsAtPanel(true, goingTo, nil, nil)
+    checkFCOISFilterButtonsAtPanel(true, goingTo, nil, nil, nil, nil)
 
     FCOIS.preventerVars.gPreHookButtonHandlerCallActive = false
 
