@@ -59,6 +59,8 @@ AddOn for the game Elder Scrolls Online: Saving your items so you do not acciden
 --#202 FilterButtons and addiitonal inventory flag context menu button added to universal deconstruction panel. The filter's and filterButtons and contextMenus re-use the selected protection
 --     methods etc. of smithing deconstuction/jewelry deconstruction/enchanting extraction! If the "All" tab is selected at the universal decon panel, which includes all types of the
 --     deconstructable/extractable item types, the smithing deconstruction buttons and context menu buttons are show, but the checks will still be done "per item", so that glyphs are protected too!
+--#203: Mass moving to junk/removing from junk will kick you from the server because of message spam. Junk move will be done in 50 items packages now, with a 250ms delay in between each package.
+
 
 --[Added on request]
 --#176 Add submenu to 4 filter buttons, with setting to change the filter between AND & OR filter conjunction behaviour. Remembers the state for each filterPanel
