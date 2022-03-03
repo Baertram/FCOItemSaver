@@ -2910,7 +2910,6 @@ function FCOIS.GetCharacterName(characterId, characterTable)
 end
 
 --Junk all items marked with a/some marker icons
---TODO: #203 Fix kicked from server because of too many items added/removed from junk!
 function FCOIS.JunkMarkedItems(markerIconsMarkedOnItems, bagId)
     --d("[FCOIS]Junk all marked for sell item in inventory now!")
     if bagId == nil or markerIconsMarkedOnItems == nil then return end
@@ -2923,18 +2922,84 @@ function FCOIS.JunkMarkedItems(markerIconsMarkedOnItems, bagId)
     if not bagCache then return end
     local retVar = false
     local junkedItemCount = 0
+    local itemsToMarkAsJunk = {}
+    isMarked = isMarked or FCOIS.IsMarked
     for _, data in pairs(bagCache) do
-        isMarked = isMarked or FCOIS.IsMarked
         local isMarkedIcon, _ = isMarked(data.bagId, data.slotIndex, markerIconsMarkedOnItems, nil)
         if isMarkedIcon and not IsItemJunk(data.bagId, data.slotIndex) then
-            SetItemIsJunk(data.bagId, data.slotIndex, true)
-            junkedItemCount = junkedItemCount + 1
-            retVar = true
+            tins(itemsToMarkAsJunk, data)
         end
     end
-    if retVar == true then
-        local locVarJunkedItemCount = FCOIS.GetLocText("fcois_junked_item_count", false)
-        d(strformat(FCOIS.preChatVars.preChatTextGreen .. locVarJunkedItemCount, tos(junkedItemCount)))
+
+    local itemsToMarkAsJunkMaxPerPackage = 50
+    local itemCountToJunk = #itemsToMarkAsJunk
+--d("[FCOIS]JunkMarkedItems - itemCountToJunk: " ..tos(itemCountToJunk))
+    if itemCountToJunk > 0 then
+        if itemCountToJunk <= itemsToMarkAsJunkMaxPerPackage then
+--d(">junk marking all at once")
+            for _, data in pairs(itemsToMarkAsJunk) do
+                SetItemIsJunk(data.bagId, data.slotIndex, true)
+                junkedItemCount = junkedItemCount + 1
+                retVar = true
+            end
+            if retVar == true then
+                local locVarJunkedItemCount = FCOIS.GetLocText("fcois_junked_item_count", false)
+                d(strformat(FCOIS.preChatVars.preChatTextGreen .. locVarJunkedItemCount, tos(junkedItemCount)))
+            end
+
+        else
+            --#203 Fix kicked from server because of too many items added/removed from junk!
+            local itemsToMarkAsJunkPackages = {}
+            local packagesCount = zo_ceil(itemCountToJunk / itemsToMarkAsJunkMaxPerPackage) --ceil 7,5 to 8 e.g.
+--d(">junk marking with packages #: " ..tos(packagesCount))
+            --Build packages of 25 items and mark them for junk after another, with a delay of 250ms between each package
+            for packageCounter=1, packagesCount, 1 do
+                local packageData = {}
+                --StartPos = packageCounter * 25 items (or at item 1 if packageCounter is 1)
+                local startPos
+                if packageCounter==1 then
+                    startPos = 1
+                else
+                    startPos = (packageCounter - 1) * itemsToMarkAsJunkMaxPerPackage
+                end
+                local endPos = startPos + (itemsToMarkAsJunkMaxPerPackage - 2) --EndPos = StartItem + 48 items (in total 50 items each package).
+                --if > itemCountToJunk then set to that max value
+                if startPos > itemCountToJunk then startPos = itemCountToJunk end
+                if endPos > itemCountToJunk then endPos = itemCountToJunk end
+                if endPos < startPos then endPos = startPos end
+                for itemDataIndex=startPos, endPos, 1 do
+                    tins(packageData, itemsToMarkAsJunk[itemDataIndex])
+                end
+                if #packageData > 0 then
+                    tins(itemsToMarkAsJunkPackages, packageData)
+                end
+            end
+--FCOIS._junkItemsToMarkAsJunk =  itemsToMarkAsJunk
+--FCOIS._junkPackages =           itemsToMarkAsJunkPackages
+            if #itemsToMarkAsJunkPackages > 0 then
+                --for each package use zo_callLater with a new delay of 250ms (increase at each package!) and junk mark the items
+                local delay = 0
+                for junkPackageIndex, junkPackageData in ipairs(itemsToMarkAsJunkPackages) do
+--d(">>Package #: " ..tos(junkPackageIndex) .. ", delay: " ..tos(delay))
+                    zo_callLater(function()
+--d("!!!!>>Junk delayed package call! #" ..tos(junkPackageIndex))
+                        for _, data in ipairs(junkPackageData) do
+                            SetItemIsJunk(data.bagId, data.slotIndex, true)
+                            junkedItemCount = junkedItemCount + 1
+                            retVar = true
+                        end
+                        --At least package delayed call
+                        if junkPackageIndex == #itemsToMarkAsJunkPackages then
+                            if retVar == true then
+                                local locVarJunkedItemCount = FCOIS.GetLocText("fcois_junked_item_count", false)
+                                d(strformat(FCOIS.preChatVars.preChatTextGreen .. locVarJunkedItemCount, tos(junkedItemCount)))
+                            end
+                        end
+                    end, delay)
+                    delay = delay + 250 --increase delay by 250 milliseconds
+                end
+            end
+        end
     end
     return retVar
 end

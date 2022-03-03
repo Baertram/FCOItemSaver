@@ -157,8 +157,6 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 
 --#199, 2021-12-28, Baertram, bug: Companion equipment character sometimes is not showing the armor type labels L/M/H
 
---#203, 2022-02-05, Hotzelvit, bug, FCOIS comments at esoui: Mass moving to junk/removing from junk (100 items) will kick you from the server because of message spam
-
 --#207, 2022-02-27, A_Darklore, bug, FCOIS comments at esoui: Companion equipment character markers will be automatically removed if you unequip the companion's items?
 
 
@@ -202,6 +200,7 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 --#197: Migration of non-unique item markers to FCOISunique itemMarkers does not work properly
 --#198: Enchanting did not recognize the filters correctly and was not always protecting the items at extraction as it thought it is LF_INVENTORY
 --#200: The chosen language is not updated in localization of the settings menu properly
+--#203: Mass moving to junk/removing from junk will kick you from the server because of message spam. Junk move will be done in 50 items packages now, with a 250ms delay in between each package.
 --#204: Fixed error message in FCOIS.GetSavedVarsMarkedItemsTableName if loaded from other addons before FCOIS SavedVariables were loaded properly (e.g. IIfA)
 --#208: Switching from vendor buy to sell panel raises a lua error
 

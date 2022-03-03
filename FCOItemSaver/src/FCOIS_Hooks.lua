@@ -29,7 +29,7 @@ local guildBankCtrl =           ctrlVars.GUILD_BANK_BAG
 local bankCtrl =                ctrlVars.BANK_BAG
 local deconstructionCtrl =      ctrlVars.DECONSTRUCTION_BAG
 local universalDeconGlobal =    ctrlVars.UNIVERSAL_DECONSTRUCTION_GLOBAL
-local universalDeconPanel =     universalDeconGlobal.deconstructionPanel
+local universalDeconPanel =     universalDeconGlobal and universalDeconGlobal.deconstructionPanel
 
 local numFilterIcons                        = FCOIS.numVars.gFCONumFilterIcons
 local mappingVarsTransm                     = FCOIS.mappingVars.containerTransmuation

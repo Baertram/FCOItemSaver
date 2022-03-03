@@ -13,7 +13,7 @@ local debugMessage = FCOIS.debugMessage
 
 local ctrlVars = FCOIS.ZOControlVars
 local universalDeconGlobal = ctrlVars.UNIVERSAL_DECONSTRUCTION_GLOBAL
-local universalDeconPanel = universalDeconGlobal.deconstructionPanel
+local universalDeconPanel = universalDeconGlobal and universalDeconGlobal.deconstructionPanel
 
 local hideContextMenu = FCOIS.HideContextMenu
 local updateFCOISFilterButtonsAtInventory = FCOIS.UpdateFCOISFilterButtonsAtInventory
