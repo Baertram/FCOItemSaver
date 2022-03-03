@@ -568,7 +568,7 @@ local function FCOItemSaver_Crafting_Interact(_, craftSkill)
         preHookMainMenuFilterButtonHandler(nil, LF_ALCHEMY_CREATION)
 
     else
-        --d("[FCOItemSaver_Crafting_Interact] FCOIS.gFilterWhere: " .. FCOIS.gFilterWhere)
+--d("[FCOItemSaver_Crafting_Interact] FCOIS.gFilterWhere: " .. FCOIS.gFilterWhere)
         --Change the button color of the context menu invoker
         changeContextMenuInvokerButtonColorByPanelId(FCOIS.gFilterWhere)
     end

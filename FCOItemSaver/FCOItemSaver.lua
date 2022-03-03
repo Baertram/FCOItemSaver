@@ -159,10 +159,8 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 
 --#207, 2022-02-27, A_Darklore, bug, FCOIS comments at esoui: Companion equipment character markers will be automatically removed if you unequip the companion's items?
 
-
-
 --____________________________
--- Current max bugs/features/ToDos: 208
+-- Current max bugs/features/ToDos: 209
 --____________________________
 
 
@@ -171,6 +169,7 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 ------------------------------------------------------------------------------------
 --#176 -> Test: Errors occured with OR filters, and mixed AND + OR filters
 --Added checks if functions/API functions are called internally or from external (other addons) -> Still ongoing TODO
+--#209
 
 -------------------------------------------------------------------------------------
 --Changelog (last version: 2.2.3 - New version: 2.2.4) -    Updated last: 2022-03-02

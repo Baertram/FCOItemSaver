@@ -1660,12 +1660,12 @@ function FCOIS.CreateHooks()
         hideContextMenu(FCOIS.gFilterWhere)
 
         if settings.debug then debugMessage("[SMITHING:SetMode]", "Mode: " .. tos(mode), true, FCOIS_DEBUG_DEPTH_NORMAL) end
-        --d("[FCOIS]smithingSetModeHook-mode: " ..tos(mode) .. ", filterPanel: " ..tos(FCOIS.gFilterWhere))
+        local craftingType                               = GetCraftingInteractionType()
+--d("[FCOIS]smithingSetModeHook-mode: " ..tos(mode) .. ", craftingType: " ..tos(craftingType) .. ", currentFilterPanel: " ..tos(FCOIS.gFilterWhere))
         if not mode then return end
 
         --Get the filter panel ID by crafting type (to distinguish jewelry crafting and normal)
         local craftingModeAndCraftingTypeToFilterPanelId = mappingVars.craftingModeAndCraftingTypeToFilterPanelId
-        local craftingType                               = GetCraftingInteractionType()
         local filterPanelId
         local showFCOISFilterButtons                     = false
         --zo_callLater(function()
@@ -1688,6 +1688,8 @@ function FCOIS.CreateHooks()
             --elseif mode == SMITHING_MODE_RESEARCH then
             --FCOIS.PreHookButtonHandler(FCOIS.gFilterWhere, LF_SMITHING_RESEARCH)
         end
+--d(">>filterPanelId: " ..tos(filterPanelId))
+
         if showFCOISFilterButtons == true and FCOIS.gFilterWhere and filterPanelId then
             --TODO: Test if delay of a few ms (or 0 to skip call to next frame) will fix the registered filters to properly
             --apply to the crafting panel at re-open of the panel/at first open of the refinement panel

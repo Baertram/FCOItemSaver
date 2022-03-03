@@ -197,11 +197,13 @@ local function getWhereAreWeOrFilterPanelIdByPanelIdRespectingCraftType(filterPa
             local filterPanelIdByCraftType
             if libFilters and libFilters.GetFilterTypeRespectingCraftType then
                 filterPanelIdByCraftType = libFilters:GetFilterTypeRespectingCraftType(filterPanelId, craftType)
+--d("[FCOIS]LibFilters detected the filterPanelIdByCraftType: " ..tos(filterPanelIdByCraftType))
             else
                 local filterPanelIdToFilterPanelIdRespectingCrafttype = mappingVars.filterPanelIdToFilterPanelIdRespectingCrafttype
                 filterPanelIdByCraftType = filterPanelIdToFilterPanelIdRespectingCrafttype[craftType] and filterPanelIdToFilterPanelIdRespectingCrafttype[craftType][filterPanelIdDetermined]
-                if filterPanelIdByCraftType ~= nil then filterPanelIdDetermined = filterPanelIdByCraftType end
+--d("[FCOIS]FCOIS detected the filterPanelIdByCraftType: " ..tos(filterPanelIdByCraftType))
             end
+            if filterPanelIdByCraftType ~= nil then filterPanelIdDetermined = filterPanelIdByCraftType end
             if getWhereAreWe == true then
                 local whereAreWeByCraftType = filterPanelIdToWhereAreWe[filterPanelIdByCraftType]
                 if whereAreWeByCraftType ~= nil then whereAreWeDetermined = whereAreWeByCraftType end
@@ -481,12 +483,13 @@ function FCOIS.CheckActivePanel(comingFrom, overwriteFilterWhere, isDeconNPC)
     end
 
     -- -v- #202 Universal deconstruction?
-    --d("[FCOIS.checkActivePanel] comingFrom/Before: " .. tos(comingFrom) .. ", isDeconNPC: " .. tos(isDeconNPC) .. ", overwriteFilterWhere: " ..tos(overwriteFilterWhere).. ", currentSceneName: " ..tos(currentSceneName))
+--d("[FCOIS.checkActivePanel] comingFrom/Before: " .. tos(comingFrom) .. ", isDeconNPC: " .. tos(isDeconNPC) .. ", overwriteFilterWhere: " ..tos(overwriteFilterWhere).. ", currentSceneName: " ..tos(currentSceneName))
     --universal Deconstruction NPC "Giladil"
     --> Return the original buttonParent via inventoryName so that we can create the buttons and then re-anchor them!
     --> But update the FCOIS.gFilterWhere with the current set filterPanelId at UNIVERSAL_DECONSTRUCTION.FCOIScurrentFilterPanelId
     if isDeconNPC == nil then isDeconNPC = checkIfUniversaldDeconstructionNPC(comingFrom) end
     if isDeconNPC == true then
+--d(">>isDeconNPC: true")
         if universalDeconGlobal.FCOIScurrentFilterPanelId ~= nil then
             FCOIS.gFilterWhere = universalDeconGlobal.FCOIScurrentFilterPanelId
         else
@@ -623,7 +626,7 @@ function FCOIS.CheckActivePanel(comingFrom, overwriteFilterWhere, isDeconNPC)
             filterPanelId = LF_JEWELRY_REFINE
         end
         ]]
-        local filterPanelId = getWhereAreWeOrFilterPanelIdByPanelIdRespectingCraftType(LF_SMITHING_REFINE, false)
+        local filterPanelId = getWhereAreWeOrFilterPanelIdByPanelIdRespectingCraftType(LF_SMITHING_REFINE, false, false)
         --Update the filterPanelId
         FCOIS.gFilterWhere = getFilterWhereBySettings(filterPanelId)
         inventoryName = ctrlVars2.REFINEMENT_INV
@@ -637,7 +640,7 @@ function FCOIS.CheckActivePanel(comingFrom, overwriteFilterWhere, isDeconNPC)
         end
         ]]
         if not isDeconNPC then
-            local filterPanelId = getWhereAreWeOrFilterPanelIdByPanelIdRespectingCraftType(LF_SMITHING_DECONSTRUCT, false)
+            local filterPanelId = getWhereAreWeOrFilterPanelIdByPanelIdRespectingCraftType(LF_SMITHING_DECONSTRUCT, false, false)
             --Update the filterPanelId
             FCOIS.gFilterWhere = getFilterWhereBySettings(filterPanelId)
         end
@@ -651,7 +654,7 @@ function FCOIS.CheckActivePanel(comingFrom, overwriteFilterWhere, isDeconNPC)
             filterPanelId = LF_JEWELRY_IMPROVEMENT
         end
         ]]
-        local filterPanelId = getWhereAreWeOrFilterPanelIdByPanelIdRespectingCraftType(LF_SMITHING_IMPROVEMENT, false)
+        local filterPanelId = getWhereAreWeOrFilterPanelIdByPanelIdRespectingCraftType(LF_SMITHING_IMPROVEMENT, false, false)
         --Update the filterPanelId
         FCOIS.gFilterWhere = getFilterWhereBySettings(filterPanelId)
         inventoryName = ctrlVars2.IMPROVEMENT_INV
@@ -664,7 +667,7 @@ function FCOIS.CheckActivePanel(comingFrom, overwriteFilterWhere, isDeconNPC)
             filterPanelId = LF_JEWELRY_RESEARCH_DIALOG
         end
         ]]
-        local filterPanelId = getWhereAreWeOrFilterPanelIdByPanelIdRespectingCraftType(LF_SMITHING_RESEARCH_DIALOG, false)
+        local filterPanelId = getWhereAreWeOrFilterPanelIdByPanelIdRespectingCraftType(LF_SMITHING_RESEARCH_DIALOG, false, false)
         --Update the filterPanelId
         FCOIS.gFilterWhere = getFilterWhereBySettings(filterPanelId)
         inventoryName = ctrlVars2.RESEARCH_POPUP_TOP_DIVIDER
@@ -677,7 +680,7 @@ function FCOIS.CheckActivePanel(comingFrom, overwriteFilterWhere, isDeconNPC)
             filterPanelId = LF_JEWELRY_RESEARCH
         end
         ]]
-        local filterPanelId = getWhereAreWeOrFilterPanelIdByPanelIdRespectingCraftType(LF_SMITHING_RESEARCH, false)
+        local filterPanelId = getWhereAreWeOrFilterPanelIdByPanelIdRespectingCraftType(LF_SMITHING_RESEARCH, false, false)
         --Update the filterPanelId
         FCOIS.gFilterWhere = getFilterWhereBySettings(filterPanelId)
         inventoryName = ctrlVars2.RESEARCH
