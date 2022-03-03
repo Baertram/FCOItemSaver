@@ -543,10 +543,16 @@ function FCOIS.CheckFCOISFilterButtonsAtPanel(doUpdateLists, panelId, overwriteF
         for _, buttonNr in ipairs(filterButtonsToCheck) do
             --#202 Hide the last shown buttons at the universal deconstruction UI, if they are not the same to use for the current
             if isUniversalDeconNPC == true and universalDeconFilterPanelIdBefore ~= nil and universalDeconFilterPanelIdBefore ~= filterPanelIdToUse then
-                --The filterButtons of the jewelry decon. re-use the normal decon filterButtonControls
-                if universalDeconFilterPanelIdBefore == LF_JEWELRY_DECONSTRUCT then
-                    universalDeconFilterPanelIdBefore = LF_SMITHING_DECONSTRUCT
+                --The filterButtons of the jewelry decon. re-use the normal decon filterButtonControls. Though the "1st" opened at the normal crafting tables will be only saved
+                --to table FCOIS.filterButtonVars.filterButtons-> filterButtons
+                --So we need to check here which button exist, LF_JEWELRY_DECONSTRUCT or LF_SMITHING_DECONSTRUCT, and use it
+                if universalDeconFilterPanelIdBefore == LF_JEWELRY_DECONSTRUCT or universalDeconFilterPanelIdBefore == LF_SMITHING_DECONSTRUCT then
+                    if filterButtons[universalDeconFilterPanelIdBefore] == nil then
+                        --Switch the deconstructable filterType to the other crafting types filterType, e.g. LF_JEWELRY_DECONSTRUCT -> LF_SMITHING_DECONSTRUCT
+                        universalDeconFilterPanelIdBefore = FCOIS.mappingVars.deconstructablePanelIdToOtherCraftType[universalDeconFilterPanelIdBefore]
+                    end
                 end
+
                 local universalDeconNPCButton = filterButtons[universalDeconFilterPanelIdBefore][buttonNr]
                 local universalDeconNPCButtonName = universalDeconNPCButton:GetName()
 --d(">universal decon NPC button: " ..tos(universalDeconNPCButtonName))

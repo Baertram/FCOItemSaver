@@ -159,9 +159,6 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 
 --#207, 2022-02-27, A_Darklore, bug, FCOIS comments at esoui: Companion equipment character markers will be automatically removed if you unequip the companion's items?
 
---#210, 2022-03-03, Baertram, bug: Based on #202: Universal deconstruction throws an error in FCOIS_FilterButtons.lua:550 if you first open the JewelryCrafting table deconstruction panel,
---      and afterwards open the universal decon's jewelry crafting panel. Table FCOIS.filterButtonVars.filterButtons contains an entry for LF_JEWELRY_DECONSTRUCT then, but no entry for
---      LF_SMITHING_DECONSTRUCT -> where exactly is this table filled and could it be filled with both entries at the same time, to circumvent this?
 
 --____________________________
 -- Current max bugs/features/ToDos: 210

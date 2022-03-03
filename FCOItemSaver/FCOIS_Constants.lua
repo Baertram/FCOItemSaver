@@ -832,6 +832,13 @@ mappingVars.panelIdToDeconstructable = {
     -->panelIds (from table mappingVars.activeFilterPanelIds above) as key, and the value = false
 }
 
+--The LibFilters panelIds of deconstruction with it's mapping to the other craftingType
+mappingVars.deconstructablePanelIdToOtherCraftType = {
+    --Deconstructable
+    [LF_SMITHING_DECONSTRUCT] = LF_JEWELRY_DECONSTRUCT,
+    [LF_JEWELRY_DECONSTRUCT]  = LF_SMITHING_DECONSTRUCT,
+}
+
 --#202 -v-
 local function getDataFromUniversalDeconstructionMenuBar(key)
     local barToSearch = ZO_UNIVERSAL_DECONSTRUCTION_FILTER_TYPES
