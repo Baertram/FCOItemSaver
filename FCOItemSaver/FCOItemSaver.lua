@@ -159,9 +159,7 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 
 --#207, 2022-02-27, A_Darklore, bug, FCOIS comments at esoui: Companion equipment character markers will be automatically removed if you unequip the companion's items?
 
---#209, 2022-03-08, sirinsidiator, bug, gitter.im: Automatic binding of set item collection items does only work if an unknown marker icon was set, but not without it
-
---#210, 2022-03-09, Baertram, bug: LibDialog error message "Missing body text for dialog with the unique identifier 'TeleportToOwnHouseDialog'" as one uses FCOIS LAM settings
+--#215, 2022-03-09, Baertram, bug: LibDialog error message "Missing body text for dialog with the unique identifier 'TeleportToOwnHouseDialog'" as one uses FCOIS LAM settings
 --> Backup marker icons submenu -> Backup marker icons
 --[[
 assert: [LibDialog]Error: Missing body text for dialog with the unique identifier 'TeleportToOwnHouseDialog', addon 'FCOItemSaver'!
@@ -177,19 +175,18 @@ user:/AddOns/FCOItemSaver/src/FCOIS_SettingsMenu.lua:7450: in function 'm_callba
 ]]
 
 --____________________________
--- Current max bugs/features/ToDos: 212
+-- Current max bugs/features/ToDos: 215
 --____________________________
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-03-09
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-03-10
 ------------------------------------------------------------------------------------
 --#176 -> Test: Errors occured with OR filters, and mixed AND + OR filters
 --Added checks if functions/API functions are called internally or from external (other addons) -> Still ongoing TODO
---#209
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.2.3 - New version: 2.2.4) -    Updated last: 2022-03-09
+--Changelog (last version: 2.2.3 - New version: 2.2.4) -    Updated last: 2022-03-10
 -------------------------------------------------------------------------------------
 --[Fixed]
 --Added debug file /src/FCOIS_Debug.lua to the txt file again
@@ -219,6 +216,8 @@ user:/AddOns/FCOItemSaver/src/FCOIS_SettingsMenu.lua:7450: in function 'm_callba
 --#203: Mass moving to junk/removing from junk will kick you from the server because of message spam. Junk move will be done in 50 items packages now, with a 250ms delay in between each package.
 --#204: Fixed error message in FCOIS.GetSavedVarsMarkedItemsTableName if loaded from other addons before FCOIS SavedVariables were loaded properly (e.g. IIfA)
 --#208: Switching from vendor buy to sell panel raises a lua error
+--#213, Automatic binding of set item collection items does only work if an unknown/known marker icon was set.
+
 
 --[Changed]
 --Changed load order of debug file to earlier loading
@@ -239,6 +238,8 @@ user:/AddOns/FCOItemSaver/src/FCOIS_SettingsMenu.lua:7450: in function 'm_callba
 --#202 FilterButtons and addiitonal inventory flag context menu button added to universal deconstruction panel. The filter's and filterButtons and contextMenus re-use the selected protection
 --     methods etc. of smithing deconstuction/jewelry deconstruction/enchanting extraction! If the "All" tab is selected at the universal decon panel, which includes all types of the
 --     deconstructable/extractable item types, the smithing deconstruction buttons and context menu buttons are show, but the checks will still be done "per item", so that glyphs are protected too!
+--#214, Enabled automatic binding of set item collection items for LibMultiAccountsSet and the currently logegd ina ccount
+
 
 --[Added on request]
 --#176 Add submenu to 4 filter buttons, with setting to change the filter between AND & OR filter conjunction behaviour. Remembers the state for each filterPanel
