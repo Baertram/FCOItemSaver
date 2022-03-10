@@ -4177,7 +4177,7 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                                             end,
                                             width = "half",
                                             default = FCOISdefaultSettings.autoBindMissingSetCollectionPiecesOnLoot,
-                                            disabled = function() return not FCOISsettings.autoMarkSetsItemCollectionBook or FCOISsettings.autoMarkSetsItemCollectionBookAddonUsed ~= FCOIS_SETS_COLLECTION_ADDON_ESO_STANDARD end,
+                                            disabled = function() return not FCOISsettings.autoMarkSetsItemCollectionBook end,
                                         },
                                         {
                                             type = "checkbox",
