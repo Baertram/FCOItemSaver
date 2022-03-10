@@ -323,6 +323,7 @@ local LMAS_getAccountList = lmas ~= nil and lmas.GetAccountList
 --Check for set collections bok items (known/unknown) and return a boolean if the item should get marked + 2nd param the table with the checkFuncResultData for the
 --.additionalCheckFunc, containing the newMarkerIcon = markerIcon to use for the MarkItem functions later on in the toDos processing
 local function automaticMarkingSetsCollectionBookCheckFunc(p_bagId, p_slotIndex, knownOrUnknown)
+--d("automaticMarkingSetsCollectionBookCheckFunc - knownOrUnknown: " ..tos(knownOrUnknown))
     if knownOrUnknown == nil or p_bagId == nil or p_slotIndex == nil then return nil, nil end
     local settings = FCOIS.settingsVars.settings
     if not settings.autoMarkSetsItemCollectionBook then return nil, nil end
@@ -342,11 +343,11 @@ local function automaticMarkingSetsCollectionBookCheckFunc(p_bagId, p_slotIndex,
     local missingAndNonMissingIconsNone = (autoMarkSetsItemCollectionBookMissingIcon == FCOIS_CON_ICON_NONE and autoMarkSetsItemCollectionBookNonMissingIcon == FCOIS_CON_ICON_NONE and true) or false
 
     --Bind unknown?
-d(">>autoBindMissingSetCollectionPiecesOnLoot: " ..tos(autoBindMissingSetCollectionPiecesOnLoot) .. ", knownOrUnknown: " ..tos(knownOrUnknown))
+--d(">>autoBindMissingSetCollectionPiecesOnLoot: " ..tos(autoBindMissingSetCollectionPiecesOnLoot) .. ", knownOrUnknown: " ..tos(knownOrUnknown))
     if autoBindMissingSetCollectionPiecesOnLoot then
         --Only go on if unknown checks
         if knownOrUnknown ~= false then return nil, nil end
-d(">go on -> auto bind!")
+--d(">go on -> auto bind!")
     else
         if ( autoMarkSetsItemCollectionBookAddonUsed == nil
                 or missingAndNonMissingIconsNone
@@ -365,7 +366,7 @@ d(">go on -> auto bind!")
     local autoMarkSetsItemCollectionBookKnownItemsBase  = (autoMarkSetsItemCollectionBookNonMissingIcon > 0 and isIconEnabled[autoMarkSetsItemCollectionBookNonMissingIcon] == true) or false
     local autoMarkSetsItemCollectionBookKnownItems      = (autoMarkSetsItemCollectionBookKnownItemsBase and knownOrUnknown == true) or false
 
-d(">>autoMarkSetsItemCollectionBookMissingItems: " ..tos(autoMarkSetsItemCollectionBookMissingItems) .. ", autoMarkSetsItemCollectionBookKnownItemsBase: " ..tos(autoMarkSetsItemCollectionBookKnownItemsBase) .. ", autoMarkSetsItemCollectionBookKnownItems: " ..tos(autoMarkSetsItemCollectionBookKnownItems))
+--d(">>autoMarkSetsItemCollectionBookMissingItems: " ..tos(autoMarkSetsItemCollectionBookMissingItems) .. ", autoMarkSetsItemCollectionBookKnownItemsBase: " ..tos(autoMarkSetsItemCollectionBookKnownItemsBase) .. ", autoMarkSetsItemCollectionBookKnownItems: " ..tos(autoMarkSetsItemCollectionBookKnownItems))
 
     if not autoBindMissingSetCollectionPiecesOnLoot and (not autoMarkSetsItemCollectionBookMissingItems and not autoMarkSetsItemCollectionBookKnownItems) then return nil, nil end
 
@@ -374,7 +375,7 @@ d(">>autoMarkSetsItemCollectionBookMissingItems: " ..tos(autoMarkSetsItemCollect
 
     --Automatic binding of missing set collection book items
     local function autoBindMissingSetCollectionBookItem()
-d(">>>>>autoBindMissingSetCollectionBookItem: " .. itemLink)
+--d(">>>>>autoBindMissingSetCollectionBookItem: " .. itemLink)
         BindItem(p_bagId, p_slotIndex)
         if settings.autoBindMissingSetCollectionPiecesOnLootToChat then
             locVars = locVars or FCOIS.localizationVars.fcois_loc
@@ -383,7 +384,7 @@ d(">>>>>autoBindMissingSetCollectionBookItem: " .. itemLink)
         --Mark as known after bind now, instead of mark as unknown?
         if settings.autoBindMissingSetCollectionPiecesOnLootMarkKnown ==true and autoMarkSetsItemCollectionBookKnownItemsBase == true then
             markerIcon = autoMarkSetsItemCollectionBookNonMissingIcon
-d("!!>updated marker icon to known set collection")
+--d("!!>updated marker icon to known set collection")
         end
     end
 
@@ -391,16 +392,16 @@ d("!!>updated marker icon to known set collection")
     --Mark items for the sets collection book for the currently logegd in account's ESO standard API functions
     if autoMarkSetsItemCollectionBookAddonUsed == FCOIS_SETS_COLLECTION_ADDON_ESO_STANDARD then
         local isKnownSetCollectionItem = iilscp(itemLink) and iilscpu(giliid(itemLink))
-d(">>isKnownSetCollectionItem: " ..tos(isKnownSetCollectionItem))
+--d(">>isKnownSetCollectionItem: " ..tos(isKnownSetCollectionItem))
         if isKnownSetCollectionItem == true and autoMarkSetsItemCollectionBookKnownItems == true then
             --Non missing items?
             markerIcon = autoMarkSetsItemCollectionBookNonMissingIcon
         elseif not isKnownSetCollectionItem then
-d(">>unknown set collection item")
+--d(">>unknown set collection item")
             if autoMarkSetsItemCollectionBookMissingItems == true then
                 --Missing items?
                 markerIcon = autoMarkSetsItemCollectionBookMissingIcon
-d(">>markeIcon: " .. tos(markerIcon))
+--d(">>markeIcon: " .. tos(markerIcon))
             end
             --Auto bind missing set collection pieces?
             if autoBindMissingSetCollectionPiecesOnLoot == true then
@@ -1006,13 +1007,13 @@ end -- automaticMarkingSetsAdditionalCheckFunc
 function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, doOverride)
     doOverride = doOverride or false
     --Debugging added with FCOIS v2.0.0
-    local showDebug = false
+    local showDebug = false --(scanType == "setItemCollectionsUnknown" and true) or false
     local il
 
     markItem = markItem or FCOIS.MarkItem
 
-    --[[
     --TODO: Comment after debugging!
+    --[[
     il = gil(bag, slot)
     if scanType == "research" then
         showDebug = true
@@ -1064,12 +1065,15 @@ function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, do
         --------------------------------------------------------------------------------
         --					Execute the TODOs now									  --
         --------------------------------------------------------------------------------
-        local forceAdditionalCheckFunc = false
-        --1) Icon
+        --1) Icon check 1
         --Check if the marker icon is given and enabled
-        if not toDos.icon or not settings.isIconEnabled[toDos.icon] then return abortChecksNow("Icon not given/not enabled: " .. tos(toDos.icon)) end
-        --d(">Active icon found for '" .. tos(scanType) .. "': " .. tos(toDos.icon))
+        if toDos.icon ~= nil and settings.isIconEnabled[toDos.icon] then
+            if showDebug then d(">Active icon found for '" .. tos(scanType) .. "': " .. tos(toDos.icon)) end
+        else
+            if showDebug then d(">No icon provided, determining it later again via the check and additionalCheckFunc!") end
+        end
 
+        local forceAdditionalCheckFunc = false
         --2) Settings enabled?
         --Check if the settings to automatically mark the item is enabled
         local checkResult
@@ -1086,7 +1090,7 @@ function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, do
             if toDos.result ~= nil then
                 --Result does NOT equal check variable -> abort
                 if checkResult ~= toDos.result then return abortChecksNow("Check value " .. tos(checkResult) .. " <> result " .. tos(toDos.result)) end
-            --Result should NOT equal the check variable
+                --Result should NOT equal the check variable
             elseif toDos.resultNot ~= nil then
                 --Result equals check variable -> abort
                 if checkResult == toDos.resultNot then return abortChecksNow("Check value " .. tos(checkResult) .. " <> result NOT " .. tos(toDos.resultNot)) end
@@ -1112,7 +1116,7 @@ function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, do
             if toDos.resultOtherAddon ~= nil then
                 --Result does NOT equal other addons check variable -> abort
                 if checkOtherAddonResult ~= toDos.resultOtherAddon then return abortChecksNow("Check other addon value " .. tos(checkOtherAddonResult) .. " <> result other addon value " .. tos(toDos.resultOtherAddon)) end
-            --Result should NOT equal the other addons check variable
+                --Result should NOT equal the other addons check variable
             elseif toDos.resultNotOtherAddon ~= nil then
                 --Result equals other addons check variable -> abort
                 if checkOtherAddonResult == toDos.resultNotOtherAddon then return abortChecksNow("Check other addon value " .. tos(checkOtherAddonResult) .. " <> result NOT other addon value" .. tos(toDos.resultNotOtherAddon)) end
@@ -1143,7 +1147,7 @@ function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, do
             if toDos.resultPreCheckFunc ~= nil then
                 --Result does NOT equal check func result -> abort
                 if preCheckFuncResult ~= toDos.resultPreCheckFunc then return abortChecksNow("Pre-CheckFunc " .. tos(preCheckFuncResult) .. " <> Pre-CheckFuncResult " .. tos(toDos.resultPreCheckFunc)) end
-            --Result should NOT equal the check func result
+                --Result should NOT equal the check func result
             elseif toDos.resultNotPreCheckFunc ~= nil then
                 --Result equals check func result -> abort
                 if preCheckFuncResult == toDos.resultNotPreCheckFunc then return abortChecksNow("Pre-CheckFunc " .. tos(preCheckFuncResult) .. " <> NOT Pre-CheckFuncResult " .. tos(toDos.resultNotPreCheckFunc)) end
@@ -1236,7 +1240,7 @@ function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, do
                 if toDos.resultCheckFunc ~= nil then
                     --Result does NOT equal check func result -> abort
                     if checkFuncResult ~= toDos.resultCheckFunc then return abortChecksNow("CheckFunc " .. tos(checkFuncResult) .. " <> CheckFuncResult " .. tos(toDos.resultCheckFunc)) end
-                --Result should NOT equal the check func result
+                    --Result should NOT equal the check func result
                 elseif toDos.resultNotCheckFunc ~= nil then
                     --Result equals check func result -> abort
                     if checkFuncResult == toDos.resultNotCheckFunc then return abortChecksNow("CheckFunc " .. tos(checkFuncResult) .. " <> NOT CheckFuncResult " .. tos(toDos.resultNotCheckFunc)) end
@@ -1258,12 +1262,12 @@ function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, do
                 itemData.itemId		= itemId
                 itemData.scanType	= scanType
                 --if checkFuncResultData ~= nil then
-                    itemData.fromCheckFunc = nil
-                    if checkFuncResultData ~= nil then
-                        itemData.fromCheckFunc = checkFuncResultData
-                    elseif preCheckFuncResultData ~= nil then
-                        itemData.fromCheckFunc = preCheckFuncResultData
-                    end
+                itemData.fromCheckFunc = nil
+                if checkFuncResultData ~= nil then
+                    itemData.fromCheckFunc = checkFuncResultData
+                elseif preCheckFuncResultData ~= nil then
+                    itemData.fromCheckFunc = preCheckFuncResultData
+                end
                 --end
                 if itemData == nil then return abortChecksNow("Additional check func, itemdata is nil!") end
                 --The check is a function, so call it with the itemData table and the current check func result variable
@@ -1281,7 +1285,7 @@ function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, do
             if toDos.resultAdditionalCheckFunc ~= nil then
                 --Result does NOT equal add. check func result -> abort
                 if additionalCheckFuncResult ~= toDos.resultAdditionalCheckFunc then return abortChecksNow("Additional check func " .. tos(additionalCheckFuncResult) .. " <> Additional check func result " .. tos(toDos.resultAdditionalCheckFunc)) end
-            --Result should NOT equal the add. check func result
+                --Result should NOT equal the add. check func result
             elseif toDos.resultNotAdditionalCheckFunc ~= nil then
                 --Result equals add. check func result -> abort
                 if additionalCheckFuncResult == toDos.resultNotAdditionalCheckFunc then return abortChecksNow("Additional check func " .. tos(additionalCheckFuncResult) .. " <> NOT Additional check func result " .. tos(toDos.resultNotAdditionalCheckFunc)) end
@@ -1290,13 +1294,45 @@ function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, do
                 return abortChecksNow("Additional check func or result not given!")
             end
         end
+
+        --8) Icon check 2
+        --Check if the marker icon is given and enabled
+        if not toDos.icon then
+            --is the icon not given but the return table of the checkFunc provided an alternative icon?
+            local abortCuzOfNoIcon = false
+            if additionalCheckFuncResultData ~= nil and additionalCheckFuncResultData.newMarkerIcon ~= nil then
+                if showDebug then
+                    d(">Active icon no given/Not enabled, but using additionalCheckFuncResultData.newMarkerIcon for '" .. tos(scanType) .. "': " .. tos(additionalCheckFuncResultData.newMarkerIcon))
+                else
+                    abortCuzOfNoIcon = true
+                end
+            else
+                if checkFuncResultData ~= nil and checkFuncResultData.newMarkerIcon ~= nil then
+                    abortCuzOfNoIcon = false
+                    if showDebug then
+                        d(">Active icon no given/Not enabled, but using checkFuncResult.newMarkerIcon for '" .. tos(scanType) .. "': " .. tos(checkFuncResultData.newMarkerIcon))
+                    end
+                else
+                    abortCuzOfNoIcon = true
+                end
+            end
+            if abortCuzOfNoIcon == true then
+                return abortChecksNow("Icon not given/not enabled in checkFuncResultData: " .. tos(toDos.icon))
+            end
+        end
+
         --Compare the two 2nd parameters (new marker icon IDs) of checkFunc and additionalCheckFunc.
         --Use the later one returned that is not nil as the new marker icon for the item
         local newMarkerIcon
-        if type(toDos.icon) == "function" then
-            newMarkerIcon = toDos.icon(bag, slot)
-        else
-            newMarkerIcon = toDos.icon
+        if toDos.icon ~= nil then
+            if type(toDos.icon) == "function" then
+                newMarkerIcon = toDos.icon(bag, slot)
+            else
+                newMarkerIcon = toDos.icon
+            end
+            if showDebug then
+                d(">newMarkerIcon taken from tods.icon")
+            end
         end
         if additionalCheckFuncResultData ~= nil and additionalCheckFuncResultData.newMarkerIcon ~= nil then
             if showDebug then
@@ -1317,7 +1353,7 @@ function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, do
             d(">Checks were done")
         end
 
-        --8) Mark the item now
+        --9) Mark the item now
         --Item was checked and should be marked now
         --FCOIS.MarkItem(bag, slot, iconId, showIcon, updateInventories)
         FCOIS.preventerVars.gCalledFromInternalFCOIS = true
@@ -1688,11 +1724,13 @@ function FCOIS.ScanInventoryItemsForAutomaticMarks(bag, slot, scanType, updateIn
             checkOtherAddon		= nil,
             resultOtherAddon   	= nil,
             resultNotOtherAddon	= nil,
-            icon				= settings.autoMarkSetsItemCollectionBookMissingIcon,
+            --Do not check here! Else it will abort due to not enabled icon if ONLY auto-bind is enabled. Icon will be determined in function automaticMarkingSetsCollectionBookCheckFunc and passed on
+            --in returned 2nd parameter checkFuncData.newMarkerIcon
+            --icon				= settings.autoMarkSetsItemCollectionBookMissingIcon,
             iconIsMarkedAllreadyAllowed = nil,
             checkIfAnyIconIsMarkedAlready = nil,
-            checkFunc			= function(p_bagid, p_slotIndex)
-                return automaticMarkingSetsCollectionBookCheckFunc(p_bagid, p_slotIndex, false)
+            checkFunc			= function(p_bagId, p_slotIndex)
+                return automaticMarkingSetsCollectionBookCheckFunc(p_bagId, p_slotIndex, false)
             end,
             resultCheckFunc 	= true,
             resultNotCheckFunc 	= nil,
@@ -1751,6 +1789,13 @@ function FCOIS.ScanInventoryItemsForAutomaticMarks(bag, slot, scanType, updateIn
 
     --Check only one bag & slot, or a whole inventory?
     if bag ~= nil and slot ~= nil then
+--todo comemnt after debug
+        --[[
+        if scanType == "setItemCollectionsUnknown" then
+            d(">scanning: " ..GetItemLink(bag, slot))
+        end
+        ]]
+
         --Single item check
         checksWereDoneLoop, atLeastOneMarkerIconWasSetLoop = scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos)
         FCOIS.preventerVars.gScanningInv = false
@@ -1842,11 +1887,13 @@ function FCOIS.ScanInventorySingle(p_bagId, p_slotIndex, checksAlreadyDoneTable)
                 --Mark set collection book items
                 if settings.autoMarkSetsItemCollectionBook == true then
                     local autoBindMissingSetCollectionPiecesOnLoot = settings.autoBindMissingSetCollectionPiecesOnLoot
+--d(">autoMarkSetsItemCollectionBook: " ..tos(true) .. ", autoBindMissingSetCollectionPiecesOnLoot: " ..tos(autoBindMissingSetCollectionPiecesOnLoot) ..", alreadyChecksDoneTab: " ..tos(checksAlreadyDoneTable["setItemCollectionsUnknown"]))
                     local _, setCollectionItemChanged
                     if (checksAlreadyDoneTable ~= nil and checksAlreadyDoneTable["setItemCollectionsUnknown"] == true) or (
                             autoBindMissingSetCollectionPiecesOnLoot == true or
                             (not autoBindMissingSetCollectionPiecesOnLoot and settings.autoMarkSetsItemCollectionBookMissingIcon ~= FCOIS_CON_ICON_NONE and
                              isIconEnabledSettings[settings.autoMarkSetsItemCollectionBookMissingIcon] == true)) then
+--d(">>scan for automatic marks")
                         _, setCollectionItemChanged = scanInventoryItemsForAutomaticMarks(p_bagId, p_slotIndex, "setItemCollectionsUnknown", false)
                     end
                     if (checksAlreadyDoneTable ~= nil and checksAlreadyDoneTable["setItemCollectionsKnown"] == true) or (
