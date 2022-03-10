@@ -316,44 +316,71 @@ end
 
 --Set item collection book checks
 local locVars
+local LMAS_isItemSetCollectionItemLinkUnlockedForAccount = lmas ~= nil and lmas.IsItemSetCollectionItemLinkUnlockedForAccount
+local LMAS_getAccountList = lmas ~= nil and lmas.GetAccountList
+--Check for set collections bok items (known/unknown) and return a boolean if the item should get marked + 2nd param the table with the checkFuncResultData for the
+--.additionalCheckFunc, containing the newMarkerIcon = markerIcon to use for the MarkItem functions later on in the toDos processing
 local function automaticMarkingSetsCollectionBookCheckFunc(p_bagId, p_slotIndex, knownOrUnknown)
-    if knownOrUnknown == nil then return end
+    if knownOrUnknown == nil then return nil, nil end
+    local itemLink = gil(p_bagId, p_slotIndex)
+    --No self crafted set items!
+    if iilc(itemLink) then return false, nil end
+    local hasSet = gilsi(itemLink, false)
+    if not hasSet then return false, nil end
+
+    isMarked = isMarked or FCOIS.IsMarked
+
     local settings = FCOIS.settingsVars.settings
     local autoMarkSetsItemCollectionBookAddonUsed = settings.autoMarkSetsItemCollectionBookAddonUsed
     local autoMarkSetsItemCollectionBookMissingIcon = settings.autoMarkSetsItemCollectionBookMissingIcon
     local autoMarkSetsItemCollectionBookNonMissingIcon = settings.autoMarkSetsItemCollectionBookNonMissingIcon
+    local missingAndNonMissingIconsNone = (autoMarkSetsItemCollectionBookMissingIcon == FCOIS_CON_ICON_NONE and autoMarkSetsItemCollectionBookNonMissingIcon == FCOIS_CON_ICON_NONE and true) or false
+    local autoBindMissingSetCollectionPiecesOnLoot = settings.autoBindMissingSetCollectionPiecesOnLoot
+    local useLibMultiAccountSets = (lmas ~= nil and autoMarkSetsItemCollectionBookAddonUsed == FCOIS_SETS_COLLECTION_ADDON_LIBMULTIACCOUNTSETS and true) or false
+    if lmas then
+        LMAS_isItemSetCollectionItemLinkUnlockedForAccount = LMAS_isItemSetCollectionItemLinkUnlockedForAccount or lmas.IsItemSetCollectionItemLinkUnlockedForAccount
+        LMAS_getAccountList = LMAS_getAccountList or lmas.GetAccountList
+    end
     local isIconEnabled = settings.isIconEnabled
 
-    if not settings.autoMarkSetsItemCollectionBook or
-        p_bagId == nil or p_slotIndex == nil or
-        autoMarkSetsItemCollectionBookAddonUsed == nil or
-        ( autoMarkSetsItemCollectionBookMissingIcon == FCOIS_CON_ICON_NONE and autoMarkSetsItemCollectionBookNonMissingIcon == FCOIS_CON_ICON_NONE ) or
-        (knownOrUnknown == false and autoMarkSetsItemCollectionBookMissingIcon == nil) or
-        (knownOrUnknown == true and (autoMarkSetsItemCollectionBookNonMissingIcon == nil and not settings.autoBindMissingSetCollectionPiecesOnLoot))
+    if ( not settings.autoMarkSetsItemCollectionBook
+        or p_bagId == nil or p_slotIndex == nil
+        or autoMarkSetsItemCollectionBookAddonUsed == nil
+        or (not autoBindMissingSetCollectionPiecesOnLoot and missingAndNonMissingIconsNone)
+        or (knownOrUnknown == false and autoMarkSetsItemCollectionBookMissingIcon == nil)
+        or (knownOrUnknown == true and (autoMarkSetsItemCollectionBookNonMissingIcon == nil and not autoBindMissingSetCollectionPiecesOnLoot))
+    )
     then
-        return
+        return nil, nil
     end
-    local itemLink = gil(p_bagId, p_slotIndex)
-    --No self crafted set items!
-    if iilc(itemLink) then return false end
-    local hasSet = gilsi(itemLink, false)
-    if not hasSet then return false end
-
-    isMarked = isMarked or FCOIS.IsMarked
 
 --d(">automaticMarkingSetsCollectionBookCheckFunc: " ..ts(itemLink))
 
     local autoMarkSetsItemCollectionBookMissingItems    = (knownOrUnknown == false and autoMarkSetsItemCollectionBookMissingIcon > 0 and isIconEnabled[autoMarkSetsItemCollectionBookMissingIcon] == true) or false
     local autoMarkSetsItemCollectionBookKnownItems      = (knownOrUnknown == true and autoMarkSetsItemCollectionBookNonMissingIcon > 0 and isIconEnabled[autoMarkSetsItemCollectionBookNonMissingIcon] == true) or false
-    if not autoMarkSetsItemCollectionBookMissingItems and not autoMarkSetsItemCollectionBookKnownItems then return end
+    if not autoBindMissingSetCollectionPiecesOnLoot and (not autoMarkSetsItemCollectionBookMissingItems and not autoMarkSetsItemCollectionBookKnownItems) then return nil, nil end
 
     local wasMarkedForSetCollectionsBook = false
+    local markerIcon
+
+    --Automatic binding of missing set collection book items
+    local function autoBindMissingSetCollectionBookItem()
+        BindItem(p_bagId, p_slotIndex)
+        if settings.autoBindMissingSetCollectionPiecesOnLootToChat then
+            locVars = locVars or FCOIS.localizationVars.fcois_loc
+            d("[FCOIS]" .. strformat(locVars["chat_output_missing_set_collection_piece_was_bound"], itemLink))
+        end
+        --Mark as known after bind now, instead of mark as unknown?
+        if settings.autoBindMissingSetCollectionPiecesOnLootMarkKnown and settings.autoMarkSetsItemCollectionBookNonMissingIcon ~= FCOIS_CON_ICON_NONE then
+            markerIcon = autoMarkSetsItemCollectionBookNonMissingIcon
+        end
+    end
+
 
     --Mark items for the sets collection book for the currently logegd in account's ESO standard API functions
     if autoMarkSetsItemCollectionBookAddonUsed == FCOIS_SETS_COLLECTION_ADDON_ESO_STANDARD then
         local isKnownSetCollectionItem = iilscp(itemLink) and iilscpu(giliid(itemLink))
 --d(">>isKnownSetCollectionItem: " ..ts(isKnownSetCollectionItem))
-        local markerIcon
         if isKnownSetCollectionItem == true and autoMarkSetsItemCollectionBookKnownItems == true then
             --Non missing items?
             markerIcon = autoMarkSetsItemCollectionBookNonMissingIcon
@@ -362,21 +389,12 @@ local function automaticMarkingSetsCollectionBookCheckFunc(p_bagId, p_slotIndex,
                 --Missing items?
                 markerIcon = autoMarkSetsItemCollectionBookMissingIcon
             end
-
             --Auto bind missing set collection pieces?
-            if settings.autoBindMissingSetCollectionPiecesOnLoot == true then
-                BindItem(p_bagId, p_slotIndex)
-                if settings.autoBindMissingSetCollectionPiecesOnLootToChat then
-                    locVars = locVars or FCOIS.localizationVars.fcois_loc
-                    d("[FCOIS]" .. strformat(locVars["chat_output_missing_set_collection_piece_was_bound"], itemLink))
-                end
-                --Mark as known after bind now, instead of mark as unknown?
-                if settings.autoBindMissingSetCollectionPiecesOnLootMarkKnown and settings.autoMarkSetsItemCollectionBookNonMissingIcon ~= FCOIS_CON_ICON_NONE then
-                    markerIcon = autoMarkSetsItemCollectionBookNonMissingIcon
-                end
+            if autoBindMissingSetCollectionPiecesOnLoot == true then
+                autoBindMissingSetCollectionBookItem()
             end
         end
-        if markerIcon == nil or markerIcon <= 0 then return end
+        if markerIcon == nil or markerIcon <= 0 then return nil, nil end
 
         local isAlreadyMarked = false
         if settings.autoMarkSetsItemCollectionBookCheckAllIcons == true then
@@ -386,7 +404,7 @@ local function automaticMarkingSetsCollectionBookCheckFunc(p_bagId, p_slotIndex,
         end
 --d(">>>isAlreadyMarked: " ..ts(isAlreadyMarked))
         if isAlreadyMarked == false then
-            --FCOIS.MarkItem(p_bagId, p_slotIndex, markerIcon)
+            --FCOIS.MarkItem(p_bagId, p_slotIndex, markerIcon) --do not mark here! Will be done in the further function calls of the todDos!
             wasMarkedForSetCollectionsBook = true
         end
 
@@ -394,7 +412,7 @@ local function automaticMarkingSetsCollectionBookCheckFunc(p_bagId, p_slotIndex,
     else
         --Mark items for the sets collection book for the currently logegd in account's, or other existing accounts, via
         --LibMultiAccountSets
-        if lmas ~= nil and autoMarkSetsItemCollectionBookAddonUsed == FCOIS_SETS_COLLECTION_ADDON_LIBMULTIACCOUNTSETS then
+        if useLibMultiAccountSets == true then
 
             --[[
                 LibMultiAccountSets.GetNumItemSetCollectionSlotsUnlockedForAccount( account, itemSetId )
@@ -434,17 +452,19 @@ local function automaticMarkingSetsCollectionBookCheckFunc(p_bagId, p_slotIndex,
             ]]
             --Only mark items for the currently logged in account?
             if settings.autoMarkSetsItemCollectionBookOnlyCurrentAccount == true then
-                local isKnownSetCollectionItem = lmas.IsItemSetCollectionItemLinkUnlockedForAccount( account, itemLink )
-                local markerIcon
+                local isKnownSetCollectionItem = LMAS_isItemSetCollectionItemLinkUnlockedForAccount( account, itemLink )
                 if isKnownSetCollectionItem == true and autoMarkSetsItemCollectionBookKnownItems == true then
                     --Non missing items?
                     markerIcon = autoMarkSetsItemCollectionBookNonMissingIcon
                 elseif not isKnownSetCollectionItem and autoMarkSetsItemCollectionBookMissingItems == true then
                     --Missing items?
                     markerIcon = autoMarkSetsItemCollectionBookMissingIcon
+                    --Auto bind missing set collection pieces?
+                    if autoBindMissingSetCollectionPiecesOnLoot == true then
+                        autoBindMissingSetCollectionBookItem()
+                    end
                 end
-                if markerIcon == nil or markerIcon <= 0 then return end
-
+                if markerIcon == nil or markerIcon <= 0 then return nil, nil end
 
                 local isAlreadyMarked = false
                 if settings.autoMarkSetsItemCollectionBookCheckAllIcons == true then
@@ -453,15 +473,15 @@ local function automaticMarkingSetsCollectionBookCheckFunc(p_bagId, p_slotIndex,
                     isAlreadyMarked = isMarked(p_bagId, p_slotIndex, -1, nil)
                 end
                 if isAlreadyMarked == false then
-                    --FCOIS.MarkItem(p_bagId, p_slotIndex, markerIcon)
+                    --FCOIS.MarkItem(p_bagId, p_slotIndex, markerIcon) --do not mark here! Will be done in the further function calls of the todDos!
                     wasMarkedForSetCollectionsBook = true
                 end
             else
                 --Mark for all accounts
-                local myAccounts = lmas.GetAccountList()
-                if myAccounts == nil then return end
+                local myAccounts = LMAS_getAccountList()
+                if myAccounts == nil then return nil, nil end
 
-                local wasMarkedForSetCollectionsBookLoop = false
+                --local wasMarkedForSetCollectionsBookLoop = false
                 local isAlreadyMarked = false
                 if settings.autoMarkSetsItemCollectionBookCheckAllIcons == true then
                     --Check if any other icon is applied already
@@ -471,8 +491,8 @@ local function automaticMarkingSetsCollectionBookCheckFunc(p_bagId, p_slotIndex,
 
                 --Loop all accounts:
                 for _, accountName in ipairs(myAccounts) do
-                    local isKnownSetCollectionItem = lmas.IsItemSetCollectionItemLinkUnlockedForAccount( accountName, itemLink )
-                    local markerIcon
+                    markerIcon = nil
+                    local isKnownSetCollectionItem = LMAS_isItemSetCollectionItemLinkUnlockedForAccount( accountName, itemLink )
                     if isKnownSetCollectionItem == true and autoMarkSetsItemCollectionBookKnownItems == true then
                         --Non missing items?
                         markerIcon = autoMarkSetsItemCollectionBookNonMissingIcon
@@ -481,7 +501,7 @@ local function automaticMarkingSetsCollectionBookCheckFunc(p_bagId, p_slotIndex,
                         markerIcon = autoMarkSetsItemCollectionBookMissingIcon
                     end
                     if markerIcon ~= nil and markerIcon > 0 and isAlreadyMarked == false then
-                        --FCOIS.MarkItem(p_bagId, p_slotIndex, markerIcon)
+                        --FCOIS.MarkItem(p_bagId, p_slotIndex, markerIcon) --do not mark here! Will be done in the further function calls of the todDos!
                         --Any account needs/already owns this item and a marker icon was applied to this item?
                         wasMarkedForSetCollectionsBook = true
                         break --leave the for ... loop
@@ -490,7 +510,15 @@ local function automaticMarkingSetsCollectionBookCheckFunc(p_bagId, p_slotIndex,
             end
         end
     end
-    return wasMarkedForSetCollectionsBook
+
+    local checkFuncReturnData
+    if markerIcon ~= nil then
+        --pass in the markerIcon to the additionalCheckFunc and toDos.icon
+        checkFuncReturnData = {
+            newMarkerIcon = markerIcon
+        }
+    end
+    return wasMarkedForSetCollectionsBook, checkFuncReturnData
 end
 
 --Do all the checks for the "automatic mark item as set"
@@ -1110,7 +1138,7 @@ function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, do
         --	  if the item can be automatically marked
         --The variable for the check function result
         local checkFuncResult = false
-        --The variable tha can be returned from the checkFunc as 2nd parameter: The new icon that should be used to mark the icon, instead of the todos.IconId
+        --The table that can be returned from the checkFunc as 2nd parameter: The table could contain a newMarkerIcon entry for the new icon that should be used to mark the icon, instead of the todos.IconId
         local checkFuncResultData
         --The variable for the additional check function result
         local additionalCheckFuncResult = false
@@ -1163,6 +1191,7 @@ function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, do
         if toDos.checkFunc ~= nil then
             if type(toDos.checkFunc) == "function" then
                 --The check is a function, so call it with the bagId and slotIndex
+                --The result will be a boolean value, and the 2nd return parameter is a table containing addiitonal info for the following "additional" checkFuncs
                 checkFuncResult, checkFuncResultData = toDos.checkFunc(bag, slot)
             else
                 --The check is no function but a variable
@@ -1171,7 +1200,7 @@ function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, do
             --Is the additionalCheckFunc foced to be executed?
             if toDos.additionalCheckFuncForce ~= nil then
                 if type(toDos.additionalCheckFuncForce) == "function" then
-                    forceAdditionalCheckFunc = toDos.additionalCheckFuncForce(bag, slot)
+                    forceAdditionalCheckFunc = toDos.additionalCheckFuncForce(bag, slot, checkFuncResultData)
                 elseif  type(toDos.additionalCheckFuncForce) == "boolean" then
                     forceAdditionalCheckFunc = toDos.additionalCheckFuncForce
                 else
@@ -1209,15 +1238,14 @@ function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, do
                 itemData.slotIndex	= slot
                 itemData.itemId		= itemId
                 itemData.scanType	= scanType
-                if checkFuncResultData ~= nil then
-                    itemData.fromCheckFunc = {}
+                --if checkFuncResultData ~= nil then
+                    itemData.fromCheckFunc = nil
                     if checkFuncResultData ~= nil then
                         itemData.fromCheckFunc = checkFuncResultData
                     elseif preCheckFuncResultData ~= nil then
                         itemData.fromCheckFunc = preCheckFuncResultData
                     end
-
-                end
+                --end
                 if itemData == nil then return abortChecksNow("Additional check func, itemdata is nil!") end
                 --The check is a function, so call it with the itemData table and the current check func result variable
                 additionalCheckFuncResult, additionalCheckFuncResultData = toDos.additionalCheckFunc(itemData, checkFuncResult)
@@ -1247,7 +1275,7 @@ function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, do
         --Use the later one returned that is not nil as the new marker icon for the item
         local newMarkerIcon
         if type(toDos.icon) == "function" then
-            newMarkerIcon = todos.icon(bag, slot)
+            newMarkerIcon = toDos.icon(bag, slot)
         else
             newMarkerIcon = toDos.icon
         end
@@ -1257,6 +1285,9 @@ function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, do
             end
             newMarkerIcon = additionalCheckFuncResultData.newMarkerIcon
         else
+            if showDebug then
+                d(">newMarkerIcon taken from check func newMarkerIcon")
+            end
             if checkFuncResultData ~= nil and checkFuncResultData.newMarkerIcon ~= nil then
                 newMarkerIcon = checkFuncResultData.newMarkerIcon
             end
@@ -1274,8 +1305,8 @@ function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, do
         markItem(bag, slot, newMarkerIcon, true, false)
         --Set the return variable with the info, that at least one marker icon was set
         atLeastOneMarkerIconWasSet = true
-        --8) Show chat output?
 
+        --9) Show chat output?
         --d(">Chat output: " .. ts(toDos.chatOutput))
         --Show the marked item in the chat now?
         local chatOutput

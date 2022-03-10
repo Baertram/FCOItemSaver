@@ -854,11 +854,15 @@ end
 FCOIS.GetDataFromUniversalDeconstructionMenuBar = getDataFromUniversalDeconstructionMenuBar
 if ZO_UNIVERSAL_DECONSTRUCTION_FILTER_TYPES ~= nil then
     --The LibFilters filterTypes which are supported at the universal deconstruction NPC e.g. 'Giladil'
+    --[[
     mappingVars.panelIdSupportedAtUniversalDeconstructionNPC = {
         [LF_SMITHING_DECONSTRUCT]   = true,
         [LF_JEWELRY_DECONSTRUCT]    = true,
         [LF_ENCHANTING_EXTRACTION]  = true,
     }
+    ]]
+    mappingVars.panelIdSupportedAtUniversalDeconstructionNPC = libFilters.mapping.universalDeconFilterTypeToFilterBase
+
     mappingVars.universalDeconFilterPanelIdToWhereAreWe = {
         [LF_SMITHING_DECONSTRUCT]   = FCOIS_CON_DECONSTRUCT,
         [LF_JEWELRY_DECONSTRUCT]    = FCOIS_CON_DECONSTRUCT,

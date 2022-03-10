@@ -133,9 +133,14 @@ end
 
 -- -v- #202
 --Check if universal Deconstruction NPC "Giladil"
-local detectActiveUniversalDeconstructionTab = libFilters.DetectActiveUniversalDeconstructionTab
+--local detectActiveUniversalDeconstructionTab = libFilters.DetectActiveUniversalDeconstructionTab
+local isUniversalDeconstructionPanelShown
 function FCOIS.CheckIfUniversalDeconstructionNPC(filterPanelIdComingFrom)
---d("[FCOIS]CheckIfUniversalDeconstructionNPC")
+    --d("[FCOIS]CheckIfUniversalDeconstructionNPC")
+    isUniversalDeconstructionPanelShown = isUniversalDeconstructionPanelShown or libFilters.IsUniversalDeconstructionPanelShown
+    if isUniversalDeconstructionPanelShown == nil or ZO_UNIVERSAL_DECONSTRUCTION_FILTER_TYPES == nil then return false end
+    return isUniversalDeconstructionPanelShown(filterPanelIdComingFrom)
+    --[[
     if ZO_UNIVERSAL_DECONSTRUCTION_FILTER_TYPES ~= nil and universaldDeconScene:IsShowing() then
         if filterPanelIdComingFrom == nil then
             detectActiveUniversalDeconstructionTab = detectActiveUniversalDeconstructionTab or libFilters.DetectActiveUniversalDeconstructionTab
@@ -147,6 +152,7 @@ function FCOIS.CheckIfUniversalDeconstructionNPC(filterPanelIdComingFrom)
         return panelIdSupportedAtDeconNPC[filterPanelIdComingFrom] or false
     end
     return false
+    ]]
 end
 local checkIfUniversaldDeconstructionNPC = FCOIS.CheckIfUniversalDeconstructionNPC
 

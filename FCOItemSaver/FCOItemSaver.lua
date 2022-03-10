@@ -159,21 +159,37 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 
 --#207, 2022-02-27, A_Darklore, bug, FCOIS comments at esoui: Companion equipment character markers will be automatically removed if you unequip the companion's items?
 
+--#209, 2022-03-08, sirinsidiator, bug, gitter.im: Automatic binding of set item collection items does only work if an unknown marker icon was set, but not without it
+
+--#210, 2022-03-09, Baertram, bug: LibDialog error message "Missing body text for dialog with the unique identifier 'TeleportToOwnHouseDialog'" as one uses FCOIS LAM settings
+--> Backup marker icons submenu -> Backup marker icons
+--[[
+assert: [LibDialog]Error: Missing body text for dialog with the unique identifier 'TeleportToOwnHouseDialog', addon 'FCOItemSaver'!
+|rstack traceback:
+[C]: in function 'assert'
+user:/AddOns/LibDialog/LibDialog.lua:115: in function 'lib:RegisterDialog'
+|caaaaaa<Locals> self = [table:1]{name = "LibDialog", _directory = "user:/AddOns/LibDialog/", version = 1.26}, uniqueAddonName = "FCOItemSaver", uniqueDialogName = "TeleportToOwnHouseDialog", title = "|cDD2222FCOIS|r ?> Backup", callbackYes = user:/AddOns/FCOItemSaver/src/FCOIS_BackupRestoreDelete.lua:347, callbackNo = user:/AddOns/FCOItemSaver/src/FCOIS_BackupRestoreDelete.lua:348, forceUpdate = F, titleStr = "|cDD2222FCOIS|r ?> Backup" </Locals>|r
+user:/AddOns/FCOItemSaver/src/FCOIS_Functions.lua:2594: in function 'FCOIS.ShowConfirmationDialog'
+|caaaaaa<Locals> dialogName = "TeleportToOwnHouseDialog", title = "|cDD2222FCOIS|r ?> Backup", callbackYes = user:/AddOns/FCOItemSaver/src/FCOIS_BackupRestoreDelete.lua:347, callbackNo = user:/AddOns/FCOItemSaver/src/FCOIS_BackupRestoreDelete.lua:348, forceUpdate = F, libDialog = [table:1], addonVars = [table:2]{addonAuthorDisplayNameNA = "@Baertram", addonVersionOptions = "2.2.4", addonNameContextMenuEntry = "     - |c22DD22FCO|r ItemSaver...", gAddonName = "FCOItemSaver", FAQwebsite = "https://www.esoui.com/portal.p...", website = "https://www.esoui.com/download...", FAQentry = "https://www.esoui.com/portal.p...", gSettingsLoaded = T, gAddonLoaded = T, addonAuthorDisplayNamePTS = "@Baertram", addonNameMenu = "FCO ItemSaver", authorPortal = "https://www.esoui.com/portal.p...", savedVarsNumSaveModeTypes = 4, savedVarVersion = 0.1, savedVarName = "FCOItemSaver_Settings", gAddonNameShort = "FCOIS", addonAuthor = "|cFFFF00Baertram|r", addonNameMenuDisplay = "|t32:32:FCOItemSaver/FCOIS.dds...", donation = "https://www.esoui.com/portal.p...", gPlayerActivated = T, feedback = "https://www.esoui.com/portal.p...", addonAuthorDisplayNameEU = "@Baertram"}, existingDialogs = [table:3]{} </Locals>|r
+user:/AddOns/FCOItemSaver/src/FCOIS_BackupRestoreDelete.lua:344: in function 'FCOIS.PreBackup'
+|caaaaaa<Locals> withDetails = F, apiVersion = 101032, doClearBackup = F, preVars = [table:4]{preChatTextRed = "|cDD2222FCOIS|r ", preChatTextGreen = "|c22DD22FCOIS|r ", preChatTextBlue = "|c2222DDFCOIS|r ", currentEnd = " <", preChatText = "FCOIS", currentStart = "> "}, doBackupNow = F, doAskForTeleportToOwnHouse = T, isOwningAHouse = T, title = "|cDD2222FCOIS|r ?> Backup" </Locals>|r
+user:/AddOns/FCOItemSaver/src/FCOIS_SettingsMenu.lua:7450: in function 'm_callback'
+]]
 
 --____________________________
--- Current max bugs/features/ToDos: 210
+-- Current max bugs/features/ToDos: 212
 --____________________________
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-03-03
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-03-09
 ------------------------------------------------------------------------------------
 --#176 -> Test: Errors occured with OR filters, and mixed AND + OR filters
 --Added checks if functions/API functions are called internally or from external (other addons) -> Still ongoing TODO
 --#209
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.2.3 - New version: 2.2.4) -    Updated last: 2022-03-03
+--Changelog (last version: 2.2.3 - New version: 2.2.4) -    Updated last: 2022-03-09
 -------------------------------------------------------------------------------------
 --[Fixed]
 --Added debug file /src/FCOIS_Debug.lua to the txt file again
