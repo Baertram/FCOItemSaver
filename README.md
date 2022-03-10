@@ -39,6 +39,8 @@ AddOn for the game Elder Scrolls Online: Saving your items so you do not acciden
 --#198: Enchanting did not recognize the filters correctly and was not always protecting the items at extraction as it thought it is LF_INVENTORY
 --#200: The chosen language is not updated in localization of the settings menu properly
 --#204: Fixed error message in FCOIS.GetSavedVarsMarkedItemsTableName if loaded from other addons before FCOIS SavedVariables were loaded properly (e.g. IIfA)
+-##213,214 Automatic set collection markers and auto bind unknown items even if no unknown set collections marker icon was selected, and fixed settings menu to allow the seection of LibMultiAccountSets and auto bind missing set collections
+
 
 --[Changed]
 --Changed load order of debug file to earlier loading
