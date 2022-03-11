@@ -33,28 +33,34 @@ standardBackupAllowedBagTypes[BAG_BUYBACK] 	= true
 standardBackupAllowedBagTypes[BAG_VIRTUAL] 	= true --Craftbag
 standardBackupAllowedBagTypes[BAG_COMPANION_WORN] 	= true
 --The text for each bagtype
+local bagIdToString
 local locVars = FCOIS.localizationVars.fcois_loc
-local bagIdToString = {
-    [BAG_WORN] 		        = locVars["options_migrate_bag_type_" .. tos(BAG_WORN)],
-    [BAG_COMPANION_WORN]    = locVars["options_migrate_bag_type_" .. tos(BAG_COMPANION_WORN)],
-    [BAG_BACKPACK]          = locVars["options_migrate_bag_type_" .. tos(BAG_BACKPACK)],
-    [BAG_BANK] 		        = locVars["options_migrate_bag_type_" .. tos(BAG_BANK)],
-    [BAG_GUILDBANK]         = locVars["options_migrate_bag_type_" .. tos(BAG_GUILDBANK)],
-    [BAG_BUYBACK] 	        = locVars["options_migrate_bag_type_" .. tos(BAG_BUYBACK)],
-    [BAG_VIRTUAL] 	        = locVars["options_migrate_bag_type_" .. tos(BAG_VIRTUAL)], --Craftbag
-    [BAG_SUBSCRIBER_BANK]   = locVars["options_migrate_bag_type_" .. tos(BAG_SUBSCRIBER_BANK)],
-    [BAG_HOUSE_BANK_ONE]    = locVars["options_migrate_bag_type_" .. tos(BAG_HOUSE_BANK_ONE)],
-    [BAG_HOUSE_BANK_TWO]    = locVars["options_migrate_bag_type_" .. tos(BAG_HOUSE_BANK_TWO)],
-    [BAG_HOUSE_BANK_THREE]  = locVars["options_migrate_bag_type_" .. tos(BAG_HOUSE_BANK_THREE)],
-    [BAG_HOUSE_BANK_FOUR]   = locVars["options_migrate_bag_type_" .. tos(BAG_HOUSE_BANK_FOUR)],
-    [BAG_HOUSE_BANK_FIVE]   = locVars["options_migrate_bag_type_" .. tos(BAG_HOUSE_BANK_FIVE)],
-    [BAG_HOUSE_BANK_SIX]    = locVars["options_migrate_bag_type_" .. tos(BAG_HOUSE_BANK_SIX)],
-    [BAG_HOUSE_BANK_SEVEN]  = locVars["options_migrate_bag_type_" .. tos(BAG_HOUSE_BANK_SEVEN)],
-    [BAG_HOUSE_BANK_EIGHT]  = locVars["options_migrate_bag_type_" .. tos(BAG_HOUSE_BANK_EIGHT)],
-    [BAG_HOUSE_BANK_NINE]   = locVars["options_migrate_bag_type_" .. tos(BAG_HOUSE_BANK_NINE)],
-    [BAG_HOUSE_BANK_TEN]    = locVars["options_migrate_bag_type_" .. tos(BAG_HOUSE_BANK_TEN)],
-}
-
+local function updateBagId2String()
+    locVars = FCOIS.localizationVars.fcois_loc
+    bagIdToString = {
+        [BAG_WORN] 		        = locVars["options_migrate_bag_type_" .. tos(BAG_WORN)],
+        [BAG_COMPANION_WORN]    = locVars["options_migrate_bag_type_" .. tos(BAG_COMPANION_WORN)],
+        [BAG_BACKPACK]          = locVars["options_migrate_bag_type_" .. tos(BAG_BACKPACK)],
+        [BAG_BANK] 		        = locVars["options_migrate_bag_type_" .. tos(BAG_BANK)],
+        [BAG_GUILDBANK]         = locVars["options_migrate_bag_type_" .. tos(BAG_GUILDBANK)],
+        [BAG_BUYBACK] 	        = locVars["options_migrate_bag_type_" .. tos(BAG_BUYBACK)],
+        [BAG_VIRTUAL] 	        = locVars["options_migrate_bag_type_" .. tos(BAG_VIRTUAL)], --Craftbag
+        [BAG_SUBSCRIBER_BANK]   = locVars["options_migrate_bag_type_" .. tos(BAG_SUBSCRIBER_BANK)],
+        [BAG_HOUSE_BANK_ONE]    = locVars["options_migrate_bag_type_" .. tos(BAG_HOUSE_BANK_ONE)],
+        [BAG_HOUSE_BANK_TWO]    = locVars["options_migrate_bag_type_" .. tos(BAG_HOUSE_BANK_TWO)],
+        [BAG_HOUSE_BANK_THREE]  = locVars["options_migrate_bag_type_" .. tos(BAG_HOUSE_BANK_THREE)],
+        [BAG_HOUSE_BANK_FOUR]   = locVars["options_migrate_bag_type_" .. tos(BAG_HOUSE_BANK_FOUR)],
+        [BAG_HOUSE_BANK_FIVE]   = locVars["options_migrate_bag_type_" .. tos(BAG_HOUSE_BANK_FIVE)],
+        [BAG_HOUSE_BANK_SIX]    = locVars["options_migrate_bag_type_" .. tos(BAG_HOUSE_BANK_SIX)],
+        [BAG_HOUSE_BANK_SEVEN]  = locVars["options_migrate_bag_type_" .. tos(BAG_HOUSE_BANK_SEVEN)],
+        [BAG_HOUSE_BANK_EIGHT]  = locVars["options_migrate_bag_type_" .. tos(BAG_HOUSE_BANK_EIGHT)],
+        [BAG_HOUSE_BANK_NINE]   = locVars["options_migrate_bag_type_" .. tos(BAG_HOUSE_BANK_NINE)],
+        [BAG_HOUSE_BANK_TEN]    = locVars["options_migrate_bag_type_" .. tos(BAG_HOUSE_BANK_TEN)],
+    }
+    FCOIS.localizationVars = FCOIS.localizationVars or {}
+    FCOIS.localizationVars.bagIdToString = bagIdToString
+end
+bagIdToString = updateBagId2String()
 
 local idTypeToName = {
     [false]                                         = "Non unique",
@@ -304,6 +310,7 @@ local backupMarkerIcons = FCOIS.BackupMarkerIcons
 --Pre-Backup funciton to jump to your house or start the backup now if you do not own any house yet
 function FCOIS.PreBackup(withDetails, apiVersion, doClearBackup)
 --d("[FCOIS]FCOIS.preBackup")
+    locVars = FCOIS.localizationVars.fcois_loc
     --Reset the preventer variable always here to prevent endless port loop attempt from this function FCOIS.preBackup -> EVENT_PLAYER_ACTIVATED -> FCOIS.preBackup ...
     FCOIS.settingsVars.settings.doBackupAfterJumpToHouse = false
     FCOIS.settingsVars.settings.backupParams = nil

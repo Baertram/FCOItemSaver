@@ -269,6 +269,16 @@ FCOIS_CON_FILTER_BUTTON_STATE_RED       = false
 --Filter button special states
 FCOIS_CON_FILTER_BUTTON_STATE_DO_NOT_UPDATE_COLOR = -999 --Do not update the colors if called from FCOIS settings menu
 
+--Prevention variables
+FCOIS.preventerVars = {}
+local preventerVars = FCOIS.preventerVars
+
+--Filter buttons
+--TODO: As of 2022-03-11 the logical conjunctions of the filterButtons do not work properly if some are set to AND and some are set to OR
+--So for now they will all change at the same time to AND or OR
+--Change orr emove this preventerVariable to update them single again
+preventerVars.filterButtonSettingsChangeAllToTheSame = true
+
 --Filter button color
 mappingVars.filterButtonColors = {
     [FCOIS_CON_FILTER_BUTTON_STATE_GREEN]     = { 0, 1, 0, 1 },
@@ -1907,9 +1917,8 @@ FCOIS.craftingCreatePanelControlsOrFunction = {}
 FCOIS.dragAndDropVars = {}
 FCOIS.dragAndDropVars.bag	= nil
 FCOIS.dragAndDropVars.slot	= nil
---Prevention variables
-FCOIS.preventerVars = {}
-local preventerVars = FCOIS.preventerVars
+
+---Prevention variables
 preventerVars._prevVarReset = "FCOIS_PreventerVariableReset_"
 preventerVars.gCalledFromInternalFCOIS = false --is an API function (or other functions which could load the SavedVariables) called from FCOIS internally
 preventerVars.gLocalizationDone		= false

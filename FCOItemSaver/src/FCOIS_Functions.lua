@@ -2585,16 +2585,17 @@ end
 --Function to show a confirmation dialog
 function FCOIS.ShowConfirmationDialog(dialogName, title, body, callbackYes, callbackNo, callbackSetup, data, forceUpdate)
     local libDialog = FCOIS.LDIALOG
-    local addonVars = FCOIS.addonVars
+    addonVars = FCOIS.addonVars
+    local addonName = addonVars.gAddonName
     --Force the dialog to be updated with the title, text, etc.?
     forceUpdate = forceUpdate or false
     --Check if the dialog exists already, and if not register it
     local existingDialogs = libDialog.dialogs
-    if forceUpdate or existingDialogs[addonVars.gAddonName] == nil or existingDialogs[addonVars.gAddonName][dialogName] == nil then
-        libDialog:RegisterDialog(addonVars.gAddonName, dialogName, title, body, callbackYes, callbackNo, callbackSetup, forceUpdate)
+    if forceUpdate or existingDialogs[addonName] == nil or existingDialogs[addonName][dialogName] == nil then
+        libDialog:RegisterDialog(addonName, dialogName, title, body, callbackYes, callbackNo, callbackSetup, forceUpdate)
     end
     --Show the dialog now
-    libDialog:ShowDialog(addonVars.gAddonName, dialogName, data)
+    libDialog:ShowDialog(addonName, dialogName, data)
 end
 
 -- =====================================================================================================================

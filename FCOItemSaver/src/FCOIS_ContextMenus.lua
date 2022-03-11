@@ -12,7 +12,7 @@ local strsub = string.sub
 local strlen = string.len
 local zo_strf = zo_strformat
 
-local wm = WINDOW_MANAGER
+--local wm = WINDOW_MANAGER
 local isiuse = IsItemUsable
 
 local numFilterIcons = FCOIS.numVars.gFCONumFilterIcons
@@ -30,6 +30,10 @@ local otherAddons = FCOIS.otherAddons
 local availableCtms = FCOIS.contextMenuVars.availableCtms
 local contextMenuButtonClickedMenuToButton = FCOIS.mappingVars.contextMenuButtonClickedMenuToButton
 local panelIdToUniversalDeconstructionParentData = FCOIS.mappingVars.panelIdToUniversalDeconstructionNPCParentData
+
+local filterButtonsToCheck
+local filterButtonFilterWithLogicalANDSettingsName = "filterWithLogicalAND"
+
 
 local getSavedVarsMarkedItemsTableName = FCOIS.GetSavedVarsMarkedItemsTableName
 --local getFilterWhereBySettings = FCOIS.getFilterWhereBySettings
@@ -1723,7 +1727,7 @@ local function ContextMenuFCOISFilterButtonSettingsOnClicked(button, contextMenu
     if buttonNr == nil then return end
 
     --Get the contextmenu variables
-    local ctmVars = FCOIS.ctmVars[contextMenuType]
+    --local ctmVars = FCOIS.ctmVars[contextMenuType]
     local settings = FCOIS.settingsVars.settings
     if settings.debug then debugMessage( "[ContextMenuFCOISFilterButtonSettingsOnClicked]","ContextMenuType: " .. contextMenuType .. ", clicked button: " .. button:GetName() .. ", settingsName: " .. tos(settingsName) .. ", filterPanelId: " .. tos(filterPanelId).. ", cbState: " .. tos(buttonCheckboxState) .. ", newValue: " ..tos(newValue), true, FCOIS_DEBUG_DEPTH_NORMAL) end
 --d("[FCOIS]ContextMenuFCOISFilterButtonSettingsOnClicked-ContextMenuType: " .. contextMenuType .. ", clicked button: " .. button:GetName() .. ", settingsName: " .. tos(settingsName) .. ", filterPanelId: " .. tos(filterPanelId).. ", cbState: " .. tos(buttonCheckboxState) .. ", newValue: " ..tos(newValue))
@@ -1731,13 +1735,29 @@ local function ContextMenuFCOISFilterButtonSettingsOnClicked(button, contextMenu
     --Change the filter button filter setting now
     if settings.filterButtonSettings[filterPanelId] and settings.filterButtonSettings[filterPanelId][buttonNr] ~= nil then
         if settings.filterButtonSettings[filterPanelId][buttonNr][settingsName] ~= nil then
-            --filterWithLogicalAND e.g.
-            settings.filterButtonSettings[filterPanelId][buttonNr][settingsName] = buttonCheckboxState ~= nil and buttonCheckboxState or newValue
+            local newSettingsValue = buttonCheckboxState ~= nil and buttonCheckboxState or newValue
+            --filterWithLogical AND conjunction
+            settings.filterButtonSettings[filterPanelId][buttonNr][settingsName] = newSettingsValue
+
+            --#176 Logical AND or OR conjunction context menua t filterButtons
+            --Change all filter buttons logical conjunction settings at the same time?
+            if settingsName == filterButtonFilterWithLogicalANDSettingsName and FCOIS.preventerVars.filterButtonSettingsChangeAllToTheSame then
+                --Get the other filter buttons and update them accordingly to the current button's settings
+                filterButtonsToCheck = filterButtonsToCheck or FCOIS.checkVars.filterButtonsToCheck
+                for _, filterButtonNr in ipairs(filterButtonsToCheck) do
+                    if filterButtonNr ~= buttonNr then
+--d(">checking otherFilterButton: " ..tos(filterButtonNr))
+                        if settings.filterButtonSettings[filterPanelId][filterButtonNr][settingsName] ~= nil then
+                            --filterWithLogical AND conjunction
+                            settings.filterButtonSettings[filterPanelId][filterButtonNr][settingsName] = newSettingsValue
+                        end
+                    end
+                end
+            end
 
             if settings.filterButtonSettings[filterPanelId][buttonNr][settingsName] == nil then return end
         end
     end
-
     updateInventoryNow(buttonNr, button, filterPanelId)
 end
 
@@ -2058,7 +2078,7 @@ function FCOIS.ShowContextMenuAtFCOISFilterButton(parentButton, p_FilterPanelId,
     --FCOIS v2.2.4 - Add a divider/headline and a submenu for the settings for the filter at the filter button - 2021-11-15
     local subMenuEntriesFilterButtonSettings = {}
     --Logical AND or OR of the filter button's filter, compared to the other 3 filter buttons
-    local settingsName = "filterWithLogicalAND"
+    local settingsName = filterButtonFilterWithLogicalANDSettingsName
     table.insert(subMenuEntriesFilterButtonSettings,
         {
             label          = localizationVars["options_filter_button_settings_"..settingsName] ,

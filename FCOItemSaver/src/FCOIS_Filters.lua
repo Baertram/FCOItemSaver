@@ -25,11 +25,13 @@ local unregisterFilter = libFilters.UnregisterFilter
 --The filter string names for each ID
 local filterIds2Name = mappingVars.libFiltersIds2StringPrefix
 
+local getAccountWideCharacterOrNormalCharacterSettings
 local getFilterWhereBySettings = FCOIS.GetFilterWhereBySettings
 local getSettingsIsFilterOn = FCOIS.GetSettingsIsFilterOn
 local checkIfItemIsProtected = FCOIS.CheckIfItemIsProtected
 local myGetItemInstanceIdNoControl = FCOIS.MyGetItemInstanceIdNoControl
 local myGetItemInstanceId = FCOIS.MyGetItemInstanceId
+
 
 --==========================================================================================================================================
 --                                          FCOIS - Filter function for LibFilters
@@ -50,7 +52,8 @@ local function shouldItemBeShownAfterBeenFiltered(slotItemInstanceId, slot)
     local result = true
     local isFilterActivated
 
-    local settingsOfFilterButtonStateAndIcon = FCOIS.GetAccountWideCharacterOrNormalCharacterSettings()
+    getAccountWideCharacterOrNormalCharacterSettings = getAccountWideCharacterOrNormalCharacterSettings or FCOIS.GetAccountWideCharacterOrNormalCharacterSettings
+    local settingsOfFilterButtonStateAndIcon = getAccountWideCharacterOrNormalCharacterSettings()
     if settingsOfFilterButtonStateAndIcon == nil then
         d("<<<[FCOIS]ERROR - shouldItemBeShownAfterFilter -> settingsOfFilterButtonStateAndIcon is NIL!")
         return
@@ -62,10 +65,9 @@ local function shouldItemBeShownAfterBeenFiltered(slotItemInstanceId, slot)
     --\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
     --TODO: For Debugging only! Remove again if not needed
     local doDebugOutput = false
-    local bagId, slotIndex
+    local bagId, slotIndex, itemLink
     --[[
     bagId, slotIndex = FCOIS.MyGetItemDetails(slot)
-    local itemLink
     --2021-12-04, bag item at char Glacies:
     local isdebugSlotIndex = {
         [37] =  true,   --Rubeditstreitkolben

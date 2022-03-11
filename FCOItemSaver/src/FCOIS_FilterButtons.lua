@@ -6,7 +6,7 @@ if not FCOIS.libsLoadedProperly then return end
 
 local debugMessage = FCOIS.debugMessage
 
-local wm = WINDOW_MANAGER
+--local wm = WINDOW_MANAGER
 
 local strfor = string.format
 local tos    = tostring
