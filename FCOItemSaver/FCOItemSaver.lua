@@ -159,34 +159,47 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 
 --#207, 2022-02-27, A_Darklore, bug, FCOIS comments at esoui: Companion equipment character markers will be automatically removed if you unequip the companion's items?
 
---#215, 2022-03-09, Baertram, bug: LibDialog error message "Missing body text for dialog with the unique identifier 'TeleportToOwnHouseDialog'" as one uses FCOIS LAM settings
---> Backup marker icons submenu -> Backup marker icons
+
 --[[
-assert: [LibDialog]Error: Missing body text for dialog with the unique identifier 'TeleportToOwnHouseDialog', addon 'FCOItemSaver'!
+user:/AddOns/FCOItemSaver/src/FCOIS_FilterButtons.lua:942: operator .. is not supported for nil .. string
 |rstack traceback:
-[C]: in function 'assert'
-user:/AddOns/LibDialog/LibDialog.lua:115: in function 'lib:RegisterDialog'
-|caaaaaa<Locals> self = [table:1]{name = "LibDialog", _directory = "user:/AddOns/LibDialog/", version = 1.26}, uniqueAddonName = "FCOItemSaver", uniqueDialogName = "TeleportToOwnHouseDialog", title = "|cDD2222FCOIS|r ?> Backup", callbackYes = user:/AddOns/FCOItemSaver/src/FCOIS_BackupRestoreDelete.lua:347, callbackNo = user:/AddOns/FCOItemSaver/src/FCOIS_BackupRestoreDelete.lua:348, forceUpdate = F, titleStr = "|cDD2222FCOIS|r ?> Backup" </Locals>|r
-user:/AddOns/FCOItemSaver/src/FCOIS_Functions.lua:2594: in function 'FCOIS.ShowConfirmationDialog'
-|caaaaaa<Locals> dialogName = "TeleportToOwnHouseDialog", title = "|cDD2222FCOIS|r ?> Backup", callbackYes = user:/AddOns/FCOItemSaver/src/FCOIS_BackupRestoreDelete.lua:347, callbackNo = user:/AddOns/FCOItemSaver/src/FCOIS_BackupRestoreDelete.lua:348, forceUpdate = F, libDialog = [table:1], addonVars = [table:2]{addonAuthorDisplayNameNA = "@Baertram", addonVersionOptions = "2.2.4", addonNameContextMenuEntry = "     - |c22DD22FCO|r ItemSaver...", gAddonName = "FCOItemSaver", FAQwebsite = "https://www.esoui.com/portal.p...", website = "https://www.esoui.com/download...", FAQentry = "https://www.esoui.com/portal.p...", gSettingsLoaded = T, gAddonLoaded = T, addonAuthorDisplayNamePTS = "@Baertram", addonNameMenu = "FCO ItemSaver", authorPortal = "https://www.esoui.com/portal.p...", savedVarsNumSaveModeTypes = 4, savedVarVersion = 0.1, savedVarName = "FCOItemSaver_Settings", gAddonNameShort = "FCOIS", addonAuthor = "|cFFFF00Baertram|r", addonNameMenuDisplay = "|t32:32:FCOItemSaver/FCOIS.dds...", donation = "https://www.esoui.com/portal.p...", gPlayerActivated = T, feedback = "https://www.esoui.com/portal.p...", addonAuthorDisplayNameEU = "@Baertram"}, existingDialogs = [table:3]{} </Locals>|r
-user:/AddOns/FCOItemSaver/src/FCOIS_BackupRestoreDelete.lua:344: in function 'FCOIS.PreBackup'
-|caaaaaa<Locals> withDetails = F, apiVersion = 101032, doClearBackup = F, preVars = [table:4]{preChatTextRed = "|cDD2222FCOIS|r ", preChatTextGreen = "|c22DD22FCOIS|r ", preChatTextBlue = "|c2222DDFCOIS|r ", currentEnd = " <", preChatText = "FCOIS", currentStart = "> "}, doBackupNow = F, doAskForTeleportToOwnHouse = T, isOwningAHouse = T, title = "|cDD2222FCOIS|r ?> Backup" </Locals>|r
-user:/AddOns/FCOItemSaver/src/FCOIS_SettingsMenu.lua:7450: in function 'm_callback'
+user:/AddOns/FCOItemSaver/src/FCOIS_FilterButtons.lua:942: in function 'filterStatusLoop'
+|caaaaaa<Locals> filterId = 1, silent = F, givenArray = [table:1]{}, p_atLeastOneFilterActive = F, returnArray = [table:2]{}, atLeastOneFilterActive = T, numFilterInvTypes = 39, activeFilterPanelIds = [table:3]{39 = T}, mappingVars = [table:4]{noEntry = "-------------", maxCPLevel = 160, noEntryValue = 1}, locVars = [table:5]{button_context_menu_toggle_anti_trade_off = "Deaktiviere 'Anti-Handel'", options_icon_standard_on_keybind = "Standard Symbol (Markierung du...", button_context_menu_lock_all = "Alle sperren", options_icon23_offsetY = "Abstand Y", options_icon9_tooltip_TT = "Tooltip beim Verwerten Symbol ...", options_icons_gear2 = "Set 2", options_icon22_size = "Größe", button_context_menu_mark_all_as_dynamic13 = "+ 13. dynamische", options_demark_sell_guild_store_on_others_TT = "Entferne 'Verkauf im Gildenlad...", options_header_food = "Nahrung & Getränke", options_size_character_TT = "Die Größe der Symbole im Cha...", options_icon_sort_9 = "9.", options_icon2_texture_TT = "Symbol für die Gear 1 Filter ...", options_enable_auto_mark_sets_in_chat_TT = "Set Teile im Chat auflisten", options_icon11_color_TT = "Farbe für das Symbol der Verk...", options_additional_buttons_FCOIS_additional_options_offsetx_TT = "Verschiebe den zusätzliche Op...", options_auto_mark_crafted_masterwrit_items_icon = "Meister Schrieb herg. Gegenst....", options_icon6_size_TT = "Größe des Symboles für die ...", options_filter_button3 = "Knopf 3", options_scan_automatic_marks_scan_bag_finished = "Scan von '%s' wurde beendet<<<...", options_filter_button1_height = "Höhe:", options_enable_block_jewelry_refinement_TT = "Deaktiviert das Veredeln von m...", options_libFiltersFilterPanelIdName_34 = "LibFilters - Filter Bereich 34...", options_icon3_size = "Größe", unknown_recipe_found = "] als unbekanntes Rezept geset...", options_icon1_tooltip_TT = "Tooltip beim Schloß Symbol an...", reloadui = "ACHTUNG: Die Benutzeroberfläc...", options_enable_auto_mark_recipes_hint = "Diese Option ist nur aktiv, we...", set_part_found = "] als Set Teil gesetzt", button_context_menu_toggle_anti_mail_on = "Aktiviere 'Anti-Mail'", button_context_menu_mark_all_as_dynamic8 = "+ 8. dynamische", options_header_filter_buttons = "Filter Knöpfe", options_filter_buttons_show_tooltip_TT = "Beim Klicken/Bewegen über den...", options_icon10_size_TT = "Größe des Symbols für die A...", chatcommands_filter2 = "|cFFFFFF'filter2'|cFFFF00: Kat...", options_migrate_uniqueids = "Migriere>EindeutigeID", filter_store = "[Verkäufer] ", options_enable_auto_mark_sets_non_wished_TT = "Markiert automatisch die nicht...", options_header_ZOsLock = "ZOs Gegenstand-Sperre", filter_lockdyn_25 = "14. dynamische", button_context_menu_unmark_all_as_dynamic2 = "- 2. dynamische", options_icon20_tooltip_TT = "Zeige Tooltip am 8. dynamische...", options_demark_all_others_TT = "Entferne alle anderen Markieru...", options_filter_button_settings_logical_conjunctions = "Wenn das Kontextmenü an den F...", options_icon4_name_TT = "Ihr gewählter Name für das G...", options_context_menu_filter_buttons_max_icons_TT = "Wenn die Kontextmenüs für Fi...", options_header_marking_undo = "Undo", options_icon22_size_TT = "Größe des 10. dynamischen Fi...", rightclick_menu_demark_improvement = "Aufwerten zurücknehmen", SI_BINDING_NAME_FCOIS_MARK_ITEM_25 = "Markiere mit dynamischen Symbo..."}, settings = [table:6]{}, filterPanelToFilterButtonMediumOutputText = [table:7]{39 = "[Gefährte Inventar]"}, filterPanelToFilterButtonFilterActiveSettingName = [table:8]{39 = "allowCompanionInventoryFilter..."}, j = 28, statusFilterIdText = "Schloß Filter: AN" </Locals>|r
+user:/AddOns/FCOItemSaver/src/FCOIS_FilterButtons.lua:1086: in function 'FCOIS.FilterStatus'
+|caaaaaa<Locals> filterId = -1, silent = F, doReturnFilterStatus = F, retArray = [table:1], atLeastOneFilterActive = F, i = 1 </Locals>|r
+user:/AddOns/FCOItemSaver/src/FCOIS_SlashCmds.lua:49: in function 'status'
+|caaaaaa<Locals> locVars = [table:5] </Locals>|r
+user:/AddOns/FCOItemSaver/src/FCOIS_SlashCmds.lua:83: in function 'FCOIS.Command_handler'
+|caaaaaa<Locals> args = "", locVars = [table:5], preVars = [table:9]{preChatText = "FCOIS", preChatTextGreen = "|c22DD22FCOIS|r ", currentStart = "> ", preChatTextRed = "|cDD2222FCOIS|r ", currentEnd = " <", preChatTextBlue = "|c2222DDFCOIS|r "}, settings = [table:6], numFilters = 4, actFilterPanelId = [table:3], toboolean = user:/AddOns/FCOItemSaver/src/FCOIS_SlashCmds.lua:61, options = [table:10]{} </Locals>|r
+/EsoUI/Ingame/SlashCommands/SlashCommands_Shared.lua:204: in function 'DoCommand'
+|caaaaaa<Locals> text = "/fcois", command = "/fcois", arguments = "", fn = user:/AddOns/FCOItemSaver/src/FCOIS_SlashCmds.lua:54 </Locals>|r
+/EsoUI/Ingame/ChatSystem/SharedChatSystem.lua:1807: in function 'SharedChatSystem:SubmitTextEntry'
+|caaaaaa<Locals> self = [table:11]{ignoreTextEntryChangedEvent = F, currentNumNotifications = 0, allowMultipleContainers = F, shouldMinimizeAfterEntry = F, numUnreadMails = 0, currentChannel = 0, isMinimizingOrMaximizing = F, isAgentChatActive = F, loaded = T, suppressSave = F, isMinimized = F, maxContainerWidth = 1824, minContainerHeight = 170, maxContainerHeight = 1026, minContainerWidth = 300}, text = "/fcois", valid = F, prefix = 47 </Locals>|r
+(tail call): ?
+/EsoUI/Ingame/ChatSystem/SharedChatSystem.lua:2532: in function 'ZO_ChatTextEntry_Execute'
+|caaaaaa<Locals> control = ud </Locals>|r
+(tail call): ?
+ZO_ChatWindowTextEntryEditBox_Enter:3: in function '(main chunk)'
+|caaaaaa<Locals> self = ud </Locals>|r
+(tail call): ?
+(tail call): ?
 ]]
 
 --____________________________
--- Current max bugs/features/ToDos: 215
+-- Current max bugs/features/ToDos: 216
 --____________________________
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-03-11
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-03-13
 ------------------------------------------------------------------------------------
 --#176 -> Test: Errors occured with OR filters, and mixed AND + OR filters
 --Added checks if functions/API functions are called internally or from external (other addons) -> Still ongoing TODO
+--#199
+--#207
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.2.3 - New version: 2.2.4) -    Updated last: 2022-03-11
+--Changelog (last version: 2.2.3 - New version: 2.2.4) -    Updated last: 2022-03-13
 -------------------------------------------------------------------------------------
 --[Fixed]
 --Added debug file /src/FCOIS_Debug.lua to the txt file again
@@ -218,6 +231,7 @@ user:/AddOns/FCOItemSaver/src/FCOIS_SettingsMenu.lua:7450: in function 'm_callba
 --#208: Switching from vendor buy to sell panel raises a lua error
 --#213,214 Automatic set collection markers and auto bind unknown items even if no unknown set collections marker icon was selected, and fixed settings menu to allow the seection of LibMultiAccountSets and auto bind missing set collections
 --#215 Porting to house dialog (as you backup marker icons) was throwing a LibDialog error
+--#216 /fcois help chat command shows all filter panel IDs possible now and /fcois command does not throw a lua error message anymore
 
 
 --[Changed]

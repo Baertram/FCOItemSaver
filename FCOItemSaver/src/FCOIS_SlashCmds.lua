@@ -17,18 +17,22 @@ local showConfirmationDialog = FCOIS.ShowConfirmationDialog
 local doFilter = FCOIS.DoFilter
 local filterStatus = FCOIS.FilterStatus
 
+local locVars = FCOIS.localizationVars.fcois_loc
 -- =====================================================================================================================
 --  Slash commands & command handler functions
 -- =====================================================================================================================
 --Show a help inside the chat
 local function help()
-    local locVars = FCOIS.localizationVars.fcois_loc
+    locVars = FCOIS.localizationVars.fcois_loc
     d(locVars["chatcommands_info"])
     d("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
     d(locVars["chatcommands_help"])
     d(locVars["chatcommands_status"])
     d(locVars["chatcommands_filterpanels"])
-    d(locVars["chatcommands_filterpanels2"])
+    for idx, filterPanelIdChatHelpLine in ipairs(locVars.filterPanelIdChatHelpLines) do
+        local prefix = (idx > 1 and " >>") or " "
+        d(prefix .. filterPanelIdChatHelpLine)
+    end
     d(locVars["chatcommands_filtervalues"])
     d(locVars["chatcommands_filter1_new"])
     d(locVars["chatcommands_filter2_new"])
@@ -43,7 +47,7 @@ end
 
 --Show a status inside the chat
 local function status()
-    local locVars = FCOIS.localizationVars.fcois_loc
+    locVars = FCOIS.localizationVars.fcois_loc
     d(locVars["chatcommands_status_info"])
     --Check all filters, not silently (chat output: enabled)
     filterStatus(-1, false, false)
@@ -52,7 +56,7 @@ end
 
 --Check the commands ppl type to the chat
 function FCOIS.Command_handler(args)
-    local locVars = FCOIS.localizationVars.fcois_loc
+    locVars = FCOIS.localizationVars.fcois_loc
     local preVars = FCOIS.preChatVars
     local settings = FCOIS.settingsVars.settings
     local numFilters = FCOIS.numVars.gFCONumFilters

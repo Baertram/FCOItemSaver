@@ -11,6 +11,9 @@ local debugMessage = FCOIS.debugMessage
 local strfor = string.format
 local tos    = tostring
 
+local localizationVars = FCOIS.localizationVars
+local locVars = localizationVars.fcois_loc
+
 local addonVars = FCOIS.addonVars
 local ctrlVars = FCOIS.ZOControlVars
 local ctrlVarInv = ctrlVars.INV
@@ -84,8 +87,8 @@ local function outputFilterState(p_outputToChat, p_panelId, p_filterId, p_stateT
 
     if settings.debug then debugMessage( "[OutputFilterState]","OutputToChat: " .. tos(p_outputToChat) ..", filterPanelId: " ..tos(p_panelId)..", filterId: "..tos(p_filterId)..", stateText: " .. p_stateText, true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
 --d("[FCOIS]OutputFilterState-OutputToChat: " .. tos(p_outputToChat) ..", filterPanelId: " ..tos(p_panelId)..", filterId: "..tos(p_filterId)..", stateText: " .. p_stateText)
-    local localizationVars = FCOIS.localizationVars
-    local locVars = localizationVars.fcois_loc
+    localizationVars = FCOIS.localizationVars
+    locVars = localizationVars.fcois_loc
     local filterStateText = locVars["filter" .. filterText .. p_stateText]
     local filterPanelToMediumOutputText = mappingVars.filterPanelToFilterButtonMediumOutputText
     --Create the outputText
@@ -924,7 +927,8 @@ local function filterStatusLoop(filterId, silent, givenArray, p_atLeastOneFilter
     end
 
     local mappingVars = FCOIS.mappingVars
-    local locVars = FCOIS.localizationVars.fcois_loc
+    localizationVars = FCOIS.localizationVars
+    locVars = localizationVars.fcois_loc
     local settings = FCOIS.settingsVars.settings
     local filterPanelToFilterButtonMediumOutputText = mappingVars.filterPanelToFilterButtonMediumOutputText
     local filterPanelToFilterButtonFilterActiveSettingName = mappingVars.filterPanelToFilterButtonFilterActiveSettingName
@@ -938,8 +942,9 @@ local function filterStatusLoop(filterId, silent, givenArray, p_atLeastOneFilter
                 local statusFilterIdText = locVars["chatcommands_status_filter" .. tos(filterId)]
 --FCOIS 2021-11-14 Use filterPanelToFilterButtonMediumOutputText[j] and settings[filterPanelToFilterButtonFilterActiveSettingName[j]] below!
                 returnArray[j][filterId] = settings[filterPanelToFilterButtonFilterActiveSettingName[j]]
-                if (not silent) then
-                    d(locVars[filterPanelToFilterButtonMediumOutputText[j]] .. statusFilterIdText)
+--d(">j: " ..tos(j) .. ", filterId: " ..tos(filterId))
+                if not silent then
+                    d(filterPanelToFilterButtonMediumOutputText[j] .. statusFilterIdText)
                 end
 --[[ Replaced by code lines above
                 if     (j == LF_INVENTORY or j == LF_BANK_DEPOSIT or j == LF_GUILDBANK_DEPOSIT or j == LF_HOUSE_BANK_DEPOSIT) then
@@ -1077,6 +1082,8 @@ function FCOIS.FilterStatus(filterId, silent, doReturnFilterStatus)
     --Prepare the return array
     local retArray = {}
     local atLeastOneFilterActive = false
+    localizationVars = FCOIS.localizationVars
+    locVars = localizationVars.fcois_loc
 
     if filterId ~= -1 then
         retArray, atLeastOneFilterActive = filterStatusLoop(filterId, silent)
@@ -1090,7 +1097,7 @@ function FCOIS.FilterStatus(filterId, silent, doReturnFilterStatus)
     --Was at least one active filter found and chat output is enabled?
     if atLeastOneFilterActive == false and silent == false then
         --local locVars = FCOIS.localizationVars.fcois_loc
-        d(FCOIS.localizationVars.fcois_loc["chatcommands_status_nofilters"])
+        d(locVars["chatcommands_status_nofilters"])
     end
 
     --Return the array with filter states?

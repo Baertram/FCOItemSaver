@@ -169,7 +169,9 @@ local function updateLibShifterBoxEntries(parentCtrl, shifterBox, boxName)
 
     --FCOIS custom UniqueId
     if boxName == FCOISuniqueIdItemTypes then
-        if not locVars or not locVars.ItemTypes then return end
+        if not locVars or not locVars.ItemTypes then
+            locVars = FCOISlocVars.fcois_loc
+        end
 
         local allowedFCOISUniqueIdItemTypes = settings.allowedFCOISUniqueIdItemTypes
         for k,v in pairs(allowedFCOISUniqueIdItemTypes) do

@@ -9,7 +9,7 @@
 # !!! Attention !!! -> 1 line here can only contain ~220 characters, so the depency lines need to be split up, or they won't be recognized properly!
 #
 ## DependsOn: LibAddonMenu-2.0>=32 LibCustomMenu>=712 LibDialog>=123 LibFeedback LibFilters-3.0>=330
-## DependsOn: LibMainMenu-2.0>=40400 LibShifterBox>=17 LibSets>=000306 LibAddonMenuOrderListBox
+## DependsOn: LibMainMenu-2.0>=40400 LibShifterBox>=17 LibSets>=000309 LibAddonMenuOrderListBox
 ##
 ## OptionalDependsOn: LibDebugLogger>=200 LibLazyCrafting>=3000
 ## OptionalDependsOn: LibMultiAccountSets>=10

@@ -4,14 +4,21 @@ AddOn for the game Elder Scrolls Online: Saving your items so you do not acciden
 
 ==Changelog for current PTS API101033==
 ```
+--____________________________
+-- Current max bugs/features/ToDos: 216
+--____________________________
+
+
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-03-02
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-03-13
 ------------------------------------------------------------------------------------
 --#176 -> Test: Errors occured with OR filters, and mixed AND + OR filters
 --Added checks if functions/API functions are called internally or from external (other addons) -> Still ongoing TODO
+--#199
+--#207
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.2.3 - New version: 2.2.4) -    Updated last: 2022-03-02
+--Changelog (last version: 2.2.3 - New version: 2.2.4) -    Updated last: 2022-03-13
 -------------------------------------------------------------------------------------
 --[Fixed]
 --Added debug file /src/FCOIS_Debug.lua to the txt file again
@@ -38,8 +45,12 @@ AddOn for the game Elder Scrolls Online: Saving your items so you do not acciden
 --#197: Migration of non-unique item markers to FCOISunique itemMarkers does not work properly
 --#198: Enchanting did not recognize the filters correctly and was not always protecting the items at extraction as it thought it is LF_INVENTORY
 --#200: The chosen language is not updated in localization of the settings menu properly
+--#203: Mass moving to junk/removing from junk will kick you from the server because of message spam. Junk move will be done in 50 items packages now, with a 250ms delay in between each package.
 --#204: Fixed error message in FCOIS.GetSavedVarsMarkedItemsTableName if loaded from other addons before FCOIS SavedVariables were loaded properly (e.g. IIfA)
--##213,214 Automatic set collection markers and auto bind unknown items even if no unknown set collections marker icon was selected, and fixed settings menu to allow the seection of LibMultiAccountSets and auto bind missing set collections
+--#208: Switching from vendor buy to sell panel raises a lua error
+--#213,214 Automatic set collection markers and auto bind unknown items even if no unknown set collections marker icon was selected, and fixed settings menu to allow the seection of LibMultiAccountSets and auto bind missing set collections
+--#215 Porting to house dialog (as you backup marker icons) was throwing a LibDialog error
+--#216 /fcois help chat command shows all filter panel IDs possible now and /fcois command does not throw a lua error message anymore
 
 
 --[Changed]
@@ -58,14 +69,14 @@ AddOn for the game Elder Scrolls Online: Saving your items so you do not acciden
 --If you press SHIFT key and right mouse on the filter button this will reset the selected filter icon at the button to the * ("All") entry
 --#184 Added automatic marking of needed scrolls etc. with ItemCooldownTracker API
 --#188 Enable backup and restore for all 3 saved itemIds (non unique, ZOs unique and FCOIS unique). ZOs unique and non-unique can only be saved and restored together!
---#202 FilterButtons and addiitonal inventory flag context menu button added to universal deconstruction panel. The filter's and filterButtons and contextMenus re-use the selected protection
+--#202 FilterButtons and additional inventory flag context menu button added to universal deconstruction panel. The filter's and filterButtons and contextMenus re-use the selected protection
 --     methods etc. of smithing deconstuction/jewelry deconstruction/enchanting extraction! If the "All" tab is selected at the universal decon panel, which includes all types of the
 --     deconstructable/extractable item types, the smithing deconstruction buttons and context menu buttons are show, but the checks will still be done "per item", so that glyphs are protected too!
---#203: Mass moving to junk/removing from junk will kick you from the server because of message spam. Junk move will be done in 50 items packages now, with a 250ms delay in between each package.
 
 
 --[Added on request]
 --#176 Add submenu to 4 filter buttons, with setting to change the filter between AND & OR filter conjunction behaviour. Remembers the state for each filterPanel
+-->Due to current problems filtering combinations of logicla AND and OR the filterButtons will change ALL filterButtons logical conjunction settings between AND or OR at the same time!
 --->Screenshot showing the new context menu "Filter settings" at the filter button: https://i.imgur.com/32AHUNS.png
 --->Screenshot link for tooltip showing new logical conjunction AND/OR state: https://i.imgur.com/yj2UIOe.png
 --#183 Add new SavedVariables saving independent to Server and AccountName -> "All servers and accounts the same"

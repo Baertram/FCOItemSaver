@@ -925,8 +925,7 @@ FCOIS.localizationVars.localizationAll = {
         ["chatcommands_filteroff"]				 = "|cFFFFFF'allon'|cFFFF00: Hide categories 1 to 4 items",
         ["chatcommands_filtershow"]				 = "|cFFFFFF'allshow'|cFFFF00: Only show marked items of categories 1 to 4 ",
 		["chatcommands_split_filter"]			 = "|cFFFFFF'split'|cFFFF00: Enable/Disable individual filters at inventory, vendor, guild bank, guild store, bank, crafting stations, enchanting station, mail and trade panels",
-        ["chatcommands_filterpanels"]			 = "|c990000Possible |cFFFFFF<filterPanel>|cFFFF00: 1 Inventory, 2 Bank, 3 Guild bank, 4 Vendor, 5 Craft station Deconstruction,",
-		["chatcommands_filterpanels2"]			 = "» 6 Guild store, 7 Mail, 8 Trade, 11 Enchanting extraction, 12 Craft station improvement, 13 Enchanting creation",
+        ["chatcommands_filterpanels"]			 = "|c990000Possible |cFFFFFF<filterPanel>|cFFFF00:",
         ["chatcommands_filtervalues"]			 = "|c990000Possible |cFFFFFF<filterValue>|cFFFF00: |cFFFFFFtrue|cFFFF00 / |cFFFFFFfalse|cFFFF00 / |cFFFFFFshow",
         ["chatcommands_filter1_new"]			 = "|cFFFFFF'filter1 <filterPanel> <filterValue>'|cFFFF00: Hide |cFFFFFF<true>|cFFFF00 / show |cFFFFFF<false>|cFFFF00 / only show marked |cFFFFFF<show>|cFFFF00 items of catergory 1 (lock symbol) at panel |cFFFFFF<filterPanel>",
         ["chatcommands_filter2_new"]			 = "|cFFFFFF'filter2 <filterPanel> <filterValue>'|cFFFF00: Hide |cFFFFFF<true>|cFFFF00 / show |cFFFFFF<false>|cFFFF00 / only show marked |cFFFFFF<show>|cFFFF00 items of catergory 2 (helmet symbol) at panel |cFFFFFF<filterPanel>",
@@ -2172,8 +2171,7 @@ FCOIS.localizationVars.localizationAll = {
         ["chatcommands_filteroff"]				 = "|cFFFFFF'alleaus'|cFFFF00: Kategorien 1 bis 4 ausblenden",
         ["chatcommands_filtershow"]				 = "|cFFFFFF'allezeigen'|cFFFF00: Nur markierte Items der Kategorien 1 bis 4 anzeigen",
         ["chatcommands_split_filter"]			 = "|cFFFFFF'split'|cFFFF00: Filter individuell in Inventar, Verkäufer, Bank, Gilden Bank, Gilden Laden, Handwerksstationen, Verzauberungstisch, Mail und Handel einschalten/ausschalten",
-        ["chatcommands_filterpanels"]			 = "|c990000Mögliche |cFFFFFF<filterPanel>|cFFFF00: 1 Inventar, 2 Bank, 3 Gilden Bank, 4 Händler, 5 Handwerksstation Verwerten, ",
-        ["chatcommands_filterpanels2"]			 = "» 6 Gilden Laden, 7 Mail, 8 Handel, 11 Verzauberungstisch Extrahieren, 12 Handwerksstation Aufwerten, 13 Verzauberungstisch Erstellen",
+        ["chatcommands_filterpanels"]			 = "|c990000Mögliche |cFFFFFF<filterPanel>|cFFFF00:",
         ["chatcommands_filtervalues"]			 = "|c990000Mögliche |cFFFFFF<filterValue>|cFFFF00: |cFFFFFFan|cFFFF00 / |cFFFFFFaus|cFFFF00 / |cFFFFFFzeigen",
         ["chatcommands_filter1_new"]			 = "|cFFFFFF'filter1 <filterPanel> <filterValue>'|cFFFF00: Kategorie 1 (Schloss Symbol) im Fenster |cFFFFFF<filterPanel>|cFFFF00 ausblenden |cFFFFFF<an>|cFFFF00 / anzeigen |cFFFFFF<aus>|cFFFF00 / nur Markierte anzeigen |cFFFFFF<zeigen>",
         ["chatcommands_filter2_new"]			 = "|cFFFFFF'filter2 <filterPanel> <filterValue>'|cFFFF00: Kategorie 2 (Rüstungs Symbole) im Fenster |cFFFFFF<filterPanel>|cFFFF00 ausblenden |cFFFFFF<an>|cFFFF00 / anzeigen |cFFFFFF<aus>|cFFFF00 / nur Markierte anzeigen |cFFFFFF<zeigen>",
@@ -3126,8 +3124,7 @@ FCOIS.localizationVars.localizationAll = {
 		["chatcommands_filteroff"]	 			 = "|cFFFFFF'touson'|cFFFF00: Cacher tous les objets marqués dans les fenêtres de vente et d'artisanat",
 		["chatcommands_filtershow"]	 			 = "|cFFFFFF'tousmontre'|cFFFF00: Ne montre QUE les objets marqués dans les fenêtres de vente et d'artisanat",
 		["chatcommands_split_filter"]			 = "|cFFFFFFsplit|cFFFF00: Activer/Désactiver les filtres individuels dans l'inventaire, le marchand, la banque, la banque de guilde, les boutiques de guildes, les ateliers de craft, l'autel d'enchantement, les mails et l'échange",
-        ["chatcommands_filterpanels"]			 = "|c990000Possible <filterPanel>: 1 Inventaire, 2 Banque, 3 Banque de guilde, 4 Marchand, 5 Atelier de craft Déconstruction,",
-        ["chatcommands_filterpanels2"] 			 = "6 Boutiques de guildes, 7 Mail, 8 Echantement, 11 Enchantement extraction, 12 Atelier de craft amélioration, 13 Enchantement créé",
+        ["chatcommands_filterpanels"]			 = "|c990000Possible <filterPanel>:",
         ["chatcommands_filtervalues"]			 = "|c990000Possible <filterValue>: |cFFFFFFvrai|cFFFF00 / |cFFFFFFfaux|cFFFF00 / |cFFFFFFmontre",
         ["chatcommands_filter1_new"]			 = "|cFFFFFF'filtre1 <filterPanel> <filterValue>'|cFFFF00: Cacher |cFFFFFF<vrai>|cFFFF00 / voir |cFFFFFF<faux>|cFFFF00 / montre seulement les objets marqués |cFFFFFF<montre>|cFFFF00 de catergory 1 (symbole verrouillé) au panneau |cFFFFFF<filterPanel>",
         ["chatcommands_filter2_new"]			 = "|cFFFFFF'filtre2 <filterPanel> <filterValue>'|cFFFF00: Cacher |cFFFFFF<vrai>|cFFFF00 / voir |cFFFFFF<faux>|cFFFF00 / montre seulement les objets marqués |cFFFFFF<montre>|cFFFF00 de catergory 2 (symbole de casque) au panneau |cFFFFFF<filterPanel>",
@@ -3556,8 +3553,7 @@ FCOIS.localizationVars.localizationAll = {
 		["chatcommands_filteroff"]	 			 = "|cFFFFFF'touson'|cFFFF00: Esconder todos los objetos marcados en las ventanas de venta y artesanía",
 		["chatcommands_filtershow"]	 			 = "|cFFFFFF'tousmontre'|cFFFF00: Muestra SOLO los objetos marcados en las ventanas de venta y artesanía",
 		["chatcommands_split_filter"]			 = "|cFFFFFFsplit|cFFFF00: Activa/Desactiva los filtros individuales en : inventario, mercaderes, banco, banco y tienda de clan, estaciones de artesanía, mesa de encantamiento, correo y comercio",
-        ["chatcommands_filterpanels"]			 = "|c990000Possible <filterPanel>: 1 Inventario, 2 Banco, 3 Banco de clan, 4 Mercader, 5 Estación de artesanía desconstrucción,",
-        ["chatcommands_filterpanels2"] 			 = "6 Tiendas de clan, 7 Correo, 8 Comercio, 11 Encantamiento extracción, 12 Estación de artesanía mejora, 13 Encantamiento creación",
+        ["chatcommands_filterpanels"]			 = "|c990000Possible <filterPanel>:",
         ["chatcommands_filtervalues"]			 = "|c990000Possible <filterValue>: |cFFFFFFvrai|cFFFF00 / |cFFFFFFfaux|cFFFF00 / |cFFFFFFmontre",
         ["chatcommands_filter1_new"]			 = "|cFFFFFF'filtre1 <filterPanel> <filterValue>'|cFFFF00: Esconder |cFFFFFF<vrai>|cFFFF00 / Ver|cFFFFFF<faux>|cFFFF00 / muestra sólo los objetos marcados |cFFFFFF<montre>|cFFFF00 de catergory 1 (símbolo de candado) en el panel |cFFFFFF<filterPanel>",
         ["chatcommands_filter2_new"]			 = "|cFFFFFF'filtre2 <filterPanel> <filterValue>'|cFFFF00: Esconder |cFFFFFF<vrai>|cFFFF00 / Ver|cFFFFFF<faux>|cFFFF00 / muestra sólo los objetos marcados |cFFFFFF<montre>|cFFFF00 de catergory 2 (símbolo de yelmo) en el panel |cFFFFFF<filterPanel>",
@@ -4262,8 +4258,7 @@ FCOIS.localizationVars.localizationAll = {
         ["chatcommands_filteroff"]               = "|cFFFFFF'allon'|cFFFF00: カテゴリ1 - 4アイテムを非表示します",
         ["chatcommands_filtershow"]              = "|cFFFFFF'allshow'|cFFFF00: マークされたカテゴリ1 - 4アイテムだけを表示します",
         ["chatcommands_split_filter"]            = "|cFFFFFF'split'|cFFFF00: インベントリ、ベンダ、ギルド銀行、ギルドストア、銀行クラフトステーション、付呪台、メール、トレードパネルの個別フィルタを有効/無効化します",
-        ["chatcommands_filterpanels"]            = "|c990000利用可能 |cFFFFFF<filterPanel>|cFFFF00: 1 インベントリ、 2 銀行、 3 ギルド銀行、 4 ベンダ、 5 クラフトステーション解体、",
-        ["chatcommands_filterpanels2"]           = "» 6 ギルドストア、 7 メール、 8 トレード、 11 付呪台抽出、 12 クラフトステーション改良、 13 付呪台作成",
+        ["chatcommands_filterpanels"]            = "|c990000利用可能 |cFFFFFF<filterPanel>|cFFFF00:",
         ["chatcommands_filtervalues"]            = "|c990000利用可能 |cFFFFFF<filterValue>|cFFFF00: |cFFFFFFtrue|cFFFF00 / |cFFFFFFfalse|cFFFF00 / |cFFFFFF表示",
         ["chatcommands_filter1_new"]             = "|cFFFFFF'フィルタ1 <filterPanel> <filterValue>'|cFFFF00: 非表示 |cFFFFFF<true>|cFFFF00 / 表示 |cFFFFFF<false>|cFFFF00 / パネル|cFFFFFF<filterPanel>|cFFFF00のマークされたカテゴリ1（ロックシンボル）アイテムのみ表示|cFFFFFF<show>",
         ["chatcommands_filter2_new"]             = "|cFFFFFF'フィルタ2 <filterPanel> <filterValue>'|cFFFF00: 非表示 |cFFFFFF<true>|cFFFF00 / 表示 |cFFFFFF<false>|cFFFF00 / パネル|cFFFFFF<filterPanel>|cFFFF00のマークされたカテゴリ2（兜シンボル）アイテムのみ表示|cFFFFFF<show>",
@@ -5010,8 +5005,7 @@ FCOIS.localizationVars.localizationAll = {
 		["chatcommands_filteroff"] = "|cFFFFFF'allon'|cFFFF00: Cкpыть пpeдмeты кaтeгopий 1-4",
 		["chatcommands_filtershow"] = "|cFFFFFF'allshow'|cFFFF00: Пoкaз. тoлькo пoмeчeнныe пpeдмeты кaтeгopий 1-4",
 		["chatcommands_split_filter"] = "|cFFFFFF'split'|cFFFF00: Вкл./Выкл индивидуaльныe фильтpы для paзныx oкoн (инвeнтapь, бaнк, мaгaзин, гильд.бaнк, гильд.мaгaзин и т.д.) ",
-		["chatcommands_filterpanels"] = "|c990000Possible |cFFFFFF<filterPanel>|cFFFF00: 1 Инвeнтapь, 2 Бaнк, 3 Гильд.бaнк, 4 Мaгaзин, 5 Дeкoнcтpукция,",
-		["chatcommands_filterpanels2"] = "» 6 Гильд.мaгaзин, 7 Пoчтa, 8 Тopгoвля, 11 Cтoл зaчapoвaния, 12 Улучшeниe, 13 Зaчapoвaниe",
+		["chatcommands_filterpanels"] = "|c990000Possible |cFFFFFF<filterPanel>|cFFFF00:",
 		["chatcommands_filtervalues"] = "|c990000Possible |cFFFFFF<filterValue>|cFFFF00: |cFFFFFFtrue|cFFFF00 / |cFFFFFFfalse|cFFFF00 / |cFFFFFFshow",
 		["chatcommands_filter1_new"] = "|cFFFFFF'filter1 <filterPanel> <filterValue>'|cFFFF00: Cкpыть |cFFFFFF<true>|cFFFF00 / пoкaз. |cFFFFFF<false>|cFFFF00 / пoкaз. тoлькo пoмeчeнныe |cFFFFFF<show>|cFFFF00 пpeдмeты кaтeгopии 1 (блoкиpoвaнныe) в oкнe |cFFFFFF<filterPanel>",
 		["chatcommands_filter2_new"] = "|cFFFFFF'filter2 <filterPanel> <filterValue>'|cFFFF00: Cкpыть |cFFFFFF<true>|cFFFF00 / пoкaз. |cFFFFFF<false>|cFFFF00 / пoкaз. тoлькo пoмeчeнныe |cFFFFFF<show>|cFFFF00 пpeдмeты кaтeгopии 2 (нaбopы) в oкнe |cFFFFFF<filterPanel>",
@@ -5373,7 +5367,9 @@ function FCOIS.GenerateLocalizedDynamicIconTexts()
 end
 
 --LibFilters translated panel ID texts
+local getLibFiltersPanelIdText
 function FCOIS.GetLibFiltersPanelIdText(language, libFilterPanelId)
+    getLibFiltersPanelIdText = FCOIS.GetLibFiltersPanelIdText
     language = language or FCOIS_CON_LANG_EN
     local retVarTable = {}
     local translatedTexts = {}
@@ -5419,7 +5415,7 @@ function FCOIS.GetLibFiltersPanelIdText(language, libFilterPanelId)
     else
         --Use fallback of English
         if translatedTexts[FCOIS_CON_LANG_EN] == nil then
-            translatedTexts[FCOIS_CON_LANG_EN] = FCOIS.GetLibFiltersPanelIdText(FCOIS_CON_LANG_EN, nil)
+            translatedTexts[FCOIS_CON_LANG_EN] = getLibFiltersPanelIdText(FCOIS_CON_LANG_EN, nil)
         end
         translatedTexts[language] = translatedTexts[FCOIS_CON_LANG_EN]
         if language == FCOIS_CON_LANG_DE then
@@ -5456,6 +5452,8 @@ function FCOIS.GetLibFiltersPanelIdText(language, libFilterPanelId)
     end
     return retVarTable
 end
+local getLibFiltersPanelIdText = FCOIS.GetLibFiltersPanelIdText
+
 --LibFilters translated panel IDs
 english["FCOIS_LibFilters_PanelIds"]    = {}
 french["FCOIS_LibFilters_PanelIds"]     = {}
@@ -5463,11 +5461,11 @@ german["FCOIS_LibFilters_PanelIds"]     = {}
 japanese["FCOIS_LibFilters_PanelIds"]   = {}
 russian["FCOIS_LibFilters_PanelIds"]    = {}
 --Build the translated LibFilters panel ID text
-english["FCOIS_LibFilters_PanelIds"]    = FCOIS.GetLibFiltersPanelIdText(FCOIS_CON_LANG_EN, nil)
-french["FCOIS_LibFilters_PanelIds"]     = FCOIS.GetLibFiltersPanelIdText(FCOIS_CON_LANG_FR, nil)
-german["FCOIS_LibFilters_PanelIds"]     = FCOIS.GetLibFiltersPanelIdText(FCOIS_CON_LANG_DE, nil)
-japanese["FCOIS_LibFilters_PanelIds"]   = FCOIS.GetLibFiltersPanelIdText(FCOIS_CON_LANG_JP, nil)
-russian["FCOIS_LibFilters_PanelIds"]    = FCOIS.GetLibFiltersPanelIdText(FCOIS_CON_LANG_RU, nil)
+english["FCOIS_LibFilters_PanelIds"]    = getLibFiltersPanelIdText(FCOIS_CON_LANG_EN, nil)
+french["FCOIS_LibFilters_PanelIds"]     = getLibFiltersPanelIdText(FCOIS_CON_LANG_FR, nil)
+german["FCOIS_LibFilters_PanelIds"]     = getLibFiltersPanelIdText(FCOIS_CON_LANG_DE, nil)
+japanese["FCOIS_LibFilters_PanelIds"]   = getLibFiltersPanelIdText(FCOIS_CON_LANG_JP, nil)
+russian["FCOIS_LibFilters_PanelIds"]    = getLibFiltersPanelIdText(FCOIS_CON_LANG_RU, nil)
 
 --Build texts for the different LibFilters filter panel IDs -> Fallback for non translated values!
 local optionsFilterPanelIdNameStart = "options_libFiltersFilterPanelIdName_"
@@ -5487,6 +5485,31 @@ for _, customFCOISfilterPanelId in ipairs(FCOIS.customFilterPanelIds) do
     russian[optionsFilterPanelIdNameStart .. customFCOISfilterPanelId]  = "LibFilters - Filter panel " .. customFCOISfilterPanelId
     japanese[optionsFilterPanelIdNameStart .. customFCOISfilterPanelId] = "LibFilters - Filter panel " .. customFCOISfilterPanelId
 end
+
+--For the chat slash command help output
+--Build the filterPanel chat output help lines table
+english.filterPanelIdChatHelpLines = {}
+local counter = 0
+local filterPanelNameTextLine = ""
+for filterPanelId, filterPanelNameEN in pairs(english["FCOIS_LibFilters_PanelIds"]) do
+    if type(filterPanelId) == "number" then
+        if filterPanelNameTextLine ~= "" then
+            filterPanelNameTextLine = filterPanelNameTextLine .. ", "
+        end
+        filterPanelNameTextLine = filterPanelNameTextLine .. tostring(filterPanelId).. " " .. filterPanelNameEN
+        if counter > 0 and counter % 4 == 0 then
+            table.insert(english.filterPanelIdChatHelpLines, filterPanelNameTextLine)
+            filterPanelNameTextLine = ""
+        end
+        counter = counter + 1
+    end
+end
+local engFilterPanelChatHelpLines = english.filterPanelIdChatHelpLines
+french.filterPanelIdChatHelpLines = engFilterPanelChatHelpLines
+german.filterPanelIdChatHelpLines = engFilterPanelChatHelpLines
+japanese.filterPanelIdChatHelpLines = engFilterPanelChatHelpLines
+russian.filterPanelIdChatHelpLines = engFilterPanelChatHelpLines
+
 
 --Error messages
 english["ERROR_MESSAGES"] = {}
