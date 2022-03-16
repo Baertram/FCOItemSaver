@@ -101,7 +101,7 @@ local doNotRunDropdownValueSetFunc = false
 
 local editBoxesToSetTextTypes
 
-local countAndUpdateEquippedArmorTypes = FCOIS.countAndUpdateEquippedArmorTypes
+local countAndUpdateEquippedArmorTypes = FCOIS.CountAndUpdateEquippedArmorTypes
 local updateFCOISFilterButtonColorsAndTextures = FCOIS.UpdateFCOISFilterButtonColorsAndTextures
 local changeContextMenuInvokerButtonColorByPanelId = FCOIS.ChangeContextMenuInvokerButtonColorByPanelId
 local changeContextMenuEntryTexts = FCOIS.ChangeContextMenuEntryTexts

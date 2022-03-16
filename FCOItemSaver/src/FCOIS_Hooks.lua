@@ -506,14 +506,15 @@ local function FCOItemSaver_OnInventorySlot_DoPrimaryAction(inventorySlot)
 end
 
 -- handler function for character equipment double click -> OnEffectivelyShown function
+local characterEquipmentSlots          = FCOIS.mappingVars.characterEquipmentSlots
 local function FCOItemSaver_CharacterOnEffectivelyShown(self, ...)
     if (not self) then return false end
     local contextMenuClearMarkesByShiftKey = FCOIS.settingsVars.settings.contextMenuClearMarkesByShiftKey
     local equipmentSlotName
-    local characterEquipmentSlots          = FCOIS.mappingVars.characterEquipmentSlots
-    local isCompanionCharacter             = (companionCharacterCtrl:IsHidden() == false) or false
+    characterEquipmentSlots = characterEquipmentSlots or FCOIS.mappingVars.characterEquipmentSlots
+    local isCompanionCharacter = (companionCharacterCtrl:IsHidden() == false) or false
     --local characterBaseCtrl = (isCompanionCharacter == true and companionCharacterCtrl) or characterCtrl
-    --d("[FCOItemSaver_CharacterOnEffectivelyShown]: " .. self:GetName())
+d("[FCOItemSaver_CharacterOnEffectivelyShown]: " .. self:GetName() .. ", isCompanionCharacter: " ..tos(isCompanionCharacter))
     for i = 1, self:GetNumChildren() do
         -- override OnMouseDoubleClick event of character window item controls, for each row (children)
         local currentCharChild = self:GetChild(i)
@@ -523,7 +524,7 @@ local function FCOItemSaver_CharacterOnEffectivelyShown(self, ...)
                 local isEquipmentSlot = characterEquipmentSlots[equipmentSlotName] or false
                 --if(string.find(equipmentSlotName, "ZO_CharacterEquipmentSlots")) then
                 if isEquipmentSlot == true then
-                    --d(">EquipmentSlot: " ..tos(equipmentSlotName))
+d(">EquipmentSlot: " ..tos(equipmentSlotName))
                     if contextMenuClearMarkesByShiftKey == true then
                         --Mouse up event for the SHIFT+right mouse button
                         if (not getEventHandler("OnMouseUp", equipmentSlotName)) then
@@ -722,6 +723,7 @@ function FCOIS.CreateHooks()
     local updateFilteredItemCountThrottled                   = FCOIS.UpdateFilteredItemCountThrottled
     local onClosePanel                                       = FCOIS.OnClosePanel
     local invContextMenuAddSlotAction                        = FCOIS.InvContextMenuAddSlotAction
+    local checkIfEnchantingInventoryItemShouldBeReMarked_AfterEnchanting = FCOIS.CheckIfEnchantingInventoryItemShouldBeReMarked_AfterEnchanting
 
 
     --Set the global filter panel ID to LF_INVENTORY again (otherwise it would stay the same like before, e.g. craftbag, and block the drag&drop!)
@@ -1243,7 +1245,7 @@ function FCOIS.CreateHooks()
     local enchantPopupDialogCustomControl = ESO_Dialogs["ENCHANTING"].customControl()
     if enchantPopupDialogCustomControl ~= nil then
         ZO_PostHookHandler(enchantPopupDialogCustomControl, "OnHide", function()
-            FCOIS.CheckIfEnchantingInventoryItemShouldBeReMarked_AfterEnchanting()
+            checkIfEnchantingInventoryItemShouldBeReMarked_AfterEnchanting()
         end)
     end
 
@@ -1732,8 +1734,8 @@ function FCOIS.CreateHooks()
     end
     --Posthook the enchanting function SetEnchantingMode() which gets executed as the enchanting tabs are changed
     --ZO_Enchanting:SetEnchantingMode does not exist anymore (PTS -> Scalebreaker) and was replaced by ZO_Enchanting:OnModeUpdated()
-    --SecurePostHook(ctrlVars.ENCHANTING_CLASS, "OnModeUpdated", enchantingPreHook)
-    SecurePostHook(ctrlVars.ENCHANTING, "OnModeUpdated", enchantingPreHook)
+    --SecurePostHook(ctrlVars.ENCHANTING, "OnModeUpdated", enchantingPreHook)
+    SecurePostHook(ctrlVars.ENCHANTING_CLASS, "OnModeUpdated", enchantingPreHook)
 
     --======== ALCHEMY =============================================================
     --Prehook the alchemy function which gets executed as the alchemy tabs are changed

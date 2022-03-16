@@ -802,7 +802,7 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
         end
         --For 2handed weapons/staffs: Only go on if the current equipment slot is not
         --the 1st weapon set's backup or the 2nd weapon set's backup
-        if FCOIS.checkWeaponOffHand(controlName, "2hdall", true, true, firstAdd) == true then return end
+        if FCOIS.CheckWeaponOffHand(controlName, "2hdall", true, true, firstAdd) == true then return end
     end
 
     ------------------------------------------------------------------------------------------------------------------------
