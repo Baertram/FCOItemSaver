@@ -512,9 +512,9 @@ local function FCOItemSaver_CharacterOnEffectivelyShown(self, ...)
     local contextMenuClearMarkesByShiftKey = FCOIS.settingsVars.settings.contextMenuClearMarkesByShiftKey
     local equipmentSlotName
     characterEquipmentSlots = characterEquipmentSlots or FCOIS.mappingVars.characterEquipmentSlots
-    local isCompanionCharacter = (companionCharacterCtrl:IsHidden() == false) or false
+    --local isCompanionCharacter = (companionCharacterCtrl:IsHidden() == false) or false
     --local characterBaseCtrl = (isCompanionCharacter == true and companionCharacterCtrl) or characterCtrl
-d("[FCOItemSaver_CharacterOnEffectivelyShown]: " .. self:GetName() .. ", isCompanionCharacter: " ..tos(isCompanionCharacter))
+--d("[FCOItemSaver_CharacterOnEffectivelyShown]: " .. self:GetName() .. ", isCompanionCharacter: " ..tos(isCompanionCharacter))
     for i = 1, self:GetNumChildren() do
         -- override OnMouseDoubleClick event of character window item controls, for each row (children)
         local currentCharChild = self:GetChild(i)
@@ -524,7 +524,7 @@ d("[FCOItemSaver_CharacterOnEffectivelyShown]: " .. self:GetName() .. ", isCompa
                 local isEquipmentSlot = characterEquipmentSlots[equipmentSlotName] or false
                 --if(string.find(equipmentSlotName, "ZO_CharacterEquipmentSlots")) then
                 if isEquipmentSlot == true then
-d(">EquipmentSlot: " ..tos(equipmentSlotName))
+--d(">EquipmentSlot: " ..tos(equipmentSlotName))
                     if contextMenuClearMarkesByShiftKey == true then
                         --Mouse up event for the SHIFT+right mouse button
                         if (not getEventHandler("OnMouseUp", equipmentSlotName)) then

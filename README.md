@@ -10,15 +10,14 @@ AddOn for the game Elder Scrolls Online: Saving your items so you do not acciden
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-03-13
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-03-19
 ------------------------------------------------------------------------------------
 --#176 -> Test: Errors occured with OR filters, and mixed AND + OR filters
 --Added checks if functions/API functions are called internally or from external (other addons) -> Still ongoing TODO
---#199
---#207
+
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.2.3 - New version: 2.2.4) -    Updated last: 2022-03-13
+--Changelog (last version: 2.2.3 - New version: 2.2.4) -    Updated last: 2022-03-19
 -------------------------------------------------------------------------------------
 --[Fixed]
 --Added debug file /src/FCOIS_Debug.lua to the txt file again
@@ -44,14 +43,15 @@ AddOn for the game Elder Scrolls Online: Saving your items so you do not acciden
 --#195: Fixed detection of owned house (for backup auto port suggestion to house, to access the house storage data)
 --#197: Migration of non-unique item markers to FCOISunique itemMarkers does not work properly
 --#198: Enchanting did not recognize the filters correctly and was not always protecting the items at extraction as it thought it is LF_INVENTORY
+--#199: Companion equipment character sometimes is not showing the armor type labels L/M/H
 --#200: The chosen language is not updated in localization of the settings menu properly
 --#203: Mass moving to junk/removing from junk will kick you from the server because of message spam. Junk move will be done in 50 items packages now, with a 250ms delay in between each package.
 --#204: Fixed error message in FCOIS.GetSavedVarsMarkedItemsTableName if loaded from other addons before FCOIS SavedVariables were loaded properly (e.g. IIfA)
+--#207: Companion equipment character markers will not be shown properly at companion's character doll
 --#208: Switching from vendor buy to sell panel raises a lua error
---#213,214 Automatic set collection markers and auto bind unknown items even if no unknown set collections marker icon was selected, and fixed settings menu to allow the seection of LibMultiAccountSets and auto bind missing set collections
---#215 Porting to house dialog (as you backup marker icons) was throwing a LibDialog error
---#216 /fcois help chat command shows all filter panel IDs possible now and /fcois command does not throw a lua error message anymore
-
+--#213,214: Automatic set collection markers and auto bind unknown items even if no unknown set collections marker icon was selected, and fixed settings menu to allow the seection of LibMultiAccountSets and auto bind missing set collections
+--#215: Porting to house dialog (as you backup marker icons) was throwing a LibDialog error
+--#216: /fcois help chat command shows all filter panel IDs possible now and /fcois command does not throw a lua error message anymore
 
 --[Changed]
 --Changed load order of debug file to earlier loading
