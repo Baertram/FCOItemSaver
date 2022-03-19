@@ -1976,15 +1976,16 @@ function FCOIS.CreateHooks()
         --d("[COMPANION CHARACTER FRAGMENT]","State: " .. tos(newState))
         if newState == SCENE_FRAGMENT_SHOWING then
             changeContextMenuInvokerButtonColorByPanelId(FCOIS_CON_LF_COMPANION_CHARACTER)
+
+            --Check if craftbag is active and change filter panel and parent panel accordingly
+            --FCOIS.gFilterWhere, FCOIS.gFilterWhereParent = checkCraftbagOrOtherActivePanel(LF_INVENTORY_COMPANION)
+        elseif newState == SCENE_FRAGMENT_SHOWN then
             if not companionEquipmentMarkersWereCreated then
                 --Update the character's equipment markers, if the companion character screen is shown
                 --d(">RefreshEquipmentControl -> COMPANION")
                 refreshEquipmentControl(nil, nil, nil, nil, nil, nil)
                 companionEquipmentMarkersWereCreated = true
             end
-
-            --Check if craftbag is active and change filter panel and parent panel accordingly
-            --FCOIS.gFilterWhere, FCOIS.gFilterWhereParent = checkCraftbagOrOtherActivePanel(LF_INVENTORY_COMPANION)
 
         elseif newState == SCENE_FRAGMENT_HIDING then
             --Update the current filter panel ID to "Companion inventory"

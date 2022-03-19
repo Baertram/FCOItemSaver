@@ -2320,10 +2320,14 @@ local isCharacterShown = FCOIS.IsCharacterShown
 
 --Is the companion character control shown
 function FCOIS.IsCompanionCharacterShown()
+    local isCompanionCharShown = false
     if libFilters.IsCompanionCharacterShown then
-        return libFilters:IsCompanionCharacterShown()
+        isCompanionCharShown = libFilters:IsCompanionCharacterShown()
     end
-    return not ctrlVars.COMPANION_CHARACTER:IsHidden()
+    if not isCompanionCharShown then
+        return not ctrlVars.COMPANION_CHARACTER:IsHidden()
+    end
+    return isCompanionCharShown
 end
 local isCompanionCharacterShown = FCOIS.IsCompanionCharacterShown
 
