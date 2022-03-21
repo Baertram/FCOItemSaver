@@ -4,8 +4,9 @@ local FCOIS = FCOIS
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
 
-local debugMessage = FCOIS.debugMessage
+--local debugMessage = FCOIS.debugMessage
 local zo_strf = zo_strformat
+local gil = GetItemLink 
 
 local isItemBindable = FCOIS.IsItemBindable
 
@@ -85,7 +86,7 @@ local function FCOAcceptDialogChanges(dialog)
         --Set global var to allow equip of item
         FCOIS.preventerVars.askBeforeEquipDialogRetVal = true
         --Equip the item now
-        --local itemLink = GetItemLink(dialog.data.bag, dialog.data.slot)
+        --local itemLink = gil(dialog.data.bag, dialog.data.slot)
 --d(">[FCOAcceptDialogChanges]Equipping " .. itemLink .. " now - equipSlot: " .. tostring(dialog.data.equipSlot))
         local dialogData = dialog.data
         if dialogData.equipSlot ~= nil then
@@ -112,7 +113,7 @@ function FCOIS.AskBeforeBindDialogInitialize(control)
         setup = function(_, data)
             FCOIS.preventerVars.askBeforeEquipDialogRetVal = false
             --Format the dialog text: Show the item's name inside
-            local itemLink = GetItemLink(data.bag, data.slot)
+            local itemLink = gil(data.bag, data.slot)
             local params = {itemLink}
             local formattedText = getFormattedDialogText(FCOIS.localizationVars.fcois_loc["options_anti_equip_question"], params)
             descLabel:SetText(formattedText)
@@ -211,6 +212,12 @@ function FCOIS.AskBeforeMigrateDialogInitialize(control)
         FCOIS.preventerVars.migrateItemMarkers = false
         FCOIS.preventerVars.migrateToUniqueIds = false
         FCOIS.preventerVars.migrateToItemInstanceIds = false
+        --If event player activated raised the migrate marker icon IDs dialog: A reloadUI is needed if we abort the
+        --dialog in order to update the settings properly and show the marker icons in the inventories properly
+        if FCOIS.preventerVars.migrateItemMarkersCalledFromPlayerActivated then
+            d("[FCOIS]Migration of marker icon IDs aborted. Reloading the UI now to update the settings properly!")
+            ReloadUI("ingame")
+        end
     end
 
     --The migrate non-unique/unique to unique/non-unique item IDs

@@ -2,6 +2,7 @@
 if FCOIS == nil then FCOIS = {} end
 local FCOIS = FCOIS
 
+local tos = tostring
 local strformat = string.format
 local strlen = string.len
 
@@ -45,17 +46,27 @@ FCOIS.dummyScene = {
     ["name"] = gAddonName
 }
 
+--The table of number variables
+FCOIS.numVars = {}
+local numVars = FCOIS.numVars
+
 --Constants for the unique itemId types
 --FCOIS v1.9.6
 FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE      = 1 --use base game's real uniqueIds by ZOs (even if items are totally the same, their id won't be the same)
 FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE    = 2 --use FCOIS calculated uniqueIds based on item values like level,quality,enchantment,style,trait etc.
+local maxIdTypes = FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE + 1
+--The different types of IDs that can be used within FCOIS to mark items
+numVars.idTypes                 = maxIdTypes
+
 --The global variable for the use temporary "UniqueIds" API
 FCOIS.temporaryUseUniqueIds = {}
+
 
 --SavedVariables constants
 local savedVarsMarkedItems = "markedItems"
 addonVars.savedVarName				= gAddonName .. "_Settings"
 addonVars.savedVarVersion		   	= 0.10 -- Changing this will reset all SavedVariables!
+addonVars.savedVarsNumSaveModeTypes = 4 -- 1=Each character, 2=Account wide, 3=Each account saved the same, 4=Each server and account saved the same
 --The subtables for the marked items. markedItems will be used for the non-unique and the ZOs really unique IDs.
 --markedItemsFCOISUnique will be used for the FCOIS created unique IDs.
 addonVars.savedVarsMarkedItemsNames = {
@@ -70,10 +81,15 @@ FCOIS.svAllAccountsName             = "$AllAccounts"
 FCOIS.svSettingsForAllName          = "SettingsForAll"
 FCOIS.svSettingsName                = "Settings"
 FCOIS.svSettingsForEachCharacterName= "SettingsForEachCharacter"
+FCOIS.svServerAllTheSameName        = "$AllServers"
 
 --LibShifterBox boxName constants
 FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES  = "FCOISuniqueIdItemTypes"
 FCOIS_CON_LIBSHIFTERBOX_EXCLUDESETS             = "FCOISexcludedSets"
+
+--The vendor type constants
+FCOIS_CON_VENDOR_TYPE_NORMAL_NPC    = 1
+FCOIS_CON_VENDOR_TYPE_PORTABLE      = 2
 
 --The global variable for the current mouseDown button
 FCOIS.gMouseButtonDown = {}
@@ -145,9 +161,10 @@ FCOIS.LMM2:Init()
 --Create the filter object for addon libFilters 3.x
 FCOIS.libFilters = {}
 FCOIS.libFilters = LibFilters3
-if not FCOIS.libFilters then d(preVars.preChatTextRed .. strformat(libMissingErrorText, "LibFilters-3.0")) return end
+local libFilters = FCOIS.libFilters
+if not libFilters then d(preVars.preChatTextRed .. strformat(libMissingErrorText, "LibFilters-3.0")) return end
 --Initialize the libFilters 3.x filters
-FCOIS.libFilters:InitializeLibFilters()
+libFilters:InitializeLibFilters()
 
 --Initialize the library LibDialog
 FCOIS.LDIALOG = LibDialog
@@ -245,6 +262,29 @@ FCOIS_CON_FILTER_BUTTON_LOCKDYN			= 1
 FCOIS_CON_FILTER_BUTTON_GEARSETS		= 2
 FCOIS_CON_FILTER_BUTTON_RESDECIMP		= 3
 FCOIS_CON_FILTER_BUTTON_SELLGUILDINT	= 4
+--Filter button state
+FCOIS_CON_FILTER_BUTTON_STATE_GREEN     = true
+FCOIS_CON_FILTER_BUTTON_STATE_YELLOW    = -99
+FCOIS_CON_FILTER_BUTTON_STATE_RED       = false
+--Filter button special states
+FCOIS_CON_FILTER_BUTTON_STATE_DO_NOT_UPDATE_COLOR = -999 --Do not update the colors if called from FCOIS settings menu
+
+--Prevention variables
+FCOIS.preventerVars = {}
+local preventerVars = FCOIS.preventerVars
+
+--Filter buttons
+--TODO: As of 2022-03-11 the logical conjunctions of the filterButtons do not work properly if some are set to AND and some are set to OR
+--So for now they will all change at the same time to AND or OR
+--Change orr emove this preventerVariable to update them single again
+preventerVars.filterButtonSettingsChangeAllToTheSame = true
+
+--Filter button color
+mappingVars.filterButtonColors = {
+    [FCOIS_CON_FILTER_BUTTON_STATE_GREEN]     = { 0, 1, 0, 1 },
+    [FCOIS_CON_FILTER_BUTTON_STATE_YELLOW]    = { 1, 1, 0, 1 },
+    [FCOIS_CON_FILTER_BUTTON_STATE_RED]       = { 1, 0, 0, 1 },
+}
 
 --Custom filterPanelIds, not offical of LibFilters, only given within FCOIS (for the "flag" context menu buttons e.g.)
 FCOIS_CON_LF_CHARACTER              = "character"
@@ -275,9 +315,6 @@ FCOIS_CON_NON_WISHED_ALL        = 3
 --in function Localization()
 FCOIS.localLocalizationsVars = {}
 
-    --The table of number variables
-FCOIS.numVars = {}
-local numVars = FCOIS.numVars
 --Global value: Number of filter icons to choose by right click menu
 numVars.languageCount = FCOIS_CON_LANG_MAX --English, German, French, Spanish, Italian, Japanese, Russian
 --Global: Count of available inventory filter types (LF_INVENTORY, LF_BANK_WITHDRAW, etc. -> see above)
@@ -296,6 +333,10 @@ numVars.gFCOMaxNumDynamicIcons	= 30
 --Global value: Number of dynamic icons
 numVars.gFCONumDynamicIcons		= 10
 local numMaxDynamicIcons        = numVars.gFCOMaxNumDynamicIcons
+--The amount of markerIcons below the resDecImp context menu
+numVars.resDecImpIconCount      = 3
+--The amount of markerIcons below the sellGuildInt context menu
+numVars.sellGuildIntIconCount   = 3
 
 --The maximum number at the ITEMTYPE constants
 local itemTypeMaxFallback = ITEMTYPE_ITERATION_END -- should be 71 -> ITEMTYPE_GROUP_REPAIR at date 2021-05-06
@@ -320,17 +361,17 @@ numVars.maxItemType = maxItemTypesFound or itemTypeMaxFallback
 --and possible context menus for the filter buttons: RESDECIMP and SELLGUILDINT
 --[[
      1 = Lock symbol            (LOCK)
-     2 = Gear set 1
-     3 = Research					(RES)
-     4 = Gear set 2
-     5 = Sell							(SELL)
-     6 = Gear set 3
-     7 = Gear set 4
-     8 = Gear set 5
-     9 = Deconstruction				(DEC)
-    10 = Improvement				(IMP)
-    11 = Sell at guild store			(GUILD)
-    12 = Intricate						(INT)
+     2 = Gear set 1             (Gear static 1)
+     3 = Research				(RES)
+     4 = Gear set 2             (Gear static 2)
+     5 = Sell					(SELL)
+     6 = Gear set 3             (Gear static 3)
+     7 = Gear set 4             (Gear static 4)
+     8 = Gear set 5             (Gear static 5)
+     9 = Deconstruction			(DEC)
+    10 = Improvement			(IMP)
+    11 = Sell at guild store	(GUILD)
+    12 = Intricate				(INT)
     13 = Dynamic 1				(DYN)
     14 = Dynamic 2              (DYN)
     15 = Dynamic 3				(DYN)
@@ -339,9 +380,28 @@ numVars.maxItemType = maxItemTypesFound or itemTypeMaxFallback
     18 = Dynamic 6              (DYN)
     19 = Dynamic 7				(DYN)
     20 = Dynamic 8              (DYN)
-    22 = Dynamic 9              (DYN)
+    21 = Dynamic 9              (DYN)
     22 = Dynamic 10             (DYN)
-    23 .. 42 = Dynamic 11 -- Dynamic 30 (DYN)
+    23 = Dynamic 11             (DYN)
+    24 = Dynamic 12             (DYN)
+    25 = Dynamic 13             (DYN)
+    26 = Dynamic 14             (DYN)
+    27 = Dynamic 15             (DYN)
+    28 = Dynamic 16             (DYN)
+    29 = Dynamic 17             (DYN)
+    30 = Dynamic 18             (DYN)
+    31 = Dynamic 19             (DYN)
+    32 = Dynamic 20             (DYN)
+    33 = Dynamic 21             (DYN)
+    34 = Dynamic 22             (DYN)
+    35 = Dynamic 23             (DYN)
+    36 = Dynamic 24             (DYN)
+    37 = Dynamic 25             (DYN)
+    38 = Dynamic 26             (DYN)
+    39 = Dynamic 27             (DYN)
+    40 = Dynamic 28             (DYN)
+    41 = Dynamic 29             (DYN)
+    42 = Dynamic 30             (DYN)
 ]]
 --Constant values for the FCOItemSaver marker icons
 FCOIS_CON_ICON_LOCK					= 1
@@ -393,7 +453,8 @@ checkVars.inventoryRowPatterns = {
     "^ZO_RepairWindowList%dRow%d%d*",                                       --Repair at vendor
     "^ZO_ListDialog1List%dRow%d%d*",                                        --List dialog (Repair, Recharge, Enchant, Research)
     "^ZO_CompanionEquipment_Panel_.+List%dRow%d%d*",                        --Companion Inventory backpack
-    "^ZO_CompanionCharacterWindow_.+_TopLevelEquipmentSlots.+$"             --Companion character
+    "^ZO_CompanionCharacterWindow_.+_TopLevelEquipmentSlots.+$",            --Companion character
+    "^ZO_UniversalDeconstructionTopLevel_%a+PanelInventoryBackpack%dRow%d%d*",-- #202 Universal deconstruction
 --Other adons like IIfA will be added dynamically at EVENT_ON_ADDON_LOADED callback function
 --See file src/FCOIS_Events.lua, call to function FCOIS.checkIfOtherAddonActive() -> See file
 -- src/FCOIS_OtherAddons.lua, function FCOIS.checkIfOtherAddonActive()
@@ -547,13 +608,17 @@ end
 --Mapping of the filterPanelId to whereAreWe constant, repsecting the crafting type
 --2021-08-15 Only JewelryCrafting so far supported to differ refine, decon, improve, research and research dialog for normal/jewelry crafting
 mappingVars.filterPanelIdToFilterPanelIdRespectingCrafttype = {}
-mappingVars.filterPanelIdToFilterPanelIdRespectingCrafttype[CRAFTING_TYPE_JEWELRYCRAFTING] = {
-    [LF_SMITHING_REFINE]            = LF_JEWELRY_REFINE,
-    [LF_SMITHING_DECONSTRUCT]       = LF_JEWELRY_DECONSTRUCT,
-    [LF_SMITHING_IMPROVEMENT]       = LF_JEWELRY_IMPROVEMENT,
-    [LF_SMITHING_RESEARCH]          = LF_JEWELRY_RESEARCH,
-    [LF_SMITHING_RESEARCH_DIALOG]   = LF_JEWELRY_RESEARCH_DIALOG,
-}
+    if libFilters.mapping and libFilters.mapping.filterTypeToFilterTypeRespectingCraftType ~= nil then
+        mappingVars.filterPanelIdToFilterPanelIdRespectingCrafttype[CRAFTING_TYPE_JEWELRYCRAFTING] = libFilters.mapping.filterTypeToFilterTypeRespectingCraftType
+    else
+        mappingVars.filterPanelIdToFilterPanelIdRespectingCrafttype[CRAFTING_TYPE_JEWELRYCRAFTING] = {
+            [LF_SMITHING_REFINE]            = LF_JEWELRY_REFINE,
+            [LF_SMITHING_DECONSTRUCT]       = LF_JEWELRY_DECONSTRUCT,
+            [LF_SMITHING_IMPROVEMENT]       = LF_JEWELRY_IMPROVEMENT,
+            [LF_SMITHING_RESEARCH]          = LF_JEWELRY_RESEARCH,
+            [LF_SMITHING_RESEARCH_DIALOG]   = LF_JEWELRY_RESEARCH_DIALOG,
+        }
+    end
 
 --Mapping of the filterPanelIds which should change the "Ant-isettings" automatically if a panelId is changed
 --> see file src/FCOIS_Panels.lua, function FCOIS.UpdateAntiCheckAtPanelVariable
@@ -605,7 +670,7 @@ local filterPanelIdToBlockSettingName = {
     -------------------------------------------------------------------
     -->CraftBag with CraftBageExtended active
         [LF_CRAFTBAG]                   = {
-            callbackFunc = FCOIS.CheckIfCBEorAGSActive, --Will be nil at load but re-added at file src/FCOIS_OtherAddns.lua, below function FCOIS.CheckIfCBEorAGSActive!
+            callbackFunc = FCOIS.CheckIfCBEorAGSActive, --Will be nil at load but re-added at file src/FCOIS_OtherAddons.lua, below function FCOIS.CheckIfCBEorAGSActive!
             filterPanelToBlockSetting = {
                 [LF_MAIL_SEND]          = "blockSendingByMail",
                 [LF_GUILDSTORE_SELL]    = "blockSellingGuildStore",
@@ -686,6 +751,50 @@ mappingVars.whereAreWeToAlertmessageText = {}
 --> filled at src/FCOIS_Localization.lua, function FCOIS.Localization()
 mappingVars.filterPanelToFilterButtonMediumOutputText = {}
 
+--The array with the "is filter active" setting "text". Used to check if the filter button is enabled at the panel
+--via check to FCOIS.settingsVars.settings[FCOIS.mappingVars.filterPanelToFilterButtonFilterActiveSettingName[LF_*]]
+--> Used in files src/FCOIS_Settings.lua, function FCOIS.GetFilterWhereBySettings and
+--> src/FCOIS_FilterButtons.lua, local function filterStatusLoop (used in slash commands)
+local allowInvFilterStr =           "allowInventoryFilter"
+local allowEnchantFilter =          "allowEnchantingFilter"
+local allowResearchFilter =         "allowResearchFilter"
+local allowJewelryResearchFilter =  "allowJewelryResearchFilter"
+mappingVars.filterPanelToFilterButtonFilterActiveSettingName = {
+    [LF_INVENTORY] =                allowInvFilterStr,
+    [LF_BANK_DEPOSIT] =             allowInvFilterStr,
+    [LF_GUILDBANK_DEPOSIT] =        allowInvFilterStr,
+    [LF_HOUSE_BANK_DEPOSIT] =       allowInvFilterStr,
+    [LF_CRAFTBAG] =                 "allowCraftBagFilter",
+    [LF_VENDOR_BUY] =               "allowVendorBuyFilter",
+    [LF_VENDOR_SELL] =              "allowVendorFilter",
+    [LF_VENDOR_BUYBACK] =           "allowVendorBuybackFilter",
+    [LF_VENDOR_REPAIR] =            "allowVendorRepairFilter",
+    [LF_FENCE_SELL] =               "allowFenceFilter",
+    [LF_FENCE_LAUNDER] =            "allowLaunderFilter",
+    [LF_BANK_WITHDRAW] =            "allowBankFilter",
+    [LF_GUILDBANK_WITHDRAW] =       "allowGuildBankFilter",
+    [LF_HOUSE_BANK_WITHDRAW] =      "allowBankFilter",
+    [LF_GUILDSTORE_SELL] =          "allowTradinghouseFilter",
+    [LF_SMITHING_REFINE] =          "allowRefinementFilter",
+    [LF_SMITHING_DECONSTRUCT] =     "allowDeconstructionFilter",
+    [LF_SMITHING_IMPROVEMENT] =     "allowImprovementFilter",
+    [LF_SMITHING_RESEARCH] =        allowResearchFilter,
+    [LF_SMITHING_RESEARCH_DIALOG] = allowResearchFilter,
+    [LF_JEWELRY_REFINE] =           "allowJewelryRefinementFilter",
+    [LF_JEWELRY_DECONSTRUCT] =      "allowJewelryDeconstructionFilter",
+    [LF_JEWELRY_IMPROVEMENT] =      "allowJewelryImprovementFilter",
+    [LF_JEWELRY_RESEARCH] =         allowJewelryResearchFilter,
+    [LF_JEWELRY_RESEARCH_DIALOG] =  allowJewelryResearchFilter,
+    [LF_MAIL_SEND] =                "allowMailFilter",
+    [LF_TRADE] =                    "allowTradeFilter",
+    [LF_ENCHANTING_EXTRACTION] =    allowEnchantFilter,
+    [LF_ENCHANTING_CREATION] =      allowEnchantFilter,
+    [LF_ALCHEMY_CREATION] =         "allowAlchemyFilter",
+    [LF_RETRAIT] =                  "allowRetraitFilter",
+    [LF_INVENTORY_COMPANION] =      "allowCompanionInventoryFilter",
+
+}
+
 
 --The active filter panel Ids (filter panel Id = inventory types above!)
 mappingVars.activeFilterPanelIds			= {
@@ -733,11 +842,60 @@ mappingVars.panelIdToDeconstructable = {
     -->panelIds (from table mappingVars.activeFilterPanelIds above) as key, and the value = false
 }
 
+--The LibFilters panelIds of deconstruction with it's mapping to the other craftingType
+mappingVars.deconstructablePanelIdToOtherCraftType = {
+    --Deconstructable
+    [LF_SMITHING_DECONSTRUCT] = LF_JEWELRY_DECONSTRUCT,
+    [LF_JEWELRY_DECONSTRUCT]  = LF_SMITHING_DECONSTRUCT,
+}
+
+--#202 -v-
+local function getDataFromUniversalDeconstructionMenuBar(key)
+    local barToSearch = ZO_UNIVERSAL_DECONSTRUCTION_FILTER_TYPES
+    if barToSearch then
+        for _, v in ipairs(barToSearch) do
+            if v.key and v.key == key then
+                return v
+            end
+        end
+    end
+    return
+end
+FCOIS.GetDataFromUniversalDeconstructionMenuBar = getDataFromUniversalDeconstructionMenuBar
+if ZO_UNIVERSAL_DECONSTRUCTION_FILTER_TYPES ~= nil then
+    --The LibFilters filterTypes which are supported at the universal deconstruction NPC e.g. 'Giladil'
+    --[[
+    mappingVars.panelIdSupportedAtUniversalDeconstructionNPC = {
+        [LF_SMITHING_DECONSTRUCT]   = true,
+        [LF_JEWELRY_DECONSTRUCT]    = true,
+        [LF_ENCHANTING_EXTRACTION]  = true,
+    }
+    ]]
+    mappingVars.panelIdSupportedAtUniversalDeconstructionNPC = libFilters.mapping.universalDeconFilterTypeToFilterBase
+
+    mappingVars.universalDeconFilterPanelIdToWhereAreWe = {
+        [LF_SMITHING_DECONSTRUCT]   = FCOIS_CON_DECONSTRUCT,
+        [LF_JEWELRY_DECONSTRUCT]    = FCOIS_CON_DECONSTRUCT,
+        [LF_ENCHANTING_EXTRACTION]  = FCOIS_CON_ENCHANT_EXTRACT,
+    }
+
+
+    --The NPC decon menuBars tab's buttons -> filterPanelId
+    mappingVars.panelIdByUniversalDeconstructionNPCMenuBarTabButtonName = {
+        [getDataFromUniversalDeconstructionMenuBar("enchantments").displayName]   = LF_ENCHANTING_EXTRACTION, --Glyphs
+        [getDataFromUniversalDeconstructionMenuBar("jewelry").displayName]        = LF_JEWELRY_DECONSTRUCT,   --Jewelry
+        [getDataFromUniversalDeconstructionMenuBar("armor").displayName]          = LF_SMITHING_DECONSTRUCT,  --Armor
+        [getDataFromUniversalDeconstructionMenuBar("weapons").displayName]        = LF_SMITHING_DECONSTRUCT,  --Weapons
+        [getDataFromUniversalDeconstructionMenuBar("all").displayName]            = LF_SMITHING_DECONSTRUCT,  --All -> Not sure if deconstruction is the correct here? But use it for now
+    }
+end
+
 --FilterPanelIds which need the FCOIS.RefreshListDialog function
 mappingVars.filterPanelIdForRefreshDialog = {
     [LF_SMITHING_RESEARCH_DIALOG] = true,
     [LF_JEWELRY_RESEARCH_DIALOG] =  true,
 }
+---^- #202
 
 --The mapping array between LibFilters IDs to their filter name string "prefix"
 FCOIS_CON_LIBFILTERS_STRING_PREFIX_BACKUP_ID    = 0
@@ -996,6 +1154,8 @@ FCOIS.equipmentVars.gEquipmentIconHeight			= 20
 --Width and height for the equipment armor type icons
 FCOIS.equipmentVars.gEquipmentArmorTypeIconHeight	= 16
 FCOIS.equipmentVars.gEquipmentArmorTypeIconWidth 	= 16
+--The created filterButtons will be saved here, for each filterPanelId
+filterButtonVars.filterButtons = {}
 --Width and height for the filter buttons - Default values
 -->Will be read within file /Src/FCOIS_FilterButtons.lua, function GetFilterButtonDataByPanelId(libFiltersPanelId)
 filterButtonVars.gFilterButtonWidth			        = 24
@@ -1039,7 +1199,7 @@ FCOIS.otherAddons.craftBagExtendedActive = false
 FCOIS.otherAddons.craftBagExtendedSupportedFilterPanels = {
     [LF_GUILDBANK_DEPOSIT]  =   true,
     [LF_BANK_DEPOSIT]       =   true,
-    [LF_GUILDBANK_WITHDRAW] =   true,
+    [LF_GUILDBANK_WITHDRAW] =   true, --Todo: Is this valid?
     [LF_MAIL_SEND]          =   true,
     [LF_GUILDSTORE_SELL]    =   true,
     [LF_TRADE]              =   true,
@@ -1159,7 +1319,8 @@ ctrlVars.BACKPACK_BAG 				    = GetControl(ctrlVars.BACKPACK_LIST, contentsStr) 
 ctrlVars.INV_MENUBAR_BUTTON_ITEMS	    = GetControl(ctrlVars.INV, strformat(menuBarButtonStr, "1")) --ZO_PlayerInventoryMenuBarButton1
 ctrlVars.INV_MENUBAR_BUTTON_CRAFTBAG    = GetControl(ctrlVars.INV, strformat(menuBarButtonStr, "2")) --ZO_PlayerInventoryMenuBarButton2
 ctrlVars.INV_MENUBAR_BUTTON_CURRENCIES  = GetControl(ctrlVars.INV, strformat(menuBarButtonStr, "3")) --ZO_PlayerInventoryMenuBarButton3
-ctrlVars.INV_MENUBAR_BUTTON_QUICKSLOTS  = GetControl(ctrlVars.INV, strformat(menuBarButtonStr, "4")) --ZO_PlayerInventoryMenuBarButton4
+ctrlVars.INV_MENUBAR_BUTTON_QUESTS      = GetControl(ctrlVars.INV, strformat(menuBarButtonStr, "4")) --ZO_PlayerInventoryMenuBarButton4
+ctrlVars.INV_MENUBAR_BUTTON_QUICKSLOTS  = GetControl(ctrlVars.INV, strformat(menuBarButtonStr, "5")) --ZO_PlayerInventoryMenuBarButton5
 ctrlVars.BACKPACK 		    		    = GetControl(ctrlVars.INV, backpackStr) --ZO_PlayerInventoryBackpack
 
 ctrlVars.companionInvSceneName          = "companionCharacterKeyboard"
@@ -1191,16 +1352,8 @@ ctrlVars.VENDOR_MENUBAR_BUTTON_SELL      = GetControl(ctrlVars.STORE, strformat(
 ctrlVars.VENDOR_MENUBAR_BUTTON_BUYBACK   = GetControl(ctrlVars.STORE, strformat(menuBarButtonStr, "3")) -- ZO_StoreWindowMenuBarButton3
 ctrlVars.VENDOR_MENUBAR_BUTTON_REPAIR    = GetControl(ctrlVars.STORE, strformat(menuBarButtonStr, "4")) -- ZO_StoreWindowMenuBarButton4
 ctrlVars.vendorPanelMainMenuButtonControlSets = {
-    ["Normal"] = {
-        [1] = ctrlVars.VENDOR_MENUBAR_BUTTON_BUY,
-        [2] = ctrlVars.VENDOR_MENUBAR_BUTTON_SELL,
-        [3] = ctrlVars.VENDOR_MENUBAR_BUTTON_BUYBACK,
-        [4] = ctrlVars.VENDOR_MENUBAR_BUTTON_REPAIR,
-    },
-    ["Nuzhimeh"] = {
-        [1] = ctrlVars.VENDOR_MENUBAR_BUTTON_SELL,
-        [2] = ctrlVars.VENDOR_MENUBAR_BUTTON_BUYBACK,
-    },
+    [FCOIS_CON_VENDOR_TYPE_NORMAL_NPC]  = {}, --4 buttons by default
+    [FCOIS_CON_VENDOR_TYPE_PORTABLE]    = {}, --2 buttons by default
 }
 ctrlVars.STORE_BUY_BACK              = ZO_BuyBack
 ctrlVars.STORE_BUY_BACK_NAME         = ctrlVars.STORE_BUY_BACK:GetName()
@@ -1258,6 +1411,29 @@ ctrlVars.DECONSTRUCTION_SLOT 		= GetControl(ctrlVars.DECONSTRUCTION_PANEL, "Slot
 ctrlVars.DECONSTRUCTION_BUTTON_ARMOR   = GetControl(ctrlVars.DECONSTRUCTION_INV, strformat(tabsButtonStr, "1")) --ZO_SmithingTopLevelDeconstructionPanelInventoryTabsButton1
 ctrlVars.DECONSTRUCTION_BUTTON_WEAPONS = GetControl(ctrlVars.DECONSTRUCTION_INV, strformat(tabsButtonStr, "2")) --ZO_SmithingTopLevelDeconstructionPanelInventoryTabsButton2
 --ctrlVars.SMITHING_MENUBAR_BUTTON_DECONSTRUCTION 		= ZO_SmithingTopLevelModeMenuBarButton3
+-- -v- #202 UniversalDeconstruction - API101033 "Ascending Tide" added via universal deconstruction NPC "Giladil"
+local universalDeconInv, universalDeconstructionPanel
+if ZO_UNIVERSAL_DECONSTRUCTION_FILTER_TYPES ~= nil then
+    ctrlVars.UNIVERSAL_DECONSTRUCTION_GLOBAL = UNIVERSAL_DECONSTRUCTION
+    universalDeconstructionPanel = ctrlVars.UNIVERSAL_DECONSTRUCTION_GLOBAL.deconstructionPanel
+    ctrlVars.UNIVERSAL_DECONSTRUCTION_BASE = ZO_UniversalDeconstructionTopLevel_Keyboard
+    ctrlVars.UNIVERSAL_DECONSTRUCTION_PANEL = GetControl(ctrlVars.UNIVERSAL_DECONSTRUCTION_BASE, "Panel") ---ZO_UniversalDeconstructionTopLevel_KeyboardPanel
+    ctrlVars.UNIVERSAL_DECONSTRUCTION_INV = GetControl(ctrlVars.UNIVERSAL_DECONSTRUCTION_PANEL, inventoryStr) ---ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventory
+    universalDeconInv = ctrlVars.UNIVERSAL_DECONSTRUCTION_INV
+    --ctrlVars.UNIVERSAL_DECONSTRUCTION_INV_LIST  = universalDeconInv.list -> not existing!
+    ctrlVars.UNIVERSAL_DECONSTRUCTION_INV_NAME	= universalDeconInv:GetName()
+    ctrlVars.UNIVERSAL_DECONSTRUCTION_INV_BACKPACK = GetControl(universalDeconInv, backpackStr) -- ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventoryBackpack
+    ctrlVars.UNIVERSAL_DECONSTRUCTION_BAG 		= GetControl(ctrlVars.UNIVERSAL_DECONSTRUCTION_INV_BACKPACK, contentsStr) -- ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventoryBackpackContents
+    ctrlVars.UNIVERSAL_DECONSTRUCTION_SLOT 		= GetControl(ctrlVars.UNIVERSAL_DECONSTRUCTION_PANEL, "SlotContainerExtractionSlot") --ZO_UniversalDeconstructionTopLevel_KeyboardPanelSlotContainerExtractionSlot
+    ctrlVars.UNIVERSAL_DECONSTRUCTION_MENUBAR_TABS = GetControl(universalDeconInv, "Tabs") --ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventoryTabs
+    --ctrlVars.UNIVERSAL_DECONSTRUCTION_BUTTON_ENCHANTING = GetControl(universalDeconInv, strformat(tabsButtonStr, "1")) --ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventoryTabsButton1
+    --ctrlVars.UNIVERSAL_DECONSTRUCTION_BUTTON_JEWELRY = GetControl(universalDeconInv, strformat(tabsButtonStr, "2")) --ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventoryTabsButton2
+    --ctrlVars.UNIVERSAL_DECONSTRUCTION_BUTTON_ARMOR = GetControl(universalDeconInv, strformat(tabsButtonStr, "3")) --ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventoryTabsButton3
+    --ctrlVars.UNIVERSAL_DECONSTRUCTION_BUTTON_WEAPONS = GetControl(universalDeconInv, strformat(tabsButtonStr, "4")) --ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventoryTabsButton4
+    --ctrlVars.UNIVERSAL_DECONSTRUCTION_BUTTON_ALL = GetControl(universalDeconInv, strformat(tabsButtonStr, "5")) --ZO_UniversalDeconstructionTopLevel_KeyboardPanelInventoryTabsButton5
+    ctrlVars.UNIVERSAL_DECONSTRUCTON_SCENE = UNIVERSAL_DECONSTRUCTION_KEYBOARD_SCENE
+end
+-- -^- #202
 ctrlVars.REFINEMENT_PANEL		    = GetControl(ctrlVars.SMITHING_PANEL, "RefinementPanel") -- ZO_SmithingTopLevelRefinementPanel
 ctrlVars.REFINEMENT_INV			    = GetControl(ctrlVars.REFINEMENT_PANEL, inventoryStr) -- ZO_SmithingTopLevelRefinementPanelInventory
 ctrlVars.REFINEMENT_INV_NAME		= ctrlVars.REFINEMENT_INV:GetName()
@@ -1313,7 +1489,7 @@ ctrlVars.ENCHANTING_RUNE_CONTAINER_ESSENCE  = GetControl(ctrlVars.ENCHANTING_RUN
 ctrlVars.ENCHANTING_RUNE_CONTAINER_ASPECT   = GetControl(ctrlVars.ENCHANTING_RUNE_CONTAINER, "AspectRune") --ZO_EnchantingTopLevelRuneSlotContainerAspectRune
 ctrlVars.ENCHANTING_APPLY_ENCHANT           = APPLY_ENCHANT
 ctrlVars.ALCHEMY                            = ALCHEMY
-ctrlVars.ALCHEMY_PANEL                      = ZO_AlchemyTopLevel
+ctrlVars.ALCHEMY_PANEL                      = ctrlVars.ALCHEMY.control --ZO_AlchemyTopLevel
 ctrlVars.ALCHEMY_INV				        = GetControl(ctrlVars.ALCHEMY_PANEL, inventoryStr) --ZO_AlchemyTopLevelInventory
 ctrlVars.ALCHEMY_INV_NAME			        = ctrlVars.ALCHEMY_INV:GetName()
 ctrlVars.ALCHEMY_STATION			        = GetControl(ctrlVars.ALCHEMY_INV, backpackStr) --ZO_AlchemyTopLevelInventoryBackpack
@@ -1395,6 +1571,34 @@ ctrlVars.ZOMenu                         = ZO_Menu
 ctrlVars.mainMenuCategoryBar            = ZO_MainMenuCategoryBar
 
 
+-- #202 The mapping between the filterPanelId and the universal deconstruction controls to parent and anchor to
+mappingVars.panelIdToUniversalDeconstructionNPCParentData = {}
+if ZO_UNIVERSAL_DECONSTRUCTION_FILTER_TYPES ~= nil then
+    mappingVars.panelIdToUniversalDeconstructionNPCParentData = {
+        [LF_SMITHING_DECONSTRUCT]   = {
+            parent      = universalDeconInv,
+            anchorTo    = universalDeconInv,
+        },
+        [LF_JEWELRY_DECONSTRUCT]   = {
+            parent      = universalDeconInv,
+            anchorTo    = universalDeconInv,
+        },
+        [LF_ENCHANTING_EXTRACTION]   = {
+            parent      = universalDeconInv,
+            anchorTo    = universalDeconInv,
+        },
+    }
+
+    --[[
+    --The NPC decon filterPanelId to inventory to update
+    mappingVars.universalDeconstructionNPCFilterPanelIdToInventory = {
+        [LF_ENCHANTING_EXTRACTION]  = nil, --todo
+        [LF_JEWELRY_DECONSTRUCT]    = nil, --todo
+        [LF_SMITHING_DECONSTRUCT]   = nil, --todo
+    }
+    ]]
+end
+
 --Array for the inventories data
 FCOIS.inventoryVars = {}
 local inventoryVars = FCOIS.inventoryVars
@@ -1425,6 +1629,11 @@ inventoryVars.markerControlInventories = {
         [ctrlVars.ALCHEMY_STATION]      = true,
     },
 }
+-- -v- #202
+if ZO_UNIVERSAL_DECONSTRUCTION_FILTER_TYPES ~= nil then
+    inventoryVars.markerControlInventories["hookScrollSetupCallback"][ctrlVars.UNIVERSAL_DECONSTRUCTION_INV_BACKPACK] = true
+end
+-- -^- #202
 
 
 --The mapping array for libFilter filterType to the inventory type
@@ -1480,6 +1689,13 @@ mappingVars.libFiltersPanelIdToCraftingPanelSlot = {
     [LF_JEWELRY_DECONSTRUCT]        = deconstructionPanel.extractionSlot,
     [LF_JEWELRY_IMPROVEMENT]        = improvementPanel.improvementSlot,
 }
+if ZO_UNIVERSAL_DECONSTRUCTION_FILTER_TYPES ~= nil then
+    mappingVars.libFiltersPanelIdToUniversalCraftingPanelSlot = {
+        [LF_SMITHING_DECONSTRUCT]       = universalDeconstructionPanel.extractionSlot,
+        [LF_JEWELRY_DECONSTRUCT]        = universalDeconstructionPanel.extractionSlot,
+        [LF_ENCHANTING_EXTRACTION]      = universalDeconstructionPanel.extractionSlot,
+    }
+end
 
 --The crafting panelIds which should show FCOIS filter buttons
 mappingVars.craftingPanelsWithFCOISFilterButtons = {
@@ -1595,7 +1811,7 @@ mappingVars.gFilterPanelIdToInv = {
 local invTextureName                = ctrlVars.INV_NAME .. "_FilterButton%sTexture"
 local refineTextureName             = ctrlVars.REFINEMENT_INV_NAME .. "_FilterButton%sTexture"
 local enchantTextureName            = ctrlVars.ENCHANTING_STATION_NAME .. "_FilterButton%sTexture"
-local deconTextureName              = ctrlVars.DECONSTRUCTION_INV_NAME .. "_FilterButton%sTexture"
+local deconTextureName              = ctrlVars.DECONSTRUCTION_INV_NAME .. "_FilterButton%sTexture" --todo #202
 local improveTextureName            = ctrlVars.IMPROVEMENT_INV_NAME .. "_FilterButton%sTexture"
 local researchTextureName           = ctrlVars.RESEARCH_NAME .. "_FilterButton%sTexture"
 local researchDialogTextureName     = ctrlVars.RESEARCH_POPUP_TOP_DIVIDER_NAME .. "_FilterButton%sTexture"
@@ -1701,12 +1917,13 @@ FCOIS.craftingCreatePanelControlsOrFunction = {}
 FCOIS.dragAndDropVars = {}
 FCOIS.dragAndDropVars.bag	= nil
 FCOIS.dragAndDropVars.slot	= nil
---Prevention variables
-FCOIS.preventerVars = {}
-local preventerVars = FCOIS.preventerVars
+
+---Prevention variables
 preventerVars._prevVarReset = "FCOIS_PreventerVariableReset_"
+preventerVars.gCalledFromInternalFCOIS = false --is an API function (or other functions which could load the SavedVariables) called from FCOIS internally
 preventerVars.gLocalizationDone		= false
 preventerVars.KeyBindingTexts		= false
+preventerVars.gKeybindingLocalizationDone = false
 preventerVars.gScanningInv	    	= false
 --preventerVars.canUpdateInv 	   		= true
 preventerVars.gFilteringBasics		= false
@@ -1741,6 +1958,7 @@ preventerVars.doNotScanInv = false
 preventerVars.migrateItemMarkers = false
 preventerVars.migrateToUniqueIds = false
 preventerVars.migrateToItemInstanceIds = false
+preventerVars.migrateItemMarkersCalledFromPlayerActivated = false
 preventerVars.gAddonStartupInProgress = false
 preventerVars.lastHoveredInvSlot = nil
 preventerVars.createdMasterWrit= false
@@ -1764,15 +1982,17 @@ preventerVars.dontUpdateFilteredItemCount                     = false
 preventerVars.lamMenuOpenAndShowingInvPreviewForGridListAddon = false
 preventerVars.isZoDialogContextMenu = false
 preventerVars.enchantItemActive = false
+preventerVars.doNotCheckForDefaultName = false
+preventerVars.universalDeconSceneHidden = false
 
 --The event handler array for OnMouseDoubleClick, Drag&Drop, etc.
 FCOIS.eventHandlers = {}
 
 --Table to map the FCOIS.settingsVars.settings filter state to the output text identifier
 mappingVars.settingsFilterStateToText = {
-	["true"]  = "on",
-    ["false"] = "off",
-    ["-99"]   = "onlyfiltered",
+	[tos(FCOIS_CON_FILTER_BUTTON_STATE_GREEN)]  = "on",
+    [tos(FCOIS_CON_FILTER_BUTTON_STATE_YELLOW)] = "onlyfiltered",
+    [tos(FCOIS_CON_FILTER_BUTTON_STATE_RED)]    = "off",
 }
 
 --Table to map iconId to relating filterId
@@ -1791,35 +2011,8 @@ mappingVars.iconToFilterDefaults = {
 	[FCOIS_CON_ICON_INTRICATE]			= FCOIS_CON_FILTER_BUTTON_SELLGUILDINT,
 --[[
     [FCOIS_CON_ICON_DYNAMIC_1]			= FCOIS_CON_FILTER_BUTTON_LOCKDYN,
-	[FCOIS_CON_ICON_DYNAMIC_2]			= FCOIS_CON_FILTER_BUTTON_LOCKDYN,
-	[FCOIS_CON_ICON_DYNAMIC_3]			= FCOIS_CON_FILTER_BUTTON_LOCKDYN,
-	[FCOIS_CON_ICON_DYNAMIC_4]			= FCOIS_CON_FILTER_BUTTON_LOCKDYN,
-	[FCOIS_CON_ICON_DYNAMIC_5]			= FCOIS_CON_FILTER_BUTTON_LOCKDYN,
-	[FCOIS_CON_ICON_DYNAMIC_6]			= FCOIS_CON_FILTER_BUTTON_LOCKDYN,
-	[FCOIS_CON_ICON_DYNAMIC_7]			= FCOIS_CON_FILTER_BUTTON_LOCKDYN,
-	[FCOIS_CON_ICON_DYNAMIC_8]			= FCOIS_CON_FILTER_BUTTON_LOCKDYN,
-	[FCOIS_CON_ICON_DYNAMIC_9]			= FCOIS_CON_FILTER_BUTTON_LOCKDYN,
-	[FCOIS_CON_ICON_DYNAMIC_10]			= FCOIS_CON_FILTER_BUTTON_LOCKDYN,
-	[FCOIS_CON_ICON_DYNAMIC_11]			= FCOIS_CON_FILTER_BUTTON_LOCKDYN,
-	[FCOIS_CON_ICON_DYNAMIC_12]			= FCOIS_CON_FILTER_BUTTON_LOCKDYN,
-	[FCOIS_CON_ICON_DYNAMIC_13]			= FCOIS_CON_FILTER_BUTTON_LOCKDYN,
-	[FCOIS_CON_ICON_DYNAMIC_14]			= FCOIS_CON_FILTER_BUTTON_LOCKDYN,
-	[FCOIS_CON_ICON_DYNAMIC_15]			= FCOIS_CON_FILTER_BUTTON_LOCKDYN,
-	[FCOIS_CON_ICON_DYNAMIC_16]			= FCOIS_CON_FILTER_BUTTON_LOCKDYN,
-	[FCOIS_CON_ICON_DYNAMIC_17]			= FCOIS_CON_FILTER_BUTTON_LOCKDYN,
-	[FCOIS_CON_ICON_DYNAMIC_18]			= FCOIS_CON_FILTER_BUTTON_LOCKDYN,
-	[FCOIS_CON_ICON_DYNAMIC_19]			= FCOIS_CON_FILTER_BUTTON_LOCKDYN,
-	[FCOIS_CON_ICON_DYNAMIC_20]			= FCOIS_CON_FILTER_BUTTON_LOCKDYN,
-	[FCOIS_CON_ICON_DYNAMIC_21]			= FCOIS_CON_FILTER_BUTTON_LOCKDYN,
-	[FCOIS_CON_ICON_DYNAMIC_22]			= FCOIS_CON_FILTER_BUTTON_LOCKDYN,
-	[FCOIS_CON_ICON_DYNAMIC_23]			= FCOIS_CON_FILTER_BUTTON_LOCKDYN,
-	[FCOIS_CON_ICON_DYNAMIC_24]			= FCOIS_CON_FILTER_BUTTON_LOCKDYN,
-	[FCOIS_CON_ICON_DYNAMIC_25]			= FCOIS_CON_FILTER_BUTTON_LOCKDYN,
-	[FCOIS_CON_ICON_DYNAMIC_26]			= FCOIS_CON_FILTER_BUTTON_LOCKDYN,
-	[FCOIS_CON_ICON_DYNAMIC_27]			= FCOIS_CON_FILTER_BUTTON_LOCKDYN,
-	[FCOIS_CON_ICON_DYNAMIC_28]			= FCOIS_CON_FILTER_BUTTON_LOCKDYN,
-	[FCOIS_CON_ICON_DYNAMIC_29]			= FCOIS_CON_FILTER_BUTTON_LOCKDYN,
-	[FCOIS_CON_ICON_DYNAMIC_30]			= FCOIS_CON_FILTER_BUTTON_LOCKDYN,
+    [FCOIS_CON_ICON_DYNAMIC_2]			= FCOIS_CON_FILTER_BUTTON_LOCKDYN,
+    ... see below at for dynIconNr=1, numMaxDynamicIcons do
 ]]
 }
 mappingVars.iconToFilter = {}
@@ -1851,6 +2044,10 @@ mappingVars.iconToGear = {
     [FCOIS_CON_ICON_GEAR_4] = 4,
     [FCOIS_CON_ICON_GEAR_5] = 5,
 }
+
+--Will both be set in function FCOIS.RebuildGearSetBaseVars() upon event_palyer_activated or changed gear icons (dynamic ones)
+mappingVars.iconToNonDynamicGear = {}
+mappingVars.iconToDynamicGear = {}
 
 --Table to map gearId to iconId. Will be enhanced by the dynamic icons which are enabled to be "gear".
 --by function FCOIS.rebuildGearSetBaseVars() (in /src/FCOIS_Functions.lua), in EVENT_PLAYER_ACTIVATED callback
@@ -1897,18 +2094,28 @@ mappingVars.iconIsDynamic = {
 	[FCOIS_CON_ICON_SELL_AT_GUILDSTORE]	= false,
 	[FCOIS_CON_ICON_INTRICATE]			= false,
 --[[
-	[FCOIS_CON_ICON_DYNAMIC_1]          = true,
-	[FCOIS_CON_ICON_DYNAMIC_2]          = true,
-	..
+    [FCOIS_CON_ICON_DYNAMIC_1]			= true,
+    [FCOIS_CON_ICON_DYNAMIC_2]			= true,
+    ... see below at for dynIconNr=1, numMaxDynamicIcons do
 ]]
 }
 
 --Table to map dynamicId to iconId
 mappingVars.dynamicToIcon = {
+--[[
+    [1]			= FCOIS_CON_ICON_DYNAMIC_1,
+    [2]			= FCOIS_CON_ICON_DYNAMIC_2,
+    ... see below at for dynIconNr=1, numMaxDynamicIcons do
+]]
 }
 
 --Table to map iconId to dynamicId
 mappingVars.iconToDynamic = {
+--[[
+    [FCOIS_CON_ICON_DYNAMIC_1]			= 1,
+    [FCOIS_CON_ICON_DYNAMIC_2]			= 2,
+    ... see below at for dynIconNr=1, numMaxDynamicIcons do
+]]
 }
 
 --Mapping array for icon to lock & dynamic icons filter split
@@ -2420,7 +2627,7 @@ checkVars.autoReenableAntiSettingsCheckWheres = {
 }
 --The entry for "all" the antisettings reenable panel checks above
 checkVars.autoReenableAntiSettingsCheckWheresAll = "-ALL-"
---The filter panelÍds which need to be checked if anti-destroy is checked
+--The filter panelIds which need to be checked if anti-destroy is checked
 checkVars.filterPanelIdsForAntiDestroy = {
     [LF_INVENTORY]              = true,
     [LF_BANK_WITHDRAW]          = true,
@@ -2592,13 +2799,14 @@ contextMenuVars.availableCtms = {
     [FCOIS_CON_FILTER_BUTTON_RESDECIMP]     = "ResDecImp",
     [FCOIS_CON_FILTER_BUTTON_SELLGUILDINT]  = "SellGuildInt",
 }
+local availableCtms = contextMenuVars.availableCtms
 
 --The self-build contextMenus (filter buttons)
 FCOIS.contextMenu = {}
 local fcoisContextMenu = FCOIS.contextMenu
 --The context menu for the lock & dynmic icons filter button
 fcoisContextMenu.LockDynFilter 	= {}
-fcoisContextMenu.LockDynFilterName = contextMenuVars.availableCtms[FCOIS_CON_FILTER_BUTTON_LOCKDYN] .. "Filter"
+fcoisContextMenu.LockDynFilterName = availableCtms[FCOIS_CON_FILTER_BUTTON_LOCKDYN] .. "Filter"
 fcoisContextMenu.ContextMenuLockDynFilterName = "ContextMenu" .. fcoisContextMenu.LockDynFilterName
 fcoisContextMenu.LockDynFilter.bdSelectedLine = {}
 --Lock & dynamic icons filter split context menu variables
@@ -2607,7 +2815,7 @@ contextMenuVars.LockDynFilter.maxWidth		= contextMenuVars.filterButtons.maxWidth
 contextMenuVars.LockDynFilter.maxHeight		= 288 -- OLD: 288 before additional 20 dynamic icons were added
 contextMenuVars.LockDynFilter.entryHeight	    = contextMenuVars.filterButtons.entryHeight
 --The prefix of the LockDynFilter entries
-contextMenuVars.LockDynFilter.buttonNamePrefix = contextMenuVars.availableCtms[FCOIS_CON_FILTER_BUTTON_LOCKDYN] .. "Filter"
+contextMenuVars.LockDynFilter.buttonNamePrefix = availableCtms[FCOIS_CON_FILTER_BUTTON_LOCKDYN] .. "Filter"
 --The entries in the following mapping array
 contextMenuVars.LockDynFilter.buttonContextMenuToIconIdEntries = 32 -- OLD: 12 before additional 20 dynamic icons were added
 --The index of the mapping table for context menu buttons to icon id
@@ -2618,7 +2826,7 @@ end
 
 --The context menu for the gear sets filter button
 fcoisContextMenu.GearSetFilter 	= {}
-fcoisContextMenu.GearSetFilterName = contextMenuVars.availableCtms[FCOIS_CON_FILTER_BUTTON_GEARSETS] .. "Filter"
+fcoisContextMenu.GearSetFilterName = availableCtms[FCOIS_CON_FILTER_BUTTON_GEARSETS] .. "Filter"
 fcoisContextMenu.ContextMenuGearSetFilterName = "ContextMenu" .. fcoisContextMenu.GearSetFilterName
 fcoisContextMenu.GearSetFilter.bdSelectedLine = {}
 --Gear set filter split context menu variables
@@ -2627,7 +2835,7 @@ contextMenuVars.GearSetFilter.maxWidth		= contextMenuVars.filterButtons.maxWidth
 contextMenuVars.GearSetFilter.maxHeight		= 144
 contextMenuVars.GearSetFilter.entryHeight	    = contextMenuVars.filterButtons.entryHeight
 --The prefix of the GearSetFilter entries
-contextMenuVars.GearSetFilter.buttonNamePrefix = contextMenuVars.availableCtms[FCOIS_CON_FILTER_BUTTON_GEARSETS] .. "Filter"
+contextMenuVars.GearSetFilter.buttonNamePrefix = availableCtms[FCOIS_CON_FILTER_BUTTON_GEARSETS] .. "Filter"
 --The entries in the following mapping array
 contextMenuVars.GearSetFilter.buttonContextMenuToIconIdEntries = 6
 --The index of the mapping table for context menu buttons to icon id
@@ -2638,7 +2846,7 @@ end
 
 --The context menu for the RESEARCH & DECONSTRUCTION & IMPORVEMENT filter button
 fcoisContextMenu.ResDecImpFilter 	= {}
-fcoisContextMenu.ResDecImpFilterName =  contextMenuVars.availableCtms[FCOIS_CON_FILTER_BUTTON_RESDECIMP] .. "Filter"
+fcoisContextMenu.ResDecImpFilterName =  availableCtms[FCOIS_CON_FILTER_BUTTON_RESDECIMP] .. "Filter"
 fcoisContextMenu.ContextMenuResDecImpFilterName = "ContextMenu" .. fcoisContextMenu.ResDecImpFilterName
 fcoisContextMenu.ResDecImpFilter.bdSelectedLine = {}
 --Research/Deconstruction filter split context menu variables
@@ -2647,7 +2855,7 @@ contextMenuVars.ResDecImpFilter.maxWidth      = contextMenuVars.filterButtons.ma
 contextMenuVars.ResDecImpFilter.maxHeight	    = 96
 contextMenuVars.ResDecImpFilter.entryHeight	= contextMenuVars.filterButtons.entryHeight
 --The prefix of the ResDecImpFilter entries
-contextMenuVars.ResDecImpFilter.buttonNamePrefix = contextMenuVars.availableCtms[FCOIS_CON_FILTER_BUTTON_RESDECIMP] .. "Filter"
+contextMenuVars.ResDecImpFilter.buttonNamePrefix = availableCtms[FCOIS_CON_FILTER_BUTTON_RESDECIMP] .. "Filter"
 --The entries in the following mapping array
 contextMenuVars.ResDecImpFilter.buttonContextMenuToIconIdEntries = 4
 --The index of the mapping table for context menu buttons to icon id
@@ -2658,7 +2866,7 @@ end
 
 --The context menu for the SELL & SELL IN GUILD STORE & INTRICATE  filter button
 fcoisContextMenu.SellGuildIntFilter 	= {}
-fcoisContextMenu.SellGuildIntFilterName = contextMenuVars.availableCtms[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT] .. "Filter"
+fcoisContextMenu.SellGuildIntFilterName = availableCtms[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT] .. "Filter"
 fcoisContextMenu.ContextMenuSellGuildIntFilterName = "ContextMenu" .. fcoisContextMenu.SellGuildIntFilterName
 fcoisContextMenu.SellGuildIntFilter.bdSelectedLine = {}
 --Sell/Guild sell/Intricate filter split context menu variables
@@ -2667,7 +2875,7 @@ contextMenuVars.SellGuildIntFilter.maxWidth       = contextMenuVars.filterButton
 contextMenuVars.SellGuildIntFilter.maxHeight      = 96
 contextMenuVars.SellGuildIntFilter.entryHeight    = contextMenuVars.filterButtons.entryHeight
 --The prefix of the SellGuildIntFilter entries
-contextMenuVars.SellGuildIntFilter.buttonNamePrefix = contextMenuVars.availableCtms[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT] .. "Filter"
+contextMenuVars.SellGuildIntFilter.buttonNamePrefix = availableCtms[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT] .. "Filter"
 --The entries in the following mapping array
 contextMenuVars.SellGuildIntFilter.buttonContextMenuToIconIdEntries = 4
 --The index of the mapping table for context menu buttons to icon id
@@ -2681,10 +2889,10 @@ mappingVars.contextMenuFilterButtonTypeToSettings = {}
 
 --Mapping for the context menu type to it's filter button
 mappingVars.contextMenuButtonClickedMenuToButton = {
-	[contextMenuVars.availableCtms[FCOIS_CON_FILTER_BUTTON_LOCKDYN]] 		= FCOIS_CON_FILTER_BUTTON_LOCKDYN,
-	[contextMenuVars.availableCtms[FCOIS_CON_FILTER_BUTTON_GEARSETS]]		= FCOIS_CON_FILTER_BUTTON_GEARSETS,
-	[contextMenuVars.availableCtms[FCOIS_CON_FILTER_BUTTON_RESDECIMP]] 	    = FCOIS_CON_FILTER_BUTTON_RESDECIMP,
-	[contextMenuVars.availableCtms[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT]]	= FCOIS_CON_FILTER_BUTTON_SELLGUILDINT,
+	[availableCtms[FCOIS_CON_FILTER_BUTTON_LOCKDYN]] 		= FCOIS_CON_FILTER_BUTTON_LOCKDYN,
+	[availableCtms[FCOIS_CON_FILTER_BUTTON_GEARSETS]]		= FCOIS_CON_FILTER_BUTTON_GEARSETS,
+	[availableCtms[FCOIS_CON_FILTER_BUTTON_RESDECIMP]] 	    = FCOIS_CON_FILTER_BUTTON_RESDECIMP,
+	[availableCtms[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT]]	= FCOIS_CON_FILTER_BUTTON_SELLGUILDINT,
 }
 
 --The textures for the button context menu, selected item
@@ -2735,7 +2943,7 @@ invAddButtonVars.playerInventoryFCOAdditionalOptionsButton = ctrlVars.INV_NAME .
 invAddButtonVars.playerBankWithdrawButtonAdditionalOptions = "FCOIS_PlayerBankWithdraw" .. additionalFCOISInvContextmenuButtonNameString
 invAddButtonVars.guildBankFCOWithdrawButtonAdditionalOptions = "FCOIS_GuildBankWithdraw" .. additionalFCOISInvContextmenuButtonNameString
 invAddButtonVars.smithingTopLevelRefinementPanelInventoryButtonAdditionalOptions = ctrlVars.REFINEMENT_INV_NAME .. additionalFCOISInvContextmenuButtonNameString
-invAddButtonVars.smithingTopLevelDeconstructionPanelInventoryButtonAdditionalOptions = ctrlVars.DECONSTRUCTION_INV_NAME .. additionalFCOISInvContextmenuButtonNameString
+invAddButtonVars.smithingTopLevelDeconstructionPanelInventoryButtonAdditionalOptions = ctrlVars.DECONSTRUCTION_INV_NAME .. additionalFCOISInvContextmenuButtonNameString --todo #202
 invAddButtonVars.smithingTopLevelImprovementPanelInventoryButtonAdditionalOptions = ctrlVars.IMPROVEMENT_INV_NAME .. additionalFCOISInvContextmenuButtonNameString
 invAddButtonVars.enchantingTopLevelInventoryButtonAdditionalOptions = ctrlVars.ENCHANTING_INV_NAME .. additionalFCOISInvContextmenuButtonNameString
 invAddButtonVars.craftBagInventoryButtonAdditionalOptions = ctrlVars.CRAFTBAG_NAME .. additionalFCOISInvContextmenuButtonNameString
@@ -2847,7 +3055,7 @@ contextMenuVars.filterPanelIdToContextMenuButtonInvoker = {
     },
     [LF_SMITHING_DECONSTRUCT]  		= {
         ["addInvButton"]  = true,
-        ["parent"]        = ctrlVars.DECONSTRUCTION_INV,
+        ["parent"]        = ctrlVars.DECONSTRUCTION_INV, --todo #202
         ["name"]          = invAddButtonVars.smithingTopLevelDeconstructionPanelInventoryButtonAdditionalOptions,
         ["sortIndex"]     = 19,
     },
@@ -2884,7 +3092,7 @@ contextMenuVars.filterPanelIdToContextMenuButtonInvoker = {
     },
     [LF_JEWELRY_DECONSTRUCT]  		= {
         ["addInvButton"]  = true,
-        ["parent"]        = ctrlVars.DECONSTRUCTION_INV,
+        ["parent"]        = ctrlVars.DECONSTRUCTION_INV, --todo #202
         ["name"]          = invAddButtonVars.smithingTopLevelDeconstructionPanelInventoryButtonAdditionalOptions,
         ["sortIndex"]     = 25,
     },
@@ -2966,7 +3174,7 @@ local sortHeaderNames = {
     [LF_GUILDBANK_DEPOSIT]      = ctrlVars.INV_NAME .. sortByNameNameStr,
     [LF_GUILDBANK_WITHDRAW]     = ctrlVars.GUILD_BANK_INV_NAME .. sortByNameNameStr,
     [LF_SMITHING_REFINE]        = ctrlVars.REFINEMENT_INV_NAME .. sortByNameNameStr,
-    [LF_SMITHING_DECONSTRUCT]   = ctrlVars.DECONSTRUCTION_INV_NAME .. sortByNameNameStr,
+    [LF_SMITHING_DECONSTRUCT]   = ctrlVars.DECONSTRUCTION_INV_NAME .. sortByNameNameStr, --todo #202
     [LF_SMITHING_IMPROVEMENT]   = ctrlVars.IMPROVEMENT_INV_NAME .. sortByNameNameStr,
     [LF_ALCHEMY_CREATION]       = ctrlVars.ALCHEMY_INV_NAME .. sortByNameNameStr,
     [LF_ENCHANTING_CREATION]    = ctrlVars.ENCHANTING_INV_NAME .. sortByNameNameStr,
@@ -3095,6 +3303,15 @@ mappingVars.contextMenuSpecialAntiButtonsAtPanel = {
     [LF_GUILDBANK_DEPOSIT] = buttonContextMenuToggleAntiPrefix .."guild_bank_deposit_without_withdraw_rights_",
 }
 
+
+--The mapping table of the automatic DeMark icon to it's settings variable
+-->Checked in /src/FCOIS_Functions.lua, function FCOIS.CheckIfItemShouldBeDemarked(iconId)
+mappingVars.automaticDeMarkSettings = {
+    [FCOIS_CON_ICON_SELL] =                 "autoDeMarkSell",
+    [FCOIS_CON_ICON_SELL_AT_GUILDSTORE] =   "autoDeMarkSellInGuildStore",
+    [FCOIS_CON_ICON_DECONSTRUCTION] =       "autoDeMarkDeconstruct",
+}
+
 --Mapping for the Transmuation Geode container ItemIds (and flavor text)
 mappingVars.containerTransmuation = {}
 --Using addon "Item finder" /finditem geode
@@ -3164,7 +3381,7 @@ anchorVarsAddInvButtonsFill[100021][LF_SMITHING_REFINE].top                  = v
 anchorVarsAddInvButtonsFill[100021][LF_SMITHING_REFINE].defaultLeft          = varX2
 anchorVarsAddInvButtonsFill[100021][LF_SMITHING_REFINE].defaultTop           = varY1
 anchorVarsAddInvButtonsFill[100021][LF_SMITHING_DECONSTRUCT] = {}
-anchorVarsAddInvButtonsFill[100021][LF_SMITHING_DECONSTRUCT].anchorControl   = ctrlVars.DECONSTRUCTION_INV
+anchorVarsAddInvButtonsFill[100021][LF_SMITHING_DECONSTRUCT].anchorControl   = ctrlVars.DECONSTRUCTION_INV --todo #202
 anchorVarsAddInvButtonsFill[100021][LF_SMITHING_DECONSTRUCT].left            = varX2
 anchorVarsAddInvButtonsFill[100021][LF_SMITHING_DECONSTRUCT].top             = varY1
 anchorVarsAddInvButtonsFill[100021][LF_SMITHING_DECONSTRUCT].defaultLeft     = varX2
@@ -3206,7 +3423,7 @@ anchorVarsAddInvButtonsFill[100021][LF_JEWELRY_REFINE].top                  = va
 anchorVarsAddInvButtonsFill[100021][LF_JEWELRY_REFINE].defaultLeft          = varX2
 anchorVarsAddInvButtonsFill[100021][LF_JEWELRY_REFINE].defaultTop           = varY1
 anchorVarsAddInvButtonsFill[100021][LF_JEWELRY_DECONSTRUCT] = {}
-anchorVarsAddInvButtonsFill[100021][LF_JEWELRY_DECONSTRUCT].anchorControl   = ctrlVars.DECONSTRUCTION_INV
+anchorVarsAddInvButtonsFill[100021][LF_JEWELRY_DECONSTRUCT].anchorControl   = ctrlVars.DECONSTRUCTION_INV --todo #202
 anchorVarsAddInvButtonsFill[100021][LF_JEWELRY_DECONSTRUCT].left            = varX2
 anchorVarsAddInvButtonsFill[100021][LF_JEWELRY_DECONSTRUCT].top             = varY1
 anchorVarsAddInvButtonsFill[100021][LF_JEWELRY_DECONSTRUCT].defaultLeft     = varX2
@@ -3239,28 +3456,13 @@ anchorVarsAddInvButtonsFill[100021][FCOIS_CON_LF_COMPANION_CHARACTER].left      
 anchorVarsAddInvButtonsFill[100021][FCOIS_CON_LF_COMPANION_CHARACTER].top             = 0
 anchorVarsAddInvButtonsFill[100021][FCOIS_CON_LF_COMPANION_CHARACTER].defaultLeft     = -16
 anchorVarsAddInvButtonsFill[100021][FCOIS_CON_LF_COMPANION_CHARACTER].defaultTop      = 0
---Is the current API version unequal one of the above ones?
-if FCOIS.APIversion >= 100021 then
-	anchorVarsAddInvButtonsFill[FCOIS.APIversion] = {}
-    -->Not working with for in pairs loop :-( So we need to copy the contents!
-    --Use the anchor controls and settings of API 100021
-    --setmetatable(anchorVarsAddInvButtons[FCOIS.APIversion], {__index = anchorVarsAddInvButtons[100021]})
-    anchorVarsAddInvButtonsFill[FCOIS.APIversion] = anchorVarsAddInvButtonsFill[100021]
-end
+--Is the current API version unequal one of the above one?
+anchorVarsAddInvButtonsFill[FCOIS.APIversion] = {}
+-->Not working with for in pairs loop :-( So we need to copy the contents!
+--Use the anchor controls and settings of API 100021
+--setmetatable(anchorVarsAddInvButtons[FCOIS.APIversion], {__index = anchorVarsAddInvButtons[100021]})
+anchorVarsAddInvButtonsFill[FCOIS.APIversion] = anchorVarsAddInvButtonsFill[100021]
 
---For the addon QualitySort: Add some panels where the x axis offset of the additional inventory "flag" button needs to be adjusted
---[[
---FCOIS v1.6.7 - Deactivated
-mappingVars.adjustAdditionalFlagButtonOffsetForPanel = {
-    [ctrlVars.CRAFTBAG]     = true,
-    [ctrlVars.GUILD_BANK_INV]    = true,
-    [ctrlVars.REFINEMENT_INV]     = true,
-    [ctrlVars.DECONSTRUCTION_INV] = true,
-    [ctrlVars.IMPROVEMENT_INV]    = true,
-    [ctrlVars.ENCHANTING_INV] = true,
-    [ctrlVars.RETRAIT_INV] = true,
-}
-]]
 --The ordinal endings of the different languages
 mappingVars.iconNrToOrdinalStr = {
     --English

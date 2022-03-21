@@ -8,8 +8,8 @@
 ## SavedVariables: FCOItemSaver_Settings
 # !!! Attention !!! -> 1 line here can only contain ~220 characters, so the depency lines need to be split up, or they won't be recognized properly!
 #
-## DependsOn: LibAddonMenu-2.0>=32 LibCustomMenu>=712 LibDialog>=123 LibFeedback LibFilters-3.0>=322
-## DependsOn: LibMainMenu-2.0>=40400 LibShifterBox>=17 LibSets>=000306 LibAddonMenuOrderListBox
+## DependsOn: LibAddonMenu-2.0>=33 LibCustomMenu>=712 LibDialog>=126 LibFeedback LibFilters-3.0>=332
+## DependsOn: LibMainMenu-2.0>=40400 LibShifterBox>=17 LibSets>=000401 LibAddonMenuOrderListBox
 ##
 ## OptionalDependsOn: LibDebugLogger>=200 LibLazyCrafting>=3000
 ## OptionalDependsOn: LibMultiAccountSets>=10
@@ -39,6 +39,7 @@
 #InventoryGridView
 #Inventory Insight (from Ashes -> IIfA)
 #InventoryManager
+#ItemCooldownTracker
 #ItemTrig
 #KhrillMasterCook
 #KhrillMerlinTheEnchanter
@@ -54,11 +55,11 @@
 # Addon variables & constants
 FCOIS_Constants.lua
 
-# Addon textures
-src/FCOIS_Textures.lua
-
 # Addon debugging
 src/FCOIS_Debug.lua
+
+# Addon textures
+src/FCOIS_Textures.lua
 
 # Addon default settings
 src/FCOIS_DefaultSettings.lua
@@ -142,8 +143,8 @@ Localization/FCOItemSaverLoc.lua
 Bindings/bindings.lua
 Bindings/bindings.xml
 
-# Backup and restore
-src/FCOIS_Backup.lua
+# Backup and restore and marker icons delete
+src/FCOIS_BackupRestoreDelete.lua
 
 # LibShifterBox boxes and functions
 src/FCOIS_LibShifterBox.lua

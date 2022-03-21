@@ -7,6 +7,9 @@ if not FCOIS.libsLoadedProperly then return end
 local debugMessage = FCOIS.debugMessage
 
 local wm = WINDOW_MANAGER
+local tos = tostring
+
+local gil = GetItemLink
 
 local strfind = string.find
 
@@ -14,6 +17,7 @@ local addonVars = FCOIS.addonVars
 local numFilterIcons = FCOIS.numVars.gFCONumFilterIcons
 local ctrlVars = FCOIS.ZOControlVars
 local mappingVars = FCOIS.mappingVars
+local otherAddons = FCOIS.otherAddons
 
 local checkIfItemIsProtected = FCOIS.CheckIfItemIsProtected
 local myGetItemDetails = FCOIS.MyGetItemDetails
@@ -27,8 +31,18 @@ local isStableSceneShown = FCOIS.IsStableSceneShown
 local isItemAlreadyBound = FCOIS.IsItemAlreadyBound
 local getItemSaverControl = FCOIS.GetItemSaverControl
 local createToolTip = FCOIS.CreateToolTip
+local isModifierKeyPressed = FCOIS.IsModifierKeyPressed
 
 local clearOrRestoreAllMarkers
+local refreshEquipmentControl
+
+local isMarked
+local isMarkedByItemInstanceId
+local markItemByItemInstanceId
+local markItem
+local checkIfInventoryRowOfExternalAddonNeedsMarkerIconsUpdate
+local getArmorType = FCOIS.GetArmorType
+
 
 -- =====================================================================================================================
 --  Other AddOns helper functions
@@ -65,6 +79,16 @@ end
 -- =====================================================================================================================
 --  Marker control / textures functions
 -- =====================================================================================================================
+--Update marker icons for other addons that should add marker icons to inventory items
+local function updateOtherAddonsInventoryMarkers(parent)
+    --FCOIS v2.2.4 - ItemCooldownTracker
+    if ICDT ~= nil then
+        local bagId, slotIndex = myGetItemDetails(parent)
+        if bagId == nil or slotIndex == nil then return end
+        FCOIS.CheckIfItemCooldownTrackerRelevantItemIdAndMarkItem(bagId, slotIndex, nil)
+    end
+end
+
 --Update the "already bound set part" icon at the item's top right image edge
 local function updateAlreadyBoundTexture(parent, pHideControl)
     if parent == nil then return end
@@ -85,7 +109,7 @@ local function updateAlreadyBoundTexture(parent, pHideControl)
         end
     end
 
-    local InventoryGridViewActivated = (FCOIS.otherAddons.inventoryGridViewActive or InventoryGridView ~= nil) or false
+    local InventoryGridViewActivated = (otherAddons.inventoryGridViewActive or InventoryGridView ~= nil) or false
     local GridListActivated          = GridList ~= nil
 
     --If not an equipped item: Get the row's/parent's image -> "Children "Button" of parent
@@ -97,7 +121,7 @@ local function updateAlreadyBoundTexture(parent, pHideControl)
         local setPartAlreadyBoundName = parent:GetName() .. addonName .. "AlreadyBoundIcon"
         if alreadyBoundTexture ~= nil then
             local setPartAlreadyBoundTexture
-            setPartAlreadyBoundTexture = wm:GetControlByName(setPartAlreadyBoundName, "")
+            setPartAlreadyBoundTexture = GetControl(setPartAlreadyBoundName) --wm:GetControlByName(setPartAlreadyBoundName, "")
             if setPartAlreadyBoundTexture == nil then
                 setPartAlreadyBoundTexture = wm:CreateControl(setPartAlreadyBoundName, parentsImage, CT_TEXTURE)
             end
@@ -188,13 +212,13 @@ end
 --Will also add/show/hide the small "is the set item already bound" icon at the top-right edge of the item's image (children "Button" of parent)
 -->Only adds the texture if it does not already exist and if the marker icon is enabled!
 function FCOIS.CreateMarkerControl(parent, markerIconId, pWidth, pHeight, pTexture, pIsEquipmentSlot, pCreateControlIfNotThere, pUpdateAllEquipmentTooltips, pArmorTypeIcon, pHideControl, pUnequipped)
---d("[FCOIS]CreateMarkerControl: " .. tostring(parent:GetName()) .. ", markerIconId: " ..tostring(markerIconId) .. ", pHideControl: " ..tostring(pHideControl) ..", pUnequipped: " ..tostring(pUnequipped))
+--d("[FCOIS]CreateMarkerControl: " .. tos(parent:GetName()) .. ", markerIconId: " ..tos(markerIconId) .. ", pHideControl: " ..tos(pHideControl) ..", pUnequipped: " ..tos(pUnequipped))
     --No parent? Abort here
     if parent == nil then return nil end
     pArmorTypeIcon = pArmorTypeIcon or false
     pHideControl = pHideControl or false
 
-    local InventoryGridViewActivated = (FCOIS.otherAddons.inventoryGridViewActive or InventoryGridView ~= nil) or false
+    local InventoryGridViewActivated = (otherAddons.inventoryGridViewActive or InventoryGridView ~= nil) or false
     local GridListActivated          = GridList ~= nil
 
     --Preset the variable for control creation with false, if it is not given
@@ -225,7 +249,7 @@ function FCOIS.CreateMarkerControl(parent, markerIconId, pWidth, pHeight, pTextu
                 --Control should be shown
                 local isItemProtected = checkIfItemIsProtected(markerIconId, myGetItemInstanceId(parent))
                 doHide = not isItemProtected
---d(">>checkIfItemIsProtected result: " .. tostring(isItemProtected) .. ", doHide: " ..tostring(doHide))
+--d(">>checkIfItemIsProtected result: " .. tos(isItemProtected) .. ", doHide: " ..tos(doHide))
             end
         end
         if doHide == nil then doHide = false end
@@ -245,7 +269,7 @@ function FCOIS.CreateMarkerControl(parent, markerIconId, pWidth, pHeight, pTextu
                 return
             end
             --If not aborted: Create the marker control now
-            control = wm:CreateControl(parent:GetName() .. FCOIS.addonVars.gAddonName .. tostring(markerIconId), parent, CT_TEXTURE)
+            control = wm:CreateControl(parent:GetName() .. FCOIS.addonVars.gAddonName .. tos(markerIconId), parent, CT_TEXTURE)
         end
         --Control did already exist or was created now
         if control ~= nil then
@@ -408,6 +432,8 @@ function FCOIS.CreateTextures(whichTextures)
                         --FCOItemSaver_AddInfoToData(rowControl)
                         --Create and show the "already bound" set parts texture at the top-right edge of the inventory item
                         updateAlreadyBoundTexture(rowControl)
+                        --Update marker icons for other addons that should add marker icons to inventory items
+                        updateOtherAddonsInventoryMarkers(rowControl)
                     end
                 end
             end
@@ -467,7 +493,8 @@ function FCOIS.CreateTextures(whichTextures)
     if (whichTextures == 3 or doCreateAllTextures) then
         -- Marker function for character equipment if character window is shown
         if ((isCharacterShown() or isCompanionCharacterShown()) or FCOIS.addonVars.gAddonLoaded == false) then
-            FCOIS.RefreshEquipmentControl(nil, nil, nil, nil, true, nil)
+            refreshEquipmentControl = refreshEquipmentControl or FCOIS.RefreshEquipmentControl
+            refreshEquipmentControl(nil, nil, nil, nil, true, nil)
         end
     end
     --Quickslot
@@ -558,10 +585,10 @@ function FCOIS.CreateTextures(whichTextures)
 end
 
 --Check if marker textures on the inventories row should be refreshed
-function FCOIS.checkMarker(markerId)
+function FCOIS.CheckMarker(markerId)
     markerId = markerId or -1
     local doDebug = FCOIS.settingsVars.settings.debug
-    if doDebug then FCOIS.debugMessage( "[checkMarker]","MarkerId: " .. tostring(markerId) .. ", CheckNow: " .. tostring(FCOIS.preventerVars.gUpdateMarkersNow) .. ", Gears changed: " .. tostring(FCOIS.preventerVars.gChangedGears), true, FCOIS_DEBUG_DEPTH_ALL) end
+    if doDebug then debugMessage( "[CheckMarker]","MarkerId: " .. tos(markerId) .. ", CheckNow: " .. tos(FCOIS.preventerVars.gUpdateMarkersNow) .. ", Gears changed: " .. tos(FCOIS.preventerVars.gChangedGears), true, FCOIS_DEBUG_DEPTH_ALL) end
 
     --Should we update the marker textures, size and color?
     if FCOIS.preventerVars.gUpdateMarkersNow == true or FCOIS.preventerVars.gChangedGears == true then
@@ -570,9 +597,10 @@ function FCOIS.checkMarker(markerId)
 
         if not FCOIS.preventerVars.gChangedGears then
             zo_callLater(function()
-                --d("character hidden: " .. tostring(ctrlVars.CHARACTER:IsHidden()))
+                --d("character hidden: " .. tos(ctrlVars.CHARACTER:IsHidden()))
                 if isCharacterShown() or isCompanionCharacterShown() then
-                    FCOIS.RefreshEquipmentControl()
+                    refreshEquipmentControl = refreshEquipmentControl or FCOIS.RefreshEquipmentControl
+                    refreshEquipmentControl()
                 end
             end, 100)
         end
@@ -601,14 +629,14 @@ function FCOIS.CheckIfClearOrRestoreAllMarkers(clickedRow, modifierKeyPressed, u
     calledByKeybind = calledByKeybind or false
     --Enable clearing all markers by help of the SHIFT+right click?
     local contextMenuClearMarkesByShiftKey = FCOIS.settingsVars.settings.contextMenuClearMarkesByShiftKey
---d("[FCOIS.checkIfClearOrRestoreAllMarkers]shiftKey: " ..tostring(IsShiftKeyDown()) .. ", upInside: " .. tostring(upInside) .. ", mouseButton: " .. tostring(mouseButton) .. ", settingEnabled: " ..tostring(contextMenuClearMarkesByShiftKey) .. ", modifierKeyPressed: " ..tostring(modifierKeyPressed) .. ", calledByKeybind: " ..tostring(calledByKeybind))
+--d("[FCOIS.checkIfClearOrRestoreAllMarkers]shiftKey: " ..tos(IsShiftKeyDown()) .. ", upInside: " .. tos(upInside) .. ", mouseButton: " .. tos(mouseButton) .. ", settingEnabled: " ..tos(contextMenuClearMarkesByShiftKey) .. ", modifierKeyPressed: " ..tos(modifierKeyPressed) .. ", calledByKeybind: " ..tos(calledByKeybind))
     if (modifierKeyPressed == true or calledByKeybind == true) and contextMenuClearMarkesByShiftKey
             and (calledByKeybind == true or (upInside and mouseButton == MOUSE_BUTTON_INDEX_RIGHT))  then
         refreshPopupDialogButons = refreshPopupDialogButons or false
         -- make sure control contains an item
         local bagId, slotIndex = myGetItemDetails(clickedRow)
         if bagId ~= nil and slotIndex ~= nil then
---d("[FCOIS] Clearing/Restoring all markers of the current item now! bag: " .. bagId .. ", slotIndex: " .. slotIndex .. " " .. GetItemLink(bagId, slotIndex))
+--d("[FCOIS] Clearing/Restoring all markers of the current item now! bag: " .. bagId .. ", slotIndex: " .. slotIndex .. " " .. gil(bagId, slotIndex))
             --Set the preventer variable now to suppress the context menu of inventory items
             if not calledByKeybind then
 --d(">NO KEYBIND call: enabling dontShowInvContextMenu: true ")
@@ -645,10 +673,10 @@ function FCOIS.RemoveAllMarkerIconsOrUndo()
     local mouseOverControl = wm:GetMouseOverControl()
     if mouseOverControl ~= nil then
         local contextMenuClearMarkesKey = FCOIS.settingsVars.settings.contextMenuClearMarkesModifierKey
-        local isModifierKeyPressed = FCOIS.IsModifierKeyPressed(contextMenuClearMarkesKey)
+        local isModifierKeyPressedResult = isModifierKeyPressed(contextMenuClearMarkesKey)
         local refreshPopupDialogButons = FCOIS.preventerVars.isZoDialogContextMenu
---d(">mouseOverControl: " ..tostring(mouseOverControl:GetName()) ..", isModifierKeyPressed: " .. tostring(isModifierKeyPressed) .. ", refreshPopupDialogButons: " ..tostring(refreshPopupDialogButons))
-        checkIfClearOrRestoreAllMarkers(mouseOverControl, isModifierKeyPressed, nil, nil, refreshPopupDialogButons, true) -- calledByKeybind = true
+--d(">mouseOverControl: " ..tos(mouseOverControl:GetName()) ..", isModifierKeyPressed: " .. tos(isModifierKeyPressedResult) .. ", refreshPopupDialogButons: " ..tos(refreshPopupDialogButons))
+        checkIfClearOrRestoreAllMarkers(mouseOverControl, isModifierKeyPressedResult, nil, nil, refreshPopupDialogButons, true) -- calledByKeybind = true
     end
 end
 
@@ -666,12 +694,12 @@ local function AddArmorTypeIconToEquipmentSlot(equipmentSlotControl, armorType)
     if not characterEquipmentArmorSlots[equipmentSlotName] then return false end
     if armorType == nil or armorType == ARMORTYPE_NONE then return false end
     local settings = FCOIS.settingsVars.settings
-    if settings.debug then FCOIS.debugMessage( "[AddArmorTypeIconToEquipmentSlot]","EquipmentSlot: " .. equipmentSlotName .. ", armorType: " .. tostring(armorType), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+    if settings.debug then debugMessage( "[AddArmorTypeIconToEquipmentSlot]","EquipmentSlot: " .. equipmentSlotName .. ", armorType: " .. tos(armorType), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
 
     local isCompanionCharacter = (equipmentSlotControl:GetParent() == ctrlVars.COMPANION_CHARACTER) or false
---d(">equipmentSlotName: " ..tostring(equipmentSlotName) .. ", isCompanionCharacter: " ..tostring(isCompanionCharacter))
+--d(">equipmentSlotName: " ..tos(equipmentSlotName) .. ", isCompanionCharacter: " ..tos(isCompanionCharacter))
 
-    local armorTypeLabel = wm:GetControlByName("FCOIS_" .. equipmentSlotName .. "_ArmorTypeLabel")
+    local armorTypeLabel = GetControl("FCOIS_" .. equipmentSlotName .."_ArmorTypeLabel") --wm:GetControlByName("FCOIS_" .. equipmentSlotName .. "_ArmorTypeLabel")
     if settings.showArmorTypeIconAtCharacter then
         if armorTypeLabel == nil then
             armorTypeLabel = wm:CreateControl("FCOIS_" .. equipmentSlotName .. "_ArmorTypeLabel", equipmentSlotControl, CT_LABEL)
@@ -760,8 +788,8 @@ end
 --function to count and update the equipped armor parts of character and companion and to add the marker texture controls to the
 --equipment slots via function FCOIS.RefreshEquipmentControl, if the function FCOIS.RefreshEquipmentControl was called without
 --any equipmentSlot control, markerIconId etc., but parameter updateIfCharacterNotShown = true
-function FCOIS.countAndUpdateEquippedArmorTypes(doRefreshControl, doCreateMarkerControl, markerIconId, updateIfCharacterNotShown)
---d("[FCOIS]countAndUpdateEquippedArmorTypes - doRefreshControl: " ..tostring(doRefreshControl) .. ", markerIconId: " ..tostring(markerIconId))
+function FCOIS.CountAndUpdateEquippedArmorTypes(doRefreshControl, doCreateMarkerControl, markerIconId, updateIfCharacterNotShown)
+--d("[FCOIS]countAndUpdateEquippedArmorTypes - doRefreshControl: " ..tos(doRefreshControl) .. ", markerIconId: " ..tos(markerIconId))
     doRefreshControl = doRefreshControl or false
     updateIfCharacterNotShown = updateIfCharacterNotShown or false
     local isCharacter = isCharacterShown()
@@ -782,15 +810,16 @@ function FCOIS.countAndUpdateEquippedArmorTypes(doRefreshControl, doCreateMarker
 --d(">character")
         for _, equipmentSlotName in pairs(characterEquipmentSlotNameByIndex) do
             --Get the control of the equipment slot
-            equipmentSlotControl = wm:GetControlByName(equipmentSlotName, "")
+            equipmentSlotControl = GetControl(equipmentSlotName) --wm:GetControlByName(equipmentSlotName, "")
             if equipmentSlotControl ~= nil then
                 --Refresh each equipped item's marker icons
                 if doRefreshControl then
-                    FCOIS.RefreshEquipmentControl(equipmentSlotControl, doCreateMarkerControl, markerIconId, false, updateIfCharacterNotShown)
+                    refreshEquipmentControl = refreshEquipmentControl or FCOIS.RefreshEquipmentControl
+                    refreshEquipmentControl(equipmentSlotControl, doCreateMarkerControl, markerIconId, false, updateIfCharacterNotShown)
                 end
 
                 --Show the armor type icons at the player doll?
-                AddArmorTypeIconToEquipmentSlot(equipmentSlotControl, FCOIS.GetArmorType(equipmentSlotControl))
+                AddArmorTypeIconToEquipmentSlot(equipmentSlotControl, getArmorType(equipmentSlotControl))
             end
         end
         --Update the equipment header text and show the amount of armor types equipped
@@ -804,25 +833,27 @@ function FCOIS.countAndUpdateEquippedArmorTypes(doRefreshControl, doCreateMarker
         local companionCharacterEquipmentSlotNameByIndex = mappingVars.companionCharacterEquipmentSlotNameByIndex
         for _, equipmentSlotName in pairs(companionCharacterEquipmentSlotNameByIndex) do
             --Get the control of the equipment slot
-            equipmentSlotControl = wm:GetControlByName(equipmentSlotName, "")
+            equipmentSlotControl = GetControl(equipmentSlotName) --wm:GetControlByName(equipmentSlotName, "")
             if equipmentSlotControl ~= nil then
                 --Refresh each equipped item's marker icons
                 if doRefreshControl then
-                    FCOIS.RefreshEquipmentControl(equipmentSlotControl, doCreateMarkerControl, markerIconId, false, updateIfCharacterNotShown)
+                    refreshEquipmentControl = refreshEquipmentControl or FCOIS.RefreshEquipmentControl
+                    refreshEquipmentControl(equipmentSlotControl, doCreateMarkerControl, markerIconId, false, updateIfCharacterNotShown)
                 end
 
                 --Show the armor type icons at the player doll?
-                AddArmorTypeIconToEquipmentSlot(equipmentSlotControl, FCOIS.GetArmorType(equipmentSlotControl))
+                AddArmorTypeIconToEquipmentSlot(equipmentSlotControl, getArmorType(equipmentSlotControl))
             end
         end
         --Update the equipment header text and show the amount of armor types equipped
         updateEquipmentHeaderCountText(FCOIS_CON_LF_COMPANION_CHARACTER)
     end
 end
-local countAndUpdateEquippedArmorTypes = FCOIS.countAndUpdateEquippedArmorTypes
+local countAndUpdateEquippedArmorTypes = FCOIS.CountAndUpdateEquippedArmorTypes
 
 --Remove the armor type marker from character doll
 function FCOIS.RemoveArmorTypeMarker(bagId, slotId)
+--d("[FCOIS]RemoveArmorTypeMarker - item: " ..gil(bagId, slotId))
     local settings = FCOIS.settingsVars.settings
     if not settings.showArmorTypeIconAtCharacter then return false end
     if bagId == nil or slotId == nil then return false end
@@ -837,7 +868,7 @@ function FCOIS.RemoveArmorTypeMarker(bagId, slotId)
     end
     local equipmentSlotControlName = characterEquipmentSlotNameByIndex[slotId]
     if equipmentSlotControlName == nil then return false end
-    local equipmentSlotControl = wm:GetControlByName(equipmentSlotControlName, "")
+    local equipmentSlotControl = GetControl(equipmentSlotControlName) --wm:GetControlByName(equipmentSlotControlName, "")
     if equipmentSlotControl == nil then return false end
 
     --Check slightly delayed if item is (still) equipped
@@ -845,7 +876,7 @@ function FCOIS.RemoveArmorTypeMarker(bagId, slotId)
     zo_callLater(function()
         if equipmentSlotControl.stackCount == 0 then
             --Hide the text control showing the armor type for this equipment slot
-            local armorTypeLabel = wm:GetControlByName("FCOIS_" .. equipmentSlotControl:GetName() .. "_ArmorTypeLabel")
+            local armorTypeLabel = GetControl("FCOIS_" .. equipmentSlotControl:GetName() .. "_ArmorTypeLabel") --wm:GetControlByName("FCOIS_" .. equipmentSlotControl:GetName() .. "_ArmorTypeLabel")
             if armorTypeLabel == nil then return true end
             armorTypeLabel:SetHidden(true)
         end
@@ -868,23 +899,24 @@ local function checkWeaponType(p_weaponType, p_check)
 end
 
 --Check if the current equipment slot is the offhand or backup offhand slot
-function FCOIS.checkWeaponOffHand(controlName, weaponTypeName, doCheckOffHand, doCheckBackupOffHand, echo)
+local characterEquipmentSlotNameByIndex = mappingVars.characterEquipmentSlotNameByIndex
+function FCOIS.CheckWeaponOffHand(controlName, weaponTypeName, doCheckOffHand, doCheckBackupOffHand, echo)
 --d("[FCOIS]checkWeaponOffHand")
     if echo then
-        if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[checkWeaponOffHand]", "ControlName: " .. controlName ..", WeaponTypeName: " .. weaponTypeName, true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+        if FCOIS.settingsVars.settings.debug then debugMessage( "[checkWeaponOffHand]", "ControlName: " .. controlName ..", WeaponTypeName: " .. weaponTypeName, true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
     end
     local weaponControl
     local weaponType
-    local characterEquipmentSlotNameByIndex = mappingVars.characterEquipmentSlotNameByIndex
+    characterEquipmentSlotNameByIndex = characterEquipmentSlotNameByIndex or mappingVars.characterEquipmentSlotNameByIndex
 
     --Check the offhand?
     if doCheckOffHand == true then
 --d(">doCheckOffHand")
         if (controlName == characterEquipmentSlotNameByIndex[EQUIP_SLOT_OFF_HAND]) then -- 'ZO_CharacterEquipmentSlotsOffHand'
             --Check if the weapon in the main slot is a 2hd weapon/staff
-            weaponControl = wm:GetControlByName(characterEquipmentSlotNameByIndex[EQUIP_SLOT_MAIN_HAND], "") --"ZO_CharacterEquipmentSlotsMainHand"
+            weaponControl = GetControl(characterEquipmentSlotNameByIndex[EQUIP_SLOT_MAIN_HAND]) --wm:GetControlByName(characterEquipmentSlotNameByIndex[EQUIP_SLOT_MAIN_HAND], "") --"ZO_CharacterEquipmentSlotsMainHand"
             if weaponControl ~= nil then
---d(">found weapon at main hand: " ..GetItemLink(weaponControl.bagId, weaponControl.slotIndex))
+--d(">found weapon at main hand: " ..gil(weaponControl.bagId, weaponControl.slotIndex))
                 weaponType = GetItemWeaponType(weaponControl.bagId, weaponControl.slotIndex)
                 if (weaponType ~= nil) then
                     return checkWeaponType(weaponType, weaponTypeName)
@@ -898,9 +930,9 @@ function FCOIS.checkWeaponOffHand(controlName, weaponTypeName, doCheckOffHand, d
 --d(">doCheckBackupOffHand")
         if (controlName == characterEquipmentSlotNameByIndex[EQUIP_SLOT_BACKUP_OFF]) then -- 'ZO_CharacterEquipmentSlotsBackupOff'
             --Check if the weapon in the backup slot is a 2hd weapon/staff
-            weaponControl = wm:GetControlByName(characterEquipmentSlotNameByIndex[EQUIP_SLOT_BACKUP_MAIN], "") -- "ZO_CharacterEquipmentSlotsBackupMain"
+            weaponControl = GetControl(characterEquipmentSlotNameByIndex[EQUIP_SLOT_BACKUP_MAIN]) --wm:GetControlByName(characterEquipmentSlotNameByIndex[EQUIP_SLOT_BACKUP_MAIN], "") -- "ZO_CharacterEquipmentSlotsBackupMain"
             if weaponControl ~= nil then
---d(">found weapon at backup main hand: " ..GetItemLink(weaponControl.bagId, weaponControl.slotIndex))
+--d(">found weapon at backup main hand: " ..gil(weaponControl.bagId, weaponControl.slotIndex))
                 weaponType = GetItemWeaponType(weaponControl.bagId, weaponControl.slotIndex)
                 if (weaponType ~= nil) then
                     return checkWeaponType(weaponType, weaponTypeName)
@@ -911,7 +943,7 @@ function FCOIS.checkWeaponOffHand(controlName, weaponTypeName, doCheckOffHand, d
 
     return false
 end
-local checkWeaponOffHand = FCOIS.checkWeaponOffHand
+local checkWeaponOffHand = FCOIS.CheckWeaponOffHand
 
 
 --Function to check empty weapon slots (Main & Offhand) and remove markers. Needed a delay ~1200ms to work properly before
@@ -920,7 +952,7 @@ function FCOIS.RemoveEmptyWeaponEquipmentMarkers(delay)
     --If he delay is below ??? the marker icons at backup weapon slots won't be removed properly e.g. as you drag&drop/doubleclick
     --a 2hd weapon and 2x1hd weapons were equipped. Backup weapon (2nd 1hd) got a marker icon which will stay at the 2nd weapon then!
     delay = delay or 150
---d("[FCOIS]RemoveEmptyWeaponEquipmentMarkers - delay: " .. tostring(delay))
+--d("[FCOIS]RemoveEmptyWeaponEquipmentMarkers - delay: " .. tos(delay))
     --Call delayed as the equipment needs to be unequipped first
     zo_callLater(function()
         local isCharacter = isCharacterShown()
@@ -935,10 +967,10 @@ function FCOIS.RemoveEmptyWeaponEquipmentMarkers(delay)
         local texVars = FCOIS.textureVars
         --For each weapon equipment control: check the empty markers and remove them
         for equipmentControlName, _ in pairs(allowedCharacterEquipmentWeaponControlNames) do
-            if settings.debug then FCOIS.debugMessage( "[RemoveEmptyWeaponEquipmentMarkers]","equipmentControl: " .. equipmentControlName ..", delay: " .. delay, true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
---d(">>equipmentControl: " .. tostring(equipmentControlName))
+            if settings.debug then debugMessage( "[RemoveEmptyWeaponEquipmentMarkers]","equipmentControl: " .. equipmentControlName ..", delay: " .. delay, true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+--d(">>equipmentControl: " .. tos(equipmentControlName))
             if equipmentControlName ~= nil and equipmentControlName ~= "" then
-                local equipmentControl = wm:GetControlByName(equipmentControlName, "")
+                local equipmentControl = GetControl(equipmentControlName) --wm:GetControlByName(equipmentControlName, "")
                 if equipmentControl ~= nil then -- and equipmentControl:IsHidden() == false then
                     --Check if the current equipment slot name is a weapon backup slot
                     local twoHandedWeaponOffHand = false
@@ -965,7 +997,7 @@ local removeEmptyWeaponEquipmentMarkers = FCOIS.RemoveEmptyWeaponEquipmentMarker
 
 --The function to refresh the equipped items and their markers
 function FCOIS.RefreshEquipmentControl(equipmentControl, doCreateMarkerControl, p_markId, dontCheckRings, updateIfCharacterNotShown, unequipped)
---d("[FCOIS]RefreshEquipmentControl-doCreateMarkerControl: " ..tostring(doCreateMarkerControl) .. ", unequipped: " ..tostring(unequipped))
+--d("[FCOIS]RefreshEquipmentControl-doCreateMarkerControl: " ..tos(doCreateMarkerControl) .. ", p_markId: " .. tos(p_markId) ..", dontCheckRings: " ..tos(dontCheckRings) ..", updateIfCharacterNotShown: "..tos(updateIfCharacterNotShown) .. ", unequipped: " ..tos(unequipped))
     dontCheckRings = dontCheckRings or false
     --Preset the value for "Create control if not existing yet" with false
     doCreateMarkerControl = doCreateMarkerControl or false
@@ -973,7 +1005,12 @@ function FCOIS.RefreshEquipmentControl(equipmentControl, doCreateMarkerControl, 
     unequipped = unequipped or false
     local isCharacter = isCharacterShown()
     local isCompanionCharacter = isCompanionCharacterShown()
+
+--d(">isCharacter: " ..tos(isCharacter) .. ", isCompanionCharacter: " ..tos(isCompanionCharacter))
+
+
     if not updateIfCharacterNotShown and not isCharacter and not isCompanionCharacter then return end
+
 --d(">1")
     local equipVars = FCOIS.equipmentVars
     local texVars = FCOIS.textureVars
@@ -988,7 +1025,7 @@ function FCOIS.RefreshEquipmentControl(equipmentControl, doCreateMarkerControl, 
         --Check all marker ids?
         if p_markId == nil or p_markId == 0 then
 --d(">checkAllMarkerIcons")
-            if settings.debug then FCOIS.debugMessage( "[RefreshEquipmentControl]","Control: " .. equipmentControl:GetName() .. ", Create: " .. tostring(doCreateMarkerControl) .. ", MarkId: ALL", true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+            if settings.debug then debugMessage( "[RefreshEquipmentControl]","Control: " .. equipmentControl:GetName() .. ", Create: " .. tos(doCreateMarkerControl) .. ", MarkId: ALL", true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
             --Add/Update the markers for the filter icons at the equipment slot
             hideControl = false
             for markerIconId=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
@@ -997,8 +1034,8 @@ function FCOIS.RefreshEquipmentControl(equipmentControl, doCreateMarkerControl, 
             end
         --Only check a specific marker id
         else
---d(">checkMarkerIcon: " ..tostring(p_markId))
-            if settings.debug then FCOIS.debugMessage( "[RefreshEquipmentControl]","Control: " .. equipmentControl:GetName() .. ", Create: " .. tostring(doCreateMarkerControl) .. ", MarkId: " .. tostring(p_markId), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+--d(">CheckMarkerIcon: " ..tos(p_markId))
+           if settings.debug then debugMessage( "[RefreshEquipmentControl]","Control: " .. equipmentControl:GetName() .. ", Create: " .. tos(doCreateMarkerControl) .. ", MarkId: " .. tos(p_markId), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
             hideControl = true
             --Add/Update the marker p_markId for the filter icons at the equipment slot
             createMarkerControl(equipmentControl, p_markId, width, height, texVars.MARKER_TEXTURES[settings.icon[p_markId].texture], true, doCreateMarkerControl, hideControl, nil, nil, unequipped)
@@ -1007,7 +1044,7 @@ function FCOIS.RefreshEquipmentControl(equipmentControl, doCreateMarkerControl, 
         --Are we chaning equipped weapons? Update the markers and remove 2hd weapon markers
         local equipControlName = equipmentControl:GetName()
         if equipControlName ~= nil and equipControlName ~= "" then
---d("[FCOIS.RefreshEquipmentControl] name: " ..tostring(equipControlName))
+--d("[FCOIS.RefreshEquipmentControl] name: " ..tos(equipControlName))
             if checkVars.allowedCharacterEquipmentWeaponControlNames[equipControlName] then
                 --Check if the offhand weapons are 2hd weapons and remove the markers then
                 removeEmptyWeaponEquipmentMarkers()
@@ -1016,23 +1053,23 @@ function FCOIS.RefreshEquipmentControl(equipmentControl, doCreateMarkerControl, 
             --Is the equipment slot a ring? Then check if the same ring is equipped at the other slot and update the marker icon visibility too
             --But not if the 1st ring got unequipped, as the marker icon on still equipped rings need to be kept!
             local isRing = (not dontCheckRings and checkVars.allowedCharacterEquipmentJewelryRingControlNames[equipControlName]) or false
---d(">isRing: " ..tostring(isRing))
+--d(">isRing: " ..tos(isRing))
             if isRing == true and not unequipped  then
                 local bag, slot = myGetItemDetails(equipmentControl)
---d(">bag: " ..tostring(bag) .. ", slotIndex: " ..tostring(slot))
+--d(">bag: " ..tos(bag) .. ", slotIndex: " ..tos(slot))
                 if bag == nil or slot == nil then return false end
                 --Most unequips fail here as the slot got no data anymore and thus the itemId will be nil! This is why unequipping was disabled at the isring == true and not unequipped check!
                 local itemId = myGetItemInstanceIdNoControl(bag, slot, true)
---d(">itemId: " ..tostring(itemId))
+--d(">itemId: " ..tos(itemId))
                 if itemId == nil then return false end
                 local isRingMarked, _ = FCOIS.IsMarked(bag, slot, -1)
                 local doHide = not isRingMarked
---d(">doHide: " ..tostring(doHide))
+--d(">doHide: " ..tos(doHide))
                 --Get the other ring
                 local mappingOfRings = mappingVars.equipmentJewelryRing2RingSlot
                 local otherRingSlotName = mappingOfRings[equipControlName]
---d(">otherRingSlotName: " ..tostring(otherRingSlotName))
-                local otherRingControl = wm:GetControlByName(otherRingSlotName, "")
+--d(">otherRingSlotName: " ..tos(otherRingSlotName))
+                local otherRingControl = GetControl(otherRingSlotName) --wm:GetControlByName(otherRingSlotName, "")
                 --Compare the item Ids/Unique itemIds (if enabled)
                 if otherRingControl ~= nil and otherRingControl:IsHidden() == false then
                     --Get the bag and slot
@@ -1040,8 +1077,10 @@ function FCOIS.RefreshEquipmentControl(equipmentControl, doCreateMarkerControl, 
                     if bagRing2 ~= nil and slotRing2 ~= nil then
                         --Get the itemId and compare it with the other ring
                         local itemIdOtherRing = myGetItemInstanceIdNoControl(bagRing2, slotRing2, true)
---d(">>other ring, itemId: " .. tostring(itemIdOtherRing) ..", " .. GetItemLink(bagRing2, slotRing2))
+--d(">>other ring, itemId: " .. tos(itemIdOtherRing) ..", " .. gil(bagRing2, slotRing2))
                         if itemId == itemIdOtherRing then
+                            refreshEquipmentControl = refreshEquipmentControl or FCOIS.RefreshEquipmentControl
+
                             --local doMarkRing = not doHide
                             --Marking of ring is not needed as it was marked already and the itemInstaceId/uniqueId should be the same ->
                             --Thus marks will be "visible" after refreshing the slot's marker control!
@@ -1049,7 +1088,7 @@ function FCOIS.RefreshEquipmentControl(equipmentControl, doCreateMarkerControl, 
                             --Update the texture, create it if not there yet
 
                             --!!!ATTENTION!!! Recursive call of function, so set 4th parameter "dontCheckRings" = true to prevent endless loop between ring1->ring2->ring1->...!
-                            FCOIS.RefreshEquipmentControl(otherRingControl, true, p_markId, true, updateIfCharacterNotShown, unequipped)
+                            refreshEquipmentControl(otherRingControl, true, p_markId, true, updateIfCharacterNotShown, unequipped)
                         end
                     end
                 end
@@ -1058,7 +1097,8 @@ function FCOIS.RefreshEquipmentControl(equipmentControl, doCreateMarkerControl, 
 
     --Equipment control is not given yet, or unknown
     else
-        if settings.debug then FCOIS.debugMessage( "[RefreshEquipmentControl]","ALL CONTROLS! Create: " .. tostring(doCreateMarkerControl) .. ", MarkId: " .. tostring(p_markId), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+--d(">equipment control = nil")
+        if settings.debug then debugMessage( "[RefreshEquipmentControl]","ALL CONTROLS! Create: " .. tos(doCreateMarkerControl) .. ", MarkId: " .. tos(p_markId), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
         --[[
         --Reset the armor type counters
         resetCharacterArmorTypeNumbers()
@@ -1067,12 +1107,12 @@ function FCOIS.RefreshEquipmentControl(equipmentControl, doCreateMarkerControl, 
         local equipmentSlotControl
         for _, equipmentSlotName in pairs(mappingVars.characterEquipmentSlotNameByIndex) do
             --Get the control of the equipment slot
-            equipmentSlotControl = wm:GetControlByName(equipmentSlotName, "")
+            equipmentSlotControl = GetControl(equipmentSlotName) --wm:GetControlByName(equipmentSlotName, "")
             if equipmentSlotControl ~= nil then
                 --Refresh each equipped item's marker icons
                 FCOIS.RefreshEquipmentControl(equipmentSlotControl, doCreateMarkerControl, p_markId)
                 --Show the armor type icons at the player doll?
-                AddArmorTypeIconToEquipmentSlot(equipmentSlotControl, FCOIS.GetArmorType(equipmentSlotControl))
+                AddArmorTypeIconToEquipmentSlot(equipmentSlotControl, getArmorType(equipmentSlotControl))
             end
         end
 
@@ -1082,22 +1122,24 @@ function FCOIS.RefreshEquipmentControl(equipmentControl, doCreateMarkerControl, 
         countAndUpdateEquippedArmorTypes(true, doCreateMarkerControl, p_markId, updateIfCharacterNotShown)
     end
 end
-local refreshEquipmentControl = FCOIS.RefreshEquipmentControl
+refreshEquipmentControl = FCOIS.RefreshEquipmentControl
 
 --Update one specific equipment slot by help of the slotIndex
+local updateEquipmentSlotMarker = FCOIS.UpdateEquipmentSlotMarker
 function FCOIS.UpdateEquipmentSlotMarker(slotIndex, delay, unequipped)
---d("[FCOIS]updateEquipmentSlotMarker-slotIndex: " ..tostring(slotIndex).. ", delay: " ..tostring(delay) .. ", unequipped: " ..tostring(unequipped))
+--d("[FCOIS]updateEquipmentSlotMarker-slotIndex: " ..tos(slotIndex).. ", delay: " ..tos(delay) .. ", unequipped: " ..tos(unequipped))
     --Only execute if character window is shown
     if slotIndex ~= nil then
         delay = delay or 0
         if delay > 0 then
+            updateEquipmentSlotMarker = updateEquipmentSlotMarker or FCOIS.UpdateEquipmentSlotMarker
             zo_callLater(function()
-                FCOIS.UpdateEquipmentSlotMarker(slotIndex, 0, unequipped)
+                updateEquipmentSlotMarker(slotIndex, 0, unequipped)
             end, delay)
         else
             local isCharacter = isCharacterShown()
             local isCompanionCharacter = isCompanionCharacterShown()
---d(">isCharacter: " ..tostring(isCharacter) .. ", isCompanionCharacter: " ..tostring(isCompanionCharacter))
+--d(">isCharacter: " ..tos(isCharacter) .. ", isCompanionCharacter: " ..tos(isCompanionCharacter))
             if not isCharacter and not isCompanionCharacter then return end
 
             local armorSlots = mappingVars.characterEquipmentArmorSlots
@@ -1108,13 +1150,13 @@ function FCOIS.UpdateEquipmentSlotMarker(slotIndex, delay, unequipped)
             else
                 equipSlotControlName = mappingVars.characterEquipmentSlotNameByIndex[slotIndex]
             end
---d(">equipSlotControlName: " ..tostring(equipSlotControlName))
+--d(">equipSlotControlName: " ..tos(equipSlotControlName))
             --Get the equipment control by help of the slotIndex
             local equipSlotControl
             if equipSlotControlName ~= nil and equipSlotControlName ~= "" then
-                if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[updateEquipmentSlotMarker]","control name="..equipSlotControlName..", slotIndex: " .. slotIndex, true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
-                equipSlotControl = wm:GetControlByName(equipSlotControlName, "")
---d(">>isHidden: " ..tostring(equipSlotControl:IsHidden()))
+                if FCOIS.settingsVars.settings.debug then debugMessage( "[updateEquipmentSlotMarker]","control name="..equipSlotControlName..", slotIndex: " .. slotIndex, true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+                equipSlotControl = GetControl(equipSlotControlName) --wm:GetControlByName(equipSlotControlName, "")
+--d(">>isHidden: " ..tos(equipSlotControl:IsHidden()))
                 if equipSlotControl ~= nil then --and equipSlotControl:IsHidden() == false then
                     --Add or refresh the equipped items, create marker control if not already there
                     --equipmentControl, doCreateMarkerControl, p_markId, dontCheckRings, updateIfCharacterNotShown, unequipped
@@ -1130,6 +1172,7 @@ function FCOIS.UpdateEquipmentSlotMarker(slotIndex, delay, unequipped)
         end
     end
 end
+updateEquipmentSlotMarker = FCOIS.UpdateEquipmentSlotMarker
 
 --The callback function for the right click/context menus to mark all equipment items with one click
 function FCOIS.MarkAllEquipment(rowControl, markId, updateNow, doHide)
@@ -1138,6 +1181,9 @@ function FCOIS.MarkAllEquipment(rowControl, markId, updateNow, doHide)
     local isCharacter = isCharacterShown()
     local isCompanionCharacter = isCompanionCharacterShown()
     if not isCharacter and not isCompanionCharacter then return end
+
+    markItemByItemInstanceId = markItemByItemInstanceId or FCOIS.MarkItemByItemInstanceId
+    markItem = markItem or FCOIS.MarkItem
 
     --Set the last used filter Id
     FCOIS.lastVars.gLastFilterId[FCOIS.gFilterWhere] = mappingVars.iconToFilter[markId]
@@ -1161,8 +1207,8 @@ function FCOIS.MarkAllEquipment(rowControl, markId, updateNow, doHide)
         dontChange = false
         equipmentControl = characterCtrl:GetChild(i)
         equipmentSlotName = equipmentControl:GetName()
---d("[FCOIS.MarkAllEquipment]equipmentSlotName: " ..tostring(equipmentSlotName))
-        if settings.debug then FCOIS.debugMessage( "[MarkAllEquipment]","MarkId: " .. tostring(markId) .. ", EquipmentSlot: "..equipmentSlotName..", no_auto_mark: " .. tostring(checkVars.equipmentSlotsNames["no_auto_mark"][equipmentSlotName])) end
+--d("[FCOIS.MarkAllEquipment]equipmentSlotName: " ..tos(equipmentSlotName))
+        if settings.debug then debugMessage( "[MarkAllEquipment]","MarkId: " .. tos(markId) .. ", EquipmentSlot: "..equipmentSlotName..", no_auto_mark: " .. tos(checkVars.equipmentSlotsNames["no_auto_mark"][equipmentSlotName])) end
         --Is the current equipment slot a changeable one?
         if strfind(equipmentSlotName, equipmentSlotsCtrlName) then
             --Only mark weapons too if enabled in settings
@@ -1181,11 +1227,8 @@ function FCOIS.MarkAllEquipment(rowControl, markId, updateNow, doHide)
                 local bag, slot = myGetItemDetails(equipmentControl)
                 if markId ~= nil and bag ~= nil and slot ~= nil then
                     itemId = myGetItemInstanceIdNoControl(bag, slot, true)
-                    if doHide == true then
-                        FCOIS.MarkItem(bag, slot, markId, false, false)
-                    else
-                        FCOIS.MarkItem(bag, slot, markId, true, false)
-                    end
+                    FCOIS.preventerVars.gCalledFromInternalFCOIS = true
+                    markItem(bag, slot, markId, not doHide, false)
                     --Update the texture, create it if not there yet
                     refreshEquipmentControl(equipmentControl, true, markId)
                 end
@@ -1216,11 +1259,11 @@ function FCOIS.CheckIfCharOrInvNeedsRingUpdate(p_bagId, p_slotIndex, p_parent, p
         else
             ringEquipmentControlsTable = mappingVars.characterCompanionEquipmentRingSlots
         end
-        local ringControl1 = ringEquipmentControlsTable[EQUIP_SLOT_RING1] ~= nil and wm:GetControlByName(ringEquipmentControlsTable[EQUIP_SLOT_RING1])
+        local ringControl1 = ringEquipmentControlsTable[EQUIP_SLOT_RING1] ~= nil and GetControl(ringEquipmentControlsTable[EQUIP_SLOT_RING1]) --wm:GetControlByName(ringEquipmentControlsTable[EQUIP_SLOT_RING1])
         if ringControl1 ~= nil then
             refreshEquipmentControl(ringControl1, p_doMark,  p_markId, nil, nil, nil)
         end
-        local ringControl2 = ringEquipmentControlsTable[EQUIP_SLOT_RING2] ~= nil and wm:GetControlByName(ringEquipmentControlsTable[EQUIP_SLOT_RING2])
+        local ringControl2 = ringEquipmentControlsTable[EQUIP_SLOT_RING2] ~= nil and GetControl(ringEquipmentControlsTable[EQUIP_SLOT_RING2]) --wm:GetControlByName(ringEquipmentControlsTable[EQUIP_SLOT_RING2])
         if ringControl2 ~= nil then
             refreshEquipmentControl(ringControl2, p_doMark,  p_markId, nil, nil, nil)
         end
@@ -1237,6 +1280,12 @@ function FCOIS.ClearOrRestoreAllMarkers(rowControl, bagId, slotIndex)
         bagId, slotIndex = myGetItemDetails(rowControl)
     end
     if bagId == nil or slotIndex == nil then return false end
+
+    isMarked = isMarked or FCOIS.IsMarked
+    isMarkedByItemInstanceId = isMarkedByItemInstanceId or FCOIS.IsMarkedByItemInstanceId
+    markItemByItemInstanceId = markItemByItemInstanceId or FCOIS.MarkItemByItemInstanceId
+    checkIfInventoryRowOfExternalAddonNeedsMarkerIconsUpdate = checkIfInventoryRowOfExternalAddonNeedsMarkerIconsUpdate or FCOIS.CheckIfInventoryRowOfExternalAddonNeedsMarkerIconsUpdate
+
     local isCharacterShownVar          = (bagId == BAG_WORN and isCharacterShown()) or false
     local isCompanionCharacterShownVar = (bagId == BAG_COMPANION_WORN and isCompanionCharacterShown()) or false
     local lastMarkedIcons              = FCOIS.lastMarkedIcons
@@ -1245,8 +1294,8 @@ function FCOIS.ClearOrRestoreAllMarkers(rowControl, bagId, slotIndex)
     FCOIS.preventerVars.gClearingMarkerIcons = false
     --Get the item's itemInstanceId (FCOIS style) and check if there are any marker icons saved in the undo list
     local fcoisItemInstanceId = myGetItemInstanceId(rowControl, true)
-    local itemLink = GetItemLink(bagId, slotIndex)
---d(">item: " .. itemLink .. ", itemInstanceId FCOIS: " ..tostring(fcoisItemInstanceId))
+    local itemLink = gil(bagId, slotIndex)
+--d(">item: " .. itemLink .. ", itemInstanceId FCOIS: " ..tos(fcoisItemInstanceId))
     if fcoisItemInstanceId ~= nil then
         local alreadyRemovedMarkersForThatBagAndItem = (lastMarkedIcons ~= nil and lastMarkedIcons[fcoisItemInstanceId]) or nil
         if alreadyRemovedMarkersForThatBagAndItem ~= nil then
@@ -1258,16 +1307,17 @@ function FCOIS.ClearOrRestoreAllMarkers(rowControl, bagId, slotIndex)
                 --Reset all markers
                 --Refresh the control now to update the set marker icons?
                 local refreshNow = isCharacterShownVar or isCompanionCharacterShownVar or FCOIS.preventerVars.gOverrideInvUpdateAfterMarkItem
-    --d(">iconId: " ..tostring(iconId) .. ", isMarked: " .. tostring(iconIsMarked) .. ", refreshNow: " ..tostring(refreshNow))
+    --d(">iconId: " ..tos(iconId) .. ", isMarked: " .. tos(iconIsMarked) .. ", refreshNow: " ..tos(refreshNow))
                 --Set global preventer variable so no other marker icons will be set/removed during the restore
                 FCOIS.preventerVars.gRestoringMarkerIcons = true
                 --FCOIS.MarkItem(bagId, slotIndex, iconId, iconIsMarked, refreshNow)
                 --FCOIS.preventerVars.markerIconChangedManually = true
-                FCOIS.MarkItemByItemInstanceId(fcoisItemInstanceId, iconId, iconIsMarked, itemLink, nil, nil, refreshNow)
+                FCOIS.preventerVars.gCalledFromInternalFCOIS = true
+                markItemByItemInstanceId(fcoisItemInstanceId, iconId, iconIsMarked, itemLink, nil, nil, refreshNow)
                 --Reset the global preventer variable
                 FCOIS.preventerVars.gRestoringMarkerIcons = false
                 --Check if the item mark removed other marks and if a row within another addon (like Inventory Insight) needs to be updated
-                FCOIS.CheckIfInventoryRowOfExternalAddonNeedsMarkerIconsUpdate(rowControl, iconId)
+                checkIfInventoryRowOfExternalAddonNeedsMarkerIconsUpdate(rowControl, iconId)
                 loc_counter = loc_counter + 1
             end
             --Reset the last saved marker array for the current item
@@ -1282,7 +1332,6 @@ function FCOIS.ClearOrRestoreAllMarkers(rowControl, bagId, slotIndex)
             end
 
         else
-
             --Marker icons were not removed yet for this item in this bag.
             --So remove them now
             --Clear all markers of current item
@@ -1290,7 +1339,8 @@ function FCOIS.ClearOrRestoreAllMarkers(rowControl, bagId, slotIndex)
             --Return false for marked icons, where the icon id is disabled in the settings
             FCOIS.preventerVars.doFalseOverride = true
             --local _, currentMarkedIcons = FCOIS.IsMarked(bagId, slotIndex, -1)
-            local _, currentMarkedIcons = FCOIS.IsMarkedByItemInstanceId(fcoisItemInstanceId, -1, nil, nil)
+            FCOIS.preventerVars.gCalledFromInternalFCOIS = true
+            local _, currentMarkedIcons = isMarkedByItemInstanceId(fcoisItemInstanceId, -1, nil, nil)
             --Reset to normal return values for marked & en-/disabled icons now
             FCOIS.preventerVars.doFalseOverride = false
             --For each marked icon of the currently improved item:
@@ -1308,7 +1358,7 @@ function FCOIS.ClearOrRestoreAllMarkers(rowControl, bagId, slotIndex)
                 local iconIdsToBackup = {}
                 --Loop over each of the marker icons and remove them
                 for iconId, iconIsMarked in pairs(currentMarkedIcons) do
-    --d(">iconId: " .. tostring(iconId) .. ", loc_counter: " .. tostring(loc_counter))
+    --d(">iconId: " .. tos(iconId) .. ", loc_counter: " .. tos(loc_counter))
                     --Only go on if item is marked or is the last marker (to update the inventory afterwards)
                     if iconIsMarked == true then
                         loc_marked_counter = loc_marked_counter + 1
@@ -1321,11 +1371,12 @@ function FCOIS.ClearOrRestoreAllMarkers(rowControl, bagId, slotIndex)
                     --Refresh the control now to update the cleared marker icons?
                     local refreshNow = isCharacterShownVar or isCompanionCharacterShownVar or FCOIS.preventerVars.gOverrideInvUpdateAfterMarkItem
                     --Remove marker icon
---d(">removing marker icon: " .. tostring(iconId))
+--d(">removing marker icon: " .. tos(iconId))
                     --Set global preventer variable so no other marker icons will be set/removed during the clear
                     FCOIS.preventerVars.gClearingMarkerIcons = true
                     --FCOIS.MarkItem(bagId, slotIndex, iconId, false, refreshNow)
-                    FCOIS.MarkItemByItemInstanceId(fcoisItemInstanceId, iconIdsToBackup, false, itemLink, nil, nil, refreshNow)
+                    FCOIS.preventerVars.gCalledFromInternalFCOIS = true
+                    markItemByItemInstanceId(fcoisItemInstanceId, iconIdsToBackup, false, itemLink, nil, nil, refreshNow)
                     --Reset the global preventer variable
                     FCOIS.preventerVars.gClearingMarkerIcons = false
                     --Save the previous state of the marker icons on the item
@@ -1343,7 +1394,7 @@ function FCOIS.ClearOrRestoreAllMarkers(rowControl, bagId, slotIndex)
     --[[ OLD- Use Bag and SlotId- Fails if the slotIndices change in the bags!
     --Restore temporarily saved marker icons
     if lastMarkedIcons ~= nil and lastMarkedIcons[bagId] ~= nil and lastMarkedIcons[bagId][slotIndex] ~= nil then
---d("restore - bag: " .. bagId .. ", slotIndex: " .. slotIndex .. " " .. GetItemLink(bagId, slotIndex))
+--d("restore - bag: " .. bagId .. ", slotIndex: " .. slotIndex .. " " .. gil(bagId, slotIndex))
         --Restore saved markers for the current item?
         local loc_counter = 1
         local lastMarkedIconsToRestore = lastMarkedIcons[bagId][slotIndex]
@@ -1351,7 +1402,7 @@ function FCOIS.ClearOrRestoreAllMarkers(rowControl, bagId, slotIndex)
             --Reset all markers
             --Refresh the control now to update the set marker icons?
             local refreshNow = isCharacterShown or FCOIS.preventerVars.gOverrideInvUpdateAfterMarkItem
---d(">iconId: " ..tostring(iconId) .. ", isMarked: " .. tostring(iconIsMarked) .. ", refreshNow: " ..tostring(refreshNow))
+--d(">iconId: " ..tos(iconId) .. ", isMarked: " .. tos(iconIsMarked) .. ", refreshNow: " ..tos(refreshNow))
             --Set global preventer variable so no other marker icons will be set/removed during the restore
             FCOIS.preventerVars.gRestoringMarkerIcons = true
             FCOIS.MarkItem(bagId, slotIndex, iconId, iconIsMarked, refreshNow)
@@ -1394,14 +1445,14 @@ function FCOIS.ClearOrRestoreAllMarkers(rowControl, bagId, slotIndex)
             local loc_marked_counter = 0
             --Loop over each of the marker icons and remove them
             for iconId, iconIsMarked in pairs(currentMarkedIcons) do
---d(">iconId: " .. tostring(iconId) .. ", loc_counter: " .. tostring(loc_counter))
+--d(">iconId: " .. tos(iconId) .. ", loc_counter: " .. tos(loc_counter))
                 --Only go on if item is marked or is the last marker (to update the inventory afterwards)
                 if iconIsMarked then
                     loc_marked_counter = loc_marked_counter + 1
                     --Refresh the control now to update the cleared marker icons?
                     local refreshNow = isCharacterShown or FCOIS.preventerVars.gOverrideInvUpdateAfterMarkItem
                     --Remove marker icon
---d(">removing marker icon: " .. tostring(iconId))
+--d(">removing marker icon: " .. tos(iconId))
                     --Set global preventer variable so no other marker icons will be set/removed during the clear
                     FCOIS.preventerVars.gClearingMarkerIcons = true
                     FCOIS.MarkItem(bagId, slotIndex, iconId, false, refreshNow)

@@ -7,6 +7,10 @@ local preVars = FCOIS.preChatVars
 local addonVars = FCOIS.addonVars
 
 local zo_strf = zo_strformat
+local strfor = string.format
+local tos = tostring
+
+local gil = GetItemLink 
 
 --==========================================================================================================================================
 --									FCOIS - Debugging
@@ -69,7 +73,7 @@ function FCOIS.debugMessage(msg_text_header, msg_text, deep, depthNeeded, isInfo
         if not msg_text_header and not msg_text or (msg_text_header ~= nil and msg_text_header == "") or (msg_text ~= nil and msg_text == "") then return end
         --[[
         logger:Debug("A debug message")
-        logger:Info("An", "info", "message") -- multiple arguments are passed through tostring and concatenated with a space in between
+        logger:Info("An", "info", "message") -- multiple arguments are passed through tos and concatenated with a space in between
         logger:Warn("A %s message: %d", "formatted", 123) -- if the first parameter contains formatting strings, the logger will pass all arguments through string.format instead
         local subLogger = logger:Create("verbose") -- this will create a separate logger with a combined tag "MyAddon/verbose".
         subLogger:SetEnabled(false) -- turn the new logger off
@@ -131,9 +135,18 @@ function FCOIS.debugItem(p_bagId, p_slotIndex)
     if bag and slot then
         --local itemName = FCOIS.MyGetItemNameNoControl(bag, slot)
         local itemId = FCOIS.MyGetItemInstanceIdNoControl(bag, slot, true)
-        local itemLink = GetItemLink(bag, slot, LINK_STYLE_DEFAULT)
-        d("[FCOIS] " .. itemLink .." - bag: " .. tostring(bag) .. ", slot: " .. tostring(slot) .. ", FCOIS_ItemId: " .. tostring(itemId))
-        ZO_ChatWindowTextEntryEditBox:SetText("/zgoo FCOIS[FCOIS.getSavedVarsMarkedItemsTableName()][<iconIdHere>]["..itemId.."]")
+        local itemLink = gil(bag, slot, LINK_STYLE_DEFAULT)
+        d("[FCOIS] " .. itemLink .." - bag: " .. tos(bag) .. ", slot: " .. tos(slot) .. ", FCOIS_ItemId: " .. tos(itemId))
+        --ZO_ChatWindowTextEntryEditBox:SetText("/zgoo FCOIS[FCOIS.getSavedVarsMarkedItemsTableName()][<iconIdHere>]["..itemId.."]")
+        local debugTextTemplate = "/%s FCOIS[FCOIS.getSavedVarsMarkedItemsTableName()][<iconIdHere>]["..itemId.."]"
+        local debugText
+        if Zgoo then
+            debugText = strfor(debugTextTemplate, "zgoo")
+        end
+        if TBUG then
+            debugText = strfor(debugTextTemplate, "tb")
+        end
+        StartChatInput(debugText, CHAT_CHANNEL_SAY, nil)
     end
 end
 
@@ -185,7 +198,7 @@ function FCOIS.debugCheckAndShowOutputWindow()
     if LibDebugLogger ~= nil and DebugLogViewer ~= nil and DebugLogViewer_Data ~= nil then
         --Show the DebugLogViewer
         local dlv = DebugLogViewer
-        local dlvSv = DebugLogViewer_Data[tostring(GetWorldName()..GetDisplayName())]
+        local dlvSv = DebugLogViewer_Data[tos(GetWorldName()..GetDisplayName())]
         local isQuickLogEnabled = (dlvSv ~= nil and dlvSv.quickLog.enabled) or false
         if not isQuickLogEnabled then
             if dlv.ToggleWindow then

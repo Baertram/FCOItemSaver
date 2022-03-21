@@ -4,6 +4,8 @@ local FCOIS = FCOIS
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
 
+local tos = tostring
+
 local currentCharId       = GetCurrentCharacterId()
 
 --Function to set the default settings
@@ -32,6 +34,8 @@ function FCOIS.BuildDefaultSettings()
 		filterButtonLeft			= {},
 		filterButtonTop				= {},
 		filterButtonData			= {},
+		filterButtonSettings  = { --FCOIS v2.2.4 2021-11-15
+		},
 		isFilterOn   		   	 	= {false, false, false, false},
 		isFilterPanelOn				= {},
 		atPanelEnabled				= {},
@@ -334,6 +338,7 @@ function FCOIS.BuildDefaultSettings()
 			isStolen = true,
 			isCrafted = true,
 			isCraftedBy = true,
+			isCrownItem = false,
 		},
 
 		--[[ FCOIS v2.2.4
@@ -379,6 +384,11 @@ function FCOIS.BuildDefaultSettings()
 		enableKeybindChording = true,
 		reApplyIconsAfterEnchanting = true,
 		reApplyIconsAfterImprovement = true,
+		autoBindMissingSetCollectionPiecesOnLoot = false,
+		autoBindMissingSetCollectionPiecesOnLootMarkKnown = false,
+		autoBindMissingSetCollectionPiecesOnLootToChat = false,
+		autoMarkItemCoolDownTrackerTrackedItems = false,
+		itemCoolDownTrackerTrackedItemsMarkerIcon = FCOIS_CON_ICON_LOCK,
 	}
 	--The tables for the markedItems, non-unique and unique
 	local addonVars = FCOIS.addonVars
@@ -397,6 +407,7 @@ function FCOIS.BuildDefaultSettings()
 	local numFilterIcons                = FCOIS.numVars.gFCONumFilterIcons
 	local filterButtonsToCheck          = FCOIS.checkVars.filterButtonsToCheck
 	-- local numNonDynamicAndGearIcons     = FCOIS.numVars.gFCONumNonDynamicAndGearIcons
+	local numMaxGearStatic				= FCOIS.numVars.gFCONumGearSetsStatic
 	local numMaxDynIcons                = FCOIS.numVars.gFCOMaxNumDynamicIcons
 	local iconIsDynamic                 = FCOIS.mappingVars.iconIsDynamic
 	local iconIdToDynIcon               = FCOIS.mappingVars.dynamicToIcon
@@ -448,6 +459,22 @@ function FCOIS.BuildDefaultSettings()
 			FCOIS.settingsVars.accountWideButForEachCharacterDefaults[currentCharId].lastGearFilterIconId[libFiltersFilterPanelIdHelper] = -1
 			FCOIS.settingsVars.accountWideButForEachCharacterDefaults[currentCharId].lastResDecImpFilterIconId[libFiltersFilterPanelIdHelper] = -1
 			FCOIS.settingsVars.accountWideButForEachCharacterDefaults[currentCharId].lastSellGuildIntFilterIconId[libFiltersFilterPanelIdHelper] = -1
+
+			--Added with FCOIS v2.2.4
+			FCOIS.settingsVars.defaults.filterButtonSettings[libFiltersFilterPanelIdHelper] = {
+				[FCOIS_CON_FILTER_BUTTON_LOCKDYN]      = {
+					filterWithLogicalAND = true, --true: filter button will add with logical AND / false: filter button will add with logical OR
+				},
+				[FCOIS_CON_FILTER_BUTTON_GEARSETS]     = {
+					filterWithLogicalAND = true,
+				},
+				[FCOIS_CON_FILTER_BUTTON_RESDECIMP]    = {
+					filterWithLogicalAND = true,
+				},
+				[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT] = {
+					filterWithLogicalAND = true,
+				},
+			}
 		end
 		--FCOIS version 1.6.7
 		--Add the default additional inventory context menu "flag" button values for each filter panel ID
@@ -491,7 +518,7 @@ function FCOIS.BuildDefaultSettings()
 			--FCOIS v.2.1.0 - Companion inventory panel needs to be protected as default value as it was added new with this version
 			local valueToSet = false
 			if filterIconHelperPanel == LF_SMITHING_RESEARCH_DIALOG or filterIconHelperPanel == LF_JEWELRY_RESEARCH_DIALOG or
-				filterIconHelperPanel == LF_INVENTORY_COMPANION then
+					filterIconHelperPanel == LF_INVENTORY_COMPANION then
 				valueToSet = true
 			end
 			FCOIS.settingsVars.defaults.icon[filterIconHelper].antiCheckAtPanel[filterIconHelperPanel] = valueToSet
@@ -697,19 +724,17 @@ function FCOIS.BuildDefaultSettings()
 	FCOIS.settingsVars.defaults.iconPositionCharacter.x	=   0
 	FCOIS.settingsVars.defaults.iconPositionCharacter.y	=	0
 
-	--Update the "Gear sets" texts depending on localization
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_GEAR_1].name    = "Gear 1"
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_GEAR_2].name    = "Gear 2"
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_GEAR_3].name    = "Gear 3"
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_GEAR_4].name    = "Gear 4"
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_GEAR_5].name    = "Gear 5"
+	--Update the static "Gear sets" texts depending on localization
+	for staticGearIndex=1, numMaxGearStatic, 1 do
+		FCOIS.settingsVars.defaults.icon[_G["FCOIS_CON_ICON_GEAR_" .. tos(staticGearIndex)]].name = "Gear " ..tos(staticGearIndex)
+	end
 
 	--Update the "Dynamic icon" texts depending on localization
 	for dynIconNr=1, numMaxDynIcons, 1 do
 		--Use english ordinals
 		local iconToOrdinalStrDynEn = iconNrToOrdinalStr[1][tonumber(dynIconNr)] or "th"
-		local dynIconStr = tostring(dynIconNr).. iconToOrdinalStrDynEn
-		FCOIS.settingsVars.defaults.icon[_G["FCOIS_CON_ICON_DYNAMIC_" .. tostring(dynIconNr)]].name     = dynIconStr .. " dynamic"
+		local dynIconStr = tos(dynIconNr).. iconToOrdinalStrDynEn
+		FCOIS.settingsVars.defaults.icon[_G["FCOIS_CON_ICON_DYNAMIC_" .. tos(dynIconNr)]].name = dynIconStr .. " dynamic"
 	end
 
 	--New filter button data settings -> since FCOIS version 1.4.4

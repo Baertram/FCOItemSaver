@@ -9,7 +9,6 @@ local tos = tostring
 local strformat = string.format
 
 local gil = GetItemLink 
-
 --local numIdTypes = FCOIS.numVars.idTypes
 
 --local debugMessage = FCOIS.debugMessage
@@ -22,7 +21,7 @@ local signItemId = FCOIS.SignItemId
 
 local isMarked
 local isMarkedByItemInstanceId
-local markItem
+
 
 --The standard allowed bags for the backup
 local standardBackupAllowedBagTypes = {}
@@ -34,28 +33,34 @@ standardBackupAllowedBagTypes[BAG_BUYBACK] 	= true
 standardBackupAllowedBagTypes[BAG_VIRTUAL] 	= true --Craftbag
 standardBackupAllowedBagTypes[BAG_COMPANION_WORN] 	= true
 --The text for each bagtype
+local bagIdToString
 local locVars = FCOIS.localizationVars.fcois_loc
-local bagIdToString = {
-    [BAG_WORN] 		        = locVars["options_migrate_bag_type_" .. tos(BAG_WORN)],
-    [BAG_COMPANION_WORN]    = locVars["options_migrate_bag_type_" .. tos(BAG_COMPANION_WORN)],
-    [BAG_BACKPACK]          = locVars["options_migrate_bag_type_" .. tos(BAG_BACKPACK)],
-    [BAG_BANK] 		        = locVars["options_migrate_bag_type_" .. tos(BAG_BANK)],
-    [BAG_GUILDBANK]         = locVars["options_migrate_bag_type_" .. tos(BAG_GUILDBANK)],
-    [BAG_BUYBACK] 	        = locVars["options_migrate_bag_type_" .. tos(BAG_BUYBACK)],
-    [BAG_VIRTUAL] 	        = locVars["options_migrate_bag_type_" .. tos(BAG_VIRTUAL)], --Craftbag
-    [BAG_SUBSCRIBER_BANK]   = locVars["options_migrate_bag_type_" .. tos(BAG_SUBSCRIBER_BANK)],
-    [BAG_HOUSE_BANK_ONE]    = locVars["options_migrate_bag_type_" .. tos(BAG_HOUSE_BANK_ONE)],
-    [BAG_HOUSE_BANK_TWO]    = locVars["options_migrate_bag_type_" .. tos(BAG_HOUSE_BANK_TWO)],
-    [BAG_HOUSE_BANK_THREE]  = locVars["options_migrate_bag_type_" .. tos(BAG_HOUSE_BANK_THREE)],
-    [BAG_HOUSE_BANK_FOUR]   = locVars["options_migrate_bag_type_" .. tos(BAG_HOUSE_BANK_FOUR)],
-    [BAG_HOUSE_BANK_FIVE]   = locVars["options_migrate_bag_type_" .. tos(BAG_HOUSE_BANK_FIVE)],
-    [BAG_HOUSE_BANK_SIX]    = locVars["options_migrate_bag_type_" .. tos(BAG_HOUSE_BANK_SIX)],
-    [BAG_HOUSE_BANK_SEVEN]  = locVars["options_migrate_bag_type_" .. tos(BAG_HOUSE_BANK_SEVEN)],
-    [BAG_HOUSE_BANK_EIGHT]  = locVars["options_migrate_bag_type_" .. tos(BAG_HOUSE_BANK_EIGHT)],
-    [BAG_HOUSE_BANK_NINE]   = locVars["options_migrate_bag_type_" .. tos(BAG_HOUSE_BANK_NINE)],
-    [BAG_HOUSE_BANK_TEN]    = locVars["options_migrate_bag_type_" .. tos(BAG_HOUSE_BANK_TEN)],
-}
-
+local function updateBagId2String()
+    locVars = FCOIS.localizationVars.fcois_loc
+    bagIdToString = {
+        [BAG_WORN] 		        = locVars["options_migrate_bag_type_" .. tos(BAG_WORN)],
+        [BAG_COMPANION_WORN]    = locVars["options_migrate_bag_type_" .. tos(BAG_COMPANION_WORN)],
+        [BAG_BACKPACK]          = locVars["options_migrate_bag_type_" .. tos(BAG_BACKPACK)],
+        [BAG_BANK] 		        = locVars["options_migrate_bag_type_" .. tos(BAG_BANK)],
+        [BAG_GUILDBANK]         = locVars["options_migrate_bag_type_" .. tos(BAG_GUILDBANK)],
+        [BAG_BUYBACK] 	        = locVars["options_migrate_bag_type_" .. tos(BAG_BUYBACK)],
+        [BAG_VIRTUAL] 	        = locVars["options_migrate_bag_type_" .. tos(BAG_VIRTUAL)], --Craftbag
+        [BAG_SUBSCRIBER_BANK]   = locVars["options_migrate_bag_type_" .. tos(BAG_SUBSCRIBER_BANK)],
+        [BAG_HOUSE_BANK_ONE]    = locVars["options_migrate_bag_type_" .. tos(BAG_HOUSE_BANK_ONE)],
+        [BAG_HOUSE_BANK_TWO]    = locVars["options_migrate_bag_type_" .. tos(BAG_HOUSE_BANK_TWO)],
+        [BAG_HOUSE_BANK_THREE]  = locVars["options_migrate_bag_type_" .. tos(BAG_HOUSE_BANK_THREE)],
+        [BAG_HOUSE_BANK_FOUR]   = locVars["options_migrate_bag_type_" .. tos(BAG_HOUSE_BANK_FOUR)],
+        [BAG_HOUSE_BANK_FIVE]   = locVars["options_migrate_bag_type_" .. tos(BAG_HOUSE_BANK_FIVE)],
+        [BAG_HOUSE_BANK_SIX]    = locVars["options_migrate_bag_type_" .. tos(BAG_HOUSE_BANK_SIX)],
+        [BAG_HOUSE_BANK_SEVEN]  = locVars["options_migrate_bag_type_" .. tos(BAG_HOUSE_BANK_SEVEN)],
+        [BAG_HOUSE_BANK_EIGHT]  = locVars["options_migrate_bag_type_" .. tos(BAG_HOUSE_BANK_EIGHT)],
+        [BAG_HOUSE_BANK_NINE]   = locVars["options_migrate_bag_type_" .. tos(BAG_HOUSE_BANK_NINE)],
+        [BAG_HOUSE_BANK_TEN]    = locVars["options_migrate_bag_type_" .. tos(BAG_HOUSE_BANK_TEN)],
+    }
+    FCOIS.localizationVars = FCOIS.localizationVars or {}
+    FCOIS.localizationVars.bagIdToString = bagIdToString
+end
+bagIdToString = updateBagId2String()
 
 local idTypeToName = {
     [false]                                         = "Non unique",
@@ -83,6 +88,7 @@ function FCOIS.BackupMarkerIcons(withDetails, apiVersion, doClearBackup)
     local secondsSinceMidnight = GetSecondsSinceMidnight()
     local currentTimeStamp = GetTimeStamp()
     local settings = FCOIS.settingsVars.settings
+    settings.backupData = settings.backupData or {}
     local backupData = settings.backupData
     local preVars = FCOIS.preChatVars
 
@@ -135,7 +141,7 @@ function FCOIS.BackupMarkerIcons(withDetails, apiVersion, doClearBackup)
     d(preVars.preChatTextGreen .. ">>> Backup of marked items non-uniqueId/unique IDs (ZOs, FCOIS) started >>>")
     d(">Backup parameters: show details: " ..tos(withDetails) .. ", using API version " ..tos(apiVersionToUse) .. ", clear existing backup with same API version: " ..tos(doClearBackup))
     --FCOIS uniqueId part settings
-    d(">!!!Attention!!! The backup of the FCOIS uniqueIds will be done with the current FCOIS uiqueID settings! Restore is only working if you do not change the FCOIS uniqueId settings.")
+    d(">!!!Attention!!! The backup of the FCOIS uniqueIds will be done with the current FCOIS uiqueID settings!\nRestore would be working if you change the FCOIS uniqueId settings meanwhile BU your marker icons would not find the items anymore then!\nSo keep the FCOIS uniqueId settings untouched before your restore or you might loose markers.")
     d(">Current FCOIS uniqueId parts are: ")
     local uniqueIdParts = settings.uniqueIdParts
     for uniqueIdPartName, uniqueIdPartValue in pairs(uniqueIdParts) do
@@ -148,7 +154,7 @@ function FCOIS.BackupMarkerIcons(withDetails, apiVersion, doClearBackup)
 
     --Clear the last backup for the specified APIversion?
     if doClearBackup then
-        if backupData[apiVersionToUse] ~= nil then
+        if backupData and backupData[apiVersionToUse] ~= nil then
             backupData[apiVersionToUse] = nil
         end
     end
@@ -302,8 +308,9 @@ end
 local backupMarkerIcons = FCOIS.BackupMarkerIcons
 
 --Pre-Backup funciton to jump to your house or start the backup now if you do not own any house yet
-function FCOIS.PreBackup(backupType, withDetails, apiVersion, doClearBackup)
+function FCOIS.PreBackup(withDetails, apiVersion, doClearBackup)
 --d("[FCOIS]FCOIS.preBackup")
+    locVars = FCOIS.localizationVars.fcois_loc
     --Reset the preventer variable always here to prevent endless port loop attempt from this function FCOIS.preBackup -> EVENT_PLAYER_ACTIVATED -> FCOIS.preBackup ...
     FCOIS.settingsVars.settings.doBackupAfterJumpToHouse = false
     FCOIS.settingsVars.settings.backupParams = nil
@@ -359,12 +366,35 @@ end
 
 --Get the marked items count in a backup set of a bag
 local function getMarkedItemsInBackupSet(backupSetOfAPI)
-    if backupSetOfAPI == nil then return 0 end
-    local backupSetEntries = 0
-    for _, _ in pairs(backupSetOfAPI) do
-        backupSetEntries = backupSetEntries + 1
+    if backupSetOfAPI == nil then return 0, 0, 0, 0 end
+    local skipMe = {
+        ["FCOISuniqueIdParts"] =    true,
+        ["timestamp"] =             true,
+    }
+    local backupSetEntriesNonUnique = 0
+    local backupSetEntriesZOsUnique = 0
+    local backupSetEntriesFCOISUnique = 0
+    local backupSetEntriesTotal = 0
+    for key, _ in pairs(backupSetOfAPI) do
+        if not skipMe[key] then
+            backupSetEntriesTotal = backupSetEntriesTotal + 1
+
+            local typeOfKey = type(key)
+            if typeOfKey == "number" then
+                --Non-unique
+                backupSetEntriesNonUnique = backupSetEntriesNonUnique + 1
+            elseif typeOfKey == "string" then
+                if string.find(key, ",") ~= nil then
+                    --FCOIS unique
+                    backupSetEntriesFCOISUnique = backupSetEntriesFCOISUnique + 1
+                else
+                    --ZOs unique
+                    backupSetEntriesZOsUnique = backupSetEntriesZOsUnique + 1
+                end
+            end
+        end
     end
-    return backupSetEntries
+    return backupSetEntriesTotal, backupSetEntriesNonUnique, backupSetEntriesZOsUnique, backupSetEntriesFCOISUnique
 end
 
 --Restore the marker icons from the saved variables. A backup is nedded in the savedvars, which can be manually triggered from the settings
@@ -372,8 +402,6 @@ function FCOIS.RestoreMarkerIcons(withDetails, apiVersion)
     local settings = FCOIS.settingsVars.settings
     local backupData = settings.backupData
     local preVars = FCOIS.preChatVars
-
-    markItem = markItem or FCOIS.MarkItem
 
     --Get the current API version of the server, to distinguish code differences dependant on the API version
     FCOIS.APIversion = GetAPIVersion()
@@ -417,9 +445,29 @@ function FCOIS.RestoreMarkerIcons(withDetails, apiVersion)
     end
     apiVersionToUse = tonumber(apiVersionToUse)
 
+    --Check if current FCOIS uniqueId settings are the same as the backuped ones
+    local uniqueIdZOsSettingsDifferFromBackup = false
+    local uniqueIdParts = settings.uniqueIdParts
+    local uniqueIdPartsOfBackup = backupData[apiVersionToUse].FCOISuniqueIdParts
+    d(">Checking if your current FCOIS unique-Id settings (See \'General settings -> Unique ID -> Dropdown FCOIS unique and checkboxes below\') are matching the backuped data...")
+    for uniqueIdPartName, uniqueIdPartValue in pairs(uniqueIdParts) do
+        local uniqueIdPartsValueOfBackup = uniqueIdPartsOfBackup[uniqueIdPartName]
+        if uniqueIdPartsValueOfBackup == nil then
+            d(string.format(">!!!|cFF0000ERROR|r \'%s\' was not backuped, but current value at settings is: %s", tos(uniqueIdPartName), tos(uniqueIdPartValue)))
+            uniqueIdZOsSettingsDifferFromBackup = true
+        elseif uniqueIdPartsValueOfBackup ~= uniqueIdPartValue then
+            d(string.format(">!!!|cFF0000ERROR|r \'%s\' was backuped with value %s, current value at settings is: %s", tos(uniqueIdPartName), tos(uniqueIdPartsValueOfBackup), tos(uniqueIdPartValue)))
+            uniqueIdZOsSettingsDifferFromBackup = true
+        end
+    end
+    if uniqueIdZOsSettingsDifferFromBackup == true then
+        d("<ERROR Aborting the restore as the FCOIS uniuqe-ID settings do not match the backup. Please change your current FCOIS unique settings to the above noted backup-settings first to restore these marker icons properly!")
+        return
+    end
+
     --Get the marked items in the backup set of this bag
-    local markedItemsInBackupSet = getMarkedItemsInBackupSet(backupData[apiVersionToUse]) or 0
-    d("!> Marked items in backup set: " ..tos(markedItemsInBackupSet))
+    local markedItemsInBackupSet, backupSetEntriesNonUnique, backupSetEntriesZOsUnique, backupSetEntriesFCOISUnique = getMarkedItemsInBackupSet(backupData[apiVersionToUse])
+    d(string.format("!> Marked items in backup set total: %s -> non-unique: %s, ZOS unique: %s, FCOIS unique: %s", tos(markedItemsInBackupSet), tos(backupSetEntriesNonUnique), tos(backupSetEntriesZOsUnique),tos(backupSetEntriesFCOISUnique)))
 
     --Scan all the inventories of the player (bank, bag, guild bank, craftbag, buyback, ESO+ subscriber bank, house banks, etc.)
     local allowedBagTypes = standardBackupAllowedBagTypes
@@ -479,6 +527,7 @@ function FCOIS.RestoreMarkerIcons(withDetails, apiVersion)
                             [FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE]    = zosUniqueId,
                             [FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE]  = FCOISUniqueId,
                         }
+                        local firstFound = true
                         for idTypeIndex, markerIconItemIdToCheck in pairs(markerIconIdsToCheck) do
                             local itemIdMarkers = backupData[apiVersion][markerIconItemIdToCheck]
                             --Is the item in the backup data with this ID? Then retsore it
@@ -491,12 +540,13 @@ function FCOIS.RestoreMarkerIcons(withDetails, apiVersion)
                                     iconsStr = ""
                                     itemLink = gil(bagId, slotIndex)
                                 end
-                                for iconId, isMarkedIcon in pairs(itemIdMarkers) do
-                                    if isMarkedIcon == true and type(iconId) == "number" then
+                                for iconId, isMarked in pairs(itemIdMarkers) do
+                                    if isMarked == true and type(iconId) == "number" then
                                         --Mark the item again with all found icon markers
-                                        FCOIS.preventerVars.gCalledFromInternalFCOIS = true
-                                        markItem(bagId, slotIndex, iconId, true, false)
-                                        foundMarkedMarkerIconsOnItems = foundMarkedMarkerIconsOnItems + 1
+                                        FCOIS.MarkItem(bagId, slotIndex, iconId, true, false)
+                                        if firstFound then
+                                            foundMarkedMarkerIconsOnItems = foundMarkedMarkerIconsOnItems + 1
+                                        end
                                         if withDetails then
                                             if iconsStr == "" then
                                                 iconsStr = tos(iconId)
@@ -510,8 +560,11 @@ function FCOIS.RestoreMarkerIcons(withDetails, apiVersion)
                                     local idType = idTypeToName[idTypeIndex]
                                     d(strformat(">restored \'%s\' icons[%s] for %s", idType, iconsStr, itemLink))
                                 end
-                                --Increase the counter
-                                foundMarkedItems = foundMarkedItems + 1
+                                if firstFound then
+                                    --Increase the counter
+                                    foundMarkedItems = foundMarkedItems + 1
+                                    firstFound = false
+                                end
                             end
                         end
                         foundItemsInBag = foundItemsInBag + 1
@@ -526,7 +579,8 @@ function FCOIS.RestoreMarkerIcons(withDetails, apiVersion)
             end
         end
     end
-    d("!>>> Total re-marked/in backup set/found items: " .. tos(totalMarkedItems) .. "/" .. tos(markedItemsInBackupSet) .. "/" .. tos(totalItems))
+    d(string.format("!>> Marked items in backup set total: %s -> non-unique: %s, ZOS unique: %s, FCOIS unique: %s", tos(markedItemsInBackupSet), tos(backupSetEntriesNonUnique), tos(backupSetEntriesZOsUnique),tos(backupSetEntriesFCOISUnique)))
+    d("!>>> Total re-marked/found items: " .. tos(totalMarkedItems) .. "/" .. tos(totalItems))
     d(preVars.preChatTextGreen .. "<<< Restore finished <<<")
     d("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
 end
@@ -541,8 +595,8 @@ end
 -- DELETE BACKUP
 ------------------------------------------------------------------------------------------------------------------------
 
-function FCOIS.DeleteBackup(backupType, apiVersionToDelete)
-    backupType = backupType or "unique"
+function FCOIS.DeleteBackup(apiVersionToDelete)
+--d("[FCOIS.DeleteBackup]apiVersion: " ..tos(apiVersionToDelete))
     if apiVersionToDelete == nil then return false end
     local settings = FCOIS.settingsVars.settings
     local backupData = settings.backupData
@@ -558,6 +612,62 @@ function FCOIS.DeleteBackup(backupType, apiVersionToDelete)
         d(preVars.preChatTextGreen .. "?> Backup for specified API version "..tos(apiVersionToDelete) .." was deleted! <<<")
         --Update the list of restorable backups now in the settings dropdown
         FCOIS.BuildRestoreAPIVersionData(true)
+        return true
+    end
+end
+
+
+------------------------------------------------------------------------------------------------------------------------
+-- DELETE MARKER ICONS
+------------------------------------------------------------------------------------------------------------------------
+
+function FCOIS.DeleteMarkerIcons(markerIconsToDeleteType, markerIconsToDeleteIcon)
+    if markerIconsToDeleteType == nil or markerIconsToDeleteIcon == nil or markerIconsToDeleteIcon == 0 then return end
+    local preVars = FCOIS.preChatVars
+    --local locVars = FCOIS.localizationVars.fcois_loc
+    local uniqueItemIdTypeChoices = locVars.uniqueItemIdTypeChoices
+    local savedVarsMarkedItemsNames = FCOIS.addonVars.savedVarsMarkedItemsNames
+    local allIcons = markerIconsToDeleteIcon == FCOIS_CON_ICON_ALL or false
+    local iconStr = (allIcons == true and "All icons") or tos(markerIconsToDeleteIcon)
+
+    local markerIconsToDeleteTypeTable = savedVarsMarkedItemsNames[markerIconsToDeleteType]
+    local markerIconsToDeleteTypeStr = (type(markerIconsToDeleteType) == "number" and uniqueItemIdTypeChoices[markerIconsToDeleteType]) or (locVars["options_non_unique_id"] .. "/" .. uniqueItemIdTypeChoices[FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE])
+    --Was the SV subTable name determined?
+    if markerIconsToDeleteTypeTable == nil or markerIconsToDeleteTypeTable == "" then
+        d(preVars.preChatTextRed .. "?> Marker icons \'" .. iconStr .. "\' SavedVariables table name for specified ID type \'"..tos(markerIconsToDeleteTypeStr) .."\' not found! <<<")
+        return false
+    end
+
+    local showError = false
+    --Is the marker icons subtable existing which should be deleted?
+    if FCOIS.settingsVars.settings[markerIconsToDeleteTypeTable] == nil then
+        showError = true
+    end
+    if not showError and not allIcons then
+        if FCOIS.settingsVars.settings[markerIconsToDeleteTypeTable][markerIconsToDeleteIcon] == nil then
+            showError = true
+        end
+    end
+    if showError then
+        d(preVars.preChatTextRed .. "?> Marker icons \'" .. iconStr .. "\'  for specified ID type \'"..tos(markerIconsToDeleteTypeStr) .."\' not found! <<<")
+        return false
+    end
+
+    --Delete the marker icons subtable now
+    local wasDeleted = false
+    if allIcons == true then
+        FCOIS.settingsVars.settings[markerIconsToDeleteTypeTable] = nil
+        wasDeleted = true
+    else
+        if FCOIS.settingsVars.settings[markerIconsToDeleteTypeTable][markerIconsToDeleteIcon] ~= nil then
+            FCOIS.settingsVars.settings[markerIconsToDeleteTypeTable][markerIconsToDeleteIcon] = nil
+            wasDeleted = true
+        end
+    end
+    if wasDeleted == true then
+        d(preVars.preChatTextGreen .. "?> Marker icons \'" .. iconStr .. "\' for specified ID type \'"..tos(markerIconsToDeleteTypeStr) .."\' were deleted from SV subtable \'" .. tos(markerIconsToDeleteTypeTable) .. "\'! \nYour UI will be reloaded now to update the SavedVariables properly. <<<")
+        --Reload the UI now
+        ReloadUI("ingame")
         return true
     end
 end

@@ -14,17 +14,14 @@
 --************************************************************************************************************************
 --************************************************************************************************************************
 --************************************************************************************************************************
-------------------------------------------------------------------
--- [Error/bug & feature messages to check - CHANGELOG since last version] --
 ---------------------------------------------------------------------
+-- [TODO LONGTIME errors list -> find a way to reproduce/fix them] --
+---------------------------------------------------------------------
+-- #58) bug, Using dynamic icons as submenu will show the dynamic icons submenu out of bounds and not clickable + sometimes hide other non-dynamic icons (e.g. sell in guildstore) in the normal context menu then
+---> Problem is that ZOs code is not raising the events like inside the normal inventories.
+--Asked for a fix/support [URL="https://www.esoui.com/forums/showthread.php?t=8938"]in this forum thread[/URL]
 
---____________________________
--- Current max bugs/features/ToDos: 175
---____________________________
-
-------------------------------------------------------------------------------------------------------------------------
-
--- 76) 2020-04-12, Baertram
+-- #76) 2020-04-12, bug, Baertram
 -- Open bank after login and try to remove/add a marker icon via keybind-> Insecure error call
 --See addon comments by TagCdog at 2020-04-11
 --[[
@@ -46,7 +43,7 @@ EsoUI/Libraries/ZO_KeybindStrip/ZO_KeybindStrip.lua:679: in function 'ZO_Keybind
 (tail call): ?
 ]]
 
--- 79) 2020-05-28, User m-ree via FCOIS addon panel, bug #2646
+-- #79) 2020-05-28, bug, User m-ree via FCOIS addon panel, bug #2646
 -- Open a sealed writ from the inventory will throw an error message:
 --1. Login
 --2. Open inventory
@@ -64,7 +61,7 @@ ZO_MenuItem1_MouseUp:4: in function '(main chunk)'
 ]]
 
 
---84) 2020-06-27, Malvarot - Automatic marks Quality will also tag set items "again" if the checkbox "check all other markers" at the quality settings is enabled.
+--#84) 2020-06-27, FEATURE - Malvarot - Automatic marks Quality will also tag set items "again" if the checkbox "check all other markers" at the quality settings is enabled.
 --                           e.g. set item markes get applied and after that quality as well, allthough set item markers were applied already and "check others" should prevent this
 --   Order of checking these automatic marks:
 --      Sets (wichtig: trait erwünscht > trait egal > trait unerwünscht diese reihenfolge beibehalten),
@@ -102,18 +99,16 @@ Blaue/Lila Set Rüstung mit invigorating: dynamic mark 4 ("undefined")
 Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 ]]
 
---#92: 2020-08-10, Baertram     SettingsForAll settings, which save if you are using accountwide, character or allAccountsTheSame SavedVariables will get
+--#92: 2020-08-10, bug, Baertram     SettingsForAll settings, which save if you are using accountwide, character or allAccountsTheSame SavedVariables will get
 --     deleted if you delete the "Account wide" settings from the FCOIS settings menu "SavedVariables copy/delete" options submenu!
 --     E.g. use "AllAccountsTheSame" in the settings of account @Baertram-> This setting is stored in AccountWide settings @Baertram, version 999.
 --     If you delete the account settings for @Baertram now, the chosen settings to use AllAccountsTheSame gets deleted as well!
 --     These SettingsForAll need to migrate and be saved somewhere else, like in a special settings table "FCOItemSaver_Settings_General"!
 
---#115: 2021-05-13, Baertram  Reposition the additional inventory "flag" icons at crafting tables: Refine, deconstruction, improvement.
+--#115: 2021-05-13, bug, Baertram  Reposition the additional inventory "flag" icons at crafting tables: Refine, deconstruction, improvement.
 --                            and test if they also fit with AdvancedFilters enabled
 
---#116: 2021-05-24: ResearchAssistant: Items won't get marked (red rectangle of RA) at the bank after changing settings/reloadUI
-
---#131: Error message at login:
+--#131: bug, Error message at login:
 --[[
 user:/AddOns/FCOItemSaver/src/FCOIS_SettingsMenu.lua:2445: attempt to index a nil value
 stack traceback:
@@ -125,99 +120,127 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 |caaaaaa<Locals> eventCode = 65536, addOnName = "FCOItemSaver", bagIdsToFilterForInvSingleSlotUpdate = [table:12]{1 = 1} </Locals>|r
 ]]
 
---#140: Error message at login -> related to fixed error 131
+--#140: bug, Error message at login -> related to fixed error 131
 -->Could not create editbox "Gauche:" FCOItemSaver_LAM
 -->Could not create editbox "Haute:" FCOItemSaver_LAM
 ----> Seems the fixed error message user:/AddOns/FCOItemSaver/src/FCOIS_SettingsMenu.lua:2445: attempt to index a nil value is causing this now
+--> Not reproducable?!
 
-
---#145, 2021-07-08, demawi, FCOIS esoui comments, ContextMenu at bank get's vanilla items removed if FCOIS, Custom Item Preview and
--- Auto Category are enabled
---TODO Check if the menu's parent is a FCOIS flag invoker button and ONLY then return true!
---> file src/FCOIS_ContextMenu.lua, function FCOIS.hideAdditionalInventoryFlagContextMenu(override) -> menuVisibleCheck
---[[
---Compatibility functions
-local function menuVisibleCheck()
-    --New: Since API10030 - Typo was removed
-    --TODO Check if the menu's parent is a FCOIS flag invoker button and ONLY then return true!
-]]
-
---#154, 2021-08-16, Baertram, bug: Improving an item does not re-apply the improve icon (if quality below gold)
---#155, 2021-08-17, Baertram, bug: Improving an item does not re-apply the already marked icons
-
---#170, 2021-10-07, sirinsidiator, bug:
---[[hey. ich hab mit FCOIS seit einer weile das problem, dass ich beim besuch einer crafting station gelockte items sehe, obwohl die eigentlich ausgeblendet wären.
-repro:
-1) crafting station besuchen
-2) crafting station verlassen
-3) crafting station sofort wieder öffnen
-wenn ich das mache, dann sehe ich alle gelockten items bis ich z.b. auf den refine tab und zurück wechsel
-]]
 
 ---------------------------------------------------------------------
---[ToDo list] --
---Check for local speed ups. FCOItemSaver.txt was checked until src/FCOIS_Tooltips.lua -> as of 2021-08-18
+--[TODO Current Errors and features list - Find a way to reproduce/fix/add them] --
+--[General]Check for local speed ups. FCOItemSaver.txt was checked until src/FCOIS_Tooltips.lua -> as of 2021-08-18
 --#129: 2021-06-01: Removing all marker icons via the add. inv. "flag" context menu does not remove companion item's marker icons
---#156: 2021-08-18, Baertram, bug: Enchanting an item does not re-apply the already marked icons (also consider icons that were saved for the items before? add setting for "Check all others")
+--#156: 2021-08-18, Baertram, bug: Enchanting an item does not re-apply the already marked icons (also consider icons that were saved for the items before? Add setting for "Check all others")
 --#157: 2021-08-18, Baertram, bug: Character doll ring/weapon marker icons do not update properly (both 2 rings were unequipped via double click or drag and drop: on drag of 1 ring back to the right!!! slot the marker icons do not update, or equip 1 ring to the left and then use double click to equp the 2nd ring to the right slot).
 --And if you drag another ring to a slot where a ring was already equipped the marker icons do neither update all!
 --#158: 2021-08-18, Baertram, bug: Character doll ring/weapon marker icons do not remove all if SHIFT+right click is used on 1 ring (and the 2nd ring is identical)
 
---#168: 2021-09-19, Baertram, bug: Refinement smithing is not removing items from slot if marker icon is applied (via context menu or keybind)
---#169: 2021-10-07, Baertram, bug: Refinement smithing/enchanting creation is not filtering the FCOIS filters at first open if AdvancedFilters and FCOCraftFilter are enabled as well
---     (maybe even not without these enabled). Changing to e.g. enchanting extarction and back to creation fixes this?!
---#170: 2021-10-07, sirinsidiator, bug: Crafting station re-opens shows locked items (filters do not seem to apply) until e.g. refine tab was opened, and other tab re-opened
---#174: 2021-10-31, Baertram, bug: If Iventory Insight from Ashes is enabled: Select "All" tab or any tab where items are shown which are on other characters. Find one item on another char
+--#174: 2021-10-31, Baertram, bug: If Inventory Insight from Ashes is enabled: Select "All" tab or any tab where items are shown which are on other characters. Find one item on another char
 --                                 having any iocn set e.g. "sell". Right click it remove the sell icon, and then set it again. Sometimes the worn items and inventory (maybe all items somehow)
 --                                 now show the removed/applied marker icon "sell" on them?!
---#175: 2021-11-06, silvereyes, bug:
---[[
-bad argument #1 to 'pairs' (table/struct expected, got nil) ---> for iconId, iconIsMarked in pairs(impVars.improvementMarkedIcons) do
-stack traceback:
-[C]: in function 'pairs'
-user:/AddOns/FCOItemSaver/src/FCOIS_Functions.lua:2120: in function 'func'
-|caaaaaa<Locals> bagId = 1, slotIndex = 16, iconsRemarked = 0 </Locals>|r
-/EsoUI/Libraries/Globals/globalapi.lua:227: in function '(anonymous)'
 
-Steps to reproduce:
-Open a crafting station
-Go to the improvement tab
-Filter the items with a text filter so that only the item to improve is shown. Not sure if this is part of the base game, or Votan's Search Box, which I have installed.
-Mark the item with an FCOItemSaver mark, like selling at guild store.
-Deactivate anti improve
-Improve the item all the way to legendary so that it becomes ineligible to improve
+--#176: 2021-11-14, Baertram, feature: Add submenu to 4 filter buttons, with setting to change the filter between AND & OR filter conjunction behaviour.
+--Remembers the state for each filterPanel
 
-I'm guessing that the same sort of thing can happen any time a marked item becomes ineligible for the inventory list.
-For example, maybe after right click > bind a marked item in the guild store selling tab or mail send tab.
-I haven't tested that, though. Should be a fairly easy nil check either way.
+--#178: 2021-12-03, Onigar (Addon comments), bug:
+--[[ So at the bank deposit tab you got only the "green lock" FCOIS filterbutton set (right clicked the filter button -> chose the "lock" icon explicitly ->
+    Then left clicked the filter button to turn it green -> will only filter out, hide, the lock marked items)?
+    Or is it the green * button (right click first filterButton and choose the most otp entry "*"-> then left click the filter button to turn it green ->
+    will filter out, hide, the lock and all dynamic icons).
+    And as you deposit (via keybind? via drag & drop? via double click? Any difference here?) some other items (do they need to be marked with any
+    FCOIS marker icon or could it also be any other non marked item?) all of sudden the filtered items with a lock/dynamic marker icon are shown in the
+    bank deposit list again.
 ]]
 
+--#181, 2022-01-02, Baertram: Check filter slash command chat feedback: Does it show correct info about filter state and new logical conjuncions?
 
----------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed]
----------------------------------------------------------------------
---In progress: Updated last 2021-11-12
---#175
 
----------------------------------------------------------------------
---Since last update 2.2.3 - New version: 2.2.4 -> Changelog updated last: 2021-11-12
----------------------------------------------------------------------
+--____________________________
+-- Current max bugs/features/ToDos: 216
+--____________________________
 
+
+------------------------------------------------------------------------------------
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-03-19
+------------------------------------------------------------------------------------
+--#176 -> Test: Errors occured with OR filters, and mixed AND + OR filters
+--Added checks if functions/API functions are called internally or from external (other addons) -> Still ongoing TODO
+
+
+-------------------------------------------------------------------------------------
+--Changelog (last version: 2.2.3 - New version: 2.2.4) -    Updated last: 2022-03-19
+-------------------------------------------------------------------------------------
 --[Fixed]
-
+--Added debug file /src/FCOIS_Debug.lua to the txt file again
+--Debug functions will use local speed up variable now
+--Added more local speed-ups in several files
+--Missing command handler function in API function FCOIS.ChangeFilter
+--Removed duplicate calls to localization
+--Removed duplicate calls to settings loading
+--Added more speed-up local variables (tooltips, marker icons, API function calls)
+--Fixed LAM settings menu editboxes for number values to disallow strings/empty strings and reset to default number if value is wrong--#175: lua error bad argument #1 to 'pairs' (table/struct expected, got nil) after improving items and leaving the improve station directly. Important: If you do not wait ~1-2 seconds after improvement has visually finished the automatic re-applied marker icons might fail to apply if you have left the improvement table meanwhile!
+--#177: With filterButton 1 and 2 at yellow state: items without markerIcon of filter 1 (but being a dynamic gear of filter 2) will not filter (hide)
+--#179: Gear or dynamic icons name could be empty and raise lua error messages. If left empty they will directly reset to the default name (English) now
+--#180: GetItemInstanceId error upon mouse over at inventory quest items
+--#182: FCOIS uniqueIds were saved with wrong values. Only the first parameter itemId was correct so they showed properly, but the differences like stolen, crafted, level, quality were never checked and saved properly.
+--Attention: You need to remove and re-apply the markers for your items if you want to save them properly with all data now! Else the old marker strings with the itemId and every other value "the same" will be kept and used!
+--You can use the new settings at "Backup &restore & delete", submenu "Delete" -> Delete all marker icons for FCOIS unique ones to mass-remove the old entries. And then use automatic marks like set items etc. to remark them new!
+--#187: Delete backuped markerIcons was not removing some API versions properly
+--#189: FCOIS uniqueIds item markers got saved into SavedVariables table "markedItems", but they should only be saved to "markedItemsFCOISUnique"
+--#191: Switching from FCOIS unique to non-unique item markers will not show ANY marker icon at the inventories. If the migration dialog appears and is aborted the UI will be reloaded to fix this
+--#192, FCOIS unique item marker strings contain the text "nil". This was changed to "" to reduce the size if the SVs
+--#193: FCOIS settings menu disappears in total after using LibFeedbacks -> Send mail feature, and re-opening the settings a 2nd time after that
+--#194: If the submenu for dynamic icons is enabled at the context menus: Using SHIFT+right mouse to remove/readd all marker icons to the item will still show the "Dynamic" submenu at banks/vendors/crafting
+--#195: Fixed detection of owned house (for backup auto port suggestion to house, to access the house storage data)
+--#197: Migration of non-unique item markers to FCOISunique itemMarkers does not work properly
+--#198: Enchanting did not recognize the filters correctly and was not always protecting the items at extraction as it thought it is LF_INVENTORY
+--#199: Companion equipment character sometimes is not showing the armor type labels L/M/H
+--#200: The chosen language is not updated in localization of the settings menu properly
+--#203: Mass moving to junk/removing from junk will kick you from the server because of message spam. Junk move will be done in 50 items packages now, with a 250ms delay in between each package.
+--#204: Fixed error message in FCOIS.GetSavedVarsMarkedItemsTableName if loaded from other addons before FCOIS SavedVariables were loaded properly (e.g. IIfA)
+--#207: Companion equipment character markers will not be shown properly at companion's character doll
+--#208: Switching from vendor buy to sell panel raises a lua error
+--#213,214: Automatic set collection markers and auto bind unknown items even if no unknown set collections marker icon was selected, and fixed settings menu to allow the seection of LibMultiAccountSets and auto bind missing set collections
+--#215: Porting to house dialog (as you backup marker icons) was throwing a LibDialog error
+--#216: /fcois help chat command shows all filter panel IDs possible now and /fcois command does not throw a lua error message anymore
 
 --[Changed]
+--Changed load order of debug file to earlier loading
+--Removed duplicate code and strings for the filter button's "allowed to filter" functions
+--FCOIS settings button at the main menu changed it's look from the -> arrow to the "FCOIS filter/lock icon" to dinstinguish it from other addons (e.g. Votans Settings Menu)
+--#186 Update the gear and dynamic icons submenu to show the gear/dynamic icon name in the submenu text
 
 
 --[Added]
+--Added new constants for filter button states: FCOIS_CON_FILTER_BUTTON_STATE_RED, FCOIS_CON_FILTER_BUTTON_STATE_GREEN and FCOIS_CON_FILTER_BUTTON_STATE_YELLOW
+--Added new constant for special filter button state: Do not update colors = FCOIS_CON_FILTER_BUTTON_STATE_DO_NOT_UPDATE_COLOR
+--New looted missing set item pieces can be bound automatically (new setting), shown in chat (new setting) and be marked as unknown (exisitng settings) or known (new setting) set colelction pieces
+--Added API function function FCOIS.GetGearIcons(onlyNonDynamicOnes, onlyDynamicOnes)
+--Added IsCrownItem to the possible FCOIS unique-ID parts
+--If you press SHIFT key and right mouse on the filter button this will reset the selected filter icon at the button to the * ("All") entry
+--#184 Added automatic marking of needed scrolls etc. with ItemCooldownTracker API
+--#188 Enable backup and restore for all 3 saved itemIds (non unique, ZOs unique and FCOIS unique). ZOs unique and non-unique can only be saved and restored together!
+--#202 FilterButtons and additional inventory flag context menu button added to universal deconstruction panel. The filter's and filterButtons and contextMenus re-use the selected protection
+--     methods etc. of smithing deconstuction/jewelry deconstruction/enchanting extraction! If the "All" tab is selected at the universal decon panel, which includes all types of the
+--     deconstructable/extractable item types, the smithing deconstruction buttons and context menu buttons are show, but the checks will still be done "per item", so that glyphs are protected too!
 
 
 --[Added on request]
+--#176 Add submenu to 4 filter buttons, with setting to change the filter between AND & OR filter conjunction behaviour. Remembers the state for each filterPanel
+-->Due to current problems filtering combinations of logicla AND and OR the filterButtons will change ALL filterButtons logical conjunction settings between AND or OR at the same time!
+--->Screenshot showing the new context menu "Filter settings" at the filter button: https://i.imgur.com/32AHUNS.png
+--->Screenshot link for tooltip showing new logical conjunction AND/OR state: https://i.imgur.com/yj2UIOe.png
+--#183 Add new SavedVariables saving independent to Server and AccountName -> "All servers and accounts the same"
+--#185 Add possibility to only reset the SavedVariables of stored marker icons, but keep the other settings. See settings menu bakup & restored & delete -> new submenu "Delete"
 
 
 --************************************************************************************************************************
 --************************************************************************************************************************
 --************************************************************************************************************************
+
+------------------------------------------------------------------
+-- START OF ADDON CODE
 ------------------------------------------------------------------
 --Global array with all data of this addon
 if FCOIS == nil then FCOIS = {} end

@@ -4,37 +4,48 @@ local FCOIS = FCOIS
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
 
+local tos = tostring
+local tabins = table.insert
+
 local debugMessage = FCOIS.debugMessage
+
+local availableCtms = FCOIS.contextMenuVars.availableCtms
 
 --==========================================================================================================================================
 -- 															FCOIS LOCALIZATION
 --==========================================================================================================================================
-
+--Change the contextMenu "contextMenuType"'s filter button entries (e.g. remove dynamic gear from dynamics and move to gear contextMenu)
+-->Update the array for the "contextMenuType"'s filter button context menu entries
 function FCOIS.BuildLocalizedFilterButtonContextMenuEntries(contextMenuType)
     local localizedContextMenuEntries = {}
 
     --Available context menus
-    local availableCtms = FCOIS.contextMenuVars.availableCtms
     if availableCtms == nil then return nil end
-    local ctmType = tostring(availableCtms[contextMenuType])
+    local ctmType = tos(availableCtms[contextMenuType])
     if ctmType == nil or ctmType == "" then return nil end
 
     --Variables
-    local settings = FCOIS.settingsVars.settings
-    local locVars = FCOIS.localizationVars.fcois_loc
+    local settings =        FCOIS.settingsVars.settings
+    local locVars =         FCOIS.localizationVars.fcois_loc
+    local mappingVars =     FCOIS.mappingVars
+    local numVars =         FCOIS.numVars
     local contextMenuVars = FCOIS.contextMenuVars
-    local textureVars = FCOIS.textureVars
+    local textureVars =     FCOIS.textureVars
+    local buttonNamePrefix = contextMenuVars.buttonNamePrefix
 
     --Gear set / dynamic icon variables
-    local iconIsGear = settings.iconIsGear
-    --local dynIconTotalCount = FCOIS.numVars.gFCONumDynamicIcons
-    local dynIconTotalCount   = settings.numMaxDynamicIconsUsable
-    local dynIconCounter2IconNr = FCOIS.mappingVars.dynamicToIcon
-    local isDynamicIcon = FCOIS.mappingVars.iconIsDynamic
+    local iconIsGear =              settings.iconIsGear
+    --local dynIconTotalCount =     FCOIS.numVars.gFCONumDynamicIcons
+    local dynIconTotalCount   =     settings.numMaxDynamicIconsUsable
+    local dynIconCounter2IconNr =   mappingVars.dynamicToIcon
+    local isDynamicIcon =           mappingVars.iconIsDynamic
+    local resDecImpIconTotalCount = numVars.resDecImpIconCount
+    local sellGuildIntIconTotalCount = numVars.sellGuildIntIconCount
 
 -----------------------------------------------------------------------------------------------
     --Lock, dynamic icons
     if contextMenuType == FCOIS_CON_FILTER_BUTTON_LOCKDYN then
+        local buttonNamePrefixLockDyn = contextMenuVars.LockDynFilter.buttonNamePrefix
         --First add 2 entries, one for the * all and one for the lock icon
         local allEntry = {
             type = ctmType,
@@ -42,18 +53,18 @@ function FCOIS.BuildLocalizedFilterButtonContextMenuEntries(contextMenuType)
             texture = "",
             textureColor = nil,
             iconId = -1,
-            anchorButton = contextMenuVars.LockDynFilter.buttonNamePrefix .. "1",
+            anchorButton = buttonNamePrefixLockDyn .. "1",
         }
-        localizedContextMenuEntries[contextMenuVars.buttonNamePrefix .. contextMenuVars.LockDynFilter.buttonNamePrefix .. "1"] = allEntry
+        localizedContextMenuEntries[buttonNamePrefix .. buttonNamePrefixLockDyn .. "1"] = allEntry
         local lockEntry = {
             type = ctmType,
             text = "",
             texture = textureVars.MARKER_TEXTURES[settings.icon[FCOIS_CON_ICON_LOCK].texture],
             textureColor = settings.icon[FCOIS_CON_ICON_LOCK].color,
             iconId = FCOIS_CON_ICON_LOCK,
-            anchorButton =  contextMenuVars.LockDynFilter.buttonNamePrefix .. "1",
+            anchorButton = buttonNamePrefixLockDyn .. "1",
         }
-        localizedContextMenuEntries[contextMenuVars.buttonNamePrefix .. contextMenuVars.LockDynFilter.buttonNamePrefix .. "2"] = lockEntry
+        localizedContextMenuEntries[buttonNamePrefix .. buttonNamePrefixLockDyn .. "2"] = lockEntry
 
         --Then add the dynamic icons, but only those which are not enabled to be a gear set
         local dynCounter = 2
@@ -62,22 +73,24 @@ function FCOIS.BuildLocalizedFilterButtonContextMenuEntries(contextMenuType)
             local isDynamic = isDynamicIcon[dynIconNr]
             local isGear    = iconIsGear[dynIconNr]
             if settings.isIconEnabled[dynIconNr] and isDynamic and not isGear then
+                local iconData = settings.icon[dynIconNr]
                 local dynEntry = {
                     type = ctmType,
                     text = "",
-                    texture = textureVars.MARKER_TEXTURES[settings.icon[dynIconNr].texture],
-                    textureColor = settings.icon[dynIconNr].color,
+                    texture = textureVars.MARKER_TEXTURES[iconData.texture],
+                    textureColor = iconData.color,
                     iconId = dynIconNr,
-                    anchorButton =  contextMenuVars.LockDynFilter.buttonNamePrefix .. tostring(dynCounter-1),
+                    anchorButton = buttonNamePrefixLockDyn .. tos(dynCounter-1),
                 }
                 dynCounter = dynCounter + 1
-                localizedContextMenuEntries[contextMenuVars.buttonNamePrefix .. contextMenuVars.LockDynFilter.buttonNamePrefix .. tostring(dynCounter)] = dynEntry
+                localizedContextMenuEntries[buttonNamePrefix .. buttonNamePrefixLockDyn .. tos(dynCounter)] = dynEntry
             end
         end
 
 -----------------------------------------------------------------------------------------------
     --Gear sets
     elseif contextMenuType == FCOIS_CON_FILTER_BUTTON_GEARSETS then
+        local buttonNamePrefixGearSet = contextMenuVars.GearSetFilter.buttonNamePrefix
         --First add 1 entry for the * all
         local allEntry = {
             type = ctmType,
@@ -85,9 +98,9 @@ function FCOIS.BuildLocalizedFilterButtonContextMenuEntries(contextMenuType)
             texture = "",
             textureColor = nil,
             iconId = -1,
-            anchorButton = contextMenuVars.buttonNamePrefix .. contextMenuVars.GearSetFilter.buttonNamePrefix .. "1",
+            anchorButton = buttonNamePrefix .. buttonNamePrefixGearSet .. "1",
         }
-        localizedContextMenuEntries[contextMenuVars.buttonNamePrefix .. contextMenuVars.GearSetFilter.buttonNamePrefix .. "1"] = allEntry
+        localizedContextMenuEntries[buttonNamePrefix .. buttonNamePrefixGearSet .. "1"] = allEntry
         --Then add the gear set buttons dynamically
         local gearIconTotalCount = FCOIS.numVars.gFCONumGearSetsStatic
         local gearIconCounter2IconNr = FCOIS.mappingVars.gearToIcon
@@ -97,16 +110,17 @@ function FCOIS.BuildLocalizedFilterButtonContextMenuEntries(contextMenuType)
             local gearIconNr = gearIconCounter2IconNr[gearIconCounter]
             local isGear = iconIsGear[gearIconNr]
             if settings.isIconEnabled[gearIconNr] and isGear then
+                local iconData = settings.icon[gearIconNr]
                 local gearEntry = {
                     type = ctmType,
                     text = "",
-                    texture = textureVars.MARKER_TEXTURES[settings.icon[gearIconNr].texture],
-                    textureColor = settings.icon[gearIconNr].color,
+                    texture = textureVars.MARKER_TEXTURES[iconData.texture],
+                    textureColor = iconData.color,
                     iconId = gearIconNr,
-                    anchorButton =  contextMenuVars.GearSetFilter.buttonNamePrefix .. tostring(gearsCounter-1),
+                    anchorButton = buttonNamePrefixGearSet .. tos(gearsCounter-1),
                 }
                 gearsCounter = gearsCounter + 1
-                localizedContextMenuEntries[contextMenuVars.buttonNamePrefix .. contextMenuVars.GearSetFilter.buttonNamePrefix .. tostring(gearsCounter)] = gearEntry
+                localizedContextMenuEntries[buttonNamePrefix .. buttonNamePrefixGearSet .. tos(gearsCounter)] = gearEntry
             end
         end
         --After the static gear set icons add the dynamic icons which are marked to be a gear set
@@ -115,28 +129,85 @@ function FCOIS.BuildLocalizedFilterButtonContextMenuEntries(contextMenuType)
             local isDynamic = isDynamicIcon[dynIconNr]
             local isGear    = iconIsGear[dynIconNr]
             if settings.isIconEnabled[dynIconNr] and isDynamic and isGear then
+                local iconData = settings.icon[dynIconNr]
                 local gearEntry = {
                     type = ctmType,
                     text = "",
-                    texture = textureVars.MARKER_TEXTURES[settings.icon[dynIconNr].texture],
-                    textureColor = settings.icon[dynIconNr].color,
+                    texture = textureVars.MARKER_TEXTURES[iconData.texture],
+                    textureColor = iconData.color,
                     iconId = dynIconNr,
-                    anchorButton =  contextMenuVars.GearSetFilter.buttonNamePrefix .. tostring(gearsCounter-1),
+                    anchorButton =  buttonNamePrefixGearSet .. tos(gearsCounter-1),
                 }
                 gearsCounter = gearsCounter + 1
-                localizedContextMenuEntries[contextMenuVars.buttonNamePrefix .. contextMenuVars.GearSetFilter.buttonNamePrefix .. tostring(gearsCounter)] = gearEntry
+                localizedContextMenuEntries[buttonNamePrefix .. buttonNamePrefixGearSet .. tos(gearsCounter)] = gearEntry
             end
         end
 
 -----------------------------------------------------------------------------------------------
     --Research, deconstruction, improvement
     elseif contextMenuType == FCOIS_CON_FILTER_BUTTON_RESDECIMP then
---TODO: See function afterLocalization below and make it more dyanmically
+        local buttonNamePrefixResDecImp = contextMenuVars.ResDecImpFilter.buttonNamePrefix
+        --First add 1 entry for the * all
+        local allEntry = {
+            type = ctmType,
+            text = locVars["button_context_menu_gear_sets_all"],
+            texture = "",
+            textureColor = nil,
+            iconId = -1,
+            anchorButton = buttonNamePrefix .. buttonNamePrefixResDecImp .. "1",
+        }
+        localizedContextMenuEntries[buttonNamePrefix .. buttonNamePrefixResDecImp .. "1"] = allEntry
+
+        local resDecImpCounter = 1
+        for resDecImpIconCounter=1, resDecImpIconTotalCount, 1 do
+            local resDecImpIcon = mappingVars.resDecImpToIcon[resDecImpIconCounter]
+            if resDecImpIcon ~= nil and settings.isIconEnabled[resDecImpIcon] then
+                local iconData = settings.icon[resDecImpIcon]
+                local resDecImpEntry = {
+                    type = ctmType,
+                    text = "",
+                    texture = textureVars.MARKER_TEXTURES[iconData.texture],
+                    textureColor = iconData.color,
+                    iconId = resDecImpIcon,
+                    anchorButton =  buttonNamePrefixResDecImp .. tos(resDecImpCounter-1),
+                }
+                resDecImpCounter = resDecImpCounter + 1
+                localizedContextMenuEntries[buttonNamePrefix .. buttonNamePrefixResDecImp .. tos(resDecImpCounter)] = resDecImpEntry
+            end
+        end
 
 -----------------------------------------------------------------------------------------------
     --Sell, sell in guild store, Intricate
     elseif contextMenuType == FCOIS_CON_FILTER_BUTTON_SELLGUILDINT then
---TODO: See function afterLocalization below and make it more dyanmically
+        local buttonNamePrefixSellGuildInt = contextMenuVars.SellGuildIntFilter.buttonNamePrefix
+        --First add 1 entry for the * all
+        local allEntry = {
+            type = ctmType,
+            text = locVars["button_context_menu_gear_sets_all"],
+            texture = "",
+            textureColor = nil,
+            iconId = -1,
+            anchorButton = buttonNamePrefix .. buttonNamePrefixSellGuildInt .. "1",
+        }
+        localizedContextMenuEntries[buttonNamePrefix .. buttonNamePrefixSellGuildInt .. "1"] = allEntry
+
+        local sellGuildIntCounter = 1
+        for sellGuildIntIconCounter=1, sellGuildIntIconTotalCount, 1 do
+            local sellGuildIntIcon = mappingVars.sellGuildIntToIcon[sellGuildIntIconCounter]
+            if sellGuildIntIcon ~= nil and settings.isIconEnabled[sellGuildIntIcon] then
+                local iconData = settings.icon[sellGuildIntIcon]
+                local sellGuildIntEntry = {
+                    type = ctmType,
+                    text = "",
+                    texture = textureVars.MARKER_TEXTURES[iconData.texture],
+                    textureColor = iconData.color,
+                    iconId = sellGuildIntIcon,
+                    anchorButton =  buttonNamePrefixSellGuildInt .. tos(sellGuildIntCounter-1),
+                }
+                sellGuildIntCounter = sellGuildIntCounter + 1
+                localizedContextMenuEntries[buttonNamePrefix .. buttonNamePrefixSellGuildInt .. tos(sellGuildIntCounter)] = sellGuildIntEntry
+            end
+        end
     end
     --Return the build context menu entries
     return localizedContextMenuEntries
@@ -177,10 +248,12 @@ local function afterLocalization()
     if settings.standardIconNameOnKeybind == "" then
         --It wasn't changed so update it according to the localized language
         local iconEndStrArray = FCOIS.localizationVars.iconEndStrArray
-        local locIconNameStr = locVars["options_icon" .. tostring(1) .. "_" .. iconEndStrArray[1]]
+        local locIconNameStr = locVars["options_icon" .. tos(1) .. "_" .. iconEndStrArray[1]]
         settings.standardIconNameOnKeybind = locIconNameStr
     end
 
+    --Added with FCOIS v2.2.4
+    FCOIS.LoadKeybindings()
     --Added with FCOIS v1.5.2
     --Dynamic icon texts localized
     FCOIS.GenerateLocalizedDynamicIconTexts()
@@ -192,84 +265,14 @@ local function afterLocalization()
     --Added with FCOIS v0.8.8d
     --Dynamic arrays for the inventory filter button's context menus:
     --The available contextmenus at the filter buttons
-    local availableCtms = FCOIS.contextMenuVars.availableCtms
     --The array for the LockDyn filter button context menu entries
     FCOIS.contextMenuVars.LockDynFilter.buttonContextMenuToIconId = buildLocalizedFilterButtonContextMenuEntries(FCOIS_CON_FILTER_BUTTON_LOCKDYN)
-
     --The mapping table for gear set split filter context menu buttons to icon id
     FCOIS.contextMenuVars.GearSetFilter.buttonContextMenuToIconId = buildLocalizedFilterButtonContextMenuEntries(FCOIS_CON_FILTER_BUTTON_GEARSETS)
-
-    --The mapping table for RESEARCH & DECONSTRUCTION & IMPORVEMENT split filter context menu buttons to icon id
-    FCOIS.contextMenuVars.ResDecImpFilter.buttonContextMenuToIconId = {
-        [FCOIS.contextMenuVars.buttonNamePrefix .. FCOIS.contextMenuVars.ResDecImpFilter.buttonNamePrefix .. "1"] = {
-            type = tostring(availableCtms[FCOIS_CON_FILTER_BUTTON_RESDECIMP]),
-            text = locVars["button_context_menu_gear_sets_all"],
-            texture = "",
-            textureColor = nil,
-            iconId = -1,
-            anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. FCOIS.contextMenuVars.ResDecImpFilter.buttonNamePrefix .. "1",
-        },
-        [FCOIS.contextMenuVars.buttonNamePrefix .. FCOIS.contextMenuVars.ResDecImpFilter.buttonNamePrefix .. "2"] = {
-            type = tostring(availableCtms[FCOIS_CON_FILTER_BUTTON_RESDECIMP]),
-            text = "",
-            texture = FCOIS.textureVars.MARKER_TEXTURES[settings.icon[FCOIS_CON_ICON_RESEARCH].texture],
-            textureColor = settings.icon[FCOIS_CON_ICON_RESEARCH].color,
-            iconId = FCOIS_CON_ICON_RESEARCH,
-            anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. FCOIS.contextMenuVars.ResDecImpFilter.buttonNamePrefix .. "1",
-        },
-        [FCOIS.contextMenuVars.buttonNamePrefix .. FCOIS.contextMenuVars.ResDecImpFilter.buttonNamePrefix .. "3"] = {
-            type = tostring(availableCtms[FCOIS_CON_FILTER_BUTTON_RESDECIMP]),
-            text = "",
-            texture = FCOIS.textureVars.MARKER_TEXTURES[settings.icon[FCOIS_CON_ICON_DECONSTRUCTION].texture],
-            textureColor = settings.icon[FCOIS_CON_ICON_DECONSTRUCTION].color,
-            iconId = FCOIS_CON_ICON_DECONSTRUCTION,
-            anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. FCOIS.contextMenuVars.ResDecImpFilter.buttonNamePrefix .. "2",
-        },
-        [FCOIS.contextMenuVars.buttonNamePrefix .. FCOIS.contextMenuVars.ResDecImpFilter.buttonNamePrefix .. "4"] = {
-            type = tostring(availableCtms[FCOIS_CON_FILTER_BUTTON_RESDECIMP]),
-            text = "",
-            texture = FCOIS.textureVars.MARKER_TEXTURES[settings.icon[FCOIS_CON_ICON_IMPROVEMENT].texture],
-            textureColor = settings.icon[FCOIS_CON_ICON_IMPROVEMENT].color,
-            iconId = FCOIS_CON_ICON_IMPROVEMENT,
-            anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. FCOIS.contextMenuVars.ResDecImpFilter.buttonNamePrefix .. "3",
-        },
-    }
-
+    --The mapping table for RESEARCH & DECONSTRUCTION & IMPROVEMENT split filter context menu buttons to icon id
+    FCOIS.contextMenuVars.ResDecImpFilter.buttonContextMenuToIconId = buildLocalizedFilterButtonContextMenuEntries(FCOIS_CON_FILTER_BUTTON_RESDECIMP)
     --The mapping table for SELL & SELL IN GUILD STORE & INTRICATE split filter context menu buttons to icon id
-    FCOIS.contextMenuVars.SellGuildIntFilter.buttonContextMenuToIconId = {
-        [FCOIS.contextMenuVars.buttonNamePrefix .. FCOIS.contextMenuVars.SellGuildIntFilter.buttonNamePrefix .. "1"] = {
-            type = tostring(availableCtms[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT]),
-            text = locVars["button_context_menu_gear_sets_all"],
-            texture = "",
-            textureColor = nil,
-            iconId = -1,
-            anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. FCOIS.contextMenuVars.SellGuildIntFilter.buttonNamePrefix .. "1",
-        },
-        [FCOIS.contextMenuVars.buttonNamePrefix .. FCOIS.contextMenuVars.SellGuildIntFilter.buttonNamePrefix .. "2"] = {
-            type = tostring(availableCtms[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT]),
-            text = "",
-            texture = FCOIS.textureVars.MARKER_TEXTURES[settings.icon[FCOIS_CON_ICON_SELL].texture],
-            textureColor = settings.icon[FCOIS_CON_ICON_SELL].color,
-            iconId = FCOIS_CON_ICON_SELL,
-            anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. FCOIS.contextMenuVars.SellGuildIntFilter.buttonNamePrefix .. "1",
-        },
-        [FCOIS.contextMenuVars.buttonNamePrefix .. FCOIS.contextMenuVars.SellGuildIntFilter.buttonNamePrefix .. "3"] = {
-            type = tostring(availableCtms[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT]),
-            text = "",
-            texture = FCOIS.textureVars.MARKER_TEXTURES[settings.icon[FCOIS_CON_ICON_SELL_AT_GUILDSTORE].texture],
-            textureColor = settings.icon[FCOIS_CON_ICON_SELL_AT_GUILDSTORE].color,
-            iconId = FCOIS_CON_ICON_SELL_AT_GUILDSTORE,
-            anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. FCOIS.contextMenuVars.SellGuildIntFilter.buttonNamePrefix .. "2",
-        },
-        [FCOIS.contextMenuVars.buttonNamePrefix .. FCOIS.contextMenuVars.SellGuildIntFilter.buttonNamePrefix .. "4"] = {
-            type = tostring(availableCtms[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT]),
-            text = "",
-            texture = FCOIS.textureVars.MARKER_TEXTURES[settings.icon[FCOIS_CON_ICON_INTRICATE].texture],
-            textureColor = settings.icon[FCOIS_CON_ICON_INTRICATE].color,
-            iconId = FCOIS_CON_ICON_INTRICATE,
-            anchorButton = FCOIS.contextMenuVars.buttonNamePrefix .. FCOIS.contextMenuVars.SellGuildIntFilter.buttonNamePrefix .. "3",
-        },
-    }
+    FCOIS.contextMenuVars.SellGuildIntFilter.buttonContextMenuToIconId = buildLocalizedFilterButtonContextMenuEntries(FCOIS_CON_FILTER_BUTTON_SELLGUILDINT)
 
     --Added with FCOIS v0.8.8d
     --Build the global contextmenu variables for the filter button context menus
@@ -283,13 +286,13 @@ local function afterLocalization()
     --Set the mapping array for the filter buttons context menu to settings
     mappingVars.contextMenuFilterButtonTypeToSettings = {
         --========= LOCK & DYNAMIC ICONS CONTEXT MENU===================================
-        [tostring(availableCtms[FCOIS_CON_FILTER_BUTTON_LOCKDYN])] 		= settings.splitLockDynFilter,
+        [tos(availableCtms[FCOIS_CON_FILTER_BUTTON_LOCKDYN])] 		= settings.splitLockDynFilter,
         --========= GEAR SETS CONTEXT MENU =============================================
-        [tostring(availableCtms[FCOIS_CON_FILTER_BUTTON_GEARSETS])] 	= settings.splitGearSetsFilter,
+        [tos(availableCtms[FCOIS_CON_FILTER_BUTTON_GEARSETS])] 	= settings.splitGearSetsFilter,
         --========= RESEARCH & DECONSTRUCTION & IMPORVEMENT CONTEXT MENU =============================
-        [tostring(availableCtms[FCOIS_CON_FILTER_BUTTON_RESDECIMP])] 	= settings.splitResearchDeconstructionImprovementFilter,
+        [tos(availableCtms[FCOIS_CON_FILTER_BUTTON_RESDECIMP])] 	= settings.splitResearchDeconstructionImprovementFilter,
         --========= SELL & SELL AT GUILD STORE & INTRICATE CONTEXT MENU =============================
-        [tostring(availableCtms[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT])] = settings.splitSellGuildSellIntricateFilter,
+        [tos(availableCtms[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT])] = settings.splitSellGuildSellIntricateFilter,
     }
     --For each available contextmenu type (at filter buttons) build the needed arrays
     for ctmNumber=1, #availableCtms, 1 do
@@ -344,7 +347,7 @@ local function afterLocalization()
     --Build the iconSortOrderEntries table for the settings menu -> LAM2 widget "order list box"
     --local optionsIcon = "options_icon"
     --local tooltipSuffix = "_TT"
-
+    FCOIS.preventerVars.gCalledFromInternalFCOIS = true
     local iconsListStandard, iconsListValuesStandard = FCOIS.GetLAMMarkerIconsDropdown("standard", true, false)
     FCOIS.settingsVars.defaults.iconSortOrderEntries = {}
     for currentSortIdx, iconNumber in ipairs(defaults.iconSortOrder) do
@@ -360,7 +363,7 @@ local function afterLocalization()
             ]]
 
             local iconIndex = ZO_IndexOfElementInNumericallyIndexedTable(iconsListValuesStandard, iconNumber)
-            local name = iconsListStandard[iconIndex] or "Icon " ..tostring(iconNumber)
+            local name = iconsListStandard[iconIndex] or "Icon " ..tos(iconNumber)
             local tooltip = name
 
             FCOIS.settingsVars.defaults.iconSortOrderEntries[currentSortIdx] = {
@@ -399,7 +402,7 @@ local function afterLocalization()
                         end
                     end
                     if found == false then
-                        table.insert(FCOIS.settingsVars.settings.autoMarkBagsToScanOrder, defaultData)
+                        tabins(FCOIS.settingsVars.settings.autoMarkBagsToScanOrder, defaultData)
                     end
                 end
             end
@@ -421,51 +424,60 @@ end
 function FCOIS.Localization()
     local preventerVars = FCOIS.preventerVars
     local defSettings = FCOIS.settingsVars.defaultSettings
+    local settings = FCOIS.settingsVars.settings
+    local alwaysUseClientLang = settings.alwaysUseClientLanguage
     local langVars = FCOIS.langVars
---d("[FCOIS] Localization - Start, keybindings: " .. tostring(preventerVars.KeyBindingTexts) ..", useClientLang: " .. tostring(FCOIS.settingsVars.settings.alwaysUseClientLanguage) .. ", localizationDone: " ..tostring(preventerVars.gLocalizationDone))
+--d("[FCOIS] Localization - Start, keybindings: " .. tos(preventerVars.KeyBindingTexts) ..", useClientLang: " .. tos(alwaysUseClientLang) .. ", localizationDone: " ..tos(preventerVars.gLocalizationDone))
 
     --Was localization already done during keybindings? Then abort here
-    if preventerVars.KeyBindingTexts == true and preventerVars.gLocalizationDone == true then
+    -->Settings at keybindings are not loaded properly as it happens before EVENT_ADD_ON_LOADED and SavedVariables were not "there" already
+    -->So we cannot abort here and need to update the texts again at least once properly -> preventerVars.gLocalizationDone check alone !
+    if preventerVars.KeyBindingTexts == true and preventerVars.gKeybindingLocalizationDone == true then
         preventerVars.KeyBindingTexts = false
+        return
+    end
+    --Abort here if localization was done at least once properly already to the end of this function, including afterLocalization etc.
+    -->Exclude a forced update of the localization variables via preventerVars.doUpdateLocalization
+    if preventerVars.gLocalizationDone == true and not preventerVars.doUpdateLocalization then
         return
     end
 
     --Fallback to english variable
     local fallbackToEnglish = false
     --Always use the client's language?
-    if not FCOIS.settingsVars.settings.alwaysUseClientLanguage then
+    if not alwaysUseClientLang then
         --Was a language chosen already?
-        if not FCOIS.settingsVars.settings.languageChosen then
-            --d("[FCOIS] Localization: Fallback to english. Keybindings: " .. tostring(preventerVars.KeyBindingTexts) .. ", language chosen: " .. tostring(FCOIS.settingsVars.settings.languageChosen) .. ", defaultLanguage: " .. tostring(defSettings.language))
+        if not settings.languageChosen then
+--d(">Fallback to english. Keybindings: " .. tos(preventerVars.KeyBindingTexts) .. ", language chosen: " .. tos(settings.languageChosen) .. ", defaultLanguage: " .. tos(defSettings.language))
             if defSettings.language == nil then
-                --d("[FCOIS] Localization: defaultSettings.language is NIL -> Fallback to english now")
+--d(">>defaultSettings.language is NIL -> Fallback to english now")
                 fallbackToEnglish = true
             else
                 --Is the languages array filled and the language is not valid (not in the language array with the value "true")?
                 if langVars.languages ~= nil and #langVars.languages > 0 and not langVars.languages[defSettings.language] then
                     fallbackToEnglish = true
-                    --d("[FCOIS] Localization: defaultSettings.language is ~= " .. i .. ", and this language # is not valid -> Fallback to english now")
+--d(">>defaultSettings.language is ~= " .. tos(defSettings.language) .. ", and this language # is not valid -> Fallback to english now")
                 end
             end
         end
     end
-    --d("[FCOIS] localization, fallBackToEnglish: " .. tostring(fallbackToEnglish))
+--d(">fallBackToEnglish: " .. tos(fallbackToEnglish))
     --Fallback to english language now
-    if (fallbackToEnglish) then defSettings.language = FCOIS_CON_LANG_EN end
+    if fallbackToEnglish then defSettings.language = FCOIS_CON_LANG_EN end
     --Is the standard language english set?
-    if FCOIS.settingsVars.settings.alwaysUseClientLanguage or (preventerVars.KeyBindingTexts or (defSettings.language == FCOIS_CON_LANG_EN and not FCOIS.settingsVars.settings.languageChosen)) then
-        --d("[FCOIS] localization: Language chosen is false or always use client language is true!")
+    if alwaysUseClientLang or (defSettings.language == FCOIS_CON_LANG_EN and not settings.languageChosen) then
+--d(">>Language chosen is false or always use client language is true!")
         --Check for supported languages
         local lang = FCOIS.clientLanguage
         local langStrToLangConstant = FCOIS.mappingVars.langStrToLangConstant
         defSettings.language = langStrToLangConstant[lang] or FCOIS_CON_LANG_EN
     end
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[Localization]","default settings, language: " .. tostring(defSettings.language), false) end
-    --d("[FCOIS] localization: default settings, language: " .. tostring(defSettings.language))
+    if settings.debug then debugMessage( "[Localization]","default settings, language: " .. tos(defSettings.language), false) end
+--d(">default settings, language: " .. tos(defSettings.language))
     --Get the localized texts from the localization file
     local locVars = FCOIS.localizationVars
     locVars.fcois_loc = locVars.localizationAll[defSettings.language]
-    
+--d(">got here: locVars.fcois_loc was overwritten!")
     --The localization end string array
     locVars.iconEndStrArray = {
         [1]  = "color",
@@ -484,13 +496,14 @@ function FCOIS.Localization()
         -->Added dynamically in this function, a bit more to the bottom in the source code
     }
 
-    preventerVars.gLocalizationDone = true
-    --Abort here if we only needed the keybinding texts
+    --Abort here if we only needed the keybinding texts, as further down other texts are build (marker icons, settings menu, etc.)
     if preventerVars.KeyBindingTexts == true then
+        preventerVars.gKeybindingLocalizationDone = true
         preventerVars.KeyBindingTexts = false
         return
     end
 
+--d(">>>>> Building localization for settingsMenu and markerIcons etc.")
     --Local variable for a faster array parsing
     local locTexts = locVars.fcois_loc
     local contextEntries = locVars.contextEntries
@@ -568,15 +581,15 @@ function FCOIS.Localization()
         local dynIconNr = dynIconCounter2IconNr[dynamicIconId]
         if isDynamicIcon[dynIconNr] then
             --Icon end string
-            table.insert(FCOIS.localizationVars.iconEndStrArray, "color")
+            tabins(FCOIS.localizationVars.iconEndStrArray, "color")
             --Add dynamic right click menu
-            table.insert(contextEntries.menu_add_dynamic_text, locTexts["rightclick_menu_mark_dynamic" .. tostring(dynIconNr)])
+            tabins(contextEntries.menu_add_dynamic_text,      locTexts["rightclick_menu_mark_dynamic" .. tos(dynIconNr)])
             --Remove dynamic right click menu
-            table.insert(contextEntries.menu_remove_dynamic_text, locTexts["rightclick_menu_demark_dynamic".. tostring(dynIconNr)])
+            tabins(contextEntries.menu_remove_dynamic_text,   locTexts["rightclick_menu_demark_dynamic".. tos(dynIconNr)])
             --Add all dynamic right click menu
-            table.insert(contextEntries.menu_add_all_text, locTexts["button_context_menu_mark_all_as_dynamic".. tostring(dynIconNr)])
+            tabins(contextEntries.menu_add_all_text,          locTexts["button_context_menu_mark_all_as_dynamic".. tos(dynIconNr)])
             --remove all dynamic right click menu
-            table.insert(contextEntries.menu_remove_all_text, locTexts["button_context_menu_unmark_all_as_dynamic".. tostring(dynIconNr)])
+            tabins(contextEntries.menu_remove_all_text,       locTexts["button_context_menu_unmark_all_as_dynamic".. tos(dynIconNr)])
         end
     end
     --Set the alert message texts as an item gets checked against anti-* (localized!)
@@ -661,8 +674,11 @@ function FCOIS.Localization()
     --Do some "after localization" stuff
     afterLocalization()
 
-    --Reset the variable for the "force localization updte"
+    --Reset the variable for the "force localization update"
     FCOIS.preventerVars.doUpdateLocalization = false
+
+    --Localization was done at least once properly now
+    FCOIS.preventerVars.gLocalizationDone = true
 end
 local localization = FCOIS.Localization
 

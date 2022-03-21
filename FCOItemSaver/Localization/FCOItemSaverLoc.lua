@@ -69,29 +69,37 @@ FCOIS.localizationVars.localizationAll = {
         ["options_savedVariables_dropdown_selection1"] = "Each character",
         ["options_savedVariables_dropdown_selection2"] = "Account wide",
         ["options_savedVariables_dropdown_selection3"] = "All accounts the same",
-
-        ["options_header_copy_sv"]              =   "Copy SavedVariables",
-        ["options_description_copy_sv_server"]  = "|cff0000Before copy or delete of SavedVariables please LOGOUT and COPY THE SavedVariables FILE 'FCOItemSaver.lua' AS A BACKUP! Click on the '|c5959D5Feedback|r|cff0000' link above and then on the 'FAQ' button for an explanation how to do this.|r\n\nCopy savedvariables from a server to another. Choose the account or character below. Copying or deleting a total server is not possible!",
+        ["options_savedVariables_dropdown_selection4"] = "All servers & accounts the same",
+        ["options_header_copy_sv"]              =   "Copy & Delete SavedVariables (all settings)",
+        ["options_description_copy_sv_server"]  = "|cff0000Before copy or delete of SavedVariables (this will copy all settings, not only the marker icons at your items!) please LOGOUT and COPY THE SavedVariables FILE 'FCOItemSaver.lua' AS A BACKUP! Click on the '|c5959D5Feedback|r|cff0000' link above and then on the 'FAQ' button for an explanation how to do this.|r\n\nCopy savedvariables from a server to another. Choose the account or character below. Copying or deleting a total server is not possible!",
         ["options_copy_sv_source_server"]       =   "Source server",
         ["options_copy_sv_target_server"]        =   "Target server",
         --["options_copy_sv_to_server"]           =   "Copy to server",
         --["options_copy_sv_to_server_TT"]   =   "Copy the SavedVariables from the chosen source server to the chosen target sever.Copying from a source to the same target server is not possible!\nIf you are using account wide setings, or all accounts use the same settings, all data will be transfered.\nIf you are using character settings only your currently logged in character will be transfered.\n\nAttention: Existing target data will be overwritten!",
-        ["options_copy_sv_to_server_warning"]   =   "Do you realy want to copy the SavedVariables?\nExisting target data will be overwritten!\n\nIf you are logged in to the target server your user UI will reload afterwards!",
+        ["options_copy_sv_to_server_warning"]   =   "Do you realy want to copy the SavedVariables?\nExisting target data will be overwritten!\n\nIf you are logged in to the target server your UI will reload afterwards!",
         ["question_copy_sv_server_reloadui"]    = "Copied SavedVariables from server \"<<C:1>>\" to server \"<<C:2>>\", using accountwide settings: <<3>>.\n\nAs the target server is your currently logged in server:\nDo you want to reload the UI now?",
         ["question_delete_sv_server_reloadui"]   = "Deleted SavedVariables from server \"<<C:1>>\", using accountwide settings: <<2>>.\n\nAs the target server is your currently logged in server:\nDo you want to reload the UI now?",
         --["options_delete_sv_on_server"]           =   "Delete target server",
-        --["options_delete_sv_on_server_TT"]   =   "Delete the SavedVariables on the target server.\nIf you are logged in to the target server with the chosen target account and character your user UI will reload afterwards!\n\nAttention: Existing target data will be deleted without any backup!",
+        --["options_delete_sv_on_server_TT"]   =   "Delete the SavedVariables on the target server.\nIf you are logged in to the target server with the chosen target account and character your UI will reload afterwards!\n\nAttention: Existing target data will be deleted without any backup!",
 
         ["options_description_copy_sv_account"]  = "This option is only available with a chosen server. |c75daffPlease read the tooltips of the account copy&delete buttons!|r",
         ["options_copy_sv_source_account"]       =   "Source account",
         ["options_copy_sv_target_account"]        =   "Target account",
         ["options_copy_sv_to_account"]           =   "Copy to account",
         ["options_copy_sv_to_account_TT"]   =   "Copy the SavedVariables from the chosen source server and source account to the chosen target server and target account. Source and target servers can be the same, but source and target accounts cannot be the same!\n\nOr copy the source server & account & character to a destination server & account. Source & target server & account can be the same in that case.\n\nAttention: Existing target data will be overwritten!",
-        ["options_copy_sv_to_account_warning"]   =   "Do you realy want to copy the SavedVariables?\nExisting target data will be overwritten!\n\nIf you are logged in to the target server with the chosen target account your user UI will reload afterwards!",
+        ["options_copy_sv_to_account_warning"]   =   "Do you realy want to copy the SavedVariables?\nExisting target data will be overwritten!\n\nIf you are logged in to the target server with the chosen target account your UI will reload afterwards!",
         ["question_copy_sv_account_reloadui"]           = "Copied SavedVariables from server \"<<C:1>>\" account \"<<C:2>>\" to server \"<<C:3>>\" account \"<<C:4>>\", using accountwide settings: <<5>>.\n\nAs the target server is your currently logged in server:\nDo you want to reload the UI now?",
+
+        ["options_copy_sv_to_allserversallaccount"]      =   "Copy to \'All the same\'",
+        ["options_copy_sv_to_allserversallaccount_TT"]   =   "Copy the SavedVariables from the chosen source server and source account to the \'All servers & accounts the same\' settings.\n\nAttention: Existing target data will be overwritten!",
+        ["options_copy_sv_to_allserversallaccount_warning"]  =  "Do you realy want to copy the SavedVariables?\nExisting target data will be overwritten!\n\nYour UI will reload afterwards!",
+        ["question_copy_sv_allserversallaccount_reloadui"]   = "Copied SavedVariables from server \"<<C:1>>\" account \"<<C:2>>\" to \'All servers & accounts the same\', using accountwide settings: <<3>>.\n\nDo you want to reload the UI now?",
+        ["options_delete_sv_allserversallaccount"]           = "Delete \'All the same\'",
+        ["options_delete_sv_allserversallaccount_TT"]        = "Delete the SavedVariables for \'All servers and accounts the same\'.\nYour UI will reload afterwards!\n\nAttention: Existing data will be deleted without any backup!",
+
         ["question_delete_sv_account_reloadui"]   = "Deleted SavedVariables from server \"<<C:1>>\" account \"<<C:2>>\", using accountwide settings: <<3>>.\n\nAs the target server is your currently logged in server:\nDo you want to reload the UI now?",
         ["options_delete_sv_account"]           =   "Delete target account",
-        ["options_delete_sv_account_TT"]   =   "Delete the SavedVariables on the target server and target account.\nIf you are logged in to the target server with the chosen target account and character your user UI will reload afterwards!\n\nAttention: Existing target account data will be deleted without any backup!",
+        ["options_delete_sv_account_TT"]   =   "Delete the SavedVariables on the target server and target account.\nIf you are logged in to the target server with the chosen target account and character your UI will reload afterwards!\n\nAttention: Existing target account data will be deleted without any backup!",
 
         ["question_copy_sv_account_to_char_reloadui"]  = "Copied SavedVariables from server \"<<C:1>>\" account \"<<C:2>>\" to server \"<<C:3>>\" account \"<<C:4>>\" character \"<<C:5>>\", using accountwide settings: <<6>>.\n\nAs the target server is your currently logged in server:\nDo you want to reload the UI now?",
         ["question_copy_sv_char_to_account_reloadui"]  = "Copied SavedVariables from server \"<<C:1>>\" account \"<<C:2>>\" character \"<<C:3>>\" to server \"<<C:4>>\" account \"<<C:5>>\", using accountwide settings: <<6>>.\n\nAs the target server is your currently logged in server:\nDo you want to reload the UI now?",
@@ -103,11 +111,11 @@ FCOIS.localizationVars.localizationAll = {
         ["options_copy_sv_target_character"]        =   "Target character",
         ["options_copy_sv_to_character"]           =   "Copy to character",
         ["options_copy_sv_to_character_TT"]   =   "Copy the SavedVariables from the chosen source server and source account and source character to the chosen target server and target account and target character. Source and target servers can be the same, source and target account can also be the same, but source and target characters cannot be the same!\nYou need to had enabled the 'Each character' save mode in the 'General settings'->'Save settings' option before in order to select the character names, which have been logged in afterwards to create the settings with this option enabled, from the source character dropdown below.\n\nOr copy the source server & account to a destination server & account & character. Source & target server & account can be the same in that case.\n\nAttention: Existing target data will be overwritten!",
-        ["options_copy_sv_to_character_warning"]   =   "Do you realy want to copy the SavedVariables?\nExisting target data will be overwritten!\n\nIf you are logged in to the target server with the chosen target account and character your user UI will reload afterwards!",
+        ["options_copy_sv_to_character_warning"]   =   "Do you realy want to copy the SavedVariables?\nExisting target data will be overwritten!\n\nIf you are logged in to the target server with the chosen target account and character your UI will reload afterwards!",
         ["question_copy_sv_character_reloadui"]   = "Copied SavedVariables from server \"<<C:1>>\" account \"<<C:2>>\" character \"<<C:3>>\" to server \"<<C:4>>\" account \"<<C:5>>\" character \"<<C:6>>\", using accountwide settings: <<7>>.\n\nAs the target server is your currently logged in server:\nDo you want to reload the UI now?",
         ["question_delete_sv_character_reloadui"]   = "Deleted SavedVariables from server \"<<C:1>>\" account \"<<C:2>>\" character \"<<C:3>>\", using accountwide settings: <<4>>.\n\nAs the target server is your currently logged in server:\nDo you want to reload the UI now?",
         ["options_delete_sv_character"]           =   "Delete target character",
-        ["options_delete_sv_character_TT"]   =   "Delete the character SavedVariables on the target server, target account and target character.\nIf you are logged in to the target server with the chosen target account and character your user UI will reload afterwards!\n\n\nAttention: Existing target character data of the target account will be deleted without any backup!",
+        ["options_delete_sv_character_TT"]   =   "Delete the character SavedVariables on the target server, target account and target character.\nIf you are logged in to the target server with the chosen target account and character your UI will reload afterwards!\n\n\nAttention: Existing target character data of the target account will be deleted without any backup!",
 
         ["options_hint_backup_savedvariables_file_title"] = "Backup SavedVariables!",
         ["options_hint_backup_savedvariables_file"] = "Please logout and create a\nbackup of your file 'FCOItemSaver.lua'\n in the SavedVariables folder, before\n working with the SavedVariable copy/delete options!\n\nIf you already created a backup file please press teh button \'Abort\' below and retry the same copy/delete option.\nThis dialog will not be shown anymore then.",
@@ -178,12 +186,13 @@ FCOIS.localizationVars.localizationAll = {
 		["options_icons_dynamic"]				 = "Dynamic icons",
         ["options_icons_dynamic_usable"]				 =  "Dynamic icons - Total usable",
         ["options_icons_dynamic_usable_TT"]				 =  "Set the total number of usable dynamic icons here.",
-        ["options_icons_dynamic_usable_warning"]		 =  "Dynamic icons are the non-standard marker icons of this addon, changebale not only in color/texture/size and position, but also in what they should protect and how they should behave. Each of the up to 30 possible dynamic icons can be totally set up according to your needs.\n\nChange the total number of dynamic icons usable with this slider. The lower the value the better the performance of the settings and the context menus.\n[|cFF0000ATTENTION|r]The user interface will reload directly after changing this value!\nDie Benutzeroberfläche wird direkt neu geladen, wenn du diese Option veränderst.\nPlease have a look at the context menu submenu settings after the reload as well (if used).",
+        ["options_icons_dynamic_usable_warning"]		 =  "Dynamic icons are the non-standard marker icons of this addon, changeable not only in color/texture/size/position and name, but also in what they should protect and how they should behave. Each of the dynamic icons can be totally set up according to your needs.\n\nChange the total number of dynamic icons usable with this slider. The lower the value the better the performance of the settings and the context menus.\n[|cFF0000ATTENTION|r]The user interface will reload directly after changing this value!\nPlease have a look at the context menu submenu settings after the reloadUI as well (if used).",
         ["options_icons_dynamic_gear"]			 = "Dynamic gear sets",
 		["options_icons_non_gear"]				 = "Normal icons",
         ["options_icons_non_gear_sets_description"] = "Normal icons are the standard marker icons of this addon, only changeable in color/texture/size/position, meant to be used for fixed reasons like protecting items generally, sell them, deconstruct or improve them.\nThis standard marker icons need to be enabled if you want to use some special features like Automatic markings (see the automatic mark settings submenu).\nIf a setting entry is not usable try to enable the matching standard icon here.",
-        ["options_icons_gear_sets_description"]     = "Gear set icons are the 5 standard marker icons of this addon, only changeable in color/texture/size/position, meant to be used for your equipment.\nIf you need more gear marker icons use others of the up to 30 dynamic icons and set them up to be used as a gear set.",
+        ["options_icons_gear_sets_description"]     = "Gear set icons are the 5 standard marker icons of this addon, only changeable in color/texture/size/position and name, meant to be used for your equipment.\nIf you need more gear marker icons change one of the dynamic icons and set it up to be used as a gear set.",
 		["options_icons_gears"]				 	 = "Gear sets",
+		["options_icons_gear1"]					 = "Gear 1",
 		["options_icons_gear1"]					 = "Gear 1",
 		["options_icons_gear2"]					 = "Gear 2",
 		["options_icons_gear3"]					 = "Gear 3",
@@ -729,7 +738,13 @@ FCOIS.localizationVars.localizationAll = {
 		["options_filter_buttons_context_menu_show_tooltip_TT"] = "Show a tooltip identifying each entry of the filter context menus",
         ["options_filter_buttons_save_for_character"]    = "Filter button state saved for each character",
         ["options_filter_buttons_save_for_character_TT"] = "Enabled: Save the filter button state for each character individually even if account wide settings are enabled.\n\nThis setting will be disabled if account wide settings are disabled!",
-		["options_header_filter_chat"] 			= "Filter & Chat",
+        ["options_filter_button_settings"] =                        "Filter settings",
+        ["options_filter_button_settings_filterWithLogicalAND"] =   "Logical conj. (Un-/Checked): OR/AND",
+        ["options_filter_button_settings_filterWithLogicalAND_and"] = "and",
+        ["options_filter_button_settings_filterWithLogicalAND_or"] = "or",
+        ["options_filter_button_settings_logical_conjunctions"] = "Logical conjunctions",
+
+        ["options_header_filter_chat"] 			= "Filter & Chat",
         ["options_chat_filter_status"]			= "Filter status in chat",
         ["options_chat_filter_status_TT"] 	= "Show the filter status in chat, if changed?",
 		["options_header_destroy"]				= "Destroy",
@@ -910,8 +925,7 @@ FCOIS.localizationVars.localizationAll = {
         ["chatcommands_filteroff"]				 = "|cFFFFFF'allon'|cFFFF00: Hide categories 1 to 4 items",
         ["chatcommands_filtershow"]				 = "|cFFFFFF'allshow'|cFFFF00: Only show marked items of categories 1 to 4 ",
 		["chatcommands_split_filter"]			 = "|cFFFFFF'split'|cFFFF00: Enable/Disable individual filters at inventory, vendor, guild bank, guild store, bank, crafting stations, enchanting station, mail and trade panels",
-        ["chatcommands_filterpanels"]			 = "|c990000Possible |cFFFFFF<filterPanel>|cFFFF00: 1 Inventory, 2 Bank, 3 Guild bank, 4 Vendor, 5 Craft station Deconstruction,",
-		["chatcommands_filterpanels2"]			 = "» 6 Guild store, 7 Mail, 8 Trade, 11 Enchanting extraction, 12 Craft station improvement, 13 Enchanting creation",
+        ["chatcommands_filterpanels"]			 = "|c990000Possible |cFFFFFF<filterPanel>|cFFFF00:",
         ["chatcommands_filtervalues"]			 = "|c990000Possible |cFFFFFF<filterValue>|cFFFF00: |cFFFFFFtrue|cFFFF00 / |cFFFFFFfalse|cFFFF00 / |cFFFFFFshow",
         ["chatcommands_filter1_new"]			 = "|cFFFFFF'filter1 <filterPanel> <filterValue>'|cFFFF00: Hide |cFFFFFF<true>|cFFFF00 / show |cFFFFFF<false>|cFFFF00 / only show marked |cFFFFFF<show>|cFFFF00 items of catergory 1 (lock symbol) at panel |cFFFFFF<filterPanel>",
         ["chatcommands_filter2_new"]			 = "|cFFFFFF'filter2 <filterPanel> <filterValue>'|cFFFF00: Hide |cFFFFFF<true>|cFFFF00 / show |cFFFFFF<false>|cFFFF00 / only show marked |cFFFFFF<show>|cFFFF00 items of catergory 2 (helmet symbol) at panel |cFFFFFF<filterPanel>",
@@ -964,15 +978,15 @@ FCOIS.localizationVars.localizationAll = {
 		["filter_guildstore"]	= "[Guild store] ",
 		["filter_bank"]			= "[Bank] ",
         ["filter_house_bank"]	= "[House bank] ",
-		["filter_alchemy"]		= "[Crafting station alchemy] ",
-        ["filter_refinement"]		= "[Crafting station refinement] ",
-		["filter_deconstruction"]	= "[Crafting station deconstruction] ",
-		["filter_improvement"]	= "[Crafting station improvement] ",
-        ["filter_jewelry_refinement"]		= "[Crafting station jewelry refinement] ",
-        ["filter_jewelry_deconstruction"]	= "[Crafting station jewelry deconstruction] ",
-        ["filter_jewelry_improvement"]	    = "[Crafting station jewelry improvement] ",
-        ["filter_research"]		= "[Crafting station research] ",
-        ["filter_jewelry_research"]		= "[Crafting station jewelry research] ",
+		["filter_alchemy"]		= "[Alchemy] ",
+        ["filter_refinement"]		= "[Refinement] ",
+		["filter_deconstruction"]	= "[Deconstruction] ",
+		["filter_improvement"]	= "[Improvement] ",
+        ["filter_jewelry_refinement"]		= "[Jewelry refinement] ",
+        ["filter_jewelry_deconstruction"]	= "[Jewelry deconstruction] ",
+        ["filter_jewelry_improvement"]	    = "[Jewelry improvement] ",
+        ["filter_research"]		= "[Research] ",
+        ["filter_jewelry_research"]		= "[Jewelry research] ",
 		["filter_enchantingstation_extraction"] = "[Enchanting extraction] ",
 		["filter_enchantingstation_creation"] = "[Enchanting creation] ",
 		["filter_store"] = "[Store] ",
@@ -1141,13 +1155,13 @@ FCOIS.localizationVars.localizationAll = {
         ["options_contextmenu_use_dyn_submenu"]             = "Use submenu: Dynamic icons",
         ["options_contextmenu_use_dyn_submenu_TT"]     = "Use a submenu for the dynamic icons in context menus, if the enabled dynamic icons count equals or is higher than this value.\nThe value 0 disables the context-submenu for the dynamic icons.",
         --Backup & restore
-        ["options_header_backup_and_restore"]           = "Backup & Restore",
+        ["options_header_backup_and_restore_and_delete"] = "Backup & Restore & Delete",
         ["options_backup_marker_icons"]                 = "Backup",
         ["options_backup_marker_icons_TT"]         = "Backup your marker icons now.",
         ["options_restore_marker_icons"]                = "Restore",
         ["options_restore_marker_icons_TT"]        = "Restore the saved marker icons now.",
-        ["options_backup_marker_icons_warning"]         = "Backup now?\nYour marker icons will be saved with their unique IDs to the saved variables.\n\n!!! Attention !!!\nGuild banks: Unfortunately the guild banks cannot be saved in real time so please open ALL your guild banks once so they are up2date. Otherwise the items cannot be read properly. If someone changes the guild banks after you have opened them the addon is not able to recognize this.\n\nHouse: You need to be in any of your houses in order to backup the house bank items too.\nIf you are not in any of your houses the addon is not able to access the house banks and will skip the marked items in there!\n\nIf you own an house and are currently not in it the addon will ask you for a teleport next!",
-        ["options_restore_marker_icons_warning"]        = "Restore now?\nThe saved data will be loaded and the marker icons set again, depending on your chosen marker icon settings (non-unique or unique-> See general settings first please!).\n\n!!! Attention !!!\nGuild banks: Unfortunately the guild banks cannot be restored in real time so please open ALL your guild banks once so they are up2date. Otherwise the items cannot be saved properly. If someone changes the guild banks after you have opened them the addon is not able to recognize this.\n\nHouse: You need to be in any of your houses in order to restore the house bank items too.\nIf you are not in any of your houses the addon is not able to access the house banks and will skip the marked items in there!\n\nIf you own an house and are currently not in it the addon will ask you for a teleport next!",
+        ["options_backup_marker_icons_warning"]         = "Backup now?\nYour marker icons will be saved with their IDs to the saved variables. Both marker icon types (non-unique and unique) will be saved.\n\n!!! Attention !!!\nGuild banks: Unfortunately the guild banks cannot be saved in real time so please open ALL your guild banks once so they are up2date. Otherwise the items cannot be read properly. If someone changes the guild banks after you have opened them the addon is not able to recognize this.\n\nHouse: You need to be in any of your houses in order to backup the house bank items too.\nIf you are not in any of your houses the addon is not able to access the house banks and will skip the marked items in there!\n\nIf you own an house and are currently not in it the addon will ask you for a teleport next!",
+        ["options_restore_marker_icons_warning"]        = "Restore now?\nThe saved data will be loaded and the marker icons set again. Both marker icon types (non-unique and unique) will be restored.\n\n!!! Attention !!!\nGuild banks: Unfortunately the guild banks cannot be restored in real time so please open ALL your guild banks once so they are up2date. Otherwise the items cannot be saved properly. If someone changes the guild banks after you have opened them the addon is not able to recognize this.\n\nHouse: You need to be in any of your houses in order to restore the house bank items too.\nIf you are not in any of your houses the addon is not able to access the house banks and will skip the marked items in there!\n\nIf you own an house and are currently not in it the addon will ask you for a teleport next!",
         ["options_backup_ask_before_teleport_to_own_house"] = "If you want to backup your house storage you need to be in one of your houses.\nTeleport there now?\n\n" .. GetString(SI_DIALOG_CONFIRM) ..": Will teleport you to your house.\n".. GetString(SI_DIALOG_CANCEL) .. ": Will start the backup without house banks.",
         ["options_backup_details"]                      = "Show details",
         ["options_backup_details_TT"]              = "Show details about the backuped data in the chat",
@@ -1163,6 +1177,16 @@ FCOIS.localizationVars.localizationAll = {
         ["options_restore_marker_icons_delete_selected_TT"] = "Delete the selected backup from the restorable backups.\n\nAttention: After deleting the backup you are not able to restore it anymore!",
         ["options_restore_marker_icons_delete_selected_warning"] = "Attention: This will delete the selected backup!",
         ["options_restore_marker_icons_delete_selected_warning2"] = "Backup will be deleted and cannot be restored afterwards.\n\nAre you realy sure?",
+
+        ["options_delete_marker_icons_header"] =    "Delete",
+        ["options_delete_marker_icons_desc"] =      "Saved marker icons at the items will be deleted. They will be deleted from the currently set (server/account/character/all the same) SavedVariables settings (see \'General settings\').\nThe icon dropdown will control which marker icon will be deleted (use the -ALL- entry to delete all of them).\nThe marker icon type defines which subtable of the SavedVariables will be deleted (non-unique/unique).\nThe Delete button is only enabled if there is at least 1 marked item saved for the chose marker icon, or if you have chosen -ALL- icons.\n\nNon-unique and ZOs unique marker icons cannot be deleted separatley as they are combined in the same SavedVariables subtable.",
+        ["options_delete_marker_icons"] =           "Choose marker icon type",
+        ["options_delete_marker_icons_TT"] =        "Choose the marker icon type which should be deleted.",
+        ["options_delete_marker_icons_button"] =    "Delete marker icons",
+        ["options_delete_marker_icons_button_TT"] = "Delete the selected marker icons",
+        ["options_delete_marker_icons_warning"] =   "Attention: This will delete the selected marker icons! The UI will be reloaded after deletion of markers.\n\nWatch the chat for error messages!",
+        ["options_delete_marker_icons_warning2"] =  "Marker icons will be deleted and cannot be restored afterwards.\n\nAre you realy sure?",
+
         --Feedback
         ["feedbackSendNote"]                    =   "Send mail",
         ["feedbackSendGold"]                    =   "Send e.g. <<1>> gold",
@@ -1186,6 +1210,7 @@ FCOIS.localizationVars.localizationAll = {
         ["filter_buyback"]  = "["..GetString(SI_ITEMFILTERTYPE8).."] ",
         ["filter_repair"]   = "["..GetString(SI_ITEM_ACTION_REPAIR).."] ",
         ["LAM_settings_are_currently_build"] = "                   - Please wait-\nSettings are currently build...",
+        ["options_non_unique_id"]               = "Non-unique ID",
         ["options_use_uniqueids_type"]          = "Type of unique ID",
         ["options_use_uniqueids_type_TT"]       = "Choose which type of the unique ID you want to use. The default type is the ZOs base game type. An alternative are the FCOIS own created uniqueIds, see checkboxes to define the parts of the self-created uniqueId below.\nPlease read the tooltips of this dropdownbox entries for more information!\n\n|cFF0000Caution: Changing this setting will automatically reload the user interface (/reloadui)!|r",
         ["options_unique_id_base_game"]         = "Use ZOs unique ID",
@@ -1237,6 +1262,22 @@ FCOIS.localizationVars.localizationAll = {
         ["options_bags_to_scan_chat_output_TT"]          = "Show a chat output of each scanned bag, as the scanning of the bag starts and ends. Marked items will be shown in the chat depending on each markings-submenu settings, independent on this setting here.",
         ["reloadui"] = "CAUTION: The user interface will be reloaded in %s seconds!",
 
+        ["options_auto_bind_missing_set_collection_pieces"] = "Auto bind missing pieces",
+        ["options_auto_bind_missing_set_collection_pieces_TT"] = "Auto bind missing set collection pieces to your account.\nIf \'Unknown set collection marker icon\' is enabled: Bound items will still get the \'unknown marker icon\' applied so you are able to filter them acordingly, except for if you enable the setting \'Mark as known then\'.\nOnly works with vanilla ESO missing set collection piece detection, or LibMultiAccountSets, and only with the logged in account!\n\nThis will be done each time the automatic set collection piece marks get applied (manually or upon looting items).\n\n|cFF0000Attention:|r There will be NO security dialog asking up in front if the item should be bound!",
+        ["options_auto_bind_missing_set_collection_pieces_markKnown"] = "Mark as known then",
+        ["options_auto_bind_missing_set_collection_pieces_markKnown_TT"] = "Mark the new bound items as known set collection pieces.\nOnly works if the known automatic set item collection pieces marking is enabled.",
+        ["options_auto_bind_missing_set_collection_pieces_to_chat"] = "Show in chat",
+        ["options_auto_bind_missing_set_collection_pieces_to_chat_TT"] = "Show the items that were auto bound in the chat",
+        ["chat_output_missing_set_collection_piece_was_bound"] = "Missing set collection piece was bound: %s",
+
+        ["options_dropdown_none"] = "- None -",
+        ["options_dropdown_all"]  = "- ALL -",
+
+        ["options_automark_itemcooldowntracker_header"] = "Item Cooldown Tracker",
+        ["options_automark_itemcooldowntracker"]        = "Mark \'Item Cooldown Tracker\' tracked",
+        ["options_automark_itemcooldowntracker_TT"]     = "Automatically mark items tracked via \'Item Cooldown Tracker\' with a marker icon.",
+        ["options_automark_itemcooldowntracker_icon_TT"] = "Choose the marker icon that should be applied on items that are tracked via \'Item Cooldown Tracker\'.",
+
         --LibShifterBoxes
         --[FCOIS_UNIQUEID_ITEMTYPES]
         ["LIBSHIFTERBOX_FCOIS_UNIQUEID_ITEMTYPES_TITLE_LEFT"]   = "Item types (all)",
@@ -1267,18 +1308,19 @@ FCOIS.localizationVars.localizationAll = {
         ["options_savedVariables_dropdown_selection1"] = "Jeder Charakter",
         ["options_savedVariables_dropdown_selection2"] = "Ganzer Account",
         ["options_savedVariables_dropdown_selection3"] = "Alle Accounts gleich",
+        ["options_savedVariables_dropdown_selection4"] = "Alle Server & Accounts gleich",
 
-        ["options_header_copy_sv"]              =   "Kopiere SavedVariables",
+        ["options_header_copy_sv"]              =   "Kopiere & Lösche SavedVariables (alle Einstellungen)",
         ["options_copy_sv_source_server"]       =   "Quell-Server",
         ["options_copy_sv_target_server"]        =  "Ziel-Server",
-        ["options_description_copy_sv_server"]  = "|cff0000Vor dem Kopieren/Löschen von SavedVariables LOG DICH bitte AUS und KOPIERE die SavedVariables DATEI 'FCOItemSaver.lua' ALS BACKUP! Klicke auf den '|c5959D5Feedback|r|cff0000' Link oben und dann auf den 'FAQ' Knopf, um eine Erklärung zu erhalten, wie du die Backup Datei erstellen kannst.|r\n\nKopiere SavedVariables von einem Server zu einem anderen. Wählen den Account oder Charakter weiter unten aus. Kopieren oder Löschen der Daten eines gesamten Servers ist nicht möglich!",
+        ["options_description_copy_sv_server"]  = "|cff0000Vor dem Kopieren/Löschen von SavedVariables (dies wird alle Einstellungen kopieren, nicht nur die Markierungen an deinen Gegenständen!) LOG DICH bitte AUS und KOPIERE die SavedVariables DATEI 'FCOItemSaver.lua' ALS BACKUP! Klicke auf den '|c5959D5Feedback|r|cff0000' Link oben und dann auf den 'FAQ' Knopf, um eine Erklärung zu erhalten, wie du die Backup Datei erstellen kannst.|r\n\nKopiere SavedVariables von einem Server zu einem anderen. Wählen den Account oder Charakter weiter unten aus. Kopieren oder Löschen der Daten eines gesamten Servers ist nicht möglich!",
         --["options_copy_sv_to_server"]           =   "Copy to server",
         --["options_copy_sv_to_server_TT"]   =   "Copy the SavedVariables from the chosen source server to the chosen target sever. Copying from a source to the same target server is not possible!\nIf you are using account wide setings, or all accounts use the same settings, all data will be transfered.\nIf you are using character settings only your currently logged in character will be transfered.\n\nAttention: Existing target data will be overwritten!",
         ["options_copy_sv_to_server_warning"]   =   "Willst du wirklich die SavedVariables kopieren?\nExistierende Ziel-Daten werden überschrieben!\n\nWenn du auf dem Ziel-Server eingeloggt bist wird deine Benutzeroberfläche im Anschluß neu laden!",
         ["question_copy_sv_server_reloadui"]    = "SavedVariables wurden von Server \"<<C:1>>\" zu Server \"<<C:2>>\" kopiert, Accountweite Einstellungen: <<3>>.\n\nDa du aktuell auf dem Ziel-Server eingeloggt bist:\nBenutzeroberfläche neu laden?",
         ["question_delete_sv_server_reloadui"]   = "SavedVariables von Server \"<<C:1>>\" gelöscht, Accountweite Einstellungen: <<2>>.\n\nDa du aktuell auf dem Ziel-Server eingeloggt bist:\nBenutzeroberfläche neu laden?",
         --["options_delete_sv_on_server"]           =   "Delete target server",
-        --["options_delete_sv_on_server_TT"]   =   "Delete the SavedVariables on the target server.\nIf you are logged in to the target server with the chosen target account and character your user UI will reload afterwards!\n\nAttention: Existing target data will be deleted without any backup!",
+        --["options_delete_sv_on_server_TT"]   =   "Delete the SavedVariables on the target server.\nIf you are logged in to the target server with the chosen target account and character your UI will reload afterwards!\n\nAttention: Existing target data will be deleted without any backup!",
 
         ["options_description_copy_sv_account"]  = "Diese Option ist nur verfügbar, wenn ein Server gewählt wurde. |c75daffBitte lies die Tooltips an den Account kopieren/löschen Knöpfen!|r",
         ["options_copy_sv_source_account"]       =   "Quell-Account",
@@ -1290,6 +1332,13 @@ FCOIS.localizationVars.localizationAll = {
         ["question_delete_sv_account_reloadui"]   = "SavedVariables von Server \"<<C:1>>\" Account \"<<C:2>>\" gelöscht, Accountweite Einstellungen: <<3>>.\n\nDa du aktuell auf dem Ziel-Server eingeloggt bist:\nBenutzeroberfläche neu laden?",
         ["options_delete_sv_account"]           =   "Lösche Ziel-Account",
         ["options_delete_sv_account_TT"]   =   "Löscht die SavedVariables auf dem Ziel-Server und Ziel-Account.\nWenn du auf dem Ziel-Server mit dem Ziel-Account und Ziel-Charakter eingeloggt bist, wird die Benutzeroberfläche im Anschluss neugeladen werden!\n\nAchtung: Existierende Ziel-Daten werden ohne Backup gelöscht!",
+
+        ["options_copy_sv_to_allserversallaccount"]      =   "Koiere zu \'Alle gleich\'",
+        ["options_copy_sv_to_allserversallaccount_TT"]   =   "Kopiere die SavedVariables vom ausgwählten Quell-Server zu den \'Alle Server & Accounts gleich\' Einstellungen.\n\nAchtung: Existierende Ziel-Daten werden überschrieben!",
+        ["options_copy_sv_to_allserversallaccount_warning"]  =  "Willst du wirklich die SavedVariables kopieren?\nExistierende Ziel-Daten werden überschrieben!\n\nDeine Benutzeroberfläche lädt im Anschluss neu!",
+        ["question_copy_sv_allserversallaccount_reloadui"]   = "SavedVariables von Server \"<<C:1>>\" Account \"<<C:2>>\" zu \'Alle Server & Accounts gleich\' kopiert, Accountweite Einstellungen: <<3>>.\n\nSoll die Benutzeroberfläche neu geladen werden?",
+        ["options_delete_sv_allserversallaccount"]           = "Lösche \'Alle gleich\'",
+        ["options_delete_sv_allserversallaccount_TT"]        = "Löscht die SavedVariables für \'Alle Server & Accounts gleich\'.\nDeine Benutzeroberfläche lädt im Anschluss neu!\n\nAchtung: Existierende Daten werden ohne Backup gelöscht!",
 
         ["options_description_copy_sv_character"]  = "Diese Option ist nur verfügbar, wenn ein Account ausgewählt wurde (außer 'Alle Accounts gleich'). Du musst in der Vergangenheit bereits Charaktere mit der Einstellung 'Jeder Charakter' gespeichert haben, um diese Charaktere in der Quell-Charakter Liste weiter unten auswählen zu können. |c75daffBitte lies die Tooltips der Kopieren/Löschen Knöpfe!|r",
         ["options_copy_sv_source_character"]       =   "Quell-Charakter",
@@ -1373,12 +1422,12 @@ FCOIS.localizationVars.localizationAll = {
         ["options_research_filter"]		 		 = "Erlaube 'Zur Analyse vorgemerkt'",
         ["options_research_filter_TT"]		 = "Erlaubt 'Zur Analyse vorgemerkte' Gegenstände dennoch im Handwerk Analyse Fenster auszuwählen",
         ["options_icons_description"]       = "In diesem Untermenü können Sie die Markierungssymbole des AddOns konfigurieren.\nEs gibt 3 Typen von Symbolen:\n1. Normal\n2. Ausrüstung Sets\n3. Dynamische\nDeren Untermenü zeigt weitere Beschreibungen an.\n\nHinweise:\n-Wenn Markierungssymbol Text rot in Auswahllisten angezeigt wird, so ist dieses Symbol aktuell deaktiviert.\n-Jedes Markierungssymbol ist zunächst geschützt bis eine Ausnahme (Siehe Untermenü \'Schutz (Anti-Methoden)\') für normale Symbole aktiviert wird, bzw. dynamische Symbole je Symbol anders konfiguriert werden.",
-        ["options_icons_non_gear_sets_description"] = "Normale Symbole sind die Standard Symbole dieses AddOns, welche nur in Farbe/Textur/Größe/Postion verändert werden können. Dieses sind für feste Gegebenheiten vorgesehen wie z.B. gegen Verkauf, Zerlegen, Aufwerten beschützen.\nDiese Standard Symbole müssen aktiviert sein wenn Sie z.B. Automatische Markierungen (die Einstellungen finden Sie im Autoamtische Markierungen Untermenü) nutzen möchte, welche von dem entsprechenden Symbol abhängig sind.\nWenn eine Einstellungsoption nicht aktivierbar ist, versuchen Sie hier das entsprechende Standard Symbol zu aktivieren.",
-        ["options_icons_gear_sets_description"]     = "Ausrüstung Sets sind die 5 Standard Symbole dieses AddOns, nur in Farbe/Textur/Größe/Postion verändert werden können. Diese sind für Ihre Ausrüstung vorgesehen.\nWenn Sie mehr Ausrüstung Set Symbole benötigen können Sie eines der bis zu 30 dynamischen Symbole zu einem Ausrüstung Set Symbol umfunktionieren.",
+        ["options_icons_non_gear_sets_description"] = "Normale Symbole sind die Standard Symbole dieses AddOns, welche nur in Farbe/Textur/Größe/Postion verändert werden können. Dieses sind für feste Gegebenheiten vorgesehen wie z.B. gegen Verkauf, Zerlegen, Aufwerten beschützen.\nDiese Standard Symbole müssen aktiviert sein wenn Sie z.B. Automatische Markierungen (die Einstellungen finden Sie im Automatische Markierungen Untermenü) nutzen möchte, welche von dem entsprechenden Symbol abhängig sind.\nWenn eine Einstellungsoption nicht aktivierbar ist, versuchen Sie hier das entsprechende Standard Symbol zu aktivieren.",
+        ["options_icons_gear_sets_description"]     = "Ausrüstungs Sets sind die 5 Standard Symbole dieses AddOns, welche in Farbe/Textur/Größe/Postion und Name verändert werden können. Diese sind für Ihre Ausrüstung vorgesehen.\nWenn Sie mehr Ausrüstungs Set Symbole benötigen können Sie eines der dynamischen Symbole zu einem Ausrüstung Set Symbol umfunktionieren.",
         ["options_icons_dynamic"]				 = "Dynamische Symbole",
         ["options_icons_dynamic_usable"]				 =  "Dynamische Symbole - Gesamt verwendbar",
         ["options_icons_dynamic_usable_TT"]				 =  "Setze die Anzahl Dynamische Symbole, welche durch das AddOn maximal verwendet werden darf.",
-        ["options_icons_dynamic_usable_warning"]		 =  "Dynamische Symbole sind die nicht-standard Markierungen dieses AddOns welche nicht nur die Farbe/Textur/Größe und Position verändern können, sondern sogar je Symbol individuell die Beschütz (Anti-*)- und weitere Einstellungen verändern können. Jedes der bis zu 30 möglichen dynamischen Symbolen kann genau für deine Belange eingestellt werden.\n\nVerändere hier die maximal verwendbaren Dynamischen Symbole. Je niederiger der Wert, so besser die Einstellungs- und Kontextmenü Performance.\n[|cFF0000ACHTUNG|r]Die Benutzeroberfläche wird direkt neu geladen, wenn du diese Option veränderst.\nBitte schau danach auch in den Kontextmenü Einstellugen nach den dynamischen Untermenüs, und passe diese an (sofern benötigt).",
+        ["options_icons_dynamic_usable_warning"]		 =  "Dynamische Symbole sind die nicht-standard Markierungen dieses AddOns welche nicht nur die Farbe/Textur/Größe/Position und Name verändern können, sondern sogar je Symbol individuell die Beschütz (Anti-*)- und weitere Einstellungen verändern können. Jedes der dynamischen Symbolen kann genau für Ihre Belange eingestellt werden.\n\nVerändern sie hier die maximal verwendbaren Dynamischen Symbole. Je niederiger der Wert, so besser die Einstellungs- und Kontextmenü Performance.\n[|cFF0000ACHTUNG|r]Die Benutzeroberfläche wird direkt neu geladen, wenn diese Option verändert wird.\nBitte schauen Sie danach auch in den Kontextmenü Einstellugen nach den dynamischen Untermenüs, und passen diese an (sofern benötigt).",
 
         ["options_icons_dynamic_gear"]			 = "Dynamische Ausrüstungs Sets",
         ["options_icons_non_gear"]				 = "Normale Symbole",
@@ -1930,6 +1979,12 @@ FCOIS.localizationVars.localizationAll = {
         ["options_filter_buttons_context_menu_show_tooltip_TT"] = "Zeigt einen Tooltip für jeden Eintrag in den Filter Knopf Kontextmenüs",
         ["options_filter_buttons_save_for_character"]    = "Filter Knopf Status für jeden Charakter speichern",
         ["options_filter_buttons_save_for_character_TT"] = "Aktiviert: Speichere den Status jedes Filter Knopfes individuell pro Charakter, auch wenn Account Weite Einstellungen aktiviert sind.\n\nSind die Pro Charakter Einstellungen aktiviert so ist diese Option deaktiviert!",
+        ["options_filter_button_settings"] =                        "Filter Einstellungen",
+        ["options_filter_button_settings_filterWithLogicalAND"] =   "Logische Verb. (De-/Aktiv): ODER/UND",
+        ["options_filter_button_settings_filterWithLogicalAND_and"] = "und",
+        ["options_filter_button_settings_filterWithLogicalAND_or"] = "oder",
+        ["options_filter_button_settings_logical_conjunctions"] = "Wenn das Kontextmenü an den Filter Knöpfen aktiviert ist kann dort unter \'Filter Einstellungen\' die \'Logische Verbindung\' des gelben (NUR MARKIERTE ANZEIGEN) Filter Status (rote und grüne Filter Status verhalten sich bei UND und ODER identisch!) eingestellt werden:\nCheckbox aktiv: Logisches UND\nCheckbox deaktiviert: Logisches ODER\n\nLogisches UND bedeutet, dass die Prüfungen der Filter \'alle zusammen\' wahr sein müssen (z.B. ein Gegenstand muss mit dem Schloss UND dem Intrikat Symbol markiert sein).\nLogisches ODER bedeutet, dass die Prüfungen der Filter \'jeder für sich\' wahr sein muss (z.B. ein Gegenstand muss mit dem Schloss ODER dem Intrikat Symbol markiert sein).",
+
         ["options_header_filter_chat"] 			= "Filter & Chat",
         ["options_chat_filter_status"]			= "Filter Status im Chat zeigen",
         ["options_chat_filter_status_TT"] 	= "Soll der Filter Status im Chat angezeigt werden, wenn dieser sich verändert?",
@@ -2116,8 +2171,7 @@ FCOIS.localizationVars.localizationAll = {
         ["chatcommands_filteroff"]				 = "|cFFFFFF'alleaus'|cFFFF00: Kategorien 1 bis 4 ausblenden",
         ["chatcommands_filtershow"]				 = "|cFFFFFF'allezeigen'|cFFFF00: Nur markierte Items der Kategorien 1 bis 4 anzeigen",
         ["chatcommands_split_filter"]			 = "|cFFFFFF'split'|cFFFF00: Filter individuell in Inventar, Verkäufer, Bank, Gilden Bank, Gilden Laden, Handwerksstationen, Verzauberungstisch, Mail und Handel einschalten/ausschalten",
-        ["chatcommands_filterpanels"]			 = "|c990000Mögliche |cFFFFFF<filterPanel>|cFFFF00: 1 Inventar, 2 Bank, 3 Gilden Bank, 4 Händler, 5 Handwerksstation Verwerten, ",
-        ["chatcommands_filterpanels2"]			 = "» 6 Gilden Laden, 7 Mail, 8 Handel, 11 Verzauberungstisch Extrahieren, 12 Handwerksstation Aufwerten, 13 Verzauberungstisch Erstellen",
+        ["chatcommands_filterpanels"]			 = "|c990000Mögliche |cFFFFFF<filterPanel>|cFFFF00:",
         ["chatcommands_filtervalues"]			 = "|c990000Mögliche |cFFFFFF<filterValue>|cFFFF00: |cFFFFFFan|cFFFF00 / |cFFFFFFaus|cFFFF00 / |cFFFFFFzeigen",
         ["chatcommands_filter1_new"]			 = "|cFFFFFF'filter1 <filterPanel> <filterValue>'|cFFFF00: Kategorie 1 (Schloss Symbol) im Fenster |cFFFFFF<filterPanel>|cFFFF00 ausblenden |cFFFFFF<an>|cFFFF00 / anzeigen |cFFFFFF<aus>|cFFFF00 / nur Markierte anzeigen |cFFFFFF<zeigen>",
         ["chatcommands_filter2_new"]			 = "|cFFFFFF'filter2 <filterPanel> <filterValue>'|cFFFF00: Kategorie 2 (Rüstungs Symbole) im Fenster |cFFFFFF<filterPanel>|cFFFF00 ausblenden |cFFFFFF<an>|cFFFF00 / anzeigen |cFFFFFF<aus>|cFFFF00 / nur Markierte anzeigen |cFFFFFF<zeigen>",
@@ -2169,17 +2223,17 @@ FCOIS.localizationVars.localizationAll = {
         ["filter_guildstore"]	= "[Gilden Laden] ",
         ["filter_bank"]			= "[Bank] ",
         ["filter_house_bank"]	= "[Haus Bank] ",
-        ["filter_alchemy"]		= "[Handwerksstation Alchemie] ",
-        ["filter_refinement"]		= "[Handwerksstation Veredeln] ",
-        ["filter_deconstruction"]	= "[Handwerksstation Verwerten] ",
-        ["filter_improvement"]	= "[Handwerksstation Aufwerten] ",
-        ["filter_jewelry_refinement"]		= "[Handwerksstation Schmuck Veredeln] ",
-        ["filter_jewelry_deconstruction"]	= "[Handwerksstation Schmuck Verwerten] ",
-        ["filter_jewelry_improvement"]	    = "[Handwerksstation Schmuck Aufwerten] ",
-        ["filter_research"]		= "[Handwerksstation Analyse] ",
-        ["filter_jewelry_research"]		= "[Handwerksstation Schmuck Analyse] ",
-        ["filter_enchantingstation_extraction"] = "[Verzauberungsstation Verwerten] ",
-        ["filter_enchantingstation_creation"] = "[Verzauberungsstation Herstellen] ",
+        ["filter_alchemy"]		= "[Alchemie] ",
+        ["filter_refinement"]		= "[Veredeln] ",
+        ["filter_deconstruction"]	= "[Verwerten] ",
+        ["filter_improvement"]	= "[Aufwerten] ",
+        ["filter_jewelry_refinement"]		= "[Schmuck Veredeln] ",
+        ["filter_jewelry_deconstruction"]	= "[Schmuck Verwerten] ",
+        ["filter_jewelry_improvement"]	    = "[Schmuck Aufwerten] ",
+        ["filter_research"]		= "[Analyse] ",
+        ["filter_jewelry_research"]		= "[Schmuck Analyse] ",
+        ["filter_enchantingstation_extraction"] = "[Verzauberung Verwerten] ",
+        ["filter_enchantingstation_creation"] = "[Verzauberung Herstellen] ",
         ["filter_store"] = "[Verkäufer] ",
         ["filter_fence"] = "[Hehler] ",
         ["filter_launder"] = "[Geldwäsche] ",
@@ -2329,13 +2383,13 @@ FCOIS.localizationVars.localizationAll = {
         ["options_contextmenu_use_dyn_submenu"]             = "Nutze Untermenü: Dynamische Symbole",
         ["options_contextmenu_use_dyn_submenu_TT"]     = "Nutze ein Untermenü für die dynamischen Symbole in den Kontextmenüs wenn die Anzahl der aktivierten dynamischen Symbole größer oder gleich diesem Wert ist.\nDer Wert 0 deaktiviert das Kontext-Untermenü für die dynamischen Symbole.",
         --Backup & restore
-        ["options_header_backup_and_restore"]           = "Sicherung & Wiederherstellung",
+        ["options_header_backup_and_restore_and_delete"] = "Sicherung & Wiederherstellung & Löschen",
         ["options_backup_marker_icons"]                 = "Sicherung",
         ["options_backup_marker_icons_TT"]         = "Sichere deine Markierungen an den Gegenständen nun.",
         ["options_restore_marker_icons"]                = "Wiederherstellung",
         ["options_restore_marker_icons_TT"]        = "Stelle deine Markierungen an den Gegenständen wieder her.",
-        ["options_backup_marker_icons_warning"]         = "Sicherung ausführen?\nDeine Markierungen an den Gegenständen werden mit ihrer eindeutigen ID gesichert.\n\n!!! Achtung !!!\nGilden Banken: Du musst alle deine Gilden Banken einmal geöffnet haben damit die Gegenstände gesichert werden können. Erst dann kennt das Addon diese. Wenn jemand nach dem Öffnen allerdings die Gegenstände entnimmt oder hinzufügt dann wird das Addon dies nicht bemerken!\n\nHaus: Du musst dich in deinem Haus befinden, wenn du die Hausbank Gegenstände auch mit sichern möchtest.\nWenn du nicht in deinem Haus bist hat das Addon keinen Zugriff auf deine Hausbank und wird diese Gegenstände überspringen!\n\nFalls du ein Haus besitzt und dich momentan nicht in diesem befindest wird das Addon dich im nächsten Schritt fragen, ob du dorthin reisen möchtest!",
-        ["options_restore_marker_icons_warning"]        = "Wiederherstellung ausführen?\nDie gesicherten Markierungen werden wieder hergestellt, abhängig von deinen gewählten Einstellungen (siehe 'Allgemeine Einstellungen'->'Eindeutige IDs'!)\n\n!!! Achtung !!!\nGilden Banken: Du musst alle deine Gilden Banken einmal geöffnet haben damit die Gegenstände wieder markiert werden können. Erst dann kennt das Addon diese. Wenn jemand nach dem Öffnen allerdings die Gegenstände entnimmt oder hinzufügt dann wird das Addon dies nicht bemerken!\n\nHaus: Du musst dich in deinem Haus befinden, wenn du die Hausbank Gegenstände auch widerherstellen möchtest!.\nWenn du nicht in deinem Haus bist hat das Addon keinen Zugriff auf deine Hausbank und wird diese Gegenstände überspringen!\n\nFalls du ein Haus besitzt und dich momentan nicht in diesem befindest wird das Addon dich im nächsten Schritt fragen, ob du dorthin reisen möchtest!",
+        ["options_backup_marker_icons_warning"]         = "Sicherung ausführen?\nDeine Markierungen an den Gegenständen werden mit ihrer ID gesichert. Beide ID Typen (nicht-einzigartig und einzigartig) werden gespeichert.\n\n!!! Achtung !!!\nGilden Banken: Du musst alle deine Gilden Banken einmal geöffnet haben damit die Gegenstände gesichert werden können. Erst dann kennt das Addon diese. Wenn jemand nach dem Öffnen allerdings die Gegenstände entnimmt oder hinzufügt dann wird das Addon dies nicht bemerken!\n\nHaus: Du musst dich in deinem Haus befinden, wenn du die Hausbank Gegenstände auch mit sichern möchtest.\nWenn du nicht in deinem Haus bist hat das Addon keinen Zugriff auf deine Hausbank und wird diese Gegenstände überspringen!\n\nFalls du ein Haus besitzt und dich momentan nicht in diesem befindest wird das Addon dich im nächsten Schritt fragen, ob du dorthin reisen möchtest!",
+        ["options_restore_marker_icons_warning"]        = "Wiederherstellung ausführen?\nDie gesicherten Markierungen werden wieder hergestellt. Beide ID Typen (nicht-einzigartig und einzigartig) werden geladen.\n\n!!! Achtung !!!\nGilden Banken: Du musst alle deine Gilden Banken einmal geöffnet haben damit die Gegenstände wieder markiert werden können. Erst dann kennt das Addon diese. Wenn jemand nach dem Öffnen allerdings die Gegenstände entnimmt oder hinzufügt dann wird das Addon dies nicht bemerken!\n\nHaus: Du musst dich in deinem Haus befinden, wenn du die Hausbank Gegenstände auch widerherstellen möchtest!.\nWenn du nicht in deinem Haus bist hat das Addon keinen Zugriff auf deine Hausbank und wird diese Gegenstände überspringen!\n\nFalls du ein Haus besitzt und dich momentan nicht in diesem befindest wird das Addon dich im nächsten Schritt fragen, ob du dorthin reisen möchtest!",
         ["options_backup_ask_before_teleport_to_own_house"] = "Wenn du deine Haus Bank mit sichern möchtest musst du dich in einem der Häuser befinden.\nNun dorthin teleportieren?\n\n" .. GetString(SI_DIALOG_CONFIRM) .. ": Wird dich teleportieren.\n".. GetString(SI_DIALOG_CANCEL) ..": Startet das Backup ohne Haus Bank.",
         ["options_backup_details"]                      = "Zeige Details",
         ["options_backup_details_TT"]              = "Zeige Details über die gesicherten Gegenstände im Chat",
@@ -2347,10 +2401,20 @@ FCOIS.localizationVars.localizationAll = {
         ["options_restore_details_TT"]             = "Zeige Details über die widerhergestellten Gegenstände im Chat an",
         ["options_restore_apiversion"]                  = "Widerherstellbare API Versionen",
         ["options_restore_apiversion_TT"]          = "Die gespeicherten API Versionen, welche widerhergestellt werden können.",
-        ["options_restore_marker_icons_delete_selected"] = "Lösche ausgewähltes Backup",
+        ["options_restore_marker_icons_delete_selected"] = "Lösche Backup",
         ["options_restore_marker_icons_delete_selected_TT"] = "Lösche das ausgewählte Backup aus den wiederherstellbaren Backups.\n\nVorsicht: Nach dem Löschen kann dieses nicht wiederhergestellt werden!",
         ["options_restore_marker_icons_delete_selected_warning"] = "Vorsicht: Dies löscht das ausgewählte Backup!",
         ["options_restore_marker_icons_delete_selected_warning2"] = "Backup wird gelöscht und kann nicht wiederhergestellt werden!\n\nBist du wirklich sicher?",
+
+        ["options_delete_marker_icons_header"] =    "Löschen",
+        ["options_delete_marker_icons_desc"] =      "Es werden die Markierungen an den Gegenständen gelöscht. Dabei werden die aktuell verwendeten SavedVariables (siehe \'Generelle Einstellungen\') verwendet (d.h. Server/Account/Character/alle gleich)!\nEs wird dabei die Markierung gelöscht, welche in der Symbol Aufklappliste ausgewählt wurde. Der Eintrag -ALLE- löscht alle Symbole!\nDer Markierungstyp gibt an, in welcher SavedVariables Tabelle die Markierungssymbole gelöscht werden (non-unique, unique).\nDer Löschen Knopf ist nur auswählbar, wenn mindestens 1 Markierung im gewählten ID Typ existiert, oder - ALLE - Markierungssymbole ausgewählt wurden!\n\nNicht-eindeutige und ZOs eindeutige Ids können nicht getrennt voneinander gelöscht werden, da diese sich dieselbe SavedVariables Tabelle teilen.",
+        ["options_delete_marker_icons"] =           "Markierungstyp auswählen",
+        ["options_delete_marker_icons_TT"] =        "Wähle den Markierungstyp aus, welcher gelöscht werden soll.",
+        ["options_delete_marker_icons_button"] =    "Markierungen löschen",
+        ["options_delete_marker_icons_button_TT"] = "Die ausgewählten Markierungen löschen",
+        ["options_delete_marker_icons_warning"] =   "Vorsicht: Dies löscht die ausgewählten Markierungen! Die Benutzeroberfläche wird neugeladen wenn Markierungen gelöscht werden.\nAchte auf den Chat für Fehlermeldungen.",
+        ["options_delete_marker_icons_warning2"] =  "Markierungen werden gelöscht und können nicht wiederhergestellt werden!\n\nBist du wirklich sicher?",
+
         --Feedback
         ["feedbackSendNote"]                    =   "Sende Mail",
         ["feedbackSendGold"]                    =   "Sende z.B. <<1>> Gold",
@@ -2371,6 +2435,7 @@ FCOIS.localizationVars.localizationAll = {
         ["button_context_menu_toggle_anti_repair_on"]   = "Aktiviere 'Anti-Reparieren'",
         ["button_context_menu_toggle_anti_repair_off"]  = "Deaktiviere 'Anti-Reparieren'",
         ["LAM_settings_are_currently_build"] = "                        - Bitte warten -\nEinstellungen werden gerade aufbereitet...",
+        ["options_non_unique_id"]               = "Nicht-eindeutige ID",
         ["options_use_uniqueids_type"]          = "Typ der eindeutigen ID",
         ["options_use_uniqueids_type_TT"]       = "Wähle welchen Typ der eindeutigen ID du verwenden möchtest. Der Default Typ ist die eindeutige ID des ZOs Standard-Spiels. Eine Alternative sind die FCOIS selbst-erstellten Eindeutigen Ids, deren Aufbau/Bestandteile du mit den Auswahlfeldern hier drunter definieren kannst.\nBitte lies die Tooltips der Einträge in dieser Aufklappbox um mehr Informationen zu erhalten!\n\n|cFF0000Achtung: Das Verändern dieser Option wird die Benutzeroberfläche automatisch neu laden (/reloadui)!|r",
         ["options_unique_id_base_game"]         = "Nutze ZO\'s eindeutige ID",
@@ -2382,6 +2447,7 @@ FCOIS.localizationVars.localizationAll = {
         ["options_header_migration"]            = "Migration",
         ["options_header_migration_ids"]        = "(Nicht-)Eindeutige ID Migration",
         ["options_unique_id_part_crafted_by"]   = GetString(SI_ITEM_FORMAT_STR_CRAFTED) .. " durch", -- Hergestellt durch
+        ["options_unique_id_part_crownItem"]    = GetString(SI_ITEMTYPE57),
         --Migrate ZOs locks to FCOIS locks
         ["migrate_ZOs_locks_to_FCOIS_locks_start"]              = "[FCOIS]Durchsuche Inventare nach mit dem ZOs Schloß markierten Gegenständen: START",
         ["migrate_ZOs_locks_to_FCOIS_locks_bagId"]              = ">Durchsuche Inventar (bagID): %s",
@@ -2413,6 +2479,22 @@ FCOIS.localizationVars.localizationAll = {
         ["options_bags_to_scan_chat_output"]             = "Zeige Chat Ausgabe pro Inventar",
         ["options_bags_to_scan_chat_output_TT"]          = "Zeige eine Ausgabe im Chat für jedes gescannte Inventar, zum Start und zum Ende. Markierte Gegenstände werden unabhängig von dieser Einstellung, je nach Einstellung im jeweiligen Markierungs-Untermenü, im Chat ausgegeben.",
         ["reloadui"] = "ACHTUNG: Die Benutzeroberfläche wird neugeladen in %s Sekunden!",
+
+        ["options_auto_bind_missing_set_collection_pieces"] = "Auto binden: Unbekannte Teile",
+        ["options_auto_bind_missing_set_collection_pieces_TT"] = "Automatisches Binden von unbekannten Set Sammlungs-Teilen deines aktuellen Accounts.\nWenn \'Unbekannte Set-Sammlung Geg. Symbol\' aktiviert sind: Neu gebundene Teile werden danach \'unbekannt Symbol\' erhalten damit diese danach filterbar bleiben, es sei denn die Option \'Markiere als bekannt dann\' wird aktiviert.\nFunktioniert nur mit den Standard ESO Set Sammlungs Prüfungen oder LibMultiAccountSets, aber nur für den aktuell eingeloggten Account!\n\nDieses Binden wird immer dann ausgeführt, wenn du die Automatischen Set Sammlungs-Prüfungen ausführst, oder wenn etwas gelootet wird.\n\n|cFF0000Achtung:|r Es wird KEIN Sicherheitsabfrage Dialog vor dem Binden angezeigt, den du bestätigen musst!",
+        ["options_auto_bind_missing_set_collection_pieces_markKnown"] = "Markiere als bekannt dann",
+        ["options_auto_bind_missing_set_collection_pieces_markKnown_TT"] = "Markiert die neu gebundenen als bekannte Set Sammlungs-Teile.\nFunktioniert nur, wenn die Automatische Set Sammlungs Markierung für bekanne Teile aktiviert ist.",
+        ["options_auto_bind_missing_set_collection_pieces_to_chat"] = "Im Chat zeigen",
+        ["options_auto_bind_missing_set_collection_pieces_to_chat_TT"] = "Zeige die automatisch gebundenen Teile im Chat an",
+        ["chat_output_missing_set_collection_piece_was_bound"] = "Fehlender Set-Sammlungs Gegenstand wurde gebunden: %s",
+
+        ["options_dropdown_none"] = "- Nichts -",
+        ["options_dropdown_all"]  = "- ALLE -",
+
+        ["options_automark_itemcooldowntracker_header"]  = "Item Cooldown Tracker",
+        ["options_automark_itemcooldowntracker"]         = "Markiere \'Item Cooldown Tracker\' verfolgte",
+        ["options_automark_itemcooldowntracker_TT"]      = "Markiere Gegenstände, welche mit \'Item Cooldown Tracker\' verfolgt werden, mit einem Symbol.",
+        ["options_automark_itemcooldowntracker_icon_TT"] = "Wähle das Symbol, welches an durch \'Item Cooldown Tracker\' verfolgten Gegenständen markiert werden soll.",
 
         --LibShifterBoxes
         --[FCOIS_UNIQUEID_ITEMTYPES]
@@ -3042,8 +3124,7 @@ FCOIS.localizationVars.localizationAll = {
 		["chatcommands_filteroff"]	 			 = "|cFFFFFF'touson'|cFFFF00: Cacher tous les objets marqués dans les fenêtres de vente et d'artisanat",
 		["chatcommands_filtershow"]	 			 = "|cFFFFFF'tousmontre'|cFFFF00: Ne montre QUE les objets marqués dans les fenêtres de vente et d'artisanat",
 		["chatcommands_split_filter"]			 = "|cFFFFFFsplit|cFFFF00: Activer/Désactiver les filtres individuels dans l'inventaire, le marchand, la banque, la banque de guilde, les boutiques de guildes, les ateliers de craft, l'autel d'enchantement, les mails et l'échange",
-        ["chatcommands_filterpanels"]			 = "|c990000Possible <filterPanel>: 1 Inventaire, 2 Banque, 3 Banque de guilde, 4 Marchand, 5 Atelier de craft Déconstruction,",
-        ["chatcommands_filterpanels2"] 			 = "6 Boutiques de guildes, 7 Mail, 8 Echantement, 11 Enchantement extraction, 12 Atelier de craft amélioration, 13 Enchantement créé",
+        ["chatcommands_filterpanels"]			 = "|c990000Possible <filterPanel>:",
         ["chatcommands_filtervalues"]			 = "|c990000Possible <filterValue>: |cFFFFFFvrai|cFFFF00 / |cFFFFFFfaux|cFFFF00 / |cFFFFFFmontre",
         ["chatcommands_filter1_new"]			 = "|cFFFFFF'filtre1 <filterPanel> <filterValue>'|cFFFF00: Cacher |cFFFFFF<vrai>|cFFFF00 / voir |cFFFFFF<faux>|cFFFF00 / montre seulement les objets marqués |cFFFFFF<montre>|cFFFF00 de catergory 1 (symbole verrouillé) au panneau |cFFFFFF<filterPanel>",
         ["chatcommands_filter2_new"]			 = "|cFFFFFF'filtre2 <filterPanel> <filterValue>'|cFFFF00: Cacher |cFFFFFF<vrai>|cFFFF00 / voir |cFFFFFF<faux>|cFFFF00 / montre seulement les objets marqués |cFFFFFF<montre>|cFFFF00 de catergory 2 (symbole de casque) au panneau |cFFFFFF<filterPanel>",
@@ -3472,8 +3553,7 @@ FCOIS.localizationVars.localizationAll = {
 		["chatcommands_filteroff"]	 			 = "|cFFFFFF'touson'|cFFFF00: Esconder todos los objetos marcados en las ventanas de venta y artesanía",
 		["chatcommands_filtershow"]	 			 = "|cFFFFFF'tousmontre'|cFFFF00: Muestra SOLO los objetos marcados en las ventanas de venta y artesanía",
 		["chatcommands_split_filter"]			 = "|cFFFFFFsplit|cFFFF00: Activa/Desactiva los filtros individuales en : inventario, mercaderes, banco, banco y tienda de clan, estaciones de artesanía, mesa de encantamiento, correo y comercio",
-        ["chatcommands_filterpanels"]			 = "|c990000Possible <filterPanel>: 1 Inventario, 2 Banco, 3 Banco de clan, 4 Mercader, 5 Estación de artesanía desconstrucción,",
-        ["chatcommands_filterpanels2"] 			 = "6 Tiendas de clan, 7 Correo, 8 Comercio, 11 Encantamiento extracción, 12 Estación de artesanía mejora, 13 Encantamiento creación",
+        ["chatcommands_filterpanels"]			 = "|c990000Possible <filterPanel>:",
         ["chatcommands_filtervalues"]			 = "|c990000Possible <filterValue>: |cFFFFFFvrai|cFFFF00 / |cFFFFFFfaux|cFFFF00 / |cFFFFFFmontre",
         ["chatcommands_filter1_new"]			 = "|cFFFFFF'filtre1 <filterPanel> <filterValue>'|cFFFF00: Esconder |cFFFFFF<vrai>|cFFFF00 / Ver|cFFFFFF<faux>|cFFFF00 / muestra sólo los objetos marcados |cFFFFFF<montre>|cFFFF00 de catergory 1 (símbolo de candado) en el panel |cFFFFFF<filterPanel>",
         ["chatcommands_filter2_new"]			 = "|cFFFFFF'filtre2 <filterPanel> <filterValue>'|cFFFF00: Esconder |cFFFFFF<vrai>|cFFFF00 / Ver|cFFFFFF<faux>|cFFFF00 / muestra sólo los objetos marcados |cFFFFFF<montre>|cFFFF00 de catergory 2 (símbolo de yelmo) en el panel |cFFFFFF<filterPanel>",
@@ -4178,8 +4258,7 @@ FCOIS.localizationVars.localizationAll = {
         ["chatcommands_filteroff"]               = "|cFFFFFF'allon'|cFFFF00: カテゴリ1 - 4アイテムを非表示します",
         ["chatcommands_filtershow"]              = "|cFFFFFF'allshow'|cFFFF00: マークされたカテゴリ1 - 4アイテムだけを表示します",
         ["chatcommands_split_filter"]            = "|cFFFFFF'split'|cFFFF00: インベントリ、ベンダ、ギルド銀行、ギルドストア、銀行クラフトステーション、付呪台、メール、トレードパネルの個別フィルタを有効/無効化します",
-        ["chatcommands_filterpanels"]            = "|c990000利用可能 |cFFFFFF<filterPanel>|cFFFF00: 1 インベントリ、 2 銀行、 3 ギルド銀行、 4 ベンダ、 5 クラフトステーション解体、",
-        ["chatcommands_filterpanels2"]           = "» 6 ギルドストア、 7 メール、 8 トレード、 11 付呪台抽出、 12 クラフトステーション改良、 13 付呪台作成",
+        ["chatcommands_filterpanels"]            = "|c990000利用可能 |cFFFFFF<filterPanel>|cFFFF00:",
         ["chatcommands_filtervalues"]            = "|c990000利用可能 |cFFFFFF<filterValue>|cFFFF00: |cFFFFFFtrue|cFFFF00 / |cFFFFFFfalse|cFFFF00 / |cFFFFFF表示",
         ["chatcommands_filter1_new"]             = "|cFFFFFF'フィルタ1 <filterPanel> <filterValue>'|cFFFF00: 非表示 |cFFFFFF<true>|cFFFF00 / 表示 |cFFFFFF<false>|cFFFF00 / パネル|cFFFFFF<filterPanel>|cFFFF00のマークされたカテゴリ1（ロックシンボル）アイテムのみ表示|cFFFFFF<show>",
         ["chatcommands_filter2_new"]             = "|cFFFFFF'フィルタ2 <filterPanel> <filterValue>'|cFFFF00: 非表示 |cFFFFFF<true>|cFFFF00 / 表示 |cFFFFFF<false>|cFFFF00 / パネル|cFFFFFF<filterPanel>|cFFFF00のマークされたカテゴリ2（兜シンボル）アイテムのみ表示|cFFFFFF<show>",
@@ -4926,8 +5005,7 @@ FCOIS.localizationVars.localizationAll = {
 		["chatcommands_filteroff"] = "|cFFFFFF'allon'|cFFFF00: Cкpыть пpeдмeты кaтeгopий 1-4",
 		["chatcommands_filtershow"] = "|cFFFFFF'allshow'|cFFFF00: Пoкaз. тoлькo пoмeчeнныe пpeдмeты кaтeгopий 1-4",
 		["chatcommands_split_filter"] = "|cFFFFFF'split'|cFFFF00: Вкл./Выкл индивидуaльныe фильтpы для paзныx oкoн (инвeнтapь, бaнк, мaгaзин, гильд.бaнк, гильд.мaгaзин и т.д.) ",
-		["chatcommands_filterpanels"] = "|c990000Possible |cFFFFFF<filterPanel>|cFFFF00: 1 Инвeнтapь, 2 Бaнк, 3 Гильд.бaнк, 4 Мaгaзин, 5 Дeкoнcтpукция,",
-		["chatcommands_filterpanels2"] = "» 6 Гильд.мaгaзин, 7 Пoчтa, 8 Тopгoвля, 11 Cтoл зaчapoвaния, 12 Улучшeниe, 13 Зaчapoвaниe",
+		["chatcommands_filterpanels"] = "|c990000Possible |cFFFFFF<filterPanel>|cFFFF00:",
 		["chatcommands_filtervalues"] = "|c990000Possible |cFFFFFF<filterValue>|cFFFF00: |cFFFFFFtrue|cFFFF00 / |cFFFFFFfalse|cFFFF00 / |cFFFFFFshow",
 		["chatcommands_filter1_new"] = "|cFFFFFF'filter1 <filterPanel> <filterValue>'|cFFFF00: Cкpыть |cFFFFFF<true>|cFFFF00 / пoкaз. |cFFFFFF<false>|cFFFF00 / пoкaз. тoлькo пoмeчeнныe |cFFFFFF<show>|cFFFF00 пpeдмeты кaтeгopии 1 (блoкиpoвaнныe) в oкнe |cFFFFFF<filterPanel>",
 		["chatcommands_filter2_new"] = "|cFFFFFF'filter2 <filterPanel> <filterValue>'|cFFFF00: Cкpыть |cFFFFFF<true>|cFFFF00 / пoкaз. |cFFFFFF<false>|cFFFF00 / пoкaз. тoлькo пoмeчeнныe |cFFFFFF<show>|cFFFF00 пpeдмeты кaтeгopии 2 (нaбopы) в oкнe |cFFFFFF<filterPanel>",
@@ -5289,7 +5367,9 @@ function FCOIS.GenerateLocalizedDynamicIconTexts()
 end
 
 --LibFilters translated panel ID texts
+local getLibFiltersPanelIdText
 function FCOIS.GetLibFiltersPanelIdText(language, libFilterPanelId)
+    getLibFiltersPanelIdText = FCOIS.GetLibFiltersPanelIdText
     language = language or FCOIS_CON_LANG_EN
     local retVarTable = {}
     local translatedTexts = {}
@@ -5335,7 +5415,7 @@ function FCOIS.GetLibFiltersPanelIdText(language, libFilterPanelId)
     else
         --Use fallback of English
         if translatedTexts[FCOIS_CON_LANG_EN] == nil then
-            translatedTexts[FCOIS_CON_LANG_EN] = FCOIS.GetLibFiltersPanelIdText(FCOIS_CON_LANG_EN, nil)
+            translatedTexts[FCOIS_CON_LANG_EN] = getLibFiltersPanelIdText(FCOIS_CON_LANG_EN, nil)
         end
         translatedTexts[language] = translatedTexts[FCOIS_CON_LANG_EN]
         if language == FCOIS_CON_LANG_DE then
@@ -5372,6 +5452,8 @@ function FCOIS.GetLibFiltersPanelIdText(language, libFilterPanelId)
     end
     return retVarTable
 end
+local getLibFiltersPanelIdText = FCOIS.GetLibFiltersPanelIdText
+
 --LibFilters translated panel IDs
 english["FCOIS_LibFilters_PanelIds"]    = {}
 french["FCOIS_LibFilters_PanelIds"]     = {}
@@ -5379,11 +5461,11 @@ german["FCOIS_LibFilters_PanelIds"]     = {}
 japanese["FCOIS_LibFilters_PanelIds"]   = {}
 russian["FCOIS_LibFilters_PanelIds"]    = {}
 --Build the translated LibFilters panel ID text
-english["FCOIS_LibFilters_PanelIds"]    = FCOIS.GetLibFiltersPanelIdText(FCOIS_CON_LANG_EN, nil)
-french["FCOIS_LibFilters_PanelIds"]     = FCOIS.GetLibFiltersPanelIdText(FCOIS_CON_LANG_FR, nil)
-german["FCOIS_LibFilters_PanelIds"]     = FCOIS.GetLibFiltersPanelIdText(FCOIS_CON_LANG_DE, nil)
-japanese["FCOIS_LibFilters_PanelIds"]   = FCOIS.GetLibFiltersPanelIdText(FCOIS_CON_LANG_JP, nil)
-russian["FCOIS_LibFilters_PanelIds"]    = FCOIS.GetLibFiltersPanelIdText(FCOIS_CON_LANG_RU, nil)
+english["FCOIS_LibFilters_PanelIds"]    = getLibFiltersPanelIdText(FCOIS_CON_LANG_EN, nil)
+french["FCOIS_LibFilters_PanelIds"]     = getLibFiltersPanelIdText(FCOIS_CON_LANG_FR, nil)
+german["FCOIS_LibFilters_PanelIds"]     = getLibFiltersPanelIdText(FCOIS_CON_LANG_DE, nil)
+japanese["FCOIS_LibFilters_PanelIds"]   = getLibFiltersPanelIdText(FCOIS_CON_LANG_JP, nil)
+russian["FCOIS_LibFilters_PanelIds"]    = getLibFiltersPanelIdText(FCOIS_CON_LANG_RU, nil)
 
 --Build texts for the different LibFilters filter panel IDs -> Fallback for non translated values!
 local optionsFilterPanelIdNameStart = "options_libFiltersFilterPanelIdName_"
@@ -5403,6 +5485,31 @@ for _, customFCOISfilterPanelId in ipairs(FCOIS.customFilterPanelIds) do
     russian[optionsFilterPanelIdNameStart .. customFCOISfilterPanelId]  = "LibFilters - Filter panel " .. customFCOISfilterPanelId
     japanese[optionsFilterPanelIdNameStart .. customFCOISfilterPanelId] = "LibFilters - Filter panel " .. customFCOISfilterPanelId
 end
+
+--For the chat slash command help output
+--Build the filterPanel chat output help lines table
+english.filterPanelIdChatHelpLines = {}
+local counter = 0
+local filterPanelNameTextLine = ""
+for filterPanelId, filterPanelNameEN in pairs(english["FCOIS_LibFilters_PanelIds"]) do
+    if type(filterPanelId) == "number" then
+        if filterPanelNameTextLine ~= "" then
+            filterPanelNameTextLine = filterPanelNameTextLine .. ", "
+        end
+        filterPanelNameTextLine = filterPanelNameTextLine .. tostring(filterPanelId).. " " .. filterPanelNameEN
+        if counter > 0 and counter % 4 == 0 then
+            table.insert(english.filterPanelIdChatHelpLines, filterPanelNameTextLine)
+            filterPanelNameTextLine = ""
+        end
+        counter = counter + 1
+    end
+end
+local engFilterPanelChatHelpLines = english.filterPanelIdChatHelpLines
+french.filterPanelIdChatHelpLines = engFilterPanelChatHelpLines
+german.filterPanelIdChatHelpLines = engFilterPanelChatHelpLines
+japanese.filterPanelIdChatHelpLines = engFilterPanelChatHelpLines
+russian.filterPanelIdChatHelpLines = engFilterPanelChatHelpLines
+
 
 --Error messages
 english["ERROR_MESSAGES"] = {}
