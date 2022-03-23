@@ -91,6 +91,12 @@ FCOIS_CON_LIBSHIFTERBOX_EXCLUDESETS             = "FCOISexcludedSets"
 FCOIS_CON_VENDOR_TYPE_NORMAL_NPC    = 1
 FCOIS_CON_VENDOR_TYPE_PORTABLE      = 2
 
+--For the localized icon texts, e.g. LAM icon dropdowns
+local colorIconEndStr   = "color"
+local nameIconEndStr    = "name"
+FCOIS_CON_ICON_SUFFIX_COLOR =  colorIconEndStr
+FCOIS_CON_ICON_SUFFIX_NAME  =  nameIconEndStr
+
 --The global variable for the current mouseDown button
 FCOIS.gMouseButtonDown = {}
 

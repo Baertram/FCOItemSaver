@@ -328,12 +328,14 @@ function FCOIS.MyGetItemDetails(rowControl)
         slotIndex = dataEntryData.slotIndex
         slotIndex = slotIndex or dataEntryData.index
     end
-    --Is the bagid still nil: Check if it's a questItem, or a store buy item
+    --Is the bagId still nil: Check if it's a questItem, or a store buy item
     if bagId == nil then
         if rowControl.questIndex ~= nil then
-            local parentCtrl = rowControl:GetParent()
-            local parentDataEntry = parentCtrl.dataEntry.data
-            bagId, slotIndex = BAG_BACKPACK, parentDataEntry.slotIndex
+            if rowControl.GetParent then
+                local parentCtrl = rowControl:GetParent()
+                local parentDataEntry = parentCtrl.dataEntry.data
+                bagId, slotIndex = BAG_BACKPACK, parentDataEntry.slotIndex
+            end
         --Store buy
         elseif rowControl.slotType == SLOT_TYPE_STORE_BUY or rowControl.slotType == SLOT_TYPE_BUY_MULTIPLE then
             bagId = nil
