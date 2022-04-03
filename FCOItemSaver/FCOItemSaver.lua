@@ -158,7 +158,7 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 
 
 --____________________________
--- Current max bugs/features/ToDos: 218
+-- Current max bugs/features/ToDos: 219
 --____________________________
 
 
@@ -167,6 +167,7 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 ------------------------------------------------------------------------------------
 --#217 Error at mouse hover over inventory quest items
 --#218 Error at LAM settings menu as LAM icon dropdowns are created
+--#219 Non set collection items were tried to be bound and chat output told you they were bound
 
 
 -------------------------------------------------------------------------------------
