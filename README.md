@@ -27,7 +27,9 @@ https://imgur.com/a/hRtnAo7
 ------------------------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-04-03
 ------------------------------------------------------------------------------------
---#220 Filter at crafting table deconstruction shows items marked for deconstruction AND sell in guildstore even though only decon marker icon filter is yellow (show only) but sell at guildstore amrker icon is green (hide), and the logical conjunction of the filters is set to AND -> Should check for yellow (only show) AND green (hide) = hide. But works like a logical OR conjunction here.
+--#220 Filter at crafting table deconstruction shows items marked for deconstruction AND sell in guildstore even though only decon marker 
+-- icon filter is yellow (show only) but sell at guildstore amrker icon is green (hide), and the logical conjunction of the filters is set
+-- AND -> Should check for yellow (only show) AND green (hide) = hide. But works like a logical OR conjunction here.
 
 
 -------------------------------------------------------------------------------------
