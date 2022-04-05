@@ -1951,7 +1951,10 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons, withNoneEntry)
 	if type == nil then type = "standard" end
 	withIcons = withIcons or false
 	withNoneEntry = withNoneEntry or false
-	local FCOISlocVars            = FCOIS.localizationVars
+	local FCOISlocVars = FCOIS.localizationVars
+	local locVars = FCOISlocVars.fcois_loc
+    local colorIconEndStr   = FCOIS_CON_ICON_SUFFIX_COLOR
+	local nameIconEndStr    = FCOIS_CON_ICON_SUFFIX_NAME
 	if not checkIfFCOISSettingsWereLoaded(FCOIS.preventerVars.gCalledFromInternalFCOIS, not addonVars.gAddonLoaded) then return nil end
 	local settings = FCOIS.settingsVars.settings
 	local isIconEnabled = settings.isIconEnabled
@@ -2038,10 +2041,10 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons, withNoneEntry)
 					goOn = true
 				end
 				if goOn then
-					local locNameStr = FCOISlocVars.iconEndStrArray[i]
+					local locNameStr = FCOISlocVars.iconEndStrArray[i] or (((isDynamic or isGear) and nameIconEndStr) or colorIconEndStr)
 					local iconIsEnabled = isIconEnabled[i]
 					FCOIS.preventerVars.gCalledFromInternalFCOIS = true
-					local iconName = getIconText(i) or FCOISlocVars.fcois_loc["options_icon" .. tos(i) .. "_" .. locNameStr] or "Icon " .. tos(i)
+					local iconName = getIconText(i) or locVars["options_icon" .. tos(i) .. "_" .. locNameStr] or "Icon " .. tos(i)
 					--Should the icon be shown at the start of the text too?
 					if p_withIcons then
 						local iconNameWithIcon = buildIconText(iconName, i, false, not iconIsEnabled)
@@ -2062,11 +2065,11 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons, withNoneEntry)
 			for i=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
   				local goOn = false
 				local isGear = isGearIcon[i]
+				local isDynamic = isDynamicIcon[i]
 				local iconIsEnabled = isIconEnabled[i]
 				if not iconIsEnabled or iconIsResearchable[i] or isGear == true then
 					goOn = false
 				else
-					local isDynamic = isDynamicIcon[i]
 					if isDynamic then
 						--Map the icon to the dynamic icon counter
 						local dynIconCountNr = icon2DynIconCountNr[i]
@@ -2080,9 +2083,9 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons, withNoneEntry)
 				end
 				if goOn then
 					counter = counter + 1
-					local locNameStr = FCOISlocVars.iconEndStrArray[i]
+					local locNameStr = FCOISlocVars.iconEndStrArray[i] or (((isDynamic or isGear) and nameIconEndStr) or colorIconEndStr)
 					FCOIS.preventerVars.gCalledFromInternalFCOIS = true
-					local iconName = getIconText(i) or FCOISlocVars.fcois_loc["options_icon" .. tos(i) .. "_" .. locNameStr] or "Icon " .. tos(i)
+					local iconName = getIconText(i) or locVars["options_icon" .. tos(i) .. "_" .. locNameStr] or "Icon " .. tos(i)
 					--Should the icon be shown at the start of the text too?
 					if p_withIcons then
 						local iconNameWithIcon = buildIconText(iconName, i, false, not iconIsEnabled)
@@ -2095,8 +2098,10 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons, withNoneEntry)
 		elseif typeToCheck == 'standardNonDisabled' then
 			for i=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
 				if isIconEnabled[i] then
-					local locNameStr = FCOISlocVars.iconEndStrArray[i]
-					local iconName = FCOISlocVars.fcois_loc["options_icon" .. tos(i) .. "_" .. locNameStr]
+					local isGear = isGearIcon[i]
+					local isDynamic = isDynamicIcon[i]
+					local locNameStr = FCOISlocVars.iconEndStrArray[i] or (((isDynamic or isGear) and nameIconEndStr) or colorIconEndStr)
+					local iconName = locVars["options_icon" .. tos(i) .. "_" .. locNameStr]
 					--Should the icon be shown at the start of the text too?
 					if p_withIcons then
 						local iconNameWithIcon = buildIconText(iconName, i, false, true) -- no color as row is completely red
@@ -2124,8 +2129,8 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons, withNoneEntry)
 					goOn = true
 				end
 				if goOn then
-					local locNameStr = FCOISlocVars.iconEndStrArray[i]
-					local iconName = FCOISlocVars.fcois_loc["options_icon" .. tos(i) .. "_" .. locNameStr]
+					local locNameStr = FCOISlocVars.iconEndStrArray[i] or (((isDynamic or isGear) and nameIconEndStr) or colorIconEndStr)
+					local iconName = locVars["options_icon" .. tos(i) .. "_" .. locNameStr]
 					local iconIsEnabled = isIconEnabled[i]
 					--Should the icon be shown at the start of the text too?
 					if p_withIcons then
@@ -2147,8 +2152,8 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons, withNoneEntry)
 				--Check if icon is a gear set icon and if it's enabled
 				local goOn = false
 				local isGear = isGearIcon[i]
+				local isDynamic = isDynamicIcon[i]
 				if isGear then
-					local isDynamic = isDynamicIcon[i]
 					if isDynamic then
 						--Map the icon to the dynamic icon counter
 						local dynIconCountNr = icon2DynIconCountNr[i]
@@ -2162,9 +2167,9 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons, withNoneEntry)
 					end
 					if goOn then
 						local iconIsEnabled = isIconEnabled[i]
-						local locNameStr = FCOISlocVars.iconEndStrArray[i]
+						local locNameStr = FCOISlocVars.iconEndStrArray[i] or (((isDynamic or isGear) and nameIconEndStr) or colorIconEndStr)
 			            FCOIS.preventerVars.gCalledFromInternalFCOIS = true
-						local iconName = getIconText(i) or FCOISlocVars.fcois_loc["options_icon" .. tos(i) .. "_" .. locNameStr] or "Icon " .. tos(i)
+						local iconName = getIconText(i) or locVars["options_icon" .. tos(i) .. "_" .. locNameStr] or "Icon " .. tos(i)
 						--Should the icon be shown at the start of the text too?
 						if p_withIcons then
 							local iconNameWithIcon = buildIconText(iconName, i, false, not iconIsEnabled)
@@ -2183,7 +2188,7 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons, withNoneEntry)
 			end
         end
 		if p_withNoneEntry == true and (iconsList and #iconsList>0) then
-			tins(iconsList, 1, FCOISlocVars.fcois_loc["options_icon_none"])
+			tins(iconsList, 1, locVars["options_icon_none"])
 		end
 
 		return iconsList

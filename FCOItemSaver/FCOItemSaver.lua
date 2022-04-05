@@ -153,86 +153,39 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
     bank deposit list again.
 ]]
 
+--#176, 2021-10-12, Beartram: Errors occured with OR filters, and mixed AND + OR filters -> Currently only ALL or or ALL AND can be enabled!
 --#181, 2022-01-02, Baertram: Check filter slash command chat feedback: Does it show correct info about filter state and new logical conjuncions?
 
 
---____________________________
--- Current max bugs/features/ToDos: 216
---____________________________
+--______________________________________
+-- Current max # of bugs/features/ToDos: 220
+--______________________________________
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-03-19
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-04-05
 ------------------------------------------------------------------------------------
---#176 -> Test: Errors occured with OR filters, and mixed AND + OR filters
---Added checks if functions/API functions are called internally or from external (other addons) -> Still ongoing TODO
 
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.2.3 - New version: 2.2.4) -    Updated last: 2022-03-19
+--Changelog (last version: 2.2.4 - New version: 2.2.5) -    Updated last: 2022-04-05
 -------------------------------------------------------------------------------------
 --[Fixed]
---Added debug file /src/FCOIS_Debug.lua to the txt file again
---Debug functions will use local speed up variable now
---Added more local speed-ups in several files
---Missing command handler function in API function FCOIS.ChangeFilter
---Removed duplicate calls to localization
---Removed duplicate calls to settings loading
---Added more speed-up local variables (tooltips, marker icons, API function calls)
---Fixed LAM settings menu editboxes for number values to disallow strings/empty strings and reset to default number if value is wrong--#175: lua error bad argument #1 to 'pairs' (table/struct expected, got nil) after improving items and leaving the improve station directly. Important: If you do not wait ~1-2 seconds after improvement has visually finished the automatic re-applied marker icons might fail to apply if you have left the improvement table meanwhile!
---#177: With filterButton 1 and 2 at yellow state: items without markerIcon of filter 1 (but being a dynamic gear of filter 2) will not filter (hide)
---#179: Gear or dynamic icons name could be empty and raise lua error messages. If left empty they will directly reset to the default name (English) now
---#180: GetItemInstanceId error upon mouse over at inventory quest items
---#182: FCOIS uniqueIds were saved with wrong values. Only the first parameter itemId was correct so they showed properly, but the differences like stolen, crafted, level, quality were never checked and saved properly.
---Attention: You need to remove and re-apply the markers for your items if you want to save them properly with all data now! Else the old marker strings with the itemId and every other value "the same" will be kept and used!
---You can use the new settings at "Backup &restore & delete", submenu "Delete" -> Delete all marker icons for FCOIS unique ones to mass-remove the old entries. And then use automatic marks like set items etc. to remark them new!
---#187: Delete backuped markerIcons was not removing some API versions properly
---#189: FCOIS uniqueIds item markers got saved into SavedVariables table "markedItems", but they should only be saved to "markedItemsFCOISUnique"
---#191: Switching from FCOIS unique to non-unique item markers will not show ANY marker icon at the inventories. If the migration dialog appears and is aborted the UI will be reloaded to fix this
---#192, FCOIS unique item marker strings contain the text "nil". This was changed to "" to reduce the size if the SVs
---#193: FCOIS settings menu disappears in total after using LibFeedbacks -> Send mail feature, and re-opening the settings a 2nd time after that
---#194: If the submenu for dynamic icons is enabled at the context menus: Using SHIFT+right mouse to remove/readd all marker icons to the item will still show the "Dynamic" submenu at banks/vendors/crafting
---#195: Fixed detection of owned house (for backup auto port suggestion to house, to access the house storage data)
---#197: Migration of non-unique item markers to FCOISunique itemMarkers does not work properly
---#198: Enchanting did not recognize the filters correctly and was not always protecting the items at extraction as it thought it is LF_INVENTORY
---#199: Companion equipment character sometimes is not showing the armor type labels L/M/H
---#200: The chosen language is not updated in localization of the settings menu properly
---#203: Mass moving to junk/removing from junk will kick you from the server because of message spam. Junk move will be done in 50 items packages now, with a 250ms delay in between each package.
---#204: Fixed error message in FCOIS.GetSavedVarsMarkedItemsTableName if loaded from other addons before FCOIS SavedVariables were loaded properly (e.g. IIfA)
---#207: Companion equipment character markers will not be shown properly at companion's character doll
---#208: Switching from vendor buy to sell panel raises a lua error
---#213,214: Automatic set collection markers and auto bind unknown items even if no unknown set collections marker icon was selected, and fixed settings menu to allow the seection of LibMultiAccountSets and auto bind missing set collections
---#215: Porting to house dialog (as you backup marker icons) was throwing a LibDialog error
---#216: /fcois help chat command shows all filter panel IDs possible now and /fcois command does not throw a lua error message anymore
+--#217 Error at mouse hover over inventory quest items
+--#218 Error at LAM settings menu as LAM icon dropdowns are created
+--#219 Non set collection items were tried to be bound and chat output told you they were bound
+--#220 Filter at crafting table deconstruction shows items marked for deconstruction AND sell in guildstore even though only decon marker
+-- icon filter is yellow (show only) but sell at guildstore marker icon is green (hide), and the logical conjunction of the filters is set
+-- AND -> Should check for yellow (only show) AND green (hide) = hide. But works like a logical OR conjunction here.
+
 
 --[Changed]
---Changed load order of debug file to earlier loading
---Removed duplicate code and strings for the filter button's "allowed to filter" functions
---FCOIS settings button at the main menu changed it's look from the -> arrow to the "FCOIS filter/lock icon" to dinstinguish it from other addons (e.g. Votans Settings Menu)
---#186 Update the gear and dynamic icons submenu to show the gear/dynamic icon name in the submenu text
 
 
 --[Added]
---Added new constants for filter button states: FCOIS_CON_FILTER_BUTTON_STATE_RED, FCOIS_CON_FILTER_BUTTON_STATE_GREEN and FCOIS_CON_FILTER_BUTTON_STATE_YELLOW
---Added new constant for special filter button state: Do not update colors = FCOIS_CON_FILTER_BUTTON_STATE_DO_NOT_UPDATE_COLOR
---New looted missing set item pieces can be bound automatically (new setting), shown in chat (new setting) and be marked as unknown (exisitng settings) or known (new setting) set colelction pieces
---Added API function function FCOIS.GetGearIcons(onlyNonDynamicOnes, onlyDynamicOnes)
---Added IsCrownItem to the possible FCOIS unique-ID parts
---If you press SHIFT key and right mouse on the filter button this will reset the selected filter icon at the button to the * ("All") entry
---#184 Added automatic marking of needed scrolls etc. with ItemCooldownTracker API
---#188 Enable backup and restore for all 3 saved itemIds (non unique, ZOs unique and FCOIS unique). ZOs unique and non-unique can only be saved and restored together!
---#202 FilterButtons and additional inventory flag context menu button added to universal deconstruction panel. The filter's and filterButtons and contextMenus re-use the selected protection
---     methods etc. of smithing deconstuction/jewelry deconstruction/enchanting extraction! If the "All" tab is selected at the universal decon panel, which includes all types of the
---     deconstructable/extractable item types, the smithing deconstruction buttons and context menu buttons are show, but the checks will still be done "per item", so that glyphs are protected too!
 
 
 --[Added on request]
---#176 Add submenu to 4 filter buttons, with setting to change the filter between AND & OR filter conjunction behaviour. Remembers the state for each filterPanel
--->Due to current problems filtering combinations of logicla AND and OR the filterButtons will change ALL filterButtons logical conjunction settings between AND or OR at the same time!
---->Screenshot showing the new context menu "Filter settings" at the filter button: https://i.imgur.com/32AHUNS.png
---->Screenshot link for tooltip showing new logical conjunction AND/OR state: https://i.imgur.com/yj2UIOe.png
---#183 Add new SavedVariables saving independent to Server and AccountName -> "All servers and accounts the same"
---#185 Add possibility to only reset the SavedVariables of stored marker icons, but keep the other settings. See settings menu bakup & restored & delete -> new submenu "Delete"
 
 
 --************************************************************************************************************************

@@ -323,18 +323,21 @@ local LMAS_getAccountList = lmas ~= nil and lmas.GetAccountList
 --Check for set collections bok items (known/unknown) and return a boolean if the item should get marked + 2nd param the table with the checkFuncResultData for the
 --.additionalCheckFunc, containing the newMarkerIcon = markerIcon to use for the MarkItem functions later on in the toDos processing
 local function automaticMarkingSetsCollectionBookCheckFunc(p_bagId, p_slotIndex, knownOrUnknown)
---d("automaticMarkingSetsCollectionBookCheckFunc - knownOrUnknown: " ..tos(knownOrUnknown))
+    --d("automaticMarkingSetsCollectionBookCheckFunc - knownOrUnknown: " ..tos(knownOrUnknown))
     if knownOrUnknown == nil or p_bagId == nil or p_slotIndex == nil then return nil, nil end
     local settings = FCOIS.settingsVars.settings
     if not settings.autoMarkSetsItemCollectionBook then return nil, nil end
+
+    isMarked = isMarked or FCOIS.IsMarked
 
     local itemLink = gil(p_bagId, p_slotIndex)
     --No self crafted set items!
     if iilc(itemLink) then return false, nil end
     local hasSet = gilsi(itemLink, false)
     if not hasSet then return false, nil end
-
-    isMarked = isMarked or FCOIS.IsMarked
+    --Only item set collection pieces
+    local isSetCollectionPiece = iilscp(itemLink)
+    if not isSetCollectionPiece then return false, nil end
 
     local autoBindMissingSetCollectionPiecesOnLoot = settings.autoBindMissingSetCollectionPiecesOnLoot
     local autoMarkSetsItemCollectionBookAddonUsed = settings.autoMarkSetsItemCollectionBookAddonUsed
@@ -343,11 +346,11 @@ local function automaticMarkingSetsCollectionBookCheckFunc(p_bagId, p_slotIndex,
     local missingAndNonMissingIconsNone = (autoMarkSetsItemCollectionBookMissingIcon == FCOIS_CON_ICON_NONE and autoMarkSetsItemCollectionBookNonMissingIcon == FCOIS_CON_ICON_NONE and true) or false
 
     --Bind unknown?
---d(">>autoBindMissingSetCollectionPiecesOnLoot: " ..tos(autoBindMissingSetCollectionPiecesOnLoot) .. ", knownOrUnknown: " ..tos(knownOrUnknown))
+    --d(">>autoBindMissingSetCollectionPiecesOnLoot: " ..tos(autoBindMissingSetCollectionPiecesOnLoot) .. ", knownOrUnknown: " ..tos(knownOrUnknown))
     if autoBindMissingSetCollectionPiecesOnLoot then
         --Only go on if unknown checks
         if knownOrUnknown ~= false then return nil, nil end
---d(">go on -> auto bind!")
+        --d(">go on -> auto bind!")
     else
         if ( autoMarkSetsItemCollectionBookAddonUsed == nil
                 or missingAndNonMissingIconsNone
@@ -366,7 +369,7 @@ local function automaticMarkingSetsCollectionBookCheckFunc(p_bagId, p_slotIndex,
     local autoMarkSetsItemCollectionBookKnownItemsBase  = (autoMarkSetsItemCollectionBookNonMissingIcon > 0 and isIconEnabled[autoMarkSetsItemCollectionBookNonMissingIcon] == true) or false
     local autoMarkSetsItemCollectionBookKnownItems      = (autoMarkSetsItemCollectionBookKnownItemsBase and knownOrUnknown == true) or false
 
---d(">>autoMarkSetsItemCollectionBookMissingItems: " ..tos(autoMarkSetsItemCollectionBookMissingItems) .. ", autoMarkSetsItemCollectionBookKnownItemsBase: " ..tos(autoMarkSetsItemCollectionBookKnownItemsBase) .. ", autoMarkSetsItemCollectionBookKnownItems: " ..tos(autoMarkSetsItemCollectionBookKnownItems))
+    --d(">>autoMarkSetsItemCollectionBookMissingItems: " ..tos(autoMarkSetsItemCollectionBookMissingItems) .. ", autoMarkSetsItemCollectionBookKnownItemsBase: " ..tos(autoMarkSetsItemCollectionBookKnownItemsBase) .. ", autoMarkSetsItemCollectionBookKnownItems: " ..tos(autoMarkSetsItemCollectionBookKnownItems))
 
     if not autoBindMissingSetCollectionPiecesOnLoot and (not autoMarkSetsItemCollectionBookMissingItems and not autoMarkSetsItemCollectionBookKnownItems) then return nil, nil end
 
@@ -375,33 +378,35 @@ local function automaticMarkingSetsCollectionBookCheckFunc(p_bagId, p_slotIndex,
 
     --Automatic binding of missing set collection book items
     local function autoBindMissingSetCollectionBookItem()
---d(">>>>>autoBindMissingSetCollectionBookItem: " .. itemLink)
-        BindItem(p_bagId, p_slotIndex)
-        if settings.autoBindMissingSetCollectionPiecesOnLootToChat then
-            locVars = locVars or FCOIS.localizationVars.fcois_loc
-            d("[FCOIS]" .. strformat(locVars["chat_output_missing_set_collection_piece_was_bound"], itemLink))
-        end
-        --Mark as known after bind now, instead of mark as unknown?
-        if settings.autoBindMissingSetCollectionPiecesOnLootMarkKnown ==true and autoMarkSetsItemCollectionBookKnownItemsBase == true then
-            markerIcon = autoMarkSetsItemCollectionBookNonMissingIcon
---d("!!>updated marker icon to known set collection")
+        --d(">>>>>autoBindMissingSetCollectionBookItem: " .. itemLink)
+        if not IsItemBound(p_bagId, p_slotIndex) then
+            BindItem(p_bagId, p_slotIndex)
+            if settings.autoBindMissingSetCollectionPiecesOnLootToChat then
+                locVars = locVars or FCOIS.localizationVars.fcois_loc
+                d("[FCOIS]" .. strformat(locVars["chat_output_missing_set_collection_piece_was_bound"], itemLink))
+            end
+            --Mark as known after bind now, instead of mark as unknown?
+            if settings.autoBindMissingSetCollectionPiecesOnLootMarkKnown == true and autoMarkSetsItemCollectionBookKnownItemsBase == true then
+                markerIcon = autoMarkSetsItemCollectionBookNonMissingIcon
+                --d("!!>updated marker icon to known set collection")
+            end
         end
     end
 
 
     --Mark items for the sets collection book for the currently logegd in account's ESO standard API functions
     if autoMarkSetsItemCollectionBookAddonUsed == FCOIS_SETS_COLLECTION_ADDON_ESO_STANDARD then
-        local isKnownSetCollectionItem = iilscp(itemLink) and iilscpu(giliid(itemLink))
---d(">>isKnownSetCollectionItem: " ..tos(isKnownSetCollectionItem))
+        local isKnownSetCollectionItem = iilscpu(giliid(itemLink))
+        --d(">>isKnownSetCollectionItem: " ..tos(isKnownSetCollectionItem))
         if isKnownSetCollectionItem == true and autoMarkSetsItemCollectionBookKnownItems == true then
             --Non missing items?
             markerIcon = autoMarkSetsItemCollectionBookNonMissingIcon
         elseif not isKnownSetCollectionItem then
---d(">>unknown set collection item")
+            --d(">>unknown set collection item")
             if autoMarkSetsItemCollectionBookMissingItems == true then
                 --Missing items?
                 markerIcon = autoMarkSetsItemCollectionBookMissingIcon
---d(">>markeIcon: " .. tos(markerIcon))
+                --d(">>markeIcon: " .. tos(markerIcon))
             end
             --Auto bind missing set collection pieces?
             if autoBindMissingSetCollectionPiecesOnLoot == true then

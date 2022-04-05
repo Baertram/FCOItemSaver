@@ -6,12 +6,13 @@ local tos = tostring
 local strformat = string.format
 local strlen = string.len
 
+
 --===================== ADDON Info =============================================
 --Addon variables
 FCOIS.addonVars = {}
 local addonVars = FCOIS.addonVars
 --Addon variables
-addonVars.addonVersionOptions 		    = '2.2.4' -- version shown in the settings panel
+addonVars.addonVersionOptions 		    = '2.2.5' -- version shown in the settings panel
 --The addon name, normal and decorated with colors etc.
 addonVars.gAddonName				    = "FCOItemSaver"
 addonVars.gAddonNameShort               = "FCOIS"
@@ -90,6 +91,12 @@ FCOIS_CON_LIBSHIFTERBOX_EXCLUDESETS             = "FCOISexcludedSets"
 --The vendor type constants
 FCOIS_CON_VENDOR_TYPE_NORMAL_NPC    = 1
 FCOIS_CON_VENDOR_TYPE_PORTABLE      = 2
+
+--For the localized icon texts, e.g. LAM icon dropdowns
+local colorIconEndStr   = "color"
+local nameIconEndStr    = "name"
+FCOIS_CON_ICON_SUFFIX_COLOR =  colorIconEndStr
+FCOIS_CON_ICON_SUFFIX_NAME  =  nameIconEndStr
 
 --The global variable for the current mouseDown button
 FCOIS.gMouseButtonDown = {}

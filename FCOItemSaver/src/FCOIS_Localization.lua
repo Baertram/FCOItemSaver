@@ -427,6 +427,9 @@ function FCOIS.Localization()
     local settings = FCOIS.settingsVars.settings
     local alwaysUseClientLang = settings.alwaysUseClientLanguage
     local langVars = FCOIS.langVars
+    local colorIconEndStr   = FCOIS_CON_ICON_SUFFIX_COLOR
+    local nameIconEndStr    = FCOIS_CON_ICON_SUFFIX_NAME
+
 --d("[FCOIS] Localization - Start, keybindings: " .. tos(preventerVars.KeyBindingTexts) ..", useClientLang: " .. tos(alwaysUseClientLang) .. ", localizationDone: " ..tos(preventerVars.gLocalizationDone))
 
     --Was localization already done during keybindings? Then abort here
@@ -476,22 +479,23 @@ function FCOIS.Localization()
 --d(">default settings, language: " .. tos(defSettings.language))
     --Get the localized texts from the localization file
     local locVars = FCOIS.localizationVars
-    locVars.fcois_loc = locVars.localizationAll[defSettings.language]
+    FCOIS.localizationVars.fcois_loc = locVars.localizationAll[defSettings.language]
 --d(">got here: locVars.fcois_loc was overwritten!")
+
     --The localization end string array
-    locVars.iconEndStrArray = {
-        [1]  = "color",
-        [2]  = "name",
-        [3]  = "color",
-        [4]  = "name",
-        [5]  = "color",
-        [6]  = "name",
-        [7]  = "name",
-        [8]  = "name",
-        [9]  = "color",
-        [10] = "color",
-        [11] = "color",
-        [12] = "color",
+    FCOIS.localizationVars.iconEndStrArray = {
+        [1]  = colorIconEndStr,
+        [2]  = nameIconEndStr,
+        [3]  = colorIconEndStr,
+        [4]  = nameIconEndStr,
+        [5]  = colorIconEndStr,
+        [6]  = nameIconEndStr,
+        [7]  = nameIconEndStr,
+        [8]  = nameIconEndStr,
+        [9]  = colorIconEndStr,
+        [10] = colorIconEndStr,
+        [11] = colorIconEndStr,
+        [12] = colorIconEndStr,
         --Dynamic icons
         -->Added dynamically in this function, a bit more to the bottom in the source code
     }
@@ -581,7 +585,7 @@ function FCOIS.Localization()
         local dynIconNr = dynIconCounter2IconNr[dynamicIconId]
         if isDynamicIcon[dynIconNr] then
             --Icon end string
-            tabins(FCOIS.localizationVars.iconEndStrArray, "color")
+            tabins(FCOIS.localizationVars.iconEndStrArray, colorIconEndStr)
             --Add dynamic right click menu
             tabins(contextEntries.menu_add_dynamic_text,      locTexts["rightclick_menu_mark_dynamic" .. tos(dynIconNr)])
             --Remove dynamic right click menu
