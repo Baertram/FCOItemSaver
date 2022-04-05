@@ -6,6 +6,7 @@ local tos = tostring
 local strformat = string.format
 local strlen = string.len
 
+
 --===================== ADDON Info =============================================
 --Addon variables
 FCOIS.addonVars = {}
