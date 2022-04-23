@@ -157,8 +157,6 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 --#181, 2022-01-02, Baertram: Check filter slash command chat feedback: Does it show correct info about filter state and new logical conjuncions?
 
 
---#224, 2022-04-24, Baertram: Copy savedvariables reloadui dialog was not showing as expected
-
 
 --______________________________________
 -- Current max # of bugs/features/ToDos: 224
@@ -166,12 +164,12 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-04-21
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-04-24
 ------------------------------------------------------------------------------------
 --#224
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.2.5 - New version: 2.2.6) -    Updated last: 2022-04-21
+--Changelog (last version: 2.2.5 - New version: 2.2.6) -    Updated last: 2022-04-24
 -------------------------------------------------------------------------------------
 --[Fixed]
 --#222 user:/AddOns/FCOItemSaver/src/FCOIS_Filters.lua:123: attempt to index a nil value error after pressing I directly at the undaunted chest vendor

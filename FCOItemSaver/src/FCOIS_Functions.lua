@@ -2590,7 +2590,7 @@ end
 -- =====================================================================================================================
 --Function to show a confirmation dialog
 function FCOIS.ShowConfirmationDialog(dialogName, title, body, callbackYes, callbackNo, callbackSetup, data, forceUpdate)
-d("[FCOIS]ShowConfirmationDialog - dialogName: " ..tos(dialogName) .. ", title: " ..tos(title) .. ", body: " ..tos(body))
+--d("[FCOIS]ShowConfirmationDialog - dialogName: " ..tos(dialogName) .. ", title: " ..tos(title) .. ", body: " ..tos(body))
     local libDialog = FCOIS.LDIALOG
     addonVars = FCOIS.addonVars
     local addonName = addonVars.gAddonName
@@ -2602,7 +2602,7 @@ d("[FCOIS]ShowConfirmationDialog - dialogName: " ..tos(dialogName) .. ", title: 
         libDialog:RegisterDialog(addonName, dialogName, title, body, callbackYes, callbackNo, callbackSetup, forceUpdate)
     end
 
-d(">show dialog now")
+--d(">show dialog now")
     --Show the dialog now
     libDialog:ShowDialog(addonName, dialogName, data)
 end
