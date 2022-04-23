@@ -1508,11 +1508,14 @@ ctrlVars.ALCHEMY_SLOT_CONTAINER             = GetControl(ctrlVars.ALCHEMY_PANEL,
 ctrlVars.ALCHEMY_SLOT_CONTAINER_NAME        = ctrlVars.ALCHEMY_SLOT_CONTAINER:GetName()
 ctrlVars.PROVISIONER                        = PROVISIONER
 ctrlVars.PROVISIONER_PANEL                  = ctrlVars.PROVISIONER.control
-ctrlVars.QUICKSLOT                          = ZO_QuickSlot
-ctrlVars.QUICKSLOT_WINDOW                   = QUICKSLOT_WINDOW
-ctrlVars.QUICKSLOT_NAME                     = ctrlVars.QUICKSLOT:GetName()
-ctrlVars.QUICKSLOT_CIRCLE  		            = GetControl(ctrlVars.QUICKSLOT, "Circle") --ZO_QuickSlotCircle
-ctrlVars.QUICKSLOT_LIST			            = GetControl(ctrlVars.QUICKSLOT, listStr) --ZO_QuickSlotList
+local quickslotKeyboard                     = QUICKSLOT_KEYBOARD
+ctrlVars.QUICKSLOT_KEYBOARD                 = quickslotKeyboard
+local quickslot                             = (quickslotKeyboard ~= nil and quickslotKeyboard.control) or ZO_QuickSlot
+ctrlVars.QUICKSLOT = quickslot
+ctrlVars.QUICKSLOT_WINDOW                   = (quickslotKeyboard ~= nil and quickslotKeyboard) or QUICKSLOT_WINDOW
+ctrlVars.QUICKSLOT_NAME                     = quickslot:GetName()
+ctrlVars.QUICKSLOT_CIRCLE  		            = (quickslotKeyboard ~= nil and quickslotKeyboard.wheelControl) or GetControl(ctrlVars.QUICKSLOT, "Circle") --ZO_QuickSlotCircle
+ctrlVars.QUICKSLOT_LIST			            = (quickslotKeyboard ~= nil and quickslotKeyboard.list) or GetControl(quickslot, listStr) --ZO_QuickSlotList
 ctrlVars.DestroyItemDialog    		        = ESO_Dialogs["DESTROY_ITEM_PROMPT"]
 ctrlVars.RepairKits                         = REPAIR_KITS
 ctrlVars.RepairItemDialog                   = ctrlVars.LIST_DIALOG1 --ZO_ListDialog1

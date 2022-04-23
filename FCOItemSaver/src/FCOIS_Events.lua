@@ -10,8 +10,6 @@ local zo_strf = zo_strformat
 
 local em = EVENT_MANAGER
 
-local iilscpu   = IsItemSetCollectionPieceUnlocked
-local iilscp    = IsItemLinkSetCollectionPiece
 
 local addonVars = FCOIS.addonVars
 local gAddonName = addonVars.gAddonName
@@ -28,7 +26,6 @@ local scanInventory = FCOIS.ScanInventory
 local preHookMainMenuFilterButtonHandler = FCOIS.PreHookMainMenuFilterButtonHandler
 local checkFCOISFilterButtonsAtPanel = FCOIS.CheckFCOISFilterButtonsAtPanel
 local updateFCOISFilterButtonsAtInventory = FCOIS.UpdateFCOISFilterButtonsAtInventory
-local updateFCOISFilterButtonColorsAndTextures = FCOIS.UpdateFCOISFilterButtonColorsAndTextures
 local changeContextMenuInvokerButtonColorByPanelId = FCOIS.ChangeContextMenuInvokerButtonColorByPanelId
 local hideContextMenu = FCOIS.HideContextMenu
 local checkIfAutomaticMarksAreDisabledAtBag = FCOIS.CheckIfAutomaticMarksAreDisabledAtBag
@@ -198,7 +195,7 @@ local function FCOItemSaver_Open_Store(p_storeIndicator)
                         local fromPanelId = FCOIS.gFilterWhere
                         fromPanelId = fromPanelId or LF_INVENTORY
                         local toPanelId = checkCurrentVendorTypeAndGetLibFiltersPanelId(buttonControl)
---d(">fromPanelId: " ..tos(fromPanelId) .. ", toPanelId: " ..tos(toPanelId))
+--d("[FCOIS]VendorPanelButtonClick >fromPanelId: " ..tos(fromPanelId) .. ", toPanelId: " ..tos(toPanelId))
                         --Bugfix #208 Update the current filterType already to the global FCOIS variable in order to let any "refresh" of the vendor UI
                         --use the correct one already! Else the scene/fragment shown callback will raise a LibFilters refresh -> which then calls runFilters
                         --and thus the FCOIS registered filtercallback function at /src/FCOIS_Filters.lua -> function shouldItemBeShownAfterBeenFiltered
@@ -255,6 +252,8 @@ end
 --Event upon closing of a vendor store
 local function FCOItemSaver_Close_Store()
     if FCOIS.settingsVars.settings.debug then debugMessage( "[EVENT]","Close store", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+
+--d("[FCOIS][EVENT]Close store - gFilterWhere: " ..tos(FCOIS.gFilterWhere))
 
     onClosePanel(FCOIS.gFilterWhere, LF_INVENTORY, "STORE")
 end

@@ -1433,7 +1433,7 @@ end
 
 --Copy SavedVariables from one server, account and/or character to another
 function FCOIS.CopySavedVars(srcServer, targServer, srcAcc, targAcc, srcCharId, targCharId, onlyDelete, forceReloadUI, toAllServersAndAccountsTheSame)
-d(strformat("[FCOIS]copySavedVars srcServer %s, targServer %s, srcAcc %s, targAcc %s, srcCharId %s, targCharId %s, onlyDelete %s, forceReloadUI %s, toAllServersAndAccountsTheSame: %s",
+d(strformat("[FCOIS]copySavedVars srcServer: %s, targServer: %s, srcAcc: %s, targAcc: %s, srcCharId: %s, targCharId: %s, onlyDelete: %s, forceReloadUI: %s, toAllServersAndAccountsTheSame: %s",
         tos(srcServer), tos(targServer), tos(srcAcc), tos(targAcc), tos(srcCharId), tos(targCharId), tos(onlyDelete), tos(forceReloadUI), tos(toAllServersAndAccountsTheSame)))
     onlyDelete = onlyDelete or false
     forceReloadUI = forceReloadUI or false
@@ -1492,6 +1492,9 @@ d(strformat("[FCOIS]copySavedVars srcServer %s, targServer %s, srcAcc %s, targAc
 
     --Nothing to do? Abort here
     if not copyServer and not deleteServer and not copyAcc and not deleteAcc and not copyChar and not deleteChar and not copyAccToChar and not copyCharToAcc then return end
+
+d(">>1")
+
     --------------------------------------------------------------------------------------------------------------------
     --------------------------------------------------------------------------------------------------------------------
     local mappingVars = FCOIS.mappingVars
@@ -1513,7 +1516,7 @@ d(strformat("[FCOIS]copySavedVars srcServer %s, targServer %s, srcAcc %s, targAc
     local showReloadUIDialog = false
 
     --d("[FCOIS.copySavedVars]srcServer: " .. tos(srcServer) .. ", targServer: " ..tos(targServer).. ", srcAccount: " .. tos(srcAcc) .. ", targAccount: " ..tos(targAcc).. ", srcChar: " .. tos(srcCharId) .. ", targChar: " ..tos(targCharId).. ", onlyDelete: " .. tos(onlyDelete))
-    --d(">copyServer: " .. tos(copyServer) .. ", deleteServer: " ..tos(deleteServer).. ", copyAccount: " .. tos(copyAcc) .. ", deleteAccount: " ..tos(deleteAcc).. ", copyChar: " .. tos(copyChar) .. ", deleteChar: " ..tos(deleteChar))
+    d(">copyServer: " .. tos(copyServer) .. ", deleteServer: " ..tos(deleteServer).. ", copyAccount: " .. tos(copyAcc) .. ", deleteAccount: " ..tos(deleteAcc).. ", copyChar: " .. tos(copyChar) .. ", deleteChar: " ..tos(deleteChar))
 
     --Security check
     if ((srcServer == noEntry or targServer == noEntry) and onlyDelete == false) or (targServer == noEntry and onlyDelete == true) then return end
@@ -1749,9 +1752,13 @@ d(strformat("[FCOIS]copySavedVars srcServer %s, targServer %s, srcAcc %s, targAc
         FCOItemSaver_Settings[svAllServersTheSame][svAllAccTheSameAcc][svAccountWideName][svSettingsName] = svToCopy
         showReloadUIDialog = true
     end
+
+
+d(">showReloadUIDialog: " ..tos(showReloadUIDialog))
+
     --------------------------------------------------------------------------------------------------------------------
     --Now check if we are logged in to the target server and reload the user interface to get the copied data to the internal savedvars
-    if showReloadUIDialog then
+    if showReloadUIDialog == true then
         if forceReloadUI or toAllServersAndAccountsTheSame == true then ReloadUI() end
         if toAllServersAndAccountsTheSame == false then
             local world = GetWorldName()
@@ -1794,8 +1801,10 @@ d(strformat("[FCOIS]copySavedVars srcServer %s, targServer %s, srcAcc %s, targAc
                     local srcCharName = getCharacterName(srcCharId, characterTable)
                     questionVar = zo_strf(locVars["question_copy_sv_char_to_account_reloadui"], srcServer, srcAcc, srcCharName, targServer, targAcc, tos(useAccountWideSV))
                 end
+d(">>show confrim. dialog: ReloadUi after SV copy/delete")
                 --Show confirmation dialog: ReloadUI now?
                 --FCOIS.ShowConfirmationDialog(dialogName, title, body, callbackYes, callbackNo, data)
+                --dialogName, title, body, callbackYes, callbackNo, callbackSetup, data, forceUpdate
                 showConfirmationDialog("ReloadUIAfterSVServer2ServerCopyDialog", titleVar, questionVar,
                         function() ReloadUI() end,
                         function() end

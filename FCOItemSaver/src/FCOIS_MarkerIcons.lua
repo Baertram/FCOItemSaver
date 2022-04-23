@@ -388,7 +388,7 @@ end
 local createMarkerControl = FCOIS.CreateMarkerControl
 
 
-local function addMarkerIconsToZOLitsViewNow(rowControl, slot, doCreateMarkerControl, libFiltersFilterTypeToUse, updateAlreadyBound, updateOtherAddonsInvMarkers)
+local function addMarkerIconsToZOListViewNow(rowControl, slot, doCreateMarkerControl, libFiltersFilterTypeToUse, updateAlreadyBound, updateOtherAddonsInvMarkers)
     --Do not execute if horse is changed
     --The current game's SCENE and name (used for determining bank/guild bank deposit)
     if not isStableSceneShown() then
@@ -456,7 +456,7 @@ function FCOIS.CreateTextures(whichTextures)
                 SecurePostHook(zosgdtt(listView, 1), "setupCallback",
                         function(rowControl, slot)
                             --hookedFunctions(rowControl, slot)
-                            addMarkerIconsToZOLitsViewNow(rowControl, slot, doCreateMarkerControl, nil, true, true)
+                            addMarkerIconsToZOListViewNow(rowControl, slot, doCreateMarkerControl, nil, true, true)
 
                             --[[
                             --Do not execute if horse is changed
@@ -493,7 +493,7 @@ function FCOIS.CreateTextures(whichTextures)
             SecurePostHook(zosgdtt(listView, 1), "setupCallback",
                     function(rowControl, slot)
                         --hookedFunctions(rowControl, slot)
-                        addMarkerIconsToZOLitsViewNow(rowControl, slot, doCreateMarkerControl, nil, false, false)
+                        addMarkerIconsToZOListViewNow(rowControl, slot, doCreateMarkerControl, nil, false, false)
 
                         --[[
                         --Do not execute if horse is changed
@@ -532,7 +532,7 @@ function FCOIS.CreateTextures(whichTextures)
                     function(rowControl, slot)
                         --hookedFunctions(rowControl, slot)
 
-                        addMarkerIconsToZOLitsViewNow(rowControl, slot, doCreateMarkerControl, nil, false, false)
+                        addMarkerIconsToZOListViewNow(rowControl, slot, doCreateMarkerControl, nil, false, false)
 
                         --[[
                         --Do not execute if horse is changed
@@ -563,7 +563,7 @@ function FCOIS.CreateTextures(whichTextures)
                     function(rowControl, slot)
                         --hookedFunctions(rowControl, slot)
 
-                        addMarkerIconsToZOLitsViewNow(rowControl, slot, doCreateMarkerControl, nil, false, false)
+                        addMarkerIconsToZOListViewNow(rowControl, slot, doCreateMarkerControl, nil, false, false)
                         --[[
                         --Do not execute if horse is changed
                         --The current game's SCENE and name (used for determining bank/guild bank deposit)
@@ -594,7 +594,7 @@ function FCOIS.CreateTextures(whichTextures)
                     function(rowControl, slot)
                         --hookedFunctions(rowControl, slot)
 
-                        addMarkerIconsToZOLitsViewNow(rowControl, slot, doCreateMarkerControl, LF_INVENTORY_COMPANION, false, false)
+                        addMarkerIconsToZOListViewNow(rowControl, slot, doCreateMarkerControl, LF_INVENTORY_COMPANION, false, false)
                         --[[
                         --Do not execute if horse is changed
                         --The current game's SCENE and name (used for determining bank/guild bank deposit)
