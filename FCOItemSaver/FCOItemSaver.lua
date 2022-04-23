@@ -156,10 +156,12 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 --#176, 2021-10-12, Beartram: Errors occured with OR filters, and mixed AND + OR filters -> Currently only ALL or or ALL AND can be enabled!
 --#181, 2022-01-02, Baertram: Check filter slash command chat feedback: Does it show correct info about filter state and new logical conjuncions?
 
+--#225  2022-04-24, Baertram: Savedvariables copy from server EU -> PTS "All accounts the same" or "Chosen account" does not work. Reloaduui is done but
+--settings were not copied properly
 
 
 --______________________________________
--- Current max # of bugs/features/ToDos: 224
+-- Current max # of bugs/features/ToDos: 225
 --______________________________________
 
 
