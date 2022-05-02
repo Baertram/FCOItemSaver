@@ -313,7 +313,7 @@ function FCOIS.GetWhereAreWe(panelId, panelIdAtCall, panelIdParent, bag, slot, i
 
         --Are we at an universal deconstruction NPC?
         if isDeconNPC == true then
-d(">decon NPC! panelId: " .. tos(panelId) ..", isDragAndDrop: " ..tos(isDragAndDrop))
+--d(">decon NPC! panelId: " .. tos(panelId) ..", isDragAndDrop: " ..tos(isDragAndDrop))
             whereAreWe = getWhereAreWeOrFilterPanelIdByPanelIdRespectingCraftType(panelId, true, isDeconNPC)
     --*********************************************************************************************************************************************************************************
         else
