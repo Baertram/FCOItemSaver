@@ -224,10 +224,10 @@ local qualityList = {}
 
 local nonWishedChecksList = {}
 local nonWishedChecksValuesList = {
-    [-1] = FCOIS_CON_NON_WISHED_TRAIT,       -- Only check the trait
-    [1] = FCOIS_CON_NON_WISHED_LEVEL,       -- Level
-    [2] = FCOIS_CON_NON_WISHED_QUALITY,     -- Quality
-    [3] = FCOIS_CON_NON_WISHED_ALL,         -- All
+    [1] = FCOIS_CON_NON_WISHED_TRAIT,       -- Only check the trait
+    [2] = FCOIS_CON_NON_WISHED_LEVEL,       -- Level
+    [3] = FCOIS_CON_NON_WISHED_QUALITY,     -- Quality
+    [4] = FCOIS_CON_NON_WISHED_ALL,         -- All
 }
 
 --Globalize the mapping table for the backwards search of the index "levelIndex", which will be
@@ -347,10 +347,10 @@ local function updateLocalizedVariablesBeforeAddonMenu()
     end
 
     nonWishedChecksList = {
-        [FCOIS_CON_NON_WISHED_TRAIT] =      locVars["options_header_traits"],
-        [FCOIS_CON_NON_WISHED_LEVEL] =      locVars["options_level"],
-        [FCOIS_CON_NON_WISHED_QUALITY] =    locVars["options_quality"],
-        [FCOIS_CON_NON_WISHED_ALL] =        locVars["options_all"],
+        locVars["options_header_traits"],
+        locVars["options_level"],
+        locVars["options_quality"],
+        locVars["options_all"],
     }
 end
 FCOIS.UpdateLocalizedVariablesBeforeAddonMenu = updateLocalizedVariablesBeforeAddonMenu
