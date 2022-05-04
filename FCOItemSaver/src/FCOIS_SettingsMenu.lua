@@ -227,7 +227,7 @@ local nonWishedChecksValuesList = {
     [1] = FCOIS_CON_NON_WISHED_TRAIT,       -- Only check the trait
     [2] = FCOIS_CON_NON_WISHED_LEVEL,       -- Level
     [3] = FCOIS_CON_NON_WISHED_QUALITY,     -- Quality
-    [4] = FCOIS_CON_NON_WISHED_ALL,         -- All (together)
+    [4] = FCOIS_CON_NON_WISHED_ALL,         -- All (all need to be true, combined)
     [5] = FCOIS_CON_NON_WISHED_ANY_OF_THEM, -- Any of them
 }
 
@@ -4571,7 +4571,9 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                                                                     scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
                                                                 end
                                                             end,
-                                                            disabled = function() return (not FCOISsettings.autoMarkSetsNonWished or (not isIconEnabled[FCOISsettings.autoMarkSetsNonWishedIconNr] or not FCOISsettings.autoMarkSets)) end,
+                                                            disabled = function()
+                                                                return (not FCOISsettings.autoMarkSetsNonWished
+                                                                        or (not isIconEnabled[FCOISsettings.autoMarkSetsNonWishedIconNr] or not FCOISsettings.autoMarkSets)) end,
                                                             width = "full",
                                                             default = FCOISdefaultSettings.autoMarkSetsNonWishedIfCharBelowLevel,
                                                         },
@@ -4590,7 +4592,10 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                                                                     scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
                                                                 end
                                                             end,
-                                                            disabled = function()return (FCOISsettings.autoMarkSetsNonWishedIfCharBelowLevel and not checkNeededLevel("player", maxLevel)) or (not FCOISsettings.autoMarkSets or not FCOISsettings.autoMarkSetsNonWished or not isIconEnabled[FCOISsettings.autoMarkSetsNonWishedIconNr] or not isIconEnabled[FCOIS_CON_ICON_SELL]) end,
+                                                            disabled = function()
+                                                                return (FCOISsettings.autoMarkSetsNonWishedIfCharBelowLevel and not checkNeededLevel("player", maxLevel))
+                                                                        or (not FCOISsettings.autoMarkSets or not FCOISsettings.autoMarkSetsNonWished
+                                                                        or not isIconEnabled[FCOISsettings.autoMarkSetsNonWishedIconNr] or not isIconEnabled[FCOIS_CON_ICON_SELL]) end,
                                                             width = "full",
                                                             default = FCOISdefaultSettings.autoMarkSetsNonWishedChecks,
                                                         },
@@ -4613,7 +4618,12 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                                                                     end
                                                                 end
                                                             end,
-                                                            disabled = function()return (FCOISsettings.autoMarkSetsNonWishedIfCharBelowLevel and not checkNeededLevel("player", maxLevel)) or (not FCOISsettings.autoMarkSets or not FCOISsettings.autoMarkSetsNonWished or not isIconEnabled[FCOISsettings.autoMarkSetsNonWishedIconNr] or not isIconEnabled[FCOIS_CON_ICON_SELL] or (FCOISsettings.autoMarkSetsNonWishedChecks~=FCOIS_CON_NON_WISHED_ALL and FCOISsettings.autoMarkSetsNonWishedChecks~=FCOIS_CON_NON_WISHED_LEVEL)) end,
+                                                            disabled = function()
+                                                                return (FCOISsettings.autoMarkSetsNonWishedIfCharBelowLevel and not checkNeededLevel("player", maxLevel))
+                                                                        or (not FCOISsettings.autoMarkSets or not FCOISsettings.autoMarkSetsNonWished
+                                                                        or not isIconEnabled[FCOISsettings.autoMarkSetsNonWishedIconNr] or not isIconEnabled[FCOIS_CON_ICON_SELL]
+                                                                        or (FCOISsettings.autoMarkSetsNonWishedChecks~=FCOIS_CON_NON_WISHED_ALL and FCOISsettings.autoMarkSetsNonWishedChecks~=FCOIS_CON_NON_WISHED_ANY_OF_THEM
+                                                                            and FCOISsettings.autoMarkSetsNonWishedChecks~=FCOIS_CON_NON_WISHED_LEVEL)) end,
                                                             width = "full",
                                                             default = levelList[FCOISdefaultSettings.autoMarkSetsNonWishedLevel],
                                                         },
@@ -4635,7 +4645,12 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                                                                     end
                                                                 end
                                                             end,
-                                                            disabled = function()return (FCOISsettings.autoMarkSetsNonWishedIfCharBelowLevel and not checkNeededLevel("player", maxLevel)) or (not FCOISsettings.autoMarkSets or not FCOISsettings.autoMarkSetsNonWished or not isIconEnabled[FCOISsettings.autoMarkSetsNonWishedIconNr] or not isIconEnabled[FCOIS_CON_ICON_SELL] or (FCOISsettings.autoMarkSetsNonWishedChecks~=FCOIS_CON_NON_WISHED_ALL and FCOISsettings.autoMarkSetsNonWishedChecks~=FCOIS_CON_NON_WISHED_QUALITY)) end,
+                                                            disabled = function()
+                                                                return (FCOISsettings.autoMarkSetsNonWishedIfCharBelowLevel and not checkNeededLevel("player", maxLevel))
+                                                                        or (not FCOISsettings.autoMarkSets or not FCOISsettings.autoMarkSetsNonWished
+                                                                        or not isIconEnabled[FCOISsettings.autoMarkSetsNonWishedIconNr] or not isIconEnabled[FCOIS_CON_ICON_SELL]
+                                                                        or (FCOISsettings.autoMarkSetsNonWishedChecks~=FCOIS_CON_NON_WISHED_ALL and FCOISsettings.autoMarkSetsNonWishedChecks~=FCOIS_CON_NON_WISHED_ANY_OF_THEM
+                                                                            and FCOISsettings.autoMarkSetsNonWishedChecks~=FCOIS_CON_NON_WISHED_QUALITY)) end,
                                                             width = "full",
                                                             default = qualityList[FCOISdefaultSettings.autoMarkSetsNonWishedQuality],
                                                         },
@@ -4650,7 +4665,10 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                                                                     scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
                                                                 end
                                                             end,
-                                                            disabled = function() return (FCOISsettings.autoMarkSetsNonWishedIfCharBelowLevel and not checkNeededLevel("player", maxLevel)) or (not FCOISsettings.autoMarkSets or not FCOISsettings.autoMarkSetsNonWished or not isIconEnabled[FCOIS_CON_ICON_SELL]) end,
+                                                            disabled = function()
+                                                                return (FCOISsettings.autoMarkSetsNonWishedIfCharBelowLevel and not checkNeededLevel("player", maxLevel))
+                                                                        or (not FCOISsettings.autoMarkSets or not FCOISsettings.autoMarkSetsNonWished
+                                                                        or not isIconEnabled[FCOIS_CON_ICON_SELL]) end,
                                                             width = "full",
                                                             default = FCOISdefaultSettings.autoMarkSetsNonWishedSellOthers,
                                                         },
