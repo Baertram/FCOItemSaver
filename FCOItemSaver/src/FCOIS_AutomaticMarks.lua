@@ -815,27 +815,41 @@ local function automaticMarkingSetsAdditionalCheckFunc(p_itemData, p_checkFuncRe
         ------------------------------------------------------------------------------------------------------------------
         local nonWishedLevelFound = false
         local nonWishedQualityFound = false
-        if (isSetPartWithWishedTrait == false or nonWishedBecauseOfCharacterLevel == true) and settings.autoMarkSetsNonWished and isIconEnabled[settings.autoMarkSetsNonWishedIconNr] then
+        if (isSetPartWithWishedTrait == false or nonWishedBecauseOfCharacterLevel == true)
+                and settings.autoMarkSetsNonWished and isIconEnabled[settings.autoMarkSetsNonWishedIconNr] then
+
             if isDebuggingCase then d(">non wished item trait check") end
             if not nonWishedBecauseOfCharacterLevel then
                 local autoMarkSetsNonWishedChecks = settings.autoMarkSetsNonWishedChecks
 
                 local autoMarkSetsNonWishedChecksAllEnabled = (autoMarkSetsNonWishedChecks == FCOIS_CON_NON_WISHED_ALL) or false
+                local autoMarkSetsNonWishedChecksAnyEnabled = (autoMarkSetsNonWishedChecks == FCOIS_CON_NON_WISHED_ANY_OF_THEM) or false --bug #228
                 local autoMarkSetsNonWishedChecksTraitEnabled = (autoMarkSetsNonWishedChecks == FCOIS_CON_NON_WISHED_TRAIT) or false --bug #228
                 local doNonWishedQualityCheck   = (autoMarkSetsNonWishedChecksAllEnabled or autoMarkSetsNonWishedChecks==FCOIS_CON_NON_WISHED_QUALITY) or false
                 local doNonWishedLevelCheck     = (autoMarkSetsNonWishedChecksAllEnabled or autoMarkSetsNonWishedChecks==FCOIS_CON_NON_WISHED_LEVEL) or false
 
-                --Do we need to simulate the normal trait checks, no quality/level, because the settings are disabled?
-                --bug #228
+                --todo bug #228
+                --check for FCOIS_CON_NON_WISHED_ANY_OF_THEM any of the selected options need to be checked
+                --fix FCOIS_CON_NON_WISHED_ALL to only check all together, or else return false (no non-wished)
+
+                --Do we need to simulate the normal trait checks, no quality/level, because the "detail" settings are disabled
+                --at quality/level?
                 if not autoMarkSetsNonWishedChecksTraitEnabled then
-                    --Level check and quality check are enabled due to the ALL checks enabled selection, but both are set to "Disabled" within the detail dropdown box?
-                    if autoMarkSetsNonWishedChecksAllEnabled == true and (settings.autoMarkSetsNonWishedLevel == 1 and settings.autoMarkSetsNonWishedQuality == 1) then
-                        --Simulate normal trait check
+                    --Level check and quality check are enabled due to the ALL/ANY checks enabled selection,
+                    --but both are set to "Disabled" within the detail dropdown box?
+                    if autoMarkSetsNonWishedChecksAllEnabled == true
+                            and (
+                                        settings.autoMarkSetsNonWishedLevel == 1    --Disabled--
+                                    and settings.autoMarkSetsNonWishedQuality == 1  --Disabled--
+                    ) then
+                        --Simulate normal trait check "only"
                         autoMarkSetsNonWishedChecksTraitEnabled = true
                     end
                 else
-                    --Do all checks? Then disable only trait base check
-                    if autoMarkSetsNonWishedChecksAllEnabled then autoMarkSetsNonWishedChecksTraitEnabled = false end
+                    --Do ALL or ANY checks? Then disable only trait base check
+                    if autoMarkSetsNonWishedChecksAllEnabled == true or autoMarkSetsNonWishedChecksAnyEnabled == true then
+                        autoMarkSetsNonWishedChecksTraitEnabled = false
+                    end
                 end
 
                 if isSetPartAndIsValidAndGotTrait == true then
@@ -904,10 +918,14 @@ local function automaticMarkingSetsAdditionalCheckFunc(p_itemData, p_checkFuncRe
                         if isDebuggingCase then d("[FCOIS]>trait check") end
                     end --only check wished-trait
                 end --isSetPartAndIsValidAndGotTrait
+
+                local levelCheckSuccessfull = (doNonWishedLevelCheck == true and nonWishedLevelFound == true ) or false
+                local qualityCheckSuccessfull = (doNonWishedQualityCheck == true and nonWishedQualityFound == true) or false
+
                 --Was a level or quality or both combined found, matching to the non-wished settings?
-                if (autoMarkSetsNonWishedChecksTraitEnabled == true and isSetPartAndIsValidAndGotTrait == true ) -- Only trait
-                    or (doNonWishedLevelCheck == true and nonWishedLevelFound == true ) --Level
-                    or (doNonWishedQualityCheck == true and nonWishedQualityFound == true) -- quality
+                if ( autoMarkSetsNonWishedChecksTraitEnabled == true and isSetPartAndIsValidAndGotTrait == true ) -- Only trait check
+                    or ( autoMarkSetsNonWishedChecksAnyEnabled and (levelCheckSuccessfull == true or qualityCheckSuccessfull == true) ) --Any check
+                    or ( autoMarkSetsNonWishedChecksAllEnabled and levelCheckSuccessfull == true and qualityCheckSuccessfull == true ) --All checks in combination
                 then
                     if isDebuggingCase then d(">NonWishedCheck: Quality, level, trait, or all") end
                     markWithNonWishedIcon       = true
@@ -929,6 +947,7 @@ local function automaticMarkingSetsAdditionalCheckFunc(p_itemData, p_checkFuncRe
                 --as the character is below level 50 and the setting to mark then as non-wished is enabled
                 markWithNonWishedIcon = true
             end --if not nonWishedBecauseOfCharacterLevel then
+
             --Mark with the non-wished icon now?
             if markWithNonWishedIcon == true or markWithNonWishedSellIcon == true then
                 if isDebuggingCase then d("<<<Marking with NonWished(Sell)Icon now!") end

@@ -318,6 +318,7 @@ FCOIS_CON_NON_WISHED_TRAIT      = -1
 FCOIS_CON_NON_WISHED_LEVEL      = 1
 FCOIS_CON_NON_WISHED_QUALITY    = 2
 FCOIS_CON_NON_WISHED_ALL        = 3
+FCOIS_CON_NON_WISHED_ANY_OF_THEM = 99
 
 --Build local localization/language variables which will be transfered to the real localization vars in file /src/FCOIS_localization.lua,
 --in function Localization()
