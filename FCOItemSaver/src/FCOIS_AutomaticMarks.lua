@@ -819,27 +819,30 @@ local function automaticMarkingSetsAdditionalCheckFunc(p_itemData, p_checkFuncRe
             if isDebuggingCase then d(">non wished item trait check") end
             if not nonWishedBecauseOfCharacterLevel then
                 local autoMarkSetsNonWishedChecks = settings.autoMarkSetsNonWishedChecks
-                --Quality, level or botch checks?
 
-                --TODO: bug #228
                 local autoMarkSetsNonWishedChecksAllEnabled = (autoMarkSetsNonWishedChecks == FCOIS_CON_NON_WISHED_ALL) or false
-                local autoMarkSetsNonWishedChecksTraitEnabled = (autoMarkSetsNonWishedChecksAllEnabled or autoMarkSetsNonWishedChecks == FCOIS_CON_NON_WISHED_TRAIT) or false
+                local autoMarkSetsNonWishedChecksTraitEnabled = (autoMarkSetsNonWishedChecks == FCOIS_CON_NON_WISHED_TRAIT) or false --bug #228
                 local doNonWishedQualityCheck   = (autoMarkSetsNonWishedChecksAllEnabled or autoMarkSetsNonWishedChecks==FCOIS_CON_NON_WISHED_QUALITY) or false
                 local doNonWishedLevelCheck     = (autoMarkSetsNonWishedChecksAllEnabled or autoMarkSetsNonWishedChecks==FCOIS_CON_NON_WISHED_LEVEL) or false
 
-                --Level check is disabled?
-                if not autoMarkSetsNonWishedChecksTraitEnabled and (
-                        (doNonWishedLevelCheck == true and settings.autoMarkSetsNonWishedLevel == 1)
-                    or  (doNonWishedQualityCheck == true and settings.autoMarkSetsNonWishedQuality == 1) ) then
-                    --Simulate normal trait check
-                    autoMarkSetsNonWishedChecksTraitEnabled = true
+                --Do we need to simulate the normal trait checks, no quality/level, because the settings are disabled?
+                --bug #228
+                if not autoMarkSetsNonWishedChecksTraitEnabled then
+                    --Level check and quality check are enabled due to the ALL checks enabled selection, but both are set to "Disabled" within the detail dropdown box?
+                    if autoMarkSetsNonWishedChecksAllEnabled == true and (settings.autoMarkSetsNonWishedLevel == 1 and settings.autoMarkSetsNonWishedQuality == 1) then
+                        --Simulate normal trait check
+                        autoMarkSetsNonWishedChecksTraitEnabled = true
+                    end
+                else
+                    --Do all checks? Then disable only trait base check
+                    if autoMarkSetsNonWishedChecksAllEnabled then autoMarkSetsNonWishedChecksTraitEnabled = false end
                 end
 
                 if isSetPartAndIsValidAndGotTrait == true then
-                    --Only check the wished trait? Skip the other checks below then
+                    --Only check the wished trait? Skip the other checks below then, except if ALL checks need to be done
                     if not autoMarkSetsNonWishedChecksTraitEnabled then
                         --If the item is a s set part "Check the item's level" is activated?
-                        if doNonWishedLevelCheck == true then
+                        if doNonWishedLevelCheck == true and settings.autoMarkSetsNonWishedLevel ~= 1 then
                             local levelMapping = mappingVars.levels
                             local CPlevelMapping = mappingVars.CPlevels
                             local level2Threshold = mappingVars.levelToThreshold
@@ -879,7 +882,7 @@ local function automaticMarkingSetsAdditionalCheckFunc(p_itemData, p_checkFuncRe
                             --end
                         end -- Non wished item level checks
                         --Don't do quality checks etc. if the level checks were done already
-                        if doNonWishedQualityCheck then
+                        if doNonWishedQualityCheck and settings.autoMarkSetsNonWishedQuality ~= 1 then
                             --Check the item's quality to mark it with the chosen non-wished icon, or the sell icon?
                             if isDebuggingCase then d(">> non-wished quality check! Non-wished quality: " .. tos(settings.autoMarkSetsNonWishedQuality)) end
                             --Check the item's quality now
@@ -902,10 +905,9 @@ local function automaticMarkingSetsAdditionalCheckFunc(p_itemData, p_checkFuncRe
                     end --only check wished-trait
                 end --isSetPartAndIsValidAndGotTrait
                 --Was a level or quality or both combined found, matching to the non-wished settings?
-                if ( autoMarkSetsNonWishedChecksTraitEnabled == true and isSetPartAndIsValidAndGotTrait == true )                        -- Only trait
-                        or (doNonWishedLevelCheck and doNonWishedQualityCheck and nonWishedLevelFound and nonWishedQualityFound)         -- Level and quality
-                        or (doNonWishedLevelCheck and not doNonWishedQualityCheck and nonWishedLevelFound and not nonWishedQualityFound) -- Level
-                        or (not doNonWishedLevelCheck and doNonWishedQualityCheck and not nonWishedLevelFound and nonWishedQualityFound) -- Quality
+                if (autoMarkSetsNonWishedChecksTraitEnabled == true and isSetPartAndIsValidAndGotTrait == true ) -- Only trait
+                    or (doNonWishedLevelCheck == true and nonWishedLevelFound == true ) --Level
+                    or (doNonWishedQualityCheck == true and nonWishedQualityFound == true) -- quality
                 then
                     if isDebuggingCase then d(">NonWishedCheck: Quality, level, trait, or all") end
                     markWithNonWishedIcon       = true
