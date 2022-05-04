@@ -314,6 +314,7 @@ checkVars.filterButtonsToCheck = {
 checkVars.filterButtonSuffix = "_FilterButton"
 
 --Constants for the automatic set item marking, non wished traits:
+FCOIS_CON_NON_WISHED_TRAIT      = -1
 FCOIS_CON_NON_WISHED_LEVEL      = 1
 FCOIS_CON_NON_WISHED_QUALITY    = 2
 FCOIS_CON_NON_WISHED_ALL        = 3
@@ -3228,6 +3229,7 @@ mappingVars.levels = {
     [10] = 50,
 }
 --Champion ranks
+mappingVars.maxLevel = GetMaxLevel() --50 API 101034
 mappingVars.maxCPLevel = GetChampionPointsPlayerProgressionCap() -- The current maxmium of Champion ranks
 mappingVars.CPlevels = {}
 local cpCnt = 1

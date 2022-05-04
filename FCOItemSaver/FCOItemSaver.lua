@@ -159,19 +159,27 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 --#225  2022-04-24, Baertram: Savedvariables copy from server EU -> PTS "All accounts the same" or "Chosen account" does not work. Reloaduui is done but
 --settings were not copied properly
 
+--#226  2022-05-01, Neverlands: Backup of marker icons throws error
+
+--#227  2022-05-02, Sethz: Automatic marking level threshold dropdown is missing entries
+--#228  2022-05-02, Sethz: Automatic marking non wished trait marker icon is not working, it's using the normal set marker icon/wished marker icon
+--for the same trait (if trait is disabled)
+
 
 --______________________________________
--- Current max # of bugs/features/ToDos: 225
+-- Current max # of bugs/features/ToDos: 228
 --______________________________________
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-04-24
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-05-04
 ------------------------------------------------------------------------------------
---#224
+--#226
+--#227
+--#228
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.2.5 - New version: 2.2.6) -    Updated last: 2022-04-24
+--Changelog (last version: 2.2.5 - New version: 2.2.6) -    Updated last: 2022-05-04
 -------------------------------------------------------------------------------------
 --[Fixed]
 --#222 user:/AddOns/FCOItemSaver/src/FCOIS_Filters.lua:123: attempt to index a nil value error after pressing I directly at the undaunted chest vendor
