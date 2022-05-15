@@ -60,7 +60,7 @@ local function updateBagId2String()
     FCOIS.localizationVars = FCOIS.localizationVars or {}
     FCOIS.localizationVars.bagIdToString = bagIdToString
 end
-bagIdToString = updateBagId2String()
+updateBagId2String()
 
 local idTypeToName = {
     [false]                                         = "Non unique",
