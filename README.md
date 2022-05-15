@@ -12,7 +12,6 @@ AddOn for the game Elder Scrolls Online: Saving your items so you do not acciden
 ------------------------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-05-04
 ------------------------------------------------------------------------------------
---#226
 
 
 -------------------------------------------------------------------------------------
@@ -22,6 +21,7 @@ AddOn for the game Elder Scrolls Online: Saving your items so you do not acciden
 --#222 user:/AddOns/FCOItemSaver/src/FCOIS_Filters.lua:123: attempt to index a nil value error after pressing I directly at the undaunted chest vendor
 --#223  PTS errors with changed QuickSlot variables
 --#224  Copy savedvariables reloadui dialog was not showing as expected
+--#226  Backup of marker icons throws error
 --#227  Automatic marking level threshold dropdown is missing entries
 --#228  Automatic marking non wished trait marker icon is not working, it's using the normal set marker icon/wished marker icon
 
@@ -32,6 +32,7 @@ AddOn for the game Elder Scrolls Online: Saving your items so you do not acciden
 
 
 --[Added on request]
+
 
 
 ```
