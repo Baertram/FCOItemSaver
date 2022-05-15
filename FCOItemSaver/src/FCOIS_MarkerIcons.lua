@@ -10,6 +10,7 @@ local wm = WINDOW_MANAGER
 local tos = tostring
 
 local gil = GetItemLink
+local zosgdtt = ZO_ScrollList_GetDataTypeTable
 
 local strfind = string.find
 
@@ -386,6 +387,43 @@ function FCOIS.CreateMarkerControl(parent, markerIconId, pWidth, pHeight, pTextu
 end
 local createMarkerControl = FCOIS.CreateMarkerControl
 
+
+local function addMarkerIconsToZOListViewNow(rowControl, slot, doCreateMarkerControl, libFiltersFilterTypeToUse, updateAlreadyBound, updateOtherAddonsInvMarkers)
+    --Do not execute if horse is changed
+    --The current game's SCENE and name (used for determining bank/guild bank deposit)
+    if not isStableSceneShown() then
+        --d("[FCOIS]addMarkerIconsToZOLitsViewNow - setupCallback")
+        updateAlreadyBound = updateAlreadyBound or false
+        updateOtherAddonsInvMarkers = updateOtherAddonsInvMarkers or false
+
+        if libFiltersFilterTypeToUse ~= nil then
+            FCOIS.gFilterWhere = libFiltersFilterTypeToUse
+        end
+
+        local iconSettings = FCOIS.settingsVars.settings.icon
+        local markerTextureVars = FCOIS.textureVars.MARKER_TEXTURES
+
+        -- for all filters: Create/Update the icons
+        for i = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
+            local iconSettingsOfMarkerIcon = iconSettings[i]
+            --createMarkerControl(parent, controlId, pWidth, pHeight, pTexture, pIsEquipmentSlot, pCreateControlIfNotThere, pUpdateAllEquipmentTooltips, pArmorTypeIcon, pHideControl)
+            createMarkerControl(rowControl, i, iconSettingsOfMarkerIcon.size, iconSettingsOfMarkerIcon.size, markerTextureVars[iconSettingsOfMarkerIcon.texture], false, doCreateMarkerControl)
+        end
+        --Add additional FCO point to the dataEntry.data slot
+        --FCOItemSaver_AddInfoToData(rowControl)
+        --Create and show the "already bound" set parts texture at the top-right edge of the inventory item
+        if updateAlreadyBound == true then
+            updateAlreadyBoundTexture(rowControl)
+        end
+
+        --Update marker icons for other addons that should add marker icons to inventory items
+        if updateOtherAddonsInvMarkers == true then
+            updateOtherAddonsInventoryMarkers(rowControl)
+        end
+    end
+end
+
+
 --Create the textures inside inventories etc.
 --The inventories of the crafting tables are build inside function /src/FCOIS_Hook.lua
 --> See function OnScrollListRowSetupCallback(rowControl, data)
@@ -402,91 +440,76 @@ function FCOIS.CreateTextures(whichTextures)
         --doCreateMarkerControl = true
         doCreateAllTextures = true
     end
-    local iconSettings = FCOIS.settingsVars.settings.icon
-    local markerTextureVars = FCOIS.textureVars.MARKER_TEXTURES
     --All inventories
     if (whichTextures == 1 or doCreateAllTextures) then
         --Create textures in inventories
         --for all PLAYER_INVENTORY.inventories do ...
+
+
         for _,v in pairs(ctrlVars.playerInventoryInvs) do
             local listView = v.listView
             --Do not hook quest items
             if (listView and listView.dataTypes and listView.dataTypes[1]
                 and (listView:GetName() ~= ctrlVars.INVENTORY_QUEST_NAME)) then
-                local hookedFunctions = listView.dataTypes[1].setupCallback
+                --local hookedFunctions = listView.dataTypes[1].setupCallback
+                --listView.dataTypes[1].setupCallback =
+                SecurePostHook(zosgdtt(listView, 1), "setupCallback",
+                        function(rowControl, slot)
+                            --hookedFunctions(rowControl, slot)
+                            addMarkerIconsToZOListViewNow(rowControl, slot, doCreateMarkerControl, nil, true, true)
 
-                listView.dataTypes[1].setupCallback =
-                function(rowControl, slot)
-                    hookedFunctions(rowControl, slot)
-                    --Do not execute if horse is changed
-                    --The current game's SCENE and name (used for determining bank/guild bank deposit)
-                    if not isStableSceneShown() then
---d("[FCOIS]PlayerInventory.listView.dataTypes[1].setupCallback")
-                        -- for all filters: Create/Update the icons
-                        for i=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
-                            local iconSettingsOfMarkerIcon = iconSettings[i]
-                            --createMarkerControl(parent, controlId, pWidth, pHeight, pTexture, pIsEquipmentSlot, pCreateControlIfNotThere, pUpdateAllEquipmentTooltips, pArmorTypeIcon, pHideControl)
-                            createMarkerControl(rowControl, i, iconSettingsOfMarkerIcon.size, iconSettingsOfMarkerIcon.size, markerTextureVars[iconSettingsOfMarkerIcon.texture], false, doCreateMarkerControl)
+                            --[[
+                            --Do not execute if horse is changed
+                            --The current game's SCENE and name (used for determining bank/guild bank deposit)
+                            if not isStableSceneShown() then
+                                --d("[FCOIS]PlayerInventory.listView.dataTypes[1].setupCallback")
+                                -- for all filters: Create/Update the icons
+                                for i = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
+                                    local iconSettingsOfMarkerIcon = iconSettings[i]
+                                    --createMarkerControl(parent, controlId, pWidth, pHeight, pTexture, pIsEquipmentSlot, pCreateControlIfNotThere, pUpdateAllEquipmentTooltips, pArmorTypeIcon, pHideControl)
+                                    createMarkerControl(rowControl, i, iconSettingsOfMarkerIcon.size, iconSettingsOfMarkerIcon.size, markerTextureVars[iconSettingsOfMarkerIcon.texture], false, doCreateMarkerControl)
+                                end
+                                --Add additional FCO point to the dataEntry.data slot
+                                --FCOItemSaver_AddInfoToData(rowControl)
+                                --Create and show the "already bound" set parts texture at the top-right edge of the inventory item
+                                updateAlreadyBoundTexture(rowControl)
+                                --Update marker icons for other addons that should add marker icons to inventory items
+                                updateOtherAddonsInventoryMarkers(rowControl)
+                            end
+                            ]]
                         end
-                        --Add additional FCO point to the dataEntry.data slot
-                        --FCOItemSaver_AddInfoToData(rowControl)
-                        --Create and show the "already bound" set parts texture at the top-right edge of the inventory item
-                        updateAlreadyBoundTexture(rowControl)
-                        --Update marker icons for other addons that should add marker icons to inventory items
-                        updateOtherAddonsInventoryMarkers(rowControl)
-                    end
-                end
+                )
             end
         end
-
-        --[[
-        for _,v in pairs(ctrlVars.playerInventoryInvs) do
-            local listView = v.listView
-            --Do not hook quest items
-            if (listView and listView.dataTypes and listView.dataTypes[1] and (listView:GetName() ~= "ZO_PlayerInventoryQuest")) then
-                SecurePostHook(listView.dataTypes[1].setupCallback, function(rowControl, slot)
-                    --Do not execute if horse is changed
-                    --The current game's SCENE and name (used for determining bank/guild bank deposit)
-                    local currentScene, _ = FCOIS.getCurrentSceneInfo()
-                    if currentScene ~= STABLES_SCENE then
-                        -- for all filters: Create/Update the icons
-                        for i=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
-                            --createMarkerControl(parent, controlId, pWidth, pHeight, pTexture, pIsEquipmentSlot, pCreateControlIfNotThere, pUpdateAllEquipmentTooltips, pArmorTypeIcon, pHideControl)
-                            createMarkerControl(rowControl, i, iconSettings[i].size, iconSettings[i].size, markerTextureVars[iconSettings[i].texture], false, doCreateMarkerControl)
-                        end
-                        --Add additional FCO point to the dataEntry.data slot
-                        --FCOItemSaver_AddInfoToData(rowControl)
-                        --Create and show the "already bound" set parts texture at the top-right edge of the inventory item
-                        updateAlreadyBoundTexture(rowControl)
-                    end
-                end)
-            end
-        end
-        ]]
     end
      --Repair list
     if (whichTextures == 2 or doCreateAllTextures) then
         --Create textures in repair window
         local listView = ctrlVars.REPAIR_LIST
         if listView and listView.dataTypes and listView.dataTypes[1] then
-            local hookedFunctions = listView.dataTypes[1].setupCallback
+            --local hookedFunctions = listView.dataTypes[1].setupCallback
 
-            listView.dataTypes[1].setupCallback =
-            function(rowControl, slot)
-                hookedFunctions(rowControl, slot)
+            --listView.dataTypes[1].setupCallback =
+            SecurePostHook(zosgdtt(listView, 1), "setupCallback",
+                    function(rowControl, slot)
+                        --hookedFunctions(rowControl, slot)
+                        addMarkerIconsToZOListViewNow(rowControl, slot, doCreateMarkerControl, nil, false, false)
 
-                --Do not execute if horse is changed
-                --The current game's SCENE and name (used for determining bank/guild bank deposit)
-                if not isStableSceneShown() then
-                    -- for all filters: Create/Update the icons
-                    for i=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
-                        local iconSettingsOfMarkerIcon = iconSettings[i]
-                        createMarkerControl(rowControl, i, iconSettingsOfMarkerIcon.size, iconSettingsOfMarkerIcon.size, markerTextureVars[iconSettingsOfMarkerIcon.texture], false, doCreateMarkerControl)
+                        --[[
+                        --Do not execute if horse is changed
+                        --The current game's SCENE and name (used for determining bank/guild bank deposit)
+                        if not isStableSceneShown() then
+                            -- for all filters: Create/Update the icons
+                            for i = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
+                                local iconSettingsOfMarkerIcon = iconSettings[i]
+                                createMarkerControl(rowControl, i, iconSettingsOfMarkerIcon.size, iconSettingsOfMarkerIcon.size, markerTextureVars[iconSettingsOfMarkerIcon.texture], false, doCreateMarkerControl)
+                            end
+                            --Add additional FCO point to the dataEntry.data slot
+                            --FCOItemSaver_AddInfoToData(rowControl)
+                        end
+                        ]]
                     end
-                    --Add additional FCO point to the dataEntry.data slot
-                    --FCOItemSaver_AddInfoToData(rowControl)
-                end
-            end
+            )
         end
     end
     --Player character / Companion character
@@ -502,24 +525,30 @@ function FCOIS.CreateTextures(whichTextures)
         -- Marker function for quickslots inventory
         local listView = ctrlVars.QUICKSLOT_LIST
         if listView and listView.dataTypes and listView.dataTypes[1] then
-            local hookedFunctions = listView.dataTypes[1].setupCallback
+            --local hookedFunctions = listView.dataTypes[1].setupCallback
 
-            listView.dataTypes[1].setupCallback =
-            function(rowControl, slot)
-                hookedFunctions(rowControl, slot)
+            --listView.dataTypes[1].setupCallback =
+            SecurePostHook(zosgdtt(listView, 1), "setupCallback",
+                    function(rowControl, slot)
+                        --hookedFunctions(rowControl, slot)
 
-                --Do not execute if horse is changed
-                --The current game's SCENE and name (used for determining bank/guild bank deposit)
-                if not isStableSceneShown() then
-                    -- for all filters: Create/Update the icons
-                    for i=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
-                        local iconSettingsOfMarkerIcon = iconSettings[i]
-                        createMarkerControl(rowControl, i, iconSettingsOfMarkerIcon.size, iconSettingsOfMarkerIcon.size, markerTextureVars[iconSettingsOfMarkerIcon.texture], false, doCreateMarkerControl)
+                        addMarkerIconsToZOListViewNow(rowControl, slot, doCreateMarkerControl, nil, false, false)
+
+                        --[[
+                        --Do not execute if horse is changed
+                        --The current game's SCENE and name (used for determining bank/guild bank deposit)
+                        if not isStableSceneShown() then
+                            -- for all filters: Create/Update the icons
+                            for i = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
+                                local iconSettingsOfMarkerIcon = iconSettings[i]
+                                createMarkerControl(rowControl, i, iconSettingsOfMarkerIcon.size, iconSettingsOfMarkerIcon.size, markerTextureVars[iconSettingsOfMarkerIcon.texture], false, doCreateMarkerControl)
+                            end
+                            --Add additional FCO point to the dataEntry.data slot
+                            --FCOItemSaver_AddInfoToData(rowControl)
+                        end
+                        ]]
                     end
-                    --Add additional FCO point to the dataEntry.data slot
-                    --FCOItemSaver_AddInfoToData(rowControl)
-                end
-            end
+            )
         end
     end
     --Transmuation
@@ -527,24 +556,29 @@ function FCOIS.CreateTextures(whichTextures)
         --Create textures in repair window
         local listView = ctrlVars.RETRAIT_LIST
         if listView and listView.dataTypes and listView.dataTypes[1] then
-            local hookedFunctions = listView.dataTypes[1].setupCallback
+            --local hookedFunctions = listView.dataTypes[1].setupCallback
 
-            listView.dataTypes[1].setupCallback =
-            function(rowControl, slot)
-                hookedFunctions(rowControl, slot)
+            --listView.dataTypes[1].setupCallback =
+            SecurePostHook(zosgdtt(listView, 1), "setupCallback",
+                    function(rowControl, slot)
+                        --hookedFunctions(rowControl, slot)
 
-                --Do not execute if horse is changed
-                --The current game's SCENE and name (used for determining bank/guild bank deposit)
-                if not isStableSceneShown() then
-                    -- for all filters: Create/Update the icons
-                    for i=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
-                        local iconSettingsOfMarkerIcon = iconSettings[i]
-                        createMarkerControl(rowControl, i, iconSettingsOfMarkerIcon.size, iconSettingsOfMarkerIcon.size, markerTextureVars[iconSettingsOfMarkerIcon.texture], false, doCreateMarkerControl)
+                        addMarkerIconsToZOListViewNow(rowControl, slot, doCreateMarkerControl, nil, false, false)
+                        --[[
+                        --Do not execute if horse is changed
+                        --The current game's SCENE and name (used for determining bank/guild bank deposit)
+                        if not isStableSceneShown() then
+                            -- for all filters: Create/Update the icons
+                            for i = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
+                                local iconSettingsOfMarkerIcon = iconSettings[i]
+                                createMarkerControl(rowControl, i, iconSettingsOfMarkerIcon.size, iconSettingsOfMarkerIcon.size, markerTextureVars[iconSettingsOfMarkerIcon.texture], false, doCreateMarkerControl)
+                            end
+                            --Add additional FCO point to the dataEntry.data slot
+                            --FCOItemSaver_AddInfoToData(rowControl)
+                        end
+                        ]]
                     end
-                    --Add additional FCO point to the dataEntry.data slot
-                    --FCOItemSaver_AddInfoToData(rowControl)
-                end
-            end
+            )
         end
     end
     --Companion inventory
@@ -553,33 +587,38 @@ function FCOIS.CreateTextures(whichTextures)
         local listView = ctrlVars.COMPANION_INV_LIST
         --ZO_CompanionEquipment_Panel_KeyboardList1Row1
         if listView and listView.dataTypes and listView.dataTypes[1] then
-            local hookedFunctions = listView.dataTypes[1].setupCallback
+            --local hookedFunctions = listView.dataTypes[1].setupCallback
 
-            listView.dataTypes[1].setupCallback =
-            function(rowControl, slot)
-                hookedFunctions(rowControl, slot)
+            --listView.dataTypes[1].setupCallback =
+            SecurePostHook(zosgdtt(listView, 1), "setupCallback",
+                    function(rowControl, slot)
+                        --hookedFunctions(rowControl, slot)
 
-                --Do not execute if horse is changed
-                --The current game's SCENE and name (used for determining bank/guild bank deposit)
-                if not isStableSceneShown() then
-                    --Workaround for the companion equipment inventory fragment's StateChange!
-                    --The OnShowing will happen AFTER the inventory rows are updated. See file src/FCOIS_Hooks.lua,
-                    --ctrlVars.COMPANION_INV_FRAGMENT:RegisterCallback("StateChange", function(oldState, newState)
-                    --Thus the filterPanelId is still on LF_INVENTORY and some panel checks for the dynamic marker icons, but
-                    --also the static ones, will be handled incorrectly! To circumvent this set the filterPanelId here each
-                    --time the inventory rows are updated!
-                    --This value will be reset via the companion keyboard fragment stateChange to hide or hidden
-                    FCOIS.gFilterWhere = LF_INVENTORY_COMPANION
+                        addMarkerIconsToZOListViewNow(rowControl, slot, doCreateMarkerControl, LF_INVENTORY_COMPANION, false, false)
+                        --[[
+                        --Do not execute if horse is changed
+                        --The current game's SCENE and name (used for determining bank/guild bank deposit)
+                        if not isStableSceneShown() then
+                            --Workaround for the companion equipment inventory fragment's StateChange!
+                            --The OnShowing will happen AFTER the inventory rows are updated. See file src/FCOIS_Hooks.lua,
+                            --ctrlVars.COMPANION_INV_FRAGMENT:RegisterCallback("StateChange", function(oldState, newState)
+                            --Thus the filterPanelId is still on LF_INVENTORY and some panel checks for the dynamic marker icons, but
+                            --also the static ones, will be handled incorrectly! To circumvent this set the filterPanelId here each
+                            --time the inventory rows are updated!
+                            --This value will be reset via the companion keyboard fragment stateChange to hide or hidden
+                            FCOIS.gFilterWhere = LF_INVENTORY_COMPANION
 
-                    -- for all filters: Create/Update the icons
-                    for i=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
-                        local iconSettingsOfMarkerIcon = iconSettings[i]
-                        createMarkerControl(rowControl, i, iconSettingsOfMarkerIcon.size, iconSettingsOfMarkerIcon.size, markerTextureVars[iconSettingsOfMarkerIcon.texture], false, doCreateMarkerControl)
+                            -- for all filters: Create/Update the icons
+                            for i = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
+                                local iconSettingsOfMarkerIcon = iconSettings[i]
+                                createMarkerControl(rowControl, i, iconSettingsOfMarkerIcon.size, iconSettingsOfMarkerIcon.size, markerTextureVars[iconSettingsOfMarkerIcon.texture], false, doCreateMarkerControl)
+                            end
+                            --Add additional FCO point to the dataEntry.data slot
+                            --FCOItemSaver_AddInfoToData(rowControl)
+                        end
+                        ]]
                     end
-                    --Add additional FCO point to the dataEntry.data slot
-                    --FCOItemSaver_AddInfoToData(rowControl)
-                end
-            end
+            )
         end
     end
 end

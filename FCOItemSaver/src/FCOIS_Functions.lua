@@ -1445,7 +1445,7 @@ function FCOIS.IsItemSetPartWithTraitNoControl(bagId, slotIndex)
     local setPartTraitIcon
     local settings = FCOIS.settingsVars.settings
     local itemLink = gil(bagId, slotIndex)
-    if itemLink ~= "" then
+    if itemLink and itemLink ~= "" then
 --d(">Item: " .. itemLink)
         local itemType = gilit(itemLink)
         -- Get the item's type
@@ -1457,7 +1457,7 @@ function FCOIS.IsItemSetPartWithTraitNoControl(bagId, slotIndex)
                 --Get the set item information
                 local hasSet = gilsetinf(itemLink)
                 -- item is a set
-                if hasSet then
+                if hasSet == true then
                     isSet = true
 --d(">has set")
                     --Check the item's trait now, according to it's item type
@@ -1483,18 +1483,14 @@ function FCOIS.IsItemSetPartWithTraitNoControl(bagId, slotIndex)
                                     --Jewelry
                                     if settings.autoMarkSetsCheckJewelryTrait[itemTraitType] ~= nil then
                                         isSetPartWithWishedTrait = settings.autoMarkSetsCheckJewelryTrait[itemTraitType]
-                                        if isSetPartWithWishedTrait then
-                                            setPartTraitIcon = settings.autoMarkSetsCheckJewelryTraitIcon[itemTraitType] or nil
-                                        end
+                                        setPartTraitIcon = settings.autoMarkSetsCheckJewelryTraitIcon[itemTraitType]
                                         isSetPartAndIsValidAndGotTrait = true
                                     end
                                 else
                                     --Armor
                                     if settings.autoMarkSetsCheckArmorTrait[itemTraitType] ~= nil then
                                         isSetPartWithWishedTrait = settings.autoMarkSetsCheckArmorTrait[itemTraitType]
-                                        if isSetPartWithWishedTrait then
-                                            setPartTraitIcon = settings.autoMarkSetsCheckArmorTraitIcon[itemTraitType] or nil
-                                        end
+                                        setPartTraitIcon = settings.autoMarkSetsCheckArmorTraitIcon[itemTraitType]
                                         isSetPartAndIsValidAndGotTrait = true
                                     end
                                 end
@@ -1503,9 +1499,7 @@ function FCOIS.IsItemSetPartWithTraitNoControl(bagId, slotIndex)
                         elseif itemType == ITEMTYPE_WEAPON then
                             if settings.autoMarkSetsCheckWeaponTrait[itemTraitType] ~= nil then
                                 isSetPartWithWishedTrait = settings.autoMarkSetsCheckWeaponTrait[itemTraitType]
-                                if isSetPartWithWishedTrait then
-                                    setPartTraitIcon = settings.autoMarkSetsCheckWeaponTraitIcon[itemTraitType] or nil
-                                end
+                                setPartTraitIcon = settings.autoMarkSetsCheckWeaponTraitIcon[itemTraitType]
                                 isSetPartAndIsValidAndGotTrait = true
                             end
                         end
@@ -1514,6 +1508,12 @@ function FCOIS.IsItemSetPartWithTraitNoControl(bagId, slotIndex)
             end -- if allowed then
         end -- if itemType ~= nil then
     end -- if itemLink ~= "" then
+
+    --If this is not a wished trait, clear the marker icon
+    if not isSetPartWithWishedTrait then
+        setPartTraitIcon = nil
+    end
+
     return isSetPartWithWishedTrait, isSetPartAndIsValidAndGotTrait, setPartTraitIcon, isSet
 end
 
@@ -2040,6 +2040,7 @@ end
 --Check if the item is a special item like the Maelstrom weapon or shield, or The Master's weapon
 --> Called in file FCOIS_Hooks.lua, function FCOItemSaver_AddSlotAction
 --  upon right clicking an item to show the context menu for "Enchant"
+--  and at the automatic set item marking
 function FCOIS.CheckIfIsSpecialItem(p_bagId, p_slotIndex)
     if p_bagId == nil or  p_slotIndex == nil then return nil end
     local specialItems = FCOIS.specialItems
@@ -2590,6 +2591,7 @@ end
 -- =====================================================================================================================
 --Function to show a confirmation dialog
 function FCOIS.ShowConfirmationDialog(dialogName, title, body, callbackYes, callbackNo, callbackSetup, data, forceUpdate)
+--d("[FCOIS]ShowConfirmationDialog - dialogName: " ..tos(dialogName) .. ", title: " ..tos(title) .. ", body: " ..tos(body))
     local libDialog = FCOIS.LDIALOG
     addonVars = FCOIS.addonVars
     local addonName = addonVars.gAddonName
@@ -2597,9 +2599,11 @@ function FCOIS.ShowConfirmationDialog(dialogName, title, body, callbackYes, call
     forceUpdate = forceUpdate or false
     --Check if the dialog exists already, and if not register it
     local existingDialogs = libDialog.dialogs
-    if forceUpdate or existingDialogs[addonName] == nil or existingDialogs[addonName][dialogName] == nil then
+    if forceUpdate == true or existingDialogs[addonName] == nil or existingDialogs[addonName][dialogName] == nil then
         libDialog:RegisterDialog(addonName, dialogName, title, body, callbackYes, callbackNo, callbackSetup, forceUpdate)
     end
+
+--d(">show dialog now")
     --Show the dialog now
     libDialog:ShowDialog(addonName, dialogName, data)
 end

@@ -33,10 +33,34 @@ standardBackupAllowedBagTypes[BAG_BUYBACK] 	= true
 standardBackupAllowedBagTypes[BAG_VIRTUAL] 	= true --Craftbag
 standardBackupAllowedBagTypes[BAG_COMPANION_WORN] 	= true
 --The text for each bagtype
-local bagIdToString
+local bagIdToString = {}
 local locVars = FCOIS.localizationVars.fcois_loc
+local migrateBagTypePrefix = "options_migrate_bag_type_"
+local bagTypesToIterate = {
+        [BAG_WORN] 		        = true,
+        [BAG_COMPANION_WORN]    = true,
+        [BAG_BACKPACK]          = true,
+        [BAG_BANK] 		        = true,
+        [BAG_GUILDBANK]         = true,
+        [BAG_BUYBACK] 	        = true,
+        [BAG_VIRTUAL] 	        = true,
+        [BAG_SUBSCRIBER_BANK]   = true,
+        [BAG_HOUSE_BANK_ONE]    = true,
+        [BAG_HOUSE_BANK_TWO]    = true,
+        [BAG_HOUSE_BANK_THREE]  = true,
+        [BAG_HOUSE_BANK_FOUR]   = true,
+        [BAG_HOUSE_BANK_FIVE]   = true,
+        [BAG_HOUSE_BANK_SIX]    = true,
+        [BAG_HOUSE_BANK_SEVEN]  = true,
+        [BAG_HOUSE_BANK_EIGHT]  = true,
+        [BAG_HOUSE_BANK_NINE]   = true,
+        [BAG_HOUSE_BANK_TEN]    = true,
+}
+
 local function updateBagId2String()
+    FCOIS.localizationVars = FCOIS.localizationVars or {}
     locVars = FCOIS.localizationVars.fcois_loc
+    --[[
     bagIdToString = {
         [BAG_WORN] 		        = locVars["options_migrate_bag_type_" .. tos(BAG_WORN)],
         [BAG_COMPANION_WORN]    = locVars["options_migrate_bag_type_" .. tos(BAG_COMPANION_WORN)],
@@ -57,10 +81,17 @@ local function updateBagId2String()
         [BAG_HOUSE_BANK_NINE]   = locVars["options_migrate_bag_type_" .. tos(BAG_HOUSE_BANK_NINE)],
         [BAG_HOUSE_BANK_TEN]    = locVars["options_migrate_bag_type_" .. tos(BAG_HOUSE_BANK_TEN)],
     }
-    FCOIS.localizationVars = FCOIS.localizationVars or {}
+    ]]
+    if locVars ~= nil then
+        for bagTypeNr, isActivated in pairs(bagTypesToIterate) do
+            if isActivated == true then
+                bagIdToString[bagTypeNr] = locVars[migrateBagTypePrefix .. tos(bagTypeNr)]
+            end
+        end
+    end
     FCOIS.localizationVars.bagIdToString = bagIdToString
 end
-bagIdToString = updateBagId2String()
+updateBagId2String()
 
 local idTypeToName = {
     [false]                                         = "Non unique",
@@ -83,7 +114,7 @@ local function teleportToHouseAndBackupThen(withDetails, apiVersion, doClearBack
     --> Check EVENT_PLAYER_ACTIVATED in file FCOIS_events.lua now for the backup after jump to house!
 end
 
---Restore the marker icons from the saved variables. A backup is nedded in the savedvars, which can be manually triggered from the settings
+--Restore the marker icons from the saved variables. A backup is needed in the savedvars, which can be manually triggered from the settings
 function FCOIS.BackupMarkerIcons(withDetails, apiVersion, doClearBackup)
     local secondsSinceMidnight = GetSecondsSinceMidnight()
     local currentTimeStamp = GetTimeStamp()
@@ -94,6 +125,8 @@ function FCOIS.BackupMarkerIcons(withDetails, apiVersion, doClearBackup)
 
     isMarked = isMarked or FCOIS.IsMarked
     isMarkedByItemInstanceId = isMarkedByItemInstanceId or FCOIS.IsMarkedByItemInstanceId
+
+    updateBagId2String()
 
     --Get the current API version of the server, to distinguish code differences dependant on the API version
     FCOIS.APIversion = GetAPIVersion()
@@ -141,7 +174,7 @@ function FCOIS.BackupMarkerIcons(withDetails, apiVersion, doClearBackup)
     d(preVars.preChatTextGreen .. ">>> Backup of marked items non-uniqueId/unique IDs (ZOs, FCOIS) started >>>")
     d(">Backup parameters: show details: " ..tos(withDetails) .. ", using API version " ..tos(apiVersionToUse) .. ", clear existing backup with same API version: " ..tos(doClearBackup))
     --FCOIS uniqueId part settings
-    d(">!!!Attention!!! The backup of the FCOIS uniqueIds will be done with the current FCOIS uiqueID settings!\nRestore would be working if you change the FCOIS uniqueId settings meanwhile BU your marker icons would not find the items anymore then!\nSo keep the FCOIS uniqueId settings untouched before your restore or you might loose markers.")
+    d(">!!!Attention!!! The backup of the FCOIS uniqueIds will be done with the current FCOIS uiqueID settings!\nRestore would be working if you change the FCOIS uniqueId settings meanwhile BUT your marker icons would not find the items anymore then!\nSo keep the FCOIS uniqueId settings untouched before your restore or you might loose markers.")
     d(">Current FCOIS uniqueId parts are: ")
     local uniqueIdParts = settings.uniqueIdParts
     for uniqueIdPartName, uniqueIdPartValue in pairs(uniqueIdParts) do
@@ -173,129 +206,136 @@ function FCOIS.BackupMarkerIcons(withDetails, apiVersion, doClearBackup)
     local totalItems = 0
     local totalMarkedItems = 0
     for bagType, allowed in pairs(allowedBagTypes) do
-        if allowed then
+        if allowed == true then
             --Do the new backup now
-            local bagStr = bagIdToString[bagType] or "???"
-            d(preVars.preChatTextBlue .. "!> Starting backup of bag: \'" ..tos(bagStr) .. "\'")
-            local bagTypBackupFailed = false
-            local foundMarkedItems = 0
-            local updatedMarkedItems = 0
-            local foundMarkedMarkerIconsOnItems = 0
-            local foundItemsInBag = 0
-            local bagCache = SHARED_INVENTORY:GetOrCreateBagCache(bagType)
-            if bagCache ~= nil then
-                --Guild bank checks
-                if bagType == BAG_GUILDBANK then
-                    local itemsInBag = #bagCache or 0
-                    if itemsInBag == 0 then
-                        d(preVars.preChatTextRed .. "?> Please open EACH guild bank which you want to backup at least once before starting the backup!\nOtherwise no items will be accessible by this addon.\nPlease follow this advice and redo the backup afterwards!")
-                        bagTypBackupFailed = true
-                    end
-                end
-                for _, data in pairs(bagCache) do
-                    local bagId = data.bagId
-                    local slotIndex = data.slotIndex
-                    if bagId ~= nil and slotIndex ~= nil then
-                        local isItemMarked
-                        local markedIcons
-                        --Is the bagtype not the craftbag? As the craftbag's slotIndex is the item's itemId!
-                        if bagType ~= BAG_VIRTUAL then
-                            FCOIS.preventerVars.gCalledFromInternalFCOIS = true
-                            isItemMarked, markedIcons = isMarked(bagId, slotIndex, -1)
-                        else
-                            --Craftbag. Item's slotIndex is the itemId.
-                            -->Overwrite it with the itemInstanceid
-                            --Use another function here to check if item is marked and which marker icons are set (itemInstanceId get#s signed in there!)
-                            FCOIS.preventerVars.gCalledFromInternalFCOIS = true
-                            local itemInstanceId = data.itemInstanceId
-                            isItemMarked, markedIcons = isMarkedByItemInstanceId(itemInstanceId, -1)
+            if bagIdToString[bagType] ~= nil then
+                local bagStr = bagIdToString[bagType]
+                if bagStr == nil then bagStr = "???" end
+                d(preVars.preChatTextBlue .. "!> Starting backup of bag: \'" ..tos(bagStr) .. "\'")
+                local bagTypBackupFailed = false
+                local foundMarkedItems = 0
+                local updatedMarkedItems = 0
+                local foundMarkedMarkerIconsOnItems = 0
+                local foundItemsInBag = 0
+                local bagCache = SHARED_INVENTORY:GetOrCreateBagCache(bagType)
+                if bagCache ~= nil then
+                    --Guild bank checks
+                    if bagType == BAG_GUILDBANK then
+                        local itemsInBag = #bagCache or 0
+                        if itemsInBag == 0 then
+                            d(preVars.preChatTextRed .. "?> Please open EACH guild bank which you want to backup at least once before starting the backup!\nOtherwise no items will be accessible by this addon.\nPlease follow this advice and redo the backup afterwards!")
+                            bagTypBackupFailed = true
                         end
-                        --Is the item marked with any marker icon?
-                        if isItemMarked then
-                            local nonUniqueId
-                            local zosUniqueId
-                            local FCOISUniqueId
-                            --if bagType ~= BAG_VIRTUAL then
+                    end
+                    for _, data in pairs(bagCache) do
+                        local bagId = data.bagId
+                        local slotIndex = data.slotIndex
+                        if bagId ~= nil and slotIndex ~= nil then
+                            local isItemMarked
+                            local markedIcons
+                            --Is the bagtype not the craftbag? As the craftbag's slotIndex is the item's itemId!
+                            if bagType ~= BAG_VIRTUAL then
+                                FCOIS.preventerVars.gCalledFromInternalFCOIS = true
+                                isItemMarked, markedIcons = isMarked(bagId, slotIndex, -1)
+                            else
+                                --Craftbag. Item's slotIndex is the itemId.
+                                -->Overwrite it with the itemInstanceid
+                                --Use another function here to check if item is marked and which marker icons are set (itemInstanceId get#s signed in there!)
+                                FCOIS.preventerVars.gCalledFromInternalFCOIS = true
+                                local itemInstanceId = data.itemInstanceId
+                                isItemMarked, markedIcons = isMarkedByItemInstanceId(itemInstanceId, -1)
+                            end
+                            --Is the item marked with any marker icon?
+                            if isItemMarked then
+                                local nonUniqueId
+                                local zosUniqueId
+                                local FCOISUniqueId
+                                --if bagType ~= BAG_VIRTUAL then
                                 nonUniqueId =     signItemId(GetItemInstanceId(bagId, slotIndex), nil, true, nil, bagId, slotIndex)
                                 zosUniqueId =     zo_getSafeId64Key(GetItemUniqueId(bagId, slotIndex))
                                 FCOISUniqueId =   createFCOISUniqueIdString(nil, bagId, slotIndex, nil)
-                            --[[
-                            else
-                                --CraftBag, slotIndex is the itemId. So get the uniqueId from the data.
-                                nonUniqueId =     signItemId(data.itemInstanceId, nil, true, nil, nil, nil)
-                                zosUniqueId =     data.uniqueId
-                                FCOISUniqueId =   createFCOISUniqueIdString(nil, bagId, slotIndex, nil)
-                            end
-                            ]]
-                            local markerIconIdsToSaved = {
-                                [false]                                         = nonUniqueId,
-                                [FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE]    = zosUniqueId,
-                                [FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE]  = FCOISUniqueId,
-                            }
+                                --[[
+                                else
+                                    --CraftBag, slotIndex is the itemId. So get the uniqueId from the data.
+                                    nonUniqueId =     signItemId(data.itemInstanceId, nil, true, nil, nil, nil)
+                                    zosUniqueId =     data.uniqueId
+                                    FCOISUniqueId =   createFCOISUniqueIdString(nil, bagId, slotIndex, nil)
+                                end
+                                ]]
+                                local markerIconIdsToSaved = {
+                                    [false]                                         = nonUniqueId,
+                                    [FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE]    = zosUniqueId,
+                                    [FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE]  = FCOISUniqueId,
+                                }
 
-                            local iconsStr
-                            local itemLink
-                            local updateDone = false
-                            local counterLoops = 0
-                            for idTypeIndex, markerIconItemIdToSave in pairs(markerIconIdsToSaved) do
-                                if markerIconItemIdToSave ~= nil and markerIconItemIdToSave ~= "" then
-                                    counterLoops = counterLoops + 1
-                                    --d(">item is marked: " ..tos(id64Str))
-                                    --Is the item already in the backup data? Then update it
-                                    if withDetails and counterLoops == 1 then
-                                        iconsStr = ""
-                                        --if bagType ~= BAG_VIRTUAL then
-                                        itemLink = gil(bagId, slotIndex)
-                                        --else
-                                        --CraftBag, slotIndex is the itemId. So get the itemLink from the data.
-                                        --    itemLink = data.lnk
-                                        --end
-                                        --d(">" .. itemLink)
-                                    end
-                                    --Add the unique ID to the savedvars backup section.
-                                    --Is the item already in the backup data? Then update/overwrite it
-                                    if backupData[apiVersionToUse][markerIconItemIdToSave] ~= nil then
-                                        updateDone = true
-                                    else
-                                        backupData[apiVersionToUse][markerIconItemIdToSave] = {}
-                                    end
-                                    --Now add all found set marker icons of this item below the uniqueItemId
-                                    for iconId, isMarkedIcon in pairs(markedIcons) do
-                                        --Is the icon marked for this item? Then save it to the backup data
-                                        if isMarkedIcon == true then
-                                            backupData[apiVersionToUse][markerIconItemIdToSave][iconId] = true
-                                            if counterLoops == 1 then
-                                                foundMarkedMarkerIconsOnItems = foundMarkedMarkerIconsOnItems + 1
-                                                if withDetails then
-                                                    if iconsStr == "" then
-                                                        iconsStr = tos(iconId)
-                                                    else
-                                                        iconsStr = iconsStr .. "," .. tos(iconId)
+                                local iconsStr
+                                local itemLink
+                                local updateDone = false
+                                local counterLoops = 0
+                                for idTypeIndex, markerIconItemIdToSave in pairs(markerIconIdsToSaved) do
+                                    if markerIconItemIdToSave ~= nil and markerIconItemIdToSave ~= "" then
+                                        counterLoops = counterLoops + 1
+                                        --d(">item is marked: " ..tos(id64Str))
+                                        --Is the item already in the backup data? Then update it
+                                        if withDetails and counterLoops == 1 then
+                                            iconsStr = ""
+                                            --if bagType ~= BAG_VIRTUAL then
+                                            itemLink = gil(bagId, slotIndex)
+                                            --else
+                                            --CraftBag, slotIndex is the itemId. So get the itemLink from the data.
+                                            --    itemLink = data.lnk
+                                            --end
+                                            --d(">" .. itemLink)
+                                        end
+                                        --Add the unique ID to the savedvars backup section.
+                                        --Is the item already in the backup data? Then update/overwrite it
+                                        if backupData[apiVersionToUse][markerIconItemIdToSave] ~= nil then
+                                            updateDone = true
+                                        else
+                                            backupData[apiVersionToUse][markerIconItemIdToSave] = {}
+                                        end
+                                        --Now add all found set marker icons of this item below the uniqueItemId
+                                        for iconId, isMarkedIcon in pairs(markedIcons) do
+                                            --Is the icon marked for this item? Then save it to the backup data
+                                            if isMarkedIcon == true then
+                                                backupData[apiVersionToUse][markerIconItemIdToSave][iconId] = true
+                                                if counterLoops == 1 then
+                                                    foundMarkedMarkerIconsOnItems = foundMarkedMarkerIconsOnItems + 1
+                                                    if withDetails then
+                                                        if iconsStr == "" then
+                                                            iconsStr = tos(iconId)
+                                                        else
+                                                            iconsStr = iconsStr .. "," .. tos(iconId)
+                                                        end
                                                     end
                                                 end
                                             end
                                         end
                                     end
                                 end
+                                if withDetails and iconsStr ~= nil and iconsStr ~= "" and itemLink ~= nil then
+                                    d(">backuped icons["..iconsStr.."] for " .. itemLink)
+                                end
+                                if updateDone then
+                                    updatedMarkedItems = updatedMarkedItems + 1
+                                else
+                                    foundMarkedItems = foundMarkedItems + 1
+                                end
                             end
-                            if withDetails and iconsStr ~= nil and iconsStr ~= "" and itemLink ~= nil then
-                                d(">backuped icons["..iconsStr.."] for " .. itemLink)
-                            end
-                            if updateDone then
-                                updatedMarkedItems = updatedMarkedItems + 1
-                            else
-                                foundMarkedItems = foundMarkedItems + 1
-                            end
+                            foundItemsInBag = foundItemsInBag + 1
                         end
-                        foundItemsInBag = foundItemsInBag + 1
                     end
+                    if not bagTypBackupFailed then
+                        d(preVars.preChatTextBlue .. "<! Finished backup of bag: \'" ..tos(bagStr) .. "\'.\n--->Backuped " .. tos(foundMarkedMarkerIconsOnItems) .. " icons at " .. tos(foundMarkedItems + updatedMarkedItems) .." marked items (" .. tos(updatedMarkedItems) .. " did already exist and were updated), of " .. tos(foundItemsInBag) .. " total items in bag")
+                    end
+                    d("====================")
+                    totalMarkedItems = totalMarkedItems + ( foundMarkedItems + updatedMarkedItems )
+                    totalItems = totalItems + foundItemsInBag
                 end
-                if not bagTypBackupFailed then
-                    d(preVars.preChatTextBlue .. "<! Finished backup of bag: \'" ..tos(bagStr) .. "\'.\n--->Backuped " .. tos(foundMarkedMarkerIconsOnItems) .. " icons at " .. tos(foundMarkedItems + updatedMarkedItems) .." marked items (" .. tos(updatedMarkedItems) .. " did already exist and were updated), of " .. tos(foundItemsInBag) .. " total items in bag")
-                end
-                d("====================")
-                totalMarkedItems = totalMarkedItems + ( foundMarkedItems + updatedMarkedItems )
-                totalItems = totalItems + foundItemsInBag
+            else
+                d(preVars.preChatTextRed .. "!> Backup aborted, bagType unknown \'" ..tos(bagType) .. "\'")
+                d("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
+                return false
             end
         end
     end
@@ -402,6 +442,8 @@ function FCOIS.RestoreMarkerIcons(withDetails, apiVersion)
     local settings = FCOIS.settingsVars.settings
     local backupData = settings.backupData
     local preVars = FCOIS.preChatVars
+
+    updateBagId2String()
 
     --Get the current API version of the server, to distinguish code differences dependant on the API version
     FCOIS.APIversion = GetAPIVersion()
@@ -594,6 +636,14 @@ end
 ------------------------------------------------------------------------------------------------------------------------
 -- DELETE BACKUP
 ------------------------------------------------------------------------------------------------------------------------
+--[[
+local function disableDeleteLAMButton()
+    if FCOITEMSAVER_SETTINGS_DELETE_API_VERSION_BUTTON ~= nil and FCOITEMSAVER_SETTINGS_DELETE_API_VERSION_BUTTON.button ~= nil then
+        FCOIS.restore.apiVersion = nil
+        FCOITEMSAVER_SETTINGS_DELETE_API_VERSION_BUTTON.button:SetEnabled(false)
+    end
+end
+]]
 
 function FCOIS.DeleteBackup(apiVersionToDelete)
 --d("[FCOIS.DeleteBackup]apiVersion: " ..tos(apiVersionToDelete))
@@ -605,6 +655,7 @@ function FCOIS.DeleteBackup(apiVersionToDelete)
     --Is the backup existing which should be deleted?
     if backupData[apiVersionToDelete] == nil then
         d(preVars.preChatTextRed .. "?> Backup for specified API version "..tos(apiVersionToDelete) .." not found! <<<")
+        --disableDeleteLAMButton()
         return false
     else
         --Delete the backup now
@@ -612,6 +663,7 @@ function FCOIS.DeleteBackup(apiVersionToDelete)
         d(preVars.preChatTextGreen .. "?> Backup for specified API version "..tos(apiVersionToDelete) .." was deleted! <<<")
         --Update the list of restorable backups now in the settings dropdown
         FCOIS.BuildRestoreAPIVersionData(true)
+        --disableDeleteLAMButton()
         return true
     end
 end

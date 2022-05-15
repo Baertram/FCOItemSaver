@@ -1433,10 +1433,11 @@ end
 
 --Copy SavedVariables from one server, account and/or character to another
 function FCOIS.CopySavedVars(srcServer, targServer, srcAcc, targAcc, srcCharId, targCharId, onlyDelete, forceReloadUI, toAllServersAndAccountsTheSame)
-d(strformat("[FCOIS]copySavedVars srcServer %s, targServer %s, srcAcc %s, targAcc %s, srcCharId %s, targCharId %s, onlyDelete %s, forceReloadUI %s, toAllServersAndAccountsTheSame: %s",
-        tos(srcServer), tos(targServer), tos(srcAcc), tos(targAcc), tos(srcCharId), tos(targCharId), tos(onlyDelete), tos(forceReloadUI), tos(toAllServersAndAccountsTheSame)))
+--d(strformat("[FCOIS]copySavedVars srcServer: %s, targServer: %s, srcAcc: %s, targAcc: %s, srcCharId: %s, targCharId: %s, onlyDelete: %s, forceReloadUI: %s, toAllServersAndAccountsTheSame: %s",
+    --tos(srcServer), tos(targServer), tos(srcAcc), tos(targAcc), tos(srcCharId), tos(targCharId), tos(onlyDelete), tos(forceReloadUI), tos(toAllServersAndAccountsTheSame)))
     onlyDelete = onlyDelete or false
     forceReloadUI = forceReloadUI or false
+    toAllServersAndAccountsTheSame = toAllServersAndAccountsTheSame or false
     local copyServer = false
     local copyAcc = false
     local copyChar = false
@@ -1492,6 +1493,7 @@ d(strformat("[FCOIS]copySavedVars srcServer %s, targServer %s, srcAcc %s, targAc
 
     --Nothing to do? Abort here
     if not copyServer and not deleteServer and not copyAcc and not deleteAcc and not copyChar and not deleteChar and not copyAccToChar and not copyCharToAcc then return end
+
     --------------------------------------------------------------------------------------------------------------------
     --------------------------------------------------------------------------------------------------------------------
     local mappingVars = FCOIS.mappingVars
@@ -1626,9 +1628,9 @@ d(strformat("[FCOIS]copySavedVars srcServer %s, targServer %s, srcAcc %s, targAc
             --d(">>found def language and markedItems")
             if FCOItemSaver_Settings[targServer] == nil then FCOItemSaver_Settings[targServer] = {} end
             --Source data is valid. Now build the target data
-            if useAccountWideSV then
+            if useAccountWideSV == true then
                 --Account wide settings
-                if copyServer then
+                if copyServer == true then
                     --[[
                     if FCOItemSaver_Settings[targServer][accountName] == nil then FCOItemSaver_Settings[targServer][accountName] = {} end
                     if FCOItemSaver_Settings[targServer][accountName][svAccountWideName] == nil then FCOItemSaver_Settings[targServer][accountName][svAccountWideName] = {} end
@@ -1640,7 +1642,7 @@ d(strformat("[FCOIS]copySavedVars srcServer %s, targServer %s, srcAcc %s, targAc
                     FCOItemSaver_Settings[targServer][accountName][svAccountWideName][svSettingsName] = svToCopy
                     showReloadUIDialog = true
                     ]]
-                elseif copyAcc then
+                elseif copyAcc == true then
                     --d(">>>copy account")
                     if FCOItemSaver_Settings[targServer][targAcc] == nil then FCOItemSaver_Settings[targServer][targAcc] = {} end
                     if FCOItemSaver_Settings[targServer][targAcc][svAccountWideName] == nil then FCOItemSaver_Settings[targServer][targAcc][svAccountWideName] = {} end
@@ -1651,7 +1653,7 @@ d(strformat("[FCOIS]copySavedVars srcServer %s, targServer %s, srcAcc %s, targAc
                     if FCOItemSaver_Settings[targServer][targAcc][svAccountWideName][svSettingsName] ~= nil then FCOItemSaver_Settings[targServer][targAcc][svAccountWideName][svSettingsName] = nil end
                     FCOItemSaver_Settings[targServer][targAcc][svAccountWideName][svSettingsName] = svToCopy
                     showReloadUIDialog = true
-                elseif copyChar then
+                elseif copyChar == true then
                     if FCOItemSaver_Settings[targServer][targAcc] == nil then FCOItemSaver_Settings[targServer][targAcc] = {} end
                     if FCOItemSaver_Settings[targServer][targAcc][targCharId] == nil then FCOItemSaver_Settings[targServer][targAcc][targCharId] = {} end
                     --Check if def settings are given and reset them, then set them to the source values
@@ -1662,7 +1664,7 @@ d(strformat("[FCOIS]copySavedVars srcServer %s, targServer %s, srcAcc %s, targAc
                     FCOItemSaver_Settings[targServer][targAcc][targCharId][svSettingsName] = svToCopy
                     showReloadUIDialog = true
                     --Added with FCOIS v1.9.6: Copy account settings to character settings
-                elseif copyAccToChar then
+                elseif copyAccToChar == true then
                     if FCOItemSaver_Settings[targServer][targAcc] == nil then FCOItemSaver_Settings[targServer][targAcc] = {} end
                     if FCOItemSaver_Settings[targServer][targAcc][targCharId] == nil then FCOItemSaver_Settings[targServer][targAcc][targCharId] = {} end
                     --Check if def settings are given and reset them, then set them to the source values
@@ -1673,7 +1675,7 @@ d(strformat("[FCOIS]copySavedVars srcServer %s, targServer %s, srcAcc %s, targAc
                     FCOItemSaver_Settings[targServer][targAcc][targCharId][svSettingsName] = svToCopy
                     showReloadUIDialog = true
                     --Added with FCOIS v1.9.6: Copy character settings to account settings
-                elseif copyCharToAcc then
+                elseif copyCharToAcc == true then
                     if FCOItemSaver_Settings[targServer][targAcc] == nil then FCOItemSaver_Settings[targServer][targAcc] = {} end
                     if FCOItemSaver_Settings[targServer][targAcc][svAccountWideName] == nil then FCOItemSaver_Settings[targServer][targAcc][svAccountWideName] = {} end
                     --Check if def settings are given and reset them, then set them to the source values
@@ -1687,7 +1689,7 @@ d(strformat("[FCOIS]copySavedVars srcServer %s, targServer %s, srcAcc %s, targAc
 
             else
                 --Character settings enabled.
-                if copyServer then
+                if copyServer == true then
                     --[[
                     if FCOItemSaver_Settings[targServer][displayName] == nil then FCOItemSaver_Settings[targServer][displayName] = {} end
                     if FCOItemSaver_Settings[targServer][displayName][svAccountWideName] == nil then FCOItemSaver_Settings[targServer][displayName][svAccountWideName] = {} end
@@ -1699,14 +1701,14 @@ d(strformat("[FCOIS]copySavedVars srcServer %s, targServer %s, srcAcc %s, targAc
                     FCOItemSaver_Settings[targServer][displayName][svAccountWideName][svSettingsName] = svToCopy
                     showReloadUIDialog = true
                     ]]
-                elseif copyAcc then
+                elseif copyAcc == true then
                     if FCOItemSaver_Settings[targServer][targAcc] == nil then FCOItemSaver_Settings[targServer][targAcc] = {} end
                     if FCOItemSaver_Settings[targServer][targAcc][currentlyLoggedInUserId] == nil then FCOItemSaver_Settings[targServer][targAcc][currentlyLoggedInUserId] = {} end
                     --Check if settings are given and reset them, then set them to the source values
                     if FCOItemSaver_Settings[targServer][targAcc][currentlyLoggedInUserId][svSettingsName] ~= nil then FCOItemSaver_Settings[targServer][targAcc][currentlyLoggedInUserId][svSettingsName] = nil end
                     FCOItemSaver_Settings[targServer][targAcc][currentlyLoggedInUserId][svSettingsName] = svToCopy
                     showReloadUIDialog = true
-                elseif copyChar then
+                elseif copyChar == true then
                     if FCOItemSaver_Settings[targServer][targAcc] == nil then FCOItemSaver_Settings[targServer][targAcc] = {} end
                     if FCOItemSaver_Settings[targServer][targAcc][targCharId] == nil then FCOItemSaver_Settings[targServer][targAcc][targCharId] = {} end
                     --Check if settings are given and reset them, then set them to the source values
@@ -1714,7 +1716,7 @@ d(strformat("[FCOIS]copySavedVars srcServer %s, targServer %s, srcAcc %s, targAc
                     FCOItemSaver_Settings[targServer][targAcc][targCharId][svSettingsName] = svToCopy
                     showReloadUIDialog = true
                     --Added with FCOIS v1.9.6: Copy account settings to character settings
-                elseif copyAccToChar then
+                elseif copyAccToChar == true then
                     if FCOItemSaver_Settings[targServer][targAcc] == nil then FCOItemSaver_Settings[targServer][targAcc] = {} end
                     if FCOItemSaver_Settings[targServer][targAcc][targCharId] == nil then FCOItemSaver_Settings[targServer][targAcc][targCharId] = {} end
                     --Check if settings are given and reset them, then set them to the source values
@@ -1722,7 +1724,7 @@ d(strformat("[FCOIS]copySavedVars srcServer %s, targServer %s, srcAcc %s, targAc
                     FCOItemSaver_Settings[targServer][targAcc][targCharId][svSettingsName] = svToCopy
                     showReloadUIDialog = true
                     --Added with FCOIS v1.9.6: Copy character settings to account settings
-                elseif copyCharToAcc then
+                elseif copyCharToAcc == true then
                     if FCOItemSaver_Settings[targServer][targAcc] == nil then FCOItemSaver_Settings[targServer][targAcc] = {} end
                     if FCOItemSaver_Settings[targServer][targAcc][currentlyLoggedInUserId] == nil then FCOItemSaver_Settings[targServer][targAcc][currentlyLoggedInUserId] = {} end
                     --Check if settings are given and reset them, then set them to the source values
@@ -1749,13 +1751,18 @@ d(strformat("[FCOIS]copySavedVars srcServer %s, targServer %s, srcAcc %s, targAc
         FCOItemSaver_Settings[svAllServersTheSame][svAllAccTheSameAcc][svAccountWideName][svSettingsName] = svToCopy
         showReloadUIDialog = true
     end
+
+
+--d(">showReloadUIDialog: " ..tos(showReloadUIDialog) .. ", toAllServersAndAccountsTheSame: " ..tos(toAllServersAndAccountsTheSame))
+
     --------------------------------------------------------------------------------------------------------------------
     --Now check if we are logged in to the target server and reload the user interface to get the copied data to the internal savedvars
-    if showReloadUIDialog then
-        if forceReloadUI or toAllServersAndAccountsTheSame == true then ReloadUI() end
+    if showReloadUIDialog == true then
+        if forceReloadUI == true or toAllServersAndAccountsTheSame == true then ReloadUI() end
         if toAllServersAndAccountsTheSame == false then
             local world = GetWorldName()
             if world == targServer then
+--d(">world == targetServer")
                 local titleVar = "SavedVariables: "
                 if srcServer ~= noEntry then titleVar = titleVar .. "\"" .. srcServer ..  "\"" end
                 titleVar = titleVar .. " -> \"" .. targServer .. "\""
@@ -1794,8 +1801,10 @@ d(strformat("[FCOIS]copySavedVars srcServer %s, targServer %s, srcAcc %s, targAc
                     local srcCharName = getCharacterName(srcCharId, characterTable)
                     questionVar = zo_strf(locVars["question_copy_sv_char_to_account_reloadui"], srcServer, srcAcc, srcCharName, targServer, targAcc, tos(useAccountWideSV))
                 end
+--d(">>show confrim. dialog: ReloadUI after SV copy/delete")
                 --Show confirmation dialog: ReloadUI now?
                 --FCOIS.ShowConfirmationDialog(dialogName, title, body, callbackYes, callbackNo, data)
+                --dialogName, title, body, callbackYes, callbackNo, callbackSetup, data, forceUpdate
                 showConfirmationDialog("ReloadUIAfterSVServer2ServerCopyDialog", titleVar, questionVar,
                         function() ReloadUI() end,
                         function() end

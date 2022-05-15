@@ -21,6 +21,8 @@ local addonVars                             = FCOIS.addonVars
 local addonName                             = addonVars.gAddonName
 
 local ctrlVars                              = FCOIS.ZOControlVars
+local invSceneName                          = ctrlVars.invSceneName
+
 local backpackCtrl =            ctrlVars.BACKPACK
 local characterCtrl =           ctrlVars.CHARACTER
 local companionCharacterCtrl =  ctrlVars.COMPANION_CHARACTER
@@ -248,7 +250,7 @@ ZO_PreHook("ZO_Menu_OnHide", function()
     --Check if the character window is shown and if the current scene is the inventory scene
     --The current game's SCENE and name (used for determining bank/guild bank deposit)
     local _, currentSceneName = getCurrentSceneInfo()
-    if isCharacterShown() and currentSceneName == ctrlVars.invSceneName then
+    if isCharacterShown() and currentSceneName == invSceneName then
         --Show the PlayerProgressBar again as the context menu closes
         showPlayerProgressBar(true)
     elseif isCompanionCharacterShown() and currentSceneName == ctrlVars.companionInvSceneName then
@@ -753,7 +755,7 @@ function FCOIS.CreateHooks()
         --local isCharacterShownNow = isCharacterShown()
         --local isCompanionCharacterShownNow = isCompanionCharacterShown()
 
---d("[FCOIS]ZO_InventorySlot_ShowContextMenu - filterPanel: " .. tos(FCOIS.gFilterWhere))
+        --d("[FCOIS]ZO_InventorySlot_ShowContextMenu - filterPanel: " .. tos(FCOIS.gFilterWhere))
         --Clear the sub context menu entries
         FCOIS.customMenuVars.customMenuSubEntries         = {}
         FCOIS.customMenuVars.customMenuDynSubEntries      = {}
@@ -1049,7 +1051,7 @@ function FCOIS.CreateHooks()
         --get re-used here we need to hide them properly again and re-anchor them to their original filterPanel ctrls/UIs
         local function reAnchorAndHideLastUniversalDeconPanelFilterAndAddFlagButtons(lastFilterPanelIdAtUniversalDecon)
             if lastFilterPanelIdAtUniversalDecon == nil then lastFilterPanelIdAtUniversalDecon = FCOIS.gFilterWhere end
-    --d(">[FCOIS]reAnchorAndHideLastUniversalDeconFilterPanelButtons - lastFilterPanelIdAtUniversalDecon: " ..tos(lastFilterPanelIdAtUniversalDecon) .. ", current: " ..tos(universalDeconGlobal.FCOIScurrentFilterPanelId))
+            --d(">[FCOIS]reAnchorAndHideLastUniversalDeconFilterPanelButtons - lastFilterPanelIdAtUniversalDecon: " ..tos(lastFilterPanelIdAtUniversalDecon) .. ", current: " ..tos(universalDeconGlobal.FCOIScurrentFilterPanelId))
             --Reset the filterButtons and the additional inventory flag button to their default parents at e.g.
             --LF_SMITHING_DECONSTRUCT, LF_JEWELRY_DECONSTRUCT and LF_ENCHANTING_EXTRACTION
             reParentAndAnchorContextMenuInvokerButtons(lastFilterPanelIdAtUniversalDecon, nil)
@@ -1071,12 +1073,12 @@ function FCOIS.CreateHooks()
                 else
                     filterPanelIdPassedIn = universalDeconGlobal.FCOIScurrentFilterPanelId
                 end
---d("[FCOIS]UniversalDecon - Setting filterPanelId to: " ..tos(filterPanelIdPassedIn))
+                --d("[FCOIS]UniversalDecon - Setting filterPanelId to: " ..tos(filterPanelIdPassedIn))
                 if filterPanelIdPassedIn == nil then filterPanelIdPassedIn = LF_SMITHING_DECONSTRUCT end
                 --Update universalDeconGlobal.FCOIScurrentFilterPanelId
                 local currentFilterPanelIdAtUniversalDecon = getCurrentFilterPanelIdAtDeconNPC(filterPanelIdPassedIn)
                 if currentFilterPanelIdAtUniversalDecon ~= nil and FCOIS.gFilterWhere ~= currentFilterPanelIdAtUniversalDecon then
---d(">Setting filterPanelId to: " ..tos(currentFilterPanelIdAtUniversalDecon))
+                    --d(">Setting filterPanelId to: " ..tos(currentFilterPanelIdAtUniversalDecon))
                     if lastUniversalDeconFilterPanelId ~= nil and lastUniversalDeconFilterPanelId ~= currentFilterPanelIdAtUniversalDecon then
                         reAnchorAndHideLastUniversalDeconPanelFilterAndAddFlagButtons(lastUniversalDeconFilterPanelId)
                     end
@@ -1107,7 +1109,7 @@ function FCOIS.CreateHooks()
 
         local universalDeconButtonsHooked = false
         ctrlVars.UNIVERSAL_DECONSTRUCTON_SCENE:RegisterCallback("StateChange", function(oldState, newState)
---d("[FCOIS] UniversalDeconstruction Scene state change to: " ..tos(newState))
+            --d("[FCOIS] UniversalDeconstruction Scene state change to: " ..tos(newState))
             --Hide the context menu at the active panel
             sceneCallbackHideContextMenu(oldState, newState)
 
@@ -1153,7 +1155,7 @@ function FCOIS.CreateHooks()
                     universalDeconPanel = universalDeconPanel or universalDeconGlobal.deconstructionPanel
                     local universalDeconSelectedTab = universalDeconPanel.inventory:GetCurrentFilter()
                     local libFiltersFilterType = detectActiveUniversalDeconstructionTab(nil, universalDeconSelectedTab.key)
---d("[FCOIS]universalDeconstructionPanel SCENE OnShown - " ..tos(universalDeconSelectedTab.key) .. ", LibFiltersFilterType: " ..tos(libFiltersFilterType))
+                    --d("[FCOIS]universalDeconstructionPanel SCENE OnShown - " ..tos(universalDeconSelectedTab.key) .. ", LibFiltersFilterType: " ..tos(libFiltersFilterType))
                     updateFilterAndAddInvFlagButtonsAtUniversalDeconstruction(false, libFiltersFilterType)
                 end
 
@@ -1205,10 +1207,10 @@ function FCOIS.CreateHooks()
 
                 end
                 ]]
-                detectActiveUniversalDeconstructionTab = detectActiveUniversalDeconstructionTab or libFilters.DetectActiveUniversalDeconstructionTab
-                local libFiltersFilterType = detectActiveUniversalDeconstructionTab(nil, tab.key)
---d("[FCOIS]universalDeconstructionPanel:OnFilterChanged - " ..tos(tab.key) .. ", LibFiltersFilterType: " ..tos(libFiltersFilterType))
-                updateFilterAndAddInvFlagButtonsAtUniversalDeconstruction(false, libFiltersFilterType)
+            detectActiveUniversalDeconstructionTab = detectActiveUniversalDeconstructionTab or libFilters.DetectActiveUniversalDeconstructionTab
+            local libFiltersFilterType = detectActiveUniversalDeconstructionTab(nil, tab.key)
+            --d("[FCOIS]universalDeconstructionPanel:OnFilterChanged - " ..tos(tab.key) .. ", LibFiltersFilterType: " ..tos(libFiltersFilterType))
+            updateFilterAndAddInvFlagButtonsAtUniversalDeconstruction(false, libFiltersFilterType)
         end)
 
     end
@@ -1511,6 +1513,19 @@ function FCOIS.CreateHooks()
     SecurePostHook(backpackCtrl.dataTypes[1], "setupCallback", onScrollListRowSetupCallback)
     --PreHook the primary action keybind in inventories
     ZO_PreHook("ZO_InventorySlot_DoPrimaryAction", FCOItemSaver_OnInventorySlot_DoPrimaryAction)
+
+
+    --=============================================================================
+    --#202 bugfix for undaunted vendor -> press I to open inventory -> error message because FCOIS.gFilterWhere was 6
+    --LF_VENDOR_SELL still -> Error message at /src/FCOIS_Filters.lua -> function shouldItemBeShownAfterBeenFiltered row
+    --116: if filterButtonSettingsForCurrentPanel == nil then
+    local invScene = SCENE_MANAGER:GetScene(invSceneName)
+    invScene:RegisterCallback("StateChange", function(oldState, newState)
+        if newState == SCENE_SHOWING or newState == SCENE_SHOWN then
+--d(">Scene invenory state change: " ..tos(newState))
+            FCOIS.gFilterWhere = LF_INVENTORY
+        end
+    end)
 
     --======== CRAFTBAG ===========================================================
     --Register a secure posthook on visibility change of a scrolllist's row -> At the craftbag inventory list

@@ -113,6 +113,10 @@ local function shouldItemBeShownAfterBeenFiltered(slotItemInstanceId, slot)
     local filterButtonSettings = settings.filterButtonSettings
     local currentFilterPanelId = FCOIS.gFilterWhere     -- The currently filtered panelId (inventory, bank withdraw, mail, trade, etc.)
     local filterButtonSettingsForCurrentPanel = filterButtonSettings[currentFilterPanelId]
+    if filterButtonSettingsForCurrentPanel == nil then
+        d("[FCOIS]ERROR filterButtonSettingsForCurrentPanel = nil! gFilterWhere: " ..tos(currentFilterPanelId))
+        return
+    end
 
     if doDebugOutput then
         d(">FCOIS.gFilterWhere: " ..tos(currentFilterPanelId) .. ", filterButtonSettingsForCurrentPanel: " ..tos(filterButtonSettingsForCurrentPanel))

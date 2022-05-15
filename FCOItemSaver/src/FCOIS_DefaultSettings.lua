@@ -233,7 +233,7 @@ function FCOIS.BuildDefaultSettings()
 		autoMarkSetsNonWished 				= false,
 		autoMarkSetsNonWishedIconNr			= FCOIS_CON_ICON_DECONSTRUCTION,
 		autoMarkSetsNonWishedIfCharBelowLevel = false,
-		autoMarkSetsNonWishedChecks         = FCOIS_CON_NON_WISHED_LEVEL,
+		autoMarkSetsNonWishedChecks         = FCOIS_CON_NON_WISHED_TRAIT,
 		autoMarkSetsNonWishedSellOthers     = true,
 		autoMarkSetsNonWishedQuality 		= 1,
 		autoMarkSetsNonWishedLevel			= 1,

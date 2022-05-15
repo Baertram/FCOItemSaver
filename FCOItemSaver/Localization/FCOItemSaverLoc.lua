@@ -44,6 +44,8 @@ local invAddButtonVars = FCOIS.invAdditionalButtonVars
 --Additional inventory "flag" icon
 local addInvFlagIcon                    = zo_iconTextFormatNoSpace(invAddButtonVars.texNormal, 24, 24, "", nil)
 
+local maxLevel = FCOIS.mappingVars.maxLevel
+
 --The localized text strings
 FCOIS.localizationVars.localizationAll = {
 	--English
@@ -534,14 +536,14 @@ FCOIS.localizationVars.localizationAll = {
 		["options_enable_auto_mark_sets_non_wished_icon_TT"]				= "Choose your marker icon for the non-desired (items without your marked traits) set parts.\n\nStandard icon: 'Deconstruction'",
         ["options_enable_auto_mark_sets_non_wished_checks"]		= "\"Non desired\" checks",
         ["options_enable_auto_mark_sets_non_wished_checks_TT"]= "Non desired set items will be checked according to this setting.",
-		["options_enable_auto_mark_sets_non_wished_quality"]					= "Non-desired quality threshold <=",
+		["options_enable_auto_mark_sets_non_wished_quality"]					= "Quality threshold <=",
 		["options_enable_auto_mark_sets_non_wished_quality_TT"]			= "Non-desired set parts will be marked with the non-desired marker icon if their quality equals/is lower this chosen quality.",
         ["options_enable_auto_mark_sets_non_wished_level"]                      = "Level threshold <",
         ["options_enable_auto_mark_sets_non_wished_level_TT"]              = "Set parts will be marked with the non-desired marker icon if their level is below this chosen level.",
         ["options_enable_auto_mark_sets_non_wished_sell_others"]                = "Sell non-matching",
         ["options_enable_auto_mark_sets_non_wished_sell_others_TT"]        = "All other not-matching (to the chosen non-desired settings) non-desired set parts will be marked to be sold.",
-        ["options_enable_auto_mark_sets_non_wished_char_below_level_50"]    = "Non-desired if char. level <50",
-        ["options_enable_auto_mark_sets_non_wished_char_below_level_50_TT"] = "Mark all set items with the non-desired marker icon (and do not apply any other desired or non-desired checks!) if the currently logged in character is still below level 55 AND the item's level is below the maximum possible level, or it equals the maximum possible level but is below the maximum possible champion points level.\nThis will give you the possibility to mark all items for e.g. deconstruction if you level a new character.",
+        ["options_enable_auto_mark_sets_non_wished_char_below_level_50"]    = "Char. level <" ..maxLevel,
+        ["options_enable_auto_mark_sets_non_wished_char_below_level_50_TT"] = "Mark all set items with the non-desired marker icon (and do not apply any other desired or non-desired checks!) if the currently logged in character is still below level " ..maxLevel .." AND the item's level is below the maximum possible level, or it equals the maximum possible level but is below the maximum possible champion points level.\nThis will give you the possibility to mark all items for e.g. deconstruction if you level a new character.",
         ["options_enable_auto_mark_sets_in_chat"] = "Show set parts in chat",
         ["options_enable_auto_mark_sets_in_chat_TT"] =  "Show automatically marked set items in the chat",
         ["options_enable_auto_mark_sets_already_bound"]         = "Mark already bound",
@@ -1049,6 +1051,7 @@ FCOIS.localizationVars.localizationAll = {
         ["options_quality"] 		    = GetString(SI_MASTER_WRIT_DESCRIPTION_QUALITY),
         ["options_level"] 		        = GetString(SI_ITEM_FORMAT_STR_LEVEL),
         ["options_all"] 		        = GetString(SI_BUFFS_OPTIONS_ALL_ENABLED),
+        ["options_any"] 		        = "Any of them (single check)",
 		["options_quality_OFF"] 		= "-DISABLED-",
 		["options_quality_trash"] 		= "Trash",
 		["options_quality_normal"] 		= "Normal",
@@ -1921,14 +1924,14 @@ FCOIS.localizationVars.localizationAll = {
         ["options_enable_auto_mark_sets_non_wished_icon_TT"]	= "Wählen Sie ihr Symbol für die nicht-gewünschten (deren Trait nicht zu der Auswahl passt) Setteile.\n\nStandard Symbol: 'Verwerten'",
         ["options_enable_auto_mark_sets_non_wished_checks"]		= "\"Nicht gewünschte\" Prüfungen",
         ["options_enable_auto_mark_sets_non_wished_checks_TT"]= "Nicht-Gewünschte Set Teile werden so geprüft wie es in dieser Einstellung ausgewählt wurde.",
-        ["options_enable_auto_mark_sets_non_wished_quality"]		= "Nicht-Gewünschte Qualität Schwelle <",
+        ["options_enable_auto_mark_sets_non_wished_quality"]		= "Qualität Schwelle <=",
         ["options_enable_auto_mark_sets_non_wished_quality_TT"]= "Nicht-Gewünschte Set Teile werden mit dem Nicht-Gewünschte Symbol markiert wenn die Qualität des Set Teils gleich/kleiner dieser ausgewählten Qualität ist.",
         ["options_enable_auto_mark_sets_non_wished_level"]          = "Level Schwelle <",
         ["options_enable_auto_mark_sets_non_wished_level_TT"]  = "Set Teile werden mit dem Nicht-Gewünschte Symbol markiert wenn ihr Level unter diesem ausgewählten Level ist.",
         ["options_enable_auto_mark_sets_non_wished_sell_others"]            = "Verkaufe alle anderen",
         ["options_enable_auto_mark_sets_non_wished_sell_others_TT"]    = "Alle anderen Nicht-Gewünschte Gegenstände werden für den Verkauf markiert.",
-        ["options_enable_auto_mark_sets_non_wished_char_below_level_50"]    = "Nicht-gewünscht wenn Char. Level <50",
-        ["options_enable_auto_mark_sets_non_wished_char_below_level_50_TT"] = "Markier alle SetItems als nicht-gewünscht (und führe keine weiteren Prüfungen durch!) wenn der aktuell eingeloggte Charakter noch unter Level 50 ist UND der Gegenstand nicht das maximale Level, oder doch das maximale Level aber nicht das aktuell mögliche maximale ChampionLevel, besitzt.\nDies gibt dir die Möglichkeit die Niedrig-Level SetTeile zum Verwerten markieren zu lassen.",
+        ["options_enable_auto_mark_sets_non_wished_char_below_level_50"]    = "Char. Level <"  ..maxLevel,
+        ["options_enable_auto_mark_sets_non_wished_char_below_level_50_TT"] = "Markier alle SetItems als nicht-gewünscht (und führe keine weiteren Prüfungen durch!) wenn der aktuell eingeloggte Charakter noch unter Level " ..maxLevel.. " ist UND der Gegenstand nicht das maximale Level, oder doch das maximale Level aber nicht das aktuell mögliche maximale ChampionLevel, besitzt.\nDies gibt dir die Möglichkeit die Niedrig-Level SetTeile zum Verwerten markieren zu lassen.",
         ["options_enable_auto_mark_sets_in_chat"] = "Set Teile im Chat auflisten",
         ["options_enable_auto_mark_sets_in_chat_TT"] =  "Set Teile im Chat auflisten",
         ["options_enable_auto_mark_sets_already_bound"]         = "Markiere bereits gebundene",
@@ -2293,6 +2296,7 @@ FCOIS.localizationVars.localizationAll = {
         ["options_enable_auto_mark_quality_items_in_chat_TT"] =  "Markierte Gegenstände, mit ausgewählter Qualität, im Chat auflisten",
         ["options_auto_mark_quality_icon_no_armor"]			= "Keine Rüstung, Schmuck & Waffen",
         ["options_auto_mark_quality_icon_no_armor_TT"]	= "Rüstungen, Schmuck und Waffen werden nicht automatisch mit dem Qualität Symbol markiert.",
+        ["options_any"] 		        = "Irgendeine Option (einzeln geprüft)",
         ["options_quality_OFF"] 		= "-DEAKTIVIERT-",
         ["options_quality_trash"] 		= "Tr\195\182del",
         ["options_quality_normal"] 		= "Normal",

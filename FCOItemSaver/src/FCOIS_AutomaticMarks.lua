@@ -548,7 +548,7 @@ end
 
 --Do all the checks for the "automatic mark item as set"
 local function automaticMarkingSetsCheckFunc(p_bagId, p_slotIndex)
-    --Todo :Remove after debugging!
+    --Todo: Remove after debugging!
     local isDebuggingCase = false
     --[[
     if p_bagId == 1 and p_slotIndex == 26 then
@@ -564,7 +564,7 @@ local function automaticMarkingSetsCheckFunc(p_bagId, p_slotIndex)
     local retDataNoFurtherChecksNeeded = {}
     retDataNoFurtherChecksNeeded["noFurtherChecksNeeded"] = false
 
-    --Check if the item needs a set colleciton book marker icon
+    --Check if the item needs a set collection book marker icon
     --[[
     local wasMarkedForSetItemCollectionBook = automaticMarkingSetsCollectionBookCheckFunc(p_bagId, p_slotIndex)
     if wasMarkedForSetItemCollectionBook == true then
@@ -578,7 +578,7 @@ local function automaticMarkingSetsCheckFunc(p_bagId, p_slotIndex)
     if isDebuggingCase then d("[FCOIS] automaticMarkingSetsCheckFunc - > go on...") end
 
     --if the item is special it should be automatically marked as a set part, without any further checks!
-    if isSpecialItem then
+    if isSpecialItem == true then
         retDataNoFurtherChecksNeeded["noFurtherChecksNeeded"] = true
         return true, retDataNoFurtherChecksNeeded
     end
@@ -612,9 +612,9 @@ local function automaticMarkingSetsAdditionalCheckFunc(p_itemData, p_checkFuncRe
 
     if p_itemData ~= nil and p_itemData.bagId ~= nil and p_itemData.slotIndex ~= nil then
         itemLink = gil(p_itemData.bagId, p_itemData.slotIndex)
-        --[[
         --Todo :Remove after debugging!
-        if p_itemData.bagId == 1 and p_itemData.slotIndex == 26 then
+        --[[
+        if p_itemData.bagId == BAG_BACKPACK and p_itemData.slotIndex == 25 then --Bogen des Leerenrufers
             d("[FCOIS]automaticMarkingSetsAdditionalCheckFunc: " .. itemLink)
             isDebuggingCase = true
         end
@@ -659,16 +659,17 @@ local function automaticMarkingSetsAdditionalCheckFunc(p_itemData, p_checkFuncRe
     local isSetTrackerAndIsMarkedWithOtherIconAlready
 
     --=== Non-Wished set items check for characters below level 50 =========================================================
-    if settings.autoMarkSetsNonWished and isIconEnabled[settings.autoMarkSetsNonWishedIconNr] and settings.autoMarkSetsNonWishedIfCharBelowLevel then
+    if settings.autoMarkSetsNonWished == true and isIconEnabled[settings.autoMarkSetsNonWishedIconNr] and settings.autoMarkSetsNonWishedIfCharBelowLevel then
+        local levelToCheck = mappingVars.maxLevel --50
         --Get the actual logged in character level
-        local isCharLevelAboveOrEqual = checkNeededLevel("player", 50)
+        local isCharLevelAboveOrEqual = checkNeededLevel("player", levelToCheck)
         if not isCharLevelAboveOrEqual then
             if isDebuggingCase then d("[FCOIS]automaticMarkingSetsAdditionalCheckFunc, charLevelIsBelow") end
             --Check the item's level if it is below level 50
             local itemLevel = gilrl(itemLink)
             local itemRequiredCP = gilrcp(itemLink)
             local maxPossibleCPLevel = gcpppc() --API 100028 = 160
-            if itemLevel < 50 or (itemLevel > 50 and itemRequiredCP < maxPossibleCPLevel) then
+            if itemLevel < levelToCheck or (itemLevel > levelToCheck and itemRequiredCP < maxPossibleCPLevel) then
                 --Character is below level 50, so mark all set items as "Non-Wished" now
                 skipAllOtherChecks = true --Skip all other set checks now (except setting the non-wished icon!)
                 nonWishedBecauseOfCharacterLevel = true
@@ -682,7 +683,6 @@ local function automaticMarkingSetsAdditionalCheckFunc(p_itemData, p_checkFuncRe
     --in file FCOIS_OtherAddons.lua as the inventories are scanned!
     ---> So these automatic checks are done "later" !
     if not skipAllOtherChecks then
-
         isSetTrackerAndIsMarkedWithOtherIconAlready = false
         if SetTrack and SetTrack.GetMaxTrackStates and oaSetTracker.isActive and settings.autoMarkSetTrackerSets then
             if isDebuggingCase then d(">check SetTracker addon") end
@@ -723,7 +723,7 @@ local function automaticMarkingSetsAdditionalCheckFunc(p_itemData, p_checkFuncRe
         --==== SET TRACKER addon integration - END =============================================================================
 
         --==== Normal set marker icon - BEGIN ==================================================================================
-        --Check if the item is marked with the automatic set icon alreay
+        --Check if the item is marked with the automatic set icon already
         --tins(iconIdArray, setsIconNr)
         isMarkedWithAutomaticSetMarkerIcon = checkIfItemIsProtected(setsIconNr, itemId) or false
         --==== Normal set marker icon - END ====================================================================================
@@ -732,7 +732,7 @@ local function automaticMarkingSetsAdditionalCheckFunc(p_itemData, p_checkFuncRe
         --If the option is enabled to check for all gear set icons: If the set part is alreay marked with
         --any of the gear set icons it shouldn't be marked with another set marker icon again
         isGearProtected = false
-        if settings.autoMarkSetsCheckAllGearIcons then
+        if settings.autoMarkSetsCheckAllGearIcons == true then
             --d(">check all gear icons")
             --Set the variable to check other icons
             checkOtherSetMarkerIcons = true
@@ -752,10 +752,10 @@ local function automaticMarkingSetsAdditionalCheckFunc(p_itemData, p_checkFuncRe
         --==== Gear marker icons - END =========================================================================================
 
         --==== Sell marker icons - BEGIN =======================================================================================
-        --If the option is enabled to check for sell and sell in guild store icons: If the set part is alreay marked with
+        --If the option is enabled to check for sell and sell in guild store icons: If the set part is already marked with
         --any of them it shouldn't be marked with another set marker icon again
         isSellProtected = false
-        if settings.autoMarkSetsCheckSellIcons and (isIconEnabled[FCOIS_CON_ICON_SELL] or isIconEnabled[FCOIS_CON_ICON_SELL_AT_GUILDSTORE]) then
+        if settings.autoMarkSetsCheckSellIcons == true and (isIconEnabled[FCOIS_CON_ICON_SELL] or isIconEnabled[FCOIS_CON_ICON_SELL_AT_GUILDSTORE]) then
             --d(">check sell icons")
             --Set the variable to check other icons
             checkOtherSetMarkerIcons = true
@@ -776,25 +776,33 @@ local function automaticMarkingSetsAdditionalCheckFunc(p_itemData, p_checkFuncRe
         --Check other set marker icons too? Or only the normal one
         if isDebuggingCase then d(">isSetTrackerAndIsMarkedWithOtherIconAlready: " .. tos(isSetTrackerAndIsMarkedWithOtherIconAlready)) end
         local checkOnlySetMarkerIcon = false
-        if checkOtherSetMarkerIcons then
+        if checkOtherSetMarkerIcons == true then
+            if isDebuggingCase then d(">checkOtherSetMarkerIcons: true") end
             if iconIdArray ~= nil and #iconIdArray > 0 then
                 --Check all the marker icons in the table iconIdArray
-                isProtected = isSetTrackerAndIsMarkedWithOtherIconAlready or isGearProtected or isSellProtected or checkIfItemArrayIsProtected(iconIdArray, itemId)
+                local isItemArrayProtected = checkIfItemArrayIsProtected(iconIdArray, itemId)
+                isProtected = isSetTrackerAndIsMarkedWithOtherIconAlready or isGearProtected or isSellProtected or isItemArrayProtected
+                if isDebuggingCase then d(">isSetTrackerAndIsMarkedWithOtherIconAlready: " ..tos(isSetTrackerAndIsMarkedWithOtherIconAlready) .. ", isGearProtected: " ..tos(isGearProtected) .. ", isSellProtected: " ..tos(isSellProtected) .. ", isItemArrayProtected: " ..tos(isItemArrayProtected)) end
             else
                 checkOnlySetMarkerIcon = true
+                if isDebuggingCase then d(">checkOnlySetMarkerIcon: true") end
             end
         else
             checkOnlySetMarkerIcon = true
+            if isDebuggingCase then d(">checkOnlySetMarkerIcon 2: true") end
         end
         if checkOnlySetMarkerIcon then
             --Only check the automatic sets marker icon
             isProtected = (isSetTrackerAndIsMarkedWithOtherIconAlready or isGearProtected or isSellProtected or isMarkedWithAutomaticSetMarkerIcon) or false
+            if isDebuggingCase then d(">isSetTrackerAndIsMarkedWithOtherIconAlready: " ..tos(isSetTrackerAndIsMarkedWithOtherIconAlready) .. ", isGearProtected: " ..tos(isGearProtected) .. ", isSellProtected: " ..tos(isSellProtected) .. ", isMarkedWithAutomaticSetMarkerIcon: " ..tos(isMarkedWithAutomaticSetMarkerIcon)) end
         end
         if not isProtected then isProtected = false end
         --==== Is item protected check - END ===================================================================================
 
 
     end --if not skipAllOtherChecks then
+
+
     --==== Trait & non-wished trait checks - BEGIN =========================================================================
     --The item is not marked with any marker icon yet and it's not protected
     --> then check for non wished item traits
@@ -805,109 +813,168 @@ local function automaticMarkingSetsAdditionalCheckFunc(p_itemData, p_checkFuncRe
         ------------------------------------------------------------------------------------------------------------------
         -- NON WISHED ITEM TRAIT CHECK - BEGIN
         -- Check if item is a set part with the wished trait and skip the "all marker icons check"!
-        -- Is the item a set part, is valid and got non-wished traits, and should be marked with a non-wished marker icon?
+        -- Is the item a set part, is valid and got a non-wished trait, and should be marked with a non-wished marker icon?
         ------------------------------------------------------------------------------------------------------------------
         local nonWishedLevelFound = false
         local nonWishedQualityFound = false
-        if (isSetPartWithWishedTrait == false or nonWishedBecauseOfCharacterLevel) and settings.autoMarkSetsNonWished and isIconEnabled[settings.autoMarkSetsNonWishedIconNr] then
+        if (isSetPartWithWishedTrait == false or nonWishedBecauseOfCharacterLevel == true)
+                and settings.autoMarkSetsNonWished and isIconEnabled[settings.autoMarkSetsNonWishedIconNr] then
+
             if isDebuggingCase then d(">non wished item trait check") end
             if not nonWishedBecauseOfCharacterLevel then
-                --Quality, level or botch checks?
-                local autoMarkSetsNonWishedChecksAllEnabled = settings.autoMarkSetsNonWishedChecks==FCOIS_CON_NON_WISHED_ALL
-                local doNonWishedQualityCheck   = (autoMarkSetsNonWishedChecksAllEnabled or settings.autoMarkSetsNonWishedChecks==FCOIS_CON_NON_WISHED_QUALITY) or false
-                local doNonWishedLevelCheck     = (autoMarkSetsNonWishedChecksAllEnabled or settings.autoMarkSetsNonWishedChecks==FCOIS_CON_NON_WISHED_LEVEL) or false
+                local autoMarkSetsNonWishedChecks = settings.autoMarkSetsNonWishedChecks
 
-                --If the item is a s set part "Check the item's level" is activated?
-                if isSetPartAndIsValidAndGotTrait and doNonWishedLevelCheck and settings.autoMarkSetsNonWishedLevel ~= 1 then
-                    local levelMapping = mappingVars.levels
-                    local CPlevelMapping = mappingVars.CPlevels
-                    local level2Threshold = mappingVars.levelToThreshold
-                    local allLevels = mappingVars.allLevels
-                    if levelMapping ~= nil and CPlevelMapping ~= nil and itemLink ~= nil and level2Threshold ~= nil and allLevels ~= nil then
-                        local levelThreshold = ton(level2Threshold[tos(allLevels[settings.autoMarkSetsNonWishedLevel])]) or 0
-                        if levelThreshold ~= nil and levelThreshold > 0  then
-                            --Get the item level and champion rank
-                            local requiredLevel = gilrl(itemLink)
-                            local requiredCPRank = gilrcp(itemLink)
-                            --Is the item a ChampionRank item?
-                            if requiredCPRank > 0 then
-                                if requiredCPRank < levelThreshold then
-                                    nonWishedLevelFound = true
-                                end
-                            else
-                                --No CPs needed to wear this item
-                                if requiredLevel < levelThreshold then
-                                    nonWishedLevelFound = true
-                                end
-                            end
-                        end
+                local autoMarkSetsNonWishedChecksAllEnabled = (autoMarkSetsNonWishedChecks == FCOIS_CON_NON_WISHED_ALL) or false
+                local autoMarkSetsNonWishedChecksAnyEnabled = (autoMarkSetsNonWishedChecks == FCOIS_CON_NON_WISHED_ANY_OF_THEM) or false --bug #228
+                local autoMarkSetsNonWishedChecksTraitEnabled = (autoMarkSetsNonWishedChecks == FCOIS_CON_NON_WISHED_TRAIT) or false --bug #228
+                local doNonWishedQualityCheck   = (autoMarkSetsNonWishedChecksAllEnabled or autoMarkSetsNonWishedChecksAnyEnabled or autoMarkSetsNonWishedChecks==FCOIS_CON_NON_WISHED_QUALITY) or false
+                local doNonWishedLevelCheck     = (autoMarkSetsNonWishedChecksAllEnabled or autoMarkSetsNonWishedChecksAnyEnabled or autoMarkSetsNonWishedChecks==FCOIS_CON_NON_WISHED_LEVEL) or false
+
+                --todo bug #228
+                --check for FCOIS_CON_NON_WISHED_ANY_OF_THEM any of the selected options need to be checked
+                --fix FCOIS_CON_NON_WISHED_ALL to only check all together, or else return false (no non-wished)
+
+                if isDebuggingCase then d(">all: " ..tos(autoMarkSetsNonWishedChecksAllEnabled) .. ", any: " ..tos(autoMarkSetsNonWishedChecksAnyEnabled) .. ", trait: " ..tos(autoMarkSetsNonWishedChecksTraitEnabled) .. ", quality: " ..tos(doNonWishedQualityCheck) .. ", level: " ..tos(doNonWishedLevelCheck)) end
+
+                --Do we need to simulate the normal trait checks, no quality/level, because the "detail" settings are disabled
+                --at quality/level?
+                if not autoMarkSetsNonWishedChecksTraitEnabled then
+                    --Level check and quality check are enabled due to the ALL/ANY checks enabled selection,
+                    --but both are set to "Disabled" within the detail dropdown box?
+                    if autoMarkSetsNonWishedChecksAllEnabled == true
+                            and (
+                                        settings.autoMarkSetsNonWishedLevel == 1    --Disabled--
+                                    and settings.autoMarkSetsNonWishedQuality == 1  --Disabled--
+                    ) then
+                        --Simulate normal trait check "only"
+                        autoMarkSetsNonWishedChecksTraitEnabled = true
                     end
-                    --Was a non wished level found? Then mark the item as non wished now
-                    --if nonWishedLevelFound then
-                    --Check if the item is a jewelry part and if the non-wished marker icon is the "deconstruction" icon
-                    --replace it with the sell icon
-                    --> Not needed nymore: FCOIS v1.3.6 as deconstruction of jewelry works too now since "Summerset" update
-                    --if settings.autoMarkSetsNonWishedIconNr ~= FCOIS_CON_ICON_SELL then
-                    --    local _, _, _, equipType = gili(itemLink)
-                    --    if equipType == EQUIP_TYPE_NECK or equipType == EQUIP_TYPE_RING then
-                    --        markWithNonWishedIcon = false
-                    --        markWithNonWishedSellIcon = true
-                    --    end
-                    --end
-                    --end
-                end -- Non wished item level checks
-                --Don't do quality checks etc. if the level checks were done already
-                if isSetPartAndIsValidAndGotTrait and doNonWishedQualityCheck then
-                    --Check the item's quality to mark it with the chosen non-wished icon, or the sell icon?
-                    if settings.autoMarkSetsNonWishedQuality ~= 1 then
-                        if isDebuggingCase then d(">> non-wished quality check! Non-wished quality: " .. tos(settings.autoMarkSetsNonWishedQuality)) end
-                        --Check the item's quality now
-                        local itemQuality = getItemQuality(p_itemData.bagId, p_itemData.slotIndex)
-                        if itemQuality ~= false then
-                            nonWishedQualityFound = (itemQuality <= settings.autoMarkSetsNonWishedQuality) or false
-                            --d("Quality: " .. tos(itemQuality) .. ", check: " .. tos(qualityCheck))
-                            --Is the quality higher or equals the non-wished quality from the settings?
-                            --if qualityCheck then
-                            --else
-                            --    --Mark with the sell icon
-                            --    markWithNonWishedIcon = false
-                            --    markWithNonWishedSellIcon = true
-                            --end
-                        end
+                else
+                    --Do ALL or ANY checks? Then disable only trait base check
+                    if autoMarkSetsNonWishedChecksAllEnabled == true or autoMarkSetsNonWishedChecksAnyEnabled == true then
+                        autoMarkSetsNonWishedChecksTraitEnabled = false
                     end
                 end
+
+                if isDebuggingCase then d(">setPartValidWithTrait: " ..tos(isSetPartAndIsValidAndGotTrait) .. ", trait: " ..tos(autoMarkSetsNonWishedChecksTraitEnabled)) end
+
+                if isSetPartAndIsValidAndGotTrait == true then
+                    --Only check the wished trait? Skip the other checks below then, except if ALL checks need to be done
+                    if not autoMarkSetsNonWishedChecksTraitEnabled then
+                        --If the item is a s set part "Check the item's level" is activated?
+                        if doNonWishedLevelCheck == true then
+                            if settings.autoMarkSetsNonWishedLevel ~= 1 then
+                                local levelMapping = mappingVars.levels
+                                local CPlevelMapping = mappingVars.CPlevels
+                                local level2Threshold = mappingVars.levelToThreshold
+                                local allLevels = mappingVars.allLevels
+                                if levelMapping ~= nil and CPlevelMapping ~= nil and itemLink ~= nil and level2Threshold ~= nil and allLevels ~= nil then
+                                    local levelThreshold = ton(level2Threshold[tos(allLevels[settings.autoMarkSetsNonWishedLevel])]) or 0
+                                    if levelThreshold ~= nil and levelThreshold > 0  then
+                                        --Get the item level and champion rank
+                                        local requiredLevel = gilrl(itemLink)
+                                        local requiredCPRank = gilrcp(itemLink)
+                                        --Is the item a ChampionRank item?
+                                        if requiredCPRank > 0 then
+                                            if requiredCPRank < levelThreshold then
+                                                nonWishedLevelFound = true
+                                            end
+                                        else
+                                            --No CPs needed to wear this item
+                                            if requiredLevel < levelThreshold then
+                                                nonWishedLevelFound = true
+                                            end
+                                        end
+                                    end
+                                end
+                                --Was a non wished level found? Then mark the item as non wished now
+                                --if nonWishedLevelFound then
+                                --Check if the item is a jewelry part and if the non-wished marker icon is the "deconstruction" icon
+                                --replace it with the sell icon
+                                --> Not needed nymore: FCOIS v1.3.6 as deconstruction of jewelry works too now since "Summerset" update
+                                --if settings.autoMarkSetsNonWishedIconNr ~= FCOIS_CON_ICON_SELL then
+                                --    local _, _, _, equipType = gili(itemLink)
+                                --    if equipType == EQUIP_TYPE_NECK or equipType == EQUIP_TYPE_RING then
+                                --        markWithNonWishedIcon = false
+                                --        markWithNonWishedSellIcon = true
+                                --    end
+                                --end
+                                --end
+                            else
+                                --Level check is set to disabled at the detail dropdown -> Simulate the level check as successfull
+                                nonWishedLevelFound = true
+                            end
+                            if isDebuggingCase then d("[FCOIS]>level check: " ..tos(nonWishedLevelFound)) end
+                        end -- Non wished item level checks
+
+                        --Quality checks
+                        if doNonWishedQualityCheck == true then
+                            if settings.autoMarkSetsNonWishedQuality ~= 1 then
+                                --Check the item's quality to mark it with the chosen non-wished icon, or the sell icon?
+                                if isDebuggingCase then d(">> non-wished quality check! Non-wished quality: " .. tos(settings.autoMarkSetsNonWishedQuality)) end
+                                --Check the item's quality now
+                                local itemQuality = getItemQuality(p_itemData.bagId, p_itemData.slotIndex)
+                                if itemQuality ~= false then
+                                    nonWishedQualityFound = (itemQuality <= settings.autoMarkSetsNonWishedQuality) or false
+                                    --d("Quality: " .. tos(itemQuality) .. ", check: " .. tos(qualityCheck))
+                                    --Is the quality higher or equals the non-wished quality from the settings?
+                                    --if qualityCheck then
+                                    --else
+                                    --    --Mark with the sell icon
+                                    --    markWithNonWishedIcon = false
+                                    --    markWithNonWishedSellIcon = true
+                                    --end
+                                end
+                            else
+                                --Quality check is set to disabled at the detail dropdown -> Simulate the quality check as successfull
+                                nonWishedQualityFound = true
+                            end
+                            if isDebuggingCase then d("[FCOIS]>quality check: " ..tos(nonWishedQualityFound)) end
+                        end
+                    else
+                        if isDebuggingCase then d("[FCOIS]>trait check") end
+                    end --only check wished-trait
+                end --isSetPartAndIsValidAndGotTrait
+
+                local levelCheckSuccessfull =   (doNonWishedLevelCheck == true and nonWishedLevelFound == true and true) or false
+                local qualityCheckSuccessfull = (doNonWishedQualityCheck == true and nonWishedQualityFound == true and true) or false
+
+                if isDebuggingCase then d(">levelCheck: " ..tos(levelCheckSuccessfull) .. ", qualityCheck: " ..tos(qualityCheckSuccessfull)) end
+
                 --Was a level or quality or both combined found, matching to the non-wished settings?
-                if (doNonWishedLevelCheck and doNonWishedQualityCheck and nonWishedLevelFound and nonWishedQualityFound)             -- Both
-                        or (doNonWishedLevelCheck and not doNonWishedQualityCheck and nonWishedLevelFound and not nonWishedQualityFound)  -- Level
-                        or (not doNonWishedLevelCheck and doNonWishedQualityCheck and not nonWishedLevelFound and nonWishedQualityFound) -- Quality
+                if ( autoMarkSetsNonWishedChecksTraitEnabled == true and isSetPartAndIsValidAndGotTrait == true ) -- Only trait check
+                    or ( autoMarkSetsNonWishedChecksAnyEnabled == true and (levelCheckSuccessfull == true or qualityCheckSuccessfull == true) )  --Any check
+                    or ( autoMarkSetsNonWishedChecksAllEnabled == true and (levelCheckSuccessfull == true and qualityCheckSuccessfull == true) ) --All checks in combination
+                    or (not autoMarkSetsNonWishedChecksAnyEnabled and not autoMarkSetsNonWishedChecksAllEnabled and (levelCheckSuccessfull == true or qualityCheckSuccessfull == true)) --Level or quality
                 then
-                    if isDebuggingCase then d(">NonWishedCheck: 1") end
+                    if isDebuggingCase then d(">NonWishedCheck: Quality, level, trait, or all") end
                     markWithNonWishedIcon       = true
                     markWithNonWishedSellIcon   = false
                 else
-                    if isDebuggingCase then d(">NonWishedCheck: 2") end
+                    if isDebuggingCase then d(">NonWishedCheck: No non-wished found!") end
                     markWithNonWishedIcon       = false
                     markWithNonWishedSellIcon   = false
                     if settings.autoMarkSetsNonWishedSellOthers and isIconEnabled[FCOIS_CON_ICON_SELL] then
-                        if isDebuggingCase then d(">NonWishedCheck: 2a") end
+                        if isDebuggingCase then d(">NonWishedCheck: Mark non-wished with sell icon") end
                         --Don't do quality checks -> Mark with the non-wished icon
                         markWithNonWishedIcon       = false
                         markWithNonWishedSellIcon   = true
                     end
                 end
             else
-                if isDebuggingCase then d(">NonWishedCheck: 3") end
+                if isDebuggingCase then d(">NonWishedCheck: Because of char level") end
                 --No other checks were needed and we need to mark the setItem with the non-wished marker icon now
                 --as the character is below level 50 and the setting to mark then as non-wished is enabled
                 markWithNonWishedIcon = true
             end --if not nonWishedBecauseOfCharacterLevel then
+
             --Mark with the non-wished icon now?
-            if markWithNonWishedIcon or markWithNonWishedSellIcon then
+            if markWithNonWishedIcon == true or markWithNonWishedSellIcon == true then
                 if isDebuggingCase then d("<<<Marking with NonWished(Sell)Icon now!") end
                 local nonWishedMarkerIcon
-                if markWithNonWishedIcon then
+                if markWithNonWishedIcon == true then
                     nonWishedMarkerIcon = settings.autoMarkSetsNonWishedIconNr
-                elseif markWithNonWishedSellIcon then
+                elseif markWithNonWishedSellIcon == true then
                     nonWishedMarkerIcon = FCOIS_CON_ICON_SELL
                 end
                 --FCOIS.MarkItem - Mark the item now
