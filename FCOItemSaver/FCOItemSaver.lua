@@ -166,12 +166,12 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-05-04
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-05-15
 ------------------------------------------------------------------------------------
 
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.2.5 - New version: 2.2.6) -    Updated last: 2022-05-04
+--Changelog (last version: 2.2.5 - New version: 2.2.6) -    Updated last: 2022-05-15
 -------------------------------------------------------------------------------------
 --[Fixed]
 --#222 user:/AddOns/FCOItemSaver/src/FCOIS_Filters.lua:123: attempt to index a nil value error after pressing I directly at the undaunted chest vendor
