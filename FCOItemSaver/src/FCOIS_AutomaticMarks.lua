@@ -345,11 +345,13 @@ local function automaticMarkingSetsCollectionBookCheckFunc(p_bagId, p_slotIndex,
     local autoMarkSetsItemCollectionBookNonMissingIcon = settings.autoMarkSetsItemCollectionBookNonMissingIcon
     local missingAndNonMissingIconsNone = (autoMarkSetsItemCollectionBookMissingIcon == FCOIS_CON_ICON_NONE and autoMarkSetsItemCollectionBookNonMissingIcon == FCOIS_CON_ICON_NONE and true) or false
 
+    local isGuildBank = (p_bagId == BAG_GUILDBANK and true) or false --#231
+
     --Bind unknown?
     --d(">>autoBindMissingSetCollectionPiecesOnLoot: " ..tos(autoBindMissingSetCollectionPiecesOnLoot) .. ", knownOrUnknown: " ..tos(knownOrUnknown))
     if autoBindMissingSetCollectionPiecesOnLoot then
-        --Only go on if unknown checks
-        if knownOrUnknown ~= false then return nil, nil end
+        --Only go on if not scanning any GuildBank item, and if unknown checks are done
+        if isGuildBank == true or knownOrUnknown ~= false then return nil, nil end
         --d(">go on -> auto bind!")
     else
         if ( autoMarkSetsItemCollectionBookAddonUsed == nil
@@ -379,6 +381,7 @@ local function automaticMarkingSetsCollectionBookCheckFunc(p_bagId, p_slotIndex,
     --Automatic binding of missing set collection book items
     local function autoBindMissingSetCollectionBookItem()
         --d(">>>>>autoBindMissingSetCollectionBookItem: " .. itemLink)
+
         if not IsItemBound(p_bagId, p_slotIndex) then
             BindItem(p_bagId, p_slotIndex)
             if settings.autoBindMissingSetCollectionPiecesOnLootToChat then
@@ -409,7 +412,7 @@ local function automaticMarkingSetsCollectionBookCheckFunc(p_bagId, p_slotIndex,
                 --d(">>markeIcon: " .. tos(markerIcon))
             end
             --Auto bind missing set collection pieces?
-            if autoBindMissingSetCollectionPiecesOnLoot == true then
+            if not isGuildBank and autoBindMissingSetCollectionPiecesOnLoot == true then
                 autoBindMissingSetCollectionBookItem()
             end
         end
@@ -485,7 +488,7 @@ local function automaticMarkingSetsCollectionBookCheckFunc(p_bagId, p_slotIndex,
                     --Missing items?
                     markerIcon = autoMarkSetsItemCollectionBookMissingIcon
                     --Auto bind missing set collection pieces?
-                    if autoBindMissingSetCollectionPiecesOnLoot == true then
+                    if not isGuildBank and autoBindMissingSetCollectionPiecesOnLoot == true then
                         autoBindMissingSetCollectionBookItem()
                     end
                 end
@@ -548,7 +551,7 @@ end
 
 --Do all the checks for the "automatic mark item as set"
 local function automaticMarkingSetsCheckFunc(p_bagId, p_slotIndex)
-    --Todo: Remove after debugging!
+    --Todo: Change to "false" after debugging!
     local isDebuggingCase = false
     --[[
     if p_bagId == 1 and p_slotIndex == 26 then
@@ -830,10 +833,6 @@ local function automaticMarkingSetsAdditionalCheckFunc(p_itemData, p_checkFuncRe
                 local doNonWishedQualityCheck   = (autoMarkSetsNonWishedChecksAllEnabled or autoMarkSetsNonWishedChecksAnyEnabled or autoMarkSetsNonWishedChecks==FCOIS_CON_NON_WISHED_QUALITY) or false
                 local doNonWishedLevelCheck     = (autoMarkSetsNonWishedChecksAllEnabled or autoMarkSetsNonWishedChecksAnyEnabled or autoMarkSetsNonWishedChecks==FCOIS_CON_NON_WISHED_LEVEL) or false
 
-                --todo bug #228
-                --check for FCOIS_CON_NON_WISHED_ANY_OF_THEM any of the selected options need to be checked
-                --fix FCOIS_CON_NON_WISHED_ALL to only check all together, or else return false (no non-wished)
-
                 if isDebuggingCase then d(">all: " ..tos(autoMarkSetsNonWishedChecksAllEnabled) .. ", any: " ..tos(autoMarkSetsNonWishedChecksAnyEnabled) .. ", trait: " ..tos(autoMarkSetsNonWishedChecksTraitEnabled) .. ", quality: " ..tos(doNonWishedQualityCheck) .. ", level: " ..tos(doNonWishedLevelCheck)) end
 
                 --Do we need to simulate the normal trait checks, no quality/level, because the "detail" settings are disabled
@@ -1078,7 +1077,7 @@ end -- automaticMarkingSetsAdditionalCheckFunc
 --Function to scan a single item. Is needed so the return false won't abort scanning the whole inventory!
 function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, doOverride)
     doOverride = doOverride or false
-    --Debugging added with FCOIS v2.0.0
+    --TODO: Debugging added with FCOIS v2.0.0, change to "true" to debug and define "il" and items to debug below at --TODO: Comment after debugging!
     local showDebug = false --(scanType == "setItemCollectionsUnknown" and true) or false
     local il
 
@@ -1861,7 +1860,7 @@ function FCOIS.ScanInventoryItemsForAutomaticMarks(bag, slot, scanType, updateIn
 
     --Check only one bag & slot, or a whole inventory?
     if bag ~= nil and slot ~= nil then
---todo comemnt after debug
+    --todo comment after debug
         --[[
         if scanType == "setItemCollectionsUnknown" then
             d(">scanning: " ..GetItemLink(bag, slot))

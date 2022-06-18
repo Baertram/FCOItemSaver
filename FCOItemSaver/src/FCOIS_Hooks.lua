@@ -1291,7 +1291,7 @@ function FCOIS.CreateHooks()
     end
     --========= RESEARCH LIST / ListDialog (also repair, enchant, charge, etc.) - ZO_Dialog1 ======================================================
     --Original setupCallback function
-    local hookedResearchListFunctions               = ctrlVars.LIST_DIALOG.dataTypes[1].setupCallback
+    local hookedResearchListFunctions = ctrlVars.LIST_DIALOG.dataTypes[1].setupCallback
 
     --function for the research list preHook
     local function smithingResearchListDialogSetupCallback(rowControl, slot)

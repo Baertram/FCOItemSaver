@@ -143,6 +143,10 @@ local function addButtonToParentControl(buttonData, parent, name, callbackFuncti
             --Show the button and make it react on mouse input
             button:SetHidden(false)
             button:SetMouseEnabled(true)
+            --#230
+            button:SetDrawTier(DT_MEDIUM)
+            button:SetDrawLayer(DL_CONTROLS)
+            button:SetDrawLevel(1)
 
             --Return the button control
             return button
@@ -257,7 +261,7 @@ function FCOIS.AddAdditionalButtons(buttonName, buttonData)
                 categoryName = SI_BINDING_NAME_FCOIS_SETTINGS_MENU,
                 callback = callbackFnc,
                 visible = function()
-                    if settings.showFCOISMenuBarButton then
+                    if settings.showFCOISMenuBarButton == true then
                         if VOTANS_MENU_SETTINGS and VOTANS_MENU_SETTINGS:IsMenuButtonEnabled() then
                             return false
                         else

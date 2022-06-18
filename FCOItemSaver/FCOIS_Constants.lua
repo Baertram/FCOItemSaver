@@ -12,7 +12,7 @@ local strlen = string.len
 FCOIS.addonVars = {}
 local addonVars = FCOIS.addonVars
 --Addon variables
-addonVars.addonVersionOptions 		    = '2.2.5' -- version shown in the settings panel
+addonVars.addonVersionOptions 		    = '2.2.8' -- version shown in the settings panel
 --The addon name, normal and decorated with colors etc.
 addonVars.gAddonName				    = "FCOItemSaver"
 addonVars.gAddonNameShort               = "FCOIS"
@@ -1461,6 +1461,7 @@ ctrlVars.IMPROVEMENT_BUTTON_WEAPONS = GetControl(ctrlVars.IMPROVEMENT_INV, strfo
 --ctrlVars.SMITHING_MENUBAR_BUTTON_IMPROVEMENT 			= ZO_SmithingTopLevelModeMenuBarButton4
 ctrlVars.RESEARCH    				= GetControl(ctrlVars.SMITHING_PANEL, "ResearchPanel") --ZO_SmithingTopLevelResearchPanel
 ctrlVars.RESEARCH_NAME 				= ctrlVars.RESEARCH:GetName()
+ctrlVars.RESEARCH_SELECT            = SMITHING_RESEARCH_SELECT
 ctrlVars.LIST_DIALOG1               = ZO_ListDialog1
 ctrlVars.ZODialog1                  = ZO_Dialog1
 ctrlVars.RESEARCH_POPUP_TOP_DIVIDER       = GetControl(ctrlVars.LIST_DIALOG1, "Divider") --ZO_ListDialog1Divider
@@ -1887,7 +1888,7 @@ FCOIS.localizationVars.lTextMark 		    = {}
 FCOIS.localizationVars.lTextDemark 	        = {}
 FCOIS.localizationVars.contextEntries       = {}
 FCOIS.localizationVars.lTextEquipmentMark   = {}
-FCOIS.localizationVars.lTextEquipmentDemark                      = {}
+FCOIS.localizationVars.lTextEquipmentDemark = {}
 
 FCOIS.settingsVars	= {}
 FCOIS.settingsVars.settings			= {}

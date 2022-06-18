@@ -153,36 +153,39 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
     bank deposit list again.
 ]]
 
---#176, 2021-10-12, Beartram: Errors occured with OR filters, and mixed AND + OR filters -> Currently only ALL or or ALL AND can be enabled!
+--#176, 2021-10-12, Baertram: Errors occured with OR filters, and mixed AND + OR filters -> Currently only ALL or or ALL AND can be enabled!
 --#181, 2022-01-02, Baertram: Check filter slash command chat feedback: Does it show correct info about filter state and new logical conjuncions?
 
---#225  2022-04-24, Baertram: Savedvariables copy from server EU -> PTS "All accounts the same" or "Chosen account" does not work. Reloaduui is done but
+--#225  2022-04-24, Baertram: Savedvariables copy from server EU -> PTS "All accounts the same" or "Chosen account" does not work. Reloadui is done but
 --settings were not copied properly
 
 
 --______________________________________
--- Current max # of bugs/features/ToDos: 228
+-- Current max # of bugs/features/ToDos: 232
 --______________________________________
 
 
+--Todo for this patch
+
+
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-05-15
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-06-18
 ------------------------------------------------------------------------------------
+
+
 
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.2.5 - New version: 2.2.6) -    Updated last: 2022-05-15
+--Changelog (last version: 2.2.7 - New version: 2.2.8) -    Updated last: 2022-06-18
 -------------------------------------------------------------------------------------
 --[Fixed]
---#222 user:/AddOns/FCOItemSaver/src/FCOIS_Filters.lua:123: attempt to index a nil value error after pressing I directly at the undaunted chest vendor
---#223  PTS errors with changed QuickSlot variables
---#224  Copy savedvariables reloadui dialog was not showing as expected
---#226  Backup of marker icons throws error
---#227  Automatic marking level threshold dropdown is missing entries
---#228  Automatic marking non wished trait marker icon is not working, it's using the normal set marker icon/wished marker icon
+--#230 Additional inventory flag buttons are behind the inventory (with Perfect Pixel enabled, for example)
+--#231 AutoBind missing set collection attempts and  messages for items stored at a guild bank
+--#232 Error message at context menu - Happening as soon as right mouse cliked any inventory item after changing dynamic icon's count
+
 
 --[Changed]
---ListViews of inventory/crafting tables use SecurePostHook now
+
 
 --[Added]
 
