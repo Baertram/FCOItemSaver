@@ -169,20 +169,20 @@ local function updateLibShifterBoxEntries(parentCtrl, shifterBox, boxName)
 
     --FCOIS custom UniqueId
     if boxName == FCOISuniqueIdItemTypes then
-        if not locVars or not locVars.ItemTypes then
-            locVars = FCOISlocVars.fcois_loc
-        end
+        if not FCOISlocVars then FCOISlocVars = FCOIS.localizationVars end
+        if not locVars or not locVars.ItemTypes then locVars = FCOISlocVars.fcois_loc end
+        local itemTypes = locVars.ItemTypes
 
         local allowedFCOISUniqueIdItemTypes = settings.allowedFCOISUniqueIdItemTypes
         for k,v in pairs(allowedFCOISUniqueIdItemTypes) do
             if v == true then
-                rightListEntries[k] = strformat("%s [%s]", locVars.ItemTypes[k], tostring(k))
+                rightListEntries[k] = strformat("%s [%s]", itemTypes[k], tostring(k))
             else
-                leftListEntries[k] = strformat("%s [%s]", locVars.ItemTypes[k], tostring(k))
+                leftListEntries[k] = strformat("%s [%s]", itemTypes[k], tostring(k))
             end
         end
 
-    --Excluded sets
+        --Excluded sets
     elseif boxName == FCOISexcludedSets then
         --LibSets is given?
         if FCOIS.libSets then
