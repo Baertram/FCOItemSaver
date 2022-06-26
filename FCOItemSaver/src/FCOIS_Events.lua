@@ -723,7 +723,7 @@ local function FCOItemSaver_OnInventorySlotUnLocked(self, bag, slot)
     --Reset: Tell function ItemSelectionHandler that a drag&drop or doubleclick event was raised so it's not blocking the equip/use/etc. functions
     FCOIS.preventerVars.dragAndDropOrDoubleClickItemSelectionHandler = false
 end
-
+FCOIS.OnInventorySlotUnLocked = FCOItemSaver_OnInventorySlotUnLocked
 
 -- handler function for EVENT_INVENTORY_SLOT_LOCKED global event
 -- will be fired (before EVENT_CURSOR_PICKUP) if you pickup an item (e.g. by drag&drop)
@@ -732,7 +732,7 @@ end
 ----> Check file src/FCOIS_Hooks.lua, function FCOItemSaver_OnDragStart(...)
 local function FCOItemSaver_OnInventorySlotLocked(self, bag, slot)
     if FCOIS.settingsVars.settings.debug then debugMessage( "[Event]","OnInventorySlotLocked: bag: " .. tos(bag) .. ", slot: " .. tos(slot), true, FCOIS_DEBUG_DEPTH_NORMAL) end
---d("[FCOIS]EVENT_INVENTORY_SLOT_LOCKED-bagId: " ..tos(bag) ..", slotIndex: " ..tos(slot))
+d("[FCOIS]EVENT_INVENTORY_SLOT_LOCKED-bagId: " ..tos(bag) ..", slotIndex: " ..tos(slot))
 
     FCOIS.preventerVars.gItemSlotIsLocked = true
     --Set: Tell function ItemSelectionHandler that a drag&drop or doubleclick event was raised so it's not blocking the equip/use/etc. functions
@@ -778,6 +778,7 @@ local function FCOItemSaver_OnInventorySlotLocked(self, bag, slot)
     FCOIS.preventerVars.dragAndDropOrDoubleClickItemSelectionHandler = false
     FCOIS.preventerVars.splitItemStackDialogActive = false
 end
+FCOIS.OnInventorySlotLocked = FCOItemSaver_OnInventorySlotLocked
 
 --Executed if item should be destroyed manually
 local function FCOItemSaver_OnMouseRequestDestroyItem(_, bagId, slotIndex, _, _, needsConfirm)

@@ -7555,6 +7555,7 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                             disabled = function() return (fcoRestore.apiVersion == nil or #restoreChoicesValues == 0) or false end,
                             warning = locVars["options_restore_marker_icons_delete_selected_warning"],
                             width="half",
+                            reference = "FCOITEMSAVER_SETTINGS_DELETE_API_VERSION_BUTTON",
                         },
                     },
                 },

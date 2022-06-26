@@ -519,7 +519,7 @@ function FCOIS.CheckFCOISFilterButtonsAtPanel(doUpdateLists, panelId, overwriteF
     addOrChangeFCOISFilterButton = addOrChangeFCOISFilterButton or FCOIS.AddOrChangeFCOISFilterButton
     local settings = FCOIS.settingsVars.settings
     if settings.debug then debugMessage( "[CheckFilterButtonsAtPanel]","Start - Check panel ID: " ..tos(panelId) .. ", overwriteFilterWhere: " .. tos(overwriteFilterWhere) .. ", hideFilterButtons: " .. tos(hideFilterButtons).. ", isUniversalDeconNPC: " ..tos(isUniversalDeconNPC) .. ", universalDeconFilterPanelIdBefore: " ..tos(universalDeconFilterPanelIdBefore), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
---d("[FCOIS.CheckFilterButtonsAtPanel - panelId: " .. tos(panelId) .. ", gFilterWhere: " .. tos(FCOIS.gFilterWhere) .. ", UseFilters: " .. tos(settings.atPanelEnabled[FCOIS.gFilterWhere]["filters"]) .. ", hideFilterButtons: " ..tos(hideFilterButtons).. ", isUniversalDeconNPC: " ..tos(isUniversalDeconNPC) .. ", universalDeconFilterPanelIdBefore: " ..tos(universalDeconFilterPanelIdBefore))
+d("[FCOIS.CheckFilterButtonsAtPanel - panelId: " .. tos(panelId) .. ", gFilterWhere: " .. tos(FCOIS.gFilterWhere) .. ", UseFilters: " .. tos(settings.atPanelEnabled[FCOIS.gFilterWhere]["filters"]) .. ", hideFilterButtons: " ..tos(hideFilterButtons).. ", isUniversalDeconNPC: " ..tos(isUniversalDeconNPC) .. ", universalDeconFilterPanelIdBefore: " ..tos(universalDeconFilterPanelIdBefore))
 
     --Should we update the marker textures, size and color?
     checkMarker = checkMarker or FCOIS.CheckMarker
@@ -530,7 +530,7 @@ function FCOIS.CheckFCOISFilterButtonsAtPanel(doUpdateLists, panelId, overwriteF
     local buttonsParentCtrl, filterPanel = checkActivePanel(panelId, overwriteFilterWhere, isUniversalDeconNPC) -- #202
     local filterPanelIdToUse = FCOIS.gFilterWhere
 
---d(">buttonParentName: " .. tos(buttonsParentCtrl:GetName()) .. ", FilterPanelId/ParentPanelId/gFilterWhere:: " .. tos(filterPanelIdToUse) .. "/" .. tos(filterPanel) .. "/" .. tos(FCOIS.gFilterWhere))
+d(">buttonParentName: " .. tos(buttonsParentCtrl:GetName()) .. ", FilterPanelId/ParentPanelId/gFilterWhere:: " .. tos(filterPanelIdToUse) .. "/" .. tos(filterPanel) .. "/" .. tos(FCOIS.gFilterWhere))
 
     --Is an inventory found? The parent will be the filter button's parent
     if buttonsParentCtrl ~= nil then

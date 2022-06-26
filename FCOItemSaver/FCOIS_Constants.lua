@@ -12,7 +12,7 @@ local strlen = string.len
 FCOIS.addonVars = {}
 local addonVars = FCOIS.addonVars
 --Addon variables
-addonVars.addonVersionOptions 		    = '2.2.5' -- version shown in the settings panel
+addonVars.addonVersionOptions 		    = '2.2.9' -- version shown in the settings panel
 --The addon name, normal and decorated with colors etc.
 addonVars.gAddonName				    = "FCOItemSaver"
 addonVars.gAddonNameShort               = "FCOIS"
@@ -1382,6 +1382,7 @@ ctrlVars.BANK_BAG		    		= GetControl(ctrlVars.BANK, contentsStr)
 ctrlVars.BANK_MENUBAR_BUTTON_WITHDRAW	= GetControl(ctrlVars.BANK_INV, strformat(menuBarButtonStr, "1")) -- ZO_PlayerBankMenuBarButton1
 ctrlVars.BANK_MENUBAR_BUTTON_DEPOSIT = GetControl(ctrlVars.BANK_INV, strformat(menuBarButtonStr, "2")) -- ZO_PlayerBankMenuBarButton2
 ctrlVars.bankSceneName				= "bank"
+ctrlVars.BANK_FRAGMENT              = BANK_FRAGMENT
 ctrlVars.GUILD_BANK_INV 	    	= ZO_GuildBank
 ctrlVars.GUILD_BANK_INV_NAME		= ctrlVars.GUILD_BANK_INV:GetName()
 ctrlVars.GUILD_BANK 	    		= GetControl(ctrlVars.GUILD_BANK_INV, backpackStr) -- ZO_GuildBankBackpack
@@ -1392,6 +1393,7 @@ ctrlVars.guildBankSceneName		    = "guildBank"
 ctrlVars.guildBankGamepadSceneName	= "gamepad_guild_bank"
 ctrlVars.GUILD_STORE_KEYBOARD	    = TRADING_HOUSE
 ctrlVars.GUILD_STORE				= ZO_TradingHouse
+ctrlVars.GUILD_STORE_SCENE          = TRADING_HOUSE_SCENE
 ctrlVars.tradingHouseSceneName	    = "tradinghouse"
 ------------------------------------------------------------------------------------------------------------------------
 --2019-01-26: Support for API 100025 and 100026 controls!
@@ -1461,6 +1463,7 @@ ctrlVars.IMPROVEMENT_BUTTON_WEAPONS = GetControl(ctrlVars.IMPROVEMENT_INV, strfo
 --ctrlVars.SMITHING_MENUBAR_BUTTON_IMPROVEMENT 			= ZO_SmithingTopLevelModeMenuBarButton4
 ctrlVars.RESEARCH    				= GetControl(ctrlVars.SMITHING_PANEL, "ResearchPanel") --ZO_SmithingTopLevelResearchPanel
 ctrlVars.RESEARCH_NAME 				= ctrlVars.RESEARCH:GetName()
+ctrlVars.RESEARCH_SELECT            = SMITHING_RESEARCH_SELECT
 ctrlVars.LIST_DIALOG1               = ZO_ListDialog1
 ctrlVars.ZODialog1                  = ZO_Dialog1
 ctrlVars.RESEARCH_POPUP_TOP_DIVIDER       = GetControl(ctrlVars.LIST_DIALOG1, "Divider") --ZO_ListDialog1Divider
@@ -1887,7 +1890,7 @@ FCOIS.localizationVars.lTextMark 		    = {}
 FCOIS.localizationVars.lTextDemark 	        = {}
 FCOIS.localizationVars.contextEntries       = {}
 FCOIS.localizationVars.lTextEquipmentMark   = {}
-FCOIS.localizationVars.lTextEquipmentDemark                      = {}
+FCOIS.localizationVars.lTextEquipmentDemark = {}
 
 FCOIS.settingsVars	= {}
 FCOIS.settingsVars.settings			= {}

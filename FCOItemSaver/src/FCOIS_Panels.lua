@@ -489,7 +489,7 @@ function FCOIS.CheckActivePanel(comingFrom, overwriteFilterWhere, isDeconNPC)
     end
 
     -- -v- #202 Universal deconstruction?
---d("[FCOIS.checkActivePanel] comingFrom/Before: " .. tos(comingFrom) .. ", isDeconNPC: " .. tos(isDeconNPC) .. ", overwriteFilterWhere: " ..tos(overwriteFilterWhere).. ", currentSceneName: " ..tos(currentSceneName))
+d("[FCOIS.checkActivePanel] comingFrom/Before: " .. tos(comingFrom) .. ", isDeconNPC: " .. tos(isDeconNPC) .. ", overwriteFilterWhere: " ..tos(overwriteFilterWhere).. ", currentSceneName: " ..tos(currentSceneName))
     --universal Deconstruction NPC "Giladil"
     --> Return the original buttonParent via inventoryName so that we can create the buttons and then re-anchor them!
     --> But update the FCOIS.gFilterWhere with the current set filterPanelId at UNIVERSAL_DECONSTRUCTION.FCOIScurrentFilterPanelId
@@ -536,6 +536,7 @@ function FCOIS.CheckActivePanel(comingFrom, overwriteFilterWhere, isDeconNPC)
         inventoryName = ctrlVars2.INV
         --Trading house / Guild store
     elseif (currentSceneName ~= nil and currentSceneName == ctrlVars2.tradingHouseSceneName and not ctrlVars2.GUILD_STORE:IsHidden()) or comingFrom == LF_GUILDSTORE_SELL then
+d(">guild store sell")
         --Update the filterPanelId
         FCOIS.gFilterWhere = getFilterWhereBySettings(LF_GUILDSTORE_SELL)
         inventoryName = ctrlVars2.INV

@@ -29,7 +29,7 @@ local companionCharacterCtrl =  ctrlVars.COMPANION_CHARACTER
 local houseBankCtrl =           ctrlVars.HOUSE_BANK_BAG
 local guildBankCtrl =           ctrlVars.GUILD_BANK_BAG
 local bankCtrl =                ctrlVars.BANK_BAG
-local deconstructionCtrl =      ctrlVars.DECONSTRUCTION_BAG
+--local deconstructionCtrl =      ctrlVars.DECONSTRUCTION_BAG
 local universalDeconGlobal =    ctrlVars.UNIVERSAL_DECONSTRUCTION_GLOBAL
 local universalDeconPanel =     universalDeconGlobal and universalDeconGlobal.deconstructionPanel
 
@@ -562,18 +562,36 @@ local function FCOItemSaver_OnDragStart(inventorySlot)
     local cursorContentType = GetCursorContentType()
 --d("[FCOIS]FCOItemSaver_OnDragStart-cursorContentType: " .. tos(cursorContentType) .. "/" .. tos(MOUSE_CONTENT_INVENTORY_ITEM))
     --cursorContentType is in 99% of the cases = MOUSE_CONTENT_EMPTY, even if an inventory item gets dragged
-    if cursorContentType == MOUSE_CONTENT_EMPTY then
+    --Workaround for AwesomeGuildSTore which "simulates" an inventory item pickup by sending an emote pickup, to make the "sell from bank fragment" work at the
+    --guild store sell panel: https://github.com/sirinsidiator/ESO-AwesomeGuildStore/blob/master/src/wrappers/SellTabWrapper.lua#L518
+    if cursorContentType == MOUSE_CONTENT_EMPTY or (AwesomeGuildStore ~= nil and cursorContentType == MOUSE_CONTENT_EMOTE) then
         inventorySlot = ZO_InventorySlot_GetInventorySlotComponents(inventorySlot)
     end
+--FCOIS._dragStartInventorySlot = inventorySlot
+
     --FCOIS._inventorySlot=inventorySlot
     FCOIS.dragAndDropVars.bag  = nil
     FCOIS.dragAndDropVars.slot = nil
     local bag, slot = myGetItemDetails(inventorySlot)
     if bag == nil or slot == nil then bag, slot = ZO_Inventory_GetBagAndIndex(inventorySlot) end
-    --d(">bag, slot: " .. tos(bag) .. ", " .. tos(slot))
+--d(">bag, slot: " .. tos(bag) .. ", " .. tos(slot))
     if bag == nil or slot == nil then return end
     FCOIS.dragAndDropVars.bag  = bag
     FCOIS.dragAndDropVars.slot = slot
+
+    --Workaround for AwesomeGuildStore -> "Sell directly from bank". The EVENT_INVENTORY_SLOT_LOCKED will not fire here as
+    --sirinsidiator uses
+    if AwesomeGuildStore ~= nil and cursorContentType == MOUSE_CONTENT_EMOTE
+            and ctrlVars.GUILD_STORE_SCENE:IsShowing() and ctrlVars.BANK_FRAGMENT:IsSHowing()
+            and inventorySlot ~= nil and inventorySlot.slotType == SLOT_TYPE_BANK_ITEM and ZO_InventorySlot_GetStackCount(inventorySlot) > 0 then
+--d(">dragStart of inventorySlot at guild store sell - AGS enabled")
+        --Simulate firing the EVENT_INVENTORY_SLOT_LOCKED now
+        local _
+        FCOIS.OnInventorySlotLocked(_, bag, slot)
+        FCOIS.OnInventorySlotUnLocked(_, bag, slot)
+        d("<[FCOIS]return true - DragStart")
+        return true
+    end
 end
 
 --Callback function for receive a dragged inventory item. Used for:
@@ -657,6 +675,13 @@ local function FCOItemSaver_OnReceiveDrag(inventorySlot)
                 return true
             end
         end
+    end
+
+    --Fix for PreHook aof AGS -> return true here instead
+    if AwesomeGuildStore ~= nil and cursorContentType == MOUSE_CONTENT_EMOTE
+            and ctrlVars.GUILD_STORE_SCENE:IsShowing() and ctrlVars.BANK_FRAGMENT:IsSHowing() then
+        d("<[FCOIS]return true - DragReceive")
+        return true
     end
 end
 
@@ -1291,7 +1316,7 @@ function FCOIS.CreateHooks()
     end
     --========= RESEARCH LIST / ListDialog (also repair, enchant, charge, etc.) - ZO_Dialog1 ======================================================
     --Original setupCallback function
-    local hookedResearchListFunctions               = ctrlVars.LIST_DIALOG.dataTypes[1].setupCallback
+    local hookedResearchListFunctions = ctrlVars.LIST_DIALOG.dataTypes[1].setupCallback
 
     --function for the research list preHook
     local function smithingResearchListDialogSetupCallback(rowControl, slot)
@@ -1643,6 +1668,44 @@ function FCOIS.CreateHooks()
         --d("bank button 2, button: " .. button .. ", upInside: " .. tos(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastBankButton:GetName())
         mainMenuBarButtonFilterButtonHandler(button, upInside, "gLastBankButton", ctrlVars.BANK_MENUBAR_BUTTON_DEPOSIT, LF_BANK_WITHDRAW, LF_BANK_DEPOSIT, nil)
     end)
+
+    --Bank fragment - May be added to other scenes where it was not added to by vanilla UI, e.g. AwesomeGuildStore adds the fragment to the guild store sell scene
+    ctrlVars.BANK_FRAGMENT:RegisterCallback("StateChange", function(oldState, newState)
+        if settings.debug then debugMessage("[BANK_FRAGMENT]", "State: " .. tos(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        --If the trading house scene is currently shown and AwesomeGuildStore is active:
+        --AGS's "sell directly from bank" is activated
+        if AwesomeGuildStore ~= nil and ctrlVars.GUILD_STORE_SCENE:IsShowing() then
+            if newState == SCENE_FRAGMENT_SHOWING then
+--d("[FCOIS]Guild trader sell scene is shown - Bank fragment showing")
+                local filterPanelId = LF_BANK_WITHDRAW
+                FCOIS.preventerVars.gActiveFilterPanel = true
+                --Reset the anti-destroy settings if needed (e.g. bank was opened directly after inventory was closed, without calling other panels in between)
+                onClosePanel(LF_GUILDSTORE_SELL, filterPanelId, "DESTROY")
+                --Reset the last clicked bank button as it will always be the withdraw tab if you open the bank, and if the
+                --deposit button was the last one clicked it won't change the filter buttons as it thinks it is still active
+                FCOIS.lastVars.gLastBankButton = ctrlVars.BANK_MENUBAR_BUTTON_WITHDRAW
+                FCOIS.gFilterWhere = filterPanelId
+                --[[
+                --Scan if player bank got items that should be marked automatically
+                if not checkIfAutomaticMarksAreDisabledAtBag(bagId) then
+                    zo_callLater(function()
+                        scanInventory(bagId, nil, settings.autoMarkBagsChatOutput)
+                    end, 250)
+                end
+                ]]
+                --Change the button color of the context menu invoker
+                --changeContextMenuInvokerButtonColorByPanelId(filterPanelId) --> Called by "onClosePanel" above already
+                --Check the filter buttons and create them if they are not there. Update the inventory afterwards too
+                checkFCOISFilterButtonsAtPanel(true, filterPanelId)
+
+            elseif newState == SCENE_FRAGMENT_HIDING then
+--d("[FCOIS]Guild trader sell scene is shown - Bank fragment hiding")
+                FCOIS.gFilterWhere = LF_GUILDSTORE_SELL
+                onClosePanel(LF_BANK_WITHDRAW, FCOIS.gFilterWhere, "DESTROY")
+            end
+        end
+    end)
+
 
     --======== HOUSE BANK ================================================================
     --Register a secure posthook on visibility change of a scrolllist's row -> At the house bank inventory list

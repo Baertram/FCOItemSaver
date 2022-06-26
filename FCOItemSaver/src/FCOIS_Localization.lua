@@ -664,7 +664,7 @@ function FCOIS.Localization()
         [LF_INVENTORY_COMPANION]                = locTexts["filter_companion_inventory"],
     }
 
-    --Add the local localized tables from the constants
+    --Add the local localized tables from the constants, e.g. the ItemTypes subTable for the LibShifterBox uniqueId itemTypes
     local localLocalizationsVars = FCOIS.localLocalizationsVars
     if localLocalizationsVars ~= nil then
         for key, valueTab in pairs(localLocalizationsVars) do
@@ -672,7 +672,6 @@ function FCOIS.Localization()
                 FCOIS.localizationVars.fcois_loc[key] = ZO_ShallowTableCopy(valueTab)
             end
         end
-        FCOIS.localLocalizationsVars = nil
     end
 
     --Do some "after localization" stuff

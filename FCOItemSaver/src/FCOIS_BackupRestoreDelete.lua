@@ -33,10 +33,34 @@ standardBackupAllowedBagTypes[BAG_BUYBACK] 	= true
 standardBackupAllowedBagTypes[BAG_VIRTUAL] 	= true --Craftbag
 standardBackupAllowedBagTypes[BAG_COMPANION_WORN] 	= true
 --The text for each bagtype
-local bagIdToString
+local bagIdToString = {}
 local locVars = FCOIS.localizationVars.fcois_loc
+local migrateBagTypePrefix = "options_migrate_bag_type_"
+local bagTypesToIterate = {
+        [BAG_WORN] 		        = true,
+        [BAG_COMPANION_WORN]    = true,
+        [BAG_BACKPACK]          = true,
+        [BAG_BANK] 		        = true,
+        [BAG_GUILDBANK]         = true,
+        [BAG_BUYBACK] 	        = true,
+        [BAG_VIRTUAL] 	        = true,
+        [BAG_SUBSCRIBER_BANK]   = true,
+        [BAG_HOUSE_BANK_ONE]    = true,
+        [BAG_HOUSE_BANK_TWO]    = true,
+        [BAG_HOUSE_BANK_THREE]  = true,
+        [BAG_HOUSE_BANK_FOUR]   = true,
+        [BAG_HOUSE_BANK_FIVE]   = true,
+        [BAG_HOUSE_BANK_SIX]    = true,
+        [BAG_HOUSE_BANK_SEVEN]  = true,
+        [BAG_HOUSE_BANK_EIGHT]  = true,
+        [BAG_HOUSE_BANK_NINE]   = true,
+        [BAG_HOUSE_BANK_TEN]    = true,
+}
+
 local function updateBagId2String()
+    FCOIS.localizationVars = FCOIS.localizationVars or {}
     locVars = FCOIS.localizationVars.fcois_loc
+    --[[
     bagIdToString = {
         [BAG_WORN] 		        = locVars["options_migrate_bag_type_" .. tos(BAG_WORN)],
         [BAG_COMPANION_WORN]    = locVars["options_migrate_bag_type_" .. tos(BAG_COMPANION_WORN)],
@@ -57,7 +81,14 @@ local function updateBagId2String()
         [BAG_HOUSE_BANK_NINE]   = locVars["options_migrate_bag_type_" .. tos(BAG_HOUSE_BANK_NINE)],
         [BAG_HOUSE_BANK_TEN]    = locVars["options_migrate_bag_type_" .. tos(BAG_HOUSE_BANK_TEN)],
     }
-    FCOIS.localizationVars = FCOIS.localizationVars or {}
+    ]]
+    if locVars ~= nil then
+        for bagTypeNr, isActivated in pairs(bagTypesToIterate) do
+            if isActivated == true then
+                bagIdToString[bagTypeNr] = locVars[migrateBagTypePrefix .. tos(bagTypeNr)]
+            end
+        end
+    end
     FCOIS.localizationVars.bagIdToString = bagIdToString
 end
 updateBagId2String()
@@ -94,6 +125,8 @@ function FCOIS.BackupMarkerIcons(withDetails, apiVersion, doClearBackup)
 
     isMarked = isMarked or FCOIS.IsMarked
     isMarkedByItemInstanceId = isMarkedByItemInstanceId or FCOIS.IsMarkedByItemInstanceId
+
+    updateBagId2String()
 
     --Get the current API version of the server, to distinguish code differences dependant on the API version
     FCOIS.APIversion = GetAPIVersion()
@@ -141,7 +174,7 @@ function FCOIS.BackupMarkerIcons(withDetails, apiVersion, doClearBackup)
     d(preVars.preChatTextGreen .. ">>> Backup of marked items non-uniqueId/unique IDs (ZOs, FCOIS) started >>>")
     d(">Backup parameters: show details: " ..tos(withDetails) .. ", using API version " ..tos(apiVersionToUse) .. ", clear existing backup with same API version: " ..tos(doClearBackup))
     --FCOIS uniqueId part settings
-    d(">!!!Attention!!! The backup of the FCOIS uniqueIds will be done with the current FCOIS uiqueID settings!\nRestore would be working if you change the FCOIS uniqueId settings meanwhile BU your marker icons would not find the items anymore then!\nSo keep the FCOIS uniqueId settings untouched before your restore or you might loose markers.")
+    d(">!!!Attention!!! The backup of the FCOIS uniqueIds will be done with the current FCOIS uiqueID settings!\nRestore would be working if you change the FCOIS uniqueId settings meanwhile BUT your marker icons would not find the items anymore then!\nSo keep the FCOIS uniqueId settings untouched before your restore or you might loose markers.")
     d(">Current FCOIS uniqueId parts are: ")
     local uniqueIdParts = settings.uniqueIdParts
     for uniqueIdPartName, uniqueIdPartValue in pairs(uniqueIdParts) do
@@ -410,6 +443,8 @@ function FCOIS.RestoreMarkerIcons(withDetails, apiVersion)
     local backupData = settings.backupData
     local preVars = FCOIS.preChatVars
 
+    updateBagId2String()
+
     --Get the current API version of the server, to distinguish code differences dependant on the API version
     FCOIS.APIversion = GetAPIVersion()
     local lastApiVersion
@@ -601,6 +636,14 @@ end
 ------------------------------------------------------------------------------------------------------------------------
 -- DELETE BACKUP
 ------------------------------------------------------------------------------------------------------------------------
+--[[
+local function disableDeleteLAMButton()
+    if FCOITEMSAVER_SETTINGS_DELETE_API_VERSION_BUTTON ~= nil and FCOITEMSAVER_SETTINGS_DELETE_API_VERSION_BUTTON.button ~= nil then
+        FCOIS.restore.apiVersion = nil
+        FCOITEMSAVER_SETTINGS_DELETE_API_VERSION_BUTTON.button:SetEnabled(false)
+    end
+end
+]]
 
 function FCOIS.DeleteBackup(apiVersionToDelete)
 --d("[FCOIS.DeleteBackup]apiVersion: " ..tos(apiVersionToDelete))
@@ -612,6 +655,7 @@ function FCOIS.DeleteBackup(apiVersionToDelete)
     --Is the backup existing which should be deleted?
     if backupData[apiVersionToDelete] == nil then
         d(preVars.preChatTextRed .. "?> Backup for specified API version "..tos(apiVersionToDelete) .." not found! <<<")
+        --disableDeleteLAMButton()
         return false
     else
         --Delete the backup now
@@ -619,6 +663,7 @@ function FCOIS.DeleteBackup(apiVersionToDelete)
         d(preVars.preChatTextGreen .. "?> Backup for specified API version "..tos(apiVersionToDelete) .." was deleted! <<<")
         --Update the list of restorable backups now in the settings dropdown
         FCOIS.BuildRestoreAPIVersionData(true)
+        --disableDeleteLAMButton()
         return true
     end
 end
