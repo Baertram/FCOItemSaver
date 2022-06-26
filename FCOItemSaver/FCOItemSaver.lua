@@ -185,7 +185,7 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 ------------------------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-06-26
 ------------------------------------------------------------------------------------
-
+--#233
 
 
 

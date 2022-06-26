@@ -582,7 +582,7 @@ local function FCOItemSaver_OnDragStart(inventorySlot)
     --Workaround for AwesomeGuildStore -> "Sell directly from bank". The EVENT_INVENTORY_SLOT_LOCKED will not fire here as
     --sirinsidiator uses
     if AwesomeGuildStore ~= nil and cursorContentType == MOUSE_CONTENT_EMOTE
-            and ctrlVars.GUILD_STORE_SCENE:IsShowing() and ctrlVars.BANK_FRAGMENT:IsSHowing()
+            and ctrlVars.GUILD_STORE_SCENE:IsShowing() and ctrlVars.BANK_FRAGMENT:IsShowing()
             and inventorySlot ~= nil and inventorySlot.slotType == SLOT_TYPE_BANK_ITEM and ZO_InventorySlot_GetStackCount(inventorySlot) > 0 then
 --d(">dragStart of inventorySlot at guild store sell - AGS enabled")
         --Simulate firing the EVENT_INVENTORY_SLOT_LOCKED now
@@ -679,7 +679,7 @@ local function FCOItemSaver_OnReceiveDrag(inventorySlot)
 
     --Fix for PreHook aof AGS -> return true here instead
     if AwesomeGuildStore ~= nil and cursorContentType == MOUSE_CONTENT_EMOTE
-            and ctrlVars.GUILD_STORE_SCENE:IsShowing() and ctrlVars.BANK_FRAGMENT:IsSHowing() then
+            and ctrlVars.GUILD_STORE_SCENE:IsShowing() and ctrlVars.BANK_FRAGMENT:IsShowing() then
         d("<[FCOIS]return true - DragReceive")
         return true
     end
