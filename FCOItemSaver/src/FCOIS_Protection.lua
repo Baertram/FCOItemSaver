@@ -1415,8 +1415,8 @@ function FCOIS.IsCraftBagItemDraggedToCraftingSlot(panelId, bagId, slotIndex)
         --Is the item from the craftbag?
         if bagId == BAG_VIRTUAL then
 --d(">Craftbag item")
-            --  bag, slot, echo, isDragAndDrop, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId
-            if( FCOIS.callItemSelectionHandler(bagId, slotIndex, true, true, false, false, false, false, false) ) then
+            -- bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId, isDragAndDrop, panelIdParent
+            if( FCOIS.callItemSelectionHandler(bagId, slotIndex, true, true, false, true, false, false, nil, true, nil) ) then
                 --d(">Item is protected so don't allow the drop!")
                 --Remove the picked item from drag&drop cursor
                 ClearCursor()

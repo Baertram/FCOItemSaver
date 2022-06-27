@@ -178,8 +178,8 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 
 -->Item click protection: Working
 -->Item click protection error text: TODO
--->Item drag protection: TODO
--->Item drag protection error text: TODO https://github.com/sirinsidiator/ESO-AwesomeGuildStore/blob/master/src/wrappers/SellTabWrapper.lua#L515 -> Calls ZO_InventorySlot_OnReceiveDrag then via "PickupEmoteById" hack
+-->Item drag protection: Working https://github.com/sirinsidiator/ESO-AwesomeGuildStore/blob/master/src/wrappers/SellTabWrapper.lua#L515 -> Calls ZO_InventorySlot_OnReceiveDrag then via "PickupEmoteById" hack
+-->Item drag protection error text: TODO
 -->Item automatic unslot as protected: TODO
 
 ------------------------------------------------------------------------------------

@@ -562,7 +562,7 @@ local function FCOItemSaver_OnDragStart(inventorySlot)
     local cursorContentType = GetCursorContentType()
 --d("[FCOIS]FCOItemSaver_OnDragStart-cursorContentType: " .. tos(cursorContentType) .. "/" .. tos(MOUSE_CONTENT_INVENTORY_ITEM))
     --cursorContentType is in 99% of the cases = MOUSE_CONTENT_EMPTY, even if an inventory item gets dragged
-    --Workaround for AwesomeGuildSTore which "simulates" an inventory item pickup by sending an emote pickup, to make the "sell from bank fragment" work at the
+    --#233 Workaround for AwesomeGuildSTore which "simulates" an inventory item pickup by sending an emote pickup, to make the "sell from bank fragment" work at the
     --guild store sell panel: https://github.com/sirinsidiator/ESO-AwesomeGuildStore/blob/master/src/wrappers/SellTabWrapper.lua#L518
     if cursorContentType == MOUSE_CONTENT_EMPTY or (AwesomeGuildStore ~= nil and cursorContentType == MOUSE_CONTENT_EMOTE) then
         inventorySlot = ZO_InventorySlot_GetInventorySlotComponents(inventorySlot)
@@ -579,7 +579,7 @@ local function FCOItemSaver_OnDragStart(inventorySlot)
     FCOIS.dragAndDropVars.bag  = bag
     FCOIS.dragAndDropVars.slot = slot
 
-    --Workaround for AwesomeGuildStore -> "Sell directly from bank". The EVENT_INVENTORY_SLOT_LOCKED will not fire here as
+    --#233 Workaround for AwesomeGuildStore -> "Sell directly from bank". The EVENT_INVENTORY_SLOT_LOCKED will not fire here as
     --sirinsidiator uses
     if AwesomeGuildStore ~= nil and cursorContentType == MOUSE_CONTENT_EMOTE
             and ctrlVars.GUILD_STORE_SCENE:IsShowing() and ctrlVars.BANK_FRAGMENT:IsShowing()
@@ -589,7 +589,7 @@ local function FCOItemSaver_OnDragStart(inventorySlot)
         local _
         FCOIS.OnInventorySlotLocked(_, bag, slot)
         FCOIS.OnInventorySlotUnLocked(_, bag, slot)
-        d("<[FCOIS]return true - DragStart")
+        --d("<[FCOIS]return true - DragStart")
         return true
     end
 end
@@ -677,10 +677,10 @@ local function FCOItemSaver_OnReceiveDrag(inventorySlot)
         end
     end
 
-    --Fix for PreHook aof AGS -> return true here instead
+    --#233 Fix for PreHook of AGS -> return true here instead
     if AwesomeGuildStore ~= nil and cursorContentType == MOUSE_CONTENT_EMOTE
             and ctrlVars.GUILD_STORE_SCENE:IsShowing() and ctrlVars.BANK_FRAGMENT:IsShowing() then
-        d("<[FCOIS]return true - DragReceive")
+        --d("<[FCOIS]return true - DragReceive")
         return true
     end
 end

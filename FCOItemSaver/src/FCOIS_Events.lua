@@ -708,6 +708,7 @@ end
 -- will be fired (after EVENT_INVENTORY_SLOT_LOCKED) if you have pickuped an item (e.g. by drag&drop) and drop it again
 local function FCOItemSaver_OnInventorySlotUnLocked(self, bag, slot)
     if FCOIS.settingsVars.settings.debug then debugMessage( "[Event]","OnInventorySlotUnLocked: bag: " .. tos(bag) .. ", slot: " .. tos(slot), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+--d("[FCOIS]EVENT_INVENTORY_SLOT_UNLOCKED-bagId: " ..tos(bag) ..", slotIndex: " ..tos(slot))
 
     if (bag == BAG_WORN or bag == BAG_COMPANION_WORN) and FCOIS.preventerVars.gItemSlotIsLocked == true then
         --If item was unequipped: Remove the armor type marker if necessary
@@ -732,7 +733,7 @@ FCOIS.OnInventorySlotUnLocked = FCOItemSaver_OnInventorySlotUnLocked
 ----> Check file src/FCOIS_Hooks.lua, function FCOItemSaver_OnDragStart(...)
 local function FCOItemSaver_OnInventorySlotLocked(self, bag, slot)
     if FCOIS.settingsVars.settings.debug then debugMessage( "[Event]","OnInventorySlotLocked: bag: " .. tos(bag) .. ", slot: " .. tos(slot), true, FCOIS_DEBUG_DEPTH_NORMAL) end
-d("[FCOIS]EVENT_INVENTORY_SLOT_LOCKED-bagId: " ..tos(bag) ..", slotIndex: " ..tos(slot))
+--d("[FCOIS]EVENT_INVENTORY_SLOT_LOCKED-bagId: " ..tos(bag) ..", slotIndex: " ..tos(slot))
 
     FCOIS.preventerVars.gItemSlotIsLocked = true
     --Set: Tell function ItemSelectionHandler that a drag&drop or doubleclick event was raised so it's not blocking the equip/use/etc. functions
@@ -763,8 +764,8 @@ d("[FCOIS]EVENT_INVENTORY_SLOT_LOCKED-bagId: " ..tos(bag) ..", slotIndex: " ..to
         -- check if destroying, improvement, sending or trading, etc. is forbidden
         -- and check if item is bindable (above)
         -- if so, clear item hold by cursor
-        --  bag, slot, echo, isDragAndDrop, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId
-        if( doShowItemBindDialog or FCOIS.callItemSelectionHandler(bag, slot, true, true, false, false, false, false, false) ) then
+        --  bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId, isDragAndDrop, panelIdParent
+        if( doShowItemBindDialog or FCOIS.callItemSelectionHandler(bag, slot, true, true, false, true, false, false, nil, true, nil) ) then
             --Remove the picked item from drag&drop cursor
             ClearCursor()
             FCOIS.preventerVars.splitItemStackDialogActive = false
