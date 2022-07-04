@@ -263,13 +263,23 @@ local function FCOItemSaver_Open_Trading_House()
     FCOIS.preventerVars.gActiveFilterPanel = true
     if FCOIS.settingsVars.settings.debug then debugMessage( "[EVENT]","Open trading house", true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
+    local filterPanelId = LF_GUILDSTORE_SELL
+    --Special case for AwesomeGuildStore -> directly sell to guild store from custom bank fragment
+    -->Will fire (why ever???) after any item was listed at the the guild store sell tab, and changes FCOIS.gFilterWhere that way
+    if otherAddons ~= nil and otherAddons.AGSActive ~= nil and ctrlVars.GUILD_STORE_SCENE:IsShowing() then
+        --Is the bank fragment shown?
+        if ctrlVars.BANK_FRAGMENT:IsShowing() or FCOIS.gFilterWhere == LF_BANK_WITHDRAW then
+            filterPanelId = LF_BANK_WITHDRAW
+        end
+    end
+
     --Reset the anti-destroy settings if needed (e.g. bank was opened directly after inventory was closed, without calling other panels in between)
     onClosePanel(LF_INVENTORY, nil, "DESTROY")
 
     --Change the button color of the context menu invoker
-    changeContextMenuInvokerButtonColorByPanelId(LF_GUILDSTORE_SELL)
+    changeContextMenuInvokerButtonColorByPanelId(filterPanelId)
     --Check the filter buttons and create them if they are not there. Update the inventory afterwards too
-    checkFCOISFilterButtonsAtPanel(true, LF_GUILDSTORE_SELL)
+    checkFCOISFilterButtonsAtPanel(true, filterPanelId)
 
     --======== GUILD STORE SEARCH ==============================================
     local function PreHookGuildStoreSearchButtonOnMouseUp()
@@ -284,7 +294,7 @@ local function FCOItemSaver_Open_Trading_House()
             ZO_PreHookHandler(ctrlVars.GUILD_STORE_MENUBAR_BUTTON_SEARCH, "OnMouseUp", function(_, button, upInside)
                 --d("guild store button 1, button: " .. button .. ", upInside: " .. tos(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastGuildStoreButton:GetName())
                 --if (button == 1 and upInside and FCOIS.lastVars.gLastGuildStoreButton~=ctrlVars.GUILD_STORE_MENUBAR_BUTTON_SEARCH) then
-                if button == 1 and upInside then
+                if button == MOUSE_BUTTON_INDEX_LEFT and upInside then
                     --FCOIS.lastVars.gLastGuildStoreButton = ctrlVars.GUILD_STORE_MENUBAR_BUTTON_SEARCH
                     --Close the contextMenu at the guild store sell window now
                     hideContextMenu(LF_GUILDSTORE_SELL)
@@ -378,6 +388,12 @@ end
 
 --Event upon opening of a player bank
 local function FCOItemSaver_Open_Player_Bank(event, bagId)
+    --Special case for AwesomeGuildStore -> directly sell to guild store from custom bank fragment
+    -->Will fire (why ever???) after any item was listed at the the guild store sell tab, and changes FCOIS.gFilterWhere that way
+    if otherAddons ~= nil and otherAddons.AGSActive ~= nil and ctrlVars.GUILD_STORE_SCENE:IsShowing() then
+        return
+    end
+
     local isHouseBank = IsHouseBankBag(bagId) or false
     FCOIS.preventerVars.gActiveFilterPanel = true
     local settings = FCOIS.settingsVars.settings

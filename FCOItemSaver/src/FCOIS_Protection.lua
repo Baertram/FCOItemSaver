@@ -1447,14 +1447,15 @@ function FCOIS.IsItemProtectedAtTheGuildStoreSellTabNow(bagId, slotIndex, scanOt
         then
             bagId = ctrlVars.GUILD_STORE_SELL_SLOT_ITEM.bagId
             slotIndex = ctrlVars.GUILD_STORE_SELL_SLOT_ITEM.slotIndex
-            --d("[FCOIS]MarkMe GuildStore - callDeconstructionSelectionHandler without echo")
             --FCOIS.callDeconstructionSelectionHandler(bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon)
             --Be sure to set calledFromExternalAddon = true here as otherwise the guild store sell checks aren't done, because
             --the DeconstructionSelectionhandler will not call the ItemSelectionHandler then!
-            local isProtected = FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, false, true, false, true, true)
+            --                                                           bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId
+            local isProtected = FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, false, true, false, true, true, nil)
+--d("[FCOIS]IsItemProtectedAtTheGuildStoreSellTabNow GuildStore - isProtected: " ..tos(isProtected))
             --Item is protected?
-            if isProtected then
-                --d("GuildStore: Item is protected! Output error message now")
+            if isProtected == true then
+--d("GuildStore: Item is protected! Output error message now")
                 --Remove the item from the guild store sell slot
                 --BAG_BACKPACK is used as even CraftBag items get moved to the bagpack before listing them! Even with addon CraftBagExtended
                 SetPendingItemPost(BAG_BACKPACK, 0, 0)
