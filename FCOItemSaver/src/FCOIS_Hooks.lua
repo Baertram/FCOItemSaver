@@ -5,6 +5,7 @@ local FCOIS = FCOIS
 if not FCOIS.libsLoadedProperly then return end
 
 local libFilters = FCOIS.libFilters
+ local otherAddons = FCOIS.otherAddons
 
 local debugMessage                          = FCOIS.debugMessage
 
@@ -564,7 +565,7 @@ local function FCOItemSaver_OnDragStart(inventorySlot)
     --cursorContentType is in 99% of the cases = MOUSE_CONTENT_EMPTY, even if an inventory item gets dragged
     --#233 Workaround for AwesomeGuildSTore which "simulates" an inventory item pickup by sending an emote pickup, to make the "sell from bank fragment" work at the
     --guild store sell panel: https://github.com/sirinsidiator/ESO-AwesomeGuildStore/blob/master/src/wrappers/SellTabWrapper.lua#L518
-    if cursorContentType == MOUSE_CONTENT_EMPTY or (AwesomeGuildStore ~= nil and cursorContentType == MOUSE_CONTENT_EMOTE) then
+    if cursorContentType == MOUSE_CONTENT_EMPTY or (otherAddons.AGSActive and cursorContentType == MOUSE_CONTENT_EMOTE) then
         inventorySlot = ZO_InventorySlot_GetInventorySlotComponents(inventorySlot)
     end
 --FCOIS._dragStartInventorySlot = inventorySlot
@@ -581,7 +582,7 @@ local function FCOItemSaver_OnDragStart(inventorySlot)
 
     --#233 Workaround for AwesomeGuildStore -> "Sell directly from bank". The EVENT_INVENTORY_SLOT_LOCKED will not fire here as
     --sirinsidiator uses
-    if AwesomeGuildStore ~= nil and cursorContentType == MOUSE_CONTENT_EMOTE
+    if otherAddons.AGSActive and cursorContentType == MOUSE_CONTENT_EMOTE
             and ctrlVars.GUILD_STORE_SCENE:IsShowing() and ctrlVars.BANK_FRAGMENT:IsShowing()
             and inventorySlot ~= nil and inventorySlot.slotType == SLOT_TYPE_BANK_ITEM and ZO_InventorySlot_GetStackCount(inventorySlot) > 0 then
 --d(">dragStart of inventorySlot at guild store sell - AGS enabled")
@@ -678,7 +679,7 @@ local function FCOItemSaver_OnReceiveDrag(inventorySlot)
     end
 
     --#233 Fix for PreHook of AGS -> return true here instead
-    if AwesomeGuildStore ~= nil and cursorContentType == MOUSE_CONTENT_EMOTE
+    if otherAddons.AGSActive ~= nil and cursorContentType == MOUSE_CONTENT_EMOTE
             and ctrlVars.GUILD_STORE_SCENE:IsShowing() and ctrlVars.BANK_FRAGMENT:IsShowing() then
         --d("<[FCOIS]return true - DragReceive")
         return true
@@ -1674,7 +1675,7 @@ function FCOIS.CreateHooks()
         if settings.debug then debugMessage("[BANK_FRAGMENT]", "State: " .. tos(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
         --If the trading house scene is currently shown and AwesomeGuildStore is active:
         --AGS's "sell directly from bank" is activated
-        if AwesomeGuildStore ~= nil and ctrlVars.GUILD_STORE_SCENE:IsShowing() then
+        if otherAddons.AGSActive ~= nil and ctrlVars.GUILD_STORE_SCENE:IsShowing() then
             if newState == SCENE_FRAGMENT_SHOWING then
 --d("[FCOIS]Guild trader sell scene is shown - Bank fragment showing")
                 local filterPanelId = LF_BANK_WITHDRAW

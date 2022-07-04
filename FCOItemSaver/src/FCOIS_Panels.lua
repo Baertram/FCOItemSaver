@@ -230,7 +230,7 @@ function FCOIS.GetWhereAreWe(panelId, panelIdAtCall, panelIdParent, bag, slot, i
     --The current game's SCENE and name (used for determining bank/guild bank deposit)
     local _, currentSceneName = getCurrentSceneInfo()
     --Local settings pointer
-    local settings = FCOIS.settingsVars.settings
+    --local settings = FCOIS.settingsVars.settings
     local otherAddons = FCOIS.otherAddons
 
     --universal Deconstruction NPC is used?
@@ -311,7 +311,7 @@ function FCOIS.GetWhereAreWe(panelId, panelIdAtCall, panelIdParent, bag, slot, i
         --------------------------------------------------------------------------------------------------------------------
         --------------------------------------------------------------------------------------------------------------------
         --AwesomeGuildStore addon is active - We are at the guild store "sell" tab and are selling from the bank
-    elseif (not isDeconNPC and otherAddons.awesomeGuildStoreActive and ctrlVars.GUILD_STORE_SCENE:IsShowing()
+    elseif (not isDeconNPC and otherAddons.AGSActive and ctrlVars.GUILD_STORE_SCENE:IsShowing()
         and ((calledFromExternalAddon and panelId == LF_BANK_WITHDRAW) or (not calledFromExternalAddon and (panelId == LF_BANK_WITHDRAW or ctrlVars.BANK_FRAGMENT:IsShowing())))) then
 d(">AwesomeGuildStore GuildStoreSell from bank " .. tos(panelId) ..", isDragAndDrop: " ..tos(isDragAndDrop))
         whereAreWe = FCOIS_CON_GUILD_STORE_SELL
