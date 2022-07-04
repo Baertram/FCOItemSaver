@@ -182,10 +182,10 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 -->Filter buttons after listing an item: TODO, changes back to LF_GUILDSTORE_SELL, but where? FCOIS.CheckActivePanel, driven by FilterButton ittself?
 
 -->Item click protection: Working
--->Item click protection error text: TODO
+-->Item click protection error text: Working
 -->Item drag protection: Working https://github.com/sirinsidiator/ESO-AwesomeGuildStore/blob/master/src/wrappers/SellTabWrapper.lua#L515 -> Calls ZO_InventorySlot_OnReceiveDrag then via "PickupEmoteById" hack
 --> !!! AwesomeGuildStore needs to update it's PreHooks of ZO_InventorySlot_OnStart Drag and ZO_InventorySlot_OnReceiveDrag !!!
--->Item drag protection error text: TODO
+-->Item drag protection error text: TODO -> Fix within AGS needed!
 -->Item automatic unslot as protected: TODO
 
 ------------------------------------------------------------------------------------

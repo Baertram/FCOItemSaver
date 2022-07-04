@@ -501,6 +501,11 @@ function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChat
     if bag == nil or slot == nil then return true end
     local doDebug = false
     --TODO: enable to show d messages for debugging
+--[[
+    if bag == 2 and slot == 24 then
+        FCOIS.preventerVars.doDebugItemSelectionHandler = true
+    end
+]]
     if FCOIS.preventerVars.doDebugItemSelectionHandler == true then
         doDebug = true
         FCOIS.preventerVars.doDebugItemSelectionHandler = false
@@ -600,6 +605,7 @@ if doDebug then d("[FCOIS]ItemSelectionHandler - Bag: " .. tos(bag) .. ", Slot: 
     --======= WHERE ARE WE? ========================================================
     --The number for the orientation (which filter panel ID and which sub-checks were done -> for the chat output and the alert message determination)
     getWhereAreWe = getWhereAreWe or FCOIS.GetWhereAreWe
+    --WhereAreWe: FCOIS_CON_* constant to show where we currently are filtering and checking protections
     local whereAreWe = getWhereAreWe(panelId, panelIdAtCall, panelIdParent, bag, slot, isDragAndDrop, calledFromExternalAddon)
 
     --Error: wheerAreWe is NIL!
@@ -724,7 +730,7 @@ if doDebug then d(">>>> Dyn 2, singleItemChecks: " .. tos(singleItemChecks) .. "
                 end
                 --============== DYNAMIC ICON CHECKS - END =====================================
             --else
-if doDebug then d(">WhereAreWe is: FCOIS_CON_FALLBACK -> No further checks were done!") end
+if doDebug then d(">WhereAreWe is: " ..tos(whereAreWe) .." -> No further checks were done!") end
             end -- if not whereAreWe == FCOIS_CON_FALLBACK then
             --============== SPECIAL ITEM & ICON CHECKS - START (non-dynamic!) ====================================
             if not isDynamicIcon then
@@ -778,11 +784,12 @@ if doDebug then d(">>IsItemAGlpyh: " .. tos(not isBlockedLoop) .. ", isBlockedLo
             --Abort here if at least one marker icon was set and it is protecting the item!
             if isBlockedLoop == true then
                 if settings.debug then debugMessage("[ItemSelectionHandler]",">isBlockedLoop: true -> Item is protected!", true, FCOIS_DEBUG_DEPTH_SPAM) end
-if doDebug then d("isBlockedLoop: true -> Item is protected!") end
+if doDebug then d("isBlockedLoop: true -> Item is protected! echo: " ..tos(echo)) end
                 --Show text in chat or alert message now?
                 if echo == true then
                     if doDebug then d(">item echo - whereAreWe: " .. tos(whereAreWe) .. ", overrideChatOutput: " .. tos(overrideChatOutput) .. ", suppressChatOutput: " .. tos(suppressChatOutput) .. ", overrideAlert: " .. tos(overrideAlert) .. ", suppressAlert: " .. tos(suppressAlert)) end
                     --Check if alert or chat message should be shown
+                    --                         bag, slot, whereAreWe, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert
                     outputItemProtectedMessage(bag, slot, whereAreWe, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert)
                 end
                 --Abort here as at least 1 icon is marked for the current item and the protection for this icon (globally or dynamically per icon) is enabled here!

@@ -447,7 +447,7 @@ end
 --Prehook function to ZO_InventorySlot_DoPrimaryAction to secure items as doubleclick or keybind of primary was raised
 local function FCOItemSaver_OnInventorySlot_DoPrimaryAction(inventorySlot)
     checkIfUniversalDeconstructionNPC = checkIfUniversalDeconstructionNPC or FCOIS.CheckIfUniversalDeconstructionNPC
-    --d("FCOItemSaver_OnInventorySlot_DoPrimaryAction")
+--d("FCOItemSaver_OnInventorySlot_DoPrimaryAction")
     local doNotCallOriginalZO_InventorySlot_DoPrimaryAction = false
     --Hide the context menu at last active panel
     hideContextMenu = hideContextMenu or FCOIS.HideContextMenu
@@ -465,6 +465,14 @@ local function FCOItemSaver_OnInventorySlot_DoPrimaryAction(inventorySlot)
     local isCharacter     = (parent == characterCtrl) or false
     isVendorPanelShown = isVendorPanelShown or FCOIS.IsVendorPanelShown
     local isVendorRepair  = isVendorPanelShown(LF_VENDOR_REPAIR, false) or false
+
+    --Special case for AwesomeGuildStore -> directly sell to guild store from custom bank fragment
+    -->Will be detected as bank here, but actually is guild store sell!
+    if isABankWithdraw == true and FCOIS.gFilterWhere == LF_BANK_WITHDRAW and otherAddons.AGSActive ~= nil
+        and ctrlVars.GUILD_STORE_SCENE:IsShowing() and ctrlVars.BANK_FRAGMENT:IsShowing() then
+        isABankWithdraw = false
+    end
+
     --Do not add protection double click functions to bank/guild bank withdraw and character, and vendor repair
 --d(">[FCOIS]FCOItemSaver_OnInventorySlot_DoPrimaryAction - " .. tos(inventorySlot:GetName()) .. ", isBankWithdraw: " ..tos(isABankWithdraw) .. ", isCharacter: " ..tos(isCharacter) .. ", isVendorRepair: " ..tos(isVendorRepair))
     if not isABankWithdraw and not isCharacter and not isVendorRepair then
