@@ -36,6 +36,7 @@ local isItemAGlpyh = FCOIS.IsItemAGlpyh
 local checkIfUniversaldDeconstructionNPC
 local checkActivePanel
 local isVendorPanelShown
+local getWhereAreWe
 
 --===================================================================================
 --	FCOIS Anti - *  - Methods to check if item is protected, or allowed to be ...
@@ -598,7 +599,8 @@ if doDebug then d("[FCOIS]ItemSelectionHandler - Bag: " .. tos(bag) .. ", Slot: 
 
     --======= WHERE ARE WE? ========================================================
     --The number for the orientation (which filter panel ID and which sub-checks were done -> for the chat output and the alert message determination)
-    local whereAreWe = FCOIS.GetWhereAreWe(panelId, panelIdAtCall, panelIdParent, bag, slot, isDragAndDrop, calledFromExternalAddon)
+    getWhereAreWe = getWhereAreWe or FCOIS.GetWhereAreWe
+    local whereAreWe = getWhereAreWe(panelId, panelIdAtCall, panelIdParent, bag, slot, isDragAndDrop, calledFromExternalAddon)
 
     --Error: wheerAreWe is NIL!
     if whereAreWe == nil then

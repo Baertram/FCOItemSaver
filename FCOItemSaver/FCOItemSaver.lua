@@ -166,8 +166,13 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 --> FCOIS filterbuttons are not working (test together with CraftBagExtended, and both alone, and check LibFilters-3.0 CBE additions!!!)
 --> https://github.com/sirinsidiator/ESO-AwesomeGuildStore/blob/master/src/wrappers/SellTabWrapper.lua#L714-L747
 
+--#235  2022-06-30, Baertram: Companion marker at companion character doll looses the marker if a companion is dismissed and another is called
+--> Maybe the same item is needed at both companions? Only visual bug, marker is still in SavedVariables and item is protected.
+
+
+
 --______________________________________
--- Current max # of bugs/features/ToDos: 234
+-- Current max # of bugs/features/ToDos: 235
 --______________________________________
 
 
@@ -179,6 +184,7 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 -->Item click protection: Working
 -->Item click protection error text: TODO
 -->Item drag protection: Working https://github.com/sirinsidiator/ESO-AwesomeGuildStore/blob/master/src/wrappers/SellTabWrapper.lua#L515 -> Calls ZO_InventorySlot_OnReceiveDrag then via "PickupEmoteById" hack
+--> !!! AwesomeGuildStore needs to update it's PreHooks of ZO_InventorySlot_OnStart Drag and ZO_InventorySlot_OnReceiveDrag !!!
 -->Item drag protection error text: TODO
 -->Item automatic unslot as protected: TODO
 
