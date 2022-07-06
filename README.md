@@ -5,34 +5,45 @@ AddOn for the game Elder Scrolls Online: Saving your items so you do not acciden
 ==Changelog for current beta version ==
 ```
 --______________________________________
--- Current max # of bugs/features/ToDos: 228
+-- Current max # of bugs/features/ToDos: 235
 --______________________________________
 
 
+--Todo for this patch
+--#233
+--TODOS within AwesomeGuildStore:
+-->Item drag protection: Working https://github.com/sirinsidiator/ESO-AwesomeGuildStore/blob/master/src/wrappers/SellTabWrapper.lua#L515 -> Calls ZO_InventorySlot_OnReceiveDrag then via "PickupEmoteById" hack
+--> TODO !!! AwesomeGuildStore needs to update it's PreHooks of ZO_InventorySlot_OnStart Drag and ZO_InventorySlot_OnReceiveDrag !!!
+-->Item drag protection error text: TODO -> Fix within AGS needed!
+
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-05-04
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-07-06
 ------------------------------------------------------------------------------------
+--#233
+
 
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.2.5 - New version: 2.2.6) -    Updated last: 2022-05-04
+--Changelog (last version: 2.2.8 - New version: 2.2.9) -    Updated last: 2022-07-06
 -------------------------------------------------------------------------------------
 --[Fixed]
---#222 user:/AddOns/FCOItemSaver/src/FCOIS_Filters.lua:123: attempt to index a nil value error after pressing I directly at the undaunted chest vendor
---#223  PTS errors with changed QuickSlot variables
---#224  Copy savedvariables reloadui dialog was not showing as expected
---#226  Backup of marker icons throws error
---#227  Automatic marking level threshold dropdown is missing entries
---#228  Automatic marking non wished trait marker icon is not working, it's using the normal set marker icon/wished marker icon
+--#233
+-->Filter butons: Working
+-->Filter buttons after listing an item: Working
+-->Item click protection: Working
+-->Item click protection error text: Working
+-->Item automatic unslot as protected: Working
+--TODOS within AwesomeGuildStore:
+-->Item drag protection & error text are not working due to PreHooks & return true of AGS in ZO_InventorySlot_OnStart and ZO_InventorySlot_OnReceiveDrag
+
 
 --[Changed]
---ListViews of inventory/crafting tables use SecurePostHook now
+
 
 --[Added]
 
 
 --[Added on request]
-
 
 
 ```
