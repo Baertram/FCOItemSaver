@@ -184,9 +184,9 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 -->Item click protection: Working
 -->Item click protection error text: Working
 -->Item drag protection: Working https://github.com/sirinsidiator/ESO-AwesomeGuildStore/blob/master/src/wrappers/SellTabWrapper.lua#L515 -> Calls ZO_InventorySlot_OnReceiveDrag then via "PickupEmoteById" hack
---> !!! AwesomeGuildStore needs to update it's PreHooks of ZO_InventorySlot_OnStart Drag and ZO_InventorySlot_OnReceiveDrag !!!
+--> TODO !!! AwesomeGuildStore needs to update it's PreHooks of ZO_InventorySlot_OnStart Drag and ZO_InventorySlot_OnReceiveDrag !!!
 -->Item drag protection error text: TODO -> Fix within AGS needed!
--->Item automatic unslot as protected: TODO -> FCOIS.IsItemProtectedAtASlotNow -> Works but while AGS is enabled it does nothing? Even /script SetPendingItemPost(BAG_BACKPACK, 0, 0) does not work then
+-->Item automatic unslot as protected: Working
 
 ------------------------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-06-26
