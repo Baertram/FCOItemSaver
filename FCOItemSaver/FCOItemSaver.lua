@@ -161,7 +161,11 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 
 
 --#233  2022-06-26, Baertram: Add support for AwesomeGuildStores new feature "Sell at trading house, directly from bank"
----> FCOIS filterbuttons are not working and missing if bank was not opened before
+--TODOS within AwesomeGuildStore:
+-->Item drag protection: Working https://github.com/sirinsidiator/ESO-AwesomeGuildStore/blob/master/src/wrappers/SellTabWrapper.lua#L515 -> Calls ZO_InventorySlot_OnReceiveDrag then via "PickupEmoteById" hack
+--> TODO !!! AwesomeGuildStore needs to update it's PreHooks of ZO_InventorySlot_OnStart Drag and ZO_InventorySlot_OnReceiveDrag !!!
+-->Item drag protection error text: TODO -> Fix within AGS needed!
+
 --#234  2022-06-26, Baertram: Add support for AwesomeGuildStores feature "Sell at trading house, directly from CraftBag"
 --> FCOIS filterbuttons are not working (test together with CraftBagExtended, and both alone, and check LibFilters-3.0 CBE additions!!!)
 --> https://github.com/sirinsidiator/ESO-AwesomeGuildStore/blob/master/src/wrappers/SellTabWrapper.lua#L714-L747
@@ -178,27 +182,30 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 
 --Todo for this patch
 --#233
--->Filter butons: Working
--->Filter buttons after listing an item: TODO, changes back to LF_GUILDSTORE_SELL, but where? FCOIS.CheckActivePanel, driven by FilterButton ittself?
-
--->Item click protection: Working
--->Item click protection error text: Working
+--TODOS within AwesomeGuildStore:
 -->Item drag protection: Working https://github.com/sirinsidiator/ESO-AwesomeGuildStore/blob/master/src/wrappers/SellTabWrapper.lua#L515 -> Calls ZO_InventorySlot_OnReceiveDrag then via "PickupEmoteById" hack
 --> TODO !!! AwesomeGuildStore needs to update it's PreHooks of ZO_InventorySlot_OnStart Drag and ZO_InventorySlot_OnReceiveDrag !!!
 -->Item drag protection error text: TODO -> Fix within AGS needed!
--->Item automatic unslot as protected: Working
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-06-26
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-07-06
 ------------------------------------------------------------------------------------
 --#233
 
 
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.2.8 - New version: 2.2.9) -    Updated last: 2022-06-26
+--Changelog (last version: 2.2.8 - New version: 2.2.9) -    Updated last: 2022-07-06
 -------------------------------------------------------------------------------------
 --[Fixed]
+--#233
+-->Filter butons: Working
+-->Filter buttons after listing an item: Working
+-->Item click protection: Working
+-->Item click protection error text: Working
+-->Item automatic unslot as protected: Working
+--TODOS within AwesomeGuildStore:
+-->Item drag protection & error text are not working due to PreHooks & return true of AGS in ZO_InventorySlot_OnStart and ZO_InventorySlot_OnReceiveDrag
 
 
 --[Changed]
