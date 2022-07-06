@@ -1460,6 +1460,7 @@ function FCOIS.IsItemProtectedAtTheGuildStoreSellTabNow(bagId, slotIndex, scanOt
                 --If AwesomeGuildStore is active the normal SetPendingItemPost does not work, so we use the same as AGS uses to unslot items
                 if FCOIS.otherAddons.AGSActive == true then
                     --TRADING_HOUSE:OnPendingPostItemUpdated
+                    ctrlVars.playerInventory:OnInventorySlotUnlocked(bagId, slotIndex)
                     ctrlVars.GUILD_STORE_KEYBOARD:OnPendingPostItemUpdated(0, false)
                 else
                     --BAG_BACKPACK is used as even CraftBag items get moved to the bagpack before listing them! Even with addon CraftBagExtended
