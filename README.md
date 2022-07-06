@@ -27,7 +27,7 @@ AddOn for the game Elder Scrolls Online: Saving your items so you do not acciden
 --Changelog (last version: 2.2.8 - New version: 2.2.9) -    Updated last: 2022-07-06
 -------------------------------------------------------------------------------------
 --[Fixed]
---#233
+--#233 Add support for AwesomeGuildStore and AGS "Sell directly from bank" feature
 -->Filter butons: Working
 -->Filter buttons after listing an item: Working
 -->Item click protection: Working
