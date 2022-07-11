@@ -1382,6 +1382,7 @@ ctrlVars.BANK_BAG		    		= GetControl(ctrlVars.BANK, contentsStr)
 ctrlVars.BANK_MENUBAR_BUTTON_WITHDRAW	= GetControl(ctrlVars.BANK_INV, strformat(menuBarButtonStr, "1")) -- ZO_PlayerBankMenuBarButton1
 ctrlVars.BANK_MENUBAR_BUTTON_DEPOSIT = GetControl(ctrlVars.BANK_INV, strformat(menuBarButtonStr, "2")) -- ZO_PlayerBankMenuBarButton2
 ctrlVars.bankSceneName				= "bank"
+ctrlVars.BANK_FRAGMENT              = BANK_FRAGMENT
 ctrlVars.GUILD_BANK_INV 	    	= ZO_GuildBank
 ctrlVars.GUILD_BANK_INV_NAME		= ctrlVars.GUILD_BANK_INV:GetName()
 ctrlVars.GUILD_BANK 	    		= GetControl(ctrlVars.GUILD_BANK_INV, backpackStr) -- ZO_GuildBankBackpack
@@ -1392,6 +1393,7 @@ ctrlVars.guildBankSceneName		    = "guildBank"
 ctrlVars.guildBankGamepadSceneName	= "gamepad_guild_bank"
 ctrlVars.GUILD_STORE_KEYBOARD	    = TRADING_HOUSE
 ctrlVars.GUILD_STORE				= ZO_TradingHouse
+ctrlVars.GUILD_STORE_SCENE          = TRADING_HOUSE_SCENE
 ctrlVars.tradingHouseSceneName	    = "tradinghouse"
 ------------------------------------------------------------------------------------------------------------------------
 --2019-01-26: Support for API 100025 and 100026 controls!

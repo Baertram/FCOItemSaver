@@ -230,7 +230,7 @@ function FCOIS.GetWhereAreWe(panelId, panelIdAtCall, panelIdParent, bag, slot, i
     --The current game's SCENE and name (used for determining bank/guild bank deposit)
     local _, currentSceneName = getCurrentSceneInfo()
     --Local settings pointer
-    local settings = FCOIS.settingsVars.settings
+    --local settings = FCOIS.settingsVars.settings
     local otherAddons = FCOIS.otherAddons
 
     --universal Deconstruction NPC is used?
@@ -301,21 +301,36 @@ function FCOIS.GetWhereAreWe(panelId, panelIdAtCall, panelIdParent, bag, slot, i
         else
             whereAreWe = FCOIS_CON_CRAFTBAG_DESTROY
         end
-        --*********************************************************************************************************************************************************************************
-        --------------------------------------------------------------------------------------------------------------------
-        --------------------------------------------------------------------------------------------------------------------
-        --------------------------------------------------------------------------------------------------------------------
-        --No Craftbag panels
-        --------------------------------------------------------------------------------------------------------------------
-        --------------------------------------------------------------------------------------------------------------------
-        --------------------------------------------------------------------------------------------------------------------
+
+    --*********************************************************************************************************************************************************************************
+    --------------------------------------------------------------------------------------------------------------------
+    --------------------------------------------------------------------------------------------------------------------
+    --------------------------------------------------------------------------------------------------------------------
+    --Awesome Guild Store - Guild Store sell + sell directly from Bank
+    --------------------------------------------------------------------------------------------------------------------
+    --------------------------------------------------------------------------------------------------------------------
+    --------------------------------------------------------------------------------------------------------------------
+    --AwesomeGuildStore addon is active - We are at the guild store "sell" tab and are selling from the bank
+    elseif (not isDeconNPC and otherAddons.AGSActive and ctrlVars.GUILD_STORE_SCENE:IsShowing()
+        and ((calledFromExternalAddon and panelId == LF_BANK_WITHDRAW) or (not calledFromExternalAddon and (panelId == LF_BANK_WITHDRAW or ctrlVars.BANK_FRAGMENT:IsShowing())))) then
+--d(">AwesomeGuildStore GuildStoreSell from bank - filterPanelId: " .. tos(panelId) ..", isDragAndDrop: " ..tos(isDragAndDrop))
+        whereAreWe = FCOIS_CON_GUILD_STORE_SELL
+
+    --*********************************************************************************************************************************************************************************
+    --------------------------------------------------------------------------------------------------------------------
+    --------------------------------------------------------------------------------------------------------------------
+    --------------------------------------------------------------------------------------------------------------------
+    --No Craftbag panels
+    --------------------------------------------------------------------------------------------------------------------
+    --------------------------------------------------------------------------------------------------------------------
+    --------------------------------------------------------------------------------------------------------------------
     else -- if FCOIS.otherAddons.craftBagExtendedActive and INVENTORY_CRAFT_BAG and (panelId == LF_CRAFTBAG or not ctrlVars.CRAFTBAG:IsHidden()) then
 
         --Are we at an universal deconstruction NPC?
         if isDeconNPC == true then
---d(">decon NPC! panelId: " .. tos(panelId) ..", isDragAndDrop: " ..tos(isDragAndDrop))
+            --d(">decon NPC! panelId: " .. tos(panelId) ..", isDragAndDrop: " ..tos(isDragAndDrop))
             whereAreWe = getWhereAreWeOrFilterPanelIdByPanelIdRespectingCraftType(panelId, true, isDeconNPC)
-    --*********************************************************************************************************************************************************************************
+            --*********************************************************************************************************************************************************************************
         else
             --Inside mail panel?
             if (calledFromExternalAddon and panelId == LF_MAIL_SEND) or (not calledFromExternalAddon and (not ctrlVars.MAIL_SEND.control:IsHidden() or panelId == LF_MAIL_SEND)) then
@@ -452,8 +467,8 @@ function FCOIS.GetWhereAreWe(panelId, panelIdAtCall, panelIdParent, bag, slot, i
                 end
                 --Only do the item checks if the item should not be deposited at a bank/guild bank/house bank
                 whereAreWe = checkIfItemShouldBeUsedOrEquipped(whereAreWe, bag, slot, panelId, panelIdAtCall, calledFromExternalAddon)
-            -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-            --All others: We are trying to destroy an item
+                -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+                --All others: We are trying to destroy an item
             else
                 whereAreWe = FCOIS_CON_DESTROY
             end

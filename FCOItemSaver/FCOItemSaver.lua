@@ -160,28 +160,52 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 --settings were not copied properly
 
 
+--#233  2022-06-26, Baertram: Add support for AwesomeGuildStores new feature "Sell at trading house, directly from bank"
+--TODOS within AwesomeGuildStore:
+-->Item drag protection: Working https://github.com/sirinsidiator/ESO-AwesomeGuildStore/blob/master/src/wrappers/SellTabWrapper.lua#L515 -> Calls ZO_InventorySlot_OnReceiveDrag then via "PickupEmoteById" hack
+--> TODO !!! AwesomeGuildStore needs to update it's PreHooks of ZO_InventorySlot_OnStart Drag and ZO_InventorySlot_OnReceiveDrag !!!
+-->Item drag protection error text: TODO -> Fix within AGS needed!
+
+--#234  2022-06-26, Baertram: Add support for AwesomeGuildStores feature "Sell at trading house, directly from CraftBag"
+--> FCOIS filterbuttons are not working (test together with CraftBagExtended, and both alone, and check LibFilters-3.0 CBE additions!!!)
+--> https://github.com/sirinsidiator/ESO-AwesomeGuildStore/blob/master/src/wrappers/SellTabWrapper.lua#L714-L747
+
+--#235  2022-06-30, Baertram: Companion marker at companion character doll looses the marker if a companion is dismissed and another is called
+--> Maybe the same item is needed at both companions? Only visual bug, marker is still in SavedVariables and item is protected.
+
+
+
 --______________________________________
--- Current max # of bugs/features/ToDos: 232
+-- Current max # of bugs/features/ToDos: 235
 --______________________________________
 
 
 --Todo for this patch
-
+--#233
+--TODOS within AwesomeGuildStore:
+-->Item drag protection: Working https://github.com/sirinsidiator/ESO-AwesomeGuildStore/blob/master/src/wrappers/SellTabWrapper.lua#L515 -> Calls ZO_InventorySlot_OnReceiveDrag then via "PickupEmoteById" hack
+--> TODO !!! AwesomeGuildStore needs to update it's PreHooks of ZO_InventorySlot_OnStart Drag and ZO_InventorySlot_OnReceiveDrag !!!
+-->Item drag protection error text: TODO -> Fix within AGS needed!
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-06-18
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-07-06
 ------------------------------------------------------------------------------------
-
+--#233
 
 
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.2.7 - New version: 2.2.8) -    Updated last: 2022-06-18
+--Changelog (last version: 2.2.8 - New version: 2.2.9) -    Updated last: 2022-07-06
 -------------------------------------------------------------------------------------
 --[Fixed]
---#230 Additional inventory flag buttons are behind the inventory (with Perfect Pixel enabled, for example)
---#231 AutoBind missing set collection attempts and  messages for items stored at a guild bank
---#232 Error message at context menu - Happening as soon as right mouse cliked any inventory item after changing dynamic icon's count
+--#233
+-->Filter butons: Working
+-->Filter buttons after listing an item: Working
+-->Item click protection: Working
+-->Item click protection error text: Working
+-->Item automatic unslot as protected: Working
+--TODOS within AwesomeGuildStore:
+-->Item drag protection & error text are not working due to PreHooks & return true of AGS in ZO_InventorySlot_OnStart and ZO_InventorySlot_OnReceiveDrag
 
 
 --[Changed]

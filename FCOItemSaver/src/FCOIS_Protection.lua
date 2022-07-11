@@ -36,6 +36,7 @@ local isItemAGlpyh = FCOIS.IsItemAGlpyh
 local checkIfUniversaldDeconstructionNPC
 local checkActivePanel
 local isVendorPanelShown
+local getWhereAreWe
 
 --===================================================================================
 --	FCOIS Anti - *  - Methods to check if item is protected, or allowed to be ...
@@ -500,6 +501,11 @@ function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChat
     if bag == nil or slot == nil then return true end
     local doDebug = false
     --TODO: enable to show d messages for debugging
+--[[
+    if bag == 2 and slot == 24 then
+        FCOIS.preventerVars.doDebugItemSelectionHandler = true
+    end
+]]
     if FCOIS.preventerVars.doDebugItemSelectionHandler == true then
         doDebug = true
         FCOIS.preventerVars.doDebugItemSelectionHandler = false
@@ -598,7 +604,9 @@ if doDebug then d("[FCOIS]ItemSelectionHandler - Bag: " .. tos(bag) .. ", Slot: 
 
     --======= WHERE ARE WE? ========================================================
     --The number for the orientation (which filter panel ID and which sub-checks were done -> for the chat output and the alert message determination)
-    local whereAreWe = FCOIS.GetWhereAreWe(panelId, panelIdAtCall, panelIdParent, bag, slot, isDragAndDrop, calledFromExternalAddon)
+    getWhereAreWe = getWhereAreWe or FCOIS.GetWhereAreWe
+    --WhereAreWe: FCOIS_CON_* constant to show where we currently are filtering and checking protections
+    local whereAreWe = getWhereAreWe(panelId, panelIdAtCall, panelIdParent, bag, slot, isDragAndDrop, calledFromExternalAddon)
 
     --Error: wheerAreWe is NIL!
     if whereAreWe == nil then
@@ -722,7 +730,7 @@ if doDebug then d(">>>> Dyn 2, singleItemChecks: " .. tos(singleItemChecks) .. "
                 end
                 --============== DYNAMIC ICON CHECKS - END =====================================
             --else
-if doDebug then d(">WhereAreWe is: FCOIS_CON_FALLBACK -> No further checks were done!") end
+if doDebug then d(">WhereAreWe is: " ..tos(whereAreWe) .." -> No further checks were done!") end
             end -- if not whereAreWe == FCOIS_CON_FALLBACK then
             --============== SPECIAL ITEM & ICON CHECKS - START (non-dynamic!) ====================================
             if not isDynamicIcon then
@@ -776,11 +784,12 @@ if doDebug then d(">>IsItemAGlpyh: " .. tos(not isBlockedLoop) .. ", isBlockedLo
             --Abort here if at least one marker icon was set and it is protecting the item!
             if isBlockedLoop == true then
                 if settings.debug then debugMessage("[ItemSelectionHandler]",">isBlockedLoop: true -> Item is protected!", true, FCOIS_DEBUG_DEPTH_SPAM) end
-if doDebug then d("isBlockedLoop: true -> Item is protected!") end
+if doDebug then d("isBlockedLoop: true -> Item is protected! echo: " ..tos(echo)) end
                 --Show text in chat or alert message now?
                 if echo == true then
                     if doDebug then d(">item echo - whereAreWe: " .. tos(whereAreWe) .. ", overrideChatOutput: " .. tos(overrideChatOutput) .. ", suppressChatOutput: " .. tos(suppressChatOutput) .. ", overrideAlert: " .. tos(overrideAlert) .. ", suppressAlert: " .. tos(suppressAlert)) end
                     --Check if alert or chat message should be shown
+                    --                         bag, slot, whereAreWe, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert
                     outputItemProtectedMessage(bag, slot, whereAreWe, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert)
                 end
                 --Abort here as at least 1 icon is marked for the current item and the protection for this icon (globally or dynamically per icon) is enabled here!
@@ -1415,8 +1424,8 @@ function FCOIS.IsCraftBagItemDraggedToCraftingSlot(panelId, bagId, slotIndex)
         --Is the item from the craftbag?
         if bagId == BAG_VIRTUAL then
 --d(">Craftbag item")
-            --  bag, slot, echo, isDragAndDrop, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId
-            if( FCOIS.callItemSelectionHandler(bagId, slotIndex, true, true, false, false, false, false, false) ) then
+            -- bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId, isDragAndDrop, panelIdParent
+            if( FCOIS.callItemSelectionHandler(bagId, slotIndex, true, true, false, true, false, false, nil, true, nil) ) then
                 --d(">Item is protected so don't allow the drop!")
                 --Remove the picked item from drag&drop cursor
                 ClearCursor()
@@ -1438,17 +1447,25 @@ function FCOIS.IsItemProtectedAtTheGuildStoreSellTabNow(bagId, slotIndex, scanOt
         then
             bagId = ctrlVars.GUILD_STORE_SELL_SLOT_ITEM.bagId
             slotIndex = ctrlVars.GUILD_STORE_SELL_SLOT_ITEM.slotIndex
-            --d("[FCOIS]MarkMe GuildStore - callDeconstructionSelectionHandler without echo")
             --FCOIS.callDeconstructionSelectionHandler(bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon)
             --Be sure to set calledFromExternalAddon = true here as otherwise the guild store sell checks aren't done, because
             --the DeconstructionSelectionhandler will not call the ItemSelectionHandler then!
-            local isProtected = FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, false, true, false, true, true)
+            --                                                           bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId
+            local isProtected = FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, false, true, false, true, true, nil)
+--d("[FCOIS]IsItemProtectedAtTheGuildStoreSellTabNow GuildStore - isProtected: " ..tos(isProtected))
             --Item is protected?
-            if isProtected then
-                --d("GuildStore: Item is protected! Output error message now")
+            if isProtected == true then
+--d("GuildStore: Item is protected! Output error message now")
                 --Remove the item from the guild store sell slot
-                --BAG_BACKPACK is used as even CraftBag items get moved to the bagpack before listing them! Even with addon CraftBagExtended
-                SetPendingItemPost(BAG_BACKPACK, 0, 0)
+                --If AwesomeGuildStore is active the normal SetPendingItemPost does not work, so we use the same as AGS uses to unslot items
+                if FCOIS.otherAddons.AGSActive == true then
+                    --TRADING_HOUSE:OnPendingPostItemUpdated
+                    ctrlVars.playerInventory:OnInventorySlotUnlocked(bagId, slotIndex)
+                    ctrlVars.GUILD_STORE_KEYBOARD:OnPendingPostItemUpdated(0, false)
+                else
+                    --BAG_BACKPACK is used as even CraftBag items get moved to the bagpack before listing them! Even with addon CraftBagExtended
+                    SetPendingItemPost(BAG_BACKPACK, 0, 0)
+                end
                 local whereAreWe = FCOIS_CON_GUILD_STORE_SELL
                 --function outputItemProtectedMessage(bag, slot, whereAreWe, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert)
                 outputItemProtectedMessage(bagId, slotIndex, whereAreWe, true, false, false, false)
