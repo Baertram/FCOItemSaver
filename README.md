@@ -5,36 +5,28 @@ AddOn for the game Elder Scrolls Online: Saving your items so you do not acciden
 ==Changelog for current beta version ==
 ```
 --______________________________________
--- Current max # of bugs/features/ToDos: 235
+-- Current max # of bugs/features/ToDos: 237
 --______________________________________
 
 
 --Todo for this patch
---#233
---TODOS within AwesomeGuildStore:
--->Item drag protection: Working https://github.com/sirinsidiator/ESO-AwesomeGuildStore/blob/master/src/wrappers/SellTabWrapper.lua#L515 -> Calls ZO_InventorySlot_OnReceiveDrag then via "PickupEmoteById" hack
---> TODO !!! AwesomeGuildStore needs to update it's PreHooks of ZO_InventorySlot_OnStart Drag and ZO_InventorySlot_OnReceiveDrag !!!
--->Item drag protection error text: TODO -> Fix within AGS needed!
+--#236
+
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-07-06
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-07-17
 ------------------------------------------------------------------------------------
---#233
+--#236
 
 
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.2.8 - New version: 2.2.9) -    Updated last: 2022-07-06
+--Changelog (last version: 2.2.9 - New version: 2.3.0) -    Updated last: 2022-07-17
 -------------------------------------------------------------------------------------
 --[Fixed]
---#233 Add support for AwesomeGuildStore and AGS "Sell directly from bank" feature
--->Filter butons: Working
--->Filter buttons after listing an item: Working
--->Item click protection: Working
--->Item click protection error text: Working
--->Item automatic unslot as protected: Working
---TODOS within AwesomeGuildStore:
--->Item drag protection & error text are not working due to PreHooks & return true of AGS in ZO_InventorySlot_OnStart and ZO_InventorySlot_OnReceiveDrag
+--#236 (also maybe #178) Deag&drop of companion items changed the internal FFCOIS panelto "Companion inventory",
+--   what made the filters unregister at the real shown panel (e.g. inventory, bank) and thus show all items again, allthough
+--   the 4 filter buttons were set to e.g. yellow or green to hide some marked items
 
 
 --[Changed]
