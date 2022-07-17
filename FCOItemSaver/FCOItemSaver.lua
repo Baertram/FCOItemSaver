@@ -187,30 +187,61 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 --#238 2022-07-17, Baertram, Feature idea: Speed-up the AddMark function and cache some markId independent checks so that calls to he same function AddMark with the same bagId and slotIndex
 -- can reuse the cached results. change of bagId or change of slotIndex will reset the cache.
 
+--#239 2022-07-17, Baertram, bug: AwesomeGuildStore - Directly switching from custom "Sell from bank" button to "Sell from inventory" button will enable FCOIS.gFilterWhere = LF_INVENTORY
+--instead of LF_GUILD_STORE_SELL
+-->Maybe event_bank_closed?
+
 
 --______________________________________
--- Current max # of bugs/features/ToDos: 237
+-- Current max # of bugs/features/ToDos: 239
 --______________________________________
 
 
 --Todo for this patch
+--#234
 --#236
+--#239
 
 
 ------------------------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-07-17
 ------------------------------------------------------------------------------------
---#236
+--#234
+--[[
+In AwesomeGuildStore/wrappers/SelltabWrapper.lua -> Add elseif self.currentInventoryFragment == CRAFT_BAG_FRAGMENT then:
 
+function SellTabWrapper:UpdateFragments()
+    SCENE_MANAGER:RemoveFragment(INVENTORY_FRAGMENT)
+    SCENE_MANAGER:RemoveFragment(BANK_FRAGMENT)
+    SCENE_MANAGER:RemoveFragment(CRAFT_BAG_FRAGMENT)
+    ZO_PlayerInventoryInfoBar:SetParent(self:GetParentForInfoBar())
+    SCENE_MANAGER:AddFragment(self.currentInventoryFragment)
+    if self.currentInventoryFragment == BANK_FRAGMENT then
+        -- need to trigger an update, otherwise bound items will show in the list
+        PLAYER_INVENTORY:UpdateList(INVENTORY_BANK, true)
+    elseif self.currentInventoryFragment == CRAFT_BAG_FRAGMENT then
+        --2022-07-17 Baertram, fix for LibFilters3.0 to update the CraftBag's additionalFilter filterFunction from the
+        --fragment BACKPACK_MENU_BAR_LAYOUT_FRAGMENT -> Where vanilla UI code and LibFilters 3 read/write from/to
+        local layoutData = BACKPACK_MENU_BAR_LAYOUT_FRAGMENT.layoutData
+        local craftBag = PLAYER_INVENTORY.inventories[INVENTORY_CRAFT_BAG]
+        craftBag.additionalFilter = layoutData.additionalCraftBagFilter
+    end
+end
+]]
 
 
 -------------------------------------------------------------------------------------
 --Changelog (last version: 2.2.8 - New version: 2.2.9) -    Updated last: 2022-07-17
 -------------------------------------------------------------------------------------
 --[Fixed]
+--#234 AwesomeGuildStore needs to fix the function SellTabWrapper:UpdateFragments() so that
+--      PLAYER_INVENTORY.inventories[INVENTORY_CRAFT_BAG].additionalFilter = BACKPACK_MENU_BAR_LAYOUT_FRAGMENT.layoutData.additionalCraftBagFilter
+--      will be called as the custom CraftBag fragment get's added
 --#236 (also maybe #178) Deag&drop of companion items changed the internal FFCOIS panelto "Companion inventory",
 --   what made the filters unregister at the real shown panel (e.g. inventory, bank) and thus show all items again, allthough
 --   the 4 filter buttons were set to e.g. yellow or green to hide some marked items
+--#239 AwesomeGuildStore: Switching from "sell from bank" panel to normal sell from inventory showed the wrong "normal invenotory" filter buttons,
+--   instead of the guild store sell filter buttons
 
 
 --[Changed]

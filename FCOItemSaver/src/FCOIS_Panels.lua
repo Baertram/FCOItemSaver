@@ -795,14 +795,22 @@ function FCOIS.OnClosePanel(panelIdClosed, panelIdToShow, autoReEnableCheck)
         hideContextMenu(panelIdClosed)
     end
 
+--d(">FCOIS.gFilterWhere1.1: " .. tos(FCOIS.gFilterWhere))
+
     if FCOIS.preventerVars.gNoCloseEvent == false then
         --Update the inventory filter buttons
-        updateFCOISFilterButtonsAtInventory(-1)
+        if panelIdToShow ~= nil and panelIdToShow == LF_INVENTORY then
+            updateFCOISFilterButtonsAtInventory(-1)
+        end
+--d(">FCOIS.gFilterWhere1.2: " .. tos(FCOIS.gFilterWhere))
+
         if panelIdToShow ~= nil then
             --Update the 4 inventory button's color
             updateFCOISFilterButtonColorsAndTextures(-1, nil, -1, panelIdToShow)
+--d(">FCOIS.gFilterWhere1.3: " .. tos(FCOIS.gFilterWhere))
             --Change the button color of the context menu invoker
             changeContextMenuInvokerButtonColorByPanelId(panelIdToShow)
+--d(">FCOIS.gFilterWhere1.4: " .. tos(FCOIS.gFilterWhere))
         end
     end
     FCOIS.preventerVars.gNoCloseEvent 	 = false
@@ -816,6 +824,7 @@ function FCOIS.OnClosePanel(panelIdClosed, panelIdToShow, autoReEnableCheck)
             end
         else
             autoReenableAntiSettingsCheck(autoReEnableCheck)
+--d(">FCOIS.gFilterWhere1.5: " .. tos(FCOIS.gFilterWhere))
         end
     end
 end
