@@ -193,7 +193,7 @@ function FCOIS.GetSettingsIsFilterOn(p_filterId, p_filterPanel)
     if result == nil then
         return false
     end
-    if baseSettings.debug then debugMessage( "[GetSettingsIsFilterOn]","Filter Panel: " .. tos(p_filterPanelNew) .. ", FilterId: " .. tos(p_filterId) .. ", Result: " .. tos(result), true, FCOIS_DEBUG_DEPTH_SPAM) end
+    if baseSettings.debug then debugMessage( "[GetSettingsIsFilterOn]","Filter Panel: " .. tos(p_filterPanelNew) .. ", FilterId: " .. tos(p_filterId) .. ", Result: " .. tos(result), true, FCOIS_DEBUG_DEPTH_VERBOSE) end
     return result
 end
 
@@ -205,7 +205,7 @@ function FCOIS.SetSettingsIsFilterOn(p_filterId, p_value, p_filterPanel)
     --New behaviour with filters
     settings.isFilterPanelOn[p_filterPanelNew] = settings.isFilterPanelOn[p_filterPanelNew] or {}
     settings.isFilterPanelOn[p_filterPanelNew][p_filterId] = p_value
-    if baseSettings.debug then debugMessage( "[SetSettingsIsFilterOn]","Filter Panel: " .. tos(p_filterPanelNew) .. ", FilterId: " .. tos(p_filterId) .. ", Value: " .. tos(p_value), true, FCOIS_DEBUG_DEPTH_SPAM) end
+    if baseSettings.debug then debugMessage( "[SetSettingsIsFilterOn]","Filter Panel: " .. tos(p_filterPanelNew) .. ", FilterId: " .. tos(p_filterId) .. ", Value: " .. tos(p_value), true, FCOIS_DEBUG_DEPTH_VERBOSE) end
     --return the value
     return p_value
 end

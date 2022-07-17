@@ -496,7 +496,8 @@ local function FCOItemSaver_OnInventorySlot_DoPrimaryAction(inventorySlot)
                 --check if item interaction is forbidden
                 --  bag, slot, echo, isDragAndDrop, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId
                 callItemSelectionHandler = callItemSelectionHandler or FCOIS.callItemSelectionHandler
-                if callItemSelectionHandler(bagId, slotId, true, false, false, false, false, false, false) then
+                --                         (bag, slot, echo, isDragAndDrop, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId, panelIdParent)
+                if callItemSelectionHandler(bagId, slotId, true, false, false, false, false, false, false, nil, nil) then
                     -- item is not allowed to work with, prevent call of the original function ZO_InventorySlot_DoPrimaryAction of the item
                     doNotCallOriginalZO_InventorySlot_DoPrimaryAction = true
                 end
@@ -2023,7 +2024,7 @@ function FCOIS.CreateHooks()
     -->See file src/FCOIS_MarkerIcons.lua, function FCOIS.CreateTextures with whichTextures = 6
     ctrlVars.COMPANION_INV_FRAGMENT:RegisterCallback("StateChange", function(oldState, newState)
         if settings.debug then debugMessage("[COMPANION EQUIPMENT FRAGMENT]", "State: " .. tos(newState), true, FCOIS_DEBUG_DEPTH_NORMAL) end
-        --d("[COMPANION EQUIPMENT FRAGMENT]","State: " .. tos(newState))
+--d("[COMPANION EQUIPMENT FRAGMENT]","State: " .. tos(newState))
         sceneCallbackHideContextMenu(oldState, newState)
         if newState == SCENE_FRAGMENT_SHOWING then
             --Check if craftbag is active and change filter panel and parent panel accordingly

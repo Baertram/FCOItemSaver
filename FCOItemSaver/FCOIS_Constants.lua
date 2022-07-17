@@ -12,7 +12,7 @@ local strlen = string.len
 FCOIS.addonVars = {}
 local addonVars = FCOIS.addonVars
 --Addon variables
-addonVars.addonVersionOptions 		    = '2.2.9' -- version shown in the settings panel
+addonVars.addonVersionOptions 		    = '2.3.0' -- version shown in the settings panel
 --The addon name, normal and decorated with colors etc.
 addonVars.gAddonName				    = "FCOItemSaver"
 addonVars.gAddonNameShort               = "FCOIS"
@@ -447,6 +447,7 @@ FCOIS_DEBUG_DEPTH_NORMAL        = 1
 FCOIS_DEBUG_DEPTH_DETAILED	    = 2
 FCOIS_DEBUG_DEPTH_VERY_DETAILED	= 3
 FCOIS_DEBUG_DEPTH_SPAM		    = 4
+FCOIS_DEBUG_DEPTH_VERBOSE       = 99
 FCOIS_DEBUG_DEPTH_ALL			= 5
 
 --The inventory row patterns for the supported keybindings and MouseOverControl checks (SHIFT+right mouse functions e.g.)

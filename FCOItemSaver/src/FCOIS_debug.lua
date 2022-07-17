@@ -35,6 +35,7 @@ end
 --Output debug message in chat or LibDebugLogger -> DebugLogViewer ingame UI.
 --Parameter deep boolean: Is it a deep debug message with more detail/special surrounding?
 --Parameter depthNeeded: Which depth is the deep message added to? FCOIS_DEBUG_DEPTH_ALL (show all debug messages) to FCOIS_DEBUG_DEPTH_NORMAL
+--                       FCOIS_DEBUG_DEPTH_VERBOSE will show the very "spammy" message which make the client hang if enabled!
 --Parameter boolean isInfo: Is the debug message just an information? A special logger and text will be used
 --Parameter boolean quickDebug: Use the deep and depthNeeded parameters FCOIS_DEBUG_DEPTH_QUICK_DEBUG to show only a few debug output message
 function FCOIS.debugMessage(msg_text_header, msg_text, deep, depthNeeded, isInfo, quickDebug)

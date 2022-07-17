@@ -146,7 +146,8 @@ function FCOIS.Command_handler(args)
         if options[2] == nil then
             local value = settings.debugDepth
             if value < FCOIS_DEBUG_DEPTH_NORMAL then value = FCOIS_DEBUG_DEPTH_NORMAL end
-            if value > FCOIS_DEBUG_DEPTH_ALL then value = FCOIS_DEBUG_DEPTH_ALL end
+            if value > FCOIS_DEBUG_DEPTH_VERBOSE then value = FCOIS_DEBUG_DEPTH_VERBOSE end
+            if value > FCOIS_DEBUG_DEPTH_ALL and value < FCOIS_DEBUG_DEPTH_VERBOSE then value = FCOIS_DEBUG_DEPTH_ALL end
             settings.debugDepth = value
             d(preVars.preChatTextGreen .. locVars["chatcommands_debugdepth"] .. tos(value))
         else
@@ -156,7 +157,8 @@ function FCOIS.Command_handler(args)
                 value = 1
             end
             if value < FCOIS_DEBUG_DEPTH_NORMAL then value = FCOIS_DEBUG_DEPTH_NORMAL end
-            if value > FCOIS_DEBUG_DEPTH_ALL then value = FCOIS_DEBUG_DEPTH_ALL end
+            if value > FCOIS_DEBUG_DEPTH_VERBOSE then value = FCOIS_DEBUG_DEPTH_VERBOSE end
+            if value > FCOIS_DEBUG_DEPTH_ALL and value < FCOIS_DEBUG_DEPTH_VERBOSE then value = FCOIS_DEBUG_DEPTH_ALL end
             settings.debugDepth = value
             d(preVars.preChatTextGreen .. locVars["chatcommands_debugdepth"] .. tos(value))
         end
