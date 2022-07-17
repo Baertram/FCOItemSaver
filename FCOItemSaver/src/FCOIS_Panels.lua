@@ -93,6 +93,7 @@ end
 --Check if an item should be used or should be equipped (only LF_INVENTORY or LF_INVENTORY_COMPANION) via double click e.g.
 --returns FCOIS_CON_FALLBACK as whereAreWe in that case and disables the further checks in ItemSelectionHandler this way
 local function checkIfItemShouldBeUsedOrEquipped(p_whereAreWe, p_bag, p_slot, panelId, panelIdAtCall, calledFromExternalAddon)
+--d("[FCOIS]checkIfItemShouldBeUsedOrEquipped")
     if p_whereAreWe ~= FCOIS_CON_FALLBACK then
         --Get the whereAreWe panel ID by checking the item's type etc. now and allow equipping items via double click e.g.
         --by returning the FCOIS_CON_FALLBACK value
@@ -710,8 +711,9 @@ function FCOIS.CheckActivePanel(comingFrom, overwriteFilterWhere, isDeconNPC)
         --Update the filterPanelId
         FCOIS.gFilterWhere = getFilterWhereBySettings(LF_RETRAIT)
         inventoryName = ctrlVars2.RETRAIT_INV
-        --COmpanion inventory
+        --Companion inventory
     elseif (isCompanionInventoryShown() or comingFrom == LF_INVENTORY_COMPANION) then
+--d(">[FCOIS]CheckActivePanel - Companion inventory -> FCOIS.gFilterWhere = LF_INVENTORY_COMPANION - LF3 isCompInvShown: " ..tos(libFilters:IsCompanionInventoryShown()))
         --Update the filterPanelId
         FCOIS.gFilterWhere = getFilterWhereBySettings(LF_INVENTORY_COMPANION)
         inventoryName = ctrlVars2.COMPANION_INV_CONTROL
@@ -793,14 +795,22 @@ function FCOIS.OnClosePanel(panelIdClosed, panelIdToShow, autoReEnableCheck)
         hideContextMenu(panelIdClosed)
     end
 
+--d(">FCOIS.gFilterWhere1.1: " .. tos(FCOIS.gFilterWhere))
+
     if FCOIS.preventerVars.gNoCloseEvent == false then
         --Update the inventory filter buttons
-        updateFCOISFilterButtonsAtInventory(-1)
+        if panelIdToShow ~= nil and panelIdToShow == LF_INVENTORY then
+            updateFCOISFilterButtonsAtInventory(-1)
+        end
+--d(">FCOIS.gFilterWhere1.2: " .. tos(FCOIS.gFilterWhere))
+
         if panelIdToShow ~= nil then
             --Update the 4 inventory button's color
             updateFCOISFilterButtonColorsAndTextures(-1, nil, -1, panelIdToShow)
+--d(">FCOIS.gFilterWhere1.3: " .. tos(FCOIS.gFilterWhere))
             --Change the button color of the context menu invoker
             changeContextMenuInvokerButtonColorByPanelId(panelIdToShow)
+--d(">FCOIS.gFilterWhere1.4: " .. tos(FCOIS.gFilterWhere))
         end
     end
     FCOIS.preventerVars.gNoCloseEvent 	 = false
@@ -814,6 +824,7 @@ function FCOIS.OnClosePanel(panelIdClosed, panelIdToShow, autoReEnableCheck)
             end
         else
             autoReenableAntiSettingsCheck(autoReEnableCheck)
+--d(">FCOIS.gFilterWhere1.5: " .. tos(FCOIS.gFilterWhere))
         end
     end
 end

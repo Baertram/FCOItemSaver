@@ -748,7 +748,7 @@ FCOIS.OnInventorySlotUnLocked = FCOItemSaver_OnInventorySlotUnLocked
 --> First function called if you drag an item from the inventories:
 ----> Check file src/FCOIS_Hooks.lua, function FCOItemSaver_OnDragStart(...)
 local function FCOItemSaver_OnInventorySlotLocked(self, bag, slot)
-    if FCOIS.settingsVars.settings.debug then debugMessage( "[Event]","OnInventorySlotLocked: bag: " .. tos(bag) .. ", slot: " .. tos(slot), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+    if FCOIS.settingsVars.settings.debug then debugMessage( "[Event]","OnInventorySlotLocked: bag: " .. tos(bag) .. ", slot: " .. tos(slot) .. ", FCOIS.gFilterWhere: " ..tos(FCOIS.gFilterWhere), true, FCOIS_DEBUG_DEPTH_NORMAL) end
 --d("[FCOIS]EVENT_INVENTORY_SLOT_LOCKED-bagId: " ..tos(bag) ..", slotIndex: " ..tos(slot))
 
     FCOIS.preventerVars.gItemSlotIsLocked = true
@@ -776,12 +776,12 @@ local function FCOItemSaver_OnInventorySlotLocked(self, bag, slot)
 
     --Picked up an item at another station, for bind, destroy, refine, improve, etc.?
     else
-        local doShowItemBindDialog = false -- Always false since API 100019 where ZOs included it's "ask before bind to account" dialog
+        --local doShowItemBindDialog = false -- Always false since API 100019 where ZOs included it's "ask before bind to account" dialog
         -- check if destroying, improvement, sending or trading, etc. is forbidden
         -- and check if item is bindable (above)
         -- if so, clear item hold by cursor
-        --  bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId, isDragAndDrop, panelIdParent
-        if( doShowItemBindDialog or FCOIS.callItemSelectionHandler(bag, slot, true, true, false, true, false, false, nil, true, nil) ) then
+        --                                bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId, isDragAndDrop, panelIdParent
+        if FCOIS.callItemSelectionHandler(bag, slot, true, true, false, true, false, false, nil, true, nil) then
             --Remove the picked item from drag&drop cursor
             ClearCursor()
             FCOIS.preventerVars.splitItemStackDialogActive = false
@@ -800,6 +800,7 @@ FCOIS.OnInventorySlotLocked = FCOItemSaver_OnInventorySlotLocked
 --Executed if item should be destroyed manually
 local function FCOItemSaver_OnMouseRequestDestroyItem(_, bagId, slotIndex, _, _, needsConfirm)
 --d("[FCOS]FCOItemSaver_OnMouseRequestDestroyItem - needsConfirm: " ..tos(needsConfirm) .. " - " .. GetItemLink(bagId, slotIndex))
+    if FCOIS.settingsVars.settings.debug then debugMessage( "[Event]","OnMouseRequestDestroyItem: bag: " .. tos(bagId) .. ", slot: " .. tos(slotIndex) .. ", needsConfirm: " ..tos(needsConfirm), true, FCOIS_DEBUG_DEPTH_NORMAL) end
     FCOIS.preventerVars.splitItemStackDialogActive = false
     --Hide the context menu at last active panel
     hideContextMenu(FCOIS.gFilterWhere)

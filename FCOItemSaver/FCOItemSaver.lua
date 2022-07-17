@@ -130,7 +130,6 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 ---------------------------------------------------------------------
 --[TODO Current Errors and features list - Find a way to reproduce/fix/add them] --
 --[General]Check for local speed ups. FCOItemSaver.txt was checked until src/FCOIS_Tooltips.lua -> as of 2021-08-18
---#129: 2021-06-01: Removing all marker icons via the add. inv. "flag" context menu does not remove companion item's marker icons
 --#156: 2021-08-18, Baertram, bug: Enchanting an item does not re-apply the already marked icons (also consider icons that were saved for the items before? Add setting for "Check all others")
 --#157: 2021-08-18, Baertram, bug: Character doll ring/weapon marker icons do not update properly (both 2 rings were unequipped via double click or drag and drop: on drag of 1 ring back to the right!!! slot the marker icons do not update, or equip 1 ring to the left and then use double click to equp the 2nd ring to the right slot).
 --And if you drag another ring to a slot where a ring was already equipped the marker icons do neither update all!
@@ -141,12 +140,12 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 --                                 now show the removed/applied marker icon "sell" on them?!
 
 --#176: 2021-11-14, Baertram, feature: Add submenu to 4 filter buttons, with setting to change the filter between AND & OR filter conjunction behaviour.
---Remembers the state for each filterPanel
+--Remembers the state for each filterPanel. -> Implemented but currently ONLY with AND or OR for all 4 buttons the same! -> Maybe split up per filter button one day...
 
 --#178: 2021-12-03, Onigar (Addon comments), bug:
 --[[ So at the bank deposit tab you got only the "green lock" FCOIS filterbutton set (right clicked the filter button -> chose the "lock" icon explicitly ->
     Then left clicked the filter button to turn it green -> will only filter out, hide, the lock marked items)?
-    Or is it the green * button (right click first filterButton and choose the most otp entry "*"-> then left click the filter button to turn it green ->
+    Or is it the green * button (right click first filterButton and choose the most top entry "*"-> then left click the filter button to turn it green ->
     will filter out, hide, the lock and all dynamic icons).
     And as you deposit (via keybind? via drag & drop? via double click? Any difference here?) some other items (do they need to be marked with any
     FCOIS marker icon or could it also be any other non marked item?) all of sudden the filtered items with a lock/dynamic marker icon are shown in the
@@ -167,45 +166,90 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 -->Item drag protection error text: TODO -> Fix within AGS needed!
 
 --#234  2022-06-26, Baertram: Add support for AwesomeGuildStores feature "Sell at trading house, directly from CraftBag"
---> FCOIS filterbuttons are not working (test together with CraftBagExtended, and both alone, and check LibFilters-3.0 CBE additions!!!)
---> https://github.com/sirinsidiator/ESO-AwesomeGuildStore/blob/master/src/wrappers/SellTabWrapper.lua#L714-L747
+--TODOS within AwesomeGuildStore:
+--[[
+In AwesomeGuildStore/wrappers/SelltabWrapper.lua -> Add elseif self.currentInventoryFragment == CRAFT_BAG_FRAGMENT then
+
+function SellTabWrapper:UpdateFragments()
+    SCENE_MANAGER:RemoveFragment(INVENTORY_FRAGMENT)
+    SCENE_MANAGER:RemoveFragment(BANK_FRAGMENT)
+    SCENE_MANAGER:RemoveFragment(CRAFT_BAG_FRAGMENT)
+    ZO_PlayerInventoryInfoBar:SetParent(self:GetParentForInfoBar())
+    SCENE_MANAGER:AddFragment(self.currentInventoryFragment)
+    if self.currentInventoryFragment == BANK_FRAGMENT then
+        -- need to trigger an update, otherwise bound items will show in the list
+        PLAYER_INVENTORY:UpdateList(INVENTORY_BANK, true)
+
+-- v --
+
+    elseif self.currentInventoryFragment == CRAFT_BAG_FRAGMENT then
+        --2022-07-17 Baertram, fix for LibFilters3.0 to update the CraftBag's additionalFilter filterFunction from the
+        --fragment BACKPACK_MENU_BAR_LAYOUT_FRAGMENT -> Where vanilla UI code and LibFilters 3 read/write from/to
+        local layoutData = BACKPACK_MENU_BAR_LAYOUT_FRAGMENT.layoutData
+        local craftBag = PLAYER_INVENTORY.inventories[INVENTORY_CRAFT_BAG]
+        craftBag.additionalFilter = layoutData.additionalCraftBagFilter
+-- ^ --
+    end
+end
+
+And somewhere where the "Guild Store Sell" fragment is shown (callback) also check if craftbag is the currently selected inventory to sell from
+and update the additionalFilters then! Else re-opening where CraftBag was opened before closing the guild store, will result in non copied filter functions
+from the layoutData.
+
+]]
+
 
 --#235  2022-06-30, Baertram: Companion marker at companion character doll looses the marker if a companion is dismissed and another is called
 --> Maybe the same item is needed at both companions? Only visual bug, marker is still in SavedVariables and item is protected.
 
+--#236 (also maybe #178) 2022-07-15, tim99: Inventory->companion item->no marker set->filter buttons set to something to filter->open bank deposit tab->filters et to filter something->
+-->double click Companion item->all filters are removed again but the filter buttons show the same as before as if they would filter something?
+-->Maybe the same if you stay at inventory and drag a companion item to destroy it->filters get disabled but buttons show as if they still were filtering
+--> FCOIS.gFilterWhere somehow will be set to LF_INVENTORY_COMPANION instead of LF_BANK_DEPOSIT, after you deposit a companion item to the bank,
+-->via keybind or doubleclick, but only seems to update to 39 LF_INVENTORY_COMPANION the first time. If you withdraw the item and doubl click/use keybind again to deposit it, FCOIS.gFilterWhere
+-->will not change to LF_INVENTORY_COMPANION anymore ?!
+-----> LibDebugLogger FCOIS: 2022-07-17 21:23:20 /Doppelklick auf "Gürtel des Gefährten" in Bank deposit -> FCOIS.gFilterWhere wurde danach LF_INVENTORY_COMPANION
+
+--#237 2022-03-14, 02:23, Papito, Feature request
+--Sorry if this is explained somewhere, but is it possible to have the New items Automatic marking exclude item categories?
+--A lot of junk items and white weapons/armor filll my inventory, I want them to be marked as sold, but I don't want it to apply to things like materials/consumables. Thank you
+
+--#238 2022-07-17, Baertram, Feature idea: Speed-up the AddMark function and cache some markId independent checks so that calls to he same function AddMark with the same bagId and slotIndex
+-- can reuse the cached results. change of bagId or change of slotIndex will reset the cache.
+
+--#239 2022-07-17, Baertram, bug: AwesomeGuildStore - Directly switching from custom "Sell from bank" button to "Sell from inventory" button will enable FCOIS.gFilterWhere = LF_INVENTORY
+--instead of LF_GUILD_STORE_SELL
+-->Maybe event_bank_closed?
 
 
 --______________________________________
--- Current max # of bugs/features/ToDos: 235
+-- Current max # of bugs/features/ToDos: 239
 --______________________________________
 
 
 --Todo for this patch
---#233
---TODOS within AwesomeGuildStore:
--->Item drag protection: Working https://github.com/sirinsidiator/ESO-AwesomeGuildStore/blob/master/src/wrappers/SellTabWrapper.lua#L515 -> Calls ZO_InventorySlot_OnReceiveDrag then via "PickupEmoteById" hack
---> TODO !!! AwesomeGuildStore needs to update it's PreHooks of ZO_InventorySlot_OnStart Drag and ZO_InventorySlot_OnReceiveDrag !!!
--->Item drag protection error text: TODO -> Fix within AGS needed!
+--#234
+--#236
+--#239
+
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-07-06
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-07-17
 ------------------------------------------------------------------------------------
---#233
-
 
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.2.8 - New version: 2.2.9) -    Updated last: 2022-07-06
+--Changelog (last version: 2.2.8 - New version: 2.2.9) -    Updated last: 2022-07-17
 -------------------------------------------------------------------------------------
 --[Fixed]
---#233
--->Filter butons: Working
--->Filter buttons after listing an item: Working
--->Item click protection: Working
--->Item click protection error text: Working
--->Item automatic unslot as protected: Working
---TODOS within AwesomeGuildStore:
--->Item drag protection & error text are not working due to PreHooks & return true of AGS in ZO_InventorySlot_OnStart and ZO_InventorySlot_OnReceiveDrag
+--#234 AwesomeGuildStore needs to fix the function SellTabWrapper:UpdateFragments() so that
+--      PLAYER_INVENTORY.inventories[INVENTORY_CRAFT_BAG].additionalFilter = BACKPACK_MENU_BAR_LAYOUT_FRAGMENT.layoutData.additionalCraftBagFilter
+--      will be called as the custom CraftBag fragment get's added
+--#236 (also maybe #178) Deag&drop of companion items changed the internal FFCOIS panelto "Companion inventory",
+--   what made the filters unregister at the real shown panel (e.g. inventory, bank) and thus show all items again, allthough
+--   the 4 filter buttons were set to e.g. yellow or green to hide some marked items
+--#239 AwesomeGuildStore: Switching from "sell from bank" panel to normal sell from inventory showed the wrong "normal invenotory" filter buttons,
+--   instead of the guild store sell filter buttons
 
 
 --[Changed]
@@ -220,6 +264,7 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 --************************************************************************************************************************
 --************************************************************************************************************************
 --************************************************************************************************************************
+
 
 ------------------------------------------------------------------
 -- START OF ADDON CODE

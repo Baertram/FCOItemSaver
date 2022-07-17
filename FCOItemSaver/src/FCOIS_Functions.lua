@@ -101,6 +101,7 @@ local isVendorPanelShown
 local isMarked
 local isMarkedByItemInstanceId
 local checkIfUniversalDeconstructionNPC
+local isCompanionInventoryShown
 
 --==========================================================================================================================================
 --                                          FCOIS - Base & helper functions
@@ -260,7 +261,7 @@ end
 --> The control's name is the addon name + a nilable additional parameter "controlNameAddition" + the markerIconId
 --> Used to create FCOIS marker icon texture controls with unique names in other addons like Inventory Insight from Ashes (IIfA)!
 function FCOIS.GetItemSaverControl(parent, controlId, useParentFallback, controlNameAddition)
-    if FCOIS.settingsVars.settings.debug then debugMessage( "[GetItemSaverControl]","Parent: " .. parent:GetName() .. ", ControlId: " .. tos(controlId) .. ", useParentFallback: " .. tos(useParentFallback), true, FCOIS_DEBUG_DEPTH_ALL) end
+    if FCOIS.settingsVars.settings.debug then debugMessage( "[GetItemSaverControl]","Parent: " .. parent:GetName() .. ", ControlId: " .. tos(controlId) .. ", useParentFallback: " .. tos(useParentFallback), true, FCOIS_DEBUG_DEPTH_VERBOSE) end
     local textureNameAddition = (controlNameAddition ~= nil and controlNameAddition) or ""
     local retControl = parent:GetNamedChild(gAddonName .. textureNameAddition .. tos(controlId))
     --Use the parent control as a fallback?
@@ -497,7 +498,8 @@ signItemId = FCOIS.SignItemId
 --Get the item's instance id or unique ID
 --OLD function before "dragon bones" patch
 function FCOIS.MyGetItemInstanceIdNoControl(bagId, slotIndex, signToo)
---d("[FCOIS]MyGetItemInstanceIdNoControl - bagId: " ..tos(bagId) .. ", slotIndex: " ..tos(slotIndex).. ", signToo: " ..tos(signToo) )
+    local settings = FCOIS.settingsVars.settings
+    if settings.debug then debugMessage("[MyGetItemInstanceIdNoControl]", "bagId: " ..tos(bagId) .. ", slotIndex: " ..tos(slotIndex).. ", signToo: " ..tos(signToo), true, FCOIS_DEBUG_DEPTH_VERBOSE) end
     signToo = signToo or false
     --Support for base64 unique itemids (e.g. an enchanted armor got the same ItemInstanceId but can have different unique ids)
     local itemId
@@ -506,8 +508,8 @@ function FCOIS.MyGetItemInstanceIdNoControl(bagId, slotIndex, signToo)
     -->Reset the last ID if he bagId or slotIndex changes
     local myGetItemInstanceIdLastData = FCOIS.MyGetItemInstanceIdLast
     if (bagId == nil or myGetItemInstanceIdLastData.BagId == nil or myGetItemInstanceIdLastData.BagId ~= bagId) or
-        (slotIndex == nil or myGetItemInstanceIdLastData.SlotIndex== nil or myGetItemInstanceIdLastData.SlotIndex ~= slotIndex) then
---d(">resetting cached bag, slot and itemIds")
+            (slotIndex == nil or myGetItemInstanceIdLastData.SlotIndex== nil or myGetItemInstanceIdLastData.SlotIndex ~= slotIndex) then
+        --d(">resetting cached bag, slot and itemIds")
         --Reset the cached last ID
         FCOIS.MyGetItemInstanceIdLast.Id = nil
         FCOIS.MyGetItemInstanceIdLast.IdSigned = nil
@@ -522,13 +524,12 @@ function FCOIS.MyGetItemInstanceIdNoControl(bagId, slotIndex, signToo)
             itemId = IIfAclicked.itemInstanceOrUniqueId
         end
 
-    --bagId and slotIndex are given already
+        --bagId and slotIndex are given already
     else
         --Is the unique item ID enabled and the item's type is an allowed one(e.g. weapons, armor, ...)
         --Then use the unique item ID
         --Else use the non-unique item ID
-        local settings = FCOIS.settingsVars.settings
-        if settings.debug then debugMessage( "[MyGetItemInstanceIdNoControl]","useUniqueIds: " .. tos(settings.useUniqueIds) .. ", allowedItemType: " .. tos(allowedItemType), true, FCOIS_DEBUG_DEPTH_ALL) end
+        if settings.debug then debugMessage("[MyGetItemInstanceIdNoControl]LF_INVENTORY_COMPANION", ">useUniqueIds: " .. tos(settings.useUniqueIds) .. ", allowedItemType: " .. tos(allowedItemType), true, FCOIS_DEBUG_DEPTH_VERBOSE) end
         --d("[FCOIS.MyGetItemInstanceINoControl] useUniqueIds: " .. tos(settings.useUniqueIds) .. ", allowedItemType: " .. tos(allowedItemType))
 
         --Use the cached itemId first
@@ -1022,6 +1023,7 @@ end
 local doesPlayerInventoryCurrentFilterEqual = FCOIS.DoesPlayerInventoryCurrentFilterEqual
 
 function FCOIS.DoesPlayerInventoryCurrentFilterEqualCompanion(panelId)
+--d("[FCOIS]DoesPlayerInventoryCurrentFilterEqualCompanion - panelId: " ..tos(panelId))
     local invType = libFiltersPanelIdToInventory[panelId]
     if invType == nil then return end
     return doesPlayerInventoryCurrentFilterEqual(invType, ITEM_TYPE_DISPLAY_CATEGORY_COMPANION)
@@ -1035,6 +1037,7 @@ local isItemLinkOwnerCompanion = FCOIS.IsItemLinkOwnerCompanion
 
 -- Check if an item owner is a companion
 function FCOIS.IsItemOwnerCompanion(bagId, slotIndex, itemLink)
+--d("[FCOIS]IsItemOwnerCompanion")
     if bagId ~= nil and slotIndex ~= nil then
         return (giac(bagId, slotIndex) == GAMEPLAY_ACTOR_CATEGORY_COMPANION) or false
     elseif itemLink ~= nil then
@@ -1049,14 +1052,14 @@ local isItemOwnerCompanion = FCOIS.IsItemOwnerCompanion
 --one of the icons that cannot be applied to items that are companion owned (e.g. research, deconstruct, improve, sell at guildstore. intricate)
 --Return value will be "allowed" (=true) or "blocked" (=false)
 function FCOIS.DoCompanionItemChecks(bagId, slotIndex, iconId, isCompanionInventory, viaKeybind, removeAll, itemLink)
-    --isCompanionInventory = isCompanionInventory or ((FCOIS.gFilterWhere == LF_INVENTORY_COMPANION or FCOIS.isCompanionInventoryShown()) or false)
+--d("[FCOIS]DoCompanionItemChecks " ..gil(bagId, slotIndex) .. ", iconId: " ..tos(iconId).. ", isCompanionInventory: " ..tos(isCompanionInventory) .. ", viaKeybind: " ..tos(viaKeybind))
     viaKeybind = viaKeybind or false
     --icon is not given but we try to apply a keybinding? Return "allowed" as fallback
     if viaKeybind == true and iconId == nil then
         return false --blocked
     end
     local isCompanionOnwed = isItemOwnerCompanion(bagId, slotIndex, itemLink)
---d("[FCOIS]DoCompanionItemChecks " ..gil(bagId, slotIndex) .. ", iconId: " ..tos(iconId) .. ", isCompanionOnwed: " ..tos(isCompanionOnwed) .. ", isCompanionInventory: " ..tos(isCompanionInventory) .. ", viaKeybind: " ..tos(viaKeybind))
+--d(">isCompanionOnwed: " ..tos(isCompanionOnwed))
     if isCompanionOnwed == true then
         --No icon given (via add. inv. "flag" context menu)
         if iconId == nil then
@@ -1070,6 +1073,18 @@ function FCOIS.DoCompanionItemChecks(bagId, slotIndex, iconId, isCompanionInvent
         return not isIconDisabledAtCompanion --"blocked" or "allowed" (if not in table FCOIS.mappingVars.iconIsDisabledAtCompanion)
     end
     return true --allowed
+end
+
+--Is the companion interacted with and is the companion inventory shown? Used within file src/FCOIS_MarkerIcons.lua, function FCOIS.CreateTextures
+--at call to addMarkerIconsToZOListViewNow
+function FCOIS.CheckIfCompanionInteractedAndCompanionInventoryIsShown()
+    isCompanionInventoryShown = isCompanionInventoryShown or FCOIS.IsCompanionInventoryShown
+    local currentLibFiltersFilterType
+    local isCompanionInventoryShownNow = isCompanionInventoryShown()
+    if isCompanionInventoryShownNow == true then
+        currentLibFiltersFilterType = LF_INVENTORY_COMPANION
+    end
+    return currentLibFiltersFilterType
 end
 
 function FCOIS.IsItemType(bag, slot, itemTypes)
@@ -2311,6 +2326,7 @@ function FCOIS.IsCompanionInventoryShown()
     end
     return not ctrlVars.COMPANION_INV_CONTROL:IsHidden()
 end
+isCompanionInventoryShown = FCOIS.IsCompanionInventoryShown
 
 --Is the character control shown
 function FCOIS.IsCharacterShown()

@@ -44,6 +44,8 @@ local markItem
 local checkIfInventoryRowOfExternalAddonNeedsMarkerIconsUpdate
 local getArmorType = FCOIS.GetArmorType
 
+local checkIfCompanionInteractedAndCompanionInventoryIsShown = FCOIS.CheckIfCompanionInteractedAndCompanionInventoryIsShown
+
 
 -- =====================================================================================================================
 --  Other AddOns helper functions
@@ -396,8 +398,18 @@ local function addMarkerIconsToZOListViewNow(rowControl, slot, doCreateMarkerCon
         updateAlreadyBound = updateAlreadyBound or false
         updateOtherAddonsInvMarkers = updateOtherAddonsInvMarkers or false
 
+        --Change FCOIS.gFilterWhere upon drag&drop of items, or upon OnMous* functions?
+        -->e.g. at the companion inventory
         if libFiltersFilterTypeToUse ~= nil then
-            FCOIS.gFilterWhere = libFiltersFilterTypeToUse
+            if type(libFiltersFilterTypeToUse) == "function" then
+                local filterPanelIdNew = libFiltersFilterTypeToUse()
+                if filterPanelIdNew ~= nil then
+                    FCOIS.gFilterWhere = filterPanelIdNew
+                end
+            else
+                FCOIS.gFilterWhere = libFiltersFilterTypeToUse
+            end
+
         end
 
         local iconSettings = FCOIS.settingsVars.settings.icon
@@ -594,7 +606,21 @@ function FCOIS.CreateTextures(whichTextures)
                     function(rowControl, slot)
                         --hookedFunctions(rowControl, slot)
 
-                        addMarkerIconsToZOListViewNow(rowControl, slot, doCreateMarkerControl, LF_INVENTORY_COMPANION, false, false)
+                        --At the companion inventory list: Add the LF_INVENTORY_COMPANION explicitly so that right click and drag&drop changes the
+                        --value of FCOIS.gFilterWhere properly again
+                        --Bug #236 (also maybe #178)
+                        --Seems that the /EsoUI/Ingame/Companion/Keyboard/CompanionEquipment_Keyboard.lua companion inventory not only affects the companion's
+                        --inventory as you interact with the companion BUT also all companion items in your normal inventory and bank deposits!
+                        --So we need to do an additional check if the companion is currently interacted with and the companion menu is opened...
+
+                        -- TODO: Check if the below is still needed then
+                        -->Attention: After right click/drag/drop (inventory slot locked) a re-evaluation needs to be done to assure that the
+                        --            "real shown panel" is updated to FCOIS.gFilterWhere again. e.g. drag&drop any companion item at the
+                        --            normal inventory (and trying to desroy it) will change FCOIS.gFilterWhere to LF_INVENTORY_COMPANION and
+                        --            after that it needs to become LF_INVENTORY properly again!
+                        --            Will be fixed now by preventing the companion
+
+                        addMarkerIconsToZOListViewNow(rowControl, slot, doCreateMarkerControl, checkIfCompanionInteractedAndCompanionInventoryIsShown, false, false)
                         --[[
                         --Do not execute if horse is changed
                         --The current game's SCENE and name (used for determining bank/guild bank deposit)

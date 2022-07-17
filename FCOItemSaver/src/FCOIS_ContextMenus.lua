@@ -2255,7 +2255,7 @@ function FCOIS.GetContextMenuAntiSettingsTextAndState(p_filterWhere, buildText, 
     local filterPanelToCheck = p_filterWhere
 
     local settings = FCOIS.settingsVars.settings
-    if settings.debug then debugMessage( "[getContextMenuAntiSettingsTextAndState]","PanelId: " .. p_filterWhere .. ", BuildText: " .. tos(buildText), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+    if settings.debug then debugMessage( "[getContextMenuAntiSettingsTextAndState]","PanelId: " .. p_filterWhere .. ", BuildText: " .. tos(buildText) .. ", isSpecialAntiSetting: " ..tos(isSpecialAntiSetting), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
 
     local currentSettingsState
     local currentSettingsStateDestroy
@@ -3827,7 +3827,7 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
     local mouseRightClickDone = self.m_contextMenuMode
     --Hide the inventory button contextMenu if shown and if we right clicked another item
     if mouseRightClickDone == true then
-        if settings.debug then debugMessage( "[AddSlotAction]","Parent: " .. parentName .. ", actionStringId: " .. tos(actionStringId), true, FCOIS_DEBUG_DEPTH_ALL) end
+        if settings.debug then debugMessage( "[AddSlotAction]","Parent: " .. parentName .. ", actionStringId: " .. tos(actionStringId), true, FCOIS_DEBUG_DEPTH_VERBOSE) end
         --Hide the context menu at last active panel
         hideContextMenu(FCOIS.gFilterWhere)
 
@@ -3845,7 +3845,7 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
             end
         end
     else
-        if isNewSlot and settings.debug then debugMessage( "[AddSlotAction]",">newSlot! Parent: " .. parentName, true, FCOIS_DEBUG_DEPTH_ALL) end
+        if isNewSlot and settings.debug then debugMessage( "[AddSlotAction]",">newSlot! Parent: " .. parentName, true, FCOIS_DEBUG_DEPTH_VERBOSE) end
     end
 
     callItemSelectionHandler = callItemSelectionHandler or FCOIS.callItemSelectionHandler
