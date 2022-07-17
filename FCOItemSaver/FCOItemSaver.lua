@@ -166,8 +166,38 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 -->Item drag protection error text: TODO -> Fix within AGS needed!
 
 --#234  2022-06-26, Baertram: Add support for AwesomeGuildStores feature "Sell at trading house, directly from CraftBag"
---> FCOIS filterbuttons are not working (test together with CraftBagExtended, and both alone, and check LibFilters-3.0 CBE additions!!!)
---> https://github.com/sirinsidiator/ESO-AwesomeGuildStore/blob/master/src/wrappers/SellTabWrapper.lua#L714-L747
+--TODOS within AwesomeGuildStore:
+--[[
+In AwesomeGuildStore/wrappers/SelltabWrapper.lua -> Add elseif self.currentInventoryFragment == CRAFT_BAG_FRAGMENT then
+
+function SellTabWrapper:UpdateFragments()
+    SCENE_MANAGER:RemoveFragment(INVENTORY_FRAGMENT)
+    SCENE_MANAGER:RemoveFragment(BANK_FRAGMENT)
+    SCENE_MANAGER:RemoveFragment(CRAFT_BAG_FRAGMENT)
+    ZO_PlayerInventoryInfoBar:SetParent(self:GetParentForInfoBar())
+    SCENE_MANAGER:AddFragment(self.currentInventoryFragment)
+    if self.currentInventoryFragment == BANK_FRAGMENT then
+        -- need to trigger an update, otherwise bound items will show in the list
+        PLAYER_INVENTORY:UpdateList(INVENTORY_BANK, true)
+
+-- v --
+
+    elseif self.currentInventoryFragment == CRAFT_BAG_FRAGMENT then
+        --2022-07-17 Baertram, fix for LibFilters3.0 to update the CraftBag's additionalFilter filterFunction from the
+        --fragment BACKPACK_MENU_BAR_LAYOUT_FRAGMENT -> Where vanilla UI code and LibFilters 3 read/write from/to
+        local layoutData = BACKPACK_MENU_BAR_LAYOUT_FRAGMENT.layoutData
+        local craftBag = PLAYER_INVENTORY.inventories[INVENTORY_CRAFT_BAG]
+        craftBag.additionalFilter = layoutData.additionalCraftBagFilter
+-- ^ --
+    end
+end
+
+And somewhere where the "Guild Store Sell" fragment is shown (callback) also check if craftbag is the currently selected inventory to sell from
+and update the additionalFilters then! Else re-opening where CraftBag was opened before closing the guild store, will result in non copied filter functions
+from the layoutData.
+
+]]
+
 
 --#235  2022-06-30, Baertram: Companion marker at companion character doll looses the marker if a companion is dismissed and another is called
 --> Maybe the same item is needed at both companions? Only visual bug, marker is still in SavedVariables and item is protected.
@@ -206,28 +236,6 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 ------------------------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-07-17
 ------------------------------------------------------------------------------------
---#234
---[[
-In AwesomeGuildStore/wrappers/SelltabWrapper.lua -> Add elseif self.currentInventoryFragment == CRAFT_BAG_FRAGMENT then:
-
-function SellTabWrapper:UpdateFragments()
-    SCENE_MANAGER:RemoveFragment(INVENTORY_FRAGMENT)
-    SCENE_MANAGER:RemoveFragment(BANK_FRAGMENT)
-    SCENE_MANAGER:RemoveFragment(CRAFT_BAG_FRAGMENT)
-    ZO_PlayerInventoryInfoBar:SetParent(self:GetParentForInfoBar())
-    SCENE_MANAGER:AddFragment(self.currentInventoryFragment)
-    if self.currentInventoryFragment == BANK_FRAGMENT then
-        -- need to trigger an update, otherwise bound items will show in the list
-        PLAYER_INVENTORY:UpdateList(INVENTORY_BANK, true)
-    elseif self.currentInventoryFragment == CRAFT_BAG_FRAGMENT then
-        --2022-07-17 Baertram, fix for LibFilters3.0 to update the CraftBag's additionalFilter filterFunction from the
-        --fragment BACKPACK_MENU_BAR_LAYOUT_FRAGMENT -> Where vanilla UI code and LibFilters 3 read/write from/to
-        local layoutData = BACKPACK_MENU_BAR_LAYOUT_FRAGMENT.layoutData
-        local craftBag = PLAYER_INVENTORY.inventories[INVENTORY_CRAFT_BAG]
-        craftBag.additionalFilter = layoutData.additionalCraftBagFilter
-    end
-end
-]]
 
 
 -------------------------------------------------------------------------------------
