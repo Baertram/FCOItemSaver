@@ -5,29 +5,24 @@ AddOn for the game Elder Scrolls Online: Saving your items so you do not acciden
 ==Changelog for current beta version ==
 ```
 --______________________________________
--- Current max # of bugs/features/ToDos: 237
+-- Current max # of bugs/features/ToDos: 240
 --______________________________________
 
 
 --Todo for this patch
---#236
+
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-07-17
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-07-31
 ------------------------------------------------------------------------------------
---#236
-
 
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.2.9 - New version: 2.3.0) -    Updated last: 2022-07-17
+--Changelog (last version: 2.3.0 - New version: 2.3.1) -    Updated last: 2022-07-31
 -------------------------------------------------------------------------------------
 --[Fixed]
---#236 (also maybe #178) Deag&drop of companion items changed the internal FFCOIS panelto "Companion inventory",
---   what made the filters unregister at the real shown panel (e.g. inventory, bank) and thus show all items again, allthough
---   the 4 filter buttons were set to e.g. yellow or green to hide some marked items
-
+--#240 FCOIS Unique Ids aren't respecting item level unique criteria (if changed at the settings)
 
 --[Changed]
 
@@ -36,6 +31,5 @@ AddOn for the game Elder Scrolls Online: Saving your items so you do not acciden
 
 
 --[Added on request]
-
 
 ```
