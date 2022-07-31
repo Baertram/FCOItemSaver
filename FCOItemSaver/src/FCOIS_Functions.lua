@@ -659,6 +659,7 @@ end
 --If bagId and slotIndex are given unsignedItemInstanceId can be nil (will be rebuild internally then).
 --If allowedItemType (boolean) is not given then the itemType will be rebuild from the bagId & slotIndex, or the itemlink, and the value will be checked against FCOIS.checkVars.uniqueIdItemTypes[itemType] afterwards.
 function FCOIS.CreateFCOISUniqueIdString(itemId, bagId, slotIndex, itemLink)
+    local numVars = FCOIS.numVars
     createFCOISUniqueIdString = createFCOISUniqueIdString or FCOIS.CreateFCOISUniqueIdString
     --Either bag + slot or itemLink needs to be given
     if (not bagId or not slotIndex) and (not itemLink or itemLink == "") then return end
@@ -693,7 +694,7 @@ function FCOIS.CreateFCOISUniqueIdString(itemId, bagId, slotIndex, itemLink)
     --Last itemLink not known?
     local createFCOISUniqueIdStringLastData = FCOIS.CreateFCOISUniqueIdStringLast
     local lastUsedLastUsedType      = createFCOISUniqueIdStringLastData.LastUseType
-    if lastUsedLastUsedType == nil or lastUsedLastUsedType > 2 then
+    if lastUsedLastUsedType == nil or lastUsedLastUsedType > numVars.lastUsedTypes then
 --d(">resetting all variables")
         --Reset all variables
         resetCreateFCOISUniqueIdStringLastVars()
@@ -709,14 +710,14 @@ function FCOIS.CreateFCOISUniqueIdString(itemId, bagId, slotIndex, itemLink)
     if lastUsedLastUsedType ~= nil and lastUsedItemInstanceId ~= nil and lastUsedItemInstanceId == itemId
         and lastFCOISuniqueId ~= nil then
         --unsignedItemInstanceId + bagId, slotIndex
-        if lastUsedLastUsedType == 1 then
+        if lastUsedLastUsedType == FCOIS_CON_FCOISUNIQUEID_TYPE_BAGID_SLOTINDEX then
             if (bagId ~= nil and lastBagId ~= nil and bagId == lastBagId) and
                (slotIndex ~= nil and lastSlotIndex ~= nil and slotIndex == lastSlotIndex) then
 --d("<returning cached bagId/slotIndex value: " ..tos(lastFCOISuniqueId))
                 return lastFCOISuniqueId
             end
         --unsignedItemInstanceId + ItemLink
-        elseif lastUsedLastUsedType == 2 then
+        elseif lastUsedLastUsedType == FCOIS_CON_FCOISUNIQUEID_TYPE_ITEMLINK then
             if (itemLink ~= nil and lastItemLink ~= nil and itemLink == lastItemLink) then
 --d("<returning cached itemLink value: " ..tos(lastFCOISuniqueId))
                 return lastFCOISuniqueId
@@ -829,12 +830,12 @@ function FCOIS.CreateFCOISUniqueIdString(itemId, bagId, slotIndex, itemLink)
         lastCreatedUniqueIDStringData.BagId        = bagId
         lastCreatedUniqueIDStringData.SlotIndex    = slotIndex
         lastCreatedUniqueIDStringData.ItemLink     = nil
-        lastCreatedUniqueIDStringData.LastUseType  = 1
+        lastCreatedUniqueIDStringData.LastUseType  = FCOIS_CON_FCOISUNIQUEID_TYPE_BAGID_SLOTINDEX
     elseif itemLink ~= nil then
         lastCreatedUniqueIDStringData.ItemLink     = itemLink
         lastCreatedUniqueIDStringData.BagId        = nil
         lastCreatedUniqueIDStringData.SlotIndex    = nil
-        lastCreatedUniqueIDStringData.LastUseType  = 2
+        lastCreatedUniqueIDStringData.LastUseType  = FCOIS_CON_FCOISUNIQUEID_TYPE_ITEMLINK
     end
     lastCreatedUniqueIDStringData.FCOISCreatedUniqueId = uniqueItemIdString
     --------------------------------------------------------------------------------------------------------------------

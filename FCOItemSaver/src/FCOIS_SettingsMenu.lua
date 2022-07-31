@@ -128,7 +128,7 @@ local refreshEquipmentControl = FCOIS.RefreshEquipmentControl
 local filterBasics = FCOIS.FilterBasics
 local setAllAddInvFlagButtonOffsetSettingsEqual = FCOIS.SetAllAddInvFlagButtonOffsetSettingsEqual
 local reAnchorAdditionalInvButtons = FCOIS.ReAnchorAdditionalInvButtons
-
+local resetCreateFCOISUniqueIdStringLastVars = FCOIS.ResetCreateFCOISUniqueIdStringLastVars
 local getLAMMarkerIconsDropdown
 
 
@@ -3244,6 +3244,7 @@ function FCOIS.BuildAddonMenu()
                         --Currntly the box is disabled as the itemId always needs to be added
                         --FCOISsettings.uniqueIdParts.itemId = value
                         FCOISsettings.uniqueIdParts.itemId = true
+                        resetCreateFCOISUniqueIdStringLastVars()
                     end,
                     default = true,
                     disabled = function() return true end, --this cannot be removed but should be "shown as a part of the uniqueID"
@@ -3256,6 +3257,7 @@ function FCOIS.BuildAddonMenu()
                     getFunc = function() return FCOISsettings.uniqueIdParts.level end,
                     setFunc = function(value)
                         FCOISsettings.uniqueIdParts.level = value
+                        resetCreateFCOISUniqueIdStringLastVars()
                     end,
                     default = FCOISdefaultSettings.uniqueIdParts.level,
                     disabled = function() return not uniqueIdIsEnabledAndSetToFCOIS() end,
@@ -3268,6 +3270,7 @@ function FCOIS.BuildAddonMenu()
                     getFunc = function() return FCOISsettings.uniqueIdParts.quality end,
                     setFunc = function(value)
                         FCOISsettings.uniqueIdParts.quality = value
+                        resetCreateFCOISUniqueIdStringLastVars()
                     end,
                     default = FCOISdefaultSettings.uniqueIdParts.quality,
                     disabled = function() return not uniqueIdIsEnabledAndSetToFCOIS() end,
@@ -3280,6 +3283,7 @@ function FCOIS.BuildAddonMenu()
                     getFunc = function() return FCOISsettings.uniqueIdParts.isStolen end,
                     setFunc = function(value)
                         FCOISsettings.uniqueIdParts.isStolen = value
+                        resetCreateFCOISUniqueIdStringLastVars()
                     end,
                     default = FCOISdefaultSettings.uniqueIdParts.isStolen,
                     disabled = function() return not uniqueIdIsEnabledAndSetToFCOIS() end,
@@ -3292,6 +3296,7 @@ function FCOIS.BuildAddonMenu()
                     getFunc = function() return FCOISsettings.uniqueIdParts.trait end,
                     setFunc = function(value)
                         FCOISsettings.uniqueIdParts.trait = value
+                        resetCreateFCOISUniqueIdStringLastVars()
                     end,
                     default = FCOISdefaultSettings.uniqueIdParts.trait,
                     disabled = function() return not uniqueIdIsEnabledAndSetToFCOIS() end,
@@ -3304,6 +3309,7 @@ function FCOIS.BuildAddonMenu()
                     getFunc = function() return FCOISsettings.uniqueIdParts.enchantment end,
                     setFunc = function(value)
                         FCOISsettings.uniqueIdParts.enchantment = value
+                        resetCreateFCOISUniqueIdStringLastVars()
                     end,
                     default = FCOISdefaultSettings.uniqueIdParts.enchantment,
                     disabled = function() return not uniqueIdIsEnabledAndSetToFCOIS() end,
@@ -3316,6 +3322,7 @@ function FCOIS.BuildAddonMenu()
                     getFunc = function() return FCOISsettings.uniqueIdParts.style end,
                     setFunc = function(value)
                         FCOISsettings.uniqueIdParts.style = value
+                        resetCreateFCOISUniqueIdStringLastVars()
                     end,
                     default = FCOISdefaultSettings.uniqueIdParts.style,
                     disabled = function() return not uniqueIdIsEnabledAndSetToFCOIS() end,
@@ -3328,6 +3335,7 @@ function FCOIS.BuildAddonMenu()
                     getFunc = function() return FCOISsettings.uniqueIdParts.isCrafted end,
                     setFunc = function(value)
                         FCOISsettings.uniqueIdParts.isCrafted = value
+                        resetCreateFCOISUniqueIdStringLastVars()
                     end,
                     default = FCOISdefaultSettings.uniqueIdParts.isCrafted,
                     disabled = function() return not uniqueIdIsEnabledAndSetToFCOIS() end,
@@ -3340,6 +3348,7 @@ function FCOIS.BuildAddonMenu()
                     getFunc = function() return FCOISsettings.uniqueIdParts.isCraftedBy end,
                     setFunc = function(value)
                         FCOISsettings.uniqueIdParts.isCraftedBy = value
+                        resetCreateFCOISUniqueIdStringLastVars()
                     end,
                     default = FCOISdefaultSettings.uniqueIdParts.isCraftedBy,
                     disabled = function() return not uniqueIdIsEnabledAndSetToFCOIS() or not FCOISsettings.uniqueIdParts.isCrafted end,
@@ -3352,6 +3361,7 @@ function FCOIS.BuildAddonMenu()
                     getFunc = function() return FCOISsettings.uniqueIdParts.isCrownItem end,
                     setFunc = function(value)
                         FCOISsettings.uniqueIdParts.isCrownItem = value
+                        resetCreateFCOISUniqueIdStringLastVars()
                     end,
                     default = FCOISdefaultSettings.uniqueIdParts.isCrownItem,
                     disabled = function() return not uniqueIdIsEnabledAndSetToFCOIS() end,
