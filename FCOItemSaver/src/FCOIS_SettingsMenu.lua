@@ -3996,6 +3996,16 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                             width="full",
                             default = FCOISdefaultSettings.useDifferentUndoFilterPanels,
                         },
+                        {
+                            type = "checkbox",
+                            name = locVars["options_undo_add_context_menu_entry"],
+                            tooltip = locVars["options_undo_add_context_menu_entry" .. tooltipSuffix],
+                            getFunc = function() return FCOISsettings.addRemoveAllMarkerIconsToItemContextMenu end,
+                            setFunc = function(value) FCOISsettings.addRemoveAllMarkerIconsToItemContextMenu = value
+                            end,
+                            width="full",
+                            default = FCOISdefaultSettings.addRemoveAllMarkerIconsToItemContextMenu,
+                        },
                     },
                 },
 

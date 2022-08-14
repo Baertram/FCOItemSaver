@@ -1417,9 +1417,9 @@ function FCOIS.ClearOrRestoreAllMarkers(rowControl, bagId, slotIndex, onlyFeedba
             FCOIS.preventerVars.doFalseOverride = false
             --For each marked icon of the currently improved item:
             --Set the icons/markers of the previous item again
-            if currentMarkedIcons and #currentMarkedIcons > 0 then
+            if currentMarkedIcons ~= nil and #currentMarkedIcons > 0 then
                 if onlyFeedback == true then
-                    return 1
+                    d(">currentMarkerIcons: " .. #currentMarkedIcons)
                 end
 
                 --Build the backup array with normal marked icons now
@@ -1437,6 +1437,10 @@ function FCOIS.ClearOrRestoreAllMarkers(rowControl, bagId, slotIndex, onlyFeedba
     --d(">iconId: " .. tos(iconId) .. ", loc_counter: " .. tos(loc_counter))
                     --Only go on if item is marked or is the last marker (to update the inventory afterwards)
                     if iconIsMarked == true then
+                        if onlyFeedback == true then
+                            return 1
+                        end
+
                         loc_marked_counter = loc_marked_counter + 1
                         table.insert(iconIdsToBackup, iconId)
                     end
