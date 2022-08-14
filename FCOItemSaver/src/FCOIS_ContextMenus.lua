@@ -1091,6 +1091,8 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
                     normalColor     = colDef,
                     highlightColor  = colDef,
                 }
+                --Add the submenu to the context menu
+                tins(customMenuVars.customMenuSubEntries, newSubEntry)
             else
                 AddCustomMenuItem(removeorRestoreAllText, function()
                     checkIfClearOrRestoreAllMarkers(rowControl, nil, nil, nil, nil, nil, true)
