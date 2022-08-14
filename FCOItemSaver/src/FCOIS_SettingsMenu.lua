@@ -4006,6 +4006,17 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                             width="full",
                             default = FCOISdefaultSettings.addRemoveAllMarkerIconsToItemContextMenu,
                         },
+                        {
+                            type = "checkbox",
+                            name = locVars["options_undo_add_context_menu_entry_tooltip"],
+                            tooltip = locVars["options_undo_add_context_menu_entry_tooltip" .. tooltipSuffix],
+                            getFunc = function() return FCOISsettings.showTooltipAtRestoreLastMarked end,
+                            setFunc = function(value) FCOISsettings.showTooltipAtRestoreLastMarked = value
+                            end,
+                            width="full",
+                            disabled = function() return not FCOISsettings.addRemoveAllMarkerIconsToItemContextMenu end,
+                            default = FCOISdefaultSettings.showTooltipAtRestoreLastMarked,
+                        },
                     },
                 },
 

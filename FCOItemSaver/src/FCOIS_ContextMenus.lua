@@ -11,6 +11,7 @@ local tos = tostring
 local strsub = string.sub
 local strlen = string.len
 local zo_strf = zo_strformat
+local strfor = string.format
 local tins = table.insert
 
 --local wm = WINDOW_MANAGER
@@ -105,6 +106,7 @@ local clearOrRestoreAllMarkers = FCOIS.ClearOrRestoreAllMarkers
 local checkIfClearOrRestoreAllMarkers = FCOIS.CheckIfClearOrRestoreAllMarkers
 
 local buildMarkerIconProtectedWhereTooltip
+local buildMarkerIconsTooltipText
 
 local checkIfUniversaldDeconstructionNPC
 
@@ -303,11 +305,16 @@ local contextMenuEntryTooltipFunc = FCOIS.ContextMenuEntryTooltipFunc
 --Function to check if a tooltip should be added to a ZO_Menu item,
 --build/enhance the tooltip text then and return the
 --so the function contextMenuEntryTooltipFunc(control, inside, data) can show the tooltip later on via LibCustomMenu
-function FCOIS.CheckBuildAndAddCustomMenuTooltip(align, tooltipText)
+function FCOIS.CheckBuildAndAddCustomMenuTooltip(align, tooltipText, isUndoLastMarked)
     --d("[FCOIS]CheckBuildAndAddCustomMenuTooltip")
+    isUndoLastMarked = isUndoLastMarked or false
     if not tooltipText or tooltipText == "" then return end
     local settings = FCOIS.settingsVars.settings
-    if not settings.contextMenuItemEntryShowTooltip then return end
+    if isUndoLastMarked then
+        if not settings.showTooltipAtRestoreLastMarked then return end
+    else
+        if not settings.contextMenuItemEntryShowTooltip then return end
+    end
     return createContextMenuAdditionalData({ ["align"] = align, ["text"] = tooltipText})
 end
 local checkBuildAndAddCustomMenuTooltip = FCOIS.CheckBuildAndAddCustomMenuTooltip
@@ -1078,15 +1085,28 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
     --Add an entry "Remove all marker icons" if enabled in settings #241
     if firstAdd and settings.addRemoveAllMarkerIconsToItemContextMenu then
         --Check if marker icons are set or not, and change the text shown
-        local isAnyMarkerIconSetOrRestorable = clearOrRestoreAllMarkers(rowControl, bag, slotId, true)
+        local isAnyMarkerIconSetOrRestorable, alreadyRemovedMarkersForThatBagAndItem = clearOrRestoreAllMarkers(rowControl, bag, slotId, true)
         if isAnyMarkerIconSetOrRestorable ~= -1 then
+            --Restore?
+            local lastMarkedIconsTooltipText = ""
+            local countMarkedBefore = 0
+            if isAnyMarkerIconSetOrRestorable == 2 then
+                buildMarkerIconsTooltipText = buildMarkerIconsTooltipText or FCOIS.BuildMarkerIconsTooltipText
+                lastMarkedIconsTooltipText, countMarkedBefore = buildMarkerIconsTooltipText(alreadyRemovedMarkersForThatBagAndItem, "\n", not settings.showTooltipAtRestoreLastMarked)
+            end
             local removeorRestoreAllText = (isAnyMarkerIconSetOrRestorable == 1 and locTextMarkSpecial.removeAll)
-                                            or (isAnyMarkerIconSetOrRestorable == 2 and locTextMarkSpecial.restoreLast)
+                                            or (isAnyMarkerIconSetOrRestorable == 2 and strfor(locTextMarkSpecial.restoreLast, tos(countMarkedBefore)))
             if useSubMenu then
                 newSubEntry = {
                     label = removeorRestoreAllText,
                     callback = function()
                         checkIfClearOrRestoreAllMarkers(rowControl, nil, nil, nil, nil, nil, true)
+                    end,
+                    tooltip = function(control, inside)
+                        if lastMarkedIconsTooltipText ~= nil and lastMarkedIconsTooltipText ~= "" then
+                            local data=checkBuildAndAddCustomMenuTooltip(tooltipAlign, lastMarkedIconsTooltipText)
+                            contextMenuEntryTooltipFunc(control, inside, data)
+                        end
                     end,
                     myfont          = myFont,
                     normalColor     = myColorEnabled,
@@ -1095,9 +1115,15 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
                 --Add the submenu to the context menu
                 tins(customMenuVars.customMenuSubEntries, newSubEntry)
             else
-                AddCustomMenuItem(removeorRestoreAllText, function()
+                local newAddedRemoveOrRestoreAllMenuIndex = AddCustomMenuItem(removeorRestoreAllText, function()
                     checkIfClearOrRestoreAllMarkers(rowControl, nil, nil, nil, nil, nil, true)
                 end, MENU_ADD_OPTION_LABEL)
+                if lastMarkedIconsTooltipText ~= nil and lastMarkedIconsTooltipText ~= "" then
+                    AddCustomMenuTooltip(function(control, inside)
+                        local data=checkBuildAndAddCustomMenuTooltip(tooltipAlign, lastMarkedIconsTooltipText)
+                        contextMenuEntryTooltipFunc(control, inside, data) end,
+                            newAddedRemoveOrRestoreAllMenuIndex)
+                end
             end
         end
     end
