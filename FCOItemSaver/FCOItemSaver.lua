@@ -204,13 +204,17 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 --Changelog (last version: 2.3.1 - New version: 2.3.2) -    Updated last: 2022-08-14
 -------------------------------------------------------------------------------------
 --[Fixed]
+--
 
 --[Changed]
 
 
 --[Added]
 --#241 Added setting to add a "remove all"/"restore last marker icons" to the context menu of items. You need to enable this at the settings submenu "marker icons" -> "Undo".
-
+--Undo entries saved by SHIFT+right mouse click (if enabled at the settings) or via this new context menu entry will be cleared if you manually set a new marker icon on the same item
+--via the inventory context menu!
+--Keybinds or mass-marking will not overwrite them.
+--Added tooltip setting for that new setting (see above) to show the last marked marker icons at the item if you press and hold the SHIFT key
 
 --[Added on request]
 

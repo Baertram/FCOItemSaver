@@ -374,7 +374,7 @@ function FCOIS.BuildMarkerIconsTooltipText(markerIcons, newLineStr, onlyMarkedCo
                     tooltipTextOfMarkerIcons = tooltipTextOfMarkerIcons .. newLineStr
                 end
                 getIconText = getIconText or FCOIS.GetIconText
-                local iconName = getIconText(iconId, true, false, true) or tos(iconId)
+                local iconName = getIconText(iconId, true, false, false) or tos(iconId)
                 tooltipTextOfMarkerIcons = tooltipTextOfMarkerIcons .. iconName
             end
         end
