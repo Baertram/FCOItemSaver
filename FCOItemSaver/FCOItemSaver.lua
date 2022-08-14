@@ -207,6 +207,13 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 --
 
 --[Changed]
+--API function FCOIS.GetIconText provides more parameters now:
+--Global function to get the for a given gear set's iconId (2, 4, 6, 7 or 8) or a dynamic icon id (13, 14, 15, 16, 17, 18, 19, 20, 21, 22)
+--> use the constants for the marker icons please! e.g. FCOIS_CON_ICON_LOCK, FCOIS_CON_ICON_DYNAMIC_1 etc. Check file src/FCOIS_constants.lua for the available constants (top of the file)
+--boolean withTexture <optional>: Add the icon#s texture to the name (default: left side)
+--boolean textureAtRight <optional>: Put the texture at the right side of the name
+--boolean textureNonColored <optional>: If true the texture will not be colored explicitly, if false the texture will use the color of the icon settings
+--function FCOIS.GetIconText(iconId, withTexture, textureAtRight, textureNonColored)
 
 
 --[Added]
