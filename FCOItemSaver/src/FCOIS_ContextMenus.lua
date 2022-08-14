@@ -719,10 +719,11 @@ end
 local function checkIfCachedLastAddMarkDataCanBeUsed(fcoisItemInstanceId, doReset, rowControl)
     doReset = doReset or false
     if doReset == true then
-        FCOIS.lastAddMarkData = nil
+        FCOIS.lastAddMarkData = {}
         return false
     else
         if FCOIS.lastAddMarkData == nil or FCOIS.lastAddMarkData.ItemInstanceId ~= fcoisItemInstanceId then
+            FCOIS.lastAddMarkData = {}
             local lastAddMarkData = {}
 
             lastAddMarkData.parentName = rowControl:GetParent():GetName()
@@ -850,7 +851,8 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
     --If quickslots are shown and the collectibles subfilters are selected: Do not allow the FCOIS context menu
     -->Will still show on quest items! So we need to extra check the currentFilter.descriptor
     --Also do not show at normal inventory quest items
-    local quickSlotsHidden = lastAddMarkData.quickSlotsHidden or ctrlVars.QUICKSLOT:IsHidden()
+    local quickSlotsHidden = lastAddMarkData.quickSlotsHidden
+    if quickSlotsHidden == nil then quickSlotsHidden = ctrlVars.QUICKSLOT:IsHidden() end
     local quickSlotsCurrentFilter = lastAddMarkData.quickslotCurrentFilter or ctrlVars.QUICKSLOT_WINDOW.currentFilter
     local quickSlotsCurrentFilterDescriptor  = quickSlotsCurrentFilter and quickSlotsCurrentFilter.descriptor
     local quickslotCurrentFilterIsNotAllowed = (quickSlotsCurrentFilter ~= nil and (quickSlotsCurrentFilter.extraInfo ~= nil or quickSlotsCurrentFilterDescriptor == 26)) or false
@@ -1028,12 +1030,12 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
             if isBound then return false end
         end
 
-        local isItemOwnerCompanion = lastAddMarkData.isItemOwnerCompanion
-        if isItemOwnerCompanion == nil then
-            isItemOwnerCompanion = isItemOwnerCompanion(bag, slotId)
+        local isItemOwnerCompanionVal = lastAddMarkData.isItemOwnerCompanion
+        if isItemOwnerCompanionVal == nil then
+            isItemOwnerCompanionVal = isItemOwnerCompanion(bag, slotId)
         end
         --Companion owned item and possible icon that should not be applied to context menu?
-        if isIconDisabledAtCompanion == true and isItemOwnerCompanion == true then
+        if isIconDisabledAtCompanion == true and isItemOwnerCompanionVal == true then
             return false
         end
     end
@@ -1586,7 +1588,7 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
 
     --Reset cached data
     if lastAdd == true then
-        checkIfCachedLastAddMarkDataCanBeUsed(fcoisItemInstanceId, true)
+        checkIfCachedLastAddMarkDataCanBeUsed(fcoisItemInstanceId, true, nil)
     end
 end
 
