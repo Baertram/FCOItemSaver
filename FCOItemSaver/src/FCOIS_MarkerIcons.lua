@@ -690,13 +690,14 @@ function FCOIS.CheckAndClearLastMarkedIcons(bagId, slotIndex)
 end
 
 --Function to check if SHIFT+right mouse was used on an inventory row to clear/restore all the marker icons (from before -> undo table)
-function FCOIS.CheckIfClearOrRestoreAllMarkers(clickedRow, modifierKeyPressed, upInside, mouseButton, refreshPopupDialogButons, calledByKeybind)
+function FCOIS.CheckIfClearOrRestoreAllMarkers(clickedRow, modifierKeyPressed, upInside, mouseButton, refreshPopupDialogButons, calledByKeybind, calledByContextMenu)
     calledByKeybind = calledByKeybind or false
+    calledByContextMenu = calledByContextMenu or false
     --Enable clearing all markers by help of the SHIFT+right click?
     local contextMenuClearMarkesByShiftKey = FCOIS.settingsVars.settings.contextMenuClearMarkesByShiftKey
 --d("[FCOIS.checkIfClearOrRestoreAllMarkers]shiftKey: " ..tos(IsShiftKeyDown()) .. ", upInside: " .. tos(upInside) .. ", mouseButton: " .. tos(mouseButton) .. ", settingEnabled: " ..tos(contextMenuClearMarkesByShiftKey) .. ", modifierKeyPressed: " ..tos(modifierKeyPressed) .. ", calledByKeybind: " ..tos(calledByKeybind))
-    if (modifierKeyPressed == true or calledByKeybind == true) and contextMenuClearMarkesByShiftKey
-            and (calledByKeybind == true or (upInside and mouseButton == MOUSE_BUTTON_INDEX_RIGHT))  then
+    if calledByContextMenu or ((modifierKeyPressed == true or calledByKeybind == true) and contextMenuClearMarkesByShiftKey
+            and (calledByKeybind == true or (upInside and mouseButton == MOUSE_BUTTON_INDEX_RIGHT)))  then
         refreshPopupDialogButons = refreshPopupDialogButons or false
         -- make sure control contains an item
         local bagId, slotIndex = myGetItemDetails(clickedRow)
@@ -1338,9 +1339,12 @@ local checkIfCharOrInvNeedsRingUpdate = FCOIS.CheckIfCharOrInvNeedsRingUpdate
 
 
 --Clear all current markers of the selected row, or restore all marker icons from the undo table
-function FCOIS.ClearOrRestoreAllMarkers(rowControl, bagId, slotIndex)
+--If parameter onlyFeedback is set to true the function returns 1 if marker icons are currently set and can be removed
+--or 2 if marker icons were already removed and saved for a restore, or it returns -1 if both is not possible
+function FCOIS.ClearOrRestoreAllMarkers(rowControl, bagId, slotIndex, onlyFeedback)
 --d("[FCOIS]ClearOrRestoreAllMarkers")
     if rowControl == nil then return end
+    onlyFeedback = onlyFeedback or false
     if bagId == nil or slotIndex == nil then
         bagId, slotIndex = myGetItemDetails(rowControl)
     end
@@ -1364,6 +1368,9 @@ function FCOIS.ClearOrRestoreAllMarkers(rowControl, bagId, slotIndex)
     if fcoisItemInstanceId ~= nil then
         local alreadyRemovedMarkersForThatBagAndItem = (lastMarkedIcons ~= nil and lastMarkedIcons[fcoisItemInstanceId]) or nil
         if alreadyRemovedMarkersForThatBagAndItem ~= nil then
+            if onlyFeedback == true then
+                return 2
+            end
 
             --Marker icons were removed already for this item in this bag, so restore them now
             --Restore saved markers for the current item?
@@ -1411,6 +1418,10 @@ function FCOIS.ClearOrRestoreAllMarkers(rowControl, bagId, slotIndex)
             --For each marked icon of the currently improved item:
             --Set the icons/markers of the previous item again
             if currentMarkedIcons and #currentMarkedIcons > 0 then
+                if onlyFeedback == true then
+                    return 1
+                end
+
                 --Build the backup array with normal marked icons now
                 --local _, currentMarkedIconsUnchanged = FCOIS.IsMarked(bagId, slotIndex, -1)
                 local currentMarkedIconsUnchanged = ZO_DeepTableCopy(currentMarkedIcons)
@@ -1453,6 +1464,9 @@ function FCOIS.ClearOrRestoreAllMarkers(rowControl, bagId, slotIndex)
                 end
             end
 
+        end
+        if onlyFeedback == true then
+            return -1
         end
     end
 

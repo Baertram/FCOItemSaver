@@ -12,7 +12,7 @@ local strlen = string.len
 FCOIS.addonVars = {}
 local addonVars = FCOIS.addonVars
 --Addon variables
-addonVars.addonVersionOptions 		    = '2.3.1' -- version shown in the settings panel
+addonVars.addonVersionOptions 		    = '2.3.2' -- version shown in the settings panel
 --The addon name, normal and decorated with colors etc.
 addonVars.gAddonName				    = "FCOItemSaver"
 addonVars.gAddonNameShort               = "FCOIS"
@@ -1896,6 +1896,7 @@ FCOIS.localizationVars.lTextDemark 	        = {}
 FCOIS.localizationVars.contextEntries       = {}
 FCOIS.localizationVars.lTextEquipmentMark   = {}
 FCOIS.localizationVars.lTextEquipmentDemark = {}
+FCOIS.localizationVars.lTextMarkSpecial     = {}
 
 FCOIS.settingsVars	= {}
 FCOIS.settingsVars.settings			= {}

@@ -1,33 +1,36 @@
 # FCOItemSaver
 AddOn for the game Elder Scrolls Online: Saving your items so you do not accidently destroy/sell/deconstruct them + many other features.
 
+--[[
+--#238 2022-07-17, Baertram, Feature idea: Speed-up the AddMark function and cache some markId independent checks so that calls to he same function AddMark with the same bagId and slotIndex
+-- can reuse the cached results. change of bagId or change of slotIndex will reset the cache.
+
+--#241 2022-08-14, Baertram, Feature idea: Add "Remove all markers" entry to context menu
+
+]]
 
 ==Changelog for current beta version ==
 ```
 --______________________________________
--- Current max # of bugs/features/ToDos: 237
+-- Current max # of bugs/features/ToDos: 241
 --______________________________________
 
 
 --Todo for this patch
---#236
+--#238
+--#241
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-07-17
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-08-14
 ------------------------------------------------------------------------------------
---#236
-
+--#241
 
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.2.9 - New version: 2.3.0) -    Updated last: 2022-07-17
+--Changelog (last version: 2.3.1 - New version: 2.3.2) -    Updated last: 2022-08-14
 -------------------------------------------------------------------------------------
 --[Fixed]
---#236 (also maybe #178) Deag&drop of companion items changed the internal FFCOIS panelto "Companion inventory",
---   what made the filters unregister at the real shown panel (e.g. inventory, bank) and thus show all items again, allthough
---   the 4 filter buttons were set to e.g. yellow or green to hide some marked items
-
 
 --[Changed]
 

@@ -798,6 +798,8 @@ FCOIS.localizationVars.localizationAll = {
         ["options_split_sellguildint_filter"]		 = "Split sell (at guild store/intricate) filter button",
         ["options_split_sellguildint_filter_TT"]= "Split the sell filter icon. If you right-click |t100.000000%:100.000000%:EsoUI/Art/Miscellaneous/icon_RMB.dds|t the sell filter button in the inventories it'll show a dropdown menu where you can choose if you wish to filter sellable, sellable at guild store or intricate icons. The entry * will select all entries again.",
         --Right click item menu
+        ["rightclick_menu_remove_all"]           = "Remove all icons",
+        ["rightclick_menu_restore_last"]         = "Restore last removed icons",
         ["rightclick_menu_lock"]       	 		 = "Lock",
         ["rightclick_menu_unlock"]         	     = "Unlock",
         ["rightclick_menu_add_gear1"]        	 = "Add to gear 1",
@@ -2040,6 +2042,8 @@ FCOIS.localizationVars.localizationAll = {
         ["options_split_sellguildint_filter"]		 = "Verkauf (Gildenladen/Aufwendig) Filterknopf auft.",
         ["options_split_sellguildint_filter_TT"]= "Teilt den Verkauf Filter Knopf in den Inventaren auf. Bei einem Klick mit der rechten Maustaste |t100.000000%:100.000000%:EsoUI/Art/Miscellaneous/icon_RMB.dds|t auf den Verkauf Filter Knopf wird ein Kontextmenü anzeigt, aus welchem entweder Verkauf, Verkauf im Gildenladen oder Aufwendige Gegenstände einzeln ausgewählt werden kann. Der Eintrag * wählt alle möglichen Einträge aus!",
         --Right click item menu
+        ["rightclick_menu_remove_all"]           = "Entferne alle Symbole",
+        ["rightclick_menu_restore_last"]         = "Stelle letzte Symbole wieder her",
         ["rightclick_menu_lock"]       	 		 = "Sperre setzen",
         ["rightclick_menu_unlock"]         	     = "Sperre entfernen",
         ["rightclick_menu_add_gear1"]        	 = "Zu Gear 1 hinzufügen",

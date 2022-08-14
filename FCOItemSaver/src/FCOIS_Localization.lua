@@ -523,6 +523,9 @@ function FCOIS.Localization()
     contextEntries.menu_remove_dynamic_text		= {}
 
     --Prepare the texts for the right click menus
+    --Remove all/Restore last marker icons
+    contextEntries.menu_remove_all_icons_text  	= locTexts["rightclick_menu_remove_all"]
+    contextEntries.menu_restore_last_icons_text	= locTexts["rightclick_menu_restore_last"]
     --Add
     contextEntries.menu_add_lock_text  	   		= locTexts["rightclick_menu_lock"]
     contextEntries.menu_add_gear_text[1]	  	= locTexts["rightclick_menu_add_gear1"]

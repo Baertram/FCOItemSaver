@@ -183,53 +183,29 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 --instead of LF_GUILD_STORE_SELL
 -->Maybe event_bank_closed?
 
---#240 2022-07-31, esoui author bugs, TechyShishy: FCOIS Unique Ids aren't respecting item level unique factor
---[[
-TL; DR:
-I first experienced this on Tazgol's Ancestral Axe, but I've since reproduced it with crafted Iron Daggers, level 1 and 4.
-I also crafted a traited level 1 Iron Dagger to confirm the exclusivity. I've included the resultant markedItemsFCOISUnique entry for all 3 Iron Daggers.
-Notably, it ends up with only 2 entries, leading to this bug:
+--#241 2022-08-14, Baertram, Feature idea: Add "Remove all markers" entry to context menu
 
-Itemlink "Rubedite dagger CP160"
-|H1:item:43535:366:50:0:0:0:0:0:0:0:0:0:0:0:0:1:0:0:0:0:0|h|h
-/tb FCOIS.CreateFCOISUniqueIdString(nil,nil,nil,"|H1:item:43535:366:50:0:0:0:0:0:0:0:0:0:0:0:0:1:0:0:0:0:0|h|h")
-
-Code:
-["43535,0,1,0,9,0,0,1,2190528011,0"] = true,
-["45024,0,1,1,9,0,0,1,2190528011,0"] = true,
-Longer version:
-
-Unique Ids don't seem to be respecting level as a factor, and as a result, marking one item marks all other items that are sufficiently similar. For example, if you craft 3 Iron Daggers, one level 1, one level 4, and one level 1 but with a trait, and then try to apply any mark to either the level 1 untraited dagger or the level 4 dagger, both of them receive the mark. The level 1 traited dagger remains unmarked. Looking at the ids in the SavedVariables explains why this occurs, for some reason, when marking either the level 1 untraited dagger or level 4 dagger, a single entry is created that apparently matches both daggers.
-
-Here's an imgur album with a reasonably full set of data about my client state and the bug in action: https://imgur.com/a/HQm6X7f
-
-And here's one of the images itself:
-https://i.imgur.com/8A9YG2O.jpg
-
-
-
-]]
 
 --______________________________________
--- Current max # of bugs/features/ToDos: 240
+-- Current max # of bugs/features/ToDos: 241
 --______________________________________
 
 
 --Todo for this patch
---#240
+--#238
+--#241
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-07-31
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-08-14
 ------------------------------------------------------------------------------------
---#240
+--#241
 
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.3.0 - New version: 2.3.1) -    Updated last: 2022-07-31
+--Changelog (last version: 2.3.1 - New version: 2.3.2) -    Updated last: 2022-08-14
 -------------------------------------------------------------------------------------
 --[Fixed]
-
 
 --[Changed]
 

@@ -100,6 +100,9 @@ local reAnchorAdditionalInvButtons = FCOIS.ReAnchorAdditionalInvButtons
 local showCompanionProgressBar = FCOIS.ShowCompanionProgressBar
 local showPlayerProgressBar = FCOIS.ShowPlayerProgressBar
 
+local clearOrRestoreAllMarkers = FCOIS.ClearOrRestoreAllMarkers
+local checkIfClearOrRestoreAllMarkers = FCOIS.CheckIfClearOrRestoreAllMarkers
+
 local buildMarkerIconProtectedWhereTooltip
 
 local checkIfUniversaldDeconstructionNPC
@@ -1001,7 +1004,9 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
     end
 
     local locVarsFCOIS = locVars.fcois_loc
+    local locTextMarkSpecial = locVars.lTextMarkSpecial
     local contMenuVars = FCOIS.contextMenuVars
+
     contMenuVars.contextMenuIndex = -1
     local newSubEntry = {}
     local newDynSubEntry = {}
@@ -1041,16 +1046,18 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
 
     ------------------------------------------------------------------------------------------------------------------------
     --Is debugging enabled? Then add the current item's bagId and slotIndex to the context menu with a callback funciton to put the info into the chat for the ZGOO addon
-    if firstAdd and settings.debug then
-        local bagId, slotIndex
-        --Were the bagId and slotIndex already set from IIfA savedvars?
-        if FCOIS.IIfAclicked ~= nil then
-            bagId = FCOIS.IIfAclicked.bagId
-            slotIndex = FCOIS.IIfAclicked.slotIndex
-        else
-            bagId, slotIndex = myGetItemDetails(rowControl)
+    if firstAdd then
+        if settings.debug then
+            local bagId, slotIndex
+            --Were the bagId and slotIndex already set from IIfA savedvars?
+            if FCOIS.IIfAclicked ~= nil then
+                bagId = FCOIS.IIfAclicked.bagId
+                slotIndex = FCOIS.IIfAclicked.slotIndex
+            else
+                bagId, slotIndex = myGetItemDetails(rowControl)
+            end
+            AddCustomMenuItem("---[DEBUG>   Bag: " .. tos(bagId) .. " / Slot: " .. tos(slotIndex) .. " ]---", function() debugItem(bagId, slotIndex) end, MENU_ADD_OPTION_LABEL)
         end
-        AddCustomMenuItem("---[DEBUG>   Bag: " .. tos(bagId) .. " / Slot: " .. tos(slotIndex) .. " ]---", function() debugItem(bagId, slotIndex) end, MENU_ADD_OPTION_LABEL)
     end
 
     --Is the current markId already set at the item?
@@ -1066,6 +1073,31 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
         end
     end
 
+    ------------------------------------------------------------------------------------------------------------------------
+    --Add an entry "Remove all marker icons" if enabled in settings #241
+    if firstAdd and settings.addRemoveAllMarkerIconsToItemContextMenu then
+        --Check if marker icons are set or not, and change the text shown
+        local isAnyMarkerIconSetOrRestorable = clearOrRestoreAllMarkers(rowControl, bag, slotId, true)
+        if isAnyMarkerIconSetOrRestorable ~= -1 then
+            local removeorRestoreAllText = (isAnyMarkerIconSetOrRestorable == 1 and locTextMarkSpecial.removeAll)
+                                            or (isAnyMarkerIconSetOrRestorable == 2 and locTextMarkSpecial.restoreLast)
+            if useSubMenu then
+                newSubEntry = {
+                    label = contextMenuSubMenuEntryTextPre .. removeorRestoreAllText,
+                    callback = function()
+                        checkIfClearOrRestoreAllMarkers(rowControl, nil, nil, nil, nil, nil, true)
+                    end,
+                    myfont          = myFont,
+                    normalColor     = colDef,
+                    highlightColor  = colDef,
+                }
+            else
+                AddCustomMenuItem(removeorRestoreAllText, function()
+                    checkIfClearOrRestoreAllMarkers(rowControl, nil, nil, nil, nil, nil, true)
+                end, MENU_ADD_OPTION_LABEL)
+            end
+        end
+    end
     ------------------------------------------------------------------------------------------------------------------------
     --Add the equipment right click / context menu entries
     if isEquipmentSlotContextmenu == true then
@@ -1190,14 +1222,14 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
                 end
             end
         end
-        ------------------------------------------------------------------------------------------------------------------------
-        --Add the normal (e.g. inventory) right click / context menu entries
+    ------------------------------------------------------------------------------------------------------------------------
+    --Add the normal (e.g. inventory) right click / context menu entries
     else
 
         --AddCustomMenuItem(mytext, myfunction, itemType, myfont, normalColor, highlightColor, itemYPad)
 
         -- Add/Update the right click menu item now
-        if(not isMarkIdProtected) then
+        if not isMarkIdProtected then
             if useSubMenu then
                 newSubEntry = {
                     label = contextMenuSubMenuEntryTextPre .. locVars.lTextMark[markId],
@@ -1368,6 +1400,10 @@ local function setSlotActionContextMenuTexts()
     local mappingVars = FCOIS.mappingVars
     local iconToGear = mappingVars.iconToGear
     --Set texts for the right-click item menus
+    FCOIS.localizationVars.lTextMarkSpecial = {
+        removeAll =     locContEntries.menu_remove_all_icons_text,
+        restoreLast =   locContEntries.menu_restore_last_icons_text,
+    }
     FCOIS.localizationVars.lTextMark = {
         locContEntries.menu_add_lock_text,
         locContEntries.menu_add_gear_text[iconToGear[FCOIS_CON_ICON_GEAR_1]],
