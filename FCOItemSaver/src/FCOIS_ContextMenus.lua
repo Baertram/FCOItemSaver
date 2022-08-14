@@ -717,6 +717,7 @@ end
 -->Will be reset automatically at last markId of an item or if a new item's context menu is build
 --The cached data contains all kind of checks done in first AddMark call
 local function checkIfCachedLastAddMarkDataCanBeUsed(fcoisItemInstanceId, doReset, rowControl)
+--d("[FCOIS]checkIfCachedLastAddMarkDataCanBeUsed-fcoisItemInstanceId: " ..tos(fcoisItemInstanceId) .. ", doReset: " ..tos(doReset))
     doReset = doReset or false
     if doReset == true then
         FCOIS.lastAddMarkData = {}
@@ -904,6 +905,8 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
     local preventerVars = FCOIS.preventerVars
     local doResearchTraitCheck = checkVars.researchTraitCheck
     local addonVars = FCOIS.addonVars
+
+--d(">customMenuCurrentCounter: " ..tos(customMenuVars.customMenuCurrentCounter) .. ", buildingInvContextMenuEntries: " ..tos(preventerVars.buildingInvContextMenuEntries))
 
     --Are we adding the first new entry in the context menu?
     if customMenuVars.customMenuCurrentCounter == 1 then

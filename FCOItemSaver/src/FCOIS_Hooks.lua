@@ -885,8 +885,9 @@ function FCOIS.CreateHooks()
                     addedCounter = addedCounter + 1
                     --Is the currently added entry with AddMark the "last one in this context menu"?
                     --> Needed to set the preventer variable buildingInvContextMenuEntries for the function AddMark so the IIfA addon is recognized properly!
-                    if addedCounter == contextMenuEntriesAdded then
-                        --Last entry in custom context menu reached
+--d(">addedCounter: " ..tos(addedCounter) .. "-contextMenuEntriesAdded: " ..tos(contextMenuEntriesAdded))
+                    if addedCounter >= contextMenuEntriesAdded then
+                        --Last entry in custom context menu reached -> Used in FCOIS.AddMark for lastAdd variable
                         FCOIS.preventerVars.buildingInvContextMenuEntries = false
                     end
                     --FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, useSubMenu)
@@ -1446,6 +1447,9 @@ function FCOIS.CreateHooks()
                         return true
                     end
                 end
+
+                FCOIS.preventerVars.buildingInvContextMenuEntries = true
+
                 --Build the context menu for the research dialog now. Will be shown via function FCOIS.MarkMe then
                 local FCOcontextMenu          = {}
                 --Check if the user set ordeirng is valid, else use the standard sorting
@@ -1482,6 +1486,7 @@ function FCOIS.CreateHooks()
 
                 --Are there any context menu entries?
                 if contextMenuEntriesAdded > 0 then
+                    local addedCounter = 0
                     --Reset the counter for the FCOIS.AddMark function
                     FCOIS.customMenuVars.customMenuCurrentCounter = 0
                     --Clear the menu completely (should be empty by default as it does not exist on the dialogs)
@@ -1490,6 +1495,13 @@ function FCOIS.CreateHooks()
                     local addMark = FCOIS.AddMark
                     for j = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
                         if FCOcontextMenu[j] ~= nil then
+                            addedCounter = addedCounter + 1
+                            --Is the currently added entry with AddMark the "last one in this context menu"?
+                            --> Needed to set the preventer variable buildingInvContextMenuEntries for the function AddMark so the IIfA addon is recognized properly!
+                            if addedCounter >= contextMenuEntriesAdded then
+                                --Last entry in custom context menu reached -> Used in FCOIS.AddMark for lastAdd variable
+                                FCOIS.preventerVars.buildingInvContextMenuEntries = false
+                            end
                             --FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, useSubMenu)
                             --Increase the global counter for the added context menu entries so the function FCOIS.AddMark can react on it
                             FCOIS.customMenuVars.customMenuCurrentCounter = FCOIS.customMenuVars.customMenuCurrentCounter + 1
