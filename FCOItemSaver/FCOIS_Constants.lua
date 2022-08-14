@@ -12,7 +12,7 @@ local strlen = string.len
 FCOIS.addonVars = {}
 local addonVars = FCOIS.addonVars
 --Addon variables
-addonVars.addonVersionOptions 		    = '2.3.0' -- version shown in the settings panel
+addonVars.addonVersionOptions 		    = '2.3.1' -- version shown in the settings panel
 --The addon name, normal and decorated with colors etc.
 addonVars.gAddonName				    = "FCOItemSaver"
 addonVars.gAddonNameShort               = "FCOIS"
@@ -58,6 +58,10 @@ FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE    = 2 --use FCOIS calculated uniqu
 local maxIdTypes = FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE + 1
 --The different types of IDs that can be used within FCOIS to mark items
 numVars.idTypes                 = maxIdTypes
+--The "lastusedType" constants for the "speed up" at function FCOIS.CreateFCOISUniqueIdString(itemId, bagId, slotIndex, itemLink)
+FCOIS_CON_FCOISUNIQUEID_TYPE_BAGID_SLOTINDEX = 1
+FCOIS_CON_FCOISUNIQUEID_TYPE_ITEMLINK = 2
+numVars.lastUsedTypes = FCOIS_CON_FCOISUNIQUEID_TYPE_ITEMLINK
 
 --The global variable for the use temporary "UniqueIds" API
 FCOIS.temporaryUseUniqueIds = {}

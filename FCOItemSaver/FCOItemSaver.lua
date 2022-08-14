@@ -166,49 +166,11 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 -->Item drag protection error text: TODO -> Fix within AGS needed!
 
 --#234  2022-06-26, Baertram: Add support for AwesomeGuildStores feature "Sell at trading house, directly from CraftBag"
---TODOS within AwesomeGuildStore:
---[[
-In AwesomeGuildStore/wrappers/SelltabWrapper.lua -> Add elseif self.currentInventoryFragment == CRAFT_BAG_FRAGMENT then
-
-function SellTabWrapper:UpdateFragments()
-    SCENE_MANAGER:RemoveFragment(INVENTORY_FRAGMENT)
-    SCENE_MANAGER:RemoveFragment(BANK_FRAGMENT)
-    SCENE_MANAGER:RemoveFragment(CRAFT_BAG_FRAGMENT)
-    ZO_PlayerInventoryInfoBar:SetParent(self:GetParentForInfoBar())
-    SCENE_MANAGER:AddFragment(self.currentInventoryFragment)
-    if self.currentInventoryFragment == BANK_FRAGMENT then
-        -- need to trigger an update, otherwise bound items will show in the list
-        PLAYER_INVENTORY:UpdateList(INVENTORY_BANK, true)
-
--- v --
-
-    elseif self.currentInventoryFragment == CRAFT_BAG_FRAGMENT then
-        --2022-07-17 Baertram, fix for LibFilters3.0 to update the CraftBag's additionalFilter filterFunction from the
-        --fragment BACKPACK_MENU_BAR_LAYOUT_FRAGMENT -> Where vanilla UI code and LibFilters 3 read/write from/to
-        local layoutData = BACKPACK_MENU_BAR_LAYOUT_FRAGMENT.layoutData
-        local craftBag = PLAYER_INVENTORY.inventories[INVENTORY_CRAFT_BAG]
-        craftBag.additionalFilter = layoutData.additionalCraftBagFilter
--- ^ --
-    end
-end
-
-And somewhere where the "Guild Store Sell" fragment is shown (callback) also check if craftbag is the currently selected inventory to sell from
-and update the additionalFilters then! Else re-opening where CraftBag was opened before closing the guild store, will result in non copied filter functions
-from the layoutData.
-
-]]
-
+--> FCOIS filterbuttons are not working (test together with CraftBagExtended, and both alone, and check LibFilters-3.0 CBE additions!!!)
+--> https://github.com/sirinsidiator/ESO-AwesomeGuildStore/blob/master/src/wrappers/SellTabWrapper.lua#L714-L747
 
 --#235  2022-06-30, Baertram: Companion marker at companion character doll looses the marker if a companion is dismissed and another is called
 --> Maybe the same item is needed at both companions? Only visual bug, marker is still in SavedVariables and item is protected.
-
---#236 (also maybe #178) 2022-07-15, tim99: Inventory->companion item->no marker set->filter buttons set to something to filter->open bank deposit tab->filters et to filter something->
--->double click Companion item->all filters are removed again but the filter buttons show the same as before as if they would filter something?
--->Maybe the same if you stay at inventory and drag a companion item to destroy it->filters get disabled but buttons show as if they still were filtering
---> FCOIS.gFilterWhere somehow will be set to LF_INVENTORY_COMPANION instead of LF_BANK_DEPOSIT, after you deposit a companion item to the bank,
--->via keybind or doubleclick, but only seems to update to 39 LF_INVENTORY_COMPANION the first time. If you withdraw the item and doubl click/use keybind again to deposit it, FCOIS.gFilterWhere
--->will not change to LF_INVENTORY_COMPANION anymore ?!
------> LibDebugLogger FCOIS: 2022-07-17 21:23:20 /Doppelklick auf "Gürtel des Gefährten" in Bank deposit -> FCOIS.gFilterWhere wurde danach LF_INVENTORY_COMPANION
 
 --#237 2022-03-14, 02:23, Papito, Feature request
 --Sorry if this is explained somewhere, but is it possible to have the New items Automatic marking exclude item categories?
@@ -221,36 +183,53 @@ from the layoutData.
 --instead of LF_GUILD_STORE_SELL
 -->Maybe event_bank_closed?
 
+--#240 2022-07-31, esoui author bugs, TechyShishy: FCOIS Unique Ids aren't respecting item level unique factor
+--[[
+TL; DR:
+I first experienced this on Tazgol's Ancestral Axe, but I've since reproduced it with crafted Iron Daggers, level 1 and 4.
+I also crafted a traited level 1 Iron Dagger to confirm the exclusivity. I've included the resultant markedItemsFCOISUnique entry for all 3 Iron Daggers.
+Notably, it ends up with only 2 entries, leading to this bug:
+
+Itemlink "Rubedite dagger CP160"
+|H1:item:43535:366:50:0:0:0:0:0:0:0:0:0:0:0:0:1:0:0:0:0:0|h|h
+/tb FCOIS.CreateFCOISUniqueIdString(nil,nil,nil,"|H1:item:43535:366:50:0:0:0:0:0:0:0:0:0:0:0:0:1:0:0:0:0:0|h|h")
+
+Code:
+["43535,0,1,0,9,0,0,1,2190528011,0"] = true,
+["45024,0,1,1,9,0,0,1,2190528011,0"] = true,
+Longer version:
+
+Unique Ids don't seem to be respecting level as a factor, and as a result, marking one item marks all other items that are sufficiently similar. For example, if you craft 3 Iron Daggers, one level 1, one level 4, and one level 1 but with a trait, and then try to apply any mark to either the level 1 untraited dagger or the level 4 dagger, both of them receive the mark. The level 1 traited dagger remains unmarked. Looking at the ids in the SavedVariables explains why this occurs, for some reason, when marking either the level 1 untraited dagger or level 4 dagger, a single entry is created that apparently matches both daggers.
+
+Here's an imgur album with a reasonably full set of data about my client state and the bug in action: https://imgur.com/a/HQm6X7f
+
+And here's one of the images itself:
+https://i.imgur.com/8A9YG2O.jpg
+
+
+
+]]
 
 --______________________________________
--- Current max # of bugs/features/ToDos: 239
+-- Current max # of bugs/features/ToDos: 240
 --______________________________________
 
 
 --Todo for this patch
---#234
---#236
---#239
+--#240
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-07-17
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-07-31
 ------------------------------------------------------------------------------------
+--#240
 
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.2.8 - New version: 2.2.9) -    Updated last: 2022-07-17
+--Changelog (last version: 2.3.0 - New version: 2.3.1) -    Updated last: 2022-07-31
 -------------------------------------------------------------------------------------
 --[Fixed]
---#234 AwesomeGuildStore needs to fix the function SellTabWrapper:UpdateFragments() so that
---      PLAYER_INVENTORY.inventories[INVENTORY_CRAFT_BAG].additionalFilter = BACKPACK_MENU_BAR_LAYOUT_FRAGMENT.layoutData.additionalCraftBagFilter
---      will be called as the custom CraftBag fragment get's added
---#236 (also maybe #178) Deag&drop of companion items changed the internal FFCOIS panelto "Companion inventory",
---   what made the filters unregister at the real shown panel (e.g. inventory, bank) and thus show all items again, allthough
---   the 4 filter buttons were set to e.g. yellow or green to hide some marked items
---#239 AwesomeGuildStore: Switching from "sell from bank" panel to normal sell from inventory showed the wrong "normal invenotory" filter buttons,
---   instead of the guild store sell filter buttons
-
+--#240 FCOIS Unique Ids aren't respecting item level unique criteria (if changed at the settings)
 
 --[Changed]
 
