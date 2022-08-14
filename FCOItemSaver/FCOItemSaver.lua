@@ -192,7 +192,6 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 
 
 --Todo for this patch
---#238
 
 
 ------------------------------------------------------------------------------------
@@ -217,6 +216,7 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 
 
 --[Added]
+--#238 Speed-up the AddMark function and cache some markId independent checks so that calls to the same function AddMark with the same bagId and slotIndex can reuse the cached results
 --#241 Added setting to add a "remove all"/"restore last marker icons" to the context menu of items. You need to enable this at the settings submenu "marker icons" -> "Undo".
 --Undo entries saved by SHIFT+right mouse click (if enabled at the settings) or via this new context menu entry will be cleared if you manually set a new marker icon on the same item
 --via the inventory context menu!
