@@ -19,6 +19,7 @@ local isiuse = IsItemUsable
 local numFilterIcons = FCOIS.numVars.gFCONumFilterIcons
 local myColorEnabled	= ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_TEXT_COLORS, INTERFACE_TEXT_COLOR_NORMAL))
 local myColorDisabled	= ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_TEXT_COLORS, INTERFACE_TEXT_COLOR_DISABLED))
+
 local ctrlVars = FCOIS.ZOControlVars
 local zoMenu = ctrlVars.ZOMenu
 
@@ -1083,13 +1084,13 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
                                             or (isAnyMarkerIconSetOrRestorable == 2 and locTextMarkSpecial.restoreLast)
             if useSubMenu then
                 newSubEntry = {
-                    label = contextMenuSubMenuEntryTextPre .. removeorRestoreAllText,
+                    label = removeorRestoreAllText,
                     callback = function()
                         checkIfClearOrRestoreAllMarkers(rowControl, nil, nil, nil, nil, nil, true)
                     end,
                     myfont          = myFont,
-                    normalColor     = colDef,
-                    highlightColor  = colDef,
+                    normalColor     = myColorEnabled,
+                    highlightColor  = myColorEnabled,
                 }
                 --Add the submenu to the context menu
                 tins(customMenuVars.customMenuSubEntries, newSubEntry)
