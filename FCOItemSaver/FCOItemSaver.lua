@@ -193,13 +193,11 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 
 --Todo for this patch
 --#238
---#241
 
 
 ------------------------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-08-14
 ------------------------------------------------------------------------------------
---#241
 
 
 -------------------------------------------------------------------------------------
@@ -211,6 +209,7 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 
 
 --[Added]
+--#241 Added setting to add a "remove all"/"restore last marker icons" to the context menu of items. You need to enable this at the settings submenu "marker icons" -> "Undo".
 
 
 --[Added on request]

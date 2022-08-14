@@ -1418,10 +1418,6 @@ function FCOIS.ClearOrRestoreAllMarkers(rowControl, bagId, slotIndex, onlyFeedba
             --For each marked icon of the currently improved item:
             --Set the icons/markers of the previous item again
             if currentMarkedIcons ~= nil and #currentMarkedIcons > 0 then
-                if onlyFeedback == true then
-                    d(">currentMarkerIcons: " .. #currentMarkedIcons)
-                end
-
                 --Build the backup array with normal marked icons now
                 --local _, currentMarkedIconsUnchanged = FCOIS.IsMarked(bagId, slotIndex, -1)
                 local currentMarkedIconsUnchanged = ZO_DeepTableCopy(currentMarkedIcons)
