@@ -1,28 +1,18 @@
-# FCOItemSaver
-AddOn for the game Elder Scrolls Online: Saving your items so you do not accidently destroy/sell/deconstruct them + many other features.
-
---#238 2022-07-17, Baertram, Feature idea: Speed-up the AddMark function and cache some markId independent checks so that calls to he same function AddMark with the same bagId and slotIndex
--- can reuse the cached results. change of bagId or change of slotIndex will reset the cache.
-
---#241 2022-08-14, Baertram, Feature idea: Add "Remove all markers" entry to context menu
-
-
+```
 --______________________________________
--- Current max # of bugs/features/ToDos: 241
+-- Current max # of bugs/features/ToDos: 242
 --______________________________________
 
 
 --Todo for this patch
 
-
-
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-08-14
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-08-17
 ------------------------------------------------------------------------------------
 
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.3.1 - New version: 2.3.2) -    Updated last: 2022-08-14
+--Changelog (last version: 2.3.1 - New version: 2.3.2) -    Updated last: 2022-08-17
 -------------------------------------------------------------------------------------
 --[Fixed]
 --
@@ -44,6 +34,7 @@ AddOn for the game Elder Scrolls Online: Saving your items so you do not acciden
 --via the inventory context menu!
 --Keybinds or mass-marking will not overwrite them.
 --Added tooltip setting for that new setting (see above) to show the last marked marker icons at the item if you press and hold the SHIFT key
+--#242 Add the 4 filter buttons to LF_SMITHING_RESEARCH / LF_JEWELRY_RESEARCH to filter the shown items already at the list before the item selection popup shows
 
 --[Added on request]
-
+```

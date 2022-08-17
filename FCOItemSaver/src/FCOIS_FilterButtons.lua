@@ -1149,7 +1149,7 @@ function FCOIS.AddOrChangeFCOISFilterButton(parentCtrl, buttonId, pWidth, pHeigh
             pTop = pTop + filterButtonVars.buttonOffsetYImprovement
             p_button:SetAnchor(TOP, ctrlVars.IMPROVEMENT_BOOSTER_CONTAINER, BOTTOM, pLeft, pTop)
             --Special treatment for research "popup" panel here, because the filter buttons should be added to the top divider of the popup
-        elseif (p_FilterPanelId == LF_SMITHING_RESEARCH or p_FilterPanelId == LF_JEWELRY_IMPROVEMENT) then
+        elseif (p_FilterPanelId == LF_SMITHING_RESEARCH_POPUP or p_FilterPanelId == LF_JEWELRY_IMPROVEMENT_POPUP) then
             pTop = pTop + filterButtonVars.buttonOffsetYImprovement
             p_button:SetAnchor(TOP, ctrlVars.RESEARCH_POPUP_TOP_DIVIDER, BOTTOM, pLeft, pTop)
             --All other inventories and panels
