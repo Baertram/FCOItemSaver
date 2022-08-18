@@ -985,12 +985,16 @@ function FCOIS.MapLibFiltersIds2FilterFunctionsNow()
 
     --Dynamic code for LibFilters-3.0 version >= r3.0
     local libFiltersMapping = FCOIS.libFilters.mapping
+    assert(libFiltersMapping ~= nil and libFiltersMapping.filterTypesUsingInventorySlotFilterFunction ~= nil and libFiltersMapping.filterTypesUsingBagIdAndSlotIndexFilterFunction,
+            "[FCOIS]LibFilters3 was not loaded with the needed version r3.x, including \'mapping.filterTypesUsingInventorySlotFilterFunction\'")
     if libFiltersMapping ~= nil then
         filterTypesUsingInventorySlotFilterFunction =     libFiltersMapping.filterTypesUsingInventorySlotFilterFunction
         filterTypesUsingBagIdAndSlotIndexFilterFunction = libFiltersMapping.filterTypesUsingBagIdAndSlotIndexFilterFunction
-    else
+    --else
         --Fixed code for LibFilters-3.0 version < r3.0
         --Using function FilterSavedItemsForSlot
+        -->Removed at 2022-08-22 as LibFilters 3 was updated and FCOIS depends on the most current version!
+        --[[
         filterTypesUsingInventorySlotFilterFunction = {
             [LF_INVENTORY]                              = true,
             [LF_BANK_WITHDRAW]                          = true,
@@ -1025,6 +1029,7 @@ function FCOIS.MapLibFiltersIds2FilterFunctionsNow()
             [LF_RETRAIT]                                = true,
             [LF_ALCHEMY_CREATION]                       = true,
         }
+        ]]
     end
 
     if filterTypesUsingInventorySlotFilterFunction then

@@ -1435,15 +1435,26 @@ function FCOIS.GetGearIcons(onlyDynamicOnes)
 end
 
 --Global function to get the for a given gear set's iconId (2, 4, 6, 7 or 8) or a dynamic icon id (13, 14, 15, 16, 17, 18, 19, 20, 21, 22)
---> use the constants for the amrker icons please! e.g. FCOIS_CON_ICON_LOCK, FCOIS_CON_ICON_DYNAMIC_1 etc. Check file src/FCOIS_constants.lua for the available constants (top of the file)
-function FCOIS.GetIconText(iconId)
+--> use the constants for the marker icons please! e.g. FCOIS_CON_ICON_LOCK, FCOIS_CON_ICON_DYNAMIC_1 etc. Check file src/FCOIS_constants.lua for the available constants (top of the file)
+--boolean withTexture <optional>: Add the icon#s texture to the name (default: left side)
+--boolean textureAtRight <optional>: Put the texture at the right side of the name
+--boolean textureNonColored <optional>: If true the texture will not be colored explicitly, if false the texture will use the color of the icon settings
+function FCOIS.GetIconText(iconId, withTexture, textureAtRight, textureNonColored)
 	--Load the user settings, if not done already
+	withTexture = withTexture or false
+	textureAtRight = textureAtRight or false
+	textureNonColored = textureNonColored or false
 	if not checkIfFCOISSettingsWereLoaded(FCOIS.preventerVars.gCalledFromInternalFCOIS, not addonVars.gAddonLoaded) then return nil end
 	if iconId == nil then return end
 	local settings = FCOIS.settingsVars.settings
 	local iconSettings = settings.icon and settings.icon[iconId]
 	if iconSettings ~= nil and iconSettings.name ~= nil and iconSettings.name ~= "" then
-		return iconSettings.name
+		local iconName = iconSettings.name
+		if withTexture == true then
+			--2022-08-14 add the icon's texture left, colored from the settings of the icon
+			iconName = buildIconText(iconName, iconId, textureAtRight, textureNonColored)
+		end
+		return iconName
 	end
 	return nil
 end -- FCOGetIconText

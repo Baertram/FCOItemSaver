@@ -11,6 +11,7 @@ local tos = tostring
 local strsub = string.sub
 local strlen = string.len
 local zo_strf = zo_strformat
+local strfor = string.format
 local tins = table.insert
 
 --local wm = WINDOW_MANAGER
@@ -19,6 +20,7 @@ local isiuse = IsItemUsable
 local numFilterIcons = FCOIS.numVars.gFCONumFilterIcons
 local myColorEnabled	= ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_TEXT_COLORS, INTERFACE_TEXT_COLOR_NORMAL))
 local myColorDisabled	= ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_TEXT_COLORS, INTERFACE_TEXT_COLOR_DISABLED))
+
 local ctrlVars = FCOIS.ZOControlVars
 local zoMenu = ctrlVars.ZOMenu
 
@@ -100,7 +102,11 @@ local reAnchorAdditionalInvButtons = FCOIS.ReAnchorAdditionalInvButtons
 local showCompanionProgressBar = FCOIS.ShowCompanionProgressBar
 local showPlayerProgressBar = FCOIS.ShowPlayerProgressBar
 
+local clearOrRestoreAllMarkers = FCOIS.ClearOrRestoreAllMarkers
+local checkIfClearOrRestoreAllMarkers = FCOIS.CheckIfClearOrRestoreAllMarkers
+
 local buildMarkerIconProtectedWhereTooltip
+local buildMarkerIconsTooltipText
 
 local checkIfUniversaldDeconstructionNPC
 
@@ -299,11 +305,16 @@ local contextMenuEntryTooltipFunc = FCOIS.ContextMenuEntryTooltipFunc
 --Function to check if a tooltip should be added to a ZO_Menu item,
 --build/enhance the tooltip text then and return the
 --so the function contextMenuEntryTooltipFunc(control, inside, data) can show the tooltip later on via LibCustomMenu
-function FCOIS.CheckBuildAndAddCustomMenuTooltip(align, tooltipText)
+function FCOIS.CheckBuildAndAddCustomMenuTooltip(align, tooltipText, isUndoLastMarked)
     --d("[FCOIS]CheckBuildAndAddCustomMenuTooltip")
+    isUndoLastMarked = isUndoLastMarked or false
     if not tooltipText or tooltipText == "" then return end
     local settings = FCOIS.settingsVars.settings
-    if not settings.contextMenuItemEntryShowTooltip then return end
+    if isUndoLastMarked then
+        if not settings.showTooltipAtRestoreLastMarked then return end
+    else
+        if not settings.contextMenuItemEntryShowTooltip then return end
+    end
     return createContextMenuAdditionalData({ ["align"] = align, ["text"] = tooltipText})
 end
 local checkBuildAndAddCustomMenuTooltip = FCOIS.CheckBuildAndAddCustomMenuTooltip
@@ -690,14 +701,103 @@ end
 local markMe = FCOIS.MarkMe
 
 
+--Clear the last marked and saved icons (only current session, no SavedVariables) for an item again
+local function clearLastMarkedIcons(fcoisItemInstanceId)
+    --Was any marker icon removed for that item before (until current reloadui, no SavedVariables!)
+    -->Used to clear the FCOIS.lastMarkedIcons if any marker icon get's manually set here again
+    local lastMarkedIcons = FCOIS.lastMarkedIcons
+    local alreadyRemovedMarkersForThatBagAndSlotIndex = (lastMarkedIcons ~= nil and lastMarkedIcons[fcoisItemInstanceId] ~= nil and lastMarkedIcons[fcoisItemInstanceId]) or nil
+    if alreadyRemovedMarkersForThatBagAndSlotIndex ~= nil then
+        FCOIS.lastMarkedIcons[fcoisItemInstanceId] = nil
+    end
+end
+
+--Performance improvement for AddMark function so that the same checks won't be done again and again for each markId
+--Only if the fcoisItemInstanceId changes the checks need to be redone
+-->Will be reset automatically at last markId of an item or if a new item's context menu is build
+--The cached data contains all kind of checks done in first AddMark call
+local function checkIfCachedLastAddMarkDataCanBeUsed(fcoisItemInstanceId, doReset, rowControl)
+--d("[FCOIS]checkIfCachedLastAddMarkDataCanBeUsed-fcoisItemInstanceId: " ..tos(fcoisItemInstanceId) .. ", doReset: " ..tos(doReset))
+    doReset = doReset or false
+    if doReset == true then
+        FCOIS.lastAddMarkData = {}
+        return false
+    else
+        if FCOIS.lastAddMarkData == nil or FCOIS.lastAddMarkData.ItemInstanceId ~= fcoisItemInstanceId then
+            FCOIS.lastAddMarkData = {}
+            local lastAddMarkData = {}
+
+            lastAddMarkData.parentName = rowControl:GetParent():GetName()
+
+            local controlName = rowControl:GetName()
+            lastAddMarkData.controlName = controlName
+
+            local _, countDynIconsEnabled = FCOIS.CountMarkerIconsEnabled()
+            lastAddMarkData.countDynIconsEnabled = countDynIconsEnabled
+
+            local quickSlotsHidden = ctrlVars.QUICKSLOT:IsHidden()
+            local quickSlotsCurrentFilter = ctrlVars.QUICKSLOT_WINDOW.currentFilter
+            lastAddMarkData.quickSlotsHidden = quickSlotsHidden
+            lastAddMarkData.quickslotCurrentFilter = quickSlotsCurrentFilter
+
+
+            local bagId, slotIndex
+            if FCOIS.IIfAclicked ~= nil then
+                bagId = FCOIS.IIfAclicked.bagId
+                slotIndex = FCOIS.IIfAclicked.slotIndex
+            else
+                bagId, slotIndex = myGetItemDetails(rowControl)
+            end
+            lastAddMarkData.bagId = bagId
+            lastAddMarkData.slotIndex = slotIndex
+
+            lastAddMarkData.checkWeaponOffHandResult = FCOIS.CheckWeaponOffHand(controlName, "2hdall", true, true, false)
+
+            lastAddMarkData.isInGamepadPreferredMode = IsInGamepadPreferredMode()
+
+            lastAddMarkData.isBound = isItemBound(bagId, slotIndex) or false
+
+            lastAddMarkData.isItemOwnerCompanion = isItemOwnerCompanion(bagId, slotIndex)
+
+            local contextMenuEntryTextPre
+            local settings = FCOIS.settingsVars.settings
+            for i=1, settings.addContextMenuLeadingSpaces do
+                contextMenuEntryTextPre = contextMenuEntryTextPre .. " "
+            end
+            lastAddMarkData.contextMenuEntryTextPre = contextMenuEntryTextPre
+
+
+            local normalColorDef = ZO_ColorDef:New(settings.contextMenuCustomMarkedNormalColor)
+            lastAddMarkData.normalColorDef = normalColorDef
+
+            lastAddMarkData.isListDialogHidden = ctrlVars.LIST_DIALOG:IsHidden()
+
+            lastAddMarkData.ItemInstanceId = fcoisItemInstanceId
+
+            FCOIS.lastAddMarkData = lastAddMarkData
+            return false
+        end
+    end
+    return true
+end
+
+
 --This function will add the FCOIS entries to the right-click context menu of e.g. inventory items
 --The function will be called multiple times, for each marker icon once. If you want to check if it was the first time it got called
 --you can use the boolean variable "firstAdd"
 -->Called from file FCOIS_Hooks.lua, function FCOIS.CreateHooks() -> ZO_InventorySlot_ShowContextMenu_For_FCOItemSaver (LibCustomMenu) ... and ctrlVars.LIST_DIALOG.dataTypes[1].setupCallback
 function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, useSubMenu)
     useSubMenu = useSubMenu or false
-    local parentName = rowControl:GetParent():GetName()
-    local controlName = rowControl:GetName()
+
+    local fcoisItemInstanceId = myGetItemInstanceId(rowControl, true)
+    --------------------------------------------------------------------------------------------------------------------
+    --Cached FCOIS.AddMark values which will be filled as a context menu is opened for a new item
+    local reUseCachedAddMarkData = checkIfCachedLastAddMarkDataCanBeUsed(fcoisItemInstanceId, false, rowControl)
+    local lastAddMarkData = FCOIS.lastAddMarkData
+    --------------------------------------------------------------------------------------------------------------------
+
+    local parentName = lastAddMarkData.parentName or rowControl:GetParent():GetName()
+    local controlName = lastAddMarkData.controlName or rowControl:GetName()
     if parentName == nil or controlName == nil then return end
     local settings = FCOIS.settingsVars.settings
     local mappingVars = FCOIS.mappingVars
@@ -725,7 +825,11 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
     local buttonText = ""
     local isEquipmentSlotContextmenu = false
     FCOIS.preventerVars.gCalledFromInternalFCOIS = true
-    local _, countDynIconsEnabled = FCOIS.CountMarkerIconsEnabled()
+    local _
+    local countDynIconsEnabled = lastAddMarkData.countDynIconsEnabled
+    if countDynIconsEnabled == nil then
+        _, countDynIconsEnabled = FCOIS.CountMarkerIconsEnabled()
+    end
     local useDynSubMenu = (settings.useDynSubMenuMaxCount > 0 and  countDynIconsEnabled >= settings.useDynSubMenuMaxCount) or false
     local isDynamic = isDynamicIcon[markId] or false
     local isGear = isGearIcon[markId] or false
@@ -748,8 +852,9 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
     --If quickslots are shown and the collectibles subfilters are selected: Do not allow the FCOIS context menu
     -->Will still show on quest items! So we need to extra check the currentFilter.descriptor
     --Also do not show at normal inventory quest items
-    local quickSlotsHidden = ctrlVars.QUICKSLOT:IsHidden()
-    local quickSlotsCurrentFilter = ctrlVars.QUICKSLOT_WINDOW.currentFilter
+    local quickSlotsHidden = lastAddMarkData.quickSlotsHidden
+    if quickSlotsHidden == nil then quickSlotsHidden = ctrlVars.QUICKSLOT:IsHidden() end
+    local quickSlotsCurrentFilter = lastAddMarkData.quickslotCurrentFilter or ctrlVars.QUICKSLOT_WINDOW.currentFilter
     local quickSlotsCurrentFilterDescriptor  = quickSlotsCurrentFilter and quickSlotsCurrentFilter.descriptor
     local quickslotCurrentFilterIsNotAllowed = (quickSlotsCurrentFilter ~= nil and (quickSlotsCurrentFilter.extraInfo ~= nil or quickSlotsCurrentFilterDescriptor == 26)) or false
 
@@ -760,7 +865,7 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
             or ( not quickSlotsHidden and quickslotCurrentFilterIsNotAllowed)
             --Inventory quest items
             or questItemsInventoryShown
-        ) or false
+    ) or false
     --[[
     if customMenuVars.customMenuCurrentCounter == 1 then
     d("[FCOIS]AddMark - CollectibleId: " ..tos(collectibleId) .. ", notAllowedCollectible: " ..tos(notAllowedCollectible) .. ", notAllowed: " ..tos(notAllowed))
@@ -773,12 +878,16 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
     --Get bagId and slotIndex
     local bag, slotId
     if not notAllowed then
-        --Were the bagId and slotIndex already set from IIfA savedvars?
+        --Were the bagId and slotIndex already set from IIfA SavedVars?
         if FCOIS.IIfAclicked ~= nil then
-            bag = FCOIS.IIfAclicked.bagId
-            slotId = FCOIS.IIfAclicked.slotIndex
+            bag = lastAddMarkData.bagId or FCOIS.IIfAclicked.bagId
+            slotId = lastAddMarkData.slotIndex or FCOIS.IIfAclicked.slotIndex
         else
-            bag, slotId = myGetItemDetails(rowControl)
+            bag = lastAddMarkData.bagId
+            slotId = lastAddMarkData.slotIndex
+            if bag == nil or slotId == nil then
+                bag, slotId = myGetItemDetails(rowControl)
+            end
         end
         --Check if item is a quickslot item at the 'ALL' subfilter but got no bagId or no slotIndex
         if bag == nil and slotId == nil and not quickSlotsHidden and quickSlotsCurrentFilterDescriptor == 0 then
@@ -797,10 +906,13 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
     local doResearchTraitCheck = checkVars.researchTraitCheck
     local addonVars = FCOIS.addonVars
 
+--d(">customMenuCurrentCounter: " ..tos(customMenuVars.customMenuCurrentCounter) .. ", buildingInvContextMenuEntries: " ..tos(preventerVars.buildingInvContextMenuEntries))
+
     --Are we adding the first new entry in the context menu?
     if customMenuVars.customMenuCurrentCounter == 1 then
         firstAdd = true
         lastAdd = false
+
         --To prevent spamming only output the debug message once for the first added context menu item
         if settings.debug then debugMessage( "[AddMark]", "Parent: " .. parentName .. ", Control: " .. controlName .. ", IsEquipmentSlot: " ..tos(isEquipmentSlot) .. ", useSubMenu: " .. tos(useSubMenu), true, FCOIS_DEBUG_DEPTH_NORMAL) end
         --d("[FCOIS.AddMark - Parent: " .. parentName .. ", Control: " .. controlName .. ", IsEquipmentSlot: " ..tos(isEquipmentSlot) .. ", useSubMenu: " .. tos(useSubMenu))
@@ -830,7 +942,11 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
         end
         --For 2handed weapons/staffs: Only go on if the current equipment slot is not
         --the 1st weapon set's backup or the 2nd weapon set's backup
-        if FCOIS.CheckWeaponOffHand(controlName, "2hdall", true, true, firstAdd) == true then return end
+        local checkWeaponOffHandResult = lastAddMarkData.checkWeaponOffHandResult
+        if checkWeaponOffHandResult == nil then
+            checkWeaponOffHandResult = FCOIS.CheckWeaponOffHand(controlName, "2hdall", true, true, firstAdd)
+        end
+        if checkWeaponOffHandResult == true then return end
     end
 
     ------------------------------------------------------------------------------------------------------------------------
@@ -852,14 +968,18 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
 
     --Define the font of the context menu entries
     if myFont == nil then
-        if not IsInGamepadPreferredMode() then
+        local isInGamepadInputMode = lastAddMarkData.isInGamepadPreferredMode
+        if isInGamepadInputMode == nil then
+            isInGamepadInputMode = IsInGamepadPreferredMode()
+        end
+        if not isInGamepadInputMode then
             myFont = "ZoFontGame"
         else
             myFont = "ZoFontGamepad22"
         end
     end
     --Define the standard color of the context menu entries
-    colDef = ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_TEXT_COLORS, INTERFACE_TEXT_COLOR_NORMAL))
+    colDef = myColorEnabled
     ------------------------------------------------------------------------------------------------------------------------
 
 
@@ -905,14 +1025,20 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
     if bag ~= nil and slotId ~= nil then
         --Check if an item is not-bound yet and only allow to mark it if it's still unbound
         if doCheckOnlyUnbound then
-            local isBound = isItemBound(bag, slotId) or false
+            local isBound = lastAddMarkData.isBound
+            if isBound == nil then isBound = isItemBound(bag, slotId) end
+            isBound = isBound or false
             --The item is already bound but it should only be un-bound to allow the marker icon
             --> Remove the marker icon from the context menu
             if isBound then return false end
         end
 
+        local isItemOwnerCompanionVal = lastAddMarkData.isItemOwnerCompanion
+        if isItemOwnerCompanionVal == nil then
+            isItemOwnerCompanionVal = isItemOwnerCompanion(bag, slotId)
+        end
         --Companion owned item and possible icon that should not be applied to context menu?
-        if isIconDisabledAtCompanion == true and isItemOwnerCompanion(bag, slotId) == true then
+        if isIconDisabledAtCompanion == true and isItemOwnerCompanionVal == true then
             return false
         end
     end
@@ -930,11 +1056,18 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
     --Use sub menu entries for the item's context menu?
     --If inside the context menu not the subMenu should be used: Indent the context menu entries with spaces for a better readability?
     if not useSubMenu and settings.addContextMenuLeadingSpaces > 0 then
-        --Add spaces in front of each context menu entry to indent them a bit
-        for i=1, settings.addContextMenuLeadingSpaces do
-            contextMenuEntryTextPre = contextMenuEntryTextPre .. " "
+        contextMenuEntryTextPre = lastAddMarkData.contextMenuEntryTextPre
+        if contextMenuEntryTextPre == nil then
+            --Add spaces in front of each context menu entry to indent them a bit
+            for i=1, settings.addContextMenuLeadingSpaces do
+                contextMenuEntryTextPre = contextMenuEntryTextPre .. " "
+            end
         end
     end
+
+    --Normal color def
+    local normalColorDef = lastAddMarkData.normalColorDef
+    if normalColorDef == nil then normalColorDef = ZO_ColorDef:New(settings.contextMenuCustomMarkedNormalColor) end
 
     ------------------------------------------------------------------------------------------------------------------------
     --Colorize the entrys in the context menu with icon colors?
@@ -991,17 +1124,19 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
 
     --Localization & Context menu entries:
     local locVars = FCOIS.localizationVars
-     --#232 Update the localized texts for the equipment gears, if changed in the settings
+    --#232 Update the localized texts for the equipment gears, if changed in the settings
     if (locVars.lTextMark[markId] == nil or locVars.lTextDemark[markId] == nil) or
-       (isEquipmentSlotContextmenu == true and (locVars.lTextEquipmentMark[markId] == nil or
-        locVars.lTextEquipmentDemark[markId] == nil))
+            (isEquipmentSlotContextmenu == true and (locVars.lTextEquipmentMark[markId] == nil or
+                    locVars.lTextEquipmentDemark[markId] == nil))
     then
         FCOIS.ChangeContextMenuEntryTexts(markId)
         locVars = FCOIS.localizationVars
     end
 
     local locVarsFCOIS = locVars.fcois_loc
+    local locTextMarkSpecial = locVars.lTextMarkSpecial
     local contMenuVars = FCOIS.contextMenuVars
+
     contMenuVars.contextMenuIndex = -1
     local newSubEntry = {}
     local newDynSubEntry = {}
@@ -1041,20 +1176,23 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
 
     ------------------------------------------------------------------------------------------------------------------------
     --Is debugging enabled? Then add the current item's bagId and slotIndex to the context menu with a callback funciton to put the info into the chat for the ZGOO addon
-    if firstAdd and settings.debug then
-        local bagId, slotIndex
-        --Were the bagId and slotIndex already set from IIfA savedvars?
-        if FCOIS.IIfAclicked ~= nil then
-            bagId = FCOIS.IIfAclicked.bagId
-            slotIndex = FCOIS.IIfAclicked.slotIndex
-        else
-            bagId, slotIndex = myGetItemDetails(rowControl)
+    if firstAdd then
+        if settings.debug then
+            local bagId, slotIndex
+            --Were the bagId and slotIndex already set from IIfA savedvars?
+            if FCOIS.IIfAclicked ~= nil then
+                bagId = FCOIS.IIfAclicked.bagId
+                slotIndex = FCOIS.IIfAclicked.slotIndex
+            else
+                bagId, slotIndex = myGetItemDetails(rowControl)
+            end
+            AddCustomMenuItem("---[DEBUG>   Bag: " .. tos(bagId) .. " / Slot: " .. tos(slotIndex) .. " ]---", function() debugItem(bagId, slotIndex) end, MENU_ADD_OPTION_LABEL)
         end
-        AddCustomMenuItem("---[DEBUG>   Bag: " .. tos(bagId) .. " / Slot: " .. tos(slotIndex) .. " ]---", function() debugItem(bagId, slotIndex) end, MENU_ADD_OPTION_LABEL)
     end
 
     --Is the current markId already set at the item?
-    local isMarkIdProtected = checkIfItemIsProtected(markId, myGetItemInstanceId(rowControl))
+    --local isMarkIdProtected = checkIfItemIsProtected(markId, myGetItemInstanceId(rowControl))
+    local isMarkIdProtected = checkIfItemIsProtected(markId, fcoisItemInstanceId)
     local newAddedMenuIndex
 
     --Build the tooltiptext for the current markId's menuItem
@@ -1067,6 +1205,52 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
     end
 
     ------------------------------------------------------------------------------------------------------------------------
+    --Add an entry "Remove all marker icons" if enabled in settings #241
+    if firstAdd and settings.addRemoveAllMarkerIconsToItemContextMenu then
+        --Check if marker icons are set or not, and change the text shown
+        local isAnyMarkerIconSetOrRestorable, alreadyRemovedMarkersForThatBagAndItem = clearOrRestoreAllMarkers(rowControl, bag, slotId, true)
+        if isAnyMarkerIconSetOrRestorable ~= -1 then
+            --Restore?
+            local lastMarkedIconsTooltipText = ""
+            local countMarkedBefore = 0
+            if isAnyMarkerIconSetOrRestorable == 2 then
+                buildMarkerIconsTooltipText = buildMarkerIconsTooltipText or FCOIS.BuildMarkerIconsTooltipText
+                lastMarkedIconsTooltipText, countMarkedBefore = buildMarkerIconsTooltipText(alreadyRemovedMarkersForThatBagAndItem, "\n", not settings.showTooltipAtRestoreLastMarked)
+            end
+            local removeorRestoreAllText = (isAnyMarkerIconSetOrRestorable == 1 and locTextMarkSpecial.removeAll)
+                    or (isAnyMarkerIconSetOrRestorable == 2 and strfor(locTextMarkSpecial.restoreLast, tos(countMarkedBefore)))
+            if useSubMenu then
+                newSubEntry = {
+                    label = removeorRestoreAllText,
+                    callback = function()
+                        checkIfClearOrRestoreAllMarkers(rowControl, nil, nil, nil, nil, nil, true)
+                    end,
+                    tooltip = function(control, inside)
+                        if lastMarkedIconsTooltipText ~= nil and lastMarkedIconsTooltipText ~= "" then
+                            local data=checkBuildAndAddCustomMenuTooltip(tooltipAlign, lastMarkedIconsTooltipText)
+                            contextMenuEntryTooltipFunc(control, inside, data)
+                        end
+                    end,
+                    myfont          = myFont,
+                    normalColor     = myColorEnabled,
+                    highlightColor  = myColorEnabled,
+                }
+                --Add the submenu to the context menu
+                tins(customMenuVars.customMenuSubEntries, newSubEntry)
+            else
+                local newAddedRemoveOrRestoreAllMenuIndex = AddCustomMenuItem(removeorRestoreAllText, function()
+                    checkIfClearOrRestoreAllMarkers(rowControl, nil, nil, nil, nil, nil, true)
+                end, MENU_ADD_OPTION_LABEL)
+                if lastMarkedIconsTooltipText ~= nil and lastMarkedIconsTooltipText ~= "" then
+                    AddCustomMenuTooltip(function(control, inside)
+                        local data=checkBuildAndAddCustomMenuTooltip(tooltipAlign, lastMarkedIconsTooltipText)
+                        contextMenuEntryTooltipFunc(control, inside, data) end,
+                            newAddedRemoveOrRestoreAllMenuIndex)
+                end
+            end
+        end
+    end
+    ------------------------------------------------------------------------------------------------------------------------
     --Add the equipment right click / context menu entries
     if isEquipmentSlotContextmenu == true then
 
@@ -1075,7 +1259,9 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
             if useSubMenu then
                 newSubEntry = {
                     label = contextMenuSubMenuEntryTextPre .. locVars.lTextEquipmentMark[markId],
-                    callback = function()  markAllEquipment(rowControl, markId, refreshList, false) end,
+                    callback = function()  markAllEquipment(rowControl, markId, refreshList, false)
+                        clearLastMarkedIcons(fcoisItemInstanceId)
+                    end,
                     myfont          = myFont,
                     normalColor     = colDef,
                     highlightColor  = colDef,
@@ -1089,7 +1275,9 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
                 if isDynamic and useDynSubMenu then
                     newDynSubEntry = {
                         label = contextMenuSubMenuEntryTextPre .. locVars.lTextEquipmentMark[markId],
-                        callback = function() markAllEquipment(rowControl, markId, refreshList, false) end,
+                        callback = function() markAllEquipment(rowControl, markId, refreshList, false)
+                            clearLastMarkedIcons(fcoisItemInstanceId)
+                        end,
                         myfont          = myFont,
                         normalColor     = colDef,
                         highlightColor  = colDef,
@@ -1101,7 +1289,10 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
                 else
                     --AddMenuItem(locVars.lTextEquipmentMark[markId], function() markAllEquipment(rowControl, markId, refreshList, false) end, MENU_ADD_OPTION_LABEL)
                     --d("[FCOIS]AddMark - markId: " ..tos(markId) .. ", text: " ..tos(locVars.lTextEquipmentMark[markId]))
-                    newAddedMenuIndex = AddCustomMenuItem(contextMenuEntryTextPre .. locVars.lTextEquipmentMark[markId], function()  markAllEquipment(rowControl, markId, refreshList, false) end, MENU_ADD_OPTION_LABEL, myFont, colDef, colDef, nil, nil)
+                    newAddedMenuIndex = AddCustomMenuItem(contextMenuEntryTextPre .. locVars.lTextEquipmentMark[markId], function()
+                        markAllEquipment(rowControl, markId, refreshList, false)
+                        clearLastMarkedIcons(fcoisItemInstanceId)
+                    end, MENU_ADD_OPTION_LABEL, myFont, colDef, colDef, nil, nil)
                     if tooltipText and tooltipText ~= "" then
                         AddCustomMenuTooltip(function(control, inside)
                             local data=checkBuildAndAddCustomMenuTooltip(tooltipAlign, contextMenuEntryTextPre .. locVars.lTextEquipmentMark[markId] .. "\n" .. tooltipText)
@@ -1115,9 +1306,11 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
                 if settings.useContextMenuCustomMarkedNormalColor then
                     newSubEntry = {
                         label = contextMenuSubMenuEntryTextPre .. locVars.lTextEquipmentDemark[markId],
-                        callback = function() markAllEquipment(rowControl, markId, refreshList, true) end,
+                        callback = function() markAllEquipment(rowControl, markId, refreshList, true)
+                            clearLastMarkedIcons(fcoisItemInstanceId)
+                        end,
                         myfont = "ZoFontGame",
-                        normalColor = ZO_ColorDef:New(settings.contextMenuCustomMarkedNormalColor),
+                        normalColor = normalColorDef,
                         myfont          = myFont,
                         highlightColor  = colDef,
                         tooltip         = function(control, inside)
@@ -1128,7 +1321,9 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
                 else
                     newSubEntry = {
                         label = contextMenuSubMenuEntryTextPre .. locVars.lTextEquipmentDemark[markId],
-                        callback = function() markAllEquipment(rowControl, markId, refreshList, true) end,
+                        callback = function() markAllEquipment(rowControl, markId, refreshList, true)
+                            clearLastMarkedIcons(fcoisItemInstanceId)
+                        end,
                         myfont          = myFont,
                         normalColor     = colDef,
                         highlightColor  = colDef,
@@ -1145,9 +1340,11 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
                     if isDynamic and useDynSubMenu then
                         newDynSubEntry = {
                             label = contextMenuSubMenuEntryTextPre .. locVars.lTextEquipmentDemark[markId],
-                            callback = function() markAllEquipment(rowControl, markId, refreshList, true) end,
+                            callback = function() markAllEquipment(rowControl, markId, refreshList, true)
+                                clearLastMarkedIcons(fcoisItemInstanceId)
+                            end,
                             myfont = "ZoFontGame",
-                            normalColor = ZO_ColorDef:New(settings.contextMenuCustomMarkedNormalColor),
+                            normalColor = normalColorDef,
                             myfont          = myFont,
                             highlightColor  = colDef,
                             tooltip         = function(control, inside)
@@ -1156,7 +1353,10 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
                             end,
                         }
                     else
-                        newAddedMenuIndex = AddCustomMenuItem(contextMenuEntryTextPre .. locVars.lTextEquipmentDemark[markId], function() markAllEquipment(rowControl, markId, refreshList, true) end, MENU_ADD_OPTION_LABEL, myFont, ZO_ColorDef:New(settings.contextMenuCustomMarkedNormalColor), colDef, nil, nil)
+                        newAddedMenuIndex = AddCustomMenuItem(contextMenuEntryTextPre .. locVars.lTextEquipmentDemark[markId], function()
+                            markAllEquipment(rowControl, markId, refreshList, true)
+                            clearLastMarkedIcons(fcoisItemInstanceId)
+                        end, MENU_ADD_OPTION_LABEL, myFont, normalColorDef, colDef, nil, nil)
                         if tooltipText and tooltipText ~= "" then
                             AddCustomMenuTooltip(function(control, inside)
                                 local data=checkBuildAndAddCustomMenuTooltip(tooltipAlign, contextMenuEntryTextPre .. locVars.lTextEquipmentDemark[markId] .. "\n" .. tooltipText)
@@ -1169,7 +1369,9 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
                     if isDynamic and useDynSubMenu then
                         newDynSubEntry = {
                             label = contextMenuSubMenuEntryTextPre .. locVars.lTextEquipmentDemark[markId],
-                            callback = function() markAllEquipment(rowControl, markId, refreshList, true) end,
+                            callback = function() markAllEquipment(rowControl, markId, refreshList, true)
+                                clearLastMarkedIcons(fcoisItemInstanceId)
+                            end,
                             myfont          = myFont,
                             normalColor     = colDef,
                             highlightColor  = colDef,
@@ -1179,7 +1381,10 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
                             end,
                         }
                     else
-                        newAddedMenuIndex = AddCustomMenuItem(contextMenuEntryTextPre .. locVars.lTextEquipmentDemark[markId], function() markAllEquipment(rowControl, markId, refreshList, true) end, MENU_ADD_OPTION_LABEL, myFont, colDef, colDef, nil, nil)
+                        newAddedMenuIndex = AddCustomMenuItem(contextMenuEntryTextPre .. locVars.lTextEquipmentDemark[markId], function()
+                            markAllEquipment(rowControl, markId, refreshList, true)
+                            clearLastMarkedIcons(fcoisItemInstanceId)
+                        end, MENU_ADD_OPTION_LABEL, myFont, colDef, colDef, nil, nil)
                         if tooltipText and tooltipText ~= "" then
                             AddCustomMenuTooltip(function(control, inside)
                                 local data=checkBuildAndAddCustomMenuTooltip(tooltipAlign, contextMenuEntryTextPre .. locVars.lTextEquipmentDemark[markId] .. "\n" .. tooltipText)
@@ -1197,11 +1402,13 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
         --AddCustomMenuItem(mytext, myfunction, itemType, myfont, normalColor, highlightColor, itemYPad)
 
         -- Add/Update the right click menu item now
-        if(not isMarkIdProtected) then
+        if not isMarkIdProtected then
             if useSubMenu then
                 newSubEntry = {
                     label = contextMenuSubMenuEntryTextPre .. locVars.lTextMark[markId],
-                    callback = function() markMe(rowControl, markId, refreshList, false, refreshPopupDialog) end,
+                    callback = function() markMe(rowControl, markId, refreshList, false, refreshPopupDialog)
+                        clearLastMarkedIcons(fcoisItemInstanceId)
+                    end,
                     myfont          = myFont,
                     normalColor     = colDef,
                     highlightColor  = colDef,
@@ -1215,7 +1422,9 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
                 if isDynamic and useDynSubMenu then
                     newDynSubEntry = {
                         label = contextMenuSubMenuEntryTextPre .. locVars.lTextMark[markId],
-                        callback = function() markMe(rowControl, markId, refreshList, false, refreshPopupDialog) end,
+                        callback = function() markMe(rowControl, markId, refreshList, false, refreshPopupDialog)
+                            clearLastMarkedIcons(fcoisItemInstanceId)
+                        end,
                         myfont          = myFont,
                         normalColor     = colDef,
                         highlightColor  = colDef,
@@ -1226,7 +1435,10 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
                     }
                 else
                     --AddMenuItem(contextMenuEntryTextPre .. locVars.lTextMark[markId], function() markMe(rowControl, markId, refreshList, false, refreshPopupDialog) end, MENU_ADD_OPTION_LABEL)
-                    newAddedMenuIndex = AddCustomMenuItem(contextMenuEntryTextPre .. locVars.lTextMark[markId], function() markMe(rowControl, markId, refreshList, false, refreshPopupDialog) end, MENU_ADD_OPTION_LABEL, myFont, colDef, colDef, nil, nil)
+                    newAddedMenuIndex = AddCustomMenuItem(contextMenuEntryTextPre .. locVars.lTextMark[markId], function()
+                        markMe(rowControl, markId, refreshList, false, refreshPopupDialog)
+                        clearLastMarkedIcons(fcoisItemInstanceId)
+                    end, MENU_ADD_OPTION_LABEL, myFont, colDef, colDef, nil, nil)
                     if tooltipText and tooltipText ~= "" then
                         AddCustomMenuTooltip(function(control, inside)
                             local data=checkBuildAndAddCustomMenuTooltip(tooltipAlign, contextMenuEntryTextPre .. locVars.lTextMark[markId] .. "\n" .. tooltipText)
@@ -1240,9 +1452,11 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
                 if settings.useContextMenuCustomMarkedNormalColor then
                     newSubEntry = {
                         label = contextMenuSubMenuEntryTextPre .. locVars.lTextDemark[markId],
-                        callback = function() markMe(rowControl, markId, refreshList, true, refreshPopupDialog) end,
+                        callback = function() markMe(rowControl, markId, refreshList, true, refreshPopupDialog)
+                            clearLastMarkedIcons(fcoisItemInstanceId)
+                        end,
                         myfont = "ZoFontGame",
-                        normalColor = ZO_ColorDef:New(settings.contextMenuCustomMarkedNormalColor),
+                        normalColor = normalColorDef,
                         myfont          = myFont,
                         highlightColor  = colDef,
                         tooltip         = function(control, inside)
@@ -1253,7 +1467,9 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
                 else
                     newSubEntry = {
                         label = contextMenuSubMenuEntryTextPre .. locVars.lTextDemark[markId],
-                        callback = function() markMe(rowControl, markId, refreshList, true, refreshPopupDialog) end,
+                        callback = function() markMe(rowControl, markId, refreshList, true, refreshPopupDialog)
+                            clearLastMarkedIcons(fcoisItemInstanceId)
+                        end,
                         myfont          = myFont,
                         normalColor     = colDef,
                         highlightColor  = colDef,
@@ -1270,9 +1486,11 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
                     if isDynamic and useDynSubMenu then
                         newDynSubEntry = {
                             label = contextMenuSubMenuEntryTextPre .. locVars.lTextDemark[markId],
-                            callback = function() markMe(rowControl, markId, refreshList, true, refreshPopupDialog) end,
+                            callback = function() markMe(rowControl, markId, refreshList, true, refreshPopupDialog)
+                                clearLastMarkedIcons(fcoisItemInstanceId)
+                            end,
                             myfont = "ZoFontGame",
-                            normalColor = ZO_ColorDef:New(settings.contextMenuCustomMarkedNormalColor),
+                            normalColor = normalColorDef,
                             myfont          = myFont,
                             highlightColor  = colDef,
                             tooltip         = function(control, inside)
@@ -1281,7 +1499,10 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
                             end,
                         }
                     else
-                        newAddedMenuIndex = AddCustomMenuItem(contextMenuEntryTextPre .. locVars.lTextDemark[markId], function() markMe(rowControl, markId, refreshList, true, refreshPopupDialog) end, MENU_ADD_OPTION_LABEL, myFont, ZO_ColorDef:New(settings.contextMenuCustomMarkedNormalColor), colDef, nil, nil)
+                        newAddedMenuIndex = AddCustomMenuItem(contextMenuEntryTextPre .. locVars.lTextDemark[markId], function()
+                            markMe(rowControl, markId, refreshList, true, refreshPopupDialog)
+                            clearLastMarkedIcons(fcoisItemInstanceId)
+                        end, MENU_ADD_OPTION_LABEL, myFont, normalColorDef, colDef, nil, nil)
                         if tooltipText and tooltipText ~= "" then
                             AddCustomMenuTooltip(function(control, inside)
                                 local data=checkBuildAndAddCustomMenuTooltip(tooltipAlign, contextMenuEntryTextPre .. locVars.lTextDemark[markId] .. "\n" .. tooltipText)
@@ -1294,7 +1515,9 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
                     if isDynamic and useDynSubMenu then
                         newDynSubEntry = {
                             label = contextMenuSubMenuEntryTextPre .. locVars.lTextDemark[markId],
-                            callback = function() markMe(rowControl, markId, refreshList, true, refreshPopupDialog) end,
+                            callback = function() markMe(rowControl, markId, refreshList, true, refreshPopupDialog)
+                                clearLastMarkedIcons(fcoisItemInstanceId)
+                            end,
                             myfont          = myFont,
                             normalColor     = colDef,
                             highlightColor  = colDef,
@@ -1304,7 +1527,10 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
                             end,
                         }
                     else
-                        newAddedMenuIndex = AddCustomMenuItem(contextMenuEntryTextPre .. locVars.lTextDemark[markId], function() markMe(rowControl, markId, refreshList, true, refreshPopupDialog) end, MENU_ADD_OPTION_LABEL, myFont, colDef, colDef, nil, nil)
+                        newAddedMenuIndex = AddCustomMenuItem(contextMenuEntryTextPre .. locVars.lTextDemark[markId], function()
+                            markMe(rowControl, markId, refreshList, true, refreshPopupDialog)
+                            clearLastMarkedIcons(fcoisItemInstanceId)
+                        end, MENU_ADD_OPTION_LABEL, myFont, colDef, colDef, nil, nil)
                         if tooltipText and tooltipText ~= "" then
                             AddCustomMenuTooltip(function(control, inside)
                                 local data=checkBuildAndAddCustomMenuTooltip(tooltipAlign, contextMenuEntryTextPre .. locVars.lTextDemark[markId] .. "\n" .. tooltipText)
@@ -1345,8 +1571,13 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
             local contextMenuItemControl = zoMenu.items[contMenuVars.contextMenuIndex].item
             if contextMenuItemControl ~= nil then
                 --Overwrite onMouseEnter events
+                local isListDialogHidden = lastAddMarkData.isListDialogHidden
+                if isListDialogHidden == nil then
+                    isListDialogHidden = ctrlVars.LIST_DIALOG:IsHidden()
+                end
+
                 if ( (contextMenuItemControl.creatingAddon and contextMenuItemControl.creatingAddon == addonVars.gAddonNameShort) and
-                        ((isEquipmentSlot) or (not ctrlVars.LIST_DIALOG:IsHidden())
+                        (isEquipmentSlot or not isListDialogHidden
                                 or (not settings.contextMenuDividerShowsSettings and not settings.contextMenuDividerClearsMarkers)) ) then
                     contextMenuItemControl:SetMouseEnabled(false)
                     --Reenable the mouse for this menu item if the menu closes. See file /src/FCOIS_Hooks.lua, function  PreHook to ZO_Menu_OnHide
@@ -1356,6 +1587,11 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
                 end
             end
         end
+    end
+
+    --Reset cached data
+    if lastAdd == true then
+        checkIfCachedLastAddMarkDataCanBeUsed(fcoisItemInstanceId, true, nil)
     end
 end
 
@@ -1368,6 +1604,10 @@ local function setSlotActionContextMenuTexts()
     local mappingVars = FCOIS.mappingVars
     local iconToGear = mappingVars.iconToGear
     --Set texts for the right-click item menus
+    FCOIS.localizationVars.lTextMarkSpecial = {
+        removeAll =     locContEntries.menu_remove_all_icons_text,
+        restoreLast =   locContEntries.menu_restore_last_icons_text,
+    }
     FCOIS.localizationVars.lTextMark = {
         locContEntries.menu_add_lock_text,
         locContEntries.menu_add_gear_text[iconToGear[FCOIS_CON_ICON_GEAR_1]],

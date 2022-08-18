@@ -690,26 +690,27 @@ function FCOIS.CheckAndClearLastMarkedIcons(bagId, slotIndex)
 end
 
 --Function to check if SHIFT+right mouse was used on an inventory row to clear/restore all the marker icons (from before -> undo table)
-function FCOIS.CheckIfClearOrRestoreAllMarkers(clickedRow, modifierKeyPressed, upInside, mouseButton, refreshPopupDialogButons, calledByKeybind)
+function FCOIS.CheckIfClearOrRestoreAllMarkers(clickedRow, modifierKeyPressed, upInside, mouseButton, refreshPopupDialogButons, calledByKeybind, calledByContextMenu)
     calledByKeybind = calledByKeybind or false
+    calledByContextMenu = calledByContextMenu or false
     --Enable clearing all markers by help of the SHIFT+right click?
     local contextMenuClearMarkesByShiftKey = FCOIS.settingsVars.settings.contextMenuClearMarkesByShiftKey
---d("[FCOIS.checkIfClearOrRestoreAllMarkers]shiftKey: " ..tos(IsShiftKeyDown()) .. ", upInside: " .. tos(upInside) .. ", mouseButton: " .. tos(mouseButton) .. ", settingEnabled: " ..tos(contextMenuClearMarkesByShiftKey) .. ", modifierKeyPressed: " ..tos(modifierKeyPressed) .. ", calledByKeybind: " ..tos(calledByKeybind))
-    if (modifierKeyPressed == true or calledByKeybind == true) and contextMenuClearMarkesByShiftKey
-            and (calledByKeybind == true or (upInside and mouseButton == MOUSE_BUTTON_INDEX_RIGHT))  then
+--d("[FCOIS.checkIfClearOrRestoreAllMarkers]shiftKey: " ..tos(IsShiftKeyDown()) .. ", upInside: " .. tos(upInside) .. ", mouseButton: " .. tos(mouseButton) .. ", settingEnabled: " ..tos(contextMenuClearMarkesByShiftKey) .. ", modifierKeyPressed: " ..tos(modifierKeyPressed) .. ", calledByKeybind: " ..tos(calledByKeybind) .. ", calledByContextMenu: " ..tos(calledByContextMenu))
+    if calledByContextMenu or ((modifierKeyPressed == true or calledByKeybind == true) and contextMenuClearMarkesByShiftKey
+            and (calledByKeybind == true or (upInside and mouseButton == MOUSE_BUTTON_INDEX_RIGHT)))  then
         refreshPopupDialogButons = refreshPopupDialogButons or false
         -- make sure control contains an item
         local bagId, slotIndex = myGetItemDetails(clickedRow)
         if bagId ~= nil and slotIndex ~= nil then
---d("[FCOIS] Clearing/Restoring all markers of the current item now! bag: " .. bagId .. ", slotIndex: " .. slotIndex .. " " .. gil(bagId, slotIndex))
+--d(">Clearing/Restoring all markers of the current item now! bag: " .. bagId .. ", slotIndex: " .. slotIndex .. " " .. gil(bagId, slotIndex))
             --Set the preventer variable now to suppress the context menu of inventory items
-            if not calledByKeybind then
+            if not calledByKeybind and not calledByContextMenu then
 --d(">NO KEYBIND call: enabling dontShowInvContextMenu: true ")
                 FCOIS.preventerVars.dontShowInvContextMenu = true
             end
 --d("[FCOIS]checkIfClearOrRestoreAllMarkers - dontShowInvContextMenu: true")
             --Clear/Restore the markers now
-            clearOrRestoreAllMarkers(clickedRow, bagId, slotIndex)
+            clearOrRestoreAllMarkers(clickedRow, bagId, slotIndex, false)
             if refreshPopupDialogButons then
                 --Unselect the item and disable the button of the popup dialog again
 --d("[FCOIS]checkIfClearOrRestoreAllMarkers - refreshPopupDialog now")
@@ -719,7 +720,7 @@ function FCOIS.CheckIfClearOrRestoreAllMarkers(clickedRow, modifierKeyPressed, u
             --the same like in the inventory and the context menu will be hidden twice in a row else!
             -->Only if no ZO_Dialog is used, as the variable FCOIS.preventerVars.dontShowInvContextMenu will be needed
             -->in the calling row hook of the ZO_ListDialog, and reset to false there!
-            if not calledByKeybind and not refreshPopupDialogButons then
+            if not calledByKeybind and not calledByContextMenu and not refreshPopupDialogButons then
                 --local isCharacter = (bagId == BAG_WORN and isCharacterShown()) or false
                 --local isCompanionCharacter = (bagId == BAG_COMPANION_WORN and isCompanionCharacterShown()) or false
                 --if isCharacter == true or isCompanionCharacter == true then
@@ -1338,9 +1339,12 @@ local checkIfCharOrInvNeedsRingUpdate = FCOIS.CheckIfCharOrInvNeedsRingUpdate
 
 
 --Clear all current markers of the selected row, or restore all marker icons from the undo table
-function FCOIS.ClearOrRestoreAllMarkers(rowControl, bagId, slotIndex)
---d("[FCOIS]ClearOrRestoreAllMarkers")
+--If parameter onlyFeedback is set to true the function returns 1 if marker icons are currently set and can be removed
+--or 2 if marker icons were already removed and saved for a restore, or it returns -1 if both is not possible
+function FCOIS.ClearOrRestoreAllMarkers(rowControl, bagId, slotIndex, onlyFeedback)
+--d("[FCOIS]ClearOrRestoreAllMarkers - onlyFeedback: " ..tos(onlyFeedback))
     if rowControl == nil then return end
+    onlyFeedback = onlyFeedback or false
     if bagId == nil or slotIndex == nil then
         bagId, slotIndex = myGetItemDetails(rowControl)
     end
@@ -1362,8 +1366,12 @@ function FCOIS.ClearOrRestoreAllMarkers(rowControl, bagId, slotIndex)
     local itemLink = gil(bagId, slotIndex)
 --d(">item: " .. itemLink .. ", itemInstanceId FCOIS: " ..tos(fcoisItemInstanceId))
     if fcoisItemInstanceId ~= nil then
-        local alreadyRemovedMarkersForThatBagAndItem = (lastMarkedIcons ~= nil and lastMarkedIcons[fcoisItemInstanceId]) or nil
+        local alreadyRemovedMarkersForThatBagAndItem = (lastMarkedIcons ~= nil and lastMarkedIcons[fcoisItemInstanceId] ~= nil and lastMarkedIcons[fcoisItemInstanceId]) or nil
         if alreadyRemovedMarkersForThatBagAndItem ~= nil then
+--d(">>restoring marker icons")
+            if onlyFeedback == true then
+                return 2, alreadyRemovedMarkersForThatBagAndItem
+            end
 
             --Marker icons were removed already for this item in this bag, so restore them now
             --Restore saved markers for the current item?
@@ -1397,6 +1405,7 @@ function FCOIS.ClearOrRestoreAllMarkers(rowControl, bagId, slotIndex)
             end
 
         else
+--d(">>removing marker icons")
             --Marker icons were not removed yet for this item in this bag.
             --So remove them now
             --Clear all markers of current item
@@ -1410,22 +1419,29 @@ function FCOIS.ClearOrRestoreAllMarkers(rowControl, bagId, slotIndex)
             FCOIS.preventerVars.doFalseOverride = false
             --For each marked icon of the currently improved item:
             --Set the icons/markers of the previous item again
-            if currentMarkedIcons and #currentMarkedIcons > 0 then
+--d(">currentMarkedIcons: " .. tos(#currentMarkedIcons))
+            if currentMarkedIcons ~= nil and #currentMarkedIcons > 0 then
                 --Build the backup array with normal marked icons now
                 --local _, currentMarkedIconsUnchanged = FCOIS.IsMarked(bagId, slotIndex, -1)
                 local currentMarkedIconsUnchanged = ZO_DeepTableCopy(currentMarkedIcons)
                 --Create the arrays if any marker icon is set currently
-                FCOIS.lastMarkedIcons = FCOIS.lastMarkedIcons or {}
-                FCOIS.lastMarkedIcons[fcoisItemInstanceId] = FCOIS.lastMarkedIcons[fcoisItemInstanceId] or {}
+                if not onlyFeedback then
+                    FCOIS.lastMarkedIcons = FCOIS.lastMarkedIcons or {}
+                    FCOIS.lastMarkedIcons[fcoisItemInstanceId] = FCOIS.lastMarkedIcons[fcoisItemInstanceId] or {}
+                end
                 --Counter vars
                 local loc_counter = 1
                 local loc_marked_counter = 0
                 local iconIdsToBackup = {}
                 --Loop over each of the marker icons and remove them
                 for iconId, iconIsMarked in pairs(currentMarkedIcons) do
-    --d(">iconId: " .. tos(iconId) .. ", loc_counter: " .. tos(loc_counter))
+--d(">iconId: " .. tos(iconId) .. ", loc_counter: " .. tos(loc_counter))
                     --Only go on if item is marked or is the last marker (to update the inventory afterwards)
                     if iconIsMarked == true then
+                        if onlyFeedback == true then
+                            return 1, nil
+                        end
+
                         loc_marked_counter = loc_marked_counter + 1
                         table.insert(iconIdsToBackup, iconId)
                     end
@@ -1436,7 +1452,7 @@ function FCOIS.ClearOrRestoreAllMarkers(rowControl, bagId, slotIndex)
                     --Refresh the control now to update the cleared marker icons?
                     local refreshNow = isCharacterShownVar or isCompanionCharacterShownVar or FCOIS.preventerVars.gOverrideInvUpdateAfterMarkItem
                     --Remove marker icon
---d(">removing marker icon: " .. tos(iconId))
+--d(">removing marker icons now")
                     --Set global preventer variable so no other marker icons will be set/removed during the clear
                     FCOIS.preventerVars.gClearingMarkerIcons = true
                     --FCOIS.MarkItem(bagId, slotIndex, iconId, false, refreshNow)
@@ -1454,87 +1470,10 @@ function FCOIS.ClearOrRestoreAllMarkers(rowControl, bagId, slotIndex)
             end
 
         end
-    end
-
-    --[[ OLD- Use Bag and SlotId- Fails if the slotIndices change in the bags!
-    --Restore temporarily saved marker icons
-    if lastMarkedIcons ~= nil and lastMarkedIcons[bagId] ~= nil and lastMarkedIcons[bagId][slotIndex] ~= nil then
---d("restore - bag: " .. bagId .. ", slotIndex: " .. slotIndex .. " " .. gil(bagId, slotIndex))
-        --Restore saved markers for the current item?
-        local loc_counter = 1
-        local lastMarkedIconsToRestore = lastMarkedIcons[bagId][slotIndex]
-        for iconId, iconIsMarked in pairs(lastMarkedIconsToRestore) do
-            --Reset all markers
-            --Refresh the control now to update the set marker icons?
-            local refreshNow = isCharacterShown or FCOIS.preventerVars.gOverrideInvUpdateAfterMarkItem
---d(">iconId: " ..tos(iconId) .. ", isMarked: " .. tos(iconIsMarked) .. ", refreshNow: " ..tos(refreshNow))
-            --Set global preventer variable so no other marker icons will be set/removed during the restore
-            FCOIS.preventerVars.gRestoringMarkerIcons = true
-            FCOIS.MarkItem(bagId, slotIndex, iconId, iconIsMarked, refreshNow)
-            --Reset the global preventer variable
-            FCOIS.preventerVars.gRestoringMarkerIcons = false
-            --Check if the item needs to be removed from a craft slot or the guild store sell tab now
-            isItemProtectedAtASlotNow(bagId, slotIndex, false, true)
-            loc_counter = loc_counter + 1
-        end
-        --Reset the last saved marker array for the current item
-        lastMarkedIcons[bagId][slotIndex] = nil
-        FCOIS.lastMarkedIcons[bagId][slotIndex] = nil
-        if loc_counter > 1 then
-            --Refresh the inventory list now to hide removed marker icons
-            filterBasics(false)
-        end
-
-    --Clear all marker icons
-    else
---d("clear")
-        --Clear all markers of current item
-        --local itemInstanceId = myGetItemInstanceIdNoControl(bagId, slotIndex)
-        --Return false for marked icons, where the icon id is disabled in the settings
-        FCOIS.preventerVars.doFalseOverride = true
-        local _, currentMarkedIcons = FCOIS.IsMarked(bagId, slotIndex, -1)
-        --Reset to normal return values for marked & en-/disabled icons now
-        FCOIS.preventerVars.doFalseOverride = false
-        --For each marked icon of the currently improved item:
-        --Set the icons/markers of the previous item again
-        if currentMarkedIcons and #currentMarkedIcons > 0 then
-            --Build the backup array with normal marked icons now
-            --local _, currentMarkedIconsUnchanged = FCOIS.IsMarked(bagId, slotIndex, -1)
-            local currentMarkedIconsUnchanged = ZO_DeepTableCopy(currentMarkedIcons)
-            --Create the arrays if any marker icon is set currently
-            FCOIS.lastMarkedIcons = FCOIS.lastMarkedIcons or {}
-            FCOIS.lastMarkedIcons[bagId] = FCOIS.lastMarkedIcons[bagId] or {}
-            FCOIS.lastMarkedIcons[bagId][slotIndex] = FCOIS.lastMarkedIcons[bagId][slotIndex] or {}
-            --Counter vars
-            local loc_counter = 1
-            local loc_marked_counter = 0
-            --Loop over each of the marker icons and remove them
-            for iconId, iconIsMarked in pairs(currentMarkedIcons) do
---d(">iconId: " .. tos(iconId) .. ", loc_counter: " .. tos(loc_counter))
-                --Only go on if item is marked or is the last marker (to update the inventory afterwards)
-                if iconIsMarked then
-                    loc_marked_counter = loc_marked_counter + 1
-                    --Refresh the control now to update the cleared marker icons?
-                    local refreshNow = isCharacterShown or FCOIS.preventerVars.gOverrideInvUpdateAfterMarkItem
-                    --Remove marker icon
---d(">removing marker icon: " .. tos(iconId))
-                    --Set global preventer variable so no other marker icons will be set/removed during the clear
-                    FCOIS.preventerVars.gClearingMarkerIcons = true
-                    FCOIS.MarkItem(bagId, slotIndex, iconId, false, refreshNow)
-                    --Reset the global preventer variable
-                    FCOIS.preventerVars.gClearingMarkerIcons = false
-                end
-                loc_counter = loc_counter + 1
-            end
-            --Only save the last active marker icons if any marker icon was removed
-            if loc_marked_counter > 0 then
-                FCOIS.lastMarkedIcons[bagId][slotIndex] = currentMarkedIconsUnchanged
-                --Refresh the inventory list now to hide removed marker icons
-                filterBasics(false)
-            end
+        if onlyFeedback == true then
+            return -1, nil
         end
     end
-    ]]
     FCOIS.preventerVars.gRestoringMarkerIcons = false
     FCOIS.preventerVars.gClearingMarkerIcons = false
 end

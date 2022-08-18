@@ -12,7 +12,7 @@ local strlen = string.len
 FCOIS.addonVars = {}
 local addonVars = FCOIS.addonVars
 --Addon variables
-addonVars.addonVersionOptions 		    = '2.3.1' -- version shown in the settings panel
+addonVars.addonVersionOptions 		    = '2.3.2' -- version shown in the settings panel
 --The addon name, normal and decorated with colors etc.
 addonVars.gAddonName				    = "FCOItemSaver"
 addonVars.gAddonNameShort               = "FCOIS"
@@ -825,7 +825,7 @@ mappingVars.activeFilterPanelIds			= {
 	[LF_SMITHING_REFINE]  			= true,
 	[LF_SMITHING_DECONSTRUCT]  		= true,
 	[LF_SMITHING_IMPROVEMENT]		= true,
-    [LF_SMITHING_RESEARCH]          = false,  -- Disabled, as no filter buttons/marker icons needed atm.
+    [LF_SMITHING_RESEARCH]          = true,  -- Enabled with #242, 2022-08-17
     [LF_SMITHING_RESEARCH_DIALOG]   = true,
 	[LF_MAIL_SEND] 					= true,
 	[LF_TRADE] 						= true,
@@ -841,7 +841,7 @@ mappingVars.activeFilterPanelIds			= {
 	[LF_JEWELRY_REFINE]		        = true,
 	[LF_JEWELRY_DECONSTRUCT]		= true,
 	[LF_JEWELRY_IMPROVEMENT]		= true,
-    [LF_JEWELRY_RESEARCH]		    = false,  -- Disabled, as no filter buttons/marker icons needed atm.
+    [LF_JEWELRY_RESEARCH]		    = true,  -- Enabled with #242, 2022-08-17
     [LF_JEWELRY_RESEARCH_DIALOG]    = true,
     [LF_INVENTORY_COMPANION]        = true,
 }
@@ -957,7 +957,9 @@ local function getHouseBankBagId()
     return houseBankBagId
 end
 
---Mapping array for the LibFilters filter panel ID to inventory bag ID (if relation is 1:1!)
+--Mapping array for the LibFilters filter panel ID to inventory bag ID (if relation is 1:1, else the entry will be nil
+--and the relevant bagIds will be detected where needed by the help of LibFilters (using ZOs vanilla code to create virtual
+--list of the bagIds needed, e.g. worn, inventory, bank for research) e.g. or manually in the FCOIS code!)
 mappingVars.libFiltersId2BagId = {
     [LF_INVENTORY]                              = BAG_BACKPACK,
     [LF_BANK_WITHDRAW]                          = BAG_BANK,
@@ -1415,6 +1417,7 @@ local smithingCtrl = ctrlVars.SMITHING
 local refinementPanel = smithingCtrl.refinementPanel
 local deconstructionPanel = smithingCtrl.deconstructionPanel
 local improvementPanel = smithingCtrl.improvementPanel
+local researchPanel = smithingCtrl.researchPanel
 ctrlVars.SMITHING_CLASS             = ZO_Smithing
 ctrlVars.SMITHING_PANEL             = ZO_SmithingTopLevel
 ctrlVars.CRAFTING_CREATION_PANEL    = GetControl(ctrlVars.SMITHING_PANEL, "CreationPanel") -- ZO_SmithingTopLevelCreationPanel
@@ -1680,7 +1683,7 @@ mappingVars.libFiltersPanelIdToInventory = {
 	[LF_INVENTORY_COMPANION]    	= INVENTORY_BACKPACK,
 }
 
---The mapping table between the LibFilters filterPaneLid constant and the crafting inventories
+--The mapping table between the LibFilters filterPanelId constant and the crafting inventories
 --Used in function FCOIS.GetInventoryTypeByFilterPanel()
 mappingVars.libFiltersPanelIdToCraftingPanelInventory = {
     [LF_ALCHEMY_CREATION]           = ctrlVars.ALCHEMY,
@@ -1689,13 +1692,13 @@ mappingVars.libFiltersPanelIdToCraftingPanelInventory = {
     [LF_SMITHING_CREATION]          = nil,
     [LF_SMITHING_DECONSTRUCT]       = deconstructionPanel,
     [LF_SMITHING_IMPROVEMENT]       = improvementPanel,
-    [LF_SMITHING_RESEARCH]          = nil,
+    [LF_SMITHING_RESEARCH]          = researchPanel, --todo #242 is this existing/valid?
     [LF_SMITHING_RESEARCH_DIALOG]   = nil,
     [LF_JEWELRY_REFINE]            = refinementPanel,
     [LF_JEWELRY_CREATION]          = nil,
     [LF_JEWELRY_DECONSTRUCT]       = deconstructionPanel,
     [LF_JEWELRY_IMPROVEMENT]       = improvementPanel,
-    [LF_JEWELRY_RESEARCH]          = nil,
+    [LF_JEWELRY_RESEARCH]          = researchPanel, --todo #242 is this existing/valid?
     [LF_JEWELRY_RESEARCH_DIALOG]   = nil,
 }
 
@@ -1718,6 +1721,8 @@ if ZO_UNIVERSAL_DECONSTRUCTION_FILTER_TYPES ~= nil then
 end
 
 --The crafting panelIds which should show FCOIS filter buttons
+--todo: 2022-08-17. Where is this table used so far? Other addons? Scanned live/AddOns but no usage so far -> Disabled for the moment
+--[[
 mappingVars.craftingPanelsWithFCOISFilterButtons = {
     ["ALCHEMY"] = {
         [LF_ALCHEMY_CREATION]           = { usesFCOISFilterButtons = true,  panelControl = ctrlVars.ALCHEMY }
@@ -1730,27 +1735,11 @@ mappingVars.craftingPanelsWithFCOISFilterButtons = {
         [LF_SMITHING_CREATION]          = { usesFCOISFilterButtons = false, panelControl = nil},
         [LF_SMITHING_DECONSTRUCT]       = { usesFCOISFilterButtons = true,  panelControl = deconstructionPanel},
         [LF_SMITHING_IMPROVEMENT]       = { usesFCOISFilterButtons = true,  panelControl = improvementPanel},
-        [LF_SMITHING_RESEARCH]          = { usesFCOISFilterButtons = false, panelControl = nil},
-        [LF_SMITHING_RESEARCH_DIALOG]   = { usesFCOISFilterButtons = false, panelControl = nil},
+        [LF_SMITHING_RESEARCH]          = { usesFCOISFilterButtons = true,  panelControl = researchPanel}, --todo #242 is this existing/valid?
+        [LF_SMITHING_RESEARCH_DIALOG]   = { usesFCOISFilterButtons = true,  panelControl = nil}, --todo: Changed on 2022-08-17. panelControl is ZO_ListDialog1's custom control once created
     },
 }
---The mapping table between the LibFilters filterPaneLid constant and the crafting inventories
-mappingVars.libFiltersPanelIdToCraftingPanelInventory = {
-    [LF_ALCHEMY_CREATION]           = ctrlVars.ALCHEMY,
-    [LF_RETRAIT]                    = ctrlVars.RETRAIT_RETRAIT_PANEL,
-    [LF_SMITHING_REFINE]            = refinementPanel,
-    [LF_SMITHING_CREATION]          = nil,
-    [LF_SMITHING_DECONSTRUCT]       = deconstructionPanel,
-    [LF_SMITHING_IMPROVEMENT]       = improvementPanel,
-    [LF_SMITHING_RESEARCH]          = nil,
-    [LF_SMITHING_RESEARCH_DIALOG]   = nil,
-    [LF_JEWELRY_REFINE]            = refinementPanel,
-    [LF_JEWELRY_CREATION]          = nil,
-    [LF_JEWELRY_DECONSTRUCT]       = deconstructionPanel,
-    [LF_JEWELRY_IMPROVEMENT]       = improvementPanel,
-    [LF_JEWELRY_RESEARCH]          = nil,
-    [LF_JEWELRY_RESEARCH_DIALOG]   = nil,
-}
+]]
 
 --Mapping for the house bank BAG numbers
 --[[
@@ -1896,6 +1885,7 @@ FCOIS.localizationVars.lTextDemark 	        = {}
 FCOIS.localizationVars.contextEntries       = {}
 FCOIS.localizationVars.lTextEquipmentMark   = {}
 FCOIS.localizationVars.lTextEquipmentDemark = {}
+FCOIS.localizationVars.lTextMarkSpecial     = {}
 
 FCOIS.settingsVars	= {}
 FCOIS.settingsVars.settings			= {}
@@ -2417,12 +2407,12 @@ checkVars.allowedJunkFlagContextMenuFilterPanelIds = {
 --Table with allowed panel IDs for the "crafting station"'s refinement/rune create/extraction/deconstruction/improvement/research slots
 --that are checked inside src/FCOIS_ContextMenus.lua, function FCOIS.MarkMe(), as an item gets marked via the right-click context menu from the inventory,
 --or via a keybinding: If item is protected again it must be removed from the crafting / etc. slot again!
+--This will only work for currently shown invetories where the rows/items are shown and where a refinement/deconstruction/improve/extraction slot holds items
 --> See file src/FCOIS_Protection.lua, function FCOIS.craftingPrevention.IsItemProtectedAtACraftSlotNow(bagId, slotIndex)
 checkVars.allowedCraftingPanelIdsForMarkerRechecks = {
 	[LF_SMITHING_REFINE] 		= true,
 	[LF_SMITHING_DECONSTRUCT] 	= true,
 	[LF_SMITHING_IMPROVEMENT] 	= true,
-	[LF_SMITHING_RESEARCH] 		= false,
 	[LF_ALCHEMY_CREATION] 		= true,
 	[LF_ENCHANTING_CREATION] 	= true,
 	[LF_ENCHANTING_EXTRACTION] 	= true,
@@ -2430,7 +2420,6 @@ checkVars.allowedCraftingPanelIdsForMarkerRechecks = {
     [LF_JEWELRY_REFINE]		    = true,
     [LF_JEWELRY_DECONSTRUCT]	= true,
     [LF_JEWELRY_IMPROVEMENT]	= true,
-    [LF_JEWELRY_RESEARCH] 		= false,
 }
 
 --Mapping of the character/companion character screen to the apparel control where the number of light/medium/heavy armor
@@ -3287,8 +3276,8 @@ mappingVars.contextMenuAntiButtonsAtPanel = {
     [LF_SMITHING_REFINE]  		= buttonContextMenuRefine,
     [LF_SMITHING_DECONSTRUCT]  	= buttonContextMenuDecon,
     [LF_SMITHING_IMPROVEMENT]	= buttonContextMenuImprove,
-    [LF_SMITHING_RESEARCH]		= "",
-    [LF_SMITHING_RESEARCH_DIALOG] = "",
+    [LF_SMITHING_RESEARCH]		= "",       --research does not show any additional "flag" button as there is no mass marking possible and the protection is neither checked. Only filters will apply! -> No shown inv list with items
+    [LF_SMITHING_RESEARCH_DIALOG] = "",     --research dialog does not show any additional "flag" button as the ZO_ListDialog1 custom control won't properly work with it. Only filters will apply!
     [LF_GUILDSTORE_SELL] 	 	= buttonContextMenuSell,
     [LF_MAIL_SEND] 				= buttonContextMenuToggleAntiPrefix .."mail_",
     [LF_TRADE] 					= buttonContextMenuToggleAntiPrefix .."trade_",
@@ -3303,8 +3292,8 @@ mappingVars.contextMenuAntiButtonsAtPanel = {
     [LF_JEWELRY_REFINE]  		= buttonContextMenuRefine,
     [LF_JEWELRY_DECONSTRUCT]  	= buttonContextMenuDecon,
     [LF_JEWELRY_IMPROVEMENT]	= buttonContextMenuImprove,
-    [LF_JEWELRY_RESEARCH]		= "",
-    [LF_JEWELRY_RESEARCH_DIALOG] = "",
+    [LF_JEWELRY_RESEARCH]		= "",       --research does not show any additional "flag" button as there is no mass marking possible and the protection is neither checked. Only filters will apply! -> No shown inv list with items
+    [LF_JEWELRY_RESEARCH_DIALOG] = "",      --research dialog does not show any additional "flag" button as the ZO_ListDialog1 custom control won't properly work with it. Only filters will apply!
     [LF_INVENTORY_COMPANION]    = buttonContextMenuDestroy,
 --======================================================================================================================
     --Special entries without LibFilters filterPanelId -> FCOIS custom filterPanels

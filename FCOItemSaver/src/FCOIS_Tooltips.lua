@@ -5,6 +5,7 @@ local FCOIS = FCOIS
 if not FCOIS.libsLoadedProperly then return end
 
 local debugMessage = FCOIS.debugMessage
+local tos = tostring
 
 --local wm = WINDOW_MANAGER
 
@@ -20,6 +21,7 @@ local isDynamicGearIcon
 local isMarked
 local isMarkedByItemInstanceId
 local checkAndGetIIfAData
+local getIconText
 
 -- =====================================================================================================================
 --  Tooltip functions
@@ -348,6 +350,37 @@ function FCOIS.CreateToolTip(markerControl, markerId, doHide, pUpdateAllEquipmen
     end
 end
 createToolTip = FCOIS.CreateToolTip
+
+function FCOIS.BuildMarkerIconsTooltipText(markerIcons, newLineStr, onlyMarkedCount)
+    onlyMarkedCount = onlyMarkedCount or false
+    newLineStr = newLineStr or "\n"
+    local countMarked = 0
+    local countTotal = 0
+    local tooltipTextOfMarkerIcons = ""
+
+    local locVars
+    local locVarsFCO
+
+    for iconId, iconIsMarked in pairs(markerIcons) do
+        countTotal = countTotal + 1
+        if iconIsMarked == true then
+            countMarked = countMarked + 1
+            if not onlyMarkedCount then
+                locVars = locVars or FCOIS.localizationVars
+                locVarsFCO = locVarsFCO or locVars.fcois_loc
+
+                --Build the tooltip text for SHIFT+ mouse over at the context menu entry to show the icons last marked
+                if tooltipTextOfMarkerIcons ~= "" then
+                    tooltipTextOfMarkerIcons = tooltipTextOfMarkerIcons .. newLineStr
+                end
+                getIconText = getIconText or FCOIS.GetIconText
+                local iconName = getIconText(iconId, true, false, false) or tos(iconId)
+                tooltipTextOfMarkerIcons = tooltipTextOfMarkerIcons .. iconName
+            end
+        end
+    end
+    return tooltipTextOfMarkerIcons, countMarked, countTotal
+end
 
 --Build the tooltip for e.g. a marker icon's context menu entry and show which panel is protected at this marker icon
 function FCOIS.BuildMarkerIconProtectedWhereTooltip(markId)

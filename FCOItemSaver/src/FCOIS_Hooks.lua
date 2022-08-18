@@ -695,6 +695,7 @@ local function FCOItemSaver_OnReceiveDrag(inventorySlot)
     end
 end
 
+
 --==============================================================================
 --      Hook Methods (update inventory rows and add doubleclick event, scene hook callbacks, etc.
 --==============================================================================
@@ -743,6 +744,17 @@ function FCOIS.CreateHooks()
     end
 
     local checkFCOISFilterButtonsAtPanel                     = FCOIS.CheckFCOISFilterButtonsAtPanel
+
+    --Show/Update the filter buttons at the research list again
+    local function showOrUpdateResearchFilterButtons()
+        local researchFiterTypeToUpdate = LF_SMITHING_RESEARCH
+        if GetCraftingInteractionType() == CRAFTING_TYPE_JEWELRYCRAFTING then
+            researchFiterTypeToUpdate = LF_JEWELRY_RESEARCH
+        end
+        checkFCOISFilterButtonsAtPanel(true, researchFiterTypeToUpdate)
+    end
+
+
     --local updateFCOISFilterButtonsAtInventory                = FCOIS.UpdateFCOISFilterButtonsAtInventory
     --local updateFCOISFilterButtonColorsAndTextures           = FCOIS.UpdateFCOISFilterButtonColorsAndTextures
     hideContextMenu = hideContextMenu or FCOIS.HideContextMenu
@@ -885,8 +897,9 @@ function FCOIS.CreateHooks()
                     addedCounter = addedCounter + 1
                     --Is the currently added entry with AddMark the "last one in this context menu"?
                     --> Needed to set the preventer variable buildingInvContextMenuEntries for the function AddMark so the IIfA addon is recognized properly!
-                    if addedCounter == contextMenuEntriesAdded then
-                        --Last entry in custom context menu reached
+--d(">addedCounter: " ..tos(addedCounter) .. "-contextMenuEntriesAdded: " ..tos(contextMenuEntriesAdded))
+                    if addedCounter >= contextMenuEntriesAdded then
+                        --Last entry in custom context menu reached -> Used in FCOIS.AddMark for lastAdd variable
                         FCOIS.preventerVars.buildingInvContextMenuEntries = false
                     end
                     --FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, useSubMenu)
@@ -1302,7 +1315,7 @@ function FCOIS.CreateHooks()
     --Register a secure posthook on visibility change of a scrolllist's row -> At the retrait inventory list
     SecurePostHook(ctrlVars.RETRAIT_LIST.dataTypes[1], "setupCallback", onScrollListRowSetupCallback)
 
-    --========= RESEARCH LIST / ListDialog OnShow/OnHide ======================================================
+    --========= RESEARCH LIST - POPUP / ListDialog OnShow/OnHide ======================================================
     local researchPopupDialogCustomControl = ESO_Dialogs["SMITHING_RESEARCH_SELECT"].customControl()
     if researchPopupDialogCustomControl ~= nil then
         ZO_PreHookHandler(researchPopupDialogCustomControl, "OnShow", function()
@@ -1322,6 +1335,8 @@ function FCOIS.CreateHooks()
             --Hide the filter buttons at LF_SMITHING_RESEARCH_DIALOG (or LF_JEWELRY_RESEARCH_DIALOG, which will be
             --determined dynamically within function FCOIS.CheckActivePanel in function FCOIS.CheckFilterButtonsAtPanel)
             checkFCOISFilterButtonsAtPanel(false, LF_SMITHING_RESEARCH_DIALOG, nil, true) -- Last parameter: Hide filter buttons
+            --Show/Update the filter buttons at the research list again
+            showOrUpdateResearchFilterButtons()
         end)
     end
     --========= RESEARCH LIST / ListDialog (also repair, enchant, charge, etc.) - ZO_Dialog1 ======================================================
@@ -1446,6 +1461,9 @@ function FCOIS.CreateHooks()
                         return true
                     end
                 end
+
+                FCOIS.preventerVars.buildingInvContextMenuEntries = true
+
                 --Build the context menu for the research dialog now. Will be shown via function FCOIS.MarkMe then
                 local FCOcontextMenu          = {}
                 --Check if the user set ordeirng is valid, else use the standard sorting
@@ -1482,6 +1500,7 @@ function FCOIS.CreateHooks()
 
                 --Are there any context menu entries?
                 if contextMenuEntriesAdded > 0 then
+                    local addedCounter = 0
                     --Reset the counter for the FCOIS.AddMark function
                     FCOIS.customMenuVars.customMenuCurrentCounter = 0
                     --Clear the menu completely (should be empty by default as it does not exist on the dialogs)
@@ -1490,6 +1509,13 @@ function FCOIS.CreateHooks()
                     local addMark = FCOIS.AddMark
                     for j = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
                         if FCOcontextMenu[j] ~= nil then
+                            addedCounter = addedCounter + 1
+                            --Is the currently added entry with AddMark the "last one in this context menu"?
+                            --> Needed to set the preventer variable buildingInvContextMenuEntries for the function AddMark so the IIfA addon is recognized properly!
+                            if addedCounter >= contextMenuEntriesAdded then
+                                --Last entry in custom context menu reached -> Used in FCOIS.AddMark for lastAdd variable
+                                FCOIS.preventerVars.buildingInvContextMenuEntries = false
+                            end
                             --FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, useSubMenu)
                             --Increase the global counter for the added context menu entries so the function FCOIS.AddMark can react on it
                             FCOIS.customMenuVars.customMenuCurrentCounter = FCOIS.customMenuVars.customMenuCurrentCounter + 1
@@ -1766,20 +1792,25 @@ function FCOIS.CreateHooks()
         if mode == SMITHING_MODE_REFINMENT then
             filterPanelId          = craftingModeAndCraftingTypeToFilterPanelId[mode][craftingType] or LF_SMITHING_REFINE
             showFCOISFilterButtons = true
-            --Creation
-            --elseif mode == SMITHING_MODE_CREATION then
-            --	FCOIS.gFilterWhere = LF_SMITHING_CREATION
-            --Deconstruction
+        --Creation -- Not supported
+        --elseif mode == SMITHING_MODE_CREATION then
+            --filterPanelId          = craftingModeAndCraftingTypeToFilterPanelId[mode][craftingType] or LF_SMITHING_CREATION
+            --showFCOISFilterButtons = true
+        --Deconstruction
         elseif mode == SMITHING_MODE_DECONSTRUCTION then
             filterPanelId          = craftingModeAndCraftingTypeToFilterPanelId[mode][craftingType] or LF_SMITHING_DECONSTRUCT
             showFCOISFilterButtons = true
-            --Improvement
+        --Improvement
         elseif mode == SMITHING_MODE_IMPROVEMENT then
             filterPanelId          = craftingModeAndCraftingTypeToFilterPanelId[mode][craftingType] or LF_SMITHING_IMPROVEMENT
             showFCOISFilterButtons = true
-            --Research
-            --elseif mode == SMITHING_MODE_RESEARCH then
-            --FCOIS.PreHookButtonHandler(FCOIS.gFilterWhere, LF_SMITHING_RESEARCH)
+        --Research
+        elseif mode == SMITHING_MODE_RESEARCH then
+            filterPanelId          = craftingModeAndCraftingTypeToFilterPanelId[mode][craftingType] or LF_SMITHING_RESEARCH
+            showFCOISFilterButtons = true
+
+            --Show/Update the filter buttons at the research list again
+            --showOrUpdateResearchFilterButtons()
         end
 --d(">>filterPanelId: " ..tos(filterPanelId))
 

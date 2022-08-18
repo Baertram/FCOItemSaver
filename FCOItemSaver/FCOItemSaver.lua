@@ -183,59 +183,46 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 --instead of LF_GUILD_STORE_SELL
 -->Maybe event_bank_closed?
 
---#240 2022-07-31, esoui author bugs, TechyShishy: FCOIS Unique Ids aren't respecting item level unique factor
---[[
-TL; DR:
-I first experienced this on Tazgol's Ancestral Axe, but I've since reproduced it with crafted Iron Daggers, level 1 and 4.
-I also crafted a traited level 1 Iron Dagger to confirm the exclusivity. I've included the resultant markedItemsFCOISUnique entry for all 3 Iron Daggers.
-Notably, it ends up with only 2 entries, leading to this bug:
+--#242 2022-08-14, Baertram, Feature idea: Add the 4 filter buttons to LF_SMITHING_RESEARCH / LF_JEWELRY_RESEARCH to filter the shown items already at the list,
+--  before selecting an item and showing the LF_SMITHING_RESEARCH_DIALOG popup
 
-Itemlink "Rubedite dagger CP160"
-|H1:item:43535:366:50:0:0:0:0:0:0:0:0:0:0:0:0:1:0:0:0:0:0|h|h
-/tb FCOIS.CreateFCOISUniqueIdString(nil,nil,nil,"|H1:item:43535:366:50:0:0:0:0:0:0:0:0:0:0:0:0:1:0:0:0:0:0|h|h")
-
-Code:
-["43535,0,1,0,9,0,0,1,2190528011,0"] = true,
-["45024,0,1,1,9,0,0,1,2190528011,0"] = true,
-Longer version:
-
-Unique Ids don't seem to be respecting level as a factor, and as a result, marking one item marks all other items that are sufficiently similar. For example, if you craft 3 Iron Daggers, one level 1, one level 4, and one level 1 but with a trait, and then try to apply any mark to either the level 1 untraited dagger or the level 4 dagger, both of them receive the mark. The level 1 traited dagger remains unmarked. Looking at the ids in the SavedVariables explains why this occurs, for some reason, when marking either the level 1 untraited dagger or level 4 dagger, a single entry is created that apparently matches both daggers.
-
-Here's an imgur album with a reasonably full set of data about my client state and the bug in action: https://imgur.com/a/HQm6X7f
-
-And here's one of the images itself:
-https://i.imgur.com/8A9YG2O.jpg
-
-
-
-]]
 
 --______________________________________
--- Current max # of bugs/features/ToDos: 240
+-- Current max # of bugs/features/ToDos: 242
 --______________________________________
 
 
 --Todo for this patch
---#240
-
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-07-31
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-08-17
 ------------------------------------------------------------------------------------
---#240
 
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.3.0 - New version: 2.3.1) -    Updated last: 2022-07-31
+--Changelog (last version: 2.3.1 - New version: 2.3.2) -    Updated last: 2022-08-17
 -------------------------------------------------------------------------------------
 --[Fixed]
---#240 FCOIS Unique Ids aren't respecting item level unique criteria (if changed at the settings)
+--
 
 --[Changed]
+--API function FCOIS.GetIconText provides more parameters now:
+--Global function to get the for a given gear set's iconId (2, 4, 6, 7 or 8) or a dynamic icon id (13, 14, 15, 16, 17, 18, 19, 20, 21, 22)
+--> use the constants for the marker icons please! e.g. FCOIS_CON_ICON_LOCK, FCOIS_CON_ICON_DYNAMIC_1 etc. Check file src/FCOIS_constants.lua for the available constants (top of the file)
+--boolean withTexture <optional>: Add the icon#s texture to the name (default: left side)
+--boolean textureAtRight <optional>: Put the texture at the right side of the name
+--boolean textureNonColored <optional>: If true the texture will not be colored explicitly, if false the texture will use the color of the icon settings
+--function FCOIS.GetIconText(iconId, withTexture, textureAtRight, textureNonColored)
 
 
 --[Added]
-
+--#238 Speed-up the AddMark function and cache some markId independent checks so that calls to the same function AddMark with the same bagId and slotIndex can reuse the cached results
+--#241 Added setting to add a "remove all"/"restore last marker icons" to the context menu of items. You need to enable this at the settings submenu "marker icons" -> "Undo".
+--Undo entries saved by SHIFT+right mouse click (if enabled at the settings) or via this new context menu entry will be cleared if you manually set a new marker icon on the same item
+--via the inventory context menu!
+--Keybinds or mass-marking will not overwrite them.
+--Added tooltip setting for that new setting (see above) to show the last marked marker icons at the item if you press and hold the SHIFT key
+--#242 Add the 4 filter buttons to LF_SMITHING_RESEARCH / LF_JEWELRY_RESEARCH to filter the shown items already at the list before the item selection popup shows
 
 --[Added on request]
 
