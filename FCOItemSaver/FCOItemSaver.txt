@@ -76,7 +76,7 @@ src/FCOIS_Functions.lua
 src/Settings/FCOIS_Settings.lua
 
 # Addon localization
-src/Localization/FCOIS_Localization.lua
+Localization/FCOIS_Localization.lua
 
 # Addon anti-* protection methods
 src/Panels/FCOIS_Protection.lua
@@ -91,7 +91,7 @@ src/Panels/FCOIS_Refresh.lua
 src/EventsHooks/FCOIS_Hooks.lua
 
 # Other addons functions source
-src/FCOIS_OtherAddons.lua
+src/_OtherAddons/FCOIS_OtherAddons.lua
 
 # Addon inventory scanning & automatic item marking
 src/MarkersTooltips/FCOIS_AutomaticMarks.lua

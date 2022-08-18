@@ -199,7 +199,8 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 
 
 --[Changed]
-
+--Changed the folder structure of the addon. Do not keep old folder live/AddOns/FCOItemSaver! Do not extract the zip file
+-->"over" the existing folder. Delete the folder and install the update so a new live/AddOns/FCOItemSaver folder will be created
 
 --[Added]
 
