@@ -188,41 +188,28 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 
 
 --______________________________________
--- Current max # of bugs/features/ToDos: 242
+-- Current max # of bugs/features/ToDos: 244
 --______________________________________
 
 
 --Todo for this patch
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-08-17
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-08-19
 ------------------------------------------------------------------------------------
 
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.3.1 - New version: 2.3.2) -    Updated last: 2022-08-17
+--Changelog (last version: 2.3.2 - New version: 2.3.3) -    Updated last: 2022-08-19
 -------------------------------------------------------------------------------------
 --[Fixed]
---
+--#244 ContextMenu error in line 765
 
 --[Changed]
---API function FCOIS.GetIconText provides more parameters now:
---Global function to get the for a given gear set's iconId (2, 4, 6, 7 or 8) or a dynamic icon id (13, 14, 15, 16, 17, 18, 19, 20, 21, 22)
---> use the constants for the marker icons please! e.g. FCOIS_CON_ICON_LOCK, FCOIS_CON_ICON_DYNAMIC_1 etc. Check file src/FCOIS_constants.lua for the available constants (top of the file)
---boolean withTexture <optional>: Add the icon#s texture to the name (default: left side)
---boolean textureAtRight <optional>: Put the texture at the right side of the name
---boolean textureNonColored <optional>: If true the texture will not be colored explicitly, if false the texture will use the color of the icon settings
---function FCOIS.GetIconText(iconId, withTexture, textureAtRight, textureNonColored)
 
 
 --[Added]
---#238 Speed-up the AddMark function and cache some markId independent checks so that calls to the same function AddMark with the same bagId and slotIndex can reuse the cached results
---#241 Added setting to add a "remove all"/"restore last marker icons" to the context menu of items. You need to enable this at the settings submenu "marker icons" -> "Undo".
---Undo entries saved by SHIFT+right mouse click (if enabled at the settings) or via this new context menu entry will be cleared if you manually set a new marker icon on the same item
---via the inventory context menu!
---Keybinds or mass-marking will not overwrite them.
---Added tooltip setting for that new setting (see above) to show the last marked marker icons at the item if you press and hold the SHIFT key
---#242 Add the 4 filter buttons to LF_SMITHING_RESEARCH / LF_JEWELRY_RESEARCH to filter the shown items already at the list before the item selection popup shows
+
 
 --[Added on request]
 

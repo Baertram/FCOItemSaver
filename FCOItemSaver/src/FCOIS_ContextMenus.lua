@@ -716,7 +716,7 @@ end
 --Only if the fcoisItemInstanceId changes the checks need to be redone
 -->Will be reset automatically at last markId of an item or if a new item's context menu is build
 --The cached data contains all kind of checks done in first AddMark call
-local function checkIfCachedLastAddMarkDataCanBeUsed(fcoisItemInstanceId, doReset, rowControl)
+local function checkIfCachedLastAddMarkDataCanBeUsed(fcoisItemInstanceId, doReset, rowControl, useSubMenu)
 --d("[FCOIS]checkIfCachedLastAddMarkDataCanBeUsed-fcoisItemInstanceId: " ..tos(fcoisItemInstanceId) .. ", doReset: " ..tos(doReset))
     doReset = doReset or false
     if doReset == true then
@@ -759,13 +759,14 @@ local function checkIfCachedLastAddMarkDataCanBeUsed(fcoisItemInstanceId, doRese
 
             lastAddMarkData.isItemOwnerCompanion = isItemOwnerCompanion(bagId, slotIndex)
 
-            local contextMenuEntryTextPre
+            local contextMenuEntryTextPre = ""
             local settings = FCOIS.settingsVars.settings
-            for i=1, settings.addContextMenuLeadingSpaces do
-                contextMenuEntryTextPre = contextMenuEntryTextPre .. " "
+            if not useSubMenu and settings.addContextMenuLeadingSpaces > 0 then
+                for i=1, settings.addContextMenuLeadingSpaces do
+                    contextMenuEntryTextPre = contextMenuEntryTextPre .. " "
+                end
+                lastAddMarkData.contextMenuEntryTextPre = contextMenuEntryTextPre
             end
-            lastAddMarkData.contextMenuEntryTextPre = contextMenuEntryTextPre
-
 
             local normalColorDef = ZO_ColorDef:New(settings.contextMenuCustomMarkedNormalColor)
             lastAddMarkData.normalColorDef = normalColorDef
@@ -792,7 +793,7 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
     local fcoisItemInstanceId = myGetItemInstanceId(rowControl, true)
     --------------------------------------------------------------------------------------------------------------------
     --Cached FCOIS.AddMark values which will be filled as a context menu is opened for a new item
-    local reUseCachedAddMarkData = checkIfCachedLastAddMarkDataCanBeUsed(fcoisItemInstanceId, false, rowControl)
+    local reUseCachedAddMarkData = checkIfCachedLastAddMarkDataCanBeUsed(fcoisItemInstanceId, false, rowControl, useSubMenu)
     local lastAddMarkData = FCOIS.lastAddMarkData
     --------------------------------------------------------------------------------------------------------------------
 
@@ -1057,7 +1058,7 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
     --If inside the context menu not the subMenu should be used: Indent the context menu entries with spaces for a better readability?
     if not useSubMenu and settings.addContextMenuLeadingSpaces > 0 then
         contextMenuEntryTextPre = lastAddMarkData.contextMenuEntryTextPre
-        if contextMenuEntryTextPre == nil then
+        if contextMenuEntryTextPre == nil or contextMenuEntryTextPre == "" then
             --Add spaces in front of each context menu entry to indent them a bit
             for i=1, settings.addContextMenuLeadingSpaces do
                 contextMenuEntryTextPre = contextMenuEntryTextPre .. " "
@@ -1591,7 +1592,7 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
 
     --Reset cached data
     if lastAdd == true then
-        checkIfCachedLastAddMarkDataCanBeUsed(fcoisItemInstanceId, true, nil)
+        checkIfCachedLastAddMarkDataCanBeUsed(fcoisItemInstanceId, true, nil, nil)
     end
 end
 
