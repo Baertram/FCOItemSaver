@@ -2926,11 +2926,10 @@ function FCOIS.BuildAddonMenu()
 
     --[Libraries]
     --LibShifterBox
+    --> See file src/Settings/FCOIS_LibAddonMenuDualListBoxes.lua -> FCOIS.LibShifterBoxes
     local lsb = FCOIS.libShifterBox
-    local libShifterBoxes
-    if lsb then
-        libShifterBoxes = FCOIS.LibShifterBoxes
-    end
+    local libShifterBoxes = FCOIS.LibShifterBoxes
+    local lsbFCOISUniqueItemTypes = libShifterBoxes[FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES]
 
 
     --[Run once as LAM panel get's created]
@@ -3371,27 +3370,56 @@ function FCOIS.BuildAddonMenu()
 
                 --==============================================================================
                 --LibShifterBox: ItemTypes for uniqueIds by FCOIS
+--[[
                 {
                     type = "custom",
-                    reference = (lsb and libShifterBoxes[FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES].name) or "FCOITEMSAVER_LAM_CUSTOM___FCOIS_UNIQUEID_ITEMTYPES",
+                    reference = (lsb and lsbFCOISUniqueItemTypes.name) or "FCOITEMSAVER_LAM_CUSTOM___FCOIS_UNIQUEID_ITEMTYPES",
                     createFunc = function(customControl)
                         if not lsb then return end
                         FCOIS.createLibShifterBox(customControl, FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES)
-                        --[[
                         --Currently not needed as a reloadui needs to be done to chnage the uniqueId and thus this disabled update will be done autoamtically at the LibShifterBox functions
-                        customControl.UpdateDisabled = function(customControl)
-d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES")
-                            if not uniqueIdIsEnabledAndSetToFCOIS() then
-
-                            end
-                        end
-                        ]]
+                        --customControl.UpdateDisabled = function(customControl)
+--d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES")
+                           -- if not uniqueIdIsEnabledAndSetToFCOIS() then
+                            --
+                            --end
+                        --end
                     end,
                     width="full",
                     minHeight = 220,
                     --disabled = function() return not uniqueIdIsEnabledAndSetToFCOIS() end,
                 },
+]]
 
+                --LibShifterBox: ItemTypes for uniqueIds by FCOIS
+                --> See file src/Settings/FCOIS_LibAddonMenuDualListBoxes.lua -> FCOIS.LibShifterBoxes
+                {
+                    type = "duallistbox",
+                    reference = lsbFCOISUniqueItemTypes.name,
+                    --refreshFunc = function(customControl) end, -- function to call when panel/controls refresh (optional)
+                    width = "full", -- or "half" (optional)
+                    minHeight = 220,
+                    --maxHeight = 500,
+                    --resetFunc = function(customControl) end,
+                    setupData = {
+                        --The overall dual list box control setup data
+                        name = lsbFCOISUniqueItemTypes.name,
+                        width       = lsbFCOISUniqueItemTypes.width,
+                        height      = lsbFCOISUniqueItemTypes.height,
+                        --Includes the callbacks for entry moved/highlighted/unhighlighted
+                        customSettings = lsbFCOISUniqueItemTypes.customSettings,
+                    },
+                    defaultLeftList =  { },
+                    defaultRightList = lsbFCOISUniqueItemTypes.defaultRightListKeys,
+                    -- Reads/writes FCOIS.settingsVars.settings.allowedFCOISUniqueIdItemTypes
+                    getFuncLeftList = function() return lsbFCOISUniqueItemTypes.getFuncOfList(true) end,
+                    setFuncLeftList = function(tableData) lsbFCOISUniqueItemTypes.setFuncOfList(true, tableData) end,
+                    --
+                    getFuncRightList = function() return lsbFCOISUniqueItemTypes.getFuncOfList(false) end,
+                    setFuncRightList = function(tableData) lsbFCOISUniqueItemTypes.setFuncOfList(false, tableData) end,
+                    --
+                    disabled  = function() return not uniqueIdIsEnabledAndSetToFCOIS() end,
+                },
 
                 --==============================================================================
                 --Migration

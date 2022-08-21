@@ -194,7 +194,7 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 --#243 2022-08-18, Baertram, Feature request: Change LibShifterBox usage to LibAddonMenuDualListBox widget in settings etc.!
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.3.4 - New version: 2.3.5) -    Updated last: 2022-08-21
+--Changelog (last version: 2.3.5 - New version: 2.3.6) -    Updated last: 2022-08-21
 -------------------------------------------------------------------------------------
 --[Fixed]
 

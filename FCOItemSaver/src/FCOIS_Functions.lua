@@ -399,7 +399,7 @@ function FCOIS.GetFCOISMarkerIconUniqueIdAllowedItemType(bagId, slotIndex, uniqu
         allowedItemtype = allowedUniqueItemTypes[itemType] or false
     else
         --All selected itemTypes at the settings of unique FCOIS marker icon IDs are allowed itemtypes
-        allowedItemtype = settings.allowedFCOISUniqueIdItemTypes[itemType] or false
+        allowedItemtype = settings.allowedFCOISUniqueIdItemTypesRightList[itemType] or false
     end
     return allowedItemtype
 end

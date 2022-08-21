@@ -12,7 +12,7 @@ local strlen = string.len
 FCOIS.addonVars = {}
 local addonVars = FCOIS.addonVars
 --Addon variables
-addonVars.addonVersionOptions 		    = '2.3.5' -- version shown in the settings panel
+addonVars.addonVersionOptions 		    = '2.3.6' -- version shown in the settings panel
 --The addon name, normal and decorated with colors etc.
 addonVars.gAddonName				    = "FCOItemSaver"
 addonVars.gAddonNameShort               = "FCOIS"
@@ -1912,7 +1912,7 @@ checkVars.uniqueIdItemTypes = {
 --The itemtypes that are allowed to be marked with unique item IDs created by FCOIS uniqueIDs (chosen by the user in the
 --settings of the unique FCOIS itemId). All not listed item types (or listed with "false") will be saved with the
 --non-unique itemInstanceId
---> See FCOIS.settingsVars.settings.allowedFCOISUniqueIdItemTypes
+--> See FCOIS.settingsVars.settings.allowedFCOISUniqueIdItemTypesRightList
 --->    filled in file /src/FCOIS_DefaultSettings.lua, and then managed in file /src/FCOIS_SettingsMenu.lua
 
 --The allowed craftskills for automatic marking of "crafted" marker icon
