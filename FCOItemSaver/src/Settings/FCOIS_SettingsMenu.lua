@@ -3409,8 +3409,8 @@ function FCOIS.BuildAddonMenu()
                         --Includes the callbacks for entry moved/highlighted/unhighlighted
                         customSettings = lsbFCOISUniqueItemTypes.customSettings,
                     },
-                    defaultLeftList =  { },
-                    defaultRightList = lsbFCOISUniqueItemTypes.defaultRightListKeys,
+                    --defaultLeftList =  { },
+                    --defaultRightList = lsbFCOISUniqueItemTypes.defaultRightListKeys,
                     -- Reads/writes FCOIS.settingsVars.settings.allowedFCOISUniqueIdItemTypes
                     getFuncLeftList = function() return lsbFCOISUniqueItemTypes.getFuncOfList(true) end,
                     setFuncLeftList = function(tableData) lsbFCOISUniqueItemTypes.setFuncOfList(true, tableData) end,

@@ -232,19 +232,7 @@ end
 
 
 local function FCOISUniqueItemIdShifterBoxEventEntryMovedCallbackFunction(shifterBox, key, value, categoryId, isDestListLeftList)
-d("[FCOIS]Move entry LibShifterBox UniqueItemIds-key: " ..tos(key) .. ", value: " ..tos(value) .. ", toLeft: " ..tos(isDestListLeftList))
-    if key == nil then return end
-    if isDestListLeftList == true then
-        --Moved to the left? Set SavedVariables value nil
-        FCOIS.settingsVars.settings.allowedFCOISUniqueIdItemTypes[key] = nil
-        --Check if any entry is left in the right list. If not:
-        --Add the default values weapons and armor again and output a chat message.
-        --checkAndUpdateRightListDefaultEntries(shifterBox, FCOIS.LibShifterBoxes[FCOISuniqueIdItemTypes])
-
-    else
-        --Moved to the right? Save to SavedVariables with value true
-        FCOIS.settingsVars.settings.allowedFCOISUniqueIdItemTypes[key] = true
-    end
+--d("[FCOIS]Move entry LibShifterBox UniqueItemIds-key: " ..tos(key) .. ", value: " ..tos(value) .. ", toLeft: " ..tos(isDestListLeftList))
 end
 
 
@@ -268,17 +256,21 @@ FCOIS.LibShifterBoxes = {
             rightList = {
                 title = locVars["LIBSHIFTERBOX_FCOIS_UNIQUEID_ITEMTYPES_TITLE_RIGHT"],
             },
+            --[[
             callbackRegister = {
                 --Add the callback function to the entry was moved event
                 [lsb.EVENT_ENTRY_MOVED] = FCOISUniqueItemIdShifterBoxEventEntryMovedCallbackFunction,
             },
+            ]]
         },
         width       = 580,
         height      = 200,
         --Right's list default entries
+        --[[
         defaultRightListKeys = {
           ITEMTYPE_WEAPON, ITEMTYPE_ARMOR
         },
+        ]]
 
         --Getter and setter
         -->The following 2 tables here are only locally used to store the visual table entries of the left and right lists.
@@ -297,21 +289,22 @@ d("[FCOIS]getFuncOfList-isLeftList: " ..tos(isLeftList))
             local itemTypes = locVars.ItemTypes
 
             if isLeftList == true then
-                FCOIS.LibShifterBoxes[FCOISuniqueIdItemTypes].currentLeftListEntries = {}
+d(">leftList")
                 local currentLeftListEntries = FCOIS.LibShifterBoxes[FCOISuniqueIdItemTypes].currentLeftListEntries
 
                 local allowedFCOISUniqueIdItemTypesLeftList = settings.allowedFCOISUniqueIdItemTypesLeftList
                 for k,v in pairs(allowedFCOISUniqueIdItemTypesLeftList) do
+d(">>Lvalue: " ..tos(v))
                     currentLeftListEntries[k] = strformat("%s [%s]", itemTypes[k], tostring(k))
                 end
-
                 return currentLeftListEntries
             else
-                FCOIS.LibShifterBoxes[FCOISuniqueIdItemTypes].currentRightListEntries = {}
+d(">rightList")
                 local currentRightListEntries = FCOIS.LibShifterBoxes[FCOISuniqueIdItemTypes].currentRightListEntries
 
                 local allowedFCOISUniqueIdItemTypesRightList = settings.allowedFCOISUniqueIdItemTypesRightList
                 for k,v in pairs(allowedFCOISUniqueIdItemTypesRightList) do
+d(">>Rvalue: " ..tos(v))
                     currentRightListEntries[k] = strformat("%s [%s]", itemTypes[k], tostring(k))
                 end
                 return currentRightListEntries
@@ -323,20 +316,16 @@ FCOIS._tableDataOfLibShifterUniqueItemType = tableData
             --Write FCOIS.settingsVars.settings.allowedFCOISUniqueIdItemTypes
             if isLeftList == nil or tableData == nil then return end
 
-            --TODO: The update of the left list and right list entries (FCOIS.LibShifterBoxes[FCOISuniqueIdItemTypes].currentLeftListEntries/
-            --FCOIS.LibShifterBoxes[FCOISuniqueIdItemTypes].currentRightListEntries) should be done where?
-
             local currentLeftListEntries = FCOIS.LibShifterBoxes[FCOISuniqueIdItemTypes].currentLeftListEntries
             local currentRightListEntries = FCOIS.LibShifterBoxes[FCOISuniqueIdItemTypes].currentRightListEntries
 
             if isLeftList == true then
+d(">leftList")
                 for k, v in pairs(tableData) do
                     --Update the helper tables
                     currentLeftListEntries[k] = v
                     currentRightListEntries[k] = nil
-                    --Update the SavedVariables
-                    FCOIS.settingsVars.settings.allowedFCOISUniqueIdItemTypesLeftList[k] = false
-                    FCOIS.settingsVars.settings.allowedFCOISUniqueIdItemTypesRightList[k] = nil
+d(">>key: " .. tos(k) .. ", value: " ..tos(v))
                 end
                 --Check if any entry is left in the right list. If not:
                 --Add the default values weapons and armor again and output a chat message.
@@ -344,16 +333,27 @@ FCOIS._tableDataOfLibShifterUniqueItemType = tableData
                 --checkAndUpdateRightListDefaultEntries(shifterBoxData.control, shifterBoxData)
 
             else
+d(">rightList")
                 for k, v in pairs(tableData) do
                     --Update the helper tables
                     currentLeftListEntries[k] = nil
                     currentRightListEntries[k] = v
-                    --Update the SavedVariables
-                    FCOIS.settingsVars.settings.allowedFCOISUniqueIdItemTypesLeftList[k] = nil
-                    FCOIS.settingsVars.settings.allowedFCOISUniqueIdItemTypesRightList[k] = true
+d(">>key: " .. tos(k) .. ", value: " ..tos(v))
                 end
             end
 
+            --Update the SavedVariables - Loop over all itemTypes and check where they currentyl are: Left or right
+            local itemTypes = locVars.ItemTypes
+            for k, v in ipairs(itemTypes) do
+                if currentRightListEntries[k] == true then
+d(">>>set to right SV - key: " .. tos(k) .. ", value: " ..tos(v))
+                    FCOIS.settingsVars.settings.allowedFCOISUniqueIdItemTypesRightList[k] = true
+                else
+d(">>>set to left SV - key: " .. tos(k) .. ", value: " ..tos(v))
+                    FCOIS.settingsVars.settings.allowedFCOISUniqueIdItemTypesLeftList[k] = false
+                    FCOIS.settingsVars.settings.allowedFCOISUniqueIdItemTypesRightList[k] = nil
+                end
+            end
         end,
 
         --Controls

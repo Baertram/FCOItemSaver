@@ -1002,6 +1002,7 @@ function FCOIS.AfterSettings()
                 allowedFCOISUniqueIdItemTypesRightList[k] = true
             else
                 allowedFCOISUniqueIdItemTypesLeftList[k] = false
+                allowedFCOISUniqueIdItemTypesRightList[k] = nil
             end
         end
         FCOIS.settingsVars.settings.allowedFCOISUniqueIdItemTypes = nil
