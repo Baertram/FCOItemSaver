@@ -182,25 +182,23 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 
 --#243 2022-08-18, Baertram, Feature request: Change LibShifterBox usage to LibAddonMenuDualListBox widget in settings etc.!
 
+
 --______________________________________
--- Current max # of bugs/features/ToDos: 243
+-- Current max # of bugs/features/ToDos: 245
 --______________________________________
---#243
+
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-08-18
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-08-21
 ------------------------------------------------------------------------------------
---#243
+--#243 2022-08-18, Baertram, Feature request: Change LibShifterBox usage to LibAddonMenuDualListBox widget in settings etc.!
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.3.2 - New version: 2.3.3) -    Updated last: 2022-08-18
+--Changelog (last version: 2.3.4 - New version: 2.3.5) -    Updated last: 2022-08-21
 -------------------------------------------------------------------------------------
 --[Fixed]
 
-
 --[Changed]
---Changed the folder structure of the addon. Do not keep old folder live/AddOns/FCOItemSaver! Do not extract the zip file
--->"over" the existing folder. Delete the folder and install the update so a new live/AddOns/FCOItemSaver folder will be created
 
 --[Added]
 
