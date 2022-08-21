@@ -1814,7 +1814,7 @@ function FCOIS.CreateHooks()
         end
 --d(">>filterPanelId: " ..tos(filterPanelId))
 
-        if showFCOISFilterButtons == true and FCOIS.gFilterWhere and filterPanelId then
+        if showFCOISFilterButtons == true and FCOIS.gFilterWhere ~= nil and filterPanelId ~= nil then
             --TODO: Test if delay of a few ms (or 0 to skip call to next frame) will fix the registered filters to properly
             --apply to the crafting panel at re-open of the panel/at first open of the refinement panel
             zo_callLater(function()

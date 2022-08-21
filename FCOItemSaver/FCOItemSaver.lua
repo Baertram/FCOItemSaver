@@ -176,37 +176,45 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 --Sorry if this is explained somewhere, but is it possible to have the New items Automatic marking exclude item categories?
 --A lot of junk items and white weapons/armor filll my inventory, I want them to be marked as sold, but I don't want it to apply to things like materials/consumables. Thank you
 
---#238 2022-07-17, Baertram, Feature idea: Speed-up the AddMark function and cache some markId independent checks so that calls to he same function AddMark with the same bagId and slotIndex
--- can reuse the cached results. change of bagId or change of slotIndex will reset the cache.
-
 --#239 2022-07-17, Baertram, bug: AwesomeGuildStore - Directly switching from custom "Sell from bank" button to "Sell from inventory" button will enable FCOIS.gFilterWhere = LF_INVENTORY
 --instead of LF_GUILD_STORE_SELL
 -->Maybe event_bank_closed?
 
---#242 2022-08-14, Baertram, Feature idea: Add the 4 filter buttons to LF_SMITHING_RESEARCH / LF_JEWELRY_RESEARCH to filter the shown items already at the list,
---  before selecting an item and showing the LF_SMITHING_RESEARCH_DIALOG popup
+--#243 2022-08-18, Baertram, Feature request: Change LibShifterBox usage to LibAddonMenuDualListBox widget in settings etc.!
 
+--#243 2022-08-21, Teva, Bug: Error message after research (filter buttons)
+--[[
+user:/AddOns/FCOIS/src/FCOIS_FilterButtons.lua:383: attempt to index a nil value
+stack traceback:
+user:/AddOns/FCOIS/src/FCOIS_FilterButtons.lua:383: in function 'FCOIS.UpdateFCOISFilterButtonColorsAndTextures'
+|caaaaaa<Locals> p_buttonId = 1, p_button = ud, p_status = F, p_filterPanelId = 35, p_statusText = "Not changed!", settings = [table:1]{}, settingsOfFilterButtonStateAndIcon = [table:1], filterToIcon = [table:2]{4 = 5}, texVars = [table:3]{allSellGuildIntWidth = 20, allLockDyn = "/esoui/art/help/help_tabicon_t...", allResDecImpHeight = 24, allGearSetsHeight = 24, allLockDynHeight = 24, allGearSets = "/esoui/art/crafting/smithing_t...", allSellGuildInt = "/esoui/art/icons/item_generic_...", allResDecImp = "/esoui/art/crafting/smithing_t...", allSellGuildIntHeight = 20, allGearSetsWidth = 24, allResDecImpWidth = 24, allLockDynWidth = 24}, texMarkerVars = [table:4]{1 = "/esoui/art/campaign/campaignbr..."}, texMarkerVars_SIZE = [table:5]{}, btnName = "ZO_SmithingTopLevelResearchPan...", texture = ud, textureNameOfFilterButton = "ZO_SmithingTopLevelResearchPan...", lastLockDynFilterIconId = [table:6]{1 = -1} </Locals>|r
+user:/AddOns/FCOIS/src/FCOIS_FilterButtons.lua:589: in function 'FCOIS.CheckFCOISFilterButtonsAtPanel'
+|caaaaaa<Locals> doUpdateLists = T, panelId = 35, hideFilterButtons = F, isUniversalDeconNPC = F, settings = [table:1], buttonsParentCtrl = ud, filterPanel = 35, filterPanelIdToUse = 35, areFilterButtonEnabledAtPanelId = T, filterBtn = ud, isFilterActivated = F, filterButtons = [table:7]{}, _ = 1, buttonNr = 1, filterButtonData = [table:8]{left = -70, height = 24, top = 6, width = 24} </Locals>|r
+user:/AddOns/FCOIS/src/FCOIS_FilterButtons.lua:654: in function 'FCOIS.PreHookMainMenuFilterButtonHandler'
+|caaaaaa<Locals> comingFrom = 31, goingTo = 35, contextMenuInventoryFlagInvokerData = [table:9]{} </Locals>|r
+user:/AddOns/FCOIS/src/FCOIS_Hooks.lua:1822: in function 'func'
+/EsoUI/Libraries/Globals/globalapi.lua:244: in function '(anonymous)'
+
+]]
 
 --______________________________________
 -- Current max # of bugs/features/ToDos: 244
 --______________________________________
 
 
---Todo for this patch
-
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-08-19
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-08-21
 ------------------------------------------------------------------------------------
-
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.3.2 - New version: 2.3.3) -    Updated last: 2022-08-19
+--Changelog (last version: 2.3.3 - New version: 2.3.4) -    Updated last: 2022-08-21
 -------------------------------------------------------------------------------------
 --[Fixed]
---#244 ContextMenu error in line 765
+--#244 Error message at filter button update, after resaerching an item
 
 --[Changed]
-
+--Changed the folder structure of the addon. Do not keep old folder live/AddOns/FCOItemSaver! Do not extract the zip file
+-->"over" the existing folder. Delete the folder and install the update so a new live/AddOns/FCOItemSaver folder will be created
 
 --[Added]
 

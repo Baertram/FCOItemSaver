@@ -380,8 +380,8 @@ function FCOIS.UpdateFCOISFilterButtonColorsAndTextures(p_buttonId, p_button, p_
                     updateTextureSizeIndex = "LockDyn"
                     --Only one of the icons is selected
                 else
-                    texture:SetTexture(texMarkerVars[settings.icon[lastLockDynFilterIconId[p_filterPanelId]].texture])
                     updateTextureSizeIndex = settings.icon[lastLockDynFilterIconId[p_filterPanelId]].texture
+                    texture:SetTexture(texMarkerVars[updateTextureSizeIndex])
                 end
                 --Is the gear sets split filter button context-menu active and are we trying to change the texture of the gear sets button?
             elseif p_buttonId == FCOIS_CON_FILTER_BUTTON_GEARSETS and settings.splitGearSetsFilter then
@@ -392,8 +392,8 @@ function FCOIS.UpdateFCOISFilterButtonColorsAndTextures(p_buttonId, p_button, p_
                     updateTextureSizeIndex = "Gear"
                     --Only one of the gear sets is selected
                 else
-                    texture:SetTexture(texMarkerVars[settings.icon[lastGearFilterIconId[p_filterPanelId]].texture])
                     updateTextureSizeIndex = settings.icon[lastGearFilterIconId[p_filterPanelId]].texture
+                    texture:SetTexture(texMarkerVars[updateTextureSizeIndex])
                 end
             elseif p_buttonId == FCOIS_CON_FILTER_BUTTON_RESDECIMP and settings.splitResearchDeconstructionImprovementFilter then
                 --Are all entries seleted (Research, Deconstruction, Improvement)?
@@ -403,8 +403,8 @@ function FCOIS.UpdateFCOISFilterButtonColorsAndTextures(p_buttonId, p_button, p_
                     updateTextureSizeIndex = "ResDecImp"
                     --Only one of the options is selected
                 else
-                    texture:SetTexture(texMarkerVars[settings.icon[lastResDecImpFilterIconId[p_filterPanelId]].texture])
                     updateTextureSizeIndex = settings.icon[lastResDecImpFilterIconId[p_filterPanelId]].texture
+                    texture:SetTexture(texMarkerVars[updateTextureSizeIndex])
                 end
             elseif p_buttonId == FCOIS_CON_FILTER_BUTTON_SELLGUILDINT and settings.splitSellGuildSellIntricateFilter then
                 --Are all entries seleted (Sell, Sell in guild store & Intricate)?
@@ -414,20 +414,20 @@ function FCOIS.UpdateFCOISFilterButtonColorsAndTextures(p_buttonId, p_button, p_
                     updateTextureSizeIndex = "SellGuildInt"
                     --Only one of the options is selected
                 else
-                    texture:SetTexture(texMarkerVars[settings.icon[lastSellGuildIntFilterIconId[p_filterPanelId]].texture])
                     updateTextureSizeIndex = settings.icon[lastSellGuildIntFilterIconId[p_filterPanelId]].texture
+                    texture:SetTexture(texMarkerVars[updateTextureSizeIndex])
                 end
             else
                 --Workaround to show at least a default texure, if none is found
                 local iconId = filterToIcon[p_buttonId] or 1
                 if (texMarkerVars[settings.icon[iconId].texture] ~= nil) then
                     --Set the texture now
-                    texture:SetTexture(texMarkerVars[settings.icon[iconId].texture])
                     updateTextureSizeIndex = settings.icon[iconId].texture
+                    texture:SetTexture(texMarkerVars[updateTextureSizeIndex])
                 else
                     --Set fallback texture now
-                    texture:SetTexture(texMarkerVars[iconId])
                     updateTextureSizeIndex = iconId
+                    texture:SetTexture(texMarkerVars[updateTextureSizeIndex])
                     --Set the fallback texture to the settings menu
                     settings.icon[iconId].texture = iconId
                 end

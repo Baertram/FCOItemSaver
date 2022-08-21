@@ -969,7 +969,7 @@ function FCOIS.AfterSettings()
     --For each panelId add an entry to for the non-deconstructable Libfilters panelIds
     local panelIdToDeconstructable = mappingVars.panelIdToDeconstructable
     local activeFilterPanelIds = mappingVars.activeFilterPanelIds
-    if panelIdToDeconstructable and activeFilterPanelIds then
+    if panelIdToDeconstructable ~= nil and activeFilterPanelIds ~= nil then
         for panelId, _ in pairs(activeFilterPanelIds) do
             if panelIdToDeconstructable[panelId] == nil then
                 FCOIS.mappingVars.panelIdToDeconstructable[panelId] = false
@@ -981,6 +981,12 @@ function FCOIS.AfterSettings()
             FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastGearFilterIconId[panelId]          = FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastGearFilterIconId[panelId] or -1
             FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastResDecImpFilterIconId[panelId]     = FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastResDecImpFilterIconId[panelId] or -1
             FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastSellGuildIntFilterIconId[panelId]  = FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastSellGuildIntFilterIconId[panelId] or -1
+
+            --Added with FCOIS v2.4.4 #244 Fix LF_SMITHING_RESEARCH/LF_JEWELRY_RESEARCH entries for last selected markerIcon at the 4 filter buttons right click context menus, and preset with -1 "all icons"
+            FCOIS.settingsVars.settings.lastLockDynFilterIconId[panelId] =      FCOIS.settingsVars.settings.lastLockDynFilterIconId[panelId] or -1
+            FCOIS.settingsVars.settings.lastGearFilterIconId[panelId] =         FCOIS.settingsVars.settings.lastGearFilterIconId[panelId] or -1
+			FCOIS.settingsVars.settings.lastResDecImpFilterIconId[panelId]  =   FCOIS.settingsVars.settings.lastResDecImpFilterIconId[panelId] or -1
+			FCOIS.settingsVars.settings.lastSellGuildIntFilterIconId[panelId] = FCOIS.settingsVars.settings.lastSellGuildIntFilterIconId[panelId] or -1
         end
     end
 

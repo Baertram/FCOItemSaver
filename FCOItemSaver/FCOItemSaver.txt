@@ -1,16 +1,17 @@
 #
 ## Title: |c00FF00FCO |cFFFF00ItemSaver|t32:32:FCOItemSaver/FCOIS.dds|t
 ## Author: Baertram
-## Version: 2.3.3
-## AddOnVersion: 232
+## Version: 2.3.4
+## AddOnVersion: 234
 ## APIVersion: 101034 101035
 ## Description: FCOIS |t32:32:FCOItemSaver/FCOIS.dds|t Marks your items with different icons and filters them in the inventories/crafting. Protects your marked items against sell/deconstruct/extract etc., and provides many more features!
 ## SavedVariables: FCOItemSaver_Settings
 # !!! Attention !!! -> 1 line here can only contain ~220 characters, so the depency lines need to be split up, or they won't be recognized properly!
 #
-## DependsOn: LibAddonMenu-2.0>=34 LibAddonMenuOrderListBox>=007 LibCustomMenu>=713 LibDialog>=126 LibFeedback LibFilters-3.0>=334
-## DependsOn: LibMainMenu-2.0>=40400 LibShifterBox>=17 LibSets>=000406
-##
+## DependsOn: LibAddonMenu-2.0>=34 LibAddonMenuOrderListBox>=007
+## DependsOn: LibCustomMenu>=713 LibDialog>=126 LibFeedback LibFilters-3.0>=335
+## DependsOn: LibMainMenu-2.0>=40400 LibSets>=000406
+## DependsOn: LibShifterBox>=000510
 ## OptionalDependsOn: LibDebugLogger>=255 LibLazyCrafting>=3000
 ## OptionalDependsOn: LibMultiAccountSets>=14
 #
@@ -60,65 +61,65 @@ FCOIS_Constants.lua
 src/FCOIS_Debug.lua
 
 # Addon textures
-src/FCOIS_Textures.lua
+src/MarkersTooltips/FCOIS_Textures.lua
 
 # Addon default settings
-src/FCOIS_DefaultSettings.lua
+src/Settings/FCOIS_DefaultSettings.lua
 
 # Addon workarounds
-src/FCOIS_Workarounds.lua
+src/Settings/FCOIS_Workarounds.lua
 
 # Addon Is, Get, Set functions
 src/FCOIS_Functions.lua
 
 # Addon settings
-src/FCOIS_Settings.lua
+src/Settings/FCOIS_Settings.lua
 
 # Addon localization
-src/FCOIS_Localization.lua
+Localization/FCOIS_Localization.lua
 
 # Addon anti-* protection methods
-src/FCOIS_Protection.lua
+src/Panels/FCOIS_Protection.lua
 
 # Addon dialogs
-src/FCOIS_Dialogs.lua
+src/Dialogs/FCOIS_Dialogs.lua
 
 # Addon Refresh functions for the inventories
-src/FCOIS_Refresh.lua
+src/Panels/FCOIS_Refresh.lua
 
 # Addon hook & pre-hook / scene & fragment callbacks
-src/FCOIS_Hooks.lua
+src/EventsHooks/FCOIS_Hooks.lua
 
 # Other addons functions source
-src/FCOIS_OtherAddons.lua
+src/_OtherAddons/FCOIS_OtherAddons.lua
 
 # Addon inventory scanning & automatic item marking
-src/FCOIS_AutomaticMarks.lua
+src/MarkersTooltips/FCOIS_AutomaticMarks.lua
 
 # Migration of data
-src/FCOIS_Migration.lua
+src/BackupMigration/FCOIS_Migration.lua
 
 # Addon marker controls & tooltips at inventories/equipment items
-src/FCOIS_Tooltips.lua
-src/FCOIS_MarkerIcons.lua
+src/MarkersTooltips/FCOIS_Tooltips.lua
+src/MarkersTooltips/FCOIS_MarkerIcons.lua
 
 # Addon filter functions
-src/FCOIS_Filters.lua
+src/Panels/FCOIS_Filters.lua
 
 # Addon filter buttons in inventories
-src/FCOIS_FilterButtons.lua
+src/Buttons/FCOIS_FilterButtons.lua
 
 # Addon additional buttons in inventories (flag) and main menu
-src/FCOIS_AdditionalButtons.lua
+src/Buttons/FCOIS_AdditionalButtons.lua
 
 # Addon context menus (additional inv buttons, filter buttons)
 src/FCOIS_ContextMenus.lua
 
 # Addon panel functions
-src/FCOIS_Panels.lua
+src/Panels/FCOIS_Panels.lua
 
 # Addon events
-src/FCOIS_Events.lua
+src/EventsHooks/FCOIS_Events.lua
 
 # Addon slash commands
 src/FCOIS_SlashCmds.lua
@@ -127,31 +128,31 @@ src/FCOIS_SlashCmds.lua
 FCOItemSaver.lua
 
 # Addon feedback functions
-src/FCOIS_Feedback.lua
+src/Settings/FCOIS_Feedback.lua
 
 # Addon API functions source
 FCOIS_API.lua
 
 # Addon Dialogs XML
-Dialogs/AskBeforeBind/FCOIS_AskBeforeBindDialog.xml
-Dialogs/AskBeforeMigrate/FCOIS_AskBeforeMigrateDialog.xml
-Dialogs/AskProtection/FCOIS_AskProtectionDialog.xml
+src/_XML/Dialogs/AskBeforeBind/FCOIS_AskBeforeBindDialog.xml
+src/_XML/Dialogs/AskBeforeMigrate/FCOIS_AskBeforeMigrateDialog.xml
+src/_XML/Dialogs/AskProtection/FCOIS_AskProtectionDialog.xml
 
-# Localization
-Localization/FCOItemSaverLoc.lua
+# Localization - The translated strings
+Localization/FCOIS_LocalizedStrings.lua
 
 # Keybindings
-Bindings/bindings.lua
-Bindings/bindings.xml
+src/_Bindings/bindings.lua
+src/_XML/bindings.xml
 
 # Backup and restore and marker icons delete
-src/FCOIS_BackupRestoreDelete.lua
+src/BackupMigration/FCOIS_BackupRestoreDelete.lua
 
-# LibShifterBox boxes and functions
-src/FCOIS_LibShifterBox.lua
+# LibAddonMenuDualListBox & LibShifterBox boxes and functions
+src/Settings/FCOIS_LibAddonMenuDualListBoxes.lua
 
 # Addon LAM settings menu
-src/FCOIS_SettingsMenu.lua
+src/Settings/FCOIS_SettingsMenu.lua
 
 # Addon XML - Tooltips
 src/XML/FCOIS_tooltips.xml
