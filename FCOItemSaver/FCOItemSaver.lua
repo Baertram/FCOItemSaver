@@ -207,14 +207,12 @@ user:/AddOns/FCOIS/src/FCOIS_Hooks.lua:1822: in function 'func'
 ------------------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.3.3 - New version: 2.3.4) -    Updated last: 2022-08-21
+--Changelog (last version: 2.3.5 - New version: 2.3.6) -    Updated last: 2022-08-21
 -------------------------------------------------------------------------------------
 --[Fixed]
---#244 Error message at filter button update, after resaerching an item
+--Fixed LibShifterBox dependency version
 
 --[Changed]
---Changed the folder structure of the addon. Do not keep old folder live/AddOns/FCOItemSaver! Do not extract the zip file
--->"over" the existing folder. Delete the folder and install the update so a new live/AddOns/FCOItemSaver folder will be created
 
 --[Added]
 
