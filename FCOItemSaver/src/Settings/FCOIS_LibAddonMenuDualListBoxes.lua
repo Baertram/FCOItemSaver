@@ -294,7 +294,6 @@ d(">leftList")
 
                 local allowedFCOISUniqueIdItemTypesLeftList = settings.allowedFCOISUniqueIdItemTypesLeftList
                 for k,v in pairs(allowedFCOISUniqueIdItemTypesLeftList) do
-d(">>Lvalue: " ..tos(v))
                     currentLeftListEntries[k] = strformat("%s [%s]", itemTypes[k], tostring(k))
                 end
                 return currentLeftListEntries
@@ -345,7 +344,7 @@ d(">>key: " .. tos(k) .. ", value: " ..tos(v))
             --Update the SavedVariables - Loop over all itemTypes and check where they currentyl are: Left or right
             local itemTypes = locVars.ItemTypes
             for k, v in ipairs(itemTypes) do
-                if currentRightListEntries[k] == true then
+                if currentRightListEntries[k] ~= nil then
 d(">>>set to right SV - key: " .. tos(k) .. ", value: " ..tos(v))
                     FCOIS.settingsVars.settings.allowedFCOISUniqueIdItemTypesRightList[k] = true
                 else
@@ -354,6 +353,7 @@ d(">>>set to left SV - key: " .. tos(k) .. ", value: " ..tos(v))
                     FCOIS.settingsVars.settings.allowedFCOISUniqueIdItemTypesRightList[k] = nil
                 end
             end
+
         end,
 
         --Controls
@@ -384,6 +384,7 @@ d(">>>set to left SV - key: " .. tos(k) .. ", value: " ..tos(v))
     },
 }
 libShifterBoxes = FCOIS.LibShifterBoxes
+
 
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
