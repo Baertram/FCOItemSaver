@@ -180,37 +180,25 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 --instead of LF_GUILD_STORE_SELL
 -->Maybe event_bank_closed?
 
---#243 2022-08-18, Baertram, Feature request: Change LibShifterBox usage to LibAddonMenuDualListBox widget in settings etc.!
+--#248 2022-08-18, Baertram, Feature request: Change LibShifterBox usage to LibAddonMenuDualListBox widget in settings etc.!
 
---#243 2022-08-21, Teva, Bug: Error message after research (filter buttons)
---[[
-user:/AddOns/FCOIS/src/FCOIS_FilterButtons.lua:383: attempt to index a nil value
-stack traceback:
-user:/AddOns/FCOIS/src/FCOIS_FilterButtons.lua:383: in function 'FCOIS.UpdateFCOISFilterButtonColorsAndTextures'
-|caaaaaa<Locals> p_buttonId = 1, p_button = ud, p_status = F, p_filterPanelId = 35, p_statusText = "Not changed!", settings = [table:1]{}, settingsOfFilterButtonStateAndIcon = [table:1], filterToIcon = [table:2]{4 = 5}, texVars = [table:3]{allSellGuildIntWidth = 20, allLockDyn = "/esoui/art/help/help_tabicon_t...", allResDecImpHeight = 24, allGearSetsHeight = 24, allLockDynHeight = 24, allGearSets = "/esoui/art/crafting/smithing_t...", allSellGuildInt = "/esoui/art/icons/item_generic_...", allResDecImp = "/esoui/art/crafting/smithing_t...", allSellGuildIntHeight = 20, allGearSetsWidth = 24, allResDecImpWidth = 24, allLockDynWidth = 24}, texMarkerVars = [table:4]{1 = "/esoui/art/campaign/campaignbr..."}, texMarkerVars_SIZE = [table:5]{}, btnName = "ZO_SmithingTopLevelResearchPan...", texture = ud, textureNameOfFilterButton = "ZO_SmithingTopLevelResearchPan...", lastLockDynFilterIconId = [table:6]{1 = -1} </Locals>|r
-user:/AddOns/FCOIS/src/FCOIS_FilterButtons.lua:589: in function 'FCOIS.CheckFCOISFilterButtonsAtPanel'
-|caaaaaa<Locals> doUpdateLists = T, panelId = 35, hideFilterButtons = F, isUniversalDeconNPC = F, settings = [table:1], buttonsParentCtrl = ud, filterPanel = 35, filterPanelIdToUse = 35, areFilterButtonEnabledAtPanelId = T, filterBtn = ud, isFilterActivated = F, filterButtons = [table:7]{}, _ = 1, buttonNr = 1, filterButtonData = [table:8]{left = -70, height = 24, top = 6, width = 24} </Locals>|r
-user:/AddOns/FCOIS/src/FCOIS_FilterButtons.lua:654: in function 'FCOIS.PreHookMainMenuFilterButtonHandler'
-|caaaaaa<Locals> comingFrom = 31, goingTo = 35, contextMenuInventoryFlagInvokerData = [table:9]{} </Locals>|r
-user:/AddOns/FCOIS/src/FCOIS_Hooks.lua:1822: in function 'func'
-/EsoUI/Libraries/Globals/globalapi.lua:244: in function '(anonymous)'
-
-]]
 
 --______________________________________
--- Current max # of bugs/features/ToDos: 244
+-- Current max # of bugs/features/ToDos: 248
 --______________________________________
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-08-21
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-08-29
 ------------------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.3.5 - New version: 2.3.6) -    Updated last: 2022-08-21
+--Changelog (last version: 2.3.6 - New version: 2.3.7) -    Updated last: 2022-08-29
 -------------------------------------------------------------------------------------
 --[Fixed]
---Fixed LibShifterBox dependency version
+--#245 Right clicked on entry in IIfA UI -> error
+--#246 Fixed right click on entry in IIfA UI -> Male remove all / restore marker icons work on non current inventory/bank items of character
+
 
 --[Changed]
 
@@ -218,6 +206,7 @@ user:/AddOns/FCOIS/src/FCOIS_Hooks.lua:1822: in function 'func'
 
 
 --[Added on request]
+--#247 Added more marker icon textures (e.g. Set collection, Armory builds) and removed/replaced missing ones (91, 194-197)
 
 
 --************************************************************************************************************************

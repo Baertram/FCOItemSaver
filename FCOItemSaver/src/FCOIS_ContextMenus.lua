@@ -105,6 +105,8 @@ local showPlayerProgressBar = FCOIS.ShowPlayerProgressBar
 local clearOrRestoreAllMarkers = FCOIS.ClearOrRestoreAllMarkers
 local checkIfClearOrRestoreAllMarkers = FCOIS.CheckIfClearOrRestoreAllMarkers
 
+local checkForIIfARightClickedRow = FCOIS.CheckForIIfARightClickedRow
+
 local buildMarkerIconProtectedWhereTooltip
 local buildMarkerIconsTooltipText
 
@@ -508,7 +510,7 @@ function FCOIS.MarkMe(rowControl, markId, updateNow, doUnmark, refreshPopupDialo
         FCOIS.IIfAclicked.ownedByChars = charsTableIIfA
         FCOIS.IIfAclicked.inThisOtherBags = inThisOtherBagsTableIIfA
         --House bank bag?
-        if IsHouseBankBag(bagIdIIfA) then
+        if bagIdIIfA ~= nil and IsHouseBankBag(bagIdIIfA) then
             --Not the owner of the house we are in or not in a house? Reset the bagid and slotIndex now!
             isNotInHouseAndBagIsHouseBankBag = not checkIfHouseBankBagAndInOwnHouse(bagIdIIfA)
         end
@@ -727,6 +729,8 @@ local function checkIfCachedLastAddMarkDataCanBeUsed(fcoisItemInstanceId, doRese
             FCOIS.lastAddMarkData = {}
             local lastAddMarkData = {}
 
+            lastAddMarkData.wasIIfARowClicked = checkForIIfARightClickedRow(rowControl)
+
             lastAddMarkData.parentName = rowControl:GetParent():GetName()
 
             local controlName = rowControl:GetName()
@@ -836,6 +840,7 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
     local isGear = isGearIcon[markId] or false
     local isResearchAble = researchableIcons[markId] or false
     local isIconDisabledAtCompanion = iconsDisabledAtCompanion[markId] or false
+    local wasIIfARowClicked = lastAddMarkData.wasIIfARowClicked
 
     ------------------------------------------------------------------------------------------------------------------------
     local notAllowed = false
@@ -920,7 +925,9 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
         --Check if we clicked a row within the IIfA addon.
         --Will clear (nil) and then fill the table FCOIS.IIfAclicked if itemLink, itemInstanceId, bagId and slotId were found
         --> See file FCOIS_OtherAddons.lua, IIfA
-        FCOIS.CheckForIIfARightClickedRow(rowControl)
+        if wasIIfARowClicked == nil then
+            wasIIfARowClicked = checkForIIfARightClickedRow(rowControl)
+        end
     else
         if preventerVars.buildingInvContextMenuEntries == false then
             lastAdd = true
@@ -1209,8 +1216,8 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
     --Add an entry "Remove all marker icons" if enabled in settings #241
     if firstAdd and settings.addRemoveAllMarkerIconsToItemContextMenu then
         --Check if marker icons are set or not, and change the text shown
-        local isAnyMarkerIconSetOrRestorable, alreadyRemovedMarkersForThatBagAndItem = clearOrRestoreAllMarkers(rowControl, bag, slotId, true)
-        if isAnyMarkerIconSetOrRestorable ~= -1 then
+        local isAnyMarkerIconSetOrRestorable, alreadyRemovedMarkersForThatBagAndItem = clearOrRestoreAllMarkers(rowControl, bag, slotId, true, wasIIfARowClicked)
+        if isAnyMarkerIconSetOrRestorable ~= nil and isAnyMarkerIconSetOrRestorable ~= -1 then
             --Restore?
             local lastMarkedIconsTooltipText = ""
             local countMarkedBefore = 0
@@ -1218,36 +1225,45 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
                 buildMarkerIconsTooltipText = buildMarkerIconsTooltipText or FCOIS.BuildMarkerIconsTooltipText
                 lastMarkedIconsTooltipText, countMarkedBefore = buildMarkerIconsTooltipText(alreadyRemovedMarkersForThatBagAndItem, "\n", not settings.showTooltipAtRestoreLastMarked)
             end
-            local removeorRestoreAllText = (isAnyMarkerIconSetOrRestorable == 1 and locTextMarkSpecial.removeAll)
-                    or (isAnyMarkerIconSetOrRestorable == 2 and strfor(locTextMarkSpecial.restoreLast, tos(countMarkedBefore)))
-            if useSubMenu then
-                newSubEntry = {
-                    label = removeorRestoreAllText,
-                    callback = function()
-                        checkIfClearOrRestoreAllMarkers(rowControl, nil, nil, nil, nil, nil, true)
-                    end,
-                    tooltip = function(control, inside)
-                        if lastMarkedIconsTooltipText ~= nil and lastMarkedIconsTooltipText ~= "" then
+            local removeOrRestoreAllText
+            if isAnyMarkerIconSetOrRestorable == 1 then
+                removeOrRestoreAllText = locTextMarkSpecial.removeAll
+            elseif isAnyMarkerIconSetOrRestorable == 2 then
+                removeOrRestoreAllText = strfor(locTextMarkSpecial.restoreLast, tos(countMarkedBefore))
+            end
+--d(">isAnyMarkerIconSetOrRestorable: " ..tos(isAnyMarkerIconSetOrRestorable) .. ", removeOrRestoreAllText: " ..tos(removeOrRestoreAllText))
+            if removeOrRestoreAllText ~= nil and removeOrRestoreAllText ~= "" then
+                if useSubMenu then
+                    newSubEntry = {
+                        label = removeOrRestoreAllText,
+                        callback = function()
+                            checkIfClearOrRestoreAllMarkers(rowControl, nil, nil, nil, nil, nil, true, wasIIfARowClicked)
+                        end,
+                        tooltip = function(control, inside)
+                            if lastMarkedIconsTooltipText ~= nil and lastMarkedIconsTooltipText ~= "" then
+                                local data=checkBuildAndAddCustomMenuTooltip(tooltipAlign, lastMarkedIconsTooltipText)
+                                contextMenuEntryTooltipFunc(control, inside, data)
+                            end
+                        end,
+                        myfont          = myFont,
+                        normalColor     = myColorEnabled,
+                        highlightColor  = myColorEnabled,
+                    }
+                    --Add the submenu to the context menu
+                    tins(customMenuVars.customMenuSubEntries, newSubEntry)
+                else
+                    local newAddedRemoveOrRestoreAllMenuIndex = AddCustomMenuItem(removeOrRestoreAllText, function()
+                        checkIfClearOrRestoreAllMarkers(rowControl, nil, nil, nil, nil, nil, true, wasIIfARowClicked)
+                    end, MENU_ADD_OPTION_LABEL)
+                    if lastMarkedIconsTooltipText ~= nil and lastMarkedIconsTooltipText ~= "" then
+                        AddCustomMenuTooltip(function(control, inside)
                             local data=checkBuildAndAddCustomMenuTooltip(tooltipAlign, lastMarkedIconsTooltipText)
-                            contextMenuEntryTooltipFunc(control, inside, data)
-                        end
-                    end,
-                    myfont          = myFont,
-                    normalColor     = myColorEnabled,
-                    highlightColor  = myColorEnabled,
-                }
-                --Add the submenu to the context menu
-                tins(customMenuVars.customMenuSubEntries, newSubEntry)
-            else
-                local newAddedRemoveOrRestoreAllMenuIndex = AddCustomMenuItem(removeorRestoreAllText, function()
-                    checkIfClearOrRestoreAllMarkers(rowControl, nil, nil, nil, nil, nil, true)
-                end, MENU_ADD_OPTION_LABEL)
-                if lastMarkedIconsTooltipText ~= nil and lastMarkedIconsTooltipText ~= "" then
-                    AddCustomMenuTooltip(function(control, inside)
-                        local data=checkBuildAndAddCustomMenuTooltip(tooltipAlign, lastMarkedIconsTooltipText)
-                        contextMenuEntryTooltipFunc(control, inside, data) end,
-                            newAddedRemoveOrRestoreAllMenuIndex)
+                            contextMenuEntryTooltipFunc(control, inside, data) end,
+                                newAddedRemoveOrRestoreAllMenuIndex)
+                    end
                 end
+            else
+                d("[FCOIS]AddMark - ERROR - markId: " ..tos(markId) .. ", removeOrRestoreAllText is nil/empty-isAnyMarkerIconSetOrRestorable: " ..tos(isAnyMarkerIconSetOrRestorable) .. ", removeAll: " ..tos(locTextMarkSpecial.removeAll) .. ", restoreLast: " .. tos(locTextMarkSpecial.restoreLast) .. ", countMarkedBefore: " ..tos(countMarkedBefore))
             end
         end
     end

@@ -921,7 +921,7 @@ function FCOIS.CheckAndGetIIfAData(rowControl, parentControl)
     --Set the variable of IIfA active/or not
     checkIfOtherAddonIIfAIsActive()
     --Is IIfA active?
-    if otherAddons.IIFAActive then
+    if otherAddons.IIFAActive == true then
         --Get the itemLink from the dataLines
         local clickedDataLine
         if parentControl ~= nil and parentControl:GetName() == otherAddons.IIFAitemsListName then
@@ -999,8 +999,9 @@ function FCOIS.CheckForIIfARightClickedRow(rowControl)
             FCOIS.IIfAclicked.bagId = nil
             FCOIS.IIfAclicked.slotIndex = nil
         end
-
+        return true
     end
+    return false
 end
 
 
