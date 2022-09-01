@@ -348,13 +348,11 @@ function FCOIS.BuildDefaultSettings()
 		},
 		]]
 		allowedUniqueIdItemTypes = nil, --set nil as it is not used anymore!
-		allowedFCOISUniqueIdItemTypesLeftList = {
-			--will be filled with all other available itemtypes further down below, value = false!
-		},
-		allowedFCOISUniqueIdItemTypesRightList = {
+
+		allowedFCOISUniqueIdItemTypes = {
 			[ITEMTYPE_ARMOR]	= true,
 			[ITEMTYPE_WEAPON] 	= true,
-		},
+		}, --will be filled with all other available itemtypes further down below, value = false!
 		showFilteredItemCount		= false,
 		showTransmutationGeodeLootDialog = true,
 		addContextMenuLeadingMarkerIcon = true,
@@ -773,11 +771,10 @@ function FCOIS.BuildDefaultSettings()
 	-->Armor and weapon are already defined at the table above as "true", so they will be skipped here
 	local itemTypeMax = FCOIS.numVars.maxItemType
 	--If not given set it to current maximum = 71 -> ITEMTYPE_GROUP_REPAIR
-	local allowedFCOISUniqueIdItemTypesLeftList = FCOIS.settingsVars.defaults.allowedFCOISUniqueIdItemTypesLeftList
-	local allowedFCOISUniqueIdItemTypesRightList = FCOIS.settingsVars.defaults.allowedFCOISUniqueIdItemTypesRightList
+	local allowedFCOISUniqueIdItemTypes = FCOIS.settingsVars.defaults.allowedFCOISUniqueIdItemTypes
 	for itemType=ITEMTYPE_NONE, itemTypeMax, 1 do
-		if itemType > 0 and allowedFCOISUniqueIdItemTypesLeftList[itemType] == nil and allowedFCOISUniqueIdItemTypesRightList[itemType] == nil then
-			FCOIS.settingsVars.defaults.allowedFCOISUniqueIdItemTypesLeftList[itemType] = false
+		if itemType > 0 and allowedFCOISUniqueIdItemTypes[itemType] == nil then
+			FCOIS.settingsVars.defaults.allowedFCOISUniqueIdItemTypes[itemType] = false
 		end
 	end
 

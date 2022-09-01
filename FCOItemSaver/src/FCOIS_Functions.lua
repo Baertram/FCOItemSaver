@@ -308,7 +308,10 @@ end
 function FCOIS.MyGetItemDetails(rowControl)
     --Inventory Insight from ashes support
     local IIfAclicked = FCOIS.IIfAclicked
+    local doDebug = FCOIS.settingsVars.settings.debug
+    if doDebug == true then FCOIS._rowControlMyGetItemDetails = rowControl end
     if IIfAclicked ~= nil then
+        if doDebug == true then FCOIS._rowControlMyGetItemDetailsIIfAClicked = ZO_ShallowTableCopy(IIfAclicked) end
         return IIfAclicked.bagId, IIfAclicked.slotIndex
     end
     local bagId, slotIndex
@@ -337,7 +340,7 @@ function FCOIS.MyGetItemDetails(rowControl)
                 local parentDataEntry = parentCtrl.dataEntry.data
                 bagId, slotIndex = BAG_BACKPACK, parentDataEntry.slotIndex
             end
-        --Store buy
+            --Store buy
         elseif rowControl.slotType == SLOT_TYPE_STORE_BUY or rowControl.slotType == SLOT_TYPE_BUY_MULTIPLE then
             bagId = nil
             slotIndex = dataEntryData.slotIndex
@@ -399,7 +402,7 @@ function FCOIS.GetFCOISMarkerIconUniqueIdAllowedItemType(bagId, slotIndex, uniqu
         allowedItemtype = allowedUniqueItemTypes[itemType] or false
     else
         --All selected itemTypes at the settings of unique FCOIS marker icon IDs are allowed itemtypes
-        allowedItemtype = settings.allowedFCOISUniqueIdItemTypesRightList[itemType] or false
+        allowedItemtype = settings.allowedFCOISUniqueIdItemTypes[itemType] or false
     end
     return allowedItemtype
 end

@@ -982,30 +982,12 @@ function FCOIS.AfterSettings()
             FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastResDecImpFilterIconId[panelId]     = FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastResDecImpFilterIconId[panelId] or -1
             FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastSellGuildIntFilterIconId[panelId]  = FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastSellGuildIntFilterIconId[panelId] or -1
 
-            --Added with FCOIS v2.4.4 #245 Fix LF_SMITHING_RESEARCH/LF_JEWELRY_RESEARCH entries for last selected markerIcon at the 4 filter buttons right click context menus, and preset with -1 "all icons"
+            --Added with FCOIS v2.4.4 #244 Fix LF_SMITHING_RESEARCH/LF_JEWELRY_RESEARCH entries for last selected markerIcon at the 4 filter buttons right click context menus, and preset with -1 "all icons"
             FCOIS.settingsVars.settings.lastLockDynFilterIconId[panelId] =      FCOIS.settingsVars.settings.lastLockDynFilterIconId[panelId] or -1
             FCOIS.settingsVars.settings.lastGearFilterIconId[panelId] =         FCOIS.settingsVars.settings.lastGearFilterIconId[panelId] or -1
-            FCOIS.settingsVars.settings.lastResDecImpFilterIconId[panelId]  =   FCOIS.settingsVars.settings.lastResDecImpFilterIconId[panelId] or -1
-            FCOIS.settingsVars.settings.lastSellGuildIntFilterIconId[panelId] = FCOIS.settingsVars.settings.lastSellGuildIntFilterIconId[panelId] or -1
+			FCOIS.settingsVars.settings.lastResDecImpFilterIconId[panelId]  =   FCOIS.settingsVars.settings.lastResDecImpFilterIconId[panelId] or -1
+			FCOIS.settingsVars.settings.lastSellGuildIntFilterIconId[panelId] = FCOIS.settingsVars.settings.lastSellGuildIntFilterIconId[panelId] or -1
         end
-    end
-
-    --Added with FCOIS v2.2.6
-    --Migrate LibShifterBox data to LibAddonMenuDualListBox widget SavedVars (2 lists in SV, instead of e.g. 1)
-    --If not given set it to current maximum = 71 -> ITEMTYPE_GROUP_REPAIR
-    local allowedFCOISUniqueIdItemTypesOld = FCOIS.settingsVars.settings.allowedFCOISUniqueIdItemTypes
-    if allowedFCOISUniqueIdItemTypesOld ~= nil then
-        local allowedFCOISUniqueIdItemTypesLeftList = FCOIS.settingsVars.settings.allowedFCOISUniqueIdItemTypesLeftList
-        local allowedFCOISUniqueIdItemTypesRightList = FCOIS.settingsVars.settings.allowedFCOISUniqueIdItemTypesRightList
-        for k,v in pairs(allowedFCOISUniqueIdItemTypesOld) do
-            if v == true then
-                allowedFCOISUniqueIdItemTypesRightList[k] = true
-            else
-                allowedFCOISUniqueIdItemTypesLeftList[k] = false
-                allowedFCOISUniqueIdItemTypesRightList[k] = nil
-            end
-        end
-        FCOIS.settingsVars.settings.allowedFCOISUniqueIdItemTypes = nil
     end
 
     ------------------------------------------------------------------------------------------------------------------------

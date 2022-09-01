@@ -1912,7 +1912,7 @@ checkVars.uniqueIdItemTypes = {
 --The itemtypes that are allowed to be marked with unique item IDs created by FCOIS uniqueIDs (chosen by the user in the
 --settings of the unique FCOIS itemId). All not listed item types (or listed with "false") will be saved with the
 --non-unique itemInstanceId
---> See FCOIS.settingsVars.settings.allowedFCOISUniqueIdItemTypesRightList
+--> See FCOIS.settingsVars.settings.allowedFCOISUniqueIdItemTypes
 --->    filled in file /src/FCOIS_DefaultSettings.lua, and then managed in file /src/FCOIS_SettingsMenu.lua
 
 --The allowed craftskills for automatic marking of "crafted" marker icon

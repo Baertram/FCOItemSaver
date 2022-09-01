@@ -999,8 +999,9 @@ function FCOIS.CheckForIIfARightClickedRow(rowControl)
             FCOIS.IIfAclicked.bagId = nil
             FCOIS.IIfAclicked.slotIndex = nil
         end
-
+        return true
     end
+    return false
 end
 
 
