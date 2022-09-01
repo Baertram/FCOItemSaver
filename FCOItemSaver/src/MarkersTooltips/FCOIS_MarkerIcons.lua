@@ -715,7 +715,7 @@ function FCOIS.CheckIfClearOrRestoreAllMarkers(clickedRow, modifierKeyPressed, u
             end
             --d("[FCOIS]checkIfClearOrRestoreAllMarkers - dontShowInvContextMenu: true")
             --Clear/Restore the markers now
-            clearOrRestoreAllMarkers(clickedRow, bagId, slotIndex, false)
+            clearOrRestoreAllMarkers(clickedRow, bagId, slotIndex, false, wasIIfARowClicked)
             if refreshPopupDialogButons then
                 --Unselect the item and disable the button of the popup dialog again
                 --d("[FCOIS]checkIfClearOrRestoreAllMarkers - refreshPopupDialog now")
@@ -1346,30 +1346,34 @@ local checkIfCharOrInvNeedsRingUpdate = FCOIS.CheckIfCharOrInvNeedsRingUpdate
 --Clear all current markers of the selected row, or restore all marker icons from the undo table
 --If parameter onlyFeedback is set to true the function returns 1 if marker icons are currently set and can be removed
 --or 2 if marker icons were already removed and saved for a restore, or it returns -1 if both is not possible
-function FCOIS.ClearOrRestoreAllMarkers(rowControl, bagId, slotIndex, onlyFeedback)
---d("[FCOIS]ClearOrRestoreAllMarkers - onlyFeedback: " ..tos(onlyFeedback))
+function FCOIS.ClearOrRestoreAllMarkers(rowControl, bagId, slotIndex, onlyFeedback, wasIIfARowClicked)
+--d("[FCOIS]ClearOrRestoreAllMarkers - onlyFeedback: " ..tos(onlyFeedback) .. ", wasIIfARowClicked: " ..tos(wasIIfARowClicked))
     if rowControl == nil then return nil, nil end
     onlyFeedback = onlyFeedback or false
+    wasIIfARowClicked = wasIIfARowClicked or false
     if bagId == nil or slotIndex == nil then
         bagId, slotIndex = myGetItemDetails(rowControl)
     end
-    if bagId == nil or slotIndex == nil then return nil, nil end
+    if ((bagId == nil or slotIndex == nil) and not wasIIfARowClicked) then return nil, nil end
 
     isMarked = isMarked or FCOIS.IsMarked
     isMarkedByItemInstanceId = isMarkedByItemInstanceId or FCOIS.IsMarkedByItemInstanceId
     markItemByItemInstanceId = markItemByItemInstanceId or FCOIS.MarkItemByItemInstanceId
     checkIfInventoryRowOfExternalAddonNeedsMarkerIconsUpdate = checkIfInventoryRowOfExternalAddonNeedsMarkerIconsUpdate or FCOIS.CheckIfInventoryRowOfExternalAddonNeedsMarkerIconsUpdate
 
-    local isCharacterShownVar          = (bagId == BAG_WORN and isCharacterShown()) or false
-    local isCompanionCharacterShownVar = (bagId == BAG_COMPANION_WORN and isCompanionCharacterShown()) or false
+    local isCharacterShownVar          = (((bagId ~= nil and bagId == BAG_WORN) or wasIIfARowClicked == true) and isCharacterShown()) or false
+    local isCompanionCharacterShownVar = (((bagId ~= nil and bagId == BAG_COMPANION_WORN) or wasIIfARowClicked == true) and isCompanionCharacterShown()) or false
     local lastMarkedIcons              = FCOIS.lastMarkedIcons
     FCOIS.preventerVars.gOverrideInvUpdateAfterMarkItem = false
     FCOIS.preventerVars.gRestoringMarkerIcons = false
     FCOIS.preventerVars.gClearingMarkerIcons = false
     --Get the item's itemInstanceId (FCOIS style) and check if there are any marker icons saved in the undo list
     local fcoisItemInstanceId = myGetItemInstanceId(rowControl, true)
-    local itemLink = gil(bagId, slotIndex)
---d(">item: " .. itemLink .. ", itemInstanceId FCOIS: " ..tos(fcoisItemInstanceId))
+    local itemLink
+    if bagId ~= nil and slotIndex ~= nil then
+        itemLink = gil(bagId, slotIndex)
+    end
+--d(">item: " .. tos(itemLink) .. ", itemInstanceId FCOIS: " ..tos(fcoisItemInstanceId))
     if fcoisItemInstanceId ~= nil then
         local alreadyRemovedMarkersForThatBagAndItem = (lastMarkedIcons ~= nil and lastMarkedIcons[fcoisItemInstanceId] ~= nil and lastMarkedIcons[fcoisItemInstanceId]) or nil
         if alreadyRemovedMarkersForThatBagAndItem ~= nil then

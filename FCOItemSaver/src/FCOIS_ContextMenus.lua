@@ -105,6 +105,8 @@ local showPlayerProgressBar = FCOIS.ShowPlayerProgressBar
 local clearOrRestoreAllMarkers = FCOIS.ClearOrRestoreAllMarkers
 local checkIfClearOrRestoreAllMarkers = FCOIS.CheckIfClearOrRestoreAllMarkers
 
+local checkForIIfARightClickedRow = FCOIS.CheckForIIfARightClickedRow
+
 local buildMarkerIconProtectedWhereTooltip
 local buildMarkerIconsTooltipText
 
@@ -727,6 +729,8 @@ local function checkIfCachedLastAddMarkDataCanBeUsed(fcoisItemInstanceId, doRese
             FCOIS.lastAddMarkData = {}
             local lastAddMarkData = {}
 
+            lastAddMarkData.wasIIfARowClicked = checkForIIfARightClickedRow(rowControl)
+
             lastAddMarkData.parentName = rowControl:GetParent():GetName()
 
             local controlName = rowControl:GetName()
@@ -836,7 +840,7 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
     local isGear = isGearIcon[markId] or false
     local isResearchAble = researchableIcons[markId] or false
     local isIconDisabledAtCompanion = iconsDisabledAtCompanion[markId] or false
-    local wasIIfARowClicked = false
+    local wasIIfARowClicked = lastAddMarkData.wasIIfARowClicked
 
     ------------------------------------------------------------------------------------------------------------------------
     local notAllowed = false
@@ -921,7 +925,9 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
         --Check if we clicked a row within the IIfA addon.
         --Will clear (nil) and then fill the table FCOIS.IIfAclicked if itemLink, itemInstanceId, bagId and slotId were found
         --> See file FCOIS_OtherAddons.lua, IIfA
-        wasIIfARowClicked = FCOIS.CheckForIIfARightClickedRow(rowControl)
+        if wasIIfARowClicked == nil then
+            wasIIfARowClicked = checkForIIfARightClickedRow(rowControl)
+        end
     else
         if preventerVars.buildingInvContextMenuEntries == false then
             lastAdd = true
@@ -1210,7 +1216,7 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
     --Add an entry "Remove all marker icons" if enabled in settings #241
     if firstAdd and settings.addRemoveAllMarkerIconsToItemContextMenu then
         --Check if marker icons are set or not, and change the text shown
-        local isAnyMarkerIconSetOrRestorable, alreadyRemovedMarkersForThatBagAndItem = clearOrRestoreAllMarkers(rowControl, bag, slotId, true)
+        local isAnyMarkerIconSetOrRestorable, alreadyRemovedMarkersForThatBagAndItem = clearOrRestoreAllMarkers(rowControl, bag, slotId, true, wasIIfARowClicked)
         if isAnyMarkerIconSetOrRestorable ~= nil and isAnyMarkerIconSetOrRestorable ~= -1 then
             --Restore?
             local lastMarkedIconsTooltipText = ""
