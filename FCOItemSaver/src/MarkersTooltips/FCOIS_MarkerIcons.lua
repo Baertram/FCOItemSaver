@@ -1361,6 +1361,16 @@ function FCOIS.ClearOrRestoreAllMarkers(rowControl, bagId, slotIndex, onlyFeedba
     markItemByItemInstanceId = markItemByItemInstanceId or FCOIS.MarkItemByItemInstanceId
     checkIfInventoryRowOfExternalAddonNeedsMarkerIconsUpdate = checkIfInventoryRowOfExternalAddonNeedsMarkerIconsUpdate or FCOIS.CheckIfInventoryRowOfExternalAddonNeedsMarkerIconsUpdate
 
+    --Could be that FCOIS.MarkMe was not called and thus FCOIS.IIfAclicked is nil!
+    local fcoisItemInstanceId
+    if wasIIfARowClicked == true and FCOIS.IIfAclicked == nil or FCOIS.IIfAclicked.itemInstanceOrUniqueId == nil then
+        local iifaItemLink, itemInstanceOrUniqueIdIIfA, bagIdIIfA, slotIndexIIfA, charsTableIIfA, inThisOtherBagsTableIIfA = FCOIS.CheckAndGetIIfAData(rowControl, rowControl:GetParent())
+        fcoisItemInstanceId = itemInstanceOrUniqueIdIIfA
+        bagId = bagIdIIfA
+        slotIndex = slotIndexIIfA
+--d(">updated fcoisItemInstanceId: " ..tos(fcoisItemInstanceId) .. ", bagId: " ..tos(bagId) .. ", slotIndex: " ..tos(slotIndex))
+    end
+
     local isCharacterShownVar          = (((bagId ~= nil and bagId == BAG_WORN) or wasIIfARowClicked == true) and isCharacterShown()) or false
     local isCompanionCharacterShownVar = (((bagId ~= nil and bagId == BAG_COMPANION_WORN) or wasIIfARowClicked == true) and isCompanionCharacterShown()) or false
     local lastMarkedIcons              = FCOIS.lastMarkedIcons
@@ -1368,12 +1378,14 @@ function FCOIS.ClearOrRestoreAllMarkers(rowControl, bagId, slotIndex, onlyFeedba
     FCOIS.preventerVars.gRestoringMarkerIcons = false
     FCOIS.preventerVars.gClearingMarkerIcons = false
     --Get the item's itemInstanceId (FCOIS style) and check if there are any marker icons saved in the undo list
-    local fcoisItemInstanceId = myGetItemInstanceId(rowControl, true)
+    if fcoisItemInstanceId == nil then
+        fcoisItemInstanceId = myGetItemInstanceId(rowControl, true)
+    end
     local itemLink
     if bagId ~= nil and slotIndex ~= nil then
         itemLink = gil(bagId, slotIndex)
     end
---d(">item: " .. tos(itemLink) .. ", itemInstanceId FCOIS: " ..tos(fcoisItemInstanceId))
+--d(">item: " .. tos(itemLink) .. ", itemInstanceId FCOIS: " ..tos(fcoisItemInstanceId) .. ", isCharacterShownVar: " ..tos(isCharacterShownVar).. ", isCompanionCharacterShownVar: " ..tos(isCompanionCharacterShownVar) .. ", invUpdateForce: " ..tos(FCOIS.preventerVars.gOverrideInvUpdateAfterMarkItem))
     if fcoisItemInstanceId ~= nil then
         local alreadyRemovedMarkersForThatBagAndItem = (lastMarkedIcons ~= nil and lastMarkedIcons[fcoisItemInstanceId] ~= nil and lastMarkedIcons[fcoisItemInstanceId]) or nil
         if alreadyRemovedMarkersForThatBagAndItem ~= nil then

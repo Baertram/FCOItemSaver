@@ -206,7 +206,7 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 
 
 --[Added on request]
---#247 Added more marker icon textures (e.g. Set collection)
+--#247 Added more marker icon textures (e.g. Set collection, Armory builds) and removed/replaced missing ones (91, 194-197)
 
 
 --************************************************************************************************************************
