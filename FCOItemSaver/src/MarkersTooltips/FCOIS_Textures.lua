@@ -289,6 +289,7 @@ FCOIS.textureVars.MARKER_TEXTURES = {
     [275] = [[/esoui/art/armory/buildicons/buildicon_72.dds]],
     [276] = [[/esoui/art/armory/buildicons/buildicon_73.dds]],
     [277] = [[/esoui/art/armory/buildicons/buildicon_74.dds]],
+    [278] = [[/esoui/art/inventory/gamepad/gp_inventory_icon_companionitems.dds]],
 }
 
 
@@ -297,7 +298,7 @@ FCOIS.textureVars.MARKER_TEXTURES = {
 --The variable for the maximum of the texture icons
 FCOIS.numVars.maxTextureIcons = #FCOIS.textureVars.MARKER_TEXTURES
 if not FCOIS.numVars.maxTextureIcons or (FCOIS.numVars.maxTextureIcons and FCOIS.numVars.maxTextureIcons <= 0) then
-    FCOIS.numVars.maxTextureIcons = 201
+    FCOIS.numVars.maxTextureIcons = 278
 end
 
 --Additional size for the textures, if the texture got a special size
