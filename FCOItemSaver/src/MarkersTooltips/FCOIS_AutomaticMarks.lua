@@ -381,14 +381,12 @@ local function automaticMarkingSetsCollectionBookCheckFunc(p_bagId, p_slotIndex,
 
     --Automatic binding of missing set collection book items
     local function autoBindMissingSetCollectionBookItem()
-        if doDebug then  d(">>>>>autoBindMissingSetCollectionBookItem: " .. itemLink) end
-
         --#250 2022-09-19 - BOP items will not enter the IF below :-(
-
         local isBoundItem = IsItemBound(p_bagId, p_slotIndex)
-        if not isBoundItem or (isBoundItem == true and IsItemBoPAndTradeable(p_bagId, p_slotIndex)) then
+        if doDebug then  d(">>>>>autoBindMissingSetCollectionBookItem: " .. itemLink .. ", isBoundItem: " ..tos(isBoundItem) .. ", BOPTradeable: " ..tos(IsItemBoPAndTradeable(p_bagId, p_slotIndex)) .. ", BindType: " ..tos(GetItemBindType(p_bagId, p_slotIndex))) end
+        if not isBoundItem or (isBoundItem == true and (IsItemBoPAndTradeable(p_bagId, p_slotIndex) or GetItemBindType(p_bagId, p_slotIndex) == BIND_TYPE_ON_PICKUP)) then
             if not isBoundItem then BindItem(p_bagId, p_slotIndex) end
-            if settings.autoBindMissingSetCollectionPiecesOnLootToChat then
+            if settings.autoBindMissingSetCollectionPiecesOnLootToChat == true then
                 locVars = locVars or FCOIS.localizationVars.fcois_loc
                 if doDebug then d("[FCOIS]" .. strformat(locVars["chat_output_missing_set_collection_piece_was_bound"], itemLink)) end
             end
