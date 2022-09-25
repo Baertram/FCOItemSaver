@@ -65,7 +65,7 @@ local markerIconTextures = FCOIS.textureVars.MARKER_TEXTURES
 
 --The textures/marker icons names (just numbers)
 local texturesList = {}
-local maxTextureIcons = numVars.maxTextureIcons or 100
+local maxTextureIcons = numVars.maxTextureIcons
 for i=1, maxTextureIcons, 1 do
     texturesList[i] = tos(i)
 end
@@ -1156,6 +1156,7 @@ end
 
 --Set the preview icon values (width, height, color, etc.)
 local function InitPreviewIcon(i)
+    FCOISsettings = FCOISsettings or FCOIS.settingsVars.settings
     local iconSettings = FCOISsettings.icon[i]
     local preViewControl = _G[strformat(fcoisLAMSettingsReferencePrefix .. filterButton .. "%d" .. previewSelect, i)]
     if preViewControl == nil then return false end

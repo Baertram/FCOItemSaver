@@ -47,6 +47,7 @@ local getArmorType = FCOIS.GetArmorType
 local checkIfCompanionInteractedAndCompanionInventoryIsShown = FCOIS.CheckIfCompanionInteractedAndCompanionInventoryIsShown
 
 local isIIFAActive
+local checkAndGetIIfAData
 
 -- =====================================================================================================================
 --  Other AddOns helper functions
@@ -1363,9 +1364,12 @@ function FCOIS.ClearOrRestoreAllMarkers(rowControl, bagId, slotIndex, onlyFeedba
 
     --Could be that FCOIS.MarkMe was not called and thus FCOIS.IIfAclicked is nil!
     local fcoisItemInstanceId
-    if wasIIfARowClicked == true and FCOIS.IIfAclicked == nil or FCOIS.IIfAclicked.itemInstanceOrUniqueId == nil then
-        local iifaItemLink, itemInstanceOrUniqueIdIIfA, bagIdIIfA, slotIndexIIfA, charsTableIIfA, inThisOtherBagsTableIIfA = FCOIS.CheckAndGetIIfAData(rowControl, rowControl:GetParent())
+    local itemLink
+    if wasIIfARowClicked == true and (FCOIS.IIfAclicked == nil or FCOIS.IIfAclicked.itemInstanceOrUniqueId == nil) then
+        checkAndGetIIfAData = checkAndGetIIfAData or FCOIS.CheckAndGetIIfAData
+        local iifaItemLink, itemInstanceOrUniqueIdIIfA, bagIdIIfA, slotIndexIIfA, charsTableIIfA, inThisOtherBagsTableIIfA = checkAndGetIIfAData(rowControl, rowControl:GetParent())
         fcoisItemInstanceId = itemInstanceOrUniqueIdIIfA
+        itemLink = iifaItemLink
         bagId = bagIdIIfA
         slotIndex = slotIndexIIfA
 --d(">updated fcoisItemInstanceId: " ..tos(fcoisItemInstanceId) .. ", bagId: " ..tos(bagId) .. ", slotIndex: " ..tos(slotIndex))
@@ -1381,8 +1385,7 @@ function FCOIS.ClearOrRestoreAllMarkers(rowControl, bagId, slotIndex, onlyFeedba
     if fcoisItemInstanceId == nil then
         fcoisItemInstanceId = myGetItemInstanceId(rowControl, true)
     end
-    local itemLink
-    if bagId ~= nil and slotIndex ~= nil then
+    if bagId ~= nil and slotIndex ~= nil and itemLink == nil then
         itemLink = gil(bagId, slotIndex)
     end
 --d(">item: " .. tos(itemLink) .. ", itemInstanceId FCOIS: " ..tos(fcoisItemInstanceId) .. ", isCharacterShownVar: " ..tos(isCharacterShownVar).. ", isCompanionCharacterShownVar: " ..tos(isCompanionCharacterShownVar) .. ", invUpdateForce: " ..tos(FCOIS.preventerVars.gOverrideInvUpdateAfterMarkItem))
