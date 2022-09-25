@@ -323,7 +323,7 @@ local LMAS_getAccountList = lmas ~= nil and lmas.GetAccountList
 --Check for set collections bok items (known/unknown) and return a boolean if the item should get marked + 2nd param the table with the checkFuncResultData for the
 --.additionalCheckFunc, containing the newMarkerIcon = markerIcon to use for the MarkItem functions later on in the toDos processing
 local function automaticMarkingSetsCollectionBookCheckFunc(p_bagId, p_slotIndex, knownOrUnknown)
-    local doDebug = (p_bagId == BAG_BACKPACK and true) or false
+    local doDebug = false --TODO disable after debugging (p_bagId == BAG_BACKPACK and true) or false
     if doDebug then d("automaticMarkingSetsCollectionBookCheckFunc - knownOrUnknown: " ..tos(knownOrUnknown)) end
     if knownOrUnknown == nil or p_bagId == nil or p_slotIndex == nil then return nil, nil end
     local settings = FCOIS.settingsVars.settings
@@ -1082,14 +1082,14 @@ end
     function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, doOverride)
         doOverride = doOverride or false
         --TODO: Debugging added with FCOIS v2.0.0, change to "true" to debug and define "il" and items to debug below at --TODO: Comment after debugging!
-        local showDebug = ((bag == BAG_BACKPACK and (scanType == "setItemCollectionsUnknown" or scanType == "setItemCollectionsKnown")) and true) or false
+        local doDebug = false -- ((bag == BAG_BACKPACK and (scanType == "setItemCollectionsUnknown" or scanType == "setItemCollectionsKnown")) and true) or false
         local il
 
         markItem = markItem or FCOIS.MarkItem
 
         --TODO: Comment after debugging!
-        il = gil(bag, slot)
-        if showDebug then
+        --il = gil(bag, slot)
+        if doDebug then
             d("FCOIS]scanInventoryItemForAutomaticMarks-" .. il .. ", bag: " ..tos(bag) .. ", slot: " ..tos(slot) .. ", scanType: " .. tos(scanType) .. ", doOverride: " .. tos(doOverride))
         end
         --------------------------------------------------------------------------------
@@ -1104,7 +1104,7 @@ end
         local function abortChecksNow(whereWasTheFunctionAborted)
             --For debugging only:
             --TODO:Remove again after testing. Added with FCOIS 1.9.6 on 2020-06-29
-            local specialCaseMet = showDebug
+            local specialCaseMet = doDebug
 
             if settings.debug == true or specialCaseMet == true then
                 if whereWasTheFunctionAborted then
@@ -1140,9 +1140,9 @@ end
             --1) Icon check 1
             --Check if the marker icon is given and enabled
             if toDos.icon ~= nil and settings.isIconEnabled[toDos.icon] then
-                if showDebug then d(">Active icon found for '" .. tos(scanType) .. "': " .. tos(toDos.icon)) end
+                if doDebug then d(">Active icon found for '" .. tos(scanType) .. "': " .. tos(toDos.icon)) end
             else
-                if showDebug then d(">No icon provided, determining it later again via the check and additionalCheckFunc!") end
+                if doDebug then d(">No icon provided, determining it later again via the check and additionalCheckFunc!") end
             end
 
             local forceAdditionalCheckFunc = false
@@ -1155,7 +1155,7 @@ end
                 else
                     checkResult = toDos.check
                 end
-                if showDebug then
+                if doDebug then
                     d(">Check active: " .. tos(checkResult) .. " (" .. tos(toDos.result) .. "/" .. tos(toDos.resultNot) .. ")")
                 end
                 --Result should equal the check variable
@@ -1181,7 +1181,7 @@ end
                 else
                     checkOtherAddonResult = toDos.checkOtherAddon
                 end
-                if showDebug then
+                if doDebug then
                     d(">Other addons active: " .. tos(checkOtherAddonResult) .. " (" .. tos(toDos.resultOtherAddon) .. "/" .. tos(toDos.resultNotOtherAddon) .. ")")
                 end
                 --Result should equal the other addons check variable
@@ -1211,7 +1211,7 @@ end
                     --The check is no function but a variable
                     preCheckFuncResult = toDos.preCheckFunc
                 end
-                if showDebug then
+                if doDebug then
                     d(">Pre-Check func active: " .. tos(preCheckFuncResult) .. " (" .. tos(toDos.resultPreCheckFunc) .. "/" .. tos(toDos.resultNotPreCheckFunc) .. ")")
                 end
                 --Was the check successfull?
@@ -1273,7 +1273,7 @@ end
                 end
             end
             if itemId == nil or not canBeAutomaticallyMarked or isItemProtected	then
-                if showDebug then
+                if doDebug then
                     if not il then
                         il = gil(bag, slot)
                     end
@@ -1302,7 +1302,7 @@ end
                         forceAdditionalCheckFunc = true
                     end
                 end
-                if showDebug then
+                if doDebug then
                     d(">Check func active: " .. tos(checkFuncResult) .. " (" .. tos(toDos.resultCheckFunc) .. "/" .. tos(toDos.resultNotCheckFunc) .. "), forceAdditionalCheckFunc: " .. tos(forceAdditionalCheckFunc))
                 end
                 --Was the check successfull?
@@ -1348,7 +1348,7 @@ end
                     --The check is no function but a variable
                     additionalCheckFuncResult = toDos.additionalCheckFunc
                 end
-                if showDebug then
+                if doDebug then
                     d(">Add. check func active: " .. tos(additionalCheckFuncResult) .. " (" .. tos(toDos.resultAdditionalCheckFunc) .. "/" .. tos(toDos.resultNotAdditionalCheckFunc) .. ")")
                 end
                 --Was the check successfull?
@@ -1376,14 +1376,14 @@ end
                 local abortCuzOfNoIcon = true
                 if additionalCheckFuncResultDataNewMarkerIcon ~= nil then
                     abortCuzOfNoIcon = false
-                    if showDebug then
+                    if doDebug then
                         d(">Active icon not given/Not enabled, but using additionalCheckFuncResultData.newMarkerIcon for '" .. tos(scanType) .. "': " .. tos(additionalCheckFuncResultData.newMarkerIcon))
                     end
                 else
                     --is the icon not given but the return table of the checkFunc provided an alternative icon?
                     if checkFuncResultDataNewMarkerIcon ~= nil then
                         abortCuzOfNoIcon = false
-                        if showDebug then
+                        if doDebug then
                             d(">Active icon no given/Not enabled, but using checkFuncResult.newMarkerIcon for '" .. tos(scanType) .. "': " .. tos(checkFuncResultData.newMarkerIcon))
                         end
                     end
@@ -1402,17 +1402,17 @@ end
                 else
                     newMarkerIcon = toDos.icon
                 end
-                if showDebug then
+                if doDebug then
                     d(">newMarkerIcon taken from todos.icon")
                 end
             end
             if additionalCheckFuncResultDataNewMarkerIcon ~= nil then
-                if showDebug then
+                if doDebug then
                     d(">newMarkerIcon taken from add. check func newMarkerIcon")
                 end
                 newMarkerIcon = additionalCheckFuncResultDataNewMarkerIcon
             else
-                if showDebug then
+                if doDebug then
                     d(">newMarkerIcon taken from check func newMarkerIcon")
                 end
                 if checkFuncResultDataNewMarkerIcon ~= nil then
@@ -1421,7 +1421,7 @@ end
             end
             --Set the return variable with the info, that the checks were done for at least one item
             checksWereDone = true
-            if showDebug then
+            if doDebug then
                 d(">Checks were done")
             end
 
@@ -1471,7 +1471,7 @@ end
             end
         end -- if bag ~= nil and slot ~= nil then
         --Return the functions return variables now
-        if showDebug then
+        if doDebug then
             d("<<< retun checksWereDone: " .. tos(checksWereDone) .. ", atLeastOneMarkerIconWasSet: " .. tos(atLeastOneMarkerIconWasSet))
         end
         return checksWereDone, atLeastOneMarkerIconWasSet
@@ -2161,12 +2161,12 @@ end
                 --d("[ScanInventory] END ALL")
 
             else
-                d("[ScanInventory] Start ONE ITEM")
+                --d("[ScanInventory] Start ONE ITEM")
                 -- Scan only one item?
                 if p_bagId ~= nil and p_slotIndex ~= nil then
                     updateInv = scanInventorySingle(p_bagId, p_slotIndex, checksAlreadyDoneTable)
                 end
-                d("[ScanInventory] End ONE ITEM")
+                --d("[ScanInventory] End ONE ITEM")
             end
 
             --Update the inventories?

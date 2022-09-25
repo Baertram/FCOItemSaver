@@ -192,15 +192,15 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-09-18
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-09-25
 ------------------------------------------------------------------------------------
 --#250
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.3.8 - New version: 2.3.9) -    Updated last: 2022-09-18
+--Changelog (last version: 2.3.8 - New version: 2.3.9) -    Updated last: 2022-09-25s
 -------------------------------------------------------------------------------------
 --[Fixed]
-
+--#250 Automatic set collections of new looted BOP(tradable) items will be marked as unknown, bound afterwards, but not marked as known then (if enabled in the settings)
 
 --[Changed]
 
