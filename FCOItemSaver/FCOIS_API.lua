@@ -14,7 +14,7 @@ local gil = GetItemLink
 
 local addonVars = FCOIS.addonVars
 local doCompanionItemChecks = FCOIS.DoCompanionItemChecks
-local isUnboundItemChecks = FCOIS.IsUnboundItemChecks
+local isUnboundAndNotStolenItemChecks = FCOIS.IsUnboundAndNotStolenItemChecks
 
 --==========================================================================================================================================
 -- 			README PLEASE		README PLEASE			-FCOIS API limitations-			README PLEASE		README PLEASE
@@ -1559,8 +1559,8 @@ function FCOIS.MarkItemByKeybind(iconId, p_bagId, p_slotIndex, removeMarkers)
 			--The item is already bound but it should only be un-bound to allow the marker icon
 			--> Remove the marker icon from the context menu
         	--#252
-			local isAllowed, isBound = isUnboundItemChecks(bagId, slotIndex, iconId, nil, nil)
-			if isBound == true and not isAllowed then return false end
+			local isAllowed, isBound, isStolen = isUnboundAndNotStolenItemChecks(bagId, slotIndex, iconId, nil, nil, nil, nil)
+			if not isAllowed and (isBound == true or isStolen == true) then return false end
 
             --Set the marker here now
             --Item is already un/marked?

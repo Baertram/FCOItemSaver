@@ -1095,8 +1095,14 @@ end
 
 --Is the item bound or stolen it cannot be sold at a guild store
 --#252
-function FCOIS.IsUnboundItemChecks(bagId, slotIndex, iconId, isBoundPassedIn, doCheckOnlyUnbound)
+function FCOIS.IsUnboundAndNotStolenItemChecks(bagId, slotIndex, iconId, isBoundPassedIn, doCheckOnlyUnbound, isStolenPassedIn, doCheckOnlyNotStolen)
+    if iconId == FCOIS_CON_ICON_SELL_AT_GUILDSTORE then
+        doCheckOnlyNotStolen = true
+    end
+    doCheckOnlyNotStolen = doCheckOnlyNotStolen or false
+    local isAllowed = true
     local isBound = isBoundPassedIn
+    local isStolen = isStolenPassedIn
     if isBound == nil then
         isBound = IsItemBound(bagId, slotIndex)
     end
@@ -1106,10 +1112,16 @@ function FCOIS.IsUnboundItemChecks(bagId, slotIndex, iconId, isBoundPassedIn, do
         end
         doCheckOnlyUnbound = doCheckOnlyUnbound or false
         if doCheckOnlyUnbound == true then
-            return false, isBound
+            isAllowed = false
         end
     end
-    return true, isBound
+    if isStolen == nil then
+        isStolen = IsItemStolen(bagId, slotIndex)
+    end
+    if isAllowed == true and doCheckOnlyNotStolen == true and isStolen == true then
+        isAllowed = false
+    end
+    return isAllowed, isBound, isStolen
 end
 
 function FCOIS.IsItemType(bag, slot, itemTypes)

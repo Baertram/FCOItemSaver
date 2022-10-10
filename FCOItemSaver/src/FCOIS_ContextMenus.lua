@@ -70,6 +70,7 @@ local changeDialogButtonState = FCOIS.ChangeDialogButtonState
 local isItemType = FCOIS.IsItemType
 local isAutolootContainer = FCOIS.IsAutolootContainer
 local isItemBound= FCOIS.IsItemBound
+local isItemStolen = IsItemStolen
 local isItemBindableAtAll = FCOIS.IsItemBindableAtAll
 
 local isItemOwnerCompanion = FCOIS.IsItemOwnerCompanion
@@ -116,7 +117,7 @@ local isMarked
 local callItemSelectionHandler
 local callDeconstructionSelectionHandler
 local changeContextMenuEntryTexts
-local isUnboundItemChecks = FCOIS.IsUnboundItemChecks
+local isUnboundAndNotStolenItemChecks = FCOIS.IsUnboundAndNotStolenItemChecks
 
 ------------------------------------------------------------------------------------------------------------------------
 --Get the context menu invoker button data by help of the panel Id
@@ -761,6 +762,10 @@ local function checkIfCachedLastAddMarkDataCanBeUsed(fcoisItemInstanceId, doRese
 
             lastAddMarkData.isBound = isItemBound(bagId, slotIndex) or false
 
+            lastAddMarkData.isStolen = isItemStolen(bagId, slotIndex) or false
+
+            lastAddMarkData.isAllowedFCOISBoundAndStolenChecks = nil --set nil to let it be filled in the contex menu properly, based on isBound and isStolen
+
             lastAddMarkData.isItemOwnerCompanion = isItemOwnerCompanion(bagId, slotIndex)
 
             local contextMenuEntryTextPre = ""
@@ -1039,13 +1044,17 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
 
         --Check if an item is not-bound yet and only allow to mark it if it's still unbound
         --#252
-        if doCheckOnlyUnbound then
-            local isBound, isAllowedBound = lastAddMarkData.isBound, nil
-            --The item is already bound but it should only be un-bound to allow the marker icon
-            --> Remove the marker icon from the context menu
-            isAllowedBound, isBound = isUnboundItemChecks(bag, slotId, markId, isBound, doCheckOnlyUnbound)
-            if isBound == true and not isAllowedBound then return false end
+        local isBound, isStolen, isAllowed = lastAddMarkData.isBound, lastAddMarkData.isStolen, lastAddMarkData.isAllowedFCOISBoundAndStolenChecks
+--d(">markId: " .. tos(markId) .. ", isAllowed: " ..tos(isAllowed) .. ", isBound: " ..tos(isBound) .. ", isAllowed: " .. tos(isAllowed))
+        --The item is already bound but it should only be un-bound to allow the marker icon
+        --> Remove the marker icon from the context menu
+        if isAllowed == nil or isBound == nil or isStolen == nil then
+            isAllowed, isBound, isStolen = isUnboundAndNotStolenItemChecks(bag, slotId, markId, isBound, doCheckOnlyUnbound, isStolen, nil)
+            lastAddMarkData.isAllowedFCOISBoundAndStolenChecks = isAllowed
+            lastAddMarkData.isBound = isBound
+            lastAddMarkData.isStolen = isStolen
         end
+        if not isAllowed and (isBound == true or isStolen == true) then return false end
     end
 
     ------------------------------------------------------------------------------------------------------------------------
