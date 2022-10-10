@@ -1,21 +1,29 @@
 ```
+--______________________________________
+-- Current max # of bugs/features/ToDos: 253
+--______________________________________
+
+
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-08-29
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-10-10
 ------------------------------------------------------------------------------------
 
+
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.3.6 - New version: 2.3.7) -    Updated last: 2022-08-29
+--Changelog (last version: 2.3.8 - New version: 2.3.9) -    Updated last: 2022-10-10
 -------------------------------------------------------------------------------------
 --[Fixed]
---#245 Right clicked on entry in IIfA UI -> error
---#246 Fixed right click on entry in IIfA UI -> Male remove all / restore marker icons work on non current inventory/bank items of character
+--#251 IIfA right click on mementos shwos error message: FCOIS_ContextMenus.lua:1071: Operator .. is not supported for nil .. string
+--#252 Keybind of "Sell at guild store" (and other special marker icons depending on your settings) does not check if item can be sold at a guild store (non bound e.g.)
+--#253 Used proper FCOIS_CON* constants instead of numbers at the keybinds
 
 
 --[Changed]
+--
 
 --[Added]
-
+--
 
 --[Added on request]
---#247 Added more marker icon textures (e.g. Set collection)
+--
 ```

@@ -13,6 +13,8 @@ local debugMessage = FCOIS.debugMessage
 local gil = GetItemLink 
 
 local addonVars = FCOIS.addonVars
+local doCompanionItemChecks = FCOIS.DoCompanionItemChecks
+local isUnboundItemChecks = FCOIS.IsUnboundItemChecks
 
 --==========================================================================================================================================
 -- 			README PLEASE		README PLEASE			-FCOIS API limitations-			README PLEASE		README PLEASE
@@ -1422,7 +1424,7 @@ function FCOIS.GetGearIcons(onlyDynamicOnes)
 	local gearMarkerIcons = {}
 	for _, gearIconId in ipairs(gearIcons) do
 		local doAdd = true
-		if onlyDynamicOnes  ~= nil then
+		if onlyDynamicOnes ~= nil then
 			local isDynamicGearIconMarker = isDynamicGearIcon(gearIconId) or false
 			doAdd = (onlyDynamicOnes == true and isDynamicGearIconMarker == true and true)
 					or (onlyDynamicOnes == false and not isDynamicGearIconMarker and true) or false
@@ -1434,9 +1436,9 @@ function FCOIS.GetGearIcons(onlyDynamicOnes)
 	return gearMarkerIcons
 end
 
---Global function to get the for a given gear set's iconId (2, 4, 6, 7 or 8) or a dynamic icon id (13, 14, 15, 16, 17, 18, 19, 20, 21, 22)
+--Global function to get the for a given gear set's iconId (2, 4, 6, 7 or 8) or a dynamic icon id (13, 14, 15, 16, 17, 18, 19, 20, 21, 22, ...)
 --> use the constants for the marker icons please! e.g. FCOIS_CON_ICON_LOCK, FCOIS_CON_ICON_DYNAMIC_1 etc. Check file src/FCOIS_constants.lua for the available constants (top of the file)
---boolean withTexture <optional>: Add the icon#s texture to the name (default: left side)
+--boolean withTexture <optional>: Add the icon's texture to the name (default: left side)
 --boolean textureAtRight <optional>: Put the texture at the right side of the name
 --boolean textureNonColored <optional>: If true the texture will not be colored explicitly, if false the texture will use the color of the icon settings
 function FCOIS.GetIconText(iconId, withTexture, textureAtRight, textureNonColored)
@@ -1508,7 +1510,7 @@ function FCOIS.MarkItemByKeybind(iconId, p_bagId, p_slotIndex, removeMarkers)
     local settings = FCOIS.settingsVars.settings
 	local isIconEnabled = settings.isIconEnabled
 	if not isIconEnabled[iconId] then return false end
-	local isIIfAControlChanged = false
+	--local isIIfAControlChanged = false
 	local bagId, slotIndex, controlBelowMouse, controlTypeBelowMouse
 	local itemLink
 	local itemInstanceOrUniqueId
@@ -1524,7 +1526,7 @@ function FCOIS.MarkItemByKeybind(iconId, p_bagId, p_slotIndex, removeMarkers)
 	else
 		bagId, slotIndex =  p_bagId, p_slotIndex
 	end
-	local doCompanionItemChecks = FCOIS.DoCompanionItemChecks
+
     --bag and slot could be retrieved?
     if bagId ~= nil and slotIndex ~= nil then
         if settings.debug then debugMessage( "[MarkItemByKeybind]","Bag: " .. tos(bagId) .. ", slot: " .. tos(slotIndex), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
@@ -1552,6 +1554,14 @@ function FCOIS.MarkItemByKeybind(iconId, p_bagId, p_slotIndex, removeMarkers)
 			if not isAllowed then
 				return false
 			end
+			--Bound item but want to sell at guild store?
+			--Check if an item is not-bound yet and only allow to mark it if it's still unbound
+			--The item is already bound but it should only be un-bound to allow the marker icon
+			--> Remove the marker icon from the context menu
+        	--#252
+			local isAllowed, isBound = isUnboundItemChecks(bagId, slotIndex, iconId, nil, nil)
+			if isBound == true and not isAllowed then return false end
+
             --Set the marker here now
             --Item is already un/marked?
 			local itemIsMarked
