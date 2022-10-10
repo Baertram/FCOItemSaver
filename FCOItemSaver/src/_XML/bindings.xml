@@ -62,7 +62,7 @@
       <Action name="FCOIS_MARK_GEAR_SET_5">
         <Down>FCOIS.MarkItemByKeybind(FCOIS_CON_ICON_GEAR_5)</Down>
       </Action>
-      <<!-- Dynamic icons 13 to 42 -> FCOIS_CON_ICON_DYNAMIC_1 (id= 13) ... FCOIS_CON_ICON_DYNAMIC_30 (id= 42) -->
+      <!-- Dynamic icons 13 to 42 -> FCOIS_CON_ICON_DYNAMIC_1 (id= 13) ... FCOIS_CON_ICON_DYNAMIC_30 (id= 42) -->
       <Action name="FCOIS_MARK_ITEM_13">
         <Down>FCOIS.MarkItemByKeybind(FCOIS_CON_ICON_DYNAMIC_1)</Down>
       </Action>
