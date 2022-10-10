@@ -764,8 +764,6 @@ local function checkIfCachedLastAddMarkDataCanBeUsed(fcoisItemInstanceId, doRese
 
             lastAddMarkData.isStolen = isItemStolen(bagId, slotIndex) or false
 
-            lastAddMarkData.isAllowedFCOISBoundAndStolenChecks = nil --set nil to let it be filled in the contex menu properly, based on isBound and isStolen
-
             lastAddMarkData.isItemOwnerCompanion = isItemOwnerCompanion(bagId, slotIndex)
 
             local contextMenuEntryTextPre = ""
@@ -1044,16 +1042,13 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
 
         --Check if an item is not-bound yet and only allow to mark it if it's still unbound
         --#252
-        local isBound, isStolen, isAllowed = lastAddMarkData.isBound, lastAddMarkData.isStolen, lastAddMarkData.isAllowedFCOISBoundAndStolenChecks
---d(">markId: " .. tos(markId) .. ", isAllowed: " ..tos(isAllowed) .. ", isBound: " ..tos(isBound) .. ", isAllowed: " .. tos(isAllowed))
+        local isBound, isStolen, isAllowed = lastAddMarkData.isBound, lastAddMarkData.isStolen, nil
+--d(">markId: " .. tos(markId) .. ", isAllowed: " ..tos(isAllowed) .. ", isBound: " ..tos(isBound) .. ", isStolen: " .. tos(isStolen))
         --The item is already bound but it should only be un-bound to allow the marker icon
         --> Remove the marker icon from the context menu
-        if isAllowed == nil or isBound == nil or isStolen == nil then
-            isAllowed, isBound, isStolen = isUnboundAndNotStolenItemChecks(bag, slotId, markId, isBound, doCheckOnlyUnbound, isStolen, nil)
-            lastAddMarkData.isAllowedFCOISBoundAndStolenChecks = isAllowed
-            lastAddMarkData.isBound = isBound
-            lastAddMarkData.isStolen = isStolen
-        end
+        isAllowed, isBound, isStolen = isUnboundAndNotStolenItemChecks(bag, slotId, markId, isBound, doCheckOnlyUnbound, isStolen, nil)
+        lastAddMarkData.isBound = isBound
+        lastAddMarkData.isStolen = isStolen
         if not isAllowed and (isBound == true or isStolen == true) then return false end
     end
 
