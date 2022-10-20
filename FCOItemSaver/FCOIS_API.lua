@@ -16,6 +16,10 @@ local addonVars = FCOIS.addonVars
 local doCompanionItemChecks = FCOIS.DoCompanionItemChecks
 local isUnboundAndNotStolenItemChecks = FCOIS.IsUnboundAndNotStolenItemChecks
 
+local libFilters = FCOIS.libFilters
+
+local universalDeconGlobal = FCOIS.ZOControlVars.UNIVERSAL_DECONSTRUCTION_GLOBAL
+
 --==========================================================================================================================================
 -- 			README PLEASE		README PLEASE			-FCOIS API limitations-			README PLEASE		README PLEASE
 --==========================================================================================================================================
@@ -1352,7 +1356,14 @@ end -- FCOIS.IsFiltered
 
 --Global function to change a filter at the given panel Id
 function FCOIS.ChangeFilter(filterId, libFiltersFilterPanelId)
+--d("[FCOIS]ChangeFilter - filterId: " ..tos(filterId) .. ", libFiltersFilterPanelId: " .. tos(libFiltersFilterPanelId) .. ", gFilterWhere: " ..tos(FCOIS.gFilterWhere))
+	--If filterPanelId is nil get it via LibFilters panel/fragment/other de))
 	libFiltersFilterPanelId = libFiltersFilterPanelId or FCOIS.gFilterWhere
+	--If filterPanelId is nil get it via LibFilters panel/fragment/other detection
+	if libFiltersFilterPanelId == nil then
+		if libFilters == nil then libFilters = FCOIS.libFilters end
+		libFiltersFilterPanelId = libFilters:GetCurrentFilterType()
+	end
 	if not checkIfFCOISSettingsWereLoaded(FCOIS.preventerVars.gCalledFromInternalFCOIS, not addonVars.gAddonLoaded) then return false end
 	--Valid filterId?
 	if filterId == nil or filterId <= 0 or filterId > numFilters then return end
@@ -1363,8 +1374,19 @@ function FCOIS.ChangeFilter(filterId, libFiltersFilterPanelId)
 	--Is filtering at the current panel enabled?
 	if not settings.atPanelEnabled[libFiltersFilterPanelId]["filters"] then return end
 	--is the filterPanelId visible?
-	if mappingVars.gFilterPanelIdToInv[libFiltersFilterPanelId]:IsHidden() then return end
-
+	-->Special check for UNIVERSAL DECONSTRUCTION
+	--todo #254
+	local filterPanelIdPassedInOrFound, isUniversalDeconFilterPanel = FCOIS.GetCurrentFilterPanelIdAtDeconNPC(libFiltersFilterPanelId)
+	if isUniversalDeconFilterPanel == true and filterPanelIdPassedInOrFound ~= nil then
+		universalDeconGlobal = universalDeconGlobal or FCOIS.ZOControlVars.UNIVERSAL_DECONSTRUCTION_GLOBAL
+		if universalDeconGlobal.control:IsHidden() then
+			return
+		end
+	else
+		if mappingVars.gFilterPanelIdToInv[libFiltersFilterPanelId]:IsHidden() then
+			return
+		end
+	end
 	if settings.debug then debugMessage( "[ChangeFilter]","FilterId: " .. tos(filterId) .. ", FilterPanelId: " .. tos(libFiltersFilterPanelId) .. ", InventoryName: " .. mappingVars.gFilterPanelIdToInv[libFiltersFilterPanelId]:GetName(), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
 	--Use the chat command handler now to emulate a filter change
 	command_handler("filter" .. tos(filterId) .. " " .. tos(libFiltersFilterPanelId))

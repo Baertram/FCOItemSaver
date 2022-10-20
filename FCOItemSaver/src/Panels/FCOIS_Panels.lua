@@ -163,7 +163,7 @@ function FCOIS.GetCurrentFilterPanelIdAtDeconNPC(filterPanelIdPassedIn)
     local isDeconstuctionNPC = checkIfUniversaldDeconstructionNPC(filterPanelIdPassedIn)
 --d(">isDeconstuctionNPC: " ..tos(isDeconstuctionNPC))
     universalDeconGlobal.FCOIScurrentFilterPanelId = nil
-    if not isDeconstuctionNPC then return filterPanelIdPassedIn end
+    if not isDeconstuctionNPC then return filterPanelIdPassedIn, false end
     universalDeconGlobal.FCOIScurrentFilterPanelId = filterPanelIdDetected
 --[[
     --Not needed anymore as the universalDeconPanel:OnFilterChanged callback was added:
@@ -183,7 +183,7 @@ d(">>>filterPanelIdDetected: " ..tos(filterPanelIdDetected))
         end
     end
     ]]
-    return filterPanelIdDetected
+    return filterPanelIdDetected, isDeconstuctionNPC
 end
 local getCurrentFilterPanelIdAtDeconNPC = FCOIS.GetCurrentFilterPanelIdAtDeconNPC
 -- -^- #202

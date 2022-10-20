@@ -175,16 +175,16 @@
         <Down>FCOIS.ShowFCOItemSaverSettings()</Down>
       </Action>
       <Action name="FCOISFILTER1_DIALOG" hideAction="true" inheritsBindFrom="FCOISFILTER1">
-        <Down>FCOIS.ChangeFilter(1)</Down>
+        <Down>FCOIS.ChangeFilter(FCOIS_CON_FILTER_BUTTON_LOCKDYN)</Down>
       </Action>
       <Action name="FCOISFILTER2_DIALOG" hideAction="true" inheritsBindFrom="FCOISFILTER2">
-        <Down>FCOIS.ChangeFilter(2)</Down>
+        <Down>FCOIS.ChangeFilter(FCOIS_CON_FILTER_BUTTON_GEARSETS)</Down>
       </Action>
       <Action name="FCOISFILTER3_DIALOG" hideAction="true" inheritsBindFrom="FCOISFILTER3">
-        <Down>FCOIS.ChangeFilter(3)</Down>
+        <Down>FCOIS.ChangeFilter(FCOIS_CON_FILTER_BUTTON_RESDECIMP)</Down>
       </Action>
       <Action name="FCOISFILTER4_DIALOG" hideAction="true" inheritsBindFrom="FCOISFILTER4">
-        <Down>FCOIS.ChangeFilter(4)</Down>
+        <Down>FCOIS.ChangeFilter(FCOIS_CON_FILTER_BUTTON_SELLGUILDINT)</Down>
       </Action>
       <Action name="FCOIS_MARK_ITEM_WITH_STANDARD_ICON_DIALOG" hideAction="true" inheritsBindFrom="FCOIS_MARK_ITEM_WITH_STANDARD_ICON">
         <Down>FCOIS.MarkItemCycle('standard')</Down>
