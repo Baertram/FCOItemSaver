@@ -12,7 +12,7 @@ local strlen = string.len
 FCOIS.addonVars = {}
 local addonVars = FCOIS.addonVars
 --Addon variables
-addonVars.addonVersionOptions 		    = '2.3.9' -- version shown in the settings panel
+addonVars.addonVersionOptions 		    = '2.4.1' -- version shown in the settings panel
 --The addon name, normal and decorated with colors etc.
 addonVars.gAddonName				    = "FCOItemSaver"
 addonVars.gAddonNameShort               = "FCOIS"
@@ -2053,6 +2053,7 @@ mappingVars.iconToGear = {
     [FCOIS_CON_ICON_GEAR_3] = 3,
     [FCOIS_CON_ICON_GEAR_4] = 4,
     [FCOIS_CON_ICON_GEAR_5] = 5,
+    --... dynamic gear will be added here by code
 }
 
 --Will both be set in function FCOIS.RebuildGearSetBaseVars() upon event_palyer_activated or changed gear icons (dynamic ones)
@@ -2067,6 +2068,7 @@ mappingVars.gearToIcon = {
     [3] = FCOIS_CON_ICON_GEAR_3,
     [4] = FCOIS_CON_ICON_GEAR_4,
     [5] = FCOIS_CON_ICON_GEAR_5,
+    --... dynamic gear will be added here by code
 }
 
 --Table to see if the icon is researchable

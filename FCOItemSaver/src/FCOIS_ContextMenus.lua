@@ -70,6 +70,7 @@ local changeDialogButtonState = FCOIS.ChangeDialogButtonState
 local isItemType = FCOIS.IsItemType
 local isAutolootContainer = FCOIS.IsAutolootContainer
 local isItemBound= FCOIS.IsItemBound
+local isItemStolen = IsItemStolen
 local isItemBindableAtAll = FCOIS.IsItemBindableAtAll
 
 local isItemOwnerCompanion = FCOIS.IsItemOwnerCompanion
@@ -116,7 +117,7 @@ local isMarked
 local callItemSelectionHandler
 local callDeconstructionSelectionHandler
 local changeContextMenuEntryTexts
-
+local isUnboundAndNotStolenItemChecks = FCOIS.IsUnboundAndNotStolenItemChecks
 
 ------------------------------------------------------------------------------------------------------------------------
 --Get the context menu invoker button data by help of the panel Id
@@ -761,6 +762,8 @@ local function checkIfCachedLastAddMarkDataCanBeUsed(fcoisItemInstanceId, doRese
 
             lastAddMarkData.isBound = isItemBound(bagId, slotIndex) or false
 
+            lastAddMarkData.isStolen = isItemStolen(bagId, slotIndex) or false
+
             lastAddMarkData.isItemOwnerCompanion = isItemOwnerCompanion(bagId, slotIndex)
 
             local contextMenuEntryTextPre = ""
@@ -839,7 +842,7 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
     local isDynamic = isDynamicIcon[markId] or false
     local isGear = isGearIcon[markId] or false
     local isResearchAble = researchableIcons[markId] or false
-    local isIconDisabledAtCompanion = iconsDisabledAtCompanion[markId] or false
+    --local isIconDisabledAtCompanion = iconsDisabledAtCompanion[markId] or false
     local wasIIfARowClicked = lastAddMarkData.wasIIfARowClicked
 
     ------------------------------------------------------------------------------------------------------------------------
@@ -1031,24 +1034,22 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
     ------------------------------------------------------------------------------------------------------------------------
     --Check with item's bagId and slotIndex
     if bag ~= nil and slotId ~= nil then
-        --Check if an item is not-bound yet and only allow to mark it if it's still unbound
-        if doCheckOnlyUnbound then
-            local isBound = lastAddMarkData.isBound
-            if isBound == nil then isBound = isItemBound(bag, slotId) end
-            isBound = isBound or false
-            --The item is already bound but it should only be un-bound to allow the marker icon
-            --> Remove the marker icon from the context menu
-            if isBound then return false end
-        end
-
-        local isItemOwnerCompanionVal = lastAddMarkData.isItemOwnerCompanion
-        if isItemOwnerCompanionVal == nil then
-            isItemOwnerCompanionVal = isItemOwnerCompanion(bag, slotId)
-        end
-        --Companion owned item and possible icon that should not be applied to context menu?
-        if isIconDisabledAtCompanion == true and isItemOwnerCompanionVal == true then
+        --Companion owned item and mark with e.g. deconstruct icon? Not possible
+        local isAllowedCompanion = doCompanionItemChecks(bag, slotId, markId, nil, false, nil, nil, lastAddMarkData.isItemOwnerCompanion)
+        if not isAllowedCompanion then
             return false
         end
+
+        --Check if an item is not-bound yet and only allow to mark it if it's still unbound
+        --#252
+        local isBound, isStolen, isAllowed = lastAddMarkData.isBound, lastAddMarkData.isStolen, nil
+--d(">markId: " .. tos(markId) .. ", isAllowed: " ..tos(isAllowed) .. ", isBound: " ..tos(isBound) .. ", isStolen: " .. tos(isStolen))
+        --The item is already bound but it should only be un-bound to allow the marker icon
+        --> Remove the marker icon from the context menu
+        isAllowed, isBound, isStolen = isUnboundAndNotStolenItemChecks(bag, slotId, markId, isBound, doCheckOnlyUnbound, isStolen, nil)
+        lastAddMarkData.isBound = isBound
+        lastAddMarkData.isStolen = isStolen
+        if not isAllowed and (isBound == true or isStolen == true) then return false end
     end
 
     ------------------------------------------------------------------------------------------------------------------------
@@ -1066,6 +1067,7 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
     if not useSubMenu and settings.addContextMenuLeadingSpaces > 0 then
         contextMenuEntryTextPre = lastAddMarkData.contextMenuEntryTextPre
         if contextMenuEntryTextPre == nil or contextMenuEntryTextPre == "" then
+            contextMenuEntryTextPre = "" --#251
             --Add spaces in front of each context menu entry to indent them a bit
             for i=1, settings.addContextMenuLeadingSpaces do
                 contextMenuEntryTextPre = contextMenuEntryTextPre .. " "

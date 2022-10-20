@@ -1055,14 +1055,16 @@ local isItemOwnerCompanion = FCOIS.IsItemOwnerCompanion
 --Check if the icon (if provided! Must be provided for keybind checks, can be nil for additional inventory "flag" context menu checks) is
 --one of the icons that cannot be applied to items that are companion owned (e.g. research, deconstruct, improve, sell at guildstore. intricate)
 --Return value will be "allowed" (=true) or "blocked" (=false)
-function FCOIS.DoCompanionItemChecks(bagId, slotIndex, iconId, isCompanionInventory, viaKeybind, removeAll, itemLink)
+function FCOIS.DoCompanionItemChecks(bagId, slotIndex, iconId, isCompanionInventory, viaKeybind, removeAll, itemLink, isCompanionOnwed)
 --d("[FCOIS]DoCompanionItemChecks " ..gil(bagId, slotIndex) .. ", iconId: " ..tos(iconId).. ", isCompanionInventory: " ..tos(isCompanionInventory) .. ", viaKeybind: " ..tos(viaKeybind))
     viaKeybind = viaKeybind or false
     --icon is not given but we try to apply a keybinding? Return "allowed" as fallback
     if viaKeybind == true and iconId == nil then
         return false --blocked
     end
-    local isCompanionOnwed = isItemOwnerCompanion(bagId, slotIndex, itemLink)
+    if isCompanionOnwed == nil then
+        isCompanionOnwed = isItemOwnerCompanion(bagId, slotIndex, itemLink)
+    end
 --d(">isCompanionOnwed: " ..tos(isCompanionOnwed))
     if isCompanionOnwed == true then
         --No icon given (via add. inv. "flag" context menu)
@@ -1089,6 +1091,37 @@ function FCOIS.CheckIfCompanionInteractedAndCompanionInventoryIsShown()
         currentLibFiltersFilterType = LF_INVENTORY_COMPANION
     end
     return currentLibFiltersFilterType
+end
+
+--Is the item bound or stolen it cannot be sold at a guild store
+--#252
+function FCOIS.IsUnboundAndNotStolenItemChecks(bagId, slotIndex, iconId, isBoundPassedIn, doCheckOnlyUnbound, isStolenPassedIn, doCheckOnlyNotStolen)
+    if iconId == FCOIS_CON_ICON_SELL_AT_GUILDSTORE then
+        doCheckOnlyNotStolen = true
+    end
+    doCheckOnlyNotStolen = doCheckOnlyNotStolen or false
+    local isAllowed = true
+    local isBound = isBoundPassedIn
+    local isStolen = isStolenPassedIn
+    if isBound == nil then
+        isBound = IsItemBound(bagId, slotIndex)
+    end
+    if isBound == true then
+        if doCheckOnlyUnbound == nil then
+            doCheckOnlyUnbound = FCOIS.settingsVars.settings.allowOnlyUnbound[iconId]
+        end
+        doCheckOnlyUnbound = doCheckOnlyUnbound or false
+        if doCheckOnlyUnbound == true then
+            isAllowed = false
+        end
+    end
+    if isStolen == nil then
+        isStolen = IsItemStolen(bagId, slotIndex)
+    end
+    if isAllowed == true and doCheckOnlyNotStolen == true and isStolen == true then
+        isAllowed = false
+    end
+    return isAllowed, isBound, isStolen
 end
 
 function FCOIS.IsItemType(bag, slot, itemTypes)
@@ -2818,8 +2851,8 @@ function FCOIS.RebuildGearSetBaseVars(iconNr, value, calledFromEventPlayerActiva
 
     --Update FCOIS with the gear icons
     getGearIcons = getGearIcons or FCOIS.GetGearIcons
-    FCOIS.mappingVars.iconToNonDynamicGear = getGearIcons(false, true)
-    FCOIS.mappingVars.iconToDynamicGear = getGearIcons(true, false)
+    FCOIS.mappingVars.iconToNonDynamicGear = getGearIcons(false)
+    FCOIS.mappingVars.iconToDynamicGear = getGearIcons(true)
 end
 
 -- =====================================================================================================================

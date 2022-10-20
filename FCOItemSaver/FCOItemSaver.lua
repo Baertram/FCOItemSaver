@@ -182,33 +182,33 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 
 --#248 2022-08-18, Baertram, Feature request: Change LibShifterBox usage to LibAddonMenuDualListBox widget in settings etc.!
 
---#250 2022-09-17, Neverlands, bug: Automatic set collections of new looted "undaunted" coffer items will be marked as unknown, bound afterwards, but not marked as known then
---(if enabled in the settings)
+--#254 2022-10-10, Nagolite, Bug: Keybinds to change filter button state at universal deconstruction does not work
 
 
 --______________________________________
--- Current max # of bugs/features/ToDos: 250
+-- Current max # of bugs/features/ToDos: 254
 --______________________________________
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-09-25
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-10-19
 ------------------------------------------------------------------------------------
---#250
+--#254
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.3.8 - New version: 2.3.9) -    Updated last: 2022-09-25s
+--Changelog (last version: 2.4.0 - New version: 2.4.1) -    Updated last: 2022-10-19
 -------------------------------------------------------------------------------------
 --[Fixed]
---#250 Automatic set collections of new looted BOP(tradable) items will be marked as unknown, bound afterwards, but not marked as known then (if enabled in the settings)
+
 
 --[Changed]
+--
 
 --[Added]
-
+--
 
 --[Added on request]
---Added new companion texture to marker icon textures
+--
 
 
 --************************************************************************************************************************
