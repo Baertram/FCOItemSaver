@@ -12,7 +12,7 @@ local strlen = string.len
 FCOIS.addonVars = {}
 local addonVars = FCOIS.addonVars
 --Addon variables
-addonVars.addonVersionOptions 		    = '2.4.1' -- version shown in the settings panel
+addonVars.addonVersionOptions 		    = '2.4.2' -- version shown in the settings panel
 --The addon name, normal and decorated with colors etc.
 addonVars.gAddonName				    = "FCOItemSaver"
 addonVars.gAddonNameShort               = "FCOIS"
@@ -463,7 +463,7 @@ checkVars.inventoryRowPatterns = {
     "^ZO_CraftBagList%dRow%d%d*",                                           --CraftBag
     "^ZO_Smithing%aRefinementPanelInventoryBackpack%dRow%d%d*",             --Smithing refinement
     "^ZO_RetraitStation_%a+RetraitPanelInventoryBackpack%dRow%d%d*",        --Retrait
-    "^ZO_QuickSlotList%dRow%d%d*",                                          --Quickslot
+    "^ZO_QuickSlot_Keyboard_TopLevelList%dRow%d%d*",                        --Quickslot
     "^ZO_RepairWindowList%dRow%d%d*",                                       --Repair at vendor
     "^ZO_ListDialog1List%dRow%d%d*",                                        --List dialog (Repair, Recharge, Enchant, Research)
     "^ZO_CompanionEquipment_Panel_.+List%dRow%d%d*",                        --Companion Inventory backpack

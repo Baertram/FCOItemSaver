@@ -182,24 +182,22 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 
 --#248 2022-08-18, Baertram, Feature request: Change LibShifterBox usage to LibAddonMenuDualListBox widget in settings etc.!
 
---#254 2022-10-10, Nagolite, Bug: Keybinds to change filter button state at universal deconstruction does not work
-
 
 --______________________________________
--- Current max # of bugs/features/ToDos: 254
+-- Current max # of bugs/features/ToDos: 256
 --______________________________________
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-10-19
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-11-01
 ------------------------------------------------------------------------------------
---#254
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.4.0 - New version: 2.4.1) -    Updated last: 2022-10-19
+--Changelog (last version: 2.4.1 - New version: 2.4.2) -    Updated last: 2022-11-01
 -------------------------------------------------------------------------------------
 --[Fixed]
-
+--#255 Keybinds at quickslots did nto work
+--#256 Compatibiliy with LibFilters 3 changes
 
 --[Changed]
 --

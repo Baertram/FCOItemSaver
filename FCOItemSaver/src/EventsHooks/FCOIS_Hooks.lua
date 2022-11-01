@@ -1088,7 +1088,7 @@ function FCOIS.CreateHooks()
     if ZO_UNIVERSAL_DECONSTRUCTION_FILTER_TYPES ~= nil then
         getCurrentFilterPanelIdAtDeconNPC = getCurrentFilterPanelIdAtDeconNPC or FCOIS.GetCurrentFilterPanelIdAtDeconNPC
         local universalDeconstructionPanel = universalDeconGlobal.deconstructionPanel
-        local detectActiveUniversalDeconstructionTab = libFilters.DetectActiveUniversalDeconstructionTab
+        local detectActiveUniversalDeconstructionTab = libFilters.DetectUniversalDeconstructionPanelActiveTab
 
         --Pre Hook the universal deconstruction for prevention methods
         --Register a secure posthook on visibility change of a scrolllist's row -> At the universald deconstruction inventory list
@@ -1255,7 +1255,7 @@ function FCOIS.CreateHooks()
 
                 end
                 ]]
-            detectActiveUniversalDeconstructionTab = detectActiveUniversalDeconstructionTab or libFilters.DetectActiveUniversalDeconstructionTab
+            detectActiveUniversalDeconstructionTab = detectActiveUniversalDeconstructionTab or libFilters.DetectUniversalDeconstructionPanelActiveTab
             local libFiltersFilterType = detectActiveUniversalDeconstructionTab(nil, tab.key)
             --d("[FCOIS]universalDeconstructionPanel:OnFilterChanged - " ..tos(tab.key) .. ", LibFiltersFilterType: " ..tos(libFiltersFilterType))
             updateFilterAndAddInvFlagButtonsAtUniversalDeconstruction(false, libFiltersFilterType)

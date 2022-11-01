@@ -503,6 +503,7 @@ signItemId = FCOIS.SignItemId
 function FCOIS.MyGetItemInstanceIdNoControl(bagId, slotIndex, signToo)
     local settings = FCOIS.settingsVars.settings
     if settings.debug then debugMessage("[MyGetItemInstanceIdNoControl]", "bagId: " ..tos(bagId) .. ", slotIndex: " ..tos(slotIndex).. ", signToo: " ..tos(signToo), true, FCOIS_DEBUG_DEPTH_VERBOSE) end
+
     signToo = signToo or false
     --Support for base64 unique itemids (e.g. an enchanted armor got the same ItemInstanceId but can have different unique ids)
     local itemId
@@ -986,7 +987,7 @@ function FCOIS.GetBagAndSlotFromControlUnderMouse()
     --Get the control below the mouse cursor
     local mouseOverControl = wm:GetMouseOverControl()
     if mouseOverControl == nil then return end
---d("[FCOIS.GetBagAndSlotFromControlUnderMouse] " .. mouseOverControl:GetName())
+d("[FCOIS.GetBagAndSlotFromControlUnderMouse] " .. mouseOverControl:GetName())
     local bagId
     local slotIndex
     local itemLink
@@ -995,9 +996,10 @@ function FCOIS.GetBagAndSlotFromControlUnderMouse()
     if inventoryRowPatterns == nil then return end
     --For each inventory row pattern check if the current control mouseOverControl's name matches this pattern
     local mouseOverControlName = mouseOverControl:GetName()
---d(">found pattern: " ..tos(patternToCheck) .. " in row " .. tos(mouseOverControlName))
+d(">row control name: " .. tos(mouseOverControlName))
     local isInvRow, patternToCheck = isSupportedInventoryRowPattern(mouseOverControlName)
     if isInvRow == true then
+d(">>row is supported pattern!")
         if patternToCheck == IIfAInvRowPatternToCheck then
             --Special treatment for the addon InventoryInsightFromAshes
             controlTypeBelowMouse = IIFAitemsListEntryPrePattern
