@@ -324,6 +324,7 @@ local LMAS_getAccountList = lmas ~= nil and lmas.GetAccountList
 --.additionalCheckFunc, containing the newMarkerIcon = markerIcon to use for the MarkItem functions later on in the toDos processing
 local function automaticMarkingSetsCollectionBookCheckFunc(p_bagId, p_slotIndex, knownOrUnknown)
     local doDebug = false --TODO disable after debugging (p_bagId == BAG_BACKPACK and true) or false
+    --local doDebug = (p_bagId == BAG_BACKPACK and true) or false
     if doDebug then d("automaticMarkingSetsCollectionBookCheckFunc - knownOrUnknown: " ..tos(knownOrUnknown)) end
     if knownOrUnknown == nil or p_bagId == nil or p_slotIndex == nil then return nil, nil end
     local settings = FCOIS.settingsVars.settings

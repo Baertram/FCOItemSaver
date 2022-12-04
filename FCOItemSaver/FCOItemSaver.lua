@@ -182,22 +182,44 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 
 --#248 2022-08-18, Baertram, Feature request: Change LibShifterBox usage to LibAddonMenuDualListBox widget in settings etc.!
 
+--#257 2022-11-28, Octopuss, comments:  I tried to remove all icons from the settings menu
+--[[
+user:/AddOns/FCOItemSaver/src/BackupMigration/FCOIS_BackupRestoreDelete.lua:686: operator .. is not supported for string .. nil
+stack traceback:
+user:/AddOns/FCOItemSaver/src/BackupMigration/FCOIS_BackupRestoreDelete.lua:686: in function 'FCOIS.DeleteMarkerIcons'
+|caaaaaa<Locals> markerIconsToDeleteType = 2, markerIconsToDeleteIcon = -1, preVars = [table:1]{currentStart = "> ", preChatText = "FCOIS", currentEnd = " <", preChatTextGreen = "|c22DD22FCOIS|r ", preChatTextBlue = "|c2222DDFCOIS|r ", preChatTextRed = "|cDD2222FCOIS|r "}, uniqueItemIdTypeChoices = [table:2]{}, savedVarsMarkedItemsNames = [table:3]{(null) = "markedItems", 1 = "markedItems"}, allIcons = T, iconStr = "All icons", markerIconsToDeleteTypeTable = "markedItemsFCOISUnique" </Locals>|r
+user:/AddOns/FCOItemSaver/src/Settings/FCOIS_SettingsMenu.lua:7654: in function 'm_callback'
+/EsoUI/Libraries/ZO_Dialog/ZO_Dialog.lua:111: in function 'HandleCallback'
+|caaaaaa<Locals> clickedButton = ud, dialog = ud, instanceId = 1 </Locals>|r
+/EsoUI/Libraries/ZO_KeybindButton/ZO_KeybindButton.lua:194: in function 'ZO_KeybindButtonMixin:OnClicked'
+|caaaaaa<Locals> self = ud, visible = T </Locals>|r
+/EsoUI/Libraries/ZO_KeybindButton/ZO_KeybindButton.lua:265: in function 'ZO_KeybindButtonTemplate_OnMouseUp'
+|caaaaaa<Locals> self = ud, button = 1, upInside = T </Locals>|r
+ZO_Dialog1Button2_MouseUp:3: in function '(main chunk)'
+|caaaaaa<Locals> self = ud, button = 1, upInside = T, ctrl = F, alt = F, shift = F, command = F </Locals>|r
+]]
+
+--#258 2022-11-27, Octopuss, comments: Keybind for remove all marks/undo does not work
+--[[I have since deleted the savedvars and redid all settings from scratch (ouch) just to make sure I have clean baseline (and to get rid of all the marks).
+So now I assigned PgUp to the "remove all marks" bind, added a lock icon to a random item in the inventory, moused over it with the cursor, pressed PgUp, and nothing happened.
+"Remove all icons" context menu entry works just fine.
+]]
 
 --______________________________________
--- Current max # of bugs/features/ToDos: 256
+-- Current max # of bugs/features/ToDos: 258
 --______________________________________
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-11-01
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-12-04
 ------------------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.4.1 - New version: 2.4.2) -    Updated last: 2022-11-01
+--Changelog (last version: 2.4.3- New version: 2.4.4) -    Updated last: 2022-13-04
 -------------------------------------------------------------------------------------
 --[Fixed]
---#255 Keybinds at quickslots did nto work
---#256 Compatibiliy with LibFilters 3 changes
+--#257
+--#258
 
 --[Changed]
 --

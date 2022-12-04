@@ -699,8 +699,10 @@ function FCOIS.CheckIfClearOrRestoreAllMarkers(clickedRow, modifierKeyPressed, u
     --Enable clearing all markers by help of the SHIFT+right click?
     local contextMenuClearMarkesByShiftKey = FCOIS.settingsVars.settings.contextMenuClearMarkesByShiftKey
 --d("[FCOIS.checkIfClearOrRestoreAllMarkers]shiftKey: " ..tos(IsShiftKeyDown()) .. ", upInside: " .. tos(upInside) .. ", mouseButton: " .. tos(mouseButton) .. ", settingEnabled: " ..tos(contextMenuClearMarkesByShiftKey) .. ", modifierKeyPressed: " ..tos(modifierKeyPressed) .. ", calledByKeybind: " ..tos(calledByKeybind) .. ", calledByContextMenu: " ..tos(calledByContextMenu) .. ", wasIIfARowClicked: " ..tos(wasIIfARowClicked))
-    if calledByContextMenu == true or ((modifierKeyPressed == true or calledByKeybind == true) and contextMenuClearMarkesByShiftKey
-            and (calledByKeybind == true or (upInside and mouseButton == MOUSE_BUTTON_INDEX_RIGHT)))  then
+    if ((calledByContextMenu == true
+        or calledByKeybind == true)
+        or (contextMenuClearMarkesByShiftKey and modifierKeyPressed == true and upInside and mouseButton == MOUSE_BUTTON_INDEX_RIGHT)
+    )  then
         refreshPopupDialogButons = refreshPopupDialogButons or false
         -- make sure control contains an item
         local bagId, slotIndex = myGetItemDetails(clickedRow)
@@ -711,15 +713,15 @@ function FCOIS.CheckIfClearOrRestoreAllMarkers(clickedRow, modifierKeyPressed, u
 --d(">Clearing/Restoring all markers of the current item now! bag: " .. bagId .. ", slotIndex: " .. slotIndex .. " " .. gil(bagId, slotIndex))
             --Set the preventer variable now to suppress the context menu of inventory items
             if not calledByKeybind and not calledByContextMenu then
-                --d(">NO KEYBIND call: enabling dontShowInvContextMenu: true ")
+--d(">NO KEYBIND call: enabling dontShowInvContextMenu: true ")
                 FCOIS.preventerVars.dontShowInvContextMenu = true
             end
-            --d("[FCOIS]checkIfClearOrRestoreAllMarkers - dontShowInvContextMenu: true")
+--d("[FCOIS]checkIfClearOrRestoreAllMarkers - dontShowInvContextMenu: true")
             --Clear/Restore the markers now
             clearOrRestoreAllMarkers(clickedRow, bagId, slotIndex, false, wasIIfARowClicked)
             if refreshPopupDialogButons then
                 --Unselect the item and disable the button of the popup dialog again
-                --d("[FCOIS]checkIfClearOrRestoreAllMarkers - refreshPopupDialog now")
+--d("[FCOIS]checkIfClearOrRestoreAllMarkers - refreshPopupDialog now")
                 FCOIS.RefreshPopupDialogButtons(clickedRow, false)
             end
             --Is the character shown, then disable the context menu "hide" variable again as the order of hooks is not
@@ -730,7 +732,7 @@ function FCOIS.CheckIfClearOrRestoreAllMarkers(clickedRow, modifierKeyPressed, u
                 --local isCharacter = (bagId == BAG_WORN and isCharacterShown()) or false
                 --local isCompanionCharacter = (bagId == BAG_COMPANION_WORN and isCompanionCharacterShown()) or false
                 --if isCharacter == true or isCompanionCharacter == true then
-                --d(">NO KEYBIND call: changing dontShowInvContextMenu to false again!")
+--d(">NO KEYBIND call: changing dontShowInvContextMenu to false again!")
                 FCOIS.preventerVars.dontShowInvContextMenu = false
                 --end
             end
@@ -747,8 +749,8 @@ function FCOIS.RemoveAllMarkerIconsOrUndo()
         local contextMenuClearMarkesKey = FCOIS.settingsVars.settings.contextMenuClearMarkesModifierKey
         local isModifierKeyPressedResult = isModifierKeyPressed(contextMenuClearMarkesKey)
         local refreshPopupDialogButons = FCOIS.preventerVars.isZoDialogContextMenu
---d(">mouseOverControl: " ..tos(mouseOverControl:GetName()) ..", isModifierKeyPressed: " .. tos(isModifierKeyPressedResult) .. ", refreshPopupDialogButons: " ..tos(refreshPopupDialogButons))
-        checkIfClearOrRestoreAllMarkers(mouseOverControl, isModifierKeyPressedResult, nil, nil, refreshPopupDialogButons, true) -- calledByKeybind = true
+--d(">mouseOverControl: " ..tos(mouseOverControl:GetName()) ..", contextMenuClearMarkesKey: " ..tos(contextMenuClearMarkesKey) .. ", isModifierKeyPressed: " .. tos(isModifierKeyPressedResult) .. ", refreshPopupDialogButons: " ..tos(refreshPopupDialogButons))
+        checkIfClearOrRestoreAllMarkers(mouseOverControl, isModifierKeyPressedResult, nil, nil, refreshPopupDialogButons, true, false, nil) -- calledByKeybind = true
     end
 end
 

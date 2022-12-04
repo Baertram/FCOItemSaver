@@ -204,8 +204,8 @@ local uniqueItemIdTypeChoices = {}
 locVars.uniqueItemIdTypeChoices = uniqueItemIdTypeChoices
 local uniqueItemIdTypeChoicesTT = {}
 local uniqueItemIdTypeChoicesValues = {
-    [1] = FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE,
-    [2] = FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE,
+    [FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE] =      FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE,
+    [FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE] =    FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE,
 }
 --The modifier key dropdown choices and values
 local choicesModifierKeys = {}
@@ -304,13 +304,13 @@ local function updateLocalizedVariablesBeforeAddonMenu()
 
     -- Unique itemId choices
     uniqueItemIdTypeChoices = {
-        [1] = locVars["options_unique_id_base_game"],
-        [2] = locVars["options_uniqe_id_by_FCOIS"],
+        [FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE] =      locVars["options_unique_id_base_game"],
+        [FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE] =    locVars["options_uniqe_id_by_FCOIS"],
     }
 
     uniqueItemIdTypeChoicesTT = {
-        [1] = locVars["options_unique_id_base_game" .. tooltipSuffix],
-        [2] = locVars["options_uniqe_id_by_FCOIS" .. tooltipSuffix],
+        [FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE] =      locVars["options_unique_id_base_game" .. tooltipSuffix],
+        [FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE] =    locVars["options_uniqe_id_by_FCOIS" .. tooltipSuffix],
     }
     --The modifier key dropdown choices and values
     choicesModifierKeys = {
