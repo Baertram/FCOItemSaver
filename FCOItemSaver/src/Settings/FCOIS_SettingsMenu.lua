@@ -201,7 +201,6 @@ local savedVariablesOptionsValues = {}
 
 -- Unique itemId choices
 local uniqueItemIdTypeChoices = {}
-locVars.uniqueItemIdTypeChoices = uniqueItemIdTypeChoices
 local uniqueItemIdTypeChoicesTT = {}
 local uniqueItemIdTypeChoicesValues = {
     [FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE] =      FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE,
@@ -265,7 +264,9 @@ end
 
 --Update localization dependent variables for the LAM settings menu
 local function updateLocalizedVariablesBeforeAddonMenu()
-    locVars = FCOISlocVars.fcois_loc
+--d("[FCOIS]updateLocalizedVariablesBeforeAddonMenu")
+    FCOISlocVars =    FCOIS.localizationVars
+    locVars =         FCOISlocVars.fcois_loc
 
     --Languages
     languageOptions = {}
@@ -307,6 +308,7 @@ local function updateLocalizedVariablesBeforeAddonMenu()
         [FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE] =      locVars["options_unique_id_base_game"],
         [FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE] =    locVars["options_uniqe_id_by_FCOIS"],
     }
+    FCOIS.localizationVars.fcois_loc.uniqueItemIdTypeChoices = uniqueItemIdTypeChoices
 
     uniqueItemIdTypeChoicesTT = {
         [FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE] =      locVars["options_unique_id_base_game" .. tooltipSuffix],
