@@ -987,7 +987,7 @@ function FCOIS.GetBagAndSlotFromControlUnderMouse()
     --Get the control below the mouse cursor
     local mouseOverControl = wm:GetMouseOverControl()
     if mouseOverControl == nil then return end
-d("[FCOIS.GetBagAndSlotFromControlUnderMouse] " .. mouseOverControl:GetName())
+--d("[FCOIS.GetBagAndSlotFromControlUnderMouse] " .. mouseOverControl:GetName())
     local bagId
     local slotIndex
     local itemLink
@@ -996,10 +996,10 @@ d("[FCOIS.GetBagAndSlotFromControlUnderMouse] " .. mouseOverControl:GetName())
     if inventoryRowPatterns == nil then return end
     --For each inventory row pattern check if the current control mouseOverControl's name matches this pattern
     local mouseOverControlName = mouseOverControl:GetName()
-d(">row control name: " .. tos(mouseOverControlName))
+--d(">row control name: " .. tos(mouseOverControlName))
     local isInvRow, patternToCheck = isSupportedInventoryRowPattern(mouseOverControlName)
     if isInvRow == true then
-d(">>row is supported pattern!")
+--d(">>row is supported pattern!")
         if patternToCheck == IIfAInvRowPatternToCheck then
             --Special treatment for the addon InventoryInsightFromAshes
             controlTypeBelowMouse = IIFAitemsListEntryPrePattern

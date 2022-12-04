@@ -676,13 +676,16 @@ end
 function FCOIS.DeleteMarkerIcons(markerIconsToDeleteType, markerIconsToDeleteIcon)
     if markerIconsToDeleteType == nil or markerIconsToDeleteIcon == nil or markerIconsToDeleteIcon == 0 then return end
     local preVars = FCOIS.preChatVars
-    --local locVars = FCOIS.localizationVars.fcois_loc
+    locVars = FCOIS.localizationVars.fcois_loc
     local uniqueItemIdTypeChoices = locVars.uniqueItemIdTypeChoices
     local savedVarsMarkedItemsNames = FCOIS.addonVars.savedVarsMarkedItemsNames
     local allIcons = markerIconsToDeleteIcon == FCOIS_CON_ICON_ALL or false
     local iconStr = (allIcons == true and "All icons") or tos(markerIconsToDeleteIcon)
 
     local markerIconsToDeleteTypeTable = savedVarsMarkedItemsNames[markerIconsToDeleteType]
+--d(">uniqueItemIdTypeChoices[markerIconsToDeleteType]: " ..tos(uniqueItemIdTypeChoices[markerIconsToDeleteType]))
+--d(">locVars[options_non_unique_id]: " ..tos(locVars["options_non_unique_id"]))
+--d(">uniqueItemIdTypeChoices[FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE]: " ..tos(uniqueItemIdTypeChoices[FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE]))
     local markerIconsToDeleteTypeStr = (type(markerIconsToDeleteType) == "number" and uniqueItemIdTypeChoices[markerIconsToDeleteType]) or (locVars["options_non_unique_id"] .. "/" .. uniqueItemIdTypeChoices[FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE])
     --Was the SV subTable name determined?
     if markerIconsToDeleteTypeTable == nil or markerIconsToDeleteTypeTable == "" then

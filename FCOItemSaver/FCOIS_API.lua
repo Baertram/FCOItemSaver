@@ -1537,7 +1537,7 @@ function FCOIS.MarkItemByKeybind(iconId, p_bagId, p_slotIndex, removeMarkers)
 	local itemLink
 	local itemInstanceOrUniqueId
 	local itemId
-d("[FCOIS.MarkItemByKeybind] Bag: " .. tos(bagId) .. ", slot: " .. tos(slotIndex))
+--d("[FCOIS.MarkItemByKeybind] Bag: " .. tos(bagId) .. ", slot: " .. tos(slotIndex))
 	if p_bagId == nil or p_slotIndex == nil then
 		bagId, slotIndex, controlBelowMouse, controlTypeBelowMouse  = FCOIS.GetBagAndSlotFromControlUnderMouse()
 		--No valid bagId and slotIndex was found
@@ -1552,7 +1552,7 @@ d("[FCOIS.MarkItemByKeybind] Bag: " .. tos(bagId) .. ", slot: " .. tos(slotIndex
     --bag and slot could be retrieved?
     if bagId ~= nil and slotIndex ~= nil then
         if settings.debug then debugMessage( "[MarkItemByKeybind]","Bag: " .. tos(bagId) .. ", slot: " .. tos(slotIndex), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
-d("[FCOIS.MarkItemByKeybind] Bag: " .. tos(bagId) .. ", slot: " .. tos(slotIndex) .. ", controlBelowMouse: ".. tos(controlBelowMouse) .. ", controlTypeBelowMouse: " .. tos(controlTypeBelowMouse))
+--d("[FCOIS.MarkItemByKeybind] Bag: " .. tos(bagId) .. ", slot: " .. tos(slotIndex) .. ", controlBelowMouse: ".. tos(controlBelowMouse) .. ", controlTypeBelowMouse: " .. tos(controlTypeBelowMouse))
 		--local mappingVars = FCOIS.mappingVars
         --Check if the item is currently marked with this icon, or not
         --Get the itemId of the bag, slot combination
@@ -1563,7 +1563,7 @@ d("[FCOIS.MarkItemByKeybind] Bag: " .. tos(bagId) .. ", slot: " .. tos(slotIndex
 			--Check if the icon is allowed for research and if the research-enabled check is set in the settings
 			local isResearchable, wasRetraitedOrReconstructed = isResearchableCheck(iconId, bagId, slotIndex)
 			if not isResearchable == true then
-d("<Abort: Item not researchable")
+--d("<Abort: Item not researchable")
 				--Abort here if not researchable or not enabled to be marked even if not researchable in the dynamic icon settings
 				return false
 			end
