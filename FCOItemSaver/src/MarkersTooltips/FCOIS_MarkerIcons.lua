@@ -400,7 +400,7 @@ local function addMarkerIconsToZOListViewNow(rowControl, slot, doCreateMarkerCon
         updateAlreadyBound = updateAlreadyBound or false
         updateOtherAddonsInvMarkers = updateOtherAddonsInvMarkers or false
 
-        --Change FCOIS.gFilterWhere upon drag&drop of items, or upon OnMous* functions?
+        --Change FCOIS.gFilterWhere upon drag&drop of items, or upon OnMouse* functions?
         -->e.g. at the companion inventory
         if libFiltersFilterTypeToUse ~= nil then
             if type(libFiltersFilterTypeToUse) == "function" then
@@ -411,7 +411,6 @@ local function addMarkerIconsToZOListViewNow(rowControl, slot, doCreateMarkerCon
             else
                 FCOIS.gFilterWhere = libFiltersFilterTypeToUse
             end
-
         end
 
         local iconSettings = FCOIS.settingsVars.settings.icon

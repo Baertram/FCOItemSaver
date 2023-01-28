@@ -12,7 +12,7 @@ local strlen = string.len
 FCOIS.addonVars = {}
 local addonVars = FCOIS.addonVars
 --Addon variables
-addonVars.addonVersionOptions 		    = '2.4.4' -- version shown in the settings panel
+addonVars.addonVersionOptions 		    = '2.4.5' -- version shown in the settings panel
 --The addon name, normal and decorated with colors etc.
 addonVars.gAddonName				    = "FCOItemSaver"
 addonVars.gAddonNameShort               = "FCOIS"
@@ -864,7 +864,8 @@ mappingVars.deconstructablePanelIdToOtherCraftType = {
 }
 
 --#202 -v-
-local function getDataFromUniversalDeconstructionMenuBar(key)
+--function to search the UniversalDeconstruction tabs for it's key (displayName) and return the tab's table then
+function FCOIS.GetDataFromUniversalDeconstructionMenuBar(key)
     local barToSearch = ZO_UNIVERSAL_DECONSTRUCTION_FILTER_TYPES
     if barToSearch then
         for _, v in ipairs(barToSearch) do
@@ -875,34 +876,35 @@ local function getDataFromUniversalDeconstructionMenuBar(key)
     end
     return
 end
-FCOIS.GetDataFromUniversalDeconstructionMenuBar = getDataFromUniversalDeconstructionMenuBar
-if ZO_UNIVERSAL_DECONSTRUCTION_FILTER_TYPES ~= nil then
-    --The LibFilters filterTypes which are supported at the universal deconstruction NPC e.g. 'Giladil'
-    --[[
-    mappingVars.panelIdSupportedAtUniversalDeconstructionNPC = {
-        [LF_SMITHING_DECONSTRUCT]   = true,
-        [LF_JEWELRY_DECONSTRUCT]    = true,
-        [LF_ENCHANTING_EXTRACTION]  = true,
-    }
-    ]]
-    mappingVars.panelIdSupportedAtUniversalDeconstructionNPC = libFilters.mapping.universalDeconFilterTypeToFilterBase
+local getDataFromUniversalDeconstructionMenuBar = FCOIS.GetDataFromUniversalDeconstructionMenuBar
+--The LibFilters filterTypes which are supported at the universal deconstruction NPC e.g. 'Giladil'
+--[[
+mappingVars.panelIdSupportedAtUniversalDeconstructionNPC = {
+    [LF_SMITHING_DECONSTRUCT]   = true,
+    [LF_JEWELRY_DECONSTRUCT]    = true,
+    [LF_ENCHANTING_EXTRACTION]  = true,
+}
+]]
+mappingVars.panelIdSupportedAtUniversalDeconstructionNPC = libFilters.mapping.universalDeconFilterTypeToFilterBase
 
-    mappingVars.universalDeconFilterPanelIdToWhereAreWe = {
-        [LF_SMITHING_DECONSTRUCT]   = FCOIS_CON_DECONSTRUCT,
-        [LF_JEWELRY_DECONSTRUCT]    = FCOIS_CON_DECONSTRUCT,
-        [LF_ENCHANTING_EXTRACTION]  = FCOIS_CON_ENCHANT_EXTRACT,
-    }
+mappingVars.universalDeconFilterPanelIdToWhereAreWe = {
+    [LF_SMITHING_DECONSTRUCT]   = FCOIS_CON_DECONSTRUCT,
+    [LF_JEWELRY_DECONSTRUCT]    = FCOIS_CON_DECONSTRUCT,
+    [LF_ENCHANTING_EXTRACTION]  = FCOIS_CON_ENCHANT_EXTRACT,
+}
 
+--The LibFilters-3.0 mapping between Universal Deconstructiona ctive tab and the LF_* filterType
+local libFiltersUniversalDeconTabToFilterType = libFilters.mapping.universalDeconTabKeyToLibFiltersFilterType
 
-    --The NPC decon menuBars tab's buttons -> filterPanelId
-    mappingVars.panelIdByUniversalDeconstructionNPCMenuBarTabButtonName = {
-        [getDataFromUniversalDeconstructionMenuBar("enchantments").displayName]   = LF_ENCHANTING_EXTRACTION, --Glyphs
-        [getDataFromUniversalDeconstructionMenuBar("jewelry").displayName]        = LF_JEWELRY_DECONSTRUCT,   --Jewelry
-        [getDataFromUniversalDeconstructionMenuBar("armor").displayName]          = LF_SMITHING_DECONSTRUCT,  --Armor
-        [getDataFromUniversalDeconstructionMenuBar("weapons").displayName]        = LF_SMITHING_DECONSTRUCT,  --Weapons
-        [getDataFromUniversalDeconstructionMenuBar("all").displayName]            = LF_SMITHING_DECONSTRUCT,  --All -> Not sure if deconstruction is the correct here? But use it for now
-    }
-end
+--The NPC decon menuBars tab's buttons -> filterPanelId
+mappingVars.panelIdByUniversalDeconstructionNPCMenuBarTabButtonName = {
+    [getDataFromUniversalDeconstructionMenuBar("enchantments").displayName]   = libFiltersUniversalDeconTabToFilterType["enchantments"], --LF_ENCHANTING_EXTRACTION, --Glyphs
+    [getDataFromUniversalDeconstructionMenuBar("jewelry").displayName]        = libFiltersUniversalDeconTabToFilterType["jewelry"],      --LF_JEWELRY_DECONSTRUCT,   --Jewelry
+    [getDataFromUniversalDeconstructionMenuBar("armor").displayName]          = libFiltersUniversalDeconTabToFilterType["armor"],        --LF_SMITHING_DECONSTRUCT,  --Armor
+    [getDataFromUniversalDeconstructionMenuBar("weapons").displayName]        = libFiltersUniversalDeconTabToFilterType["weapons"],      --LF_SMITHING_DECONSTRUCT,  --Weapons
+    [getDataFromUniversalDeconstructionMenuBar("all").displayName]            = libFiltersUniversalDeconTabToFilterType["all"],          --LF_SMITHING_DECONSTRUCT,  --All
+}
+
 
 --FilterPanelIds which need the FCOIS.RefreshListDialog function
 mappingVars.filterPanelIdForRefreshDialog = {
