@@ -391,7 +391,7 @@ end
 --A setupCallback function for the scrolllists of the inventories.
 --> Will add the FCOIS marker icons if they get visible and add the OnMouseUp handlers to the rows to support the SHIFT+right mouse button features
 local function onScrollListRowSetupCallback(rowControl, data)
-    d("[FCOIS]OnScrollListRow:SetupCallback - gFilterWhere: " ..tos(FCOIS.gFilterWhere))
+    --d("[FCOIS]OnScrollListRow:SetupCallback - gFilterWhere: " ..tos(FCOIS.gFilterWhere))
     if not rowControl then
         d("[FCOIS]ERROR: OnScrollListRowSetupCallback - rowControl is missing!")
         return

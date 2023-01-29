@@ -227,15 +227,16 @@ ZO_MainMenuCategoryBarButton1_MouseUp:3: in function '(main chunk)'
 ------------------------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed] -              Updated last 2023-01-28
 ------------------------------------------------------------------------------------
---#262
+--#260
 
 -------------------------------------------------------------------------------------
 --Changelog (last version: 2.4.4 - New version: 2.4.5) -    Updated last: 2023-01-28
 -------------------------------------------------------------------------------------
 --[Fixed]
+--#262 Universal Deconstruction filters not re-applying properly upon scrolling, close & re-open Universal Decon panel
 
 --[Changed]
---
+--Recoded the Universal Deconstruction panel to use LibFilters-3.0's open/clsoe callbacks now
 
 --[Added]
 --
