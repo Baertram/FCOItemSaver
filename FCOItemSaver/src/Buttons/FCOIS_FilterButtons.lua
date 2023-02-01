@@ -547,7 +547,7 @@ ZO_MainMenuCategoryBarButton1_MouseUp:3: in function '(main chunk)'
 
 -- -v- #202
 local function getUniversalDeconstructionNPCParentAndAnchor(p_FilterPanelId)
-d("[FCOIS]getUniversalDeconstructionNPCParentAndAnchor-p_FilterPanelId: " ..tos(p_FilterPanelId))
+--d("[FCOIS]getUniversalDeconstructionNPCParentAndAnchor-p_FilterPanelId: " ..tos(p_FilterPanelId))
     local universalDeconParentDataByPanelId = panelIdToUniversalDeconstructionParentData[p_FilterPanelId]
     return universalDeconParentDataByPanelId.parent, universalDeconParentDataByPanelId.anchorTo
 end
