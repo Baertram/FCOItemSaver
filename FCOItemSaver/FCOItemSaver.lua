@@ -227,12 +227,12 @@ ZO_MainMenuCategoryBarButton1_MouseUp:3: in function '(main chunk)'
 ------------------------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed] -              Updated last 2023-01-28
 ------------------------------------------------------------------------------------
---#260
 
 -------------------------------------------------------------------------------------
 --Changelog (last version: 2.4.4 - New version: 2.4.5) -    Updated last: 2023-01-28
 -------------------------------------------------------------------------------------
 --[Fixed]
+--#260 & #261 Context menu open, after slider of max dynamic icons was changed, showed a lua error user:/AddOns/FCOItemSaver/src/FCOIS_ContextMenus.lua:1427 or 1443
 --#262 Universal Deconstruction filters not re-applying properly upon scrolling, close & re-open Universal Decon panel
 
 --[Changed]
