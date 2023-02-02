@@ -182,47 +182,61 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 
 --#248 2022-08-18, Baertram, Feature request: Change LibShifterBox usage to LibAddonMenuDualListBox widget in settings etc.!
 
---#257 2022-11-28, Octopuss, comments:  I tried to remove all icons from the settings menu
+
+--#295 2022-12-05, Baertram, bug: After opening alchemy, enchanting, jewelry crafting, then clothier, then calling Giladil and talink to her to show the universal decon:
 --[[
-user:/AddOns/FCOItemSaver/src/BackupMigration/FCOIS_BackupRestoreDelete.lua:686: operator .. is not supported for string .. nil
-stack traceback:
-user:/AddOns/FCOItemSaver/src/BackupMigration/FCOIS_BackupRestoreDelete.lua:686: in function 'FCOIS.DeleteMarkerIcons'
-|caaaaaa<Locals> markerIconsToDeleteType = 2, markerIconsToDeleteIcon = -1, preVars = [table:1]{currentStart = "> ", preChatText = "FCOIS", currentEnd = " <", preChatTextGreen = "|c22DD22FCOIS|r ", preChatTextBlue = "|c2222DDFCOIS|r ", preChatTextRed = "|cDD2222FCOIS|r "}, uniqueItemIdTypeChoices = [table:2]{}, savedVarsMarkedItemsNames = [table:3]{(null) = "markedItems", 1 = "markedItems"}, allIcons = T, iconStr = "All icons", markerIconsToDeleteTypeTable = "markedItemsFCOISUnique" </Locals>|r
-user:/AddOns/FCOItemSaver/src/Settings/FCOIS_SettingsMenu.lua:7654: in function 'm_callback'
-/EsoUI/Libraries/ZO_Dialog/ZO_Dialog.lua:111: in function 'HandleCallback'
-|caaaaaa<Locals> clickedButton = ud, dialog = ud, instanceId = 1 </Locals>|r
-/EsoUI/Libraries/ZO_KeybindButton/ZO_KeybindButton.lua:194: in function 'ZO_KeybindButtonMixin:OnClicked'
-|caaaaaa<Locals> self = ud, visible = T </Locals>|r
-/EsoUI/Libraries/ZO_KeybindButton/ZO_KeybindButton.lua:265: in function 'ZO_KeybindButtonTemplate_OnMouseUp'
+user:/AddOns/FCOItemSaver/src/Buttons/FCOIS_FilterButtons.lua:560: attempt to index a nil value
+|rstack traceback:
+user:/AddOns/FCOItemSaver/src/Buttons/FCOIS_FilterButtons.lua:560: in function 'FCOIS.CheckFCOISFilterButtonsAtPanel'
+|caaaaaa<Locals> doUpdateLists = T, panelId = 16, hideFilterButtons = F, isUniversalDeconNPC = T, universalDeconFilterPanelIdBefore = 21, settings = [table:1]{}, buttonsParentCtrl = ud, filterPanel = 16, filterPanelIdToUse = 16, areFilterButtonEnabledAtPanelId = T, filterButtons = [table:2]{}, _ = 1, buttonNr = 1 </Locals>|r
+user:/AddOns/FCOItemSaver/src/EventsHooks/FCOIS_Hooks.lua:1145: in function 'updateFilterAndAddInvFlagButtonsAtUniversalDeconstruction'
+|caaaaaa<Locals> isHidden = F, LibFiltersFilterTypeAtUniversalDecon = 16, lastUniversalDeconFilterPanelId = 21, filterPanelIdPassedIn = 16, currentFilterPanelIdAtUniversalDecon = 16 </Locals>|r
+user:/AddOns/FCOItemSaver/src/EventsHooks/FCOIS_Hooks.lua:1261: in function 'callback'
+|caaaaaa<Locals> tab = [table:3]{iconOver = "EsoUI/Art/Inventory/inventory_...", key = "all", iconUp = "EsoUI/Art/Inventory/inventory_...", displayName = "Alles", iconDisabled = "EsoUI/Art/Inventory/inventory_...", iconDown = "EsoUI/Art/Inventory/inventory_..."}, craftingTypes = [table:4]{}, includeBanked = T, libFiltersFilterType = 16 </Locals>|r
+/EsoUI/Libraries/Utility/ZO_CallbackObject.lua:132: in function 'ZO_CallbackObjectMixin:FireCallbacks'
+|caaaaaa<Locals> self = [table:5]{fireCallbackDepth = 1}, eventName = "OnFilterChanged", registry = [table:6]{}, callbackInfoIndex = 2, callbackInfo = [table:7]{4 = F}, callback = user:/AddOns/FCOItemSaver/src/EventsHooks/FCOIS_Hooks.lua:1224, deleted = F </Locals>|r
+/EsoUI/Ingame/Crafting/Keyboard/UniversalDeconstructionPanel_Keyboard.lua:171: in function 'ZO_UniversalDeconstructionPanel_Keyboard:OnFilterChanged'
+|caaaaaa<Locals> self = [table:5], includeBankedItemsChecked = T, craftingTypeFilters = [table:4], currentTab = [table:3] </Locals>|r
+/EsoUI/Ingame/Crafting/Keyboard/UniversalDeconstructionPanel_Keyboard.lua:228: in function 'ZO_UniversalDeconstructionInventory_Keyboard:ChangeFilter'
+|caaaaaa<Locals> self = [table:8]{dirty = F, sortOrder = T, sortKey = "traitInformationSortOrder", performingFullRefresh = F}, filterData = [table:9]{disabled = "EsoUI/Art/Inventory/inventory_...", activeTabText = "Alles", highlight = "EsoUI/Art/Inventory/inventory_...", pressed = "EsoUI/Art/Inventory/inventory_...", tooltipText = "Alles", normal = "EsoUI/Art/Inventory/inventory_..."} </Locals>|r
+/EsoUI/Ingame/Crafting/Keyboard/CraftingInventory.lua:148: in function 'callback'
+|caaaaaa<Locals> tabData = [table:9] </Locals>|r
+/EsoUI/Libraries/ZO_MenuBar/ZO_MenuBar.lua:287: in function 'MenuBarButton:Release'
+|caaaaaa<Locals> self = [table:10]{m_highlightHidden = F, m_state = 1, m_locked = T}, upInside = T, skipAnimation = F, playerDriven = T, buttonData = [table:9] </Locals>|r
+/EsoUI/Libraries/ZO_MenuBar/ZO_MenuBar.lua:657: in function 'ZO_MenuBarButtonTemplate_OnMouseUp'
 |caaaaaa<Locals> self = ud, button = 1, upInside = T </Locals>|r
-ZO_Dialog1Button2_MouseUp:3: in function '(main chunk)'
+ZO_MainMenuCategoryBarButton1_MouseUp:3: in function '(main chunk)'
 |caaaaaa<Locals> self = ud, button = 1, upInside = T, ctrl = F, alt = F, shift = F, command = F </Locals>|r
 ]]
 
---#258 2022-11-27, Octopuss, comments: Keybind for remove all marks/undo does not work
---[[I have since deleted the savedvars and redid all settings from scratch (ouch) just to make sure I have clean baseline (and to get rid of all the marks).
-So now I assigned PgUp to the "remove all marks" bind, added a lock icon to a random item in the inventory, moused over it with the cursor, pressed PgUp, and nothing happened.
-"Remove all icons" context menu entry works just fine.
-]]
+--#260 2022-12-05, Nagolite, bug: Each time context menu is opened: user:/AddOns/FCOItemSaver/src/FCOIS_ContextMenus.lua:1427: in function 'FCOIS.AddMark'
+-->Maybe a solution would be: After changing the number of max enabled dynamic marker icons disable the dynamic icons in a loop at event_add_on_loaded?
+
+--#261 2023-01-15, Tes96, bug: After "Get a free house brochure" was finished the error message showed for context menus:
+-->user:/AddOns/FCOItemSaver/src/FCOIS_ContextMenus.lua:1443: operator .. is not supported for string .. nil
+-->Equal error like #260?
+
+--#262 2023-01-28, sirinsidiator, bug: Universal Deconstruction NPC: After scrolling, close NPC, reopen it and filters applied before are not registered
+-->(FCOIS.gFilterWhere most probably is 1 then for LF_INVENTORY due to the row setupFunction hack)
 
 --______________________________________
--- Current max # of bugs/features/ToDos: 258
+-- Current max # of bugs/features/ToDos: 262
 --______________________________________
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2022-12-04
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2023-01-28
 ------------------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.4.3- New version: 2.4.4) -    Updated last: 2022-13-04
+--Changelog (last version: 2.4.4 - New version: 2.4.5) -    Updated last: 2023-01-28
 -------------------------------------------------------------------------------------
 --[Fixed]
---#257
---#258
+--#260 & #261 Context menu open, after slider of max dynamic icons was changed, showed a lua error user:/AddOns/FCOItemSaver/src/FCOIS_ContextMenus.lua:1427 or 1443
+--#262 Universal Deconstruction filters not re-applying properly upon scrolling, close & re-open Universal Decon panel
 
 --[Changed]
---
+--Recoded the Universal Deconstruction panel to use LibFilters-3.0's open/clsoe callbacks now
 
 --[Added]
 --

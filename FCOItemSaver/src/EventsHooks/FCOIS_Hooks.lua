@@ -21,6 +21,8 @@ local giet                                  = GetItemEquipType
 local addonVars                             = FCOIS.addonVars
 local addonName                             = addonVars.gAddonName
 
+local CM                                    = CALLBACK_MANAGER
+
 local ctrlVars                              = FCOIS.ZOControlVars
 local invSceneName                          = ctrlVars.invSceneName
 
@@ -59,20 +61,6 @@ local showProtectionDialog                  = FCOIS.ShowProtectionDialog
 local showCompanionProgressBar              = FCOIS.ShowCompanionProgressBar
 local showPlayerProgressBar                 = FCOIS.ShowPlayerProgressBar
 local isDeconstructionHandlerNeeded         = FCOIS.IsDeconstructionHandlerNeeded
-
--- -v- #202 Universal Deconstruction - Butonly for the inperformant ChangeFilter hook which Cardinal05 provided
--->Disabled for now! Until ZOs provides a callback for the tab change we will PostHook the menuBar tab buttons OnMouseUp
---[[
-local getDataFromUniversalDeconstructionMenuBar
-local enchantingItemTypes
-local universalDeconstructionPanel
-if ZO_UNIVERSAL_DECONSTRUCTION_FILTER_TYPES ~= nil then
-    universalDeconstructionPanel = ctrlVars.UNIVERSAL_DECONSTRUCTION_GLOBAL.deconstructionPanel
-    getDataFromUniversalDeconstructionMenuBar = FCOIS.GetDataFromUniversalDeconstructionMenuBar
-    enchantingItemTypes = getDataFromUniversalDeconstructionMenuBar("enchantments").filter.itemTypes
-end
-]]
--- -^- #202
 
 local removeArmorTypeMarker
 local updateEquipmentSlotMarker
@@ -1085,184 +1073,160 @@ function FCOIS.CreateHooks()
 
     --======== UNIVERSAL DECONSTRUCTION =================================================
     -- -v- #202
-    if ZO_UNIVERSAL_DECONSTRUCTION_FILTER_TYPES ~= nil then
-        getCurrentFilterPanelIdAtDeconNPC = getCurrentFilterPanelIdAtDeconNPC or FCOIS.GetCurrentFilterPanelIdAtDeconNPC
+    getCurrentFilterPanelIdAtDeconNPC = getCurrentFilterPanelIdAtDeconNPC or FCOIS.GetCurrentFilterPanelIdAtDeconNPC
+    --[[
+    --Old before LibFilters-3.0 v339 - No panel callbacks for "shown" and "hidden" used
         local universalDeconstructionPanel = universalDeconGlobal.deconstructionPanel
         local detectActiveUniversalDeconstructionTab = libFilters.DetectUniversalDeconstructionPanelActiveTab
+    ]]
 
-        --Pre Hook the universal deconstruction for prevention methods
-        --Register a secure posthook on visibility change of a scrolllist's row -> At the universald deconstruction inventory list
-        SecurePostHook(ctrlVars.UNIVERSAL_DECONSTRUCTION_INV_BACKPACK.dataTypes[1], "setupCallback", onScrollListRowSetupCallback)
+    --Pre Hook the universal deconstruction for prevention methods
+    --Register a secure posthook on visibility change of a scrolllist's row -> At the universal deconstruction inventory list
+    SecurePostHook(ctrlVars.UNIVERSAL_DECONSTRUCTION_INV_BACKPACK.dataTypes[1], "setupCallback", onScrollListRowSetupCallback)
 
-
-        --Hide and reAnchor the last shown filterPanel filter buttons at the UniversalDeconstruction UI -> As the smithing/jewelry/enchanting filetrButtons
-        --get re-used here we need to hide them properly again and re-anchor them to their original filterPanel ctrls/UIs
-        local function reAnchorAndHideLastUniversalDeconPanelFilterAndAddFlagButtons(lastFilterPanelIdAtUniversalDecon)
-            if lastFilterPanelIdAtUniversalDecon == nil then lastFilterPanelIdAtUniversalDecon = FCOIS.gFilterWhere end
-            --d(">[FCOIS]reAnchorAndHideLastUniversalDeconFilterPanelButtons - lastFilterPanelIdAtUniversalDecon: " ..tos(lastFilterPanelIdAtUniversalDecon) .. ", current: " ..tos(universalDeconGlobal.FCOIScurrentFilterPanelId))
-            --Reset the filterButtons and the additional inventory flag button to their default parents at e.g.
-            --LF_SMITHING_DECONSTRUCT, LF_JEWELRY_DECONSTRUCT and LF_ENCHANTING_EXTRACTION
-            reParentAndAnchorContextMenuInvokerButtons(lastFilterPanelIdAtUniversalDecon, nil)
-        end
-
-        --Add StateChange callback to UNIVERSAL_DECONSTRUCTION_KEYBOARD_SCENE (ctrlVars.UNIVERSAL_DECONSTRUCTON_SCENE) and
-        --at SHOWN detect the current panel and set FCOIS.gFilterWhere + add buttons + add flag icon (reanchor LF_SMITHING_DECONSTRUCT [buttons ALL, ARMOR, WEAPON]
-        --and LF_JEWELRY_DECONSTRUCT [buttons JEWELRY] and LF_ENCHANTING_EXTRACT [buttons ENCHANTING], and at HIDING reanchor them to their normal parents
-        -- and set FCOIS.gFilterWhere to LF_INVENTORY again)
-        local function updateFilterAndAddInvFlagButtonsAtUniversalDeconstruction(isHidden, LibFiltersFilterTypeAtUniversalDecon)
-            isHidden = isHidden or false
-
-            if not isHidden then
-                local lastUniversalDeconFilterPanelId = universalDeconGlobal.FCOIScurrentFilterPanelId
-                --LF_SMITHING_DECONSTRUCT needs to be passed in as valid filterPanel! It maybe not the correct filterPanel, so it is determined internally
-                local filterPanelIdPassedIn
-                if LibFiltersFilterTypeAtUniversalDecon ~= nil then
-                    filterPanelIdPassedIn = LibFiltersFilterTypeAtUniversalDecon
-                else
-                    filterPanelIdPassedIn = universalDeconGlobal.FCOIScurrentFilterPanelId
-                end
-                --d("[FCOIS]UniversalDecon - Setting filterPanelId to: " ..tos(filterPanelIdPassedIn))
-                if filterPanelIdPassedIn == nil then filterPanelIdPassedIn = LF_SMITHING_DECONSTRUCT end
-                --Update universalDeconGlobal.FCOIScurrentFilterPanelId
-                local currentFilterPanelIdAtUniversalDecon = getCurrentFilterPanelIdAtDeconNPC(filterPanelIdPassedIn)
-                if currentFilterPanelIdAtUniversalDecon ~= nil and FCOIS.gFilterWhere ~= currentFilterPanelIdAtUniversalDecon then
-                    --d(">Setting filterPanelId to: " ..tos(currentFilterPanelIdAtUniversalDecon))
-                    if lastUniversalDeconFilterPanelId ~= nil and lastUniversalDeconFilterPanelId ~= currentFilterPanelIdAtUniversalDecon then
-                        reAnchorAndHideLastUniversalDeconPanelFilterAndAddFlagButtons(lastUniversalDeconFilterPanelId)
-                    end
-
-                    FCOIS.gFilterWhere = currentFilterPanelIdAtUniversalDecon
-                    --Re-anchor the filterButtons and the additional inventory flag button from their default parents at e.g.
-                    --LF_SMITHING_DECONSTRUCT, LF_JEWELRY_DECONSTRUCT and LF_ENCHANTING_EXTRACTION to
-                    --their new parent control UNIVERSAL_DECONSTRUCTION.control ...
-                    -->Re-Parent and Re-Anchor he filterButtons and the additional inventory "flag" button from old panel to current panel
-                    reParentAndAnchorContextMenuInvokerButtons(nil, currentFilterPanelIdAtUniversalDecon)
-                    --Change the button color of the context menu invoker
-                    changeContextMenuInvokerButtonColorByPanelId(currentFilterPanelIdAtUniversalDecon)
-                    --Check the filter buttons and create them if they are not there. Update the inventory afterwards too
-                    -->Will reParent and reAnchor the filterButtons too!
-                    --doUpdateLists, panelId, overwriteFilterWhere, hideFilterButtons, isUniversalDeconNPC
-                    checkFCOISFilterButtonsAtPanel(true, currentFilterPanelIdAtUniversalDecon, nil, nil, true, lastUniversalDeconFilterPanelId) --#202 universal deconstruction
-                end
-            else
-                reAnchorAndHideLastUniversalDeconPanelFilterAndAddFlagButtons(universalDeconGlobal.FCOIScurrentFilterPanelId)
-
-                --Hide context menus and update inventory filterButtons + re-enable the ANTI deconstruction/ANTI enchanting protection if needed
-                onClosePanel(nil, LF_INVENTORY, "CRAFTING_STATION")
-                --Reset the filterPanelId to inventory
-                --d("[FCOIS]UniversalDecon HIDDEN - resetting filterPanelId to LF_INVENTORY")
-                FCOIS.gFilterWhere = LF_INVENTORY
-            end
-        end
-
-        local universalDeconButtonsHooked = false
-        ctrlVars.UNIVERSAL_DECONSTRUCTON_SCENE:RegisterCallback("StateChange", function(oldState, newState)
-            --d("[FCOIS] UniversalDeconstruction Scene state change to: " ..tos(newState))
-            --Hide the context menu at the active panel
-            sceneCallbackHideContextMenu(oldState, newState)
-
-            --[[
-            if newState == SCENE_SHOWING then
-                if not universalDeconButtonsHooked then
-                    --Hook the buttons' OnClick handler of the universal deconstruction bar
-                    local buttonsToHook = ctrlVars.UNIVERSAL_DECONSTRUCTION_MENUBAR_TABS.m_object.m_buttons
-                    --d("[FCOIS]Universal deconstruction menu bar button hooks: " ..tos(buttonsToHook))
-                    if buttonsToHook ~= nil then
-                        for _, buttonRef in ipairs(buttonsToHook) do
-                            if buttonRef ~= nil and buttonRef[1] ~= nil and buttonRef[1].SetHandler ~= nil then
-                                --d(">hooked button: " ..tos(idx))
-                                ZO_PostHookHandler(buttonRef[1], "OnMouseUp", function(clickedButtonRef, mouseButton, upInside)
-                                    --d("[FCOIS]OnMouseUp universal deconstruction menu bar button")
-                                    if not mouseButton == MOUSE_BUTTON_INDEX_LEFT or not upInside then return end
-                                    zo_callLater(function()
-                                        updateFilterAndAddInvFlagButtonsAtUniversalDeconstruction(false)
-                                    end, 0) --delay by 1 frame to update the menu buttons properly
-                                end)
-                            end
-                            universalDeconButtonsHooked = true
-                        end
-                    end
-                end
-            ]]
-
-            --Normal scene shown/hidden callbacks to show/hide (& reanchor) the additional inventory flag buttons and the filterButtonss
-            if newState == SCENE_SHOWN then
-                --[[
-                    --Set the filterPanelId to last opened one or default for "all" tab directly so that functions at the inventory list will use
-                    --the correct filterPanelId
-                    --d(">>>SHOWN - Setting filterPanelId to: " ..tos(universalDeconGlobal.FCOIScurrentFilterPanelId) .. ", or to \'ALL\' tab")
-                    --Delay by a few ms to update the controls etc. properly
-                    zo_callLater(function()
-                        updateFilterAndAddInvFlagButtonsAtUniversalDeconstruction(false)
-                    end, 10)
-                ]]
-                --Was the scene hidden before?
-                if FCOIS.preventerVars.universalDeconSceneHidden then
-                    FCOIS.preventerVars.universalDeconSceneHidden = false
-                    --Set the currently opened panel again as the OnFilterChanged callback might not fire
-                    universalDeconPanel = universalDeconPanel or universalDeconGlobal.deconstructionPanel
-                    local universalDeconSelectedTab = universalDeconPanel.inventory:GetCurrentFilter()
-                    local libFiltersFilterType = detectActiveUniversalDeconstructionTab(nil, universalDeconSelectedTab.key)
-                    --d("[FCOIS]universalDeconstructionPanel SCENE OnShown - " ..tos(universalDeconSelectedTab.key) .. ", LibFiltersFilterType: " ..tos(libFiltersFilterType))
-                    updateFilterAndAddInvFlagButtonsAtUniversalDeconstruction(false, libFiltersFilterType)
-                end
-
-            elseif newState == SCENE_HIDING then
-                --Hide the context menu at mail panel
-                local filterTypeToHide = universalDeconGlobal.FCOIScurrentFilterPanelId
-                if filterTypeToHide == nil then filterTypeToHide = LF_SMITHING_DECONSTRUCT end
-                hideContextMenu(filterTypeToHide)
-            elseif newState == SCENE_HIDDEN then
-                updateFilterAndAddInvFlagButtonsAtUniversalDeconstruction(true, nil)
-
-                universalDeconGlobal.FCOIScurrentFilterPanelId = nil
-                FCOIS.preventerVars.universalDeconSceneHidden = true
-            end
-        end)
-
-        --Another approach to detect the current active panel, but this will fire also if the dropdown filters are changed!
-        universalDeconstructionPanel:RegisterCallback("OnFilterChanged", function(tab, craftingTypes, includeBanked)
-            --[[
-                -- Returns any CRAFTING_TYPE filter value(s) selected from ZO_UNIVERSAL_DECONSTRUCTION_CRAFTING_TYPES by the player.
-                local craftingTypes = panel:GetSavedCraftingTypeFilters()
-                if craftingTypes then
-                    -- One or more keys from the set {CRAFTING_TYPE_BLACKSMITHING, CRAFTING_TYPE_CLOTHIER,
-                    --CRAFTING_TYPE_ENCHANTING, CRAFTING_TYPE_JEWELRYCRAFTING, CRAFTING_TYPE_WOODWORKING}
-        FCOIS._universalDeconCraftingTypes = craftingTypes
-                end
-
-                -- Returns the ITEMTYPE or ITEMFILTERTYPE value(s) shown by the current tab.
-                local filterData = panel.inventory:GetCurrentFilterType()
-                if filterData then
-                    -- If itemTypes exists, it is a table with one or more ITEMTYPE_* values indicating which item types are shown.
-                    -- For example: {ITEMTYPE_GLYPH_ARMOR, ITEMTYPE_GLYPH_JEWELRY, ITEMTYPE_GLYPH_WEAPON}
-                    local itemTypes = filterData.itemTypes
-        FCOIS._universalDeconItemTypes = itemTypes
-                    if itemTypes and enchantingItemTypes and itemTypes == enchantingItemTypes then
-                        d(">Enchating tab active")
-                    else
-                        -- If itemFilterTypes exists, it is a table with one or more ITEMFILTERTYPE_* values indicating which item filter types are shown.
-                        -- For example: {ITEMFILTERTYPE_WEAPONS}
-                        local itemFilterTypes = filterData.itemFilterTypes
-        FCOIS._universalDeconItemFilterTypes = itemFilterTypes
-                        if itemFilterTypes then
-
-                        end
-                    end
-
-                else
-                    -- Otherwise, the current tab is the "All" tab; all items that can be deconstructed are shown.
-
-                end
-                ]]
-            detectActiveUniversalDeconstructionTab = detectActiveUniversalDeconstructionTab or libFilters.DetectUniversalDeconstructionPanelActiveTab
-            local libFiltersFilterType = detectActiveUniversalDeconstructionTab(nil, tab.key)
-            --d("[FCOIS]universalDeconstructionPanel:OnFilterChanged - " ..tos(tab.key) .. ", LibFiltersFilterType: " ..tos(libFiltersFilterType))
-            updateFilterAndAddInvFlagButtonsAtUniversalDeconstruction(false, libFiltersFilterType)
-        end)
-
+    --Hide and reAnchor the last shown filterPanel filter buttons at the UniversalDeconstruction UI -> As the smithing/jewelry/enchanting filetrButtons
+    --get re-used here we need to hide them properly again and re-anchor them to their original filterPanel ctrls/UIs
+    local function reAnchorAndHideLastUniversalDeconPanelFilterAndAddFlagButtons(lastFilterPanelIdAtUniversalDecon)
+        if lastFilterPanelIdAtUniversalDecon == nil then lastFilterPanelIdAtUniversalDecon = FCOIS.gFilterWhere end
+    --d(">[FCOIS]reAnchorAndHideLastUniversalDeconFilterPanelButtons - lastFilterPanelIdAtUniversalDecon: " ..tos(lastFilterPanelIdAtUniversalDecon) .. ", current: " ..tos(universalDeconGlobal.FCOIScurrentFilterPanelId))
+        --Reset the filterButtons and the additional inventory flag button to their default parents at e.g.
+        --LF_SMITHING_DECONSTRUCT, LF_JEWELRY_DECONSTRUCT and LF_ENCHANTING_EXTRACTION
+        reParentAndAnchorContextMenuInvokerButtons(lastFilterPanelIdAtUniversalDecon, nil)
     end
+
+    --Add StateChange callback to UNIVERSAL_DECONSTRUCTION_KEYBOARD_SCENE (ctrlVars.UNIVERSAL_DECONSTRUCTON_SCENE) and
+    --at SHOWN detect the current panel and set FCOIS.gFilterWhere + add buttons + add flag icon (reanchor LF_SMITHING_DECONSTRUCT [buttons ALL, ARMOR, WEAPON]
+    --and LF_JEWELRY_DECONSTRUCT [buttons JEWELRY] and LF_ENCHANTING_EXTRACT [buttons ENCHANTING], and at HIDING reanchor them to their normal parents
+    -- and set FCOIS.gFilterWhere to LF_INVENTORY again)
+    local function updateFilterAndAddInvFlagButtonsAtUniversalDeconstruction(isHidden, LibFiltersFilterTypeAtUniversalDecon)
+        isHidden = isHidden or false
+
+        if not isHidden then
+            local lastUniversalDeconFilterPanelId = universalDeconGlobal.FCOIScurrentFilterPanelId
+            --LF_SMITHING_DECONSTRUCT needs to be passed in as valid filterPanel! It maybe not the correct filterPanel, so it is determined internally
+            local filterPanelIdPassedIn
+            if LibFiltersFilterTypeAtUniversalDecon ~= nil then
+                filterPanelIdPassedIn = LibFiltersFilterTypeAtUniversalDecon
+            else
+                filterPanelIdPassedIn = universalDeconGlobal.FCOIScurrentFilterPanelId
+            end
+--d("[FCOIS]UniversalDecon - Setting filterPanelId to: " ..tos(filterPanelIdPassedIn))
+            if filterPanelIdPassedIn == nil then filterPanelIdPassedIn = LF_SMITHING_DECONSTRUCT end
+            --Update universalDeconGlobal.FCOIScurrentFilterPanelId
+            local currentFilterPanelIdAtUniversalDecon = getCurrentFilterPanelIdAtDeconNPC(filterPanelIdPassedIn)
+            if currentFilterPanelIdAtUniversalDecon ~= nil and FCOIS.gFilterWhere ~= currentFilterPanelIdAtUniversalDecon then
+--d(">Setting filterPanelId to: " ..tos(currentFilterPanelIdAtUniversalDecon))
+                if lastUniversalDeconFilterPanelId ~= nil and lastUniversalDeconFilterPanelId ~= currentFilterPanelIdAtUniversalDecon then
+                    reAnchorAndHideLastUniversalDeconPanelFilterAndAddFlagButtons(lastUniversalDeconFilterPanelId)
+                end
+
+                FCOIS.gFilterWhere = currentFilterPanelIdAtUniversalDecon
+                --Re-anchor the filterButtons and the additional inventory flag button from their default parents at e.g.
+                --LF_SMITHING_DECONSTRUCT, LF_JEWELRY_DECONSTRUCT and LF_ENCHANTING_EXTRACTION to
+                --their new parent control UNIVERSAL_DECONSTRUCTION.control ...
+                -->Re-Parent and Re-Anchor he filterButtons and the additional inventory "flag" button from old panel to current panel
+                reParentAndAnchorContextMenuInvokerButtons(nil, currentFilterPanelIdAtUniversalDecon)
+                --Change the button color of the context menu invoker
+                changeContextMenuInvokerButtonColorByPanelId(currentFilterPanelIdAtUniversalDecon)
+                --Check the filter buttons and create them if they are not there. Update the inventory afterwards too
+                -->Will reParent and reAnchor the filterButtons too!
+                --doUpdateLists, panelId, overwriteFilterWhere, hideFilterButtons, isUniversalDeconNPC
+                checkFCOISFilterButtonsAtPanel(true, currentFilterPanelIdAtUniversalDecon, nil, nil, true, lastUniversalDeconFilterPanelId) --#202 universal deconstruction
+            end
+        else
+--d("[FCOIS]UniversalDecon panel HIDDEN")
+            reAnchorAndHideLastUniversalDeconPanelFilterAndAddFlagButtons(universalDeconGlobal.FCOIScurrentFilterPanelId)
+        end
+    end
+
+    ctrlVars.UNIVERSAL_DECONSTRUCTON_SCENE:RegisterCallback("StateChange", function(oldState, newState)
+--d("[FCOIS] UniversalDeconstruction Scene state change to: " ..tos(newState))
+        --Hide the context menu at the active panel
+        sceneCallbackHideContextMenu(oldState, newState)
+
+        --Normal scene shown/hidden callbacks to show/hide (& reanchor) the additional inventory flag buttons and the filterButtonss
+        if newState == SCENE_HIDING then
+            --Hide the context menu at universal decon panel
+            local filterTypeToHide = universalDeconGlobal.FCOIScurrentFilterPanelId
+            if filterTypeToHide == nil then filterTypeToHide = LF_SMITHING_DECONSTRUCT end
+            hideContextMenu(filterTypeToHide)
+        elseif newState == SCENE_HIDDEN then
+--d("[FCOIS]UniversalDecon scene hidden - resetting universalDeconGlobal.FCOIScurrentFilterPanelId to nil")
+            universalDeconGlobal.FCOIScurrentFilterPanelId = nil
+
+            --Hide context menus and update inventory filterButtons + re-enable the ANTI deconstruction/ANTI enchanting protection if needed
+            onClosePanel(nil, LF_INVENTORY, "CRAFTING_STATION")
+            --Reset the filterPanelId to inventory
+            FCOIS.gFilterWhere = LF_INVENTORY
+        end
+    end)
+
     -- -^- #202
+
+
+    --New with LibFilters-3.0 v339 panel callbacks:
+    --======== UNIVERSAL DECONSTRUCTION ===========================================================
+    --Check if UniversalDeconstruction is shown
+    local libFilters_getUniversalDeconstructionPanelActiveTabFilterType = libFilters.GetUniversalDeconstructionPanelActiveTabFilterType
+    local function FCOItemSaver_CheckIfUniversalDeconIsShownAndAddButtons(stateStr, universalDeconSelectedTabNow)
+--d("[FCOItemSaver_CheckIfUniversalDeconIsShownAndAddButton]stateStr: " ..tos(stateStr) .. ", tab: " ..tos(universalDeconSelectedTabNow))
+        libFilters_getUniversalDeconstructionPanelActiveTabFilterType = libFilters_getUniversalDeconstructionPanelActiveTabFilterType or libFilters.GetUniversalDeconstructionPanelActiveTabFilterType
+        local currentUniversalDeconFilterType, universalDeconCurrentTab = libFilters_getUniversalDeconstructionPanelActiveTabFilterType(nil)
+        local isUniversalDecon = (currentUniversalDeconFilterType ~= nil and universalDeconCurrentTab ~= nil and universalDeconCurrentTab == universalDeconSelectedTabNow and true) or false
+--d(">isUniversalDecon: " ..tos(isUniversalDecon) .. ", currentUniversalDeconFilterType: " ..tos(currentUniversalDeconFilterType) .. ", currentTab: " ..tos(universalDeconCurrentTab))
+        if isUniversalDecon == true then
+            --Was the panel shown or hidden?
+            local isShown = (stateStr == SCENE_SHOWN and true) or false
+            --If hidden: Hide context menus and filter buttons, unregister filters
+            if isShown == false then
+                local filterTypeToHide = universalDeconGlobal.FCOIScurrentFilterPanelId
+--d("[FCOIS]universalDeconstructionPanel HIDDEN - " ..tos(universalDeconCurrentTab) .. ", LibFiltersFilterType: " ..tos(currentUniversalDeconFilterType) .. ", filterTypeLastTab: " ..tos(filterTypeToHide))
+                hideContextMenu(filterTypeToHide)
+                --Hide buttons and set the actual panel to LF_INVENTORY
+                updateFilterAndAddInvFlagButtonsAtUniversalDeconstruction(true, nil)
+            else
+--d("[FCOIS]universalDeconstructionPanel SHOWN - " ..tos(universalDeconCurrentTab) .. ", LibFiltersFilterType: " ..tos(currentUniversalDeconFilterType))
+                --If shown: Show filter buttons and register filters, and update FCOIS.gFilterWhere (only if the tab change also changed the LF* FilterType)
+                -->The last tab's filterType, before the chane, will be added to universalDeconGlobal.FCOIScurrentFilterPanelId
+                updateFilterAndAddInvFlagButtonsAtUniversalDeconstruction(false, currentUniversalDeconFilterType)
+            end
+
+        end
+    end
+
+    --[[
+        callbackName,
+        filterType,
+        stateStr,
+        isInGamepadMode,
+        fragmentOrSceneOrControl,
+        lReferencesToFilterType,
+        universalDeconSelectedTabNow
+    ]]
+    local function libFiltersUniversalDeconShownOrHiddenCallback(isShown, callbackName, filterType, stateStr, isInGamepadMode, fragmentOrSceneOrControl, lReferencesToFilterType, universalDeconSelectedTabNow)
+--d("[FCOIS]UNIVERSAL_DECONSTRUCTION - CALLBACK - " ..tos(callbackName) .. ", state: "..tos(stateStr) .. ", filterType: " ..tos(filterType) ..", isInGamepadMode: " ..tos(isInGamepadMode) .. ", universalDeconSelectedTabNow: " ..tos(universalDeconSelectedTabNow))
+        FCOItemSaver_CheckIfUniversalDeconIsShownAndAddButtons(stateStr, universalDeconSelectedTabNow)
+    end
+    local callbackNameUniversalDeconDeconAllShown = libFilters:RegisterCallbackName(addonName, LF_SMITHING_DECONSTRUCT, true, nil, "all")
+    local callbackNameUniversalDeconDeconAllHidden = libFilters:RegisterCallbackName(addonName, LF_SMITHING_DECONSTRUCT, false, nil, "all")
+    CM:RegisterCallback(callbackNameUniversalDeconDeconAllShown, function(...) libFiltersUniversalDeconShownOrHiddenCallback(true, ...) end)
+    CM:RegisterCallback(callbackNameUniversalDeconDeconAllHidden, function(...) libFiltersUniversalDeconShownOrHiddenCallback(false, ...) end)
+    local callbackNameUniversalDeconDeconArmorShown = libFilters:RegisterCallbackName(addonName, LF_SMITHING_DECONSTRUCT, true, nil, "armor")
+    local callbackNameUniversalDeconDeconArmorHidden = libFilters:RegisterCallbackName(addonName, LF_SMITHING_DECONSTRUCT, false, nil, "armor")
+    CM:RegisterCallback(callbackNameUniversalDeconDeconArmorShown, function(...) libFiltersUniversalDeconShownOrHiddenCallback(true, ...) end)
+    CM:RegisterCallback(callbackNameUniversalDeconDeconArmorHidden, function(...) libFiltersUniversalDeconShownOrHiddenCallback(false, ...) end)
+    local callbackNameUniversalDeconDeconWeaponsShown = libFilters:RegisterCallbackName(addonName, LF_SMITHING_DECONSTRUCT, true, nil, "weapons")
+    local callbackNameUniversalDeconDeconWeaponsHidden = libFilters:RegisterCallbackName(addonName, LF_SMITHING_DECONSTRUCT, false, nil, "weapons")
+    CM:RegisterCallback(callbackNameUniversalDeconDeconWeaponsShown, function(...) libFiltersUniversalDeconShownOrHiddenCallback(true, ...) end)
+    CM:RegisterCallback(callbackNameUniversalDeconDeconWeaponsHidden, function(...) libFiltersUniversalDeconShownOrHiddenCallback(false, ...) end)
+    local callbackNameUniversalDeconJewelryDeconShown = libFilters:RegisterCallbackName(addonName, LF_JEWELRY_DECONSTRUCT, true, nil, "jewelry")
+    local callbackNameUniversalDeconJewelryDeconHidden = libFilters:RegisterCallbackName(addonName, LF_JEWELRY_DECONSTRUCT, false, nil, "jewelry")
+    CM:RegisterCallback(callbackNameUniversalDeconJewelryDeconShown, function(...) libFiltersUniversalDeconShownOrHiddenCallback(true, ...) end)
+    CM:RegisterCallback(callbackNameUniversalDeconJewelryDeconHidden, function(...) libFiltersUniversalDeconShownOrHiddenCallback(false, ...) end)
+    local callbackNameUniversalDeconEnchantingShown = libFilters:RegisterCallbackName(addonName, LF_ENCHANTING_EXTRACTION, true, nil, "enchantments")
+    local callbackNameUniversalDeconEnchantingHidden = libFilters:RegisterCallbackName(addonName, LF_ENCHANTING_EXTRACTION, false, nil, "enchantments")
+    CM:RegisterCallback(callbackNameUniversalDeconEnchantingShown, function(...) libFiltersUniversalDeconShownOrHiddenCallback(true, ...) end)
+    CM:RegisterCallback(callbackNameUniversalDeconEnchantingHidden, function(...) libFiltersUniversalDeconShownOrHiddenCallback(false, ...) end)
 
 
     --========= IMPROVEMENT ========================================================

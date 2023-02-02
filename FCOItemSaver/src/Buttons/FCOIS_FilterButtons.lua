@@ -503,8 +503,51 @@ end
 updateFCOISFilterButtonColorsAndTextures = FCOIS.UpdateFCOISFilterButtonColorsAndTextures
 
 
+--[[
+user:/AddOns/FCOItemSaver/src/Buttons/FCOIS_FilterButtons.lua:510: attempt to index a nil value
+|rstack traceback:
+user:/AddOns/FCOItemSaver/src/Buttons/FCOIS_FilterButtons.lua:510: in function 'getUniversalDeconstructionNPCParentAndAnchor'
+|caaaaaa<Locals> p_FilterPanelId = 1 </Locals>|r
+user:/AddOns/FCOItemSaver/src/Buttons/FCOIS_FilterButtons.lua:1126: in function 'FCOIS.AddOrChangeFCOISFilterButton'
+|caaaaaa<Locals> parentCtrl = ud, buttonId = 1, pWidth = 24, pHeight = 24, pLeft = -30, pTop = 6, hide = F, p_FilterPanelId = 1, isUniversalDeconNPC = T, parentToUse = ud </Locals>|r
+user:/AddOns/FCOItemSaver/src/Buttons/FCOIS_FilterButtons.lua:326: in function 'FCOIS.UpdateFCOISFilterButtonsAtInventory'
+|caaaaaa<Locals> buttonId = -1, settings = [table:1]{}, currentFilterPanelId = 1, isUniversalDeconNPC = T, _ = 1, buttonNr = 1, filterButtonData = [table:2]{height = 24, left = "-30", width = 24, top = 6} </Locals>|r
+user:/AddOns/FCOItemSaver/src/Panels/FCOIS_Panels.lua:770: in function 'FCOIS.OnClosePanel'
+|caaaaaa<Locals> panelIdToShow = 1, autoReEnableCheck = "CRAFTING_STATION" </Locals>|r
+user:/AddOns/FCOItemSaver/src/EventsHooks/FCOIS_Hooks.lua:1140: in function 'updateFilterAndAddInvFlagButtonsAtUniversalDeconstruction'
+|caaaaaa<Locals> isHidden = T </Locals>|r
+user:/AddOns/FCOItemSaver/src/EventsHooks/FCOIS_Hooks.lua:1212: in function 'FCOItemSaver_CheckIfUniversalDeconIsShownAndAddButtons'
+|caaaaaa<Locals> stateStr = "hidden", universalDeconSelectedTabNow = "weapons", currentUniversalDeconFilterType = 16, universalDeconCurrentTab = "weapons", isUniversalDecon = T, isShown = F, filterTypeToHide = 16 </Locals>|r
+user:/AddOns/FCOItemSaver/src/EventsHooks/FCOIS_Hooks.lua:1234: in function 'libFiltersUniversalDeconShownOrHiddenCallback'
+|caaaaaa<Locals> isShown = F, callbackName = "LibFilters3-FCOItemSaver-hidde...", filterType = 16, stateStr = "hidden", isInGamepadMode = F, fragmentOrSceneOrControl = [table:3]{fireCallbackDepth = 1}, lReferencesToFilterType = [table:3], universalDeconSelectedTabNow = "weapons" </Locals>|r
+user:/AddOns/FCOItemSaver/src/EventsHooks/FCOIS_Hooks.lua:1247: in function 'callback'
+/EsoUI/Libraries/Utility/ZO_CallbackObject.lua:132: in function 'ZO_CallbackObjectMixin:FireCallbacks'
+|caaaaaa<Locals> self = [table:4]{fireCallbackDepth = 1}, eventName = "LibFilters3-FCOItemSaver-hidde...", registry = [table:5]{}, callbackInfoIndex = 1, callbackInfo = [table:6]{4 = F}, callback = user:/AddOns/FCOItemSaver/src/EventsHooks/FCOIS_Hooks.lua:1247, deleted = F </Locals>|r
+user:/AddOns/LibFilters-3.0/LibFilters-3.0.lua:4143: in function 'libFilters:CallbackRaise'
+|caaaaaa<Locals> self = [table:7]{globalLibName = "LibFilters3", _lastFilterTypeNoCallback = F, isInitialized = T, _lastCallbackState = "hidden", _currentFilterTypeUniversalDeconTab = "weapons", _directory = "user:/AddOns/LibFilters-3.0/", _lastFilterTypeUniversalDeconTab = "all", debug = F, version = 3.9, callbackBaseLibPattern = "LibFilters3-%s-%s-%s", callbackPattern = "LibFilters3-%s-%s-%s-%s", _lastFilterType = 16, name = "LibFilters-3.0", useFilterAllFallback = F}, filterTypes = [table:8]{}, fragmentOrSceneOrControl = [table:3], stateStr = "hidden", isInGamepadMode = F, typeOfRef = 1, doNotUpdateCurrentAndLastFilterTypes = F, universalDeconData = [table:9]{isShown = T, currentTab = "weapons", wasShownBefore = T, lastTab = "all"}, isShown = F, switchToLastFilterType = T, lastFilterTypeUniversalDeconTabBefore = "all", currentFilterTypeUniversalDeconTab = "weapons", currentFilterTypeRef = [table:3], currentFilterTypeBeforeReset = 16, currentFilterTypeUniversalDeconTabBeforeReset = "weapons", currentFilterTypeRefBeforeReset = [table:3], lastFilterTypeUniversalDeconTabBeforeReset = "all", lReferencesToFilterType = [table:3], filterType = 16, universalDeconSelectedTabNow = "weapons" </Locals>|r
+user:/AddOns/LibFilters-3.0/LibFilters-3.0.lua:4351: in function 'onControlHiddenStateChange'
+|caaaaaa<Locals> isShown = F, filterTypes = [table:8], ctrlRef = [table:3], inputType = F, universalDeconData = [table:9], stateStr = "hidden" </Locals>|r
+user:/AddOns/LibFilters-3.0/LibFilters-3.0.lua:1688: in function 'universalDeconOnFilterChangedCallback'
+|caaaaaa<Locals> tab = [table:10]{iconDown = "EsoUI/Art/Inventory/inventory_...", iconOver = "EsoUI/Art/Inventory/inventory_...", iconDisabled = "EsoUI/Art/Inventory/inventory_...", iconUp = "EsoUI/Art/Inventory/inventory_...", key = "weapons", displayName = "Waffen"}, craftingTypes = [table:11]{}, includeBanked = T, universalDeconTabBefore = "all", lastTab = "all", currentTabBefore = "weapons", currentTab = "weapons", libFiltersFilterType = 16, base = [table:12]{LibFilters3_filterType = 16}, isInGamepadMode = F, universalDeconRefVar = [table:3], universalDeconDataHideCurrentTab = [table:9] </Locals>|r
+/EsoUI/Libraries/Utility/ZO_CallbackObject.lua:132: in function 'ZO_CallbackObjectMixin:FireCallbacks'
+|caaaaaa<Locals> self = [table:3], eventName = "OnFilterChanged", registry = [table:13]{}, callbackInfoIndex = 1, callbackInfo = [table:14]{4 = F}, callback = user:/AddOns/LibFilters-3.0/LibFilters-3.0.lua:1648, deleted = F </Locals>|r
+/EsoUI/Ingame/Crafting/Keyboard/UniversalDeconstructionPanel_Keyboard.lua:171: in function 'ZO_UniversalDeconstructionPanel_Keyboard:OnFilterChanged'
+|caaaaaa<Locals> self = [table:3], includeBankedItemsChecked = T, craftingTypeFilters = [table:11], currentTab = [table:10] </Locals>|r
+/EsoUI/Ingame/Crafting/Keyboard/UniversalDeconstructionPanel_Keyboard.lua:228: in function 'ZO_UniversalDeconstructionInventory_Keyboard:ChangeFilter'
+|caaaaaa<Locals> self = [table:15]{sortOrder = T, sortKey = "traitInformationSortOrder", performingFullRefresh = F, dirty = F}, filterData = [table:16]{disabled = "EsoUI/Art/Inventory/inventory_...", tooltipText = "Waffen", highlight = "EsoUI/Art/Inventory/inventory_...", pressed = "EsoUI/Art/Inventory/inventory_...", normal = "EsoUI/Art/Inventory/inventory_...", activeTabText = "Waffen"} </Locals>|r
+/EsoUI/Ingame/Crafting/Keyboard/CraftingInventory.lua:148: in function 'callback'
+|caaaaaa<Locals> tabData = [table:16] </Locals>|r
+/EsoUI/Libraries/ZO_MenuBar/ZO_MenuBar.lua:287: in function 'MenuBarButton:Release'
+|caaaaaa<Locals> self = [table:17]{m_highlightHidden = F, m_locked = T, m_state = 1}, upInside = T, skipAnimation = F, playerDriven = T, buttonData = [table:16] </Locals>|r
+/EsoUI/Libraries/ZO_MenuBar/ZO_MenuBar.lua:657: in function 'ZO_MenuBarButtonTemplate_OnMouseUp'
+|caaaaaa<Locals> self = ud, button = 1, upInside = T </Locals>|r
+ZO_MainMenuCategoryBarButton1_MouseUp:3: in function '(main chunk)'
+|caaaaaa<Locals> self = ud, button = 1, upInside = T, ctrl = F, alt = F, shift = F, command = F </Locals>|r
+]]
+
 -- -v- #202
 local function getUniversalDeconstructionNPCParentAndAnchor(p_FilterPanelId)
+--d("[FCOIS]getUniversalDeconstructionNPCParentAndAnchor-p_FilterPanelId: " ..tos(p_FilterPanelId))
     local universalDeconParentDataByPanelId = panelIdToUniversalDeconstructionParentData[p_FilterPanelId]
     return universalDeconParentDataByPanelId.parent, universalDeconParentDataByPanelId.anchorTo
 end

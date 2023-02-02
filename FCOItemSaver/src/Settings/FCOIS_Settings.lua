@@ -814,20 +814,25 @@ function FCOIS.AfterSettings()
     --Introduced with FCOIS version 1.5.2: Dynamic icons global settings slider to set dynamic icons max total count enabled.
     --Check if the current value of the settings slider was set due to an update of the addon and check if the user was using more than the
     --default value of the enabled dynamic icons already: If so set the slider to the users max value so his dyn icons are all enabled
-    --Set the valuie from the settings to the global constant now:
+    --Set the value from the settings to the global constant now:
     FCOIS.numVars.gFCONumDynamicIcons = settings.numMaxDynamicIconsUsable
     --Did the addon update and the max usable dyn. icons slider was introduced?
     if settings.addonFCOISChangedDynIconMaxUsableSlider == nil then
         FCOIS.settingsVars.settings.addonFCOISChangedDynIconMaxUsableSlider = true
     end
     local maxUsableDynIconNr = 0
-    if settings.addonFCOISChangedDynIconMaxUsableSlider then
+    if settings.addonFCOISChangedDynIconMaxUsableSlider == true then
         --Check if the user got more dyn. icons enabled as the current value of the usable dyn. icons is set (standard value is: 10)
         --Loop over iconsEnabled in settings and check if the number of dynIcons is > then the currently total usable number
         --local firstDynIconNr = FCOIS.numVars.gFCONumNonDynamicAndGearIcons + 1 --Start at icon# 13 = Dyn. icon #1
-        for dynIconNr, isEnabled in ipairs(settings.isIconEnabled) do
-            if isEnabled then
-                maxUsableDynIconNr = icon2Dynamic[dynIconNr]
+        for iconNr, isEnabled in ipairs(settings.isIconEnabled) do
+            if isEnabled == true then
+                local dynamicIconNr = icon2Dynamic[iconNr]
+                if dynamicIconNr ~= nil then
+                    if maxUsableDynIconNr < dynamicIconNr then
+                        maxUsableDynIconNr = dynamicIconNr
+                    end
+                end
             end
         end
         --Fallback
@@ -844,6 +849,24 @@ function FCOIS.AfterSettings()
     if settings.addonFCOISChangedDynIconMaxUsableSlider == true then
         FCOIS.settingsVars.settings.addonFCOISChangedDynIconMaxUsableSlider = false
     end
+
+    --FCOIS v2.4.5 If the "max dynamic icons" slider was changed and a reloadUI took place:
+    --Check if the dynmic icon disabled is still enabled at the marker icons and disable them
+    --todo 20230201
+    if settings.numMaxDynamicIconsUsable > 0 then
+        for iconNr, isEnabled in ipairs(settings.isIconEnabled) do
+            if isEnabled == true then
+                local dynamicIconNr = icon2Dynamic[iconNr]
+                if dynamicIconNr ~= nil then
+                    if dynamicIconNr > settings.numMaxDynamicIconsUsable then
+d("[FCOIS-SettingsMenu]Automatically disabled dynamic icon #" .. tos(dynamicIconNr) .. " (iconNr: " .. tos(iconNr) .. "), as the slider numMaxDynamicIconsUsable prohibits it!")
+                        FCOIS.settingsVars.settings.isIconEnabled[iconNr] = false
+                    end
+                end
+            end
+        end
+    end
+
     --FCOIS v1.8.0
     --Check if the currently set value of "show dynamic icons in submenus if enabled number of dynamic icons is > then x" is above the
     --value of total enabled dynamic icons (currently set maximum usable dynamicIcons via the slider in the marker icons->dynamic settings).

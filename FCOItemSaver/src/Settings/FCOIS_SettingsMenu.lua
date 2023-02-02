@@ -3587,9 +3587,27 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                             getFunc = function() return FCOISsettings.numMaxDynamicIconsUsable end,
                             setFunc = function(numDynIconsTotalUsable)
                                 if FCOISsettings.numMaxDynamicIconsUsable ~= numDynIconsTotalUsable then
-                                    FCOISsettings.numMaxDynamicIconsUsable = numDynIconsTotalUsable
+                                    FCOIS.settingsVars.settings.numMaxDynamicIconsUsable = numDynIconsTotalUsable
                                     --Slider was manually changed: So disable the automatic "max dyn. icons enabled check" in file src/FCOIS_Settings.lua, function afterSettings()!
                                     FCOISsettings.addonFCOISChangedDynIconMaxUsableSlider = false
+
+                                    --If the slider was changed, automatically disable dynamic icons with a number > than the max allowed one
+                                    -->Will also be checked at FCOIS.AfterSettings() after the reloadUI was done!
+                                    if numDynIconsTotalUsable > 0 then
+                                        local icon2Dynamic = FCOIS.mappingVars.iconToDynamic
+
+                                        for iconNr, isEnabled in ipairs(FCOISsettings.isIconEnabled) do
+                                            if isEnabled == true then
+                                                local dynamicIconNr = icon2Dynamic[iconNr]
+                                                if dynamicIconNr ~= nil then
+                                                    if dynamicIconNr > numDynIconsTotalUsable then
+--d("[FCOIS-SettingsMenu]Automatically disabled dynamic icon #" .. tos(dynamicIconNr) .. " (iconNr: " .. tos(iconNr) .. "), as the slider numMaxDynamicIconsUsable prohibits it!")
+                                                        FCOIS.settingsVars.settings.isIconEnabled[iconNr] = false
+                                                    end
+                                                end
+                                            end
+                                        end
+                                    end
                                     --Reload the UI now to assure that all settings get updated properly directly!
                                     ReloadUI()
                                 end

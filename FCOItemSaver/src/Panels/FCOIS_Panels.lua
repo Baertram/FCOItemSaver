@@ -138,16 +138,15 @@ local isUniversalDeconstructionPanelShown
 function FCOIS.CheckIfUniversalDeconstructionNPC(filterPanelIdComingFrom)
     --d("[FCOIS]CheckIfUniversalDeconstructionNPC")
     isUniversalDeconstructionPanelShown = isUniversalDeconstructionPanelShown or libFilters.IsUniversalDeconstructionPanelShown
-    if isUniversalDeconstructionPanelShown == nil or ZO_UNIVERSAL_DECONSTRUCTION_FILTER_TYPES == nil then return false end
+    if isUniversalDeconstructionPanelShown == nil then return false end
     return isUniversalDeconstructionPanelShown(filterPanelIdComingFrom)
 end
 local checkIfUniversaldDeconstructionNPC = FCOIS.CheckIfUniversalDeconstructionNPC
 
 function FCOIS.GetCurrentFilterPanelIdAtDeconNPC(filterPanelIdPassedIn)
     local filterPanelIdDetected = filterPanelIdPassedIn
---d("[FCOIS]GetCurrentFilterPanelIdAtDeconNPC - filterPanel: " ..tos(filterPanelIdPassedIn))
     local isDeconstuctionNPC = checkIfUniversaldDeconstructionNPC(filterPanelIdPassedIn)
---d(">isDeconstuctionNPC: " ..tos(isDeconstuctionNPC))
+--d("[FCOIS]GetCurrentFilterPanelIdAtDeconNPC - filterPanel: " ..tos(filterPanelIdPassedIn) .. ", FCOIS.universalDeconPanelId: " ..tos(universalDeconGlobal.FCOIScurrentFilterPanelId) .. ", isDeconstuctionNPC: " ..tos(isDeconstuctionNPC))
     universalDeconGlobal.FCOIScurrentFilterPanelId = nil
     if not isDeconstuctionNPC then return filterPanelIdPassedIn, false end
     universalDeconGlobal.FCOIScurrentFilterPanelId = filterPanelIdDetected
@@ -767,12 +766,12 @@ function FCOIS.OnClosePanel(panelIdClosed, panelIdToShow, autoReEnableCheck)
 
     if FCOIS.preventerVars.gNoCloseEvent == false then
         --Update the inventory filter buttons
-        if panelIdToShow ~= nil and panelIdToShow == LF_INVENTORY then
-            updateFCOISFilterButtonsAtInventory(-1)
-        end
+        if panelIdToShow ~= nil then
+            if  panelIdToShow == LF_INVENTORY then
+                updateFCOISFilterButtonsAtInventory(-1)
+            end
 --d(">FCOIS.gFilterWhere1.2: " .. tos(FCOIS.gFilterWhere))
 
-        if panelIdToShow ~= nil then
             --Update the 4 inventory button's color
             updateFCOISFilterButtonColorsAndTextures(-1, nil, -1, panelIdToShow)
 --d(">FCOIS.gFilterWhere1.3: " .. tos(FCOIS.gFilterWhere))
