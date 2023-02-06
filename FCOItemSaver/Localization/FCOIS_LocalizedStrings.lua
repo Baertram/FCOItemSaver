@@ -1237,6 +1237,7 @@ FCOIS.localizationVars.localizationAll = {
         ["options_unique_id_part_stolen"]       = GetString(SI_GAMEPAD_ITEM_STOLEN_LABEL), -- Stolen
         ["options_unique_id_part_crafted"]      = GetString(SI_ITEM_FORMAT_STR_CRAFTED), -- Crafted
         ["options_unique_id_part_crafted_by"]   = GetString(SI_ITEM_FORMAT_STR_CRAFTED) .. " by", -- Crafted by
+        ["options_unique_id_part_crownItem"]    = GetString(SI_ITEMTYPE57),
         ["options_header_migration"]            = "Migration",
         ["options_header_migration_ids"]        = "(Non-)Unique ID migration",
         --Migrate ZOs locks to FCOIS locks
