@@ -4216,7 +4216,6 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
 
     --Should the "Junk item" context menu entry be hidden if any marker icon is set?
     elseif actionStringId == SI_ITEM_ACTION_MARK_AS_JUNK and settings.removeMarkAsJunk then
---d(">mark as junk")
         --Check the marker icons
         FCOIS.preventerVars.gCalledFromInternalFCOIS = true
         local isMarkedJunk, markedWithThisIconsJunk = isMarked(bag, slotIndex, -1)

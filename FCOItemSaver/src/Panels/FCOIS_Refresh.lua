@@ -176,6 +176,7 @@ local refreshBackpack = FCOIS.RefreshBackpack
 
 --Refresh the companion inventory
 function FCOIS.RefreshCompanionInventory()
+--d("[FCOIS]RefreshCompanionInventory")
     local updateFilteredItemCount = false
     
     if isCompanionInventoryShown() then
@@ -191,6 +192,7 @@ local refreshCompanionInventory = FCOIS.RefreshCompanionInventory
 
 --Refresh the bank list
 function FCOIS.RefreshBank()
+--d("[FCOIS]RefreshBank")
     local updateFilteredItemCount = false
     
     if not ctrlVars.BANK:IsHidden() then
@@ -310,6 +312,8 @@ end
 
 --Update the scroll list controls for the player inventories
 function FCOIS.RefreshBasics()
+--d("[FCOIS]RefreshBasics")
+    --Normal inventory updater functions etc.
     refreshBackpack()
     refreshCompanionInventory()
     refreshBank()
@@ -429,7 +433,7 @@ function FCOIS.FilterBasics(onlyPlayer, isUniversalDeconNPC)
 
         FCOIS.preventerVars.gFilteringBasics = true
         if onlyPlayer == true then
-            --d(">>onlyPlayer or companionInv")
+--d(">>onlyPlayer or companionInv")
             updateInventories()
             --Try to update other addon's UIs
             updateOtherAddonUIs()

@@ -183,7 +183,7 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 --#248 2022-08-18, Baertram, Feature request: Change LibShifterBox usage to LibAddonMenuDualListBox widget in settings etc.!
 
 
---#295 2022-12-05, Baertram, bug: After opening alchemy, enchanting, jewelry crafting, then clothier, then calling Giladil and talink to her to show the universal decon:
+--#259 2022-12-05, Baertram, bug: After opening alchemy, enchanting, jewelry crafting, then clothier, then calling Giladil and talking to her to show the universal decon:
 --[[
 user:/AddOns/FCOItemSaver/src/Buttons/FCOIS_FilterButtons.lua:560: attempt to index a nil value
 |rstack traceback:
@@ -209,34 +209,34 @@ ZO_MainMenuCategoryBarButton1_MouseUp:3: in function '(main chunk)'
 |caaaaaa<Locals> self = ud, button = 1, upInside = T, ctrl = F, alt = F, shift = F, command = F </Locals>|r
 ]]
 
---#260 2022-12-05, Nagolite, bug: Each time context menu is opened: user:/AddOns/FCOItemSaver/src/FCOIS_ContextMenus.lua:1427: in function 'FCOIS.AddMark'
--->Maybe a solution would be: After changing the number of max enabled dynamic marker icons disable the dynamic icons in a loop at event_add_on_loaded?
-
 --#261 2023-01-15, Tes96, bug: After "Get a free house brochure" was finished the error message showed for context menus:
 -->user:/AddOns/FCOItemSaver/src/FCOIS_ContextMenus.lua:1443: operator .. is not supported for string .. nil
 -->Equal error like #260?
 
---#262 2023-01-28, sirinsidiator, bug: Universal Deconstruction NPC: After scrolling, close NPC, reopen it and filters applied before are not registered
--->(FCOIS.gFilterWhere most probably is 1 then for LF_INVENTORY due to the row setupFunction hack)
+--#263 2023-02-24, Baertram, feature: Add automatic marks for trait marker icons of normal non-set items
+
+
 
 --______________________________________
--- Current max # of bugs/features/ToDos: 262
+-- Current max # of bugs/features/ToDos: 263
 --______________________________________
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2023-01-28
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2023-02-24
 ------------------------------------------------------------------------------------
+
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.4.4 - New version: 2.4.5) -    Updated last: 2023-01-28
+--Changelog (last version: 2.4.6 - New version: 2.4.7) -    Updated last: 2023-02-24
 -------------------------------------------------------------------------------------
 --[Fixed]
---#260 & #261 Context menu open, after slider of max dynamic icons was changed, showed a lua error user:/AddOns/FCOItemSaver/src/FCOIS_ContextMenus.lua:1427 or 1443
---#262 Universal Deconstruction filters not re-applying properly upon scrolling, close & re-open Universal Decon panel
+
+
 
 --[Changed]
---Recoded the Universal Deconstruction panel to use LibFilters-3.0's open/clsoe callbacks now
+--Error messages shown that FCOIS is not working in gamepad mode now also adds "not working in accessibility mode", as this re-uses the gamepad mode
+
 
 --[Added]
 --
@@ -291,13 +291,14 @@ function FCOIS.FCOItemSaver_CheckGamePadMode(showChatOutputOverride)
                 FCOIS.resetPreventerVariableAfterTime("noGamePadModeSupportTextOutput", "noGamePadModeSupportTextOutput", false, 3000)
                 --Normal gamepad mode is enabled -> Abort with error message "not supported!"
                 local noGamepadModeSupportedLanguageTexts = {
-                    ["en"]	=	"FCO ItemSaver does not support the gamepad mode! Please change the mode to keyboard at the settings.",
-                    ["de"]	=	"FCO ItemSaver unterstützt den Gamepad Modus nicht! Bitte wechsel in den Optionen zum Tastatur Modus.",
-                    ["fr"]	=	"FCO ItemSaver ne prend pas en charge le mode de gamepad! S'il vous plaît changer le mode de clavier au niveau des réglages.",
-                    ["es"]	=	"FCO ItemSaver no es compatible con el modo de mando de juegos! Por favor, cambie el modo de teclado en la configuración.",
-                    ["it"]	=	"FCO ItemSaver non supporta la modalità di gamepad! Si prega di cambiare la modalità di tastiera con le impostazioni.",
-                    ["jp"]	=	"FCO ItemSaverはゲームパッドモードをサポートしません！設定でキーボードモードに変更してください。",
-                    ["ru"]	=	"FCO ItemSaver нe пoддepживaeт peжим гeймпaдa! Пoжaлуйcтa, cмeнитe в нacтpoйкax peжим нa клaвиaтуpу.",
+                    ["en"]	=	"FCO ItemSaver does not support the gamepad/accessibility mode! Please change the mode to keyboard at the settings.",
+                    ["de"]	=	"FCO ItemSaver unterstützt den Gamepad/Barrierefreiheit Modus nicht! Bitte wechsel in den Optionen zum Tastatur Modus.",
+                    ["fr"]	=	"FCO ItemSaver ne prend pas en charge le mode de gamepad/accessibilité! S'il vous plaît changer le mode de clavier au niveau des réglages.",
+                    ["es"]	=	"FCO ItemSaver no es compatible con el modo de mando/accesibilidad de juegos! Por favor, cambie el modo de teclado en la configuración.",
+                    ["it"]	=	"FCO ItemSaver non supporta la modalità di gamepad/accessibilità! Si prega di cambiare la modalità di tastiera con le impostazioni.",
+                    ["jp"]	=	"FCO ItemSaver は、ゲームパッド/アクセシビリティ モードをサポートしていません! 設定でモードをキーボードに変更してください。",
+                    ["ru"]	=	"FCO ItemSaver не поддерживает геймпад/режим специальных возможностей! Пожалуйста, измените режим на клавиатуру в настройках.",
+                    ["zh"]	=	"FCO ItemSaver 不支持遊戲手柄/輔助功能模式！ 請在設置中將模式更改為鍵盤。",
                 }
                 local lang = GetCVar("language.2")
                 local noGamepadModeSupportedText = noGamepadModeSupportedLanguageTexts[lang] or noGamepadModeSupportedLanguageTexts["en"]
