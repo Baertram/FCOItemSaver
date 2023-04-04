@@ -918,7 +918,9 @@ end
 -- =====================================================================================================================
 --  Player activated functions
 -- =====================================================================================================================
-local function doOtherAddonTaskAtPlayerActivated()
+
+--Function to check if something should be done at Player Activated event (e.g. mark items in inventories etc.)
+function FCOIS.checkForPlayerActivatedTasks()
     --Set Tracker item marking - Scan inventories on login/reloadui?
     local settings = FCOIS.settingsVars.settings
     if settings.autoMarkSetTrackerSetsRescan then
@@ -930,12 +932,6 @@ local function doOtherAddonTaskAtPlayerActivated()
             otherAddonsSetTracker.checkAllItemsForSetTrackerTrackingState()
         end
     end
-end
-
---Function to check if something should be done at Player Activated event (e.g. mark items in inventories etc.)
-function FCOIS.checkForPlayerActivatedTasks()
-    --Other addons
-    doOtherAddonTaskAtPlayerActivated()
 
     --FCOIS version 1.4.8
     --Reset the flag "temporary use unique IDs" of other addons

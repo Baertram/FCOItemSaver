@@ -28,6 +28,7 @@ local myGetItemInstanceIdNoControl = FCOIS.MyGetItemInstanceIdNoControl
 local isItemOrnate = FCOIS.IsItemOrnate
 local checkIfFilterPanelIsDeconstructable = FCOIS.CheckIfFilterPanelIsDeconstructable
 local checkIfDeconstructionNPC
+local isSendingMail = FCOIS.IsSendingMail
 
 local isResearchListDialogShown = FCOIS.IsResearchListDialogShown
 local isRetraitStationShown = FCOIS.IsRetraitStationShown
@@ -37,6 +38,8 @@ local checkIfUniversaldDeconstructionNPC
 local checkActivePanel
 local isVendorPanelShown
 local getWhereAreWe
+
+local FCOIScdsh = FCOIS.callDeconstructionSelectionHandler
 
 --===================================================================================
 --	FCOIS Anti - *  - Methods to check if item is protected, or allowed to be ...
@@ -1243,7 +1246,8 @@ function craftPrev.CheckPreventCrafting(override, extractSlot, extractWhereAreWe
     end
     --Is an item put into the extraction slot?
     if bagId ~= nil and slotIndex ~= nil then
-        return FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, true, false, false, false)
+        FCOIScdsh = FCOIScdsh or FCOIS.callDeconstructionSelectionHandler
+        return FCOIScdsh(bagId, slotIndex, true, false, false, false)
     end
     --Reset variables again
     craftPrev.extractSlot = nil
@@ -1339,7 +1343,8 @@ function craftPrev.IsItemProtectedAtACraftSlotNow(bagId, slotIndex, scanOtherInv
                 local retVar = false
                 --Check if the item is currently slotted at a crafting station's extraction slot. If the item is proteced remove it from the extraction slot again!
                 --FCOIS.callDeconstructionSelectionHandler(bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon)
-                local isProtected = FCOIS.callDeconstructionSelectionHandler(p_bagId, p_slotIndex, false, false, true, false, true, false)
+                FCOIScdsh = FCOIScdsh or FCOIS.callDeconstructionSelectionHandler
+                local isProtected = FCOIScdsh(p_bagId, p_slotIndex, false, false, true, false, true, false)
                 --Item is protected?
 --d(">item " .. gil(p_bagId, p_slotIndex) .. " is protected: " ..tos(isProtected))
                 if isProtected then
@@ -1451,7 +1456,8 @@ function FCOIS.IsItemProtectedAtTheGuildStoreSellTabNow(bagId, slotIndex, scanOt
             --Be sure to set calledFromExternalAddon = true here as otherwise the guild store sell checks aren't done, because
             --the DeconstructionSelectionhandler will not call the ItemSelectionHandler then!
             --                                                           bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId
-            local isProtected = FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, false, true, false, true, true, nil)
+            FCOIScdsh = FCOIScdsh or FCOIS.callDeconstructionSelectionHandler
+            local isProtected = FCOIScdsh(bagId, slotIndex, false, false, true, false, true, true, nil)
 --d("[FCOIS]IsItemProtectedAtTheGuildStoreSellTabNow GuildStore - isProtected: " ..tos(isProtected))
             --Item is protected?
             if isProtected == true then
@@ -1475,51 +1481,60 @@ function FCOIS.IsItemProtectedAtTheGuildStoreSellTabNow(bagId, slotIndex, scanOt
 end
 local isItemProtectedAtTheGuildStoreSellTabNow = FCOIS.IsItemProtectedAtTheGuildStoreSellTabNow
 
+function FCOIS.AreItemsProtectedAtMailSendPanel(bagId, slotIndex, doNotRemoveJustWarn)
+    local wasProtected = false
+    if not isSendingMail() then return false end
+
+    local attachmentSlotsParent = ctrlVars.MAIL_ATTACHMENTS
+    --Check each of the attachmenmt slots
+    for i = 1, MAIL_MAX_ATTACHED_ITEMS do
+        -- Return value would be 1 if item is slotted in this attachment slot
+        if GetQueuedItemAttachmentInfo(i) ~= 0 then
+            --Get the slot i's slotIndex
+            local slotControl = attachmentSlotsParent[i]
+            --Search the slotControl slotIndex and compare it with the actually checked item's slotIndex
+            if (slotControl ~= nil
+                and     (bagId ~= nil and slotIndex ~= nil and slotControl.bagId ~= nil and slotControl.bagId == bagId and slotControl.slotIndex ~= nil and slotControl.slotIndex == slotIndex)
+                    or  (bagId == nil and slotIndex == nil and slotControl.bagId ~= nil and slotControl.slotIndex ~= nil) )
+            then
+                --Item was found: Check if it is protected now
+--d("[FCOIS]MarkMe ProtectedAtSlotNow - callDeconstructionSelectionHandler without echo")
+                --FCOIS.callDeconstructionSelectionHandler(bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon)
+                --Be sure to set calledFromExternalAddon = true here as otherwise the guild store sell checks aren't done, because
+                --the DeconstructionSelectionhandler will not call the ItemSelectionHandler then!
+                FCOIScdsh = FCOIScdsh or FCOIS.callDeconstructionSelectionHandler
+                local isProtected = FCOIScdsh(slotControl.bagId, slotControl.slotIndex, false, false, true, false, true, true)
+                --Item is protected?
+                if isProtected then
+                    --#263 Do not remove, just warn, if mail panel was reopened
+                    if not doNotRemoveJustWarn then
+                        --Item is protected now, so remove it from the mail attachment slot again
+                        RemoveQueuedItemAttachment(i)
+                    end
+                    local whereAreWe = FCOIS_CON_MAIL
+                    --function outputItemProtectedMessage(bag, slot, whereAreWe, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert)
+                    outputItemProtectedMessage(slotControl.bagId, slotControl.slotIndex, whereAreWe, true, false, false, false)
+                end
+                wasProtected = isProtected
+            end
+        end
+    end
+    return wasProtected
+end
+local areItemsProtectedAtMailSendPanel = FCOIS.AreItemsProtectedAtMailSendPanel
+
 --Function to check if an item is protected at a libFilters filter panel ID now, after it got marked with a marker icon.
 --If so: Remove the item from the panel's slot again, if it is slotted
-function FCOIS.IsItemProtectedAtPanelNow(bagId, slotIndex, panelId, scanOtherInvItemsIfSlotted)
+function FCOIS.IsItemProtectedAtPanelNow(bagId, slotIndex, panelId, scanOtherInvItemsIfSlotted, doNotRemoveJustWarn)
     scanOtherInvItemsIfSlotted = scanOtherInvItemsIfSlotted or false
+    doNotRemoveJustWarn = doNotRemoveJustWarn or false
     panelId = panelId or FCOIS.gFilterWhere
 --d("[FCOIS]IsItemProtectedAtPanelNow-bagId: " ..tos(bagId) .. ", slotIndex: " ..tos(slotIndex) .. ", panelId: " ..tos(panelId) .. ", scanOtherInvItemsIfSlotted: " ..tos(scanOtherInvItemsIfSlotted))
     if panelId == nil then return nil end
     --Mail send
     if panelId == LF_MAIL_SEND then
-        local mailSendCtrl = ctrlVars.MAIL_SEND
-        if (mailSendCtrl and not mailSendCtrl.control:IsHidden()) or not ctrlVars.MAIL_ATTACHMENTS:IsHidden() then
-            local function CheckAttachments()
-                --Check each of the attachmenmt slots
-                for i = 1, MAIL_MAX_ATTACHED_ITEMS do
-                    -- Return value would be 1 if item is slotted in this attachment slot
-                    if GetQueuedItemAttachmentInfo(i) ~= 0 then
-                        --Get the slot i's slotIndex
-                        local attachmentSlotsParent = ctrlVars.MAIL_ATTACHMENTS
-                        local slotControl = attachmentSlotsParent[i]
-                        --Search the slotControl slotIndex and compare it with the actually checked item's slotIndex
-                        if (slotControl ~= nil
-                            and     (bagId ~= nil and slotIndex ~= nil and slotControl.bagId ~= nil and slotControl.bagId == bagId and slotControl.slotIndex ~= nil and slotControl.slotIndex == slotIndex)
-                                or  (bagId == nil and slotIndex == nil and slotControl.bagId ~= nil and slotControl.slotIndex ~= nil) )
-                        then
-                            --Item was found: Check if it is protected now
-    --d("[FCOIS]MarkMe ProtectedAtSlotNow - callDeconstructionSelectionHandler without echo")
-                            --FCOIS.callDeconstructionSelectionHandler(bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon)
-                            --Be sure to set calledFromExternalAddon = true here as otherwise the guild store sell checks aren't done, because
-                            --the DeconstructionSelectionhandler will not call the ItemSelectionHandler then!
-                            local isProtected = FCOIS.callDeconstructionSelectionHandler(slotControl.bagId, slotControl.slotIndex, false, false, true, false, true, true)
-                            --Item is protected?
-                            if isProtected then
-                                --Item is protected now, so remove it from the mail attachment slot again
-                                RemoveQueuedItemAttachment(i)
-                                local whereAreWe = FCOIS_CON_MAIL
-                                --function outputItemProtectedMessage(bag, slot, whereAreWe, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert)
-                                outputItemProtectedMessage(slotControl.bagId, slotControl.slotIndex, whereAreWe, true, false, false, false)
-                            end
-                        end
-                    end
-                end
-            end
-            --Check the attachments now and unslot them if they are protected now
-            CheckAttachments()
-        end
+        --local wasProtected
+        areItemsProtectedAtMailSendPanel(bagId, slotIndex, doNotRemoveJustWarn)
 
     --Player2Player trade
     elseif panelId == LF_TRADE then
@@ -1539,7 +1554,8 @@ function FCOIS.IsItemProtectedAtPanelNow(bagId, slotIndex, panelId, scanOtherInv
                         --FCOIS.callDeconstructionSelectionHandler(bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon)
                         --Be sure to set calledFromExternalAddon = true here as otherwise the guild store sell checks aren't done, because
                         --the DeconstructionSelectionhandler will not call the ItemSelectionHandler then!
-                        local isProtected = FCOIS.callDeconstructionSelectionHandler(bagIdTradeSlot, slotIndexTradeSlot, false, false, true, false, true, true)
+                        FCOIScdsh = FCOIScdsh or FCOIS.callDeconstructionSelectionHandler
+                        local isProtected = FCOIScdsh(bagIdTradeSlot, slotIndexTradeSlot, false, false, true, false, true, true)
                         --Item is protected?
                         if isProtected then
                             TradeRemoveItem(i)

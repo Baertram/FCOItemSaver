@@ -169,7 +169,7 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 --> FCOIS filterbuttons are not working (test together with CraftBagExtended, and both alone, and check LibFilters-3.0 CBE additions!!!)
 --> https://github.com/sirinsidiator/ESO-AwesomeGuildStore/blob/master/src/wrappers/SellTabWrapper.lua#L714-L747
 
---#235  2022-06-30, Baertram: Companion marker at companion character doll looses the marker if a companion is dismissed and another is called
+--#235  2022-06-30, Baertram: Companion marker at companion character doll looses the markers if a companion is dismissed and another is called
 --> Maybe the same item is needed at both companions? Only visual bug, marker is still in SavedVariables and item is protected.
 
 --#237 2022-03-14, 02:23, Papito, Feature request
@@ -183,7 +183,7 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 --#248 2022-08-18, Baertram, Feature request: Change LibShifterBox usage to LibAddonMenuDualListBox widget in settings etc.!
 
 
---#259 2022-12-05, Baertram, bug: After opening alchemy, enchanting, jewelry crafting, then clothier, then calling Giladil and talking to her to show the universal decon:
+--#295 2022-12-05, Baertram, bug: After opening alchemy, enchanting, jewelry crafting, then clothier, then calling Giladil and talink to her to show the universal decon:
 --[[
 user:/AddOns/FCOItemSaver/src/Buttons/FCOIS_FilterButtons.lua:560: attempt to index a nil value
 |rstack traceback:
@@ -209,34 +209,42 @@ ZO_MainMenuCategoryBarButton1_MouseUp:3: in function '(main chunk)'
 |caaaaaa<Locals> self = ud, button = 1, upInside = T, ctrl = F, alt = F, shift = F, command = F </Locals>|r
 ]]
 
+--#260 2022-12-05, Nagolite, bug: Each time context menu is opened: user:/AddOns/FCOItemSaver/src/FCOIS_ContextMenus.lua:1427: in function 'FCOIS.AddMark'
+-->Maybe a solution would be: After changing the number of max enabled dynamic marker icons disable the dynamic icons in a loop at event_add_on_loaded?
+
 --#261 2023-01-15, Tes96, bug: After "Get a free house brochure" was finished the error message showed for context menus:
 -->user:/AddOns/FCOItemSaver/src/FCOIS_ContextMenus.lua:1443: operator .. is not supported for string .. nil
 -->Equal error like #260?
 
---#263 2023-02-24, Baertram, feature: Add automatic marks for trait marker icons of normal non-set items
+--#262 2023-01-28, sirinsidiator, bug: Universal Deconstruction NPC: After scrolling, close NPC, reopen it and filters applied before are not registered
+-->(FCOIS.gFilterWhere most probably is 1 then for LF_INVENTORY due to the row setupFunction hack)
 
+--#263 2023-04-03, Baertram: Anti-mail protection does not protect items if you had them slotted and unprotected (flag set to red or marker not applied), then closed the mail panel and reoened it
+-- (items now marked or flag green again): Add protection check before sending mail!
+
+--#264  2023-04-03, Baertram: Armor type marker at companion character doll shows armor type of last shown companion, if a new companion was summoned and interacted with
 
 
 --______________________________________
--- Current max # of bugs/features/ToDos: 263
+-- Current max # of bugs/features/ToDos: 265
 --______________________________________
 
+--Open/To work on this patch:
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2023-02-24
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2023-04-05
 ------------------------------------------------------------------------------------
-
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.4.6 - New version: 2.4.7) -    Updated last: 2023-02-24
+--Changelog (last version: 2.4.6 - New version: 2.4.7) -    Updated last: 2023-04-05
 -------------------------------------------------------------------------------------
 --[Fixed]
-
+--263 Anti-mail protection does protect items now upon sending the mail (if you had them slotted and unprotected, e.g. by setting the flag to red or marker not applied, then closed the mail panel and reopened it
+-- (items now marked or flag green again), an error message appeared but you still were able to send the mail!
+--#264 Companion paperdoll armorType icons not updating upon companion swap
 
 
 --[Changed]
---Error messages shown that FCOIS is not working in gamepad mode now also adds "not working in accessibility mode", as this re-uses the gamepad mode
-
 
 --[Added]
 --
@@ -291,14 +299,13 @@ function FCOIS.FCOItemSaver_CheckGamePadMode(showChatOutputOverride)
                 FCOIS.resetPreventerVariableAfterTime("noGamePadModeSupportTextOutput", "noGamePadModeSupportTextOutput", false, 3000)
                 --Normal gamepad mode is enabled -> Abort with error message "not supported!"
                 local noGamepadModeSupportedLanguageTexts = {
-                    ["en"]	=	"FCO ItemSaver does not support the gamepad/accessibility mode! Please change the mode to keyboard at the settings.",
-                    ["de"]	=	"FCO ItemSaver unterstützt den Gamepad/Barrierefreiheit Modus nicht! Bitte wechsel in den Optionen zum Tastatur Modus.",
-                    ["fr"]	=	"FCO ItemSaver ne prend pas en charge le mode de gamepad/accessibilité! S'il vous plaît changer le mode de clavier au niveau des réglages.",
-                    ["es"]	=	"FCO ItemSaver no es compatible con el modo de mando/accesibilidad de juegos! Por favor, cambie el modo de teclado en la configuración.",
-                    ["it"]	=	"FCO ItemSaver non supporta la modalità di gamepad/accessibilità! Si prega di cambiare la modalità di tastiera con le impostazioni.",
-                    ["jp"]	=	"FCO ItemSaver は、ゲームパッド/アクセシビリティ モードをサポートしていません! 設定でモードをキーボードに変更してください。",
-                    ["ru"]	=	"FCO ItemSaver не поддерживает геймпад/режим специальных возможностей! Пожалуйста, измените режим на клавиатуру в настройках.",
-                    ["zh"]	=	"FCO ItemSaver 不支持遊戲手柄/輔助功能模式！ 請在設置中將模式更改為鍵盤。",
+                    ["en"]	=	"FCO ItemSaver does not support the gamepad mode! Please change the mode to keyboard at the settings.",
+                    ["de"]	=	"FCO ItemSaver unterstützt den Gamepad Modus nicht! Bitte wechsel in den Optionen zum Tastatur Modus.",
+                    ["fr"]	=	"FCO ItemSaver ne prend pas en charge le mode de gamepad! S'il vous plaît changer le mode de clavier au niveau des réglages.",
+                    ["es"]	=	"FCO ItemSaver no es compatible con el modo de mando de juegos! Por favor, cambie el modo de teclado en la configuración.",
+                    ["it"]	=	"FCO ItemSaver non supporta la modalità di gamepad! Si prega di cambiare la modalità di tastiera con le impostazioni.",
+                    ["jp"]	=	"FCO ItemSaverはゲームパッドモードをサポートしません！設定でキーボードモードに変更してください。",
+                    ["ru"]	=	"FCO ItemSaver нe пoддepживaeт peжим гeймпaдa! Пoжaлуйcтa, cмeнитe в нacтpoйкax peжим нa клaвиaтуpу.",
                 }
                 local lang = GetCVar("language.2")
                 local noGamepadModeSupportedText = noGamepadModeSupportedLanguageTexts[lang] or noGamepadModeSupportedLanguageTexts["en"]
