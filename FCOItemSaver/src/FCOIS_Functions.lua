@@ -1791,6 +1791,16 @@ function FCOIS.IsWritOrNonWritItemCraftedAndIsAllowedToBeMarked()
     return retVar, craftMarkerIcon
 end
 
+function FCOIS.IsSendingMail()
+    local mailSend = FCOIS.ZOControlVars.MAIL_SEND
+    if mailSend and not mailSend:IsHidden() then
+        return true
+    elseif MAIL_MANAGER_GAMEPAD and MAIL_MANAGER_GAMEPAD:GetSend():IsAttachingItems() then
+        return true
+    end
+    return false
+end
+
 --==============================================================================
 -- Is dialog functions
 --==============================================================================

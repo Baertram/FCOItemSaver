@@ -169,7 +169,7 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 --> FCOIS filterbuttons are not working (test together with CraftBagExtended, and both alone, and check LibFilters-3.0 CBE additions!!!)
 --> https://github.com/sirinsidiator/ESO-AwesomeGuildStore/blob/master/src/wrappers/SellTabWrapper.lua#L714-L747
 
---#235  2022-06-30, Baertram: Companion marker at companion character doll looses the marker if a companion is dismissed and another is called
+--#235  2022-06-30, Baertram: Companion marker at companion character doll looses the markers if a companion is dismissed and another is called
 --> Maybe the same item is needed at both companions? Only visual bug, marker is still in SavedVariables and item is protected.
 
 --#237 2022-03-14, 02:23, Papito, Feature request
@@ -219,24 +219,32 @@ ZO_MainMenuCategoryBarButton1_MouseUp:3: in function '(main chunk)'
 --#262 2023-01-28, sirinsidiator, bug: Universal Deconstruction NPC: After scrolling, close NPC, reopen it and filters applied before are not registered
 -->(FCOIS.gFilterWhere most probably is 1 then for LF_INVENTORY due to the row setupFunction hack)
 
+--#263 2023-04-03, Baertram: Anti-mail protection does not protect items if you had them slotted and unprotected (flag set to red or marker not applied), then closed the mail panel and reoened it
+-- (items now marked or flag green again): Add protection check before sending mail!
+
+--#264  2023-04-03, Baertram: Armor type marker at companion character doll shows armor type of last shown companion, if a new companion was summoned and interacted with
+
+
 --______________________________________
--- Current max # of bugs/features/ToDos: 262
+-- Current max # of bugs/features/ToDos: 265
 --______________________________________
 
+--Open/To work on this patch:
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2023-01-28
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2023-04-05
 ------------------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.4.4 - New version: 2.4.5) -    Updated last: 2023-01-28
+--Changelog (last version: 2.4.6 - New version: 2.4.7) -    Updated last: 2023-04-05
 -------------------------------------------------------------------------------------
 --[Fixed]
---#260 & #261 Context menu open, after slider of max dynamic icons was changed, showed a lua error user:/AddOns/FCOItemSaver/src/FCOIS_ContextMenus.lua:1427 or 1443
---#262 Universal Deconstruction filters not re-applying properly upon scrolling, close & re-open Universal Decon panel
+--263 Anti-mail protection does protect items now upon sending the mail (if you had them slotted and unprotected, e.g. by setting the flag to red or marker not applied, then closed the mail panel and reopened it
+-- (items now marked or flag green again), an error message appeared but you still were able to send the mail!
+--#264 Companion paperdoll armorType icons not updating upon companion swap
+
 
 --[Changed]
---Recoded the Universal Deconstruction panel to use LibFilters-3.0's open/clsoe callbacks now
 
 --[Added]
 --
