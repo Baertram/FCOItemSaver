@@ -1968,10 +1968,10 @@ function FCOIS.CreateHooks()
     ZO_PreHook("SendMail", function()
         --#263 Check if atatched items and if those are protected (after reopening the mail send panel e.g.) and abort sending them
         if FCOIS.AreItemsProtectedAtMailSendPanel(nil, nil, true) then
-            d("[FCOIS]PROTECTED SendMail")
+            --d("[FCOIS]PROTECTED SendMail")
             return true
         end
-        d("[FCOIS]PreHook SendMail")
+        --d("[FCOIS]PreHook SendMail")
         return false
     end)
 
