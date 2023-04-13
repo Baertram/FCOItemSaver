@@ -503,48 +503,6 @@ end
 updateFCOISFilterButtonColorsAndTextures = FCOIS.UpdateFCOISFilterButtonColorsAndTextures
 
 
---[[
-user:/AddOns/FCOItemSaver/src/Buttons/FCOIS_FilterButtons.lua:510: attempt to index a nil value
-|rstack traceback:
-user:/AddOns/FCOItemSaver/src/Buttons/FCOIS_FilterButtons.lua:510: in function 'getUniversalDeconstructionNPCParentAndAnchor'
-|caaaaaa<Locals> p_FilterPanelId = 1 </Locals>|r
-user:/AddOns/FCOItemSaver/src/Buttons/FCOIS_FilterButtons.lua:1126: in function 'FCOIS.AddOrChangeFCOISFilterButton'
-|caaaaaa<Locals> parentCtrl = ud, buttonId = 1, pWidth = 24, pHeight = 24, pLeft = -30, pTop = 6, hide = F, p_FilterPanelId = 1, isUniversalDeconNPC = T, parentToUse = ud </Locals>|r
-user:/AddOns/FCOItemSaver/src/Buttons/FCOIS_FilterButtons.lua:326: in function 'FCOIS.UpdateFCOISFilterButtonsAtInventory'
-|caaaaaa<Locals> buttonId = -1, settings = [table:1]{}, currentFilterPanelId = 1, isUniversalDeconNPC = T, _ = 1, buttonNr = 1, filterButtonData = [table:2]{height = 24, left = "-30", width = 24, top = 6} </Locals>|r
-user:/AddOns/FCOItemSaver/src/Panels/FCOIS_Panels.lua:770: in function 'FCOIS.OnClosePanel'
-|caaaaaa<Locals> panelIdToShow = 1, autoReEnableCheck = "CRAFTING_STATION" </Locals>|r
-user:/AddOns/FCOItemSaver/src/EventsHooks/FCOIS_Hooks.lua:1140: in function 'updateFilterAndAddInvFlagButtonsAtUniversalDeconstruction'
-|caaaaaa<Locals> isHidden = T </Locals>|r
-user:/AddOns/FCOItemSaver/src/EventsHooks/FCOIS_Hooks.lua:1212: in function 'FCOItemSaver_CheckIfUniversalDeconIsShownAndAddButtons'
-|caaaaaa<Locals> stateStr = "hidden", universalDeconSelectedTabNow = "weapons", currentUniversalDeconFilterType = 16, universalDeconCurrentTab = "weapons", isUniversalDecon = T, isShown = F, filterTypeToHide = 16 </Locals>|r
-user:/AddOns/FCOItemSaver/src/EventsHooks/FCOIS_Hooks.lua:1234: in function 'libFiltersUniversalDeconShownOrHiddenCallback'
-|caaaaaa<Locals> isShown = F, callbackName = "LibFilters3-FCOItemSaver-hidde...", filterType = 16, stateStr = "hidden", isInGamepadMode = F, fragmentOrSceneOrControl = [table:3]{fireCallbackDepth = 1}, lReferencesToFilterType = [table:3], universalDeconSelectedTabNow = "weapons" </Locals>|r
-user:/AddOns/FCOItemSaver/src/EventsHooks/FCOIS_Hooks.lua:1247: in function 'callback'
-/EsoUI/Libraries/Utility/ZO_CallbackObject.lua:132: in function 'ZO_CallbackObjectMixin:FireCallbacks'
-|caaaaaa<Locals> self = [table:4]{fireCallbackDepth = 1}, eventName = "LibFilters3-FCOItemSaver-hidde...", registry = [table:5]{}, callbackInfoIndex = 1, callbackInfo = [table:6]{4 = F}, callback = user:/AddOns/FCOItemSaver/src/EventsHooks/FCOIS_Hooks.lua:1247, deleted = F </Locals>|r
-user:/AddOns/LibFilters-3.0/LibFilters-3.0.lua:4143: in function 'libFilters:CallbackRaise'
-|caaaaaa<Locals> self = [table:7]{globalLibName = "LibFilters3", _lastFilterTypeNoCallback = F, isInitialized = T, _lastCallbackState = "hidden", _currentFilterTypeUniversalDeconTab = "weapons", _directory = "user:/AddOns/LibFilters-3.0/", _lastFilterTypeUniversalDeconTab = "all", debug = F, version = 3.9, callbackBaseLibPattern = "LibFilters3-%s-%s-%s", callbackPattern = "LibFilters3-%s-%s-%s-%s", _lastFilterType = 16, name = "LibFilters-3.0", useFilterAllFallback = F}, filterTypes = [table:8]{}, fragmentOrSceneOrControl = [table:3], stateStr = "hidden", isInGamepadMode = F, typeOfRef = 1, doNotUpdateCurrentAndLastFilterTypes = F, universalDeconData = [table:9]{isShown = T, currentTab = "weapons", wasShownBefore = T, lastTab = "all"}, isShown = F, switchToLastFilterType = T, lastFilterTypeUniversalDeconTabBefore = "all", currentFilterTypeUniversalDeconTab = "weapons", currentFilterTypeRef = [table:3], currentFilterTypeBeforeReset = 16, currentFilterTypeUniversalDeconTabBeforeReset = "weapons", currentFilterTypeRefBeforeReset = [table:3], lastFilterTypeUniversalDeconTabBeforeReset = "all", lReferencesToFilterType = [table:3], filterType = 16, universalDeconSelectedTabNow = "weapons" </Locals>|r
-user:/AddOns/LibFilters-3.0/LibFilters-3.0.lua:4351: in function 'onControlHiddenStateChange'
-|caaaaaa<Locals> isShown = F, filterTypes = [table:8], ctrlRef = [table:3], inputType = F, universalDeconData = [table:9], stateStr = "hidden" </Locals>|r
-user:/AddOns/LibFilters-3.0/LibFilters-3.0.lua:1688: in function 'universalDeconOnFilterChangedCallback'
-|caaaaaa<Locals> tab = [table:10]{iconDown = "EsoUI/Art/Inventory/inventory_...", iconOver = "EsoUI/Art/Inventory/inventory_...", iconDisabled = "EsoUI/Art/Inventory/inventory_...", iconUp = "EsoUI/Art/Inventory/inventory_...", key = "weapons", displayName = "Waffen"}, craftingTypes = [table:11]{}, includeBanked = T, universalDeconTabBefore = "all", lastTab = "all", currentTabBefore = "weapons", currentTab = "weapons", libFiltersFilterType = 16, base = [table:12]{LibFilters3_filterType = 16}, isInGamepadMode = F, universalDeconRefVar = [table:3], universalDeconDataHideCurrentTab = [table:9] </Locals>|r
-/EsoUI/Libraries/Utility/ZO_CallbackObject.lua:132: in function 'ZO_CallbackObjectMixin:FireCallbacks'
-|caaaaaa<Locals> self = [table:3], eventName = "OnFilterChanged", registry = [table:13]{}, callbackInfoIndex = 1, callbackInfo = [table:14]{4 = F}, callback = user:/AddOns/LibFilters-3.0/LibFilters-3.0.lua:1648, deleted = F </Locals>|r
-/EsoUI/Ingame/Crafting/Keyboard/UniversalDeconstructionPanel_Keyboard.lua:171: in function 'ZO_UniversalDeconstructionPanel_Keyboard:OnFilterChanged'
-|caaaaaa<Locals> self = [table:3], includeBankedItemsChecked = T, craftingTypeFilters = [table:11], currentTab = [table:10] </Locals>|r
-/EsoUI/Ingame/Crafting/Keyboard/UniversalDeconstructionPanel_Keyboard.lua:228: in function 'ZO_UniversalDeconstructionInventory_Keyboard:ChangeFilter'
-|caaaaaa<Locals> self = [table:15]{sortOrder = T, sortKey = "traitInformationSortOrder", performingFullRefresh = F, dirty = F}, filterData = [table:16]{disabled = "EsoUI/Art/Inventory/inventory_...", tooltipText = "Waffen", highlight = "EsoUI/Art/Inventory/inventory_...", pressed = "EsoUI/Art/Inventory/inventory_...", normal = "EsoUI/Art/Inventory/inventory_...", activeTabText = "Waffen"} </Locals>|r
-/EsoUI/Ingame/Crafting/Keyboard/CraftingInventory.lua:148: in function 'callback'
-|caaaaaa<Locals> tabData = [table:16] </Locals>|r
-/EsoUI/Libraries/ZO_MenuBar/ZO_MenuBar.lua:287: in function 'MenuBarButton:Release'
-|caaaaaa<Locals> self = [table:17]{m_highlightHidden = F, m_locked = T, m_state = 1}, upInside = T, skipAnimation = F, playerDriven = T, buttonData = [table:16] </Locals>|r
-/EsoUI/Libraries/ZO_MenuBar/ZO_MenuBar.lua:657: in function 'ZO_MenuBarButtonTemplate_OnMouseUp'
-|caaaaaa<Locals> self = ud, button = 1, upInside = T </Locals>|r
-ZO_MainMenuCategoryBarButton1_MouseUp:3: in function '(main chunk)'
-|caaaaaa<Locals> self = ud, button = 1, upInside = T, ctrl = F, alt = F, shift = F, command = F </Locals>|r
-]]
-
 -- -v- #202
 local function getUniversalDeconstructionNPCParentAndAnchor(p_FilterPanelId)
 --d("[FCOIS]getUniversalDeconstructionNPCParentAndAnchor-p_FilterPanelId: " ..tos(p_FilterPanelId))
@@ -581,35 +539,83 @@ function FCOIS.CheckFCOISFilterButtonsAtPanel(doUpdateLists, panelId, overwriteF
         --local filterButtonVars = FCOIS.filterButtonVars
         --Is the setting enabled to use the filters at this panel?
         local areFilterButtonEnabledAtPanelId = false
-        if not hideFilterButtons then areFilterButtonEnabledAtPanelId = (settings.atPanelEnabled[filterPanelIdToUse]["filters"] == true) or false end
+        if hideFilterButtons == false then areFilterButtonEnabledAtPanelId = (settings.atPanelEnabled[filterPanelIdToUse]["filters"] == true and true) or false end --#266
+--d(">areFilterButtonEnabledAtPanelId: " ..tos(areFilterButtonEnabledAtPanelId) .. ", hideFilterButtons: " .. tos(hideFilterButtons) .. "; settings: " ..tos(settings.atPanelEnabled[filterPanelIdToUse]["filters"]))
         local filterBtn
         local isFilterActivated
         local filterButtons = FCOIS.filterButtonVars.filterButtons
 
+        --For debugging only!
+        if isUniversalDeconNPC == true then
+--d(">>>>>>>>>>> CheckFCOISFilterButtonsAtPanel - UniversalDecon >>>>>>>")
+        end
+
         --Change the filter buttons & callback functions
         for _, buttonNr in ipairs(filterButtonsToCheck) do
             --#202 Hide the last shown buttons at the universal deconstruction UI, if they are not the same to use for the current
-            if isUniversalDeconNPC == true and universalDeconFilterPanelIdBefore ~= nil and universalDeconFilterPanelIdBefore ~= filterPanelIdToUse then
-                --The filterButtons of the jewelry decon. re-use the normal decon filterButtonControls. Though the "1st" opened at the normal crafting tables will be only saved
-                --to table FCOIS.filterButtonVars.filterButtons-> filterButtons
-                --So we need to check here which button exist, LF_JEWELRY_DECONSTRUCT or LF_SMITHING_DECONSTRUCT, and use it
-                if universalDeconFilterPanelIdBefore == LF_JEWELRY_DECONSTRUCT or universalDeconFilterPanelIdBefore == LF_SMITHING_DECONSTRUCT then
-                    if filterButtons[universalDeconFilterPanelIdBefore] == nil then
-                        --Switch the deconstructable filterType to the other crafting types filterType, e.g. LF_JEWELRY_DECONSTRUCT -> LF_SMITHING_DECONSTRUCT
-                        universalDeconFilterPanelIdBefore = FCOIS.mappingVars.deconstructablePanelIdToOtherCraftType[universalDeconFilterPanelIdBefore]
+            if isUniversalDeconNPC == true then
+--d("button: " ..tos(buttonNr) ..", before: " .. tos(universalDeconFilterPanelIdBefore) .. ", now: " ..tos(filterPanelIdToUse))
+                if universalDeconFilterPanelIdBefore ~= nil then
+--d(">universalDeconFilterPanelIdBefore NOT nil")
+                    if universalDeconFilterPanelIdBefore ~= filterPanelIdToUse then
+--d(">>current and old panel differ")
+                        if filterButtons[universalDeconFilterPanelIdBefore] == nil then
+--d(">>>filterButtons["..tos(universalDeconFilterPanelIdBefore).."] do NOT exist")
+                            --The filterButtons of the jewelry decon. re-use the normal decon filterButtonControls. Though the "1st" opened at the normal crafting tables will be only saved
+                            --to table FCOIS.filterButtonVars.filterButtons-> filterButtons
+                            --So we need to check here which button exist, LF_JEWELRY_DECONSTRUCT or LF_SMITHING_DECONSTRUCT, and use it
+                            if universalDeconFilterPanelIdBefore == LF_JEWELRY_DECONSTRUCT or universalDeconFilterPanelIdBefore == LF_SMITHING_DECONSTRUCT then
+--d(">>>>swithching jewelry decon<>smithing decon")
+                                --Switch the deconstructable filterType to the other crafting types filterType, e.g. LF_JEWELRY_DECONSTRUCT -> LF_SMITHING_DECONSTRUCT
+                                -->to get the correct filterbutton variables (which get reused) from FCOIS.filterButtonVars.filterButtons
+                                universalDeconFilterPanelIdBefore = FCOIS.mappingVars.deconstructablePanelIdToOtherCraftType[universalDeconFilterPanelIdBefore]
+                            else
+--d(">>>>swithching enchanting create<>extract")
+                                --Switch the deconstructable filterType to the other crafting types filterType, e.g. LF_ENCHANTING_CREATION -> LF_ENCHANTING_EXTRACTION
+                                -->to get the correct filterbutton variables (which get reused) from FCOIS.filterButtonVars.filterButtons
+                                if universalDeconFilterPanelIdBefore == LF_ENCHANTING_CREATION then
+                                    universalDeconFilterPanelIdBefore = LF_ENCHANTING_EXTRACTION
+                                elseif universalDeconFilterPanelIdBefore == LF_ENCHANTING_EXTRACTION then
+                                    universalDeconFilterPanelIdBefore = LF_ENCHANTING_CREATION
+                                end
+                            end
+                        else
+--d(">>>filterButtons["..tos(universalDeconFilterPanelIdBefore).."] exist")
+                        end
+                    else
+--d(">current and old panel are the same")
                     end
-                end
 
-                local universalDeconNPCButton = filterButtons[universalDeconFilterPanelIdBefore][buttonNr]
-                local universalDeconNPCButtonName = universalDeconNPCButton:GetName()
---d(">universal decon NPC button: " ..tos(universalDeconNPCButtonName))
-                local oldUniversalDeconButton = GetControl(universalDeconNPCButtonName)
-                if oldUniversalDeconButton ~= nil then
---d(">>oldUniversalDeconButton found")
-                    if not oldUniversalDeconButton:IsHidden() then
-                        oldUniversalDeconButton:SetHidden(true)
-                        oldUniversalDeconButton:SetMouseEnabled(false)
+                    --Stil nil?
+                    if filterButtons[universalDeconFilterPanelIdBefore] ~= nil then
+--d(">filterButtons["..tos(universalDeconFilterPanelIdBefore).."] will be hidden now!")
+                        --[[
+                        user:/AddOns/FCOItemSaver/src/Buttons/FCOIS_FilterButtons.lua:603: attempt to index a nil value
+                        stack traceback:
+                        user:/AddOns/FCOItemSaver/src/Buttons/FCOIS_FilterButtons.lua:603: in function 'FCOIS.CheckFCOISFilterButtonsAtPanel'
+                        |caaaaaa<Locals> doUpdateLists = T, panelId = 16, hideFilterButtons = F, isUniversalDeconNPC = T, universalDeconFilterPanelIdBefore = 21,
+                        settings = [table:1]{}, buttonsParentCtrl = ud, filterPanel = 16, filterPanelIdToUse = 16, areFilterButtonEnabledAtPanelId = T, filterButtons = [table:2]{}, _ = 1,
+                        buttonNr = 1 </Locals>|r
+                        ]]
+                        local universalDeconNPCButton = filterButtons[universalDeconFilterPanelIdBefore][buttonNr]
+                        if universalDeconNPCButton ~= nil then
+                            local universalDeconNPCButtonName = universalDeconNPCButton:GetName()
+                            --d(">universal decon NPC button: " ..tos(universalDeconNPCButtonName))
+                            local oldUniversalDeconButton = GetControl(universalDeconNPCButtonName)
+                            if oldUniversalDeconButton ~= nil then
+                                --d(">>oldUniversalDeconButton found")
+                                if not oldUniversalDeconButton:IsHidden() then
+                                    oldUniversalDeconButton:SetHidden(true)
+                                    oldUniversalDeconButton:SetMouseEnabled(false)
+                                end
+                            end
+                        else
+--d("<universalDeconNPCButton is NIL - panel: " ..tos(universalDeconFilterPanelIdBefore) .. "; button: " ..tos(buttonNr))
+                        end
+                    else
+--d("<filterButtons["..tos(universalDeconFilterPanelIdBefore).."] are NIL!")
                     end
+
                 end
             end
 
@@ -622,7 +628,7 @@ function FCOIS.CheckFCOISFilterButtonsAtPanel(doUpdateLists, panelId, overwriteF
                 filterBtn = addOrChangeFCOISFilterButton(buttonsParentCtrl, buttonNr,
                                 filterButtonData["width"], filterButtonData["height"], filterButtonData["left"], filterButtonData["top"],
                                 not areFilterButtonEnabledAtPanelId, filterPanelIdToUse, isUniversalDeconNPC) -- #202
-                if areFilterButtonEnabledAtPanelId then
+                if areFilterButtonEnabledAtPanelId == true then
                     --Colorize the button and update the tooltips + filter functions
                     if filterBtn ~= nil then
                         --Get the filter's state
@@ -638,6 +644,7 @@ function FCOIS.CheckFCOISFilterButtonsAtPanel(doUpdateLists, panelId, overwriteF
                         end
                     end
                 else
+--d("<filterButton not enabled")
                     --Unregister the filter as the settings don't want a button and filter here
                     unregisterFilters(-1, false, filterPanelIdToUse)
                 end
@@ -1208,7 +1215,8 @@ function FCOIS.AddOrChangeFCOISFilterButton(parentCtrl, buttonId, pWidth, pHeigh
     -- -^- #202
 
     --Hide the button?
-    if hide then
+    if hide == true then
+--d(">hide button")
         if button then
             button:SetParent(parentToUse) --#202 set the parent to the original inventory again, not to the universal deconstruction inventory
             button:SetHidden(true)
@@ -1221,6 +1229,7 @@ function FCOIS.AddOrChangeFCOISFilterButton(parentCtrl, buttonId, pWidth, pHeigh
     local buttonExists = true
     --Create the button?
     if not button then
+--d(">no button yet")
         buttonExists = false
         -- create it
         parentName = parentName or parentCtrl:GetName()
@@ -1234,7 +1243,7 @@ function FCOIS.AddOrChangeFCOISFilterButton(parentCtrl, buttonId, pWidth, pHeigh
         local texVars = FCOIS.textureVars
         local texMarkerVars = texVars.MARKER_TEXTURES
 
-        --d(">+++ FCOIS.AddOrChangeFilterButton: ADD ButtonName=" .. button:GetName() .. ", Width/Height: " .. pWidth .. "/" .. pHeight .. ", Left/Top: " .. pLeft .. "/" .. pTop)
+--d(">+++ FCOIS.AddOrChangeFilterButton: ADD ButtonName=" .. button:GetName() .. ", Width/Height: " .. pWidth .. "/" .. pHeight .. ", Left/Top: " .. pLeft .. "/" .. pTop)
 
         --Create the texture for the button to hold the image
         local texture = CreateControl(button:GetName() .. "Texture", button, CT_TEXTURE)
@@ -1272,7 +1281,7 @@ function FCOIS.AddOrChangeFCOISFilterButton(parentCtrl, buttonId, pWidth, pHeigh
     --Button already existed?
     if buttonExists then
         button:SetParent(parentToUse) --#202 set the parent to the original inventory again, not to the universal deconstruction inventory
-        --d("-> FCOIS.AddOrChangeFilterButton: CHANGE ButtonName=" .. button:GetName() .. ", Width/Height: " .. pWidth .. "/" .. pHeight .. ", Left/Top: " .. pLeft .. "/" .. pTop)
+--d("-> FCOIS.AddOrChangeFilterButton: CHANGE ButtonName=" .. button:GetName() .. ", Width/Height: " .. pWidth .. "/" .. pHeight .. ", Left/Top: " .. pLeft .. "/" .. pTop)
         if settings.debug then debugMessage( "[AddOrChangeFilterButton]", ">> CHANGE ButtonName=" .. button:GetName() .. ", Width/Height: " .. pWidth .. "/" .. pHeight .. ", Left/Top: " .. pLeft .. "/" .. pTop, true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
     end
 
@@ -1433,6 +1442,7 @@ function FCOIS.AddOrChangeFCOISFilterButton(parentCtrl, buttonId, pWidth, pHeigh
     end)
 
     -- setup & modify button's size, position etc.
+--d(">dimensions: " ..tos(pWidth) .. "/" ..tos(pHeight) .. ", gFilterWhere: " ..tos(FCOIS.gFilterWhere))
     button:SetDimensions(pWidth, pHeight)
     --Move the button more to the right, if standard left values are used and GridView Addon is activated
     local panelId = FCOIS.gFilterWhere
@@ -1466,6 +1476,7 @@ function FCOIS.AddOrChangeFCOISFilterButton(parentCtrl, buttonId, pWidth, pHeigh
     button:SetDrawLevel(5) --high level to overlay others
 
     --Show the button and make it react on mouse input
+--d(">button unhidden!")
     button:SetHidden(false)
     button:SetMouseEnabled(true)
 

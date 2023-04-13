@@ -61,6 +61,7 @@ local showProtectionDialog                  = FCOIS.ShowProtectionDialog
 local showCompanionProgressBar              = FCOIS.ShowCompanionProgressBar
 local showPlayerProgressBar                 = FCOIS.ShowPlayerProgressBar
 local isDeconstructionHandlerNeeded         = FCOIS.IsDeconstructionHandlerNeeded
+local getFilterWhereBySettings              = FCOIS.GetFilterWhereBySettings
 
 local removeArmorTypeMarker
 local updateEquipmentSlotMarker
@@ -765,7 +766,7 @@ function FCOIS.CreateHooks()
 
     --Set the global filter panel ID to LF_INVENTORY again (otherwise it would stay the same like before, e.g. craftbag, and block the drag&drop!)
     local function resetToInventoryAndHideContextMenu()
-        FCOIS.gFilterWhere = LF_INVENTORY
+        FCOIS.gFilterWhere = getFilterWhereBySettings(LF_INVENTORY)
         --Hide the context menus
         zo_callLater(function()
             hideContextMenu(LF_INVENTORY)
@@ -1120,7 +1121,8 @@ function FCOIS.CreateHooks()
                     reAnchorAndHideLastUniversalDeconPanelFilterAndAddFlagButtons(lastUniversalDeconFilterPanelId)
                 end
 
-                FCOIS.gFilterWhere = currentFilterPanelIdAtUniversalDecon
+                FCOIS.gFilterWhere = getFilterWhereBySettings(currentFilterPanelIdAtUniversalDecon) --#266
+
                 --Re-anchor the filterButtons and the additional inventory flag button from their default parents at e.g.
                 --LF_SMITHING_DECONSTRUCT, LF_JEWELRY_DECONSTRUCT and LF_ENCHANTING_EXTRACTION to
                 --their new parent control UNIVERSAL_DECONSTRUCTION.control ...
@@ -1157,7 +1159,7 @@ function FCOIS.CreateHooks()
             --Hide context menus and update inventory filterButtons + re-enable the ANTI deconstruction/ANTI enchanting protection if needed
             onClosePanel(nil, LF_INVENTORY, "CRAFTING_STATION")
             --Reset the filterPanelId to inventory
-            FCOIS.gFilterWhere = LF_INVENTORY
+            FCOIS.gFilterWhere = getFilterWhereBySettings(LF_INVENTORY)
         end
     end)
 
@@ -1173,7 +1175,7 @@ function FCOIS.CreateHooks()
         libFilters_getUniversalDeconstructionPanelActiveTabFilterType = libFilters_getUniversalDeconstructionPanelActiveTabFilterType or libFilters.GetUniversalDeconstructionPanelActiveTabFilterType
         local currentUniversalDeconFilterType, universalDeconCurrentTab = libFilters_getUniversalDeconstructionPanelActiveTabFilterType(nil)
         local isUniversalDecon = (currentUniversalDeconFilterType ~= nil and universalDeconCurrentTab ~= nil and universalDeconCurrentTab == universalDeconSelectedTabNow and true) or false
---d(">isUniversalDecon: " ..tos(isUniversalDecon) .. ", currentUniversalDeconFilterType: " ..tos(currentUniversalDeconFilterType) .. ", currentTab: " ..tos(universalDeconCurrentTab))
+--d(">isUnivDecon: " ..tos(isUniversalDecon) .. ", currentFilterType: " ..tos(currentUniversalDeconFilterType) .. ", currentTab: " ..tos(universalDeconCurrentTab))
         if isUniversalDecon == true then
             --Was the panel shown or hidden?
             local isShown = (stateStr == SCENE_SHOWN and true) or false
@@ -1548,7 +1550,7 @@ function FCOIS.CreateHooks()
     invScene:RegisterCallback("StateChange", function(oldState, newState)
         if newState == SCENE_SHOWING or newState == SCENE_SHOWN then
 --d(">Scene invenory state change: " ..tos(newState))
-            FCOIS.gFilterWhere = LF_INVENTORY
+            FCOIS.gFilterWhere = getFilterWhereBySettings(LF_INVENTORY)
         end
     end)
 
@@ -1684,7 +1686,7 @@ function FCOIS.CreateHooks()
                 --Reset the last clicked bank button as it will always be the withdraw tab if you open the bank, and if the
                 --deposit button was the last one clicked it won't change the filter buttons as it thinks it is still active
                 FCOIS.lastVars.gLastBankButton = ctrlVars.BANK_MENUBAR_BUTTON_WITHDRAW
-                FCOIS.gFilterWhere = filterPanelId
+                FCOIS.gFilterWhere = getFilterWhereBySettings(filterPanelId)
                 --[[
                 --Scan if player bank got items that should be marked automatically
                 if not checkIfAutomaticMarksAreDisabledAtBag(bagId) then
@@ -1701,7 +1703,7 @@ function FCOIS.CreateHooks()
             elseif newState == SCENE_FRAGMENT_HIDING then
 --d("[FCOIS]Guild trader sell scene is shown - Bank fragment hiding")
                 local toPanelId = LF_GUILDSTORE_SELL
-                FCOIS.gFilterWhere = toPanelId
+                FCOIS.gFilterWhere = getFilterWhereBySettings(toPanelId)
 --d(">FCOIS.gFilterWhere: " .. tos(FCOIS.gFilterWhere))
                 onClosePanel(LF_BANK_WITHDRAW, toPanelId, "DESTROY")
 --d(">FCOIS.gFilterWhere2: " .. tos(FCOIS.gFilterWhere))
@@ -1860,7 +1862,7 @@ function FCOIS.CreateHooks()
             if settings.debug then debugMessage("[CRAFT_BAG_FRAGMENT]", ">Parent panel: " .. tos(parentPanel), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
 
             --Update the current filter panel ID to "CraftBag"
-            FCOIS.gFilterWhere   = LF_CRAFTBAG
+            FCOIS.gFilterWhere   = getFilterWhereBySettings(LF_CRAFTBAG)
 
             --Are we showing a CBE subpanel of another parent panel?
             local cbeOrAGSActive = FCOIS.CheckIfCBEorAGSActive(FCOIS.gFilterWhereParent, true)
@@ -1952,7 +1954,7 @@ function FCOIS.CreateHooks()
         elseif newState == SCENE_HIDING then
             --d("mail scene hiding")
             --Update the current filter panel ID to "Mail"
-            FCOIS.gFilterWhere = LF_MAIL_SEND
+            FCOIS.gFilterWhere = getFilterWhereBySettings(LF_MAIL_SEND)
 
             --Hide the context menu at mail panel
             hideContextMenu(FCOIS.gFilterWhere)
@@ -2017,7 +2019,7 @@ function FCOIS.CreateHooks()
 
         elseif newState == SCENE_HIDING then
             --Update the current filter panel ID to "Retrait"
-            FCOIS.gFilterWhere = LF_RETRAIT
+            FCOIS.gFilterWhere = getFilterWhereBySettings(LF_RETRAIT)
 
             --Hide the context menu at the retrait panel
             hideContextMenu(FCOIS.gFilterWhere)
@@ -2054,7 +2056,7 @@ function FCOIS.CreateHooks()
 
         elseif newState == SCENE_FRAGMENT_HIDING then
             --Update the current filter panel ID to "Companion inventory"
-            FCOIS.gFilterWhere = LF_INVENTORY_COMPANION
+            FCOIS.gFilterWhere = getFilterWhereBySettings(LF_INVENTORY_COMPANION)
 
             --Hide the context menu at companion inventory panel
             hideContextMenu(FCOIS.gFilterWhere)
