@@ -224,9 +224,10 @@ ZO_MainMenuCategoryBarButton1_MouseUp:3: in function '(main chunk)'
 
 --#264  2023-04-03, Baertram: Armor type marker at companion character doll shows armor type of last shown companion, if a new companion was summoned and interacted with
 
+--#266, 2023-04-12, dackjaniels, addon comments: for my doc: Login, Giladil ragpicker (Perfect pixel seems to enabled too, which is important), All tab (FCOCF filter is set to "bank only"), switch FCOCF filter to All, clickon jewelry tab (FCOCF filter there is at "All") -> Error message
 
 --______________________________________
--- Current max # of bugs/features/ToDos: 265
+-- Current max # of bugs/features/ToDos: 266
 --______________________________________
 
 --Open/To work on this patch:
@@ -239,9 +240,7 @@ ZO_MainMenuCategoryBarButton1_MouseUp:3: in function '(main chunk)'
 --Changelog (last version: 2.4.6 - New version: 2.4.7) -    Updated last: 2023-04-05
 -------------------------------------------------------------------------------------
 --[Fixed]
---263 Anti-mail protection does protect items now upon sending the mail (if you had them slotted and unprotected, e.g. by setting the flag to red or marker not applied, then closed the mail panel and reopened it
--- (items now marked or flag green again), an error message appeared but you still were able to send the mail!
---#264 Companion paperdoll armorType icons not updating upon companion swap
+--266 Giladil ragpicker error message upon switching from All to jewelry tab, or from enchantments to all tab
 
 
 --[Changed]
