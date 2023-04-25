@@ -1089,7 +1089,7 @@ function FCOIS.CreateHooks()
     --get re-used here we need to hide them properly again and re-anchor them to their original filterPanel ctrls/UIs
     local function reAnchorAndHideLastUniversalDeconPanelFilterAndAddFlagButtons(lastFilterPanelIdAtUniversalDecon)
         if lastFilterPanelIdAtUniversalDecon == nil then lastFilterPanelIdAtUniversalDecon = FCOIS.gFilterWhere end
-    --d(">[FCOIS]reAnchorAndHideLastUniversalDeconFilterPanelButtons - lastFilterPanelIdAtUniversalDecon: " ..tos(lastFilterPanelIdAtUniversalDecon) .. ", current: " ..tos(universalDeconGlobal.FCOIScurrentFilterPanelId))
+--d(">[FCOIS]reAnchorAndHideLastUniversalDeconFilterPanelButtons - lastFilterPanelIdAtUniversalDecon: " ..tos(lastFilterPanelIdAtUniversalDecon) .. ", current: " ..tos(universalDeconGlobal.FCOIScurrentFilterPanelId))
         --Reset the filterButtons and the additional inventory flag button to their default parents at e.g.
         --LF_SMITHING_DECONSTRUCT, LF_JEWELRY_DECONSTRUCT and LF_ENCHANTING_EXTRACTION
         reParentAndAnchorContextMenuInvokerButtons(lastFilterPanelIdAtUniversalDecon, nil)
@@ -1115,25 +1115,30 @@ function FCOIS.CreateHooks()
             if filterPanelIdPassedIn == nil then filterPanelIdPassedIn = LF_SMITHING_DECONSTRUCT end
             --Update universalDeconGlobal.FCOIScurrentFilterPanelId
             local currentFilterPanelIdAtUniversalDecon = getCurrentFilterPanelIdAtDeconNPC(filterPanelIdPassedIn)
-            if currentFilterPanelIdAtUniversalDecon ~= nil and FCOIS.gFilterWhere ~= currentFilterPanelIdAtUniversalDecon then
 --d(">Setting filterPanelId to: " ..tos(currentFilterPanelIdAtUniversalDecon))
-                if lastUniversalDeconFilterPanelId ~= nil and lastUniversalDeconFilterPanelId ~= currentFilterPanelIdAtUniversalDecon then
-                    reAnchorAndHideLastUniversalDeconPanelFilterAndAddFlagButtons(lastUniversalDeconFilterPanelId)
-                end
+            if currentFilterPanelIdAtUniversalDecon ~= nil then
+                --if FCOIS.gFilterWhere ~= currentFilterPanelIdAtUniversalDecon then --#267
+                    if lastUniversalDeconFilterPanelId ~= nil and lastUniversalDeconFilterPanelId ~= currentFilterPanelIdAtUniversalDecon then
+                        reAnchorAndHideLastUniversalDeconPanelFilterAndAddFlagButtons(lastUniversalDeconFilterPanelId)
+                    end
 
-                FCOIS.gFilterWhere = getFilterWhereBySettings(currentFilterPanelIdAtUniversalDecon) --#266
+                    FCOIS.gFilterWhere = getFilterWhereBySettings(currentFilterPanelIdAtUniversalDecon) --#266
 
-                --Re-anchor the filterButtons and the additional inventory flag button from their default parents at e.g.
-                --LF_SMITHING_DECONSTRUCT, LF_JEWELRY_DECONSTRUCT and LF_ENCHANTING_EXTRACTION to
-                --their new parent control UNIVERSAL_DECONSTRUCTION.control ...
-                -->Re-Parent and Re-Anchor he filterButtons and the additional inventory "flag" button from old panel to current panel
-                reParentAndAnchorContextMenuInvokerButtons(nil, currentFilterPanelIdAtUniversalDecon)
-                --Change the button color of the context menu invoker
-                changeContextMenuInvokerButtonColorByPanelId(currentFilterPanelIdAtUniversalDecon)
-                --Check the filter buttons and create them if they are not there. Update the inventory afterwards too
-                -->Will reParent and reAnchor the filterButtons too!
-                --doUpdateLists, panelId, overwriteFilterWhere, hideFilterButtons, isUniversalDeconNPC
-                checkFCOISFilterButtonsAtPanel(true, currentFilterPanelIdAtUniversalDecon, nil, nil, true, lastUniversalDeconFilterPanelId) --#202 universal deconstruction
+                    --Re-anchor the filterButtons and the additional inventory flag button from their default parents at e.g.
+                    --LF_SMITHING_DECONSTRUCT, LF_JEWELRY_DECONSTRUCT and LF_ENCHANTING_EXTRACTION to
+                    --their new parent control UNIVERSAL_DECONSTRUCTION.control ...
+                    -->Re-Parent and Re-Anchor he filterButtons and the additional inventory "flag" button from old panel to current panel
+                    reParentAndAnchorContextMenuInvokerButtons(nil, currentFilterPanelIdAtUniversalDecon)
+                    --Change the button color of the context menu invoker
+                    changeContextMenuInvokerButtonColorByPanelId(currentFilterPanelIdAtUniversalDecon)
+                    --Check the filter buttons and create them if they are not there. Update the inventory afterwards too
+                    -->Will reParent and reAnchor the filterButtons too!
+                    --doUpdateLists, panelId, overwriteFilterWhere, hideFilterButtons, isUniversalDeconNPC
+                    checkFCOISFilterButtonsAtPanel(true, currentFilterPanelIdAtUniversalDecon, nil, nil, true, lastUniversalDeconFilterPanelId) --#202 universal deconstruction
+                --else --#267
+--d(">Same filterPanel at last and current UniversalDecon!")
+
+                --end --#267
             end
         else
 --d("[FCOIS]UniversalDecon panel HIDDEN")

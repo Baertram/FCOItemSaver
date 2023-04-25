@@ -225,22 +225,43 @@ ZO_MainMenuCategoryBarButton1_MouseUp:3: in function '(main chunk)'
 --#264  2023-04-03, Baertram: Armor type marker at companion character doll shows armor type of last shown companion, if a new companion was summoned and interacted with
 
 --#266, 2023-04-12, dackjaniels, addon comments: for my doc: Login, Giladil ragpicker (Perfect pixel seems to enabled too, which is important), All tab (FCOCF filter is set to "bank only"), switch FCOCF filter to All, clickon jewelry tab (FCOCF filter there is at "All") -> Error message
+--#267, 2023-04-19, dackjaniels, gitter: Additional inventory flag icon jumps at universal decon. if switched panels, and sometimes even hides. PP was enabled!
+
+--#268, 2021-11-09, silvereyes, bug report
+--[[
+bad argument #1 to 'pairs' (table/struct expected, got nil)
+stack traceback:
+[C]: in function 'pairs'
+user:/AddOns/FCOItemSaver/src/FCOIS_Functions.lua:2120: in function 'func'
+|caaaaaa<Locals> bagId = 1, slotIndex = 16, iconsRemarked = 0 </Locals>|r
+/EsoUI/Libraries/Globals/globalapi.lua:227: in function '(anonymous)'
+
+Steps to reproduce:
+Open a crafting station
+Go to the improvement tab
+Filter the items with a text filter so that only the item to improve is shown. Not sure if this is part of the base game, or Votan's Search Box, which I have installed.
+Mark the item with an FCOItemSaver mark, like selling at guild store.
+Deactivate anti improve
+Improve the item all the way to legendary so that it becomes ineligible to improve
+
+I'm guessing that the same sort of thing can happen any time a marked item becomes ineligible for the inventory list. For example, maybe after right click > bind a marked item in the guild store selling tab or mail send tab. I haven't tested that, though. Should be a fairly easy nil check either way.
+]]
 
 --______________________________________
--- Current max # of bugs/features/ToDos: 266
+-- Current max # of bugs/features/ToDos: 268
 --______________________________________
 
 --Open/To work on this patch:
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2023-04-05
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2023-04-21
 ------------------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.4.6 - New version: 2.4.7) -    Updated last: 2023-04-05
+--Changelog (last version: 2.4.8 - New version: 2.4.9) -    Updated last: 2023-04-21
 -------------------------------------------------------------------------------------
 --[Fixed]
---266 Giladil ragpicker error message upon switching from All to jewelry tab, or from enchantments to all tab
+--267 Giladil ragpicker addiitonal inventory 'flag' icons not appearing properly if changed from a panel to a technically 'same' panel (e.g. all->smithing armor->smithing weapons)
 
 
 --[Changed]
