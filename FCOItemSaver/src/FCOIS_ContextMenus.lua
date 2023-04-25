@@ -2755,7 +2755,7 @@ function FCOIS.ReParentAndAnchorContextMenuInvokerButtons(fromPanelId, toPanelId
     local filterPanelId
 
     if fromPanelId == nil then
---d(">from not given")
+--e(">from not given")
         if toPanelId == nil then return end
         filterPanelId = toPanelId
         --No matter, just reParent and reAnchor to the new panelId of universal deconstruction
@@ -2818,8 +2818,7 @@ function FCOIS.ReParentAndAnchorContextMenuInvokerButtons(fromPanelId, toPanelId
 
     --Change parent and anchorTo now
     if filterPanelId ~= nil and newParent == nil or contMenuInvokerButton == nil or anchorData == nil then return end
---d(">>>filterPanelId: " ..tos(filterPanelId) .. ", contMenuInvokerButton: " ..tos(contMenuInvokerButton:GetName()) .. ", newParent: "
-        --..tos(newParent:GetName()) .. ", anchorTo: " ..tos(anchorData.anchorControl:GetName()))
+--d(">>>filterPanelId: " ..tos(filterPanelId) .. ", contMenuInvokerButton: " ..tos(contMenuInvokerButton:GetName()) .. ", newParent: " ..tos(newParent:GetName()) .. ", anchorTo: " ..tos(anchorData.anchorControl:GetName()))
     reAnchorAdditionalInvButtons(filterPanelId, contMenuInvokerButton, newParent, anchorData)
 end
 --# -^- 202
