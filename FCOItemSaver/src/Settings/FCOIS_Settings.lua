@@ -859,7 +859,7 @@ function FCOIS.AfterSettings()
                 local dynamicIconNr = icon2Dynamic[iconNr]
                 if dynamicIconNr ~= nil then
                     if dynamicIconNr > settings.numMaxDynamicIconsUsable then
-d("[FCOIS-SettingsMenu]Automatically disabled dynamic icon #" .. tos(dynamicIconNr) .. " (iconNr: " .. tos(iconNr) .. "), as the slider numMaxDynamicIconsUsable prohibits it!")
+                        d("[FCOIS-SettingsMenu]Automatically disabled dynamic icon #" .. tos(dynamicIconNr) .. " (iconNr: " .. tos(iconNr) .. "), as the slider numMaxDynamicIconsUsable prohibits it!")
                         FCOIS.settingsVars.settings.isIconEnabled[iconNr] = false
                     end
                 end
@@ -954,14 +954,27 @@ d("[FCOIS-SettingsMenu]Automatically disabled dynamic icon #" .. tos(dynamicIcon
     local apiVersion = FCOIS.APIversion
     local addInvButtonOffsets = settings.FCOISAdditionalInventoriesButtonOffset
     local anchorVarsAddInvButtons = FCOIS.anchorVars.additionalInventoryFlagButton[apiVersion]
-    FCOIS.settingsVars.settings.FCOISAdditionalInventoriesButtonOffset["left"] = nil --remove wrong added values
-    FCOIS.settingsVars.settings.FCOISAdditionalInventoriesButtonOffset["top"] = nil --remove wrong added values
+    FCOIS.settingsVars.settings.FCOISAdditionalInventoriesButtonOffset["left"] = nil --remove wrong added values -> left and top should be in a subtable of filterPanelId!
+    FCOIS.settingsVars.settings.FCOISAdditionalInventoriesButtonOffset["top"] = nil --remove wrong added values -> left and top should be in a subtable of filterPanelId!
     --Loop over the anchorVars and get each panel of the additional inv buttons (e.g. LF_INVENTORY, LF_BANK_WITHDRAW, ...)
     local function fixAnchorVarsLeftAndTopOffsets(p_addInvButtonOffsetsForPanel, p_panelId)
         if p_addInvButtonOffsetsForPanel["left"] == "" or type(p_addInvButtonOffsetsForPanel["left"]) == "string" or tonumber(p_addInvButtonOffsetsForPanel["left"]) == nil then
             FCOIS.settingsVars.settings.FCOISAdditionalInventoriesButtonOffset[p_panelId]["left"] = 0
+            --d("[FCOIS]fixAnchorVarsLeftAndTopOffsets-left-filterPanel: " ..tos(p_panelId) .. ", current: " .. tos(p_addInvButtonOffsetsForPanel["top"]) .. "->reset to 0!")
         end
-        if p_addInvButtonOffsetsForPanel["top"] or type(p_addInvButtonOffsetsForPanel["top"]) == "string" or tonumber(p_addInvButtonOffsetsForPanel["top"]) == nil then
+        if p_addInvButtonOffsetsForPanel["top"] == "" or type(p_addInvButtonOffsetsForPanel["top"]) == "string" or tonumber(p_addInvButtonOffsetsForPanel["top"]) == nil then
+            --[[ For debugging -- FCOIS v2.4.9
+                d("[FCOIS]fixAnchorVarsLeftAndTopOffsets-top-filterPanel: " ..tos(p_panelId) .. ", current: " .. tos(p_addInvButtonOffsetsForPanel["top"]) .. "->reset to 0!")
+                if p_addInvButtonOffsetsForPanel["top"] == "" then
+                    d(">empty string")
+                end
+                if type(p_addInvButtonOffsetsForPanel["top"]) == "string" then
+                    d(">string detected")
+                end
+                if tonumber(p_addInvButtonOffsetsForPanel["top"]) == nil then
+                    d(">no number")
+                end
+                ]]
             FCOIS.settingsVars.settings.FCOISAdditionalInventoriesButtonOffset[p_panelId]["top"] = 0
         end
     end
@@ -971,11 +984,15 @@ d("[FCOIS-SettingsMenu]Automatically disabled dynamic icon #" .. tos(dynamicIcon
             if addInvButtonOffsetsForPanel then
                 fixAnchorVarsLeftAndTopOffsets(addInvButtonOffsetsForPanel, panelId)
             end
+
+            --FCOIS.ReAnchorAdditionalInvButtons(panelId)
         end
         --1 extra call to LF_ENCHANTING_EXTRACTION as it is not added to FCOIS.anchorVars.additionalInventoryFlagButton[apiVersion], because it re-usess LF_ENCHANTING_CREATION
         local addInvButtonOffsetsForPanel = addInvButtonOffsets[LF_ENCHANTING_EXTRACTION]
         if addInvButtonOffsetsForPanel then
             fixAnchorVarsLeftAndTopOffsets(addInvButtonOffsetsForPanel, LF_ENCHANTING_EXTRACTION)
+
+            --FCOIS.ReAnchorAdditionalInvButtons(LF_ENCHANTING_EXTRACTION)
         end
     end
 
@@ -1008,8 +1025,8 @@ d("[FCOIS-SettingsMenu]Automatically disabled dynamic icon #" .. tos(dynamicIcon
             --Added with FCOIS v2.4.4 #244 Fix LF_SMITHING_RESEARCH/LF_JEWELRY_RESEARCH entries for last selected markerIcon at the 4 filter buttons right click context menus, and preset with -1 "all icons"
             FCOIS.settingsVars.settings.lastLockDynFilterIconId[panelId] =      FCOIS.settingsVars.settings.lastLockDynFilterIconId[panelId] or -1
             FCOIS.settingsVars.settings.lastGearFilterIconId[panelId] =         FCOIS.settingsVars.settings.lastGearFilterIconId[panelId] or -1
-			FCOIS.settingsVars.settings.lastResDecImpFilterIconId[panelId]  =   FCOIS.settingsVars.settings.lastResDecImpFilterIconId[panelId] or -1
-			FCOIS.settingsVars.settings.lastSellGuildIntFilterIconId[panelId] = FCOIS.settingsVars.settings.lastSellGuildIntFilterIconId[panelId] or -1
+            FCOIS.settingsVars.settings.lastResDecImpFilterIconId[panelId]  =   FCOIS.settingsVars.settings.lastResDecImpFilterIconId[panelId] or -1
+            FCOIS.settingsVars.settings.lastSellGuildIntFilterIconId[panelId] = FCOIS.settingsVars.settings.lastSellGuildIntFilterIconId[panelId] or -1
         end
     end
 

@@ -1551,11 +1551,21 @@ function FCOIS.CreateHooks()
     --#202 bugfix for undaunted vendor -> press I to open inventory -> error message because FCOIS.gFilterWhere was 6
     --LF_VENDOR_SELL still -> Error message at /src/FCOIS_Filters.lua -> function shouldItemBeShownAfterBeenFiltered row
     --116: if filterButtonSettingsForCurrentPanel == nil then
+    local invSceneWasShown = false
     local invScene = SCENE_MANAGER:GetScene(invSceneName)
     invScene:RegisterCallback("StateChange", function(oldState, newState)
         if newState == SCENE_SHOWING or newState == SCENE_SHOWN then
 --d(">Scene invenory state change: " ..tos(newState))
             FCOIS.gFilterWhere = getFilterWhereBySettings(LF_INVENTORY)
+
+            --Added with FCOIS v2.4.9 ReAnchor the inventory additionalInventoryFlag button now so changed data is reflected after reloadui
+            --on first open of the inventory, without having to open the settings menu first!
+            if newState == SCENE_SHOWN and invSceneWasShown == false then
+--d(">>calling ReAnchorAdditionalInvButtons(LF_INVENTORY)")
+                invSceneWasShown = true
+
+                FCOIS.ReAnchorAdditionalInvButtons(LF_INVENTORY)
+            end
         end
     end)
 

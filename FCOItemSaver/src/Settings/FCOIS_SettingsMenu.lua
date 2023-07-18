@@ -12,6 +12,7 @@ local SM = SCENE_MANAGER
 local gameMenuIngameScene = SM:GetScene('gameMenuInGame')
 
 local tos = tostring
+local ton = tonumber
 local strformat = string.format
 local strlen = string.len
 local strsub = string.sub
@@ -254,7 +255,7 @@ local traitData = {
 
 local function checkIfNumberOrReset(valueToCheck, resetValue)
     if valueToCheck == nil or valueToCheck == "" then return resetValue end
-    local newValueNumber = tonumber(valueToCheck)
+    local newValueNumber = ton(valueToCheck)
     if newValueNumber == nil or type(newValueNumber) ~= "number" then
         newValueNumber = resetValue
     end
@@ -713,7 +714,7 @@ local function reBuildCharacterOptions(updateSourceOrTarget)
                     -- Do not use the $AccountWide entry or entries with starting @ (other account names)
                     if characterId ~= FCOIS.svAccountWideName and strsub(characterId, 1, 1) ~= "@" then
                         --Is the read entry a character ID number?
-                        local characterIdNumber = tonumber(characterId)
+                        local characterIdNumber = ton(characterId)
                         if characterIdNumber and characterIdNumber > 0 then
                             --Get the character name for the characterId
                             local characterName = ""
@@ -830,7 +831,7 @@ local function buildRestoreAPIVersionData(doUpdateDropdownValues)
             --Build the choices and choices values for the LAM dropdown box of restore api versions
             local tableIndex = #restoreChoices+1
             restoreChoices[tableIndex] = "[" .. tos(dateInfo) .. "] " .. tos(backupApiVersion)
-            restoreChoicesValues[tableIndex] = tonumber(backupApiVersion)
+            restoreChoicesValues[tableIndex] = ton(backupApiVersion)
         end
         --Update the choices and choicesValues in the LAM restore API verison dropdown now
         --> only needed if manually clicked the "refresh restorable backups" button
@@ -2634,7 +2635,7 @@ local function buildFilterButtonsPositionsSubMenu()
                 disabledFunc = function() return false end
                 getFunc = function() return FCOISsettings.filterButtonData[filterButtonNr][filterPanelId]["width"] end
                 setFunc = function(newValue)
-                    FCOISsettings.filterButtonData[filterButtonNr][filterPanelId]["width"] = tonumber(newValue)
+                    FCOISsettings.filterButtonData[filterButtonNr][filterPanelId]["width"] = ton(newValue)
                     saveValueFilterButtonChecks(filterPanelId, filterButtonNr)
                 end
                 defaultSettings = FCOISdefaultSettings.filterButtonData[filterButtonNr][filterPanelId]["width"]
@@ -2650,7 +2651,7 @@ local function buildFilterButtonsPositionsSubMenu()
                 disabledFunc = function() return false end
                 getFunc = function() return FCOISsettings.filterButtonData[filterButtonNr][filterPanelId]["height"] end
                 setFunc = function(newValue)
-                    FCOISsettings.filterButtonData[filterButtonNr][filterPanelId]["height"] = tonumber(newValue)
+                    FCOISsettings.filterButtonData[filterButtonNr][filterPanelId]["height"] = ton(newValue)
                     saveValueFilterButtonChecks(filterPanelId, filterButtonNr)
                 end
                 defaultSettings = FCOISdefaultSettings.filterButtonData[filterButtonNr][filterPanelId]["height"]
@@ -2681,6 +2682,8 @@ end
 --Added with FCOIS v1.6.7
 --Build the complete submenus for the addiitonal inventory context menu "flag" offset settings
 local function buildAddInvContextMenuFlagButtonsPositionsSubMenu()
+    FCOISsettings = FCOIS.settingsVars.settings
+
     local addInvFlagButtonsPositionsSubMenu = {}
     locVars = FCOISlocVars.fcois_loc
     --Add 1 button to set all filter panel ID settings to an equal value, the one of LF_INVENTORY
@@ -2736,7 +2739,7 @@ local function buildAddInvContextMenuFlagButtonsPositionsSubMenu()
                 getFunc = function() return FCOISsettings.FCOISAdditionalInventoriesButtonOffset[filterPanelId]["left"] end
                 defaultSettings = FCOISdefaultSettings.FCOISAdditionalInventoriesButtonOffset[filterPanelId]["left"]
                 setFunc = function(newValue)
-                    FCOISsettings.FCOISAdditionalInventoriesButtonOffset[filterPanelId]["left"] = checkIfNumberOrReset(newValue, defaultSettings)
+                    FCOISsettings.FCOISAdditionalInventoriesButtonOffset[filterPanelId]["left"] = ton(newValue) -- checkIfNumberOrReset(newValue, defaultSettings) -- number check should be done via LAM control's textType TEXT_TYPE_NUMERIC already
                     reAnchorAdditionalInvButtons(filterPanelId)
                 end
                 createdControl = CreateControl(ref, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
@@ -2754,7 +2757,7 @@ local function buildAddInvContextMenuFlagButtonsPositionsSubMenu()
                 getFunc = function() return FCOISsettings.FCOISAdditionalInventoriesButtonOffset[filterPanelId]["top"] end
                 defaultSettings = FCOISdefaultSettings.FCOISAdditionalInventoriesButtonOffset[filterPanelId]["top"]
                 setFunc = function(newValue)
-                    FCOISsettings.FCOISAdditionalInventoriesButtonOffset[filterPanelId]["top"] = checkIfNumberOrReset(newValue, defaultSettings)
+                    FCOISsettings.FCOISAdditionalInventoriesButtonOffset[filterPanelId]["top"] = ton(newValue) -- checkIfNumberOrReset(newValue, defaultSettings) -- number check should be done via LAM control's textType TEXT_TYPE_NUMERIC already
                     reAnchorAdditionalInvButtons(filterPanelId)
                 end
                 createdControl = CreateControl(ref, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
@@ -7473,7 +7476,7 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                                     --String only contains numbers -> Does not contain alphanumeric characters (%w = alphanumeric characters, uppercase W = unequals w)
                                     local strLen = strlen(value)
                                     local apiLength = FCOIS.APIVersionLength
-                                    local numValue = tonumber(value)
+                                    local numValue = ton(value)
                                     local onlyDigits = (numValue ~= nil and numValue > 0) or false
                                     --Input text is >= API version length
                                     if strLen == apiLength then

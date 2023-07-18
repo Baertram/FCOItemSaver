@@ -315,14 +315,15 @@ end
 
 --Set the additional inventory context menu "flag" bvutton offsets the same
 function FCOIS.SetAllAddInvFlagButtonOffsetSettingsEqual(filterPanelIdSource)
+--d("[FCOIS]SetAllAddInvFlagButtonOffsetSettingsEqual-filterPanelSource: " ..tos(filterPanelIdSource))
     if filterPanelIdSource == nil then return end
     local addInvBtnInvokers = FCOIS.contextMenuVars.filterPanelIdToContextMenuButtonInvoker
     --local filterButtonsToCheck = FCOIS.checkVars.filterButtonsToCheck
     if addInvBtnInvokers ~= nil then
         local settings = FCOIS.settingsVars.settings
         local activeFilterPanelIds = FCOIS.mappingVars.activeFilterPanelIds
-        --Get source settings
-        local sourceSettings = settings.FCOISAdditionalInventoriesButtonOffset[filterPanelIdSource]
+        --Get source settings -> De-Reference them so updating the sourceettings in the future does not change the actual settings of another button too
+        local sourceSettings = ZO_ShallowTableCopy(settings.FCOISAdditionalInventoriesButtonOffset[filterPanelIdSource])
         if sourceSettings ~= nil then
             --Check each filter button's settings
             for filterPanelIdTarget, _ in ipairs(addInvBtnInvokers) do
