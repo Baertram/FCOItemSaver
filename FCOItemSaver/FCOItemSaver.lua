@@ -248,21 +248,20 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
 ]]
 
 --______________________________________
--- Current max # of bugs/features/ToDos: 270
+-- Current max # of bugs/features/ToDos: 271
 --______________________________________
 
 --Open/To work on this patch:
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2023-07-18
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2023-11-22
 ------------------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.4.8 - New version: 2.4.9) -    Updated last: 2023-07-18
+--Changelog (last version: 2.4.8 - New version: 2.4.9) -    Updated last: 2023-11-22
 -------------------------------------------------------------------------------------
 --[Fixed]
---269 Additional inventory flag icons not saving there positions
---270 Additional inventory flag icon at inventory not loading it's position at 1st open (only updated if settings menu was used to change the offsets)
+--Fixed 271: XML resizeToFitConstraints="true" at dialogs to strip interface.log file entries
 
 
 --[Changed]

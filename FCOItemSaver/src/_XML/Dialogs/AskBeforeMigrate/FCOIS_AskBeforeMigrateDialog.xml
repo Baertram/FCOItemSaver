@@ -1,6 +1,6 @@
 <GuiXml>
 	<Controls>
-		<TopLevelControl name="FCOISAskBeforeMigrateDialogXML" inherits="ZO_CustomDialogBase">
+		<TopLevelControl name="FCOISAskBeforeMigrateDialogXML" inherits="ZO_CustomDialogBase" resizeToFitConstrains="true">
 			<Dimensions x="500" y="125" />
 			<Anchor point="CENTER" offsetY="-45" />
 			<Controls>
