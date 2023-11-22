@@ -1,7 +1,6 @@
 <GuiXml>
 	<Controls>
-		<TopLevelControl name="FCOISAskBeforeBindDialogXML" inherits="ZO_CustomDialogBase" resizeToFitConstrains="true">
-			<Dimensions x="500" y="125" />
+		<TopLevelControl name="FCOISAskBeforeBindDialogXML" inherits="ZO_CustomDialogBase" resizeToFitConstrains="Y">
 			<Anchor point="CENTER" offsetY="-45" />
 			<Controls>
 				<Control name="$(parent)Content" inherits="ZO_DialogContentAnchors">
