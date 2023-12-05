@@ -254,14 +254,13 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
 --Open/To work on this patch:
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2023-11-22
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2023-12-05
 ------------------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.4.8 - New version: 2.4.9) -    Updated last: 2023-11-22
+--Changelog (last version: 2.5.1 - New version: 2.5.2) -    Updated last: 2023-12-05
 -------------------------------------------------------------------------------------
 --[Fixed]
---Fixed 271: XML resizeToFitConstraints="true" at dialogs to strip interface.log file entries
 
 
 --[Changed]

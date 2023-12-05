@@ -12,7 +12,7 @@ local strlen = string.len
 FCOIS.addonVars = {}
 local addonVars = FCOIS.addonVars
 --Addon variables
-addonVars.addonVersionOptions 		    = '2.5.1' -- version shown in the settings panel
+addonVars.addonVersionOptions 		    = '2.5.2' -- version shown in the settings panel
 --The addon name, normal and decorated with colors etc.
 addonVars.gAddonName				    = "FCOItemSaver"
 addonVars.gAddonNameShort               = "FCOIS"
@@ -1192,6 +1192,8 @@ filterButtonVars.gFilterButtonLeft	   		= {
 }
 --Filter button offset Y at the improvement panel bottom (due to the extra "improvement booster bar")
 filterButtonVars.buttonOffsetYImprovement = 7
+--Filter button offset Y at the research dialog
+filterButtonVars.buttonOffsetYResearchDialog = 4
 
 --Filter button offset on x axis, if InventoryGriView addon is active too
 FCOIS.otherAddons.gGriedViewOffsetX			= 26
