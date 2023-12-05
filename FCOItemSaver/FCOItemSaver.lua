@@ -248,17 +248,20 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
 ]]
 
 --______________________________________
--- Current max # of bugs/features/ToDos: 271
+-- Current max # of bugs/features/ToDos: 272
 --______________________________________
 
 --Open/To work on this patch:
+--#272 Alchemy station protection is not working for dynamic icons
+
 
 ------------------------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed] -              Updated last 2023-12-05
 ------------------------------------------------------------------------------------
+--#272
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.5.1 - New version: 2.5.2) -    Updated last: 2023-12-05
+--Changelog (last version: 2.5.2 - New version: 2.5.3) -    Updated last: 2023-12-05
 -------------------------------------------------------------------------------------
 --[Fixed]
 

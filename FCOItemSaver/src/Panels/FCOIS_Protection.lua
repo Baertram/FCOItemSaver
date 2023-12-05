@@ -504,11 +504,11 @@ function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChat
     if bag == nil or slot == nil then return true end
     local doDebug = false
     --TODO: enable to show d messages for debugging
---[[
-    if bag == 2 and slot == 24 then
+    --[[
+    if GetDisplayName() == "@Baertram" and bag == 5 and slot == 883 then --bug #272 20231205 -> Alchemy station, dynamic icon not protected
         FCOIS.preventerVars.doDebugItemSelectionHandler = true
     end
-]]
+    ]]
     if FCOIS.preventerVars.doDebugItemSelectionHandler == true then
         doDebug = true
         FCOIS.preventerVars.doDebugItemSelectionHandler = false
@@ -1008,10 +1008,12 @@ function craftPrev.IsShowingEnchantmentCreation()
     return not ctrlVars.ENCHANTING_RUNE_CONTAINER:IsHidden() or ctrlVars.SMITHING:IsCreating()
 end
 local isShowingEnchantmentCreation = craftPrev.IsShowingEnchantmentCreation
+
 function craftPrev.IsShowingEnchantmentExtraction()
     return not ctrlVars.ENCHANTING_EXTRACTION_SLOT:IsHidden()
 end
 local isShowingEnchantmentExtraction = craftPrev.IsShowingEnchantmentExtraction
+
 function craftPrev.IsShowingEnchantment()
     if isShowingEnchantmentCreation() or isShowingEnchantmentExtraction() then
         return true
@@ -1019,18 +1021,22 @@ function craftPrev.IsShowingEnchantment()
     return false
 end
 local isShowingEnchantment = craftPrev.IsShowingEnchantment
+
 function craftPrev.IsShowingDeconstruction()
     return not ctrlVars.DECONSTRUCTION_SLOT:IsHidden() --or ctrlVars.SMITHING:IsDeconstructing()
 end
 local isShowingDeconstruction = craftPrev.IsShowingDeconstruction
+
 function craftPrev.IsShowingImprovement()
     return not ctrlVars.IMPROVEMENT_SLOT:IsHidden() --or ctrlVars.SMITHING:IsImproving() --only checks if the tab is activated!
 end
 local isShowingImprovement = craftPrev.IsShowingImprovement
+
 function craftPrev.IsShowingRefinement()
     return not ctrlVars.REFINEMENT_SLOT:IsHidden() --or ctrlVars.SMITHING:IsExtracting()
 end
 local isShowingRefinement = craftPrev.IsShowingRefinement
+
 function craftPrev.IsShowingResearch()
     return not ctrlVars.RESEARCH:IsHidden()
 end
@@ -1039,10 +1045,12 @@ function craftPrev.IsShowingAlchemy()
     return not ctrlVars.ALCHEMY_SLOT_CONTAINER:IsHidden()
 end
 local isShowingAlchemy = craftPrev.IsShowingAlchemy
+
 function craftPrev.IsShowingProvisioner()
     return not ctrlVars.PROVISIONER_PANEL:IsHidden()
 end
 local isShowingProvisioner = craftPrev.IsShowingProvisioner
+
 local function isShowingProvisionerFilterType(filterType)
     local retVar = isShowingProvisioner()
     if retVar then
@@ -1050,10 +1058,12 @@ local function isShowingProvisionerFilterType(filterType)
     end
     return false
 end
+
 function craftPrev.IsShowingProvisionerCook()
     return isShowingProvisionerFilterType(PROVISIONER_SPECIAL_INGREDIENT_TYPE_SPICES)
 end
 local isShowingProvisionerCook = craftPrev.IsShowingProvisionerCook()
+
 function craftPrev.IsShowingProvisionerBrew()
     return isShowingProvisionerFilterType(PROVISIONER_SPECIAL_INGREDIENT_TYPE_FLAVORING)
 end

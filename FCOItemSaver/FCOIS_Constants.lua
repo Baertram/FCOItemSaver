@@ -12,7 +12,7 @@ local strlen = string.len
 FCOIS.addonVars = {}
 local addonVars = FCOIS.addonVars
 --Addon variables
-addonVars.addonVersionOptions 		    = '2.5.2' -- version shown in the settings panel
+addonVars.addonVersionOptions 		    = '2.5.3' -- version shown in the settings panel
 --The addon name, normal and decorated with colors etc.
 addonVars.gAddonName				    = "FCOItemSaver"
 addonVars.gAddonNameShort               = "FCOIS"
@@ -670,6 +670,7 @@ local filterPanelIdToBlockSettingName = {
     [LF_GUILDSTORE_SELL]            = "blockSellingGuildStore",
     [LF_MAIL_SEND]                  = "blockSendingByMail",
     [LF_TRADE]                      = "blockTrading",
+    [LF_ALCHEMY_CREATION]           = "blockAlchemyDestroy",
     [LF_ENCHANTING_CREATION]        = "blockEnchantingCreation",
     [LF_ENCHANTING_EXTRACTION]      = "blockEnchantingExtraction",
     [LF_RETRAIT]                    = "blockRetrait",
