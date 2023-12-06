@@ -2901,6 +2901,10 @@ local function contextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                 --(Jewelry) Improvement panel?
                 INVENTORY_TO_SEARCH = ctrlVars.IMPROVEMENT
                 contextmenuType = "IMPROVEMENT"
+            elseif panelId == LF_ALCHEMY_CREATION then
+                --Alchemy creation
+                INVENTORY_TO_SEARCH = ctrlVars.ALCHEMY_STATION
+                contextmenuType = "ALCHEMY CREATION"
             elseif panelId == LF_ENCHANTING_CREATION then
                 --Enchanting creation
                 INVENTORY_TO_SEARCH = ctrlVars.ENCHANTING_STATION

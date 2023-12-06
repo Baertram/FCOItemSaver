@@ -15,6 +15,7 @@ local ctrlVars = FCOIS.ZOControlVars
 local deconstructionBag = ctrlVars.DECONSTRUCTION_BAG
 local alchemyStation = ctrlVars.ALCHEMY_STATION
 local enchantingStation = ctrlVars.ENCHANTING_STATION
+local reagentSlotNamePrefix = ctrlVars.ALCHEMY_REAGENT_SLOT_NAME_PREFIX --ZO_AlchemyTopLevelSlotContainerReagentSlot
 
 local checkVars = FCOIS.checkVars
 local allowedCheckHandlers = checkVars.checkHandlers
@@ -1110,6 +1111,7 @@ function craftPrev.GetSlottedItemBagAndSlot()
     --Crafting station shown?
     if isValidPanelShown then
         local currentFilterPanelId = FCOIS.gFilterWhere
+--d(">valid panel shown, filterPanelId: " ..tos(currentFilterPanelId))
         craftingStationSlot = getCraftingSlotControl(currentFilterPanelId)
         --Is the crafting slot found, get the bagId and slotIndex of the slotted item now
         if craftingStationSlot ~= nil then
@@ -1126,6 +1128,27 @@ function craftPrev.GetSlottedItemBagAndSlot()
                         end
                     end
                 end
+            elseif currentFilterPanelId == LF_ALCHEMY_CREATION then
+--d(">>Alchemy slots")
+                --We got 4 slots to protect here now: 1 solvent ZO_AlchemyTopLevelSlotContainerSolventSlot and 3 reagents ZO_AlchemyTopLevelSlotContainerReagentSlot1 to 3
+                -->craftingStationSlot will only contain the data of the SolventSlot!
+                -->We need to add all 4 slots to the slotetdItems table
+
+                --Solvent slot got any item slotted?
+                if craftingStationSlot.bagId ~= nil and craftingStationSlot.slotIndex ~= nil then
+                    slottedItems = {}
+                    tins(slottedItems, { bagId=craftingStationSlot.bagId, slotIndex=craftingStationSlot.slotIndex })
+                end
+
+                --Check the 3 reagent slots too
+                for i=1, 3, 1 do
+                    local reagentSlot = GetControl(reagentSlotNamePrefix .. tos(i))
+                    if reagentSlot ~= nil and reagentSlot.bagId ~= nil and reagentSlot.slotIndex ~= nil then
+                        slottedItems = slottedItems or {}
+                        tins(slottedItems, { bagId=reagentSlot.bagId, slotIndex=reagentSlot.slotIndex })
+                    end
+                end
+
             else
                 --All others got just 1 slot
                 if craftingStationSlot.GetBagAndSlot then
@@ -1156,7 +1179,7 @@ function craftPrev.GetExtractionSlotAndWhereAreWe()
     elseif isShowingRefinement() or currentFilterId == LF_SMITHING_REFINE or currentFilterId == LF_JEWELRY_REFINE then
         return ctrlVars.REFINEMENT_SLOT, FCOIS_CON_REFINE, ctrlVars.SMITHING
     elseif isShowingAlchemy() or currentFilterId == LF_ALCHEMY_CREATION then
-        return ctrlVars.REFINEMENT_SLOT, FCOIS_CON_ALCHEMY_DESTROY, ctrlVars.ALCHEMY
+        return ctrlVars.ALCHEMY_SOLVENT_SLOT, FCOIS_CON_ALCHEMY_DESTROY, ctrlVars.ALCHEMY
     end
 end
 local getExtractionSlotAndWhereAreWe = craftPrev.GetExtractionSlotAndWhereAreWe
@@ -1176,8 +1199,9 @@ function craftPrev.RemoveItemFromCraftSlot(bagId, slotIndex, isSlotted)
     --Check if the item is slotted at the crafting station
     if not isSlotted then
         isSlotted = craftingStationVar:IsItemAlreadySlottedToCraft(bagId, slotIndex)
+
         --Bugfix #93 from 2020-08-18: After the improvement was done the function SMITHING:IsItemAlreadySlottedToCraft(bagId, slotIndex) will return false for
-        --and already soltted item. So we cannot rely on this result!
+        --an already slotted item. So we cannot rely on this result!
         --We need to check if the slot control contains any item...
         if not isSlotted then
             --Manually check the slotted items and if found, set isSlotted to true

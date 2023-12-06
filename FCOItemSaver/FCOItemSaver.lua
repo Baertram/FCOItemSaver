@@ -252,16 +252,16 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
 --______________________________________
 
 --Open/To work on this patch:
---#272 Alchemy station protection is not working for dynamic icons
+--#273 Alchemy station flag icon is missing
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2023-12-05
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2023-12-06
 ------------------------------------------------------------------------------------
---#272
+--#273
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.5.2 - New version: 2.5.3) -    Updated last: 2023-12-05
+--Changelog (last version: 2.5.3 - New version: 2.5.4) -    Updated last: 2023-12-06
 -------------------------------------------------------------------------------------
 --[Fixed]
 

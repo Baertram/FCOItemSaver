@@ -1514,6 +1514,7 @@ ctrlVars.ENCHANTING_RUNE_CONTAINER_ESSENCE  = GetControl(ctrlVars.ENCHANTING_RUN
 ctrlVars.ENCHANTING_RUNE_CONTAINER_ASPECT   = GetControl(ctrlVars.ENCHANTING_RUNE_CONTAINER, "AspectRune") --ZO_EnchantingTopLevelRuneSlotContainerAspectRune
 ctrlVars.ENCHANTING_APPLY_ENCHANT           = APPLY_ENCHANT
 ctrlVars.ALCHEMY                            = ALCHEMY
+ctrlVars.ALCHEMY_CLASS    		            = ZO_Alchemy
 ctrlVars.ALCHEMY_PANEL                      = ctrlVars.ALCHEMY.control --ZO_AlchemyTopLevel
 ctrlVars.ALCHEMY_INV				        = GetControl(ctrlVars.ALCHEMY_PANEL, inventoryStr) --ZO_AlchemyTopLevelInventory
 ctrlVars.ALCHEMY_INV_NAME			        = ctrlVars.ALCHEMY_INV:GetName()
@@ -1524,6 +1525,8 @@ ctrlVars.ALCHEMY_STATION_MENUBAR_BUTTON_CREATION    = GetControl(ctrlVars.ALCHEM
 ctrlVars.ALCHEMY_STATION_MENUBAR_BUTTON_POTIONMAKER = GetControl(ctrlVars.ALCHEMY_PANEL, "Mode" .. strformat(menuBarButtonStr, "2")) --ZO_AlchemyTopLevelModeMenuBarButton2
 ctrlVars.ALCHEMY_SLOT_CONTAINER             = GetControl(ctrlVars.ALCHEMY_PANEL, "SlotContainer") --ZO_AlchemyTopLevelSlotContainer
 ctrlVars.ALCHEMY_SLOT_CONTAINER_NAME        = ctrlVars.ALCHEMY_SLOT_CONTAINER:GetName()
+ctrlVars.ALCHEMY_SOLVENT_SLOT               = GetControl(ctrlVars.ALCHEMY_SLOT_CONTAINER, "SolventSlot") --ZO_AlchemyTopLevelSlotContainerSolventSlot
+ctrlVars.ALCHEMY_REAGENT_SLOT_NAME_PREFIX   = ctrlVars.ALCHEMY_SLOT_CONTAINER_NAME .. "ReagentSlot" --ZO_AlchemyTopLevelSlotContainerReagentSlot (for ZO_AlchemyTopLevelSlotContainerReagentSlot1 to 3)
 ctrlVars.PROVISIONER                        = PROVISIONER
 ctrlVars.PROVISIONER_PANEL                  = ctrlVars.PROVISIONER.control
 local quickslotKeyboard                     = QUICKSLOT_KEYBOARD
@@ -1560,12 +1563,14 @@ if FCOIS.APIversion >= 100033 then
     ctrlVars.RETRAIT_STATION_KEYBOARD       = ZO_RETRAIT_STATION_KEYBOARD
     ctrlVars.RETRAIT_KEYBOARD_INTERACT_SCENE = ctrlVars.RETRAIT_STATION_KEYBOARD.interactScene
     ctrlVars.RETRAIT_RETRAIT_PANEL	        = ctrlVars.RETRAIT_KEYBOARD
+--[[
 else
     --Stonethorn or older
     ctrlVars.RETRAIT_KEYBOARD               = ZO_RETRAIT_STATION_KEYBOARD
     ctrlVars.RETRAIT_STATION_KEYBOARD       = ctrlVars.RETRAIT_KEYBOARD
     ctrlVars.RETRAIT_KEYBOARD_INTERACT_SCENE = ctrlVars.RETRAIT_STATION_KEYBOARD.interactScene
     ctrlVars.RETRAIT_RETRAIT_PANEL	        = ctrlVars.RETRAIT_KEYBOARD.retraitPanel
+]]
 end
 ctrlVars.RETRAIT					    = ZO_RetraitStation_Keyboard
 ctrlVars.RETRAIT_PANEL                  = ZO_RetraitStation_KeyboardTopLevelRetraitPanel
@@ -1707,8 +1712,9 @@ mappingVars.libFiltersPanelIdToCraftingPanelInventory = {
     [LF_JEWELRY_RESEARCH_DIALOG]   = nil,
 }
 
---The filterPanelId to crafting table slot (extraction, deconstruction, refine, retrait, ...) control
+--The filterPanelId to crafting table slot (extraction, deconstruction, refine, retrait, alchemy, ...) control
 mappingVars.libFiltersPanelIdToCraftingPanelSlot = {
+    [LF_ALCHEMY_CREATION]           = ctrlVars.ALCHEMY_SOLVENT_SLOT, --Solvents slot is the 1st, but it will also check the additional 3 reagent slots at FCOIS_Protection, func craftPrev.GetSlottedItemBagAndSlot()
     [LF_RETRAIT]                    = ctrlVars.RETRAIT_RETRAIT_PANEL.retraitSlot,
     [LF_SMITHING_REFINE]            = refinementPanel.extractionSlot,
     [LF_SMITHING_DECONSTRUCT]       = deconstructionPanel.extractionSlot,
@@ -1718,10 +1724,11 @@ mappingVars.libFiltersPanelIdToCraftingPanelSlot = {
     [LF_JEWELRY_IMPROVEMENT]        = improvementPanel.improvementSlot,
 }
 if ZO_UNIVERSAL_DECONSTRUCTION_FILTER_TYPES ~= nil then
+    local universalDeconPanelExtractionSlot = universalDeconstructionPanel.extractionSlot
     mappingVars.libFiltersPanelIdToUniversalCraftingPanelSlot = {
-        [LF_SMITHING_DECONSTRUCT]       = universalDeconstructionPanel.extractionSlot,
-        [LF_JEWELRY_DECONSTRUCT]        = universalDeconstructionPanel.extractionSlot,
-        [LF_ENCHANTING_EXTRACTION]      = universalDeconstructionPanel.extractionSlot,
+        [LF_SMITHING_DECONSTRUCT]       = universalDeconPanelExtractionSlot,
+        [LF_JEWELRY_DECONSTRUCT]        = universalDeconPanelExtractionSlot,
+        [LF_ENCHANTING_EXTRACTION]      = universalDeconPanelExtractionSlot,
     }
 end
 
@@ -2961,6 +2968,7 @@ invAddButtonVars.guildBankFCOWithdrawButtonAdditionalOptions = "FCOIS_GuildBankW
 invAddButtonVars.smithingTopLevelRefinementPanelInventoryButtonAdditionalOptions = ctrlVars.REFINEMENT_INV_NAME .. additionalFCOISInvContextmenuButtonNameString
 invAddButtonVars.smithingTopLevelDeconstructionPanelInventoryButtonAdditionalOptions = ctrlVars.DECONSTRUCTION_INV_NAME .. additionalFCOISInvContextmenuButtonNameString --todo #202
 invAddButtonVars.smithingTopLevelImprovementPanelInventoryButtonAdditionalOptions = ctrlVars.IMPROVEMENT_INV_NAME .. additionalFCOISInvContextmenuButtonNameString
+invAddButtonVars.alchemyTopLevelInventoryButtonAdditionalOptions = ctrlVars.ALCHEMY_INV_NAME .. additionalFCOISInvContextmenuButtonNameString
 invAddButtonVars.enchantingTopLevelInventoryButtonAdditionalOptions = ctrlVars.ENCHANTING_INV_NAME .. additionalFCOISInvContextmenuButtonNameString
 invAddButtonVars.craftBagInventoryButtonAdditionalOptions = ctrlVars.CRAFTBAG_NAME .. additionalFCOISInvContextmenuButtonNameString
 invAddButtonVars.retraitInventoryButtonAdditionalOptions = ctrlVars.RETRAIT_INV_NAME .. additionalFCOISInvContextmenuButtonNameString
@@ -3079,6 +3087,12 @@ contextMenuVars.filterPanelIdToContextMenuButtonInvoker = {
         ["addInvButton"]  = true,
         ["parent"]        = ctrlVars.IMPROVEMENT_INV,
         ["name"]          = invAddButtonVars.smithingTopLevelImprovementPanelInventoryButtonAdditionalOptions,
+        ["sortIndex"]     = 20,
+    },
+	[LF_ALCHEMY_CREATION] = {
+        ["addInvButton"]  = true,
+        ["parent"]        = ctrlVars.ALCHEMY_INV,
+        ["name"]          = invAddButtonVars.alchemyTopLevelInventoryButtonAdditionalOptions,
         ["sortIndex"]     = 20,
     },
 	[LF_ENCHANTING_CREATION]		= {
@@ -3288,6 +3302,7 @@ mappingVars.contextMenuAntiButtonsAtPanel = {
     [LF_GUILDSTORE_SELL] 	 	= buttonContextMenuSell,
     [LF_MAIL_SEND] 				= buttonContextMenuToggleAntiPrefix .."mail_",
     [LF_TRADE] 					= buttonContextMenuToggleAntiPrefix .."trade_",
+    [LF_ALCHEMY_CREATION]       = buttonContextMenuToggleAntiPrefix .."alchemy_",
     [LF_ENCHANTING_CREATION]	= buttonContextMenuToggleAntiPrefix .."create_",
     [LF_ENCHANTING_EXTRACTION]	= buttonContextMenuToggleAntiPrefix .."extract_",
     [LF_FENCE_SELL] 			= buttonContextMenuToggleAntiPrefix .."fence_sell_",
@@ -3409,6 +3424,12 @@ anchorVarsAddInvButtonsFill[100021][LF_SMITHING_IMPROVEMENT].left            = v
 anchorVarsAddInvButtonsFill[100021][LF_SMITHING_IMPROVEMENT].top             = varY1
 anchorVarsAddInvButtonsFill[100021][LF_SMITHING_IMPROVEMENT].defaultLeft     = varX2
 anchorVarsAddInvButtonsFill[100021][LF_SMITHING_IMPROVEMENT].defaultTop      = varY1
+anchorVarsAddInvButtonsFill[100021][LF_ALCHEMY_CREATION] = {}
+anchorVarsAddInvButtonsFill[100021][LF_ALCHEMY_CREATION] .anchorControl   = ctrlVars.ALCHEMY_INV
+anchorVarsAddInvButtonsFill[100021][LF_ALCHEMY_CREATION].left             = varX2
+anchorVarsAddInvButtonsFill[100021][LF_ALCHEMY_CREATION].top              = varY1
+anchorVarsAddInvButtonsFill[100021][LF_ALCHEMY_CREATION].defaultLeft      = varX2
+anchorVarsAddInvButtonsFill[100021][LF_ALCHEMY_CREATION].defaultTop       = varY1
 anchorVarsAddInvButtonsFill[100021][LF_ENCHANTING_CREATION] = {}
 anchorVarsAddInvButtonsFill[100021][LF_ENCHANTING_CREATION] .anchorControl   = ctrlVars.ENCHANTING_INV
 anchorVarsAddInvButtonsFill[100021][LF_ENCHANTING_CREATION].left             = varX2
