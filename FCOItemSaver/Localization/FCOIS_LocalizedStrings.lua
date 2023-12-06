@@ -885,6 +885,8 @@ FCOIS.localizationVars.localizationAll = {
 		["button_context_menu_toggle_anti_launder_sell_off"] = "Deactivate fence 'Anti-Launder'",
 		["button_context_menu_toggle_anti_trade_on"] = "Activate 'Anti-Trade'",
 		["button_context_menu_toggle_anti_trade_off"] = "Deactivate 'Anti-Trade'",
+        ["button_context_menu_toggle_anti_alchemy_on"] = "Activate 'Anti-Alchemy'",
+        ["button_context_menu_toggle_anti_alchemy_off"] = "Dectivate 'Anti-Alchemy'",
         ["button_context_menu_toggle_anti_guild_bank_deposit_without_withdraw_rights_on"] = "Activate 'Anti-Deposit w/o withdraw rights'",
         ["button_context_menu_toggle_anti_guild_bank_deposit_without_withdraw_rights_off"] = "Deactivate 'Anti-Deposit w/o withdraw rights'",
 
@@ -2137,6 +2139,8 @@ FCOIS.localizationVars.localizationAll = {
         ["button_context_menu_toggle_anti_launder_sell_off"] = "Deaktiviere Hehler 'Anti-Wäsche'",
         ["button_context_menu_toggle_anti_trade_on"] = "Aktiviere 'Anti-Handel'",
         ["button_context_menu_toggle_anti_trade_off"] = "Deaktiviere 'Anti-Handel'",
+        ["button_context_menu_toggle_anti_alchemy_on"] = "Aktiviere 'Anti-Alchemie'",
+        ["button_context_menu_toggle_anti_alchemy_off"] = "Deaktiviere 'Anti-Alchemie'",
         ["button_context_menu_toggle_anti_guild_bank_deposit_without_withdraw_rights_on"] = "Aktiviere 'Anti-Einlagern o. Entn. Rechte'",
         ["button_context_menu_toggle_anti_guild_bank_deposit_without_withdraw_rights_off"] = "Deaktiviere 'Anti-Einlagern o. Entn. Rechte'",
 

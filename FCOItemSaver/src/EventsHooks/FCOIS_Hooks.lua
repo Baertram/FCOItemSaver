@@ -1270,18 +1270,6 @@ function FCOIS.CreateHooks()
         end)
     end
 
-    --========= ALCHEMY ============================================================
-    --PreHook the receiver function of drag&drop at the alchemy panel as items from the craftbag won't fire
-    --the event EVENT_INVENTORY_SLOT_LOCKED :-(
-    ZO_PreHook(ctrlVars.ALCHEMY, "OnItemReceiveDrag", function(ctrl, slotControl, bagId, slotIndex)
-        --Alchemy creation
-        return isCraftBagItemDraggedToCraftingSlot(LF_ALCHEMY_CREATION, bagId, slotIndex)
-    end)
-    --Register a secure posthook on visibility change of a scrolllist's row -> At the alchemy solvent inventory list
-    SecurePostHook(ctrlVars.ALCHEMY_STATION.dataTypes[1], "setupCallback", onScrollListRowSetupCallback)
-    --Register a secure posthook on visibility change of a scrolllist's row -> At the alchemy reagent inventory list
-    SecurePostHook(ctrlVars.ALCHEMY_STATION.dataTypes[2], "setupCallback", onScrollListRowSetupCallback)
-
     --========= RETRAIT =========================================================
     --Register a secure posthook on visibility change of a scrolllist's row -> At the retrait inventory list
     SecurePostHook(ctrlVars.RETRAIT_LIST.dataTypes[1], "setupCallback", onScrollListRowSetupCallback)
@@ -1847,8 +1835,41 @@ function FCOIS.CreateHooks()
         mainMenuBarButtonFilterButtonHandler(button, upInside, "gLastAlchemyButton", ctrlVars.ALCHEMY_STATION_MENUBAR_BUTTON_CREATION, LF_ALCHEMY_CREATION, nil, nil)
     end)
 
+    --PreHook the receiver function of drag&drop at the alchemy panel as items from the craftbag won't fire
+    --the event EVENT_INVENTORY_SLOT_LOCKED :-(
+    ZO_PreHook(ctrlVars.ALCHEMY, "OnItemReceiveDrag", function(ctrl, slotControl, bagId, slotIndex)
+        --Alchemy creation
+        return isCraftBagItemDraggedToCraftingSlot(LF_ALCHEMY_CREATION, bagId, slotIndex)
+    end)
+    --Register a secure posthook on visibility change of a scrolllist's row -> At the alchemy solvent inventory list
+    SecurePostHook(ctrlVars.ALCHEMY_STATION.dataTypes[1], "setupCallback", onScrollListRowSetupCallback)
+    --Register a secure posthook on visibility change of a scrolllist's row -> At the alchemy reagent inventory list
+    SecurePostHook(ctrlVars.ALCHEMY_STATION.dataTypes[2], "setupCallback", onScrollListRowSetupCallback)
+
     --Another Prehook will be done at the event callback function for the crafting station interact, when the alchemy station
     --gets opened as the PotionMaker addon button will be created then
+    local function alchemyPreHook(selfZO_Alchemy, mode)
+--d("[FCOIS]alchemyPreHook-mode: " ..tos(mode))
+        --Hide the context menu at last active panel
+        local activeFilterPanel = FCOIS.gFilterWhere
+        hideContextMenu(activeFilterPanel)
+        --Call delayed with 0ms to call it on next frame in order to let the filterFunctions work properly in function
+        --preHookMainMenuFilterButtonHandler -> registerFilter and refresh of inventory
+        --zo_callLater(function()
+            --Creation
+            if mode == ZO_ALCHEMY_MODE_CREATION then
+                preHookMainMenuFilterButtonHandler(activeFilterPanel, LF_ALCHEMY_CREATION)
+            else
+                resetContextMenuInvokerButtonColorToDefaultPanelId()
+            end
+        --end, 0)
+        --Go on with original function --> Only for PreHook!
+        --return false
+    end
+    --Posthook the enchanting function SetEnchantingMode() which gets executed as the enchanting tabs are changed
+    --ZO_Enchanting:SetEnchantingMode does not exist anymore (PTS -> Scalebreaker) and was replaced by ZO_Enchanting:OnModeUpdated()
+    --SecurePostHook(ctrlVars.ENCHANTING, "OnModeUpdated", enchantingPreHook)
+    SecurePostHook(ctrlVars.ALCHEMY_CLASS, "SetMode", alchemyPreHook)
 
 
     --======== CRAFTBAG FRAGMNET=========================================================

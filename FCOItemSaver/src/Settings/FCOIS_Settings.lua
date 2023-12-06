@@ -336,6 +336,11 @@ local function doAutoReenableAntiSettingsCheck(checkWhere)
         if settings.autoReenable_blockEnchantingExtraction then
             settings.blockEnchantingExtraction = true
         end
+        --Reenable the Anti-Alchemy creation methods if activated in the settings
+        if settings.autoReenable_blockAlchemyDestroy then
+            settings.blockAlchemyDestroy = true
+        end
+
         --"STORE"
     elseif checkWhere == checksToDo[2] then
         --FCOIS version 1.6.0 disabled as not yet implemented settings in the settingsMenu for this

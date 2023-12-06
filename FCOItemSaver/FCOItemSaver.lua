@@ -248,20 +248,22 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
 ]]
 
 --______________________________________
--- Current max # of bugs/features/ToDos: 271
+-- Current max # of bugs/features/ToDos: 272
 --______________________________________
 
 --Open/To work on this patch:
+--#273 Alchemy station flag icon is missing
+
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2023-11-22
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2023-12-06
 ------------------------------------------------------------------------------------
+--#273
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.4.8 - New version: 2.4.9) -    Updated last: 2023-11-22
+--Changelog (last version: 2.5.3 - New version: 2.5.4) -    Updated last: 2023-12-06
 -------------------------------------------------------------------------------------
 --[Fixed]
---Fixed 271: XML resizeToFitConstraints="true" at dialogs to strip interface.log file entries
 
 
 --[Changed]
