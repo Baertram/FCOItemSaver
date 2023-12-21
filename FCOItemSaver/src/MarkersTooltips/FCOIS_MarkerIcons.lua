@@ -53,11 +53,33 @@ local checkAndGetIIfAData
 --  Other AddOns helper functions
 -- =====================================================================================================================
 
+local grid_addons = { "GridList", "InventoryGridView" }
+
+local function is_it_enabled()
+    local addonManager = GetAddOnManager()
+    local numAddOns = addonManager:GetNumAddOns()
+
+    for i = 1, numAddOns do
+        local name, _, _, _, _, state, _, _ = addonManager:GetAddOnInfo(i)
+
+        for _, addonName in ipairs(grid_addons) do
+            if name == addonName and state == "enabled" then
+                return true
+            end
+        end
+    end
+
+    return false
+end
+
+local InventoryGridViewActivated = false
+local GridListActivated = false
+
 -- GRID LIST: https://www.esoui.com/downloads/info2341-GridList.html ---
 --Get the GridList inventoryList
 local GridList_MODE_LIST, GridList_MODE_GRID = 1, 3
 local function GridList_GetMode(inventoryType)
-    if not inventoryType then return nil end
+    if not is_it_enabled() or not inventoryType then return nil end
     if not GridList or not GridList.GetList then return end
     local control = GridList.GetList(inventoryType)
     if not control then return nil end
@@ -66,16 +88,15 @@ local function GridList_GetMode(inventoryType)
 end
 
 local function GridList_IsSupportedInventory(inventoryType)
-    if not inventoryType then return nil end
+    if not is_it_enabled() or not inventoryType then return nil end
     if not GridList then return end
     local list = GridList.List
     if not list then return end
     for _, invToCompare in ipairs(list) do
-        if invToCompare == inventoryType then return true  end
+        if invToCompare == inventoryType then return true end
     end
     return false
 end
-
 
 -- =====================================================================================================================
 --  Marker icon helper functions
@@ -114,8 +135,10 @@ local function updateAlreadyBoundTexture(parent, pHideControl)
         end
     end
 
-    local InventoryGridViewActivated = (otherAddons.inventoryGridViewActive or InventoryGridView ~= nil) or false
-    local GridListActivated          = GridList ~= nil
+    if is_it_enabled() then
+        InventoryGridViewActivated = otherAddons.inventoryGridViewActive or is_it_enabled()
+        GridListActivated = is_it_enabled()
+    end
 
     --If not an equipped item: Get the row's/parent's image -> "Children "Button" of parent
     local parentsImage = parent:GetNamedChild("Button")
@@ -223,8 +246,10 @@ function FCOIS.CreateMarkerControl(parent, markerIconId, pWidth, pHeight, pTextu
     pArmorTypeIcon = pArmorTypeIcon or false
     pHideControl = pHideControl or false
 
-    local InventoryGridViewActivated = (otherAddons.inventoryGridViewActive or InventoryGridView ~= nil) or false
-    local GridListActivated          = GridList ~= nil
+    if is_it_enabled() then
+        InventoryGridViewActivated = otherAddons.inventoryGridViewActive or is_it_enabled()
+        GridListActivated = is_it_enabled()
+    end
 
     --Preset the variable for control creation with false, if it is not given
     pCreateControlIfNotThere	= pCreateControlIfNotThere or false
