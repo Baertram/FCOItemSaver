@@ -2926,14 +2926,12 @@ function FCOIS.GetCurrentlyLoggedInCharUniqueId()
     return gccharid()
 end
 
---Get the currently logged in account's characters as table, with the name as key and the characterId as value,
---or the characterId as key and the character name as key (depending in boolean parameter keyIsCharName)
---Function to get all characters of the account, ID and name.
---Returns a table with 2 possible variants, either the character ID is key and the name is the value,
+--Function to get all characters of the currently logged in @account: server's unique characterID and non unique name.
+--Returns a table:nilable with 2 possible variants, either the character ID is key and the name is the value,
 --or vice versa.
 --Parameter boolean, keyIsCharName:
 -->True: the key of the returned table is the character name
--->False: the key of the returned table is the unique cahracter ID (standard)
+-->False: the key of the returned table is the unique character ID (standard)
 function FCOIS.GetCharactersOfAccount(keyIsCharName)
     keyIsCharName = keyIsCharName or false
     local charactersOfAccount

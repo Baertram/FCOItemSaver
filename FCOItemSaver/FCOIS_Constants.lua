@@ -12,7 +12,7 @@ local strlen = string.len
 FCOIS.addonVars = {}
 local addonVars = FCOIS.addonVars
 --Addon variables
-addonVars.addonVersionOptions 		    = '2.5.3' -- version shown in the settings panel
+addonVars.addonVersionOptions 		    = '2.5.5' -- version shown in the settings panel
 --The addon name, normal and decorated with colors etc.
 addonVars.gAddonName				    = "FCOItemSaver"
 addonVars.gAddonNameShort               = "FCOIS"
@@ -1537,6 +1537,7 @@ ctrlVars.QUICKSLOT_WINDOW                   = (quickslotKeyboard ~= nil and quic
 ctrlVars.QUICKSLOT_NAME                     = quickslot:GetName()
 ctrlVars.QUICKSLOT_CIRCLE  		            = (quickslotKeyboard ~= nil and quickslotKeyboard.wheelControl) or GetControl(ctrlVars.QUICKSLOT, "Circle") --ZO_QuickSlotCircle
 ctrlVars.QUICKSLOT_LIST			            = (quickslotKeyboard ~= nil and quickslotKeyboard.list) or GetControl(quickslot, listStr) --ZO_QuickSlotList
+ctrlVars.QUICKSLOT_WHEEL_FRAGMENT_NAME      = "" --KEYBOARD_QUICKSLOT_CIRCLE_FRAGMENT
 ctrlVars.DestroyItemDialog    		        = ESO_Dialogs["DESTROY_ITEM_PROMPT"]
 ctrlVars.RepairKits                         = REPAIR_KITS
 ctrlVars.RepairItemDialog                   = ctrlVars.LIST_DIALOG1 --ZO_ListDialog1

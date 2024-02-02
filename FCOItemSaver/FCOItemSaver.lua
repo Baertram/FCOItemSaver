@@ -247,24 +247,28 @@ Improve the item all the way to legendary so that it becomes ineligible to impro
 I'm guessing that the same sort of thing can happen any time a marked item becomes ineligible for the inventory list. For example, maybe after right click > bind a marked item in the guild store selling tab or mail send tab. I haven't tested that, though. Should be a fairly easy nil check either way.
 ]]
 
+--#273 Alchemy station flag icon is missing
+--#274 Quickslot wheel is protecting drag&drop of usable scrolls
+
+
 --______________________________________
--- Current max # of bugs/features/ToDos: 272
+-- Current max # of bugs/features/ToDos: 274
 --______________________________________
 
 --Open/To work on this patch:
---#273 Alchemy station flag icon is missing
+--#274 Quickslot wheel is protecting drag&drop of usable scrolls
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2023-12-06
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2024-02-02
 ------------------------------------------------------------------------------------
---#273
+
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.5.3 - New version: 2.5.4) -    Updated last: 2023-12-06
+--Changelog (last version: 2.5.4- New version: 2.5.5) -    Updated last: 2024-02-02
 -------------------------------------------------------------------------------------
 --[Fixed]
-
+--#274
 
 --[Changed]
 
