@@ -94,10 +94,10 @@ local function getMarkerIconDrawLevel(p_markerIconId)
     local markerIconsOutputOrder = FCOIS.settingsVars.settings.markerIconsOutputOrder
     --Loop the setup marker icons output order from bottom to top, check if the markerIconId is the
     --passed in one. For each markerIconId increase the drawLevel by 1
-    for i=1, #markerIconsOutputOrder, 1 do
+    for i=#markerIconsOutputOrder, 1, -1 do
         drawLevel = drawLevel + 1
         if p_markerIconId == markerIconsOutputOrder[i] then
-d("[FCOIS]getMarkerIconDrawLevel-markerId: " ..tos(p_markerIconId) .. "; drawLevel: " ..tos(drawLevel))
+--d("[FCOIS]getMarkerIconDrawLevel-markerId: " ..tos(p_markerIconId) .. "; drawLevel: " ..tos(drawLevel))
             return drawLevel
         end
     end
@@ -319,16 +319,20 @@ function FCOIS.CreateMarkerControl(parent, markerIconId, pWidth, pHeight, pTextu
 
             --Control should be shown?
             if not doHide then
-                local iconSettings = settings.icon
+                local iconSettings = settings.icon[markerIconId]
 
                 --DrawLevel was passed in? Else try to detect it from settings
                 if pDrawLevel == nil then
                     --Get the marker Icons drawLevel via settings.markerIconsOutputOrder table etc. -> see function addMarkerIconsToControl
                     pDrawLevel = getMarkerIconDrawLevel(markerIconId) --#278
+                else
+                    if markerIconId == 1 or markerIconId == 3 then
+d("[FCOIS]CreateMarkerControl-markerId: " ..tos(iconSettings.name) .. " /" ..tos(markerIconId) .. "; drawLevel: " ..tos(pDrawLevel))
+                    end
                 end
 
                 control:SetTexture(pTexture)
-                local iconSettingsColor = iconSettings[markerIconId].color
+                local iconSettingsColor = iconSettings.color
                 control:SetColor(iconSettingsColor.r, iconSettingsColor.g, iconSettingsColor.b, iconSettingsColor.a)
                 --Marker was created/updated for the character equipment slots?
                 local gridIsEnabled = false
@@ -404,7 +408,7 @@ function FCOIS.CreateMarkerControl(parent, markerIconId, pWidth, pHeight, pTextu
                         local iconPosition = settings.iconPosition
                         local iconOffset = filterPanelIdToIconOffset[FCOIS.gFilterWhere] or iconPosition
                         --get the offsets defined at the filterPanel for each icon (and defiend at the icon itsself for the inventory row)
-                        local iconOffsetDefinedAtPanel = iconSettings[markerIconId].offsets[LF_INVENTORY]
+                        local iconOffsetDefinedAtPanel = iconSettings.offsets[LF_INVENTORY]
                         --Now add the iconOffset defined at each panel
                         local totalOffSetLeft = iconOffset.x + iconOffsetDefinedAtPanel.left
                         local totalOffSetTop = iconOffset.y + iconOffsetDefinedAtPanel.top

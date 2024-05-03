@@ -2734,7 +2734,8 @@ end
 local function invertAdditionalInventoryFlagProtectionAndColor(p_panelId, p_buttonControl)
 --d("[FCOIS]invertAdditionalInventoryFlagProtectionAndColor-panelId: " ..tos(p_panelId) .. ", button: " ..tos(p_buttonControl:GetName()))
     --Invert the active anti-setting (false->true / true->false)
-    local settingsStateAfterChange = changeAntiSettingsAccordingToFilterPanel()
+    --#286 Prevent "Remove protected items from slot" check as this will be done futher down too -> removeSlottedProtectedItemsAndUpdateTooltips
+    local settingsStateAfterChange = changeAntiSettingsAccordingToFilterPanel(true)
     local dummy, settingsEnabled
     if settingsStateAfterChange ~= nil then
         --Update the buttons text and get the settings state

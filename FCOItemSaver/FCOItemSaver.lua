@@ -247,18 +247,24 @@ Improve the item all the way to legendary so that it becomes ineligible to impro
 I'm guessing that the same sort of thing can happen any time a marked item becomes ineligible for the inventory list. For example, maybe after right click > bind a marked item in the guild store selling tab or mail send tab. I haven't tested that, though. Should be a fairly easy nil check either way.
 ]]
 
---#273 Alchemy station flag icon is missing
+
+--#280 For future version of LibScrollableMenu, where LibCustomMenu was updated to be compatible too:
+ -->Make FCOIS context menu and ZO_Menu stuff compatible with experimental LibScrollableMenu version where LSM will take over Inventory context menu creation from ZO_Menu/LibCustomMenu
 
 
 --______________________________________
--- Current max # of bugs/features/ToDos: 281
+-- Current max # of bugs/features/ToDos: 286
 --______________________________________
 
 --Open/To work on this patch:
 --#278 Add on request: OrderListBox widget to control order of the marker icons created -> DrawLevel
 --#279 OrderListBox widget reflect enabled marker icon updates
---#280 Make FCOIS context menu and ZO_Menu stuff compatible with experimental LibScrollableMenu version where LSM will take over Inventory context menu creation from ZO_Menu/LibCustomMenu
 --#281 Only create markerIcon texture controls if the markerIcon is enabled and applied to the item -> else do not create and do hide it (unless explicitly asking to create it via param pCreateControlIfNotThere in FCOIS.CreateMarkerControl)
+--#283 Move add. inv. flag icons at the panels for API101042
+--#284 Right click add. inv. flag icon to re-protect "enchanting create & extract" does not unslot protected items automatically -> FCOIS_Protection.lua, isItemProtectedAtACraftSlotNow
+--#285 Check new Mail Send panel: If all still works properly
+--> First FCOIS_ContextMenus.lua:2737: in function 'invertAdditionalInventoryFlagProtectionAndColor -> FCOIS.ChangeAntiSettingsAccordingToFilterPanel -> FCOIS.IsItemProtectedAtASlotNow
+--> and second time via FCOIS_ContextMenus.lua: 2750: in function 'invertAdditionalInventoryFlagProtectionAndColor' -> removeSlottedProtectedItemsAndUpdateTooltips -> removeSlottedProtectedItemsAndUpdateTooltips -> FCOIS.IsItemProtectedAtASlotNow
 
 ------------------------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed] -              Updated last 2024-05-03
@@ -277,6 +283,8 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
 --#275 Fix guild history scene reference
 --#276 Fix translation keys: Duplicates
 --#277 Fix translation invalid escape sequences
+--#282 If LibFilters3 requested an update of inventory: Do not update another time via FCOIS routines
+--#286 Right clicking add. inv. flag context menu called "any item protected at the slot" twice
 
 --[Changed]
 

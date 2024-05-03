@@ -1158,16 +1158,17 @@ local function changePreviewLabelText(previewType, iconNr, text, doNotUpdateMark
 end
 
 --Set the preview icon values (width, height, color, etc.)
-local function InitPreviewIcon(i)
+local function InitPreviewIcon(markerIconIndex)
     FCOISsettings = FCOISsettings or FCOIS.settingsVars.settings
-    local iconSettings = FCOISsettings.icon[i]
-    local preViewControl = _G[strformat(fcoisLAMSettingsReferencePrefix .. filterButton .. "%d" .. previewSelect, i)]
+    local iconSettings = FCOISsettings.icon[markerIconIndex]
+    local preViewControl = _G[strformat(fcoisLAMSettingsReferencePrefix .. filterButton .. "%d" .. previewSelect, markerIconIndex)]
     if preViewControl == nil then return false end
     locVars = FCOISlocVars.fcois_loc
 
     preViewControl:SetColor(ZO_ColorDef:New(iconSettings.color))
     preViewControl:SetIconSize(iconSettings.size)
-    local text = strformat("%s: %s", locVars[strformat(optionsIcon .. "%d_texture", i)], texturesList[iconSettings.texture])
+    --Show the curerntly selected iconIndex at the coor picker's name, behind the :
+    local text = strformat("%s: %s", locVars[strformat(optionsIcon .. "%d_texture", markerIconIndex)], texturesList[iconSettings.texture])
     preViewControl.label:SetText(text)
 end
 --Preview icon/color - END --------------------------------------------------------------------
@@ -3096,8 +3097,8 @@ function FCOIS.BuildAddonMenu()
         --d("[FCOIS] SettingsPanel Created")
         --Update the filterIcon textures etc.
         if not lamPanelCreationInitDone then
-            for i = FCOIS_CON_ICON_LOCK, numFilterIcons do
-                InitPreviewIcon(i)
+            for markerIconIndex = FCOIS_CON_ICON_LOCK, numFilterIcons do
+                InitPreviewIcon(markerIconIndex)
             end
 
             --Set the editbox TextType to validate the entered value

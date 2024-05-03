@@ -1101,7 +1101,7 @@ local getCraftingSlotControl = craftPrev.GetCraftingSlotControl
 --left mouse click to the slot and the items added are then in the subtable "items" of the deconstruction/extraction slot.
 --This function checks if there are multiple items and returns the table of slotted items now as 3rd return parameter
 function craftPrev.GetSlottedItemBagAndSlot()
---d("[FCOIS]craftingPrevention.GetSlottedItemBagAndSlot()")
+d("[FCOIS]craftingPrevention.GetSlottedItemBagAndSlot()")
     local isRetraitShown = isRetraitStationShown()
     local isCraftingStationShown = ZO_CraftingUtils_IsCraftingWindowOpen() and ctrlVars.RESEARCH:IsHidden() -- No crafting slot at research!
     local isValidPanelShown = isRetraitShown or isCraftingStationShown
@@ -1111,13 +1111,14 @@ function craftPrev.GetSlottedItemBagAndSlot()
     --Crafting station shown?
     if isValidPanelShown then
         local currentFilterPanelId = FCOIS.gFilterWhere
---d(">valid panel shown, filterPanelId: " ..tos(currentFilterPanelId))
+d(">valid panel shown, filterPanelId: " ..tos(currentFilterPanelId))
         craftingStationSlot = getCraftingSlotControl(currentFilterPanelId)
         --Is the crafting slot found, get the bagId and slotIndex of the slotted item now
         if craftingStationSlot ~= nil then
---d(">found slot")
+d(">found slot")
             --Enchanting creation got 3 slots, not only 1
             if currentFilterPanelId == LF_ENCHANTING_CREATION then
+d(">>enchanting creation")
                 if craftingStationSlot and type(craftingStationSlot) == "table" then
                     slottedItems = {}
                     for _, craftingStationSlotData in ipairs(craftingStationSlot) do
@@ -1129,7 +1130,7 @@ function craftPrev.GetSlottedItemBagAndSlot()
                     end
                 end
             elseif currentFilterPanelId == LF_ALCHEMY_CREATION then
---d(">>Alchemy slots")
+                --d(">>Alchemy slots")
                 --We got 4 slots to protect here now: 1 solvent ZO_AlchemyTopLevelSlotContainerSolventSlot and 3 reagents ZO_AlchemyTopLevelSlotContainerReagentSlot1 to 3
                 -->craftingStationSlot will only contain the data of the SolventSlot!
                 -->We need to add all 4 slots to the slotetdItems table
@@ -1150,12 +1151,16 @@ function craftPrev.GetSlottedItemBagAndSlot()
                 end
 
             else
+d(">>others")
                 --All others got just 1 slot
                 if craftingStationSlot.GetBagAndSlot then
+d(">>func GetBagAndSlot was available")
                     bagId, slotIndex = craftingStationSlot:GetBagAndSlot()
                 end
                 slottedItems = craftingStationSlot.items
             end
+        else
+d("<ERROR: CraftingSlot not found!")
         end
     end
     return bagId, slotIndex, slottedItems
@@ -1186,7 +1191,7 @@ local getExtractionSlotAndWhereAreWe = craftPrev.GetExtractionSlotAndWhereAreWe
 
 --Remove an item from a crafting extraction/refinement slot
 function craftPrev.RemoveItemFromCraftSlot(bagId, slotIndex, isSlotted)
---d("[FCOIS]craftingPrevention.RemoveItemFromCraftSlot - bagId: " ..tos(bagId) .. ", slot: " ..tos(slotIndex) .. ", isSlotted: " ..tos(isSlotted))
+d("[FCOIS]craftingPrevention.RemoveItemFromCraftSlot - bagId: " ..tos(bagId) .. ", slot: " ..tos(slotIndex) .. ", isSlotted: " ..tos(isSlotted))
     if bagId == nil or slotIndex == nil then return false end
     isSlotted = isSlotted or false
     --Get the "WhereAreWe" constant by the help of the active deconstruction/extraction crafting panel
@@ -1208,12 +1213,12 @@ function craftPrev.RemoveItemFromCraftSlot(bagId, slotIndex, isSlotted)
             local slottedItems
             bagId, slotIndex, slottedItems = getSlottedItemBagAndSlot()
             if slottedItems ~= nil then
---d(">craftingSlot found")
+d(">craftingSlot found")
                 isSlotted = true
             end
         end
     end
---d(">whereAreWe: " .. tos(whereAreWe) .. ", isSlotted: " ..tos(isSlotted) .. ", craftingStationVar: " .. tos(craftingStationVar.control:GetName()))
+d(">whereAreWe: " .. tos(whereAreWe) .. ", isSlotted: " ..tos(isSlotted) .. ", craftingStationVar: " .. tos(craftingStationVar.control:GetName()))
     --Item is not slotted so abort here
     if not isSlotted then return false end
     --Unequip the item from the crafting slot again
@@ -1363,7 +1368,7 @@ function craftPrev.IsItemProtectedAtACraftSlotNow(bagId, slotIndex, scanOtherInv
     local isRetraitShown = isRetraitStationShown()
     local slottedItems
     local isCraftingStationShown = not isRetraitShown and ZO_CraftingUtils_IsCraftingWindowOpen() and ctrlVars.RESEARCH:IsHidden() -- No crafting slot at research!
---d(">isCraftingStationShown: " .. tos(isCraftingStationShown) .. ", isRetraitShown: " ..tos(isRetraitShown) .. ", filterPanelId: " ..tos(FCOIS.gFilterWhere))
+d(">isCraftingStationShown: " .. tos(isCraftingStationShown) .. ", isRetraitShown: " ..tos(isRetraitShown) .. ", filterPanelId: " ..tos(FCOIS.gFilterWhere))
     if isCraftingStationShown or isRetraitShown then
         local allowedCraftingPanelIdsForMarkerRechecks = FCOIS.checkVars.allowedCraftingPanelIdsForMarkerRechecks
         --Check if a refine/deconstruct/create glyph/extract/improve/create alchemy panel is shown
@@ -1374,20 +1379,21 @@ function craftPrev.IsItemProtectedAtACraftSlotNow(bagId, slotIndex, scanOtherInv
             end
             --local helper function to check the protection and remove the item from the craft slot
             local function checkProtectionAndRemoveFromSlotIfProtected(p_bagId, p_slotIndex)
+d("~~~~~~~~~  checkProtectionAndRemoveFromSlotIfProtected: " .. gil(p_bagId, p_slotIndex) .. " ~~~~~~~~~")
                 local retVar = false
                 --Check if the item is currently slotted at a crafting station's extraction slot. If the item is proteced remove it from the extraction slot again!
                 --FCOIS.callDeconstructionSelectionHandler(bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon)
                 FCOIScdsh = FCOIScdsh or FCOIS.callDeconstructionSelectionHandler
                 local isProtected = FCOIScdsh(p_bagId, p_slotIndex, false, false, true, false, true, false)
                 --Item is protected?
---d(">item " .. gil(p_bagId, p_slotIndex) .. " is protected: " ..tos(isProtected))
+d(">item " .. gil(p_bagId, p_slotIndex) .. " is protected: " ..tos(isProtected))
                 if isProtected then
                     if isRetraitShown then
                         --d("Item is protected! Remove it from the retrait slot and output error message now")
                         removeItemFromRetraitSlot(p_bagId, p_slotIndex, false)
                         retVar = true
                     else
-                        --d("Item is protected! Remove it from the crafting slot and output error message now")
+d("Item is protected! Remove it from the crafting slot and output error message now")
                         removeItemFromCraftSlot(p_bagId, p_slotIndex, false)
                         retVar = true
                     end
@@ -1396,6 +1402,7 @@ function craftPrev.IsItemProtectedAtACraftSlotNow(bagId, slotIndex, scanOtherInv
             end
             --Table with all slotted items is given?
             if (bagId == nil or slotIndex == nil) and slottedItems ~= nil then
+d(">table with slotted items given")
                 --For each table entry check if the item is protected and remove where needed
                 for _, slottedData in ipairs(slottedItems) do
                     if slottedData.bagId and slottedData.slotIndex then
@@ -1404,8 +1411,8 @@ function craftPrev.IsItemProtectedAtACraftSlotNow(bagId, slotIndex, scanOtherInv
                         --and got protected as you marked the currently checked item (which is not slotted).
                         -->Scan the currently visible inventory rows for such items and if they are slotted.
                         if scanOtherInvItemsIfSlotted then
---local itemLink = gil(slottedData.bagId, slottedData.slotIndex)
---d(">checking slotted items: " ..itemLink)
+local itemLink = gil(slottedData.bagId, slottedData.slotIndex)
+d(">checking slotted items: " ..itemLink)
 
                             local foundBagdIdAndSlotIndices = checkCurrentInventoryRowsDataForItemInstanceId(slottedData.bagId, slottedData.slotIndex)
                             if foundBagdIdAndSlotIndices ~= nil then
