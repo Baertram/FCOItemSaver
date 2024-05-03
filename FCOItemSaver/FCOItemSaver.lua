@@ -257,20 +257,16 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
 --______________________________________
 
 --Open/To work on this patch:
---#278 Add on request: OrderListBox widget to control order of the marker icons created -> DrawLevel
---#279 OrderListBox widget reflect enabled marker icon updates
 --#281 Only create markerIcon texture controls if the markerIcon is enabled and applied to the item -> else do not create and do hide it (unless explicitly asking to create it via param pCreateControlIfNotThere in FCOIS.CreateMarkerControl)
+
+--=== Not started yet ===
 --#283 Move add. inv. flag icons at the panels for API101042
 --#285 Check new Mail Send panel: If all still works properly
+
 
 ------------------------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed] -              Updated last 2024-05-03
 ------------------------------------------------------------------------------------
---#278
---#279
--->--todo: 20240329 - Rebuild this function and total defaults values to properly update the OrderListBox widgets!
---->See file FCOIS_SettingsMenu.lua, FCOIS_Localization.lua -> Saerch for markerIconsOutputOrderEntries
---#280
 --#281
 
 -------------------------------------------------------------------------------------
@@ -280,6 +276,7 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
 --#275 Fix guild history scene reference
 --#276 Fix translation keys: Duplicates
 --#277 Fix translation invalid escape sequences
+--#279 OrderListBox widget reflect enabled marker icon updates/enabled state
 --#282 If LibFilters3 requested an update of inventory: Do not update another time via FCOIS routines
 --#284 Right click add. inv. flag icon protects "enchanting create & extract" again and unslots protected items
 --#286 Right clicking add. inv. flag context menu called "any item protected at the slot" twice
@@ -290,7 +287,7 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
 --
 
 --[Added on request]
---
+--#278 Add on request: OrderListBox widget to control order of the marker icons created -> DrawLevel
 
 
 --************************************************************************************************************************

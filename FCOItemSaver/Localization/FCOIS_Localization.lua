@@ -407,10 +407,12 @@ local function afterLocalization()
         --end
     end
     if not settings.markerIconsOutputOrderEntries or (settings.markerIconsOutputOrderEntries and #settings.markerIconsOutputOrderEntries == 0) then
+--d("[FCOIS]Loading SavedVars' markerIconsOutputOrderEntries from defaults!")
         FCOIS.settingsVars.settings.markerIconsOutputOrderEntries = FCOIS.settingsVars.defaults.markerIconsOutputOrderEntries
     end
     --This new sortOrderOutputSetting was not opened in LAM menu yet (first login with new data e.g.)?
     if ZO_IsTableEmpty(settings.markerIconsOutputOrder) then
+--d("[FCOIS]Loading SavedVars' markerIconsOutputOrder from markerIconsOutputOrderEntries!")
         for idx, data in ipairs(FCOIS.settingsVars.settings.markerIconsOutputOrderEntries) do
             FCOIS.settingsVars.settings.markerIconsOutputOrder[idx] = data.value
         end

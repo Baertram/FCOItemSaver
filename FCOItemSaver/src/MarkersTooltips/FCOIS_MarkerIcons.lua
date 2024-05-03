@@ -325,10 +325,10 @@ function FCOIS.CreateMarkerControl(parent, markerIconId, pWidth, pHeight, pTextu
                 if pDrawLevel == nil then
                     --Get the marker Icons drawLevel via settings.markerIconsOutputOrder table etc. -> see function addMarkerIconsToControl
                     pDrawLevel = getMarkerIconDrawLevel(markerIconId) --#278
-                else
-                    if markerIconId == 1 or markerIconId == 3 then
-d("[FCOIS]CreateMarkerControl-markerId: " ..tos(iconSettings.name) .. " /" ..tos(markerIconId) .. "; drawLevel: " ..tos(pDrawLevel))
-                    end
+--                else
+--                    if markerIconId == 1 or markerIconId == 3 then
+--d("[FCOIS]CreateMarkerControl-markerId: " ..tos(iconSettings.name) .. " /" ..tos(markerIconId) .. "; drawLevel: " ..tos(pDrawLevel))
+--                    end
                 end
 
                 control:SetTexture(pTexture)
