@@ -12,7 +12,7 @@ local strlen = string.len
 FCOIS.addonVars = {}
 local addonVars = FCOIS.addonVars
 --Addon variables
-addonVars.addonVersionOptions 		    = '2.5.5' -- version shown in the settings panel
+addonVars.addonVersionOptions 		    = '2.5.6' -- version shown in the settings panel
 --The addon name, normal and decorated with colors etc.
 addonVars.gAddonName				    = "FCOItemSaver"
 addonVars.gAddonNameShort               = "FCOIS"
@@ -1054,10 +1054,9 @@ mappingVars.sceneControlsToRegisterStateChangeForContextMenu = {
     GUILD_ROSTER_SCENE,
     GUILD_RANKS_SCENE,
     GUILD_HERALDRY_SCENE,
-    GUILD_HISTORY_SCENE,
+    GUILD_HISTORY_KEYBOARD_SCENE, --#275 Fix guild history scene reference
     GUILD_CREATE_SCENE,
     NOTIFICATIONS_SCENE,
-    GUILD_HISTORY_SCENE,
     CAMPAIGN_BROWSER_SCENE,
     CAMPAIGN_OVERVIEW_SCENE,
     STATS_SCENE,

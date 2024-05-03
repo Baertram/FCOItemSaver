@@ -248,27 +248,35 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
 ]]
 
 --#273 Alchemy station flag icon is missing
---#274 Quickslot wheel is protecting drag&drop of usable scrolls
 
 
 --______________________________________
--- Current max # of bugs/features/ToDos: 274
+-- Current max # of bugs/features/ToDos: 281
 --______________________________________
 
 --Open/To work on this patch:
---#274 Quickslot wheel is protecting drag&drop of usable scrolls
-
+--#278 Add on request: OrderListBox widget to control order of the marker icons created -> DrawLevel
+--#279 OrderListBox widget reflect enabled marker icon updates
+--#280 Make FCOIS context menu and ZO_Menu stuff compatible with experimental LibScrollableMenu version where LSM will take over Inventory context menu creation from ZO_Menu/LibCustomMenu
+--#281 Only create markerIcon texture controls if the markerIcon is enabled and applied to the item -> else do not create and do hide it (unless explicitly asking to create it via param pCreateControlIfNotThere in FCOIS.CreateMarkerControl)
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2024-02-02
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2024-05-03
 ------------------------------------------------------------------------------------
-
+--#278
+--#279
+-->--todo: 20240329 - Rebuild this function and total defaults values to properly update the OrderListBox widgets!
+--->See file FCOIS_SettingsMenu.lua, FCOIS_Localization.lua -> Saerch for markerIconsOutputOrderEntries
+--#280
+--#281
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.5.4- New version: 2.5.5) -    Updated last: 2024-02-02
+--Changelog (last version: 2.5.5- New version: 2.5.6) -    Updated last: 2024-05-03
 -------------------------------------------------------------------------------------
 --[Fixed]
---#274
+--#275 Fix guild history scene reference
+--#276 Fix translation keys: Duplicates
+--#277 Fix translation invalid escape sequences
 
 --[Changed]
 

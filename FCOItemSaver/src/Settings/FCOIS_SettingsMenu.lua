@@ -1349,6 +1349,113 @@ local function defaultIconNameCheck(refCtrlName, iconName, iconId)
 end
 --Update marker icon name - END --------------------------------------------------------------------
 
+
+--Update marker icon enabled data - BEGIN --------------------------------------------------------------------
+    --Update enabled and sort data, for the sort OrderListBoxWidgets
+    local function updateEnabledMarkerIconsSortOrderListData(isInitialLAMCall) --#279
+        isInitialLAMCall = isInitialLAMCall or false
+        local settingsBase = FCOIS.settingsVars
+        local settings = settingsBase.settings
+        --local defaults = settingsBase.defaults
+        --local l_isIconEnabled = settings.isIconEnabled
+        local currentMarkerIconsOutputOrder = ZO_ShallowTableCopy(settings.markerIconsOutputOrder)
+        local currentMarkerIconsOutputOrderEntries = ZO_ShallowTableCopy(settings.markerIconsOutputOrderEntries)
+        local currentIconSortOrder = ZO_ShallowTableCopy(settings.iconSortOrder)
+        local currentIconSortOrderEntries = ZO_ShallowTableCopy(settings.iconSortOrderEntries)
+        --local defaultMarkerIconsOutputOrderEntries = defaults.markerIconsOutputOrderEntries
+        --local defaultIconSortOrderEntries = defaults.iconSortOrderEntries
+
+
+--d("[FCOIS]updateEnabledMarkerIconsSortOrderListData-isInitialLAMCall: " .. tos(isInitialLAMCall) ..", numIcons: " .. tos(FCOIS.numVars.gFCONumFilterIcons))
+
+        FCOIS.preventerVars.gCalledFromInternalFCOIS = true
+        local iconsListStandard, iconsListValuesStandard = FCOIS.GetLAMMarkerIconsDropdown("standard", true, false)
+
+        --Reset the list varibales for the LAM OrderListBox widgets
+        FCOIS.settingsVars.settings.markerIconsOutputOrderEntries = {}
+        FCOIS.settingsVars.settings.iconSortOrderEntries = {}
+
+
+        --todo: 20240329 - Rebuild this function and total defaults values to properly update the OrderListBox widgets!
+
+        --Rebuild the list varibales for the LAM OrderListBox widgets
+        for iconNumber=FCOIS_CON_ICON_LOCK, FCOIS.numVars.gFCONumFilterIcons, 1 do
+            local iconIndex = ZO_IndexOfElementInNumericallyIndexedTable(iconsListValuesStandard, iconNumber)
+            local name = iconsListStandard[iconIndex] or "Icon " ..tos(iconNumber)
+
+            local currentMarkerIconOutputOrderIndex = ZO_IndexOfElementInNumericallyIndexedTable(currentMarkerIconsOutputOrder, iconNumber)
+            local currentMarkerIconContextMenuOrderIndex = ZO_IndexOfElementInNumericallyIndexedTable(currentIconSortOrder, iconNumber)
+--d(">iconNumber: " ..tos(iconNumber) .. ", iconIndex: " .. tos(iconIndex) .. ", name: " ..tos(name) .. ", currentIdxOutput: " .. tos(currentMarkerIconOutputOrderIndex).. ", currentIdxCtxMenu: " .. tos(currentMarkerIconContextMenuOrderIndex))
+            if currentMarkerIconsOutputOrderEntries[currentMarkerIconOutputOrderIndex] ~= nil then
+--d(">>outputOrder exists!")
+                --Icon was ordered already: Reuse that already set value again, but update the name and tooltip (for the enabled marker icon state)
+                currentMarkerIconsOutputOrderEntries[currentMarkerIconOutputOrderIndex].text = name
+                currentMarkerIconsOutputOrderEntries[currentMarkerIconOutputOrderIndex].tooltip = name
+                FCOIS.settingsVars.settings.markerIconsOutputOrderEntries[currentMarkerIconOutputOrderIndex] = currentMarkerIconsOutputOrderEntries[currentMarkerIconOutputOrderIndex]
+            else
+--d(">>outputOrder: Using default")
+                --Icon was not ordered already: Use default order = icon number
+                FCOIS.settingsVars.settings.markerIconsOutputOrderEntries[iconNumber] = {
+                    uniqueKey	= iconNumber,
+                    value		= iconNumber,
+                    text 		= name,
+                    tooltip 	= name,
+                }
+            end
+            if currentIconSortOrderEntries[currentMarkerIconContextMenuOrderIndex] ~= nil then
+--d(">>contextMenuOrder: Exist")
+                --Icon was ordered already: Reuse that already set value again, but update the name and tooltip (for the enabled marker icon state)
+                currentIconSortOrderEntries[currentMarkerIconContextMenuOrderIndex].text = name
+                currentIconSortOrderEntries[currentMarkerIconContextMenuOrderIndex].tooltip = name
+                FCOIS.settingsVars.settings.iconSortOrderEntries[currentMarkerIconContextMenuOrderIndex] = currentIconSortOrderEntries[currentMarkerIconContextMenuOrderIndex]
+            else
+--d(">>contextMenuOrder: Using default")
+                --Icon was not ordered already: Use default order = icon number
+                FCOIS.settingsVars.settings.iconSortOrderEntries[iconNumber] = {
+                    uniqueKey	= iconNumber,
+                    value		= iconNumber,
+                    text 		= name,
+                    tooltip 	= name,
+                }
+            end
+        end
+
+        --[[
+        for currentSortIdx, iconNumber in ipairs(iconSortOrder) do
+            local iconIndex = ZO_IndexOfElementInNumericallyIndexedTable(iconsListValuesStandard, iconNumber)
+            local name = iconsListStandard[iconIndex] or "Icon " ..tos(iconNumber)
+
+            --if l_isIconEnabled[iconNumber] then
+            --end
+
+            FCOIS.settingsVars.settings.markerIconsOutputOrderEntries[currentSortIdx] = {
+                uniqueKey	= iconNumber,
+                value		= iconNumber,
+                text 		= name,
+                tooltip 	= name,
+            }
+            FCOIS.settingsVars.settings.iconSortOrderEntries[currentSortIdx] = {
+                uniqueKey	= iconNumber,
+                value		= iconNumber,
+                text 		= name,
+                tooltip 	= name,
+            }
+        end
+        ]]
+
+        if isInitialLAMCall == true then return end
+
+        --Update the LAM OrderlistBox data now
+        if FCOItemSaver_Settings_IconSortOrder_Output_OrderListBox ~= nil then
+            FCOItemSaver_Settings_IconSortOrder_Output_OrderListBox:UpdateValue(FCOIS.settingsVars.settings.markerIconsOutputOrderEntries)
+        end
+        if FCOItemSaver_Settings_IconSortOrder_OrderListBox ~= nil then
+            FCOItemSaver_Settings_IconSortOrder_OrderListBox:UpdateValue(FCOIS.settingsVars.settings.iconSortOrderEntries)
+        end
+    end
+--Update marker icon enabled data - END --------------------------------------------------------------------
+
+
 -- ============= local helper functions - END ======================================================================
 
 
@@ -1845,6 +1952,7 @@ local function buildNormalIconEnableCheckboxes(buildName)
             changePreviewIconColor(filterButton, p_iconId, r, g, b, a, true)
         end
         updateIconListDropdownEntries()
+        updateEnabledMarkerIconsSortOrderListData()
         FCOIS.preventerVars.doUpdateLocalization = true
     end
     --Create 1 checkbox for each normal/gear icon, to enable/disable the normal/gear icon
@@ -1914,6 +2022,7 @@ local function buildDynamicIconEnableCheckboxes()
             end
             --Update the icon list dropdown entries (name, enabled state, icon)
             updateIconListDropdownEntries()
+            updateEnabledMarkerIconsSortOrderListData()
             FCOIS.preventerVars.doUpdateLocalization = true
         end
         local defaultSettings = FCOISdefaultSettings.isIconEnabled[fcoisDynIconNr]
@@ -2900,6 +3009,8 @@ function FCOIS.BuildAddonMenu()
     --Update localizationDependent variables for the settings menu
     updateLocalizedVariablesBeforeAddonMenu()
 
+    --Update the data for the enabled marker icons, for the sort OrderListBoxWidgets
+    updateEnabledMarkerIconsSortOrderListData(true)
 
     --[Local variables to speed up stuff a bit]
     FCOISdefaultSettings =  FCOIS.settingsVars.defaults
@@ -3648,7 +3759,50 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                     controls =
                     {
                         --========= ICON SORT OPTIONS ==================================================
-                        -- FCOIS Icon sort order
+                        -- FCOIS Icon sort order - Output of marker icons - #278
+                        {
+                            type = "submenu",
+                            name = locVars["options_header_sort_order_output"],
+                            reference = "FCOItemSaver_Settings_IconSortOrder_Output_SubMenu",
+                            controls = {
+
+                                --[[
+                                --FCOIS version 2.5.6
+                                ]]
+
+                                {
+                                    type = "orderlistbox",
+                                    name = locVars["options_header_sort_order_output"],
+                                    tooltip = locVars["options_header_sort_order_output_TT"],
+                                    listEntries = FCOISsettings.markerIconsOutputOrderEntries,
+                                    showPosition = true,
+                                    getFunc = function() return FCOISsettings.markerIconsOutputOrderEntries end,
+                                    setFunc = function(sortedSortListEntries)
+                                        --[[
+        [1] = {
+            value = "Value of the entry", -- or number or boolean or function returning the value of this entry
+            uniqueKey = 1, --number of the unique key of this list entry. This will not change if the order changes. Will be used to identify the entry uniquely
+            text  = "Text of this entry", -- or string id or function returning a string (optional)
+            tooltip = "Tooltip text shown at this entry", -- or string id or function returning a string (optional)
+        },                                        ]]
+                                        for idx, data in ipairs(sortedSortListEntries) do
+                                            FCOIS.settingsVars.settings.icon[data.value].outputOrder = idx
+                                            FCOIS.settingsVars.settings.markerIconsOutputOrder[idx] = data.value
+                                        end
+                                    end,
+                                    width="full",
+                                    isExtraWide = true,
+                                    minHeight = 250,
+                                    maxHeight = 400,
+                                    reference = "FCOItemSaver_Settings_IconSortOrder_Output_OrderListBox",
+                                    --disabled = function() return false end,
+                                    default = FCOISdefaultSettings.markerIconsOutputOrderEntries,
+                                },
+                            },
+
+                        },
+                        --========= ICON SORT OPTIONS ==================================================
+                        -- FCOIS Icon sort order in context menus
                         {
                             type = "submenu",
                             name = locVars["options_header_sort_order"],
@@ -3673,6 +3827,7 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                                     name = locVars["options_header_sort_order"],
                                     tooltip = locVars["options_header_sort_order"],
                                     listEntries = FCOISsettings.iconSortOrderEntries,
+                                    showPosition = true,
                                     getFunc = function() return FCOISsettings.iconSortOrderEntries end,
                                     setFunc = function(sortedSortListEntries)
                                         --[[
