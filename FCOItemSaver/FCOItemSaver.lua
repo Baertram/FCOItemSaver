@@ -251,23 +251,22 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
 --#280 For future version of LibScrollableMenu, where LibCustomMenu was updated to be compatible too:
  -->Make FCOIS context menu and ZO_Menu stuff compatible with experimental LibScrollableMenu version where LSM will take over Inventory context menu creation from ZO_Menu/LibCustomMenu
 
+--#283 Move add. inv. flag icons at the panels for API101042
+--#285 Check new Mail Send panel: If all still works properly API101042
+
 
 --______________________________________
 -- Current max # of bugs/features/ToDos: 286
 --______________________________________
 
 --Open/To work on this patch:
---#281 Only create markerIcon texture controls if the markerIcon is enabled and applied to the item -> else do not create and do hide it (unless explicitly asking to create it via param pCreateControlIfNotThere in FCOIS.CreateMarkerControl)
 
 --=== Not started yet ===
---#283 Move add. inv. flag icons at the panels for API101042
---#285 Check new Mail Send panel: If all still works properly
 
 
 ------------------------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed] -              Updated last 2024-05-03
 ------------------------------------------------------------------------------------
---#281
 
 -------------------------------------------------------------------------------------
 --Changelog (last version: 2.5.5- New version: 2.5.6) -    Updated last: 2024-05-03
@@ -282,6 +281,7 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
 --#286 Right clicking add. inv. flag context menu called "any item protected at the slot" twice
 
 --[Changed]
+--#281 Only create markerIcon texture controls if the markerIcon is enabled and applied to the item
 
 --[Added]
 --
