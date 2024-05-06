@@ -230,7 +230,7 @@ function FCOIS.GetFilterWhereBySettings(p_filterWhere, onlyAnti)
 end
 
 --This function will change the actual ANTI-DETSROY etc. settings according to the active filter panel ID (inventory, vendor, mail, trade, bank, etc.)
-function FCOIS.ChangeAntiSettingsAccordingToFilterPanel()
+function FCOIS.ChangeAntiSettingsAccordingToFilterPanel(suppressRemoveProtectedItemsFromSlots)
     local filterPanelId = FCOIS.gFilterWhere
     if filterPanelId == nil then return nil end
     isItemProtectedAtASlotNow = isItemProtectedAtASlotNow or FCOIS.IsItemProtectedAtASlotNow
@@ -280,7 +280,7 @@ function FCOIS.ChangeAntiSettingsAccordingToFilterPanel()
 --d(">settingNameToChange: " .. tos(settingNameToChange) .. ", isSettingEnabled: " ..tos(isSettingEnabled))
     --Check if the settings are enabled now and if any item is slotted in the deconstruction/improvement/extraction/refine/retrait slot
     --> Then remove the item from the slot again if it's protected again now
-    if isSettingEnabled then
+    if isSettingEnabled and not suppressRemoveProtectedItemsFromSlots then --#286
         isItemProtectedAtASlotNow(nil, nil, false, true)
     end
     return isSettingEnabled

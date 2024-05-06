@@ -4,6 +4,8 @@ local FCOIS = FCOIS
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
 
+local gAddonName = FCOIS.addonVars.gAddonName
+
 local debugMessage = FCOIS.debugMessage
 
 local wm = WINDOW_MANAGER
@@ -84,6 +86,24 @@ end
 -- =====================================================================================================================
 --  Marker control / textures functions
 -- =====================================================================================================================
+
+--Get the drawlevel of a markerIconId
+local function getMarkerIconDrawLevel(p_markerIconId)
+    if p_markerIconId == nil or p_markerIconId <= 0 or p_markerIconId > numFilterIcons then return 1 end
+    local drawLevel = 0
+    local markerIconsOutputOrder = FCOIS.settingsVars.settings.markerIconsOutputOrder
+    --Loop the setup marker icons output order from bottom to top, check if the markerIconId is the
+    --passed in one. For each markerIconId increase the drawLevel by 1
+    for i=#markerIconsOutputOrder, 1, -1 do
+        drawLevel = drawLevel + 1
+        if p_markerIconId == markerIconsOutputOrder[i] then
+--d("[FCOIS]getMarkerIconDrawLevel-markerId: " ..tos(p_markerIconId) .. "; drawLevel: " ..tos(drawLevel))
+            return drawLevel
+        end
+    end
+    return 1 --default drawLevel -> Fallback
+end
+
 --Update marker icons for other addons that should add marker icons to inventory items
 local function updateOtherAddonsInventoryMarkers(parent)
     --FCOIS v2.2.4 - ItemCooldownTracker
@@ -122,7 +142,7 @@ local function updateAlreadyBoundTexture(parent, pHideControl)
     if parentsImage ~= nil then
         --d("parentsImage: " .. parentsImage:GetName())
         local alreadyBoundTexture = "esoui/art/ava/avacapturebar_point_aldmeri.dds"
-        local addonName = FCOIS.addonVars.gAddonName
+        local addonName = gAddonName
         local setPartAlreadyBoundName = parent:GetName() .. addonName .. "AlreadyBoundIcon"
         if alreadyBoundTexture ~= nil then
             local setPartAlreadyBoundTexture
@@ -216,7 +236,8 @@ end
 --Will be created/updated as inventories get updated row by row (scrolling) -> by the help of function "CreateTextures()"
 --Will also add/show/hide the small "is the set item already bound" icon at the top-right edge of the item's image (children "Button" of parent)
 -->Only adds the texture if it does not already exist and if the marker icon is enabled!
-function FCOIS.CreateMarkerControl(parent, markerIconId, pWidth, pHeight, pTexture, pIsEquipmentSlot, pCreateControlIfNotThere, pUpdateAllEquipmentTooltips, pArmorTypeIcon, pHideControl, pUnequipped)
+--->If pCreateControlIfNotThere == false: If a texture control is enabled and should be shown it will be created either way, else it would make no sense!
+function FCOIS.CreateMarkerControl(parent, markerIconId, pWidth, pHeight, pTexture, pIsEquipmentSlot, pCreateControlIfNotThere, pUpdateAllEquipmentTooltips, pArmorTypeIcon, pHideControl, pUnequipped, pDrawLevel, pIsIconEnabled)
 --d("[FCOIS]CreateMarkerControl: " .. tos(parent:GetName()) .. ", markerIconId: " ..tos(markerIconId) .. ", pHideControl: " ..tos(pHideControl) ..", pUnequipped: " ..tos(pUnequipped))
     --No parent? Abort here
     if parent == nil then return nil end
@@ -229,32 +250,38 @@ function FCOIS.CreateMarkerControl(parent, markerIconId, pWidth, pHeight, pTextu
     --Preset the variable for control creation with false, if it is not given
     pCreateControlIfNotThere	= pCreateControlIfNotThere or false
     pUpdateAllEquipmentTooltips	= pUpdateAllEquipmentTooltips or false
+
     --Is the parent's owner control not the quickslot circle?
     if parent:GetOwningWindow() ~= ctrlVars.QUICKSLOT_CIRCLE then
         if pIsEquipmentSlot == nil then pIsEquipmentSlot = false end
 
+        local settings = FCOIS.settingsVars.settings
+        if pIsIconEnabled == nil then pIsIconEnabled = settings.isIconEnabled[markerIconId] end
+
+        --Hide the control explicitly or hide it because the marker icon is not enabled?
+        local doHide = pHideControl == true or not pIsIconEnabled
+
         --Does the FCOItemSaver marker control exist already?
-        local control = getItemSaverControl(parent, markerIconId, false)
-        local doHide = pHideControl
+        local control = getItemSaverControl(parent, markerIconId, false, nil)
+
         --Item got unequipped? Hide all marker textures of the unequipped item
         if pIsEquipmentSlot == true and pUnequipped ~= nil and pUnequipped == true then
---d(">hide: true -> equipment slot got unequipped")
+            --d(">hide: true -> equipment slot got unequipped")
             doHide = true
         end
 
-        local settings = FCOIS.settingsVars.settings
         --Should the control not be hidden? Then check it's marker settings and if a marker is set
         if not doHide then
             --Marker control for a disabled icon? Hide the icon then
-            if not settings.isIconEnabled[markerIconId] then
-                --Do not hide the texture anymore but do not create it to save memory
-                --doHide = true
+            if not pIsIconEnabled then
+                if control ~= nil then control:SetHidden(true) end --#281
+                --Abort here now as markerIcon is disabled
                 return false
             else
-                --Control should be shown
+                --Marker icon is enabled: Control should be shown, so check if the current item go that marker icon applied
                 local isItemProtected = checkIfItemIsProtected(markerIconId, myGetItemInstanceId(parent))
                 doHide = not isItemProtected
---d(">>checkIfItemIsProtected result: " .. tos(isItemProtected) .. ", doHide: " ..tos(doHide))
+                --d(">>checkIfItemIsProtected result: " .. tos(isItemProtected) .. ", doHide: " ..tos(doHide))
             end
         end
         if doHide == nil then doHide = false end
@@ -266,24 +293,46 @@ function FCOIS.CreateMarkerControl(parent, markerIconId, pWidth, pHeight, pTextu
             end
         end
 
-        --It does not exist yet, so create it now
-        if control == parent or not control then
+        --It does not exist yet, or it fall-back to the parent control?
+        if control == parent or control == nil then
             --Abort here if control should be hiden and is not created yet
             if doHide == true and pCreateControlIfNotThere == false then
                 ZO_Tooltips_HideTextTooltip()
                 return
             end
+
             --If not aborted: Create the marker control now
-            control = wm:CreateControl(parent:GetName() .. FCOIS.addonVars.gAddonName .. tos(markerIconId), parent, CT_TEXTURE)
+            --#281 -v-
+            -->Only do this if pCreateControlIfNotThere == true (explicitly asking to create the texture control)
+            -->or the markerIcon is actually enabled
+            -->and the marker icon is applied to the current item -> and thus shold be visually shown
+            if (pCreateControlIfNotThere == true or pIsIconEnabled == true) and not doHide then
+            --#281 -^-
+                control = wm:CreateControl(parent:GetName() .. gAddonName .. tos(markerIconId), parent, CT_TEXTURE)
+            end --#281
         end
+
         --Control did already exist or was created now
         if control ~= nil then
             --Hide or show the control now
             control:SetHidden(doHide)
+
             --Control should be shown?
             if not doHide then
+                local iconSettings = settings.icon[markerIconId]
+
+                --DrawLevel was passed in? Else try to detect it from settings
+                if pDrawLevel == nil then
+                    --Get the marker Icons drawLevel via settings.markerIconsOutputOrder table etc. -> see function addMarkerIconsToControl
+                    pDrawLevel = getMarkerIconDrawLevel(markerIconId) --#278
+--                else
+--                    if markerIconId == 1 or markerIconId == 3 then
+--d("[FCOIS]CreateMarkerControl-markerId: " ..tos(iconSettings.name) .. " /" ..tos(markerIconId) .. "; drawLevel: " ..tos(pDrawLevel))
+--                    end
+                end
+
                 control:SetTexture(pTexture)
-                local iconSettingsColor = settings.icon[markerIconId].color
+                local iconSettingsColor = iconSettings.color
                 control:SetColor(iconSettingsColor.r, iconSettingsColor.g, iconSettingsColor.b, iconSettingsColor.a)
                 --Marker was created/updated for the character equipment slots?
                 local gridIsEnabled = false
@@ -294,10 +343,14 @@ function FCOIS.CreateMarkerControl(parent, markerIconId, pWidth, pHeight, pTextu
                     --control:SetAnchor(BOTTOMLEFT, parent, BOTTOMLEFT, -6, 5)
                     local iconPositionCharacter = settings.iconPositionCharacter
                     control:SetAnchor(BOTTOMLEFT, parent, BOTTOMLEFT, iconPositionCharacter.x, iconPositionCharacter.y)
+                    control:SetDrawLayer(DL_BACKGROUND)
                     control:SetDrawTier(DT_HIGH)
+                    control:SetDrawLevel(pDrawLevel)
                 else
-                    control:SetDrawTier(DT_HIGH)
                     control:ClearAnchors()
+                    control:SetDrawLayer(DL_BACKGROUND)
+                    control:SetDrawTier(DT_HIGH)
+                    control:SetDrawLevel(pDrawLevel)
 
                     --Is one of the grid addons enabled?
                     local gridListOffSetLeft
@@ -355,7 +408,7 @@ function FCOIS.CreateMarkerControl(parent, markerIconId, pWidth, pHeight, pTextu
                         local iconPosition = settings.iconPosition
                         local iconOffset = filterPanelIdToIconOffset[FCOIS.gFilterWhere] or iconPosition
                         --get the offsets defined at the filterPanel for each icon (and defiend at the icon itsself for the inventory row)
-                        local iconOffsetDefinedAtPanel = settings.icon[markerIconId].offsets[LF_INVENTORY]
+                        local iconOffsetDefinedAtPanel = iconSettings.offsets[LF_INVENTORY]
                         --Now add the iconOffset defined at each panel
                         local totalOffSetLeft = iconOffset.x + iconOffsetDefinedAtPanel.left
                         local totalOffSetTop = iconOffset.y + iconOffsetDefinedAtPanel.top
@@ -392,6 +445,91 @@ end
 local createMarkerControl = FCOIS.CreateMarkerControl
 
 
+local function addMarkerIconsToControl(rowControl, pDoCreateMarkerControl, pIsEquipmentSlot, pUpdateAllEquipmentTooltips, pArmorTypeIcon, pHideControl, pUnequipped)
+    if rowControl == nil then return end
+    pDoCreateMarkerControl = pDoCreateMarkerControl or false
+    pIsEquipmentSlot = pIsEquipmentSlot or false
+
+    local settings = FCOIS.settingsVars.settings
+    local iconSettings = settings.icon
+    local iconVars = FCOIS.iconVars
+    local equipVars = FCOIS.equipmentVars
+    local markerTextureVars = FCOIS.textureVars.MARKER_TEXTURES
+    local isIconEnabled = settings.isIconEnabled
+    local iconSizeForCharacterPanel = settings.iconSizeCharacter
+
+    -- for all filters: Create/Update the icons
+    --> ZO ScrollList rows
+    --[[
+    for i = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
+        local iconSettingsOfMarkerIcon = iconSettings[i]
+        createMarkerControl(rowControl, i, iconSettingsOfMarkerIcon.size, iconSettingsOfMarkerIcon.size, markerTextureVars[iconSettingsOfMarkerIcon.texture], false, doCreateMarkerControl)
+    end
+    ]]
+
+    --[[
+    From FCOIS_Hooks.lua, function onScrollListRowSetupCallback(rowControl, data)
+        local settings            = FCOIS.settingsVars.settings
+        local iconSettings        = settings.icon
+        local iconVars            = FCOIS.iconVars
+        local textureVars         = FCOIS.textureVars
+
+        for i = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
+            local iconData = iconSettings[i]
+            createMarkerControl(rowControl, i, iconData.size or iconVars.gIconWidth, iconData.size or iconVars.gIconWidth, textureVars.MARKER_TEXTURES[iconData.texture])
+        end
+    ]]
+
+    --[[ From FCOIS_MarkerIcons.lua, function FCOIS.RemoveEmptyWeaponEquipmentMarkers(delay)
+        --Remove the markers for the filter icons at the equipment slot
+        local width = settings.iconSizeCharacter or equipVars.gEquipmentIconWidth
+        local height = settings.iconSizeCharacter or equipVars.gEquipmentIconHeight
+        for markerIconId=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
+            --3rd last parameter = doHide (true)
+            createMarkerControl(equipmentControl, markerIconId, width, height, texVars.MARKER_TEXTURES[settings.icon[markerIconId].texture], true, false, false, false, true, nil, nil)
+        end
+    ]]
+
+    --[[
+    From FCOIS_Hooks.lua, local function smithingResearchListDialogSetupCallback(rowControl, slot)
+        local iconVars            = FCOIS.iconVars
+        local textureVars         = FCOIS.textureVars
+
+        -- Create/Update all the icons for the current dialog row
+        for iconNumb = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
+            local iconData = settings.icon[iconNumb]
+            FCOIS.CreateMarkerControl(rowControl, iconNumb, iconData.size or iconVars.gIconWidth, iconData.size or iconVars.gIconWidth, textureVars.MARKER_TEXTURES[iconData.texture])
+        end -- for i = 1, numFilterIcons, 1 do
+    ]]
+
+    --#278 Add on request: OrderListBox widget to control order of the marker icons created -> DrawLevel
+    --todo 20240328 read settings order of the marker icons output (LibAddonMenuOrderListBox), and then add the icons in that order
+    local markerIconsOutputOrder = settings.markerIconsOutputOrder
+    --From last to first icon order -> So that last icon will be created first, and then 2nd last overlays it, and so on until 1st icon is created on top
+    local drawLevel = 0
+    for i=#markerIconsOutputOrder, 1, -1 do
+        drawLevel = drawLevel + 1
+        local markerIconId = markerIconsOutputOrder[i]
+        local iconSettingsOfMarkerIcon = iconSettings[markerIconId]
+
+        local iconWidth, iconHeight
+        if pIsEquipmentSlot == true then
+            iconWidth = iconSizeForCharacterPanel or equipVars.gEquipmentIconWidth
+            iconHeight = iconSizeForCharacterPanel or equipVars.gEquipmentIconHeight
+        else
+            local iconSize = iconSettingsOfMarkerIcon.size
+            iconWidth = iconSize or iconVars.gIconWidth
+            iconHeight = iconSize or iconVars.gIconHeight
+        end
+
+        --d(">createMarkerIcon at pos #" ..tos(idx) .. ": " ..tos(markerIconId) .. " - " .. tos(iconSettingsOfMarkerIcon.name))
+        --createMarkerControl(parent, markerIconId, pWidth, pHeight, pTexture, pIsEquipmentSlot, pCreateControlIfNotThere, pUpdateAllEquipmentTooltips, pArmorTypeIcon, pHideControl, pUnequipped, pDrawLevel)
+        createMarkerControl(rowControl, markerIconId, iconWidth, iconHeight, markerTextureVars[iconSettingsOfMarkerIcon.texture], pIsEquipmentSlot, pDoCreateMarkerControl, pUpdateAllEquipmentTooltips, pArmorTypeIcon, pHideControl, pUnequipped, drawLevel, isIconEnabled[markerIconId])
+    end
+end
+FCOIS.AddMarkerIconsToControl = addMarkerIconsToControl
+
+
 local function addMarkerIconsToZOListViewNow(rowControl, slot, doCreateMarkerControl, libFiltersFilterTypeToUse, updateAlreadyBound, updateOtherAddonsInvMarkers)
     --Do not execute if horse is changed
     --The current game's SCENE and name (used for determining bank/guild bank deposit)
@@ -413,15 +551,10 @@ local function addMarkerIconsToZOListViewNow(rowControl, slot, doCreateMarkerCon
             end
         end
 
-        local iconSettings = FCOIS.settingsVars.settings.icon
-        local markerTextureVars = FCOIS.textureVars.MARKER_TEXTURES
+        --Add the marker icons to the control now
+        --addMarkerIconsToControl(rowControl, pDoCreateMarkerControl, pIsEquipmentSlot, pUpdateAllEquipmentTooltips, pArmorTypeIcon, pHideControl, pUnequipped)
+        addMarkerIconsToControl(rowControl, doCreateMarkerControl, false, nil, nil, nil, nil)
 
-        -- for all filters: Create/Update the icons
-        for i = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
-            local iconSettingsOfMarkerIcon = iconSettings[i]
-            --createMarkerControl(parent, controlId, pWidth, pHeight, pTexture, pIsEquipmentSlot, pCreateControlIfNotThere, pUpdateAllEquipmentTooltips, pArmorTypeIcon, pHideControl)
-            createMarkerControl(rowControl, i, iconSettingsOfMarkerIcon.size, iconSettingsOfMarkerIcon.size, markerTextureVars[iconSettingsOfMarkerIcon.texture], false, doCreateMarkerControl)
-        end
         --Add additional FCO point to the dataEntry.data slot
         --FCOItemSaver_AddInfoToData(rowControl)
         --Create and show the "already bound" set parts texture at the top-right edge of the inventory item
@@ -1054,12 +1187,17 @@ function FCOIS.RemoveEmptyWeaponEquipmentMarkers(delay)
                     --Check if the equipment control got something equipped or it's a backup weapon slot containing a 2hd weapon
                     if equipmentControl.stackCount == 0 or twoHandedWeaponOffHand then
                         --Remove the markers for the filter icons at the equipment slot
+                        --[[
                         local width = settings.iconSizeCharacter or equipVars.gEquipmentIconWidth
                         local height = settings.iconSizeCharacter or equipVars.gEquipmentIconHeight
                         for markerIconId=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
-                            --Last parameter = doHide (true)
-                            createMarkerControl(equipmentControl, markerIconId, width, height, texVars.MARKER_TEXTURES[settings.icon[markerIconId].texture], true, false, false, false, true)
+                            --3rd last parameter = doHide (true)
+                            --createMarkerControl(parent, markerIconId, pWidth, pHeight, pTexture, pIsEquipmentSlot, pCreateControlIfNotThere, pUpdateAllEquipmentTooltips, pArmorTypeIcon, pHideControl, pUnequipped, pDrawLevel)
+                            createMarkerControl(equipmentControl, markerIconId, width, height, texVars.MARKER_TEXTURES[settings.icon[markerIconId].texture], true, false, false, false, true, nil, nil)
                         end
+                        ]]
+                        --addMarkerIconsToControl(rowControl, pDoCreateMarkerControl, pIsEquipmentSlot, pUpdateAllEquipmentTooltips, pArmorTypeIcon, pHideControl, pUnequipped)
+                        addMarkerIconsToControl(equipmentControl, false, true, false, false, true, nil)
                     end
                 end
             end
@@ -1101,17 +1239,24 @@ function FCOIS.RefreshEquipmentControl(equipmentControl, doCreateMarkerControl, 
             if settings.debug then debugMessage( "[RefreshEquipmentControl]","Control: " .. equipmentControl:GetName() .. ", Create: " .. tos(doCreateMarkerControl) .. ", MarkId: ALL", true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
             --Add/Update the markers for the filter icons at the equipment slot
             hideControl = false
+            --[[
             for markerIconId=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
                 --parent, markerIconId, pWidth, pHeight, pTexture, pIsEquipmentSlot, pCreateControlIfNotThere, pUpdateAllEquipmentTooltips, pArmorTypeIcon, pHideControl, pUnequipped
                 createMarkerControl(equipmentControl, markerIconId, width, height, texVars.MARKER_TEXTURES[settings.icon[markerIconId].texture], true, doCreateMarkerControl, hideControl, nil, nil, unequipped)
             end
+            ]]
+            --addMarkerIconsToControl(rowControl, pDoCreateMarkerControl, pIsEquipmentSlot, pUpdateAllEquipmentTooltips, pArmorTypeIcon, pHideControl, pUnequipped)
+            --todo 20240328 is hideControl param used as createMarkerControl's param pUpdateAllEquipmentTooltips ? Why? And why not at pHideControl?
+            addMarkerIconsToControl(equipmentControl, doCreateMarkerControl, true, hideControl, nil, nil, unequipped)
         --Only check a specific marker id
         else
 --d(">CheckMarkerIcon: " ..tos(p_markId))
+           --Changing one specific markerIcon p_markId -> e.g. from FCOIS.MarkMe() function (right clicking any item to apply/remove a marker icon -> at character panel)
            if settings.debug then debugMessage( "[RefreshEquipmentControl]","Control: " .. equipmentControl:GetName() .. ", Create: " .. tos(doCreateMarkerControl) .. ", MarkId: " .. tos(p_markId), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
             hideControl = true
             --Add/Update the marker p_markId for the filter icons at the equipment slot
-            createMarkerControl(equipmentControl, p_markId, width, height, texVars.MARKER_TEXTURES[settings.icon[p_markId].texture], true, doCreateMarkerControl, hideControl, nil, nil, unequipped)
+                                --parent, markerIconId, pWidth, pHeight, pTexture, pIsEquipmentSlot, pCreateControlIfNotThere, pUpdateAllEquipmentTooltips, pArmorTypeIcon, pHideControl, pUnequipped, pDrawLevel, pIsIconEnabled
+            createMarkerControl(equipmentControl, p_markId, width, height, texVars.MARKER_TEXTURES[settings.icon[p_markId].texture], true, doCreateMarkerControl, hideControl, nil, nil, unequipped, nil, settings.isIconEnabled[p_markId])
         end
 
         --Are we chaning equipped weapons? Update the markers and remove 2hd weapon markers

@@ -46,6 +46,9 @@ local function checkSingleItemProtection(p_bag, p_slotIndex, panelId, panelIdAtC
     if settings.debug then debugMessage( "[checkSingleItemProtection]","panelId: " .. tos(panelId) .. ", calledFromExternalAddon: " ..tos(calledFromExternalAddon), true, FCOIS_DEBUG_DEPTH_ALL) end
     if p_bag == nil or p_slotIndex == nil then return false end
     local locWhereAreWe = FCOIS_CON_DESTROY
+
+    local wasDragged = FCOIS.preventerVars.dragAndDropOrDoubleClickItemSelectionHandler
+
     --Are we trying to open a container with autoloot on?
     if (isAutolootContainer(p_bag, p_slotIndex)) then
         locWhereAreWe = FCOIS_CON_CONTAINER_AUTOOLOOT
@@ -77,7 +80,7 @@ local function checkSingleItemProtection(p_bag, p_slotIndex, panelId, panelIdAtC
             if not calledFromExternalAddon then
                 --Called internally, no filterPanelId was given. Current filterPanelId is the globally active one FCOIS.gFilterWhere
                 --Could be called during drag&drop or doubleclick functions of the addon
-                if FCOIS.preventerVars.dragAndDropOrDoubleClickItemSelectionHandler then
+                if wasDragged then
                     --Return the fallback value "false" so the drag&drop/double click works and will not show "Destroy not allowed!"
                     --d(">SingleItemChecks: Drag&Drop handler -> whereAreWe = FCOIS_CON_FALLBACK")
                     locWhereAreWe = FCOIS_CON_FALLBACK
@@ -86,6 +89,14 @@ local function checkSingleItemProtection(p_bag, p_slotIndex, panelId, panelIdAtC
             end
         end
     end
+
+    --Inventory -> QuickSlot is shown -> Item was dragged & dropped
+    --#274 Fix usable items getting protected as drag&drop is taking place at quuckslot wheell
+    if panelId == LF_INVENTORY and locWhereAreWe ~= FCOIS_CON_FALLBACK and ctrlVars.QUICKSLOT_KEYBOARD:AreQuickSlotsShowing() and wasDragged then
+--d( "[checkSingleItemProtection]QUICKSLOT panelId: " .. tos(panelId) .. ", calledFromExternalAddon: " ..tos(calledFromExternalAddon) ..", panelIdAtCall: " ..tos(panelIdAtCall) .. ", locWhereAreWe: " ..tos(locWhereAreWe) )
+        locWhereAreWe = FCOIS_CON_FALLBACK
+    end
+
     if settings.debug then debugMessage( "[checkSingleItemProtection]", "<<< whereAreWeAfter: " .. tos(locWhereAreWe), true, FCOIS_DEBUG_DEPTH_ALL) end
     return locWhereAreWe
 end
@@ -196,7 +207,7 @@ function FCOIS.GetWhereAreWe(panelId, panelIdAtCall, panelIdParent, bag, slot, i
     --The number for the orientation (which filter panel ID and which sub-checks were done -> for the chat output and the alert message determination)
     local whereAreWe = FCOIS_CON_DESTROY
     --The current game's SCENE and name (used for determining bank/guild bank deposit)
-    local _, currentSceneName = getCurrentSceneInfo()
+    local currentScene, currentSceneName = getCurrentSceneInfo()
     --Local settings pointer
     --local settings = FCOIS.settingsVars.settings
     local otherAddons = FCOIS.otherAddons
@@ -420,9 +431,11 @@ function FCOIS.GetWhereAreWe(panelId, panelIdAtCall, panelIdParent, bag, slot, i
                 whereAreWe = checkIfItemShouldBeUsedOrEquipped(whereAreWe, bag, slot, panelId, panelIdAtCall, calledFromExternalAddon)
                 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
                 --Are we at the inventory/bank/guild bank and trying to use/equip/deposit an item?
-            elseif (calledFromExternalAddon and (panelId == LF_INVENTORY or panelId == LF_BANK_DEPOSIT or panelId == LF_GUILDBANK_DEPOSIT or panelId == LF_HOUSE_BANK_DEPOSIT)) or (not calledFromExternalAddon and (not ctrlVars.BACKPACK:IsHidden() or panelId == LF_INVENTORY or panelId == LF_BANK_DEPOSIT or panelId == LF_GUILDBANK_DEPOSIT or panelId == LF_HOUSE_BANK_DEPOSIT)) then
+            elseif (calledFromExternalAddon and (panelId == LF_INVENTORY or panelId == LF_BANK_DEPOSIT or panelId == LF_GUILDBANK_DEPOSIT or panelId == LF_HOUSE_BANK_DEPOSIT))
+                    or (not calledFromExternalAddon and (not ctrlVars.BACKPACK:IsHidden() or panelId == LF_INVENTORY or panelId == LF_BANK_DEPOSIT or panelId == LF_GUILDBANK_DEPOSIT or panelId == LF_HOUSE_BANK_DEPOSIT)) then
                 --Check if player or guild bank is active by checking current scene in scene manager
-                if (calledFromExternalAddon and (panelId == LF_INVENTORY or panelId == LF_BANK_DEPOSIT or panelId == LF_GUILDBANK_DEPOSIT or panelId == LF_HOUSE_BANK_DEPOSIT)) or (not calledFromExternalAddon and (IsGuildBankOpen() or IsBankOpen() or (currentSceneName ~= nil and (currentSceneName == ctrlVars.bankSceneName or currentSceneName == ctrlVars.guildBankSceneName or currentSceneName == ctrlVars.houseBankSceneName)))) then
+                if (calledFromExternalAddon and (panelId == LF_INVENTORY or panelId == LF_BANK_DEPOSIT or panelId == LF_GUILDBANK_DEPOSIT or panelId == LF_HOUSE_BANK_DEPOSIT))
+                        or (not calledFromExternalAddon and (IsGuildBankOpen() or IsBankOpen() or (currentSceneName ~= nil and (currentSceneName == ctrlVars.bankSceneName or currentSceneName == ctrlVars.guildBankSceneName or currentSceneName == ctrlVars.houseBankSceneName)))) then
                     --If bank/guild bank/house deposit tab is active
                     if (calledFromExternalAddon and (panelId == LF_BANK_DEPOSIT or panelId == LF_GUILDBANK_DEPOSIT or panelId == LF_HOUSE_BANK_DEPOSIT)) or (not calledFromExternalAddon and ((ctrlVars.BANK:IsHidden() and ctrlVars.GUILD_BANK:IsHidden() and ctrlVars.HOUSE_BANK:IsHidden()) or (panelId == LF_BANK_DEPOSIT or panelId == LF_GUILDBANK_DEPOSIT or panelId == LF_HOUSE_BANK_DEPOSIT))) then
                         --If the item is double clicked + marked deposit it, instead of blocking the deposit

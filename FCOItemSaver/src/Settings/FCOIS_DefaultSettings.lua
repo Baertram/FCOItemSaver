@@ -391,6 +391,8 @@ function FCOIS.BuildDefaultSettings()
 		itemCoolDownTrackerTrackedItemsMarkerIcon = FCOIS_CON_ICON_LOCK,
 		addRemoveAllMarkerIconsToItemContextMenu = false,
 		showTooltipAtRestoreLastMarked = false,
+		markerIconsOutputOrder = {},
+		markerIconsOutputOrderEntries = {},
 	}
 	--The tables for the markedItems, non-unique and unique
 	local addonVars = FCOIS.addonVars

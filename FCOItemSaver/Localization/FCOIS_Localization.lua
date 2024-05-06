@@ -349,6 +349,7 @@ local function afterLocalization()
     --local tooltipSuffix = "_TT"
     FCOIS.preventerVars.gCalledFromInternalFCOIS = true
     local iconsListStandard, iconsListValuesStandard = FCOIS.GetLAMMarkerIconsDropdown("standard", true, false)
+
     FCOIS.settingsVars.defaults.iconSortOrderEntries = {}
     for currentSortIdx, iconNumber in ipairs(defaults.iconSortOrder) do
         if settings.isIconEnabled[iconNumber] then
@@ -377,6 +378,46 @@ local function afterLocalization()
     if not settings.iconSortOrderEntries or (settings.iconSortOrderEntries and #settings.iconSortOrderEntries == 0) then
         FCOIS.settingsVars.settings.iconSortOrderEntries = FCOIS.settingsVars.defaults.iconSortOrderEntries
     end
+
+    --Added with FCOIS v2.5.6 - #278
+    --Build the markerIconsOutputOrder table for the settings menu -> LAM2 widget "order list box"
+    FCOIS.settingsVars.defaults.markerIconsOutputOrderEntries = {}
+    for currentSortIdx, iconNumber in ipairs(defaults.iconSortOrder) do
+        --if settings.isIconEnabled[iconNumber] then
+        --[[
+            --Example entry
+            [1] = {
+                value = "Value of the entry", -- or number or boolean or function returning the value of this entry
+                uniqueKey = 1, --number of the unique key of this list entry. This will not change if the order changes. Will be used to identify the entry uniquely
+                text  = "Text of this entry", -- or string id or function returning a string (optional)
+                tooltip = "Tooltip text shown at this entry", -- or string id or function returning a string (optional)
+            },
+        ]]
+
+        local iconIndex = ZO_IndexOfElementInNumericallyIndexedTable(iconsListValuesStandard, iconNumber)
+        local name = iconsListStandard[iconIndex] or "Icon " ..tos(iconNumber)
+        local tooltip = name
+
+        FCOIS.settingsVars.defaults.markerIconsOutputOrderEntries[currentSortIdx] = {
+            uniqueKey	= iconNumber,
+            value		= iconNumber,
+            text 		= name,
+            tooltip 	= tooltip,
+        }
+        --end
+    end
+    if not settings.markerIconsOutputOrderEntries or (settings.markerIconsOutputOrderEntries and #settings.markerIconsOutputOrderEntries == 0) then
+--d("[FCOIS]Loading SavedVars' markerIconsOutputOrderEntries from defaults!")
+        FCOIS.settingsVars.settings.markerIconsOutputOrderEntries = FCOIS.settingsVars.defaults.markerIconsOutputOrderEntries
+    end
+    --This new sortOrderOutputSetting was not opened in LAM menu yet (first login with new data e.g.)?
+    if ZO_IsTableEmpty(settings.markerIconsOutputOrder) then
+--d("[FCOIS]Loading SavedVars' markerIconsOutputOrder from markerIconsOutputOrderEntries!")
+        for idx, data in ipairs(FCOIS.settingsVars.settings.markerIconsOutputOrderEntries) do
+            FCOIS.settingsVars.settings.markerIconsOutputOrder[idx] = data.value
+        end
+    end
+
 
     --Added with FCOIS v2.1.0 - Bag scan order for automatic marks
     for _, defaultData in ipairs(FCOIS.settingsVars.defaults.autoMarkBagsToScanOrder) do

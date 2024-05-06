@@ -260,10 +260,10 @@ local createContextMenuAdditionalData = FCOIS.CreateContextMenuAdditionalData
 
 --Function to show the tooltip at a ZO_Menu context menu entry, using library LibCustomMenu's function "runTooltip(control, inside)"
 function FCOIS.ContextMenuEntryTooltipFunc(control, inside, data)
-    --d("[FCOIS]FCOIS.contextMenuEntryTooltipFunc-control: " .. tos(control:GetName()) .. ", inside: " ..tos(inside))
-    if not data then return end
+--d("[FCOIS]FCOIS.contextMenuEntryTooltipFunc-control: " .. tos(control:GetName()) .. ", inside: " ..tos(inside))
     --Hide old text tooltips
     ZO_Tooltips_HideTextTooltip()
+    if not data then return end
     if not inside or not zoMenu.items or not control or not control:IsMouseEnabled() then return end
     local settings = FCOIS.settingsVars.settings
     if not settings.contextMenuItemEntryShowTooltip then return end
@@ -297,6 +297,7 @@ function FCOIS.ContextMenuEntryTooltipFunc(control, inside, data)
             end
             --Show the text tooltip now
             ZO_Tooltips_ShowTextTooltip(control, tooltipAnchor, textTooltip)
+            InformationTooltipTopLevel:BringWindowToTop()
         end
     else
         return false
@@ -794,8 +795,9 @@ end
 --The function will be called multiple times, for each marker icon once. If you want to check if it was the first time it got called
 --you can use the boolean variable "firstAdd"
 -->Called from file FCOIS_Hooks.lua, function FCOIS.CreateHooks() -> ZO_InventorySlot_ShowContextMenu_For_FCOItemSaver (LibCustomMenu) ... and ctrlVars.LIST_DIALOG.dataTypes[1].setupCallback
-function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, useSubMenu)
+function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, useSubMenu, isLastEntryAdded)
     useSubMenu = useSubMenu or false
+    isLastEntryAdded = isLastEntryAdded or false
 
     local fcoisItemInstanceId = myGetItemInstanceId(rowControl, true)
     --------------------------------------------------------------------------------------------------------------------
@@ -1578,7 +1580,17 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
 
         --Show the new added menu entries inside the context menu borders
         --Do not remove this or context menu is not working anymore in ZO_Dialog1 !
-        ShowMenu(rowControl)
+
+        --#280 Disabled this ShowMenu(rowControl) (if not the last entry of the menu is called) here so it is only called by LibCustomMenu's hook and only 1 SecurePostHook in LibScrollableMenu is called
+        --todo 20240402 If LibScrollableMenu is enabled and replaces the inventory context menu, each ShowMenu of ZO_Menu will clear
+        --LSM's created menu entries via ClearScrollableMenu() -> And thus only the last entry of FCOIS will be shown.
+        --Is that ShowMenu really needed here for EACH added marker icon, or could we simply call it once at the end?
+        if isLastEntryAdded == true then
+--d("[FCOIS]AddMark - isLastEntryAdded: True -> ShowMenu now")
+            ShowMenu(rowControl) --todo: Removed 2024-04-02 to test LSM
+        end
+
+
         --Last context menu entry was added?
         if preventerVars.buildingInvContextMenuEntries == false then
             --Reset the IIfA clicked row variables again if the last entry of the context menu was added!
@@ -1586,23 +1598,27 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
         end
 
         --Modify the spacer context menu entry so it isn't enabled for the mouse
-        if firstAdd and settings.showContextMenuDivider and contMenuVars ~= nil and contMenuVars.contextMenuIndex  ~= nil and contMenuVars.contextMenuIndex ~= -1 then
-            local contextMenuItemControl = zoMenu.items[contMenuVars.contextMenuIndex].item
-            if contextMenuItemControl ~= nil then
+        if firstAdd and settings.showContextMenuDivider and contMenuVars ~= nil and contMenuVars.contextMenuIndex  ~= nil and contMenuVars.contextMenuIndex ~= -1
+            and zoMenu.items ~= nil and #zoMenu.items > 0 and zoMenu.items[contMenuVars.contextMenuIndex] ~= nil then
+--d(">ZO_Menu -> Header entry found - En-/Disabling according to settings now")
+
+
+            local ZO_Menu_contextMenuHeaderControl = zoMenu.items[contMenuVars.contextMenuIndex].item
+            if ZO_Menu_contextMenuHeaderControl ~= nil then
                 --Overwrite onMouseEnter events
                 local isListDialogHidden = lastAddMarkData.isListDialogHidden
                 if isListDialogHidden == nil then
                     isListDialogHidden = ctrlVars.LIST_DIALOG:IsHidden()
                 end
 
-                if ( (contextMenuItemControl.creatingAddon and contextMenuItemControl.creatingAddon == addonVars.gAddonNameShort) and
+                if ( (ZO_Menu_contextMenuHeaderControl.creatingAddon and ZO_Menu_contextMenuHeaderControl.creatingAddon == addonVars.gAddonNameShort) and
                         (isEquipmentSlot or not isListDialogHidden
                                 or (not settings.contextMenuDividerShowsSettings and not settings.contextMenuDividerClearsMarkers)) ) then
-                    contextMenuItemControl:SetMouseEnabled(false)
+                    ZO_Menu_contextMenuHeaderControl:SetMouseEnabled(false)
                     --Reenable the mouse for this menu item if the menu closes. See file /src/FCOIS_Hooks.lua, function  PreHook to ZO_Menu_OnHide
                     FCOIS.preventerVars.disabledContextMenuItemIndex = contMenuVars.contextMenuIndex
                 else
-                    contextMenuItemControl:SetMouseEnabled(true)
+                    ZO_Menu_contextMenuHeaderControl:SetMouseEnabled(true)
                 end
             end
         end
@@ -2718,7 +2734,8 @@ end
 local function invertAdditionalInventoryFlagProtectionAndColor(p_panelId, p_buttonControl)
 --d("[FCOIS]invertAdditionalInventoryFlagProtectionAndColor-panelId: " ..tos(p_panelId) .. ", button: " ..tos(p_buttonControl:GetName()))
     --Invert the active anti-setting (false->true / true->false)
-    local settingsStateAfterChange = changeAntiSettingsAccordingToFilterPanel()
+    --#286 Prevent "Remove protected items from slot" check as this will be done futher down too -> removeSlottedProtectedItemsAndUpdateTooltips
+    local settingsStateAfterChange = changeAntiSettingsAccordingToFilterPanel(true)
     local dummy, settingsEnabled
     if settingsStateAfterChange ~= nil then
         --Update the buttons text and get the settings state

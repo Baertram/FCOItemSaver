@@ -1,19 +1,19 @@
 #
 ## Title: |c00FF00FCO |cFFFF00ItemSaver|t32:32:FCOItemSaver/FCOIS.dds|t
 ## Author: Baertram
-## Version: 2.5.4
-## AddOnVersion: 254
-## APIVersion: 101040 101041
+## Version: 2.5.6
+## AddOnVersion: 256
+## APIVersion: 101041 101042
 ## Description: FCOIS |t32:32:FCOItemSaver/FCOIS.dds|t Marks your items with different icons and filters them in the inventories/crafting. Protects your marked items against sell/deconstruct/extract etc., and provides many more features!
 ## SavedVariables: FCOItemSaver_Settings
 # !!! Attention !!! -> 1 line here can only contain ~220 characters, so the depency lines need to be split up, or they won't be recognized properly!
 #
-## DependsOn: LibAddonMenu-2.0>=34 LibAddonMenuOrderListBox>=007
-## DependsOn: LibCustomMenu>=713 LibDialog>=126 LibFeedback LibFilters-3.0>=339
-## DependsOn: LibMainMenu-2.0>=40400 LibSets>=000502
+## DependsOn: LibAddonMenu-2.0>=34 LibAddonMenuOrderListBox>=010
+## DependsOn: LibCustomMenu>=721 LibDialog>=126 LibFeedback LibFilters-3.0>=342
+## DependsOn: LibMainMenu-2.0>=40400 LibSets>=000607
 ## DependsOn: LibShifterBox>=000500
-## OptionalDependsOn: LibDebugLogger>=255 LibLazyCrafting>=3000
-## OptionalDependsOn: LibMultiAccountSets>=15
+## OptionalDependsOn: LibDebugLogger>=263 LibLazyCrafting>=4006
+## OptionalDependsOn: LibMultiAccountSets>=19
 #
 ## OptionalDependsOn: AdvancedDisableControllerUI AdvancedFilters AF_FCODuplicateItemsFilters
 ## OptionalDependsOn: CraftBagExtended
@@ -28,15 +28,25 @@
 
 #Known addons with FCOIS function usage:
 #-----------------------------------------------------------------
+#Advanced AutoLoot Renewed
+#Advanced Filters - FCOItemSaver filters PLUGIN
 #AlphaGear 2
-#AutoCategory
+#AutoCategory Revised
+#Auto Research
+#Awesome Events - Pack Rat
 #BankManagerRevived
+#BindAll (Sticker Book Collector)
 #CDGBankStack
+#Caro's Collection Mail Group
 #CarosLootList
-#CraftStoreFixedAndImproved
+#CraftStore
+#Daily Alchemy
+#DeconstructAll (+gamepad)
 #DoItAll
 #Dustman
 #GridList
+#Harven's Trait and Style
+#Hotep Crafting Freelancer
 #Inventory Assistant
 #InventoryGridView
 #Inventory Insight (from Ashes -> IIfA)
@@ -45,14 +55,25 @@
 #ItemTrig
 #KhrillMasterCook
 #KhrillMerlinTheEnchanter
+#Lazy Deconstructor
+#Leo's Trainer
 #MailerDemon
+#Mail Back Please
 #MassDeconstructor
+#Not a Craftsman
+#Oger's Mail Intricates
 #PersonalAssistant (Banking, Junk, Loot, Repair)
 #PotionMaker
 #QuickEnchanter
+#Restacker
+#Research Craft
 #RulebasedInventory
 #SetTracker
+#SwissKnife
+#Unboxer
+#WinterQueen's Survey Banker
 #WishList
+
 
 # Addon variables & constants
 FCOIS_Constants.lua

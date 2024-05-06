@@ -247,32 +247,47 @@ Improve the item all the way to legendary so that it becomes ineligible to impro
 I'm guessing that the same sort of thing can happen any time a marked item becomes ineligible for the inventory list. For example, maybe after right click > bind a marked item in the guild store selling tab or mail send tab. I haven't tested that, though. Should be a fairly easy nil check either way.
 ]]
 
+
+--#280 For future version of LibScrollableMenu, where LibCustomMenu was updated to be compatible too:
+ -->Make FCOIS context menu and ZO_Menu stuff compatible with experimental LibScrollableMenu version where LSM will take over Inventory context menu creation from ZO_Menu/LibCustomMenu
+
+--#283 Move add. inv. flag icons at the panels for API101042
+--#285 Check new Mail Send panel: If all still works properly API101042
+
+
 --______________________________________
--- Current max # of bugs/features/ToDos: 272
+-- Current max # of bugs/features/ToDos: 286
 --______________________________________
 
 --Open/To work on this patch:
---#273 Alchemy station flag icon is missing
+
+--=== Not started yet ===
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2023-12-06
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2024-05-03
 ------------------------------------------------------------------------------------
---#273
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.5.3 - New version: 2.5.4) -    Updated last: 2023-12-06
+--Changelog (last version: 2.5.5- New version: 2.5.6) -    Updated last: 2024-05-03
 -------------------------------------------------------------------------------------
 --[Fixed]
-
+--#275 Fix guild history scene reference
+--#276 Fix translation keys: Duplicates
+--#277 Fix translation invalid escape sequences
+--#279 OrderListBox widget reflect enabled marker icon updates/enabled state
+--#282 If LibFilters3 requested an update of inventory: Do not update another time via FCOIS routines
+--#284 Right click add. inv. flag icon protects "enchanting create & extract" again and unslots protected items
+--#286 Right clicking add. inv. flag context menu called "any item protected at the slot" twice
 
 --[Changed]
+--#281 Only create markerIcon texture controls if the markerIcon is enabled and applied to the item
 
 --[Added]
 --
 
 --[Added on request]
---
+--#278 Add on request: OrderListBox widget to control order of the marker icons created -> DrawLevel
 
 
 --************************************************************************************************************************

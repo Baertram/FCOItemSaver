@@ -74,6 +74,8 @@ local hideContextMenu
 local isVendorPanelShown
 local callDeconstructionSelectionHandler
 local callItemSelectionHandler
+local createMarkerControl, addMarkerIconsToControl
+local addMark
 
 --LibCustomMenu
 local lcm                                 = FCOIS.LCM
@@ -414,16 +416,23 @@ local function onScrollListRowSetupCallback(rowControl, data)
     local hookScrollSetupCallbacks = inventoryVars.markerControlInventories and inventoryVars.markerControlInventories.hookScrollSetupCallback
     if hookScrollSetupCallbacks[inventoryListControl] ~= nil then
         --d(">>it's a valid crafting inventory scrollList setupCallback")
+        --[[
+        createMarkerControl = createMarkerControl or FCOIS.CreateMarkerControl
+
         local settings            = FCOIS.settingsVars.settings
         local iconSettings        = settings.icon
         local iconVars            = FCOIS.iconVars
         local textureVars         = FCOIS.textureVars
 
-        local createMarkerControl = FCOIS.CreateMarkerControl
         for i = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
             local iconData = iconSettings[i]
             createMarkerControl(rowControl, i, iconData.size or iconVars.gIconWidth, iconData.size or iconVars.gIconWidth, textureVars.MARKER_TEXTURES[iconData.texture])
         end
+        ]]
+
+        --#278 todo 20240328 use addMarkerIconsToControl function here too
+        addMarkerIconsToControl = addMarkerIconsToControl or FCOIS.AddMarkerIconsToControl
+        addMarkerIconsToControl(rowControl, nil)
     end
 
     --Add additional FCO point to the dataEntry.data slot
@@ -879,7 +888,7 @@ function FCOIS.CreateHooks()
             FCOIS.preventerVars.buildingInvContextMenuEntries = true
             --Check if the localization data of the context menu is given
             checkAndUpdateContextMenuLocalizationData()
-            local addMark = FCOIS.AddMark
+            addMark = addMark or FCOIS.AddMark
             for j = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
                 local FCOcontextMenuEntry = FCOcontextMenu[j]
                 if FCOcontextMenuEntry ~= nil then
@@ -894,13 +903,16 @@ function FCOIS.CreateHooks()
                     --FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, useSubMenu)
                     --Increase the global counter for the added context menu entries so the function FCOIS.AddMark can react on it
                     FCOIS.customMenuVars.customMenuCurrentCounter = FCOIS.customMenuVars.customMenuCurrentCounter + 1
-                    addMark(FCOcontextMenuEntry.control, FCOcontextMenuEntry.iconId, FCOcontextMenuEntry.isEquip, FCOcontextMenuEntry.refreshPopup, FCOcontextMenuEntry.useSubMenu)
+                    addMark(FCOcontextMenuEntry.control, FCOcontextMenuEntry.iconId, FCOcontextMenuEntry.isEquip, FCOcontextMenuEntry.refreshPopup, FCOcontextMenuEntry.useSubMenu, addedCounter >= contextMenuEntriesAdded)
                 end
             end
 
             --As the (dynamic) sub menu entries were build, show them now
             if useSubContextMenu or useDynSubContextMenu then
-                zo_callLater(function()
+                --#280 Test:
+                --Was called delayed to let the table FCOIS.customMenuVars.customMenuSubEntries be build and finished within function FCOIS.AddMark
+                --but it should be finished properly before this code runs? Remove the zo_callLater
+                --zo_callLater(function()
                     local customMenuSubEntries = FCOIS.customMenuVars.customMenuSubEntries
                     if customMenuSubEntries ~= nil and #customMenuSubEntries > 0 then
                         AddCustomSubMenuItem("|c22DD22FCO|r ItemSaver", customMenuSubEntries)
@@ -914,9 +926,10 @@ function FCOIS.CreateHooks()
                             AddCustomSubMenuItem(dynamicSubMenuEntryHeaderText, customMenuDynSubEntries)
                         end
                     end
-                    --Do not remove or dynamic submenu in contextmenus will be missing boundaries!
+                    --Do not remove or dynamic submenu in contextmenus will not be shown!
+                    --#280 Keep this ShowMenu enabled here, or the submenu entry with the submenu entries will not show!
                     ShowMenu(rowControl)
-                end, 30)
+                --end, 30)
             end
         end -- if contextMenuEntriesAdded > 0 then
         FCOIS.preventerVars.buildingInvContextMenuEntries = false
@@ -1309,6 +1322,8 @@ function FCOIS.CreateHooks()
         --d("[".. os.date("%c", GetTimeStamp()) .."]>enabling the control's row again")
         --Reset the row so it is enabled
         rowControl.disableControl = false
+        --[[
+        createMarkerControl = createMarkerControl or FCOIS.CreateMarkerControl
 
         local iconVars            = FCOIS.iconVars
         local textureVars         = FCOIS.textureVars
@@ -1316,8 +1331,12 @@ function FCOIS.CreateHooks()
         -- Create/Update all the icons for the current dialog row
         for iconNumb = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
             local iconData = settings.icon[iconNumb]
-            FCOIS.CreateMarkerControl(rowControl, iconNumb, iconData.size or iconVars.gIconWidth, iconData.size or iconVars.gIconWidth, textureVars.MARKER_TEXTURES[iconData.texture])
+            createMarkerControl(rowControl, iconNumb, iconData.size or iconVars.gIconWidth, iconData.size or iconVars.gIconWidth, textureVars.MARKER_TEXTURES[iconData.texture])
         end -- for i = 1, numFilterIcons, 1 do
+        ]]
+        --addMarkerIconsToControl(rowControl, pDoCreateMarkerControl, pIsEquipmentSlot, pUpdateAllEquipmentTooltips, pArmorTypeIcon, pHideControl, pUnequipped)
+        addMarkerIconsToControl = addMarkerIconsToControl or FCOIS.AddMarkerIconsToControl
+        addMarkerIconsToControl(rowControl, false, false, nil, nil, nil, nil)
 
         --Get the row's bag and slotIndex
         local bagId, slotIndex = myGetItemDetails(rowControl)
@@ -1465,7 +1484,7 @@ function FCOIS.CreateHooks()
                     --Clear the menu completely (should be empty by default as it does not exist on the dialogs)
                     ClearMenu()
                     --Add the context menu entries now
-                    local addMark = FCOIS.AddMark
+                    addMark = addMark or FCOIS.AddMark
                     for j = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
                         if FCOcontextMenu[j] ~= nil then
                             addedCounter = addedCounter + 1
@@ -1478,7 +1497,7 @@ function FCOIS.CreateHooks()
                             --FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, useSubMenu)
                             --Increase the global counter for the added context menu entries so the function FCOIS.AddMark can react on it
                             FCOIS.customMenuVars.customMenuCurrentCounter = FCOIS.customMenuVars.customMenuCurrentCounter + 1
-                            addMark(FCOcontextMenu[j].control, FCOcontextMenu[j].iconId, FCOcontextMenu[j].isEquip, FCOcontextMenu[j].refreshPopup, FCOcontextMenu[j].useSubMenu)
+                            addMark(FCOcontextMenu[j].control, FCOcontextMenu[j].iconId, FCOcontextMenu[j].isEquip, FCOcontextMenu[j].refreshPopup, FCOcontextMenu[j].useSubMenu, addedCounter >= contextMenuEntriesAdded)
                         end
                     end
                 end

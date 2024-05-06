@@ -12,7 +12,7 @@ local strlen = string.len
 FCOIS.addonVars = {}
 local addonVars = FCOIS.addonVars
 --Addon variables
-addonVars.addonVersionOptions 		    = '2.5.3' -- version shown in the settings panel
+addonVars.addonVersionOptions 		    = '2.5.6' -- version shown in the settings panel
 --The addon name, normal and decorated with colors etc.
 addonVars.gAddonName				    = "FCOItemSaver"
 addonVars.gAddonNameShort               = "FCOIS"
@@ -1054,10 +1054,9 @@ mappingVars.sceneControlsToRegisterStateChangeForContextMenu = {
     GUILD_ROSTER_SCENE,
     GUILD_RANKS_SCENE,
     GUILD_HERALDRY_SCENE,
-    GUILD_HISTORY_SCENE,
+    GUILD_HISTORY_KEYBOARD_SCENE, --#275 Fix guild history scene reference
     GUILD_CREATE_SCENE,
     NOTIFICATIONS_SCENE,
-    GUILD_HISTORY_SCENE,
     CAMPAIGN_BROWSER_SCENE,
     CAMPAIGN_OVERVIEW_SCENE,
     STATS_SCENE,
@@ -1496,6 +1495,7 @@ ctrlVars.PLAYER_TRADE_WINDOW        = TRADE_WINDOW
 --ctrlVars.PLAYER_TRADE_NAME			= ctrlVars.PLAYER_TRADE.control:GetName()
 ctrlVars.PLAYER_TRADE_ATTACHMENTS   = ctrlVars.PLAYER_TRADE.Columns[TRADE_ME]
 ctrlVars.ENCHANTING                 = ENCHANTING
+local enchanting =  ctrlVars.ENCHANTING
 ctrlVars.ENCHANTING_CLASS    		= ZO_Enchanting
 ctrlVars.ENCHANTING_PANEL           = ZO_EnchantingTopLevel
 ctrlVars.ENCHANTING_INV             = GetControl(ctrlVars.ENCHANTING_PANEL, inventoryStr) --ZO_EnchantingTopLevelInventory
@@ -1507,7 +1507,9 @@ ctrlVars.ENCHANTING_STATION_BAG 	= GetControl(ctrlVars.ENCHANTING_STATION, conte
 --ctrlVars.ENCHANTING_STATION_MENUBAR_BUTTON_EXTRACTION  = ZO_EnchantingTopLevelModeMenuBarButton2
 ctrlVars.ENCHANTING_RUNE_CONTAINER	= GetControl(ctrlVars.ENCHANTING_PANEL, "RuneSlotContainer") --ZO_EnchantingTopLevelRuneSlotContainer
 ctrlVars.ENCHANTING_RUNE_CONTAINER_NAME	= ctrlVars.ENCHANTING_RUNE_CONTAINER:GetName()
-ctrlVars.ENCHANTING_EXTRACTION_SLOT	    = GetControl(ctrlVars.ENCHANTING_PANEL, "ExtractionSlotContainerExtractionSlot") --ZO_EnchantingTopLevelExtractionSlotContainerExtractionSlot
+ctrlVars.ENCHANTING_EXTRACTION_SLOT_CONTAINER  = GetControl(ctrlVars.ENCHANTING_PANEL, "ExtractionSlotContainer") --ZO_EnchantingTopLevelExtractionSlotContainer
+ctrlVars.ENCHANTING_EXTRACTION_SLOT_CONTAINER_NAME  = ctrlVars.ENCHANTING_EXTRACTION_SLOT_CONTAINER:GetName()
+ctrlVars.ENCHANTING_EXTRACTION_SLOT	    = GetControl(ctrlVars.ENCHANTING_EXTRACTION_SLOT_CONTAINER, "ExtractionSlot") --ZO_EnchantingTopLevelExtractionSlotContainerExtractionSlot
 ctrlVars.ENCHANTING_EXTRACTION_SLOT_NAME    = ctrlVars.ENCHANTING_EXTRACTION_SLOT:GetName()
 ctrlVars.ENCHANTING_RUNE_CONTAINER_POTENCY  = GetControl(ctrlVars.ENCHANTING_RUNE_CONTAINER, "PotencyRune") --ZO_EnchantingTopLevelRuneSlotContainerPotencyRune
 ctrlVars.ENCHANTING_RUNE_CONTAINER_ESSENCE  = GetControl(ctrlVars.ENCHANTING_RUNE_CONTAINER, "EssenceRune") --ZO_EnchantingTopLevelRuneSlotContainerEssenceRune
@@ -1537,6 +1539,7 @@ ctrlVars.QUICKSLOT_WINDOW                   = (quickslotKeyboard ~= nil and quic
 ctrlVars.QUICKSLOT_NAME                     = quickslot:GetName()
 ctrlVars.QUICKSLOT_CIRCLE  		            = (quickslotKeyboard ~= nil and quickslotKeyboard.wheelControl) or GetControl(ctrlVars.QUICKSLOT, "Circle") --ZO_QuickSlotCircle
 ctrlVars.QUICKSLOT_LIST			            = (quickslotKeyboard ~= nil and quickslotKeyboard.list) or GetControl(quickslot, listStr) --ZO_QuickSlotList
+ctrlVars.QUICKSLOT_WHEEL_FRAGMENT_NAME      = "" --KEYBOARD_QUICKSLOT_CIRCLE_FRAGMENT
 ctrlVars.DestroyItemDialog    		        = ESO_Dialogs["DESTROY_ITEM_PROMPT"]
 ctrlVars.RepairKits                         = REPAIR_KITS
 ctrlVars.RepairItemDialog                   = ctrlVars.LIST_DIALOG1 --ZO_ListDialog1
@@ -1712,7 +1715,7 @@ mappingVars.libFiltersPanelIdToCraftingPanelInventory = {
     [LF_JEWELRY_RESEARCH_DIALOG]   = nil,
 }
 
---The filterPanelId to crafting table slot (extraction, deconstruction, refine, retrait, alchemy, ...) control
+--The filterPanelId to crafting table slot (extraction, deconstruction, refine, retrait, alchemy, enchanting, ...) control
 mappingVars.libFiltersPanelIdToCraftingPanelSlot = {
     [LF_ALCHEMY_CREATION]           = ctrlVars.ALCHEMY_SOLVENT_SLOT, --Solvents slot is the 1st, but it will also check the additional 3 reagent slots at FCOIS_Protection, func craftPrev.GetSlottedItemBagAndSlot()
     [LF_RETRAIT]                    = ctrlVars.RETRAIT_RETRAIT_PANEL.retraitSlot,
@@ -1722,6 +1725,8 @@ mappingVars.libFiltersPanelIdToCraftingPanelSlot = {
     [LF_JEWELRY_REFINE]             = refinementPanel.extractionSlot,
     [LF_JEWELRY_DECONSTRUCT]        = deconstructionPanel.extractionSlot,
     [LF_JEWELRY_IMPROVEMENT]        = improvementPanel.improvementSlot,
+    [LF_ENCHANTING_CREATION]        = enchanting.runeSlots, --#284
+    [LF_ENCHANTING_EXTRACTION]      = enchanting.extractionSlot, --#284
 }
 if ZO_UNIVERSAL_DECONSTRUCTION_FILTER_TYPES ~= nil then
     local universalDeconPanelExtractionSlot = universalDeconstructionPanel.extractionSlot
