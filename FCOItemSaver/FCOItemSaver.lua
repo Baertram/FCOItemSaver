@@ -196,8 +196,6 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
 --#280 For future version of LibScrollableMenu, where LibCustomMenu was updated to be compatible too:
  -->Make FCOIS context menu and ZO_Menu stuff compatible with experimental LibScrollableMenu version where LSM will take over Inventory context menu creation from ZO_Menu/LibCustomMenu
 
---#285 Check new Mail Send panel: If all still works properly API101042
-
 
 --______________________________________
 -- Current max # of bugs/features/ToDos: 286
@@ -209,11 +207,11 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2024-05-03
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2024-05-07
 ------------------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.5.5- New version: 2.5.6) -    Updated last: 2024-05-03
+--Changelog (last version: 2.5.6 - New version: 2.5.7) -    Updated last: 2024-05-07
 -------------------------------------------------------------------------------------
 --[Fixed]
 --#275 Fix guild history scene reference
