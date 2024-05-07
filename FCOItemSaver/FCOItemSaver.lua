@@ -108,24 +108,6 @@ Blaue/Lila Set Rüstung mit infused: gear mark 3 ("good)
 --#115: 2021-05-13, bug, Baertram  Reposition the additional inventory "flag" icons at crafting tables: Refine, deconstruction, improvement.
 --                            and test if they also fit with AdvancedFilters enabled
 
---#131: bug, Error message at login:
---[[
-user:/AddOns/FCOItemSaver/src/FCOIS_SettingsMenu.lua:2445: attempt to index a nil value
-stack traceback:
-user:/AddOns/FCOItemSaver/src/FCOIS_SettingsMenu.lua:2445: in function 'buildAddInvContextMenuFlagButtonsPositionsSubMenu'
-|caaaaaa<Locals> addInvFlagButtonsPositionsSubMenu = [table:1]{}, btnname = "Set all equal", btntooltip = "This will set all the addition...", btndata = [table:2]{name = "Set all equal", width = "full", tooltip = "This will set all the addition...", warning = "This will set all the addition...", isDangerous = "true", scrollable = F, type = "button"}, btndisabledFunc = user:/AddOns/FCOItemSaver/src/FCOIS_SettingsMenu.lua:2408, btnFunc = user:/AddOns/FCOItemSaver/src/FCOIS_SettingsMenu.lua:2411, btncreatedControl = [table:2], sortedAddInvBtnInvokers = [table:3]{}, _ = 27, addInvBtnInvokerData = [table:4]{textureMouseOver = "/esoui/art/ava/tabicon_bg_scor...", name = "ZO_CompanionEquipment_Panel_Ke...", filterPanelId = 39, alignMain = 3, height = 32, textureNormal = "/esoui/art/ava/tabicon_bg_scor...", width = 32, alignBackup = 3, hideButton = T, tooltipAlign = 8, onMouseUpCallbackFunctionMouseButton = 2, textureClicked = "/esoui/art/ava/tabicon_bg_scor...", top = 110, left = -55, sortIndex = 27, addInvButton = T}, filterPanelId = 39, isActiveFilterPanelId = T, addInvFlagButtonsPositionsSubMenuControls = [table:5]{}, ref = "FCOItemSaver_Settings_AddInvFl...", name = "Left:", tooltip = "Left:", data = [table:6]{width = "half", type = "editbox"}, disabledFunc = user:/AddOns/FCOItemSaver/src/FCOIS_SettingsMenu.lua:2439, getFunc = user:/AddOns/FCOItemSaver/src/FCOIS_SettingsMenu.lua:2440, setFunc = user:/AddOns/FCOItemSaver/src/FCOIS_SettingsMenu.lua:2441 </Locals>|r
-user:/AddOns/FCOItemSaver/src/FCOIS_SettingsMenu.lua:2485: in function 'FCOIS.BuildAddonMenu'
-|caaaaaa<Locals> lsb = [table:7]{EVENT_ENTRY_MOVED = 3, DEFAULT_CATEGORY = "LSBDefCat", EVENT_LEFT_LIST_CLEARED = 4, EVENT_ENTRY_HIGHLIGHTED = 1, EVENT_RIGHT_LIST_CLEARED = 5, EVENT_ENTRY_UNHIGHLIGHTED = 2}, libShifterBoxes = [table:8]{}, srcServer = 1, targServer = 1, srcAcc = 1, targAcc = 1, srcChar = 1, targChar = 1, addonVars = [table:9]{FAQentry = "https://www.esoui.com/portal.p...", gAddonLoaded = F, addonVersionOptions = "2.1.1", authorPortal = "https://www.esoui.com/portal.p...", addonNameMenu = "FCO ItemSaver", addonAuthor = "|cFFFF00Baertram|r", addonNameContextMenuEntry = "     - |c22DD22FCO|r ItemSaver...", website = "https://www.esoui.com/download...", addonNameMenuDisplay = "|t32:32:FCOItemSaver/FCOIS.dds...", addonAuthorDisplayNamePTS = "@Baertram", gAddonNameShort = "FCOIS", addonAuthorDisplayNameNA = "@Baertram", addonVersionOptionsNumber = 2.11, savedVarVersion = 0.1, FAQwebsite = "https://www.esoui.com/portal.p...", gAddonName = "FCOItemSaver", savedVarName = "FCOItemSaver_Settings", gSettingsLoaded = T, feedback = "https://www.esoui.com/portal.p...", gPlayerActivated = F, addonAuthorDisplayNameEU = "@Baertram", donation = "https://www.esoui.com/portal.p..."}, addonFAQentry = "https://www.esoui.com/portal.p...", GridListActivated = F, InventoryGridViewActivated = T, getGridAddonIconSize = user:/AddOns/FCOItemSaver/src/FCOIS_SettingsMenu.lua:372, isIconEnabled = [table:10]{1 = T}, numDynIcons = 15, panelData = [table:11]{name = "FCO ItemSaver", registerForRefresh = T, author = "|cFFFF00Baertram|r", displayName = "|t32:32:FCOItemSaver/FCOIS.dds...", donation = "https://www.esoui.com/portal.p...", website = "https://www.esoui.com/download...", version = "2.1.1", slashCommand = "/fcoiss", registerForDefaults = T, type = "panel"}, FCOSettingsPanel = ud, animation = ud, timeline = ud, apiVersion = 100035 </Locals>|r
-user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_Loaded'
-|caaaaaa<Locals> eventCode = 65536, addOnName = "FCOItemSaver", bagIdsToFilterForInvSingleSlotUpdate = [table:12]{1 = 1} </Locals>|r
-]]
-
---#140: bug, Error message at login -> related to fixed error 131
--->Could not create editbox "Gauche:" FCOItemSaver_LAM
--->Could not create editbox "Haute:" FCOItemSaver_LAM
-----> Seems the fixed error message user:/AddOns/FCOItemSaver/src/FCOIS_SettingsMenu.lua:2445: attempt to index a nil value is causing this now
---> Not reproducable?!
-
 
 ---------------------------------------------------------------------
 --[TODO Current Errors and features list - Find a way to reproduce/fix/add them] --
@@ -139,24 +121,7 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 --                                 having any iocn set e.g. "sell". Right click it remove the sell icon, and then set it again. Sometimes the worn items and inventory (maybe all items somehow)
 --                                 now show the removed/applied marker icon "sell" on them?!
 
---#176: 2021-11-14, Baertram, feature: Add submenu to 4 filter buttons, with setting to change the filter between AND & OR filter conjunction behaviour.
---Remembers the state for each filterPanel. -> Implemented but currently ONLY with AND or OR for all 4 buttons the same! -> Maybe split up per filter button one day...
-
---#178: 2021-12-03, Onigar (Addon comments), bug:
---[[ So at the bank deposit tab you got only the "green lock" FCOIS filterbutton set (right clicked the filter button -> chose the "lock" icon explicitly ->
-    Then left clicked the filter button to turn it green -> will only filter out, hide, the lock marked items)?
-    Or is it the green * button (right click first filterButton and choose the most top entry "*"-> then left click the filter button to turn it green ->
-    will filter out, hide, the lock and all dynamic icons).
-    And as you deposit (via keybind? via drag & drop? via double click? Any difference here?) some other items (do they need to be marked with any
-    FCOIS marker icon or could it also be any other non marked item?) all of sudden the filtered items with a lock/dynamic marker icon are shown in the
-    bank deposit list again.
-]]
-
---#176, 2021-10-12, Baertram: Errors occured with OR filters, and mixed AND + OR filters -> Currently only ALL or or ALL AND can be enabled!
---#181, 2022-01-02, Baertram: Check filter slash command chat feedback: Does it show correct info about filter state and new logical conjuncions?
-
---#225  2022-04-24, Baertram: Savedvariables copy from server EU -> PTS "All accounts the same" or "Chosen account" does not work. Reloadui is done but
---settings were not copied properly
+--#181, 2022-01-02, Baertram: Check filter slash command chat feedback: Does it show correct info about filter state and new logical conjunctions?
 
 
 --#233  2022-06-26, Baertram: Add support for AwesomeGuildStores new feature "Sell at trading house, directly from bank"
@@ -175,10 +140,6 @@ user:/AddOns/FCOItemSaver/src/FCOIS_Events.lua:1128: in function 'FCOItemSaver_L
 --#237 2022-03-14, 02:23, Papito, Feature request
 --Sorry if this is explained somewhere, but is it possible to have the New items Automatic marking exclude item categories?
 --A lot of junk items and white weapons/armor filll my inventory, I want them to be marked as sold, but I don't want it to apply to things like materials/consumables. Thank you
-
---#239 2022-07-17, Baertram, bug: AwesomeGuildStore - Directly switching from custom "Sell from bank" button to "Sell from inventory" button will enable FCOIS.gFilterWhere = LF_INVENTORY
---instead of LF_GUILD_STORE_SELL
--->Maybe event_bank_closed?
 
 --#248 2022-08-18, Baertram, Feature request: Change LibShifterBox usage to LibAddonMenuDualListBox widget in settings etc.!
 
@@ -209,22 +170,6 @@ ZO_MainMenuCategoryBarButton1_MouseUp:3: in function '(main chunk)'
 |caaaaaa<Locals> self = ud, button = 1, upInside = T, ctrl = F, alt = F, shift = F, command = F </Locals>|r
 ]]
 
---#260 2022-12-05, Nagolite, bug: Each time context menu is opened: user:/AddOns/FCOItemSaver/src/FCOIS_ContextMenus.lua:1427: in function 'FCOIS.AddMark'
--->Maybe a solution would be: After changing the number of max enabled dynamic marker icons disable the dynamic icons in a loop at event_add_on_loaded?
-
---#261 2023-01-15, Tes96, bug: After "Get a free house brochure" was finished the error message showed for context menus:
--->user:/AddOns/FCOItemSaver/src/FCOIS_ContextMenus.lua:1443: operator .. is not supported for string .. nil
--->Equal error like #260?
-
---#262 2023-01-28, sirinsidiator, bug: Universal Deconstruction NPC: After scrolling, close NPC, reopen it and filters applied before are not registered
--->(FCOIS.gFilterWhere most probably is 1 then for LF_INVENTORY due to the row setupFunction hack)
-
---#263 2023-04-03, Baertram: Anti-mail protection does not protect items if you had them slotted and unprotected (flag set to red or marker not applied), then closed the mail panel and reoened it
--- (items now marked or flag green again): Add protection check before sending mail!
-
---#264  2023-04-03, Baertram: Armor type marker at companion character doll shows armor type of last shown companion, if a new companion was summoned and interacted with
-
---#266, 2023-04-12, dackjaniels, addon comments: for my doc: Login, Giladil ragpicker (Perfect pixel seems to enabled too, which is important), All tab (FCOCF filter is set to "bank only"), switch FCOCF filter to All, clickon jewelry tab (FCOCF filter there is at "All") -> Error message
 --#267, 2023-04-19, dackjaniels, gitter: Additional inventory flag icon jumps at universal decon. if switched panels, and sometimes even hides. PP was enabled!
 
 --#268, 2021-11-09, silvereyes, bug report
@@ -251,9 +196,6 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
 --#280 For future version of LibScrollableMenu, where LibCustomMenu was updated to be compatible too:
  -->Make FCOIS context menu and ZO_Menu stuff compatible with experimental LibScrollableMenu version where LSM will take over Inventory context menu creation from ZO_Menu/LibCustomMenu
 
---#283 Move add. inv. flag icons at the panels for API101042
---#285 Check new Mail Send panel: If all still works properly API101042
-
 
 --______________________________________
 -- Current max # of bugs/features/ToDos: 286
@@ -265,11 +207,11 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2024-05-03
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2024-05-07
 ------------------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.5.5- New version: 2.5.6) -    Updated last: 2024-05-03
+--Changelog (last version: 2.5.6 - New version: 2.5.7) -    Updated last: 2024-05-07
 -------------------------------------------------------------------------------------
 --[Fixed]
 --#275 Fix guild history scene reference
@@ -277,6 +219,7 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
 --#277 Fix translation invalid escape sequences
 --#279 OrderListBox widget reflect enabled marker icon updates/enabled state
 --#282 If LibFilters3 requested an update of inventory: Do not update another time via FCOIS routines
+--#283 Move add. inv. flag icons at the panels for API101042
 --#284 Right click add. inv. flag icon protects "enchanting create & extract" again and unslots protected items
 --#286 Right clicking add. inv. flag context menu called "any item protected at the slot" twice
 
