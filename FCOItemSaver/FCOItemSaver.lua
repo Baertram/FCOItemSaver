@@ -197,6 +197,7 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
  -->Make FCOIS context menu and ZO_Menu stuff compatible with experimental LibScrollableMenu version where LSM will take over Inventory context menu creation from ZO_Menu/LibCustomMenu
 
 --#292 Inventory space text does not show the currently filtered itemCount anymore
+--#293 Why do items which get mass moved to junk loose the "sell" icon all of sudden (after moving them from junk to normal, back to junk, ...)
 
 --______________________________________
 -- Current max # of bugs/features/ToDos: 292
@@ -210,6 +211,7 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
 
 --=== Not started yet ===
 --#292
+--#293
 
 
 ------------------------------------------------------------------------------------
