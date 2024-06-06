@@ -323,7 +323,7 @@ local LMAS_getAccountList = lmas ~= nil and lmas.GetAccountList
 --Check for set collections bok items (known/unknown) and return a boolean if the item should get marked + 2nd param the table with the checkFuncResultData for the
 --.additionalCheckFunc, containing the newMarkerIcon = markerIcon to use for the MarkItem functions later on in the toDos processing
 local function automaticMarkingSetsCollectionBookCheckFunc(p_bagId, p_slotIndex, knownOrUnknown)
-    local doDebug = false --TODO disable after debugging (p_bagId == BAG_BACKPACK and true) or false
+    local doDebug = false --TODO DEBUG disable after debugging (p_bagId == BAG_BACKPACK and true) or false
     --local doDebug = (p_bagId == BAG_BACKPACK and true) or false
     if doDebug then d("automaticMarkingSetsCollectionBookCheckFunc - knownOrUnknown: " ..tos(knownOrUnknown)) end
     if knownOrUnknown == nil or p_bagId == nil or p_slotIndex == nil then return nil, nil end
@@ -556,7 +556,7 @@ end
 
     --Do all the checks for the "automatic mark item as set"
     local function automaticMarkingSetsCheckFunc(p_bagId, p_slotIndex)
-        --Todo: Change to "false" after debugging!
+        --Todo DEBUG: Change to "false" after debugging!
         local isDebuggingCase = false
         --[[
         if p_bagId == 1 and p_slotIndex == 26 then
@@ -620,7 +620,7 @@ end
 
         if p_itemData ~= nil and p_itemData.bagId ~= nil and p_itemData.slotIndex ~= nil then
             itemLink = gil(p_itemData.bagId, p_itemData.slotIndex)
-            --Todo :Remove after debugging!
+            --Todo DEBUG: Comment again after debugging!
             --[[
             if p_itemData.bagId == BAG_BACKPACK and p_itemData.slotIndex == 25 then --Bogen des Leerenrufers
                 d("[FCOIS]automaticMarkingSetsAdditionalCheckFunc: " .. itemLink)
@@ -1082,13 +1082,13 @@ end
     --Function to scan a single item. Is needed so the return false won't abort scanning the whole inventory!
     function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, doOverride)
         doOverride = doOverride or false
-        --TODO: Debugging added with FCOIS v2.0.0, change to "true" to debug and define "il" and items to debug below at --TODO: Comment after debugging!
+        --TODO DEBUG: Debugging added with FCOIS v2.0.0, change to "true" to debug and define "il" and items to debug below at --TODO: Comment after debugging!
         local doDebug = false -- ((bag == BAG_BACKPACK and (scanType == "setItemCollectionsUnknown" or scanType == "setItemCollectionsKnown")) and true) or false
         local il
 
         markItem = markItem or FCOIS.MarkItem
 
-        --TODO: Comment after debugging!
+        --TODO DEBUG: Comment after debugging!
         --il = gil(bag, slot)
         if doDebug then
             d("FCOIS]scanInventoryItemForAutomaticMarks-" .. il .. ", bag: " ..tos(bag) .. ", slot: " ..tos(slot) .. ", scanType: " .. tos(scanType) .. ", doOverride: " .. tos(doOverride))
@@ -1104,7 +1104,7 @@ end
 
         local function abortChecksNow(whereWasTheFunctionAborted)
             --For debugging only:
-            --TODO:Remove again after testing. Added with FCOIS 1.9.6 on 2020-06-29
+            --TODO DEBUG: For debugging the doDebug variable is used here too (change it above)
             local specialCaseMet = doDebug
 
             if settings.debug == true or specialCaseMet == true then
@@ -1862,7 +1862,7 @@ end
 
         --Check only one bag & slot, or a whole inventory?
         if bag ~= nil and slot ~= nil then
-            --todo comment after debug
+            --todo DEBUG: comment again after debug
             --[[
             if scanType == "setItemCollectionsUnknown" then
                 d(">scanning: " ..GetItemLink(bag, slot))

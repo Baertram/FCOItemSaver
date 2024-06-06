@@ -503,7 +503,7 @@ local function addMarkerIconsToControl(rowControl, pDoCreateMarkerControl, pIsEq
     ]]
 
     --#278 Add on request: OrderListBox widget to control order of the marker icons created -> DrawLevel
-    --todo 20240328 read settings order of the marker icons output (LibAddonMenuOrderListBox), and then add the icons in that order
+    --20240328 read settings order of the marker icons output (LibAddonMenuOrderListBox), and then add the icons in that order
     local markerIconsOutputOrder = settings.markerIconsOutputOrder
     --From last to first icon order -> So that last icon will be created first, and then 2nd last overlays it, and so on until 1st icon is created on top
     local drawLevel = 0
@@ -582,8 +582,7 @@ function FCOIS.CreateTextures(whichTextures)
     if whichTextures == -1 then
         --Crate the texture controls for the marker icons?
         --If this is set to true each inventory row will automatically get 1 new texture control child for each marker icon
-        --Todo: Test if creating them "On demand" (if shown, at scrolling) is more performant
-        --doCreateMarkerControl = true
+        --doCreateMarkerControl = true --Creating them "On demand" (if shown, at scrolling) shiuld be more performant
         doCreateAllTextures = true
     end
     --All inventories
@@ -747,7 +746,7 @@ function FCOIS.CreateTextures(whichTextures)
                         --inventory as you interact with the companion BUT also all companion items in your normal inventory and bank deposits!
                         --So we need to do an additional check if the companion is currently interacted with and the companion menu is opened...
 
-                        -- TODO: Check if the below is still needed then
+                        -- TODO OBSOLETE?: 20240604 Check if the below is still needed then
                         -->Attention: After right click/drag/drop (inventory slot locked) a re-evaluation needs to be done to assure that the
                         --            "real shown panel" is updated to FCOIS.gFilterWhere again. e.g. drag&drop any companion item at the
                         --            normal inventory (and trying to desroy it) will change FCOIS.gFilterWhere to LF_INVENTORY_COMPANION and
@@ -962,6 +961,7 @@ local function AddArmorTypeIconToEquipmentSlot(equipmentSlotControl, armorType)
 end
 
 --Update the equipment header text with the information about the amount of equipped armor types
+local armorText = GetString("SI_EQUIPSLOTVISUALCATEGORY", EQUIP_SLOT_VISUAL_CATEGORY_APPAREL) --#288
 local function updateEquipmentHeaderCountText(updateWhere)
     local isCompanionCharacter = (updateWhere == FCOIS_CON_LF_COMPANION_CHARACTER) or false
     if isCompanionCharacter == true then
@@ -975,21 +975,22 @@ local function updateEquipmentHeaderCountText(updateWhere)
     if not charApparelSectionCtrl then return end
 
     if not showArmorTypeHeaderTextAtCharacter then
-        charApparelSectionCtrl:SetText(GetString(SI_CHARACTER_EQUIP_SECTION_APPAREL))
+        charApparelSectionCtrl:SetText(armorText)
         return
     end
     local countVars = FCOIS.countVars
     local locVars = FCOIS.localizationVars.fcois_loc
     if isCompanionCharacter == true then
         if countVars.countCompanionLightArmor ~= nil or countVars.countCompanionMediumArmor ~= nil or countVars.countCompanionHeavyArmor ~= nil then
-            charApparelSectionCtrl:SetText(GetString(SI_CHARACTER_EQUIP_SECTION_APPAREL) .. " (" .. locVars["options_armor_type_icon_light_short"] .. ": " .. countVars.countCompanionLightArmor .. ", " .. locVars["options_armor_type_icon_medium_short"] .. ": " .. countVars.countCompanionMediumArmor .. ", " .. locVars["options_armor_type_icon_heavy_short"] .. ": " .. countVars.countCompanionHeavyArmor .. ")")
+            charApparelSectionCtrl:SetText(armorText .. " (" .. locVars["options_armor_type_icon_light_short"] .. ": " .. countVars.countCompanionLightArmor .. ", " .. locVars["options_armor_type_icon_medium_short"] .. ": " .. countVars.countCompanionMediumArmor .. ", " .. locVars["options_armor_type_icon_heavy_short"] .. ": " .. countVars.countCompanionHeavyArmor .. ")")
         end
     else
         if countVars.countLightArmor ~= nil or countVars.countMediumArmor ~= nil or countVars.countHeavyArmor ~= nil then
-            charApparelSectionCtrl:SetText(GetString(SI_CHARACTER_EQUIP_SECTION_APPAREL) .. " (" .. locVars["options_armor_type_icon_light_short"] .. ": " .. countVars.countLightArmor .. ", " .. locVars["options_armor_type_icon_medium_short"] .. ": " .. countVars.countMediumArmor .. ", " .. locVars["options_armor_type_icon_heavy_short"] .. ": " .. countVars.countHeavyArmor .. ")")
+            charApparelSectionCtrl:SetText(armorText .. " (" .. locVars["options_armor_type_icon_light_short"] .. ": " .. countVars.countLightArmor .. ", " .. locVars["options_armor_type_icon_medium_short"] .. ": " .. countVars.countMediumArmor .. ", " .. locVars["options_armor_type_icon_heavy_short"] .. ": " .. countVars.countHeavyArmor .. ")")
         end
     end
 end
+FCOIS.UpdateEquipmentHeaderCountText = updateEquipmentHeaderCountText
 
 --function to count and update the equipped armor parts of character and companion and to add the marker texture controls to the
 --equipment slots via function FCOIS.RefreshEquipmentControl, if the function FCOIS.RefreshEquipmentControl was called without
@@ -1246,8 +1247,7 @@ function FCOIS.RefreshEquipmentControl(equipmentControl, doCreateMarkerControl, 
             end
             ]]
             --addMarkerIconsToControl(rowControl, pDoCreateMarkerControl, pIsEquipmentSlot, pUpdateAllEquipmentTooltips, pArmorTypeIcon, pHideControl, pUnequipped)
-            --todo 20240328 is hideControl param used as createMarkerControl's param pUpdateAllEquipmentTooltips ? Why? And why not at pHideControl?
-            addMarkerIconsToControl(equipmentControl, doCreateMarkerControl, true, hideControl, nil, nil, unequipped)
+            addMarkerIconsToControl(equipmentControl, doCreateMarkerControl, true, hideControl --[[ todo 20240328 is pUpdateAllEquipmentTooltips=hideControl("false") correct here? ]], nil, hideControl, unequipped)
         --Only check a specific marker id
         else
 --d(">CheckMarkerIcon: " ..tos(p_markId))

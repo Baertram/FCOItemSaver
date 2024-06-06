@@ -12,7 +12,7 @@ local strlen = string.len
 FCOIS.addonVars = {}
 local addonVars = FCOIS.addonVars
 --Addon variables
-addonVars.addonVersionOptions 		    = '2.5.7' -- version shown in the settings panel
+addonVars.addonVersionOptions 		    = '2.5.8' -- version shown in the settings panel
 --The addon name, normal and decorated with colors etc.
 addonVars.gAddonName				    = "FCOItemSaver"
 addonVars.gAddonNameShort               = "FCOIS"
@@ -285,7 +285,7 @@ FCOIS.preventerVars = {}
 local preventerVars = FCOIS.preventerVars
 
 --Filter buttons
---TODO: As of 2022-03-11 the logical conjunctions of the filterButtons do not work properly if some are set to AND and some are set to OR
+--TODO FEATURE: As of 2022-03-11 the logical conjunctions of the filterButtons do not work properly if some are set to AND and some are set to OR
 --So for now they will all change at the same time to AND or OR
 --Change orr emove this preventerVariable to update them single again
 preventerVars.filterButtonSettingsChangeAllToTheSame = true
@@ -1219,7 +1219,7 @@ FCOIS.otherAddons.craftBagExtendedActive = false
 FCOIS.otherAddons.craftBagExtendedSupportedFilterPanels = {
     [LF_GUILDBANK_DEPOSIT]  =   true,
     [LF_BANK_DEPOSIT]       =   true,
-    [LF_GUILDBANK_WITHDRAW] =   true, --Todo: Is this valid?
+    [LF_GUILDBANK_WITHDRAW] =   true, --Todo BUG?: Is this valid for CraftbagExtended, can we withdraw items there? Used in FCOIS_Hooks.lua -> ctrlVars.CRAFT_BAG_FRAGMENT StateChange
     [LF_MAIL_SEND]          =   true,
     [LF_GUILDSTORE_SELL]    =   true,
     [LF_TRADE]              =   true,
@@ -1705,13 +1705,13 @@ mappingVars.libFiltersPanelIdToCraftingPanelInventory = {
     [LF_SMITHING_CREATION]          = nil,
     [LF_SMITHING_DECONSTRUCT]       = deconstructionPanel,
     [LF_SMITHING_IMPROVEMENT]       = improvementPanel,
-    [LF_SMITHING_RESEARCH]          = researchPanel, --todo #242 is this existing/valid?
+    [LF_SMITHING_RESEARCH]          = researchPanel, --#242 Added 4 filter buttons to research panels
     [LF_SMITHING_RESEARCH_DIALOG]   = nil,
     [LF_JEWELRY_REFINE]            = refinementPanel,
     [LF_JEWELRY_CREATION]          = nil,
     [LF_JEWELRY_DECONSTRUCT]       = deconstructionPanel,
     [LF_JEWELRY_IMPROVEMENT]       = improvementPanel,
-    [LF_JEWELRY_RESEARCH]          = researchPanel, --todo #242 is this existing/valid?
+    [LF_JEWELRY_RESEARCH]          = researchPanel, --#242 Added 4 filter buttons to research panels
     [LF_JEWELRY_RESEARCH_DIALOG]   = nil,
 }
 
@@ -1736,27 +1736,6 @@ if ZO_UNIVERSAL_DECONSTRUCTION_FILTER_TYPES ~= nil then
         [LF_ENCHANTING_EXTRACTION]      = universalDeconPanelExtractionSlot,
     }
 end
-
---The crafting panelIds which should show FCOIS filter buttons
---todo: 2022-08-17. Where is this table used so far? Other addons? Scanned live/AddOns but no usage so far -> Disabled for the moment
---[[
-mappingVars.craftingPanelsWithFCOISFilterButtons = {
-    ["ALCHEMY"] = {
-        [LF_ALCHEMY_CREATION]           = { usesFCOISFilterButtons = true,  panelControl = ctrlVars.ALCHEMY }
-    },
-    ["RETRAIT"] = {
-        [LF_RETRAIT]                    = { usesFCOISFilterButtons = true,  panelControl = ctrlVars.RETRAIT_RETRAIT_PANEL }
-    },
-    ["SMITHING"] = {
-        [LF_SMITHING_REFINE]            = { usesFCOISFilterButtons = true,  panelControl = refinementPanel},
-        [LF_SMITHING_CREATION]          = { usesFCOISFilterButtons = false, panelControl = nil},
-        [LF_SMITHING_DECONSTRUCT]       = { usesFCOISFilterButtons = true,  panelControl = deconstructionPanel},
-        [LF_SMITHING_IMPROVEMENT]       = { usesFCOISFilterButtons = true,  panelControl = improvementPanel},
-        [LF_SMITHING_RESEARCH]          = { usesFCOISFilterButtons = true,  panelControl = researchPanel}, --todo #242 is this existing/valid?
-        [LF_SMITHING_RESEARCH_DIALOG]   = { usesFCOISFilterButtons = true,  panelControl = nil}, --todo: Changed on 2022-08-17. panelControl is ZO_ListDialog1's custom control once created
-    },
-}
-]]
 
 --Mapping for the house bank BAG numbers
 --[[
@@ -1837,7 +1816,7 @@ mappingVars.gFilterPanelIdToInv = {
 local invTextureName                = ctrlVars.INV_NAME .. "_FilterButton%sTexture"
 local refineTextureName             = ctrlVars.REFINEMENT_INV_NAME .. "_FilterButton%sTexture"
 local enchantTextureName            = ctrlVars.ENCHANTING_STATION_NAME .. "_FilterButton%sTexture"
-local deconTextureName              = ctrlVars.DECONSTRUCTION_INV_NAME .. "_FilterButton%sTexture" --todo #202
+local deconTextureName              = ctrlVars.DECONSTRUCTION_INV_NAME .. "_FilterButton%sTexture" --#202 FilterButtons and additional inventory flag context menu button added to universal deconstruction panel
 local improveTextureName            = ctrlVars.IMPROVEMENT_INV_NAME .. "_FilterButton%sTexture"
 local researchTextureName           = ctrlVars.RESEARCH_NAME .. "_FilterButton%sTexture"
 local researchDialogTextureName     = ctrlVars.RESEARCH_POPUP_TOP_DIVIDER_NAME .. "_FilterButton%sTexture"
@@ -2971,7 +2950,7 @@ invAddButtonVars.playerInventoryFCOAdditionalOptionsButton = ctrlVars.INV_NAME .
 invAddButtonVars.playerBankWithdrawButtonAdditionalOptions = "FCOIS_PlayerBankWithdraw" .. additionalFCOISInvContextmenuButtonNameString
 invAddButtonVars.guildBankFCOWithdrawButtonAdditionalOptions = "FCOIS_GuildBankWithdraw" .. additionalFCOISInvContextmenuButtonNameString
 invAddButtonVars.smithingTopLevelRefinementPanelInventoryButtonAdditionalOptions = ctrlVars.REFINEMENT_INV_NAME .. additionalFCOISInvContextmenuButtonNameString
-invAddButtonVars.smithingTopLevelDeconstructionPanelInventoryButtonAdditionalOptions = ctrlVars.DECONSTRUCTION_INV_NAME .. additionalFCOISInvContextmenuButtonNameString --todo #202
+invAddButtonVars.smithingTopLevelDeconstructionPanelInventoryButtonAdditionalOptions = ctrlVars.DECONSTRUCTION_INV_NAME .. additionalFCOISInvContextmenuButtonNameString --#202 FilterButtons and additional inventory flag context menu button added to universal deconstruction panel
 invAddButtonVars.smithingTopLevelImprovementPanelInventoryButtonAdditionalOptions = ctrlVars.IMPROVEMENT_INV_NAME .. additionalFCOISInvContextmenuButtonNameString
 invAddButtonVars.alchemyTopLevelInventoryButtonAdditionalOptions = ctrlVars.ALCHEMY_INV_NAME .. additionalFCOISInvContextmenuButtonNameString
 invAddButtonVars.enchantingTopLevelInventoryButtonAdditionalOptions = ctrlVars.ENCHANTING_INV_NAME .. additionalFCOISInvContextmenuButtonNameString
@@ -3084,7 +3063,7 @@ contextMenuVars.filterPanelIdToContextMenuButtonInvoker = {
     },
     [LF_SMITHING_DECONSTRUCT]  		= {
         ["addInvButton"]  = true,
-        ["parent"]        = ctrlVars.DECONSTRUCTION_INV, --todo #202
+        ["parent"]        = ctrlVars.DECONSTRUCTION_INV, --#202 FilterButtons and additional inventory flag context menu button added to universal deconstruction panel
         ["name"]          = invAddButtonVars.smithingTopLevelDeconstructionPanelInventoryButtonAdditionalOptions,
         ["sortIndex"]     = 19,
     },
@@ -3127,7 +3106,7 @@ contextMenuVars.filterPanelIdToContextMenuButtonInvoker = {
     },
     [LF_JEWELRY_DECONSTRUCT]  		= {
         ["addInvButton"]  = true,
-        ["parent"]        = ctrlVars.DECONSTRUCTION_INV, --todo #202
+        ["parent"]        = ctrlVars.DECONSTRUCTION_INV, --#202 FilterButtons and additional inventory flag context menu button added to universal deconstruction panel
         ["name"]          = invAddButtonVars.smithingTopLevelDeconstructionPanelInventoryButtonAdditionalOptions,
         ["sortIndex"]     = 25,
     },
@@ -3209,7 +3188,7 @@ local sortHeaderNames = {
     [LF_GUILDBANK_DEPOSIT]      = ctrlVars.INV_NAME .. sortByNameNameStr,
     [LF_GUILDBANK_WITHDRAW]     = ctrlVars.GUILD_BANK_INV_NAME .. sortByNameNameStr,
     [LF_SMITHING_REFINE]        = ctrlVars.REFINEMENT_INV_NAME .. sortByNameNameStr,
-    [LF_SMITHING_DECONSTRUCT]   = ctrlVars.DECONSTRUCTION_INV_NAME .. sortByNameNameStr, --todo #202
+    [LF_SMITHING_DECONSTRUCT]   = ctrlVars.DECONSTRUCTION_INV_NAME .. sortByNameNameStr, --#202 FilterButtons and additional inventory flag context menu button added to universal deconstruction panel
     [LF_SMITHING_IMPROVEMENT]   = ctrlVars.IMPROVEMENT_INV_NAME .. sortByNameNameStr,
     [LF_ALCHEMY_CREATION]       = ctrlVars.ALCHEMY_INV_NAME .. sortByNameNameStr,
     [LF_ENCHANTING_CREATION]    = ctrlVars.ENCHANTING_INV_NAME .. sortByNameNameStr,
@@ -3419,7 +3398,7 @@ anchorVarsAddInvButtonsFill[100021][LF_SMITHING_REFINE].top                  = v
 anchorVarsAddInvButtonsFill[100021][LF_SMITHING_REFINE].defaultLeft          = varX2
 anchorVarsAddInvButtonsFill[100021][LF_SMITHING_REFINE].defaultTop           = varY2
 anchorVarsAddInvButtonsFill[100021][LF_SMITHING_DECONSTRUCT] = {}
-anchorVarsAddInvButtonsFill[100021][LF_SMITHING_DECONSTRUCT].anchorControl   = ctrlVars.DECONSTRUCTION_INV --todo #202
+anchorVarsAddInvButtonsFill[100021][LF_SMITHING_DECONSTRUCT].anchorControl   = ctrlVars.DECONSTRUCTION_INV --#202 FilterButtons and additional inventory flag context menu button added to universal deconstruction panel
 anchorVarsAddInvButtonsFill[100021][LF_SMITHING_DECONSTRUCT].left            = varX2
 anchorVarsAddInvButtonsFill[100021][LF_SMITHING_DECONSTRUCT].top             = varY2
 anchorVarsAddInvButtonsFill[100021][LF_SMITHING_DECONSTRUCT].defaultLeft     = varX2
@@ -3467,7 +3446,7 @@ anchorVarsAddInvButtonsFill[100021][LF_JEWELRY_REFINE].top                  = va
 anchorVarsAddInvButtonsFill[100021][LF_JEWELRY_REFINE].defaultLeft          = varX2
 anchorVarsAddInvButtonsFill[100021][LF_JEWELRY_REFINE].defaultTop           = varY2
 anchorVarsAddInvButtonsFill[100021][LF_JEWELRY_DECONSTRUCT] = {}
-anchorVarsAddInvButtonsFill[100021][LF_JEWELRY_DECONSTRUCT].anchorControl   = ctrlVars.DECONSTRUCTION_INV --todo #202
+anchorVarsAddInvButtonsFill[100021][LF_JEWELRY_DECONSTRUCT].anchorControl   = ctrlVars.DECONSTRUCTION_INV --#202 FilterButtons and additional inventory flag context menu button added to universal deconstruction panel
 anchorVarsAddInvButtonsFill[100021][LF_JEWELRY_DECONSTRUCT].left            = varX2
 anchorVarsAddInvButtonsFill[100021][LF_JEWELRY_DECONSTRUCT].top             = varY2
 anchorVarsAddInvButtonsFill[100021][LF_JEWELRY_DECONSTRUCT].defaultLeft     = varX2

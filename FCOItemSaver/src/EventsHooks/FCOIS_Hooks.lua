@@ -76,6 +76,7 @@ local callDeconstructionSelectionHandler
 local callItemSelectionHandler
 local createMarkerControl, addMarkerIconsToControl
 local addMark
+local updateEquipmentHeaderCountText
 
 --LibCustomMenu
 local lcm                                 = FCOIS.LCM
@@ -430,7 +431,7 @@ local function onScrollListRowSetupCallback(rowControl, data)
         end
         ]]
 
-        --#278 todo 20240328 use addMarkerIconsToControl function here too
+        --#278
         addMarkerIconsToControl = addMarkerIconsToControl or FCOIS.AddMarkerIconsToControl
         addMarkerIconsToControl(rowControl, nil)
     end
@@ -1650,7 +1651,7 @@ function FCOIS.CreateHooks()
     --Pre Hook the 5th menubar button (Quickslots) handler at the player inventory
     ZO_PreHookHandler(ctrlVars.INV_MENUBAR_BUTTON_QUICKSLOTS, "OnMouseUp", function(control, button, upInside)
         if button == MOUSE_BUTTON_INDEX_LEFT and upInside then
-            --todo add inventory filter buttons for quickslot filtering?
+            --todo FEATURE: add inventory filter buttons for quickslot filtering?
             resetToInventoryAndHideContextMenu()
         end
     end)
@@ -1803,8 +1804,8 @@ function FCOIS.CreateHooks()
 --d(">>filterPanelId: " ..tos(filterPanelId))
 
         if showFCOISFilterButtons == true and FCOIS.gFilterWhere ~= nil and filterPanelId ~= nil then
-            --TODO: Test if delay of a few ms (or 0 to skip call to next frame) will fix the registered filters to properly
             --apply to the crafting panel at re-open of the panel/at first open of the refinement panel
+            --delay of a few ms (or 0 to skip call to next frame) to let the filters get registered properly
             zo_callLater(function()
                 --d(">preHookMainMenuFilterButtonHandler, comingFrom: " ..tos(FCOIS.gFilterWhere) .. ", goingTo: " ..tos(filterPanelId))
                 preHookMainMenuFilterButtonHandler(FCOIS.gFilterWhere, filterPanelId)
@@ -2283,6 +2284,7 @@ function FCOIS.CreateHooks()
         end
         updateFilteredItemCountThrottled(filterPanelId, delay, "ZO_InventoryManager - UpdateEmptyBagLabel")
     end)
+
     --Update inventory slot labels
     ZO_PreHook("UpdateInventorySlots", function()
         --d("[FCOIS]UpdateInventorySlots")
@@ -2294,6 +2296,19 @@ function FCOIS.CreateHooks()
         if not FCOIS.preventerVars.dontUpdateFilteredItemCount then
             updateFilteredItemCountThrottled(nil, 50, "UpdateInventorySlots")
         end
+    end)
+
+    --#288 Inventory's player/companion headerline at the character screen -> "Armor" or "Armor hidden"
+    SecurePostHook(PLAYER_INVENTORY, "UpdateApparelSection", function(selfVar)
+        --[[
+        if ZO_CharacterApparelSectionText then
+            local isApparelHidden = IsEquipSlotVisualCategoryHidden(EQUIP_SLOT_VISUAL_CATEGORY_APPAREL, GAMEPLAY_ACTOR_CATEGORY_PLAYER)
+            local apparelString = isApparelHidden and GetString(SI_CHARACTER_EQUIP_APPAREL_HIDDEN) or GetString("SI_EQUIPSLOTVISUALCATEGORY", EQUIP_SLOT_VISUAL_CATEGORY_APPAREL)
+            ZO_CharacterApparelSectionText:SetText(apparelString)
+        end
+        ]]
+        updateEquipmentHeaderCountText = updateEquipmentHeaderCountText or FCOIS.UpdateEquipmentHeaderCountText
+        updateEquipmentHeaderCountText(FCOIS_CON_LF_CHARACTER)
     end)
 
     --[[

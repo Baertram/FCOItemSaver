@@ -1392,8 +1392,7 @@ end
         FCOIS.settingsVars.settings.iconSortOrderEntries = {}
 
 
-        --todo: 20240329 - Rebuild this function and total defaults values to properly update the OrderListBox widgets!
-        --#279
+        --#279 20240329 - Rebuild this function and total defaults values to properly update the OrderListBox widgets!
         --Rebuild the list variables for the LAM OrderListBox widgets
         for iconNumber=FCOIS_CON_ICON_LOCK, FCOIS.numVars.gFCONumFilterIcons, 1 do
             local iconIndex = ZO_IndexOfElementInNumericallyIndexedTable(iconsListValuesStandard, iconNumber)
@@ -7170,7 +7169,6 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                             getFunc = function() return FCOISsettings.useContextMenuCustomMarkedNormalColor end,
                             setFunc = function(value) FCOISsettings.useContextMenuCustomMarkedNormalColor = value
                             end,
-                            default = FCOISdefaultSettings.useContextMenuCustomMarkedNormalColor,
                             width = "half",
                             default = FCOISdefaultSettings.useContextMenuCustomMarkedNormalColor,
                         },
@@ -7368,7 +7366,6 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                             setFunc = function(value)
                                 FCOISsettings.filterButtonContextMenuMaxIcons = value
                             end,
-                            default = FCOISdefaultSettings.filterButtonContextMenuMaxIcons,
                             disabled = function()
                                 if     not FCOISsettings.splitLockDynFilter and not FCOISsettings.splitGearSetsFilter
                                         and not FCOISsettings.splitResearchDeconstructionImprovementFilter and not FCOISsettings.splitSellGuildSellIntricateFilter then

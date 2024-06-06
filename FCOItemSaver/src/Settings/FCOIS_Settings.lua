@@ -729,10 +729,6 @@ local function scanBagsAndTransferMarkerIcon(toUnique)
                         --Transfer the marker icon from the old one to the new one
                         FCOIS.settingsVars.settings[savedVarsMarkedItemsTableNameNew][iconId] = FCOIS.settingsVars.settings[savedVarsMarkedItemsTableNameNew][iconId] or {}
                         FCOIS.settingsVars.settings[savedVarsMarkedItemsTableNameNew][iconId][itemIdNew] = true
---TODO: Remove 3 lines below after migration tests finished
---FCOIS["_migrated" .. savedVarsMarkedItemsTableNameNew] = FCOIS["_migrated" .. savedVarsMarkedItemsTableNameNew] or {}
---FCOIS["_migrated" .. savedVarsMarkedItemsTableNameNew][iconId] = FCOIS["_migrated" .. savedVarsMarkedItemsTableNameNew][iconId] or {}
---FCOIS["_migrated" .. savedVarsMarkedItemsTableNameNew][iconId][itemIdNew] = true
                         numMigratedIcons = numMigratedIcons + 1
                         if increaseNumMigratedItems then
                             numMigratedItems = numMigratedItems + 1
@@ -857,7 +853,6 @@ function FCOIS.AfterSettings()
 
     --FCOIS v2.4.5 If the "max dynamic icons" slider was changed and a reloadUI took place:
     --Check if the dynmic icon disabled is still enabled at the marker icons and disable them
-    --todo 20230201
     if settings.numMaxDynamicIconsUsable > 0 then
         for iconNr, isEnabled in ipairs(settings.isIconEnabled) do
             if isEnabled == true then
@@ -1264,7 +1259,7 @@ end
 function FCOIS.LoadUserSettings(calledFromExternal, isFromEventAddOnLoaded)
     calledFromExternal = calledFromExternal or false
     isFromEventAddOnLoaded = isFromEventAddOnLoaded or false
---TODO: Debugging
+--TODO DEBUG: Uncomment for debugging
 --if GetDisplayName() == "@Baertram" then d("[FCOIS]LoadUserSettings - calledFromExternal: " ..tos(calledFromExternal) .. ", isFromEventAddOnLoaded: " ..tos(isFromEventAddOnLoaded)) end
     if calledFromExternal == true then
         FCOIS.addonVars.gSettingsLoaded = false
@@ -1575,8 +1570,8 @@ function FCOIS.CopySavedVars(srcServer, targServer, srcAcc, targAcc, srcCharId, 
     --Copy
     if not onlyDelete then
         if copyServer then
-            if toAllServersAndAccountsTheSame == true then
-                --TODO: 2022-01-30 #183 add "toAllServersAndAccountsTheSame" parameter to copy SV to profile svAllServersTheSame and account svAllAccTheSameAcc SavedVariables
+            --if toAllServersAndAccountsTheSame == true then
+                --2022-01-30 #183 Added "toAllServersAndAccountsTheSame" parameter to copy SV to profile svAllServersTheSame and account svAllAccTheSameAcc SavedVariables
 
             --else
                 --[[
@@ -1591,7 +1586,7 @@ function FCOIS.CopySavedVars(srcServer, targServer, srcAcc, targAcc, srcCharId, 
                                 svToCopy    = FCOItemSaver_Settings[srcServer][displayName][currentlyLoggedInUserId][svSettingsName]
                             end
                 ]]
-            end
+            --end
 
         elseif copyAcc then
             if srcAcc == noEntry or targAcc == noEntry then return end
@@ -1788,7 +1783,7 @@ function FCOIS.CopySavedVars(srcServer, targServer, srcAcc, targAcc, srcCharId, 
 
     --Copy to All servers and accounts the same
     elseif not onlyDelete and toAllServersAndAccountsTheSame == true then
-        --TODO: 2022-01-30 #183 add "toAllServersAndAccountsTheSame" parameter to copy SV to profile svAllServersTheSame and account svAllAccTheSameAcc SavedVariables
+        --2022-01-30 #183 Added "toAllServersAndAccountsTheSame" parameter to copy SV to profile svAllServersTheSame and account svAllAccTheSameAcc SavedVariables
         svDefToCopy = FCOItemSaver_Settings[srcServer][srcAcc][svAccountWideName][svSettingsForAllName]
         svToCopy    = FCOItemSaver_Settings[srcServer][srcAcc][svAccountWideName][svSettingsName]
         if FCOItemSaver_Settings[svAllServersTheSame] == nil then FCOItemSaver_Settings[svAllServersTheSame] = {} end

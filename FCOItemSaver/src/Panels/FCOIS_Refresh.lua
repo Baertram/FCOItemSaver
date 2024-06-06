@@ -80,7 +80,7 @@ local function updateCraftingInventory(filterPanelOverride, isUniversalDeconNPC)
             FCOIS.preventerVars.isInventoryListUpdating = true
             ZO_ScrollList_RefreshVisible(ctrlVars.ALCHEMY_STATION)
             FCOIS.preventerVars.isInventoryListUpdating = false
-            --updateFilteredItemCount = true -- TODO: Enable once alchemy filters are added!
+            updateFilteredItemCount = true -- TODO FEATURE: LF_ALCHEMY_CREATION Enable once alchemy filters are added! #290
 
             --Enchanting?
         elseif (not isUniversalDeconNPC and locCraftType == CRAFTING_TYPE_ENCHANTING) or (isUniversalDeconNPC and filterType == LF_ENCHANTING_EXTRACTION) then
