@@ -3467,7 +3467,7 @@ local function contextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
             end --for _,v in pairs(PLAYER_INV...
 
             --Were any items maoved to/from junk?
-d("[FCOS]wasAddedToJunk: " ..tos(wasAddedToJunk) .. ", wasRemovedFromJunk: " ..tos(wasRemovedFromJunk))
+--d("[FCOS]wasAddedToJunk: " ..tos(wasAddedToJunk) .. ", wasRemovedFromJunk: " ..tos(wasRemovedFromJunk))
             if wasAddedToJunk == true and wasRemovedFromJunk == true then
                 processJunkQueue("both")
             else

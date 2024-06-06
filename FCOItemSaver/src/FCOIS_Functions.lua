@@ -181,7 +181,7 @@ local function processPackages(itemsToProcessTab, maxEntriesPerPackage, maxPacka
     local packagesCount = zo_clamp(packagesEstimated, zo_ceil(packagesEstimated), maxPackages)
     packagesCount = packagesCount or 1
 
-d("[FCOSI]processPackages - #itemsToProcessTab: " ..tos(itemsToProcessTab) .. ", entriesPerPack: " ..tos(maxEntriesPerPackage) ..", maxPacks: " ..tos(maxPackages) .. ", packagesEstimated: " ..tos(packagesEstimated) ..", packagesCount: " ..tos(packagesCount) ..", delay: " ..tos(delay))
+--d("[FCOSI]processPackages - #itemsToProcessTab: " ..tos(itemsToProcessTab) .. ", entriesPerPack: " ..tos(maxEntriesPerPackage) ..", maxPacks: " ..tos(maxPackages) .. ", packagesEstimated: " ..tos(packagesEstimated) ..", packagesCount: " ..tos(packagesCount) ..", delay: " ..tos(delay))
 
     for packageCounter=1, packagesCount, 1 do
         local packageData = {}
@@ -197,38 +197,38 @@ d("[FCOSI]processPackages - #itemsToProcessTab: " ..tos(itemsToProcessTab) .. ",
         if endPos > itemCount then endPos = itemCount end
         if endPos < startPos then endPos = startPos end
 
-d(">>startPos: " ..tos(startPos) .. ", endPos: " ..tos(endPos))
+--d(">>startPos: " ..tos(startPos) .. ", endPos: " ..tos(endPos))
 
         for itemDataIndex=startPos, endPos, 1 do
             itemsToProcessTab[itemDataIndex].indexInOrigTable = itemDataIndex
             tins(packageData, itemsToProcessTab[itemDataIndex])
         end
         if #packageData > 0 then
-d(">>>inserted package with #entries: " ..tos(#packageData))
+--d(">>>inserted package with #entries: " ..tos(#packageData))
             tins(packagesToProcess, packageData)
         end
     end
 
     local packagesCountToProcess = #packagesToProcess
     if packagesCountToProcess > 0 then
-d(">packagesToProcess: " ..tos(packagesCountToProcess))
+--d(">packagesToProcess: " ..tos(packagesCountToProcess))
         --for each package use zo_callLater with a new delay of 250ms (increase at each package!) and junk mark the items
         local totalDelay = 0
         for packageIndex, packageData in ipairs(packagesToProcess) do
-d(">Package #: " ..tos(packageIndex) .. ", delay: " ..tos(totalDelay))
+--d(">Package #: " ..tos(packageIndex) .. ", delay: " ..tos(totalDelay))
             zocl(function()
-d("!!!!>>Delayed package call! #" ..tos(packageIndex))
+--d("!!!!>>Delayed package call! #" ..tos(packageIndex))
                 for _, data in ipairs(packageData) do
                     local processNow = true
                     if preCheckFunc ~= nil then
                         processNow = preCheckFunc(data)
-d("!processNow: " ..tos(processNow))
+--d("!processNow: " ..tos(processNow))
                     end
                     if processNow == true then
                         local l_retVar = callbackFunc(data)
                         retCount = retCount + 1
                         if l_retVar == true then retVar = true end
-d("!l_retVar: " ..tos(l_retVar) .. "; retVar: " .. tos(retVar) ..", retCount: " ..tos(retCount))
+--d("!l_retVar: " ..tos(l_retVar) .. "; retVar: " .. tos(retVar) ..", retCount: " ..tos(retCount))
                         if callbackAfterEachEntry ~= nil then
                             callbackAfterEachEntry(data, l_retVar)
                         end
@@ -2232,19 +2232,19 @@ local function canItemBeMarkedAsJunkByPackageData(data, isJunk)
         local bagId, slotIndex = data.bagId, data.slotIndex
         local isCompanionItem = GetItemLinkActorCategory(GetItemLink(bagId, slotIndex)) == GAMEPLAY_ACTOR_CATEGORY_COMPANION
         if isCompanionItem == true then
-d(">isCompanionItem")
+--d(">isCompanionItem")
             goOn = false
 
             --2024-06-06 Add support for FCOCompanion's companion junk?
             if FCOCO then
                 local FCOCOsettings = FCOCO.settingsVars.settings
                 if FCOCOsettings.enableCompanionItemJunk == true or FCOCOsettings.settingsPerToon.enableCompanionItemJunk == true then
-d(">>FCOCO companion junk is enabled!")
+--d(">>FCOCO companion junk is enabled!")
                     goOn = true
                 end
             end
         end
-d(">>goOn? " ..tos(goOn) .. " " ..GetItemLink(bagId, slotIndex))
+--d(">>goOn? " ..tos(goOn) .. " " ..GetItemLink(bagId, slotIndex))
         if goOn == true then
             return CanItemBeMarkedAsJunk(bagId, slotIndex)
         else
@@ -2265,26 +2265,29 @@ local function setItemAsJunkOrRemoveFromJunkByPackageData(data, isJunk)
     return setItemIsJunkNow(data.bagId, data.slotIndex, isJunk)
 end
 
+--Calling this function will remove table indices and thus make indices of 2nd package not work anymore!
+--[[
 local function junkQueueCallbackAfterEachEntry(data, wasSuccessfull, isJunk)
-d("[FCOIS]CallbackAfterEachEntry - wasSuccessfull: " ..tos(wasSuccessfull) .. ", isJunk: " ..tos(isJunk))
+--d("[FCOIS]CallbackAfterEachEntry - wasSuccessfull: " ..tos(wasSuccessfull) .. ", isJunk: " ..tos(isJunk))
     if wasSuccessfull == true then
         if isJunk == true then
             local posOfData = data.indexInOrigTable or ZO_IndexOfElementInNumericallyIndexedTable(moveToJunkQueue, data)
-d(">posOfData: " ..tos(posOfData))
+--d(">posOfData: " ..tos(posOfData))
             if posOfData ~= nil and moveToJunkQueue[posOfData] ~= nil then
-                --table.remove(moveToJunkQueue, posOfData)
-d("<removed from moveToJunkQueue")
+                table.remove(moveToJunkQueue, posOfData)
+--d("<removed from moveToJunkQueue")
             end
         else
             local posOfData = data.indexInOrigTable or ZO_IndexOfElementInNumericallyIndexedTable(moveFromJunkQueue, data)
-d("<posOfData: " ..tos(posOfData))
+--d("<posOfData: " ..tos(posOfData))
             if posOfData ~= nil and moveFromJunkQueue[posOfData] ~= nil then
-                --table.remove(moveFromJunkQueue, posOfData)
-d("<removed from moveFromJunkQueue")
+                table.remove(moveFromJunkQueue, posOfData)
+--d("<removed from moveFromJunkQueue")
             end
         end
     end
 end
+]]
 
 
 local function prcocessJunkQueueItems(queueTab, startIndex, callbackFunc, callbackAfterEachEntry, delay, isJunk)
@@ -2292,11 +2295,11 @@ local function prcocessJunkQueueItems(queueTab, startIndex, callbackFunc, callba
     startIndex = startIndex or 1
     delay = delay or delayToMarkAsJunkInBetweenPackages
 
-    d("[FCOIS]prcocessJunkQueueItems - queueTab: " ..tos(queueTab) .. ", startIndex: " ..tos(startIndex) .. ", isJunk: " ..tos(isJunk))
+--d("[FCOIS]prcocessJunkQueueItems - queueTab: " ..tos(queueTab) .. ", startIndex: " ..tos(startIndex) .. ", isJunk: " ..tos(isJunk))
 
 
     local function finalCallbackFunc(l_retVar, l_retCount, l_isJunk)
-d("[FCOIS]finalCallbackFunc - l_retVar: " ..tos(l_retVar) .. ", l_retCount: " .. tos(l_retCount))
+--d("[FCOIS]finalCallbackFunc - l_retVar: " ..tos(l_retVar) .. ", l_retCount: " .. tos(l_retCount))
         if l_retVar == true then
             local locVarJunkedItemCount = ""
             if l_isJunk == true then
@@ -2306,20 +2309,20 @@ d("[FCOIS]finalCallbackFunc - l_retVar: " ..tos(l_retVar) .. ", l_retCount: " ..
             end
             d(strformat(preChatTextGreen .. locVarJunkedItemCount, tos(l_retCount)))
         end
-d("<CLEARING TABLES!")
+--d("<CLEARING TABLES!")
         if l_isJunk == true then
             moveToJunkQueueActive = false
-            --moveToJunkQueue = {}
+            moveToJunkQueue = {}
         else
             moveFromJunkQueueActive = false
-            --moveFromJunkQueue = {}
+            moveFromJunkQueue = {}
         end
     end
 
     local packagesCountToProcess = processPackages(queueTab, itemsToMarkAsJunkMaxPerPackage, packagesToMarkAsJunkMax,
             function(data) return canItemBeMarkedAsJunkByPackageData(data, isJunk) end,
             function(data) return callbackFunc(data, isJunk) end,
-            function(data, wasSuccessfull) return callbackAfterEachEntry(data, wasSuccessfull, isJunk) end,
+            (callbackAfterEachEntry ~= nil and function(data, wasSuccessfull) return callbackAfterEachEntry(data, wasSuccessfull, isJunk) end) or nil,
             delay,
             function(retVar, count) finalCallbackFunc(retVar, count, isJunk) end
     ) --max 50 packages à 10 items = 500 items (guild bank size)
@@ -2331,7 +2334,7 @@ function FCOIS.ProcessJunkQueue(isJunk, delay, skipOutput)
     if skipOutput == nil then skipOutput = false end
     processJunkQueue = processJunkQueue or FCOIS.ProcessJunkQueue
 
-d("[FCOIS]ProcessJunkQueue - isJunk: " ..tos(isJunk) .. ", delay: " ..tos(delay) .. ", skipOutput: " ..tos(skipOutput))
+--d("[FCOIS]ProcessJunkQueue - isJunk: " ..tos(isJunk) .. ", delay: " ..tos(delay) .. ", skipOutput: " ..tos(skipOutput))
 
     if not skipOutput and outputJunkQueueActiveInfo(isJunk) then
         return
@@ -2346,9 +2349,9 @@ d("[FCOIS]ProcessJunkQueue - isJunk: " ..tos(isJunk) .. ", delay: " ..tos(delay)
     else
         --Only 1 queue
         if isJunk == true then
-            prcocessJunkQueueItems(moveToJunkQueue, 1, setItemAsJunkOrRemoveFromJunkByPackageData, junkQueueCallbackAfterEachEntry, delay, true)
+            prcocessJunkQueueItems(moveToJunkQueue, 1, setItemAsJunkOrRemoveFromJunkByPackageData, nil, delay, true)
         else
-            prcocessJunkQueueItems(moveFromJunkQueue, 1, setItemAsJunkOrRemoveFromJunkByPackageData, junkQueueCallbackAfterEachEntry, delay, false)
+            prcocessJunkQueueItems(moveFromJunkQueue, 1, setItemAsJunkOrRemoveFromJunkByPackageData, nil, delay, false)
         end
     end
 end
@@ -2357,15 +2360,15 @@ processJunkQueue = FCOIS.ProcessJunkQueue
 local function nonDuplicateAddToQueue(bagId, slotIndex, isJunk)
     local entryToAdd = { bagId = bagId, slotIndex = slotIndex }
     local tableToAdd = (isJunk == true and moveToJunkQueue) or moveFromJunkQueue
-d("[FCOIS]nonDuplicateAddToQueue - isJunk: " ..tos(isJunk) .. " " .. GetItemLink(bagId, slotIndex))
+--d("[FCOIS]nonDuplicateAddToQueue - isJunk: " ..tos(isJunk) .. " " .. GetItemLink(bagId, slotIndex))
 
     --Add to junk/unjunk queue, if not already in there
     if ZO_IsElementInNumericallyIndexedTable(tableToAdd, entryToAdd) then
-d("<already in table!")
+--d("<already in table!")
         return false
     end
     tins(tableToAdd, entryToAdd)
-d(">Added to table")
+--d(">Added to table")
     return true
 end
 
@@ -3324,7 +3327,7 @@ function FCOIS.JunkMarkedItems(markerIconsMarkedOnItems, bagId)
 
     local isJunk = true --moving to junk here
     local itemCountToJunk = #itemsToMarkAsJunk
-d("[FCOIS]JunkMarkedItems - itemCountToJunk: " ..tos(itemCountToJunk))
+--d("[FCOIS]JunkMarkedItems - itemCountToJunk: " ..tos(itemCountToJunk))
     if itemCountToJunk > 0 then
         --#203 & #291 Fix kicked from server because of too many items added/removed from junk!
         local function finalCallbackFunc(l_retVar, l_retCount)
@@ -3332,6 +3335,7 @@ d("[FCOIS]JunkMarkedItems - itemCountToJunk: " ..tos(itemCountToJunk))
                 local locVarJunkedItemCount = FCOIS.GetLocText("fcois_junked_item_count", false)
                 d(strformat(preChatTextGreen .. locVarJunkedItemCount, tos(l_retCount)))
             end
+             moveToJunkQueue = {}
         end
         local packagesCountToProcess = processPackages(itemsToMarkAsJunk, itemsToMarkAsJunkMaxPerPackage, packagesToMarkAsJunkMax,
                 function(data) return canItemBeMarkedAsJunkByPackageData(data, isJunk) end,
