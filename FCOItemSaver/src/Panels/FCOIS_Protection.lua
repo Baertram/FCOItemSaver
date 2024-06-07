@@ -504,7 +504,7 @@ end
 function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId, panelIdParent)
     if bag == nil or slot == nil then return true end
     local doDebug = false
-    --TODO: enable to show d messages for debugging
+    --TODO DEBUG: enable to show d messages for debugging
     --[[
     if GetDisplayName() == "@Baertram" and bag == 5 and slot == 883 then --bug #272 20231205 -> Alchemy station, dynamic icon not protected
         FCOIS.preventerVars.doDebugItemSelectionHandler = true
@@ -834,7 +834,7 @@ function FCOIS.DeconstructionSelectionHandler(bag, slot, echo, overrideChatOutpu
     overrideAlert = overrideAlert or false
     suppressAlert = suppressAlert or false
 
-    local doDebug = false --TODO: enable to show d messages for debugging
+    local doDebug = false --TODO DEBUG: enable to show d messages for debugging
     if FCOIS.preventerVars.doDebugDeconstructionSelectionHandler then
         doDebug = true
         FCOIS.preventerVars.doDebugDeconstructionSelectionHandler = false

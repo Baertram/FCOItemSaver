@@ -8,6 +8,7 @@ local libFilters = FCOIS.libFilters
 if not FCOIS.libsLoadedProperly then return end
 
 local debugMessage = FCOIS.debugMessage
+local preChatTextGreen = FCOIS.preChatVars.preChatTextGreen
 
 --local lua
 local tos = tostring
@@ -28,6 +29,7 @@ local zostrspl = zo_strsplit
 local zocstrfor = ZO_CachedStrFormat
 local hashstr = HashString
 local zogsid64 = zo_getSafeId64Key
+local zocl = zo_callLater
 
 local giid = GetItemId
 local giiid = GetItemInstanceId
@@ -81,6 +83,14 @@ local checkVars = FCOIS.checkVars
 local allowedSetItemTypes = checkVars.setItemTypes
 
 local uniqueItemIdStringTemplate = "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s" -- itemInstanceOrItemId,level,quality,trait,style,enchantment,isStolen,isCrafted,craftedByName,isCrownItem
+--Junk marking/removing from junk
+local itemsToMarkAsJunkMaxPerPackage = 10 --#291
+local packagesToMarkAsJunkMax = 50 --#291
+local delayToMarkAsJunkInBetweenPackages = 250 --#291
+
+
+
+
 local allowedUniqueItemTypes = checkVars.uniqueIdItemTypes
 
 local inventoryRowPatterns = checkVars.inventoryRowPatterns
@@ -102,6 +112,7 @@ local isMarked
 local isMarkedByItemInstanceId
 local checkIfUniversalDeconstructionNPC
 local isCompanionInventoryShown
+local FCOISMarkItem
 
 --==========================================================================================================================================
 --                                          FCOIS - Base & helper functions
@@ -148,6 +159,93 @@ function FCOIS.OnlyCallOnceInTime(callbackName, timeToBlock, callback, ...)
     callback(unpack(args))
 end
 
+local function processPackages(itemsToProcessTab, maxEntriesPerPackage, maxPackages, preCheckFunc, callbackFunc, callbackAfterEachEntry, delay, finalCallbackFunc)
+    if itemsToProcessTab == nil or maxEntriesPerPackage == nil or type(callbackFunc) ~= "function" then return end
+    if type(finalCallbackFunc) ~= "function" then finalCallbackFunc = nil end
+    if type(preCheckFunc) ~= "function" then preCheckFunc = nil end
+    if type(callbackAfterEachEntry) ~= "function" then callbackAfterEachEntry = nil end
+    delay = delay or 250
+
+
+    local retVar = false
+    local retCount = 0
+    local itemCount = #itemsToProcessTab
+    maxPackages = maxPackages or 999
+    if itemCount <= maxEntriesPerPackage then maxPackages = 1 end
+
+
+    local packagesToProcess = {}
+
+    local packagesEstimated = itemCount / maxEntriesPerPackage
+    --ceil 7,5 to 8 e.g., and then use that as min package count but cut off at maxPackageCount
+    local packagesCount = zo_clamp(packagesEstimated, zo_ceil(packagesEstimated), maxPackages)
+    packagesCount = packagesCount or 1
+
+--d("[FCOSI]processPackages - #itemsToProcessTab: " ..tos(itemsToProcessTab) .. ", entriesPerPack: " ..tos(maxEntriesPerPackage) ..", maxPacks: " ..tos(maxPackages) .. ", packagesEstimated: " ..tos(packagesEstimated) ..", packagesCount: " ..tos(packagesCount) ..", delay: " ..tos(delay))
+
+    for packageCounter=1, packagesCount, 1 do
+        local packageData = {}
+        --StartPos = packageCounter * 25 items (or at item 1 if packageCounter is 1)
+        local startPos
+        if packageCounter == 1 then
+            startPos = 1
+        else
+            startPos = ((packageCounter - 1) * maxEntriesPerPackage) + 1 -- As of 2nd package: Start at maxEntriesPerPackage + 1 (e.g. 10 + 1)
+        end
+        local endPos = startPos + (maxEntriesPerPackage - 1) --EndPos = StartItem (e.g. 1, or 11, or 21) + 9 items (in total 10 items each package).
+        if startPos > itemCount then startPos = itemCount end
+        if endPos > itemCount then endPos = itemCount end
+        if endPos < startPos then endPos = startPos end
+
+--d(">>startPos: " ..tos(startPos) .. ", endPos: " ..tos(endPos))
+
+        for itemDataIndex=startPos, endPos, 1 do
+            itemsToProcessTab[itemDataIndex].indexInOrigTable = itemDataIndex
+            tins(packageData, itemsToProcessTab[itemDataIndex])
+        end
+        if #packageData > 0 then
+--d(">>>inserted package with #entries: " ..tos(#packageData))
+            tins(packagesToProcess, packageData)
+        end
+    end
+
+    local packagesCountToProcess = #packagesToProcess
+    if packagesCountToProcess > 0 then
+--d(">packagesToProcess: " ..tos(packagesCountToProcess))
+        --for each package use zo_callLater with a new delay of 250ms (increase at each package!) and junk mark the items
+        local totalDelay = 0
+        for packageIndex, packageData in ipairs(packagesToProcess) do
+--d(">Package #: " ..tos(packageIndex) .. ", delay: " ..tos(totalDelay))
+            zocl(function()
+--d("!!!!>>Delayed package call! #" ..tos(packageIndex))
+                for _, data in ipairs(packageData) do
+                    local processNow = true
+                    if preCheckFunc ~= nil then
+                        processNow = preCheckFunc(data)
+--d("!processNow: " ..tos(processNow))
+                    end
+                    if processNow == true then
+                        local l_retVar = callbackFunc(data)
+                        retCount = retCount + 1
+                        if l_retVar == true then retVar = true end
+--d("!l_retVar: " ..tos(l_retVar) .. "; retVar: " .. tos(retVar) ..", retCount: " ..tos(retCount))
+                        if callbackAfterEachEntry ~= nil then
+                            callbackAfterEachEntry(data, l_retVar)
+                        end
+                    end
+                end
+                --At last package delayed call: Do something?
+                if packageIndex == packagesCountToProcess and finalCallbackFunc ~= nil then
+                    finalCallbackFunc(retVar, retCount)
+                end
+            end, totalDelay)
+            totalDelay = totalDelay + delay --increase delay by e.g. 250 milliseconds (default value) for each package
+        end
+    end
+    return packagesCountToProcess
+end
+FCOIS.ProcessPackages = processPackages
+
 function FCOIS.ResetMyGetItemInstanceIdLastVars()
     FCOIS.MyGetItemInstanceIdLast = {
         BagId = nil,
@@ -193,10 +291,10 @@ function FCOIS.GetNumberOfFilteredItemsForEachPanel()
     FCOIS.numberOfFilteredItems[LF_GUILDSTORE_SELL]        = numFilterdItemsInv
     FCOIS.numberOfFilteredItems[LF_BANK_DEPOSIT]           = numFilterdItemsInv
     FCOIS.numberOfFilteredItems[LF_GUILDBANK_DEPOSIT]      = numFilterdItemsInv
-    FCOIS.numberOfFilteredItems[LF_VENDOR_BUY]             = 0 -- TODO: Add as filter panel gets supported
+    FCOIS.numberOfFilteredItems[LF_VENDOR_BUY]             = 0                      -- TODO FEATURE: Add as filter panel gets supported
     FCOIS.numberOfFilteredItems[LF_VENDOR_SELL]            = numFilterdItemsInv
-    FCOIS.numberOfFilteredItems[LF_VENDOR_BUYBACK]         = 0 -- TODO: Add as filter panel gets supported
-    FCOIS.numberOfFilteredItems[LF_VENDOR_REPAIR]          = 0 -- TODO: Add as filter panel gets supported
+    FCOIS.numberOfFilteredItems[LF_VENDOR_BUYBACK]         = 0                      -- TODO FEATURE: Add as filter panel gets supported
+    FCOIS.numberOfFilteredItems[LF_VENDOR_REPAIR]          = 0                      -- TODO FEATURE: Add as filter panel gets supported
     FCOIS.numberOfFilteredItems[LF_FENCE_SELL]             = numFilterdItemsInv
     FCOIS.numberOfFilteredItems[LF_FENCE_LAUNDER]          = numFilterdItemsInv
     --Others
@@ -658,8 +756,8 @@ end
 -->Depending on the chosen uniqeId "parts" settings and the itemType of the item!
 --Parameters bagId and slotIndex or itemLink must be given!
 --If only the parameter itemLink is given the parameter unsignedItemInstanceId must be given as well, as there is no GetItemLinkIteminstaceId function :-(
--->TODO: Maybe, if only itemLink is given, use the itemId here instead of the ItemInstanceId then, as some addons like IventoryInsight from ashes do not provide bagId and slotIndex at all!
--->Yes, changed to that way, also because the itemInstanceId always differs level/quality/enchantment etc. already and if we want to manually specify which parts the FCOIS uniqueId needs, we need to use the itemId as base!
+--->If only itemLink is given, use the itemId here instead of the ItemInstanceId then, as some addons like IventoryInsight from ashes do not provide bagId and slotIndex at all!
+--->Yes, changed to that way, also because the itemInstanceId always differs level/quality/enchantment etc. already and if we want to manually specify which parts the FCOIS uniqueId needs, we need to use the itemId as base!
 --If bagId and slotIndex are given unsignedItemInstanceId can be nil (will be rebuild internally then).
 --If allowedItemType (boolean) is not given then the itemType will be rebuild from the bagId & slotIndex, or the itemlink, and the value will be checked against FCOIS.checkVars.uniqueIdItemTypes[itemType] afterwards.
 function FCOIS.CreateFCOISUniqueIdString(itemId, bagId, slotIndex, itemLink)
@@ -683,9 +781,9 @@ function FCOIS.CreateFCOISUniqueIdString(itemId, bagId, slotIndex, itemLink)
             itemId = giid(bagId, slotIndex)
         else
             --No bag or slot? Use the itemId of the itemLink -> e.g. Addon Inventory Insight From Ashes
-            -->TODO: This might become buggy if one extracts the first value of the returned String (the itemId in this case) and tries to get entries in the SavedVariables
-            -->TODO: of "markedItems" using only this itemId, instead of the "signed" ItemInstanceId. One would need to check the inventory item's signed itemId and if it
-            -->TODO: matches get bagId and slotIndex of that item to do further checks
+            -->TODO BUG OR WORKING?: This might become buggy if one extracts the first value of the returned String (the itemId in this case) and tries to get entries in the SavedVariables
+            -->TODO BUG OR WORKING?: of "markedItems" using only this itemId, instead of the "signed" ItemInstanceId. One would need to check the inventory item's signed itemId and only if it
+            -->TODO BUG OR WORKING?: matches get bagId and slotIndex of that item to do further checks
             itemId = giliid(itemLink)
         end
     end
@@ -1321,8 +1419,7 @@ function FCOIS.IsRecipeKnown(bagId, slotIndex, expectedResult)
                         --Only check if recipe is known for the currently logged in unique character ID?
                         currentCharacterName = currentCharId
                     else
-                        --Check if recipe is known for any of your characters, not only the main provisioner char from SousChef settings ?!
-                        --TODO
+                        ---TODO FEATURE Check if recipe is known for any of your characters, not only the main provisioner char from SousChef settings ?!
 
                         --Check if recipe is known for your main provisioning character
                         local recipeMainChar = sousChefSettings.mainChar
@@ -2044,26 +2141,241 @@ end
 -- Set functions
 --======================================================================================================================
 --Set an item as junk + remove all marker icons on it / remove item from junk -> via additional inventory "flag" context menu
-function FCOIS.SetItemIsJunk(bagId, slotIndex, isJunk)
-    if bagId == nil or slotIndex == nil then return false end
-    isJunk = isJunk or false
+--#291 Mass moving to junk/unmoving from junk will get you server kicked for message spam
+local moveToJunkQueue = {}
+local moveFromJunkQueue = {}
+local moveToJunkQueueActive = false
+local moveFromJunkQueueActive = false
+--For debugging
+FCOIS.JunkQueue = {
+    _moveToJunkQueue = moveToJunkQueue,
+    _moveFromJunkQueue = moveFromJunkQueue,
+    moveToJunkQueueActive = moveToJunkQueueActive,
+    moveFromJunkQueueActive = moveFromJunkQueueActive,
+}
+
+function FCOIS.SetItemIsJunkNow(bagId, slotIndex, isJunk)
+    if bagId == nil or slotIndex == nil or isJunk == nil then return false end
     --Mark as junk?
-    if isJunk == true then
-        --Are there any marker icons on the item?
-        isMarked = isMarked or FCOIS.IsMarked
-        local anyMarkerIconSetOnItemToJunk, markerIconsOnItemToJunk = isMarked(bagId, slotIndex, -1)
-        if anyMarkerIconSetOnItemToJunk then
-            --Check if item can be junked
-            --Remove all marker icons
-            for iconIdWhichWasSetBeforeAlready, isIconMarked in pairs(markerIconsOnItemToJunk) do
-                if isIconMarked then
-                    FCOIS.MarkItem(bagId, slotIndex, iconIdWhichWasSetBeforeAlready, false, false) -- No inventory update needed as the item will be moved to the junk tab now!
+    if not isJunk or (isJunk and not IsItemJunk(bagId, slotIndex)) then
+        SetItemIsJunk(bagId, slotIndex, isJunk)
+        if isJunk == true then
+            --Are there any marker icons on the item? Remove them if moved to junk
+            isMarked = isMarked or FCOIS.IsMarked
+            FCOISMarkItem = FCOISMarkItem or FCOIS.MarkItem
+
+            local anyMarkerIconSetOnItemToJunk, markerIconsOnItemToJunk = isMarked(bagId, slotIndex, -1)
+            if anyMarkerIconSetOnItemToJunk == true then
+                --Remove all marker icons, except "Sell"
+                for iconIdWhichWasSetBeforeAlready, isIconMarked in pairs(markerIconsOnItemToJunk) do
+                    if iconIdWhichWasSetBeforeAlready ~= FCOIS_CON_ICON_SELL and isIconMarked == true then
+                        FCOISMarkItem(bagId, slotIndex, iconIdWhichWasSetBeforeAlready, false, false) -- No inventory update needed as the item will be moved to the junk tab now!
+                    end
                 end
             end
         end
     end
-    SetItemIsJunk(bagId, slotIndex, isJunk)
+    return true
 end
+local setItemIsJunkNow = FCOIS.SetItemIsJunkNow
+
+local function isAnyJunkQueueActive()
+    return moveToJunkQueueActive or moveFromJunkQueueActive
+end
+
+local function outputJunkQueueActiveInfo(isJunk)
+    if isJunk == "both" then
+        if isAnyJunkQueueActive() then
+            local itemsLeftToJunk = #moveToJunkQueue
+            local itemsLeftFromJunk = #moveFromJunkQueue
+            local itemsLeftToProcess = (itemsLeftToJunk + itemsLeftFromJunk) or 0
+            if itemsLeftToProcess > 0 then
+                df("[FCOIS]The \"Move to\" or \"Move from\" Junk features are currently active - Items left: %q - Please try again later", tos(itemsLeftToProcess))
+                return true
+            else
+                moveToJunkQueueActive = false
+                moveFromJunkQueueActive = false
+            end
+        end
+    else
+        if isJunk == true then
+            if moveToJunkQueueActive then
+                local itemsLeftToJunk = #moveToJunkQueue
+                if itemsLeftToJunk > 0 then
+                    df("[FCOIS]The \"Move to\" Junk features are currently active - Items left: %q - Please try again later", tos(itemsLeftToJunk))
+                    return true
+                end
+            end
+        else
+            if moveFromJunkQueueActive then
+                local itemsLeftFromJunk = #moveFromJunkQueue
+                if itemsLeftFromJunk > 0 then
+                    df("[FCOIS]The \"Move from\" Junk features are currently active - Items left: %q - Please try again later", tos(itemsLeftFromJunk))
+                    return true
+                end
+            end
+        end
+    end
+    return false
+end
+
+local function canItemBeMarkedAsJunkByPackageData(data, isJunk)
+    if isJunk == true then
+        local goOn = true
+        local bagId, slotIndex = data.bagId, data.slotIndex
+        local isCompanionItem = GetItemLinkActorCategory(GetItemLink(bagId, slotIndex)) == GAMEPLAY_ACTOR_CATEGORY_COMPANION
+        if isCompanionItem == true then
+--d(">isCompanionItem")
+            goOn = false
+
+            --2024-06-06 Add support for FCOCompanion's companion junk?
+            if FCOCO then
+                local FCOCOsettings = FCOCO.settingsVars.settings
+                if FCOCOsettings.enableCompanionItemJunk == true or FCOCOsettings.settingsPerToon.enableCompanionItemJunk == true then
+--d(">>FCOCO companion junk is enabled!")
+                    goOn = true
+                end
+            end
+        end
+--d(">>goOn? " ..tos(goOn) .. " " ..GetItemLink(bagId, slotIndex))
+        if goOn == true then
+            return CanItemBeMarkedAsJunk(bagId, slotIndex)
+        else
+            return false
+        end
+    else
+        return true
+    end
+end
+
+--Called from FCOIS.ProcessJunkQueue -> processJunkQueueItems
+local function setItemAsJunkOrRemoveFromJunkByPackageData(data, isJunk)
+    if isJunk == true then
+        moveToJunkQueueActive = true
+    else
+        moveFromJunkQueueActive = true
+    end
+    return setItemIsJunkNow(data.bagId, data.slotIndex, isJunk)
+end
+
+--Calling this function will remove table indices and thus make indices of 2nd package not work anymore!
+--[[
+local function junkQueueCallbackAfterEachEntry(data, wasSuccessfull, isJunk)
+--d("[FCOIS]CallbackAfterEachEntry - wasSuccessfull: " ..tos(wasSuccessfull) .. ", isJunk: " ..tos(isJunk))
+    if wasSuccessfull == true then
+        if isJunk == true then
+            local posOfData = data.indexInOrigTable or ZO_IndexOfElementInNumericallyIndexedTable(moveToJunkQueue, data)
+--d(">posOfData: " ..tos(posOfData))
+            if posOfData ~= nil and moveToJunkQueue[posOfData] ~= nil then
+                table.remove(moveToJunkQueue, posOfData)
+--d("<removed from moveToJunkQueue")
+            end
+        else
+            local posOfData = data.indexInOrigTable or ZO_IndexOfElementInNumericallyIndexedTable(moveFromJunkQueue, data)
+--d("<posOfData: " ..tos(posOfData))
+            if posOfData ~= nil and moveFromJunkQueue[posOfData] ~= nil then
+                table.remove(moveFromJunkQueue, posOfData)
+--d("<removed from moveFromJunkQueue")
+            end
+        end
+    end
+end
+]]
+
+
+local function prcocessJunkQueueItems(queueTab, startIndex, callbackFunc, callbackAfterEachEntry, delay, isJunk)
+    if queueTab == nil or type(callbackFunc) ~= "function" or type(isJunk) ~= "boolean" then return end
+    startIndex = startIndex or 1
+    delay = delay or delayToMarkAsJunkInBetweenPackages
+
+--d("[FCOIS]prcocessJunkQueueItems - queueTab: " ..tos(queueTab) .. ", startIndex: " ..tos(startIndex) .. ", isJunk: " ..tos(isJunk))
+
+
+    local function finalCallbackFunc(l_retVar, l_retCount, l_isJunk)
+--d("[FCOIS]finalCallbackFunc - l_retVar: " ..tos(l_retVar) .. ", l_retCount: " .. tos(l_retCount))
+        if l_retVar == true then
+            local locVarJunkedItemCount = ""
+            if l_isJunk == true then
+                locVarJunkedItemCount = FCOIS.GetLocText("fcois_junked_item_count", false)
+            else
+                locVarJunkedItemCount = FCOIS.GetLocText("fcois_unjunked_item_count", false)
+            end
+            d(strformat(preChatTextGreen .. locVarJunkedItemCount, tos(l_retCount)))
+        end
+--d("<CLEARING TABLES!")
+        if l_isJunk == true then
+            moveToJunkQueueActive = false
+            moveToJunkQueue = {}
+        else
+            moveFromJunkQueueActive = false
+            moveFromJunkQueue = {}
+        end
+    end
+
+    local packagesCountToProcess = processPackages(queueTab, itemsToMarkAsJunkMaxPerPackage, packagesToMarkAsJunkMax,
+            function(data) return canItemBeMarkedAsJunkByPackageData(data, isJunk) end,
+            function(data) return callbackFunc(data, isJunk) end,
+            (callbackAfterEachEntry ~= nil and function(data, wasSuccessfull) return callbackAfterEachEntry(data, wasSuccessfull, isJunk) end) or nil,
+            delay,
+            function(retVar, count) finalCallbackFunc(retVar, count, isJunk) end
+    ) --max 50 packages à 10 items = 500 items (guild bank size)
+end
+
+local processJunkQueue
+function FCOIS.ProcessJunkQueue(isJunk, delay, skipOutput)
+    if isJunk == nil then return end
+    if skipOutput == nil then skipOutput = false end
+    processJunkQueue = processJunkQueue or FCOIS.ProcessJunkQueue
+
+--d("[FCOIS]ProcessJunkQueue - isJunk: " ..tos(isJunk) .. ", delay: " ..tos(delay) .. ", skipOutput: " ..tos(skipOutput))
+
+    if not skipOutput and outputJunkQueueActiveInfo(isJunk) then
+        return
+    end
+    delay = delay or delayToMarkAsJunkInBetweenPackages
+
+    if isJunk == "both" then
+        --Both queues -- First move to Junk, then back
+        processJunkQueue(true, delay, true)
+        processJunkQueue(false, delay, true)
+
+    else
+        --Only 1 queue
+        if isJunk == true then
+            prcocessJunkQueueItems(moveToJunkQueue, 1, setItemAsJunkOrRemoveFromJunkByPackageData, nil, delay, true)
+        else
+            prcocessJunkQueueItems(moveFromJunkQueue, 1, setItemAsJunkOrRemoveFromJunkByPackageData, nil, delay, false)
+        end
+    end
+end
+processJunkQueue = FCOIS.ProcessJunkQueue
+
+local function nonDuplicateAddToQueue(bagId, slotIndex, isJunk)
+    local entryToAdd = { bagId = bagId, slotIndex = slotIndex }
+    local tableToAdd = (isJunk == true and moveToJunkQueue) or moveFromJunkQueue
+--d("[FCOIS]nonDuplicateAddToQueue - isJunk: " ..tos(isJunk) .. " " .. GetItemLink(bagId, slotIndex))
+
+    --Add to junk/unjunk queue, if not already in there
+    if ZO_IsElementInNumericallyIndexedTable(tableToAdd, entryToAdd) then
+--d("<already in table!")
+        return false
+    end
+    tins(tableToAdd, entryToAdd)
+--d(">Added to table")
+    return true
+end
+
+--#291 Add items to the junk/unjunk queues and then process the queues with a delay of 150ms in between (after each entry)
+-->From FCOIS add. Inv. "flag" context menus
+--> From Keybind it is using FCOIS.JunkMarkedItems(markerIconsMarkedOnItems, bagId) running packages of 25 items each with delay in between
+function FCOIS.SetItemIsJunk(bagId, slotIndex, isJunk)
+    if bagId == nil or slotIndex == nil then return false end
+    isJunk = isJunk or false
+
+    --Also add to the queues while they are currently processed? Yes, should be fine. All that could happen is moving items to junk and removing it from junk again directly
+    return nonDuplicateAddToQueue(bagId, slotIndex, isJunk)
+end
+
 
 --Set the anti-research check for a dynamic icon
 function FCOIS.SetDynamicIconAntiResearchCheck(iconNr, value)
@@ -2347,7 +2659,7 @@ function FCOIS.CheckIfEnchantingInventoryItemShouldBeReMarked_AfterEnchanting()
     end
     if #newMarkerIcons == 0 then return end
     --Re-Mark now and clear enchanted bagId and slotIndex slightly delayed
-    zo_callLater(function()
+    zocl(function()
 --d(">>re-marking now: " ..gil(bagId, slotIndex))
         FCOIS.MarkItem(bagId, slotIndex, newMarkerIcons, true, true)
         FCOIS.enchantingVars.lastMarkerIcons[bagId][slotIndex] = nil
@@ -2999,81 +3311,38 @@ function FCOIS.JunkMarkedItems(markerIconsMarkedOnItems, bagId)
     local itemsToMarkAsJunk = {}
     isMarked = isMarked or FCOIS.IsMarked
     for _, data in pairs(bagCache) do
-        local isMarkedIcon, _ = isMarked(data.bagId, data.slotIndex, markerIconsMarkedOnItems, nil)
-        if isMarkedIcon and not IsItemJunk(data.bagId, data.slotIndex) then
+        local p_bagId, slotIndex = data.bagId, data.slotIndex
+        local isMarkedIcon, _ = isMarked(p_bagId, slotIndex, markerIconsMarkedOnItems, nil)
+        if isMarkedIcon then --and not IsItemJunk(p_bagId, slotIndex) then
             tins(itemsToMarkAsJunk, data)
         end
     end
 
-    local itemsToMarkAsJunkMaxPerPackage = 50
+    local isJunk = true --moving to junk here
     local itemCountToJunk = #itemsToMarkAsJunk
 --d("[FCOIS]JunkMarkedItems - itemCountToJunk: " ..tos(itemCountToJunk))
     if itemCountToJunk > 0 then
-        if itemCountToJunk <= itemsToMarkAsJunkMaxPerPackage then
---d(">junk marking all at once")
-            for _, data in pairs(itemsToMarkAsJunk) do
-                SetItemIsJunk(data.bagId, data.slotIndex, true)
-                junkedItemCount = junkedItemCount + 1
-                retVar = true
-            end
-            if retVar == true then
+        --#203 & #291 Fix kicked from server because of too many items added/removed from junk!
+        local function finalCallbackFunc(l_retVar, l_retCount, l_isJunk)
+            if l_retVar == true then
                 local locVarJunkedItemCount = FCOIS.GetLocText("fcois_junked_item_count", false)
-                d(strformat(FCOIS.preChatVars.preChatTextGreen .. locVarJunkedItemCount, tos(junkedItemCount)))
+                d(strformat(preChatTextGreen .. locVarJunkedItemCount, tos(l_retCount)))
             end
-
-        else
-            --#203 Fix kicked from server because of too many items added/removed from junk!
-            local itemsToMarkAsJunkPackages = {}
-            local packagesCount = zo_ceil(itemCountToJunk / itemsToMarkAsJunkMaxPerPackage) --ceil 7,5 to 8 e.g.
---d(">junk marking with packages #: " ..tos(packagesCount))
-            --Build packages of 25 items and mark them for junk after another, with a delay of 250ms between each package
-            for packageCounter=1, packagesCount, 1 do
-                local packageData = {}
-                --StartPos = packageCounter * 25 items (or at item 1 if packageCounter is 1)
-                local startPos
-                if packageCounter==1 then
-                    startPos = 1
-                else
-                    startPos = (packageCounter - 1) * itemsToMarkAsJunkMaxPerPackage
-                end
-                local endPos = startPos + (itemsToMarkAsJunkMaxPerPackage - 2) --EndPos = StartItem + 48 items (in total 50 items each package).
-                --if > itemCountToJunk then set to that max value
-                if startPos > itemCountToJunk then startPos = itemCountToJunk end
-                if endPos > itemCountToJunk then endPos = itemCountToJunk end
-                if endPos < startPos then endPos = startPos end
-                for itemDataIndex=startPos, endPos, 1 do
-                    tins(packageData, itemsToMarkAsJunk[itemDataIndex])
-                end
-                if #packageData > 0 then
-                    tins(itemsToMarkAsJunkPackages, packageData)
-                end
-            end
---FCOIS._junkItemsToMarkAsJunk =  itemsToMarkAsJunk
---FCOIS._junkPackages =           itemsToMarkAsJunkPackages
-            if #itemsToMarkAsJunkPackages > 0 then
-                --for each package use zo_callLater with a new delay of 250ms (increase at each package!) and junk mark the items
-                local delay = 0
-                for junkPackageIndex, junkPackageData in ipairs(itemsToMarkAsJunkPackages) do
---d(">>Package #: " ..tos(junkPackageIndex) .. ", delay: " ..tos(delay))
-                    zo_callLater(function()
---d("!!!!>>Junk delayed package call! #" ..tos(junkPackageIndex))
-                        for _, data in ipairs(junkPackageData) do
-                            SetItemIsJunk(data.bagId, data.slotIndex, true)
-                            junkedItemCount = junkedItemCount + 1
-                            retVar = true
-                        end
-                        --At least package delayed call
-                        if junkPackageIndex == #itemsToMarkAsJunkPackages then
-                            if retVar == true then
-                                local locVarJunkedItemCount = FCOIS.GetLocText("fcois_junked_item_count", false)
-                                d(strformat(FCOIS.preChatVars.preChatTextGreen .. locVarJunkedItemCount, tos(junkedItemCount)))
-                            end
-                        end
-                    end, delay)
-                    delay = delay + 250 --increase delay by 250 milliseconds
-                end
+--d("<CLEARING TABLES!")
+            if l_isJunk == true then
+                moveToJunkQueueActive = false
+                moveToJunkQueue = {}
+            else
+                moveFromJunkQueueActive = false
+                moveFromJunkQueue = {}
             end
         end
+        local packagesCountToProcess = processPackages(itemsToMarkAsJunk, itemsToMarkAsJunkMaxPerPackage, packagesToMarkAsJunkMax,
+                function(data) return canItemBeMarkedAsJunkByPackageData(data, isJunk) end,
+                function(data) return setItemAsJunkOrRemoveFromJunkByPackageData(data, isJunk) end,
+                nil,
+                delayToMarkAsJunkInBetweenPackages,
+                finalCallbackFunc) --max 50 packages à 10 items = 500 items (guild bank size)
     end
     return retVar
 end

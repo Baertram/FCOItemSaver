@@ -118,6 +118,8 @@ local callItemSelectionHandler
 local callDeconstructionSelectionHandler
 local changeContextMenuEntryTexts
 local isUnboundAndNotStolenItemChecks = FCOIS.IsUnboundAndNotStolenItemChecks
+local processJunkQueue = FCOIS.ProcessJunkQueue
+
 
 ------------------------------------------------------------------------------------------------------------------------
 --Get the context menu invoker button data by help of the panel Id
@@ -869,13 +871,13 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
     local quickSlotsCurrentFilterDescriptor  = quickSlotsCurrentFilter and quickSlotsCurrentFilter.descriptor
     local quickslotCurrentFilterIsNotAllowed = (quickSlotsCurrentFilter ~= nil and (quickSlotsCurrentFilter.extraInfo ~= nil or quickSlotsCurrentFilterDescriptor == 26)) or false
 
-    local questItemsInventoryShown = false --TODO
+    --local questItemsInventoryShown = false --TODO OBSOLETE?: Determine if the quests inventory panel is shown? Is that still needed to set the notAllowed variable below?
 
     notAllowed = (notAllowedCollectible or notAllowedParentCtrls[parentName] or notAllowedCtrls[controlName]
             --Quickslots
             or ( not quickSlotsHidden and quickslotCurrentFilterIsNotAllowed)
             --Inventory quest items
-            or questItemsInventoryShown
+            --or questItemsInventoryShown
     ) or false
     --[[
     if customMenuVars.customMenuCurrentCounter == 1 then
@@ -1330,7 +1332,6 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
                         callback = function() markAllEquipment(rowControl, markId, refreshList, true)
                             clearLastMarkedIcons(fcoisItemInstanceId)
                         end,
-                        myfont = "ZoFontGame",
                         normalColor = normalColorDef,
                         myfont          = myFont,
                         highlightColor  = colDef,
@@ -1364,7 +1365,6 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
                             callback = function() markAllEquipment(rowControl, markId, refreshList, true)
                                 clearLastMarkedIcons(fcoisItemInstanceId)
                             end,
-                            myfont = "ZoFontGame",
                             normalColor = normalColorDef,
                             myfont          = myFont,
                             highlightColor  = colDef,
@@ -1476,7 +1476,6 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
                         callback = function() markMe(rowControl, markId, refreshList, true, refreshPopupDialog)
                             clearLastMarkedIcons(fcoisItemInstanceId)
                         end,
-                        myfont = "ZoFontGame",
                         normalColor = normalColorDef,
                         myfont          = myFont,
                         highlightColor  = colDef,
@@ -1510,7 +1509,6 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
                             callback = function() markMe(rowControl, markId, refreshList, true, refreshPopupDialog)
                                 clearLastMarkedIcons(fcoisItemInstanceId)
                             end,
-                            myfont = "ZoFontGame",
                             normalColor = normalColorDef,
                             myfont          = myFont,
                             highlightColor  = colDef,
@@ -1582,12 +1580,12 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
         --Do not remove this or context menu is not working anymore in ZO_Dialog1 !
 
         --#280 Disabled this ShowMenu(rowControl) (if not the last entry of the menu is called) here so it is only called by LibCustomMenu's hook and only 1 SecurePostHook in LibScrollableMenu is called
-        --todo 20240402 If LibScrollableMenu is enabled and replaces the inventory context menu, each ShowMenu of ZO_Menu will clear
-        --LSM's created menu entries via ClearScrollableMenu() -> And thus only the last entry of FCOIS will be shown.
-        --Is that ShowMenu really needed here for EACH added marker icon, or could we simply call it once at the end?
+        --todo FEATURE 20240402 If LibScrollableMenu is enabled and replaces the inventory context menu, each ShowMenu of ZO_Menu will clear
+        --todo FEATURE   LSM's created menu entries via ClearScrollableMenu() -> And thus only the last entry of FCOIS will be shown.
+        --todo FEATURE   Is that ShowMenu really needed here for EACH added marker icon, or could we simply call it once at the end?
         if isLastEntryAdded == true then
 --d("[FCOIS]AddMark - isLastEntryAdded: True -> ShowMenu now")
-            ShowMenu(rowControl) --todo: Removed 2024-04-02 to test LSM
+            ShowMenu(rowControl)
         end
 
 
@@ -2882,6 +2880,9 @@ local function contextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
     local isMARKALLASJUNKButton	        = (specialButtonType == "JUNK_CHECK_ALL") or false
     local isMARKALLASNOJUNKButton	    = (specialButtonType == "UNJUNK_CHECK_ALL") or false
 
+    local wasAddedToJunk = false
+    local wasRemovedFromJunk = false
+
     local atLeastOneMarkerChanged = false
     --Get the filter panel for the undo stuff
     local filterPanelToSaveUndoTo = getUndoFilterPanel(panelId)
@@ -3391,6 +3392,9 @@ local function contextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
             local undoTableCleared = false
             local undoEntry
 
+            wasAddedToJunk = false
+            wasRemovedFromJunk = false
+
             --Loop over each not-filtered item data in the current inventory
             for _,v in pairs(inventoryData) do
                 --Get the data from current unfiltered inventory item
@@ -3426,7 +3430,8 @@ local function contextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                                 --Check all icon Ids, if item is protected (only if item should be marked as junk! Not neccessary if item should be removed from junk)
                                 if not isProtectedWithIcon then
                                     if settings.debug then debugMessage( "[ContextMenuForAddInvButtonsOnClicked]", "Clicked "..contextmenuType.." context menu button, MARK ALL AS JUNK", true, FCOIS_DEBUG_DEPTH_NORMAL) end
-                                    setItemIsJunk(bagId, slotIndex, true)
+                                    local l_wasAddedToJunk = setItemIsJunk(bagId, slotIndex, true)
+                                    if l_wasAddedToJunk == true then wasAddedToJunk = true end
                                 end
                             --UnMark all junk items
                             elseif isMARKALLASNOJUNKButton then
@@ -3452,7 +3457,8 @@ local function contextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                                 end
                                 if not isProtectedWithIcon then
                                     if settings.debug then debugMessage( "[ContextMenuForAddInvButtonsOnClicked]", "Clicked "..contextmenuType.." context menu button, REMOVE ALL FROM JUNK", true, FCOIS_DEBUG_DEPTH_NORMAL) end
-                                    setItemIsJunk(bagId, slotIndex, false)
+                                    local l_wasRemovedFromJunk = setItemIsJunk(bagId, slotIndex, false)
+                                    if l_wasRemovedFromJunk == true then wasRemovedFromJunk = true end
                                 end
                             end
                         end
@@ -3460,6 +3466,17 @@ local function contextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                 end
             end --for _,v in pairs(PLAYER_INV...
 
+            --Were any items maoved to/from junk?
+--d("[FCOS]wasAddedToJunk: " ..tos(wasAddedToJunk) .. ", wasRemovedFromJunk: " ..tos(wasRemovedFromJunk))
+            if wasAddedToJunk == true and wasRemovedFromJunk == true then
+                processJunkQueue("both")
+            else
+                if wasAddedToJunk == true then
+                    processJunkQueue(true)
+                elseif wasRemovedFromJunk == true then
+                    processJunkQueue(false)
+                end
+            end
         end  -- if isUNDOButton ... elseif ...
     end -- if not isUNDOButton and not isREMOVEALLGEARSButton and not isREMOVEALLButton and not isTOGGLEANTISETTINGSButton then
     --==================================================================================================================
@@ -3972,7 +3989,7 @@ function FCOIS.ShowContextMenuForAddInvButtons(invAddContextMenuInvokerButton, b
                         local doNotShowJunkAdditionalContextMenuEntryFilterTypes = FCOIS.checkVars.doNotShowJunkAdditionalContextMenuEntryFilterTypes
                         local doNotShowJunkAdditionalContextMenuEntryFilterType = doNotShowJunkAdditionalContextMenuEntryFilterTypes[currentInvFilter] or false
                         if not doNotShowJunkAdditionalContextMenuEntryFilterType then
-                            local isJunkTabActive, isJunkTabActiveCheckOne = false
+                            local isJunkTabActive, isJunkTabActiveCheckOne = false, false
                             if activeBagId == BAG_BACKPACK then
                                 isJunkTabActiveCheckOne = HasAnyJunk(activeBagId) or false
                             else
@@ -4223,7 +4240,7 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
 --d(">add to craft")
         --Is item marked with any of the FCOItemSaver icons? Then don't show the actionStringId in the contextmenu
         --bag, slotIndex, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId
-        --FCOIS.preventerVars.doDebugDeconstructionSelectionHandler = true --todo for debugging
+        --FCOIS.preventerVars.doDebugDeconstructionSelectionHandler = true --todo DEBUG uncomment for debugging
         return callDeconstructionSelectionHandler(bag, slotIndex, false, false, false, false, false, false, nil)
 
     --Trade an item, mark item as junk, attach item to mail, sell item, launder item, add to trading house listing (sell there) or add to crafting station
@@ -4231,7 +4248,7 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
 --d(">trade/mail attach/sell/launder/add to listing")
         --Is item marked with any of the FCOItemSaver icons? Then don't show the actionStringId in the contextmenu
         --  bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId, isDragAndDrop, panelIdParent
-        --FCOIS.preventerVars.doDebugItemSelectionHandler = true --todo for debugging
+        --FCOIS.preventerVars.doDebugItemSelectionHandler = true --todo DEBUG uncomment for debugging
         return callItemSelectionHandler(bag, slotIndex, false, false, false, false, false, false, nil, nil, nil)
 
     --Should the "Junk item" context menu entry be hidden if any marker icon is set?

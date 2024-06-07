@@ -63,7 +63,7 @@ local function shouldItemBeShownAfterBeenFiltered(slotItemInstanceId, slot)
     --local isIconEnabled = settings.isIconEnabled
 
     --\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
-    --TODO: For Debugging only! Remove again if not needed
+    --TODO DEBUG: Debugging only! Remove again if not needed
     local doDebugOutput = false
     local bagId, slotIndex, itemLink
     --[[
@@ -82,9 +82,9 @@ local function shouldItemBeShownAfterBeenFiltered(slotItemInstanceId, slot)
     end
     ]]
 
-    --TODO 2022-04-05 Filtering with logical OR does not work properly that way.
-    --TODO We need to split this functions code below up so that OR (or AND & OR combined) filtering will be working differently in total!
-    --TODO Else the "result" will mix and give false results in total.
+    --TODO FEATURE 2022-04-05 Filtering with logical OR does not work properly that way.
+    --TODO FEATURE   We need to split this functions code below up so that OR (or AND & OR combined) filtering will be working differently in total!
+    --TODO FEATURE   Else the "result" will mix and give false results in total.
 
     --[[
     [Does work]
@@ -459,7 +459,7 @@ local function shouldItemBeShownAfterBeenFiltered(slotItemInstanceId, slot)
                                         or checkIfItemIsProtected(FCOIS_CON_ICON_SELL_AT_GUILDSTORE, slotItemInstanceId)
                                         or checkIfItemIsProtected(FCOIS_CON_ICON_INTRICATE, slotItemInstanceId)
                         ) then
-                            result = true --TODO: why was it returning here via return directly?
+                            result = true
                         else
                             result = (not sellGuildIntFilterWithLogicalAND and true) or false --"hide" if logical AND, "show" if logical OR is used!
                         end
@@ -479,7 +479,7 @@ local function shouldItemBeShownAfterBeenFiltered(slotItemInstanceId, slot)
                         --Filter 4 "show only marked"
                     elseif isFilterActivated == FCOIS_CON_FILTER_BUTTON_STATE_YELLOW then
                         if checkIfItemIsProtected(lastSellGuildIntFilterIconId, slotItemInstanceId) then
-                            result = true --TODO: why was it returning here via return directly?
+                            result = true
                         else
                             result = (not sellGuildIntFilterWithLogicalAND and true) or false --"hide" if logical AND, "show" if logical OR is used!
                         end

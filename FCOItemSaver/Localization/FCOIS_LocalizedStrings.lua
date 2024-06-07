@@ -1094,6 +1094,7 @@ FCOIS.localizationVars.localizationAll = {
         ["options_keybind_move_marked_for_sell_to_junk_enabled"]    = "Enable 'Sell marked->Junk' keybind",
         ["options_keybind_move_marked_for_sell_to_junk_enabled_TT"] = "Enable a keybind in the inventories to move all items marked for sell to the junk.",
         ["fcois_junked_item_count"] = "Junked %s item(s)",
+        ["fcois_unjunked_item_count"] = "Unjunked %s item(s)",
         --Error messages
         ["error_gamepad_mode_not_supported"]	= "FCOItemSaver does not support the gamepad mode! Please change the mode to keyboard at the settings.",
 
@@ -2349,6 +2350,7 @@ FCOIS.localizationVars.localizationAll = {
         ["options_keybind_move_marked_for_sell_to_junk_enabled"]    = "Aktiviere 'Verkauf markierte->Trödel' Taste",
         ["options_keybind_move_marked_for_sell_to_junk_enabled_TT"] = "Aktiviere die Tastenkombination in den Inventaren mit der alle zum Verkauf markierte Gegenstände zum Trödel verschoben werden.",
         ["fcois_junked_item_count"] = "%s Gegenstände zum Trödel bewegt",
+        ["fcois_unjunked_item_count"] = "%s Gegenstände vom Trödel weg bewegt",
         --Error messages
         ["error_gamepad_mode_not_supported"]	= "FCOItemSaver unterstützt den Gamepad Modus nicht! Bitte wechsel in den Optionen zum Tastatur Modus.",
 
@@ -2650,8 +2652,6 @@ FCOIS.localizationVars.localizationAll = {
 		["options_icon9_tooltip_TT"]		 = "Révèle une info-bulle au symbole destruction",
 		["options_icon10_TT"]				 = "Révèle une info-bulle",
 		["options_icon10_tooltip_TT"]		 = "Révèle une info-bulle au symbole ameliorer",
-		["options_icon9_tooltip_text"]			 = "Marqué pour la destruction",
-		["options_icon10_tooltip_text"]			 = "Marqué pour l'améliorer",
 		["options_tooltipatchar"]		 		 = "Info-bulle dans la fenêtre de personnage",
 		["options_tooltipatchar_TT"]		 = "Révèle aussi, l'info-bulle dans la fenêtre de personnage ",
         ["options_icon11_TT"]				 = "Révèle une info-bulle",
@@ -2795,7 +2795,6 @@ FCOIS.localizationVars.localizationAll = {
 		["options_header_items_demark"]          = "Désélection auto",
         ["options_enable_auto_mark_ornate_items"] 		 			 = "Marque les objets ornés",
         ["options_enable_auto_mark_ornate_items_TT"] 			 = "Marque automatiquement les objets ornés pour les vendre",
-        ["options_enable_auto_mark_ornate_items_in_chat"] 			 = "Montre en chat",
         ["options_enable_auto_mark_ornate_items_in_chat_TT"]	 =  "Montre automatiquement, les objets marqué ornés dans le chat",
         ["options_auto_mark_ornate_items_icon"] 					 = "Icône des objets ornés",
         ["options_auto_mark_ornate_items_icon_TT"] 			 = "Icône pour les objets ornés, qui seront automatiquement marqués pour être vendus",

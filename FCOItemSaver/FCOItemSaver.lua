@@ -196,9 +196,8 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
 --#280 For future version of LibScrollableMenu, where LibCustomMenu was updated to be compatible too:
  -->Make FCOIS context menu and ZO_Menu stuff compatible with experimental LibScrollableMenu version where LSM will take over Inventory context menu creation from ZO_Menu/LibCustomMenu
 
-
 --______________________________________
--- Current max # of bugs/features/ToDos: 286
+-- Current max # of bugs/features/ToDos: 292
 --______________________________________
 
 --Open/To work on this patch:
@@ -207,30 +206,26 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2024-05-07
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2024-06-03
 ------------------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.5.6 - New version: 2.5.7) -    Updated last: 2024-05-07
+--Changelog (last version: 2.5.7 - New version: 2.5.8) -    Updated last: 2024-056-03
 -------------------------------------------------------------------------------------
 --[Fixed]
---#275 Fix guild history scene reference
---#276 Fix translation keys: Duplicates
---#277 Fix translation invalid escape sequences
---#279 OrderListBox widget reflect enabled marker icon updates/enabled state
---#282 If LibFilters3 requested an update of inventory: Do not update another time via FCOIS routines
---#283 Move add. inv. flag icons at the panels for API101042
---#284 Right click add. inv. flag icon protects "enchanting create & extract" again and unslots protected items
---#286 Right clicking add. inv. flag context menu called "any item protected at the slot" twice
+--#287 API func for mass move junk not working if keybind is disabled
+--#288 Fixed missing character "armor" string (thanks DackJaniels)
+--#289 Fixed duplicate and wrong indices in translations, settings and other files (thanks DackJaniels)
+--#290 LF_ALCHEMY_CREATE update of filtered itemcount at crafting panel
+--#291 Mass moving to junk/unmoving from junk will get you server kicked for message spam
+--#292 Mass moving to junk will keep "Sell" icon (if it was applied to item)
 
 --[Changed]
---#281 Only create markerIcon texture controls if the markerIcon is enabled and applied to the item
 
 --[Added]
 --
 
 --[Added on request]
---#278 Add on request: OrderListBox widget to control order of the marker icons created -> DrawLevel
 
 
 --************************************************************************************************************************

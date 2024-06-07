@@ -1110,7 +1110,7 @@ end
 
 ]]
 local function getItemCooldownTrackerRelevantItemIds()
-    --todo # 184
+    --#184
     if not ICDT then return end
     FCOIS.otherAddons.ItemCooldownTracker = FCOIS.otherAddons.ItemCooldownTracker or {}
     FCOIS.otherAddons.ItemCooldownTracker.relevantItemIds = {}
@@ -1120,13 +1120,11 @@ local function getItemCooldownTrackerRelevantItemIds()
     for _, itemIdOfRelevance in ipairs(relevantItemIdsWithIndex) do
         relevantItemIds[itemIdOfRelevance] = true
     end
-    --Todo: For debugging add style page book "The bretons" too:  itemId 16425
+    --Todo DEBUG: For debugging add style page book "The bretons" too:  itemId 16425
     --relevantItemIds[16425] = true
 
     FCOIS.otherAddons.ItemCooldownTracker.relevantItemIds = relevantItemIds
 end
-
-GetAchievementInfo()
 
 function FCOIS.CheckIfItemCooldownTrackerRelevantItemIdAndMarkItem(bagId, slotIndex, itemLink)
     --#184

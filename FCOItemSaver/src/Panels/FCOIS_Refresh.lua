@@ -39,7 +39,7 @@ local function updateCraftingInventory(filterPanelOverride, isUniversalDeconNPC)
     --Abort if we are not at a crafting station
     if not isUniversalDeconNPC and locCraftType == CRAFTING_TYPE_INVALID then return end
 
-    local liFiltersUpdateWasCalled = false --#282
+    local libFiltersUpdateWasCalled = false --#282
 
     --Check the current filter panel ID and the lastVars filterPanelId. If one is missing, override them with filterPanelOverride
     local gFilterWhereBefore, gLastFilterIdFilterWhere
@@ -64,14 +64,14 @@ local function updateCraftingInventory(filterPanelOverride, isUniversalDeconNPC)
             --if isFilterEnabled == FCOIS_CON_FILTER_BUTTON_STATE_GREEN or isFilterEnabled == FCOIS_CON_FILTER_BUTTON_STATE_YELLOW then
             if settings.debug then debugMessage( "[UpdateCraftingInventory]", "Filter Id: " ..tos(FCOIS.lastVars.gLastFilterId[filterType]) .. ", Filter panel Id: " .. tos(filterType), true, FCOIS_DEBUG_DEPTH_NORMAL) end
             --libFilterVars.inventoryUpdaters[libFilterVars.filterTypeToUpdaterName[FCOIS.gFilterWhere]]()
-            liFiltersUpdateWasCalled = true --#282
+            libFiltersUpdateWasCalled = true --#282
             libFilters:RequestUpdate(filterType)
             --end
         end
     end
 
 
-    if not liFiltersUpdateWasCalled then --#282
+    if not libFiltersUpdateWasCalled then --#282
         --Alchemy?
         if not isUniversalDeconNPC and locCraftType == CRAFTING_TYPE_ALCHEMY then
             --d(">alchemy refresh")
@@ -80,7 +80,7 @@ local function updateCraftingInventory(filterPanelOverride, isUniversalDeconNPC)
             FCOIS.preventerVars.isInventoryListUpdating = true
             ZO_ScrollList_RefreshVisible(ctrlVars.ALCHEMY_STATION)
             FCOIS.preventerVars.isInventoryListUpdating = false
-            --updateFilteredItemCount = true -- TODO: Enable once alchemy filters are added!
+            updateFilteredItemCount = true -- TODO FEATURE: LF_ALCHEMY_CREATION Enable once alchemy filters are added! #290
 
             --Enchanting?
         elseif (not isUniversalDeconNPC and locCraftType == CRAFTING_TYPE_ENCHANTING) or (isUniversalDeconNPC and filterType == LF_ENCHANTING_EXTRACTION) then

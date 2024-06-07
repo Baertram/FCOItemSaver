@@ -1375,7 +1375,7 @@ function FCOIS.ChangeFilter(filterId, libFiltersFilterPanelId)
 	if not settings.atPanelEnabled[libFiltersFilterPanelId]["filters"] then return end
 	--is the filterPanelId visible?
 	-->Special check for UNIVERSAL DECONSTRUCTION
-	--todo #254
+	--#254 Keybinds to change filter button state at universal deconstruction do not work
 	local filterPanelIdPassedInOrFound, isUniversalDeconFilterPanel = FCOIS.GetCurrentFilterPanelIdAtDeconNPC(libFiltersFilterPanelId)
 	if isUniversalDeconFilterPanel == true and filterPanelIdPassedInOrFound ~= nil then
 		universalDeconGlobal = universalDeconGlobal or FCOIS.ZOControlVars.UNIVERSAL_DECONSTRUCTION_GLOBAL
@@ -2239,7 +2239,6 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons, withNoneEntry)
 
 	--Build icons choicesValues tooltips list
 	local function buildIconsChoicesValuesTooltipsList(typeToCheck, p_withIcons, p_withNoneEntry)
-		--TODO
         --Currently now own tooltips -> Using the names of function buildIconsChoicesList
 	end
 
@@ -2276,13 +2275,17 @@ end
 --Parameters: 	markerIconsToApply Table of marker icons or -1 for all
 --				commandToRun String defining the functions to run on the item
 function FCOIS.MarkAndRunOnItemByKeybind(markerIconsToApply, commandToRun)
---d("[FCOIS]MarkAndRunOnItemByKeybind-commandToRun: " ..tos(commandToRun))
+	--d("[FCOIS]MarkAndRunOnItemByKeybind-commandToRun: " ..tos(commandToRun))
 	if markerIconsToApply == nil or commandToRun == nil or commandToRun == "" then return end
 	if not checkIfFCOISSettingsWereLoaded(FCOIS.preventerVars.gCalledFromInternalFCOIS, not addonVars.gAddonLoaded) then return nil end
 	local settings = FCOIS.settingsVars.settings
 
 	--Junk the item now via the keybind?
 	if commandToRun == "junk" then
+		--#291 API func for mass move junk not working if keybind is disabled
+		local keybindMoveItemToJunkEnabled = settings.keybindMoveItemToJunkEnabled
+		if not keybindMoveItemToJunkEnabled then return end
+
 		--Add the 'sell' icon?
 		local isJunkNow
 		local addSellIconAsAddToJunk = settings.keybindMoveItemToJunkAddSellIcon
@@ -2304,7 +2307,7 @@ function FCOIS.MarkAndRunOnItemByKeybind(markerIconsToApply, commandToRun)
 				FCOIS.preventerVars.gCalledFromInternalFCOIS = true
 				--Set the sell icon now
 				markItem(bagId, slotIndex, FCOIS_CON_ICON_SELL, true, false)
-			--If the item is already junked then remove all marker icons again and remove it from the junk
+				--If the item is already junked then remove all marker icons again and remove it from the junk
 			elseif isJunkNow == true then
 				FCOIS.preventerVars.gCalledFromInternalFCOIS = true
 				--Remove all marker icons
@@ -2313,33 +2316,34 @@ function FCOIS.MarkAndRunOnItemByKeybind(markerIconsToApply, commandToRun)
 			end
 			--Invert the junk state of the item now
 			SetItemIsJunk(bagId, slotIndex, not isJunkNow)
-		--[[
-		--Currently disabled as it would only work for items in your inventory and we cannot check this easily via teh IIfA UI
-		else
-			--Is the controlType below the mouse given?
-			if controlTypeBelowMouse ~= nil then
-				--Did we try to change a marker icon at the InventoryInsightFromAshes UI?
-				if controlTypeBelowMouse == FCOIS.otherAddons.IIFAitemsListEntryPrePattern then
-					if FCOIS.IIfAmouseOvered ~= nil then
-	--d("[FCOIS]MarkItemByKeybind-IIfA control found: " .. FCOIS.IIfAmouseOvered.itemLink)
-						local IIfAmouseOvered = FCOIS.IIfAmouseOvered
-						if IIfAmouseOvered.itemLink ~= nil and IIfAmouseOvered.itemInstanceOrUniqueId ~= nil then
-							local itemLink = IIfAmouseOvered.itemLink
-							local itemInstanceOrUniqueId = IIfAmouseOvered.itemInstanceOrUniqueId
-							--Get the item's id from the itemLink
-							local itemId = FCOIS.getItemIdFromItemLink(itemLink)
-							--Remove all marker icons on the item
-							markItemByItemInstanceId(itemInstanceOrUniqueId, -1, false, itemLink, itemId, nil, false)
-							if addSellIconAsAddToJunk == true then
-								--FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon, itemLink, itemId, addonName, updateInventories)
-								markItemByItemInstanceId(itemInstanceOrUniqueId, FCOIS_CON_ICON_SELL, true, itemLink, itemId, nil, true)
-							end
-							--SetItemIsJunk(bagId, slotIndex, true)
-						end
-					end
-				end
-			end
-		]]
+
+			--[[
+            --Currently disabled as it would only work for items in your inventory and we cannot check this easily via the IIfA UI
+            else
+                --Is the controlType below the mouse given?
+                if controlTypeBelowMouse ~= nil then
+                    --Did we try to change a marker icon at the InventoryInsightFromAshes UI?
+                    if controlTypeBelowMouse == FCOIS.otherAddons.IIFAitemsListEntryPrePattern then
+                        if FCOIS.IIfAmouseOvered ~= nil then
+        --d("[FCOIS]MarkItemByKeybind-IIfA control found: " .. FCOIS.IIfAmouseOvered.itemLink)
+                            local IIfAmouseOvered = FCOIS.IIfAmouseOvered
+                            if IIfAmouseOvered.itemLink ~= nil and IIfAmouseOvered.itemInstanceOrUniqueId ~= nil then
+                                local itemLink = IIfAmouseOvered.itemLink
+                                local itemInstanceOrUniqueId = IIfAmouseOvered.itemInstanceOrUniqueId
+                                --Get the item's id from the itemLink
+                                local itemId = FCOIS.getItemIdFromItemLink(itemLink)
+                                --Remove all marker icons on the item
+                                markItemByItemInstanceId(itemInstanceOrUniqueId, -1, false, itemLink, itemId, nil, false)
+                                if addSellIconAsAddToJunk == true then
+                                    --FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon, itemLink, itemId, addonName, updateInventories)
+                                    markItemByItemInstanceId(itemInstanceOrUniqueId, FCOIS_CON_ICON_SELL, true, itemLink, itemId, nil, true)
+                                end
+                                --SetItemIsJunk(bagId, slotIndex, true)
+                            end
+                        end
+                    end
+                end
+            ]]
 		end
 	end
 end
