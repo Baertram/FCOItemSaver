@@ -2157,24 +2157,23 @@ FCOIS.JunkQueue = {
 function FCOIS.SetItemIsJunkNow(bagId, slotIndex, isJunk)
     if bagId == nil or slotIndex == nil or isJunk == nil then return false end
     --Mark as junk?
-    if isJunk == true then
-        --Are there any marker icons on the item?
-        isMarked = isMarked or FCOIS.IsMarked
-        FCOISMarkItem = FCOISMarkItem or FCOIS.MarkItem
+    if not isJunk or (isJunk and not IsItemJunk(bagId, slotIndex)) then
+        SetItemIsJunk(bagId, slotIndex, isJunk)
+        if isJunk == true then
+            --Are there any marker icons on the item? Remove them if moved to junk
+            isMarked = isMarked or FCOIS.IsMarked
+            FCOISMarkItem = FCOISMarkItem or FCOIS.MarkItem
 
-        local anyMarkerIconSetOnItemToJunk, markerIconsOnItemToJunk = isMarked(bagId, slotIndex, -1)
-        if anyMarkerIconSetOnItemToJunk then
-            --Check if item can be junked
-            --Remove all marker icons
-            for iconIdWhichWasSetBeforeAlready, isIconMarked in pairs(markerIconsOnItemToJunk) do
-                if isIconMarked then
-                    FCOISMarkItem(bagId, slotIndex, iconIdWhichWasSetBeforeAlready, false, false) -- No inventory update needed as the item will be moved to the junk tab now!
+            local anyMarkerIconSetOnItemToJunk, markerIconsOnItemToJunk = isMarked(bagId, slotIndex, -1)
+            if anyMarkerIconSetOnItemToJunk == true then
+                --Remove all marker icons, except "Sell"
+                for iconIdWhichWasSetBeforeAlready, isIconMarked in pairs(markerIconsOnItemToJunk) do
+                    if iconIdWhichWasSetBeforeAlready ~= FCOIS_CON_ICON_SELL and isIconMarked == true then
+                        FCOISMarkItem(bagId, slotIndex, iconIdWhichWasSetBeforeAlready, false, false) -- No inventory update needed as the item will be moved to the junk tab now!
+                    end
                 end
             end
         end
-    end
-    if not isJunk or (isJunk and not IsItemJunk(bagId, slotIndex)) then
-        SetItemIsJunk(bagId, slotIndex, isJunk)
     end
     return true
 end
@@ -2218,12 +2217,6 @@ local function outputJunkQueueActiveInfo(isJunk)
         end
     end
     return false
-end
-
---Called from FCOIS.JunkMarkedItems(markerIconsMarkedOnItems, bagId)
-local function setItemAsJunkByPackageData(data)
-    SetItemIsJunk(data.bagId, data.slotIndex, true)
-    return true
 end
 
 local function canItemBeMarkedAsJunkByPackageData(data, isJunk)
@@ -3320,7 +3313,7 @@ function FCOIS.JunkMarkedItems(markerIconsMarkedOnItems, bagId)
     for _, data in pairs(bagCache) do
         local p_bagId, slotIndex = data.bagId, data.slotIndex
         local isMarkedIcon, _ = isMarked(p_bagId, slotIndex, markerIconsMarkedOnItems, nil)
-        if isMarkedIcon and not IsItemJunk(p_bagId, slotIndex) then
+        if isMarkedIcon then --and not IsItemJunk(p_bagId, slotIndex) then
             tins(itemsToMarkAsJunk, data)
         end
     end
@@ -3330,16 +3323,23 @@ function FCOIS.JunkMarkedItems(markerIconsMarkedOnItems, bagId)
 --d("[FCOIS]JunkMarkedItems - itemCountToJunk: " ..tos(itemCountToJunk))
     if itemCountToJunk > 0 then
         --#203 & #291 Fix kicked from server because of too many items added/removed from junk!
-        local function finalCallbackFunc(l_retVar, l_retCount)
+        local function finalCallbackFunc(l_retVar, l_retCount, l_isJunk)
             if l_retVar == true then
                 local locVarJunkedItemCount = FCOIS.GetLocText("fcois_junked_item_count", false)
                 d(strformat(preChatTextGreen .. locVarJunkedItemCount, tos(l_retCount)))
             end
-             moveToJunkQueue = {}
+--d("<CLEARING TABLES!")
+            if l_isJunk == true then
+                moveToJunkQueueActive = false
+                moveToJunkQueue = {}
+            else
+                moveFromJunkQueueActive = false
+                moveFromJunkQueue = {}
+            end
         end
         local packagesCountToProcess = processPackages(itemsToMarkAsJunk, itemsToMarkAsJunkMaxPerPackage, packagesToMarkAsJunkMax,
                 function(data) return canItemBeMarkedAsJunkByPackageData(data, isJunk) end,
-                function(data) return setItemAsJunkByPackageData(data, isJunk) end,
+                function(data) return setItemAsJunkOrRemoveFromJunkByPackageData(data, isJunk) end,
                 nil,
                 delayToMarkAsJunkInBetweenPackages,
                 finalCallbackFunc) --max 50 packages à 10 items = 500 items (guild bank size)

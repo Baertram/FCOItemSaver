@@ -1552,7 +1552,7 @@ function FCOIS.UpdateFilteredItemCount(panelId, calledFrom)
         libFiltersPanelId = LF_INVENTORY
     end
     local showFilteredItemCount = FCOIS.settingsVars.settings.showFilteredItemCount
-    --d(">[FCOIS]updateFilteredItemCount->".. calledFrom .. " - panelId: " ..tos(panelId) .. ", libFiltersPanelId: " ..tos(libFiltersPanelId) .. ", showFilteredItemCount: " .. tos(showFilteredItemCount))
+--d(">[FCOIS]updateFilteredItemCount->".. calledFrom .. " - panelId: " ..tos(panelId) .. ", libFiltersPanelId: " ..tos(libFiltersPanelId) .. ", showFilteredItemCount: " .. tos(showFilteredItemCount))
     local sortHeaderCtrl = FCOIS.GetSortHeaderControl(libFiltersPanelId)
     --Reset the sortheader text to the original one
     if sortHeaderCtrl then resetSortHeaderCount(libFiltersPanelId, sortHeaderCtrl) end

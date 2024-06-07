@@ -196,37 +196,29 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
 --#280 For future version of LibScrollableMenu, where LibCustomMenu was updated to be compatible too:
  -->Make FCOIS context menu and ZO_Menu stuff compatible with experimental LibScrollableMenu version where LSM will take over Inventory context menu creation from ZO_Menu/LibCustomMenu
 
---#292 Inventory space text does not show the currently filtered itemCount anymore
---#293 Why do items which get mass moved to junk loose the "sell" icon all of sudden (after moving them from junk to normal, back to junk, ...)
-
 --______________________________________
 -- Current max # of bugs/features/ToDos: 292
 --______________________________________
 
 --Open/To work on this patch:
---#287
---#288
---#289
---#290
 
 --=== Not started yet ===
---#292
---#293
 
 
 ------------------------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed] -              Updated last 2024-06-03
 ------------------------------------------------------------------------------------
---#287 API func for mass move junk not working if keybind is disabled
---#290 LF_ALCHEMY_CREATE update of filtered itemcount at crafting panel
---#291 Mass moving to junk/unmoving from junk will get you server kicked for message spam
 
 -------------------------------------------------------------------------------------
 --Changelog (last version: 2.5.7 - New version: 2.5.8) -    Updated last: 2024-056-03
 -------------------------------------------------------------------------------------
 --[Fixed]
+--#287 API func for mass move junk not working if keybind is disabled
 --#288 Fixed missing character "armor" string (thanks DackJaniels)
 --#289 Fixed duplicate and wrong indices in translations, settings and other files (thanks DackJaniels)
+--#290 LF_ALCHEMY_CREATE update of filtered itemcount at crafting panel
+--#291 Mass moving to junk/unmoving from junk will get you server kicked for message spam
+--#292 Mass moving to junk will keep "Sell" icon (if it was applied to item)
 
 --[Changed]
 
