@@ -159,6 +159,10 @@ function FCOIS.OnlyCallOnceInTime(callbackName, timeToBlock, callback, ...)
     callback(unpack(args))
 end
 
+local function checkIfCompanionItem(bagId, slotIndex)
+    return gilac(gil(bagId, slotIndex)) == GAMEPLAY_ACTOR_CATEGORY_COMPANION
+end
+
 local function processPackages(itemsToProcessTab, maxEntriesPerPackage, maxPackages, preCheckFunc, callbackFunc, callbackAfterEachEntry, delay, finalCallbackFunc)
     if itemsToProcessTab == nil or maxEntriesPerPackage == nil or type(callbackFunc) ~= "function" then return end
     if type(finalCallbackFunc) ~= "function" then finalCallbackFunc = nil end
@@ -2146,19 +2150,24 @@ local moveToJunkQueue = {}
 local moveFromJunkQueue = {}
 local moveToJunkQueueActive = false
 local moveFromJunkQueueActive = false
---For debugging
+--todo DEBUG Remove comment for debugging
+--[[
 FCOIS.JunkQueue = {
     _moveToJunkQueue = moveToJunkQueue,
     _moveFromJunkQueue = moveFromJunkQueue,
     moveToJunkQueueActive = moveToJunkQueueActive,
     moveFromJunkQueueActive = moveFromJunkQueueActive,
 }
+]]
 
-function FCOIS.SetItemIsJunkNow(bagId, slotIndex, isJunk)
+function FCOIS.SetItemIsJunkNow(bagId, slotIndex, isJunk, isCompanionItem)
     if bagId == nil or slotIndex == nil or isJunk == nil then return false end
+    if isCompanionItem == nil then
+        isCompanionItem = checkIfCompanionItem(bagId, slotIndex)
+    end
     --Mark as junk?
-    if not isJunk or (isJunk and not IsItemJunk(bagId, slotIndex)) then
-        SetItemIsJunk(bagId, slotIndex, isJunk)
+    if not isJunk or (isJunk and not IsItemJunk(bagId, slotIndex, isCompanionItem)) then
+        SetItemIsJunk(bagId, slotIndex, isJunk, isCompanionItem)
         if isJunk == true then
             --Are there any marker icons on the item? Remove them if moved to junk
             isMarked = isMarked or FCOIS.IsMarked
@@ -2223,15 +2232,20 @@ local function canItemBeMarkedAsJunkByPackageData(data, isJunk)
     if isJunk == true then
         local goOn = true
         local bagId, slotIndex = data.bagId, data.slotIndex
-        local isCompanionItem = GetItemLinkActorCategory(GetItemLink(bagId, slotIndex)) == GAMEPLAY_ACTOR_CATEGORY_COMPANION
+        local isCompanionItem = checkIfCompanionItem(bagId, slotIndex)
         if isCompanionItem == true then
 --d(">isCompanionItem")
             goOn = false
 
             --2024-06-06 Add support for FCOCompanion's companion junk?
             if FCOCO then
-                local FCOCOsettings = FCOCO.settingsVars.settings
-                if FCOCOsettings.enableCompanionItemJunk == true or FCOCOsettings.settingsPerToon.enableCompanionItemJunk == true then
+                local fcoCompanionSavedVars
+                if FCOCO.GetCompanionJunkSavedVars then
+                    fcoCompanionSavedVars = FCOCO.GetCompanionJunkSavedVars()
+                else
+                    fcoCompanionSavedVars = FCOCO.settingsVars.settingsPerToon
+                end
+                if fcoCompanionSavedVars and fcoCompanionSavedVars.enableCompanionItemJunk == true then
 --d(">>FCOCO companion junk is enabled!")
                     goOn = true
                 end
@@ -2239,7 +2253,7 @@ local function canItemBeMarkedAsJunkByPackageData(data, isJunk)
         end
 --d(">>goOn? " ..tos(goOn) .. " " ..GetItemLink(bagId, slotIndex))
         if goOn == true then
-            return CanItemBeMarkedAsJunk(bagId, slotIndex)
+            return CanItemBeMarkedAsJunk(bagId, slotIndex, isCompanionItem)
         else
             return false
         end
@@ -2255,7 +2269,7 @@ local function setItemAsJunkOrRemoveFromJunkByPackageData(data, isJunk)
     else
         moveFromJunkQueueActive = true
     end
-    return setItemIsJunkNow(data.bagId, data.slotIndex, isJunk)
+    return setItemIsJunkNow(data.bagId, data.slotIndex, isJunk, nil)
 end
 
 --Calling this function will remove table indices and thus make indices of 2nd package not work anymore!
@@ -3313,7 +3327,8 @@ function FCOIS.JunkMarkedItems(markerIconsMarkedOnItems, bagId)
     for _, data in pairs(bagCache) do
         local p_bagId, slotIndex = data.bagId, data.slotIndex
         local isMarkedIcon, _ = isMarked(p_bagId, slotIndex, markerIconsMarkedOnItems, nil)
-        if isMarkedIcon then --and not IsItemJunk(p_bagId, slotIndex) then
+        local isCompanionItem = checkIfCompanionItem(bagId, slotIndex)
+        if isMarkedIcon and not IsItemJunk(p_bagId, slotIndex, isCompanionItem) then
             tins(itemsToMarkAsJunk, data)
         end
     end
@@ -3328,7 +3343,7 @@ function FCOIS.JunkMarkedItems(markerIconsMarkedOnItems, bagId)
                 local locVarJunkedItemCount = FCOIS.GetLocText("fcois_junked_item_count", false)
                 d(strformat(preChatTextGreen .. locVarJunkedItemCount, tos(l_retCount)))
             end
---d("<CLEARING TABLES!")
+            --d("<CLEARING TABLES!")
             if l_isJunk == true then
                 moveToJunkQueueActive = false
                 moveToJunkQueue = {}
@@ -3342,7 +3357,8 @@ function FCOIS.JunkMarkedItems(markerIconsMarkedOnItems, bagId)
                 function(data) return setItemAsJunkOrRemoveFromJunkByPackageData(data, isJunk) end,
                 nil,
                 delayToMarkAsJunkInBetweenPackages,
-                finalCallbackFunc) --max 50 packages à 10 items = 500 items (guild bank size)
+                function(retVar, retCount) finalCallbackFunc(retVar, retCount, isJunk) end --#293
+        ) --max 50 packages à 10 items = 500 items (guild bank size)
     end
     return retVar
 end
