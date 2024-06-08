@@ -1,19 +1,19 @@
 #
 ## Title: |c00FF00FCO |cFFFF00ItemSaver|t32:32:FCOItemSaver/FCOIS.dds|t
 ## Author: Baertram
-## Version: 2.5.8
-## AddOnVersion: 258
+## Version: 2.5.9
+## AddOnVersion: 259
 ## APIVersion: 101042 101043
 ## Description: FCOIS |t32:32:FCOItemSaver/FCOIS.dds|t Marks your items with different icons and filters them in the inventories/crafting. Protects your marked items against sell/deconstruct/extract etc., and provides many more features!
 ## SavedVariables: FCOItemSaver_Settings
 # !!! Attention !!! -> 1 line here can only contain ~220 characters, so the depency lines need to be split up, or they won't be recognized properly!
 #
-## DependsOn: LibAddonMenu-2.0>=34 LibAddonMenuOrderListBox>=010
-## DependsOn: LibCustomMenu>=721 LibDialog>=126 LibFeedback LibFilters-3.0>=342
-## DependsOn: LibMainMenu-2.0>=40400 LibSets>=000607
+## DependsOn: LibAddonMenu-2.0>=37 LibAddonMenuOrderListBox>=010
+## DependsOn: LibCustomMenu>=721 LibDialog>=127 LibFeedback LibFilters-3.0>=343
+## DependsOn: LibMainMenu-2.0>=40400 LibSets>=000609
 ## DependsOn: LibShifterBox>=000500
-## OptionalDependsOn: LibDebugLogger>=263 LibLazyCrafting>=4006
-## OptionalDependsOn: LibMultiAccountSets>=19
+## OptionalDependsOn: LibDebugLogger>=263 LibLazyCrafting>=4009
+## OptionalDependsOn: LibMultiAccountSets>=300080
 #
 ## OptionalDependsOn: AdvancedDisableControllerUI AdvancedFilters AF_FCODuplicateItemsFilters
 ## OptionalDependsOn: CraftBagExtended

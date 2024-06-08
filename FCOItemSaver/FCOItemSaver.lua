@@ -197,7 +197,7 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
  -->Make FCOIS context menu and ZO_Menu stuff compatible with experimental LibScrollableMenu version where LSM will take over Inventory context menu creation from ZO_Menu/LibCustomMenu
 
 --______________________________________
--- Current max # of bugs/features/ToDos: 292
+-- Current max # of bugs/features/ToDos: 294
 --______________________________________
 
 --Open/To work on this patch:
@@ -206,19 +206,16 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2024-06-03
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2024-06-08
 ------------------------------------------------------------------------------------
 
+
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.5.7 - New version: 2.5.8) -    Updated last: 2024-056-03
+--Changelog (last version: 2.5.8 - New version: 2.5.9) -    Updated last: 2024-056-08
 -------------------------------------------------------------------------------------
 --[Fixed]
---#287 API func for mass move junk not working if keybind is disabled
---#288 Fixed missing character "armor" string (thanks DackJaniels)
---#289 Fixed duplicate and wrong indices in translations, settings and other files (thanks DackJaniels)
---#290 LF_ALCHEMY_CREATE update of filtered itemcount at crafting panel
---#291 Mass moving to junk/unmoving from junk will get you server kicked for message spam
---#292 Mass moving to junk will keep "Sell" icon (if it was applied to item)
+--#293 Move to junk via keybind shows correct numbers in chat
+--#294 Move to/from junk works better with FCO Companion's feature "move companion items to junk"
 
 --[Changed]
 
