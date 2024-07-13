@@ -197,7 +197,7 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
  -->Make FCOIS context menu and ZO_Menu stuff compatible with experimental LibScrollableMenu version where LSM will take over Inventory context menu creation from ZO_Menu/LibCustomMenu
 
 --______________________________________
--- Current max # of bugs/features/ToDos: 294
+-- Current max # of bugs/features/ToDos: 295
 --______________________________________
 
 --Open/To work on this patch:
@@ -206,16 +206,15 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2024-06-08
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2024-07-13
 ------------------------------------------------------------------------------------
 
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.5.8 - New version: 2.5.9) -    Updated last: 2024-056-08
+--Changelog (last version: 2.5.9 - New version: 2.6.0) -    Updated last: 2024-07-13
 -------------------------------------------------------------------------------------
 --[Fixed]
---#293 Move to junk via keybind shows correct numbers in chat
---#294 Move to/from junk works better with FCO Companion's feature "move companion items to junk"
+--#295 Fix missing antiPanel settings to reset to default values
 
 --[Changed]
 
