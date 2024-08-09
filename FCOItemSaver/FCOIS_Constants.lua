@@ -807,7 +807,6 @@ mappingVars.filterPanelToFilterButtonFilterActiveSettingName = {
     [LF_ALCHEMY_CREATION] =         "allowAlchemyFilter",
     [LF_RETRAIT] =                  "allowRetraitFilter",
     [LF_INVENTORY_COMPANION] =      "allowCompanionInventoryFilter",
-
 }
 
 
