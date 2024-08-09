@@ -9,6 +9,8 @@ if not FCOIS.libsLoadedProperly then return end
 --==========================================================================================================================================
 --Apply current needed fixes and workarounds because of other addons/libraries etc.
 function FCOIS.LoadWorkarounds()
+	local numLibFiltersFilterPanelIds   = FCOIS.numVars.gFCONumFilterInventoryTypes
+
     local settings = FCOIS.settingsVars.settings
     --FCOIS v0.7.8
     --The array to map the marker icon offsets for each filter panel ID
@@ -74,7 +76,7 @@ function FCOIS.LoadWorkarounds()
                 for filterIconHelperPanel = 1, numLibFiltersFilterPanelIds, 1 do
                     local valueToSet = false
                     if filterIconHelperPanel == LF_SMITHING_RESEARCH_DIALOG or filterIconHelperPanel == LF_JEWELRY_RESEARCH_DIALOG or
-                            filterIconHelperPanel == LF_INVENTORY_COMPANION then
+                        filterIconHelperPanel == LF_INVENTORY_COMPANION then
                         valueToSet = true
                     end
                     settings.icon[iconNr].antiCheckAtPanel[filterIconHelperPanel] = valueToSet

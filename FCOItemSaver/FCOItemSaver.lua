@@ -196,8 +196,11 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
 --#280 For future version of LibScrollableMenu, where LibCustomMenu was updated to be compatible too:
  -->Make FCOIS context menu and ZO_Menu stuff compatible with experimental LibScrollableMenu version where LSM will take over Inventory context menu creation from ZO_Menu/LibCustomMenu
 
+--#297 Add scribing script automatic markers via LibCharacterKnowlege (but these need to be character dependend markers, is that possible? Or are account wide markers also possible -> only mark "unknwon for any other char")
+
+
 --______________________________________
--- Current max # of bugs/features/ToDos: 295
+-- Current max # of bugs/features/ToDos: 297
 --______________________________________
 
 --Open/To work on this patch:
@@ -206,12 +209,13 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2024-07-13
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2024-08-09
 ------------------------------------------------------------------------------------
 
+--#296 PTS API101043 user:/AddOns/FCOItemSaver/src/FCOIS_Functions.lua:323: attempt to index a nil value
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.5.9 - New version: 2.6.0) -    Updated last: 2024-07-13
+--Changelog (last version: 2.5.9 - New version: 2.6.0) -    Updated last: 2024-08-09
 -------------------------------------------------------------------------------------
 --[Fixed]
 --#295 Fix missing antiPanel settings to reset to default values
