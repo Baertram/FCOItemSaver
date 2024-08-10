@@ -39,6 +39,8 @@ local universalDeconPanel =     universalDeconGlobal and universalDeconGlobal.de
 local numFilterIcons                        = FCOIS.numVars.gFCONumFilterIcons
 local mappingVarsTransm                     = FCOIS.mappingVars.containerTransmuation
 
+local onDeferredInitCheck                   = FCOIS.onDeferredInitCheck
+
 local checkBindableItems
 local checkIfItemIsProtected                = FCOIS.CheckIfItemIsProtected
 local myGetItemDetails                      = FCOIS.MyGetItemDetails
@@ -1646,7 +1648,18 @@ function FCOIS.CreateHooks()
     --dataTypes[1] = normal inventory items
     --dataTypes[2] = quest items
     --dataTypes[3] = collectibles
-    SecurePostHook(ctrlVars.QUICKSLOT_LIST.dataTypes[1], "setupCallback", onScrollListRowSetupCallback)
+    --SecurePostHook(ctrlVars.QUICKSLOT_LIST.dataTypes[1], "setupCallback", onScrollListRowSetupCallback)
+    onDeferredInitCheck(ctrlVars.QUICKSLOT_KEYBOARD, function()
+        --Create the marker icons for quickslots
+        if ctrlVars.QUICKSLOT_KEYBOARD.OnDeferredInitialize ~= nil then
+            FCOIS.CreateTextures(4) --quickslots
+            --Update the number of filtered items count variables
+            FCOIS.numberOfFilteredItems[LF_QUICKSLOT] = ctrlVars.QUICKSLOT_LIST.data
+        end
+
+        --Hook the quickslots list rows setupFunction
+        SecurePostHook(ctrlVars.QUICKSLOT_LIST.dataTypes[1], "setupCallback", onScrollListRowSetupCallback)
+    end, nil)
 
     --Pre Hook the 5th menubar button (Quickslots) handler at the player inventory
     ZO_PreHookHandler(ctrlVars.INV_MENUBAR_BUTTON_QUICKSLOTS, "OnMouseUp", function(control, button, upInside)

@@ -140,6 +140,31 @@ function FCOIS.ThrottledUpdate(callbackName, timer, callback, ...)
     em:RegisterForUpdate(callbackName, timer, updateNow)
 end
 
+--Added with API101043 - ZOs uses more and more DeferredInitialization meanwhile so we craete a wrapper function for that
+local postHookedOnDeferredInitControls = {}
+function FCOIS.onDeferredInitCheck(object, callbackFunc, preCheckFunc)
+	if callbackFunc == nil then return end
+	--PreCheck funtion is needed?
+	local doNow = true
+	if type(preCheckFunc) == "function" then
+		doNow = preCheckFunc(object)
+	end
+	if not doNow then return end
+
+	--No deferred init available? Run callback directly
+	if object ~= nil then
+		if object.OnDeferredInitialize == nil then
+			callbackFunc(object)
+		else
+			if not postHookedOnDeferredInitControls[object] then
+				SecurePostHook(object, "OnDeferredInitialize", function(...) callbackFunc(object, ...) end)
+				postHookedOnDeferredInitControls[object] = true
+			end
+		end
+	end
+end
+
+
 local alreadyActiveBlockedCallbackNames = {}
 function FCOIS.OnlyCallOnceInTime(callbackName, timeToBlock, callback, ...)
     --d("[FCOIS]OnlyCallOnceInTime, callbackName: " .. tos(callbackName))
@@ -287,42 +312,46 @@ local resetCreateFCOISUniqueIdStringLastVars = FCOIS.ResetCreateFCOISUniqueIdStr
 
 --Set the variables for each panel where the number of filtered items can be found for the current inventory
 function FCOIS.GetNumberOfFilteredItemsForEachPanel()
+    local numberOfFilteredItems = FCOIS.numberOfFilteredItems
+
     local numFilterdItemsInv = ctrlVars.BACKPACK_LIST.data
-    FCOIS.numberOfFilteredItems[LF_INVENTORY]              = numFilterdItemsInv
+    numberOfFilteredItems[LF_INVENTORY]              = numFilterdItemsInv
     --Same like inventory
-    FCOIS.numberOfFilteredItems[LF_MAIL_SEND]              = numFilterdItemsInv
-    FCOIS.numberOfFilteredItems[LF_TRADE]                  = numFilterdItemsInv
-    FCOIS.numberOfFilteredItems[LF_GUILDSTORE_SELL]        = numFilterdItemsInv
-    FCOIS.numberOfFilteredItems[LF_BANK_DEPOSIT]           = numFilterdItemsInv
-    FCOIS.numberOfFilteredItems[LF_GUILDBANK_DEPOSIT]      = numFilterdItemsInv
-    FCOIS.numberOfFilteredItems[LF_VENDOR_BUY]             = 0                      -- TODO FEATURE: Add as filter panel gets supported
-    FCOIS.numberOfFilteredItems[LF_VENDOR_SELL]            = numFilterdItemsInv
-    FCOIS.numberOfFilteredItems[LF_VENDOR_BUYBACK]         = 0                      -- TODO FEATURE: Add as filter panel gets supported
-    FCOIS.numberOfFilteredItems[LF_VENDOR_REPAIR]          = 0                      -- TODO FEATURE: Add as filter panel gets supported
-    FCOIS.numberOfFilteredItems[LF_FENCE_SELL]             = numFilterdItemsInv
-    FCOIS.numberOfFilteredItems[LF_FENCE_LAUNDER]          = numFilterdItemsInv
+    numberOfFilteredItems[LF_MAIL_SEND]              = numFilterdItemsInv
+    numberOfFilteredItems[LF_TRADE]                  = numFilterdItemsInv
+    numberOfFilteredItems[LF_GUILDSTORE_SELL]        = numFilterdItemsInv
+    numberOfFilteredItems[LF_BANK_DEPOSIT]           = numFilterdItemsInv
+    numberOfFilteredItems[LF_GUILDBANK_DEPOSIT]      = numFilterdItemsInv
+    numberOfFilteredItems[LF_VENDOR_BUY]             = 0                      -- TODO FEATURE: Add as filter panel gets supported
+    numberOfFilteredItems[LF_VENDOR_SELL]            = numFilterdItemsInv
+    numberOfFilteredItems[LF_VENDOR_BUYBACK]         = 0                      -- TODO FEATURE: Add as filter panel gets supported
+    numberOfFilteredItems[LF_VENDOR_REPAIR]          = 0                      -- TODO FEATURE: Add as filter panel gets supported
+    numberOfFilteredItems[LF_FENCE_SELL]             = numFilterdItemsInv
+    numberOfFilteredItems[LF_FENCE_LAUNDER]          = numFilterdItemsInv
     --Others
-    FCOIS.numberOfFilteredItems[LF_BANK_WITHDRAW]          = ctrlVars.BANK.data
-    FCOIS.numberOfFilteredItems[LF_GUILDBANK_WITHDRAW]     = ctrlVars.GUILD_BANK.data
-    FCOIS.numberOfFilteredItems[LF_SMITHING_REFINE]        = ctrlVars.REFINEMENT.data
-    FCOIS.numberOfFilteredItems[LF_SMITHING_DECONSTRUCT]   = ctrlVars.DECONSTRUCTION.data
-    FCOIS.numberOfFilteredItems[LF_SMITHING_IMPROVEMENT]   = ctrlVars.IMPROVEMENT.data
-    FCOIS.numberOfFilteredItems[LF_SMITHING_RESEARCH]      = 0 -- No item count should be shown at the research traits list
-    FCOIS.numberOfFilteredItems[LF_SMITHING_RESEARCH_DIALOG] = 0 -- No item count should be shown inside the selected traits popup
-    FCOIS.numberOfFilteredItems[LF_ALCHEMY_CREATION]       = ctrlVars.ALCHEMY_STATION.data
-    FCOIS.numberOfFilteredItems[LF_ENCHANTING_CREATION]    = ctrlVars.ENCHANTING_STATION.data
-    FCOIS.numberOfFilteredItems[LF_ENCHANTING_EXTRACTION]  = FCOIS.numberOfFilteredItems[LF_ENCHANTING_CREATION]
-    FCOIS.numberOfFilteredItems[LF_CRAFTBAG]               = ctrlVars.CRAFTBAG_LIST.data
-    FCOIS.numberOfFilteredItems[LF_RETRAIT]                = ctrlVars.RETRAIT_LIST.data
-    FCOIS.numberOfFilteredItems[LF_HOUSE_BANK_WITHDRAW]    = ctrlVars.HOUSE_BANK.data
-    FCOIS.numberOfFilteredItems[LF_JEWELRY_REFINE]         = FCOIS.numberOfFilteredItems[LF_SMITHING_REFINE]
-    FCOIS.numberOfFilteredItems[LF_JEWELRY_DECONSTRUCT]    = FCOIS.numberOfFilteredItems[LF_SMITHING_DECONSTRUCT]
-    FCOIS.numberOfFilteredItems[LF_JEWELRY_IMPROVEMENT]    = FCOIS.numberOfFilteredItems[LF_SMITHING_IMPROVEMENT]
-    FCOIS.numberOfFilteredItems[LF_JEWELRY_RESEARCH]       = FCOIS.numberOfFilteredItems[LF_SMITHING_RESEARCH]
-    FCOIS.numberOfFilteredItems[LF_JEWELRY_RESEARCH_DIALOG]= FCOIS.numberOfFilteredItems[LF_SMITHING_RESEARCH_DIALOG]
-    FCOIS.numberOfFilteredItems[LF_QUICKSLOT]              = ctrlVars.QUICKSLOT_WINDOW.list.data
+    numberOfFilteredItems[LF_BANK_WITHDRAW]          = ctrlVars.BANK.data
+    numberOfFilteredItems[LF_GUILDBANK_WITHDRAW]     = ctrlVars.GUILD_BANK.data
+    numberOfFilteredItems[LF_SMITHING_REFINE]        = ctrlVars.REFINEMENT.data
+    numberOfFilteredItems[LF_SMITHING_DECONSTRUCT]   = ctrlVars.DECONSTRUCTION.data
+    numberOfFilteredItems[LF_SMITHING_IMPROVEMENT]   = ctrlVars.IMPROVEMENT.data
+    numberOfFilteredItems[LF_SMITHING_RESEARCH]      = 0 -- No item count should be shown at the research traits list
+    numberOfFilteredItems[LF_SMITHING_RESEARCH_DIALOG] = 0 -- No item count should be shown inside the selected traits popup
+    numberOfFilteredItems[LF_ALCHEMY_CREATION]       = ctrlVars.ALCHEMY_STATION.data
+    numberOfFilteredItems[LF_ENCHANTING_CREATION]    = ctrlVars.ENCHANTING_STATION.data
+    numberOfFilteredItems[LF_ENCHANTING_EXTRACTION]  = numberOfFilteredItems[LF_ENCHANTING_CREATION]
+    numberOfFilteredItems[LF_CRAFTBAG]               = ctrlVars.CRAFTBAG_LIST.data
+    numberOfFilteredItems[LF_RETRAIT]                = ctrlVars.RETRAIT_LIST.data
+    numberOfFilteredItems[LF_HOUSE_BANK_WITHDRAW]    = ctrlVars.HOUSE_BANK.data
+    numberOfFilteredItems[LF_JEWELRY_REFINE]         = numberOfFilteredItems[LF_SMITHING_REFINE]
+    numberOfFilteredItems[LF_JEWELRY_DECONSTRUCT]    = numberOfFilteredItems[LF_SMITHING_DECONSTRUCT]
+    numberOfFilteredItems[LF_JEWELRY_IMPROVEMENT]    = numberOfFilteredItems[LF_SMITHING_IMPROVEMENT]
+    numberOfFilteredItems[LF_JEWELRY_RESEARCH]       = numberOfFilteredItems[LF_SMITHING_RESEARCH]
+    numberOfFilteredItems[LF_JEWELRY_RESEARCH_DIALOG]= numberOfFilteredItems[LF_SMITHING_RESEARCH_DIALOG]
+    numberOfFilteredItems[LF_QUICKSLOT]              = ctrlVars.QUICKSLOT_LIST ~= nil and ctrlVars.QUICKSLOT_LIST.data --Will be updated at DeferredInit again! See FCOIS_Hooks -> onDeferredInitCheck(ctrlVars.QUICKSLOT_KEYBOARD
     --Special numbers for e.g. quest items in inventory
-    FCOIS.numberOfFilteredItems["INVENTORY_QUEST_ITEM"]    = playerInvInvs[INVENTORY_QUEST_ITEM].listView.data
+    numberOfFilteredItems["INVENTORY_QUEST_ITEM"]    = playerInvInvs[INVENTORY_QUEST_ITEM].listView.data
+
+    FCOIS.numberOfFilteredItems = numberOfFilteredItems
 end
 
 --==========================================================================================================================================

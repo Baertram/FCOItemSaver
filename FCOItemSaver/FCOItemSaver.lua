@@ -212,7 +212,7 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
 -- Currently worked on [Added/Fixed/Changed] -              Updated last 2024-08-09
 ------------------------------------------------------------------------------------
 
---#296 PTS API101043 user:/AddOns/FCOItemSaver/src/FCOIS_Functions.lua:323: attempt to index a nil value
+--#296 PTS API101043 Fix quickslot marker icons and errors due to ZOs change to deferred init.
 
 -------------------------------------------------------------------------------------
 --Changelog (last version: 2.5.9 - New version: 2.6.0) -    Updated last: 2024-08-09
