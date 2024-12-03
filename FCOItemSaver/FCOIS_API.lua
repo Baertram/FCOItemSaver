@@ -1400,7 +1400,7 @@ function FCOIS.ShouldInventoryContextMenuBeHiddden()
 	if not checkIfFCOISSettingsWereLoaded(FCOIS.preventerVars.gCalledFromInternalFCOIS, not addonVars.gAddonLoaded) then return false end
 	local contextMenuClearMarkesByShiftKey = FCOIS.settingsVars.settings.contextMenuClearMarkesByShiftKey
 --d(">contextMenuClearMarkesByShiftKey: " ..tos(contextMenuClearMarkesByShiftKey) .. ", dontShowInvContextMenu: " ..tos(FCOIS.preventerVars.dontShowInvContextMenu))
-    return (contextMenuClearMarkesByShiftKey == true and FCOIS.preventerVars.dontShowInvContextMenu == true) or false
+    return (contextMenuClearMarkesByShiftKey == true and FCOIS.preventerVars.dontShowInvContextMenu == true and true) or false
 end
 
 --------------------------------------------------------------------------------

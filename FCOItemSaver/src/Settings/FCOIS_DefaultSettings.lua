@@ -252,7 +252,7 @@ function FCOIS.BuildDefaultSettings()
 		showSetCollectionMarkedInChat		= false,
 		autoMarkSetTrackerSets				= false,
 		autoMarkSetTrackerSetsCheckAllIcons = false,
-		autoMarkSetTrackerSetsInv			= true,
+		autoMarkSetTrackerSetsInv			= false,
 		autoMarkSetTrackerSetsBank			= false,
 		autoMarkSetTrackerSetsGuildBank		= false,
 		autoMarkSetTrackerSetsWorn			= false,
@@ -393,6 +393,8 @@ function FCOIS.BuildDefaultSettings()
 		showTooltipAtRestoreLastMarked = false,
 		markerIconsOutputOrder = {},
 		markerIconsOutputOrderEntries = {},
+		autoMarkLibSetsSetSearchFavorites = false, --#301
+		LibSetsSetSearchFavoriteToFCOISMapping = {}, --#301
 	}
 	--The tables for the markedItems, non-unique and unique
 	local addonVars = FCOIS.addonVars

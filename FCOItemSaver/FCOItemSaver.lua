@@ -200,25 +200,28 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
 
 
 --______________________________________
--- Current max # of bugs/features/ToDos: 297
+-- Current max # of bugs/features/ToDos: 301
 --______________________________________
 
 --Open/To work on this patch:
 
+
 --=== Not started yet ===
+--#299 At launder/fence using SHIFT+right click or keybind to remove all marker icons should auto re-apply those to the same item once the fence/launder closes (enable at settings menu "Automatic marks")
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2024-08-09
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2024-12-03
 ------------------------------------------------------------------------------------
-
---#296 PTS API101043 Fix quickslot marker icons and errors due to ZOs change to deferred init.
+--#301 Add LibSets favorites as marker icons of FCOIS to the inventories -> Uses FCOIS dynamic icons
+--#302 Disable SetTracker support
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.5.9 - New version: 2.6.0) -    Updated last: 2024-08-09
+--Changelog (last version: 2.6.0 - New version: 2.6.1) -    Updated last: 2024-12-03
 -------------------------------------------------------------------------------------
 --[Fixed]
---#295 Fix missing antiPanel settings to reset to default values
+--#298 Context menu prevention as modifier key + right mouse was clicked now resets the internal variables slightly delayed so other addons like TTC properly detect it on first usage (other addons like TTC though propelry needs to add ## OptionalDependsOn: FCOItemSaver for that to work)
+--#300 If LibScrollableMenu is enabled and replaces ZO_Menu the checkbox callback function at filterButtons right click context menu "(logical AND/OR)" saves the complete LSM combobox to savedvars of FCOIS via function ContextMenuFCOISFilterButtonSettingsOnClicked
 
 --[Changed]
 

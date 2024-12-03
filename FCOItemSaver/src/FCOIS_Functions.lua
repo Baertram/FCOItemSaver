@@ -2955,7 +2955,7 @@ end
 
 --Check if the player is in a house
 function FCOIS.CheckIfInHouse()
-    local inHouse = (GetCurrentZoneHouseId() ~= 0) or false
+    local inHouse = (GetCurrentZoneHouseId() ~= 0 and true) or false
     if not inHouse then
         local x,y,z,rotRad = GetPlayerWorldPositionInHouse()
         if x == 0 and y == 0 and z == 0 and rotRad == 0 then
@@ -2968,20 +2968,22 @@ local checkIfInHouse = FCOIS.CheckIfInHouse
 
 --Check if the player owns the house
 function FCOIS.CheckIfIsOwnerOfHouse()
-    return IsOwnerOfCurrentHouse() or false
+    return IsOwnerOfCurrentHouse()
 end
 local checkIfIsOwnerOfHouse = FCOIS.CheckIfIsOwnerOfHouse
 
 --Check if the bagId is a house bank bag and we are in our own house
 function FCOIS.CheckIfHouseBankBagAndInOwnHouse(bagId)
-    local retVar = (bagId ~= nil and IsHouseBankBag(bagId) and checkIfInHouse() and checkIfIsOwnerOfHouse) or false
+    --20241119 Disabled for performance local retVar = (bagId ~= nil and IsHouseBankBag(bagId) and checkIfInHouse() and checkIfIsOwnerOfHouse()) or false
+    local retVar = (bagId ~= nil and IsHouseBankBag(bagId) and checkIfIsOwnerOfHouse() and true) or false
 --d("[FCOIS.checkIfHouseBankBagAndInOwnHouse] bagId: " ..tos(bagId) .. ", houseBankBagAndInOwnHouse: " ..tos(retVar))
     return retVar
 end
 
 --Check if I'm an owner of a house and I'm curerntly in a house
 function FCOIS.CheckIfHouseOwnerAndInsideOwnHouse()
-    local retVar = (checkIfInHouse() and checkIfIsOwnerOfHouse()) or false
+    --20241119 Disabled for performance local retVar = (checkIfInHouse() and checkIfIsOwnerOfHouse()) or false
+    local retVar = checkIfIsOwnerOfHouse()
 --d("[FCOIS.checkIfHouseBankBagAndInOwnHouse] bagId: " ..tos(bagId) .. ", houseBankBagAndInOwnHouse: " ..tos(retVar))
     return retVar
 end
@@ -3440,6 +3442,7 @@ function FCOIS.CheckIfBagShouldAutoRemoveMarkerIcons(bagId, slotIndex)
     end
 end
 
+
 ------------------------------------------------
 --- Tooltip functions
 ------------------------------------------------
@@ -3469,6 +3472,7 @@ function FCOIS.ShowItemLinkTooltip(control, parent, anchor1, offsetX, offsetY, a
         end
     end
 end
+
 
 --==========================================================================================================================================
 --                                          FCOIS - Keyboard helper functions

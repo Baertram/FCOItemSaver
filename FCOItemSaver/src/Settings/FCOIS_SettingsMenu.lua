@@ -27,6 +27,7 @@ local fcoisLAMSettingsReferencePrefix = "FCOItemSaver_Settings_"
 --Control name parts, prefix, suffix, tooltip suffix
 local previewSelect = "Preview_Select"
 local filterButton = "Filter"
+local libSetsSetSearchFavorite = "LibSetsSetSearchFavorite_" --#301
 local colorSuffix = "_color"
 local nameSuffix = "_name"
 local optionsIcon = "options_icon"
@@ -131,6 +132,8 @@ local setAllAddInvFlagButtonOffsetSettingsEqual = FCOIS.SetAllAddInvFlagButtonOf
 local reAnchorAdditionalInvButtons = FCOIS.ReAnchorAdditionalInvButtons
 local resetCreateFCOISUniqueIdStringLastVars = FCOIS.ResetCreateFCOISUniqueIdStringLastVars
 local getLAMMarkerIconsDropdown
+
+local mapLibSetsSetSearchFavoritesCategories = FCOIS.MapLibSetsSetSearchFavoritesCategories --#301
 
 
 --Other addons
@@ -386,9 +389,15 @@ local function CreateControl(ref, name, tooltip, data, disabledChecks, getFunc, 
         if data.type ~= "header" and data.type ~= "submenu" then
             data.tooltip = tooltip
             if data.type ~= "button" then
-                data.getFunc = getFunc
-                data.setFunc = setFunc
-                data.default = defaultSettings
+                if getFunc ~= nil then
+                    data.getFunc = getFunc
+                end
+                if setFunc ~= nil then
+                    data.setFunc = setFunc
+                end
+                if defaultSettings ~= nil then
+                    data.default = defaultSettings
+                end
             else
                 data.func = setFunc
             end
@@ -1144,13 +1153,19 @@ local function updateFilterButtonColorAndTexture(filterButtonNr, iconNr)
     updateFCOISFilterButtonColorsAndTextures(iconNr, p_button, FCOIS_CON_FILTER_BUTTON_STATE_DO_NOT_UPDATE_COLOR)
 end
 
-local function changePreviewLabelText(previewType, iconNr, text, doNotUpdateMarkers)
+local function changePreviewLabelText(previewType, iconNr, text, doNotUpdateMarkers, iconType) --#301
     doNotUpdateMarkers = doNotUpdateMarkers or false
     local iconCtrl = getPreviewControlByIconNr(previewType, iconNr)
     if not iconCtrl or not iconCtrl.label or not text then return end
     locVars = FCOISlocVars.fcois_loc
 
-    iconCtrl.label:SetText(locVars[optionsIcon..tos(iconNr).."_texture"] .. ": " .. text)
+    if iconType == nil then
+        iconCtrl.label:SetText(locVars[optionsIcon..tos(iconNr).."_texture"] .. ": " .. text)
+    --#301
+    elseif iconType == "LibSetsSetSearchFavorite" then
+        iconCtrl.label:SetText(locVars[optionsIcon..tos(1).."_texture"] .. ": " .. text)
+    end
+
     if not doNotUpdateMarkers then
         --Set global variable to update the marker colors and textures
         FCOIS.preventerVars.gUpdateMarkersNow = true
@@ -1500,6 +1515,7 @@ runOnceBeforeLAMPanelGetsCreated()
 
 --==================== SetTracker - BEGIN ======================================
 --Function to build the SetTracker dropdown boxes
+--[[ --#302
 local function buildSetTrackerDDBoxes()
     if not FCOIS.otherAddons.SetTracker.isActive or not SetTrack or not SetTrack.GetMaxTrackStates then return nil end
     --Get the amount of tracking states
@@ -1541,13 +1557,6 @@ local function buildSetTrackerDDBoxes()
                 local alternativeNameText = zo_strf(locVars["options_auto_mark_settrackersets_to_fcois_icon"], tos(i+1))
                 name = sTrackName or alternativeNameText or "SetTracker state " .. tos(i+1)
                 tooltip = alternativeNameText
-                --[[
-                    if strlen(sTrackName) > 40 then
-                        tooltip = locVars["options_auto_mark_settrackersets_to_fcois_icon" .. tooltipSuffix]
-                    else
-                        tooltip = sTrackName or locVars["options_auto_mark_settrackersets_to_fcois_icon" .. tooltipSuffix]
-                    end
-               ]]
             end
         end
         --Is the tracking state name determined?
@@ -1566,6 +1575,7 @@ local function buildSetTrackerDDBoxes()
 end
 
 -- Build a LAM SubMenu for the addon "SetTracker"
+--#302
 local function LAMSubmenuSetTracker()
     local submenuControls = {}
     locVars = FCOISlocVars.fcois_loc
@@ -1683,6 +1693,7 @@ local function LAMSubmenuSetTracker()
     --------------------------------------------------------------------------------
     return submenuControls
 end
+]]
 --==================== SetTracker - END ======================================
 
 
@@ -2899,6 +2910,78 @@ end
 --==================== Filter panel additional inventory context menu "flag" button positions - END =====================================
 
 
+
+--#301 LibSets set search favorites
+local function buildLibSetsSetSearchCategorySubMenu()
+    FCOISsettings = FCOIS.settingsVars.settings
+
+    local libSetsSetSearchCategorySubMenu = {}
+
+    local libSetsSetSearchCategoryData = mapLibSetsSetSearchFavoritesCategories()
+    if ZO_IsTableEmpty(libSetsSetSearchCategoryData) then return libSetsSetSearchCategorySubMenu end
+
+    local LibSetsSetSearchFavoriteToFCOISMapping = FCOISsettings.LibSetsSetSearchFavoriteToFCOISMapping
+    local iconSettings = FCOISsettings.icon[FCOIS_CON_ICON_LOCK] --use default 'lock' icon as icon settings
+
+    local optionsLibSetsSetSearchFavoritesCategoryName = locVars["options_LibSetsSetSearchFavoritesCategory"]
+
+    --Map each LibSets set search category data to LibAddonMenu IconPicker controls
+    for categoryIndex, categoryData in ipairs(libSetsSetSearchCategoryData) do
+        local category = categoryData.category
+        local categoryName = categoryData.categoryName or category
+        local categoryTexture = categoryData.texture
+        if category and categoryTexture then
+            local ref, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, createdControl
+
+            --Add the current LibSets set search favorite category icon as texture, with the name of the category (for visual reference)
+            --[[textureData = {
+                type = "texture",
+                image = "file/path.dds",
+                imageWidth = 64, -- max of 250 for half width, 510 for full
+                imageHeight = 32, -- max of 100
+                tooltip = "Image's tooltip text.", -- or string id or function returning a string (optional)
+                width = "full", -- or "half" (optional)
+                reference = "MyAddonTexture" -- unique global reference to control (optional)
+            } ]]
+            ref = fcoisLAMSettingsReferencePrefix .. libSetsSetSearchFavorite.. category ..  "Icon"
+            data = { type = "texture", image = categoryTexture, width = "half", imageWidth = 32, imageHeight=32 }
+            disabledFunc = function() return FCOIS.libSets == nil or not FCOISsettings.autoMarkLibSetsSetSearchFavorites end
+            defaultSettings = markerIconTextures[1]
+            createdControl = CreateControl(ref, name, tooltip, data, disabledFunc, nil, nil, defaultSettings, nil)
+            if createdControl ~= nil then
+                table.insert(libSetsSetSearchCategorySubMenu, createdControl)
+            end
+            ref, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, createdControl = nil, nil, nil, nil, nil, nil, nil, nil, nil
+
+            --Add the icon picker
+            local lamCtrlTooltip = optionsLibSetsSetSearchFavoritesCategoryName .. " #" .. tos(categoryIndex)  .. ": " .. tos(categoryName)
+            ref = fcoisLAMSettingsReferencePrefix .. libSetsSetSearchFavorite.. category ..  previewSelect
+            name = categoryName
+            tooltip = lamCtrlTooltip
+            data = { type = "iconpicker", width = "half", choices = markerIconTextures, choicesTooltips = texturesList, maxColumns=6, visibleRows=5, iconSize=iconSettings.size}
+            disabledFunc = function() return FCOIS.libSets == nil or not FCOISsettings.autoMarkLibSetsSetSearchFavorites end
+            getFunc = function() return (LibSetsSetSearchFavoriteToFCOISMapping[category] ~= nil and markerIconTextures[LibSetsSetSearchFavoriteToFCOISMapping[category]]) or markerIconTextures[1] end
+            setFunc = function(texturePath)
+                local textureId = GetFCOTextureId(texturePath)
+                if textureId ~= 0 then
+                    FCOISsettings.LibSetsSetSearchFavoriteToFCOISMapping[category] = textureId
+                    changePreviewLabelText(libSetsSetSearchFavorite, category, texturesList[textureId], nil, "LibSetsSetSearchFavorite")
+                    --updateFilterButtonColorAndTexture(mappingVars.iconToFilterDefaults[FCOIS_CON_ICON_LOCK], FCOIS_CON_ICON_LOCK)
+                    --todo 20241203 Update the markers in the inventory for LibSets set items where the set search favorites are applied?
+                end
+            end
+            defaultSettings = markerIconTextures[1]
+            createdControl = CreateControl(ref, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
+            if createdControl ~= nil then
+                table.insert(libSetsSetSearchCategorySubMenu, createdControl)
+            end
+
+        end
+    end
+    return libSetsSetSearchCategorySubMenu
+end
+
+
 --======================================================================================================================
 --======================================================================================================================
 --======================================================================================================================
@@ -3072,7 +3155,7 @@ function FCOIS.BuildAddonMenu()
     --[Submenus]
     --Other addons
     -- Creating LAM submenu for the SetTracker addon
-    local SetTrackerSubmenuControls = LAMSubmenuSetTracker()
+    --local SetTrackerSubmenuControls = LAMSubmenuSetTracker()
 
     --Marker icons
     --Build submenus for the normal and the gear marker icons
@@ -3091,6 +3174,8 @@ function FCOIS.BuildAddonMenu()
     local filterButtonsPositionsSubMenu = buildFilterButtonsPositionsSubMenu()
     --Build submenu for additional inventory flag button contextMenus
     local addInvFlagButtonsPositionsSubMenu = buildAddInvContextMenuFlagButtonsPositionsSubMenu()
+    --Build submenu for LibSets set search favorites
+    local libSetsSetSearchFavoritesSubMenu = buildLibSetsSetSearchCategorySubMenu()
 
 
     --==================== LAM callbacks - BEGIN =====================================
@@ -4995,13 +5080,49 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
 
 
                                 --==============================================================================
+                                -- LibSets Set Search Favorites - #301
+                                {
+                                    type = "submenu",
+                                    name = locVars["options_enable_auto_mark_LibSetsSetSearchFavorites"],
+                                    reference = "FCOItemSaver_Settings_LibSetsSetSearchFavoriteCategories_SubMenu",
+                                    controls = {
+
+                                        {
+                                            type = "checkbox",
+                                            name = locVars["options_enable_auto_mark_LibSetsSetSearchFavorites"],
+                                            tooltip = locVars["options_enable_auto_mark_LibSetsSetSearchFavorites" .. tooltipSuffix],
+                                            getFunc = function() return FCOISsettings.autoMarkLibSetsSetSearchFavorites end,
+                                            setFunc = function(value)
+                                                FCOISsettings.autoMarkLibSetsSetSearchFavorites = value
+                                                if (FCOISsettings.autoMarkLibSetsSetSearchFavorites == true) then
+                                                    --scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
+                                                end
+                                            end,
+                                            disabled = function() return FCOIS.libSets == nil end,
+                                            width = "full",
+                                            default = FCOISdefaultSettings.autoMarkLibSetsSetSearchFavorites,
+                                        },
+
+                                        { -- Begin Submenu filter button position data
+                                            type = "submenu",
+                                            name = locVars["options_LibSetsSetSearchFavorites_Mapping"],
+                                            controls = libSetsSetSearchFavoritesSubMenu,
+                                        },
+
+                                    }, -- -- LibSets Set Search Favorites controls
+                                }, -- -- LibSets Set Search Favorites submenu
+
+
+                                --==============================================================================
                                 -- SetTracker auto-marking
+                                --[[
                                 {
                                     type = "submenu",
                                     name = locVars["options_header_settracker"],
                                     reference = "FCOItemSaver_Settings_SetTracker_SubMenu",
                                     controls = SetTrackerSubmenuControls, -- dynamically created dropdown controls for each SetTracker tracking state/index
                                 },
+                                ]]
 
                                 --==============================================================================
                                 {

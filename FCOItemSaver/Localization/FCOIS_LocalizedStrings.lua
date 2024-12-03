@@ -1291,6 +1291,13 @@ FCOIS.localizationVars.localizationAll = {
         ["options_automark_itemcooldowntracker_TT"]     = "Automatically mark items tracked via \'Item Cooldown Tracker\' with a marker icon.",
         ["options_automark_itemcooldowntracker_icon_TT"] = "Choose the marker icon that should be applied on items that are tracked via \'Item Cooldown Tracker\'.",
 
+
+        --#301 LibSets set search favorites
+        ["options_enable_auto_mark_LibSetsSetSearchFavorites"] = "LibSets set search favorites mapping",
+        ["options_enable_auto_mark_LibSetsSetSearchFavorites_TT"] = "Map the LibSets set search favorite categories to FCOIS marker icons and show those in your inventories.",
+        ["options_LibSetsSetSearchFavorites_Mapping"] = "LibSets - Set search favorites mapping",
+        ["options_LibSetsSetSearchFavoritesCategory"] = "Set search favorite category",
+
         --LibShifterBoxes
         --[FCOIS_UNIQUEID_ITEMTYPES]
         ["LIBSHIFTERBOX_FCOIS_UNIQUEID_ITEMTYPES_TITLE_LEFT"]   = "Item types (all)",

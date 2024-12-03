@@ -589,7 +589,7 @@ local function FCOItemSaver_Crafting_Interact(_, craftSkill)
     end
 end
 
-local updateSetTrackerMarker = FCOIS.updateSetTrackerMarker
+--local updateSetTrackerMarker = FCOIS.updateSetTrackerMarker --#302
 --Inventory slot gets updated function
 local function FCOItemSaver_Inv_Single_Slot_Update(_, bagId, slotId, isNewItem, itemSoundCategory, updateReason, stackCountChange, triggeredByCharacterName, triggeredByDisplayName)
     --Only updates for my own account!
@@ -675,6 +675,7 @@ local function FCOItemSaver_Inv_Single_Slot_Update(_, bagId, slotId, isNewItem, 
             end
 
             -- ========================== SET TRACKER ===========================================================================================================================
+            --[[ --#302
             if SetTrack ~= nil and SetTrack.GetTrackingInfo ~= nil then
                 local otherAddonsSetTracker = otherAddons.SetTracker
                 if otherAddonsSetTracker.isActive and settings.autoMarkSetTrackerSets then
@@ -692,6 +693,7 @@ local function FCOItemSaver_Inv_Single_Slot_Update(_, bagId, slotId, isNewItem, 
                     updateSetTrackerMarker(bagId, slotId, setTrackerState, doShow, doUpdateInv, calledFromFCOISEventSingleSlotInvUpdate)
                 end
             end
+            ]]
 
             --New item
             local settingsAutoMarkNewItems = (settings.autoMarkNewItems and settings.isIconEnabled[settings.autoMarkNewIconNr]) or false

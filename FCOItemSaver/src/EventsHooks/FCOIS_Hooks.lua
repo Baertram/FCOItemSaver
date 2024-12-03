@@ -798,7 +798,7 @@ function FCOIS.CreateHooks()
         --Then hide the context menu
         local contextMenuClearMarkesKey                   = settings.contextMenuClearMarkesModifierKey
         local contextMenuClearMarkesByShiftKey            = specialContextMenuKeysCheckAndActions()
-        --d("[FCOIS]contextMenuClearMarkesByShiftKey: " ..tos(contextMenuClearMarkesByShiftKey))
+--d("HHHHHHHHHHHHH[FCOIS]ZO_InventorySlot_ShowContextMenu_For_FCOItemSaver - contextMenuClearMarkesByShiftKey: " ..tos(contextMenuClearMarkesByShiftKey) .. ", preventCOntextMenu: " .. tos(prevVars.dontShowInvContextMenu) .. ", modifierPressed: " .. tos(isModifierKeyPressed(contextMenuClearMarkesKey)) ..", noOtherModifierpressed: " ..tos(isNoOtherModifierKeyPressed(contextMenuClearMarkesKey)))
         --#194: bugfix
         --local isCharacterShownNow = isCharacterShown()
         --local isCompanionCharacterShownNow = isCompanionCharacterShown()
@@ -816,15 +816,23 @@ function FCOIS.CreateHooks()
         --#194: Checking for the character here will show the dynamic icons submenu context menu (customMenuDynSubEntries) as standalone, if enabled!
         --and (isCharacterShownNow or isCompanionCharacterShownNow)
         then
-            --d(">FCOIS context menu, shift key is down")
+--d(">FCOIS context menu, modifier key is down -> Preventing contextMenu now")
             FCOIS.preventerVars.dontShowInvContextMenu = true
+            prevVars = FCOIS.preventerVars
         end
         if prevVars.dontShowInvContextMenu == true then
-            --d(">FCOIS context menu, hiding it!")
-            FCOIS.preventerVars.dontShowInvContextMenu = false
+--d(">FCOIS context menu, hiding it!")
             --Hide the context menu now by returning true in this preHook and not calling the "context menu show" function
             --Nil the current menu ZO_Menu so it does not show (anti-flickering)
             ClearMenu()
+            --2024-11-11 LibScrollableMenu is enabled and it is used to replace ZO_Menu? Clear LSM entries now too so it does not show any empty LSM context menu
+            -->!!!Only happens if Tamriel Trade Center is nabled too!!! So must be an issue how TTC hooks into the inventory context menu?
+            -->Because FCOIS.ShouldInventoryContextMenuBeHiddden() returns false as  FCOIS.preventerVars.dontShowInvContextMenu below was reset to false already!
+            -->So we need to delay the reset a bit
+            zo_callLater(function()
+--d("[FCOIS]resetting preventerVars.dontShowInvContextMenu to false")
+                FCOIS.preventerVars.dontShowInvContextMenu = false
+            end, 0) --Call at next frame so next ShowMenu() of TTC etc. do not get the preventer variable reset?
             return true
         end
 

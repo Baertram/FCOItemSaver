@@ -38,7 +38,8 @@ local isCharacterShown = FCOIS.IsCharacterShown
 
 local checkIfIsOwnerOfHouse = FCOIS.CheckIfIsOwnerOfHouse
 local checkIfInHouse = FCOIS.CheckIfInHouse
-local checkIfHouseBankBagAndInOwnHouse = FCOIS.CheckIfHouseBankBagAndInOwnHouse
+--local checkIfHouseBankBagAndInOwnHouse = FCOIS.CheckIfHouseBankBagAndInOwnHouse
+local checkIfHouseOwnerAndInsideOwnHouse = FCOIS.CheckIfHouseOwnerAndInsideOwnHouse
 local getCurrentlyLoggedInCharUniqueId = FCOIS.GetCurrentlyLoggedInCharUniqueId
 local checkIfFCOISSettingsWereLoaded = FCOIS.CheckIfFCOISSettingsWereLoaded
 
@@ -137,6 +138,7 @@ FCOIS.mappingVars.filterPanelIdToBlockSettingName[LF_CRAFTBAG].callbackFunc = ch
 -- ==================================================================
 --Get the SetTracker data from it's SavedVariables and build the FCOIS mapping table data etc.
 function otherAddons.SetTracker.GetSetTrackerSettingsAndBuildFCOISSetTrackerData()
+    --[[ --#302
     --Support for addon 'SetTracker': Get the number of allowed indices of SetTracker and
     --build a mapping array for SetTracker index -> FCOIS marker icon
     if otherAddons.SetTracker.isActive and SetTrack and SetTrack.GetMaxTrackStates then
@@ -158,8 +160,10 @@ function otherAddons.SetTracker.GetSetTrackerSettingsAndBuildFCOISSetTrackerData
             [BAG_GUILDBANK]	        = FCOIS.settingsVars.settings.autoMarkSetTrackerSetsGuildBank,
         }
     end
+    ]]
 end
 
+--[[ --#302
 --Loop function to check the items in your inventories against a set name and mark them with FCOIS marker icon, if tracked with addon SetTracker
 local function checkSetTrackerTrackingStateAndMarkWithFCOISIcon(sSetName, setTrackerState, iTrackIndex, doShow, p_bagId, p_slotIndex)
     local settings = FCOIS.settingsVars.settings
@@ -403,9 +407,11 @@ local function checkSetTrackerTrackingStateAndMarkWithFCOISIcon(sSetName, setTra
     end -- for in pairs ...
     return retVar, FCOISMarkerIconForSetTracker
 end
+]]
 
 --function to scan inventories for set parts and mark them, if SetTracker addon is active
 function otherAddons.SetTracker.checkAllItemsForSetTrackerTrackingState()
+    --[[ --#302
     --Is the SetTracker addon active and the marking of tracked items with FCOIS icons is active and the scan for tarcked items at reloadui/login is enabled?
     if SetTrack == nil or SetTrack.GetTrackingInfo == nil or not otherAddons.SetTracker.isActive
             or FCOIS.settingsVars.settings.autoMarkSetTrackerSets == false or FCOIS.settingsVars.settings.autoMarkSetTrackerSetsRescan == false then
@@ -478,11 +484,13 @@ function otherAddons.SetTracker.checkAllItemsForSetTrackerTrackingState()
             end -- for bagCache
         end
     end -- for bagToCheck
+    ]]
 end
 
 --Called from external addon SetTracker to show/hide the FCOIS marker icons for tracked set parts
 -- or called from event EVENT_INVENTORY_SINGLE_SLOT_UPDATE callback function FCOItemSaver_Inv_Single_Slot_Update(...)
 function otherAddons.SetTracker.updateSetTrackerMarker(bagId, slotIndex, setTrackerState, doShow, doUpdateInv, calledFromFCOISEventSingleSlotInvUpdate)
+     --[[ --#302
     calledFromFCOISEventSingleSlotInvUpdate = calledFromFCOISEventSingleSlotInvUpdate or false
     --d("[FCOIS.updateSetTrackerMarker] calledFromFCOISEventSingleSlotInvUpdate: " .. tos(calledFromFCOISEventSingleSlotInvUpdate))
     if bagId == nil or slotIndex == nil or SetTrack == nil or SetTrack.GetTrackingInfo == nil or SetTrack.GetTrackStateInfo == nil or not otherAddons.SetTracker.isActive
@@ -549,6 +557,7 @@ function otherAddons.SetTracker.updateSetTrackerMarker(bagId, slotIndex, setTrac
         end
     end
     return retVarBool
+    ]]
 end
 FCOIS.updateSetTrackerMarker = otherAddons.SetTracker.updateSetTrackerMarker
 
@@ -820,7 +829,8 @@ function FCOIS.MyGetItemInstanceIdForIIfA(clickedDataLine, signToo)
                         if accountWideBagId == BAG_GUILDBANK then
                             guildBankBagFound = true
                         elseif IsHouseBankBag(accountWideBagId) then
-                            if not checkIfHouseBankBagAndInOwnHouse(accountWideBagId) then
+                            --if not checkIfHouseBankBagAndInOwnHouse(accountWideBagId) then
+                            if not checkIfHouseOwnerAndInsideOwnHouse() then
                                 houseBankBagFoundAndNotInHouse = true
                             end
                         else
@@ -1267,9 +1277,11 @@ function FCOIS.CheckIfOtherAddonActive(addOnName)
         FCOIS.otherAddons.AGSActive = true
     end
     --Check if addon "SetTracker" is active
+    --[[ --#302
     if(addOnName == "SetTracker" or SetTrack) then
         FCOIS.otherAddons.SetTracker.isActive = true
     end
+    ]]
     --Check if addon "AdvancedDisableControllerUI" is active
     if(addOnName == "AdvancedDisableControllerUI" or ADCUI) then
         FCOIS.otherAddons.ADCUIActive = true
@@ -1370,4 +1382,30 @@ function FCOIS.CheckIfInventoryRowOfExternalAddonNeedsMarkerIconsUpdate(rowContr
             IIfA:UpdateFCOISMarkerIcons(rowControl, showFCOISMarkerIcons, false, -1)
         end
     end
+end
+
+
+
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+--- LibSets
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+--#301 Support LibSet set search favorite categories with FCOIS marker icons -> In FCOIS settings menu -> LibSets submenu
+function FCOIS.MapLibSetsSetSearchFavoritesCategories()
+    local libSets = FCOIS.libSets
+    if not libSets or not libSets.GetSetSearchFavoriteCategories then return end
+
+    --[[ Returns table:
+        possibleSetSearchFavoriteCategoriesSorted[index] = {
+            category = string "lightningStaff",
+            categoryName = string "Lightning Staff",                            --in current client language, or fallback language en
+            texture = string "/esoui/art/progression/icon_lightningstaff.dds",
+        }
+    ]]
+    local setSearchCategoryData = libSets.GetSetSearchFavoriteCategories()
+    if ZO_IsTableEmpty(setSearchCategoryData) then return end
+    return setSearchCategoryData
 end
