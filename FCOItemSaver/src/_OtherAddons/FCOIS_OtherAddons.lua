@@ -138,7 +138,7 @@ FCOIS.mappingVars.filterPanelIdToBlockSettingName[LF_CRAFTBAG].callbackFunc = ch
 -- ==================================================================
 --Get the SetTracker data from it's SavedVariables and build the FCOIS mapping table data etc.
 function otherAddons.SetTracker.GetSetTrackerSettingsAndBuildFCOISSetTrackerData()
-    --[[ --#302
+    --[[ --#302 Disable SetTracker support within FCOIS
     --Support for addon 'SetTracker': Get the number of allowed indices of SetTracker and
     --build a mapping array for SetTracker index -> FCOIS marker icon
     if otherAddons.SetTracker.isActive and SetTrack and SetTrack.GetMaxTrackStates then
@@ -163,7 +163,7 @@ function otherAddons.SetTracker.GetSetTrackerSettingsAndBuildFCOISSetTrackerData
     ]]
 end
 
---[[ --#302
+--[[ --#302 SetTracker support disabled with FCOOIS v2.6.1
 --Loop function to check the items in your inventories against a set name and mark them with FCOIS marker icon, if tracked with addon SetTracker
 local function checkSetTrackerTrackingStateAndMarkWithFCOISIcon(sSetName, setTrackerState, iTrackIndex, doShow, p_bagId, p_slotIndex)
     local settings = FCOIS.settingsVars.settings
@@ -411,7 +411,7 @@ end
 
 --function to scan inventories for set parts and mark them, if SetTracker addon is active
 function otherAddons.SetTracker.checkAllItemsForSetTrackerTrackingState()
-    --[[ --#302
+    --[[ --#302 SetTracker support disabled with FCOOIS v2.6.1
     --Is the SetTracker addon active and the marking of tracked items with FCOIS icons is active and the scan for tarcked items at reloadui/login is enabled?
     if SetTrack == nil or SetTrack.GetTrackingInfo == nil or not otherAddons.SetTracker.isActive
             or FCOIS.settingsVars.settings.autoMarkSetTrackerSets == false or FCOIS.settingsVars.settings.autoMarkSetTrackerSetsRescan == false then
@@ -490,7 +490,7 @@ end
 --Called from external addon SetTracker to show/hide the FCOIS marker icons for tracked set parts
 -- or called from event EVENT_INVENTORY_SINGLE_SLOT_UPDATE callback function FCOItemSaver_Inv_Single_Slot_Update(...)
 function otherAddons.SetTracker.updateSetTrackerMarker(bagId, slotIndex, setTrackerState, doShow, doUpdateInv, calledFromFCOISEventSingleSlotInvUpdate)
-     --[[ --#302
+     --[[ --#302 SetTracker support disabled with FCOOIS v2.6.1
     calledFromFCOISEventSingleSlotInvUpdate = calledFromFCOISEventSingleSlotInvUpdate or false
     --d("[FCOIS.updateSetTrackerMarker] calledFromFCOISEventSingleSlotInvUpdate: " .. tos(calledFromFCOISEventSingleSlotInvUpdate))
     if bagId == nil or slotIndex == nil or SetTrack == nil or SetTrack.GetTrackingInfo == nil or SetTrack.GetTrackStateInfo == nil or not otherAddons.SetTracker.isActive
@@ -1277,7 +1277,9 @@ function FCOIS.CheckIfOtherAddonActive(addOnName)
         FCOIS.otherAddons.AGSActive = true
     end
     --Check if addon "SetTracker" is active
-    --[[ --#302
+    --#302 SetTracker support disabled with FCOOIS v2.6.1
+    FCOIS.otherAddons.SetTracker.isActive = false
+    --[[
     if(addOnName == "SetTracker" or SetTrack) then
         FCOIS.otherAddons.SetTracker.isActive = true
     end
@@ -1394,7 +1396,7 @@ end
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 --#301 Support LibSet set search favorite categories with FCOIS marker icons -> In FCOIS settings menu -> LibSets submenu
-function FCOIS.MapLibSetsSetSearchFavoritesCategories()
+function FCOIS.GetLibSetsSetSearchFavoriteCategories()
     local libSets = FCOIS.libSets
     if not libSets or not libSets.GetSetSearchFavoriteCategories then return end
 
@@ -1406,6 +1408,6 @@ function FCOIS.MapLibSetsSetSearchFavoritesCategories()
         }
     ]]
     local setSearchCategoryData = libSets.GetSetSearchFavoriteCategories()
-    if ZO_IsTableEmpty(setSearchCategoryData) then return end
+    --if ZO_IsTableEmpty(setSearchCategoryData) then return {} end
     return setSearchCategoryData
 end

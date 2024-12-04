@@ -123,27 +123,27 @@ local showConfirmationDialog = FCOIS.ShowConfirmationDialog
 local showRememberUserAboutSavedVariablesBackupDialog = FCOIS.ShowRememberUserAboutSavedVariablesBackupDialog
 local checkIfRecipeAddonUsed = FCOIS.CheckIfRecipeAddonUsed
 local checkIfChosenRecipeAddonActive = FCOIS.CheckIfChosenRecipeAddonActive
-local checkIfResearchAddonUsed = FCOIS.CheckIfResearchAddonUsed
-local checkIfChosenResearchAddonActive = FCOIS.CheckIfChosenResearchAddonActive
-local updateAntiCheckAtPanelVariable = FCOIS.UpdateAntiCheckAtPanelVariable
-local refreshEquipmentControl = FCOIS.RefreshEquipmentControl
-local filterBasics = FCOIS.FilterBasics
+local checkIfResearchAddonUsed                  = FCOIS.CheckIfResearchAddonUsed
+local checkIfChosenResearchAddonActive          = FCOIS.CheckIfChosenResearchAddonActive
+local updateAntiCheckAtPanelVariable            = FCOIS.UpdateAntiCheckAtPanelVariable
+local refreshEquipmentControl                   = FCOIS.RefreshEquipmentControl
+local filterBasics                              = FCOIS.FilterBasics
 local setAllAddInvFlagButtonOffsetSettingsEqual = FCOIS.SetAllAddInvFlagButtonOffsetSettingsEqual
-local reAnchorAdditionalInvButtons = FCOIS.ReAnchorAdditionalInvButtons
-local resetCreateFCOISUniqueIdStringLastVars = FCOIS.ResetCreateFCOISUniqueIdStringLastVars
+local reAnchorAdditionalInvButtons              = FCOIS.ReAnchorAdditionalInvButtons
+local resetCreateFCOISUniqueIdStringLastVars    = FCOIS.ResetCreateFCOISUniqueIdStringLastVars
 local getLAMMarkerIconsDropdown
 
-local mapLibSetsSetSearchFavoritesCategories = FCOIS.MapLibSetsSetSearchFavoritesCategories --#301
+local getLibSetsSetSearchFavoriteCategories     = FCOIS.GetLibSetsSetSearchFavoriteCategories --#301
 
 
 --Other addons
-local GridListActivated = false
-local InventoryGridViewActivated = false
+local GridListActivated                         = false
+local InventoryGridViewActivated                = false
 
 
 -- ============= Addon LAM dropdown choices/choicesValues/choicesTooltios - BEGIN ======================================
 --The table with all the LAM dropdown controls that should get updated with marker icons and their name
-local LAMdropdownsWithIconList = {}
+local LAMdropdownsWithIconList                  = {}
 --The table with all LAM submenus for marker icons where the name could be changed (gear, dynamic)
 --local LAMsubmenusWithMarkerIconChangeableNames = {}
 
@@ -375,6 +375,19 @@ end
 
 -- ============= local LAM control create helper functions - BEGIN ===========================================
 --Function to create a LAM control
+local dataTypesWithoutName = {
+    ["description"] = true,
+    ["texture"] = true,
+}
+local dataTypesWithoutGenericData = {
+    ["header"] = true,
+    ["submenu"] = true,
+}
+
+local dataTypesWithoutSetAndGetFunc = {
+    ["button"] = true,
+}
+
 local function CreateControl(ref, name, tooltip, data, disabledChecks, getFunc, setFunc, defaultSettings, warning, isIconDropDown, scrollable)
     scrollable = scrollable or false
     if ref ~= nil then
@@ -384,17 +397,15 @@ local function CreateControl(ref, name, tooltip, data, disabledChecks, getFunc, 
             data.reference = ref
         end
     end
-    if data.type ~= "description" then
+
+    local dataType = data.type
+    if dataType ~= nil and not dataTypesWithoutName[dataType] then
         data.name = name
-        if data.type ~= "header" and data.type ~= "submenu" then
+        if not dataTypesWithoutGenericData[dataType] then
             data.tooltip = tooltip
-            if data.type ~= "button" then
-                if getFunc ~= nil then
-                    data.getFunc = getFunc
-                end
-                if setFunc ~= nil then
-                    data.setFunc = setFunc
-                end
+            if not dataTypesWithoutSetAndGetFunc[dataType] then
+                data.getFunc = getFunc
+                data.setFunc = setFunc
                 if defaultSettings ~= nil then
                     data.default = defaultSettings
                 end
@@ -1259,7 +1270,7 @@ local function updateIconsList(typeToBuild, withIcons, withNoneEntry, iconsListT
             FCOIS.LAMiconsListWithAllEntryValues =  iconsListWithAllEntryValues
         end
     elseif typeToBuild == "recipe" then
-        iconsListRecipe                     =  iconsListTmp
+        iconsListRecipe                     = iconsListTmp
         iconsListValuesRecipe               = iconsListValuesTmp
         FCOIS.LAMiconsListRecipe            = iconsListRecipe
         FCOIS.LAMiconsListValuesRecipe      = iconsListValuesRecipe
@@ -1515,7 +1526,7 @@ runOnceBeforeLAMPanelGetsCreated()
 
 --==================== SetTracker - BEGIN ======================================
 --Function to build the SetTracker dropdown boxes
---[[ --#302
+--[[ --#302  SetTracker support disabled with FCOOIS v2.6.1
 local function buildSetTrackerDDBoxes()
     if not FCOIS.otherAddons.SetTracker.isActive or not SetTrack or not SetTrack.GetMaxTrackStates then return nil end
     --Get the amount of tracking states
@@ -1575,7 +1586,7 @@ local function buildSetTrackerDDBoxes()
 end
 
 -- Build a LAM SubMenu for the addon "SetTracker"
---#302
+--#302 SetTracker support disabled with FCOOIS v2.6.1
 local function LAMSubmenuSetTracker()
     local submenuControls = {}
     locVars = FCOISlocVars.fcois_loc
@@ -2917,11 +2928,11 @@ local function buildLibSetsSetSearchCategorySubMenu()
 
     local libSetsSetSearchCategorySubMenu = {}
 
-    local libSetsSetSearchCategoryData = mapLibSetsSetSearchFavoritesCategories()
+    local libSetsSetSearchCategoryData = getLibSetsSetSearchFavoriteCategories()
     if ZO_IsTableEmpty(libSetsSetSearchCategoryData) then return libSetsSetSearchCategorySubMenu end
 
     local LibSetsSetSearchFavoriteToFCOISMapping = FCOISsettings.LibSetsSetSearchFavoriteToFCOISMapping
-    local iconSettings = FCOISsettings.icon[FCOIS_CON_ICON_LOCK] --use default 'lock' icon as icon settings
+    local iconSettings = FCOISsettings.icon[FCOIS_CON_ICON_DYNAMIC_1] --use default settings of first dynamic icon
 
     local optionsLibSetsSetSearchFavoritesCategoryName = locVars["options_LibSetsSetSearchFavoritesCategory"]
 
@@ -2931,7 +2942,7 @@ local function buildLibSetsSetSearchCategorySubMenu()
         local categoryName = categoryData.categoryName or category
         local categoryTexture = categoryData.texture
         if category and categoryTexture then
-            local ref, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, createdControl
+            local ref, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, createdControl, createdDDControl
 
             --Add the current LibSets set search favorite category icon as texture, with the name of the category (for visual reference)
             --[[textureData = {
@@ -2951,29 +2962,22 @@ local function buildLibSetsSetSearchCategorySubMenu()
             if createdControl ~= nil then
                 table.insert(libSetsSetSearchCategorySubMenu, createdControl)
             end
-            ref, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, createdControl = nil, nil, nil, nil, nil, nil, nil, nil, nil
+            ref, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, createdControl, createdDDControl = nil, nil, nil, nil, nil, nil, nil, nil, nil, nil
 
-            --Add the icon picker
-            local lamCtrlTooltip = optionsLibSetsSetSearchFavoritesCategoryName .. " #" .. tos(categoryIndex)  .. ": " .. tos(categoryName)
+            --Add the dropdown with the FCOIS marker icons to choose the FCOIS marker icon for the LibSets set search favorite category
+            local lamCtrlSetSearchCategoryTooltip = optionsLibSetsSetSearchFavoritesCategoryName .. " #" .. tos(categoryIndex)  .. ": " .. tos(categoryName)
             ref = fcoisLAMSettingsReferencePrefix .. libSetsSetSearchFavorite.. category ..  previewSelect
             name = categoryName
-            tooltip = lamCtrlTooltip
-            data = { type = "iconpicker", width = "half", choices = markerIconTextures, choicesTooltips = texturesList, maxColumns=6, visibleRows=5, iconSize=iconSettings.size}
+            tooltip = lamCtrlSetSearchCategoryTooltip
             disabledFunc = function() return FCOIS.libSets == nil or not FCOISsettings.autoMarkLibSetsSetSearchFavorites end
-            getFunc = function() return (LibSetsSetSearchFavoriteToFCOISMapping[category] ~= nil and markerIconTextures[LibSetsSetSearchFavoriteToFCOISMapping[category]]) or markerIconTextures[1] end
-            setFunc = function(texturePath)
-                local textureId = GetFCOTextureId(texturePath)
-                if textureId ~= 0 then
-                    FCOISsettings.LibSetsSetSearchFavoriteToFCOISMapping[category] = textureId
-                    changePreviewLabelText(libSetsSetSearchFavorite, category, texturesList[textureId], nil, "LibSetsSetSearchFavorite")
-                    --updateFilterButtonColorAndTexture(mappingVars.iconToFilterDefaults[FCOIS_CON_ICON_LOCK], FCOIS_CON_ICON_LOCK)
-                    --todo 20241203 Update the markers in the inventory for LibSets set items where the set search favorites are applied?
-                end
+            getFunc = function() return LibSetsSetSearchFavoriteToFCOISMapping[category] end
+            setFunc = function(markerIconNr)
+                FCOISsettings.LibSetsSetSearchFavoriteToFCOISMapping[category] = markerIconNr
             end
-            defaultSettings = markerIconTextures[1]
-            createdControl = CreateControl(ref, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
-            if createdControl ~= nil then
-                table.insert(libSetsSetSearchCategorySubMenu, createdControl)
+            defaultSettings = FCOIS_CON_ICON_DYNAMIC_1
+            createdDDControl = CreateDropdownBox(ref, name, tooltip, disabledFunc, getFunc, setFunc, defaultSettings, iconsListNone, iconsListValuesNone, iconsListNone, nil, "half", true, true)
+            if createdDDControl ~= nil then
+                table.insert(libSetsSetSearchCategorySubMenu, createdDDControl)
             end
 
         end

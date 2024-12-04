@@ -794,4 +794,17 @@ function FCOIS.BuildDefaultSettings()
 			["left"] = 0,
 		}
 	end
+
+	--Added with FCOIS v2.6.1
+	-->LibSets set search favorite categories
+	FCOIS.settingsVars.defaults.LibSetsSetSearchFavoriteToFCOISMapping = {}
+	local libSetsSetSearchFavoriteToFCOISMapping = FCOIS.settingsVars.defaults.LibSetsSetSearchFavoriteToFCOISMapping
+	local libSetsSetSearchCategoryData = FCOIS.GetLibSetsSetSearchFavoriteCategories()
+	if not ZO_IsTableEmpty(libSetsSetSearchCategoryData) then
+		for idx, categoryData in ipairs(libSetsSetSearchCategoryData) do
+			if categoryData.category ~= nil then
+				libSetsSetSearchFavoriteToFCOISMapping[categoryData.category] = FCOIS_CON_ICON_DYNAMIC_1 --Default = 1st dynamic marker icon of FCOIS
+			end
+		end
+	end
 end

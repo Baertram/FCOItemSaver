@@ -37,7 +37,7 @@ local lmas = FCOIS.libMultiAccountSets
 local ctrlVars = FCOIS.ZOControlVars
 local mappingVars = FCOIS.mappingVars
 local otherAddons = FCOIS.otherAddons
---local oaSetTracker = otherAddons.SetTracker --#302
+--local oaSetTracker = otherAddons.SetTracker --#302 SetTracker support disabled with FCOOIS v2.6.1
 
 local checkIfItemIsProtected = FCOIS.CheckIfItemIsProtected
 local myGetItemInstanceIdNoControl = FCOIS.MyGetItemInstanceIdNoControl
@@ -658,13 +658,13 @@ end
         local iconIdArray = {}
         local gearIconIdArray = {}
         local sellIconIdArray = {}
-        --local setTrackerIconIdArray = {} --#302
+        --local setTrackerIconIdArray = {} --#302  SetTracker support disabled with FCOOIS v2.6.1
         --The standard automatic marker icon for the sets
         local setsIconNr = settings.autoMarkSetsIconNr
         local isMarkedWithAutomaticSetMarkerIcon
         local isSellProtected
         local isGearProtected
-        local isSetTrackerAndIsMarkedWithOtherIconAlready --#302
+        local isSetTrackerAndIsMarkedWithOtherIconAlready --#302  SetTracker support disabled with FCOOIS v2.6.1
 
         --=== Non-Wished set items check for characters below level 50 =========================================================
         if settings.autoMarkSetsNonWished == true and isIconEnabled[settings.autoMarkSetsNonWishedIconNr] and settings.autoMarkSetsNonWishedIfCharBelowLevel then
@@ -692,7 +692,7 @@ end
         ---> So these automatic checks are done "later" !
         if not skipAllOtherChecks then
             isSetTrackerAndIsMarkedWithOtherIconAlready = false
-            --[[ --#302
+            --[[ --#302  SetTracker support disabled with FCOOIS v2.6.1
             if SetTrack and SetTrack.GetMaxTrackStates and oaSetTracker.isActive and settings.autoMarkSetTrackerSets then
                 if isDebuggingCase then d(">check SetTracker addon") end
                 --If the option is enabled to check for all marker icons before checking SetTracker set icons:

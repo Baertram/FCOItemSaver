@@ -2657,7 +2657,7 @@ checkVars.filterPanelIdsForAntiDestroyDoNotUseOtherAntiSettings = {
     [LF_GUILDBANK_DEPOSIT] = true,      --use anti-destroy at the destroy item handler as anti-deposit is the wrong setting :-) -> to reflect the "flag"'s icon color state
 }
 
---BagId to SetTracker addon settings in FCOIS
+--BagId to SetTracker addon settings in FCOIS --#302 SetTracker support disabled with FCOOIS v2.6.1
 mappingVars.bagToSetTrackerSettings = {
 	--[[ Will be filled as the settings got loaded
 		--> See function updateSettingsBeforeAddonMenu

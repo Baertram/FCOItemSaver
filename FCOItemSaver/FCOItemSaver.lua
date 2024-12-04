@@ -200,7 +200,7 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
 
 
 --______________________________________
--- Current max # of bugs/features/ToDos: 301
+-- Current max # of bugs/features/ToDos: 302
 --______________________________________
 
 --Open/To work on this patch:
@@ -213,8 +213,8 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
 ------------------------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed] -              Updated last 2024-12-03
 ------------------------------------------------------------------------------------
---#301 Add LibSets favorites as marker icons of FCOIS to the inventories -> Uses FCOIS dynamic icons
---#302 Disable SetTracker support
+--#301 Add LibSets set search favorites as marker icons of FCOIS to the inventories
+
 
 -------------------------------------------------------------------------------------
 --Changelog (last version: 2.6.0 - New version: 2.6.1) -    Updated last: 2024-12-03
@@ -224,11 +224,13 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
 --#300 If LibScrollableMenu is enabled and replaces ZO_Menu the checkbox callback function at filterButtons right click context menu "(logical AND/OR)" saves the complete LSM combobox to savedvars of FCOIS via function ContextMenuFCOISFilterButtonSettingsOnClicked
 
 --[Changed]
+--#302 Disable SetTracker support, because this addon is non working since years and always troubled FCOIS code since then. Please switch to LibSets and/or WishList instead.
 
 --[Added]
 --
 
 --[Added on request]
+--
 
 
 --************************************************************************************************************************
