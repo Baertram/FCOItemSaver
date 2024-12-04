@@ -51,6 +51,15 @@ local checkIfCompanionInteractedAndCompanionInventoryIsShown = FCOIS.CheckIfComp
 local isIIFAActive
 local checkAndGetIIfAData
 
+--ItemCooldownTracker
+local icdt = ICDT
+local checkIfItemCooldownTrackerRelevantItemIdAndMarkItem = FCOIS.CheckIfItemCooldownTrackerRelevantItemIdAndMarkItem
+
+--LibSets --#301
+local libSets = FCOIS.libSets or LibSets
+local applyLibSetsSetSearchFavoriteCategoryMarkers = FCOIS.ApplyLibSetsSetSearchFavoriteCategoryMarkers --#301
+
+
 -- =====================================================================================================================
 --  Other AddOns helper functions
 -- =====================================================================================================================
@@ -104,13 +113,24 @@ local function getMarkerIconDrawLevel(p_markerIconId)
     return 1 --default drawLevel -> Fallback
 end
 
+
+
 --Update marker icons for other addons that should add marker icons to inventory items
 local function updateOtherAddonsInventoryMarkers(parent)
-    --FCOIS v2.2.4 - ItemCooldownTracker
-    if ICDT ~= nil then
-        local bagId, slotIndex = myGetItemDetails(parent)
+    local bagId, slotIndex
+    if icdt ~= nil or libSets ~= nil then
+        bagId, slotIndex = myGetItemDetails(parent)
         if bagId == nil or slotIndex == nil then return end
-        FCOIS.CheckIfItemCooldownTrackerRelevantItemIdAndMarkItem(bagId, slotIndex, nil)
+    end
+
+    --FCOIS v2.2.4 - ItemCooldownTracker
+    if icdt ~= nil then
+        checkIfItemCooldownTrackerRelevantItemIdAndMarkItem(bagId, slotIndex, nil)
+    end
+
+    --#301 FCOIS v2.6.1 LibSets set search favorite categories marker icons
+    if libSets ~= nil then
+        applyLibSetsSetSearchFavoriteCategoryMarkers(parent, bagId, slotIndex, nil)
     end
 end
 

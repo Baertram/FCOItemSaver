@@ -43,6 +43,7 @@ local checkIfHouseOwnerAndInsideOwnHouse = FCOIS.CheckIfHouseOwnerAndInsideOwnHo
 local getCurrentlyLoggedInCharUniqueId = FCOIS.GetCurrentlyLoggedInCharUniqueId
 local checkIfFCOISSettingsWereLoaded = FCOIS.CheckIfFCOISSettingsWereLoaded
 
+local FCOISsettings
 
 --==========================================================================================================================================
 --									FCOIS other addon functions
@@ -1111,6 +1112,7 @@ end
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
+local icdt = ICDT
 --[[
     --==================================================================
     --ItemCooldownTracker API
@@ -1121,10 +1123,10 @@ end
 ]]
 local function getItemCooldownTrackerRelevantItemIds()
     --#184
-    if not ICDT then return end
+    if not icdt then return end
     FCOIS.otherAddons.ItemCooldownTracker = FCOIS.otherAddons.ItemCooldownTracker or {}
     FCOIS.otherAddons.ItemCooldownTracker.relevantItemIds = {}
-    local relevantItemIdsWithIndex = ICDT.GetRelevantItemIds()
+    local relevantItemIdsWithIndex = icdt.GetRelevantItemIds()
     if relevantItemIdsWithIndex == nil or #relevantItemIdsWithIndex <= 0 then return end
     local relevantItemIds = {}
     for _, itemIdOfRelevance in ipairs(relevantItemIdsWithIndex) do
@@ -1139,7 +1141,7 @@ end
 function FCOIS.CheckIfItemCooldownTrackerRelevantItemIdAndMarkItem(bagId, slotIndex, itemLink)
     --#184
 --d("[FCOIS]CheckIfItemCooldownTrackerRelevantItemIdAndMarkItem")
-    if not ICDT then return false end
+    if not icdt then return false end
     local settings = FCOIS.settingsVars.settings
     local autoMarkItemCoolDownTrackerTrackedItems = settings.autoMarkItemCoolDownTrackerTrackedItems
     local itemCoolDownTrackerTrackedItemsMarkerIcon = settings.itemCoolDownTrackerTrackedItemsMarkerIcon
@@ -1181,7 +1183,7 @@ function FCOIS.CheckIfItemCooldownTrackerRelevantItemIdAndMarkItem(bagId, slotIn
     end
 
     --Check the cooldown left
-    local cooldownLeft = ICDT.GetItemCooldown(itemId)
+    local cooldownLeft = icdt.GetItemCooldown(itemId)
     --[[
     --TODO For debugging
     if cooldownLeft == -1 and itemId == 16425 then
@@ -1395,9 +1397,11 @@ end
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
+local libSets = FCOIS.libSets or LibSets
+
 --#301 Support LibSet set search favorite categories with FCOIS marker icons -> In FCOIS settings menu -> LibSets submenu
+local libSetsSetSearchFavoriteCategoryData
 function FCOIS.GetLibSetsSetSearchFavoriteCategories()
-    local libSets = FCOIS.libSets
     if not libSets or not libSets.GetSetSearchFavoriteCategories then return end
 
     --[[ Returns table:
@@ -1407,7 +1411,62 @@ function FCOIS.GetLibSetsSetSearchFavoriteCategories()
             texture = string "/esoui/art/progression/icon_lightningstaff.dds",
         }
     ]]
-    local setSearchCategoryData = libSets.GetSetSearchFavoriteCategories()
+    libSetsSetSearchFavoriteCategoryData = libSets.GetSetSearchFavoriteCategories()
     --if ZO_IsTableEmpty(setSearchCategoryData) then return {} end
-    return setSearchCategoryData
+    return libSetsSetSearchFavoriteCategoryData
+end
+local FCOIS_GetLibSetsSetSearchFavoriteCategories = FCOIS.GetLibSetsSetSearchFavoriteCategories
+
+--#301 Apply the chosen FCOIS marker icon automatically to the setItem, if it's on the LibSets set favorites list
+local isSetIdInLibSetsSearchFavorites, libSets_IsSetByItemLink
+function FCOIS.ApplyLibSetsSetSearchFavoriteCategoryMarkers(rowControl, bagId, slotIndex, itemLink)
+    if libSets == nil or ((itemLink == nil and (bagId == nil or slotIndex == nil)) or itemLink == nil) then return end
+    FCOISsettings = FCOISsettings or FCOIS.settingsVars.settings
+    if not FCOISsettings.autoMarkLibSetsSetSearchFavorites then return end
+
+    --LibSets_SearchUI_Keyboard:IsSetIdInFavorites(setId, favoriteCategory)
+    local libSets_SearchUI_Keyboard = LibSets_SearchUI_Keyboard
+    libSetsSetSearchFavoriteCategoryData = libSetsSetSearchFavoriteCategoryData or FCOIS_GetLibSetsSetSearchFavoriteCategories()
+    if ZO_IsTableEmpty(libSetsSetSearchFavoriteCategoryData) then return end
+
+    --Is the item a setItem?
+    itemLink = itemLink or GetItemLink(bagId, slotIndex)
+    if itemLink == nil then return end
+    local itemId = GetItemLinkItemId(itemLink)
+    if itemId == nil then return end
+
+
+    --isSet, setName, setId, numBonuses, numEquipped, maxEquipped
+    libSets_IsSetByItemLink = libSets_IsSetByItemLink or libSets.IsSetByItemLink
+    local isSet, _, setId = libSets_IsSetByItemLink(itemLink)
+    if isSet == true and setId ~= nil then
+        isSetIdInLibSetsSearchFavorites = isSetIdInLibSetsSearchFavorites or libSets_SearchUI_Keyboard.IsSetIdInFavorites
+        local LibSetsSetSearchFavoriteToFCOISMapping = FCOISsettings.LibSetsSetSearchFavoriteToFCOISMapping
+
+        --As the item is a set check if the setId is in any of the saved LibSets set search favorite categories
+        for idx, categoryData in ipairs(libSetsSetSearchFavoriteCategoryData) do
+            local category = categoryData.category
+            if category ~= nil then
+                local isSetMarkedAsFavoriteByCategory = isSetIdInLibSetsSearchFavorites(libSets_SearchUI_Keyboard, setId, category)
+                if isSetMarkedAsFavoriteByCategory == true then
+                    --Get the FCOIS marker icon for that category
+                    local FCOISmarkerIconForLibSetsSetSearchFavoriteCategory = LibSetsSetSearchFavoriteToFCOISMapping[category]
+                    if FCOISmarkerIconForLibSetsSetSearchFavoriteCategory ~= nil and FCOISmarkerIconForLibSetsSetSearchFavoriteCategory ~= FCOIS_CON_ICON_NONE then
+                        --todo 20241204
+d("[FCOIS]Item " .. itemLink .. " is marked as LibSets set search favorite category '" .. category .. "', icon #: " ..tos(FCOISmarkerIconForLibSetsSetSearchFavoriteCategory))
+
+                        --Mark the item with the chosen marker icon now
+                        local showIcon = true
+                        if bagId == nil or slotIndex == nil then
+                            local fcoisItemInstanceId = myGetItemInstanceIdNoControl(bagId, slotIndex, true)
+                            FCOIS.MarkItemByItemInstanceId(fcoisItemInstanceId, FCOISmarkerIconForLibSetsSetSearchFavoriteCategory, showIcon, itemLink, itemId, nil, true)
+                        else
+                            FCOIS.MarkItem(bagId, slotIndex, FCOISmarkerIconForLibSetsSetSearchFavoriteCategory, showIcon, true)
+                        end
+                        return true
+                    end
+                end
+            end
+        end
+    end
 end
