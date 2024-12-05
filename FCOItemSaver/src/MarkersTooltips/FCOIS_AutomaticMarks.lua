@@ -29,6 +29,8 @@ local iilc      = IsItemLinkCrafted
 
 local account = GetDisplayName()
 
+local libSets = FCOIS.libSets or LibSets
+
 local numFilterIcons = FCOIS.numVars.gFCONumFilterIcons
 --local getSavedVarsMarkedItemsTableName = FCOIS.GetSavedVarsMarkedItemsTableName
 
@@ -553,6 +555,16 @@ local function automaticMarkingSetsCollectionBookCheckFunc(p_bagId, p_slotIndex,
     end
     return wasMarkedForSetCollectionsBook, checkFuncReturnData
 end
+
+    --Do all the checks for the "automatic mark item with LibSets"
+    local applyLibSetsSetSearchFavoriteCategoryMarker = FCOIS.ApplyLibSetsSetSearchFavoriteCategoryMarker --#301
+    local function automaticMarkingLibSetsCheckFunc(p_bagId, p_slotIndex, setId) --#301
+        --todo 20241204 --#301
+        --Mark, or remove the mark now -> Checks are done in applyLibSetsSetSearchFavoriteCategoryMarker
+        applyLibSetsSetSearchFavoriteCategoryMarker = applyLibSetsSetSearchFavoriteCategoryMarker or FCOIS.ApplyLibSetsSetSearchFavoriteCategoryMarker
+        local wasIconApplied = applyLibSetsSetSearchFavoriteCategoryMarker(nil, p_bagId, p_slotIndex, nil, nil, setId)
+        return wasIconApplied, nil
+    end
 
     --Do all the checks for the "automatic mark item as set"
     local function automaticMarkingSetsCheckFunc(p_bagId, p_slotIndex)
@@ -1290,7 +1302,7 @@ end
                 if type(toDos.checkFunc) == "function" then
                     --The check is a function, so call it with the bagId and slotIndex
                     --The result will be a boolean value, and the 2nd return parameter is a table containing addiitonal info for the following "additional" checkFuncs
-                    checkFuncResult, checkFuncResultData = toDos.checkFunc(bag, slot)
+                    checkFuncResult, checkFuncResultData = toDos.checkFunc(bag, slot, preCheckFuncResultData)
                 else
                     --The check is no function but a variable
                     checkFuncResult = toDos.checkFunc
@@ -1322,6 +1334,19 @@ end
                     else
                         --No expected result given? Abort
                         return abortChecksNow("Check func or result not used")
+                    end
+                    --Result was okay, so check if we need to go on with marker icon etc.
+                    -->Only if the icon to be marked was not provided. The checkFunc needs to mark the item then and we abort here if this was done!
+                    if toDos.checkFuncMarksItem ~= nil and toDos.icon == nil then
+                        local checkFuncMarksItemResult
+                        if type(toDos.checkFuncMarksItem) == "function" then
+                            checkFuncMarksItemResult = toDos.checkFuncMarksItem(bag, slot)
+                        else
+                            checkFuncMarksItemResult = toDos.checkFuncMarksItem
+                        end
+                        if checkFuncMarksItemResult == true then
+                            return abortChecksNow("Check func marked the item already")
+                        end
                     end
                 end
             end
@@ -1554,6 +1579,7 @@ end
 
         return bagIdsToScanNow, onlyUpdatePlayerInv
     end
+
 
     --Function to do the scans for automatic marker icons (multiple items)
     function FCOIS.ScanInventoryItemsForAutomaticMarks(bag, slot, scanType, updateInv)
@@ -1817,7 +1843,7 @@ end
                 chatBegin			= fcoisLoc["marked"],
                 chatEnd				= fcoisLoc["set_collection_part_known_found"],
             },
-            ---------------------------- Set parts----------------------------------
+            ---------------------------- Set parts ----------------------------------
             ["sets"] = {
                 check				= settings.autoMarkSets,
                 result 				= true,
@@ -1829,7 +1855,7 @@ end
                 iconIsMarkedAllreadyAllowed = true,
                 checkIfAnyIconIsMarkedAlready = settings.autoMarkSetsCheckAllIcons,
                 preCheckFunc        = function(p_bagId, p_slotIndex)
-                    --Check if item is a known recipe
+                    --Check if item is a set item
                     return isItemSetAndNotExcluded(p_bagId, p_slotIndex), nil
                 end,
                 resultPreCheckFunc  = true,
@@ -1846,7 +1872,39 @@ end
                 chatOutput			= settings.showSetsInChat,
                 chatBegin			= fcoisLoc["marked"],
                 chatEnd				= fcoisLoc["set_part_found"],
-                ------------------------------------------------------------------------
+            },
+            ---------------------------- LibSets Set search favorite categories ----------------------------------------
+            ["LibSetsSetSearchFavoriteCategoryMarkers"] = { --#301 LibSets set search favorite category marker icons
+                check				= settings.autoMarkLibSetsSetSearchFavorites, --todo: Could be disabled and marks need to be removed then?
+                result 				= true,
+                resultNot			= nil,
+                checkOtherAddon		= function()
+                    return libSets ~= nil
+                end,
+                resultOtherAddon   	= true,
+                resultNotOtherAddon	= nil,
+                --Do not check here! Else it will abort due to not enabled icon if ONLY auto-bind is enabled. Icon will be determined in function automaticMarkingLibSetsCheckFunc and passed on
+                --in returned 2nd parameter checkFuncData.newMarkerIcon
+                icon				= nil,
+                iconIsMarkedAllreadyAllowed = true,
+                checkIfAnyIconIsMarkedAlready = nil,
+                preCheckFunc        = function(p_bagId, p_slotIndex)
+                    --Check if item is a set item
+                    return isItemSetAndNotExcluded(p_bagId, p_slotIndex), nil
+                end,
+                resultPreCheckFunc  = true,
+                resultNotPreCheckFunc = nil,
+                checkFunc			= automaticMarkingLibSetsCheckFunc,
+                checkFuncMarksItem  = true,
+                resultCheckFunc 	= nil,
+                resultNotCheckFunc 	= nil,
+                additionalCheckFuncForce = nil, -- force the call of the additional check func!
+                additionalCheckFunc = nil,
+                resultAdditionalCheckFunc = nil,
+                resultNotAdditionalCheckFunc = nil,
+                chatOutput			= settings.showSetsInChat,
+                chatBegin			= fcoisLoc["marked"],
+                chatEnd				= fcoisLoc["LibSetsSetSearchFavoriteCategory_part_found"],
             },
         } -- scantypeToDo
         --------------------------------------------------------------------------------
@@ -1927,6 +1985,7 @@ end
     end
     local scanInventoryItemsForAutomaticMarks = FCOIS.ScanInventoryItemsForAutomaticMarks
 
+
     --Local function to scan a single inventory item
     -->checksAlreadyDoneTable was filled in function FCOIS.scanInventory with the results needed for the checks (performance gain!)
     function FCOIS.ScanInventorySingle(p_bagId, p_slotIndex, checksAlreadyDoneTable)
@@ -1947,6 +2006,15 @@ end
                 local itemId = myGetItemInstanceIdNoControl(p_bagId, p_slotIndex, false)
                 --d(">itemId: " ..tos(itemId))
                 if itemId ~= nil then
+
+                    --(Other addons)
+                    --LibSets - Set search favorites category markers --#301
+                    if (checksAlreadyDoneTable ~= nil and libSets ~= nil and checksAlreadyDoneTable["LibSetsSetSearchFavoriteCategoryMarkers"] == true) then
+                        local _, libSetsSetPartChanged = scanInventoryItemsForAutomaticMarks(p_bagId, p_slotIndex, "LibSetsSetSearchFavoriteCategoryMarkers", false)
+                        if not updateInv and libSetsSetPartChanged then
+                            updateInv = true
+                        end
+                    end
 
                     --1)
                     --Mark set items
@@ -2067,7 +2135,8 @@ end
     local scanInventorySingle = FCOIS.ScanInventorySingle
 
 
-    --Scan the inventory for ornate and/or researchable, setCollectionBook known/unknown, quality, recipes knonw/unknown, research scrolls or set items
+    --Scan the inventory for ornate and/or researchable, setCollectionBook known/unknown, quality, recipes knonw/unknown, research scrolls or set items,
+    --and other automatic marks or marks to be removed (LibSets set search favorite category marker icons)
     function FCOIS.ScanInventory(p_bagId, p_slotIndex, doEcho)
         doEcho = doEcho or false
         local settings = FCOIS.settingsVars.settings
@@ -2105,6 +2174,7 @@ end
         checksAlreadyDoneTable["setItemCollectionsUnknown"] = (autoMarkSetsItemCollectionBook == true and (autoBindMissingSetCollectionPiecesOnLoot == true or (not autoBindMissingSetCollectionPiecesOnLoot == true and settings.autoMarkSetsItemCollectionBookMissingIcon ~= FCOIS_CON_ICON_NONE and isIconEnabledSettings[settings.autoMarkSetsItemCollectionBookMissingIcon] == true)))
         checksAlreadyDoneTable["setItemCollectionsKnown"]   = (autoMarkSetsItemCollectionBook == true and (settings.autoMarkSetsItemCollectionBookNonMissingIcon ~= FCOIS_CON_ICON_NONE and isIconEnabledSettings[settings.autoMarkSetsItemCollectionBookNonMissingIcon] == true))
         checksAlreadyDoneTable["sets"]                      = (settings.autoMarkSets == true and isIconEnabledSettings[settings.autoMarkSetsIconNr])
+        checksAlreadyDoneTable["LibSetsSetSearchFavoriteCategoryMarkers"] = (libSets ~= nil and libSets.GetSetSearchFavoriteCategories ~= nil) --#301
 
         local isCheckNecessary = false
         for _, isCheckNecessaryAtCheckType in pairs(checksAlreadyDoneTable) do
@@ -2176,5 +2246,11 @@ end
             if updateInv == true then
                 filterBasics(onlyUpdatePlayerInv)
             end
+
+            --Reset recently removed LibSets set search favorite category mapping to FCOIS marker icons
+            if libSets ~= nil then --#301
+                settings.LibSetsSetSearchFavoriteToFCOISMappingRemoved = {}
+            end
+
         end --if isCheckNecessary then
     end

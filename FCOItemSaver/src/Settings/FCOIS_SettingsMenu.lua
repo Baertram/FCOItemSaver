@@ -2972,7 +2972,13 @@ local function buildLibSetsSetSearchCategorySubMenu()
             disabledFunc = function() return FCOIS.libSets == nil or not FCOISsettings.autoMarkLibSetsSetSearchFavorites end
             getFunc = function() return LibSetsSetSearchFavoriteToFCOISMapping[category] end
             setFunc = function(markerIconNr)
-                FCOISsettings.LibSetsSetSearchFavoriteToFCOISMapping[category] = markerIconNr
+                if markerIconNr == FCOIS_CON_ICON_NONE then
+                    FCOISsettings.LibSetsSetSearchFavoriteToFCOISMappingRemoved[category] = markerIconNr
+                    FCOISsettings.LibSetsSetSearchFavoriteToFCOISMapping[category] = nil
+                else
+                    FCOISsettings.LibSetsSetSearchFavoriteToFCOISMappingRemoved[category] = nil
+                    FCOISsettings.LibSetsSetSearchFavoriteToFCOISMapping[category] = markerIconNr
+                end
             end
             defaultSettings = FCOIS_CON_ICON_DYNAMIC_1
             createdDDControl = CreateDropdownBox(ref, name, tooltip, disabledFunc, getFunc, setFunc, defaultSettings, iconsListNone, iconsListValuesNone, iconsListNone, nil, "half", true, true)

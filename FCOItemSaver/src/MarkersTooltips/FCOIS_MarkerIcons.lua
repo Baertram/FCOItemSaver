@@ -57,7 +57,7 @@ local checkIfItemCooldownTrackerRelevantItemIdAndMarkItem = FCOIS.CheckIfItemCoo
 
 --LibSets --#301
 local libSets = FCOIS.libSets or LibSets
-local applyLibSetsSetSearchFavoriteCategoryMarkers = FCOIS.ApplyLibSetsSetSearchFavoriteCategoryMarkers --#301
+local applyLibSetsSetSearchFavoriteCategoryMarker = FCOIS.ApplyLibSetsSetSearchFavoriteCategoryMarker --#301
 
 
 -- =====================================================================================================================
@@ -118,7 +118,7 @@ end
 --Update marker icons for other addons that should add marker icons to inventory items
 local function updateOtherAddonsInventoryMarkers(parent)
     local bagId, slotIndex
-    if icdt ~= nil or libSets ~= nil then
+    if icdt ~= nil then -- #301 todo needed? or libSets ~= nil then
         bagId, slotIndex = myGetItemDetails(parent)
         if bagId == nil or slotIndex == nil then return end
     end
@@ -129,9 +129,12 @@ local function updateOtherAddonsInventoryMarkers(parent)
     end
 
     --#301 FCOIS v2.6.1 LibSets set search favorite categories marker icons
+    -->todo Is this really needed here as the marker icons are applied on FCOIS.ScanInventory too already?
+    --[[
     if libSets ~= nil then
-        applyLibSetsSetSearchFavoriteCategoryMarkers(parent, bagId, slotIndex, nil)
+        applyLibSetsSetSearchFavoriteCategoryMarker(parent, bagId, slotIndex, nil, nil, nil)
     end
+    ]]
 end
 
 --Update the "already bound set part" icon at the item's top right image edge

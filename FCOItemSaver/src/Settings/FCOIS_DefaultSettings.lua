@@ -395,6 +395,7 @@ function FCOIS.BuildDefaultSettings()
 		markerIconsOutputOrderEntries = {},
 		autoMarkLibSetsSetSearchFavorites = false, --#301
 		LibSetsSetSearchFavoriteToFCOISMapping = {}, --#301
+		LibSetsSetSearchFavoriteToFCOISMappingRemoved = {} --#301
 	}
 	--The tables for the markedItems, non-unique and unique
 	local addonVars = FCOIS.addonVars

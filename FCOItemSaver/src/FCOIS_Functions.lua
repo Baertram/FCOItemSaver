@@ -1291,9 +1291,16 @@ function FCOIS.IsItemAGlpyh(bag, slot)
     return resultVar
 end
 
-function FCOIS.IsItemSetAndNotExcluded(bag, slot)
-    if bag == nil or slot == nil then return false end
-    local isAllowedSet, _, _, _, _, setId = gilsetinf(gil(bag, slot), false)
+function FCOIS.IsItemSetAndNotExcluded(bag, slot, itemLink)
+    if (itemLink == nil and (bag == nil or slot == nil)) or itemLink == nil then return false, nil end
+    local isAllowedSet, setId
+    if itemLink ~= nil then
+        local l_isAllowedSet, _, _, _, _, l_setId = gilsetinf(itemLink, false)
+        isAllowedSet, setId = l_isAllowedSet, l_setId
+    else
+        local l_isAllowedSet, _, _, _, _, l_setId = gilsetinf(gil(bag, slot), false)
+        isAllowedSet, setId = l_isAllowedSet, l_setId
+    end
     if isAllowedSet == true and setId ~= nil then
         local settings = FCOIS.settingsVars.settings
         if settings.autoMarkSetsExcludeSets == true then
@@ -1303,7 +1310,7 @@ function FCOIS.IsItemSetAndNotExcluded(bag, slot)
             end
         end
     end
-    return isAllowedSet
+    return isAllowedSet, setId
 end
 
 
