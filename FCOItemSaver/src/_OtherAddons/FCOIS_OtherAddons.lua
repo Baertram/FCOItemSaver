@@ -1419,8 +1419,8 @@ end
 function FCOIS.RegisterLibSetsCallbacks()
     if not libSets then return end
     local MAJOR = libSets.name
-    CM:RegisterFirCallback(MAJOR .. "_SetSearchFavoriteCategoryAdded", function(...) libSetsSetSearchFavoriteChanged(true, ...) end)
-    CM:RegisterForCallback(MAJOR .. "_SetSearchFavoriteCategoryRemoved", function(...) libSetsSetSearchFavoriteChanged(false, ...) end)
+    CM:RegisterCallback(MAJOR .. "_SetSearchFavoriteCategoryAdded", function(...) libSetsSetSearchFavoriteChanged(true, ...) end)
+    CM:RegisterCallback(MAJOR .. "_SetSearchFavoriteCategoryRemoved", function(...) libSetsSetSearchFavoriteChanged(false, ...) end)
 end
 
 --#301 Support LibSet set search favorite categories with FCOIS marker icons -> In FCOIS settings menu -> LibSets submenu
