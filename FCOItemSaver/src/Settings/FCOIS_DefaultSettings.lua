@@ -797,7 +797,8 @@ function FCOIS.BuildDefaultSettings()
 	end
 
 	--Added with FCOIS v2.6.1
-	-->LibSets set search favorite categories
+	--#301 LibSets set search favorite categories
+	--[[
 	FCOIS.settingsVars.defaults.LibSetsSetSearchFavoriteToFCOISMapping = {}
 	local libSetsSetSearchFavoriteToFCOISMapping = FCOIS.settingsVars.defaults.LibSetsSetSearchFavoriteToFCOISMapping
 	local libSetsSetSearchCategoryData = FCOIS.GetLibSetsSetSearchFavoriteCategories()
@@ -808,4 +809,5 @@ function FCOIS.BuildDefaultSettings()
 			end
 		end
 	end
+	]]
 end
