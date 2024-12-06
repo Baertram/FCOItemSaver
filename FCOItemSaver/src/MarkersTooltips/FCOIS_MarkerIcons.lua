@@ -116,25 +116,15 @@ end
 
 
 --Update marker icons for other addons that should add marker icons to inventory items
-local function updateOtherAddonsInventoryMarkers(parent)
-    local bagId, slotIndex
-    if icdt ~= nil then -- #301 todo needed? or libSets ~= nil then
-        bagId, slotIndex = myGetItemDetails(parent)
-        if bagId == nil or slotIndex == nil then return end
-    end
-
+local function updateOtherAddonsInventoryMarkers(parent, bagId, slotIndex)
     --FCOIS v2.2.4 - ItemCooldownTracker
     if icdt ~= nil then
+        if bagId == nil or slotIndex == nil then
+            bagId, slotIndex = myGetItemDetails(parent)
+        end
+        if bagId == nil or slotIndex == nil then return end
         checkIfItemCooldownTrackerRelevantItemIdAndMarkItem(bagId, slotIndex, nil)
     end
-
-    --#301 FCOIS v2.6.1 LibSets set search favorite categories marker icons
-    -->todo Is this really needed here as the marker icons are applied on FCOIS.ScanInventory too already?
-    --[[
-    if libSets ~= nil then
-        applyLibSetsSetSearchFavoriteCategoryMarker(parent, bagId, slotIndex, nil, nil, nil)
-    end
-    ]]
 end
 
 --Update the "already bound set part" icon at the item's top right image edge
@@ -144,6 +134,7 @@ local function updateAlreadyBoundTexture(parent, pHideControl)
     --Hide the control if settings are disabled or the function parameter tells it to do so
     --Is the item a non-bound item? en hide it!
     local doHide
+    local bagId, slotIndex
     if pHideControl then
         doHide = true
     else
@@ -151,7 +142,7 @@ local function updateAlreadyBoundTexture(parent, pHideControl)
         doHide = not showBoundItemMarker
         if not doHide then
             --Get the bagId and slotIndex
-            local bagId, slotIndex = myGetItemDetails(parent)
+            bagId, slotIndex = myGetItemDetails(parent)
             if bagId == nil or slotIndex == nil then return end
             doHide = not isItemAlreadyBound(bagId, slotIndex)
         end
@@ -241,6 +232,7 @@ local function updateAlreadyBoundTexture(parent, pHideControl)
             end
         end
     end
+    return bagId, slotIndex
 end
 
 local function resetCharacterArmorTypeNumbers()
@@ -574,6 +566,8 @@ local function addMarkerIconsToZOListViewNow(rowControl, slot, doCreateMarkerCon
             end
         end
 
+        local bagId, slotIndex
+
         --Add the marker icons to the control now
         --addMarkerIconsToControl(rowControl, pDoCreateMarkerControl, pIsEquipmentSlot, pUpdateAllEquipmentTooltips, pArmorTypeIcon, pHideControl, pUnequipped)
         addMarkerIconsToControl(rowControl, doCreateMarkerControl, false, nil, nil, nil, nil)
@@ -582,13 +576,25 @@ local function addMarkerIconsToZOListViewNow(rowControl, slot, doCreateMarkerCon
         --FCOItemSaver_AddInfoToData(rowControl)
         --Create and show the "already bound" set parts texture at the top-right edge of the inventory item
         if updateAlreadyBound == true then
-            updateAlreadyBoundTexture(rowControl)
+            bagId, slotIndex = updateAlreadyBoundTexture(rowControl)
         end
 
         --Update marker icons for other addons that should add marker icons to inventory items
         if updateOtherAddonsInvMarkers == true then
-            updateOtherAddonsInventoryMarkers(rowControl)
+            bagId, slotIndex = updateOtherAddonsInventoryMarkers(rowControl, bagId, slotIndex)
         end
+
+        --#301 FCOIS v2.6.1 LibSets set search favorite categories marker icons
+        -->todo Is this really needed here as the marker icons are applied on FCOIS.ScanInventory too already?
+        --[[
+        if libSets ~= nil then
+            if bagId == nil or slotIndex == nil then
+                bagId, slotIndex = myGetItemDetails(parent)
+            end
+            if bagId == nil or slotIndex == nil then return end
+            applyLibSetsSetSearchFavoriteCategoryMarker(rowControl, bagId, slotIndex, nil, nil, nil)
+        end
+        ]]
     end
 end
 

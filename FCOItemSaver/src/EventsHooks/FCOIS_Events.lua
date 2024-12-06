@@ -1181,6 +1181,9 @@ local function FCOItemSaver_Loaded(eventCode, addOnName)
             --Do inventory keybinding stuff (for junk mark etc.)
             FCOIS.InitializeInventoryKeybind()
 
+            --Load other things like library dependent actions
+            FCOIS.RegisterLibSetsCallbacks()
+
             if FCOIS.settingsVars.settings.debug then debugMessage( "[EVENT]", "Addon startup finished!", true, FCOIS_DEBUG_DEPTH_NORMAL) end
         end --gamepad active check
     else

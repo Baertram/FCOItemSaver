@@ -1612,6 +1612,7 @@ end
                 icon				= settings.autoMarkQualityIconNr,
                 checkIfAnyIconIsMarkedAlready = settings.autoMarkQualityCheckAllIcons,
                 checkFunc			= automaticMarkingQualityCheckFunc,
+                checkFuncMarksItem  = nil,
                 resultCheckFunc 	= true,
                 resultNotCheckFunc 	= nil,
                 additionalCheckFuncForce = nil,
@@ -1639,6 +1640,7 @@ end
                 resultPreCheckFunc  = true,
                 resultNotPreCheckFunc = nil,
                 checkFunc			= nil,
+                checkFuncMarksItem  = nil,
                 resultCheckFunc 	= nil,
                 resultNotCheckFunc 	= nil,
                 additionalCheckFuncForce = nil,
@@ -1666,6 +1668,7 @@ end
                 resultPreCheckFunc  = true,
                 resultNotPreCheckFunc = nil,
                 checkFunc			= nil,
+                checkFuncMarksItem  = nil,
                 resultCheckFunc 	= nil,
                 resultNotCheckFunc 	= nil,
                 additionalCheckFuncForce = nil,
@@ -1698,6 +1701,7 @@ end
                 resultPreCheckFunc  = true,
                 resultNotPreCheckFunc = nil,
                 checkFunc			= nil,
+                checkFuncMarksItem  = nil,
                 resultCheckFunc 	= nil,
                 resultNotCheckFunc 	= nil,
                 additionalCheckFuncForce = false, --Only call the additional check func if no icon/marker was found/appliey until now!
@@ -1727,6 +1731,7 @@ end
                 resultPreCheckFunc  = true,
                 resultNotPreCheckFunc = nil,
                 checkFunc			= nil,
+                checkFuncMarksItem  = nil,
                 resultCheckFunc 	= nil,
                 resultNotCheckFunc 	= nil,
                 additionalCheckFuncForce = nil,
@@ -1754,6 +1759,7 @@ end
                 resultPreCheckFunc  = false,
                 resultNotPreCheckFunc = nil,
                 checkFunc			= nil,
+                checkFuncMarksItem  = nil,
                 resultCheckFunc 	= nil,
                 resultNotCheckFunc 	= nil,
                 additionalCheckFuncForce = nil,
@@ -1783,6 +1789,7 @@ end
                 resultPreCheckFunc  = true,
                 resultNotPreCheckFunc = nil,
                 checkFunc			= nil,
+                checkFuncMarksItem  = nil,
                 resultCheckFunc 	= nil,
                 resultNotCheckFunc 	= nil,
                 additionalCheckFuncForce = nil,
@@ -1809,6 +1816,7 @@ end
                 checkFunc			= function(p_bagId, p_slotIndex)
                     return automaticMarkingSetsCollectionBookCheckFunc(p_bagId, p_slotIndex, false)
                 end,
+                checkFuncMarksItem  = nil,
                 resultCheckFunc 	= true,
                 resultNotCheckFunc 	= nil,
                 additionalCheckFuncForce = nil,
@@ -1833,6 +1841,7 @@ end
                 checkFunc			= function(p_bagId, p_slotIndex)
                     return automaticMarkingSetsCollectionBookCheckFunc(p_bagId, p_slotIndex, true)
                 end,
+                checkFuncMarksItem  = nil,
                 resultCheckFunc 	= true,
                 resultNotCheckFunc 	= nil,
                 additionalCheckFuncForce = nil,
@@ -1861,6 +1870,7 @@ end
                 resultPreCheckFunc  = true,
                 resultNotPreCheckFunc = nil,
                 checkFunc			= automaticMarkingSetsCheckFunc,
+                checkFuncMarksItem  = nil,
                 resultCheckFunc 	= true,
                 resultNotCheckFunc 	= nil,
                 --"Forced" the call of the addtional checkFunction at the automatic item marker checks
@@ -1875,7 +1885,7 @@ end
             },
             ---------------------------- LibSets Set search favorite categories ----------------------------------------
             ["LibSetsSetSearchFavoriteCategoryMarkers"] = { --#301 LibSets set search favorite category marker icons
-                check				= settings.autoMarkLibSetsSetSearchFavorites, --todo: Could be disabled and marks need to be removed then?
+                check				= nil, --settings.autoMarkLibSetsSetSearchFavorites, --todo: Could be disabled in settings and marks need to be removed then?
                 result 				= true,
                 resultNot			= nil,
                 checkOtherAddon		= function()
@@ -2242,14 +2252,17 @@ end
                 --d("[ScanInventory] End ONE ITEM")
             end
 
+            --Reset recently removed LibSets set search favorite category mapping to FCOIS marker icons
+            -->todo: 20241205 How do we only do it after all bags have been scanned, and not directly afer the first bag has been scanned?
+            --[[
+            if libSets ~= nil then --#301
+                settings.LibSetsSetSearchFavoriteToFCOISMappingRemoved = {}
+            end
+            ]]
+
             --Update the inventories?
             if updateInv == true then
                 filterBasics(onlyUpdatePlayerInv)
-            end
-
-            --Reset recently removed LibSets set search favorite category mapping to FCOIS marker icons
-            if libSets ~= nil then --#301
-                settings.LibSetsSetSearchFavoriteToFCOISMappingRemoved = {}
             end
 
         end --if isCheckNecessary then

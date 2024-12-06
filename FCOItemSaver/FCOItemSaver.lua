@@ -214,7 +214,8 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
 -- Currently worked on [Added/Fixed/Changed] -              Updated last 2024-12-03
 ------------------------------------------------------------------------------------
 --#301 Add LibSets set search favorites as marker icons of FCOIS to the inventories
-
+--CM:FireCallbacks(MAJOR .. "_SetSearchFavoriteCategoryAdded", favoriteCategory, setId, possibleSetSearchFavoriteCategoriesUnsorted[favoriteCategory])
+--CM:FireCallbacks(MAJOR .. "_SetSearchFavoriteCategoryRemoved", favoriteCategory, setId, possibleSetSearchFavoriteCategoriesUnsorted[favoriteCategory])
 
 -------------------------------------------------------------------------------------
 --Changelog (last version: 2.6.0 - New version: 2.6.1) -    Updated last: 2024-12-03

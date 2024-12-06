@@ -4,6 +4,7 @@ local FCOIS = FCOIS
 
 local debugMessage = FCOIS.debugMessage
 
+local CM = CALLBACK_MANAGER
 local wm = WINDOW_MANAGER
 
 local tos = tostring
@@ -1403,6 +1404,25 @@ end
 ------------------------------------------------------------------------------------------------------------------------
 local libSets = FCOIS.libSets or LibSets
 
+local function libSetsSetSearchFavoriteChanged(wasAdded, favoriteCategory, setId, categoryTexturePath)
+d("[FCOIS]libSetsSetSearchFavoriteChanged-wasAdded: " ..tos(wasAdded) .. ", category: " .. tos(favoriteCategory) ..", setId: " .. tos(setId) ..", texture: " ..tos(categoryTexturePath))
+    if favoriteCategory == nil or setId == nil then return end
+    if wasAdded == true then
+        --todo 20241206 Scan inventories and update the LibSets set search favorite category markers
+        -->FCOIS.ScanInventory normal player inv ?
+    elseif wasAdded == false then
+        --todo 20241206 Scan inventories and update the LibSets set search favorite category markers
+        -->FCOIS.ScanInventory normal player inv ?
+    end
+end
+
+function FCOIS.RegisterLibSetsCallbacks()
+    if not libSets then return end
+    local MAJOR = libSets.name
+    CM:RegisterFirCallback(MAJOR .. "_SetSearchFavoriteCategoryAdded", function(...) libSetsSetSearchFavoriteChanged(true, ...) end)
+    CM:RegisterForCallback(MAJOR .. "_SetSearchFavoriteCategoryRemoved", function(...) libSetsSetSearchFavoriteChanged(false, ...) end)
+end
+
 --#301 Support LibSet set search favorite categories with FCOIS marker icons -> In FCOIS settings menu -> LibSets submenu
 local libSetsSetSearchFavoriteCategoryData
 function FCOIS.GetLibSetsSetSearchFavoriteCategories()
@@ -1471,32 +1491,33 @@ function FCOIS.ApplyLibSetsSetSearchFavoriteCategoryMarker(rowControl, bagId, sl
             local checkForRemovedCategory = false
             local category = categoryData.category
             if category ~= nil then
+                --------------------------------------------------------------------------------------------------------
                 --Should we mark the set items?
                 if autoMarkLibSetsSetSearchFavorites == true then
 
                     --LibSets_SearchUI_Keyboard:IsSetIdInFavorites(setId, favoriteCategory)
                     local isSetMarkedAsFavoriteByCategory = isSetIdInLibSetsSearchFavorites(libSets_SearchUI_Keyboard, setId, category)
                     if isSetMarkedAsFavoriteByCategory == true then
-                        --Get the FCOIS marker icon for that category
+                        --Get the chosen FCOIS marker icon for that category
                         local FCOISmarkerIconForLibSetsSetSearchFavoriteCategory = LibSetsSetSearchFavoriteToFCOISMapping[category]
                         if FCOISmarkerIconForLibSetsSetSearchFavoriteCategory ~= nil and FCOISmarkerIconForLibSetsSetSearchFavoriteCategory ~= FCOIS_CON_ICON_NONE then
 d("[FCOIS]LibSets set search favorite item " .. itemLink .. " is marked, category '" .. category .. "', icon #: " ..tos(FCOISmarkerIconForLibSetsSetSearchFavoriteCategory))
 
-                            --Mark the/Remove marker from item with the chosen marker icon now
+                            --Mark the item with the chosen FCOIS marker icon now
                             showIcon = true
                             markerIcon = FCOISmarkerIconForLibSetsSetSearchFavoriteCategory
                         end
                     else
-                        --Check if the category is on the recently removed list and remove the marker icon then
+                        --Check if the category is on the recently removed list and remove the FCOIS marker icon then
                         checkForRemovedCategory = true
                     end
 
                 else
-                    --Check if the category is on the recently removed list and remove the marker icon then
+                    --Check if the category is on the recently removed list and remove the FCOIS marker icon then
                     checkForRemovedCategory = true
                 end
-
-
+                --------------------------------------------------------------------------------------------------------
+                --Shall we check if any FCOIS marker icon chosen for the LibSets set search category should be removed now?
                 if checkForRemovedCategory == true then
                     --Was the LibSets set search favorite category mapping recently removed in FCOIS settings?
                     if LibSetsSetSearchFavoriteToFCOISMappingRemoved[category] ~= nil then
@@ -1504,9 +1525,12 @@ d("[FCOIS]LibSets set search favorite item " .. itemLink .. " is marked, categor
                         showIcon = false
                         markerIcon = LibSetsSetSearchFavoriteToFCOISMappingRemoved[category]
 d("[FCOIS]LibSets set search favorite item " .. itemLink .. " was removed, category '" .. category .. "', icon #: " ..tos(markerIcon))
+
+                        --LibSetsSetSearchFavoriteToFCOISMappingRemoved[category] overall will be emptied in FCOIS.ScanInventory function at the end
                     end
                 end
-
+                --------------------------------------------------------------------------------------------------------
+                --Add or remove the FCOIS marker icon now
                 if forceShow ~= nil then showIcon = forceShow end
                 if showIcon ~= nil and markerIcon ~= nil then
                     if bagId == nil or slotIndex == nil then
