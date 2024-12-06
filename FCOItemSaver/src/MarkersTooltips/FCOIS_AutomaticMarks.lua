@@ -556,6 +556,7 @@ local function automaticMarkingSetsCollectionBookCheckFunc(p_bagId, p_slotIndex,
     return wasMarkedForSetCollectionsBook, checkFuncReturnData
 end
 
+    --[[
     --Do all the checks for the "automatic mark item with LibSets"
     local applyLibSetsSetSearchFavoriteCategoryMarker = FCOIS.ApplyLibSetsSetSearchFavoriteCategoryMarker --#301
     local function automaticMarkingLibSetsCheckFunc(p_bagId, p_slotIndex, setId) --#301
@@ -565,6 +566,7 @@ end
         local wasIconApplied = applyLibSetsSetSearchFavoriteCategoryMarker(nil, p_bagId, p_slotIndex, nil, nil, setId)
         return wasIconApplied, nil
     end
+    ]]
 
     --Do all the checks for the "automatic mark item as set"
     local function automaticMarkingSetsCheckFunc(p_bagId, p_slotIndex)
@@ -1884,6 +1886,7 @@ end
                 chatEnd				= fcoisLoc["set_part_found"],
             },
             ---------------------------- LibSets Set search favorite categories ----------------------------------------
+            --[[
             ["LibSetsSetSearchFavoriteCategoryMarkers"] = { --#301 LibSets set search favorite category marker icons
                 check				= nil, --settings.autoMarkLibSetsSetSearchFavorites, --todo: Could be disabled in settings and marks need to be removed then?
                 result 				= true,
@@ -1916,6 +1919,7 @@ end
                 chatBegin			= fcoisLoc["marked"],
                 chatEnd				= fcoisLoc["LibSetsSetSearchFavoriteCategory_part_found"],
             },
+            ]]
         } -- scantypeToDo
         --------------------------------------------------------------------------------
         --------------------------------------------------------------------------------
@@ -2019,12 +2023,14 @@ end
 
                     --(Other addons)
                     --LibSets - Set search favorites category markers --#301
+                    --[[
                     if (checksAlreadyDoneTable ~= nil and libSets ~= nil and checksAlreadyDoneTable["LibSetsSetSearchFavoriteCategoryMarkers"] == true) then
                         local _, libSetsSetPartChanged = scanInventoryItemsForAutomaticMarks(p_bagId, p_slotIndex, "LibSetsSetSearchFavoriteCategoryMarkers", false)
                         if not updateInv and libSetsSetPartChanged then
                             updateInv = true
                         end
                     end
+                    ]]
 
                     --1)
                     --Mark set items
@@ -2184,7 +2190,7 @@ end
         checksAlreadyDoneTable["setItemCollectionsUnknown"] = (autoMarkSetsItemCollectionBook == true and (autoBindMissingSetCollectionPiecesOnLoot == true or (not autoBindMissingSetCollectionPiecesOnLoot == true and settings.autoMarkSetsItemCollectionBookMissingIcon ~= FCOIS_CON_ICON_NONE and isIconEnabledSettings[settings.autoMarkSetsItemCollectionBookMissingIcon] == true)))
         checksAlreadyDoneTable["setItemCollectionsKnown"]   = (autoMarkSetsItemCollectionBook == true and (settings.autoMarkSetsItemCollectionBookNonMissingIcon ~= FCOIS_CON_ICON_NONE and isIconEnabledSettings[settings.autoMarkSetsItemCollectionBookNonMissingIcon] == true))
         checksAlreadyDoneTable["sets"]                      = (settings.autoMarkSets == true and isIconEnabledSettings[settings.autoMarkSetsIconNr])
-        checksAlreadyDoneTable["LibSetsSetSearchFavoriteCategoryMarkers"] = (libSets ~= nil and libSets.GetSetSearchFavoriteCategories ~= nil) --#301
+        --checksAlreadyDoneTable["LibSetsSetSearchFavoriteCategoryMarkers"] = (libSets ~= nil and libSets.GetSetSearchFavoriteCategories ~= nil) --#301
 
         local isCheckNecessary = false
         for _, isCheckNecessaryAtCheckType in pairs(checksAlreadyDoneTable) do
@@ -2252,10 +2258,10 @@ end
                 --d("[ScanInventory] End ONE ITEM")
             end
 
+            --[[
             --Reset recently removed LibSets set search favorite category mapping to FCOIS marker icons
             -->todo: 20241205 How do we only do it after all bags have been scanned, and not directly afer the first bag has been scanned?
-            --[[
-            if libSets ~= nil then --#301
+            if libSets ~= nil then --#301 LibSets set search favorites
                 settings.LibSetsSetSearchFavoriteToFCOISMappingRemoved = {}
             end
             ]]

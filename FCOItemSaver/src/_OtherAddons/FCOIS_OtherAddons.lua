@@ -1402,6 +1402,7 @@ end
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
+--[[
 local libSets = FCOIS.libSets or LibSets
 
 local function libSetsSetSearchFavoriteChanged(wasAdded, favoriteCategory, setId, categoryTexturePath)
@@ -1428,13 +1429,6 @@ local libSetsSetSearchFavoriteCategoryData
 function FCOIS.GetLibSetsSetSearchFavoriteCategories()
     if not libSets or not libSets.GetSetSearchFavoriteCategories then return end
 
-    --[[ Returns table:
-        possibleSetSearchFavoriteCategoriesSorted[index] = {
-            category = string "lightningStaff",
-            categoryName = string "Lightning Staff",                            --in current client language, or fallback language en
-            texture = string "/esoui/art/progression/icon_lightningstaff.dds",
-        }
-    ]]
     libSetsSetSearchFavoriteCategoryData = libSets.GetSetSearchFavoriteCategories()
     --if ZO_IsTableEmpty(setSearchCategoryData) then return {} end
     return libSetsSetSearchFavoriteCategoryData
@@ -1547,12 +1541,11 @@ d("[FCOIS]LibSets set search favorite item " .. itemLink .. " was removed, categ
             end
         end
 
-        --[[
-        if updateInv == true then
-            updateInventory = updateInventory or FCOIS.UpdateInventory
-            --updateInventory(bagId, nil, nil, nil) -- Will be done in calling code
-        end
-        ]]
+        --if updateInv == true then
+--            updateInventory = updateInventory or FCOIS.UpdateInventory
+--            --updateInventory(bagId, nil, nil, nil) -- Will be done in calling code
+--        end
     end
     return wasMarked
 end
+]]

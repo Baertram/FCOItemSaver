@@ -27,7 +27,7 @@ local fcoisLAMSettingsReferencePrefix = "FCOItemSaver_Settings_"
 --Control name parts, prefix, suffix, tooltip suffix
 local previewSelect = "Preview_Select"
 local filterButton = "Filter"
-local libSetsSetSearchFavorite = "LibSetsSetSearchFavorite_" --#301
+--local libSetsSetSearchFavorite = "LibSetsSetSearchFavorite_" --#301
 local colorSuffix = "_color"
 local nameSuffix = "_name"
 local optionsIcon = "options_icon"
@@ -133,7 +133,7 @@ local reAnchorAdditionalInvButtons              = FCOIS.ReAnchorAdditionalInvBut
 local resetCreateFCOISUniqueIdStringLastVars    = FCOIS.ResetCreateFCOISUniqueIdStringLastVars
 local getLAMMarkerIconsDropdown
 
-local getLibSetsSetSearchFavoriteCategories     = FCOIS.GetLibSetsSetSearchFavoriteCategories --#301
+--local getLibSetsSetSearchFavoriteCategories     = FCOIS.GetLibSetsSetSearchFavoriteCategories --#301
 
 
 --Other addons
@@ -1164,7 +1164,7 @@ local function updateFilterButtonColorAndTexture(filterButtonNr, iconNr)
     updateFCOISFilterButtonColorsAndTextures(iconNr, p_button, FCOIS_CON_FILTER_BUTTON_STATE_DO_NOT_UPDATE_COLOR)
 end
 
-local function changePreviewLabelText(previewType, iconNr, text, doNotUpdateMarkers, iconType) --#301
+local function changePreviewLabelText(previewType, iconNr, text, doNotUpdateMarkers, iconType) --#301 LibSets set search favorites
     doNotUpdateMarkers = doNotUpdateMarkers or false
     local iconCtrl = getPreviewControlByIconNr(previewType, iconNr)
     if not iconCtrl or not iconCtrl.label or not text then return end
@@ -1172,7 +1172,7 @@ local function changePreviewLabelText(previewType, iconNr, text, doNotUpdateMark
 
     if iconType == nil then
         iconCtrl.label:SetText(locVars[optionsIcon..tos(iconNr).."_texture"] .. ": " .. text)
-    --#301
+    --#301 LibSets set search favorites
     elseif iconType == "LibSetsSetSearchFavorite" then
         iconCtrl.label:SetText(locVars[optionsIcon..tos(1).."_texture"] .. ": " .. text)
     end
@@ -2921,7 +2921,7 @@ end
 --==================== Filter panel additional inventory context menu "flag" button positions - END =====================================
 
 
-
+--[[
 --#301 LibSets set search favorites
 local function buildLibSetsSetSearchCategorySubMenu()
     FCOISsettings = FCOIS.settingsVars.settings
@@ -2945,15 +2945,6 @@ local function buildLibSetsSetSearchCategorySubMenu()
             local ref, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, createdControl, createdDDControl
 
             --Add the current LibSets set search favorite category icon as texture, with the name of the category (for visual reference)
-            --[[textureData = {
-                type = "texture",
-                image = "file/path.dds",
-                imageWidth = 64, -- max of 250 for half width, 510 for full
-                imageHeight = 32, -- max of 100
-                tooltip = "Image's tooltip text.", -- or string id or function returning a string (optional)
-                width = "full", -- or "half" (optional)
-                reference = "MyAddonTexture" -- unique global reference to control (optional)
-            } ]]
             ref = fcoisLAMSettingsReferencePrefix .. libSetsSetSearchFavorite.. category ..  "Icon"
             data = { type = "texture", image = categoryTexture, width = "half", imageWidth = 32, imageHeight=32 }
             disabledFunc = function() return FCOIS.libSets == nil or not FCOISsettings.autoMarkLibSetsSetSearchFavorites end
@@ -2990,6 +2981,7 @@ local function buildLibSetsSetSearchCategorySubMenu()
     end
     return libSetsSetSearchCategorySubMenu
 end
+]]
 
 
 --======================================================================================================================
@@ -3185,7 +3177,7 @@ function FCOIS.BuildAddonMenu()
     --Build submenu for additional inventory flag button contextMenus
     local addInvFlagButtonsPositionsSubMenu = buildAddInvContextMenuFlagButtonsPositionsSubMenu()
     --Build submenu for LibSets set search favorites
-    local libSetsSetSearchFavoritesSubMenu = buildLibSetsSetSearchCategorySubMenu()
+    --local libSetsSetSearchFavoritesSubMenu = buildLibSetsSetSearchCategorySubMenu() --#301
 
 
     --==================== LAM callbacks - BEGIN =====================================
@@ -5091,6 +5083,7 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
 
                                 --==============================================================================
                                 -- LibSets Set Search Favorites - #301
+                                --[[
                                 {
                                     type = "submenu",
                                     name = locVars["options_enable_auto_mark_LibSetsSetSearchFavorites"],
@@ -5121,6 +5114,7 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
 
                                     }, -- -- LibSets Set Search Favorites controls
                                 }, -- -- LibSets Set Search Favorites submenu
+                                ]]
 
 
                                 --==============================================================================
