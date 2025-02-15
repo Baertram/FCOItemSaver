@@ -49,7 +49,8 @@ local getArmorType = FCOIS.GetArmorType
 local checkIfCompanionInteractedAndCompanionInventoryIsShown = FCOIS.CheckIfCompanionInteractedAndCompanionInventoryIsShown
 
 --Prevent duplicate SecurePostHooks added to the scrollList setupCallback functions #303
-local inventoriesSecurePostHooksDone = FCOIS.inventoriesSecurePostHooksDone
+local onScrollListRowSetupCallback = FCOIS.onScrollListRowSetupCallback
+--local inventoriesSecurePostHooksDone = FCOIS.inventoriesSecurePostHooksDone
 local addInventorySecurePostHookDoneEntry = FCOIS.addInventorySecurePostHookDoneEntry
 local checkIfInventorySecurePostHookWasDone = FCOIS.checkIfInventorySecurePostHookWasDone
 
@@ -624,7 +625,6 @@ function FCOIS.CreateTextures(whichTextures)
         --Create textures in inventories
         --for all PLAYER_INVENTORY.inventories do ...
 
-
         for _,v in pairs(ctrlVars.playerInventoryInvs) do
             local listView = v.listView
             --Do not hook quest items
@@ -638,6 +638,7 @@ function FCOIS.CreateTextures(whichTextures)
                         function(rowControl, slot)
                             --hookedFunctions(rowControl, slot)
                             addMarkerIconsToZOListViewNow(rowControl, slot, doCreateMarkerControl, nil, true, true)
+                            onScrollListRowSetupCallback(rowControl, nil, true)
 
                             --[[
                             --Do not execute if horse is changed
@@ -677,6 +678,7 @@ function FCOIS.CreateTextures(whichTextures)
                     function(rowControl, slot)
                         --hookedFunctions(rowControl, slot)
                         addMarkerIconsToZOListViewNow(rowControl, slot, doCreateMarkerControl, nil, false, false)
+                        onScrollListRowSetupCallback(rowControl, nil, true)
 
                         --[[
                         --Do not execute if horse is changed
@@ -708,6 +710,7 @@ function FCOIS.CreateTextures(whichTextures)
     if (whichTextures == 4 or doCreateAllTextures) then
         -- Marker function for quickslots inventory
         local listView = ctrlVars.QUICKSLOT_LIST
+        -->Quickslots get initilizaed on first open with OnDeferredInit now so maybe the list is not there properly yet! Check FCOIS.CreateHooks -> onDeferredInitCheck(ctrlVars.QUICKSLOT_KEYBOARD,
         if listView and listView.dataTypes and listView.dataTypes[1]
             and not checkIfInventorySecurePostHookWasDone(listView, listView.dataTypes[1]) then --#303
             --local hookedFunctions = listView.dataTypes[1].setupCallback
@@ -718,6 +721,7 @@ function FCOIS.CreateTextures(whichTextures)
                         --hookedFunctions(rowControl, slot)
 
                         addMarkerIconsToZOListViewNow(rowControl, slot, doCreateMarkerControl, nil, false, false)
+                        onScrollListRowSetupCallback(rowControl, nil, true)
 
                         --[[
                         --Do not execute if horse is changed
@@ -738,7 +742,7 @@ function FCOIS.CreateTextures(whichTextures)
         end
     end
     --Transmuation
-    if (whichTextures == 5 or doCreateAllTextures) then
+    if (whichTextures == 5 or doCreateAllTextures) then ---->FCOIS.CreateHooks() adds the onMouseUpHandlers
         --Create textures in repair window
         local listView = ctrlVars.RETRAIT_LIST
         if listView and listView.dataTypes and listView.dataTypes[1]
@@ -751,6 +755,7 @@ function FCOIS.CreateTextures(whichTextures)
                         --hookedFunctions(rowControl, slot)
 
                         addMarkerIconsToZOListViewNow(rowControl, slot, doCreateMarkerControl, nil, false, false)
+                        onScrollListRowSetupCallback(rowControl, nil, true)
                         --[[
                         --Do not execute if horse is changed
                         --The current game's SCENE and name (used for determining bank/guild bank deposit)
@@ -798,6 +803,7 @@ function FCOIS.CreateTextures(whichTextures)
                         --            Will be fixed now by preventing the companion
 
                         addMarkerIconsToZOListViewNow(rowControl, slot, doCreateMarkerControl, checkIfCompanionInteractedAndCompanionInventoryIsShown, false, false)
+                        onScrollListRowSetupCallback(rowControl, nil, true)
                         --[[
                         --Do not execute if horse is changed
                         --The current game's SCENE and name (used for determining bank/guild bank deposit)

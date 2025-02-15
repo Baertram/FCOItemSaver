@@ -1638,37 +1638,36 @@ end
 FCOIS.inventoryVars = {}
 local inventoryVars = FCOIS.inventoryVars
 --The inventory controls which get hooked for the marker texture controls.
-    ---hookListViewSetupCallback: ---> Currently NOT used! 2021-05-25
-    -- Should be done in file /src/FCOIS_MarkerIcons.lua -> function FCOIS.CreateTextures(whichTextures)
-    ---called by file /src/FCOIS_Events.lua -> function FCOItemSaver_Loaded -> FCOIS.CreateTextures(-1)
     --
-    ---hookScrollSetupCallback: ---> Currently used
-    ---Will be done in file /src/FCOIS_Hooks.lua -> function OnScrollListRowSetupCallback
-    ---called by file /src/FCOIS_Hooks.lua -> different SecurePosthooks to crafting inventories e.g.
-    ---Will be used to prevent duplicate marker texture icon apply calls.
+    ---hookListViewSetupCallback: ---> Currently NOT used as there are special checks needed - 2021-05-25
+    -- Done in file /src/FCOIS_MarkerIcons.lua -> function FCOIS.CreateTextures(whichTextures)
+    ---called by file /src/FCOIS_Events.lua -> function FCOItemSaver_Loaded -> FCOIS.CreateTextures(-1)
 inventoryVars.markerControlInventories = {
+    --[[
     ["hookListViewSetupCallback"] = {
         --all PLAYER_INVENTORY.inventories
+        --todo 20250215
         --+
         [ctrlVars.REPAIR_LIST]          = true,
         [ctrlVars.CHARACTER]            = true,
         [ctrlVars.QUICKSLOT_LIST]       = true,
         [ctrlVars.RETRAIT_LIST]         = true,
     },
+    ]]
 -------------------------------------------------
+    ---hookScrollSetupCallback: ---> Currently used
+    ---Will be done in file /src/FCOIS_Hooks.lua -> function OnScrollListRowSetupCallback
+    ---called by file /src/FCOIS_Hooks.lua -> different SecurePosthooks to crafting inventories e.g.
+    ---Will be used to prevent duplicate marker texture icon apply calls.
     ["hookScrollSetupCallback"] = {
         [ctrlVars.REFINEMENT]           = true,
         [ctrlVars.DECONSTRUCTION]       = true,
         [ctrlVars.IMPROVEMENT]          = true,
         [ctrlVars.ENCHANTING_STATION]   = true,
         [ctrlVars.ALCHEMY_STATION]      = true,
+        [ctrlVars.UNIVERSAL_DECONSTRUCTION_INV_BACKPACK] = true, --#202
     },
 }
--- -v- #202
-if ZO_UNIVERSAL_DECONSTRUCTION_FILTER_TYPES ~= nil then
-    inventoryVars.markerControlInventories["hookScrollSetupCallback"][ctrlVars.UNIVERSAL_DECONSTRUCTION_INV_BACKPACK] = true
-end
--- -^- #202
 
 
 --The mapping array for libFilter filterType to the inventory type

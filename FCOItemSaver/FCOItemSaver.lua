@@ -225,13 +225,12 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
 
 --[Changed]
 --#302 Disable SetTracker support unless you are using version 300+ of Shintarou (because the original addon is non working since years and always troubled FCOIS code since then. Please switch to LibSets and/or WishList instead).
---#304 Made LibSets an optional dependency
 
 --[Added]
 --
 
 --[Added on request]
---
+--#304 Made LibSets an optional dependency
 
 
 --************************************************************************************************************************

@@ -3539,14 +3539,25 @@ function FCOIS.GetFilterPanelIdByBagId(bagId)
     return filterPanelId
 end
 
+local onlyOnMouseUpHandlerSuffix = "_OnMouseUpHandler"
+local function getListViewName(listView, onlyOnMouseUpHandler)
+    local listViewName = listView
+    if onlyOnMouseUpHandler == true then
+        listViewName = (listView:GetName() or listView.name) .. onlyOnMouseUpHandlerSuffix
+    end
+    return listViewName
+end
+
 --Prevent duplicate SecurePostHooks added to the scrollList setupCallback functions #303
-local function addInventorySecurePostHookDoneEntry(listView, dataType) --#303
-    inventoriesSecurePostHooksDone[listView] = inventoriesSecurePostHooksDone[listView] or {}
-    inventoriesSecurePostHooksDone[listView][dataType] = true
+local function addInventorySecurePostHookDoneEntry(listView, dataType, onlyOnMouseUpHandler) --#303
+    local listViewName = getListViewName(listView, onlyOnMouseUpHandler)
+    inventoriesSecurePostHooksDone[listViewName] = inventoriesSecurePostHooksDone[listViewName] or {}
+    inventoriesSecurePostHooksDone[listViewName][dataType] = true
 end
 FCOIS.addInventorySecurePostHookDoneEntry = addInventorySecurePostHookDoneEntry
 
-local function checkIfInventorySecurePostHookWasDone(listView, dataType) --#303
-   return (inventoriesSecurePostHooksDone[listView] ~= nil and inventoriesSecurePostHooksDone[dataType] ~= nil and true) or false
+local function checkIfInventorySecurePostHookWasDone(listView, dataType, onlyOnMouseUpHandler) --#303
+    local listViewName = getListViewName(listView, onlyOnMouseUpHandler)
+    return (inventoriesSecurePostHooksDone[listViewName] ~= nil and inventoriesSecurePostHooksDone[listViewName][dataType] ~= nil and true) or false
 end
 FCOIS.checkIfInventorySecurePostHookWasDone = checkIfInventorySecurePostHookWasDone
