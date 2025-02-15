@@ -2391,6 +2391,8 @@ function FCOIS.CreateHooks()
     end)
 
     --Update inventory slot labels
+    --[[ --todo 20250215 This is a local function! So how do we add our code to the local UpdateInventorySlots function, maybe by hooking into the slotsLabel:SetText function?
+         --todo or is this even needed here? Maybe it's taken care of automatically via FCOIS' UpdateEmptyBagLabel hook?
     ZO_PreHook("UpdateInventorySlots", function()
         --d("[FCOIS]UpdateInventorySlots")
         --This variable (FCOIS.preventerVars.dontUpdateFilteredItemCount) is set within file src/FCOIS_FilterButtons.lua, function FCOIS.updateFilteredItemCount
@@ -2402,6 +2404,7 @@ function FCOIS.CreateHooks()
             updateFilteredItemCountThrottled(nil, 50, "UpdateInventorySlots")
         end
     end)
+    ]]
 
     --#288 Inventory's player/companion headerline at the character screen -> "Armor" or "Armor hidden"
     SecurePostHook(PLAYER_INVENTORY, "UpdateApparelSection", function(selfVar)
