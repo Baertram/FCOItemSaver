@@ -1044,6 +1044,7 @@ FCOIS.localizationVars.localizationAll = {
 		["research_item_found"]                  = "] as researchable",
         ["researchScroll_item_found"]            = "] as wasted research scroll",
         ["set_part_found"]						 = "] as set part",
+        ["LibSetsSetSearchFavoriteCategory_part_found"] = "] as LibSets set search favorite",
 		["set_part_non_wished_found"]			 = "] as non-desired set part",
 		["quality_item_found"]                  = "] because of item's quality",
 		["known_recipe_found"]				= "] as known recipe",
@@ -1290,6 +1291,13 @@ FCOIS.localizationVars.localizationAll = {
         ["options_automark_itemcooldowntracker"]        = "Mark \'Item Cooldown Tracker\' tracked",
         ["options_automark_itemcooldowntracker_TT"]     = "Automatically mark items tracked via \'Item Cooldown Tracker\' with a marker icon.",
         ["options_automark_itemcooldowntracker_icon_TT"] = "Choose the marker icon that should be applied on items that are tracked via \'Item Cooldown Tracker\'.",
+
+
+        --#301 LibSets set search favorites
+        ["options_enable_auto_mark_LibSetsSetSearchFavorites"] = "LibSets set search favorites mapping",
+        ["options_enable_auto_mark_LibSetsSetSearchFavorites_TT"] = "Map the LibSets set search favorite categories to FCOIS marker icons and show those in your inventories.",
+        ["options_LibSetsSetSearchFavorites_Mapping"] = "LibSets - Set search favorites mapping",
+        ["options_LibSetsSetSearchFavoritesCategory"] = "Set search favorite category",
 
         --LibShifterBoxes
         --[FCOIS_UNIQUEID_ITEMTYPES]
@@ -2303,6 +2311,7 @@ FCOIS.localizationVars.localizationAll = {
         ["research_item_found"]                  = "] als analysierbar gesetzt",
         ["researchScroll_item_found"]            = "] als vergeudete Analyse Schriftrolle markiert",
         ["set_part_found"]						 = "] als Set Teil gesetzt",
+        ["LibSetsSetSearchFavoriteCategory_part_found"] = "] als LibSets Set Suche Favorit",
         ["set_part_non_wished_found"]			 = "] als nicht-gewünschtes Set Teil gesetzt",
         ["quality_item_found"]                  = "] durch die Qualität gesetzt",
         ["known_recipe_found"]				= "] als bekanntes Rezept gesetzt",

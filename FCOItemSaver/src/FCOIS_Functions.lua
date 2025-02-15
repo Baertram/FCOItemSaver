@@ -3,6 +3,8 @@ if FCOIS == nil then FCOIS = {} end
 local FCOIS = FCOIS
 
 local libFilters = FCOIS.libFilters
+local libSets = FCOIS.libSets
+local libLSB = FCOIS.libShifterBox
 
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
@@ -100,6 +102,8 @@ local IIfAInvRowPatternToCheck = "^" .. IIFAitemsListEntryPrePattern .. "*"
 
 local updateCraftingInventory = FCOIS.UpdateCraftingInventory --maybe nil here, will be updated further down in function FCOIS.CheckIfImprovedItemShouldBeReMarked_AfterImprovement()
 
+local inventoriesSecurePostHooksDone = FCOIS.inventoriesSecurePostHooksDone --#303
+
 local getGearIcons
 
 local createFCOISUniqueIdString
@@ -139,6 +143,31 @@ function FCOIS.ThrottledUpdate(callbackName, timer, callback, ...)
     em:UnregisterForUpdate(callbackName)
     em:RegisterForUpdate(callbackName, timer, updateNow)
 end
+
+--Added with API101043 - ZOs uses more and more DeferredInitialization meanwhile so we craete a wrapper function for that
+local postHookedOnDeferredInitControls = {}
+function FCOIS.onDeferredInitCheck(object, callbackFunc, preCheckFunc)
+	if callbackFunc == nil then return end
+	--PreCheck funtion is needed?
+	local doNow = true
+	if type(preCheckFunc) == "function" then
+		doNow = preCheckFunc(object)
+	end
+	if not doNow then return end
+
+	--No deferred init available? Run callback directly
+	if object ~= nil then
+		if object.OnDeferredInitialize == nil then
+			callbackFunc(object)
+		else
+			if not postHookedOnDeferredInitControls[object] then
+				SecurePostHook(object, "OnDeferredInitialize", function(...) callbackFunc(object, ...) end)
+				postHookedOnDeferredInitControls[object] = true
+			end
+		end
+	end
+end
+
 
 local alreadyActiveBlockedCallbackNames = {}
 function FCOIS.OnlyCallOnceInTime(callbackName, timeToBlock, callback, ...)
@@ -287,42 +316,46 @@ local resetCreateFCOISUniqueIdStringLastVars = FCOIS.ResetCreateFCOISUniqueIdStr
 
 --Set the variables for each panel where the number of filtered items can be found for the current inventory
 function FCOIS.GetNumberOfFilteredItemsForEachPanel()
+    local numberOfFilteredItems = FCOIS.numberOfFilteredItems
+
     local numFilterdItemsInv = ctrlVars.BACKPACK_LIST.data
-    FCOIS.numberOfFilteredItems[LF_INVENTORY]              = numFilterdItemsInv
+    numberOfFilteredItems[LF_INVENTORY]              = numFilterdItemsInv
     --Same like inventory
-    FCOIS.numberOfFilteredItems[LF_MAIL_SEND]              = numFilterdItemsInv
-    FCOIS.numberOfFilteredItems[LF_TRADE]                  = numFilterdItemsInv
-    FCOIS.numberOfFilteredItems[LF_GUILDSTORE_SELL]        = numFilterdItemsInv
-    FCOIS.numberOfFilteredItems[LF_BANK_DEPOSIT]           = numFilterdItemsInv
-    FCOIS.numberOfFilteredItems[LF_GUILDBANK_DEPOSIT]      = numFilterdItemsInv
-    FCOIS.numberOfFilteredItems[LF_VENDOR_BUY]             = 0                      -- TODO FEATURE: Add as filter panel gets supported
-    FCOIS.numberOfFilteredItems[LF_VENDOR_SELL]            = numFilterdItemsInv
-    FCOIS.numberOfFilteredItems[LF_VENDOR_BUYBACK]         = 0                      -- TODO FEATURE: Add as filter panel gets supported
-    FCOIS.numberOfFilteredItems[LF_VENDOR_REPAIR]          = 0                      -- TODO FEATURE: Add as filter panel gets supported
-    FCOIS.numberOfFilteredItems[LF_FENCE_SELL]             = numFilterdItemsInv
-    FCOIS.numberOfFilteredItems[LF_FENCE_LAUNDER]          = numFilterdItemsInv
+    numberOfFilteredItems[LF_MAIL_SEND]              = numFilterdItemsInv
+    numberOfFilteredItems[LF_TRADE]                  = numFilterdItemsInv
+    numberOfFilteredItems[LF_GUILDSTORE_SELL]        = numFilterdItemsInv
+    numberOfFilteredItems[LF_BANK_DEPOSIT]           = numFilterdItemsInv
+    numberOfFilteredItems[LF_GUILDBANK_DEPOSIT]      = numFilterdItemsInv
+    numberOfFilteredItems[LF_VENDOR_BUY]             = 0                      -- TODO FEATURE: Add as filter panel gets supported
+    numberOfFilteredItems[LF_VENDOR_SELL]            = numFilterdItemsInv
+    numberOfFilteredItems[LF_VENDOR_BUYBACK]         = 0                      -- TODO FEATURE: Add as filter panel gets supported
+    numberOfFilteredItems[LF_VENDOR_REPAIR]          = 0                      -- TODO FEATURE: Add as filter panel gets supported
+    numberOfFilteredItems[LF_FENCE_SELL]             = numFilterdItemsInv
+    numberOfFilteredItems[LF_FENCE_LAUNDER]          = numFilterdItemsInv
     --Others
-    FCOIS.numberOfFilteredItems[LF_BANK_WITHDRAW]          = ctrlVars.BANK.data
-    FCOIS.numberOfFilteredItems[LF_GUILDBANK_WITHDRAW]     = ctrlVars.GUILD_BANK.data
-    FCOIS.numberOfFilteredItems[LF_SMITHING_REFINE]        = ctrlVars.REFINEMENT.data
-    FCOIS.numberOfFilteredItems[LF_SMITHING_DECONSTRUCT]   = ctrlVars.DECONSTRUCTION.data
-    FCOIS.numberOfFilteredItems[LF_SMITHING_IMPROVEMENT]   = ctrlVars.IMPROVEMENT.data
-    FCOIS.numberOfFilteredItems[LF_SMITHING_RESEARCH]      = 0 -- No item count should be shown at the research traits list
-    FCOIS.numberOfFilteredItems[LF_SMITHING_RESEARCH_DIALOG] = 0 -- No item count should be shown inside the selected traits popup
-    FCOIS.numberOfFilteredItems[LF_ALCHEMY_CREATION]       = ctrlVars.ALCHEMY_STATION.data
-    FCOIS.numberOfFilteredItems[LF_ENCHANTING_CREATION]    = ctrlVars.ENCHANTING_STATION.data
-    FCOIS.numberOfFilteredItems[LF_ENCHANTING_EXTRACTION]  = FCOIS.numberOfFilteredItems[LF_ENCHANTING_CREATION]
-    FCOIS.numberOfFilteredItems[LF_CRAFTBAG]               = ctrlVars.CRAFTBAG_LIST.data
-    FCOIS.numberOfFilteredItems[LF_RETRAIT]                = ctrlVars.RETRAIT_LIST.data
-    FCOIS.numberOfFilteredItems[LF_HOUSE_BANK_WITHDRAW]    = ctrlVars.HOUSE_BANK.data
-    FCOIS.numberOfFilteredItems[LF_JEWELRY_REFINE]         = FCOIS.numberOfFilteredItems[LF_SMITHING_REFINE]
-    FCOIS.numberOfFilteredItems[LF_JEWELRY_DECONSTRUCT]    = FCOIS.numberOfFilteredItems[LF_SMITHING_DECONSTRUCT]
-    FCOIS.numberOfFilteredItems[LF_JEWELRY_IMPROVEMENT]    = FCOIS.numberOfFilteredItems[LF_SMITHING_IMPROVEMENT]
-    FCOIS.numberOfFilteredItems[LF_JEWELRY_RESEARCH]       = FCOIS.numberOfFilteredItems[LF_SMITHING_RESEARCH]
-    FCOIS.numberOfFilteredItems[LF_JEWELRY_RESEARCH_DIALOG]= FCOIS.numberOfFilteredItems[LF_SMITHING_RESEARCH_DIALOG]
-    FCOIS.numberOfFilteredItems[LF_QUICKSLOT]              = ctrlVars.QUICKSLOT_WINDOW.list.data
+    numberOfFilteredItems[LF_BANK_WITHDRAW]          = ctrlVars.BANK.data
+    numberOfFilteredItems[LF_GUILDBANK_WITHDRAW]     = ctrlVars.GUILD_BANK.data
+    numberOfFilteredItems[LF_SMITHING_REFINE]        = ctrlVars.REFINEMENT.data
+    numberOfFilteredItems[LF_SMITHING_DECONSTRUCT]   = ctrlVars.DECONSTRUCTION.data
+    numberOfFilteredItems[LF_SMITHING_IMPROVEMENT]   = ctrlVars.IMPROVEMENT.data
+    numberOfFilteredItems[LF_SMITHING_RESEARCH]      = 0 -- No item count should be shown at the research traits list
+    numberOfFilteredItems[LF_SMITHING_RESEARCH_DIALOG] = 0 -- No item count should be shown inside the selected traits popup
+    numberOfFilteredItems[LF_ALCHEMY_CREATION]       = ctrlVars.ALCHEMY_STATION.data
+    numberOfFilteredItems[LF_ENCHANTING_CREATION]    = ctrlVars.ENCHANTING_STATION.data
+    numberOfFilteredItems[LF_ENCHANTING_EXTRACTION]  = numberOfFilteredItems[LF_ENCHANTING_CREATION]
+    numberOfFilteredItems[LF_CRAFTBAG]               = ctrlVars.CRAFTBAG_LIST.data
+    numberOfFilteredItems[LF_RETRAIT]                = ctrlVars.RETRAIT_LIST.data
+    numberOfFilteredItems[LF_HOUSE_BANK_WITHDRAW]    = ctrlVars.HOUSE_BANK.data
+    numberOfFilteredItems[LF_JEWELRY_REFINE]         = numberOfFilteredItems[LF_SMITHING_REFINE]
+    numberOfFilteredItems[LF_JEWELRY_DECONSTRUCT]    = numberOfFilteredItems[LF_SMITHING_DECONSTRUCT]
+    numberOfFilteredItems[LF_JEWELRY_IMPROVEMENT]    = numberOfFilteredItems[LF_SMITHING_IMPROVEMENT]
+    numberOfFilteredItems[LF_JEWELRY_RESEARCH]       = numberOfFilteredItems[LF_SMITHING_RESEARCH]
+    numberOfFilteredItems[LF_JEWELRY_RESEARCH_DIALOG]= numberOfFilteredItems[LF_SMITHING_RESEARCH_DIALOG]
+    numberOfFilteredItems[LF_QUICKSLOT]              = ctrlVars.QUICKSLOT_LIST ~= nil and ctrlVars.QUICKSLOT_LIST.data --Will be updated at DeferredInit again! See FCOIS_Hooks -> onDeferredInitCheck(ctrlVars.QUICKSLOT_KEYBOARD
     --Special numbers for e.g. quest items in inventory
-    FCOIS.numberOfFilteredItems["INVENTORY_QUEST_ITEM"]    = playerInvInvs[INVENTORY_QUEST_ITEM].listView.data
+    numberOfFilteredItems["INVENTORY_QUEST_ITEM"]    = playerInvInvs[INVENTORY_QUEST_ITEM].listView.data
+
+    FCOIS.numberOfFilteredItems = numberOfFilteredItems
 end
 
 --==========================================================================================================================================
@@ -443,7 +476,7 @@ function FCOIS.MyGetItemDetails(rowControl)
                 bagId, slotIndex = BAG_BACKPACK, parentDataEntry.slotIndex
             end
             --Store buy
-        elseif rowControl.slotType == SLOT_TYPE_STORE_BUY or rowControl.slotType == SLOT_TYPE_BUY_MULTIPLE then
+        elseif not isDataEntryNil and rowControl.slotType == SLOT_TYPE_STORE_BUY or rowControl.slotType == SLOT_TYPE_BUY_MULTIPLE then
             bagId = nil
             slotIndex = dataEntryData.slotIndex
             --[[
@@ -1262,10 +1295,18 @@ function FCOIS.IsItemAGlpyh(bag, slot)
     return resultVar
 end
 
-function FCOIS.IsItemSetAndNotExcluded(bag, slot)
-    if bag == nil or slot == nil then return false end
-    local isAllowedSet, _, _, _, _, setId = gilsetinf(gil(bag, slot), false)
-    if isAllowedSet == true and setId ~= nil then
+function FCOIS.IsItemSetAndNotExcluded(bag, slot, itemLink)
+    libSets = libSets or FCOIS.libSets
+    if (itemLink == nil and (bag == nil or slot == nil)) or itemLink == nil then return false, nil end
+    local isAllowedSet, setId
+    if itemLink ~= nil then
+        local l_isAllowedSet, _, _, _, _, l_setId = gilsetinf(itemLink, false)
+        isAllowedSet, setId = l_isAllowedSet, l_setId
+    else
+        local l_isAllowedSet, _, _, _, _, l_setId = gilsetinf(gil(bag, slot), false)
+        isAllowedSet, setId = l_isAllowedSet, l_setId
+    end
+    if isAllowedSet == true and setId ~= nil and libSets ~= nil and libLSB ~= nil then --#304
         local settings = FCOIS.settingsVars.settings
         if settings.autoMarkSetsExcludeSets == true then
             local autoMarkSetsExcludeSetsList = settings.autoMarkSetsExcludeSetsList
@@ -1274,7 +1315,7 @@ function FCOIS.IsItemSetAndNotExcluded(bag, slot)
             end
         end
     end
-    return isAllowedSet
+    return isAllowedSet, setId
 end
 
 
@@ -2926,7 +2967,7 @@ end
 
 --Check if the player is in a house
 function FCOIS.CheckIfInHouse()
-    local inHouse = (GetCurrentZoneHouseId() ~= 0) or false
+    local inHouse = (GetCurrentZoneHouseId() ~= 0 and true) or false
     if not inHouse then
         local x,y,z,rotRad = GetPlayerWorldPositionInHouse()
         if x == 0 and y == 0 and z == 0 and rotRad == 0 then
@@ -2939,20 +2980,22 @@ local checkIfInHouse = FCOIS.CheckIfInHouse
 
 --Check if the player owns the house
 function FCOIS.CheckIfIsOwnerOfHouse()
-    return IsOwnerOfCurrentHouse() or false
+    return IsOwnerOfCurrentHouse()
 end
 local checkIfIsOwnerOfHouse = FCOIS.CheckIfIsOwnerOfHouse
 
 --Check if the bagId is a house bank bag and we are in our own house
 function FCOIS.CheckIfHouseBankBagAndInOwnHouse(bagId)
-    local retVar = (bagId ~= nil and IsHouseBankBag(bagId) and checkIfInHouse() and checkIfIsOwnerOfHouse) or false
+    --20241119 Disabled for performance local retVar = (bagId ~= nil and IsHouseBankBag(bagId) and checkIfInHouse() and checkIfIsOwnerOfHouse()) or false
+    local retVar = (bagId ~= nil and IsHouseBankBag(bagId) and checkIfIsOwnerOfHouse() and true) or false
 --d("[FCOIS.checkIfHouseBankBagAndInOwnHouse] bagId: " ..tos(bagId) .. ", houseBankBagAndInOwnHouse: " ..tos(retVar))
     return retVar
 end
 
 --Check if I'm an owner of a house and I'm curerntly in a house
 function FCOIS.CheckIfHouseOwnerAndInsideOwnHouse()
-    local retVar = (checkIfInHouse() and checkIfIsOwnerOfHouse()) or false
+    --20241119 Disabled for performance local retVar = (checkIfInHouse() and checkIfIsOwnerOfHouse()) or false
+    local retVar = checkIfIsOwnerOfHouse()
 --d("[FCOIS.checkIfHouseBankBagAndInOwnHouse] bagId: " ..tos(bagId) .. ", houseBankBagAndInOwnHouse: " ..tos(retVar))
     return retVar
 end
@@ -3411,6 +3454,7 @@ function FCOIS.CheckIfBagShouldAutoRemoveMarkerIcons(bagId, slotIndex)
     end
 end
 
+
 ------------------------------------------------
 --- Tooltip functions
 ------------------------------------------------
@@ -3424,8 +3468,8 @@ function FCOIS.ShowItemLinkTooltip(control, parent, anchor1, offsetX, offsetY, a
         hideItemLinkTooltip()
         return nil
     end
-    local libSets = FCOIS.libSets
-    if not libSets then return end
+    libSets = libSets or FCOIS.libSets
+    if not libSets then return end --#304
     local data = control.dataEntry.data
     local setItemId = data.setItemId or libSets.GetSetItemId(data.key)
     if setItemId ~= nil then
@@ -3440,6 +3484,7 @@ function FCOIS.ShowItemLinkTooltip(control, parent, anchor1, offsetX, offsetY, a
         end
     end
 end
+
 
 --==========================================================================================================================================
 --                                          FCOIS - Keyboard helper functions
@@ -3493,3 +3538,15 @@ function FCOIS.GetFilterPanelIdByBagId(bagId)
 --d("<filterPanelId: " ..tos(filterPanelId))
     return filterPanelId
 end
+
+--Prevent duplicate SecurePostHooks added to the scrollList setupCallback functions #303
+local function addInventorySecurePostHookDoneEntry(listView, dataType) --#303
+    inventoriesSecurePostHooksDone[listView] = inventoriesSecurePostHooksDone[listView] or {}
+    inventoriesSecurePostHooksDone[listView][dataType] = true
+end
+FCOIS.addInventorySecurePostHookDoneEntry = addInventorySecurePostHookDoneEntry
+
+local function checkIfInventorySecurePostHookWasDone(listView, dataType) --#303
+   return (inventoriesSecurePostHooksDone[listView] ~= nil and inventoriesSecurePostHooksDone[dataType] ~= nil and true) or false
+end
+FCOIS.checkIfInventorySecurePostHookWasDone = checkIfInventorySecurePostHookWasDone

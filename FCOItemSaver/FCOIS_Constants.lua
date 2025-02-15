@@ -12,7 +12,7 @@ local strlen = string.len
 FCOIS.addonVars = {}
 local addonVars = FCOIS.addonVars
 --Addon variables
-addonVars.addonVersionOptions 		    = '2.5.9' -- version shown in the settings panel
+addonVars.addonVersionOptions 		    = '2.6.1' -- version shown in the settings panel
 --The addon name, normal and decorated with colors etc.
 addonVars.gAddonName				    = "FCOItemSaver"
 addonVars.gAddonNameShort               = "FCOIS"
@@ -807,7 +807,6 @@ mappingVars.filterPanelToFilterButtonFilterActiveSettingName = {
     [LF_ALCHEMY_CREATION] =         "allowAlchemyFilter",
     [LF_RETRAIT] =                  "allowRetraitFilter",
     [LF_INVENTORY_COMPANION] =      "allowCompanionInventoryFilter",
-
 }
 
 
@@ -2658,7 +2657,7 @@ checkVars.filterPanelIdsForAntiDestroyDoNotUseOtherAntiSettings = {
     [LF_GUILDBANK_DEPOSIT] = true,      --use anti-destroy at the destroy item handler as anti-deposit is the wrong setting :-) -> to reflect the "flag"'s icon color state
 }
 
---BagId to SetTracker addon settings in FCOIS
+--BagId to SetTracker addon settings in FCOIS --#302 SetTracker support disabled with FCOOIS v2.6.1, for versions <300
 mappingVars.bagToSetTrackerSettings = {
 	--[[ Will be filled as the settings got loaded
 		--> See function updateSettingsBeforeAddonMenu
@@ -3534,3 +3533,6 @@ mappingVars.iconNrToOrdinalStr = {
         [30] = "trentième",
     },
 }
+
+--#303
+FCOIS.inventoriesSecurePostHooksDone = {}

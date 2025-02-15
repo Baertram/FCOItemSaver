@@ -751,6 +751,21 @@ function FCOIS.IsGear(bag, slot)
 	return isMarked(bag, slot, gearIconIds, nil)
 end
 
+
+function FCOIS.UpdateInventory(bag, isCharShown, showIcon, iconId)
+	--d("<<UpdateInv: " ..tos(updateInventories) .. ", doUpdateMarkerNow: " .. tos(doUpdateMarkerNow) .. ", gOverrideInvUpdateAfterMarkItem: " ..tos(FCOIS.preventerVars.gOverrideInvUpdateAfterMarkItem))
+	if isCharShown then
+		refreshEquipmentControl(nil, showIcon, iconId)
+	elseif bag == nil then
+		filterBasics(false)
+	elseif bag ~= nil and (bag == BAG_BACKPACK or bag == BAG_VIRTUAL
+			or bag == BAG_BANK or bag == BAG_SUBSCRIBER_BANK or bag == BAG_GUILDBANK or IsHouseBankBag(bag)
+			or (bag == BAG_WORN and FCOIS.IsVendorPanelShown(LF_VENDOR_REPAIR, false))) then
+		filterBasics(false)
+	end
+end
+local FCOIS_UpdateInventory = FCOIS.UpdateInventory
+
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -969,13 +984,8 @@ function FCOIS.MarkItem(bag, slot, iconId, showIcon, updateInventories)
 			if ( (updateInventories and doUpdateMarkerNow) or (FCOIS.preventerVars.gOverrideInvUpdateAfterMarkItem) ) then
 				--d("<<UpdateInv: " ..tos(updateInventories) .. ", doUpdateMarkerNow: " .. tos(doUpdateMarkerNow) .. ", gOverrideInvUpdateAfterMarkItem: " ..tos(FCOIS.preventerVars.gOverrideInvUpdateAfterMarkItem))
 				FCOIS.preventerVars.gOverrideInvUpdateAfterMarkItem = false
-				if isCharShown then
-					refreshEquipmentControl(nil, showIcon, iconId)
-				elseif bag == BAG_BACKPACK or bag == BAG_VIRTUAL
-					or bag == BAG_BANK or bag == BAG_SUBSCRIBER_BANK or bag == BAG_GUILDBANK or IsHouseBankBag(bag)
-					or (bag == BAG_WORN and FCOIS.IsVendorPanelShown(LF_VENDOR_REPAIR, false)) then
-					filterBasics(false)
-				end
+
+				FCOIS_UpdateInventory(bag, isCharShown, showIcon, iconId)
 			end -- if updateInventories ...
 		end -- if iconId ~= -1
 	end -- if not iconIdTypeIsATable
@@ -1170,11 +1180,8 @@ function FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon
 			if ( (updateInventories and doUpdateMarkerNow) or (FCOIS.preventerVars.gOverrideInvUpdateAfterMarkItem) ) then
 				--d("<<UpdateInv: " ..tos(updateInventories) .. ", doUpdateMarkerNow: " .. tos(doUpdateMarkerNow) .. ", gOverrideInvUpdateAfterMarkItem: " ..tos(FCOIS.preventerVars.gOverrideInvUpdateAfterMarkItem))
 				FCOIS.preventerVars.gOverrideInvUpdateAfterMarkItem = false
-				if isCharShown then
-					refreshEquipmentControl(nil, showIcon, iconId)
-				else
-					filterBasics(false)
-				end
+
+				FCOIS_UpdateInventory(nil, isCharShown, showIcon, iconId)
 			end -- if updateInventories ...
         end -- if iconId ~= -1
     end --if not iconIdTypeIsATable then
@@ -1400,7 +1407,7 @@ function FCOIS.ShouldInventoryContextMenuBeHiddden()
 	if not checkIfFCOISSettingsWereLoaded(FCOIS.preventerVars.gCalledFromInternalFCOIS, not addonVars.gAddonLoaded) then return false end
 	local contextMenuClearMarkesByShiftKey = FCOIS.settingsVars.settings.contextMenuClearMarkesByShiftKey
 --d(">contextMenuClearMarkesByShiftKey: " ..tos(contextMenuClearMarkesByShiftKey) .. ", dontShowInvContextMenu: " ..tos(FCOIS.preventerVars.dontShowInvContextMenu))
-    return (contextMenuClearMarkesByShiftKey == true and FCOIS.preventerVars.dontShowInvContextMenu == true) or false
+    return (contextMenuClearMarkesByShiftKey == true and FCOIS.preventerVars.dontShowInvContextMenu == true and true) or false
 end
 
 --------------------------------------------------------------------------------

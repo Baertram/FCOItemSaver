@@ -1188,7 +1188,7 @@ end -- AfterSettings
 --Do some updates to the SavedVariables before the addon menu is created
 function FCOIS.UpdateSettingsBeforeAddonMenu()
     --SetTracker addon
-    FCOIS.otherAddons.SetTracker.GetSetTrackerSettingsAndBuildFCOISSetTrackerData()
+    FCOIS.otherAddons.SetTracker.GetSetTrackerSettingsAndBuildFCOISSetTrackerData()  --#302  SetTracker support disabled with FCOOIS v2.6.1, for versions <300
 
     --Introduced with FCOIS v0.8.8b
     --Create the armor, jewelry and weapon trait automatic marking arrays and preset them with "true",

@@ -48,8 +48,22 @@ local getArmorType = FCOIS.GetArmorType
 
 local checkIfCompanionInteractedAndCompanionInventoryIsShown = FCOIS.CheckIfCompanionInteractedAndCompanionInventoryIsShown
 
+--Prevent duplicate SecurePostHooks added to the scrollList setupCallback functions #303
+local inventoriesSecurePostHooksDone = FCOIS.inventoriesSecurePostHooksDone
+local addInventorySecurePostHookDoneEntry = FCOIS.addInventorySecurePostHookDoneEntry
+local checkIfInventorySecurePostHookWasDone = FCOIS.checkIfInventorySecurePostHookWasDone
+
 local isIIFAActive
 local checkAndGetIIfAData
+
+--ItemCooldownTracker
+local icdt = ICDT
+local checkIfItemCooldownTrackerRelevantItemIdAndMarkItem = FCOIS.CheckIfItemCooldownTrackerRelevantItemIdAndMarkItem
+
+--LibSets --#301
+local libSets = FCOIS.libSets
+--local applyLibSetsSetSearchFavoriteCategoryMarker = FCOIS.ApplyLibSetsSetSearchFavoriteCategoryMarker --#301
+
 
 -- =====================================================================================================================
 --  Other AddOns helper functions
@@ -104,13 +118,17 @@ local function getMarkerIconDrawLevel(p_markerIconId)
     return 1 --default drawLevel -> Fallback
 end
 
+
+
 --Update marker icons for other addons that should add marker icons to inventory items
-local function updateOtherAddonsInventoryMarkers(parent)
+local function updateOtherAddonsInventoryMarkers(parent, bagId, slotIndex)
     --FCOIS v2.2.4 - ItemCooldownTracker
-    if ICDT ~= nil then
-        local bagId, slotIndex = myGetItemDetails(parent)
+    if icdt ~= nil then
+        if bagId == nil or slotIndex == nil then
+            bagId, slotIndex = myGetItemDetails(parent)
+        end
         if bagId == nil or slotIndex == nil then return end
-        FCOIS.CheckIfItemCooldownTrackerRelevantItemIdAndMarkItem(bagId, slotIndex, nil)
+        checkIfItemCooldownTrackerRelevantItemIdAndMarkItem(bagId, slotIndex, nil)
     end
 end
 
@@ -121,6 +139,7 @@ local function updateAlreadyBoundTexture(parent, pHideControl)
     --Hide the control if settings are disabled or the function parameter tells it to do so
     --Is the item a non-bound item? en hide it!
     local doHide
+    local bagId, slotIndex
     if pHideControl then
         doHide = true
     else
@@ -128,7 +147,7 @@ local function updateAlreadyBoundTexture(parent, pHideControl)
         doHide = not showBoundItemMarker
         if not doHide then
             --Get the bagId and slotIndex
-            local bagId, slotIndex = myGetItemDetails(parent)
+            bagId, slotIndex = myGetItemDetails(parent)
             if bagId == nil or slotIndex == nil then return end
             doHide = not isItemAlreadyBound(bagId, slotIndex)
         end
@@ -218,6 +237,7 @@ local function updateAlreadyBoundTexture(parent, pHideControl)
             end
         end
     end
+    return bagId, slotIndex
 end
 
 local function resetCharacterArmorTypeNumbers()
@@ -551,6 +571,8 @@ local function addMarkerIconsToZOListViewNow(rowControl, slot, doCreateMarkerCon
             end
         end
 
+        local bagId, slotIndex
+
         --Add the marker icons to the control now
         --addMarkerIconsToControl(rowControl, pDoCreateMarkerControl, pIsEquipmentSlot, pUpdateAllEquipmentTooltips, pArmorTypeIcon, pHideControl, pUnequipped)
         addMarkerIconsToControl(rowControl, doCreateMarkerControl, false, nil, nil, nil, nil)
@@ -559,13 +581,25 @@ local function addMarkerIconsToZOListViewNow(rowControl, slot, doCreateMarkerCon
         --FCOItemSaver_AddInfoToData(rowControl)
         --Create and show the "already bound" set parts texture at the top-right edge of the inventory item
         if updateAlreadyBound == true then
-            updateAlreadyBoundTexture(rowControl)
+            bagId, slotIndex = updateAlreadyBoundTexture(rowControl)
         end
 
         --Update marker icons for other addons that should add marker icons to inventory items
         if updateOtherAddonsInvMarkers == true then
-            updateOtherAddonsInventoryMarkers(rowControl)
+            bagId, slotIndex = updateOtherAddonsInventoryMarkers(rowControl, bagId, slotIndex)
         end
+
+        --#301 FCOIS v2.6.1 LibSets set search favorite categories marker icons
+        -->todo Is this really needed here as the marker icons are applied on FCOIS.ScanInventory too already?
+        --[[
+        if libSets ~= nil then
+            if bagId == nil or slotIndex == nil then
+                bagId, slotIndex = myGetItemDetails(parent)
+            end
+            if bagId == nil or slotIndex == nil then return end
+            applyLibSetsSetSearchFavoriteCategoryMarker(rowControl, bagId, slotIndex, nil, nil, nil)
+        end
+        ]]
     end
 end
 
@@ -595,7 +629,9 @@ function FCOIS.CreateTextures(whichTextures)
             local listView = v.listView
             --Do not hook quest items
             if (listView and listView.dataTypes and listView.dataTypes[1]
+                and not checkIfInventorySecurePostHookWasDone(listView, listView.dataTypes[1]) --#303
                 and (listView:GetName() ~= ctrlVars.INVENTORY_QUEST_NAME)) then
+
                 --local hookedFunctions = listView.dataTypes[1].setupCallback
                 --listView.dataTypes[1].setupCallback =
                 SecurePostHook(zosgdtt(listView, 1), "setupCallback",
@@ -624,6 +660,7 @@ function FCOIS.CreateTextures(whichTextures)
                             ]]
                         end
                 )
+                addInventorySecurePostHookDoneEntry(listView, listView.dataTypes[1]) --#303
             end
         end
     end
@@ -631,7 +668,8 @@ function FCOIS.CreateTextures(whichTextures)
     if (whichTextures == 2 or doCreateAllTextures) then
         --Create textures in repair window
         local listView = ctrlVars.REPAIR_LIST
-        if listView and listView.dataTypes and listView.dataTypes[1] then
+        if listView and listView.dataTypes and listView.dataTypes[1]
+            and not checkIfInventorySecurePostHookWasDone(listView, listView.dataTypes[1]) then --#303
             --local hookedFunctions = listView.dataTypes[1].setupCallback
 
             --listView.dataTypes[1].setupCallback =
@@ -655,6 +693,7 @@ function FCOIS.CreateTextures(whichTextures)
                         ]]
                     end
             )
+            addInventorySecurePostHookDoneEntry(listView, listView.dataTypes[1]) --#303
         end
     end
     --Player character / Companion character
@@ -669,7 +708,8 @@ function FCOIS.CreateTextures(whichTextures)
     if (whichTextures == 4 or doCreateAllTextures) then
         -- Marker function for quickslots inventory
         local listView = ctrlVars.QUICKSLOT_LIST
-        if listView and listView.dataTypes and listView.dataTypes[1] then
+        if listView and listView.dataTypes and listView.dataTypes[1]
+            and not checkIfInventorySecurePostHookWasDone(listView, listView.dataTypes[1]) then --#303
             --local hookedFunctions = listView.dataTypes[1].setupCallback
 
             --listView.dataTypes[1].setupCallback =
@@ -694,13 +734,15 @@ function FCOIS.CreateTextures(whichTextures)
                         ]]
                     end
             )
+            addInventorySecurePostHookDoneEntry(listView, listView.dataTypes[1]) --#303
         end
     end
     --Transmuation
     if (whichTextures == 5 or doCreateAllTextures) then
         --Create textures in repair window
         local listView = ctrlVars.RETRAIT_LIST
-        if listView and listView.dataTypes and listView.dataTypes[1] then
+        if listView and listView.dataTypes and listView.dataTypes[1]
+            and not checkIfInventorySecurePostHookWasDone(listView, listView.dataTypes[1]) then --#303
             --local hookedFunctions = listView.dataTypes[1].setupCallback
 
             --listView.dataTypes[1].setupCallback =
@@ -724,6 +766,7 @@ function FCOIS.CreateTextures(whichTextures)
                         ]]
                     end
             )
+            addInventorySecurePostHookDoneEntry(listView, listView.dataTypes[1]) --#303
         end
     end
     --Companion inventory
@@ -731,7 +774,8 @@ function FCOIS.CreateTextures(whichTextures)
         -- Marker function for companion inventory
         local listView = ctrlVars.COMPANION_INV_LIST
         --ZO_CompanionEquipment_Panel_KeyboardList1Row1
-        if listView and listView.dataTypes and listView.dataTypes[1] then
+        if listView and listView.dataTypes and listView.dataTypes[1]
+            and not checkIfInventorySecurePostHookWasDone(listView, listView.dataTypes[1]) then --#303
             --local hookedFunctions = listView.dataTypes[1].setupCallback
 
             --listView.dataTypes[1].setupCallback =
@@ -778,6 +822,7 @@ function FCOIS.CreateTextures(whichTextures)
                         ]]
                     end
             )
+            addInventorySecurePostHookDoneEntry(listView, listView.dataTypes[1]) --#303
         end
     end
 end

@@ -9,6 +9,8 @@ if not FCOIS.libsLoadedProperly then return end
 --==========================================================================================================================================
 --Apply current needed fixes and workarounds because of other addons/libraries etc.
 function FCOIS.LoadWorkarounds()
+	local numLibFiltersFilterPanelIds   = FCOIS.numVars.gFCONumFilterInventoryTypes
+
     local settings = FCOIS.settingsVars.settings
     --FCOIS v0.7.8
     --The array to map the marker icon offsets for each filter panel ID
@@ -66,14 +68,30 @@ function FCOIS.LoadWorkarounds()
     --so the Anti-Destroy and ItemSelectionHandler functions return the anti-settings "enabled"
     local updateAntiCheckAtPanelVariable = FCOIS.UpdateAntiCheckAtPanelVariable
     for iconNr, _ in pairs(FCOIS.mappingVars.iconToDynamic) do
-        local invValue = settings.icon[iconNr].antiCheckAtPanel[LF_INVENTORY]
-        updateAntiCheckAtPanelVariable(iconNr, LF_INVENTORY, invValue)
-        --FCOIS v.0.8.8i
-        --Also update the crafting station research panel and set it to true for all dynamic icons
-        updateAntiCheckAtPanelVariable(iconNr, LF_SMITHING_RESEARCH, true)
-        --FCOIS v.1.4.4
-        updateAntiCheckAtPanelVariable(iconNr, LF_JEWELRY_RESEARCH, true)
-        --FCOIS v.2.1.0 --> FCOIS 2.1.9: Done within updateAntiCheckAtPanelVariable for LF_INVENTORY!
-        --updateAntiCheckAtPanelVariable(iconNr, LF_INVENTORY_COMPANION, true)
+        if settings.icon[iconNr] ~= nil then
+            --#295 Fix missing antiPanel settings to reset to default values
+            if settings.icon[iconNr].antiCheckAtPanel == nil then
+                settings.icon[iconNr].antiCheckAtPanel = {}
+                --For each filterPanelId do some checks and add icon settings settings data:
+                for filterIconHelperPanel = 1, numLibFiltersFilterPanelIds, 1 do
+                    local valueToSet = false
+                    if filterIconHelperPanel == LF_SMITHING_RESEARCH_DIALOG or filterIconHelperPanel == LF_JEWELRY_RESEARCH_DIALOG or
+                        filterIconHelperPanel == LF_INVENTORY_COMPANION then
+                        valueToSet = true
+                    end
+                    settings.icon[iconNr].antiCheckAtPanel[filterIconHelperPanel] = valueToSet
+                end
+            end
+
+            local invValue = settings.icon[iconNr].antiCheckAtPanel[LF_INVENTORY]
+            updateAntiCheckAtPanelVariable(iconNr, LF_INVENTORY, invValue)
+            --FCOIS v.0.8.8i
+            --Also update the crafting station research panel and set it to true for all dynamic icons
+            updateAntiCheckAtPanelVariable(iconNr, LF_SMITHING_RESEARCH, true)
+            --FCOIS v.1.4.4
+            updateAntiCheckAtPanelVariable(iconNr, LF_JEWELRY_RESEARCH, true)
+            --FCOIS v.2.1.0 --> FCOIS 2.1.9: Done within updateAntiCheckAtPanelVariable for LF_INVENTORY!
+            --updateAntiCheckAtPanelVariable(iconNr, LF_INVENTORY_COMPANION, true)
+        end
     end
 end

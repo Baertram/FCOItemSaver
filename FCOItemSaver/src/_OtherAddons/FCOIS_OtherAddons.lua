@@ -4,6 +4,7 @@ local FCOIS = FCOIS
 
 local debugMessage = FCOIS.debugMessage
 
+local CM = CALLBACK_MANAGER
 local wm = WINDOW_MANAGER
 
 local tos = tostring
@@ -38,9 +39,15 @@ local isCharacterShown = FCOIS.IsCharacterShown
 
 local checkIfIsOwnerOfHouse = FCOIS.CheckIfIsOwnerOfHouse
 local checkIfInHouse = FCOIS.CheckIfInHouse
-local checkIfHouseBankBagAndInOwnHouse = FCOIS.CheckIfHouseBankBagAndInOwnHouse
+--local checkIfHouseBankBagAndInOwnHouse = FCOIS.CheckIfHouseBankBagAndInOwnHouse
+local checkIfHouseOwnerAndInsideOwnHouse = FCOIS.CheckIfHouseOwnerAndInsideOwnHouse
 local getCurrentlyLoggedInCharUniqueId = FCOIS.GetCurrentlyLoggedInCharUniqueId
 local checkIfFCOISSettingsWereLoaded = FCOIS.CheckIfFCOISSettingsWereLoaded
+
+local FCOISsettings
+local markItemByItemInstanceId = FCOIS.MarkItemByItemInstanceId
+local markItem = FCOIS.MarkItem
+local updateInventory = FCOIS.UpdateInventory
 
 
 --==========================================================================================================================================
@@ -137,6 +144,7 @@ FCOIS.mappingVars.filterPanelIdToBlockSettingName[LF_CRAFTBAG].callbackFunc = ch
 -- ==================================================================
 --Get the SetTracker data from it's SavedVariables and build the FCOIS mapping table data etc.
 function otherAddons.SetTracker.GetSetTrackerSettingsAndBuildFCOISSetTrackerData()
+    --#302 Disable SetTracker support within FCOIS
     --Support for addon 'SetTracker': Get the number of allowed indices of SetTracker and
     --build a mapping array for SetTracker index -> FCOIS marker icon
     if otherAddons.SetTracker.isActive and SetTrack and SetTrack.GetMaxTrackStates then
@@ -160,6 +168,7 @@ function otherAddons.SetTracker.GetSetTrackerSettingsAndBuildFCOISSetTrackerData
     end
 end
 
+--#302 SetTracker support disabled with FCOOIS v2.6.1, for versions <300
 --Loop function to check the items in your inventories against a set name and mark them with FCOIS marker icon, if tracked with addon SetTracker
 local function checkSetTrackerTrackingStateAndMarkWithFCOISIcon(sSetName, setTrackerState, iTrackIndex, doShow, p_bagId, p_slotIndex)
     local settings = FCOIS.settingsVars.settings
@@ -406,6 +415,7 @@ end
 
 --function to scan inventories for set parts and mark them, if SetTracker addon is active
 function otherAddons.SetTracker.checkAllItemsForSetTrackerTrackingState()
+    --#302 SetTracker support disabled with FCOOIS v2.6.1, for versions <300
     --Is the SetTracker addon active and the marking of tracked items with FCOIS icons is active and the scan for tarcked items at reloadui/login is enabled?
     if SetTrack == nil or SetTrack.GetTrackingInfo == nil or not otherAddons.SetTracker.isActive
             or FCOIS.settingsVars.settings.autoMarkSetTrackerSets == false or FCOIS.settingsVars.settings.autoMarkSetTrackerSetsRescan == false then
@@ -483,6 +493,7 @@ end
 --Called from external addon SetTracker to show/hide the FCOIS marker icons for tracked set parts
 -- or called from event EVENT_INVENTORY_SINGLE_SLOT_UPDATE callback function FCOItemSaver_Inv_Single_Slot_Update(...)
 function otherAddons.SetTracker.updateSetTrackerMarker(bagId, slotIndex, setTrackerState, doShow, doUpdateInv, calledFromFCOISEventSingleSlotInvUpdate)
+    --#302 SetTracker support disabled with FCOOIS v2.6.1, for versions <300
     calledFromFCOISEventSingleSlotInvUpdate = calledFromFCOISEventSingleSlotInvUpdate or false
     --d("[FCOIS.updateSetTrackerMarker] calledFromFCOISEventSingleSlotInvUpdate: " .. tos(calledFromFCOISEventSingleSlotInvUpdate))
     if bagId == nil or slotIndex == nil or SetTrack == nil or SetTrack.GetTrackingInfo == nil or SetTrack.GetTrackStateInfo == nil or not otherAddons.SetTracker.isActive
@@ -820,7 +831,8 @@ function FCOIS.MyGetItemInstanceIdForIIfA(clickedDataLine, signToo)
                         if accountWideBagId == BAG_GUILDBANK then
                             guildBankBagFound = true
                         elseif IsHouseBankBag(accountWideBagId) then
-                            if not checkIfHouseBankBagAndInOwnHouse(accountWideBagId) then
+                            --if not checkIfHouseBankBagAndInOwnHouse(accountWideBagId) then
+                            if not checkIfHouseOwnerAndInsideOwnHouse() then
                                 houseBankBagFoundAndNotInHouse = true
                             end
                         else
@@ -1101,6 +1113,7 @@ end
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
+local icdt = ICDT
 --[[
     --==================================================================
     --ItemCooldownTracker API
@@ -1111,10 +1124,10 @@ end
 ]]
 local function getItemCooldownTrackerRelevantItemIds()
     --#184
-    if not ICDT then return end
+    if not icdt then return end
     FCOIS.otherAddons.ItemCooldownTracker = FCOIS.otherAddons.ItemCooldownTracker or {}
     FCOIS.otherAddons.ItemCooldownTracker.relevantItemIds = {}
-    local relevantItemIdsWithIndex = ICDT.GetRelevantItemIds()
+    local relevantItemIdsWithIndex = icdt.GetRelevantItemIds()
     if relevantItemIdsWithIndex == nil or #relevantItemIdsWithIndex <= 0 then return end
     local relevantItemIds = {}
     for _, itemIdOfRelevance in ipairs(relevantItemIdsWithIndex) do
@@ -1129,7 +1142,7 @@ end
 function FCOIS.CheckIfItemCooldownTrackerRelevantItemIdAndMarkItem(bagId, slotIndex, itemLink)
     --#184
 --d("[FCOIS]CheckIfItemCooldownTrackerRelevantItemIdAndMarkItem")
-    if not ICDT then return false end
+    if not icdt then return false end
     local settings = FCOIS.settingsVars.settings
     local autoMarkItemCoolDownTrackerTrackedItems = settings.autoMarkItemCoolDownTrackerTrackedItems
     local itemCoolDownTrackerTrackedItemsMarkerIcon = settings.itemCoolDownTrackerTrackedItemsMarkerIcon
@@ -1171,7 +1184,7 @@ function FCOIS.CheckIfItemCooldownTrackerRelevantItemIdAndMarkItem(bagId, slotIn
     end
 
     --Check the cooldown left
-    local cooldownLeft = ICDT.GetItemCooldown(itemId)
+    local cooldownLeft = icdt.GetItemCooldown(itemId)
     --[[
     --TODO For debugging
     if cooldownLeft == -1 and itemId == 16425 then
@@ -1267,6 +1280,8 @@ function FCOIS.CheckIfOtherAddonActive(addOnName)
         FCOIS.otherAddons.AGSActive = true
     end
     --Check if addon "SetTracker" is active
+    --#302 SetTracker support disabled with FCOOIS v2.6.1, for versions <300
+    FCOIS.otherAddons.SetTracker.isActive = false
     if(addOnName == "SetTracker" or SetTrack) then
         FCOIS.otherAddons.SetTracker.isActive = true
     end
@@ -1371,3 +1386,160 @@ function FCOIS.CheckIfInventoryRowOfExternalAddonNeedsMarkerIconsUpdate(rowContr
         end
     end
 end
+
+
+
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+--- LibSets
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+--[[ --#301
+local libSets = FCOIS.libSets or LibSets
+
+local function libSetsSetSearchFavoriteChanged(wasAdded, favoriteCategory, setId, categoryTexturePath)
+d("[FCOIS]libSetsSetSearchFavoriteChanged-wasAdded: " ..tos(wasAdded) .. ", category: " .. tos(favoriteCategory) ..", setId: " .. tos(setId) ..", texture: " ..tos(categoryTexturePath))
+    if favoriteCategory == nil or setId == nil then return end
+    if wasAdded == true then
+        --todo 20241206 Scan inventories and update the LibSets set search favorite category markers
+        -->FCOIS.ScanInventory normal player inv ?
+    elseif wasAdded == false then
+        --todo 20241206 Scan inventories and update the LibSets set search favorite category markers
+        -->FCOIS.ScanInventory normal player inv ?
+    end
+end
+
+function FCOIS.RegisterLibSetsCallbacks()
+    if not libSets then return end
+    local MAJOR = libSets.name
+    CM:RegisterCallback(MAJOR .. "_SetSearchFavoriteCategoryAdded", function(...) libSetsSetSearchFavoriteChanged(true, ...) end)
+    CM:RegisterCallback(MAJOR .. "_SetSearchFavoriteCategoryRemoved", function(...) libSetsSetSearchFavoriteChanged(false, ...) end)
+end
+
+--#301 Support LibSet set search favorite categories with FCOIS marker icons -> In FCOIS settings menu -> LibSets submenu
+local libSetsSetSearchFavoriteCategoryData
+function FCOIS.GetLibSetsSetSearchFavoriteCategories()
+    if not libSets or not libSets.GetSetSearchFavoriteCategories then return end
+
+    libSetsSetSearchFavoriteCategoryData = libSets.GetSetSearchFavoriteCategories()
+    --if ZO_IsTableEmpty(setSearchCategoryData) then return {} end
+    return libSetsSetSearchFavoriteCategoryData
+end
+local FCOIS_GetLibSetsSetSearchFavoriteCategories = FCOIS.GetLibSetsSetSearchFavoriteCategories
+
+--#301 Apply the chosen FCOIS marker icon automatically to the setItem, if it's on the LibSets set favorites list
+local isSetIdInLibSetsSearchFavorites, libSets_IsSetByItemLink
+local isItemSetAndNotExcluded = FCOIS.IsItemSetAndNotExcluded
+function FCOIS.ApplyLibSetsSetSearchFavoriteCategoryMarker(rowControl, bagId, slotIndex, itemLink, forceShow, setIdProvided)
+    markItem = markItem or FCOIS.MarkItem
+    markItemByItemInstanceId = markItemByItemInstanceId or FCOIS.MarkItemByItemInstanceId
+
+    if libSets == nil or ((itemLink == nil and (bagId == nil or slotIndex == nil)) or itemLink == nil) then return end
+    FCOISsettings = FCOISsettings or FCOIS.settingsVars.settings
+    local autoMarkLibSetsSetSearchFavorites = FCOISsettings.autoMarkLibSetsSetSearchFavorites
+
+    --Any LibSets set search favorite categories found? If not abort here
+    libSetsSetSearchFavoriteCategoryData = libSetsSetSearchFavoriteCategoryData or FCOIS_GetLibSetsSetSearchFavoriteCategories()
+    if ZO_IsTableEmpty(libSetsSetSearchFavoriteCategoryData) then return end
+
+    --Is the item a setItem?
+    itemLink = itemLink or GetItemLink(bagId, slotIndex)
+    if itemLink == nil then return end
+    local itemId = GetItemLinkItemId(itemLink)
+    if itemId == nil then return end
+
+    --isSet, setName, setId, numBonuses, numEquipped, maxEquipped
+    --libSets_IsSetByItemLink = libSets_IsSetByItemLink or libSets.IsSetByItemLink
+    --local isSet, _, setId = libSets_IsSetByItemLink(itemLink)
+    local isSet, setId
+    if setIdProvided ~= nil then
+        setId = setIdProvided
+        isSet = true
+    else
+        isItemSetAndNotExcluded = isItemSetAndNotExcluded or FCOIS.IsItemSetAndNotExcluded
+        isSet, setId = isItemSetAndNotExcluded(bagId, slotIndex)
+    end
+
+    local wasMarked = false
+    local updateInv = false
+
+    --We check a set's item
+    if isSet == true and setId ~= nil then
+        --Detect if that setId is on the list of favorite sets
+        local libSets_SearchUI_Keyboard = LibSets_SearchUI_Keyboard
+        isSetIdInLibSetsSearchFavorites = isSetIdInLibSetsSearchFavorites or libSets_SearchUI_Keyboard.IsSetIdInFavorites
+        local LibSetsSetSearchFavoriteToFCOISMapping = FCOISsettings.LibSetsSetSearchFavoriteToFCOISMapping
+        local LibSetsSetSearchFavoriteToFCOISMappingRemoved = FCOISsettings.LibSetsSetSearchFavoriteToFCOISMappingRemoved
+
+        --As the item is a set check if the setId is in any of the saved LibSets set search favorite categories
+        for idx, categoryData in ipairs(libSetsSetSearchFavoriteCategoryData) do
+            local showIcon, markerIcon
+            local checkForRemovedCategory = false
+            local category = categoryData.category
+            if category ~= nil then
+                --------------------------------------------------------------------------------------------------------
+                --Should we mark the set items?
+                if autoMarkLibSetsSetSearchFavorites == true then
+
+                    --LibSets_SearchUI_Keyboard:IsSetIdInFavorites(setId, favoriteCategory)
+                    local isSetMarkedAsFavoriteByCategory = isSetIdInLibSetsSearchFavorites(libSets_SearchUI_Keyboard, setId, category)
+                    if isSetMarkedAsFavoriteByCategory == true then
+                        --Get the chosen FCOIS marker icon for that category
+                        local FCOISmarkerIconForLibSetsSetSearchFavoriteCategory = LibSetsSetSearchFavoriteToFCOISMapping[category]
+                        if FCOISmarkerIconForLibSetsSetSearchFavoriteCategory ~= nil and FCOISmarkerIconForLibSetsSetSearchFavoriteCategory ~= FCOIS_CON_ICON_NONE then
+d("[FCOIS]LibSets set search favorite item " .. itemLink .. " is marked, category '" .. category .. "', icon #: " ..tos(FCOISmarkerIconForLibSetsSetSearchFavoriteCategory))
+
+                            --Mark the item with the chosen FCOIS marker icon now
+                            showIcon = true
+                            markerIcon = FCOISmarkerIconForLibSetsSetSearchFavoriteCategory
+                        end
+                    else
+                        --Check if the category is on the recently removed list and remove the FCOIS marker icon then
+                        checkForRemovedCategory = true
+                    end
+
+                else
+                    --Check if the category is on the recently removed list and remove the FCOIS marker icon then
+                    checkForRemovedCategory = true
+                end
+                --------------------------------------------------------------------------------------------------------
+                --Shall we check if any FCOIS marker icon chosen for the LibSets set search category should be removed now?
+                if checkForRemovedCategory == true then
+                    --Was the LibSets set search favorite category mapping recently removed in FCOIS settings?
+                    if LibSetsSetSearchFavoriteToFCOISMappingRemoved[category] ~= nil then
+                        --Remove that marker icon now
+                        showIcon = false
+                        markerIcon = LibSetsSetSearchFavoriteToFCOISMappingRemoved[category]
+d("[FCOIS]LibSets set search favorite item " .. itemLink .. " was removed, category '" .. category .. "', icon #: " ..tos(markerIcon))
+
+                        --LibSetsSetSearchFavoriteToFCOISMappingRemoved[category] overall will be emptied in FCOIS.ScanInventory function at the end
+                    end
+                end
+                --------------------------------------------------------------------------------------------------------
+                --Add or remove the FCOIS marker icon now
+                if forceShow ~= nil then showIcon = forceShow end
+                if showIcon ~= nil and markerIcon ~= nil then
+                    if bagId == nil or slotIndex == nil then
+                        local fcoisItemInstanceId = myGetItemInstanceIdNoControl(bagId, slotIndex, true)
+                        markItemByItemInstanceId(fcoisItemInstanceId, markerIcon, showIcon, itemLink, itemId, nil, false)
+                        --updateInv = true
+                        wasMarked = true
+                    else
+                        markItem(bagId, slotIndex, markerIcon, showIcon, false)
+                        --updateInv = true
+                        wasMarked = true
+                    end
+                end
+            end
+        end
+
+        --if updateInv == true then
+--            updateInventory = updateInventory or FCOIS.UpdateInventory
+--            --updateInventory(bagId, nil, nil, nil) -- Will be done in calling code
+--        end
+    end
+    return wasMarked
+end
+]]

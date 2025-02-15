@@ -279,6 +279,7 @@ function FCOIS.CreateToolTip(markerControl, markerId, doHide, pUpdateAllEquipmen
                 -- SetTracker - BEGIN
                 --====================================================================================================================================
                 --SetTracker Addon is active and the set note should be added to FCOIS marker icon tooltips?
+                --#302  SetTracker support disabled with FCOOIS v2.6.1, for versions <300
                 local isSetTrackerActive = otherAddons.SetTracker.isActive
                 if    bagId ~= nil and slotIndex ~= nil and isSetTrackerActive and SetTrack ~= nil and SetTrack.GetTrackingInfo ~= nil
                         and settings.autoMarkSetTrackerSets and settings.autoMarkSetTrackerSetsShowTooltip then

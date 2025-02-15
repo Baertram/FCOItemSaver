@@ -252,7 +252,7 @@ function FCOIS.BuildDefaultSettings()
 		showSetCollectionMarkedInChat		= false,
 		autoMarkSetTrackerSets				= false,
 		autoMarkSetTrackerSetsCheckAllIcons = false,
-		autoMarkSetTrackerSetsInv			= true,
+		autoMarkSetTrackerSetsInv			= false,
 		autoMarkSetTrackerSetsBank			= false,
 		autoMarkSetTrackerSetsGuildBank		= false,
 		autoMarkSetTrackerSetsWorn			= false,
@@ -393,6 +393,9 @@ function FCOIS.BuildDefaultSettings()
 		showTooltipAtRestoreLastMarked = false,
 		markerIconsOutputOrder = {},
 		markerIconsOutputOrderEntries = {},
+		--autoMarkLibSetsSetSearchFavorites = false, --#301 LibSets set search favorites
+		--LibSetsSetSearchFavoriteToFCOISMapping = {}, --#301 LibSets set search favorites
+		--LibSetsSetSearchFavoriteToFCOISMappingRemoved = {} --#301 LibSets set search favorites
 	}
 	--The tables for the markedItems, non-unique and unique
 	local addonVars = FCOIS.addonVars
@@ -792,4 +795,19 @@ function FCOIS.BuildDefaultSettings()
 			["left"] = 0,
 		}
 	end
+
+	--Added with FCOIS v2.6.1
+	--#301 LibSets set search favorite categories
+	--[[
+	FCOIS.settingsVars.defaults.LibSetsSetSearchFavoriteToFCOISMapping = {}
+	local libSetsSetSearchFavoriteToFCOISMapping = FCOIS.settingsVars.defaults.LibSetsSetSearchFavoriteToFCOISMapping
+	local libSetsSetSearchCategoryData = FCOIS.GetLibSetsSetSearchFavoriteCategories()
+	if not ZO_IsTableEmpty(libSetsSetSearchCategoryData) then
+		for idx, categoryData in ipairs(libSetsSetSearchCategoryData) do
+			if categoryData.category ~= nil then
+				libSetsSetSearchFavoriteToFCOISMapping[categoryData.category] = FCOIS_CON_ICON_DYNAMIC_1 --Default = 1st dynamic marker icon of FCOIS
+			end
+		end
+	end
+	]]
 end

@@ -185,8 +185,8 @@ local function updateLibShifterBoxEntries(parentCtrl, shifterBox, boxName)
         --Excluded sets
     elseif boxName == FCOISexcludedSets then
         --LibSets is given?
-        if FCOIS.libSets then
-            local libSets = FCOIS.libSets
+        local libSets = FCOIS.libSets
+        if libSets then --#304
             local allSetNames = libSets.GetAllSetNames()
             local clientLang = FCOIS.clientLanguage
             if allSetNames ~= nil then
@@ -226,7 +226,7 @@ local function updateLibShifterBoxState(parentCtrl, shifterBox, boxName)
     if boxName == FCOISuniqueIdItemTypes then
         isEnabled = FCOIS.uniqueIdIsEnabledAndSetToFCOIS()
     elseif boxName == FCOISexcludedSets then
-        isEnabled = (FCOIS.libSets ~= nil and FCOIS.settingsVars.settings.autoMarkSetsExcludeSets == true) or false
+        isEnabled = (FCOIS.libSets ~= nil and FCOIS.settingsVars.settings.autoMarkSetsExcludeSets == true) or false --#304
     end
 
     parentCtrl:SetHidden(false)

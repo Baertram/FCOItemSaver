@@ -196,33 +196,42 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
 --#280 For future version of LibScrollableMenu, where LibCustomMenu was updated to be compatible too:
  -->Make FCOIS context menu and ZO_Menu stuff compatible with experimental LibScrollableMenu version where LSM will take over Inventory context menu creation from ZO_Menu/LibCustomMenu
 
+--#297 Add scribing script automatic markers via LibCharacterKnowlege (but these need to be character dependend markers, is that possible? Or are account wide markers also possible -> only mark "unknwon for any other char")
+
+
 --______________________________________
--- Current max # of bugs/features/ToDos: 294
+-- Current max # of bugs/features/ToDos: 304
 --______________________________________
 
 --Open/To work on this patch:
 
+
 --=== Not started yet ===
+--#299 At launder/fence using SHIFT+right click or keybind to remove all marker icons should auto re-apply those to the same item once the fence/launder closes (enable at settings menu "Automatic marks")
+--#301 Add LibSets set search favorites as marker icons of FCOIS to the inventories -> Maybe create a kind of "plugin system" that other addons can use to pass in a settings submenu, and some marker icons and textures of that other addon
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2024-06-08
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2025-02-15
 ------------------------------------------------------------------------------------
-
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.5.8 - New version: 2.5.9) -    Updated last: 2024-056-08
+--Changelog (last version: 2.6.0 - New version: 2.6.1) -    Updated last: 2025-02-15
 -------------------------------------------------------------------------------------
 --[Fixed]
---#293 Move to junk via keybind shows correct numbers in chat
---#294 Move to/from junk works better with FCO Companion's feature "move companion items to junk"
+--#298 Context menu prevention as modifier key + right mouse was clicked now resets the internal variables slightly delayed so other addons like TTC properly detect it on first usage (other addons like TTC though propelry needs to add ## OptionalDependsOn: FCOItemSaver for that to work)
+--#300 If LibScrollableMenu is enabled and replaces ZO_Menu the checkbox callback function at filterButtons right click context menu "(logical AND/OR)" saves the complete LSM combobox to savedvars of FCOIS via function ContextMenuFCOISFilterButtonSettingsOnClicked
+--#303 Prevent possible duplicate posthooks at inventory rows
 
 --[Changed]
+--#302 Disable SetTracker support unless you are using version 300+ of Shintarou (because the original addon is non working since years and always troubled FCOIS code since then. Please switch to LibSets and/or WishList instead).
+--#304 Made LibSets an optional dependency
 
 --[Added]
 --
 
 --[Added on request]
+--
 
 
 --************************************************************************************************************************

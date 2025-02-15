@@ -80,7 +80,8 @@ local checkIfItemShouldBeDemarked = FCOIS.CheckIfItemShouldBeDemarked
 local getItemSaverControl = FCOIS.GetItemSaverControl
 local isCharacterShown = FCOIS.IsCharacterShown
 local isCompanionCharacterShown = FCOIS.IsCompanionCharacterShown
-local checkIfHouseBankBagAndInOwnHouse = FCOIS.CheckIfHouseBankBagAndInOwnHouse
+--local checkIfHouseBankBagAndInOwnHouse = FCOIS.CheckIfHouseBankBagAndInOwnHouse
+local checkIfHouseOwnerAndInsideOwnHouse = FCOIS.CheckIfHouseOwnerAndInsideOwnHouse
 local getCurrentlyLoggedInCharUniqueId = FCOIS.GetCurrentlyLoggedInCharUniqueId
 local changeAntiSettingsAccordingToFilterPanel = FCOIS.ChangeAntiSettingsAccordingToFilterPanel
 
@@ -262,36 +263,45 @@ local createContextMenuAdditionalData = FCOIS.CreateContextMenuAdditionalData
 
 --Function to show the tooltip at a ZO_Menu context menu entry, using library LibCustomMenu's function "runTooltip(control, inside)"
 function FCOIS.ContextMenuEntryTooltipFunc(control, inside, data)
---d("[FCOIS]FCOIS.contextMenuEntryTooltipFunc-control: " .. tos(control:GetName()) .. ", inside: " ..tos(inside))
+--d("[FCOIS]FCOIS.contextMenuEntryTooltipFunc-control: " .. tos(control:GetName()) .. ", inside: " ..tos(inside) .. ", data: " ..tos(data) .. ", zoMenu.items: " .. tos(zoMenu.items))
     --Hide old text tooltips
     ZO_Tooltips_HideTextTooltip()
     if not data then return end
+--d(">1")
     if not inside or not zoMenu.items or not control or not control:IsMouseEnabled() then return end
+--d(">2")
     local settings = FCOIS.settingsVars.settings
     if not settings.contextMenuItemEntryShowTooltip then return end
+--d(">3")
     --Only show if SHIFT key is pressed?
     if settings.contextMenuItemEntryShowTooltipWithSHIFTKeyOnly then
         if not IsShiftKeyDown() then return end
+--d(">4")
     end
+--d(">5")
     --Check the selected menu index (row index)
     --index = zo_max(zo_min(index, #ZO_Menu.items), 1)
     --Check if the parentControl of the menu's item menu (e.g. the inventory row) is an allowed FCOIS control
     local menuOwner = zoMenu.owner
     if menuOwner and menuOwner.GetName then
+--d(">6")
         local menuOwnerName = menuOwner:GetName()
         if not menuOwnerName then return false end
+--d(">7")
         --FCOIS specific checks for allowed parent control names of the ZO_Menu owner
         local checkVars = FCOIS.checkVars
         local notAllowedContextMenuParentControls = checkVars.notAllowedContextMenuParentControls
         local notAllowedContextMenuControls = checkVars.notAllowedContextMenuControls
         local notAllowed = notAllowedContextMenuParentControls[menuOwnerName] or false
         if not notAllowed then notAllowed = notAllowedContextMenuControls[menuOwnerName] or false end
+--d(">notAllowed: " ..tos(notAllowed))
         if notAllowed then return false end
         --Build the text tooltip
         local addonVars = FCOIS.addonVars
         local textTooltip
         local tooltipData = data
         if tooltipData and tooltipData.creatingAddon and tooltipData.creatingAddon == addonVars.gAddonNameShort then
+--d(">tooltipData found")
             textTooltip = tooltipData.text
             local tooltipAnchor = LEFT
             if tooltipData["align"] ~= nil then
@@ -302,6 +312,7 @@ function FCOIS.ContextMenuEntryTooltipFunc(control, inside, data)
             InformationTooltipTopLevel:BringWindowToTop()
         end
     else
+--d("<ABORT menuOwner unknown")
         return false
     end
     return true -- Set to true so LibCustomMenu's function "runTooltip" won't try to show the text tooltip again
@@ -515,8 +526,9 @@ function FCOIS.MarkMe(rowControl, markId, updateNow, doUnmark, refreshPopupDialo
         FCOIS.IIfAclicked.inThisOtherBags = inThisOtherBagsTableIIfA
         --House bank bag?
         if bagIdIIfA ~= nil and IsHouseBankBag(bagIdIIfA) then
-            --Not the owner of the house we are in or not in a house? Reset the bagid and slotIndex now!
-            isNotInHouseAndBagIsHouseBankBag = not checkIfHouseBankBagAndInOwnHouse(bagIdIIfA)
+            --Not the owner of the house we are in or not in a house? Reset the bagId and slotIndex now!
+            --isNotInHouseAndBagIsHouseBankBag = not checkIfHouseBankBagAndInOwnHouse(bagIdIIfA)
+            isNotInHouseAndBagIsHouseBankBag = not checkIfHouseOwnerAndInsideOwnHouse()
         end
         --House bank bag but not in any house/not owner of the house we are in! -> Reset the bagId and slotIndex
         if isNotInHouseAndBagIsHouseBankBag then
@@ -2049,6 +2061,11 @@ local function ContextMenuFCOISFilterButtonSettingsOnClicked(button, contextMenu
     if settings.filterButtonSettings[filterPanelId] and settings.filterButtonSettings[filterPanelId][buttonNr] ~= nil then
         if settings.filterButtonSettings[filterPanelId][buttonNr][settingsName] ~= nil then
             local newSettingsValue = buttonCheckboxState ~= nil and buttonCheckboxState or newValue
+            --#300 bugfix to prevent endless big SavedVars because the newSettingsValue is a table containign a complete LibScrollableMenu reference?!
+            if type(newSettingsValue) ~= "boolean" then
+--d(">type of newSettingsValue: " .. tos(type(newSettingsValue)))
+                newSettingsValue = false
+            end
             --filterWithLogical AND conjunction
             settings.filterButtonSettings[filterPanelId][buttonNr][settingsName] = newSettingsValue
 
@@ -2395,8 +2412,16 @@ function FCOIS.ShowContextMenuAtFCOISFilterButton(parentButton, p_FilterPanelId,
     tins(subMenuEntriesFilterButtonSettings,
         {
             label          = localizationVars["options_filter_button_settings_"..settingsName] ,
-            checked        = function() return FCOIS.settingsVars.settings.filterButtonSettings[p_FilterPanelId][buttonNr][settingsName] end,
-            callback       = function(state) ContextMenuFCOISFilterButtonSettingsOnClicked(parentButton, contextMenuType, settingsName, p_FilterPanelId, state, state) end,
+            checked        = function()
+--d("[FCOIS]FilterButton context menu checkbox, checked: " ..tos(FCOIS.settingsVars.settings.filterButtonSettings[p_FilterPanelId][buttonNr][settingsName]))
+                return FCOIS.settingsVars.settings.filterButtonSettings[p_FilterPanelId][buttonNr][settingsName]
+            end,
+            callback       = function(state)
+--d("[FCOIS]FilterButton context menu checkbox, callback called")
+                --#300 2024116 If LibScrollableMenu is enabled and replaces ZO_Menu the checkbox callback function at filterButtons right click context menu "(logical AND/OR)"
+                --saves the complete LSM combobox to savedvars of FCOIS via function ContextMenuFCOISFilterButtonSettingsOnClicked
+                ContextMenuFCOISFilterButtonSettingsOnClicked(parentButton, contextMenuType, settingsName, p_FilterPanelId, state, state)
+            end,
             myfont         = myFont,
             normalColor    = myColorEnabled,
             highlightColor = myColorEnabled,
