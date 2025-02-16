@@ -12,7 +12,7 @@ local strlen = string.len
 FCOIS.addonVars = {}
 local addonVars = FCOIS.addonVars
 --Addon variables
-addonVars.addonVersionOptions 		    = '2.6.1' -- version shown in the settings panel
+addonVars.addonVersionOptions 		    = '2.6.2' -- version shown in the settings panel
 --The addon name, normal and decorated with colors etc.
 addonVars.gAddonName				    = "FCOItemSaver"
 addonVars.gAddonNameShort               = "FCOIS"
@@ -192,6 +192,10 @@ if not FCOIS.libShifterBox == nil then d(preVars.preChatTextRed .. strformat(lib
 
 --Initialize the library LibSets
 FCOIS.libSets = LibSets
+
+--Initialize the library LibCharacterKnowledge
+FCOIS.LCK = LibCharacterKnowledge
+
 
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
@@ -505,6 +509,8 @@ FCOIS.invAdditionalButtonVars = {}
 local invAddButtonVars = FCOIS.invAdditionalButtonVars
 -- Local variables for other addons
 FCOIS.otherAddons = {}
+local otherAddons = FCOIS.otherAddons
+    
 -- Local variables for improvement
 FCOIS.improvementVars = {}
 -- Local variables for enchanting
@@ -1195,27 +1201,27 @@ filterButtonVars.buttonOffsetYImprovement = 7
 filterButtonVars.buttonOffsetYResearchDialog = 4
 
 --Filter button offset on x axis, if InventoryGriView addon is active too
-FCOIS.otherAddons.gGriedViewOffsetX			= 26
+otherAddons.gGriedViewOffsetX			= 26
 --Variables for the test if the Addon "Inventory Gridview" is enabled
-FCOIS.otherAddons.GRIDVIEWBUTTON    		= "ZO_PlayerInventory_GridButton"
+otherAddons.GRIDVIEWBUTTON    		= "ZO_PlayerInventory_GridButton"
 
-FCOIS.otherAddons.inventoryGridViewActive = false
+otherAddons.inventoryGridViewActive = false
 --For the test, if the addon "Chat Merchant" is enabled
-FCOIS.otherAddons.CHATMERCHANTBUTTON 		= "ZO_PlayerInventory_CMbutton"
-FCOIS.otherAddons.chatMerchantActive 		= false
+otherAddons.CHATMERCHANTBUTTON 		= "ZO_PlayerInventory_CMbutton"
+otherAddons.chatMerchantActive 		= false
 --For the test, if the addon "Research Assistant" is enabled
-FCOIS.otherAddons.researchAssistantActive	= false
+otherAddons.researchAssistantActive	= false
 --For the test, if the addon "PotionMaker" is enabled
-FCOIS.otherAddons.potionMakerActive		= false
+otherAddons.potionMakerActive		= false
 --For the test, if the addon "Votans Settings Menu" is enabled
-FCOIS.otherAddons.votansSettingsMenuActive= false
+otherAddons.votansSettingsMenuActive= false
 --For the test, if the addon "sousChef" is enabled
-FCOIS.otherAddons.sousChefActive = false
+otherAddons.sousChefActive = false
 --For the test, if the addon "CraftStoreFixedAndImprovedActive" is enabled
-FCOIS.otherAddons.craftStoreFixedAndImprovedActive = false
+otherAddons.craftStoreFixedAndImprovedActive = false
 --For the test, if the addon "CraftBagExtended" is enabled
-FCOIS.otherAddons.craftBagExtendedActive = false
-FCOIS.otherAddons.craftBagExtendedSupportedFilterPanels = {
+otherAddons.craftBagExtendedActive = false
+otherAddons.craftBagExtendedSupportedFilterPanels = {
     [LF_GUILDBANK_DEPOSIT]  =   true,
     [LF_BANK_DEPOSIT]       =   true,
     [LF_GUILDBANK_WITHDRAW] =   true, --Todo BUG?: Is this valid for CraftbagExtended, can we withdraw items there? Used in FCOIS_Hooks.lua -> ctrlVars.CRAFT_BAG_FRAGMENT StateChange
@@ -1226,43 +1232,48 @@ FCOIS.otherAddons.craftBagExtendedSupportedFilterPanels = {
     [LF_HOUSE_BANK_DEPOSIT] =   true,
 }
 --For the addon SetTracker
-FCOIS.otherAddons.SetTracker = {}
-FCOIS.otherAddons.SetTracker.isActive = false
+otherAddons.SetTracker = {}
+otherAddons.SetTracker.isActive = false
 --For the addon AwesomeGuildStore (Craftbag support at guild sell tab) is enabled
-FCOIS.otherAddons.AGSActive = false
+otherAddons.AGSActive = false
 --For the addon AdvancedDisableController UI is enabled
-FCOIS.otherAddons.ADCUIActive = false
+otherAddons.ADCUIActive = false
 --For the test, if the addon "LazyWritCreator" is enabled
-FCOIS.otherAddons.LazyWritCreatorActive = false
+otherAddons.LazyWritCreatorActive = false
 --For the QualitySort addon which is moving the "name" sort header to the left by n (currently 80) pixles
-FCOIS.otherAddons.qualitySortActive = false
-FCOIS.otherAddons.QualitySortOffsetX = 80 + 1 -- +1 as there seems to be a small space left compared to the other positions: Moving "name" sort header to the left on x axis by this pixels. See file QualitySort.lua, line 256ff (function QualitySort.addSortByQuality(flag))
+otherAddons.qualitySortActive = false
+otherAddons.QualitySortOffsetX = 80 + 1 -- +1 as there seems to be a small space left compared to the other positions: Moving "name" sort header to the left on x axis by this pixels. See file QualitySort.lua, line 256ff (function QualitySort.addSortByQuality(flag))
 --For the AdvancedFilters plugin AF_FCODuplicateItemsFilter
-FCOIS.otherAddons.AFFCODuplicateItemFilter = false
+otherAddons.AFFCODuplicateItemFilter = false
 --For the Inventory Insight from ashes addon
-FCOIS.otherAddons.IIFAActive = false
-FCOIS.otherAddons.IIFAitemsListName = "IIFA_GUI_ListHolder"
-FCOIS.otherAddons.IIFAitemsListEntryPre = "IIFA_ListItem_"
-FCOIS.otherAddons.IIFAitemsListEntryPrePattern = FCOIS.otherAddons.IIFAitemsListEntryPre .. "%d"
+otherAddons.IIFAActive = false
+otherAddons.IIFAitemsListName = "IIFA_GUI_ListHolder"
+otherAddons.IIFAitemsListEntryPre = "IIFA_ListItem_"
+otherAddons.IIFAitemsListEntryPrePattern = otherAddons.IIFAitemsListEntryPre .. "%d"
 --External addon constants
-FCOIS.otherAddons.IIFAaddonCallName = "IIfA"
+otherAddons.IIFAaddonCallName = "IIfA"
 --Possible external addon call names
-FCOIS.otherAddons.possibleExternalAddonCalls = {
-    [1] = FCOIS.otherAddons.IIFAaddonCallName
+otherAddons.possibleExternalAddonCalls = {
+    [1] = otherAddons.IIFAaddonCallName
 }
+--For the libarry LibCharacterKnowledge
+otherAddons.libCharacterKnowledgeActive = false
+
 --The recipe addons which are supported by FCOIS
 FCOIS_RECIPE_ADDON_SOUSCHEF = 1
 FCOIS_RECIPE_ADDON_CSFAI    = 2
-FCOIS.otherAddons.recipeAddonsSupported = {
+FCOIS_RECIPE_ADDON_LIBCHARACTERKNOWLEDGE = 3
+otherAddons.recipeAddonsSupported = {
     [FCOIS_RECIPE_ADDON_SOUSCHEF]   = "SousChef",
     [FCOIS_RECIPE_ADDON_CSFAI]      = "CraftStoreFixedAndImproved",
+    [FCOIS_RECIPE_ADDON_LIBCHARACTERKNOWLEDGE] = "LibCharacterKnowledge",
 }
 
 --The research addons which are supported by FCOIS
 FCOIS_RESEARCH_ADDON_ESO_STANDARD       = 1
 FCOIS_RESEARCH_ADDON_CSFAI              = 2
 FCOIS_RESEARCH_ADDON_RESEARCHASSISTANT  = 3
-FCOIS.otherAddons.researchAddonsSupported = {
+otherAddons.researchAddonsSupported = {
     [FCOIS_RESEARCH_ADDON_ESO_STANDARD]         = "ESO Standard",
     [FCOIS_RESEARCH_ADDON_CSFAI]                = "CraftStoreFixedAndImproved",
     [FCOIS_RESEARCH_ADDON_RESEARCHASSISTANT]    = "ResearchAssistant",
@@ -1271,7 +1282,7 @@ FCOIS.otherAddons.researchAddonsSupported = {
 --The sets colleciton book addons whicha re supported by FCOIS
 FCOIS_SETS_COLLECTION_ADDON_ESO_STANDARD        = 1
 FCOIS_SETS_COLLECTION_ADDON_LIBMULTIACCOUNTSETS = 2
-FCOIS.otherAddons.setCollectionBookAddonsSupported = {
+otherAddons.setCollectionBookAddonsSupported = {
     [FCOIS_SETS_COLLECTION_ADDON_ESO_STANDARD]         = "ESO Standard",
     [FCOIS_SETS_COLLECTION_ADDON_LIBMULTIACCOUNTSETS]  = "LibMultiAccountSets",
 }

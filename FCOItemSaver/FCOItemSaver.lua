@@ -200,7 +200,7 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
 
 
 --______________________________________
--- Current max # of bugs/features/ToDos: 304
+-- Current max # of bugs/features/ToDos: 305
 --______________________________________
 
 --Open/To work on this patch:
@@ -215,22 +215,19 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
 -- Currently worked on [Added/Fixed/Changed] -              Updated last 2025-02-15
 ------------------------------------------------------------------------------------
 
+--#305 libCharacterKnowledge for recipes
+
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.6.0 - New version: 2.6.1) -    Updated last: 2025-02-15
+--Changelog (last version: 2.6.1 - New version: 2.6.2) -    Updated last: 2025-02-15
 -------------------------------------------------------------------------------------
 --[Fixed]
---#298 Context menu prevention as modifier key + right mouse was clicked now resets the internal variables slightly delayed so other addons like TTC properly detect it on first usage (other addons like TTC though propelry needs to add ## OptionalDependsOn: FCOItemSaver for that to work)
---#300 If LibScrollableMenu is enabled and replaces ZO_Menu the checkbox callback function at filterButtons right click context menu "(logical AND/OR)" saves the complete LSM combobox to savedvars of FCOIS via function ContextMenuFCOISFilterButtonSettingsOnClicked
---#303 Prevent possible duplicate posthooks at inventory rows
 
 --[Changed]
---#302 Disable SetTracker support unless you are using version 300+ of Shintarou (because the original addon is non working since years and always troubled FCOIS code since then. Please switch to LibSets and/or WishList instead).
 
 --[Added]
 --
 
 --[Added on request]
---#304 Made LibSets an optional dependency
 
 
 --************************************************************************************************************************

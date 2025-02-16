@@ -1037,7 +1037,9 @@ local getRecipeAddonUsed = FCOIS.GetRecipeAddonUsed
 function FCOIS.CheckIfRecipeAddonUsed()
     local retVar = false
     if (otherAddons.sousChefActive and (SousChef and SousChef.settings and SousChef.settings.showAltKnowledge))
-    or (otherAddons.craftStoreFixedAndImprovedActive and CraftStoreFixedAndImprovedLongClassName ~= nil and CraftStoreFixedAndImprovedLongClassName.IsLearnable ~= nil) then
+    or (otherAddons.craftStoreFixedAndImprovedActive and CraftStoreFixedAndImprovedLongClassName ~= nil and CraftStoreFixedAndImprovedLongClassName.IsLearnable ~= nil)
+    or (otherAddons.libCharacterKnowledgeActive)
+    then
         retVar = true
     end
     if FCOIS.settingsVars.settings.debug then debugMessage("checkIfRecipeAddonUsed", tos(retVar), true, FCOIS_DEBUG_DEPTH_SPAM, false) end
@@ -1054,6 +1056,8 @@ function FCOIS.CheckIfChosenRecipeAddonActive(recipeAddonId)
         retVar = (otherAddons.sousChefActive and SousChef.settings.showAltKnowledge) or false
     elseif recipeAddonId == FCOIS_RECIPE_ADDON_CSFAI then
         retVar = (otherAddons.craftStoreFixedAndImprovedActive and CraftStoreFixedAndImprovedLongClassName ~= nil and CraftStoreFixedAndImprovedLongClassName.IsLearnable ~= nil) or false
+    elseif recipeAddonId == FCOIS_RECIPE_ADDON_LIBCHARACTERKNOWLEDGE then
+        retVar = (otherAddons.libCharacterKnowledgeActive and FCOIS.LCK ~= nil) or false
     end
     if FCOIS.settingsVars.settings.debug then debugMessage("checkIfChosenRecipeAddonActive","recipeAddonId: "..tos(recipeAddonId) .. ", retVar: " ..tos(retVar), true, FCOIS_DEBUG_DEPTH_SPAM, false) end
     return retVar
@@ -1243,55 +1247,61 @@ end
 --Check if another addon name is found and thus active
 function FCOIS.CheckIfOtherAddonActive(addOnName)
     addOnName = addOnName or ""
+    otherAddons = FCOIS.otherAddons
+    
     --Check if addon "Research Assistant" is active
     if(addOnName == "ResearchAssistant" or ResearchAssistant) then
-        FCOIS.otherAddons.researchAssistantActive = true
+        otherAddons.researchAssistantActive = true
     end
     --Check if addon "InventoryGridView" is active
     if(addOnName == "InventoryGridView" or InventoryGridView) then
-        FCOIS.otherAddons.inventoryGridViewActive = true
+        otherAddons.inventoryGridViewActive = true
     end
     --Check if addon "ChatMerchant" is active
     if(addOnName == "ChatMerchant") then
-        FCOIS.otherAddons.chatMerchantActive = true
+        otherAddons.chatMerchantActive = true
     end
     --Check if addon "PotionMaker" is active
     if(addOnName == "PotionMaker" or PotMaker) then
-        FCOIS.otherAddons.potionMakerActive = true
+        otherAddons.potionMakerActive = true
     end
     --Check if addon "Votans Settings Menu" is active
     if(addOnName == "VotansSettingsMenu" or VOTANS_MENU_SETTINGS) then
-        FCOIS.otherAddons.votansSettingsMenuActive = true
+        otherAddons.votansSettingsMenuActive = true
     end
     --Check if addon "SousChef" is active
     if(addOnName == "SousChef" or SousChef) then
-        FCOIS.otherAddons.sousChefActive = true
+        otherAddons.sousChefActive = true
     end
     --Check if addon "CraftStoreFixedAndImproved" is active
     if(addOnName == "CraftStoreFixedAndImproved" or CraftStoreFixedAndImprovedLongClassName) then
-        FCOIS.otherAddons.craftStoreFixedAndImprovedActive = true
+        otherAddons.craftStoreFixedAndImprovedActive = true
+    end
+    --Check if library "LibCharacterKnowledge" is active
+    if(addOnName == "LibCharacterKnowledge" or LibCharacterKnowledge) then
+        otherAddons.libCharacterKnowledgeActive = true
     end
     --Check if addon "CraftBagExtended" is active
     if(addOnName == "CraftBagExtended" or CraftBagExtended or CBE) then
-        FCOIS.otherAddons.craftBagExtendedActive = true
+        otherAddons.craftBagExtendedActive = true
     end
     --Check if addon "AwesomeGuildStore" is active
     if(addOnName == "AwesomeGuildStore" or AwesomeGuildStore) then
-        FCOIS.otherAddons.AGSActive = true
+        otherAddons.AGSActive = true
     end
     --Check if addon "SetTracker" is active
     --#302 SetTracker support disabled with FCOOIS v2.6.1, for versions <300
-    FCOIS.otherAddons.SetTracker.isActive = false
+    otherAddons.SetTracker.isActive = false
     if(addOnName == "SetTracker" or SetTrack) then
-        FCOIS.otherAddons.SetTracker.isActive = true
+        otherAddons.SetTracker.isActive = true
     end
     --Check if addon "AdvancedDisableControllerUI" is active
     if(addOnName == "AdvancedDisableControllerUI" or ADCUI) then
-        FCOIS.otherAddons.ADCUIActive = true
+        otherAddons.ADCUIActive = true
     end
     --Check if addon "LazyWritCreator" is active
     if(addOnName == "DolgubonsLazyWritCreator" or WritCreater) then
-        FCOIS.otherAddons.LazyWritCreatorActive = true
+        otherAddons.LazyWritCreatorActive = true
         --Overwrite the following functions to enabled automatic marking of writ created items!
         --WritCreater.masterWritCompletion = function(...) end -- Empty function, intended to be overwritten by other addons
         --WritCreater.writItemCompletion = function(...) end -- also empty
@@ -1310,17 +1320,17 @@ function FCOIS.CheckIfOtherAddonActive(addOnName)
     end
     --Quality Sort
     if (addOnName == "QualitySort" or QualitySort) then
-        FCOIS.otherAddons.qualitySortActive = true
+        otherAddons.qualitySortActive = true
     end
     --Inventory Insight From Ashes (IIFA)
     if (addOnName == "IIfA" or IIfA) then
-        FCOIS.otherAddons.IIFAActive = true
+        otherAddons.IIFAActive = true
         --Add entry to constants table for the keybinds/SHIFT+right mouse click inventory row patterns
         table.insert(checkVars.inventoryRowPatterns, "^" .. otherAddons.IIFAitemsListEntryPrePattern .. "*")         --Other addons: InventoryInsightFromAshes UI
     end
     --AdvancedFilters: Plugin FCO DuplicateItemsFilter
     if (addOnName == "AF_FCODuplicateItemsFilters" and AdvancedFilters) then
-        FCOIS.otherAddons.AFFCODuplicateItemFilter = true
+        otherAddons.AFFCODuplicateItemFilter = true
     end
 end
 

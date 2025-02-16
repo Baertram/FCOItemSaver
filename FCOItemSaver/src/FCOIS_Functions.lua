@@ -5,6 +5,7 @@ local FCOIS = FCOIS
 local libFilters = FCOIS.libFilters
 local libSets = FCOIS.libSets
 local libLSB = FCOIS.libShifterBox
+local LCK = FCOIS.LCK --LibCharacterKnowledge
 
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
@@ -1558,7 +1559,7 @@ function FCOIS.IsRecipeKnown(bagId, slotIndex, expectedResult)
                                             --Abort the loop over the chars now as acount wide settings are enabled and the
                                             --recipe was marked, or it was the currently logged in char
                                             return false
-                                            --Should a known recipe be marked?
+                                        --Should a known recipe be marked?
                                         elseif expectedResult == true and knownLoop == true then
 --d(">>>>>marking item as known recipe!")
                                             --Mark the item now as it can be learned on another char!
@@ -1575,8 +1576,55 @@ function FCOIS.IsRecipeKnown(bagId, slotIndex, expectedResult)
                 end
             end
         end
+    ------------------------------------------------------------------------------------------------------------------------
+    --20250216 #305 LibCharacterKnowledge support
+    elseif recipeAddonUsed == FCOIS_RECIPE_ADDON_LIBCHARACTERKNOWLEDGE then
+        --[[
+            LCK.KNOWLEDGE_INVALID -- Not a recipe, furnishing plan, motif, or scribing item
+            LCK.KNOWLEDGE_NODATA  -- No data for this character
+            LCK.KNOWLEDGE_KNOWN
+            LCK.KNOWLEDGE_UNKNOWN
+        ]]
+        --Only currently logged in char?
+        if autoMarkRecipesOnlyThisChar == true then
+            local resultKnown = LCK.GetItemKnowledgeForCharacter(itemLink, nil, nil) --current server, current character
+            if resultKnown == nil or resultKnown == LCK.KNOWLEDGE_INVALID then return end
+            if expectedResult == true and resultKnown == LCK.KNOWLEDGE_KNOWN then
+                return true
+            elseif expectedResult == false and resultKnown == LCK.KNOWLEDGE_UNKNOWN then
+                return false
+            end
+        else
+            --All characters of server
+            local knownListOfServer = LCK.GetItemKnowledgeList(itemLink, nil, nil) --current server, all characters
+            local unKnownRecipeFound = nil
+            local knownRecipeFound = nil
+            if not ZO_IsTableEmpty(knownListOfServer) then
+                --Check each character and if ANY knows/does not know the recipe then we will provide the overall returnValue
+                for _, knowledgeData in ipairs(knownListOfServer) do
+                    local knowledgeOfChar = knowledgeData.knowledge
+                    if knowledgeOfChar and knowledgeOfChar ~= LCK.KNOWLEDGE_INVALID then
+--d(">knowledgeOfChar: " ..tos(knowledgeOfChar) .. ", charName: " .. tos(knowledgeData.name))
+                        if knowledgeOfChar == LCK.KNOWLEDGE_UNKNOWN then
+                            unKnownRecipeFound = true
+                        elseif knowledgeOfChar == LCK.KNOWLEDGE_KNOWN then
+                            knownRecipeFound = true
+                        end
+                    end
+                end
+--d(">unKnownRecipeFound: " ..tos(unKnownRecipeFound) .. ", knownRecipeFound: " .. tos(knownRecipeFound))
+                if unKnownRecipeFound == nil and knownRecipeFound == nil then return end
+                --Only mark as known if no other char still neesd this!
+                if expectedResult == true and knownRecipeFound == true and not unKnownRecipeFound then
+                    return true
+                elseif expectedResult == false and unKnownRecipeFound == true then
+                    return false
+                end
+            end
+        end
+
     end
-    return nil
+    return
 end
 
 --Check if the recipe addon chosen is active, the marker icon too and the setting to automark it is enabled
