@@ -384,6 +384,7 @@ function FCOIS.BuildDefaultSettings()
 		enableKeybindChording = true,
 		reApplyIconsAfterEnchanting = true,
 		reApplyIconsAfterImprovement = true,
+		reApplyIconsAfterLaunderFenceRemove = false, --#299
 		autoBindMissingSetCollectionPiecesOnLoot = false,
 		autoBindMissingSetCollectionPiecesOnLootMarkKnown = false,
 		autoBindMissingSetCollectionPiecesOnLootToChat = false,

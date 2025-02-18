@@ -48,6 +48,12 @@ local getArmorType = FCOIS.GetArmorType
 
 local checkIfCompanionInteractedAndCompanionInventoryIsShown = FCOIS.CheckIfCompanionInteractedAndCompanionInventoryIsShown
 
+--Prevent duplicate SecurePostHooks added to the scrollList setupCallback functions #303
+local onScrollListRowSetupCallback = FCOIS.onScrollListRowSetupCallback
+--local inventoriesSecurePostHooksDone = FCOIS.inventoriesSecurePostHooksDone
+local addInventorySecurePostHookDoneEntry = FCOIS.addInventorySecurePostHookDoneEntry
+local checkIfInventorySecurePostHookWasDone = FCOIS.checkIfInventorySecurePostHookWasDone
+
 local isIIFAActive
 local checkAndGetIIfAData
 
@@ -56,7 +62,7 @@ local icdt = ICDT
 local checkIfItemCooldownTrackerRelevantItemIdAndMarkItem = FCOIS.CheckIfItemCooldownTrackerRelevantItemIdAndMarkItem
 
 --LibSets --#301
-local libSets = FCOIS.libSets or LibSets
+local libSets = FCOIS.libSets
 --local applyLibSetsSetSearchFavoriteCategoryMarker = FCOIS.ApplyLibSetsSetSearchFavoriteCategoryMarker --#301
 
 
@@ -619,18 +625,20 @@ function FCOIS.CreateTextures(whichTextures)
         --Create textures in inventories
         --for all PLAYER_INVENTORY.inventories do ...
 
-
         for _,v in pairs(ctrlVars.playerInventoryInvs) do
             local listView = v.listView
             --Do not hook quest items
             if (listView and listView.dataTypes and listView.dataTypes[1]
+                and not checkIfInventorySecurePostHookWasDone(listView, listView.dataTypes[1]) --#303
                 and (listView:GetName() ~= ctrlVars.INVENTORY_QUEST_NAME)) then
+
                 --local hookedFunctions = listView.dataTypes[1].setupCallback
                 --listView.dataTypes[1].setupCallback =
                 SecurePostHook(zosgdtt(listView, 1), "setupCallback",
                         function(rowControl, slot)
                             --hookedFunctions(rowControl, slot)
                             addMarkerIconsToZOListViewNow(rowControl, slot, doCreateMarkerControl, nil, true, true)
+                            onScrollListRowSetupCallback(rowControl, nil, true)
 
                             --[[
                             --Do not execute if horse is changed
@@ -653,6 +661,7 @@ function FCOIS.CreateTextures(whichTextures)
                             ]]
                         end
                 )
+                addInventorySecurePostHookDoneEntry(listView, listView.dataTypes[1]) --#303
             end
         end
     end
@@ -660,7 +669,8 @@ function FCOIS.CreateTextures(whichTextures)
     if (whichTextures == 2 or doCreateAllTextures) then
         --Create textures in repair window
         local listView = ctrlVars.REPAIR_LIST
-        if listView and listView.dataTypes and listView.dataTypes[1] then
+        if listView and listView.dataTypes and listView.dataTypes[1]
+            and not checkIfInventorySecurePostHookWasDone(listView, listView.dataTypes[1]) then --#303
             --local hookedFunctions = listView.dataTypes[1].setupCallback
 
             --listView.dataTypes[1].setupCallback =
@@ -668,6 +678,7 @@ function FCOIS.CreateTextures(whichTextures)
                     function(rowControl, slot)
                         --hookedFunctions(rowControl, slot)
                         addMarkerIconsToZOListViewNow(rowControl, slot, doCreateMarkerControl, nil, false, false)
+                        onScrollListRowSetupCallback(rowControl, nil, true)
 
                         --[[
                         --Do not execute if horse is changed
@@ -684,6 +695,7 @@ function FCOIS.CreateTextures(whichTextures)
                         ]]
                     end
             )
+            addInventorySecurePostHookDoneEntry(listView, listView.dataTypes[1]) --#303
         end
     end
     --Player character / Companion character
@@ -698,7 +710,9 @@ function FCOIS.CreateTextures(whichTextures)
     if (whichTextures == 4 or doCreateAllTextures) then
         -- Marker function for quickslots inventory
         local listView = ctrlVars.QUICKSLOT_LIST
-        if listView and listView.dataTypes and listView.dataTypes[1] then
+        -->Quickslots get initilizaed on first open with OnDeferredInit now so maybe the list is not there properly yet! Check FCOIS.CreateHooks -> onDeferredInitCheck(ctrlVars.QUICKSLOT_KEYBOARD,
+        if listView and listView.dataTypes and listView.dataTypes[1]
+            and not checkIfInventorySecurePostHookWasDone(listView, listView.dataTypes[1]) then --#303
             --local hookedFunctions = listView.dataTypes[1].setupCallback
 
             --listView.dataTypes[1].setupCallback =
@@ -707,6 +721,7 @@ function FCOIS.CreateTextures(whichTextures)
                         --hookedFunctions(rowControl, slot)
 
                         addMarkerIconsToZOListViewNow(rowControl, slot, doCreateMarkerControl, nil, false, false)
+                        onScrollListRowSetupCallback(rowControl, nil, true)
 
                         --[[
                         --Do not execute if horse is changed
@@ -723,13 +738,15 @@ function FCOIS.CreateTextures(whichTextures)
                         ]]
                     end
             )
+            addInventorySecurePostHookDoneEntry(listView, listView.dataTypes[1]) --#303
         end
     end
     --Transmuation
-    if (whichTextures == 5 or doCreateAllTextures) then
+    if (whichTextures == 5 or doCreateAllTextures) then ---->FCOIS.CreateHooks() adds the onMouseUpHandlers
         --Create textures in repair window
         local listView = ctrlVars.RETRAIT_LIST
-        if listView and listView.dataTypes and listView.dataTypes[1] then
+        if listView and listView.dataTypes and listView.dataTypes[1]
+            and not checkIfInventorySecurePostHookWasDone(listView, listView.dataTypes[1]) then --#303
             --local hookedFunctions = listView.dataTypes[1].setupCallback
 
             --listView.dataTypes[1].setupCallback =
@@ -738,6 +755,7 @@ function FCOIS.CreateTextures(whichTextures)
                         --hookedFunctions(rowControl, slot)
 
                         addMarkerIconsToZOListViewNow(rowControl, slot, doCreateMarkerControl, nil, false, false)
+                        onScrollListRowSetupCallback(rowControl, nil, true)
                         --[[
                         --Do not execute if horse is changed
                         --The current game's SCENE and name (used for determining bank/guild bank deposit)
@@ -753,6 +771,7 @@ function FCOIS.CreateTextures(whichTextures)
                         ]]
                     end
             )
+            addInventorySecurePostHookDoneEntry(listView, listView.dataTypes[1]) --#303
         end
     end
     --Companion inventory
@@ -760,7 +779,8 @@ function FCOIS.CreateTextures(whichTextures)
         -- Marker function for companion inventory
         local listView = ctrlVars.COMPANION_INV_LIST
         --ZO_CompanionEquipment_Panel_KeyboardList1Row1
-        if listView and listView.dataTypes and listView.dataTypes[1] then
+        if listView and listView.dataTypes and listView.dataTypes[1]
+            and not checkIfInventorySecurePostHookWasDone(listView, listView.dataTypes[1]) then --#303
             --local hookedFunctions = listView.dataTypes[1].setupCallback
 
             --listView.dataTypes[1].setupCallback =
@@ -783,6 +803,7 @@ function FCOIS.CreateTextures(whichTextures)
                         --            Will be fixed now by preventing the companion
 
                         addMarkerIconsToZOListViewNow(rowControl, slot, doCreateMarkerControl, checkIfCompanionInteractedAndCompanionInventoryIsShown, false, false)
+                        onScrollListRowSetupCallback(rowControl, nil, true)
                         --[[
                         --Do not execute if horse is changed
                         --The current game's SCENE and name (used for determining bank/guild bank deposit)
@@ -807,6 +828,7 @@ function FCOIS.CreateTextures(whichTextures)
                         ]]
                     end
             )
+            addInventorySecurePostHookDoneEntry(listView, listView.dataTypes[1]) --#303
         end
     end
 end

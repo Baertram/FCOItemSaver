@@ -1526,7 +1526,7 @@ runOnceBeforeLAMPanelGetsCreated()
 
 --==================== SetTracker - BEGIN ======================================
 --Function to build the SetTracker dropdown boxes
---[[ --#302  SetTracker support disabled with FCOOIS v2.6.1
+--#302  SetTracker support disabled with FCOOIS v2.6.1, for versions <300
 local function buildSetTrackerDDBoxes()
     if not FCOIS.otherAddons.SetTracker.isActive or not SetTrack or not SetTrack.GetMaxTrackStates then return nil end
     --Get the amount of tracking states
@@ -1585,11 +1585,121 @@ local function buildSetTrackerDDBoxes()
     return createdSetTrackerDDBoxes
 end
 
+local function LAMSubmenuDolgubonLazyWritCreator()
+    local submenuControls = {}
+    locVars = FCOISlocVars.fcois_loc
+
+    if not FCOIS.otherAddons.LazyWritCreatorActive or WritCreater == nil then return submenuControls end
+
+    submenuControls = {
+        {
+            type = "checkbox",
+            name = locVars["options_auto_mark_crafted_writ_items"],
+            tooltip = locVars["options_auto_mark_crafted_writ_items" .. tooltipSuffix],
+            getFunc = function() return FCOISsettings.autoMarkCraftedWritItems end,
+            setFunc = function(value)
+                FCOISsettings.autoMarkCraftedWritItems = value
+            end,
+            disabled = function()
+                return  not FCOIS.otherAddons.LazyWritCreatorActive
+                        or (not isIconEnabled[FCOISsettings.autoMarkCraftedWritCreatorItemsIconNr] and isIconEnabled[FCOISsettings.autoMarkCraftedWritCreatorMasterWritItemsIconNr])
+            end,
+            width = "full",
+            default = FCOISdefaultSettings.autoMarkCraftedWritItems,
+        },
+        {
+            type = 'dropdown',
+            name = locVars["options_auto_mark_crafted_writ_items_icon"],
+            tooltip = locVars["options_auto_mark_crafted_writ_items_icon" .. tooltipSuffix],
+            choices = iconsList,
+            choicesValues = iconsListValues,
+            scrollable = true,
+            getFunc = function() return FCOISsettings.autoMarkCraftedWritCreatorItemsIconNr
+            end,
+            setFunc = function(value)
+                FCOISsettings.autoMarkCraftedWritCreatorItemsIconNr = value
+                --Check if the icon needs to get the setting to skip the research check enabled
+                if value ~= nil then
+                    setDynamicIconAntiResearchCheck(value, true)
+                end
+            end,
+            reference = "FCOItemSaver_Icon_On_Automatic_Crafted_Writ_Items_Dropdown",
+            disabled = function() return not FCOIS.otherAddons.LazyWritCreatorActive or not FCOISsettings.autoMarkCraftedWritItems end,
+            width = "half",
+            default = FCOISdefaultSettings.autoMarkCraftedWritCreatorItemsIconNr,
+        },
+        {
+            type = 'dropdown',
+            name = locVars["options_auto_mark_crafted_masterwrit_items_icon"],
+            tooltip = locVars["options_auto_mark_crafted_masterwrit_items_icon" .. tooltipSuffix],
+            choices = iconsList,
+            choicesValues = iconsListValues,
+            scrollable = true,
+            getFunc = function() return FCOISsettings.autoMarkCraftedWritCreatorMasterWritItemsIconNr
+            end,
+            setFunc = function(value)
+                FCOISsettings.autoMarkCraftedWritCreatorMasterWritItemsIconNr = value
+                --Check if the icon needs to get the setting to skip the research check enabled
+                if value ~= nil then
+                    setDynamicIconAntiResearchCheck(value, true)
+                end
+            end,
+            reference = "FCOItemSaver_Icon_On_Automatic_Crafted_MasterWrit_Items_Dropdown",
+            disabled = function() return not FCOIS.otherAddons.LazyWritCreatorActive or not FCOISsettings.autoMarkCraftedWritItems end,
+            width = "half",
+            default = FCOISdefaultSettings.autoMarkCraftedWritCreatorMasterWritItemsIconNr,
+        },
+    }
+    return submenuControls
+end
+
+local function LAMSubmenuItemCooldownTracker() -- #306
+    local submenuControls = {}
+    locVars = FCOISlocVars.fcois_loc
+
+    if not FCOIS.otherAddons.ItemCooldownTrackerActive then return submenuControls end
+
+    submenuControls = {
+        {
+            type = "checkbox",
+            name = locVars["options_automark_itemcooldowntracker"],
+            tooltip = locVars["options_automark_itemcooldowntracker" .. tooltipSuffix],
+            getFunc = function() return FCOISsettings.autoMarkItemCoolDownTrackerTrackedItems end,
+            setFunc = function(value)
+                FCOISsettings.autoMarkItemCoolDownTrackerTrackedItems = value
+            end,
+            width = "half",
+            default = FCOISdefaultSettings.autoMarkItemCoolDownTrackerTrackedItems,
+        },
+        {
+            type = 'dropdown',
+            name = locVars["options_icon1_texture"],
+            tooltip = locVars["options_automark_itemcooldowntracker_icon_TT" .. tooltipSuffix],
+            choices = iconsList,
+            choicesValues = iconsListValues,
+            scrollable = true,
+            getFunc = function() return FCOISsettings.itemCoolDownTrackerTrackedItemsMarkerIcon
+            end,
+            setFunc = function(value)
+                FCOISsettings.itemCoolDownTrackerTrackedItemsMarkerIcon = value
+            end,
+            reference = "FCOItemSaver_Icon_On_Automatic_ItemCooldownTracker_Dropdown",
+            disabled = function() return not FCOISsettings.autoMarkItemCoolDownTrackerTrackedItems end,
+            width = "half",
+            default = FCOISdefaultSettings.itemCoolDownTrackerTrackedItemsMarkerIcon,
+        },
+
+    }
+    return submenuControls
+end
+
 -- Build a LAM SubMenu for the addon "SetTracker"
---#302 SetTracker support disabled with FCOOIS v2.6.1
+--#302 #307 SetTracker support disabled with FCOOIS v2.6.1, for versions <300
 local function LAMSubmenuSetTracker()
     local submenuControls = {}
     locVars = FCOISlocVars.fcois_loc
+
+    if not FCOIS.otherAddons.SetTracker.isActive or not SetTrack or not SetTrack.GetMaxTrackStates then return submenuControls end
 
     --------------------------------------------------------------------------------
     --Checkboxes
@@ -1692,7 +1802,7 @@ local function LAMSubmenuSetTracker()
     table.insert(submenuControls, cbAutoMarkSetTrackerRescan)
     --Dropdown boxes
     --Is the SetTracker addon active?
-    if FCOIS.otherAddons.SetTracker.isActive and SetTrack and SetTrack.GetMaxTrackStates then
+    --if FCOIS.otherAddons.SetTracker.isActive and SetTrack and SetTrack.GetMaxTrackStates then
         local createdSetTrackerDDBoxes = buildSetTrackerDDBoxes()
         --Was the SetTracker submenu build?
         if createdSetTrackerDDBoxes ~= nil and #createdSetTrackerDDBoxes > 0 then
@@ -1700,11 +1810,10 @@ local function LAMSubmenuSetTracker()
                 table.insert(submenuControls, createdSetTrackerDDBox)
             end
         end
-    end
+    --end
     --------------------------------------------------------------------------------
     return submenuControls
 end
-]]
 --==================== SetTracker - END ======================================
 
 
@@ -2923,6 +3032,9 @@ end
 
 --[[
 --#301 LibSets set search favorites
+--Currently disabled because it is unclear how to update the favorite icons properly if they get applied and removed,
+--how to update FCOIS LAM settings then etc. Maybe easier to direclty use LibSet's textures as marker icons and create
+--some special new marker icons via "plugin system"? > Future idea
 local function buildLibSetsSetSearchCategorySubMenu()
     FCOISsettings = FCOIS.settingsVars.settings
 
@@ -3157,7 +3269,11 @@ function FCOIS.BuildAddonMenu()
     --[Submenus]
     --Other addons
     -- Creating LAM submenu for the SetTracker addon
-    --local SetTrackerSubmenuControls = LAMSubmenuSetTracker()
+    local SetTrackerSubmenuControls = LAMSubmenuSetTracker() --#307
+    -- Creating LAM submenu for the ItemCooldownTracker addon
+    local ItemCooldownTrackerSubmenuControls = LAMSubmenuItemCooldownTracker() --#306
+    local WritCreatorSubmenuControls = LAMSubmenuDolgubonLazyWritCreator()
+
 
     --Marker icons
     --Build submenus for the normal and the gear marker icons
@@ -4663,12 +4779,16 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                                                     default = FCOISdefaultSettings.autoMarkSetsExcludeSets,
                                                 },
 
-                                                --LibShifterBox: Excluded sets
+                                                --LibShifterBox: Excluded sets --#304
                                                 {
                                                     type = "custom",
                                                     reference = (lsb and libShifterBoxes[FCOIS_CON_LIBSHIFTERBOX_EXCLUDESETS].name) or "FCOITEMSAVER_LAM_CUSTOM___FCOIS_EXCLUDED_SETS",
                                                     createFunc = function(customControl)
-                                                        if not lsb then return end
+                                                        if not lsb or not FCOIS.libSets then --#304
+                                                            d("[FCOIS]ERROR - If you want to use the \'Auto mark excluded sets\' setting you must enable LibSets and LibShiferBox!")
+                                                            return
+                                                        end
+
                                                         FCOIS.createLibShifterBox(customControl, FCOIS_CON_LIBSHIFTERBOX_EXCLUDESETS)
                                                         --Will be called by the LAM panel automatically upon refresh of controls
                                                         customControl.UpdateDisabled = function(customControl)
@@ -4679,7 +4799,7 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                                                     end,
                                                     width="full",
                                                     minHeight = 220,
-                                                    --disabled = function() return not FCOISsettings.autoMarkSetsExcludeSets or not FCOIS.libSets  end,
+                                                    disabled = function() return FCOIS.libSets == nil end --or not FCOISsettings.autoMarkSetsExcludeSets end, --#304
                                                 },
 
                                             } -- -- Exclude sets auto-marking controls
@@ -5119,14 +5239,14 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
 
                                 --==============================================================================
                                 -- SetTracker auto-marking
-                                --[[
                                 {
                                     type = "submenu",
                                     name = locVars["options_header_settracker"],
                                     reference = "FCOItemSaver_Settings_SetTracker_SubMenu",
                                     controls = SetTrackerSubmenuControls, -- dynamically created dropdown controls for each SetTracker tracking state/index
+                                    disabled = function() return not FCOIS.otherAddons.SetTracker.isActive end --#307
+
                                 },
-                                ]]
 
                                 --==============================================================================
                                 {
@@ -5562,66 +5682,8 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                                 {   --Crafted "Writs"
                                     type = "submenu",
                                     name = "Writ Creator",
-                                    controls =
-                                    {
-                                        {
-                                            type = "checkbox",
-                                            name = locVars["options_auto_mark_crafted_writ_items"],
-                                            tooltip = locVars["options_auto_mark_crafted_writ_items" .. tooltipSuffix],
-                                            getFunc = function() return FCOISsettings.autoMarkCraftedWritItems end,
-                                            setFunc = function(value)
-                                                FCOISsettings.autoMarkCraftedWritItems = value
-                                            end,
-                                            disabled = function()
-                                                return  not FCOIS.otherAddons.LazyWritCreatorActive
-                                                        or (not isIconEnabled[FCOISsettings.autoMarkCraftedWritCreatorItemsIconNr] and isIconEnabled[FCOISsettings.autoMarkCraftedWritCreatorMasterWritItemsIconNr])
-                                            end,
-                                            width = "full",
-                                            default = FCOISdefaultSettings.autoMarkCraftedWritItems,
-                                        },
-                                        {
-                                            type = 'dropdown',
-                                            name = locVars["options_auto_mark_crafted_writ_items_icon"],
-                                            tooltip = locVars["options_auto_mark_crafted_writ_items_icon" .. tooltipSuffix],
-                                            choices = iconsList,
-                                            choicesValues = iconsListValues,
-                                            scrollable = true,
-                                            getFunc = function() return FCOISsettings.autoMarkCraftedWritCreatorItemsIconNr
-                                            end,
-                                            setFunc = function(value)
-                                                FCOISsettings.autoMarkCraftedWritCreatorItemsIconNr = value
-                                                --Check if the icon needs to get the setting to skip the research check enabled
-                                                if value ~= nil then
-                                                    setDynamicIconAntiResearchCheck(value, true)
-                                                end
-                                            end,
-                                            reference = "FCOItemSaver_Icon_On_Automatic_Crafted_Writ_Items_Dropdown",
-                                            disabled = function() return not FCOIS.otherAddons.LazyWritCreatorActive or not FCOISsettings.autoMarkCraftedWritItems end,
-                                            width = "half",
-                                            default = FCOISdefaultSettings.autoMarkCraftedWritCreatorItemsIconNr,
-                                        },
-                                        {
-                                            type = 'dropdown',
-                                            name = locVars["options_auto_mark_crafted_masterwrit_items_icon"],
-                                            tooltip = locVars["options_auto_mark_crafted_masterwrit_items_icon" .. tooltipSuffix],
-                                            choices = iconsList,
-                                            choicesValues = iconsListValues,
-                                            scrollable = true,
-                                            getFunc = function() return FCOISsettings.autoMarkCraftedWritCreatorMasterWritItemsIconNr
-                                            end,
-                                            setFunc = function(value)
-                                                FCOISsettings.autoMarkCraftedWritCreatorMasterWritItemsIconNr = value
-                                                --Check if the icon needs to get the setting to skip the research check enabled
-                                                if value ~= nil then
-                                                    setDynamicIconAntiResearchCheck(value, true)
-                                                end
-                                            end,
-                                            reference = "FCOItemSaver_Icon_On_Automatic_Crafted_MasterWrit_Items_Dropdown",
-                                            disabled = function() return not FCOIS.otherAddons.LazyWritCreatorActive or not FCOISsettings.autoMarkCraftedWritItems end,
-                                            width = "half",
-                                            default = FCOISdefaultSettings.autoMarkCraftedWritCreatorMasterWritItemsIconNr,
-                                        },
-                                    },
+                                    controls = WritCreatorSubmenuControls,
+                                    disabled = function() return not FCOIS.otherAddons.LazyWritCreatorActive or WritCreater == nil end,
                                 },
                                 {
                                     type = "checkbox",
@@ -5821,38 +5883,8 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                         {
                             type = "submenu",
                             name = locVars["options_automark_itemcooldowntracker_header"],
-                            controls = {
-                                {
-                                    type = "checkbox",
-                                    name = locVars["options_automark_itemcooldowntracker"],
-                                    tooltip = locVars["options_automark_itemcooldowntracker" .. tooltipSuffix],
-                                    getFunc = function() return FCOISsettings.autoMarkItemCoolDownTrackerTrackedItems end,
-                                    setFunc = function(value)
-                                        FCOISsettings.autoMarkItemCoolDownTrackerTrackedItems = value
-                                    end,
-                                    width = "half",
-                                    default = FCOISdefaultSettings.autoMarkItemCoolDownTrackerTrackedItems,
-                                },
-                                {
-                                    type = 'dropdown',
-                                    name = locVars["options_icon1_texture"],
-                                    tooltip = locVars["options_automark_itemcooldowntracker_icon_TT" .. tooltipSuffix],
-                                    choices = iconsList,
-                                    choicesValues = iconsListValues,
-                                    scrollable = true,
-                                    getFunc = function() return FCOISsettings.itemCoolDownTrackerTrackedItemsMarkerIcon
-                                    end,
-                                    setFunc = function(value)
-                                        FCOISsettings.itemCoolDownTrackerTrackedItemsMarkerIcon = value
-                                    end,
-                                    reference = "FCOItemSaver_Icon_On_Automatic_ItemCooldownTracker_Dropdown",
-                                    disabled = function() return not FCOISsettings.autoMarkItemCoolDownTrackerTrackedItems end,
-                                    width = "half",
-                                    default = FCOISdefaultSettings.itemCoolDownTrackerTrackedItemsMarkerIcon,
-                                },
-
-                            }
-
+                            controls = ItemCooldownTrackerSubmenuControls,
+                            disabled = function() return not FCOIS.otherAddons.ItemCooldownTrackerActive end --#306
                         },
 
 
@@ -6051,6 +6083,19 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                             default = FCOISdefaultSettings.reApplyIconsAfterImprovement,
                             disabled = function() return false end,
                         },
+                        { --#299
+                            type = "checkbox",
+                            name = locVars["options_remark_after_launderfence_leave"],
+                            tooltip = locVars["options_remark_after_launderfence_leave" .. tooltipSuffix],
+                            getFunc = function() return FCOISsettings.reApplyIconsAfterLaunderFenceRemove end,
+                            setFunc = function(value) FCOISsettings.reApplyIconsAfterLaunderFenceRemove = value
+                            end,
+                            width = "half",
+                            default = FCOISdefaultSettings.reApplyIconsAfterLaunderFenceRemove,
+                            disabled = function() return false end,
+                        },
+
+
                     },
 
                 },

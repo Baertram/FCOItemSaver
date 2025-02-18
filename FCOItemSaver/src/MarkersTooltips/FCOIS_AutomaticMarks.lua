@@ -29,7 +29,7 @@ local iilc      = IsItemLinkCrafted
 
 local account = GetDisplayName()
 
-local libSets = FCOIS.libSets or LibSets
+local libSets = FCOIS.libSets
 
 local numFilterIcons = FCOIS.numVars.gFCONumFilterIcons
 --local getSavedVarsMarkedItemsTableName = FCOIS.GetSavedVarsMarkedItemsTableName
@@ -39,7 +39,7 @@ local lmas = FCOIS.libMultiAccountSets
 local ctrlVars = FCOIS.ZOControlVars
 local mappingVars = FCOIS.mappingVars
 local otherAddons = FCOIS.otherAddons
---local oaSetTracker = otherAddons.SetTracker --#302 SetTracker support disabled with FCOOIS v2.6.1
+local oaSetTracker = otherAddons.SetTracker --#302 SetTracker support disabled with FCOOIS v2.6.1, for versions <300
 
 local checkIfItemIsProtected = FCOIS.CheckIfItemIsProtected
 local myGetItemInstanceIdNoControl = FCOIS.MyGetItemInstanceIdNoControl
@@ -557,7 +557,7 @@ local function automaticMarkingSetsCollectionBookCheckFunc(p_bagId, p_slotIndex,
 end
 
     --[[
-    --Do all the checks for the "automatic mark item with LibSets"
+    --#301 Do all the checks for the "automatic mark item with LibSets"
     local applyLibSetsSetSearchFavoriteCategoryMarker = FCOIS.ApplyLibSetsSetSearchFavoriteCategoryMarker --#301
     local function automaticMarkingLibSetsCheckFunc(p_bagId, p_slotIndex, setId) --#301
         --todo 20241204 --#301
@@ -672,13 +672,13 @@ end
         local iconIdArray = {}
         local gearIconIdArray = {}
         local sellIconIdArray = {}
-        --local setTrackerIconIdArray = {} --#302  SetTracker support disabled with FCOOIS v2.6.1
+        local setTrackerIconIdArray = {} --#302  SetTracker support disabled with FCOOIS v2.6.1, for versions <300
         --The standard automatic marker icon for the sets
         local setsIconNr = settings.autoMarkSetsIconNr
         local isMarkedWithAutomaticSetMarkerIcon
         local isSellProtected
         local isGearProtected
-        local isSetTrackerAndIsMarkedWithOtherIconAlready --#302  SetTracker support disabled with FCOOIS v2.6.1
+        local isSetTrackerAndIsMarkedWithOtherIconAlready --#302  SetTracker support disabled with FCOOIS v2.6.1, for versions <300
 
         --=== Non-Wished set items check for characters below level 50 =========================================================
         if settings.autoMarkSetsNonWished == true and isIconEnabled[settings.autoMarkSetsNonWishedIconNr] and settings.autoMarkSetsNonWishedIfCharBelowLevel then
@@ -706,7 +706,7 @@ end
         ---> So these automatic checks are done "later" !
         if not skipAllOtherChecks then
             isSetTrackerAndIsMarkedWithOtherIconAlready = false
-            --[[ --#302  SetTracker support disabled with FCOOIS v2.6.1
+            --#302  SetTracker support disabled with FCOOIS v2.6.1, for versions <300
             if SetTrack and SetTrack.GetMaxTrackStates and oaSetTracker.isActive and settings.autoMarkSetTrackerSets then
                 if isDebuggingCase then d(">check SetTracker addon") end
                 --If the option is enabled to check for all marker icons before checking SetTracker set icons:
@@ -743,7 +743,6 @@ end
                     end
                 end
             end
-            ]]
             --==== SET TRACKER addon integration - END =============================================================================
 
             --==== Normal set marker icon - BEGIN ==================================================================================
@@ -1885,7 +1884,7 @@ end
                 chatBegin			= fcoisLoc["marked"],
                 chatEnd				= fcoisLoc["set_part_found"],
             },
-            ---------------------------- LibSets Set search favorite categories ----------------------------------------
+            ---------------------------- LibSets Set search favorite categories #301 ----------------------------------------
             --[[
             ["LibSetsSetSearchFavoriteCategoryMarkers"] = { --#301 LibSets set search favorite category marker icons
                 check				= nil, --settings.autoMarkLibSetsSetSearchFavorites, --todo: Could be disabled in settings and marks need to be removed then?

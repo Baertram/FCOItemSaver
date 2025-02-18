@@ -3,6 +3,9 @@ if FCOIS == nil then FCOIS = {} end
 local FCOIS = FCOIS
 
 local libFilters = FCOIS.libFilters
+local libSets = FCOIS.libSets
+local libLSB = FCOIS.libShifterBox
+local LCK = FCOIS.LCK --LibCharacterKnowledge
 
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
@@ -81,6 +84,7 @@ local libFiltersPanelIdToInventory = mappingVars.libFiltersPanelIdToInventory
 
 local checkVars = FCOIS.checkVars
 local allowedSetItemTypes = checkVars.setItemTypes
+local allowedFenceOrLaunderTypes = checkVars.allowedFenceOrLaunderTypes
 
 local uniqueItemIdStringTemplate = "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s" -- itemInstanceOrItemId,level,quality,trait,style,enchantment,isStolen,isCrafted,craftedByName,isCrownItem
 --Junk marking/removing from junk
@@ -100,6 +104,8 @@ local IIfAInvRowPatternToCheck = "^" .. IIFAitemsListEntryPrePattern .. "*"
 
 local updateCraftingInventory = FCOIS.UpdateCraftingInventory --maybe nil here, will be updated further down in function FCOIS.CheckIfImprovedItemShouldBeReMarked_AfterImprovement()
 
+local inventoriesSecurePostHooksDone = FCOIS.inventoriesSecurePostHooksDone --#303
+
 local getGearIcons
 
 local createFCOISUniqueIdString
@@ -112,7 +118,9 @@ local isMarked
 local isMarkedByItemInstanceId
 local checkIfUniversalDeconstructionNPC
 local isCompanionInventoryShown
-local FCOISMarkItem
+local FCOISMarkItem = FCOIS.MarkItem
+local FCOISMarkItemByItemInstanceId = FCOIS.MarkItemByItemInstanceId
+
 
 --==========================================================================================================================================
 --                                          FCOIS - Base & helper functions
@@ -472,7 +480,7 @@ function FCOIS.MyGetItemDetails(rowControl)
                 bagId, slotIndex = BAG_BACKPACK, parentDataEntry.slotIndex
             end
             --Store buy
-        elseif rowControl.slotType == SLOT_TYPE_STORE_BUY or rowControl.slotType == SLOT_TYPE_BUY_MULTIPLE then
+        elseif not isDataEntryNil and rowControl.slotType == SLOT_TYPE_STORE_BUY or rowControl.slotType == SLOT_TYPE_BUY_MULTIPLE then
             bagId = nil
             slotIndex = dataEntryData.slotIndex
             --[[
@@ -1292,6 +1300,7 @@ function FCOIS.IsItemAGlpyh(bag, slot)
 end
 
 function FCOIS.IsItemSetAndNotExcluded(bag, slot, itemLink)
+    libSets = libSets or FCOIS.libSets
     if (itemLink == nil and (bag == nil or slot == nil)) or itemLink == nil then return false, nil end
     local isAllowedSet, setId
     if itemLink ~= nil then
@@ -1301,7 +1310,7 @@ function FCOIS.IsItemSetAndNotExcluded(bag, slot, itemLink)
         local l_isAllowedSet, _, _, _, _, l_setId = gilsetinf(gil(bag, slot), false)
         isAllowedSet, setId = l_isAllowedSet, l_setId
     end
-    if isAllowedSet == true and setId ~= nil then
+    if isAllowedSet == true and setId ~= nil and libSets ~= nil and libLSB ~= nil then --#304
         local settings = FCOIS.settingsVars.settings
         if settings.autoMarkSetsExcludeSets == true then
             local autoMarkSetsExcludeSetsList = settings.autoMarkSetsExcludeSetsList
@@ -1553,7 +1562,7 @@ function FCOIS.IsRecipeKnown(bagId, slotIndex, expectedResult)
                                             --Abort the loop over the chars now as acount wide settings are enabled and the
                                             --recipe was marked, or it was the currently logged in char
                                             return false
-                                            --Should a known recipe be marked?
+                                        --Should a known recipe be marked?
                                         elseif expectedResult == true and knownLoop == true then
 --d(">>>>>marking item as known recipe!")
                                             --Mark the item now as it can be learned on another char!
@@ -1570,8 +1579,55 @@ function FCOIS.IsRecipeKnown(bagId, slotIndex, expectedResult)
                 end
             end
         end
+    ------------------------------------------------------------------------------------------------------------------------
+    --20250216 #305 LibCharacterKnowledge support
+    elseif recipeAddonUsed == FCOIS_RECIPE_ADDON_LIBCHARACTERKNOWLEDGE then
+        --[[
+            LCK.KNOWLEDGE_INVALID -- Not a recipe, furnishing plan, motif, or scribing item
+            LCK.KNOWLEDGE_NODATA  -- No data for this character
+            LCK.KNOWLEDGE_KNOWN
+            LCK.KNOWLEDGE_UNKNOWN
+        ]]
+        --Only currently logged in char?
+        if autoMarkRecipesOnlyThisChar == true then
+            local resultKnown = LCK.GetItemKnowledgeForCharacter(itemLink, nil, nil) --current server, current character
+            if resultKnown == nil or resultKnown == LCK.KNOWLEDGE_INVALID then return end
+            if expectedResult == true and resultKnown == LCK.KNOWLEDGE_KNOWN then
+                return true
+            elseif expectedResult == false and resultKnown == LCK.KNOWLEDGE_UNKNOWN then
+                return false
+            end
+        else
+            --All characters of server
+            local knownListOfServer = LCK.GetItemKnowledgeList(itemLink, nil, nil) --current server, all characters
+            local unKnownRecipeFound = nil
+            local knownRecipeFound = nil
+            if not ZO_IsTableEmpty(knownListOfServer) then
+                --Check each character and if ANY knows/does not know the recipe then we will provide the overall returnValue
+                for _, knowledgeData in ipairs(knownListOfServer) do
+                    local knowledgeOfChar = knowledgeData.knowledge
+                    if knowledgeOfChar and knowledgeOfChar ~= LCK.KNOWLEDGE_INVALID then
+--d(">knowledgeOfChar: " ..tos(knowledgeOfChar) .. ", charName: " .. tos(knowledgeData.name))
+                        if knowledgeOfChar == LCK.KNOWLEDGE_UNKNOWN then
+                            unKnownRecipeFound = true
+                        elseif knowledgeOfChar == LCK.KNOWLEDGE_KNOWN then
+                            knownRecipeFound = true
+                        end
+                    end
+                end
+--d(">unKnownRecipeFound: " ..tos(unKnownRecipeFound) .. ", knownRecipeFound: " .. tos(knownRecipeFound))
+                if unKnownRecipeFound == nil and knownRecipeFound == nil then return end
+                --Only mark as known if no other char still neesd this!
+                if expectedResult == true and knownRecipeFound == true and not unKnownRecipeFound then
+                    return true
+                elseif expectedResult == false and unKnownRecipeFound == true then
+                    return false
+                end
+            end
+        end
+
     end
-    return nil
+    return
 end
 
 --Check if the recipe addon chosen is active, the marker icon too and the setting to automark it is enabled
@@ -2719,6 +2775,134 @@ function FCOIS.CheckIfEnchantingInventoryItemShouldBeReMarked_AfterEnchanting()
     end, 200)
 end
 
+--#299 -v-
+local locSettings = FCOIS.settingsVars.settings
+function FCOIS.CheckReApplyRemovedFenceOrLaunderMarkerIcons() --#299
+    locSettings = locSettings or FCOIS.settingsVars.settings
+d("[FCOIS]CheckReApplyRemovedFenceOrLaunderMarkerIcons - setting: " .. tos(locSettings.reApplyIconsAfterLaunderFenceRemove))
+    return locSettings.reApplyIconsAfterLaunderFenceRemove
+end
+local checkReApplyRemovedFenceOrLaunderMarkerIcons = FCOIS.CheckReApplyRemovedFenceOrLaunderMarkerIcons
+
+
+local function resetReApplyRemovedFenceOrLaunderMarkerIcons(fenceOrLaunder) --#299
+d("[FCOIS]resetReApplyRemovedFenceOrLaunderMarkerIcons - fenceOrLaunder: " .. tos(fenceOrLaunder))
+    if not checkReApplyRemovedFenceOrLaunderMarkerIcons() then return end
+
+    if fenceOrLaunder == nil then
+        FCOIS.lastVars.removedMarkerIcons = FCOIS.lastVars.removedMarkerIcons or {}
+        for fenceOrLaunderFilterType, isEnabled in pairs(allowedFenceOrLaunderTypes) do
+            if isEnabled == true then
+                FCOIS.lastVars.removedMarkerIcons[fenceOrLaunderFilterType] = {}
+            end
+        end
+    else
+        if not allowedFenceOrLaunderTypes[fenceOrLaunder] then return end
+        FCOIS.lastVars.removedMarkerIcons = FCOIS.lastVars.removedMarkerIcons or {}
+        --Do not clear the table if we switch between fence and launder and have not left the fence&launder UI in total yet
+        if not ZO_IsTableEmpty(FCOIS.lastVars.removedMarkerIcons[fenceOrLaunder]) then return end
+        FCOIS.lastVars.removedMarkerIcons[fenceOrLaunder] = {}
+    end
+end
+
+function FCOIS.PrepareReApplyRemovedFenceOrLaunderMarkerIcons(fenceOrLaunder) --#299
+d("[FCOIS]PrepareReApplyRemovedFenceOrLaunderMarkerIcons - fenceOrLaunder: " .. tos(fenceOrLaunder))
+    resetReApplyRemovedFenceOrLaunderMarkerIcons(fenceOrLaunder)
+end
+
+local function checkTableForReApplyMarkerIcons(tabToCheck) --#299
+d("[FCOIS]checkTableForReApplyMarkerIcons - tabToCheck: " .. tos(tabToCheck))
+    if ZO_IsTableEmpty(tabToCheck) then return nil end
+
+    FCOISMarkItemByItemInstanceId = FCOISMarkItemByItemInstanceId or FCOIS.MarkItemByItemInstanceId
+
+    local reappliedCounter = 0
+    local numEntries = #tabToCheck
+    for idx, itemData in ipairs(tabToCheck) do
+        if itemData.itemInstanceOrUniqueId ~= nil and (itemData.itemLink ~= nil or itemData.itemId ~= nil) and itemData.icons ~= nil then
+            --todo 20250218 reapply the removed marker icons at the items in tables. Do not use bagId and slotIndex here:
+            -->itemData.itemInstanceOrUniqueId should be the unsignedId to use for FCOIS.markItemByItemInstanceId table diretly so we can remark the icons even if the item was sold meanwhile
+            FCOISMarkItemByItemInstanceId(itemData.itemInstanceOrUniqueId, itemData.icons, true, itemData.itemLink, itemData.itemId, itemData.addonName, idx == numEntries)
+
+            reappliedCounter = reappliedCounter + 1
+        end
+    end
+    return reappliedCounter
+end
+
+local function saveRemovedFenceOrLaunderMarkerIcons(itemData, fenceOrLaunder) --#299
+d("[FCOIS]saveRemovedFenceOrLaunderMarkerIcons - itemData: " .. tos(itemData) .. ", fenceOrLaunder: " ..tos(fenceOrLaunder))
+    if itemData == nil or fenceOrLaunder == nil or itemData.id == nil or itemData.icons == nil then return end
+
+    table.insert(FCOIS.lastVars.removedMarkerIcons[fenceOrLaunder], itemData)
+end
+
+function FCOIS.ReApplyRemovedFenceOrLaunderMarkerIcons() --#299
+d("[FCOIS]ReApplyRemovedFenceOrLaunderMarkerIcons")
+    if not checkReApplyRemovedFenceOrLaunderMarkerIcons() then return end
+
+    if ZO_IsTableEmpty(FCOIS.lastVars.removedMarkerIcons) then return end
+d(">found saved removed marker icons on items")
+    for fenceOrLaunderFilterType, isEnabled in pairs(allowedFenceOrLaunderTypes) do
+        if isEnabled == true then
+d(">>restoring fence/laundertype: " ..tos(fenceOrLaunderFilterType))
+            local tabToCheck = FCOIS.lastVars.removedMarkerIcons[fenceOrLaunderFilterType]
+            local resultNum = checkTableForReApplyMarkerIcons(tabToCheck)
+
+d("<<restored entry # " ..tos(resultNum) .." -> resetting table")
+            FCOIS.lastVars.removedMarkerIcons[fenceOrLaunderFilterType] = nil
+        end
+    end
+end
+
+local function itemUnmarkedChecksForLaunderAndFence(bagId, slotIndex, iconIds, itemInstanceOrUniqueId, itemLink, itemId, addonName, signedItemId) --#299
+d("[FCOIS]itemUnmarkedChecksForLaunderAndFence")
+    --if a signedItemId was provided already then we can directly update that in the used SavedVariables table for the marker icons at the item
+    --so we can store it direcly in the itemData table
+    if iconIds == nil then return end
+
+    local itemData
+    if signedItemId == nil then
+        --Check if we got a bagId and slotIndex, else try the itemInstanceOrUniqueId first to update the SavedVariables for the marker icons at the item
+        if (bagId == nil or slotIndex == nil or itemId == nil) and (itemInstanceOrUniqueId == nil) then return end
+
+
+        if itemInstanceOrUniqueId ~= nil then
+            signedItemId = signItemId(itemInstanceOrUniqueId, nil, nil, addonName, nil, nil)
+
+        elseif bagId ~= nil and slotIndex ~= nil and itemId ~= nil then
+            --todo 20250218 Can we even use this here? What if the item was sold meanwhile as we try to restore the marker icons at that item?
+            signedItemId = signItemId(itemId, nil, nil, nil, bagId, slotIndex)
+        end
+
+    end
+
+    if signedItemId ~= nil then
+        itemData = {
+            id =        signedItemId,
+            itemInstanceOrUniqueId = itemInstanceOrUniqueId or itemId,
+            icons =     iconIds,
+            itemLink =  itemLink or (bagId ~= nil and slotIndex ~= nil and GetItemLink(bagId, slotIndex)),
+            itemId =    itemId,
+            addonName = addonName,
+        }
+        saveRemovedFenceOrLaunderMarkerIcons(itemData, FCOIS.FenceLaunderMode)
+    end
+end
+
+--Check if any item marker removed checks are needed
+function FCOIS.CheckIfItemUnmarkedChecksNeeded(bagId, slotIndex, iconId, itemInstanceOrUniqueId, itemLink, itemId, addonName, signedItemId) --#299
+d("[FCOIS]CheckIfItemUnmarkedChecksNeeded - bagId: " .. tos(bagId) .. "; slotIndex: " .. tos(slotIndex) .. "; iconId: " .. tos(iconId) .."; itemInstanceOrUniqueId: " .. tos(itemInstanceOrUniqueId) .. "; itemId: " ..tos(itemId) .. "; addonName: " .. tos(addonName) .."; signedItemId: " .. tos(signedItemId))
+    --#299 Check for items to be saved for a later reApply, if we are at launder and/or fence
+    if checkReApplyRemovedFenceOrLaunderMarkerIcons() then
+        local fenceOrLaunder = FCOIS.FenceLaunderMode
+        if fenceOrLaunder ~= nil and allowedFenceOrLaunderTypes[fenceOrLaunder] then
+            itemUnmarkedChecksForLaunderAndFence(bagId, slotIndex, iconId, itemInstanceOrUniqueId, itemLink, itemId, addonName, signedItemId)
+        end
+    end
+end
+--#299 -^-
+
 --======================================================================================================================
 -- Is shown functions
 --======================================================================================================================
@@ -3463,8 +3647,8 @@ function FCOIS.ShowItemLinkTooltip(control, parent, anchor1, offsetX, offsetY, a
         hideItemLinkTooltip()
         return nil
     end
-    local libSets = FCOIS.libSets
-    if not libSets then return end
+    libSets = libSets or FCOIS.libSets
+    if not libSets then return end --#304
     local data = control.dataEntry.data
     local setItemId = data.setItemId or libSets.GetSetItemId(data.key)
     if setItemId ~= nil then
@@ -3533,3 +3717,26 @@ function FCOIS.GetFilterPanelIdByBagId(bagId)
 --d("<filterPanelId: " ..tos(filterPanelId))
     return filterPanelId
 end
+
+local onlyOnMouseUpHandlerSuffix = "_OnMouseUpHandler"
+local function getListViewName(listView, onlyOnMouseUpHandler)
+    local listViewName = listView
+    if onlyOnMouseUpHandler == true then
+        listViewName = (listView:GetName() or listView.name) .. onlyOnMouseUpHandlerSuffix
+    end
+    return listViewName
+end
+
+--Prevent duplicate SecurePostHooks added to the scrollList setupCallback functions #303
+local function addInventorySecurePostHookDoneEntry(listView, dataType, onlyOnMouseUpHandler) --#303
+    local listViewName = getListViewName(listView, onlyOnMouseUpHandler)
+    inventoriesSecurePostHooksDone[listViewName] = inventoriesSecurePostHooksDone[listViewName] or {}
+    inventoriesSecurePostHooksDone[listViewName][dataType] = true
+end
+FCOIS.addInventorySecurePostHookDoneEntry = addInventorySecurePostHookDoneEntry
+
+local function checkIfInventorySecurePostHookWasDone(listView, dataType, onlyOnMouseUpHandler) --#303
+    local listViewName = getListViewName(listView, onlyOnMouseUpHandler)
+    return (inventoriesSecurePostHooksDone[listViewName] ~= nil and inventoriesSecurePostHooksDone[listViewName][dataType] ~= nil and true) or false
+end
+FCOIS.checkIfInventorySecurePostHookWasDone = checkIfInventorySecurePostHookWasDone

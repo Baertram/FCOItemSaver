@@ -108,6 +108,8 @@ local isCompanionCharacterShown = FCOIS.IsCompanionCharacterShown
 local buildIconText = FCOIS.BuildIconText
 local filterStatus = FCOIS.FilterStatus
 local command_handler = FCOIS.Command_handler
+local checkIfItemUnmarkedChecksNeeded = FCOIS.CheckIfItemUnmarkedChecksNeeded --#299
+
 
 --------------------------------------------------------------------------------
 -- Local helper functions
@@ -146,6 +148,21 @@ end
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
+
+
+--=========== FCOIS Filter icons =============================
+--Get all the possible filter icons as a table (to be used in e.g. FCOIS.MarkItem or FCOIS.MarkItemByItemInstanceId (iconId parameter)
+--> returns table { [1] = FCOIS_CON_ICON_LOCK, [2] = FCOIS_CON_ICON_*, ... }
+local function getAllFilterIconsAsTab()
+	local retTab = {}
+	for iconNr=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
+		retTab[#retTab + 1] = iconNr
+	end
+	return retTab
+end
+FCOIS.GetAllFilterIconsAsTab = getAllFilterIconsAsTab
+
+
 --=========== FCOIS Protection check API functions (with possbility to show alert messages) =============================
 --[[ Description:
 
@@ -780,8 +797,10 @@ local FCOIS_UpdateInventory = FCOIS.UpdateInventory
 ---								e.g. local myTableOfFCOISMarkerIcons = { [1] = FCOIS_CON_ICON_RSEARCH, [2] = FCOIS_CON_ICON_SELL }
 ---showIcon (boolean): 			Flag to set if the item should be marked with the icon(s), or not
 ---updateInventories (boolean):	Flag to set if the inventory lists should be updated, or not. Use this only "after updating the last marker icon", if you (de)mark many at once!
+local markItem
 function FCOIS.MarkItem(bag, slot, iconId, showIcon, updateInventories)
 --d("[FCOIS.MarkItem] bag " .. tos(bag) .. ", slot: " .. tos(slot) .. ", iconId: " .. tos(iconId) .. ", show: " .. tos(showIcon) .. ", updateInv: " .. tos(updateInventories))
+	markItem = markItem or FCOIS.MarkItem
 	if bag == nil or slot == nil or iconId == nil then return false end
 	if showIcon == nil then showIcon = true end
 	updateInventories = updateInventories or false
@@ -806,6 +825,8 @@ function FCOIS.MarkItem(bag, slot, iconId, showIcon, updateInventories)
 		local recurRetVal = false
 		local numMarkerIconsToChange = #iconId
 		local markerIconsChanged = 0
+		FCOIS.lastVars.MarkItem_IconTable = iconId		--#299
+		FCOIS.lastVars.Last_MarkItem_IconTable = nil	--#299
 		for _, iconIdInTable in ipairs(iconId) do
 			FCOIS.preventerVars.gMarkItemLastIconInLoop = false
 			markerIconsChanged = markerIconsChanged + 1
@@ -814,11 +835,13 @@ function FCOIS.MarkItem(bag, slot, iconId, showIcon, updateInventories)
 				FCOIS.preventerVars.gMarkItemLastIconInLoop = true
 			end
 			--Recursively call this function again to change each marker icon at the item
-			recurRetVal = FCOIS.MarkItem(bag, slot, iconIdInTable, showIcon, doUpdateInvNow)
+			recurRetVal = markItem(bag, slot, iconIdInTable, showIcon, doUpdateInvNow)
 			if not recurRetVal then
 				recurRetValTotal = false
 			end
 		end
+		FCOIS.lastVars.MarkItem_IconTable = nil			--#299
+		FCOIS.lastVars.Last_MarkItem_IconTable = nil	--#299
 		--Reset preventing variable against endless loop
 		FCOIS.preventerVars.markItemAntiEndlessLoop = false
 	else
@@ -832,6 +855,8 @@ function FCOIS.MarkItem(bag, slot, iconId, showIcon, updateInventories)
 			FCOIS.preventerVars.markItemAntiEndlessLoop = true
 			local doUpdateInvNow = false
 			local recurRetVal = false
+			FCOIS.lastVars.MarkItem_IconTable = getAllFilterIconsAsTab() --#299
+			FCOIS.lastVars.Last_MarkItem_IconTable = nil --#299
 			for iconNr=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
 				FCOIS.preventerVars.gMarkItemLastIconInLoop = false
 				if updateInventories and iconNr == numFilterIcons then
@@ -839,11 +864,13 @@ function FCOIS.MarkItem(bag, slot, iconId, showIcon, updateInventories)
 					FCOIS.preventerVars.gMarkItemLastIconInLoop = true
 				end
 				--Recursively call this function again to change each marker icon at the item
-				recurRetVal = FCOIS.MarkItem(bag, slot, iconNr, showIcon, doUpdateInvNow)
+				recurRetVal = markItem(bag, slot, iconNr, showIcon, doUpdateInvNow)
 				if not recurRetVal then
 					recurRetValTotal = false
 				end
 			end
+			FCOIS.lastVars.MarkItem_IconTable = nil			--#299
+			FCOIS.lastVars.Last_MarkItem_IconTable = nil	--#299
 			--Reset preventing variable against endless loop
 			FCOIS.preventerVars.markItemAntiEndlessLoop = false
 		end -- if iconId == -1 then
@@ -928,7 +955,7 @@ function FCOIS.MarkItem(bag, slot, iconId, showIcon, updateInventories)
 							end
 							--Remove all markers now, using the -1 iconId if all icons should be removed without any further checks,
 							--or use the given table with iconIds to remove if further checks were done
-							FCOIS.MarkItem(bag, slot, iconsToRemoveViaAutomaticRemoveCheck, false, isCharShown)
+							markItem(bag, slot, iconsToRemoveViaAutomaticRemoveCheck, false, isCharShown)
 							FCOIS.preventerVars.markItemAntiEndlessLoop = false
 
 						--Any other circumstances
@@ -952,7 +979,7 @@ function FCOIS.MarkItem(bag, slot, iconId, showIcon, updateInventories)
 											--d(">remove icon: " ..tos(iconToRemove))
 											--Remove the sell/sell at guildstore/... marker icons now
 											--Is the character screen shown, then update the marker icons now?
-											FCOIS.MarkItem(bag, slot, iconToRemove, false, isCharShown)
+											markItem(bag, slot, iconToRemove, false, isCharShown)
 											FCOIS.preventerVars.markItemAntiEndlessLoop = false
 										end
 									end
@@ -971,11 +998,23 @@ function FCOIS.MarkItem(bag, slot, iconId, showIcon, updateInventories)
 					--Shall we unmark the item? Then remove it from the SavedVars totally!
 					if itemIsMarked == false then itemIsMarked = nil end
 					--Un/Mark the item now
-					if FCOIS[savedVarsMarkedItemsTableName] and FCOIS[savedVarsMarkedItemsTableName][iconId] then
-						FCOIS[savedVarsMarkedItemsTableName][iconId][signItemId(itemId, nil, nil, nil, bag, slot)] = itemIsMarked
+					local signedItemId = signItemId(itemId, nil, nil, nil, bag, slot)
+					if signedItemId ~= nil and FCOIS[savedVarsMarkedItemsTableName] and FCOIS[savedVarsMarkedItemsTableName][iconId] then
+						FCOIS[savedVarsMarkedItemsTableName][iconId][signedItemId] = itemIsMarked
+
+						if itemIsMarked == nil then --#299 Removed the marker
+							--Item got removed so check if launder/fence etc. checks need to be done now --#299
+							--If FCOIS.lastVars.MarkItem_IconTable is provided then we only need to run the checkIfItemUnmarkedChecksNeeded once
+							if FCOIS.lastVars.Last_MarkItem_IconTable == nil or (FCOIS.lastVars.MarkItem_IconTable ~= nil and FCOIS.lastVars.Last_MarkItem_IconTable ~= FCOIS.lastVars.MarkItem_IconTable) then
+								checkIfItemUnmarkedChecksNeeded(bag, slot, FCOIS.lastVars.MarkItem_IconTable or iconId, nil, nil, itemId, nil, signedItemId)
+							end
+							if FCOIS.lastVars.MarkItem_IconTable ~= nil then
+								FCOIS.lastVars.Last_MarkItem_IconTable = FCOIS.lastVars.MarkItem_IconTable
+							end
+						end
 					else
 						--Error message
-						debugMessage("[MarkItem]","FCOIS[savedVarsMarkedItemsTableName][iconId] -> Missing iconId ("..tos(iconId)..") subtable for SV table ("..tos(savedVarsMarkedItemsTableName) ..")", false, FCOIS_DEBUG_DEPTH_NORMAL, false, true)
+						debugMessage("[MarkItem]","FCOIS[savedVarsMarkedItemsTableName][iconId] -> Missing iconId ("..tos(iconId)..") or signedItemId (" ..tos(signedItemId) .. " subtable for SV table ("..tos(savedVarsMarkedItemsTableName) ..")", false, FCOIS_DEBUG_DEPTH_NORMAL, false, true)
 					end
 					--d(">> new markedItem value: " .. tos(FCOIS[getSavedVarsMarkedItemsTableName()][iconId][signItemId(itemId, nil, nil, nil)]))
 				end
@@ -992,7 +1031,7 @@ function FCOIS.MarkItem(bag, slot, iconId, showIcon, updateInventories)
 	--Return value if icon was added/removed
 	return recurRetValTotal
 end -- FCOIS.MarkItem
-local markItem = FCOIS.MarkItem
+markItem = FCOIS.MarkItem
 
 --Function to mark an item with a FCOIS marker icon using either the itemInstaceId, or the uniqueId, of that item.
 --IMPORTANT: The itemInstanceId or uniqueId must be unsigned! They will get signed in this function.
@@ -1043,6 +1082,8 @@ function FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon
         local recurRetVal = false
 		local numMarkerIconsToChange = #iconId
 		local markerIconsChanged = 0
+		FCOIS.lastVars.MarkItemByItemInstanceId_IconTable = iconId --#299
+		FCOIS.lastVars.Last_MarkItemByItemInstanceId_IconTable = nil --#299
         for _, iconIdInTable in ipairs(iconId) do
 			FCOIS.preventerVars.gMarkItemLastIconInLoop = false
 			markerIconsChanged = markerIconsChanged + 1
@@ -1056,11 +1097,14 @@ function FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon
                 recurRetValTotal = false
             end
         end
+		FCOIS.lastVars.MarkItemByItemInstanceId_IconTable = nil --#299
+		FCOIS.lastVars.Last_MarkItemByItemInstanceId_IconTable = nil --#299
         --Reset preventing variable against endless loop
         FCOIS.preventerVars.markItemAntiEndlessLoop = false
     else
         return false
     end
+
     --IconId is not a table, then go on. Else: return with return value in recurRetValTotal
     if not iconIdTypeIsATable then
         --Recursively set/remove markers for all icons?
@@ -1069,6 +1113,8 @@ function FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon
             FCOIS.preventerVars.markItemAntiEndlessLoop = true
             local recurRetVal = false
 			local doUpdateInvNow = false
+			FCOIS.lastVars.MarkItemByItemInstanceId_IconTable = getAllFilterIconsAsTab() --#299
+			FCOIS.lastVars.Last_MarkItemByItemInstanceId_IconTable = nil --#299
             for iconNr=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
 				if updateInventories and iconNr == numFilterIcons then
 					doUpdateInvNow = true
@@ -1080,6 +1126,8 @@ function FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon
                     recurRetValTotal = false
                 end
             end
+			FCOIS.lastVars.MarkItemByItemInstanceId_IconTable = nil --#299
+			FCOIS.lastVars.Last_MarkItemByItemInstanceId_IconTable = nil --#299
             --Reset preventing variable against endless loop
             FCOIS.preventerVars.markItemAntiEndlessLoop = false
         end -- if iconId == -1 then
@@ -1167,11 +1215,22 @@ function FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon
                     --Un/Mark the item now
 					local signedItemInstanceOrUniqueId = signItemId(itemInstanceOrUniqueId, nil, nil, addonName, nil, nil)
 --d(">itemId: " ..tos(itemId) .. ", itemInstanceOrUniqueId: " .. tos(itemInstanceOrUniqueId) .. ", signedItemInstanceOrUniqueId: " .. tos(signedItemInstanceOrUniqueId))
-					if FCOIS[savedVarsMarkedItemsTableName] and FCOIS[savedVarsMarkedItemsTableName][iconId] then
+					if signedItemInstanceOrUniqueId ~= nil and FCOIS[savedVarsMarkedItemsTableName] and FCOIS[savedVarsMarkedItemsTableName][iconId] then
 						FCOIS[savedVarsMarkedItemsTableName][iconId][signedItemInstanceOrUniqueId] = itemIsMarked
+
+						if itemIsMarked == nil then --#299 Removed the marker
+							--Item got removed so check if launder/fence etc. checks need to be done now --#299
+							--If FCOIS.lastVars.MarkItem_IconTable is provided then we only need to run the checkIfItemUnmarkedChecksNeeded once
+							if FCOIS.lastVars.Last_MarkItemByItemInstanceId_IconTable == nil or (FCOIS.lastVars.MarkItemByItemInstanceId_IconTable ~= nil and FCOIS.lastVars.Last_MarkItemByItemInstanceId_IconTable ~= FCOIS.lastVars.MarkItemByItemInstanceId_IconTable) then
+								checkIfItemUnmarkedChecksNeeded(nil, nil, FCOIS.lastVars.MarkItemByItemInstanceId_IconTable or iconId, itemInstanceOrUniqueId, itemLink, itemId, addonName, signedItemInstanceOrUniqueId)
+							end
+							if FCOIS.lastVars.MarkItemByItemInstanceId_IconTable ~= nil then
+								FCOIS.lastVars.Last_MarkItemByItemInstanceId_IconTable = FCOIS.lastVars.MarkItemByItemInstanceId_IconTable
+							end
+						end
 					else
 						--Error message
-						debugMessage("[MarkItemByItemInstanceId]","FCOIS[savedVarsMarkedItemsTableName][iconId] -> Missing iconId ("..tos(iconId)..") subtable for SV table ("..tos(savedVarsMarkedItemsTableName) ..")", false, FCOIS_DEBUG_DEPTH_NORMAL, false, true)
+						debugMessage("[MarkItemByItemInstanceId]","FCOIS[savedVarsMarkedItemsTableName][iconId] -> Missing iconId ("..tos(iconId)..") or signedItemInstanceOrUniqueId (" .. tos(signedItemInstanceOrUniqueId) .." subtable for SV table ("..tos(savedVarsMarkedItemsTableName) ..")", false, FCOIS_DEBUG_DEPTH_NORMAL, false, true)
 					end
 --d(">> new markedItem value: " .. tos(FCOIS[getSavedVarsMarkedItemsTableName()][iconId][signedItemInstanceOrUniqueId]))
                 end
@@ -1607,9 +1666,9 @@ function FCOIS.MarkItemByKeybind(iconId, p_bagId, p_slotIndex, removeMarkers)
             --Check if all markers should be removed prior to setting a new marker
             markItem(bagId, slotIndex, iconId, itemIsMarked, true)
             --If the item got marked: Check if the item is a junk item. Remove it from junk again then
-            if itemIsMarked == true then
+			if itemIsMarked == true then
 				isItemProtectedAtASlotNow(bagId, slotIndex, false, true)
-            end
+			end
 			--Check if item is a ring and the char/inv needs an update on a same ring item
 			controlBelowMouse = controlBelowMouse or moc()
 			checkIfCharOrInvNeedsRingUpdate(bagId, slotIndex, controlBelowMouse:GetParent(), itemIsMarked, iconId)
@@ -1661,7 +1720,7 @@ function FCOIS.MarkItemByKeybind(iconId, p_bagId, p_slotIndex, removeMarkers)
 					end
 				end
 				if itemIsMarked == true then
-					--Check if the item was marked wvia IIfA and this was opened at e.g. the carfting deconstruction panel and the same item was slotted currently there:
+					--Check if the item was marked via IIfA and this was opened at e.g. the carfting deconstruction panel and the same item was slotted currently there:
 					--Remove it from the slot then if it is protected now!
 					isItemProtectedAtASlotNow(nil, nil, false, true)
 				end
