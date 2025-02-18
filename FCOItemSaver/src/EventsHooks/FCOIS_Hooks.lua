@@ -1751,6 +1751,7 @@ function FCOIS.CreateHooks()
     -- #299 -v-
     local fenceManager = ctrlVars.FENCE_MANAGER
     fenceManager:RegisterCallback("FenceEnterSell", function(...)
+--d("[FCOIS]FenceEnterSell")
         FCOIS.FenceLaunderMode = LF_FENCE_SELL
         --Prepare for any items got the marker icons removed at fence
         prepareReApplyRemovedFenceOrLaunderMarkerIcons(FCOIS.FenceLaunderMode)
@@ -1758,6 +1759,7 @@ function FCOIS.CreateHooks()
         zo_callLater(function() preHookMainMenuFilterButtonHandler(LF_FENCE_LAUNDER, LF_FENCE_SELL) end, 50)
     end)
     fenceManager:RegisterCallback("FenceEnterLaunder", function(...)
+--d("[FCOIS]FenceEnterLaunder")
         FCOIS.FenceLaunderMode = LF_FENCE_LAUNDER
         --Prepare for any items got the marker icons removed at launder
         prepareReApplyRemovedFenceOrLaunderMarkerIcons(FCOIS.FenceLaunderMode)
@@ -1765,6 +1767,7 @@ function FCOIS.CreateHooks()
         zo_callLater(function() preHookMainMenuFilterButtonHandler(LF_FENCE_SELL, LF_FENCE_LAUNDER) end, 50)
     end)
     fenceManager:RegisterCallback("FenceClosed", function(...)
+--d("[FCOIS]FenceClosed")
         FCOIS.FenceLaunderMode = nil
         if settings.debug then debugMessage("[FENCE_MANAGER]", "OnFenceClosed", true, FCOIS_DEBUG_DEPTH_NORMAL) end
         --Check if any items got the marker icons removed and reapply them, if needed

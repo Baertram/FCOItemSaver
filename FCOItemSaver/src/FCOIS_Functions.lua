@@ -2776,17 +2776,15 @@ function FCOIS.CheckIfEnchantingInventoryItemShouldBeReMarked_AfterEnchanting()
 end
 
 --#299 -v-
-local locSettings = FCOIS.settingsVars.settings
 function FCOIS.CheckReApplyRemovedFenceOrLaunderMarkerIcons() --#299
-    locSettings = locSettings or FCOIS.settingsVars.settings
-d("[FCOIS]CheckReApplyRemovedFenceOrLaunderMarkerIcons - setting: " .. tos(locSettings.reApplyIconsAfterLaunderFenceRemove))
-    return locSettings.reApplyIconsAfterLaunderFenceRemove
+--d("[FCOIS]CheckReApplyRemovedFenceOrLaunderMarkerIcons - setting: " .. tos(FCOIS.settingsVars.settings.reApplyIconsAfterLaunderFenceRemove))
+    return FCOIS.settingsVars.settings.reApplyIconsAfterLaunderFenceRemove
 end
 local checkReApplyRemovedFenceOrLaunderMarkerIcons = FCOIS.CheckReApplyRemovedFenceOrLaunderMarkerIcons
 
 
 local function resetReApplyRemovedFenceOrLaunderMarkerIcons(fenceOrLaunder) --#299
-d("[FCOIS]resetReApplyRemovedFenceOrLaunderMarkerIcons - fenceOrLaunder: " .. tos(fenceOrLaunder))
+--d("[FCOIS]resetReApplyRemovedFenceOrLaunderMarkerIcons - fenceOrLaunder: " .. tos(fenceOrLaunder))
     if not checkReApplyRemovedFenceOrLaunderMarkerIcons() then return end
 
     if fenceOrLaunder == nil then
@@ -2806,12 +2804,12 @@ d("[FCOIS]resetReApplyRemovedFenceOrLaunderMarkerIcons - fenceOrLaunder: " .. to
 end
 
 function FCOIS.PrepareReApplyRemovedFenceOrLaunderMarkerIcons(fenceOrLaunder) --#299
-d("[FCOIS]PrepareReApplyRemovedFenceOrLaunderMarkerIcons - fenceOrLaunder: " .. tos(fenceOrLaunder))
+--d("[FCOIS]PrepareReApplyRemovedFenceOrLaunderMarkerIcons - fenceOrLaunder: " .. tos(fenceOrLaunder))
     resetReApplyRemovedFenceOrLaunderMarkerIcons(fenceOrLaunder)
 end
 
 local function checkTableForReApplyMarkerIcons(tabToCheck) --#299
-d("[FCOIS]checkTableForReApplyMarkerIcons - tabToCheck: " .. tos(tabToCheck))
+--d("[FCOIS]checkTableForReApplyMarkerIcons - tabToCheck: " .. tos(tabToCheck))
     if ZO_IsTableEmpty(tabToCheck) then return nil end
 
     FCOISMarkItemByItemInstanceId = FCOISMarkItemByItemInstanceId or FCOIS.MarkItemByItemInstanceId
@@ -2831,32 +2829,32 @@ d("[FCOIS]checkTableForReApplyMarkerIcons - tabToCheck: " .. tos(tabToCheck))
 end
 
 local function saveRemovedFenceOrLaunderMarkerIcons(itemData, fenceOrLaunder) --#299
-d("[FCOIS]saveRemovedFenceOrLaunderMarkerIcons - itemData: " .. tos(itemData) .. ", fenceOrLaunder: " ..tos(fenceOrLaunder))
+--d("[FCOIS]saveRemovedFenceOrLaunderMarkerIcons - itemData: " .. tos(itemData) .. ", fenceOrLaunder: " ..tos(fenceOrLaunder))
     if itemData == nil or fenceOrLaunder == nil or itemData.id == nil or itemData.icons == nil then return end
 
     table.insert(FCOIS.lastVars.removedMarkerIcons[fenceOrLaunder], itemData)
 end
 
 function FCOIS.ReApplyRemovedFenceOrLaunderMarkerIcons() --#299
-d("[FCOIS]ReApplyRemovedFenceOrLaunderMarkerIcons")
+--d("[FCOIS]ReApplyRemovedFenceOrLaunderMarkerIcons")
     if not checkReApplyRemovedFenceOrLaunderMarkerIcons() then return end
 
     if ZO_IsTableEmpty(FCOIS.lastVars.removedMarkerIcons) then return end
-d(">found saved removed marker icons on items")
+--d(">found saved removed marker icons on items")
     for fenceOrLaunderFilterType, isEnabled in pairs(allowedFenceOrLaunderTypes) do
         if isEnabled == true then
-d(">>restoring fence/laundertype: " ..tos(fenceOrLaunderFilterType))
+--d(">>restoring fence/laundertype: " ..tos(fenceOrLaunderFilterType))
             local tabToCheck = FCOIS.lastVars.removedMarkerIcons[fenceOrLaunderFilterType]
             local resultNum = checkTableForReApplyMarkerIcons(tabToCheck)
 
-d("<<restored entry # " ..tos(resultNum) .." -> resetting table")
+--d("<<restored entry # " ..tos(resultNum) .." -> resetting table")
             FCOIS.lastVars.removedMarkerIcons[fenceOrLaunderFilterType] = nil
         end
     end
 end
 
 local function itemUnmarkedChecksForLaunderAndFence(bagId, slotIndex, iconIds, itemInstanceOrUniqueId, itemLink, itemId, addonName, signedItemId) --#299
-d("[FCOIS]itemUnmarkedChecksForLaunderAndFence")
+--d("[FCOIS]itemUnmarkedChecksForLaunderAndFence")
     --if a signedItemId was provided already then we can directly update that in the used SavedVariables table for the marker icons at the item
     --so we can store it direcly in the itemData table
     if iconIds == nil then return end
@@ -2892,7 +2890,7 @@ end
 
 --Check if any item marker removed checks are needed
 function FCOIS.CheckIfItemUnmarkedChecksNeeded(bagId, slotIndex, iconId, itemInstanceOrUniqueId, itemLink, itemId, addonName, signedItemId) --#299
-d("[FCOIS]CheckIfItemUnmarkedChecksNeeded - bagId: " .. tos(bagId) .. "; slotIndex: " .. tos(slotIndex) .. "; iconId: " .. tos(iconId) .."; itemInstanceOrUniqueId: " .. tos(itemInstanceOrUniqueId) .. "; itemId: " ..tos(itemId) .. "; addonName: " .. tos(addonName) .."; signedItemId: " .. tos(signedItemId))
+--d("[FCOIS]CheckIfItemUnmarkedChecksNeeded - bagId: " .. tos(bagId) .. "; slotIndex: " .. tos(slotIndex) .. "; iconId: " .. tos(iconId) .."; itemInstanceOrUniqueId: " .. tos(itemInstanceOrUniqueId) .. "; itemId: " ..tos(itemId) .. "; addonName: " .. tos(addonName) .."; signedItemId: " .. tos(signedItemId))
     --#299 Check for items to be saved for a later reApply, if we are at launder and/or fence
     if checkReApplyRemovedFenceOrLaunderMarkerIcons() then
         local fenceOrLaunder = FCOIS.FenceLaunderMode

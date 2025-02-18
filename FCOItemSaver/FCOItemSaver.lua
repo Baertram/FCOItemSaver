@@ -211,13 +211,12 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2025-02-17
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2025-02-18
 ------------------------------------------------------------------------------------
---#299 At launder/fence using SHIFT+right click or keybind to remove all marker icons should auto re-apply those to the same item once the fence/launder closes (enable at settings menu "Automatic marks")
 
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.6.2 - New version: 2.6.3) -    Updated last: 2025-02-17
+--Changelog (last version: 2.6.2 - New version: 2.6.3) -    Updated last: 2025-02-18
 -------------------------------------------------------------------------------------
 --[Fixed]
 --#306 Fixed ItemCooldownTracker support, and reduced workload (building the LAM menu only if addon is active)
@@ -227,6 +226,7 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
 
 
 --[Added]
+--#299 At launder/fence using SHIFT+right click or keybind to remove all marker icons should auto re-apply those to the same item once the fence/launder closes (enable at settings menu "Automatic Re-marks")
 
 
 --[Added on request]
