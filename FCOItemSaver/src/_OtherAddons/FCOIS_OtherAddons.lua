@@ -1332,6 +1332,10 @@ function FCOIS.CheckIfOtherAddonActive(addOnName)
     if (addOnName == "AF_FCODuplicateItemsFilters" and AdvancedFilters) then
         otherAddons.AFFCODuplicateItemFilter = true
     end
+    --ItemCooldownTracker --#306
+    if (addOnName == "ItemCooldownTracker" and icdt ~= nil) then
+        otherAddons.ItemCooldownTrackerActive = true
+    end
 end
 
 --Check for other addons and react on them

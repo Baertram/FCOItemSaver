@@ -779,6 +779,9 @@ function FCOIS.CreateHooks()
     local invContextMenuAddSlotAction                        = FCOIS.InvContextMenuAddSlotAction
     local checkIfEnchantingInventoryItemShouldBeReMarked_AfterEnchanting = FCOIS.CheckIfEnchantingInventoryItemShouldBeReMarked_AfterEnchanting
 
+    local prepareReApplyRemovedFenceOrLaunderMarkerIcons     = FCOIS.PrepareReApplyRemovedFenceOrLaunderMarkerIcons
+    local reApplyRemovedFenceOrLaunderMarkerIcons            = FCOIS.ReApplyRemovedFenceOrLaunderMarkerIcons
+
 
     --Set the global filter panel ID to LF_INVENTORY again (otherwise it would stay the same like before, e.g. craftbag, and block the drag&drop!)
     local function resetToInventoryAndHideContextMenu()
@@ -1726,13 +1729,17 @@ function FCOIS.CreateHooks()
 
     --======== FENCE & LAUNDER =====================================================
     --Pre Hook the fence and launder "enter" and "fence closed" functions
+    --[[ --#299
     ZO_PreHook(FENCE_MANAGER, "OnEnterSell", function(...)
+        FCOIS.FenceLaunderMode = 1
         zo_callLater(function() preHookMainMenuFilterButtonHandler(LF_FENCE_LAUNDER, LF_FENCE_SELL) end, 50)
     end)
     ZO_PreHook(FENCE_MANAGER, "OnEnterLaunder", function(...)
+        FCOIS.FenceLaunderMode = 2
         zo_callLater(function() preHookMainMenuFilterButtonHandler(LF_FENCE_SELL, LF_FENCE_LAUNDER) end, 50)
     end)
     ZO_PreHook(FENCE_MANAGER, "OnFenceClosed", function(...)
+        FCOIS.FenceLaunderMode = nil
         if settings.debug then debugMessage("[FENCE_MANAGER]", "OnFenceClosed", true, FCOIS_DEBUG_DEPTH_NORMAL) end
         --Avoid the filter panel ID change if the fence_manager is called from a normal vendor, which closes the store:
         --If you directly open the mail panel at the vendor the current panel ID will be reset to LF_INVENTORY and this would be not true!
@@ -1740,6 +1747,42 @@ function FCOIS.CreateHooks()
             resetContextMenuInvokerButtonColorToDefaultPanelId()
         end
     end)
+    ]]
+    -- #299 -v-
+    local fenceManager = ctrlVars.FENCE_MANAGER
+    fenceManager:RegisterCallback("FenceEnterSell", function(...)
+--d("[FCOIS]FenceEnterSell")
+        FCOIS.FenceLaunderMode = LF_FENCE_SELL
+        --Prepare for any items got the marker icons removed at fence
+        prepareReApplyRemovedFenceOrLaunderMarkerIcons(FCOIS.FenceLaunderMode)
+
+        zo_callLater(function() preHookMainMenuFilterButtonHandler(LF_FENCE_LAUNDER, LF_FENCE_SELL) end, 50)
+    end)
+    fenceManager:RegisterCallback("FenceEnterLaunder", function(...)
+--d("[FCOIS]FenceEnterLaunder")
+        FCOIS.FenceLaunderMode = LF_FENCE_LAUNDER
+        --Prepare for any items got the marker icons removed at launder
+        prepareReApplyRemovedFenceOrLaunderMarkerIcons(FCOIS.FenceLaunderMode)
+
+        zo_callLater(function() preHookMainMenuFilterButtonHandler(LF_FENCE_SELL, LF_FENCE_LAUNDER) end, 50)
+    end)
+    fenceManager:RegisterCallback("FenceClosed", function(...)
+--d("[FCOIS]FenceClosed")
+        FCOIS.FenceLaunderMode = nil
+        if settings.debug then debugMessage("[FENCE_MANAGER]", "OnFenceClosed", true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        --Check if any items got the marker icons removed and reapply them, if needed
+        reApplyRemovedFenceOrLaunderMarkerIcons()
+
+        --Avoid the filter panel ID change if the fence_manager is called from a normal vendor, which closes the store:
+        --If you directly open the mail panel at the vendor the current panel ID will be reset to LF_INVENTORY and this would be not true!
+        if FCOIS.preventerVars.gNoCloseEvent == false then
+            resetContextMenuInvokerButtonColorToDefaultPanelId()
+        end
+    end)
+    -- #299 -^-
+
+
+
 
     --======== VENDOR =====================================================
     --Pre Hook the menubar button's (buy, sell, buyback, repair) handler at the vendor

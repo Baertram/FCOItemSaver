@@ -12,7 +12,7 @@ local strlen = string.len
 FCOIS.addonVars = {}
 local addonVars = FCOIS.addonVars
 --Addon variables
-addonVars.addonVersionOptions 		    = '2.6.2' -- version shown in the settings panel
+addonVars.addonVersionOptions 		    = '2.6.3' -- version shown in the settings panel
 --The addon name, normal and decorated with colors etc.
 addonVars.gAddonName				    = "FCOItemSaver"
 addonVars.gAddonNameShort               = "FCOIS"
@@ -1256,6 +1256,8 @@ otherAddons.IIFAaddonCallName = "IIfA"
 otherAddons.possibleExternalAddonCalls = {
     [1] = otherAddons.IIFAaddonCallName
 }
+--For the addon ItemCooldownTracker
+otherAddons.ItemCooldownTrackerActive = false
 --For the libarry LibCharacterKnowledge
 otherAddons.libCharacterKnowledgeActive = false
 
@@ -1391,6 +1393,7 @@ ctrlVars.STORE_BUY_BACK_LIST         = GetControl(ctrlVars.STORE_BUY_BACK, listS
 --ctrlVars.STORE_BUY_BACK_LIST_BAG     = ZO_BuyBackListContents
 ctrlVars.VENDOR_MAINMENU_BUTTON_BAR  = ""
 --ctrlVars.FENCE						= ZO_Fence_Keyboard_WindowMenu
+ctrlVars.FENCE_MANAGER               = FENCE_MANAGER
 ctrlVars.FENCE_SCENE_NAME            = "fence_keyboard"
 ctrlVars.REPAIR                      = ZO_RepairWindow
 ctrlVars.REPAIR_NAME                 = ctrlVars.REPAIR:GetName()
@@ -2664,6 +2667,13 @@ checkVars.filterPanelIdsForAntiDestroySettingsAlwaysOn = {
 checkVars.filterPanelIdsForAntiDestroyDoNotUseOtherAntiSettings = {
     [LF_GUILDBANK_DEPOSIT] = true,      --use anti-destroy at the destroy item handler as anti-deposit is the wrong setting :-) -> to reflect the "flag"'s icon color state
 }
+
+--Alowed fence and launder filterypes --#299
+checkVars.allowedFenceOrLaunderTypes = {
+    [LF_FENCE_SELL] = true,
+    [LF_FENCE_LAUNDER] = true,
+}
+
 
 --BagId to SetTracker addon settings in FCOIS --#302 SetTracker support disabled with FCOOIS v2.6.1, for versions <300
 mappingVars.bagToSetTrackerSettings = {

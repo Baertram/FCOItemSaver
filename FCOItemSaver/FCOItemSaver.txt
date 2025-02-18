@@ -1,8 +1,8 @@
 #
 ## Title: |c00FF00FCO |cFFFF00ItemSaver|t32:32:FCOItemSaver/FCOIS.dds|t
 ## Author: Baertram
-## Version: 2.6.2
-## AddOnVersion: 262
+## Version: 2.6.3
+## AddOnVersion: 263
 ## APIVersion: 101044 101045
 ## Description: FCOIS |t32:32:FCOItemSaver/FCOIS.dds|t Marks your items with different icons and filters them in the inventories/crafting. Protects your marked items against sell/deconstruct/extract etc., and provides many more features!
 ## SavedVariables: FCOItemSaver_Settings
@@ -13,7 +13,7 @@
 # Optional libraries
 ## OptionalDependsOn: LibCharacterKnowledge>=201020 LibDebugLogger>=263 LibLazyCrafting>=4009 LibMultiAccountSets>=300080 LibSets>=000704
 # Optional AddOns
-## OptionalDependsOn: AdvancedDisableControllerUI AdvancedFilters AF_FCODuplicateItemsFilters CraftBagExtended DolgubonsLazyWritCreator SetTracker>=300 SousChef
+## OptionalDependsOn: AdvancedDisableControllerUI AdvancedFilters AF_FCODuplicateItemsFilters CraftBagExtended DolgubonsLazyWritCreator ItemCooldownTracker SetTracker>=300 SousChef
 
 # These addons were in the OptionalDependsOn before but raised circular dependencies. They are kept as reference at the tag BetterWith.
 # BetterWith: ChatMerchant CraftedPotions DetailedResearchScrolls GridList InventoryGridView PotionMaker QualitySort ResearchAssistant VotansSettingsMenu

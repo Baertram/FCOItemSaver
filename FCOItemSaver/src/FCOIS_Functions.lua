@@ -84,6 +84,7 @@ local libFiltersPanelIdToInventory = mappingVars.libFiltersPanelIdToInventory
 
 local checkVars = FCOIS.checkVars
 local allowedSetItemTypes = checkVars.setItemTypes
+local allowedFenceOrLaunderTypes = checkVars.allowedFenceOrLaunderTypes
 
 local uniqueItemIdStringTemplate = "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s" -- itemInstanceOrItemId,level,quality,trait,style,enchantment,isStolen,isCrafted,craftedByName,isCrownItem
 --Junk marking/removing from junk
@@ -117,7 +118,9 @@ local isMarked
 local isMarkedByItemInstanceId
 local checkIfUniversalDeconstructionNPC
 local isCompanionInventoryShown
-local FCOISMarkItem
+local FCOISMarkItem = FCOIS.MarkItem
+local FCOISMarkItemByItemInstanceId = FCOIS.MarkItemByItemInstanceId
+
 
 --==========================================================================================================================================
 --                                          FCOIS - Base & helper functions
@@ -2771,6 +2774,132 @@ function FCOIS.CheckIfEnchantingInventoryItemShouldBeReMarked_AfterEnchanting()
         resetEnchantingInventoryVarsForReMark(bagId, slotIndex)
     end, 200)
 end
+
+--#299 -v-
+function FCOIS.CheckReApplyRemovedFenceOrLaunderMarkerIcons() --#299
+--d("[FCOIS]CheckReApplyRemovedFenceOrLaunderMarkerIcons - setting: " .. tos(FCOIS.settingsVars.settings.reApplyIconsAfterLaunderFenceRemove))
+    return FCOIS.settingsVars.settings.reApplyIconsAfterLaunderFenceRemove
+end
+local checkReApplyRemovedFenceOrLaunderMarkerIcons = FCOIS.CheckReApplyRemovedFenceOrLaunderMarkerIcons
+
+
+local function resetReApplyRemovedFenceOrLaunderMarkerIcons(fenceOrLaunder) --#299
+--d("[FCOIS]resetReApplyRemovedFenceOrLaunderMarkerIcons - fenceOrLaunder: " .. tos(fenceOrLaunder))
+    if not checkReApplyRemovedFenceOrLaunderMarkerIcons() then return end
+
+    if fenceOrLaunder == nil then
+        FCOIS.lastVars.removedMarkerIcons = FCOIS.lastVars.removedMarkerIcons or {}
+        for fenceOrLaunderFilterType, isEnabled in pairs(allowedFenceOrLaunderTypes) do
+            if isEnabled == true then
+                FCOIS.lastVars.removedMarkerIcons[fenceOrLaunderFilterType] = {}
+            end
+        end
+    else
+        if not allowedFenceOrLaunderTypes[fenceOrLaunder] then return end
+        FCOIS.lastVars.removedMarkerIcons = FCOIS.lastVars.removedMarkerIcons or {}
+        --Do not clear the table if we switch between fence and launder and have not left the fence&launder UI in total yet
+        if not ZO_IsTableEmpty(FCOIS.lastVars.removedMarkerIcons[fenceOrLaunder]) then return end
+        FCOIS.lastVars.removedMarkerIcons[fenceOrLaunder] = {}
+    end
+end
+
+function FCOIS.PrepareReApplyRemovedFenceOrLaunderMarkerIcons(fenceOrLaunder) --#299
+--d("[FCOIS]PrepareReApplyRemovedFenceOrLaunderMarkerIcons - fenceOrLaunder: " .. tos(fenceOrLaunder))
+    resetReApplyRemovedFenceOrLaunderMarkerIcons(fenceOrLaunder)
+end
+
+local function checkTableForReApplyMarkerIcons(tabToCheck) --#299
+--d("[FCOIS]checkTableForReApplyMarkerIcons - tabToCheck: " .. tos(tabToCheck))
+    if ZO_IsTableEmpty(tabToCheck) then return nil end
+
+    FCOISMarkItemByItemInstanceId = FCOISMarkItemByItemInstanceId or FCOIS.MarkItemByItemInstanceId
+
+    local reappliedCounter = 0
+    local numEntries = #tabToCheck
+    for idx, itemData in ipairs(tabToCheck) do
+        if itemData.itemInstanceOrUniqueId ~= nil and (itemData.itemLink ~= nil or itemData.itemId ~= nil) and itemData.icons ~= nil then
+            --todo 20250218 reapply the removed marker icons at the items in tables. Do not use bagId and slotIndex here:
+            -->itemData.itemInstanceOrUniqueId should be the unsignedId to use for FCOIS.markItemByItemInstanceId table diretly so we can remark the icons even if the item was sold meanwhile
+            FCOISMarkItemByItemInstanceId(itemData.itemInstanceOrUniqueId, itemData.icons, true, itemData.itemLink, itemData.itemId, itemData.addonName, idx == numEntries)
+
+            reappliedCounter = reappliedCounter + 1
+        end
+    end
+    return reappliedCounter
+end
+
+local function saveRemovedFenceOrLaunderMarkerIcons(itemData, fenceOrLaunder) --#299
+--d("[FCOIS]saveRemovedFenceOrLaunderMarkerIcons - itemData: " .. tos(itemData) .. ", fenceOrLaunder: " ..tos(fenceOrLaunder))
+    if itemData == nil or fenceOrLaunder == nil or itemData.id == nil or itemData.icons == nil then return end
+
+    table.insert(FCOIS.lastVars.removedMarkerIcons[fenceOrLaunder], itemData)
+end
+
+function FCOIS.ReApplyRemovedFenceOrLaunderMarkerIcons() --#299
+--d("[FCOIS]ReApplyRemovedFenceOrLaunderMarkerIcons")
+    if not checkReApplyRemovedFenceOrLaunderMarkerIcons() then return end
+
+    if ZO_IsTableEmpty(FCOIS.lastVars.removedMarkerIcons) then return end
+--d(">found saved removed marker icons on items")
+    for fenceOrLaunderFilterType, isEnabled in pairs(allowedFenceOrLaunderTypes) do
+        if isEnabled == true then
+--d(">>restoring fence/laundertype: " ..tos(fenceOrLaunderFilterType))
+            local tabToCheck = FCOIS.lastVars.removedMarkerIcons[fenceOrLaunderFilterType]
+            local resultNum = checkTableForReApplyMarkerIcons(tabToCheck)
+
+--d("<<restored entry # " ..tos(resultNum) .." -> resetting table")
+            FCOIS.lastVars.removedMarkerIcons[fenceOrLaunderFilterType] = nil
+        end
+    end
+end
+
+local function itemUnmarkedChecksForLaunderAndFence(bagId, slotIndex, iconIds, itemInstanceOrUniqueId, itemLink, itemId, addonName, signedItemId) --#299
+--d("[FCOIS]itemUnmarkedChecksForLaunderAndFence")
+    --if a signedItemId was provided already then we can directly update that in the used SavedVariables table for the marker icons at the item
+    --so we can store it direcly in the itemData table
+    if iconIds == nil then return end
+
+    local itemData
+    if signedItemId == nil then
+        --Check if we got a bagId and slotIndex, else try the itemInstanceOrUniqueId first to update the SavedVariables for the marker icons at the item
+        if (bagId == nil or slotIndex == nil or itemId == nil) and (itemInstanceOrUniqueId == nil) then return end
+
+
+        if itemInstanceOrUniqueId ~= nil then
+            signedItemId = signItemId(itemInstanceOrUniqueId, nil, nil, addonName, nil, nil)
+
+        elseif bagId ~= nil and slotIndex ~= nil and itemId ~= nil then
+            --todo 20250218 Can we even use this here? What if the item was sold meanwhile as we try to restore the marker icons at that item?
+            signedItemId = signItemId(itemId, nil, nil, nil, bagId, slotIndex)
+        end
+
+    end
+
+    if signedItemId ~= nil then
+        itemData = {
+            id =        signedItemId,
+            itemInstanceOrUniqueId = itemInstanceOrUniqueId or itemId,
+            icons =     iconIds,
+            itemLink =  itemLink or (bagId ~= nil and slotIndex ~= nil and GetItemLink(bagId, slotIndex)),
+            itemId =    itemId,
+            addonName = addonName,
+        }
+        saveRemovedFenceOrLaunderMarkerIcons(itemData, FCOIS.FenceLaunderMode)
+    end
+end
+
+--Check if any item marker removed checks are needed
+function FCOIS.CheckIfItemUnmarkedChecksNeeded(bagId, slotIndex, iconId, itemInstanceOrUniqueId, itemLink, itemId, addonName, signedItemId) --#299
+--d("[FCOIS]CheckIfItemUnmarkedChecksNeeded - bagId: " .. tos(bagId) .. "; slotIndex: " .. tos(slotIndex) .. "; iconId: " .. tos(iconId) .."; itemInstanceOrUniqueId: " .. tos(itemInstanceOrUniqueId) .. "; itemId: " ..tos(itemId) .. "; addonName: " .. tos(addonName) .."; signedItemId: " .. tos(signedItemId))
+    --#299 Check for items to be saved for a later reApply, if we are at launder and/or fence
+    if checkReApplyRemovedFenceOrLaunderMarkerIcons() then
+        local fenceOrLaunder = FCOIS.FenceLaunderMode
+        if fenceOrLaunder ~= nil and allowedFenceOrLaunderTypes[fenceOrLaunder] then
+            itemUnmarkedChecksForLaunderAndFence(bagId, slotIndex, iconId, itemInstanceOrUniqueId, itemLink, itemId, addonName, signedItemId)
+        end
+    end
+end
+--#299 -^-
 
 --======================================================================================================================
 -- Is shown functions

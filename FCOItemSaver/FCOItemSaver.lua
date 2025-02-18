@@ -200,32 +200,34 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
 
 
 --______________________________________
--- Current max # of bugs/features/ToDos: 305
+-- Current max # of bugs/features/ToDos: 307
 --______________________________________
 
 --Open/To work on this patch:
 
 
 --=== Not started yet ===
---#299 At launder/fence using SHIFT+right click or keybind to remove all marker icons should auto re-apply those to the same item once the fence/launder closes (enable at settings menu "Automatic marks")
 --#301 Add LibSets set search favorites as marker icons of FCOIS to the inventories -> Maybe create a kind of "plugin system" that other addons can use to pass in a settings submenu, and some marker icons and textures of that other addon
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2025-02-15
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2025-02-18
 ------------------------------------------------------------------------------------
 
---#305 libCharacterKnowledge for recipes
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.6.1 - New version: 2.6.2) -    Updated last: 2025-02-15
+--Changelog (last version: 2.6.2 - New version: 2.6.3) -    Updated last: 2025-02-18
 -------------------------------------------------------------------------------------
 --[Fixed]
+--#306 Fixed ItemCooldownTracker support, and reduced workload (building the LAM menu only if addon is active)
+--#307 Fixed SetTracker settings submenu, and reduced workload (building the LAM menu only if addon is active)
 
 --[Changed]
 
+
 --[Added]
---
+--#299 At launder/fence using SHIFT+right click or keybind to remove all marker icons should auto re-apply those to the same item once the fence/launder closes (enable at settings menu "Automatic Re-marks")
+
 
 --[Added on request]
 
