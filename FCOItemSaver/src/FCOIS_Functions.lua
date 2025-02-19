@@ -1710,6 +1710,9 @@ function FCOIS.IsMotifKnown(bagId, slotIndex, expectedResult) --#308
         else
             --Check if the container is a motif container
             --todo 20250219
+            --local itemCategory, styleId = LCK.GetItemCategory(itemLink)
+            --d("[FCOS]IsIsMotifKnown - isContainer: " ..itemLink..", itemCategory: " .. tos(itemCategory) .."/" .. tos(LCK.ITEM_CATEGORY_MOTIF) ..", styleId: " ..tos(styleId))
+
             return
         end
 
