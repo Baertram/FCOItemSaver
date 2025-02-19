@@ -5667,7 +5667,7 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                                     type = "checkbox",
                                     name = locVars["options_enable_auto_mark_known_motifs"],
                                     tooltip = locVars["options_enable_auto_mark_known_motifs" .. tooltipSuffix],
-                                    getFunc = function() return FCOISsettings.autoMarkKnownRecipes end,
+                                    getFunc = function() return FCOISsettings.autoMarkKnownMotifs end,
                                     setFunc = function(value)
                                         FCOISsettings.autoMarkKnownMotifs = value
                                         if (FCOISsettings.autoMarkKnownMotifs == true and checkIfMotifsAddonUsed()) then

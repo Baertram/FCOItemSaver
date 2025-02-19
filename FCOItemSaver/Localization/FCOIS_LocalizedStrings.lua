@@ -1304,6 +1304,8 @@ FCOIS.localizationVars.localizationAll = {
         --#308 Auto mark motifs
         ["options_enable_auto_mark_motifs"]			    = "Mark unknown motifs",
 		["options_enable_auto_mark_motifs_TT"]	        = "Automatically mark unknown motifs with the chosen icon",
+        ["options_enable_auto_mark_known_motifs"]       = "Mark known motifs",
+        ["options_enable_auto_mark_known_motifs_TT"]    = "Automatically mark known motifs with the chosen icon",
 		["options_enable_auto_mark_motifs_in_chat"]	    = "Show motifs in chat",
 		["options_enable_auto_mark_motifs_in_chat_TT"]  = "Show automatically marked unknown motifs in the chat",
 		["options_enable_auto_mark_motifs_hint"]		= "This option needs the selected motifs addon activated.",
@@ -2549,6 +2551,8 @@ FCOIS.localizationVars.localizationAll = {
         --#308 Auto mark motifs
         ["options_enable_auto_mark_motifs"]			    = "Markiere unbekannte Motive",
 		["options_enable_auto_mark_motifs_TT"]	        = "Markiert unbekannte Motive mit dem gewählten Symbol",
+        ["options_enable_auto_mark_known_motifs"]       = "Markiere bekannte Motive",
+        ["options_enable_auto_mark_known_motifs_TT"]    = "Markiert bekannte Motive mit dem gewählten Symbol",
 		["options_enable_auto_mark_motifs_in_chat"]	    = "Zeige Motive im Chat",
 		["options_enable_auto_mark_motifs_in_chat_TT"]  = "Zeigt automatisch markierte bekannte Motive im Chat",
 		["options_enable_auto_mark_motifs_hint"]		= "Diese Option benötigt ein aktiviertes und ausgewähltes Motive AddOn.",
