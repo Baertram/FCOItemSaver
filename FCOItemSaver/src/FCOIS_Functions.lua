@@ -1694,7 +1694,7 @@ function FCOIS.IsMotifKnown(bagId, slotIndex, expectedResult) --#308
     --local currentCharId = tos(gccharid())
 
     if settings.debug then debugMessage("isMotifKnown", gil(bagId, slotIndex) .. ", expectedResult: " ..tos(expectedResult) .. ", motifAddonUsed: " ..tos(motifsAddonUsed) .. ", autoMarkMotifsOnlyThisChar: " ..tos(autoMarkMotifsOnlyThisChar), true, FCOIS_DEBUG_DEPTH_SPAM, false) end
-d("[FCOIS]IsMotifKnown ".. gil(bagId, slotIndex) .. ", expectedResult: " ..tos(expectedResult) .. ", motifAddonUsed: " ..tos(motifsAddonUsed) .. ", autoMarkMotifsOnlyThisChar: " ..tos(autoMarkMotifsOnlyThisChar))
+--d("[FCOIS]IsMotifKnown ".. gil(bagId, slotIndex) .. ", expectedResult: " ..tos(expectedResult) .. ", motifAddonUsed: " ..tos(motifsAddonUsed) .. ", autoMarkMotifsOnlyThisChar: " ..tos(autoMarkMotifsOnlyThisChar))
 
 
     if motifsAddonUsed == FCOIS_MOTIF_ADDON_LIBCHARACTERKNOWLEDGE then
@@ -1734,7 +1734,7 @@ d("[FCOIS]IsMotifKnown ".. gil(bagId, slotIndex) .. ", expectedResult: " ..tos(e
                     local knowledgeOfChar = knowledgeData.knowledge
                     if knowledgeOfChar ~= nil and LCK.IsKnowledgeUsable(knowledgeOfChar) then
                         --if knowledgeOfChar and knowledgeOfChar ~= LCK.KNOWLEDGE_INVALID then
-d(">knowledgeOfChar: " ..tos(knowledgeOfChar) .. ", charName: " .. tos(knowledgeData.name))
+--d(">knowledgeOfChar: " ..tos(knowledgeOfChar) .. ", charName: " .. tos(knowledgeData.name))
                         if knowledgeOfChar == LCK.KNOWLEDGE_UNKNOWN then
                             unKnownMotifFound = true
                         elseif knowledgeOfChar == LCK.KNOWLEDGE_KNOWN then
@@ -1742,7 +1742,7 @@ d(">knowledgeOfChar: " ..tos(knowledgeOfChar) .. ", charName: " .. tos(knowledge
                         end
                     end
                 end
-d(">unKnownRecipeFound: " ..tos(unKnownMotifFound) .. ", knownRecipeFound: " .. tos(knownRecipeFound))
+--d(">unKnownRecipeFound: " ..tos(unKnownMotifFound) .. ", knownRecipeFound: " .. tos(knownRecipeFound))
                 if unKnownMotifFound == nil and knownRecipeFound == nil then return end
                 --Only mark as known if no other char still neesd this!
                 if expectedResult == true and knownRecipeFound == true and not unKnownMotifFound then
@@ -1759,7 +1759,7 @@ end
 
 --Check if the motifs addon chosen is active, the marker icon too and the setting to automark it is enabled
 function FCOIS.IsMotifsAutoMarkDoable(checkIfSettingToAutoMarkIsEnabled, knownMotifsIconCheck, doIconCheck)
-d("[FCOIS]IsMotifsAutoMarkDoable - knownMotifsIconCheck: "..tos(knownMotifsIconCheck))
+--d("[FCOIS]IsMotifsAutoMarkDoable - knownMotifsIconCheck: "..tos(knownMotifsIconCheck))
     checkIfSettingToAutoMarkIsEnabled = checkIfSettingToAutoMarkIsEnabled or false
     knownMotifsIconCheck = knownMotifsIconCheck or false
     doIconCheck = doIconCheck or false
@@ -1774,7 +1774,7 @@ d("[FCOIS]IsMotifsAutoMarkDoable - knownMotifsIconCheck: "..tos(knownMotifsIconC
         end
     end
     local isMotifsAutoMarkPrerequisitesMet = (FCOIS.CheckIfMotifsAddonUsed() and FCOIS.CheckIfChosenMotifsAddonActive(settings.motifsAddonUsed)) or false
-d(">isMotifsAutoMarkPrerequisitesMet: " ..tos(isMotifsAutoMarkPrerequisitesMet))
+--d(">isMotifsAutoMarkPrerequisitesMet: " ..tos(isMotifsAutoMarkPrerequisitesMet))
     if doIconCheck and isMotifsAutoMarkPrerequisitesMet then
         isMotifsAutoMarkPrerequisitesMet = (isMotifsAutoMarkPrerequisitesMet and iconCheck) or false
     end
@@ -1787,7 +1787,7 @@ d(">isMotifsAutoMarkPrerequisitesMet: " ..tos(isMotifsAutoMarkPrerequisitesMet))
     else
         retVar = isMotifsAutoMarkPrerequisitesMet
     end
-d("<retVar: " ..tos(retVar))
+--d("<retVar: " ..tos(retVar))
     return retVar
 end
 
