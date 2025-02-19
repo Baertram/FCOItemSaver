@@ -55,6 +55,8 @@ local checkNeededLevel = FCOIS.CheckNeededLevel
 local isItemSetPartWithTraitNoControl = FCOIS.IsItemSetPartWithTraitNoControl
 local isRecipeAutoMarkDoable = FCOIS.IsRecipeAutoMarkDoable
 local isRecipeKnown = FCOIS.IsRecipeKnown
+local isMotifsAutoMarkDoable = FCOIS.IsMotifsAutoMarkDoable --#308
+local isMotifKnown = FCOIS.IsMotifKnown                   --#308
 local isItemSetAndNotExcluded = FCOIS.IsItemSetAndNotExcluded
 local checkIfRecipeAddonUsed = FCOIS.CheckIfRecipeAddonUsed
 local checkIfChosenRecipeAddonActive = FCOIS.CheckIfChosenRecipeAddonActive
@@ -1801,6 +1803,66 @@ end
                 chatBegin			= fcoisLoc["marked"],
                 chatEnd				= fcoisLoc["known_recipe_found"],
             },
+            ---------------------------- Unknown recipes ---------------------------
+            ["motifs"] = { --#308
+                check				= settings.autoMarkMotifs,
+                result 				= true,
+                resultNot			= nil,
+                checkOtherAddon		= function()
+                    return checkIfMotifsAddonUsed() and checkIfChosenMotifsAddonActive()
+                end,
+                resultOtherAddon   	= true,
+                resultNotOtherAddon	= nil,
+                icon				= settings.autoMarkMotifsIconNr,
+                checkIfAnyIconIsMarkedAlready = nil,
+                preCheckFunc        = function(p_bagId, p_slotIndex)
+                    --Check if item is an unknown motif
+                    return isMotifKnown(p_bagId, p_slotIndex, false), nil
+                end,
+                resultPreCheckFunc  = false,
+                resultNotPreCheckFunc = nil,
+                checkFunc			= nil,
+                checkFuncMarksItem  = nil,
+                resultCheckFunc 	= nil,
+                resultNotCheckFunc 	= nil,
+                additionalCheckFuncForce = nil,
+                additionalCheckFunc = nil,
+                resultAdditionalCheckFunc = nil,
+                resultNotAdditionalCheckFunc = nil,
+                chatOutput			= settings.showMotifsInChat,
+                chatBegin			= fcoisLoc["marked"],
+                chatEnd				= fcoisLoc["unknown_motif_found"],
+            },
+            ---------------------------- Known motifs ---------------------------
+            ["knownMotifs"] = { --#308
+                check				= settings.autoMarkKnownMotifs,
+                result 				= true,
+                resultNot			= nil,
+                checkOtherAddon		= function()
+                    return checkIfMotifsAddonUsed() and checkIfChosenMotifsAddonActive()
+                end,
+                resultOtherAddon   	= true,
+                resultNotOtherAddon	= nil,
+                icon				= settings.autoMarkKnownMotifsIconNr,
+                checkIfAnyIconIsMarkedAlready = nil,
+                preCheckFunc        = function(p_bagId, p_slotIndex)
+                    --Check if item is a known motif
+                    return isMotifKnown(p_bagId, p_slotIndex, true), nil
+                end,
+                resultPreCheckFunc  = true,
+                resultNotPreCheckFunc = nil,
+                checkFunc			= nil,
+                checkFuncMarksItem  = nil,
+                resultCheckFunc 	= nil,
+                resultNotCheckFunc 	= nil,
+                additionalCheckFuncForce = nil,
+                additionalCheckFunc = nil,
+                resultAdditionalCheckFunc = nil,
+                resultNotAdditionalCheckFunc = nil,
+                chatOutput			= settings.showMotifsInChat,
+                chatBegin			= fcoisLoc["marked"],
+                chatEnd				= fcoisLoc["known_motif_found"],
+            },
             ---------------------------- Set collection items ----------------------------------
             ["setItemCollectionsUnknown"] = {
                 check				= settings.autoMarkSetsItemCollectionBook,
@@ -2130,6 +2192,28 @@ end
                     end
 
                     --9)
+                    --Update unknown motifs --#308
+                    if (checksAlreadyDoneTable ~= nil and checksAlreadyDoneTable["motifs"] == true) or (
+                            isMotifsAutoMarkDoable(true, false, true)) then
+                        --local itemLink = gil(p_bagId, p_slotIndex)
+                        --d(">scanInvSingle, unknown motifs scan reached for: " .. itemLink)
+                        local _, recipeChanged = scanInventoryItemsForAutomaticMarks(p_bagId, p_slotIndex, "motifs", false)
+                        if not updateInv and recipeChanged then
+                            updateInv = true
+                        end
+                    end
+
+                    --10)
+                    --Update known recipes --#308
+                    if (checksAlreadyDoneTable ~= nil and checksAlreadyDoneTable["knownMotifs"] == true) or (
+                            isMotifsAutoMarkDoable(false, true, true)) then
+                        local _, recipeChanged = scanInventoryItemsForAutomaticMarks(p_bagId, p_slotIndex, "knownMotifs", false)
+                        if not updateInv and recipeChanged then
+                            updateInv = true
+                        end
+                    end
+
+                    --11)
                     --Check for item quality
                     if (checksAlreadyDoneTable ~= nil and checksAlreadyDoneTable["quality"] == true) or (
                             (settings.autoMarkQuality ~= 1 and isIconEnabledSettings[settings.autoMarkQualityIconNr])) then

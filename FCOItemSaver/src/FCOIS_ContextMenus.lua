@@ -93,6 +93,7 @@ local markAllEquipment = FCOIS.MarkAllEquipment
 local checkIfRecipeAddonUsed = FCOIS.CheckIfRecipeAddonUsed
 local checkIfResearchAddonUsed = FCOIS.CheckIfResearchAddonUsed
 local checkIfChosenResearchAddonActive = FCOIS.CheckIfChosenResearchAddonActive
+local checkIfMotifsAddonUsed = FCOIS.CheckIfMotifsAddonUsed --#308
 
 local destroySelectionHandler = FCOIS.DestroySelectionHandler
 local deconstructionSelectionHandler 	= FCOIS.DeconstructionSelectionHandler
@@ -2883,6 +2884,8 @@ local function contextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
         ["researchScrolls"]             = {allowed = true, icon = FCOIS_CON_ICON_LOCK},
         ["recipes"]                     = {allowed = true, icon = settings.autoMarkRecipesIconNr},
         ["knownRecipes"]                = {allowed = true, icon = settings.autoMarkKnownRecipesIconNr},
+        ["motifs"]                      = {allowed = true, icon = settings.autoMarkMotifsIconNr},      --#308
+        ["knownMotifs"]                 = {allowed = true, icon = settings.autoMarkKnownMotifsIconNr}, --#308
         ["sets"]                        = {allowed = true, icon = settings.autoMarkSetsIconNr},
         ["setItemCollectionsUnknown"]   = {allowed = true, icon = settings.autoMarkSetsItemCollectionBookMissingIcon},
         ["setItemCollectionsKnown"]     = {allowed = true, icon = settings.autoMarkSetsItemCollectionBookNonMissingIcon},
@@ -3949,6 +3952,20 @@ function FCOIS.ShowContextMenuForAddInvButtons(invAddContextMenuInvokerButton, b
                     label 		= zo_strf(GetString(SI_ITEM_FORMAT_STR_KNOWN_ITEM_TYPE), GetString(SI_ITEMTYPE29)),
                     callback 	= function() contextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "knownRecipes", panelId) end,
                     disabled	= function() return not settings.autoMarkKnownRecipes or not checkIfRecipeAddonUsed() or not settings.isIconEnabled[settings.autoMarkKnownRecipesIconNr] end,
+                }
+                tins(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
+                --Unknown motifs --#308
+                subMenuEntryAutomaticMarking = {
+                    label 		= GetString(SI_INPUT_LANGUAGE_UNKNOWN) .. " " .. GetString(SI_ITEMTYPE8),
+                    callback 	= function() contextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "motifs", panelId) end,
+                    disabled	= function() return not settings.autoMarkMotifs or not checkIfMotifsAddonUsed() or not settings.isIconEnabled[settings.autoMarkMotifsIconNr] end,
+                }
+                tins(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
+                --Known motifs --#308
+                subMenuEntryAutomaticMarking = {
+                    label 		= zo_strf(GetString(SI_ITEM_FORMAT_STR_KNOWN_ITEM_TYPE), GetString(SI_ITEMTYPE8)),
+                    callback 	= function() contextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "knownMotifs", panelId) end,
+                    disabled	= function() return not settings.autoMarkKnownMotifs or not checkIfMotifsAddonUsed() or not settings.isIconEnabled[settings.autoMarkKnownMotifsIconNr] end,
                 }
                 tins(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
             end

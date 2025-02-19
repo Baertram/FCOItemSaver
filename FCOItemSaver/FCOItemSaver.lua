@@ -200,7 +200,7 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
 
 
 --______________________________________
--- Current max # of bugs/features/ToDos: 307
+-- Current max # of bugs/features/ToDos: 308
 --______________________________________
 
 --Open/To work on this patch:
@@ -211,22 +211,18 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2025-02-18
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2025-02-19
 ------------------------------------------------------------------------------------
-
+--#308 Add LibCharacterKnowledge automatic motifs marking
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.6.2 - New version: 2.6.3) -    Updated last: 2025-02-18
+--Changelog (last version: 2.6.3 - New version: 2.6.4) -    Updated last: 2025-02-19
 -------------------------------------------------------------------------------------
 --[Fixed]
---#306 Fixed ItemCooldownTracker support, and reduced workload (building the LAM menu only if addon is active)
---#307 Fixed SetTracker settings submenu, and reduced workload (building the LAM menu only if addon is active)
 
 --[Changed]
 
-
 --[Added]
---#299 At launder/fence using SHIFT+right click or keybind to remove all marker icons should auto re-apply those to the same item once the fence/launder closes (enable at settings menu "Automatic Re-marks")
 
 
 --[Added on request]

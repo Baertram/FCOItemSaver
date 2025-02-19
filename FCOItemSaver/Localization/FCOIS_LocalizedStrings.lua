@@ -1301,6 +1301,19 @@ FCOIS.localizationVars.localizationAll = {
         ["options_LibSetsSetSearchFavorites_Mapping"] = "LibSets - Set search favorites mapping",
         ["options_LibSetsSetSearchFavoritesCategory"] = "Set search favorite category",
 
+        --#308 Auto mark motifs
+        ["options_enable_auto_mark_motifs"]			    = "Mark unknown motifs",
+		["options_enable_auto_mark_motifs_TT"]	        = "Automatically mark unknown motifs with the chosen icon",
+		["options_enable_auto_mark_motifs_in_chat"]	    = "Show motifs in chat",
+		["options_enable_auto_mark_motifs_in_chat_TT"]  = "Show automatically marked unknown motifs in the chat",
+		["options_enable_auto_mark_motifs_hint"]		= "This option needs the selected motifs addon activated.",
+    	["options_auto_mark_motifs_icon"]				= "Motif icon (%s)",
+		["options_auto_mark_motifs_icon_TT"]		    = "Icon for the automatically marked %s motifs",
+		["options_auto_mark_motifs_this_char"]			= "Only for this character",
+		["options_auto_mark_motifs_this_char_TT"]	    = "If you enable this setting the (un)known motifs will only be checked for the currently loggedin character!\n\nIf this setting is disabled the (un)known motifs will be checked for other (non-logged in) characters too, and the marker icon will be added to the motifs, if\n-you are using the account wide settings of FCOIS\n-and if the following rules apply:\n\n[Chosen motifs addon: \'LibCharacterKnowledge\']\nOnly checks the current server and the characters that you have priorized in the library settings menu.",
+		["known_motif_found"]				            = "] as " .. GetString(SI_ITEM_FORMAT_STR_KNOWN_ITEM_TYPE, SI_ITEMTYPE8),
+		["unknown_motif_found"]				            = "] as " .. GetString(SI_INPUT_LANGUAGE_UNKNOWN) .. " " .. GetString(SI_ITEMTYPE8),
+
         --LibShifterBoxes
         --[FCOIS_UNIQUEID_ITEMTYPES]
         ["LIBSHIFTERBOX_FCOIS_UNIQUEID_ITEMTYPES_TITLE_LEFT"]   = "Item types (all)",
@@ -2532,6 +2545,19 @@ FCOIS.localizationVars.localizationAll = {
         ["options_automark_itemcooldowntracker"]         = "Markiere \'Item Cooldown Tracker\' verfolgte",
         ["options_automark_itemcooldowntracker_TT"]      = "Markiere Gegenstände, welche mit \'Item Cooldown Tracker\' verfolgt werden, mit einem Symbol.",
         ["options_automark_itemcooldowntracker_icon_TT"] = "Wähle das Symbol, welches an durch \'Item Cooldown Tracker\' verfolgten Gegenständen markiert werden soll.",
+
+        --#308 Auto mark motifs
+        ["options_enable_auto_mark_motifs"]			    = "Markiere unbekannte Motive",
+		["options_enable_auto_mark_motifs_TT"]	        = "Markiert unbekannte Motive mit dem gewählten Symbol",
+		["options_enable_auto_mark_motifs_in_chat"]	    = "Zeige Motive im Chat",
+		["options_enable_auto_mark_motifs_in_chat_TT"]  = "Zeigt automatisch markierte bekannte Motive im Chat",
+		["options_enable_auto_mark_motifs_hint"]		= "Diese Option benötigt ein aktiviertes und ausgewähltes Motive AddOn.",
+    	["options_auto_mark_motifs_icon"]				= "Motiv Symbol (%s)",
+		["options_auto_mark_motifs_icon_TT"]		    = "Symbol für die automatische Markierung von %s Motiven",
+		["options_auto_mark_motifs_this_char"]			= "Nut für diesen Charakter",
+		["options_auto_mark_motifs_this_char_TT"]	    = "Wenn Sie diese Option aktivieren werden nur für den aktuell eingeloggten Charakter (un)bekannte Motive markiert!\n\nWenn diese Option deaktiviert wird, werden die (un)bekannten Motive für andere Charaktere ebenfalls markiert, sofern:\n-Die Accountweiten Einstellungen von FCOIS verwendet werden\n-Die folgenden Punkte zum gewählten Motive AddOn zutreffen:\n\n[Gewähltes Motive AddOn: \'LibCharacterKnowledge\']\nPrüft nur den aktuellen Server und nur Charaktere, welche du in den Bibliothek Einstellungen entsprechend priorisiert hast.",
+		["known_motif_found"]				            = "] als " .. GetString(SI_ITEM_FORMAT_STR_KNOWN_ITEM_TYPE, SI_ITEMTYPE8),
+		["unknown_motif_found"]				            = "] als " .. GetString(SI_INPUT_LANGUAGE_UNKNOWN) .. " " .. GetString(SI_ITEMTYPE8),
 
         --LibShifterBoxes
         --[FCOIS_UNIQUEID_ITEMTYPES]

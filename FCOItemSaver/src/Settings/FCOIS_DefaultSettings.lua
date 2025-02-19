@@ -202,6 +202,13 @@ function FCOIS.BuildDefaultSettings()
 		recipeAddonUsed				= FCOIS_RECIPE_ADDON_SOUSCHEF, --Default recipe marking addon: SousChef
 		autoMarkRecipesOnlyThisChar = false,
 		autoMarkRecipesIconNr		= FCOIS_CON_ICON_LOCK,
+		autoMarkMotifs				= false, --#308
+		autoMarkKnownMotifs 		= false, --#308
+		motifsAddonUsed 			= FCOIS_MOTIF_ADDON_LIBCHARACTERKNOWLEDGE, --#308
+		autoMarkMotifsOnlyThisChar  = false, --#308
+		autoMarkMotifsIconNr		= FCOIS_CON_ICON_LOCK,  --#308
+		autoMarkKnownMotifsIconNr   = FCOIS_CON_ICON_SELL_AT_GUILDSTORE, --#308
+		showMotifsInChat			= false, --#308
 		allowedCraftSkillsForCraftedMarking = {
 			[CRAFTING_TYPE_ALCHEMY] 		= false,
 			[CRAFTING_TYPE_BLACKSMITHING] 	= true,

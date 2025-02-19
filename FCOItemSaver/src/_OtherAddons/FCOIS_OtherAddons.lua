@@ -1020,7 +1020,7 @@ end
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
--- Recipe check addons: SousChef, CraftStoreFixedAndImproved
+-- Recipe check addons: SousChef, CraftStoreFixedAndImproved, LibCharacterKnowledge
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
@@ -1060,6 +1060,47 @@ function FCOIS.CheckIfChosenRecipeAddonActive(recipeAddonId)
         retVar = (otherAddons.libCharacterKnowledgeActive and FCOIS.LCK ~= nil) or false
     end
     if FCOIS.settingsVars.settings.debug then debugMessage("checkIfChosenRecipeAddonActive","recipeAddonId: "..tos(recipeAddonId) .. ", retVar: " ..tos(retVar), true, FCOIS_DEBUG_DEPTH_SPAM, false) end
+    return retVar
+end
+
+
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+-- Motifs check addons: LibCharacterKnowledge
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+--Function to return the ID of the recipe addon used
+function FCOIS.GetMotifsAddonUsed()
+    local settings = FCOIS.settingsVars.settings
+    local motifsAddonUsed = settings.motifsAddonUsed or 0
+    if settings.debug then debugMessage("getMotifsAddonUsed",tos(motifsAddonUsed), true, FCOIS_DEBUG_DEPTH_SPAM, false) end
+    return motifsAddonUsed
+end
+local getMotifsAddonUsed = FCOIS.GetMotifsAddonUsed
+
+--Function to check which recipe addon handles the checks (enabled within the FCOIS settings)
+function FCOIS.CheckIfMotifsAddonUsed()
+    local retVar = false
+    if (otherAddons.libCharacterKnowledgeActive)
+    then
+        retVar = true
+    end
+    if FCOIS.settingsVars.settings.debug then debugMessage("checkIfMotifsAddonUsed", tos(retVar), true, FCOIS_DEBUG_DEPTH_SPAM, false) end
+    return retVar
+end
+
+--Function to check if the recipe addon is loaded
+function FCOIS.CheckIfChosenMotifsAddonActive(recipeAddonId)
+    if recipeAddonId == nil then recipeAddonId = getMotifsAddonUsed() end
+    if recipeAddonId == 0 then return false end
+    local retVar = false
+
+    if recipeAddonId == FCOIS_MOTIF_ADDON_LIBCHARACTERKNOWLEDGE then
+        retVar = (otherAddons.libCharacterKnowledgeActive and FCOIS.LCK ~= nil) or false
+    end
+    if FCOIS.settingsVars.settings.debug then debugMessage("checkIfChosenMotifsAddonActive","motifsAddonId: "..tos(recipeAddonId) .. ", retVar: " ..tos(retVar), true, FCOIS_DEBUG_DEPTH_SPAM, false) end
     return retVar
 end
 

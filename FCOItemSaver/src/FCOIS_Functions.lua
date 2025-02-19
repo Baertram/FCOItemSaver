@@ -93,9 +93,9 @@ local packagesToMarkAsJunkMax = 50 --#291
 local delayToMarkAsJunkInBetweenPackages = 250 --#291
 
 
-
-
 local allowedUniqueItemTypes = checkVars.uniqueIdItemTypes
+local allowedMotifItemTypes = checkVars.allowedMotifsItemTypes --#308
+
 
 local inventoryRowPatterns = checkVars.inventoryRowPatterns
 local otherAddons = FCOIS.otherAddons
@@ -1591,7 +1591,8 @@ function FCOIS.IsRecipeKnown(bagId, slotIndex, expectedResult)
         --Only currently logged in char?
         if autoMarkRecipesOnlyThisChar == true then
             local resultKnown = LCK.GetItemKnowledgeForCharacter(itemLink, nil, nil) --current server, current character
-            if resultKnown == nil or resultKnown == LCK.KNOWLEDGE_INVALID then return end
+            if resultKnown == nil or not LCK.IsKnowledgeUsable(resultKnown) then return end
+            --if resultKnown == nil or resultKnown == LCK.KNOWLEDGE_INVALID then return end
             if expectedResult == true and resultKnown == LCK.KNOWLEDGE_KNOWN then
                 return true
             elseif expectedResult == false and resultKnown == LCK.KNOWLEDGE_UNKNOWN then
@@ -1606,7 +1607,8 @@ function FCOIS.IsRecipeKnown(bagId, slotIndex, expectedResult)
                 --Check each character and if ANY knows/does not know the recipe then we will provide the overall returnValue
                 for _, knowledgeData in ipairs(knownListOfServer) do
                     local knowledgeOfChar = knowledgeData.knowledge
-                    if knowledgeOfChar and knowledgeOfChar ~= LCK.KNOWLEDGE_INVALID then
+                    if knowledgeOfChar ~= nil and LCK.IsKnowledgeUsable(knowledgeOfChar) then
+                    --if knowledgeOfChar and knowledgeOfChar ~= LCK.KNOWLEDGE_INVALID then
 --d(">knowledgeOfChar: " ..tos(knowledgeOfChar) .. ", charName: " .. tos(knowledgeData.name))
                         if knowledgeOfChar == LCK.KNOWLEDGE_UNKNOWN then
                             unKnownRecipeFound = true
@@ -1663,6 +1665,131 @@ function FCOIS.IsRecipeAutoMarkDoable(checkIfSettingToAutoMarkIsEnabled, knownRe
 --d("<retVar: " ..tos(retVar))
     return retVar
 end
+
+
+--Is the item a motif and is it known by one of your chars? Boolean expectedResult will give the
+--true (known motif) or false (unknown motif) parameter
+function FCOIS.IsMotifKnown(bagId, slotIndex, expectedResult) --#308
+    expectedResult = expectedResult or false
+    --Check if any recipe addon is used and available
+    if not FCOIS.CheckIfMotifsAddonUsed() then return nil end
+    --Get the recipe addon used to check for known/unknown state
+    local motifsAddonUsed = FCOIS.GetMotifsAddonUsed()
+    if motifsAddonUsed == nil or motifsAddonUsed == "" then return nil end
+    --Get the itemLink
+    local itemLink = gil(bagId, slotIndex)
+    if itemLink == "" then return nil end
+    -- item is a motif or container with motifs?
+    local itemType = gilit(itemLink)
+    if not allowedMotifItemTypes[itemType] then return nil end
+
+    local isContainer = itemType == ITEMTYPE_CONTAINER
+
+    local settingsBase = FCOIS.settingsVars
+    local settings = settingsBase.settings
+    --local useAccountWideSettings = (settingsBase.defaultSettings.saveMode == 2) or false
+    local autoMarkMotifsOnlyThisChar = settings.autoMarkMotifsOnlyThisChar
+    --local currentCharName = zocstrfor(SI_UNIT_NAME, GetUnitName("player"))
+    --local currentCharId = tos(gccharid())
+
+    if settings.debug then debugMessage("isMotifKnown", gil(bagId, slotIndex) .. ", expectedResult: " ..tos(expectedResult) .. ", motifAddonUsed: " ..tos(motifsAddonUsed) .. ", autoMarkMotifsOnlyThisChar: " ..tos(autoMarkMotifsOnlyThisChar), true, FCOIS_DEBUG_DEPTH_SPAM, false) end
+d("[FCOIS]IsMotifKnown ".. gil(bagId, slotIndex) .. ", expectedResult: " ..tos(expectedResult) .. ", motifAddonUsed: " ..tos(motifsAddonUsed) .. ", autoMarkMotifsOnlyThisChar: " ..tos(autoMarkMotifsOnlyThisChar))
+
+
+    if motifsAddonUsed == FCOIS_MOTIF_ADDON_LIBCHARACTERKNOWLEDGE then
+        --[[
+            LCK.KNOWLEDGE_INVALID -- Not a recipe, furnishing plan, motif, or scribing item
+            LCK.KNOWLEDGE_NODATA  -- No data for this character
+            LCK.KNOWLEDGE_KNOWN
+            LCK.KNOWLEDGE_UNKNOWN
+        ]]
+        if not isContainer then
+            local itemCategory = LCK.GetItemCategory(itemLink)
+            if itemCategory ~= LCK.ITEM_CATEGORY_MOTIF then return end
+        else
+            --Check if the container is a motif container
+            --todo 20250219
+            return
+        end
+
+        --Only currently logged in char?
+        if autoMarkMotifsOnlyThisChar == true then
+            local resultKnown = LCK.GetItemKnowledgeForCharacter(itemLink, nil, nil) --current server, current character
+            if resultKnown == nil or not LCK.IsKnowledgeUsable(resultKnown) then return end
+            --if resultKnown == nil or resultKnown == LCK.KNOWLEDGE_INVALID then return end
+            if expectedResult == true and resultKnown == LCK.KNOWLEDGE_KNOWN then
+                return true
+            elseif expectedResult == false and resultKnown == LCK.KNOWLEDGE_UNKNOWN then
+                return false
+            end
+        else
+            --All characters of server
+            local knownListOfServer = LCK.GetItemKnowledgeList(itemLink, nil, nil) --current server, all characters
+            local unKnownMotifFound = nil
+            local knownRecipeFound  = nil
+            if not ZO_IsTableEmpty(knownListOfServer) then
+                --Check each character and if ANY knows/does not know the recipe then we will provide the overall returnValue
+                for _, knowledgeData in ipairs(knownListOfServer) do
+                    local knowledgeOfChar = knowledgeData.knowledge
+                    if knowledgeOfChar ~= nil and LCK.IsKnowledgeUsable(knowledgeOfChar) then
+                        --if knowledgeOfChar and knowledgeOfChar ~= LCK.KNOWLEDGE_INVALID then
+d(">knowledgeOfChar: " ..tos(knowledgeOfChar) .. ", charName: " .. tos(knowledgeData.name))
+                        if knowledgeOfChar == LCK.KNOWLEDGE_UNKNOWN then
+                            unKnownMotifFound = true
+                        elseif knowledgeOfChar == LCK.KNOWLEDGE_KNOWN then
+                            knownRecipeFound = true
+                        end
+                    end
+                end
+d(">unKnownRecipeFound: " ..tos(unKnownMotifFound) .. ", knownRecipeFound: " .. tos(knownRecipeFound))
+                if unKnownMotifFound == nil and knownRecipeFound == nil then return end
+                --Only mark as known if no other char still neesd this!
+                if expectedResult == true and knownRecipeFound == true and not unKnownMotifFound then
+                    return true
+                elseif expectedResult == false and unKnownMotifFound == true then
+                    return false
+                end
+            end
+        end
+
+    end
+    return
+end
+
+--Check if the motifs addon chosen is active, the marker icon too and the setting to automark it is enabled
+function FCOIS.IsMotifsAutoMarkDoable(checkIfSettingToAutoMarkIsEnabled, knownMotifsIconCheck, doIconCheck)
+d("[FCOIS]IsMotifsAutoMarkDoable - knownMotifsIconCheck: "..tos(knownMotifsIconCheck))
+    checkIfSettingToAutoMarkIsEnabled = checkIfSettingToAutoMarkIsEnabled or false
+    knownMotifsIconCheck = knownMotifsIconCheck or false
+    doIconCheck = doIconCheck or false
+    local settings = FCOIS.settingsVars.settings
+    local retVar = false
+    local iconCheck
+    if doIconCheck then
+        if knownMotifsIconCheck == true then
+            iconCheck = settings.isIconEnabled[settings.autoMarkKnownMotifsIconNr]
+        else
+            iconCheck = settings.isIconEnabled[settings.autoMarkMotifsIconNr]
+        end
+    end
+    local isMotifsAutoMarkPrerequisitesMet = (FCOIS.CheckIfMotifsAddonUsed() and FCOIS.CheckIfChosenMotifsAddonActive(settings.motifsAddonUsed)) or false
+d(">isMotifsAutoMarkPrerequisitesMet: " ..tos(isMotifsAutoMarkPrerequisitesMet))
+    if doIconCheck and isMotifsAutoMarkPrerequisitesMet then
+        isMotifsAutoMarkPrerequisitesMet = (isMotifsAutoMarkPrerequisitesMet and iconCheck) or false
+    end
+    if checkIfSettingToAutoMarkIsEnabled and knownMotifsIconCheck then
+        retVar = isMotifsAutoMarkPrerequisitesMet and (settings.autoMarkMotifs or settings.autoMarkKnownMotifs)
+    elseif checkIfSettingToAutoMarkIsEnabled and not knownMotifsIconCheck then
+        retVar = isMotifsAutoMarkPrerequisitesMet and settings.autoMarkMotifs
+    elseif not checkIfSettingToAutoMarkIsEnabled and knownMotifsIconCheck then
+        retVar = isMotifsAutoMarkPrerequisitesMet and settings.autoMarkKnownMotifs
+    else
+        retVar = isMotifsAutoMarkPrerequisitesMet
+    end
+d("<retVar: " ..tos(retVar))
+    return retVar
+end
+
 
 --Is the item a set part?
 function FCOIS.IsItemSetPartNoControl(bagId, slotIndex)
