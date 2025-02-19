@@ -1290,6 +1290,7 @@ otherAddons.setCollectionBookAddonsSupported = {
 }
 
 --The motif addons supported --#308
+FCOIS_MOTIF_ADDON_LIBCHARACTERKNOWLEDGE = 1
 otherAddons.motifAddonsSupported = {
     [FCOIS_MOTIF_ADDON_LIBCHARACTERKNOWLEDGE] = "LibCharacterKnowledge", --#308
 }

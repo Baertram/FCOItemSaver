@@ -118,6 +118,7 @@ local isMarked
 local isMarkedByItemInstanceId
 local checkIfUniversalDeconstructionNPC
 local isCompanionInventoryShown
+
 local FCOISMarkItem = FCOIS.MarkItem
 local FCOISMarkItemByItemInstanceId = FCOIS.MarkItemByItemInstanceId
 
@@ -3731,6 +3732,80 @@ function FCOIS.GetInventoryTypeByFilterPanel(p_filterPanelId)
         end
     end
     return inventoryType
+end
+local getInventoryTypeByFilterPanel = FCOIS.GetInventoryTypeByFilterPanel
+
+function FCOIS.GetInventoryToSearch(panelId, isUniversalDeconNPC) --#308
+    if panelId == nil and not isUniversalDeconNPC then return nil, nil end
+    local INVENTORY_TO_SEARCH, contextmenuType = nil, nil
+
+    if isUniversalDeconNPC == nil then
+        checkIfUniversalDeconstructionNPC = checkIfUniversalDeconstructionNPC or FCOIS.CheckIfUniversalDeconstructionNPC
+        isUniversalDeconNPC = checkIfUniversalDeconstructionNPC(panelId) -- #202
+    end
+
+    if isUniversalDeconNPC == true then
+        --#202 enable mass marking for the universald deconstruction NPC inventory
+        -->Which inventory does INVENTORY_TO_SEARCH need to be?
+        INVENTORY_TO_SEARCH = ctrlVars.UNIVERSAL_DECONSTRUCTION_INV_BACKPACK
+        contextmenuType = "UNIVERSAL_DECONSTRUCTION"
+    else
+        --LibFilters panelIds:
+        --(Jewelry) Refinement panel?
+        if (panelId == LF_SMITHING_REFINE or panelId == LF_JEWELRY_REFINE) then
+            INVENTORY_TO_SEARCH = ctrlVars.REFINEMENT
+            contextmenuType = "REFINEMENT"
+            --(Jewelry) Deconstruction panel?
+        elseif (panelId == LF_SMITHING_DECONSTRUCT or panelId == LF_JEWELRY_DECONSTRUCT) then
+            INVENTORY_TO_SEARCH = ctrlVars.DECONSTRUCTION
+            contextmenuType = "DECONSTRUCTION"
+        elseif (panelId == LF_SMITHING_IMPROVEMENT or panelId == LF_JEWELRY_IMPROVEMENT) then
+            --(Jewelry) Improvement panel?
+            INVENTORY_TO_SEARCH = ctrlVars.IMPROVEMENT
+            contextmenuType = "IMPROVEMENT"
+        elseif panelId == LF_ALCHEMY_CREATION then
+            --Alchemy creation
+            INVENTORY_TO_SEARCH = ctrlVars.ALCHEMY_STATION
+            contextmenuType = "ALCHEMY CREATION"
+        elseif panelId == LF_ENCHANTING_CREATION then
+            --Enchanting creation
+            INVENTORY_TO_SEARCH = ctrlVars.ENCHANTING_STATION
+            contextmenuType = "ENCHANTING CREATION"
+        elseif panelId == LF_ENCHANTING_EXTRACTION then
+            --Enchanting extraction
+            contextmenuType = "ENCHANTING EXTRACTION"
+            INVENTORY_TO_SEARCH = ctrlVars.ENCHANTING_STATION
+        elseif panelId == LF_RETRAIT then
+            --Retrait / Transmutation station
+            contextmenuType = "RETRAIT"
+            INVENTORY_TO_SEARCH = ctrlVars.RETRAIT_LIST
+        elseif panelId == LF_HOUSE_BANK_WITHDRAW then
+            --House Banks
+            contextmenuType = "HOUSEBANK"
+            INVENTORY_TO_SEARCH = ctrlVars.HOUSE_BANK
+        elseif panelId == LF_INVENTORY_COMPANION then
+            --Companion
+            contextmenuType = "COMPANION_INVENTORY"
+            INVENTORY_TO_SEARCH = ctrlVars.COMPANION_INV_LIST
+        else
+            --Inventory (mail, trade, etc.) or bank or craftbag (if other addons enabled the craftbag at mail panel etc.)
+            --Get the current inventorytype
+            local inventoryType = getInventoryTypeByFilterPanel(panelId)
+            if inventoryType == INVENTORY_CRAFT_BAG then
+                contextmenuType = "CRAFTBAG"
+            else
+                contextmenuType = "INVENTORY"
+            end
+            --All non-filtered items will be in this list here:
+            --ctrlVars.playerInventoryInvs[inventoryType].data[1-28].data   .bagId & ... .slotIndex
+            if inventoryType == nil then
+                d("[FCOIS] -ERROR- getInventoryToSearch - Inventory type for filter panel ID \"" .. panelId .. "\" is not set!")
+                return false
+            end
+            INVENTORY_TO_SEARCH = ctrlVars.playerInventoryInvs[inventoryType].listView
+        end
+        return INVENTORY_TO_SEARCH, contextmenuType
+    end
 end
 
 --Check if any item moved to a bagId should run some "auto demark" checks

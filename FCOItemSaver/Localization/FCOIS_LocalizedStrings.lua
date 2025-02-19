@@ -1049,8 +1049,8 @@ FCOIS.localizationVars.localizationAll = {
         ["LibSetsSetSearchFavoriteCategory_part_found"] = "] as LibSets set search favorite",
 		["set_part_non_wished_found"]			 = "] as non-desired set part",
 		["quality_item_found"]                  = "] because of item's quality",
-		["known_recipe_found"]				= "] as known recipe",
-		["unknown_recipe_found"]				= "] as unknown recipe",
+		["known_recipe_found"]				= "] as " .. zo_strformat(GetString(SI_ITEM_FORMAT_STR_KNOWN_ITEM_TYPE), GetString(SI_ITEMTYPE29)),
+		["unknown_recipe_found"]				= "] as " .. GetString(SI_INPUT_LANGUAGE_UNKNOWN) .. " " .. GetString(SI_ITEMTYPE29),
         ["options_enable_auto_mark_quality_items"] = "Mark items with quality",
         ["options_enable_auto_mark_quality_items_TT"] =  "Automatically mark items with icon if there quality equals the selected quality",
         ["options_enable_auto_mark_higher_quality_items"] = "Mark higher quality too",
@@ -1311,7 +1311,7 @@ FCOIS.localizationVars.localizationAll = {
 		["options_auto_mark_motifs_icon_TT"]		    = "Icon for the automatically marked %s motifs",
 		["options_auto_mark_motifs_this_char"]			= "Only for this character",
 		["options_auto_mark_motifs_this_char_TT"]	    = "If you enable this setting the (un)known motifs will only be checked for the currently loggedin character!\n\nIf this setting is disabled the (un)known motifs will be checked for other (non-logged in) characters too, and the marker icon will be added to the motifs, if\n-you are using the account wide settings of FCOIS\n-and if the following rules apply:\n\n[Chosen motifs addon: \'LibCharacterKnowledge\']\nOnly checks the current server and the characters that you have priorized in the library settings menu.",
-		["known_motif_found"]				            = "] as " .. GetString(SI_ITEM_FORMAT_STR_KNOWN_ITEM_TYPE, SI_ITEMTYPE8),
+		["known_motif_found"]				            = "] as " .. zo_strformat(GetString(SI_ITEM_FORMAT_STR_KNOWN_ITEM_TYPE), GetString(SI_ITEMTYPE8)),
 		["unknown_motif_found"]				            = "] as " .. GetString(SI_INPUT_LANGUAGE_UNKNOWN) .. " " .. GetString(SI_ITEMTYPE8),
 
         --LibShifterBoxes
@@ -2556,7 +2556,7 @@ FCOIS.localizationVars.localizationAll = {
 		["options_auto_mark_motifs_icon_TT"]		    = "Symbol für die automatische Markierung von %s Motiven",
 		["options_auto_mark_motifs_this_char"]			= "Nut für diesen Charakter",
 		["options_auto_mark_motifs_this_char_TT"]	    = "Wenn Sie diese Option aktivieren werden nur für den aktuell eingeloggten Charakter (un)bekannte Motive markiert!\n\nWenn diese Option deaktiviert wird, werden die (un)bekannten Motive für andere Charaktere ebenfalls markiert, sofern:\n-Die Accountweiten Einstellungen von FCOIS verwendet werden\n-Die folgenden Punkte zum gewählten Motive AddOn zutreffen:\n\n[Gewähltes Motive AddOn: \'LibCharacterKnowledge\']\nPrüft nur den aktuellen Server und nur Charaktere, welche du in den Bibliothek Einstellungen entsprechend priorisiert hast.",
-		["known_motif_found"]				            = "] als " .. GetString(SI_ITEM_FORMAT_STR_KNOWN_ITEM_TYPE, SI_ITEMTYPE8),
+		["known_motif_found"]				            = "] als " .. zo_strformat(GetString(SI_ITEM_FORMAT_STR_KNOWN_ITEM_TYPE), GetString(SI_ITEMTYPE8)),
 		["unknown_motif_found"]				            = "] als " .. GetString(SI_INPUT_LANGUAGE_UNKNOWN) .. " " .. GetString(SI_ITEMTYPE8),
 
         --LibShifterBoxes
