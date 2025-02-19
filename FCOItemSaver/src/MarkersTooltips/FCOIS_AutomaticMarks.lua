@@ -60,6 +60,8 @@ local isMotifKnown = FCOIS.IsMotifKnown                   --#308
 local isItemSetAndNotExcluded = FCOIS.IsItemSetAndNotExcluded
 local checkIfRecipeAddonUsed = FCOIS.CheckIfRecipeAddonUsed
 local checkIfChosenRecipeAddonActive = FCOIS.CheckIfChosenRecipeAddonActive
+local checkIfMotifsAddonUsed = FCOIS.CheckIfMotifsAddonUsed --#308
+local checkIfChosenMotifsAddonActive = FCOIS.CheckIfChosenMotifsAddonActive --#308
 local getResearchAddonUsed = FCOIS.GetResearchAddonUsed
 local checkIfResearchAddonUsed = FCOIS.CheckIfResearchAddonUsed
 local checkIfChosenResearchAddonActive = FCOIS.CheckIfChosenResearchAddonActive
@@ -2255,6 +2257,7 @@ end
         local isIconEnabledSettings = settings.isIconEnabled
 
         local isRecipeAddonActive = (checkIfRecipeAddonUsed() and checkIfChosenRecipeAddonActive()) or false
+        local isMotifsAddonActive = (checkIfMotifsAddonUsed() and checkIfChosenMotifsAddonActive()) or false --#308
         local isResearchAddonActive = (checkIfResearchAddonUsed() and checkIfChosenResearchAddonActive() and isIconEnabledSettings[FCOIS_CON_ICON_RESEARCH]) or false
         local isResearchScrollsAddonActive = (DetailedResearchScrolls ~= nil and DetailedResearchScrolls.GetWarningLine ~= nil and settings.autoMarkWastedResearchScrolls == true and isIconEnabledSettings[FCOIS_CON_ICON_LOCK]) or false
 
@@ -2270,6 +2273,8 @@ end
         checksAlreadyDoneTable["quality"]                   = (settings.autoMarkQuality ~= 1 and isIconEnabledSettings[settings.autoMarkQualityIconNr])
         checksAlreadyDoneTable["recipes"]                   = (isRecipeAddonActive and settings.autoMarkRecipes == true and isIconEnabledSettings[settings.autoMarkRecipesIconNr])
         checksAlreadyDoneTable["knownRecipes"]              = (isRecipeAddonActive and settings.autoMarkKnownRecipes == true and isIconEnabledSettings[settings.AutoMarkKnownRecipesIconNr])
+        checksAlreadyDoneTable["motifs"]                    = (isMotifsAddonActive and settings.autoMarkMotifs == true and isIconEnabledSettings[settings.autoMarkMotifsIconNr]) -- #308
+        checksAlreadyDoneTable["knownMotifs"]               = (isMotifsAddonActive and settings.autoMarkKnownMotifs == true and isIconEnabledSettings[settings.AutoMarkKnownMotifsIconNr]) -- #308
         checksAlreadyDoneTable["setItemCollectionsUnknown"] = (autoMarkSetsItemCollectionBook == true and (autoBindMissingSetCollectionPiecesOnLoot == true or (not autoBindMissingSetCollectionPiecesOnLoot == true and settings.autoMarkSetsItemCollectionBookMissingIcon ~= FCOIS_CON_ICON_NONE and isIconEnabledSettings[settings.autoMarkSetsItemCollectionBookMissingIcon] == true)))
         checksAlreadyDoneTable["setItemCollectionsKnown"]   = (autoMarkSetsItemCollectionBook == true and (settings.autoMarkSetsItemCollectionBookNonMissingIcon ~= FCOIS_CON_ICON_NONE and isIconEnabledSettings[settings.autoMarkSetsItemCollectionBookNonMissingIcon] == true))
         checksAlreadyDoneTable["sets"]                      = (settings.autoMarkSets == true and isIconEnabledSettings[settings.autoMarkSetsIconNr])
