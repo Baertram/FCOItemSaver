@@ -114,7 +114,6 @@ local setDynamicIconAntiResearchCheck = FCOIS.SetDynamicIconAntiResearchCheck
 local checkNeededLevel = FCOIS.CheckNeededLevel
 local isRecipeAutoMarkDoable = FCOIS.IsRecipeAutoMarkDoable
 local rebuildGearSetBaseVars = FCOIS.RebuildGearSetBaseVars
-
 local getCharactersOfAccount = FCOIS.GetCharactersOfAccount
 local hideItemLinkTooltip = FCOIS.HideItemLinkTooltip
 local migrateMarkerIcons = FCOIS.MigrateMarkerIcons
@@ -131,6 +130,11 @@ local filterBasics                              = FCOIS.FilterBasics
 local setAllAddInvFlagButtonOffsetSettingsEqual = FCOIS.SetAllAddInvFlagButtonOffsetSettingsEqual
 local reAnchorAdditionalInvButtons              = FCOIS.ReAnchorAdditionalInvButtons
 local resetCreateFCOISUniqueIdStringLastVars    = FCOIS.ResetCreateFCOISUniqueIdStringLastVars
+local isMotifsAutoMarkDoable = FCOIS.IsMotifsAutoMarkDoable -- #308
+local checkIfMotifsAddonUsed = FCOIS.CheckIfMotifsAddonUsed -- #308
+local checkIfChosenMotifsAddonActive = FCOIS.CheckIfChosenMotifsAddonActive -- #308
+local getMotifsAddonUsed = FCOIS.GetMotifsAddonUsed -- #308
+
 local getLAMMarkerIconsDropdown
 
 --local getLibSetsSetSearchFavoriteCategories     = FCOIS.GetLibSetsSetSearchFavoriteCategories --#301
@@ -184,6 +188,8 @@ local researchAddonsList = {}
 local researchAddonsListValues = {}
 local setCollectionAddonsList = {}
 local setCollectionAddonsListValues = {}
+local motifsAddonsList = {} --#308
+local motifsAddonsListValues = {} --#308
 
 --Backup & Restore & Restore from APIversion
 local restoreChoices = {}
@@ -989,6 +995,16 @@ local function buildRecipeAddonsList()
     end
 end
 
+--The list for motifs #308
+local function buildMotifsAddonsList()
+    local motifAddonsAvailable = FCOIS.otherAddons.motifAddonsSupported
+    for motifAddonIdx, motifAddonName in pairs(motifAddonsAvailable) do
+        table.insert(motifsAddonsListValues, motifAddonIdx)
+        table.insert(motifsAddonsList, motifAddonName)
+    end
+end
+
+
 --The list of research addons
 local function buildResearchAddonsList()
     local researchAddonsAvailable = FCOIS.otherAddons.researchAddonsSupported
@@ -1502,6 +1518,7 @@ local function runOnceBeforeLAMPanelGetsCreated()
         ["FCOItemSaver_Icon_On_Automatic_Non_Wished_Set_Part_Dropdown"] =           { ["choices"] = 'standard', ["choicesValues"] = iconsListValues,        ["choicesTooltips"] = nil, ["withIcons"] = true, ["withNoneEntry"] = false, },
         ["FCOItemSaver_Icon_On_Automatic_Crafted_Items_Dropdown"]       =           { ["choices"] = 'standard', ["choicesValues"] = iconsListValues,        ["choicesTooltips"] = nil, ["withIcons"] = true, ["withNoneEntry"] = false, },
         ["FCOItemSaver_Icon_On_Automatic_Recipe_Dropdown"]              =           { ["choices"] = 'standard', ["choicesValues"] = iconsListValues,        ["choicesTooltips"] = nil, ["withIcons"] = true, ["withNoneEntry"] = false, },
+        ["FCOItemSaver_Icon_On_Automatic_Motif_Dropdown"]               =           { ["choices"] = 'standard', ["choicesValues"] = iconsListValues,        ["choicesTooltips"] = nil, ["withIcons"] = true, ["withNoneEntry"] = false, },
         ["FCOItemSaver_Icon_On_Automatic_Quality_Dropdown"]             =           { ["choices"] = 'standard', ["choicesValues"] = iconsListValues,        ["choicesTooltips"] = nil, ["withIcons"] = true, ["withNoneEntry"] = false, },
         ["FCOItemSaver_Icon_On_Automatic_SetCollections_UnknownIcon_Dropdown"]  =   { ["choices"] = 'standard', ["choicesValues"] = iconsListValuesNone,    ["choicesTooltips"] = nil, ["withIcons"] = true, ["withNoneEntry"] = true,  },
         ["FCOItemSaver_Icon_On_Automatic_SetCollections_KnownIcon_Dropdown"]    =   { ["choices"] = 'standard', ["choicesValues"] = iconsListValuesNone,    ["choicesTooltips"] = nil, ["withIcons"] = true, ["withNoneEntry"] = true,  },
@@ -3145,6 +3162,7 @@ local function runOnceAsLAMPanelGetsCreated(lamPanel)
     buildRecipeAddonsList()
     buildResearchAddonsList()
     buildSetCollectionAddonsList()
+    buildMotifsAddonsList() --#308
 
     --Rebuild the server, account and charaacter dropdowns etc.
     reBuildServerOptions()
@@ -5569,6 +5587,132 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                                 },
                             } -- controls recipes
                         }, -- submenu recipes
+
+                        --==============================================================================
+                        {   -- Motifs --#308
+                            type = "submenu",
+                            name = GetString(SI_ITEMTYPE8),
+                            controls =
+                            {
+                                {
+                                    type = 'dropdown',
+                                    name = locVars["options_auto_mark_addon"],
+                                    tooltip = zo_strf(locVars["options_auto_mark_addon" .. tooltipSuffix], GetString(SI_ITEMTYPE8)),
+                                    choices = motifsAddonsList,
+                                    choicesValues = motifsAddonsListValues,
+                                    --scrollable = true,
+                                    getFunc = function() return FCOISsettings.motifsAddonUsed
+                                    end,
+                                    setFunc = function(value)
+                                        FCOISsettings.motifsAddonUsed = value
+
+                                    end,
+                                    --disabled = function() return not FCOISsettings.autoMarkRecipes end,
+                                    width = "full",
+                                    default = FCOISdefaultSettings.motifsAddonUsed,
+                                    warning = locVars["options_enable_auto_mark_motifs_hint"],
+                                },
+                                {
+                                    type = "checkbox",
+                                    name = locVars["options_enable_auto_mark_motifs"],
+                                    tooltip = locVars["options_enable_auto_mark_motifs" .. tooltipSuffix],
+                                    getFunc = function() return FCOISsettings.autoMarkMotifs end,
+                                    setFunc = function(value)
+                                        FCOISsettings.autoMarkMotifs = value
+                                        if (FCOISsettings.autoMarkMotifs == true and checkIfMotifsAddonUsed() and checkIfChosenMotifsAddonActive(FCOISsettings.motifsAddonUsed)) then
+                                            scanInventoryItemsForAutomaticMarks(nil, nil, "motifs", false)
+                                        end
+                                    end,
+                                    disabled = function() return not isMotifsAutoMarkDoable(false, false, false) end,
+                                    warning = locVars["options_enable_auto_mark_motifs_hint"],
+                                    width = "half",
+                                    default = FCOISdefaultSettings.autoMarkMotifs,
+                                },
+                                {
+                                    type = 'dropdown',
+                                    name = strformat(locVars["options_auto_mark_motifs_icon"], GetString(SI_INPUT_LANGUAGE_UNKNOWN)),
+                                    tooltip = strformat(locVars["options_auto_mark_motifs_icon" .. tooltipSuffix], GetString(SI_INPUT_LANGUAGE_UNKNOWN)),
+                                    --choices = iconsList,
+                                    choices = iconsListRecipe,
+                                    --choicesValues = iconsListValues,
+                                    choicesValues = iconsListValuesRecipe,
+                                    scrollable = true,
+                                    getFunc = function() return FCOISsettings.autoMarkMotifsIconNr
+                                    end,
+                                    setFunc = function(value)
+                                        FCOISsettings.autoMarkMotifsIconNr = value
+                                    end,
+                                    reference = "FCOItemSaver_Icon_On_Automatic_Motif_Dropdown",
+                                    disabled = function() return not isMotifsAutoMarkDoable(true, false, false) end,
+                                    width = "half",
+                                    default = iconsListRecipe[FCOISdefaultSettings.autoMarkMotifsIconNr],
+                                },
+                                {
+                                    type = "checkbox",
+                                    name = locVars["options_auto_mark_motifs_this_char"],
+                                    tooltip = locVars["options_auto_mark_motifs_this_char" .. tooltipSuffix],
+                                    getFunc = function() return FCOISsettings.autoMarkMotifsOnlyThisChar end,
+                                    setFunc = function(value)
+                                        FCOISsettings.autoMarkMotifsOnlyThisChar = value
+                                        if (FCOISsettings.autoMarkMotifs == true and checkIfMotifsAddonUsed()) then
+                                            scanInventoryItemsForAutomaticMarks(nil, nil, "recipes", false)
+                                        end
+                                    end,
+                                    disabled = function() return not isMotifsAutoMarkDoable(false, false, false) end,
+                                    width = "full",
+                                    default = FCOISdefaultSettings.autoMarkMotifsOnlyThisChar,
+                                    warning = locVars["options_auto_mark_motifs_this_char" .. tooltipSuffix],
+                                },
+                                {
+                                    type = "checkbox",
+                                    name = locVars["options_enable_auto_mark_known_motifs"],
+                                    tooltip = locVars["options_enable_auto_mark_known_motifs" .. tooltipSuffix],
+                                    getFunc = function() return FCOISsettings.autoMarkKnownMotifs end,
+                                    setFunc = function(value)
+                                        FCOISsettings.autoMarkKnownMotifs = value
+                                        if (FCOISsettings.autoMarkKnownMotifs == true and checkIfMotifsAddonUsed()) then
+                                            scanInventoryItemsForAutomaticMarks(nil, nil, "knownRecipes", false)
+                                        end
+                                    end,
+                                    disabled = function() return not isMotifsAutoMarkDoable(false, false, false) end,
+                                    warning = locVars["options_enable_auto_mark_motifs_hint"],
+                                    width = "half",
+                                    default = FCOISdefaultSettings.autoMarkKnownMotifs,
+                                },
+                                {
+                                    type = 'dropdown',
+                                    name = strformat(locVars["options_auto_mark_motifs_icon"], locVars["options_known"]),
+                                    tooltip = strformat(locVars["options_auto_mark_motifs_icon"], locVars["options_known"]),
+                                    --choices = iconsList,
+                                    choices = iconsListRecipe,
+                                    --choicesValues = iconsListValues,
+                                    choicesValues = iconsListValuesRecipe,
+                                    scrollable = true,
+                                    getFunc = function() return FCOISsettings.autoMarkKnownMotifsIconNr
+                                    end,
+                                    setFunc = function(value)
+                                        FCOISsettings.autoMarkKnownMotifsIconNr = value
+                                    end,
+                                    reference = "FCOItemSaver_Icon_On_Automatic_Known_Motif_Dropdown",
+                                    disabled = function() return not FCOISsettings.autoMarkKnownMotifs or not isMotifsAutoMarkDoable(false, false, false) end,
+                                    width = "half",
+                                    default = iconsListRecipe[FCOISdefaultSettings.autoMarkKnownMotifsIconNr],
+                                },
+                                {
+                                    type = "checkbox",
+                                    name = locVars["options_enable_auto_mark_motifs_in_chat"],
+                                    tooltip = locVars["options_enable_auto_mark_motifs_in_chat" .. tooltipSuffix],
+                                    getFunc = function() return FCOISsettings.showMotifsInChat end,
+                                    setFunc = function(value)
+                                        FCOISsettings.showMotifsInChat = value
+                                    end,
+                                    disabled = function() return not isMotifsAutoMarkDoable(true, true, false) end,
+                                    warning = locVars["options_enable_auto_mark_motifs_hint"],
+                                    width = "half",
+                                    default = FCOISdefaultSettings.showMotifsInChat,
+                                },
+                            } -- controls motifs
+                        }, -- submenu motifs
 
                         --==============================================================================
                         {   -- Quality

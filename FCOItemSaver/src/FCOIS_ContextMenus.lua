@@ -93,6 +93,7 @@ local markAllEquipment = FCOIS.MarkAllEquipment
 local checkIfRecipeAddonUsed = FCOIS.CheckIfRecipeAddonUsed
 local checkIfResearchAddonUsed = FCOIS.CheckIfResearchAddonUsed
 local checkIfChosenResearchAddonActive = FCOIS.CheckIfChosenResearchAddonActive
+local checkIfMotifsAddonUsed = FCOIS.CheckIfMotifsAddonUsed --#308
 
 local destroySelectionHandler = FCOIS.DestroySelectionHandler
 local deconstructionSelectionHandler 	= FCOIS.DeconstructionSelectionHandler
@@ -112,7 +113,7 @@ local checkForIIfARightClickedRow = FCOIS.CheckForIIfARightClickedRow
 local buildMarkerIconProtectedWhereTooltip
 local buildMarkerIconsTooltipText
 
-local checkIfUniversaldDeconstructionNPC
+local checkIfUniversalDeconstructionNPC
 
 local isMarked
 local callItemSelectionHandler
@@ -120,6 +121,7 @@ local callDeconstructionSelectionHandler
 local changeContextMenuEntryTexts
 local isUnboundAndNotStolenItemChecks = FCOIS.IsUnboundAndNotStolenItemChecks
 local processJunkQueue = FCOIS.ProcessJunkQueue
+local getInventoryToSearch = FCOIS.GetInventoryToSearch --#308
 
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -2875,7 +2877,7 @@ local function contextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
     panelId = panelId or FCOIS.gFilterWhere
     isMarked = isMarked or FCOIS.IsMarked
 
-    local allowedSpecialButtonTypes = {
+    local allowedSpecialButtonTypes         = {
         ["quality"]                     = {allowed = true, icon = settings.autoMarkQualityIconNr},
         ["intricate"]                   = {allowed = true, icon = FCOIS_CON_ICON_INTRICATE},
         ["ornate"]                      = {allowed = true, icon = FCOIS_CON_ICON_SELL},
@@ -2883,27 +2885,29 @@ local function contextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
         ["researchScrolls"]             = {allowed = true, icon = FCOIS_CON_ICON_LOCK},
         ["recipes"]                     = {allowed = true, icon = settings.autoMarkRecipesIconNr},
         ["knownRecipes"]                = {allowed = true, icon = settings.autoMarkKnownRecipesIconNr},
+        ["motifs"]                      = {allowed = true, icon = settings.autoMarkMotifsIconNr},      --#308
+        ["knownMotifs"]                 = {allowed = true, icon = settings.autoMarkKnownMotifsIconNr}, --#308
         ["sets"]                        = {allowed = true, icon = settings.autoMarkSetsIconNr},
         ["setItemCollectionsUnknown"]   = {allowed = true, icon = settings.autoMarkSetsItemCollectionBookMissingIcon},
         ["setItemCollectionsKnown"]     = {allowed = true, icon = settings.autoMarkSetsItemCollectionBookNonMissingIcon},
     }
 
-    local isCompanionInventory = false
+    local isCompanionInventory              = false
     --local iconsDisabledAtCompanion = mappingVars.iconIsDisabledAtCompanion
-    local isCharacter = (panelId == FCOIS_CON_LF_CHARACTER) or false
-    local isCompanionCharacter = (panelId == FCOIS_CON_LF_COMPANION_CHARACTER) or false
+    local isCharacter                       = (panelId == FCOIS_CON_LF_CHARACTER) or false
+    local isCompanionCharacter              = (panelId == FCOIS_CON_LF_COMPANION_CHARACTER) or false
 
-    checkIfUniversaldDeconstructionNPC = checkIfUniversaldDeconstructionNPC or FCOIS.CheckIfUniversalDeconstructionNPC -- #202
-    local isUniversalDeconNPC = checkIfUniversaldDeconstructionNPC(panelId) -- #202
+    checkIfUniversalDeconstructionNPC       = checkIfUniversalDeconstructionNPC or FCOIS.CheckIfUniversalDeconstructionNPC -- #202
+    --local isUniversalDeconNPC               = checkIfUniversalDeconstructionNPC(panelId) -- #202 #308
 --d(">isUniversalDeconNPC: " ..tos(isUniversalDeconNPC))
 
-    local isUNDOButton 			 		= (specialButtonType == "UNDO") or false
-    local isREMOVEALLGEARSButton 		= (specialButtonType == "REMOVE_ALL_GEAR") or false
-    local isREMOVEALLButton 	 		= (specialButtonType == "REMOVE_ALL") or false
-    local isTOGGLEANTISETTINGSButton	= (specialButtonType == "ANTI_SETTINGS") or false
+    local isUNDOButton                      = (specialButtonType == "UNDO") or false
+    local isREMOVEALLGEARSButton            = (specialButtonType == "REMOVE_ALL_GEAR") or false
+    local isREMOVEALLButton                 = (specialButtonType == "REMOVE_ALL") or false
+    local isTOGGLEANTISETTINGSButton        = (specialButtonType == "ANTI_SETTINGS") or false
     local isTOGGLEANTISETTINGSSPECIALButton = (specialButtonType == "ANTI_SETTINGS_SPECIAL") or false
-    local isMARKALLASJUNKButton	        = (specialButtonType == "JUNK_CHECK_ALL") or false
-    local isMARKALLASNOJUNKButton	    = (specialButtonType == "UNJUNK_CHECK_ALL") or false
+    local isMARKALLASJUNKButton             = (specialButtonType == "JUNK_CHECK_ALL") or false
+    local isMARKALLASNOJUNKButton           = (specialButtonType == "UNJUNK_CHECK_ALL") or false
 
     local wasAddedToJunk = false
     local wasRemovedFromJunk = false
@@ -2930,69 +2934,8 @@ local function contextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
 
     --==================================================================================================================
     else
-        if not isUniversalDeconNPC then
-            --LibFilters panelIds:
-            --(Jewelry) Refinement panel?
-            if (panelId == LF_SMITHING_REFINE or panelId == LF_JEWELRY_REFINE) then
-                INVENTORY_TO_SEARCH = ctrlVars.REFINEMENT
-                contextmenuType = "REFINEMENT"
-                --(Jewelry) Deconstruction panel?
-            elseif (panelId == LF_SMITHING_DECONSTRUCT or panelId == LF_JEWELRY_DECONSTRUCT) then
-                INVENTORY_TO_SEARCH = ctrlVars.DECONSTRUCTION
-                contextmenuType = "DECONSTRUCTION"
-            elseif (panelId == LF_SMITHING_IMPROVEMENT or panelId == LF_JEWELRY_IMPROVEMENT) then
-                --(Jewelry) Improvement panel?
-                INVENTORY_TO_SEARCH = ctrlVars.IMPROVEMENT
-                contextmenuType = "IMPROVEMENT"
-            elseif panelId == LF_ALCHEMY_CREATION then
-                --Alchemy creation
-                INVENTORY_TO_SEARCH = ctrlVars.ALCHEMY_STATION
-                contextmenuType = "ALCHEMY CREATION"
-            elseif panelId == LF_ENCHANTING_CREATION then
-                --Enchanting creation
-                INVENTORY_TO_SEARCH = ctrlVars.ENCHANTING_STATION
-                contextmenuType = "ENCHANTING CREATION"
-            elseif panelId == LF_ENCHANTING_EXTRACTION then
-                --Enchanting extraction
-                contextmenuType = "ENCHANTING EXTRACTION"
-                INVENTORY_TO_SEARCH = ctrlVars.ENCHANTING_STATION
-            elseif panelId == LF_RETRAIT then
-                --Retrait / Transmutation station
-                contextmenuType = "RETRAIT"
-                INVENTORY_TO_SEARCH = ctrlVars.RETRAIT_LIST
-            elseif panelId == LF_HOUSE_BANK_WITHDRAW then
-                --House Banks
-                contextmenuType = "HOUSEBANK"
-                INVENTORY_TO_SEARCH = ctrlVars.HOUSE_BANK
-            elseif panelId == LF_INVENTORY_COMPANION then
-                --Companion
-                isCompanionInventory = true
-                contextmenuType = "COMPANION_INVENTORY"
-                INVENTORY_TO_SEARCH = ctrlVars.COMPANION_INV_LIST
-            else
-                --Inventory (mail, trade, etc.) or bank or craftbag (if other addons enabled the craftbag at mail panel etc.)
-                --Get the current inventorytype
-                local inventoryType = FCOIS.GetInventoryTypeByFilterPanel(panelId)
-                if inventoryType == INVENTORY_CRAFT_BAG then
-                    contextmenuType = "CRAFTBAG"
-                else
-                    contextmenuType = "INVENTORY"
-                end
-                --All non-filtered items will be in this list here:
-                --ctrlVars.playerInventoryInvs[inventoryType].data[1-28].data   .bagId & ... .slotIndex
-                if inventoryType == nil then
-                    d("[FCOIS] -ERROR- ContextMenuForAddInvButtonsOnClicked - Inventory type for filter panel ID \"" .. panelId .. "\" is not set!")
-                    return false
-                end
-                INVENTORY_TO_SEARCH = ctrlVars.playerInventoryInvs[inventoryType].listView
-            end
-------------------------------------------------------------------------------------------------------------------------
-        else
-            --#202 enable mass marking for the universald deconstruction NPC inventory
-            -->Which inventory does INVENTORY_TO_SEARCH need to be?
-            INVENTORY_TO_SEARCH = ctrlVars.UNIVERSAL_DECONSTRUCTION_INV_BACKPACK
-            contextmenuType = "UNIVERSAL_DECONSTRUCTION"
-        end
+        INVENTORY_TO_SEARCH, contextmenuType = getInventoryToSearch(panelId, nil)   --#308
+        isCompanionInventory = (contextmenuType ~= nil and contextmenuType == "COMPANION_INVENTORY" and true) or false --#308
     end
     --==================================================================================================================
 --d("FCOIS]ContextMenuForAddInvButtonsOnClicked - INVENTORY_TO_SEARCH: " .. INVENTORY_TO_SEARCH:GetName() .. ", contextmenuType: " .. contextmenuType)
@@ -3536,10 +3479,10 @@ function FCOIS.ShowContextMenuForAddInvButtons(invAddContextMenuInvokerButton, b
 --FCOIS._buttonDataOfInvokerButton = buttonDataOfInvokerButton
     --FCOIS v.0.8.8d
     --Add ZOs ZO_Menu contextMenu entries via addon library libCustomMenu
-    local filterPanelIdOfButtonData = buttonDataOfInvokerButton and buttonDataOfInvokerButton.filterPanelId
-    local panelId = filterPanelIdOfButtonData
-    checkIfUniversaldDeconstructionNPC = checkIfUniversaldDeconstructionNPC or FCOIS.CheckIfUniversalDeconstructionNPC -- #202
-    local isUniversalDeconNPC = checkIfUniversaldDeconstructionNPC(FCOIS.gFilterWhere) -- #202
+    local filterPanelIdOfButtonData   = buttonDataOfInvokerButton and buttonDataOfInvokerButton.filterPanelId
+    local panelId                     = filterPanelIdOfButtonData
+    checkIfUniversalDeconstructionNPC = checkIfUniversalDeconstructionNPC or FCOIS.CheckIfUniversalDeconstructionNPC -- #202
+    local isUniversalDeconNPC         = checkIfUniversalDeconstructionNPC(FCOIS.gFilterWhere) -- #202
     --Should the active filterPanelId be re-read again as the flag context menu button used is e.g. the "inventory" button which is
     --reused for many panels like mail, player2player trade, bank deposit etc.?
     if isUniversalDeconNPC == true or (buttonDataOfInvokerButton.updateActivePanelDataOnShowContextMenu ~= nil and buttonDataOfInvokerButton.updateActivePanelDataOnShowContextMenu == true) then
@@ -3949,6 +3892,20 @@ function FCOIS.ShowContextMenuForAddInvButtons(invAddContextMenuInvokerButton, b
                     label 		= zo_strf(GetString(SI_ITEM_FORMAT_STR_KNOWN_ITEM_TYPE), GetString(SI_ITEMTYPE29)),
                     callback 	= function() contextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "knownRecipes", panelId) end,
                     disabled	= function() return not settings.autoMarkKnownRecipes or not checkIfRecipeAddonUsed() or not settings.isIconEnabled[settings.autoMarkKnownRecipesIconNr] end,
+                }
+                tins(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
+                --Unknown motifs --#308
+                subMenuEntryAutomaticMarking = {
+                    label 		= GetString(SI_INPUT_LANGUAGE_UNKNOWN) .. " " .. GetString(SI_ITEMTYPE8),
+                    callback 	= function() contextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "motifs", panelId) end,
+                    disabled	= function() return not settings.autoMarkMotifs or not checkIfMotifsAddonUsed() or not settings.isIconEnabled[settings.autoMarkMotifsIconNr] end,
+                }
+                tins(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
+                --Known motifs --#308
+                subMenuEntryAutomaticMarking = {
+                    label 		= zo_strf(GetString(SI_ITEM_FORMAT_STR_KNOWN_ITEM_TYPE), GetString(SI_ITEMTYPE8)),
+                    callback 	= function() contextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "knownMotifs", panelId) end,
+                    disabled	= function() return not settings.autoMarkKnownMotifs or not checkIfMotifsAddonUsed() or not settings.isIconEnabled[settings.autoMarkKnownMotifsIconNr] end,
                 }
                 tins(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
             end

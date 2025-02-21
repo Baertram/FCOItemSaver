@@ -12,7 +12,7 @@ local strlen = string.len
 FCOIS.addonVars = {}
 local addonVars = FCOIS.addonVars
 --Addon variables
-addonVars.addonVersionOptions 		    = '2.6.3' -- version shown in the settings panel
+addonVars.addonVersionOptions 		    = '2.6.4' -- version shown in the settings panel
 --The addon name, normal and decorated with colors etc.
 addonVars.gAddonName				    = "FCOItemSaver"
 addonVars.gAddonNameShort               = "FCOIS"
@@ -1288,6 +1288,13 @@ otherAddons.setCollectionBookAddonsSupported = {
     [FCOIS_SETS_COLLECTION_ADDON_ESO_STANDARD]         = "ESO Standard",
     [FCOIS_SETS_COLLECTION_ADDON_LIBMULTIACCOUNTSETS]  = "LibMultiAccountSets",
 }
+
+--The motif addons supported --#308
+FCOIS_MOTIF_ADDON_LIBCHARACTERKNOWLEDGE = 1
+otherAddons.motifAddonsSupported = {
+    [FCOIS_MOTIF_ADDON_LIBCHARACTERKNOWLEDGE] = "LibCharacterKnowledge", --#308
+}
+
 
 --Variables for the anti-extraction functions
 FCOIS.craftingPrevention = {}
@@ -2673,7 +2680,11 @@ checkVars.allowedFenceOrLaunderTypes = {
     [LF_FENCE_SELL] = true,
     [LF_FENCE_LAUNDER] = true,
 }
-
+--Allowed motifs itemTypes --#308
+checkVars.allowedMotifsItemTypes = {
+    [ITEMTYPE_RACIAL_STYLE_MOTIF] = true,
+    [ITEMTYPE_CONTAINER] = true,
+}
 
 --BagId to SetTracker addon settings in FCOIS --#302 SetTracker support disabled with FCOOIS v2.6.1, for versions <300
 mappingVars.bagToSetTrackerSettings = {

@@ -93,9 +93,9 @@ local packagesToMarkAsJunkMax = 50 --#291
 local delayToMarkAsJunkInBetweenPackages = 250 --#291
 
 
-
-
 local allowedUniqueItemTypes = checkVars.uniqueIdItemTypes
+local allowedMotifItemTypes = checkVars.allowedMotifsItemTypes --#308
+
 
 local inventoryRowPatterns = checkVars.inventoryRowPatterns
 local otherAddons = FCOIS.otherAddons
@@ -118,6 +118,7 @@ local isMarked
 local isMarkedByItemInstanceId
 local checkIfUniversalDeconstructionNPC
 local isCompanionInventoryShown
+
 local FCOISMarkItem = FCOIS.MarkItem
 local FCOISMarkItemByItemInstanceId = FCOIS.MarkItemByItemInstanceId
 
@@ -1591,7 +1592,8 @@ function FCOIS.IsRecipeKnown(bagId, slotIndex, expectedResult)
         --Only currently logged in char?
         if autoMarkRecipesOnlyThisChar == true then
             local resultKnown = LCK.GetItemKnowledgeForCharacter(itemLink, nil, nil) --current server, current character
-            if resultKnown == nil or resultKnown == LCK.KNOWLEDGE_INVALID then return end
+            if resultKnown == nil or not LCK.IsKnowledgeUsable(resultKnown) then return end
+            --if resultKnown == nil or resultKnown == LCK.KNOWLEDGE_INVALID then return end
             if expectedResult == true and resultKnown == LCK.KNOWLEDGE_KNOWN then
                 return true
             elseif expectedResult == false and resultKnown == LCK.KNOWLEDGE_UNKNOWN then
@@ -1606,7 +1608,8 @@ function FCOIS.IsRecipeKnown(bagId, slotIndex, expectedResult)
                 --Check each character and if ANY knows/does not know the recipe then we will provide the overall returnValue
                 for _, knowledgeData in ipairs(knownListOfServer) do
                     local knowledgeOfChar = knowledgeData.knowledge
-                    if knowledgeOfChar and knowledgeOfChar ~= LCK.KNOWLEDGE_INVALID then
+                    if knowledgeOfChar ~= nil and LCK.IsKnowledgeUsable(knowledgeOfChar) then
+                    --if knowledgeOfChar and knowledgeOfChar ~= LCK.KNOWLEDGE_INVALID then
 --d(">knowledgeOfChar: " ..tos(knowledgeOfChar) .. ", charName: " .. tos(knowledgeData.name))
                         if knowledgeOfChar == LCK.KNOWLEDGE_UNKNOWN then
                             unKnownRecipeFound = true
@@ -1663,6 +1666,134 @@ function FCOIS.IsRecipeAutoMarkDoable(checkIfSettingToAutoMarkIsEnabled, knownRe
 --d("<retVar: " ..tos(retVar))
     return retVar
 end
+
+
+--Is the item a motif and is it known by one of your chars? Boolean expectedResult will give the
+--true (known motif) or false (unknown motif) parameter
+function FCOIS.IsMotifKnown(bagId, slotIndex, expectedResult) --#308
+    expectedResult = expectedResult or false
+    --Check if any recipe addon is used and available
+    if not FCOIS.CheckIfMotifsAddonUsed() then return nil end
+    --Get the recipe addon used to check for known/unknown state
+    local motifsAddonUsed = FCOIS.GetMotifsAddonUsed()
+    if motifsAddonUsed == nil or motifsAddonUsed == "" then return nil end
+    --Get the itemLink
+    local itemLink = gil(bagId, slotIndex)
+    if itemLink == "" then return nil end
+    -- item is a motif or container with motifs?
+    local itemType = gilit(itemLink)
+    if not allowedMotifItemTypes[itemType] then return nil end
+
+    local isContainer = itemType == ITEMTYPE_CONTAINER
+
+    local settingsBase = FCOIS.settingsVars
+    local settings = settingsBase.settings
+    --local useAccountWideSettings = (settingsBase.defaultSettings.saveMode == 2) or false
+    local autoMarkMotifsOnlyThisChar = settings.autoMarkMotifsOnlyThisChar
+    --local currentCharName = zocstrfor(SI_UNIT_NAME, GetUnitName("player"))
+    --local currentCharId = tos(gccharid())
+
+    if settings.debug then debugMessage("isMotifKnown", gil(bagId, slotIndex) .. ", expectedResult: " ..tos(expectedResult) .. ", motifAddonUsed: " ..tos(motifsAddonUsed) .. ", autoMarkMotifsOnlyThisChar: " ..tos(autoMarkMotifsOnlyThisChar), true, FCOIS_DEBUG_DEPTH_SPAM, false) end
+--d("[FCOIS]IsMotifKnown ".. gil(bagId, slotIndex) .. ", expectedResult: " ..tos(expectedResult) .. ", motifAddonUsed: " ..tos(motifsAddonUsed) .. ", autoMarkMotifsOnlyThisChar: " ..tos(autoMarkMotifsOnlyThisChar))
+
+
+    if motifsAddonUsed == FCOIS_MOTIF_ADDON_LIBCHARACTERKNOWLEDGE then
+        --[[
+            LCK.KNOWLEDGE_INVALID -- Not a recipe, furnishing plan, motif, or scribing item
+            LCK.KNOWLEDGE_NODATA  -- No data for this character
+            LCK.KNOWLEDGE_KNOWN
+            LCK.KNOWLEDGE_UNKNOWN
+        ]]
+        if not isContainer then
+            local itemCategory = LCK.GetItemCategory(itemLink)
+            if itemCategory ~= LCK.ITEM_CATEGORY_MOTIF then return end
+        else
+            --Check if the container is a motif container
+            --todo 20250219
+            --local itemCategory, styleId = LCK.GetItemCategory(itemLink)
+            --d("[FCOS]IsIsMotifKnown - isContainer: " ..itemLink..", itemCategory: " .. tos(itemCategory) .."/" .. tos(LCK.ITEM_CATEGORY_MOTIF) ..", styleId: " ..tos(styleId))
+
+            return
+        end
+
+        --Only currently logged in char?
+        if autoMarkMotifsOnlyThisChar == true then
+            local resultKnown = LCK.GetItemKnowledgeForCharacter(itemLink, nil, nil) --current server, current character
+            if resultKnown == nil or not LCK.IsKnowledgeUsable(resultKnown) then return end
+            --if resultKnown == nil or resultKnown == LCK.KNOWLEDGE_INVALID then return end
+            if expectedResult == true and resultKnown == LCK.KNOWLEDGE_KNOWN then
+                return true
+            elseif expectedResult == false and resultKnown == LCK.KNOWLEDGE_UNKNOWN then
+                return false
+            end
+        else
+            --All characters of server
+            local knownListOfServer = LCK.GetItemKnowledgeList(itemLink, nil, nil) --current server, all characters
+            local unKnownMotifFound = nil
+            local knownRecipeFound  = nil
+            if not ZO_IsTableEmpty(knownListOfServer) then
+                --Check each character and if ANY knows/does not know the recipe then we will provide the overall returnValue
+                for _, knowledgeData in ipairs(knownListOfServer) do
+                    local knowledgeOfChar = knowledgeData.knowledge
+                    if knowledgeOfChar ~= nil and LCK.IsKnowledgeUsable(knowledgeOfChar) then
+                        --if knowledgeOfChar and knowledgeOfChar ~= LCK.KNOWLEDGE_INVALID then
+--d(">knowledgeOfChar: " ..tos(knowledgeOfChar) .. ", charName: " .. tos(knowledgeData.name))
+                        if knowledgeOfChar == LCK.KNOWLEDGE_UNKNOWN then
+                            unKnownMotifFound = true
+                        elseif knowledgeOfChar == LCK.KNOWLEDGE_KNOWN then
+                            knownRecipeFound = true
+                        end
+                    end
+                end
+--d(">unKnownRecipeFound: " ..tos(unKnownMotifFound) .. ", knownRecipeFound: " .. tos(knownRecipeFound))
+                if unKnownMotifFound == nil and knownRecipeFound == nil then return end
+                --Only mark as known if no other char still neesd this!
+                if expectedResult == true and knownRecipeFound == true and not unKnownMotifFound then
+                    return true
+                elseif expectedResult == false and unKnownMotifFound == true then
+                    return false
+                end
+            end
+        end
+
+    end
+    return
+end
+
+--Check if the motifs addon chosen is active, the marker icon too and the setting to automark it is enabled
+function FCOIS.IsMotifsAutoMarkDoable(checkIfSettingToAutoMarkIsEnabled, knownMotifsIconCheck, doIconCheck)
+--d("[FCOIS]IsMotifsAutoMarkDoable - knownMotifsIconCheck: "..tos(knownMotifsIconCheck))
+    checkIfSettingToAutoMarkIsEnabled = checkIfSettingToAutoMarkIsEnabled or false
+    knownMotifsIconCheck = knownMotifsIconCheck or false
+    doIconCheck = doIconCheck or false
+    local settings = FCOIS.settingsVars.settings
+    local retVar = false
+    local iconCheck
+    if doIconCheck then
+        if knownMotifsIconCheck == true then
+            iconCheck = settings.isIconEnabled[settings.autoMarkKnownMotifsIconNr]
+        else
+            iconCheck = settings.isIconEnabled[settings.autoMarkMotifsIconNr]
+        end
+    end
+    local isMotifsAutoMarkPrerequisitesMet = (FCOIS.CheckIfMotifsAddonUsed() and FCOIS.CheckIfChosenMotifsAddonActive(settings.motifsAddonUsed)) or false
+--d(">isMotifsAutoMarkPrerequisitesMet: " ..tos(isMotifsAutoMarkPrerequisitesMet))
+    if doIconCheck and isMotifsAutoMarkPrerequisitesMet then
+        isMotifsAutoMarkPrerequisitesMet = (isMotifsAutoMarkPrerequisitesMet and iconCheck) or false
+    end
+    if checkIfSettingToAutoMarkIsEnabled and knownMotifsIconCheck then
+        retVar = isMotifsAutoMarkPrerequisitesMet and (settings.autoMarkMotifs or settings.autoMarkKnownMotifs)
+    elseif checkIfSettingToAutoMarkIsEnabled and not knownMotifsIconCheck then
+        retVar = isMotifsAutoMarkPrerequisitesMet and settings.autoMarkMotifs
+    elseif not checkIfSettingToAutoMarkIsEnabled and knownMotifsIconCheck then
+        retVar = isMotifsAutoMarkPrerequisitesMet and settings.autoMarkKnownMotifs
+    else
+        retVar = isMotifsAutoMarkPrerequisitesMet
+    end
+--d("<retVar: " ..tos(retVar))
+    return retVar
+end
+
 
 --Is the item a set part?
 function FCOIS.IsItemSetPartNoControl(bagId, slotIndex)
@@ -3604,6 +3735,80 @@ function FCOIS.GetInventoryTypeByFilterPanel(p_filterPanelId)
         end
     end
     return inventoryType
+end
+local getInventoryTypeByFilterPanel = FCOIS.GetInventoryTypeByFilterPanel
+
+function FCOIS.GetInventoryToSearch(panelId, isUniversalDeconNPC) --#308
+    if panelId == nil and not isUniversalDeconNPC then return nil, nil end
+    local INVENTORY_TO_SEARCH, contextmenuType = nil, nil
+
+    if isUniversalDeconNPC == nil then
+        checkIfUniversalDeconstructionNPC = checkIfUniversalDeconstructionNPC or FCOIS.CheckIfUniversalDeconstructionNPC
+        isUniversalDeconNPC = checkIfUniversalDeconstructionNPC(panelId) -- #202
+    end
+
+    if isUniversalDeconNPC == true then
+        --#202 enable mass marking for the universald deconstruction NPC inventory
+        -->Which inventory does INVENTORY_TO_SEARCH need to be?
+        INVENTORY_TO_SEARCH = ctrlVars.UNIVERSAL_DECONSTRUCTION_INV_BACKPACK
+        contextmenuType = "UNIVERSAL_DECONSTRUCTION"
+    else
+        --LibFilters panelIds:
+        --(Jewelry) Refinement panel?
+        if (panelId == LF_SMITHING_REFINE or panelId == LF_JEWELRY_REFINE) then
+            INVENTORY_TO_SEARCH = ctrlVars.REFINEMENT
+            contextmenuType = "REFINEMENT"
+            --(Jewelry) Deconstruction panel?
+        elseif (panelId == LF_SMITHING_DECONSTRUCT or panelId == LF_JEWELRY_DECONSTRUCT) then
+            INVENTORY_TO_SEARCH = ctrlVars.DECONSTRUCTION
+            contextmenuType = "DECONSTRUCTION"
+        elseif (panelId == LF_SMITHING_IMPROVEMENT or panelId == LF_JEWELRY_IMPROVEMENT) then
+            --(Jewelry) Improvement panel?
+            INVENTORY_TO_SEARCH = ctrlVars.IMPROVEMENT
+            contextmenuType = "IMPROVEMENT"
+        elseif panelId == LF_ALCHEMY_CREATION then
+            --Alchemy creation
+            INVENTORY_TO_SEARCH = ctrlVars.ALCHEMY_STATION
+            contextmenuType = "ALCHEMY CREATION"
+        elseif panelId == LF_ENCHANTING_CREATION then
+            --Enchanting creation
+            INVENTORY_TO_SEARCH = ctrlVars.ENCHANTING_STATION
+            contextmenuType = "ENCHANTING CREATION"
+        elseif panelId == LF_ENCHANTING_EXTRACTION then
+            --Enchanting extraction
+            contextmenuType = "ENCHANTING EXTRACTION"
+            INVENTORY_TO_SEARCH = ctrlVars.ENCHANTING_STATION
+        elseif panelId == LF_RETRAIT then
+            --Retrait / Transmutation station
+            contextmenuType = "RETRAIT"
+            INVENTORY_TO_SEARCH = ctrlVars.RETRAIT_LIST
+        elseif panelId == LF_HOUSE_BANK_WITHDRAW then
+            --House Banks
+            contextmenuType = "HOUSEBANK"
+            INVENTORY_TO_SEARCH = ctrlVars.HOUSE_BANK
+        elseif panelId == LF_INVENTORY_COMPANION then
+            --Companion
+            contextmenuType = "COMPANION_INVENTORY"
+            INVENTORY_TO_SEARCH = ctrlVars.COMPANION_INV_LIST
+        else
+            --Inventory (mail, trade, etc.) or bank or craftbag (if other addons enabled the craftbag at mail panel etc.)
+            --Get the current inventorytype
+            local inventoryType = getInventoryTypeByFilterPanel(panelId)
+            if inventoryType == INVENTORY_CRAFT_BAG then
+                contextmenuType = "CRAFTBAG"
+            else
+                contextmenuType = "INVENTORY"
+            end
+            --All non-filtered items will be in this list here:
+            --ctrlVars.playerInventoryInvs[inventoryType].data[1-28].data   .bagId & ... .slotIndex
+            if inventoryType == nil then
+                d("[FCOIS] -ERROR- getInventoryToSearch - Inventory type for filter panel ID \"" .. panelId .. "\" is not set!")
+                return false
+            end
+            INVENTORY_TO_SEARCH = ctrlVars.playerInventoryInvs[inventoryType].listView
+        end
+        return INVENTORY_TO_SEARCH, contextmenuType
+    end
 end
 
 --Check if any item moved to a bagId should run some "auto demark" checks
