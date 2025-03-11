@@ -200,10 +200,11 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
 
 
 --______________________________________
--- Current max # of bugs/features/ToDos: 308
+-- Current max # of bugs/features/ToDos: 310
 --______________________________________
 
 --Open/To work on this patch:
+--#309 Fixed support for AwesomeGuildStore's "sell to guildstore from craftbag/bank"
 
 
 --=== Not started yet ===
@@ -211,14 +212,15 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2025-02-19
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2025-03-11
 ------------------------------------------------------------------------------------
---#308 Add LibCharacterKnowledge automatic motifs marking
+--#309
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.6.3 - New version: 2.6.4) -    Updated last: 2025-02-19
+--Changelog (last version: 2.6.4 - New version: 2.6.5) -    Updated last: 2025-03-11
 -------------------------------------------------------------------------------------
 --[Fixed]
+--#310 Automatic set marks do not work with FCOISuniqueItemIds - reported by user Mayrael
 
 --[Changed]
 

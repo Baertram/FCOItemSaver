@@ -95,6 +95,8 @@ local delayToMarkAsJunkInBetweenPackages = 250 --#291
 
 local allowedUniqueItemTypes = checkVars.uniqueIdItemTypes
 local allowedMotifItemTypes = checkVars.allowedMotifsItemTypes --#308
+local checkIfAGSActive = FCOIS.CheckIfAGSActive --#309
+local checkIfCBEActive = FCOIS.CheckIfCBEActive --#309
 
 
 local inventoryRowPatterns = checkVars.inventoryRowPatterns
@@ -1302,21 +1304,35 @@ end
 
 function FCOIS.IsItemSetAndNotExcluded(bag, slot, itemLink)
     libSets = libSets or FCOIS.libSets
-    if (itemLink == nil and (bag == nil or slot == nil)) or itemLink == nil then return false, nil end
+
+    if itemLink == nil and (bag == nil or slot == nil) then return false, nil  end
+    if itemLink == nil then
+        itemLink = gil(bag, slot)
+    end
+
+    local doDebug = false
+    --For debugging automatic set markings only
+    --[[
+    if bag == BAG_BACKPACK and slot == 187 then
+d("[FCOIS]IsItemSetAndNotExcluded: " .. itemLink)
+        doDebug = true
+    end
+    ]]
+
     local isAllowedSet, setId
     if itemLink ~= nil then
+        --- @return boolean hasSet, string setName, integer numBonuses, integer numNormalEquipped, integer maxEquipped, integer setId, integer numPerfectedEquipped
         local l_isAllowedSet, _, _, _, _, l_setId = gilsetinf(itemLink, false)
         isAllowedSet, setId = l_isAllowedSet, l_setId
-    else
-        local l_isAllowedSet, _, _, _, _, l_setId = gilsetinf(gil(bag, slot), false)
-        isAllowedSet, setId = l_isAllowedSet, l_setId
+        if doDebug then d(">isAllowedSet: " ..tos(isAllowedSet) .. "; l_setId: " ..tos(l_setId)) end
     end
     if isAllowedSet == true and setId ~= nil and libSets ~= nil and libLSB ~= nil then --#304
         local settings = FCOIS.settingsVars.settings
         if settings.autoMarkSetsExcludeSets == true then
             local autoMarkSetsExcludeSetsList = settings.autoMarkSetsExcludeSetsList
-            if autoMarkSetsExcludeSetsList[setId] == true then
+            if not ZO_IsTableEmpty(autoMarkSetsExcludeSetsList) and autoMarkSetsExcludeSetsList[setId] == true then
                 isAllowedSet = false
+                if doDebug then d(">disallowed setId, by settings -> LibSets LibShiftrBox") end
             end
         end
     end
@@ -1427,15 +1443,18 @@ end
 
 --Is the item a recipe and is it known by one of your chars? Boolean expectedResult will give the
 --true (known recipe) or false (unknown recipe) parameter
-function FCOIS.IsRecipeKnown(bagId, slotIndex, expectedResult)
-    expectedResult = expectedResult or false
+function FCOIS.IsRecipeKnown(bagId, slotIndex, expectedResult, itemLink)
     --Check if any recipe addon is used and available
     if not FCOIS.CheckIfRecipeAddonUsed() then return nil end
     --Get the recipe addon used to check for known/unknown state
     local recipeAddonUsed = FCOIS.GetRecipeAddonUsed()
     if recipeAddonUsed == nil or recipeAddonUsed == "" then return nil end
+
+    if (bagId == nil or slotIndex == nil) and itemLink == nil then return nil end
+    expectedResult = expectedResult or false
+
     --Get the itemLink
-    local itemLink = gil(bagId, slotIndex)
+    itemLink = itemLink or gil(bagId, slotIndex)
     if itemLink == "" then return nil end
     -- item is a recipe
     if gilit(itemLink) ~= ITEMTYPE_RECIPE then return nil end
@@ -1450,12 +1469,12 @@ function FCOIS.IsRecipeKnown(bagId, slotIndex, expectedResult)
     local known
 
     if settings.debug then debugMessage("isRecipeKnown", gil(bagId, slotIndex) .. ", expectedResult: " ..tos(expectedResult) .. ", recipeAddonUsed: " ..tos(recipeAddonUsed) .. ", autoMarkRecipesOnlyThisChar: " ..tos(autoMarkRecipesOnlyThisChar), true, FCOIS_DEBUG_DEPTH_SPAM, false) end
---d("[FCOIS]isRecipeKnown ".. gil(bagId, slotIndex) .. ", expectedResult: " ..tos(expectedResult) .. ", recipeAddonUsed: " ..tos(recipeAddonUsed) .. ", autoMarkRecipesOnlyThisChar: " ..tos(autoMarkRecipesOnlyThisChar))
+    --d("[FCOIS]isRecipeKnown ".. gil(bagId, slotIndex) .. ", expectedResult: " ..tos(expectedResult) .. ", recipeAddonUsed: " ..tos(recipeAddonUsed) .. ", autoMarkRecipesOnlyThisChar: " ..tos(autoMarkRecipesOnlyThisChar))
 
     --SousChef
     if recipeAddonUsed == FCOIS_RECIPE_ADDON_SOUSCHEF then
---d(">using SousChef")
---Get recipe info from Sous Chef addon
+        --d(">using SousChef")
+        --Get recipe info from Sous Chef addon
         if SousChef and SousChef.Utility then
             local sousChefUtility = SousChef.Utility
             local sousChefSettings = SousChef.settings
@@ -1488,15 +1507,15 @@ function FCOIS.IsRecipeKnown(bagId, slotIndex, expectedResult)
                 return known
             end
         end
-    ------------------------------------------------------------------------------------------------------------------------
-    --CraftStoreFixedAndImproved
+        ------------------------------------------------------------------------------------------------------------------------
+        --CraftStoreFixedAndImproved
     elseif recipeAddonUsed == FCOIS_RECIPE_ADDON_CSFAI then
---d("CraftStoreFixedAndImproved is used for recipes")
+        --d("CraftStoreFixedAndImproved is used for recipes")
         --Get recipe info from Sous Chef addon
         if CraftStoreFixedAndImprovedLongClassName ~= nil and CraftStoreFixedAndImprovedLongClassName.IsLearnable ~= nil then
             --Data is returned as a table in the format of [index] = {[1] = name, [2] = can be learned}
             local knownByUsersTable = CraftStoreFixedAndImprovedLongClassName.IsLearnable(itemLink, autoMarkRecipesOnlyThisChar)
---FCOIS._knownByUsersTable = knownByUsersTable
+            --FCOIS._knownByUsersTable = knownByUsersTable
             local knownLoop
             local isCraftStoreMainCrafterCharSet = false
             if knownByUsersTable ~= nil then
@@ -1514,10 +1533,10 @@ function FCOIS.IsRecipeKnown(bagId, slotIndex, expectedResult)
                     else
                         isCraftStoreMainCrafterCharSet = true
                     end
---FCOIS._recipeMainChar = recipeMainChar
+                    --FCOIS._recipeMainChar = recipeMainChar
                     currentCharacterName = recipeMainChar
                 end
---FCOIS._currentCharacterName = currentCharacterName
+                --FCOIS._currentCharacterName = currentCharacterName
                 if currentCharacterName ~= nil then
                     --Read table with characternames
                     --table is in the format of [index] = {[1] = String name, [2] = boolean canBeLearned}
@@ -1533,39 +1552,39 @@ function FCOIS.IsRecipeKnown(bagId, slotIndex, expectedResult)
                         local isLearnable = knownDataOfChar[2]
                         knownLoop = not isLearnable
 
---d(">>checking char:  " ..tos(charToCheck) .. ", isCraftStoreMainCrafterChar: " ..tos(isCraftStoreMainCrafterChar) .. ", knownLoop: " ..tos(knownLoop))
+                        --d(">>checking char:  " ..tos(charToCheck) .. ", isCraftStoreMainCrafterChar: " ..tos(isCraftStoreMainCrafterChar) .. ", knownLoop: " ..tos(knownLoop))
                         --Is the expected result already the knownState of the recipe at this char? Then go on with the
                         --next char
                         if expectedResult ~= isLearnable then
                             --Is the char the crafter main char? Or wasn't any main crafter set
                             --If autoMarkRecipesOnlyThisChar == true then the table only got 1 line with the current character!
                             if autoMarkRecipesOnlyThisChar then
---d("<<onlyThisChar -> knownLoop: " ..tos(knownLoop))
+                                --d("<<onlyThisChar -> knownLoop: " ..tos(knownLoop))
                                 --Return the first line's known entry
                                 return knownLoop
                             else
                                 --Is the main Crafter set? Then only check his/her recipe's known/unknown state
                                 local goOn = true
                                 if isCraftStoreMainCrafterCharSet == true then
---d(">>main crafter char is set")
+                                    --d(">>main crafter char is set")
                                     goOn = isCraftStoreMainCrafterChar
                                 end
---d(">>>goOn: " ..tos(goOn))
+                                --d(">>>goOn: " ..tos(goOn))
                                 if goOn == true then
                                     --Mark it for the other char, but only possible if account wide settings are enabled!
                                     --And if the expected result of this function call equals the "known state" of the recipe
                                     if needsAccountWideSettings == false or (needsAccountWideSettings == true and useAccountWideSettings == true) then
                                         --Should an unkown recipe be marked and is the recipe not known for the current char in the loop?
                                         if expectedResult == false and knownLoop == false then
---d(">>>>>marking item as UNknown recipe!")
+                                            --d(">>>>>marking item as UNknown recipe!")
                                             --Mark the item now as it can be learned on another char!
                                             --FCOIS.MarkItem(bagId, slotIndex, recipeUnknownIconNr)
                                             --Abort the loop over the chars now as acount wide settings are enabled and the
                                             --recipe was marked, or it was the currently logged in char
                                             return false
-                                        --Should a known recipe be marked?
+                                            --Should a known recipe be marked?
                                         elseif expectedResult == true and knownLoop == true then
---d(">>>>>marking item as known recipe!")
+                                            --d(">>>>>marking item as known recipe!")
                                             --Mark the item now as it can be learned on another char!
                                             --FCOIS.MarkItem(bagId, slotIndex, recipeKnownIconNr)
                                             --Abort the loop over the chars now as acount wide settings are enabled and the
@@ -1580,8 +1599,8 @@ function FCOIS.IsRecipeKnown(bagId, slotIndex, expectedResult)
                 end
             end
         end
-    ------------------------------------------------------------------------------------------------------------------------
-    --20250216 #305 LibCharacterKnowledge support
+        ------------------------------------------------------------------------------------------------------------------------
+        --20250216 #305 LibCharacterKnowledge support
     elseif recipeAddonUsed == FCOIS_RECIPE_ADDON_LIBCHARACTERKNOWLEDGE then
         --[[
             LCK.KNOWLEDGE_INVALID -- Not a recipe, furnishing plan, motif, or scribing item
@@ -1609,8 +1628,8 @@ function FCOIS.IsRecipeKnown(bagId, slotIndex, expectedResult)
                 for _, knowledgeData in ipairs(knownListOfServer) do
                     local knowledgeOfChar = knowledgeData.knowledge
                     if knowledgeOfChar ~= nil and LCK.IsKnowledgeUsable(knowledgeOfChar) then
-                    --if knowledgeOfChar and knowledgeOfChar ~= LCK.KNOWLEDGE_INVALID then
---d(">knowledgeOfChar: " ..tos(knowledgeOfChar) .. ", charName: " .. tos(knowledgeData.name))
+                        --if knowledgeOfChar and knowledgeOfChar ~= LCK.KNOWLEDGE_INVALID then
+                        --d(">knowledgeOfChar: " ..tos(knowledgeOfChar) .. ", charName: " .. tos(knowledgeData.name))
                         if knowledgeOfChar == LCK.KNOWLEDGE_UNKNOWN then
                             unKnownRecipeFound = true
                         elseif knowledgeOfChar == LCK.KNOWLEDGE_KNOWN then
@@ -1618,7 +1637,7 @@ function FCOIS.IsRecipeKnown(bagId, slotIndex, expectedResult)
                         end
                     end
                 end
---d(">unKnownRecipeFound: " ..tos(unKnownRecipeFound) .. ", knownRecipeFound: " .. tos(knownRecipeFound))
+                --d(">unKnownRecipeFound: " ..tos(unKnownRecipeFound) .. ", knownRecipeFound: " .. tos(knownRecipeFound))
                 if unKnownRecipeFound == nil and knownRecipeFound == nil then return end
                 --Only mark as known if no other char still neesd this!
                 if expectedResult == true and knownRecipeFound == true and not unKnownRecipeFound then
@@ -1670,15 +1689,18 @@ end
 
 --Is the item a motif and is it known by one of your chars? Boolean expectedResult will give the
 --true (known motif) or false (unknown motif) parameter
-function FCOIS.IsMotifKnown(bagId, slotIndex, expectedResult) --#308
-    expectedResult = expectedResult or false
+function FCOIS.IsMotifKnown(bagId, slotIndex, expectedResult, itemLink) --#308
     --Check if any recipe addon is used and available
     if not FCOIS.CheckIfMotifsAddonUsed() then return nil end
     --Get the recipe addon used to check for known/unknown state
     local motifsAddonUsed = FCOIS.GetMotifsAddonUsed()
     if motifsAddonUsed == nil or motifsAddonUsed == "" then return nil end
+
+    if (bagId == nil or slotIndex == nil) and itemLink == nil then return nil end
+    expectedResult = expectedResult or false
+
     --Get the itemLink
-    local itemLink = gil(bagId, slotIndex)
+    itemLink = itemLink or gil(bagId, slotIndex)
     if itemLink == "" then return nil end
     -- item is a motif or container with motifs?
     local itemType = gilit(itemLink)
@@ -1963,11 +1985,11 @@ end
 local isItemLinkResearchable = FCOIS.IsItemLinkResearchable
 
 -- Is the item researchable?
-function FCOIS.IsItemResearchableNoControl(bagId, slotIndex, markId, doTraitCheck)
-    if bagId == nil or slotIndex == nil then return false, false end
+function FCOIS.IsItemResearchableNoControl(bagId, slotIndex, markId, doTraitCheck, itemLink)
+    if (bagId == nil or slotIndex == nil) and itemLink == nil then return false, false end
     --Check if the item is virtually researchable as the settings is enabled to allow marking of non-researchable items as gear/dynamic
     markId = markId or nil
-    local itemLink = gil(bagId, slotIndex)
+    itemLink = itemLink or gil(bagId, slotIndex)
     local retVal, retVal2 = isItemLinkResearchable(itemLink, markId, doTraitCheck)
 --d("[FCOIS.isItemResearchableNoControl] retVal: " .. tos(retVal))
     return retVal, retVal2
@@ -2028,9 +2050,9 @@ function FCOIS.IsItemIntricate(bagId, slotIndex)
 end
 
 --Check if the item is a "super item" (special enchantment with set bonus!)
-function FCOIS.IsItemSuperitem(bagId, slotIndex)
-    if bagId == nil or slotIndex == nil then return false end
-    local itemLink = gil(bagId, slotIndex)
+function FCOIS.IsItemSuperitem(bagId, slotIndex, itemLink)
+    if (bagId == nil or slotIndex == nil) and itemLink == nil then return false end
+    itemLink = itemLink or gil(bagId, slotIndex)
     local hasSet, _, numBonuses = gilsetinf(itemLink, false)
     if hasSet and numBonuses == 1 then
         -- Superitem
@@ -2654,10 +2676,12 @@ end
 --> Called in file FCOIS_Hooks.lua, function FCOItemSaver_AddSlotAction
 --  upon right clicking an item to show the context menu for "Enchant"
 --  and at the automatic set item marking
-function FCOIS.CheckIfIsSpecialItem(p_bagId, p_slotIndex)
-    if p_bagId == nil or  p_slotIndex == nil then return nil end
+function FCOIS.CheckIfIsSpecialItem(p_bagId, p_slotIndex, p_itemLink)
+    if (p_bagId == nil or  p_slotIndex == nil) and p_itemLink == nil then return nil end
     local specialItems = FCOIS.specialItems
-    local itemId = giid(p_bagId, p_slotIndex)
+    p_itemLink = p_itemLink or gil(p_bagId, p_slotIndex)
+    --local itemId = giid(p_bagId, p_slotIndex)
+    local itemId = giliid(p_itemLink)
     if itemId == nil then return nil end
     if specialItems[itemId] then
         return true
@@ -2666,9 +2690,9 @@ function FCOIS.CheckIfIsSpecialItem(p_bagId, p_slotIndex)
 end
 
 --Check if a research scroll is usable or if the time left for research is less
-function FCOIS.CheckIfResearchScrollWouldBeWasted(bag, slotId)
-    if bag == nil or slotId == nil or DetailedResearchScrolls == nil or DetailedResearchScrolls.GetWarningLine == nil then return nil end
-    local itemLink = gil(bag, slotId)
+function FCOIS.CheckIfResearchScrollWouldBeWasted(bag, slotId, itemLink)
+    if DetailedResearchScrolls == nil or DetailedResearchScrolls.GetWarningLine == nil or ((bag == nil or slotId == nil) and itemLink == nil) then return nil end
+    itemLink = itemLink or gil(bag, slotId)
     if itemLink == nil or itemLink == "" then return false end
     local isResearchScrollAndWouldBeWasted = DetailedResearchScrolls:GetWarningLine(itemLink)
     --The function returns the string "Less than y research timeslots available with x days time left", or nil if nothing found or wrong itemType
@@ -3723,9 +3747,20 @@ function FCOIS.GetInventoryTypeByFilterPanel(p_filterPanelId)
     local libFiltersPanelIdToCraftingPanelInventory = mappingVars.libFiltersPanelIdToCraftingPanelInventory
     local libFiltersPanelIdToNormalInventory = mappingVars.libFiltersPanelIdToInventory
 
-    --Is the craftbag active and additional addons like CraftBagExtended show the craftbag at the bank or mail panel?
-    if FCOIS.CheckIfCBEorAGSActive(FCOIS.gFilterWhereParent, true) and INVENTORY_CRAFT_BAG and not ctrlVars.CRAFTBAG:IsHidden() then
+
+    --#309 AwesomeGuildStore loaded?
+    local parentFilterPanel = FCOIS.gFilterWhereParent
+    checkIfAGSActive = checkIfAGSActive or FCOIS.CheckIfAGSActive
+    checkIfCBEActive = checkIfCBEActive or FCOIS.CheckIfCBEActive
+    local agsEnabled = checkIfAGSActive(parentFilterPanel, true)
+    local cbeEnabled = checkIfCBEActive(parentFilterPanel, true)
+
+    --Is the craftbag active and additional addons like CraftBagExtended show the craftbag at the bank, trading house or mail panel?
+    if (agsEnabled or cbeEnabled) and INVENTORY_CRAFT_BAG and not ctrlVars.CRAFTBAG:IsHidden() then --#309
         inventoryType = INVENTORY_CRAFT_BAG
+    --AwesomeGuildStore's bank panel at the parent filterPanel = trading house
+    elseif agsEnabled and INVENTORY_BANK and not ctrlVars.BANK:IsHidden() then --#309
+        inventoryType = INVENTORY_BANK
     else
         --Is the filterpanelId a crafting table?
         inventoryType = libFiltersPanelIdToCraftingPanelInventory[p_filterPanelId] or nil

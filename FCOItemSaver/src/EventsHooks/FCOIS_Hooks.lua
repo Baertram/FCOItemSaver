@@ -82,6 +82,10 @@ local createMarkerControl, addMarkerIconsToControl
 local addMark
 local updateEquipmentHeaderCountText
 
+local checkIfAGSActive = FCOIS.CheckIfAGSActive --#309
+local checkIfAGSShowsCustomPanelAtGuildStore =  FCOIS.CheckIfAGSShowsCustomPanelAtGuildStore --#309
+
+
 --LibCustomMenu
 local lcm                                 = FCOIS.LCM
 
@@ -471,10 +475,13 @@ local function FCOItemSaver_OnInventorySlot_DoPrimaryAction(inventorySlot)
     isVendorPanelShown = isVendorPanelShown or FCOIS.IsVendorPanelShown
     local isVendorRepair  = isVendorPanelShown(LF_VENDOR_REPAIR, false) or false
 
-    --Special case for AwesomeGuildStore -> directly sell to guild store from custom bank fragment
+    --Special case for AwesomeGuildStore -> directly sell to guild store from custom bank fragment --#309
     -->Will be detected as bank here, but actually is guild store sell!
-    if isABankWithdraw == true and FCOIS.gFilterWhere == LF_BANK_WITHDRAW and otherAddons.AGSActive ~= nil
-        and ctrlVars.GUILD_STORE_SCENE:IsShowing() and ctrlVars.BANK_FRAGMENT:IsShowing() then
+    local filterPanelId = FCOIS.gFilterWhere
+    checkIfAGSShowsCustomPanelAtGuildStore = checkIfAGSShowsCustomPanelAtGuildStore or FCOIS.CheckIfAGSShowsCustomPanelAtGuildStore
+    if isABankWithdraw == true
+        --and ctrlVars.GUILD_STORE_SCENE:IsShowing() and ctrlVars.BANK_FRAGMENT:IsShowing() then --#309
+        and checkIfAGSShowsCustomPanelAtGuildStore(filterPanelId, nil) then --#309
         isABankWithdraw = false
     end
 
@@ -2063,7 +2070,8 @@ function FCOIS.CreateHooks()
             --Update the current filter panel ID to "CraftBag"
             FCOIS.gFilterWhere   = getFilterWhereBySettings(LF_CRAFTBAG)
 
-            --Are we showing a CBE subpanel of another parent panel?
+            --Are we showing a CBE subpanel of another parent panel (e.g. tradinghouse/guild store)?
+            -->Could be CraftBagExtended or AwesomeGuildStore addons
             local cbeOrAGSActive = FCOIS.CheckIfCBEorAGSActive(FCOIS.gFilterWhereParent, true)
             if cbeOrAGSActive and parentPanel ~= nil then
                 --The parent panel for the craftbag can be one of these

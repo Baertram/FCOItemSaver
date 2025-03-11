@@ -111,17 +111,87 @@ local checkIfWritItemShouldBeMarked = FCOIS.CheckIfWritItemShouldBeMarked
 
 
 -- ==================================================================
+--               AwesomeGuildstore --#309
+-- ==================================================================
+--Function to check if AwesomeGuildStore is active --#309
+function FCOIS.CheckIfAGSActive(parentFilterPanelId, checkWithoutParentFilterPanelId)
+    checkWithoutParentFilterPanelId = checkWithoutParentFilterPanelId or false
+    if FCOIS.settingsVars.settings.debug then debugMessage( "[Other addons]","CheckIfAGSActive - parentFilterPanelId: " .. tos(parentFilterPanelId) ..", checkWithoutParentFilterPanelId: " .. tos(checkWithoutParentFilterPanelId), true, FCOIS_DEBUG_DEPTH_SPAM) end
+    local addonActive = false
+    --Do the check only for the other addons enabled
+    if checkWithoutParentFilterPanelId then
+        --AwesomeGuildStore addon is active and we are at the CraftBag panel of AGS's guild store sell tab
+        addonActive = FCOIS.otherAddons.AGSActive
+    else
+        --Do the checks together for the other addons enabled AND the parent filter panel ID given from the craftbag's fragment callback function
+        if parentFilterPanelId == nil then
+            if FCOIS.settingsVars.settings.debug then debugMessage( "[Other addons]","CheckIfAGSActive <<< aborted", true, FCOIS_DEBUG_DEPTH_SPAM) end
+            return false
+        end
+        --AwesomeGuildStore addon is active and we are at the CraftBag panel of AGS's guild store sell tab
+        addonActive = otherAddons.AGSActive and parentFilterPanelId == LF_GUILDSTORE_SELL
+    end
+    if FCOIS.settingsVars.settings.debug then debugMessage( "[Other addons]", "CheckIfAGSActive > addonActive: " .. tos(addonActive), true, FCOIS_DEBUG_DEPTH_SPAM) end
+    return addonActive
+end
+local checkIfAGSActive = FCOIS.CheckIfAGSActive
+
+function FCOIS.CheckIfAGSShowsCustomPanelAtGuildStore(customFilterPanelId, agsActive) --#309
+    if customFilterPanelId == nil then return false end
+    if agsActive == nil then agsActive = checkIfAGSActive(customFilterPanelId, true) end
+    if not agsActive then return false end
+
+    local ctrlVars = FCOIS.ZOControlVars
+    if not ctrlVars.GUILD_STORE_SCENE:IsShowing() then return false end
+
+    if customFilterPanelId == LF_BANK_WITHDRAW then
+        return ctrlVars.BANK_FRAGMENT:IsShowing()
+
+    elseif customFilterPanelId == LF_CRAFTBAG then
+        return ctrlVars.CRAFT_BAG_FRAGMENT:IsShowing()
+    end
+end
+
+-- ==================================================================
 --               CraftBagExtended & AwesomeGuildstore
 -- ==================================================================
+--Function to check if CraftBagExtended is active
+function FCOIS.CheckIfCBEActive(parentFilterPanelId, checkWithoutParentFilterPanelId)
+    checkWithoutParentFilterPanelId = checkWithoutParentFilterPanelId or false
+    if FCOIS.settingsVars.settings.debug then debugMessage( "[Other addons]","CheckIfCBEActive - parentFilterPanelId: " .. tos(parentFilterPanelId) ..", checkWithoutParentFilterPanelId: " .. tos(checkWithoutParentFilterPanelId), true, FCOIS_DEBUG_DEPTH_SPAM) end
+    local addonActive = false
+
+    --Do the check only for the other addons enabled
+    if checkWithoutParentFilterPanelId then
+        --CraftBagExtended addon is active
+        addonActive = otherAddons.craftBagExtendedActive
+    else
+        --Do the checks together for the other addons enabled AND the parent filter panel ID given from the craftbag's fragment callback function
+        if parentFilterPanelId == nil then
+            if FCOIS.settingsVars.settings.debug then debugMessage( "[Other addons]","CheckIfCBEActive <<< aborted", true, FCOIS_DEBUG_DEPTH_SPAM) end
+            return false
+        end
+        --CraftBagExtended addon is active
+        addonActive = otherAddons.craftBagExtendedActive
+    end
+    if FCOIS.settingsVars.settings.debug then debugMessage( "[Other addons]", "CheckIfCBEActive > addonActive: " .. tos(addonActive), true, FCOIS_DEBUG_DEPTH_SPAM) end
+    return addonActive
+end
+local checkIfCBEActive = FCOIS.CheckIfCBEActive
+
 --Function to check if CraftBagExtended or AwesomeGuildStore are active
 function FCOIS.CheckIfCBEorAGSActive(parentFilterPanelId, checkWithoutParentFilterPanelId)
     checkWithoutParentFilterPanelId = checkWithoutParentFilterPanelId or false
     if FCOIS.settingsVars.settings.debug then debugMessage( "[Other addons]","checkIfCBEorAGSActive - parentFilterPanelId: " .. tos(parentFilterPanelId) ..", checkWithoutParentFilterPanelId: " .. tos(checkWithoutParentFilterPanelId), true, FCOIS_DEBUG_DEPTH_SPAM) end
     local addonActive = false
+
+    local isCBEActive = checkIfCBEActive(parentFilterPanelId, checkWithoutParentFilterPanelId)
+    local isAGSActive = checkIfAGSActive(parentFilterPanelId, checkWithoutParentFilterPanelId)
+
     --Do the check only for the other addons enabled
     if checkWithoutParentFilterPanelId then
         --CraftBagExtended addon is active, or AwesomeGuildStore addon is active and we are at the CraftBag panel of AGS's guild store sell tab
-        addonActive = otherAddons.craftBagExtendedActive or FCOIS.otherAddons.AGSActive
+        addonActive = isCBEActive or isAGSActive
     else
         --Do the checks together for the other addons enabled AND the parent filter panel ID given from the craftbag's fragment callback function
         if parentFilterPanelId == nil then
@@ -129,12 +199,13 @@ function FCOIS.CheckIfCBEorAGSActive(parentFilterPanelId, checkWithoutParentFilt
             return false
         end
         --CraftBagExtended addon is active, or AwesomeGuildStore addon is active and we are at the CraftBag panel of AGS's guild store sell tab
-        addonActive = otherAddons.craftBagExtendedActive or (otherAddons.AGSActive and parentFilterPanelId == LF_GUILDSTORE_SELL)
+        addonActive = isCBEActive or (isAGSActive and parentFilterPanelId == LF_GUILDSTORE_SELL)
     end
     if FCOIS.settingsVars.settings.debug then debugMessage( "[Other addons]", "checkIfCBEorAGSActive > addonActive: " .. tos(addonActive), true, FCOIS_DEBUG_DEPTH_SPAM) end
     return addonActive
 end
 local checkIfCBEorAGSActive = FCOIS.CheckIfCBEorAGSActive
+
 --Fixing FCOIS_Constants.lua file here:
 FCOIS.mappingVars.filterPanelIdToBlockSettingName[LF_CRAFTBAG].callbackFunc = checkIfCBEorAGSActive
 

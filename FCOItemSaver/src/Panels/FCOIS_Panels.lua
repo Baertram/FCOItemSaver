@@ -35,6 +35,10 @@ local panelIdByDeconNPCMenuBarTabButtonName = mappingVars.panelIdByUniversalDeco
 local universalDeconInvCtrl = ctrlVars.UNIVERSAL_DECONSTRUCTION_INV
 local universaldDeconScene = ctrlVars.UNIVERSAL_DECONSTRUCTON_SCENE
 local universaldDeconMenuBarTabs = ctrlVars.UNIVERSAL_DECONSTRUCTION_MENUBAR_TABS
+local checkIfCBEActive = FCOIS.CheckIfCBEActive --#309
+local checkIfAGSActive = FCOIS.CheckIfAGSActive --#309
+local checkIfAGSShowsCustomPanelAtGuildStore = FCOIS.CheckIfAGSShowsCustomPanelAtGuildStore --#309
+
 
 --==========================================================================================================================================
 --                                          FCOIS - Panel functions
@@ -202,6 +206,7 @@ local function getWhereAreWeOrFilterPanelIdByPanelIdRespectingCraftType(filterPa
     end
 end
 
+
 --Determine which filterPanelId is currently active and set the whereAreWe variable
 function FCOIS.GetWhereAreWe(panelId, panelIdAtCall, panelIdParent, bag, slot, isDragAndDrop, calledFromExternalAddon)
     --The number for the orientation (which filter panel ID and which sub-checks were done -> for the chat output and the alert message determination)
@@ -210,55 +215,73 @@ function FCOIS.GetWhereAreWe(panelId, panelIdAtCall, panelIdParent, bag, slot, i
     local currentScene, currentSceneName = getCurrentSceneInfo()
     --Local settings pointer
     --local settings = FCOIS.settingsVars.settings
-    local otherAddons = FCOIS.otherAddons
+    --local otherAddons = FCOIS.otherAddons
 
     --universal Deconstruction NPC is used?
     local isDeconNPC = checkIfUniversaldDeconstructionNPC(panelId)
 
+    local parentFilterPanelId = FCOIS.gFilterWhereParent --#309
+
     --======= WhereAreWe determination ============================================================
+    local cbeActive, agsActive, agsShowsCustomPanelAtGuildStore
+    if not isDeconNPC then --#309
+        cbeActive = checkIfCBEActive(nil, true)     --#309
+        agsActive = checkIfAGSActive(nil, true)     --#309
+        agsShowsCustomPanelAtGuildStore = checkIfAGSShowsCustomPanelAtGuildStore(panelId, agsActive) --#309
+    end
+
+
     --*********************************************************************************************************************************************************************************
     --------------------------------------------------------------------------------------------------------------------
     --------------------------------------------------------------------------------------------------------------------
     --------------------------------------------------------------------------------------------------------------------
     --CraftBagExtended at a mail send panel, the bank, guild bank, guild store, store or trade?
+    --Or AwesomeGuildStore's craftbag at guild store --#309
     --------------------------------------------------------------------------------------------------------------------
     --------------------------------------------------------------------------------------------------------------------
     --------------------------------------------------------------------------------------------------------------------
-    if not isDeconNPC and otherAddons.craftBagExtendedActive and INVENTORY_CRAFT_BAG and ((calledFromExternalAddon and panelId == LF_CRAFTBAG) or (not calledFromExternalAddon and (panelId == LF_CRAFTBAG or not ctrlVars.CRAFTBAG:IsHidden()))) then
-        panelIdParent = panelIdParent or FCOIS.gFilterWhereParent
+    if not isDeconNPC and cbeActive and INVENTORY_CRAFT_BAG and ((calledFromExternalAddon and panelId == LF_CRAFTBAG) or (not calledFromExternalAddon and (panelId == LF_CRAFTBAG or not ctrlVars.CRAFTBAG:IsHidden()))) then
+        panelIdParent = panelIdParent or parentFilterPanelId
         --Inside mail panel?
-        if (calledFromExternalAddon and panelIdParent == LF_MAIL_SEND) or (not calledFromExternalAddon and (not ctrlVars.MAIL_SEND.control:IsHidden() or FCOIS.gFilterWhereParent == LF_MAIL_SEND)) then
+        if (calledFromExternalAddon and panelIdParent == LF_MAIL_SEND) or (not calledFromExternalAddon and (not ctrlVars.MAIL_SEND.control:IsHidden() or parentFilterPanelId == LF_MAIL_SEND)) then
             whereAreWe = FCOIS_CON_MAIL
             --Inside trading player 2 player panel?
-        elseif (calledFromExternalAddon and panelIdParent == LF_TRADE) or (not calledFromExternalAddon and (not ctrlVars.PLAYER_TRADE.control:IsHidden() or FCOIS.gFilterWhereParent == LF_TRADE)) then
+        elseif (calledFromExternalAddon and panelIdParent == LF_TRADE) or (not calledFromExternalAddon and (not ctrlVars.PLAYER_TRADE.control:IsHidden() or parentFilterPanelId == LF_TRADE)) then
             whereAreWe = FCOIS_CON_TRADE
             --Are we at the store scene
         elseif currentSceneName == ctrlVars.vendorSceneName or (panelIdParent == LF_VENDOR_BUY or panelIdParent == LF_VENDOR_SELL or panelIdParent == LF_VENDOR_BUYBACK or panelIdParent == LF_VENDOR_SELL) then
             --Vendor buy
-            if (calledFromExternalAddon and panelIdParent == LF_VENDOR_BUY) or (not calledFromExternalAddon and (FCOIS.gFilterWhereParent == LF_VENDOR_BUY or (not ctrlVars.STORE:IsHidden() and ctrlVars.BACKPACK_BAG:IsHidden() and ctrlVars.STORE_BUY_BACK:IsHidden() and ctrlVars.REPAIR_LIST:IsHidden()))) then
+            if (calledFromExternalAddon and panelIdParent == LF_VENDOR_BUY) or (not calledFromExternalAddon and (parentFilterPanelId == LF_VENDOR_BUY or (not ctrlVars.STORE:IsHidden() and ctrlVars.BACKPACK_BAG:IsHidden() and ctrlVars.STORE_BUY_BACK:IsHidden() and ctrlVars.REPAIR_LIST:IsHidden()))) then
                 whereAreWe = FCOIS_CON_BUY
                 --Vendor sell
-            elseif (calledFromExternalAddon and panelIdParent == LF_VENDOR_SELL) or (not calledFromExternalAddon and (FCOIS.gFilterWhereParent == LF_VENDOR_SELL or (ctrlVars.STORE:IsHidden() and not ctrlVars.BACKPACK_BAG:IsHidden() and ctrlVars.STORE_BUY_BACK:IsHidden() and ctrlVars.REPAIR_LIST:IsHidden()))) then
+            elseif (calledFromExternalAddon and panelIdParent == LF_VENDOR_SELL) or (not calledFromExternalAddon and (parentFilterPanelId == LF_VENDOR_SELL or (ctrlVars.STORE:IsHidden() and not ctrlVars.BACKPACK_BAG:IsHidden() and ctrlVars.STORE_BUY_BACK:IsHidden() and ctrlVars.REPAIR_LIST:IsHidden()))) then
                 whereAreWe = FCOIS_CON_SELL
                 --Vendor buyback
-            elseif (calledFromExternalAddon and panelIdParent == LF_VENDOR_BUYBACK) or (not calledFromExternalAddon and (FCOIS.gFilterWhereParent == LF_VENDOR_BUYBACK or (ctrlVars.STORE:IsHidden() and ctrlVars.BACKPACK_BAG:IsHidden() and not ctrlVars.STORE_BUY_BACK:IsHidden() and ctrlVars.REPAIR_LIST:IsHidden()))) then
+            elseif (calledFromExternalAddon and panelIdParent == LF_VENDOR_BUYBACK) or (not calledFromExternalAddon and (parentFilterPanelId == LF_VENDOR_BUYBACK or (ctrlVars.STORE:IsHidden() and ctrlVars.BACKPACK_BAG:IsHidden() and not ctrlVars.STORE_BUY_BACK:IsHidden() and ctrlVars.REPAIR_LIST:IsHidden()))) then
                 whereAreWe = FCOIS_CON_BUYBACK
                 --Vendor repair
-            elseif (calledFromExternalAddon and panelIdParent == LF_VENDOR_SELL) or (not calledFromExternalAddon and (FCOIS.gFilterWhereParent == LF_VENDOR_SELL or (ctrlVars.STORE:IsHidden() and ctrlVars.BACKPACK_BAG:IsHidden() and ctrlVars.STORE_BUY_BACK:IsHidden() and not ctrlVars.REPAIR_LIST:IsHidden()))) then
+            elseif (calledFromExternalAddon and panelIdParent == LF_VENDOR_SELL) or (not calledFromExternalAddon and (parentFilterPanelId == LF_VENDOR_SELL or (ctrlVars.STORE:IsHidden() and ctrlVars.BACKPACK_BAG:IsHidden() and ctrlVars.STORE_BUY_BACK:IsHidden() and not ctrlVars.REPAIR_LIST:IsHidden()))) then
                 whereAreWe = FCOIS_CON_REPAIR
             end
-            --Inside guild store selling?
-        elseif (calledFromExternalAddon and panelIdParent == LF_GUILDSTORE_SELL) or (not calledFromExternalAddon and (not ctrlVars.GUILD_STORE:IsHidden() or FCOIS.gFilterWhereParent == LF_GUILDSTORE_SELL)) then
-            whereAreWe = FCOIS_CON_GUILD_STORE_SELL
+        --Inside guild store selling?
+        elseif (calledFromExternalAddon and panelIdParent == LF_GUILDSTORE_SELL) or (not calledFromExternalAddon and (not ctrlVars.GUILD_STORE:IsHidden() or parentFilterPanelId == LF_GUILDSTORE_SELL)) then
+d("[FCOIS]GetWhereAreWe - CBE GuildStoreSell from craftbag - filterPanelId: " .. tos(panelId) ..", isDragAndDrop: " ..tos(isDragAndDrop) .. ", panelIdParent: " .. tos(panelIdParent))
+            --There is a CraftBag at a guild bank withdraw panel, but only if AwesomeGuildStore is enabled
+            if agsShowsCustomPanelAtGuildStore then         --#309
+d(">>FCOIS_CON_GUILD_STORE_SELL")
+                whereAreWe = FCOIS_CON_GUILD_STORE_SELL
+            else
+d(">>FCOIS_CON_CRAFTBAG_DESTROY")
+                whereAreWe = FCOIS_CON_CRAFTBAG_DESTROY     --#309
+            end
             --[[
-            --There is no CraftBag or CraftBagExtended at a guild bank withdraw panel!
             --Are we at a guild bank and trying to withdraw some items by double clicking it?
-            elseif (not ctrlVars.GUILD_BANK:IsHidden() or FCOIS.gFilterWhereParent == LF_GUILDBANK_WITHDRAW) then
+            elseif (not ctrlVars.GUILD_BANK:IsHidden() or parentFilterPanelId == LF_GUILDBANK_WITHDRAW) then
                 --TODO: Why FCOIS_CON_SELL here for Guildstore withdraw??? To test!
                 whereAreWe = FCOIS_CON_SELL
             ]]
             --Are we at the inventory/bank/guild bank/house bank and trying to use/equip/deposit an item?
-        elseif (calledFromExternalAddon and (panelIdParent == LF_BANK_DEPOSIT or panelIdParent == LF_GUILDBANK_DEPOSIT or panelIdParent == LF_HOUSE_BANK_DEPOSIT)) or (not calledFromExternalAddon and (FCOIS.gFilterWhereParent == LF_BANK_DEPOSIT or FCOIS.gFilterWhereParent == LF_GUILDBANK_DEPOSIT or FCOIS.gFilterWhereParent == LF_HOUSE_BANK_DEPOSIT)) then
+        elseif (calledFromExternalAddon and (panelIdParent == LF_BANK_DEPOSIT or panelIdParent == LF_GUILDBANK_DEPOSIT or panelIdParent == LF_HOUSE_BANK_DEPOSIT)) or (not calledFromExternalAddon and (parentFilterPanelId == LF_BANK_DEPOSIT or parentFilterPanelId == LF_GUILDBANK_DEPOSIT or parentFilterPanelId == LF_HOUSE_BANK_DEPOSIT)) then
             --Check if player or guild or house bank is active by checking current scene in scene manager, or using ZOs API functions
             if (IsGuildBankOpen() or IsBankOpen() or (currentSceneName ~= nil and (currentSceneName == ctrlVars.bankSceneName or currentSceneName == ctrlVars.guildBankSceneName or currentSceneName == ctrlVars.houseBankSceneName))) then
                 --If bank/guild bank/house bank deposit tab is active
@@ -276,10 +299,13 @@ function FCOIS.GetWhereAreWe(panelId, panelIdAtCall, panelIdParent, bag, slot, i
                 --Get the whereAreWe panel ID by checking the item's type etc. now
                 whereAreWe = checkSingleItemProtection(bag, slot, panelId, panelIdAtCall, calledFromExternalAddon)
             end
-            --Are we in the normal craftbag?
+        --Are we in the normal craftbag?
         else
             whereAreWe = FCOIS_CON_CRAFTBAG_DESTROY
         end
+
+
+
 
     --*********************************************************************************************************************************************************************************
     --------------------------------------------------------------------------------------------------------------------
@@ -290,20 +316,35 @@ function FCOIS.GetWhereAreWe(panelId, panelIdAtCall, panelIdParent, bag, slot, i
     --------------------------------------------------------------------------------------------------------------------
     --------------------------------------------------------------------------------------------------------------------
     --AwesomeGuildStore addon is active - We are at the guild store "sell" tab and are selling from the bank
-    elseif (not isDeconNPC and otherAddons.AGSActive and ctrlVars.GUILD_STORE_SCENE:IsShowing()
-        and ((calledFromExternalAddon and panelId == LF_BANK_WITHDRAW) or (not calledFromExternalAddon and (panelId == LF_BANK_WITHDRAW or ctrlVars.BANK_FRAGMENT:IsShowing())))) then
---d(">AwesomeGuildStore GuildStoreSell from bank - filterPanelId: " .. tos(panelId) ..", isDragAndDrop: " ..tos(isDragAndDrop))
-        whereAreWe = FCOIS_CON_GUILD_STORE_SELL
+    elseif (not isDeconNPC and agsShowsCustomPanelAtGuildStore) then  --#309
+        panelIdParent = panelIdParent or parentFilterPanelId
+        if (INVENTORY_CRAFT_BAG and ((calledFromExternalAddon and panelId == LF_CRAFTBAG) or (not calledFromExternalAddon and (panelId == LF_CRAFTBAG or not ctrlVars.CRAFTBAG:IsHidden())))) then --#309
+d("[FCOIS]GetWhereAreWe - AwesomeGuildStore GuildStoreSell from craftbag - filterPanelId: " .. tos(panelId) ..", isDragAndDrop: " ..tos(isDragAndDrop) .. ", panelIdParent: " .. tos(panelIdParent))
+            whereAreWe = FCOIS_CON_GUILD_STORE_SELL
+
+        elseif ((calledFromExternalAddon and panelId == LF_BANK_WITHDRAW) or (not calledFromExternalAddon and (panelId == LF_BANK_WITHDRAW or ctrlVars.BANK_FRAGMENT:IsShowing()))) then --#309
+d("[FCOIS]GetWhereAreWe - AwesomeGuildStore GuildStoreSell from bank - filterPanelId: " .. tos(panelId) ..", isDragAndDrop: " ..tos(isDragAndDrop) .. ", panelIdParent: " .. tos(panelIdParent))
+            whereAreWe = FCOIS_CON_GUILD_STORE_SELL
+
+        else
+d("[FCOIS]GetWhereAreWe - AwesomeGuildStore GuildStoreSell FALLBACK - filterPanelId: " .. tos(panelId) ..", isDragAndDrop: " ..tos(isDragAndDrop) .. ", panelIdParent: " .. tos(panelIdParent))
+            whereAreWe = FCOIS_CON_GUILD_STORE_SELL
+            --Fallback - Should not happen --#309
+            whereAreWe = FCOIS_CON_DESTROY
+        end
+
+
+
 
     --*********************************************************************************************************************************************************************************
     --------------------------------------------------------------------------------------------------------------------
     --------------------------------------------------------------------------------------------------------------------
     --------------------------------------------------------------------------------------------------------------------
-    --No Craftbag panels
+    --No Craftbag or other addon's custom panels
     --------------------------------------------------------------------------------------------------------------------
     --------------------------------------------------------------------------------------------------------------------
     --------------------------------------------------------------------------------------------------------------------
-    else -- if FCOIS.otherAddons.craftBagExtendedActive and INVENTORY_CRAFT_BAG and (panelId == LF_CRAFTBAG or not ctrlVars.CRAFTBAG:IsHidden()) then
+    else
 
         --Are we at an universal deconstruction NPC?
         if isDeconNPC == true then
