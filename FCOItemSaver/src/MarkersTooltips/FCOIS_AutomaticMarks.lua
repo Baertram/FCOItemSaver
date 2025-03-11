@@ -76,8 +76,8 @@ local isMarked
 --!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 --Change this if you want to debug an item's automatic marks
 local isDebuggingCase = false --will be automatically switched to true if the item's bagId and slotIndex matches the values below (-1, -1 should never be found):
-local debuggingBagId =      BAG_BACKPACK    -- -1
-local debuggingSlotIndex =  187             -- -1
+local debuggingBagId =      -1 --BAG_BACKPACK
+local debuggingSlotIndex =  -1 --187             
 --!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 --==========================================================================================================================================

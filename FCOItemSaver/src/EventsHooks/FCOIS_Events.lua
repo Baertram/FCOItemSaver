@@ -1108,6 +1108,7 @@ local function FCOItemSaver_Loaded(eventCode, addOnName)
                 em:AddFilterForEvent(gAddonName .. "_EVENT_INVENTORY_SINGLE_SLOT_UPDATE" ..tos(bagIdToFilter), EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_IS_NEW_ITEM, true)
                 em:AddFilterForEvent(gAddonName .. "_EVENT_INVENTORY_SINGLE_SLOT_UPDATE" ..tos(bagIdToFilter), EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_BAG_ID, bagIdToFilter)
             end
+
             --Register the callback function for an update of the inventory slots
             --SHARED_INVENTORY:RegisterCallback("SingleSlotInventoryUpdate", FCOItemSaver_OnSharedSingleSlotUpdate)
             --Events for destruction & destroy prevention
