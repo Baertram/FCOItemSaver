@@ -1312,10 +1312,12 @@ function FCOIS.IsItemSetAndNotExcluded(bag, slot, itemLink)
 
     local doDebug = false
     --For debugging automatic set markings only
+    --[[
     if bag == BAG_BACKPACK and slot == 187 then
 d("[FCOIS]IsItemSetAndNotExcluded: " .. itemLink)
         doDebug = true
     end
+    ]]
 
     local isAllowedSet, setId
     if itemLink ~= nil then

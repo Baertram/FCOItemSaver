@@ -77,7 +77,7 @@ local isMarked
 --Change this if you want to debug an item's automatic marks
 local isDebuggingCase = false --will be automatically switched to true if the item's bagId and slotIndex matches the values below (-1, -1 should never be found):
 local debuggingBagId =      -1 --BAG_BACKPACK
-local debuggingSlotIndex =  -1 --187             
+local debuggingSlotIndex =  -1 --187
 --!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 --==========================================================================================================================================
@@ -2256,7 +2256,7 @@ end
             FCOIS.preventerVars.doNotScanInv = false
             return false
         end
---d("[ScanInventory] bag: " .. tos(p_bagId) .. ", slot: " .. tos(p_slotIndex) .. ", scanningInv: " .. tos(FCOIS.preventerVars.gScanningInv))
+        if isDebuggingCase then d("[ScanInventory] bag: " .. tos(p_bagId) .. ", slot: " .. tos(p_slotIndex) .. ", scanningInv: " .. tos(FCOIS.preventerVars.gScanningInv)) end
         --Inventory scan is alreay active? Do not start another one!
         if FCOIS.preventerVars.gScanningInv == true then return end
 
@@ -2287,7 +2287,7 @@ end
         checksAlreadyDoneTable["sets"]                      = (settings.autoMarkSets == true and isIconEnabledSettings[settings.autoMarkSetsIconNr])
         --checksAlreadyDoneTable["LibSetsSetSearchFavoriteCategoryMarkers"] = (libSets ~= nil and libSets.GetSetSearchFavoriteCategories ~= nil) --#301
 
---d(">settingSets: " ..tos(settings.autoMarkSets) .. "; iconEnabled: " .. tos(isIconEnabledSettings[settings.autoMarkSetsIconNr]))
+        --d(">settingSets: " ..tos(settings.autoMarkSets) .. "; iconEnabled: " .. tos(isIconEnabledSettings[settings.autoMarkSetsIconNr]))
 
         local isCheckNecessary = false
         for _, isCheckNecessaryAtCheckType in pairs(checksAlreadyDoneTable) do
@@ -2298,7 +2298,7 @@ end
         end
 
         if isCheckNecessary == true then
---d("-Scanning needed-")
+            --d("-Scanning needed-")
             local fcoisLoc = FCOIS.localizationVars.fcois_loc
             local preVars  = FCOIS.preChatVars
             local prefixFCOISGreen = preVars.preChatTextGreen
@@ -2307,8 +2307,10 @@ end
 
             -- Scan the whole inventory because no bagId and slotIndex are given
             if p_bagId == nil or p_slotIndex == nil then
-d(">>~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-d("[ScanInventory] Start ALL")
+                if isDebuggingCase then
+                    d(">>~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+                    d("[ScanInventory] Start ALL")
+                end
                 if settings.debug then debugMessage( "[ScanInventory]","Start ALL", false, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
 
                 if p_bagId == nil and p_slotIndex ~= nil then
@@ -2345,8 +2347,10 @@ d("[ScanInventory] Start ALL")
                     end
                 end
                 if settings.debug then debugMessage( "[ScanInventory]","End ALL", false, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
-                d("[ScanInventory] END ALL")
-d("<<~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+                if isDebuggingCase then
+                    d("[ScanInventory] END ALL")
+                    d("<<~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+                end
 
             else
                 --d("[ScanInventory] Start ONE ITEM")
