@@ -598,7 +598,7 @@ local function FCOItemSaver_Inv_Single_Slot_Update(_, bagId, slotId, isNewItem, 
     if FCOIS.preventerVars.writCreatorCreatedItem then return false end
     local settings = FCOIS.settingsVars.settings
     --Scan new items in the player inventory and add markers OR update equipped/unequipped item markers
-    --d("[FCOItemSaver_Inv_Single_Slot_Update] bagId: " .. bagId .. ", slot: " .. slotId..", isNewItem: " .. tos(isNewItem)..", updateReason: " .. tos(updateReason) .. ", FCOIS.newItemCrafted: " .. tos(FCOIS.preventerVars.newItemCrafted))
+--d("[FCOItemSaver_Inv_Single_Slot_Update] bagId: " .. bagId .. ", slot: " .. slotId..", isNewItem: " .. tos(isNewItem)..", updateReason: " .. tos(updateReason) .. ", FCOIS.newItemCrafted: " .. tos(FCOIS.preventerVars.newItemCrafted))
     -- ===== Do some abort checks first =====
     --Mark new crafted item with the lock (or the chosen) icon?
     if FCOIS.preventerVars.newItemCrafted and bagId ~= nil and slotId ~= nil then --and isNewItem then
@@ -669,6 +669,7 @@ local function FCOItemSaver_Inv_Single_Slot_Update(_, bagId, slotId, isNewItem, 
             if settings.debug then debugMessage( "[EVENT]",">executed now! bagId=" .. bagId .. ", slotIndex=" .. slotId, true, FCOIS_DEBUG_DEPTH_NORMAL) end
             --Scan the inventory item for automatic marker icons which should be set
             if not checkIfAutomaticMarksAreDisabledAtBag(bagId) then
+            --d("[FCOIS]automatic marks are disabled at the bag!")
                 FCOIS.preventerVars.eventInventorySingleSlotUpdate = true
                 scanInventory(bagId, slotId, false) --no chat output!
                 FCOIS.preventerVars.eventInventorySingleSlotUpdate = false
