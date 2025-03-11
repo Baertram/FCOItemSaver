@@ -478,6 +478,7 @@ local function FCOItemSaver_OnInventorySlot_DoPrimaryAction(inventorySlot)
     --Special case for AwesomeGuildStore -> directly sell to guild store from custom bank fragment --#309
     -->Will be detected as bank here, but actually is guild store sell!
     local filterPanelId = FCOIS.gFilterWhere
+    checkIfAGSShowsCustomPanelAtGuildStore = checkIfAGSShowsCustomPanelAtGuildStore or FCOIS.CheckIfAGSShowsCustomPanelAtGuildStore
     if isABankWithdraw == true
         --and ctrlVars.GUILD_STORE_SCENE:IsShowing() and ctrlVars.BANK_FRAGMENT:IsShowing() then --#309
         and checkIfAGSShowsCustomPanelAtGuildStore(filterPanelId, nil) then --#309
