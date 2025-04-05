@@ -2574,7 +2574,15 @@ FCOIS.localizationVars.localizationAll = {
         --[FCOIS_UNIQUEID_ITEMTYPES]
         ["LIBSHIFTERBOX_FCOIS_UNIQUEID_ITEMTYPES_TITLE_LEFT"]   = "Gegenstandstypen (Alle)",
         ["LIBSHIFTERBOX_FCOIS_UNIQUEID_ITEMTYPES_TITLE_RIGHT"]  = "Für FCOIS Eindeutige ID gewählt",
-        ["LIBSHIFTERBOX_FCOIS_UNIQUEID_ITEMTYPES_RIGHT_NON_EMPTY"]  = "Eindeutige ID Gegenstandstypen können nicht leer sein!\nBitte wähle mindestens einen Typ aus. Ansonsten werden die Standard Werte Waffen und Rüstung automatich wieder hinzugefügt!"
+        ["LIBSHIFTERBOX_FCOIS_UNIQUEID_ITEMTYPES_RIGHT_NON_EMPTY"]  = "Eindeutige ID Gegenstandstypen können nicht leer sein!\nBitte wähle mindestens einen Typ aus. Ansonsten werden die Standard Werte Waffen und Rüstung automatich wieder hinzugefügt!",
+
+        --#311 -v-
+        ["LIBSHIFTERBOX_FCOIS_ALLOWEXCLUSION_MAIL_TITLE_LEFT"] = "Mail blockieren",
+        ["LIBSHIFTERBOX_FCOIS_ALLOWEXCLUSION_MAIL_TITLE_RIGHT"] = "Mail erlauben",
+        ["options_header_allow_exclusion_non_dynamic"] = "Ausnahmen - Nicht-dynamische Symbole",
+        ["options_allow_mail_exclusion_non_dynamic"] = "An Mail anhängen - Ausnahme",
+        ["options_allow_mail_exclusion_non_dynamic_TT"] = "Du kannst nicht-dynamische Symbole in der Dual-Listbox hier drunter von links nach rechts bewegen, um diese Symbole beim Mail Anhang zu erlauben. Oder von rechts nach links, um diese zu blockieren.",
+        --#311 -^-
     },
 --==============================================================================
 --French / Französisch
