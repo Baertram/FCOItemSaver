@@ -6562,6 +6562,51 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                         },
                     }, -- controls anti equip
                 }, -- submenu anti equip
+
+
+                -- Allow mail --#311 -v-
+                {
+                    type = "submenu",
+                    name = locVars["options_header_allow_exclusion_non_dynamic"],
+                    controls =
+                    {
+                        {
+                            type = "checkbox",
+                            name = locVars["options_allow_mail_exclusion_non_dynamic"],
+                            tooltip = locVars["options_allow_mail_exclusion_non_dynamic" .. tooltipSuffix],
+                            getFunc = function() return FCOISsettings.allowExclusionMail end,
+                            setFunc = function(value) FCOISsettings.allowExclusionMail = value
+                            end,
+                            default = FCOISdefaultSettings.allowExclusionMail,
+                        },
+
+                        --LibShifterBox: Allow mail exclusion
+                        {
+                            type = "custom",
+                            reference = (lsb and libShifterBoxes[FCOIS_CON_LIBSHIFTERBOX_FCOISALLOWEXCLUSION_MAIL].name) or "FCOITEMSAVER_LAM_CUSTOM___FCOIS_ALLOWEXCLUSION_MAIL",
+                            createFunc = function(customControl)
+                                if not lsb then return end
+                                FCOIS.createLibShifterBox(customControl, FCOIS_CON_LIBSHIFTERBOX_FCOISALLOWEXCLUSION_MAIL)
+
+                                --Will be called by the LAM panel automatically upon refresh of controls
+                                customControl.UpdateDisabled = function(customControl)
+                                    if lsb and libShifterBoxes[FCOIS_CON_LIBSHIFTERBOX_FCOISALLOWEXCLUSION_MAIL] then
+                                        FCOIS.updateLibShifterBoxState(customControl, nil, FCOIS_CON_LIBSHIFTERBOX_FCOISALLOWEXCLUSION_MAIL)
+                                    end
+                                end
+
+                            end,
+                            width="full",
+                            minHeight = 150,
+                            --disabled = function() return not FCOISsettings.allowExclusionMail end,
+                        },
+
+                    }, -- controls allow exclusion
+                }, -- submenu allow exclusion  --#311 -^-
+
+                --==============================================================================
+
+
                 {
                     type = "header",
                     name = locVars["options_header_destroy"],

@@ -14,6 +14,8 @@ local numFilterIcons = FCOIS.numVars.gFCONumFilterIcons
 local getSavedVarsMarkedItemsTableName = FCOIS.GetSavedVarsMarkedItemsTableName
 local showItemLinkTooltip = FCOIS.ShowItemLinkTooltip
 local hideItemLinkTooltip = FCOIS.HideItemLinkTooltip
+local getIconText = FCOIS.GetIconText
+
 
 if not FCOIS.libShifterBox then return end
 local lsb = FCOIS.libShifterBox
@@ -21,10 +23,13 @@ local lsb = FCOIS.libShifterBox
 local FCOISlocVars = FCOIS.localizationVars
 local locVars      = FCOISlocVars.fcois_loc
 
+
+
 --The LibShifterBoxes FCOIS uses:
 --The box for the LAM settings panel FCOIS uniqueId itemTypes
 local FCOISuniqueIdItemTypes = FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES   --FCOISuniqueIdItemTypes
 local FCOISexcludedSets      = FCOIS_CON_LIBSHIFTERBOX_EXCLUDESETS              --FCOISexcludedSets
+local FCOISallowExclusionMail = FCOIS_CON_LIBSHIFTERBOX_FCOISALLOWEXCLUSION_MAIL --FCOISallowExclusionMail --#311
 
 FCOIS.LibShifterBoxes = {
     --ShortName = LAM control global name/reference
@@ -69,8 +74,29 @@ FCOIS.LibShifterBoxes = {
         lamCustomControl = nil,
         control = nil,
     },
+    --Allow non-dynamic marker icons to exclude mail protection
+    [FCOISallowExclusionMail] = {
+        name = addonName .. "_LAM_CUSTOM___FCOIS_ALLOWEXCLUSION_MAIL",
+        customSettings = {
+            leftList = {
+                title = locVars["LIBSHIFTERBOX_FCOIS_ALLOWEXCLUSION_MAIL_TITLE_LEFT"],
+            },
+            rightList = {
+                title = locVars["LIBSHIFTERBOX_FCOIS_ALLOWEXCLUSION_MAIL_TITLE_RIGHT"],
+            }
+        },
+        width       = 450,
+        height      = 150,
+        --Right's list default entries
+        defaultRightListKeys = {
+        },
+        --Controls
+        lamCustomControl = nil,
+        control = nil,
+    },
 }
 local libShifterBoxes = FCOIS.LibShifterBoxes
+
 
 local function getLeftListEntriesFull(shifterBox)
     if not shifterBox then return end
@@ -123,6 +149,10 @@ local function myShifterBoxEventEntryMovedCallbackFunction(shifterBox, key, valu
             hideItemLinkTooltip()
             --Moved to the left? Set SavedVariables value nil
             FCOIS.settingsVars.settings.autoMarkSetsExcludeSetsList[key] = nil
+        elseif boxName == FCOISallowExclusionMail then --#311
+            hideItemLinkTooltip()
+            --Moved to the left? Set SavedVariables value nil
+            FCOIS.settingsVars.settings.allowExclusionMailFor[key] = nil
         end
     else
         if boxName == FCOISuniqueIdItemTypes then
@@ -133,6 +163,10 @@ local function myShifterBoxEventEntryMovedCallbackFunction(shifterBox, key, valu
             hideItemLinkTooltip()
             --Moved to the right? Save to SavedVariables with value true
             FCOIS.settingsVars.settings.autoMarkSetsExcludeSetsList[key] = true
+        elseif boxName == FCOISallowExclusionMail then --#311
+            hideItemLinkTooltip()
+            --Moved to the right? Set SavedVariables value true
+            FCOIS.settingsVars.settings.allowExclusionMailFor[key] = true
         end
     end
 end
@@ -164,6 +198,9 @@ local function updateLibShifterBoxEntries(parentCtrl, shifterBox, boxName)
     if not shifterBox then return end
     local settings = FCOIS.settingsVars.settings
 
+    local clientLang = FCOIS.clientLanguage
+
+
     local leftListEntries = {}
     local rightListEntries = {}
 
@@ -188,7 +225,6 @@ local function updateLibShifterBoxEntries(parentCtrl, shifterBox, boxName)
         local libSets = FCOIS.libSets
         if libSets then --#304
             local allSetNames = libSets.GetAllSetNames()
-            local clientLang = FCOIS.clientLanguage
             if allSetNames ~= nil then
                 local autoMarkSetsExcludeSetsList = settings.autoMarkSetsExcludeSetsList
                 for setId, setNamesTable in pairs(allSetNames) do
@@ -199,6 +235,30 @@ local function updateLibShifterBoxEntries(parentCtrl, shifterBox, boxName)
                         rightListEntries[setId] = setNamesTable[clientLang]
                     else
                         leftListEntries[setId] = setNamesTable[clientLang]
+                    end
+                end
+            end
+        end
+    --Allow mail --#311
+    elseif boxName == FCOISallowExclusionMail then --#311
+        local mappingVars = FCOIS.mappingVars
+        local iconIsDynamic = mappingVars.iconIsDynamic
+        if iconIsDynamic ~= nil then
+            local allowExclusionMailFor = settings.allowExclusionMailFor
+            local iconIsGear = settings.iconIsGear
+            local optionsIcon = "options_icon"
+
+            getIconText = getIconText or FCOIS.GetIconText
+
+            for markerIconId, isDynamic in pairs(iconIsDynamic) do
+                if not isDynamic and not iconIsGear[markerIconId] then
+                    local locNameStr = FCOISlocVars.iconEndStrArray[markerIconId]
+                    local markerIconName = getIconText(markerIconId, true, true, false) or locVars[optionsIcon .. tostring(markerIconId) .. "_" .. locNameStr] or "Icon " .. tostring(markerIconId)
+
+                    if allowExclusionMailFor[markerIconId] ~= nil then
+                        rightListEntries[markerIconId] = markerIconName
+                    else
+                        leftListEntries[markerIconId] = markerIconName
                     end
                 end
             end
@@ -221,12 +281,16 @@ local function updateLibShifterBoxState(parentCtrl, shifterBox, boxName)
     shifterBox = shifterBox or shifterBoxData.control
     if not shifterBox then return end
 
+    local settings = FCOIS.settingsVars.settings
+
     local isEnabled = true
     --FCOIS uniqueId itemTypes
     if boxName == FCOISuniqueIdItemTypes then
         isEnabled = FCOIS.uniqueIdIsEnabledAndSetToFCOIS()
     elseif boxName == FCOISexcludedSets then
-        isEnabled = (FCOIS.libSets ~= nil and FCOIS.settingsVars.settings.autoMarkSetsExcludeSets == true) or false --#304
+        isEnabled = (FCOIS.libSets ~= nil and settings.autoMarkSetsExcludeSets == true) or false --#304
+    elseif boxName == FCOISallowExclusionMail then --#311
+        isEnabled = (settings.allowExclusionMail == true) or false --#311
     end
 
     parentCtrl:SetHidden(false)

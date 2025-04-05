@@ -1320,8 +1320,15 @@ FCOIS.localizationVars.localizationAll = {
         --[FCOIS_UNIQUEID_ITEMTYPES]
         ["LIBSHIFTERBOX_FCOIS_UNIQUEID_ITEMTYPES_TITLE_LEFT"]   = "Item types (all)",
         ["LIBSHIFTERBOX_FCOIS_UNIQUEID_ITEMTYPES_TITLE_RIGHT"]  = "Chosen for FCOIS unique ID",
-        ["LIBSHIFTERBOX_FCOIS_UNIQUEID_ITEMTYPES_RIGHT_NON_EMPTY"]  = "UniqueId itemTypes cannot be empty!\nPlease add at least one supported itemType, or the default values weapons and armor will be automatically pre-set again!"
-    },
+        ["LIBSHIFTERBOX_FCOIS_UNIQUEID_ITEMTYPES_RIGHT_NON_EMPTY"]  = "UniqueId itemTypes cannot be empty!\nPlease add at least one supported itemType, or the default values weapons and armor will be automatically pre-set again!",
+        --#311 -v-
+        ["LIBSHIFTERBOX_FCOIS_ALLOWEXCLUSION_MAIL_TITLE_LEFT"] = "Block mail",
+        ["LIBSHIFTERBOX_FCOIS_ALLOWEXCLUSION_MAIL_TITLE_RIGHT"] = "Allow mail",
+        ["options_header_allow_exclusion_non_dynamic"] = "Exclusion settings - Non dynamic icon",
+        ["options_allow_mail_exclusion_non_dynamic"] = "Attach to mail - Exclusion",
+        ["options_allow_mail_exclusion_non_dynamic_TT"] = "You can allow the non-dynamic marker icons to be attached to a mail by moving them to the right side of the dual list box.",
+        --#311 -^-
+},
 --==============================================================================
 	--German / Deutsch
     [FCOIS_CON_LANG_DE] = {
