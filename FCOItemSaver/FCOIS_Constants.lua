@@ -12,7 +12,7 @@ local strlen = string.len
 FCOIS.addonVars = {}
 local addonVars = FCOIS.addonVars
 --Addon variables
-addonVars.addonVersionOptions 		    = '2.6.5' -- version shown in the settings panel
+addonVars.addonVersionOptions 		    = '2.6.6' -- version shown in the settings panel
 --The addon name, normal and decorated with colors etc.
 addonVars.gAddonName				    = "FCOItemSaver"
 addonVars.gAddonNameShort               = "FCOIS"
@@ -91,6 +91,7 @@ FCOIS.svServerAllTheSameName        = "$AllServers"
 --LibShifterBox boxName constants
 FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES  = "FCOISuniqueIdItemTypes"
 FCOIS_CON_LIBSHIFTERBOX_EXCLUDESETS             = "FCOISexcludedSets"
+FCOIS_CON_LIBSHIFTERBOX_FCOISALLOWEXCLUSION_MAIL = "FCOISallowExclusionMail" --#311
 
 --The vendor type constants
 FCOIS_CON_VENDOR_TYPE_NORMAL_NPC    = 1

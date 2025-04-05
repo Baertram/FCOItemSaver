@@ -193,38 +193,33 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
 ]]
 
 
---#280 For future version of LibScrollableMenu, where LibCustomMenu was updated to be compatible too:
+--#280 For future version of LibScrollableMenu, where LibCustomMenu was updated to be compatible too (20250405: not going to be implemented into LSM soon!)
  -->Make FCOIS context menu and ZO_Menu stuff compatible with experimental LibScrollableMenu version where LSM will take over Inventory context menu creation from ZO_Menu/LibCustomMenu
-
 --#297 Add scribing script automatic markers via LibCharacterKnowlege (but these need to be character dependend markers, is that possible? Or are account wide markers also possible -> only mark "unknwon for any other char")
-
+--#301 Add LibSets set search favorites as marker icons of FCOIS to the inventories -> Maybe create a kind of "plugin system" that other addons can use to pass in a settings submenu, and some marker icons and textures of that other addon
 
 --______________________________________
--- Current max # of bugs/features/ToDos: 310
+-- Current max # of bugs/features/ToDos: 311
 --______________________________________
 
 --Open/To work on this patch:
---#309 Fixed support for AwesomeGuildStore's "sell to guildstore from craftbag/bank"
-
 
 --=== Not started yet ===
---#301 Add LibSets set search favorites as marker icons of FCOIS to the inventories -> Maybe create a kind of "plugin system" that other addons can use to pass in a settings submenu, and some marker icons and textures of that other addon
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2025-03-11
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2025-04-05
 ------------------------------------------------------------------------------------
---#309
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.6.4 - New version: 2.6.5) -    Updated last: 2025-03-11
+--Changelog (last version: 2.6.5 - New version: 2.6.6) -    Updated last: 2025-04-04
 -------------------------------------------------------------------------------------
 --[Fixed]
---#310 Automatic set marks do not work with FCOISuniqueItemIds - reported by user Mayrael
 
 --[Changed]
 
 --[Added]
+--#311 "Exclude mail protection" for non-dynamic marker icons: New daul listbox at "Anti settings" where you can exclude each non-dynamic non-gear icon from mail protection (to e.g. easily send deconstruct marked or intricate marked items via mail)
 
 
 --[Added on request]

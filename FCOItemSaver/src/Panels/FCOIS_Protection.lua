@@ -34,6 +34,7 @@ local isSendingMail = FCOIS.IsSendingMail
 local isResearchListDialogShown = FCOIS.IsResearchListDialogShown
 local isRetraitStationShown = FCOIS.IsRetraitStationShown
 local isItemAGlpyh = FCOIS.IsItemAGlpyh
+local FCOIS_isMailProtectionExcluded = FCOIS.IsMailProtectionExcluded
 
 local checkIfUniversaldDeconstructionNPC
 local checkActivePanel
@@ -506,7 +507,7 @@ function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChat
     local doDebug = false
     --TODO DEBUG: enable to show d messages for debugging
     --[[
-    if GetDisplayName() == "@Baertram" and bag == 5 and slot == 883 then --bug #272 20231205 -> Alchemy station, dynamic icon not protected
+    if GetDisplayName() == "@Baertram" and bag == 1 and (slot == 85 or slot == 99) then --bug #272 20231205 -> Alchemy station, dynamic icon not protected
         FCOIS.preventerVars.doDebugItemSelectionHandler = true
     end
     ]]
@@ -780,6 +781,9 @@ if doDebug then d(">>selling non-dynamic at guild store is allowed!") end
 if doDebug then d(">>IsItemAGlpyh: " .. tos(not isBlockedLoop) .. ", isBlockedLoop: " .. tos(isBlockedLoop)) end
                 --Research and research marker icon is allowed to be used at research panel and research dialog?
                 elseif ((iconIdToCheck==FCOIS_CON_ICON_RESEARCH and settings.allowResearch == true) and (whereAreWe == FCOIS_CON_RESEARCH or whereAreWe == FCOIS_CON_JEWELRY_RESEARCH or whereAreWe == FCOIS_CON_RESEARCH_DIALOG or whereAreWe == FCOIS_CON_JEWELRY_RESEARCH_DIALOG)) then
+                    isBlockedLoop = false
+                --Mail and mail exclusion is enabled for the marker icon? --#311
+                elseif (whereAreWe == FCOIS_CON_MAIL and FCOIS_isMailProtectionExcluded(iconIdToCheck, true)) then --#311
                     isBlockedLoop = false
                 end
                 --============== SPECIAL ITEM & ICON CHECKS - END (non-dynamic) ====================================

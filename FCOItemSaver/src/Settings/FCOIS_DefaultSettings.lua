@@ -401,6 +401,13 @@ function FCOIS.BuildDefaultSettings()
 		showTooltipAtRestoreLastMarked = false,
 		markerIconsOutputOrder = {},
 		markerIconsOutputOrderEntries = {},
+
+		allowExclusionMail			= false,			--#311
+		allowExclusionMailFor		= {					--#311
+			--[FCOIS_CON_ICON_DECONSTRUCTION] = true,
+		},
+
+
 		--autoMarkLibSetsSetSearchFavorites = false, --#301 LibSets set search favorites
 		--LibSetsSetSearchFavoriteToFCOISMapping = {}, --#301 LibSets set search favorites
 		--LibSetsSetSearchFavoriteToFCOISMappingRemoved = {} --#301 LibSets set search favorites

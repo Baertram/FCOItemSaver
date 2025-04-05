@@ -2147,6 +2147,19 @@ function FCOIS.IsSendingMail()
     return false
 end
 
+function FCOIS.IsMailProtectionExcluded(markerIconId, isNoDynamicIcon)
+    local settings = FCOIS.settingsVars.settings
+    local allowExclusionMail = settings.allowExclusionMail
+    if not allowExclusionMail then return false end
+
+    if not isNoDynamicIcon then
+        local isDynamicIcon = mappingVars.iconIsDynamic[markerIconId]
+        if isDynamicIcon then return false end
+    end
+
+    return settings.allowExclusionMailFor[markerIconId] or false
+end
+
 --==============================================================================
 -- Is dialog functions
 --==============================================================================
