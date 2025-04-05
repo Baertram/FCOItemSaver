@@ -445,7 +445,7 @@ checkIfItemIsProtected = FCOIS.CheckIfItemIsProtected
 FCOIS.checkIfItemIsProtected = checkIfItemIsProtected --backwards compatibility (lower case function name)
 
 --#311 Any normal marker icon got an exclusion enabled?
-local function normalMarkerIconExclusionsEnabled(panelId, iconIdToCheck, whereAreWe)
+local function FCOIS_normalMarkerIconExclusionsEnabled(panelId, iconIdToCheck, whereAreWe)
     if iconIdToCheck == nil or (panelId == nil and whereAreWe == nil) then return false end
     if whereAreWe ~= nil then
         if whereAreWe == FCOIS_CON_MAIL then
@@ -459,7 +459,7 @@ local function normalMarkerIconExclusionsEnabled(panelId, iconIdToCheck, whereAr
     end
     return false
 end
-FCOIS.normalMarkerIconExclusionsEnabled = normalMarkerIconExclusionsEnabled
+FCOIS.normalMarkerIconExclusionsEnabled = FCOIS_normalMarkerIconExclusionsEnabled
 
 -- Fired when user selects an item to destroy.
 -- Warns user if the item is marked with any of the filter icons
