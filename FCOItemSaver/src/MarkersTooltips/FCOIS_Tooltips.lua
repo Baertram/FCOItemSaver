@@ -16,6 +16,7 @@ local preChatTextGreen = preChatVars.preChatTextGreen
 
 local checkIfProtectedSettingsEnabled = FCOIS.CheckIfProtectedSettingsEnabled
 local myGetItemDetails = FCOIS.MyGetItemDetails
+local FCOIS_normalMarkerIconExclusionsEnabled = FCOIS.normalMarkerIconExclusionsEnabled
 
 local isDynamicGearIcon
 local isMarked
@@ -197,7 +198,12 @@ function FCOIS.CreateToolTip(markerControl, markerId, doHide, pUpdateAllEquipmen
                                 normalSettingsEnabled = isDestroyProtected
                             end
                             if normalSettingsEnabled then
-                                colorForText = protectionEnabledColor
+                                --#311 Check if any special exclusions are enabled
+                                if FCOIS_normalMarkerIconExclusionsEnabled(panelId, iconId, whereAreWe) then --#311
+                                    colorForText = protectionDisabledColor
+                                else
+                                    colorForText = protectionEnabledColor
+                                end
                             else
                                 colorForText = protectionDisabledColor
                             end

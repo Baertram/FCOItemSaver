@@ -208,11 +208,11 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2025-04-05
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2025-04-06
 ------------------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.6.5 - New version: 2.6.6) -    Updated last: 2025-04-04
+--Changelog (last version: 2.6.6 - New version: 2.6.7) -    Updated last: 2025-04-06
 -------------------------------------------------------------------------------------
 --[Fixed]
 

@@ -444,6 +444,22 @@ end
 checkIfItemIsProtected = FCOIS.CheckIfItemIsProtected
 FCOIS.checkIfItemIsProtected = checkIfItemIsProtected --backwards compatibility (lower case function name)
 
+--#311 Any normal marker icon got an exclusion enabled?
+local function normalMarkerIconExclusionsEnabled(panelId, iconIdToCheck, whereAreWe)
+    if iconIdToCheck == nil or (panelId == nil and whereAreWe == nil) then return false end
+    if whereAreWe ~= nil then
+        if whereAreWe == FCOIS_CON_MAIL then
+            return FCOIS_isMailProtectionExcluded(iconIdToCheck, true) or false
+        end
+
+    elseif panelId ~= nil then
+        if panelId == LF_MAIL_SEND then
+            return FCOIS_isMailProtectionExcluded(iconIdToCheck, true) or false
+        end
+    end
+    return false
+end
+FCOIS.normalMarkerIconExclusionsEnabled = normalMarkerIconExclusionsEnabled
 
 -- Fired when user selects an item to destroy.
 -- Warns user if the item is marked with any of the filter icons
@@ -783,7 +799,7 @@ if doDebug then d(">>IsItemAGlpyh: " .. tos(not isBlockedLoop) .. ", isBlockedLo
                 elseif ((iconIdToCheck==FCOIS_CON_ICON_RESEARCH and settings.allowResearch == true) and (whereAreWe == FCOIS_CON_RESEARCH or whereAreWe == FCOIS_CON_JEWELRY_RESEARCH or whereAreWe == FCOIS_CON_RESEARCH_DIALOG or whereAreWe == FCOIS_CON_JEWELRY_RESEARCH_DIALOG)) then
                     isBlockedLoop = false
                 --Mail and mail exclusion is enabled for the marker icon? --#311
-                elseif (whereAreWe == FCOIS_CON_MAIL and FCOIS_isMailProtectionExcluded(iconIdToCheck, true)) then --#311
+                elseif (FCOIS_normalMarkerIconExclusionsEnabled(panelId, iconIdToCheck, whereAreWe)) then --#311
                     isBlockedLoop = false
                 end
                 --============== SPECIAL ITEM & ICON CHECKS - END (non-dynamic) ====================================
