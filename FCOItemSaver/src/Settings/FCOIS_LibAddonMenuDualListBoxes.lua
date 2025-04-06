@@ -23,7 +23,7 @@ local lsb = FCOIS.libShifterBox
 local FCOISlocVars = FCOIS.localizationVars
 local locVars      = FCOISlocVars.fcois_loc
 
-
+FCOIS.LibShifterBoxes = {}
 
 --The LibShifterBoxes FCOIS uses:
 --The box for the LAM settings panel FCOIS uniqueId itemTypes
@@ -31,71 +31,82 @@ local FCOISuniqueIdItemTypes = FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES   
 local FCOISexcludedSets      = FCOIS_CON_LIBSHIFTERBOX_EXCLUDESETS              --FCOISexcludedSets
 local FCOISallowExclusionMail = FCOIS_CON_LIBSHIFTERBOX_FCOISALLOWEXCLUSION_MAIL --FCOISallowExclusionMail --#311
 
-FCOIS.LibShifterBoxes = {
-    --ShortName = LAM control global name/reference
-    --Itemtypes for FCOIS created uniqueIds
-    [FCOISuniqueIdItemTypes] = {
-        name = addonName .. "_LAM_CUSTOM___FCOIS_UNIQUEID_ITEMTYPES",
-        customSettings = {
-            leftList = {
-                title = locVars["LIBSHIFTERBOX_FCOIS_UNIQUEID_ITEMTYPES_TITLE_LEFT"],
+local libShifterBoxesWerePrepared = false
+local function prepareFCOISLibShifterBoxes()
+    if libShifterBoxesWerePrepared then return FCOIS.LibShifterBoxes end
+
+    locVars = FCOISlocVars.fcois_loc
+
+    local libShifterBoxes = {
+        --ShortName = LAM control global name/reference
+        --Itemtypes for FCOIS created uniqueIds
+        [FCOISuniqueIdItemTypes] = {
+            name = addonName .. "_LAM_CUSTOM___FCOIS_UNIQUEID_ITEMTYPES",
+            customSettings = {
+                leftList = {
+                    title = locVars["LIBSHIFTERBOX_FCOIS_UNIQUEID_ITEMTYPES_TITLE_LEFT"],
+                },
+                rightList = {
+                    title = locVars["LIBSHIFTERBOX_FCOIS_UNIQUEID_ITEMTYPES_TITLE_RIGHT"],
+                }
             },
-            rightList = {
-                title = locVars["LIBSHIFTERBOX_FCOIS_UNIQUEID_ITEMTYPES_TITLE_RIGHT"],
-            }
-        },
-        width       = 580,
-        height      = 200,
-        --Right's list default entries
-        defaultRightListKeys = {
-          ITEMTYPE_WEAPON, ITEMTYPE_ARMOR
-        },
-        --Controls
-        lamCustomControl = nil,
-        control = nil,
-    },
-    --Exclude sets
-    [FCOISexcludedSets] = {
-        name = addonName .. "_LAM_CUSTOM___FCOIS_EXCLUDED_SETS",
-        customSettings = {
-            leftList = {
-                title = locVars["options_exclude_automark_sets_included"],
+            width       = 580,
+            height      = 200,
+            --Right's list default entries
+            defaultRightListKeys = {
+                ITEMTYPE_WEAPON, ITEMTYPE_ARMOR
             },
-            rightList = {
-                title = locVars["options_exclude_automark_sets_list"],
-            }
+            --Controls
+            lamCustomControl = nil,
+            control = nil,
         },
-        width       = 450,
-        height      = 200,
-        --Right's list default entries
-        defaultRightListKeys = {
-        },
-        --Controls
-        lamCustomControl = nil,
-        control = nil,
-    },
-    --Allow non-dynamic marker icons to exclude mail protection
-    [FCOISallowExclusionMail] = {
-        name = addonName .. "_LAM_CUSTOM___FCOIS_ALLOWEXCLUSION_MAIL",
-        customSettings = {
-            leftList = {
-                title = locVars["LIBSHIFTERBOX_FCOIS_ALLOWEXCLUSION_MAIL_TITLE_LEFT"],
+        --Exclude sets
+        [FCOISexcludedSets] = {
+            name = addonName .. "_LAM_CUSTOM___FCOIS_EXCLUDED_SETS",
+            customSettings = {
+                leftList = {
+                    title = locVars["options_exclude_automark_sets_included"],
+                },
+                rightList = {
+                    title = locVars["options_exclude_automark_sets_list"],
+                }
             },
-            rightList = {
-                title = locVars["LIBSHIFTERBOX_FCOIS_ALLOWEXCLUSION_MAIL_TITLE_RIGHT"],
-            }
+            width       = 450,
+            height      = 200,
+            --Right's list default entries
+            defaultRightListKeys = {
+            },
+            --Controls
+            lamCustomControl = nil,
+            control = nil,
         },
-        width       = 450,
-        height      = 150,
-        --Right's list default entries
-        defaultRightListKeys = {
+        --Allow non-dynamic marker icons to exclude mail protection
+        [FCOISallowExclusionMail] = {
+            name = addonName .. "_LAM_CUSTOM___FCOIS_ALLOWEXCLUSION_MAIL",
+            customSettings = {
+                leftList = {
+                    title = locVars["LIBSHIFTERBOX_FCOIS_ALLOWEXCLUSION_MAIL_TITLE_LEFT"],
+                },
+                rightList = {
+                    title = locVars["LIBSHIFTERBOX_FCOIS_ALLOWEXCLUSION_MAIL_TITLE_RIGHT"],
+                }
+            },
+            width       = 450,
+            height      = 150,
+            --Right's list default entries
+            defaultRightListKeys = {
+            },
+            --Controls
+            lamCustomControl = nil,
+            control = nil,
         },
-        --Controls
-        lamCustomControl = nil,
-        control = nil,
-    },
-}
-local libShifterBoxes = FCOIS.LibShifterBoxes
+    }
+    FCOIS.LibShifterBoxes = libShifterBoxes
+    libShifterBoxesWerePrepared = true
+    return FCOIS.LibShifterBoxes
+end
+FCOIS.prepareFCOISLibShifterBoxes = prepareFCOISLibShifterBoxes
+
 
 
 local function getLeftListEntriesFull(shifterBox)
@@ -110,6 +121,7 @@ end
 
 local function getBoxName(shifterBox)
     if not shifterBox then return end
+    local libShifterBoxes = FCOIS.LibShifterBoxes
     for k, dataTab in pairs(libShifterBoxes) do
         if dataTab.control ~= nil and dataTab.control == shifterBox then
             return k
@@ -133,6 +145,7 @@ local function myShifterBoxEventEntryMovedCallbackFunction(shifterBox, key, valu
     local boxName = getBoxName(shifterBox)
 --d("LSB FCOIS, boxName: " ..tostring(boxName))
     if not boxName or boxName == "" then return end
+    local libShifterBoxes = FCOIS.LibShifterBoxes
     local shifterBoxData = libShifterBoxes[boxName]
 
     --Moved to the ?
@@ -193,6 +206,7 @@ end
 
 local function updateLibShifterBoxEntries(parentCtrl, shifterBox, boxName)
     if not parentCtrl or not boxName or boxName == "" then return end
+    local libShifterBoxes = FCOIS.LibShifterBoxes
     local shifterBoxData = libShifterBoxes[boxName]
     shifterBox = shifterBox or shifterBoxData.control
     if not shifterBox then return end
@@ -277,6 +291,7 @@ end
 
 local function updateLibShifterBoxState(parentCtrl, shifterBox, boxName)
     if not parentCtrl or not boxName or boxName == "" then return end
+    local libShifterBoxes = FCOIS.LibShifterBoxes
     local shifterBoxData = libShifterBoxes[boxName]
     shifterBox = shifterBox or shifterBoxData.control
     if not shifterBox then return end
@@ -330,6 +345,7 @@ end
 
 local function updateLibShifterBox(parentCtrl, shifterBox, boxName)
     if not parentCtrl or not boxName or boxName == "" then return end
+    local libShifterBoxes = FCOIS.LibShifterBoxes
     local shifterBoxData = libShifterBoxes[boxName]
     if not shifterBoxData then return end
     shifterBox = shifterBox or shifterBoxData.control
@@ -358,11 +374,17 @@ end
 --Create a LibShifterBox for e.g. LAM settings panel
 function FCOIS.createLibShifterBox(customControl, boxName)
     if not customControl or not boxName or boxName == "" then return end
+
+    prepareFCOISLibShifterBoxes()
+    local libShifterBoxes = FCOIS.LibShifterBoxes
     local boxData = libShifterBoxes[boxName]
     if not boxData then return end
+
     libShifterBoxes[boxName].lamCustomControl = customControl
-    local shifterBox = lsb(addonName, boxName .. "_LSB", customControl, boxData.customSettings)
+                         --uniqueAddonName, uniqueShifterBoxName, parentControl, customSettings, anchorOptions, dimensionOptions, leftListEntries, rightListEntries
+    local shifterBox = lsb(addonName, boxName .. "_LSB", customControl, boxData.customSettings, nil, nil, nil, nil)
     libShifterBoxes[boxName].control = shifterBox
+
     --Update the shifter box entries and state
     updateLibShifterBox(customControl, shifterBox, boxName)
 end

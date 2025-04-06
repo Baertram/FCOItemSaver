@@ -3263,7 +3263,9 @@ function FCOIS.BuildAddonMenu()
 
     --[Libraries]
     --LibShifterBox
+    FCOIS.LibShifterBoxes = FCOIS.prepareFCOISLibShifterBoxes()
     local lsb = FCOIS.libShifterBox
+
     local libShifterBoxes
     if lsb then
         libShifterBoxes = FCOIS.LibShifterBoxes

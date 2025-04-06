@@ -199,7 +199,7 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
 --#301 Add LibSets set search favorites as marker icons of FCOIS to the inventories -> Maybe create a kind of "plugin system" that other addons can use to pass in a settings submenu, and some marker icons and textures of that other addon
 
 --______________________________________
--- Current max # of bugs/features/ToDos: 311
+-- Current max # of bugs/features/ToDos: 312
 --______________________________________
 
 --Open/To work on this patch:
@@ -212,9 +212,10 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
 ------------------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.6.6 - New version: 2.6.7) -    Updated last: 2025-04-06
+--Changelog (last version: 2.6.7 - New version: 2.6.8) -    Updated last: 2025-04-06
 -------------------------------------------------------------------------------------
 --[Fixed]
+--#312 Dual list box header texts were not showing properly
 
 --[Changed]
 
