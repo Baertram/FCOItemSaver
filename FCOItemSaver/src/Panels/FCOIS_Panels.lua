@@ -265,13 +265,10 @@ function FCOIS.GetWhereAreWe(panelId, panelIdAtCall, panelIdParent, bag, slot, i
             end
         --Inside guild store selling?
         elseif (calledFromExternalAddon and panelIdParent == LF_GUILDSTORE_SELL) or (not calledFromExternalAddon and (not ctrlVars.GUILD_STORE:IsHidden() or parentFilterPanelId == LF_GUILDSTORE_SELL)) then
-d("[FCOIS]GetWhereAreWe - CBE GuildStoreSell from craftbag - filterPanelId: " .. tos(panelId) ..", isDragAndDrop: " ..tos(isDragAndDrop) .. ", panelIdParent: " .. tos(panelIdParent))
             --There is a CraftBag at a guild bank withdraw panel, but only if AwesomeGuildStore is enabled
             if agsShowsCustomPanelAtGuildStore then         --#309
-d(">>FCOIS_CON_GUILD_STORE_SELL")
                 whereAreWe = FCOIS_CON_GUILD_STORE_SELL
             else
-d(">>FCOIS_CON_CRAFTBAG_DESTROY")
                 whereAreWe = FCOIS_CON_CRAFTBAG_DESTROY     --#309
             end
             --[[
@@ -319,15 +316,12 @@ d(">>FCOIS_CON_CRAFTBAG_DESTROY")
     elseif (not isDeconNPC and agsShowsCustomPanelAtGuildStore) then  --#309
         panelIdParent = panelIdParent or parentFilterPanelId
         if (INVENTORY_CRAFT_BAG and ((calledFromExternalAddon and panelId == LF_CRAFTBAG) or (not calledFromExternalAddon and (panelId == LF_CRAFTBAG or not ctrlVars.CRAFTBAG:IsHidden())))) then --#309
-d("[FCOIS]GetWhereAreWe - AwesomeGuildStore GuildStoreSell from craftbag - filterPanelId: " .. tos(panelId) ..", isDragAndDrop: " ..tos(isDragAndDrop) .. ", panelIdParent: " .. tos(panelIdParent))
             whereAreWe = FCOIS_CON_GUILD_STORE_SELL
 
         elseif ((calledFromExternalAddon and panelId == LF_BANK_WITHDRAW) or (not calledFromExternalAddon and (panelId == LF_BANK_WITHDRAW or ctrlVars.BANK_FRAGMENT:IsShowing()))) then --#309
-d("[FCOIS]GetWhereAreWe - AwesomeGuildStore GuildStoreSell from bank - filterPanelId: " .. tos(panelId) ..", isDragAndDrop: " ..tos(isDragAndDrop) .. ", panelIdParent: " .. tos(panelIdParent))
             whereAreWe = FCOIS_CON_GUILD_STORE_SELL
 
         else
-d("[FCOIS]GetWhereAreWe - AwesomeGuildStore GuildStoreSell FALLBACK - filterPanelId: " .. tos(panelId) ..", isDragAndDrop: " ..tos(isDragAndDrop) .. ", panelIdParent: " .. tos(panelIdParent))
             whereAreWe = FCOIS_CON_GUILD_STORE_SELL
             --Fallback - Should not happen --#309
             whereAreWe = FCOIS_CON_DESTROY
