@@ -447,12 +447,16 @@ FCOIS.checkIfItemIsProtected = checkIfItemIsProtected --backwards compatibility 
 --#311 Any normal marker icon got an exclusion enabled?
 local function FCOIS_normalMarkerIconExclusionsEnabled(panelId, iconIdToCheck, whereAreWe)
     if iconIdToCheck == nil or (panelId == nil and whereAreWe == nil) then return false end
+
+    --WhereAreWe checks
     if whereAreWe ~= nil then
         if whereAreWe == FCOIS_CON_MAIL then
             return FCOIS_isMailProtectionExcluded(iconIdToCheck, true) or false
         end
+    end
 
-    elseif panelId ~= nil then
+    --PanelId (LibFilters) checks
+    if panelId ~= nil then
         if panelId == LF_MAIL_SEND then
             return FCOIS_isMailProtectionExcluded(iconIdToCheck, true) or false
         end

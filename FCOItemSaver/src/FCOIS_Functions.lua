@@ -2157,7 +2157,9 @@ function FCOIS.IsMailProtectionExcluded(markerIconId, isNoDynamicIcon)
         if isDynamicIcon then return false end
     end
 
-    return settings.allowExclusionMailFor[markerIconId] or false
+    local isMarkerIconProtectionExcludedAtPanel = settings.allowExclusionMailFor[markerIconId]
+    if isMarkerIconProtectionExcludedAtPanel == nil then isMarkerIconProtectionExcludedAtPanel = false end
+    return isMarkerIconProtectionExcludedAtPanel
 end
 
 --==============================================================================

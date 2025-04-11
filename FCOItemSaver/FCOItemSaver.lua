@@ -197,9 +197,14 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
  -->Make FCOIS context menu and ZO_Menu stuff compatible with experimental LibScrollableMenu version where LSM will take over Inventory context menu creation from ZO_Menu/LibCustomMenu
 --#297 Add scribing script automatic markers via LibCharacterKnowlege (but these need to be character dependend markers, is that possible? Or are account wide markers also possible -> only mark "unknwon for any other char")
 --#301 Add LibSets set search favorites as marker icons of FCOIS to the inventories -> Maybe create a kind of "plugin system" that other addons can use to pass in a settings submenu, and some marker icons and textures of that other addon
+--#313 Automatic motif marking doesnot work - "Notnear": Enabled "only for this character" option with "mark known motifs" and it didn't mark anything at first, only when I toggled "mark unknown motifs" too AND with an icon selected that it marked them, if I check "mark unknown motifs" with "no icon" it doesn't mark them.
+-->Not reproducable 2025-04-11
+--#314 Mail send is blocked for normal markers (sell, sell at guildstore) even if the add. inv. flag is red (protection off). But maybe only for golden style pages?! Other armor items work fine
+-->Only was able to get that bug once so far, not sure how to reproduce it
+
 
 --______________________________________
--- Current max # of bugs/features/ToDos: 312
+-- Current max # of bugs/features/ToDos: 314
 --______________________________________
 
 --Open/To work on this patch:
@@ -208,19 +213,21 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2025-04-06
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2025-04-11
 ------------------------------------------------------------------------------------
 
+
+
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.6.7 - New version: 2.6.8) -    Updated last: 2025-04-06
+--Changelog (last version: 2.6.7 - New version: 2.6.8) -    Updated last: 2025-04-11
 -------------------------------------------------------------------------------------
 --[Fixed]
 --#312 Dual list box header texts were not showing properly
+--Removed debug messages
 
 --[Changed]
 
 --[Added]
---#311 "Exclude mail protection" for non-dynamic marker icons: New daul listbox at "Anti settings" where you can exclude each non-dynamic non-gear icon from mail protection (to e.g. easily send deconstruct marked or intricate marked items via mail)
 
 
 --[Added on request]
