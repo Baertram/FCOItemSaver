@@ -204,7 +204,7 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
 
 
 --______________________________________
--- Current max # of bugs/features/ToDos: 314
+-- Current max # of bugs/features/ToDos: 315
 --______________________________________
 
 --Open/To work on this patch:
@@ -213,17 +213,16 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2025-04-11
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2025-04-13
 ------------------------------------------------------------------------------------
 
 
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.6.7 - New version: 2.6.8) -    Updated last: 2025-04-11
+--Changelog (last version: 2.6.8 - New version: 2.6.9) -    Updated last: 2025-04-13
 -------------------------------------------------------------------------------------
 --[Fixed]
---#312 Dual list box header texts were not showing properly
---Removed debug messages
+--#315 Enabled serch buttons at dual list boxes
 
 --[Changed]
 

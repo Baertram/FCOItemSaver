@@ -48,7 +48,8 @@ local function prepareFCOISLibShifterBoxes()
                 },
                 rightList = {
                     title = locVars["LIBSHIFTERBOX_FCOIS_UNIQUEID_ITEMTYPES_TITLE_RIGHT"],
-                }
+                },
+                search = { enabled = true }, --#315
             },
             width       = 580,
             height      = 200,
@@ -69,7 +70,8 @@ local function prepareFCOISLibShifterBoxes()
                 },
                 rightList = {
                     title = locVars["options_exclude_automark_sets_list"],
-                }
+                },
+                search = { enabled = true }, --#315
             },
             width       = 450,
             height      = 200,
@@ -89,7 +91,8 @@ local function prepareFCOISLibShifterBoxes()
                 },
                 rightList = {
                     title = locVars["LIBSHIFTERBOX_FCOIS_ALLOWEXCLUSION_MAIL_TITLE_RIGHT"],
-                }
+                },
+                search = { enabled = true }, --#315
             },
             width       = 450,
             height      = 150,
