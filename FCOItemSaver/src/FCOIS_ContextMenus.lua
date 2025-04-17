@@ -398,7 +398,7 @@ function FCOIS.RefreshPopupDialogButtons(rowControl, override)
                 if bagId ~= nil and slotIndex ~= nil then
 --d(">bagId, slotIndex: " ..tos(bagId) ..", " ..tos(slotIndex) .. ", itemLink: " ..GetItemLink(bagId, slotIndex))
                     FCOIS.preventerVars.gCalledFromInternalFCOIS = true
-                    local _, markedIcons = isMarked(bagId, slotIndex, -1)
+                    local _, markedIcons = isMarked(bagId, slotIndex, FCOIS_CON_ICONS_ALL)
                     if markedIcons then
                         local settings = FCOIS.settingsVars.settings
                         for iconId, iconIsMarked in pairs(markedIcons) do
@@ -1762,7 +1762,7 @@ function FCOIS.ChangeContextMenuEntryTexts(iconId)
     local gearIcons = settings.iconIsGear
 
     --Update all icon texts?
-    if iconId == -1 then
+    if iconId == FCOIS_CON_ICONS_ALL then
         FCOIS.preventerVars.buildingSlotActionTexts = false
         --Reset the localization array variables
         locContEntries.menu_add_gear_text = {}
@@ -1950,7 +1950,7 @@ local function ContextMenuFilterButtonOnMouseEnter(button, contextMenuType, icon
     if settings.showFilterButtonContextTooltip == true then
         --LockDyn
         if contextMenuType == availableCtms[FCOIS_CON_FILTER_BUTTON_LOCKDYN] then
-            if iconId == -1 then
+            if iconId == FCOIS_CON_ICONS_ALL then
                 tooltipText = locVars["button_context_menu_all_markers_tooltip"]
             else
                 --One of the dynamic icons was selected?
@@ -1967,7 +1967,7 @@ local function ContextMenuFilterButtonOnMouseEnter(button, contextMenuType, icon
 
         --Gear
         elseif contextMenuType == availableCtms[FCOIS_CON_FILTER_BUTTON_GEARSETS] then
-            if iconId == -1 then
+            if iconId == FCOIS_CON_ICONS_ALL then
                 tooltipText = locVars["button_context_menu_gear_sets_all_tooltip"]
             else
                 tooltipText = iconSettings[iconId].name
@@ -1979,7 +1979,7 @@ local function ContextMenuFilterButtonOnMouseEnter(button, contextMenuType, icon
 
         --ResDecImp
         elseif contextMenuType == availableCtms[FCOIS_CON_FILTER_BUTTON_RESDECIMP] then
-            if iconId == -1 then
+            if iconId == FCOIS_CON_ICONS_ALL then
                 tooltipText = locVars["button_context_menu_all_markers_tooltip"]
             else
                 tooltipText = locVars["options_icon" .. iconId .. "_color"]
@@ -1990,7 +1990,7 @@ local function ContextMenuFilterButtonOnMouseEnter(button, contextMenuType, icon
 
         --SellGuildInt
         elseif contextMenuType == availableCtms[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT] then
-            if iconId == -1 then
+            if iconId == FCOIS_CON_ICONS_ALL then
                 tooltipText = locVars["button_context_menu_all_markers_tooltip"]
             else
                 tooltipText = locVars["options_icon" .. iconId .. "_color"]
@@ -2034,10 +2034,10 @@ local function ContextMenuFCOISFilterButtonOnClicked(button, contextMenuType, ic
 --d("[FCOIS]ContextMenuFilterButtonOnClicked - ContextMenuType: " .. contextMenuType .. ", clicked button: " .. button:GetName() .. ", buttonNr: " .. tos(buttonNr) ..", IconId: " .. tos(iconId) .. ", filterPanelId: " .. tos(filterPanelId))
     if iconId ~= nil then
         --Update the last filter ID (determined by the used icon) for the correct inventory refresh
-        if iconId ~= -1 then
+        if iconId ~= FCOIS_CON_ICONS_ALL then
             lastVars.gLastFilterId[filterPanelId] = iconToFilter[iconId]
         else
-            lastVars.gLastFilterId[filterPanelId] = -1
+            lastVars.gLastFilterId[filterPanelId] = FCOIS_CON_ICONS_ALL
         end
 
         updateInventoryNow(buttonNr, button, filterPanelId)
@@ -2182,8 +2182,8 @@ local function sortContextMenuEntries(menuEntriesUnsorted)
     local iconStarFound = false
     for iconId, subMenuData in pairs(menuEntriesUnsorted) do
         --Get the sort order of the icon from the settings
-        --is the entry the * button with iconid == -1?
-        if iconId == -1 then
+        --is the entry the * button with iconid == FCOIS_CON_ICONS_ALL (-1)?
+        if iconId == FCOIS_CON_ICONS_ALL then
             iconStarFound = true
             contextMenuEntriesAdded = contextMenuEntriesAdded + 1
         else
@@ -2240,7 +2240,7 @@ function FCOIS.ShowContextMenuAtFCOISFilterButton(parentButton, p_FilterPanelId,
 
     --Reset the filterButton's icon to the * ("All") entry
     if resetToAllEntry == true then
-        ContextMenuFCOISFilterButtonOnClicked(parentButton, contextMenuType, -1, p_FilterPanelId)
+        ContextMenuFCOISFilterButtonOnClicked(parentButton, contextMenuType, FCOIS_CON_ICONS_ALL, p_FilterPanelId)
         return
     end
 
@@ -2288,7 +2288,7 @@ function FCOIS.ShowContextMenuAtFCOISFilterButton(parentButton, p_FilterPanelId,
     for _, buttonNameStr in ipairs(filterButtonContextMenuButtonTemplateIndex) do
         local buttonData = filterButtonContextMenuButtonTemplate[buttonNameStr]
         local buttonText
-        if buttonData ~= nil and (buttonData.iconId ~= nil and (buttonData.iconId == -1 or settings.isIconEnabled[buttonData.iconId])) and ((buttonData.text ~= nil and buttonData.text ~= "") or (buttonData.texture ~= nil and buttonData.texture ~= "")) then
+        if buttonData ~= nil and (buttonData.iconId ~= nil and (buttonData.iconId == FCOIS_CON_ICONS_ALL or settings.isIconEnabled[buttonData.iconId])) and ((buttonData.text ~= nil and buttonData.text ~= "") or (buttonData.texture ~= nil and buttonData.texture ~= "")) then
             ---The standard color for the context menu entries
             local colDef = ZO_ColorDef:New(1, 1, 1, 1)
             --The icon which the filter button context menu button affects
@@ -3059,7 +3059,7 @@ local function contextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                                         if iconShouldDemarkAllOthers then
                                             --Check if the item is marked with any icon (except the current one)
                                             FCOIS.preventerVars.gCalledFromInternalFCOIS = true
-                                            local isMarkedWithIcon, markedIconsArray = isMarked(bagId, slotIndex, -1, iconId)
+                                            local isMarkedWithIcon, markedIconsArray = isMarked(bagId, slotIndex, FCOIS_CON_ICONS_ALL, iconId)
                                             --Add all other removed icons to the undo tab, if they are set
                                             if isMarkedWithIcon then
                                                 for iconNr, iconIsMarked in pairs(markedIconsArray) do
@@ -3379,7 +3379,7 @@ local function contextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                             --Mark all as junk
                             if isMARKALLASJUNKButton then
                                 FCOIS.preventerVars.gCalledFromInternalFCOIS = true
-                                local isMarkedWithIcon, isMarkedWithIconsTable = isMarked(bagId, slotIndex, -1)
+                                local isMarkedWithIcon, isMarkedWithIconsTable = isMarked(bagId, slotIndex, FCOIS_CON_ICONS_ALL)
                                 if isMarkedWithIcon and isMarkedWithIconsTable ~= nil then
                                     --Check each marked marker icon. If any marker icon is set disallow the junk
                                     for iconNrLoop, isIconMarked in pairs(isMarkedWithIconsTable) do
@@ -3406,7 +3406,7 @@ local function contextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                                 --Check if the setting to only unjunk items which are not being "marked to be sold" is enabled
                                 if settings.dontUnJunkItemsMarkedToBeSold then
                                     FCOIS.preventerVars.gCalledFromInternalFCOIS = true
-                                    local isMarkedWithIcon, isMarkedWithIconsTable = isMarked(bagId, slotIndex, -1)
+                                    local isMarkedWithIcon, isMarkedWithIconsTable = isMarked(bagId, slotIndex, FCOIS_CON_ICONS_ALL)
                                     if isMarkedWithIcon and isMarkedWithIconsTable ~= nil then
                                         --Check each marked marker icon. If only the "sell icon" is set disallow the unjunk!
                                         for iconNrLoop, isIconMarked in pairs(isMarkedWithIconsTable) do
@@ -4134,7 +4134,7 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
 --d(">use")
         --Is the item protected with any icon?
         FCOIS.preventerVars.gCalledFromInternalFCOIS = true
-        local marked, _ = isMarked(bag, slotIndex, -1)
+        local marked, _ = isMarked(bag, slotIndex, FCOIS_CON_ICONS_ALL)
         if marked and isiuse(bag, slotIndex) then
             --If mail send or player trade panel is activated
             local isCurrentlyShowingMailSend 	= not mailSend.control:IsHidden() and settings.blockSendingByMail
@@ -4238,7 +4238,7 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
 --d(">mark as junk")
         --Check the marker icons
         FCOIS.preventerVars.gCalledFromInternalFCOIS = true
-        local isMarkedJunk, markedWithThisIconsJunk = isMarked(bag, slotIndex, -1)
+        local isMarkedJunk, markedWithThisIconsJunk = isMarked(bag, slotIndex, FCOIS_CON_ICONS_ALL)
         if isMarkedJunk then
             --Allowed to junk if only marked with the junk icon?
             if settings.allowMarkAsJunkForMarkedToBeSold then
@@ -4274,7 +4274,7 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
         if isStore or isFence or isCurrentlyShowingGuildStore or isMailSend or isPlayer2PlayerTrade then
             --Is the item protected with any icon?
             FCOIS.preventerVars.gCalledFromInternalFCOIS = true
-            local marked, _ = isMarked(bag, slotIndex, -1)
+            local marked, _ = isMarked(bag, slotIndex, FCOIS_CON_ICONS_ALL)
             if marked then
                 --remove the context-menu entry for "equip" (and the keybinding)
                 return true

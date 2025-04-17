@@ -6293,9 +6293,9 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                                     getFunc = function() return FCOISsettings.allowInventoryFilter end,
                                     setFunc = function(value) FCOISsettings.allowInventoryFilter = value
                                         --Hide the filter buttons at the filter panel Id
-                                        FCOIS.UpdateFCOISFilterButtonsAtInventory(-1)
+                                        FCOIS.UpdateFCOISFilterButtonsAtInventory(FCOIS_CON_FILTER_BUTTONS_ALL) --#316
                                         --Unregister and reregister the inventory filter LF_INVENTORY
-                                        FCOIS.EnableFilters(-100)
+                                        FCOIS.EnableFilters(FCOIS_CON_FILTER_BUTTON_STATE_INIT) --#316
                                     end,
                                     default = FCOISdefaultSettings.allowInventoryFilter,
                                 },

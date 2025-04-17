@@ -465,10 +465,10 @@ function FCOIS.BuildDefaultSettings()
 				--				["anti-launder"]	 = false,
 			}
 			--Create the helper arrays for the filter button context menus
-			FCOIS.settingsVars.defaults.lastLockDynFilterIconId[libFiltersFilterPanelIdHelper]		= -1
-			FCOIS.settingsVars.defaults.lastGearFilterIconId[libFiltersFilterPanelIdHelper] 		= -1
-			FCOIS.settingsVars.defaults.lastResDecImpFilterIconId[libFiltersFilterPanelIdHelper] 	= -1
-			FCOIS.settingsVars.defaults.lastSellGuildIntFilterIconId[libFiltersFilterPanelIdHelper]	= -1
+			FCOIS.settingsVars.defaults.lastLockDynFilterIconId[libFiltersFilterPanelIdHelper]		= FCOIS_CON_ICONS_ALL
+			FCOIS.settingsVars.defaults.lastGearFilterIconId[libFiltersFilterPanelIdHelper] 		= FCOIS_CON_ICONS_ALL
+			FCOIS.settingsVars.defaults.lastResDecImpFilterIconId[libFiltersFilterPanelIdHelper] 	= FCOIS_CON_ICONS_ALL
+			FCOIS.settingsVars.defaults.lastSellGuildIntFilterIconId[libFiltersFilterPanelIdHelper]	= FCOIS_CON_ICONS_ALL
 
 			--Create 2-dimensional array for the UNDO functions from the addiitonal inventory context menu (flag) menu
 			FCOIS.contextMenuVars.undoMarkedItems[libFiltersFilterPanelIdHelper] = {}
@@ -477,10 +477,10 @@ function FCOIS.BuildDefaultSettings()
 			FCOIS.settingsVars.accountWideButForEachCharacterDefaults[currentCharId].isFilterPanelOn[libFiltersFilterPanelIdHelper] = {}
 			FCOIS.settingsVars.accountWideButForEachCharacterDefaults[currentCharId].isFilterPanelOn[libFiltersFilterPanelIdHelper] = {false, false, false, false}
 			--Create the helper arrays for the filter button context menus
-			FCOIS.settingsVars.accountWideButForEachCharacterDefaults[currentCharId].lastLockDynFilterIconId[libFiltersFilterPanelIdHelper] = -1
-			FCOIS.settingsVars.accountWideButForEachCharacterDefaults[currentCharId].lastGearFilterIconId[libFiltersFilterPanelIdHelper] = -1
-			FCOIS.settingsVars.accountWideButForEachCharacterDefaults[currentCharId].lastResDecImpFilterIconId[libFiltersFilterPanelIdHelper] = -1
-			FCOIS.settingsVars.accountWideButForEachCharacterDefaults[currentCharId].lastSellGuildIntFilterIconId[libFiltersFilterPanelIdHelper] = -1
+			FCOIS.settingsVars.accountWideButForEachCharacterDefaults[currentCharId].lastLockDynFilterIconId[libFiltersFilterPanelIdHelper] = FCOIS_CON_ICONS_ALL
+			FCOIS.settingsVars.accountWideButForEachCharacterDefaults[currentCharId].lastGearFilterIconId[libFiltersFilterPanelIdHelper] = FCOIS_CON_ICONS_ALL
+			FCOIS.settingsVars.accountWideButForEachCharacterDefaults[currentCharId].lastResDecImpFilterIconId[libFiltersFilterPanelIdHelper] = FCOIS_CON_ICONS_ALL
+			FCOIS.settingsVars.accountWideButForEachCharacterDefaults[currentCharId].lastSellGuildIntFilterIconId[libFiltersFilterPanelIdHelper] = FCOIS_CON_ICONS_ALL
 
 			--Added with FCOIS v2.2.4
 			FCOIS.settingsVars.defaults.filterButtonSettings[libFiltersFilterPanelIdHelper] = {

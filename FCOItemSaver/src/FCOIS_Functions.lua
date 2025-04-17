@@ -2433,7 +2433,7 @@ function FCOIS.SetItemIsJunkNow(bagId, slotIndex, isJunk, isCompanionItem)
             isMarked = isMarked or FCOIS.IsMarked
             FCOISMarkItem = FCOISMarkItem or FCOIS.MarkItem
 
-            local anyMarkerIconSetOnItemToJunk, markerIconsOnItemToJunk = isMarked(bagId, slotIndex, -1)
+            local anyMarkerIconSetOnItemToJunk, markerIconsOnItemToJunk = isMarked(bagId, slotIndex, FCOIS_CON_ICONS_ALL)
             if anyMarkerIconSetOnItemToJunk == true then
                 --Remove all marker icons, except "Sell"
                 for iconIdWhichWasSetBeforeAlready, isIconMarked in pairs(markerIconsOnItemToJunk) do
@@ -2812,7 +2812,7 @@ function FCOIS.CheckIfImprovedItemShouldBeReMarked_BeforeImprovement()
 
     --Check if the item is marked with several icons
     isMarked = isMarked or FCOIS.IsMarked
-    local isMarkedIcon, markedIcons = isMarked(bagId, slotIndex, -1)
+    local isMarkedIcon, markedIcons = isMarked(bagId, slotIndex, FCOIS_CON_ICONS_ALL)
     if isMarkedIcon == true then
 --d(">>item was marked before improvement")
         --Remember the bagId and slotIndex of the slotted item that will be improved
@@ -2907,7 +2907,7 @@ function FCOIS.CheckIfEnchantingItemShouldBeReMarked_BeforeEnchanting(bagId, slo
     if not FCOIS.settingsVars.settings.reApplyIconsAfterEnchanting then return end
 
     isMarked = isMarked or FCOIS.IsMarked
-    local isMarkedIcon, markerIcons = isMarked(bagId, slotIndex, -1, nil)
+    local isMarkedIcon, markerIcons = isMarked(bagId, slotIndex, FCOIS_CON_ICONS_ALL, nil)
     if not isMarkedIcon then return end
 --d(">>marked with icons!")
     FCOIS.enchantingVars.lastMarkerIcons[bagId] = FCOIS.enchantingVars.lastMarkerIcons[bagId] or {}
@@ -3499,7 +3499,7 @@ function FCOIS.RebuildGearSetBaseVars(iconNr, value, calledFromEventPlayerActiva
 
             --Update the context menu texts for this icon
             --but not if this function was called from Event_Player_Activated as the same function will be called just after
-            --FCOIS.rebuildGearSetBaseVars for all icons (-1) already!
+            --FCOIS.rebuildGearSetBaseVars for all icons FCOIS_CON_ICONS_ALL (-1) already!
             if not calledFromEventPlayerActivated then
                 changeContextMenuEntryTexts(iconNrLoop)
             end

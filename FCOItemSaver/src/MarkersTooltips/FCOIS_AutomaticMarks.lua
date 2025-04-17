@@ -124,7 +124,7 @@ local function checkIfCanBeAutomaticallyMarked(bagId, slotIndex, itemId, checkTy
 
     --Get all icons of the item
     FCOIS.preventerVars.gCalledFromInternalFCOIS = true
-    local isMarkedWithOneIcon, markedIcons = isMarked(bagId, slotIndex, -1)
+    local isMarkedWithOneIcon, markedIcons = isMarked(bagId, slotIndex, FCOIS_CON_ICONS_ALL)
     if isMarkedWithOneIcon and markedIcons then
         local settings = FCOIS.settingsVars.settings
         local iconIdToIsDnamicIcon = mappingVars.iconIsDynamic
@@ -439,7 +439,7 @@ local function automaticMarkingSetsCollectionBookCheckFunc(p_bagId, p_slotIndex,
         if settings.autoMarkSetsItemCollectionBookCheckAllIcons == true then
             --Check if any other icon is applied already
             FCOIS.preventerVars.gCalledFromInternalFCOIS = true
-            isAlreadyMarked = isMarked(p_bagId, p_slotIndex, -1, nil)
+            isAlreadyMarked = isMarked(p_bagId, p_slotIndex, FCOIS_CON_ICONS_ALL, nil)
         end
         if doDebug then d(">>>isAlreadyMarked: " ..tos(isAlreadyMarked)) end
         if isAlreadyMarked == false then
@@ -515,7 +515,7 @@ local function automaticMarkingSetsCollectionBookCheckFunc(p_bagId, p_slotIndex,
                 if settings.autoMarkSetsItemCollectionBookCheckAllIcons == true then
                     --Check if any other icon is applied already
                     FCOIS.preventerVars.gCalledFromInternalFCOIS = true
-                    isAlreadyMarked = isMarked(p_bagId, p_slotIndex, -1, nil)
+                    isAlreadyMarked = isMarked(p_bagId, p_slotIndex, FCOIS_CON_ICONS_ALL, nil)
                 end
                 if isAlreadyMarked == false then
                     --FCOIS.MarkItem(p_bagId, p_slotIndex, markerIcon) --do not mark here! Will be done in the further function calls of the todDos!
@@ -531,7 +531,7 @@ local function automaticMarkingSetsCollectionBookCheckFunc(p_bagId, p_slotIndex,
                 if settings.autoMarkSetsItemCollectionBookCheckAllIcons == true then
                     --Check if any other icon is applied already
                     FCOIS.preventerVars.gCalledFromInternalFCOIS = true
-                    isAlreadyMarked = isMarked(p_bagId, p_slotIndex, -1, nil)
+                    isAlreadyMarked = isMarked(p_bagId, p_slotIndex, FCOIS_CON_ICONS_ALL, nil)
                 end
 
                 --Loop all accounts:

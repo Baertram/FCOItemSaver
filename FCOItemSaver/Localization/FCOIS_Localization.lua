@@ -52,7 +52,7 @@ function FCOIS.BuildLocalizedFilterButtonContextMenuEntries(contextMenuType)
             text = locVars["button_context_menu_gear_sets_all"],
             texture = "",
             textureColor = nil,
-            iconId = -1,
+            iconId = FCOIS_CON_ICONS_ALL,
             anchorButton = buttonNamePrefixLockDyn .. "1",
         }
         localizedContextMenuEntries[buttonNamePrefix .. buttonNamePrefixLockDyn .. "1"] = allEntry
@@ -97,7 +97,7 @@ function FCOIS.BuildLocalizedFilterButtonContextMenuEntries(contextMenuType)
             text = locVars["button_context_menu_gear_sets_all"],
             texture = "",
             textureColor = nil,
-            iconId = -1,
+            iconId = FCOIS_CON_ICONS_ALL,
             anchorButton = buttonNamePrefix .. buttonNamePrefixGearSet .. "1",
         }
         localizedContextMenuEntries[buttonNamePrefix .. buttonNamePrefixGearSet .. "1"] = allEntry
@@ -153,7 +153,7 @@ function FCOIS.BuildLocalizedFilterButtonContextMenuEntries(contextMenuType)
             text = locVars["button_context_menu_gear_sets_all"],
             texture = "",
             textureColor = nil,
-            iconId = -1,
+            iconId = FCOIS_CON_ICONS_ALL,
             anchorButton = buttonNamePrefix .. buttonNamePrefixResDecImp .. "1",
         }
         localizedContextMenuEntries[buttonNamePrefix .. buttonNamePrefixResDecImp .. "1"] = allEntry
@@ -186,7 +186,7 @@ function FCOIS.BuildLocalizedFilterButtonContextMenuEntries(contextMenuType)
             text = locVars["button_context_menu_gear_sets_all"],
             texture = "",
             textureColor = nil,
-            iconId = -1,
+            iconId = FCOIS_CON_ICONS_ALL,
             anchorButton = buttonNamePrefix .. buttonNamePrefixSellGuildInt .. "1",
         }
         localizedContextMenuEntries[buttonNamePrefix .. buttonNamePrefixSellGuildInt .. "1"] = allEntry

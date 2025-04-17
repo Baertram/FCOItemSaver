@@ -120,14 +120,14 @@ function FCOIS.CreateToolTip(markerControl, markerId, doHide, pUpdateAllEquipmen
             --d("[FCOIS]CreateToolTip - bagId: " .. tostring(bagId) .. ", slotIndex: " .. tostring(slotIndex))
             FCOIS.preventerVars.gCalledFromInternalFCOIS = true
             --FCOIS.IsMarked(bag, slot, iconIds, excludeIconIds)
-            local _, markedIconsBagSlot = isMarked(bagId, slotIndex, -1, nil)
+            local _, markedIconsBagSlot = isMarked(bagId, slotIndex, FCOIS_CON_ICONS_ALL, nil)
             markedIcons = markedIconsBagSlot
         --is only the itemInstance or unique ID given?
         elseif itemInstanceOrUniqueId ~= nil then
             --d("[FCOIS]CreateToolTip - itemInstanceOrUniqueId: " .. tostring(itemInstanceOrUniqueId))
             FCOIS.preventerVars.gCalledFromInternalFCOIS = true
             --isMarkedByItemInstanceId(itemInstanceId, iconIds, excludeIconIds)
-            local _, markedIconsItemInstanceOrUniqueId = isMarkedByItemInstanceId(itemInstanceOrUniqueId, -1, nil)
+            local _, markedIconsItemInstanceOrUniqueId = isMarkedByItemInstanceId(itemInstanceOrUniqueId, FCOIS_CON_ICONS_ALL, nil)
             markedIcons = markedIconsItemInstanceOrUniqueId
         end
         if markedIcons then

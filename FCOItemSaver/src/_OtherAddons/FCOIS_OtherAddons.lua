@@ -1508,7 +1508,7 @@ function FCOIS.CheckIfInventoryRowOfExternalAddonNeedsMarkerIconsUpdate(rowContr
         --Update the complete row in the IIfA inventory frame
         if IIfA ~= nil and FCOIS.IIfAclicked ~= nil and IIfA.UpdateFCOISMarkerIcons ~= nil then
             local showFCOISMarkerIcons = IIfA:GetSettings().FCOISshowMarkerIcons
-            IIfA:UpdateFCOISMarkerIcons(rowControl, showFCOISMarkerIcons, false, -1)
+            IIfA:UpdateFCOISMarkerIcons(rowControl, showFCOISMarkerIcons, false, FCOIS_CON_ICONS_ALL)
         end
     end
 end

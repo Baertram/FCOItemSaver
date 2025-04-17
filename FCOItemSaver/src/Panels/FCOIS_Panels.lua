@@ -816,12 +816,12 @@ function FCOIS.OnClosePanel(panelIdClosed, panelIdToShow, autoReEnableCheck)
         --Update the inventory filter buttons
         if panelIdToShow ~= nil then
             if  panelIdToShow == LF_INVENTORY then
-                updateFCOISFilterButtonsAtInventory(-1)
+                updateFCOISFilterButtonsAtInventory(FCOIS_CON_FILTER_BUTTONS_ALL)
             end
 --d(">FCOIS.gFilterWhere1.2: " .. tos(FCOIS.gFilterWhere))
 
             --Update the 4 inventory button's color
-            updateFCOISFilterButtonColorsAndTextures(-1, nil, -1, panelIdToShow)
+            updateFCOISFilterButtonColorsAndTextures(FCOIS_CON_FILTER_BUTTONS_ALL, nil, FCOIS_CON_FILTER_BUTTON_STATUS_ALL, panelIdToShow)
 --d(">FCOIS.gFilterWhere1.3: " .. tos(FCOIS.gFilterWhere))
             --Change the button color of the context menu invoker
             changeContextMenuInvokerButtonColorByPanelId(panelIdToShow)

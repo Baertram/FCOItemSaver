@@ -12,7 +12,7 @@ local strlen = string.len
 FCOIS.addonVars = {}
 local addonVars = FCOIS.addonVars
 --Addon variables
-addonVars.addonVersionOptions 		    = '2.6.9' -- version shown in the settings panel
+addonVars.addonVersionOptions 		    = '2.7.0' -- version shown in the settings panel
 --The addon name, normal and decorated with colors etc.
 addonVars.gAddonName				    = "FCOItemSaver"
 addonVars.gAddonNameShort               = "FCOIS"
@@ -273,12 +273,34 @@ FCOIS_CON_COMPANION_DESTROY     = 1030
 FCOIS_CON_CROWN_ITEM            = 9000
 FCOIS_CON_FALLBACK 				= 9990
 
+--Constant values for the marker textures panels (inventories) -> Where they should be created --#316
+FCOIS_CON_MARKER_TEXTURE_PANELS_ALL         = -1
+FCOIS_CON_MARKER_TEXTURE_PANEL_INVENTORY    = 1
+FCOIS_CON_MARKER_TEXTURE_PANEL_REPAIR_LIST  = 2
+FCOIS_CON_MARKER_TEXTURE_PANEL_CHARACTER    = 3
+FCOIS_CON_MARKER_TEXTURE_PANEL_QUICKSLOTS   = 4
+FCOIS_CON_MARKER_TEXTURE_PANEL_TRANSMUTATION= 5
+FCOIS_CON_MARKER_TEXTURE_COMPANION_INVENTORY= 6
+
+
 --Constant values for the FCOItemSaver filter buttons at the inventories (bottom)
+FCOIS_CON_FILTER_BUTTONS_ALL            = -1 --#316
 FCOIS_CON_FILTER_BUTTON_LOCKDYN			= 1
 FCOIS_CON_FILTER_BUTTON_GEARSETS		= 2
 FCOIS_CON_FILTER_BUTTON_RESDECIMP		= 3
 FCOIS_CON_FILTER_BUTTON_SELLGUILDINT	= 4
+
+--Constant values for the FCOItemSaver filter buttons's status
+FCOIS_CON_FILTER_BUTTON_STATUS_ALL      = -1 --#316
+
+--Constant values for the FCOItemSaver filter buttons' contextMenu -> Selection of singkle marker icons
+FCOIS_CON_FILTER_BUTTON_CONTEXTMENU_SELECTED_MARKER_ICONS_ALL = -1 --#316
+
 --Filter button state
+FCOIS_CON_FILTER_BUTTON_STATE_INIT      = -100 --#316 Constant to init the filter button state as addon loads
+FCOIS_CON_FILTER_BUTTON_STATE_TOGGLENEXT= -1 --#316
+FCOIS_CON_FILTER_BUTTON_STATE_ON        = 1 --#316 Relates to the FCOIS_CON_FILTER_BUTTON_STATE_GREEN boolean true
+FCOIS_CON_FILTER_BUTTON_STATE_OFF       = 2 --#316 Relates to the FCOIS_CON_FILTER_BUTTON_STATE_RED boolean false
 FCOIS_CON_FILTER_BUTTON_STATE_GREEN     = true
 FCOIS_CON_FILTER_BUTTON_STATE_YELLOW    = -99
 FCOIS_CON_FILTER_BUTTON_STATE_RED       = false
@@ -422,6 +444,7 @@ numVars.maxItemType = maxItemTypesFound or itemTypeMaxFallback
     42 = Dynamic 30             (DYN)
 ]]
 --Constant values for the FCOItemSaver marker icons
+FCOIS_CON_ICONS_ALL                 = -1 --#316
 FCOIS_CON_ICON_LOCK					= 1
 FCOIS_CON_ICON_GEAR_1				= 2
 FCOIS_CON_ICON_RESEARCH				= 3

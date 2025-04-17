@@ -700,7 +700,7 @@ local function FCOItemSaver_Inv_Single_Slot_Update(_, bagId, slotId, isNewItem, 
             if settingsAutoMarkNewItems == true then
                 local markWithNewNow = true
                 if settings.autoMarkNewItemsCheckOthers == true then
-                    local isMarked, _ = FCOIS.IsMarked(bagId, slotId, -1)
+                    local isMarked, _ = FCOIS.IsMarked(bagId, slotId, FCOIS_CON_ICONS_ALL)
                     if isMarked == true then markWithNewNow = false end
                 end
                 if markWithNewNow == true then
@@ -999,18 +999,18 @@ local function FCOItemSaver_Player_Activated(...)
 
         --Add/update the filter buttons, but only if not done already in addon initialization
         if FCOIS.addonVars.gAddonLoaded == false then
-            updateFCOISFilterButtonsAtInventory(-1)
+            updateFCOISFilterButtonsAtInventory(FCOIS_CON_FILTER_BUTTONS_ALL)
         end
         --FCOIS.addonVars.gAddonLoaded = false --If disabled here the LoadSettings function will get wrong values!
 
         --Rebuild the gear set variables like the mapping tables for the filter buttons, etc.
         --Must be called once before FCOIS.changeContextMenuEntryTexts(-1) to build the mapping tables + settings.iconIsGear!
         --3rd parameter "calledFromEventPlayerActivated" will tell the function to NOT call FCOIS.changeContextMenuEntryTexts internally
-        --as it will be called with -1 (all icons) just below!
+        --as it will be called with FCOIS_CON_ICONS_ALL (-1 all icons) just below!
         rebuildGearSetBaseVars(nil, nil, true)
 
         --Overwrite the localized texts for the equipment gears, if changed in the settings
-        FCOIS.ChangeContextMenuEntryTexts(-1)
+        FCOIS.ChangeContextMenuEntryTexts(FCOIS_CON_ICONS_ALL)
 
         --Change the button color of the context menu invoker
         changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
@@ -1147,16 +1147,16 @@ local function FCOItemSaver_Loaded(eventCode, addOnName)
             FCOIS.BuildAddonMenu()
 
             --Create the icon textures
-            FCOIS.CreateTextures(-1)
+            FCOIS.CreateTextures(FCOIS_CON_MARKER_TEXTURE_PANELS_ALL)
 
             --Create the hooks
             FCOIS.CreateHooks()
 
             --Build the inventory filter buttons and add them to the panels
-            updateFCOISFilterButtonsAtInventory(-1)
+            updateFCOISFilterButtonsAtInventory(FCOIS_CON_FILTER_BUTTONS_ALL)
 
-            --Initialize the filters
-            FCOIS.EnableFilters(-100)
+            --Initialize the filters (all = -100)
+            FCOIS.EnableFilters(FCOIS_CON_FILTER_BUTTON_STATE_INIT) --#316
 
             -- Register slash commands
             FCOIS.RegisterSlashCommands()

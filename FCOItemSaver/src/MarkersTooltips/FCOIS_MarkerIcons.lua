@@ -614,14 +614,14 @@ function FCOIS.CreateTextures(whichTextures)
     local doCreateMarkerControl = false
     local doCreateAllTextures = false
 
-    if whichTextures == -1 then
+    if whichTextures == FCOIS_CON_MARKER_TEXTURE_PANELS_ALL then
         --Crate the texture controls for the marker icons?
         --If this is set to true each inventory row will automatically get 1 new texture control child for each marker icon
         --doCreateMarkerControl = true --Creating them "On demand" (if shown, at scrolling) shiuld be more performant
         doCreateAllTextures = true
     end
     --All inventories
-    if (whichTextures == 1 or doCreateAllTextures) then
+    if (whichTextures == FCOIS_CON_MARKER_TEXTURE_PANEL_INVENTORY or doCreateAllTextures) then
         --Create textures in inventories
         --for all PLAYER_INVENTORY.inventories do ...
 
@@ -666,7 +666,7 @@ function FCOIS.CreateTextures(whichTextures)
         end
     end
      --Repair list
-    if (whichTextures == 2 or doCreateAllTextures) then
+    if (whichTextures == FCOIS_CON_MARKER_TEXTURE_PANEL_REPAIR_LIST or doCreateAllTextures) then
         --Create textures in repair window
         local listView = ctrlVars.REPAIR_LIST
         if listView and listView.dataTypes and listView.dataTypes[1]
@@ -699,7 +699,7 @@ function FCOIS.CreateTextures(whichTextures)
         end
     end
     --Player character / Companion character
-    if (whichTextures == 3 or doCreateAllTextures) then
+    if (whichTextures == FCOIS_CON_MARKER_TEXTURE_PANEL_CHARACTER or doCreateAllTextures) then
         -- Marker function for character equipment if character window is shown
         if ((isCharacterShown() or isCompanionCharacterShown()) or FCOIS.addonVars.gAddonLoaded == false) then
             refreshEquipmentControl = refreshEquipmentControl or FCOIS.RefreshEquipmentControl
@@ -707,7 +707,7 @@ function FCOIS.CreateTextures(whichTextures)
         end
     end
     --Quickslot
-    if (whichTextures == 4 or doCreateAllTextures) then
+    if (whichTextures == FCOIS_CON_MARKER_TEXTURE_PANEL_QUICKSLOTS or doCreateAllTextures) then
         -- Marker function for quickslots inventory
         local listView = ctrlVars.QUICKSLOT_LIST
         -->Quickslots get initilizaed on first open with OnDeferredInit now so maybe the list is not there properly yet! Check FCOIS.CreateHooks -> onDeferredInitCheck(ctrlVars.QUICKSLOT_KEYBOARD,
@@ -742,7 +742,7 @@ function FCOIS.CreateTextures(whichTextures)
         end
     end
     --Transmuation
-    if (whichTextures == 5 or doCreateAllTextures) then ---->FCOIS.CreateHooks() adds the onMouseUpHandlers
+    if (whichTextures == FCOIS_CON_MARKER_TEXTURE_PANEL_TRANSMUTATION or doCreateAllTextures) then ---->FCOIS.CreateHooks() adds the onMouseUpHandlers
         --Create textures in repair window
         local listView = ctrlVars.RETRAIT_LIST
         if listView and listView.dataTypes and listView.dataTypes[1]
@@ -775,7 +775,7 @@ function FCOIS.CreateTextures(whichTextures)
         end
     end
     --Companion inventory
-    if (whichTextures == 6 or doCreateAllTextures) then
+    if (whichTextures == FCOIS_CON_MARKER_TEXTURE_COMPANION_INVENTORY or doCreateAllTextures) then
         -- Marker function for companion inventory
         local listView = ctrlVars.COMPANION_INV_LIST
         --ZO_CompanionEquipment_Panel_KeyboardList1Row1
@@ -835,7 +835,7 @@ end
 
 --Check if marker textures on the inventories row should be refreshed
 function FCOIS.CheckMarker(markerId)
-    markerId = markerId or -1
+    markerId = markerId or FCOIS_CON_ICONS_ALL
     local doDebug = FCOIS.settingsVars.settings.debug
     if doDebug then debugMessage( "[CheckMarker]","MarkerId: " .. tos(markerId) .. ", CheckNow: " .. tos(FCOIS.preventerVars.gUpdateMarkersNow) .. ", Gears changed: " .. tos(FCOIS.preventerVars.gChangedGears), true, FCOIS_DEBUG_DEPTH_ALL) end
 
@@ -1331,7 +1331,7 @@ function FCOIS.RefreshEquipmentControl(equipmentControl, doCreateMarkerControl, 
                 local itemId = myGetItemInstanceIdNoControl(bag, slot, true)
 --d(">itemId: " ..tos(itemId))
                 if itemId == nil then return false end
-                local isRingMarked, _ = FCOIS.IsMarked(bag, slot, -1)
+                local isRingMarked, _ = FCOIS.IsMarked(bag, slot, FCOIS_CON_ICONS_ALL)
                 local doHide = not isRingMarked
 --d(">doHide: " ..tos(doHide))
                 --Get the other ring
@@ -1635,7 +1635,7 @@ function FCOIS.ClearOrRestoreAllMarkers(rowControl, bagId, slotIndex, onlyFeedba
             FCOIS.preventerVars.doFalseOverride = true
             --local _, currentMarkedIcons = FCOIS.IsMarked(bagId, slotIndex, -1)
             FCOIS.preventerVars.gCalledFromInternalFCOIS = true
-            local _, currentMarkedIcons = isMarkedByItemInstanceId(fcoisItemInstanceId, -1, nil, nil)
+            local _, currentMarkedIcons = isMarkedByItemInstanceId(fcoisItemInstanceId, FCOIS_CON_ICONS_ALL, nil, nil)
             --Reset to normal return values for marked & en-/disabled icons now
             FCOIS.preventerVars.doFalseOverride = false
             --For each marked icon of the currently improved item:
@@ -1643,7 +1643,7 @@ function FCOIS.ClearOrRestoreAllMarkers(rowControl, bagId, slotIndex, onlyFeedba
 --d(">currentMarkedIcons: " .. tos(#currentMarkedIcons))
             if currentMarkedIcons ~= nil and #currentMarkedIcons > 0 then
                 --Build the backup array with normal marked icons now
-                --local _, currentMarkedIconsUnchanged = FCOIS.IsMarked(bagId, slotIndex, -1)
+                --local _, currentMarkedIconsUnchanged = FCOIS.IsMarked(bagId, slotIndex, FCOIS_CON_ICONS_ALL)
                 local currentMarkedIconsUnchanged = ZO_DeepTableCopy(currentMarkedIcons)
                 --Create the arrays if any marker icon is set currently
                 if not onlyFeedback then
