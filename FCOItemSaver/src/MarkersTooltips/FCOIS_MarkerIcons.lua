@@ -1633,7 +1633,7 @@ function FCOIS.ClearOrRestoreAllMarkers(rowControl, bagId, slotIndex, onlyFeedba
             --local itemInstanceId = myGetItemInstanceIdNoControl(bagId, slotIndex)
             --Return false for marked icons, where the icon id is disabled in the settings
             FCOIS.preventerVars.doFalseOverride = true
-            --local _, currentMarkedIcons = FCOIS.IsMarked(bagId, slotIndex, -1)
+            --local _, currentMarkedIcons = FCOIS.IsMarked(bagId, slotIndex, FCOIS_CON_ICONS_ALL)
             FCOIS.preventerVars.gCalledFromInternalFCOIS = true
             local _, currentMarkedIcons = isMarkedByItemInstanceId(fcoisItemInstanceId, FCOIS_CON_ICONS_ALL, nil, nil)
             --Reset to normal return values for marked & en-/disabled icons now

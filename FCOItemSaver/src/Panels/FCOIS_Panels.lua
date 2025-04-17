@@ -13,7 +13,7 @@ local debugMessage = FCOIS.debugMessage
 
 local ctrlVars = FCOIS.ZOControlVars
 local universalDeconGlobal = ctrlVars.UNIVERSAL_DECONSTRUCTION_GLOBAL
-local universalDeconPanel = universalDeconGlobal and universalDeconGlobal.deconstructionPanel
+--local universalDeconPanel = universalDeconGlobal and universalDeconGlobal.deconstructionPanel
 
 local hideContextMenu = FCOIS.HideContextMenu
 local updateFCOISFilterButtonsAtInventory = FCOIS.UpdateFCOISFilterButtonsAtInventory
@@ -29,12 +29,12 @@ local isItemType = FCOIS.IsItemType
 local isCompanionInventoryShown = FCOIS.IsCompanionInventoryShown
 local getFilterWhereBySettings = FCOIS.GetFilterWhereBySettings
 local mappingVars = FCOIS.mappingVars
-local panelIdSupportedAtDeconNPC = mappingVars.panelIdSupportedAtUniversalDeconstructionNPC
-local panelIdByDeconNPCMenuBarTabButtonName = mappingVars.panelIdByUniversalDeconstructionNPCMenuBarTabButtonName
+--local panelIdSupportedAtDeconNPC = mappingVars.panelIdSupportedAtUniversalDeconstructionNPC
+--local panelIdByDeconNPCMenuBarTabButtonName = mappingVars.panelIdByUniversalDeconstructionNPCMenuBarTabButtonName
 
-local universalDeconInvCtrl = ctrlVars.UNIVERSAL_DECONSTRUCTION_INV
-local universaldDeconScene = ctrlVars.UNIVERSAL_DECONSTRUCTON_SCENE
-local universaldDeconMenuBarTabs = ctrlVars.UNIVERSAL_DECONSTRUCTION_MENUBAR_TABS
+--local universalDeconInvCtrl = ctrlVars.UNIVERSAL_DECONSTRUCTION_INV
+--local universaldDeconScene = ctrlVars.UNIVERSAL_DECONSTRUCTON_SCENE
+--local universaldDeconMenuBarTabs = ctrlVars.UNIVERSAL_DECONSTRUCTION_MENUBAR_TABS
 local checkIfCBEActive = FCOIS.CheckIfCBEActive --#309
 local checkIfAGSActive = FCOIS.CheckIfAGSActive --#309
 local checkIfAGSShowsCustomPanelAtGuildStore = FCOIS.CheckIfAGSShowsCustomPanelAtGuildStore --#309
