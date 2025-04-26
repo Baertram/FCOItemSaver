@@ -62,6 +62,9 @@ local function checkSingleItemProtection(p_bag, p_slotIndex, panelId, panelIdAtC
         --Read style motif?
     elseif (isItemType(p_bag, p_slotIndex, ITEMTYPE_RACIAL_STYLE_MOTIF)) then
         locWhereAreWe = FCOIS_CON_MOTIF_USAGE
+        --Read golden collectible box style?
+    elseif (isItemType(p_bag, p_slotIndex, ITEMTYPE_COLLECTIBLE)) then --#318
+        locWhereAreWe = FCOIS_CON_COLLECTIBLE_USAGE
         --Drink potion?
     elseif (isItemType(p_bag, p_slotIndex, ITEMTYPE_POTION)) then
         locWhereAreWe = FCOIS_CON_POTION_USAGE

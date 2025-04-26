@@ -669,6 +669,7 @@ function FCOIS.Localization()
         [FCOIS_CON_CROWN_ITEM]			=	locTexts["crown_item_usage_not_allowed"],
         [FCOIS_CON_CRAFTBAG_DESTROY]	=	locTexts["destroying_not_allowed"],
         [FCOIS_CON_RETRAIT]	            =	locTexts["retrait_not_allowed"],
+        [FCOIS_CON_COLLECTIBLE_USAGE]   =   locTexts["collectibles_usage_not_allowed"], --#318
         [FCOIS_CON_FALLBACK]			=   locTexts["destroying_not_allowed"],  -- Fallback: Destroying not allowed (used at bank deposit, guild bank deposit, bank withdraw, guild bank withdraw, ...)
     }
 

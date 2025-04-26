@@ -7379,6 +7379,28 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                 },
                 {
                     type = "header",
+                    name = locVars["options_header_collectibles"],
+                },
+                {
+                    type = "checkbox",
+                    name = locVars["options_enable_block_collectibles"],
+                    tooltip = locVars["options_enable_block_collectibles" .. tooltipSuffix],
+                    getFunc = function() return FCOISsettings.blockMarkedCollectibles end,
+                    setFunc = function(value) FCOISsettings.blockMarkedCollectibles = value
+                    end,
+                    default = FCOISdefaultSettings.blockMarkedMotifs,
+                },
+                {
+                    type = "checkbox",
+                    name = locVars["options_enable_block_marked_disable_with_flag"],
+                    tooltip = locVars["options_enable_block_marked_disable_with_flag" .. tooltipSuffix],
+                    getFunc = function() return FCOISsettings.blockMarkedCollectiblesDisableWithFlag end,
+                    setFunc = function(value) FCOISsettings.blockMarkedCollectiblesDisableWithFlag = value
+                    end,
+                    default = FCOISdefaultSettings.blockMarkedCollectiblesDisableWithFlag,
+                },
+                {
+                    type = "header",
                     name = locVars["options_header_food"],
                 },
                 {

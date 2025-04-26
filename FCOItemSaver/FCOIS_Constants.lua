@@ -270,6 +270,7 @@ FCOIS_CON_RESEARCH_DIALOG       = 1000
 FCOIS_CON_JEWELRY_RESEARCH_DIALOG = 1010
 FCOIS_CON_GUILDBANK_DEPOSIT     = 1020
 FCOIS_CON_COMPANION_DESTROY     = 1030
+FCOIS_CON_COLLECTIBLE_USAGE     = 1040 --#318
 FCOIS_CON_CROWN_ITEM            = 9000
 FCOIS_CON_FALLBACK 				= 9990
 
@@ -638,6 +639,7 @@ mappingVars.whereAreWeToFilterPanelId = {
         [FCOIS_CON_RESEARCH_DIALOG]	    =   LF_SMITHING_RESEARCH_DIALOG,
         [FCOIS_CON_JEWELRY_RESEARCH_DIALOG] = LF_JEWELRY_RESEARCH_DIALOG,
         [FCOIS_CON_COMPANION_DESTROY]   = LF_INVENTORY_COMPANION,
+        [FCOIS_CON_COLLECTIBLE_USAGE]   = LF_INVENTORY, --#318
 }
 --The array for the mapping between the LibFilters FilterPanelId and the "WhereAreWe" (e.g. used in ItemSelectionHandler function)
 mappingVars.filterPanelIdToWhereAreWe = {}
@@ -760,6 +762,7 @@ local filterPanelIdToBlockSettingName = {
     [FCOIS_CON_CRAFTBAG_DESTROY]	= "blockDestroying", 		    --Craftbag", destroying
     [FCOIS_CON_RETRAIT]	            = "blockRetrait", 			    --Retrait station", retrait
     [FCOIS_CON_COMPANION_DESTROY]	= "blockDestroying",			    --Companion inventory destroying
+    [FCOIS_CON_COLLECTIBLE_USAGE]   = "blockMarkedCollectibles", --Collectibles stlye container --#318
     [FCOIS_CON_FALLBACK]			= false,							    --Always return false. Used e.g. for the bank/guild bank deposit checks
 }
 mappingVars.filterPanelIdToBlockSettingName = filterPanelIdToBlockSettingName
@@ -785,6 +788,7 @@ local whereAreWeToSingleItemChecks = {
         [FCOIS_CON_POTION_USAGE]		= true, --Potion
         [FCOIS_CON_FOOD_USAGE]			= true, --Food
         [FCOIS_CON_CROWN_ITEM]			= true, --Crown store item
+        [FCOIS_CON_COLLECTIBLE_USAGE]   = true, --Collectibles --#318
     }
 mappingVars.whereAreWeToSingleItemChecks = whereAreWeToSingleItemChecks
 

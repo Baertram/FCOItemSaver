@@ -121,6 +121,8 @@ function FCOIS.BuildDefaultSettings()
 		blockMarkedFood			    = false,
 		blockMarkedFoodDisableWithFlag = false,
 		blockMarkedCrownStoreItemDisableWithFlag = false,
+		blockMarkedCollectibles     = false, --#318
+		blockMarkedCollectiblesDisableWithFlag = false, --#318
 		blockGuildBankWithoutWithdraw = true,
 		blockGuildBankWithoutWithdrawDisableWithFlag = false,
 		blockSpecialItemsEnchantment = true,
