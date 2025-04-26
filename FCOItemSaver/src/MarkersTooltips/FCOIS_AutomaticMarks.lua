@@ -65,6 +65,10 @@ local checkIfChosenMotifsAddonActive = FCOIS.CheckIfChosenMotifsAddonActive --#3
 local getResearchAddonUsed = FCOIS.GetResearchAddonUsed
 local checkIfResearchAddonUsed = FCOIS.CheckIfResearchAddonUsed
 local checkIfChosenResearchAddonActive = FCOIS.CheckIfChosenResearchAddonActive
+local checkIfStyleContainerAddonUsed = FCOIS.CheckIfStyleContainerAddonUsed --#317
+local checkIfChosenStyleContainerAddonActive = FCOIS.CheckIfChosenStyleContainerAddonActive --#317
+local isStyleContainerCollectibleAutoMarkDoable = FCOIS.IsStyleContainerCollectibleAutoMarkDoable --#317
+local isStyleContainerCollectibleKnown = FCOIS.IsStyleContainerCollectibleKnown --#317
 
 local checkIfHouseOwnerAndInsideOwnHouse = FCOIS.CheckIfHouseOwnerAndInsideOwnHouse
 
@@ -1593,6 +1597,7 @@ local function getInventoryScanNecesaryChecks()
 
     local isRecipeAddonActive =             (checkIfRecipeAddonUsed() and checkIfChosenRecipeAddonActive()) or false
     local isMotifsAddonActive =             (checkIfMotifsAddonUsed() and checkIfChosenMotifsAddonActive()) or false --#308
+    local isStyleContainerCollectibleAddonActive = (checkIfStyleContainerAddonUsed() and checkIfChosenStyleContainerAddonActive()) or false --#317
     local isResearchAddonActive =           (checkIfResearchAddonUsed() and checkIfChosenResearchAddonActive() and isIconEnabledSettings[FCOIS_CON_ICON_RESEARCH]) or false
     local isResearchScrollsAddonActive =    (DetailedResearchScrolls ~= nil and DetailedResearchScrolls.GetWarningLine ~= nil and settings.autoMarkWastedResearchScrolls == true and isIconEnabledSettings[FCOIS_CON_ICON_LOCK]) or false
 
@@ -1611,6 +1616,8 @@ local function getInventoryScanNecesaryChecks()
         ["knownRecipes"] =              { enabled = isRecipeAddonActive and settings.autoMarkKnownRecipes == true,          iconEnabled = isIconEnabledSettings[settings.AutoMarkKnownRecipesIconNr] },
         ["motifs"] =                    { enabled = isMotifsAddonActive and settings.autoMarkMotifs == true,                iconEnabled = isIconEnabledSettings[settings.autoMarkMotifsIconNr] }, --#308
         ["knownMotifs"] =               { enabled = isMotifsAddonActive and settings.autoMarkKnownMotifs == true,           iconEnabled = isIconEnabledSettings[settings.AutoMarkKnownMotifsIconNr] }, --#308
+        ["styleContainerCollectibles"] ={ enabled = isStyleContainerCollectibleAddonActive and settings.autoMarkStyleContainerCollectibles == true,                iconEnabled = isIconEnabledSettings[settings.autoMarkStyleContainerCollectiblesIconNr] }, --#317
+        ["knownStyleContainerCollectibles"] = { enabled = isStyleContainerCollectibleAddonActive and settings.autoMarkKnownStyleContainerCollectibles == true,     iconEnabled = isIconEnabledSettings[settings.autoMarkKnownStyleContainerCollectiblesIconNr] }, --#317
         ["setItemCollectionsUnknown"] = { enabled = (autoMarkSetsItemCollectionBook == true and (autoBindMissingSetCollectionPiecesOnLoot == true or (not autoBindMissingSetCollectionPiecesOnLoot == true and settings.autoMarkSetsItemCollectionBookMissingIcon ~= FCOIS_CON_ICON_NONE and isIconEnabledSettings[settings.autoMarkSetsItemCollectionBookMissingIcon] == true))), iconEnabled = nil },
         ["setItemCollectionsKnown"] =   { enabled = autoMarkSetsItemCollectionBook == true,                                 iconEnabled = (settings.autoMarkSetsItemCollectionBookNonMissingIcon ~= FCOIS_CON_ICON_NONE and isIconEnabledSettings[settings.autoMarkSetsItemCollectionBookNonMissingIcon] == true) },
         ["sets"] =                      { enabled = settings.autoMarkSets == true,                                          iconEnabled = isIconEnabledSettings[settings.autoMarkSetsIconNr] },
@@ -1858,7 +1865,7 @@ function FCOIS.ScanInventoryItemsForAutomaticMarks(bag, slot, scanType, updateIn
             chatBegin			= fcoisLoc["marked"],
             chatEnd				= fcoisLoc["known_recipe_found"],
         },
-        ---------------------------- Unknown recipes ---------------------------
+        ---------------------------- Unknown motifs ---------------------------
         ["motifs"] = { --#308
             check				= settings.autoMarkMotifs,
             result 				= true,
@@ -1918,7 +1925,66 @@ function FCOIS.ScanInventoryItemsForAutomaticMarks(bag, slot, scanType, updateIn
             chatBegin			= fcoisLoc["marked"],
             chatEnd				= fcoisLoc["known_motif_found"],
         },
-        ---------------------------- Set collection items ----------------------------------
+        ---------------------------- Unknown motifs ---------------------------
+        ["styleContainerCollectibles"] = { --#317
+            check				= settings.autoMarkStyleContainerCollectibles,
+            result 				= true,
+            resultNot			= nil,
+            checkOtherAddon		= function(p_bagId, p_slotIndex, p_itemLink)
+                return checkIfStyleContainerAddonUsed() and checkIfChosenStyleContainerAddonActive()
+            end,
+            resultOtherAddon   	= true,
+            resultNotOtherAddon	= nil,
+            icon				= settings.autoMarkStyleContainerCollectiblesIconNr,
+            checkIfAnyIconIsMarkedAlready = nil,
+            preCheckFunc        = function(p_bagId, p_slotIndex, p_itemLink)
+                --Check if item is an unknown motif
+                return isStyleContainerCollectibleKnown(p_bagId, p_slotIndex, false, p_itemLink), nil
+            end,
+            resultPreCheckFunc  = false,
+            resultNotPreCheckFunc = nil,
+            checkFunc			= nil,
+            checkFuncMarksItem  = nil,
+            resultCheckFunc 	= nil,
+            resultNotCheckFunc 	= nil,
+            additionalCheckFuncForce = nil,
+            additionalCheckFunc = nil,
+            resultAdditionalCheckFunc = nil,
+            resultNotAdditionalCheckFunc = nil,
+            chatOutput			= settings.showStyleContainerCollectiblesInChat,
+            chatBegin			= fcoisLoc["marked"],
+            chatEnd				= fcoisLoc["unknown_styleContainerCollectible_found"],
+        },
+        ---------------------------- Known motifs ---------------------------
+        ["knownStyleContainerCollectibles"] = { --#317
+            check				= settings.autoMarkKnownStyleContainerCollectibles,
+            result 				= true,
+            resultNot			= nil,
+            checkOtherAddon		= function()
+                return checkIfStyleContainerAddonUsed() and checkIfChosenStyleContainerAddonActive()
+            end,
+            resultOtherAddon   	= true,
+            resultNotOtherAddon	= nil,
+            icon				= settings.autoMarkKnownStyleContainerCollectiblesIconNr,
+            checkIfAnyIconIsMarkedAlready = nil,
+            preCheckFunc        = function(p_bagId, p_slotIndex, p_itemLink)
+                --Check if item is a known motif
+                return isStyleContainerCollectibleKnown(p_bagId, p_slotIndex, true, p_itemLink), nil
+            end,
+            resultPreCheckFunc  = true,
+            resultNotPreCheckFunc = nil,
+            checkFunc			= nil,
+            checkFuncMarksItem  = nil,
+            resultCheckFunc 	= nil,
+            resultNotCheckFunc 	= nil,
+            additionalCheckFuncForce = nil,
+            additionalCheckFunc = nil,
+            resultAdditionalCheckFunc = nil,
+            resultNotAdditionalCheckFunc = nil,
+            chatOutput			= settings.showStyleContainerCollectiblesInChat,
+            chatBegin			= fcoisLoc["marked"],
+            chatEnd				= fcoisLoc["known_styleContainerCollectible_found"],
+        },        ---------------------------- Set collection items ----------------------------------
         ["setItemCollectionsUnknown"] = {
             check				= settings.autoMarkSetsItemCollectionBook,
             result 				= true,
@@ -2275,6 +2341,26 @@ function FCOIS.ScanInventorySingle(p_bagId, p_slotIndex, checksAlreadyDoneTable)
                 end
 
                 --11)
+                --Update unknown style container collectibles --#317
+                if (checksAlreadyDoneTable["styleContainerCollectibles"] == true) then
+                    --local itemLink = gil(p_bagId, p_slotIndex)
+                    if isDebuggingCase == true then d(">scanInvSingle, unknown style container collectibles scan reached for: " .. itemLink) end
+                    local _, recipeChanged = scanInventoryItemsForAutomaticMarks(p_bagId, p_slotIndex, "styleContainerCollectibles", false)
+                    if not updateInv and recipeChanged then
+                        updateInv = true
+                    end
+                end
+
+                --12)
+                --Update known style container collectibles --#317
+                if (checksAlreadyDoneTable["knownStyleContainerCollectibles"] == true) then
+                    local _, recipeChanged = scanInventoryItemsForAutomaticMarks(p_bagId, p_slotIndex, "knownStyleContainerCollectibles", false)
+                    if not updateInv and recipeChanged then
+                        updateInv = true
+                    end
+                end
+
+                --13)
                 --Check for item quality
                 if (checksAlreadyDoneTable["quality"] == true) then
                     local _, qualityChanged = scanInventoryItemsForAutomaticMarks(p_bagId, p_slotIndex, "quality", false)

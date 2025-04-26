@@ -217,7 +217,7 @@ ReloadUI does not do anything, but manually mass marking via flag icon works fin
 
 
 --______________________________________
--- Current max # of bugs/features/ToDos: 317
+-- Current max # of bugs/features/ToDos: 318
 --______________________________________
 
 --Open/To work on this patch:
@@ -228,7 +228,8 @@ ReloadUI does not do anything, but manually mass marking via flag icon works fin
 ------------------------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed] -              Updated last 2025-04-26
 ------------------------------------------------------------------------------------
---#317 Add support for golden style page container blocks
+--#317 Add support for automatic known/unknown golden style page container markers
+--#318 Add support for blocking golden style page containers usage
 
 
 -------------------------------------------------------------------------------------

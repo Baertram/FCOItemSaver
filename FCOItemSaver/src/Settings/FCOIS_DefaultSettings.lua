@@ -401,12 +401,16 @@ function FCOIS.BuildDefaultSettings()
 		showTooltipAtRestoreLastMarked = false,
 		markerIconsOutputOrder = {},
 		markerIconsOutputOrderEntries = {},
-
 		allowExclusionMail			= false,			--#311
 		allowExclusionMailFor		= {					--#311
 			--[FCOIS_CON_ICON_DECONSTRUCTION] = true,
 		},
-
+		styleContainerCollectibleAddonUsed = FCOIS_STYLECONTAINER_ADDON_ESO_STANDARD, --#317
+		autoMarkStyleContainerCollectibles = false, --#317
+		autoMarkStyleContainerCollectiblesIconNr = FCOIS_CON_ICON_LOCK, --#317
+		autoMarkKnownStyleContainerCollectibles = false, --#317
+		autoMarkKnownStyleContainerCollectiblesIconNr = FCOIS_CON_ICON_LOCK, --#317
+		showStyleContainerCollectiblesInChat = false, --#317
 
 		--autoMarkLibSetsSetSearchFavorites = false, --#301 LibSets set search favorites
 		--LibSetsSetSearchFavoriteToFCOISMapping = {}, --#301 LibSets set search favorites

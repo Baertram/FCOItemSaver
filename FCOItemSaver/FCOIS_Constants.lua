@@ -1319,6 +1319,12 @@ otherAddons.motifAddonsSupported = {
     [FCOIS_MOTIF_ADDON_LIBCHARACTERKNOWLEDGE] = "LibCharacterKnowledge", --#308
 }
 
+--The style collectible container addons supported --#317
+FCOIS_STYLECONTAINER_ADDON_ESO_STANDARD = 1
+otherAddons.styleContainerCollectiblesAddonsSupported = {
+    [FCOIS_STYLECONTAINER_ADDON_ESO_STANDARD] = "ESO Standard", --#317
+}
+
 
 --Variables for the anti-extraction functions
 FCOIS.craftingPrevention = {}
@@ -2708,6 +2714,10 @@ checkVars.allowedFenceOrLaunderTypes = {
 checkVars.allowedMotifsItemTypes = {
     [ITEMTYPE_RACIAL_STYLE_MOTIF] = true,
     [ITEMTYPE_CONTAINER] = true,
+}
+--Allowed style container itemTypes --#317
+checkVars.allowedStyleContainerItemTypes = {
+    [ITEMTYPE_COLLECTIBLE] = true,
 }
 
 --BagId to SetTracker addon settings in FCOIS --#302 SetTracker support disabled with FCOOIS v2.6.1, for versions <300

@@ -97,6 +97,7 @@ local allowedUniqueItemTypes = checkVars.uniqueIdItemTypes
 local allowedMotifItemTypes = checkVars.allowedMotifsItemTypes --#308
 local checkIfAGSActive = FCOIS.CheckIfAGSActive --#309
 local checkIfCBEActive = FCOIS.CheckIfCBEActive --#309
+local allowedStyleContainerItemTypes = checkVars.allowedStyleContainerItemTypes --#317
 
 
 local inventoryRowPatterns = checkVars.inventoryRowPatterns
@@ -1816,6 +1817,95 @@ function FCOIS.IsMotifsAutoMarkDoable(checkIfSettingToAutoMarkIsEnabled, knownMo
     return retVar
 end
 
+
+--Is the item a motif and is it known by one of your chars? Boolean expectedResult will give the
+--true (known motif) or false (unknown motif) parameter
+function FCOIS.IsStyleContainerCollectibleKnown(bagId, slotIndex, expectedResult, itemLink) --#317
+    --Check if any recipe addon is used and available
+    if not FCOIS.CheckIfStyleContainerAddonUsed() then return nil end
+    --Get the recipe addon used to check for known/unknown state
+    local styleContainerAddonUsed = FCOIS.GetStyleContainerAddonUsed()
+    if styleContainerAddonUsed == nil or styleContainerAddonUsed == "" then return nil end
+
+    if (bagId == nil or slotIndex == nil) and itemLink == nil then return nil end
+    expectedResult = expectedResult or false
+
+    --Get the itemLink
+    itemLink = itemLink or gil(bagId, slotIndex)
+    if itemLink == "" then return nil end
+    -- item is a motif or container with motifs?
+    local itemType = gilit(itemLink)
+    if not allowedStyleContainerItemTypes[itemType] then return nil end
+
+    local settingsBase = FCOIS.settingsVars
+    local settings = settingsBase.settings
+
+    if settings.debug then debugMessage("isStyleContainerKnown", gil(bagId, slotIndex) .. ", expectedResult: " ..tos(expectedResult) .. ", motifAddonUsed: " ..tos(styleContainerAddonUsed), true, FCOIS_DEBUG_DEPTH_SPAM, false) end
+--d("[FCOIS]IsStyleContainerCollectibleKnown ".. gil(bagId, slotIndex) .. ", expectedResult: " ..tos(expectedResult) .. ", motifAddonUsed: " ..tos(motifsAddonUsed))
+
+
+    if styleContainerAddonUsed == FCOIS_STYLECONTAINER_ADDON_ESO_STANDARD then
+        local grantedCollectibleId = GetItemLinkContainerCollectibleId(itemLink)
+        if grantedCollectibleId > 0 then
+            local collectibleCategory = GetCollectibleCategoryType(grantedCollectibleId)
+            local owned = false
+            local unknown = false
+            if IsCollectibleOwnedByDefId(grantedCollectibleId) then
+                --Owned already by account
+                owned = true
+            elseif collectibleCategory == COLLECTIBLE_CATEGORY_TYPE_COMBINATION_FRAGMENT and not CanCombinationFragmentBeUnlocked(grantedCollectibleId) then
+                --Owned colletible for the current fragment
+                owned = true
+            else
+                --Unknown collectible
+                unknown = true
+            end
+
+            if expectedResult == false then
+                --Should an unknown be marked=
+                if unknown == true then return true end
+
+            elseif expectedResult == true then
+                --Should an owned be marked?
+                if owned == true then return true end
+            end
+        end
+    end
+    return
+end
+
+--Check if the motifs addon chosen is active, the marker icon too and the setting to automark it is enabled
+function FCOIS.IsStyleContainerCollectibleAutoMarkDoable(checkIfSettingToAutoMarkIsEnabled, knownStyleContainerCollectibleIconCheck, doIconCheck) --#317
+--d("[FCOIS]IsMotifsAutoMarkDoable - knownMotifsIconCheck: "..tos(knownMotifsIconCheck))
+    checkIfSettingToAutoMarkIsEnabled       = checkIfSettingToAutoMarkIsEnabled or false
+    knownStyleContainerCollectibleIconCheck = knownStyleContainerCollectibleIconCheck or false
+    doIconCheck                             = doIconCheck or false
+    local settings                          = FCOIS.settingsVars.settings
+    local retVar                            = false
+    local iconCheck
+    if doIconCheck then
+        if knownStyleContainerCollectibleIconCheck == true then
+            iconCheck = settings.isIconEnabled[settings.autoMarkKnownStyleContainerCollectiblesIconNr]
+        else
+            iconCheck = settings.isIconEnabled[settings.autoMarkStyleContainerCollectiblesIconNr]
+        end
+    end
+    local isStyleContainerCollectibleAutoMarkPrerequisitesMet = (FCOIS.CheckIfStyleContainerAddonUsed() and FCOIS.CheckIfChosenStyleContainerAddonActive(settings.styleContainerAddonUsed)) or false
+    if doIconCheck and isStyleContainerCollectibleAutoMarkPrerequisitesMet then
+        isStyleContainerCollectibleAutoMarkPrerequisitesMet = (isStyleContainerCollectibleAutoMarkPrerequisitesMet and iconCheck) or false
+    end
+    if checkIfSettingToAutoMarkIsEnabled and knownStyleContainerCollectibleIconCheck then
+        retVar = isStyleContainerCollectibleAutoMarkPrerequisitesMet and (settings.autoMarkMotifs or settings.autoMarkKnownMotifs)
+    elseif checkIfSettingToAutoMarkIsEnabled and not knownStyleContainerCollectibleIconCheck then
+        retVar = isStyleContainerCollectibleAutoMarkPrerequisitesMet and settings.autoMarkMotifs
+    elseif not checkIfSettingToAutoMarkIsEnabled and knownStyleContainerCollectibleIconCheck then
+        retVar = isStyleContainerCollectibleAutoMarkPrerequisitesMet and settings.autoMarkKnownMotifs
+    else
+        retVar = isStyleContainerCollectibleAutoMarkPrerequisitesMet
+    end
+--d("<retVar: " ..tos(retVar))
+    return retVar
+end
 
 --Is the item a set part?
 function FCOIS.IsItemSetPartNoControl(bagId, slotIndex)
