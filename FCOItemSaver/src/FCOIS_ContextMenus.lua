@@ -94,6 +94,7 @@ local checkIfRecipeAddonUsed = FCOIS.CheckIfRecipeAddonUsed
 local checkIfResearchAddonUsed = FCOIS.CheckIfResearchAddonUsed
 local checkIfChosenResearchAddonActive = FCOIS.CheckIfChosenResearchAddonActive
 local checkIfMotifsAddonUsed = FCOIS.CheckIfMotifsAddonUsed --#308
+local checkIfStyleContainerAddonUsed = FCOIS.CheckIfStyleContainerAddonUsed --#317
 
 local destroySelectionHandler = FCOIS.DestroySelectionHandler
 local deconstructionSelectionHandler 	= FCOIS.DeconstructionSelectionHandler
@@ -2887,6 +2888,8 @@ local function contextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
         ["knownRecipes"]                = {allowed = true, icon = settings.autoMarkKnownRecipesIconNr},
         ["motifs"]                      = {allowed = true, icon = settings.autoMarkMotifsIconNr},      --#308
         ["knownMotifs"]                 = {allowed = true, icon = settings.autoMarkKnownMotifsIconNr}, --#308
+        ["styleContainerCollectibles"]  = {allowed = true, icon = settings.autoMarkStyleContainerCollectiblesIconNr},      --#317
+        ["knownStyleContainerCollectibles"]= {allowed = true, icon = settings.autoMarkKnownStyleContainerCollectiblesIconNr}, --#317
         ["sets"]                        = {allowed = true, icon = settings.autoMarkSetsIconNr},
         ["setItemCollectionsUnknown"]   = {allowed = true, icon = settings.autoMarkSetsItemCollectionBookMissingIcon},
         ["setItemCollectionsKnown"]     = {allowed = true, icon = settings.autoMarkSetsItemCollectionBookNonMissingIcon},
@@ -3906,6 +3909,20 @@ function FCOIS.ShowContextMenuForAddInvButtons(invAddContextMenuInvokerButton, b
                     label 		= zo_strf(GetString(SI_ITEM_FORMAT_STR_KNOWN_ITEM_TYPE), GetString(SI_ITEMTYPE8)),
                     callback 	= function() contextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "knownMotifs", panelId) end,
                     disabled	= function() return not settings.autoMarkKnownMotifs or not checkIfMotifsAddonUsed() or not settings.isIconEnabled[settings.autoMarkKnownMotifsIconNr] end,
+                }
+                tins(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
+                --Unknown style container --#317
+                subMenuEntryAutomaticMarking = {
+                    label 		= GetString(SI_INPUT_LANGUAGE_UNKNOWN) .. " " .. GetString(SI_ITEMTYPE34),
+                    callback 	= function() contextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "styleContainerCollectibles", panelId) end,
+                    disabled	= function() return not settings.autoMarkStyleContainerCollectibles or not checkIfStyleContainerAddonUsed() or not settings.isIconEnabled[settings.autoMarkStyleContainerCollectiblesIconNr] end,
+                }
+                tins(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
+                --Known style container --#317
+                subMenuEntryAutomaticMarking = {
+                    label 		= zo_strf(GetString(SI_ITEM_FORMAT_STR_KNOWN_ITEM_TYPE), GetString(SI_ITEMTYPE34)),
+                    callback 	= function() contextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "knownStyleContainerCollectibles", panelId) end,
+                    disabled	= function() return not settings.autoMarkKnownStyleContainerCollectibles or not checkIfStyleContainerAddonUsed() or not settings.isIconEnabled[settings.autoMarkKnownStyleContainerCollectiblesIconNr] end,
                 }
                 tins(subMenuEntriesAutomaticMarking, subMenuEntryAutomaticMarking)
             end
