@@ -197,25 +197,12 @@ I'm guessing that the same sort of thing can happen any time a marked item becom
  -->Make FCOIS context menu and ZO_Menu stuff compatible with experimental LibScrollableMenu version where LSM will take over Inventory context menu creation from ZO_Menu/LibCustomMenu
 --#297 Add scribing script automatic markers via LibCharacterKnowlege (but these need to be character dependend markers, is that possible? Or are account wide markers also possible -> only mark "unknwon for any other char")
 --#301 Add LibSets set search favorites as marker icons of FCOIS to the inventories -> Maybe create a kind of "plugin system" that other addons can use to pass in a settings submenu, and some marker icons and textures of that other addon
---#314 Mail send is blocked for normal markers (sell, sell at guildstore) even if the add. inv. flag is red (protection off). But maybe only for golden style pages?! Other armor items work fine
--->Only was able to get that bug once so far, not sure how to reproduce it
 
-
---______________________________________
--- Current max # of bugs/features/ToDos: 316
---______________________________________
-
---Open/To work on this patch:
-
---=== Not started yet ===
-
-
-------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2025-04-17
-------------------------------------------------------------------------------------
---#313 Automatic motif marking doesnot work - "Notnear": Enabled "only for this character" option with "mark known motifs" and it didn't mark anything at first, only when I toggled "mark unknown motifs" too AND with an icon selected that it marked them, if I check "mark unknown motifs" with "no icon" it doesn't mark them.
+--#313 Automatic motif marking does not work - "Notnear": -> Not reproducable, maybe LibCharacterKnowledge checks are wrong for notnear's toons? Or API of that lib returns any non mathcing values.
 --[[
-I was able to test these just now, using the latest version (2.6.9)
+Enabled "only for this character" option with "mark known motifs" and it didn't mark anything at first, only when I toggled "mark unknown motifs" too AND with an icon selected that
+it marked them, if I check "mark unknown motifs" with "no icon" it doesn't mark them.
+-> I was able to test these just now, using the latest version (2.6.9)
 
 - I had no icons already on the motifs I'm testing with;
 - The results below are the same with or without the "show motifs in chat" option;
@@ -225,10 +212,27 @@ I was able to test these just now, using the latest version (2.6.9)
 
 ReloadUI does not do anything, but manually mass marking via flag icon works fine
 ]]
+--#314 Mail send is blocked for normal markers (sell, sell at guildstore) even if the add. inv. flag is red (protection off). But maybe only for golden style pages?! Other armor items work fine
+-->Only was able to get that bug once so far, not sure how to reproduce it
+
+
+--______________________________________
+-- Current max # of bugs/features/ToDos: 317
+--______________________________________
+
+--Open/To work on this patch:
+
+--=== Not started yet ===
+
+
+------------------------------------------------------------------------------------
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2025-04-26
+------------------------------------------------------------------------------------
+--#317 Add support for golden style page container blocks
 
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.6.9 - New version: 2.7.0) -    Updated last: 2025-04-17
+--Changelog (last version: 2.6.9 - New version: 2.7.0) -    Updated last: 2025-04-26
 -------------------------------------------------------------------------------------
 --[Fixed]
 
