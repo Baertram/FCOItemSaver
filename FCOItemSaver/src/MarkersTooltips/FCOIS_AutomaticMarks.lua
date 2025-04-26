@@ -2143,6 +2143,18 @@ function FCOIS.ScanInventorySingle(p_bagId, p_slotIndex, checksAlreadyDoneTable)
             if isDebuggingCase == true then d(">itemId: " ..tos(itemId)) end
             if itemId ~= nil then
 
+
+                local isCheckNecessary = false
+                --Checks table is empty? Create it now
+                if ZO_IsTableEmpty(checksAlreadyDoneTable) then
+                    isCheckNecessary, checksAlreadyDoneTable = getInventoryScanNecesaryChecks()
+                else
+                    isCheckNecessary = true
+                end
+                --Nothing to do?
+                if not isCheckNecessary then return end
+
+
                 --(Other addons)
                 --LibSets - Set search favorites category markers --#301
                 --[[
@@ -2156,8 +2168,7 @@ function FCOIS.ScanInventorySingle(p_bagId, p_slotIndex, checksAlreadyDoneTable)
 
                 --1)
                 --Mark set items
-                if (checksAlreadyDoneTable ~= nil and checksAlreadyDoneTable["sets"] == true) or (
-                        (settings.autoMarkSets == true and isIconEnabledSettings[settings.autoMarkSetsIconNr])) then
+                if (checksAlreadyDoneTable["sets"] == true) then
                     if isDebuggingCase == true then d(">set marking") end
                     local _, setPartChanged = scanInventoryItemsForAutomaticMarks(p_bagId, p_slotIndex, "sets", false)
                     if not updateInv and setPartChanged then
@@ -2172,16 +2183,11 @@ function FCOIS.ScanInventorySingle(p_bagId, p_slotIndex, checksAlreadyDoneTable)
                     local autoBindMissingSetCollectionPiecesOnLoot = settings.autoBindMissingSetCollectionPiecesOnLoot
                     if isDebuggingCase == true then d(">autoMarkSetsItemCollectionBook: " ..tos(true) .. ", autoBindMissingSetCollectionPiecesOnLoot: " ..tos(autoBindMissingSetCollectionPiecesOnLoot) ..", alreadyChecksDoneTab: " ..tos(checksAlreadyDoneTable["setItemCollectionsUnknown"])) end
                     local _, setCollectionItemChanged
-                    if (checksAlreadyDoneTable ~= nil and checksAlreadyDoneTable["setItemCollectionsUnknown"] == true) or (
-                            autoBindMissingSetCollectionPiecesOnLoot == true or
-                                    (not autoBindMissingSetCollectionPiecesOnLoot and settings.autoMarkSetsItemCollectionBookMissingIcon ~= FCOIS_CON_ICON_NONE and
-                                            isIconEnabledSettings[settings.autoMarkSetsItemCollectionBookMissingIcon] == true)) then
+                    if (checksAlreadyDoneTable["setItemCollectionsUnknown"] == true) then
                         if isDebuggingCase == true then d(">>scan for unknown") end
                         _, setCollectionItemChanged = scanInventoryItemsForAutomaticMarks(p_bagId, p_slotIndex, "setItemCollectionsUnknown", false)
                     end
-                    if (checksAlreadyDoneTable ~= nil and checksAlreadyDoneTable["setItemCollectionsKnown"] == true) or (
-                            settings.autoMarkSetsItemCollectionBookNonMissingIcon ~= FCOIS_CON_ICON_NONE and
-                                    isIconEnabledSettings[settings.autoMarkSetsItemCollectionBookNonMissingIcon] == true) then
+                    if (checksAlreadyDoneTable["setItemCollectionsKnown"] == true) then
                         if isDebuggingCase == true then d(">>scan for known") end
                         _, setCollectionItemChanged = scanInventoryItemsForAutomaticMarks(p_bagId, p_slotIndex, "setItemCollectionsKnown", false)
                     end
@@ -2192,8 +2198,7 @@ function FCOIS.ScanInventorySingle(p_bagId, p_slotIndex, checksAlreadyDoneTable)
 
                 --3)
                 --Update ornate items
-                if (checksAlreadyDoneTable ~= nil and checksAlreadyDoneTable["ornate"] == true) or (
-                        (settings.autoMarkOrnate == true and isIconEnabledSettings[FCOIS_CON_ICON_SELL]) ) then
+                if (checksAlreadyDoneTable["ornate"] == true) then
                     local _, ornateChanged = scanInventoryItemsForAutomaticMarks(p_bagId, p_slotIndex, "ornate", false)
                     if not updateInv and ornateChanged then
                         updateInv = true
@@ -2202,8 +2207,7 @@ function FCOIS.ScanInventorySingle(p_bagId, p_slotIndex, checksAlreadyDoneTable)
 
                 --4)
                 --Update intricate items
-                if (checksAlreadyDoneTable ~= nil and checksAlreadyDoneTable["intricate"] == true) or (
-                        (settings.autoMarkIntricate == true and isIconEnabledSettings[FCOIS_CON_ICON_INTRICATE])) then
+                if (checksAlreadyDoneTable["intricate"] == true) then
                     local _, intricateChanged = scanInventoryItemsForAutomaticMarks(p_bagId, p_slotIndex, "intricate", false)
                     if not updateInv and intricateChanged then
                         updateInv = true
@@ -2212,8 +2216,7 @@ function FCOIS.ScanInventorySingle(p_bagId, p_slotIndex, checksAlreadyDoneTable)
 
                 --5)
                 --Update researchable items
-                if (checksAlreadyDoneTable ~= nil and checksAlreadyDoneTable["research"] == true) or (
-                        (settings.autoMarkResearch == true and checkIfResearchAddonUsed() and checkIfChosenResearchAddonActive() and isIconEnabledSettings[FCOIS_CON_ICON_RESEARCH])) then
+                if (checksAlreadyDoneTable["research"] == true) then
                     --local itemLink = gil(p_bagId, p_slotIndex)
                     if isDebuggingCase == true then d(">scanInvSingle, research scan reached for: " .. itemLink) end
                     local _, researchableChanged = scanInventoryItemsForAutomaticMarks(p_bagId, p_slotIndex, "research", false)
@@ -2224,8 +2227,7 @@ function FCOIS.ScanInventorySingle(p_bagId, p_slotIndex, checksAlreadyDoneTable)
 
                 --6)
                 --Update research scrolls (time reduction for crafting research) items
-                if (checksAlreadyDoneTable ~= nil and checksAlreadyDoneTable["researchScrolls"] == true) or (
-                        ((DetailedResearchScrolls ~= nil and DetailedResearchScrolls.GetWarningLine ~= nil) and settings.autoMarkWastedResearchScrolls == true and isIconEnabledSettings[FCOIS_CON_ICON_LOCK])) then
+                if (checksAlreadyDoneTable["researchScrolls"] == true) then
                     local _, researchScrollWastedChanged = scanInventoryItemsForAutomaticMarks(p_bagId, p_slotIndex, "researchScrolls", false)
                     if not updateInv and researchScrollWastedChanged then
                         updateInv = true
@@ -2234,8 +2236,7 @@ function FCOIS.ScanInventorySingle(p_bagId, p_slotIndex, checksAlreadyDoneTable)
 
                 --7)
                 --Update unknown recipes
-                if (checksAlreadyDoneTable ~= nil and checksAlreadyDoneTable["recipes"] == true) or (
-                        isRecipeAutoMarkDoable(true, false, true)) then
+                if (checksAlreadyDoneTable["recipes"] == true) then
                     --local itemLink = gil(p_bagId, p_slotIndex)
                     if isDebuggingCase == true then d(">scanInvSingle, unknown recipe scan reached for: " .. itemLink) end
                     local _, recipeChanged = scanInventoryItemsForAutomaticMarks(p_bagId, p_slotIndex, "recipes", false)
@@ -2246,8 +2247,7 @@ function FCOIS.ScanInventorySingle(p_bagId, p_slotIndex, checksAlreadyDoneTable)
 
                 --8)
                 --Update known recipes
-                if (checksAlreadyDoneTable ~= nil and checksAlreadyDoneTable["knownRecipes"] == true) or (
-                        isRecipeAutoMarkDoable(false, true, true)) then
+                if (checksAlreadyDoneTable["knownRecipes"] == true) then
                     local _, recipeChanged = scanInventoryItemsForAutomaticMarks(p_bagId, p_slotIndex, "knownRecipes", false)
                     if not updateInv and recipeChanged then
                         updateInv = true
@@ -2256,8 +2256,7 @@ function FCOIS.ScanInventorySingle(p_bagId, p_slotIndex, checksAlreadyDoneTable)
 
                 --9)
                 --Update unknown motifs --#308
-                if (checksAlreadyDoneTable ~= nil and checksAlreadyDoneTable["motifs"] == true) or (
-                        isMotifsAutoMarkDoable(true, false, true)) then
+                if (checksAlreadyDoneTable["motifs"] == true) then
                     --local itemLink = gil(p_bagId, p_slotIndex)
                     if isDebuggingCase == true then d(">scanInvSingle, unknown motifs scan reached for: " .. itemLink) end
                     local _, recipeChanged = scanInventoryItemsForAutomaticMarks(p_bagId, p_slotIndex, "motifs", false)
@@ -2268,8 +2267,7 @@ function FCOIS.ScanInventorySingle(p_bagId, p_slotIndex, checksAlreadyDoneTable)
 
                 --10)
                 --Update known recipes --#308
-                if (checksAlreadyDoneTable ~= nil and checksAlreadyDoneTable["knownMotifs"] == true) or (
-                        isMotifsAutoMarkDoable(false, true, true)) then
+                if (checksAlreadyDoneTable["knownMotifs"] == true) then
                     local _, recipeChanged = scanInventoryItemsForAutomaticMarks(p_bagId, p_slotIndex, "knownMotifs", false)
                     if not updateInv and recipeChanged then
                         updateInv = true
@@ -2278,8 +2276,7 @@ function FCOIS.ScanInventorySingle(p_bagId, p_slotIndex, checksAlreadyDoneTable)
 
                 --11)
                 --Check for item quality
-                if (checksAlreadyDoneTable ~= nil and checksAlreadyDoneTable["quality"] == true) or (
-                        (settings.autoMarkQuality ~= 1 and isIconEnabledSettings[settings.autoMarkQualityIconNr])) then
+                if (checksAlreadyDoneTable["quality"] == true) then
                     local _, qualityChanged = scanInventoryItemsForAutomaticMarks(p_bagId, p_slotIndex, "quality", false)
                     if not updateInv and qualityChanged then
                         updateInv = true
