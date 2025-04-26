@@ -1890,16 +1890,16 @@ function FCOIS.IsStyleContainerCollectibleAutoMarkDoable(checkIfSettingToAutoMar
             iconCheck = settings.isIconEnabled[settings.autoMarkStyleContainerCollectiblesIconNr]
         end
     end
-    local isStyleContainerCollectibleAutoMarkPrerequisitesMet = (FCOIS.CheckIfStyleContainerAddonUsed() and FCOIS.CheckIfChosenStyleContainerAddonActive(settings.styleContainerAddonUsed)) or false
+    local isStyleContainerCollectibleAutoMarkPrerequisitesMet = (FCOIS.CheckIfStyleContainerAddonUsed() and FCOIS.CheckIfChosenStyleContainerAddonActive(settings.styleContainerCollectibleAddonUsed)) or false
     if doIconCheck and isStyleContainerCollectibleAutoMarkPrerequisitesMet then
         isStyleContainerCollectibleAutoMarkPrerequisitesMet = (isStyleContainerCollectibleAutoMarkPrerequisitesMet and iconCheck) or false
     end
     if checkIfSettingToAutoMarkIsEnabled and knownStyleContainerCollectibleIconCheck then
-        retVar = isStyleContainerCollectibleAutoMarkPrerequisitesMet and (settings.autoMarkMotifs or settings.autoMarkKnownMotifs)
+        retVar = isStyleContainerCollectibleAutoMarkPrerequisitesMet and (settings.autoMarkStyleContainerCollectibles or settings.autoMarkKnownStyleContainerCollectibles)
     elseif checkIfSettingToAutoMarkIsEnabled and not knownStyleContainerCollectibleIconCheck then
-        retVar = isStyleContainerCollectibleAutoMarkPrerequisitesMet and settings.autoMarkMotifs
+        retVar = isStyleContainerCollectibleAutoMarkPrerequisitesMet and settings.autoMarkStyleContainerCollectibles
     elseif not checkIfSettingToAutoMarkIsEnabled and knownStyleContainerCollectibleIconCheck then
-        retVar = isStyleContainerCollectibleAutoMarkPrerequisitesMet and settings.autoMarkKnownMotifs
+        retVar = isStyleContainerCollectibleAutoMarkPrerequisitesMet and settings.autoMarkKnownStyleContainerCollectibles
     else
         retVar = isStyleContainerCollectibleAutoMarkPrerequisitesMet
     end

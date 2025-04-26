@@ -5735,7 +5735,7 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                         --==============================================================================
                         {   -- Style Container Collectibles --#317
                             type = "submenu",
-                            name = GetString(SI_ITEMTYPE8),
+                            name = GetString(SI_ITEMTYPE34),
                             controls =
                             {
                                 {
@@ -5834,7 +5834,7 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                                     setFunc = function(value)
                                         FCOISsettings.showStyleContainerCollectiblesInChat = value
                                     end,
-                                    disabled = function() return not isMotifsAutoMarkDoable(true, true, false) end,
+                                    disabled = function() return not isStyleContainerCollectibleAutoMarkDoable(true, true, false) end,
                                     warning = locVars["options_enable_auto_mark_styleContainerCollectibles_hint"],
                                     width = "half",
                                     default = FCOISdefaultSettings.showStyleContainerCollectiblesInChat,
