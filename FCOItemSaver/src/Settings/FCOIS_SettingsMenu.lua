@@ -5797,7 +5797,7 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                                     tooltip = locVars["options_enable_auto_mark_known_styleContainerCollectibles" .. tooltipSuffix],
                                     getFunc = function() return FCOISsettings.autoMarkKnownStyleContainerCollectibles end,
                                     setFunc = function(value)
-                                        FCOISsettings.autoMarkKnownMotifs = value
+                                        FCOISsettings.autoMarkKnownStyleContainerCollectibles = value
                                         if (FCOISsettings.autoMarkKnownStyleContainerCollectibles == true and checkIfStyleContainerAddonUsed()) then
                                             scanInventoryItemsForAutomaticMarks(nil, nil, "knownStyleContainerCollectibles", false)
                                         end
