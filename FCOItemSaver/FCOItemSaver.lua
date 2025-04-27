@@ -226,13 +226,12 @@ ReloadUI does not do anything, but manually mass marking via flag icon works fin
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2025-04-26
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2025-04-27
 ------------------------------------------------------------------------------------
---#318 Add support for blocking golden style page containers (collectible) usage
 
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.6.9 - New version: 2.7.0) -    Updated last: 2025-04-26
+--Changelog (last version: 2.6.9 - New version: 2.7.0) -    Updated last: 2025-04-27
 -------------------------------------------------------------------------------------
 --[Fixed]
 
@@ -240,6 +239,7 @@ ReloadUI does not do anything, but manually mass marking via flag icon works fin
 --[Changed]
 --#316 Added more constants FCOIS_CON* for the filterButtons, filterState and markerIcons _ALL (all buttons, all states, all marker icons) where only the value -1 was used until now
 --#317 Add support for automatic known/unknown golden style page container (colectibles) markers
+--#318 Add support for blocking golden style page containers (collectible) usage from inventory -> See anti settings -> Collection
 
 --[Added]
 
