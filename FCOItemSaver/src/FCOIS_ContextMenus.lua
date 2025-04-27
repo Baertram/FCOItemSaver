@@ -4153,16 +4153,18 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
         FCOIS.preventerVars.gCalledFromInternalFCOIS = true
         local marked, _ = isMarked(bag, slotIndex, FCOIS_CON_ICONS_ALL)
         if marked and isiuse(bag, slotIndex) then
+            local itemType = GetItemType(bag, slotIndex)
             --If mail send or player trade panel is activated
             local isCurrentlyShowingMailSend 	= not mailSend.control:IsHidden() and settings.blockSendingByMail
             local isCurrentlyShowingPlayerTrade = not playerTrade.control:IsHidden() and settings.blockTrading
             local isContainerWithAutoLootEnabled= isAutolootContainer(bag, slotIndex) and settings.blockAutoLootContainer
-            local isARecipe		 				= isItemType(bag, slotIndex, ITEMTYPE_RECIPE) and settings.blockMarkedRecipes
-            local isAStyleMotif					= isItemType(bag, slotIndex, ITEMTYPE_RACIAL_STYLE_MOTIF) and settings.blockMarkedMotifs
-            local isAPotion					    = isItemType(bag, slotIndex, ITEMTYPE_POTION) and settings.blockMarkedPotions
-            local isAFood					    = isItemType(bag, slotIndex, ITEMTYPE_FOOD) and settings.blockMarkedFood
+            local isARecipe		 				= isItemType(bag, slotIndex, ITEMTYPE_RECIPE, itemType) and settings.blockMarkedRecipes
+            local isAStyleMotif					= isItemType(bag, slotIndex, ITEMTYPE_RACIAL_STYLE_MOTIF, itemType) and settings.blockMarkedMotifs
+            local isAPotion					    = isItemType(bag, slotIndex, ITEMTYPE_POTION, itemType) and settings.blockMarkedPotions
+            local isAFood					    = isItemType(bag, slotIndex, ITEMTYPE_FOOD, itemType) and settings.blockMarkedFood
             --local isARepairKit				  = isItemType(bag, slot, ITEMTYPE_TOOL)
-            local isACrownStoreItem             = (isItemType(bag, slotIndex, ITEMTYPE_CROWN_ITEM) or isItemType(bag, slotIndex, ITEMTYPE_CROWN_REPAIR)) and settings.blockCrownStoreItems
+            local isACrownStoreItem             = isItemType(bag, slotIndex, {ITEMTYPE_CROWN_ITEM, ITEMTYPE_CROWN_REPAIR}, itemType) and settings.blockCrownStoreItems
+            local isACollectible                = isItemType(bag, slotIndex, ITEMTYPE_COLLECTIBLE, itemType) and settings.blockMarkedCollectibles --#318
 
 --d("[FCOIS]FCOItemSaver_AddSlotAction - PanelId: " .. tos(FCOIS.gFilterWhere) .. ", isARecipe: " .. tos(isARecipe) .. ", isAStyleMotif: " .. tos(isAStyleMotif) .. ", isAFood: " .. tos(isAFood))
             --Only if we are in the inventory
@@ -4181,6 +4183,10 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
                     --Style motifs
                     if isAStyleMotif and settings.blockMarkedMotifsDisableWithFlag then
                         isAStyleMotif = false
+                    end
+                    --Collectible
+                    if isACollectible and settings.blockMarkedCollectiblesDisableWithFlag then --#318
+                        isACollectible = false
                     end
                     --Drink & food
                     if (isAFood or isAPotion) and settings.blockMarkedFoodDisableWithFlag then
@@ -4202,6 +4208,7 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
                     or isContainerWithAutoLootEnabled
                     or isARecipe
                     or isAStyleMotif
+                    or isACollectible --#318
                     or isAPotion
                     or isAFood
                     or isACrownStoreItem

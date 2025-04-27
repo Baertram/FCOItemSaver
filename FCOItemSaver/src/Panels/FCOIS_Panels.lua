@@ -53,26 +53,35 @@ local function checkSingleItemProtection(p_bag, p_slotIndex, panelId, panelIdAtC
 
     local wasDragged = FCOIS.preventerVars.dragAndDropOrDoubleClickItemSelectionHandler
 
+    local itemType = GetItemType(p_bag, p_slotIndex)
+
+    --[[
+    if itemType == ITEMTYPE_COLLECTIBLE then --for debugging --#318
+        d("[FCOIS]checkSingleItemProtection -> collectible: " .. GetItemLink(p_bag, p_slotIndex))
+    end
+    ]]
+
     --Are we trying to open a container with autoloot on?
     if (isAutolootContainer(p_bag, p_slotIndex)) then
         locWhereAreWe = FCOIS_CON_CONTAINER_AUTOOLOOT
         --Read recipe?
-    elseif (isItemType(p_bag, p_slotIndex, ITEMTYPE_RECIPE)) then
+    elseif (isItemType(p_bag, p_slotIndex, ITEMTYPE_RECIPE, itemType)) then
         locWhereAreWe = FCOIS_CON_RECIPE_USAGE
         --Read style motif?
-    elseif (isItemType(p_bag, p_slotIndex, ITEMTYPE_RACIAL_STYLE_MOTIF)) then
+    elseif (isItemType(p_bag, p_slotIndex, ITEMTYPE_RACIAL_STYLE_MOTIF, itemType)) then
         locWhereAreWe = FCOIS_CON_MOTIF_USAGE
         --Read golden collectible box style?
-    elseif (isItemType(p_bag, p_slotIndex, ITEMTYPE_COLLECTIBLE)) then --#318
+    elseif (isItemType(p_bag, p_slotIndex, ITEMTYPE_COLLECTIBLE, itemType)) then --#318
         locWhereAreWe = FCOIS_CON_COLLECTIBLE_USAGE
+--d(">locWhereAreWe = FCOIS_CON_COLLECTIBLE_USAGE")
         --Drink potion?
-    elseif (isItemType(p_bag, p_slotIndex, ITEMTYPE_POTION)) then
+    elseif (isItemType(p_bag, p_slotIndex, ITEMTYPE_POTION, itemType)) then
         locWhereAreWe = FCOIS_CON_POTION_USAGE
         --Eat food?
-    elseif (isItemType(p_bag, p_slotIndex, {ITEMTYPE_FOOD, ITEMTYPE_DRINK})) then
+    elseif (isItemType(p_bag, p_slotIndex, {ITEMTYPE_FOOD, ITEMTYPE_DRINK}, itemType)) then
         locWhereAreWe = FCOIS_CON_FOOD_USAGE
         --Use crown store item?
-    elseif (isItemType(p_bag, p_slotIndex, ITEMTYPE_CROWN_ITEM) or isItemType(p_bag, p_slotIndex, ITEMTYPE_CROWN_REPAIR)) then
+    elseif (isItemType(p_bag, p_slotIndex, {ITEMTYPE_CROWN_ITEM, ITEMTYPE_CROWN_REPAIR}, itemType)) then
         locWhereAreWe = FCOIS_CON_CROWN_ITEM
         --Other items are allowed!
     else
@@ -111,7 +120,7 @@ end
 --Check if an item should be used or should be equipped (only LF_INVENTORY or LF_INVENTORY_COMPANION) via double click e.g.
 --returns FCOIS_CON_FALLBACK as whereAreWe in that case and disables the further checks in ItemSelectionHandler this way
 local function checkIfItemShouldBeUsedOrEquipped(p_whereAreWe, p_bag, p_slot, panelId, panelIdAtCall, calledFromExternalAddon)
---d("[FCOIS]checkIfItemShouldBeUsedOrEquipped")
+--d("[FCOIS]checkIfItemShouldBeUsedOrEquipped - p_whereAreWe: " .. tos(p_whereAreWe))
     if p_whereAreWe ~= FCOIS_CON_FALLBACK then
         --Get the whereAreWe panel ID by checking the item's type etc. now and allow equipping items via double click e.g.
         --by returning the FCOIS_CON_FALLBACK value

@@ -40,6 +40,7 @@ local checkIfUniversaldDeconstructionNPC
 local checkActivePanel
 local isVendorPanelShown
 local getWhereAreWe
+local getContextMenuAntiSettingsTextAndState
 
 local FCOIScdsh = FCOIS.callDeconstructionSelectionHandler
 
@@ -119,6 +120,8 @@ function FCOIS.CheckIfProtectedSettingsEnabled(filterPanel, iconNr, isDynamicIco
     if filterPanel == nil then return nil, false end
     isDynamicIcon = isDynamicIcon or false
     checkAntiDetails = checkAntiDetails or false
+    getContextMenuAntiSettingsTextAndState = getContextMenuAntiSettingsTextAndState or FCOIS.GetContextMenuAntiSettingsTextAndState
+
     local craftBagExtendedUsed = false
     local protectionVal
     local protectionValDestroy
@@ -186,7 +189,8 @@ function FCOIS.CheckIfProtectedSettingsEnabled(filterPanel, iconNr, isDynamicIco
             --Is the dynamic icon protected at the current panel?
             if protectionVal == true then
                 --The protective functions are not enabled (red flag is set in the inventory additional options flag icon, or the current panel got no additional inventory button, e.g. the crafting research tab or the research popup dialog)?
-                local _, invAntiSettingsEnabled = FCOIS.GetContextMenuAntiSettingsTextAndState(filterPanel, false)
+                getContextMenuAntiSettingsTextAndState = getContextMenuAntiSettingsTextAndState or FCOIS.GetContextMenuAntiSettingsTextAndState
+                local _, invAntiSettingsEnabled = getContextMenuAntiSettingsTextAndState(filterPanel, false)
 --d(">invAntiSettingsEnabled: " ..tos(invAntiSettingsEnabled))
                 if not invAntiSettingsEnabled then
                     --Check if the temporary disabling of the protection is enabled, if the user uses the inventory "flag" icon and sets it to red
@@ -490,8 +494,8 @@ function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChat
     if bag == nil or slot == nil then return true end
     local doDebug = false
     --TODO DEBUG: enable to show d messages for debugging
-    --[[
-    if GetDisplayName() == "@Baertram" and bag == 1 and (slot == 85 or slot == 99) then --bug #272 20231205 -> Alchemy station, dynamic icon not protected
+   --[[
+    if GetDisplayName() == "@Baertram" and bag == 1 and (slot == 62) then  --#318 20250427
         FCOIS.preventerVars.doDebugItemSelectionHandler = true
     end
     ]]
@@ -592,7 +596,7 @@ if doDebug then d(">Where are we: " .. tos(whereAreWe) .. ", isBlocked: " .. tos
     if panelId == LF_INVENTORY and singleItemChecks then
         --See if the Anti-settings for the given panel are enabled or not
         --The protective functions are not enabled (red flag in the inventory additional options flag icon or the current panel got no additional inventory button, e.g. the crafting research tab)
-        local _, invAntiSettingsEnabled = FCOIS.GetContextMenuAntiSettingsTextAndState(panelId, false)
+        local _, invAntiSettingsEnabled = getContextMenuAntiSettingsTextAndState(panelId, false)
         if not invAntiSettingsEnabled then
             --Using/eating/drinking items for marked items is blocked, e.g. for recipes/style motifs?
             --If the settings allow it: Change the blocked state to unblocked upon right-clicking the inventory additional options flag icon

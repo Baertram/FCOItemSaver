@@ -1200,7 +1200,7 @@ function FCOIS.CheckIfStyleContainerAddonUsed() --#317
 end
 
 --Function to check if the recipe addon is loaded
-function FCOIS.CheckIfStyleContainerAddonActive(recipeAddonId) --#317
+function FCOIS.CheckIfChosenStyleContainerAddonActive(recipeAddonId) --#317
     if recipeAddonId == nil then recipeAddonId = getStyleContainerAddonUsed() end
     if recipeAddonId == 0 then return false end
     local retVar = false

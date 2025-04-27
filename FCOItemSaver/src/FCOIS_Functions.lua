@@ -1269,16 +1269,18 @@ function FCOIS.IsUnboundAndNotStolenItemChecks(bagId, slotIndex, iconId, isBound
     return isAllowed, isBound, isStolen
 end
 
-function FCOIS.IsItemType(bag, slot, itemTypes)
+function FCOIS.IsItemType(bag, slot, itemTypes, currentItemType)
     if not itemTypes then return false end
     local isItemTypeVar
+    currentItemType = currentItemType or git(bag, slot)
+
     if type(itemTypes) == "table" then
         for _, itemType in ipairs(itemTypes) do
-            isItemTypeVar = (git(bag, slot) == itemType)
+            isItemTypeVar = (currentItemType == itemType)
             if isItemTypeVar == true then return true end
         end
     else
-        return (git(bag, slot) == itemTypes)
+        return (currentItemType == itemTypes)
     end
     return false
 end
