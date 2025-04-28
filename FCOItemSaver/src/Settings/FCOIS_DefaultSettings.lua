@@ -121,6 +121,8 @@ function FCOIS.BuildDefaultSettings()
 		blockMarkedFood			    = false,
 		blockMarkedFoodDisableWithFlag = false,
 		blockMarkedCrownStoreItemDisableWithFlag = false,
+		blockMarkedCollectibles     = false, --#318
+		blockMarkedCollectiblesDisableWithFlag = false, --#318
 		blockGuildBankWithoutWithdraw = true,
 		blockGuildBankWithoutWithdrawDisableWithFlag = false,
 		blockSpecialItemsEnchantment = true,
@@ -401,12 +403,16 @@ function FCOIS.BuildDefaultSettings()
 		showTooltipAtRestoreLastMarked = false,
 		markerIconsOutputOrder = {},
 		markerIconsOutputOrderEntries = {},
-
 		allowExclusionMail			= false,			--#311
 		allowExclusionMailFor		= {					--#311
 			--[FCOIS_CON_ICON_DECONSTRUCTION] = true,
 		},
-
+		styleContainerCollectibleAddonUsed = FCOIS_STYLECONTAINER_ADDON_ESO_STANDARD, --#317
+		autoMarkStyleContainerCollectibles = false, --#317
+		autoMarkStyleContainerCollectiblesIconNr = FCOIS_CON_ICON_LOCK, --#317
+		autoMarkKnownStyleContainerCollectibles = false, --#317
+		autoMarkKnownStyleContainerCollectiblesIconNr = FCOIS_CON_ICON_LOCK, --#317
+		showStyleContainerCollectiblesInChat = false, --#317
 
 		--autoMarkLibSetsSetSearchFavorites = false, --#301 LibSets set search favorites
 		--LibSetsSetSearchFavoriteToFCOISMapping = {}, --#301 LibSets set search favorites
@@ -465,10 +471,10 @@ function FCOIS.BuildDefaultSettings()
 				--				["anti-launder"]	 = false,
 			}
 			--Create the helper arrays for the filter button context menus
-			FCOIS.settingsVars.defaults.lastLockDynFilterIconId[libFiltersFilterPanelIdHelper]		= -1
-			FCOIS.settingsVars.defaults.lastGearFilterIconId[libFiltersFilterPanelIdHelper] 		= -1
-			FCOIS.settingsVars.defaults.lastResDecImpFilterIconId[libFiltersFilterPanelIdHelper] 	= -1
-			FCOIS.settingsVars.defaults.lastSellGuildIntFilterIconId[libFiltersFilterPanelIdHelper]	= -1
+			FCOIS.settingsVars.defaults.lastLockDynFilterIconId[libFiltersFilterPanelIdHelper]		= FCOIS_CON_ICONS_ALL
+			FCOIS.settingsVars.defaults.lastGearFilterIconId[libFiltersFilterPanelIdHelper] 		= FCOIS_CON_ICONS_ALL
+			FCOIS.settingsVars.defaults.lastResDecImpFilterIconId[libFiltersFilterPanelIdHelper] 	= FCOIS_CON_ICONS_ALL
+			FCOIS.settingsVars.defaults.lastSellGuildIntFilterIconId[libFiltersFilterPanelIdHelper]	= FCOIS_CON_ICONS_ALL
 
 			--Create 2-dimensional array for the UNDO functions from the addiitonal inventory context menu (flag) menu
 			FCOIS.contextMenuVars.undoMarkedItems[libFiltersFilterPanelIdHelper] = {}
@@ -477,10 +483,10 @@ function FCOIS.BuildDefaultSettings()
 			FCOIS.settingsVars.accountWideButForEachCharacterDefaults[currentCharId].isFilterPanelOn[libFiltersFilterPanelIdHelper] = {}
 			FCOIS.settingsVars.accountWideButForEachCharacterDefaults[currentCharId].isFilterPanelOn[libFiltersFilterPanelIdHelper] = {false, false, false, false}
 			--Create the helper arrays for the filter button context menus
-			FCOIS.settingsVars.accountWideButForEachCharacterDefaults[currentCharId].lastLockDynFilterIconId[libFiltersFilterPanelIdHelper] = -1
-			FCOIS.settingsVars.accountWideButForEachCharacterDefaults[currentCharId].lastGearFilterIconId[libFiltersFilterPanelIdHelper] = -1
-			FCOIS.settingsVars.accountWideButForEachCharacterDefaults[currentCharId].lastResDecImpFilterIconId[libFiltersFilterPanelIdHelper] = -1
-			FCOIS.settingsVars.accountWideButForEachCharacterDefaults[currentCharId].lastSellGuildIntFilterIconId[libFiltersFilterPanelIdHelper] = -1
+			FCOIS.settingsVars.accountWideButForEachCharacterDefaults[currentCharId].lastLockDynFilterIconId[libFiltersFilterPanelIdHelper] = FCOIS_CON_ICONS_ALL
+			FCOIS.settingsVars.accountWideButForEachCharacterDefaults[currentCharId].lastGearFilterIconId[libFiltersFilterPanelIdHelper] = FCOIS_CON_ICONS_ALL
+			FCOIS.settingsVars.accountWideButForEachCharacterDefaults[currentCharId].lastResDecImpFilterIconId[libFiltersFilterPanelIdHelper] = FCOIS_CON_ICONS_ALL
+			FCOIS.settingsVars.accountWideButForEachCharacterDefaults[currentCharId].lastSellGuildIntFilterIconId[libFiltersFilterPanelIdHelper] = FCOIS_CON_ICONS_ALL
 
 			--Added with FCOIS v2.2.4
 			FCOIS.settingsVars.defaults.filterButtonSettings[libFiltersFilterPanelIdHelper] = {

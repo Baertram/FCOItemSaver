@@ -1138,12 +1138,12 @@ end
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
--- Motifs check addons: LibCharacterKnowledge
+-- Motifs check addons: LibCharacterKnowledge  --#308
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 --Function to return the ID of the recipe addon used
-function FCOIS.GetMotifsAddonUsed()
+function FCOIS.GetMotifsAddonUsed()  --#308
     local settings = FCOIS.settingsVars.settings
     local motifsAddonUsed = settings.motifsAddonUsed or 0
     if settings.debug then debugMessage("getMotifsAddonUsed",tos(motifsAddonUsed), true, FCOIS_DEBUG_DEPTH_SPAM, false) end
@@ -1152,7 +1152,7 @@ end
 local getMotifsAddonUsed = FCOIS.GetMotifsAddonUsed
 
 --Function to check which recipe addon handles the checks (enabled within the FCOIS settings)
-function FCOIS.CheckIfMotifsAddonUsed()
+function FCOIS.CheckIfMotifsAddonUsed()  --#308
     local retVar = false
     if (otherAddons.libCharacterKnowledgeActive)
     then
@@ -1163,7 +1163,7 @@ function FCOIS.CheckIfMotifsAddonUsed()
 end
 
 --Function to check if the recipe addon is loaded
-function FCOIS.CheckIfChosenMotifsAddonActive(recipeAddonId)
+function FCOIS.CheckIfChosenMotifsAddonActive(recipeAddonId) --#308
     if recipeAddonId == nil then recipeAddonId = getMotifsAddonUsed() end
     if recipeAddonId == 0 then return false end
     local retVar = false
@@ -1174,6 +1174,44 @@ function FCOIS.CheckIfChosenMotifsAddonActive(recipeAddonId)
     if FCOIS.settingsVars.settings.debug then debugMessage("checkIfChosenMotifsAddonActive","motifsAddonId: "..tos(recipeAddonId) .. ", retVar: " ..tos(retVar), true, FCOIS_DEBUG_DEPTH_SPAM, false) end
     return retVar
 end
+
+
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+-- Style container for collectibles check addons: ESO vanilla --#317
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+--Function to return the ID of the recipe addon used
+function FCOIS.GetStyleContainerAddonUsed() --#317
+    local settings = FCOIS.settingsVars.settings
+    local styleContainerCollectibleAddonUsed = settings.styleContainerCollectibleAddonUsed or 0
+    if settings.debug then debugMessage("getStyleContainerAddonUsed",tos(styleContainerCollectibleAddonUsed), true, FCOIS_DEBUG_DEPTH_SPAM, false) end
+    return styleContainerCollectibleAddonUsed
+end
+local getStyleContainerAddonUsed = FCOIS.GetStyleContainerAddonUsed
+
+--Function to check which recipe addon handles the checks (enabled within the FCOIS settings)
+function FCOIS.CheckIfStyleContainerAddonUsed() --#317
+    local retVar = true --as we only use ESO vanilla code atm -> always true
+    if FCOIS.settingsVars.settings.debug then debugMessage("checkIfStyleContainerAddonUsed", tos(retVar), true, FCOIS_DEBUG_DEPTH_SPAM, false) end
+    return retVar
+end
+
+--Function to check if the recipe addon is loaded
+function FCOIS.CheckIfChosenStyleContainerAddonActive(recipeAddonId) --#317
+    if recipeAddonId == nil then recipeAddonId = getStyleContainerAddonUsed() end
+    if recipeAddonId == 0 then return false end
+    local retVar = false
+
+    if recipeAddonId == FCOIS_STYLECONTAINER_ADDON_ESO_STANDARD then
+        retVar = true
+    end
+    if FCOIS.settingsVars.settings.debug then debugMessage("checkIfStyleContainerAddonActive","styleContainerAddonId: "..tos(recipeAddonId) .. ", retVar: " ..tos(retVar), true, FCOIS_DEBUG_DEPTH_SPAM, false) end
+    return retVar
+end
+
 
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
@@ -1508,7 +1546,7 @@ function FCOIS.CheckIfInventoryRowOfExternalAddonNeedsMarkerIconsUpdate(rowContr
         --Update the complete row in the IIfA inventory frame
         if IIfA ~= nil and FCOIS.IIfAclicked ~= nil and IIfA.UpdateFCOISMarkerIcons ~= nil then
             local showFCOISMarkerIcons = IIfA:GetSettings().FCOISshowMarkerIcons
-            IIfA:UpdateFCOISMarkerIcons(rowControl, showFCOISMarkerIcons, false, -1)
+            IIfA:UpdateFCOISMarkerIcons(rowControl, showFCOISMarkerIcons, false, FCOIS_CON_ICONS_ALL)
         end
     end
 end

@@ -52,7 +52,7 @@ function FCOIS.BuildLocalizedFilterButtonContextMenuEntries(contextMenuType)
             text = locVars["button_context_menu_gear_sets_all"],
             texture = "",
             textureColor = nil,
-            iconId = -1,
+            iconId = FCOIS_CON_ICONS_ALL,
             anchorButton = buttonNamePrefixLockDyn .. "1",
         }
         localizedContextMenuEntries[buttonNamePrefix .. buttonNamePrefixLockDyn .. "1"] = allEntry
@@ -97,7 +97,7 @@ function FCOIS.BuildLocalizedFilterButtonContextMenuEntries(contextMenuType)
             text = locVars["button_context_menu_gear_sets_all"],
             texture = "",
             textureColor = nil,
-            iconId = -1,
+            iconId = FCOIS_CON_ICONS_ALL,
             anchorButton = buttonNamePrefix .. buttonNamePrefixGearSet .. "1",
         }
         localizedContextMenuEntries[buttonNamePrefix .. buttonNamePrefixGearSet .. "1"] = allEntry
@@ -153,7 +153,7 @@ function FCOIS.BuildLocalizedFilterButtonContextMenuEntries(contextMenuType)
             text = locVars["button_context_menu_gear_sets_all"],
             texture = "",
             textureColor = nil,
-            iconId = -1,
+            iconId = FCOIS_CON_ICONS_ALL,
             anchorButton = buttonNamePrefix .. buttonNamePrefixResDecImp .. "1",
         }
         localizedContextMenuEntries[buttonNamePrefix .. buttonNamePrefixResDecImp .. "1"] = allEntry
@@ -186,7 +186,7 @@ function FCOIS.BuildLocalizedFilterButtonContextMenuEntries(contextMenuType)
             text = locVars["button_context_menu_gear_sets_all"],
             texture = "",
             textureColor = nil,
-            iconId = -1,
+            iconId = FCOIS_CON_ICONS_ALL,
             anchorButton = buttonNamePrefix .. buttonNamePrefixSellGuildInt .. "1",
         }
         localizedContextMenuEntries[buttonNamePrefix .. buttonNamePrefixSellGuildInt .. "1"] = allEntry
@@ -669,6 +669,7 @@ function FCOIS.Localization()
         [FCOIS_CON_CROWN_ITEM]			=	locTexts["crown_item_usage_not_allowed"],
         [FCOIS_CON_CRAFTBAG_DESTROY]	=	locTexts["destroying_not_allowed"],
         [FCOIS_CON_RETRAIT]	            =	locTexts["retrait_not_allowed"],
+        [FCOIS_CON_COLLECTIBLE_USAGE]   =   locTexts["collectibles_usage_not_allowed"], --#318
         [FCOIS_CON_FALLBACK]			=   locTexts["destroying_not_allowed"],  -- Fallback: Destroying not allowed (used at bank deposit, guild bank deposit, bank withdraw, guild bank withdraw, ...)
     }
 

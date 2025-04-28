@@ -13,7 +13,7 @@ local debugMessage = FCOIS.debugMessage
 
 local ctrlVars = FCOIS.ZOControlVars
 local universalDeconGlobal = ctrlVars.UNIVERSAL_DECONSTRUCTION_GLOBAL
-local universalDeconPanel = universalDeconGlobal and universalDeconGlobal.deconstructionPanel
+--local universalDeconPanel = universalDeconGlobal and universalDeconGlobal.deconstructionPanel
 
 local hideContextMenu = FCOIS.HideContextMenu
 local updateFCOISFilterButtonsAtInventory = FCOIS.UpdateFCOISFilterButtonsAtInventory
@@ -29,12 +29,12 @@ local isItemType = FCOIS.IsItemType
 local isCompanionInventoryShown = FCOIS.IsCompanionInventoryShown
 local getFilterWhereBySettings = FCOIS.GetFilterWhereBySettings
 local mappingVars = FCOIS.mappingVars
-local panelIdSupportedAtDeconNPC = mappingVars.panelIdSupportedAtUniversalDeconstructionNPC
-local panelIdByDeconNPCMenuBarTabButtonName = mappingVars.panelIdByUniversalDeconstructionNPCMenuBarTabButtonName
+--local panelIdSupportedAtDeconNPC = mappingVars.panelIdSupportedAtUniversalDeconstructionNPC
+--local panelIdByDeconNPCMenuBarTabButtonName = mappingVars.panelIdByUniversalDeconstructionNPCMenuBarTabButtonName
 
-local universalDeconInvCtrl = ctrlVars.UNIVERSAL_DECONSTRUCTION_INV
-local universaldDeconScene = ctrlVars.UNIVERSAL_DECONSTRUCTON_SCENE
-local universaldDeconMenuBarTabs = ctrlVars.UNIVERSAL_DECONSTRUCTION_MENUBAR_TABS
+--local universalDeconInvCtrl = ctrlVars.UNIVERSAL_DECONSTRUCTION_INV
+--local universaldDeconScene = ctrlVars.UNIVERSAL_DECONSTRUCTON_SCENE
+--local universaldDeconMenuBarTabs = ctrlVars.UNIVERSAL_DECONSTRUCTION_MENUBAR_TABS
 local checkIfCBEActive = FCOIS.CheckIfCBEActive --#309
 local checkIfAGSActive = FCOIS.CheckIfAGSActive --#309
 local checkIfAGSShowsCustomPanelAtGuildStore = FCOIS.CheckIfAGSShowsCustomPanelAtGuildStore --#309
@@ -53,23 +53,35 @@ local function checkSingleItemProtection(p_bag, p_slotIndex, panelId, panelIdAtC
 
     local wasDragged = FCOIS.preventerVars.dragAndDropOrDoubleClickItemSelectionHandler
 
+    local itemType = GetItemType(p_bag, p_slotIndex)
+
+    --[[
+    if itemType == ITEMTYPE_COLLECTIBLE then --for debugging --#318
+        d("[FCOIS]checkSingleItemProtection -> collectible: " .. GetItemLink(p_bag, p_slotIndex))
+    end
+    ]]
+
     --Are we trying to open a container with autoloot on?
     if (isAutolootContainer(p_bag, p_slotIndex)) then
         locWhereAreWe = FCOIS_CON_CONTAINER_AUTOOLOOT
         --Read recipe?
-    elseif (isItemType(p_bag, p_slotIndex, ITEMTYPE_RECIPE)) then
+    elseif (isItemType(p_bag, p_slotIndex, ITEMTYPE_RECIPE, itemType)) then
         locWhereAreWe = FCOIS_CON_RECIPE_USAGE
         --Read style motif?
-    elseif (isItemType(p_bag, p_slotIndex, ITEMTYPE_RACIAL_STYLE_MOTIF)) then
+    elseif (isItemType(p_bag, p_slotIndex, ITEMTYPE_RACIAL_STYLE_MOTIF, itemType)) then
         locWhereAreWe = FCOIS_CON_MOTIF_USAGE
+        --Read golden collectible box style?
+    elseif (isItemType(p_bag, p_slotIndex, ITEMTYPE_COLLECTIBLE, itemType)) then --#318
+        locWhereAreWe = FCOIS_CON_COLLECTIBLE_USAGE
+--d(">locWhereAreWe = FCOIS_CON_COLLECTIBLE_USAGE")
         --Drink potion?
-    elseif (isItemType(p_bag, p_slotIndex, ITEMTYPE_POTION)) then
+    elseif (isItemType(p_bag, p_slotIndex, ITEMTYPE_POTION, itemType)) then
         locWhereAreWe = FCOIS_CON_POTION_USAGE
         --Eat food?
-    elseif (isItemType(p_bag, p_slotIndex, {ITEMTYPE_FOOD, ITEMTYPE_DRINK})) then
+    elseif (isItemType(p_bag, p_slotIndex, {ITEMTYPE_FOOD, ITEMTYPE_DRINK}, itemType)) then
         locWhereAreWe = FCOIS_CON_FOOD_USAGE
         --Use crown store item?
-    elseif (isItemType(p_bag, p_slotIndex, ITEMTYPE_CROWN_ITEM) or isItemType(p_bag, p_slotIndex, ITEMTYPE_CROWN_REPAIR)) then
+    elseif (isItemType(p_bag, p_slotIndex, {ITEMTYPE_CROWN_ITEM, ITEMTYPE_CROWN_REPAIR}, itemType)) then
         locWhereAreWe = FCOIS_CON_CROWN_ITEM
         --Other items are allowed!
     else
@@ -108,7 +120,7 @@ end
 --Check if an item should be used or should be equipped (only LF_INVENTORY or LF_INVENTORY_COMPANION) via double click e.g.
 --returns FCOIS_CON_FALLBACK as whereAreWe in that case and disables the further checks in ItemSelectionHandler this way
 local function checkIfItemShouldBeUsedOrEquipped(p_whereAreWe, p_bag, p_slot, panelId, panelIdAtCall, calledFromExternalAddon)
---d("[FCOIS]checkIfItemShouldBeUsedOrEquipped")
+--d("[FCOIS]checkIfItemShouldBeUsedOrEquipped - p_whereAreWe: " .. tos(p_whereAreWe))
     if p_whereAreWe ~= FCOIS_CON_FALLBACK then
         --Get the whereAreWe panel ID by checking the item's type etc. now and allow equipping items via double click e.g.
         --by returning the FCOIS_CON_FALLBACK value
@@ -816,12 +828,12 @@ function FCOIS.OnClosePanel(panelIdClosed, panelIdToShow, autoReEnableCheck)
         --Update the inventory filter buttons
         if panelIdToShow ~= nil then
             if  panelIdToShow == LF_INVENTORY then
-                updateFCOISFilterButtonsAtInventory(-1)
+                updateFCOISFilterButtonsAtInventory(FCOIS_CON_FILTER_BUTTONS_ALL)
             end
 --d(">FCOIS.gFilterWhere1.2: " .. tos(FCOIS.gFilterWhere))
 
             --Update the 4 inventory button's color
-            updateFCOISFilterButtonColorsAndTextures(-1, nil, -1, panelIdToShow)
+            updateFCOISFilterButtonColorsAndTextures(FCOIS_CON_FILTER_BUTTONS_ALL, nil, FCOIS_CON_FILTER_BUTTON_STATUS_ALL, panelIdToShow)
 --d(">FCOIS.gFilterWhere1.3: " .. tos(FCOIS.gFilterWhere))
             --Change the button color of the context menu invoker
             changeContextMenuInvokerButtonColorByPanelId(panelIdToShow)

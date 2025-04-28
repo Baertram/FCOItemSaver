@@ -1017,16 +1017,16 @@ function FCOIS.AfterSettings()
             --Added with FCOIS v1.9.9
             FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].isFilterPanelOn[panelId]               = FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].isFilterPanelOn[panelId] or {false, false, false, false}
             --Create the helper arrays for the filter button context menus
-            FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastLockDynFilterIconId[panelId]       = FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastLockDynFilterIconId[panelId] or -1
-            FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastGearFilterIconId[panelId]          = FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastGearFilterIconId[panelId] or -1
-            FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastResDecImpFilterIconId[panelId]     = FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastResDecImpFilterIconId[panelId] or -1
-            FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastSellGuildIntFilterIconId[panelId]  = FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastSellGuildIntFilterIconId[panelId] or -1
+            FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastLockDynFilterIconId[panelId]       = FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastLockDynFilterIconId[panelId] or FCOIS_CON_ICONS_ALL
+            FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastGearFilterIconId[panelId]          = FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastGearFilterIconId[panelId] or FCOIS_CON_ICONS_ALL
+            FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastResDecImpFilterIconId[panelId]     = FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastResDecImpFilterIconId[panelId] or FCOIS_CON_ICONS_ALL
+            FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastSellGuildIntFilterIconId[panelId]  = FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastSellGuildIntFilterIconId[panelId] or FCOIS_CON_ICONS_ALL
 
             --Added with FCOIS v2.4.4 #244 Fix LF_SMITHING_RESEARCH/LF_JEWELRY_RESEARCH entries for last selected markerIcon at the 4 filter buttons right click context menus, and preset with -1 "all icons"
-            FCOIS.settingsVars.settings.lastLockDynFilterIconId[panelId] =      FCOIS.settingsVars.settings.lastLockDynFilterIconId[panelId] or -1
-            FCOIS.settingsVars.settings.lastGearFilterIconId[panelId] =         FCOIS.settingsVars.settings.lastGearFilterIconId[panelId] or -1
-            FCOIS.settingsVars.settings.lastResDecImpFilterIconId[panelId]  =   FCOIS.settingsVars.settings.lastResDecImpFilterIconId[panelId] or -1
-            FCOIS.settingsVars.settings.lastSellGuildIntFilterIconId[panelId] = FCOIS.settingsVars.settings.lastSellGuildIntFilterIconId[panelId] or -1
+            FCOIS.settingsVars.settings.lastLockDynFilterIconId[panelId] =      FCOIS.settingsVars.settings.lastLockDynFilterIconId[panelId] or FCOIS_CON_ICONS_ALL
+            FCOIS.settingsVars.settings.lastGearFilterIconId[panelId] =         FCOIS.settingsVars.settings.lastGearFilterIconId[panelId] or FCOIS_CON_ICONS_ALL
+            FCOIS.settingsVars.settings.lastResDecImpFilterIconId[panelId]  =   FCOIS.settingsVars.settings.lastResDecImpFilterIconId[panelId] or FCOIS_CON_ICONS_ALL
+            FCOIS.settingsVars.settings.lastSellGuildIntFilterIconId[panelId] = FCOIS.settingsVars.settings.lastSellGuildIntFilterIconId[panelId] or FCOIS_CON_ICONS_ALL
         end
     end
 

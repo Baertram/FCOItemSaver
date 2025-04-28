@@ -12,7 +12,7 @@ local strlen = string.len
 FCOIS.addonVars = {}
 local addonVars = FCOIS.addonVars
 --Addon variables
-addonVars.addonVersionOptions 		    = '2.6.9' -- version shown in the settings panel
+addonVars.addonVersionOptions 		    = '2.7.1' -- version shown in the settings panel
 --The addon name, normal and decorated with colors etc.
 addonVars.gAddonName				    = "FCOItemSaver"
 addonVars.gAddonNameShort               = "FCOIS"
@@ -270,15 +270,38 @@ FCOIS_CON_RESEARCH_DIALOG       = 1000
 FCOIS_CON_JEWELRY_RESEARCH_DIALOG = 1010
 FCOIS_CON_GUILDBANK_DEPOSIT     = 1020
 FCOIS_CON_COMPANION_DESTROY     = 1030
+FCOIS_CON_COLLECTIBLE_USAGE     = 1040 --#318
 FCOIS_CON_CROWN_ITEM            = 9000
 FCOIS_CON_FALLBACK 				= 9990
 
+--Constant values for the marker textures panels (inventories) -> Where they should be created --#316
+FCOIS_CON_MARKER_TEXTURE_PANELS_ALL         = -1
+FCOIS_CON_MARKER_TEXTURE_PANEL_INVENTORY    = 1
+FCOIS_CON_MARKER_TEXTURE_PANEL_REPAIR_LIST  = 2
+FCOIS_CON_MARKER_TEXTURE_PANEL_CHARACTER    = 3
+FCOIS_CON_MARKER_TEXTURE_PANEL_QUICKSLOTS   = 4
+FCOIS_CON_MARKER_TEXTURE_PANEL_TRANSMUTATION= 5
+FCOIS_CON_MARKER_TEXTURE_COMPANION_INVENTORY= 6
+
+
 --Constant values for the FCOItemSaver filter buttons at the inventories (bottom)
+FCOIS_CON_FILTER_BUTTONS_ALL            = -1 --#316
 FCOIS_CON_FILTER_BUTTON_LOCKDYN			= 1
 FCOIS_CON_FILTER_BUTTON_GEARSETS		= 2
 FCOIS_CON_FILTER_BUTTON_RESDECIMP		= 3
 FCOIS_CON_FILTER_BUTTON_SELLGUILDINT	= 4
+
+--Constant values for the FCOItemSaver filter buttons's status
+FCOIS_CON_FILTER_BUTTON_STATUS_ALL      = -1 --#316
+
+--Constant values for the FCOItemSaver filter buttons' contextMenu -> Selection of singkle marker icons
+FCOIS_CON_FILTER_BUTTON_CONTEXTMENU_SELECTED_MARKER_ICONS_ALL = -1 --#316
+
 --Filter button state
+FCOIS_CON_FILTER_BUTTON_STATE_INIT      = -100 --#316 Constant to init the filter button state as addon loads
+FCOIS_CON_FILTER_BUTTON_STATE_TOGGLENEXT= -1 --#316
+FCOIS_CON_FILTER_BUTTON_STATE_ON        = 1 --#316 Relates to the FCOIS_CON_FILTER_BUTTON_STATE_GREEN boolean true
+FCOIS_CON_FILTER_BUTTON_STATE_OFF       = 2 --#316 Relates to the FCOIS_CON_FILTER_BUTTON_STATE_RED boolean false
 FCOIS_CON_FILTER_BUTTON_STATE_GREEN     = true
 FCOIS_CON_FILTER_BUTTON_STATE_YELLOW    = -99
 FCOIS_CON_FILTER_BUTTON_STATE_RED       = false
@@ -422,6 +445,7 @@ numVars.maxItemType = maxItemTypesFound or itemTypeMaxFallback
     42 = Dynamic 30             (DYN)
 ]]
 --Constant values for the FCOItemSaver marker icons
+FCOIS_CON_ICONS_ALL                 = -1 --#316
 FCOIS_CON_ICON_LOCK					= 1
 FCOIS_CON_ICON_GEAR_1				= 2
 FCOIS_CON_ICON_RESEARCH				= 3
@@ -615,6 +639,7 @@ mappingVars.whereAreWeToFilterPanelId = {
         [FCOIS_CON_RESEARCH_DIALOG]	    =   LF_SMITHING_RESEARCH_DIALOG,
         [FCOIS_CON_JEWELRY_RESEARCH_DIALOG] = LF_JEWELRY_RESEARCH_DIALOG,
         [FCOIS_CON_COMPANION_DESTROY]   = LF_INVENTORY_COMPANION,
+        [FCOIS_CON_COLLECTIBLE_USAGE]   = LF_INVENTORY, --#318
 }
 --The array for the mapping between the LibFilters FilterPanelId and the "WhereAreWe" (e.g. used in ItemSelectionHandler function)
 mappingVars.filterPanelIdToWhereAreWe = {}
@@ -737,6 +762,7 @@ local filterPanelIdToBlockSettingName = {
     [FCOIS_CON_CRAFTBAG_DESTROY]	= "blockDestroying", 		    --Craftbag", destroying
     [FCOIS_CON_RETRAIT]	            = "blockRetrait", 			    --Retrait station", retrait
     [FCOIS_CON_COMPANION_DESTROY]	= "blockDestroying",			    --Companion inventory destroying
+    [FCOIS_CON_COLLECTIBLE_USAGE]   = "blockMarkedCollectibles", --Collectibles stlye container --#318
     [FCOIS_CON_FALLBACK]			= false,							    --Always return false. Used e.g. for the bank/guild bank deposit checks
 }
 mappingVars.filterPanelIdToBlockSettingName = filterPanelIdToBlockSettingName
@@ -762,6 +788,7 @@ local whereAreWeToSingleItemChecks = {
         [FCOIS_CON_POTION_USAGE]		= true, --Potion
         [FCOIS_CON_FOOD_USAGE]			= true, --Food
         [FCOIS_CON_CROWN_ITEM]			= true, --Crown store item
+        [FCOIS_CON_COLLECTIBLE_USAGE]   = true, --Collectibles --#318
     }
 mappingVars.whereAreWeToSingleItemChecks = whereAreWeToSingleItemChecks
 
@@ -1294,6 +1321,12 @@ otherAddons.setCollectionBookAddonsSupported = {
 FCOIS_MOTIF_ADDON_LIBCHARACTERKNOWLEDGE = 1
 otherAddons.motifAddonsSupported = {
     [FCOIS_MOTIF_ADDON_LIBCHARACTERKNOWLEDGE] = "LibCharacterKnowledge", --#308
+}
+
+--The style collectible container addons supported --#317
+FCOIS_STYLECONTAINER_ADDON_ESO_STANDARD = 1
+otherAddons.styleContainerCollectiblesAddonsSupported = {
+    [FCOIS_STYLECONTAINER_ADDON_ESO_STANDARD] = "ESO Standard", --#317
 }
 
 
@@ -2685,6 +2718,10 @@ checkVars.allowedFenceOrLaunderTypes = {
 checkVars.allowedMotifsItemTypes = {
     [ITEMTYPE_RACIAL_STYLE_MOTIF] = true,
     [ITEMTYPE_CONTAINER] = true,
+}
+--Allowed style container itemTypes --#317
+checkVars.allowedStyleContainerItemTypes = {
+    [ITEMTYPE_COLLECTIBLE] = true,
 }
 
 --BagId to SetTracker addon settings in FCOIS --#302 SetTracker support disabled with FCOOIS v2.6.1, for versions <300

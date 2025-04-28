@@ -230,7 +230,7 @@ local function checkAndUpdateContextMenuLocalizationData()
         localization()
         --Overwrite the localized texts for the marker icons in the context menus
         changeContextMenuEntryTexts = changeContextMenuEntryTexts or FCOIS.ChangeContextMenuEntryTexts
-        changeContextMenuEntryTexts(-1)
+        changeContextMenuEntryTexts(FCOIS_CON_ICONS_ALL)
     end
 end
 

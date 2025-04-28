@@ -2,6 +2,8 @@
 if FCOIS == nil then FCOIS = {} end
 local FCOIS = FCOIS
 
+local SM = SCENE_MANAGER
+
 local libFilters = FCOIS.libFilters
 local libSets = FCOIS.libSets
 local libLSB = FCOIS.libShifterBox
@@ -97,6 +99,7 @@ local allowedUniqueItemTypes = checkVars.uniqueIdItemTypes
 local allowedMotifItemTypes = checkVars.allowedMotifsItemTypes --#308
 local checkIfAGSActive = FCOIS.CheckIfAGSActive --#309
 local checkIfCBEActive = FCOIS.CheckIfCBEActive --#309
+local allowedStyleContainerItemTypes = checkVars.allowedStyleContainerItemTypes --#317
 
 
 local inventoryRowPatterns = checkVars.inventoryRowPatterns
@@ -1268,16 +1271,18 @@ function FCOIS.IsUnboundAndNotStolenItemChecks(bagId, slotIndex, iconId, isBound
     return isAllowed, isBound, isStolen
 end
 
-function FCOIS.IsItemType(bag, slot, itemTypes)
+function FCOIS.IsItemType(bag, slot, itemTypes, currentItemType)
     if not itemTypes then return false end
     local isItemTypeVar
+    currentItemType = currentItemType or git(bag, slot)
+
     if type(itemTypes) == "table" then
         for _, itemType in ipairs(itemTypes) do
-            isItemTypeVar = (git(bag, slot) == itemType)
+            isItemTypeVar = (currentItemType == itemType)
             if isItemTypeVar == true then return true end
         end
     else
-        return (git(bag, slot) == itemTypes)
+        return (currentItemType == itemTypes)
     end
     return false
 end
@@ -1817,6 +1822,95 @@ function FCOIS.IsMotifsAutoMarkDoable(checkIfSettingToAutoMarkIsEnabled, knownMo
 end
 
 
+--Is the item a motif and is it known by one of your chars? Boolean expectedResult will give the
+--true (known motif) or false (unknown motif) parameter
+function FCOIS.IsStyleContainerCollectibleKnown(bagId, slotIndex, expectedResult, itemLink) --#317
+    --Check if any recipe addon is used and available
+    if not FCOIS.CheckIfStyleContainerAddonUsed() then return nil end
+    --Get the recipe addon used to check for known/unknown state
+    local styleContainerAddonUsed = FCOIS.GetStyleContainerAddonUsed()
+    if styleContainerAddonUsed == nil or styleContainerAddonUsed == "" then return nil end
+
+    if (bagId == nil or slotIndex == nil) and itemLink == nil then return nil end
+    expectedResult = expectedResult or false
+
+    --Get the itemLink
+    itemLink = itemLink or gil(bagId, slotIndex)
+    if itemLink == "" then return nil end
+    -- item is a motif or container with motifs?
+    local itemType = gilit(itemLink)
+    if not allowedStyleContainerItemTypes[itemType] then return nil end
+
+    local settingsBase = FCOIS.settingsVars
+    local settings = settingsBase.settings
+
+    if settings.debug then debugMessage("isStyleContainerKnown", gil(bagId, slotIndex) .. ", expectedResult: " ..tos(expectedResult) .. ", motifAddonUsed: " ..tos(styleContainerAddonUsed), true, FCOIS_DEBUG_DEPTH_SPAM, false) end
+--d("[FCOIS]IsStyleContainerCollectibleKnown ".. gil(bagId, slotIndex) .. ", expectedResult: " ..tos(expectedResult) .. ", motifAddonUsed: " ..tos(motifsAddonUsed))
+
+
+    if styleContainerAddonUsed == FCOIS_STYLECONTAINER_ADDON_ESO_STANDARD then
+        local grantedCollectibleId = GetItemLinkContainerCollectibleId(itemLink)
+        if grantedCollectibleId > 0 then
+            local collectibleCategory = GetCollectibleCategoryType(grantedCollectibleId)
+            local owned = false
+            local unknown = false
+            if IsCollectibleOwnedByDefId(grantedCollectibleId) then
+                --Owned already by account
+                owned = true
+            elseif collectibleCategory == COLLECTIBLE_CATEGORY_TYPE_COMBINATION_FRAGMENT and not CanCombinationFragmentBeUnlocked(grantedCollectibleId) then
+                --Owned colletible for the current fragment
+                owned = true
+            else
+                --Unknown collectible
+                unknown = true
+            end
+
+            if expectedResult == false then
+                --Should an unknown be marked=
+                if unknown == true then return true end
+
+            elseif expectedResult == true then
+                --Should an owned be marked?
+                if owned == true then return true end
+            end
+        end
+    end
+    return
+end
+
+--Check if the motifs addon chosen is active, the marker icon too and the setting to automark it is enabled
+function FCOIS.IsStyleContainerCollectibleAutoMarkDoable(checkIfSettingToAutoMarkIsEnabled, knownStyleContainerCollectibleIconCheck, doIconCheck) --#317
+--d("[FCOIS]IsMotifsAutoMarkDoable - knownMotifsIconCheck: "..tos(knownMotifsIconCheck))
+    checkIfSettingToAutoMarkIsEnabled       = checkIfSettingToAutoMarkIsEnabled or false
+    knownStyleContainerCollectibleIconCheck = knownStyleContainerCollectibleIconCheck or false
+    doIconCheck                             = doIconCheck or false
+    local settings                          = FCOIS.settingsVars.settings
+    local retVar                            = false
+    local iconCheck
+    if doIconCheck then
+        if knownStyleContainerCollectibleIconCheck == true then
+            iconCheck = settings.isIconEnabled[settings.autoMarkKnownStyleContainerCollectiblesIconNr]
+        else
+            iconCheck = settings.isIconEnabled[settings.autoMarkStyleContainerCollectiblesIconNr]
+        end
+    end
+    local isStyleContainerCollectibleAutoMarkPrerequisitesMet = (FCOIS.CheckIfStyleContainerAddonUsed() and FCOIS.CheckIfChosenStyleContainerAddonActive(settings.styleContainerCollectibleAddonUsed)) or false
+    if doIconCheck and isStyleContainerCollectibleAutoMarkPrerequisitesMet then
+        isStyleContainerCollectibleAutoMarkPrerequisitesMet = (isStyleContainerCollectibleAutoMarkPrerequisitesMet and iconCheck) or false
+    end
+    if checkIfSettingToAutoMarkIsEnabled and knownStyleContainerCollectibleIconCheck then
+        retVar = isStyleContainerCollectibleAutoMarkPrerequisitesMet and (settings.autoMarkStyleContainerCollectibles or settings.autoMarkKnownStyleContainerCollectibles)
+    elseif checkIfSettingToAutoMarkIsEnabled and not knownStyleContainerCollectibleIconCheck then
+        retVar = isStyleContainerCollectibleAutoMarkPrerequisitesMet and settings.autoMarkStyleContainerCollectibles
+    elseif not checkIfSettingToAutoMarkIsEnabled and knownStyleContainerCollectibleIconCheck then
+        retVar = isStyleContainerCollectibleAutoMarkPrerequisitesMet and settings.autoMarkKnownStyleContainerCollectibles
+    else
+        retVar = isStyleContainerCollectibleAutoMarkPrerequisitesMet
+    end
+--d("<retVar: " ..tos(retVar))
+    return retVar
+end
+
 --Is the item a set part?
 function FCOIS.IsItemSetPartNoControl(bagId, slotIndex)
     local retVal = false
@@ -2320,8 +2414,9 @@ end
 --Get the current scene and scene name
 --If no scene_manager is given or no scene can be determined the dummy scene FCOIS will be returned (table containing only a name)
 function FCOIS.GetCurrentSceneInfo()
-    if not SCENE_MANAGER then return FCOIS.dummyScene, "" end
-    local currentScene = SCENE_MANAGER:GetCurrentScene()
+    SM = SM or SCENE_MANAGER
+    if not SM or SM:IsCurrentSceneGamepad() then return FCOIS.dummyScene, "" end --#319
+    local currentScene = SM:GetCurrentScene()
     local currentSceneName = ""
     if not currentScene then currentScene = FCOIS.dummyScene end
     currentSceneName = currentScene.name
@@ -2433,7 +2528,7 @@ function FCOIS.SetItemIsJunkNow(bagId, slotIndex, isJunk, isCompanionItem)
             isMarked = isMarked or FCOIS.IsMarked
             FCOISMarkItem = FCOISMarkItem or FCOIS.MarkItem
 
-            local anyMarkerIconSetOnItemToJunk, markerIconsOnItemToJunk = isMarked(bagId, slotIndex, -1)
+            local anyMarkerIconSetOnItemToJunk, markerIconsOnItemToJunk = isMarked(bagId, slotIndex, FCOIS_CON_ICONS_ALL)
             if anyMarkerIconSetOnItemToJunk == true then
                 --Remove all marker icons, except "Sell"
                 for iconIdWhichWasSetBeforeAlready, isIconMarked in pairs(markerIconsOnItemToJunk) do
@@ -2812,7 +2907,7 @@ function FCOIS.CheckIfImprovedItemShouldBeReMarked_BeforeImprovement()
 
     --Check if the item is marked with several icons
     isMarked = isMarked or FCOIS.IsMarked
-    local isMarkedIcon, markedIcons = isMarked(bagId, slotIndex, -1)
+    local isMarkedIcon, markedIcons = isMarked(bagId, slotIndex, FCOIS_CON_ICONS_ALL)
     if isMarkedIcon == true then
 --d(">>item was marked before improvement")
         --Remember the bagId and slotIndex of the slotted item that will be improved
@@ -2907,7 +3002,7 @@ function FCOIS.CheckIfEnchantingItemShouldBeReMarked_BeforeEnchanting(bagId, slo
     if not FCOIS.settingsVars.settings.reApplyIconsAfterEnchanting then return end
 
     isMarked = isMarked or FCOIS.IsMarked
-    local isMarkedIcon, markerIcons = isMarked(bagId, slotIndex, -1, nil)
+    local isMarkedIcon, markerIcons = isMarked(bagId, slotIndex, FCOIS_CON_ICONS_ALL, nil)
     if not isMarkedIcon then return end
 --d(">>marked with icons!")
     FCOIS.enchantingVars.lastMarkerIcons[bagId] = FCOIS.enchantingVars.lastMarkerIcons[bagId] or {}
@@ -3499,7 +3594,7 @@ function FCOIS.RebuildGearSetBaseVars(iconNr, value, calledFromEventPlayerActiva
 
             --Update the context menu texts for this icon
             --but not if this function was called from Event_Player_Activated as the same function will be called just after
-            --FCOIS.rebuildGearSetBaseVars for all icons (-1) already!
+            --FCOIS.rebuildGearSetBaseVars for all icons FCOIS_CON_ICONS_ALL (-1) already!
             if not calledFromEventPlayerActivated then
                 changeContextMenuEntryTexts(iconNrLoop)
             end
