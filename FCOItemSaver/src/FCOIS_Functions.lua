@@ -2,6 +2,8 @@
 if FCOIS == nil then FCOIS = {} end
 local FCOIS = FCOIS
 
+local SM = SCENE_MANAGER
+
 local libFilters = FCOIS.libFilters
 local libSets = FCOIS.libSets
 local libLSB = FCOIS.libShifterBox
@@ -2412,8 +2414,9 @@ end
 --Get the current scene and scene name
 --If no scene_manager is given or no scene can be determined the dummy scene FCOIS will be returned (table containing only a name)
 function FCOIS.GetCurrentSceneInfo()
-    if not SCENE_MANAGER then return FCOIS.dummyScene, "" end
-    local currentScene = SCENE_MANAGER:GetCurrentScene()
+    SM = SM or SCENE_MANAGER
+    if not SM or SM:IsCurrentSceneGamepad() then return FCOIS.dummyScene, "" end --#319
+    local currentScene = SM:GetCurrentScene()
     local currentSceneName = ""
     if not currentScene then currentScene = FCOIS.dummyScene end
     currentSceneName = currentScene.name
