@@ -441,16 +441,23 @@ function FCOIS.BuildDefaultSettings()
 	local iconIdToDynIcon               = FCOIS.mappingVars.dynamicToIcon
 	local iconNrToOrdinalStr            = FCOIS.mappingVars.iconNrToOrdinalStr
 
-	--Added with FCOIS v1.9.9 - Accoutn wide "per character" settings
+	local filterButtonVars = FCOIS.filterButtonVars
+	local defaultSettingsIcon = FCOIS.settingsVars.defaults.icon
+	local defaultSettingsIconSortOrder     			= FCOIS.settingsVars.defaults.iconSortOrder
+	local accountWideButForEachCharacterSettings    = FCOIS.settingsVars.accountWideButForEachCharacterDefaults
+	local defaultSettingsIconIsGear                 = FCOIS.settingsVars.defaults.iconIsGear
+
+
+	--Added with FCOIS v1.9.9 - Account wide "per character" settings
 	--The table for the current character Id
-	FCOIS.settingsVars.accountWideButForEachCharacterDefaults[currentCharId] = {}
+	accountWideButForEachCharacterSettings[currentCharId]                              = {}
 	--The filterButton state
-	FCOIS.settingsVars.accountWideButForEachCharacterDefaults[currentCharId].isFilterPanelOn = {}
+	accountWideButForEachCharacterSettings[currentCharId].isFilterPanelOn              = {}
 	--Create the helper arrays for the filter button context menus
-	FCOIS.settingsVars.accountWideButForEachCharacterDefaults[currentCharId].lastLockDynFilterIconId = {}
-	FCOIS.settingsVars.accountWideButForEachCharacterDefaults[currentCharId].lastGearFilterIconId = {}
-	FCOIS.settingsVars.accountWideButForEachCharacterDefaults[currentCharId].lastResDecImpFilterIconId = {}
-	FCOIS.settingsVars.accountWideButForEachCharacterDefaults[currentCharId].lastSellGuildIntFilterIconId = {}
+	accountWideButForEachCharacterSettings[currentCharId].lastLockDynFilterIconId      = {}
+	accountWideButForEachCharacterSettings[currentCharId].lastGearFilterIconId         = {}
+	accountWideButForEachCharacterSettings[currentCharId].lastResDecImpFilterIconId    = {}
+	accountWideButForEachCharacterSettings[currentCharId].lastSellGuildIntFilterIconId = {}
 
 	--For each panel id that is active
 	for libFiltersFilterPanelIdHelper = 1, numLibFiltersFilterPanelIds, 1 do
@@ -480,13 +487,13 @@ function FCOIS.BuildDefaultSettings()
 			FCOIS.contextMenuVars.undoMarkedItems[libFiltersFilterPanelIdHelper] = {}
 
 			--Added with FCOIS v1.9.9
-			FCOIS.settingsVars.accountWideButForEachCharacterDefaults[currentCharId].isFilterPanelOn[libFiltersFilterPanelIdHelper] = {}
-			FCOIS.settingsVars.accountWideButForEachCharacterDefaults[currentCharId].isFilterPanelOn[libFiltersFilterPanelIdHelper] = {false, false, false, false}
+			accountWideButForEachCharacterSettings[currentCharId].isFilterPanelOn[libFiltersFilterPanelIdHelper]              = {}
+			accountWideButForEachCharacterSettings[currentCharId].isFilterPanelOn[libFiltersFilterPanelIdHelper]              = { false, false, false, false}
 			--Create the helper arrays for the filter button context menus
-			FCOIS.settingsVars.accountWideButForEachCharacterDefaults[currentCharId].lastLockDynFilterIconId[libFiltersFilterPanelIdHelper] = FCOIS_CON_ICONS_ALL
-			FCOIS.settingsVars.accountWideButForEachCharacterDefaults[currentCharId].lastGearFilterIconId[libFiltersFilterPanelIdHelper] = FCOIS_CON_ICONS_ALL
-			FCOIS.settingsVars.accountWideButForEachCharacterDefaults[currentCharId].lastResDecImpFilterIconId[libFiltersFilterPanelIdHelper] = FCOIS_CON_ICONS_ALL
-			FCOIS.settingsVars.accountWideButForEachCharacterDefaults[currentCharId].lastSellGuildIntFilterIconId[libFiltersFilterPanelIdHelper] = FCOIS_CON_ICONS_ALL
+			accountWideButForEachCharacterSettings[currentCharId].lastLockDynFilterIconId[libFiltersFilterPanelIdHelper]      = FCOIS_CON_ICONS_ALL
+			accountWideButForEachCharacterSettings[currentCharId].lastGearFilterIconId[libFiltersFilterPanelIdHelper]         = FCOIS_CON_ICONS_ALL
+			accountWideButForEachCharacterSettings[currentCharId].lastResDecImpFilterIconId[libFiltersFilterPanelIdHelper]    = FCOIS_CON_ICONS_ALL
+			accountWideButForEachCharacterSettings[currentCharId].lastSellGuildIntFilterIconId[libFiltersFilterPanelIdHelper] = FCOIS_CON_ICONS_ALL
 
 			--Added with FCOIS v2.2.4
 			FCOIS.settingsVars.defaults.filterButtonSettings[libFiltersFilterPanelIdHelper] = {
@@ -517,6 +524,7 @@ function FCOIS.BuildDefaultSettings()
 		["left"] 	= 0,
 		["top"] 	= 0,
 	}
+
 	for filterIconHelper = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
 		local isIconDynamic = iconIsDynamic[filterIconHelper]
 
@@ -525,22 +533,22 @@ function FCOIS.BuildDefaultSettings()
 		FCOIS.settingsVars.defaults[savedVarsMarkedItemsNames[FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE]][filterIconHelper] = {}
 
 		--Defaults for filter button offsets
-		FCOIS.settingsVars.defaults.filterButtonTop[filterIconHelper]  = FCOIS.filterButtonVars.gFilterButtonTop
-		FCOIS.settingsVars.defaults.filterButtonLeft[filterIconHelper] = FCOIS.filterButtonVars.gFilterButtonLeft[filterIconHelper]
+		FCOIS.settingsVars.defaults.filterButtonTop[filterIconHelper]  = filterButtonVars.gFilterButtonTop
+		FCOIS.settingsVars.defaults.filterButtonLeft[filterIconHelper] = filterButtonVars.gFilterButtonLeft[filterIconHelper]
 
 		--General icon information
-		FCOIS.settingsVars.defaults.icon[filterIconHelper] 		  	= {}
-		FCOIS.settingsVars.defaults.icon[filterIconHelper].antiCheckAtPanel = {}
-		FCOIS.settingsVars.defaults.icon[filterIconHelper].demarkAllOthers = false --added with FCOIS 1.5.2
-		FCOIS.settingsVars.defaults.icon[filterIconHelper].demarkAllOthersExcludeDynamic = false
-		FCOIS.settingsVars.defaults.icon[filterIconHelper].demarkAllOthersExcludeNormal = false -- added with FCOIS 1.9.6
+		defaultSettingsIcon[filterIconHelper] 		  	= {}
+		defaultSettingsIcon[filterIconHelper].antiCheckAtPanel = {}
+		defaultSettingsIcon[filterIconHelper].demarkAllOthers = false --added with FCOIS 1.5.2
+		defaultSettingsIcon[filterIconHelper].demarkAllOthersExcludeDynamic = false
+		defaultSettingsIcon[filterIconHelper].demarkAllOthersExcludeNormal = false -- added with FCOIS 1.9.6
 		--Icon offsets in inventories etc. (FCOIS v1.6.8)
-		FCOIS.settingsVars.defaults.icon[filterIconHelper].offsets = {}
+		defaultSettingsIcon[filterIconHelper].offsets = {}
 		--For each filterPanelId do some checks and add icon default settings data:
 		for filterIconHelperPanel = 1, numLibFiltersFilterPanelIds, 1 do
 			--FCOIS v1.6.8
 			--For each filterPanelId add the icon offsets table
-			FCOIS.settingsVars.defaults.icon[filterIconHelper].offsets[filterIconHelperPanel] = defaultIconOffsets
+			defaultSettingsIcon[filterIconHelper].offsets[filterIconHelperPanel] = defaultIconOffsets
 
 			--FCOIS v.1.4.4 - Research dialog panels need to be protected as default value as they were added new with this version
 			--FCOIS v.2.1.0 - Companion inventory panel needs to be protected as default value as it was added new with this version
@@ -549,7 +557,7 @@ function FCOIS.BuildDefaultSettings()
 					filterIconHelperPanel == LF_INVENTORY_COMPANION then
 				valueToSet = true
 			end
-			FCOIS.settingsVars.defaults.icon[filterIconHelper].antiCheckAtPanel[filterIconHelperPanel] = valueToSet
+			defaultSettingsIcon[filterIconHelper].antiCheckAtPanel[filterIconHelperPanel] = valueToSet
 		end
 
 		--Defaults for research check is "false", except for dynamic icons where it is "true"
@@ -557,13 +565,13 @@ function FCOIS.BuildDefaultSettings()
 		if isIconDynamic then defResearchCheck = true end
 		FCOIS.settingsVars.defaults.disableResearchCheck[filterIconHelper] = defResearchCheck
 		if isIconDynamic == true then
-			FCOIS.settingsVars.defaults.icon[filterIconHelper].temporaryDisableByInventoryFlagIcon = false
+			defaultSettingsIcon[filterIconHelper].temporaryDisableByInventoryFlagIcon = false
 			--Added with FCOIS 1.9.6
-			FCOIS.settingsVars.defaults.icon[filterIconHelper].autoMarkPreventIfMarkedWithThis = false
+			defaultSettingsIcon[filterIconHelper].autoMarkPreventIfMarkedWithThis = false
 			--Added with FCOIS 1.9.9
-			FCOIS.settingsVars.defaults.icon[filterIconHelper].autoRemoveMarkForBag = {}
-			FCOIS.settingsVars.defaults.icon[filterIconHelper].autoRemoveMarkForBag[BAG_BANK] = false
-			FCOIS.settingsVars.defaults.icon[filterIconHelper].autoRemoveMarkForBag[BAG_GUILDBANK] = false
+			defaultSettingsIcon[filterIconHelper].autoRemoveMarkForBag = {}
+			defaultSettingsIcon[filterIconHelper].autoRemoveMarkForBag[BAG_BANK] = false
+			defaultSettingsIcon[filterIconHelper].autoRemoveMarkForBag[BAG_GUILDBANK] = false
 		end
 
 		--Defaults for the enabling/disabling of the icons
@@ -588,159 +596,159 @@ function FCOIS.BuildDefaultSettings()
 
 		--Fill the missing icon numbers to the isGearSet table so they exist with a "false" value as "non gear" entries
 		local isStaticGearIcon = FCOIS.mappingVars.isStaticGearIcon
-		if FCOIS.settingsVars.defaults.iconIsGear[filterIconHelper] == nil then
-			FCOIS.settingsVars.defaults.iconIsGear[filterIconHelper] = false
+		if defaultSettingsIconIsGear[filterIconHelper] == nil then
+			defaultSettingsIconIsGear[filterIconHelper] = false
 		end
 		--Always set the 5 static gear icons to "true"
 		if isStaticGearIcon[filterIconHelper] ~= nil and isStaticGearIcon[filterIconHelper] then
-			FCOIS.settingsVars.defaults.iconIsGear[filterIconHelper] = true
+			defaultSettingsIconIsGear[filterIconHelper] = true
 		end
 	end -- for filter icons ...
 	--Preset the default icon colors, textures and sort orders
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_LOCK].color   = {["r"] = 1,["g"] = 0,["b"] = 0,["a"] = 1}
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_LOCK].texture = 1
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_LOCK].size    = FCOIS.iconVars.gIconWidth
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_LOCK].sortOrder = 1
-	FCOIS.settingsVars.defaults.iconSortOrder[1] = FCOIS_CON_ICON_LOCK
+	defaultSettingsIcon[FCOIS_CON_ICON_LOCK].color   = {["r"] = 1,["g"] = 0,["b"] = 0,["a"] = 1}
+	defaultSettingsIcon[FCOIS_CON_ICON_LOCK].texture = 1
+	defaultSettingsIcon[FCOIS_CON_ICON_LOCK].size    = FCOIS.iconVars.gIconWidth
+	defaultSettingsIcon[FCOIS_CON_ICON_LOCK].sortOrder = 1
+	defaultSettingsIconSortOrder[1] = FCOIS_CON_ICON_LOCK
 
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_GEAR_1].color   = {["r"] = 0,["g"] = 1,["b"] = 0,["a"] = 1}
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_GEAR_1].texture = 2
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_GEAR_1].size    = FCOIS.iconVars.gIconWidth
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_GEAR_1].sortOrder = 8
-	FCOIS.settingsVars.defaults.iconSortOrder[2] = FCOIS_CON_ICON_RESEARCH
+	defaultSettingsIcon[FCOIS_CON_ICON_GEAR_1].color   = {["r"] = 0,["g"] = 1,["b"] = 0,["a"] = 1}
+	defaultSettingsIcon[FCOIS_CON_ICON_GEAR_1].texture = 2
+	defaultSettingsIcon[FCOIS_CON_ICON_GEAR_1].size    = FCOIS.iconVars.gIconWidth
+	defaultSettingsIcon[FCOIS_CON_ICON_GEAR_1].sortOrder = 8
+	defaultSettingsIconSortOrder[2] = FCOIS_CON_ICON_RESEARCH
 
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_RESEARCH].color   = {["r"] = 1,["g"] = 1,["b"] = 1,["a"] = 1}
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_RESEARCH].texture = 3
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_RESEARCH].size    = FCOIS.iconVars.gIconWidth
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_RESEARCH].sortOrder = 2
-	FCOIS.settingsVars.defaults.iconSortOrder[3] = FCOIS_CON_ICON_SELL
+	defaultSettingsIcon[FCOIS_CON_ICON_RESEARCH].color   = {["r"] = 1,["g"] = 1,["b"] = 1,["a"] = 1}
+	defaultSettingsIcon[FCOIS_CON_ICON_RESEARCH].texture = 3
+	defaultSettingsIcon[FCOIS_CON_ICON_RESEARCH].size    = FCOIS.iconVars.gIconWidth
+	defaultSettingsIcon[FCOIS_CON_ICON_RESEARCH].sortOrder = 2
+	defaultSettingsIconSortOrder[3] = FCOIS_CON_ICON_SELL
 
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_GEAR_2].color   = {["r"] = 1,["g"] = 0,["b"] = 1,["a"] = 1}
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_GEAR_2].texture = 2
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_GEAR_2].size    = FCOIS.iconVars.gIconWidth
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_GEAR_2].sortOrder = 9
-	FCOIS.settingsVars.defaults.iconSortOrder[4] = FCOIS_CON_ICON_DECONSTRUCTION
+	defaultSettingsIcon[FCOIS_CON_ICON_GEAR_2].color   = {["r"] = 1,["g"] = 0,["b"] = 1,["a"] = 1}
+	defaultSettingsIcon[FCOIS_CON_ICON_GEAR_2].texture = 2
+	defaultSettingsIcon[FCOIS_CON_ICON_GEAR_2].size    = FCOIS.iconVars.gIconWidth
+	defaultSettingsIcon[FCOIS_CON_ICON_GEAR_2].sortOrder = 9
+	defaultSettingsIconSortOrder[4] = FCOIS_CON_ICON_DECONSTRUCTION
 
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_SELL].color   = {["r"] = 1,["g"] = 1,["b"] = 0,["a"] = 1}
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_SELL].texture = 4
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_SELL].size    = FCOIS.iconVars.gIconWidth
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_SELL].sortOrder = 3
-	FCOIS.settingsVars.defaults.iconSortOrder[5] = FCOIS_CON_ICON_IMPROVEMENT
+	defaultSettingsIcon[FCOIS_CON_ICON_SELL].color   = {["r"] = 1,["g"] = 1,["b"] = 0,["a"] = 1}
+	defaultSettingsIcon[FCOIS_CON_ICON_SELL].texture = 4
+	defaultSettingsIcon[FCOIS_CON_ICON_SELL].size    = FCOIS.iconVars.gIconWidth
+	defaultSettingsIcon[FCOIS_CON_ICON_SELL].sortOrder = 3
+	defaultSettingsIconSortOrder[5] = FCOIS_CON_ICON_IMPROVEMENT
 
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_GEAR_3].color   = {["r"] = 1,["g"] = 1,["b"] = 0,["a"] = 1}
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_GEAR_3].texture = 2
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_GEAR_3].size    = FCOIS.iconVars.gIconWidth
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_GEAR_3].sortOrder = 10
-	FCOIS.settingsVars.defaults.iconSortOrder[6] = FCOIS_CON_ICON_SELL_AT_GUILDSTORE
+	defaultSettingsIcon[FCOIS_CON_ICON_GEAR_3].color   = {["r"] = 1,["g"] = 1,["b"] = 0,["a"] = 1}
+	defaultSettingsIcon[FCOIS_CON_ICON_GEAR_3].texture = 2
+	defaultSettingsIcon[FCOIS_CON_ICON_GEAR_3].size    = FCOIS.iconVars.gIconWidth
+	defaultSettingsIcon[FCOIS_CON_ICON_GEAR_3].sortOrder = 10
+	defaultSettingsIconSortOrder[6] = FCOIS_CON_ICON_SELL_AT_GUILDSTORE
 
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_GEAR_4].color   = {["r"] = 1,["g"] = 1,["b"] = 0,["a"] = 1}
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_GEAR_4].texture = 2
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_GEAR_4].size    = FCOIS.iconVars.gIconWidth
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_GEAR_4].sortOrder = 11
-	FCOIS.settingsVars.defaults.iconSortOrder[7] = FCOIS_CON_ICON_INTRICATE
+	defaultSettingsIcon[FCOIS_CON_ICON_GEAR_4].color   = {["r"] = 1,["g"] = 1,["b"] = 0,["a"] = 1}
+	defaultSettingsIcon[FCOIS_CON_ICON_GEAR_4].texture = 2
+	defaultSettingsIcon[FCOIS_CON_ICON_GEAR_4].size    = FCOIS.iconVars.gIconWidth
+	defaultSettingsIcon[FCOIS_CON_ICON_GEAR_4].sortOrder = 11
+	defaultSettingsIconSortOrder[7] = FCOIS_CON_ICON_INTRICATE
 
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_GEAR_5].color   = {["r"] = 1,["g"] = 1,["b"] = 0,["a"] = 1}
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_GEAR_5].texture = 2
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_GEAR_5].size    = FCOIS.iconVars.gIconWidth
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_GEAR_5].sortOrder = 12
-	FCOIS.settingsVars.defaults.iconSortOrder[8] = FCOIS_CON_ICON_GEAR_1
+	defaultSettingsIcon[FCOIS_CON_ICON_GEAR_5].color   = {["r"] = 1,["g"] = 1,["b"] = 0,["a"] = 1}
+	defaultSettingsIcon[FCOIS_CON_ICON_GEAR_5].texture = 2
+	defaultSettingsIcon[FCOIS_CON_ICON_GEAR_5].size    = FCOIS.iconVars.gIconWidth
+	defaultSettingsIcon[FCOIS_CON_ICON_GEAR_5].sortOrder = 12
+	defaultSettingsIconSortOrder[8] = FCOIS_CON_ICON_GEAR_1
 
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_DECONSTRUCTION].color   = {["r"] = 1,["g"] = 1,["b"] = 1,["a"] = 1}
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_DECONSTRUCTION].texture = 55
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_DECONSTRUCTION].size    = FCOIS.iconVars.gIconWidth
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_DECONSTRUCTION].sortOrder = 4
-	FCOIS.settingsVars.defaults.iconSortOrder[9] = FCOIS_CON_ICON_GEAR_2
+	defaultSettingsIcon[FCOIS_CON_ICON_DECONSTRUCTION].color   = {["r"] = 1,["g"] = 1,["b"] = 1,["a"] = 1}
+	defaultSettingsIcon[FCOIS_CON_ICON_DECONSTRUCTION].texture = 55
+	defaultSettingsIcon[FCOIS_CON_ICON_DECONSTRUCTION].size    = FCOIS.iconVars.gIconWidth
+	defaultSettingsIcon[FCOIS_CON_ICON_DECONSTRUCTION].sortOrder = 4
+	defaultSettingsIconSortOrder[9] = FCOIS_CON_ICON_GEAR_2
 
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_IMPROVEMENT].color   = {["r"] = 1,["g"] = 1,["b"] = 1,["a"] = 1}
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_IMPROVEMENT].texture = 56
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_IMPROVEMENT].size    = FCOIS.iconVars.gIconWidth
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_IMPROVEMENT].sortOrder = 5
-	FCOIS.settingsVars.defaults.iconSortOrder[10] = FCOIS_CON_ICON_GEAR_3
+	defaultSettingsIcon[FCOIS_CON_ICON_IMPROVEMENT].color   = {["r"] = 1,["g"] = 1,["b"] = 1,["a"] = 1}
+	defaultSettingsIcon[FCOIS_CON_ICON_IMPROVEMENT].texture = 56
+	defaultSettingsIcon[FCOIS_CON_ICON_IMPROVEMENT].size    = FCOIS.iconVars.gIconWidth
+	defaultSettingsIcon[FCOIS_CON_ICON_IMPROVEMENT].sortOrder = 5
+	defaultSettingsIconSortOrder[10] = FCOIS_CON_ICON_GEAR_3
 
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_SELL_AT_GUILDSTORE].color   = {["r"] = 1,["g"] = 1,["b"] = 0,["a"] = 1}
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_SELL_AT_GUILDSTORE].texture = 58
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_SELL_AT_GUILDSTORE].size    = FCOIS.iconVars.gIconWidth
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_SELL_AT_GUILDSTORE].sortOrder = 6
-	FCOIS.settingsVars.defaults.iconSortOrder[11] = FCOIS_CON_ICON_GEAR_4
+	defaultSettingsIcon[FCOIS_CON_ICON_SELL_AT_GUILDSTORE].color   = {["r"] = 1,["g"] = 1,["b"] = 0,["a"] = 1}
+	defaultSettingsIcon[FCOIS_CON_ICON_SELL_AT_GUILDSTORE].texture = 58
+	defaultSettingsIcon[FCOIS_CON_ICON_SELL_AT_GUILDSTORE].size    = FCOIS.iconVars.gIconWidth
+	defaultSettingsIcon[FCOIS_CON_ICON_SELL_AT_GUILDSTORE].sortOrder = 6
+	defaultSettingsIconSortOrder[11] = FCOIS_CON_ICON_GEAR_4
 
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_INTRICATE].color   = {["r"] = 1,["g"] = 1,["b"] = 1,["a"] = 1}
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_INTRICATE].texture = 60
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_INTRICATE].size    = FCOIS.iconVars.gIconWidth
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_INTRICATE].sortOrder = 7
-	FCOIS.settingsVars.defaults.iconSortOrder[12] = FCOIS_CON_ICON_GEAR_5
+	defaultSettingsIcon[FCOIS_CON_ICON_INTRICATE].color   = {["r"] = 1,["g"] = 1,["b"] = 1,["a"] = 1}
+	defaultSettingsIcon[FCOIS_CON_ICON_INTRICATE].texture = 60
+	defaultSettingsIcon[FCOIS_CON_ICON_INTRICATE].size    = FCOIS.iconVars.gIconWidth
+	defaultSettingsIcon[FCOIS_CON_ICON_INTRICATE].sortOrder = 7
+	defaultSettingsIconSortOrder[12] = FCOIS_CON_ICON_GEAR_5
 
 	------Dynamic icons ---------------------------------------------------------------------------------------------------
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_DYNAMIC_1].color   = {["r"] = 1,["g"] = 1,["b"] = 1,["a"] = 1}
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_DYNAMIC_1].texture = 46
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_DYNAMIC_1].size    = FCOIS.iconVars.gIconWidth
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_DYNAMIC_1].sortOrder = 13
-	FCOIS.settingsVars.defaults.iconSortOrder[13] = FCOIS_CON_ICON_DYNAMIC_1
+	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_1].color   = {["r"] = 1,["g"] = 1,["b"] = 1,["a"] = 1}
+	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_1].texture = 46
+	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_1].size    = FCOIS.iconVars.gIconWidth
+	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_1].sortOrder = 13
+	defaultSettingsIconSortOrder[13] = FCOIS_CON_ICON_DYNAMIC_1
 
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_DYNAMIC_2].color   = {["r"] = 1,["g"] = 1,["b"] = 1,["a"] = 1}
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_DYNAMIC_2].texture = 47
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_DYNAMIC_2].size    = FCOIS.iconVars.gIconWidth
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_DYNAMIC_2].sortOrder = 14
-	FCOIS.settingsVars.defaults.iconSortOrder[14] = FCOIS_CON_ICON_DYNAMIC_2
+	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_2].color   = {["r"] = 1,["g"] = 1,["b"] = 1,["a"] = 1}
+	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_2].texture = 47
+	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_2].size    = FCOIS.iconVars.gIconWidth
+	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_2].sortOrder = 14
+	defaultSettingsIconSortOrder[14] = FCOIS_CON_ICON_DYNAMIC_2
 
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_DYNAMIC_3].color   = {["r"] = 1,["g"] = 1,["b"] = 1,["a"] = 1}
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_DYNAMIC_3].texture = 48
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_DYNAMIC_3].size    = FCOIS.iconVars.gIconWidth
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_DYNAMIC_3].sortOrder = 15
-	FCOIS.settingsVars.defaults.iconSortOrder[15] = FCOIS_CON_ICON_DYNAMIC_3
+	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_3].color   = {["r"] = 1,["g"] = 1,["b"] = 1,["a"] = 1}
+	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_3].texture = 48
+	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_3].size    = FCOIS.iconVars.gIconWidth
+	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_3].sortOrder = 15
+	defaultSettingsIconSortOrder[15] = FCOIS_CON_ICON_DYNAMIC_3
 
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_DYNAMIC_4].color   = {["r"] = 1,["g"] = 1,["b"] = 1,["a"] = 1}
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_DYNAMIC_4].texture = 49
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_DYNAMIC_4].size    = FCOIS.iconVars.gIconWidth
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_DYNAMIC_4].sortOrder = 16
-	FCOIS.settingsVars.defaults.iconSortOrder[16] = FCOIS_CON_ICON_DYNAMIC_4
+	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_4].color   = {["r"] = 1,["g"] = 1,["b"] = 1,["a"] = 1}
+	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_4].texture = 49
+	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_4].size    = FCOIS.iconVars.gIconWidth
+	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_4].sortOrder = 16
+	defaultSettingsIconSortOrder[16] = FCOIS_CON_ICON_DYNAMIC_4
 
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_DYNAMIC_5].color   = {["r"] = 1,["g"] = 1,["b"] = 1,["a"] = 1}
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_DYNAMIC_5].texture = 50
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_DYNAMIC_5].size    = FCOIS.iconVars.gIconWidth
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_DYNAMIC_5].sortOrder = 17
-	FCOIS.settingsVars.defaults.iconSortOrder[17] = FCOIS_CON_ICON_DYNAMIC_5
+	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_5].color   = {["r"] = 1,["g"] = 1,["b"] = 1,["a"] = 1}
+	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_5].texture = 50
+	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_5].size    = FCOIS.iconVars.gIconWidth
+	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_5].sortOrder = 17
+	defaultSettingsIconSortOrder[17] = FCOIS_CON_ICON_DYNAMIC_5
 
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_DYNAMIC_6].color   = {["r"] = 1,["g"] = 1,["b"] = 1,["a"] = 1}
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_DYNAMIC_6].texture = 51
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_DYNAMIC_6].size    = FCOIS.iconVars.gIconWidth
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_DYNAMIC_6].sortOrder = 18
-	FCOIS.settingsVars.defaults.iconSortOrder[18] = FCOIS_CON_ICON_DYNAMIC_6
+	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_6].color   = {["r"] = 1,["g"] = 1,["b"] = 1,["a"] = 1}
+	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_6].texture = 51
+	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_6].size    = FCOIS.iconVars.gIconWidth
+	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_6].sortOrder = 18
+	defaultSettingsIconSortOrder[18] = FCOIS_CON_ICON_DYNAMIC_6
 
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_DYNAMIC_7].color   = {["r"] = 1,["g"] = 1,["b"] = 1,["a"] = 1}
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_DYNAMIC_7].texture = 52
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_DYNAMIC_7].size    = FCOIS.iconVars.gIconWidth
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_DYNAMIC_7].sortOrder = 19
-	FCOIS.settingsVars.defaults.iconSortOrder[19] = FCOIS_CON_ICON_DYNAMIC_7
+	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_7].color   = {["r"] = 1,["g"] = 1,["b"] = 1,["a"] = 1}
+	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_7].texture = 52
+	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_7].size    = FCOIS.iconVars.gIconWidth
+	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_7].sortOrder = 19
+	defaultSettingsIconSortOrder[19] = FCOIS_CON_ICON_DYNAMIC_7
 
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_DYNAMIC_8].color   = {["r"] = 1,["g"] = 1,["b"] = 1,["a"] = 1}
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_DYNAMIC_8].texture = 53
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_DYNAMIC_8].size    = FCOIS.iconVars.gIconWidth
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_DYNAMIC_8].sortOrder = 20
-	FCOIS.settingsVars.defaults.iconSortOrder[20] = FCOIS_CON_ICON_DYNAMIC_8
+	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_8].color   = {["r"] = 1,["g"] = 1,["b"] = 1,["a"] = 1}
+	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_8].texture = 53
+	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_8].size    = FCOIS.iconVars.gIconWidth
+	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_8].sortOrder = 20
+	defaultSettingsIconSortOrder[20] = FCOIS_CON_ICON_DYNAMIC_8
 
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_DYNAMIC_9].color   = {["r"] = 1,["g"] = 1,["b"] = 1,["a"] = 1}
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_DYNAMIC_9].texture = 54
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_DYNAMIC_9].size    = FCOIS.iconVars.gIconWidth
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_DYNAMIC_9].sortOrder = 21
-	FCOIS.settingsVars.defaults.iconSortOrder[21] = FCOIS_CON_ICON_DYNAMIC_9
+	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_9].color   = {["r"] = 1,["g"] = 1,["b"] = 1,["a"] = 1}
+	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_9].texture = 54
+	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_9].size    = FCOIS.iconVars.gIconWidth
+	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_9].sortOrder = 21
+	defaultSettingsIconSortOrder[21] = FCOIS_CON_ICON_DYNAMIC_9
 
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_DYNAMIC_10].color   = {["r"] = 1,["g"] = 1,["b"] = 1,["a"] = 1}
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_DYNAMIC_10].texture = 55
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_DYNAMIC_10].size    = FCOIS.iconVars.gIconWidth
-	FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_DYNAMIC_10].sortOrder = 22
-	FCOIS.settingsVars.defaults.iconSortOrder[22] = FCOIS_CON_ICON_DYNAMIC_10
+	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_10].color   = {["r"] = 1,["g"] = 1,["b"] = 1,["a"] = 1}
+	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_10].texture = 55
+	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_10].size    = FCOIS.iconVars.gIconWidth
+	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_10].sortOrder = 22
+	defaultSettingsIconSortOrder[22] = FCOIS_CON_ICON_DYNAMIC_10
 
 	--Add the next 20 default values for the dynamic icons (11 to 30)
-	local currentIconSortOrder = FCOIS.settingsVars.defaults.icon[FCOIS_CON_ICON_DYNAMIC_10].sortOrder
+	local currentIconSortOrder = defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_10].sortOrder
 	for dynIconId=11, numMaxDynIcons, 1 do
 		local dynIconNumber = iconIdToDynIcon[dynIconId]
 		if iconIsDynamic[dynIconNumber] then
 			currentIconSortOrder = currentIconSortOrder + 1
-			FCOIS.settingsVars.defaults.icon[dynIconNumber].color   = {["r"] = 1,["g"] = 0,["b"] = 0,["a"] = 1}
-			FCOIS.settingsVars.defaults.icon[dynIconNumber].texture = 1
-			FCOIS.settingsVars.defaults.icon[dynIconNumber].size    = FCOIS.iconVars.gIconWidth
-			FCOIS.settingsVars.defaults.icon[dynIconNumber].sortOrder = currentIconSortOrder
-			FCOIS.settingsVars.defaults.iconSortOrder[currentIconSortOrder] = dynIconNumber
+			defaultSettingsIcon[dynIconNumber].color   = {["r"] = 1,["g"] = 0,["b"] = 0,["a"] = 1}
+			defaultSettingsIcon[dynIconNumber].texture = 1
+			defaultSettingsIcon[dynIconNumber].size    = FCOIS.iconVars.gIconWidth
+			defaultSettingsIcon[dynIconNumber].sortOrder = currentIconSortOrder
+			defaultSettingsIconSortOrder[currentIconSortOrder] = dynIconNumber
 		end
 	end
 
@@ -754,7 +762,7 @@ function FCOIS.BuildDefaultSettings()
 
 	--Update the static "Gear sets" texts depending on localization
 	for staticGearIndex=1, numMaxGearStatic, 1 do
-		FCOIS.settingsVars.defaults.icon[_G["FCOIS_CON_ICON_GEAR_" .. tos(staticGearIndex)]].name = "Gear " ..tos(staticGearIndex)
+		defaultSettingsIcon[_G["FCOIS_CON_ICON_GEAR_" .. tos(staticGearIndex)]].name = "Gear " ..tos(staticGearIndex)
 	end
 
 	--Update the "Dynamic icon" texts depending on localization
@@ -762,21 +770,22 @@ function FCOIS.BuildDefaultSettings()
 		--Use english ordinals
 		local iconToOrdinalStrDynEn = iconNrToOrdinalStr[1][tonumber(dynIconNr)] or "th"
 		local dynIconStr = tos(dynIconNr).. iconToOrdinalStrDynEn
-		FCOIS.settingsVars.defaults.icon[_G["FCOIS_CON_ICON_DYNAMIC_" .. tos(dynIconNr)]].name = dynIconStr .. " dynamic"
+		defaultSettingsIcon[_G["FCOIS_CON_ICON_DYNAMIC_" .. tos(dynIconNr)]].name = dynIconStr .. " dynamic"
 	end
 
 	--New filter button data settings -> since FCOIS version 1.4.4
+	local defaultSettingsFilterButtonData = FCOIS.settingsVars.defaults.filterButtonData
 	for _, filterButtonNr in ipairs(filterButtonsToCheck) do
 		--Initialize the default settings
-		FCOIS.settingsVars.defaults.filterButtonData[filterButtonNr] = FCOIS.settingsVars.defaults.filterButtonData[filterButtonNr] or {}
+		defaultSettingsFilterButtonData[filterButtonNr] = defaultSettingsFilterButtonData[filterButtonNr] or {}
 		for filterIconHelperPanel = 1, numLibFiltersFilterPanelIds, 1 do
 			--Create a subtable in the filterIcon data for each libFiltersFilterPanelId
-			FCOIS.settingsVars.defaults.filterButtonData[filterButtonNr][filterIconHelperPanel] = FCOIS.settingsVars.defaults.filterButtonData[filterButtonNr][filterIconHelperPanel]
-					or  {
-				["left"]    = FCOIS.filterButtonVars.gFilterButtonLeft[filterButtonNr],
-				["top"]     = FCOIS.filterButtonVars.gFilterButtonTop,
-				["width"]   = FCOIS.filterButtonVars.gFilterButtonWidth,
-				["height"]  = FCOIS.filterButtonVars.gFilterButtonHeight,
+			defaultSettingsFilterButtonData[filterButtonNr][filterIconHelperPanel] = defaultSettingsFilterButtonData[filterButtonNr][filterIconHelperPanel]
+			 or  {
+				["left"]    = filterButtonVars.gFilterButtonLeft[filterButtonNr],
+				["top"]     = filterButtonVars.gFilterButtonTop,
+				["width"]   = filterButtonVars.gFilterButtonWidth,
+				["height"]  = filterButtonVars.gFilterButtonHeight,
 			}
 		end
 	end
@@ -800,7 +809,7 @@ function FCOIS.BuildDefaultSettings()
 	local allowedFCOISUniqueIdItemTypes = FCOIS.settingsVars.defaults.allowedFCOISUniqueIdItemTypes
 	for itemType=ITEMTYPE_NONE, itemTypeMax, 1 do
 		if itemType > 0 and allowedFCOISUniqueIdItemTypes[itemType] == nil then
-			FCOIS.settingsVars.defaults.allowedFCOISUniqueIdItemTypes[itemType] = false
+			allowedFCOISUniqueIdItemTypes[itemType] = false
 		end
 	end
 

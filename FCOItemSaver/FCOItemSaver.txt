@@ -9,7 +9,7 @@
 # !!! Attention !!! -> 1 line here can only contain ~220 characters, so the depency lines need to be split up, or they won't be recognized properly!
 #
 # Non-Optional libraries
-## DependsOn: LibAddonMenu-2.0>=38 LibAddonMenuOrderListBox>=012 LibCustomMenu>=730 LibDialog>=127 LibFeedback LibFilters-3.0>=343 LibMainMenu-2.0>=40400 LibShifterBox>=000700
+## DependsOn: LibAddonMenu-2.0>=39 LibAddonMenuOrderListBox>=012 LibCustomMenu>=730 LibDialog>=127 LibFeedback LibFilters-3.0>=345 LibMainMenu-2.0>=40400 LibShifterBox>=000700
 # Optional libraries
 ## OptionalDependsOn: LibCharacterKnowledge>=201020 LibDebugLogger>=263 LibLazyCrafting>=4009 LibMultiAccountSets>=300080 LibSets>=000704
 # Optional AddOns

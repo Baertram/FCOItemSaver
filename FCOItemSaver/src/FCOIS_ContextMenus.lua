@@ -17,6 +17,8 @@ local tins = table.insert
 --local wm = WINDOW_MANAGER
 local isiuse = IsItemUsable
 
+local apiVersion = FCOIS.APIversion
+
 local numFilterIcons = FCOIS.numVars.gFCONumFilterIcons
 local myColorEnabled	= ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_TEXT_COLORS, INTERFACE_TEXT_COLOR_NORMAL))
 local myColorDisabled	= ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_TEXT_COLORS, INTERFACE_TEXT_COLOR_DISABLED))
@@ -2783,7 +2785,7 @@ end
 --their new parent control UNIVERSAL_DECONSTRUCTION.control ...
 -->Re-Parent and Re-Anchor he filterButtons and the additional inventory "flag" button from old panel to current panel
 local function getAddInvFlagContextmenuButtonAnchorData(filterPanelId)
-    local additionalInventoryFlagButton = FCOIS.anchorVars.additionalInventoryFlagButton[FCOIS.APIversion]
+    local additionalInventoryFlagButton = FCOIS.anchorVars.additionalInventoryFlagButton[apiVersion]
     local anchorData
     anchorData = additionalInventoryFlagButton[filterPanelId]
     return anchorData

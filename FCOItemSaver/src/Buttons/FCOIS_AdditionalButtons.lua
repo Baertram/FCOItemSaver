@@ -10,6 +10,7 @@ local tos = tostring
 
 local addonVars = FCOIS.addonVars
 local gAddonName = addonVars.gAddonName
+local apiVersion = FCOIS.APIversion
 
 -- =====================================================================================================================
 --  Additional inventory button functions ("flag" buttons / jump to settings button / etc.)
@@ -206,24 +207,26 @@ local function reAnchorAdditionalInvButtonNow(panelId, anchorData, addInvButtonO
 end
 
 --Reanchor the additional inventory "flag" buttons with the x and y offsets from the settings
+local anchorVarsAddInvButtons
 function FCOIS.ReAnchorAdditionalInvButtons(filterPanelId, contMenuInvokerButton, newParent, newAnchorData)
 --d("[FCOIS]ReAnchorAdditionalInvButtons - filterPanel: " ..tos(filterPanelId) .. ", newParent: " ..tos(newParent))
     --Add the offset X/Y from the settings to the anchor values of the additional inventory buttons
-    local apiVersion = FCOIS.APIversion
-    local settings = FCOIS.settingsVars.settings
-    local addInvButtonOffsets = settings.FCOISAdditionalInventoriesButtonOffset[filterPanelId]
-    if addInvButtonOffsets then
-        local anchorVarsAddInvButtons = FCOIS.anchorVars.additionalInventoryFlagButton[apiVersion]
+    anchorVarsAddInvButtons = anchorVarsAddInvButtons or FCOIS.anchorVars.additionalInventoryFlagButton[apiVersion] --#320
+    if anchorVarsAddInvButtons then --#320
+        local settings = FCOIS.settingsVars.settings --#320
+        local FCOISAdditionalInventoriesButtonOffset = settings.FCOISAdditionalInventoriesButtonOffset --#320
+
         --Loop over the anchorVars and get each panel of the additional inv buttons (e.g. LF_INVENTORY, LF_BANK_WITHDRAW, ...)
-        if anchorVarsAddInvButtons then
-            if filterPanelId ~= nil then
-                local anchorData = newAnchorData or anchorVarsAddInvButtons[filterPanelId]
-                --Update only selected filterPanelId
-                reAnchorAdditionalInvButtonNow(filterPanelId, anchorData, addInvButtonOffsets, contMenuInvokerButton, newParent)
-            else
-                for panelId, anchorData in pairs(anchorVarsAddInvButtons) do
-                    reAnchorAdditionalInvButtonNow(panelId, anchorData, addInvButtonOffsets, nil, nil)
-                end
+        if filterPanelId ~= nil then
+            local addInvButtonOffsets = FCOISAdditionalInventoriesButtonOffset[filterPanelId] --#320
+            local anchorData = newAnchorData or anchorVarsAddInvButtons[filterPanelId]
+            --Update only selected filterPanelId
+            reAnchorAdditionalInvButtonNow(filterPanelId, anchorData, addInvButtonOffsets, contMenuInvokerButton, newParent)
+        else
+            for panelId, anchorData in pairs(anchorVarsAddInvButtons) do
+                anchorData = newAnchorData or anchorData --#320
+                local addInvButtonOffsets = FCOISAdditionalInventoriesButtonOffset[panelId] --#320
+                reAnchorAdditionalInvButtonNow(panelId, anchorData, addInvButtonOffsets, nil, nil) --#320 use contMenuInvokerButton, newParent here too?
             end
         end
     end
