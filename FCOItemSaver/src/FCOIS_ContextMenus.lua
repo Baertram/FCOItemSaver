@@ -2748,6 +2748,7 @@ function FCOIS.ChangeContextMenuInvokerButtonColorByPanelId(panelId)
         local contextMenuInvokerButton = GetControl(contextMenuInvokerButtonName) --wm:GetControlByName(contextMenuInvokerButtonName, "")
         if contextMenuInvokerButton then
             changeContextMenuInvokerButtonColor(contextMenuInvokerButton, settingsEnabled)
+            --reAnchorAdditionalInvButtons(panelId) --#320
         end
     end
 end

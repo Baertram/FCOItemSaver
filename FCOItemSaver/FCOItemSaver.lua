@@ -226,15 +226,15 @@ ReloadUI does not do anything, but manually mass marking via flag icon works fin
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2025-05-02
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2025-05-18
 ------------------------------------------------------------------------------------
---#320 Additional inventory flag  icon positions do not save at account wide settings
 
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.7.0 - New version: 2.7.1) -    Updated last: 2025-05-02
+--Changelog (last version: 2.7.0 - New version: 2.7.1) -    Updated last: 2025-05-18
 -------------------------------------------------------------------------------------
 --[Fixed]
+--#320 Additional inventory flag  icon positions do not apply at account wide settings
 
 
 

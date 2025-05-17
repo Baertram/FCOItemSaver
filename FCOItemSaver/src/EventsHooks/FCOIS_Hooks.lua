@@ -1214,6 +1214,10 @@ function FCOIS.CreateHooks()
             onClosePanel(nil, LF_INVENTORY, "CRAFTING_STATION")
             --Reset the filterPanelId to inventory
             FCOIS.gFilterWhere = getFilterWhereBySettings(LF_INVENTORY)
+        --[[
+        elseif newState == SCENE_SHOWN then
+            FCOIS.ReAnchorAdditionalInvButtons(universalDeconGlobal.FCOIScurrentFilterPanelId) --#320
+        ]]
         end
     end)
 
@@ -1622,7 +1626,7 @@ function FCOIS.CreateHooks()
 
             --Added with FCOIS v2.4.9 ReAnchor the inventory additionalInventoryFlag button now so changed data is reflected after reloadui
             --on first open of the inventory, without having to open the settings menu first!
-            if newState == SCENE_SHOWN and invSceneWasShown == false then
+            if newState == SCENE_SHOWN then -- and invSceneWasShown == false then --#320
                 --d(">>calling ReAnchorAdditionalInvButtons(LF_INVENTORY)")
                 invSceneWasShown = true
 
@@ -1852,6 +1856,9 @@ function FCOIS.CreateHooks()
                 --changeContextMenuInvokerButtonColorByPanelId(filterPanelId) --> Called by "onClosePanel" above already
                 --Check the filter buttons and create them if they are not there. Update the inventory afterwards too
                 checkFCOISFilterButtonsAtPanel(true, filterPanelId)
+
+            elseif newState == SCENE_FRAGMENT_SHOWN then
+                FCOIS.ReAnchorAdditionalInvButtons(LF_BANK_WITHDRAW) --#320
 
             elseif newState == SCENE_FRAGMENT_HIDING then
                 --d("[FCOIS]Guild trader sell scene is shown - Bank fragment hiding")
@@ -2086,12 +2093,16 @@ function FCOIS.CreateHooks()
             --d("<CraftBag: SCENE_FRAGMENT_SHOWING, before changeContextMenuInvokerButtonColorByPanelId(LF_CRAFTBAG)")
             changeContextMenuInvokerButtonColorByPanelId(LF_CRAFTBAG)
 
+
             --				elseif 	newState == SCENE_FRAGMENT_SHOWN then
             --	d("Callback fragment CRAFTBAG: Shown")
 
             --				elseif 	newState == SCENE_FRAGMENT_HIDING then
             --	d("Callback fragment CRAFTBAG: Hiding")
             FCOIS.preventerVars.craftBagSceneShowInProgress = false
+            --------------------------------------------------------------------------------------------------------------------
+        elseif newState == SCENE_FRAGMENT_SHOWN then
+            FCOIS.ReAnchorAdditionalInvButtons(LF_CRAFTBAG) --#320
             --------------------------------------------------------------------------------------------------------------------
         elseif newState == SCENE_FRAGMENT_HIDDEN then
             --d("[FCOIS]CraftBag SCENE_FRAGMENT_HIDDEN")
@@ -2157,6 +2168,8 @@ function FCOIS.CreateHooks()
             --Check the filter buttons and create them if they are not there. Update the inventory afterwards too
             checkFCOISFilterButtonsAtPanel(true, FCOIS.gFilterWhere)
 
+        elseif newState == SCENE_SHOWN then
+            FCOIS.ReAnchorAdditionalInvButtons(LF_MAIL_SEND) --#320
             --When the mail send panel is hiding
         elseif newState == SCENE_HIDING then
             --d("mail scene hiding")
@@ -2224,6 +2237,8 @@ function FCOIS.CreateHooks()
             --Check the filter buttons and create them if they are not there. Update the inventory afterwards too
             checkFCOISFilterButtonsAtPanel(true, LF_RETRAIT)
 
+        elseif newState == SCENE_SHOWN then
+            FCOIS.ReAnchorAdditionalInvButtons(LF_RETRAIT) --#320
         elseif newState == SCENE_HIDING then
             --Update the current filter panel ID to "Retrait"
             FCOIS.gFilterWhere = getFilterWhereBySettings(LF_RETRAIT)
@@ -2261,6 +2276,8 @@ function FCOIS.CreateHooks()
             --Check the filter buttons and create them if they are not there. Update the inventory afterwards too
             checkFCOISFilterButtonsAtPanel(true, LF_INVENTORY_COMPANION)
 
+        elseif newState == SCENE_FRAGMENT_SHOWN then
+            FCOIS.ReAnchorAdditionalInvButtons(LF_INVENTORY_COMPANION) --#320
         elseif newState == SCENE_FRAGMENT_HIDING then
             --Update the current filter panel ID to "Companion inventory"
             FCOIS.gFilterWhere = getFilterWhereBySettings(LF_INVENTORY_COMPANION)
@@ -2292,6 +2309,8 @@ function FCOIS.CreateHooks()
             --Check if craftbag is active and change filter panel and parent panel accordingly
             --FCOIS.gFilterWhere, FCOIS.gFilterWhereParent = checkCraftbagOrOtherActivePanel(LF_INVENTORY_COMPANION)
         elseif newState == SCENE_FRAGMENT_SHOWN then
+            FCOIS.ReAnchorAdditionalInvButtons(FCOIS_CON_LF_COMPANION_CHARACTER) --#320
+
             --Update the character's equipment markers, if the companion character screen is shown
             --d(">RefreshEquipmentControl -> COMPANION")
             refreshEquipmentControl(nil, nil, nil, nil, nil, nil)
