@@ -1844,6 +1844,7 @@ FCOIS.lastVars.gLastBankButton					= ctrlVars.BANK_MENUBAR_BUTTON_WITHDRAW
 FCOIS.lastVars.gLastHouseBankButton				= ctrlVars.HOUSE_BANK_MENUBAR_BUTTON_WITHDRAW
 FCOIS.lastVars.gLastGuildBankButton   			= ctrlVars.GUILD_BANK_MENUBAR_BUTTON_WITHDRAW
 FCOIS.lastVars.gLastGuildStoreButton			= ctrlVars.GUILD_STORE_MENUBAR_BUTTON_SEARCH
+FCOIS.lastVars.gLastFurnitureVaultButton		= ctrlVars.FURNITURE_VAULT_MENUBAR_BUTTON_WITHDRAW
 --FCOIS.lastVars.gLastVendorButton				= ctrlVars.VENDOR_MENUBAR_BUTTON_SELL -> See file src/FCOIS_events.lua, function FCOItemSaver_Open_Store()
 --FCOIS.lastVars.gLastMailButton         		= ctrlVars.MAIL_MENUBAR_BUTTON_SEND
 FCOIS.lastVars.gLastAlchemyButton				= ctrlVars.ALCHEMY_STATION_MENUBAR_BUTTON_CREATION
@@ -1881,6 +1882,8 @@ mappingVars.gFilterPanelIdToInv = {
     [LF_JEWELRY_REFINE]		                = ctrlVars.REFINEMENT,
     [LF_JEWELRY_DECONSTRUCT]		        = ctrlVars.DECONSTRUCTION,
     [LF_JEWELRY_IMPROVEMENT]		        = ctrlVars.IMPROVEMENT,
+    [LF_FURNITURE_VAULT_WITHDRAW] 			= ctrlVars.FURNITURE_VAULT,
+	[LF_FURNITURE_VAULT_DEPOSIT]    		= ctrlVars.BACKPACK,
 }
 
 --The array for the texture names of each panel Id

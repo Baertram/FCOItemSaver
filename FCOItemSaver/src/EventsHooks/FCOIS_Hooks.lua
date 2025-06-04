@@ -1928,11 +1928,11 @@ function FCOIS.CreateHooks()
     --Pre Hook the 2 menubar button's (take and deposit) handler at the bank
     ZO_PreHookHandler(ctrlVars.FURNITURE_VAULT_MENUBAR_BUTTON_WITHDRAW, "OnMouseUp", function(control, button, upInside)
         --d("furniture vault button 1, button: " .. button .. ", upInside: " .. tos(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastBankButton:GetName())
-        mainMenuBarButtonFilterButtonHandler(button, upInside, "gLastHouseBankButton", ctrlVars.FURNITURE_VAULT_MENUBAR_BUTTON_WITHDRAW, LF_FURNITURE_VAULT_DEPOSIT, LF_FURNITURE_VAULT_WITHDRAW, nil)
+        mainMenuBarButtonFilterButtonHandler(button, upInside, "gLastFurnitureVaultButton", ctrlVars.FURNITURE_VAULT_MENUBAR_BUTTON_WITHDRAW, LF_FURNITURE_VAULT_DEPOSIT, LF_FURNITURE_VAULT_WITHDRAW, nil)
     end)
     ZO_PreHookHandler(ctrlVars.FURNITURE_VAULT_MENUBAR_BUTTON_DEPOSIT, "OnMouseUp", function(control, button, upInside)
         --d("furniture vault button 2, button: " .. button .. ", upInside: " .. tos(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastBankButton:GetName())
-        mainMenuBarButtonFilterButtonHandler(button, upInside, "gLastHouseBankButton", ctrlVars.FURNITURE_VAULT_MENUBAR_BUTTON_DEPOSIT, LF_FURNITURE_VAULT_WITHDRAW, LF_FURNITURE_VAULT_DEPOSIT, nil)
+        mainMenuBarButtonFilterButtonHandler(button, upInside, "gLastFurnitureVaultButton", ctrlVars.FURNITURE_VAULT_MENUBAR_BUTTON_DEPOSIT, LF_FURNITURE_VAULT_WITHDRAW, LF_FURNITURE_VAULT_DEPOSIT, nil)
     end)
 
     --======== SMITHING =============================================================
