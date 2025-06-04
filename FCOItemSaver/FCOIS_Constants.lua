@@ -1532,7 +1532,7 @@ ctrlVars.UNIVERSAL_DECONSTRUCTON_SCENE = UNIVERSAL_DECONSTRUCTION_KEYBOARD_SCENE
 -- -^- #202
 ctrlVars.FURNITURE_VAULT_INV					= ZO_FurnitureVault
 ctrlVars.FURNITURE_VAULT_INV_NAME				= ctrlVars.FURNITURE_VAULT_INV:GetName()
-ctrlVars.FURNITURE_VAULT			    		= GetControl(ctrlVars.FURNITURE_VAULT_INV, backpackStr) -- ZO_FurnitureVaultBackpack
+ctrlVars.FURNITURE_VAULT			    		= GetControl(ctrlVars.FURNITURE_VAULT_INV, listStr) -- ZO_FurnitureVaultList
 ctrlVars.FURNITURE_VAULT_BAG		    		= GetControl(ctrlVars.FURNITURE_VAULT, contentsStr)
 ctrlVars.FURNITURE_VAULT_MENUBAR_BUTTON_WITHDRAW= GetControl(ctrlVars.FURNITURE_VAULT_INV, strformat(menuBarButtonStr, "1")) -- ZO_FurnitureVaultMenuBarButton1
 ctrlVars.FURNITURE_VAULT_MENUBAR_BUTTON_DEPOSIT = GetControl(ctrlVars.FURNITURE_VAULT_INV, strformat(menuBarButtonStr, "2")) -- ZO_FurnitureVaultMenuBarButton2
