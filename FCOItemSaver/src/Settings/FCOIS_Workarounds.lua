@@ -14,35 +14,38 @@ function FCOIS.LoadWorkarounds()
     local settings = FCOIS.settingsVars.settings
     --FCOIS v0.7.8
     --The array to map the marker icon offsets for each filter panel ID
+    local iconPositionSettings = settings.iconPosition
+    local iconPositionCraftingSettings = settings.iconPositionCrafting
     FCOIS.mappingVars.filterPanelIdToIconOffset = {
-        [LF_INVENTORY] 					= settings.iconPosition,
-        [LF_SMITHING_REFINE]			= settings.iconPositionCrafting,
-        [LF_SMITHING_DECONSTRUCT]		= settings.iconPositionCrafting,
-        [LF_SMITHING_IMPROVEMENT] 		= settings.iconPositionCrafting,
-        [LF_SMITHING_RESEARCH] 			= settings.iconPositionCrafting,
-        [LF_SMITHING_RESEARCH_DIALOG]   = settings.iconPositionCrafting,
-        [LF_JEWELRY_REFINE]			    = settings.iconPositionCrafting,
-        [LF_JEWELRY_DECONSTRUCT]		= settings.iconPositionCrafting,
-        [LF_JEWELRY_IMPROVEMENT] 		= settings.iconPositionCrafting,
-        [LF_JEWELRY_RESEARCH] 			= settings.iconPositionCrafting,
-        [LF_JEWELRY_RESEARCH_DIALOG]    = settings.iconPositionCrafting,
-        [LF_VENDOR_SELL] 				= settings.iconPosition,
-        [LF_GUILDBANK_WITHDRAW] 		= settings.iconPosition,
-        [LF_GUILDBANK_DEPOSIT]			= settings.iconPosition,
-        [LF_GUILDSTORE_SELL] 			= settings.iconPosition,
-        [LF_BANK_WITHDRAW] 				= settings.iconPosition,
-        [LF_BANK_DEPOSIT] 				= settings.iconPosition,
-        [LF_HOUSE_BANK_WITHDRAW] 		= settings.iconPosition,
-        [LF_HOUSE_BANK_DEPOSIT] 		= settings.iconPosition,
-        [LF_ENCHANTING_EXTRACTION] 		= settings.iconPositionCrafting,
-        [LF_ENCHANTING_CREATION] 		= settings.iconPositionCrafting,
-        [LF_MAIL_SEND] 					= settings.iconPosition,
-        [LF_TRADE] 						= settings.iconPosition,
-        [LF_FENCE_SELL] 				= settings.iconPosition,
-        [LF_FENCE_LAUNDER] 				= settings.iconPosition,
-        [LF_ALCHEMY_CREATION] 			= settings.iconPositionCrafting,
-        [LF_CRAFTBAG] 					= settings.iconPosition, -- Workaround: Craftbag, added with API 100015
-        [LF_INVENTORY_COMPANION]		= settings.iconPosition, --Added with FCOIS v.2.1.0
+        [LF_INVENTORY] 					= iconPositionSettings,
+        [LF_SMITHING_REFINE]			= iconPositionCraftingSettings,
+        [LF_SMITHING_DECONSTRUCT]		= iconPositionCraftingSettings,
+        [LF_SMITHING_IMPROVEMENT] 		= iconPositionCraftingSettings,
+        [LF_SMITHING_RESEARCH] 			= iconPositionCraftingSettings,
+        [LF_SMITHING_RESEARCH_DIALOG]   = iconPositionCraftingSettings,
+        [LF_JEWELRY_REFINE]			    = iconPositionCraftingSettings,
+        [LF_JEWELRY_DECONSTRUCT]		= iconPositionCraftingSettings,
+        [LF_JEWELRY_IMPROVEMENT] 		= iconPositionCraftingSettings,
+        [LF_JEWELRY_RESEARCH] 			= iconPositionCraftingSettings,
+        [LF_JEWELRY_RESEARCH_DIALOG]    = iconPositionCraftingSettings,
+        [LF_VENDOR_SELL] 				= iconPositionSettings,
+        [LF_GUILDBANK_WITHDRAW] 		= iconPositionSettings,
+        [LF_GUILDBANK_DEPOSIT]			= iconPositionSettings,
+        [LF_GUILDSTORE_SELL] 			= iconPositionSettings,
+        [LF_BANK_WITHDRAW] 				= iconPositionSettings,
+        [LF_BANK_DEPOSIT] 				= iconPositionSettings,
+        [LF_HOUSE_BANK_WITHDRAW] 		= iconPositionSettings,
+        [LF_HOUSE_BANK_DEPOSIT] 		= iconPositionSettings,
+        [LF_ENCHANTING_EXTRACTION] 		= iconPositionCraftingSettings,
+        [LF_ENCHANTING_CREATION] 		= iconPositionCraftingSettings,
+        [LF_MAIL_SEND] 					= iconPositionSettings,
+        [LF_TRADE] 						= iconPositionSettings,
+        [LF_FENCE_SELL] 				= iconPositionSettings,
+        [LF_FENCE_LAUNDER] 				= iconPositionSettings,
+        [LF_ALCHEMY_CREATION] 			= iconPositionCraftingSettings,
+        [LF_CRAFTBAG] 					= iconPositionSettings, -- Workaround: Craftbag, added with API 100015
+        [LF_INVENTORY_COMPANION]		= iconPositionSettings, --Added with FCOIS v.2.1.0
+        [LF_FURNITURE_VAULT_WITHDRAW]   = iconPositionSettings,
     }
 
     --FCOIS v0.7.8b

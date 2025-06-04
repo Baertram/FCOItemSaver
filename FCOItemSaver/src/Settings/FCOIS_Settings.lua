@@ -17,6 +17,8 @@ local accName             = GetDisplayName()
 local currentCharId       = GetCurrentCharacterId()
 
 --The SavedVariables local name
+FCOIS.APIversion = FCOIS.APIversion or GetAPIVersion()
+local apiVersion = FCOIS.APIversion
 local addonVars         = FCOIS.addonVars
 local addonSVname       = addonVars.savedVarName
 local addonSVversion    = addonVars.savedVarVersion
@@ -949,9 +951,8 @@ function FCOIS.AfterSettings()
     rebuildAllowedCraftSkillsForCraftedMarking()
 
     --Added with FCOIS v1.6.7
-    --Check if the values at the add. inv. context menu "flag" button offsets are properly set, or
-    --reset them
-    local apiVersion = FCOIS.APIversion
+    --Check if the values at the add. inv. context menu "flag" button offsets are properly set,
+    --or reset them --#320
     local addInvButtonOffsets = settings.FCOISAdditionalInventoriesButtonOffset
     local anchorVarsAddInvButtons = FCOIS.anchorVars.additionalInventoryFlagButton[apiVersion]
     FCOIS.settingsVars.settings.FCOISAdditionalInventoriesButtonOffset["left"] = nil --remove wrong added values -> left and top should be in a subtable of filterPanelId!
@@ -984,14 +985,12 @@ function FCOIS.AfterSettings()
             if addInvButtonOffsetsForPanel then
                 fixAnchorVarsLeftAndTopOffsets(addInvButtonOffsetsForPanel, panelId)
             end
-
             --FCOIS.ReAnchorAdditionalInvButtons(panelId)
         end
         --1 extra call to LF_ENCHANTING_EXTRACTION as it is not added to FCOIS.anchorVars.additionalInventoryFlagButton[apiVersion], because it re-usess LF_ENCHANTING_CREATION
         local addInvButtonOffsetsForPanel = addInvButtonOffsets[LF_ENCHANTING_EXTRACTION]
         if addInvButtonOffsetsForPanel then
             fixAnchorVarsLeftAndTopOffsets(addInvButtonOffsetsForPanel, LF_ENCHANTING_EXTRACTION)
-
             --FCOIS.ReAnchorAdditionalInvButtons(LF_ENCHANTING_EXTRACTION)
         end
     end
@@ -1017,16 +1016,16 @@ function FCOIS.AfterSettings()
             --Added with FCOIS v1.9.9
             FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].isFilterPanelOn[panelId]               = FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].isFilterPanelOn[panelId] or {false, false, false, false}
             --Create the helper arrays for the filter button context menus
-            FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastLockDynFilterIconId[panelId]       = FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastLockDynFilterIconId[panelId] or -1
-            FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastGearFilterIconId[panelId]          = FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastGearFilterIconId[panelId] or -1
-            FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastResDecImpFilterIconId[panelId]     = FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastResDecImpFilterIconId[panelId] or -1
-            FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastSellGuildIntFilterIconId[panelId]  = FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastSellGuildIntFilterIconId[panelId] or -1
+            FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastLockDynFilterIconId[panelId]       = FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastLockDynFilterIconId[panelId] or FCOIS_CON_ICONS_ALL
+            FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastGearFilterIconId[panelId]          = FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastGearFilterIconId[panelId] or FCOIS_CON_ICONS_ALL
+            FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastResDecImpFilterIconId[panelId]     = FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastResDecImpFilterIconId[panelId] or FCOIS_CON_ICONS_ALL
+            FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastSellGuildIntFilterIconId[panelId]  = FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastSellGuildIntFilterIconId[panelId] or FCOIS_CON_ICONS_ALL
 
             --Added with FCOIS v2.4.4 #244 Fix LF_SMITHING_RESEARCH/LF_JEWELRY_RESEARCH entries for last selected markerIcon at the 4 filter buttons right click context menus, and preset with -1 "all icons"
-            FCOIS.settingsVars.settings.lastLockDynFilterIconId[panelId] =      FCOIS.settingsVars.settings.lastLockDynFilterIconId[panelId] or -1
-            FCOIS.settingsVars.settings.lastGearFilterIconId[panelId] =         FCOIS.settingsVars.settings.lastGearFilterIconId[panelId] or -1
-            FCOIS.settingsVars.settings.lastResDecImpFilterIconId[panelId]  =   FCOIS.settingsVars.settings.lastResDecImpFilterIconId[panelId] or -1
-            FCOIS.settingsVars.settings.lastSellGuildIntFilterIconId[panelId] = FCOIS.settingsVars.settings.lastSellGuildIntFilterIconId[panelId] or -1
+            FCOIS.settingsVars.settings.lastLockDynFilterIconId[panelId] =      FCOIS.settingsVars.settings.lastLockDynFilterIconId[panelId] or FCOIS_CON_ICONS_ALL
+            FCOIS.settingsVars.settings.lastGearFilterIconId[panelId] =         FCOIS.settingsVars.settings.lastGearFilterIconId[panelId] or FCOIS_CON_ICONS_ALL
+            FCOIS.settingsVars.settings.lastResDecImpFilterIconId[panelId]  =   FCOIS.settingsVars.settings.lastResDecImpFilterIconId[panelId] or FCOIS_CON_ICONS_ALL
+            FCOIS.settingsVars.settings.lastSellGuildIntFilterIconId[panelId] = FCOIS.settingsVars.settings.lastSellGuildIntFilterIconId[panelId] or FCOIS_CON_ICONS_ALL
         end
     end
 

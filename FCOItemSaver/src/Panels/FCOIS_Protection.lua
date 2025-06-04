@@ -40,6 +40,7 @@ local checkIfUniversaldDeconstructionNPC
 local checkActivePanel
 local isVendorPanelShown
 local getWhereAreWe
+local getContextMenuAntiSettingsTextAndState
 
 local FCOIScdsh = FCOIS.callDeconstructionSelectionHandler
 
@@ -119,6 +120,8 @@ function FCOIS.CheckIfProtectedSettingsEnabled(filterPanel, iconNr, isDynamicIco
     if filterPanel == nil then return nil, false end
     isDynamicIcon = isDynamicIcon or false
     checkAntiDetails = checkAntiDetails or false
+    getContextMenuAntiSettingsTextAndState = getContextMenuAntiSettingsTextAndState or FCOIS.GetContextMenuAntiSettingsTextAndState
+
     local craftBagExtendedUsed = false
     local protectionVal
     local protectionValDestroy
@@ -156,42 +159,6 @@ function FCOIS.CheckIfProtectedSettingsEnabled(filterPanel, iconNr, isDynamicIco
         end
     end
 ------------------------------------------------------------------------------------------------------------------------
-    --[[ OLD DATA before the for ... loop was created above!
-    local protectionSettings = {
-        --[LF_CRAFTBAG]   				= {[LF_CRAFTBAG]=settings.blockDestroying},
-        [LF_VENDOR_BUY]   				= {[LF_VENDOR_BUY]=settings.blockVendorBuy},
-        [LF_VENDOR_SELL]   				= {[LF_VENDOR_SELL]=settings.blockSelling, [LF_CRAFTBAG]=settings.blockSelling},
-        [LF_VENDOR_BUYBACK]   			= {[LF_VENDOR_BUYBACK]=settings.blockVendorBuyback},
-        [LF_VENDOR_REPAIR]   			= {[LF_VENDOR_REPAIR]=settings.blockVendorRepair},
-        [LF_GUILDBANK_DEPOSIT] 			= {[LF_GUILDBANK_DEPOSIT]=settings.blockGuildBankWithoutWithdraw},
-        [LF_GUILDSTORE_SELL] 			= {[LF_GUILDSTORE_SELL]=settings.blockSellingGuildStore, [LF_CRAFTBAG]=settings.blockSellingGuildStore},
-        [LF_FENCE_SELL]					= {[LF_FENCE_SELL]=settings.blockFence},
-        [LF_FENCE_LAUNDER]				= {[LF_FENCE_LAUNDER]=settings.blockLaunder},
-        [LF_SMITHING_REFINE] 			= {[LF_SMITHING_REFINE]=settings.blockRefinement},
-        [LF_SMITHING_DECONSTRUCT] 		= {[LF_SMITHING_DECONSTRUCT]=settings.blockDeconstruction},
-        [LF_SMITHING_IMPROVEMENT]		= {[LF_SMITHING_IMPROVEMENT]=settings.blockImprovement},
-        [LF_SMITHING_RESEARCH]			= {[LF_SMITHING_RESEARCH]=true}, 			                --Always say that items are blocked for research
-        [LF_SMITHING_RESEARCH_DIALOG]	= {[LF_SMITHING_RESEARCH_DIALOG]=settings.blockResearchDialog},
-        [LF_JEWELRY_REFINE] 			= {[LF_JEWELRY_REFINE]=settings.blockJewelryRefinement},
-        [LF_JEWELRY_DECONSTRUCT] 		= {[LF_JEWELRY_DECONSTRUCT]=settings.blockJewelryDeconstruction},
-        [LF_JEWELRY_IMPROVEMENT]		= {[LF_JEWELRY_IMPROVEMENT]=settings.blockJewelryImprovement},
-        [LF_JEWELRY_RESEARCH]			= {[LF_JEWELRY_RESEARCH]=true}, 			                --Always say that items are blocked for research
-        [LF_JEWELRY_RESEARCH_DIALOG]    = {[LF_JEWELRY_RESEARCH_DIALOG]=settings.blockJewelryResearchDialog},
-        [LF_ENCHANTING_CREATION] 		= {[LF_ENCHANTING_CREATION]=settings.blockEnchantingCreation},
-        [LF_ENCHANTING_EXTRACTION] 		= {[LF_ENCHANTING_EXTRACTION]=settings.blockEnchantingExtraction},
-        [LF_ALCHEMY_CREATION] 			= {[LF_ALCHEMY_CREATION]=settings.blockAlchemyDestroy},
-        [LF_MAIL_SEND] 					= {[LF_MAIL_SEND]=settings.blockSendingByMail, [LF_CRAFTBAG]=settings.blockSendingByMail},
-        [LF_TRADE] 						= {[LF_TRADE]=settings.blockTrading, [LF_CRAFTBAG]=settings.blockTrading},
-        [LF_RETRAIT] 					= {[LF_RETRAIT]=settings.blockRetrait},
-        --Special entries for the call from ItemSelectionHandler() function's variable 'whereAreWe'
-        [FCOIS_CON_CONTAINER_AUTOOLOOT]	= {[FCOIS_CON_CONTAINER_AUTOOLOOT]=settings.blockAutoLootContainer},	--Auto loot container
-        [FCOIS_CON_RECIPE_USAGE]		= {[FCOIS_CON_RECIPE_USAGE]=settings.blockMarkedRecipes}, 		--Recipe
-        [FCOIS_CON_MOTIF_USAGE]			= {[FCOIS_CON_MOTIF_USAGE]=settings.blockMarkedMotifs}, 		--Racial style motif
-        [FCOIS_CON_POTION_USAGE]		= {[FCOIS_CON_POTION_USAGE]=settings.blockMarkedPotions}, 		--Potion
-        [FCOIS_CON_FOOD_USAGE]			= {[FCOIS_CON_FOOD_USAGE]=settings.blockMarkedFood}, 		--Food
-        [FCOIS_CON_CROWN_ITEM]			= {[FCOIS_CON_CROWN_ITEM]=settings.blockCrownStoreItems}, 	--Crown store item
-    }
-    ]]
     --Add the filterPanelIds which need to be checked for anti-destroy
     local filterPanelIdsCheckForAntiDestroy = FCOIS.checkVars.filterPanelIdsForAntiDestroy
     --For each entry in this anti-destroy check table add one line in libFiltersPanelIdToBlockSettings
@@ -222,7 +189,8 @@ function FCOIS.CheckIfProtectedSettingsEnabled(filterPanel, iconNr, isDynamicIco
             --Is the dynamic icon protected at the current panel?
             if protectionVal == true then
                 --The protective functions are not enabled (red flag is set in the inventory additional options flag icon, or the current panel got no additional inventory button, e.g. the crafting research tab or the research popup dialog)?
-                local _, invAntiSettingsEnabled = FCOIS.GetContextMenuAntiSettingsTextAndState(filterPanel, false)
+                getContextMenuAntiSettingsTextAndState = getContextMenuAntiSettingsTextAndState or FCOIS.GetContextMenuAntiSettingsTextAndState
+                local _, invAntiSettingsEnabled = getContextMenuAntiSettingsTextAndState(filterPanel, false)
 --d(">invAntiSettingsEnabled: " ..tos(invAntiSettingsEnabled))
                 if not invAntiSettingsEnabled then
                     --Check if the temporary disabling of the protection is enabled, if the user uses the inventory "flag" icon and sets it to red
@@ -526,8 +494,8 @@ function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChat
     if bag == nil or slot == nil then return true end
     local doDebug = false
     --TODO DEBUG: enable to show d messages for debugging
-    --[[
-    if GetDisplayName() == "@Baertram" and bag == 1 and (slot == 85 or slot == 99) then --bug #272 20231205 -> Alchemy station, dynamic icon not protected
+   --[[
+    if GetDisplayName() == "@Baertram" and bag == 1 and (slot == 62) then  --#318 20250427
         FCOIS.preventerVars.doDebugItemSelectionHandler = true
     end
     ]]
@@ -559,43 +527,7 @@ if doDebug then d("[FCOIS]ItemSelectionHandler - Bag: " .. tos(bag) .. ", Slot: 
     --Mapping array for the whereAreWe to anti-settings. Returns the anti-settings from the current settings, or false (not protected) as a constant if there is no anti-setting available.
     --The constant false values will be taken care of in other checks after this table check was done then.
     --local settingNameOfBlock = filterPanelIdToBlockSettingName[filterPanel]
-    local whereAreWeToIsBlocked = {
---[[
-        [FCOIS_CON_DESTROY]				= settings.blockDestroying,			    --Destroying
-        [FCOIS_CON_MAIL]				= settings.blockSendingByMail,     	    --Mail send
-        [FCOIS_CON_TRADE]				= settings.blockTrading,				--Trading
-        [FCOIS_CON_BUY]				    = settings.blockVendorBuy,              --Vendor buy
-        [FCOIS_CON_SELL]				= settings.blockSelling,                --Vendor sell
-        [FCOIS_CON_BUYBACK]				= settings.blockVendorBuyback,          --Vendor buyback
-        [FCOIS_CON_REPAIR]				= settings.blockVendorRepair,           --Vendor repair
-        [FCOIS_CON_REFINE]				= settings.blockRefinement,			    --Refinement,
-        [FCOIS_CON_DECONSTRUCT]			= settings.blockDeconstruction,		    --Deconstruction
-        [FCOIS_CON_IMPROVE]				= settings.blockImprovement,			--Improvement
-        [FCOIS_CON_RESEARCH]			= true,   			                    --Research -> Always return true as there is no special option for anti-research and the protection is on
-        [FCOIS_CON_RESEARCH_DIALOG] 	= settings.blockResearchDialog, 		--Research dialog
-        [FCOIS_CON_JEWELRY_REFINE]		= settings.blockJewelryRefinement,		--Jewelry Refinement,
-        [FCOIS_CON_JEWELRY_DECONSTRUCT]	= settings.blockJewelryDeconstruction,	--Jewelry Deconstruction
-        [FCOIS_CON_JEWELRY_IMPROVE]		= settings.blockJewelryImprovement,		--Jewelry Improvement
-        [FCOIS_CON_JEWELRY_RESEARCH]    = true, 								--Jewelry research -> Always return true as there is no special option for anti-jewelry research and the protection is on
-        [FCOIS_CON_JEWELRY_RESEARCH_DIALOG] = settings.blockJewelryResearchDialog, --Jewelry research dialog
-        [FCOIS_CON_ENCHANT_EXTRACT]		= settings.blockEnchantingExtraction,   --Enchanting extraction
-        [FCOIS_CON_ENCHANT_CREATE]		= settings.blockEnchantingCreation,	    --Enchanting creation
-        [FCOIS_CON_GUILD_STORE_SELL]	= settings.blockSellingGuildStore,	    --Guild store sell
-        [FCOIS_CON_FENCE_SELL]			= settings.blockFence,                  --Fence sell
-        [FCOIS_CON_LAUNDER_SELL]		= settings.blockLaunder,			    --Fence launder
-        [FCOIS_CON_ALCHEMY_DESTROY]		= settings.blockAlchemyDestroy,		    --Alchemy destroy
-        [FCOIS_CON_CONTAINER_AUTOOLOOT]	= settings.blockAutoLootContainer,	    --Auto loot container
-        [FCOIS_CON_RECIPE_USAGE]   		= settings.blockMarkedRecipes, 		    --Recipe
-        [FCOIS_CON_MOTIF_USAGE]			= settings.blockMarkedMotifs, 		    --Racial style motif
-        [FCOIS_CON_POTION_USAGE]		= settings.blockMarkedPotions, 		    --Potion
-        [FCOIS_CON_FOOD_USAGE]	   		= settings.blockMarkedFood, 		    --Food
-        [FCOIS_CON_CROWN_ITEM]	   		= settings.blockCrownStoreItems, 		--Crown store items
-        [FCOIS_CON_CRAFTBAG_DESTROY]	= settings.blockDestroying, 		    --Craftbag, destroying
-        [FCOIS_CON_RETRAIT]	            = settings.blockRetrait, 			    --Retrait station, retrait
-        [FCOIS_CON_COMPANION_DESTROY]	= settings.blockDestroying,			    --Companion inventory destroying
-        [FCOIS_CON_FALLBACK]			= false,							    --Always return false. Used e.g. for the bank/guild bank deposit checks
-]]
-    }
+    local whereAreWeToIsBlocked = {}
     local filterPanelIdToBlockSettingName = mappingVars.filterPanelIdToBlockSettingName
     for whereAreWeId, blockSettingsData in pairs(filterPanelIdToBlockSettingName) do
         if whereAreWeId >= FCOIS_CON_WHEREAREWE_MIN then
@@ -664,7 +596,7 @@ if doDebug then d(">Where are we: " .. tos(whereAreWe) .. ", isBlocked: " .. tos
     if panelId == LF_INVENTORY and singleItemChecks then
         --See if the Anti-settings for the given panel are enabled or not
         --The protective functions are not enabled (red flag in the inventory additional options flag icon or the current panel got no additional inventory button, e.g. the crafting research tab)
-        local _, invAntiSettingsEnabled = FCOIS.GetContextMenuAntiSettingsTextAndState(panelId, false)
+        local _, invAntiSettingsEnabled = getContextMenuAntiSettingsTextAndState(panelId, false)
         if not invAntiSettingsEnabled then
             --Using/eating/drinking items for marked items is blocked, e.g. for recipes/style motifs?
             --If the settings allow it: Change the blocked state to unblocked upon right-clicking the inventory additional options flag icon
@@ -678,6 +610,12 @@ if doDebug then d(">Where are we: " .. tos(whereAreWe) .. ", isBlocked: " .. tos
             if whereAreWe == FCOIS_CON_MOTIF_USAGE and settings.blockMarkedMotifsDisableWithFlag then
                 --Using the style motif by help of a doubleclick is allowed
                 if doDebug then d("[FCOIS] ItemSelectionHandler - Style motif is allowed with doubleclick") end
+                return false
+            end
+            --Collectibles style boxes
+            if whereAreWe == FCOIS_CON_COLLECTIBLE_USAGE and settings.blockMarkedCollectiblesDisableWithFlag then
+                --Using the collectible box by help of a doubleclick is allowed
+                if doDebug then d("[FCOIS] ItemSelectionHandler - Collectible box is allowed with doubleclick") end
                 return false
             end
             --Drink & food

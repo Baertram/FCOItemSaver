@@ -35,6 +35,7 @@ local bankCtrl =                ctrlVars.BANK_BAG
 --local deconstructionCtrl =      ctrlVars.DECONSTRUCTION_BAG
 local universalDeconGlobal =    ctrlVars.UNIVERSAL_DECONSTRUCTION_GLOBAL
 local universalDeconPanel =     universalDeconGlobal and universalDeconGlobal.deconstructionPanel
+local furnitureVaultCtrl =      ctrlVars.FURNITURE_VAULT
 
 local numFilterIcons                        = FCOIS.numVars.gFCONumFilterIcons
 local mappingVarsTransm                     = FCOIS.mappingVars.containerTransmuation
@@ -230,7 +231,7 @@ local function checkAndUpdateContextMenuLocalizationData()
         localization()
         --Overwrite the localized texts for the marker icons in the context menus
         changeContextMenuEntryTexts = changeContextMenuEntryTexts or FCOIS.ChangeContextMenuEntryTexts
-        changeContextMenuEntryTexts(-1)
+        changeContextMenuEntryTexts(FCOIS_CON_ICONS_ALL)
     end
 end
 
@@ -471,6 +472,7 @@ local function FCOItemSaver_OnInventorySlot_DoPrimaryAction(inventorySlot)
     --Check where we are
     local parent          = inventorySlot:GetParent()
     local isABankWithdraw = (parent == bankCtrl or parent == guildBankCtrl or parent == houseBankCtrl)
+    local isAFurnitureVaultWithdraw = (parent == furnitureVaultCtrl)
     local isCharacter     = (parent == characterCtrl) or false
     isVendorPanelShown = isVendorPanelShown or FCOIS.IsVendorPanelShown
     local isVendorRepair  = isVendorPanelShown(LF_VENDOR_REPAIR, false) or false
@@ -487,7 +489,7 @@ local function FCOItemSaver_OnInventorySlot_DoPrimaryAction(inventorySlot)
 
     --Do not add protection double click functions to bank/guild bank withdraw and character, and vendor repair
 --d(">[FCOIS]FCOItemSaver_OnInventorySlot_DoPrimaryAction - " .. tos(inventorySlot:GetName()) .. ", isBankWithdraw: " ..tos(isABankWithdraw) .. ", isCharacter: " ..tos(isCharacter) .. ", isVendorRepair: " ..tos(isVendorRepair))
-    if not isABankWithdraw and not isCharacter and not isVendorRepair then
+    if not isABankWithdraw and not isCharacter and not isVendorRepair and not isAFurnitureVaultWithdraw then
         --Get the slected inv. row's dataEntry.data with bagId and slotIndex
         local bagId, slotId = myGetItemDetails(inventorySlot)
         if bagId ~= nil and slotId ~= nil then
@@ -1214,6 +1216,10 @@ function FCOIS.CreateHooks()
             onClosePanel(nil, LF_INVENTORY, "CRAFTING_STATION")
             --Reset the filterPanelId to inventory
             FCOIS.gFilterWhere = getFilterWhereBySettings(LF_INVENTORY)
+        --[[
+        elseif newState == SCENE_SHOWN then
+            FCOIS.ReAnchorAdditionalInvButtons(universalDeconGlobal.FCOIScurrentFilterPanelId) --#320
+        ]]
         end
     end)
 
@@ -1622,7 +1628,7 @@ function FCOIS.CreateHooks()
 
             --Added with FCOIS v2.4.9 ReAnchor the inventory additionalInventoryFlag button now so changed data is reflected after reloadui
             --on first open of the inventory, without having to open the settings menu first!
-            if newState == SCENE_SHOWN and invSceneWasShown == false then
+            if newState == SCENE_SHOWN then -- and invSceneWasShown == false then --#320
                 --d(">>calling ReAnchorAdditionalInvButtons(LF_INVENTORY)")
                 invSceneWasShown = true
 
@@ -1853,6 +1859,9 @@ function FCOIS.CreateHooks()
                 --Check the filter buttons and create them if they are not there. Update the inventory afterwards too
                 checkFCOISFilterButtonsAtPanel(true, filterPanelId)
 
+            elseif newState == SCENE_FRAGMENT_SHOWN then
+                FCOIS.ReAnchorAdditionalInvButtons(LF_BANK_WITHDRAW) --#320
+
             elseif newState == SCENE_FRAGMENT_HIDING then
                 --d("[FCOIS]Guild trader sell scene is shown - Bank fragment hiding")
                 local toPanelId = LF_GUILDSTORE_SELL
@@ -1904,6 +1913,28 @@ function FCOIS.CreateHooks()
         --d("guild bank button 2, button: " .. button .. ", upInside: " .. tos(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastGuildBankButton:GetName())
         mainMenuBarButtonFilterButtonHandler(button, upInside, "gLastGuildBankButton", ctrlVars.GUILD_BANK_MENUBAR_BUTTON_DEPOSIT, LF_GUILDBANK_WITHDRAW, LF_GUILDBANK_DEPOSIT, nil)
     end)
+
+
+    --======== FURNITURE VAULT ================================================================
+    --Register a secure posthook on visibility change of a scrolllist's row -> At the house bank inventory list
+    -->#303 Was added via FCOIS.CreateTextures already so here we only need to add the onMouseUpHandlers!
+    --[[
+    if not checkIfInventorySecurePostHookWasDone(ctrlVars.HOUSE_BANK, ctrlVars.HOUSE_BANK.dataTypes[1], true) then --#303
+        SecurePostHook(ctrlVars.HOUSE_BANK.dataTypes[1], "setupCallback", function(rowControl, data) onScrollListRowSetupCallback(rowControl, data, true) end)
+        addInventorySecurePostHookDoneEntry(ctrlVars.HOUSE_BANK, ctrlVars.HOUSE_BANK.dataTypes[1], true)
+    end
+    ]]
+
+    --Pre Hook the 2 menubar button's (take and deposit) handler at the bank
+    ZO_PreHookHandler(ctrlVars.FURNITURE_VAULT_MENUBAR_BUTTON_WITHDRAW, "OnMouseUp", function(control, button, upInside)
+        --d("furniture vault button 1, button: " .. button .. ", upInside: " .. tos(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastBankButton:GetName())
+        mainMenuBarButtonFilterButtonHandler(button, upInside, "gLastHouseBankButton", ctrlVars.FURNITURE_VAULT_MENUBAR_BUTTON_WITHDRAW, LF_FURNITURE_VAULT_DEPOSIT, LF_FURNITURE_VAULT_WITHDRAW, nil)
+    end)
+    ZO_PreHookHandler(ctrlVars.FURNITURE_VAULT_MENUBAR_BUTTON_DEPOSIT, "OnMouseUp", function(control, button, upInside)
+        --d("furniture vault button 2, button: " .. button .. ", upInside: " .. tos(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastBankButton:GetName())
+        mainMenuBarButtonFilterButtonHandler(button, upInside, "gLastHouseBankButton", ctrlVars.FURNITURE_VAULT_MENUBAR_BUTTON_DEPOSIT, LF_FURNITURE_VAULT_WITHDRAW, LF_FURNITURE_VAULT_DEPOSIT, nil)
+    end)
+
     --======== SMITHING =============================================================
     local function smithingSetModeHook(smithingCtrl, mode, ...)
         --Hide the context menu at last active panel
@@ -2086,12 +2117,16 @@ function FCOIS.CreateHooks()
             --d("<CraftBag: SCENE_FRAGMENT_SHOWING, before changeContextMenuInvokerButtonColorByPanelId(LF_CRAFTBAG)")
             changeContextMenuInvokerButtonColorByPanelId(LF_CRAFTBAG)
 
+
             --				elseif 	newState == SCENE_FRAGMENT_SHOWN then
             --	d("Callback fragment CRAFTBAG: Shown")
 
             --				elseif 	newState == SCENE_FRAGMENT_HIDING then
             --	d("Callback fragment CRAFTBAG: Hiding")
             FCOIS.preventerVars.craftBagSceneShowInProgress = false
+            --------------------------------------------------------------------------------------------------------------------
+        elseif newState == SCENE_FRAGMENT_SHOWN then
+            FCOIS.ReAnchorAdditionalInvButtons(LF_CRAFTBAG) --#320
             --------------------------------------------------------------------------------------------------------------------
         elseif newState == SCENE_FRAGMENT_HIDDEN then
             --d("[FCOIS]CraftBag SCENE_FRAGMENT_HIDDEN")
@@ -2157,6 +2192,8 @@ function FCOIS.CreateHooks()
             --Check the filter buttons and create them if they are not there. Update the inventory afterwards too
             checkFCOISFilterButtonsAtPanel(true, FCOIS.gFilterWhere)
 
+        elseif newState == SCENE_SHOWN then
+            FCOIS.ReAnchorAdditionalInvButtons(LF_MAIL_SEND) --#320
             --When the mail send panel is hiding
         elseif newState == SCENE_HIDING then
             --d("mail scene hiding")
@@ -2224,6 +2261,8 @@ function FCOIS.CreateHooks()
             --Check the filter buttons and create them if they are not there. Update the inventory afterwards too
             checkFCOISFilterButtonsAtPanel(true, LF_RETRAIT)
 
+        elseif newState == SCENE_SHOWN then
+            FCOIS.ReAnchorAdditionalInvButtons(LF_RETRAIT) --#320
         elseif newState == SCENE_HIDING then
             --Update the current filter panel ID to "Retrait"
             FCOIS.gFilterWhere = getFilterWhereBySettings(LF_RETRAIT)
@@ -2261,6 +2300,8 @@ function FCOIS.CreateHooks()
             --Check the filter buttons and create them if they are not there. Update the inventory afterwards too
             checkFCOISFilterButtonsAtPanel(true, LF_INVENTORY_COMPANION)
 
+        elseif newState == SCENE_FRAGMENT_SHOWN then
+            FCOIS.ReAnchorAdditionalInvButtons(LF_INVENTORY_COMPANION) --#320
         elseif newState == SCENE_FRAGMENT_HIDING then
             --Update the current filter panel ID to "Companion inventory"
             FCOIS.gFilterWhere = getFilterWhereBySettings(LF_INVENTORY_COMPANION)
@@ -2292,6 +2333,8 @@ function FCOIS.CreateHooks()
             --Check if craftbag is active and change filter panel and parent panel accordingly
             --FCOIS.gFilterWhere, FCOIS.gFilterWhereParent = checkCraftbagOrOtherActivePanel(LF_INVENTORY_COMPANION)
         elseif newState == SCENE_FRAGMENT_SHOWN then
+            FCOIS.ReAnchorAdditionalInvButtons(FCOIS_CON_LF_COMPANION_CHARACTER) --#320
+
             --Update the character's equipment markers, if the companion character screen is shown
             --d(">RefreshEquipmentControl -> COMPANION")
             refreshEquipmentControl(nil, nil, nil, nil, nil, nil)

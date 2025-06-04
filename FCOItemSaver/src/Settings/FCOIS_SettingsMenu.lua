@@ -134,6 +134,10 @@ local isMotifsAutoMarkDoable = FCOIS.IsMotifsAutoMarkDoable -- #308
 local checkIfMotifsAddonUsed = FCOIS.CheckIfMotifsAddonUsed -- #308
 local checkIfChosenMotifsAddonActive = FCOIS.CheckIfChosenMotifsAddonActive -- #308
 local getMotifsAddonUsed = FCOIS.GetMotifsAddonUsed -- #308
+local isStyleContainerCollectibleAutoMarkDoable = FCOIS.IsStyleContainerCollectibleAutoMarkDoable --#317
+local checkIfStyleContainerAddonUsed = FCOIS.CheckIfStyleContainerAddonUsed --#317
+local checkIfChosenStyleContainerAddonActive = FCOIS.CheckIfChosenStyleContainerAddonActive --#317
+local getStyleContainerAddonUsed = FCOIS.GetStyleContainerAddonUsed --#317
 
 local getLAMMarkerIconsDropdown
 
@@ -190,6 +194,8 @@ local setCollectionAddonsList = {}
 local setCollectionAddonsListValues = {}
 local motifsAddonsList = {} --#308
 local motifsAddonsListValues = {} --#308
+local styleContainerCollectiblesAddonsList = {} --#317
+local styleContainerCollectiblesAddonsListValues = {} --#317
 
 --Backup & Restore & Restore from APIversion
 local restoreChoices = {}
@@ -995,7 +1001,7 @@ local function buildRecipeAddonsList()
     end
 end
 
---The list for motifs #308
+--The list for motifs addons #308
 local function buildMotifsAddonsList()
     local motifAddonsAvailable = FCOIS.otherAddons.motifAddonsSupported
     for motifAddonIdx, motifAddonName in pairs(motifAddonsAvailable) do
@@ -1004,6 +1010,14 @@ local function buildMotifsAddonsList()
     end
 end
 
+--The list for style container for collectibles addon #317
+local function buildStyleContainerCollectiblesAddonsList()
+    local styleContainerCollectiblesAddonsAvailable = FCOIS.otherAddons.styleContainerCollectiblesAddonsSupported
+    for styleContainerCollectiblesAddonIdx, styleContainerCollectiblesAddonName in pairs(styleContainerCollectiblesAddonsAvailable) do
+        table.insert(styleContainerCollectiblesAddonsListValues, styleContainerCollectiblesAddonIdx)
+        table.insert(styleContainerCollectiblesAddonsList, styleContainerCollectiblesAddonName)
+    end
+end
 
 --The list of research addons
 local function buildResearchAddonsList()
@@ -1519,6 +1533,7 @@ local function runOnceBeforeLAMPanelGetsCreated()
         ["FCOItemSaver_Icon_On_Automatic_Crafted_Items_Dropdown"]       =           { ["choices"] = 'standard', ["choicesValues"] = iconsListValues,        ["choicesTooltips"] = nil, ["withIcons"] = true, ["withNoneEntry"] = false, },
         ["FCOItemSaver_Icon_On_Automatic_Recipe_Dropdown"]              =           { ["choices"] = 'standard', ["choicesValues"] = iconsListValues,        ["choicesTooltips"] = nil, ["withIcons"] = true, ["withNoneEntry"] = false, },
         ["FCOItemSaver_Icon_On_Automatic_Motif_Dropdown"]               =           { ["choices"] = 'standard', ["choicesValues"] = iconsListValues,        ["choicesTooltips"] = nil, ["withIcons"] = true, ["withNoneEntry"] = false, },
+        ["FCOItemSaver_Icon_On_Automatic_StyleContainerCollectible_Dropdown"] =     { ["choices"] = 'standard', ["choicesValues"] = iconsListValues,        ["choicesTooltips"] = nil, ["withIcons"] = true, ["withNoneEntry"] = false, },
         ["FCOItemSaver_Icon_On_Automatic_Quality_Dropdown"]             =           { ["choices"] = 'standard', ["choicesValues"] = iconsListValues,        ["choicesTooltips"] = nil, ["withIcons"] = true, ["withNoneEntry"] = false, },
         ["FCOItemSaver_Icon_On_Automatic_SetCollections_UnknownIcon_Dropdown"]  =   { ["choices"] = 'standard', ["choicesValues"] = iconsListValuesNone,    ["choicesTooltips"] = nil, ["withIcons"] = true, ["withNoneEntry"] = true,  },
         ["FCOItemSaver_Icon_On_Automatic_SetCollections_KnownIcon_Dropdown"]    =   { ["choices"] = 'standard', ["choicesValues"] = iconsListValuesNone,    ["choicesTooltips"] = nil, ["withIcons"] = true, ["withNoneEntry"] = true,  },
@@ -3163,6 +3178,7 @@ local function runOnceAsLAMPanelGetsCreated(lamPanel)
     buildResearchAddonsList()
     buildSetCollectionAddonsList()
     buildMotifsAddonsList() --#308
+    buildStyleContainerCollectiblesAddonsList() --#317
 
     --Rebuild the server, account and charaacter dropdowns etc.
     reBuildServerOptions()
@@ -5673,7 +5689,7 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                                     setFunc = function(value)
                                         FCOISsettings.autoMarkKnownMotifs = value
                                         if (FCOISsettings.autoMarkKnownMotifs == true and checkIfMotifsAddonUsed()) then
-                                            scanInventoryItemsForAutomaticMarks(nil, nil, "knownRecipes", false)
+                                            scanInventoryItemsForAutomaticMarks(nil, nil, "knownMotifs", false)
                                         end
                                     end,
                                     disabled = function() return not isMotifsAutoMarkDoable(false, false, false) end,
@@ -5715,6 +5731,116 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                                 },
                             } -- controls motifs
                         }, -- submenu motifs
+
+                        --==============================================================================
+                        {   -- Style Container Collectibles --#317
+                            type = "submenu",
+                            name = GetString(SI_ITEMTYPE34),
+                            controls =
+                            {
+                                {
+                                    type = 'dropdown',
+                                    name = locVars["options_auto_mark_addon"],
+                                    tooltip = zo_strf(locVars["options_auto_mark_addon" .. tooltipSuffix], GetString(SI_ITEMTYPE34)), --collectible
+                                    choices = styleContainerCollectiblesAddonsList,
+                                    choicesValues = styleContainerCollectiblesAddonsListValues,
+                                    --scrollable = true,
+                                    getFunc = function() return FCOISsettings.styleContainerCollectibleAddonUsed
+                                    end,
+                                    setFunc = function(value)
+                                        FCOISsettings.styleContainerCollectibleAddonUsed = value
+
+                                    end,
+                                    --disabled = function() return not FCOISsettings.autoMarkRecipes end,
+                                    width = "full",
+                                    default = FCOISdefaultSettings.styleContainerCollectibleAddonUsed,
+                                    warning = locVars["options_enable_auto_mark_styleContainerCollectibles_hint"],
+                                },
+                                {
+                                    type = "checkbox",
+                                    name = locVars["options_enable_auto_mark_styleContainerCollectibles"],
+                                    tooltip = locVars["options_enable_auto_mark_styleContainerCollectibles" .. tooltipSuffix],
+                                    getFunc = function() return FCOISsettings.autoMarkStyleContainerCollectibles end,
+                                    setFunc = function(value)
+                                        FCOISsettings.autoMarkStyleContainerCollectibles = value
+                                        if (FCOISsettings.autoMarkStyleContainerCollectibles == true and checkIfStyleContainerAddonUsed() and checkIfChosenStyleContainerAddonActive(FCOISsettings.styleContainerCollectibleAddonUsed)) then
+                                            scanInventoryItemsForAutomaticMarks(nil, nil, "styleContainerCollectibles", false)
+                                        end
+                                    end,
+                                    disabled = function() return not isStyleContainerCollectibleAutoMarkDoable(false, false, false) end,
+                                    warning = locVars["options_enable_auto_mark_styleContainerCollectibles_hint"],
+                                    width = "half",
+                                    default = FCOISdefaultSettings.autoMarkStyleContainerCollectibles,
+                                },
+                                {
+                                    type = 'dropdown',
+                                    name = strformat(locVars["options_auto_mark_styleContainerCollectibles_icon"], GetString(SI_INPUT_LANGUAGE_UNKNOWN)),
+                                    tooltip = strformat(locVars["options_auto_mark_styleContainerCollectibles_icon" .. tooltipSuffix], GetString(SI_INPUT_LANGUAGE_UNKNOWN)),
+                                    --choices = iconsList,
+                                    choices = iconsListRecipe,
+                                    --choicesValues = iconsListValues,
+                                    choicesValues = iconsListValuesRecipe,
+                                    scrollable = true,
+                                    getFunc = function() return FCOISsettings.autoMarkStyleContainerCollectiblesIconNr
+                                    end,
+                                    setFunc = function(value)
+                                        FCOISsettings.autoMarkStyleContainerCollectiblesIconNr = value
+                                    end,
+                                    reference = "FCOItemSaver_Icon_On_Automatic_StyleContainerCollectible_Dropdown",
+                                    disabled = function() return not isStyleContainerCollectibleAutoMarkDoable(true, false, false) end,
+                                    width = "half",
+                                    default = iconsListRecipe[FCOISdefaultSettings.autoMarkStyleContainerCollectiblesIconNr],
+                                },
+                                {
+                                    type = "checkbox",
+                                    name = locVars["options_enable_auto_mark_known_styleContainerCollectibles"],
+                                    tooltip = locVars["options_enable_auto_mark_known_styleContainerCollectibles" .. tooltipSuffix],
+                                    getFunc = function() return FCOISsettings.autoMarkKnownStyleContainerCollectibles end,
+                                    setFunc = function(value)
+                                        FCOISsettings.autoMarkKnownStyleContainerCollectibles = value
+                                        if (FCOISsettings.autoMarkKnownStyleContainerCollectibles == true and checkIfStyleContainerAddonUsed()) then
+                                            scanInventoryItemsForAutomaticMarks(nil, nil, "knownStyleContainerCollectibles", false)
+                                        end
+                                    end,
+                                    disabled = function() return not isStyleContainerCollectibleAutoMarkDoable(false, false, false) end,
+                                    warning = locVars["options_enable_auto_mark_styleContainerCollectibles_hint"],
+                                    width = "half",
+                                    default = FCOISdefaultSettings.autoMarkKnownStyleContainerCollectibles,
+                                },
+                                {
+                                    type = 'dropdown',
+                                    name = strformat(locVars["options_auto_mark_styleContainerCollectibles_icon"], locVars["options_known"]),
+                                    tooltip = strformat(locVars["options_auto_mark_styleContainerCollectibles_icon"], locVars["options_known"]),
+                                    --choices = iconsList,
+                                    choices = iconsListRecipe,
+                                    --choicesValues = iconsListValues,
+                                    choicesValues = iconsListValuesRecipe,
+                                    scrollable = true,
+                                    getFunc = function() return FCOISsettings.autoMarkKnownStyleContainerCollectiblesIconNr
+                                    end,
+                                    setFunc = function(value)
+                                        FCOISsettings.autoMarkKnownStyleContainerCollectiblesIconNr = value
+                                    end,
+                                    reference = "FCOItemSaver_Icon_On_Automatic_Known_StyleContainerCollectible_Dropdown",
+                                    disabled = function() return not FCOISsettings.autoMarkKnownStyleContainerCollectibles or not isStyleContainerCollectibleAutoMarkDoable(false, false, false) end,
+                                    width = "half",
+                                    default = iconsListRecipe[FCOISdefaultSettings.autoMarkKnownStyleContainerCollectiblesIconNr],
+                                },
+                                {
+                                    type = "checkbox",
+                                    name = locVars["options_enable_auto_mark_styleContainerCollectibles_in_chat"],
+                                    tooltip = locVars["options_enable_auto_mark_styleContainerCollectibles_in_chat" .. tooltipSuffix],
+                                    getFunc = function() return FCOISsettings.showStyleContainerCollectiblesInChat end,
+                                    setFunc = function(value)
+                                        FCOISsettings.showStyleContainerCollectiblesInChat = value
+                                    end,
+                                    disabled = function() return not isStyleContainerCollectibleAutoMarkDoable(true, true, false) end,
+                                    warning = locVars["options_enable_auto_mark_styleContainerCollectibles_hint"],
+                                    width = "half",
+                                    default = FCOISdefaultSettings.showStyleContainerCollectiblesInChat,
+                                },
+                            } -- controls styleContainerCollectibles
+                        }, -- submenu  styleContainerCollectibles
 
                         --==============================================================================
                         {   -- Quality
@@ -6293,9 +6419,9 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                                     getFunc = function() return FCOISsettings.allowInventoryFilter end,
                                     setFunc = function(value) FCOISsettings.allowInventoryFilter = value
                                         --Hide the filter buttons at the filter panel Id
-                                        FCOIS.UpdateFCOISFilterButtonsAtInventory(-1)
+                                        FCOIS.UpdateFCOISFilterButtonsAtInventory(FCOIS_CON_FILTER_BUTTONS_ALL) --#316
                                         --Unregister and reregister the inventory filter LF_INVENTORY
-                                        FCOIS.EnableFilters(-100)
+                                        FCOIS.EnableFilters(FCOIS_CON_FILTER_BUTTON_STATE_INIT) --#316
                                     end,
                                     default = FCOISdefaultSettings.allowInventoryFilter,
                                 },
@@ -6487,6 +6613,15 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                                     setFunc = function(value) FCOISsettings.allowCompanionInventoryFilter = value
                                     end,
                                     default = FCOISdefaultSettings.allowCompanionInventoryFilter,
+                                },
+                                {
+                                    type = "checkbox",
+                                    name = locVars["options_enable_filter_in_furnitureVault"],
+                                    tooltip = locVars["options_enable_filter_in_furnitureVault" .. tooltipSuffix],
+                                    getFunc = function() return FCOISsettings.allowFurnitureVaultFilter end,
+                                    setFunc = function(value) FCOISsettings.allowFurnitureVaultFilter = value
+                                    end,
+                                    default = FCOISdefaultSettings.allowFurnitureVaultFilter,
                                 },
                                 --==============================================================================
                                 {
@@ -7250,6 +7385,28 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                     setFunc = function(value) FCOISsettings.blockMarkedMotifsDisableWithFlag = value
                     end,
                     default = FCOISdefaultSettings.blockMarkedMotifsDisableWithFlag,
+                },
+                {
+                    type = "header",
+                    name = locVars["options_header_collectibles"],
+                },
+                {
+                    type = "checkbox",
+                    name = locVars["options_enable_block_collectibles"],
+                    tooltip = locVars["options_enable_block_collectibles" .. tooltipSuffix],
+                    getFunc = function() return FCOISsettings.blockMarkedCollectibles end,
+                    setFunc = function(value) FCOISsettings.blockMarkedCollectibles = value
+                    end,
+                    default = FCOISdefaultSettings.blockMarkedMotifs,
+                },
+                {
+                    type = "checkbox",
+                    name = locVars["options_enable_block_marked_disable_with_flag"],
+                    tooltip = locVars["options_enable_block_marked_disable_with_flag" .. tooltipSuffix],
+                    getFunc = function() return FCOISsettings.blockMarkedCollectiblesDisableWithFlag end,
+                    setFunc = function(value) FCOISsettings.blockMarkedCollectiblesDisableWithFlag = value
+                    end,
+                    default = FCOISdefaultSettings.blockMarkedCollectiblesDisableWithFlag,
                 },
                 {
                     type = "header",

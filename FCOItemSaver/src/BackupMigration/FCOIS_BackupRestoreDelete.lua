@@ -236,14 +236,14 @@ function FCOIS.BackupMarkerIcons(withDetails, apiVersion, doClearBackup)
                             --Is the bagtype not the craftbag? As the craftbag's slotIndex is the item's itemId!
                             if bagType ~= BAG_VIRTUAL then
                                 FCOIS.preventerVars.gCalledFromInternalFCOIS = true
-                                isItemMarked, markedIcons = isMarked(bagId, slotIndex, -1)
+                                isItemMarked, markedIcons = isMarked(bagId, slotIndex, FCOIS_CON_ICONS_ALL)
                             else
                                 --Craftbag. Item's slotIndex is the itemId.
                                 -->Overwrite it with the itemInstanceid
                                 --Use another function here to check if item is marked and which marker icons are set (itemInstanceId get#s signed in there!)
                                 FCOIS.preventerVars.gCalledFromInternalFCOIS = true
                                 local itemInstanceId = data.itemInstanceId
-                                isItemMarked, markedIcons = isMarkedByItemInstanceId(itemInstanceId, -1)
+                                isItemMarked, markedIcons = isMarkedByItemInstanceId(itemInstanceId, FCOIS_CON_ICONS_ALL)
                             end
                             --Is the item marked with any marker icon?
                             if isItemMarked then

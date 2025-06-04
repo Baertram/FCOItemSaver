@@ -273,7 +273,7 @@ local function shouldItemBeShownAfterBeenFiltered(slotItemInstanceId, slot)
             if preCheckIfFilterButtonsFilterCheckNeedsToBeDone(filterButtonId, result, isFilterActivated) == true then
                 local lastLockDynFilterIconId = settingsOfFilterButtonStateAndIcon.lastLockDynFilterIconId[currentFilterPanelId]
                 --Lock & dynamic icons
-                if lastLockDynFilterIconId == nil or lastLockDynFilterIconId == -1 or not settings.splitLockDynFilter then
+                if lastLockDynFilterIconId == nil or lastLockDynFilterIconId == FCOIS_CON_ICONS_ALL or not settings.splitLockDynFilter then
 
                     --Filter 1 on
                     if isFilterActivated == FCOIS_CON_FILTER_BUTTON_STATE_GREEN then
@@ -331,7 +331,7 @@ local function shouldItemBeShownAfterBeenFiltered(slotItemInstanceId, slot)
             if preCheckIfFilterButtonsFilterCheckNeedsToBeDone(filterButtonId, result, isFilterActivated) == true then
                 local lastGearFilterIconId = settingsOfFilterButtonStateAndIcon.lastGearFilterIconId[currentFilterPanelId]
                 --Gear filter split disabled
-                if lastGearFilterIconId == nil or lastGearFilterIconId == -1 or not settings.splitGearSetsFilter then
+                if lastGearFilterIconId == nil or lastGearFilterIconId == FCOIS_CON_ICONS_ALL or not settings.splitGearSetsFilter then
 
                     --Filter 2 on
                     if isFilterActivated == FCOIS_CON_FILTER_BUTTON_STATE_GREEN
@@ -382,7 +382,7 @@ local function shouldItemBeShownAfterBeenFiltered(slotItemInstanceId, slot)
             if preCheckIfFilterButtonsFilterCheckNeedsToBeDone(filterButtonId, result, isFilterActivated) == true then
                 local lastResDecImpFilterIconId = settingsOfFilterButtonStateAndIcon.lastResDecImpFilterIconId[currentFilterPanelId]
                 --Research, Deconstruction, Improvement filter split disabled
-                if lastResDecImpFilterIconId == nil or lastResDecImpFilterIconId == -1 or not settings.splitResearchDeconstructionImprovementFilter then
+                if lastResDecImpFilterIconId == nil or lastResDecImpFilterIconId == FCOIS_CON_ICONS_ALL or not settings.splitResearchDeconstructionImprovementFilter then
 
                     --Filter 3 on
                     if isFilterActivated == FCOIS_CON_FILTER_BUTTON_STATE_GREEN
@@ -442,7 +442,7 @@ local function shouldItemBeShownAfterBeenFiltered(slotItemInstanceId, slot)
             if preCheckIfFilterButtonsFilterCheckNeedsToBeDone(filterButtonId, result, isFilterActivated) == true then
                 local lastSellGuildIntFilterIconId = settingsOfFilterButtonStateAndIcon.lastSellGuildIntFilterIconId[currentFilterPanelId]
                 -- Split Sell, Sell in guild store & Intricate not activated in settings
-                if lastSellGuildIntFilterIconId == nil or lastSellGuildIntFilterIconId == -1 or not settings.splitSellGuildSellIntricateFilter then
+                if lastSellGuildIntFilterIconId == nil or lastSellGuildIntFilterIconId == FCOIS_CON_ICONS_ALL or not settings.splitSellGuildSellIntricateFilter then
 
                     --Filter 4 on
                     if isFilterActivated == FCOIS_CON_FILTER_BUTTON_STATE_GREEN
@@ -798,7 +798,7 @@ local function FilterPlayerInventory(filterId, panelId)
     local filterNameInv = invFilterStringPrefix .. tos(panelId) .. "_" .. tos(filterId)
     if allowInvFilter == true then
         --Register only 1 filter in the player inventory
-        if filterId ~= -1 then
+        if filterId ~= FCOIS_CON_FILTER_BUTTONS_ALL then
             if not isFilterRegistered(libFilters, filterNameInv) then
                 registerFilter(libFilters, filterNameInv, LF_INVENTORY, FilterSavedItemsForSlot)
             end
@@ -814,7 +814,7 @@ local function FilterPlayerInventory(filterId, panelId)
     else
         --Filtering inside inventory is NOT enabled in the settings: Unregister the filters
         --UnRegister only 1 filter in the player inventory
-        if filterId ~= -1 then
+        if filterId ~= FCOIS_CON_FILTER_BUTTONS_ALL then
             unregisterFilter(libFilters, filterNameInv, LF_INVENTORY)
         else
             --UnRegister all the filters in the player inventory
@@ -847,7 +847,7 @@ function FCOIS.UnregisterFilters(filterId, onlyPlayerInvFilter, filterPanelId)
 
     local unregisterArrayNew = {}
     --Unregister only 1 filter ID?
-    if (filterId ~= nil and filterId ~= -1) then
+    if (filterId ~= nil and filterId ~= FCOIS_CON_FILTER_BUTTONS_ALL) then
         --New filter method
         for lFilterWhere=forVar, maxVar , 1 do
             if activeFilterPanelIds[lFilterWhere] == true then
@@ -945,7 +945,7 @@ function FCOIS.RegisterFilters(filterId, onlyPlayerInvFilter, p_FilterPanelId)
 
     local settings = FCOIS.settingsVars.settings
     --Register only 1 filter ID?
-    if (filterId ~= nil and filterId ~= -1) then
+    if (filterId ~= nil and filterId ~= FCOIS_CON_FILTER_BUTTONS_ALL) then
         --Register only one filter ID
 
         --New or old behaviour of filtering?
