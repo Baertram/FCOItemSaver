@@ -499,6 +499,7 @@ checkVars.inventoryRowPatterns = {
     "^ZO_CompanionEquipment_Panel_.+List%dRow%d%d*",                        --Companion Inventory backpack
     "^ZO_CompanionCharacterWindow_.+_TopLevelEquipmentSlots.+$",            --Companion character
     "^ZO_UniversalDeconstructionTopLevel_%a+PanelInventoryBackpack%dRow%d%d*",-- #202 Universal deconstruction
+    "^ZO_FurnitureVaultList%dRow%d%d*",                                     --Furniturevault
 --Other adons like IIfA will be added dynamically at EVENT_ON_ADDON_LOADED callback function
 --See file src/FCOIS_Events.lua, call to function FCOIS.checkIfOtherAddonActive() -> See file
 -- src/FCOIS_OtherAddons.lua, function FCOIS.checkIfOtherAddonActive()
