@@ -829,6 +829,7 @@ mappingVars.filterPanelToFilterButtonFilterActiveSettingName = {
     [LF_BANK_WITHDRAW] =            "allowBankFilter",
     [LF_GUILDBANK_WITHDRAW] =       "allowGuildBankFilter",
     [LF_HOUSE_BANK_WITHDRAW] =      "allowBankFilter",
+    [LF_FURNITURE_VAULT_DEPOSIT] =  allowInvFilterStr,
     [LF_FURNITURE_VAULT_WITHDRAW] = "allowFurnitureVaultFilter",
     [LF_GUILDSTORE_SELL] =          "allowTradinghouseFilter",
     [LF_SMITHING_REFINE] =          "allowRefinementFilter",
