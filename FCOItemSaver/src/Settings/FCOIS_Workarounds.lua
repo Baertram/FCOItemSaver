@@ -46,6 +46,7 @@ function FCOIS.LoadWorkarounds()
         [LF_CRAFTBAG] 					= iconPositionSettings, -- Workaround: Craftbag, added with API 100015
         [LF_INVENTORY_COMPANION]		= iconPositionSettings, --Added with FCOIS v.2.1.0
         [LF_FURNITURE_VAULT_WITHDRAW]   = iconPositionSettings,
+        [LF_FURNITURE_VAULT_DEPOSIT]    = iconPositionSettings,
     }
 
     --FCOIS v0.7.8b

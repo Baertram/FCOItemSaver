@@ -681,6 +681,7 @@ mappingVars.dependingAntiCheckPanelIdsAtPanelId = {
         LF_GUILDBANK_WITHDRAW,
         LF_HOUSE_BANK_WITHDRAW,
         LF_INVENTORY_COMPANION,
+        LF_FURNITURE_VAULT_DEPOSIT,
         LF_FURNITURE_VAULT_WITHDRAW,
     },
 }
@@ -829,7 +830,6 @@ mappingVars.filterPanelToFilterButtonFilterActiveSettingName = {
     [LF_BANK_WITHDRAW] =            "allowBankFilter",
     [LF_GUILDBANK_WITHDRAW] =       "allowGuildBankFilter",
     [LF_HOUSE_BANK_WITHDRAW] =      "allowBankFilter",
-    [LF_FURNITURE_VAULT_DEPOSIT] =  allowInvFilterStr,
     [LF_FURNITURE_VAULT_WITHDRAW] = "allowFurnitureVaultFilter",
     [LF_GUILDSTORE_SELL] =          "allowTradinghouseFilter",
     [LF_SMITHING_REFINE] =          "allowRefinementFilter",
@@ -2722,6 +2722,7 @@ checkVars.filterPanelIdsForAntiDestroy = {
     [LF_HOUSE_BANK_DEPOSIT]     = true,
     [LF_INVENTORY_COMPANION]    = true,
     [LF_FURNITURE_VAULT_WITHDRAW] = true,
+    [LF_FURNITURE_VAULT_DEPOSIT] = true,
     --FCOIS custom LibFilters filterPanelId
     [FCOIS_CON_LF_CHARACTER]            = true,
     [FCOIS_CON_LF_COMPANION_CHARACTER]  = true,
