@@ -1765,6 +1765,7 @@ mappingVars.libFiltersPanelIdToInventory = {
     [LF_QUICKSLOT]                  = ctrlVars.QUICKSLOT_WINDOW,
 	[LF_INVENTORY_COMPANION]    	= INVENTORY_BACKPACK,
     [LF_FURNITURE_VAULT_WITHDRAW]   = INVENTORY_FURNITURE_VAULT,
+    [LF_FURNITURE_VAULT_DEPOSIT]    = INVENTORY_BACKPACK,
 }
 
 --The mapping table between the LibFilters filterPanelId constant and the crafting inventories
@@ -3052,6 +3053,7 @@ invAddButtonVars.houseBankInventoryButtonAdditionalOptions = ctrlVars.HOUSE_BANK
 invAddButtonVars.companionInventoryFCOAdditionalOptionsButton = ctrlVars.COMPANION_INV_NAME .. additionalFCOISInvContextmenuButtonNameString
 invAddButtonVars.characterFCOAdditionalOptionsButton = ctrlVars.CHARACTER_NAME .. additionalFCOISInvContextmenuButtonNameString
 invAddButtonVars.companionCharacterFCOAdditionalOptionsButton = ctrlVars.COMPANION_CHARACTER_NAME .. additionalFCOISInvContextmenuButtonNameString
+invAddButtonVars.furnitureVaultWithdrawButtonAdditionalOptions = "FCOIS_FurnitureVaultWithdraw" .. additionalFCOISInvContextmenuButtonNameString
 
 
 --The mapping between the panel (libFilters filter ID LF_*) and the button data -> See file FCOIS_settings.lua -> function AfterSettings() for additional added data
@@ -3220,6 +3222,17 @@ contextMenuVars.filterPanelIdToContextMenuButtonInvoker = {
             }
         }
     },
+	[LF_FURNITURE_VAULT_WITHDRAW] 				= {
+        ["addInvButton"]  = true,
+        ["parent"]        = ctrlVars.FURNITURE_VAULT_INV,
+        ["name"]          = invAddButtonVars.furnitureVaultWithdrawButtonAdditionalOptions,
+        ["sortIndex"]     = 28,
+    },
+	[LF_FURNITURE_VAULT_DEPOSIT] 				= {
+        ["name"]          = invAddButtonVars.playerInventoryFCOAdditionalOptionsButton,                      --Same like inventory
+        ["sortIndex"]     = 29,
+    },
+
 --======================================================================================================================
     --Special entries without LibFilters filterPanelId -> FCOIS custom filterPanels
     --> Will also be added to contextMenuVars.sortedFilterPanelIdToContextMenuButtonInvoker
@@ -3235,7 +3248,7 @@ contextMenuVars.filterPanelIdToContextMenuButtonInvoker = {
                 requirementFunc = function() return FCOIS.IsInventoryShown() end,
             }
         },
-        ["sortIndex"]     = 28,
+        ["sortIndex"]     = 30,
     },
     --Companion character
     [FCOIS_CON_LF_COMPANION_CHARACTER] = {
@@ -3249,7 +3262,7 @@ contextMenuVars.filterPanelIdToContextMenuButtonInvoker = {
                 requirementFunc = function() return FCOIS.IsCompanionInventoryShown() end,
             }
         },
-        ["sortIndex"]     = 29,
+        ["sortIndex"]     = 31,
     },
 }
 --Resort the panels by their sort number attribut given
