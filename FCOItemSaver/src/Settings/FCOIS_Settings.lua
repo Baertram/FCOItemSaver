@@ -17,6 +17,8 @@ local accName             = GetDisplayName()
 local currentCharId       = GetCurrentCharacterId()
 
 --The SavedVariables local name
+FCOIS.APIversion = FCOIS.APIversion or GetAPIVersion()
+local apiVersion = FCOIS.APIversion
 local addonVars         = FCOIS.addonVars
 local addonSVname       = addonVars.savedVarName
 local addonSVversion    = addonVars.savedVarVersion
@@ -949,9 +951,8 @@ function FCOIS.AfterSettings()
     rebuildAllowedCraftSkillsForCraftedMarking()
 
     --Added with FCOIS v1.6.7
-    --Check if the values at the add. inv. context menu "flag" button offsets are properly set, or
-    --reset them
-    local apiVersion = FCOIS.APIversion
+    --Check if the values at the add. inv. context menu "flag" button offsets are properly set,
+    --or reset them --#320
     local addInvButtonOffsets = settings.FCOISAdditionalInventoriesButtonOffset
     local anchorVarsAddInvButtons = FCOIS.anchorVars.additionalInventoryFlagButton[apiVersion]
     FCOIS.settingsVars.settings.FCOISAdditionalInventoriesButtonOffset["left"] = nil --remove wrong added values -> left and top should be in a subtable of filterPanelId!
@@ -984,14 +985,12 @@ function FCOIS.AfterSettings()
             if addInvButtonOffsetsForPanel then
                 fixAnchorVarsLeftAndTopOffsets(addInvButtonOffsetsForPanel, panelId)
             end
-
             --FCOIS.ReAnchorAdditionalInvButtons(panelId)
         end
         --1 extra call to LF_ENCHANTING_EXTRACTION as it is not added to FCOIS.anchorVars.additionalInventoryFlagButton[apiVersion], because it re-usess LF_ENCHANTING_CREATION
         local addInvButtonOffsetsForPanel = addInvButtonOffsets[LF_ENCHANTING_EXTRACTION]
         if addInvButtonOffsetsForPanel then
             fixAnchorVarsLeftAndTopOffsets(addInvButtonOffsetsForPanel, LF_ENCHANTING_EXTRACTION)
-
             --FCOIS.ReAnchorAdditionalInvButtons(LF_ENCHANTING_EXTRACTION)
         end
     end

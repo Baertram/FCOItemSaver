@@ -12,6 +12,9 @@ local strlen = string.len
 local tos = tostring
 local ton = tonumber
 
+local apiVersion = FCOIS.APIversion
+local apiVersionLength = FCOIS.APIVersionLength
+
 local showConfirmationDialog = FCOIS.ShowConfirmationDialog
 
 local doFilter = FCOIS.DoFilter
@@ -96,11 +99,10 @@ function FCOIS.Command_handler(args)
         --Backup
         local withDetails = false
         local doClearBackup = false
-        local apiVersion = FCOIS.APIversion
         if options[2] ~= nil and options[2] ~= "" then
             withDetails = toboolean(tos(options[2])) or false
         end
-        if options[3] ~= nil and options[3] ~= "" and strlen(options[3]) == FCOIS.APIVersionLength then
+        if options[3] ~= nil and options[3] ~= "" and strlen(options[3]) == apiVersionLength then
             apiVersion = ton(options[3])
         end
         if options[4] ~= nil and options[4] ~= "" then
@@ -117,7 +119,7 @@ function FCOIS.Command_handler(args)
         if options[2] ~= nil and options[2] ~= "" then
             withDetails = true
         end
-        if options[3] ~= nil and options[3] ~= "" and strlen(options[3]) == FCOIS.APIVersionLength then
+        if options[3] ~= nil and options[3] ~= "" and strlen(options[3]) == apiVersionLength then
             apiVersion = ton(options[3])
         end
         local title = locVars["options_restore_marker_icons"] .. " - API " .. tos(apiVersion)

@@ -154,7 +154,7 @@ function FCOIS.BackupMarkerIcons(withDetails, apiVersion, doClearBackup)
     if isOwningAHouse and isInOwnHouse then
         local houseBankBagIdToBag = FCOIS.mappingVars.houseBankBagIdToBag
         for _, houseBankBagId in ipairs(houseBankBagIdToBag) do
-            if houseBankBagId ~= nil and IsHouseBankBag(houseBankBagId) then
+            if houseBankBagId ~= nil and not IsFurnitureVault(houseBankBagId) and IsHouseBankBag(houseBankBagId) then
                 --Add the house bank bags
                 allowedBagTypes[houseBankBagId] = true
             end

@@ -43,6 +43,7 @@ local getNumberOfFilteredItemsForEachPanel = FCOIS.GetNumberOfFilteredItemsForEa
 local getFilterWhereBySettings = FCOIS.GetFilterWhereBySettings
 local getAccountWideCharacterOrNormalCharacterSettings = FCOIS.GetAccountWideCharacterOrNormalCharacterSettings
 
+
 local refreshFilteredInventory = FCOIS.RefreshFilteredInventory
 local addOrChangeFCOISFilterButton
 local hideContextMenu
@@ -52,6 +53,7 @@ local inventoryChangeFilterHook
 local checkActivePanel
 local checkMarker
 local checkIfUniversalDeconstructionNPC
+local reAnchorAdditionalInvButtons
 
 -- =====================================================================================================================
 --  Filter state & chat output functions
@@ -680,6 +682,8 @@ function FCOIS.PreHookMainMenuFilterButtonHandler(comingFrom, goingTo)
     --Hide the context menu at last active panel
     hideContextMenu = hideContextMenu or FCOIS.HideContextMenu
     hideContextMenu(comingFrom)
+    reAnchorAdditionalInvButtons = reAnchorAdditionalInvButtons or FCOIS.ReAnchorAdditionalInvButtons --#320
+
 
     --Update the number of filtered items at the sort header "name"?
     -->Shown within AdvancedFilters addon, at the inventory bottom line where the bagSpace and bankSpace items are shown!
@@ -690,6 +694,8 @@ function FCOIS.PreHookMainMenuFilterButtonHandler(comingFrom, goingTo)
     if FCOIS.IsCraftbagPanelShown() then
 --d(">> Craftbag panel is shown -> abort!")
         FCOIS.preventerVars.gPreHookButtonHandlerCallActive = false
+
+        reAnchorAdditionalInvButtons(goingTo) --#320
         return false
     end
 
@@ -699,6 +705,9 @@ function FCOIS.PreHookMainMenuFilterButtonHandler(comingFrom, goingTo)
         --Change the button color of the context menu invoker button (flag)
         FCOIS.ChangeContextMenuInvokerButtonColorByPanelId(goingTo)
     end
+
+    --Update the positions of the addiitonal inventory flag buttons at the new panel to show
+    reAnchorAdditionalInvButtons(goingTo) --#320
 
     --Check the filter buttons and create them if they are not there
     checkFCOISFilterButtonsAtPanel(true, goingTo, nil, nil, nil, nil)

@@ -17,6 +17,8 @@ local tins = table.insert
 --local wm = WINDOW_MANAGER
 local isiuse = IsItemUsable
 
+local apiVersion = FCOIS.APIversion
+
 local numFilterIcons = FCOIS.numVars.gFCONumFilterIcons
 local myColorEnabled	= ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_TEXT_COLORS, INTERFACE_TEXT_COLOR_NORMAL))
 local myColorDisabled	= ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_TEXT_COLORS, INTERFACE_TEXT_COLOR_DISABLED))
@@ -528,7 +530,7 @@ function FCOIS.MarkMe(rowControl, markId, updateNow, doUnmark, refreshPopupDialo
         FCOIS.IIfAclicked.ownedByChars = charsTableIIfA
         FCOIS.IIfAclicked.inThisOtherBags = inThisOtherBagsTableIIfA
         --House bank bag?
-        if bagIdIIfA ~= nil and IsHouseBankBag(bagIdIIfA) then
+        if bagIdIIfA ~= nil and --[[not IsFurnitureVault(bagIdIIfA) and]] IsHouseBankBag(bagIdIIfA) then
             --Not the owner of the house we are in or not in a house? Reset the bagId and slotIndex now!
             --isNotInHouseAndBagIsHouseBankBag = not checkIfHouseBankBagAndInOwnHouse(bagIdIIfA)
             isNotInHouseAndBagIsHouseBankBag = not checkIfHouseOwnerAndInsideOwnHouse()
@@ -644,24 +646,27 @@ function FCOIS.MarkMe(rowControl, markId, updateNow, doUnmark, refreshPopupDialo
                         --Bag of clicked IIfA row is still given? This means the read data is from the currently logged in char, a craftbag item or a bank item.
                         --All other items are determined via the itemInstanceId as the bagId and slotIndex are ONLY build as the character of the item is logged in!!!
                         if FCOIS.IIfAclicked.bagId ~= nil then
+                            local IIfAClicked = FCOIS.IIfAclicked
+                            local IIfAClickedBagId = IIfAClicked.bagId
+
                             --Character bag?
-                            if FCOIS.IIfAclicked.bagId == BAG_WORN then
-                                if FCOIS.IIfAclicked.slotIndex ~= nil then
+                            if IIfAClickedBagId == BAG_WORN then
+                                if IIfAClicked.slotIndex ~= nil then
                                     local ownedByLoggedInChar = false
                                     --Check if the clicked row's item is from the currently logged in char
-                                    if FCOIS.IIfAclicked.ownedByChars ~= nil then
+                                    if IIfAClicked.ownedByChars ~= nil then
                                         --Get the current char's unique ID and check if it's in the "worn by chars" table from the IIfA savedvars for this curently clicked item
                                         if FCOIS.loggedInCharUniqueId == nil or FCOIS.loggedInCharUniqueId == "" then
                                             FCOIS.loggedInCharUniqueId = getCurrentlyLoggedInCharUniqueId()
                                         end
-                                        ownedByLoggedInChar = FCOIS.IIfAclicked.ownedByChars[FCOIS.loggedInCharUniqueId] or false
+                                        ownedByLoggedInChar = IIfAClicked.ownedByChars[FCOIS.loggedInCharUniqueId] or false
                                     end
                                     --Yes it is owned by the currently logged in char
                                     if ownedByLoggedInChar then
                                         --Refresh character's equipment slot of the clicked item
                                         --Get the equipmentslot by the help of the slotIndex
                                         local slotIndexToEquiptmentSlotControlName = FCOIS.mappingVars.characterEquipmentSlotNameByIndex
-                                        local equipmentSlotName = slotIndexToEquiptmentSlotControlName[FCOIS.IIfAclicked.slotIndex] or ""
+                                        local equipmentSlotName = slotIndexToEquiptmentSlotControlName[IIfAClicked.slotIndex] or ""
                                         if equipmentSlotName ~= "" then
                                             local equipmentSlot = GetControl(equipmentSlotName) --wm:GetControlByName(equipmentSlotName, "")
                                             if equipmentSlot ~= nil then
@@ -672,15 +677,17 @@ function FCOIS.MarkMe(rowControl, markId, updateNow, doUnmark, refreshPopupDialo
                                     end
                                 end
                                 --Inventory bag?
-                            elseif FCOIS.IIfAclicked.bagId == BAG_BACKPACK
+                            elseif IIfAClickedBagId == BAG_BACKPACK
                                 --Bank bag?
-                                or (FCOIS.IIfAclicked.bagId == BAG_BANK or FCOIS.IIfAclicked.bagId == BAG_SUBSCRIBER_BANK)
+                                or (IIfAClickedBagId == BAG_BANK or IIfAClickedBagId == BAG_SUBSCRIBER_BANK)
                                 --Guild bank bag?
-                                or FCOIS.IIfAclicked.bagId == BAG_GUILDBANK
+                                or IIfAClickedBagId == BAG_GUILDBANK
+                                --Furniture Vault bag?
+                                or IsFurnitureVault(IIfAClickedBagId)
                                 --House bank bag?
-                                or IsHouseBankBag(FCOIS.IIfAclicked.bagId)
+                                or IsHouseBankBag(IIfAClickedBagId)
                                 --CraftBag bag?
-                                or FCOIS.IIfAclicked.bagId == BAG_VIRTUAL
+                                or IIfAClickedBagId == BAG_VIRTUAL
                             then
                                 --Update the marker icons at the relevant bag's inventory list
                                 filterBasics(false)
@@ -2746,6 +2753,7 @@ function FCOIS.ChangeContextMenuInvokerButtonColorByPanelId(panelId)
         local contextMenuInvokerButton = GetControl(contextMenuInvokerButtonName) --wm:GetControlByName(contextMenuInvokerButtonName, "")
         if contextMenuInvokerButton then
             changeContextMenuInvokerButtonColor(contextMenuInvokerButton, settingsEnabled)
+            --reAnchorAdditionalInvButtons(panelId) --#320
         end
     end
 end
@@ -2783,7 +2791,7 @@ end
 --their new parent control UNIVERSAL_DECONSTRUCTION.control ...
 -->Re-Parent and Re-Anchor he filterButtons and the additional inventory "flag" button from old panel to current panel
 local function getAddInvFlagContextmenuButtonAnchorData(filterPanelId)
-    local additionalInventoryFlagButton = FCOIS.anchorVars.additionalInventoryFlagButton[FCOIS.APIversion]
+    local additionalInventoryFlagButton = FCOIS.anchorVars.additionalInventoryFlagButton[apiVersion]
     local anchorData
     anchorData = additionalInventoryFlagButton[filterPanelId]
     return anchorData

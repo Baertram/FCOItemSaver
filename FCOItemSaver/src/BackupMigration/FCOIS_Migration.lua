@@ -84,14 +84,14 @@ function FCOIS.ScanInventoriesForZOsLockedItems(allInventories, houseBankBagId)
         local isInHouse = (checkIfOwningHouse() == true and checkIfInHouse() == true) or false
         if isInHouse == true then
             for p_houseBankBagId = BAG_HOUSE_BANK_ONE, BAG_HOUSE_BANK_TEN, 1 do
-                if IsHouseBankBag(p_houseBankBagId) == true then
+                if not IsFurnitureVault(p_houseBankBagId) and IsHouseBankBag(p_houseBankBagId) == true then
                     allowedBagTypes[p_houseBankBagId] = true
                 end
             end
         end
 
     else
-        if houseBankBagId ~= nil and IsHouseBankBag(houseBankBagId) then
+        if houseBankBagId ~= nil and not IsFurnitureVault(houseBankBagId) and IsHouseBankBag(houseBankBagId) then
             --Add the house bank bags
             allowedBagTypes[houseBankBagId] = true
         else

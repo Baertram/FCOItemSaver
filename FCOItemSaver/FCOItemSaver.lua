@@ -217,7 +217,7 @@ ReloadUI does not do anything, but manually mass marking via flag icon works fin
 
 
 --______________________________________
--- Current max # of bugs/features/ToDos: 318
+-- Current max # of bugs/features/ToDos: 321
 --______________________________________
 
 --Open/To work on this patch:
@@ -226,20 +226,22 @@ ReloadUI does not do anything, but manually mass marking via flag icon works fin
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2025-04-28
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2025-06-08
 ------------------------------------------------------------------------------------
 
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.7.0 - New version: 2.7.1) -    Updated last: 2025-04-28
+--Changelog (last version: 2.7.3 - New version: 2.7.4) -    Updated last: 2025-06-08
 -------------------------------------------------------------------------------------
 --[Fixed]
---#319 Gamepad mode detection to disable FCOIS
+--
+
 
 
 --[Changed]
 
 --[Added]
+--#321 Furniture Vault support
 
 
 --[Added on request]

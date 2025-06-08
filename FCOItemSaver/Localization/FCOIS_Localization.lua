@@ -707,6 +707,8 @@ function FCOIS.Localization()
         [LF_RETRAIT]                            = locTexts["filter_retrait"],
         [LF_HOUSE_BANK_WITHDRAW]                = locTexts["filter_house_bank"],
         [LF_INVENTORY_COMPANION]                = locTexts["filter_companion_inventory"],
+        [LF_FURNITURE_VAULT_DEPOSIT]            = locTexts["filter_inventory"],
+        [LF_FURNITURE_VAULT_WITHDRAW]           = locTexts["filter_furniture_vault"],
     }
 
     --Add the local localized tables from the constants, e.g. the ItemTypes subTable for the LibShifterBox uniqueId itemTypes

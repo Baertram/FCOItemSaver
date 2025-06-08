@@ -294,7 +294,7 @@ function FCOIS.GetWhereAreWe(panelId, panelIdAtCall, panelIdParent, bag, slot, i
             --Check if player or guild or house bank is active by checking current scene in scene manager, or using ZOs API functions
             if (IsGuildBankOpen() or IsBankOpen() or (currentSceneName ~= nil and (currentSceneName == ctrlVars.bankSceneName or currentSceneName == ctrlVars.guildBankSceneName or currentSceneName == ctrlVars.houseBankSceneName))) then
                 --If bank/guild bank/house bank deposit tab is active
-                if ctrlVars.BANK:IsHidden() and ctrlVars.GUILD_BANK:IsHidden() and ctrlVars.HOUSE_BANK:IsHidden() then
+                if ctrlVars.BANK:IsHidden() and ctrlVars.GUILD_BANK:IsHidden() and ctrlVars.HOUSE_BANK:IsHidden() and ctrlVars.FURNITURE_VAULT:IsHidden() then
                     --If the item is double clicked + marked deposit it, instead of blocking the deposition
                     --Set whereAreWe to FCOIS_CON_FALLBACK so the anti-settings mapping function returns "false"
                     whereAreWe = FCOIS_CON_FALLBACK
@@ -456,6 +456,10 @@ function FCOIS.GetWhereAreWe(panelId, panelIdAtCall, panelIdParent, bag, slot, i
                 --Are we at the alchemy station?
             elseif (calledFromExternalAddon and panelId == LF_ALCHEMY_CREATION) or (not calledFromExternalAddon and (not ctrlVars.ALCHEMY_STATION:IsHidden() or panelId == LF_ALCHEMY_CREATION)) then
                 whereAreWe = FCOIS_CON_ALCHEMY_DESTROY
+                --Are we at a furniture vault and trying to withdraw some items by double clicking it?
+            elseif (calledFromExternalAddon and panelId == LF_FURNITURE_VAULT_WITHDRAW) or (not calledFromExternalAddon and (not ctrlVars.FURNITURE_VAULT:IsHidden() or panelId == LF_FURNITURE_VAULT_WITHDRAW)) then
+                --Set whereAreWe to FCOIS_CON_FALLBACK so the anti-settings mapping function returns "false"
+                whereAreWe = FCOIS_CON_FALLBACK
                 --Are we at a bank and trying to withdraw some items by double clicking it?
             elseif (calledFromExternalAddon and panelId == LF_BANK_WITHDRAW) or (not calledFromExternalAddon and (not ctrlVars.BANK:IsHidden() or panelId == LF_BANK_WITHDRAW)) then
                 --Set whereAreWe to FCOIS_CON_FALLBACK so the anti-settings mapping function returns "false"
@@ -478,11 +482,11 @@ function FCOIS.GetWhereAreWe(panelId, panelIdAtCall, panelIdParent, bag, slot, i
                 whereAreWe = checkIfItemShouldBeUsedOrEquipped(whereAreWe, bag, slot, panelId, panelIdAtCall, calledFromExternalAddon)
                 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
                 --Are we at the inventory/bank/guild bank and trying to use/equip/deposit an item?
-            elseif (calledFromExternalAddon and (panelId == LF_INVENTORY or panelId == LF_BANK_DEPOSIT or panelId == LF_GUILDBANK_DEPOSIT or panelId == LF_HOUSE_BANK_DEPOSIT))
-                    or (not calledFromExternalAddon and (not ctrlVars.BACKPACK:IsHidden() or panelId == LF_INVENTORY or panelId == LF_BANK_DEPOSIT or panelId == LF_GUILDBANK_DEPOSIT or panelId == LF_HOUSE_BANK_DEPOSIT)) then
+            elseif (calledFromExternalAddon and (panelId == LF_INVENTORY or panelId == LF_BANK_DEPOSIT or panelId == LF_GUILDBANK_DEPOSIT or panelId == LF_HOUSE_BANK_DEPOSIT or panelId == LF_FURNITURE_VAULT_DEPOSIT))
+                    or (not calledFromExternalAddon and (not ctrlVars.BACKPACK:IsHidden() or panelId == LF_INVENTORY or panelId == LF_BANK_DEPOSIT or panelId == LF_GUILDBANK_DEPOSIT or panelId == LF_HOUSE_BANK_DEPOSIT or panelId == LF_FURNITURE_VAULT_DEPOSIT)) then
                 --Check if player or guild bank is active by checking current scene in scene manager
-                if (calledFromExternalAddon and (panelId == LF_INVENTORY or panelId == LF_BANK_DEPOSIT or panelId == LF_GUILDBANK_DEPOSIT or panelId == LF_HOUSE_BANK_DEPOSIT))
-                        or (not calledFromExternalAddon and (IsGuildBankOpen() or IsBankOpen() or (currentSceneName ~= nil and (currentSceneName == ctrlVars.bankSceneName or currentSceneName == ctrlVars.guildBankSceneName or currentSceneName == ctrlVars.houseBankSceneName)))) then
+                if (calledFromExternalAddon and (panelId == LF_INVENTORY or panelId == LF_BANK_DEPOSIT or panelId == LF_GUILDBANK_DEPOSIT or panelId == LF_HOUSE_BANK_DEPOSIT or panelId == LF_FURNITURE_VAULT_DEPOSIT))
+                        or (not calledFromExternalAddon and (IsGuildBankOpen() or IsBankOpen() or (currentSceneName ~= nil and (currentSceneName == ctrlVars.bankSceneName or currentSceneName == ctrlVars.guildBankSceneName or currentSceneName == ctrlVars.houseBankSceneName or currentSceneName == ctrlVars.furnitureVaultSceneName)))) then
                     --If bank/guild bank/house deposit tab is active
                     if (calledFromExternalAddon and (panelId == LF_BANK_DEPOSIT or panelId == LF_GUILDBANK_DEPOSIT or panelId == LF_HOUSE_BANK_DEPOSIT)) or (not calledFromExternalAddon and ((ctrlVars.BANK:IsHidden() and ctrlVars.GUILD_BANK:IsHidden() and ctrlVars.HOUSE_BANK:IsHidden()) or (panelId == LF_BANK_DEPOSIT or panelId == LF_GUILDBANK_DEPOSIT or panelId == LF_HOUSE_BANK_DEPOSIT))) then
                         --If the item is double clicked + marked deposit it, instead of blocking the deposit
@@ -557,6 +561,11 @@ function FCOIS.CheckActivePanel(comingFrom, overwriteFilterWhere, isDeconNPC)
         --Update the filterPanelId
         FCOIS.gFilterWhere = getFilterWhereBySettings(LF_HOUSE_BANK_WITHDRAW)
         inventoryName = ctrlVars2.HOUSE_BANK_INV
+        --Furniture vault
+    elseif ((currentSceneName ~= nil and currentSceneName == ctrlVars2.furnitureVaultSceneName) and not ctrlVars2.FURNITURE_VAULT:IsHidden()) or comingFrom == LF_FURNITURE_VAULT_WITHDRAW then
+        --Update the filterPanelId
+        FCOIS.gFilterWhere = getFilterWhereBySettings(LF_FURNITURE_VAULT_WITHDRAW)
+        inventoryName = ctrlVars2.FURNITURE_VAULT_INV
         --Player inventory at bank (deposit)
     elseif ((currentSceneName ~= nil and currentSceneName == ctrlVars2.bankSceneName) and ctrlVars2.BANK:IsHidden()) or comingFrom == LF_BANK_DEPOSIT then
         --Update the filterPanelId
@@ -566,6 +575,11 @@ function FCOIS.CheckActivePanel(comingFrom, overwriteFilterWhere, isDeconNPC)
     elseif ((currentSceneName ~= nil and currentSceneName == ctrlVars2.houseBankSceneName) and ctrlVars2.HOUSE_BANK:IsHidden()) or comingFrom == LF_HOUSE_BANK_DEPOSIT then
         --Update the filterPanelId
         FCOIS.gFilterWhere = getFilterWhereBySettings(LF_HOUSE_BANK_DEPOSIT)
+        inventoryName = ctrlVars2.INV
+        --Player inventory at Furniture vault (deposit)
+    elseif ((currentSceneName ~= nil and currentSceneName == ctrlVars2.furnitureVaultSceneName) and ctrlVars2.FURNITURE_VAULT:IsHidden()) or comingFrom == LF_FURNITURE_VAULT_DEPOSIT then
+        --Update the filterPanelId
+        FCOIS.gFilterWhere = getFilterWhereBySettings(LF_FURNITURE_VAULT_DEPOSIT)
         inventoryName = ctrlVars2.INV
         --Guild bank
     elseif ((currentSceneName ~= nil and currentSceneName == ctrlVars2.guildBankSceneName) and not ctrlVars2.GUILD_BANK:IsHidden()) or comingFrom == LF_GUILDBANK_WITHDRAW then
