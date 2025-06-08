@@ -1928,6 +1928,8 @@ mappingVars.gFilterPanelIdToTextureName = {
     [LF_JEWELRY_RESEARCH] 		    = researchTextureName,
     [LF_JEWELRY_RESEARCH_DIALOG]    = researchDialogTextureName,
     [LF_INVENTORY_COMPANION]        = companionInvTextureName,
+    [LF_FURNITURE_VAULT_WITHDRAW]   = ctrlVars.FURNITURE_VAULT_INV_NAME .. "_FilterButton%sTexture",
+    [LF_FURNITURE_VAULT_DEPOSIT]    = invTextureName,
 }
 
 --The icons to choose from

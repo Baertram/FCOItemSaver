@@ -394,8 +394,8 @@ local function FCOItemSaver_Open_Player_Bank(event, bagId)
         return
     end
 
-    local isHouseBank = IsHouseBankBag(bagId) or false
-    local isFurnitureVault = (not isHouseBank and IsFurnitureVault(bagId)) or false
+    local isFurnitureVault = IsFurnitureVault(bagId) or false
+    local isHouseBank = (not isFurnitureVault and IsHouseBankBag(bagId)) or false
     FCOIS.preventerVars.gActiveFilterPanel = true
     local settings = FCOIS.settingsVars.settings
     if settings.debug then debugMessage( "[EVENT]","Open bank - bagId: " .. tos(bagId) .. ", isHouseBank: " .. tos(isHouseBank) .. ", isFurnitureVault: " .. tos(isFurnitureVault), true, FCOIS_DEBUG_DEPTH_NORMAL) end
@@ -412,7 +412,7 @@ local function FCOItemSaver_Open_Player_Bank(event, bagId)
     end
 
     local filterPanelId = LF_BANK_WITHDRAW
-    if isHouseBank then
+    if isHouseBank == true then
         --Reset the last clicked bank button as it will always be the withdraw tab if you open the bank, and if the
         --deposit button was the last one clicked it won't change the filter buttons as it thinks it is still active
         FCOIS.lastVars.gLastHouseBankButton = ctrlVars.HOUSE_BANK_MENUBAR_BUTTON_WITHDRAW
@@ -429,7 +429,7 @@ local function FCOItemSaver_Open_Player_Bank(event, bagId)
                 scanInventory(bagId, nil, FCOIS.settingsVars.settings.autoMarkBagsChatOutput)
             end, 250)
         end
-    elseif isFurnitureVault then
+    elseif isFurnitureVault == true then
         --Reset the last clicked furniture vault button as it will always be the withdraw tab if you open the furniture vault, and if the
         --deposit button was the last one clicked it won't change the filter buttons as it thinks it is still active
         FCOIS.lastVars.gLastFurnitureVaultButton = ctrlVars.HOUSE_BANK_MENUBAR_BUTTON_WITHDRAW

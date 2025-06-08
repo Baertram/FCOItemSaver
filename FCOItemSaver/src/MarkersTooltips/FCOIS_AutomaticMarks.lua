@@ -1515,7 +1515,7 @@ end -- Single item scan function scanInventoryItemForAutomaticMarks(bag, slot, s
 local scanInventoryItemForAutomaticMarks = FCOIS.scanInventoryItemForAutomaticMarks
 
 local function houseBankAndFurnitureVaultCheck(bagId)
-    if IsHouseBankBag(bagId) == true or IsFurnitureVault(bagId) == true then
+    if IsFurnitureVault(bagId) == true or IsHouseBankBag(bagId) == true then
         return checkIfHouseOwnerAndInsideOwnHouse()
     end
     return nil
@@ -1580,20 +1580,21 @@ local function getBagsToScanForAutomaticMarks(bag)
                 tins(bagScanOrder, insertIdx, { value = BAG_SUBSCRIBER_BANK, uniqueKey = BAG_SUBSCRIBER_BANK, text = "BAG_SUBSCRIBER_BANK", tooltip = "BAG_SUBSCRIBER_BANK" })
             end
         end
+        --Furniture vault should be scanned as well?
+        local furnitureVaultCheckResult = false
+        if bagsToScan[BAG_FURNITURE_VAULT] == true then
+            furnitureVaultCheckResult = furnitureVaultBagChecks(BAG_FURNITURE_VAULT)
+            --Not in an own house? No access to the own house's furniture vault!
+            if furnitureVaultCheckResult == nil then
+                bagsToScan[BAG_FURNITURE_VAULT] = false
+            end
+        end
         --House bank bag should be scanned as well?
-        if bagsToScan[BAG_HOUSE_BANK_ONE] == true then
+        if bagsToScan[BAG_HOUSE_BANK_ONE] == true and not furnitureVaultCheckResult then
             local houseCheckResult = houseBankBagChecks(BAG_HOUSE_BANK_ONE)
             --Not in an own house? No access to the own house bank then!
             if houseCheckResult == nil then
                 bagsToScan[BAG_HOUSE_BANK_ONE] = false
-            end
-        end
-        --Furniture vault should be scanned as well?
-        if bagsToScan[BAG_FURNITURE_VAULT] == true then
-            local furnitureVaultCheckResult = furnitureVaultBagChecks(BAG_FURNITURE_VAULT)
-            --Not in an own house? No access to the own house's furniture vault!
-            if furnitureVaultCheckResult == nil then
-                bagsToScan[BAG_FURNITURE_VAULT] = false
             end
         end
         bagIdsToScanNow = {}

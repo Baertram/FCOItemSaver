@@ -817,7 +817,7 @@ function FCOIS.UpdateInventory(bag, isCharShown, showIcon, iconId)
 	elseif bag == nil then
 		filterBasics(false)
 	elseif bag ~= nil and (bag == BAG_BACKPACK or bag == BAG_VIRTUAL
-			or bag == BAG_BANK or bag == BAG_SUBSCRIBER_BANK or bag == BAG_GUILDBANK or IsHouseBankBag(bag)
+			or bag == BAG_BANK or bag == BAG_SUBSCRIBER_BANK or bag == BAG_GUILDBANK or IsFurnitureVault(bag) or IsHouseBankBag(bag)
 			or (bag == BAG_WORN and FCOIS.IsVendorPanelShown(LF_VENDOR_REPAIR, false))) then
 		filterBasics(false)
 	end
