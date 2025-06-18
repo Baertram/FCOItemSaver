@@ -35,6 +35,7 @@ local bankCtrl =                ctrlVars.BANK_BAG
 --local deconstructionCtrl =      ctrlVars.DECONSTRUCTION_BAG
 local universalDeconGlobal =    ctrlVars.UNIVERSAL_DECONSTRUCTION_GLOBAL
 local universalDeconPanel =     universalDeconGlobal and universalDeconGlobal.deconstructionPanel
+local furnitureVaultCtrl =      ctrlVars.FURNITURE_VAULT
 
 local numFilterIcons                        = FCOIS.numVars.gFCONumFilterIcons
 local mappingVarsTransm                     = FCOIS.mappingVars.containerTransmuation
@@ -471,6 +472,7 @@ local function FCOItemSaver_OnInventorySlot_DoPrimaryAction(inventorySlot)
     --Check where we are
     local parent          = inventorySlot:GetParent()
     local isABankWithdraw = (parent == bankCtrl or parent == guildBankCtrl or parent == houseBankCtrl)
+    local isAFurnitureVaultWithdraw = (parent == furnitureVaultCtrl)
     local isCharacter     = (parent == characterCtrl) or false
     isVendorPanelShown = isVendorPanelShown or FCOIS.IsVendorPanelShown
     local isVendorRepair  = isVendorPanelShown(LF_VENDOR_REPAIR, false) or false
@@ -487,7 +489,7 @@ local function FCOItemSaver_OnInventorySlot_DoPrimaryAction(inventorySlot)
 
     --Do not add protection double click functions to bank/guild bank withdraw and character, and vendor repair
 --d(">[FCOIS]FCOItemSaver_OnInventorySlot_DoPrimaryAction - " .. tos(inventorySlot:GetName()) .. ", isBankWithdraw: " ..tos(isABankWithdraw) .. ", isCharacter: " ..tos(isCharacter) .. ", isVendorRepair: " ..tos(isVendorRepair))
-    if not isABankWithdraw and not isCharacter and not isVendorRepair then
+    if not isABankWithdraw and not isCharacter and not isVendorRepair and not isAFurnitureVaultWithdraw then
         --Get the slected inv. row's dataEntry.data with bagId and slotIndex
         local bagId, slotId = myGetItemDetails(inventorySlot)
         if bagId ~= nil and slotId ~= nil then
@@ -1911,6 +1913,28 @@ function FCOIS.CreateHooks()
         --d("guild bank button 2, button: " .. button .. ", upInside: " .. tos(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastGuildBankButton:GetName())
         mainMenuBarButtonFilterButtonHandler(button, upInside, "gLastGuildBankButton", ctrlVars.GUILD_BANK_MENUBAR_BUTTON_DEPOSIT, LF_GUILDBANK_WITHDRAW, LF_GUILDBANK_DEPOSIT, nil)
     end)
+
+
+    --======== FURNITURE VAULT ================================================================
+    --Register a secure posthook on visibility change of a scrolllist's row -> At the house bank inventory list
+    -->#303 Was added via FCOIS.CreateTextures already so here we only need to add the onMouseUpHandlers!
+    --[[
+    if not checkIfInventorySecurePostHookWasDone(ctrlVars.HOUSE_BANK, ctrlVars.HOUSE_BANK.dataTypes[1], true) then --#303
+        SecurePostHook(ctrlVars.HOUSE_BANK.dataTypes[1], "setupCallback", function(rowControl, data) onScrollListRowSetupCallback(rowControl, data, true) end)
+        addInventorySecurePostHookDoneEntry(ctrlVars.HOUSE_BANK, ctrlVars.HOUSE_BANK.dataTypes[1], true)
+    end
+    ]]
+
+    --Pre Hook the 2 menubar button's (take and deposit) handler at the bank
+    ZO_PreHookHandler(ctrlVars.FURNITURE_VAULT_MENUBAR_BUTTON_WITHDRAW, "OnMouseUp", function(control, button, upInside)
+        --d("furniture vault button 1, button: " .. button .. ", upInside: " .. tos(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastBankButton:GetName())
+        mainMenuBarButtonFilterButtonHandler(button, upInside, "gLastFurnitureVaultButton", ctrlVars.FURNITURE_VAULT_MENUBAR_BUTTON_WITHDRAW, LF_FURNITURE_VAULT_DEPOSIT, LF_FURNITURE_VAULT_WITHDRAW, nil)
+    end)
+    ZO_PreHookHandler(ctrlVars.FURNITURE_VAULT_MENUBAR_BUTTON_DEPOSIT, "OnMouseUp", function(control, button, upInside)
+        --d("furniture vault button 2, button: " .. button .. ", upInside: " .. tos(upInside) .. ", lastButton: " .. FCOIS.lastVars.gLastBankButton:GetName())
+        mainMenuBarButtonFilterButtonHandler(button, upInside, "gLastFurnitureVaultButton", ctrlVars.FURNITURE_VAULT_MENUBAR_BUTTON_DEPOSIT, LF_FURNITURE_VAULT_WITHDRAW, LF_FURNITURE_VAULT_DEPOSIT, nil)
+    end)
+
     --======== SMITHING =============================================================
     local function smithingSetModeHook(smithingCtrl, mode, ...)
         --Hide the context menu at last active panel

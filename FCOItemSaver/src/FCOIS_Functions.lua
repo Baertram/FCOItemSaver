@@ -362,6 +362,8 @@ function FCOIS.GetNumberOfFilteredItemsForEachPanel()
     numberOfFilteredItems[LF_JEWELRY_RESEARCH]       = numberOfFilteredItems[LF_SMITHING_RESEARCH]
     numberOfFilteredItems[LF_JEWELRY_RESEARCH_DIALOG]= numberOfFilteredItems[LF_SMITHING_RESEARCH_DIALOG]
     numberOfFilteredItems[LF_QUICKSLOT]              = ctrlVars.QUICKSLOT_LIST ~= nil and ctrlVars.QUICKSLOT_LIST.data --Will be updated at DeferredInit again! See FCOIS_Hooks -> onDeferredInitCheck(ctrlVars.QUICKSLOT_KEYBOARD
+    numberOfFilteredItems[LF_FURNITURE_VAULT_WITHDRAW] = ctrlVars.FURNITURE_VAULT.data
+    numberOfFilteredItems[LF_FURNITURE_VAULT_DEPOSIT]  = numFilterdItemsInv
     --Special numbers for e.g. quest items in inventory
     numberOfFilteredItems["INVENTORY_QUEST_ITEM"]    = playerInvInvs[INVENTORY_QUEST_ITEM].listView.data
 

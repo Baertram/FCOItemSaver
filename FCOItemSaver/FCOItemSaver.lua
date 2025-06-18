@@ -217,7 +217,7 @@ ReloadUI does not do anything, but manually mass marking via flag icon works fin
 
 
 --______________________________________
--- Current max # of bugs/features/ToDos: 320
+-- Current max # of bugs/features/ToDos: 322
 --______________________________________
 
 --Open/To work on this patch:
@@ -226,21 +226,35 @@ ReloadUI does not do anything, but manually mass marking via flag icon works fin
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2025-05-18
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2025-06-18
 ------------------------------------------------------------------------------------
+--#322 Automatic intricate/sell marks not working for gear (blacksmit, clothier, woodworking), below level CP160
+--[[
+Hello! After the latest update, it seems that previous automark for sale items such as ornate are no longer marking themselves.
+......
+I noticed the same issue, Intricate and ornate items aren't automatically marked.
+I tested it with all other addons disabled and with my Saved Variables deleted, the issue persists.
 
+But I noticed the following during my testing:
+- gear that is level "CP 160" is not affected and is getting marked as intended
+- jewelry is not affected at all, all gear levels are getting marked as intended
+
+
+Summary, how the issue presents to me: it only affects blacksmithing, clothing and woodworking gear below gear level "CP 160".
+]]
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.7.0 - New version: 2.7.1) -    Updated last: 2025-05-18
+--Changelog (last version: 2.7.3 - New version: 2.7.4) -    Updated last: 2025-06-18
 -------------------------------------------------------------------------------------
 --[Fixed]
---#320 Additional inventory flag  icon positions do not apply at account wide settings
+--
 
 
 
 --[Changed]
 
 --[Added]
+
 
 
 --[Added on request]

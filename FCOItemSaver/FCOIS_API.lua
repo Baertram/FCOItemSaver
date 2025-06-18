@@ -348,6 +348,27 @@ function FCOIS.IsGuildBankDepositLocked(bagId, slotIndex)
     return FCOIScish(bagId, slotIndex, false, true, true, true, true, true, LF_GUILDBANK_DEPOSIT)
 end
 
+-- FCOIS prevention for being depositted to house bank
+--> ATTENTION: FCOIS is currently NOT protecting the deposit of items to a house bank.
+-- This is always allowed!
+-- If you want to check if there is a marker icon on the item you want to deposit, and thus not allow to deposit it,
+-- use the function FCOIS.IsMarked() -> See below in this API file, or FCOIS.IsLocked(bagId, slotIndex) -> See above in this API file
+function FCOIS.IsHouseBankDepositLocked(bagId, slotIndex)
+    --Don't show chat output and don't show alert message
+    return FCOIScish(bagId, slotIndex, false, true, true, true, true, true, LF_HOUSE_BANK_DEPOSIT)
+end
+
+-- FCOIS prevention for being depositted to furniture vault
+--> ATTENTION: FCOIS is currently NOT protecting the deposit of items to a furniture vault.
+-- This is always allowed!
+-- If you want to check if there is a marker icon on the item you want to deposit, and thus not allow to deposit it,
+-- use the function FCOIS.IsMarked() -> See below in this API file, or FCOIS.IsLocked(bagId, slotIndex) -> See above in this API file
+function FCOIS.IsFurnitureVaultDepositLocked(bagId, slotIndex)
+    --Don't show chat output and don't show alert message
+    return FCOIScish(bagId, slotIndex, false, true, true, true, true, true, LF_FURNITURE_VAULT_DEPOSIT)
+end
+
+
 -- ===== ANTI Withdraw =====
 -- FCOIS prevention for being withdrawn from player bank
 --> ATTENTION: FCOIS is currently NOT protecting the withdraw of items from a player bank.
@@ -367,6 +388,26 @@ end
 function FCOIS.IsGuildBankWithdrawLocked(bagId, slotIndex)
     --Don't show chat output and don't show alert message
     return FCOIScish(bagId, slotIndex, false, true, true, true, true, true, LF_GUILDBANK_WITHDRAW)
+end
+
+-- FCOIS prevention for being withdrawn from house bank
+--> ATTENTION: FCOIS is currently NOT protecting the withdraw of items from a house bank.
+-- This is always allowed!
+-- If you want to check if there is a marker icon on the item you want to withdraw, and thus not allow to withdraw it,
+-- use the function FCOIS.IsMarked() -> See below in this API file, or FCOIS.IsLocked(bagId, slotIndex) -> See above in this API file
+function FCOIS.IsHouseBankWithdrawLocked(bagId, slotIndex)
+    --Don't show chat output and don't show alert message
+    return FCOIScish(bagId, slotIndex, false, true, true, true, true, true, LF_HOUSE_BANK_WITHDRAW)
+end
+
+-- FCOIS prevention for being withdrawn from furniture vault
+--> ATTENTION: FCOIS is currently NOT protecting the withdraw of items from a furniture vault.
+-- This is always allowed!
+-- If you want to check if there is a marker icon on the item you want to withdraw, and thus not allow to withdraw it,
+-- use the function FCOIS.IsMarked() -> See below in this API file, or FCOIS.IsLocked(bagId, slotIndex) -> See above in this API file
+function FCOIS.IsFurnitureVaultWithdrawLocked(bagId, slotIndex)
+    --Don't show chat output and don't show alert message
+    return FCOIScish(bagId, slotIndex, false, true, true, true, true, true, LF_FURNITURE_VAULT_WITHDRAW)
 end
 
 
@@ -776,7 +817,7 @@ function FCOIS.UpdateInventory(bag, isCharShown, showIcon, iconId)
 	elseif bag == nil then
 		filterBasics(false)
 	elseif bag ~= nil and (bag == BAG_BACKPACK or bag == BAG_VIRTUAL
-			or bag == BAG_BANK or bag == BAG_SUBSCRIBER_BANK or bag == BAG_GUILDBANK or IsHouseBankBag(bag)
+			or bag == BAG_BANK or bag == BAG_SUBSCRIBER_BANK or bag == BAG_GUILDBANK or IsFurnitureVault(bag) or IsHouseBankBag(bag)
 			or (bag == BAG_WORN and FCOIS.IsVendorPanelShown(LF_VENDOR_REPAIR, false))) then
 		filterBasics(false)
 	end

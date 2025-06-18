@@ -58,6 +58,7 @@ function FCOIS.BuildDefaultSettings()
 		allowLaunderFilter			= true,
 		allowGuildBankFilter    	= true,
 		allowBankFilter 	    	= true,
+		allowFurnitureVaultFilter   = true,
 		allowTradinghouseFilter		= true,
 		allowTradeFilter	   	 	= true,
 		allowMailFilter		    	= true,
@@ -181,6 +182,13 @@ function FCOIS.BuildDefaultSettings()
 				--text  		= locVars["FCOIS_LibFilters_PanelIds"][LF_HOUSE_BANK_WITHDRAW],
 				--tooltip 	= locVars["FCOIS_LibFilters_PanelIds"][LF_HOUSE_BANK_WITHDRAW],
 			},
+			[5] = {
+				value 		= BAG_FURNITURE_VAULT,
+				uniqueKey 	= LF_FURNITURE_VAULT_WITHDRAW,
+				--text  		= locVars["FCOIS_LibFilters_PanelIds"][LF_FURNITURE_VAULT_WITHDRAW],
+				--tooltip 	= locVars["FCOIS_LibFilters_PanelIds"][LF_FURNITURE_VAULT_WITHDRAW],
+			},
+
 		},
 		autoMarkBagsChatOutput		= false,
 		autoMarkNewItems			= false,

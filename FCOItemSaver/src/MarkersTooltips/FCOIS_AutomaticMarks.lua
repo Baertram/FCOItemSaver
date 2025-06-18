@@ -1514,8 +1514,22 @@ function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, do
 end -- Single item scan function scanInventoryItemForAutomaticMarks(bag, slot, scanType)
 local scanInventoryItemForAutomaticMarks = FCOIS.scanInventoryItemForAutomaticMarks
 
+local function houseBankAndFurnitureVaultCheck(bagId)
+    if IsFurnitureVault(bagId) == true or IsHouseBankBag(bagId) == true then
+        return checkIfHouseOwnerAndInsideOwnHouse()
+    end
+    return nil
+end
+
 local function houseBankBagChecks(bagId)
     if IsHouseBankBag(bagId) == true then
+        return checkIfHouseOwnerAndInsideOwnHouse()
+    end
+    return nil
+end
+
+local function furnitureVaultBagChecks(bagId)
+    if IsFurnitureVault(bagId) == true then
         return checkIfHouseOwnerAndInsideOwnHouse()
     end
     return nil
@@ -1527,12 +1541,13 @@ local function getBagsToScanForAutomaticMarks(bag)
     local bagIdsToScanNow = {}
     --Scan a dedicated bag
     if bag ~= nil then
-        local houseCheckResult = houseBankBagChecks(bag)
-        if houseCheckResult == true then
+        local houseAndFurnitureVaultCheckResult = houseBankAndFurnitureVaultCheck(bag)
+        if houseAndFurnitureVaultCheckResult == true then
             tins(bagIdsToScanNow, bag)
             onlyUpdatePlayerInv = false
-            --Not in an own house? No access to the own house bank then!
-        elseif houseCheckResult == nil then
+
+        --Not in an own house? No access to the own house bank then!
+        elseif houseAndFurnitureVaultCheckResult == nil then
             tins(bagIdsToScanNow, bag)
             if bag ~= BAG_BACKPACK then
                 if bag == BAG_BANK == true then
@@ -1565,8 +1580,17 @@ local function getBagsToScanForAutomaticMarks(bag)
                 tins(bagScanOrder, insertIdx, { value = BAG_SUBSCRIBER_BANK, uniqueKey = BAG_SUBSCRIBER_BANK, text = "BAG_SUBSCRIBER_BANK", tooltip = "BAG_SUBSCRIBER_BANK" })
             end
         end
+        --Furniture vault should be scanned as well?
+        local furnitureVaultCheckResult = false
+        if bagsToScan[BAG_FURNITURE_VAULT] == true then
+            furnitureVaultCheckResult = furnitureVaultBagChecks(BAG_FURNITURE_VAULT)
+            --Not in an own house? No access to the own house's furniture vault!
+            if furnitureVaultCheckResult == nil then
+                bagsToScan[BAG_FURNITURE_VAULT] = false
+            end
+        end
         --House bank bag should be scanned as well?
-        if bagsToScan[BAG_HOUSE_BANK_ONE] == true then
+        if bagsToScan[BAG_HOUSE_BANK_ONE] == true and not furnitureVaultCheckResult then
             local houseCheckResult = houseBankBagChecks(BAG_HOUSE_BANK_ONE)
             --Not in an own house? No access to the own house bank then!
             if houseCheckResult == nil then
@@ -2201,8 +2225,10 @@ function FCOIS.ScanInventorySingle(p_bagId, p_slotIndex, checksAlreadyDoneTable)
         -- Update only one item in inventory
         -- bagId AND slotIndex are given?
         if (p_bagId ~= nil and p_slotIndex ~= nil) then
-            --Is the bag a HouseBank then check if we own a house and are in any owned house at the moment
-            if houseBankBagChecks(p_bagId) == false then return end
+            --Is the bag a HouseBank or Furniture Vault, then check if we own a house and are in any owned house at the moment
+            if not houseBankAndFurnitureVaultCheck(p_bagId) then
+                return
+            end
 
             --Get item's instance or uniqueId
             local itemId = myGetItemInstanceIdNoControl(p_bagId, p_slotIndex, false)

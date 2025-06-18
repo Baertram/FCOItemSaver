@@ -268,7 +268,7 @@ local function checkSetTrackerTrackingStateAndMarkWithFCOISIcon(sSetName, setTra
     --Add the houes bank bags
     local houseBagIds = mappingVars.houseBankBagIdToBag
     for _, bagHouseBankNumber in ipairs(houseBagIds) do
-        if IsHouseBankBag(bagHouseBankNumber) then
+        if not IsFurnitureVault(bagHouseBankNumber) and IsHouseBankBag(bagHouseBankNumber) then
             bagsToCheck[bagHouseBankNumber] = settings.autoMarkSetTrackerSetsBank
         end
     end

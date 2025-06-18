@@ -4550,6 +4550,16 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                                     default = FCOISdefaultSettings.autoMarkBagsToScan[BAG_HOUSE_BANK_ONE],
                                 },
                                 {
+                                    type    = "checkbox",
+                                    name    = locVars["FCOIS_LibFilters_PanelIds"][LF_FURNITURE_VAULT_WITHDRAW],
+                                    tooltip = locVars["FCOIS_LibFilters_PanelIds"][LF_FURNITURE_VAULT_WITHDRAW],
+                                    getFunc = function() return FCOISsettings.autoMarkBagsToScan[BAG_FURNITURE_VAULT] end,
+                                    setFunc = function(value)
+                                        FCOISsettings.autoMarkBagsToScan[BAG_FURNITURE_VAULT] = value
+                                    end,
+                                    default = FCOISdefaultSettings.autoMarkBagsToScan[BAG_FURNITURE_VAULT],
+                                },
+                                {
                                     type    = "orderlistbox",
                                     name    = locVars["options_bags_to_scan_order"],
                                     tooltip = locVars["options_bags_to_scan_order" ..tooltipSuffix],
@@ -6613,6 +6623,15 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                                     setFunc = function(value) FCOISsettings.allowCompanionInventoryFilter = value
                                     end,
                                     default = FCOISdefaultSettings.allowCompanionInventoryFilter,
+                                },
+                                {
+                                    type = "checkbox",
+                                    name = locVars["options_enable_filter_in_furnitureVault"],
+                                    tooltip = locVars["options_enable_filter_in_furnitureVault" .. tooltipSuffix],
+                                    getFunc = function() return FCOISsettings.allowFurnitureVaultFilter end,
+                                    setFunc = function(value) FCOISsettings.allowFurnitureVaultFilter = value
+                                    end,
+                                    default = FCOISdefaultSettings.allowFurnitureVaultFilter,
                                 },
                                 --==============================================================================
                                 {
