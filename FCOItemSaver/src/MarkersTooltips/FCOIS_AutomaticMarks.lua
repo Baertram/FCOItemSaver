@@ -80,8 +80,8 @@ local isMarked
 --!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 --Change this if you want to debug an item's automatic marks
 local isDebuggingCase = false --will be automatically switched to true if the item's bagId and slotIndex matches the values below (-1, -1 should never be found):
-local debuggingBagId =      -1 --BAG_BACKPACK
-local debuggingSlotIndex =  -1 --187
+local debuggingBagId =      -1 --BAG_BACKPACK    --1 to disable
+local debuggingSlotIndex =  -1 --89              --1
 --!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 --==========================================================================================================================================
@@ -1515,8 +1515,10 @@ end -- Single item scan function scanInventoryItemForAutomaticMarks(bag, slot, s
 local scanInventoryItemForAutomaticMarks = FCOIS.scanInventoryItemForAutomaticMarks
 
 local function houseBankAndFurnitureVaultCheck(bagId)
-    if IsFurnitureVault(bagId) == true or IsHouseBankBag(bagId) == true then
-        return checkIfHouseOwnerAndInsideOwnHouse()
+    if bagId ~= nil then
+        if (IsFurnitureVault(bagId) == true or IsHouseBankBag(bagId) == true) then
+            return checkIfHouseOwnerAndInsideOwnHouse()
+        end
     end
     return nil
 end
@@ -1615,7 +1617,7 @@ end
 
 --Get the settings for the automatic checks and see if anything needs to be done at all!
 --> Called from FCOIS.ScanInventory
-local function getInventoryScanNecesaryChecks()
+local function getInventoryScanNecessaryChecks()
     local settings = FCOIS.settingsVars.settings
     local isIconEnabledSettings = settings.isIconEnabled
 
@@ -1631,20 +1633,20 @@ local function getInventoryScanNecesaryChecks()
     --Automatic marking of ornate, intricate, researchable items (researchAssistant or other research addon needed, or ESO base game marks for researchabel items), unknown recipes (SousChef or other recipe addon is needed!), set parts, quality items, set collection book items is activated?
     -->Define the automatic marking checks here in this table: enabled needs to return a boolean if the setting is enabled, iconEnabled (optional) must return a boolean if the markerIcon for that setting was chosen and is enabled
     local checksToDoTable = {
-        ["ornate"] =                    { enabled = settings.autoMarkOrnate == true,                                        iconEnabled = isIconEnabledSettings[FCOIS_CON_ICON_SELL]} ,
-        ["intricate"] =                 { enabled = settings.autoMarkIntricate == true,                                     iconEnabled = isIconEnabledSettings[FCOIS_CON_ICON_INTRICATE] },
-        ["research"] =                  { enabled = isResearchAddonActive and settings.autoMarkResearch == true,            iconEnabled = nil },
-        ["researchScrolls"] =           { enabled = isResearchScrollsAddonActive,                                           iconEnabled = nil },
-        ["quality"] =                   { enabled = settings.autoMarkQuality ~= 1,                                          iconEnabled = isIconEnabledSettings[settings.autoMarkQualityIconNr] },
-        ["recipes"] =                   { enabled = isRecipeAddonActive and settings.autoMarkRecipes == true,               iconEnabled = isIconEnabledSettings[settings.autoMarkRecipesIconNr] },
-        ["knownRecipes"] =              { enabled = isRecipeAddonActive and settings.autoMarkKnownRecipes == true,          iconEnabled = isIconEnabledSettings[settings.AutoMarkKnownRecipesIconNr] },
-        ["motifs"] =                    { enabled = isMotifsAddonActive and settings.autoMarkMotifs == true,                iconEnabled = isIconEnabledSettings[settings.autoMarkMotifsIconNr] }, --#308
-        ["knownMotifs"] =               { enabled = isMotifsAddonActive and settings.autoMarkKnownMotifs == true,           iconEnabled = isIconEnabledSettings[settings.AutoMarkKnownMotifsIconNr] }, --#308
-        ["styleContainerCollectibles"] ={ enabled = isStyleContainerCollectibleAddonActive and settings.autoMarkStyleContainerCollectibles == true,                iconEnabled = isIconEnabledSettings[settings.autoMarkStyleContainerCollectiblesIconNr] }, --#317
-        ["knownStyleContainerCollectibles"] = { enabled = isStyleContainerCollectibleAddonActive and settings.autoMarkKnownStyleContainerCollectibles == true,     iconEnabled = isIconEnabledSettings[settings.autoMarkKnownStyleContainerCollectiblesIconNr] }, --#317
-        ["setItemCollectionsUnknown"] = { enabled = (autoMarkSetsItemCollectionBook == true and (autoBindMissingSetCollectionPiecesOnLoot == true or (not autoBindMissingSetCollectionPiecesOnLoot == true and settings.autoMarkSetsItemCollectionBookMissingIcon ~= FCOIS_CON_ICON_NONE and isIconEnabledSettings[settings.autoMarkSetsItemCollectionBookMissingIcon] == true))), iconEnabled = nil },
-        ["setItemCollectionsKnown"] =   { enabled = autoMarkSetsItemCollectionBook == true,                                 iconEnabled = (settings.autoMarkSetsItemCollectionBookNonMissingIcon ~= FCOIS_CON_ICON_NONE and isIconEnabledSettings[settings.autoMarkSetsItemCollectionBookNonMissingIcon] == true) },
-        ["sets"] =                      { enabled = settings.autoMarkSets == true,                                          iconEnabled = isIconEnabledSettings[settings.autoMarkSetsIconNr] },
+        ["ornate"] =                            { enabled = settings.autoMarkOrnate == true,                                                                        iconEnabled = isIconEnabledSettings[FCOIS_CON_ICON_SELL]} ,
+        ["intricate"] =                         { enabled = settings.autoMarkIntricate == true,                                                                     iconEnabled = isIconEnabledSettings[FCOIS_CON_ICON_INTRICATE] },
+        ["research"] =                          { enabled = isResearchAddonActive and settings.autoMarkResearch == true,                                            iconEnabled = nil },
+        ["researchScrolls"] =                   { enabled = isResearchScrollsAddonActive,                                                                           iconEnabled = nil },
+        ["quality"] =                           { enabled = settings.autoMarkQuality ~= 1,                                                                          iconEnabled = isIconEnabledSettings[settings.autoMarkQualityIconNr] },
+        ["recipes"] =                           { enabled = isRecipeAddonActive and settings.autoMarkRecipes == true,                                               iconEnabled = isIconEnabledSettings[settings.autoMarkRecipesIconNr] },
+        ["knownRecipes"] =                      { enabled = isRecipeAddonActive and settings.autoMarkKnownRecipes == true,                                          iconEnabled = isIconEnabledSettings[settings.AutoMarkKnownRecipesIconNr] },
+        ["motifs"] =                            { enabled = isMotifsAddonActive and settings.autoMarkMotifs == true,                                                iconEnabled = isIconEnabledSettings[settings.autoMarkMotifsIconNr] }, --#308
+        ["knownMotifs"] =                       { enabled = isMotifsAddonActive and settings.autoMarkKnownMotifs == true,                                           iconEnabled = isIconEnabledSettings[settings.AutoMarkKnownMotifsIconNr] }, --#308
+        ["styleContainerCollectibles"] =        { enabled = isStyleContainerCollectibleAddonActive and settings.autoMarkStyleContainerCollectibles == true,         iconEnabled = isIconEnabledSettings[settings.autoMarkStyleContainerCollectiblesIconNr] }, --#317
+        ["knownStyleContainerCollectibles"] =   { enabled = isStyleContainerCollectibleAddonActive and settings.autoMarkKnownStyleContainerCollectibles == true,    iconEnabled = isIconEnabledSettings[settings.autoMarkKnownStyleContainerCollectiblesIconNr] }, --#317
+        ["setItemCollectionsUnknown"] =         { enabled = (autoMarkSetsItemCollectionBook == true and (autoBindMissingSetCollectionPiecesOnLoot == true or (not autoBindMissingSetCollectionPiecesOnLoot == true and settings.autoMarkSetsItemCollectionBookMissingIcon ~= FCOIS_CON_ICON_NONE and isIconEnabledSettings[settings.autoMarkSetsItemCollectionBookMissingIcon] == true))),      iconEnabled = nil },
+        ["setItemCollectionsKnown"] =           { enabled = autoMarkSetsItemCollectionBook == true,                                                                 iconEnabled = (settings.autoMarkSetsItemCollectionBookNonMissingIcon ~= FCOIS_CON_ICON_NONE and isIconEnabledSettings[settings.autoMarkSetsItemCollectionBookNonMissingIcon] == true) },
+        ["sets"] =                              { enabled = settings.autoMarkSets == true,                                                                          iconEnabled = isIconEnabledSettings[settings.autoMarkSetsIconNr] },
         --["LibSetsSetSearchFavoriteCategoryMarkers"] = { enabled = (libSets ~= nil and libSets.GetSetSearchFavoriteCategories ~= nil), iconEnabled = nil } --#301
     }
 
@@ -2209,8 +2211,8 @@ local scanInventoryItemsForAutomaticMarks = FCOIS.ScanInventoryItemsForAutomatic
 --Local function to scan a single inventory item
 -->checksAlreadyDoneTable was filled in function FCOIS.scanInventory with the results needed for the checks (performance gain!)
 function FCOIS.ScanInventorySingle(p_bagId, p_slotIndex, checksAlreadyDoneTable)
-    local isDebuggingCase = false
     local itemLink
+    isDebuggingCase = false
     if p_bagId == debuggingBagId and p_slotIndex == debuggingSlotIndex then
         itemLink = GetItemLink(p_bagId, p_slotIndex)
         isDebuggingCase = true
@@ -2221,12 +2223,12 @@ function FCOIS.ScanInventorySingle(p_bagId, p_slotIndex, checksAlreadyDoneTable)
     local isIconEnabledSettings = settings.isIconEnabled
     if FCOIS.preventerVars.gScanningInv == false then
         if settings.debug then debugMessage( "[ScanInventorySingle]","Start", false, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
-        if isDebuggingCase == true then d("[ScanInventorySingle] Start - checksAlreadyDoneTable['recipes']: " ..tos(checksAlreadyDoneTable["recipes"])) end
+        if isDebuggingCase == true then d("[ScanInventorySingle] Start - checksAlreadyDoneTable['ornate']: " ..tos(checksAlreadyDoneTable["ornate"])) end
         -- Update only one item in inventory
         -- bagId AND slotIndex are given?
         if (p_bagId ~= nil and p_slotIndex ~= nil) then
             --Is the bag a HouseBank or Furniture Vault, then check if we own a house and are in any owned house at the moment
-            if not houseBankAndFurnitureVaultCheck(p_bagId) then
+            if houseBankAndFurnitureVaultCheck(p_bagId) == false then --#322
                 return
             end
 
@@ -2239,7 +2241,7 @@ function FCOIS.ScanInventorySingle(p_bagId, p_slotIndex, checksAlreadyDoneTable)
                 local isCheckNecessary = false
                 --Checks table is empty? Create it now
                 if ZO_IsTableEmpty(checksAlreadyDoneTable) then
-                    isCheckNecessary, checksAlreadyDoneTable = getInventoryScanNecesaryChecks()
+                    isCheckNecessary, checksAlreadyDoneTable = getInventoryScanNecessaryChecks()
                 else
                     isCheckNecessary = true
                 end
@@ -2426,7 +2428,7 @@ function FCOIS.ScanInventory(p_bagId, p_slotIndex, doEcho)
     local updateInv = false
 
     --Check if anything needs to be done
-    local isCheckNecessary, checksAlreadyDoneTable = getInventoryScanNecesaryChecks()
+    local isCheckNecessary, checksAlreadyDoneTable = getInventoryScanNecessaryChecks()
     --Any checks are necessary? Loop the inventory items and check each item now...
     if isCheckNecessary == true then
         --d("-Scanning needed-")

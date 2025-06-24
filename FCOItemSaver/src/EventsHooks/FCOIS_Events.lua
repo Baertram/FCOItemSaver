@@ -10,6 +10,7 @@ local zo_strf = zo_strformat
 
 local em = EVENT_MANAGER
 
+local playerStr = "player"
 
 local addonVars = FCOIS.addonVars
 local gAddonName = addonVars.gAddonName
@@ -360,7 +361,7 @@ local function FCOItemSaver_Open_Guild_Bank()
 
     if checkIfBankInventorySingleSlotUpdateEventNeedsToBeRegistered(BAG_GUILDBANK) == true then
         em:RegisterForEvent(gAddonName.."_GUILDBANK", EVENT_GUILD_BANK_ITEM_ADDED, FCOItemSaver_GuildBankItemAdded)
-        em:AddFilterForEvent(gAddonName.."_GUILDBANK", EVENT_GUILD_BANK_ITEM_ADDED, REGISTER_FILTER_UNIT_TAG, "player")
+        em:AddFilterForEvent(gAddonName.."_GUILDBANK", EVENT_GUILD_BANK_ITEM_ADDED, REGISTER_FILTER_UNIT_TAG, playerStr)
     end
     --Reset the last clicked guild bank button as it will always be the withdraw tab if you open the guild bank, and if the
     --deposit button was the last one clicked it won't change the filter buttons as it thinks it is still active
@@ -400,14 +401,17 @@ local function FCOItemSaver_Open_Player_Bank(event, bagId)
     local settings = FCOIS.settingsVars.settings
     if settings.debug then debugMessage( "[EVENT]","Open bank - bagId: " .. tos(bagId) .. ", isHouseBank: " .. tos(isHouseBank) .. ", isFurnitureVault: " .. tos(isFurnitureVault), true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
+    local autoMarkBagsChatOutput = settings.autoMarkBagsChatOutput
+
     --Reset the anti-destroy settings if needed (e.g. bank was opened directly after inventory was closed, without calling other panels in between)
     onClosePanel(LF_INVENTORY, nil, "DESTROY")
 
     if bagId == BAG_BANK or bagId == BAG_SUBSCRIBER_BANK then
         if checkIfBankInventorySingleSlotUpdateEventNeedsToBeRegistered(BAG_BANK) == true then
-            em:RegisterForEvent(gAddonName.."_BANK", EVENT_INVENTORY_SINGLE_SLOT_UPDATE, FCOItemSaver_Inv_Single_Slot_Update_Bank)
-            em:AddFilterForEvent(gAddonName.."_BANK", EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_UNIT_TAG, "player")
-            em:AddFilterForEvent(gAddonName.."_BANK", EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_BAG_ID, bagId)
+            local eventInventorySingleSlotUpdateBankName = gAddonName.."_BANK"
+            em:RegisterForEvent(eventInventorySingleSlotUpdateBankName,  EVENT_INVENTORY_SINGLE_SLOT_UPDATE, FCOItemSaver_Inv_Single_Slot_Update_Bank)
+            em:AddFilterForEvent(eventInventorySingleSlotUpdateBankName, EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_UNIT_TAG, playerStr)
+            em:AddFilterForEvent(eventInventorySingleSlotUpdateBankName, EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_BAG_ID, bagId)
         end
     end
 
@@ -426,7 +430,7 @@ local function FCOItemSaver_Open_Player_Bank(event, bagId)
                 -->Disabled as this should only be done via the settings menu, manually!
                 --FCOIS.scanInventoriesForZOsLockedItems(false, bagId)
                 --Scan if house bank got items that should be marked automatically
-                scanInventory(bagId, nil, FCOIS.settingsVars.settings.autoMarkBagsChatOutput)
+                scanInventory(bagId, nil, autoMarkBagsChatOutput)
             end, 250)
         end
     elseif isFurnitureVault == true then
@@ -441,7 +445,7 @@ local function FCOItemSaver_Open_Player_Bank(event, bagId)
                 -->Disabled as this should only be done via the settings menu, manually!
                 --FCOIS.scanInventoriesForZOsLockedItems(false, bagId)
                 --Scan if house bank got items that should be marked automatically
-                scanInventory(bagId, nil, FCOIS.settingsVars.settings.autoMarkBagsChatOutput)
+                scanInventory(bagId, nil, autoMarkBagsChatOutput)
             end, 250)
         end
 
@@ -453,7 +457,7 @@ local function FCOItemSaver_Open_Player_Bank(event, bagId)
         --Scan if player bank got items that should be marked automatically
         if not checkIfAutomaticMarksAreDisabledAtBag(bagId) then
             zo_callLater(function()
-                scanInventory(bagId, nil, settings.autoMarkBagsChatOutput)
+                scanInventory(bagId, nil, autoMarkBagsChatOutput)
             end, 250)
         end
     end
@@ -1005,7 +1009,7 @@ local function FCOItemSaver_Player_Activated(...)
         if settings.debug then debugMessage( "[EVENT]","Player activated", true, FCOIS_DEBUG_DEPTH_NORMAL) end
 
         --Get the currently logged in character name
-        FCOIS.currentlyLoggedInCharName = zo_strf(SI_UNIT_NAME, GetUnitName("player"))
+        FCOIS.currentlyLoggedInCharName = zo_strf(SI_UNIT_NAME, GetUnitName(playerStr))
 
         --Check if other Addons active now, as the addons should all have been loaded
         FCOIS.CheckIfOtherAddonsActiveAfterPlayerActivated()
@@ -1037,7 +1041,7 @@ local function FCOItemSaver_Player_Activated(...)
         if FCOIS.preventerVars.gAddonStartupInProgress then
             FCOIS.preventerVars.gAddonStartupInProgress = false
             --Delay the call to "scanInventory" so the other addons like CraftStoreFixedAndImproved are working properly with their research/recipe functions
-            zo_callLater(function() scanInventory(nil, nil, settings.autoMarkBagsChatOutput) end, 500)
+            zo_callLater(function() scanInventory(nil, nil, settings.autoMarkBagsChatOutput) end, 1000)
         end
 
         --Update the itemCount in the inventory sort headers, if needed
@@ -1113,17 +1117,20 @@ local function FCOItemSaver_Loaded(eventCode, addOnName)
             --Register for Trade panel opened & closed
             em:RegisterForEvent(gAddonName, EVENT_TRADE_INVITE_ACCEPTED, FCOItemSaver_Open_Trade_Panel)
             --Register for player inventory slot update
+            local eventInventorySingleSlotUpdateNamePrefix = "_EVENT_INVENTORY_SINGLE_SLOT_UPDATE"
+            local eventInventorySingleSlotUpdateName = gAddonName .. eventInventorySingleSlotUpdateNamePrefix
             local bagIdsToFilterForInvSingleSlotUpdate = {
                 BAG_BACKPACK,
                 BAG_WORN,
                 BAG_COMPANION_WORN,
             }
             for _, bagIdToFilter in ipairs(bagIdsToFilterForInvSingleSlotUpdate) do
-                em:RegisterForEvent(gAddonName .. "_EVENT_INVENTORY_SINGLE_SLOT_UPDATE" ..tos(bagIdToFilter), EVENT_INVENTORY_SINGLE_SLOT_UPDATE, FCOItemSaver_Inv_Single_Slot_Update)
-                em:AddFilterForEvent(gAddonName .. "_EVENT_INVENTORY_SINGLE_SLOT_UPDATE" ..tos(bagIdToFilter), EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_UNIT_TAG, "player")
-                em:AddFilterForEvent(gAddonName .. "_EVENT_INVENTORY_SINGLE_SLOT_UPDATE" ..tos(bagIdToFilter), EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_INVENTORY_UPDATE_REASON, INVENTORY_UPDATE_REASON_DEFAULT)
-                em:AddFilterForEvent(gAddonName .. "_EVENT_INVENTORY_SINGLE_SLOT_UPDATE" ..tos(bagIdToFilter), EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_IS_NEW_ITEM, true)
-                em:AddFilterForEvent(gAddonName .. "_EVENT_INVENTORY_SINGLE_SLOT_UPDATE" ..tos(bagIdToFilter), EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_BAG_ID, bagIdToFilter)
+                local eventInventorySingleSlotUpdateNameForBagId = eventInventorySingleSlotUpdateName ..tos(bagIdToFilter)
+                em:RegisterForEvent(eventInventorySingleSlotUpdateNameForBagId,  EVENT_INVENTORY_SINGLE_SLOT_UPDATE, FCOItemSaver_Inv_Single_Slot_Update)
+                em:AddFilterForEvent(eventInventorySingleSlotUpdateNameForBagId, EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_UNIT_TAG, playerStr)
+                em:AddFilterForEvent(eventInventorySingleSlotUpdateNameForBagId, EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_INVENTORY_UPDATE_REASON, INVENTORY_UPDATE_REASON_DEFAULT)
+                em:AddFilterForEvent(eventInventorySingleSlotUpdateNameForBagId, EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_IS_NEW_ITEM, true)
+                em:AddFilterForEvent(eventInventorySingleSlotUpdateNameForBagId, EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_BAG_ID, bagIdToFilter)
             end
 
             --Register the callback function for an update of the inventory slots
