@@ -217,7 +217,7 @@ ReloadUI does not do anything, but manually mass marking via flag icon works fin
 
 
 --______________________________________
--- Current max # of bugs/features/ToDos: 321
+-- Current max # of bugs/features/ToDos: 322
 --______________________________________
 
 --Open/To work on this patch:
@@ -226,22 +226,20 @@ ReloadUI does not do anything, but manually mass marking via flag icon works fin
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2025-06-08
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2025-06-18
 ------------------------------------------------------------------------------------
 
-
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.7.3 - New version: 2.7.4) -    Updated last: 2025-06-08
+--Changelog (last version: 2.7.3 - New version: 2.7.4) -    Updated last: 2025-06-18
 -------------------------------------------------------------------------------------
 --[Fixed]
---
-
+--#322 Automatic intricate/sell marks not working for gear (blacksmit, clothier, woodworking), below level CP160
 
 
 --[Changed]
 
 --[Added]
---#321 Furniture Vault support
+
 
 
 --[Added on request]
