@@ -648,6 +648,18 @@ FCOIS.updateSetTrackerMarker = otherAddons.SetTracker.updateSetTrackerMarker
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
+--#324 Fix missing/nil IIfA.data and IIfA.settings and point to the correct settings now
+function FCOIS.GetIIfASettings()
+    local IIfASettings
+    if IIfA.data == nil and IIfA.settings == nil then
+        IIfASettings = IIFA_DATABASE[IIfA.currentAccount].settings
+    else
+        IIfASettings = IIfA:GetSettings()
+    end
+    return IIfASettings
+end
+local FCOIS_GetIIfASettings = FCOIS.GetIIfASettings
+
 
 --Inventory Insight From Ashes (IIFA) loaded now?
 function FCOIS.CheckIfOtherAddonIIfAIsActive()
@@ -1569,13 +1581,7 @@ function FCOIS.CheckIfInventoryRowOfExternalAddonNeedsMarkerIconsUpdate(rowContr
         --Other addons "Inventory Insight" integration:
         --Update the complete row in the IIfA inventory frame
         if IIfA ~= nil and FCOIS.IIfAclicked ~= nil and IIfA.UpdateFCOISMarkerIcons ~= nil then
-            local IIfASettings
-            --#324 Fix missing/nil IIfA.data and IIfA.settings and point to the correct settings now
-            if IIfA.data == nil and IIfA.settings == nil then
-                IIfASettings = IIFA_DATABASE[IIfA.currentAccount].settings
-            else
-                IIfASettings = IIfA:GetSettings()
-            end
+            local IIfASettings = FCOIS_GetIIfASettings()
             local showFCOISMarkerIcons = (IIfASettings ~= nil and IIfASettings.FCOISshowMarkerIcons) or false
             IIfA:UpdateFCOISMarkerIcons(rowControl, showFCOISMarkerIcons, false, FCOIS_CON_ICONS_ALL)
         end
