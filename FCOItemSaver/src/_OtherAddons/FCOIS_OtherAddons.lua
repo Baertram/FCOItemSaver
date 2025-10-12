@@ -727,8 +727,6 @@ end
 function FCOIS.MyGetItemInstanceIdForIIfA(clickedDataLine, signToo)
     if IIfA == nil or clickedDataLine == nil then return nil, nil, nil, nil, nil end
     --d("[FCOIS]MyGetItemInstanceIdForIIfA]")
-FCOIS._clickedDataLines = FCOIS._clickedDataLines or {}
-FCOIS._clickedDataLines[clickedDataLine:GetName()] = clickedDataLine
 
     signToo = signToo or false
     --Support for base64 unique itemids (e.g. an enchanted armor got the same ItemInstanceId but can have different unique ids)
