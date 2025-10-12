@@ -217,7 +217,7 @@ ReloadUI does not do anything, but manually mass marking via flag icon works fin
 
 
 --______________________________________
--- Current max # of bugs/features/ToDos: 320
+-- Current max # of bugs/features/ToDos: 324
 --______________________________________
 
 --Open/To work on this patch:
@@ -226,21 +226,20 @@ ReloadUI does not do anything, but manually mass marking via flag icon works fin
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2025-06-04
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2025-10-12
 ------------------------------------------------------------------------------------
 
-
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.7.2 - New version: 2.7.3) -    Updated last: 2025-06-04
+--Changelog (last version: 2.7.5 - New version: 2.7.6) -    Updated last: 2025-10-12
 -------------------------------------------------------------------------------------
 --[Fixed]
---LibFilters dependency
-
+--#324 Fixed: InventoryInsight from Ashes marker icons did not show anymore due to a removed variable within IIfA. Temporarily fixed this for within FCOIS now until IIfA get's an update
 
 
 --[Changed]
 
 --[Added]
+
 
 
 --[Added on request]

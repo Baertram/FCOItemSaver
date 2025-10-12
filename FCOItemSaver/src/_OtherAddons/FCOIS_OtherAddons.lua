@@ -74,12 +74,18 @@ if not FCOIS.libsLoadedProperly then return end
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 --Function to check if an item is crafted via the addon Dolgubon's Lazy Writ Creator
+local writCreaterName, writCreaterNameMultiple
 function FCOIS.CheckLazyWritCreatorCraftedItem()
+    if WritCreater then
+        writCreaterName = writCreaterName or WritCreater.name
+        writCreaterNameMultiple = writCreaterNameMultiple or writCreaterName..'Multiplier'
+    end
+
     local writCreatedItem, craftingType, addonRequester
     if otherAddons.LazyWritCreatorActive and WritCreater ~= nil and FCOIS.settingsVars.settings.autoMarkCraftedWritItems and LibLazyCrafting ~= nil then
         writCreatedItem, craftingType, addonRequester = LibLazyCrafting:IsPerformingCraftProcess() --> returns boolean, type of crafting, addon that requested the craft
 --d("[FCOIS]checkLazyWritCreatorCraftedItem - writCreatedItem: " .. tos(writCreatedItem) .. ", craftingType: " .. tos(craftingType) .. ", addonRequester: " .. tos(addonRequester))
-        FCOIS.preventerVars.writCreatorCreatedItem = writCreatedItem and addonRequester == WritCreater.name
+        FCOIS.preventerVars.writCreatorCreatedItem = writCreatedItem and (addonRequester == writCreaterName or addonRequester == writCreaterNameMultiple)
     end
     return writCreatedItem, craftingType, addonRequester
 end
@@ -698,6 +704,17 @@ function FCOIS.getItemInstanceOrUniqueId(bagId, slotIndex, itemLink)
     return getItemInstanceOrUniqueId(bagId, slotIndex, itemLink, true) --Change calledByExternalAddon always to true!
 end
 
+
+--20251012 #324 IIfA.database is nil all of sudden.. Sharlikran had remoced the reference
+--Should be something like IIfA.database = IIFA_DATABASE[GetDisplayName()]["servers"][serverLookup[currentServer]["DBv3"]
+local currentServer = GetWorldName()
+local function fixIIfAMissingDatabaseReference()
+    if IIfA.database ~= nil then return end
+    local displayName = IIfA.currentAccount or GetDisplayName()
+    local serverType = IIfA.currentServerType or GetWorldName():gsub(" Megaserver", IIfA.EMPTY_STRING)
+    IIfA.database = IIFA_DATABASE[displayName]["servers"][serverType]["DBv3"]
+end
+
 --Function to support Inventory Insight from Ashes addon. clickedDataLine is the right clicked row within the IIfA inventory frame.
 --> Returns the itemInstance or uniqueId (signed or unsigned depending on parameter signToo),
 --> bagId, slotIndex,
@@ -708,8 +725,11 @@ end
 --> And a table with the location names owning this item (all other BAG_* bags -> account wide bags!).
 ---->This table contains the bag string (e.g. "Bank" or "CraftBag") as key and the bagId as value
 function FCOIS.MyGetItemInstanceIdForIIfA(clickedDataLine, signToo)
-    if IIfA == nil then return nil, nil, nil, nil, nil end
+    if IIfA == nil or clickedDataLine == nil then return nil, nil, nil, nil, nil end
     --d("[FCOIS]MyGetItemInstanceIdForIIfA]")
+FCOIS._clickedDataLines = FCOIS._clickedDataLines or {}
+FCOIS._clickedDataLines[clickedDataLine:GetName()] = clickedDataLine
+
     signToo = signToo or false
     --Support for base64 unique itemids (e.g. an enchanted armor got the same ItemInstanceId but can have different unique ids)
     local itemId
@@ -718,7 +738,13 @@ function FCOIS.MyGetItemInstanceIdForIIfA(clickedDataLine, signToo)
     local settings = FCOIS.settingsVars.settings
 
     --Get the IIfA savedvars for the stored data
-    local DBv3 = IIfA.database
+    local DBv3
+    if not IIfA.GetDBv3 then
+        fixIIfAMissingDatabaseReference()
+        DBv3 = IIfA.database
+    else
+        DBv3 = IIfA:GetDBv3()
+    end
     if DBv3 == nil then return nil, nil, nil, nil, nil end
     --Check if the item at the given itemLink can be virtual (materials -> craftbag) or
     --if the itemtype is something which is stored like the craftbag items ONLY with the itemId inside the IIfA savedvars!

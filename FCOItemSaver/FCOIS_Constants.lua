@@ -12,7 +12,7 @@ local strlen = string.len
 FCOIS.addonVars = {}
 local addonVars = FCOIS.addonVars
 --Addon variables
-addonVars.addonVersionOptions 		    = '2.7.3' -- version shown in the settings panel
+addonVars.addonVersionOptions 		    = '2.7.6' -- version shown in the settings panel
 --The addon name, normal and decorated with colors etc.
 addonVars.gAddonName				    = "FCOItemSaver"
 addonVars.gAddonNameShort               = "FCOIS"
@@ -499,7 +499,7 @@ checkVars.inventoryRowPatterns = {
     "^ZO_CompanionEquipment_Panel_.+List%dRow%d%d*",                        --Companion Inventory backpack
     "^ZO_CompanionCharacterWindow_.+_TopLevelEquipmentSlots.+$",            --Companion character
     "^ZO_UniversalDeconstructionTopLevel_%a+PanelInventoryBackpack%dRow%d%d*",-- #202 Universal deconstruction
-    "^ZO_FurnitureVaultList%dRow%d%d*",                                     --Furniturevault
+    "^ZO_FurnitureVaultList%dRow%d%d*",                                     --Furniture Vault
 --Other adons like IIfA will be added dynamically at EVENT_ON_ADDON_LOADED callback function
 --See file src/FCOIS_Events.lua, call to function FCOIS.checkIfOtherAddonActive() -> See file
 -- src/FCOIS_OtherAddons.lua, function FCOIS.checkIfOtherAddonActive()
