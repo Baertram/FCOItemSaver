@@ -125,7 +125,7 @@ local changeContextMenuEntryTexts
 local isUnboundAndNotStolenItemChecks = FCOIS.IsUnboundAndNotStolenItemChecks
 local processJunkQueue = FCOIS.ProcessJunkQueue
 local getInventoryToSearch = FCOIS.GetInventoryToSearch --#308
-
+local FCOIS_GetIIfASettings = FCOIS.GetIIfASettings --#324
 
 ------------------------------------------------------------------------------------------------------------------------
 --Get the context menu invoker button data by help of the panel Id
@@ -638,7 +638,8 @@ function FCOIS.MarkMe(rowControl, markId, updateNow, doUnmark, refreshPopupDialo
                     --Update the texture for the control now:
                     --Show the FCOIS marker icons at the line, if enabled in the settings (create them if needed)  -> File AddOns/IIfA/plugins/FCOIS/IIfA_FCOIS.lua
                     if IIfA ~= nil and IIfA.UpdateFCOISMarkerIcons ~= nil then
-                        local showFCOISMarkerIcons = IIfA:GetSettings().FCOISshowMarkerIcons
+                        local IIfA_Settings = FCOIS_GetIIfASettings()
+                        local showFCOISMarkerIcons = (IIfA_Settings ~= nil and IIfA_Settings.FCOISshowMarkerIcons) or false
                         IIfA:UpdateFCOISMarkerIcons(rowControl, showFCOISMarkerIcons, showFCOISMarkerIcons, markId)
 
                         --Now check if the inventory or character screen etc. are visible too (together with the IIfA inventory frame) and refresh these panels
