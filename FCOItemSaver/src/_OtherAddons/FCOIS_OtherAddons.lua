@@ -648,14 +648,114 @@ FCOIS.updateSetTrackerMarker = otherAddons.SetTracker.updateSetTrackerMarker
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
+--[[ 2025-10-12 - IIfA API information by Sharlikran
+
+IIfA:GetInventoryDB() -> table
+Purpose: Returns the live inventory database table for the current account + server shard.
+Returns: IIFA_DATABASE[IIfA.currentAccount].servers[IIfA.currentServerType].DBv3 (a mutable table; edits persist)
+
+Notes:
+- “DBv3” is the canonical item store used throughout item scanning and updates (e.g., bag scans write into this same table).
+- Structure is account → servers → DBv3 (per NA/EU/etc.), initialized by InitializeDatabase().
+
+Example:
+local DBv3 = IIfA:GetInventoryDB()
+local sword = DBv3["4482"] -- if “4482” is a valid itemKey
+
+
+IIfA:GetSettings() -> table
+Purpose: Returns the current settings table.
+Returns: IIFA_DATABASE[IIfA.currentAccount].settings
+
+Notes:
+- Defaults (e.g., FCOISshowMarkerIcons) are populated during InitializeDatabase().
+- Many systems read from ...settings directly.
+
+Example:
+if IIfA:GetSettings().FCOISshowMarkerIcons then
+-- draw marker icons...
+end
+
+
+IIfA:GetItemKey(itemLink: string) -> string
+Purpose: Produces the canonical item key that IIfA uses to index items in DBv3.
+Returns:
+- For craft-bag/virtualizable or special “level-variant” item types (tools, containers, lockpicks, soul gems, motifs, trophies, tabards, recipes): the itemId as a string (e.g., "4482").
+- Otherwise: the full itemLink is returned unchanged.
+- If itemLink isn’t valid, returns IIfA.EMPTY_STRING.
+
+Why this matters:
+Callers must not assume they can index DBv3 by a raw itemLink; some items are intentionally keyed by itemId string to deduplicate variants.
+
+Example:
+local key = IIfA:GetItemKey(itemLink)
+local DBv3 = IIfA:GetInventoryDB()
+local entry = DBv3[key]
+
+
+IIfA:isItemKey(itemKey: any) -> boolean
+Purpose: Type guard for “itemKey is a numeric string (itemId form)”.
+Returns: true if itemKey is a string of digits and < 10 chars; else false.
+
+Typical use:
+- Distinguish numeric-string keys from itemLinks when reading DBv3 entries.
+
+
+IIfA:isItemLink(itemLink: any) -> boolean
+Purpose: Type guard for “looks like an ESO itemLink”.
+Returns: true if it’s a string containing ":item:"; else false.
+
+Example:
+if IIfA:isItemLink(suspect) then
+-- safe to pass to GetItemKey or ESO API calls
+end
+
+Item identity flow:
+- For any bag slot, the collector derives itemLink and itemKey, then writes to DBv3[itemKey].
+- When a slot lacks a usable link, stored slot info or DB can backfill it if the key is numeric.
+
+Location keys:
+- The following symbolic keys are used in place of specific bag IDs:
+IIFA_LOCATION_KEY_BANK = "Bank" -- replaces BAG_BANK and BAG_SUBSCRIBER_BANK
+IIFA_LOCATION_KEY_CRAFTBAG = "CraftBag" -- replaces BAG_VIRTUAL
+IIFA_LOCATION_KEY_FURNITURE_VAULT = "FurnitureVault" -- replaces BAG_FURNITURE_VAULT
+
+Character and companion references:
+- For characters, the location uses IIfA.currentCharacterId.
+- For companions, the location uses IIfA.currentCompanionId.
+- When a companion is not summoned, IIfA.currentCompanionId will be nil.
+
+
+Quick caller patterns:
+Get the live DB, then index with a safe key:
+local DBv3 = IIfA:GetInventoryDB()
+local key = IIfA:GetItemKey(itemLink)
+local row = DBv3[key]
+
+Determine what a key “is”:
+if IIfA:isItemKey(key) then
+-- numeric string (itemId form)
+elseif IIfA:isItemLink(key) then
+-- full itemLink
+end
+
+Read settings flags:
+local settings = IIfA:GetSettings()
+if settings.FCOISshowMarkerIcons then
+-- integrate with FCOIS markers
+end
+
+
+Guarantees:
+- GetInventoryDB() and GetSettings() return live tables from IIFA_DATABASE (no copies).
+- GetItemKey() always returns "", a numeric string, or a valid itemLink — never nil.
+- The location keys and character/companion identifiers are always defined during runtime initialization.
+]]
+
+
 --#324 Fix missing/nil IIfA.data and IIfA.settings and point to the correct settings now
 function FCOIS.GetIIfASettings()
-    local IIfASettings
-    if IIfA.data == nil and IIfA.settings == nil then
-        IIfASettings = IIFA_DATABASE[IIfA.currentAccount].settings
-    else
-        IIfASettings = IIfA:GetSettings()
-    end
+    local IIfASettings = IIfA:GetSettings()
     return IIfASettings
 end
 local FCOIS_GetIIfASettings = FCOIS.GetIIfASettings
@@ -719,12 +819,17 @@ end
 
 --20251012 #324 IIfA.database is nil all of sudden.. Sharlikran had remoced the reference
 --Should be something like IIfA.database = IIFA_DATABASE[GetDisplayName()]["servers"][serverLookup[currentServer]["DBv3"]
-local currentServer = GetWorldName()
+local currentServerShort = GetWorldName():gsub(" Megaserver", (IIfA ~= nil and IIfA.EMPTY_STRING) or "")
+local currentAccount = GetDisplayName()
 local function fixIIfAMissingDatabaseReference()
-    if IIfA.database ~= nil then return end
-    local displayName = IIfA.currentAccount or GetDisplayName()
-    local serverType = IIfA.currentServerType or GetWorldName():gsub(" Megaserver", IIfA.EMPTY_STRING)
-    IIfA.database = IIFA_DATABASE[displayName]["servers"][serverType]["DBv3"]
+    if IIfA.GetInventoryDB then
+        return IIfA:GetInventoryDB()
+    end
+    if IIfA.database ~= nil then return IIfA.database end
+
+    local displayName = IIfA.currentAccount or currentAccount
+    local serverType = IIfA.currentServerType or currentServerShort
+    return IIFA_DATABASE[displayName]["servers"][serverType]["DBv3"]
 end
 
 --Function to support Inventory Insight from Ashes addon. clickedDataLine is the right clicked row within the IIfA inventory frame.
@@ -748,13 +853,7 @@ function FCOIS.MyGetItemInstanceIdForIIfA(clickedDataLine, signToo)
     local settings = FCOIS.settingsVars.settings
 
     --Get the IIfA savedvars for the stored data
-    local DBv3
-    if not IIfA.GetDBv3 then
-        fixIIfAMissingDatabaseReference()
-        DBv3 = IIfA.database
-    else
-        DBv3 = IIfA:GetDBv3()
-    end
+    local DBv3 = fixIIfAMissingDatabaseReference()
     if DBv3 == nil then return nil, nil, nil, nil, nil end
     --Check if the item at the given itemLink can be virtual (materials -> craftbag) or
     --if the itemtype is something which is stored like the craftbag items ONLY with the itemId inside the IIfA savedvars!

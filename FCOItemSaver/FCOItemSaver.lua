@@ -230,10 +230,10 @@ ReloadUI does not do anything, but manually mass marking via flag icon works fin
 ------------------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.7.5 - New version: 2.7.6) -    Updated last: 2025-10-12
+--Changelog (last version: 2.7.6 - New version: 2.7.7) -    Updated last: 2025-10-12
 -------------------------------------------------------------------------------------
 --[Fixed]
---#324 Fixed: InventoryInsight from Ashes marker icons did not show anymore due to a removed variable within IIfA. Temporarily fixed this for within FCOIS now until IIfA get's an update
+--Uüdated to IIfa new/changed API
 
 
 --[Changed]
