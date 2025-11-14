@@ -1,17 +1,17 @@
 #
 ## Title: |c00FF00FCO |cFFFF00ItemSaver|t32:32:FCOItemSaver/FCOIS.dds|t
 ## Author: Baertram
-## Version: 2.7.7
-## AddOnVersion: 277
-## APIVersion: 101047 101048
+## Version: 2.7.8
+## AddOnVersion: 278
+## APIVersion: 101048 101049
 ## Description: FCOIS |t32:32:FCOItemSaver/FCOIS.dds|t Marks your items with different icons and filters them in the inventories/crafting. Protects your marked items against sell/deconstruct/extract etc., and provides many more features!
 ## SavedVariables: FCOItemSaver_Settings
 # !!! Attention !!! -> 1 line here can only contain ~220 characters, so the depency lines need to be split up, or they won't be recognized properly!
 #
 # Non-Optional libraries
-## DependsOn: LibAddonMenu-2.0>=40 LibAddonMenuOrderListBox>=012 LibCustomMenu>=730 LibDialog>=127 LibFeedback LibFilters-3.0>=345 LibMainMenu-2.0>=40400 LibShifterBox>=000700
+## DependsOn: LibAddonMenu-2.0>=41 LibAddonMenuOrderListBox>=012 LibCustomMenu>=730 LibDialog>=127 LibFeedback LibFilters-3.0>=346 LibMainMenu-2.0>=40400 LibShifterBox>=000700
 # Optional libraries
-## OptionalDependsOn: LibCharacterKnowledge>=201020 LibDebugLogger>=263 LibLazyCrafting>=4009 LibMultiAccountSets>=300080 LibSets>=000800
+## OptionalDependsOn: LibCharacterKnowledge>=201020 LibDebugLogger>=263 LibLazyCrafting>=4009 LibMultiAccountSets>=300080 LibSets>=000803
 # Optional AddOns
 ## OptionalDependsOn: AdvancedDisableControllerUI AdvancedFilters AF_FCODuplicateItemsFilters AwesomeGuildStore CraftBagExtended DolgubonsLazyWritCreator ItemCooldownTracker SetTracker>=300 SousChef
 

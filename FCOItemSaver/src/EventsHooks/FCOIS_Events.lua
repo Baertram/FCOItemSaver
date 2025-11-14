@@ -1211,6 +1211,18 @@ local function FCOItemSaver_Loaded(eventCode, addOnName)
 
             if FCOIS.settingsVars.settings.debug then debugMessage( "[EVENT]", "Addon startup finished!", true, FCOIS_DEBUG_DEPTH_NORMAL) end
         end --gamepad active check
+
+
+        local doDebug = false
+        if doDebug then
+            local displayName = GetDisplayName()
+            if displayName == "@Baertram" or displayName == "@Baerkloppt" then
+                ZO_PreHook(PLAYER_INVENTORY, "UpdateList", function()
+                    d("=====================> PLAYER_INVENTORY:UpdateList called")
+                end)
+            end
+        end
+
     else
         FCOIS.addonVars.gAddonLoaded = false
         --Libraries were not loaded properly!
