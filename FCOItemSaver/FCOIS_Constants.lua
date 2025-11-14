@@ -12,7 +12,7 @@ local strlen = string.len
 FCOIS.addonVars = {}
 local addonVars = FCOIS.addonVars
 --Addon variables
-addonVars.addonVersionOptions 		    = '2.7.4' -- version shown in the settings panel
+addonVars.addonVersionOptions 		    = '2.7.8' -- version shown in the settings panel
 --The addon name, normal and decorated with colors etc.
 addonVars.gAddonName				    = "FCOItemSaver"
 addonVars.gAddonNameShort               = "FCOIS"
@@ -318,6 +318,9 @@ local preventerVars = FCOIS.preventerVars
 --So for now they will all change at the same time to AND or OR
 --Change orr emove this preventerVariable to update them single again
 preventerVars.filterButtonSettingsChangeAllToTheSame = true
+
+--Set the variable to update the filter button conjunction data
+preventerVars.filterButtonsLogicalConjunctionsNeedUpdate = true
 
 --Filter button color
 mappingVars.filterButtonColors = {

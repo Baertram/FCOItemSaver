@@ -1092,7 +1092,10 @@ local function automaticMarkingSetsAdditionalCheckFunc(p_itemData, p_checkFuncRe
 
         --Set marker icon was set already, or only the trait should be marked and was marked successfully? Then abort here now
         --so the set icon won't be set later on in the calling function's "to do" entry
-        if (markWithTraitIcon and settings.autoMarkSetsOnlyTraits) or isMarkedWithAutomaticSetMarkerIcon then return nil, nil end
+        --#325 If only trait icosn should be set, and no trait icon was enabled for this' item's trait, then neither add the setMarker icon now!
+        --if (markWithTraitIcon and settings.autoMarkSetsOnlyTraits) or isMarkedWithAutomaticSetMarkerIcon then return nil, nil end
+        if settings.autoMarkSetsOnlyTraits or isMarkedWithAutomaticSetMarkerIcon then return nil, nil end
+
         --Change the marker icon in the 1st checkFunc resultdata from the trait icon (if valid set part and trait was found)
         --to the normal "Set" marker icon now
         p_itemData.fromCheckFunc["newMarkerIcon"] = setsIconNr

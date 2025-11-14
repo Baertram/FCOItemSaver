@@ -125,7 +125,7 @@ local changeContextMenuEntryTexts
 local isUnboundAndNotStolenItemChecks = FCOIS.IsUnboundAndNotStolenItemChecks
 local processJunkQueue = FCOIS.ProcessJunkQueue
 local getInventoryToSearch = FCOIS.GetInventoryToSearch --#308
-
+local FCOIS_GetIIfASettings = FCOIS.GetIIfASettings --#324
 
 ------------------------------------------------------------------------------------------------------------------------
 --Get the context menu invoker button data by help of the panel Id
@@ -638,7 +638,8 @@ function FCOIS.MarkMe(rowControl, markId, updateNow, doUnmark, refreshPopupDialo
                     --Update the texture for the control now:
                     --Show the FCOIS marker icons at the line, if enabled in the settings (create them if needed)  -> File AddOns/IIfA/plugins/FCOIS/IIfA_FCOIS.lua
                     if IIfA ~= nil and IIfA.UpdateFCOISMarkerIcons ~= nil then
-                        local showFCOISMarkerIcons = IIfA:GetSettings().FCOISshowMarkerIcons
+                        local IIfA_Settings = FCOIS_GetIIfASettings()
+                        local showFCOISMarkerIcons = (IIfA_Settings ~= nil and IIfA_Settings.FCOISshowMarkerIcons) or false
                         IIfA:UpdateFCOISMarkerIcons(rowControl, showFCOISMarkerIcons, showFCOISMarkerIcons, markId)
 
                         --Now check if the inventory or character screen etc. are visible too (together with the IIfA inventory frame) and refresh these panels
@@ -2071,7 +2072,7 @@ local function ContextMenuFCOISFilterButtonSettingsOnClicked(button, contextMenu
     if settings.filterButtonSettings[filterPanelId] and settings.filterButtonSettings[filterPanelId][buttonNr] ~= nil then
         if settings.filterButtonSettings[filterPanelId][buttonNr][settingsName] ~= nil then
             local newSettingsValue = buttonCheckboxState ~= nil and buttonCheckboxState or newValue
-            --#300 bugfix to prevent endless big SavedVars because the newSettingsValue is a table containign a complete LibScrollableMenu reference?!
+            --#300 bugfix to prevent endless big SavedVars because the newSettingsValue is a table containing a complete LibScrollableMenu reference?!
             if type(newSettingsValue) ~= "boolean" then
 --d(">type of newSettingsValue: " .. tos(type(newSettingsValue)))
                 newSettingsValue = false
@@ -2079,17 +2080,21 @@ local function ContextMenuFCOISFilterButtonSettingsOnClicked(button, contextMenu
             --filterWithLogical AND conjunction
             settings.filterButtonSettings[filterPanelId][buttonNr][settingsName] = newSettingsValue
 
-            --#176 Logical AND or OR conjunction context menua t filterButtons
+            --#176 Logical AND or OR conjunction context menu at filterButtons
             --Change all filter buttons logical conjunction settings at the same time?
-            if settingsName == filterButtonFilterWithLogicalANDSettingsName and FCOIS.preventerVars.filterButtonSettingsChangeAllToTheSame then
-                --Get the other filter buttons and update them accordingly to the current button's settings
-                filterButtonsToCheck = filterButtonsToCheck or FCOIS.checkVars.filterButtonsToCheck
-                for _, filterButtonNr in ipairs(filterButtonsToCheck) do
-                    if filterButtonNr ~= buttonNr then
---d(">checking otherFilterButton: " ..tos(filterButtonNr))
-                        if settings.filterButtonSettings[filterPanelId][filterButtonNr][settingsName] ~= nil then
-                            --filterWithLogical AND conjunction
-                            settings.filterButtonSettings[filterPanelId][filterButtonNr][settingsName] = newSettingsValue
+            if settingsName == filterButtonFilterWithLogicalANDSettingsName then
+                FCOIS.preventerVars.filterButtonsLogicalConjunctionsNeedUpdate = true --#2025_999
+
+                if FCOIS.preventerVars.filterButtonSettingsChangeAllToTheSame then
+                    --Get the other filter buttons and update them accordingly to the current button's settings
+                    filterButtonsToCheck = filterButtonsToCheck or FCOIS.checkVars.filterButtonsToCheck
+                    for _, filterButtonNr in ipairs(filterButtonsToCheck) do
+                        if filterButtonNr ~= buttonNr then
+                            --d(">checking otherFilterButton: " ..tos(filterButtonNr))
+                            if settings.filterButtonSettings[filterPanelId][filterButtonNr][settingsName] ~= nil then
+                                --filterWithLogical AND conjunction
+                                settings.filterButtonSettings[filterPanelId][filterButtonNr][settingsName] = newSettingsValue
+                            end
                         end
                     end
                 end

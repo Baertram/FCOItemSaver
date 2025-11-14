@@ -156,12 +156,12 @@ FCOIS.UpdateCraftingInventory = updateCraftingInventory
 
 --Refresh the backpack list
 function FCOIS.RefreshBackpack(liFiltersUpdateWasCalled)
---d("[FCOIS]RefreshBackpack")
     local updateFilteredItemCount = false
 
     if not liFiltersUpdateWasCalled then --#282
         --Added with patch to API 100015 -> New craft bag
         if INVENTORY_CRAFT_BAG and not ctrlVars.CRAFTBAG:IsHidden() then
+--d("[FCOIS]RefreshBackpack - CRAFTBAG")
             if FCOIS.settingsVars.settings.debug then debugMessage( "[RefreshBackpack]","Craftbag refresh", true, FCOIS_DEBUG_DEPTH_DETAILED) end
             FCOIS.preventerVars.isInventoryListUpdating = true
             ctrlVars.playerInventory:UpdateList(INVENTORY_CRAFT_BAG)
@@ -171,6 +171,7 @@ function FCOIS.RefreshBackpack(liFiltersUpdateWasCalled)
             --d(">normal inv")
             --Refresh the normal inventory
             if not backpackCtrl:IsHidden() then
+--d("[FCOIS]RefreshBackpack - PLAYER INVENTORY")
                 --d(">>refreshing")
                 if FCOIS.settingsVars.settings.debug then debugMessage( "[RefreshBackpack]","Backpack refresh", true, FCOIS_DEBUG_DEPTH_DETAILED) end
                 FCOIS.preventerVars.isInventoryListUpdating = true

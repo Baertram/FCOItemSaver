@@ -212,12 +212,15 @@ it marked them, if I check "mark unknown motifs" with "no icon" it doesn't mark 
 
 ReloadUI does not do anything, but manually mass marking via flag icon works fine
 ]]
---#314 Mail send is blocked for normal markers (sell, sell at guildstore) even if the add. inv. flag is red (protection off). But maybe only for golden style pages?! Other armor items work fine
--->Only was able to get that bug once so far, not sure how to reproduce it
+
+
+--#2025_999 Performance improvements
+
+--#325 Automatic set marker is applied to all items, allthough only automatic set traits should be marked
 
 
 --______________________________________
--- Current max # of bugs/features/ToDos: 322
+-- Current max # of bugs/features/ToDos: 325
 --______________________________________
 
 --Open/To work on this patch:
@@ -226,14 +229,15 @@ ReloadUI does not do anything, but manually mass marking via flag icon works fin
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2025-06-18
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2025-11-14
 ------------------------------------------------------------------------------------
+--#325
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.7.3 - New version: 2.7.4) -    Updated last: 2025-06-18
+--Changelog (last version: 2.7.6 - New version: 2.7.7) -    Updated last: 2025-11-14
 -------------------------------------------------------------------------------------
 --[Fixed]
---#322 Automatic intricate/sell marks not working for gear (blacksmit, clothier, woodworking), below level CP160
+--
 
 
 --[Changed]
