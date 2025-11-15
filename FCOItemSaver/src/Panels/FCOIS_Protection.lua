@@ -350,7 +350,7 @@ function FCOIS.CheckIfItemIsProtected(iconId, itemId, checkHandler, addonName, s
     --If the check handler is given we need to check if it is an allowed one
     if checkHandler ~= nil and checkHandler ~= "" then
         if not allowedCheckHandlers[checkHandler] then return false end
-        checkIfItemIsProtected = FCOIS.CheckIfItemIsProtected
+        checkIfItemIsProtected = checkIfItemIsProtected or FCOIS.CheckIfItemIsProtected
         local mappingVars = FCOIS.mappingVars
         --Recursively check all the marker icons from the check handler range, e.g. all gear sets or all dynamic icons
         if checkHandler == "gear" then
