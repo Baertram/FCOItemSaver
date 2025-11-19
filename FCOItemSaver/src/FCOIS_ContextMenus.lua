@@ -842,12 +842,11 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
     if not isIconEnabled[markId] then return false end
 
     local isDynamicIcon = mappingVars.iconIsDynamic
-    --local isGearIcon = mappingVars.iconIsGear
     local isGearIcon = settings.iconIsGear
     local notAllowedParentCtrls = checkVars.notAllowedContextMenuParentControls
     local notAllowedCtrls       = checkVars.notAllowedContextMenuControls
     local researchableIcons     = mappingVars.iconIsResearchable
-    local iconsDisabledAtCompanion = mappingVars.iconIsDisabledAtCompanion
+    --local iconsDisabledAtCompanion = mappingVars.iconIsDisabledAtCompanion
     local allowedCharacterCtrls = checkVars.allowedCharacterEquipmentWeaponControlNames
     local allowedCharacterJewelryControls = checkVars.allowedCharacterEquipmentJewelryControlNames
     local customMenuVars = FCOIS.customMenuVars
@@ -934,7 +933,7 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
     ------------------------------------------------------------------------------------------------------------------------
     local allowedCharCtrl = allowedCharacterCtrls[controlName] or false
     local allowedCharJewelryControl = allowedCharacterJewelryControls[controlName] or false
-    local doCheckOnlyUnbound = settings.allowOnlyUnbound[markId]
+    local doCheckOnlyUnbound = settings.allowOnlyUnbound[markId] or false --#2025_999
     local refreshList
     local contextMenuEntryTextPre = ""
     local contextMenuSubMenuEntryTextPre = ""
@@ -1812,7 +1811,7 @@ function FCOIS.ChangeContextMenuEntryTexts(iconId)
             locContEntries.menu_remove_dynamic_text = {}
         end
 
-        local isGearIcon 	= gearIcons[iconId]
+        local isGearIcon 	= gearIcons[iconId] or false --#2025_999
         local isDynamicIcon = dynamicIcons[iconId]
         --d(">Icon (" .. iconId .. "): isGear: ".. tos(isGearIcon) .. ", isDynamic: " ..tos(isDynamicIcon))
 
@@ -3008,7 +3007,7 @@ local function contextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
 
             --FCOIS.its = inventoryData
             --d("[FCOIS]ContextMenuForAddInvButtonsOnClicked")
-            local doCheckOnlyUnbound = settings.allowOnlyUnbound[iconId]
+            local doCheckOnlyUnbound = settings.allowOnlyUnbound[iconId] or false --#2025_999
             --Loop over each not-filtered item data in the current inventory
             for _,v in pairs(inventoryData) do
                 --Initialize the "is item markable/researchable" variable
@@ -3614,7 +3613,7 @@ function FCOIS.ShowContextMenuForAddInvButtons(invAddContextMenuInvokerButton, b
                     local isIconDisabledAtCompanionInv = ((isCompanionInventory == true or isCompanionCharacter == true) and iconsDisabledAtCompanionInv[buttonsIcon] == true) or false
                     if not isIconDisabledAtCompanionInv then
                         --The icon which the button affects -> Gets the text that should be displayed
-                        local isGear	= isIconGear[buttonsIcon]
+                        local isGear	= isIconGear[buttonsIcon] or false
                         local isDynamic = isIconDynamic[buttonsIcon]
                         --Use the custom sort order as it is valid, or do not sort and use the iconId instead as sortIndex
                         if sortAddInvFlagContextMenu then

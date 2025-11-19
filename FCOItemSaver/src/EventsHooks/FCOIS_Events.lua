@@ -1215,7 +1215,8 @@ local function FCOItemSaver_Loaded(eventCode, addOnName)
 
 
 --======================================================================================================================
-        local doDebug = true --#2025_999
+        --[[
+        local doDebug = false --#2025_999
         if doDebug then
             local displayName = GetDisplayName()
             if displayName == "@Baertram" or displayName == "@Baerkloppt" then
@@ -1224,6 +1225,7 @@ local function FCOItemSaver_Loaded(eventCode, addOnName)
                 end)
             end
         end
+        ]]
 --======================================================================================================================
 
     else

@@ -801,21 +801,10 @@ end
 --and change depending anti check panels accordingly
 -->Used in files src/FCOIS_SettingsMenu.lua and src/FCOIS_Workarounds.lua
 function FCOIS.UpdateAntiCheckAtPanelVariable(iconNr, panelId, value)
-    value = value or false
+    --value = value or false --#2025_999
     if iconNr == nil or panelId == nil then return false end
     --Check depending panelIds
-    --[[
-    --Inventory
-    if panelId == LF_INVENTORY then
-        --Must change the bank, guild bank and house bank withdraw/deposit panels as well
-        FCOIS.settingsVars.settings.icon[iconNr].antiCheckAtPanel[LF_BANK_DEPOSIT] = value
-        FCOIS.settingsVars.settings.icon[iconNr].antiCheckAtPanel[LF_GUILDBANK_DEPOSIT] = value
-        FCOIS.settingsVars.settings.icon[iconNr].antiCheckAtPanel[LF_HOUSE_BANK_DEPOSIT] = value
-        FCOIS.settingsVars.settings.icon[iconNr].antiCheckAtPanel[LF_BANK_WITHDRAW] = value
-        FCOIS.settingsVars.settings.icon[iconNr].antiCheckAtPanel[LF_GUILDBANK_WITHDRAW] = value
-        FCOIS.settingsVars.settings.icon[iconNr].antiCheckAtPanel[LF_HOUSE_BANK_WITHDRAW] = value
-    end
-    ]]
+    --e.g. inventory: Must change the bank, guild bank and house bank withdraw/deposit panels as well
     local dependingAntiCheckPaneIldsAtPanelId = mappingVars.dependingAntiCheckPanelIdsAtPanelId
     local dependingPanelIds = dependingAntiCheckPaneIldsAtPanelId[panelId]
     if dependingPanelIds ~= nil then

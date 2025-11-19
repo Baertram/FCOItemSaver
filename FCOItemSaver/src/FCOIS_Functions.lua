@@ -407,16 +407,20 @@ end
 -->Check the name of a texture control and see if it exists, then return the control.
 --> The control's name is the addon name + a nilable additional parameter "controlNameAddition" + the markerIconId
 --> Used to create FCOIS marker icon texture controls with unique names in other addons like Inventory Insight from Ashes (IIfA)!
-function FCOIS.GetItemSaverControl(parent, controlId, useParentFallback, controlNameAddition)
-    if FCOIS.settingsVars.settings.debug then debugMessage( "[GetItemSaverControl]","Parent: " .. parent:GetName() .. ", ControlId: " .. tos(controlId) .. ", useParentFallback: " .. tos(useParentFallback), true, FCOIS_DEBUG_DEPTH_VERBOSE) end
+function FCOIS.GetItemSaverControl(parent, markerIconId, useParentFallback, controlNameAddition, onlyReturnControlName) --#2025_999
+    if FCOIS.settingsVars.settings.debug then debugMessage( "[GetItemSaverControl]","Parent: " .. parent:GetName() .. ", MarkerIconId: " .. tos(markerIconId) .. ", useParentFallback: " .. tos(useParentFallback), true, FCOIS_DEBUG_DEPTH_VERBOSE) end
     local textureNameAddition = (controlNameAddition ~= nil and controlNameAddition) or ""
-    local retControl = parent:GetNamedChild(gAddonName .. textureNameAddition .. tos(controlId))
-    --Use the parent control as a fallback?
-    --e.g. Inside enchanting the parent control is the correct one already
-    if retControl == nil and useParentFallback == true then
-        return parent
+    local textureName = gAddonName .. textureNameAddition .. tos(markerIconId)
+    local retControl
+    if not onlyReturnControlName then --#2025_999
+        retControl = parent:GetNamedChild(textureName)
+        --Use the parent control as a fallback?
+        --e.g. Inside enchanting the parent control is the correct one already
+        if retControl == nil and useParentFallback == true then
+            return parent, textureName
+        end
     end
-    return retControl
+    return retControl, textureName
 end
 
 function FCOIS.MyGetItemNameNoControl(bagId, slotIndex)
@@ -439,7 +443,7 @@ function FCOIS.MyGetItemNameNoControl(bagId, slotIndex)
     return name
 end
 
-function FCOIS.Mygin(rowControl)
+function FCOIS.GetItemName(rowControl)
     --Inventory Insight from Ashes support
     local IIfAclicked = FCOIS.IIfAclicked
     if IIfAclicked ~= nil then
@@ -1257,7 +1261,7 @@ function FCOIS.IsUnboundAndNotStolenItemChecks(bagId, slotIndex, iconId, isBound
     end
     if isBound == true then
         if doCheckOnlyUnbound == nil then
-            doCheckOnlyUnbound = FCOIS.settingsVars.settings.allowOnlyUnbound[iconId]
+            doCheckOnlyUnbound = FCOIS.settingsVars.settings.allowOnlyUnbound[iconId] or false --#2025_999
         end
         doCheckOnlyUnbound = doCheckOnlyUnbound or false
         if doCheckOnlyUnbound == true then
@@ -3529,7 +3533,7 @@ end
 --Function to rebuild the gear set values (icons, ids, names, context menu values, dynamicGear, nonDynamicGear, etc.)
 --Called at event_player_activated and if some gear settings change in the settings menu (dynamic marker icons -> enabled as gear e.g.)
 function FCOIS.RebuildGearSetBaseVars(iconNr, value, calledFromEventPlayerActivated)
---d("FCOIS]rebuildGearSetBaseVars-calledFromEventPlayerActivated: " ..tos(calledFromEventPlayerActivated))
+    --d("FCOIS]rebuildGearSetBaseVars-calledFromEventPlayerActivated: " ..tos(calledFromEventPlayerActivated))
     calledFromEventPlayerActivated = calledFromEventPlayerActivated or false
     local numVars = FCOIS.numVars
     local settings = FCOIS.settingsVars.settings
@@ -3541,21 +3545,21 @@ function FCOIS.RebuildGearSetBaseVars(iconNr, value, calledFromEventPlayerActiva
     local changeContextMenuEntryTexts = FCOIS.ChangeContextMenuEntryTexts
     local rebuildFilterButtonContextMenuVars = FCOIS.RebuildFilterButtonContextMenuVars
 
-------------------------------------------------------------------------------------------------------------------------
---Update all entries
-------------------------------------------------------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------------------------------------------
+    --Update all entries
+    ------------------------------------------------------------------------------------------------------------------------
     if iconNr == nil and value == nil then
         local gearCounter = 0
 
         --Reset the active gear sets
         FCOIS.numVars.gFCONumGearSets = 0
         --loop over all icons which are marked as gear, or are one of the 5 static gear icons
---d("[FCOIS]rebuildGearSetBaseVars - all icons")
+        --d("[FCOIS]rebuildGearSetBaseVars - all icons")
         for iconNrLoop, isGear in pairs(iconIsGear) do
             --Maximum gear set number
             --Get the current max and increase/decrease it, depending on the value
             local currentMaxGearSets = numVars.gFCONumGearSets
---d(">iconNrLoop: " ..tos(iconNrLoop) .. ", isGear: " ..tos(isGear) .. ", currentMaxGearSets: " .. tos(currentMaxGearSets))
+            --d(">iconNrLoop: " ..tos(iconNrLoop) .. ", isGear: " ..tos(isGear) .. ", currentMaxGearSets: " .. tos(currentMaxGearSets))
             ------------------------------------------------------------------------------------------------------------------------
             --Icon is marked as gear
             ------------------------------------------------------------------------------------------------------------------------
@@ -3569,10 +3573,10 @@ function FCOIS.RebuildGearSetBaseVars(iconNr, value, calledFromEventPlayerActiva
                 FCOIS.mappingVars.gearToIcon[gearCounter] = iconNrLoop
                 --Increase the maximum gear sets
                 currentMaxGearSets = currentMaxGearSets + 1
---d(">>is gear! gearCounter: " .. tos(gearCounter) .. ", newMaxGearSets: " ..tos(currentMaxGearSets))
-            ------------------------------------------------------------------------------------------------------------------------
-            --Icon is not marked as gear
-            ------------------------------------------------------------------------------------------------------------------------
+                --d(">>is gear! gearCounter: " .. tos(gearCounter) .. ", newMaxGearSets: " ..tos(currentMaxGearSets))
+                ------------------------------------------------------------------------------------------------------------------------
+                --Icon is not marked as gear
+                ------------------------------------------------------------------------------------------------------------------------
             else
                 --Reset the icon to filter mapping to the default value
                 local icon2filterDef = FCOIS.mappingVars.iconToFilterDefaults
@@ -3582,14 +3586,14 @@ function FCOIS.RebuildGearSetBaseVars(iconNr, value, calledFromEventPlayerActiva
                 if FCOIS.mappingVars.iconToGear[iconNrLoop] ~= nil then
                     gearNr = FCOIS.mappingVars.iconToGear[iconNrLoop]
                     FCOIS.mappingVars.iconToGear[iconNrLoop] = nil -- as the table got no consistent digit key table.remove does not work
-					--trem(FCOIS.mappingVars.iconToGear, iconNrLoop) -- to retain table indices
+                    --trem(FCOIS.mappingVars.iconToGear, iconNrLoop) -- to retain table indices
                 end
                 --Reset the mapping of gear number to icon
                 if gearNr ~= nil and gearNr > 0 and FCOIS.mappingVars.gearToIcon[gearNr] ~= nil then
                     --FCOIS.mappingVars.gearToIcon[gearNr] = nil
-					trem(FCOIS.mappingVars.gearToIcon, gearNr) -- to retain table indices
+                    trem(FCOIS.mappingVars.gearToIcon, gearNr) -- to retain table indices
                 end
---d(">>NOT a gear! gearNr: " .. tos(gearNr) .. ", newMaxGearSets: " ..tos(currentMaxGearSets))
+                --d(">>NOT a gear! gearNr: " .. tos(gearNr) .. ", newMaxGearSets: " ..tos(currentMaxGearSets))
             end
             --Set the new current gear sets number
             FCOIS.numVars.gFCONumGearSets = currentMaxGearSets
@@ -3608,33 +3612,34 @@ function FCOIS.RebuildGearSetBaseVars(iconNr, value, calledFromEventPlayerActiva
         --Rebuild the context menu variables for the dynamic and gear icons
         rebuildFilterButtonContextMenuVars()
 
-------------------------------------------------------------------------------------------------------------------------
---Update only one entry
-------------------------------------------------------------------------------------------------------------------------
+
+        ------------------------------------------------------------------------------------------------------------------------
+        --Update only one entry
+        ------------------------------------------------------------------------------------------------------------------------
     else
---d("[FCOIS]rebuildGearSetBaseVars - single icon: "..tos(iconNr) .." and value: " ..tos(value))
+        --d("[FCOIS]rebuildGearSetBaseVars - single icon: "..tos(iconNr) .." and value: " ..tos(value))
         ------------------------------------------------------------------------------------------------------------------------
         --Single icon is marked as gear
         ------------------------------------------------------------------------------------------------------------------------
-        if value then
+        if value == true then
             local gearCounter = 0
             for _, isGear in pairs(iconIsGear) do
                 if isGear then
                     gearCounter = gearCounter + 1
                 end
             end
---d(">gearCounter: " ..tos(gearCounter))
+            --d(">gearCounter: " ..tos(gearCounter))
             --The mapping of icon to filter button number
             FCOIS.mappingVars.iconToFilter[iconNr] = FCOIS_CON_FILTER_BUTTON_GEARSETS
             --The mapping of icon to gear number
             FCOIS.mappingVars.iconToGear[iconNr] = gearCounter
             --The mapping of gear number to icon
             FCOIS.mappingVars.gearToIcon[gearCounter] = iconNr
-        ------------------------------------------------------------------------------------------------------------------------
-        --Single icon is not marked as gear
-        ------------------------------------------------------------------------------------------------------------------------
+            ------------------------------------------------------------------------------------------------------------------------
+            --Single icon is not marked as gear
+            ------------------------------------------------------------------------------------------------------------------------
         else
-            --Reset the icon to filter mapping to the default value
+            --Reset the "icon to filter button" mapping to the default value
             local icon2filterDef = FCOIS.mappingVars.iconToFilterDefaults
             FCOIS.mappingVars.iconToFilter[iconNr] = icon2filterDef[iconNr]
             --Reset the mapping of icon to gear number
@@ -3642,19 +3647,19 @@ function FCOIS.RebuildGearSetBaseVars(iconNr, value, calledFromEventPlayerActiva
             if FCOIS.mappingVars.iconToGear[iconNr] ~= nil then
                 gearNr = FCOIS.mappingVars.iconToGear[iconNr]
                 FCOIS.mappingVars.iconToGear[iconNr] = nil -- as the table got no consistent digit key table.remove does not work
-				--trem(FCOIS.mappingVars.iconToGear, iconNr) -- to retain table indices
+                --trem(FCOIS.mappingVars.iconToGear, iconNr) -- to retain table indices
             end
             --Reset the mapping of gear number to icon
             if gearNr ~= nil and gearNr > 0 and FCOIS.mappingVars.gearToIcon[gearNr] ~= nil then
                 --FCOIS.mappingVars.gearToIcon[gearNr] = nil
-				trem(FCOIS.mappingVars.gearToIcon, gearNr) -- to retain table indices
+                trem(FCOIS.mappingVars.gearToIcon, gearNr) -- to retain table indices
             end
         end
 
         --Maximum gear set number
         --Get the current max and increase/decrease it, depending on the value
         local currentMaxGearSets = numVars.gFCONumGearSets
---d(">currentMaxGearSets: " ..tos(currentMaxGearSets))
+        --d(">currentMaxGearSets: " ..tos(currentMaxGearSets))
         if value then
             currentMaxGearSets = currentMaxGearSets + 1
         else
@@ -3662,7 +3667,7 @@ function FCOIS.RebuildGearSetBaseVars(iconNr, value, calledFromEventPlayerActiva
         end
         --Set the new current gear sets number
         FCOIS.numVars.gFCONumGearSets = currentMaxGearSets
---d(">newMaxGearSets: " ..tos(FCOIS.numVars.gFCONumGearSets))
+        --d(">newMaxGearSets: " ..tos(FCOIS.numVars.gFCONumGearSets))
 
         --Update the context menu texts for this icon
         changeContextMenuEntryTexts(iconNr)

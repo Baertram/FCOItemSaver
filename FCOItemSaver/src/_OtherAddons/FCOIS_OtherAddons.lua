@@ -1431,7 +1431,7 @@ end
 function FCOIS.CheckIfItemCooldownTrackerRelevantItemIdAndMarkItem(bagId, slotIndex, itemLink)
     --#184
 --d("[FCOIS]CheckIfItemCooldownTrackerRelevantItemIdAndMarkItem")
-    if not icdt then return false end
+    if not icdt or (bagId == nil and slotIndex == nil and itemLink == nil) then return false end
     local settings = FCOIS.settingsVars.settings
     local autoMarkItemCoolDownTrackerTrackedItems = settings.autoMarkItemCoolDownTrackerTrackedItems
     local itemCoolDownTrackerTrackedItemsMarkerIcon = settings.itemCoolDownTrackerTrackedItemsMarkerIcon

@@ -34,7 +34,7 @@ function FCOIS.BuildLocalizedFilterButtonContextMenuEntries(contextMenuType)
     local buttonNamePrefix = contextMenuVars.buttonNamePrefix
 
     --Gear set / dynamic icon variables
-    local iconIsGear =              settings.iconIsGear
+    local iconIsGear =              settings.iconIsGear --#2025_999
     --local dynIconTotalCount =     FCOIS.numVars.gFCONumDynamicIcons
     local dynIconTotalCount   =     settings.numMaxDynamicIconsUsable
     local dynIconCounter2IconNr =   mappingVars.dynamicToIcon
@@ -71,7 +71,7 @@ function FCOIS.BuildLocalizedFilterButtonContextMenuEntries(contextMenuType)
         for dynIconCounter=1, dynIconTotalCount, 1 do
             local dynIconNr = dynIconCounter2IconNr[dynIconCounter]
             local isDynamic = isDynamicIcon[dynIconNr]
-            local isGear    = iconIsGear[dynIconNr]
+            local isGear    = iconIsGear[dynIconNr] or false --#2025_999
             if settings.isIconEnabled[dynIconNr] and isDynamic and not isGear then
                 local iconData = settings.icon[dynIconNr]
                 local dynEntry = {
@@ -104,11 +104,10 @@ function FCOIS.BuildLocalizedFilterButtonContextMenuEntries(contextMenuType)
         --Then add the gear set buttons dynamically
         local gearIconTotalCount = FCOIS.numVars.gFCONumGearSetsStatic
         local gearIconCounter2IconNr = FCOIS.mappingVars.gearToIcon
-        --local isGearIcon = FCOIS.mappingVars.iconIsGear
         local gearsCounter = 1
         for gearIconCounter=1, gearIconTotalCount, 1 do
             local gearIconNr = gearIconCounter2IconNr[gearIconCounter]
-            local isGear = iconIsGear[gearIconNr]
+            local isGear = iconIsGear[gearIconNr] or false --#2025_999
             if settings.isIconEnabled[gearIconNr] and isGear then
                 local iconData = settings.icon[gearIconNr]
                 local gearEntry = {
@@ -127,7 +126,7 @@ function FCOIS.BuildLocalizedFilterButtonContextMenuEntries(contextMenuType)
         for dynIconCounter=1, dynIconTotalCount, 1 do
             local dynIconNr = dynIconCounter2IconNr[dynIconCounter]
             local isDynamic = isDynamicIcon[dynIconNr]
-            local isGear    = iconIsGear[dynIconNr]
+            local isGear    = iconIsGear[dynIconNr] or false --#2025_999
             if settings.isIconEnabled[dynIconNr] and isDynamic and isGear then
                 local iconData = settings.icon[dynIconNr]
                 local gearEntry = {

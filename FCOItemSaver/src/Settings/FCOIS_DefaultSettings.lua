@@ -471,7 +471,7 @@ function FCOIS.BuildDefaultSettings()
 	for libFiltersFilterPanelIdHelper = 1, numLibFiltersFilterPanelIds, 1 do
 		if activeFilterPanelIds[libFiltersFilterPanelIdHelper] == true then
 			--Create 2-dimensional arrays for the filters
-			FCOIS.settingsVars.defaults.isFilterPanelOn[libFiltersFilterPanelIdHelper] = {false, false, false, false}
+			--FCOIS.settingsVars.defaults.isFilterPanelOn[libFiltersFilterPanelIdHelper] = {false, false, false, false}   --#2025_999
 			--Create 2-dimensional array for the "enabled" setings (Filters, Anti-Destroy, Anti-Deconstruction, Anti-Sell, Anti-Trade, Anti-Mail, etc.)
 			FCOIS.settingsVars.defaults.atPanelEnabled[libFiltersFilterPanelIdHelper]	= {
 				["filters"] 		 = false,
@@ -495,8 +495,7 @@ function FCOIS.BuildDefaultSettings()
 			FCOIS.contextMenuVars.undoMarkedItems[libFiltersFilterPanelIdHelper] = {}
 
 			--Added with FCOIS v1.9.9
-			accountWideButForEachCharacterSettings[currentCharId].isFilterPanelOn[libFiltersFilterPanelIdHelper]              = {}
-			accountWideButForEachCharacterSettings[currentCharId].isFilterPanelOn[libFiltersFilterPanelIdHelper]              = { false, false, false, false}
+			--accountWideButForEachCharacterSettings[currentCharId].isFilterPanelOn[libFiltersFilterPanelIdHelper]              = { false, false, false, false}   --#2025_999
 			--Create the helper arrays for the filter button context menus
 			accountWideButForEachCharacterSettings[currentCharId].lastLockDynFilterIconId[libFiltersFilterPanelIdHelper]      = FCOIS_CON_ICONS_ALL
 			accountWideButForEachCharacterSettings[currentCharId].lastGearFilterIconId[libFiltersFilterPanelIdHelper]         = FCOIS_CON_ICONS_ALL
@@ -521,10 +520,12 @@ function FCOIS.BuildDefaultSettings()
 		end
 		--FCOIS version 1.6.7
 		--Add the default additional inventory context menu "flag" button values for each filter panel ID
+		--[[ --#2025_999 Removing = and false values from SavedVars to strip filesize
 		FCOIS.settingsVars.defaults.FCOISAdditionalInventoriesButtonOffset[libFiltersFilterPanelIdHelper] = {
 			["top"] = 0,
 			["left"] = 0,
 		}
+		]]
 	end
 	--Create 2-dimensional arrays for the icons
 	local dynamicCounter = 0
@@ -556,8 +557,12 @@ function FCOIS.BuildDefaultSettings()
 		for filterIconHelperPanel = 1, numLibFiltersFilterPanelIds, 1 do
 			--FCOIS v1.6.8
 			--For each filterPanelId add the icon offsets table
-			defaultSettingsIcon[filterIconHelper].offsets[filterIconHelperPanel] = defaultIconOffsets
+			--defaultSettingsIcon[filterIconHelper].offsets[filterIconHelperPanel] = defaultIconOffsets --#2025_999 Do not blow up SV with unnecessary entries. Only needed for LF_INVENTORY currently
+			if filterIconHelperPanel == LF_INVENTORY then
+				defaultSettingsIcon[filterIconHelper].offsets[filterIconHelperPanel] = defaultIconOffsets
+			end
 
+			--[[ --#2025_999
 			--FCOIS v.1.4.4 - Research dialog panels need to be protected as default value as they were added new with this version
 			--FCOIS v.2.1.0 - Companion inventory panel needs to be protected as default value as it was added new with this version
 			local valueToSet = false
@@ -565,7 +570,8 @@ function FCOIS.BuildDefaultSettings()
 					filterIconHelperPanel == LF_INVENTORY_COMPANION then
 				valueToSet = true
 			end
-			defaultSettingsIcon[filterIconHelper].antiCheckAtPanel[filterIconHelperPanel] = valueToSet
+			defaultSettingsIcon[filterIconHelper].antiCheckAtPanel[filterIconHelperPanel] = valueToSet --#2025_999
+			]]
 		end
 
 		--Defaults for research check is "false", except for dynamic icons where it is "true"
@@ -600,15 +606,15 @@ function FCOIS.BuildDefaultSettings()
 
 		--Defaults for allow only unbound items to be marked
 		--Introduced with FCOIS version 1.0.6
-		FCOIS.settingsVars.defaults.allowOnlyUnbound[filterIconHelper] = false
+		--FCOIS.settingsVars.defaults.allowOnlyUnbound[filterIconHelper] = false ->  --#2025_999
 
 		--Fill the missing icon numbers to the isGearSet table so they exist with a "false" value as "non gear" entries
 		local isStaticGearIcon = FCOIS.mappingVars.isStaticGearIcon
-		if defaultSettingsIconIsGear[filterIconHelper] == nil then
-			defaultSettingsIconIsGear[filterIconHelper] = false
-		end
+		--if defaultSettingsIconIsGear[filterIconHelper] == nil then --#2025_999
+		--	defaultSettingsIconIsGear[filterIconHelper] = false --#2025_999
+		--end  --#2025_999
 		--Always set the 5 static gear icons to "true"
-		if isStaticGearIcon[filterIconHelper] ~= nil and isStaticGearIcon[filterIconHelper] then
+		if isStaticGearIcon[filterIconHelper] ~= nil and isStaticGearIcon[filterIconHelper] == true then
 			defaultSettingsIconIsGear[filterIconHelper] = true
 		end
 	end -- for filter icons ...

@@ -769,7 +769,7 @@ function FCOIS.IsJunkLocked(bagId, slotIndex, calledFromExternalAddon)
                 --All marked dyanmic icons must allow "sell" in order to let this item be marked as junk!
                 --Check if dynamic icon's "sell" setting is allowed
                 local iconData = settings.icon[iconId]
-				if iconData.antiCheckAtPanel[LF_VENDOR_SELL] == true then
+				if iconData.antiCheckAtPanel[LF_VENDOR_SELL] then --#2025_999
                     oneDynamicDoesNotAllowToSell = true
                 end
             elseif itemIsMarked and not isDynIcon then
@@ -2108,7 +2108,7 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons, withNoneEntry)
 	if not checkIfFCOISSettingsWereLoaded(FCOIS.preventerVars.gCalledFromInternalFCOIS, not addonVars.gAddonLoaded) then return nil end
 	local settings = FCOIS.settingsVars.settings
 	local isIconEnabled = settings.isIconEnabled
-	local isGearIcon = settings.iconIsGear
+	local isGearIcon = settings.iconIsGear --#2025_999
 	local isDynamicIcon = mappingVars.iconIsDynamic
 	local icon2DynIconCountNr = mappingVars.iconToDynamic
 	local numDynIconsUsable = settings.numMaxDynamicIconsUsable
@@ -2130,7 +2130,7 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons, withNoneEntry)
 		local counter = 0
 		for i=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
 			local goOn = false
-			local isGear = isGearIcon[i]
+			local isGear = isGearIcon[i] or false
 			local isDynamic = isDynamicIcon[i]
 			if isDynamic then
 				--Map the icon to the dynamic icon counter
@@ -2156,7 +2156,7 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons, withNoneEntry)
 					doAddIconValueNow = isIconEnabled[i]
 				end
 				if doAddIconValueNow and typeToCheck == "gearSets" then
-					doAddIconValueNow = isGearIcon[i]
+					doAddIconValueNow = isGearIcon[i] or false
 				end
 				if doAddIconValueNow then
 					counter = counter + 1
@@ -2176,7 +2176,7 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons, withNoneEntry)
 		if typeToCheck == 'standard' or typeToCheck == 'standardNone' then
 			for i=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
   				local goOn = false
-				local isGear = isGearIcon[i]
+				local isGear = isGearIcon[i] or false
 				local isDynamic = isDynamicIcon[i]
 				if isDynamic then
 					--Map the icon to the dynamic icon counter
@@ -2214,7 +2214,7 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons, withNoneEntry)
 			local counter = 0
 			for i=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
   				local goOn = false
-				local isGear = isGearIcon[i]
+				local isGear = isGearIcon[i] or false
 				local isDynamic = isDynamicIcon[i]
 				local iconIsEnabled = isIconEnabled[i]
 				if not iconIsEnabled or iconIsResearchable[i] or isGear == true then
@@ -2248,7 +2248,7 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons, withNoneEntry)
 		elseif typeToCheck == 'standardNonDisabled' then
 			for i=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
 				if isIconEnabled[i] then
-					local isGear = isGearIcon[i]
+					local isGear = isGearIcon[i] or false
 					local isDynamic = isDynamicIcon[i]
 					local locNameStr = FCOISlocVars.iconEndStrArray[i] or (((isDynamic or isGear) and nameIconEndStr) or colorIconEndStr)
 					local iconName = locVars["options_icon" .. tos(i) .. "_" .. locNameStr]
@@ -2264,7 +2264,7 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons, withNoneEntry)
 			--Check for each icon if it is enabled in the settings
 			for i=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
 				local goOn = false
-				local isGear = isGearIcon[i]
+				local isGear = isGearIcon[i] or false
 				local isDynamic = isDynamicIcon[i]
 				if isDynamic then
 					--Map the icon to the dynamic icon counter
@@ -2301,7 +2301,7 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons, withNoneEntry)
 			for i=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
 				--Check if icon is a gear set icon and if it's enabled
 				local goOn = false
-				local isGear = isGearIcon[i]
+				local isGear = isGearIcon[i] or false
 				local isDynamic = isDynamicIcon[i]
 				if isGear then
 					if isDynamic then

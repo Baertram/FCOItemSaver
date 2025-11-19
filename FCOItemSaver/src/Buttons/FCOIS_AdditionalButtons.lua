@@ -161,11 +161,16 @@ local function addButtonToParentControl(buttonData, parent, name, callbackFuncti
     end
 end
 
+local defaultAddInvButtonOffsets = { left = 0, top = 0 } --#2025_999
 local function reAnchorAdditionalInvButtonNow(panelId, anchorData, addInvButtonOffsets, contMenuInvokerButton, newParent)
 --d(">reAnchorAdditionalInvButtonNow - filterPanel: " ..tos(panelId) .. ", contMenuInvokerButton: " .. ((contMenuInvokerButton ~= nil and contMenuInvokerButton:GetName()) or "n/a"))
     local alignMyDefault = TOPLEFT
     local alignToDefault = TOPLEFT
     local addInvBtnInvokers = FCOIS.contextMenuVars.filterPanelIdToContextMenuButtonInvoker
+
+    if addInvButtonOffsets == nil then  --#2025_999
+        addInvButtonOffsets = defaultAddInvButtonOffsets
+    end
 
     --Update filterPanelId
     --panelId = e.g. LF_INVENTORY
@@ -233,13 +238,15 @@ function FCOIS.ReAnchorAdditionalInvButtons(filterPanelId, contMenuInvokerButton
 end
 local reAnchorAdditionalInvButtons = FCOIS.ReAnchorAdditionalInvButtons
 
+local addAdditionalButtons
 --Add additonal buttons, controlled by the FCOIS settings
 function FCOIS.AddAdditionalButtons(buttonName, buttonData)
+    addAdditionalButtons = addAdditionalButtons or FCOIS.AddAdditionalButtons
     --d("FCOIS.AddAdditionalButtons - button: " .. tos(buttonName))
     --Add all additional buttons
     if (buttonName == -1) then
-        FCOIS.AddAdditionalButtons("FCOSettings")
-        FCOIS.AddAdditionalButtons("FCOInventoriesContextMenuButtons")
+        addAdditionalButtons("FCOSettings")
+        addAdditionalButtons("FCOInventoriesContextMenuButtons")
     else
         local settings = FCOIS.settingsVars.settings
 
@@ -293,7 +300,7 @@ function FCOIS.AddAdditionalButtons(buttonName, buttonData)
             local addInvBtnInvokers = FCOIS.contextMenuVars.filterPanelIdToContextMenuButtonInvoker
             for _, buttonDataTab in pairs(addInvBtnInvokers) do
                 if buttonDataTab ~= nil and buttonDataTab.addInvButton and buttonDataTab.name ~= nil and buttonDataTab.name ~= "" then
-                    FCOIS.AddAdditionalButtons(nil, buttonDataTab)
+                    addAdditionalButtons(nil, buttonDataTab)
                 end
             end
             --ReAnchor the additional inventory "flag" buttons with the x and y offsets from the settings
@@ -315,6 +322,7 @@ function FCOIS.AddAdditionalButtons(buttonName, buttonData)
         end
     end
 end
+addAdditionalButtons = addAdditionalButtons or FCOIS.AddAdditionalButtons
 
 --Set the additional inventory context menu "flag" bvutton offsets the same
 function FCOIS.SetAllAddInvFlagButtonOffsetSettingsEqual(filterPanelIdSource)
@@ -326,15 +334,17 @@ function FCOIS.SetAllAddInvFlagButtonOffsetSettingsEqual(filterPanelIdSource)
         local settings = FCOIS.settingsVars.settings
         local activeFilterPanelIds = FCOIS.mappingVars.activeFilterPanelIds
         --Get source settings -> De-Reference them so updating the sourceettings in the future does not change the actual settings of another button too
-        local sourceSettings = ZO_ShallowTableCopy(settings.FCOISAdditionalInventoriesButtonOffset[filterPanelIdSource])
-        if sourceSettings ~= nil then
+        local sourceSettingsOrig = settings.FCOISAdditionalInventoriesButtonOffset[filterPanelIdSource]
+        if sourceSettingsOrig ~= nil and sourceSettingsOrig["top"] ~= nil and sourceSettingsOrig["left"] ~= nil and sourceSettingsOrig["top"] ~= 0 and sourceSettingsOrig["left"] ~= 0 then --#2025_999
+            local top = sourceSettingsOrig["top"]
+            local left = sourceSettingsOrig["left"]
             --Check each filter button's settings
             for filterPanelIdTarget, _ in ipairs(addInvBtnInvokers) do
                 if filterPanelIdSource ~= filterPanelIdTarget and activeFilterPanelIds[filterPanelIdTarget] then
-                    --For each target filterPanelId which is not == source filterPanelId
+                    --For each active target filterPanelId which is not == source filterPanelId
                     FCOIS.settingsVars.settings.FCOISAdditionalInventoriesButtonOffset[filterPanelIdTarget] = {
-                        ["top"]     = sourceSettings["top"],
-                        ["left"]    = sourceSettings["left"],
+                        ["top"]     = top,
+                        ["left"]    = left,
                     }
                 end
             end
