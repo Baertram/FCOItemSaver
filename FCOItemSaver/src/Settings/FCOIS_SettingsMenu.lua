@@ -2056,10 +2056,12 @@ local function buildNormalIconSubMenus(buildName)
                 tooltip = locVars["options_gear_disable_research_check" .. tooltipSuffix]
                 data = { type = "checkbox", width = "half"}
                 disabledFunc = function() return not isIconEnabled[normalIconId] end
-                getFunc = function() return FCOISsettings.disableResearchCheck[normalIconId] end
-                setFunc = function(value) FCOISsettings.disableResearchCheck[normalIconId] = value
+                getFunc = function() return FCOISsettings.disableResearchCheck[normalIconId] or false end --#2025_999
+                setFunc = function(value)
+                    if value == false then value = nil end --#2025_999
+                    FCOISsettings.disableResearchCheck[normalIconId] = value
                 end
-                defaultSettings = FCOISdefaultSettings.disableResearchCheck[normalIconId]
+                defaultSettings = function() return FCOISdefaultSettings.disableResearchCheck[normalIconId] or false end --#2025_999
                 createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
                 if createdControl ~= nil then
                     table.insert(normalIconsSubMenusControls, createdControl)
@@ -2561,10 +2563,12 @@ local function buildDynamicIconSubMenus()
         tooltip = locVars["options_gear_disable_research_check" .. tooltipSuffix]
         data = defaultCheckboxData
         disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
-        getFunc = function() return FCOISsettings.disableResearchCheck[fcoisDynIconNr] end
-        setFunc = function(value) FCOISsettings.disableResearchCheck[fcoisDynIconNr] = value
+        getFunc = function() return FCOISsettings.disableResearchCheck[fcoisDynIconNr] or false end --#2025_999
+        setFunc = function(value)
+            if value == false then value = nil end --#2025_999
+            FCOISsettings.disableResearchCheck[fcoisDynIconNr] = value
         end
-        defaultSettings = FCOISdefaultSettings.disableResearchCheck[fcoisDynIconNr]
+        defaultSettings = function() return FCOISdefaultSettings.disableResearchCheck[fcoisDynIconNr] or false end --#2025_999
         createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
         if createdControl ~= nil then
             table.insert(dynIconsSubMenusControls, createdControl)

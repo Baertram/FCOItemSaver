@@ -473,6 +473,7 @@ function FCOIS.BuildDefaultSettings()
 			--Create 2-dimensional arrays for the filters
 			--FCOIS.settingsVars.defaults.isFilterPanelOn[libFiltersFilterPanelIdHelper] = {false, false, false, false}   --#2025_999
 			--Create 2-dimensional array for the "enabled" setings (Filters, Anti-Destroy, Anti-Deconstruction, Anti-Sell, Anti-Trade, Anti-Mail, etc.)
+			--[[ --#2025_999
 			FCOIS.settingsVars.defaults.atPanelEnabled[libFiltersFilterPanelIdHelper]	= {
 				["filters"] 		 = false,
 				--			    ["anti-destroy"] 	 = false,
@@ -485,6 +486,7 @@ function FCOIS.BuildDefaultSettings()
 				--				["anti-fence"] 		 = false,
 				--				["anti-launder"]	 = false,
 			}
+			]]
 			--Create the helper arrays for the filter button context menus
 			FCOIS.settingsVars.defaults.lastLockDynFilterIconId[libFiltersFilterPanelIdHelper]		= FCOIS_CON_ICONS_ALL
 			FCOIS.settingsVars.defaults.lastGearFilterIconId[libFiltersFilterPanelIdHelper] 		= FCOIS_CON_ICONS_ALL
@@ -538,8 +540,8 @@ function FCOIS.BuildDefaultSettings()
 		local isIconDynamic = iconIsDynamic[filterIconHelper]
 
 		--Marker icons in inventories - non-unique & unique
-		FCOIS.settingsVars.defaults[savedVarsMarkedItemsNames[false]][filterIconHelper] = {}
-		FCOIS.settingsVars.defaults[savedVarsMarkedItemsNames[FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE]][filterIconHelper] = {}
+		FCOIS.settingsVars.defaults[savedVarsMarkedItemsNames[false]][filterIconHelper] = {} --#2025_999
+		FCOIS.settingsVars.defaults[savedVarsMarkedItemsNames[FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE]][filterIconHelper] = {} --#2025_999
 
 		--Defaults for filter button offsets
 		FCOIS.settingsVars.defaults.filterButtonTop[filterIconHelper]  = filterButtonVars.gFilterButtonTop
@@ -575,7 +577,7 @@ function FCOIS.BuildDefaultSettings()
 		end
 
 		--Defaults for research check is "false", except for dynamic icons where it is "true"
-		local defResearchCheck = false
+		local defResearchCheck --#2025_999
 		if isIconDynamic then defResearchCheck = true end
 		FCOIS.settingsVars.defaults.disableResearchCheck[filterIconHelper] = defResearchCheck
 		if isIconDynamic == true then

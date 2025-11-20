@@ -537,12 +537,15 @@ function FCOIS.CheckFCOISFilterButtonsAtPanel(doUpdateLists, panelId, overwriteF
 
     --Is an inventory found? The parent will be the filter button's parent
     if buttonsParentCtrl ~= nil then
-        if settings.debug then debugMessage("[CheckFilterButtonsAtPanel]", buttonsParentCtrl:GetName() .. ", FilterPanelId: " .. tos(filterPanelIdToUse) .. ", UseFilters: " .. tos(settings.atPanelEnabled[FCOIS.gFilterWhere]["filters"]), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+        if settings.debug then debugMessage("[CheckFilterButtonsAtPanel]", buttonsParentCtrl:GetName() .. ", FilterPanelId: " .. tos(filterPanelIdToUse) .. ", UseFilters: " .. tos((settings.atPanelEnabled[FCOIS.gFilterWhere] and settings.atPanelEnabled[FCOIS.gFilterWhere]["filters"]) or nil), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
         --local filterButtonVars = FCOIS.filterButtonVars
         --Is the setting enabled to use the filters at this panel?
         local areFilterButtonEnabledAtPanelId = false
-        if hideFilterButtons == false then areFilterButtonEnabledAtPanelId = (settings.atPanelEnabled[filterPanelIdToUse]["filters"] == true and true) or false end --#266
---d(">areFilterButtonEnabledAtPanelId: " ..tos(areFilterButtonEnabledAtPanelId) .. ", hideFilterButtons: " .. tos(hideFilterButtons) .. "; settings: " ..tos(settings.atPanelEnabled[filterPanelIdToUse]["filters"]))
+        if hideFilterButtons == false then
+            local atPanelEnabled = settings.atPanelEnabled[filterPanelIdToUse] --#2025_999
+            areFilterButtonEnabledAtPanelId = (atPanelEnabled and atPanelEnabled["filters"] == true and true) or false --#2025_999
+        end --#266 --#2025_999
+--d(">areFilterButtonEnabledAtPanelId: " ..tos(areFilterButtonEnabledAtPanelId) .. ", hideFilterButtons: " .. tos(hideFilterButtons) .. "; settings: " ..tos(atPanelEnabled and atPanelEnabled["filters"] or nil))
         local filterBtn
         local isFilterActivated
         local filterButtons = FCOIS.filterButtonVars.filterButtons
@@ -770,7 +773,8 @@ local function doFilter(onoff, p_button, filterButtonId, beQuiet, doFilterBasics
     --============================================================================
     -- ABORT HERE IF the settings for the current filter panel Id is not enabled
     --============================================================================
-    if settings.atPanelEnabled[p_FilterPanelId]["filters"] == nil or settings.atPanelEnabled[p_FilterPanelId]["filters"] == false then
+    local atPanelEnabled = settings.atPanelEnabled[p_FilterPanelId] --#2025_999
+    if not atPanelEnabled or not atPanelEnabled["filters"] then --#2025_999
         --Unregister the filter
         unregisterFilters(filterButtonId, onlyPlayerInvFilter, p_FilterPanelId)
 

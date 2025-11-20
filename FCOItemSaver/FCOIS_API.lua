@@ -1479,7 +1479,8 @@ function FCOIS.ChangeFilter(filterId, libFiltersFilterPanelId)
 			or libFiltersFilterPanelId > numFilterInventoryTypes then return end
 	local settings = FCOIS.settingsVars.settings
 	--Is filtering at the current panel enabled?
-	if not settings.atPanelEnabled[libFiltersFilterPanelId]["filters"] then return end
+	local atPanelEnabled = settings.atPanelEnabled[libFiltersFilterPanelId] --#2025_999
+	if not atPanelEnabled or not atPanelEnabled["filters"] then return end --#2025_999
 	--is the filterPanelId visible?
 	-->Special check for UNIVERSAL DECONSTRUCTION
 	--#254 Keybinds to change filter button state at universal deconstruction do not work

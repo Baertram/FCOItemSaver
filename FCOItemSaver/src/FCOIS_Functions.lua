@@ -2062,8 +2062,7 @@ function FCOIS.IsItemLinkResearchable(itemLink, markId, doTraitCheck)
     --Check if the item is virtually researchable as the settings is enabled to allow marking of non researchable items as gear/dynamic
     markId = markId or nil
     if markId ~= nil then
-        local settings = FCOIS.settingsVars.settings
-        retVal = settings.disableResearchCheck[markId] or false
+        retVal = FCOIS.settingsVars.settings.disableResearchCheck[markId] or false
     end
     retValReconstructedOrRetraited = isItemLinkReconStructedOrRetraited(itemLink)
     --Check the item's type (Armor, weapon, jewelry e.g. are researchable)
@@ -2754,7 +2753,7 @@ end
 
 --Set the anti-research check for a dynamic icon
 function FCOIS.SetDynamicIconAntiResearchCheck(iconNr, value)
-    value = value or false
+    --value = value or false --#2025_999
     --d("FCOIS]setDynamicIconAntiResearchCheck - iconNr: " .. tos(iconNr) .. ", value: " .. tos(value))
     if iconNr == nil then return false end
     local isIconDynamic = FCOIS.mappingVars.iconIsDynamic

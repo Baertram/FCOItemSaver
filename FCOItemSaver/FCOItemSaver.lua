@@ -228,17 +228,15 @@ ReloadUI does not do anything, but manually mass marking via flag icon works fin
 --=== Not started yet ===
 --Clear SV values which are boolean and do not really need a "false" (nil would be okay too):
 --allowOnlyUnbound                                                  -> Done 20251119
---icon[n].antiCheckAtPanel                                          -> Working on 20251119
+--icon[n].antiCheckAtPanel                                          -> Done 20251119
 --icon[n].offsets[2..n]                                             -> Done 20251119
 --FCOISAdditionalInventoriesButtonOffset[1..n].top & .left == 0     -> Done 20251119
 --isFilterPanelOn[1..n]                                             -> Done 20251119
 --iconIsGear[1..n]                                                  -> Done 20251119
---atPanelEnabled[1..n].filters
---markedItemsFCOISUnique[1..n] = {}
---disableResearchCheck[1..n]
+--atPanelEnabled[1..n].filters                                      -> Done 20251119
+--disableResearchCheck[1..n]                                        -> Done 20251120
 --showMarkerTooltip[1..n]
 --isIconEnabled[1..n]
---markedItems[1..n] = {}
 --allowedFCOISUniqueIdItemTypes
 
 --Other cleanUp

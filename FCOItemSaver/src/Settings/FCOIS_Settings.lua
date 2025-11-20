@@ -230,21 +230,29 @@ function FCOIS.SetSettingsIsFilterOn(p_filterId, p_value, p_filterPanel)
 end
 
 -- Check the settings for the panels and return if they are enabled or disabled (e.g. the filter buttons [filters])
--- If 2nd param onlyAnti == true: p_filterWhere will be used, and updated with the current filterPanelId, if it was nil
+-- If 2nd param onlyAnti == false:
 function FCOIS.GetFilterWhereBySettings(p_filterWhere, onlyAnti)
     p_filterWhere = p_filterWhere or FCOIS.gFilterWhere
     onlyAnti = onlyAnti or false
 
     local settingsAllowed = FCOIS.settingsVars.settings
     if onlyAnti == false then
-        FCOIS.settingsVars.settings.atPanelEnabled = FCOIS.settingsVars.settings.atPanelEnabled or {}
-        FCOIS.settingsVars.settings.atPanelEnabled[p_filterWhere] = FCOIS.settingsVars.settings.atPanelEnabled[p_filterWhere] or {}
         --FCOIS 2021-11-14 Get setting's Is filter allowed via mapping table filterPanelToFilterButtonFilterActiveSettingName
-        --Set the resultVar and update the FCOIS.settingsVars.settings.atPanelEnabled array
-        FCOIS.settingsVars.settings.atPanelEnabled[p_filterWhere]["filters"] = settingsAllowed[filterPanelToFilterButtonFilterActiveSettingName[p_filterWhere]]
+        --e.g. for LF_INVENTORY use the settings.allowInventoryFilter boolean variable
+        local settingFilterActiveAtPanelsButton = settingsAllowed[filterPanelToFilterButtonFilterActiveSettingName[p_filterWhere]] --#2025_999
+        if settingFilterActiveAtPanelsButton == true then --#2025_999
+            settingsAllowed.atPanelEnabled = settingsAllowed.atPanelEnabled or {}
+            settingsAllowed.atPanelEnabled[p_filterWhere] = settingsAllowed.atPanelEnabled[p_filterWhere] or {}
+            --Set the resultVar and update the FCOIS.settingsVars.settings.atPanelEnabled array
+            settingsAllowed.atPanelEnabled[p_filterWhere]["filters"] = settingFilterActiveAtPanelsButton
+        else
+            if settingsAllowed.atPanelEnabled[p_filterWhere] and settingsAllowed.atPanelEnabled[p_filterWhere]["filters"] then
+                settingsAllowed.atPanelEnabled[p_filterWhere]["filters"] = nil --#2025_999
+            end
+        end
     end
 
-    if settingsAllowed.debug then debugMessage( "[getFilterWhereBySettings]", tos(p_filterWhere) .. " = " .. tos(settingsAllowed.atPanelEnabled[p_filterWhere]["filters"]), true, FCOIS_DEBUG_DEPTH_SPAM) end
+    if settingsAllowed.debug then debugMessage( "[getFilterWhereBySettings]", tos(p_filterWhere) .. " = " .. tos(settingsAllowed.atPanelEnabled[p_filterWhere] and settingsAllowed.atPanelEnabled[p_filterWhere]["filters"] or nil), true, FCOIS_DEBUG_DEPTH_SPAM) end
     return p_filterWhere
 end
 
@@ -928,6 +936,11 @@ function FCOIS.AfterSettings()
         end
         -->Link FCOIS[getSavedVarsMarkedItemsTableName()] to the SavedVariables
         FCOIS[savedVarsMarkedItemsTableName][filterIconId] = settings[savedVarsMarkedItemsTableName][filterIconId]
+
+        --#2025_999 Clear table entries
+        if settings.disableResearchCheck[filterIconId] == false then
+            FCOIS.settingsVars.settings.disableResearchCheck[filterIconId] = nil
+        end
     end
     --The automatic set marker icon name was changed from autoMarkSetsGearIconNr to autoMarkSetsIconNr
     if settings.autoMarkSetsGearIconNr ~= nil then
@@ -1146,8 +1159,8 @@ function FCOIS.AfterSettings()
 
     --Added with FCOIS v2.2.4
     --#189 FCOIS uniqueIds item markers got saved into SavedVariables table "markedItems", but they should only be saved to "markedItemsFCOISUnique"
+    local markedItemsInSV = FCOIS.settingsVars.settings.markedItems
     if FCOIS.settingsVars.settings.cleanedFCOISUniqueInNonUnique == nil then
-        local markedItemsInSV = FCOIS.settingsVars.settings.markedItems
         if markedItemsInSV ~= nil then
             for markerIconNr, _ in ipairs(markedItemsInSV) do
                 for itemInstanceOrZOsUniqueId, isMarked in pairs(markedItemsInSV) do
@@ -1161,12 +1174,21 @@ function FCOIS.AfterSettings()
         end
         FCOIS.settingsVars.settings.cleanedFCOISUniqueInNonUnique = true
     end
+    --[[
+    if markedItemsInSV ~= nil then     --#2025_999 Clean empty "markerIconNr" sub-tables
+        for markerIconNr, markedItemsData in ipairs(markedItemsInSV) do
+            if ZO_IsTableEmpty(markedItemsData) then
+               FCOIS.settingsVars.settings.markedItems[markerIconNr] = nil
+            end
+        end
+    end
+    ]]
 
 
     --Added with FCOIS v2.2.4
     --#192 FCOIS uniqueIds contain "nil" strings which consume too much space. Change these to "" instead, as function FCOIS.CreateFCOISUniqueIdString uses too now
+    local markedItemsFCOISUniqueInSV = FCOIS.settingsVars.settings.markedItemsFCOISUnique
     if FCOIS.settingsVars.settings.cleanedFCOISUniqueNILEntries == nil then
-        local markedItemsFCOISUniqueInSV = FCOIS.settingsVars.settings.markedItemsFCOISUnique
         local newPart                    = ""
         if markedItemsFCOISUniqueInSV ~= nil then
             for markerIconNr, markedItemsData in ipairs(markedItemsFCOISUniqueInSV) do
@@ -1201,6 +1223,16 @@ function FCOIS.AfterSettings()
         end
         FCOIS.settingsVars.settings.cleanedFCOISUniqueNILEntries = true
     end
+    --[[
+    if markedItemsFCOISUniqueInSV ~= nil then     --#2025_999 Clean empty "markerIconNr" sub-tables
+        for markerIconNr, markedItemsData in ipairs(markedItemsFCOISUniqueInSV) do
+            if ZO_IsTableEmpty(markedItemsData) then
+               FCOIS.settingsVars.settings.markedItemsFCOISUnique[markerIconNr] = nil
+            end
+        end
+    end
+    ]]
+
 
     --Added with FCOIS v2.7.8     --#2025_999 Performance improvement by cleaning unnecessary SavedVariable entries
     local settingsToUpdate = FCOIS.settingsVars.settings

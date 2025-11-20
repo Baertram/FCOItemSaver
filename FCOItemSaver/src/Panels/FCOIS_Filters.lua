@@ -960,7 +960,8 @@ local function registerFilterId(p_onlyPlayerInvFilter, p_filterId, p_panelId)
         --Is the setting for the filter on? Check and update variable
         getFilterWhereBySettings(p_panelId, false)
         --Read the variable now
-        local isFilteringAtPanelEnabled = settings.atPanelEnabled[p_panelId]["filters"] or false
+        local atPanelEnabled = settings.atPanelEnabled[p_panelId] --#2025_999
+        local isFilteringAtPanelEnabled = (atPanelEnabled and atPanelEnabled["filters"]) or false --#2025_999
         --Get the filter function now
         local filterFunctions = mappingVars.libFiltersId2filterFunction
         local filterFunction = filterFunctions[p_panelId]
