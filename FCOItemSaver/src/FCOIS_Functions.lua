@@ -412,15 +412,16 @@ function FCOIS.GetItemSaverControl(parent, markerIconId, useParentFallback, cont
     local textureNameAddition = (controlNameAddition ~= nil and controlNameAddition) or ""
     local textureName = gAddonName .. textureNameAddition .. tos(markerIconId)
     local retControl
+    local parentName = parent:GetName()
     if not onlyReturnControlName then --#2025_999
         retControl = parent:GetNamedChild(textureName)
         --Use the parent control as a fallback?
         --e.g. Inside enchanting the parent control is the correct one already
         if retControl == nil and useParentFallback == true then
-            return parent, textureName
+            return parent, parentName .. textureName
         end
     end
-    return retControl, textureName
+    return retControl, parentName .. textureName
 end
 
 function FCOIS.MyGetItemNameNoControl(bagId, slotIndex)

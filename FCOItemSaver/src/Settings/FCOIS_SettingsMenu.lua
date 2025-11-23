@@ -2170,150 +2170,156 @@ end
 local defaultCheckboxData = { type="checkbox" , width="half"} --#2025_999
 local defaultSettingsAntiCheckAtPanelCB = false --#2025_999
 --Table to loop: Create dynamic icons submenu checkboxes to enable/disable protection checks for a markerIcon at the filterPanel
-local dynamicAntiCheckAtPanelsData = { --#2025_999
-    {
-        data = { type = "header"},
-        name = locVars["options_header_anti_destroy"]
-    },
-    --Add the block destroy checkbox
-    {
-        name = locVars["options_enable_block_destroying"],
-        tooltip = locVars["options_enable_block_destroying" .. tooltipSuffix],
-        filterPanel = LF_INVENTORY,
-    },
-    --Add the block selling checkbox
-    {
-        name = locVars["options_enable_block_selling"],
-        tooltip = locVars["options_enable_block_selling" .. tooltipSuffix],
-        filterPanel = LF_VENDOR_SELL,
-    },
-    ------------------------------------------------------------------------------------------------------------------------
-    --Add the block sell in guildstore checkbox
-    {
-        name = locVars["options_enable_block_selling_guild_store"],
-        tooltip = locVars["options_enable_block_selling_guild_store" .. tooltipSuffix],
-        filterPanel = LF_GUILDSTORE_SELL,
-    },
-    ------------------------------------------------------------------------------------------------------------------------
-    --Add the block fence selling checkbox
-    {
-        name = locVars["options_enable_block_fence_selling"],
-        tooltip = locVars["options_enable_block_fence_selling" .. tooltipSuffix],
-        filterPanel = LF_FENCE_SELL,
-    },
-    ------------------------------------------------------------------------------------------------------------------------
-    --Add the block launder selling checkbox
-    {
-        name        = locVars["options_enable_block_launder_selling"],
-        tooltip     = locVars["options_enable_block_launder_selling" .. tooltipSuffix],
-        filterPanel = LF_FENCE_LAUNDER,
-    },
-    ------------------------------------------------------------------------------------------------------------------------
-    --Add the block trading checkbox
-    {
-        name = locVars["options_enable_block_trading"],
-        tooltip = locVars["options_enable_block_trading" .. tooltipSuffix],
-        filterPanel = LF_TRADE,
-    },
-    ------------------------------------------------------------------------------------------------------------------------
-    --Add the block send by mail checkbox
-    {
-        name = locVars["options_enable_block_sending_mail"],
-        tooltip = locVars["options_enable_block_sending_mail" .. tooltipSuffix],
-        filterPanel = LF_MAIL_SEND,
-    },
-    ------------------------------------------------------------------------------------------------------------------------
-    --Add the headline "Crafting"
-    {
-        data = { type = "header"},
-        name = locVars["options_header_crafting"] .. " - " .. locVars["options_header_anti_destroy"],
-        tooltip = locVars["options_header_crafting"] .. " - " .. locVars["options_header_anti_destroy"],
-    },
-    ------------------------------------------------------------------------------------------------------------------------
-    --Add the block refinement checkbox
-    {
-        name = locVars["options_enable_block_refinement"],
-        tooltip = locVars["options_enable_block_refinement" .. tooltipSuffix],
-        filterPanel = LF_SMITHING_REFINE,
-    },
-    ------------------------------------------------------------------------------------------------------------------------
-    --Add the block jewelry refinement checkbox
-    {
-        name = locVars["options_enable_block_jewelry_refinement"],
-        tooltip = locVars["options_enable_block_jewelry_refinement" .. tooltipSuffix],
-        filterPanel = LF_JEWELRY_REFINE,
-    },
-    ------------------------------------------------------------------------------------------------------------------------
-    --Add the block deconstruction checkbox
-    {
-        name = locVars["options_enable_block_deconstruction"],
-        tooltip = locVars["options_enable_block_deconstruction" .. tooltipSuffix],
-        filterPanel = LF_SMITHING_DECONSTRUCT,
-    },
-    ------------------------------------------------------------------------------------------------------------------------
-    --Add the block jewelry deconstruction checkbox
-    {
-        name = locVars["options_enable_block_jewelry_deconstruction"],
-        tooltip = locVars["options_enable_block_jewelry_deconstruction" .. tooltipSuffix],
-        filterPanel = LF_JEWELRY_DECONSTRUCT,
-    },
-    ------------------------------------------------------------------------------------------------------------------------
-    --Add the block improvement checkbox
-    {
-        name = locVars["options_enable_block_improvement"],
-        tooltip = locVars["options_enable_block_improvement" .. tooltipSuffix],
-        filterPanel = LF_SMITHING_IMPROVEMENT,
-    },
-    ------------------------------------------------------------------------------------------------------------------------
-    --Add the block jewelry improvement checkbox
-    {
-        name = locVars["options_enable_block_jewelry_improvement"],
-        tooltip = locVars["options_enable_block_jewelry_improvement" .. tooltipSuffix],
-        filterPanel = LF_JEWELRY_IMPROVEMENT,
-    },
-    ------------------------------------------------------------------------------------------------------------------------
-    --Add the block research checkbox
-    {
-        name = locVars["options_enable_block_research"],
-        tooltip = locVars["options_enable_block_research" .. tooltipSuffix],
-        filterPanel = LF_SMITHING_RESEARCH_DIALOG,
-    },
-    ------------------------------------------------------------------------------------------------------------------------
-    --Add the block jewelry research checkbox
-    {
-        name = locVars["options_enable_block_jewelry_research"],
-        tooltip = locVars["options_enable_block_jewelry_research" .. tooltipSuffix],
-        filterPanel = LF_JEWELRY_RESEARCH_DIALOG,
-    },
-    ------------------------------------------------------------------------------------------------------------------------
-    --Add the block enchanting creation checkbox
-    {
-        name = locVars["options_enable_block_creation"],
-        tooltip = locVars["options_enable_block_creation" .. tooltipSuffix],
-        filterPanel = LF_ENCHANTING_CREATION,
-    },
-    ------------------------------------------------------------------------------------------------------------------------
-    --Add the block enchanting extraction checkbox
-    {
-        name = locVars["options_enable_block_extraction"],
-        tooltip = locVars["options_enable_block_extraction" .. tooltipSuffix],
-        filterPanel = LF_ENCHANTING_EXTRACTION,
-    },
-    ------------------------------------------------------------------------------------------------------------------------
-    --Add the block alchemy destroy checkbox
-    {
-        name = locVars["options_enable_block_alchemy_destroy"],
-        tooltip = locVars["options_enable_block_alchemy_destroy" .. tooltipSuffix],
-        filterPanel = LF_ALCHEMY_CREATION,
-    },
-    ------------------------------------------------------------------------------------------------------------------------
-    --Add the block retrait checkbox
-    {
-        name = locVars["options_enable_block_retrait"],
-        tooltip = locVars["options_enable_block_retrait" .. tooltipSuffix],
-        filterPanel = LF_RETRAIT,
-    },
-}
+local dynamicAntiCheckAtPanelsData
+
+local function buildDynamicAntiCheckAtPanelCheckboxTable()
+    locVars = FCOISlocVars.fcois_loc
+
+    dynamicAntiCheckAtPanelsData = { --#2025_999
+        {
+            data = { type = "header"},
+            name = locVars["options_header_anti_destroy"]
+        },
+        --Add the block destroy checkbox
+        {
+            name = locVars["options_enable_block_destroying"],
+            tooltip = locVars["options_enable_block_destroying" .. tooltipSuffix],
+            filterPanel = LF_INVENTORY,
+        },
+        --Add the block selling checkbox
+        {
+            name = locVars["options_enable_block_selling"],
+            tooltip = locVars["options_enable_block_selling" .. tooltipSuffix],
+            filterPanel = LF_VENDOR_SELL,
+        },
+        ------------------------------------------------------------------------------------------------------------------------
+        --Add the block sell in guildstore checkbox
+        {
+            name = locVars["options_enable_block_selling_guild_store"],
+            tooltip = locVars["options_enable_block_selling_guild_store" .. tooltipSuffix],
+            filterPanel = LF_GUILDSTORE_SELL,
+        },
+        ------------------------------------------------------------------------------------------------------------------------
+        --Add the block fence selling checkbox
+        {
+            name = locVars["options_enable_block_fence_selling"],
+            tooltip = locVars["options_enable_block_fence_selling" .. tooltipSuffix],
+            filterPanel = LF_FENCE_SELL,
+        },
+        ------------------------------------------------------------------------------------------------------------------------
+        --Add the block launder selling checkbox
+        {
+            name        = locVars["options_enable_block_launder_selling"],
+            tooltip     = locVars["options_enable_block_launder_selling" .. tooltipSuffix],
+            filterPanel = LF_FENCE_LAUNDER,
+        },
+        ------------------------------------------------------------------------------------------------------------------------
+        --Add the block trading checkbox
+        {
+            name = locVars["options_enable_block_trading"],
+            tooltip = locVars["options_enable_block_trading" .. tooltipSuffix],
+            filterPanel = LF_TRADE,
+        },
+        ------------------------------------------------------------------------------------------------------------------------
+        --Add the block send by mail checkbox
+        {
+            name = locVars["options_enable_block_sending_mail"],
+            tooltip = locVars["options_enable_block_sending_mail" .. tooltipSuffix],
+            filterPanel = LF_MAIL_SEND,
+        },
+        ------------------------------------------------------------------------------------------------------------------------
+        --Add the headline "Crafting"
+        {
+            data = { type = "header"},
+            name = locVars["options_header_crafting"] .. " - " .. locVars["options_header_anti_destroy"],
+            tooltip = locVars["options_header_crafting"] .. " - " .. locVars["options_header_anti_destroy"],
+        },
+        ------------------------------------------------------------------------------------------------------------------------
+        --Add the block refinement checkbox
+        {
+            name = locVars["options_enable_block_refinement"],
+            tooltip = locVars["options_enable_block_refinement" .. tooltipSuffix],
+            filterPanel = LF_SMITHING_REFINE,
+        },
+        ------------------------------------------------------------------------------------------------------------------------
+        --Add the block jewelry refinement checkbox
+        {
+            name = locVars["options_enable_block_jewelry_refinement"],
+            tooltip = locVars["options_enable_block_jewelry_refinement" .. tooltipSuffix],
+            filterPanel = LF_JEWELRY_REFINE,
+        },
+        ------------------------------------------------------------------------------------------------------------------------
+        --Add the block deconstruction checkbox
+        {
+            name = locVars["options_enable_block_deconstruction"],
+            tooltip = locVars["options_enable_block_deconstruction" .. tooltipSuffix],
+            filterPanel = LF_SMITHING_DECONSTRUCT,
+        },
+        ------------------------------------------------------------------------------------------------------------------------
+        --Add the block jewelry deconstruction checkbox
+        {
+            name = locVars["options_enable_block_jewelry_deconstruction"],
+            tooltip = locVars["options_enable_block_jewelry_deconstruction" .. tooltipSuffix],
+            filterPanel = LF_JEWELRY_DECONSTRUCT,
+        },
+        ------------------------------------------------------------------------------------------------------------------------
+        --Add the block improvement checkbox
+        {
+            name = locVars["options_enable_block_improvement"],
+            tooltip = locVars["options_enable_block_improvement" .. tooltipSuffix],
+            filterPanel = LF_SMITHING_IMPROVEMENT,
+        },
+        ------------------------------------------------------------------------------------------------------------------------
+        --Add the block jewelry improvement checkbox
+        {
+            name = locVars["options_enable_block_jewelry_improvement"],
+            tooltip = locVars["options_enable_block_jewelry_improvement" .. tooltipSuffix],
+            filterPanel = LF_JEWELRY_IMPROVEMENT,
+        },
+        ------------------------------------------------------------------------------------------------------------------------
+        --Add the block research checkbox
+        {
+            name = locVars["options_enable_block_research"],
+            tooltip = locVars["options_enable_block_research" .. tooltipSuffix],
+            filterPanel = LF_SMITHING_RESEARCH_DIALOG,
+        },
+        ------------------------------------------------------------------------------------------------------------------------
+        --Add the block jewelry research checkbox
+        {
+            name = locVars["options_enable_block_jewelry_research"],
+            tooltip = locVars["options_enable_block_jewelry_research" .. tooltipSuffix],
+            filterPanel = LF_JEWELRY_RESEARCH_DIALOG,
+        },
+        ------------------------------------------------------------------------------------------------------------------------
+        --Add the block enchanting creation checkbox
+        {
+            name = locVars["options_enable_block_creation"],
+            tooltip = locVars["options_enable_block_creation" .. tooltipSuffix],
+            filterPanel = LF_ENCHANTING_CREATION,
+        },
+        ------------------------------------------------------------------------------------------------------------------------
+        --Add the block enchanting extraction checkbox
+        {
+            name = locVars["options_enable_block_extraction"],
+            tooltip = locVars["options_enable_block_extraction" .. tooltipSuffix],
+            filterPanel = LF_ENCHANTING_EXTRACTION,
+        },
+        ------------------------------------------------------------------------------------------------------------------------
+        --Add the block alchemy destroy checkbox
+        {
+            name = locVars["options_enable_block_alchemy_destroy"],
+            tooltip = locVars["options_enable_block_alchemy_destroy" .. tooltipSuffix],
+            filterPanel = LF_ALCHEMY_CREATION,
+        },
+        ------------------------------------------------------------------------------------------------------------------------
+        --Add the block retrait checkbox
+        {
+            name = locVars["options_enable_block_retrait"],
+            tooltip = locVars["options_enable_block_retrait" .. tooltipSuffix],
+            filterPanel = LF_RETRAIT,
+        },
+    }
+end
 
 --Build the enable/disable checkboxes submenu for the dynamic icons
 local function buildDynamicIconEnableCheckboxes()
@@ -2357,6 +2363,13 @@ end
 
 local function buildDynamicAntiCheckAtPanelCheckboxes(dynIconsSubMenusControls, fcoisDynIconNr)  --#2025_999
     local disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+
+    --Build the needed table to loop
+    if dynamicAntiCheckAtPanelsData == nil then
+        buildDynamicAntiCheckAtPanelCheckboxTable()
+    end
+
+    --------------------------------------------------------------------------------------------------------------------
 
     for _, dynamicAntiCheckAtPanelDataEntry in ipairs(dynamicAntiCheckAtPanelsData) do
         local name, tooltip, getFunc, setFunc, createdControl

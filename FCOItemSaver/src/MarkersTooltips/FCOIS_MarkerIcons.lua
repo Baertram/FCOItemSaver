@@ -341,7 +341,7 @@ function FCOIS.CreateMarkerControl(parent, markerIconId, pWidth, pHeight, pTextu
     end
 
     --Is the parent's owner control not the quickslot circle?
-    if parentData.owningWindow() ~= ctrlVars.QUICKSLOT_CIRCLE then
+    if parentData.owningWindow ~= ctrlVars.QUICKSLOT_CIRCLE then
         if pIsEquipmentSlot == nil then pIsEquipmentSlot = false end
 
         settings = settings or FCOIS.settingsVars.settings
