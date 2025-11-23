@@ -192,18 +192,17 @@ if not FCOIS.libFeedback then d(preVars.preChatTextRed .. strformat(libMissingEr
 FCOIS.libShifterBox = LibShifterBox
 if not FCOIS.libShifterBox == nil then d(preVars.preChatTextRed .. strformat(libMissingErrorText, "LibShifterBox")) return end
 
---Initialize the library LibSets
-FCOIS.libSets = LibSets
-
---Initialize the library LibCharacterKnowledge
-FCOIS.LCK = LibCharacterKnowledge
 
 
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 --Optional libraries
+--LibCharacterKnowledge
+FCOIS.LCK = LibCharacterKnowledge
 --LibMultiAccountSets
 FCOIS.libMultiAccountSets = LibMultiAccountSets
+--library LibSets
+FCOIS.libSets = LibSets
 
 
 --All libraries are loaded prolery?
@@ -308,6 +307,27 @@ FCOIS_CON_FILTER_BUTTON_STATE_YELLOW    = -99
 FCOIS_CON_FILTER_BUTTON_STATE_RED       = false
 --Filter button special states
 FCOIS_CON_FILTER_BUTTON_STATE_DO_NOT_UPDATE_COLOR = -999 --Do not update the colors if called from FCOIS settings menu
+--The onOff filterButtonState mapping -> if FCOIS_CON_FILTER_BUTTON_STATE_TOGGLENEXT is NOT used
+local onOffTofilterButtonState = {
+    [FCOIS_CON_FILTER_BUTTON_STATE_ON] = FCOIS_CON_FILTER_BUTTON_STATE_GREEN,
+    [FCOIS_CON_FILTER_BUTTON_STATE_OFF] = FCOIS_CON_FILTER_BUTTON_STATE_RED,
+    [FCOIS_CON_FILTER_BUTTON_STATE_YELLOW] = FCOIS_CON_FILTER_BUTTON_STATE_YELLOW,
+}
+mappingVars.onOffTofilterButtonState = onOffTofilterButtonState
+--The current to the next filterButtonState mapping -> if FCOIS_CON_FILTER_BUTTON_STATE_TOGGLENEXT is used
+local currentToNextFilterButtonState = {
+    [FCOIS_CON_FILTER_BUTTON_STATE_GREEN] = FCOIS_CON_FILTER_BUTTON_STATE_RED,
+    [FCOIS_CON_FILTER_BUTTON_STATE_YELLOW] = FCOIS_CON_FILTER_BUTTON_STATE_GREEN,
+    [FCOIS_CON_FILTER_BUTTON_STATE_RED] = FCOIS_CON_FILTER_BUTTON_STATE_YELLOW,
+}
+mappingVars.currentToNextFilterButtonState = currentToNextFilterButtonState
+--Mapping if a filterButton state will register the filter functions via LibFilters, or not
+local filterStateToRegisterFilters = {
+    [FCOIS_CON_FILTER_BUTTON_STATE_GREEN] = true,
+    [FCOIS_CON_FILTER_BUTTON_STATE_YELLOW] = true,
+    [FCOIS_CON_FILTER_BUTTON_STATE_RED] = false,
+}
+mappingVars.filterStateToRegisterFilters = filterStateToRegisterFilters
 
 --Prevention variables
 FCOIS.preventerVars = {}
@@ -328,6 +348,50 @@ mappingVars.filterButtonColors = {
     [FCOIS_CON_FILTER_BUTTON_STATE_YELLOW]    = { 1, 1, 0, 1 },
     [FCOIS_CON_FILTER_BUTTON_STATE_RED]       = { 1, 0, 0, 1 },
 }
+--Split the filterButtons up? Settings to read and texturetoUse
+local filterButtonIdToSplitFilterSettings = {
+    [FCOIS_CON_FILTER_BUTTON_LOCKDYN] = {
+        setting = "splitLockDynFilter",
+        lastSetting = "lastLockDynFilterIconId",
+        texture = "allLockDyn",
+        textureSizeIndex = "LockDyn",
+    },
+    [FCOIS_CON_FILTER_BUTTON_GEARSETS] = {
+        setting = "splitGearSetsFilter",
+        lastSetting = "lastGearFilterIconId",
+        texture = "allGearSets",
+        textureSizeIndex = "Gear",
+    },
+    [FCOIS_CON_FILTER_BUTTON_RESDECIMP] = {
+        setting = "splitResearchDeconstructionImprovementFilter",
+        lastSetting = "lastResDecImpFilterIconId",
+        texture = "allResDecImp",
+        textureSizeIndex = "ResDecImp",
+    },
+    [FCOIS_CON_FILTER_BUTTON_SELLGUILDINT] = {
+        setting = "splitSellGuildSellIntricateFilter",
+        lastSetting = "lastSellGuildIntFilterIconId",
+        texture = "allSellGuildInt",
+        textureSizeIndex = "SellGuildInt",
+    },
+}
+mappingVars.filterButtonIdToSplitFilterSettings = filterButtonIdToSplitFilterSettings
+--The filterbutton split filter contextMenu data
+local filterButtonIdToSplitFilterContextMenuData = {
+    [FCOIS_CON_FILTER_BUTTON_LOCKDYN] = {
+        contextMenuName = "LockDynFilter",
+    },
+    [FCOIS_CON_FILTER_BUTTON_GEARSETS] = {
+        contextMenuName = "GearSetFilter",
+    },
+    [FCOIS_CON_FILTER_BUTTON_RESDECIMP] = {
+        contextMenuName = "ResDecImpFilter",
+    },
+    [FCOIS_CON_FILTER_BUTTON_SELLGUILDINT] = {
+        contextMenuName = "SellGuildIntFilter",
+    },
+}
+mappingVars.filterButtonIdToSplitFilterContextMenuData = filterButtonIdToSplitFilterContextMenuData
 
 --Custom filterPanelIds, not offical of LibFilters, only given within FCOIS (for the "flag" context menu buttons e.g.)
 FCOIS_CON_LF_CHARACTER              = "character"
@@ -347,7 +411,13 @@ checkVars.filterButtonsToCheck = {
     [3] = FCOIS_CON_FILTER_BUTTON_RESDECIMP,
     [4] = FCOIS_CON_FILTER_BUTTON_SELLGUILDINT,
 }
-checkVars.filterButtonSuffix = "_FilterButton"
+local filterButtonsToCheck = checkVars.filterButtonsToCheck
+checkVars.filterButtonSuffix = "_FCOISFilterButton"
+local filterButtonSuffix = checkVars.filterButtonSuffix
+checkVars.filterButtonTextureSuffix = "%sTexture"
+local filterButtonTextureSuffix = checkVars.filterButtonTextureSuffix
+checkVars.filterButtonTotalSuffix = filterButtonSuffix .. filterButtonTextureSuffix
+local filterButtonTotalSuffix = checkVars.filterButtonTotalSuffix
 
 --Constants for the automatic set item marking, non wished traits:
 FCOIS_CON_NON_WISHED_TRAIT      = -1
@@ -1400,19 +1470,26 @@ local inventories =
     },
 }
 ctrlVars.inventories = inventories
+
+ctrlVars.INV				            = ZO_PlayerInventory
+ctrlVars.INV_NAME					    = ctrlVars.INV:GetName()
+local invName = ctrlVars.INV_NAME
+
 --Control names of ZO* standard controls etc.
-ctrlVars.FCOISfilterButtonNames = {
- [FCOIS_CON_FILTER_BUTTON_LOCKDYN] 		= "ZO_PlayerInventory_FilterButton1",
- [FCOIS_CON_FILTER_BUTTON_GEARSETS] 	= "ZO_PlayerInventory_FilterButton2",
- [FCOIS_CON_FILTER_BUTTON_RESDECIMP] 	= "ZO_PlayerInventory_FilterButton3",
- [FCOIS_CON_FILTER_BUTTON_SELLGUILDINT]	= "ZO_PlayerInventory_FilterButton4",
-}
+local FCOISfilterButtonNames = {} --filterButtons are added via function FCOIS.UpdateFCOISFilterButtonsAtInventory(buttonId)
+ --[FCOIS_CON_FILTER_BUTTON_LOCKDYN] 		= "ZO_PlayerInventory" .. filterButtonSuffix .."1",
+ --[FCOIS_CON_FILTER_BUTTON_GEARSETS] 	    = "ZO_PlayerInventory" .. filterButtonSuffix .."2",
+ --[FCOIS_CON_FILTER_BUTTON_RESDECIMP] 	    = "ZO_PlayerInventory" .. filterButtonSuffix .."3",
+ --[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT]	= "ZO_PlayerInventory" .. filterButtonSuffix .."4",
+for _, filterButtonId in ipairs(filterButtonsToCheck) do
+    FCOISfilterButtonNames[filterButtonId] = invName .. filterButtonSuffix .. tos(filterButtonId)
+end
+ctrlVars.FCOISfilterButtonNames = FCOISfilterButtonNames
+
 ctrlVars.playerInventory                = PLAYER_INVENTORY
 ctrlVars.playerInventoryInvs            = ctrlVars.playerInventory.inventories
 ctrlVars.invSceneName                   = "inventory"
 ctrlVars.INVENTORY_MANAGER              = ZO_InventoryManager
-ctrlVars.INV				            = ZO_PlayerInventory
-ctrlVars.INV_NAME					    = ctrlVars.INV:GetName()
 ctrlVars.BACKPACK_LIST 				    = GetControl(ctrlVars.INV, listStr) -- ZO_PlayerInventoryList
 ctrlVars.BACKPACK_BAG 				    = GetControl(ctrlVars.BACKPACK_LIST, contentsStr) -- ZO_PlayerInventoryListContents
 ctrlVars.INV_MENUBAR_BUTTON_ITEMS	    = GetControl(ctrlVars.INV, strformat(menuBarButtonStr, "1")) --ZO_PlayerInventoryMenuBarButton1
@@ -1893,17 +1970,17 @@ mappingVars.gFilterPanelIdToInv = {
 }
 
 --The array for the texture names of each panel Id
-local invTextureName                = ctrlVars.INV_NAME .. "_FilterButton%sTexture"
-local refineTextureName             = ctrlVars.REFINEMENT_INV_NAME .. "_FilterButton%sTexture"
-local enchantTextureName            = ctrlVars.ENCHANTING_STATION_NAME .. "_FilterButton%sTexture"
-local deconTextureName              = ctrlVars.DECONSTRUCTION_INV_NAME .. "_FilterButton%sTexture" --#202 FilterButtons and additional inventory flag context menu button added to universal deconstruction panel
-local improveTextureName            = ctrlVars.IMPROVEMENT_INV_NAME .. "_FilterButton%sTexture"
-local researchTextureName           = ctrlVars.RESEARCH_NAME .. "_FilterButton%sTexture"
-local researchDialogTextureName     = ctrlVars.RESEARCH_POPUP_TOP_DIVIDER_NAME .. "_FilterButton%sTexture"
-local companionInvTextureName       = ctrlVars.COMPANION_INV_NAME .. "_FilterButton%sTexture"
+local invTextureName                = ctrlVars.INV_NAME .. filterButtonTotalSuffix
+local refineTextureName             = ctrlVars.REFINEMENT_INV_NAME .. filterButtonTotalSuffix
+local enchantTextureName            = ctrlVars.ENCHANTING_STATION_NAME .. filterButtonTotalSuffix
+local deconTextureName              = ctrlVars.DECONSTRUCTION_INV_NAME .. filterButtonTotalSuffix --#202 FilterButtons and additional inventory flag context menu button added to universal deconstruction panel
+local improveTextureName            = ctrlVars.IMPROVEMENT_INV_NAME .. filterButtonTotalSuffix
+local researchTextureName           = ctrlVars.RESEARCH_NAME .. filterButtonTotalSuffix
+local researchDialogTextureName     = ctrlVars.RESEARCH_POPUP_TOP_DIVIDER_NAME .. filterButtonTotalSuffix
+local companionInvTextureName       = ctrlVars.COMPANION_INV_NAME .. filterButtonTotalSuffix
 mappingVars.gFilterPanelIdToTextureName = {
 	[LF_INVENTORY] 					= invTextureName,
-	[LF_CRAFTBAG] 					= ctrlVars.CRAFTBAG_NAME .. "_FilterButton%sTexture",
+	[LF_CRAFTBAG] 					= ctrlVars.CRAFTBAG_NAME .. filterButtonTotalSuffix,
     [LF_SMITHING_REFINE]			= refineTextureName,
     [LF_SMITHING_DECONSTRUCT] 		= deconTextureName,
 	[LF_SMITHING_IMPROVEMENT] 		= improveTextureName,
@@ -1913,10 +1990,10 @@ mappingVars.gFilterPanelIdToTextureName = {
     [LF_VENDOR_SELL] 				= invTextureName,
     [LF_VENDOR_BUYBACK]				= invTextureName,
     [LF_VENDOR_REPAIR] 				= invTextureName,
-	[LF_GUILDBANK_WITHDRAW]			= ctrlVars.GUILD_BANK_INV_NAME .. "_FilterButton%sTexture",
+	[LF_GUILDBANK_WITHDRAW]			= ctrlVars.GUILD_BANK_INV_NAME .. filterButtonTotalSuffix,
 	[LF_GUILDBANK_DEPOSIT] 			= invTextureName,
 	[LF_GUILDSTORE_SELL] 			= invTextureName,
-	[LF_BANK_WITHDRAW] 				= ctrlVars.BANK_INV_NAME .. "_FilterButton%sTexture",
+	[LF_BANK_WITHDRAW] 				= ctrlVars.BANK_INV_NAME .. filterButtonTotalSuffix,
 	[LF_BANK_DEPOSIT] 				= invTextureName,
 	[LF_ENCHANTING_EXTRACTION] 		= enchantTextureName,
 	[LF_ENCHANTING_CREATION] 		= enchantTextureName,
@@ -1924,9 +2001,9 @@ mappingVars.gFilterPanelIdToTextureName = {
 	[LF_TRADE] 						= invTextureName,
 	[LF_FENCE_SELL] 				= invTextureName,
 	[LF_FENCE_LAUNDER] 				= invTextureName,
-	[LF_ALCHEMY_CREATION] 			= ctrlVars.ALCHEMY_INV_NAME .. "_FilterButton%sTexture",
-    [LF_RETRAIT] 		            = ctrlVars.RETRAIT_INV_NAME .. "_FilterButton%sTexture",
-    [LF_HOUSE_BANK_WITHDRAW]		= ctrlVars.HOUSE_BANK_INV_NAME .. "_FilterButton%sTexture",
+	[LF_ALCHEMY_CREATION] 			= ctrlVars.ALCHEMY_INV_NAME .. filterButtonTotalSuffix,
+    [LF_RETRAIT] 		            = ctrlVars.RETRAIT_INV_NAME .. filterButtonTotalSuffix,
+    [LF_HOUSE_BANK_WITHDRAW]		= ctrlVars.HOUSE_BANK_INV_NAME .. filterButtonTotalSuffix,
     [LF_HOUSE_BANK_DEPOSIT] 		= invTextureName,
     [LF_JEWELRY_REFINE]		        = refineTextureName,
     [LF_JEWELRY_DECONSTRUCT]		= deconTextureName,
@@ -1934,7 +2011,7 @@ mappingVars.gFilterPanelIdToTextureName = {
     [LF_JEWELRY_RESEARCH] 		    = researchTextureName,
     [LF_JEWELRY_RESEARCH_DIALOG]    = researchDialogTextureName,
     [LF_INVENTORY_COMPANION]        = companionInvTextureName,
-    [LF_FURNITURE_VAULT_WITHDRAW]   = ctrlVars.FURNITURE_VAULT_INV_NAME .. "_FilterButton%sTexture",
+    [LF_FURNITURE_VAULT_WITHDRAW]   = ctrlVars.FURNITURE_VAULT_INV_NAME .. filterButtonTotalSuffix,
     [LF_FURNITURE_VAULT_DEPOSIT]    = invTextureName,
 }
 

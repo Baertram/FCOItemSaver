@@ -157,27 +157,25 @@ end
 
 --==============================================================================
 
---Returns either the account wide "for each character individually",
---or the normal character saved "for each character", settings
+--Returns either the account wide "for each character individually" saved settings,
+--or the normal character saved "for each character" settings
 function FCOIS.GetAccountWideCharacterOrNormalCharacterSettings()
     local settingsForAll = FCOIS.settingsVars.defaultSettings
     local saveMode = settingsForAll.saveMode
 --d("[FCOIS]getAccountWideCharacterOrNormalCharacterSettings - saveMode: " ..tos(saveMode) .. ", filterForEachCharacter: " ..tos(settingsForAll.filterButtonsSaveForCharacter))
-    local settingsSV
     --Character SavedVariables
     if saveMode == 1 then
-        settingsSV = FCOIS.settingsVars.settings
+        return FCOIS.settingsVars.settings
     else
         --Account wide and AllAccountsTheSame account wide SavedVariables
-        --FilterButton states are saved account wide but for each character individually?
+        -->FilterButton states are saved account wide but for each character individually?
         if settingsForAll.filterButtonsSaveForCharacter == true then
             local settingsSVBase = FCOIS.settingsVars.accountWideButForEachCharacterSettings
-            settingsSV = settingsSVBase ~= nil and settingsSVBase[currentCharId]
+            return (settingsSVBase ~= nil and FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId]) or nil
         else
-            settingsSV = FCOIS.settingsVars.settings
+            return FCOIS.settingsVars.settings
         end
     end
-    return settingsSV
 end
 local getAccountWideCharacterOrNormalCharacterSettings = FCOIS.GetAccountWideCharacterOrNormalCharacterSettings
 
