@@ -182,8 +182,22 @@ local getAccountWideCharacterOrNormalCharacterSettings = FCOIS.GetAccountWideCha
 
 --Check if the filterButton's state is on/off/FCOIS_CON_FILTER_BUTTON_STATE_YELLOW (Show only marked)
 local defaultIsFilterPanelOn = { false, false, false, false }   --#2025_999
+local lastGetSettingsIsFilterOn = {}
+local function resetLastGetSettingIsFilterOn(p_filterButtonId, p_filterPanelId)
+    if lastGetSettingsIsFilterOn[p_filterButtonId] ~= nil then
+        lastGetSettingsIsFilterOn[p_filterButtonId][p_filterPanelId] = nil
+    end
+end
+
 function FCOIS.GetSettingsIsFilterOn(p_filterButtonId, p_filterPanel)
     local p_filterPanelNew = p_filterPanel or FCOIS.gFilterWhere
+
+    --Return cached value at the filterButton and panel -> As this function is called for each filtered inventory item
+    local lastResultAtFilterButtonAndPanel = (lastGetSettingsIsFilterOn[p_filterButtonId] ~= nil and lastGetSettingsIsFilterOn[p_filterButtonId][p_filterPanelNew]) or nil ----#2025_999
+    if lastResultAtFilterButtonAndPanel ~= nil then
+        return lastResultAtFilterButtonAndPanel
+    end
+
     local result
     local baseSettings = FCOIS.settingsVars.settings
     local settings = getAccountWideCharacterOrNormalCharacterSettings()
@@ -197,9 +211,13 @@ function FCOIS.GetSettingsIsFilterOn(p_filterButtonId, p_filterPanel)
             settings.isFilterPanelOn[p_filterPanelNew][p_filterButtonId] = nil
         end
     end
---d("[FCOIS]GetSettingsIsFilterOn - result: " ..tos(result))
+d("[FCOIS]GetSettingsIsFilterOn - result: " ..tos(result))
     if result == nil then result = false end --#2025_999
     if baseSettings.debug then debugMessage( "[GetSettingsIsFilterOn]","Filter Panel: " .. tos(p_filterPanelNew) .. ", FilterId: " .. tos(p_filterButtonId) .. ", Result: " .. tos(result), true, FCOIS_DEBUG_DEPTH_VERBOSE) end
+
+    --#2025_999 Cache current result for the filterButton and panel
+    lastGetSettingsIsFilterOn[p_filterButtonId] = lastGetSettingsIsFilterOn[p_filterButtonId] or {}
+    lastGetSettingsIsFilterOn[p_filterButtonId][p_filterPanelNew] = result
     return result
 end
 
@@ -213,9 +231,14 @@ function FCOIS.SetSettingsIsFilterOn(p_filterButtonId, p_value, p_filterPanel)
     if p_value ~= false then
         settings.isFilterPanelOn[p_filterPanelNew] = settings.isFilterPanelOn[p_filterPanelNew] or {}
         settings.isFilterPanelOn[p_filterPanelNew][p_filterButtonId] = p_value
+
+        resetLastGetSettingIsFilterOn(p_filterButtonId, p_filterPanelNew)
     else
         if settings.isFilterPanelOn[p_filterPanelNew] ~= nil then
             settings.isFilterPanelOn[p_filterPanelNew][p_filterButtonId] = nil
+
+            resetLastGetSettingIsFilterOn(p_filterButtonId, p_filterPanelNew)
+
             --Clean up code: If value was changed to false and all values are false, clean the SV table --#2025_999
             for filterButtonIdLoop, filterButtonSetting in ipairs(settings.isFilterPanelOn[p_filterPanelNew]) do
                 if p_filterButtonId ~= filterButtonIdLoop and filterButtonSetting == false then
