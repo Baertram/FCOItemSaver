@@ -1309,7 +1309,7 @@ local function checkIfFilterButtonContextMenuIsShown(p_currentFilterButton, pane
                 if not contextMenuFilterButton:IsHidden() then return false end
             end
         end
-        return false
+        return true
     end
     return false
 end
