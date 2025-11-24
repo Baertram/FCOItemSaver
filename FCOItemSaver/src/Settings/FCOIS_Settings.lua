@@ -182,7 +182,7 @@ local getAccountWideCharacterOrNormalCharacterSettings = FCOIS.GetAccountWideCha
 
 --Check if the filterButton's state is on/off/FCOIS_CON_FILTER_BUTTON_STATE_YELLOW (Show only marked)
 local defaultIsFilterPanelOn = { false, false, false, false }   --#2025_999
-function FCOIS.GetSettingsIsFilterOn(p_filterId, p_filterPanel)
+function FCOIS.GetSettingsIsFilterOn(p_filterButtonId, p_filterPanel)
     local p_filterPanelNew = p_filterPanel or FCOIS.gFilterWhere
     local result
     local baseSettings = FCOIS.settingsVars.settings
@@ -190,38 +190,45 @@ function FCOIS.GetSettingsIsFilterOn(p_filterId, p_filterPanel)
 
     --New behaviour with filters
     if settings.isFilterPanelOn[p_filterPanelNew] == nil then --#2025_999
-        result = defaultIsFilterPanelOn[p_filterId] --#2025_999
+        result = defaultIsFilterPanelOn[p_filterButtonId] --#2025_999
     else
-        result = settings.isFilterPanelOn[p_filterPanelNew][p_filterId]
+        result = settings.isFilterPanelOn[p_filterPanelNew][p_filterButtonId]
+        if result == false then --#2025_999
+            settings.isFilterPanelOn[p_filterPanelNew][p_filterButtonId] = nil
+        end
     end
+--d("[FCOIS]GetSettingsIsFilterOn - result: " ..tos(result))
     if result == nil then result = false end --#2025_999
-    if baseSettings.debug then debugMessage( "[GetSettingsIsFilterOn]","Filter Panel: " .. tos(p_filterPanelNew) .. ", FilterId: " .. tos(p_filterId) .. ", Result: " .. tos(result), true, FCOIS_DEBUG_DEPTH_VERBOSE) end
+    if baseSettings.debug then debugMessage( "[GetSettingsIsFilterOn]","Filter Panel: " .. tos(p_filterPanelNew) .. ", FilterId: " .. tos(p_filterButtonId) .. ", Result: " .. tos(result), true, FCOIS_DEBUG_DEPTH_VERBOSE) end
     return result
 end
 
 --Set the value of a filter type, and return it
-function FCOIS.SetSettingsIsFilterOn(p_filterId, p_value, p_filterPanel)
+function FCOIS.SetSettingsIsFilterOn(p_filterButtonId, p_value, p_filterPanel)
     local p_filterPanelNew = p_filterPanel or FCOIS.gFilterWhere
     local baseSettings = FCOIS.settingsVars.settings
     local settings = getAccountWideCharacterOrNormalCharacterSettings()
     --New behaviour with filters
-    if settings.isFilterPanelOn[p_filterPanelNew] ~= nil then --#2025_999
-        settings.isFilterPanelOn[p_filterPanelNew][p_filterId] = p_value
+--d("[FCOIS]SetSettingsIsFilterOn - p_filterPanel: " .. tos(p_filterPanel) .. ", p_filterButtonId: " .. tos(p_filterButtonId) ..", p_value: " ..tos(p_value))
+    if p_value ~= false then
+        settings.isFilterPanelOn[p_filterPanelNew] = settings.isFilterPanelOn[p_filterPanelNew] or {}
+        settings.isFilterPanelOn[p_filterPanelNew][p_filterButtonId] = p_value
+    else
+        if settings.isFilterPanelOn[p_filterPanelNew] ~= nil then
+            settings.isFilterPanelOn[p_filterPanelNew][p_filterButtonId] = nil
+            --Clean up code: If value was changed to false and all values are false, clean the SV table --#2025_999
+            for filterButtonIdLoop, filterButtonSetting in ipairs(settings.isFilterPanelOn[p_filterPanelNew]) do
+                if p_filterButtonId ~= filterButtonIdLoop and filterButtonSetting == false then
+                    --d(">cleaned false entry at button: " ..tos(filterButtonIdLoop))
+                    settings.isFilterPanelOn[p_filterPanelNew][filterButtonIdLoop] = nil
+                end
+            end
+            if ZO_IsTableEmpty(settings.isFilterPanelOn[p_filterPanelNew]) then settings.isFilterPanelOn[p_filterPanelNew] = nil end
+        end
     end
-    if baseSettings.debug then debugMessage( "[SetSettingsIsFilterOn]","Filter Panel: " .. tos(p_filterPanelNew) .. ", FilterId: " .. tos(p_filterId) .. ", Value: " .. tos(p_value), true, FCOIS_DEBUG_DEPTH_VERBOSE) end
+    if baseSettings.debug then debugMessage( "[SetSettingsIsFilterOn]","Filter Panel: " .. tos(p_filterPanelNew) .. ", FilterId: " .. tos(p_filterButtonId) .. ", Value: " .. tos(p_value), true, FCOIS_DEBUG_DEPTH_VERBOSE) end
 
     FCOIS.preventerVars.filterButtonsLogicalConjunctionsNeedUpdate = true --#2025_999
-
-    --Clean up code: If value was changed to false and all values are false, clean the SV table --#2025_999
-    if settings.isFilterPanelOn[p_filterPanelNew] ~= nil and p_value == false then
-        for _, settingBool in ipairs(settings.isFilterPanelOn[p_filterPanelNew]) do
-            if settingBool == true then
-                return p_value
-            end
-        end
-        --Got here? Then all entries were false -> Clear the SV table entry now
-        settings.isFilterPanelOn[p_filterPanelNew] = nil
-    end
 
     --return the value
     return p_value

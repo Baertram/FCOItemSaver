@@ -39,6 +39,13 @@ local onOffTofilterButtonState = gMappingVars.onOffTofilterButtonState --#2025_9
 local currentToNextFilterButtonState = gMappingVars.currentToNextFilterButtonState --#2025_999
 local filterStateToRegisterFilters = gMappingVars.filterStateToRegisterFilters --#2025_999
 
+local filterButtonHandlersApplied = { --#2025_999
+    ["OnMouseEnter"] = {},
+    ["OnMouseExit"] = {},
+    ["OnMouseUp"] = {},
+    ["OnClicked"] = {},
+}
+
 local filterButtonsToCheck = FCOIS.checkVars.filterButtonsToCheck
 local setSettingsIsFilterOn = FCOIS.SetSettingsIsFilterOn
 local getSettingsIsFilterOn = FCOIS.GetSettingsIsFilterOn
@@ -357,10 +364,11 @@ function FCOIS.UpdateFCOISFilterButtonsAtInventory(buttonId)
 end
 
 local textureSizeIndexToDimensionVars
+local notChangedText = "Not changed!"
 --Update the filter button colors and textures, depending on the filters (and chosen sub-filter icons)
 function FCOIS.UpdateFCOISFilterButtonColorsAndTextures(p_buttonId, p_button, p_status, p_filterPanelId)
     updateFCOISFilterButtonColorsAndTextures = updateFCOISFilterButtonColorsAndTextures or FCOIS.UpdateFCOISFilterButtonColorsAndTextures
-    local p_statusText = p_status or "Not changed!"
+    local p_statusText = (p_status ~= nil and p_status) or notChangedText
     p_filterPanelId = p_filterPanelId or FCOIS.gFilterWhere
     local settings = FCOIS.settingsVars.settings
     local settingsOfFilterButtonStateAndIcon = getAccountWideCharacterOrNormalCharacterSettings()
@@ -377,7 +385,7 @@ function FCOIS.UpdateFCOISFilterButtonColorsAndTextures(p_buttonId, p_button, p_
     end
 
     if settings.debug then debugMessage( "[UpdateButtonColorsAndTextures]","Button: " .. btnName .. ", ButtonId: " .. tos(p_buttonId) .. ", Status: " .. tos(p_status) .. ", FilterPanelId: " .. tos(p_filterPanelId), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
-d("[FCOIS]UpdateButtonColorsAndTextures-Button: " .. btnName .. ", ButtonId: " .. tos(p_buttonId) .. ", Status: " .. tos(p_status) .. ", FilterPanelId: " .. tos(p_filterPanelId))
+--d("[FCOIS]UpdateButtonColorsAndTextures-Button: " .. btnName .. ", ButtonId: " .. tos(p_buttonId) .. ", Status: " .. tos(p_status) .. ", FilterPanelId: " .. tos(p_filterPanelId))
     local texture
     --local offset
     if p_buttonId == FCOIS_CON_FILTER_BUTTONS_ALL or p_status == FCOIS_CON_FILTER_BUTTON_STATUS_ALL then
@@ -395,8 +403,10 @@ d("[FCOIS]UpdateButtonColorsAndTextures-Button: " .. btnName .. ", ButtonId: " .
             --Split the filterButton filters up?
             local filterButtonFilterSplitSettingCurrent, filterButtonFilterSplitSetting = getFilterButtonSplitSettingValue(p_buttonId)
             local doSplit = (filterButtonFilterSplitSettingCurrent == true and true) or false --e.g. p_buttonId == FCOIS_CON_FILTER_BUTTON_LOCKDYN and settings.splitLockDynFilter == true
+--d(">filterButtonFilterSplitSettingCurrent: " ..tos(filterButtonFilterSplitSettingCurrent) .. ", doSplit: " .. tos(doSplit))
             if doSplit == true then
                 local lastFilterButtonIconId = settingsOfFilterButtonStateAndIcon[filterButtonFilterSplitSetting.lastSetting]
+--d(">>lastFilterButtonIconId: " ..tos(lastFilterButtonIconId ~= nil and lastFilterButtonIconId[p_filterPanelId]))
                 if lastFilterButtonIconId[p_filterPanelId] == FCOIS_CON_ICONS_ALL then
                     texture:SetTexture(texVars[filterButtonFilterSplitSetting.texture])
                     updateTextureSizeIndex = filterButtonFilterSplitSetting.textureSizeIndex
@@ -423,18 +433,21 @@ d("[FCOIS]UpdateButtonColorsAndTextures-Button: " .. btnName .. ", ButtonId: " .
             end -- if p_buttonId == 1 and settings...
 
             --Get current status and reset the current texture color
-            if ((   p_buttonId == FCOIS_CON_FILTER_BUTTON_LOCKDYN or p_buttonId == FCOIS_CON_FILTER_BUTTON_GEARSETS
-                    or p_buttonId == FCOIS_CON_FILTER_BUTTON_RESDECIMP or p_buttonId == FCOIS_CON_FILTER_BUTTON_SELLGUILDINT) and p_statusText == "Not changed!") then
+            --if ((   p_buttonId == FCOIS_CON_FILTER_BUTTON_LOCKDYN or p_buttonId == FCOIS_CON_FILTER_BUTTON_GEARSETS
+            --        or p_buttonId == FCOIS_CON_FILTER_BUTTON_RESDECIMP or p_buttonId == FCOIS_CON_FILTER_BUTTON_SELLGUILDINT) and p_statusText == "Not changed!") then
+            if filterButtonIdToSplitFilterSettings[p_buttonId] ~= nil and p_statusText == notChangedText then
                 p_status = getSettingsIsFilterOn(p_buttonId, p_filterPanelId)
+--d(">>p_status NEW: " .. tos(p_status))
             end
 
             --Only update colors if wished. FCOIS_CON_FILTER_BUTTON_STATE_DO_NOT_UPDATE_COLOR will be set in FCOIS settings menu e.g. when you update the filter button's color there
             if p_status ~= FCOIS_CON_FILTER_BUTTON_STATE_DO_NOT_UPDATE_COLOR then
+--d(">>updating the color of the filterButton")
                 --Update the color of the filterbutton dependend on the state (FCOIS_CON_FILTER_BUTTON_STATE_GREEN, FCOIS_CON_FILTER_BUTTON_STATE_YELLOW, FCOIS_CON_FILTER_BUTTON_STATE_RED
                 texture:SetColor(unpack(filterButtonColors[p_status]))
             end -- if p_status ~= -FCOIS_CON_FILTER_BUTTON_STATE_DO_NOT_UPDATE_COLOR then
             --else
-            --d("<<<[FCOIS]ERROR-FilterButton texture control not found: " ..tos(textureNameOfFilterButton) .. ", filterPanelId: " ..tos(p_filterPanelId) .. ", buttonNr: " ..tos(p_buttonId))
+            --d("<<[FCOIS]ERROR-FilterButton texture control not found: " ..tos(textureNameOfFilterButton) .. ", filterPanelId: " ..tos(p_filterPanelId) .. ", buttonNr: " ..tos(p_buttonId))
         end -- iftexture ~= nil then
 
     end -- if p_buttonId == -1 or p_status == -1 then
@@ -457,6 +470,7 @@ d("[FCOIS]UpdateButtonColorsAndTextures-Button: " .. btnName .. ", ButtonId: " .
 
             --Get the new texture size by help of the index/index string
             local textureDimensions = textureSizeIndexToDimensionVars[updateTextureSizeIndex] --#2025_999
+--d(">updateTextureSizeIndex: " ..tos(updateTextureSizeIndex) ..", textureDimensions - width: " .. tos(textureDimensions.width) .. ", height: " .. tos(textureDimensions.height))
             texture:ClearAnchors()
             texture:SetDimensions(textureDimensions.width, textureDimensions.height)
             texture:SetAnchorFill()
@@ -814,10 +828,12 @@ local function doFilter(onoff, p_button, filterButtonId, beQuiet, doFilterBasics
         -- Should the filter be changed to next state?
         if onoff == FCOIS_CON_FILTER_BUTTON_STATE_TOGGLENEXT then
             isFilterActive = getSettingsIsFilterOn(filterButtonId, p_FilterPanelId)
-d("[FCOIS]DoFilter - isFilterActive: " ..tos(isFilterActive))
-            local filterbuttonStateValueNext = currentToNextFilterButtonState[isFilterActive] or nil --#2025_999
+            local filterbuttonStateValueNext = currentToNextFilterButtonState[isFilterActive] --#2025_999
+--d("[FCOIS]DoFilter - isFilterActive: " ..tos(isFilterActive) .. ", filterbuttonStateValueNext: " ..tos(filterbuttonStateValueNext))
             if filterbuttonStateValueNext ~= nil then
+                --Change the filter to the next state now
                 isFilterActive = setSettingsIsFilterOn(filterButtonId, filterbuttonStateValueNext, p_FilterPanelId)
+--d(">isFilterActive NEW: " ..tos(isFilterActive))
             end
 
             --Filter is on? Turn it off
@@ -844,7 +860,7 @@ d("[FCOIS]DoFilter - isFilterActive: " ..tos(isFilterActive))
     -- Initializing from function EnableFilters() at e.g. addon loading
     --------------------------------------------------------------------------------
     --Are we initializing from function EnableFilters() ?
-    if isInit  then
+    if isInit == true then
 
         --Unregister all old filters if the addon is already loaded and filters have been registered before.
         --This happens only by function Enablefilters() called after addon has been fully loaded (e.g. the settings menu "Split filters")
@@ -896,10 +912,13 @@ d("[FCOIS]DoFilter - isFilterActive: " ..tos(isFilterActive))
         --be determined here once again
         if isFilterActive == nil then
             isFilterActive = getSettingsIsFilterOn(filterButtonId, p_FilterPanelId)
+--d(">isFilterActive changed from NIL to: " ..tos(isFilterActive))
+            --[[
             --Is the new filter status still not set initialize it with "false"
             if isFilterActive == nil then
                 isFilterActive = setSettingsIsFilterOn(filterButtonId, false, p_FilterPanelId)
             end
+            ]]
         end
 
         registerFiltersNow = filterStateToRegisterFilters[isFilterActive] --#2025_999
@@ -1287,9 +1306,10 @@ local function checkIfFilterButtonContextMenuIsShown(p_currentFilterButton, pane
             local filterButtonIdToSplitFilterContextMenuNameOfButton = (filterButtonIdToSplitFilterContextMenuData[filterButtonNrLoop] ~= nil and filterButtonIdToSplitFilterContextMenuData[filterButtonNrLoop].contextMenuName) or nil
             local contextMenuFilterButton = (filterButtonIdToSplitFilterContextMenuNameOfButton ~= nil and contextMenu[filterButtonIdToSplitFilterContextMenuNameOfButton] ~= nil and contextMenu[filterButtonIdToSplitFilterContextMenuNameOfButton][panelId]) or nil
             if contextMenuFilterButton ~= nil then
-                if contextMenuFilterButton:IsHidden() then return true end
+                if not contextMenuFilterButton:IsHidden() then return false end
             end
         end
+        return false
     end
     return false
 end
@@ -1368,18 +1388,20 @@ function FCOIS.AddOrChangeFCOISFilterButton(parentCtrl, buttonId, filterButtonDa
 
     --Update the button's personal variables -> Passed to OnMouse* handlers!
     button.FCOISfilterPanelId     = p_FilterPanelId
-    button.FCOISbuttonId		    = buttonId
+    button.FCOISbuttonId		  = buttonId
     button.FCOISisUniversalDecon  = isUniversalDeconNPC -- #202
 
     --Set/Update handlers
     --Set/Update a tooltip?
-    if button:GetHandler("OnMouseEnter") == nil then
+    if not filterButtonHandlersApplied["OnMouseEnter"][button] then
+        filterButtonHandlersApplied["OnMouseEnter"][button] = true
+        button:SetHandler("OnMouseEnter", nil)
         button:SetHandler("OnMouseEnter", function(buttonMouseEntered)
             ZO_Tooltips_HideTextTooltip()
             local panelId = buttonMouseEntered.FCOISfilterPanelId or FCOIS.gFilterWhere -- #202
             local p_buttonId = buttonMouseEntered.FCOISbuttonId
             local showToolTip = checkIfFilterButtonContextMenuIsShown(p_buttonId, panelId) --#2025_999
-            if showToolTip then
+            if showToolTip == true then
                 tooltipText = outputFilterState(false, panelId, p_buttonId, settingsFilterStateToText[tos(getSettingsIsFilterOn(p_buttonId, panelId))])
                 if tooltipText ~= "" then
                     ZO_Tooltips_ShowTextTooltip(buttonMouseEntered, BOTTOM, tooltipText)
@@ -1387,7 +1409,9 @@ function FCOIS.AddOrChangeFCOISFilterButton(parentCtrl, buttonId, filterButtonDa
             end
         end)
     end
-    if button:GetHandler("OnMouseExit") == nil then
+    if not filterButtonHandlersApplied["OnMouseExit"][button] then
+        filterButtonHandlersApplied["OnMouseExit"][button] = true
+        button:SetHandler("OnMouseExit", nil)
         button:SetHandler("OnMouseExit", function()
             ZO_Tooltips_HideTextTooltip()
         end)
@@ -1395,7 +1419,9 @@ function FCOIS.AddOrChangeFCOISFilterButton(parentCtrl, buttonId, filterButtonDa
 
     --Overwrite the callback function of the button so it is channging the correct panel filter
     --as mail, trade, bank, guild bank, and others all use the ZO_PlayerInventory buttons to filter!
-    if button:SetHandler("OnClicked") == nil then
+    if not filterButtonHandlersApplied["OnClicked"][button] then
+        filterButtonHandlersApplied["OnClicked"][button] = true
+        button:SetHandler("OnClicked", nil)
         button:SetHandler("OnClicked", function(buttonClicked)
             --Hide the tooltip
             ZO_Tooltips_HideTextTooltip()
@@ -1418,7 +1444,9 @@ function FCOIS.AddOrChangeFCOISFilterButton(parentCtrl, buttonId, filterButtonDa
     end
 
     --Set the mouse up handler for the filter button -> e.g. right click -> context menu to select one filter icon (or * for all)
-    if button:GetHandler("OnMouseUp") == nil then
+    if not filterButtonHandlersApplied["OnMouseUp"][button] then
+        filterButtonHandlersApplied["OnMouseUp"][button] = true
+        button:SetHandler("OnMouseUp", nil)
         button:SetHandler("OnMouseUp", function(buttonOnMouseUp, mouseButton, upInside, ctrl, alt, shift, command)
             --Right click/mouse button 2 context menu hook part:
             if mouseButton == MOUSE_BUTTON_INDEX_RIGHT and upInside then
