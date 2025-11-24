@@ -3470,6 +3470,7 @@ function FCOIS.BuildAddonMenu()
                             end
                         end
                         ]]
+                        FCOIS.ResetLastGetSettingIsFilterOn()
                         FCOIS.settingsVars.defaultSettings.saveMode = value
                     end,
                     warning = locVars["options_language_description1"],
@@ -6360,6 +6361,7 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                     tooltip = locVars["options_filter_buttons_save_for_character" .. tooltipSuffix],
                     getFunc = function() return FCOIS.settingsVars.defaultSettings.filterButtonsSaveForCharacter end,
                     setFunc = function(value) FCOIS.settingsVars.defaultSettings.filterButtonsSaveForCharacter = value
+                        --FCOIS.ResetLastGetSettingIsFilterOn()
                         ReloadUI("ingame")
                     end,
                     default = FCOIS.settingsVars.defaultSettings.filterButtonsSaveForCharacter,

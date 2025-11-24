@@ -184,10 +184,15 @@ local getAccountWideCharacterOrNormalCharacterSettings = FCOIS.GetAccountWideCha
 local defaultIsFilterPanelOn = { false, false, false, false }   --#2025_999
 local lastGetSettingsIsFilterOn = {}
 local function resetLastGetSettingIsFilterOn(p_filterButtonId, p_filterPanelId)
-    if lastGetSettingsIsFilterOn[p_filterButtonId] ~= nil then
-        lastGetSettingsIsFilterOn[p_filterButtonId][p_filterPanelId] = nil
+    if p_filterButtonId == nil and p_filterPanelId == nil then
+        lastGetSettingsIsFilterOn = {}
+    elseif p_filterButtonId ~= nil and p_filterPanelId ~= nil then
+        if lastGetSettingsIsFilterOn[p_filterButtonId] ~= nil then
+            lastGetSettingsIsFilterOn[p_filterButtonId][p_filterPanelId] = nil
+        end
     end
 end
+FCOIS.ResetLastGetSettingIsFilterOn = resetLastGetSettingIsFilterOn
 
 function FCOIS.GetSettingsIsFilterOn(p_filterButtonId, p_filterPanel)
     local p_filterPanelNew = p_filterPanel or FCOIS.gFilterWhere
@@ -195,6 +200,7 @@ function FCOIS.GetSettingsIsFilterOn(p_filterButtonId, p_filterPanel)
     --Return cached value at the filterButton and panel -> As this function is called for each filtered inventory item
     local lastResultAtFilterButtonAndPanel = (lastGetSettingsIsFilterOn[p_filterButtonId] ~= nil and lastGetSettingsIsFilterOn[p_filterButtonId][p_filterPanelNew]) or nil ----#2025_999
     if lastResultAtFilterButtonAndPanel ~= nil then
+--d(">returning cached: " .. tos(lastResultAtFilterButtonAndPanel))
         return lastResultAtFilterButtonAndPanel
     end
 
@@ -211,7 +217,7 @@ function FCOIS.GetSettingsIsFilterOn(p_filterButtonId, p_filterPanel)
             settings.isFilterPanelOn[p_filterPanelNew][p_filterButtonId] = nil
         end
     end
-d("[FCOIS]GetSettingsIsFilterOn - result: " ..tos(result))
+--d("[FCOIS]GetSettingsIsFilterOn - result: " ..tos(result))
     if result == nil then result = false end --#2025_999
     if baseSettings.debug then debugMessage( "[GetSettingsIsFilterOn]","Filter Panel: " .. tos(p_filterPanelNew) .. ", FilterId: " .. tos(p_filterButtonId) .. ", Result: " .. tos(result), true, FCOIS_DEBUG_DEPTH_VERBOSE) end
 

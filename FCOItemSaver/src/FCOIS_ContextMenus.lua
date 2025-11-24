@@ -2016,6 +2016,10 @@ local function ContextMenuFilterButtonOnMouseEnter(button, contextMenuType, icon
 end
 
 local function updateInventoryNow(buttonNr, button, filterPanelId)
+    --As the filterButton contextMenu was used to change the marker icon or change the settings (logical AND or OR conjunction of filters):
+    --Reset cached lastGetSettingsIsFilterOn for filterButtonId and panelId
+    FCOIS.ResetLastGetSettingIsFilterOn(buttonNr, filterPanelId)
+
     --Update the inventory
     filterBasics()
     --Change the gear sets filter context-menu button's texture
@@ -2023,7 +2027,7 @@ local function updateInventoryNow(buttonNr, button, filterPanelId)
     updateFCOISFilterButtonColorsAndTextures(buttonNr, button, nil, filterPanelId)--FCOIS.gFilterWhere)
 end
 
---The filter button's context menu OnClicked callback function
+--The filter button's context menu OnClicked callback function (filterButton)
 local function ContextMenuFCOISFilterButtonOnClicked(button, contextMenuType, iconId, filterPanelId)
     if button == nil then return end
     if contextMenuType == nil then return end
@@ -2231,6 +2235,7 @@ end
 --Function that display the LOCKDYN context menu after the player right-clicks on the FCOIS filter button on the inventory
 --or shows the context menu for the GEARs, RESEARCH & DECONSTRUCTION & IMPORVEMENT or SELL & SELL AT GUILD STORE & INTRICATE filter button
 -->With FCOIS v2.2.4 there was added a new submenu for filter button settings (e.g. logical AND or OR of the filter, compared to the other 3 filter buttons)
+local colDefDefault = ZO_ColorDef:New(1, 1, 1, 1)
 function FCOIS.ShowContextMenuAtFCOISFilterButton(parentButton, p_FilterPanelId, contextMenuType, resetToAllEntry)
     p_FilterPanelId = p_FilterPanelId or FCOIS.gFilterWhere
     if parentButton == nil or p_FilterPanelId == nil or p_FilterPanelId == 0 then return end
@@ -2302,7 +2307,7 @@ function FCOIS.ShowContextMenuAtFCOISFilterButton(parentButton, p_FilterPanelId,
         local buttonText
         if buttonData ~= nil and (buttonData.iconId ~= nil and (buttonData.iconId == FCOIS_CON_ICONS_ALL or settings.isIconEnabled[buttonData.iconId])) and ((buttonData.text ~= nil and buttonData.text ~= "") or (buttonData.texture ~= nil and buttonData.texture ~= "")) then
             ---The standard color for the context menu entries
-            local colDef = ZO_ColorDef:New(1, 1, 1, 1)
+            local colDef = colDefDefault
             --The icon which the filter button context menu button affects
             local buttonsIcon = buttonData.iconId
             --Text
