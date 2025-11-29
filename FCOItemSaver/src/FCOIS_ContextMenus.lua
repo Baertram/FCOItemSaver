@@ -33,6 +33,12 @@ local FCOIS_CON_ICON_GEAR_5				= FCOIS_CON_ICON_GEAR_5
 
 local apiVersion = FCOIS.APIversion
 
+local textPrefix = {
+    ["nil"]   = "",
+    ["true"]  = "+ ",
+    ["false"] = "- ",
+}
+
 local numFilterIcons = FCOIS.numVars.gFCONumFilterIcons
 local myColorEnabled	= ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_TEXT_COLORS, INTERFACE_TEXT_COLOR_NORMAL))
 local myColorDisabled	= ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_TEXT_COLORS, INTERFACE_TEXT_COLOR_DISABLED))
@@ -2707,8 +2713,7 @@ local function getContextMenuAntiSettingsColor(settingIsEnabled, override)
             retCol = defaultColorNotActive  --#2025_999
         end
     end
-    --return retCol["r"], retCol["g"], retCol["b"], retCol["a"]
-    return unpack(retCol) --#2025_999
+    return retCol["r"], retCol["g"], retCol["b"], retCol["a"]
 end
 
 --Change the context menu invoker button's color by help of the button control and the anti-* settings state, but do not
@@ -3525,11 +3530,6 @@ end
 
 
 --Helper function to add the table entries of sorted button data, + and -
-local textPrefix = {
-    ["nil"]   = "",
-    ["true"]  = "+ ",
-    ["false"] = "- ",
-}
 local subMenuEntriesGear, subMenuEntriesDynamic, subMenuEntriesDynamicAdd, subMenuEntriesDynamicRemove --#2025_999
 local gearAdded, dynamicAdded, otherAdded --#2025_999
 local function addSortedButtonDataTableEntries(sortedButtonData, btnCtrl, panelId, useDynSubMenu)  --#2025_999

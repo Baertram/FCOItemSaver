@@ -179,6 +179,7 @@ local function reAnchorAdditionalInvButtonNow(panelId, anchorData, addInvButtonO
         --Update the left and top offsets now
         local newX = anchorData.defaultLeft + addInvButtonOffsets.left
         local newY = anchorData.defaultTop + addInvButtonOffsets.top
+--d(">newX: " ..tos(newX) .. ", newY: " ..tos(newY))
         --ReAnchor the controls if they are already created?
         --Get the button's data at the panel
         local buttonData = addInvBtnInvokers[panelId]
@@ -197,7 +198,10 @@ local function reAnchorAdditionalInvButtonNow(panelId, anchorData, addInvButtonO
                 if newParent ~= nil then
                     invAddCntBtnCtrl:SetParent(newParent)
                 else
-                    if buttonData.parent == nil then return end
+                    if buttonData.parent == nil then
+--d("<[ABORT]parent not found!")
+                        return
+                    end
                     invAddCntBtnCtrl:SetParent(buttonData.parent)
                 end
                 --Clear the anchors and reanchor it with the updated x and y offsets
@@ -207,6 +211,7 @@ local function reAnchorAdditionalInvButtonNow(panelId, anchorData, addInvButtonO
                 local alignTo = anchorData.anchorToPoint or alignToDefault
                 invAddCntBtnCtrl:SetAnchor(alignMy, anchorData.anchorControl, alignTo, newX, newY)
             end
+--FCOIS._lastContextMenuInvokerButton = invAddCntBtnCtrl
         end
     end
 end
@@ -214,7 +219,7 @@ end
 --Reanchor the additional inventory "flag" buttons with the x and y offsets from the settings
 local anchorVarsAddInvButtons
 function FCOIS.ReAnchorAdditionalInvButtons(filterPanelId, contMenuInvokerButton, newParent, newAnchorData)
---d("[FCOIS]ReAnchorAdditionalInvButtons - filterPanel: " ..tos(filterPanelId) .. ", newParent: " ..tos(newParent))
+--d("[FCOIS]ReAnchorAdditionalInvButtons - filterPanel: " ..tos(filterPanelId) .. ", newParent: " ..tos(newParent and newParent:GetName() or "n/a"))
     --Add the offset X/Y from the settings to the anchor values of the additional inventory buttons
     anchorVarsAddInvButtons = anchorVarsAddInvButtons or FCOIS.anchorVars.additionalInventoryFlagButton[apiVersion] --#320
     if anchorVarsAddInvButtons then --#320
