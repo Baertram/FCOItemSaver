@@ -12,6 +12,11 @@ local em = EVENT_MANAGER
 
 local playerStr = "player"
 
+local FCOIS_CON_MARKER_TEXTURE_PANELS_ALL         = FCOIS_CON_MARKER_TEXTURE_PANELS_ALL
+local FCOIS_CON_FILTER_BUTTONS_ALL          = FCOIS_CON_FILTER_BUTTONS_ALL
+local FCOIS_CON_FILTER_BUTTON_STATE_INIT      = FCOIS_CON_FILTER_BUTTON_STATE_INIT
+
+
 local addonVars = FCOIS.addonVars
 local gAddonName = addonVars.gAddonName
 local ctrlVars = FCOIS.ZOControlVars

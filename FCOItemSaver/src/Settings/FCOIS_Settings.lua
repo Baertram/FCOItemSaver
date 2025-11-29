@@ -15,6 +15,8 @@ local tabins = table.insert
 --Currently logged in account name
 local accName             = GetDisplayName()
 local currentCharId       = GetCurrentCharacterId()
+local FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE = FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE
+local FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE = FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE
 
 --The SavedVariables local name
 FCOIS.APIversion = FCOIS.APIversion or GetAPIVersion()

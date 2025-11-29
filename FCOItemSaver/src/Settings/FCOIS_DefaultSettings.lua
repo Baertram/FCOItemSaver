@@ -7,6 +7,8 @@ if not FCOIS.libsLoadedProperly then return end
 local tos = tostring
 
 local currentCharId       = GetCurrentCharacterId()
+local FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE = FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE
+local FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE = FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE
 
 --Function to set the default settings
 function FCOIS.BuildDefaultSettings()

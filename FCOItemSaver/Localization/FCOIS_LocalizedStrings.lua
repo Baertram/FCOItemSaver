@@ -28,6 +28,17 @@ local FCOIS = FCOIS
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
 
+--Languages
+local FCOIS_CON_LANG_EN = FCOIS_CON_LANG_EN
+local FCOIS_CON_LANG_DE = FCOIS_CON_LANG_DE
+local FCOIS_CON_LANG_FR = FCOIS_CON_LANG_FR
+local FCOIS_CON_LANG_ES = FCOIS_CON_LANG_ES
+local FCOIS_CON_LANG_IT = FCOIS_CON_LANG_IT
+local FCOIS_CON_LANG_JP = FCOIS_CON_LANG_JP
+local FCOIS_CON_LANG_RU = FCOIS_CON_LANG_RU
+local FCOIS_CON_LANG_MAX = FCOIS_CON_LANG_MAX
+
+
 --Local speed-ups of global number and other variables
 local numLanguages                      = FCOIS.numVars.languageCount
 local numFilterPanels                   = FCOIS.numVars.gFCONumFilterInventoryTypes

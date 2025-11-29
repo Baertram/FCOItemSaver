@@ -7,6 +7,15 @@ if not FCOIS.libsLoadedProperly then return end
 local tos = tostring
 local tabins = table.insert
 
+local FCOIS_CON_LANG_EN = FCOIS_CON_LANG_EN
+local FCOIS_CON_LANG_DE = FCOIS_CON_LANG_DE
+local FCOIS_CON_LANG_FR = FCOIS_CON_LANG_FR
+local FCOIS_CON_LANG_ES = FCOIS_CON_LANG_ES
+local FCOIS_CON_LANG_IT = FCOIS_CON_LANG_IT
+local FCOIS_CON_LANG_JP = FCOIS_CON_LANG_JP
+local FCOIS_CON_LANG_RU = FCOIS_CON_LANG_RU
+local FCOIS_CON_LANG_MAX = FCOIS_CON_LANG_MAX
+
 local debugMessage = FCOIS.debugMessage
 
 local availableCtms = FCOIS.contextMenuVars.availableCtms
@@ -461,14 +470,19 @@ local function afterLocalization()
 end
 
 --Localized texts etc.
+local l_FCOIS_CON_ICON_SUFFIX_NAME
+local l_FCOIS_CON_ICON_SUFFIX_COLOR
 function FCOIS.Localization()
+    l_FCOIS_CON_ICON_SUFFIX_NAME = l_FCOIS_CON_ICON_SUFFIX_NAME or FCOIS_CON_ICON_SUFFIX_NAME
+    l_FCOIS_CON_ICON_SUFFIX_COLOR = l_FCOIS_CON_ICON_SUFFIX_COLOR or FCOIS_CON_ICON_SUFFIX_COLOR
+
     local preventerVars = FCOIS.preventerVars
     local defSettings = FCOIS.settingsVars.defaultSettings
     local settings = FCOIS.settingsVars.settings
     local alwaysUseClientLang = settings.alwaysUseClientLanguage
     local langVars = FCOIS.langVars
-    local colorIconEndStr   = FCOIS_CON_ICON_SUFFIX_COLOR
-    local nameIconEndStr    = FCOIS_CON_ICON_SUFFIX_NAME
+    local colorIconEndStr   = l_FCOIS_CON_ICON_SUFFIX_COLOR
+    local nameIconEndStr    = l_FCOIS_CON_ICON_SUFFIX_NAME
 
 --d("[FCOIS] Localization - Start, keybindings: " .. tos(preventerVars.KeyBindingTexts) ..", useClientLang: " .. tos(alwaysUseClientLang) .. ", localizationDone: " ..tos(preventerVars.gLocalizationDone))
 

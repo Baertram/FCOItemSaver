@@ -4087,11 +4087,15 @@ end
 
 
 ------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
 --========= INVENTORY SLOT - SLOT ACTIONs =================================
 --AddContextMenuEntry -> SlotAction
 --Pre Hook function for adding right click/context menu entries.
+--->Returning true removes the action from the contextMenu (and the keybind!)
+--
 --Attention: Will be executed on mouse enter on a slot in inventories
---AND if you open the context menu by a mouse righ-click
+--AND if you open the context menu by a mouse righ-click.
 --To distinguish these two "events" you can use: if self.m_contextMenuMode == true then
 --true: Context-menu is open, false: Only mouse hoevered over the item
 
@@ -4142,15 +4146,10 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
     if isNewSlot then
         FCOIS.preventerVars.lastHoveredInvSlot = self.m_inventorySlot
     end
-    local parentControl
     local isShowingCharacter = isCharacterShown()
     local isShowingCompanionCharacter = isCompanionCharacterShown()
-    --Chracter equipment, or normal slot?
-    if isShowingCharacter or isShowingCompanionCharacter then
-        parentControl = self.m_inventorySlot
-    else
-        parentControl = self.m_inventorySlot:GetParent()
-    end
+    --Character equipment, or normal slot, or normal?
+    local parentControl = ((isShowingCharacter or isShowingCompanionCharacter) and self.m_inventorySlot) or self.m_inventorySlot:GetParent()
     --No parent found? Abort
     if parentControl == nil then return false end
     local parentName = parentControl:GetName()
@@ -4188,9 +4187,16 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
         if isNewSlot and settings.debug then debugMessage( "[AddSlotAction]",">newSlot! Parent: " .. parentName, true, FCOIS_DEBUG_DEPTH_VERBOSE) end
     end
 
+
+
+    -------------------------------------------------------------------
+    -- Check the action strings now - And block / allow the action
+    -------------------------------------------------------------------
+
     callItemSelectionHandler = callItemSelectionHandler or FCOIS.callItemSelectionHandler
     callDeconstructionSelectionHandler = callDeconstructionSelectionHandler or FCOIS.callDeconstructionSelectionHandler
 --d(">1")
+    -------------------------------------------------------------------
     --Use item?
     if actionStringId == SI_ITEM_ACTION_USE then
 --d(">use")
@@ -4263,6 +4269,7 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
             end
         end
 
+    -------------------------------------------------------------------
     --Enchant
     elseif actionStringId == SI_ITEM_ACTION_ENCHANT then
 --d(">enchant")
@@ -4272,6 +4279,7 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
             return isSpecialItem --Remove the context menu entry for "enchant"
         end
 
+    -------------------------------------------------------------------
     --Destroy item
     elseif actionStringId == SI_ITEM_ACTION_DESTROY then
 --d(">destroy")
@@ -4286,6 +4294,7 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
         --Is item marked with any of the FCOItemSaver icons? Then don't show the actionStringId in the contextmenu
         return destroySelectionHandler(bag, slotIndex, false, parentControl)
 
+    -------------------------------------------------------------------
     --Add item to crafting station, improvement, enchanting, retrait table
     elseif addToCraftResearchStrings[actionStringId] then
 --d(">add to craft")
@@ -4294,6 +4303,7 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
         --FCOIS.preventerVars.doDebugDeconstructionSelectionHandler = true --todo DEBUG uncomment for debugging
         return callDeconstructionSelectionHandler(bag, slotIndex, false, false, false, false, false, false, nil)
 
+    -------------------------------------------------------------------
     --Trade an item, mark item as junk, attach item to mail, sell item, launder item, add to trading house listing (sell there) or add to crafting station
     elseif mailTradeSellLaunderListStrings[actionStringId] then
 --d(">trade/mail attach/sell/launder/add to listing")
@@ -4302,6 +4312,7 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
         --FCOIS.preventerVars.doDebugItemSelectionHandler = true --todo DEBUG uncomment for debugging
         return callItemSelectionHandler(bag, slotIndex, false, false, false, false, false, false, nil, nil, nil)
 
+    -------------------------------------------------------------------
     --Should the "Junk item" context menu entry be hidden if any marker icon is set?
     elseif actionStringId == SI_ITEM_ACTION_MARK_AS_JUNK and settings.removeMarkAsJunk then
 --d(">mark as junk")
@@ -4328,6 +4339,7 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
             end
         end
 
+    -------------------------------------------------------------------
     --Equip
     elseif actionStringId == SI_ITEM_ACTION_EQUIP then
 --d(">equip")
@@ -4350,6 +4362,7 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
             end
         end
 
+    -------------------------------------------------------------------
     --Guild bank/Bank deposit
     elseif actionStringId == SI_ITEM_ACTION_BANK_DEPOSIT then
 --d(">bank deposit")
@@ -4363,16 +4376,20 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
         end
 
     --[[
+    -------------------------------------------------------------------
     --Buy (at vendor)
     elseif actionStringId == SI_ITEM_ACTION_BUY or actionStringId == SI_ITEM_ACTION_BUY_MULTIPLE then
 
+    -------------------------------------------------------------------
     --Buy back (at vendor)
     elseif actionStringId == SI_ITEM_ACTION_BUYBACK then
 
+    -------------------------------------------------------------------
     --Repair (at vendor)
     elseif actionStringId == SI_ITEM_ACTION_REPAIR then
     ]]
 
+    -------------------------------------------------------------------
     --CraftBagExtended: Unpack item and add to mail, sell, trade
     elseif (CraftBagExtended or CBE or otherAddons.craftBagExtendedActive) and craftbagExtendedActiveStrings[actionStringId] then
 --d(">CraftBagExtended")

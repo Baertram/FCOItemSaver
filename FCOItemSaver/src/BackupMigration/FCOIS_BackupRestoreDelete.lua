@@ -22,6 +22,8 @@ local signItemId = FCOIS.SignItemId
 local isMarked
 local isMarkedByItemInstanceId
 
+local FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE = FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE
+local FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE = FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE
 
 --The standard allowed bags for the backup
 local standardBackupAllowedBagTypes = {}

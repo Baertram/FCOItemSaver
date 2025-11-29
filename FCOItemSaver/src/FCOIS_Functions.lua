@@ -14,6 +14,13 @@ if not FCOIS.libsLoadedProperly then return end
 
 local debugMessage = FCOIS.debugMessage
 local preChatTextGreen = FCOIS.preChatVars.preChatTextGreen
+local FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE = FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE
+local FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE = FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE
+local FCOIS_CON_FCOISUNIQUEID_TYPE_BAGID_SLOTINDEX = FCOIS_CON_FCOISUNIQUEID_TYPE_BAGID_SLOTINDEX
+local FCOIS_CON_FCOISUNIQUEID_TYPE_ITEMLINK = FCOIS_CON_FCOISUNIQUEID_TYPE_ITEMLINK
+local FCOIS_CON_VENDOR_TYPE_NORMAL_NPC = FCOIS_CON_VENDOR_TYPE_NORMAL_NPC
+local FCOIS_CON_VENDOR_TYPE_PORTABLE = FCOIS_CON_VENDOR_TYPE_PORTABLE
+
 
 --local lua
 local tos = tostring
@@ -3202,31 +3209,33 @@ end
 
 --Is the companion inventory control shown
 function FCOIS.IsCompanionInventoryShown()
-    if libFilters.IsCompanionInventoryShown then
+    --if libFilters.IsCompanionInventoryShown then
         return libFilters:IsCompanionInventoryShown()
-    end
-    return not ctrlVars.COMPANION_INV_CONTROL:IsHidden()
+    --end
+    --return not ctrlVars.COMPANION_INV_CONTROL:IsHidden()
 end
 isCompanionInventoryShown = FCOIS.IsCompanionInventoryShown
 
 --Is the character control shown
 function FCOIS.IsCharacterShown()
-    if libFilters.IsCharacterShown then
+    --if libFilters.IsCharacterShown then
         return libFilters:IsCharacterShown()
-    end
-    return not ctrlVars.CHARACTER:IsHidden()
+    --end
+    --return not ctrlVars.CHARACTER:IsHidden()
 end
 local isCharacterShown = FCOIS.IsCharacterShown
 
 --Is the companion character control shown
 function FCOIS.IsCompanionCharacterShown()
     local isCompanionCharShown = false
-    if libFilters.IsCompanionCharacterShown then
+    --if libFilters.IsCompanionCharacterShown then
         isCompanionCharShown = libFilters:IsCompanionCharacterShown()
-    end
+    --end
+    --[[
     if not isCompanionCharShown then
         return not ctrlVars.COMPANION_CHARACTER:IsHidden()
     end
+    ]]
     return isCompanionCharShown
 end
 local isCompanionCharacterShown = FCOIS.IsCompanionCharacterShown
@@ -3234,18 +3243,19 @@ local isCompanionCharacterShown = FCOIS.IsCompanionCharacterShown
 
 --Is the retrait station shown?
 function FCOIS.IsRetraitStationShown()
-    if libFilters.IsRetraitStationShown then
+    --if libFilters.IsRetraitStationShown then
         return libFilters:IsRetraitStationShown()
-    end
-    return ZO_RETRAIT_STATION_MANAGER:IsRetraitSceneShowing()
+    --end
+    --return ZO_RETRAIT_STATION_MANAGER:IsRetraitSceneShowing()
 end
 
 --Check if the Enchanting panel is shown
 function FCOIS.IsEnchantingPanelShown(enchantingMode)
     --d("[FCOIS]IsEnchantingPanelShown - enchantingMode: " ..tos(enchantingMode))
-    if libFilters.IsEnchantingShown then
+    --if libFilters.IsEnchantingShown then
         return libFilters:IsEnchantingShown(enchantingMode)
-    end
+    --end
+    --[[
     if enchantingMode == ENCHANTING_MODE_NONE or (enchantingMode ~= ENCHANTING_MODE_CREATION and enchantingMode ~= ENCHANTING_MODE_EXTRACTION and enchantingMode ~= ENCHANTING_MODE_RECIPES) then return false end
     local retVar = false
     if ctrlVars.ENCHANTING_STATION ~= nil and not ctrlVars.ENCHANTING_STATION:IsHidden() then
@@ -3254,14 +3264,16 @@ function FCOIS.IsEnchantingPanelShown(enchantingMode)
         end
     end
     return retVar
+    ]]
 end
 
 --Check if the Enchanting glyph creation panel is shown
 function FCOIS.IsEnchantingPanelCreationShown()
     --d("[FCOIS]IsEnchantingPanelShown")
-    if libFilters.IsEnchantingShown then
+    --if libFilters.IsEnchantingShown then
         return libFilters:IsEnchantingShown(ENCHANTING_MODE_CREATION)
-    end
+    --end
+    --[[
     local retVar = false
     if ctrlVars.ENCHANTING_STATION ~= nil and not ctrlVars.ENCHANTING_STATION:IsHidden() then
         if ctrlVars.ENCHANTING.GetEnchantingMode ~= nil then
@@ -3271,14 +3283,16 @@ function FCOIS.IsEnchantingPanelCreationShown()
     end
     --d("<result: " .. tos(retVar))
     return retVar
+    ]]
 end
 
 --Check if the Alchemy creation panel is shown
 function FCOIS.IsAlchemyPanelCreationShown()
     --d("[FCOIS]IsAlchemyPanelCreationShown")
-    if libFilters.IsAlchemyShown then
+    --if libFilters.IsAlchemyShown then
         return libFilters:IsAlchemyShown(ZO_ALCHEMY_MODE_CREATION)
-    end
+    --end
+    --[[
     local retVar = false
     if ctrlVars.ALCHEMY_INV ~= nil and not ctrlVars.ALCHEMY_INV:IsHidden() then
         if ctrlVars.ALCHEMY.mode ~= nil then
@@ -3288,25 +3302,35 @@ function FCOIS.IsAlchemyPanelCreationShown()
     end
     --d("<result: " .. tos(retVar))
     return retVar
+    ]]
 end
 
 --Check if any of the vendor panels (buy, sell, buyback, repair) are shown
 function FCOIS.IsVendorPanelShown(vendorPanelId, overwrite)
     overwrite = overwrite or false
     isVendorPanelShown = isVendorPanelShown or FCOIS.IsVendorPanelShown
---d("FCOIS.IsVendorPanelShown, vendorPanelId: " .. tos(vendorPanelId) .. ", overwrite: " .. tos(overwrite))
+    --d("FCOIS.IsVendorPanelShown, vendorPanelId: " .. tos(vendorPanelId) .. ", overwrite: " .. tos(overwrite))
     if overwrite then return true end
+    local storeMode
+
+    local isVendorPanelChecked = false
+    if vendorPanelId ~= nil then
+        isVendorPanelChecked = mappingVars.supportedVendorPanels[vendorPanelId] or false
+        if not isVendorPanelChecked then return false end
+
+        storeMode = mappingVars.vendorPanelId2StoreMode[vendorPanelId]
+        if storeMode == nil then return false end
+    end
+
+    return libFilters:IsStoreShown(storeMode)
+    --[[
     --Check the scene name if it is the "vendor" scene
     local currentSceneName = SCENE_MANAGER.currentScene.name
     if currentSceneName == nil or currentSceneName ~= ctrlVars.vendorSceneName then
 --d("<1, sceneName: " ..tos(currentSceneName))
-        return false end
-    local vendorLibFilterIds = FCOIS.mappingVars.supportedVendorPanels
-    local isVendorPanelChecked = false
-    if vendorPanelId ~= nil then
-        isVendorPanelChecked = vendorLibFilterIds[vendorPanelId] or false
-        if not isVendorPanelChecked then return false end
+        return false
     end
+
     local retVar = false
     if vendorPanelId ~= nil then
         --Vendor Buy
@@ -3330,6 +3354,7 @@ function FCOIS.IsVendorPanelShown(vendorPanelId, overwrite)
     end
 --d("<retVar: " ..tos(retVar))
     return retVar
+    ]]
 end
 isVendorPanelShown = FCOIS.IsVendorPanelShown
 
