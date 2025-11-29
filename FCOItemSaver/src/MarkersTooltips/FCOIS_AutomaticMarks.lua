@@ -9,6 +9,19 @@ if not FCOIS.libsLoadedProperly then return end
 --and function FCOIS.ScanInventoryItemsForAutomaticMarks is called which get's the toDo table and loops it, checking for each relevant automaticMark process
 --where function FCOIS.AutomaticMarksToDoCheck runs the scanTypeToDo dynamic checks then on each bagId, slotIndex inventory item
 
+local FCOIS_CON_NON_WISHED_TRAIT      = FCOIS_CON_NON_WISHED_TRAIT
+local FCOIS_CON_NON_WISHED_LEVEL      = FCOIS_CON_NON_WISHED_LEVEL
+local FCOIS_CON_NON_WISHED_QUALITY    = FCOIS_CON_NON_WISHED_QUALITY
+local FCOIS_CON_NON_WISHED_ALL        = FCOIS_CON_NON_WISHED_ALL
+local FCOIS_CON_NON_WISHED_ANY_OF_THEM = FCOIS_CON_NON_WISHED_ANY_OF_THEM
+local FCOIS_CON_ICON_NONE               = FCOIS_CON_ICON_NONE
+local FCOIS_CON_ICONS_ALL               = FCOIS_CON_ICONS_ALL
+local FCOIS_CON_ICON_LOCK				= FCOIS_CON_ICON_LOCK
+local FCOIS_CON_ICON_RESEARCH			= FCOIS_CON_ICON_RESEARCH
+local FCOIS_CON_ICON_SELL				= FCOIS_CON_ICON_SELL
+local FCOIS_CON_ICON_DECONSTRUCTION		= FCOIS_CON_ICON_DECONSTRUCTION
+local FCOIS_CON_ICON_SELL_AT_GUILDSTORE	= FCOIS_CON_ICON_SELL_AT_GUILDSTORE
+local FCOIS_CON_ICON_INTRICATE			= FCOIS_CON_ICON_INTRICATE
 
 local debugMessage = FCOIS.debugMessage
 local tos       = tostring

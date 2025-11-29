@@ -6,6 +6,8 @@ if not FCOIS.libsLoadedProperly then return end
 
 local debugMessage = FCOIS.debugMessage
 
+local FCOIS_CON_ICON_LOCK				= FCOIS_CON_ICON_LOCK
+
 local strformat = string.format
 
 local iipl      = IsItemPlayerLocked

@@ -20,13 +20,18 @@ local FCOIS_CON_FCOISUNIQUEID_TYPE_BAGID_SLOTINDEX = FCOIS_CON_FCOISUNIQUEID_TYP
 local FCOIS_CON_FCOISUNIQUEID_TYPE_ITEMLINK = FCOIS_CON_FCOISUNIQUEID_TYPE_ITEMLINK
 local FCOIS_CON_VENDOR_TYPE_NORMAL_NPC = FCOIS_CON_VENDOR_TYPE_NORMAL_NPC
 local FCOIS_CON_VENDOR_TYPE_PORTABLE = FCOIS_CON_VENDOR_TYPE_PORTABLE
+local FCOIS_CON_ICONS_ALL               = FCOIS_CON_ICONS_ALL
+local FCOIS_CON_ICON_SELL				= FCOIS_CON_ICON_SELL
+local FCOIS_CON_ICON_DECONSTRUCTION		= FCOIS_CON_ICON_DECONSTRUCTION
+local FCOIS_CON_ICON_IMPROVEMENT		= FCOIS_CON_ICON_IMPROVEMENT
+local FCOIS_CON_ICON_SELL_AT_GUILDSTORE	= FCOIS_CON_ICON_SELL_AT_GUILDSTORE
 
 
 --local lua
 local tos = tostring
 local ton = tonumber
 local strformat = string.format
-local strmatch = string.match
+--local strmatch = string.match
 local tins = table.insert
 local trem = table.remove
 local tsort = table.sort
@@ -37,8 +42,8 @@ local wm = WINDOW_MANAGER
 local funcType = "function"
 local stringType = "string"
 local numberType = "number"
-local booleanType = "boolean"
-local tableType = "table"
+--local booleanType = "boolean"
+--local tableType = "table"
 
 --Local ZOs API
 local gccharid = GetCurrentCharacterId

@@ -297,7 +297,6 @@ for FCOISConvar, conValue in pairs(FCOIS_CON_VALUES) do
     _G[FCOISConvar] = conValue
 end
 --Local speed up variables
-local FCOIS_CON_WHEREAREWE_MIN = FCOIS_CON_VALUES.FCOIS_CON_WHEREAREWE_MIN
 local FCOIS_CON_DESTROY = FCOIS_CON_VALUES.FCOIS_CON_DESTROY
 local FCOIS_CON_MAIL = FCOIS_CON_VALUES.FCOIS_CON_MAIL
 local FCOIS_CON_TRADE = FCOIS_CON_VALUES.FCOIS_CON_TRADE
@@ -466,7 +465,8 @@ mappingVars.filterButtonIdToSplitFilterContextMenuData = filterButtonIdToSplitFi
 --Custom filterPanelIds, not offical of LibFilters, only given within FCOIS (for the "flag" context menu buttons e.g.)
 FCOIS_CON_LF_CHARACTER              = "character"
 FCOIS_CON_LF_COMPANION_CHARACTER    = "companion_character"
-
+local FCOIS_CON_LF_CHARACTER = FCOIS_CON_LF_CHARACTER
+local FCOIS_CON_LF_COMPANION_CHARACTER = FCOIS_CON_LF_COMPANION_CHARACTER
 FCOIS.customFilterPanelIds = {
     FCOIS_CON_LF_CHARACTER,
     FCOIS_CON_LF_COMPANION_CHARACTER
@@ -588,8 +588,12 @@ numVars.maxItemType = maxItemTypesFound or itemTypeMaxFallback
     41 = Dynamic 29             (DYN)
     42 = Dynamic 30             (DYN)
 ]]
+--Special icon constants
+FCOIS_CON_ICON_NONE					= -100  --No marker icon selected
+local FCOIS_CON_ICONS_ALL           = -1 --#316 All marker icons
+_G["FCOIS_CON_ICONS_ALL"]           = FCOIS_CON_ICONS_ALL
+
 --Constant values for the FCOItemSaver marker icons
-FCOIS_CON_ICONS_ALL                 = -1 --#316
 FCOIS_CON_ICON_LOCK					= 1
 FCOIS_CON_ICON_GEAR_1				= 2
 FCOIS_CON_ICON_RESEARCH				= 3
@@ -602,20 +606,35 @@ FCOIS_CON_ICON_DECONSTRUCTION		= 9
 FCOIS_CON_ICON_IMPROVEMENT			= 10
 FCOIS_CON_ICON_SELL_AT_GUILDSTORE	= 11
 FCOIS_CON_ICON_INTRICATE			= 12
+local FCOIS_CON_ICON_LOCK				= FCOIS_CON_ICON_LOCK
+local FCOIS_CON_ICON_GEAR_1				= FCOIS_CON_ICON_GEAR_1
+local FCOIS_CON_ICON_RESEARCH			= FCOIS_CON_ICON_RESEARCH
+local FCOIS_CON_ICON_GEAR_2  			= FCOIS_CON_ICON_GEAR_2
+local FCOIS_CON_ICON_SELL				= FCOIS_CON_ICON_SELL
+local FCOIS_CON_ICON_GEAR_3				= FCOIS_CON_ICON_GEAR_3
+local FCOIS_CON_ICON_GEAR_4				= FCOIS_CON_ICON_GEAR_4
+local FCOIS_CON_ICON_GEAR_5				= FCOIS_CON_ICON_GEAR_5
+local FCOIS_CON_ICON_DECONSTRUCTION		= FCOIS_CON_ICON_DECONSTRUCTION
+local FCOIS_CON_ICON_IMPROVEMENT		= FCOIS_CON_ICON_IMPROVEMENT
+local FCOIS_CON_ICON_SELL_AT_GUILDSTORE	= FCOIS_CON_ICON_SELL_AT_GUILDSTORE
+local FCOIS_CON_ICON_INTRICATE = FCOIS_CON_ICON_INTRICATE
 --[[
 ----Changed to dynamically created variables and added to global namespace
 ]]
 local dynamicIconPrefix = "FCOIS_CON_ICON_DYNAMIC_"
+FCOIS.dynamicIconPrefix = dynamicIconPrefix
 local markerIconsBefore = FCOIS_CON_ICON_INTRICATE --12
+local maxDynIconRef
 for dynIconNr = 1, numMaxDynamicIcons, 1 do
 	markerIconsBefore = markerIconsBefore + 1
-	_G[dynamicIconPrefix .. tostring(dynIconNr)] = markerIconsBefore
+    local dynIconName = dynamicIconPrefix .. tostring(dynIconNr)
+	_G[dynIconName] = markerIconsBefore
+    if dynIconNr == numMaxDynamicIcons then
+        maxDynIconRef = _G[dynIconName]
+    end
 end
 --The maximum marker icons variable
-numVars.gFCONumFilterIcons = FCOIS_CON_ICON_DYNAMIC_30 --42, since FCOIS version 1.4.0
---Special icon constants
-FCOIS_CON_ICON_ALL					= -1    --All marker icons
-FCOIS_CON_ICON_NONE					= -100  --No marker icon selected
+numVars.gFCONumFilterIcons = maxDynIconRef --42, since FCOIS version 1.4.0 FCOIS_CON_ICON_DYNAMIC_30
 
 
 --Debug depth levels
@@ -626,6 +645,13 @@ FCOIS_DEBUG_DEPTH_VERY_DETAILED	= 3
 FCOIS_DEBUG_DEPTH_SPAM		    = 4
 FCOIS_DEBUG_DEPTH_VERBOSE       = 99
 FCOIS_DEBUG_DEPTH_ALL			= 5
+local FCOIS_DEBUG_DEPTH_QUICK_DEBUG   = FCOIS_DEBUG_DEPTH_QUICK_DEBUG
+local FCOIS_DEBUG_DEPTH_NORMAL        = FCOIS_DEBUG_DEPTH_NORMAL
+local FCOIS_DEBUG_DEPTH_DETAILED	    = FCOIS_DEBUG_DEPTH_DETAILED
+local FCOIS_DEBUG_DEPTH_VERY_DETAILED	= FCOIS_DEBUG_DEPTH_VERY_DETAILED
+local FCOIS_DEBUG_DEPTH_SPAM		    = FCOIS_DEBUG_DEPTH_SPAM
+local FCOIS_DEBUG_DEPTH_VERBOSE       = FCOIS_DEBUG_DEPTH_VERBOSE
+local FCOIS_DEBUG_DEPTH_ALL			= FCOIS_DEBUG_DEPTH_ALL
 
 --The inventory row patterns for the supported keybindings and MouseOverControl checks (SHIFT+right mouse functions e.g.)
 --See file src/FCOIS_Functions.lua, function FCOIS.GetBagAndSlotFromControlUnderMouse()

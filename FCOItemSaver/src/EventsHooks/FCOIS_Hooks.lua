@@ -4,6 +4,8 @@ local FCOIS = FCOIS
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
 
+local CM                                    = CALLBACK_MANAGER
+
 local libFilters = FCOIS.libFilters
  local otherAddons = FCOIS.otherAddons
 
@@ -15,16 +17,22 @@ local strmatch                              = string.match
 local tins                                  = table.insert
 
 local giid                                  = GetItemId
-local gil                                   = GetItemLink
+--local gil                                   = GetItemLink
 local giet                                  = GetItemEquipType
 
 local addonVars                             = FCOIS.addonVars
 local addonName                             = addonVars.gAddonName
 
-local CM                                    = CALLBACK_MANAGER
-
 local ctrlVars                              = FCOIS.ZOControlVars
 local invSceneName                          = ctrlVars.invSceneName
+
+local FCOIS_CON_LF_CHARACTER = FCOIS_CON_LF_CHARACTER
+local FCOIS_CON_LF_COMPANION_CHARACTER = FCOIS_CON_LF_COMPANION_CHARACTER
+local FCOIS_CON_ICONS_ALL               = FCOIS_CON_ICONS_ALL
+local FCOIS_CON_ICON_LOCK				= FCOIS_CON_ICON_LOCK
+local FCOIS_CON_ICON_RESEARCH			= FCOIS_CON_ICON_RESEARCH
+
+
 
 local backpackCtrl =            ctrlVars.BACKPACK
 local characterCtrl =           ctrlVars.CHARACTER

@@ -36,6 +36,22 @@ local FCOIS_CON_FILTER_BUTTON_RESDECIMP		= FCOIS_CON_FILTER_BUTTON_RESDECIMP
 local FCOIS_CON_FILTER_BUTTON_SELLGUILDINT	= FCOIS_CON_FILTER_BUTTON_SELLGUILDINT
 local FCOIS_CON_FILTER_BUTTON_STATE_INIT      = FCOIS_CON_FILTER_BUTTON_STATE_INIT
 local FCOIS_CON_FILTER_BUTTON_STATE_DO_NOT_UPDATE_COLOR = FCOIS_CON_FILTER_BUTTON_STATE_DO_NOT_UPDATE_COLOR
+local FCOIS_CON_NON_WISHED_TRAIT      = FCOIS_CON_NON_WISHED_TRAIT
+local FCOIS_CON_NON_WISHED_LEVEL      = FCOIS_CON_NON_WISHED_LEVEL
+local FCOIS_CON_NON_WISHED_QUALITY    = FCOIS_CON_NON_WISHED_QUALITY
+local FCOIS_CON_NON_WISHED_ALL        = FCOIS_CON_NON_WISHED_ALL
+local FCOIS_CON_NON_WISHED_ANY_OF_THEM = FCOIS_CON_NON_WISHED_ANY_OF_THEM
+local FCOIS_CON_ICON_NONE               = FCOIS_CON_ICON_NONE
+local FCOIS_CON_ICON_LOCK				= FCOIS_CON_ICON_LOCK
+local FCOIS_CON_ICON_RESEARCH			= FCOIS_CON_ICON_RESEARCH
+local FCOIS_CON_ICON_SELL				= FCOIS_CON_ICON_SELL
+local FCOIS_CON_ICON_SELL_AT_GUILDSTORE	= FCOIS_CON_ICON_SELL_AT_GUILDSTORE
+local FCOIS_CON_ICON_INTRICATE			= FCOIS_CON_ICON_INTRICATE
+local FCOIS_CON_ICON_GEAR_1				= FCOIS_CON_ICON_GEAR_1
+local FCOIS_CON_ICON_GEAR_2     		= FCOIS_CON_ICON_GEAR_2
+local FCOIS_CON_ICON_GEAR_3				= FCOIS_CON_ICON_GEAR_3
+local FCOIS_CON_ICON_GEAR_4				= FCOIS_CON_ICON_GEAR_4
+local FCOIS_CON_ICON_GEAR_5				= FCOIS_CON_ICON_GEAR_5
 
 local fcoisLAMSettingsReferencePrefix = "FCOItemSaver_Settings_"
 --Control name parts, prefix, suffix, tooltip suffix
@@ -956,7 +972,7 @@ local function checkIfMarkerIconsToDeleteExist()
     numIconsToDelete = 0
     if markerIconsToDeleteIcon ~= nil and markerIconsToDeleteIcon ~= 0
             and markerIconsToDeleteType ~= nil and markerIconsToDeleteType ~= noneEntryValue then
-        local isAllIcons = (markerIconsToDeleteIcon == FCOIS_CON_ICON_ALL) or false
+        local isAllIcons = (markerIconsToDeleteIcon == FCOIS_CON_ICONS_ALL) or false
         if isAllIcons then return end
 
         local savedVarsMarkedItemsNames = FCOIS.addonVars.savedVarsMarkedItemsNames
@@ -1307,7 +1323,7 @@ local function updateIconsList(typeToBuild, withIcons, withNoneEntry, iconsListT
             local l_iconsListWithAllEntry =         ZO_ShallowTableCopy(iconsList)
             table.insert(l_iconsListWithAllEntry, 1, locVars["options_dropdown_all"])
             local l_iconsListWithAllEntryValues =   ZO_ShallowTableCopy(iconsListValues)
-            table.insert(l_iconsListWithAllEntryValues, 1, FCOIS_CON_ICON_ALL)
+            table.insert(l_iconsListWithAllEntryValues, 1, FCOIS_CON_ICONS_ALL)
             iconsListWithAllEntry           =       l_iconsListWithAllEntry
             iconsListWithAllEntryValues     =       l_iconsListWithAllEntryValues
             FCOIS.LAMiconsListWithAllEntry       =  iconsListWithAllEntry
@@ -8328,7 +8344,7 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                             name = locVars["options_delete_marker_icons_button"],
                             tooltip = locVars["options_delete_marker_icons_button" .. tooltipSuffix],
                             func = function()
-                                local isAllIcons = (markerIconsToDeleteIcon == FCOIS_CON_ICON_ALL) or false
+                                local isAllIcons = (markerIconsToDeleteIcon == FCOIS_CON_ICONS_ALL) or false
                                 if (numIconsToDelete > 0 or isAllIcons) or markerIconsToDeleteIcon ~= nil and markerIconsToDeleteIcon ~= 0
                                         and markerIconsToDeleteType ~= nil and markerIconsToDeleteType ~= noneEntryValue then
                                     local numIconsStr = ""
@@ -8350,7 +8366,7 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                             isDangerous = true,
                             disabled = function()
                                 if not markerIconsToDeleteIcon or markerIconsToDeleteIcon == 0 then return true end
-                                local isAllIcons = (markerIconsToDeleteIcon == FCOIS_CON_ICON_ALL) or false
+                                local isAllIcons = (markerIconsToDeleteIcon == FCOIS_CON_ICONS_ALL) or false
                                 return ((numIconsToDelete <= 0 and not isAllIcons) or markerIconsToDeleteType == nil or markerIconsToDeleteType == noneEntryValue) or false
                             end,
                             warning = locVars["options_delete_marker_icons_warning"],
