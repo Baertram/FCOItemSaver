@@ -27,6 +27,12 @@ local tsort = table.sort
 local em = EVENT_MANAGER
 local wm = WINDOW_MANAGER
 
+local funcType = "function"
+local stringType = "string"
+local numberType = "number"
+local booleanType = "boolean"
+local tableType = "table"
+
 --Local ZOs API
 local gccharid = GetCurrentCharacterId
 local zo_strf = zo_strformat
@@ -133,7 +139,7 @@ local FCOISMarkItemByItemInstanceId = FCOIS.MarkItemByItemInstanceId
 --==========================================================================================================================================
 local function booleanToNumber(boolValue)
     boolValue = boolValue or false
-    if type(boolValue) ~= "boolean" then return end
+    if type(boolValue) ~= booleanType then return end
     local mapBoolToNumberTab = {
         [false] = 0,
         [true]  = 1,
@@ -154,13 +160,24 @@ function FCOIS.ThrottledUpdate(callbackName, timer, callback, ...)
     em:RegisterForUpdate(callbackName, timer, updateNow)
 end
 
+--Either return results of a passed in function with params ..., or just return the variable passed in
+local function getFuncOrVar(funcOrVar, ...) --#2025_999
+   if type(funcOrVar) == funcType then
+        return funcOrVar(...)
+    else
+        return funcOrVar
+    end
+end
+FCOIS.GetFuncOrVar = getFuncOrVar
+
+
 --Added with API101043 - ZOs uses more and more DeferredInitialization meanwhile so we craete a wrapper function for that
 local postHookedOnDeferredInitControls = {}
 function FCOIS.onDeferredInitCheck(object, callbackFunc, preCheckFunc)
 	if callbackFunc == nil then return end
 	--PreCheck funtion is needed?
 	local doNow = true
-	if type(preCheckFunc) == "function" then
+	if type(preCheckFunc) == funcType then
 		doNow = preCheckFunc(object)
 	end
 	if not doNow then return end
@@ -203,10 +220,10 @@ local function checkIfCompanionItem(bagId, slotIndex)
 end
 
 local function processPackages(itemsToProcessTab, maxEntriesPerPackage, maxPackages, preCheckFunc, callbackFunc, callbackAfterEachEntry, delay, finalCallbackFunc)
-    if itemsToProcessTab == nil or maxEntriesPerPackage == nil or type(callbackFunc) ~= "function" then return end
-    if type(finalCallbackFunc) ~= "function" then finalCallbackFunc = nil end
-    if type(preCheckFunc) ~= "function" then preCheckFunc = nil end
-    if type(callbackAfterEachEntry) ~= "function" then callbackAfterEachEntry = nil end
+    if itemsToProcessTab == nil or maxEntriesPerPackage == nil or type(callbackFunc) ~= funcType then return end
+    if type(finalCallbackFunc) ~= funcType then finalCallbackFunc = nil end
+    if type(preCheckFunc) ~= funcType then preCheckFunc = nil end
+    if type(callbackAfterEachEntry) ~= funcType then callbackAfterEachEntry = nil end
     delay = delay or 250
 
 
@@ -530,7 +547,7 @@ function FCOIS.CheckItemId(itemId, addonName)
     --Support for base64 unique itemids (e.g. an enchanted armor got the same ItemInstanceId but can have different unique ids)
     if FCOIS.settingsVars.settings.useUniqueIds or checkIfAddonNameHasTemporarilyEnabledUniqueIds(addonName) == true then
         --Check if the given uniqueID is already transfered to the string, and if not do so
-        if type(itemId) ~= "string" then
+        if type(itemId) ~= stringType then
             retItemId = zogsid64(itemId)
         end
     end
@@ -612,7 +629,7 @@ function FCOIS.SignItemId(itemId, allowedItemType, onlySign, addonName, bagId, s
     signItemId = signItemId or FCOIS.SignItemId
     allowedItemType = allowedItemType or false
     onlySign = onlySign or false
-    local itemIDTypeIsString = (type(itemId) == "string") or false
+    local itemIDTypeIsString = (type(itemId) == stringType) or false
 
 --Attention: Removing the comment in front of the following line will make the game client LAG a lot upon opening the inventory!
 --d("[FCOIS.SignItemId] itemId: " ..tos(itemId) ..", allowedItemType: " .. tos(allowedItemType) .. ", onlySign: " .. tos(onlySign) ..", addonName: " ..tos(addonName))
@@ -1283,7 +1300,7 @@ function FCOIS.IsItemType(bag, slot, itemTypes, currentItemType)
     local isItemTypeVar
     currentItemType = currentItemType or git(bag, slot)
 
-    if type(itemTypes) == "table" then
+    if type(itemTypes) == tableType then
         for _, itemType in ipairs(itemTypes) do
             isItemTypeVar = (currentItemType == itemType)
             if isItemTypeVar == true then return true end
@@ -2440,7 +2457,7 @@ end
 --Returns boolean true if level is above or equal the parameter neededLevel
 --Returns boolean false if level is below the parameter neededLevel
 function FCOIS.CheckNeededLevel(unitTag, neededLevel)
-    if unitTag == nil or neededLevel == nil or type(neededLevel) ~= "number" then return false end
+    if unitTag == nil or neededLevel == nil or type(neededLevel) ~= numberType then return false end
     local gotNeededLevel = false
     local charLevel = getUnitLvl(unitTag)
     if not charLevel then return false end
@@ -2659,7 +2676,7 @@ end
 
 
 local function prcocessJunkQueueItems(queueTab, startIndex, callbackFunc, callbackAfterEachEntry, delay, isJunk)
-    if queueTab == nil or type(callbackFunc) ~= "function" or type(isJunk) ~= "boolean" then return end
+    if queueTab == nil or type(callbackFunc) ~= funcType or type(isJunk) ~= booleanType then return end
     startIndex = startIndex or 1
     delay = delay or delayToMarkAsJunkInBetweenPackages
 
@@ -2850,11 +2867,11 @@ function FCOIS.CheckIfCraftedItemShouldBeMarked(craftSkill, overwrite)
     local craftingCreatePanel = FCOIS.craftingCreatePanelControlsOrFunction[craftSkill]
     local craftingCreatePanelResult = false
     if craftingCreatePanel == nil then return false end
-    if type(craftingCreatePanel) == "function" then
+    if type(craftingCreatePanel) == funcType then
         --Function
         craftingCreatePanelResult = craftingCreatePanel()
         --d(">function: " ..tos(craftingCreatePanelResult))
-    elseif type(craftingCreatePanel) == "boolean" then
+    elseif type(craftingCreatePanel) == booleanType then
         --Function result value
         craftingCreatePanelResult = craftingCreatePanel
         --d(">boolean: " ..tos(craftingCreatePanelResult))
@@ -3782,7 +3799,7 @@ function FCOIS.GetCharacterName(characterId, characterTable)
     else
         --Check if the characterTable got the uniqueId or the name as key
         for key, _ in pairs(characterTable) do
-            if type(key) == "String" then
+            if type(key) == stringType then
                 keyIsName = true
                 break -- end the for loop
             end

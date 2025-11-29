@@ -4,6 +4,12 @@ local FCOIS = FCOIS
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
 
+--The automatic marks are dynamically checked via table scanTypeToDo (filled via function getScanTypeTodoTable)
+--Function FCOIS.ScanInventory starts the scan process on event_player_activated or if you use the additional inventory flag button to manually start the check process
+--and function FCOIS.ScanInventoryItemsForAutomaticMarks is called which get's the toDo table and loops it, checking for each relevant automaticMark process
+--where function FCOIS.AutomaticMarksToDoCheck runs the scanTypeToDo dynamic checks then on each bagId, slotIndex inventory item
+
+
 local debugMessage = FCOIS.debugMessage
 local tos       = tostring
 local ton       = tonumber
@@ -29,12 +35,20 @@ local iilc      = IsItemLinkCrafted
 
 local account = GetDisplayName()
 
-local libSets = FCOIS.libSets
+local funcType = "function"
+--local stringType = "string"
+--local numberType = "number"
+local booleanType = "boolean"
+local tableType = "table"
+
+--Libraries
+--local libSets = FCOIS.libSets
+local lmas = FCOIS.libMultiAccountSets
 
 local numFilterIcons = FCOIS.numVars.gFCONumFilterIcons
 --local getSavedVarsMarkedItemsTableName = FCOIS.GetSavedVarsMarkedItemsTableName
 
-local lmas = FCOIS.libMultiAccountSets
+local esoPlusStr = " - " .. GetString(SI_NOTIFICATIONTYPE18) --#2025_999
 
 local ctrlVars = FCOIS.ZOControlVars
 local mappingVars = FCOIS.mappingVars
@@ -74,6 +88,10 @@ local checkIfHouseOwnerAndInsideOwnHouse = FCOIS.CheckIfHouseOwnerAndInsideOwnHo
 
 local getItemQuality = FCOIS.GetItemQuality
 
+local getFuncOrVar = FCOIS.GetFuncOrVar
+
+local scanTypeToDo
+
 local markItem
 local isMarked
 
@@ -87,7 +105,6 @@ local debuggingSlotIndex =  -1 --89              --1
 --==========================================================================================================================================
 --									FCOIS Inventory scanning & automatic item marking
 --==========================================================================================================================================
-
 --Function do check if an array of icons is marked and thus protected
 local function checkIfItemArrayIsProtected(iconIdArray, itemId)
     if iconIdArray == nil or #iconIdArray == 0 or itemId == nil then return false end
@@ -98,6 +115,29 @@ local function checkIfItemArrayIsProtected(iconIdArray, itemId)
         if isProtected then break end
     end
     return isProtected
+end
+
+local function houseBankAndFurnitureVaultCheck(bagId)
+    if bagId ~= nil then
+        if (IsFurnitureVault(bagId) == true or IsHouseBankBag(bagId) == true) then
+            return checkIfHouseOwnerAndInsideOwnHouse()
+        end
+    end
+    return nil
+end
+
+local function houseBankBagChecks(bagId)
+    if IsHouseBankBag(bagId) == true then
+        return checkIfHouseOwnerAndInsideOwnHouse()
+    end
+    return nil
+end
+
+local function furnitureVaultBagChecks(bagId)
+    if IsFurnitureVault(bagId) == true then
+        return checkIfHouseOwnerAndInsideOwnHouse()
+    end
+    return nil
 end
 
 --Function to return if the automatic markings at a chosen bagId (or if nil then all bagIds) is disabled
@@ -223,9 +263,9 @@ local function automaticMarkingResearchAdditionalCheckFunc(p_itemData, p_checkFu
                     --table[1] = {[1] = "Glacies", [2] = false}, [2] = {[1] = "Baertram", [2] = true}, etc.
                     --If currentlyLoggedInCharOnly is set to true it will only contain the entry for the currently logged in char
                     local isResearchableCharTable = CraftStoreFixedAndImprovedLongClassName.IsResearchable(itemLinkResearch, currentlyLoggedInCharOnly)
-                    if isResearchableCharTable ~= nil and type(isResearchableCharTable) == "table" then
+                    if isResearchableCharTable ~= nil and type(isResearchableCharTable) == tableType then
                         for _, isResearchableTableForChar in ipairs(isResearchableCharTable) do
-                            if type(isResearchableTableForChar) == "table" then
+                            if type(isResearchableTableForChar) == tableType then
                                 local charName, isResearchableTableValue = isResearchableTableForChar[1], isResearchableTableForChar[2]
                                 if isResearchableTableValue == true then
                                     if currentlyLoggedInCharOnly == true then
@@ -1108,438 +1148,6 @@ local function automaticMarkingSetsAdditionalCheckFunc(p_itemData, p_checkFuncRe
 end -- automaticMarkingSetsAdditionalCheckFunc
 
 
---Function to scan a single item. Is needed so the return false won't abort scanning the whole inventory!
-function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, doOverride)
-    doOverride = doOverride or false
-    --TODO DEBUG: Debugging added with FCOIS v2.0.0, change to "true" to debug and define "il" and items to debug below at --TODO: Comment after debugging!
-    local doDebug = (bag == debuggingBagId and slot == debuggingSlotIndex and true) or false --and (scanType == "setItemCollectionsUnknown" or scanType == "setItemCollectionsKnown")) and true) or false
-    isDebuggingCase = doDebug
-
-    markItem = markItem or FCOIS.MarkItem
-    local itemLink = gil(bag, slot)
-
-    --TODO DEBUG: Comment after debugging!
-    if doDebug then
-        d("FCOIS]scanInventoryItemForAutomaticMarks-" .. tos(itemLink) .. ", bag: " ..tos(bag) .. ", slot: " ..tos(slot) .. ", scanType: " .. tos(scanType) .. ", doOverride: " .. tos(doOverride))
-    end
-    --------------------------------------------------------------------------------
-    --					Function starts											  --
-    --------------------------------------------------------------------------------
-    --Local return variables for the subfunction
-    local checksWereDone			 = false
-    local atLeastOneMarkerIconWasSet = false
-
-    local settings = FCOIS.settingsVars.settings
-
-    local function abortChecksNow(whereWasTheFunctionAborted)
-        --For debugging only:
-        --TODO DEBUG: For debugging the doDebug variable is used here too (change it above)
-        local specialCaseMet = doDebug
-
-        if settings.debug == true or specialCaseMet == true then
-            if whereWasTheFunctionAborted then
-                whereWasTheFunctionAborted = " " .. tos(whereWasTheFunctionAborted)
-            end
-            debugMessage( "[ScanInvForAutomaticMarks]", strformat(tos(scanType) .. ": Aborting!%s", tos(whereWasTheFunctionAborted)), true, FCOIS_DEBUG_DEPTH_NORMAL)
-            if specialCaseMet == true then
-                d( strformat("[ScanInvForAutomaticMarks]" .. tos(scanType) .. ": Aborting!%s", tos(whereWasTheFunctionAborted)) )
-            end
-        end
-        return false, false
-    end
-
-    --------------------------------------------------------------------------------
-    --Check only one bag & slot, or a whole inventory?
-    if bag ~= nil and slot ~= nil then
-        --Are the TO DOs given?
-        if toDos == nil then return abortChecksNow("ToDos are nil!") end
-        --d(">Todos found")
-
-        --Check only one item slot
-        --Is the inventory already scanned currently?
-        if FCOIS.preventerVars.gScanningInv then
-            --d("<<<!!! Aborting inv. scan. Scan already active - bag: " .. tos(bag) .. ", slot: " .. tos(slot) .. " scanType: " .. tos(scanType) .. " !!!>>>")
-            return abortChecksNow("Scanning inv already")
-        end
-        FCOIS.preventerVars.gScanningInv = true
-
-        --------------------------------------------------------------------------------
-        --					Execute the TODOs now									  --
-        --------------------------------------------------------------------------------
-        --1) Icon check 1
-        --Check if the marker icon is given and enabled
-        if toDos.icon ~= nil and settings.isIconEnabled[toDos.icon] then
-            if doDebug then d(">Active icon found for '" .. tos(scanType) .. "': " .. tos(toDos.icon)) end
-        else
-            if doDebug then d(">No icon provided, determining it later again via the check and additionalCheckFunc!") end
-        end
-
-        local forceAdditionalCheckFunc = false
-        --2) Settings enabled?
-        --Check if the settings to automatically mark the item is enabled
-        local checkResult
-        if toDos.check ~= nil then
-            if type(toDos.check) == "function" then
-                checkResult = toDos.check(bag, slot, itemLink)
-            else
-                checkResult = toDos.check
-            end
-            if doDebug then
-                d(">Check active: " .. tos(checkResult) .. " (" .. tos(toDos.result) .. "/" .. tos(toDos.resultNot) .. ")")
-            end
-            --Result should equal the check variable
-            if toDos.result ~= nil then
-                --Result does NOT equal check variable -> abort
-                if checkResult ~= toDos.result then return abortChecksNow("Check value " .. tos(checkResult) .. " <> result " .. tos(toDos.result)) end
-                --Result should NOT equal the check variable
-            elseif toDos.resultNot ~= nil then
-                --Result equals check variable -> abort
-                if checkResult == toDos.resultNot then return abortChecksNow("Check value " .. tos(checkResult) .. " <> result NOT " .. tos(toDos.resultNot)) end
-            else
-                --No expected result given? Abort
-                return abortChecksNow("No expected result given")
-            end
-        end
-
-        --3) Other addons needed?
-        --Check if the settings to automatically mark the item is enabled
-        local checkOtherAddonResult
-        if toDos.checkOtherAddon ~= nil then
-            if type(toDos.checkOtherAddon) == "function" then
-                checkOtherAddonResult = toDos.checkOtherAddon(bag, slot, itemLink)
-            else
-                checkOtherAddonResult = toDos.checkOtherAddon
-            end
-            if doDebug then
-                d(">Other addons active: " .. tos(checkOtherAddonResult) .. " (" .. tos(toDos.resultOtherAddon) .. "/" .. tos(toDos.resultNotOtherAddon) .. ")")
-            end
-            --Result should equal the other addons check variable
-            if toDos.resultOtherAddon ~= nil then
-                --Result does NOT equal other addons check variable -> abort
-                if checkOtherAddonResult ~= toDos.resultOtherAddon then return abortChecksNow("Check other addon value " .. tos(checkOtherAddonResult) .. " <> result other addon value " .. tos(toDos.resultOtherAddon)) end
-                --Result should NOT equal the other addons check variable
-            elseif toDos.resultNotOtherAddon ~= nil then
-                --Result equals other addons check variable -> abort
-                if checkOtherAddonResult == toDos.resultNotOtherAddon then return abortChecksNow("Check other addon value " .. tos(checkOtherAddonResult) .. " <> result NOT other addon value" .. tos(toDos.resultNotOtherAddon)) end
-            else
-                --No expected result given? Abort
-                return abortChecksNow("No expected other addon result given")
-            end
-        end
-
-        --4) Run the preCheckFunc (if asked for) to see if the item should be scanned for the scanType
-        --The variable for the pre check function result
-        local preCheckFuncResult = false
-        --The variable tha can be returned from the preCheckFunc as 2nd parameter: The new icon that should be used to mark the icon, instead of the todos.IconId
-        local preCheckFuncResultData
-        if toDos.preCheckFunc ~= nil then
-            if type(toDos.preCheckFunc) == "function" then
-                --The pre-check is a function, so call it with the bagId and slotIndex
-                preCheckFuncResult, preCheckFuncResultData = toDos.preCheckFunc(bag, slot, itemLink)
-            else
-                --The check is no function but a variable
-                preCheckFuncResult = toDos.preCheckFunc
-            end
-            if doDebug then
-                d(">Pre-Check func active: " .. tos(preCheckFuncResult) .. " (" .. tos(toDos.resultPreCheckFunc) .. "/" .. tos(toDos.resultNotPreCheckFunc) .. ")")
-            end
-            --Was the check successfull?
-            if preCheckFuncResult == nil then return abortChecksNow("Pre-CheckFuncResult is nil!") end
-            if toDos.resultPreCheckFunc ~= nil then
-                --Result does NOT equal check func result -> abort
-                if preCheckFuncResult ~= toDos.resultPreCheckFunc then return abortChecksNow("Pre-CheckFunc " .. tos(preCheckFuncResult) .. " <> Pre-CheckFuncResult " .. tos(toDos.resultPreCheckFunc)) end
-                --Result should NOT equal the check func result
-            elseif toDos.resultNotPreCheckFunc ~= nil then
-                --Result equals check func result -> abort
-                if preCheckFuncResult == toDos.resultNotPreCheckFunc then return abortChecksNow("Pre-CheckFunc " .. tos(preCheckFuncResult) .. " <> NOT Pre-CheckFuncResult " .. tos(toDos.resultNotPreCheckFunc)) end
-            else
-                --No expected result given? Abort
-                return abortChecksNow("Pre-Check func or result not used")
-            end
-        end
-
-        --5) Build the itemInstanceId and check if the item is protected already, and
-        --	  if the item can be automatically marked
-        --The variable for the check function result
-        local checkFuncResult = false
-        --The table that can be returned from the checkFunc as 2nd parameter: The table could contain a newMarkerIcon entry for the new icon that should be used to mark the icon, instead of the todos.IconId
-        local checkFuncResultData
-        --The variable for the additional check function result
-        local additionalCheckFuncResult = false
-        --The variable tha can be returned from the additionalCheckFunc as 2nd parameter: The new icon that should be used to mark the icon, instead of the todos.IconId
-        local additionalCheckFuncResultData
-        --The item's instance iD
-        local itemId
-        itemId = myGetItemInstanceIdNoControl(bag, slot, false)
-        --Is the itemInstanceId/uniqueId not given,
-        --or the item cannot be automatically marked (anymore),
-        --  or the item is already marked with the wished icon
-        --  or the item is already marked with any icon, if enabled to be checked
-        local isItemProtected = true
-        local canBeAutomaticallyMarked = true
-        local iconIsMarkedAllreadyAllowed = (toDos.iconIsMarkedAllreadyAllowed ~= nil and toDos.iconIsMarkedAllreadyAllowed) or false
-        if itemId ~= nil then
-            canBeAutomaticallyMarked = checkIfCanBeAutomaticallyMarked(bag, slot, itemId, scanType)
-            if canBeAutomaticallyMarked == true then
-                if toDos.checkIfAnyIconIsMarkedAlready ~= nil and toDos.checkIfAnyIconIsMarkedAlready == true then
-                    local iconIdArray = {}
-                    local doAddIconNow = false
-                    for iconNr = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
-                        doAddIconNow = true
-                        if iconIsMarkedAllreadyAllowed and iconNr == toDos.icon then doAddIconNow = false end
-                        if doAddIconNow then
-                            tins(iconIdArray, iconNr)
-                        end
-                    end
-                    isItemProtected = checkIfItemArrayIsProtected(iconIdArray, itemId)
-                else
-                    if not iconIsMarkedAllreadyAllowed then
-                        isItemProtected = checkIfItemIsProtected(toDos.icon, itemId)
-                    else
-                        isItemProtected = false
-                    end
-                end
-            end
-        end
-        if itemId == nil or not canBeAutomaticallyMarked or isItemProtected	then
-            if doDebug then
-                d("<-- ABORTED [".. tos(itemLink) .. "] - ItemId: " .. tos(itemId) .. ", scanType: " .. tos(scanType) .. ", checkIfItemIsProtected: " .. tos(isItemProtected) .. " -> Should be: false, checkIfCanBeAutomaticallyMarked: (" .. tos(canBeAutomaticallyMarked) .." -> Should be: true)")
-            end
-            return abortChecksNow("ItemId nil?: " .. tos(itemId) .. ", canBeAutomaticallyMarked false/nil?: " .. tos(canBeAutomaticallyMarked) .. ", isItemProtected true?: " .. tos(isItemProtected))
-        end
-
-        --6) Check function needs to be run?
-        if toDos.checkFunc ~= nil then
-            if type(toDos.checkFunc) == "function" then
-                --The check is a function, so call it with the bagId and slotIndex
-                --The result will be a boolean value, and the 2nd return parameter is a table containing addiitonal info for the following "additional" checkFuncs
-                checkFuncResult, checkFuncResultData = toDos.checkFunc(bag, slot, preCheckFuncResultData, itemLink)
-            else
-                --The check is no function but a variable
-                checkFuncResult = toDos.checkFunc
-            end
-            --Is the additionalCheckFunc foced to be executed?
-            if toDos.additionalCheckFuncForce ~= nil then
-                if type(toDos.additionalCheckFuncForce) == "function" then
-                    forceAdditionalCheckFunc = toDos.additionalCheckFuncForce(bag, slot, checkFuncResultData, itemLink)
-                elseif  type(toDos.additionalCheckFuncForce) == "boolean" then
-                    forceAdditionalCheckFunc = toDos.additionalCheckFuncForce
-                else
-                    forceAdditionalCheckFunc = true
-                end
-            end
-            if doDebug then
-                d(">Check func active: " .. tos(checkFuncResult) .. " (" .. tos(toDos.resultCheckFunc) .. "/" .. tos(toDos.resultNotCheckFunc) .. "), forceAdditionalCheckFunc: " .. tos(forceAdditionalCheckFunc))
-            end
-            --Was the check successfull?
-            if checkFuncResult == nil and not forceAdditionalCheckFunc then return abortChecksNow("CheckFuncResult is nil and no force to go on is active!") end
-            --Result should equal the check func result
-            if not forceAdditionalCheckFunc then
-                if toDos.resultCheckFunc ~= nil then
-                    --Result does NOT equal check func result -> abort
-                    if checkFuncResult ~= toDos.resultCheckFunc then return abortChecksNow("CheckFunc " .. tos(checkFuncResult) .. " <> CheckFuncResult " .. tos(toDos.resultCheckFunc)) end
-                    --Result should NOT equal the check func result
-                elseif toDos.resultNotCheckFunc ~= nil then
-                    --Result equals check func result -> abort
-                    if checkFuncResult == toDos.resultNotCheckFunc then return abortChecksNow("CheckFunc " .. tos(checkFuncResult) .. " <> NOT CheckFuncResult " .. tos(toDos.resultNotCheckFunc)) end
-                else
-                    --No expected result given? Abort
-                    return abortChecksNow("Check func or result not used")
-                end
-                --Result was okay, so check if we need to go on with marker icon etc.
-                -->Only if the icon to be marked was not provided. The checkFunc needs to mark the item then and we abort here if this was done!
-                if toDos.checkFuncMarksItem ~= nil and toDos.icon == nil then
-                    local checkFuncMarksItemResult
-                    if type(toDos.checkFuncMarksItem) == "function" then
-                        checkFuncMarksItemResult = toDos.checkFuncMarksItem(bag, slot, itemLink)
-                    else
-                        checkFuncMarksItemResult = toDos.checkFuncMarksItem
-                    end
-                    if checkFuncMarksItemResult == true then
-                        return abortChecksNow("Check func marked the item already")
-                    end
-                end
-            end
-        end
-
-        --7) Additional check function should be executed?
-        if toDos.additionalCheckFunc ~= nil then
-            if type(toDos.additionalCheckFunc) == "function" then
-                --Build the itemData table for the checkfunc
-                local itemData
-                itemData = {}
-                itemData.bagId		= bag
-                itemData.slotIndex	= slot
-                itemData.itemLink   = itemLink
-                itemData.itemId		= itemId
-                itemData.scanType	= scanType
-                --if checkFuncResultData ~= nil then
-                itemData.fromCheckFunc = nil
-                if checkFuncResultData ~= nil then
-                    itemData.fromCheckFunc = checkFuncResultData
-                elseif preCheckFuncResultData ~= nil then
-                    itemData.fromCheckFunc = preCheckFuncResultData
-                end
-                --end
-                if itemData == nil then return abortChecksNow("Additional check func, itemdata is nil!") end
-                --The check is a function, so call it with the itemData table and the current check func result variable
-                additionalCheckFuncResult, additionalCheckFuncResultData = toDos.additionalCheckFunc(itemData, checkFuncResult)
-            else
-                --The check is no function but a variable
-                additionalCheckFuncResult = toDos.additionalCheckFunc
-            end
-            if doDebug then
-                d(">Add. check func active: " .. tos(additionalCheckFuncResult) .. " (" .. tos(toDos.resultAdditionalCheckFunc) .. "/" .. tos(toDos.resultNotAdditionalCheckFunc) .. ")")
-            end
-            --Was the check successfull?
-            if additionalCheckFuncResult == nil then return abortChecksNow("Additional check func result is nil!") end
-            --Result should equal the add. check func result
-            if toDos.resultAdditionalCheckFunc ~= nil then
-                --Result does NOT equal add. check func result -> abort
-                if additionalCheckFuncResult ~= toDos.resultAdditionalCheckFunc then return abortChecksNow("Additional check func " .. tos(additionalCheckFuncResult) .. " <> Additional check func result " .. tos(toDos.resultAdditionalCheckFunc)) end
-                --Result should NOT equal the add. check func result
-            elseif toDos.resultNotAdditionalCheckFunc ~= nil then
-                --Result equals add. check func result -> abort
-                if additionalCheckFuncResult == toDos.resultNotAdditionalCheckFunc then return abortChecksNow("Additional check func " .. tos(additionalCheckFuncResult) .. " <> NOT Additional check func result " .. tos(toDos.resultNotAdditionalCheckFunc)) end
-            else
-                --No expected result given? Abort
-                return abortChecksNow("Additional check func or result not given!")
-            end
-        end
-
-        --8) Icon check 2
-        --Check if the marker icon is given and enabled
-        local additionalCheckFuncResultDataNewMarkerIcon = (additionalCheckFuncResultData ~= nil and additionalCheckFuncResultData.newMarkerIcon ~= nil and additionalCheckFuncResultData.newMarkerIcon) or nil
-        local checkFuncResultDataNewMarkerIcon = (checkFuncResultData ~= nil and checkFuncResultData.newMarkerIcon ~= nil and checkFuncResultData.newMarkerIcon) or nil
-        if not toDos.icon then
-            --is the icon not given but the return table of the additionalCheckFunc provided an alternative icon?
-            local abortCuzOfNoIcon = true
-            if additionalCheckFuncResultDataNewMarkerIcon ~= nil then
-                abortCuzOfNoIcon = false
-                if doDebug then
-                    d(">Active icon not given/Not enabled, but using additionalCheckFuncResultData.newMarkerIcon for '" .. tos(scanType) .. "': " .. tos(additionalCheckFuncResultData.newMarkerIcon))
-                end
-            else
-                --is the icon not given but the return table of the checkFunc provided an alternative icon?
-                if checkFuncResultDataNewMarkerIcon ~= nil then
-                    abortCuzOfNoIcon = false
-                    if doDebug then
-                        d(">Active icon no given/Not enabled, but using checkFuncResult.newMarkerIcon for '" .. tos(scanType) .. "': " .. tos(checkFuncResultData.newMarkerIcon))
-                    end
-                end
-            end
-            if abortCuzOfNoIcon == true then
-                return abortChecksNow("Icon not given/not enabled in (additional)checkFuncResultData: " .. tos(toDos.icon))
-            end
-        end
-
-        --Compare the two 2nd parameters (new marker icon IDs) of checkFunc and additionalCheckFunc.
-        --Use the later one returned that is not nil as the new marker icon for the item
-        local newMarkerIcon
-        if toDos.icon ~= nil then
-            if type(toDos.icon) == "function" then
-                newMarkerIcon = toDos.icon(bag, slot, itemLink)
-            else
-                newMarkerIcon = toDos.icon
-            end
-            if doDebug then
-                d(">newMarkerIcon taken from todos.icon")
-            end
-        end
-        if additionalCheckFuncResultDataNewMarkerIcon ~= nil then
-            if doDebug then
-                d(">newMarkerIcon taken from add. check func newMarkerIcon")
-            end
-            newMarkerIcon = additionalCheckFuncResultDataNewMarkerIcon
-        else
-            if doDebug then
-                d(">newMarkerIcon taken from check func newMarkerIcon")
-            end
-            if checkFuncResultDataNewMarkerIcon ~= nil then
-                newMarkerIcon = checkFuncResultDataNewMarkerIcon
-            end
-        end
-        --Set the return variable with the info, that the checks were done for at least one item
-        checksWereDone = true
-        if doDebug then
-            d(">Checks were done")
-        end
-
-        --9) Mark the item now
-        --Item was checked and should be marked now
-        --FCOIS.MarkItem(bag, slot, iconId, showIcon, updateInventories)
-        FCOIS.preventerVars.gCalledFromInternalFCOIS = true
-        markItem(bag, slot, newMarkerIcon, true, false)
-        --Set the return variable with the info, that at least one marker icon was set
-        atLeastOneMarkerIconWasSet = true
-
-        --9) Show chat output?
-        --d(">Chat output: " .. tos(toDos.chatOutput))
-        --Show the marked item in the chat now?
-        local chatOutput
-        if type(toDos.chatOutput) == "function" then
-            chatOutput = toDos.chatOutput(bag, slot, itemLink)
-        else
-            chatOutput = toDos.chatOutput
-        end
-        local chatBegin
-        if type(toDos.chatBegin) == "function" then
-            chatBegin = toDos.chatBegin(bag, slot, itemLink)
-        else
-            chatBegin = toDos.chatBegin
-        end
-        local chatEnd
-        if type(toDos.chatEnd) == "function" then
-            chatEnd = toDos.chatEnd(bag, slot, itemLink)
-        else
-            chatEnd = toDos.chatEnd
-        end
-        if chatOutput or doOverride then
-            --Show the marked item in the chat with the clickable itemLink
-            if (itemLink ~= nil) then
-                d(chatBegin .. itemLink .. chatEnd)
-            end
-            --local scanTypeCapitalText
-            --scanTypeCapitalText = zo_strf("<<C:1>>", scanType)
-            --d(">scanType: " .. tos(scanType) ..", scanTypeCapital: " .. tos(scanTypeCapitalText))
-        else
-            --Show the marked item in the chat via debug message
-            local scanTypeCapitalText
-            scanTypeCapitalText = zo_strf("<<C:1>>", scanType)
-            if settings.debug then debugMessage( "[ScanInventoryFor".. scanTypeCapitalText or tos(scanType) .."]", chatBegin .. tos(itemLink) .. chatEnd, false) end
-        end
-    end -- if bag ~= nil and slot ~= nil then
-    --Return the functions return variables now
-    if doDebug then
-        d("<<< retun checksWereDone: " .. tos(checksWereDone) .. ", atLeastOneMarkerIconWasSet: " .. tos(atLeastOneMarkerIconWasSet))
-    end
-    return checksWereDone, atLeastOneMarkerIconWasSet
-end -- Single item scan function scanInventoryItemForAutomaticMarks(bag, slot, scanType)
-local scanInventoryItemForAutomaticMarks = FCOIS.scanInventoryItemForAutomaticMarks
-
-local function houseBankAndFurnitureVaultCheck(bagId)
-    if bagId ~= nil then
-        if (IsFurnitureVault(bagId) == true or IsHouseBankBag(bagId) == true) then
-            return checkIfHouseOwnerAndInsideOwnHouse()
-        end
-    end
-    return nil
-end
-
-local function houseBankBagChecks(bagId)
-    if IsHouseBankBag(bagId) == true then
-        return checkIfHouseOwnerAndInsideOwnHouse()
-    end
-    return nil
-end
-
-local function furnitureVaultBagChecks(bagId)
-    if IsFurnitureVault(bagId) == true then
-        return checkIfHouseOwnerAndInsideOwnHouse()
-    end
-    return nil
-end
-
 local function getBagsToScanForAutomaticMarks(bag)
     --d("[FCOIS]getBagsToScanForAutomaticMarks - bagId: " ..tos(bagId))
     local onlyUpdatePlayerInv = true
@@ -1674,14 +1282,12 @@ local function getInventoryScanNecessaryChecks()
     return isCheckNecessary, checksAlreadyDoneTable
 end
 
+local function getScanTypeTodoTable() --#2025_999
+    if scanTypeToDo ~= nil then return scanTypeToDo end
 
---Function to do the scans for automatic marker icons (multiple items)
-function FCOIS.ScanInventoryItemsForAutomaticMarks(bag, slot, scanType, updateInv)
-    updateInv = updateInv or false
-    if not scanType then return false end
     local settings = FCOIS.settingsVars.settings
     local fcoisLoc = FCOIS.localizationVars.fcois_loc
-    --d("FCOIS]scanInventoryItemsForAutomaticMarks- bag: " ..tos(bag) .. ", slot: " ..tos(slot) .. ", scanType: " .. tos(scanType) .. ", updateInv: " .. tos(updateInv))
+
     --------------------------------------------------------------------------------
     --The table with the information "what should be done and marked how" for each scan type
     --This table contains a short scanType (e.g. "scan for unknown recipes" -> "recipes" as the key.
@@ -1690,41 +1296,45 @@ function FCOIS.ScanInventoryItemsForAutomaticMarks(bag, slot, scanType, updateIn
     --are there any other addons involved (checkOtherAddon),
     --and what are their expected results (resultOtherAddon, resultNotOtherAddon),
     --which marker icon of FCOIS will be used to mark the item (icon),
-    --are there any check functions to be executed if result or resultNot are not the only values to compare
+    --if a any other markerIcon can be applied to the item already or not (checkIfAnyIconIsMarkedAlready)
+    --is the a pre checkFunc (resultPreCheckFunc) needed and what must the result be (resultPreCheckFunc, resultNotPreCheckFunc).
+    --Are there any check functions to be executed if result or resultNot are not the only values to compare
     --(checkFunc, resultCheckFunc, resultNotCheckFunc),
-    --is after the checkFunc any other function to be called (resultAdditionalCheckFunc, resultNotAdditionalCheckFunc),
-    --and should the marked item info output to the chat (chatOutput, chatBegin, chatEnd)
-    local scanTypeToDo = {
+    --If the checkFunc should automatically apply the markerIcon already if the result matches (checkFuncMarksItem)
+    --Is after the checkFunc any other function (additionalCheckFunc) to be called or even forceCalled (additionalCheckFuncForce)
+    --and what the result of the additionalCheckFunc needs to be (resultAdditionalCheckFunc, resultNotAdditionalCheckFunc)
+    --And should the marked item info output to the chat (chatOutput, chatBegin, chatEnd)
+    scanTypeToDo = {
         ---------------------------- Quality -----------------------------------
         ["quality"] = {
             check				= settings.autoMarkQuality,
-            result 				= nil,
+            --result 				= nil,
             resultNot			= 1,
-            checkOtherAddon		= nil,
-            resultOtherAddon   	= nil,
-            resultNotOtherAddon	= nil,
-            icon				= settings.autoMarkQualityIconNr,
-            checkIfAnyIconIsMarkedAlready = settings.autoMarkQualityCheckAllIcons,
+            --checkOtherAddon		= nil,
+            --resultOtherAddon   	= nil,
+            --resultNotOtherAddon	= nil,
+            icon				= function() return settings.autoMarkQualityIconNr end,
+            checkIfAnyIconIsMarkedAlready = function() return settings.autoMarkQualityCheckAllIcons end,
             checkFunc			= automaticMarkingQualityCheckFunc,
-            checkFuncMarksItem  = nil,
-            resultCheckFunc 	= true,
-            resultNotCheckFunc 	= nil,
-            additionalCheckFuncForce = nil,
-            additionalCheckFunc = nil,
+            --checkFuncMarksItem  = nil,
+            --resultCheckFunc 	= true,
+            --resultNotCheckFunc 	= nil,
+            --additionalCheckFuncForce = nil,
+            --additionalCheckFunc = nil,
             resultAdditionalCheckFunc = true,
-            resultNotAdditionalCheckFunc = nil,
-            chatOutput			= settings.showQualityItemsInChat,
+            --resultNotAdditionalCheckFunc = nil,
+            chatOutput			= function() return settings.showQualityItemsInChat end,
             chatBegin			= fcoisLoc["marked"],
             chatEnd				= fcoisLoc["quality_item_found"],
         },
         ---------------------------- Ornate ------------------------------------
         ["ornate"] = {
-            check				= settings.autoMarkOrnate,
+            check				= function() return settings.autoMarkOrnate end,
             result 				= true,
-            resultNot  			= nil,
-            checkOtherAddon		= nil,
-            resultOtherAddon   	= nil,
-            resultNotOtherAddon	= nil,
+            --resultNot  			= nil,
+            --checkOtherAddon		= nil,
+            --resultOtherAddon   	= nil,
+            --resultNotOtherAddon	= nil,
             icon				= FCOIS_CON_ICON_SELL,
             checkIfAnyIconIsMarkedAlready = nil,
             preCheckFunc        = function(p_bagId, p_slotIndex, p_itemLink)
@@ -1732,27 +1342,27 @@ function FCOIS.ScanInventoryItemsForAutomaticMarks(bag, slot, scanType, updateIn
                 return isItemOrnate(p_bagId, p_slotIndex), nil
             end,
             resultPreCheckFunc  = true,
-            resultNotPreCheckFunc = nil,
-            checkFunc			= nil,
-            checkFuncMarksItem  = nil,
-            resultCheckFunc 	= nil,
-            resultNotCheckFunc 	= nil,
-            additionalCheckFuncForce = nil,
-            additionalCheckFunc = nil,
-            resultAdditionalCheckFunc = nil,
-            resultNotAdditionalCheckFunc = nil,
-            chatOutput			= settings.showOrnateItemsInChat,
+            --resultNotPreCheckFunc = nil,
+            --checkFunc			= nil,
+            --checkFuncMarksItem  = nil,
+            --resultCheckFunc 	= nil,
+            --resultNotCheckFunc 	= nil,
+            --additionalCheckFuncForce = nil,
+            --additionalCheckFunc = nil,
+            --resultAdditionalCheckFunc = nil,
+            --resultNotAdditionalCheckFunc = nil,
+            chatOutput			= function() return settings.showOrnateItemsInChat end,
             chatBegin			= fcoisLoc["marked"],
             chatEnd				= fcoisLoc["ornate_item_found"],
         },
         ---------------------------- Intricate ---------------------------------
         ["intricate"] = {
-            check				= settings.autoMarkIntricate,
+            check				= function() return settings.autoMarkIntricate end,
             result 				= true,
-            resultNot			= nil,
-            checkOtherAddon		= nil,
-            resultOtherAddon   	= nil,
-            resultNotOtherAddon	= nil,
+            --resultNot			= nil,
+            --checkOtherAddon		= nil,
+            --resultOtherAddon   	= nil,
+            --resultNotOtherAddon	= nil,
             icon				= FCOIS_CON_ICON_INTRICATE,
             checkIfAnyIconIsMarkedAlready = nil,
             preCheckFunc        = function(p_bagId, p_slotIndex, p_itemLink)
@@ -1760,29 +1370,29 @@ function FCOIS.ScanInventoryItemsForAutomaticMarks(bag, slot, scanType, updateIn
                 return isItemIntricate(p_bagId, p_slotIndex), nil
             end,
             resultPreCheckFunc  = true,
-            resultNotPreCheckFunc = nil,
-            checkFunc			= nil,
-            checkFuncMarksItem  = nil,
-            resultCheckFunc 	= nil,
-            resultNotCheckFunc 	= nil,
-            additionalCheckFuncForce = nil,
-            additionalCheckFunc = nil,
-            chatOutput			= settings.showIntricateItemsInChat,
+            --resultNotPreCheckFunc = nil,
+            --checkFunc			= nil,
+            --checkFuncMarksItem  = nil,
+            --resultCheckFunc 	= nil,
+            --resultNotCheckFunc 	= nil,
+            --additionalCheckFuncForce = nil,
+            --additionalCheckFunc = nil,
+            chatOutput			= function() return settings.showIntricateItemsInChat end,
             chatBegin			= fcoisLoc["marked"],
             chatEnd				= fcoisLoc["intricate_item_found"],
         },
         ---------------------------- Researchable items-------------------------
         ["research"] = {
-            check				= settings.autoMarkResearch,
+            check				= function() return settings.autoMarkResearch end,
             result 				= true,
-            resultNot			= nil,
+            --resultNot			= nil,
             checkOtherAddon		= function(p_bagId, p_slotIndex, p_itemLink)
                 return (checkIfResearchAddonUsed() and checkIfChosenResearchAddonActive()) or false
             end,
             resultOtherAddon   	= true,
-            resultNotOtherAddon	= nil,
+            --resultNotOtherAddon	= nil,
             icon				= FCOIS_CON_ICON_RESEARCH,
-            checkIfAnyIconIsMarkedAlready = settings.autoMarkResearchCheckAllIcons,
+            checkIfAnyIconIsMarkedAlready = function() return settings.autoMarkResearchCheckAllIcons end,
             preCheckFunc        = function(p_bagId, p_slotIndex, p_itemLink)
                 --Check if item is researchable
                 local isItemResearchable, wasItemReconstructedOrRetraited = isItemResearchableNoControl(p_bagId, p_slotIndex, nil, nil, p_itemLink)
@@ -1793,29 +1403,29 @@ function FCOIS.ScanInventoryItemsForAutomaticMarks(bag, slot, scanType, updateIn
                 return isItemResearchable, nil
             end,
             resultPreCheckFunc  = true,
-            resultNotPreCheckFunc = nil,
-            checkFunc			= nil,
-            checkFuncMarksItem  = nil,
-            resultCheckFunc 	= nil,
-            resultNotCheckFunc 	= nil,
+            --resultNotPreCheckFunc = nil,
+            --checkFunc			= nil,
+            --checkFuncMarksItem  = nil,
+            --resultCheckFunc 	= nil,
+            --resultNotCheckFunc 	= nil,
             additionalCheckFuncForce = false, --Only call the additional check func if no icon/marker was found/appliey until now!
             additionalCheckFunc = function(p_itemData, p_checkFuncResult)
                 return automaticMarkingResearchAdditionalCheckFunc(p_itemData, p_checkFuncResult), nil
             end,
             resultAdditionalCheckFunc = true,
-            resultNotAdditionalCheckFunc = nil,
-            chatOutput			= settings.showResearchItemsInChat,
+            --resultNotAdditionalCheckFunc = nil,
+            chatOutput			= function() return settings.showResearchItemsInChat end,
             chatBegin			= fcoisLoc["marked"],
             chatEnd				= fcoisLoc["research_item_found"],
         },
         ---------------------------- Research scrolls-------------------------------
         ["researchScrolls"] = {
-            check				= settings.autoMarkWastedResearchScrolls,
+            check				= function() return settings.autoMarkWastedResearchScrolls end,
             result 				= true,
-            resultNot			= nil,
-            checkOtherAddon		= nil,
-            resultOtherAddon   	= nil,
-            resultNotOtherAddon	= nil,
+            --resultNot			= nil,
+            --checkOtherAddon		= nil,
+            --resultOtherAddon   	= nil,
+            --resultNotOtherAddon	= nil,
             icon				= FCOIS_CON_ICON_LOCK,
             checkIfAnyIconIsMarkedAlready = nil,
             preCheckFunc        = function(p_bagId, p_slotIndex, p_itemLink)
@@ -1823,283 +1433,283 @@ function FCOIS.ScanInventoryItemsForAutomaticMarks(bag, slot, scanType, updateIn
                 return checkIfResearchScrollWouldBeWasted(p_bagId, p_slotIndex, p_itemLink), nil
             end,
             resultPreCheckFunc  = true,
-            resultNotPreCheckFunc = nil,
-            checkFunc			= nil,
-            checkFuncMarksItem  = nil,
-            resultCheckFunc 	= nil,
-            resultNotCheckFunc 	= nil,
-            additionalCheckFuncForce = nil,
-            additionalCheckFunc = nil,
-            chatOutput			= settings.showResearchItemsInChat,
+            --resultNotPreCheckFunc = nil,
+            --checkFunc			= nil,
+            --checkFuncMarksItem  = nil,
+            --resultCheckFunc 	= nil,
+            --resultNotCheckFunc 	= nil,
+            --additionalCheckFuncForce = nil,
+            --additionalCheckFunc = nil,
+            chatOutput			= function() return settings.showResearchItemsInChat end,
             chatBegin			= fcoisLoc["marked"],
             chatEnd				= fcoisLoc["researchScroll_item_found"],
         },
         ---------------------------- Unknown recipes ---------------------------
         ["recipes"] = {
-            check				= settings.autoMarkRecipes,
+            check				= function() return settings.autoMarkRecipes end,
             result 				= true,
-            resultNot			= nil,
+            --resultNot			= nil,
             checkOtherAddon		= function(p_bagId, p_slotIndex, p_itemLink)
                 return checkIfRecipeAddonUsed() and checkIfChosenRecipeAddonActive()
             end,
             resultOtherAddon   	= true,
-            resultNotOtherAddon	= nil,
-            icon				= settings.autoMarkRecipesIconNr,
+            --resultNotOtherAddon	= nil,
+            icon				= function() return settings.autoMarkRecipesIconNr end,
             checkIfAnyIconIsMarkedAlready = nil,
             preCheckFunc        = function(p_bagId, p_slotIndex, p_itemLink)
                 --Check if item is an unknown recipe
                 return isRecipeKnown(p_bagId, p_slotIndex, false, p_itemLink), nil
             end,
             resultPreCheckFunc  = false,
-            resultNotPreCheckFunc = nil,
-            checkFunc			= nil,
-            checkFuncMarksItem  = nil,
-            resultCheckFunc 	= nil,
-            resultNotCheckFunc 	= nil,
-            additionalCheckFuncForce = nil,
-            additionalCheckFunc = nil,
-            resultAdditionalCheckFunc = nil,
-            resultNotAdditionalCheckFunc = nil,
-            chatOutput			= settings.showRecipesInChat,
+            --resultNotPreCheckFunc = nil,
+            --checkFunc			= nil,
+            --checkFuncMarksItem  = nil,
+            --resultCheckFunc 	= nil,
+            --resultNotCheckFunc 	= nil,
+            --additionalCheckFuncForce = nil,
+            --additionalCheckFunc = nil,
+            --resultAdditionalCheckFunc = nil,
+            --resultNotAdditionalCheckFunc = nil,
+            chatOutput			= function() return settings.showRecipesInChat end,
             chatBegin			= fcoisLoc["marked"],
             chatEnd				= fcoisLoc["unknown_recipe_found"],
         },
         ---------------------------- Known recipes ---------------------------
         ["knownRecipes"] = {
-            check				= settings.autoMarkKnownRecipes,
+            check				= function() return settings.autoMarkKnownRecipes end,
             result 				= true,
-            resultNot			= nil,
+            --resultNot			= nil,
             checkOtherAddon		= function(p_bagId, p_slotIndex, p_itemLink)
                 return checkIfRecipeAddonUsed() and checkIfChosenRecipeAddonActive()
             end,
             resultOtherAddon   	= true,
-            resultNotOtherAddon	= nil,
-            icon				= settings.autoMarkKnownRecipesIconNr,
-            checkIfAnyIconIsMarkedAlready = nil,
+            --resultNotOtherAddon	= nil,
+            icon				= function() return settings.autoMarkKnownRecipesIconNr end,
+            --checkIfAnyIconIsMarkedAlready = nil,
             preCheckFunc        = function(p_bagId, p_slotIndex, p_itemLink)
                 --Check if item is a known recipe
                 return isRecipeKnown(p_bagId, p_slotIndex, true, p_itemLink), nil
             end,
             resultPreCheckFunc  = true,
-            resultNotPreCheckFunc = nil,
-            checkFunc			= nil,
-            checkFuncMarksItem  = nil,
-            resultCheckFunc 	= nil,
-            resultNotCheckFunc 	= nil,
-            additionalCheckFuncForce = nil,
-            additionalCheckFunc = nil,
-            resultAdditionalCheckFunc = nil,
-            resultNotAdditionalCheckFunc = nil,
-            chatOutput			= settings.showRecipesInChat,
+            --resultNotPreCheckFunc = nil,
+            --checkFunc			= nil,
+            --checkFuncMarksItem  = nil,
+            --resultCheckFunc 	= nil,
+            --resultNotCheckFunc 	= nil,
+            --additionalCheckFuncForce = nil,
+            --additionalCheckFunc = nil,
+            --resultAdditionalCheckFunc = nil,
+            --resultNotAdditionalCheckFunc = nil,
+            chatOutput			= function() return settings.showRecipesInChat end,
             chatBegin			= fcoisLoc["marked"],
             chatEnd				= fcoisLoc["known_recipe_found"],
         },
         ---------------------------- Unknown motifs ---------------------------
         ["motifs"] = { --#308
-            check				= settings.autoMarkMotifs,
+            check				= function() return settings.autoMarkMotifs end,
             result 				= true,
-            resultNot			= nil,
+            --resultNot			= nil,
             checkOtherAddon		= function(p_bagId, p_slotIndex, p_itemLink)
                 return checkIfMotifsAddonUsed() and checkIfChosenMotifsAddonActive()
             end,
             resultOtherAddon   	= true,
-            resultNotOtherAddon	= nil,
-            icon				= settings.autoMarkMotifsIconNr,
-            checkIfAnyIconIsMarkedAlready = nil,
+            --resultNotOtherAddon	= nil,
+            icon				= function() return settings.autoMarkMotifsIconNr end,
+            --checkIfAnyIconIsMarkedAlready = nil,
             preCheckFunc        = function(p_bagId, p_slotIndex, p_itemLink)
                 --Check if item is an unknown motif
                 return isMotifKnown(p_bagId, p_slotIndex, false, p_itemLink), nil
             end,
             resultPreCheckFunc  = false,
-            resultNotPreCheckFunc = nil,
-            checkFunc			= nil,
-            checkFuncMarksItem  = nil,
-            resultCheckFunc 	= nil,
-            resultNotCheckFunc 	= nil,
-            additionalCheckFuncForce = nil,
-            additionalCheckFunc = nil,
-            resultAdditionalCheckFunc = nil,
-            resultNotAdditionalCheckFunc = nil,
-            chatOutput			= settings.showMotifsInChat,
+            --resultNotPreCheckFunc = nil,
+            --checkFunc			= nil,
+            --checkFuncMarksItem  = nil,
+            --resultCheckFunc 	= nil,
+            --resultNotCheckFunc 	= nil,
+            --additionalCheckFuncForce = nil,
+            --additionalCheckFunc = nil,
+            --resultAdditionalCheckFunc = nil,
+            --resultNotAdditionalCheckFunc = nil,
+            chatOutput			= function() return settings.showMotifsInChat end,
             chatBegin			= fcoisLoc["marked"],
             chatEnd				= fcoisLoc["unknown_motif_found"],
         },
         ---------------------------- Known motifs ---------------------------
         ["knownMotifs"] = { --#308
-            check				= settings.autoMarkKnownMotifs,
+            check				= function() return settings.autoMarkKnownMotifs end,
             result 				= true,
-            resultNot			= nil,
+            --resultNot			= nil,
             checkOtherAddon		= function()
                 return checkIfMotifsAddonUsed() and checkIfChosenMotifsAddonActive()
             end,
             resultOtherAddon   	= true,
-            resultNotOtherAddon	= nil,
-            icon				= settings.autoMarkKnownMotifsIconNr,
+            --resultNotOtherAddon	= nil,
+            icon				= function() return settings.autoMarkKnownMotifsIconNr end,
             checkIfAnyIconIsMarkedAlready = nil,
             preCheckFunc        = function(p_bagId, p_slotIndex, p_itemLink)
                 --Check if item is a known motif
                 return isMotifKnown(p_bagId, p_slotIndex, true, p_itemLink), nil
             end,
             resultPreCheckFunc  = true,
-            resultNotPreCheckFunc = nil,
-            checkFunc			= nil,
-            checkFuncMarksItem  = nil,
-            resultCheckFunc 	= nil,
-            resultNotCheckFunc 	= nil,
-            additionalCheckFuncForce = nil,
-            additionalCheckFunc = nil,
+            --resultNotPreCheckFunc = nil,
+            --checkFunc			= nil,
+            --checkFuncMarksItem  = nil,
+            --resultCheckFunc 	= nil,
+            --resultNotCheckFunc 	= nil,
+            --additionalCheckFuncForce = nil,
+            --additionalCheckFunc = nil,
             resultAdditionalCheckFunc = nil,
-            resultNotAdditionalCheckFunc = nil,
-            chatOutput			= settings.showMotifsInChat,
+            --resultNotAdditionalCheckFunc = nil,
+            chatOutput			= function() return settings.showMotifsInChat end,
             chatBegin			= fcoisLoc["marked"],
             chatEnd				= fcoisLoc["known_motif_found"],
         },
         ---------------------------- Unknown motifs ---------------------------
         ["styleContainerCollectibles"] = { --#317
-            check				= settings.autoMarkStyleContainerCollectibles,
+            check				= function() return settings.autoMarkStyleContainerCollectibles end,
             result 				= true,
-            resultNot			= nil,
+            --resultNot			= nil,
             checkOtherAddon		= function(p_bagId, p_slotIndex, p_itemLink)
                 return checkIfStyleContainerAddonUsed() and checkIfChosenStyleContainerAddonActive()
             end,
             resultOtherAddon   	= true,
-            resultNotOtherAddon	= nil,
-            icon				= settings.autoMarkStyleContainerCollectiblesIconNr,
+            --resultNotOtherAddon	= nil,
+            icon				= function() return settings.autoMarkStyleContainerCollectiblesIconNr end,
             checkIfAnyIconIsMarkedAlready = nil,
             preCheckFunc        = function(p_bagId, p_slotIndex, p_itemLink)
                 --Check if item is an unknown motif
                 return isStyleContainerCollectibleKnown(p_bagId, p_slotIndex, false, p_itemLink), nil
             end,
             resultPreCheckFunc  = false,
-            resultNotPreCheckFunc = nil,
-            checkFunc			= nil,
-            checkFuncMarksItem  = nil,
-            resultCheckFunc 	= nil,
-            resultNotCheckFunc 	= nil,
-            additionalCheckFuncForce = nil,
-            additionalCheckFunc = nil,
-            resultAdditionalCheckFunc = nil,
-            resultNotAdditionalCheckFunc = nil,
-            chatOutput			= settings.showStyleContainerCollectiblesInChat,
+            --resultNotPreCheckFunc = nil,
+            --checkFunc			= nil,
+            --checkFuncMarksItem  = nil,
+            --resultCheckFunc 	= nil,
+            --resultNotCheckFunc 	= nil,
+            --additionalCheckFuncForce = nil,
+            --additionalCheckFunc = nil,
+            --resultAdditionalCheckFunc = nil,
+            --resultNotAdditionalCheckFunc = nil,
+            chatOutput			= function() return settings.showStyleContainerCollectiblesInChat end,
             chatBegin			= fcoisLoc["marked"],
             chatEnd				= fcoisLoc["unknown_styleContainerCollectible_found"],
         },
         ---------------------------- Known motifs ---------------------------
         ["knownStyleContainerCollectibles"] = { --#317
-            check				= settings.autoMarkKnownStyleContainerCollectibles,
+            check				= function() return settings.autoMarkKnownStyleContainerCollectibles end,
             result 				= true,
-            resultNot			= nil,
+            --resultNot			= nil,
             checkOtherAddon		= function()
                 return checkIfStyleContainerAddonUsed() and checkIfChosenStyleContainerAddonActive()
             end,
             resultOtherAddon   	= true,
-            resultNotOtherAddon	= nil,
-            icon				= settings.autoMarkKnownStyleContainerCollectiblesIconNr,
+            --resultNotOtherAddon	= nil,
+            icon				= function() return settings.autoMarkKnownStyleContainerCollectiblesIconNr end,
             checkIfAnyIconIsMarkedAlready = nil,
             preCheckFunc        = function(p_bagId, p_slotIndex, p_itemLink)
                 --Check if item is a known motif
                 return isStyleContainerCollectibleKnown(p_bagId, p_slotIndex, true, p_itemLink), nil
             end,
             resultPreCheckFunc  = true,
-            resultNotPreCheckFunc = nil,
-            checkFunc			= nil,
-            checkFuncMarksItem  = nil,
-            resultCheckFunc 	= nil,
-            resultNotCheckFunc 	= nil,
-            additionalCheckFuncForce = nil,
-            additionalCheckFunc = nil,
-            resultAdditionalCheckFunc = nil,
-            resultNotAdditionalCheckFunc = nil,
-            chatOutput			= settings.showStyleContainerCollectiblesInChat,
+            --resultNotPreCheckFunc = nil,
+            --checkFunc			= nil,
+            --checkFuncMarksItem  = nil,
+            --resultCheckFunc 	= nil,
+            --resultNotCheckFunc 	= nil,
+            --additionalCheckFuncForce = nil,
+            --additionalCheckFunc = nil,
+            --resultAdditionalCheckFunc = nil,
+            --resultNotAdditionalCheckFunc = nil,
+            chatOutput			= function() return settings.showStyleContainerCollectiblesInChat end,
             chatBegin			= fcoisLoc["marked"],
             chatEnd				= fcoisLoc["known_styleContainerCollectible_found"],
         },        ---------------------------- Set collection items ----------------------------------
         ["setItemCollectionsUnknown"] = {
-            check				= settings.autoMarkSetsItemCollectionBook,
+            check				= function() return settings.autoMarkSetsItemCollectionBook end,
             result 				= true,
-            resultNot			= nil,
-            checkOtherAddon		= nil,
-            resultOtherAddon   	= nil,
-            resultNotOtherAddon	= nil,
+            --resultNot			= nil,
+            --checkOtherAddon		= nil,
+            --resultOtherAddon   	= nil,
+            --resultNotOtherAddon	= nil,
             --Do not check here! Else it will abort due to not enabled icon if ONLY auto-bind is enabled. Icon will be determined in function automaticMarkingSetsCollectionBookCheckFunc and passed on
             --in returned 2nd parameter checkFuncData.newMarkerIcon
-            --icon				= settings.autoMarkSetsItemCollectionBookMissingIcon,
+            --icon				= function() return settings.autoMarkSetsItemCollectionBookMissingIcon end,
             iconIsMarkedAllreadyAllowed = nil,
             checkIfAnyIconIsMarkedAlready = nil,
             checkFunc			= function(p_bagId, p_slotIndex, p_itemLink)
                 return automaticMarkingSetsCollectionBookCheckFunc(p_bagId, p_slotIndex, false, p_itemLink)
             end,
-            checkFuncMarksItem  = nil,
+            --checkFuncMarksItem  = nil,
             resultCheckFunc 	= true,
-            resultNotCheckFunc 	= nil,
-            additionalCheckFuncForce = nil,
-            additionalCheckFunc = nil,
-            resultAdditionalCheckFunc = nil,
-            resultNotAdditionalCheckFunc = nil,
-            chatOutput			= settings.showSetCollectionMarkedInChat,
+            --resultNotCheckFunc 	= nil,
+            --additionalCheckFuncForce = nil,
+            --additionalCheckFunc = nil,
+            --resultAdditionalCheckFunc = nil,
+            --resultNotAdditionalCheckFunc = nil,
+            chatOutput			= function() return settings.showSetCollectionMarkedInChat end,
             chatBegin			= fcoisLoc["marked"],
             chatEnd				= fcoisLoc["set_collection_part_unknown_found"],
         },
         ------------------------------------------------------------------------
         ["setItemCollectionsKnown"] = {
-            check				= settings.autoMarkSetsItemCollectionBook,
+            check				= function() return settings.autoMarkSetsItemCollectionBook end,
             result 				= true,
-            resultNot			= nil,
-            checkOtherAddon		= nil,
-            resultOtherAddon   	= nil,
-            resultNotOtherAddon	= nil,
-            icon				= settings.autoMarkSetsItemCollectionBookNonMissingIcon,
-            iconIsMarkedAllreadyAllowed = nil,
-            checkIfAnyIconIsMarkedAlready = nil,
+            --resultNot			= nil,
+            --checkOtherAddon		= nil,
+            --resultOtherAddon   	= nil,
+            --resultNotOtherAddon	= nil,
+            icon				= function() return settings.autoMarkSetsItemCollectionBookNonMissingIcon end,
+            --iconIsMarkedAllreadyAllowed = nil,
+            --checkIfAnyIconIsMarkedAlready = nil,
             checkFunc			= function(p_bagId, p_slotIndex, p_itemLink)
                 return automaticMarkingSetsCollectionBookCheckFunc(p_bagId, p_slotIndex, true, p_itemLink)
             end,
-            checkFuncMarksItem  = nil,
+            --checkFuncMarksItem  = nil,
             resultCheckFunc 	= true,
-            resultNotCheckFunc 	= nil,
-            additionalCheckFuncForce = nil,
-            additionalCheckFunc = nil,
-            resultAdditionalCheckFunc = nil,
-            resultNotAdditionalCheckFunc = nil,
-            chatOutput			= settings.showSetCollectionMarkedInChat,
+            --resultNotCheckFunc 	= nil,
+            --additionalCheckFuncForce = nil,
+            --additionalCheckFunc = nil,
+            --resultAdditionalCheckFunc = nil,
+            --resultNotAdditionalCheckFunc = nil,
+            chatOutput			= function() return settings.showSetCollectionMarkedInChat end,
             chatBegin			= fcoisLoc["marked"],
             chatEnd				= fcoisLoc["set_collection_part_known_found"],
         },
         ---------------------------- Set parts ----------------------------------
         ["sets"] = {
-            check				= settings.autoMarkSets,
+            check				= function() return settings.autoMarkSets end,
             result 				= true,
-            resultNot			= nil,
-            checkOtherAddon		= nil,
-            resultOtherAddon   	= nil,
-            resultNotOtherAddon	= nil,
-            icon				= settings.autoMarkSetsIconNr,
+            --resultNot			= nil,
+            --checkOtherAddon		= nil,
+            --resultOtherAddon   	= nil,
+            --resultNotOtherAddon	= nil,
+            icon				= function() return settings.autoMarkSetsIconNr end,
             iconIsMarkedAllreadyAllowed = true,
-            checkIfAnyIconIsMarkedAlready = settings.autoMarkSetsCheckAllIcons,
+            checkIfAnyIconIsMarkedAlready = function() return settings.autoMarkSetsCheckAllIcons end,
             preCheckFunc        = function(p_bagId, p_slotIndex, p_itemLink)
                 --Check if item is a set item
                 return isItemSetAndNotExcluded(p_bagId, p_slotIndex, p_itemLink), nil  --#310
             end,
             resultPreCheckFunc  = true,
-            resultNotPreCheckFunc = nil,
+            --resultNotPreCheckFunc = nil,
             checkFunc			= automaticMarkingSetsCheckFunc,
-            checkFuncMarksItem  = nil,
+            --checkFuncMarksItem  = nil,
             resultCheckFunc 	= true,
-            resultNotCheckFunc 	= nil,
+            --resultNotCheckFunc 	= nil,
             --"Forced" the call of the addtional checkFunction at the automatic item marker checks
             --even if the normal checkFunc already returned a valid result/marker icon change
             additionalCheckFuncForce = true, -- force the call of the additional check func!
             additionalCheckFunc = automaticMarkingSetsAdditionalCheckFunc,
             resultAdditionalCheckFunc = false,
-            resultNotAdditionalCheckFunc = nil,
-            chatOutput			= settings.showSetsInChat,
+            --resultNotAdditionalCheckFunc = nil,
+            chatOutput			= function() return settings.showSetsInChat end,
             chatBegin			= fcoisLoc["marked"],
             chatEnd				= fcoisLoc["set_part_found"],
         },
         ---------------------------- LibSets Set search favorite categories #301 ----------------------------------------
         --[[
         ["LibSetsSetSearchFavoriteCategoryMarkers"] = { --#301 LibSets set search favorite category marker icons
-            check				= nil, --settings.autoMarkLibSetsSetSearchFavorites, --todo: Could be disabled in settings and marks need to be removed then?
+            check				= nil, --function() return settings.autoMarkLibSetsSetSearchFavorites end, --todo: Could be disabled in settings and marks need to be removed then?
             result 				= true,
             resultNot			= nil,
             checkOtherAddon		= function()
@@ -2126,15 +1736,424 @@ function FCOIS.ScanInventoryItemsForAutomaticMarks(bag, slot, scanType, updateIn
             additionalCheckFunc = nil,
             resultAdditionalCheckFunc = nil,
             resultNotAdditionalCheckFunc = nil,
-            chatOutput			= settings.showSetsInChat,
+            chatOutput			= function() return settings.showSetsInChat end,
             chatBegin			= fcoisLoc["marked"],
             chatEnd				= fcoisLoc["LibSetsSetSearchFavoriteCategory_part_found"],
         },
         ]]
-    } -- scantypeToDo
+    } -- scanTypeToDo
+    return scanTypeToDo
+end
+
+
+local debuggingEnabled = false
+local function abortChecksNow(scanType, whereWasTheFunctionAborted)
+    --For debugging only:
+    --TODO DEBUG: For debugging the doDebug variable is used here too (change it above)
+    local specialCaseMet = isDebuggingCase
+
+    if specialCaseMet == true or debuggingEnabled == true then
+        if whereWasTheFunctionAborted then
+            whereWasTheFunctionAborted = " " .. tos(whereWasTheFunctionAborted)
+        end
+        debugMessage( "[ScanInvForAutomaticMarks]", strformat(tos(scanType) .. ": Aborting!%s", tos(whereWasTheFunctionAborted)), true, FCOIS_DEBUG_DEPTH_NORMAL)
+        if specialCaseMet == true then
+            d( strformat("[ScanInvForAutomaticMarks]" .. tos(scanType) .. ": Aborting!%s", tos(whereWasTheFunctionAborted)) )
+        end
+    end
+    return false, false
+end
+
+--Function to scan a single item based on the toDos table and the scanType
+function FCOIS.AutomaticMarksToDoCheck(bag, slot, scanType, doOverride) --#2025_999
+    doOverride = doOverride or false
+
+    --TODO DEBUG: Debugging added with FCOIS v2.0.0, change to "true" to debug and define "il" and items to debug below at --TODO: Comment after debugging!
+    local doDebug = (bag == debuggingBagId and slot == debuggingSlotIndex and true) or false --and (scanType == "setItemCollectionsUnknown" or scanType == "setItemCollectionsKnown")) and true) or false
+    isDebuggingCase = doDebug
+
+    markItem = markItem or FCOIS.MarkItem
+    local itemLink --#2025_999
+
+    --TODO DEBUG: Comment after debugging!
+    if doDebug then
+        itemLink = gil(bag, slot) --#2025_999
+        d("FCOIS]AutomaticMarksToDoCheck-" .. tos(itemLink) .. ", bag: " ..tos(bag) .. ", slot: " ..tos(slot) .. ", scanType: " .. tos(scanType) .. ", doOverride: " .. tos(doOverride))
+    end
+    --------------------------------------------------------------------------------
+    --					Function starts											  --
+    --------------------------------------------------------------------------------
+    --Local return variables for the subfunction
+    local checksWereDone			 = false
+    local atLeastOneMarkerIconWasSet = false
+
+    local settings = FCOIS.settingsVars.settings
+    debuggingEnabled = settings.debug
+
+    --------------------------------------------------------------------------------
+    --Check only one bag & slot, or a whole inventory?
+    if bag ~= nil and slot ~= nil then
+        --Check only one item slot
+
+        --Are the TO DOs given?
+        local toDos = scanTypeToDo[scanType] --#2025_999
+        if toDos == nil then return abortChecksNow(scanType, "ToDos are nil!") end
+        --d(">Todos found")
+
+        --Is the inventory already scanned currently?
+        if FCOIS.preventerVars.gScanningInv then
+            --d("<<<!!! Aborting inv. scan. Scan already active - bag: " .. tos(bag) .. ", slot: " .. tos(slot) .. " scanType: " .. tos(scanType) .. " !!!>>>")
+            return abortChecksNow(scanType, "Scanning inv already")
+        end
+        FCOIS.preventerVars.gScanningInv = true
+
+        --Get the itemLink
+        itemLink = itemLink or gil(bag, slot) --#2025_999
+
+        --------------------------------------------------------------------------------
+        --					Execute the TODOs now									  --
+        --------------------------------------------------------------------------------
+        --1) Icon check 1
+        --Check if the marker icon is given and enabled
+        if toDos.icon ~= nil and settings.isIconEnabled[toDos.icon] then
+            if doDebug then d(">Active icon found for '" .. tos(scanType) .. "': " .. tos(toDos.icon)) end
+        else
+            if doDebug then d(">No icon provided, determining it later again via the check and additionalCheckFunc!") end
+        end
+
+        --------------------------------------------------------------------------------
+        local forceAdditionalCheckFunc = false
+        --2) Settings enabled?
+        --Check if the settings to automatically mark the item is enabled
+        local checkResult
+        if toDos.check ~= nil then
+            checkResult = getFuncOrVar(toDos.check, bag, slot, itemLink)
+            if doDebug then
+                d(">Check active: " .. tos(checkResult) .. " (" .. tos(toDos.result) .. "/" .. tos(toDos.resultNot) .. ")")
+            end
+            --Result should equal the check variable
+            if toDos.result ~= nil then
+                --Result does NOT equal check variable -> abort
+                if checkResult ~= toDos.result then return abortChecksNow(scanType, "Check value " .. tos(checkResult) .. " <> result " .. tos(toDos.result)) end
+                --Result should NOT equal the check variable
+            elseif toDos.resultNot ~= nil then
+                --Result equals check variable -> abort
+                if checkResult == toDos.resultNot then return abortChecksNow(scanType, "Check value " .. tos(checkResult) .. " <> result NOT " .. tos(toDos.resultNot)) end
+            else
+                --No expected result given? Abort
+                return abortChecksNow(scanType, "No expected result given")
+            end
+        end
+
+        --------------------------------------------------------------------------------
+        --3) Other addons needed?
+        --Check if the settings to automatically mark the item is enabled
+        local checkOtherAddonResult
+        if toDos.checkOtherAddon ~= nil then
+            checkOtherAddonResult = getFuncOrVar(toDos.checkOtherAddon, bag, slot, itemLink)
+            if doDebug then
+                d(">Other addons active: " .. tos(checkOtherAddonResult) .. " (" .. tos(toDos.resultOtherAddon) .. "/" .. tos(toDos.resultNotOtherAddon) .. ")")
+            end
+            --Result should equal the other addons check variable
+            if toDos.resultOtherAddon ~= nil then
+                --Result does NOT equal other addons check variable -> abort
+                if checkOtherAddonResult ~= toDos.resultOtherAddon then return abortChecksNow(scanType, "Check other addon value " .. tos(checkOtherAddonResult) .. " <> result other addon value " .. tos(toDos.resultOtherAddon)) end
+                --Result should NOT equal the other addons check variable
+            elseif toDos.resultNotOtherAddon ~= nil then
+                --Result equals other addons check variable -> abort
+                if checkOtherAddonResult == toDos.resultNotOtherAddon then return abortChecksNow(scanType, "Check other addon value " .. tos(checkOtherAddonResult) .. " <> result NOT other addon value" .. tos(toDos.resultNotOtherAddon)) end
+            else
+                --No expected result given? Abort
+                return abortChecksNow(scanType, "No expected other addon result given")
+            end
+        end
+
+        --------------------------------------------------------------------------------
+        --4) Run the preCheckFunc (if asked for) to see if the item should be scanned for the scanType
+        --The variable for the pre check function result
+        local preCheckFuncResult = false
+        --The variable tha can be returned from the preCheckFunc as 2nd parameter: The new icon that should be used to mark the icon, instead of the todos.IconId
+        local preCheckFuncResultData
+        if toDos.preCheckFunc ~= nil then
+            preCheckFuncResult, preCheckFuncResultData = getFuncOrVar(toDos.preCheckFunc, bag, slot, itemLink)
+            if doDebug then
+                d(">Pre-Check func active: " .. tos(preCheckFuncResult) .. " (" .. tos(toDos.resultPreCheckFunc) .. "/" .. tos(toDos.resultNotPreCheckFunc) .. ")")
+            end
+            --Was the check successfull?
+            if preCheckFuncResult == nil then return abortChecksNow(scanType, "Pre-CheckFuncResult is nil!") end
+            if toDos.resultPreCheckFunc ~= nil then
+                --Result does NOT equal check func result -> abort
+                if preCheckFuncResult ~= toDos.resultPreCheckFunc then return abortChecksNow(scanType, "Pre-CheckFunc " .. tos(preCheckFuncResult) .. " <> Pre-CheckFuncResult " .. tos(toDos.resultPreCheckFunc)) end
+                --Result should NOT equal the check func result
+            elseif toDos.resultNotPreCheckFunc ~= nil then
+                --Result equals check func result -> abort
+                if preCheckFuncResult == toDos.resultNotPreCheckFunc then return abortChecksNow(scanType, "Pre-CheckFunc " .. tos(preCheckFuncResult) .. " <> NOT Pre-CheckFuncResult " .. tos(toDos.resultNotPreCheckFunc)) end
+            else
+                --No expected result given? Abort
+                return abortChecksNow(scanType, "Pre-Check func or result not used")
+            end
+        end
+
+        --------------------------------------------------------------------------------
+        --5) Build the itemInstanceId and check if the item is protected already, and
+        --	  if the item can be automatically marked
+        --The variable for the check function result
+        local checkFuncResult = false
+        --The table that can be returned from the checkFunc as 2nd parameter: The table could contain a newMarkerIcon entry for the new icon that should be used to mark the icon, instead of the todos.IconId
+        local checkFuncResultData
+        --The variable for the additional check function result
+        local additionalCheckFuncResult = false
+        --The variable tha can be returned from the additionalCheckFunc as 2nd parameter: The new icon that should be used to mark the icon, instead of the todos.IconId
+        local additionalCheckFuncResultData
+        --The item's instance iD
+        local itemId
+        itemId = myGetItemInstanceIdNoControl(bag, slot, false)
+        --Is the itemInstanceId/uniqueId not given,
+        --or the item cannot be automatically marked (anymore),
+        --  or the item is already marked with the wished icon
+        --  or the item is already marked with any icon, if enabled to be checked
+        local isItemProtected = true
+        local canBeAutomaticallyMarked = true
+        local iconIsMarkedAllreadyAllowed = (toDos.iconIsMarkedAllreadyAllowed ~= nil and toDos.iconIsMarkedAllreadyAllowed) or false
+        if itemId ~= nil then
+            canBeAutomaticallyMarked = checkIfCanBeAutomaticallyMarked(bag, slot, itemId, scanType)
+            if canBeAutomaticallyMarked == true then
+                if toDos.checkIfAnyIconIsMarkedAlready ~= nil and toDos.checkIfAnyIconIsMarkedAlready == true then
+                    local iconIdArray = {}
+                    local doAddIconNow = false
+                    for iconNr = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
+                        doAddIconNow = true
+                        if iconIsMarkedAllreadyAllowed and iconNr == toDos.icon then doAddIconNow = false end
+                        if doAddIconNow then
+                            tins(iconIdArray, iconNr)
+                        end
+                    end
+                    isItemProtected = checkIfItemArrayIsProtected(iconIdArray, itemId)
+                else
+                    if not iconIsMarkedAllreadyAllowed then
+                        isItemProtected = checkIfItemIsProtected(toDos.icon, itemId)
+                    else
+                        isItemProtected = false
+                    end
+                end
+            end
+        end
+        if itemId == nil or not canBeAutomaticallyMarked or isItemProtected	then
+            if doDebug then
+                d("<-- ABORTED [".. tos(itemLink) .. "] - ItemId: " .. tos(itemId) .. ", scanType: " .. tos(scanType) .. ", checkIfItemIsProtected: " .. tos(isItemProtected) .. " -> Should be: false, checkIfCanBeAutomaticallyMarked: (" .. tos(canBeAutomaticallyMarked) .." -> Should be: true)")
+            end
+            return abortChecksNow(scanType, "ItemId nil?: " .. tos(itemId) .. ", canBeAutomaticallyMarked false/nil?: " .. tos(canBeAutomaticallyMarked) .. ", isItemProtected true?: " .. tos(isItemProtected))
+        end
+
+        --------------------------------------------------------------------------------
+        --6) Check function needs to be run?
+        if toDos.checkFunc ~= nil then
+            --The check is a function, so call it with the bagId and slotIndex
+            --The result will be a boolean value, and the 2nd return parameter is a table containing addiitonal info for the following "additional" checkFuncs
+            checkFuncResult, checkFuncResultData = getFuncOrVar(toDos.checkFunc, bag, slot, itemLink)
+            --Is the additionalCheckFunc foced to be executed?
+            if toDos.additionalCheckFuncForce ~= nil then
+                if type(toDos.additionalCheckFuncForce) == funcType then
+                    forceAdditionalCheckFunc = toDos.additionalCheckFuncForce(bag, slot, checkFuncResultData, itemLink)
+                elseif  type(toDos.additionalCheckFuncForce) == booleanType then
+                    forceAdditionalCheckFunc = toDos.additionalCheckFuncForce
+                else
+                    forceAdditionalCheckFunc = true
+                end
+            end
+            if doDebug then
+                d(">Check func active: " .. tos(checkFuncResult) .. " (" .. tos(toDos.resultCheckFunc) .. "/" .. tos(toDos.resultNotCheckFunc) .. "), forceAdditionalCheckFunc: " .. tos(forceAdditionalCheckFunc))
+            end
+            --Was the check successfull?
+            if checkFuncResult == nil and not forceAdditionalCheckFunc then return abortChecksNow(scanType, "CheckFuncResult is nil and no force to go on is active!") end
+            --Result should equal the check func result
+            if not forceAdditionalCheckFunc then
+                if toDos.resultCheckFunc ~= nil then
+                    --Result does NOT equal check func result -> abort
+                    if checkFuncResult ~= toDos.resultCheckFunc then return abortChecksNow(scanType, "CheckFunc " .. tos(checkFuncResult) .. " <> CheckFuncResult " .. tos(toDos.resultCheckFunc)) end
+                    --Result should NOT equal the check func result
+                elseif toDos.resultNotCheckFunc ~= nil then
+                    --Result equals check func result -> abort
+                    if checkFuncResult == toDos.resultNotCheckFunc then return abortChecksNow(scanType, "CheckFunc " .. tos(checkFuncResult) .. " <> NOT CheckFuncResult " .. tos(toDos.resultNotCheckFunc)) end
+                else
+                    --No expected result given? Abort
+                    return abortChecksNow(scanType, "Check func or result not used")
+                end
+                --Result was okay, so check if we need to go on with marker icon etc.
+                -->Only if the icon to be marked was not provided. The checkFunc needs to mark the item then and we abort here if this was done!
+                if toDos.checkFuncMarksItem ~= nil and toDos.icon == nil then
+                    local checkFuncMarksItemResult = getFuncOrVar(toDos.checkFuncMarksItem, bag, slot, itemLink)
+                    if checkFuncMarksItemResult == true then
+                        return abortChecksNow(scanType, "Check func marked the item already")
+                    end
+                end
+            end
+        end
+
+        --------------------------------------------------------------------------------
+        --7) Additional check function should be executed?
+        if toDos.additionalCheckFunc ~= nil then
+            if type(toDos.additionalCheckFunc) == funcType then
+                --Build the itemData table for the checkfunc
+                local itemData
+                itemData = {}
+                itemData.bagId		= bag
+                itemData.slotIndex	= slot
+                itemData.itemLink   = itemLink
+                itemData.itemId		= itemId
+                itemData.scanType	= scanType
+                --if checkFuncResultData ~= nil then
+                itemData.fromCheckFunc = nil
+                if checkFuncResultData ~= nil then
+                    itemData.fromCheckFunc = checkFuncResultData
+                elseif preCheckFuncResultData ~= nil then
+                    itemData.fromCheckFunc = preCheckFuncResultData
+                end
+                --end
+                if itemData == nil then return abortChecksNow(scanType, "Additional check func, itemdata is nil!") end
+                --The check is a function, so call it with the itemData table and the current check func result variable
+                additionalCheckFuncResult, additionalCheckFuncResultData = toDos.additionalCheckFunc(itemData, checkFuncResult)
+            else
+                --The check is no function but a variable
+                additionalCheckFuncResult = toDos.additionalCheckFunc
+            end
+            if doDebug then
+                d(">Add. check func active: " .. tos(additionalCheckFuncResult) .. " (" .. tos(toDos.resultAdditionalCheckFunc) .. "/" .. tos(toDos.resultNotAdditionalCheckFunc) .. ")")
+            end
+            --Was the check successfull?
+            if additionalCheckFuncResult == nil then return abortChecksNow(scanType, "Additional check func result is nil!") end
+            --Result should equal the add. check func result
+            if toDos.resultAdditionalCheckFunc ~= nil then
+                --Result does NOT equal add. check func result -> abort
+                if additionalCheckFuncResult ~= toDos.resultAdditionalCheckFunc then return abortChecksNow(scanType, "Additional check func " .. tos(additionalCheckFuncResult) .. " <> Additional check func result " .. tos(toDos.resultAdditionalCheckFunc)) end
+                --Result should NOT equal the add. check func result
+            elseif toDos.resultNotAdditionalCheckFunc ~= nil then
+                --Result equals add. check func result -> abort
+                if additionalCheckFuncResult == toDos.resultNotAdditionalCheckFunc then return abortChecksNow(scanType, "Additional check func " .. tos(additionalCheckFuncResult) .. " <> NOT Additional check func result " .. tos(toDos.resultNotAdditionalCheckFunc)) end
+            else
+                --No expected result given? Abort
+                return abortChecksNow(scanType, "Additional check func or result not given!")
+            end
+        end
+
+        --------------------------------------------------------------------------------
+        --8) Icon check 2
+        --Check if the marker icon is given and enabled
+        local additionalCheckFuncResultDataNewMarkerIcon = (additionalCheckFuncResultData ~= nil and additionalCheckFuncResultData.newMarkerIcon ~= nil and additionalCheckFuncResultData.newMarkerIcon) or nil
+        local checkFuncResultDataNewMarkerIcon = (checkFuncResultData ~= nil and checkFuncResultData.newMarkerIcon ~= nil and checkFuncResultData.newMarkerIcon) or nil
+        if not toDos.icon then
+            --is the icon not given but the return table of the additionalCheckFunc provided an alternative icon?
+            local abortCuzOfNoIcon = true
+            if additionalCheckFuncResultDataNewMarkerIcon ~= nil then
+                abortCuzOfNoIcon = false
+                if doDebug then
+                    d(">Active icon not given/Not enabled, but using additionalCheckFuncResultData.newMarkerIcon for '" .. tos(scanType) .. "': " .. tos(additionalCheckFuncResultData.newMarkerIcon))
+                end
+            else
+                --is the icon not given but the return table of the checkFunc provided an alternative icon?
+                if checkFuncResultDataNewMarkerIcon ~= nil then
+                    abortCuzOfNoIcon = false
+                    if doDebug then
+                        d(">Active icon no given/Not enabled, but using checkFuncResult.newMarkerIcon for '" .. tos(scanType) .. "': " .. tos(checkFuncResultData.newMarkerIcon))
+                    end
+                end
+            end
+            if abortCuzOfNoIcon == true then
+                return abortChecksNow(scanType, "Icon not given/not enabled in (additional)checkFuncResultData: " .. tos(toDos.icon))
+            end
+        end
+
+        --Compare the two 2nd parameters (new marker icon IDs) of checkFunc and additionalCheckFunc.
+        --Use the later one returned that is not nil as the new marker icon for the item
+        local newMarkerIcon
+        if toDos.icon ~= nil then
+            newMarkerIcon = getFuncOrVar(toDos.icon, bag, slot, itemLink)
+            if doDebug then
+                d(">newMarkerIcon taken from todos.icon")
+            end
+        end
+        if additionalCheckFuncResultDataNewMarkerIcon ~= nil then
+            if doDebug then
+                d(">newMarkerIcon taken from add. check func newMarkerIcon")
+            end
+            newMarkerIcon = additionalCheckFuncResultDataNewMarkerIcon
+        else
+            if doDebug then
+                d(">newMarkerIcon taken from check func newMarkerIcon")
+            end
+            if checkFuncResultDataNewMarkerIcon ~= nil then
+                newMarkerIcon = checkFuncResultDataNewMarkerIcon
+            end
+        end
+        --Set the return variable with the info, that the checks were done for at least one item
+        checksWereDone = true
+        if doDebug then
+            d(">Checks were done")
+        end
+
+        --------------------------------------------------------------------------------
+        --9) Mark the item now
+        --Item was checked and should be marked now
+        --FCOIS.MarkItem(bag, slot, iconId, showIcon, updateInventories)
+        FCOIS.preventerVars.gCalledFromInternalFCOIS = true
+        markItem(bag, slot, newMarkerIcon, true, false)
+        --Set the return variable with the info, that at least one marker icon was set
+        atLeastOneMarkerIconWasSet = true
+
+        --9) Show chat output?
+        --d(">Chat output: " .. tos(toDos.chatOutput))
+        --Show the marked item in the chat now?
+        local chatOutput = getFuncOrVar(toDos.chatOutput, bag, slot, itemLink)
+        if chatOutput or doOverride then
+            --Show the marked item in the chat with the clickable itemLink
+            if itemLink ~= nil then
+                local chatBegin = getFuncOrVar(toDos.chatBegin, bag, slot, itemLink)
+                local chatEnd = getFuncOrVar(toDos.chatEnd, bag, slot, itemLink)
+                d(chatBegin .. itemLink .. chatEnd)
+            end
+            --local scanTypeCapitalText
+            --scanTypeCapitalText = zo_strf("<<C:1>>", scanType)
+            --d(">scanType: " .. tos(scanType) ..", scanTypeCapital: " .. tos(scanTypeCapitalText))
+        else
+            --Show the marked item in the chat via debug message
+            local scanTypeCapitalText
+            scanTypeCapitalText = zo_strf("<<C:1>>", scanType)
+            if settings.debug then
+                local chatBegin = getFuncOrVar(toDos.chatBegin, bag, slot, itemLink)
+                local chatEnd = getFuncOrVar(toDos.chatEnd, bag, slot, itemLink)
+                debugMessage( "[ScanInventoryFor".. scanTypeCapitalText or tos(scanType) .."]", chatBegin .. tos(itemLink) .. chatEnd, false)
+            end
+        end
+    end -- if bag ~= nil and slot ~= nil then
+
+
     --------------------------------------------------------------------------------
     --------------------------------------------------------------------------------
-    --		Function start                                                        --
+    --------------------------------------------------------------------------------
+    --Return the functions return variables now
+    if doDebug then
+        d("<<< retun checksWereDone: " .. tos(checksWereDone) .. ", atLeastOneMarkerIconWasSet: " .. tos(atLeastOneMarkerIconWasSet))
+    end
+    return checksWereDone, atLeastOneMarkerIconWasSet
+end -- Single item scan function scanInventoryItemForAutomaticMarks(bag, slot, scanType)
+local automaticMarksToDoCheck = FCOIS.AutomaticMarksToDoCheck
+
+
+--Function to do the scans for automatic marker icons (multiple items)
+function FCOIS.ScanInventoryItemsForAutomaticMarks(bag, slot, scanType, updateInv)
+    if not scanType then return false end
+    updateInv = updateInv or false
+    --d("FCOIS]scanInventoryItemsForAutomaticMarks- bag: " ..tos(bag) .. ", slot: " ..tos(slot) .. ", scanType: " .. tos(scanType) .. ", updateInv: " .. tos(updateInv))
+
+    --------------------------------------------------------------------------------
+    --------------------------------------------------------------------------------
+    --      Build the toDos table once
+    --------------------------------------------------------------------------------
+    scanTypeToDo = scanTypeToDo or getScanTypeTodoTable() --#2025_999
+
+    --------------------------------------------------------------------------------
+    --------------------------------------------------------------------------------
+    --		Function start - Single bagId & slotIndex or loop bagId items
     --------------------------------------------------------------------------------
     --Local variables for the return
     local onlyUpdatePlayerInv = true
@@ -2142,8 +2161,7 @@ function FCOIS.ScanInventoryItemsForAutomaticMarks(bag, slot, scanType, updateIn
     local atLeastOneMarkerIconWasSetLoop = false
     --Is the scantype given: Get the todos ->
     --Get the array below the scanType with the functions and stepts to check
-    local toDos = scanTypeToDo[scanType]
-    if toDos == nil then return false, false end
+    if scanTypeToDo[scanType] == nil then return false, false end
 
     --Check only one bag & slot, or a whole inventory?
     if bag ~= nil and slot ~= nil then
@@ -2155,7 +2173,7 @@ function FCOIS.ScanInventoryItemsForAutomaticMarks(bag, slot, scanType, updateIn
         ]]
 
         --Single item check
-        checksWereDoneLoop, atLeastOneMarkerIconWasSetLoop = scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos)
+        checksWereDoneLoop, atLeastOneMarkerIconWasSetLoop = automaticMarksToDoCheck(bag, slot, scanType) --#2025_999
         FCOIS.preventerVars.gScanningInv = false
     else
         if bag == nil and slot ~= nil then
@@ -2181,7 +2199,7 @@ function FCOIS.ScanInventoryItemsForAutomaticMarks(bag, slot, scanType, updateIn
                     checksWereDoneInForLoop			 		= false
                     atLeastOneMarkerIconWasSetInForLoop 	= false
                     --Recursively call this function here
-                    checksWereDoneInForLoop, atLeastOneMarkerIconWasSetInForLoop = scanInventoryItemForAutomaticMarks(bagId, slotIndex, scanType, toDos)
+                    checksWereDoneInForLoop, atLeastOneMarkerIconWasSetInForLoop = automaticMarksToDoCheck(bagId, slotIndex, scanType) --#2025_999
                     --d(">Whole bag item check. checksWereDoneLoop: " ..tos(checksWereDoneLoop) .. ", atLeastOneMarkerIconWasSetLoop: " ..tos(atLeastOneMarkerIconWasSetLoop))
                     --Update the calling functions return variables
                     if not checksWereDoneLoop then checksWereDoneLoop = checksWereDoneInForLoop end
@@ -2223,7 +2241,6 @@ function FCOIS.ScanInventorySingle(p_bagId, p_slotIndex, checksAlreadyDoneTable)
     end
     local updateInv = false
     local settings = FCOIS.settingsVars.settings
-    local isIconEnabledSettings = settings.isIconEnabled
     if FCOIS.preventerVars.gScanningInv == false then
         if settings.debug then debugMessage( "[ScanInventorySingle]","Start", false, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
         if isDebuggingCase == true then d("[ScanInventorySingle] Start - checksAlreadyDoneTable['ornate']: " ..tos(checksAlreadyDoneTable["ornate"])) end
@@ -2232,7 +2249,7 @@ function FCOIS.ScanInventorySingle(p_bagId, p_slotIndex, checksAlreadyDoneTable)
         if (p_bagId ~= nil and p_slotIndex ~= nil) then
             --Is the bag a HouseBank or Furniture Vault, then check if we own a house and are in any owned house at the moment
             if houseBankAndFurnitureVaultCheck(p_bagId) == false then --#322
-                return
+                return false
             end
 
             --Get item's instance or uniqueId
@@ -2249,7 +2266,7 @@ function FCOIS.ScanInventorySingle(p_bagId, p_slotIndex, checksAlreadyDoneTable)
                     isCheckNecessary = true
                 end
                 --Nothing to do?
-                if not isCheckNecessary then return end
+                if not isCheckNecessary then return false end
 
 
                 --(Other addons)
@@ -2435,14 +2452,15 @@ function FCOIS.ScanInventory(p_bagId, p_slotIndex, doEcho)
     --Any checks are necessary? Loop the inventory items and check each item now...
     if isCheckNecessary == true then
         --d("-Scanning needed-")
-        local fcoisLoc = FCOIS.localizationVars.fcois_loc
-        local preVars  = FCOIS.preChatVars
-        local prefixFCOISGreen = preVars.preChatTextGreen
-        local prefixFCOISRed = preVars.preChatTextRed
         local onlyUpdatePlayerInv = true
 
         -- Scan the whole inventory because no bagId and slotIndex are given
         if p_bagId == nil or p_slotIndex == nil then
+            local fcoisLoc = FCOIS.localizationVars.fcois_loc
+            local preVars  = FCOIS.preChatVars
+            local prefixFCOISGreen = preVars.preChatTextGreen
+            local prefixFCOISRed = preVars.preChatTextRed
+
             if isDebuggingCase then
                 d(">>~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
                 d("[ScanInventory] Start ALL")
@@ -2467,16 +2485,15 @@ function FCOIS.ScanInventory(p_bagId, p_slotIndex, doEcho)
                     filterPanelId = getFilterPanelIdByBagId(bagToCheck)
                     filterPanelText = getFilterPanelIdText(filterPanelId)
                     if bagToCheck == BAG_SUBSCRIBER_BANK then
-                        filterPanelText = filterPanelText .. " - ESO+"
+                        filterPanelText = filterPanelText .. esoPlusStr --#2025_999  - ESO Plus
                     end
                     d(strformat(prefixFCOISGreen .. " " .. fcoisLoc["options_scan_automatic_marks_scan_bag"], filterPanelText))
                 end
                 local bagCache = SHARED_INVENTORY:GetOrCreateBagCache(bagToCheck)
                 local updateInvLoop = false
                 for _, data in pairs(bagCache) do
-                    updateInvLoop = false
                     updateInvLoop = scanInventorySingle(data.bagId, data.slotIndex, checksAlreadyDoneTable)
-                    if not updateInv then updateInv = updateInvLoop end
+                    if not updateInv and updateInvLoop == true then updateInv = true end
                 end
                 if doEcho == true then
                     d(strformat(prefixFCOISRed .. " " .. fcoisLoc["options_scan_automatic_marks_scan_bag_finished"], filterPanelText))
@@ -2511,4 +2528,4 @@ function FCOIS.ScanInventory(p_bagId, p_slotIndex, doEcho)
         end
 
     end --if isCheckNecessary then
-end
+end --FCOIS.ScanInventory

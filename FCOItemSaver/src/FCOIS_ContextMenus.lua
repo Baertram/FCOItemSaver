@@ -38,7 +38,34 @@ local panelIdToUniversalDeconstructionParentData = FCOIS.mappingVars.panelIdToUn
 
 local filterButtonsToCheck
 local filterButtonFilterWithLogicalANDSettingsName = "filterWithLogicalAND"
+local getFuncOrVar = FCOIS.GetFuncOrVar
+local countMarkerIconsEnabled
 
+--Colors
+local defaultColorWhite = {
+    ["r"] = 1,
+    ["g"] = 1,
+    ["b"] = 1,
+    ["a"] = 1,
+}
+local defaultColorRed = {
+    ["r"] = 1,
+    ["g"] = 0,
+    ["b"] = 0,
+    ["a"] = 1,
+}
+local defaultColorGreen = {
+    ["r"] = 0,
+    ["g"] = 1,
+    ["b"] = 0,
+    ["a"] = 1,
+}
+local defaultColorNotActive = {
+    ["r"] = 128/100,
+    ["g"] = 128/100,
+    ["b"] = 128/100,
+    ["a"] = 1,
+}
 
 local getSavedVarsMarkedItemsTableName = FCOIS.GetSavedVarsMarkedItemsTableName
 --local getFilterWhereBySettings = FCOIS.getFilterWhereBySettings
@@ -371,9 +398,11 @@ end
 --         Inventories item context menu
 -- ============================================================
 
+--[[
 local function noSelectionCallback()
     return
 end
+]]
 
 function FCOIS.RefreshPopupDialogButtons(rowControl, override)
 --d("[FCOIS]refreshPopupDialogButtons - rowName:  " ..tos(rowControl:GetName()) .. ", override: " ..tos(override))
@@ -2648,45 +2677,24 @@ function FCOIS.GetContextMenuAntiSettingsTextAndState(p_filterWhere, buildText, 
 end
 local getContextMenuAntiSettingsTextAndState = FCOIS.GetContextMenuAntiSettingsTextAndState
 
-
-
 --Returns the color for the context menu button if the "anti" settings is enabled or disabled
 local function getContextMenuAntiSettingsColor(settingIsEnabled, override)
     override = override or false
     local retCol = {}
     local settings = FCOIS.settingsVars.settings
     if not override and not settings.colorizeFCOISAdditionalInventoriesButton then
-        retCol = {
-            ["r"] = 1,
-            ["g"] = 1,
-            ["b"] = 1,
-            ["a"] = 1,
-        }
+        retCol = defaultColorWhite
     else
         if settingIsEnabled == true then
-            retCol = {
-                ["r"] = 0,
-                ["g"] = 1,
-                ["b"] = 0,
-                ["a"] = 1,
-            }
+            retCol = defaultColorGreen  --#2025_999
         elseif settingIsEnabled == false then
-            retCol = {
-                ["r"] = 1,
-                ["g"] = 0,
-                ["b"] = 0,
-                ["a"] = 1,
-            }
+            retCol = defaultColorRed  --#2025_999
         elseif settingIsEnabled == "non_active" then
-            retCol = {
-                ["r"] = 128/100,
-                ["g"] = 128/100,
-                ["b"] = 128/100,
-                ["a"] = 1,
-            }
+            retCol = defaultColorNotActive  --#2025_999
         end
     end
-    return retCol["r"], retCol["g"], retCol["b"], retCol["a"]
+    --return retCol["r"], retCol["g"], retCol["b"], retCol["a"]
+    return unpack(retCol) --#2025_999
 end
 
 --Change the context menu invoker button's color by help of the button control and the anti-* settings state, but do not
@@ -2883,6 +2891,29 @@ function FCOIS.ReParentAndAnchorContextMenuInvokerButtons(fromPanelId, toPanelId
 end
 --# -^- 202
 
+local allowedSpecialButtonTypes
+local function getAllowedSpecialButtonTypes()  --#2025_999
+    if allowedSpecialButtonTypes ~= nil then return allowedSpecialButtonTypes end
+    local settings = FCOIS.settingsVars.settings
+
+    allowedSpecialButtonTypes         = {
+        ["quality"]                     = {allowed = true, icon = function() return settings.autoMarkQualityIconNr end},
+        ["intricate"]                   = {allowed = true, icon = FCOIS_CON_ICON_INTRICATE},
+        ["ornate"]                      = {allowed = true, icon = FCOIS_CON_ICON_SELL},
+        ["research"]                    = {allowed = true, icon = FCOIS_CON_ICON_RESEARCH},
+        ["researchScrolls"]             = {allowed = true, icon = FCOIS_CON_ICON_LOCK},
+        ["recipes"]                     = {allowed = true, icon = function() return settings.autoMarkRecipesIconNr end},
+        ["knownRecipes"]                = {allowed = true, icon = function() return settings.autoMarkKnownRecipesIconNr end},
+        ["motifs"]                      = {allowed = true, icon = function() return settings.autoMarkMotifsIconNr end},      --#308
+        ["knownMotifs"]                 = {allowed = true, icon = function() return settings.autoMarkKnownMotifsIconNr end}, --#308
+        ["styleContainerCollectibles"]  = {allowed = true, icon = function() return settings.autoMarkStyleContainerCollectiblesIconNr end},      --#317
+        ["knownStyleContainerCollectibles"]= {allowed = true, icon = function() return settings.autoMarkKnownStyleContainerCollectiblesIconNr end}, --#317
+        ["sets"]                        = {allowed = true, icon = function() return settings.autoMarkSetsIconNr end},
+        ["setItemCollectionsUnknown"]   = {allowed = true, icon = function() return settings.autoMarkSetsItemCollectionBookMissingIcon end},
+        ["setItemCollectionsKnown"]     = {allowed = true, icon = function() return settings.autoMarkSetsItemCollectionBookNonMissingIcon end},
+    }
+    return allowedSpecialButtonTypes
+end
 
 --The context menu OnClicked callback function for the additional inventory flag context menu buttons/entries
 local function contextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, specialButtonType, panelId)
@@ -2895,22 +2926,7 @@ local function contextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
     panelId = panelId or FCOIS.gFilterWhere
     isMarked = isMarked or FCOIS.IsMarked
 
-    local allowedSpecialButtonTypes         = {
-        ["quality"]                     = {allowed = true, icon = settings.autoMarkQualityIconNr},
-        ["intricate"]                   = {allowed = true, icon = FCOIS_CON_ICON_INTRICATE},
-        ["ornate"]                      = {allowed = true, icon = FCOIS_CON_ICON_SELL},
-        ["research"]                    = {allowed = true, icon = FCOIS_CON_ICON_RESEARCH},
-        ["researchScrolls"]             = {allowed = true, icon = FCOIS_CON_ICON_LOCK},
-        ["recipes"]                     = {allowed = true, icon = settings.autoMarkRecipesIconNr},
-        ["knownRecipes"]                = {allowed = true, icon = settings.autoMarkKnownRecipesIconNr},
-        ["motifs"]                      = {allowed = true, icon = settings.autoMarkMotifsIconNr},      --#308
-        ["knownMotifs"]                 = {allowed = true, icon = settings.autoMarkKnownMotifsIconNr}, --#308
-        ["styleContainerCollectibles"]  = {allowed = true, icon = settings.autoMarkStyleContainerCollectiblesIconNr},      --#317
-        ["knownStyleContainerCollectibles"]= {allowed = true, icon = settings.autoMarkKnownStyleContainerCollectiblesIconNr}, --#317
-        ["sets"]                        = {allowed = true, icon = settings.autoMarkSetsIconNr},
-        ["setItemCollectionsUnknown"]   = {allowed = true, icon = settings.autoMarkSetsItemCollectionBookMissingIcon},
-        ["setItemCollectionsKnown"]     = {allowed = true, icon = settings.autoMarkSetsItemCollectionBookNonMissingIcon},
-    }
+    allowedSpecialButtonTypes = allowedSpecialButtonTypes or getAllowedSpecialButtonTypes()  --#2025_999
 
     local isCompanionInventory              = false
     --local iconsDisabledAtCompanion = mappingVars.iconIsDisabledAtCompanion
@@ -2984,8 +3000,8 @@ local function contextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
        and not isTOGGLEANTISETTINGSButton and not isTOGGLEANTISETTINGSSPECIALButton and not isMARKALLASJUNKButton and not isMARKALLASNOJUNKButton then
         --Check if this icon is enabled in the settings, or abort here
         if iconId == nil then
-            if specialButtonType ~= nil and allowedSpecialButtonTypes[specialButtonType] ~= nil and allowedSpecialButtonTypes[specialButtonType].icon ~= nil then
-                iconId = allowedSpecialButtonTypes[specialButtonType].icon
+            if specialButtonType ~= nil and allowedSpecialButtonTypes[specialButtonType] ~= nil then
+                iconId = getFuncOrVar(allowedSpecialButtonTypes[specialButtonType].icon)  --#2025_999
             end
         end
         if iconId ~= nil then
@@ -3493,6 +3509,146 @@ function FCOIS.OnContextMenuForAddInvButtonsButtonMouseUp(inventoryAdditionalCon
     end
 end
 
+
+--Helper function to add the table entries of sorted button data, + and -
+local textPrefix = {
+    ["nil"]   = "",
+    ["true"]  = "+ ",
+    ["false"] = "- ",
+}
+local subMenuEntriesGear, subMenuEntriesDynamic, subMenuEntriesDynamicAdd, subMenuEntriesDynamicRemove --#2025_999
+local gearAdded, dynamicAdded, otherAdded --#2025_999
+local function addSortedButtonDataTableEntries(sortedButtonData, btnCtrl, panelId, useDynSubMenu)  --#2025_999
+    local index         = sortedButtonData.index
+    local buttonsIcon   = sortedButtonData.iconId
+    local isGear	    = sortedButtonData.isGear
+    local isDynamic     = sortedButtonData.isDynamic
+    local buttonData    = sortedButtonData.buttonData
+    local buttonNameStr = sortedButtonData.buttonNameStr
+    local buttonText
+
+    local localizationVars = FCOIS.localizationVars
+    local locContextEntriesVars = localizationVars.contextEntries
+
+    local mappingVars = FCOIS.mappingVars
+    local icon2Gear = mappingVars.iconToGear
+    local icon2Dynamic = mappingVars.iconToDynamic
+    local settings = FCOIS.settingsVars.settings
+    countMarkerIconsEnabled = countMarkerIconsEnabled or FCOIS.CountMarkerIconsEnabled
+    local contextMenuVars = FCOIS.contextMenuVars
+
+    --Does the button set or remove the icon? (mark)
+    if buttonData.mark then
+        --Is the icon a gear item?
+        if isGear then
+            --Get the gear number
+            local gearNumber = icon2Gear[buttonsIcon]
+            --Is the buttons text not given? Create it again
+            if not locContextEntriesVars.menu_add_all_gear_text or not locContextEntriesVars.menu_add_all_gear_text[gearNumber] then
+                changeContextMenuEntryTexts(buttonsIcon)
+            end
+            buttonText = locContextEntriesVars.menu_add_all_gear_text[gearNumber]
+            local subMenuEntryGear = {
+                label 		= buttonText,
+                callback 	= function() contextMenuForAddInvButtonsOnClicked(btnCtrl, buttonsIcon, buttonData.mark, nil, panelId) end,
+            }
+            tins(subMenuEntriesGear, subMenuEntryGear)
+            gearAdded = true
+            --Is the icon a dynamic icon?
+        elseif isDynamic then
+            --Get the dynamic number
+            local dynamicNumber = icon2Dynamic[buttonsIcon]
+            --Is the buttons text not given? Create it again
+            if not locContextEntriesVars.menu_add_dynamic_text or not locContextEntriesVars.menu_add_dynamic_text[dynamicNumber] then
+                changeContextMenuEntryTexts(buttonsIcon)
+            end
+            buttonText = textPrefix[tos(buttonData.mark)] .. locContextEntriesVars.menu_add_dynamic_text[dynamicNumber]
+            local subMenuEntryDynamic = {
+                label 		= buttonText,
+                callback 	= function() contextMenuForAddInvButtonsOnClicked(btnCtrl, buttonsIcon, buttonData.mark, nil, panelId) end,
+            }
+            --Are too many dynamic icons enabled to show them in one context menu?
+            if useDynSubMenu then
+                --Split the one submenu into two, one for + and one for -
+                tins(subMenuEntriesDynamicAdd, subMenuEntryDynamic)
+            else
+                tins(subMenuEntriesDynamic, subMenuEntryDynamic)
+            end
+            dynamicAdded = true
+            --Normal icons
+        else
+            buttonText = locContextEntriesVars.menu_add_all_text[buttonsIcon]
+        end
+        --Remove the icon (unmark)
+    else
+        --Is the icon a gear item?
+        if isGear then
+            --Get the gear number
+            local gearNumber = icon2Gear[buttonsIcon]
+            --Is the buttons text not given? Create it again
+            if not locContextEntriesVars.menu_remove_all_gear_text or not locContextEntriesVars.menu_remove_all_gear_text[gearNumber] then
+                changeContextMenuEntryTexts(buttonsIcon)
+            end
+            buttonText = locContextEntriesVars.menu_remove_all_gear_text[gearNumber]
+            local subMenuEntryGear = {
+                label 		= buttonText,
+                callback 	= function() contextMenuForAddInvButtonsOnClicked(btnCtrl, buttonsIcon, buttonData.mark, nil, panelId) end,
+            }
+            tins(subMenuEntriesGear, subMenuEntryGear)
+            gearAdded = true
+            --Is the icon a dynamic icon?
+        elseif isDynamic then
+            --Get the dynamic number
+            local dynamicNumber = icon2Dynamic[buttonsIcon]
+            --Is the buttons text not given? Create it again
+            if not locContextEntriesVars.menu_remove_dynamic_text or not locContextEntriesVars.menu_remove_dynamic_text[dynamicNumber] then
+                if GetDisplayName() == "@Baertram" then
+                    d("[FCOIS]showContextMenuForAddInvButtons-Dynamic icon: " ..tos(buttonsIcon).."(" .. tos(dynamicNumber).."), menu_remove_dynamic_text: " ..tos(locContextEntriesVars.menu_remove_dynamic_text) .. ", menu_remove_dynamic_text[dynamicNumber]: " ..tos(locContextEntriesVars.menu_remove_dynamic_text[dynamicNumber]))
+                else
+                    changeContextMenuEntryTexts(buttonsIcon)
+                end
+            end
+            buttonText = textPrefix[tos(buttonData.mark)] .. locContextEntriesVars.menu_remove_dynamic_text[dynamicNumber]
+            local subMenuEntryDynamic = {
+                label 		= buttonText,
+                callback 	= function() contextMenuForAddInvButtonsOnClicked(btnCtrl, buttonsIcon, buttonData.mark, nil, panelId) end,
+            }
+            --Are too many dynamic icons enabled to show them in one context menu?
+            if useDynSubMenu then
+                --Split the one submenu into two, one for + and one for -
+                tins(subMenuEntriesDynamicRemove, subMenuEntryDynamic)
+            else
+                tins(subMenuEntriesDynamic, subMenuEntryDynamic)
+            end
+            dynamicAdded = true
+            --Normal icons
+        else
+            buttonText = locContextEntriesVars.menu_remove_all_text[buttonsIcon]
+        end
+    end
+    --ERROR Handling
+    if buttonText == nil then
+        local errorData = {
+            [1] = index,
+            [2] = buttonNameStr,
+            [3] = buttonData.iconId,
+            [4] = buttonData.mark,
+        }
+        FCOIS.debugErrorMessage2Chat("showContextMenuForAddInvButtons", 1, errorData)
+        return nil
+    end
+    --is the button's text too long? Then shorten it and show ... at the end
+    if strlen(buttonText) > contextMenuVars.maxCharactersInLine then
+        buttonText = strsub(buttonText, 1, contextMenuVars.maxCharactersInLine) .. " ..."
+    end
+    --Add the non gear and non dynamic icons to the normal menu
+    if not isGear and not isDynamic then
+        --Add the entry for the context menu now
+        AddCustomMenuItem(buttonText, function() contextMenuForAddInvButtonsOnClicked(btnCtrl, buttonsIcon, buttonData.mark, nil, panelId) end, MENU_ADD_OPTION_LABEL)
+        otherAdded = true
+    end
+end -- function addSortedButtonDataTableEntries()
+
 --Function that display the context menu after the player clicks with left mouse button on the additional inventory "flag" button
 -- on the top left corner of the inventories (left to the "name" sort header)
 function FCOIS.ShowContextMenuForAddInvButtons(invAddContextMenuInvokerButton, buttonDataOfInvokerButton)
@@ -3533,13 +3689,11 @@ function FCOIS.ShowContextMenuForAddInvButtons(invAddContextMenuInvokerButton, b
         local locVars = localizationVars.fcois_loc
 
         FCOIS.preventerVars.gCalledFromInternalFCOIS = true
-        local _, countDynIconsEnabled = FCOIS.CountMarkerIconsEnabled()
-        local useDynSubMenu = (settings.useDynSubMenuMaxCount > 0 and countDynIconsEnabled >= settings.useDynSubMenuMaxCount) or false
-        local icon2Gear = mappingVars.iconToGear
-        local icon2Dynamic = mappingVars.iconToDynamic
-        --local isIconGear	= mappingVars.iconIsGear
         local isIconGear = settings.iconIsGear
         local isIconDynamic = mappingVars.iconIsDynamic
+        local _, countDynIconsEnabled = countMarkerIconsEnabled()
+        local useDynSubMenu = (settings.useDynSubMenuMaxCount > 0 and countDynIconsEnabled >= settings.useDynSubMenuMaxCount) or false
+
         local iconsDisabledAtCompanionInv = mappingVars.iconIsDisabledAtCompanion
         local sortAddInvFlagContextMenu = settings.sortIconsInAdditionalInvFlagContextMenu
         local contextMenuVars = FCOIS.contextMenuVars
@@ -3572,15 +3726,10 @@ function FCOIS.ShowContextMenuForAddInvButtons(invAddContextMenuInvokerButton, b
 
         --Add the new entries
         --Dynamic entries first
-        local textPrefix = {
-            ["nil"]   = "",
-            ["true"]  = "+ ",
-            ["false"] = "- ",
-        }
-        local subMenuEntriesGear = {}
-        local subMenuEntriesDynamic = {}
-        local subMenuEntriesDynamicAdd = {}
-        local subMenuEntriesDynamicRemove = {}
+        subMenuEntriesGear = {}
+        subMenuEntriesDynamic = {}
+        subMenuEntriesDynamicAdd = {}
+        subMenuEntriesDynamicRemove = {}
         local subMenuEntriesAutomaticMarking = {}
 
         --The inventory additional flag context menu invoker button
@@ -3592,9 +3741,9 @@ function FCOIS.ShowContextMenuForAddInvButtons(invAddContextMenuInvokerButton, b
         --Loop over the inventory context menu template table and build each button + anchor the following buttons to the ones before
         local invContextMenuButtonTemplate = contextMenuVars.buttonContextMenuToIconId
         local invContextMenuButtonTemplateIndex = contextMenuVars.buttonContextMenuToIconIdIndex
-        local gearAdded = false
-        local dynamicAdded = false
-        local otherAdded = false
+        gearAdded = false
+        dynamicAdded = false
+        otherAdded = false
 
         --Is the sorting enabled then check the sort order and reset it if not valid
         if sortAddInvFlagContextMenu then
@@ -3672,136 +3821,15 @@ function FCOIS.ShowContextMenuForAddInvButtons(invAddContextMenuInvokerButton, b
         --Sorted table of normal, gear set and dynamic icons must be looped and added to the context menu then
         if FCOAddInvFlagButtonContextMenu ~= nil and #FCOAddInvFlagButtonContextMenu > 0 and contextMenuEntriesAdded > 0 then
             ------------------------------------------------------------------------------------------------------------------------
-            --Helper function to add the table entries of sorted button data, + and -
-            local function addSortedButtonDataTableEntries(sortedButtonData)
-                local index         = sortedButtonData.index
-                local buttonsIcon   = sortedButtonData.iconId
-                local isGear	    = sortedButtonData.isGear
-                local isDynamic     = sortedButtonData.isDynamic
-                local buttonData    = sortedButtonData.buttonData
-                local buttonNameStr = sortedButtonData.buttonNameStr
-                local buttonText
-                --Does the button set or remove the icon? (mark)
-                if buttonData.mark then
-                    --Is the icon a gear item?
-                    if isGear then
-                        --Get the gear number
-                        local gearNumber = icon2Gear[buttonsIcon]
-                        --Is the buttons text not given? Create it again
-                        if not locContextEntriesVars.menu_add_all_gear_text or not locContextEntriesVars.menu_add_all_gear_text[gearNumber] then
-                            changeContextMenuEntryTexts(buttonsIcon)
-                        end
-                        buttonText = locContextEntriesVars.menu_add_all_gear_text[gearNumber]
-                        local subMenuEntryGear = {
-                            label 		= buttonText,
-                            callback 	= function() contextMenuForAddInvButtonsOnClicked(btnCtrl, buttonsIcon, buttonData.mark, nil, panelId) end,
-                        }
-                        tins(subMenuEntriesGear, subMenuEntryGear)
-                        gearAdded = true
-                        --Is the icon a dynamic icon?
-                    elseif isDynamic then
-                        --Get the dynamic number
-                        local dynamicNumber = icon2Dynamic[buttonsIcon]
-                        --Is the buttons text not given? Create it again
-                        if not locContextEntriesVars.menu_add_dynamic_text or not locContextEntriesVars.menu_add_dynamic_text[dynamicNumber] then
-                            changeContextMenuEntryTexts(buttonsIcon)
-                        end
-                        buttonText = textPrefix[tos(buttonData.mark)] .. locContextEntriesVars.menu_add_dynamic_text[dynamicNumber]
-                        local subMenuEntryDynamic = {
-                            label 		= buttonText,
-                            callback 	= function() contextMenuForAddInvButtonsOnClicked(btnCtrl, buttonsIcon, buttonData.mark, nil, panelId) end,
-                        }
-                        --Are too many dynamic icons enabled to show them in one context menu?
-                        if useDynSubMenu then
-                            --Split the one submenu into two, one for + and one for -
-                            tins(subMenuEntriesDynamicAdd, subMenuEntryDynamic)
-                        else
-                            tins(subMenuEntriesDynamic, subMenuEntryDynamic)
-                        end
-                        dynamicAdded = true
-                        --Normal icons
-                    else
-                        buttonText = locContextEntriesVars.menu_add_all_text[buttonsIcon]
-                    end
-                    --Remove the icon (unmark)
-                else
-                    --Is the icon a gear item?
-                    if isGear then
-                        --Get the gear number
-                        local gearNumber = icon2Gear[buttonsIcon]
-                        --Is the buttons text not given? Create it again
-                        if not locContextEntriesVars.menu_remove_all_gear_text or not locContextEntriesVars.menu_remove_all_gear_text[gearNumber] then
-                            changeContextMenuEntryTexts(buttonsIcon)
-                        end
-                        buttonText = locContextEntriesVars.menu_remove_all_gear_text[gearNumber]
-                        local subMenuEntryGear = {
-                            label 		= buttonText,
-                            callback 	= function() contextMenuForAddInvButtonsOnClicked(btnCtrl, buttonsIcon, buttonData.mark, nil, panelId) end,
-                        }
-                        tins(subMenuEntriesGear, subMenuEntryGear)
-                        gearAdded = true
-                        --Is the icon a dynamic icon?
-                    elseif isDynamic then
-                        --Get the dynamic number
-                        local dynamicNumber = icon2Dynamic[buttonsIcon]
-                        --Is the buttons text not given? Create it again
-                        if not locContextEntriesVars.menu_remove_dynamic_text or not locContextEntriesVars.menu_remove_dynamic_text[dynamicNumber] then
-                            if GetDisplayName() == "@Baertram" then
-                                d("[FCOIS]showContextMenuForAddInvButtons-Dynamic icon: " ..tos(buttonsIcon).."(" .. tos(dynamicNumber).."), menu_remove_dynamic_text: " ..tos(locContextEntriesVars.menu_remove_dynamic_text) .. ", menu_remove_dynamic_text[dynamicNumber]: " ..tos(locContextEntriesVars.menu_remove_dynamic_text[dynamicNumber]))
-                            else
-                                changeContextMenuEntryTexts(buttonsIcon)
-                            end
-                        end
-                        buttonText = textPrefix[tos(buttonData.mark)] .. locContextEntriesVars.menu_remove_dynamic_text[dynamicNumber]
-                        local subMenuEntryDynamic = {
-                            label 		= buttonText,
-                            callback 	= function() contextMenuForAddInvButtonsOnClicked(btnCtrl, buttonsIcon, buttonData.mark, nil, panelId) end,
-                        }
-                        --Are too many dynamic icons enabled to show them in one context menu?
-                        if useDynSubMenu then
-                            --Split the one submenu into two, one for + and one for -
-                            tins(subMenuEntriesDynamicRemove, subMenuEntryDynamic)
-                        else
-                            tins(subMenuEntriesDynamic, subMenuEntryDynamic)
-                        end
-                        dynamicAdded = true
-                        --Normal icons
-                    else
-                        buttonText = locContextEntriesVars.menu_remove_all_text[buttonsIcon]
-                    end
-                end
-                --ERROR Handling
-                if buttonText == nil then
-                    local errorData = {
-                        [1] = index,
-                        [2] = buttonNameStr,
-                        [3] = buttonData.iconId,
-                        [4] = buttonData.mark,
-                    }
-                    FCOIS.debugErrorMessage2Chat("showContextMenuForAddInvButtons", 1, errorData)
-                    return nil
-                end
-                --is the button's text too long? Then shorten it and show ... at the end
-                if strlen(buttonText) > contextMenuVars.maxCharactersInLine then
-                    buttonText = strsub(buttonText, 1, contextMenuVars.maxCharactersInLine) .. " ..."
-                end
-                --Add the non gear and non dynamic icons to the normal menu
-                if not isGear and not isDynamic then
-                    --Add the entry for the context menu now
-                    AddCustomMenuItem(buttonText, function() contextMenuForAddInvButtonsOnClicked(btnCtrl, buttonsIcon, buttonData.mark, nil, panelId) end, MENU_ADD_OPTION_LABEL)
-                    otherAdded = true
-                end
-            end -- function addSortedButtonDataTableEntries()
-            ------------------------------------------------------------------------------------------------------------------------
             --Check all entries of the pre-sorted data tabloe and create the context menu entries in the output tables for LibContextMenu now
-            for sortOrderId, sortedButtonDataTable in ipairs(FCOAddInvFlagButtonContextMenu) do
+            for _, sortedButtonDataTable in ipairs(FCOAddInvFlagButtonContextMenu) do
                 --Check the mark=false and mark=true subtable entries and add them to the sorted output after another.
                 --First + mark and then - mark
                 if sortedButtonDataTable[1] ~= nil then
-                    addSortedButtonDataTableEntries(sortedButtonDataTable[1])
+                    addSortedButtonDataTableEntries(sortedButtonDataTable[1], btnCtrl, panelId, useDynSubMenu) --#2025_999
                 end
                 if sortedButtonDataTable[0] ~= nil then
-                    addSortedButtonDataTableEntries(sortedButtonDataTable[0])
+                    addSortedButtonDataTableEntries(sortedButtonDataTable[0], btnCtrl, panelId, useDynSubMenu) --#2025_999
                 end
             end --for buttonsIcon, sortedButtonData in ipairs(FCOAddInvFlagButtonContextMenu) do
         end -- if contextMenuEntriesAdded > 0 then
