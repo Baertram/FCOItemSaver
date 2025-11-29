@@ -1827,9 +1827,11 @@ function FCOIS.AutomaticMarksToDoCheck(bag, slot, scanType, doOverride) --#2025_
         --					Execute the TODOs now									  --
         --------------------------------------------------------------------------------
         --1) Icon check 1
+        local todoIcon = getFuncOrVar(toDos.icon, bag, slot, itemLink)
+
         --Check if the marker icon is given and enabled
-        if toDos.icon ~= nil and settings.isIconEnabled[toDos.icon] then
-            if doDebug then d(">Active icon found for '" .. tos(scanType) .. "': " .. tos(toDos.icon)) end
+        if todoIcon ~= nil and settings.isIconEnabled[todoIcon] then
+            if doDebug then d(">Active icon found for '" .. tos(scanType) .. "': " .. tos(todoIcon)) end
         else
             if doDebug then d(">No icon provided, determining it later again via the check and additionalCheckFunc!") end
         end
@@ -1885,7 +1887,7 @@ function FCOIS.AutomaticMarksToDoCheck(bag, slot, scanType, doOverride) --#2025_
         --4) Run the preCheckFunc (if asked for) to see if the item should be scanned for the scanType
         --The variable for the pre check function result
         local preCheckFuncResult = false
-        --The variable tha can be returned from the preCheckFunc as 2nd parameter: The new icon that should be used to mark the icon, instead of the todos.IconId
+        --The variable tha can be returned from the preCheckFunc as 2nd parameter: The new icon that should be used to mark the icon, instead of the todoIconId
         local preCheckFuncResultData
         if toDos.preCheckFunc ~= nil then
             preCheckFuncResult, preCheckFuncResultData = getFuncOrVar(toDos.preCheckFunc, bag, slot, itemLink)
@@ -1912,11 +1914,11 @@ function FCOIS.AutomaticMarksToDoCheck(bag, slot, scanType, doOverride) --#2025_
         --	  if the item can be automatically marked
         --The variable for the check function result
         local checkFuncResult = false
-        --The table that can be returned from the checkFunc as 2nd parameter: The table could contain a newMarkerIcon entry for the new icon that should be used to mark the icon, instead of the todos.IconId
+        --The table that can be returned from the checkFunc as 2nd parameter: The table could contain a newMarkerIcon entry for the new icon that should be used to mark the icon, instead of the todoIconId
         local checkFuncResultData
         --The variable for the additional check function result
         local additionalCheckFuncResult = false
-        --The variable tha can be returned from the additionalCheckFunc as 2nd parameter: The new icon that should be used to mark the icon, instead of the todos.IconId
+        --The variable tha can be returned from the additionalCheckFunc as 2nd parameter: The new icon that should be used to mark the icon, instead of the todoIconId
         local additionalCheckFuncResultData
         --The item's instance iD
         local itemId
@@ -1927,7 +1929,7 @@ function FCOIS.AutomaticMarksToDoCheck(bag, slot, scanType, doOverride) --#2025_
         --  or the item is already marked with any icon, if enabled to be checked
         local isItemProtected = true
         local canBeAutomaticallyMarked = true
-        local iconIsMarkedAllreadyAllowed = (toDos.iconIsMarkedAllreadyAllowed ~= nil and toDos.iconIsMarkedAllreadyAllowed) or false
+        local iconIsMarkedAllreadyAllowed = (todoIconIsMarkedAllreadyAllowed ~= nil and todoIconIsMarkedAllreadyAllowed) or false
         if itemId ~= nil then
             canBeAutomaticallyMarked = checkIfCanBeAutomaticallyMarked(bag, slot, itemId, scanType)
             if canBeAutomaticallyMarked == true then
@@ -1936,7 +1938,7 @@ function FCOIS.AutomaticMarksToDoCheck(bag, slot, scanType, doOverride) --#2025_
                     local doAddIconNow = false
                     for iconNr = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
                         doAddIconNow = true
-                        if iconIsMarkedAllreadyAllowed and iconNr == toDos.icon then doAddIconNow = false end
+                        if iconIsMarkedAllreadyAllowed and iconNr == todoIcon then doAddIconNow = false end
                         if doAddIconNow then
                             tins(iconIdArray, iconNr)
                         end
@@ -1944,7 +1946,7 @@ function FCOIS.AutomaticMarksToDoCheck(bag, slot, scanType, doOverride) --#2025_
                     isItemProtected = checkIfItemArrayIsProtected(iconIdArray, itemId)
                 else
                     if not iconIsMarkedAllreadyAllowed then
-                        isItemProtected = checkIfItemIsProtected(toDos.icon, itemId)
+                        isItemProtected = checkIfItemIsProtected(todoIcon, itemId)
                     else
                         isItemProtected = false
                     end
@@ -1994,7 +1996,7 @@ function FCOIS.AutomaticMarksToDoCheck(bag, slot, scanType, doOverride) --#2025_
                 end
                 --Result was okay, so check if we need to go on with marker icon etc.
                 -->Only if the icon to be marked was not provided. The checkFunc needs to mark the item then and we abort here if this was done!
-                if toDos.checkFuncMarksItem ~= nil and toDos.icon == nil then
+                if toDos.checkFuncMarksItem ~= nil and todoIcon == nil then
                     local checkFuncMarksItemResult = getFuncOrVar(toDos.checkFuncMarksItem, bag, slot, itemLink)
                     if checkFuncMarksItemResult == true then
                         return abortChecksNow(scanType, "Check func marked the item already")
@@ -2054,7 +2056,7 @@ function FCOIS.AutomaticMarksToDoCheck(bag, slot, scanType, doOverride) --#2025_
         --Check if the marker icon is given and enabled
         local additionalCheckFuncResultDataNewMarkerIcon = (additionalCheckFuncResultData ~= nil and additionalCheckFuncResultData.newMarkerIcon ~= nil and additionalCheckFuncResultData.newMarkerIcon) or nil
         local checkFuncResultDataNewMarkerIcon = (checkFuncResultData ~= nil and checkFuncResultData.newMarkerIcon ~= nil and checkFuncResultData.newMarkerIcon) or nil
-        if not toDos.icon then
+        if not todoIcon then
             --is the icon not given but the return table of the additionalCheckFunc provided an alternative icon?
             local abortCuzOfNoIcon = true
             if additionalCheckFuncResultDataNewMarkerIcon ~= nil then
@@ -2072,17 +2074,17 @@ function FCOIS.AutomaticMarksToDoCheck(bag, slot, scanType, doOverride) --#2025_
                 end
             end
             if abortCuzOfNoIcon == true then
-                return abortChecksNow(scanType, "Icon not given/not enabled in (additional)checkFuncResultData: " .. tos(toDos.icon))
+                return abortChecksNow(scanType, "Icon not given/not enabled in (additional)checkFuncResultData: " .. tos(todoIcon))
             end
         end
 
         --Compare the two 2nd parameters (new marker icon IDs) of checkFunc and additionalCheckFunc.
         --Use the later one returned that is not nil as the new marker icon for the item
         local newMarkerIcon
-        if toDos.icon ~= nil then
-            newMarkerIcon = getFuncOrVar(toDos.icon, bag, slot, itemLink)
+        if todoIcon ~= nil then
+            newMarkerIcon = getFuncOrVar(todoIcon, bag, slot, itemLink)
             if doDebug then
-                d(">newMarkerIcon taken from todos.icon")
+                d(">newMarkerIcon taken from todoIcon")
             end
         end
         if additionalCheckFuncResultDataNewMarkerIcon ~= nil then
