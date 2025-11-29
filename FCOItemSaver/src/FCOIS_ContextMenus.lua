@@ -3705,6 +3705,7 @@ function FCOIS.ShowContextMenuForAddInvButtons(invAddContextMenuInvokerButton, b
         FCOIS.preventerVars.gCalledFromInternalFCOIS = true
         local isIconGear = settings.iconIsGear
         local isIconDynamic = mappingVars.iconIsDynamic
+        countMarkerIconsEnabled = countMarkerIconsEnabled or FCOIS.CountMarkerIconsEnabled
         local _, countDynIconsEnabled = countMarkerIconsEnabled()
         local useDynSubMenu = (settings.useDynSubMenuMaxCount > 0 and countDynIconsEnabled >= settings.useDynSubMenuMaxCount) or false
 
