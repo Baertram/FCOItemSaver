@@ -226,7 +226,9 @@ ReloadUI does not do anything, but manually mass marking via flag icon works fin
 --Open/To work on this patch:
 --Mail send panel does not allow double click and keybind is removed, but drag&drop does work for protected items?
 --Test protective functions for all panels
---LAM settings menu tries to create maxDynIconNum checkboxes (16 e.g.) again and again?
+--Selling items at vendor does not work anymore for a "marked to sell" icon except it is a potion e.g.?
+--LAM settings menu tries to create maxDynIconNum checkboxes (16 e.g.) again and again? Search for dynamic marker icons enabled submenu, and then "_activate_text"
+
 
 --=== Not started yet ===
 --Clear SV values which are boolean and do not really need a "false" (nil would be okay too):

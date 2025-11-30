@@ -18,7 +18,7 @@
    ã : \195\163    õ : \195\181  				   \195\177 : \195\177
 ]]
 --The "lock" icon texturepath
---local lockIconPath = "FCOItemSaver/assets/FCOIS.dds"
+--local FCOISIconPath = FCOIS.addonVars.icon --"FCOItemSaver/assets/FCOIS.dds"
 local lockIconPath = "/esoui/art/miscellaneous/status_locked.dds"
 local lockIcon = "|t32:32:"..lockIconPath.."|t"
 
@@ -5278,14 +5278,15 @@ FCOIS.localizationVars.localizationAll = {
 	},
 --==============================================================================
 }
-
-local english   = FCOIS.localizationVars.localizationAll[FCOIS_CON_LANG_EN]
-local german    = FCOIS.localizationVars.localizationAll[FCOIS_CON_LANG_DE]
-local french    = FCOIS.localizationVars.localizationAll[FCOIS_CON_LANG_FR]
-local spanish   = FCOIS.localizationVars.localizationAll[FCOIS_CON_LANG_ES]
-local italian   = FCOIS.localizationVars.localizationAll[FCOIS_CON_LANG_IT]
-local japanese  = FCOIS.localizationVars.localizationAll[FCOIS_CON_LANG_JP]
-local russian   = FCOIS.localizationVars.localizationAll[FCOIS_CON_LANG_RU]
+--References to the language subtables
+local locVarsAll = FCOIS.localizationVars.localizationAll
+local english   = locVarsAll[FCOIS_CON_LANG_EN]
+local german    = locVarsAll[FCOIS_CON_LANG_DE]
+local french    = locVarsAll[FCOIS_CON_LANG_FR]
+local spanish   = locVarsAll[FCOIS_CON_LANG_ES]
+local italian   = locVarsAll[FCOIS_CON_LANG_IT]
+local japanese  = locVarsAll[FCOIS_CON_LANG_JP]
+local russian   = locVarsAll[FCOIS_CON_LANG_RU]
 
 --Generate settingsmenu texts for the dynamic icons
 function FCOIS.GenerateLocalizedDynamicIconTexts()
@@ -5494,7 +5495,7 @@ end
 --LibFilters translated panel ID texts
 local getLibFiltersPanelIdText
 function FCOIS.GetLibFiltersPanelIdText(language, libFilterPanelId)
-    getLibFiltersPanelIdText = FCOIS.GetLibFiltersPanelIdText
+    getLibFiltersPanelIdText = getLibFiltersPanelIdText or FCOIS.GetLibFiltersPanelIdText
     language = language or FCOIS_CON_LANG_EN
     local retVarTable = {}
     local translatedTexts = {}
@@ -5579,7 +5580,7 @@ function FCOIS.GetLibFiltersPanelIdText(language, libFilterPanelId)
     end
     return retVarTable
 end
-local getLibFiltersPanelIdText = FCOIS.GetLibFiltersPanelIdText
+getLibFiltersPanelIdText = FCOIS.GetLibFiltersPanelIdText
 
 --LibFilters translated panel IDs
 english["FCOIS_LibFilters_PanelIds"]    = {}

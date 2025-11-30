@@ -4,7 +4,7 @@ local FCOIS = FCOIS
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
 
-local debugMessage = FCOIS.debugMessage
+--local debugMessage = FCOIS.debugMessage
 
 local wm = WINDOW_MANAGER
 local cm = CALLBACK_MANAGER
@@ -161,11 +161,11 @@ local resetCreateFCOISUniqueIdStringLastVars    = FCOIS.ResetCreateFCOISUniqueId
 local isMotifsAutoMarkDoable = FCOIS.IsMotifsAutoMarkDoable -- #308
 local checkIfMotifsAddonUsed = FCOIS.CheckIfMotifsAddonUsed -- #308
 local checkIfChosenMotifsAddonActive = FCOIS.CheckIfChosenMotifsAddonActive -- #308
-local getMotifsAddonUsed = FCOIS.GetMotifsAddonUsed -- #308
+--local getMotifsAddonUsed = FCOIS.GetMotifsAddonUsed -- #308
 local isStyleContainerCollectibleAutoMarkDoable = FCOIS.IsStyleContainerCollectibleAutoMarkDoable --#317
 local checkIfStyleContainerAddonUsed = FCOIS.CheckIfStyleContainerAddonUsed --#317
 local checkIfChosenStyleContainerAddonActive = FCOIS.CheckIfChosenStyleContainerAddonActive --#317
-local getStyleContainerAddonUsed = FCOIS.GetStyleContainerAddonUsed --#317
+--local getStyleContainerAddonUsed = FCOIS.GetStyleContainerAddonUsed --#317
 
 local getLAMMarkerIconsDropdown
 local FCOIS_getIconText
@@ -174,12 +174,12 @@ local FCOIS_getIconText
 
 local defaultSettingsAntiCheckAtPanelCB = false --#2025_999
 --LibAddonMenu-2.0 default data and function variables
-local defaultCheckboxData               = { type="checkbox" , width="half"} --#2025_999
-local defaultEditboxData                = { type="editbox" , width="half"} --#2025_999
-local defaultNumericEditboxData         = { type = "editbox", width = "half", textType = TEXT_TYPE_NUMERIC }
+local defaultCheckboxData               = { type="checkbox" , width="half" } --#2025_999
+local defaultEditboxData                = { type="editbox" , width="half" } --#2025_999
+local defaultNumericEditboxData         = { type = "editbox", width = "half", textType = TEXT_TYPE_NUMERIC } --#2025_999
 local defaultColorpickerData            = { type = "colorpicker", width = "half" }  --#2025_999
 local defaultDisabledFunc               = function() return false end --#2025_999
-local defaultIconSliderData             = { type = "slider", width = "half", min =minIconOffsetLeft, max =maxIconOffsetLeft, decimals =0, autoselect =true}  --#2025_999
+local defaultIconSliderData             = { type = "slider", width = "half", min=minIconOffsetLeft, max=maxIconOffsetLeft, decimals=0, autoselect =true }  --#2025_999
 
 
 --Other addons
@@ -438,6 +438,7 @@ local dataTypesWithoutSetAndGetFunc = {
     ["button"] = true,
 }
 
+local defaultLAMDDLData --#2025_999
 local function CreateControl(ref, name, tooltip, data, disabledChecks, getFunc, setFunc, defaultSettings, warning, isIconDropDown, scrollable)
     scrollable = scrollable or false
     if ref ~= nil then
@@ -471,10 +472,13 @@ local function CreateControl(ref, name, tooltip, data, disabledChecks, getFunc, 
             --Then add the reference to the list of dropboxes that need to be updated if an icon changes it's name or
             if isIconDropDown then
                 if LAMdropdownsWithIconList ~= nil then
-                    LAMdropdownsWithIconList[tos(data.reference)] = { ["choices"] = 'standard', ["choicesValues"] = iconsListValues, ["choicesTooltips"] = nil, ["scrollable"] = true }
+                    defaultLAMDDLData = defaultLAMDDLData or { ["choices"] = 'standard', ["choicesValues"] = iconsListValues, ["choicesTooltips"] = nil, ["scrollable"] = true } --#2025_999
+                    LAMdropdownsWithIconList[tos(data.reference)] = defaultLAMDDLData
                 end
             end
         end
+    else
+d("<data.type is nil! name: " .. tos(name) .. ", ref: " .. tos(ref))
     end
     return data
 end
@@ -938,7 +942,7 @@ local function buildMarkerIconsData(doUpdateDropdownValues)
     local savedVarsMarkedItemsNames = FCOIS.addonVars.savedVarsMarkedItemsNames
     local subTablesAlreadyAdded = {}
     --Add the unique-ID types with different subTable names in the FCOIS SV now -> Each table only once
-    for idx, saveIdType  in ipairs(uniqueItemIdTypeChoicesValues) do
+    for _, saveIdType  in ipairs(uniqueItemIdTypeChoicesValues) do
         --Do not add the really unique ZOs entry as it shares the same SV table as the non-uniques and will be added below
         --together with the non-unique as a combined entry
         if saveIdType ~= FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE then
@@ -1034,8 +1038,7 @@ end
 
 --The list of recipe addons
 local function buildRecipeAddonsList()
-    local recipeAddonsAvailable = FCOIS.otherAddons.recipeAddonsSupported
-    for recipeAddonIdx, recipeAddonName in pairs(recipeAddonsAvailable) do
+    for recipeAddonIdx, recipeAddonName in pairs(FCOIS.otherAddons.recipeAddonsSupported) do
         --tins(recipeAddonsListValues, recipeAddonIdx)
         --tins(recipeAddonsList, recipeAddonName)
         recipeAddonsListValues[#recipeAddonsListValues +1] = recipeAddonIdx
@@ -1045,8 +1048,7 @@ end
 
 --The list for motifs addons #308
 local function buildMotifsAddonsList()
-    local motifAddonsAvailable = FCOIS.otherAddons.motifAddonsSupported
-    for motifAddonIdx, motifAddonName in pairs(motifAddonsAvailable) do
+    for motifAddonIdx, motifAddonName in pairs(FCOIS.otherAddons.motifAddonsSupported) do
         --tins(motifsAddonsListValues, motifAddonIdx)
         --tins(motifsAddonsList, motifAddonName)
         motifsAddonsListValues[#motifsAddonsListValues +1] = motifAddonIdx
@@ -1056,8 +1058,7 @@ end
 
 --The list for style container for collectibles addon #317
 local function buildStyleContainerCollectiblesAddonsList()
-    local styleContainerCollectiblesAddonsAvailable = FCOIS.otherAddons.styleContainerCollectiblesAddonsSupported
-    for styleContainerCollectiblesAddonIdx, styleContainerCollectiblesAddonName in pairs(styleContainerCollectiblesAddonsAvailable) do
+    for styleContainerCollectiblesAddonIdx, styleContainerCollectiblesAddonName in pairs(FCOIS.otherAddons.styleContainerCollectiblesAddonsSupported) do
         --tins(styleContainerCollectiblesAddonsListValues, styleContainerCollectiblesAddonIdx)
         --tins(styleContainerCollectiblesAddonsList, styleContainerCollectiblesAddonName)
         styleContainerCollectiblesAddonsListValues[#styleContainerCollectiblesAddonsListValues +1] = styleContainerCollectiblesAddonIdx
@@ -1067,14 +1068,14 @@ end
 
 --The list of research addons
 local function buildResearchAddonsList()
-    local researchAddonsAvailable = FCOIS.otherAddons.researchAddonsSupported
-    for researchAddonIdx, researchAddonName in pairs(researchAddonsAvailable) do
+    local otherAddons = FCOIS.otherAddons
+    for researchAddonIdx, researchAddonName in pairs(otherAddons.researchAddonsSupported) do
         local researchAddonNameColored = researchAddonName
         local colorRed = false
         if researchAddonIdx ~= FCOIS_RESEARCH_ADDON_ESO_STANDARD then
             if _G[researchAddonName] == nil then
                 if researchAddonIdx == FCOIS_RESEARCH_ADDON_CSFAI then
-                    if not FCOIS.otherAddons.craftStoreFixedAndImprovedActive then
+                    if not otherAddons.craftStoreFixedAndImprovedActive then
                         colorRed = true
                     end
                 else
@@ -1089,7 +1090,7 @@ local function buildResearchAddonsList()
         --tins(researchAddonsListValues, researchAddonIdx)
         --tins(researchAddonsList, researchAddonNameColored)
         researchAddonsListValues[#researchAddonsListValues +1] = researchAddonIdx
-        researchAddonsList[#researchAddonsList +1] = recipeAddonIdx
+        researchAddonsList[#researchAddonsList +1] = researchAddonNameColored
     end
 end
 
@@ -2419,10 +2420,10 @@ d("[FCOIS]buildDynamicIconEnableCheckboxes - numDynIcons: " .. tos(numDynIcons))
         local activateText = LAMcontrolBaseName .. "_activate_text"
         local ref = LAMcontrolBaseName .. cbSuffix
 
-d(">dynIconId: " .. tos(dynIconId) .. "; fcoisDynIconNr: " .. tos(fcoisDynIconNr) .. "; LAMname: " .. tos(activateText) .. "; name: " .. tos(locVars[activateText]) .. "; ref: " ..tos(ref))
+        local name = locVars[activateText]
+d(">dynIconId: " .. tos(dynIconId) .. "; fcoisDynIconNr: " .. tos(fcoisDynIconNr) .. "; LAMname: " .. tos(activateText) .. "; name: " .. tos(name) .. "; ref: " ..tos(ref))
         --local fcoisLockDynMenuIconNr = iconId2FCOISIconLockDynMenuNr[dynIconId] --e.g. dynamic icon 1 = 2, 2 = 3, and so on
 
-        local name = locVars[activateText]
         local getFunc = function()
             isIconEnabled = FCOISsettings.isIconEnabled
             return isIconEnabled[fcoisDynIconNr]
@@ -2444,9 +2445,13 @@ d(">dynIconId: " .. tos(dynIconId) .. "; fcoisDynIconNr: " .. tos(fcoisDynIconNr
         --Create the checkbox now
         local createdDynIconEnableCB = CreateControl(ref, name, dynIconCheckboxTooltipStr, defaultCheckboxData, defaultDisabledFunc, getFunc, setFunc, defaultSettings)
         if createdDynIconEnableCB ~= nil then
+d(">createdDynIconEnableCB.name: " ..tos(createdDynIconEnableCB.name))
             dynamicIconsEnabledCbs[#dynamicIconsEnabledCbs +1] = createdDynIconEnableCB
         end
     end
+
+    FCOIS._origTab = ZO_ShallowTableCopy(dynamicIconsEnabledCbs)
+
     return dynamicIconsEnabledCbs
 end
 
@@ -3242,10 +3247,20 @@ local function showFCOISSettingsLoadingTexture(lamPanel)
     FCOIS_LAM_SettingsMenuOpen_timeline:SetPlaybackType(ANIMATION_PLAYBACK_PING_PONG, 10)
 end
 
+local function runOnceForOtherAddonsSettingsPanel()
+    --GridList
+    GridListActivated = GridList ~= nil or false
+    --InventoryGridView
+    InventoryGridViewActivated = (FCOIS.otherAddons.inventoryGridViewActive == true or InventoryGridView ~= nil) or false
+    if InventoryGridViewActivated == true then FCOIS.otherAddons.inventoryGridViewActive = true end
+end
 
 local function runOnceAsLAMPanelGetsCreated(lamPanel)
     locVars = FCOISlocVars.fcois_loc
     noneEntryStr = locVars["options_dropdown_none"]
+
+    --Show the FCOIS is loading "sandclock" texture
+    showFCOISSettingsLoadingTexture(lamPanel)
 
     --Build the icons & choicesValues list for the LAM icon dropdown boxes (again)
     updateAllIconsList()
@@ -3274,15 +3289,9 @@ local function runOnceAsLAMPanelGetsCreated(lamPanel)
     end
 
     --[Other addons]
-    --GridList
-    GridListActivated = GridList ~= nil or false
-    --InventoryGridView
-    InventoryGridViewActivated = (FCOIS.otherAddons.inventoryGridViewActive == true or InventoryGridView ~= nil) or false
-    if InventoryGridViewActivated == true then FCOIS.otherAddons.inventoryGridViewActive = true end
+    runOnceForOtherAddonsSettingsPanel()
 
-    --Show the FCOIS is loading "snadclock" texture
-    showFCOISSettingsLoadingTexture(lamPanel)
-
+    --FCOIS API version and backup
     FCOIS.APIversion = FCOIS.APIversion or GetAPIVersion()
     --Backup variables
     if FCOIS.backup == nil then FCOIS.backup = {} end
@@ -3363,7 +3372,6 @@ function FCOIS.BuildAddonMenu()
     if lsb then
         libShifterBoxes = FCOIS.LibShifterBoxes
     end
-
 
     --[Run once as LAM panel get's created]
     runOnceAsLAMPanelGetsCreated(FCOSettingsPanel)
@@ -4914,9 +4922,9 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
 
                                                         FCOIS.createLibShifterBox(customControl, FCOIS_CON_LIBSHIFTERBOX_EXCLUDESETS)
                                                         --Will be called by the LAM panel automatically upon refresh of controls
-                                                        customControl.UpdateDisabled = function(customControl)
+                                                        customControl.UpdateDisabled = function(l_customControl)
                                                             if lsb and libShifterBoxes[FCOIS_CON_LIBSHIFTERBOX_EXCLUDESETS] then
-                                                                FCOIS.updateLibShifterBoxState(customControl, nil, FCOIS_CON_LIBSHIFTERBOX_EXCLUDESETS)
+                                                                FCOIS.updateLibShifterBoxState(l_customControl, nil, FCOIS_CON_LIBSHIFTERBOX_EXCLUDESETS)
                                                             end
                                                         end
                                                     end,
@@ -6814,9 +6822,9 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                                 FCOIS.createLibShifterBox(customControl, FCOIS_CON_LIBSHIFTERBOX_FCOISALLOWEXCLUSION_MAIL)
 
                                 --Will be called by the LAM panel automatically upon refresh of controls
-                                customControl.UpdateDisabled = function(customControl)
+                                customControl.UpdateDisabled = function(l_customControl)
                                     if lsb and libShifterBoxes[FCOIS_CON_LIBSHIFTERBOX_FCOISALLOWEXCLUSION_MAIL] then
-                                        FCOIS.updateLibShifterBoxState(customControl, nil, FCOIS_CON_LIBSHIFTERBOX_FCOISALLOWEXCLUSION_MAIL)
+                                        FCOIS.updateLibShifterBoxState(l_customControl, nil, FCOIS_CON_LIBSHIFTERBOX_FCOISALLOWEXCLUSION_MAIL)
                                     end
                                 end
 
@@ -8632,7 +8640,7 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                     disabled = function()
                         local srcServerName = serverNames[srcServer]
                         --local targetServerName = serverNames[targServer]
-                        local targetAccName = accountTargOptions[targAcc]
+                        --local targetAccName = accountTargOptions[targAcc]
                         --local targetAccNameClean = cleanName(targetAccName, "account", targAcc)
                         local srcAccNameClean = cleanName(serverOptionsTarget[srcAcc], "account", srcAcc)
 

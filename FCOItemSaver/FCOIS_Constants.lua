@@ -11,13 +11,14 @@ local strlen = string.len
 --Addon variables
 FCOIS.addonVars = {}
 local addonVars = FCOIS.addonVars
+addonVars.icon                          = "FCOItemSaver/assets/FCOIS.dds"
 --Addon variables
 addonVars.addonVersionOptions 		    = '2.7.8' -- version shown in the settings panel
 --The addon name, normal and decorated with colors etc.
 addonVars.gAddonName				    = "FCOItemSaver"
 addonVars.gAddonNameShort               = "FCOIS"
 addonVars.addonNameMenu				    = "FCO ItemSaver"
-addonVars.addonNameMenuDisplay		    = "|t32:32:FCOItemSaver/assets/FCOIS.dds|t |c00FF00FCO |cFFFF00ItemSaver|r"
+addonVars.addonNameMenuDisplay		    = "|t32:32:"..addonVars.icon.."|t |c00FF00FCO |cFFFF00ItemSaver|r"
 addonVars.addonNameContextMenuEntry     = "     - |c22DD22FCO|r ItemSaver -"
 addonVars.addonAuthor 				    = '|cFFFF00Baertram|r'
 local authorDisplayName                 = '@Baertram'
@@ -34,7 +35,6 @@ addonVars.FAQwebsite                    = esouiWWWAddonAuthorPortalFCOIS .. "&a=
 addonVars.feedback                      = esouiWWWAddonAuthorPortalFCOIS .. "&a=bugreport"
 addonVars.FAQentry                      = addonVars.FAQwebsite .. "&faqid=%s"
 addonVars.donation                      = strformat(addonVars.FAQwebsite .. "&faqid=%s", tos(esouiWWWAddonDonationId))
-addonVars.icon                          = "FCOItemSaver/assets/FCOIS.dds"
 
 --Variables for the addon's load state
 addonVars.gAddonLoaded				= false
