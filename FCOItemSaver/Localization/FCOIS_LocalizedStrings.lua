@@ -18,7 +18,7 @@
    ã : \195\163    õ : \195\181  				   \195\177 : \195\177
 ]]
 --The "lock" icon texturepath
---local lockIconPath = "FCOItemSaver/FCOIS.dds"
+--local lockIconPath = "FCOItemSaver/assets/FCOIS.dds"
 local lockIconPath = "/esoui/art/miscellaneous/status_locked.dds"
 local lockIcon = "|t32:32:"..lockIconPath.."|t"
 
@@ -39,11 +39,6 @@ local FCOIS_CON_LANG_RU = FCOIS_CON_LANG_RU
 local FCOIS_CON_LF_CHARACTER = FCOIS_CON_LF_CHARACTER
 local FCOIS_CON_LF_COMPANION_CHARACTER = FCOIS_CON_LF_COMPANION_CHARACTER
 local FCOIS_CON_ICON_LOCK				= FCOIS_CON_ICON_LOCK
-local FCOIS_CON_ICON_GEAR_1				= FCOIS_CON_ICON_GEAR_1
-local FCOIS_CON_ICON_GEAR_2     		= FCOIS_CON_ICON_GEAR_2
-local FCOIS_CON_ICON_GEAR_3				= FCOIS_CON_ICON_GEAR_3
-local FCOIS_CON_ICON_GEAR_4				= FCOIS_CON_ICON_GEAR_4
-local FCOIS_CON_ICON_GEAR_5				= FCOIS_CON_ICON_GEAR_5
 
 
 --Local speed-ups of global number and other variables

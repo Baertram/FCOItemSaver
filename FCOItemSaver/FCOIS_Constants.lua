@@ -17,7 +17,7 @@ addonVars.addonVersionOptions 		    = '2.7.8' -- version shown in the settings p
 addonVars.gAddonName				    = "FCOItemSaver"
 addonVars.gAddonNameShort               = "FCOIS"
 addonVars.addonNameMenu				    = "FCO ItemSaver"
-addonVars.addonNameMenuDisplay		    = "|t32:32:FCOItemSaver/FCOIS.dds|t |c00FF00FCO |cFFFF00ItemSaver|r"
+addonVars.addonNameMenuDisplay		    = "|t32:32:FCOItemSaver/assets/FCOIS.dds|t |c00FF00FCO |cFFFF00ItemSaver|r"
 addonVars.addonNameContextMenuEntry     = "     - |c22DD22FCO|r ItemSaver -"
 addonVars.addonAuthor 				    = '|cFFFF00Baertram|r'
 local authorDisplayName                 = '@Baertram'
@@ -27,13 +27,14 @@ addonVars.addonAuthorDisplayNamePTS     = authorDisplayName
 local esouiWWWAuthorId                  = 136 -- Baertram ddon authorId at www.esoui.com
 local esouiWWWAddonDonationId           = 131 -- FAQ etry Id for the donation
 local esouiWWW                          = "https://www.esoui.com"
-local esouiWWWAddonAuthorPortalFCOIS    = strformat(esouiWWW .. "/portal.php?&id=%s", tostring(esouiWWWAuthorId))
+local esouiWWWAddonAuthorPortalFCOIS    = strformat(esouiWWW .. "/portal.php?&id=%s", tos(esouiWWWAuthorId))
 addonVars.website 					    = esouiWWW .. "/downloads/info630-FCOItemSaver.html"
 addonVars.authorPortal                  = esouiWWWAddonAuthorPortalFCOIS
 addonVars.FAQwebsite                    = esouiWWWAddonAuthorPortalFCOIS .. "&a=faq"
 addonVars.feedback                      = esouiWWWAddonAuthorPortalFCOIS .. "&a=bugreport"
 addonVars.FAQentry                      = addonVars.FAQwebsite .. "&faqid=%s"
-addonVars.donation                      = strformat(addonVars.FAQwebsite .. "&faqid=%s", tostring(esouiWWWAddonDonationId))
+addonVars.donation                      = strformat(addonVars.FAQwebsite .. "&faqid=%s", tos(esouiWWWAddonDonationId))
+addonVars.icon                          = "FCOItemSaver/assets/FCOIS.dds"
 
 --Variables for the addon's load state
 addonVars.gAddonLoaded				= false
@@ -627,7 +628,7 @@ local markerIconsBefore = FCOIS_CON_ICON_INTRICATE --12
 local maxDynIconRef
 for dynIconNr = 1, numMaxDynamicIcons, 1 do
 	markerIconsBefore = markerIconsBefore + 1
-    local dynIconName = dynamicIconPrefix .. tostring(dynIconNr)
+    local dynIconName = dynamicIconPrefix .. tos(dynIconNr)
 	_G[dynIconName] = markerIconsBefore
     if dynIconNr == numMaxDynamicIcons then
         maxDynIconRef = _G[dynIconName]
@@ -779,8 +780,9 @@ mappingVars.bagsToBuildItemInstanceOrUniqueIdFor =  {
     [BAG_FURNITURE_VAULT]    = true,
 }
 --The array for the mapping between the "WhereAreWe" (e.g. in ItemSelectionHandler function) and the filter panel ID
-mappingVars.whereAreWeToFilterPanelId = {
-    	[FCOIS_CON_DESTROY]				=	LF_INVENTORY,
+local whereAreWeToFilterPanelId = {
+    	--Dedicated filterPanelIds
+        [FCOIS_CON_DESTROY]				=	LF_INVENTORY,
     	[FCOIS_CON_MAIL]				=	LF_MAIL_SEND,
     	[FCOIS_CON_TRADE]				=	LF_TRADE,
     	[FCOIS_CON_BUY]				    =	LF_VENDOR_BUY,
@@ -797,11 +799,6 @@ mappingVars.whereAreWeToFilterPanelId = {
     	[FCOIS_CON_FENCE_SELL]			=	LF_FENCE_SELL,
     	[FCOIS_CON_LAUNDER_SELL]		=	LF_FENCE_LAUNDER,
     	[FCOIS_CON_ALCHEMY_DESTROY]		=	LF_ALCHEMY_CREATION,
-    	[FCOIS_CON_CONTAINER_AUTOOLOOT]	=	LF_INVENTORY,
-    	[FCOIS_CON_RECIPE_USAGE]		=	LF_INVENTORY,
-    	[FCOIS_CON_MOTIF_USAGE]			=	LF_INVENTORY,
-    	[FCOIS_CON_POTION_USAGE]		=	LF_INVENTORY,
-    	[FCOIS_CON_FOOD_USAGE]			=	LF_INVENTORY,
     	[FCOIS_CON_CRAFTBAG_DESTROY]	=	LF_CRAFTBAG,
 		[FCOIS_CON_RESEARCH]			=   LF_SMITHING_RESEARCH,
         [FCOIS_CON_FALLBACK]			=	LF_INVENTORY, -- Fallback. Used e.g. for the bank/guild bank deposit checks
@@ -811,23 +808,59 @@ mappingVars.whereAreWeToFilterPanelId = {
         [FCOIS_CON_JEWELRY_IMPROVE]		=	LF_JEWELRY_IMPROVEMENT,
         [FCOIS_CON_JEWELRY_RESEARCH]	=   LF_JEWELRY_RESEARCH,
         [FCOIS_CON_RESEARCH_DIALOG]	    =   LF_SMITHING_RESEARCH_DIALOG,
-        [FCOIS_CON_JEWELRY_RESEARCH_DIALOG] = LF_JEWELRY_RESEARCH_DIALOG,
-        [FCOIS_CON_COMPANION_DESTROY]   = LF_INVENTORY_COMPANION,
-        [FCOIS_CON_COLLECTIBLE_USAGE]   = LF_INVENTORY, --#318
+        [FCOIS_CON_JEWELRY_RESEARCH_DIALOG]=LF_JEWELRY_RESEARCH_DIALOG,
+        [FCOIS_CON_COMPANION_DESTROY]   =   LF_INVENTORY_COMPANION,
 }
+local whereAreWeToFilterPanelIdSpecial = {
+        --Special usage e.g. in inventory "Use item"
+        [FCOIS_CON_COLLECTIBLE_USAGE]   =   LF_INVENTORY, --#318
+    	[FCOIS_CON_CONTAINER_AUTOOLOOT]	=	LF_INVENTORY,
+    	[FCOIS_CON_RECIPE_USAGE]		=	LF_INVENTORY,
+    	[FCOIS_CON_MOTIF_USAGE]			=	LF_INVENTORY,
+    	[FCOIS_CON_POTION_USAGE]		=	LF_INVENTORY,
+    	[FCOIS_CON_FOOD_USAGE]			=	LF_INVENTORY,
+        [FCOIS_CON_CROWN_ITEM]          = 	LF_INVENTORY,
+}
+mappingVars.whereAreWeToFilterPanelIdSpecial = whereAreWeToFilterPanelIdSpecial
+--Add the special ones to the normal table too so checking the normal table provides a filterPanelId for the special whereAreWes
+for whereAreWe, filterPanelId in pairs(whereAreWeToFilterPanelIdSpecial) do
+    whereAreWeToFilterPanelId[whereAreWe] = filterPanelId
+end
+mappingVars.whereAreWeToFilterPanelId = whereAreWeToFilterPanelId
+
+
 --The array for the mapping between the LibFilters FilterPanelId and the "WhereAreWe" (e.g. used in ItemSelectionHandler function)
-mappingVars.filterPanelIdToWhereAreWe = {}
+local filterPanelIdToWhereAreWe = {}
 for whereAreWe, filterPanelId in pairs(mappingVars.whereAreWeToFilterPanelId) do
     --Only update LF_INVENTORY etc. once
-    if mappingVars.filterPanelIdToWhereAreWe[filterPanelId] == nil then --#2025_999
-        mappingVars.filterPanelIdToWhereAreWe[filterPanelId] = whereAreWe
+    if filterPanelIdToWhereAreWe[filterPanelId] == nil then --#2025_999
+        filterPanelIdToWhereAreWe[filterPanelId] = whereAreWe
     end
 end
---For the inventory use the anti-destroy checks by default (not any other added above, like FCOIS_CON_COLLECTIBLE_USAGE)
-mappingVars.filterPanelIdToWhereAreWe[LF_INVENTORY] = FCOIS_CON_DESTROY
---For the companion: There is no extra "Anti companion destroy" option at dynamic icons, so just return the normal destroy constant
---for it as well! Else the tooltip always says the protection is disabled.
-mappingVars.filterPanelIdToWhereAreWe[LF_INVENTORY_COMPANION] = FCOIS_CON_DESTROY
+--The following filterPanelIds use the destroy whereAreWe
+local filterPaneiIds2WhereAreWeDestroy = {
+    --For the inventory use the anti-destroy checks by default (not any other added above, like FCOIS_CON_COLLECTIBLE_USAGE)
+    [LF_INVENTORY] = true,
+    --For the companion: There is no extra "Anti companion destroy" option at dynamic icons, so just return the normal destroy constant
+    -->Else the tooltip always says the protection is disabled.
+    [LF_INVENTORY_COMPANION] = true,
+}
+for filterPanelId, _ in pairs(filterPaneiIds2WhereAreWeDestroy) do
+    filterPanelIdToWhereAreWe[filterPanelId] = FCOIS_CON_DESTROY
+end
+--The following filterPanelIds use the fallback whereAreWe
+-->to allow e.g. double click or drag & drop withdraw from a bank
+local filterPaneiIds2WhereAreWeFallback = {
+    [LF_BANK_WITHDRAW] = true,
+    [LF_HOUSE_BANK_WITHDRAW] = true,
+    [LF_GUILDBANK_WITHDRAW] = true,
+    [LF_FURNITURE_VAULT_WITHDRAW] = true,
+}
+for filterPanelId, _ in pairs(filterPaneiIds2WhereAreWeFallback) do
+    filterPanelIdToWhereAreWe[filterPanelId] = FCOIS_CON_FALLBACK
+end
+mappingVars.filterPanelIdToWhereAreWe = filterPanelIdToWhereAreWe
+
 
 --Mapping of the filterPanelId to whereAreWe constant, repsecting the crafting type
 --2021-08-15 Only JewelryCrafting so far supported to differ refine, decon, improve, research and research dialog for normal/jewelry crafting
@@ -2420,13 +2453,14 @@ mappingVars.lockDynToIcon = {
 
 --Add the dynamic icons to the different mapping tables. Use a loop from dynamicIcon 1 to maximum of possible dynamic ones
 for dynIconNr=1, numMaxDynamicIcons do
-    local dynIconValue = _G[dynamicIconPrefix .. tostring(dynIconNr)]
+    local dynIconValue = _G[dynamicIconPrefix .. tos(dynIconNr)]
     mappingVars.iconToFilterDefaults[dynIconValue] = FCOIS_CON_FILTER_BUTTON_LOCKDYN
     mappingVars.iconIsDynamic[dynIconValue] = true
     mappingVars.dynamicToIcon[dynIconNr]    = dynIconValue
     mappingVars.iconToDynamic[dynIconValue] = dynIconNr
-    mappingVars.iconToLockDyn[dynIconValue] = 1 + dynIconNr
-    mappingVars.lockDynToIcon[1 + dynIconNr] = dynIconValue
+    local lockDynIconIndex = 1 + dynIconNr
+    mappingVars.iconToLockDyn[dynIconValue] = lockDynIconIndex
+    mappingVars.lockDynToIcon[lockDynIconIndex] = dynIconValue
 end
 
 
@@ -3549,7 +3583,7 @@ mappingVars.levelToThreshold = {}
 if mappingVars.levels ~= nil then
     for _, level in ipairs(mappingVars.levels) do
         if level > 0 then
-            mappingVars.levelToThreshold[tostring(level)] = level
+            mappingVars.levelToThreshold[tos(level)] = level
         end
     end
 end
@@ -3557,7 +3591,7 @@ end
 if mappingVars.CPlevels ~= nil then
     for _, CPRank in ipairs(mappingVars.CPlevels) do
         if CPRank > 0 then
-            mappingVars.levelToThreshold[tostring("CP") .. CPRank] = CPRank
+            mappingVars.levelToThreshold[tos("CP") .. CPRank] = CPRank
         end
     end
 end

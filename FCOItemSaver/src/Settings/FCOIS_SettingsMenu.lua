@@ -19,6 +19,7 @@ local strsub = string.sub
 local strgsub = string.gsub
 local strfind = string.find
 local zo_strf = zo_strformat
+local tins = table.insert
 
 local svAllServersTheSame   = FCOIS.svServerAllTheSameName
 local svAllAccTheSameAcc    = FCOIS.svAllAccountsName
@@ -47,11 +48,7 @@ local FCOIS_CON_ICON_RESEARCH			= FCOIS_CON_ICON_RESEARCH
 local FCOIS_CON_ICON_SELL				= FCOIS_CON_ICON_SELL
 local FCOIS_CON_ICON_SELL_AT_GUILDSTORE	= FCOIS_CON_ICON_SELL_AT_GUILDSTORE
 local FCOIS_CON_ICON_INTRICATE			= FCOIS_CON_ICON_INTRICATE
-local FCOIS_CON_ICON_GEAR_1				= FCOIS_CON_ICON_GEAR_1
-local FCOIS_CON_ICON_GEAR_2     		= FCOIS_CON_ICON_GEAR_2
-local FCOIS_CON_ICON_GEAR_3				= FCOIS_CON_ICON_GEAR_3
-local FCOIS_CON_ICON_GEAR_4				= FCOIS_CON_ICON_GEAR_4
-local FCOIS_CON_ICON_GEAR_5				= FCOIS_CON_ICON_GEAR_5
+
 
 local fcoisLAMSettingsReferencePrefix = "FCOItemSaver_Settings_"
 --Control name parts, prefix, suffix, tooltip suffix
@@ -62,6 +59,7 @@ local colorSuffix = "_color"
 local nameSuffix = "_name"
 local optionsIcon = "options_icon"
 local submenuSuffix = "_submenu"
+local cbSuffix = "_checkbox"
 local subMenuNamePattern = fcoisLAMSettingsReferencePrefix .. "MarkerIcon%s" .. submenuSuffix
 local tooltipSuffix = "_TT"
 local LAMopenedCounter = 0
@@ -170,18 +168,28 @@ local checkIfChosenStyleContainerAddonActive = FCOIS.CheckIfChosenStyleContainer
 local getStyleContainerAddonUsed = FCOIS.GetStyleContainerAddonUsed --#317
 
 local getLAMMarkerIconsDropdown
+local FCOIS_getIconText
 
 --local getLibSetsSetSearchFavoriteCategories     = FCOIS.GetLibSetsSetSearchFavoriteCategories --#301
 
+local defaultSettingsAntiCheckAtPanelCB = false --#2025_999
+--LibAddonMenu-2.0 default data and function variables
+local defaultCheckboxData               = { type="checkbox" , width="half"} --#2025_999
+local defaultEditboxData                = { type="editbox" , width="half"} --#2025_999
+local defaultNumericEditboxData         = { type = "editbox", width = "half", textType = TEXT_TYPE_NUMERIC }
+local defaultColorpickerData            = { type = "colorpicker", width = "half" }  --#2025_999
+local defaultDisabledFunc               = function() return false end --#2025_999
+local defaultIconSliderData             = { type = "slider", width = "half", min =minIconOffsetLeft, max =maxIconOffsetLeft, decimals =0, autoselect =true}  --#2025_999
+
 
 --Other addons
-local GridListActivated                         = false
-local InventoryGridViewActivated                = false
+local GridListActivated                 = false
+local InventoryGridViewActivated        = false
 
 
 -- ============= Addon LAM dropdown choices/choicesValues/choicesTooltios - BEGIN ======================================
 --The table with all the LAM dropdown controls that should get updated with marker icons and their name
-local LAMdropdownsWithIconList                  = {}
+local LAMdropdownsWithIconList          = {}
 --The table with all LAM submenus for marker icons where the name could be changed (gear, dynamic)
 --local LAMsubmenusWithMarkerIconChangeableNames = {}
 
@@ -576,18 +584,18 @@ local function reBuildServerOptions(updateSourceOrTarget)
         end
         if serverIdx > 1 then
             --Do we have server settings for the servername in the SavedVars?
-            table.insert(serverOptionsTarget, serverNameStr)
-            table.insert(serverOptionsValuesTarget, serverIdx)
+            tins(serverOptionsTarget, serverNameStr)
+            tins(serverOptionsValuesTarget, serverIdx)
             if FCOItemSaver_Settings and FCOItemSaver_Settings[serverName] then
-                table.insert(serverOptions, serverNameStr)
-                table.insert(serverOptionsValues, serverIdx)
+                tins(serverOptions, serverNameStr)
+                tins(serverOptionsValues, serverIdx)
             end
         else
             --Index 1: Always add "none" entry
-            table.insert(serverOptions, serverName)
-            table.insert(serverOptionsValues, serverIdx)
-            table.insert(serverOptionsTarget, serverName)
-            table.insert(serverOptionsValuesTarget, serverIdx)
+            tins(serverOptions, serverName)
+            tins(serverOptionsValues, serverIdx)
+            tins(serverOptionsTarget, serverName)
+            tins(serverOptionsValuesTarget, serverIdx)
         end
     end
     --Reset chosen dropdown values
@@ -639,8 +647,8 @@ local function reBuildAccountOptions(updateSourceOrTarget)
     local sourceServerName = serverNames[srcServer]
     --Source accounts
     --Add the no entry entry
-    table.insert(accountSrcOptions, noEntry)
-    table.insert(accountSrcOptionsValues, noEntryValue)
+    tins(accountSrcOptions, noEntry)
+    tins(accountSrcOptionsValues, noEntryValue)
     if FCOItemSaver_Settings then
         local accCnt = 3 -- Preset with 3 so the 3rd item will be left empty for the "All accounts" entry
         --Get account names from the SavedVariables, for each server
@@ -650,8 +658,8 @@ local function reBuildAccountOptions(updateSourceOrTarget)
                     --Do not add the current accountName again, and not the all accounts name
                     if accountName ~= currentAccountName and accountName ~= svAllAccountsName then
                         accCnt = accCnt + 1
-                        table.insert(accountSrcOptions, accountName)
-                        table.insert(accountSrcOptionsValues, accCnt)
+                        tins(accountSrcOptions, accountName)
+                        tins(accountSrcOptionsValues, accCnt)
                     elseif accountName == currentAccountName then
                         currentAccountFoundInSv = true
                     elseif accountName == svAllAccountsName then
@@ -666,15 +674,15 @@ local function reBuildAccountOptions(updateSourceOrTarget)
     if not currentAccountFoundInSv then
         currentAccountText = "|cff0000" .. currentAccountText .. "|r"
     end
-    table.insert(accountSrcOptions, currentAccountText)
-    table.insert(accountSrcOptionsValues, noEntryValue+1)
+    tins(accountSrcOptions, currentAccountText)
+    tins(accountSrcOptionsValues, noEntryValue+1)
     --Add all acounts name at fixed positon 3! Color it red if it does not exist yet
     local allAccountsText = locVars["options_savedVariables_dropdown_selection3"]
     if not allAccountsFoundInSV then
         allAccountsText = "|cff0000" .. allAccountsText .. "|r"
     end
-    table.insert(accountSrcOptions, allAccountsText)
-    table.insert(accountSrcOptionsValues, noEntryValue+2)
+    tins(accountSrcOptions, allAccountsText)
+    tins(accountSrcOptionsValues, noEntryValue+2)
     --**********************************************************************************************************************
     --**********************************************************************************************************************
     --Target accounts
@@ -686,8 +694,8 @@ local function reBuildAccountOptions(updateSourceOrTarget)
     --The target server name
     local targetServerName = serverNames[targServer]
     --Add the no entry entry
-    table.insert(accountTargOptions, noEntry)
-    table.insert(accountTargOptionsValues, noEntryValue)
+    tins(accountTargOptions, noEntry)
+    tins(accountTargOptionsValues, noEntryValue)
     if FCOItemSaver_Settings then
         local accCnt = 3 -- Preset with 3 so the 3rd item will be left empty for the "All accounts" entry
         --Get account names from the SavedVariables, for each server
@@ -698,8 +706,8 @@ local function reBuildAccountOptions(updateSourceOrTarget)
                     if accountName ~= currentAccountName and accountName ~= svAllAccountsName then
                         accCnt = accCnt + 1
                         local accNameTarg = accountName
-                        table.insert(accountTargOptions, accNameTarg)
-                        table.insert(accountTargOptionsValues, accCnt)
+                        tins(accountTargOptions, accNameTarg)
+                        tins(accountTargOptionsValues, accCnt)
                     elseif accountName == currentAccountName then
                         currentAccountFoundInSv = true
                     elseif accountName == svAllAccountsName then
@@ -714,15 +722,15 @@ local function reBuildAccountOptions(updateSourceOrTarget)
     if not currentAccountFoundInSv then
         currentAccountText = "|cff0000" .. currentAccountText .. "|r"
     end
-    table.insert(accountTargOptions, currentAccountText)
-    table.insert(accountTargOptionsValues, noEntryValue+1)
+    tins(accountTargOptions, currentAccountText)
+    tins(accountTargOptionsValues, noEntryValue+1)
     --Add all acounts name at fixed positon 3! Color it red if it does not exist yet
     allAccountsText = locVars["options_savedVariables_dropdown_selection3"]
     if not allAccountsFoundInSV then
         allAccountsText = "|cff0000" .. allAccountsText .. "|r"
     end
-    table.insert(accountTargOptions, allAccountsText)
-    table.insert(accountTargOptionsValues, noEntryValue+2)
+    tins(accountTargOptions, allAccountsText)
+    tins(accountTargOptionsValues, noEntryValue+2)
 
     --Reset chosen dropdown values
     doNotRunDropdownValueSetFunc = true
@@ -763,10 +771,10 @@ local function reBuildCharacterOptions(updateSourceOrTarget)
     local charactersOfAccountKeyId  = getCharactersOfAccount(false) --unique ID as key
     --Source characters
     --Add the no entry entry
-    table.insert(characterSrcOptions, noEntry)
-    table.insert(characterSrcOptionsValues, noEntryValue)
-    --table.insert(characterSrcOptions, currentCharacterNameMarked)
-    --table.insert(characterSrcOptionsValues, currentCharacterId)
+    tins(characterSrcOptions, noEntry)
+    tins(characterSrcOptionsValues, noEntryValue)
+    --tins(characterSrcOptions, currentCharacterNameMarked)
+    --tins(characterSrcOptionsValues, currentCharacterId)
     if FCOItemSaver_Settings then
         --Get account names from the SavedVariables, for each server
         for _, serverData in pairs(FCOItemSaver_Settings) do
@@ -787,8 +795,8 @@ local function reBuildCharacterOptions(updateSourceOrTarget)
                                 characterName = currentCharacterName
                             end
                             if characterName ~= nil and characterName ~= "" and characterId ~= nil then
-                                table.insert(characterSrcOptions, characterName)
-                                table.insert(characterSrcOptionsValues, characterId)
+                                tins(characterSrcOptions, characterName)
+                                tins(characterSrcOptionsValues, characterId)
                             else
                                 --The characterId and/or name are not given or unknown to the account
                                 d(strformat("%s CharacterId %s is not a known character of the account %s!", FCOIS.preChatVars.preChatTextRed, tos(characterId), tos(currentAccountName)))
@@ -804,15 +812,15 @@ local function reBuildCharacterOptions(updateSourceOrTarget)
     local targetAccName = accountTargOptions[targAcc]
     local targetAccNameClean = cleanName(targetAccName, "account", targAcc)
     --Add the no entry entry
-    table.insert(characterTargOptions, noEntry)
-    table.insert(characterTargOptionsValues, noEntryValue)
+    tins(characterTargOptions, noEntry)
+    tins(characterTargOptionsValues, noEntryValue)
     --Add the current character (red if SV data is missing)
     if FCOItemSaver_Settings == nil or FCOItemSaver_Settings[targetServerName] == nil or FCOItemSaver_Settings[targetServerName][targetAccNameClean] == nil or FCOItemSaver_Settings[targetServerName][targetAccNameClean][tos(currentCharacterId)] == nil then
-        table.insert(characterTargOptions, "|cFF0000" .. currentCharacterNameMarked .. "|r")
+        tins(characterTargOptions, "|cFF0000" .. currentCharacterNameMarked .. "|r")
     else
-        table.insert(characterTargOptions, currentCharacterNameMarked)
+        tins(characterTargOptions, currentCharacterNameMarked)
     end
-    table.insert(characterTargOptionsValues, currentCharacterId)
+    tins(characterTargOptionsValues, currentCharacterId)
 
     for charNameTarg, charIdTarg in pairs(charactersOfAccount) do
         if charIdTarg ~= currentCharacterId then
@@ -820,11 +828,11 @@ local function reBuildCharacterOptions(updateSourceOrTarget)
             --If not color the charactername red
             if FCOItemSaver_Settings == nil or FCOItemSaver_Settings[targetServerName] == nil or FCOItemSaver_Settings[targetServerName][targetAccNameClean] == nil or FCOItemSaver_Settings[targetServerName][targetAccNameClean][tos(charIdTarg)] == nil then
                 local charNameWithColorActiveOrNot = "|cFF0000" .. charNameTarg .. "|r"
-                table.insert(characterTargOptions, charNameWithColorActiveOrNot)
+                tins(characterTargOptions, charNameWithColorActiveOrNot)
             else
-                table.insert(characterTargOptions, charNameTarg)
+                tins(characterTargOptions, charNameTarg)
             end
-            table.insert(characterTargOptionsValues, charIdTarg)
+            tins(characterTargOptionsValues, charIdTarg)
         end
     end
     --Reset chosen dropdown values
@@ -889,7 +897,7 @@ local function buildRestoreAPIVersionData(doUpdateDropdownValues)
             local restoreEntry = {}
             restoreEntry.apiVersion = backupApiVersion
             restoreEntry.timestamp  = dateInfo
-            table.insert(foundRestoreData, restoreEntry)
+            foundRestoreData[#foundRestoreData +1] = restoreEntry
             --Build the choices and choices values for the LAM dropdown box of restore api versions
             local tableIndex = #restoreChoices+1
             restoreChoices[tableIndex] = "[" .. tos(dateInfo) .. "] " .. tos(backupApiVersion)
@@ -939,21 +947,23 @@ local function buildMarkerIconsData(doUpdateDropdownValues)
                 local svMarkerIconsDataOfSaveIdType = FCOISsettings[savedVarsMarkedItemsSubTableName]
                 if svMarkerIconsDataOfSaveIdType ~= nil and NonContiguousCount(svMarkerIconsDataOfSaveIdType) > 0 then
                     local savedIdTypeName = uniqueItemIdTypeChoices[saveIdType]
-                    table.insert(markerIconTypeChoices, savedIdTypeName)
-                    table.insert(markerIconTypeChoicesValues, saveIdType)
+                    --tins(markerIconTypeChoices, savedIdTypeName)
+                    --tins(markerIconTypeChoicesValues, saveIdType)
+                    markerIconTypeChoices[#markerIconTypeChoices +1] = savedIdTypeName
+                    markerIconTypeChoicesValues[#markerIconTypeChoicesValues +1] = saveIdType
                 end
             end
         end
     end
     --Insert a none entry with value 0 at index 1
-    table.insert(markerIconTypeChoices, 1, noneEntryStr)
-    table.insert(markerIconTypeChoicesValues, 1, noneEntryValue)
+    tins(markerIconTypeChoices, 1, noneEntryStr)
+    tins(markerIconTypeChoicesValues, 1, noneEntryValue)
     local nonUniqueAndZOsUniqueSharedSVTable = savedVarsMarkedItemsNames[false]
     local svOfNonUniqueAndZOsUnique = FCOISsettings[nonUniqueAndZOsUniqueSharedSVTable]
     if svOfNonUniqueAndZOsUnique  ~= nil and NonContiguousCount(svOfNonUniqueAndZOsUnique) > 0 then
         --Insert a "non unique" / really unique entry with value false at index 2
-        table.insert(markerIconTypeChoices, 2, locVars["options_non_unique_id"] .. "/" .. uniqueItemIdTypeChoices[FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE])
-        table.insert(markerIconTypeChoicesValues, 2, false)
+        tins(markerIconTypeChoices, 2, locVars["options_non_unique_id"] .. "/" .. uniqueItemIdTypeChoices[FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE])
+        tins(markerIconTypeChoicesValues, 2, false)
     end
 
     --Update the choices and choicesValues in the LAM delete marker icons dropdown now
@@ -1026,8 +1036,10 @@ end
 local function buildRecipeAddonsList()
     local recipeAddonsAvailable = FCOIS.otherAddons.recipeAddonsSupported
     for recipeAddonIdx, recipeAddonName in pairs(recipeAddonsAvailable) do
-        table.insert(recipeAddonsListValues, recipeAddonIdx)
-        table.insert(recipeAddonsList, recipeAddonName)
+        --tins(recipeAddonsListValues, recipeAddonIdx)
+        --tins(recipeAddonsList, recipeAddonName)
+        recipeAddonsListValues[#recipeAddonsListValues +1] = recipeAddonIdx
+        recipeAddonsList[#recipeAddonsList +1] = recipeAddonName
     end
 end
 
@@ -1035,8 +1047,10 @@ end
 local function buildMotifsAddonsList()
     local motifAddonsAvailable = FCOIS.otherAddons.motifAddonsSupported
     for motifAddonIdx, motifAddonName in pairs(motifAddonsAvailable) do
-        table.insert(motifsAddonsListValues, motifAddonIdx)
-        table.insert(motifsAddonsList, motifAddonName)
+        --tins(motifsAddonsListValues, motifAddonIdx)
+        --tins(motifsAddonsList, motifAddonName)
+        motifsAddonsListValues[#motifsAddonsListValues +1] = motifAddonIdx
+        motifsAddonsList[#motifsAddonsList +1] = motifAddonName
     end
 end
 
@@ -1044,8 +1058,10 @@ end
 local function buildStyleContainerCollectiblesAddonsList()
     local styleContainerCollectiblesAddonsAvailable = FCOIS.otherAddons.styleContainerCollectiblesAddonsSupported
     for styleContainerCollectiblesAddonIdx, styleContainerCollectiblesAddonName in pairs(styleContainerCollectiblesAddonsAvailable) do
-        table.insert(styleContainerCollectiblesAddonsListValues, styleContainerCollectiblesAddonIdx)
-        table.insert(styleContainerCollectiblesAddonsList, styleContainerCollectiblesAddonName)
+        --tins(styleContainerCollectiblesAddonsListValues, styleContainerCollectiblesAddonIdx)
+        --tins(styleContainerCollectiblesAddonsList, styleContainerCollectiblesAddonName)
+        styleContainerCollectiblesAddonsListValues[#styleContainerCollectiblesAddonsListValues +1] = styleContainerCollectiblesAddonIdx
+        styleContainerCollectiblesAddonsList[#styleContainerCollectiblesAddonsList +1] = styleContainerCollectiblesAddonName
     end
 end
 
@@ -1070,8 +1086,10 @@ local function buildResearchAddonsList()
                 researchAddonNameColored = "|cFF0000" .. researchAddonNameColored .. "|r"
             end
         end
-        table.insert(researchAddonsListValues, researchAddonIdx)
-        table.insert(researchAddonsList, researchAddonNameColored)
+        --tins(researchAddonsListValues, researchAddonIdx)
+        --tins(researchAddonsList, researchAddonNameColored)
+        researchAddonsListValues[#researchAddonsListValues +1] = researchAddonIdx
+        researchAddonsList[#researchAddonsList +1] = recipeAddonIdx
     end
 end
 
@@ -1079,8 +1097,10 @@ end
 local function buildSetCollectionAddonsList()
     local setCollectionAddonsAvailable = FCOIS.otherAddons.setCollectionBookAddonsSupported
     for setCollectionAddonIdx, setCollectionAddonName in pairs(setCollectionAddonsAvailable) do
-        table.insert(setCollectionAddonsListValues, setCollectionAddonIdx)
-        table.insert(setCollectionAddonsList, setCollectionAddonName)
+        --tins(setCollectionAddonsListValues, setCollectionAddonIdx)
+        --tins(setCollectionAddonsList, setCollectionAddonName)
+        setCollectionAddonsListValues[#setCollectionAddonsListValues +1] = setCollectionAddonIdx
+        setCollectionAddonsList[#setCollectionAddonsList +1] = setCollectionAddonName
     end
 end
 
@@ -1106,6 +1126,7 @@ end
 local function buildTraitCheckboxes()
     if traitData == nil then return nil end
     locVars = FCOISlocVars.fcois_loc
+    local optionsIcon1TextureStr = locVars[optionsIcon .. "1_texture"]
 
     local typeToTable = {
         [1] = armorTraitControls,
@@ -1120,8 +1141,8 @@ local function buildTraitCheckboxes()
             --local settingsVar = typeToSettings[traitType][traitTypeItemTrait]
             local ref = tos(traitType) .. "_" .. tos(traitTypeName)
             local name = traitTypeName
-            local tooltip = traitTypeName
-            local data = { type = "checkbox", width = "half" }
+            --local tooltip = traitTypeName
+            --local data = { type = "checkbox", width = "half" }
             local disabledFunc = function() return not FCOISsettings.autoMarkSets end
             local getFunc
             local setFunc
@@ -1170,18 +1191,20 @@ local function buildTraitCheckboxes()
                 defaultSettingsDD   = FCOISdefaultSettings.autoMarkSetsCheckWeaponTraitIcon[traitTypeItemTrait]
                 disabledFuncDD = function() return not FCOISsettings.autoMarkSets or not FCOISsettings.autoMarkSetsCheckWeaponTrait[traitTypeItemTrait] end
             end
-            --Create the dropdownbox now
-            local createdTraitCB = CreateControl(ref, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
+            --Create the checkbox and the dropdownbox now
+            local createdTraitCB = CreateControl(ref, name, name, defaultCheckboxData, disabledFunc, getFunc, setFunc, defaultSettings, nil)
             if createdTraitCB ~= nil then
-                table.insert(typeToTable[traitType], createdTraitCB)
+                --tins(typeToTable[traitType], createdTraitCB)
+                typeToTable[traitType][#typeToTable[traitType] +1] = createdTraitCB
                 --Add an additional dropdownbox for the icon, for each trait
                 --local settingsVarDD = typeToSettingsDD[traitType][traitTypeItemTrait]
                 local refDD = ref .. "_DD"
-                local nameDD = traitTypeName .. " " .. locVars[optionsIcon .. "1_texture"]
+                local nameDD = traitTypeName .. " " .. optionsIcon1TextureStr
                 local tooltipDD = "Icon " .. traitTypeName
                 local createdIconTraitDDBox = CreateDropdownBox(refDD, nameDD, tooltipDD, disabledFuncDD, getFuncDD, setFuncDD, defaultSettingsDD, iconsList, iconsListValues, iconsList, nil, "half", true, true)
                 if createdIconTraitDDBox ~= nil then
-                    table.insert(typeToTable[traitType], createdIconTraitDDBox)
+                    --tins(typeToTable[traitType], createdIconTraitDDBox)
+                    typeToTable[traitType][#typeToTable[traitType] +1] = createdIconTraitDDBox
                 end
             end
         end -- for traitTypeName, traitTypeItemTrait in pairs(traitTypeData) do
@@ -1285,7 +1308,7 @@ local function buildIconSortOrderDropdowns()
             --Create the dropdownbox now
             local createdIconSortDDBox = CreateDropdownBox(ref, name, tooltip, nil, getFunc, setFunc, defSettings, iconsList, iconsListValues, iconsList, nil, "full", true, true)
             if createdIconSortDDBox ~= nil then
-                table.insert(createdIconSortDDBoxes, createdIconSortDDBox)
+                tins(createdIconSortDDBoxes, createdIconSortDDBox)
             end
         end
     end
@@ -1321,9 +1344,9 @@ local function updateIconsList(typeToBuild, withIcons, withNoneEntry, iconsListT
 
             --Create/Update the iconsList with the all entries
             local l_iconsListWithAllEntry =         ZO_ShallowTableCopy(iconsList)
-            table.insert(l_iconsListWithAllEntry, 1, locVars["options_dropdown_all"])
+            tins(l_iconsListWithAllEntry, 1, locVars["options_dropdown_all"])
             local l_iconsListWithAllEntryValues =   ZO_ShallowTableCopy(iconsListValues)
-            table.insert(l_iconsListWithAllEntryValues, 1, FCOIS_CON_ICONS_ALL)
+            tins(l_iconsListWithAllEntryValues, 1, FCOIS_CON_ICONS_ALL)
             iconsListWithAllEntry           =       l_iconsListWithAllEntry
             iconsListWithAllEntryValues     =       l_iconsListWithAllEntryValues
             FCOIS.LAMiconsListWithAllEntry       =  iconsListWithAllEntry
@@ -1555,27 +1578,27 @@ local function runOnceBeforeLAMPanelGetsCreated()
     --Initialize the icon lists
     --updateAllIconsList() --Will load the FCOIS settings too early! Will be called again later at runOnceAsLAMPanelGetsCreated
 
+    local iconsListValuesDefaultSetup = { ["choices"] = 'standard', ["choicesValues"] = iconsListValues,        ["choicesTooltips"] = nil, ["withIcons"] = true, ["withNoneEntry"] = false, }
+    local iconsListValuesNoneDefaultSetup = { ["choices"] = 'standard', ["choicesValues"] = iconsListValuesNone,    ["choicesTooltips"] = nil, ["withIcons"] = true, ["withNoneEntry"] = true,  }
+
     --Update the table of LAM dropdowns which use the icon lists
     LAMdropdownsWithIconList = {
-        ["FCOItemSaver_Standard_Icon_On_Keybind_Dropdown"]              =           { ["choices"] = 'standard', ["choicesValues"] = iconsListValues,        ["choicesTooltips"] = nil, ["withIcons"] = true, ["withNoneEntry"] = false, },
-        ["FCOItemSaver_Icon_On_Automatic_Set_Part_Dropdown"]            =           { ["choices"] = 'standard', ["choicesValues"] = iconsListValues,        ["choicesTooltips"] = nil, ["withIcons"] = true, ["withNoneEntry"] = false, },
-        ["FCOItemSaver_Icon_On_Automatic_Non_Wished_Set_Part_Dropdown"] =           { ["choices"] = 'standard', ["choicesValues"] = iconsListValues,        ["choicesTooltips"] = nil, ["withIcons"] = true, ["withNoneEntry"] = false, },
-        ["FCOItemSaver_Icon_On_Automatic_Crafted_Items_Dropdown"]       =           { ["choices"] = 'standard', ["choicesValues"] = iconsListValues,        ["choicesTooltips"] = nil, ["withIcons"] = true, ["withNoneEntry"] = false, },
-        ["FCOItemSaver_Icon_On_Automatic_Recipe_Dropdown"]              =           { ["choices"] = 'standard', ["choicesValues"] = iconsListValues,        ["choicesTooltips"] = nil, ["withIcons"] = true, ["withNoneEntry"] = false, },
-        ["FCOItemSaver_Icon_On_Automatic_Motif_Dropdown"]               =           { ["choices"] = 'standard', ["choicesValues"] = iconsListValues,        ["choicesTooltips"] = nil, ["withIcons"] = true, ["withNoneEntry"] = false, },
-        ["FCOItemSaver_Icon_On_Automatic_StyleContainerCollectible_Dropdown"] =     { ["choices"] = 'standard', ["choicesValues"] = iconsListValues,        ["choicesTooltips"] = nil, ["withIcons"] = true, ["withNoneEntry"] = false, },
-        ["FCOItemSaver_Icon_On_Automatic_Quality_Dropdown"]             =           { ["choices"] = 'standard', ["choicesValues"] = iconsListValues,        ["choicesTooltips"] = nil, ["withIcons"] = true, ["withNoneEntry"] = false, },
-        ["FCOItemSaver_Icon_On_Automatic_SetCollections_UnknownIcon_Dropdown"]  =   { ["choices"] = 'standard', ["choicesValues"] = iconsListValuesNone,    ["choicesTooltips"] = nil, ["withIcons"] = true, ["withNoneEntry"] = true,  },
-        ["FCOItemSaver_Icon_On_Automatic_SetCollections_KnownIcon_Dropdown"]    =   { ["choices"] = 'standard', ["choicesValues"] = iconsListValuesNone,    ["choicesTooltips"] = nil, ["withIcons"] = true, ["withNoneEntry"] = true,  },
+        ["FCOItemSaver_Standard_Icon_On_Keybind_Dropdown"]              =           iconsListValuesDefaultSetup,
+        ["FCOItemSaver_Icon_On_Automatic_Set_Part_Dropdown"]            =           iconsListValuesDefaultSetup,
+        ["FCOItemSaver_Icon_On_Automatic_Non_Wished_Set_Part_Dropdown"] =           iconsListValuesDefaultSetup,
+        ["FCOItemSaver_Icon_On_Automatic_Crafted_Items_Dropdown"]       =           iconsListValuesDefaultSetup,
+        ["FCOItemSaver_Icon_On_Automatic_Recipe_Dropdown"]              =           iconsListValuesDefaultSetup,
+        ["FCOItemSaver_Icon_On_Automatic_Motif_Dropdown"]               =           iconsListValuesDefaultSetup,
+        ["FCOItemSaver_Icon_On_Automatic_StyleContainerCollectible_Dropdown"] =     iconsListValuesDefaultSetup,
+        ["FCOItemSaver_Icon_On_Automatic_Quality_Dropdown"]             =           iconsListValuesDefaultSetup,
+        ["FCOItemSaver_Icon_On_Automatic_SetCollections_UnknownIcon_Dropdown"]  =   iconsListValuesNoneDefaultSetup,
+        ["FCOItemSaver_Icon_On_Automatic_SetCollections_KnownIcon_Dropdown"]    =   iconsListValuesNoneDefaultSetup,
     }
 end
 
 --Run code once before LAM panel gets created
 runOnceBeforeLAMPanelGetsCreated()
 -- ============= run code once before LAM settings menu will be build - END ===========================================
-
-
-
 
 
 --======================================================================================================================
@@ -1599,6 +1622,8 @@ local function buildSetTrackerDDBoxes()
     --Build the icons list with a first entry "None"
     updateIconsList("standard", true, true)
 
+    FCOIS_getIconText = FCOIS_getIconText or FCOIS.GetIconText
+
     --The return array for the LAM panel
     local createdSetTrackerDDBoxes = {}
 
@@ -1610,9 +1635,10 @@ local function buildSetTrackerDDBoxes()
     for _, FCOISiconNr in ipairs(iconsListValues) do
         --local iconDescription = "FCOItemSaver icon " .. tos(FCOISiconNr)
         local locNameStr = FCOISlocVars.iconEndStrArray[FCOISiconNr]
-        local iconName = FCOIS.GetIconText(FCOISiconNr) or locVars[optionsIcon .. tos(FCOISiconNr) .. "_" .. locNameStr] or "Icon " .. tos(FCOISiconNr)
+        local iconName = FCOIS_getIconText(FCOISiconNr) or locVars[optionsIcon .. tos(FCOISiconNr) .. "_" .. locNameStr] or "Icon " .. tos(FCOISiconNr)
         --Add each FCOIS icon description to the list
-        table.insert(choicesTooltipsList, iconName)
+        --tins(choicesTooltipsList, iconName)
+        choicesTooltipsList[#choicesTooltipsList +1] = iconName
     end
 
     --For each SetTracker tracking state (set) build one label with the description and one dropdown box with the FCOIS icons
@@ -1640,7 +1666,8 @@ local function buildSetTrackerDDBoxes()
             --Create the dropdownbox now
             local createdSetTrackerDDBox = CreateDropdownBox(ref, name, tooltip, disabledChecks, getFunc, setFunc, defaultSettings, iconsListNone, iconsListValuesNone, choicesTooltipsList, nil, "full", true, true)
             if createdSetTrackerDDBox ~= nil then
-                table.insert(createdSetTrackerDDBoxes, createdSetTrackerDDBox)
+                --tins(createdSetTrackerDDBoxes, createdSetTrackerDDBox)
+                createdSetTrackerDDBoxes[#createdSetTrackerDDBoxes +1] = createdSetTrackerDDBox
             end
         end
     end
@@ -1652,6 +1679,7 @@ local function LAMSubmenuDolgubonLazyWritCreator()
     locVars = FCOISlocVars.fcois_loc
 
     if not FCOIS.otherAddons.LazyWritCreatorActive or WritCreater == nil then return submenuControls end
+    local writCrafterDefaultDisabledFunc = function() return not FCOIS.otherAddons.LazyWritCreatorActive or not FCOISsettings.autoMarkCraftedWritItems end
 
     submenuControls = {
         {
@@ -1686,9 +1714,9 @@ local function LAMSubmenuDolgubonLazyWritCreator()
                 end
             end,
             reference = "FCOItemSaver_Icon_On_Automatic_Crafted_Writ_Items_Dropdown",
-            disabled = function() return not FCOIS.otherAddons.LazyWritCreatorActive or not FCOISsettings.autoMarkCraftedWritItems end,
             width = "half",
             default = FCOISdefaultSettings.autoMarkCraftedWritCreatorItemsIconNr,
+            disabled = writCrafterDefaultDisabledFunc
         },
         {
             type = 'dropdown',
@@ -1707,9 +1735,9 @@ local function LAMSubmenuDolgubonLazyWritCreator()
                 end
             end,
             reference = "FCOItemSaver_Icon_On_Automatic_Crafted_MasterWrit_Items_Dropdown",
-            disabled = function() return not FCOIS.otherAddons.LazyWritCreatorActive or not FCOISsettings.autoMarkCraftedWritItems end,
             width = "half",
             default = FCOISdefaultSettings.autoMarkCraftedWritCreatorMasterWritItemsIconNr,
+            disabled = writCrafterDefaultDisabledFunc
         },
     }
     return submenuControls
@@ -1762,6 +1790,7 @@ local function LAMSubmenuSetTracker()
     locVars = FCOISlocVars.fcois_loc
 
     if not FCOIS.otherAddons.SetTracker.isActive or not SetTrack or not SetTrack.GetMaxTrackStates then return submenuControls end
+    local setTrackerDefaultDisabledFunc = function() return not FCOIS.otherAddons.SetTracker.isActive or not FCOISsettings.autoMarkSetTrackerSets end
 
     --------------------------------------------------------------------------------
     --Checkboxes
@@ -1777,7 +1806,8 @@ local function LAMSubmenuSetTracker()
         disabled = function() return not FCOIS.otherAddons.SetTracker.isActive end,
         requiresReload = true,
     }
-    table.insert(submenuControls, cbAutoMarkSetTracker)
+    --tins(submenuControls, cbAutoMarkSetTracker)
+    submenuControls[#submenuControls +1] = cbAutoMarkSetTracker
     local cbAutoMarkSetTrackerCheckAllIcons = {
         type = "checkbox",
         name = locVars["options_enable_auto_mark_check_all_icons"],
@@ -1787,9 +1817,10 @@ local function LAMSubmenuSetTracker()
             FCOISsettings.autoMarkSetTrackerSetsCheckAllIcons = value
         end,
         width = "half",
-        disabled = function() return not FCOIS.otherAddons.SetTracker.isActive or not FCOISsettings.autoMarkSetTrackerSets end,
+        disabled = setTrackerDefaultDisabledFunc
     }
-    table.insert(submenuControls, cbAutoMarkSetTrackerCheckAllIcons)
+    --tins(submenuControls, cbAutoMarkSetTrackerCheckAllIcons)
+    submenuControls[#submenuControls +1] = cbAutoMarkSetTrackerCheckAllIcons
     local cbAutoMarkSetTrackerTooltips = {
         type = "checkbox",
         name = locVars["options_auto_mark_settrackersets_show_tooltip_on_FCOIS_marker"],
@@ -1799,9 +1830,10 @@ local function LAMSubmenuSetTracker()
             FCOISsettings.autoMarkSetTrackerSetsShowTooltip = value
         end,
         width = "half",
-        disabled = function() return not FCOIS.otherAddons.SetTracker.isActive or not FCOISsettings.autoMarkSetTrackerSets end,
+        disabled = setTrackerDefaultDisabledFunc
     }
-    table.insert(submenuControls, cbAutoMarkSetTrackerTooltips)
+    --tins(submenuControls, cbAutoMarkSetTrackerTooltips)
+    submenuControls[#submenuControls +1] = cbAutoMarkSetTrackerTooltips
     local cbAutoMarkSetTrackerInv = {
         type = "checkbox",
         name = locVars["options_auto_mark_settrackersets_inv"],
@@ -1811,9 +1843,10 @@ local function LAMSubmenuSetTracker()
             FCOISsettings.autoMarkSetTrackerSetsInv = value
         end,
         width = "half",
-        disabled = function() return not FCOIS.otherAddons.SetTracker.isActive or not FCOISsettings.autoMarkSetTrackerSets end,
+        disabled = setTrackerDefaultDisabledFunc
     }
-    table.insert(submenuControls, cbAutoMarkSetTrackerInv)
+    --tins(submenuControls, cbAutoMarkSetTrackerInv)
+    submenuControls[#submenuControls +1] = cbAutoMarkSetTrackerInv
     local cbAutoMarkSetTrackerWorn = {
         type = "checkbox",
         name = locVars["options_auto_mark_settrackersets_worn"],
@@ -1823,9 +1856,10 @@ local function LAMSubmenuSetTracker()
             FCOISsettings.autoMarkSetTrackerSetsWorn = value
         end,
         width = "half",
-        disabled = function() return not FCOIS.otherAddons.SetTracker.isActive or not FCOISsettings.autoMarkSetTrackerSets end,
+        disabled = setTrackerDefaultDisabledFunc
     }
-    table.insert(submenuControls, cbAutoMarkSetTrackerWorn)
+    --tins(submenuControls, cbAutoMarkSetTrackerWorn)
+    submenuControls[#submenuControls +1] = cbAutoMarkSetTrackerWorn
     local cbAutoMarkSetTrackerBank = {
         type = "checkbox",
         name = locVars["options_auto_mark_settrackersets_bank"],
@@ -1835,9 +1869,10 @@ local function LAMSubmenuSetTracker()
             FCOISsettings.autoMarkSetTrackerSetsBank = value
         end,
         width = "half",
-        disabled = function() return not FCOIS.otherAddons.SetTracker.isActive or not FCOISsettings.autoMarkSetTrackerSets end,
+        disabled = setTrackerDefaultDisabledFunc
     }
-    table.insert(submenuControls, cbAutoMarkSetTrackerBank)
+    --tins(submenuControls, cbAutoMarkSetTrackerBank)
+    submenuControls[#submenuControls +1] = cbAutoMarkSetTrackerBank
     local cbAutoMarkSetTrackerGuildBank = {
         type = "checkbox",
         name = locVars["options_auto_mark_settrackersets_guildbank"],
@@ -1847,9 +1882,10 @@ local function LAMSubmenuSetTracker()
             FCOISsettings.autoMarkSetTrackerSetsGuildBank = value
         end,
         width = "half",
-        disabled = function() return not FCOIS.otherAddons.SetTracker.isActive or not FCOISsettings.autoMarkSetTrackerSets end,
+        disabled = setTrackerDefaultDisabledFunc
     }
-    table.insert(submenuControls, cbAutoMarkSetTrackerGuildBank)
+    --tins(submenuControls, cbAutoMarkSetTrackerGuildBank)
+    submenuControls[#submenuControls +1] = cbAutoMarkSetTrackerGuildBank
     local cbAutoMarkSetTrackerRescan = {
         type = "checkbox",
         name = locVars["options_auto_mark_settrackersets_rescan"],
@@ -1859,9 +1895,10 @@ local function LAMSubmenuSetTracker()
             FCOISsettings.autoMarkSetTrackerSetsRescan = value
         end,
         width = "half",
-        disabled = function() return not FCOIS.otherAddons.SetTracker.isActive or not FCOISsettings.autoMarkSetTrackerSets end,
+        disabled = setTrackerDefaultDisabledFunc
     }
-    table.insert(submenuControls, cbAutoMarkSetTrackerRescan)
+    --tins(submenuControls, cbAutoMarkSetTrackerRescan)
+    submenuControls[#submenuControls +1] = cbAutoMarkSetTrackerRescan
     --Dropdown boxes
     --Is the SetTracker addon active?
     --if FCOIS.otherAddons.SetTracker.isActive and SetTrack and SetTrack.GetMaxTrackStates then
@@ -1869,7 +1906,8 @@ local function LAMSubmenuSetTracker()
         --Was the SetTracker submenu build?
         if createdSetTrackerDDBoxes ~= nil and #createdSetTrackerDDBoxes > 0 then
             for _, createdSetTrackerDDBox in pairs(createdSetTrackerDDBoxes) do
-                table.insert(submenuControls, createdSetTrackerDDBox)
+                --tins(submenuControls, createdSetTrackerDDBox)
+                submenuControls[#submenuControls +1] = createdSetTrackerDDBox
             end
         end
     --end
@@ -1935,6 +1973,7 @@ local function buildNormalIconSubMenus(buildName)
             local tooltip
             local data = {}
             local disabledFunc, getFunc, setFunc, defaultSettings, createdControl
+            local disabledFuncNormalIconsDefault = function() return not isIconEnabled[normalIconId] end
 
             local iconNameStart = optionsIcon .. tos(normalIconId)
             local iconSettings = FCOISsettings.icon[normalIconId]
@@ -1946,11 +1985,8 @@ local function buildNormalIconSubMenus(buildName)
                 name = locVars[iconNameStart .. nameSuffix]
                 local refOfGearIconEdit =  fcoisLAMSettingsReferencePrefix .. "GearSetNameEdit" .. gearIndex
                 tooltip = locVars[iconNameStart .. nameSuffix .. tooltipSuffix]
-                data = {
-                    type = "editbox", width = "half",
-                    --helpUrl = locVars[dynIconNameStart .. colorSuffix],
-                }
-                disabledFunc = function() return not isIconEnabled[normalIconId] end
+                data = defaultEditboxData
+                disabledFunc = disabledFuncNormalIconsDefault
                 getFunc = function() return iconSettings.name end
                 setFunc = function(newValue)
                     if not FCOIS.preventerVars.doNotCheckForDefaultName then
@@ -1966,7 +2002,8 @@ local function buildNormalIconSubMenus(buildName)
                 defaultSettings = FCOISdefaultSettings.icon[normalIconId].name --locVars[normalIconId .. nameSuffix]
                 createdControl = CreateControl(refOfGearIconEdit, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
                 if createdControl ~= nil then
-                    table.insert(normalIconsSubMenusControls, createdControl)
+                    --tins(normalIconsSubMenusControls, createdControl)
+                    normalIconsSubMenusControls[#normalIconsSubMenusControls +1] = createdControl
                 end
             end
 
@@ -1974,8 +2011,8 @@ local function buildNormalIconSubMenus(buildName)
             --Add the color picker
             name = locVars[iconNameStart .. colorSuffix]
             tooltip = locVars[iconNameStart .. colorSuffix .. tooltipSuffix]
-            data = { type = "colorpicker", width = "half" }
-            disabledFunc = function() return not isIconEnabled[normalIconId] end
+            data = defaultColorpickerData
+            --disabledFunc = function() return not isIconEnabled[normalIconId] end
             getFunc = function() return iconSettings.color.r, iconSettings.color.g, iconSettings.color.b, iconSettings.color.a end
             setFunc = function(r,g,b,a)
                 FCOISsettings.icon[normalIconId].color = {["r"] = r, ["g"] = g, ["b"] = b, ["a"] = a}
@@ -1984,7 +2021,8 @@ local function buildNormalIconSubMenus(buildName)
             defaultSettings = FCOISdefaultSettings.icon[normalIconId].color
             createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
             if createdControl ~= nil then
-                table.insert(normalIconsSubMenusControls, createdControl)
+                --tins(normalIconsSubMenusControls, createdControl)
+                normalIconsSubMenusControls[#normalIconsSubMenusControls +1] = createdControl
             end
 
             ------------------------------------------------------------------------------------------------------------------------
@@ -1993,7 +2031,7 @@ local function buildNormalIconSubMenus(buildName)
             name = locVars[iconNameStart .. "_texture"]
             tooltip = locVars[iconNameStart .. "_texture" .. tooltipSuffix]
             data = { type = "iconpicker", width = "half", choices = markerIconTextures, choicesTooltips = texturesList, maxColumns=6, visibleRows=5, iconSize=iconSettings.size}
-            disabledFunc = function() return not isIconEnabled[normalIconId] end
+            --disabledFunc = function() return not isIconEnabled[normalIconId] end
             getFunc = function() return markerIconTextures[iconSettings.texture] end
             setFunc = function(texturePath)
                 local textureId = GetFCOTextureId(texturePath)
@@ -2008,15 +2046,16 @@ local function buildNormalIconSubMenus(buildName)
             defaultSettings = markerIconTextures[iconSettings.texture]
             createdControl = CreateControl(ref, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
             if createdControl ~= nil then
-                table.insert(normalIconsSubMenusControls, createdControl)
+                --tins(normalIconsSubMenusControls, createdControl)
+                normalIconsSubMenusControls[#normalIconsSubMenusControls +1] = createdControl
             end
 
             ------------------------------------------------------------------------------------------------------------------------
             --Add the offsetX slider
             name = locVars["options_icon_offset_left"]
             tooltip = locVars["options_icon_offset_left" .. tooltipSuffix]
-            data = { type = "slider", width = "half", min=minIconOffsetLeft, max=maxIconOffsetLeft, decimals=0, autoselect=true}
-            disabledFunc = function() return not isIconEnabled[normalIconId] end
+            data = defaultIconSliderData
+            --disabledFunc = function() return not isIconEnabled[normalIconId] end
             getFunc = function() return iconSettings.offsets[LF_INVENTORY].left end
             setFunc = function(offsetX)
                 FCOISsettings.icon[normalIconId].offsets[LF_INVENTORY].left = offsetX
@@ -2024,15 +2063,16 @@ local function buildNormalIconSubMenus(buildName)
             defaultSettings = FCOISdefaultSettings.icon[normalIconId].offsets[LF_INVENTORY].left
             createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
             if createdControl ~= nil then
-                table.insert(normalIconsSubMenusControls, createdControl)
+                --tins(normalIconsSubMenusControls, createdControl)
+                normalIconsSubMenusControls[#normalIconsSubMenusControls +1] = createdControl
             end
 
             ------------------------------------------------------------------------------------------------------------------------
             --Add the offsetY slider
             name = locVars["options_icon_offset_top"]
             tooltip = locVars["options_icon_offset_top" .. tooltipSuffix]
-            data = { type = "slider", width = "half", min=minIconOffsetTop, max=maxIconOffsetTop, decimals=0, autoselect=true}
-            disabledFunc = function() return not isIconEnabled[normalIconId] end
+            data = defaultIconSliderData
+            --disabledFunc = function() return not isIconEnabled[normalIconId] end
             getFunc = function() return iconSettings.offsets[LF_INVENTORY].top end
             setFunc = function(offsetY)
                 FCOISsettings.icon[normalIconId].offsets[LF_INVENTORY].top = offsetY
@@ -2040,15 +2080,16 @@ local function buildNormalIconSubMenus(buildName)
             defaultSettings = FCOISdefaultSettings.icon[normalIconId].offsets[LF_INVENTORY].top
             createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
             if createdControl ~= nil then
-                table.insert(normalIconsSubMenusControls, createdControl)
+                --tins(normalIconsSubMenusControls, createdControl)
+                normalIconsSubMenusControls[#normalIconsSubMenusControls +1] = createdControl
             end
 
             ------------------------------------------------------------------------------------------------------------------------
             --Add the size slider
             name = locVars[iconNameStart .. "_size"]
             tooltip = locVars[iconNameStart .. "_size" .. tooltipSuffix]
-            data = { type = "slider", width = "half", min=minIconSize, max=maxIconSize, decimals=0, autoselect=true}
-            disabledFunc = function() return not isIconEnabled[normalIconId] end
+            data = defaultIconSliderData
+            --disabledFunc = function() return not isIconEnabled[normalIconId] end
             getFunc = function() return iconSettings.size end
             setFunc = function(size)
                 FCOISsettings.icon[normalIconId].size = size
@@ -2057,15 +2098,16 @@ local function buildNormalIconSubMenus(buildName)
             defaultSettings = FCOISdefaultSettings.icon[normalIconId].size
             createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
             if createdControl ~= nil then
-                table.insert(normalIconsSubMenusControls, createdControl)
+                --tins(normalIconsSubMenusControls, createdControl)
+                normalIconsSubMenusControls[#normalIconsSubMenusControls +1] = createdControl
             end
 
             ------------------------------------------------------------------------------------------------------------------------
             --Add the tooltip checkbox
             name = locVars[iconNameStart .. tooltipSuffix]
             tooltip = locVars[iconNameStart .. "_tooltip" .. tooltipSuffix]
-            data = { type = "checkbox", width = "half"}
-            disabledFunc = function() return not isIconEnabled[normalIconId] end
+            data = defaultCheckboxData
+            --disabledFunc = function() return not isIconEnabled[normalIconId] end
             getFunc = function() return FCOISsettings.showMarkerTooltip[normalIconId] end
             setFunc = function(value)
                 FCOISsettings.icon[normalIconId].showMarkerTooltip[normalIconId] = value
@@ -2075,7 +2117,8 @@ local function buildNormalIconSubMenus(buildName)
             defaultSettings = FCOISdefaultSettings.showMarkerTooltip[normalIconId]
             createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
             if createdControl ~= nil then
-                table.insert(normalIconsSubMenusControls, createdControl)
+                --tins(normalIconsSubMenusControls, createdControl)
+                normalIconsSubMenusControls[#normalIconsSubMenusControls +1] = createdControl
             end
 
             --Is a gear icon?
@@ -2084,8 +2127,8 @@ local function buildNormalIconSubMenus(buildName)
                 --Add the disable research (old: check for gear items) checkbox
                 name = locVars["options_gear_disable_research_check"]
                 tooltip = locVars["options_gear_disable_research_check" .. tooltipSuffix]
-                data = { type = "checkbox", width = "half"}
-                disabledFunc = function() return not isIconEnabled[normalIconId] end
+                data = defaultCheckboxData
+                --disabledFunc = function() return not isIconEnabled[normalIconId] end
                 getFunc = function() return FCOISsettings.disableResearchCheck[normalIconId] or false end --#2025_999
                 setFunc = function(value)
                     if value == false then value = nil end --#2025_999
@@ -2094,7 +2137,8 @@ local function buildNormalIconSubMenus(buildName)
                 defaultSettings = function() return FCOISdefaultSettings.disableResearchCheck[normalIconId] or false end --#2025_999
                 createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
                 if createdControl ~= nil then
-                    table.insert(normalIconsSubMenusControls, createdControl)
+                    --tins(normalIconsSubMenusControls, createdControl)
+                    normalIconsSubMenusControls[#normalIconsSubMenusControls +1] = createdControl
                 end
             end
 
@@ -2113,7 +2157,8 @@ local function buildNormalIconSubMenus(buildName)
                         defaultSettings = specialControlData.default
                         createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
                         if createdControl ~= nil then
-                            table.insert(normalIconsSubMenusControls, createdControl)
+                            --tins(normalIconsSubMenusControls, createdControl)
+                            normalIconsSubMenusControls[#normalIconsSubMenusControls +1] = createdControl
                         end
                     end
                 end
@@ -2131,7 +2176,8 @@ local function buildNormalIconSubMenus(buildName)
                 tooltip = ""
                 data = { type = "submenu", controls = normalIconsSubMenusControls }
                 local createdNormalconSubMenuSurrounding = CreateControl(ref, name, tooltip, data, nil, nil, nil, nil, nil)
-                table.insert(normalIconsSubMenus, createdNormalconSubMenuSurrounding)
+                --tins(normalIconsSubMenus, createdNormalconSubMenuSurrounding)
+                normalIconsSubMenus[#normalIconsSubMenus +1] = createdNormalconSubMenuSurrounding
             end
 
         end
@@ -2140,10 +2186,13 @@ local function buildNormalIconSubMenus(buildName)
 end
 
 --Build the enable/disable checkboxes submenu for the normal and gear marker icons
+local normalIconTooltip
 local function buildNormalIconEnableCheckboxes(buildName)
     local buildGear = buildName ~= nil and buildName == "gear"
     local normalIconsEnabledCbs = {}
     locVars = FCOISlocVars.fcois_loc
+    normalIconTooltip = normalIconTooltip or locVars[optionsIcon .. "_activate_text" .. tooltipSuffix]
+
     local standardSetFunc = function(p_iconId, p_value)
         FCOISsettings.isIconEnabled[p_iconId] = p_value
         if p_value == true then
@@ -2162,8 +2211,8 @@ local function buildNormalIconEnableCheckboxes(buildName)
         local isGearIcon = mappingVars.iconToGear[normalIconId] ~= nil or false
         local addThisIcon = ((buildGear == true and isGearIcon == true) or (not buildGear and not isGearIcon)) or false
         if addThisIcon == true then
-            local name = locVars[optionsIcon .. normalIconId .. "_activate_text"]
-            local tooltip = locVars[optionsIcon .. "_activate_text" .. tooltipSuffix]
+            local name = locVars[optionsIcon .. tos(normalIconId) .. "_activate_text"]
+            local tooltip = normalIconTooltip
             local data = { type = "checkbox", width = "half" }
             local disabledFunc = function() return false end
             local getFunc = function() return FCOISsettings.isIconEnabled[normalIconId] end
@@ -2187,7 +2236,8 @@ local function buildNormalIconEnableCheckboxes(buildName)
             --Create the checkbox now
             local createdNormalIconEnableCB = CreateControl(name, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
             if createdNormalIconEnableCB ~= nil then
-                table.insert(normalIconsEnabledCbs, createdNormalIconEnableCB)
+                --tins(normalIconsEnabledCbs, createdNormalIconEnableCB)
+                normalIconsEnabledCbs[#normalIconsEnabledCbs +1] = createdNormalIconEnableCB
             end
         end
     end
@@ -2197,8 +2247,6 @@ end
 
 
 --==================== Dynamic marker icons submenu - BEGIN ===================================
-local defaultCheckboxData = { type="checkbox" , width="half"} --#2025_999
-local defaultSettingsAntiCheckAtPanelCB = false --#2025_999
 --Table to loop: Create dynamic icons submenu checkboxes to enable/disable protection checks for a markerIcon at the filterPanel
 local dynamicAntiCheckAtPanelsData
 
@@ -2352,29 +2400,39 @@ local function buildDynamicAntiCheckAtPanelCheckboxTable()
 end
 
 --Build the enable/disable checkboxes submenu for the dynamic icons
+local dynIconCheckboxTooltipStr
 local function buildDynamicIconEnableCheckboxes()
+    FCOISsettings = FCOIS.settingsVars.settings
+    mappingVars = FCOIS.mappingVars
     iconId2FCOISIconNr = mappingVars.dynamicToIcon
     numDynIcons = FCOISsettings.numMaxDynamicIconsUsable
     locVars = FCOISlocVars.fcois_loc
+    dynIconCheckboxTooltipStr = dynIconCheckboxTooltipStr or locVars[optionsIcon .. "_activate_text" .. tooltipSuffix]
+
     local dynamicIconsEnabledCbs = {}
+
     --Create 1 checkbox for each dynamic icon, to enable/disable the dynamic icon
+d("[FCOIS]buildDynamicIconEnableCheckboxes - numDynIcons: " .. tos(numDynIcons))
     for dynIconId=1, numDynIcons, 1 do
         local fcoisDynIconNr = iconId2FCOISIconNr[dynIconId] --e.g. dynamic icon 1 = FCOIS icon ID 13, 2 = 14, and so on
-        local iconSettings = FCOISsettings.icon[fcoisDynIconNr]
-        local iconColorSettings = iconSettings.color
+        local LAMcontrolBaseName = optionsIcon .. tos(fcoisDynIconNr)
+        local activateText = LAMcontrolBaseName .. "_activate_text"
+        local ref = LAMcontrolBaseName .. cbSuffix
+
+d(">dynIconId: " .. tos(dynIconId) .. "; fcoisDynIconNr: " .. tos(fcoisDynIconNr) .. "; LAMname: " .. tos(activateText) .. "; name: " .. tos(locVars[activateText]) .. "; ref: " ..tos(ref))
         --local fcoisLockDynMenuIconNr = iconId2FCOISIconLockDynMenuNr[dynIconId] --e.g. dynamic icon 1 = 2, 2 = 3, and so on
 
-        local name = locVars[optionsIcon .. tos(fcoisDynIconNr) .. "_activate_text"]
-        local tooltip = locVars[optionsIcon .. "_activate_text" .. tooltipSuffix]
-        local data = defaultCheckboxData
-        local disabledFunc = function() return false end
-        local getFunc = function() return isIconEnabled[fcoisDynIconNr] end
+        local name = locVars[activateText]
+        local getFunc = function()
+            isIconEnabled = FCOISsettings.isIconEnabled
+            return isIconEnabled[fcoisDynIconNr]
+        end
         local setFunc = function(value)
             FCOISsettings.isIconEnabled[fcoisDynIconNr] = value
             if value == true then
+                local iconColorSettings = FCOISsettings.icon[fcoisDynIconNr].color
                 --Update the color of the dynamic icons's icon picker texture again as it was grayed out
-                local r, g, b, a = iconColorSettings.r, iconColorSettings.g, iconColorSettings.b, iconColorSettings.a
-                changePreviewIconColor(filterButton, fcoisDynIconNr, r, g, b, a, true)
+                changePreviewIconColor(filterButton, fcoisDynIconNr, iconColorSettings.r, iconColorSettings.g, iconColorSettings.b, iconColorSettings.a, true)
             end
             --Update the icon list dropdown entries (name, enabled state, icon)
             updateIconListDropdownEntries()
@@ -2382,10 +2440,11 @@ local function buildDynamicIconEnableCheckboxes()
             FCOIS.preventerVars.doUpdateLocalization = true
         end
         local defaultSettings = FCOISdefaultSettings.isIconEnabled[fcoisDynIconNr]
+
         --Create the checkbox now
-        local createdDynIconEnableCB = CreateControl(name, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
+        local createdDynIconEnableCB = CreateControl(ref, name, dynIconCheckboxTooltipStr, defaultCheckboxData, defaultDisabledFunc, getFunc, setFunc, defaultSettings)
         if createdDynIconEnableCB ~= nil then
-            table.insert(dynamicIconsEnabledCbs, createdDynIconEnableCB)
+            dynamicIconsEnabledCbs[#dynamicIconsEnabledCbs +1] = createdDynIconEnableCB
         end
     end
     return dynamicIconsEnabledCbs
@@ -2421,7 +2480,8 @@ local function buildDynamicAntiCheckAtPanelCheckboxes(dynIconsSubMenusControls, 
                 createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettingsAntiCheckAtPanelCB, nil)
             end
             if createdControl ~= nil then
-                table.insert(dynIconsSubMenusControls, createdControl)
+                --tins(dynIconsSubMenusControls, createdControl)
+                dynIconsSubMenusControls[#dynIconsSubMenusControls +1] = createdControl
             end
         end
     end
@@ -2460,6 +2520,7 @@ local function buildDynamicIconSubMenus()
         local tooltip
         local data = {}
         local disabledFunc, getFunc, setFunc, defaultSettings, createdControl
+        local defaultDisabledDynamicIconFunc = function() return not isIconEnabled[fcoisDynIconNr] end
 
         local dynIconNameStart = optionsIcon .. tos(fcoisDynIconNr)
 
@@ -2468,11 +2529,8 @@ local function buildDynamicIconSubMenus()
         name = locVars[dynIconNameStart .. colorSuffix]
         local refOfDynIconEditBox = fcoisLAMSettingsReferencePrefix .. "DynamicIconNameEdit" .. tos(dynIconId)
         tooltip = ""
-        data = {
-            type = "editbox", width = "half",
-            --helpUrl = locVars[dynIconNameStart .. colorSuffix],
-        }
-        disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+        data = defaultEditboxData
+        disabledFunc = defaultDisabledDynamicIconFunc
         getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].name end
         setFunc = function(newValue)
             if not FCOIS.preventerVars.doNotCheckForDefaultName then
@@ -2488,15 +2546,16 @@ local function buildDynamicIconSubMenus()
         defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].name --locVars[dynIconNameStart .. nameSuffix]
         createdControl = CreateControl(refOfDynIconEditBox, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
         if createdControl ~= nil then
-            table.insert(dynIconsSubMenusControls, createdControl)
+            --tins(dynIconsSubMenusControls, createdControl)
+            dynIconsSubMenusControls[#dynIconsSubMenusControls +1] = createdControl
         end
 
         ------------------------------------------------------------------------------------------------------------------------
         --Add the color picker
         name = locVars[dynIconNameStart .. colorSuffix]
         tooltip = locVars[dynIconNameStart .. colorSuffix .. tooltipSuffix]
-        data = { type = "colorpicker", width = "half" }
-        disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+        data = defaultColorpickerData
+        --disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
         getFunc = function()
             local colorOfIcon = FCOISsettings.icon[fcoisDynIconNr].color
             return colorOfIcon.r, colorOfIcon.g, colorOfIcon.b, colorOfIcon.a end
@@ -2507,7 +2566,8 @@ local function buildDynamicIconSubMenus()
         defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].color
         createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
         if createdControl ~= nil then
-            table.insert(dynIconsSubMenusControls, createdControl)
+            --tins(dynIconsSubMenusControls, createdControl)
+            dynIconsSubMenusControls[#dynIconsSubMenusControls +1] = createdControl
         end
 
         ------------------------------------------------------------------------------------------------------------------------
@@ -2516,7 +2576,7 @@ local function buildDynamicIconSubMenus()
         name = locVars[dynIconNameStart .. "_texture"]
         tooltip = locVars[dynIconNameStart .. "_texture" .. tooltipSuffix]
         data = { type = "iconpicker", width = "half", choices = markerIconTextures, choicesTooltips = texturesList, maxColumns=6, visibleRows=5, iconSize=FCOISsettings.icon[fcoisDynIconNr].size}
-        disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+        --disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
         getFunc = function() return markerIconTextures[FCOISsettings.icon[fcoisDynIconNr].texture] end
         setFunc = function(texturePath)
             local textureId = GetFCOTextureId(texturePath)
@@ -2531,7 +2591,8 @@ local function buildDynamicIconSubMenus()
         defaultSettings = markerIconTextures[FCOISsettings.icon[fcoisDynIconNr].texture]
         createdControl = CreateControl(ref, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
         if createdControl ~= nil then
-            table.insert(dynIconsSubMenusControls, createdControl)
+            --tins(dynIconsSubMenusControls, createdControl)
+            dynIconsSubMenusControls[#dynIconsSubMenusControls +1] = createdControl
         end
 
         ------------------------------------------------------------------------------------------------------------------------
@@ -2539,7 +2600,7 @@ local function buildDynamicIconSubMenus()
         name = locVars[dynIconNameStart .. "_size"]
         tooltip = locVars[dynIconNameStart .. "_size" .. tooltipSuffix]
         data = { type = "slider", width = "half", min=minIconSize, max=maxIconSize, decimals=0, autoselect=true}
-        disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+        --disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
         getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].size end
         setFunc = function(size)
             FCOISsettings.icon[fcoisDynIconNr].size = size
@@ -2548,7 +2609,8 @@ local function buildDynamicIconSubMenus()
         defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].size
         createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
         if createdControl ~= nil then
-            table.insert(dynIconsSubMenusControls, createdControl)
+            --tins(dynIconsSubMenusControls, createdControl)
+            dynIconsSubMenusControls[#dynIconsSubMenusControls +1] = createdControl
         end
 
         ------------------------------------------------------------------------------------------------------------------------
@@ -2556,7 +2618,7 @@ local function buildDynamicIconSubMenus()
         name = locVars[dynIconNameStart .. "_offsetX"]
         tooltip = locVars[dynIconNameStart .. "_offsetX" .. tooltipSuffix]
         data = { type = "slider", width = "half", min=minIconOffsetLeft, max=maxIconOffsetLeft, decimals=0, autoselect=true}
-        disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+        --disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
         getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].offsets[LF_INVENTORY].left end
         setFunc = function(offsetX)
             FCOISsettings.icon[fcoisDynIconNr].offsets[LF_INVENTORY].left = offsetX
@@ -2564,7 +2626,8 @@ local function buildDynamicIconSubMenus()
         defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].offsets[LF_INVENTORY].left
         createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
         if createdControl ~= nil then
-            table.insert(dynIconsSubMenusControls, createdControl)
+            --tins(dynIconsSubMenusControls, createdControl)
+            dynIconsSubMenusControls[#dynIconsSubMenusControls +1] = createdControl
         end
 
         ------------------------------------------------------------------------------------------------------------------------
@@ -2572,7 +2635,7 @@ local function buildDynamicIconSubMenus()
         name = locVars[dynIconNameStart .. "_offsetY"]
         tooltip = locVars[dynIconNameStart .. "_offsetY" .. tooltipSuffix]
         data = { type = "slider", width = "half", min=minIconOffsetTop, max=maxIconOffsetTop, decimals=0, autoselect=true}
-        disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+        --disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
         getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].offsets[LF_INVENTORY].top end
         setFunc = function(offsetY)
             FCOISsettings.icon[fcoisDynIconNr].offsets[LF_INVENTORY].top = offsetY
@@ -2580,7 +2643,8 @@ local function buildDynamicIconSubMenus()
         defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].offsets[LF_INVENTORY].top
         createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
         if createdControl ~= nil then
-            table.insert(dynIconsSubMenusControls, createdControl)
+            --tins(dynIconsSubMenusControls, createdControl)
+            dynIconsSubMenusControls[#dynIconsSubMenusControls +1] = createdControl
         end
 
         ------------------------------------------------------------------------------------------------------------------------
@@ -2588,7 +2652,7 @@ local function buildDynamicIconSubMenus()
         name = locVars[dynIconNameStart .. tooltipSuffix]
         tooltip = locVars[dynIconNameStart .. "_tooltip" .. tooltipSuffix]
         data = defaultCheckboxData
-        disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+        --disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
         getFunc = function() return FCOISsettings.showMarkerTooltip[fcoisDynIconNr] end
         setFunc = function(value)
             FCOISsettings.showMarkerTooltip[fcoisDynIconNr] = value
@@ -2598,14 +2662,15 @@ local function buildDynamicIconSubMenus()
         defaultSettings = FCOISdefaultSettings.showMarkerTooltip[fcoisDynIconNr]
         createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
         if createdControl ~= nil then
-            table.insert(dynIconsSubMenusControls, createdControl)
+            --tins(dynIconsSubMenusControls, createdControl)
+            dynIconsSubMenusControls[#dynIconsSubMenusControls +1] = createdControl
         end
         ------------------------------------------------------------------------------------------------------------------------
         --Add the disable research (old: check for gear items) checkbox
         name = locVars["options_gear_disable_research_check"]
         tooltip = locVars["options_gear_disable_research_check" .. tooltipSuffix]
         data = defaultCheckboxData
-        disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+        --disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
         getFunc = function() return FCOISsettings.disableResearchCheck[fcoisDynIconNr] or false end --#2025_999
         setFunc = function(value)
             if value == false then value = nil end --#2025_999
@@ -2614,14 +2679,15 @@ local function buildDynamicIconSubMenus()
         defaultSettings = function() return FCOISdefaultSettings.disableResearchCheck[fcoisDynIconNr] or false end --#2025_999
         createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
         if createdControl ~= nil then
-            table.insert(dynIconsSubMenusControls, createdControl)
+            --tins(dynIconsSubMenusControls, createdControl)
+            dynIconsSubMenusControls[#dynIconsSubMenusControls +1] = createdControl
         end
         ------------------------------------------------------------------------------------------------------------------------
         --Add the enable as gear checkbox
         name = locVars["options_gear_enable_as_gear"]
         tooltip = locVars["options_gear_enable_as_gear" .. tooltipSuffix]
         data = defaultCheckboxData
-        disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+        --disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
         getFunc = function() return FCOISsettings.iconIsGear[fcoisDynIconNr] or false end
         setFunc = function(value)
             if value == false then value = nil end --#2025_999
@@ -2633,14 +2699,15 @@ local function buildDynamicIconSubMenus()
         defaultSettings = function() return FCOISdefaultSettings.iconIsGear[fcoisDynIconNr] or false end
         createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
         if createdControl ~= nil then
-            table.insert(dynIconsSubMenusControls, createdControl)
+            --tins(dynIconsSubMenusControls, createdControl)
+            dynIconsSubMenusControls[#dynIconsSubMenusControls +1] = createdControl
         end
         ------------------------------------------------------------------------------------------------------------------------
         --Add the respect inventory flag icon state
         name = locVars["options_enable_block_marked_disable_with_flag"]
         tooltip = locVars["options_enable_block_marked_disable_with_flag" .. tooltipSuffix]
         data = defaultCheckboxData
-        disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+        --disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
         getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].temporaryDisableByInventoryFlagIcon end
         setFunc = function(value)
             FCOISsettings.icon[fcoisDynIconNr].temporaryDisableByInventoryFlagIcon = value
@@ -2648,14 +2715,15 @@ local function buildDynamicIconSubMenus()
         defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].temporaryDisableByInventoryFlagIcon
         createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
         if createdControl ~= nil then
-            table.insert(dynIconsSubMenusControls, createdControl)
+            --tins(dynIconsSubMenusControls, createdControl)
+            dynIconsSubMenusControls[#dynIconsSubMenusControls +1] = createdControl
         end
         ------------------------------------------------------------------------------------------------------------------------
         --Add the disable all other marker icons if this dyn. icon is set checkbox
         name = locVars["options_demark_all_others"]
         tooltip = locVars["options_demark_all_others" .. tooltipSuffix]
         data = defaultCheckboxData
-        disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+        --disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
         getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].demarkAllOthers end
         setFunc = function(value)
             FCOISsettings.icon[fcoisDynIconNr].demarkAllOthers = value
@@ -2663,7 +2731,8 @@ local function buildDynamicIconSubMenus()
         defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].demarkAllOthers
         createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
         if createdControl ~= nil then
-            table.insert(dynIconsSubMenusControls, createdControl)
+            --tins(dynIconsSubMenusControls, createdControl)
+            dynIconsSubMenusControls[#dynIconsSubMenusControls +1] = createdControl
         end
         ------------------------------------------------------------------------------------------------------------------------
         --Add the exclude non-dynamic (normal) icons to the disable all other marker icons if this dyn. icon is set checkbox
@@ -2678,7 +2747,8 @@ local function buildDynamicIconSubMenus()
         defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].demarkAllOthersExcludeNormal
         createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
         if createdControl ~= nil then
-            table.insert(dynIconsSubMenusControls, createdControl)
+            --tins(dynIconsSubMenusControls, createdControl)
+            dynIconsSubMenusControls[#dynIconsSubMenusControls +1] = createdControl
         end
         ------------------------------------------------------------------------------------------------------------------------
         --Add the exclude dnaymic icons to the disable all other marker icons if this dyn. icon is set checkbox
@@ -2693,14 +2763,15 @@ local function buildDynamicIconSubMenus()
         defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].demarkAllOthersExcludeDynamic
         createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
         if createdControl ~= nil then
-            table.insert(dynIconsSubMenusControls, createdControl)
+            --tins(dynIconsSubMenusControls, createdControl)
+            dynIconsSubMenusControls[#dynIconsSubMenusControls +1] = createdControl
         end
         ------------------------------------------------------------------------------------------------------------------------
         --Add the "Prevent auto-marking  if marked with this icon" checkbox
         name = locVars["options_prevent_auto_marking_if_this_icon_set"]
         tooltip = locVars["options_prevent_auto_marking_if_this_icon_set" .. tooltipSuffix]
         data = defaultCheckboxData
-        disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+        disabledFunc = defaultDisabledDynamicIconFunc
         getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].autoMarkPreventIfMarkedWithThis end
         setFunc = function(value)
             FCOISsettings.icon[fcoisDynIconNr].autoMarkPreventIfMarkedWithThis = value
@@ -2708,14 +2779,15 @@ local function buildDynamicIconSubMenus()
         defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].autoMarkPreventIfMarkedWithThis
         createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
         if createdControl ~= nil then
-            table.insert(dynIconsSubMenusControls, createdControl)
+            --tins(dynIconsSubMenusControls, createdControl)
+            dynIconsSubMenusControls[#dynIconsSubMenusControls +1] = createdControl
         end
         ------------------------------------------------------------------------------------------------------------------------
         --Add the "Auto-remove if banked" checkbox
         name = locVars["options_auto_remove_if_banked"]
         tooltip = locVars["options_auto_remove_if_banked" .. tooltipSuffix]
         data = defaultCheckboxData
-        disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+        disabledFunc = defaultDisabledDynamicIconFunc
         getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].autoRemoveMarkForBag[BAG_BANK] end
         setFunc = function(value)
             FCOISsettings.icon[fcoisDynIconNr].autoRemoveMarkForBag[BAG_BANK] = value
@@ -2723,14 +2795,15 @@ local function buildDynamicIconSubMenus()
         defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].autoRemoveMarkForBag[BAG_BANK]
         createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
         if createdControl ~= nil then
-            table.insert(dynIconsSubMenusControls, createdControl)
+            --tins(dynIconsSubMenusControls, createdControl)
+            dynIconsSubMenusControls[#dynIconsSubMenusControls +1] = createdControl
         end
         ------------------------------------------------------------------------------------------------------------------------
         --Add the "Auto-remove if guild banked" checkbox
         name = locVars["options_auto_remove_if_guild_banked"]
         tooltip = locVars["options_auto_remove_if_guild_banked" .. tooltipSuffix]
         data = defaultCheckboxData
-        disabledFunc = function() return not isIconEnabled[fcoisDynIconNr] end
+        disabledFunc = defaultDisabledDynamicIconFunc
         getFunc = function() return FCOISsettings.icon[fcoisDynIconNr].autoRemoveMarkForBag[BAG_GUILDBANK] end
         setFunc = function(value)
             FCOISsettings.icon[fcoisDynIconNr].autoRemoveMarkForBag[BAG_GUILDBANK] = value
@@ -2738,7 +2811,8 @@ local function buildDynamicIconSubMenus()
         defaultSettings = FCOISdefaultSettings.icon[fcoisDynIconNr].autoRemoveMarkForBag[BAG_GUILDBANK]
         createdControl = CreateControl(nil, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
         if createdControl ~= nil then
-            table.insert(dynIconsSubMenusControls, createdControl)
+            --tins(dynIconsSubMenusControls, createdControl)
+            dynIconsSubMenusControls[#dynIconsSubMenusControls +1] = createdControl
         end
 
         -----------------------------------------------------------------------------------------------------------------------
@@ -2754,7 +2828,8 @@ local function buildDynamicIconSubMenus()
             tooltip = ""
             data = { type = "submenu", controls = dynIconsSubMenusControls }
             local createdDynIconSubMenuSurrounding = CreateControl(ref, name, tooltip, data, nil, nil, nil, nil, nil)
-            table.insert(dynIconsSubMenus, createdDynIconSubMenuSurrounding)
+            --tins(dynIconsSubMenus, createdDynIconSubMenuSurrounding)
+            dynIconsSubMenus[#dynIconsSubMenus +1] = createdDynIconSubMenuSurrounding
         end
     end -- for traitTypeName, traitTypeItemTrait in pairs(traitTypeData) do
     return dynIconsSubMenus
@@ -2790,7 +2865,8 @@ local function buildFilterButtonsPositionsSubMenu()
     end
     local btncreatedControl = CreateControl(nil, btnname, btntooltip, btndata, btndisabledFunc, nil, btnFunc, nil, locVars["options_filter_button_set_all_equal" .. tooltipSuffix])
     if btncreatedControl ~= nil then
-        table.insert(filterButtonsPositionsSubMenu, btncreatedControl)
+        --tins(filterButtonsPositionsSubMenu, btncreatedControl)
+        filterButtonsPositionsSubMenu[#filterButtonsPositionsSubMenu +1] = btncreatedControl
     end
     --Create a submenu for each LibFilters filter panel ID
     for filterPanelId=1, numFilterPanels, 1 do
@@ -2813,13 +2889,14 @@ local function buildFilterButtonsPositionsSubMenu()
                 data = { type = "header", width = "full" }
                 createdControl = CreateControl(nil, name, tooltip, data, nil, nil, nil, nil, nil)
                 if createdControl ~= nil then
-                    table.insert(filterButtonsPositionsSubMenuControls, createdControl)
+                    --tins(filterButtonsPositionsSubMenuControls, createdControl)
+                    filterButtonsPositionsSubMenuControls[#filterButtonsPositionsSubMenuControls +1] = createdControl
                 end
                 --Add the filter button left edit box
                 ref = fcoisLAMSettingsReferencePrefix .. "FilterButtonsPositionsAtPanel" .. tos(filterPanelId) .. "_" .. tos(filterButtonNr) .. "_LEFT"
                 name    = locVars["options_filter_button" .. tos(filterButtonNr) .. "_left"]
                 tooltip = locVars["options_filter_button" .. tos(filterButtonNr) .. "_left" .. tooltipSuffix]
-                data = { type = "editbox", width = "half", textType = TEXT_TYPE_NUMERIC }
+                data = defaultNumericEditboxData
                 disabledFunc = function() return false end
                 getFunc = function() return FCOISsettings.filterButtonData[filterButtonNr][filterPanelId]["left"] end
                 defaultSettings = FCOISdefaultSettings.filterButtonData[filterButtonNr][filterPanelId]["left"]
@@ -2829,7 +2906,8 @@ local function buildFilterButtonsPositionsSubMenu()
                 end
                 createdControl = CreateControl(ref, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
                 if createdControl ~= nil then
-                    table.insert(filterButtonsPositionsSubMenuControls, createdControl)
+                    --tins(filterButtonsPositionsSubMenuControls, createdControl)
+                    filterButtonsPositionsSubMenuControls[#filterButtonsPositionsSubMenuControls +1] = createdControl
                     editBoxesToSetTextTypes = editBoxesToSetTextTypes or {}
                     editBoxesToSetTextTypes[ref] = TEXT_TYPE_NUMERIC
                 end
@@ -2837,7 +2915,7 @@ local function buildFilterButtonsPositionsSubMenu()
                 ref = fcoisLAMSettingsReferencePrefix .. "FilterButtonsPositionsAtPanel" .. tos(filterPanelId) .. "_" .. tos(filterButtonNr) .. "_TOP"
                 name    = locVars["options_filter_button" .. tos(filterButtonNr) .. "_top"]
                 tooltip = locVars["options_filter_button" .. tos(filterButtonNr) .. "_top" .. tooltipSuffix]
-                data = { type = "editbox", width = "half", textType = TEXT_TYPE_NUMERIC }
+                data = defaultNumericEditboxData
                 disabledFunc = function() return false end
                 getFunc = function() return FCOISsettings.filterButtonData[filterButtonNr][filterPanelId]["top"] end
                 defaultSettings = FCOISdefaultSettings.filterButtonData[filterButtonNr][filterPanelId]["top"]
@@ -2847,7 +2925,8 @@ local function buildFilterButtonsPositionsSubMenu()
                 end
                 createdControl = CreateControl(ref, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
                 if createdControl ~= nil then
-                    table.insert(filterButtonsPositionsSubMenuControls, createdControl)
+                    --tins(filterButtonsPositionsSubMenuControls, createdControl)
+                    filterButtonsPositionsSubMenuControls[#filterButtonsPositionsSubMenuControls +1] = createdControl
                     editBoxesToSetTextTypes = editBoxesToSetTextTypes or {}
                     editBoxesToSetTextTypes[ref] = TEXT_TYPE_NUMERIC
                 end
@@ -2865,7 +2944,8 @@ local function buildFilterButtonsPositionsSubMenu()
                 defaultSettings = FCOISdefaultSettings.filterButtonData[filterButtonNr][filterPanelId]["width"]
                 createdControl = CreateControl(ref, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
                 if createdControl ~= nil then
-                    table.insert(filterButtonsPositionsSubMenuControls, createdControl)
+                    --tins(filterButtonsPositionsSubMenuControls, createdControl)
+                    filterButtonsPositionsSubMenuControls[#filterButtonsPositionsSubMenuControls +1] = createdControl
                 end
                 --Add the filter button height edit box
                 ref = fcoisLAMSettingsReferencePrefix .. "FilterButtonsPositionsAtPanel" .. tos(filterPanelId) .. "_" .. tos(filterButtonNr) .. "_HEIGHT"
@@ -2881,7 +2961,8 @@ local function buildFilterButtonsPositionsSubMenu()
                 defaultSettings = FCOISdefaultSettings.filterButtonData[filterButtonNr][filterPanelId]["height"]
                 createdControl = CreateControl(ref, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
                 if createdControl ~= nil then
-                    table.insert(filterButtonsPositionsSubMenuControls, createdControl)
+                    --tins(filterButtonsPositionsSubMenuControls, createdControl)
+                    filterButtonsPositionsSubMenuControls[#filterButtonsPositionsSubMenuControls +1] = createdControl
                 end
             end -- for numFilterButtons
             ------------------------------------------------------------------------------------------------------------------------
@@ -2893,7 +2974,8 @@ local function buildFilterButtonsPositionsSubMenu()
                 local subMenuTooltip = ""
                 local subMenuData = { type = "submenu", controls = filterButtonsPositionsSubMenuControls }
                 local createdFilterButtonsPositionsSubMenuSurrounding = CreateControl(subMenuRef, subMenuName, subMenuTooltip, subMenuData, nil, nil, nil, nil, nil)
-                table.insert(filterButtonsPositionsSubMenu, createdFilterButtonsPositionsSubMenuSurrounding)
+                --tins(filterButtonsPositionsSubMenu, createdFilterButtonsPositionsSubMenuSurrounding)
+                filterButtonsPositionsSubMenu[#filterButtonsPositionsSubMenu +1] = createdFilterButtonsPositionsSubMenuSurrounding
             end
         end -- is active filter panel ID?
     end -- for numFilterPanels
@@ -2923,7 +3005,8 @@ local function buildAddInvContextMenuFlagButtonsPositionsSubMenu()
     end
     local btncreatedControl = CreateControl(nil, btnname, btntooltip, btndata, btndisabledFunc, nil, btnFunc, nil, locVars["options_add_inv_flag_button_set_all_equal" .. tooltipSuffix])
     if btncreatedControl ~= nil then
-        table.insert(addInvFlagButtonsPositionsSubMenu, btncreatedControl)
+        --tins(addInvFlagButtonsPositionsSubMenu, btncreatedControl)
+        addInvFlagButtonsPositionsSubMenu[#addInvFlagButtonsPositionsSubMenu +1] = btncreatedControl
     end
     --Create a submenu for each LibFilters filter panel ID where the add. inv. context menu "flag" button is active
     local sortedAddInvBtnInvokers = FCOIS.contextMenuVars.sortedFilterPanelIdToContextMenuButtonInvoker
@@ -2958,7 +3041,7 @@ local function buildAddInvContextMenuFlagButtonsPositionsSubMenu()
                 ref = fcoisLAMSettingsReferencePrefix .. "AddInvFlagButtonsPositionsAtPanel" .. tos(filterPanelId) .. "_LEFT"
                 name    = locVars["options_filter_button1_left"]
                 tooltip = locVars["options_filter_button1_left"]
-                data = { type = "editbox", width = "half", textType = TEXT_TYPE_NUMERIC }
+                data = defaultNumericEditboxData
                 disabledFunc = function() return false end
                 getFunc = function()
                     if FCOISsettings.FCOISAdditionalInventoriesButtonOffset[filterPanelId] ~= nil then   --#2025_999
@@ -2990,7 +3073,8 @@ local function buildAddInvContextMenuFlagButtonsPositionsSubMenu()
                 end
                 createdControl = CreateControl(ref, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
                 if createdControl ~= nil then
-                    table.insert(addInvFlagButtonsPositionsSubMenuControls, createdControl)
+                    --tins(addInvFlagButtonsPositionsSubMenuControls, createdControl)
+                    addInvFlagButtonsPositionsSubMenuControls[#addInvFlagButtonsPositionsSubMenuControls +1] = createdControl
                     editBoxesToSetTextTypes = editBoxesToSetTextTypes or {}
                     editBoxesToSetTextTypes[ref] = TEXT_TYPE_NUMERIC
                 end
@@ -2998,7 +3082,7 @@ local function buildAddInvContextMenuFlagButtonsPositionsSubMenu()
                 ref = fcoisLAMSettingsReferencePrefix .. "AddInvFlagButtonsPositionsAtPanel" .. tos(filterPanelId) .. "_TOP"
                 name    = locVars["options_filter_button1_top"]
                 tooltip = locVars["options_filter_button1_top" .. tooltipSuffix]
-                data = { type = "editbox", width = "half", textType = TEXT_TYPE_NUMERIC }
+                data = defaultNumericEditboxData
                 disabledFunc = function() return false end
                 getFunc = function()
                     if FCOISsettings.FCOISAdditionalInventoriesButtonOffset[filterPanelId] ~= nil then   --#2025_999
@@ -3030,7 +3114,8 @@ local function buildAddInvContextMenuFlagButtonsPositionsSubMenu()
                 end
                 createdControl = CreateControl(ref, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
                 if createdControl ~= nil then
-                    table.insert(addInvFlagButtonsPositionsSubMenuControls, createdControl)
+                    --tins(addInvFlagButtonsPositionsSubMenuControls, createdControl)
+                    addInvFlagButtonsPositionsSubMenuControls[#addInvFlagButtonsPositionsSubMenuControls +1] = createdControl
                     editBoxesToSetTextTypes = editBoxesToSetTextTypes or {}
                     editBoxesToSetTextTypes[ref] = TEXT_TYPE_NUMERIC
                 end
@@ -3043,7 +3128,8 @@ local function buildAddInvContextMenuFlagButtonsPositionsSubMenu()
                     local subMenuTooltip = ""
                     local subMenuData = { type = "submenu", controls = addInvFlagButtonsPositionsSubMenuControls }
                     local createdaddInvFlagButtonsPositionsSubMenuSurrounding = CreateControl(subMenuRef, subMenuName, subMenuTooltip, subMenuData, nil, nil, nil, nil, nil)
-                    table.insert(addInvFlagButtonsPositionsSubMenu, createdaddInvFlagButtonsPositionsSubMenuSurrounding)
+                    --tins(addInvFlagButtonsPositionsSubMenu, createdaddInvFlagButtonsPositionsSubMenuSurrounding)
+                    addInvFlagButtonsPositionsSubMenu[#addInvFlagButtonsPositionsSubMenu +1] = createdaddInvFlagButtonsPositionsSubMenuSurrounding
                 end
             end -- is active filter panel ID?
         end
@@ -3086,7 +3172,7 @@ local function buildLibSetsSetSearchCategorySubMenu()
             defaultSettings = markerIconTextures[1]
             createdControl = CreateControl(ref, name, tooltip, data, disabledFunc, nil, nil, defaultSettings, nil)
             if createdControl ~= nil then
-                table.insert(libSetsSetSearchCategorySubMenu, createdControl)
+                tins(libSetsSetSearchCategorySubMenu, createdControl)
             end
             ref, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, createdControl, createdDDControl = nil, nil, nil, nil, nil, nil, nil, nil, nil, nil
 
@@ -3109,7 +3195,7 @@ local function buildLibSetsSetSearchCategorySubMenu()
             defaultSettings = FCOIS_CON_ICON_DYNAMIC_1
             createdDDControl = CreateDropdownBox(ref, name, tooltip, disabledFunc, getFunc, setFunc, defaultSettings, iconsListNone, iconsListValuesNone, iconsListNone, nil, "half", true, true)
             if createdDDControl ~= nil then
-                table.insert(libSetsSetSearchCategorySubMenu, createdDDControl)
+                tins(libSetsSetSearchCategorySubMenu, createdDDControl)
             end
 
         end
@@ -3321,7 +3407,6 @@ function FCOIS.BuildAddonMenu()
     local addInvFlagButtonsPositionsSubMenu = buildAddInvContextMenuFlagButtonsPositionsSubMenu()
     --Build submenu for LibSets set search favorites
     --local libSetsSetSearchFavoritesSubMenu = buildLibSetsSetSearchCategorySubMenu() --#301
-
 
     --==================== LAM callbacks - BEGIN =====================================
     --LAM 2.0 callback function if the panel was created

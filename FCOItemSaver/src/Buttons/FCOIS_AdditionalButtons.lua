@@ -11,6 +11,7 @@ local tos = tostring
 local addonVars = FCOIS.addonVars
 local gAddonName = addonVars.gAddonName
 local apiVersion = FCOIS.APIversion
+local FCOISicon = addonVars.icon
 
 -- =====================================================================================================================
 --  Additional inventory button functions ("flag" buttons / jump to settings button / etc.)
@@ -292,10 +293,10 @@ function FCOIS.AddAdditionalButtons(buttonName, buttonData)
                 highlight = "esoui/art/charactercreate/rotate_right_over.dds",
                 disabled  = "esoui/art/charactercreate/rotate_right_disabled.dds",
                 ]]
-                normal    = "FCOItemSaver/FCOIS.dds",
-                pressed   = "FCOItemSaver/FCOIS.dds",
-                highlight = "FCOItemSaver/FCOIS.dds",
-                disabled  = "FCOItemSaver/FCOIS.dds",
+                normal    = FCOISicon,
+                pressed   = FCOISicon,
+                highlight = FCOISicon,
+                disabled  = FCOISicon,
             }
             FCOIS.LMM2:AddMenuItem(descriptor, categoryLayoutInfo)
 ------------------------------------------------------------------------------------------------------------------------

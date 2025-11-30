@@ -63,28 +63,29 @@ local countMarkerIconsEnabled
 
 --Colors
 local defaultColorWhite = {
-    ["r"] = 1,
-    ["g"] = 1,
-    ["b"] = 1,
-    ["a"] = 1,
+    1,
+    1,
+    1,
+    1,
 }
 local defaultColorRed = {
-    ["r"] = 1,
-    ["g"] = 0,
-    ["b"] = 0,
-    ["a"] = 1,
+    1,
+    0,
+    0,
+    1,
 }
 local defaultColorGreen = {
-    ["r"] = 0,
-    ["g"] = 1,
-    ["b"] = 0,
-    ["a"] = 1,
+    0,
+    1,
+    0,
+    1,
 }
+local noActiveCol = 128/100
 local defaultColorNotActive = {
-    ["r"] = 128/100,
-    ["g"] = 128/100,
-    ["b"] = 128/100,
-    ["a"] = 1,
+    noActiveCol,
+    noActiveCol,
+    noActiveCol,
+    1,
 }
 
 local getSavedVarsMarkedItemsTableName = FCOIS.GetSavedVarsMarkedItemsTableName
@@ -2713,7 +2714,8 @@ local function getContextMenuAntiSettingsColor(settingIsEnabled, override)
             retCol = defaultColorNotActive  --#2025_999
         end
     end
-    return retCol["r"], retCol["g"], retCol["b"], retCol["a"]
+    --return retCol["r"], retCol["g"], retCol["b"], retCol["a"]
+    return unpack(retCol)
 end
 
 --Change the context menu invoker button's color by help of the button control and the anti-* settings state, but do not
