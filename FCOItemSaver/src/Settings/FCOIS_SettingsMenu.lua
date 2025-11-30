@@ -440,47 +440,54 @@ local dataTypesWithoutSetAndGetFunc = {
 
 local defaultLAMDDLData --#2025_999
 local function CreateControl(ref, name, tooltip, data, disabledChecks, getFunc, setFunc, defaultSettings, warning, isIconDropDown, scrollable)
+    if data == nil then return end
+    local dataType = data.type
+    if dataType == nil then
+        return data
+    end
+
+    --Detach the data table passed in from new added values, else we overwrite them and the default dummies passed in cannot be used for
+    --any other anymore -> Referencing all the same data!
+    local newData = ZO_ShallowTableCopy(data)
+
     scrollable = scrollable or false
     if ref ~= nil then
         if strfind(ref, fcoisLAMSettingsReferencePrefix, 1) ~= 1 then
-            data.reference = fcoisLAMSettingsReferencePrefix .. ref
+            newData.reference = fcoisLAMSettingsReferencePrefix .. ref
         else
-            data.reference = ref
+            newData.reference = ref
         end
     end
 
-    local dataType = data.type
-    if dataType ~= nil and not dataTypesWithoutName[dataType] then
-        data.name = name
+    if not dataTypesWithoutName[dataType] then
+        newData.name = name
         if not dataTypesWithoutGenericData[dataType] then
-            data.tooltip = tooltip
+            newData.tooltip = tooltip
             if not dataTypesWithoutSetAndGetFunc[dataType] then
-                data.getFunc = getFunc
-                data.setFunc = setFunc
+                newData.getFunc = getFunc
+                newData.setFunc = setFunc
                 if defaultSettings ~= nil then
-                    data.default = defaultSettings
+                    newData.default = defaultSettings
                 end
             else
-                data.func = setFunc
+                newData.func = setFunc
             end
             if disabledChecks ~= nil then
-                data.disabled = disabledChecks
+                newData.disabled = disabledChecks
             end
-            data.scrollable = scrollable
-            data.warning = warning
+            newData.scrollable = scrollable
+            newData.warning = warning
             --Is the created control a dropdown box containing the FCOIS marker icons?
             --Then add the reference to the list of dropboxes that need to be updated if an icon changes it's name or
             if isIconDropDown then
                 if LAMdropdownsWithIconList ~= nil then
                     defaultLAMDDLData = defaultLAMDDLData or { ["choices"] = 'standard', ["choicesValues"] = iconsListValues, ["choicesTooltips"] = nil, ["scrollable"] = true } --#2025_999
-                    LAMdropdownsWithIconList[tos(data.reference)] = defaultLAMDDLData
+                    LAMdropdownsWithIconList[tos(newData.reference)] = defaultLAMDDLData
                 end
             end
         end
-    else
-d("<data.type is nil! name: " .. tos(name) .. ", ref: " .. tos(ref))
     end
-    return data
+    return newData
 end
 
 --Function to create a dropdown box for the LAM panel
@@ -2413,7 +2420,7 @@ local function buildDynamicIconEnableCheckboxes()
     local dynamicIconsEnabledCbs = {}
 
     --Create 1 checkbox for each dynamic icon, to enable/disable the dynamic icon
-d("[FCOIS]buildDynamicIconEnableCheckboxes - numDynIcons: " .. tos(numDynIcons))
+--d("[FCOIS]buildDynamicIconEnableCheckboxes - numDynIcons: " .. tos(numDynIcons))
     for dynIconId=1, numDynIcons, 1 do
         local fcoisDynIconNr = iconId2FCOISIconNr[dynIconId] --e.g. dynamic icon 1 = FCOIS icon ID 13, 2 = 14, and so on
         local LAMcontrolBaseName = optionsIcon .. tos(fcoisDynIconNr)
@@ -2421,7 +2428,7 @@ d("[FCOIS]buildDynamicIconEnableCheckboxes - numDynIcons: " .. tos(numDynIcons))
         local ref = LAMcontrolBaseName .. cbSuffix
 
         local name = locVars[activateText]
-d(">dynIconId: " .. tos(dynIconId) .. "; fcoisDynIconNr: " .. tos(fcoisDynIconNr) .. "; LAMname: " .. tos(activateText) .. "; name: " .. tos(name) .. "; ref: " ..tos(ref))
+--d(">dynIconId: " .. tos(dynIconId) .. "; fcoisDynIconNr: " .. tos(fcoisDynIconNr) .. "; LAMname: " .. tos(activateText) .. "; name: " .. tos(name) .. "; ref: " ..tos(ref))
         --local fcoisLockDynMenuIconNr = iconId2FCOISIconLockDynMenuNr[dynIconId] --e.g. dynamic icon 1 = 2, 2 = 3, and so on
 
         local getFunc = function()
@@ -2445,12 +2452,11 @@ d(">dynIconId: " .. tos(dynIconId) .. "; fcoisDynIconNr: " .. tos(fcoisDynIconNr
         --Create the checkbox now
         local createdDynIconEnableCB = CreateControl(ref, name, dynIconCheckboxTooltipStr, defaultCheckboxData, defaultDisabledFunc, getFunc, setFunc, defaultSettings)
         if createdDynIconEnableCB ~= nil then
-d(">createdDynIconEnableCB.name: " ..tos(createdDynIconEnableCB.name))
-            dynamicIconsEnabledCbs[#dynamicIconsEnabledCbs +1] = createdDynIconEnableCB
+--d(">createdDynIconEnableCB.name: " ..tos(createdDynIconEnableCB.name))
+            --dynamicIconsEnabledCbs[#dynamicIconsEnabledCbs +1] = createdDynIconEnableCB
+            tins(dynamicIconsEnabledCbs, createdDynIconEnableCB)
         end
     end
-
-    FCOIS._origTab = ZO_ShallowTableCopy(dynamicIconsEnabledCbs)
 
     return dynamicIconsEnabledCbs
 end
