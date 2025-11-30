@@ -502,11 +502,9 @@ function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChat
     if bag == nil or slot == nil then return true end
     local doDebug = false
     --TODO DEBUG: enable to show d messages for debugging
-   --[[
-    if GetDisplayName() == "@Baertram" and bag == 1 and (slot == 62) then  --#318 20250427
+    if GetDisplayName() == "@Baertram" and bag == 1 and (slot == 5 or slot == 25 or slot == 134) then
         FCOIS.preventerVars.doDebugItemSelectionHandler = true
     end
-    ]]
     if FCOIS.preventerVars.doDebugItemSelectionHandler == true then
         doDebug = true
         FCOIS.preventerVars.doDebugItemSelectionHandler = false

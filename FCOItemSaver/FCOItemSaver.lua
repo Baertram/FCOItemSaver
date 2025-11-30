@@ -224,7 +224,6 @@ ReloadUI does not do anything, but manually mass marking via flag icon works fin
 --______________________________________
 
 --Open/To work on this patch:
---Mail send panel does not allow double click and keybind is removed, but drag&drop does work for protected items?
 --Test protective functions for all panels
 --Selling items at vendor does not work anymore for a "marked to sell" icon except it is a potion e.g.?
 

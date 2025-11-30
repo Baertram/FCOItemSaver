@@ -18,7 +18,7 @@
    ã : \195\163    õ : \195\181  				   \195\177 : \195\177
 ]]
 --The "lock" icon texturepath
---local FCOISIconPath = FCOIS.addonVars.icon --"FCOItemSaver/assets/FCOIS.dds"
+--local FCOISIconPath = FCOIS.addonVars.icon --"FCOItemSaver/FCOIS.dds"
 local lockIconPath = "/esoui/art/miscellaneous/status_locked.dds"
 local lockIcon = "|t32:32:"..lockIconPath.."|t"
 

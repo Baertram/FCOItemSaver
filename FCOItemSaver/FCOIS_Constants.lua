@@ -11,7 +11,7 @@ local strlen = string.len
 --Addon variables
 FCOIS.addonVars = {}
 local addonVars = FCOIS.addonVars
-addonVars.icon                          = "FCOItemSaver/assets/FCOIS.dds"
+addonVars.icon                          = "FCOItemSaver/FCOIS.dds"
 --Addon variables
 addonVars.addonVersionOptions 		    = '2.7.8' -- version shown in the settings panel
 --The addon name, normal and decorated with colors etc.
@@ -809,7 +809,6 @@ local whereAreWeToFilterPanelId = {
         [FCOIS_CON_JEWELRY_RESEARCH]	=   LF_JEWELRY_RESEARCH,
         [FCOIS_CON_RESEARCH_DIALOG]	    =   LF_SMITHING_RESEARCH_DIALOG,
         [FCOIS_CON_JEWELRY_RESEARCH_DIALOG]=LF_JEWELRY_RESEARCH_DIALOG,
-        [FCOIS_CON_COMPANION_DESTROY]   =   LF_INVENTORY_COMPANION,
 }
 local whereAreWeToFilterPanelIdSpecial = {
         --Special usage e.g. in inventory "Use item"
@@ -820,6 +819,7 @@ local whereAreWeToFilterPanelIdSpecial = {
     	[FCOIS_CON_POTION_USAGE]		=	LF_INVENTORY,
     	[FCOIS_CON_FOOD_USAGE]			=	LF_INVENTORY,
         [FCOIS_CON_CROWN_ITEM]          = 	LF_INVENTORY,
+        [FCOIS_CON_COMPANION_DESTROY]   =   LF_INVENTORY_COMPANION,
 }
 mappingVars.whereAreWeToFilterPanelIdSpecial = whereAreWeToFilterPanelIdSpecial
 --Add the special ones to the normal table too so checking the normal table provides a filterPanelId for the special whereAreWes
