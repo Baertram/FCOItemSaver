@@ -257,7 +257,7 @@ local function getWhereAreWeInventorySpecial(whereAreWe, calledFromExternalAddon
                 or (not calledFromExternalAddon and (IsGuildBankOpen() or IsBankOpen() or (currentSceneName ~= nil and (currentSceneName == ctrlVars.bankSceneName or currentSceneName == ctrlVars.guildBankSceneName or currentSceneName == ctrlVars.houseBankSceneName)))) then --or currentSceneName == ctrlVars.furnitureVaultSceneName
             --If bank/guild bank/house deposit tab is active
             if (calledFromExternalAddon and (panelId == LF_BANK_DEPOSIT or panelId == LF_GUILDBANK_DEPOSIT or panelId == LF_HOUSE_BANK_DEPOSIT)) or (not calledFromExternalAddon and ((ctrlVars.BANK:IsHidden() and ctrlVars.GUILD_BANK:IsHidden() and ctrlVars.HOUSE_BANK:IsHidden()) or (panelId == LF_BANK_DEPOSIT or panelId == LF_GUILDBANK_DEPOSIT or panelId == LF_HOUSE_BANK_DEPOSIT))) then
-                d(">>deposit bank")
+    --d(">>deposit bank")
                 --If the item is double clicked + marked deposit it, instead of blocking the deposit
                 --Set whereAreWe to FCOIS_CON_FALLBACK so the anti-settings mapping function returns "false"
                 whereAreWe = FCOIS_CON_FALLBACK
