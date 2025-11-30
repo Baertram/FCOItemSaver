@@ -225,7 +225,6 @@ ReloadUI does not do anything, but manually mass marking via flag icon works fin
 
 --Open/To work on this patch:
 --Test protective functions for all panels
---Selling items at vendor does not work anymore for a "marked to sell" icon except it is a potion e.g.?
 
 
 --=== Not started yet ===

@@ -204,7 +204,7 @@ local function getWhereAreWeOrFilterPanelIdByPanelIdRespectingCraftType(filterPa
     if getWhereAreWe == true then
         filterPanelIdToWhereAreWe = filterPanelIdToWhereAreWe or mappingVars.filterPanelIdToWhereAreWe
         whereAreWeDetermined = filterPanelIdToWhereAreWe[filterPanelIdDetermined]
-d("[FCOIS]getWhereAreWeOrFilterPanelIdByPanelIdRespectingCraftType-filterPanelId: " ..tos(filterPanelId) .. ", whereAreWe: " .. tos(whereAreWeDetermined))
+--d("[FCOIS]getWhereAreWeOrFilterPanelIdByPanelIdRespectingCraftType-filterPanelId: " ..tos(filterPanelId) .. ", whereAreWe: " .. tos(whereAreWeDetermined))
     end
     if not isDeconNPC then
         local craftType = GetCraftingInteractionType() --will be 0 if we are at a universal deconstruction NPC
@@ -213,7 +213,7 @@ d("[FCOIS]getWhereAreWeOrFilterPanelIdByPanelIdRespectingCraftType-filterPanelId
             --if libFilters and libFilters.GetFilterTypeRespectingCraftType then
                 libFilters_GetFilterTypeRespectingCraftType = libFilters_GetFilterTypeRespectingCraftType or libFilters.GetFilterTypeRespectingCraftType
                 filterPanelIdByCraftType = libFilters_GetFilterTypeRespectingCraftType(libFilters, filterPanelId, craftType)
-d("[FCOIS]LibFilters detected the filterPanelIdByCraftType: " ..tos(filterPanelIdByCraftType))
+--d("[FCOIS]LibFilters detected the filterPanelIdByCraftType: " ..tos(filterPanelIdByCraftType))
             --[[
             else
                 local filterPanelIdToFilterPanelIdRespectingCrafttype = mappingVars.filterPanelIdToFilterPanelIdRespectingCrafttype
@@ -226,7 +226,7 @@ d("[FCOIS]LibFilters detected the filterPanelIdByCraftType: " ..tos(filterPanelI
                 local whereAreWeByCraftType = filterPanelIdToWhereAreWe[filterPanelIdByCraftType]
                 if whereAreWeByCraftType ~= nil then
                     whereAreWeDetermined = whereAreWeByCraftType
-d(">whereAreWe changed to carftType dependent: " ..tos(whereAreWeDetermined))
+--d(">whereAreWe changed to carftType dependent: " ..tos(whereAreWeDetermined))
                 end
             end
         end
@@ -239,7 +239,7 @@ d(">whereAreWe changed to carftType dependent: " ..tos(whereAreWeDetermined))
 end
 
 local function getWhereAreWeInventorySpecial(whereAreWe, calledFromExternalAddon, panelId, panelIdAtCall, bag, slot, isDragAndDrop)
-d("[FCOIS]getWhereAreWeInventorySpecial-whereAreWe: " ..tos(whereAreWe) .. ", panelId: " ..tos(panelId))
+--d("[FCOIS]getWhereAreWeInventorySpecial-whereAreWe: " ..tos(whereAreWe) .. ", panelId: " ..tos(panelId))
 
     --Are we at a companion inventory?
     if (calledFromExternalAddon and (panelId == LF_INVENTORY_COMPANION or whereAreWe == FCOIS_CON_COMPANION_DESTROY))
@@ -249,7 +249,7 @@ d("[FCOIS]getWhereAreWeInventorySpecial-whereAreWe: " ..tos(whereAreWe) .. ", pa
     --Are we at the inventory/bank/guild bank/furniture vault and trying to use/equip/deposit an item?
     elseif (calledFromExternalAddon and (panelId == LF_INVENTORY or panelId == LF_BANK_DEPOSIT or panelId == LF_GUILDBANK_DEPOSIT or panelId == LF_HOUSE_BANK_DEPOSIT or panelId == LF_FURNITURE_VAULT_DEPOSIT))
             or (not calledFromExternalAddon and (not ctrlVars.BACKPACK:IsHidden() or panelId == LF_INVENTORY or panelId == LF_BANK_DEPOSIT or panelId == LF_GUILDBANK_DEPOSIT or panelId == LF_HOUSE_BANK_DEPOSIT or panelId == LF_FURNITURE_VAULT_DEPOSIT)) then
-d(">PLAYER_INVENTORY or deposit bank")
+--d(">PLAYER_INVENTORY or deposit bank")
         local _, currentSceneName = getCurrentSceneInfo()
 
         --Check if player inventory, player bank, guild bank or furniture vault is active by checking current scene in scene manager
@@ -264,14 +264,14 @@ d(">PLAYER_INVENTORY or deposit bank")
                 --Abort the checks here as items are always allowed to deposit at the bank/guildbank/house bank deposit tab
                 --but only if you do not use the mouse drag&drop (or context menu destroy)
                 if not isDragAndDrop then
-d("<[ABORT]no drag&drop, returning FALSE!")
+--d("<[ABORT]no drag&drop, returning FALSE!")
                     return false, true
                 end
             end
         end
         --Only do the item checks if the item should not be deposited at a bank/guild bank/house bank
         whereAreWe = checkIfItemShouldBeUsedOrEquipped(whereAreWe, bag, slot, panelId, panelIdAtCall, calledFromExternalAddon)
-d(">whereAreWe ItemUsage: " .. tos(whereAreWe))
+--d(">whereAreWe ItemUsage: " .. tos(whereAreWe))
     end
     return whereAreWe, nil
 end
@@ -279,21 +279,21 @@ end
 local function getWhereAreWeByPanelOrLibFilters(calledFromExternalAddon, filterPanelId, panelIdAtCall, bag, slot, isDragAndDrop) --#2025_999
     local isItemDepositToBankProcess
     libFilters_GetCurrentFilterType = libFilters_GetCurrentFilterType or libFilters.GetCurrentFilterType
-d("[FCOIS]getWhereAreByPanelOrLibFilters-External: " ..tos(calledFromExternalAddon) .. ", filterPanelId: " .. tos(filterPanelId) .. "/FCOIS.gFilterWhere: " .. tos(FCOIS.gFilterWhere))
+--d("[FCOIS]getWhereAreByPanelOrLibFilters-External: " ..tos(calledFromExternalAddon) .. ", filterPanelId: " .. tos(filterPanelId) .. "/FCOIS.gFilterWhere: " .. tos(FCOIS.gFilterWhere))
     if filterPanelId == nil then
         --if called from an external addon the panelId needs to be passed in, or else we cannot assure the correct panelId checked!
         if calledFromExternalAddon then return fallbackToDefaultDestroyWhereAreWe, nil end
 
         --Not calling externall but no panelId -- Try to find the panelId by help of the active control, scene, fragment, userdata etc. -> using LibFilters-3.0
         filterPanelId = libFilters_GetCurrentFilterType(libFilters)
-d(">filterPanelId determined by LibFilters: " .. tos(filterPanelId))
+--d(">filterPanelId determined by LibFilters: " .. tos(filterPanelId))
     end
     --Fallback: We are trying to destroy an item
     if filterPanelId == nil then return fallbackToDefaultDestroyWhereAreWe, nil end
 
     --Get whereArWe by the filterPanelId, and craftingType
     local whereAreWe = getWhereAreWeOrFilterPanelIdByPanelIdRespectingCraftType(filterPanelId, true, false)
-d(">>whereAreWe by filterPanelId: " .. tos(whereAreWe))
+--d(">>whereAreWe by filterPanelId: " .. tos(whereAreWe))
 
     --WhereAreWe was not determined or is the fallback entry or any special entry for inventory item usage e.g.:
     --Check if we are at companion inventory, or normal inventory or bank deposits etc.
@@ -330,9 +330,11 @@ function FCOIS.GetWhereAreWe(panelId, panelIdAtCall, panelIdParent, bag, slot, i
     end
 
     --todo debugging --#2025_999
+    --[[
     if panelId == LF_MAIL_SEND or panelIdAtCall == LF_MAIL_SEND then
         d("[FCOIS]GetWhereAreWe-" .. gil(bag, slot) .. ", isDragAndDrop: " ..tos(isDragAndDrop) ..", panelId: " ..tos(panelId) .. ", panelIdAtCall: " .. tos(panelIdAtCall) .. ", panelIdParent: " .. tos(panelIdParent) .. ", parentFilterPanelId: " ..tos(parentFilterPanelId) ..", calledFromExternalAddon: " ..tos(calledFromExternalAddon).. ", isDeconNPC: " ..tos(isDeconNPC))
     end
+    ]]
 
     --*********************************************************************************************************************************************************************************
     --------------------------------------------------------------------------------------------------------------------
