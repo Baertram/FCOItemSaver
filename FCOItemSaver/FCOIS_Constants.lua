@@ -219,6 +219,50 @@ FCOIS.libsLoadedProperly = true
 FCOIS.mappingVars = {}
 local mappingVars = FCOIS.mappingVars
 
+
+--==========================================================================================================================================
+-- 															LibFilters-3.0 FCOIS CONSTANTS
+--==========================================================================================================================================
+local LF_INVENTORY = LF_INVENTORY
+local LF_BANK_WITHDRAW = LF_BANK_WITHDRAW
+local LF_BANK_DEPOSIT = LF_BANK_DEPOSIT
+--local LF_GUILD_BANK_WITHDRAW = LF_GUILD_BANK_WITHDRAW
+--local LF_GUILD_BANK_DEPOSIT = LF_GUILD_BANK_DEPOSIT
+local LF_VENDOR_BUY = LF_VENDOR_BUY
+local LF_VENDOR_SELL = LF_VENDOR_SELL
+local LF_VENDOR_BUYBACK = LF_VENDOR_BUYBACK
+local LF_VENDOR_REPAIR = LF_VENDOR_REPAIR
+local LF_GUILDSTORE_SELL = LF_GUILDSTORE_SELL
+local LF_MAIL_SEND = LF_MAIL_SEND
+local LF_TRADE = LF_TRADE
+local LF_SMITHING_REFINE = LF_SMITHING_REFINE
+local LF_SMITHING_DECONSTRUCT = LF_SMITHING_DECONSTRUCT
+local LF_SMITHING_IMPROVEMENT = LF_SMITHING_IMPROVEMENT
+local LF_SMITHING_RESEARCH = LF_SMITHING_RESEARCH
+local LF_ALCHEMY_CREATION = LF_ALCHEMY_CREATION
+local LF_ENCHANTING_EXTRACTION = LF_ENCHANTING_EXTRACTION
+local LF_ENCHANTING_CREATION = LF_ENCHANTING_CREATION
+--local LF_PROVISIONING_COOK = LF_PROVISIONING_COOK
+--local LF_PROVISIONING_BREW = LF_PROVISIONING_BREW
+local LF_FENCE_SELL = LF_FENCE_SELL
+local LF_FENCE_LAUNDER = LF_FENCE_LAUNDER
+local LF_CRAFTBAG = LF_CRAFTBAG
+local LF_RETRAIT = LF_RETRAIT
+local LF_HOUSE_BANK_WITHDRAW = LF_HOUSE_BANK_WITHDRAW
+local LF_HOUSE_BANK_DEPOSIT = LF_HOUSE_BANK_DEPOSIT
+local LF_JEWELRY_REFINE = LF_JEWELRY_REFINE
+local LF_JEWELRY_DECONSTRUCT = LF_JEWELRY_DECONSTRUCT
+local LF_JEWELRY_IMPROVEMENT = LF_JEWELRY_IMPROVEMENT
+local LF_JEWELRY_RESEARCH = LF_JEWELRY_RESEARCH
+local LF_SMITHING_RESEARCH_DIALOG = LF_SMITHING_RESEARCH_DIALOG
+local LF_JEWELRY_RESEARCH_DIALOG = LF_JEWELRY_RESEARCH_DIALOG
+local LF_INVENTORY_COMPANION = LF_INVENTORY_COMPANION
+local LF_FURNITURE_VAULT_WITHDRAW = LF_FURNITURE_VAULT_WITHDRAW
+local LF_FURNITURE_VAULT_DEPOSIT = LF_FURNITURE_VAULT_DEPOSIT
+--local LF_INVENTORY_VENGEANCE = LF_INVENTORY_VENGEANCE
+--local LF_VENDOR_SELL_VENGEANCE = LF_VENDOR_SELL_VENGEANCE
+
+
 --==========================================================================================================================================
 -- 															FCOIS CONSTANTS
 --==========================================================================================================================================
@@ -1906,6 +1950,7 @@ ctrlVars.ZOMenu                         = ZO_Menu
 ctrlVars.mainMenuCategoryBar            = ZO_MainMenuCategoryBar
 
 --Local reference for speed variables
+--Inventories
 local playerInv = ctrlVars.INV
 local bankInv = ctrlVars.BANK_INV
 local houseBankInv = ctrlVars.HOUSE_BANK_INV
@@ -1921,7 +1966,15 @@ local alchemyInv = ctrlVars.ALCHEMY_INV
 local retraitInv = ctrlVars.RETRAIT_INV
 local companionInv = ctrlVars.COMPANION_INV_CONTROL
 local furnitureVaultInv = ctrlVars.FURNITURE_VAULT_INV
-
+local characterInv = ctrlVars.CHARACTER
+local companionCharacterInv = ctrlVars.COMPANION_CHARACTER
+--Backpacks
+local backPack = ctrlVars.BACKPACK
+local refinement = ctrlVars.DECONSTRUCTION
+local improvement = ctrlVars.IMPROVEMENT
+local deconstruction = ctrlVars.REFINEMENT
+--Names
+--ctrlVars.STORE_NAME
 
 
 -- #202 The mapping between the filterPanelId and the universal deconstruction controls to parent and anchor to
@@ -1967,7 +2020,7 @@ inventoryVars.markerControlInventories = {
         --todo 20250215
         --+
         [ctrlVars.REPAIR_LIST]          = true,
-        [ctrlVars.CHARACTER]            = true,
+        [characterInv]            = true,
         [ctrlVars.QUICKSLOT_LIST]       = true,
         [ctrlVars.RETRAIT_LIST]         = true,
     },
@@ -1978,9 +2031,9 @@ inventoryVars.markerControlInventories = {
     ---called by file /src/FCOIS_Hooks.lua -> different SecurePosthooks to crafting inventories e.g.
     ---Will be used to prevent duplicate marker texture icon apply calls.
     ["hookScrollSetupCallback"] = {
-        [ctrlVars.REFINEMENT]           = true,
-        [ctrlVars.DECONSTRUCTION]       = true,
-        [ctrlVars.IMPROVEMENT]          = true,
+        [refinement]           = true,
+        [deconstruction]       = true,
+        [improvement]          = true,
         [enchantingStation]   = true,
         [ctrlVars.ALCHEMY_STATION]      = true,
         [ctrlVars.UNIVERSAL_DECONSTRUCTION_INV_BACKPACK] = true, --#202
@@ -2140,39 +2193,39 @@ FCOIS.lastVars.gLastInvButton					= ctrlVars.INV_MENUBAR_BUTTON_ITEMS
 
 --The mapping array for filterPanelId to shown inventories
 mappingVars.gFilterPanelIdToInv = {
-	[LF_INVENTORY] 							= ctrlVars.BACKPACK,
+	[LF_INVENTORY] 							= backPack,
 	[LF_CRAFTBAG] 							= craftBagInv,
     [LF_BANK_WITHDRAW] 						= ctrlVars.BANK,
-	[LF_BANK_DEPOSIT]						= ctrlVars.BACKPACK,
+	[LF_BANK_DEPOSIT]						= backPack,
 	[LF_GUILDBANK_WITHDRAW] 			   	= ctrlVars.GUILD_BANK,
-	[LF_GUILDBANK_DEPOSIT]					= ctrlVars.BACKPACK,
-    [LF_VENDOR_BUY] 						= ctrlVars.BACKPACK,
-	[LF_VENDOR_SELL] 						= ctrlVars.BACKPACK,
-    [LF_VENDOR_BUYBACK]						= ctrlVars.BACKPACK,
-    [LF_VENDOR_REPAIR] 						= ctrlVars.BACKPACK,
-    [LF_SMITHING_REFINE]					= ctrlVars.REFINEMENT,
-	[LF_SMITHING_DECONSTRUCT]  				= ctrlVars.DECONSTRUCTION,
-	[LF_SMITHING_IMPROVEMENT]				= ctrlVars.IMPROVEMENT,
-	[LF_GUILDSTORE_SELL] 	 		   		= ctrlVars.BACKPACK,
-	[LF_MAIL_SEND] 							= ctrlVars.BACKPACK,
-	[LF_TRADE] 				   				= ctrlVars.BACKPACK,
+	[LF_GUILDBANK_DEPOSIT]					= backPack,
+    [LF_VENDOR_BUY] 						= backPack,
+	[LF_VENDOR_SELL] 						= backPack,
+    [LF_VENDOR_BUYBACK]						= backPack,
+    [LF_VENDOR_REPAIR] 						= backPack,
+    [LF_SMITHING_REFINE]					= refinement,
+	[LF_SMITHING_DECONSTRUCT]  				= deconstruction,
+	[LF_SMITHING_IMPROVEMENT]				= improvement,
+	[LF_GUILDSTORE_SELL] 	 		   		= backPack,
+	[LF_MAIL_SEND] 							= backPack,
+	[LF_TRADE] 				   				= backPack,
     [LF_ENCHANTING_CREATION]				= enchantingStation,
 	[LF_ENCHANTING_EXTRACTION]	 			= enchantingStation,
-	[LF_FENCE_SELL]							= ctrlVars.BACKPACK,
-	[LF_FENCE_LAUNDER]						= ctrlVars.BACKPACK,
+	[LF_FENCE_SELL]							= backPack,
+	[LF_FENCE_LAUNDER]						= backPack,
     [LF_ALCHEMY_CREATION]					= ctrlVars.ALCHEMY_STATION,
-    [LF_RETRAIT]						    = ctrlVars.BACKPACK,
+    [LF_RETRAIT]						    = backPack,
     [LF_HOUSE_BANK_WITHDRAW]				= ctrlVars.HOUSE_BANK,
-    [LF_HOUSE_BANK_DEPOSIT]					= ctrlVars.BACKPACK,
-    [LF_JEWELRY_REFINE]		                = ctrlVars.REFINEMENT,
-    [LF_JEWELRY_DECONSTRUCT]		        = ctrlVars.DECONSTRUCTION,
-    [LF_JEWELRY_IMPROVEMENT]		        = ctrlVars.IMPROVEMENT,
+    [LF_HOUSE_BANK_DEPOSIT]					= backPack,
+    [LF_JEWELRY_REFINE]		                = refinement,
+    [LF_JEWELRY_DECONSTRUCT]		        = deconstruction,
+    [LF_JEWELRY_IMPROVEMENT]		        = improvement,
     [LF_FURNITURE_VAULT_WITHDRAW] 			= ctrlVars.FURNITURE_VAULT,
-	[LF_FURNITURE_VAULT_DEPOSIT]    		= ctrlVars.BACKPACK,
+	[LF_FURNITURE_VAULT_DEPOSIT]    		= backPack,
 }
 
 --The array for the texture names of each panel Id
-local invTextureName                = ctrlVars.INV_NAME .. filterButtonTotalSuffix
+local invTextureName                = invName .. filterButtonTotalSuffix
 local refineTextureName             = ctrlVars.REFINEMENT_INV_NAME .. filterButtonTotalSuffix
 local enchantTextureName            = ctrlVars.ENCHANTING_STATION_NAME .. filterButtonTotalSuffix
 local deconTextureName              = ctrlVars.DECONSTRUCTION_INV_NAME .. filterButtonTotalSuffix --#202 FilterButtons and additional inventory flag context menu button added to universal deconstruction panel
@@ -2785,8 +2838,8 @@ checkVars.allowedCraftingPanelIdsForMarkerRechecks = {
 --Mapping of the character/companion character screen to the apparel control where the number of light/medium/heavy armor
 --pieces worn should be shown
 mappingVars.characterApparelSection = {
-    [FCOIS_CON_LF_CHARACTER]           = GetControl(ctrlVars.CHARACTER,            "ApparelSectionText"),
-    [FCOIS_CON_LF_COMPANION_CHARACTER] = GetControl(ctrlVars.COMPANION_CHARACTER,  "ApparelSectionText"),
+    [FCOIS_CON_LF_CHARACTER]           = GetControl(characterInv,            "ApparelSectionText"),
+    [FCOIS_CON_LF_COMPANION_CHARACTER] = GetControl(companionCharacterInv,  "ApparelSectionText"),
 }
 
 --Mapping between equipment slot and it's name suffix
@@ -3325,7 +3378,7 @@ invAddButtonVars.texNormal = "/esoui/art/ava/tabicon_bg_score_inactive.dds"
 invAddButtonVars.texMouseOver = "/esoui/art/ava/tabicon_bg_score_disabled.dds"
 --The mapping table for the additional inventory "flag" context menu invoker buttons, their name, their parent and their settings
 local additionalFCOISInvContextmenuButtonNameString = "ButtonFCOISAdditionalOptions"
-invAddButtonVars.playerInventoryFCOAdditionalOptionsButton = ctrlVars.INV_NAME .. additionalFCOISInvContextmenuButtonNameString
+invAddButtonVars.playerInventoryFCOAdditionalOptionsButton = invName .. additionalFCOISInvContextmenuButtonNameString
 invAddButtonVars.playerBankWithdrawButtonAdditionalOptions = "FCOIS_PlayerBankWithdraw" .. additionalFCOISInvContextmenuButtonNameString
 invAddButtonVars.guildBankFCOWithdrawButtonAdditionalOptions = "FCOIS_GuildBankWithdraw" .. additionalFCOISInvContextmenuButtonNameString
 invAddButtonVars.smithingTopLevelRefinementPanelInventoryButtonAdditionalOptions = ctrlVars.REFINEMENT_INV_NAME .. additionalFCOISInvContextmenuButtonNameString
@@ -3525,7 +3578,7 @@ contextMenuVars.filterPanelIdToContextMenuButtonInvoker = {
     --Character
     [FCOIS_CON_LF_CHARACTER] = {
         ["addInvButton"]  = true,
-        ["parent"]        = ctrlVars.CHARACTER,
+        ["parent"]        = characterInv,
         ["name"]          = invAddButtonVars.characterFCOAdditionalOptionsButton,
         ["filterPanelId"] = FCOIS_CON_LF_CHARACTER, --Used within function AddButton to provide the custom non-LibFilters filterPanelId to function FCOIS.ShowContextMenuForAddInvButtons
         ["updateOtherInvokerButtonsState"] = {
@@ -3539,7 +3592,7 @@ contextMenuVars.filterPanelIdToContextMenuButtonInvoker = {
     --Companion character
     [FCOIS_CON_LF_COMPANION_CHARACTER] = {
         ["addInvButton"]  = true,
-        ["parent"]        = ctrlVars.COMPANION_CHARACTER,
+        ["parent"]        = companionCharacterInv,
         ["name"]          = invAddButtonVars.companionCharacterFCOAdditionalOptionsButton,
         ["filterPanelId"] = FCOIS_CON_LF_COMPANION_CHARACTER, --Used within function AddButton to provide the custom non-LibFilters filterPanelId to function FCOIS.ShowContextMenuForAddInvButtons
         ["updateOtherInvokerButtonsState"] = {
@@ -3570,13 +3623,13 @@ contextMenuVars.sortedFilterPanelIdToContextMenuButtonInvoker = sortedAddInvBtnI
 FCOIS.sortHeaderVars = {}
 local sortByNameNameStr = "SortByNameName"
 local sortHeaderNames = {
-    [LF_INVENTORY]              = ctrlVars.INV_NAME .. sortByNameNameStr,
+    [LF_INVENTORY]              = invName .. sortByNameNameStr,
     [LF_VENDOR_BUY]             = ctrlVars.STORE_NAME .. sortByNameNameStr,
     [LF_VENDOR_BUYBACK]         = ctrlVars.STORE_BUY_BACK_NAME .. sortByNameNameStr,
     [LF_VENDOR_REPAIR]          = ctrlVars.REPAIR_NAME .. sortByNameNameStr,
-    [LF_BANK_DEPOSIT]           = ctrlVars.INV_NAME .. sortByNameNameStr,
+    [LF_BANK_DEPOSIT]           = invName .. sortByNameNameStr,
     [LF_BANK_WITHDRAW]          = ctrlVars.BANK_INV_NAME .. sortByNameNameStr,
-    [LF_GUILDBANK_DEPOSIT]      = ctrlVars.INV_NAME .. sortByNameNameStr,
+    [LF_GUILDBANK_DEPOSIT]      = invName .. sortByNameNameStr,
     [LF_GUILDBANK_WITHDRAW]     = ctrlVars.GUILD_BANK_INV_NAME .. sortByNameNameStr,
     [LF_SMITHING_REFINE]        = ctrlVars.REFINEMENT_INV_NAME .. sortByNameNameStr,
     [LF_SMITHING_DECONSTRUCT]   = ctrlVars.DECONSTRUCTION_INV_NAME .. sortByNameNameStr, --#202 FilterButtons and additional inventory flag context menu button added to universal deconstruction panel
@@ -3752,9 +3805,9 @@ geodeItemIds[134623] = true -- 1-10
 geodeItemIds[134595] = true -- Endless geode, reveiling 200 crystals and geodes
 
 ------------------------------------------------------------------------------------------------------------------------
---Special item'S itemID (Master weapons, Mahlstrom weapons, etc.)
---> Removd with API 100021 as Maelstrom and Master weapons can be enchanted normally now!
-FCOIS.specialItems = {}
+--Special items' itemID (Master weapons, Mahlstrom weapons, etc.)
+--> Removed with API 100021 as Maelstrom and Master weapons can be enchanted normally now!
+--FCOIS.specialItems = {}
 
 --Constant values for the additional inventories "flag" button anchor controls
 --dependent on the API version of the game
@@ -3767,127 +3820,122 @@ local varY1 = 104
 local varX2 = -20
 local varY2 = 64
 --Last updated with API101042 - 20240507
-FCOIS.anchorVars.additionalInventoryFlagButtonBaseAPIVersion = 100021 --#320
-local additionalInventoryFlagButtonBaseAPIVersion = FCOIS.anchorVars.additionalInventoryFlagButtonBaseAPIVersion --#320
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion] = {}
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_INVENTORY] = {}
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_INVENTORY].anchorControl              = playerInv
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_INVENTORY].left                       = varX1
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_INVENTORY].top                        = varY1
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_INVENTORY].defaultLeft                = varX1
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_INVENTORY].defaultTop                 = varY1
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_BANK_WITHDRAW] = {}
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_BANK_WITHDRAW].anchorControl          = bankInv
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_BANK_WITHDRAW].left                   = varX1
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_BANK_WITHDRAW].top                    = varY1
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_BANK_WITHDRAW].defaultLeft            = varX1
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_BANK_WITHDRAW].defaultTop             = varY1
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_GUILDBANK_WITHDRAW] = {}
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_GUILDBANK_WITHDRAW].anchorControl     = guildBankInv
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_GUILDBANK_WITHDRAW].left              = varX1
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_GUILDBANK_WITHDRAW].top               = varY1
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_GUILDBANK_WITHDRAW].defaultLeft       = varX1
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_GUILDBANK_WITHDRAW].defaultTop        = varY1
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_SMITHING_REFINE] = {}
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_SMITHING_REFINE].anchorControl        = refinementInv
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_SMITHING_REFINE].left                 = varX2
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_SMITHING_REFINE].top                  = varY2
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_SMITHING_REFINE].defaultLeft          = varX2
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_SMITHING_REFINE].defaultTop           = varY2
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_SMITHING_DECONSTRUCT] = {}
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_SMITHING_DECONSTRUCT].anchorControl   = deconstructionInv --#202 FilterButtons and additional inventory flag context menu button added to universal deconstruction panel
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_SMITHING_DECONSTRUCT].left            = varX2
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_SMITHING_DECONSTRUCT].top             = varY2
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_SMITHING_DECONSTRUCT].defaultLeft     = varX2
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_SMITHING_DECONSTRUCT].defaultTop      = varY2
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_SMITHING_IMPROVEMENT] = {}
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_SMITHING_IMPROVEMENT].anchorControl   = improvementInv
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_SMITHING_IMPROVEMENT].left            = varX2
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_SMITHING_IMPROVEMENT].top             = varY2
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_SMITHING_IMPROVEMENT].defaultLeft     = varX2
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_SMITHING_IMPROVEMENT].defaultTop      = varY2
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_ALCHEMY_CREATION] = {}
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_ALCHEMY_CREATION] .anchorControl   = alchemyInv
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_ALCHEMY_CREATION].left             = varX2
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_ALCHEMY_CREATION].top              = varY1
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_ALCHEMY_CREATION].defaultLeft      = varX2
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_ALCHEMY_CREATION].defaultTop       = varY1
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_ENCHANTING_CREATION] = {}
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_ENCHANTING_CREATION] .anchorControl   = ctrlVars.ENCHANTING_INV
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_ENCHANTING_CREATION].left             = varX2
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_ENCHANTING_CREATION].top              = varY2
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_ENCHANTING_CREATION].defaultLeft      = varX2
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_ENCHANTING_CREATION].defaultTop       = varY2
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_CRAFTBAG] = {}
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_CRAFTBAG].anchorControl               = craftBagInv
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_CRAFTBAG].left                        = varX2
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_CRAFTBAG].top                         = varY1
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_CRAFTBAG].defaultLeft                 = varX2
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_CRAFTBAG].defaultTop                  = varY1
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_RETRAIT] = {}
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_RETRAIT].anchorControl               = retraitInv
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_RETRAIT].left                        = varX2
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_RETRAIT].top                         = varY1
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_RETRAIT].defaultLeft                 = varX2
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_RETRAIT].defaultTop                  = varY1
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_HOUSE_BANK_WITHDRAW] = {}
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_HOUSE_BANK_WITHDRAW].anchorControl   = houseBankInv
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_HOUSE_BANK_WITHDRAW].left            = varX1
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_HOUSE_BANK_WITHDRAW].top             = varY1
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_HOUSE_BANK_WITHDRAW].defaultLeft     = varX1
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_HOUSE_BANK_WITHDRAW].defaultTop      = varY1
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_JEWELRY_REFINE] = {}
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_JEWELRY_REFINE].anchorControl        = refinementInv
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_JEWELRY_REFINE].left                 = varX2
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_JEWELRY_REFINE].top                  = varY2
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_JEWELRY_REFINE].defaultLeft          = varX2
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_JEWELRY_REFINE].defaultTop           = varY2
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_JEWELRY_DECONSTRUCT] = {}
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_JEWELRY_DECONSTRUCT].anchorControl   = deconstructionInv --#202 FilterButtons and additional inventory flag context menu button added to universal deconstruction panel
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_JEWELRY_DECONSTRUCT].left            = varX2
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_JEWELRY_DECONSTRUCT].top             = varY2
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_JEWELRY_DECONSTRUCT].defaultLeft     = varX2
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_JEWELRY_DECONSTRUCT].defaultTop      = varY2
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_JEWELRY_IMPROVEMENT] = {}
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_JEWELRY_IMPROVEMENT].anchorControl   = improvementInv
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_JEWELRY_IMPROVEMENT].left            = varX2
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_JEWELRY_IMPROVEMENT].top             = varY2
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_JEWELRY_IMPROVEMENT].defaultLeft     = varX2
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_JEWELRY_IMPROVEMENT].defaultTop      = varY2
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_INVENTORY_COMPANION] = {}
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_INVENTORY_COMPANION].anchorControl   = companionInv
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_INVENTORY_COMPANION].left            = -55
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_INVENTORY_COMPANION].top             = 110
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_INVENTORY_COMPANION].defaultLeft     = -55
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_INVENTORY_COMPANION].defaultTop      = 110
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][FCOIS_CON_LF_CHARACTER] = {}
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][FCOIS_CON_LF_CHARACTER].anchorControl   = ctrlVars.CHARACTER
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][FCOIS_CON_LF_CHARACTER].anchorMyPoint   = TOPLEFT
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][FCOIS_CON_LF_CHARACTER].anchorToPoint   = TOPRIGHT
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][FCOIS_CON_LF_CHARACTER].left            = -16
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][FCOIS_CON_LF_CHARACTER].top             = 0
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][FCOIS_CON_LF_CHARACTER].defaultLeft     = -16
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][FCOIS_CON_LF_CHARACTER].defaultTop      = 0
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][FCOIS_CON_LF_COMPANION_CHARACTER] = {}
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][FCOIS_CON_LF_COMPANION_CHARACTER].anchorControl   = ctrlVars.COMPANION_CHARACTER
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][FCOIS_CON_LF_COMPANION_CHARACTER].anchorMyPoint   = TOPLEFT
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][FCOIS_CON_LF_COMPANION_CHARACTER].anchorToPoint   = TOPRIGHT
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][FCOIS_CON_LF_COMPANION_CHARACTER].left            = -16
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][FCOIS_CON_LF_COMPANION_CHARACTER].top             = 0
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][FCOIS_CON_LF_COMPANION_CHARACTER].defaultLeft     = -16
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][FCOIS_CON_LF_COMPANION_CHARACTER].defaultTop      = 0
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_FURNITURE_VAULT_WITHDRAW] = {}
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_FURNITURE_VAULT_WITHDRAW].anchorControl          = furnitureVaultInv
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_FURNITURE_VAULT_WITHDRAW].left                   = varX1
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_FURNITURE_VAULT_WITHDRAW].top                    = varY1
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_FURNITURE_VAULT_WITHDRAW].defaultLeft            = varX1
-anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion][LF_FURNITURE_VAULT_WITHDRAW].defaultTop             = varY1
---Is the current API version unequal one of the above one?
-anchorVarsAddInvButtonsFill[apiVersion] = {}
--->Not working with for in pairs loop :-( So we need to copy the contents!
---Use the anchor controls and settings of API 100021
---setmetatable(anchorVarsAddInvButtons[apiVersion], {__index = anchorVarsAddInvButtons[additionalInventoryFlagButtonBaseAPIVersion]})
-anchorVarsAddInvButtonsFill[apiVersion] = ZO_ShallowTableCopy(anchorVarsAddInvButtonsFill[additionalInventoryFlagButtonBaseAPIVersion]) --#320
+local additionalInventoryFlagButtonBaseAPIVersion = 100021 --#320
+local additionalInventoryFlagButtonBaseAPIAnchors = {}
+additionalInventoryFlagButtonBaseAPIAnchors[LF_INVENTORY] = {}
+additionalInventoryFlagButtonBaseAPIAnchors[LF_INVENTORY].anchorControl              = playerInv
+additionalInventoryFlagButtonBaseAPIAnchors[LF_INVENTORY].left                       = varX1
+additionalInventoryFlagButtonBaseAPIAnchors[LF_INVENTORY].top                        = varY1
+additionalInventoryFlagButtonBaseAPIAnchors[LF_INVENTORY].defaultLeft                = varX1
+additionalInventoryFlagButtonBaseAPIAnchors[LF_INVENTORY].defaultTop                 = varY1
+additionalInventoryFlagButtonBaseAPIAnchors[LF_BANK_WITHDRAW] = {}
+additionalInventoryFlagButtonBaseAPIAnchors[LF_BANK_WITHDRAW].anchorControl          = bankInv
+additionalInventoryFlagButtonBaseAPIAnchors[LF_BANK_WITHDRAW].left                   = varX1
+additionalInventoryFlagButtonBaseAPIAnchors[LF_BANK_WITHDRAW].top                    = varY1
+additionalInventoryFlagButtonBaseAPIAnchors[LF_BANK_WITHDRAW].defaultLeft            = varX1
+additionalInventoryFlagButtonBaseAPIAnchors[LF_BANK_WITHDRAW].defaultTop             = varY1
+additionalInventoryFlagButtonBaseAPIAnchors[LF_GUILDBANK_WITHDRAW] = {}
+additionalInventoryFlagButtonBaseAPIAnchors[LF_GUILDBANK_WITHDRAW].anchorControl     = guildBankInv
+additionalInventoryFlagButtonBaseAPIAnchors[LF_GUILDBANK_WITHDRAW].left              = varX1
+additionalInventoryFlagButtonBaseAPIAnchors[LF_GUILDBANK_WITHDRAW].top               = varY1
+additionalInventoryFlagButtonBaseAPIAnchors[LF_GUILDBANK_WITHDRAW].defaultLeft       = varX1
+additionalInventoryFlagButtonBaseAPIAnchors[LF_GUILDBANK_WITHDRAW].defaultTop        = varY1
+additionalInventoryFlagButtonBaseAPIAnchors[LF_SMITHING_REFINE] = {}
+additionalInventoryFlagButtonBaseAPIAnchors[LF_SMITHING_REFINE].anchorControl        = refinementInv
+additionalInventoryFlagButtonBaseAPIAnchors[LF_SMITHING_REFINE].left                 = varX2
+additionalInventoryFlagButtonBaseAPIAnchors[LF_SMITHING_REFINE].top                  = varY2
+additionalInventoryFlagButtonBaseAPIAnchors[LF_SMITHING_REFINE].defaultLeft          = varX2
+additionalInventoryFlagButtonBaseAPIAnchors[LF_SMITHING_REFINE].defaultTop           = varY2
+additionalInventoryFlagButtonBaseAPIAnchors[LF_SMITHING_DECONSTRUCT] = {}
+additionalInventoryFlagButtonBaseAPIAnchors[LF_SMITHING_DECONSTRUCT].anchorControl   = deconstructionInv --#202 FilterButtons and additional inventory flag context menu button added to universal deconstruction panel
+additionalInventoryFlagButtonBaseAPIAnchors[LF_SMITHING_DECONSTRUCT].left            = varX2
+additionalInventoryFlagButtonBaseAPIAnchors[LF_SMITHING_DECONSTRUCT].top             = varY2
+additionalInventoryFlagButtonBaseAPIAnchors[LF_SMITHING_DECONSTRUCT].defaultLeft     = varX2
+additionalInventoryFlagButtonBaseAPIAnchors[LF_SMITHING_DECONSTRUCT].defaultTop      = varY2
+additionalInventoryFlagButtonBaseAPIAnchors[LF_SMITHING_IMPROVEMENT] = {}
+additionalInventoryFlagButtonBaseAPIAnchors[LF_SMITHING_IMPROVEMENT].anchorControl   = improvementInv
+additionalInventoryFlagButtonBaseAPIAnchors[LF_SMITHING_IMPROVEMENT].left            = varX2
+additionalInventoryFlagButtonBaseAPIAnchors[LF_SMITHING_IMPROVEMENT].top             = varY2
+additionalInventoryFlagButtonBaseAPIAnchors[LF_SMITHING_IMPROVEMENT].defaultLeft     = varX2
+additionalInventoryFlagButtonBaseAPIAnchors[LF_SMITHING_IMPROVEMENT].defaultTop      = varY2
+additionalInventoryFlagButtonBaseAPIAnchors[LF_ALCHEMY_CREATION] = {}
+additionalInventoryFlagButtonBaseAPIAnchors[LF_ALCHEMY_CREATION] .anchorControl   = alchemyInv
+additionalInventoryFlagButtonBaseAPIAnchors[LF_ALCHEMY_CREATION].left             = varX2
+additionalInventoryFlagButtonBaseAPIAnchors[LF_ALCHEMY_CREATION].top              = varY1
+additionalInventoryFlagButtonBaseAPIAnchors[LF_ALCHEMY_CREATION].defaultLeft      = varX2
+additionalInventoryFlagButtonBaseAPIAnchors[LF_ALCHEMY_CREATION].defaultTop       = varY1
+additionalInventoryFlagButtonBaseAPIAnchors[LF_ENCHANTING_CREATION] = {}
+additionalInventoryFlagButtonBaseAPIAnchors[LF_ENCHANTING_CREATION] .anchorControl   = ctrlVars.ENCHANTING_INV
+additionalInventoryFlagButtonBaseAPIAnchors[LF_ENCHANTING_CREATION].left             = varX2
+additionalInventoryFlagButtonBaseAPIAnchors[LF_ENCHANTING_CREATION].top              = varY2
+additionalInventoryFlagButtonBaseAPIAnchors[LF_ENCHANTING_CREATION].defaultLeft      = varX2
+additionalInventoryFlagButtonBaseAPIAnchors[LF_ENCHANTING_CREATION].defaultTop       = varY2
+additionalInventoryFlagButtonBaseAPIAnchors[LF_CRAFTBAG] = {}
+additionalInventoryFlagButtonBaseAPIAnchors[LF_CRAFTBAG].anchorControl               = craftBagInv
+additionalInventoryFlagButtonBaseAPIAnchors[LF_CRAFTBAG].left                        = varX2
+additionalInventoryFlagButtonBaseAPIAnchors[LF_CRAFTBAG].top                         = varY1
+additionalInventoryFlagButtonBaseAPIAnchors[LF_CRAFTBAG].defaultLeft                 = varX2
+additionalInventoryFlagButtonBaseAPIAnchors[LF_CRAFTBAG].defaultTop                  = varY1
+additionalInventoryFlagButtonBaseAPIAnchors[LF_RETRAIT] = {}
+additionalInventoryFlagButtonBaseAPIAnchors[LF_RETRAIT].anchorControl               = retraitInv
+additionalInventoryFlagButtonBaseAPIAnchors[LF_RETRAIT].left                        = varX2
+additionalInventoryFlagButtonBaseAPIAnchors[LF_RETRAIT].top                         = varY1
+additionalInventoryFlagButtonBaseAPIAnchors[LF_RETRAIT].defaultLeft                 = varX2
+additionalInventoryFlagButtonBaseAPIAnchors[LF_RETRAIT].defaultTop                  = varY1
+additionalInventoryFlagButtonBaseAPIAnchors[LF_HOUSE_BANK_WITHDRAW] = {}
+additionalInventoryFlagButtonBaseAPIAnchors[LF_HOUSE_BANK_WITHDRAW].anchorControl   = houseBankInv
+additionalInventoryFlagButtonBaseAPIAnchors[LF_HOUSE_BANK_WITHDRAW].left            = varX1
+additionalInventoryFlagButtonBaseAPIAnchors[LF_HOUSE_BANK_WITHDRAW].top             = varY1
+additionalInventoryFlagButtonBaseAPIAnchors[LF_HOUSE_BANK_WITHDRAW].defaultLeft     = varX1
+additionalInventoryFlagButtonBaseAPIAnchors[LF_HOUSE_BANK_WITHDRAW].defaultTop      = varY1
+additionalInventoryFlagButtonBaseAPIAnchors[LF_JEWELRY_REFINE] = {}
+additionalInventoryFlagButtonBaseAPIAnchors[LF_JEWELRY_REFINE].anchorControl        = refinementInv
+additionalInventoryFlagButtonBaseAPIAnchors[LF_JEWELRY_REFINE].left                 = varX2
+additionalInventoryFlagButtonBaseAPIAnchors[LF_JEWELRY_REFINE].top                  = varY2
+additionalInventoryFlagButtonBaseAPIAnchors[LF_JEWELRY_REFINE].defaultLeft          = varX2
+additionalInventoryFlagButtonBaseAPIAnchors[LF_JEWELRY_REFINE].defaultTop           = varY2
+additionalInventoryFlagButtonBaseAPIAnchors[LF_JEWELRY_DECONSTRUCT] = {}
+additionalInventoryFlagButtonBaseAPIAnchors[LF_JEWELRY_DECONSTRUCT].anchorControl   = deconstructionInv --#202 FilterButtons and additional inventory flag context menu button added to universal deconstruction panel
+additionalInventoryFlagButtonBaseAPIAnchors[LF_JEWELRY_DECONSTRUCT].left            = varX2
+additionalInventoryFlagButtonBaseAPIAnchors[LF_JEWELRY_DECONSTRUCT].top             = varY2
+additionalInventoryFlagButtonBaseAPIAnchors[LF_JEWELRY_DECONSTRUCT].defaultLeft     = varX2
+additionalInventoryFlagButtonBaseAPIAnchors[LF_JEWELRY_DECONSTRUCT].defaultTop      = varY2
+additionalInventoryFlagButtonBaseAPIAnchors[LF_JEWELRY_IMPROVEMENT] = {}
+additionalInventoryFlagButtonBaseAPIAnchors[LF_JEWELRY_IMPROVEMENT].anchorControl   = improvementInv
+additionalInventoryFlagButtonBaseAPIAnchors[LF_JEWELRY_IMPROVEMENT].left            = varX2
+additionalInventoryFlagButtonBaseAPIAnchors[LF_JEWELRY_IMPROVEMENT].top             = varY2
+additionalInventoryFlagButtonBaseAPIAnchors[LF_JEWELRY_IMPROVEMENT].defaultLeft     = varX2
+additionalInventoryFlagButtonBaseAPIAnchors[LF_JEWELRY_IMPROVEMENT].defaultTop      = varY2
+additionalInventoryFlagButtonBaseAPIAnchors[LF_INVENTORY_COMPANION] = {}
+additionalInventoryFlagButtonBaseAPIAnchors[LF_INVENTORY_COMPANION].anchorControl   = companionInv
+additionalInventoryFlagButtonBaseAPIAnchors[LF_INVENTORY_COMPANION].left            = -55
+additionalInventoryFlagButtonBaseAPIAnchors[LF_INVENTORY_COMPANION].top             = 110
+additionalInventoryFlagButtonBaseAPIAnchors[LF_INVENTORY_COMPANION].defaultLeft     = -55
+additionalInventoryFlagButtonBaseAPIAnchors[LF_INVENTORY_COMPANION].defaultTop      = 110
+additionalInventoryFlagButtonBaseAPIAnchors[FCOIS_CON_LF_CHARACTER] = {}
+additionalInventoryFlagButtonBaseAPIAnchors[FCOIS_CON_LF_CHARACTER].anchorControl   = characterInv
+additionalInventoryFlagButtonBaseAPIAnchors[FCOIS_CON_LF_CHARACTER].anchorMyPoint   = TOPLEFT
+additionalInventoryFlagButtonBaseAPIAnchors[FCOIS_CON_LF_CHARACTER].anchorToPoint   = TOPRIGHT
+additionalInventoryFlagButtonBaseAPIAnchors[FCOIS_CON_LF_CHARACTER].left            = -16
+additionalInventoryFlagButtonBaseAPIAnchors[FCOIS_CON_LF_CHARACTER].top             = 0
+additionalInventoryFlagButtonBaseAPIAnchors[FCOIS_CON_LF_CHARACTER].defaultLeft     = -16
+additionalInventoryFlagButtonBaseAPIAnchors[FCOIS_CON_LF_CHARACTER].defaultTop      = 0
+additionalInventoryFlagButtonBaseAPIAnchors[FCOIS_CON_LF_COMPANION_CHARACTER] = {}
+additionalInventoryFlagButtonBaseAPIAnchors[FCOIS_CON_LF_COMPANION_CHARACTER].anchorControl   = companionCharacterInv
+additionalInventoryFlagButtonBaseAPIAnchors[FCOIS_CON_LF_COMPANION_CHARACTER].anchorMyPoint   = TOPLEFT
+additionalInventoryFlagButtonBaseAPIAnchors[FCOIS_CON_LF_COMPANION_CHARACTER].anchorToPoint   = TOPRIGHT
+additionalInventoryFlagButtonBaseAPIAnchors[FCOIS_CON_LF_COMPANION_CHARACTER].left            = -16
+additionalInventoryFlagButtonBaseAPIAnchors[FCOIS_CON_LF_COMPANION_CHARACTER].top             = 0
+additionalInventoryFlagButtonBaseAPIAnchors[FCOIS_CON_LF_COMPANION_CHARACTER].defaultLeft     = -16
+additionalInventoryFlagButtonBaseAPIAnchors[FCOIS_CON_LF_COMPANION_CHARACTER].defaultTop      = 0
+additionalInventoryFlagButtonBaseAPIAnchors[LF_FURNITURE_VAULT_WITHDRAW] = {}
+additionalInventoryFlagButtonBaseAPIAnchors[LF_FURNITURE_VAULT_WITHDRAW].anchorControl          = furnitureVaultInv
+additionalInventoryFlagButtonBaseAPIAnchors[LF_FURNITURE_VAULT_WITHDRAW].left                   = varX1
+additionalInventoryFlagButtonBaseAPIAnchors[LF_FURNITURE_VAULT_WITHDRAW].top                    = varY1
+additionalInventoryFlagButtonBaseAPIAnchors[LF_FURNITURE_VAULT_WITHDRAW].defaultLeft            = varX1
+additionalInventoryFlagButtonBaseAPIAnchors[LF_FURNITURE_VAULT_WITHDRAW].defaultTop             = varY1
+--Is the current API version unequal to the base API version above? Then copy the data
+anchorVarsAddInvButtonsFill[apiVersion] = ZO_ShallowTableCopy(additionalInventoryFlagButtonBaseAPIAnchors) --#320
 
 --The ordinal endings of the different languages
 mappingVars.iconNrToOrdinalStr = {

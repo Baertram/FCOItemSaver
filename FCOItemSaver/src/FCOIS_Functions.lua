@@ -2823,6 +2823,7 @@ end
 --  and at the automatic set item marking
 function FCOIS.CheckIfIsSpecialItem(p_bagId, p_slotIndex, p_itemLink)
     if (p_bagId == nil or  p_slotIndex == nil) and p_itemLink == nil then return nil end
+    --[[
     local specialItems = FCOIS.specialItems
     p_itemLink = p_itemLink or gil(p_bagId, p_slotIndex)
     --local itemId = giid(p_bagId, p_slotIndex)
@@ -2831,6 +2832,7 @@ function FCOIS.CheckIfIsSpecialItem(p_bagId, p_slotIndex, p_itemLink)
     if specialItems[itemId] then
         return true
     end
+    ]]
     return false
 end
 
