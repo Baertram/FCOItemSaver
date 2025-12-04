@@ -225,7 +225,8 @@ ReloadUI does not do anything, but manually mass marking via flag icon works fin
 
 --Open/To work on this patch:
 --Test protective functions for all panels
-
+--FCOIS.CheckActivePanel -> Use LibFilters to detect the panel ?
+--FCOIS.GetWhereAreWe -> Remove CraftBagExtended checks and move to extra function
 
 --=== Not started yet ===
 --Clear SV values which are boolean and do not really need a "false" (nil would be okay too):
@@ -242,7 +243,7 @@ ReloadUI does not do anything, but manually mass marking via flag icon works fin
 --allowedFCOISUniqueIdItemTypes
 
 --Other cleanUp
---???
+--FCOIS_panels.lua -> function FCOIS.CheckActivePanel -> LibFilters could reolve that already, or not?
 
 
 ------------------------------------------------------------------------------------

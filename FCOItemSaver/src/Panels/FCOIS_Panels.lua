@@ -29,6 +29,13 @@ local ctrlVars = FCOIS.ZOControlVars
 local universalDeconGlobal = ctrlVars.UNIVERSAL_DECONSTRUCTION_GLOBAL
 --local universalDeconPanel = universalDeconGlobal and universalDeconGlobal.deconstructionPanel
 
+local enchantingStation = ctrlVars.ENCHANTING_STATION
+local enchantingModeToData = {
+    [1] = { filterPanelId = LF_ENCHANTING_CREATION,     inventoryName = enchantingStation },
+    [2] = { filterPanelId = LF_ENCHANTING_EXTRACTION,   inventoryName = enchantingStation },
+}
+local checkIfCBEorAGSActive
+
 local hideContextMenu = FCOIS.HideContextMenu
 local updateFCOISFilterButtonsAtInventory = FCOIS.UpdateFCOISFilterButtonsAtInventory
 local updateFCOISFilterButtonColorsAndTextures = FCOIS.UpdateFCOISFilterButtonColorsAndTextures
@@ -45,6 +52,9 @@ local getFilterWhereBySettings = FCOIS.GetFilterWhereBySettings
 local mappingVars = FCOIS.mappingVars
 --local panelIdSupportedAtDeconNPC = mappingVars.panelIdSupportedAtUniversalDeconstructionNPC
 --local panelIdByDeconNPCMenuBarTabButtonName = mappingVars.panelIdByUniversalDeconstructionNPCMenuBarTabButtonName
+
+local libFiltersPanelIdToInventory = mappingVars.libFiltersPanelIdToInventory
+--local libFiltersPanelIdToCraftingPanelInventory = mappingVars.libFiltersPanelIdToCraftingPanelInventory
 
 --local universalDeconInvCtrl = ctrlVars.UNIVERSAL_DECONSTRUCTION_INV
 --local universaldDeconScene = ctrlVars.UNIVERSAL_DECONSTRUCTON_SCENE
@@ -581,12 +591,14 @@ end
 --the normal inventory filters of panelId = 1. The same applies for mail, trade, and others
 function FCOIS.CheckActivePanel(comingFrom, overwriteFilterWhere, isDeconNPC)
     if overwriteFilterWhere == nil then overwriteFilterWhere = false end
+    local updateGFilterWhere
     local inventoryName
-    local ctrlVars2 = FCOIS.ZOControlVars
+    local origComingFrom = comingFrom
+    --local ctrlVars2 = FCOIS.ZOControlVars
 
     --Get the current scene's name to be able to distinguish between bank, guildbank, mail etc. when changing to CBE's craftbag panels
     --The current game's SCENE and name (used for determining bank/guild bank deposit)
-    local currentScene, currentSceneName = getCurrentSceneInfo()
+    --local currentScene, currentSceneName = getCurrentSceneInfo()
     --Debug
     if FCOIS.settingsVars.settings.debug then
         local oldFilterWhere
@@ -599,14 +611,15 @@ function FCOIS.CheckActivePanel(comingFrom, overwriteFilterWhere, isDeconNPC)
         debugMessage( "[checkActivePanel]","Coming from/Before: " .. tos(oldFilterWhere) .. ", overwriteFilterWhere: " .. tos(overwriteFilterWhere) .. ", currentSceneName: " ..tos(currentSceneName), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED)
     end
 
+    ------------------------------------------------------------------------------------------------------------------------
     -- -v- #202 Universal deconstruction?
---d("[FCOIS.checkActivePanel] comingFrom/Before: " .. tos(comingFrom) .. ", isDeconNPC: " .. tos(isDeconNPC) .. ", overwriteFilterWhere: " ..tos(overwriteFilterWhere).. ", currentSceneName: " ..tos(currentSceneName))
+    --d("[FCOIS.checkActivePanel] comingFrom/Before: " .. tos(comingFrom) .. ", isDeconNPC: " .. tos(isDeconNPC) .. ", overwriteFilterWhere: " ..tos(overwriteFilterWhere).. ", currentSceneName: " ..tos(currentSceneName))
     --universal Deconstruction NPC "Giladil"
     --> Return the original buttonParent via inventoryName so that we can create the buttons and then re-anchor them!
     --> But update the FCOIS.gFilterWhere with the current set filterPanelId at UNIVERSAL_DECONSTRUCTION.FCOIScurrentFilterPanelId
     if isDeconNPC == nil then isDeconNPC = checkIfUniversaldDeconstructionNPC(comingFrom) end
     if isDeconNPC == true then
---d(">>isDeconNPC: true")
+        --d(">>isDeconNPC: true")
         if universalDeconGlobal.FCOIScurrentFilterPanelId ~= nil then
             FCOIS.gFilterWhere = universalDeconGlobal.FCOIScurrentFilterPanelId
         else
@@ -614,7 +627,75 @@ function FCOIS.CheckActivePanel(comingFrom, overwriteFilterWhere, isDeconNPC)
         end
     end
     -- -^- #202 Universal deconstruction?
+
     ------------------------------------------------------------------------------------------------------------------------
+    --Use LibFilters to detect the currently shown filterPanelId
+    libFilters_GetCurrentFilterType = libFilters_GetCurrentFilterType or libFilters.GetCurrentFilterType --#2025_999
+    local currentFilterPanelId = libFilters_GetCurrentFilterType(libFilters)
+    if currentFilterPanelId ~= comingFrom then
+        d("[FCOIS]CheckActivePanel - Error. LibFilters current filterPanelID: " .. tos(currentFilterPanelId) .. ", comingFrom: " .. tos(comingFrom))
+    end
+d("[FCOIS]CheckActivePanel - LibFilters current filterPanelID: " .. tos(currentFilterPanelId) .. ", comingFrom: " .. tos(comingFrom))
+    currentFilterPanelId = currentFilterPanelId or comingFrom
+
+    ------------------------------------------------------------------------------------------------------------------------
+    --Check crafting type relevant filterTypes (e.g. deconstruction could be smithing or jewelry, depending on the craft type)
+    if not isDeconNPC then
+        currentFilterPanelId = getWhereAreWeOrFilterPanelIdByPanelIdRespectingCraftType(currentFilterPanelId, false, false)
+d(">crafting filterPanelId: " .. tos(currentFilterPanelId))
+    end
+
+    ------------------------------------------------------------------------------------------------------------------------
+    --Update the filterPanelId with a standard value
+    if currentFilterPanelId == nil then
+        currentFilterPanelId = LF_INVENTORY --Fallback value: Normal player inventory
+d("<FALLBACK filterPanelId: " .. tos(currentFilterPanelId))
+    end
+
+    ------------------------------------------------------------------------------------------------------------------------
+    --Special cases for the inventoryName detection
+    --ENCHANTING
+    if origComingFrom == "ENCHANTING" then
+        enchantingStation = enchantingStation or ctrlVars.ENCHANTING_STATION
+        --Determine which enchanting mode is used
+        local currentEnchantingModeData = enchantingModeToData[ctrlVars.ENCHANTING.enchantingMode]
+        if currentEnchantingModeData ~= nil then
+            updateGFilterWhere = currentEnchantingModeData.filterPanelId
+            comingFrom = updateGFilterWhere
+            inventoryName = currentEnchantingModeData.inventoryName
+d(">ENCHANTING special filterPanelId: " .. tos(updateGFilterWhere))
+        end
+    end
+
+    ------------------------------------------------------------------------------------------------------------------------
+    --Normal cases (take already prefileld inventoryName, if given)
+    inventoryName = inventoryName or libFiltersPanelIdToInventory[currentFilterPanelId]
+d(">>InventoryName: " .. tos(inventoryName))
+
+    --Special cases updating FCOIS.gFilterWhere
+    updateGFilterWhere = updateGFilterWhere or currentFilterPanelId
+d(">>updateGFilterWhere: " .. tos(updateGFilterWhere))
+
+    ------------------------------------------------------------------------------------------------------------------------
+    --Enchanting extraction
+    if origComingFrom == LF_ENCHANTING_EXTRACTION then
+        updateGFilterWhere = nil
+        --At universal deconstruction we do not overwrite the current filterPanelId
+        if not isDeconNPC then
+            updateGFilterWhere = LF_ENCHANTING_EXTRACTION
+        end
+    end
+
+    ------------------------------------------------------------------------------------------------------------------------
+    if updateGFilterWhere ~= nil then
+d(">>updateGFilterWhere AT UPDATE: " .. tos(updateGFilterWhere))
+        --Standard cases of updating FCOIS.gFilterWhere
+        FCOIS.gFilterWhere = getFilterWhereBySettings(updateGFilterWhere)
+    end
+
+
+    ------------------------------------------------------------------------------------------------------------------------
+    --[[
     --Player bank
     if ((currentSceneName ~= nil and currentSceneName == ctrlVars2.bankSceneName) and not ctrlVars2.BANK:IsHidden()) or comingFrom == LF_BANK_WITHDRAW then
         --Update the filterPanelId
@@ -746,26 +827,12 @@ function FCOIS.CheckActivePanel(comingFrom, overwriteFilterWhere, isDeconNPC)
         inventoryName = ctrlVars2.ALCHEMY_INV
         --Refinement
     elseif not ctrlVars2.REFINEMENT_INV:IsHidden() or (comingFrom == LF_SMITHING_REFINE or comingFrom == LF_JEWELRY_REFINE) then
-        --[[
-        local craftType = GetCraftingInteractionType()
-        local filterPanelId = LF_SMITHING_REFINE
-        if craftType == CRAFTING_TYPE_JEWELRYCRAFTING then
-            filterPanelId = LF_JEWELRY_REFINE
-        end
-        ]]
         local filterPanelId = getWhereAreWeOrFilterPanelIdByPanelIdRespectingCraftType(LF_SMITHING_REFINE, false, false)
         --Update the filterPanelId
         FCOIS.gFilterWhere = getFilterWhereBySettings(filterPanelId)
         inventoryName = ctrlVars2.REFINEMENT_INV
         --Deconstruction
     elseif (not ctrlVars2.DECONSTRUCTION_INV:IsHidden() or (comingFrom == LF_SMITHING_DECONSTRUCT or comingFrom == LF_JEWELRY_DECONSTRUCT)) then
-        --[[
-        local craftType = GetCraftingInteractionType()
-        local filterPanelId = LF_SMITHING_DECONSTRUCT
-        if craftType == CRAFTING_TYPE_JEWELRYCRAFTING then
-            filterPanelId = LF_JEWELRY_DECONSTRUCT
-        end
-        ]]
         if not isDeconNPC then
             local filterPanelId = getWhereAreWeOrFilterPanelIdByPanelIdRespectingCraftType(LF_SMITHING_DECONSTRUCT, false, false)
             --Update the filterPanelId
@@ -774,39 +841,18 @@ function FCOIS.CheckActivePanel(comingFrom, overwriteFilterWhere, isDeconNPC)
         inventoryName = ctrlVars2.DECONSTRUCTION_INV
         --Improvement
     elseif not ctrlVars2.IMPROVEMENT_INV:IsHidden() or (comingFrom == LF_SMITHING_IMPROVEMENT or comingFrom == LF_JEWELRY_IMPROVEMENT) then
-        --[[
-        local craftType = GetCraftingInteractionType()
-        local filterPanelId = LF_SMITHING_IMPROVEMENT
-        if craftType == CRAFTING_TYPE_JEWELRYCRAFTING then
-            filterPanelId = LF_JEWELRY_IMPROVEMENT
-        end
-        ]]
         local filterPanelId = getWhereAreWeOrFilterPanelIdByPanelIdRespectingCraftType(LF_SMITHING_IMPROVEMENT, false, false)
         --Update the filterPanelId
         FCOIS.gFilterWhere = getFilterWhereBySettings(filterPanelId)
-        inventoryName = ctrlVars2.IMPROVEMENT_INV
+        inventoryName = ctrlVars2.LF_JEWELRY_IMPROVEMENT
         --Research dialog
     elseif isResearchListDialogShown() or (comingFrom == LF_SMITHING_RESEARCH_DIALOG or comingFrom == LF_JEWELRY_RESEARCH_DIALOG) then
-        --[[
-        local craftType = GetCraftingInteractionType()
-        local filterPanelId = LF_SMITHING_RESEARCH_DIALOG
-        if craftType == CRAFTING_TYPE_JEWELRYCRAFTING then
-            filterPanelId = LF_JEWELRY_RESEARCH_DIALOG
-        end
-        ]]
         local filterPanelId = getWhereAreWeOrFilterPanelIdByPanelIdRespectingCraftType(LF_SMITHING_RESEARCH_DIALOG, false, false)
         --Update the filterPanelId
         FCOIS.gFilterWhere = getFilterWhereBySettings(filterPanelId)
         inventoryName = ctrlVars2.RESEARCH_POPUP_TOP_DIVIDER
         --Research
     elseif not ctrlVars2.RESEARCH:IsHidden() or (comingFrom == LF_SMITHING_RESEARCH or comingFrom == LF_JEWELRY_RESEARCH) then
-        --[[
-        local craftType = GetCraftingInteractionType()
-        local filterPanelId = LF_SMITHING_RESEARCH
-        if craftType == CRAFTING_TYPE_JEWELRYCRAFTING then
-            filterPanelId = LF_JEWELRY_RESEARCH
-        end
-        ]]
         local filterPanelId = getWhereAreWeOrFilterPanelIdByPanelIdRespectingCraftType(LF_SMITHING_RESEARCH, false, false)
         --Update the filterPanelId
         FCOIS.gFilterWhere = getFilterWhereBySettings(filterPanelId)
@@ -838,6 +884,8 @@ function FCOIS.CheckActivePanel(comingFrom, overwriteFilterWhere, isDeconNPC)
         FCOIS.gFilterWhere = getFilterWhereBySettings(LF_INVENTORY)
         inventoryName = ctrlVars2.INV
     end
+    ]]
+
     --end     -- #202 Universal deconstruction?
 
     --Set the return variable for the currently active filter panel
@@ -847,9 +895,12 @@ function FCOIS.CheckActivePanel(comingFrom, overwriteFilterWhere, isDeconNPC)
     --(e.g. at the CraftBag Extended mail panel the filterPanel will be LF_MAIL. This will be moved to the "parent panel". And the filterPanel will be overwritten with LF_CRAFTBAG)
     if overwriteFilterWhere then
         FCOIS.gFilterWhere = overwriteFilterWhere
-        --CraftBagExtended is active?
-        if overwriteFilterWhere == LF_CRAFTBAG and FCOIS.CheckIfCBEorAGSActive(FCOIS.gFilterWhereParent, true) then
-            inventoryName = ctrlVars2.CRAFTBAG
+        if overwriteFilterWhere == LF_CRAFTBAG then
+            --CraftBagExtended is active?
+            checkIfCBEorAGSActive = checkIfCBEorAGSActive or FCOIS.CheckIfCBEorAGSActive
+            if checkIfCBEorAGSActive(FCOIS.gFilterWhereParent, true) then
+                inventoryName = ctrlVars.CRAFTBAG
+            end
         end
     end
 
