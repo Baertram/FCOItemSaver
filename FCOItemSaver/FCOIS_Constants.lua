@@ -226,8 +226,8 @@ local mappingVars = FCOIS.mappingVars
 local LF_INVENTORY = LF_INVENTORY
 local LF_BANK_WITHDRAW = LF_BANK_WITHDRAW
 local LF_BANK_DEPOSIT = LF_BANK_DEPOSIT
---local LF_GUILD_BANK_WITHDRAW = LF_GUILD_BANK_WITHDRAW
---local LF_GUILD_BANK_DEPOSIT = LF_GUILD_BANK_DEPOSIT
+local LF_GUILDBANK_WITHDRAW = LF_GUILDBANK_WITHDRAW
+local LF_GUILDBANK_DEPOSIT = LF_GUILDBANK_DEPOSIT
 local LF_VENDOR_BUY = LF_VENDOR_BUY
 local LF_VENDOR_SELL = LF_VENDOR_SELL
 local LF_VENDOR_BUYBACK = LF_VENDOR_BUYBACK
@@ -248,6 +248,7 @@ local LF_FENCE_SELL = LF_FENCE_SELL
 local LF_FENCE_LAUNDER = LF_FENCE_LAUNDER
 local LF_CRAFTBAG = LF_CRAFTBAG
 local LF_RETRAIT = LF_RETRAIT
+local LF_QUICKSLOT = LF_QUICKSLOT
 local LF_HOUSE_BANK_WITHDRAW = LF_HOUSE_BANK_WITHDRAW
 local LF_HOUSE_BANK_DEPOSIT = LF_HOUSE_BANK_DEPOSIT
 local LF_JEWELRY_REFINE = LF_JEWELRY_REFINE
@@ -2067,7 +2068,7 @@ mappingVars.libFiltersPanelIdToInventory = {
     [LF_FURNITURE_VAULT_DEPOSIT]    = INVENTORY_BACKPACK,
 }
 
-local libFiltersPanelIdToInventory = {
+local libFiltersPanelIdToInventoryControl = {
     [LF_INVENTORY] = playerInv,
     [LF_BANK_DEPOSIT] = playerInv,
     [LF_HOUSE_BANK_DEPOSIT] = playerInv,
@@ -2102,7 +2103,7 @@ local libFiltersPanelIdToInventory = {
     [LF_ENCHANTING_EXTRACTION] = enchantingStation,
     [LF_RETRAIT] = retraitInv,
 }
-mappingVars.libFiltersPanelIdToInventory = libFiltersPanelIdToInventory
+mappingVars.libFiltersPanelIdToInventoryControl = libFiltersPanelIdToInventoryControl
 
 
 --The mapping table between the LibFilters filterPanelId constant and the crafting inventories
@@ -2111,13 +2112,13 @@ mappingVars.libFiltersPanelIdToCraftingPanelInventory = {
     [LF_ALCHEMY_CREATION]           = ctrlVars.ALCHEMY,
     [LF_RETRAIT]                    = ctrlVars.RETRAIT_RETRAIT_PANEL,
     [LF_SMITHING_REFINE]            = refinementPanel,
-    [LF_SMITHING_CREATION]          = nil,
+    --[LF_SMITHING_CREATION]          = nil,
     [LF_SMITHING_DECONSTRUCT]       = deconstructionPanel,
     [LF_SMITHING_IMPROVEMENT]       = improvementPanel,
     [LF_SMITHING_RESEARCH]          = researchPanel, --#242 Added 4 filter buttons to research panels
     [LF_SMITHING_RESEARCH_DIALOG]   = nil,
     [LF_JEWELRY_REFINE]            = refinementPanel,
-    [LF_JEWELRY_CREATION]          = nil,
+    --[LF_JEWELRY_CREATION]          = nil,
     [LF_JEWELRY_DECONSTRUCT]       = deconstructionPanel,
     [LF_JEWELRY_IMPROVEMENT]       = improvementPanel,
     [LF_JEWELRY_RESEARCH]          = researchPanel, --#242 Added 4 filter buttons to research panels

@@ -53,7 +53,7 @@ local mappingVars = FCOIS.mappingVars
 --local panelIdSupportedAtDeconNPC = mappingVars.panelIdSupportedAtUniversalDeconstructionNPC
 --local panelIdByDeconNPCMenuBarTabButtonName = mappingVars.panelIdByUniversalDeconstructionNPCMenuBarTabButtonName
 
-local libFiltersPanelIdToInventory = mappingVars.libFiltersPanelIdToInventory
+local libFiltersPanelIdToInventoryControl = mappingVars.libFiltersPanelIdToInventoryControl
 --local libFiltersPanelIdToCraftingPanelInventory = mappingVars.libFiltersPanelIdToCraftingPanelInventory
 
 --local universalDeconInvCtrl = ctrlVars.UNIVERSAL_DECONSTRUCTION_INV
@@ -632,9 +632,11 @@ function FCOIS.CheckActivePanel(comingFrom, overwriteFilterWhere, isDeconNPC)
     --Use LibFilters to detect the currently shown filterPanelId
     libFilters_GetCurrentFilterType = libFilters_GetCurrentFilterType or libFilters.GetCurrentFilterType --#2025_999
     local currentFilterPanelId = libFilters_GetCurrentFilterType(libFilters)
-    if currentFilterPanelId ~= comingFrom then
+    --[[
+    if currentFilterPanelId ~= comingFrom and GetDisplayName() == "@Baertram" then
         d("[FCOIS]CheckActivePanel - Error. LibFilters current filterPanelID: " .. tos(currentFilterPanelId) .. ", comingFrom: " .. tos(comingFrom))
     end
+    ]]
 d("[FCOIS]CheckActivePanel - LibFilters current filterPanelID: " .. tos(currentFilterPanelId) .. ", comingFrom: " .. tos(comingFrom))
     currentFilterPanelId = currentFilterPanelId or comingFrom
 
@@ -649,7 +651,7 @@ d(">crafting filterPanelId: " .. tos(currentFilterPanelId))
     --Update the filterPanelId with a standard value
     if currentFilterPanelId == nil then
         currentFilterPanelId = LF_INVENTORY --Fallback value: Normal player inventory
-d("<FALLBACK filterPanelId: " .. tos(currentFilterPanelId))
+d("<FALLBACK filterPanelId to LF_INVENTORY: " .. tos(currentFilterPanelId))
     end
 
     ------------------------------------------------------------------------------------------------------------------------
@@ -669,7 +671,7 @@ d(">ENCHANTING special filterPanelId: " .. tos(updateGFilterWhere))
 
     ------------------------------------------------------------------------------------------------------------------------
     --Normal cases (take already prefileld inventoryName, if given)
-    inventoryName = inventoryName or libFiltersPanelIdToInventory[currentFilterPanelId]
+    inventoryName = inventoryName or libFiltersPanelIdToInventoryControl[currentFilterPanelId]
 d(">>InventoryName: " .. tos(inventoryName))
 
     --Special cases updating FCOIS.gFilterWhere
