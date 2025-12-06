@@ -2443,7 +2443,7 @@ function FCOIS.CreateHooks()
     local function changeFilterQuickSlot(self, filterData)
         updateFilteredItemCountThrottled(LF_QUICKSLOT, 50, "Quickslots - ChangeFilter")
     end
-    ZO_PreHook(ctrlVars.QUICKSLOT_WINDOW, "ChangeFilter", changeFilterQuickSlot)
+    ZO_PreHook(ctrlVars.QUICKSLOT_KEYBOARD, "ChangeFilter", changeFilterQuickSlot)
     --Update the count of items filtered if text search boxes are used (ZOs or Votans Search Box)
     ZO_PreHook(ctrlVars.INVENTORY_MANAGER, "UpdateEmptyBagLabel", function(ctrl, inventoryType, isEmptyList)
         local inventories = ctrlVars.inventories

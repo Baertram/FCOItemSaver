@@ -1888,12 +1888,11 @@ ctrlVars.PROVISIONER                        = PROVISIONER
 ctrlVars.PROVISIONER_PANEL                  = ctrlVars.PROVISIONER.control
 local quickslotKeyboard                     = QUICKSLOT_KEYBOARD
 ctrlVars.QUICKSLOT_KEYBOARD                 = quickslotKeyboard
-local quickslot                             = (quickslotKeyboard ~= nil and quickslotKeyboard.control) or ZO_QuickSlot
+local quickslot                             = quickslotKeyboard.control
 ctrlVars.QUICKSLOT = quickslot
-ctrlVars.QUICKSLOT_WINDOW                   = (quickslotKeyboard ~= nil and quickslotKeyboard) or QUICKSLOT_WINDOW
 ctrlVars.QUICKSLOT_NAME                     = quickslot:GetName()
-ctrlVars.QUICKSLOT_CIRCLE  		            = (quickslotKeyboard ~= nil and quickslotKeyboard.wheelControl) or GetControl(ctrlVars.QUICKSLOT, "Circle") --ZO_QuickSlotCircle
-ctrlVars.QUICKSLOT_LIST			            = (quickslotKeyboard ~= nil and quickslotKeyboard.list) or GetControl(quickslot, listStr) --ZO_QuickSlotList
+ctrlVars.QUICKSLOT_CIRCLE  		            = quickslotKeyboard.wheelControl or GetControl(ctrlVars.QUICKSLOT, "Circle") --ZO_QuickSlotCircle
+ctrlVars.QUICKSLOT_LIST			            = quickslotKeyboard.list or GetControl(quickslot, listStr) --ZO_QuickSlotList
 ctrlVars.QUICKSLOT_WHEEL_FRAGMENT_NAME      = "" --KEYBOARD_QUICKSLOT_CIRCLE_FRAGMENT
 ctrlVars.DestroyItemDialog    		        = ESO_Dialogs["DESTROY_ITEM_PROMPT"]
 ctrlVars.RepairKits                         = REPAIR_KITS
@@ -2062,7 +2061,7 @@ mappingVars.libFiltersPanelIdToInventory = {
     [LF_CRAFTBAG]					= INVENTORY_CRAFT_BAG,
     [LF_HOUSE_BANK_WITHDRAW]        = INVENTORY_HOUSE_BANK,
     [LF_HOUSE_BANK_DEPOSIT]			= INVENTORY_BACKPACK,
-    [LF_QUICKSLOT]                  = ctrlVars.QUICKSLOT_WINDOW,
+    [LF_QUICKSLOT]                  = ctrlVars.QUICKSLOT_KEYBOARD,
 	[LF_INVENTORY_COMPANION]    	= INVENTORY_BACKPACK,
     [LF_FURNITURE_VAULT_WITHDRAW]   = INVENTORY_FURNITURE_VAULT,
     [LF_FURNITURE_VAULT_DEPOSIT]    = INVENTORY_BACKPACK,

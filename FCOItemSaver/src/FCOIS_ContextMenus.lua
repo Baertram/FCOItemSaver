@@ -817,7 +817,7 @@ local function checkIfCachedLastAddMarkDataCanBeUsed(fcoisItemInstanceId, doRese
             lastAddMarkData.countDynIconsEnabled = countDynIconsEnabled
 
             local quickSlotsHidden = ctrlVars.QUICKSLOT:IsHidden()
-            local quickSlotsCurrentFilter = ctrlVars.QUICKSLOT_WINDOW.currentFilter
+            local quickSlotsCurrentFilter = ctrlVars.QUICKSLOT_KEYBOARD.currentFilter
             lastAddMarkData.quickSlotsHidden = quickSlotsHidden
             lastAddMarkData.quickslotCurrentFilter = quickSlotsCurrentFilter
 
@@ -939,7 +939,7 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
     --Also do not show at normal inventory quest items
     local quickSlotsHidden = lastAddMarkData.quickSlotsHidden
     if quickSlotsHidden == nil then quickSlotsHidden = ctrlVars.QUICKSLOT:IsHidden() end
-    local quickSlotsCurrentFilter = lastAddMarkData.quickslotCurrentFilter or ctrlVars.QUICKSLOT_WINDOW.currentFilter
+    local quickSlotsCurrentFilter = lastAddMarkData.quickslotCurrentFilter or ctrlVars.QUICKSLOT_KEYBOARD.currentFilter
     local quickSlotsCurrentFilterDescriptor  = quickSlotsCurrentFilter and quickSlotsCurrentFilter.descriptor
     local quickslotCurrentFilterIsNotAllowed = (quickSlotsCurrentFilter ~= nil and (quickSlotsCurrentFilter.extraInfo ~= nil or quickSlotsCurrentFilterDescriptor == 26)) or false
 

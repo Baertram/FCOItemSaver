@@ -53,7 +53,7 @@ local mappingVars = FCOIS.mappingVars
 --local panelIdSupportedAtDeconNPC = mappingVars.panelIdSupportedAtUniversalDeconstructionNPC
 --local panelIdByDeconNPCMenuBarTabButtonName = mappingVars.panelIdByUniversalDeconstructionNPCMenuBarTabButtonName
 
-local libFiltersPanelIdToInventoryControl = mappingVars.libFiltersPanelIdToInventoryControl
+local libFiltersPanelIdToInventory = mappingVars.libFiltersPanelIdToInventoryControl
 --local libFiltersPanelIdToCraftingPanelInventory = mappingVars.libFiltersPanelIdToCraftingPanelInventory
 
 --local universalDeconInvCtrl = ctrlVars.UNIVERSAL_DECONSTRUCTION_INV
@@ -671,7 +671,7 @@ d(">ENCHANTING special filterPanelId: " .. tos(updateGFilterWhere))
 
     ------------------------------------------------------------------------------------------------------------------------
     --Normal cases (take already prefileld inventoryName, if given)
-    inventoryName = inventoryName or libFiltersPanelIdToInventoryControl[currentFilterPanelId]
+    inventoryName = inventoryName or libFiltersPanelIdToInventory[currentFilterPanelId]
 d(">>InventoryName: " .. tos(inventoryName))
 
     --Special cases updating FCOIS.gFilterWhere
