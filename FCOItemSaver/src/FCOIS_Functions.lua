@@ -1246,7 +1246,7 @@ local doesPlayerInventoryCurrentFilterEqual = FCOIS.DoesPlayerInventoryCurrentFi
 
 function FCOIS.DoesPlayerInventoryCurrentFilterEqualCompanion(panelId)
     local invType = libFiltersPanelIdToInventory[panelId]
-d("[FCOIS]DoesPlayerInventoryCurrentFilterEqualCompanion - panelId: " ..tos(panelId) .. ", invType: " .. tos(invType))
+--d("[FCOIS]DoesPlayerInventoryCurrentFilterEqualCompanion - panelId: " ..tos(panelId) .. ", invType: " .. tos(invType))
     if invType == nil then return end
     return doesPlayerInventoryCurrentFilterEqual(invType, ITEM_TYPE_DISPLAY_CATEGORY_COMPANION)
 end
