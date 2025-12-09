@@ -1162,6 +1162,14 @@ mappingVars.deconstructablePanelIdToOtherCraftType = {
     [LF_JEWELRY_DECONSTRUCT]  = LF_SMITHING_DECONSTRUCT,
 }
 
+--The LibFilters panelIds at universalDeconstruction with it's mapping to the other panelIds
+mappingVars.universalDeconstructionPanelIdToOtherCraftType = {
+    --Deconstructable
+    [LF_ENCHANTING_EXTRACTION] = LF_ENCHANTING_CREATION,
+    [LF_ENCHANTING_CREATION]  = LF_ENCHANTING_EXTRACTION,
+}
+
+
 --#202 -v-
 --function to search the UniversalDeconstruction tabs for it's key (displayName) and return the tab's table then
 function FCOIS.GetDataFromUniversalDeconstructionMenuBar(key)
@@ -1190,6 +1198,12 @@ mappingVars.universalDeconFilterPanelIdToWhereAreWe = {
     [LF_SMITHING_DECONSTRUCT]   = FCOIS_CON_DECONSTRUCT,
     [LF_JEWELRY_DECONSTRUCT]    = FCOIS_CON_DECONSTRUCT,
     [LF_ENCHANTING_EXTRACTION]  = FCOIS_CON_ENCHANT_EXTRACT,
+}
+
+--Exchangeable filterPanelIds e.g. smithing -> jewelry and vie-versa
+mappingVars.universalDeconFilterPanelIdSwitchable = {
+    [LF_SMITHING_DECONSTRUCT]   = true,
+    [LF_JEWELRY_DECONSTRUCT]    = true,
 }
 
 --The LibFilters-3.0 mapping between Universal Deconstructiona ctive tab and the LF_* filterType

@@ -13,6 +13,7 @@ local gAddonName = addonVars.gAddonName
 local apiVersion = FCOIS.APIversion
 local FCOISicon = addonVars.icon
 
+
 -- =====================================================================================================================
 --  Additional inventory button functions ("flag" buttons / jump to settings button / etc.)
 -- =====================================================================================================================

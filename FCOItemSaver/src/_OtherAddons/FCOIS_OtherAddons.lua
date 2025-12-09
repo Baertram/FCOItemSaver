@@ -21,6 +21,10 @@ local bagsToBuildIdFor = mappingVars.bagsToBuildItemInstanceOrUniqueIdFor
 local checkVars = FCOIS.checkVars
 --local allowedUniqueItemTypes = checkVars.uniqueIdItemTypes
 
+local LF_BANK_WITHDRAW = LF_BANK_WITHDRAW
+local LF_GUILDSTORE_SELL = LF_GUILDSTORE_SELL
+local LF_CRAFTBAG = LF_CRAFTBAG
+
 local getSavedVarsMarkedItemsTableName       = FCOIS.GetSavedVarsMarkedItemsTableName
 local getFCOISMarkerIconSavedVariablesItemId = FCOIS.GetFCOISMarkerIconSavedVariablesItemId
 local signItemId                             = FCOIS.SignItemId
