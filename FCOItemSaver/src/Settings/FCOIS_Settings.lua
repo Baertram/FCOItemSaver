@@ -22,8 +22,12 @@ local FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE = FCOIS_CON_UNIQUE_ITEMID_TYP
 FCOIS.APIversion = FCOIS.APIversion or GetAPIVersion()
 local apiVersion = FCOIS.APIversion
 local addonVars         = FCOIS.addonVars
+local savedVarsMarkedItemsNames = addonVars.savedVarsMarkedItemsNames
+local markedItemsName = savedVarsMarkedItemsNames[false]
+local markedItemsFCOISUniqueName = savedVarsMarkedItemsNames[FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE]
 local addonSVname       = addonVars.savedVarName
 local addonSVversion    = addonVars.savedVarVersion
+
 local checkVars = FCOIS.checkVars
 local checksToDo = checkVars.autoReenableAntiSettingsCheckWheres
 local checksAll = checkVars.autoReenableAntiSettingsCheckWheresAll
@@ -1195,7 +1199,7 @@ function FCOIS.AfterSettings()
 
     --Added with FCOIS v2.2.4
     --#189 FCOIS uniqueIds item markers got saved into SavedVariables table "markedItems", but they should only be saved to "markedItemsFCOISUnique"
-    local markedItemsInSV = FCOIS.settingsVars.settings.markedItems
+    local markedItemsInSV = FCOIS.settingsVars.settings[markedItemsName] -- markedItems
     if FCOIS.settingsVars.settings.cleanedFCOISUniqueInNonUnique == nil then
         if markedItemsInSV ~= nil then
             for markerIconNr, _ in ipairs(markedItemsInSV) do
@@ -1203,54 +1207,48 @@ function FCOIS.AfterSettings()
                     if isMarked == true and type(itemInstanceOrZOsUniqueId) == "string" and strfind(itemInstanceOrZOsUniqueId, ",") ~= nil then
                         --FCOIS unique-ID saved to normal markerIcons table -> Delete
                         --d(">Found FCOISUniqueID in normal markedItems table: " ..tos(itemInstanceOrZOsUniqueId))
-                        FCOIS.settingsVars.settings.markedItems[markerIconNr][itemInstanceOrZOsUniqueId] = nil
+                        FCOIS.settingsVars.settings[markedItemsName][markerIconNr][itemInstanceOrZOsUniqueId] = nil
                     end
                 end
             end
         end
         FCOIS.settingsVars.settings.cleanedFCOISUniqueInNonUnique = true
     end
-    --[[
-    if markedItemsInSV ~= nil then     --#2025_999 Clean empty "markerIconNr" sub-tables
-        for markerIconNr, markedItemsData in ipairs(markedItemsInSV) do
-            if ZO_IsTableEmpty(markedItemsData) then
-               FCOIS.settingsVars.settings.markedItems[markerIconNr] = nil
-            end
-        end
-    end
-    ]]
-
 
     --Added with FCOIS v2.2.4
     --#192 FCOIS uniqueIds contain "nil" strings which consume too much space. Change these to "" instead, as function FCOIS.CreateFCOISUniqueIdString uses too now
-    local markedItemsFCOISUniqueInSV = FCOIS.settingsVars.settings.markedItemsFCOISUnique
+    local markedItemsFCOISUniqueInSV = FCOIS.settingsVars.settings[markedItemsFCOISUniqueName] --markedItemsFCOISUnique
     if FCOIS.settingsVars.settings.cleanedFCOISUniqueNILEntries == nil then
         local newPart                    = ""
         if markedItemsFCOISUniqueInSV ~= nil then
             for markerIconNr, markedItemsData in ipairs(markedItemsFCOISUniqueInSV) do
-                for FCOISuniqueIdOfItem, isMarked in pairs(markedItemsData) do
-                    if isMarked == true and type(FCOISuniqueIdOfItem) == "string" and strfind(FCOISuniqueIdOfItem, ",") ~= nil then
-                        local partsOfFCOISUniqueId = splitStringWithDelimiter(FCOISuniqueIdOfItem, ",")
-                        if partsOfFCOISUniqueId ~= nil and #partsOfFCOISUniqueId > 0 then
-                            local newFCOISUniqueId = ""
-                            local wasFCOISUniqueIdChanged = false
-                            for idx, part in ipairs(partsOfFCOISUniqueId) do
-                                --Always keep the itemID at first part
-                                if idx > 1 and (part == "nil" or part == "?") then
-                                    part = newPart
-                                    wasFCOISUniqueIdChanged = true
+                if ZO_IsTableEmpty(markedItemsData) then
+                    markedItemsData = nil
+                else
+                    for FCOISuniqueIdOfItem, isMarked in pairs(markedItemsData) do
+                        if isMarked == true and type(FCOISuniqueIdOfItem) == "string" and strfind(FCOISuniqueIdOfItem, ",") ~= nil then
+                            local partsOfFCOISUniqueId = splitStringWithDelimiter(FCOISuniqueIdOfItem, ",")
+                            if partsOfFCOISUniqueId ~= nil and #partsOfFCOISUniqueId > 0 then
+                                local newFCOISUniqueId = ""
+                                local wasFCOISUniqueIdChanged = false
+                                for idx, part in ipairs(partsOfFCOISUniqueId) do
+                                    --Always keep the itemID at first part
+                                    if idx > 1 and (part == "nil" or part == "?") then
+                                        part = newPart
+                                        wasFCOISUniqueIdChanged = true
+                                    end
+                                    newFCOISUniqueId = newFCOISUniqueId .. part
+                                    if idx < #partsOfFCOISUniqueId then
+                                        newFCOISUniqueId = newFCOISUniqueId .. ","
+                                    end
                                 end
-                                newFCOISUniqueId = newFCOISUniqueId .. part
-                                if idx < #partsOfFCOISUniqueId then
-                                    newFCOISUniqueId = newFCOISUniqueId .. ","
+                                if wasFCOISUniqueIdChanged == true then
+                                    --d(">changed FCOIS uniqueId from: " ..tos(FCOISuniqueIdOfItem) .. " to: " ..tos(newFCOISUniqueId))
+                                    --Remove old FCOISUniqueId
+                                    FCOIS.settingsVars.settings[markedItemsFCOISUniqueName][markerIconNr][FCOISuniqueIdOfItem] = nil
+                                    --Add new corrected one
+                                    FCOIS.settingsVars.settings[markedItemsFCOISUniqueName][markerIconNr][newFCOISUniqueId] = true
                                 end
-                            end
-                            if wasFCOISUniqueIdChanged == true then
-                                --d(">changed FCOIS uniqueId from: " ..tos(FCOISuniqueIdOfItem) .. " to: " ..tos(newFCOISUniqueId))
-                                --Remove old FCOISUniqueId
-                                FCOIS.settingsVars.settings.markedItemsFCOISUnique[markerIconNr][FCOISuniqueIdOfItem] = nil
-                                --Add new corrected one
-                                FCOIS.settingsVars.settings.markedItemsFCOISUnique[markerIconNr][newFCOISUniqueId] = true
                             end
                         end
                     end
@@ -1259,16 +1257,6 @@ function FCOIS.AfterSettings()
         end
         FCOIS.settingsVars.settings.cleanedFCOISUniqueNILEntries = true
     end
-    --[[
-    if markedItemsFCOISUniqueInSV ~= nil then     --#2025_999 Clean empty "markerIconNr" sub-tables
-        for markerIconNr, markedItemsData in ipairs(markedItemsFCOISUniqueInSV) do
-            if ZO_IsTableEmpty(markedItemsData) then
-               FCOIS.settingsVars.settings.markedItemsFCOISUnique[markerIconNr] = nil
-            end
-        end
-    end
-    ]]
-
 
     --Added with FCOIS v2.7.8     --#2025_999 Performance improvement by cleaning unnecessary SavedVariable entries
     local settingsToUpdate = FCOIS.settingsVars.settings
@@ -1775,7 +1763,7 @@ function FCOIS.CopySavedVars(srcServer, targServer, srcAcc, targAcc, srcCharId, 
     if not onlyDelete and svDefToCopy ~= nil and svToCopy ~= nil then
         --d(">go on with copy/delete!")
         --The default table got the language entry and the normal settings table got the markedItems entry?
-        if svDefToCopy["language"] ~= nil and (svToCopy["markedItems"] ~= nil or svToCopy["markedItemsFCOISUnique"] ~= nil) then
+        if svDefToCopy["language"] ~= nil and (svToCopy[markedItemsName] ~= nil or svToCopy[markedItemsFCOISUniqueName] ~= nil) then
             --d(">>found def language and markedItems")
             if FCOItemSaver_Settings[targServer] == nil then FCOItemSaver_Settings[targServer] = {} end
             --Source data is valid. Now build the target data

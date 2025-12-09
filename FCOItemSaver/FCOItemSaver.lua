@@ -217,10 +217,10 @@ ReloadUI does not do anything, but manually mass marking via flag icon works fin
 --#2025_999 Performance improvements
 
 --#325 Automatic set marker is applied to all items, allthough only automatic set traits should be marked
-
+--#326 Vendor sell filters aren#t working anymore
 
 --______________________________________
--- Current max # of bugs/features/ToDos: 325
+-- Current max # of bugs/features/ToDos: 326
 --______________________________________
 
 --Open/To work on this patch:

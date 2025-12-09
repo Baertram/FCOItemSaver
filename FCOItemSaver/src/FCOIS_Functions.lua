@@ -43,7 +43,7 @@ local funcType = "function"
 local stringType = "string"
 local numberType = "number"
 --local booleanType = "boolean"
---local tableType = "table"
+local tableType = "table"
 
 --Local ZOs API
 local gccharid = GetCurrentCharacterId
@@ -589,7 +589,7 @@ function FCOIS.GetFCOISMarkerIconUniqueIdAllowedItemType(bagId, slotIndex, uniqu
 end
 local getFCOISMarkerIconUniqueIdAllowedItemType = FCOIS.GetFCOISMarkerIconUniqueIdAllowedItemType
 
---Get the itemInstanceId for non-unique or the unique ZOs id or the FCOIS created unique id, depending on the settings
+--Get the itemInstanceId for non-unique, or the real unique ZOs ID, or the FCOIS created unique id -> depending on the settings
 function FCOIS.GetFCOISMarkerIconSavedVariablesItemId(bagId, slotIndex, allowedItemType, useUniqueIds, uniqueItemIdType, signToo)
     if bagId == nil or slotIndex == nil then
         return nil, allowedItemType

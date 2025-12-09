@@ -10,18 +10,17 @@
 # Non-Optional libraries
 ## DependsOn: LibAddonMenu-2.0>=41 LibAddonMenuOrderListBox>=012 LibCustomMenu>=730 LibDialog>=127 LibFeedback LibFilters-3.0>=346 LibMainMenu-2.0>=40400 LibShifterBox>=000700
 #
-# !!! Attention !!! -> 1 line here can only contain ~220 characters, so the optional dependency lines need to be split up, or they won't be recognized properly!
 # Optional libraries
 ## OptionalDependsOn: LibCharacterKnowledge>=202010 LibDebugLogger>=263 LibLazyCrafting>=4028 LibMultiAccountSets>=300130 LibSets>=000804
 # Optional AddOns
-AdvancedDisableControllerUI AdvancedFilters AF_FCODuplicateItemsFilters AwesomeGuildStore CraftBagExtended DolgubonsLazyWritCreator ItemCooldownTracker SetTracker>=300 SousChef
-
+## OptionalDependsOn: AdvancedDisableControllerUI AdvancedFilters AF_FCODuplicateItemsFilters AwesomeGuildStore CraftBagExtended DolgubonsLazyWritCreator ItemCooldownTracker SetTracker>=300 SousChef
+#
 # These addons were in the OptionalDependsOn before but raised circular dependencies. They are kept as reference at the tag BetterWith.
 # BetterWith: ChatMerchant CraftedPotions DetailedResearchScrolls GridList InventoryGridView PotionMaker QualitySort ResearchAssistant VotansSettingsMenu
-
+#
 #(Check file FCOIS_Constants.lua for local and global constant values
 #(Check file FCOIS_API.lua for functions to use within your addon)
-
+#
 #Known addons with FCOIS function usage:
 #-----------------------------------------------------------------
 #Advanced AutoLoot Renewed

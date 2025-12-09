@@ -1808,7 +1808,7 @@ function FCOIS.CreateHooks()
     --======== VENDOR =====================================================
     --Pre Hook the menubar button's (buy, sell, buyback, repair) handler at the vendor
     --> Will be done in event callback function for EVENT_OPEN_STORE + a delay as the buttons are not created before!
-    ---> See file src/FCOIS_events.lua, function 'FCOItemSaver_OpenStore("vendor")'
+    ---> See file src/FCOIS_events.lua, function 'FCOItemSaver_Open_Store("vendor")'
     --Register a secure posthook on visibility change of a scrolllist's row -> At the vendor inventory list
     -->#303 Was added via FCOIS.CreateTextures already so here we only need to add the onMouseUpHandlers!
     --[[

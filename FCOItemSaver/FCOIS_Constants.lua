@@ -80,11 +80,14 @@ addonVars.savedVarVersion		   	= 0.10 -- Changing this will reset all SavedVaria
 addonVars.savedVarsNumSaveModeTypes = 4 -- 1=Each character, 2=Account wide, 3=Each account saved the same, 4=Each server and account saved the same
 --The subtables for the marked items. markedItems will be used for the non-unique and the ZOs really unique IDs.
 --markedItemsFCOISUnique will be used for the FCOIS created unique IDs.
-addonVars.savedVarsMarkedItemsNames = {
+local savedVarsMarkedItemsNames = {
     [false]                                         = savedVarsMarkedItems,
     [FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE]    = savedVarsMarkedItems,
     [FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE]  = savedVarsMarkedItems .. "FCOISUnique",
 }
+addonVars.savedVarsMarkedItemsNames = savedVarsMarkedItemsNames
+local markedItemsName = savedVarsMarkedItemsNames[false]
+local markedItemsFCOISUniqueName = savedVarsMarkedItemsNames[FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE]
 
 FCOIS.svDefaultName                 = "Default"
 FCOIS.svAccountWideName             = "$AccountWide"
@@ -551,7 +554,8 @@ numVars.languageCount = FCOIS_CON_LANG_MAX --English, German, French, Spanish, I
 --Global: Count of available inventory filter types (LF_INVENTORY, LF_BANK_WITHDRAW, etc. -> see above)
 numVars.gFCONumFilterInventoryTypes = FCOIS.libFilters:GetMaxFilterType()  -- Maximum libFilters 3.0 filter types
 --Global value: Number of filters
-numVars.gFCONumFilters			= #checkVars.filterButtonsToCheck
+local numFilterButtons	= #checkVars.filterButtonsToCheck
+numVars.gFCONumFilters = numFilterButtons
 --Global value: Number of non-dynamic and non gear set icons
 numVars.gFCONumNonDynamicIcons	= 7
 --Global value: Number of gear sets
@@ -2077,6 +2081,7 @@ local libFiltersPanelIdToInventoryControl = {
     [LF_VENDOR_BUY] = playerInv,
     [LF_VENDOR_BUYBACK] = playerInv,
     [LF_VENDOR_REPAIR] = playerInv,
+    [LF_VENDOR_SELL] = playerInv,
     [LF_FENCE_SELL] = playerInv,
     [LF_FENCE_LAUNDER] = playerInv,
     [LF_MAIL_SEND] = playerInv,
@@ -2305,12 +2310,12 @@ FCOIS.settingsVars.firstRunSettings   = {}
 FCOIS.settingsVars.defaults			= {}
 FCOIS.settingsVars.accountWideButForEachCharacterDefaults = {}
 
-FCOIS.markedItems = {}
-FCOIS.markedItemsFCOISUnique = {}
-local numFilters = numVars.gFCONumFilters
-for i = 1, numFilters, 1 do
-	FCOIS.markedItems[i] = {}
-	FCOIS.markedItemsFCOISUnique[i] = {}
+FCOIS[markedItemsName] = {}
+FCOIS[markedItemsFCOISUniqueName] = {}
+--Create empty subtables per markerIcon
+for i = 1, numFilterButtons, 1 do
+	FCOIS[markedItemsName][i] = {}
+	--FCOIS[markedItemsFCOISUniqueName][i] = {}
 end
 
 --The itemtypes that are allowed to be marked with unique item IDs by ZOS uniqueIDs
