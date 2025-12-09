@@ -200,21 +200,31 @@ local function FCOItemSaver_Open_Store(p_storeIndicator)
         vendorMenuButtonSetups[3] = vendorMenuButtonSetups[3] or {
             [vendorBuyButton] = LF_VENDOR_BUY,
             [vendorSellButton] = LF_VENDOR_SELL,
-            [vendorBuyBackButton] = LF_VENDOR_BUYBACK,
         }
+        if vendorBuyBackButton ~= nil then
+            vendorMenuButtonSetups[3][vendorBuyBackButton] = LF_VENDOR_BUYBACK
+        end
         --The vendor type is e.g. Normal NPC with buy, sell, buyback and repair menu buttons.
         vendorMenuButtonSetups[4] = vendorMenuButtonSetups[4] or {
             [vendorBuyButton] = LF_VENDOR_BUY,
             [vendorSellButton] = LF_VENDOR_SELL,
-            [vendorBuyBackButton] = LF_VENDOR_BUYBACK,
         }
+        if vendorBuyBackButton ~= nil then
+            vendorMenuButtonSetups[4][vendorBuyBackButton] = LF_VENDOR_BUYBACK
+        end
+        if vendorRepairButton ~= nil then
+            vendorMenuButtonSetups[4][vendorRepairButton] = LF_VENDOR_REPAIR
+        end
+        --[[ todo LV_VENDOR_SELL_VENGEANCE support
         --The vendor type is e.g. Normal NPC with buy, sell, vengeance sell, buyback and repair menu buttons.
         vendorMenuButtonSetups[5] = vendorMenuButtonSetups[5] or {
             [vendorBuyButton] = LF_VENDOR_BUY,
             [vendorSellButton] = LF_VENDOR_SELL,
-            [vendorBuyBackButton] = LF_VENDOR_BUYBACK,
+            [vendorBuyBackButton] = LV_VENDOR_SELL_VENGEANCE,
+            [vendorRepairButton] = LF_VENDOR_BUYBACK,
             [vendorRepairButton] = LF_VENDOR_REPAIR,
         }
+        ]]
 
         --Check the filter buttons and create them if they are not there. Update the inventory afterwards too
         if p_storeIndicator == "vendor" then
