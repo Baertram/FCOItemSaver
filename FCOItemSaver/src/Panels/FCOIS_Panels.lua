@@ -5,6 +5,8 @@ local FCOIS = FCOIS
 local tos = tostring
 local gil = GetItemLink
 
+local numberType = "number"
+
 local libFilters = FCOIS.libFilters
 
 local FCOIS_CON_DESTROY = FCOIS_CON_DESTROY
@@ -608,13 +610,12 @@ end
 --If you are at the bank e.g. panelId is 2 (FCOIS.gFilterWhere was set in event BANK_OPEN), but you could also be at the deposit tab which uses
 --the normal inventory filters of panelId = 1. The same applies for mail, trade, and others
 function FCOIS.CheckActivePanel(comingFrom, overwriteFilterWhere, isDeconNPC)
-    if overwriteFilterWhere == nil then overwriteFilterWhere = false end
     local updateGFilterWhere
     local inventoryName
     local origComingFrom = comingFrom
     --local ctrlVars2 = FCOIS.ZOControlVars
 
-    local doDebugHere = false --origComingFrom == nil or origComingFrom == LF_SMITHING_RESEARCH_DIALOG --todo: change to true to debug the function
+    local doDebugHere = true --origComingFrom == nil or origComingFrom == LF_SMITHING_RESEARCH_DIALOG --todo: change to true to debug the function
 
     --Get the current scene's name to be able to distinguish between bank, guildbank, mail etc. when changing to CBE's craftbag panels
     --The current game's SCENE and name (used for determining bank/guild bank deposit)
@@ -710,9 +711,9 @@ function FCOIS.CheckActivePanel(comingFrom, overwriteFilterWhere, isDeconNPC)
 
     ------------------------------------------------------------------------------------------------------------------------
     if updateGFilterWhere ~= nil then
-        if doDebugHere then d(">>updateGFilterWhere AT UPDATE: " .. tos(updateGFilterWhere)) end
         --Standard cases of updating FCOIS.gFilterWhere
         FCOIS.gFilterWhere = getFilterWhereBySettings(updateGFilterWhere)
+        if doDebugHere then d(">>updateGFilterWhere AT UPDATE: " .. tos(updateGFilterWhere) .. ", FCOIS.gFilterWhere: " .. tos(FCOIS.gFilterWhere) .. "; overwriteFilterWhere: " .. tos(overwriteFilterWhere)) end
     end
     ------------------------------------------------------------------------------------------------------------------------
 
@@ -720,14 +721,16 @@ function FCOIS.CheckActivePanel(comingFrom, overwriteFilterWhere, isDeconNPC)
     local panelType = FCOIS.gFilterWhere
 
     --Overwrite the FCOIS panelID with the one from the function parameter?
-    --(e.g. at the CraftBag Extended mail panel the filterPanel will be LF_MAIL. This will be moved to the "parent panel". And the filterPanel will be overwritten with LF_CRAFTBAG)
+    --(e.g. at the CraftBag Extended mail panel the filterPanel will be LF_MAIL. This will be moved to the "parent panel". And the actual filterPanel will be overwritten with LF_CRAFTBAG)
     if overwriteFilterWhere ~= nil then
-        FCOIS.gFilterWhere = overwriteFilterWhere
-        if overwriteFilterWhere == LF_CRAFTBAG then
-            --CraftBagExtended is active?
-            checkIfCBEorAGSActive = checkIfCBEorAGSActive or FCOIS.CheckIfCBEorAGSActive
-            if checkIfCBEorAGSActive(FCOIS.gFilterWhereParent, true) then
-                inventoryName = ctrlVars.CRAFTBAG
+        if type(overwriteFilterWhere) == numberType then
+            FCOIS.gFilterWhere = overwriteFilterWhere
+            if overwriteFilterWhere == LF_CRAFTBAG then
+                --CraftBagExtended is active?
+                checkIfCBEorAGSActive = checkIfCBEorAGSActive or FCOIS.CheckIfCBEorAGSActive
+                if checkIfCBEorAGSActive(FCOIS.gFilterWhereParent, true) then
+                    inventoryName = ctrlVars.CRAFTBAG
+                end
             end
         end
     end
