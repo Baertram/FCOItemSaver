@@ -1157,9 +1157,20 @@ mappingVars.panelIdToDeconstructable = {
 
 --The LibFilters panelIds of deconstruction with it's mapping to the other craftingType
 mappingVars.deconstructablePanelIdToOtherCraftType = {
-    --Deconstructable
     [LF_SMITHING_DECONSTRUCT] = LF_JEWELRY_DECONSTRUCT,
     [LF_JEWELRY_DECONSTRUCT]  = LF_SMITHING_DECONSTRUCT,
+}
+
+--The LibFilters panelIds of improvement with it's mapping to the other craftingType
+mappingVars.improvablePanelIdToOtherCraftType = {
+    [LF_SMITHING_IMPROVEMENT] = LF_JEWELRY_IMPROVEMENT,
+    [LF_JEWELRY_IMPROVEMENT]  = LF_SMITHING_IMPROVEMENT,
+}
+
+--The LibFilters panelIds of researchDialog with it's mapping to the other craftingType
+mappingVars.researchDialogPanelIdToOtherCraftType = {
+    [LF_SMITHING_RESEARCH_DIALOG] = LF_JEWELRY_RESEARCH_DIALOG,
+    [LF_JEWELRY_RESEARCH_DIALOG]  = LF_SMITHING_RESEARCH_DIALOG,
 }
 
 --The LibFilters panelIds at universalDeconstruction with it's mapping to the other panelIds

@@ -2332,16 +2332,19 @@ end
 
 --Is the research list dialog shown?
 function FCOIS.IsResearchListDialogShown()
-    if libFilters.IsListDialogShown then
-        return libFilters.IsListDialogShown(libFilters, nil, ctrlVars.RESEARCH)
+    return libFilters.IsListDialogShown(libFilters, nil, ctrlVars.RESEARCH)
+    --[[
     else
+d(">FCOIS internal check")
         local listDialog = ZO_InventorySlot_GetItemListDialog()
         local data = listDialog and listDialog.control and listDialog.control.data
         if data == nil then return false end
         local owner = data.owner
         if owner == nil or owner.control == nil then return false end
+d(">owner: " .. tos(owner.control == ctrlVars.RESEARCH) .. "; listDialogHidden: " .. tos(listDialog.control:IsHidden()))
         return owner.control == ctrlVars.RESEARCH and not listDialog.control:IsHidden()
     end
+    ]]
 end
 
 --Is the repair item dialog shown?

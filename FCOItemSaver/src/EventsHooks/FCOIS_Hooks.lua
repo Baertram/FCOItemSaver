@@ -1387,7 +1387,9 @@ function FCOIS.CreateHooks()
             if not isResearchListDialogShown() then return false end
             FCOIS.preventerVars.ZO_ListDialog1ResearchIsOpen = true
             --Check the filter buttons and create them if they are not there.
-            checkFCOISFilterButtonsAtPanel(true, LF_SMITHING_RESEARCH_DIALOG)
+            zo_callLater(function()
+                checkFCOISFilterButtonsAtPanel(true, LF_SMITHING_RESEARCH_DIALOG)
+            end, 0) --delay a bit so LibFilters can detect the listDialog's filterPanelId properly
         end)
         ZO_PreHookHandler(researchPopupDialogCustomControl, "OnHide", function()
             --d("[FCOIS]SMITHING_RESEARCH_SELECT PreHook:OnHide")

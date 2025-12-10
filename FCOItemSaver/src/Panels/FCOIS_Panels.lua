@@ -614,7 +614,7 @@ function FCOIS.CheckActivePanel(comingFrom, overwriteFilterWhere, isDeconNPC)
     local origComingFrom = comingFrom
     --local ctrlVars2 = FCOIS.ZOControlVars
 
-    local doDebugHere = false --origComingFrom == nil or origComingFrom == LF_VENDOR_SELL --todo: change to true to debug the function
+    local doDebugHere = false --origComingFrom == nil or origComingFrom == LF_SMITHING_RESEARCH_DIALOG --todo: change to true to debug the function
 
     --Get the current scene's name to be able to distinguish between bank, guildbank, mail etc. when changing to CBE's craftbag panels
     --The current game's SCENE and name (used for determining bank/guild bank deposit)
@@ -721,7 +721,7 @@ function FCOIS.CheckActivePanel(comingFrom, overwriteFilterWhere, isDeconNPC)
 
     --Overwrite the FCOIS panelID with the one from the function parameter?
     --(e.g. at the CraftBag Extended mail panel the filterPanel will be LF_MAIL. This will be moved to the "parent panel". And the filterPanel will be overwritten with LF_CRAFTBAG)
-    if overwriteFilterWhere then
+    if overwriteFilterWhere ~= nil then
         FCOIS.gFilterWhere = overwriteFilterWhere
         if overwriteFilterWhere == LF_CRAFTBAG then
             --CraftBagExtended is active?
