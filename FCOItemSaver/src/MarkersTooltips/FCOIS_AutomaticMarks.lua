@@ -1929,7 +1929,7 @@ function FCOIS.AutomaticMarksToDoCheck(bag, slot, scanType, doOverride) --#2025_
         --  or the item is already marked with any icon, if enabled to be checked
         local isItemProtected = true
         local canBeAutomaticallyMarked = true
-        local iconIsMarkedAllreadyAllowed = (todoIconIsMarkedAllreadyAllowed ~= nil and todoIconIsMarkedAllreadyAllowed) or false
+        local iconIsMarkedAllreadyAllowed = (toDos.IconIsMarkedAllreadyAllowed ~= nil and toDos.IconIsMarkedAllreadyAllowed) or false
         if itemId ~= nil then
             canBeAutomaticallyMarked = checkIfCanBeAutomaticallyMarked(bag, slot, itemId, scanType)
             if canBeAutomaticallyMarked == true then
