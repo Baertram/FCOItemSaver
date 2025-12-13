@@ -617,7 +617,7 @@ function FCOIS.CheckActivePanel(comingFrom, overwriteFilterWhere, isDeconNPC)
     local origComingFrom = comingFrom
     --local ctrlVars2 = FCOIS.ZOControlVars
 
-    local doDebugHere = origComingFrom == nil or origComingFrom == LF_SMITHING_DECONSTRUCT --todo: change to true to debug the function
+    local doDebugHere = false --origComingFrom == nil or origComingFrom == LF_SMITHING_DECONSTRUCT --todo: change to true to debug the function
 
     --Get the current scene's name to be able to distinguish between bank, guildbank, mail etc. when changing to CBE's craftbag panels
     --The current game's SCENE and name (used for determining bank/guild bank deposit)
