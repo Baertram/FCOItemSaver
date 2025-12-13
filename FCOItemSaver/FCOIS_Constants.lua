@@ -1175,7 +1175,6 @@ mappingVars.researchDialogPanelIdToOtherCraftType = {
 
 --The LibFilters panelIds at universalDeconstruction with it's mapping to the other panelIds
 mappingVars.universalDeconstructionPanelIdToOtherCraftType = {
-    --Deconstructable
     [LF_ENCHANTING_EXTRACTION] = LF_ENCHANTING_CREATION,
     [LF_ENCHANTING_CREATION]  = LF_ENCHANTING_EXTRACTION,
 }

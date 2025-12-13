@@ -74,6 +74,8 @@ local mappingVars = FCOIS.mappingVars
 
 local libFiltersPanelIdToInventory = mappingVars.libFiltersPanelIdToInventoryControl
 --local libFiltersPanelIdToCraftingPanelInventory = mappingVars.libFiltersPanelIdToCraftingPanelInventory
+--local universalDeconFilterPanelIdToWhereAreWe = mappingVars.universalDeconFilterPanelIdToWhereAreWe
+
 
 --local universalDeconInvCtrl = ctrlVars.UNIVERSAL_DECONSTRUCTION_INV
 --local universaldDeconScene = ctrlVars.UNIVERSAL_DECONSTRUCTON_SCENE
@@ -209,7 +211,7 @@ function FCOIS.CheckIfUniversalDeconstructionNPC(filterPanelIdComingFrom)
     --d("[FCOIS]CheckIfUniversalDeconstructionNPC")
     isUniversalDeconstructionPanelShown = isUniversalDeconstructionPanelShown or libFilters.IsUniversalDeconstructionPanelShown
     if isUniversalDeconstructionPanelShown == nil then return false end
-    return isUniversalDeconstructionPanelShown(filterPanelIdComingFrom)
+    return isUniversalDeconstructionPanelShown(libFilters)
 end
 local checkIfUniversaldDeconstructionNPC = FCOIS.CheckIfUniversalDeconstructionNPC
 
@@ -615,7 +617,7 @@ function FCOIS.CheckActivePanel(comingFrom, overwriteFilterWhere, isDeconNPC)
     local origComingFrom = comingFrom
     --local ctrlVars2 = FCOIS.ZOControlVars
 
-    local doDebugHere = true --origComingFrom == nil or origComingFrom == LF_SMITHING_RESEARCH_DIALOG --todo: change to true to debug the function
+    local doDebugHere = origComingFrom == nil or origComingFrom == LF_SMITHING_DECONSTRUCT --todo: change to true to debug the function
 
     --Get the current scene's name to be able to distinguish between bank, guildbank, mail etc. when changing to CBE's craftbag panels
     --The current game's SCENE and name (used for determining bank/guild bank deposit)
@@ -629,16 +631,19 @@ function FCOIS.CheckActivePanel(comingFrom, overwriteFilterWhere, isDeconNPC)
         else
             oldFilterWhere = comingFrom
         end
-        debugMessage( "[checkActivePanel]","Coming from/Before: " .. tos(oldFilterWhere) .. ", overwriteFilterWhere: " .. tos(overwriteFilterWhere) .. ", currentSceneName: " ..tos(currentSceneName), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED)
+        debugMessage( "[checkActivePanel]","Coming from/Before: " .. tos(oldFilterWhere) .. ", overwriteFilterWhere: " .. tos(overwriteFilterWhere), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED)
     end
+
+    local currentFilterPanelId
 
     ------------------------------------------------------------------------------------------------------------------------
     -- -v- #202 Universal deconstruction?
-    --d("[FCOIS.checkActivePanel] comingFrom/Before: " .. tos(comingFrom) .. ", isDeconNPC: " .. tos(isDeconNPC) .. ", overwriteFilterWhere: " ..tos(overwriteFilterWhere).. ", currentSceneName: " ..tos(currentSceneName))
+    if doDebugHere then d("[FCOIS.checkActivePanel] comingFrom/Before: " .. tos(comingFrom) .. ", isDeconNPC: " .. tos(isDeconNPC) .. ", overwriteFilterWhere: " ..tos(overwriteFilterWhere)) end
     --universal Deconstruction NPC "Giladil"
     --> Return the original buttonParent via inventoryName so that we can create the buttons and then re-anchor them!
     --> But update the FCOIS.gFilterWhere with the current set filterPanelId at UNIVERSAL_DECONSTRUCTION.FCOIScurrentFilterPanelId
     if isDeconNPC == nil then isDeconNPC = checkIfUniversaldDeconstructionNPC(comingFrom) end
+    if doDebugHere then d(">isUniversalDeconstruction: " ..tos(isDeconNPC)) end
     if isDeconNPC == true then
         --d(">>isDeconNPC: true")
         if universalDeconGlobal.FCOIScurrentFilterPanelId ~= nil then
@@ -646,19 +651,21 @@ function FCOIS.CheckActivePanel(comingFrom, overwriteFilterWhere, isDeconNPC)
         else
             FCOIS.gFilterWhere = getCurrentFilterPanelIdAtDeconNPC(comingFrom)
         end
+        currentFilterPanelId = FCOIS.gFilterWhere
+        if doDebugHere then d(">>currentFilterPanelId: " ..tos(currentFilterPanelId)) end
     end
     -- -^- #202 Universal deconstruction?
 
     ------------------------------------------------------------------------------------------------------------------------
     --Use LibFilters to detect the currently shown filterPanelId
     libFilters_GetCurrentFilterType = libFilters_GetCurrentFilterType or libFilters.GetCurrentFilterType --#2025_999
-    local currentFilterPanelId = libFilters_GetCurrentFilterType(libFilters)
+    currentFilterPanelId = currentFilterPanelId or libFilters_GetCurrentFilterType(libFilters)
     --[[
     if currentFilterPanelId ~= comingFrom and GetDisplayName() == "@Baertram" then
         d("[FCOIS]CheckActivePanel - Error. LibFilters current filterPanelID: " .. tos(currentFilterPanelId) .. ", comingFrom: " .. tos(comingFrom))
     end
     ]]
-    if doDebugHere then d("[FCOIS]CheckActivePanel - LibFilters current filterPanelID: " .. tos(currentFilterPanelId) .. ", comingFrom: " .. tos(comingFrom)) end
+    if doDebugHere then d(">LibFilters current filterPanelID: " .. tos(currentFilterPanelId)) end
     currentFilterPanelId = currentFilterPanelId or comingFrom
 
     ------------------------------------------------------------------------------------------------------------------------
@@ -700,17 +707,7 @@ function FCOIS.CheckActivePanel(comingFrom, overwriteFilterWhere, isDeconNPC)
     if doDebugHere then d(">>updateGFilterWhere: " .. tos(updateGFilterWhere)) end
 
     ------------------------------------------------------------------------------------------------------------------------
-    --Enchanting extraction
-    if origComingFrom == LF_ENCHANTING_EXTRACTION then
-        updateGFilterWhere = nil
-        --At universal deconstruction we do not overwrite the current filterPanelId
-        if not isDeconNPC then
-            updateGFilterWhere = LF_ENCHANTING_EXTRACTION
-        end
-    end
-
-    ------------------------------------------------------------------------------------------------------------------------
-    if updateGFilterWhere ~= nil then
+    if updateGFilterWhere ~= nil and not isDeconNPC then
         --Standard cases of updating FCOIS.gFilterWhere
         FCOIS.gFilterWhere = getFilterWhereBySettings(updateGFilterWhere)
         if doDebugHere then d(">>updateGFilterWhere AT UPDATE: " .. tos(updateGFilterWhere) .. ", FCOIS.gFilterWhere: " .. tos(FCOIS.gFilterWhere) .. "; overwriteFilterWhere: " .. tos(overwriteFilterWhere)) end

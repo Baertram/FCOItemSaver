@@ -23,10 +23,7 @@ local FCOIS_CON_FILTER_BUTTON_STATE_DO_NOT_UPDATE_COLOR = FCOIS_CON_FILTER_BUTTO
 local FCOIS_CON_ICONS_ALL = FCOIS_CON_ICONS_ALL
 
 local LF_INVENTORY = LF_INVENTORY
-local LF_SMITHING_IMPROVEMENT = LF_SMITHING_IMPROVEMENT
-local LF_JEWELRY_IMPROVEMENT = LF_JEWELRY_IMPROVEMENT
-local LF_SMITHING_RESEARCH_DIALOG = LF_SMITHING_RESEARCH_DIALOG
-local LF_JEWELRY_RESEARCH_DIALOG = LF_JEWELRY_RESEARCH_DIALOG
+local LF_SMITHING_DECONSTRUCT = LF_SMITHING_DECONSTRUCT
 
 local localizationVars = FCOIS.localizationVars
 local locVars = localizationVars.fcois_loc
@@ -419,7 +416,7 @@ function FCOIS.UpdateFCOISFilterButtonColorsAndTextures(p_buttonId, p_button, p_
 
     else --if (p_buttonId == -1 or p_status == -1) then
         local textureNameOfFilterButton = strfor(gFilterPanelIdToTextureName[p_filterPanelId], p_buttonId)
-        texture  = GetControl(textureNameOfFilterButton) --wm:GetControlByName(textureNameOfFilterButton, "")
+        texture = GetControl(textureNameOfFilterButton) --wm:GetControlByName(textureNameOfFilterButton, "")
         --Does texture exist now?
         if texture ~= nil then
             --Split the filterButton filters up?
@@ -559,7 +556,7 @@ function FCOIS.CheckFCOISFilterButtonsAtPanel(doUpdateLists, panelId, overwriteF
     local settings = FCOIS.settingsVars.settings
     if settings.debug then debugMessage( "[CheckFilterButtonsAtPanel]","Start - Check panel ID: " ..tos(panelId) .. ", overwriteFilterWhere: " .. tos(overwriteFilterWhere) .. ", hideFilterButtons: " .. tos(hideFilterButtons).. ", isUniversalDeconNPC: " ..tos(isUniversalDeconNPC) .. ", universalDeconFilterPanelIdBefore: " ..tos(universalDeconFilterPanelIdBefore), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
 
-    local doDebugHere = false --panelId == LF_SMITHING_RESEARCH_DIALOG --todo change after debugging again
+    local doDebugHere = panelId == LF_SMITHING_DECONSTRUCT --todo change after debugging again
     if doDebugHere then d("[FCOIS.CheckFilterButtonsAtPanel - panelId: " .. tos(panelId) .. ", gFilterWhere: " .. tos(FCOIS.gFilterWhere) .. ", UseFilters: " .. tos(settings.atPanelEnabled[FCOIS.gFilterWhere]["filters"]) .. ", hideFilterButtons: " ..tos(hideFilterButtons).. ", isUniversalDeconNPC: " ..tos(isUniversalDeconNPC) .. ", universalDeconFilterPanelIdBefore: " ..tos(universalDeconFilterPanelIdBefore)) end
 
     --Should we update the marker textures, size and color?
@@ -589,9 +586,9 @@ function FCOIS.CheckFCOISFilterButtonsAtPanel(doUpdateLists, panelId, overwriteF
         local filterButtons = FCOIS.filterButtonVars.filterButtons
 
         --For debugging only!
-        --if isUniversalDeconNPC == true then
-        if doDebugHere then d(">>>>>>>>>>> CheckFCOISFilterButtonsAtPanel - UniversalDecon >>>>>>>") end
-        --end
+        if isUniversalDeconNPC == true then
+            if doDebugHere then d(">>>>>>>>>>> CheckFCOISFilterButtonsAtPanel - UniversalDecon >>>>>>>") end
+        end
 
         --Change the filter buttons & callback functions
         for _, buttonNr in ipairs(filterButtonsToCheck) do
@@ -599,9 +596,8 @@ function FCOIS.CheckFCOISFilterButtonsAtPanel(doUpdateLists, panelId, overwriteF
             if isUniversalDeconNPC == true then
                 if doDebugHere then d("button: " ..tos(buttonNr) ..", before: " .. tos(universalDeconFilterPanelIdBefore) .. ", now: " ..tos(filterPanelIdToUse)) end
                 if universalDeconFilterPanelIdBefore ~= nil then
-                    if doDebugHere then d(">universalDeconFilterPanelIdBefore NOT nil") end
                     if universalDeconFilterPanelIdBefore ~= filterPanelIdToUse then
-                        if doDebugHere then d(">>current and old panel differ") end
+                        if doDebugHere then d(">>universalDeconFilterPanelIdBefore NOT nil, current and old panel differ") end
                         if filterButtons[universalDeconFilterPanelIdBefore] == nil then
                             if doDebugHere then d(">>>filterButtons["..tos(universalDeconFilterPanelIdBefore).."] do NOT exist") end
                             --The filterButtons of the jewelry decon. re-use the normal decon filterButtonControls. Though the "1st" opened at the normal crafting tables will be only saved
@@ -613,13 +609,11 @@ function FCOIS.CheckFCOISFilterButtonsAtPanel(doUpdateLists, panelId, overwriteF
                                 -->to get the correct filterbutton variables (which get reused) from FCOIS.filterButtonVars.filterButtons
                                 universalDeconFilterPanelIdBefore = deconstructablePanelIdToOtherCraftType[universalDeconFilterPanelIdBefore]
                             else
-                                if doDebugHere then d(">>>>switchhing enchanting create<>extract") end
+                                if doDebugHere then d(">>>>switching enchanting create<>extract") end
                                 --Switch the deconstructable filterType to the other crafting types filterType, e.g. LF_ENCHANTING_CREATION -> LF_ENCHANTING_EXTRACTION
                                 -->to get the correct filterbutton variables (which get reused) from FCOIS.filterButtonVars.filterButtons
                                 universalDeconFilterPanelIdBefore = universalDeconstructionPanelIdToOtherCraftType[universalDeconFilterPanelIdBefore] or universalDeconFilterPanelIdBefore
                             end
-                        else
-                            if doDebugHere then d(">>>filterButtons["..tos(universalDeconFilterPanelIdBefore).."] exist") end
                         end
                     else
                         if doDebugHere then d(">current and old panel are the same") end
@@ -627,7 +621,7 @@ function FCOIS.CheckFCOISFilterButtonsAtPanel(doUpdateLists, panelId, overwriteF
 
                     --Stil nil?
                     if filterButtons[universalDeconFilterPanelIdBefore] ~= nil then
-                        if doDebugHere then d(">filterButtons["..tos(universalDeconFilterPanelIdBefore).."] will be hidden now!") end
+                        if doDebugHere then d(">filterButtons["..tos(universalDeconFilterPanelIdBefore).."] exist and will be hidden now!") end
                         local universalDeconNPCButton = filterButtons[universalDeconFilterPanelIdBefore][buttonNr]
                         if universalDeconNPCButton ~= nil then
                             local universalDeconNPCButtonName = universalDeconNPCButton:GetName()
@@ -659,6 +653,7 @@ function FCOIS.CheckFCOISFilterButtonsAtPanel(doUpdateLists, panelId, overwriteF
                 --                                       parentCtrl, buttonId, filterButtonData, hide, p_FilterPanelId, isUniversalDeconNPC
                 filterBtn = addOrChangeFCOISFilterButton(buttonsParentCtrl, buttonNr, filterButtonData, not areFilterButtonEnabledAtPanelId, filterPanelIdToUse, isUniversalDeconNPC) -- #202
                 if areFilterButtonEnabledAtPanelId == true then
+                    if doDebugHere then d(">>filterBtn #: " ..tos(buttonNr) ..": " ..tos(filterBtn ~= nil and filterBtn:GetName() or "!nil!")) end
                     --Colorize the button and update the tooltips + filter functions
                     if filterBtn ~= nil then
                         --Get the filter's state
@@ -1341,6 +1336,9 @@ function FCOIS.AddOrChangeFCOISFilterButton(parentCtrl, buttonId, filterButtonDa
     -- -v- #202
     checkIfUniversalDeconstructionNPC = checkIfUniversalDeconstructionNPC or FCOIS.CheckIfUniversalDeconstructionNPC
     if isUniversalDeconNPC == nil then isUniversalDeconNPC = checkIfUniversalDeconstructionNPC(p_FilterPanelId) end
+    if isUniversalDeconNPC == true then
+        parentToUse, universalDeconAnchorTo = getUniversalDeconstructionNPCParentAndAnchor(p_FilterPanelId)
+    end
     -- -^- #202
 
     showContextMenuAtFCOISFilterButton = showContextMenuAtFCOISFilterButton or FCOIS.ShowContextMenuAtFCOISFilterButton
