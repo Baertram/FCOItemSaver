@@ -8,7 +8,7 @@
 ## SavedVariables: FCOItemSaver_Settings
 #
 # Non-Optional libraries
-## DependsOn: LibAddonMenu-2.0>=41 LibAddonMenuOrderListBox>=012 LibCustomMenu>=730 LibDialog>=127 LibFeedback LibFilters-3.0>=346 LibMainMenu-2.0>=40400 LibShifterBox>=000700
+## DependsOn: LibAddonMenu-2.0>=41 LibAddonMenuOrderListBox>=012 LibCustomMenu>=730 LibDialog>=127 LibFeedback LibFilters-3.0>=348 LibMainMenu-2.0>=40400 LibShifterBox>=000700
 #
 # Optional libraries
 ## OptionalDependsOn: LibCharacterKnowledge>=202010 LibDebugLogger>=263 LibLazyCrafting>=4028 LibMultiAccountSets>=300130 LibSets>=000804

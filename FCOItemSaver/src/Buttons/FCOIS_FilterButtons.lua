@@ -1337,7 +1337,8 @@ function FCOIS.AddOrChangeFCOISFilterButton(parentCtrl, buttonId, filterButtonDa
     checkIfUniversalDeconstructionNPC = checkIfUniversalDeconstructionNPC or FCOIS.CheckIfUniversalDeconstructionNPC
     if isUniversalDeconNPC == nil then isUniversalDeconNPC = checkIfUniversalDeconstructionNPC(p_FilterPanelId) end
     if isUniversalDeconNPC == true then
-        parentToUse, universalDeconAnchorTo = getUniversalDeconstructionNPCParentAndAnchor(p_FilterPanelId)
+        local _
+        parentToUse, _ = getUniversalDeconstructionNPCParentAndAnchor(p_FilterPanelId)
     end
     -- -^- #202
 

@@ -4172,7 +4172,7 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
     local isShowingCharacter = isCharacterShown()
     local isShowingCompanionCharacter = isCompanionCharacterShown()
     --Character equipment, or normal slot, or normal?
-    local parentControl = ((isShowingCharacter or isShowingCompanionCharacter) and self.m_inventorySlot) or self.m_inventorySlot:GetParent()
+    local parentControl = ((isShowingCharacter or isShowingCompanionCharacter) and self.m_inventorySlot) or (self.m_inventorySlot and self.m_inventorySlot:GetParent()) or nil
     --No parent found? Abort
     if parentControl == nil then return false end
     local parentName = parentControl:GetName()
