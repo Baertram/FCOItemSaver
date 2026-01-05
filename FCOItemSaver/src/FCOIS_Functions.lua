@@ -76,7 +76,7 @@ local wm = WINDOW_MANAGER
 local funcType = "function"
 local stringType = "string"
 local numberType = "number"
---local booleanType = "boolean"
+local booleanType = "boolean"
 local tableType = "table"
 
 --Local ZOs API
