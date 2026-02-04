@@ -219,7 +219,7 @@ ReloadUI does not do anything, but manually mass marking via flag icon works fin
 --#325 Automatic set marker is applied to all items, allthough only automatic set traits should be marked
 
 --______________________________________
--- Current max # of bugs/features/ToDos: 325
+-- Current max # of bugs/features/ToDos: 326
 --______________________________________
 
 --Open/To work on this patch:
@@ -249,6 +249,7 @@ ReloadUI does not do anything, but manually mass marking via flag icon works fin
 -- Currently worked on [Added/Fixed/Changed] -              Updated last 2025-11-14
 ------------------------------------------------------------------------------------
 --#325
+--#326
 --#2025_999
 
 -------------------------------------------------------------------------------------
@@ -261,7 +262,7 @@ ReloadUI does not do anything, but manually mass marking via flag icon works fin
 --[Changed]
 
 --[Added]
-
+--#326 Added setting for automatic set item marking -> non-wished traits -> check other markers
 
 
 --[Added on request]

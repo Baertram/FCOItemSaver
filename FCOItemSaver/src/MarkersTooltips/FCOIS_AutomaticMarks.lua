@@ -98,6 +98,7 @@ local isStyleContainerCollectibleAutoMarkDoable = FCOIS.IsStyleContainerCollecti
 local isStyleContainerCollectibleKnown = FCOIS.IsStyleContainerCollectibleKnown --#317
 
 local checkIfHouseOwnerAndInsideOwnHouse = FCOIS.CheckIfHouseOwnerAndInsideOwnHouse
+local FCOIS_IsMarked
 
 local getItemQuality = FCOIS.GetItemQuality
 
@@ -744,21 +745,35 @@ local function automaticMarkingSetsAdditionalCheckFunc(p_itemData, p_checkFuncRe
     local isGearProtected
     local isSetTrackerAndIsMarkedWithOtherIconAlready --#302  SetTracker support disabled with FCOOIS v2.6.1, for versions <300
 
-    --=== Non-Wished set items check for characters below level 50 =========================================================
-    if settings.autoMarkSetsNonWished == true and isIconEnabled[settings.autoMarkSetsNonWishedIconNr] and settings.autoMarkSetsNonWishedIfCharBelowLevel then
-        local levelToCheck = mappingVars.maxLevel --50
-        --Get the actual logged in character level
-        local isCharLevelAboveOrEqual = checkNeededLevel("player", levelToCheck)
-        if not isCharLevelAboveOrEqual then
-            if isDebuggingCase then d("[FCOIS]automaticMarkingSetsAdditionalCheckFunc, charLevelIsBelow") end
-            --Check the item's level if it is below level 50
-            local itemLevel = gilrl(itemLink)
-            local itemRequiredCP = gilrcp(itemLink)
-            local maxPossibleCPLevel = gcpppc() --API 100028 = 160
-            if itemLevel < levelToCheck or (itemLevel > levelToCheck and itemRequiredCP < maxPossibleCPLevel) then
-                --Character is below level 50, so mark all set items as "Non-Wished" now
+    --=== Non-Wished set items check  =========================================================
+    local isMarkedWithAnyForNonWishedResult = false --#326
+    if settings.autoMarkSetsNonWished == true and isIconEnabled[settings.autoMarkSetsNonWishedIconNr] then
+        --Any other marker icons are set on the item?
+        if settings.autoMarkSetsNonWishedCheckAllIcons then --#326
+            isMarked = isMarked or FCOIS.IsMarked
+            isMarkedWithAnyForNonWishedResult, _ = isMarked(p_itemData.bagId, p_itemData.slotIndex, -1)
+            if isMarkedWithAnyForNonWishedResult == true then
                 skipAllOtherChecks = true --Skip all other set checks now (except setting the non-wished icon!)
-                nonWishedBecauseOfCharacterLevel = true
+                isProtected = true --to skip further checks down below
+            end
+        end
+
+        --Check for set items for characters below level 50
+        if not skipAllOtherChecks and settings.autoMarkSetsNonWishedIfCharBelowLevel then --#326
+            local levelToCheck = mappingVars.maxLevel --50
+            --Get the actual logged in character level
+            local isCharLevelAboveOrEqual = checkNeededLevel("player", levelToCheck)
+            if not isCharLevelAboveOrEqual then
+                if isDebuggingCase then d("[FCOIS]automaticMarkingSetsAdditionalCheckFunc, charLevelIsBelow") end
+                --Check the item's level if it is below level 50
+                local itemLevel = gilrl(itemLink)
+                local itemRequiredCP = gilrcp(itemLink)
+                local maxPossibleCPLevel = gcpppc() --API 100028 = 160
+                if itemLevel < levelToCheck or (itemLevel > levelToCheck and itemRequiredCP < maxPossibleCPLevel) then
+                    --Character is below level 50, so mark all set items as "Non-Wished" now
+                    skipAllOtherChecks = true --Skip all other set checks now (except setting the non-wished icon!)
+                    nonWishedBecauseOfCharacterLevel = true
+                end
             end
         end
     end

@@ -5150,6 +5150,21 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
 
                                                         {
                                                             type = "checkbox",
+                                                            name = locVars["options_enable_auto_mark_check_all_icons"],
+                                                            tooltip = locVars["options_enable_auto_mark_check_all_icons" .. tooltipSuffix],
+                                                            getFunc = function() return FCOISsettings.autoMarkSetsNonWishedCheckAllIcons end,
+                                                            setFunc = function(value)
+                                                                FCOISsettings.autoMarkSetsNonWishedCheckAllIcons = value
+                                                                if (FCOISsettings.autoMarkSetsNonWishedCheckAllIcons == true) then
+                                                                    scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
+                                                                end
+                                                            end,
+                                                            disabled = function() return not FCOISsettings.autoMarkSetsNonWished end,
+                                                            width = "full",
+                                                            default = FCOISdefaultSettings.autoMarkSetsNonWishedCheckAllIcons,
+                                                        },
+                                                        {
+                                                            type = "checkbox",
                                                             name = locVars["options_enable_auto_mark_sets_non_wished_char_below_level_50"],
                                                             tooltip = locVars["options_enable_auto_mark_sets_non_wished_char_below_level_50" .. tooltipSuffix],
                                                             getFunc = function() return FCOISsettings.autoMarkSetsNonWishedIfCharBelowLevel end,

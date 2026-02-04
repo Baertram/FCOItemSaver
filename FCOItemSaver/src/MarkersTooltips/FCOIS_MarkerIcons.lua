@@ -677,7 +677,6 @@ local function addMarkerIconsToZOListViewNow(rowControl, slot, doCreateMarkerCon
     end
 end
 
-
 --Create the textures inside inventories etc.
 --The inventories of the crafting tables are build inside function /src/FCOIS_Hook.lua
 --> See function OnScrollListRowSetupCallback(rowControl, data)

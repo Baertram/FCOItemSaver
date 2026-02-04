@@ -272,6 +272,7 @@ function FCOIS.BuildDefaultSettings()
 		autoMarkSetsNonWishedSellOthers     = true,
 		autoMarkSetsNonWishedQuality 		= 1,
 		autoMarkSetsNonWishedLevel			= 1,
+		autoMarkSetsNonWishedCheckAllIcons  = false, --#326
 		autoMarkSetsWithTraitIfAutoSetMarked = true,
 		autoMarkSetsOnlyTraits				= false,
 		autoMarkSetsWithTraitCheckAllIcons  = false,
