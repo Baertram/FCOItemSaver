@@ -216,7 +216,6 @@ ReloadUI does not do anything, but manually mass marking via flag icon works fin
 
 --#2025_999 Performance improvements
 
---#325 Automatic set marker is applied to all items, allthough only automatic set traits should be marked
 
 --______________________________________
 -- Current max # of bugs/features/ToDos: 326
@@ -228,35 +227,24 @@ ReloadUI does not do anything, but manually mass marking via flag icon works fin
 --FCOIS.GetWhereAreWe -> Remove CraftBagExtended checks and move to extra function
 
 --=== Not started yet ===
---Clear SV values which are boolean and do not really need a "false" (nil would be okay too):
---allowOnlyUnbound                                                  -> Done 20251119
---icon[n].antiCheckAtPanel                                          -> Done 20251119
---icon[n].offsets[2..n]                                             -> Done 20251119
---FCOISAdditionalInventoriesButtonOffset[1..n].top & .left == 0     -> Done 20251119
---isFilterPanelOn[1..n]                                             -> Done 20251119
---iconIsGear[1..n]                                                  -> Done 20251119
---atPanelEnabled[1..n].filters                                      -> Done 20251119
---disableResearchCheck[1..n]                                        -> Done 20251120
+--Clear SV values which are boolean and do not really need a "false" (nil would be okay too)
 --showMarkerTooltip[1..n]
 --isIconEnabled[1..n]
 --allowedFCOISUniqueIdItemTypes
 
---Other cleanUp
---FCOIS_panels.lua -> function FCOIS.CheckActivePanel -> LibFilters could reolve that already, or not?
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2025-11-14
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2026-02-05
 ------------------------------------------------------------------------------------
---#325
---#326
---#2025_999
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.7.7 - New version: 2.7.8) -    Updated last: 2025-11-19
+--Changelog (last version: 2.7.7 - New version: 2.7.8) -    Updated last: 2026-02-05
 -------------------------------------------------------------------------------------
 --[Fixed]
---
+--Clear SV values which are boolean and do not really need a "false" (nil would be okay too)
+--#325 Automatic set marker is applied to all items, allthough only automatic set traits should be marked
+--#2025_999 Performance improvements, and usage of LibFilters-3.0 instead of own FCOIS code
 
 
 --[Changed]
