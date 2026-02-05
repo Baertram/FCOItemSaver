@@ -58,7 +58,8 @@ local function updateCraftingInventory(filterPanelOverride, isUniversalDeconNPC)
 
 --d(">FCOIS.gFilterWhere: " ..tos(filterType))
         --Is the filter for this panel enabled in the settings?
-        if settings.atPanelEnabled[filterType]["filters"] == true then
+        local atPanelEnabled = settings.atPanelEnabled[filterType] --#2025_999
+        if atPanelEnabled ~= nil and atPanelEnabled["filters"] == true then --#2025_999
             --Is the filter we have added the icon for currently enabled(registered)?
             --local isFilterEnabled = FCOIS.getSettingsIsFilterOn(FCOIS.lastVars.gLastFilterId[FCOIS.gFilterWhere], FCOIS.gFilterWhere)
             --if isFilterEnabled == FCOIS_CON_FILTER_BUTTON_STATE_GREEN or isFilterEnabled == FCOIS_CON_FILTER_BUTTON_STATE_YELLOW then
@@ -156,12 +157,12 @@ FCOIS.UpdateCraftingInventory = updateCraftingInventory
 
 --Refresh the backpack list
 function FCOIS.RefreshBackpack(liFiltersUpdateWasCalled)
---d("[FCOIS]RefreshBackpack")
     local updateFilteredItemCount = false
 
     if not liFiltersUpdateWasCalled then --#282
         --Added with patch to API 100015 -> New craft bag
         if INVENTORY_CRAFT_BAG and not ctrlVars.CRAFTBAG:IsHidden() then
+--d("[FCOIS]RefreshBackpack - CRAFTBAG")
             if FCOIS.settingsVars.settings.debug then debugMessage( "[RefreshBackpack]","Craftbag refresh", true, FCOIS_DEBUG_DEPTH_DETAILED) end
             FCOIS.preventerVars.isInventoryListUpdating = true
             ctrlVars.playerInventory:UpdateList(INVENTORY_CRAFT_BAG)
@@ -171,6 +172,7 @@ function FCOIS.RefreshBackpack(liFiltersUpdateWasCalled)
             --d(">normal inv")
             --Refresh the normal inventory
             if not backpackCtrl:IsHidden() then
+--d("[FCOIS]RefreshBackpack - PLAYER INVENTORY")
                 --d(">>refreshing")
                 if FCOIS.settingsVars.settings.debug then debugMessage( "[RefreshBackpack]","Backpack refresh", true, FCOIS_DEBUG_DEPTH_DETAILED) end
                 FCOIS.preventerVars.isInventoryListUpdating = true
@@ -391,7 +393,8 @@ local function updateInventories()
         --Get the current set settings for the filter panels
         FCOIS.gFilterWhere = getFilterWhereBySettings(FCOIS.gFilterWhere, false)
         --Is the filter for this panel enabled in the settings?
-        if settings.atPanelEnabled[FCOIS.gFilterWhere]["filters"] == true then
+        local atPanelEnabled = settings.atPanelEnabled[FCOIS.gFilterWhere] --#2025_999
+        if atPanelEnabled ~= nil and atPanelEnabled["filters"] == true then --#2025_999
 --d("[FCOIS]UpdateInventories-libFiters:RequestUpdate("..tos(FCOIS.gFilterWhere)..")")
             --Is the filter we have added the icon for currently enabled(registered)?
             --local isFilterEnabled = FCOIS.getSettingsIsFilterOn(FCOIS.lastVars.gLastFilterId[FCOIS.gFilterWhere], FCOIS.gFilterWhere)

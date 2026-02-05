@@ -7,6 +7,24 @@ if not FCOIS.libsLoadedProperly then return end
 local tos = tostring
 
 local currentCharId       = GetCurrentCharacterId()
+local FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE = FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE
+local FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE = FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE
+local FCOIS_CON_NON_WISHED_TRAIT      = FCOIS_CON_NON_WISHED_TRAIT
+local FCOIS_CON_ICON_NONE               = FCOIS_CON_ICON_NONE
+local FCOIS_CON_ICONS_ALL               = FCOIS_CON_ICONS_ALL
+local FCOIS_CON_ICON_LOCK				= FCOIS_CON_ICON_LOCK
+local FCOIS_CON_ICON_RESEARCH			= FCOIS_CON_ICON_RESEARCH
+local FCOIS_CON_ICON_SELL				= FCOIS_CON_ICON_SELL
+local FCOIS_CON_ICON_DECONSTRUCTION		= FCOIS_CON_ICON_DECONSTRUCTION
+local FCOIS_CON_ICON_IMPROVEMENT		= FCOIS_CON_ICON_IMPROVEMENT
+local FCOIS_CON_ICON_SELL_AT_GUILDSTORE	= FCOIS_CON_ICON_SELL_AT_GUILDSTORE
+local FCOIS_CON_ICON_INTRICATE			= FCOIS_CON_ICON_INTRICATE
+local FCOIS_CON_ICON_GEAR_1				= FCOIS_CON_ICON_GEAR_1
+local FCOIS_CON_ICON_GEAR_2     		= FCOIS_CON_ICON_GEAR_2
+local FCOIS_CON_ICON_GEAR_3				= FCOIS_CON_ICON_GEAR_3
+local FCOIS_CON_ICON_GEAR_4				= FCOIS_CON_ICON_GEAR_4
+local FCOIS_CON_ICON_GEAR_5				= FCOIS_CON_ICON_GEAR_5
+local dynamicIconPrefix = FCOIS.dynamicIconPrefix --FCOIS_CON_ICON_DYNAMIC_
 
 --Function to set the default settings
 function FCOIS.BuildDefaultSettings()
@@ -254,6 +272,7 @@ function FCOIS.BuildDefaultSettings()
 		autoMarkSetsNonWishedSellOthers     = true,
 		autoMarkSetsNonWishedQuality 		= 1,
 		autoMarkSetsNonWishedLevel			= 1,
+		autoMarkSetsNonWishedCheckAllIcons  = false, --#326
 		autoMarkSetsWithTraitIfAutoSetMarked = true,
 		autoMarkSetsOnlyTraits				= false,
 		autoMarkSetsWithTraitCheckAllIcons  = false,
@@ -471,8 +490,9 @@ function FCOIS.BuildDefaultSettings()
 	for libFiltersFilterPanelIdHelper = 1, numLibFiltersFilterPanelIds, 1 do
 		if activeFilterPanelIds[libFiltersFilterPanelIdHelper] == true then
 			--Create 2-dimensional arrays for the filters
-			FCOIS.settingsVars.defaults.isFilterPanelOn[libFiltersFilterPanelIdHelper] = {false, false, false, false}
+			--FCOIS.settingsVars.defaults.isFilterPanelOn[libFiltersFilterPanelIdHelper] = {false, false, false, false}   --#2025_999
 			--Create 2-dimensional array for the "enabled" setings (Filters, Anti-Destroy, Anti-Deconstruction, Anti-Sell, Anti-Trade, Anti-Mail, etc.)
+			--[[ --#2025_999
 			FCOIS.settingsVars.defaults.atPanelEnabled[libFiltersFilterPanelIdHelper]	= {
 				["filters"] 		 = false,
 				--			    ["anti-destroy"] 	 = false,
@@ -485,6 +505,7 @@ function FCOIS.BuildDefaultSettings()
 				--				["anti-fence"] 		 = false,
 				--				["anti-launder"]	 = false,
 			}
+			]]
 			--Create the helper arrays for the filter button context menus
 			FCOIS.settingsVars.defaults.lastLockDynFilterIconId[libFiltersFilterPanelIdHelper]		= FCOIS_CON_ICONS_ALL
 			FCOIS.settingsVars.defaults.lastGearFilterIconId[libFiltersFilterPanelIdHelper] 		= FCOIS_CON_ICONS_ALL
@@ -495,8 +516,7 @@ function FCOIS.BuildDefaultSettings()
 			FCOIS.contextMenuVars.undoMarkedItems[libFiltersFilterPanelIdHelper] = {}
 
 			--Added with FCOIS v1.9.9
-			accountWideButForEachCharacterSettings[currentCharId].isFilterPanelOn[libFiltersFilterPanelIdHelper]              = {}
-			accountWideButForEachCharacterSettings[currentCharId].isFilterPanelOn[libFiltersFilterPanelIdHelper]              = { false, false, false, false}
+			--accountWideButForEachCharacterSettings[currentCharId].isFilterPanelOn[libFiltersFilterPanelIdHelper]              = { false, false, false, false}   --#2025_999
 			--Create the helper arrays for the filter button context menus
 			accountWideButForEachCharacterSettings[currentCharId].lastLockDynFilterIconId[libFiltersFilterPanelIdHelper]      = FCOIS_CON_ICONS_ALL
 			accountWideButForEachCharacterSettings[currentCharId].lastGearFilterIconId[libFiltersFilterPanelIdHelper]         = FCOIS_CON_ICONS_ALL
@@ -521,10 +541,12 @@ function FCOIS.BuildDefaultSettings()
 		end
 		--FCOIS version 1.6.7
 		--Add the default additional inventory context menu "flag" button values for each filter panel ID
+		--[[ --#2025_999 Removing = and false values from SavedVars to strip filesize
 		FCOIS.settingsVars.defaults.FCOISAdditionalInventoriesButtonOffset[libFiltersFilterPanelIdHelper] = {
 			["top"] = 0,
 			["left"] = 0,
 		}
+		]]
 	end
 	--Create 2-dimensional arrays for the icons
 	local dynamicCounter = 0
@@ -537,8 +559,8 @@ function FCOIS.BuildDefaultSettings()
 		local isIconDynamic = iconIsDynamic[filterIconHelper]
 
 		--Marker icons in inventories - non-unique & unique
-		FCOIS.settingsVars.defaults[savedVarsMarkedItemsNames[false]][filterIconHelper] = {}
-		FCOIS.settingsVars.defaults[savedVarsMarkedItemsNames[FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE]][filterIconHelper] = {}
+		FCOIS.settingsVars.defaults[savedVarsMarkedItemsNames[false]][filterIconHelper] = {} --#2025_999
+		FCOIS.settingsVars.defaults[savedVarsMarkedItemsNames[FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE]][filterIconHelper] = {} --#2025_999
 
 		--Defaults for filter button offsets
 		FCOIS.settingsVars.defaults.filterButtonTop[filterIconHelper]  = filterButtonVars.gFilterButtonTop
@@ -556,8 +578,12 @@ function FCOIS.BuildDefaultSettings()
 		for filterIconHelperPanel = 1, numLibFiltersFilterPanelIds, 1 do
 			--FCOIS v1.6.8
 			--For each filterPanelId add the icon offsets table
-			defaultSettingsIcon[filterIconHelper].offsets[filterIconHelperPanel] = defaultIconOffsets
+			--defaultSettingsIcon[filterIconHelper].offsets[filterIconHelperPanel] = defaultIconOffsets --#2025_999 Do not blow up SV with unnecessary entries. Only needed for LF_INVENTORY currently
+			if filterIconHelperPanel == LF_INVENTORY then
+				defaultSettingsIcon[filterIconHelper].offsets[filterIconHelperPanel] = defaultIconOffsets
+			end
 
+			--[[ --#2025_999
 			--FCOIS v.1.4.4 - Research dialog panels need to be protected as default value as they were added new with this version
 			--FCOIS v.2.1.0 - Companion inventory panel needs to be protected as default value as it was added new with this version
 			local valueToSet = false
@@ -565,11 +591,12 @@ function FCOIS.BuildDefaultSettings()
 					filterIconHelperPanel == LF_INVENTORY_COMPANION then
 				valueToSet = true
 			end
-			defaultSettingsIcon[filterIconHelper].antiCheckAtPanel[filterIconHelperPanel] = valueToSet
+			defaultSettingsIcon[filterIconHelper].antiCheckAtPanel[filterIconHelperPanel] = valueToSet --#2025_999
+			]]
 		end
 
 		--Defaults for research check is "false", except for dynamic icons where it is "true"
-		local defResearchCheck = false
+		local defResearchCheck --#2025_999
 		if isIconDynamic then defResearchCheck = true end
 		FCOIS.settingsVars.defaults.disableResearchCheck[filterIconHelper] = defResearchCheck
 		if isIconDynamic == true then
@@ -600,15 +627,15 @@ function FCOIS.BuildDefaultSettings()
 
 		--Defaults for allow only unbound items to be marked
 		--Introduced with FCOIS version 1.0.6
-		FCOIS.settingsVars.defaults.allowOnlyUnbound[filterIconHelper] = false
+		--FCOIS.settingsVars.defaults.allowOnlyUnbound[filterIconHelper] = false ->  --#2025_999
 
 		--Fill the missing icon numbers to the isGearSet table so they exist with a "false" value as "non gear" entries
 		local isStaticGearIcon = FCOIS.mappingVars.isStaticGearIcon
-		if defaultSettingsIconIsGear[filterIconHelper] == nil then
-			defaultSettingsIconIsGear[filterIconHelper] = false
-		end
+		--if defaultSettingsIconIsGear[filterIconHelper] == nil then --#2025_999
+		--	defaultSettingsIconIsGear[filterIconHelper] = false --#2025_999
+		--end  --#2025_999
 		--Always set the 5 static gear icons to "true"
-		if isStaticGearIcon[filterIconHelper] ~= nil and isStaticGearIcon[filterIconHelper] then
+		if isStaticGearIcon[filterIconHelper] ~= nil and isStaticGearIcon[filterIconHelper] == true then
 			defaultSettingsIconIsGear[filterIconHelper] = true
 		end
 	end -- for filter icons ...
@@ -686,68 +713,69 @@ function FCOIS.BuildDefaultSettings()
 	defaultSettingsIconSortOrder[12] = FCOIS_CON_ICON_GEAR_5
 
 	------Dynamic icons ---------------------------------------------------------------------------------------------------
-	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_1].color   = {["r"] = 1,["g"] = 1,["b"] = 1,["a"] = 1}
-	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_1].texture = 46
-	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_1].size    = FCOIS.iconVars.gIconWidth
-	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_1].sortOrder = 13
-	defaultSettingsIconSortOrder[13] = FCOIS_CON_ICON_DYNAMIC_1
+	--todo 20251129 Put that 10 fixed dynamic icons to the loop below! --#2025_999
+	defaultSettingsIcon[_G[dynamicIconPrefix .. "1"]].color   = {["r"] = 1,["g"] = 1,["b"] = 1,["a"] = 1}
+	defaultSettingsIcon[_G[dynamicIconPrefix .. "1"]].texture = 46
+	defaultSettingsIcon[_G[dynamicIconPrefix .. "1"]].size    = FCOIS.iconVars.gIconWidth
+	defaultSettingsIcon[_G[dynamicIconPrefix .. "1"]].sortOrder = 13
+	defaultSettingsIconSortOrder[13] = _G[dynamicIconPrefix .. "1"]
 
-	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_2].color   = {["r"] = 1,["g"] = 1,["b"] = 1,["a"] = 1}
-	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_2].texture = 47
-	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_2].size    = FCOIS.iconVars.gIconWidth
-	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_2].sortOrder = 14
-	defaultSettingsIconSortOrder[14] = FCOIS_CON_ICON_DYNAMIC_2
+	defaultSettingsIcon[_G[dynamicIconPrefix .. "2"]].color   = {["r"] = 1,["g"] = 1,["b"] = 1,["a"] = 1}
+	defaultSettingsIcon[_G[dynamicIconPrefix .. "2"]].texture = 47
+	defaultSettingsIcon[_G[dynamicIconPrefix .. "2"]].size    = FCOIS.iconVars.gIconWidth
+	defaultSettingsIcon[_G[dynamicIconPrefix .. "2"]].sortOrder = 14
+	defaultSettingsIconSortOrder[14] = _G[dynamicIconPrefix .. "2"]
 
-	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_3].color   = {["r"] = 1,["g"] = 1,["b"] = 1,["a"] = 1}
-	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_3].texture = 48
-	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_3].size    = FCOIS.iconVars.gIconWidth
-	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_3].sortOrder = 15
-	defaultSettingsIconSortOrder[15] = FCOIS_CON_ICON_DYNAMIC_3
+	defaultSettingsIcon[_G[dynamicIconPrefix .. "3"]].color   = {["r"] = 1,["g"] = 1,["b"] = 1,["a"] = 1}
+	defaultSettingsIcon[_G[dynamicIconPrefix .. "3"]].texture = 48
+	defaultSettingsIcon[_G[dynamicIconPrefix .. "3"]].size    = FCOIS.iconVars.gIconWidth
+	defaultSettingsIcon[_G[dynamicIconPrefix .. "3"]].sortOrder = 15
+	defaultSettingsIconSortOrder[15] = _G[dynamicIconPrefix .. "3"]
 
-	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_4].color   = {["r"] = 1,["g"] = 1,["b"] = 1,["a"] = 1}
-	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_4].texture = 49
-	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_4].size    = FCOIS.iconVars.gIconWidth
-	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_4].sortOrder = 16
-	defaultSettingsIconSortOrder[16] = FCOIS_CON_ICON_DYNAMIC_4
+	defaultSettingsIcon[_G[dynamicIconPrefix .. "4"]].color   = {["r"] = 1,["g"] = 1,["b"] = 1,["a"] = 1}
+	defaultSettingsIcon[_G[dynamicIconPrefix .. "4"]].texture = 49
+	defaultSettingsIcon[_G[dynamicIconPrefix .. "4"]].size    = FCOIS.iconVars.gIconWidth
+	defaultSettingsIcon[_G[dynamicIconPrefix .. "4"]].sortOrder = 16
+	defaultSettingsIconSortOrder[16] = _G[dynamicIconPrefix .. "4"]
 
-	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_5].color   = {["r"] = 1,["g"] = 1,["b"] = 1,["a"] = 1}
-	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_5].texture = 50
-	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_5].size    = FCOIS.iconVars.gIconWidth
-	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_5].sortOrder = 17
-	defaultSettingsIconSortOrder[17] = FCOIS_CON_ICON_DYNAMIC_5
+	defaultSettingsIcon[_G[dynamicIconPrefix .. "5"]].color   = {["r"] = 1,["g"] = 1,["b"] = 1,["a"] = 1}
+	defaultSettingsIcon[_G[dynamicIconPrefix .. "5"]].texture = 50
+	defaultSettingsIcon[_G[dynamicIconPrefix .. "5"]].size    = FCOIS.iconVars.gIconWidth
+	defaultSettingsIcon[_G[dynamicIconPrefix .. "5"]].sortOrder = 17
+	defaultSettingsIconSortOrder[17] = _G[dynamicIconPrefix .. "5"]
 
-	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_6].color   = {["r"] = 1,["g"] = 1,["b"] = 1,["a"] = 1}
-	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_6].texture = 51
-	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_6].size    = FCOIS.iconVars.gIconWidth
-	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_6].sortOrder = 18
-	defaultSettingsIconSortOrder[18] = FCOIS_CON_ICON_DYNAMIC_6
+	defaultSettingsIcon[_G[dynamicIconPrefix .. "6"]].color   = {["r"] = 1,["g"] = 1,["b"] = 1,["a"] = 1}
+	defaultSettingsIcon[_G[dynamicIconPrefix .. "6"]].texture = 51
+	defaultSettingsIcon[_G[dynamicIconPrefix .. "6"]].size    = FCOIS.iconVars.gIconWidth
+	defaultSettingsIcon[_G[dynamicIconPrefix .. "6"]].sortOrder = 18
+	defaultSettingsIconSortOrder[18] = _G[dynamicIconPrefix .. "6"]
 
-	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_7].color   = {["r"] = 1,["g"] = 1,["b"] = 1,["a"] = 1}
-	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_7].texture = 52
-	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_7].size    = FCOIS.iconVars.gIconWidth
-	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_7].sortOrder = 19
-	defaultSettingsIconSortOrder[19] = FCOIS_CON_ICON_DYNAMIC_7
+	defaultSettingsIcon[_G[dynamicIconPrefix .. "7"]].color   = {["r"] = 1,["g"] = 1,["b"] = 1,["a"] = 1}
+	defaultSettingsIcon[_G[dynamicIconPrefix .. "7"]].texture = 52
+	defaultSettingsIcon[_G[dynamicIconPrefix .. "7"]].size    = FCOIS.iconVars.gIconWidth
+	defaultSettingsIcon[_G[dynamicIconPrefix .. "7"]].sortOrder = 19
+	defaultSettingsIconSortOrder[19] = _G[dynamicIconPrefix .. "7"]
 
-	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_8].color   = {["r"] = 1,["g"] = 1,["b"] = 1,["a"] = 1}
-	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_8].texture = 53
-	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_8].size    = FCOIS.iconVars.gIconWidth
-	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_8].sortOrder = 20
-	defaultSettingsIconSortOrder[20] = FCOIS_CON_ICON_DYNAMIC_8
+	defaultSettingsIcon[_G[dynamicIconPrefix .. "8"]].color   = {["r"] = 1,["g"] = 1,["b"] = 1,["a"] = 1}
+	defaultSettingsIcon[_G[dynamicIconPrefix .. "8"]].texture = 53
+	defaultSettingsIcon[_G[dynamicIconPrefix .. "8"]].size    = FCOIS.iconVars.gIconWidth
+	defaultSettingsIcon[_G[dynamicIconPrefix .. "8"]].sortOrder = 20
+	defaultSettingsIconSortOrder[20] = _G[dynamicIconPrefix .. "8"]
 
-	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_9].color   = {["r"] = 1,["g"] = 1,["b"] = 1,["a"] = 1}
-	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_9].texture = 54
-	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_9].size    = FCOIS.iconVars.gIconWidth
-	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_9].sortOrder = 21
-	defaultSettingsIconSortOrder[21] = FCOIS_CON_ICON_DYNAMIC_9
+	defaultSettingsIcon[_G[dynamicIconPrefix .. "9"]].color   = {["r"] = 1,["g"] = 1,["b"] = 1,["a"] = 1}
+	defaultSettingsIcon[_G[dynamicIconPrefix .. "9"]].texture = 54
+	defaultSettingsIcon[_G[dynamicIconPrefix .. "9"]].size    = FCOIS.iconVars.gIconWidth
+	defaultSettingsIcon[_G[dynamicIconPrefix .. "9"]].sortOrder = 21
+	defaultSettingsIconSortOrder[21] = _G[dynamicIconPrefix .. "9"]
 
-	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_10].color   = {["r"] = 1,["g"] = 1,["b"] = 1,["a"] = 1}
-	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_10].texture = 55
-	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_10].size    = FCOIS.iconVars.gIconWidth
-	defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_10].sortOrder = 22
-	defaultSettingsIconSortOrder[22] = FCOIS_CON_ICON_DYNAMIC_10
+	defaultSettingsIcon[_G[dynamicIconPrefix .. "10"]].color   = {["r"] = 1,["g"] = 1,["b"] = 1,["a"] = 1}
+	defaultSettingsIcon[_G[dynamicIconPrefix .. "10"]].texture = 55
+	defaultSettingsIcon[_G[dynamicIconPrefix .. "10"]].size    = FCOIS.iconVars.gIconWidth
+	defaultSettingsIcon[_G[dynamicIconPrefix .. "10"]].sortOrder = 22
+	defaultSettingsIconSortOrder[22] = _G[dynamicIconPrefix .. "10"]
 
 	--Add the next 20 default values for the dynamic icons (11 to 30)
-	local currentIconSortOrder = defaultSettingsIcon[FCOIS_CON_ICON_DYNAMIC_10].sortOrder
+	local currentIconSortOrder = defaultSettingsIcon[defaultSettingsIconSortOrder[22]].sortOrder
 	for dynIconId=11, numMaxDynIcons, 1 do
 		local dynIconNumber = iconIdToDynIcon[dynIconId]
 		if iconIsDynamic[dynIconNumber] then

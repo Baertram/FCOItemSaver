@@ -212,34 +212,45 @@ it marked them, if I check "mark unknown motifs" with "no icon" it doesn't mark 
 
 ReloadUI does not do anything, but manually mass marking via flag icon works fine
 ]]
---#314 Mail send is blocked for normal markers (sell, sell at guildstore) even if the add. inv. flag is red (protection off). But maybe only for golden style pages?! Other armor items work fine
--->Only was able to get that bug once so far, not sure how to reproduce it
+
+
+--#2025_999 Performance improvements
 
 
 --______________________________________
--- Current max # of bugs/features/ToDos: 324
+-- Current max # of bugs/features/ToDos: 326
 --______________________________________
 
 --Open/To work on this patch:
+--Test protective functions for all panels
+--FCOIS.CheckActivePanel -> Use LibFilters to detect the panel ?
+--FCOIS.GetWhereAreWe -> Remove CraftBagExtended checks and move to extra function
 
 --=== Not started yet ===
+--Clear SV values which are boolean and do not really need a "false" (nil would be okay too)
+--showMarkerTooltip[1..n]
+--isIconEnabled[1..n]
+--allowedFCOISUniqueIdItemTypes
+
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2025-10-12
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2026-02-05
 ------------------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.7.6 - New version: 2.7.7) -    Updated last: 2025-10-12
+--Changelog (last version: 2.7.7 - New version: 2.7.8) -    Updated last: 2026-02-05
 -------------------------------------------------------------------------------------
 --[Fixed]
---Uüdated to IIfa new/changed API
+--Clear SV values which are boolean and do not really need a "false" (nil would be okay too)
+--#325 Automatic set marker is applied to all items, allthough only automatic set traits should be marked
+--#2025_999 Performance improvements, and usage of LibFilters-3.0 instead of own FCOIS code
 
 
 --[Changed]
 
 --[Added]
-
+--#326 Added setting for automatic set item marking -> non-wished traits -> check other markers
 
 
 --[Added on request]

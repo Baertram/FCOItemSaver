@@ -6,6 +6,25 @@ if not FCOIS.libsLoadedProperly then return end
 
 local tos = tostring
 
+local FCOIS_CON_FILTER_BUTTONS_ALL          = FCOIS_CON_FILTER_BUTTONS_ALL
+local FCOIS_CON_FILTER_BUTTON_LOCKDYN       = FCOIS_CON_FILTER_BUTTON_LOCKDYN
+local FCOIS_CON_FILTER_BUTTON_GEARSETS		= FCOIS_CON_FILTER_BUTTON_GEARSETS
+local FCOIS_CON_FILTER_BUTTON_RESDECIMP		= FCOIS_CON_FILTER_BUTTON_RESDECIMP
+local FCOIS_CON_FILTER_BUTTON_SELLGUILDINT	= FCOIS_CON_FILTER_BUTTON_SELLGUILDINT
+local FCOIS_CON_FILTER_BUTTON_STATE_GREEN     = FCOIS_CON_FILTER_BUTTON_STATE_GREEN
+local FCOIS_CON_FILTER_BUTTON_STATE_YELLOW    = FCOIS_CON_FILTER_BUTTON_STATE_YELLOW
+local FCOIS_CON_FILTER_BUTTON_STATE_RED       = FCOIS_CON_FILTER_BUTTON_STATE_RED
+local FCOIS_CON_ICONS_ALL               = FCOIS_CON_ICONS_ALL
+local FCOIS_CON_ICON_LOCK				= FCOIS_CON_ICON_LOCK
+local FCOIS_CON_ICON_RESEARCH			= FCOIS_CON_ICON_RESEARCH
+local FCOIS_CON_ICON_SELL				= FCOIS_CON_ICON_SELL
+local FCOIS_CON_ICON_DECONSTRUCTION		= FCOIS_CON_ICON_DECONSTRUCTION
+local FCOIS_CON_ICON_IMPROVEMENT		= FCOIS_CON_ICON_IMPROVEMENT
+local FCOIS_CON_ICON_SELL_AT_GUILDSTORE	= FCOIS_CON_ICON_SELL_AT_GUILDSTORE
+local FCOIS_CON_ICON_INTRICATE			= FCOIS_CON_ICON_INTRICATE
+
+local LF_INVENTORY = LF_INVENTORY
+
 local debugMessage = FCOIS.debugMessage
 local debugErrorMessage2Chat = FCOIS.debugErrorMessage2Chat
 
@@ -41,47 +60,17 @@ local myGetItemInstanceId = FCOIS.MyGetItemInstanceId
 --function FilterSavedItemsForBagIdAndSlotIndex: Used to filter inventories with a bagId, slotIndex (crafting tables e.g.), via LibFilters' runFilters() function as the inventory gets updated/refreshed
 
 
+local doDebugOutput = false
+
 -- =====================================================================================================================
---  Filter functions (used library: libFilters 3.x)
+--  Filter button logical conjunction and/or --#2025_999 -v-
 -- =====================================================================================================================
---The function to filter an item in your inventories
---return value "true" = Show item
---return value "false" = Hide (filter) item
-local function shouldItemBeShownAfterBeenFiltered(slotItemInstanceId, slot)
-    --Check for each filter the marked items
-    local result = true
-    local isFilterActivated
+local lockDynFilterWithLogicalAND, gearSetsFilterWithLogicalAND, resDecImpFilterWithLogicalAND, sellGuildIntFilterWithLogicalAND
+local allLogicalConjunctionsAreAND, allLogicalConjunctionsAreOR
+local filterButtonSettings, filterButtonSettingsForCurrentPanel, filterButtonLogicalConjunctionSettings, filterButtonLogicalConjunctionResults, filterButtonStates
 
-    getAccountWideCharacterOrNormalCharacterSettings = getAccountWideCharacterOrNormalCharacterSettings or FCOIS.GetAccountWideCharacterOrNormalCharacterSettings
-    local settingsOfFilterButtonStateAndIcon = getAccountWideCharacterOrNormalCharacterSettings()
-    if settingsOfFilterButtonStateAndIcon == nil then
-        d("<<<[FCOIS]ERROR - shouldItemBeShownAfterFilter -> settingsOfFilterButtonStateAndIcon is NIL!")
-        return
-    end
-
-    local settings = FCOIS.settingsVars.settings
-    --local isIconEnabled = settings.isIconEnabled
-
-    --\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
-    --TODO DEBUG: Debugging only! Remove again if not needed
-    local doDebugOutput = false
-    local bagId, slotIndex, itemLink
-    --[[
-    bagId, slotIndex = FCOIS.MyGetItemDetails(slot)
-    --2021-12-04, bag item at char Hlewang:
-    local isdebugSlotIndex = {
-        [63] =  true,   --Ring der unermesslichen Dunkelheit
-    }
-    if bagId == 1 and isdebugSlotIndex[slotIndex] then
-        doDebugOutput = true
-    end
-    if doDebugOutput then
-        itemLink = (bagId ~= nil and slotIndex ~= nil and GetItemLink(bagId, slotIndex))
-        d(">================================================================>")
-        d("[FCOIS]>=====>shouldItemBeShownAfterFilter: " ..tos(itemLink))
-    end
-    ]]
-
+local lastUsedFilterButtonLogicalConjunctionFilterPanelId = nil
+local function prepareFilterButtonsLogicalConjunctions(currentFilterPanelId)
     --TODO FEATURE 2022-04-05 Filtering with logical OR does not work properly that way.
     --TODO FEATURE   We need to split this functions code below up so that OR (or AND & OR combined) filtering will be working differently in total!
     --TODO FEATURE   Else the "result" will mix and give false results in total.
@@ -99,9 +88,443 @@ local function shouldItemBeShownAfterBeenFiltered(slotItemInstanceId, slot)
     [Does not work]
     -All other combinations
 
-
     ]]
+    currentFilterPanelId = currentFilterPanelId or FCOIS.gFilterWhere
+
+    --Always init these tables, on each call of the function!
+    --The results of the logical conjunction checks done at each filter button (see below at function shouldItemBeShownAfterBeenFiltered, for filterId=1, numFilters, 1 do loop)
+    --> only used if at least 1 logical OR conjunction is enabled
+    filterButtonLogicalConjunctionResults = {
+        [FCOIS_CON_FILTER_BUTTON_LOCKDYN] =         true,
+        [FCOIS_CON_FILTER_BUTTON_GEARSETS] =        true,
+        [FCOIS_CON_FILTER_BUTTON_RESDECIMP] =       true,
+        [FCOIS_CON_FILTER_BUTTON_SELLGUILDINT] =    true,
+    }
+    --The filter button states (true: green, false: red, -99: yellow)
+    --> only used if at least 1 logical OR conjunction is enabled
+    filterButtonStates = {
+        [FCOIS_CON_FILTER_BUTTON_LOCKDYN] =         true,
+        [FCOIS_CON_FILTER_BUTTON_GEARSETS] =        true,
+        [FCOIS_CON_FILTER_BUTTON_RESDECIMP] =       true,
+        [FCOIS_CON_FILTER_BUTTON_SELLGUILDINT] =    true,
+    }
+
+    --Did the filterPanel change? Request an update for the filterButton data now
+    if lastUsedFilterButtonLogicalConjunctionFilterPanelId == nil or lastUsedFilterButtonLogicalConjunctionFilterPanelId ~= currentFilterPanelId then --#2025_999
+        FCOIS.preventerVars.filterButtonsLogicalConjunctionsNeedUpdate = true
+        lastUsedFilterButtonLogicalConjunctionFilterPanelId = currentFilterPanelId
+    end
+
+    --Was a filter button's context menu used to switch the logical an/or setting at a button?
+    --Or did the lastFilterPanelId switch compared to the current one?
+    -->Then update the needed filterButton related settings tables now too
+    if FCOIS.preventerVars.filterButtonsLogicalConjunctionsNeedUpdate == true
+            or lockDynFilterWithLogicalAND == nil or gearSetsFilterWithLogicalAND == nil or resDecImpFilterWithLogicalAND == nil or sellGuildIntFilterWithLogicalAND == nil
+            or allLogicalConjunctionsAreAND == nil or allLogicalConjunctionsAreOR == nil
+            or filterButtonLogicalConjunctionSettings == nil or filterButtonLogicalConjunctionResults == nil or filterButtonStates == nil
+            or filterButtonSettings == nil or filterButtonSettingsForCurrentPanel == nil then
+        --The 4 filter button's settings for the logical conjunction (true = AND, false = OR)
+        filterButtonSettings = FCOIS.settingsVars.settings.filterButtonSettings
+        filterButtonSettingsForCurrentPanel = (currentFilterPanelId ~= nil and filterButtonSettings[currentFilterPanelId]) or nil
+        if filterButtonSettingsForCurrentPanel == nil then
+            return
+        end
+
+        -------------------------------------------------------------------------------------------------------
+        lockDynFilterWithLogicalAND =         filterButtonSettingsForCurrentPanel[FCOIS_CON_FILTER_BUTTON_LOCKDYN].filterWithLogicalAND
+        gearSetsFilterWithLogicalAND =        filterButtonSettingsForCurrentPanel[FCOIS_CON_FILTER_BUTTON_GEARSETS].filterWithLogicalAND
+        resDecImpFilterWithLogicalAND =       filterButtonSettingsForCurrentPanel[FCOIS_CON_FILTER_BUTTON_RESDECIMP].filterWithLogicalAND
+        sellGuildIntFilterWithLogicalAND =    filterButtonSettingsForCurrentPanel[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT].filterWithLogicalAND
+        --Are all 4 filter buttons set to logical ALL conjunction?
+        allLogicalConjunctionsAreAND = (lockDynFilterWithLogicalAND == true and gearSetsFilterWithLogicalAND  == true
+                                        and resDecImpFilterWithLogicalAND == true and sellGuildIntFilterWithLogicalAND == true) or false
+        --Are all 4 filter buttons set to logical OR conjunction?
+        allLogicalConjunctionsAreOR = (not allLogicalConjunctionsAreAND and lockDynFilterWithLogicalAND == false and gearSetsFilterWithLogicalAND  == false
+                                        and resDecImpFilterWithLogicalAND == false and sellGuildIntFilterWithLogicalAND == false) or false
+
+        --> only used if at least 1 logical OR conjunction is enabled
+        filterButtonLogicalConjunctionSettings = {
+            [FCOIS_CON_FILTER_BUTTON_LOCKDYN] =         lockDynFilterWithLogicalAND,
+            [FCOIS_CON_FILTER_BUTTON_GEARSETS] =        gearSetsFilterWithLogicalAND,
+            [FCOIS_CON_FILTER_BUTTON_RESDECIMP] =       resDecImpFilterWithLogicalAND,
+            [FCOIS_CON_FILTER_BUTTON_SELLGUILDINT] =    sellGuildIntFilterWithLogicalAND,
+        }
+
+        FCOIS.preventerVars.filterButtonsLogicalConjunctionsNeedUpdate = false
+    end
+end
+
+-------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------
+--Helper function to check if the filterButton's filter checks need to be done now, or if the current return variable's ("result")
+--boolean value already prevents this
+local function preCheckIfFilterButtonsFilterCheckNeedsToBeDone(filterButtonId, currentValue, filterButtonState)
+    if doDebugOutput then d(">>preCheckFilterButton - button: " ..tos(filterButtonId) .. ", result: " ..tos(currentValue) .. ", filterButtonState: " ..tos(filterButtonState)) end
+    --Only run this filterButton's filter code if all filterButton's settings for the logical conjunction are set to AND and the result overall is still "true" (show item)
+    if allLogicalConjunctionsAreAND == true then
+        local retVar = (filterButtonId == FCOIS_CON_FILTER_BUTTON_LOCKDYN and true) or currentValue
+        if doDebugOutput then d(">allLogicalConjunctionsAreAND - return:  " ..tos(retVar)) end
+        -->Return true for the 1st filter button as the checks start with it
+        -->If the overall result is false the logical AND will return false already for all buttons and no further checks are needed!
+        return retVar
+    else
+        filterButtonStates[filterButtonId] = filterButtonState
+        --Else if the filter settings of the logical conjunction is set to OR for any of the filterButtons:
+        --If this filterButton's logical conjunction is set to OR
+        if filterButtonLogicalConjunctionSettings[filterButtonId] == false then
+            --if doDebugOutput then d("<2") end
+            -->Do the checks independent from the overall "result". Only do the check if the result of the currentfilterButton's checks still is true
+            return filterButtonLogicalConjunctionResults[filterButtonId] == true
+        else
+            --if doDebugOutput then d("<3") end
+            --Current filter button is set to logical AND, so return the overall result
+            return (filterButtonId == FCOIS_CON_FILTER_BUTTON_LOCKDYN and true) or currentValue
+        end
+    end
+    --if doDebugOutput then d("<4") end
+    --All other cases: Return false so that no checks are done
+    return false
+end
+
+
+--Helper function for the "red" filter button state
+local function getRedFilterButtonResult(filterButtonId, currentResult)
+    --All filter button's logical conjunctions are set to AND?
+    if allLogicalConjunctionsAreAND then
+        --"Show" only the items if the currentResult (total result of all filter buttons checked already) is still "true"
+        if currentResult ~= false then
+            return true
+        end
+    else
+        --Not all filter button's logical conjunctions are set to OR?
+        if not allLogicalConjunctionsAreOR then
+            --"Show" only the items if the currentResult (total result of all filter buttons checked already) is still "true"
+            if currentResult ~= false then
+                return true
+            end
+        else
+            --If all filter button's logical conjunctions are set to logical OR: "Show" all red filter button's marker icons
+            return true
+        end
+    end
+    return currentResult
+end
+
+
+--Helper function for the "green" filter button state at any filter button, and check if the result at that button
+--is already "false", then hide the item
+local function getAnyGreenFilterButtonResult(currentResult)
+    --Only if overall result is currently still true (show items) and not all logical conjunctions are set to AND
+    if currentResult == true and not allLogicalConjunctionsAreAND then
+        for filterButtonIdOfAllFilterButtons=1, numFilters, 1 do
+            --The filter buttons' logical conjunction is OR
+            if filterButtonSettingsForCurrentPanel[filterButtonIdOfAllFilterButtons].filterWithLogicalAND == false
+                --and filter button state is "green" (hide)
+                and filterButtonStates[filterButtonIdOfAllFilterButtons] == FCOIS_CON_FILTER_BUTTON_STATE_GREEN
+                and filterButtonLogicalConjunctionResults[filterButtonIdOfAllFilterButtons] == false then
+                if doDebugOutput then d(">>>>getAnyGreenResult-["..tos(filterButtonIdOfAllFilterButtons).."]: false") end
+                return false
+            end
+        end
+    end
+    return currentResult
+end
+
+--Helper function to update the resuls of the logical OR conjunction filter button checks
+local function updateLogicalConjunctionResultsOfFilterButton(filterButtonId, newValue, p_isFilterActivated)
+    --Only update if any filter button's logical OR conjunction is enabled
+    if not allLogicalConjunctionsAreAND
+        --ALWAYS update the result of the filterButton checks to the table filterButtonLogicalConjunctionResults
+
+        ----if the result of the filterButton checks is false (as default value at the filter button is true = showFilteredItem)
+        --and newValue == false
+        ----and the current filterButton's logical conjunction is set to OR
+        --and filterButtonLogicalConjunctionSettings[filterButtonId] == false
+            ----and the current button's logical OR result is still true -> optional, as already checking for "newValue" being == false should be enough
+            ----and filterButtonLogicalConjunctionResults[filterButtonId] == true
+    then
+        if doDebugOutput then d(">>>updateLogicalResult: " .. tos(newValue)) end
+        filterButtonLogicalConjunctionResults[filterButtonId] = newValue
+    end
+end
+
+--Check the filterButton states that were determined and return the correct "filtered" boolean value according to the button's state etc.
+local function checkAndReturnFilterButtonLogicalConjunctionResult(result, bagId, slotIndex, itemLink)
+    --All conjunctions are logically AND -> All checks were done above already. Return the overall "result" variable now
+    if allLogicalConjunctionsAreAND == true then
+        --==========================
+        -- Logical AND at all 4 filter buttons
+        --==========================
+        if doDebugOutput then  d("[FCOIS]====== AND result: " ..tos(result)) end
+        return result
+        ------------------------------------------------------------------------------------------------------------------------------------------
+    else
+        --Not all logical concuntions are AND, any/all are OR
+
+        --The state at each filterButton
+        local filterButton1State = filterButtonStates[FCOIS_CON_FILTER_BUTTON_LOCKDYN]
+        local filterButton2State = filterButtonStates[FCOIS_CON_FILTER_BUTTON_GEARSETS]
+        local filterButton3State = filterButtonStates[FCOIS_CON_FILTER_BUTTON_RESDECIMP]
+        local filterButton4State = filterButtonStates[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT]
+        --Are all 4 filter buttons state's set to "green" (hide)?
+        local allFilterButtonStatesAreGreen = (filterButton1State == FCOIS_CON_FILTER_BUTTON_STATE_GREEN and
+                filterButton2State == FCOIS_CON_FILTER_BUTTON_STATE_GREEN and
+                filterButton3State == FCOIS_CON_FILTER_BUTTON_STATE_GREEN and
+                filterButton4State == FCOIS_CON_FILTER_BUTTON_STATE_GREEN) or false
+        local allFilterButtonStatesAreYellow = (filterButton1State == FCOIS_CON_FILTER_BUTTON_STATE_YELLOW and
+                filterButton2State == FCOIS_CON_FILTER_BUTTON_STATE_YELLOW and
+                filterButton3State == FCOIS_CON_FILTER_BUTTON_STATE_YELLOW and
+                filterButton4State == FCOIS_CON_FILTER_BUTTON_STATE_YELLOW) or false
+        local allFilterButtonStatesAreRed = (filterButton1State == FCOIS_CON_FILTER_BUTTON_STATE_RED and
+                filterButton2State == FCOIS_CON_FILTER_BUTTON_STATE_RED and
+                filterButton3State == FCOIS_CON_FILTER_BUTTON_STATE_RED and
+                filterButton4State == FCOIS_CON_FILTER_BUTTON_STATE_RED) or false
+        --The result at each filterButton
+        local filterButton1Result = filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_LOCKDYN]
+        local filterButton2Result = filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_GEARSETS]
+        local filterButton3Result = filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_RESDECIMP]
+        local filterButton4Result = filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT]
+        --All filter buttons equal "show" item?
+        local allFilterButtonResultsEqualShowItem = (filterButton1Result == true and
+                filterButton2Result == true and
+                filterButton3Result == true and
+                filterButton4Result == true) or false
+        local logicalANDOfAllResults = filterButton1Result and filterButton2Result and filterButton3Result
+                and filterButton4Result
+        local logicalOROfAllResults = filterButton1Result or filterButton2Result or filterButton3Result
+                or filterButton4Result
+
+        local resultAfterLogicalConjunction = true -- Initial value: true = show the item (not filtered)
+        if doDebugOutput then d(string.format("[FCOIS]Button results: %s, %s, %s, %s - Result: %s, ORResult: %s",tos(filterButton1Result),tos(filterButton2Result),tos(filterButton3Result),tos(filterButton4Result),tos(result),tos(logicalOROfAllResults))) end
+        ------------------------------------------------------------------------------------------------------------------------
+        ------------------------------------------------------------------------------------------------------------------------
+        --Check the logical conjunctions now according to the filter button settings, state and the number of OR & AND
+        --conjunctions
+        --==========================
+        -- Logical OR at ALL of the 4 filter buttons
+        --==========================
+        if allLogicalConjunctionsAreOR then
+            if doDebugOutput then d("[FCOIS]====== 4x OR") end
+
+            --If all 4 filter buttons state's are set to "green" (hide): hide, or show if not marked at all -> Same as 4x logical AND conjunction
+            if allFilterButtonStatesAreGreen then
+                resultAfterLogicalConjunction = logicalANDOfAllResults --result
+                ------------------------------------------------------------------------------------------------------------------------
+                --If all 4 filter buttons state's are set to "yellow" (show only): show, or hide if not marked at all -> Same as 4x logical AND conjunction
+            elseif allFilterButtonStatesAreYellow then
+                resultAfterLogicalConjunction = logicalOROfAllResults
+                ------------------------------------------------------------------------------------------------------------------------
+                --If all 4 filter buttons state's are set to "red" (show): Show it -> Same as 4x logical AND conjunction
+            elseif allFilterButtonStatesAreRed then
+                resultAfterLogicalConjunction = true
+                ------------------------------------------------------------------------------------------------------------------------
+                --If all 4 filter buttons state's are set to different states: Do further checks
+            else
+                --All filter buttons say "show" item? Okay -> Show it
+                if allFilterButtonResultsEqualShowItem then
+                    resultAfterLogicalConjunction = true -- show
+
+                    --Is any of the filter button's result "false" (hide item)?
+                else
+                    --Check if any of the filter buttons' state is "green" and update the overall OR result
+                    logicalOROfAllResults = getAnyGreenFilterButtonResult(logicalOROfAllResults)
+
+                    --The filter buttons need to be combined with a logical OR conjunction
+                    resultAfterLogicalConjunction = logicalOROfAllResults
+                end
+            end
+            ------------------------------------------------------------------------------------------------------------------------
+        else
+            --==========================
+            -- Logical OR at ANY of the 4 filter buttons
+            --==========================
+            ----------------------------
+            --3 buttons with logical OR / 1 button with logical AND
+            ----------------------------
+            if not lockDynFilterWithLogicalAND and not gearSetsFilterWithLogicalAND
+                    and not resDecImpFilterWithLogicalAND and sellGuildIntFilterWithLogicalAND == true then
+                if doDebugOutput then d("[FCOIS]====== 3x OR 1") end
+                resultAfterLogicalConjunction = (filterButton1Result
+                        or filterButton2Result
+                        or filterButton3Result)
+                        and filterButton4Result
+            elseif not lockDynFilterWithLogicalAND and not gearSetsFilterWithLogicalAND
+                    and not sellGuildIntFilterWithLogicalAND and resDecImpFilterWithLogicalAND == true then
+                if doDebugOutput then d("[FCOIS]====== 3x OR 2") end
+                resultAfterLogicalConjunction = (filterButton1Result
+                        or filterButton2Result
+                        or filterButton4Result)
+                        and filterButton3Result
+            elseif not lockDynFilterWithLogicalAND and not resDecImpFilterWithLogicalAND
+                    and not sellGuildIntFilterWithLogicalAND and gearSetsFilterWithLogicalAND == true then
+                if doDebugOutput then d("[FCOIS]====== 3x OR 3") end
+                resultAfterLogicalConjunction = (filterButton1Result
+                        or filterButton3Result
+                        or filterButton4Result)
+                        and filterButton2Result
+            elseif not gearSetsFilterWithLogicalAND and not resDecImpFilterWithLogicalAND
+                    and not sellGuildIntFilterWithLogicalAND and lockDynFilterWithLogicalAND == true then
+                if doDebugOutput then d("[FCOIS]====== 3x OR 4") end
+                resultAfterLogicalConjunction = (filterButton2Result
+                        or filterButton3Result
+                        or filterButton4Result)
+                        and filterButton1Result
+                ------------------------------------------------------------------------------------------------------------------------
+                ----------------------------
+                --2 buttons with logical OR / 2 buttons with logical AND
+                ----------------------------
+            elseif not lockDynFilterWithLogicalAND and not gearSetsFilterWithLogicalAND
+                    and resDecImpFilterWithLogicalAND == true and sellGuildIntFilterWithLogicalAND == true then
+                if doDebugOutput then d("[FCOIS]====== 2x OR 1") end
+                resultAfterLogicalConjunction = (filterButton1Result
+                        or filterButton2Result)
+                        and filterButton3Result
+                        and filterButton4Result
+            elseif not lockDynFilterWithLogicalAND and not resDecImpFilterWithLogicalAND
+                    and gearSetsFilterWithLogicalAND == true and sellGuildIntFilterWithLogicalAND == true then
+                if doDebugOutput then d("[FCOIS]====== 2x OR 2") end
+                resultAfterLogicalConjunction = (filterButton1Result
+                        or filterButton3Result)
+                        and filterButton2Result
+                        and filterButton4Result
+            elseif not lockDynFilterWithLogicalAND and not sellGuildIntFilterWithLogicalAND
+                    and gearSetsFilterWithLogicalAND == true and resDecImpFilterWithLogicalAND == true then
+                if doDebugOutput then d("[FCOIS]====== 2x OR 3") end
+                resultAfterLogicalConjunction = (filterButton1Result
+                        or filterButton4Result)
+                        and filterButton2Result
+                        and filterButton3Result
+            elseif not gearSetsFilterWithLogicalAND and not resDecImpFilterWithLogicalAND
+                    and lockDynFilterWithLogicalAND == true and sellGuildIntFilterWithLogicalAND == true then
+                if doDebugOutput then d("[FCOIS]====== 2x OR 4") end
+                resultAfterLogicalConjunction = (filterButton2Result
+                        or filterButton3Result)
+                        and filterButton1Result
+                        and filterButton4Result
+            elseif not gearSetsFilterWithLogicalAND and not sellGuildIntFilterWithLogicalAND
+                    and lockDynFilterWithLogicalAND == true and resDecImpFilterWithLogicalAND == true then
+                if doDebugOutput then d("[FCOIS]====== 2x OR 5") end
+                resultAfterLogicalConjunction = (filterButton2Result
+                        or filterButton4Result)
+                        and filterButton1Result
+                        and filterButton3Result
+            elseif not resDecImpFilterWithLogicalAND and not sellGuildIntFilterWithLogicalAND
+                    and lockDynFilterWithLogicalAND == true and gearSetsFilterWithLogicalAND == true then
+                if doDebugOutput then d("[FCOIS]====== 2x OR 6") end
+                resultAfterLogicalConjunction = (filterButton3Result
+                        or filterButton4Result)
+                        and filterButton1Result
+                        and filterButton2Result
+                ------------------------------------------------------------------------------------------------------------------------
+                ----------------------------
+                --1 button with logical OR / 3 buttons with logical AND
+                ----------------------------
+            elseif not lockDynFilterWithLogicalAND
+                    and gearSetsFilterWithLogicalAND == true and resDecImpFilterWithLogicalAND == true and sellGuildIntFilterWithLogicalAND == true then
+                if doDebugOutput then d("[FCOIS]====== 1x OR 1") end
+                resultAfterLogicalConjunction = filterButton1Result
+                        or (filterButton2Result
+                        and filterButton3Result
+                        and filterButton4Result)
+            elseif not gearSetsFilterWithLogicalAND
+                    and lockDynFilterWithLogicalAND == true and resDecImpFilterWithLogicalAND == true and sellGuildIntFilterWithLogicalAND == true then
+                if doDebugOutput then d("[FCOIS]====== 1x OR 2") end
+                resultAfterLogicalConjunction = filterButton2Result
+                        or (filterButton1Result
+                        and filterButton3Result
+                        and filterButton4Result)
+            elseif not resDecImpFilterWithLogicalAND
+                    and lockDynFilterWithLogicalAND == true and gearSetsFilterWithLogicalAND == true and sellGuildIntFilterWithLogicalAND == true then
+                if doDebugOutput then d("[FCOIS]====== 1x OR 3") end
+                resultAfterLogicalConjunction = filterButton3Result
+                        or (filterButton1Result
+                        and filterButton2Result
+                        and filterButton4Result)
+            elseif not sellGuildIntFilterWithLogicalAND
+                    and lockDynFilterWithLogicalAND == true and gearSetsFilterWithLogicalAND == true and resDecImpFilterWithLogicalAND == true then
+                if doDebugOutput then d("[FCOIS]====== 1x OR 4") end
+                resultAfterLogicalConjunction = filterButton4Result
+                        or (filterButton1Result
+                        and filterButton2Result
+                        and filterButton3Result)
+            end
+        end
+        ------------------------------------------------------------------------------------------------------------------------
+        ------------------------------------------------------------------------------------------------------------------------
+        if doDebugOutput then
+            d("<<result AND & OR: " .. tos(resultAfterLogicalConjunction))
+
+            FCOIS._debugFilterLogicalConjunctions = FCOIS._debugFilterLogicalConjunctions or {}
+            local dflc = FCOIS._debugFilterLogicalConjunctions
+            dflc[bagId] = dflc[bagId] or {}
+            dflc[bagId][slotIndex] = {
+                item = itemLink,
+                lockDynFilterState = filterButton1State,
+                lockDynFilterLog = lockDynFilterWithLogicalAND,
+                gearSetsFilterState = filterButton2State,
+                gearSetsFilterLog = gearSetsFilterWithLogicalAND,
+                resDecImpFilterState = filterButton3State,
+                resDecImpFilterLog = resDecImpFilterWithLogicalAND,
+                sellGuildIntFilterState = filterButton4State,
+                sellGuildIntFilterLog = sellGuildIntFilterWithLogicalAND,
+                result = result,
+                resultAfterLogicalConjunction = resultAfterLogicalConjunction,
+            }
+        end
+        return resultAfterLogicalConjunction
+
+    end
+end
+------------- -^- #2025_999
+
+-- =====================================================================================================================
+--  Filter functions (used library: libFilters 3.x)
+-- =====================================================================================================================
+--The function to filter an item in your inventories
+--return value "true" = Show item
+--return value "false" = Hide (filter) item
+
+local function shouldItemBeShownAfterBeenFiltered(slotItemInstanceId, slot)
+    --Check for each filter the marked items
+    local result = true
+    local isFilterActivated
+
+    getAccountWideCharacterOrNormalCharacterSettings = getAccountWideCharacterOrNormalCharacterSettings or FCOIS.GetAccountWideCharacterOrNormalCharacterSettings
+    local settingsOfFilterButtonStateAndIcon = getAccountWideCharacterOrNormalCharacterSettings()
+    if settingsOfFilterButtonStateAndIcon == nil then
+        d("<<<[FCOIS]ERROR - shouldItemBeShownAfterFilter -> settingsOfFilterButtonStateAndIcon is NIL!")
+        return
+    end
+
+    local settings = FCOIS.settingsVars.settings
+    --local isIconEnabled = settings.isIconEnabled
+
+    --\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+    --TODO DEBUG: Debugging only! Remove again if not needed
+    local bagId, slotIndex, itemLink
+    --[[
+    bagId, slotIndex = FCOIS.MyGetItemDetails(slot)
+    --2021-12-04, bag item at char Hlewang:
+    local isdebugSlotIndex = {
+        [63] =  true,   --Ring der unermesslichen Dunkelheit
+    }
+    if bagId == 1 and isdebugSlotIndex[slotIndex] then
+        doDebugOutput = true
+    end
+    if doDebugOutput then
+        itemLink = (bagId ~= nil and slotIndex ~= nil and GetItemLink(bagId, slotIndex))
+        d(">================================================================>")
+        d("[FCOIS]>=====>shouldItemBeShownAfterFilter: " ..tos(itemLink))
+    end
+    ]]
+
     --////////////////////////////////////////////////////////////////////////////////
+
+    -- The currently filtered panelId (inventory, bank withdraw, mail, trade, etc.)
+    local currentFilterPanelId = FCOIS.gFilterWhere
+    --Check if the FilterButtons logical conjunction data needs an update/build first
+    prepareFilterButtonsLogicalConjunctions(currentFilterPanelId) --#2025_999
 
     -------------------------------------------------------------------------------------------------------
     --Check each filter button and collect the "protected ones". Do not return or abort in between to assure that filters
@@ -110,154 +533,20 @@ local function shouldItemBeShownAfterBeenFiltered(slotItemInstanceId, slot)
     ---NEW: With FCOIS v2.2.4 new context menus with settings for the filter buttons where added at the filter buttons. You
     --->are now able to swithc between logical conjunction AND or OR and thus the filter results here need to sum up
     --->according to these settings (AND means all must apply. OR means any of them must apply).
-    local filterButtonSettings = settings.filterButtonSettings
-    local currentFilterPanelId = FCOIS.gFilterWhere     -- The currently filtered panelId (inventory, bank withdraw, mail, trade, etc.)
-    local filterButtonSettingsForCurrentPanel = filterButtonSettings[currentFilterPanelId]
     if filterButtonSettingsForCurrentPanel == nil then
         d("[FCOIS]ERROR filterButtonSettingsForCurrentPanel = nil! gFilterWhere: " ..tos(currentFilterPanelId))
         return
     end
-
     if doDebugOutput then
         d(">FCOIS.gFilterWhere: " ..tos(currentFilterPanelId) .. ", filterButtonSettingsForCurrentPanel: " ..tos(filterButtonSettingsForCurrentPanel))
     end
 
-    --The 4 filter button's settings for the logical conjunction (true = AND, false = OR)
     -------------------------------------------------------------------------------------------------------
-    local lockDynFilterWithLogicalAND =         filterButtonSettingsForCurrentPanel[FCOIS_CON_FILTER_BUTTON_LOCKDYN].filterWithLogicalAND
-    local gearSetsFilterWithLogicalAND =        filterButtonSettingsForCurrentPanel[FCOIS_CON_FILTER_BUTTON_GEARSETS].filterWithLogicalAND
-    local resDecImpFilterWithLogicalAND =       filterButtonSettingsForCurrentPanel[FCOIS_CON_FILTER_BUTTON_RESDECIMP].filterWithLogicalAND
-    local sellGuildIntFilterWithLogicalAND =    filterButtonSettingsForCurrentPanel[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT].filterWithLogicalAND
-    --Are all 4 filter buttons set to logical ALL conjunction?
-    local allLogicalConjunctionsAreAND = (lockDynFilterWithLogicalAND == true and gearSetsFilterWithLogicalAND  == true
-            and resDecImpFilterWithLogicalAND == true and sellGuildIntFilterWithLogicalAND == true) or false
-    --Are all 4 filter buttons set to logical OR conjunction?
-    local allLogicalConjunctionsAreOR = (not allLogicalConjunctionsAreAND and lockDynFilterWithLogicalAND == false and gearSetsFilterWithLogicalAND  == false
-            and resDecImpFilterWithLogicalAND == false and sellGuildIntFilterWithLogicalAND == false) or false
-    --> only used if at least 1 logical OR conjunciton is enabled
-    local filterButtonLogicalConjunctionSettings = {
-        [FCOIS_CON_FILTER_BUTTON_LOCKDYN] =         lockDynFilterWithLogicalAND,
-        [FCOIS_CON_FILTER_BUTTON_GEARSETS] =        gearSetsFilterWithLogicalAND,
-        [FCOIS_CON_FILTER_BUTTON_RESDECIMP] =       resDecImpFilterWithLogicalAND,
-        [FCOIS_CON_FILTER_BUTTON_SELLGUILDINT] =    sellGuildIntFilterWithLogicalAND,
-    }
-    --The results of the logical conjunction checks done at each filter button (see below at the for filterId=1, numFilters, 1 do loop)
-    --> only used if at least 1 logical OR conjunciton is enabled
-    local filterButtonLogicalConjunctionResults = {
-        [FCOIS_CON_FILTER_BUTTON_LOCKDYN] =         true,
-        [FCOIS_CON_FILTER_BUTTON_GEARSETS] =        true,
-        [FCOIS_CON_FILTER_BUTTON_RESDECIMP] =       true,
-        [FCOIS_CON_FILTER_BUTTON_SELLGUILDINT] =    true,
-    }
-    --The filter button states (true: green, false: red, -99: yellow)
-    --> only used if at least 1 logical OR conjunciton is enabled
-    local filterButtonStates = {
-        [FCOIS_CON_FILTER_BUTTON_LOCKDYN] =         true,
-        [FCOIS_CON_FILTER_BUTTON_GEARSETS] =        true,
-        [FCOIS_CON_FILTER_BUTTON_RESDECIMP] =       true,
-        [FCOIS_CON_FILTER_BUTTON_SELLGUILDINT] =    true,
-    }
-
+    -------------------------------------------------------------------------------------------------------
+    -------------------------------------------------------------------------------------------------------
     --The table with the dynamic gear icons,which should be excluded at the normal filterButton1 "dynamic" protection checks
     local excludeDynamicGearIconsTab = mappingVars.iconToDynamicGear
 
-    -------------------------------------------------------------------------------------------------------
-    -------------------------------------------------------------------------------------------------------
-    -------------------------------------------------------------------------------------------------------
-    --Helper function to check if the filterButton's filter checks need to be done now, or if the current return variable's ("result")
-    --boolean value already prevents this
-    local function preCheckIfFilterButtonsFilterCheckNeedsToBeDone(filterButtonId, currentValue, filterButtonState)
-        if doDebugOutput then d(">>preCheckFilterButton - button: " ..tos(filterButtonId) .. ", result: " ..tos(currentValue) .. ", filterButtonState: " ..tos(filterButtonState)) end
-        --Only run this filterButton's filter code if all filterButton's settings for the logical conjunction are set to AND and the result overall is still "true" (show item)
-        if allLogicalConjunctionsAreAND == true then
-            local retVar = (filterButtonId == FCOIS_CON_FILTER_BUTTON_LOCKDYN and true) or currentValue
-            if doDebugOutput then d(">allLogicalConjunctionsAreAND - return:  " ..tos(retVar)) end
-            -->Return true for the 1st filter button as the checks start with it
-            -->If the overall result is false the logical AND will return false already for all buttons and no further checks are needed!
-            return retVar
-        else
-            filterButtonStates[filterButtonId] = filterButtonState
-            --Else if the filter settings of the logical conjunction is set to OR for any of the filterButtons:
-            --If this filterButton's logical conjunction is set to OR
-            if filterButtonLogicalConjunctionSettings[filterButtonId] == false then
-                --if doDebugOutput then d("<2") end
-                -->Do the checks independent from the overall "result". Only do the check if the result of the currentfilterButton's checks still is true
-                return filterButtonLogicalConjunctionResults[filterButtonId] == true
-            else
-                --if doDebugOutput then d("<3") end
-                --Current filter button is set to logical AND, so return the overall result
-                return (filterButtonId == FCOIS_CON_FILTER_BUTTON_LOCKDYN and true) or currentValue
-            end
-        end
-        --if doDebugOutput then d("<4") end
-        --All other cases: Return false so that no checks are done
-        return false
-    end
-
-
-    --Helper function for the "red" filter button state
-    local function getRedFilterButtonResult(filterButtonId, currentResult)
-        --All filter button's logical conjunctions are set to AND?
-        if allLogicalConjunctionsAreAND then
-            --"Show" only the items if the currentResult (total result of all filter buttons checked already) is still "true"
-            if currentResult ~= false then
-                return true
-            end
-        else
-            --Not all filter button's logical conjunctions are set to OR?
-            if not allLogicalConjunctionsAreOR then
-                --"Show" only the items if the currentResult (total result of all filter buttons checked already) is still "true"
-                if currentResult ~= false then
-                    return true
-                end
-            else
-                --If all filter button's logical conjunctions are set to logical OR: "Show" all red filter button's marker icons
-                return true
-            end
-        end
-        return currentResult
-    end
-
-
-    --Helper function for the "green" filter button state at any filter button, and check if the result at that button
-    --is already "false", then hide the item
-    local function getAnyGreenFilterButtonResult(currentResult)
-        --Only if overall result is currently still true (show items) and not all logical conjunctions are set to AND
-        if currentResult == true and not allLogicalConjunctionsAreAND then
-            for filterButtonIdOfAllFilterButtons=1, numFilters, 1 do
-                --The filter buttons' logical conjunction is OR
-                if filterButtonSettingsForCurrentPanel[filterButtonIdOfAllFilterButtons].filterWithLogicalAND == false
-                    --and filter button state is "green" (hide)
-                    and filterButtonStates[filterButtonIdOfAllFilterButtons] == FCOIS_CON_FILTER_BUTTON_STATE_GREEN
-                    and filterButtonLogicalConjunctionResults[filterButtonIdOfAllFilterButtons] == false then
-                    if doDebugOutput then d(">>>>getAnyGreenResult-["..tos(filterButtonIdOfAllFilterButtons).."]: false") end
-                    return false
-                end
-            end
-        end
-        return currentResult
-    end
-
-    --Helper function to update the resuls of the logical OR conjunction filter button checks
-    local function updateLogicalConjunctionResultsOfFilterButton(filterButtonId, newValue, p_isFilterActivated)
-        --Only update if any filter button's logical OR conjunction is enabled
-        if not allLogicalConjunctionsAreAND
-            --ALWAYS update the result of the filterButton checks to the table filterButtonLogicalConjunctionResults
-
-            ----if the result of the filterButton checks is false (as default value at the filter button is true = showFilteredItem)
-            --and newValue == false
-            ----and the current filterButton's logical conjunction is set to OR
-            --and filterButtonLogicalConjunctionSettings[filterButtonId] == false
-                ----and the current button's logical OR result is still true -> optional, as already checking for "newValue" being == false should be enough
-                ----and filterButtonLogicalConjunctionResults[filterButtonId] == true
-        then
-            if doDebugOutput then d(">>>updateLogicalResult: " .. tos(newValue)) end
-            filterButtonLogicalConjunctionResults[filterButtonId] = newValue
-        end
-    end
-    -------------------------------------------------------------------------------------------------------
-    -------------------------------------------------------------------------------------------------------
-    -------------------------------------------------------------------------------------------------------
 
     for filterButtonId=1, numFilters, 1 do
         --Check if filter is activated for current filterButton
@@ -525,230 +814,7 @@ if doDebugOutput then d(">>[filterButton>4???] " .. tos(isFilterActivated) .. ":
 --  -> return value "true"  = Show item
 --  -> return value "false" = Hide (filter) item
 ------------------------------------------------------------------------------------------------------------------------------------------
-
-    --All conjunctions are logically AND -> All checks were done above already. Return the overall "result" variable now
-    if allLogicalConjunctionsAreAND == true then
-        --==========================
-        -- Logical AND at all 4 filter buttons
-        --==========================
-        if doDebugOutput then  d("[FCOIS]====== AND result: " ..tos(result)) end
-        return result
-------------------------------------------------------------------------------------------------------------------------------------------
-    else
-        --Not all logical concuntions are AND, any/all is/are OR
-
-        --The state at each filterButton
-        local filterButton1State = filterButtonStates[FCOIS_CON_FILTER_BUTTON_LOCKDYN]
-        local filterButton2State = filterButtonStates[FCOIS_CON_FILTER_BUTTON_GEARSETS]
-        local filterButton3State = filterButtonStates[FCOIS_CON_FILTER_BUTTON_RESDECIMP]
-        local filterButton4State = filterButtonStates[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT]
-        --Are all 4 filter buttons state's set to "green" (hide)?
-        local allFilterButtonStatesAreGreen = (filterButton1State == FCOIS_CON_FILTER_BUTTON_STATE_GREEN and
-                                                filterButton2State == FCOIS_CON_FILTER_BUTTON_STATE_GREEN and
-                                                filterButton3State == FCOIS_CON_FILTER_BUTTON_STATE_GREEN and
-                                                filterButton4State == FCOIS_CON_FILTER_BUTTON_STATE_GREEN) or false
-        local allFilterButtonStatesAreYellow = (filterButton1State == FCOIS_CON_FILTER_BUTTON_STATE_YELLOW and
-                                                filterButton2State == FCOIS_CON_FILTER_BUTTON_STATE_YELLOW and
-                                                filterButton3State == FCOIS_CON_FILTER_BUTTON_STATE_YELLOW and
-                                                filterButton4State == FCOIS_CON_FILTER_BUTTON_STATE_YELLOW) or false
-        local allFilterButtonStatesAreRed = (filterButton1State == FCOIS_CON_FILTER_BUTTON_STATE_RED and
-                                                filterButton2State == FCOIS_CON_FILTER_BUTTON_STATE_RED and
-                                                filterButton3State == FCOIS_CON_FILTER_BUTTON_STATE_RED and
-                                                filterButton4State == FCOIS_CON_FILTER_BUTTON_STATE_RED) or false
-        --The result at each filterButton
-        local filterButton1Result = filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_LOCKDYN]
-        local filterButton2Result = filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_GEARSETS]
-        local filterButton3Result = filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_RESDECIMP]
-        local filterButton4Result = filterButtonLogicalConjunctionResults[FCOIS_CON_FILTER_BUTTON_SELLGUILDINT]
-        --All filter buttons equal "show" item?
-        local allFilterButtonResultsEqualShowItem = (filterButton1Result == true and
-                                                filterButton2Result == true and
-                                                filterButton3Result == true and
-                                                filterButton4Result == true) or false
-        local logicalANDOfAllResults = filterButton1Result and filterButton2Result and filterButton3Result
-                                        and filterButton4Result
-        local logicalOROfAllResults = filterButton1Result or filterButton2Result or filterButton3Result
-                                        or filterButton4Result
-
-        local resultAfterLogicalConjunction = true -- Initial value: true = show the item (not filtered)
-        if doDebugOutput then d(string.format("[FCOIS]Button results: %s, %s, %s, %s - Result: %s, ORResult: %s",tos(filterButton1Result),tos(filterButton2Result),tos(filterButton3Result),tos(filterButton4Result),tos(result),tos(logicalOROfAllResults))) end
-------------------------------------------------------------------------------------------------------------------------
-------------------------------------------------------------------------------------------------------------------------
-        --Check the logical conjunctions now according to the filter button settings, state and the number of OR & AND
-        --conjunctions
-        --==========================
-        -- Logical OR at ALL of the 4 filter buttons
-        --==========================
-        if allLogicalConjunctionsAreOR then
-            if doDebugOutput then d("[FCOIS]====== 4x OR") end
-
-            --If all 4 filter buttons state's are set to "green" (hide): hide, or show if not marked at all -> Same as 4x logical AND conjunction
-            if allFilterButtonStatesAreGreen then
-                resultAfterLogicalConjunction = logicalANDOfAllResults --result
-            ------------------------------------------------------------------------------------------------------------------------
-            --If all 4 filter buttons state's are set to "yellow" (show only): show, or hide if not marked at all -> Same as 4x logical AND conjunction
-            elseif allFilterButtonStatesAreYellow then
-                resultAfterLogicalConjunction = logicalOROfAllResults
-            ------------------------------------------------------------------------------------------------------------------------
-            --If all 4 filter buttons state's are set to "red" (show): Show it -> Same as 4x logical AND conjunction
-            elseif allFilterButtonStatesAreRed then
-                resultAfterLogicalConjunction = true
-            ------------------------------------------------------------------------------------------------------------------------
-            --If all 4 filter buttons state's are set to different states: Do further checks
-            else
-                --All filter buttons say "show" item? Okay -> Show it
-                if allFilterButtonResultsEqualShowItem then
-                    resultAfterLogicalConjunction = true -- show
-
-                --Is any of the filter button's result "false" (hide item)?
-                else
-                    --Check if any of the filter buttons' state is "green" and update the overall OR result
-                    logicalOROfAllResults = getAnyGreenFilterButtonResult(logicalOROfAllResults)
-
-                    --The filter buttons need to be combined with a logical OR conjunction
-                    resultAfterLogicalConjunction = logicalOROfAllResults
-                end
-            end
-------------------------------------------------------------------------------------------------------------------------
-        else
-            --==========================
-            -- Logical OR at ANY of the 4 filter buttons
-            --==========================
-            ----------------------------
-            --3 buttons with logical OR / 1 button with logical AND
-            ----------------------------
-            if not lockDynFilterWithLogicalAND and not gearSetsFilterWithLogicalAND
-                    and not resDecImpFilterWithLogicalAND and sellGuildIntFilterWithLogicalAND == true then
-                if doDebugOutput then d("[FCOIS]====== 3x OR 1") end
-                resultAfterLogicalConjunction = (filterButton1Result
-                        or filterButton2Result
-                        or filterButton3Result)
-                        and filterButton4Result
-            elseif not lockDynFilterWithLogicalAND and not gearSetsFilterWithLogicalAND
-                    and not sellGuildIntFilterWithLogicalAND and resDecImpFilterWithLogicalAND == true then
-                if doDebugOutput then d("[FCOIS]====== 3x OR 2") end
-                resultAfterLogicalConjunction = (filterButton1Result
-                        or filterButton2Result
-                        or filterButton4Result)
-                        and filterButton3Result
-            elseif not lockDynFilterWithLogicalAND and not resDecImpFilterWithLogicalAND
-                    and not sellGuildIntFilterWithLogicalAND and gearSetsFilterWithLogicalAND == true then
-                if doDebugOutput then d("[FCOIS]====== 3x OR 3") end
-                resultAfterLogicalConjunction = (filterButton1Result
-                        or filterButton3Result
-                        or filterButton4Result)
-                        and filterButton2Result
-            elseif not gearSetsFilterWithLogicalAND and not resDecImpFilterWithLogicalAND
-                    and not sellGuildIntFilterWithLogicalAND and lockDynFilterWithLogicalAND == true then
-                if doDebugOutput then d("[FCOIS]====== 3x OR 3") end
-                resultAfterLogicalConjunction = (filterButton2Result
-                        or filterButton3Result
-                        or filterButton4Result)
-                        and filterButton1Result
-                ------------------------------------------------------------------------------------------------------------------------
-                ----------------------------
-                --2 buttons with logical OR / 2 buttons with logical AND
-                ----------------------------
-            elseif not lockDynFilterWithLogicalAND and not gearSetsFilterWithLogicalAND
-                    and resDecImpFilterWithLogicalAND == true and sellGuildIntFilterWithLogicalAND == true then
-                if doDebugOutput then d("[FCOIS]====== 2x OR 1") end
-                resultAfterLogicalConjunction = (filterButton1Result
-                        or filterButton2Result)
-                        and filterButton3Result
-                        and filterButton4Result
-            elseif not lockDynFilterWithLogicalAND and not resDecImpFilterWithLogicalAND
-                    and gearSetsFilterWithLogicalAND == true and sellGuildIntFilterWithLogicalAND == true then
-                if doDebugOutput then d("[FCOIS]====== 2x OR 2") end
-                resultAfterLogicalConjunction = (filterButton1Result
-                        or filterButton3Result)
-                        and filterButton2Result
-                        and filterButton4Result
-            elseif not lockDynFilterWithLogicalAND and not sellGuildIntFilterWithLogicalAND
-                    and gearSetsFilterWithLogicalAND == true and resDecImpFilterWithLogicalAND == true then
-                if doDebugOutput then d("[FCOIS]====== 2x OR 3") end
-                resultAfterLogicalConjunction = (filterButton1Result
-                        or filterButton4Result)
-                        and filterButton2Result
-                        and filterButton3Result
-            elseif not gearSetsFilterWithLogicalAND and not resDecImpFilterWithLogicalAND
-                    and lockDynFilterWithLogicalAND == true and sellGuildIntFilterWithLogicalAND == true then
-                if doDebugOutput then d("[FCOIS]====== 2x OR 3") end
-                resultAfterLogicalConjunction = (filterButton2Result
-                        or filterButton3Result)
-                        and filterButton1Result
-                        and filterButton4Result
-            elseif not gearSetsFilterWithLogicalAND and not sellGuildIntFilterWithLogicalAND
-                    and lockDynFilterWithLogicalAND == true and resDecImpFilterWithLogicalAND == true then
-                if doDebugOutput then d("[FCOIS]====== 2x OR 4") end
-                resultAfterLogicalConjunction = (filterButton2Result
-                        or filterButton4Result)
-                        and filterButton1Result
-                        and filterButton3Result
-            elseif not resDecImpFilterWithLogicalAND and not sellGuildIntFilterWithLogicalAND
-                    and lockDynFilterWithLogicalAND == true and gearSetsFilterWithLogicalAND == true then
-                if doDebugOutput then d("[FCOIS]====== 2x OR 5") end
-                resultAfterLogicalConjunction = (filterButton3Result
-                        or filterButton4Result)
-                        and filterButton1Result
-                        and filterButton2Result
-                ------------------------------------------------------------------------------------------------------------------------
-                ----------------------------
-                --1 button with logical OR / 3 buttons with logical AND
-                ----------------------------
-            elseif not lockDynFilterWithLogicalAND
-                    and gearSetsFilterWithLogicalAND == true and resDecImpFilterWithLogicalAND == true and sellGuildIntFilterWithLogicalAND == true then
-                if doDebugOutput then d("[FCOIS]====== 1x OR 1") end
-                resultAfterLogicalConjunction = filterButton1Result
-                        or (filterButton2Result
-                        and filterButton3Result
-                        and filterButton4Result)
-            elseif not gearSetsFilterWithLogicalAND
-                    and lockDynFilterWithLogicalAND == true and resDecImpFilterWithLogicalAND == true and sellGuildIntFilterWithLogicalAND == true then
-                if doDebugOutput then d("[FCOIS]====== 1x OR 2") end
-                resultAfterLogicalConjunction = filterButton2Result
-                        or (filterButton1Result
-                        and filterButton3Result
-                        and filterButton4Result)
-            elseif not resDecImpFilterWithLogicalAND
-                    and lockDynFilterWithLogicalAND == true and gearSetsFilterWithLogicalAND == true and sellGuildIntFilterWithLogicalAND == true then
-                if doDebugOutput then d("[FCOIS]====== 1x OR 3") end
-                resultAfterLogicalConjunction = filterButton3Result
-                        or (filterButton1Result
-                        and filterButton2Result
-                        and filterButton4Result)
-            elseif not sellGuildIntFilterWithLogicalAND
-                    and lockDynFilterWithLogicalAND == true and gearSetsFilterWithLogicalAND == true and resDecImpFilterWithLogicalAND == true then
-                if doDebugOutput then d("[FCOIS]====== 1x OR 4") end
-                resultAfterLogicalConjunction = filterButton4Result
-                        or (filterButton1Result
-                        and filterButton2Result
-                        and filterButton3Result)
-            end
-        end
-------------------------------------------------------------------------------------------------------------------------
-------------------------------------------------------------------------------------------------------------------------
-        if doDebugOutput then
-            d("<<result AND & OR: " .. tos(resultAfterLogicalConjunction))
-
-            FCOIS._debugFilterLogicalConjunctions = FCOIS._debugFilterLogicalConjunctions or {}
-            local dflc = FCOIS._debugFilterLogicalConjunctions
-            dflc[bagId] = dflc[bagId] or {}
-            dflc[bagId][slotIndex] = {
-                item = itemLink,
-                lockDynFilterState = filterButton1State,
-                lockDynFilterLog = lockDynFilterWithLogicalAND,
-                gearSetsFilterState = filterButton2State,
-                gearSetsFilterLog = gearSetsFilterWithLogicalAND,
-                resDecImpFilterState = filterButton3State,
-                resDecImpFilterLog = resDecImpFilterWithLogicalAND,
-                sellGuildIntFilterState = filterButton4State,
-                sellGuildIntFilterLog = sellGuildIntFilterWithLogicalAND,
-                result = result,
-                resultAfterLogicalConjunction = resultAfterLogicalConjunction,
-            }
-        end
-        return resultAfterLogicalConjunction
-    end
+    return checkAndReturnFilterButtonLogicalConjunctionResult(result, bagId, slotIndex, itemLink) --#2025_999
 end
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -767,7 +833,7 @@ local function FilterSavedItemsForBagIdAndSlotIndex(bagId, slotIndex, ...)
     -- Return value variable initalization: Show the slot
     local slotItemInstanceId = myGetItemInstanceIdNoControl(bagId, slotIndex)
     --Return the result if all filters were cross-checked and last filter is reached
-    return shouldItemBeShownAfterBeenFiltered(slotItemInstanceId, { bagId = bagId, slotIndex = slotIndex })
+    return shouldItemBeShownAfterBeenFiltered(slotItemInstanceId) --, { bagId = bagId, slotIndex = slotIndex }) --todo remove comment if debugging in function is needed
 end
 
 --filter callBack function for bags, bank, mail, trade, guild bank, guild store, vendor, launder, fence, etc.
@@ -780,7 +846,7 @@ local function FilterSavedItemsForSlot(slot)
     -- Return value variable initalization: Show the slot
     local slotItemInstanceId = myGetItemInstanceId(slot)
     -- Return the result if all filters were cross-checked and last filter is reached
-    return shouldItemBeShownAfterBeenFiltered(slotItemInstanceId, slot)
+    return shouldItemBeShownAfterBeenFiltered(slotItemInstanceId) --, slot) --todo remove comment if debugging in function is needed
 end
 
 
@@ -913,7 +979,8 @@ local function registerFilterId(p_onlyPlayerInvFilter, p_filterId, p_panelId)
         --Is the setting for the filter on? Check and update variable
         getFilterWhereBySettings(p_panelId, false)
         --Read the variable now
-        local isFilteringAtPanelEnabled = settings.atPanelEnabled[p_panelId]["filters"] or false
+        local atPanelEnabled = settings.atPanelEnabled[p_panelId] --#2025_999
+        local isFilteringAtPanelEnabled = (atPanelEnabled and atPanelEnabled["filters"]) or false --#2025_999
         --Get the filter function now
         local filterFunctions = mappingVars.libFiltersId2filterFunction
         local filterFunction = filterFunctions[p_panelId]

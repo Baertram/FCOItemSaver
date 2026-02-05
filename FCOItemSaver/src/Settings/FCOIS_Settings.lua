@@ -15,13 +15,28 @@ local tabins = table.insert
 --Currently logged in account name
 local accName             = GetDisplayName()
 local currentCharId       = GetCurrentCharacterId()
+local FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE = FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE
+local FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE = FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE
+
+local LF_INVENTORY = LF_INVENTORY
+local LF_GUILDBANK_WITHDRAW = LF_GUILDBANK_WITHDRAW
+local LF_VENDOR_BUY = LF_VENDOR_BUY
+local LF_VENDOR_BUYBACK = LF_VENDOR_BUYBACK
+local LF_VENDOR_REPAIR = LF_VENDOR_REPAIR
+local LF_ENCHANTING_EXTRACTION = LF_ENCHANTING_EXTRACTION
+local LF_CRAFTBAG = LF_CRAFTBAG
+local LF_RETRAIT = LF_RETRAIT
 
 --The SavedVariables local name
 FCOIS.APIversion = FCOIS.APIversion or GetAPIVersion()
 local apiVersion = FCOIS.APIversion
 local addonVars         = FCOIS.addonVars
+local savedVarsMarkedItemsNames = addonVars.savedVarsMarkedItemsNames
+local markedItemsName = savedVarsMarkedItemsNames[false]
+local markedItemsFCOISUniqueName = savedVarsMarkedItemsNames[FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE]
 local addonSVname       = addonVars.savedVarName
 local addonSVversion    = addonVars.savedVarVersion
+
 local checkVars = FCOIS.checkVars
 local checksToDo = checkVars.autoReenableAntiSettingsCheckWheres
 local checksAll = checkVars.autoReenableAntiSettingsCheckWheresAll
@@ -157,77 +172,136 @@ end
 
 --==============================================================================
 
---Returns either the account wide "for each character individually",
---or the normal character saved "for each character", settings
+--Returns either the account wide "for each character individually" saved settings,
+--or the normal character saved "for each character" settings
 function FCOIS.GetAccountWideCharacterOrNormalCharacterSettings()
     local settingsForAll = FCOIS.settingsVars.defaultSettings
     local saveMode = settingsForAll.saveMode
 --d("[FCOIS]getAccountWideCharacterOrNormalCharacterSettings - saveMode: " ..tos(saveMode) .. ", filterForEachCharacter: " ..tos(settingsForAll.filterButtonsSaveForCharacter))
-    local settingsSV
     --Character SavedVariables
     if saveMode == 1 then
-        settingsSV = FCOIS.settingsVars.settings
+        return FCOIS.settingsVars.settings
     else
         --Account wide and AllAccountsTheSame account wide SavedVariables
-        --FilterButton states are saved account wide but for each character individually?
+        -->FilterButton states are saved account wide but for each character individually?
         if settingsForAll.filterButtonsSaveForCharacter == true then
             local settingsSVBase = FCOIS.settingsVars.accountWideButForEachCharacterSettings
-            settingsSV = settingsSVBase ~= nil and settingsSVBase[currentCharId]
+            return (settingsSVBase ~= nil and FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId]) or nil
         else
-            settingsSV = FCOIS.settingsVars.settings
+            return FCOIS.settingsVars.settings
         end
     end
-    return settingsSV
 end
 local getAccountWideCharacterOrNormalCharacterSettings = FCOIS.GetAccountWideCharacterOrNormalCharacterSettings
 
 
 --Check if the filterButton's state is on/off/FCOIS_CON_FILTER_BUTTON_STATE_YELLOW (Show only marked)
-function FCOIS.GetSettingsIsFilterOn(p_filterId, p_filterPanel)
+local defaultIsFilterPanelOn = { false, false, false, false }   --#2025_999
+local lastGetSettingsIsFilterOn = {}
+local function resetLastGetSettingIsFilterOn(p_filterButtonId, p_filterPanelId)
+    if p_filterButtonId == nil and p_filterPanelId == nil then
+        lastGetSettingsIsFilterOn = {}
+    elseif p_filterButtonId ~= nil and p_filterPanelId ~= nil then
+        if lastGetSettingsIsFilterOn[p_filterButtonId] ~= nil then
+            lastGetSettingsIsFilterOn[p_filterButtonId][p_filterPanelId] = nil
+        end
+    end
+end
+FCOIS.ResetLastGetSettingIsFilterOn = resetLastGetSettingIsFilterOn
+
+function FCOIS.GetSettingsIsFilterOn(p_filterButtonId, p_filterPanel)
     local p_filterPanelNew = p_filterPanel or FCOIS.gFilterWhere
+
+    --Return cached value at the filterButton and panel -> As this function is called for each filtered inventory item
+    local lastResultAtFilterButtonAndPanel = (lastGetSettingsIsFilterOn[p_filterButtonId] ~= nil and lastGetSettingsIsFilterOn[p_filterButtonId][p_filterPanelNew]) or nil ----#2025_999
+    if lastResultAtFilterButtonAndPanel ~= nil then
+--d(">returning cached: " .. tos(lastResultAtFilterButtonAndPanel))
+        return lastResultAtFilterButtonAndPanel
+    end
+
     local result
     local baseSettings = FCOIS.settingsVars.settings
     local settings = getAccountWideCharacterOrNormalCharacterSettings()
 
     --New behaviour with filters
-    settings.isFilterPanelOn[p_filterPanelNew] = settings.isFilterPanelOn[p_filterPanelNew] or {}
-    result = settings.isFilterPanelOn[p_filterPanelNew][p_filterId]
-    if result == nil then
-        return false
+    if settings.isFilterPanelOn[p_filterPanelNew] == nil then --#2025_999
+        result = defaultIsFilterPanelOn[p_filterButtonId] --#2025_999
+    else
+        result = settings.isFilterPanelOn[p_filterPanelNew][p_filterButtonId]
+        if result == false then --#2025_999
+            settings.isFilterPanelOn[p_filterPanelNew][p_filterButtonId] = nil
+        end
     end
-    if baseSettings.debug then debugMessage( "[GetSettingsIsFilterOn]","Filter Panel: " .. tos(p_filterPanelNew) .. ", FilterId: " .. tos(p_filterId) .. ", Result: " .. tos(result), true, FCOIS_DEBUG_DEPTH_VERBOSE) end
+--d("[FCOIS]GetSettingsIsFilterOn - result: " ..tos(result))
+    if result == nil then result = false end --#2025_999
+    if baseSettings.debug then debugMessage( "[GetSettingsIsFilterOn]","Filter Panel: " .. tos(p_filterPanelNew) .. ", FilterId: " .. tos(p_filterButtonId) .. ", Result: " .. tos(result), true, FCOIS_DEBUG_DEPTH_VERBOSE) end
+
+    --#2025_999 Cache current result for the filterButton and panel
+    lastGetSettingsIsFilterOn[p_filterButtonId] = lastGetSettingsIsFilterOn[p_filterButtonId] or {}
+    lastGetSettingsIsFilterOn[p_filterButtonId][p_filterPanelNew] = result
     return result
 end
 
 --Set the value of a filter type, and return it
-function FCOIS.SetSettingsIsFilterOn(p_filterId, p_value, p_filterPanel)
+function FCOIS.SetSettingsIsFilterOn(p_filterButtonId, p_value, p_filterPanel)
     local p_filterPanelNew = p_filterPanel or FCOIS.gFilterWhere
     local baseSettings = FCOIS.settingsVars.settings
     local settings = getAccountWideCharacterOrNormalCharacterSettings()
     --New behaviour with filters
-    settings.isFilterPanelOn[p_filterPanelNew] = settings.isFilterPanelOn[p_filterPanelNew] or {}
-    settings.isFilterPanelOn[p_filterPanelNew][p_filterId] = p_value
-    if baseSettings.debug then debugMessage( "[SetSettingsIsFilterOn]","Filter Panel: " .. tos(p_filterPanelNew) .. ", FilterId: " .. tos(p_filterId) .. ", Value: " .. tos(p_value), true, FCOIS_DEBUG_DEPTH_VERBOSE) end
+--d("[FCOIS]SetSettingsIsFilterOn - p_filterPanel: " .. tos(p_filterPanel) .. ", p_filterButtonId: " .. tos(p_filterButtonId) ..", p_value: " ..tos(p_value))
+    if p_value ~= false then
+        settings.isFilterPanelOn[p_filterPanelNew] = settings.isFilterPanelOn[p_filterPanelNew] or {}
+        settings.isFilterPanelOn[p_filterPanelNew][p_filterButtonId] = p_value
+
+        resetLastGetSettingIsFilterOn(p_filterButtonId, p_filterPanelNew)
+    else
+        if settings.isFilterPanelOn[p_filterPanelNew] ~= nil then
+            settings.isFilterPanelOn[p_filterPanelNew][p_filterButtonId] = nil
+
+            resetLastGetSettingIsFilterOn(p_filterButtonId, p_filterPanelNew)
+
+            --Clean up code: If value was changed to false and all values are false, clean the SV table --#2025_999
+            for filterButtonIdLoop, filterButtonSetting in ipairs(settings.isFilterPanelOn[p_filterPanelNew]) do
+                if p_filterButtonId ~= filterButtonIdLoop and filterButtonSetting == false then
+                    --d(">cleaned false entry at button: " ..tos(filterButtonIdLoop))
+                    settings.isFilterPanelOn[p_filterPanelNew][filterButtonIdLoop] = nil
+                end
+            end
+            if ZO_IsTableEmpty(settings.isFilterPanelOn[p_filterPanelNew]) then settings.isFilterPanelOn[p_filterPanelNew] = nil end
+        end
+    end
+    if baseSettings.debug then debugMessage( "[SetSettingsIsFilterOn]","Filter Panel: " .. tos(p_filterPanelNew) .. ", FilterId: " .. tos(p_filterButtonId) .. ", Value: " .. tos(p_value), true, FCOIS_DEBUG_DEPTH_VERBOSE) end
+
+    FCOIS.preventerVars.filterButtonsLogicalConjunctionsNeedUpdate = true --#2025_999
+
     --return the value
     return p_value
 end
 
 -- Check the settings for the panels and return if they are enabled or disabled (e.g. the filter buttons [filters])
--- If 2nd param onlyAnti == true: p_filterWhere will be used, and updated with the current filterPanelId, if it was nil
+-- If 2nd param onlyAnti == false:
 function FCOIS.GetFilterWhereBySettings(p_filterWhere, onlyAnti)
     p_filterWhere = p_filterWhere or FCOIS.gFilterWhere
     onlyAnti = onlyAnti or false
 
     local settingsAllowed = FCOIS.settingsVars.settings
     if onlyAnti == false then
-        FCOIS.settingsVars.settings.atPanelEnabled = FCOIS.settingsVars.settings.atPanelEnabled or {}
-        FCOIS.settingsVars.settings.atPanelEnabled[p_filterWhere] = FCOIS.settingsVars.settings.atPanelEnabled[p_filterWhere] or {}
         --FCOIS 2021-11-14 Get setting's Is filter allowed via mapping table filterPanelToFilterButtonFilterActiveSettingName
-        --Set the resultVar and update the FCOIS.settingsVars.settings.atPanelEnabled array
-        FCOIS.settingsVars.settings.atPanelEnabled[p_filterWhere]["filters"] = settingsAllowed[filterPanelToFilterButtonFilterActiveSettingName[p_filterWhere]]
+        --e.g. for LF_INVENTORY use the settings.allowInventoryFilter boolean variable
+        local settingFilterActiveAtPanelsButton = settingsAllowed[filterPanelToFilterButtonFilterActiveSettingName[p_filterWhere]] --#2025_999
+        if settingFilterActiveAtPanelsButton == true then --#2025_999
+            settingsAllowed.atPanelEnabled = settingsAllowed.atPanelEnabled or {}
+            settingsAllowed.atPanelEnabled[p_filterWhere] = settingsAllowed.atPanelEnabled[p_filterWhere] or {}
+            --Set the resultVar and update the FCOIS.settingsVars.settings.atPanelEnabled array
+            settingsAllowed.atPanelEnabled[p_filterWhere]["filters"] = settingFilterActiveAtPanelsButton
+        else
+            if settingsAllowed.atPanelEnabled[p_filterWhere] and settingsAllowed.atPanelEnabled[p_filterWhere]["filters"] then
+                settingsAllowed.atPanelEnabled[p_filterWhere]["filters"] = nil --#2025_999
+            end
+        end
     end
 
-    if settingsAllowed.debug then debugMessage( "[getFilterWhereBySettings]", tos(p_filterWhere) .. " = " .. tos(settingsAllowed.atPanelEnabled[p_filterWhere]["filters"]), true, FCOIS_DEBUG_DEPTH_SPAM) end
+    if settingsAllowed.debug then debugMessage( "[getFilterWhereBySettings]", tos(p_filterWhere) .. " = " .. tos(settingsAllowed.atPanelEnabled[p_filterWhere] and settingsAllowed.atPanelEnabled[p_filterWhere]["filters"] or nil), true, FCOIS_DEBUG_DEPTH_SPAM) end
     return p_filterWhere
 end
 
@@ -880,6 +954,7 @@ function FCOIS.AfterSettings()
     end
 
     --FCOIS 2.1.3 - Fix for missing default settings at Companion Inventory
+    --[[  --#2025_999
     if FCOIS.settingsVars.defaults.FCOISAdditionalInventoriesButtonOffset[LF_INVENTORY_COMPANION] == nil or
             ( FCOIS.settingsVars.defaults.FCOISAdditionalInventoriesButtonOffset[LF_INVENTORY_COMPANION] ~= nil and
                     (FCOIS.settingsVars.defaults.FCOISAdditionalInventoriesButtonOffset[LF_INVENTORY_COMPANION].top == nil or
@@ -889,6 +964,7 @@ function FCOIS.AfterSettings()
             ["left"] = 0,
         }
     end
+    ]]
 
     --Build the additional inventory "flag" context menu button data, which depends on the here before set values
     --FCOIS.numVars.gFCONumDynamicIcons and FCOIS.settingsVars.settings.numMaxDynamicIconsUsable
@@ -909,6 +985,11 @@ function FCOIS.AfterSettings()
         end
         -->Link FCOIS[getSavedVarsMarkedItemsTableName()] to the SavedVariables
         FCOIS[savedVarsMarkedItemsTableName][filterIconId] = settings[savedVarsMarkedItemsTableName][filterIconId]
+
+        --#2025_999 Clear table entries
+        if settings.disableResearchCheck[filterIconId] == false then
+            FCOIS.settingsVars.settings.disableResearchCheck[filterIconId] = nil
+        end
     end
     --The automatic set marker icon name was changed from autoMarkSetsGearIconNr to autoMarkSetsIconNr
     if settings.autoMarkSetsGearIconNr ~= nil then
@@ -957,26 +1038,24 @@ function FCOIS.AfterSettings()
     local anchorVarsAddInvButtons = FCOIS.anchorVars.additionalInventoryFlagButton[apiVersion]
     FCOIS.settingsVars.settings.FCOISAdditionalInventoriesButtonOffset["left"] = nil --remove wrong added values -> left and top should be in a subtable of filterPanelId!
     FCOIS.settingsVars.settings.FCOISAdditionalInventoriesButtonOffset["top"] = nil --remove wrong added values -> left and top should be in a subtable of filterPanelId!
+
     --Loop over the anchorVars and get each panel of the additional inv buttons (e.g. LF_INVENTORY, LF_BANK_WITHDRAW, ...)
+    local defaultAddInvButtonOffsets = { left=0, top=0 } --#2025_999
     local function fixAnchorVarsLeftAndTopOffsets(p_addInvButtonOffsetsForPanel, p_panelId)
-        if p_addInvButtonOffsetsForPanel["left"] == "" or type(p_addInvButtonOffsetsForPanel["left"]) == "string" or tonumber(p_addInvButtonOffsetsForPanel["left"]) == nil then
+        p_addInvButtonOffsetsForPanel = p_addInvButtonOffsetsForPanel or defaultAddInvButtonOffsets
+        local deleteLeft = false
+        local deleteTop = false
+        if p_addInvButtonOffsetsForPanel["left"] == "" or type(p_addInvButtonOffsetsForPanel["left"]) == "string" or tonumber(p_addInvButtonOffsetsForPanel["left"]) == nil or p_addInvButtonOffsetsForPanel["left"] == 0 then --#2025_999
             FCOIS.settingsVars.settings.FCOISAdditionalInventoriesButtonOffset[p_panelId]["left"] = 0
             --d("[FCOIS]fixAnchorVarsLeftAndTopOffsets-left-filterPanel: " ..tos(p_panelId) .. ", current: " .. tos(p_addInvButtonOffsetsForPanel["top"]) .. "->reset to 0!")
+            deleteLeft = true --#2025_999
         end
-        if p_addInvButtonOffsetsForPanel["top"] == "" or type(p_addInvButtonOffsetsForPanel["top"]) == "string" or tonumber(p_addInvButtonOffsetsForPanel["top"]) == nil then
-            --[[ For debugging -- FCOIS v2.4.9
-                d("[FCOIS]fixAnchorVarsLeftAndTopOffsets-top-filterPanel: " ..tos(p_panelId) .. ", current: " .. tos(p_addInvButtonOffsetsForPanel["top"]) .. "->reset to 0!")
-                if p_addInvButtonOffsetsForPanel["top"] == "" then
-                    d(">empty string")
-                end
-                if type(p_addInvButtonOffsetsForPanel["top"]) == "string" then
-                    d(">string detected")
-                end
-                if tonumber(p_addInvButtonOffsetsForPanel["top"]) == nil then
-                    d(">no number")
-                end
-                ]]
+        if p_addInvButtonOffsetsForPanel["top"] == "" or type(p_addInvButtonOffsetsForPanel["top"]) == "string" or tonumber(p_addInvButtonOffsetsForPanel["top"]) == nil or p_addInvButtonOffsetsForPanel["top"] == 0 then --#2025_999
             FCOIS.settingsVars.settings.FCOISAdditionalInventoriesButtonOffset[p_panelId]["top"] = 0
+            deleteTop = true --#2025_999
+        end
+        if deleteLeft == true and deleteTop == true then --#2025_999
+            FCOIS.settingsVars.settings.FCOISAdditionalInventoriesButtonOffset[p_panelId] = nil
         end
     end
     if anchorVarsAddInvButtons then
@@ -1014,7 +1093,7 @@ function FCOIS.AfterSettings()
                 FCOIS.mappingVars.panelIdToDeconstructable[panelId] = false
             end
             --Added with FCOIS v1.9.9
-            FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].isFilterPanelOn[panelId]               = FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].isFilterPanelOn[panelId] or {false, false, false, false}
+            --FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].isFilterPanelOn[panelId]               = FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].isFilterPanelOn[panelId] or {false, false, false, false} --#2025_999
             --Create the helper arrays for the filter button context menus
             FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastLockDynFilterIconId[panelId]       = FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastLockDynFilterIconId[panelId] or FCOIS_CON_ICONS_ALL
             FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastGearFilterIconId[panelId]          = FCOIS.settingsVars.accountWideButForEachCharacterSettings[currentCharId].lastGearFilterIconId[panelId] or FCOIS_CON_ICONS_ALL
@@ -1101,19 +1180,22 @@ function FCOIS.AfterSettings()
     FCOIS.settingsVars.settings.blockVendorBuyback  = false
     FCOIS.settingsVars.settings.blockVendorRepair   = false -- to block the destroy
     --Update the dynamic icons as well, but enable the protection by default to block destroying,
-    --as drag&drop of an item at the vendor repair panel will try to destroy the item
+    --as drag&drop of an item at the vendor repair panel will try to destroy the item, so disable some filter panel IDs at the vendor!
+    --Added with FCOIS version 1.6.7
+    --Resetting the dynamic icons filterpanel protection settings for GuildStore withdraw and CraftBag to nil as there is no protection available
+    --and the tooltips etc. should show these as "grey" entries without protection!
+    local resetFilterPanelIdsAtAntiCheckPanel = { --#2025_999
+        [LF_VENDOR_BUY] = true,
+        [LF_VENDOR_BUYBACK] = true,
+        [LF_VENDOR_REPAIR] = true,
+        [LF_GUILDBANK_WITHDRAW] = true,
+        [LF_CRAFTBAG] = true,
+    }
     for filterIconHelper = FCOIS_CON_ICON_LOCK, numFilterIcons do
         if iconIsDynamic[filterIconHelper] then
             for filterIconHelperPanel = 1, numLibFiltersFilterPanelIds, 1 do
-                --Disable some filter panel IDs at the vendor!
-                if filterIconHelperPanel == LF_VENDOR_BUY or filterIconHelperPanel == LF_VENDOR_BUYBACK or filterIconHelperPanel == LF_VENDOR_REPAIR then
-                    FCOIS.settingsVars.settings.icon[filterIconHelper].antiCheckAtPanel[filterIconHelperPanel] = false
-                end
-                --Added with FCOIS version 1.6.7
-                --Resetting the dynamic icons filterpanel protection settings for GuildStore withdraw and CarftBag to nil as there is no protection available
-                --and the tooltips etc. should show these as "grey" entries without protection!
-                if filterIconHelperPanel == LF_GUILDBANK_WITHDRAW or filterIconHelperPanel == LF_CRAFTBAG then
-                    FCOIS.settingsVars.settings.icon[filterIconHelper].antiCheckAtPanel[filterIconHelperPanel] = nil
+                if resetFilterPanelIdsAtAntiCheckPanel[filterIconHelperPanel] then --#2025_999
+                    FCOIS.settingsVars.settings.icon[filterIconHelper].antiCheckAtPanel[filterIconHelperPanel] = nil --#2025_999
                 end
             end
         end
@@ -1126,15 +1208,15 @@ function FCOIS.AfterSettings()
 
     --Added with FCOIS v2.2.4
     --#189 FCOIS uniqueIds item markers got saved into SavedVariables table "markedItems", but they should only be saved to "markedItemsFCOISUnique"
+    local markedItemsInSV = FCOIS.settingsVars.settings[markedItemsName] -- markedItems
     if FCOIS.settingsVars.settings.cleanedFCOISUniqueInNonUnique == nil then
-        local markedItemsInSV = FCOIS.settingsVars.settings.markedItems
         if markedItemsInSV ~= nil then
             for markerIconNr, _ in ipairs(markedItemsInSV) do
                 for itemInstanceOrZOsUniqueId, isMarked in pairs(markedItemsInSV) do
                     if isMarked == true and type(itemInstanceOrZOsUniqueId) == "string" and strfind(itemInstanceOrZOsUniqueId, ",") ~= nil then
                         --FCOIS unique-ID saved to normal markerIcons table -> Delete
                         --d(">Found FCOISUniqueID in normal markedItems table: " ..tos(itemInstanceOrZOsUniqueId))
-                        FCOIS.settingsVars.settings.markedItems[markerIconNr][itemInstanceOrZOsUniqueId] = nil
+                        FCOIS.settingsVars.settings[markedItemsName][markerIconNr][itemInstanceOrZOsUniqueId] = nil
                     end
                 end
             end
@@ -1142,37 +1224,40 @@ function FCOIS.AfterSettings()
         FCOIS.settingsVars.settings.cleanedFCOISUniqueInNonUnique = true
     end
 
-
     --Added with FCOIS v2.2.4
     --#192 FCOIS uniqueIds contain "nil" strings which consume too much space. Change these to "" instead, as function FCOIS.CreateFCOISUniqueIdString uses too now
+    local markedItemsFCOISUniqueInSV = FCOIS.settingsVars.settings[markedItemsFCOISUniqueName] --markedItemsFCOISUnique
     if FCOIS.settingsVars.settings.cleanedFCOISUniqueNILEntries == nil then
-        local markedItemsFCOISUniqueInSV = FCOIS.settingsVars.settings.markedItemsFCOISUnique
         local newPart                    = ""
         if markedItemsFCOISUniqueInSV ~= nil then
             for markerIconNr, markedItemsData in ipairs(markedItemsFCOISUniqueInSV) do
-                for FCOISuniqueIdOfItem, isMarked in pairs(markedItemsData) do
-                    if isMarked == true and type(FCOISuniqueIdOfItem) == "string" and strfind(FCOISuniqueIdOfItem, ",") ~= nil then
-                        local partsOfFCOISUniqueId = splitStringWithDelimiter(FCOISuniqueIdOfItem, ",")
-                        if partsOfFCOISUniqueId ~= nil and #partsOfFCOISUniqueId > 0 then
-                            local newFCOISUniqueId = ""
-                            local wasFCOISUniqueIdChanged = false
-                            for idx, part in ipairs(partsOfFCOISUniqueId) do
-                                --Always keep the itemID at first part
-                                if idx > 1 and (part == "nil" or part == "?") then
-                                    part = newPart
-                                    wasFCOISUniqueIdChanged = true
+                if ZO_IsTableEmpty(markedItemsData) then
+                    markedItemsData = nil
+                else
+                    for FCOISuniqueIdOfItem, isMarked in pairs(markedItemsData) do
+                        if isMarked == true and type(FCOISuniqueIdOfItem) == "string" and strfind(FCOISuniqueIdOfItem, ",") ~= nil then
+                            local partsOfFCOISUniqueId = splitStringWithDelimiter(FCOISuniqueIdOfItem, ",")
+                            if partsOfFCOISUniqueId ~= nil and #partsOfFCOISUniqueId > 0 then
+                                local newFCOISUniqueId = ""
+                                local wasFCOISUniqueIdChanged = false
+                                for idx, part in ipairs(partsOfFCOISUniqueId) do
+                                    --Always keep the itemID at first part
+                                    if idx > 1 and (part == "nil" or part == "?") then
+                                        part = newPart
+                                        wasFCOISUniqueIdChanged = true
+                                    end
+                                    newFCOISUniqueId = newFCOISUniqueId .. part
+                                    if idx < #partsOfFCOISUniqueId then
+                                        newFCOISUniqueId = newFCOISUniqueId .. ","
+                                    end
                                 end
-                                newFCOISUniqueId = newFCOISUniqueId .. part
-                                if idx < #partsOfFCOISUniqueId then
-                                    newFCOISUniqueId = newFCOISUniqueId .. ","
+                                if wasFCOISUniqueIdChanged == true then
+                                    --d(">changed FCOIS uniqueId from: " ..tos(FCOISuniqueIdOfItem) .. " to: " ..tos(newFCOISUniqueId))
+                                    --Remove old FCOISUniqueId
+                                    FCOIS.settingsVars.settings[markedItemsFCOISUniqueName][markerIconNr][FCOISuniqueIdOfItem] = nil
+                                    --Add new corrected one
+                                    FCOIS.settingsVars.settings[markedItemsFCOISUniqueName][markerIconNr][newFCOISUniqueId] = true
                                 end
-                            end
-                            if wasFCOISUniqueIdChanged == true then
-                                --d(">changed FCOIS uniqueId from: " ..tos(FCOISuniqueIdOfItem) .. " to: " ..tos(newFCOISUniqueId))
-                                --Remove old FCOISUniqueId
-                                FCOIS.settingsVars.settings.markedItemsFCOISUnique[markerIconNr][FCOISuniqueIdOfItem] = nil
-                                --Add new corrected one
-                                FCOIS.settingsVars.settings.markedItemsFCOISUnique[markerIconNr][newFCOISUniqueId] = true
                             end
                         end
                     end
@@ -1180,6 +1265,24 @@ function FCOIS.AfterSettings()
             end
         end
         FCOIS.settingsVars.settings.cleanedFCOISUniqueNILEntries = true
+    end
+
+    --Added with FCOIS v2.7.8     --#2025_999 Performance improvement by cleaning unnecessary SavedVariable entries
+    local settingsToUpdate = FCOIS.settingsVars.settings
+    for filterIconHelperPanel = 1, numLibFiltersFilterPanelIds, 1 do
+        --For each filterPanelId clear the icon offsets table
+        --except the really currently needed LF_INVENTORY, that's why we start at 2 (and not 1)
+        if filterIconHelperPanel ~= LF_INVENTORY then
+            for filterIconHelper = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
+                settingsToUpdate.icon[filterIconHelper].offsets[filterIconHelperPanel] = nil
+            end
+        end
+
+        --Remove the additionalInventoryFlag positions if they are all 0
+        local addInvButtonDataAtPanel = settingsToUpdate.FCOISAdditionalInventoriesButtonOffset[filterIconHelperPanel]
+        if addInvButtonDataAtPanel ~= nil and addInvButtonDataAtPanel.left == 0 and addInvButtonDataAtPanel.top == 0 then
+            settingsToUpdate.FCOISAdditionalInventoriesButtonOffset[filterIconHelperPanel] = nil
+        end
     end
 end -- AfterSettings
 
@@ -1669,7 +1772,7 @@ function FCOIS.CopySavedVars(srcServer, targServer, srcAcc, targAcc, srcCharId, 
     if not onlyDelete and svDefToCopy ~= nil and svToCopy ~= nil then
         --d(">go on with copy/delete!")
         --The default table got the language entry and the normal settings table got the markedItems entry?
-        if svDefToCopy["language"] ~= nil and (svToCopy["markedItems"] ~= nil or svToCopy["markedItemsFCOISUnique"] ~= nil) then
+        if svDefToCopy["language"] ~= nil and (svToCopy[markedItemsName] ~= nil or svToCopy[markedItemsFCOISUniqueName] ~= nil) then
             --d(">>found def language and markedItems")
             if FCOItemSaver_Settings[targServer] == nil then FCOItemSaver_Settings[targServer] = {} end
             --Source data is valid. Now build the target data

@@ -10,6 +10,53 @@ local strformat = string.format
 
 local debugMessage = FCOIS.debugMessage
 
+local FCOIS_CON_ICON_SUFFIX_NAME = FCOIS_CON_ICON_SUFFIX_NAME
+local FCOIS_CON_ICON_SUFFIX_COLOR = FCOIS_CON_ICON_SUFFIX_COLOR
+local FCOIS_CON_FILTER_BUTTONS_ALL          = FCOIS_CON_FILTER_BUTTONS_ALL
+local FCOIS_CON_FILTER_BUTTON_LOCKDYN       = FCOIS_CON_FILTER_BUTTON_LOCKDYN
+local FCOIS_CON_FILTER_BUTTON_GEARSETS		= FCOIS_CON_FILTER_BUTTON_GEARSETS
+local FCOIS_CON_FILTER_BUTTON_RESDECIMP		= FCOIS_CON_FILTER_BUTTON_RESDECIMP
+local FCOIS_CON_FILTER_BUTTON_SELLGUILDINT	= FCOIS_CON_FILTER_BUTTON_SELLGUILDINT
+local FCOIS_CON_ICON_NONE               = FCOIS_CON_ICON_NONE
+local FCOIS_CON_ICONS_ALL               = FCOIS_CON_ICONS_ALL
+local FCOIS_CON_ICON_LOCK				= FCOIS_CON_ICON_LOCK
+local FCOIS_CON_ICON_RESEARCH			= FCOIS_CON_ICON_RESEARCH
+local FCOIS_CON_ICON_SELL				= FCOIS_CON_ICON_SELL
+local FCOIS_CON_ICON_DECONSTRUCTION		= FCOIS_CON_ICON_DECONSTRUCTION
+local FCOIS_CON_ICON_IMPROVEMENT		= FCOIS_CON_ICON_IMPROVEMENT
+local FCOIS_CON_ICON_SELL_AT_GUILDSTORE	= FCOIS_CON_ICON_SELL_AT_GUILDSTORE
+local FCOIS_CON_ICON_INTRICATE			= FCOIS_CON_ICON_INTRICATE
+
+local LF_INVENTORY = LF_INVENTORY
+local LF_BANK_WITHDRAW = LF_BANK_WITHDRAW
+local LF_BANK_DEPOSIT = LF_BANK_DEPOSIT
+local LF_GUILDBANK_WITHDRAW = LF_GUILDBANK_WITHDRAW
+local LF_GUILDBANK_DEPOSIT = LF_GUILDBANK_DEPOSIT
+local LF_VENDOR_SELL = LF_VENDOR_SELL
+local LF_VENDOR_REPAIR = LF_VENDOR_REPAIR
+local LF_GUILDSTORE_SELL = LF_GUILDSTORE_SELL
+local LF_MAIL_SEND = LF_MAIL_SEND
+local LF_TRADE = LF_TRADE
+local LF_SMITHING_REFINE = LF_SMITHING_REFINE
+local LF_SMITHING_DECONSTRUCT = LF_SMITHING_DECONSTRUCT
+local LF_SMITHING_IMPROVEMENT = LF_SMITHING_IMPROVEMENT
+local LF_SMITHING_RESEARCH = LF_SMITHING_RESEARCH
+local LF_ALCHEMY_CREATION = LF_ALCHEMY_CREATION
+local LF_ENCHANTING_EXTRACTION = LF_ENCHANTING_EXTRACTION
+local LF_ENCHANTING_CREATION = LF_ENCHANTING_CREATION
+local LF_FENCE_SELL = LF_FENCE_SELL
+local LF_FENCE_LAUNDER = LF_FENCE_LAUNDER
+local LF_HOUSE_BANK_WITHDRAW = LF_HOUSE_BANK_WITHDRAW
+local LF_HOUSE_BANK_DEPOSIT = LF_HOUSE_BANK_DEPOSIT
+local LF_JEWELRY_REFINE = LF_JEWELRY_REFINE
+local LF_JEWELRY_DECONSTRUCT = LF_JEWELRY_DECONSTRUCT
+local LF_JEWELRY_IMPROVEMENT = LF_JEWELRY_IMPROVEMENT
+local LF_JEWELRY_RESEARCH = LF_JEWELRY_RESEARCH
+local LF_SMITHING_RESEARCH_DIALOG = LF_SMITHING_RESEARCH_DIALOG
+local LF_JEWELRY_RESEARCH_DIALOG = LF_JEWELRY_RESEARCH_DIALOG
+local LF_FURNITURE_VAULT_WITHDRAW = LF_FURNITURE_VAULT_WITHDRAW
+local LF_FURNITURE_VAULT_DEPOSIT = LF_FURNITURE_VAULT_DEPOSIT
+
 local gil = GetItemLink 
 
 local addonVars = FCOIS.addonVars
@@ -99,7 +146,7 @@ local checkIfOtherDemarksDeconstruction = FCOIS.CheckIfOtherDemarksSell
 local isItemLinkResearchable = FCOIS.IsItemLinkResearchable
 local isItemResearchableNoControl = FCOIS.IsItemResearchableNoControl
 local getIconsToRemove = FCOIS.GetIconsToRemove
-local isItemBindable = FCOIS.IsItemBindable
+--local isItemBindable = FCOIS.IsItemBindable
 local checkIfItemShouldBeDemarked = FCOIS.CheckIfItemShouldBeDemarked
 local getItemIdFromItemLink = FCOIS.GetItemIdFromItemLink
 local getItemLinkFromItemId = FCOIS.GetItemLinkFromItemId
@@ -769,7 +816,7 @@ function FCOIS.IsJunkLocked(bagId, slotIndex, calledFromExternalAddon)
                 --All marked dyanmic icons must allow "sell" in order to let this item be marked as junk!
                 --Check if dynamic icon's "sell" setting is allowed
                 local iconData = settings.icon[iconId]
-				if iconData.antiCheckAtPanel[LF_VENDOR_SELL] == true then
+				if iconData.antiCheckAtPanel[LF_VENDOR_SELL] then --#2025_999
                     oneDynamicDoesNotAllowToSell = true
                 end
             elseif itemIsMarked and not isDynIcon then
@@ -1479,7 +1526,8 @@ function FCOIS.ChangeFilter(filterId, libFiltersFilterPanelId)
 			or libFiltersFilterPanelId > numFilterInventoryTypes then return end
 	local settings = FCOIS.settingsVars.settings
 	--Is filtering at the current panel enabled?
-	if not settings.atPanelEnabled[libFiltersFilterPanelId]["filters"] then return end
+	local atPanelEnabled = settings.atPanelEnabled[libFiltersFilterPanelId] --#2025_999
+	if not atPanelEnabled or not atPanelEnabled["filters"] then return end --#2025_999
 	--is the filterPanelId visible?
 	-->Special check for UNIVERSAL DECONSTRUCTION
 	--#254 Keybinds to change filter button state at universal deconstruction do not work
@@ -2108,7 +2156,7 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons, withNoneEntry)
 	if not checkIfFCOISSettingsWereLoaded(FCOIS.preventerVars.gCalledFromInternalFCOIS, not addonVars.gAddonLoaded) then return nil end
 	local settings = FCOIS.settingsVars.settings
 	local isIconEnabled = settings.isIconEnabled
-	local isGearIcon = settings.iconIsGear
+	local isGearIcon = settings.iconIsGear --#2025_999
 	local isDynamicIcon = mappingVars.iconIsDynamic
 	local icon2DynIconCountNr = mappingVars.iconToDynamic
 	local numDynIconsUsable = settings.numMaxDynamicIconsUsable
@@ -2130,7 +2178,7 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons, withNoneEntry)
 		local counter = 0
 		for i=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
 			local goOn = false
-			local isGear = isGearIcon[i]
+			local isGear = isGearIcon[i] or false
 			local isDynamic = isDynamicIcon[i]
 			if isDynamic then
 				--Map the icon to the dynamic icon counter
@@ -2156,7 +2204,7 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons, withNoneEntry)
 					doAddIconValueNow = isIconEnabled[i]
 				end
 				if doAddIconValueNow and typeToCheck == "gearSets" then
-					doAddIconValueNow = isGearIcon[i]
+					doAddIconValueNow = isGearIcon[i] or false
 				end
 				if doAddIconValueNow then
 					counter = counter + 1
@@ -2176,7 +2224,7 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons, withNoneEntry)
 		if typeToCheck == 'standard' or typeToCheck == 'standardNone' then
 			for i=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
   				local goOn = false
-				local isGear = isGearIcon[i]
+				local isGear = isGearIcon[i] or false
 				local isDynamic = isDynamicIcon[i]
 				if isDynamic then
 					--Map the icon to the dynamic icon counter
@@ -2214,7 +2262,7 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons, withNoneEntry)
 			local counter = 0
 			for i=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
   				local goOn = false
-				local isGear = isGearIcon[i]
+				local isGear = isGearIcon[i] or false
 				local isDynamic = isDynamicIcon[i]
 				local iconIsEnabled = isIconEnabled[i]
 				if not iconIsEnabled or iconIsResearchable[i] or isGear == true then
@@ -2248,7 +2296,7 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons, withNoneEntry)
 		elseif typeToCheck == 'standardNonDisabled' then
 			for i=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
 				if isIconEnabled[i] then
-					local isGear = isGearIcon[i]
+					local isGear = isGearIcon[i] or false
 					local isDynamic = isDynamicIcon[i]
 					local locNameStr = FCOISlocVars.iconEndStrArray[i] or (((isDynamic or isGear) and nameIconEndStr) or colorIconEndStr)
 					local iconName = locVars["options_icon" .. tos(i) .. "_" .. locNameStr]
@@ -2264,7 +2312,7 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons, withNoneEntry)
 			--Check for each icon if it is enabled in the settings
 			for i=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
 				local goOn = false
-				local isGear = isGearIcon[i]
+				local isGear = isGearIcon[i] or false
 				local isDynamic = isDynamicIcon[i]
 				if isDynamic then
 					--Map the icon to the dynamic icon counter
@@ -2301,7 +2349,7 @@ function FCOIS.GetLAMMarkerIconsDropdown(type, withIcons, withNoneEntry)
 			for i=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
 				--Check if icon is a gear set icon and if it's enabled
 				local goOn = false
-				local isGear = isGearIcon[i]
+				local isGear = isGearIcon[i] or false
 				local isDynamic = isDynamicIcon[i]
 				if isGear then
 					if isDynamic then

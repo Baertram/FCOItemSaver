@@ -7,6 +7,21 @@ if not FCOIS.libsLoadedProperly then return end
 local tos = tostring
 local tabins = table.insert
 
+local FCOIS_CON_LANG_EN = FCOIS_CON_LANG_EN
+local FCOIS_CON_ICONS_ALL               = FCOIS_CON_ICONS_ALL
+local FCOIS_CON_ICON_LOCK				= FCOIS_CON_ICON_LOCK
+local FCOIS_CON_ICON_RESEARCH			= FCOIS_CON_ICON_RESEARCH
+local FCOIS_CON_ICON_SELL				= FCOIS_CON_ICON_SELL
+local FCOIS_CON_ICON_DECONSTRUCTION		= FCOIS_CON_ICON_DECONSTRUCTION
+local FCOIS_CON_ICON_IMPROVEMENT		= FCOIS_CON_ICON_IMPROVEMENT
+local FCOIS_CON_ICON_SELL_AT_GUILDSTORE	= FCOIS_CON_ICON_SELL_AT_GUILDSTORE
+local FCOIS_CON_ICON_INTRICATE			= FCOIS_CON_ICON_INTRICATE
+local FCOIS_CON_ICON_GEAR_1				= FCOIS_CON_ICON_GEAR_1
+local FCOIS_CON_ICON_GEAR_2     		= FCOIS_CON_ICON_GEAR_2
+local FCOIS_CON_ICON_GEAR_3				= FCOIS_CON_ICON_GEAR_3
+local FCOIS_CON_ICON_GEAR_4				= FCOIS_CON_ICON_GEAR_4
+local FCOIS_CON_ICON_GEAR_5				= FCOIS_CON_ICON_GEAR_5
+
 local debugMessage = FCOIS.debugMessage
 
 local availableCtms = FCOIS.contextMenuVars.availableCtms
@@ -34,7 +49,7 @@ function FCOIS.BuildLocalizedFilterButtonContextMenuEntries(contextMenuType)
     local buttonNamePrefix = contextMenuVars.buttonNamePrefix
 
     --Gear set / dynamic icon variables
-    local iconIsGear =              settings.iconIsGear
+    local iconIsGear =              settings.iconIsGear --#2025_999
     --local dynIconTotalCount =     FCOIS.numVars.gFCONumDynamicIcons
     local dynIconTotalCount   =     settings.numMaxDynamicIconsUsable
     local dynIconCounter2IconNr =   mappingVars.dynamicToIcon
@@ -71,7 +86,7 @@ function FCOIS.BuildLocalizedFilterButtonContextMenuEntries(contextMenuType)
         for dynIconCounter=1, dynIconTotalCount, 1 do
             local dynIconNr = dynIconCounter2IconNr[dynIconCounter]
             local isDynamic = isDynamicIcon[dynIconNr]
-            local isGear    = iconIsGear[dynIconNr]
+            local isGear    = iconIsGear[dynIconNr] or false --#2025_999
             if settings.isIconEnabled[dynIconNr] and isDynamic and not isGear then
                 local iconData = settings.icon[dynIconNr]
                 local dynEntry = {
@@ -104,11 +119,10 @@ function FCOIS.BuildLocalizedFilterButtonContextMenuEntries(contextMenuType)
         --Then add the gear set buttons dynamically
         local gearIconTotalCount = FCOIS.numVars.gFCONumGearSetsStatic
         local gearIconCounter2IconNr = FCOIS.mappingVars.gearToIcon
-        --local isGearIcon = FCOIS.mappingVars.iconIsGear
         local gearsCounter = 1
         for gearIconCounter=1, gearIconTotalCount, 1 do
             local gearIconNr = gearIconCounter2IconNr[gearIconCounter]
-            local isGear = iconIsGear[gearIconNr]
+            local isGear = iconIsGear[gearIconNr] or false --#2025_999
             if settings.isIconEnabled[gearIconNr] and isGear then
                 local iconData = settings.icon[gearIconNr]
                 local gearEntry = {
@@ -127,7 +141,7 @@ function FCOIS.BuildLocalizedFilterButtonContextMenuEntries(contextMenuType)
         for dynIconCounter=1, dynIconTotalCount, 1 do
             local dynIconNr = dynIconCounter2IconNr[dynIconCounter]
             local isDynamic = isDynamicIcon[dynIconNr]
-            local isGear    = iconIsGear[dynIconNr]
+            local isGear    = iconIsGear[dynIconNr] or false --#2025_999
             if settings.isIconEnabled[dynIconNr] and isDynamic and isGear then
                 local iconData = settings.icon[dynIconNr]
                 local gearEntry = {
@@ -462,14 +476,19 @@ local function afterLocalization()
 end
 
 --Localized texts etc.
+local l_FCOIS_CON_ICON_SUFFIX_NAME
+local l_FCOIS_CON_ICON_SUFFIX_COLOR
 function FCOIS.Localization()
+    l_FCOIS_CON_ICON_SUFFIX_NAME = l_FCOIS_CON_ICON_SUFFIX_NAME or FCOIS_CON_ICON_SUFFIX_NAME
+    l_FCOIS_CON_ICON_SUFFIX_COLOR = l_FCOIS_CON_ICON_SUFFIX_COLOR or FCOIS_CON_ICON_SUFFIX_COLOR
+
     local preventerVars = FCOIS.preventerVars
     local defSettings = FCOIS.settingsVars.defaultSettings
     local settings = FCOIS.settingsVars.settings
     local alwaysUseClientLang = settings.alwaysUseClientLanguage
     local langVars = FCOIS.langVars
-    local colorIconEndStr   = FCOIS_CON_ICON_SUFFIX_COLOR
-    local nameIconEndStr    = FCOIS_CON_ICON_SUFFIX_NAME
+    local colorIconEndStr   = l_FCOIS_CON_ICON_SUFFIX_COLOR
+    local nameIconEndStr    = l_FCOIS_CON_ICON_SUFFIX_NAME
 
 --d("[FCOIS] Localization - Start, keybindings: " .. tos(preventerVars.KeyBindingTexts) ..", useClientLang: " .. tos(alwaysUseClientLang) .. ", localizationDone: " ..tos(preventerVars.gLocalizationDone))
 

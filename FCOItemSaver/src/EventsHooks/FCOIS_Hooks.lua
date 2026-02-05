@@ -4,6 +4,8 @@ local FCOIS = FCOIS
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
 
+local CM                                    = CALLBACK_MANAGER
+
 local libFilters = FCOIS.libFilters
  local otherAddons = FCOIS.otherAddons
 
@@ -15,16 +17,49 @@ local strmatch                              = string.match
 local tins                                  = table.insert
 
 local giid                                  = GetItemId
-local gil                                   = GetItemLink
+--local gil                                   = GetItemLink
 local giet                                  = GetItemEquipType
 
 local addonVars                             = FCOIS.addonVars
 local addonName                             = addonVars.gAddonName
 
-local CM                                    = CALLBACK_MANAGER
-
 local ctrlVars                              = FCOIS.ZOControlVars
 local invSceneName                          = ctrlVars.invSceneName
+
+local FCOIS_CON_LF_CHARACTER = FCOIS_CON_LF_CHARACTER
+local FCOIS_CON_LF_COMPANION_CHARACTER = FCOIS_CON_LF_COMPANION_CHARACTER
+local FCOIS_CON_ICONS_ALL               = FCOIS_CON_ICONS_ALL
+local FCOIS_CON_ICON_LOCK				= FCOIS_CON_ICON_LOCK
+local FCOIS_CON_ICON_RESEARCH			= FCOIS_CON_ICON_RESEARCH
+
+local LF_INVENTORY = LF_INVENTORY
+local LF_BANK_WITHDRAW = LF_BANK_WITHDRAW
+local LF_BANK_DEPOSIT = LF_BANK_DEPOSIT
+local LF_GUILDBANK_WITHDRAW = LF_GUILDBANK_WITHDRAW
+local LF_GUILDBANK_DEPOSIT = LF_GUILDBANK_DEPOSIT
+local LF_VENDOR_REPAIR = LF_VENDOR_REPAIR
+local LF_GUILDSTORE_SELL = LF_GUILDSTORE_SELL
+local LF_MAIL_SEND = LF_MAIL_SEND
+local LF_SMITHING_REFINE = LF_SMITHING_REFINE
+local LF_SMITHING_DECONSTRUCT = LF_SMITHING_DECONSTRUCT
+local LF_SMITHING_IMPROVEMENT = LF_SMITHING_IMPROVEMENT
+local LF_SMITHING_RESEARCH = LF_SMITHING_RESEARCH
+local LF_ALCHEMY_CREATION = LF_ALCHEMY_CREATION
+local LF_ENCHANTING_EXTRACTION = LF_ENCHANTING_EXTRACTION
+local LF_ENCHANTING_CREATION = LF_ENCHANTING_CREATION
+local LF_FENCE_SELL = LF_FENCE_SELL
+local LF_FENCE_LAUNDER = LF_FENCE_LAUNDER
+local LF_CRAFTBAG = LF_CRAFTBAG
+local LF_RETRAIT = LF_RETRAIT
+local LF_QUICKSLOT = LF_QUICKSLOT
+local LF_HOUSE_BANK_WITHDRAW = LF_HOUSE_BANK_WITHDRAW
+local LF_HOUSE_BANK_DEPOSIT = LF_HOUSE_BANK_DEPOSIT
+local LF_JEWELRY_DECONSTRUCT = LF_JEWELRY_DECONSTRUCT
+local LF_JEWELRY_RESEARCH = LF_JEWELRY_RESEARCH
+local LF_SMITHING_RESEARCH_DIALOG = LF_SMITHING_RESEARCH_DIALOG
+local LF_INVENTORY_COMPANION = LF_INVENTORY_COMPANION
+local LF_FURNITURE_VAULT_WITHDRAW = LF_FURNITURE_VAULT_WITHDRAW
+local LF_FURNITURE_VAULT_DEPOSIT = LF_FURNITURE_VAULT_DEPOSIT
 
 local backpackCtrl =            ctrlVars.BACKPACK
 local characterCtrl =           ctrlVars.CHARACTER
@@ -1150,7 +1185,7 @@ function FCOIS.CreateHooks()
     --at SHOWN detect the current panel and set FCOIS.gFilterWhere + add buttons + add flag icon (reanchor LF_SMITHING_DECONSTRUCT [buttons ALL, ARMOR, WEAPON]
     --and LF_JEWELRY_DECONSTRUCT [buttons JEWELRY] and LF_ENCHANTING_EXTRACT [buttons ENCHANTING], and at HIDING reanchor them to their normal parents
     -- and set FCOIS.gFilterWhere to LF_INVENTORY again)
-    local function updateFilterAndAddInvFlagButtonsAtUniversalDeconstruction(isHidden, LibFiltersFilterTypeAtUniversalDecon)
+    local function updateFilterAndAddFilterButtonsAndAddInvFlagButtonsAtUniversalDeconstruction(isHidden, LibFiltersFilterTypeAtUniversalDecon)
         isHidden = isHidden or false
 
         if not isHidden then
@@ -1162,11 +1197,11 @@ function FCOIS.CreateHooks()
             else
                 filterPanelIdPassedIn = universalDeconGlobal.FCOIScurrentFilterPanelId
             end
-            --d("[FCOIS]UniversalDecon - Setting filterPanelId to: " ..tos(filterPanelIdPassedIn))
+    --d("[FCOIS]UniversalDecon - Setting filterPanelId to: " ..tos(filterPanelIdPassedIn))
             if filterPanelIdPassedIn == nil then filterPanelIdPassedIn = LF_SMITHING_DECONSTRUCT end
             --Update universalDeconGlobal.FCOIScurrentFilterPanelId
             local currentFilterPanelIdAtUniversalDecon = getCurrentFilterPanelIdAtDeconNPC(filterPanelIdPassedIn)
-            --d(">Setting filterPanelId to: " ..tos(currentFilterPanelIdAtUniversalDecon))
+    --d(">>updating filterPanelId to current at UniversalDecon: " ..tos(currentFilterPanelIdAtUniversalDecon) .. ", last was: " ..tos(lastUniversalDeconFilterPanelId))
             if currentFilterPanelIdAtUniversalDecon ~= nil then
                 --if FCOIS.gFilterWhere ~= currentFilterPanelIdAtUniversalDecon then --#267
                 if lastUniversalDeconFilterPanelId ~= nil and lastUniversalDeconFilterPanelId ~= currentFilterPanelIdAtUniversalDecon then
@@ -1178,12 +1213,12 @@ function FCOIS.CreateHooks()
                 --Re-anchor the filterButtons and the additional inventory flag button from their default parents at e.g.
                 --LF_SMITHING_DECONSTRUCT, LF_JEWELRY_DECONSTRUCT and LF_ENCHANTING_EXTRACTION to
                 --their new parent control UNIVERSAL_DECONSTRUCTION.control ...
-                -->Re-Parent and Re-Anchor he filterButtons and the additional inventory "flag" button from old panel to current panel
+                -->Re-Parent and Re-Anchor the additional inventory "flag" button from old panel to current panel
                 reParentAndAnchorContextMenuInvokerButtons(nil, currentFilterPanelIdAtUniversalDecon)
                 --Change the button color of the context menu invoker
                 changeContextMenuInvokerButtonColorByPanelId(currentFilterPanelIdAtUniversalDecon)
                 --Check the filter buttons and create them if they are not there. Update the inventory afterwards too
-                -->Will reParent and reAnchor the filterButtons too!
+                --->Will reParent and reAnchor the filterButtons too!
                 --doUpdateLists, panelId, overwriteFilterWhere, hideFilterButtons, isUniversalDeconNPC
                 checkFCOISFilterButtonsAtPanel(true, currentFilterPanelIdAtUniversalDecon, nil, nil, true, lastUniversalDeconFilterPanelId) --#202 universal deconstruction
                 --else --#267
@@ -1242,15 +1277,15 @@ function FCOIS.CreateHooks()
             --If hidden: Hide context menus and filter buttons, unregister filters
             if isShown == false then
                 local filterTypeToHide = universalDeconGlobal.FCOIScurrentFilterPanelId
-                --d("[FCOIS]universalDeconstructionPanel HIDDEN - " ..tos(universalDeconCurrentTab) .. ", LibFiltersFilterType: " ..tos(currentUniversalDeconFilterType) .. ", filterTypeLastTab: " ..tos(filterTypeToHide))
+--d("[FCOIS]universalDeconstructionPanel HIDDEN - " ..tos(universalDeconCurrentTab) .. ", LibFiltersFilterType: " ..tos(currentUniversalDeconFilterType) .. ", filterTypeLastTab: " ..tos(filterTypeToHide))
                 hideContextMenu(filterTypeToHide)
                 --Hide buttons and set the actual panel to LF_INVENTORY
-                updateFilterAndAddInvFlagButtonsAtUniversalDeconstruction(true, nil)
+                updateFilterAndAddFilterButtonsAndAddInvFlagButtonsAtUniversalDeconstruction(true, nil)
             else
-                --d("[FCOIS]universalDeconstructionPanel SHOWN - " ..tos(universalDeconCurrentTab) .. ", LibFiltersFilterType: " ..tos(currentUniversalDeconFilterType))
+--d("[FCOIS]universalDeconstructionPanel SHOWN - " ..tos(universalDeconCurrentTab) .. ", LibFiltersFilterType: " ..tos(currentUniversalDeconFilterType))
                 --If shown: Show filter buttons and register filters, and update FCOIS.gFilterWhere (only if the tab change also changed the LF* FilterType)
-                -->The last tab's filterType, before the chane, will be added to universalDeconGlobal.FCOIScurrentFilterPanelId
-                updateFilterAndAddInvFlagButtonsAtUniversalDeconstruction(false, currentUniversalDeconFilterType)
+                -->The last tab's filterType, before the change, will be added to universalDeconGlobal.FCOIScurrentFilterPanelId
+                updateFilterAndAddFilterButtonsAndAddInvFlagButtonsAtUniversalDeconstruction(false, currentUniversalDeconFilterType)
             end
 
         end
@@ -1352,7 +1387,9 @@ function FCOIS.CreateHooks()
             if not isResearchListDialogShown() then return false end
             FCOIS.preventerVars.ZO_ListDialog1ResearchIsOpen = true
             --Check the filter buttons and create them if they are not there.
-            checkFCOISFilterButtonsAtPanel(true, LF_SMITHING_RESEARCH_DIALOG)
+            zo_callLater(function()
+                checkFCOISFilterButtonsAtPanel(true, LF_SMITHING_RESEARCH_DIALOG)
+            end, 0) --delay a bit so LibFilters can detect the listDialog's filterPanelId properly
         end)
         ZO_PreHookHandler(researchPopupDialogCustomControl, "OnHide", function()
             --d("[FCOIS]SMITHING_RESEARCH_SELECT PreHook:OnHide")
@@ -1800,7 +1837,7 @@ function FCOIS.CreateHooks()
     --======== VENDOR =====================================================
     --Pre Hook the menubar button's (buy, sell, buyback, repair) handler at the vendor
     --> Will be done in event callback function for EVENT_OPEN_STORE + a delay as the buttons are not created before!
-    ---> See file src/FCOIS_events.lua, function 'FCOItemSaver_OpenStore("vendor")'
+    ---> See file src/FCOIS_events.lua, function 'FCOItemSaver_Open_Store("vendor")'
     --Register a secure posthook on visibility change of a scrolllist's row -> At the vendor inventory list
     -->#303 Was added via FCOIS.CreateTextures already so here we only need to add the onMouseUpHandlers!
     --[[
@@ -2435,7 +2472,7 @@ function FCOIS.CreateHooks()
     local function changeFilterQuickSlot(self, filterData)
         updateFilteredItemCountThrottled(LF_QUICKSLOT, 50, "Quickslots - ChangeFilter")
     end
-    ZO_PreHook(ctrlVars.QUICKSLOT_WINDOW, "ChangeFilter", changeFilterQuickSlot)
+    ZO_PreHook(ctrlVars.QUICKSLOT_KEYBOARD, "ChangeFilter", changeFilterQuickSlot)
     --Update the count of items filtered if text search boxes are used (ZOs or Votans Search Box)
     ZO_PreHook(ctrlVars.INVENTORY_MANAGER, "UpdateEmptyBagLabel", function(ctrl, inventoryType, isEmptyList)
         local inventories = ctrlVars.inventories

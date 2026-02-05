@@ -8,6 +8,32 @@ local tos = tostring
 local tins = table.insert
 local gil = GetItemLink
 
+local FCOIS_CON_ICON_LOCK				= FCOIS_CON_ICON_LOCK
+local FCOIS_CON_ICON_RESEARCH			= FCOIS_CON_ICON_RESEARCH
+local FCOIS_CON_ICON_SELL				= FCOIS_CON_ICON_SELL
+local FCOIS_CON_ICON_DECONSTRUCTION		= FCOIS_CON_ICON_DECONSTRUCTION
+local FCOIS_CON_ICON_IMPROVEMENT		= FCOIS_CON_ICON_IMPROVEMENT
+local FCOIS_CON_ICON_SELL_AT_GUILDSTORE	= FCOIS_CON_ICON_SELL_AT_GUILDSTORE
+local FCOIS_CON_ICON_INTRICATE			= FCOIS_CON_ICON_INTRICATE
+
+local LF_INVENTORY = LF_INVENTORY
+local LF_VENDOR_REPAIR = LF_VENDOR_REPAIR
+local LF_MAIL_SEND = LF_MAIL_SEND
+local LF_TRADE = LF_TRADE
+local LF_SMITHING_REFINE = LF_SMITHING_REFINE
+local LF_SMITHING_DECONSTRUCT = LF_SMITHING_DECONSTRUCT
+local LF_SMITHING_IMPROVEMENT = LF_SMITHING_IMPROVEMENT
+local LF_ALCHEMY_CREATION = LF_ALCHEMY_CREATION
+local LF_ENCHANTING_EXTRACTION = LF_ENCHANTING_EXTRACTION
+local LF_ENCHANTING_CREATION = LF_ENCHANTING_CREATION
+local LF_PROVISIONING_COOK = LF_PROVISIONING_COOK
+local LF_PROVISIONING_BREW = LF_PROVISIONING_BREW
+local LF_CRAFTBAG = LF_CRAFTBAG
+local LF_JEWELRY_REFINE = LF_JEWELRY_REFINE
+local LF_JEWELRY_DECONSTRUCT = LF_JEWELRY_DECONSTRUCT
+local LF_JEWELRY_IMPROVEMENT = LF_JEWELRY_IMPROVEMENT
+local LF_INVENTORY_COMPANION = LF_INVENTORY_COMPANION
+
 local debugMessage = FCOIS.debugMessage
 
 local numFilterIcons = FCOIS.numVars.gFCONumFilterIcons
@@ -350,7 +376,7 @@ function FCOIS.CheckIfItemIsProtected(iconId, itemId, checkHandler, addonName, s
     --If the check handler is given we need to check if it is an allowed one
     if checkHandler ~= nil and checkHandler ~= "" then
         if not allowedCheckHandlers[checkHandler] then return false end
-        checkIfItemIsProtected = FCOIS.CheckIfItemIsProtected
+        checkIfItemIsProtected = checkIfItemIsProtected or FCOIS.CheckIfItemIsProtected
         local mappingVars = FCOIS.mappingVars
         --Recursively check all the marker icons from the check handler range, e.g. all gear sets or all dynamic icons
         if checkHandler == "gear" then
@@ -494,8 +520,8 @@ function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChat
     if bag == nil or slot == nil then return true end
     local doDebug = false
     --TODO DEBUG: enable to show d messages for debugging
-   --[[
-    if GetDisplayName() == "@Baertram" and bag == 1 and (slot == 62) then  --#318 20250427
+    --[[
+    if GetDisplayName() == "@Baertram" and bag == 1 and (slot == 5 or slot == 25 or slot == 134) then
         FCOIS.preventerVars.doDebugItemSelectionHandler = true
     end
     ]]

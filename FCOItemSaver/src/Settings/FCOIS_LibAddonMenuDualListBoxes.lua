@@ -8,9 +8,14 @@ local debugMessage = FCOIS.debugMessage
 
 local strformat = string.format
 
+local FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES  = FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
+local FCOIS_CON_LIBSHIFTERBOX_EXCLUDESETS             = FCOIS_CON_LIBSHIFTERBOX_EXCLUDESETS
+local FCOIS_CON_LIBSHIFTERBOX_FCOISALLOWEXCLUSION_MAIL = FCOIS_CON_LIBSHIFTERBOX_FCOISALLOWEXCLUSION_MAIL
+
 local addonVars = FCOIS.addonVars
 local addonName = addonVars.gAddonName
 local numFilterIcons = FCOIS.numVars.gFCONumFilterIcons
+
 local getSavedVarsMarkedItemsTableName = FCOIS.GetSavedVarsMarkedItemsTableName
 local showItemLinkTooltip = FCOIS.ShowItemLinkTooltip
 local hideItemLinkTooltip = FCOIS.HideItemLinkTooltip

@@ -21,6 +21,10 @@ local bagsToBuildIdFor = mappingVars.bagsToBuildItemInstanceOrUniqueIdFor
 local checkVars = FCOIS.checkVars
 --local allowedUniqueItemTypes = checkVars.uniqueIdItemTypes
 
+local LF_BANK_WITHDRAW = LF_BANK_WITHDRAW
+local LF_GUILDSTORE_SELL = LF_GUILDSTORE_SELL
+local LF_CRAFTBAG = LF_CRAFTBAG
+
 local getSavedVarsMarkedItemsTableName       = FCOIS.GetSavedVarsMarkedItemsTableName
 local getFCOISMarkerIconSavedVariablesItemId = FCOIS.GetFCOISMarkerIconSavedVariablesItemId
 local signItemId                             = FCOIS.SignItemId
@@ -283,7 +287,7 @@ local function checkSetTrackerTrackingStateAndMarkWithFCOISIcon(sSetName, setTra
     local setTrackerPossibleFCOISMarkerIcons = {}
     --Get the marker icon from FCOIS for the current trackIndex and create/show the marker icon now
     local FCOISMarkerIconForSetTracker = settings.setTrackerIndexToFCOISIcon[iTrackIndex]
-    if FCOISMarkerIconForSetTracker == nil or FCOISMarkerIconForSetTracker == FCOIS_CON_ICON_ALL or FCOISMarkerIconForSetTracker > FCOIS.numVars.gFCONumFilterIcons then return false, nil end
+    if FCOISMarkerIconForSetTracker == nil or FCOISMarkerIconForSetTracker == FCOIS_CON_ICONS_ALL or FCOISMarkerIconForSetTracker > FCOIS.numVars.gFCONumFilterIcons then return false, nil end
     --No icon should be set via FCOIS (for SetTracker) so remove all curentlys et SetTracker marker icons
     if FCOISMarkerIconForSetTracker == FCOIS_CON_ICON_NONE then
         removeAllSetTrackerMarkerIcons = true
@@ -343,7 +347,7 @@ local function checkSetTrackerTrackingStateAndMarkWithFCOISIcon(sSetName, setTra
                         if setTrackerState ~= nil and doShow == true then
                             --Remove the old set tracker marker icon within FCOIS now
                             FCOIS_OLD_MarkerIconForSetTracker = settings.setTrackerIndexToFCOISIcon[setTrackerState]
-                            if FCOIS_OLD_MarkerIconForSetTracker ~= nil and FCOIS_OLD_MarkerIconForSetTracker ~= FCOIS_CON_ICON_NONE and FCOIS_OLD_MarkerIconForSetTracker ~= FCOIS_CON_ICON_ALL then
+                            if FCOIS_OLD_MarkerIconForSetTracker ~= nil and FCOIS_OLD_MarkerIconForSetTracker ~= FCOIS_CON_ICON_NONE and FCOIS_OLD_MarkerIconForSetTracker ~= FCOIS_CON_ICONS_ALL then
                                 --d(">Removing old marker icon first: " .. tos(FCOIS_OLD_MarkerIconForSetTracker))
                                 FCOIS_sv[FCOIS_OLD_MarkerIconForSetTracker][itemId] = nil
                             end
@@ -1431,7 +1435,7 @@ end
 function FCOIS.CheckIfItemCooldownTrackerRelevantItemIdAndMarkItem(bagId, slotIndex, itemLink)
     --#184
 --d("[FCOIS]CheckIfItemCooldownTrackerRelevantItemIdAndMarkItem")
-    if not icdt then return false end
+    if not icdt or (bagId == nil and slotIndex == nil and itemLink == nil) then return false end
     local settings = FCOIS.settingsVars.settings
     local autoMarkItemCoolDownTrackerTrackedItems = settings.autoMarkItemCoolDownTrackerTrackedItems
     local itemCoolDownTrackerTrackedItemsMarkerIcon = settings.itemCoolDownTrackerTrackedItemsMarkerIcon

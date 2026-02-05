@@ -18,7 +18,7 @@
    ã : \195\163    õ : \195\181  				   \195\177 : \195\177
 ]]
 --The "lock" icon texturepath
---local lockIconPath = "FCOItemSaver/FCOIS.dds"
+--local FCOISIconPath = FCOIS.addonVars.icon --"FCOItemSaver/FCOIS.dds"
 local lockIconPath = "/esoui/art/miscellaneous/status_locked.dds"
 local lockIcon = "|t32:32:"..lockIconPath.."|t"
 
@@ -27,6 +27,19 @@ local FCOIS = FCOIS
 
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
+
+--Languages
+local FCOIS_CON_LANG_EN = FCOIS_CON_LANG_EN
+local FCOIS_CON_LANG_DE = FCOIS_CON_LANG_DE
+local FCOIS_CON_LANG_FR = FCOIS_CON_LANG_FR
+local FCOIS_CON_LANG_ES = FCOIS_CON_LANG_ES
+local FCOIS_CON_LANG_IT = FCOIS_CON_LANG_IT
+local FCOIS_CON_LANG_JP = FCOIS_CON_LANG_JP
+local FCOIS_CON_LANG_RU = FCOIS_CON_LANG_RU
+local FCOIS_CON_LF_CHARACTER = FCOIS_CON_LF_CHARACTER
+local FCOIS_CON_LF_COMPANION_CHARACTER = FCOIS_CON_LF_COMPANION_CHARACTER
+local FCOIS_CON_ICON_LOCK				= FCOIS_CON_ICON_LOCK
+
 
 --Local speed-ups of global number and other variables
 local numLanguages                      = FCOIS.numVars.languageCount
@@ -2021,7 +2034,7 @@ FCOIS.localizationVars.localizationAll = {
         ["options_header_traits"]                               = "Eigenschaften",
         ["options_auto_mark_traits_with_set_too"]               = "Auch mit Set Markierung setzen",
         ["options_auto_mark_traits_with_set_too_TT"]       = "Markiere einen Set Gegenstand zusätzlich zu der automatischen Set Markierung. Ist diese Option aus wird die Eigenschaftsmarkierung nicht gesetzt, wenn die Set Markierung bereits gesetzt ist.",
-        ["options_auto_mark_traits_only"]                       = "Nur Eingenschaften setzen",
+        ["options_auto_mark_traits_only"]                       = "Nur Eigenschaften setzen",
         ["options_auto_mark_traits_only_TT"]               = "Setze die Eigenschaftsmarkierungssymbole aber nicht die Set Markierung wenn für die Eigenschaft des Gegenstandes eine Markierung aktiviert ist.",
         ["options_auto_mark_settrackersets"]					= "'SetTracker' Sets",
         ["options_auto_mark_settrackersets_TT"]			= "Markiere automatisch die Gegestände, welche mit dem Addon 'SetTracker' verfolgt werden, mit einem FCOIS Symbol.",
@@ -5265,14 +5278,15 @@ FCOIS.localizationVars.localizationAll = {
 	},
 --==============================================================================
 }
-
-local english   = FCOIS.localizationVars.localizationAll[FCOIS_CON_LANG_EN]
-local german    = FCOIS.localizationVars.localizationAll[FCOIS_CON_LANG_DE]
-local french    = FCOIS.localizationVars.localizationAll[FCOIS_CON_LANG_FR]
-local spanish   = FCOIS.localizationVars.localizationAll[FCOIS_CON_LANG_ES]
-local italian   = FCOIS.localizationVars.localizationAll[FCOIS_CON_LANG_IT]
-local japanese  = FCOIS.localizationVars.localizationAll[FCOIS_CON_LANG_JP]
-local russian   = FCOIS.localizationVars.localizationAll[FCOIS_CON_LANG_RU]
+--References to the language subtables
+local locVarsAll = FCOIS.localizationVars.localizationAll
+local english   = locVarsAll[FCOIS_CON_LANG_EN]
+local german    = locVarsAll[FCOIS_CON_LANG_DE]
+local french    = locVarsAll[FCOIS_CON_LANG_FR]
+local spanish   = locVarsAll[FCOIS_CON_LANG_ES]
+local italian   = locVarsAll[FCOIS_CON_LANG_IT]
+local japanese  = locVarsAll[FCOIS_CON_LANG_JP]
+local russian   = locVarsAll[FCOIS_CON_LANG_RU]
 
 --Generate settingsmenu texts for the dynamic icons
 function FCOIS.GenerateLocalizedDynamicIconTexts()
@@ -5481,7 +5495,7 @@ end
 --LibFilters translated panel ID texts
 local getLibFiltersPanelIdText
 function FCOIS.GetLibFiltersPanelIdText(language, libFilterPanelId)
-    getLibFiltersPanelIdText = FCOIS.GetLibFiltersPanelIdText
+    getLibFiltersPanelIdText = getLibFiltersPanelIdText or FCOIS.GetLibFiltersPanelIdText
     language = language or FCOIS_CON_LANG_EN
     local retVarTable = {}
     local translatedTexts = {}
@@ -5566,7 +5580,7 @@ function FCOIS.GetLibFiltersPanelIdText(language, libFilterPanelId)
     end
     return retVarTable
 end
-local getLibFiltersPanelIdText = FCOIS.GetLibFiltersPanelIdText
+getLibFiltersPanelIdText = FCOIS.GetLibFiltersPanelIdText
 
 --LibFilters translated panel IDs
 english["FCOIS_LibFilters_PanelIds"]    = {}

@@ -71,6 +71,13 @@ function FCOIS.LoadWorkarounds()
     --bank withdraw, guild bank withdraw, ...)
     --so the Anti-Destroy and ItemSelectionHandler functions return the anti-settings "enabled"
     local updateAntiCheckAtPanelVariable = FCOIS.UpdateAntiCheckAtPanelVariable
+    local enableSettingAtAntiCheckAtPanel = { --#2025_999
+        [LF_SMITHING_RESEARCH_DIALOG] = true,
+        [LF_JEWELRY_RESEARCH_DIALOG] = true,
+        [LF_INVENTORY_COMPANION] = true,
+        [LF_SMITHING_RESEARCH] = true, --FCOIS v.0.8.8i
+        [LF_JEWELRY_RESEARCH] = true, --FCOIS v.1.4.4
+    }
     for iconNr, _ in pairs(FCOIS.mappingVars.iconToDynamic) do
         if settings.icon[iconNr] ~= nil then
             --#295 Fix missing antiPanel settings to reset to default values
@@ -78,24 +85,16 @@ function FCOIS.LoadWorkarounds()
                 settings.icon[iconNr].antiCheckAtPanel = {}
                 --For each filterPanelId do some checks and add icon settings settings data:
                 for filterIconHelperPanel = 1, numLibFiltersFilterPanelIds, 1 do
-                    local valueToSet = false
-                    if filterIconHelperPanel == LF_SMITHING_RESEARCH_DIALOG or filterIconHelperPanel == LF_JEWELRY_RESEARCH_DIALOG or
-                        filterIconHelperPanel == LF_INVENTORY_COMPANION then
+                    local valueToSet --#2025_999
+                    if enableSettingAtAntiCheckAtPanel[filterIconHelperPanel] then --#2025_999
                         valueToSet = true
                     end
                     settings.icon[iconNr].antiCheckAtPanel[filterIconHelperPanel] = valueToSet
                 end
             end
 
-            local invValue = settings.icon[iconNr].antiCheckAtPanel[LF_INVENTORY]
-            updateAntiCheckAtPanelVariable(iconNr, LF_INVENTORY, invValue)
-            --FCOIS v.0.8.8i
-            --Also update the crafting station research panel and set it to true for all dynamic icons
-            updateAntiCheckAtPanelVariable(iconNr, LF_SMITHING_RESEARCH, true)
-            --FCOIS v.1.4.4
-            updateAntiCheckAtPanelVariable(iconNr, LF_JEWELRY_RESEARCH, true)
-            --FCOIS v.2.1.0 --> FCOIS 2.1.9: Done within updateAntiCheckAtPanelVariable for LF_INVENTORY!
-            --updateAntiCheckAtPanelVariable(iconNr, LF_INVENTORY_COMPANION, true)
+            local invValueAntiCheckAtPanelForMarkerIcon = settings.icon[iconNr].antiCheckAtPanel[LF_INVENTORY]
+            updateAntiCheckAtPanelVariable(iconNr, LF_INVENTORY, invValueAntiCheckAtPanelForMarkerIcon) --Updates depending panels like companionInventory and banks too!
         end
     end
 end

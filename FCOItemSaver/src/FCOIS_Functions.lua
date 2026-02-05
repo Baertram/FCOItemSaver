@@ -14,18 +14,70 @@ if not FCOIS.libsLoadedProperly then return end
 
 local debugMessage = FCOIS.debugMessage
 local preChatTextGreen = FCOIS.preChatVars.preChatTextGreen
+local FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE = FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE
+local FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE = FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE
+local FCOIS_CON_FCOISUNIQUEID_TYPE_BAGID_SLOTINDEX = FCOIS_CON_FCOISUNIQUEID_TYPE_BAGID_SLOTINDEX
+local FCOIS_CON_FCOISUNIQUEID_TYPE_ITEMLINK = FCOIS_CON_FCOISUNIQUEID_TYPE_ITEMLINK
+local FCOIS_CON_VENDOR_TYPE_NORMAL_NPC = FCOIS_CON_VENDOR_TYPE_NORMAL_NPC
+local FCOIS_CON_VENDOR_TYPE_PORTABLE = FCOIS_CON_VENDOR_TYPE_PORTABLE
+local FCOIS_CON_ICONS_ALL               = FCOIS_CON_ICONS_ALL
+local FCOIS_CON_ICON_SELL				= FCOIS_CON_ICON_SELL
+local FCOIS_CON_ICON_DECONSTRUCTION		= FCOIS_CON_ICON_DECONSTRUCTION
+local FCOIS_CON_ICON_IMPROVEMENT		= FCOIS_CON_ICON_IMPROVEMENT
+local FCOIS_CON_ICON_SELL_AT_GUILDSTORE	= FCOIS_CON_ICON_SELL_AT_GUILDSTORE
+
+local LF_INVENTORY = LF_INVENTORY
+local LF_BANK_WITHDRAW = LF_BANK_WITHDRAW
+local LF_BANK_DEPOSIT = LF_BANK_DEPOSIT
+local LF_GUILDBANK_WITHDRAW = LF_GUILDBANK_WITHDRAW
+local LF_GUILDBANK_DEPOSIT = LF_GUILDBANK_DEPOSIT
+local LF_VENDOR_BUY = LF_VENDOR_BUY
+local LF_VENDOR_SELL = LF_VENDOR_SELL
+local LF_VENDOR_BUYBACK = LF_VENDOR_BUYBACK
+local LF_VENDOR_REPAIR = LF_VENDOR_REPAIR
+local LF_GUILDSTORE_SELL = LF_GUILDSTORE_SELL
+local LF_MAIL_SEND = LF_MAIL_SEND
+local LF_TRADE = LF_TRADE
+local LF_SMITHING_REFINE = LF_SMITHING_REFINE
+local LF_SMITHING_DECONSTRUCT = LF_SMITHING_DECONSTRUCT
+local LF_SMITHING_IMPROVEMENT = LF_SMITHING_IMPROVEMENT
+local LF_SMITHING_RESEARCH = LF_SMITHING_RESEARCH
+local LF_ALCHEMY_CREATION = LF_ALCHEMY_CREATION
+local LF_ENCHANTING_EXTRACTION = LF_ENCHANTING_EXTRACTION
+local LF_ENCHANTING_CREATION = LF_ENCHANTING_CREATION
+local LF_FENCE_SELL = LF_FENCE_SELL
+local LF_FENCE_LAUNDER = LF_FENCE_LAUNDER
+local LF_CRAFTBAG = LF_CRAFTBAG
+local LF_RETRAIT = LF_RETRAIT
+local LF_QUICKSLOT = LF_QUICKSLOT
+local LF_HOUSE_BANK_WITHDRAW = LF_HOUSE_BANK_WITHDRAW
+local LF_JEWELRY_REFINE = LF_JEWELRY_REFINE
+local LF_JEWELRY_DECONSTRUCT = LF_JEWELRY_DECONSTRUCT
+local LF_JEWELRY_IMPROVEMENT = LF_JEWELRY_IMPROVEMENT
+local LF_JEWELRY_RESEARCH = LF_JEWELRY_RESEARCH
+local LF_SMITHING_RESEARCH_DIALOG = LF_SMITHING_RESEARCH_DIALOG
+local LF_JEWELRY_RESEARCH_DIALOG = LF_JEWELRY_RESEARCH_DIALOG
+local LF_INVENTORY_COMPANION = LF_INVENTORY_COMPANION
+local LF_FURNITURE_VAULT_WITHDRAW = LF_FURNITURE_VAULT_WITHDRAW
+local LF_FURNITURE_VAULT_DEPOSIT = LF_FURNITURE_VAULT_DEPOSIT
 
 --local lua
 local tos = tostring
 local ton = tonumber
 local strformat = string.format
-local strmatch = string.match
+--local strmatch = string.match
 local tins = table.insert
 local trem = table.remove
 local tsort = table.sort
 
 local em = EVENT_MANAGER
 local wm = WINDOW_MANAGER
+
+local funcType = "function"
+local stringType = "string"
+local numberType = "number"
+local booleanType = "boolean"
+local tableType = "table"
 
 --Local ZOs API
 local gccharid = GetCurrentCharacterId
@@ -133,7 +185,7 @@ local FCOISMarkItemByItemInstanceId = FCOIS.MarkItemByItemInstanceId
 --==========================================================================================================================================
 local function booleanToNumber(boolValue)
     boolValue = boolValue or false
-    if type(boolValue) ~= "boolean" then return end
+    if type(boolValue) ~= booleanType then return end
     local mapBoolToNumberTab = {
         [false] = 0,
         [true]  = 1,
@@ -154,13 +206,24 @@ function FCOIS.ThrottledUpdate(callbackName, timer, callback, ...)
     em:RegisterForUpdate(callbackName, timer, updateNow)
 end
 
+--Either return results of a passed in function with params ..., or just return the variable passed in
+local function getFuncOrVar(funcOrVar, ...) --#2025_999
+   if type(funcOrVar) == funcType then
+        return funcOrVar(...)
+    else
+        return funcOrVar
+    end
+end
+FCOIS.GetFuncOrVar = getFuncOrVar
+
+
 --Added with API101043 - ZOs uses more and more DeferredInitialization meanwhile so we craete a wrapper function for that
 local postHookedOnDeferredInitControls = {}
 function FCOIS.onDeferredInitCheck(object, callbackFunc, preCheckFunc)
 	if callbackFunc == nil then return end
 	--PreCheck funtion is needed?
 	local doNow = true
-	if type(preCheckFunc) == "function" then
+	if type(preCheckFunc) == funcType then
 		doNow = preCheckFunc(object)
 	end
 	if not doNow then return end
@@ -203,10 +266,10 @@ local function checkIfCompanionItem(bagId, slotIndex)
 end
 
 local function processPackages(itemsToProcessTab, maxEntriesPerPackage, maxPackages, preCheckFunc, callbackFunc, callbackAfterEachEntry, delay, finalCallbackFunc)
-    if itemsToProcessTab == nil or maxEntriesPerPackage == nil or type(callbackFunc) ~= "function" then return end
-    if type(finalCallbackFunc) ~= "function" then finalCallbackFunc = nil end
-    if type(preCheckFunc) ~= "function" then preCheckFunc = nil end
-    if type(callbackAfterEachEntry) ~= "function" then callbackAfterEachEntry = nil end
+    if itemsToProcessTab == nil or maxEntriesPerPackage == nil or type(callbackFunc) ~= funcType then return end
+    if type(finalCallbackFunc) ~= funcType then finalCallbackFunc = nil end
+    if type(preCheckFunc) ~= funcType then preCheckFunc = nil end
+    if type(callbackAfterEachEntry) ~= funcType then callbackAfterEachEntry = nil end
     delay = delay or 250
 
 
@@ -407,16 +470,21 @@ end
 -->Check the name of a texture control and see if it exists, then return the control.
 --> The control's name is the addon name + a nilable additional parameter "controlNameAddition" + the markerIconId
 --> Used to create FCOIS marker icon texture controls with unique names in other addons like Inventory Insight from Ashes (IIfA)!
-function FCOIS.GetItemSaverControl(parent, controlId, useParentFallback, controlNameAddition)
-    if FCOIS.settingsVars.settings.debug then debugMessage( "[GetItemSaverControl]","Parent: " .. parent:GetName() .. ", ControlId: " .. tos(controlId) .. ", useParentFallback: " .. tos(useParentFallback), true, FCOIS_DEBUG_DEPTH_VERBOSE) end
+function FCOIS.GetItemSaverControl(parent, markerIconId, useParentFallback, controlNameAddition, onlyReturnControlName) --#2025_999
+    if FCOIS.settingsVars.settings.debug then debugMessage( "[GetItemSaverControl]","Parent: " .. parent:GetName() .. ", MarkerIconId: " .. tos(markerIconId) .. ", useParentFallback: " .. tos(useParentFallback), true, FCOIS_DEBUG_DEPTH_VERBOSE) end
     local textureNameAddition = (controlNameAddition ~= nil and controlNameAddition) or ""
-    local retControl = parent:GetNamedChild(gAddonName .. textureNameAddition .. tos(controlId))
-    --Use the parent control as a fallback?
-    --e.g. Inside enchanting the parent control is the correct one already
-    if retControl == nil and useParentFallback == true then
-        return parent
+    local textureName = gAddonName .. textureNameAddition .. tos(markerIconId)
+    local retControl
+    local parentName = parent:GetName()
+    if not onlyReturnControlName then --#2025_999
+        retControl = parent:GetNamedChild(textureName)
+        --Use the parent control as a fallback?
+        --e.g. Inside enchanting the parent control is the correct one already
+        if retControl == nil and useParentFallback == true then
+            return parent, parentName .. textureName
+        end
     end
-    return retControl
+    return retControl, parentName .. textureName
 end
 
 function FCOIS.MyGetItemNameNoControl(bagId, slotIndex)
@@ -439,7 +507,7 @@ function FCOIS.MyGetItemNameNoControl(bagId, slotIndex)
     return name
 end
 
-function FCOIS.Mygin(rowControl)
+function FCOIS.GetItemName(rowControl)
     --Inventory Insight from Ashes support
     local IIfAclicked = FCOIS.IIfAclicked
     if IIfAclicked ~= nil then
@@ -525,7 +593,7 @@ function FCOIS.CheckItemId(itemId, addonName)
     --Support for base64 unique itemids (e.g. an enchanted armor got the same ItemInstanceId but can have different unique ids)
     if FCOIS.settingsVars.settings.useUniqueIds or checkIfAddonNameHasTemporarilyEnabledUniqueIds(addonName) == true then
         --Check if the given uniqueID is already transfered to the string, and if not do so
-        if type(itemId) ~= "string" then
+        if type(itemId) ~= stringType then
             retItemId = zogsid64(itemId)
         end
     end
@@ -555,7 +623,7 @@ function FCOIS.GetFCOISMarkerIconUniqueIdAllowedItemType(bagId, slotIndex, uniqu
 end
 local getFCOISMarkerIconUniqueIdAllowedItemType = FCOIS.GetFCOISMarkerIconUniqueIdAllowedItemType
 
---Get the itemInstanceId for non-unique or the unique ZOs id or the FCOIS created unique id, depending on the settings
+--Get the itemInstanceId for non-unique, or the real unique ZOs ID, or the FCOIS created unique id -> depending on the settings
 function FCOIS.GetFCOISMarkerIconSavedVariablesItemId(bagId, slotIndex, allowedItemType, useUniqueIds, uniqueItemIdType, signToo)
     if bagId == nil or slotIndex == nil then
         return nil, allowedItemType
@@ -607,7 +675,7 @@ function FCOIS.SignItemId(itemId, allowedItemType, onlySign, addonName, bagId, s
     signItemId = signItemId or FCOIS.SignItemId
     allowedItemType = allowedItemType or false
     onlySign = onlySign or false
-    local itemIDTypeIsString = (type(itemId) == "string") or false
+    local itemIDTypeIsString = (type(itemId) == stringType) or false
 
 --Attention: Removing the comment in front of the following line will make the game client LAG a lot upon opening the inventory!
 --d("[FCOIS.SignItemId] itemId: " ..tos(itemId) ..", allowedItemType: " .. tos(allowedItemType) .. ", onlySign: " .. tos(onlySign) ..", addonName: " ..tos(addonName))
@@ -1171,13 +1239,14 @@ end
 -- Is Item functions
 --==============================================================================
 function FCOIS.DoesPlayerInventoryCurrentFilterEqual(inventoryVar, currentFilter)
+FCOIS._inventoryVar =  inventoryVar
     return (playerInvInvs[inventoryVar].currentFilter == currentFilter) or false
 end
 local doesPlayerInventoryCurrentFilterEqual = FCOIS.DoesPlayerInventoryCurrentFilterEqual
 
 function FCOIS.DoesPlayerInventoryCurrentFilterEqualCompanion(panelId)
---d("[FCOIS]DoesPlayerInventoryCurrentFilterEqualCompanion - panelId: " ..tos(panelId))
     local invType = libFiltersPanelIdToInventory[panelId]
+--d("[FCOIS]DoesPlayerInventoryCurrentFilterEqualCompanion - panelId: " ..tos(panelId) .. ", invType: " .. tos(invType))
     if invType == nil then return end
     return doesPlayerInventoryCurrentFilterEqual(invType, ITEM_TYPE_DISPLAY_CATEGORY_COMPANION)
 end
@@ -1257,7 +1326,7 @@ function FCOIS.IsUnboundAndNotStolenItemChecks(bagId, slotIndex, iconId, isBound
     end
     if isBound == true then
         if doCheckOnlyUnbound == nil then
-            doCheckOnlyUnbound = FCOIS.settingsVars.settings.allowOnlyUnbound[iconId]
+            doCheckOnlyUnbound = FCOIS.settingsVars.settings.allowOnlyUnbound[iconId] or false --#2025_999
         end
         doCheckOnlyUnbound = doCheckOnlyUnbound or false
         if doCheckOnlyUnbound == true then
@@ -1278,7 +1347,7 @@ function FCOIS.IsItemType(bag, slot, itemTypes, currentItemType)
     local isItemTypeVar
     currentItemType = currentItemType or git(bag, slot)
 
-    if type(itemTypes) == "table" then
+    if type(itemTypes) == tableType then
         for _, itemType in ipairs(itemTypes) do
             isItemTypeVar = (currentItemType == itemType)
             if isItemTypeVar == true then return true end
@@ -2058,8 +2127,7 @@ function FCOIS.IsItemLinkResearchable(itemLink, markId, doTraitCheck)
     --Check if the item is virtually researchable as the settings is enabled to allow marking of non researchable items as gear/dynamic
     markId = markId or nil
     if markId ~= nil then
-        local settings = FCOIS.settingsVars.settings
-        retVal = settings.disableResearchCheck[markId] or false
+        retVal = FCOIS.settingsVars.settings.disableResearchCheck[markId] or false
     end
     retValReconstructedOrRetraited = isItemLinkReconStructedOrRetraited(itemLink)
     --Check the item's type (Armor, weapon, jewelry e.g. are researchable)
@@ -2264,16 +2332,19 @@ end
 
 --Is the research list dialog shown?
 function FCOIS.IsResearchListDialogShown()
-    if libFilters.IsListDialogShown then
-        return libFilters.IsListDialogShown(libFilters, nil, ctrlVars.RESEARCH)
+    return libFilters.IsListDialogShown(libFilters, nil, ctrlVars.RESEARCH)
+    --[[
     else
+d(">FCOIS internal check")
         local listDialog = ZO_InventorySlot_GetItemListDialog()
         local data = listDialog and listDialog.control and listDialog.control.data
         if data == nil then return false end
         local owner = data.owner
         if owner == nil or owner.control == nil then return false end
+d(">owner: " .. tos(owner.control == ctrlVars.RESEARCH) .. "; listDialogHidden: " .. tos(listDialog.control:IsHidden()))
         return owner.control == ctrlVars.RESEARCH and not listDialog.control:IsHidden()
     end
+    ]]
 end
 
 --Is the repair item dialog shown?
@@ -2436,7 +2507,7 @@ end
 --Returns boolean true if level is above or equal the parameter neededLevel
 --Returns boolean false if level is below the parameter neededLevel
 function FCOIS.CheckNeededLevel(unitTag, neededLevel)
-    if unitTag == nil or neededLevel == nil or type(neededLevel) ~= "number" then return false end
+    if unitTag == nil or neededLevel == nil or type(neededLevel) ~= numberType then return false end
     local gotNeededLevel = false
     local charLevel = getUnitLvl(unitTag)
     if not charLevel then return false end
@@ -2655,7 +2726,7 @@ end
 
 
 local function prcocessJunkQueueItems(queueTab, startIndex, callbackFunc, callbackAfterEachEntry, delay, isJunk)
-    if queueTab == nil or type(callbackFunc) ~= "function" or type(isJunk) ~= "boolean" then return end
+    if queueTab == nil or type(callbackFunc) ~= funcType or type(isJunk) ~= booleanType then return end
     startIndex = startIndex or 1
     delay = delay or delayToMarkAsJunkInBetweenPackages
 
@@ -2750,7 +2821,7 @@ end
 
 --Set the anti-research check for a dynamic icon
 function FCOIS.SetDynamicIconAntiResearchCheck(iconNr, value)
-    value = value or false
+    --value = value or false --#2025_999
     --d("FCOIS]setDynamicIconAntiResearchCheck - iconNr: " .. tos(iconNr) .. ", value: " .. tos(value))
     if iconNr == nil then return false end
     local isIconDynamic = FCOIS.mappingVars.iconIsDynamic
@@ -2790,6 +2861,7 @@ end
 --  and at the automatic set item marking
 function FCOIS.CheckIfIsSpecialItem(p_bagId, p_slotIndex, p_itemLink)
     if (p_bagId == nil or  p_slotIndex == nil) and p_itemLink == nil then return nil end
+    --[[
     local specialItems = FCOIS.specialItems
     p_itemLink = p_itemLink or gil(p_bagId, p_slotIndex)
     --local itemId = giid(p_bagId, p_slotIndex)
@@ -2798,6 +2870,7 @@ function FCOIS.CheckIfIsSpecialItem(p_bagId, p_slotIndex, p_itemLink)
     if specialItems[itemId] then
         return true
     end
+    ]]
     return false
 end
 
@@ -2846,11 +2919,11 @@ function FCOIS.CheckIfCraftedItemShouldBeMarked(craftSkill, overwrite)
     local craftingCreatePanel = FCOIS.craftingCreatePanelControlsOrFunction[craftSkill]
     local craftingCreatePanelResult = false
     if craftingCreatePanel == nil then return false end
-    if type(craftingCreatePanel) == "function" then
+    if type(craftingCreatePanel) == funcType then
         --Function
         craftingCreatePanelResult = craftingCreatePanel()
         --d(">function: " ..tos(craftingCreatePanelResult))
-    elseif type(craftingCreatePanel) == "boolean" then
+    elseif type(craftingCreatePanel) == booleanType then
         --Function result value
         craftingCreatePanelResult = craftingCreatePanel
         --d(">boolean: " ..tos(craftingCreatePanelResult))
@@ -3181,31 +3254,33 @@ end
 
 --Is the companion inventory control shown
 function FCOIS.IsCompanionInventoryShown()
-    if libFilters.IsCompanionInventoryShown then
+    --if libFilters.IsCompanionInventoryShown then
         return libFilters:IsCompanionInventoryShown()
-    end
-    return not ctrlVars.COMPANION_INV_CONTROL:IsHidden()
+    --end
+    --return not ctrlVars.COMPANION_INV_CONTROL:IsHidden()
 end
 isCompanionInventoryShown = FCOIS.IsCompanionInventoryShown
 
 --Is the character control shown
 function FCOIS.IsCharacterShown()
-    if libFilters.IsCharacterShown then
+    --if libFilters.IsCharacterShown then
         return libFilters:IsCharacterShown()
-    end
-    return not ctrlVars.CHARACTER:IsHidden()
+    --end
+    --return not ctrlVars.CHARACTER:IsHidden()
 end
 local isCharacterShown = FCOIS.IsCharacterShown
 
 --Is the companion character control shown
 function FCOIS.IsCompanionCharacterShown()
     local isCompanionCharShown = false
-    if libFilters.IsCompanionCharacterShown then
+    --if libFilters.IsCompanionCharacterShown then
         isCompanionCharShown = libFilters:IsCompanionCharacterShown()
-    end
+    --end
+    --[[
     if not isCompanionCharShown then
         return not ctrlVars.COMPANION_CHARACTER:IsHidden()
     end
+    ]]
     return isCompanionCharShown
 end
 local isCompanionCharacterShown = FCOIS.IsCompanionCharacterShown
@@ -3213,18 +3288,19 @@ local isCompanionCharacterShown = FCOIS.IsCompanionCharacterShown
 
 --Is the retrait station shown?
 function FCOIS.IsRetraitStationShown()
-    if libFilters.IsRetraitStationShown then
+    --if libFilters.IsRetraitStationShown then
         return libFilters:IsRetraitStationShown()
-    end
-    return ZO_RETRAIT_STATION_MANAGER:IsRetraitSceneShowing()
+    --end
+    --return ZO_RETRAIT_STATION_MANAGER:IsRetraitSceneShowing()
 end
 
 --Check if the Enchanting panel is shown
 function FCOIS.IsEnchantingPanelShown(enchantingMode)
     --d("[FCOIS]IsEnchantingPanelShown - enchantingMode: " ..tos(enchantingMode))
-    if libFilters.IsEnchantingShown then
+    --if libFilters.IsEnchantingShown then
         return libFilters:IsEnchantingShown(enchantingMode)
-    end
+    --end
+    --[[
     if enchantingMode == ENCHANTING_MODE_NONE or (enchantingMode ~= ENCHANTING_MODE_CREATION and enchantingMode ~= ENCHANTING_MODE_EXTRACTION and enchantingMode ~= ENCHANTING_MODE_RECIPES) then return false end
     local retVar = false
     if ctrlVars.ENCHANTING_STATION ~= nil and not ctrlVars.ENCHANTING_STATION:IsHidden() then
@@ -3233,14 +3309,16 @@ function FCOIS.IsEnchantingPanelShown(enchantingMode)
         end
     end
     return retVar
+    ]]
 end
 
 --Check if the Enchanting glyph creation panel is shown
 function FCOIS.IsEnchantingPanelCreationShown()
     --d("[FCOIS]IsEnchantingPanelShown")
-    if libFilters.IsEnchantingShown then
+    --if libFilters.IsEnchantingShown then
         return libFilters:IsEnchantingShown(ENCHANTING_MODE_CREATION)
-    end
+    --end
+    --[[
     local retVar = false
     if ctrlVars.ENCHANTING_STATION ~= nil and not ctrlVars.ENCHANTING_STATION:IsHidden() then
         if ctrlVars.ENCHANTING.GetEnchantingMode ~= nil then
@@ -3250,14 +3328,16 @@ function FCOIS.IsEnchantingPanelCreationShown()
     end
     --d("<result: " .. tos(retVar))
     return retVar
+    ]]
 end
 
 --Check if the Alchemy creation panel is shown
 function FCOIS.IsAlchemyPanelCreationShown()
     --d("[FCOIS]IsAlchemyPanelCreationShown")
-    if libFilters.IsAlchemyShown then
+    --if libFilters.IsAlchemyShown then
         return libFilters:IsAlchemyShown(ZO_ALCHEMY_MODE_CREATION)
-    end
+    --end
+    --[[
     local retVar = false
     if ctrlVars.ALCHEMY_INV ~= nil and not ctrlVars.ALCHEMY_INV:IsHidden() then
         if ctrlVars.ALCHEMY.mode ~= nil then
@@ -3267,25 +3347,35 @@ function FCOIS.IsAlchemyPanelCreationShown()
     end
     --d("<result: " .. tos(retVar))
     return retVar
+    ]]
 end
 
 --Check if any of the vendor panels (buy, sell, buyback, repair) are shown
 function FCOIS.IsVendorPanelShown(vendorPanelId, overwrite)
     overwrite = overwrite or false
     isVendorPanelShown = isVendorPanelShown or FCOIS.IsVendorPanelShown
---d("FCOIS.IsVendorPanelShown, vendorPanelId: " .. tos(vendorPanelId) .. ", overwrite: " .. tos(overwrite))
+    --d("FCOIS.IsVendorPanelShown, vendorPanelId: " .. tos(vendorPanelId) .. ", overwrite: " .. tos(overwrite))
     if overwrite then return true end
+    local storeMode
+
+    local isVendorPanelChecked = false
+    if vendorPanelId ~= nil then
+        isVendorPanelChecked = mappingVars.supportedVendorPanels[vendorPanelId] or false
+        if not isVendorPanelChecked then return false end
+
+        storeMode = mappingVars.vendorPanelId2StoreMode[vendorPanelId]
+        if storeMode == nil then return false end
+    end
+
+    return libFilters:IsStoreShown(storeMode)
+    --[[
     --Check the scene name if it is the "vendor" scene
     local currentSceneName = SCENE_MANAGER.currentScene.name
     if currentSceneName == nil or currentSceneName ~= ctrlVars.vendorSceneName then
 --d("<1, sceneName: " ..tos(currentSceneName))
-        return false end
-    local vendorLibFilterIds = FCOIS.mappingVars.supportedVendorPanels
-    local isVendorPanelChecked = false
-    if vendorPanelId ~= nil then
-        isVendorPanelChecked = vendorLibFilterIds[vendorPanelId] or false
-        if not isVendorPanelChecked then return false end
+        return false
     end
+
     local retVar = false
     if vendorPanelId ~= nil then
         --Vendor Buy
@@ -3309,6 +3399,7 @@ function FCOIS.IsVendorPanelShown(vendorPanelId, overwrite)
     end
 --d("<retVar: " ..tos(retVar))
     return retVar
+    ]]
 end
 isVendorPanelShown = FCOIS.IsVendorPanelShown
 
@@ -3529,7 +3620,7 @@ end
 --Function to rebuild the gear set values (icons, ids, names, context menu values, dynamicGear, nonDynamicGear, etc.)
 --Called at event_player_activated and if some gear settings change in the settings menu (dynamic marker icons -> enabled as gear e.g.)
 function FCOIS.RebuildGearSetBaseVars(iconNr, value, calledFromEventPlayerActivated)
---d("FCOIS]rebuildGearSetBaseVars-calledFromEventPlayerActivated: " ..tos(calledFromEventPlayerActivated))
+    --d("FCOIS]rebuildGearSetBaseVars-calledFromEventPlayerActivated: " ..tos(calledFromEventPlayerActivated))
     calledFromEventPlayerActivated = calledFromEventPlayerActivated or false
     local numVars = FCOIS.numVars
     local settings = FCOIS.settingsVars.settings
@@ -3541,21 +3632,21 @@ function FCOIS.RebuildGearSetBaseVars(iconNr, value, calledFromEventPlayerActiva
     local changeContextMenuEntryTexts = FCOIS.ChangeContextMenuEntryTexts
     local rebuildFilterButtonContextMenuVars = FCOIS.RebuildFilterButtonContextMenuVars
 
-------------------------------------------------------------------------------------------------------------------------
---Update all entries
-------------------------------------------------------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------------------------------------------
+    --Update all entries
+    ------------------------------------------------------------------------------------------------------------------------
     if iconNr == nil and value == nil then
         local gearCounter = 0
 
         --Reset the active gear sets
         FCOIS.numVars.gFCONumGearSets = 0
         --loop over all icons which are marked as gear, or are one of the 5 static gear icons
---d("[FCOIS]rebuildGearSetBaseVars - all icons")
+        --d("[FCOIS]rebuildGearSetBaseVars - all icons")
         for iconNrLoop, isGear in pairs(iconIsGear) do
             --Maximum gear set number
             --Get the current max and increase/decrease it, depending on the value
             local currentMaxGearSets = numVars.gFCONumGearSets
---d(">iconNrLoop: " ..tos(iconNrLoop) .. ", isGear: " ..tos(isGear) .. ", currentMaxGearSets: " .. tos(currentMaxGearSets))
+            --d(">iconNrLoop: " ..tos(iconNrLoop) .. ", isGear: " ..tos(isGear) .. ", currentMaxGearSets: " .. tos(currentMaxGearSets))
             ------------------------------------------------------------------------------------------------------------------------
             --Icon is marked as gear
             ------------------------------------------------------------------------------------------------------------------------
@@ -3569,10 +3660,10 @@ function FCOIS.RebuildGearSetBaseVars(iconNr, value, calledFromEventPlayerActiva
                 FCOIS.mappingVars.gearToIcon[gearCounter] = iconNrLoop
                 --Increase the maximum gear sets
                 currentMaxGearSets = currentMaxGearSets + 1
---d(">>is gear! gearCounter: " .. tos(gearCounter) .. ", newMaxGearSets: " ..tos(currentMaxGearSets))
-            ------------------------------------------------------------------------------------------------------------------------
-            --Icon is not marked as gear
-            ------------------------------------------------------------------------------------------------------------------------
+                --d(">>is gear! gearCounter: " .. tos(gearCounter) .. ", newMaxGearSets: " ..tos(currentMaxGearSets))
+                ------------------------------------------------------------------------------------------------------------------------
+                --Icon is not marked as gear
+                ------------------------------------------------------------------------------------------------------------------------
             else
                 --Reset the icon to filter mapping to the default value
                 local icon2filterDef = FCOIS.mappingVars.iconToFilterDefaults
@@ -3582,14 +3673,14 @@ function FCOIS.RebuildGearSetBaseVars(iconNr, value, calledFromEventPlayerActiva
                 if FCOIS.mappingVars.iconToGear[iconNrLoop] ~= nil then
                     gearNr = FCOIS.mappingVars.iconToGear[iconNrLoop]
                     FCOIS.mappingVars.iconToGear[iconNrLoop] = nil -- as the table got no consistent digit key table.remove does not work
-					--trem(FCOIS.mappingVars.iconToGear, iconNrLoop) -- to retain table indices
+                    --trem(FCOIS.mappingVars.iconToGear, iconNrLoop) -- to retain table indices
                 end
                 --Reset the mapping of gear number to icon
                 if gearNr ~= nil and gearNr > 0 and FCOIS.mappingVars.gearToIcon[gearNr] ~= nil then
                     --FCOIS.mappingVars.gearToIcon[gearNr] = nil
-					trem(FCOIS.mappingVars.gearToIcon, gearNr) -- to retain table indices
+                    trem(FCOIS.mappingVars.gearToIcon, gearNr) -- to retain table indices
                 end
---d(">>NOT a gear! gearNr: " .. tos(gearNr) .. ", newMaxGearSets: " ..tos(currentMaxGearSets))
+                --d(">>NOT a gear! gearNr: " .. tos(gearNr) .. ", newMaxGearSets: " ..tos(currentMaxGearSets))
             end
             --Set the new current gear sets number
             FCOIS.numVars.gFCONumGearSets = currentMaxGearSets
@@ -3608,33 +3699,34 @@ function FCOIS.RebuildGearSetBaseVars(iconNr, value, calledFromEventPlayerActiva
         --Rebuild the context menu variables for the dynamic and gear icons
         rebuildFilterButtonContextMenuVars()
 
-------------------------------------------------------------------------------------------------------------------------
---Update only one entry
-------------------------------------------------------------------------------------------------------------------------
+
+        ------------------------------------------------------------------------------------------------------------------------
+        --Update only one entry
+        ------------------------------------------------------------------------------------------------------------------------
     else
---d("[FCOIS]rebuildGearSetBaseVars - single icon: "..tos(iconNr) .." and value: " ..tos(value))
+        --d("[FCOIS]rebuildGearSetBaseVars - single icon: "..tos(iconNr) .." and value: " ..tos(value))
         ------------------------------------------------------------------------------------------------------------------------
         --Single icon is marked as gear
         ------------------------------------------------------------------------------------------------------------------------
-        if value then
+        if value == true then
             local gearCounter = 0
             for _, isGear in pairs(iconIsGear) do
                 if isGear then
                     gearCounter = gearCounter + 1
                 end
             end
---d(">gearCounter: " ..tos(gearCounter))
+            --d(">gearCounter: " ..tos(gearCounter))
             --The mapping of icon to filter button number
             FCOIS.mappingVars.iconToFilter[iconNr] = FCOIS_CON_FILTER_BUTTON_GEARSETS
             --The mapping of icon to gear number
             FCOIS.mappingVars.iconToGear[iconNr] = gearCounter
             --The mapping of gear number to icon
             FCOIS.mappingVars.gearToIcon[gearCounter] = iconNr
-        ------------------------------------------------------------------------------------------------------------------------
-        --Single icon is not marked as gear
-        ------------------------------------------------------------------------------------------------------------------------
+            ------------------------------------------------------------------------------------------------------------------------
+            --Single icon is not marked as gear
+            ------------------------------------------------------------------------------------------------------------------------
         else
-            --Reset the icon to filter mapping to the default value
+            --Reset the "icon to filter button" mapping to the default value
             local icon2filterDef = FCOIS.mappingVars.iconToFilterDefaults
             FCOIS.mappingVars.iconToFilter[iconNr] = icon2filterDef[iconNr]
             --Reset the mapping of icon to gear number
@@ -3642,19 +3734,19 @@ function FCOIS.RebuildGearSetBaseVars(iconNr, value, calledFromEventPlayerActiva
             if FCOIS.mappingVars.iconToGear[iconNr] ~= nil then
                 gearNr = FCOIS.mappingVars.iconToGear[iconNr]
                 FCOIS.mappingVars.iconToGear[iconNr] = nil -- as the table got no consistent digit key table.remove does not work
-				--trem(FCOIS.mappingVars.iconToGear, iconNr) -- to retain table indices
+                --trem(FCOIS.mappingVars.iconToGear, iconNr) -- to retain table indices
             end
             --Reset the mapping of gear number to icon
             if gearNr ~= nil and gearNr > 0 and FCOIS.mappingVars.gearToIcon[gearNr] ~= nil then
                 --FCOIS.mappingVars.gearToIcon[gearNr] = nil
-				trem(FCOIS.mappingVars.gearToIcon, gearNr) -- to retain table indices
+                trem(FCOIS.mappingVars.gearToIcon, gearNr) -- to retain table indices
             end
         end
 
         --Maximum gear set number
         --Get the current max and increase/decrease it, depending on the value
         local currentMaxGearSets = numVars.gFCONumGearSets
---d(">currentMaxGearSets: " ..tos(currentMaxGearSets))
+        --d(">currentMaxGearSets: " ..tos(currentMaxGearSets))
         if value then
             currentMaxGearSets = currentMaxGearSets + 1
         else
@@ -3662,7 +3754,7 @@ function FCOIS.RebuildGearSetBaseVars(iconNr, value, calledFromEventPlayerActiva
         end
         --Set the new current gear sets number
         FCOIS.numVars.gFCONumGearSets = currentMaxGearSets
---d(">newMaxGearSets: " ..tos(FCOIS.numVars.gFCONumGearSets))
+        --d(">newMaxGearSets: " ..tos(FCOIS.numVars.gFCONumGearSets))
 
         --Update the context menu texts for this icon
         changeContextMenuEntryTexts(iconNr)
@@ -3777,7 +3869,7 @@ function FCOIS.GetCharacterName(characterId, characterTable)
     else
         --Check if the characterTable got the uniqueId or the name as key
         for key, _ in pairs(characterTable) do
-            if type(key) == "String" then
+            if type(key) == stringType then
                 keyIsName = true
                 break -- end the for loop
             end

@@ -16,11 +16,24 @@ local zosgdtt = ZO_ScrollList_GetDataTypeTable
 
 local strfind = string.find
 
+local FCOIS_CON_MARKER_TEXTURE_PANELS_ALL         = FCOIS_CON_MARKER_TEXTURE_PANELS_ALL
+local FCOIS_CON_MARKER_TEXTURE_PANEL_INVENTORY    = FCOIS_CON_MARKER_TEXTURE_PANEL_INVENTORY
+local FCOIS_CON_MARKER_TEXTURE_PANEL_REPAIR_LIST  = FCOIS_CON_MARKER_TEXTURE_PANEL_REPAIR_LIST
+local FCOIS_CON_MARKER_TEXTURE_PANEL_CHARACTER    = FCOIS_CON_MARKER_TEXTURE_PANEL_CHARACTER
+local FCOIS_CON_MARKER_TEXTURE_PANEL_QUICKSLOTS   = FCOIS_CON_MARKER_TEXTURE_PANEL_QUICKSLOTS
+local FCOIS_CON_MARKER_TEXTURE_PANEL_TRANSMUTATION= FCOIS_CON_MARKER_TEXTURE_PANEL_TRANSMUTATION
+local FCOIS_CON_MARKER_TEXTURE_COMPANION_INVENTORY= FCOIS_CON_MARKER_TEXTURE_COMPANION_INVENTORY
+local FCOIS_CON_LF_CHARACTER = FCOIS_CON_LF_CHARACTER
+local FCOIS_CON_LF_COMPANION_CHARACTER = FCOIS_CON_LF_COMPANION_CHARACTER
+
 local addonVars = FCOIS.addonVars
 local numFilterIcons = FCOIS.numVars.gFCONumFilterIcons
 local ctrlVars = FCOIS.ZOControlVars
 local mappingVars = FCOIS.mappingVars
 local otherAddons = FCOIS.otherAddons
+
+
+local filterPanelIdToIconOffset
 
 local checkIfItemIsProtected = FCOIS.CheckIfItemIsProtected
 local myGetItemDetails = FCOIS.MyGetItemDetails
@@ -35,6 +48,7 @@ local isItemAlreadyBound = FCOIS.IsItemAlreadyBound
 local getItemSaverControl = FCOIS.GetItemSaverControl
 local createToolTip = FCOIS.CreateToolTip
 local isModifierKeyPressed = FCOIS.IsModifierKeyPressed
+local getInventoryTypeByFilterPanel = FCOIS.GetInventoryTypeByFilterPanel
 
 local clearOrRestoreAllMarkers
 local refreshEquipmentControl
@@ -61,8 +75,14 @@ local checkAndGetIIfAData
 local icdt = ICDT
 local checkIfItemCooldownTrackerRelevantItemIdAndMarkItem = FCOIS.CheckIfItemCooldownTrackerRelevantItemIdAndMarkItem
 
+--InventoryGridView
+local InventoryGridViewActivated
+--GriList
+local GridListActivated = GridList ~= nil
+
+
 --LibSets --#301
-local libSets = FCOIS.libSets
+--local libSets = FCOIS.libSets
 --local applyLibSetsSetSearchFavoriteCategoryMarker = FCOIS.ApplyLibSetsSetSearchFavoriteCategoryMarker --#301
 
 
@@ -128,7 +148,6 @@ local function updateOtherAddonsInventoryMarkers(parent, bagId, slotIndex)
         if bagId == nil or slotIndex == nil then
             bagId, slotIndex = myGetItemDetails(parent)
         end
-        if bagId == nil or slotIndex == nil then return end
         checkIfItemCooldownTrackerRelevantItemIdAndMarkItem(bagId, slotIndex, nil)
     end
 end
@@ -258,6 +277,51 @@ end
 --Will also add/show/hide the small "is the set item already bound" icon at the top-right edge of the item's image (children "Button" of parent)
 -->Only adds the texture if it does not already exist and if the marker icon is enabled!
 --->If pCreateControlIfNotThere == false: If a texture control is enabled and should be shown it will be created either way, else it would make no sense!
+
+--Cache for the last parent control, as we are calling this function for the same parent n times (once per markerIconId)
+local lastParentData = {
+    parent = nil,
+    owningWindow = nil,
+
+}
+local function updateParentData(parent, lastParentDataPassedIn)
+    local settings = FCOIS.settingsVars.settings
+
+    --Gridlist and other addons
+    local gridListSettings = settings.markerIconOffset["GridList"]
+    local scale = gridListSettings.scale
+    if scale <= 0 then settings.markerIconOffset["GridList"].scale = 1 end
+    if scale > 100 then settings.markerIconOffset["GridList"].scale = 100 end
+    scale = gridListSettings.scale
+
+    --Get the currently active filter panel ID and map the appropriate inventory for the icon X axis offset
+    filterPanelIdToIconOffset = filterPanelIdToIconOffset or mappingVars.filterPanelIdToIconOffset
+    local iconOffset = filterPanelIdToIconOffset[FCOIS.gFilterWhere] or settings.iconPosition
+
+    --Build the cached parentData
+    local parentData
+    --Take passed in lastParentData as base?
+    if lastParentDataPassedIn ~= nil then
+        parentData = lastParentDataPassedIn
+    else
+        parentData = {
+            owningWindow = parent:GetOwningWindow(),
+            itemInstanceId = myGetItemInstanceId(parent),
+            hideSellPrice = parent:GetWidth() - parent:GetHeight() < 5,
+            sellPriceChild = parent:GetNamedChild("SellPrice"),
+            gridListOffSetLeft = gridListSettings.x,
+            gridListOffSetTop = gridListSettings.y,
+            gridListScale = scale,
+            iconOffset = iconOffset,
+        }
+    end
+
+    --Update any missing parentData that maybe empty due to the different markerIconIds etc.
+    parentData.itemInstanceId = parentData.itemInstanceId or myGetItemInstanceId(parent) --maybe empty (check per markerIconId)
+
+    return parentData
+end
+
 function FCOIS.CreateMarkerControl(parent, markerIconId, pWidth, pHeight, pTexture, pIsEquipmentSlot, pCreateControlIfNotThere, pUpdateAllEquipmentTooltips, pArmorTypeIcon, pHideControl, pUnequipped, pDrawLevel, pIsIconEnabled)
 --d("[FCOIS]CreateMarkerControl: " .. tos(parent:GetName()) .. ", markerIconId: " ..tos(markerIconId) .. ", pHideControl: " ..tos(pHideControl) ..", pUnequipped: " ..tos(pUnequipped))
     --No parent? Abort here
@@ -265,25 +329,39 @@ function FCOIS.CreateMarkerControl(parent, markerIconId, pWidth, pHeight, pTextu
     pArmorTypeIcon = pArmorTypeIcon or false
     pHideControl = pHideControl or false
 
-    local InventoryGridViewActivated = (otherAddons.inventoryGridViewActive or InventoryGridView ~= nil) or false
-    local GridListActivated          = GridList ~= nil
+    InventoryGridViewActivated = InventoryGridViewActivated or ((otherAddons.inventoryGridViewActive or InventoryGridView ~= nil) or false) --#2025_999
+    GridListActivated          = GridListActivated or (GridList ~= nil) --#2025_999
 
     --Preset the variable for control creation with false, if it is not given
     pCreateControlIfNotThere	= pCreateControlIfNotThere or false
     pUpdateAllEquipmentTooltips	= pUpdateAllEquipmentTooltips or false
 
+    local settings
+
+    --Use cached lastParent data? --#2025_999
+    local parentData
+    if lastParentData.parent == parent then
+        parentData = updateParentData(parent, lastParentData)
+    else
+        --Or did the parent change: Then rebuild all needed cached data (generic, non dependent on the markerIconId)
+        parentData = updateParentData(parent, nil)
+
+        --Reference the lastParentData to the current parentData -> For next markerIconId
+        lastParentData = parentData
+    end
+
     --Is the parent's owner control not the quickslot circle?
-    if parent:GetOwningWindow() ~= ctrlVars.QUICKSLOT_CIRCLE then
+    if parentData.owningWindow ~= ctrlVars.QUICKSLOT_CIRCLE then
         if pIsEquipmentSlot == nil then pIsEquipmentSlot = false end
 
-        local settings = FCOIS.settingsVars.settings
+        settings = settings or FCOIS.settingsVars.settings
         if pIsIconEnabled == nil then pIsIconEnabled = settings.isIconEnabled[markerIconId] end
 
         --Hide the control explicitly or hide it because the marker icon is not enabled?
         local doHide = pHideControl == true or not pIsIconEnabled
 
-        --Does the FCOItemSaver marker control exist already?
-        local control = getItemSaverControl(parent, markerIconId, false, nil)
+        --Does the FCOItemSaver marker control exist as a child of the current parent already?
+        local control = getItemSaverControl(parent, markerIconId, false, nil, nil)
 
         --Item got unequipped? Hide all marker textures of the unequipped item
         if pIsEquipmentSlot == true and pUnequipped ~= nil and pUnequipped == true then
@@ -300,7 +378,7 @@ function FCOIS.CreateMarkerControl(parent, markerIconId, pWidth, pHeight, pTextu
                 return false
             else
                 --Marker icon is enabled: Control should be shown, so check if the current item go that marker icon applied
-                local isItemProtected = checkIfItemIsProtected(markerIconId, myGetItemInstanceId(parent))
+                local isItemProtected = checkIfItemIsProtected(markerIconId, parentData.itemInstanceId)
                 doHide = not isItemProtected
                 --d(">>checkIfItemIsProtected result: " .. tos(isItemProtected) .. ", doHide: " ..tos(doHide))
             end
@@ -308,10 +386,8 @@ function FCOIS.CreateMarkerControl(parent, markerIconId, pWidth, pHeight, pTextu
         if doHide == nil then doHide = false end
 
         --Remove the sell icon and price if Inventory Grid View or Grid List addons are active
-        if parent:GetWidth() - parent:GetHeight() < 5 then
-            if parent:GetNamedChild("SellPrice") then
-                parent:GetNamedChild("SellPrice"):SetHidden(true)
-            end
+        if parentData.hideSellPrice and parentData.sellPriceChild ~= nil then
+            parentData.sellPriceChild:SetHidden(true)
         end
 
         --It does not exist yet, or it fall-back to the parent control?
@@ -325,11 +401,12 @@ function FCOIS.CreateMarkerControl(parent, markerIconId, pWidth, pHeight, pTextu
             --If not aborted: Create the marker control now
             --#281 -v-
             -->Only do this if pCreateControlIfNotThere == true (explicitly asking to create the texture control)
-            -->or the markerIcon is actually enabled
+            -->or the markerIcon is actually enabled (and thus we need to draw the marker texture)
             -->and the marker icon is applied to the current item -> and thus shold be visually shown
             if (pCreateControlIfNotThere == true or pIsIconEnabled == true) and not doHide then
             --#281 -^-
-                control = wm:CreateControl(parent:GetName() .. gAddonName .. tos(markerIconId), parent, CT_TEXTURE)
+                local _, FCOISmarkerTextureControlName = getItemSaverControl(parent, markerIconId, false, nil, true) --#2025_999
+                control = wm:CreateControl(FCOISmarkerTextureControlName, parent, CT_TEXTURE)
             end --#281
         end
 
@@ -389,7 +466,7 @@ function FCOIS.CreateMarkerControl(parent, markerIconId, pWidth, pHeight, pTextu
                                     filterPanelId = LF_INVENTORY
                                 end
                                 if filterPanelId then
-                                    local inventoryType = FCOIS.GetInventoryTypeByFilterPanel(filterPanelId)
+                                    local inventoryType = getInventoryTypeByFilterPanel(filterPanelId)
                                     if inventoryType ~= nil then
                                         --Is the inventory type a supported GridList inventory type?
                                         local isSupportedGridListInv = GridList_IsSupportedInventory(inventoryType)
@@ -408,11 +485,9 @@ function FCOIS.CreateMarkerControl(parent, markerIconId, pWidth, pHeight, pTextu
 
                     --The grid of one the grid addons is currently enabled?
                     if gridIsEnabled == true then
-                        gridListOffSetLeft = settings.markerIconOffset["GridList"].x
-                        gridListOffSetTop = settings.markerIconOffset["GridList"].y
-                        local scale = settings.markerIconOffset["GridList"].scale
-                        if scale <= 0 then scale = 1 end
-                        if scale > 100 then scale = 100 end
+                        gridListOffSetLeft = parentData.gridListOffSetLeft
+                        gridListOffSetTop = parentData.gridListOffSetTop
+                        local scale = parentData.gridListOffSetScale
                         if pWidth > 0 and pHeight > 0 then
                             local newWidth = (pWidth / 100) * scale
                             local newHeight = (pHeight / 100) * scale
@@ -424,13 +499,11 @@ function FCOIS.CreateMarkerControl(parent, markerIconId, pWidth, pHeight, pTextu
                     else
                         --Normal icons without InventoryGridView or GridList grid
                         control:SetDimensions(pWidth, pHeight)
-                        --Get the currently active filter panel ID and map the appropriate inventory for the icon X axis offset
-                        local filterPanelIdToIconOffset = mappingVars.filterPanelIdToIconOffset
-                        local iconPosition = settings.iconPosition
-                        local iconOffset = filterPanelIdToIconOffset[FCOIS.gFilterWhere] or iconPosition
-                        --get the offsets defined at the filterPanel for each icon (and defiend at the icon itsself for the inventory row)
+
+                        --Generic iconOffsets defiend per filterPanel
+                        local iconOffset = parentData.iconOffset
+                        --Get the offsets defined at the filterPanel for each marker icon (and defined at the icon itsself, for the inventory panel's row)
                         local iconOffsetDefinedAtPanel = iconSettings.offsets[LF_INVENTORY]
-                        --Now add the iconOffset defined at each panel
                         local totalOffSetLeft = iconOffset.x + iconOffsetDefinedAtPanel.left
                         local totalOffSetTop = iconOffset.y + iconOffsetDefinedAtPanel.top
                         control:SetAnchor(LEFT, parent, LEFT, totalOffSetLeft, totalOffSetTop)
@@ -544,7 +617,7 @@ local function addMarkerIconsToControl(rowControl, pDoCreateMarkerControl, pIsEq
         end
 
         --d(">createMarkerIcon at pos #" ..tos(idx) .. ": " ..tos(markerIconId) .. " - " .. tos(iconSettingsOfMarkerIcon.name))
-        --createMarkerControl(parent, markerIconId, pWidth, pHeight, pTexture, pIsEquipmentSlot, pCreateControlIfNotThere, pUpdateAllEquipmentTooltips, pArmorTypeIcon, pHideControl, pUnequipped, pDrawLevel)
+        --createMarkerControl(parent, markerIconId, pWidth, pHeight, pTexture, pIsEquipmentSlot, pCreateControlIfNotThere, pUpdateAllEquipmentTooltips, pArmorTypeIcon, pHideControl, pUnequipped, pDrawLevel, pIsIconEnabled)
         createMarkerControl(rowControl, markerIconId, iconWidth, iconHeight, markerTextureVars[iconSettingsOfMarkerIcon.texture], pIsEquipmentSlot, pDoCreateMarkerControl, pUpdateAllEquipmentTooltips, pArmorTypeIcon, pHideControl, pUnequipped, drawLevel, isIconEnabled[markerIconId])
     end
 end
@@ -604,7 +677,6 @@ local function addMarkerIconsToZOListViewNow(rowControl, slot, doCreateMarkerCon
     end
 end
 
-
 --Create the textures inside inventories etc.
 --The inventories of the crafting tables are build inside function /src/FCOIS_Hook.lua
 --> See function OnScrollListRowSetupCallback(rowControl, data)
@@ -637,6 +709,7 @@ function FCOIS.CreateTextures(whichTextures)
                 SecurePostHook(zosgdtt(listView, 1), "setupCallback",
                         function(rowControl, slot)
                             --hookedFunctions(rowControl, slot)
+                            --addMarkerIconsToZOListViewNow(rowControl, slot, doCreateMarkerControl, libFiltersFilterTypeToUse, updateAlreadyBound, updateOtherAddonsInvMarkers)
                             addMarkerIconsToZOListViewNow(rowControl, slot, doCreateMarkerControl, nil, true, true)
                             onScrollListRowSetupCallback(rowControl, nil, true)
 

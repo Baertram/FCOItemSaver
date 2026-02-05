@@ -12,6 +12,24 @@ local em = EVENT_MANAGER
 
 local playerStr = "player"
 
+local FCOIS_CON_MARKER_TEXTURE_PANELS_ALL   = FCOIS_CON_MARKER_TEXTURE_PANELS_ALL
+local FCOIS_CON_FILTER_BUTTONS_ALL          = FCOIS_CON_FILTER_BUTTONS_ALL
+local FCOIS_CON_FILTER_BUTTON_STATE_INIT    = FCOIS_CON_FILTER_BUTTON_STATE_INIT
+
+local LF_INVENTORY = LF_INVENTORY
+local LF_BANK_WITHDRAW = LF_BANK_WITHDRAW
+local LF_GUILDBANK_WITHDRAW = LF_GUILDBANK_WITHDRAW
+local LF_VENDOR_BUY = LF_VENDOR_BUY
+local LF_VENDOR_SELL = LF_VENDOR_SELL
+local LF_VENDOR_BUYBACK = LF_VENDOR_BUYBACK
+local LF_VENDOR_REPAIR = LF_VENDOR_REPAIR
+local LF_GUILDSTORE_SELL = LF_GUILDSTORE_SELL
+local LF_TRADE = LF_TRADE
+local LF_ALCHEMY_CREATION = LF_ALCHEMY_CREATION
+local LF_RETRAIT = LF_RETRAIT
+local LF_HOUSE_BANK_WITHDRAW = LF_HOUSE_BANK_WITHDRAW
+local LF_FURNITURE_VAULT_WITHDRAW = LF_FURNITURE_VAULT_WITHDRAW
+
 local addonVars = FCOIS.addonVars
 local gAddonName = addonVars.gAddonName
 local ctrlVars = FCOIS.ZOControlVars
@@ -74,6 +92,81 @@ end
 --Event upon opening of a vendor store
 local vendorCheckFuncInitialized = false
 local checkCurrentVendorTypeAndGetLibFiltersPanelId
+local vendorBuyButton
+local vendorBuyButtonName
+local vendorSellButton
+local vendorSellButtonName
+local vendorBuyBackButton
+local vendorBuyBackButtonName
+local vendorRepairButton
+local vendorRepairButtonName
+
+local vendorMenuButtonSetups = {}
+
+local function checkCurrentVendorTypeAndGetLibFiltersPanelId(currentVendorMenuBarButtonToCheck)
+    --d("[FCOIS]checkCurrentVendorTypeAndGetLibFiltersPanelId: " .. tos(currentVendorMenuBarbuttonToCheck:GetName()))
+    if currentVendorMenuBarButtonToCheck == nil then return end
+    local libFiltersFilterPanelId
+    --Get the current vendor type and count of menu buttons
+    local currentVendorType, vendorTypeButtonCount = getCurrentVendorType(true)
+    if currentVendorType ~= nil and currentVendorType ~= "" and vendorTypeButtonCount ~= nil then
+        libFiltersFilterPanelId = vendorMenuButtonSetups[vendorTypeButtonCount][currentVendorMenuBarButtonToCheck]
+
+        --[[
+        if vendorTypeButtonCount == 2 then
+            --The vendor type is e.g. Nuzhimeh with only sell and buyback menu buttons
+            if currentVendorMenuBarButtonToCheck == vendorBuyButton then
+                libFiltersFilterPanelId = LF_VENDOR_SELL
+            elseif currentVendorMenuBarButtonToCheck == vendorSellButton then
+                libFiltersFilterPanelId = LF_VENDOR_BUYBACK
+            end
+        elseif vendorTypeButtonCount == 3 then
+            --The vendor type is e.g. ??? with only buy, sell and buyback menu buttons, but no repair button.
+            if currentVendorMenuBarButtonToCheck == vendorBuyButton then
+                libFiltersFilterPanelId = LF_VENDOR_BUY
+            elseif currentVendorMenuBarButtonToCheck == vendorSellButton then
+                libFiltersFilterPanelId = LF_VENDOR_SELL
+            elseif currentVendorMenuBarButtonToCheck == vendorBuyBackButton then
+                libFiltersFilterPanelId = LF_VENDOR_BUYBACK
+            end
+
+        elseif vendorTypeButtonCount == 4 then
+            --The vendor type is e.g. Normal NPC with buy, sell, buyback and repair menu buttons.
+            if currentVendorMenuBarButtonToCheck == vendorBuyButton then
+                libFiltersFilterPanelId = LF_VENDOR_BUY
+            elseif currentVendorMenuBarButtonToCheck == vendorSellButton then
+                libFiltersFilterPanelId = LF_VENDOR_SELL
+            elseif currentVendorMenuBarButtonToCheck == vendorBuyBackButton then
+                libFiltersFilterPanelId = LF_VENDOR_BUYBACK
+            elseif currentVendorMenuBarButtonToCheck == vendorRepairButton then
+                libFiltersFilterPanelId = LF_VENDOR_REPAIR
+            end
+        end
+        ]]
+    end
+    --d("<libFiltersFilterPanelId: " ..tos(libFiltersFilterPanelId))
+    return libFiltersFilterPanelId
+end
+
+local function updateVendorPanelByButtonControl(buttonControl, mouseButton, upInside)
+    if (mouseButton == MOUSE_BUTTON_INDEX_LEFT and upInside and FCOIS.lastVars.gLastVendorButton~=buttonControl) then
+        FCOIS.lastVars.gLastVendorButton = buttonControl
+        local fromPanelId = FCOIS.gFilterWhere
+        fromPanelId = fromPanelId or LF_INVENTORY
+        local toPanelId = checkCurrentVendorTypeAndGetLibFiltersPanelId(buttonControl)
+--d("[FCOIS]VendorPanelButtonClick >fromPanelId: " ..tos(fromPanelId) .. ", toPanelId: " ..tos(toPanelId))
+        --Bugfix #208 Update the current filterType already to the global FCOIS variable in order to let any "refresh" of the vendor UI
+        --use the correct one already! Else the scene/fragment shown callback will raise a LibFilters refresh -> which then calls runFilters
+        --and thus the FCOIS registered filtercallback function at /src/FCOIS_Filters.lua -> function shouldItemBeShownAfterBeenFiltered
+        --which will fail with a lua error as LF_VENDOR_BUY would be stilla ctive even though we switched to LF_VENDOR_SELL already
+        if toPanelId ~= nil then
+            FCOIS.gFilterWhere = toPanelId
+        end
+        --FCOIS.gFilterWhere will be normally updated here, delayed, so that the FCOIS.CheckActivePanel function detects the UI etc. propelry!
+        zo_callLater(function() preHookMainMenuFilterButtonHandler(fromPanelId, toPanelId) end, 50)
+    end
+end
+
 local function FCOItemSaver_Open_Store(p_storeIndicator)
     FCOIS.preventerVars.gActiveFilterPanel = true
     p_storeIndicator = p_storeIndicator or "vendor"
@@ -103,79 +196,56 @@ local function FCOItemSaver_Open_Store(p_storeIndicator)
             },
         }
 
+        vendorBuyButton = vendorBuyButton or ctrlVarsVendor.VENDOR_MENUBAR_BUTTON_BUY
+        vendorBuyButtonName = vendorBuyButton and vendorBuyButton:GetName()
+        vendorSellButton = vendorSellButton or ctrlVarsVendor.VENDOR_MENUBAR_BUTTON_SELL
+        vendorSellButtonName = vendorSellButton and vendorSellButton:GetName()
+        vendorBuyBackButton = vendorBuyBackButton or ctrlVarsVendor.VENDOR_MENUBAR_BUTTON_BUYBACK
+        vendorBuyBackButtonName = vendorBuyBackButton and vendorBuyBackButton:GetName()
+        vendorRepairButton = vendorRepairButton or ctrlVarsVendor.VENDOR_MENUBAR_BUTTON_REPAIR
+        vendorRepairButtonName = vendorRepairButton and vendorRepairButton:GetName()
+        --The vendor type is e.g. Nuzhimeh with only sell and buyback menu buttons
+        vendorMenuButtonSetups[2] = vendorMenuButtonSetups[2] or {
+            [vendorBuyButton] = LF_VENDOR_SELL, --As button 1 is only named buyButton here, but it's actually the 1st menu button, the LibFilters filterPanelIds do not match the name!
+            [vendorSellButton] = LF_VENDOR_BUYBACK,
+        }
+        --The vendor type is e.g. ??? with only buy, sell and buyback menu buttons, but no repair button.
+        vendorMenuButtonSetups[3] = vendorMenuButtonSetups[3] or {
+            [vendorBuyButton] = LF_VENDOR_BUY,
+            [vendorSellButton] = LF_VENDOR_SELL,
+        }
+        if vendorBuyBackButton ~= nil then
+            vendorMenuButtonSetups[3][vendorBuyBackButton] = LF_VENDOR_BUYBACK
+        end
+        --The vendor type is e.g. Normal NPC with buy, sell, buyback and repair menu buttons.
+        vendorMenuButtonSetups[4] = vendorMenuButtonSetups[4] or {
+            [vendorBuyButton] = LF_VENDOR_BUY,
+            [vendorSellButton] = LF_VENDOR_SELL,
+        }
+        if vendorBuyBackButton ~= nil then
+            vendorMenuButtonSetups[4][vendorBuyBackButton] = LF_VENDOR_BUYBACK
+        end
+        if vendorRepairButton ~= nil then
+            vendorMenuButtonSetups[4][vendorRepairButton] = LF_VENDOR_REPAIR
+        end
+        --[[ todo LV_VENDOR_SELL_VENGEANCE support
+        --The vendor type is e.g. Normal NPC with buy, sell, vengeance sell, buyback and repair menu buttons.
+        vendorMenuButtonSetups[5] = vendorMenuButtonSetups[5] or {
+            [vendorBuyButton] = LF_VENDOR_BUY,
+            [vendorSellButton] = LF_VENDOR_SELL,
+            [vendorBuyBackButton] = LV_VENDOR_SELL_VENGEANCE,
+            [vendorRepairButton] = LF_VENDOR_BUYBACK,
+            [vendorRepairButton] = LF_VENDOR_REPAIR,
+        }
+        ]]
 
         --Check the filter buttons and create them if they are not there. Update the inventory afterwards too
         if p_storeIndicator == "vendor" then
             local preHookButtonDoneCheck = FCOIS.preventerVars.preHookButtonDone
 
-            local vendorBuyButton = ctrlVarsVendor.VENDOR_MENUBAR_BUTTON_BUY
-            local vendorBuyButtonName = vendorBuyButton and vendorBuyButton:GetName()
-            local vendorSellButton = ctrlVarsVendor.VENDOR_MENUBAR_BUTTON_SELL
-            local vendorSellButtonName = vendorSellButton and vendorSellButton:GetName()
-            local vendorBuyBackButton = ctrlVarsVendor.VENDOR_MENUBAR_BUTTON_BUYBACK
-            local vendorBuyBackButtonName = vendorBuyBackButton and vendorBuyBackButton:GetName()
-            local vendorRepairButton = ctrlVarsVendor.VENDOR_MENUBAR_BUTTON_REPAIR
-            local vendorRepairButtonName = vendorRepairButton and vendorRepairButton:GetName()
-
-            if not vendorCheckFuncInitialized then
-                function checkCurrentVendorTypeAndGetLibFiltersPanelId(currentVendorMenuBarButtonToCheck)
-                    --d("[FCOIS]checkCurrentVendorTypeAndGetLibFiltersPanelId: " .. tos(currentVendorMenuBarbuttonToCheck:GetName()))
-                    if currentVendorMenuBarButtonToCheck == nil then return end
-                    local libFiltersFilterPanelId
-                    --Get the current vendor type and count of menu buttons
-                    local currentVendorType, vendorTypeButtonCount = getCurrentVendorType(true)
-                    if currentVendorType ~= nil and currentVendorType ~= "" and vendorTypeButtonCount ~= nil then
-                        if vendorTypeButtonCount == 2 then
-                            --The vendor type is e.g. Nuzhimeh with only sell and buyback menu buttons
-                            if currentVendorMenuBarButtonToCheck == vendorBuyButton then
-                                libFiltersFilterPanelId = LF_VENDOR_SELL
-                            elseif currentVendorMenuBarButtonToCheck == vendorSellButton then
-                                libFiltersFilterPanelId = LF_VENDOR_BUYBACK
-                            end
-                        elseif vendorTypeButtonCount == 3 then
-                            --The vendor type is e.g. ??? with only buy, sell and buyback menu buttons, but no repair button.
-                            if currentVendorMenuBarButtonToCheck == vendorBuyButton then
-                                libFiltersFilterPanelId = LF_VENDOR_BUY
-                            elseif currentVendorMenuBarButtonToCheck == vendorSellButton then
-                                libFiltersFilterPanelId = LF_VENDOR_SELL
-                            elseif currentVendorMenuBarButtonToCheck == vendorBuyBackButton then
-                                libFiltersFilterPanelId = LF_VENDOR_BUYBACK
-                            end
-
-                        elseif vendorTypeButtonCount == 4 then
-                            --The vendor type is e.g. Normal NPC with buy, sell, buyback and repair menu buttons.
-                            if currentVendorMenuBarButtonToCheck == vendorBuyButton then
-                                libFiltersFilterPanelId = LF_VENDOR_BUY
-                            elseif currentVendorMenuBarButtonToCheck == vendorSellButton then
-                                libFiltersFilterPanelId = LF_VENDOR_SELL
-                            elseif currentVendorMenuBarButtonToCheck == vendorBuyBackButton then
-                                libFiltersFilterPanelId = LF_VENDOR_BUYBACK
-                            elseif currentVendorMenuBarButtonToCheck == vendorRepairButton then
-                                libFiltersFilterPanelId = LF_VENDOR_REPAIR
-                            end
-                        end
-                    end
-                    --d("<libFiltersFilterPanelId: " ..tos(libFiltersFilterPanelId))
-                    return libFiltersFilterPanelId
-                end
-                vendorCheckFuncInitialized = true
-            end
-
             --Preset the last active vendor button as the different vendor types can have different button counts
-            --> The first will be always activated!
-            --[[
-            local currentVendorType, vendorTypeButtonCount = getCurrentVendorType(true)
-            --d("[FCOIS]FCOItemSaver_Open_Store, lastVendorButton. CurrentVendorType: " .. tos(currentVendorType) .. ", vendorTypeButtonCount: " ..tos(vendorTypeButtonCount))
-            if currentVendorType ~= nil and currentVendorType ~= "" and vendorTypeButtonCount ~= nil then
-                if vendorTypeButtonCount <= 2 then
-                    FCOIS.lastVars.gLastVendorButton = ctrlVars.VENDOR_MENUBAR_BUTTON_BUY
-                else
-                    FCOIS.lastVars.gLastVendorButton = ctrlVars.VENDOR_MENUBAR_BUTTON_BUY
-                end
-            end
-            ]]
-            FCOIS.lastVars.gLastVendorButton = ctrlVarsVendor.VENDOR_MENUBAR_BUTTON_BUY
-            local lastVars = FCOIS.lastVars
+            --> The first button will be always activated!
+            FCOIS.lastVars.gLastVendorButton = vendorBuyButton
 
             --Check the current active panel and set FCOIS.gFilterWhere
             -- doUpdateLists, panelId, overwriteFilterWhere, hideFilterButtons, isUniversalDeconNPC, universalDeconFilterPanelIdBefore
@@ -189,26 +259,6 @@ local function FCOItemSaver_Open_Store(p_storeIndicator)
             --> If a mobile vendor is used the button name 1 is the "sell" tab (and not the buy tab) and the button name 2 is the "buyback" tab and not the
             --> sell tab.
             --======== VENDOR =====================================================
-
-            local function updateVendorPanelByButtonControl(buttonControl, mouseButton, upInside)
-                    if (mouseButton == MOUSE_BUTTON_INDEX_LEFT and upInside and lastVars.gLastVendorButton~=buttonControl) then
-                        FCOIS.lastVars.gLastVendorButton = buttonControl
-                        local fromPanelId = FCOIS.gFilterWhere
-                        fromPanelId = fromPanelId or LF_INVENTORY
-                        local toPanelId = checkCurrentVendorTypeAndGetLibFiltersPanelId(buttonControl)
---d("[FCOIS]VendorPanelButtonClick >fromPanelId: " ..tos(fromPanelId) .. ", toPanelId: " ..tos(toPanelId))
-                        --Bugfix #208 Update the current filterType already to the global FCOIS variable in order to let any "refresh" of the vendor UI
-                        --use the correct one already! Else the scene/fragment shown callback will raise a LibFilters refresh -> which then calls runFilters
-                        --and thus the FCOIS registered filtercallback function at /src/FCOIS_Filters.lua -> function shouldItemBeShownAfterBeenFiltered
-                        --which will fail with a lua error as LF_VENDOR_BUY would be stilla ctive even though we switched to LF_VENDOR_SELL already
-                        if toPanelId ~= nil then
-                            FCOIS.gFilterWhere = toPanelId
-                        end
-                        --FCOIS.gFilterWhere will be normally updated here, delayed, so that the FCOIS.CheckActivePanel function detects the UI etc. propelry!
-                        zo_callLater(function() preHookMainMenuFilterButtonHandler(fromPanelId, toPanelId) end, 50)
-                    end
-            end
-
             --Pre Hook the menubar button's (buy, sell, buyback, repair) handler at the vendor
             if vendorBuyButton ~= nil and not preHookButtonDoneCheck[vendorBuyButtonName] then
                 --d("Vendor button 1 name: " .. tos(ctrlVarsVendor.VENDOR_MENUBAR_BUTTON_BUY:GetName()))
@@ -247,7 +297,7 @@ local function FCOItemSaver_Open_Store(p_storeIndicator)
             end
 
         end
-    end, 200) -- zo_callLater(function()
+    end, 200) -- delaying the vendor open panel checks by 200ms so everything is properly initialized
 end
 
 --Event upon closing of a vendor store
@@ -1211,6 +1261,23 @@ local function FCOItemSaver_Loaded(eventCode, addOnName)
 
             if FCOIS.settingsVars.settings.debug then debugMessage( "[EVENT]", "Addon startup finished!", true, FCOIS_DEBUG_DEPTH_NORMAL) end
         end --gamepad active check
+
+
+
+--======================================================================================================================
+        --[[
+        local doDebug = false --#2025_999
+        if doDebug then
+            local displayName = GetDisplayName()
+            if displayName == "@Baertram" or displayName == "@Baerkloppt" then
+                ZO_PreHook(PLAYER_INVENTORY, "UpdateList", function()
+                    d("=====================> PLAYER_INVENTORY:UpdateList called")
+                end)
+            end
+        end
+        ]]
+--======================================================================================================================
+
     else
         FCOIS.addonVars.gAddonLoaded = false
         --Libraries were not loaded properly!

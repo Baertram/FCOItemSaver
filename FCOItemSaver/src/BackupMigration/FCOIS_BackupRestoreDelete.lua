@@ -4,11 +4,15 @@ local FCOIS = FCOIS
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
 
+local FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE = FCOIS_CON_UNIQUE_ITEMID_TYPE_REALLY_UNIQUE
+local FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE = FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE
+local FCOIS_CON_ICONS_ALL               = FCOIS_CON_ICONS_ALL
+
 local ton = tonumber
 local tos = tostring
 local strformat = string.format
 
-local gil = GetItemLink 
+local gil = GetItemLink
 --local numIdTypes = FCOIS.numVars.idTypes
 
 --local debugMessage = FCOIS.debugMessage
@@ -679,7 +683,7 @@ function FCOIS.DeleteMarkerIcons(markerIconsToDeleteType, markerIconsToDeleteIco
     locVars = FCOIS.localizationVars.fcois_loc
     local uniqueItemIdTypeChoices = locVars.uniqueItemIdTypeChoices
     local savedVarsMarkedItemsNames = FCOIS.addonVars.savedVarsMarkedItemsNames
-    local allIcons = markerIconsToDeleteIcon == FCOIS_CON_ICON_ALL or false
+    local allIcons = markerIconsToDeleteIcon == FCOIS_CON_ICONS_ALL or false
     local iconStr = (allIcons == true and "All icons") or tos(markerIconsToDeleteIcon)
 
     local markerIconsToDeleteTypeTable = savedVarsMarkedItemsNames[markerIconsToDeleteType]
