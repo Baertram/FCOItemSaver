@@ -218,7 +218,7 @@ ReloadUI does not do anything, but manually mass marking via flag icon works fin
 
 
 --______________________________________
--- Current max # of bugs/features/ToDos: 326
+-- Current max # of bugs/features/ToDos: 327
 --______________________________________
 
 --Open/To work on this patch:
@@ -235,22 +235,20 @@ ReloadUI does not do anything, but manually mass marking via flag icon works fin
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2026-02-05
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2026-02-06
 ------------------------------------------------------------------------------------
 
+
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.7.7 - New version: 2.7.8) -    Updated last: 2026-02-05
+--Changelog (last version: 2.7.8 - New version: 2.7.9) -    Updated last: 2026-02-06
 -------------------------------------------------------------------------------------
 --[Fixed]
---Clear SV values which are boolean and do not really need a "false" (nil would be okay too)
---#325 Automatic set marker is applied to all items, allthough only automatic set traits should be marked
---#2025_999 Performance improvements, and usage of LibFilters-3.0 instead of own FCOIS code
+--#327 nil error if GridList was enabled (at bank e.g.)
 
 
 --[Changed]
 
 --[Added]
---#326 Added setting for automatic set item marking -> non-wished traits -> check other markers
 
 
 --[Added on request]

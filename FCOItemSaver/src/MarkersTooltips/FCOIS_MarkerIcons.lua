@@ -487,7 +487,9 @@ function FCOIS.CreateMarkerControl(parent, markerIconId, pWidth, pHeight, pTextu
                     if gridIsEnabled == true then
                         gridListOffSetLeft = parentData.gridListOffSetLeft
                         gridListOffSetTop = parentData.gridListOffSetTop
-                        local scale = parentData.gridListOffSetScale
+
+
+                        local scale = parentData.gridListScale --#372
                         if pWidth > 0 and pHeight > 0 then
                             local newWidth = (pWidth / 100) * scale
                             local newHeight = (pHeight / 100) * scale
