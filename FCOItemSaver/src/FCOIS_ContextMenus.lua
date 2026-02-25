@@ -2542,7 +2542,7 @@ local function removeSlottedProtectedItemsAndUpdateTooltips(settingsStateAfterCh
     filterBasics()
 end
 
---Function to build the additional inventory "flag" context menu entries according to the enabled marker icons and the maximum set dynamic icons
+--Function to build the additional inventory "flag" context menu entries according to the enabled marker icons, and the maximum enabled dynamic marker icons
 -->Added with FCOIS v1.5.4
 function FCOIS.BuildAdditionalInventoryFlagContextMenuData(calledFromFCOISSettings)
     calledFromFCOISSettings = calledFromFCOISSettings or false
@@ -2580,7 +2580,7 @@ function FCOIS.BuildAdditionalInventoryFlagContextMenuData(calledFromFCOISSettin
             --index is even, value = false. Else: Value = true
             entryData.mark = true
             if index % 2 == 0 then
-                --Only increase the iconIndex if the number is even, so the next icon in next loop will be increased
+                --Only increase the iconIndex if the number is even, so the next icon in next loop will be increased (each 2 icons is a pair of mark/unmark)
                 iconIndex = iconIndex + 1
                 entryData.mark = false
             end
@@ -2603,7 +2603,7 @@ function FCOIS.BuildAdditionalInventoryFlagContextMenuData(calledFromFCOISSettin
                 --entryNumber is even, value = false. Else: Value = true
                 entryData.mark = true
                 if entryNumber % 2 == 0 then
-                    --Only increase the counter if the number is even, so the next icon in next loop will be increased
+                    --Only increase the counter if the number is even, so the next dyn. icon in next loop will be increased (each 2 icons is a pair of mark/unmark)
                     dynIconCounter = dynIconCounter + 1
                     entryData.mark = false
                 end
@@ -2816,9 +2816,11 @@ local function invertAdditionalInventoryFlagProtectionAndColor(p_panelId, p_butt
     local settingsStateAfterChange = changeAntiSettingsAccordingToFilterPanel(true)
     local dummy, settingsEnabled
     if settingsStateAfterChange ~= nil then
+--d(">>setting did change")
         --Update the buttons text and get the settings state
         dummy, settingsEnabled = getContextMenuAntiSettingsTextAndState(p_panelId, false)
     else
+--d(">>ERROR: setting did NOT change")
         settingsEnabled = nil
     end
     --Change the color of the context menu invoker button now
@@ -2961,7 +2963,7 @@ local function contextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
     local isCompanionCharacter              = (panelId == FCOIS_CON_LF_COMPANION_CHARACTER) or false
 
     checkIfUniversalDeconstructionNPC       = checkIfUniversalDeconstructionNPC or FCOIS.CheckIfUniversalDeconstructionNPC -- #202
-    --local isUniversalDeconNPC               = checkIfUniversalDeconstructionNPC(panelId) -- #202 #308
+    local isUniversalDeconNPC               = checkIfUniversalDeconstructionNPC(panelId) -- #202 #308
 --d(">isUniversalDeconNPC: " ..tos(isUniversalDeconNPC))
 
     local isUNDOButton                      = (specialButtonType == "UNDO") or false
@@ -2971,6 +2973,7 @@ local function contextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
     local isTOGGLEANTISETTINGSSPECIALButton = (specialButtonType == "ANTI_SETTINGS_SPECIAL") or false
     local isMARKALLASJUNKButton             = (specialButtonType == "JUNK_CHECK_ALL") or false
     local isMARKALLASNOJUNKButton           = (specialButtonType == "UNJUNK_CHECK_ALL") or false
+--d(">isTOGGLEANTISETTINGSButton: " ..tos(isTOGGLEANTISETTINGSButton))
 
     local wasAddedToJunk = false
     local wasRemovedFromJunk = false
@@ -2997,11 +3000,11 @@ local function contextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
 
     --==================================================================================================================
     else
-        INVENTORY_TO_SEARCH, contextmenuType = getInventoryToSearch(panelId, nil)   --#308
+        INVENTORY_TO_SEARCH, contextmenuType = getInventoryToSearch(panelId, isUniversalDeconNPC)   --#308 --#328 Universal Deconstruction, additional inventory 'flag' context menu won't allow to toggle 'Anti-deconstruct' on/off
         isCompanionInventory = (contextmenuType ~= nil and contextmenuType == "COMPANION_INVENTORY" and true) or false --#308
     end
     --==================================================================================================================
---d("FCOIS]ContextMenuForAddInvButtonsOnClicked - INVENTORY_TO_SEARCH: " .. INVENTORY_TO_SEARCH:GetName() .. ", contextmenuType: " .. contextmenuType)
+--d("FCOIS]ContextMenuForAddInvButtonsOnClicked - INVENTORY_TO_SEARCH: " .. tos((INVENTORY_TO_SEARCH ~= nil and INVENTORY_TO_SEARCH.GetName ~= nil and INVENTORY_TO_SEARCH:GetName()) or INVENTORY_TO_SEARCH) .. ", contextmenuType: " .. tos(contextmenuType))
 
     --No inventory to search in given? Abort here!
     if INVENTORY_TO_SEARCH == nil then return end
@@ -3392,7 +3395,7 @@ local function contextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
         elseif isTOGGLEANTISETTINGSButton then
 
             if settings.debug then debugMessage( "[ContextMenuForAddInvButtonsOnClicked]", "Clicked "..contextmenuType.." context menu button, TOGGLE ANTI SETTINGS", true, FCOIS_DEBUG_DEPTH_NORMAL) end
---d("[ContextMenuForAddInvButtonsOnClicked]Clicked "..contextmenuType.." context menu button, TOGGLE ANTI SETTINGS")
+--d("[ContextMenuForAddInvButtonsOnClicked]Clicked "..contextmenuType.." context menu button, TOGGLE ANTI SETTINGS - panelId: " .. tos(panelId))
             invertAdditionalInventoryFlagProtectionAndColor(panelId, buttonCtrl)
 
             --==================================================================================================================
@@ -4020,13 +4023,13 @@ function FCOIS.ShowContextMenuForAddInvButtons(invAddContextMenuInvokerButton, b
         --Context menu buttons for "Toggle Anti-*" settings
         --Get the anti settings text for the current filter panel. This can be anti-destroy or anti-mail etc.
         local antiButtonText, _ = getContextMenuAntiSettingsTextAndState(panelId, true, nil)
-    --d("[FCOIS.showContextMenuForAddInvButtons]panelId: " ..tos(panelId))
+--d("[FCOIS.showContextMenuForAddInvButtons]panelId: " ..tos(panelId) .. ", antiButtonText: " .. tos(antiButtonText))
         if antiButtonText ~= nil and antiButtonText ~= "" then
-            AddCustomMenuItem(antiButtonText, function() contextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "ANTI_SETTINGS", panelId) end, MENU_ADD_OPTION_LABEL)
+            AddCustomMenuItem(antiButtonText, function() contextMenuForAddInvButtonsOnClicked(btnCtrl, nil, nil, "ANTI_SETTINGS", panelId) end, MENU_ADD_OPTION_LABEL) --#328 Universal Deconstruction, additional inventory 'flag' context menu won't allow to toggle 'Anti-deconstruct' on/off
         end
 
         --Get the special anti-*  settings text for the current filter panel, if given.
-        --This can be anti-deposit into guld bank where you got no withdraw rights e.g.
+        --This can be anti-deposit into guild bank where you got no withdraw rights e.g.
         if filterPanelGotSpecialSettingsEntryInContextMenu[panelId] ~= nil then
 --d(">special entry for flag contextMenu Anti-Settings found: " ..tos(filterPanelGotSpecialSettingsEntryInContextMenu[panelId]))
             local antiButtonSpecialText, _ = getContextMenuAntiSettingsTextAndState(panelId, true, true)

@@ -305,7 +305,7 @@ function FCOIS.GetFilterWhereBySettings(p_filterWhere, onlyAnti)
     return p_filterWhere
 end
 
---This function will change the actual ANTI-DETSROY etc. settings according to the active filter panel ID (inventory, vendor, mail, trade, bank, etc.)
+--This function will change the actual ANTI-DESTROY etc. settings according to the active filter panel ID (inventory, vendor, mail, trade, bank, etc.)
 function FCOIS.ChangeAntiSettingsAccordingToFilterPanel(suppressRemoveProtectedItemsFromSlots)
     local filterPanelId = FCOIS.gFilterWhere
     if filterPanelId == nil then return nil end

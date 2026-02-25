@@ -218,7 +218,7 @@ ReloadUI does not do anything, but manually mass marking via flag icon works fin
 
 
 --______________________________________
--- Current max # of bugs/features/ToDos: 327
+-- Current max # of bugs/features/ToDos: 328
 --______________________________________
 
 --Open/To work on this patch:
@@ -235,15 +235,15 @@ ReloadUI does not do anything, but manually mass marking via flag icon works fin
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2026-02-06
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2026-02-25
 ------------------------------------------------------------------------------------
-
+--#328 Universal Deconstruction, additional inventory 'flag' context menu won't allow to toggle 'Anti-deconstruct' on/off
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.7.8 - New version: 2.7.9) -    Updated last: 2026-02-06
+--Changelog (last version: 2.7.9 - New version: 2.8.0) -    Updated last: 2026-02-25
 -------------------------------------------------------------------------------------
 --[Fixed]
---#327 nil error if GridList was enabled (at bank e.g.)
+
 
 
 --[Changed]
