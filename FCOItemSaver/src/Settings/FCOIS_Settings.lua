@@ -311,7 +311,7 @@ function FCOIS.ChangeAntiSettingsAccordingToFilterPanel(suppressRemoveProtectedI
     if filterPanelId == nil then return nil end
     isItemProtectedAtASlotNow = isItemProtectedAtASlotNow or FCOIS.IsItemProtectedAtASlotNow
     local parentPanel = FCOIS.gFilterWhereParent
-d("[FCOIS.changeAntiSettingsAccordingToFilterPanel - FilterPanel: " .. filterPanelId .. ", FilterPanelParent: " .. tos(parentPanel))
+--d("[FCOIS.changeAntiSettingsAccordingToFilterPanel - FilterPanel: " .. filterPanelId .. ", FilterPanelParent: " .. tos(parentPanel))
 
     local currentSettings = FCOIS.settingsVars.settings
     local filterPanelIdToBlockSettingName = FCOIS.mappingVars.filterPanelIdToBlockSettingName
@@ -353,7 +353,7 @@ d("[FCOIS.changeAntiSettingsAccordingToFilterPanel - FilterPanel: " .. filterPan
     isSettingEnabled = not currentSettings[settingNameToChange]
     FCOIS.settingsVars.settings[settingNameToChange] = isSettingEnabled
     --------------------------------------------------------------------------------------------------------------------
-d(">settingNameToChange: " .. tos(settingNameToChange) .. ", isSettingEnabled: " ..tos(isSettingEnabled))
+--d(">settingNameToChange: " .. tos(settingNameToChange) .. ", isSettingEnabled: " ..tos(isSettingEnabled))
     --Check if the settings are enabled now and if any item is slotted in the deconstruction/improvement/extraction/refine/retrait slot
     --> Then remove the item from the slot again if it's protected again now
     if isSettingEnabled and not suppressRemoveProtectedItemsFromSlots then --#286

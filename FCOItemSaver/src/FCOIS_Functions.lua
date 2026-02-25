@@ -3986,7 +3986,7 @@ function FCOIS.GetInventoryToSearch(panelId, isUniversalDeconNPC) --#308
         checkIfUniversalDeconstructionNPC = checkIfUniversalDeconstructionNPC or FCOIS.CheckIfUniversalDeconstructionNPC
         isUniversalDeconNPC = checkIfUniversalDeconstructionNPC(panelId) -- #202
     end
-d("[FCOIS]GetInventoryToSearch - panelId: " ..tos(panelId) ..", isUniversalDeconNPC: " ..tos(isUniversalDeconNPC))
+--d("[FCOIS]GetInventoryToSearch - panelId: " ..tos(panelId) ..", isUniversalDeconNPC: " ..tos(isUniversalDeconNPC))
 
     if isUniversalDeconNPC == true then
         --#202 enable mass marking for the universald deconstruction NPC inventory
