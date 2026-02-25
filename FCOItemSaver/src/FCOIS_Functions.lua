@@ -2918,12 +2918,13 @@ function FCOIS.CheckIfCraftedItemShouldBeMarked(craftSkill, overwrite)
 
     local craftingCreatePanel = FCOIS.craftingCreatePanelControlsOrFunction[craftSkill]
     local craftingCreatePanelResult = false
+    local craftingCreatePanelType = type(craftingCreatePanel)
     if craftingCreatePanel == nil then return false end
-    if type(craftingCreatePanel) == funcType then
+    if craftingCreatePanelType == funcType then
         --Function
         craftingCreatePanelResult = craftingCreatePanel()
         --d(">function: " ..tos(craftingCreatePanelResult))
-    elseif type(craftingCreatePanel) == booleanType then
+    elseif craftingCreatePanelType == booleanType then
         --Function result value
         craftingCreatePanelResult = craftingCreatePanel
         --d(">boolean: " ..tos(craftingCreatePanelResult))
@@ -3985,6 +3986,7 @@ function FCOIS.GetInventoryToSearch(panelId, isUniversalDeconNPC) --#308
         checkIfUniversalDeconstructionNPC = checkIfUniversalDeconstructionNPC or FCOIS.CheckIfUniversalDeconstructionNPC
         isUniversalDeconNPC = checkIfUniversalDeconstructionNPC(panelId) -- #202
     end
+d("[FCOIS]GetInventoryToSearch - panelId: " ..tos(panelId) ..", isUniversalDeconNPC: " ..tos(isUniversalDeconNPC))
 
     if isUniversalDeconNPC == true then
         --#202 enable mass marking for the universald deconstruction NPC inventory
@@ -4046,8 +4048,8 @@ function FCOIS.GetInventoryToSearch(panelId, isUniversalDeconNPC) --#308
             end
             INVENTORY_TO_SEARCH = ctrlVars.playerInventoryInvs[inventoryType].listView
         end
-        return INVENTORY_TO_SEARCH, contextmenuType
     end
+    return INVENTORY_TO_SEARCH, contextmenuType --#328 Universal Deconstruction, additional inventory 'flag' context menu won't allow to toggle 'Anti-deconstruct' on/off
 end
 
 --Check if any item moved to a bagId should run some "auto demark" checks
