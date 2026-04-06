@@ -2712,10 +2712,11 @@ local function getContextMenuAntiSettingsColor(settingIsEnabled, override)
     if not override and not settings.colorizeFCOISAdditionalInventoriesButton then
         retCol = defaultColorWhite
     else
+        local additionalInvContextMenuFlagButtonColorsProtectionState = settings.colorizeFCOISAdditionalInventoriesButtonColor --#329
         if settingIsEnabled == true then
-            retCol = defaultColorGreen  --#2025_999
+            retCol = additionalInvContextMenuFlagButtonColorsProtectionState[true] or defaultColorGreen  --#2025_999
         elseif settingIsEnabled == false then
-            retCol = defaultColorRed  --#2025_999
+            retCol = additionalInvContextMenuFlagButtonColorsProtectionState[false] or defaultColorRed  --#2025_999
         elseif settingIsEnabled == "non_active" then
             retCol = defaultColorNotActive  --#2025_999
         end

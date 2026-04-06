@@ -218,7 +218,7 @@ ReloadUI does not do anything, but manually mass marking via flag icon works fin
 
 
 --______________________________________
--- Current max # of bugs/features/ToDos: 328
+-- Current max # of bugs/features/ToDos: 330
 --______________________________________
 
 --Open/To work on this patch:
@@ -235,12 +235,15 @@ ReloadUI does not do anything, but manually mass marking via flag icon works fin
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2026-02-25
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2026-04-06
 ------------------------------------------------------------------------------------
---#328 Universal Deconstruction, additional inventory 'flag' context menu won't allow to toggle 'Anti-deconstruct' on/off
+--#329 Add color and size settings for additional inventory flag protection enabled/disabled
+--#330 Add color settings for tooltip protection enabled/disabled text
+--#331 Fix additional inventory "flag" filter button position copying from inventory to all other filterPanels
+
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.7.9 - New version: 2.8.0) -    Updated last: 2026-02-25
+--Changelog (last version: 2.8.0 - New version: 2.8.1) -    Updated last: 2026-04-06
 -------------------------------------------------------------------------------------
 --[Fixed]
 

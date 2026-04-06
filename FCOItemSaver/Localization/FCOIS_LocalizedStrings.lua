@@ -795,12 +795,19 @@ FCOIS.localizationVars.localizationAll = {
         ["options_additional_buttons_FCOIS_additional_options"] 		= "Addit. options in inventories ("..addInvFlagIcon..")",
         ["options_additional_buttons_FCOIS_additional_options_TT"] = "Show an additional button for more options (mark all/unmark all/undo last change) in the inventories.\nThe button will be shown as a small \'flag\' ("..addInvFlagIcon..") symbol at the top-left edge of the inventories and it will show a context menu if you left click |t100.000000%:100.000000%:EsoUI/Art/Miscellaneous/icon_LMB.dds|t it.\nIf you right click |t100.000000%:100.000000%:EsoUI/Art/Miscellaneous/icon_RMB.dds|t it it will change the protective state (anti-* setting) of the currently shown panel.",
         ["options_additional_buttons_FCOIS_additional_options_colorize"] 		= "Protection state as color at "..addInvFlagIcon,
-        ["options_additional_buttons_FCOIS_additional_options_colorize_TT"]     = "Colors the additional inventory options \'flag\' ("..addInvFlagIcon..") button green/red if the protective functionality for the currently shown panel is enabled/disabled.",
+        ["options_additional_buttons_FCOIS_additional_options_colorize_TT"]     = "Colors the additional inventory options \'flag\' ("..addInvFlagIcon..") button green/red (or with your below chosen colors) if the protective functionality for the currently shown panel is enabled/disabled.",
         ["options_additional_buttons_FCOIS_additional_options_offsets"]         = "Add. inv. "..addInvFlagIcon.." button offsets",
         ["options_additional_buttons_FCOIS_additional_options_offsetx"]         = "Offset X",
         ["options_additional_buttons_FCOIS_additional_options_offsetx_TT"] = "Move the additional inventory \'flag\' ("..addInvFlagIcon..") button on the x axis. Standard value is 0.",
         ["options_additional_buttons_FCOIS_additional_options_offsety"]         = "Offset Y",
         ["options_additional_buttons_FCOIS_additional_options_offsety_TT"] = "Move the additional inventory \'flag\' ("..addInvFlagIcon..") button on the y axis. Standard value is 0.",
+
+        ["options_additional_buttons_FCOIS_additional_options_colors"]         = "Add. inv. "..addInvFlagIcon.." button colors",
+        ["options_additional_buttons_FCOIS_additional_options_color_protected"] 	= "Color - Protection ON",
+        ["options_additional_buttons_FCOIS_additional_options_color_protected_TT"]  = "Colors the additional inventory options \'flag\' ("..addInvFlagIcon..") button with this color if the protective functionality for the currently shown panel is enabled.",
+        ["options_additional_buttons_FCOIS_additional_options_color_unprotected"] 	= "Color - Protection OFF",
+        ["options_additional_buttons_FCOIS_additional_options_color_unprotected_TT"]  = "Colors the additional inventory options \'flag\' ("..addInvFlagIcon..") button with this color if the protective functionality for the currently shown panel is disabled.",
+
         ["button_FCOIS_settings_TT"]							 = "Show FCOItemSaver settings",
         --Anti equip
         ["options_header_anti_equip"]					= "Anti equip",
