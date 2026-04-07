@@ -320,7 +320,12 @@ function FCOIS.BuildDefaultSettings()
 		showFCOISMenuBarButton		= true,
 		showFCOISAdditionalInventoriesButton = true,
 		colorizeFCOISAdditionalInventoriesButton = true,
+		colorizeFCOISAdditionalInventoriesButtonColor = { --#329
+			[true] = 	{0, 1, 0, 1}, --protected GREEN
+			[false] = 	{1, 0, 0, 1}, --unprotected RED
+		},
 		FCOISAdditionalInventoriesButtonOffset = {},
+		FCOISAdditionalInventoriesButtonSize = 32, --#329
 		showFilterButtonTooltip		= true,
 		showFilterButtonContextTooltip = true,
 		showAntiMessageInChat		= true,

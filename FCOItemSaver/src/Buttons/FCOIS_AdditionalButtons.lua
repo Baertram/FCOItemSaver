@@ -20,6 +20,7 @@ local FCOISicon = addonVars.icon
 
 --Add a button to an existing parent control
 local function addButtonToParentControl(buttonData, parent, name, callbackFunction, onMouseUpCallbackFunction, onMouseUpCallbackFunctionMouseButton, text, font, tooltipText, tooltipAlign, textureNormal, textureMouseOver, textureClicked, width, height, left, top, alignMain, alignBackup, alignControl, hideButton)
+--d("[FCOIS]addButtonToParentControl - name: " ..tos(name) .. "; width: " ..tos(width) ..", height: " .. tos(height))
     --Abort needed?
     if  (parent == nil or name == nil or callbackFunction == nil
             or width <= 0 or height <= 0 or alignMain == nil or alignBackup == nil)
@@ -164,7 +165,8 @@ local function addButtonToParentControl(buttonData, parent, name, callbackFuncti
 end
 
 local defaultAddInvButtonOffsets = { left = 0, top = 0 } --#2025_999
-local function reAnchorAdditionalInvButtonNow(panelId, anchorData, addInvButtonOffsets, contMenuInvokerButton, newParent)
+local defaultAddInvButtonSize = 32 --#329
+local function reAnchorAdditionalInvButtonNow(panelId, anchorData, addInvButtonOffsets, contMenuInvokerButton, newParent, addInvButtonSize) --#320 --#329
 --d(">reAnchorAdditionalInvButtonNow - filterPanel: " ..tos(panelId) .. ", contMenuInvokerButton: " .. ((contMenuInvokerButton ~= nil and contMenuInvokerButton:GetName()) or "n/a"))
     local alignMyDefault = TOPLEFT
     local alignToDefault = TOPLEFT
@@ -172,6 +174,9 @@ local function reAnchorAdditionalInvButtonNow(panelId, anchorData, addInvButtonO
 
     if addInvButtonOffsets == nil then  --#2025_999
         addInvButtonOffsets = defaultAddInvButtonOffsets
+    end
+    if addInvButtonSize == nil then --#329
+        addInvButtonSize = defaultAddInvButtonSize
     end
 
     --Update filterPanelId
@@ -212,6 +217,7 @@ local function reAnchorAdditionalInvButtonNow(panelId, anchorData, addInvButtonO
                 local alignMy = anchorData.anchorMyPoint or alignMyDefault
                 local alignTo = anchorData.anchorToPoint or alignToDefault
                 invAddCntBtnCtrl:SetAnchor(alignMy, anchorData.anchorControl, alignTo, newX, newY)
+                invAddCntBtnCtrl:SetDimensions(addInvButtonSize, addInvButtonSize) --#329
             end
 --FCOIS._lastContextMenuInvokerButton = invAddCntBtnCtrl
         end
@@ -227,18 +233,19 @@ function FCOIS.ReAnchorAdditionalInvButtons(filterPanelId, contMenuInvokerButton
     if anchorVarsAddInvButtons then --#320
         local settings = FCOIS.settingsVars.settings --#320
         local FCOISAdditionalInventoriesButtonOffset = settings.FCOISAdditionalInventoriesButtonOffset --#320
+        local FCOISAdditionalInventoriesButtonSize = settings.FCOISAdditionalInventoriesButtonSize --#329
 
         --Loop over the anchorVars and get each panel of the additional inv buttons (e.g. LF_INVENTORY, LF_BANK_WITHDRAW, ...)
         if filterPanelId ~= nil then
             local addInvButtonOffsets = FCOISAdditionalInventoriesButtonOffset[filterPanelId] --#320
             local anchorData = newAnchorData or anchorVarsAddInvButtons[filterPanelId]
             --Update only selected filterPanelId
-            reAnchorAdditionalInvButtonNow(filterPanelId, anchorData, addInvButtonOffsets, contMenuInvokerButton, newParent)
+            reAnchorAdditionalInvButtonNow(filterPanelId, anchorData, addInvButtonOffsets, contMenuInvokerButton, newParent, FCOISAdditionalInventoriesButtonSize) --#329
         else
             for panelId, anchorData in pairs(anchorVarsAddInvButtons) do
                 anchorData = newAnchorData or anchorData --#320
                 local addInvButtonOffsets = FCOISAdditionalInventoriesButtonOffset[panelId] --#320
-                reAnchorAdditionalInvButtonNow(panelId, anchorData, addInvButtonOffsets, nil, nil) --#320 use contMenuInvokerButton, newParent here too?
+                reAnchorAdditionalInvButtonNow(panelId, anchorData, addInvButtonOffsets, nil, nil, FCOISAdditionalInventoriesButtonSize) --#320 use contMenuInvokerButton, newParent here too? --#329
             end
         end
     end
@@ -303,10 +310,16 @@ function FCOIS.AddAdditionalButtons(buttonName, buttonData)
 ------------------------------------------------------------------------------------------------------------------------
         --Add all additional inventory context menu "flag icon" buttons
         elseif buttonName == "FCOInventoriesContextMenuButtons" and buttonData == nil then
+            local currentAddInvFlagButtonHiddenState = not settings.showFCOISAdditionalInventoriesButton --#332
+            local currentAddInvFlagButtonSize = settings.FCOISAdditionalInventoriesButtonSize
+
             --Add all additional inventory flag buttons
             local addInvBtnInvokers = FCOIS.contextMenuVars.filterPanelIdToContextMenuButtonInvoker
             for _, buttonDataTab in pairs(addInvBtnInvokers) do
                 if buttonDataTab ~= nil and buttonDataTab.addInvButton and buttonDataTab.name ~= nil and buttonDataTab.name ~= "" then
+                    buttonDataTab.width = currentAddInvFlagButtonSize --#329
+                    buttonDataTab.height = currentAddInvFlagButtonSize --#329
+                    buttonDataTab.hideButton = currentAddInvFlagButtonHiddenState --#332
                     addAdditionalButtons(nil, buttonDataTab)
                 end
             end
@@ -340,13 +353,13 @@ function FCOIS.SetAllAddInvFlagButtonOffsetSettingsEqual(filterPanelIdSource)
     if addInvBtnInvokers ~= nil then
         local settings = FCOIS.settingsVars.settings
         local activeFilterPanelIds = FCOIS.mappingVars.activeFilterPanelIds
-        --Get source settings -> De-Reference them so updating the sourceettings in the future does not change the actual settings of another button too
+        --Get source settings -> De-Reference them so updating the source settings in the future does not change the actual settings of another button too
         local sourceSettingsOrig = settings.FCOISAdditionalInventoriesButtonOffset[filterPanelIdSource]
-        if sourceSettingsOrig ~= nil and sourceSettingsOrig["top"] ~= nil and sourceSettingsOrig["left"] ~= nil and sourceSettingsOrig["top"] ~= 0 and sourceSettingsOrig["left"] ~= 0 then --#2025_999
+        if sourceSettingsOrig ~= nil and sourceSettingsOrig["top"] ~= nil and sourceSettingsOrig["left"] ~= nil then --#2025_999
             local top = sourceSettingsOrig["top"]
             local left = sourceSettingsOrig["left"]
             --Check each filter button's settings
-            for filterPanelIdTarget, _ in ipairs(addInvBtnInvokers) do
+            for filterPanelIdTarget, _ in pairs(addInvBtnInvokers) do --#331 Fix ipairs as this table got gaps in the index!
                 if filterPanelIdSource ~= filterPanelIdTarget and activeFilterPanelIds[filterPanelIdTarget] then
                     --For each active target filterPanelId which is not == source filterPanelId
                     FCOIS.settingsVars.settings.FCOISAdditionalInventoriesButtonOffset[filterPanelIdTarget] = {

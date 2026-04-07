@@ -8057,11 +8057,7 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                         --FCOIS.AddAdditionalButtons("FCOSettings")
                     end,
                     disabled = function()
-                        if VOTANS_MENU_SETTINGS and VOTANS_MENU_SETTINGS:IsMenuButtonEnabled() then
-                            return true
-                        else
-                            return false
-                        end
+                        return VOTANS_MENU_SETTINGS and VOTANS_MENU_SETTINGS:IsMenuButtonEnabled()
                     end,
                     default = FCOISdefaultSettings.showFCOISMenuBarButton,
                 },
@@ -8084,7 +8080,32 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                                 FCOIS.AddAdditionalButtons("FCOInventoriesContextMenuButtons")
                             end,
                             default = FCOISdefaultSettings.showFCOISAdditionalInventoriesButton,
+                            --requiresReload = true,
                         },
+                        {
+                            type = "slider",  --#329 Slider for width and height of the add. inv. flag buttons
+                            name = locVars["options_additional_buttons_FCOIS_additional_options_width"],
+                            tooltip = locVars["options_additional_buttons_FCOIS_additional_options_width"],
+                            min = 4,
+                            max = 256,
+                            decimals = 0,
+                            autoSelect = true,
+                            getFunc = function() return FCOISsettings.FCOISAdditionalInventoriesButtonSize end,
+                            setFunc = function(size)
+                                FCOISsettings.FCOISAdditionalInventoriesButtonSize = size
+                                FCOIS.AddAdditionalButtons("FCOInventoriesContextMenuButtons")
+                            end,
+                            width="full",
+                            disabled = function() return not FCOISsettings.showFCOISAdditionalInventoriesButton end,
+                            default = FCOISdefaultSettings.FCOISAdditionalInventoriesButtonSize,
+                        },
+                        --Submenu with editboxes for each filterPanelId to change the x and y offsets of the additional inventory context menu "flag" icon position
+                        { -- Begin Submenu filter button position data
+                            type = "submenu",
+                            name = locVars["options_additional_buttons_FCOIS_additional_options_offsets"],
+                            controls = addInvFlagButtonsPositionsSubMenu,
+                        }, -- End submenu - Filter button position data
+
                         {
                             type = "checkbox",
                             name = locVars["options_additional_buttons_FCOIS_additional_options_colorize"],
@@ -8097,52 +8118,46 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                             disabled = function() return not FCOISsettings.showFCOISAdditionalInventoriesButton end,
                             default = FCOISdefaultSettings.colorizeFCOISAdditionalInventoriesButton,
                         },
-                        --[[
-                    {
-                        type = "slider",
-                        min  = -500,
-                        max  = 500,
-                        step = 1,
-                        decimals = 0,
-                        autoSelect = true,
-                        name = locVars["options_additional_buttons_FCOIS_additional_options_offsetx"],
-                        tooltip = locVars["options_additional_buttons_FCOIS_additional_options_offsetx" .. tooltipSuffix],
-                        getFunc = function() return FCOISsettings.FCOISAdditionalInventoriesButtonOffset.x end,
-                        setFunc = function(value)
-                            FCOISsettings.FCOISAdditionalInventoriesButtonOffset.x = value
-                            --Update the additional inventory "flag" invoker button positions
-                            reAnchorAdditionalInvButtons(true)
-                        end,
-                        disabled = function() return not FCOISsettings.showFCOISAdditionalInventoriesButton end,
-                        width = "half",
-                        default = FCOISdefaultSettings.FCOISAdditionalInventoriesButtonOffset.x,
-                    },
-                   {
-                       type = "slider",
-                       min  = -500,
-                       max  = 500,
-                       step = 1,
-                       decimals = 0,
-                       autoSelect = true,
-                       name = locVars["options_additional_buttons_FCOIS_additional_options_offsety"],
-                       tooltip = locVars["options_additional_buttons_FCOIS_additional_options_offsety" .. tooltipSuffix],
-                       getFunc = function() return FCOISsettings.FCOISAdditionalInventoriesButtonOffset.y end,
-                       setFunc = function(value)
-                           FCOISsettings.FCOISAdditionalInventoriesButtonOffset.y = value
-                           --Update the additional inventory "flag" invoker button positions
-                           reAnchorAdditionalInvButtons(true)
-                       end,
-                       disabled = function() return not FCOISsettings.showFCOISAdditionalInventoriesButton end,
-                       width = "half",
-                       default = FCOISdefaultSettings.FCOISAdditionalInventoriesButtonOffset.y,
-                   },
-]]
-                        --Submenu with sliders for each filterPanelId to change the x and y offsets of the additional inventory context menu "flag" icon position
-                        { -- Begin Submenu filter button position data
+                        {
                             type = "submenu",
-                            name = locVars["options_additional_buttons_FCOIS_additional_options_offsets"],
-                            controls = addInvFlagButtonsPositionsSubMenu,
-                        }, -- End submenu - Filter button position data
+                            name = locVars["options_additional_buttons_FCOIS_additional_options_colors"],
+                            controls =
+                            {
+                                {
+                                    type = "colorpicker",
+                                    name = locVars["options_additional_buttons_FCOIS_additional_options_color_protected"],
+                                    tooltip = locVars["options_additional_buttons_FCOIS_additional_options_color_protected" .. tooltipSuffix],
+                                    getFunc = function()
+                                        return unpack(FCOISsettings.colorizeFCOISAdditionalInventoriesButtonColor[true])
+                                    end,
+                                    setFunc = function(r, g, b, a) FCOISsettings.colorizeFCOISAdditionalInventoriesButtonColor[true] = { r, g, b, a }
+                                        --Change the button color of the context menu invoker
+                                        changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
+                                        FCOIS.AddAdditionalButtons("FCOInventoriesContextMenuButtons")
+                                        FCOIS.cachedColors.protectionState = {} --#330 reset the tooltip colors too
+                                    end,
+                                    disabled = function() return not FCOISsettings.showFCOISAdditionalInventoriesButton or not FCOISsettings.colorizeFCOISAdditionalInventoriesButton end,
+                                    default = unpack(FCOISdefaultSettings.colorizeFCOISAdditionalInventoriesButtonColor[true]),
+                                },
+                                {
+                                    type = "colorpicker",
+                                    name = locVars["options_additional_buttons_FCOIS_additional_options_color_protected"],
+                                    tooltip = locVars["options_additional_buttons_FCOIS_additional_options_color_protected" .. tooltipSuffix],
+                                    getFunc = function()
+                                        return unpack(FCOISsettings.colorizeFCOISAdditionalInventoriesButtonColor[false])
+                                    end,
+                                    setFunc = function(r, g, b, a) FCOISsettings.colorizeFCOISAdditionalInventoriesButtonColor[false] = { r, g, b, a }
+                                        --Change the button color of the context menu invoker
+                                        changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
+                                        FCOIS.AddAdditionalButtons("FCOInventoriesContextMenuButtons")
+                                        FCOIS.cachedColors.protectionState = {} --#330 reset the tooltip colors too
+                                    end,
+                                    disabled = function() return not FCOISsettings.showFCOISAdditionalInventoriesButton or not FCOISsettings.colorizeFCOISAdditionalInventoriesButton end,
+                                    default = unpack(FCOISdefaultSettings.colorizeFCOISAdditionalInventoriesButtonColor[false]),
+                                },
+                            }
+                        },
+
 
                     } -- controls additional buttons in inventories
                 }, -- submenu  additional buttons in inventories

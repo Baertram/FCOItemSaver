@@ -17,10 +17,12 @@
    ä : \195\164    ö : \195\182    ü : \195\188
    ã : \195\163    õ : \195\181  				   \195\177 : \195\177
 ]]
---The "lock" icon texturepath
---local FCOISIconPath = FCOIS.addonVars.icon --"FCOItemSaver/FCOIS.dds"
+--Icons
+local iconPattern = "|t32:32:%s|t"
+local FCOISIconPath = FCOIS.addonVars.icon --"FCOItemSaver/FCOIS.dds"
 local lockIconPath = "/esoui/art/miscellaneous/status_locked.dds"
-local lockIcon = "|t32:32:"..lockIconPath.."|t"
+local FCOISicon = string.format(iconPattern, FCOISIconPath)
+local lockIcon = string.format(iconPattern, lockIconPath)
 
 --Move the localization vars to the global data
 local FCOIS = FCOIS
@@ -790,17 +792,24 @@ FCOIS.localizationVars.localizationAll = {
         ["options_header_anti_output_options"]	= "Output options",
         --Additional buttons
         ["options_header_additional_buttons"]						 = "Additional buttons",
-        ["options_additional_buttons_FCOIS_settings"] 				 = "FCO settings in main menu",
+        ["options_additional_buttons_FCOIS_settings"] 				 = "FCOIS settings "..FCOISicon.." in main menu",
         ["options_additional_buttons_FCOIS_settings_TT"] 		 = "Show an additonal button for the FCOItemSaver settings inside the main menu of the game (right to the help button).\n\n[Attention] The button will only be shown if the addon settings button of the addon 'Votans Settings Menu' is not shown!",
         ["options_additional_buttons_FCOIS_additional_options"] 		= "Addit. options in inventories ("..addInvFlagIcon..")",
         ["options_additional_buttons_FCOIS_additional_options_TT"] = "Show an additional button for more options (mark all/unmark all/undo last change) in the inventories.\nThe button will be shown as a small \'flag\' ("..addInvFlagIcon..") symbol at the top-left edge of the inventories and it will show a context menu if you left click |t100.000000%:100.000000%:EsoUI/Art/Miscellaneous/icon_LMB.dds|t it.\nIf you right click |t100.000000%:100.000000%:EsoUI/Art/Miscellaneous/icon_RMB.dds|t it it will change the protective state (anti-* setting) of the currently shown panel.",
         ["options_additional_buttons_FCOIS_additional_options_colorize"] 		= "Protection state as color at "..addInvFlagIcon,
-        ["options_additional_buttons_FCOIS_additional_options_colorize_TT"]     = "Colors the additional inventory options \'flag\' ("..addInvFlagIcon..") button green/red if the protective functionality for the currently shown panel is enabled/disabled.",
+        ["options_additional_buttons_FCOIS_additional_options_colorize_TT"]     = "Colors the additional inventory options \'flag\' ("..addInvFlagIcon..") button green/red (or with your below chosen colors) if the protective functionality for the currently shown panel is enabled/disabled.",
         ["options_additional_buttons_FCOIS_additional_options_offsets"]         = "Add. inv. "..addInvFlagIcon.." button offsets",
         ["options_additional_buttons_FCOIS_additional_options_offsetx"]         = "Offset X",
         ["options_additional_buttons_FCOIS_additional_options_offsetx_TT"] = "Move the additional inventory \'flag\' ("..addInvFlagIcon..") button on the x axis. Standard value is 0.",
         ["options_additional_buttons_FCOIS_additional_options_offsety"]         = "Offset Y",
         ["options_additional_buttons_FCOIS_additional_options_offsety_TT"] = "Move the additional inventory \'flag\' ("..addInvFlagIcon..") button on the y axis. Standard value is 0.",
+        ["options_additional_buttons_FCOIS_additional_options_colors"]         = "Add. inv. "..addInvFlagIcon.." button colors",
+        ["options_additional_buttons_FCOIS_additional_options_color_protected"] 	= "Color - Protection ON",
+        ["options_additional_buttons_FCOIS_additional_options_color_protected_TT"]  = "Colors the additional inventory options \'flag\' ("..addInvFlagIcon..") button with this color if the protective functionality for the currently shown panel is enabled.",
+        ["options_additional_buttons_FCOIS_additional_options_color_unprotected"] 	= "Color - Protection OFF",
+        ["options_additional_buttons_FCOIS_additional_options_color_unprotected_TT"]  = "Colors the additional inventory options \'flag\' ("..addInvFlagIcon..") button with this color if the protective functionality for the currently shown panel is disabled.",
+        ["options_additional_buttons_FCOIS_additional_options_width"]         = "Add. inv. "..addInvFlagIcon.." button width&height",
+
         ["button_FCOIS_settings_TT"]							 = "Show FCOItemSaver settings",
         --Anti equip
         ["options_header_anti_equip"]					= "Anti equip",
@@ -1182,7 +1191,7 @@ FCOIS.localizationVars.localizationAll = {
         ["options_contextmenu_entries_enable_tooltip_only_SHIFTkey"]              = "Only if SHIFT key is pressed",
         ["options_contextmenu_entries_enable_tooltip_only_SHIFTkey_TT"]           = "Show a tooltip only if you press and hold the SHIFT key as you move the mouse above the context menu entries.",
         ["options_contextmenu_entries_tooltip_protectedpanels"]     = "Show protected-state of panel",
-        ["options_contextmenu_entries_tooltip_protectedpanels_TT"]  = "Show the protected-state of the item at the currently active filter panel id.\n\n|c00FF00Green|r/checkmark icon: Protected\n|cFF0000Red|r/X icon: Not protected",
+        ["options_contextmenu_entries_tooltip_protectedpanels_TT"]  = "Show the protected-state of the item at the currently active filter panel id.\n\n|c00FF00Green|r/checkmark icon: Protected\n|cFF0000Red|r/X icon: Not protected\nAttention: The colors red & green change too if you change the protection state color at the additional inv. flag icon!",
         ["protection_at_panel"]                             = "Protection at panel",
         --Enable/Disable icons
         ["options_header_enable_disable"]                   = "Enable / Disable",
@@ -2095,17 +2104,23 @@ FCOIS.localizationVars.localizationAll = {
         ["options_header_anti_output_options"]	= "Ausgabe Optionen",
         --Additional buttons
         ["options_header_additional_buttons"]						 = "Zusätzliche Knöpfe",
-        ["options_additional_buttons_FCOIS_settings"] 				 = "FCO Einstellungen im Hauptmenu",
+        ["options_additional_buttons_FCOIS_settings"] 				 = "FCOIS Einstellungen"..FCOISicon.."im Hauptmenu",
         ["options_additional_buttons_FCOIS_settings_TT"] 		 = "Zeigt einen Knopf für die FCOItemSaver Einstellungen im Hauptmenü an (rechts vom Hilfe Knopf).\n\n[Achtung] Der Knopf wird nur angezeigt, wenn der Einstellungsknopf im Addon 'Votans Settings Menu' nicht geladen ist!",
         ["options_additional_buttons_FCOIS_additional_options"] 		= "Zusätzl. Optionen in Inventaren ("..addInvFlagIcon..")",
         ["options_additional_buttons_FCOIS_additional_options_TT"] = "Zeigt einen Knopf für zusätzliche Optionen (Alle markieren/Alle demarkieren/Rückgängig machen) in den Inventaren an.\nDer Knopf wird als kleine \'Flagge\' ("..addInvFlagIcon..") links oben im Inventar angezeigt und öffnet ein Kontextmenü, wenn man mit der Maus links |t100.000000%:100.000000%:EsoUI/Art/Miscellaneous/icon_LMB.dds|t darauf klickt.\nKlickt man rechts |t100.000000%:100.000000%:EsoUI/Art/Miscellaneous/icon_RMB.dds|t darauf so wechselt der Schutz-Status (Anti-* Schutz) des aktuell angezeigten Panels.",
         ["options_additional_buttons_FCOIS_additional_options_colorize"] 		= "Schutz Status als Farbe am "..addInvFlagIcon.." Knopf",
-        ["options_additional_buttons_FCOIS_additional_options_colorize_TT"] = "Färbt den zusätzliche Inventar Optionen \'Flagge\' ("..addInvFlagIcon..") Knopf in den Inventaren grün/rot ein, wenn die Anti-* Schutz Funktionalität für das aktuelle Panel an-/ausgeschaltet ist.",
+        ["options_additional_buttons_FCOIS_additional_options_colorize_TT"] = "Färbt den zusätzliche Inventar Optionen \'Flagge\' ("..addInvFlagIcon..") Knopf in den Inventaren grün/rot (oder mit deiner unten gewählten Farbe) ein, wenn die Anti-* Schutz Funktionalität für das aktuelle Panel an-/ausgeschaltet ist.",
         ["options_additional_buttons_FCOIS_additional_options_offsets"]         = "Zusätzl. Inv. "..addInvFlagIcon.." Knopf Offsets",
         ["options_additional_buttons_FCOIS_additional_options_offsetx"]         = "Position X",
         ["options_additional_buttons_FCOIS_additional_options_offsetx_TT"] = "Verschiebe den zusätzliche Optionen "..addInvFlagIcon.." Knopf auf der X Achse. Standard Wert ist 0.",
         ["options_additional_buttons_FCOIS_additional_options_offsety"]         = "Position Y",
         ["options_additional_buttons_FCOIS_additional_options_offsety_TT"] = "Verschiebe den zusätzliche Optionen "..addInvFlagIcon.." Knopf auf der Y Achse. Standard Wert ist 0.",
+        ["options_additional_buttons_FCOIS_additional_options_colors"]         = "Zusätzl. Inv. \"..addInvFlagIcon..\" Knopf Farben",
+        ["options_additional_buttons_FCOIS_additional_options_color_protected"] 	= "Farbe - Schutz AN",
+        ["options_additional_buttons_FCOIS_additional_options_color_protected_TT"]  = "Färbt den zusätzliche Inventar Optionen \'Flagge\' (\"..addInvFlagIcon..\") Knopf in den Inventaren ein, wenn die Anti-* Schutz Funktionalität für das aktuelle Panel angeschaltet ist.",
+        ["options_additional_buttons_FCOIS_additional_options_color_unprotected"] 	= "Farbe - Schutz AUS",
+        ["options_additional_buttons_FCOIS_additional_options_color_unprotected_TT"]  = "Färbt den zusätzliche Inventar Optionen \'Flagge\' (\"..addInvFlagIcon..\") Knopf in den Inventaren ein, wenn die Anti-* Schutz Funktionalität für das aktuelle Panel ausgeschaltet ist.",
+        ["options_additional_buttons_FCOIS_additional_options_width"]         = "Zusätzl. Inv. \"..addInvFlagIcon..\" Knopf Breite&Höhe",
         ["button_FCOIS_settings_TT"]							 = "FCOItemSaver Einstellungen anzeigen",
         --Anti equip
         ["options_header_anti_equip"]					= "Anti Equip",
@@ -2473,7 +2488,7 @@ FCOIS.localizationVars.localizationAll = {
         ["options_contextmenu_entries_enable_tooltip_only_SHIFTkey"]              = "Nur mit SHIFT Taste gedrückt",
         ["options_contextmenu_entries_enable_tooltip_only_SHIFTkey_TT"]           = "Zeige den Tooltip nur dann, wenn die SHIFT (Großschreiben) Taste gedrückt bleibt während du die Maus über den Kontextmenü Eintrag bewegst.",
         ["options_contextmenu_entries_tooltip_protectedpanels"]     = "Zeige Schutz-Status im Tooltip",
-        ["options_contextmenu_entries_tooltip_protectedpanels_TT"]  = "Zeige den aktuellen Schutz-Status, der Symbole am aktuell geöffneten Filter Panel, im Kontext-Menü Eintrag Tooltip an.\n\n|c00FF00Grün|r/Haken Symbol: Geschützt\n|cFF0000Rot|r/X Symbol: Nicht geschützt",
+        ["options_contextmenu_entries_tooltip_protectedpanels_TT"]  = "Zeige den aktuellen Schutz-Status, der Symbole am aktuell geöffneten Filter Panel, im Kontext-Menü Eintrag Tooltip an.\n\n|c00FF00Grün|r/Haken Symbol: Geschützt\n|cFF0000Rot|r/X Symbol: Nicht geschützt.\nAchtung: Durch das Ändern der Zusätzlchen Inventar Flaggen Symbol Farben für den Schutz, verändern sich die Farben grün & rot in den Tooltips auch!",
         ["protection_at_panel"]                             = "Schutz-Status je Panel",
         --Enable/Disable icons
         ["options_header_enable_disable"]                   = "Aktivieren / Deaktivieren",
@@ -3119,7 +3134,7 @@ FCOIS.localizationVars.localizationAll = {
 		["options_header_anti_output_options"]  = "Options de réactions",
 		--Additional buttons
         ["options_header_additional_buttons"]						 = "Boutons additionnels",
-        ["options_additional_buttons_FCOIS_settings"] 				 = "Options FCO dans le menu principal",
+        ["options_additional_buttons_FCOIS_settings"] 				 = "Options FCOIS"..FCOISicon.."dans le menu principal",
         ["options_additional_buttons_FCOIS_settings_TT"] 		 = "Fait apparaître un bouton additionnel, pour FCOItemSaver (Options) dans le menu principal (à droite du boutton Aide/Help)\n\n[Attention] The button will only be shown if the addon settings button of the addon 'Votans Settings Menu' is not show!",
         ["options_additional_buttons_FCOIS_additional_options"] 		= "Options additionnelles dans l'inventaire",
 		["options_additional_buttons_FCOIS_additional_options_TT"] = "Affiche un bouton supplémentaire pour plus d'options dans les inventaires (marquer tout, désélectionner tout, annuler la dernière modification). Ce bouton sera représenté par un ' drapeau' sur le bord supérieur gauche de l'inventaire et ouvrira un menu si vous cliquez dessus !",
@@ -3605,7 +3620,7 @@ FCOIS.localizationVars.localizationAll = {
 		["options_header_anti_output_options"]	= "Output options",
         --Additional buttons
         ["options_header_additional_buttons"]						 = "Botones adicionales",
-        ["options_additional_buttons_FCOIS_settings"] 				 = "Opciones FCO en menú principal",
+        ["options_additional_buttons_FCOIS_settings"] 				 = "Opciones FCOIS"..FCOISicon.."en menú principal",
         ["options_additional_buttons_FCOIS_settings_TT"] 		 = "Muestra un botón adicional para la configuración de FCOItemSaver en el menú principal del juego (a la derecha del botón de ayuda)\n\n[Attention] The button will only be shown if the addon settings button of the addon 'Votans Settings Menu' is not shown!",
         ["options_additional_buttons_FCOIS_additional_options"] 		= "Opciones adicionales de inventario",
 
@@ -4252,7 +4267,7 @@ FCOIS.localizationVars.localizationAll = {
         ["options_scan_ZOs_lock_functions_warning"]	= "本当にあなたのアイテムのインゲームロックを解除し、FCOItemSaverのマーカーアイコン1に転送してもよろしいですか？?",
         --Additional buttons
         ["options_header_additional_buttons"]                        = "追加ボタン",
-        ["options_additional_buttons_FCOIS_settings"]                = "メインメニューにFCO設定",
+        ["options_additional_buttons_FCOIS_settings"]                = "メインメニューにFCOIS設定"..FCOISicon,
         ["options_additional_buttons_FCOIS_settings_TT"]        = "ゲームのメインメニュー内にFCOItemSaver設定の追加ボタンを表示します。（ヘルプボタンの右）\n\n[注意]このボタンはaddon 'Votan Setting Menu'のaddon設定ボタンがが表示されていない場合のみ表示されます！",
         ["options_additional_buttons_FCOIS_additional_options"]         = "インベントリに追加オプション",
         ["options_additional_buttons_FCOIS_additional_options_TT"] = "インベントリ内にさらなるオプションを追加するボタンを表示します。（全てをマーク/マークを全て外す/やり直し）ボタンは小さな'フラッグ'シンボルでインベントリの左上の角に表示され、クリックするとコンテキストメニューが表示されます！",
@@ -5000,7 +5015,7 @@ FCOIS.localizationVars.localizationAll = {
 		["options_header_anti_output_options"]= "Нacтpoйки вывoдa",
 		--Additional buttons
 		["options_header_additional_buttons"] = "Дoпoлнитeльныe кнoпки",
-		["options_additional_buttons_FCOIS_settings"] = "Нacтpoйки FCO в ocнoвнoм мeню",
+		["options_additional_buttons_FCOIS_settings"] = "Нacтpoйки FCOIS"..FCOISicon.."в ocнoвнoм мeню",
 		["options_additional_buttons_FCOIS_settings_TT"] = "Пoкaзывaть дoпoлнитeльную кнoпку нacтpoeк FCOItemSaver в ocнoвнoм мeню игpы (пpaвee кнoпки пoмoщи).\n\n[Внимaниe] Кнoпкa будeт пoкaзaнa тoлькo в тoм cлучae, кoгдa в нacтpoйкax дpугoгo aддoнa 'Votans Settings Menu' cтoит нe пoкaзывaть!",
 		["options_additional_buttons_FCOIS_additional_options"] = "Дoп.вoзмoжнocти в инвeнтape",
 		["options_additional_buttons_FCOIS_additional_options_TT"] = "Пoкaзывaть кнoпку дoпoлнитeльныx вoзмoжнocтeй (пoмeтить вce/cнять вce пoмeтки/oтмeнить пocлeднee измeнeниe) в инвeнтape. Кнoпкa выглядит кaк мaлeнький 'флaг' в вepxнeй-лeвoй чacти oкнa инвeнтapя и пpи нaжaтии нa нee вывoдитcя кoнтeкcтнoe мeню!",

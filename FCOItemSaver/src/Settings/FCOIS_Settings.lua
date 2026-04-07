@@ -1129,8 +1129,8 @@ function FCOIS.AfterSettings()
     local tooltip = locVars["button_context_menu_tooltip"]
     local anchorTooltip = RIGHT
     local texClicked = texMouseOver
-    local width  = 32
-    local height = 32
+    local width  = 32 --#329 make width use SavedVariables
+    local height = 32 --#329 make height use SavedVariables
     local alignMain = TOPLEFT
     local alignBackup = TOPLEFT
     local doHide = not settings.showFCOISAdditionalInventoriesButton
@@ -1139,6 +1139,7 @@ function FCOIS.AfterSettings()
     --if so: update some values of these buttons
     for panelId, buttonData in pairs(addInvBtnInvokers) do
         if panelId ~= nil and buttonData ~= nil and buttonData.addInvButton and buttonData.name ~= nil and buttonData.name ~= "" then
+            local anchorDataAtAPIVersionAndPanelId = ancVars.additionalInventoryFlagButton[apiVersion][panelId]
             buttonData.callbackFunction = showAddInvContextMenuFunc
             buttonData.onMouseUpCallbackFunction = showAddInvContextMenuMouseUpFunc
             buttonData.onMouseUpCallbackFunctionMouseButton = mouseButtonRight
@@ -1149,13 +1150,18 @@ function FCOIS.AfterSettings()
             buttonData.textureNormal = texNormal
             buttonData.textureMouseOver = texMouseOver
             buttonData.textureClicked = texClicked
-            buttonData.width = width
-            buttonData.height = height
-            buttonData.left = ancVars.additionalInventoryFlagButton[apiVersion][panelId].left
-            buttonData.top = ancVars.additionalInventoryFlagButton[apiVersion][panelId].top
-            buttonData.alignMain = ancVars.additionalInventoryFlagButton[apiVersion][panelId].anchorMyPoint or alignMain
-            buttonData.alignBackup = ancVars.additionalInventoryFlagButton[apiVersion][panelId].anchorToPoint or alignBackup
-            buttonData.alignControl = ancVars.additionalInventoryFlagButton[apiVersion][panelId].anchorControl
+            --buttonData.width = width --#329
+            --buttonData.height = height --#329
+            if anchorDataAtAPIVersionAndPanelId == nil then
+                d("[FCOIS]ERROR - AfterSettings - anchorDataAtAPIVersionAndPanelId is nil, panelId: " ..tos(panelId))
+            end
+            buttonData.width =          (anchorDataAtAPIVersionAndPanelId and anchorDataAtAPIVersionAndPanelId.width) or width                             --#329
+            buttonData.height =         (anchorDataAtAPIVersionAndPanelId and anchorDataAtAPIVersionAndPanelId.height) or height                           --#329
+            buttonData.left =           (anchorDataAtAPIVersionAndPanelId and anchorDataAtAPIVersionAndPanelId.left) or 0
+            buttonData.top =            (anchorDataAtAPIVersionAndPanelId and anchorDataAtAPIVersionAndPanelId.top) or 0
+            buttonData.alignMain =      (anchorDataAtAPIVersionAndPanelId and anchorDataAtAPIVersionAndPanelId.anchorMyPoint) or alignMain
+            buttonData.alignBackup =    (anchorDataAtAPIVersionAndPanelId and anchorDataAtAPIVersionAndPanelId.anchorToPoint) or alignBackup
+            buttonData.alignControl =   (anchorDataAtAPIVersionAndPanelId and anchorDataAtAPIVersionAndPanelId.anchorControl) or nil
             buttonData.hideButton = doHide
             --buttonData.updateOtherInvokerButtonsState
         end

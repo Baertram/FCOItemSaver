@@ -132,6 +132,9 @@ FCOIS.protectedData.textures = {
     [true]          = "esoui/art/buttons/accept_up.dds",
     ["non_active"]  = "esoui/art/buttons/cancel_up.dds",
 }
+FCOIS.cachedColors = { --#330
+    ["protectionState"] = { [true] = nil, [false] = nil}
+}
 local protectedColors = FCOIS.protectedData.colors
 local protectionOffColor    = protectedColors[false]
 local protectionOnColor     = protectedColors[true]
@@ -3840,129 +3843,90 @@ geodeItemIds[134595] = true -- Endless geode, reveiling 200 crystals and geodes
 
 --Constant values for the additional inventories "flag" button anchor controls
 --dependent on the API version of the game
+--Current API version, starting with "Clockwork City" - Last updated with API101049 "Season 0" - 20260406
 FCOIS.anchorVars = {}
 FCOIS.anchorVars.additionalInventoryFlagButton = {}
 local anchorVarsAddInvButtonsFill = FCOIS.anchorVars.additionalInventoryFlagButton
---Current API version, starting with "Clockwork city"
 local varX1 = -20
 local varY1 = 104
 local varX2 = -20
 local varY2 = 64
---Last updated with API101042 - 20240507
-local additionalInventoryFlagButtonBaseAPIVersion = 100021 --#320
 local additionalInventoryFlagButtonBaseAPIAnchors = {}
-additionalInventoryFlagButtonBaseAPIAnchors[LF_INVENTORY] = {}
-additionalInventoryFlagButtonBaseAPIAnchors[LF_INVENTORY].anchorControl              = playerInv
-additionalInventoryFlagButtonBaseAPIAnchors[LF_INVENTORY].left                       = varX1
-additionalInventoryFlagButtonBaseAPIAnchors[LF_INVENTORY].top                        = varY1
-additionalInventoryFlagButtonBaseAPIAnchors[LF_INVENTORY].defaultLeft                = varX1
-additionalInventoryFlagButtonBaseAPIAnchors[LF_INVENTORY].defaultTop                 = varY1
-additionalInventoryFlagButtonBaseAPIAnchors[LF_BANK_WITHDRAW] = {}
-additionalInventoryFlagButtonBaseAPIAnchors[LF_BANK_WITHDRAW].anchorControl          = bankInv
-additionalInventoryFlagButtonBaseAPIAnchors[LF_BANK_WITHDRAW].left                   = varX1
-additionalInventoryFlagButtonBaseAPIAnchors[LF_BANK_WITHDRAW].top                    = varY1
-additionalInventoryFlagButtonBaseAPIAnchors[LF_BANK_WITHDRAW].defaultLeft            = varX1
-additionalInventoryFlagButtonBaseAPIAnchors[LF_BANK_WITHDRAW].defaultTop             = varY1
-additionalInventoryFlagButtonBaseAPIAnchors[LF_GUILDBANK_WITHDRAW] = {}
-additionalInventoryFlagButtonBaseAPIAnchors[LF_GUILDBANK_WITHDRAW].anchorControl     = guildBankInv
-additionalInventoryFlagButtonBaseAPIAnchors[LF_GUILDBANK_WITHDRAW].left              = varX1
-additionalInventoryFlagButtonBaseAPIAnchors[LF_GUILDBANK_WITHDRAW].top               = varY1
-additionalInventoryFlagButtonBaseAPIAnchors[LF_GUILDBANK_WITHDRAW].defaultLeft       = varX1
-additionalInventoryFlagButtonBaseAPIAnchors[LF_GUILDBANK_WITHDRAW].defaultTop        = varY1
-additionalInventoryFlagButtonBaseAPIAnchors[LF_SMITHING_REFINE] = {}
-additionalInventoryFlagButtonBaseAPIAnchors[LF_SMITHING_REFINE].anchorControl        = refinementInv
-additionalInventoryFlagButtonBaseAPIAnchors[LF_SMITHING_REFINE].left                 = varX2
-additionalInventoryFlagButtonBaseAPIAnchors[LF_SMITHING_REFINE].top                  = varY2
-additionalInventoryFlagButtonBaseAPIAnchors[LF_SMITHING_REFINE].defaultLeft          = varX2
-additionalInventoryFlagButtonBaseAPIAnchors[LF_SMITHING_REFINE].defaultTop           = varY2
-additionalInventoryFlagButtonBaseAPIAnchors[LF_SMITHING_DECONSTRUCT] = {}
-additionalInventoryFlagButtonBaseAPIAnchors[LF_SMITHING_DECONSTRUCT].anchorControl   = deconstructionInv --#202 FilterButtons and additional inventory flag context menu button added to universal deconstruction panel
-additionalInventoryFlagButtonBaseAPIAnchors[LF_SMITHING_DECONSTRUCT].left            = varX2
-additionalInventoryFlagButtonBaseAPIAnchors[LF_SMITHING_DECONSTRUCT].top             = varY2
-additionalInventoryFlagButtonBaseAPIAnchors[LF_SMITHING_DECONSTRUCT].defaultLeft     = varX2
-additionalInventoryFlagButtonBaseAPIAnchors[LF_SMITHING_DECONSTRUCT].defaultTop      = varY2
-additionalInventoryFlagButtonBaseAPIAnchors[LF_SMITHING_IMPROVEMENT] = {}
-additionalInventoryFlagButtonBaseAPIAnchors[LF_SMITHING_IMPROVEMENT].anchorControl   = improvementInv
-additionalInventoryFlagButtonBaseAPIAnchors[LF_SMITHING_IMPROVEMENT].left            = varX2
-additionalInventoryFlagButtonBaseAPIAnchors[LF_SMITHING_IMPROVEMENT].top             = varY2
-additionalInventoryFlagButtonBaseAPIAnchors[LF_SMITHING_IMPROVEMENT].defaultLeft     = varX2
-additionalInventoryFlagButtonBaseAPIAnchors[LF_SMITHING_IMPROVEMENT].defaultTop      = varY2
-additionalInventoryFlagButtonBaseAPIAnchors[LF_ALCHEMY_CREATION] = {}
-additionalInventoryFlagButtonBaseAPIAnchors[LF_ALCHEMY_CREATION] .anchorControl   = alchemyInv
-additionalInventoryFlagButtonBaseAPIAnchors[LF_ALCHEMY_CREATION].left             = varX2
-additionalInventoryFlagButtonBaseAPIAnchors[LF_ALCHEMY_CREATION].top              = varY1
-additionalInventoryFlagButtonBaseAPIAnchors[LF_ALCHEMY_CREATION].defaultLeft      = varX2
-additionalInventoryFlagButtonBaseAPIAnchors[LF_ALCHEMY_CREATION].defaultTop       = varY1
-additionalInventoryFlagButtonBaseAPIAnchors[LF_ENCHANTING_CREATION] = {}
-additionalInventoryFlagButtonBaseAPIAnchors[LF_ENCHANTING_CREATION] .anchorControl   = ctrlVars.ENCHANTING_INV
-additionalInventoryFlagButtonBaseAPIAnchors[LF_ENCHANTING_CREATION].left             = varX2
-additionalInventoryFlagButtonBaseAPIAnchors[LF_ENCHANTING_CREATION].top              = varY2
-additionalInventoryFlagButtonBaseAPIAnchors[LF_ENCHANTING_CREATION].defaultLeft      = varX2
-additionalInventoryFlagButtonBaseAPIAnchors[LF_ENCHANTING_CREATION].defaultTop       = varY2
-additionalInventoryFlagButtonBaseAPIAnchors[LF_CRAFTBAG] = {}
-additionalInventoryFlagButtonBaseAPIAnchors[LF_CRAFTBAG].anchorControl               = craftBagInv
-additionalInventoryFlagButtonBaseAPIAnchors[LF_CRAFTBAG].left                        = varX2
-additionalInventoryFlagButtonBaseAPIAnchors[LF_CRAFTBAG].top                         = varY1
-additionalInventoryFlagButtonBaseAPIAnchors[LF_CRAFTBAG].defaultLeft                 = varX2
-additionalInventoryFlagButtonBaseAPIAnchors[LF_CRAFTBAG].defaultTop                  = varY1
-additionalInventoryFlagButtonBaseAPIAnchors[LF_RETRAIT] = {}
-additionalInventoryFlagButtonBaseAPIAnchors[LF_RETRAIT].anchorControl               = retraitInv
-additionalInventoryFlagButtonBaseAPIAnchors[LF_RETRAIT].left                        = varX2
-additionalInventoryFlagButtonBaseAPIAnchors[LF_RETRAIT].top                         = varY1
-additionalInventoryFlagButtonBaseAPIAnchors[LF_RETRAIT].defaultLeft                 = varX2
-additionalInventoryFlagButtonBaseAPIAnchors[LF_RETRAIT].defaultTop                  = varY1
-additionalInventoryFlagButtonBaseAPIAnchors[LF_HOUSE_BANK_WITHDRAW] = {}
-additionalInventoryFlagButtonBaseAPIAnchors[LF_HOUSE_BANK_WITHDRAW].anchorControl   = houseBankInv
-additionalInventoryFlagButtonBaseAPIAnchors[LF_HOUSE_BANK_WITHDRAW].left            = varX1
-additionalInventoryFlagButtonBaseAPIAnchors[LF_HOUSE_BANK_WITHDRAW].top             = varY1
-additionalInventoryFlagButtonBaseAPIAnchors[LF_HOUSE_BANK_WITHDRAW].defaultLeft     = varX1
-additionalInventoryFlagButtonBaseAPIAnchors[LF_HOUSE_BANK_WITHDRAW].defaultTop      = varY1
-additionalInventoryFlagButtonBaseAPIAnchors[LF_JEWELRY_REFINE] = {}
-additionalInventoryFlagButtonBaseAPIAnchors[LF_JEWELRY_REFINE].anchorControl        = refinementInv
-additionalInventoryFlagButtonBaseAPIAnchors[LF_JEWELRY_REFINE].left                 = varX2
-additionalInventoryFlagButtonBaseAPIAnchors[LF_JEWELRY_REFINE].top                  = varY2
-additionalInventoryFlagButtonBaseAPIAnchors[LF_JEWELRY_REFINE].defaultLeft          = varX2
-additionalInventoryFlagButtonBaseAPIAnchors[LF_JEWELRY_REFINE].defaultTop           = varY2
-additionalInventoryFlagButtonBaseAPIAnchors[LF_JEWELRY_DECONSTRUCT] = {}
-additionalInventoryFlagButtonBaseAPIAnchors[LF_JEWELRY_DECONSTRUCT].anchorControl   = deconstructionInv --#202 FilterButtons and additional inventory flag context menu button added to universal deconstruction panel
-additionalInventoryFlagButtonBaseAPIAnchors[LF_JEWELRY_DECONSTRUCT].left            = varX2
-additionalInventoryFlagButtonBaseAPIAnchors[LF_JEWELRY_DECONSTRUCT].top             = varY2
-additionalInventoryFlagButtonBaseAPIAnchors[LF_JEWELRY_DECONSTRUCT].defaultLeft     = varX2
-additionalInventoryFlagButtonBaseAPIAnchors[LF_JEWELRY_DECONSTRUCT].defaultTop      = varY2
-additionalInventoryFlagButtonBaseAPIAnchors[LF_JEWELRY_IMPROVEMENT] = {}
-additionalInventoryFlagButtonBaseAPIAnchors[LF_JEWELRY_IMPROVEMENT].anchorControl   = improvementInv
-additionalInventoryFlagButtonBaseAPIAnchors[LF_JEWELRY_IMPROVEMENT].left            = varX2
-additionalInventoryFlagButtonBaseAPIAnchors[LF_JEWELRY_IMPROVEMENT].top             = varY2
-additionalInventoryFlagButtonBaseAPIAnchors[LF_JEWELRY_IMPROVEMENT].defaultLeft     = varX2
-additionalInventoryFlagButtonBaseAPIAnchors[LF_JEWELRY_IMPROVEMENT].defaultTop      = varY2
-additionalInventoryFlagButtonBaseAPIAnchors[LF_INVENTORY_COMPANION] = {}
-additionalInventoryFlagButtonBaseAPIAnchors[LF_INVENTORY_COMPANION].anchorControl   = companionInv
-additionalInventoryFlagButtonBaseAPIAnchors[LF_INVENTORY_COMPANION].left            = -55
-additionalInventoryFlagButtonBaseAPIAnchors[LF_INVENTORY_COMPANION].top             = 110
-additionalInventoryFlagButtonBaseAPIAnchors[LF_INVENTORY_COMPANION].defaultLeft     = -55
-additionalInventoryFlagButtonBaseAPIAnchors[LF_INVENTORY_COMPANION].defaultTop      = 110
-additionalInventoryFlagButtonBaseAPIAnchors[FCOIS_CON_LF_CHARACTER] = {}
-additionalInventoryFlagButtonBaseAPIAnchors[FCOIS_CON_LF_CHARACTER].anchorControl   = characterInv
-additionalInventoryFlagButtonBaseAPIAnchors[FCOIS_CON_LF_CHARACTER].anchorMyPoint   = TOPLEFT
-additionalInventoryFlagButtonBaseAPIAnchors[FCOIS_CON_LF_CHARACTER].anchorToPoint   = TOPRIGHT
-additionalInventoryFlagButtonBaseAPIAnchors[FCOIS_CON_LF_CHARACTER].left            = -16
-additionalInventoryFlagButtonBaseAPIAnchors[FCOIS_CON_LF_CHARACTER].top             = 0
-additionalInventoryFlagButtonBaseAPIAnchors[FCOIS_CON_LF_CHARACTER].defaultLeft     = -16
-additionalInventoryFlagButtonBaseAPIAnchors[FCOIS_CON_LF_CHARACTER].defaultTop      = 0
-additionalInventoryFlagButtonBaseAPIAnchors[FCOIS_CON_LF_COMPANION_CHARACTER] = {}
-additionalInventoryFlagButtonBaseAPIAnchors[FCOIS_CON_LF_COMPANION_CHARACTER].anchorControl   = companionCharacterInv
-additionalInventoryFlagButtonBaseAPIAnchors[FCOIS_CON_LF_COMPANION_CHARACTER].anchorMyPoint   = TOPLEFT
-additionalInventoryFlagButtonBaseAPIAnchors[FCOIS_CON_LF_COMPANION_CHARACTER].anchorToPoint   = TOPRIGHT
-additionalInventoryFlagButtonBaseAPIAnchors[FCOIS_CON_LF_COMPANION_CHARACTER].left            = -16
-additionalInventoryFlagButtonBaseAPIAnchors[FCOIS_CON_LF_COMPANION_CHARACTER].top             = 0
-additionalInventoryFlagButtonBaseAPIAnchors[FCOIS_CON_LF_COMPANION_CHARACTER].defaultLeft     = -16
-additionalInventoryFlagButtonBaseAPIAnchors[FCOIS_CON_LF_COMPANION_CHARACTER].defaultTop      = 0
-additionalInventoryFlagButtonBaseAPIAnchors[LF_FURNITURE_VAULT_WITHDRAW] = {}
-additionalInventoryFlagButtonBaseAPIAnchors[LF_FURNITURE_VAULT_WITHDRAW].anchorControl          = furnitureVaultInv
-additionalInventoryFlagButtonBaseAPIAnchors[LF_FURNITURE_VAULT_WITHDRAW].left                   = varX1
-additionalInventoryFlagButtonBaseAPIAnchors[LF_FURNITURE_VAULT_WITHDRAW].top                    = varY1
-additionalInventoryFlagButtonBaseAPIAnchors[LF_FURNITURE_VAULT_WITHDRAW].defaultLeft            = varX1
-additionalInventoryFlagButtonBaseAPIAnchors[LF_FURNITURE_VAULT_WITHDRAW].defaultTop             = varY1
+local function updateAddInvFlagButtonData(p_filterPanelId, p_anchorData, defVarX, defVarY) --#329
+    if p_filterPanelId == nil or p_anchorData == nil then return end
+    additionalInventoryFlagButtonBaseAPIAnchors[p_filterPanelId] = {}
+    additionalInventoryFlagButtonBaseAPIAnchors[p_filterPanelId].anchorControl   = p_anchorData.anchorControl
+    additionalInventoryFlagButtonBaseAPIAnchors[p_filterPanelId].anchorMyPoint   = p_anchorData.anchorMyPoint
+    additionalInventoryFlagButtonBaseAPIAnchors[p_filterPanelId].anchorToPoint   = p_anchorData.anchorToPoint
+    additionalInventoryFlagButtonBaseAPIAnchors[p_filterPanelId].left            = p_anchorData.left or defVarX
+    additionalInventoryFlagButtonBaseAPIAnchors[p_filterPanelId].top             = p_anchorData.top or defVarX
+    additionalInventoryFlagButtonBaseAPIAnchors[p_filterPanelId].defaultLeft     = p_anchorData.defaultLeft or defVarY
+    additionalInventoryFlagButtonBaseAPIAnchors[p_filterPanelId].defaultTop      = p_anchorData.defaultTop or defVarY
+end
+
+--Additional inventory flag buttons using offset defaults 1: varX1, varY1
+local addInvFlagButtonsWithOffsets1 = { --#329
+    [LF_INVENTORY] =                { anchorControl = playerInv },
+    [LF_BANK_WITHDRAW]=             { anchorControl = bankInv },
+    [LF_GUILDBANK_WITHDRAW]=        { anchorControl = guildBankInv },
+    [LF_HOUSE_BANK_WITHDRAW]=       { anchorControl = playerInv },
+    [LF_FURNITURE_VAULT_WITHDRAW]=  { anchorControl = furnitureVaultInv },
+}
+--Additional inventory flag buttons using offset defaults 2: varX2, varY2
+local addInvFlagButtonsWithOffsets2 = { --#329
+    [LF_SMITHING_REFINE] =      { anchorControl = refinementInv },
+    [LF_SMITHING_DECONSTRUCT]=  { anchorControl = deconstructionInv }, --#202 FilterButtons and additional inventory flag context menu button added to universal deconstruction panel
+    [LF_SMITHING_IMPROVEMENT]=  { anchorControl = improvementInv },
+    [LF_ENCHANTING_CREATION]=   { anchorControl = ctrlVars.ENCHANTING_INV },
+    [LF_JEWELRY_REFINE] =       { anchorControl = refinementInv },
+    [LF_JEWELRY_DECONSTRUCT]=   { anchorControl = deconstructionInv }, --#202 FilterButtons and additional inventory flag context menu button added to universal deconstruction panel
+    [LF_JEWELRY_IMPROVEMENT]=   { anchorControl = improvementInv },
+}
+--Additional inventory flag buttons using offset defaults 3: varX2, varY1
+local addInvFlagButtonsWithOffsets3 = { --#329
+    [LF_ALCHEMY_CREATION] =     { anchorControl = alchemyInv },
+    [LF_CRAFTBAG] =             { anchorControl = craftBagInv },
+    [LF_RETRAIT] =              { anchorControl = retraitInv },
+}
+--Special cases
+local addInvFlagButtonsWithOffsetsSpecial = { --#329
+    [LF_INVENTORY_COMPANION] =              { anchorControl   = companionInv,
+                                              left            = -55,
+                                              top             = 110,
+                                              defaultLeft     = -55,
+                                              defaultTop      = 110, },
+    [FCOIS_CON_LF_CHARACTER] =              { anchorControl   = characterInv,
+                                              anchorMyPoint   = TOPLEFT,
+                                              anchorToPoint   = TOPRIGHT,
+                                              left            = -16,
+                                              top             = 0,
+                                              defaultLeft     = -16,
+                                              defaultTop      = 0, },
+    [FCOIS_CON_LF_COMPANION_CHARACTER] =    { anchorControl   = companionCharacterInv,
+                                              anchorMyPoint   = TOPLEFT,
+                                              anchorToPoint   = TOPRIGHT,
+                                              left            = -16,
+                                              top             = 0,
+                                              defaultLeft     = -16,
+                                              defaultTop      = 0, },
+}
+--Cases using varX1 and varY1
+for filterPanelId, anchorData in pairs(addInvFlagButtonsWithOffsets1) do --#329
+    updateAddInvFlagButtonData(filterPanelId, anchorData, varX1, varY1)
+end
+--Cases using varX2 and varY2
+for filterPanelId, anchorData in pairs(addInvFlagButtonsWithOffsets2) do --#329
+    updateAddInvFlagButtonData(filterPanelId, anchorData, varX2, varY2)
+end
+--Cases using varX2 and varY1
+for filterPanelId, anchorData in pairs(addInvFlagButtonsWithOffsets3) do --#329
+    updateAddInvFlagButtonData(filterPanelId, anchorData, varX2, varY1)
+end
+--Special cases using custom variables
+for filterPanelId, anchorData in pairs(addInvFlagButtonsWithOffsetsSpecial) do --#329
+    updateAddInvFlagButtonData(filterPanelId, anchorData)
+end
+
 --Is the current API version unequal to the base API version above? Then copy the data
 anchorVarsAddInvButtonsFill[apiVersion] = ZO_ShallowTableCopy(additionalInventoryFlagButtonBaseAPIAnchors) --#320
 

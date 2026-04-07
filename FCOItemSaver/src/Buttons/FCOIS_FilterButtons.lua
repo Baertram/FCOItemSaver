@@ -319,21 +319,22 @@ local checkAndTransferFCOISFilterButtonDataByPanelId = FCOIS.CheckAndTransferFCO
 --Set all the filter button settings equal/to the same value of a given filter panel ID
 function FCOIS.SetAllFCOISFilterButtonOffsetAndSizeSettingsEqual(filterPanelIdSource)
     if filterPanelIdSource == nil then return false end
-    --local filterButtonsToCheck = FCOIS.checkVars.filterButtonsToCheck
+    local filterButtonsToCheck = FCOIS.checkVars.filterButtonsToCheck
     if filterButtonsToCheck ~= nil then
         local settings = FCOIS.settingsVars.settings
-        local activeFilterPanelIds = FCOIS.mappingVars.activeFilterPanelIds
-        --Check each filter button's settings
-        for _, filterButtonNr in ipairs(filterButtonsToCheck) do
-            for filterPanelIdTarget, active in pairs(activeFilterPanelIds) do
-                if active and filterPanelIdSource ~= filterPanelIdTarget then
-                    --Copy source settings to target settings
-                    if settings.filterButtonData ~= nil and settings.filterButtonData[filterButtonNr] ~= nil then
-                        --Get source settings
-                        local sourceSettings = ZO_DeepTableCopy(settings.filterButtonData[filterButtonNr][filterPanelIdSource])
-                        if sourceSettings ~= nil then
-                            FCOIS.settingsVars.settings.filterButtonData[filterButtonNr][filterPanelIdTarget] = {}
-                            FCOIS.settingsVars.settings.filterButtonData[filterButtonNr][filterPanelIdTarget] = sourceSettings
+        if settings.filterButtonData ~= nil then
+            local activeFilterPanelIds = FCOIS.mappingVars.activeFilterPanelIds
+            --Check each filter button's settings
+            for _, filterButtonNr in ipairs(filterButtonsToCheck) do
+                for filterPanelIdTarget, active in pairs(activeFilterPanelIds) do
+                    if active and filterPanelIdSource ~= filterPanelIdTarget then
+                        --Copy source settings to target settings
+                        if settings.filterButtonData[filterButtonNr] ~= nil then
+                            --Get source settings
+                            local sourceSettings = ZO_DeepTableCopy(settings.filterButtonData[filterButtonNr][filterPanelIdSource])
+                            if sourceSettings ~= nil then
+                                FCOIS.settingsVars.settings.filterButtonData[filterButtonNr][filterPanelIdTarget] = sourceSettings
+                            end
                         end
                     end
                 end

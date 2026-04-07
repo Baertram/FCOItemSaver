@@ -28,6 +28,38 @@ local getIconText
 --  Tooltip functions
 -- =====================================================================================================================
 
+local cacchedColorsProtectionState =  FCOIS.cachedColors.protectionState --#330
+local function RGBAToString(RGBAtab, protectionState)
+    local createNewColor = false
+    local cacchedColorsProtectionStateOfCurrentPprotectionState = cacchedColorsProtectionState[protectionState]
+    if cacchedColorsProtectionStateOfCurrentPprotectionState ~= nil then
+        if cacchedColorsProtectionStateOfCurrentPprotectionState.r ~= RGBAtab[1] or cacchedColorsProtectionStateOfCurrentPprotectionState.g ~= RGBAtab[2] or
+                cacchedColorsProtectionStateOfCurrentPprotectionState.b ~= RGBAtab[3] or cacchedColorsProtectionStateOfCurrentPprotectionState.a ~= RGBAtab[4] then
+            createNewColor = true
+        end
+    else
+        createNewColor = true
+    end
+    local protectionStateColor
+    if createNewColor then
+        local r, g, b, a = unpack(RGBAtab)
+        protectionStateColor = ZO_ColorDef:New(r, g, b, a)
+        cacchedColorsProtectionState[protectionState] = {
+            colorDef = protectionStateColor,
+            r = r,
+            g = g,
+            b = b,
+            a = a
+        }
+    else
+        protectionStateColor = cacchedColorsProtectionState[protectionState].colorDef
+    end
+    if protectionStateColor ~= nil then
+        return "|c" .. protectionStateColor:ToHex()
+    end
+end
+
+
 --Create the tooltip for the marker texture - BuildTooltip
 local createToolTip
 function FCOIS.CreateToolTip(markerControl, markerId, doHide, pUpdateAllEquipmentTooltips, pIsEquipmentSlot, calledByExternalAddonName, tooltipAdditionText)
@@ -77,6 +109,7 @@ function FCOIS.CreateToolTip(markerControl, markerId, doHide, pUpdateAllEquipmen
         local protectedColor = protectedData.colors
         local protectionEnabledColor = protectedColor[true]
         local protectionDisabledColor = protectedColor[false]
+        local colorizeFCOISAdditionalInventoriesButtonColor = settings.colorizeFCOISAdditionalInventoriesButtonColor ----#330
         local fcoisLoc                = FCOIS.localizationVars.fcois_loc
         local iconGearTooltipText     = fcoisLoc["options_icon_gear_tooltip_text"]
         local iconGearsTooltipText    = fcoisLoc["options_icon_gears_tooltip_text"]
@@ -148,10 +181,13 @@ function FCOIS.CreateToolTip(markerControl, markerId, doHide, pUpdateAllEquipmen
                             gearSettingsEnabled = isDestroyProtected
                         end
                         --Colorize the tooltip now so one always can see if the settings for this tooltip at the current panel are enabled!
+                        local gearSettingsEnabledBool = gearSettingsEnabled or false
+                        local protectedColorPrefixRGBA    = colorizeFCOISAdditionalInventoriesButtonColor[gearSettingsEnabledBool] --#330
+                        local protectedColorPrefix        = RGBAToString(protectedColorPrefixRGBA, gearSettingsEnabledBool) --#330
                         if gearSettingsEnabled then
-                            colorForText = protectionEnabledColor
+                            colorForText = protectedColorPrefix or protectionEnabledColor --#330
                         else
-                            colorForText = protectionDisabledColor
+                            colorForText = protectedColorPrefix or protectionDisabledColor --#330
                         end
                         local gearName = ""
                         --Mark the disabled gear sets gray in the tooltip
@@ -182,10 +218,13 @@ function FCOIS.CreateToolTip(markerControl, markerId, doHide, pUpdateAllEquipmen
                                         dynamicSettingsEnabled = isDestroyProtected
                                     end
                                     --Colorize the tooltip now so one always can see if the settings for this tooltip at the current panel are enabled!
+                                    local dynamicSettingsEnabledBool = dynamicSettingsEnabled or false
+                                    local protectedColorPrefixRGBA    = colorizeFCOISAdditionalInventoriesButtonColor[dynamicSettingsEnabledBool] --#330
+                                    local protectedColorPrefix        = RGBAToString(protectedColorPrefixRGBA, dynamicSettingsEnabledBool) --#330
                                     if dynamicSettingsEnabled then
-                                        colorForText = protectionEnabledColor
+                                        colorForText = protectedColorPrefix or protectionEnabledColor --#330
                                     else
-                                        colorForText = protectionDisabledColor
+                                        colorForText = protectedColorPrefix or protectionDisabledColor --#330
                                     end
                                 end
                                 iconName = colorForText .. iconName .. "|r"
@@ -198,14 +237,17 @@ function FCOIS.CreateToolTip(markerControl, markerId, doHide, pUpdateAllEquipmen
                                 normalSettingsEnabled = isDestroyProtected
                             end
                             if normalSettingsEnabled then
-                                --#311 Check if any special exclusions are enabled
-                                if FCOIS_normalMarkerIconExclusionsEnabled(panelId, iconId, whereAreWe) then --#311
-                                    colorForText = protectionDisabledColor
+                                local isMarkerIconProtectionDisabledByExclusion = FCOIS_normalMarkerIconExclusionsEnabled(panelId, iconId, whereAreWe) --#311 Check if any special exclusions are enabled
+                                local protectedColorPrefixRGBA    = colorizeFCOISAdditionalInventoriesButtonColor[not isMarkerIconProtectionDisabledByExclusion] --#330
+                                local protectedColorPrefix        = RGBAToString(protectedColorPrefixRGBA, not isMarkerIconProtectionDisabledByExclusion) --#330
+                                if isMarkerIconProtectionDisabledByExclusion then
+                                    colorForText = protectedColorPrefix or protectionDisabledColor
                                 else
-                                    colorForText = protectionEnabledColor
+                                    colorForText = protectedColorPrefix or protectionEnabledColor
                                 end
                             else
-                                colorForText = protectionDisabledColor
+                                local protectedColorPrefixDisabled = RGBAToString(colorizeFCOISAdditionalInventoriesButtonColor[false], false) --#330
+                                colorForText = protectedColorPrefixDisabled or protectionDisabledColor --#330
                             end
                             iconName = colorForText .. fcoisLoc["options_icon" .. tostring(iconId) .. "_tooltip_text"] .. "|r"
                         end
@@ -389,6 +431,7 @@ function FCOIS.BuildMarkerIconsTooltipText(markerIcons, newLineStr, onlyMarkedCo
     return tooltipTextOfMarkerIcons, countMarked, countTotal
 end
 
+
 --Build the tooltip for e.g. a marker icon's context menu entry and show which panel is protected at this marker icon
 function FCOIS.BuildMarkerIconProtectedWhereTooltip(markId)
     --local icon2Dyn = mappingVars.iconIsDynamic
@@ -397,11 +440,13 @@ function FCOIS.BuildMarkerIconProtectedWhereTooltip(markId)
     local protectedAtStr = "[" .. locVarsFCO["protection_at_panel"] .. "]"
     local filterPanelNames = locVarsFCO["FCOIS_LibFilters_PanelIds"]
     local activeFilterPanelIds = mappingVars.activeFilterPanelIds
-    local protectedData = FCOIS.protectedData
-    local protectedColorPrefixes = protectedData.colors
-    local protectedTextures = protectedData.textures
+    local protectedData                 = FCOIS.protectedData
+    local protectedColorDefaultPrefixes = protectedData.colors
+    local protectedTextures             = protectedData.textures
     local filterPanelIdToWhereAreWe = mappingVars.filterPanelIdToWhereAreWe
     local panelId = FCOIS.gFilterWhere
+    local colorizeFCOISAdditionalInventoriesButtonColor = FCOIS.settingsVars.settings.colorizeFCOISAdditionalInventoriesButtonColor ----#330
+
     --For each possible filterPanelId:
     for libFilterPanelId, isActivated in pairs(activeFilterPanelIds) do
         if isActivated then
@@ -414,18 +459,21 @@ function FCOIS.BuildMarkerIconProtectedWhereTooltip(markId)
                 if not isProtected and isDestroyProtected then
                     isProtected = isDestroyProtected
                 end
+                local isProtectedBool = isProtected or false
                 if isProtected == nil then isProtected = "non_active" end
-                local protectedColorPrefix = protectedColorPrefixes[isProtected]
-                local protectedTexture = protectedTextures[isProtected]
+                local protectedColorDefaultPrefix = protectedColorDefaultPrefixes[isProtected]
+                local protectedColorPrefixRGBA    = colorizeFCOISAdditionalInventoriesButtonColor[isProtectedBool] --#330
+                local protectedColorPrefix        = RGBAToString(protectedColorPrefixRGBA, isProtectedBool) --#330
+                local protectedTexture            = protectedTextures[isProtected]
                 --Add the texture to the filterpanelName
                 --filterPanelName = zo_strformat(filterPanelName .. " <<1>>", zo_iconFormat(protectedTexture, 20, 20))
-                filterPanelName = zo_iconTextFormatNoSpace(protectedTexture, 20, 20, filterPanelName, protectedColorPrefix)
+                filterPanelName                   = zo_iconTextFormatNoSpace(protectedTexture, 20, 20, filterPanelName, protectedColorPrefix or protectedColorDefaultPrefix) --#330
                 --Is the filterPanelId the current filterPanelid? Then add the [ in front and ]aat the end
                 if libFilterPanelId == panelId then
                     filterPanelName = "[  " .. filterPanelName .. "  ]"
                 end
                 --And then add the texture, afterwards the name of the panel colorized to the text output
-                protectedAtStr = protectedAtStr .. "\n" .. protectedColorPrefix .. filterPanelName .. "|r"
+                protectedAtStr = protectedAtStr .. "\n" .. (protectedColorPrefix or protectedColorDefaultPrefix) .. filterPanelName .. "|r" --#330
             end
         end
     end
