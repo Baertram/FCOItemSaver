@@ -325,7 +325,7 @@ function FCOIS.BuildDefaultSettings()
 			[false] = 	{1, 0, 0, 1}, --unprotected RED
 		},
 		FCOISAdditionalInventoriesButtonOffset = {},
-		FCOISAdditionalInventoriesButtonSize = {}, --#329
+		FCOISAdditionalInventoriesButtonSize = 32, --#329
 		showFilterButtonTooltip		= true,
 		showFilterButtonContextTooltip = true,
 		showAntiMessageInChat		= true,

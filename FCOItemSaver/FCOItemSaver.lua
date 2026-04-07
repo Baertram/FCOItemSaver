@@ -218,7 +218,7 @@ ReloadUI does not do anything, but manually mass marking via flag icon works fin
 
 
 --______________________________________
--- Current max # of bugs/features/ToDos: 330
+-- Current max # of bugs/features/ToDos: 332
 --______________________________________
 
 --Open/To work on this patch:
@@ -237,21 +237,21 @@ ReloadUI does not do anything, but manually mass marking via flag icon works fin
 ------------------------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed] -              Updated last 2026-04-06
 ------------------------------------------------------------------------------------
---#329 Add color and size settings for additional inventory flag protection enabled/disabled
---#330 Add color settings for tooltip protection enabled/disabled text
---#331 Fix additional inventory "flag" filter button position copying from inventory to all other filterPanels
 
 
 -------------------------------------------------------------------------------------
 --Changelog (last version: 2.8.0 - New version: 2.8.1) -    Updated last: 2026-04-06
 -------------------------------------------------------------------------------------
 --[Fixed]
-
+--#331 Fix additional inventory "flag" filter button position copying from inventory to all other filterPanels
+--#332 Fix additional inventory "flag" filter button hidden state according to settings
 
 
 --[Changed]
 
 --[Added]
+--#329 Add color and size settings for additional inventory flag protection enabled/disabled state (this color change also affects the protection state color at the markr icon tooltips and at the context menus -> See #330)
+--#330 Indirectly added color settings for marker icon's tooltip protection enabled/disabled text -> See #329
 
 
 --[Added on request]

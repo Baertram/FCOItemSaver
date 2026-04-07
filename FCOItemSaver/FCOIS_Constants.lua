@@ -132,6 +132,9 @@ FCOIS.protectedData.textures = {
     [true]          = "esoui/art/buttons/accept_up.dds",
     ["non_active"]  = "esoui/art/buttons/cancel_up.dds",
 }
+FCOIS.cachedColors = { --#330
+    ["protectionState"] = { [true] = nil, [false] = nil}
+}
 local protectedColors = FCOIS.protectedData.colors
 local protectionOffColor    = protectedColors[false]
 local protectionOnColor     = protectedColors[true]
