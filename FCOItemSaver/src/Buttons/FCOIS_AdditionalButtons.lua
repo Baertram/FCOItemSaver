@@ -17,6 +17,22 @@ local FCOISicon = addonVars.icon
 -- =====================================================================================================================
 --  Additional inventory button functions ("flag" buttons / jump to settings button / etc.)
 -- =====================================================================================================================
+local FCOIS_GetTooltipForAddInvButtons --#334
+local function FCOIS_GetAddInvButtonTooltip(button) --#334
+    local buttonData = button.buttonData
+    if buttonData == nil then return end
+    local showTooltip = buttonData.showTooltip
+    if not showTooltip then return end
+
+    FCOIS_GetTooltipForAddInvButtons = FCOIS_GetTooltipForAddInvButtons or FCOIS.GetTooltipForAddInvButtons
+    local tooltipText = FCOIS_GetTooltipForAddInvButtons(button, buttonData) --Get the current protection state at the current panel of the button -> as text
+    if tooltipText == nil or tooltipText == "" then return end
+    tooltipText = FCOIS.preChatVars.preChatTextGreen .. tooltipText
+    buttonData.tooltipText = tooltipText
+
+    ZO_Tooltips_ShowTextTooltip(button, button.tooltipAlign, tooltipText)
+end
+
 
 --Add a button to an existing parent control
 local function addButtonToParentControl(buttonData, parent, name, callbackFunction, onMouseUpCallbackFunction, onMouseUpCallbackFunctionMouseButton, text, font, tooltipText, tooltipAlign, textureNormal, textureMouseOver, textureClicked, width, height, left, top, alignMain, alignBackup, alignControl, hideButton)
@@ -37,10 +53,16 @@ local function addButtonToParentControl(buttonData, parent, name, callbackFuncti
         if hideButton == true then return nil end
         --Create the button control at the parent
         button = wm:CreateControl(name, parent, CT_BUTTON)
-        button.buttonData = buttonData
     end
     --Button was created?
     if button ~= nil then
+        button.buttonData = buttonData --#334
+        button:SetHandler("OnClicked", nil) --#334
+        button:SetHandler("OnMouseEnter", nil) --#334
+        button:SetHandler("OnMouseExit", nil) --#334
+        button:SetHandler("OnMouseUp", nil) --#334
+        button.tooltipText = nil
+        button.tooltipAlign = nil
         --is the QualitySort addon active?
         --[[
         --FCOIS v1.6.7 - Deactivated
@@ -68,7 +90,7 @@ local function addButtonToParentControl(buttonData, parent, name, callbackFuncti
             button:SetAnchor(alignMain, alignControl, alignBackup, left, top)
 
             --Texture or text?
-            if (text ~= nil) then
+            if text ~= nil then
                 --Text
                 --Set the button's font
                 if font == nil then
@@ -85,7 +107,7 @@ local function addButtonToParentControl(buttonData, parent, name, callbackFuncti
                 local texture
 
                 --Check if texture exists
-                texture =  GetControl(name, "Texture") --wm:GetControlByName(name .. "Texture", "")
+                texture = GetControl(name, "Texture") --wm:GetControlByName(name .. "Texture", "")
                 if texture == nil then
                     --Create the texture for the button to hold the image
                     texture = wm:CreateControl(name .. "Texture", button, CT_TEXTURE)
@@ -104,24 +126,22 @@ local function addButtonToParentControl(buttonData, parent, name, callbackFuncti
             if tooltipAlign == nil then tooltipAlign = TOP end
 
             --Set a tooltip?
-            if tooltipText ~= nil then
-                tooltipText = FCOIS.preChatVars.preChatTextGreen .. tooltipText
-                button.tooltipText	= tooltipText
+            if (tooltipText == nil and buttonData.showTooltip == true) or (tooltipText ~= nil and tooltipText ~= "") then --#334
                 button.tooltipAlign = tooltipAlign
-                button:SetHandler("OnMouseEnter", function(self)
-                    self:GetChild(1):SetTexture(self.downTexture)
-                    ZO_Tooltips_ShowTextTooltip(self, self.tooltipAlign, self.tooltipText)
+                button:SetHandler("OnMouseEnter", function(selfButton)
+                    selfButton:GetChild(1):SetTexture(selfButton.downTexture)
+                    FCOIS_GetAddInvButtonTooltip(selfButton)
                 end)
-                button:SetHandler("OnMouseExit", function(self)
-                    self:GetChild(1):SetTexture(self.upTexture)
+                button:SetHandler("OnMouseExit", function(selfButton)
+                    selfButton:GetChild(1):SetTexture(selfButton.upTexture)
                     ZO_Tooltips_HideTextTooltip()
                 end)
-            else
-                button:SetHandler("OnMouseEnter", function(self)
-                    self:GetChild(1):SetTexture(self.downTexture)
+            elseif tooltipText == nil then
+                button:SetHandler("OnMouseEnter", function(selfButton)
+                    selfButton:GetChild(1):SetTexture(selfButton.downTexture)
                 end)
-                button:SetHandler("OnMouseExit", function(self)
-                    self:GetChild(1):SetTexture(self.upTexture)
+                button:SetHandler("OnMouseExit", function(selfButton)
+                    selfButton:GetChild(1):SetTexture(selfButton.upTexture)
                 end)
             end
             --Set the callback function of the button
@@ -311,7 +331,18 @@ function FCOIS.AddAdditionalButtons(buttonName, buttonData)
         --Add all additional inventory context menu "flag icon" buttons
         elseif buttonName == "FCOInventoriesContextMenuButtons" and buttonData == nil then
             local currentAddInvFlagButtonHiddenState = not settings.showFCOISAdditionalInventoriesButton --#332
-            local currentAddInvFlagButtonSize = settings.FCOISAdditionalInventoriesButtonSize
+            local currentAddInvFlagButtonSize = settings.FCOISAdditionalInventoriesButtonSize --#332
+
+            local invAddButtonVars = FCOIS.invAdditionalButtonVars --#333 -v-
+            local markerIconTextures = FCOIS.textureVars.MARKER_TEXTURES
+            local defaultAddInvFlagIcon = invAddButtonVars.texNormal
+            local currentAddInvFlagButtonTexture = markerIconTextures[settings.FCOISAdditionalInventoriesButtonTexture] or defaultAddInvFlagIcon
+            --MosueOver texture is the same, only if normal texture is the flag then use the mouse over of default flag too
+            local currentAddInvFlagButtonTextureMouseOver = currentAddInvFlagButtonTexture
+            if currentAddInvFlagButtonTexture == defaultAddInvFlagIcon then
+                currentAddInvFlagButtonTextureMouseOver = invAddButtonVars.texMouseOver
+            end --#333 -^-
+            local currentAddInvFlagButtonTooltip = settings.showFCOISAdditionalInventoriesButtonTooltip --#334
 
             --Add all additional inventory flag buttons
             local addInvBtnInvokers = FCOIS.contextMenuVars.filterPanelIdToContextMenuButtonInvoker
@@ -319,7 +350,11 @@ function FCOIS.AddAdditionalButtons(buttonName, buttonData)
                 if buttonDataTab ~= nil and buttonDataTab.addInvButton and buttonDataTab.name ~= nil and buttonDataTab.name ~= "" then
                     buttonDataTab.width = currentAddInvFlagButtonSize --#329
                     buttonDataTab.height = currentAddInvFlagButtonSize --#329
+                    buttonDataTab.textureNormal = currentAddInvFlagButtonTexture --#333
+                    buttonDataTab.textureMouseOver = currentAddInvFlagButtonTextureMouseOver --#333
+                    buttonDataTab.textureClicked = currentAddInvFlagButtonTexture --#333
                     buttonDataTab.hideButton = currentAddInvFlagButtonHiddenState --#332
+                    buttonDataTab.showTooltip = currentAddInvFlagButtonTooltip --#334
                     addAdditionalButtons(nil, buttonDataTab)
                 end
             end

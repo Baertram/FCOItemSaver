@@ -214,45 +214,30 @@ ReloadUI does not do anything, but manually mass marking via flag icon works fin
 ]]
 
 
---#2025_999 Performance improvements
-
 
 --______________________________________
--- Current max # of bugs/features/ToDos: 332
+-- Current max # of bugs/features/ToDos: 334
 --______________________________________
-
---Open/To work on this patch:
---Test protective functions for all panels
---FCOIS.CheckActivePanel -> Use LibFilters to detect the panel ?
---FCOIS.GetWhereAreWe -> Remove CraftBagExtended checks and move to extra function
-
---=== Not started yet ===
---Clear SV values which are boolean and do not really need a "false" (nil would be okay too)
---showMarkerTooltip[1..n]
---isIconEnabled[1..n]
---allowedFCOISUniqueIdItemTypes
-
+--#333 Add. inv. 'flag' icon texture selection
+--#334 Add. inv. 'flag' icon tooltip to show protection state of the current panel
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2026-04-06
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2026-04-10
 ------------------------------------------------------------------------------------
 
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.8.0 - New version: 2.8.1) -    Updated last: 2026-04-06
+--Changelog (last version: 2.8.1 - New version: 2.8.1) -    Updated last: 2026-04-10
 -------------------------------------------------------------------------------------
 --[Fixed]
---#331 Fix additional inventory "flag" filter button position copying from inventory to all other filterPanels
---#332 Fix additional inventory "flag" filter button hidden state according to settings
+--
 
 
 --[Changed]
 
 --[Added]
---#329 Add color and size settings for additional inventory flag protection enabled/disabled state (this color change also affects the protection state color at the markr icon tooltips and at the context menus -> See #330)
---#330 Indirectly added color settings for marker icon's tooltip protection enabled/disabled text -> See #329
-
+--
 
 --[Added on request]
 

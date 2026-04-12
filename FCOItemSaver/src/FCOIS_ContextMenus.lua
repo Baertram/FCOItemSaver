@@ -13,6 +13,7 @@ local strlen = string.len
 local zo_strf = zo_strformat
 local strfor = string.format
 local tins = table.insert
+local string_upper = string.upper
 
 --local wm = WINDOW_MANAGER
 local isiuse = IsItemUsable
@@ -177,9 +178,12 @@ local callItemSelectionHandler
 local callDeconstructionSelectionHandler
 local changeContextMenuEntryTexts
 local isUnboundAndNotStolenItemChecks = FCOIS.IsUnboundAndNotStolenItemChecks
+local FCOIS_CheckIfCBEorAGSActive
+
 local processJunkQueue = FCOIS.ProcessJunkQueue
 local getInventoryToSearch = FCOIS.GetInventoryToSearch --#308
 local FCOIS_GetIIfASettings = FCOIS.GetIIfASettings --#324
+local RGBAToString --#334
 
 ------------------------------------------------------------------------------------------------------------------------
 --Get the context menu invoker button data by help of the panel Id
@@ -2619,16 +2623,22 @@ end
 
 --Function to build the text for the toggle buttons (Anti-Deconstruct, Anti-Destroy, Anti-Sell, etc.)
 --The function will return as first parameter the text and as second parameter a boolean value: true if the protective setting for the current panel is enabled, and false if not
-function FCOIS.GetContextMenuAntiSettingsTextAndState(p_filterWhere, buildText, isSpecialAntiSetting)
+--Mapping array for the on/off text
+local mappingButtonOnOffText = {
+    ["true"]  = "off",
+    ["false"] = "on",
+}
+function FCOIS.GetContextMenuAntiSettingsTextAndState(p_filterWhere, buildText, isSpecialAntiSetting, addInvFlagTooltip) --#334
 --d("[FCOIS] FCOIS.getContextMenuAntiSettingsTextAndState - filterPanelIdAtCall: " ..tos(p_filterWhere) .. ", buildText: " ..tos(buildText) .. ", isSpecialAntiSetting: " ..tos(isSpecialAntiSetting))
     if p_filterWhere == nil or p_filterWhere == 0 then p_filterWhere = FCOIS.gFilterWhere end
     if p_filterWhere == nil or p_filterWhere == 0 then return end
     buildText = buildText or false
     local useCraftBagExtendedPanel = false
     local filterPanelToCheck = p_filterWhere
+    addInvFlagTooltip = addInvFlagTooltip or false
 
     local settings = FCOIS.settingsVars.settings
-    if settings.debug then debugMessage( "[getContextMenuAntiSettingsTextAndState]","PanelId: " .. p_filterWhere .. ", BuildText: " .. tos(buildText) .. ", isSpecialAntiSetting: " ..tos(isSpecialAntiSetting), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+    if settings.debug then debugMessage( "[getContextMenuAntiSettingsTextAndState]","PanelId: " .. p_filterWhere .. ", BuildText: " .. tos(buildText) .. ", isSpecialAntiSetting: " ..tos(isSpecialAntiSetting) .. "; addInvFlagTooltip: " ..tos(addInvFlagTooltip), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
 
     local currentSettingsState
     local currentSettingsStateDestroy
@@ -2636,7 +2646,8 @@ function FCOIS.GetContextMenuAntiSettingsTextAndState(p_filterWhere, buildText, 
         --As the CraftBag can be active at the mail send, trade, vendor sell, guild store sell and guild bank panels too we need to check if we are currently using the
         --addon CraftBagExtended and if the parent panel ID (FCOIS.gFilterWhereParent) is one of the above mentioned
         -- -> See callback function for CRAFT_BAG_FRAGMENT in the PreHooks section!
-        if FCOIS.CheckIfCBEorAGSActive(FCOIS.gFilterWhereParent, nil) then
+        FCOIS_CheckIfCBEorAGSActive = FCOIS_CheckIfCBEorAGSActive or FCOIS.CheckIfCBEorAGSActive
+        if FCOIS_CheckIfCBEorAGSActive(FCOIS.gFilterWhereParent, nil) then
             filterPanelToCheck = FCOIS.gFilterWhereParent
             useCraftBagExtendedPanel = true
         end
@@ -2656,6 +2667,7 @@ function FCOIS.GetContextMenuAntiSettingsTextAndState(p_filterWhere, buildText, 
             currentSettingsState = currentSettingsStateDestroy
         end
     end
+    local currentSettingsStateInverted = not currentSettingsState --#334
 
     --Build the text too?
     local retStrVal = ""
@@ -2665,20 +2677,21 @@ function FCOIS.GetContextMenuAntiSettingsTextAndState(p_filterWhere, buildText, 
             return nil, nil
         end
         local locVars = FCOIS.localizationVars.fcois_loc
-        --Mapping array for the on/off text
-        local mappingButtonOnOffText = {
-            ["true"]  = "off",
-            ["false"] = "on",
-        }
         local onOffText = mappingButtonOnOffText[tos(currentSettingsState)]
+        local onOffInvertedText = mappingButtonOnOffText[tos(currentSettingsStateInverted)] --#334
         if onOffText ~= "" then
             --Mapping array for the localized button texts
             local mappingButtonText
             if isSpecialAntiSetting == true then
                 mappingButtonText = FCOIS.mappingVars.contextMenuSpecialAntiButtonsAtPanel
             else
-                mappingButtonText = FCOIS.mappingVars.contextMenuAntiButtonsAtPanel
+                if addInvFlagTooltip == true then --#334
+                    mappingButtonText = FCOIS.mappingVars.addInvFlagAntiTooltipTextAtPanel  --#334
+                else
+                    mappingButtonText = FCOIS.mappingVars.contextMenuAntiButtonsAtPanel
+                end
             end
+            if mappingButtonText == nil then return nil, nil end  --#334
             local btnText = ""
             --As the CraftBag can be active at the mail send, trade, sell, guild store sell and guild bank panels too we need to check if we are currently using the
             --addon CraftBagExtended and if the parent panel ID (FCOIS.gFilterWhereParent) is one of the above mentioned
@@ -2690,9 +2703,22 @@ function FCOIS.GetContextMenuAntiSettingsTextAndState(p_filterWhere, buildText, 
                 btnText = mappingButtonText[p_filterWhere]
             end
             if btnText ~= "" then
-                btnText = btnText .. onOffText
+                if not addInvFlagTooltip then --#334
+                    btnText = btnText .. onOffText
+                end
                 if btnText ~= "" then
                     retStrVal = locVars[btnText]
+--d(">p_filterWhere: " .. tos(p_filterWhere) .. ", retStrVal: " .. tos(retStrVal) ..", btnText: " .. tos(btnText))
+                    if addInvFlagTooltip and retStrVal ~= nil and retStrVal ~= "" then --#334
+                        local onOfTextLoc = locVars[onOffInvertedText]
+                        onOfTextLoc = (onOfTextLoc ~= nil and string_upper(onOfTextLoc)) or ""
+                        --todo Colorize the ON/OFF with the normal tooltip text color too
+                        local colorizeFCOISAdditionalInventoriesButtonColor = settings.colorizeFCOISAdditionalInventoriesButtonColor --#334
+                        RGBAToString = RGBAToString or FCOIS.RGBAToString
+                        local onOfTextLocColorized = (onOfTextLoc ~= "" and (": " .. RGBAToString(colorizeFCOISAdditionalInventoriesButtonColor[currentSettingsState], currentSettingsState) .. onOfTextLoc .. "|r")) or onOfTextLoc
+--d(">>onOffText: " ..tos(onOffInvertedText) .. "; onOfTextLoc: " ..tos(onOfTextLocColorized))
+                        retStrVal = retStrVal .. onOfTextLocColorized  --#334
+                    end
                 end
             else
                 retStrVal = ""
@@ -3675,12 +3701,7 @@ local function addSortedButtonDataTableEntries(sortedButtonData, btnCtrl, panelI
     end
 end -- function addSortedButtonDataTableEntries()
 
---Function that display the context menu after the player clicks with left mouse button on the additional inventory "flag" button
--- on the top left corner of the inventories (left to the "name" sort header)
-function FCOIS.ShowContextMenuForAddInvButtons(invAddContextMenuInvokerButton, buttonDataOfInvokerButton)
---FCOIS._buttonDataOfInvokerButton = buttonDataOfInvokerButton
-    --FCOIS v.0.8.8d
-    --Add ZOs ZO_Menu contextMenu entries via addon library libCustomMenu
+local function getFilterPanelIdForAddInvButton(buttonDataOfInvokerButton)
     local filterPanelIdOfButtonData   = buttonDataOfInvokerButton and buttonDataOfInvokerButton.filterPanelId
     local panelId                     = filterPanelIdOfButtonData
     checkIfUniversalDeconstructionNPC = checkIfUniversalDeconstructionNPC or FCOIS.CheckIfUniversalDeconstructionNPC -- #202
@@ -3692,6 +3713,24 @@ function FCOIS.ShowContextMenuForAddInvButtons(invAddContextMenuInvokerButton, b
     end
     --Else use the filterPanelId at the currently shown panel
     if panelId == nil then panelId = FCOIS.gFilterWhere end
+
+    return panelId, isUniversalDeconNPC
+end
+
+function FCOIS.GetTooltipForAddInvButtons(invAddContextMenuInvokerButton, buttonDataOfInvokerButton) --#334
+    buttonDataOfInvokerButton = buttonDataOfInvokerButton or invAddContextMenuInvokerButton.buttonData
+    local panelId, isUniversalDeconNPC = getFilterPanelIdForAddInvButton(buttonDataOfInvokerButton)
+    local antiButtonText, _ = getContextMenuAntiSettingsTextAndState(panelId, true, nil, true)
+    return antiButtonText
+end
+
+--Function that display the context menu after the player clicks with left mouse button on the additional inventory "flag" button
+-- on the top left corner of the inventories (left to the "name" sort header)
+function FCOIS.ShowContextMenuForAddInvButtons(invAddContextMenuInvokerButton, buttonDataOfInvokerButton)
+--FCOIS._buttonDataOfInvokerButton = buttonDataOfInvokerButton
+    --FCOIS v.0.8.8d
+    --Add ZOs ZO_Menu contextMenu entries via addon library libCustomMenu
+    local panelId, isUniversalDeconNPC = getFilterPanelIdForAddInvButton(buttonDataOfInvokerButton) --#334
     --d(">panelId: " ..tos(panelId) .. ", FCOIS.gFilterWhere: " .. tos(FCOIS.gFilterWhere) .. ", buttonFilterPanel: " ..tos(buttonDataOfInvokerButton.filterPanelId))
 
     local mappingVars = FCOIS.mappingVars

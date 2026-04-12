@@ -290,6 +290,7 @@ FCOIS.textureVars.MARKER_TEXTURES = {
     [277] = [[/esoui/art/armory/buildicons/buildicon_73.dds]],
     [278] = [[/esoui/art/armory/buildicons/buildicon_74.dds]],
     [279] = [[/esoui/art/inventory/gamepad/gp_inventory_icon_companionitems.dds]],
+    [280] = [[/esoui/art/ava/tabicon_bg_score_inactive.dds]], --Additional inventory 'flag' icon
 }
 
 

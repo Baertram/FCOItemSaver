@@ -8082,6 +8082,36 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                             default = FCOISdefaultSettings.showFCOISAdditionalInventoriesButton,
                             --requiresReload = true,
                         },
+                        { --#334
+                            type = "checkbox",
+                            name = locVars["options_icon1_TT"],
+                            tooltip = locVars["options_icon1_TT"],
+                            getFunc = function() return FCOISsettings.showFCOISAdditionalInventoriesButtonTooltip end,
+                            setFunc = function(value) FCOISsettings.showFCOISAdditionalInventoriesButtonTooltip = value
+                            end,
+                            default = FCOISdefaultSettings.showFCOISAdditionalInventoriesButtonTooltip,
+                            disabled = function() return not FCOISsettings.showFCOISAdditionalInventoriesButton end,
+                        },
+                        { --#333
+                            name = locVars["options_additional_buttons_FCOIS_additional_options_texture"],
+                            tooltip = locVars["options_additional_buttons_FCOIS_additional_options_texture" .. tooltipSuffix],
+                            type    = "iconpicker",
+                            width = "full",
+                            choices = markerIconTextures,
+                            choicesTooltips = texturesList,
+                            maxColumns = 5,
+                            visibleRows = 5,
+                            iconSize = 32,
+                            getFunc = function() return markerIconTextures[FCOISsettings.FCOISAdditionalInventoriesButtonTexture] end,
+                            setFunc = function(texturePath)
+                                local textureId = GetFCOTextureId(texturePath)
+                                if textureId ~= 0 then
+                                    FCOISsettings.FCOISAdditionalInventoriesButtonTexture = textureId
+                                    FCOIS.AddAdditionalButtons("FCOInventoriesContextMenuButtons")
+                                end
+                            end,
+                            disabled = function() return not FCOISsettings.showFCOISAdditionalInventoriesButton end,
+                        },
                         {
                             type = "slider",  --#329 Slider for width and height of the add. inv. flag buttons
                             name = locVars["options_additional_buttons_FCOIS_additional_options_width"],

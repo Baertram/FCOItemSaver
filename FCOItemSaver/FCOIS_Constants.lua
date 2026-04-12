@@ -3789,6 +3789,56 @@ mappingVars.contextMenuAntiButtonsAtPanel = {
     [FCOIS_CON_LF_COMPANION_CHARACTER]  = buttonContextMenuDestroy,
 }
 
+--The mapping for the additional inventory 'flag' tooltip text -> protection state
+local addInvFlagButtonTooltipToggleAntiPrefix = "addInvFlagTooltip_anti_"
+local addInvFlagButtonTooltipDestroy         = addInvFlagButtonTooltipToggleAntiPrefix .."destroy"
+local addInvFlagButtonTooltipSell            = addInvFlagButtonTooltipToggleAntiPrefix .."sell"
+local addInvFlagButtonTooltipRefine          = addInvFlagButtonTooltipToggleAntiPrefix .."refine"
+local addInvFlagButtonTooltipDecon           = addInvFlagButtonTooltipToggleAntiPrefix .."deconstruct"
+local addInvFlagButtonTooltipImprove         = addInvFlagButtonTooltipToggleAntiPrefix .."improve"
+mappingVars.addInvFlagAntiTooltipTextAtPanel = { --#334
+    [LF_INVENTORY] 				= addInvFlagButtonTooltipDestroy,
+    [LF_BANK_WITHDRAW] 			= addInvFlagButtonTooltipDestroy,
+    [LF_BANK_DEPOSIT] 			= addInvFlagButtonTooltipDestroy,
+    [LF_GUILDBANK_WITHDRAW] 	= addInvFlagButtonTooltipDestroy,
+    [LF_GUILDBANK_DEPOSIT]		= addInvFlagButtonTooltipDestroy,
+    [LF_VENDOR_BUY] 			= addInvFlagButtonTooltipToggleAntiPrefix .."buy",
+    [LF_VENDOR_SELL] 			= addInvFlagButtonTooltipSell,
+    [LF_VENDOR_BUYBACK] 		= addInvFlagButtonTooltipToggleAntiPrefix .."buyback",
+    [LF_VENDOR_REPAIR] 			= addInvFlagButtonTooltipToggleAntiPrefix .."repair",
+    [LF_SMITHING_REFINE]  		= addInvFlagButtonTooltipRefine,
+    [LF_SMITHING_DECONSTRUCT]  	= addInvFlagButtonTooltipDecon,
+    [LF_SMITHING_IMPROVEMENT]	= addInvFlagButtonTooltipImprove,
+    [LF_SMITHING_RESEARCH]		= "",       --research does not show any additional "flag" button as there is no mass marking possible and the protection is neither checked. Only filters will apply! -> No shown inv list with items
+    [LF_SMITHING_RESEARCH_DIALOG] = "",     --research dialog does not show any additional "flag" button as the ZO_ListDialog1 custom control won't properly work with it. Only filters will apply!
+    [LF_GUILDSTORE_SELL] 	 	= addInvFlagButtonTooltipSell,
+    [LF_MAIL_SEND] 				= addInvFlagButtonTooltipToggleAntiPrefix .."mail",
+    [LF_TRADE] 					= addInvFlagButtonTooltipToggleAntiPrefix .."trade",
+    [LF_ALCHEMY_CREATION]       = addInvFlagButtonTooltipToggleAntiPrefix .."alchemy",
+    [LF_ENCHANTING_CREATION]	= addInvFlagButtonTooltipToggleAntiPrefix .."create",
+    [LF_ENCHANTING_EXTRACTION]	= addInvFlagButtonTooltipToggleAntiPrefix .."extract",
+    [LF_FENCE_SELL] 			= addInvFlagButtonTooltipToggleAntiPrefix .."fence_sell",
+    [LF_FENCE_LAUNDER] 			= addInvFlagButtonTooltipToggleAntiPrefix .."launder_sell",
+    [LF_CRAFTBAG]				= addInvFlagButtonTooltipDestroy,
+    [LF_RETRAIT]				= addInvFlagButtonTooltipToggleAntiPrefix .."retrait",
+    [LF_HOUSE_BANK_WITHDRAW]    = addInvFlagButtonTooltipDestroy,
+    [LF_HOUSE_BANK_DEPOSIT] 	= addInvFlagButtonTooltipDestroy,
+    [LF_JEWELRY_REFINE]  		= addInvFlagButtonTooltipRefine,
+    [LF_JEWELRY_DECONSTRUCT]  	= addInvFlagButtonTooltipDecon,
+    [LF_JEWELRY_IMPROVEMENT]	= addInvFlagButtonTooltipImprove,
+    [LF_JEWELRY_RESEARCH]		= "",       --research does not show any additional "flag" button as there is no mass marking possible and the protection is neither checked. Only filters will apply! -> No shown inv list with items
+    [LF_JEWELRY_RESEARCH_DIALOG] = "",      --research dialog does not show any additional "flag" button as the ZO_ListDialog1 custom control won't properly work with it. Only filters will apply!
+    [LF_INVENTORY_COMPANION]    = addInvFlagButtonTooltipDestroy,
+    [LF_FURNITURE_VAULT_WITHDRAW] = addInvFlagButtonTooltipDestroy,
+    [LF_FURNITURE_VAULT_DEPOSIT] = addInvFlagButtonTooltipDestroy,
+    --======================================================================================================================
+    --Special entries without LibFilters filterPanelId -> FCOIS custom filterPanels
+    --Character
+    [FCOIS_CON_LF_CHARACTER]            = addInvFlagButtonTooltipDestroy,
+    --Companion character
+    [FCOIS_CON_LF_COMPANION_CHARACTER]  = addInvFlagButtonTooltipDestroy,
+}
+
 --The mapping between filterPanelIds and there special Anti-Settings which need an own contextmenu entry
 mappingVars.filterPanelGotSpecialSettingsEntryInContextMenu = {
     [LF_GUILDBANK_DEPOSIT] = "blockGuildBankWithoutWithdraw",
@@ -3796,7 +3846,7 @@ mappingVars.filterPanelGotSpecialSettingsEntryInContextMenu = {
 
 --The maping table for the text at the context menu that the special anti-settings should show there
 mappingVars.contextMenuSpecialAntiButtonsAtPanel = {
-    [LF_GUILDBANK_DEPOSIT] = buttonContextMenuToggleAntiPrefix .."guild_bank_deposit_without_withdraw_rights_",
+    [LF_GUILDBANK_DEPOSIT] = addInvFlagButtonTooltipToggleAntiPrefix .."guild_bank_deposit_without_withdraw_rights_",
 }
 
 
