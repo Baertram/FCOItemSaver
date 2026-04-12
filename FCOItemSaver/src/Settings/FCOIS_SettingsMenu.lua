@@ -8092,6 +8092,7 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                             tooltip = locVars["options_icon1_TT"],
                             getFunc = function() return FCOISsettings.showFCOISAdditionalInventoriesButtonTooltip end,
                             setFunc = function(value) FCOISsettings.showFCOISAdditionalInventoriesButtonTooltip = value
+                                FCOIS.AddAdditionalButtons("FCOInventoriesContextMenuButtons")
                             end,
                             default = FCOISdefaultSettings.showFCOISAdditionalInventoriesButtonTooltip,
                             disabled = function() return not FCOISsettings.showFCOISAdditionalInventoriesButton end,
