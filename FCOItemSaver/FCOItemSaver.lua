@@ -216,22 +216,21 @@ ReloadUI does not do anything, but manually mass marking via flag icon works fin
 
 
 --______________________________________
--- Current max # of bugs/features/ToDos: 334
+-- Current max # of bugs/features/ToDos: 335
 --______________________________________
---#333 Add. inv. 'flag' icon texture selection
---#334 Add. inv. 'flag' icon tooltip to show protection state of the current panel
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2026-04-10
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2026-04-12
 ------------------------------------------------------------------------------------
-
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.8.1 - New version: 2.8.1) -    Updated last: 2026-04-10
+--Changelog (last version: 2.8.1 - New version: 2.8.2) -    Updated last: 2026-04-12
 -------------------------------------------------------------------------------------
 --[Fixed]
---
+--#333 Add. inv. 'flag' icon texture selection
+--#334 Add. inv. 'flag' icon tooltip to show protection state of the current panel
+--#335 Anti-refine/decon/improve protection did not change via the context menu or right clicking the flag button (jewelry/non-jewelry crafing detection)
 
 
 --[Changed]

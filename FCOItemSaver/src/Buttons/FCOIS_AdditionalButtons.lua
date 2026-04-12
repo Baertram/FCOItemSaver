@@ -19,6 +19,7 @@ local FCOISicon = addonVars.icon
 -- =====================================================================================================================
 local FCOIS_GetTooltipForAddInvButtons --#334
 local function FCOIS_GetAddInvButtonTooltip(button) --#334
+--d("[FCOIS].GetAddInvButtonTooltip")
     local buttonData = button.buttonData
     if buttonData == nil then return end
     local showTooltip = buttonData.showTooltip
@@ -29,7 +30,7 @@ local function FCOIS_GetAddInvButtonTooltip(button) --#334
     if tooltipText == nil or tooltipText == "" then return end
     tooltipText = FCOIS.preChatVars.preChatTextGreen .. tooltipText
     buttonData.tooltipText = tooltipText
-
+--d(">tooltipText: " .. tos(tooltipText))
     ZO_Tooltips_ShowTextTooltip(button, button.tooltipAlign, tooltipText)
 end
 

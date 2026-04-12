@@ -2657,13 +2657,13 @@ function FCOIS.GetContextMenuAntiSettingsTextAndState(p_filterWhere, buildText, 
 --d(">currentSettingsState: " ..tos(currentSettingsState) .. ", currentSettingsStateDestroy: " ..tos(currentSettingsStateDestroy))
     if currentSettingsState == nil and currentSettingsStateDestroy ~= nil then
         if isSpecialAntiSetting == true then return end
-        --d(">>other setting missing, using anti-destroy!")
+--d(">>other setting missing, using anti-destroy!")
         currentSettingsState = currentSettingsStateDestroy
         --If there are 2 settings, e.g. guild bak deposit: Anti-deposit checks and anti-destroy
         --use the anti-destroy for the flag icon
     elseif currentSettingsState ~= nil and currentSettingsStateDestroy ~= nil then
         if not isSpecialAntiSetting then
-            --d(">>other setting given, but using destroy!")
+--d(">>other setting given, but using destroy!")
             currentSettingsState = currentSettingsStateDestroy
         end
     end
@@ -2703,12 +2703,13 @@ function FCOIS.GetContextMenuAntiSettingsTextAndState(p_filterWhere, buildText, 
                 btnText = mappingButtonText[p_filterWhere]
             end
             if btnText ~= "" then
+--d(">p_filterWhere: " .. tos(p_filterWhere) .. ", btnText: " .. tos(btnText))
                 if not addInvFlagTooltip then --#334
                     btnText = btnText .. onOffText
                 end
                 if btnText ~= "" then
                     retStrVal = locVars[btnText]
---d(">p_filterWhere: " .. tos(p_filterWhere) .. ", retStrVal: " .. tos(retStrVal) ..", btnText: " .. tos(btnText))
+--d(">p_filterWhere: " .. tos(p_filterWhere) .. ", retStrVal: " .. tos(retStrVal))
                     if addInvFlagTooltip and retStrVal ~= nil and retStrVal ~= "" then --#334
                         local onOfTextLoc = locVars[onOffInvertedText]
                         onOfTextLoc = (onOfTextLoc ~= nil and string_upper(onOfTextLoc)) or ""
@@ -2726,6 +2727,7 @@ function FCOIS.GetContextMenuAntiSettingsTextAndState(p_filterWhere, buildText, 
         end
         if retStrVal == "" then retStrVal = "N/A" end
     end
+--d("<<<< retStrVal: " .. tos(retStrVal) .. ", currentSettingsState: " .. tos(currentSettingsState))
     return retStrVal, currentSettingsState
 end
 local getContextMenuAntiSettingsTextAndState = FCOIS.GetContextMenuAntiSettingsTextAndState
@@ -2752,7 +2754,7 @@ local function getContextMenuAntiSettingsColor(settingIsEnabled, override)
 end
 
 --Change the context menu invoker button's color by help of the button control and the anti-* settings state, but do not
---change the given invoker button but other buttons also possibly shown at the current button's panel
+--change the given invoker button -> Change other buttons also possibly shown at the current button's panel
 local function changeContextMenuInvokerButtonColorOfOtherButton(contextMenuInvokerButton, settingsEnabled)
     if not contextMenuInvokerButton then return false end
     local settingStateForColor
@@ -2800,7 +2802,7 @@ local function changeContextMenuInvokerButtonColor(contextMenuInvokerButton, set
 --d("[FCOIS]changeContextMenuInvokerButtonColor - contextMenuInvokerButton: " .. contextMenuInvokerButton:GetName() .. ", settingsEnabled: " .. tos(settingsEnabled))
 
     --Update the context menu "flag" button's color according to the current settings state
-    local colR, colG, colB, colA = getContextMenuAntiSettingsColor(settingStateForColor, nil)
+    local colR, colG, colB, colA = getContextMenuAntiSettingsColor(settingStateForColor)
     local contInvButTexture = GetControl(contextMenuInvokerButton:GetName(), "Texture") --wm:GetControlByName(contextMenuInvokerButton:GetName(), "Texture")
     if contInvButTexture then
 --d(">found button's Texture -> Calling SetColor")
@@ -2817,9 +2819,9 @@ function FCOIS.ChangeContextMenuInvokerButtonColorByPanelId(panelId)
     if not panelId or panelId == 0 then return false end
     --Change the color of the context menu invoker button now
     --First see if the setitngs for the given panel are enabled or not
-    local _, settingsEnabled = getContextMenuAntiSettingsTextAndState(panelId, false)
     local contextMenuInvokerButtonName = getContextMenuInvokerButtonName(panelId)
     if contextMenuInvokerButtonName ~= "" and contextMenuInvokerButtonName ~= false then
+        local _, settingsEnabled = getContextMenuAntiSettingsTextAndState(panelId, false)
 --d("[FCOIS.ChangeContextMenuInvokerButtonColorByPanelId-panelId:" .. tos(panelId) .. ", button: ".. contextMenuInvokerButtonName .. ", settings: " .. tos(settingsEnabled))
         local contextMenuInvokerButton = GetControl(contextMenuInvokerButtonName) --wm:GetControlByName(contextMenuInvokerButtonName, "")
         if contextMenuInvokerButton then
@@ -2836,6 +2838,7 @@ function FCOIS.ResetContextMenuInvokerButtonColorToDefaultPanelId()
     changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
 end
 
+--Called from right clicking the add. inv. flag icon or selecting the toggle Anti-* settings button in the add. inv. flag context menu
 local function invertAdditionalInventoryFlagProtectionAndColor(p_panelId, p_buttonControl)
 --d("[FCOIS]invertAdditionalInventoryFlagProtectionAndColor-panelId: " ..tos(p_panelId) .. ", button: " ..tos(p_buttonControl:GetName()))
     --Invert the active anti-setting (false->true / true->false)
@@ -3703,7 +3706,8 @@ end -- function addSortedButtonDataTableEntries()
 
 local function getFilterPanelIdForAddInvButton(buttonDataOfInvokerButton)
     local filterPanelIdOfButtonData   = buttonDataOfInvokerButton and buttonDataOfInvokerButton.filterPanelId
-    local panelId                     = filterPanelIdOfButtonData
+    local panelId                     = (type(filterPanelIdOfButtonData) == "function" and filterPanelIdOfButtonData()) or filterPanelIdOfButtonData --#335
+--d(">panelId: " ..tos(panelId) .. "; filterPanelIdOfButtonData: " ..tos(filterPanelIdOfButtonData))
     checkIfUniversalDeconstructionNPC = checkIfUniversalDeconstructionNPC or FCOIS.CheckIfUniversalDeconstructionNPC -- #202
     local isUniversalDeconNPC         = checkIfUniversalDeconstructionNPC(FCOIS.gFilterWhere) -- #202
     --Should the active filterPanelId be re-read again as the flag context menu button used is e.g. the "inventory" button which is
@@ -3720,7 +3724,9 @@ end
 function FCOIS.GetTooltipForAddInvButtons(invAddContextMenuInvokerButton, buttonDataOfInvokerButton) --#334
     buttonDataOfInvokerButton = buttonDataOfInvokerButton or invAddContextMenuInvokerButton.buttonData
     local panelId, isUniversalDeconNPC = getFilterPanelIdForAddInvButton(buttonDataOfInvokerButton)
+--d("[FCOIS]GetTooltipForAddInvButtons - panelId: " ..tos(panelId) .. ", isUniversalDeconNPC: " ..tos(isUniversalDeconNPC))
     local antiButtonText, _ = getContextMenuAntiSettingsTextAndState(panelId, true, nil, true)
+--d(">antiButtonText: " ..tos(antiButtonText))
     return antiButtonText
 end
 

@@ -311,7 +311,7 @@ function FCOIS.ChangeAntiSettingsAccordingToFilterPanel(suppressRemoveProtectedI
     if filterPanelId == nil then return nil end
     isItemProtectedAtASlotNow = isItemProtectedAtASlotNow or FCOIS.IsItemProtectedAtASlotNow
     local parentPanel = FCOIS.gFilterWhereParent
---d("[FCOIS.changeAntiSettingsAccordingToFilterPanel - FilterPanel: " .. filterPanelId .. ", FilterPanelParent: " .. tos(parentPanel))
+d("[FCOIS.changeAntiSettingsAccordingToFilterPanel - FilterPanel: " .. filterPanelId .. ", FilterPanelParent: " .. tos(parentPanel) .. ", suppressRemoveProtectedItemsFromSlots: " ..tos(suppressRemoveProtectedItemsFromSlots))
 
     local currentSettings = FCOIS.settingsVars.settings
     local filterPanelIdToBlockSettingName = FCOIS.mappingVars.filterPanelIdToBlockSettingName
@@ -350,10 +350,11 @@ function FCOIS.ChangeAntiSettingsAccordingToFilterPanel(suppressRemoveProtectedI
     end
     --------------------------------------------------------------------------------------------------------------------
     if not settingNameToChange or settingNameToChange == "" then return end
-    isSettingEnabled = not currentSettings[settingNameToChange]
+    local currentSettingsOfSettingName = currentSettings[settingNameToChange]
+    isSettingEnabled = not currentSettingsOfSettingName
     FCOIS.settingsVars.settings[settingNameToChange] = isSettingEnabled
     --------------------------------------------------------------------------------------------------------------------
---d(">settingNameToChange: " .. tos(settingNameToChange) .. ", isSettingEnabled: " ..tos(isSettingEnabled))
+d(">settingNameToChange: " .. tos(settingNameToChange) .. ", isSettingEnabled: " ..tos(isSettingEnabled) .. "; currentSettingsOfSettingName: " ..tos(currentSettingsOfSettingName))
     --Check if the settings are enabled now and if any item is slotted in the deconstruction/improvement/extraction/refine/retrait slot
     --> Then remove the item from the slot again if it's protected again now
     if isSettingEnabled and not suppressRemoveProtectedItemsFromSlots then --#286
@@ -1140,7 +1141,7 @@ function FCOIS.AfterSettings()
     for panelId, buttonData in pairs(addInvBtnInvokers) do
         if panelId ~= nil and buttonData ~= nil and buttonData.addInvButton and buttonData.name ~= nil and buttonData.name ~= "" then
             local anchorDataAtAPIVersionAndPanelId = ancVars.additionalInventoryFlagButton[apiVersion][panelId]
-            buttonData.callbackFunction = showAddInvContextMenuFunc
+            buttonData.callbackFunction = showAddInvContextMenuFunc --#335 FCOIS.ShowContextMenuForAddInvButtons
             buttonData.onMouseUpCallbackFunction = showAddInvContextMenuMouseUpFunc
             buttonData.onMouseUpCallbackFunctionMouseButton = mouseButtonRight
             buttonData.text = text
