@@ -1317,7 +1317,7 @@ function FCOIS.AfterSettings()
                 for oldStrKey, newStr in pairs(changes) do
                     markedItemsFCOISUnique[markerIconId][oldStrKey] = nil
                     markedItemsFCOISUnique[markerIconId][newStr] = true
-                    d(">markerIcon: " .. tos(markerIconId) ..", oldKey: " ..tos(oldStrKey) .. "; fixedKey: " .. tos(newStr))
+                    d(">markerIcon: " .. tos(markerIconId) ..", oldKey: " ..tos(oldStrKey) .. " / fixedKey: " .. tos(newStr))
                 end
             end
         end

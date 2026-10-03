@@ -201,11 +201,11 @@ function FCOIS.AskBeforeMigrateDialogInitialize(control)
     local cancelBtn = GetControl(control, "Cancel")
     local descLabel = GetControl(content, "Text")
 
-    local titleText = ""
+    local titleText = "Migration"
     if FCOIS.settingsVars.settings.useUniqueIds then
         titleText = FCOIS.preChatVars.preChatTextRed .. localVars["options_migrate_uniqueids"]
     else
-        titleText = FCOIS.preChatVars.preChatTextRed .. localVars["options_migrate_uniqueids"]
+        titleText = FCOIS.preChatVars.preChatTextRed .. localVars["options_migrate_non-uniqueids"]
     end
 
     local function resetMigrateMarkerIcons(p_dialog)
@@ -223,8 +223,8 @@ function FCOIS.AskBeforeMigrateDialogInitialize(control)
     --The migrate non-unique/unique to unique/non-unique item IDs
     ZO_Dialogs_RegisterCustomDialog("FCOIS_ASK_BEFORE_MIGRATE_DIALOG", {
         customControl = control,
-        title = { text = titleText  },
-        mainText = { text = "" },
+        title = { text = titleText },
+        mainText = { text = "PLACEHOLDER\nPLACEHOLDER\nPLACEHOLDER\nPLACEHOLDER\nPLACEHOLDER\nPLACEHOLDER" },
         setup = function(_, data)
             local formattedText = ""
             if FCOIS.settingsVars.settings.useUniqueIds == true then

@@ -246,9 +246,15 @@ Let me know if there's any other data that would benefit you and I will endeavou
 ]]
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.8.3 - New version: 2.8.4) -    Updated last: 2026-09-27
+--Changelog (last version: 2.8.3 - New version: 2.8.4) -    Updated last: 2026-10-03
 -------------------------------------------------------------------------------------
 --[Fixed]
+--Fixed #337: FCOIS uniqueItemIds' "Crafted by" part wasn't saved properly for non-armor/non-weapon items
+--Thus SavedVariables might contain entries with "nil" string parts: On first login with FCOIS uniqueItemIds enabled the SVs will be scanned and repaired automatically. You could see some lines like in chat (if pChat or  DebugLogViewer UI is enabled -> Which show you the chat before player activated fires):
+--[FCOIS]Migrating FCOIS uniqueIds' parts with 'NIL' to appropriate value
+--[FCOIS]Found <n> wrong formatted unique FCOIS marker itemIds:
+-->markerIcon: 1, oldKey: 8888888888,160,3,8,20,nil,nil,nil,nil,nil, / fixedKey: 8888888888,160,3,8,20,0,0,0,,
+---> This should only happen once per account (or "AllAccountsSavedTheSame), or character (if Character saved SavedVariables are enabled)
 
 
 --[Changed]
