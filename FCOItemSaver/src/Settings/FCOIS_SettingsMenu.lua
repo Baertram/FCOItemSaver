@@ -3020,7 +3020,7 @@ end
 
 --==================== Filter panel additional inventory context menu "flag" button positions - BEGIN =====================================
 --Added with FCOIS v1.6.7
---Build the complete submenus for the addiitonal inventory context menu "flag" offset settings
+--Build the complete submenus for the additional inventory context menu "flag" offset settings
 local function buildAddInvContextMenuFlagButtonsPositionsSubMenu()
     FCOISsettings = FCOIS.settingsVars.settings
 
@@ -3046,6 +3046,10 @@ local function buildAddInvContextMenuFlagButtonsPositionsSubMenu()
     local sortedAddInvBtnInvokers = FCOIS.contextMenuVars.sortedFilterPanelIdToContextMenuButtonInvoker
     for _, addInvBtnInvokerData in ipairs(sortedAddInvBtnInvokers) do
         local filterPanelId = addInvBtnInvokerData.filterPanelId
+        if type(filterPanelId) == "function" then       --#335
+            local filterPanelIdResult = filterPanelId() --#335
+            filterPanelId = filterPanelIdResult         --#335
+        end                                             --#335
         if filterPanelId == nil then
             --Added as FR client user (via email esobzh@gmail.com) always got an error in line 2445, and after adding some workaround fixes with FCOSI v2.1.3 at the default settings the error message is:
             --#140: Error message at login -> related to fixed error 131
@@ -3096,13 +3100,13 @@ local function buildAddInvContextMenuFlagButtonsPositionsSubMenu()
                         FCOISsettings.FCOISAdditionalInventoriesButtonOffset[filterPanelId] = FCOISsettings.FCOISAdditionalInventoriesButtonOffset[filterPanelId] or {}
                         FCOISsettings.FCOISAdditionalInventoriesButtonOffset[filterPanelId]["left"] = ton(newValue) -- checkIfNumberOrReset(newValue, defaultSettings) -- number check should be done via LAM control's textType TEXT_TYPE_NUMERIC already
                         if FCOISsettings.FCOISAdditionalInventoriesButtonOffset[filterPanelId]["top"] == nil then FCOISsettings.FCOISAdditionalInventoriesButtonOffset[filterPanelId]["top"] = 0 end
-                        else
-                            if FCOISsettings.FCOISAdditionalInventoriesButtonOffset[filterPanelId] then   --#2025_999
-                                if FCOISsettings.FCOISAdditionalInventoriesButtonOffset[filterPanelId]["top"] and FCOISsettings.FCOISAdditionalInventoriesButtonOffset[filterPanelId]["top"] == 0 then
-                                    FCOISsettings.FCOISAdditionalInventoriesButtonOffset[filterPanelId] = nil
-                                end
+                    else
+                        if FCOISsettings.FCOISAdditionalInventoriesButtonOffset[filterPanelId] then   --#2025_999
+                            if FCOISsettings.FCOISAdditionalInventoriesButtonOffset[filterPanelId]["top"] and FCOISsettings.FCOISAdditionalInventoriesButtonOffset[filterPanelId]["top"] == 0 then
+                                FCOISsettings.FCOISAdditionalInventoriesButtonOffset[filterPanelId] = nil
                             end
                         end
+                    end
                     reAnchorAdditionalInvButtons(filterPanelId)
                 end
                 createdControl = CreateControl(ref, name, tooltip, data, disabledFunc, getFunc, setFunc, defaultSettings, nil)
@@ -8081,6 +8085,37 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                             end,
                             default = FCOISdefaultSettings.showFCOISAdditionalInventoriesButton,
                             --requiresReload = true,
+                        },
+                        { --#334
+                            type = "checkbox",
+                            name = locVars["options_icon1_TT"],
+                            tooltip = locVars["options_icon1_TT"],
+                            getFunc = function() return FCOISsettings.showFCOISAdditionalInventoriesButtonTooltip end,
+                            setFunc = function(value) FCOISsettings.showFCOISAdditionalInventoriesButtonTooltip = value
+                                FCOIS.AddAdditionalButtons("FCOInventoriesContextMenuButtons")
+                            end,
+                            default = FCOISdefaultSettings.showFCOISAdditionalInventoriesButtonTooltip,
+                            disabled = function() return not FCOISsettings.showFCOISAdditionalInventoriesButton end,
+                        },
+                        { --#333
+                            name = locVars["options_additional_buttons_FCOIS_additional_options_texture"],
+                            tooltip = locVars["options_additional_buttons_FCOIS_additional_options_texture" .. tooltipSuffix],
+                            type    = "iconpicker",
+                            width = "full",
+                            choices = markerIconTextures,
+                            choicesTooltips = texturesList,
+                            maxColumns = 5,
+                            visibleRows = 5,
+                            iconSize = 32,
+                            getFunc = function() return markerIconTextures[FCOISsettings.FCOISAdditionalInventoriesButtonTexture] end,
+                            setFunc = function(texturePath)
+                                local textureId = GetFCOTextureId(texturePath)
+                                if textureId ~= 0 then
+                                    FCOISsettings.FCOISAdditionalInventoriesButtonTexture = textureId
+                                    FCOIS.AddAdditionalButtons("FCOInventoriesContextMenuButtons")
+                                end
+                            end,
+                            disabled = function() return not FCOISsettings.showFCOISAdditionalInventoriesButton end,
                         },
                         {
                             type = "slider",  --#329 Slider for width and height of the add. inv. flag buttons

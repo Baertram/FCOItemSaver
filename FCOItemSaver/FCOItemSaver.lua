@@ -214,45 +214,47 @@ ReloadUI does not do anything, but manually mass marking via flag icon works fin
 ]]
 
 
---#2025_999 Performance improvements
-
 
 --______________________________________
--- Current max # of bugs/features/ToDos: 332
+-- Current max # of bugs/features/ToDos: 337
 --______________________________________
-
---Open/To work on this patch:
---Test protective functions for all panels
---FCOIS.CheckActivePanel -> Use LibFilters to detect the panel ?
---FCOIS.GetWhereAreWe -> Remove CraftBagExtended checks and move to extra function
-
---=== Not started yet ===
---Clear SV values which are boolean and do not really need a "false" (nil would be okay too)
---showMarkerTooltip[1..n]
---isIconEnabled[1..n]
---allowedFCOISUniqueIdItemTypes
-
 
 
 ------------------------------------------------------------------------------------
--- Currently worked on [Added/Fixed/Changed] -              Updated last 2026-04-06
+-- Currently worked on [Added/Fixed/Changed] -              Updated last 2026-09-27
 ------------------------------------------------------------------------------------
+--#337 "Crafted by" tag not properly saved for FCOISUniqueItemIds
+-->See file FCOIS_Functions, function FCOIS.CreateFCOISUniqueIdString
 
+--[[
+Anybody know if ESO broke the "crafted by" portion of the unique item ID?
+I tried out using this so I could start tagging things my own characters crafted separately from things crafted by others in my guild,
+but it seems to not care about who crafted what.
+Since I'm not getting any errors, I'm hesitant to believe this is an FCOIS bug at all - feels more like "ZOS broke something" material.
+
+----------------------------------
+Thanks for looking into this. As requested on the ESOUI forum... loktai (Michael Wray)
+
+My account is @loktaigreywolf on the NA server. I have settings configured to be accountwide, although it does appear to be the case that per-character settings replicate this issue for me.
+
+Kur'Dar is my character and Lord-Azmatar is a guildmate but not mine. Item links notated below.
+
+Kur'Dar crafted baked potato - |H1:item:28354:3:1:0:0:0:0:0:0:0:0:0:0:0:0:0:1:0:0:0:0|h|h
+Lord-Azmatar crafted baked potato - |H1:item:28354:3:0:0:0:0:0:0:0:0:0:0:0:0:0:0:1:0:0:0:0|h|h
+
+Let me know if there's any other data that would benefit you and I will endeavour to make it so.
+]]
 
 -------------------------------------------------------------------------------------
---Changelog (last version: 2.8.0 - New version: 2.8.1) -    Updated last: 2026-04-06
+--Changelog (last version: 2.8.3 - New version: 2.8.4) -    Updated last: 2026-09-27
 -------------------------------------------------------------------------------------
 --[Fixed]
---#331 Fix additional inventory "flag" filter button position copying from inventory to all other filterPanels
---#332 Fix additional inventory "flag" filter button hidden state according to settings
 
 
 --[Changed]
 
 --[Added]
---#329 Add color and size settings for additional inventory flag protection enabled/disabled state (this color change also affects the protection state color at the markr icon tooltips and at the context menus -> See #330)
---#330 Indirectly added color settings for marker icon's tooltip protection enabled/disabled text -> See #329
-
+--
 
 --[Added on request]
 

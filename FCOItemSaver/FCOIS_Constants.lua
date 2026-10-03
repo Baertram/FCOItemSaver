@@ -13,7 +13,7 @@ FCOIS.addonVars = {}
 local addonVars = FCOIS.addonVars
 addonVars.icon                          = "FCOItemSaver/FCOIS.dds"
 --Addon variables
-addonVars.addonVersionOptions 		    = '2.8.0' -- version shown in the settings panel
+addonVars.addonVersionOptions 		    = '2.8.4' -- version shown in the settings panel
 --The addon name, normal and decorated with colors etc.
 addonVars.gAddonName				    = "FCOItemSaver"
 addonVars.gAddonNameShort               = "FCOIS"
@@ -3432,6 +3432,11 @@ invAddButtonVars.furnitureVaultWithdrawButtonAdditionalOptions = "FCOIS_Furnitur
 --Entries without a parent and without "addInvButton" boolean == true will not be added again as another panel (like LF_INVENTORY) is reused for the button.
 --The entry is only there to get the button's name for the functions in file "fcoisContextMenus.lua" to show/hide it.
 --> To check what entries the context menu below this invokerButton will create/show check the file src/fcoisContextMenus.lua, function FCOIS.showContextMenuForAddInvButtons(invokerButton)
+--if a filterPanelIdFunc is provided this will be executed each time to get the current correct filterPanelId --#335
+local function filterPanelIdReplaceFunc(oldFilterPanelId, newFilterPanelId)
+    return (libFilters:IsJewelryCrafting() and newFilterPanelId) or oldFilterPanelId
+end
+
 contextMenuVars.filterPanelIdToContextMenuButtonInvoker = {
 	[LF_INVENTORY] 					= {
         ["addInvButton"]  = true,
@@ -3525,18 +3530,24 @@ contextMenuVars.filterPanelIdToContextMenuButtonInvoker = {
         ["parent"]        = refinementInv,
         ["name"]          = invAddButtonVars.smithingTopLevelRefinementPanelInventoryButtonAdditionalOptions,
         ["sortIndex"]     = 18,
+        ["filterPanelCheckFunc"] = function() return filterPanelIdReplaceFunc(LF_SMITHING_REFINE, LF_JEWELRY_REFINE) end, --#335
+        ["updateActivePanelDataOnShowContextMenu"] = true, --#335
     },
     [LF_SMITHING_DECONSTRUCT]  		= {
         ["addInvButton"]  = true,
         ["parent"]        = deconstructionInv, --#202 FilterButtons and additional inventory flag context menu button added to universal deconstruction panel
         ["name"]          = invAddButtonVars.smithingTopLevelDeconstructionPanelInventoryButtonAdditionalOptions,
         ["sortIndex"]     = 19,
+        ["filterPanelCheckFunc"] = function() return filterPanelIdReplaceFunc(LF_SMITHING_DECONSTRUCT, LF_JEWELRY_DECONSTRUCT) end, --#335
+        ["updateActivePanelDataOnShowContextMenu"] = true, --#335
     },
     [LF_SMITHING_IMPROVEMENT]		= {
         ["addInvButton"]  = true,
         ["parent"]        = improvementInv,
         ["name"]          = invAddButtonVars.smithingTopLevelImprovementPanelInventoryButtonAdditionalOptions,
         ["sortIndex"]     = 20,
+        ["filterPanelCheckFunc"] = function() return filterPanelIdReplaceFunc(LF_SMITHING_IMPROVEMENT, LF_JEWELRY_IMPROVEMENT) end, --#335
+        ["updateActivePanelDataOnShowContextMenu"] = true, --#335
     },
 	[LF_ALCHEMY_CREATION] = {
         ["addInvButton"]  = true,
@@ -3568,18 +3579,24 @@ contextMenuVars.filterPanelIdToContextMenuButtonInvoker = {
         ["parent"]        = refinementInv,
         ["name"]          = invAddButtonVars.smithingTopLevelRefinementPanelInventoryButtonAdditionalOptions,
         ["sortIndex"]     = 24,
+        ["filterPanelCheckFunc"] = function() return filterPanelIdReplaceFunc(LF_SMITHING_REFINE, LF_JEWELRY_REFINE) end, --#335
+        ["updateActivePanelDataOnShowContextMenu"] = true, --#335
     },
     [LF_JEWELRY_DECONSTRUCT]  		= {
         ["addInvButton"]  = true,
         ["parent"]        = deconstructionInv, --#202 FilterButtons and additional inventory flag context menu button added to universal deconstruction panel
         ["name"]          = invAddButtonVars.smithingTopLevelDeconstructionPanelInventoryButtonAdditionalOptions,
         ["sortIndex"]     = 25,
+        ["filterPanelCheckFunc"] = function() return filterPanelIdReplaceFunc(LF_SMITHING_DECONSTRUCT, LF_JEWELRY_DECONSTRUCT) end, --#335
+        ["updateActivePanelDataOnShowContextMenu"] = true, --#335
     },
     [LF_JEWELRY_IMPROVEMENT]		= {
         ["addInvButton"]  = true,
         ["parent"]        = improvementInv,
         ["name"]          = invAddButtonVars.smithingTopLevelImprovementPanelInventoryButtonAdditionalOptions,
         ["sortIndex"]     = 26,
+        ["filterPanelCheckFunc"] = function() return filterPanelIdReplaceFunc(LF_SMITHING_IMPROVEMENT, LF_JEWELRY_IMPROVEMENT) end, --#335
+        ["updateActivePanelDataOnShowContextMenu"] = true, --#335
     },
 	[LF_INVENTORY_COMPANION] 		= {
         ["addInvButton"]  = true,
@@ -3640,13 +3657,13 @@ contextMenuVars.filterPanelIdToContextMenuButtonInvoker = {
 local sortedAddInvBtnInvokersNoGapIndex = {}
 for filterPanelId, addInvBtnInvokerData in pairs(FCOIS.contextMenuVars.filterPanelIdToContextMenuButtonInvoker) do
     --local typeFilterPanelId = type(filterPanelId)
-    --if typeFilterPanelId == "number" then
+    local filterPanelIdFunc = addInvBtnInvokerData.filterPanelIdFunc --#335
+    if type(filterPanelIdFunc) == "function" then --#335
+        addInvBtnInvokerData.filterPanelId = filterPanelIdFunc --#335
+    else
         addInvBtnInvokerData.filterPanelId = filterPanelId
-        table.insert(sortedAddInvBtnInvokersNoGapIndex, addInvBtnInvokerData)
-    --else
-        --Special data for non LibFilters panels, e.g. character
-        -->Do not add to re-position sortIndex table as they cannot be moved via settings!
-    --end
+    end
+    table.insert(sortedAddInvBtnInvokersNoGapIndex, addInvBtnInvokerData)
 end
 table.sort(sortedAddInvBtnInvokersNoGapIndex, function(a, b) return a.sortIndex < b.sortIndex  end)
 contextMenuVars.sortedFilterPanelIdToContextMenuButtonInvoker = sortedAddInvBtnInvokersNoGapIndex
@@ -3789,6 +3806,56 @@ mappingVars.contextMenuAntiButtonsAtPanel = {
     [FCOIS_CON_LF_COMPANION_CHARACTER]  = buttonContextMenuDestroy,
 }
 
+--The mapping for the additional inventory 'flag' tooltip text -> protection state
+local addInvFlagButtonTooltipToggleAntiPrefix = "addInvFlagTooltip_anti_"
+local addInvFlagButtonTooltipDestroy         = addInvFlagButtonTooltipToggleAntiPrefix .."destroy"
+local addInvFlagButtonTooltipSell            = addInvFlagButtonTooltipToggleAntiPrefix .."sell"
+local addInvFlagButtonTooltipRefine          = addInvFlagButtonTooltipToggleAntiPrefix .."refine"
+local addInvFlagButtonTooltipDecon           = addInvFlagButtonTooltipToggleAntiPrefix .."deconstruct"
+local addInvFlagButtonTooltipImprove         = addInvFlagButtonTooltipToggleAntiPrefix .."improve"
+mappingVars.addInvFlagAntiTooltipTextAtPanel = { --#334
+    [LF_INVENTORY] 				= addInvFlagButtonTooltipDestroy,
+    [LF_BANK_WITHDRAW] 			= addInvFlagButtonTooltipDestroy,
+    [LF_BANK_DEPOSIT] 			= addInvFlagButtonTooltipDestroy,
+    [LF_GUILDBANK_WITHDRAW] 	= addInvFlagButtonTooltipDestroy,
+    [LF_GUILDBANK_DEPOSIT]		= addInvFlagButtonTooltipDestroy,
+    [LF_VENDOR_BUY] 			= addInvFlagButtonTooltipToggleAntiPrefix .."buy",
+    [LF_VENDOR_SELL] 			= addInvFlagButtonTooltipSell,
+    [LF_VENDOR_BUYBACK] 		= addInvFlagButtonTooltipToggleAntiPrefix .."buyback",
+    [LF_VENDOR_REPAIR] 			= addInvFlagButtonTooltipToggleAntiPrefix .."repair",
+    [LF_SMITHING_REFINE]  		= addInvFlagButtonTooltipRefine,
+    [LF_SMITHING_DECONSTRUCT]  	= addInvFlagButtonTooltipDecon,
+    [LF_SMITHING_IMPROVEMENT]	= addInvFlagButtonTooltipImprove,
+    [LF_SMITHING_RESEARCH]		= "",       --research does not show any additional "flag" button as there is no mass marking possible and the protection is neither checked. Only filters will apply! -> No shown inv list with items
+    [LF_SMITHING_RESEARCH_DIALOG] = "",     --research dialog does not show any additional "flag" button as the ZO_ListDialog1 custom control won't properly work with it. Only filters will apply!
+    [LF_GUILDSTORE_SELL] 	 	= addInvFlagButtonTooltipSell,
+    [LF_MAIL_SEND] 				= addInvFlagButtonTooltipToggleAntiPrefix .."mail",
+    [LF_TRADE] 					= addInvFlagButtonTooltipToggleAntiPrefix .."trade",
+    [LF_ALCHEMY_CREATION]       = addInvFlagButtonTooltipToggleAntiPrefix .."alchemy",
+    [LF_ENCHANTING_CREATION]	= addInvFlagButtonTooltipToggleAntiPrefix .."create",
+    [LF_ENCHANTING_EXTRACTION]	= addInvFlagButtonTooltipToggleAntiPrefix .."extract",
+    [LF_FENCE_SELL] 			= addInvFlagButtonTooltipToggleAntiPrefix .."fence_sell",
+    [LF_FENCE_LAUNDER] 			= addInvFlagButtonTooltipToggleAntiPrefix .."launder_sell",
+    [LF_CRAFTBAG]				= addInvFlagButtonTooltipDestroy,
+    [LF_RETRAIT]				= addInvFlagButtonTooltipToggleAntiPrefix .."retrait",
+    [LF_HOUSE_BANK_WITHDRAW]    = addInvFlagButtonTooltipDestroy,
+    [LF_HOUSE_BANK_DEPOSIT] 	= addInvFlagButtonTooltipDestroy,
+    [LF_JEWELRY_REFINE]  		= addInvFlagButtonTooltipRefine,
+    [LF_JEWELRY_DECONSTRUCT]  	= addInvFlagButtonTooltipDecon,
+    [LF_JEWELRY_IMPROVEMENT]	= addInvFlagButtonTooltipImprove,
+    [LF_JEWELRY_RESEARCH]		= "",       --research does not show any additional "flag" button as there is no mass marking possible and the protection is neither checked. Only filters will apply! -> No shown inv list with items
+    [LF_JEWELRY_RESEARCH_DIALOG] = "",      --research dialog does not show any additional "flag" button as the ZO_ListDialog1 custom control won't properly work with it. Only filters will apply!
+    [LF_INVENTORY_COMPANION]    = addInvFlagButtonTooltipDestroy,
+    [LF_FURNITURE_VAULT_WITHDRAW] = addInvFlagButtonTooltipDestroy,
+    [LF_FURNITURE_VAULT_DEPOSIT] = addInvFlagButtonTooltipDestroy,
+    --======================================================================================================================
+    --Special entries without LibFilters filterPanelId -> FCOIS custom filterPanels
+    --Character
+    [FCOIS_CON_LF_CHARACTER]            = addInvFlagButtonTooltipDestroy,
+    --Companion character
+    [FCOIS_CON_LF_COMPANION_CHARACTER]  = addInvFlagButtonTooltipDestroy,
+}
+
 --The mapping between filterPanelIds and there special Anti-Settings which need an own contextmenu entry
 mappingVars.filterPanelGotSpecialSettingsEntryInContextMenu = {
     [LF_GUILDBANK_DEPOSIT] = "blockGuildBankWithoutWithdraw",
@@ -3796,7 +3863,7 @@ mappingVars.filterPanelGotSpecialSettingsEntryInContextMenu = {
 
 --The maping table for the text at the context menu that the special anti-settings should show there
 mappingVars.contextMenuSpecialAntiButtonsAtPanel = {
-    [LF_GUILDBANK_DEPOSIT] = buttonContextMenuToggleAntiPrefix .."guild_bank_deposit_without_withdraw_rights_",
+    [LF_GUILDBANK_DEPOSIT] = addInvFlagButtonTooltipToggleAntiPrefix .."guild_bank_deposit_without_withdraw_rights_",
 }
 
 
@@ -3859,9 +3926,9 @@ local function updateAddInvFlagButtonData(p_filterPanelId, p_anchorData, defVarX
     additionalInventoryFlagButtonBaseAPIAnchors[p_filterPanelId].anchorMyPoint   = p_anchorData.anchorMyPoint
     additionalInventoryFlagButtonBaseAPIAnchors[p_filterPanelId].anchorToPoint   = p_anchorData.anchorToPoint
     additionalInventoryFlagButtonBaseAPIAnchors[p_filterPanelId].left            = p_anchorData.left or defVarX
-    additionalInventoryFlagButtonBaseAPIAnchors[p_filterPanelId].top             = p_anchorData.top or defVarX
-    additionalInventoryFlagButtonBaseAPIAnchors[p_filterPanelId].defaultLeft     = p_anchorData.defaultLeft or defVarY
-    additionalInventoryFlagButtonBaseAPIAnchors[p_filterPanelId].defaultTop      = p_anchorData.defaultTop or defVarY
+    additionalInventoryFlagButtonBaseAPIAnchors[p_filterPanelId].top             = p_anchorData.top or defVarY --#336
+    additionalInventoryFlagButtonBaseAPIAnchors[p_filterPanelId].defaultLeft     = p_anchorData.defaultLeft or defVarX --#336
+    additionalInventoryFlagButtonBaseAPIAnchors[p_filterPanelId].defaultTop      = p_anchorData.defaultTop or defVarY --#336
 end
 
 --Additional inventory flag buttons using offset defaults 1: varX1, varY1

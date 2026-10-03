@@ -28,10 +28,10 @@ local getIconText
 --  Tooltip functions
 -- =====================================================================================================================
 
-local cacchedColorsProtectionState =  FCOIS.cachedColors.protectionState --#330
+local cachedColorsProtectionState =  FCOIS.cachedColors.protectionState --#330
 local function RGBAToString(RGBAtab, protectionState)
     local createNewColor = false
-    local cacchedColorsProtectionStateOfCurrentPprotectionState = cacchedColorsProtectionState[protectionState]
+    local cacchedColorsProtectionStateOfCurrentPprotectionState = cachedColorsProtectionState[protectionState]
     if cacchedColorsProtectionStateOfCurrentPprotectionState ~= nil then
         if cacchedColorsProtectionStateOfCurrentPprotectionState.r ~= RGBAtab[1] or cacchedColorsProtectionStateOfCurrentPprotectionState.g ~= RGBAtab[2] or
                 cacchedColorsProtectionStateOfCurrentPprotectionState.b ~= RGBAtab[3] or cacchedColorsProtectionStateOfCurrentPprotectionState.a ~= RGBAtab[4] then
@@ -43,8 +43,8 @@ local function RGBAToString(RGBAtab, protectionState)
     local protectionStateColor
     if createNewColor then
         local r, g, b, a = unpack(RGBAtab)
-        protectionStateColor = ZO_ColorDef:New(r, g, b, a)
-        cacchedColorsProtectionState[protectionState] = {
+        protectionStateColor                         = ZO_ColorDef:New(r, g, b, a)
+        cachedColorsProtectionState[protectionState] = {
             colorDef = protectionStateColor,
             r = r,
             g = g,
@@ -52,12 +52,13 @@ local function RGBAToString(RGBAtab, protectionState)
             a = a
         }
     else
-        protectionStateColor = cacchedColorsProtectionState[protectionState].colorDef
+        protectionStateColor = cachedColorsProtectionState[protectionState].colorDef
     end
     if protectionStateColor ~= nil then
         return "|c" .. protectionStateColor:ToHex()
     end
 end
+FCOIS.RGBAToString = RGBAToString
 
 
 --Create the tooltip for the marker texture - BuildTooltip

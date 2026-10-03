@@ -809,7 +809,8 @@ FCOIS.localizationVars.localizationAll = {
         ["options_additional_buttons_FCOIS_additional_options_color_unprotected"] 	= "Color - Protection OFF",
         ["options_additional_buttons_FCOIS_additional_options_color_unprotected_TT"]  = "Colors the additional inventory options \'flag\' ("..addInvFlagIcon..") button with this color if the protective functionality for the currently shown panel is disabled.",
         ["options_additional_buttons_FCOIS_additional_options_width"]         = "Add. inv. "..addInvFlagIcon.." button width&height",
-
+        ["options_additional_buttons_FCOIS_additional_options_texture"] = "Texture of the button",
+        ["options_additional_buttons_FCOIS_additional_options_texture_TT"] = "Select the texture of the additional inventory \'flag\' (\"..addInvFlagIcon..\") button.",
         ["button_FCOIS_settings_TT"]							 = "Show FCOItemSaver settings",
         --Anti equip
         ["options_header_anti_equip"]					= "Anti equip",
@@ -1370,6 +1371,24 @@ FCOIS.localizationVars.localizationAll = {
         ["options_allow_mail_exclusion_non_dynamic"] = "Attach to mail - Exclusion",
         ["options_allow_mail_exclusion_non_dynamic_TT"] = "You can allow the non-dynamic marker icons to be attached to a mail by moving them to the right side of the dual list box.",
         --#311 -^-
+        --#334 -v-
+        ["on"] = "on",
+        ["off"] = "off",
+        ["addInvFlagTooltip_anti_destroy"] = "'Anti-Destroy'",
+        ["addInvFlagTooltip_anti_improve"] = "'Anti-Improve'",
+        ["addInvFlagTooltip_anti_deconstruct"] = "'Anti-Deconstruct'",
+        ["addInvFlagTooltip_anti_create"] = "'Anti-Creation'",
+        ["addInvFlagTooltip_anti_extract"] = "'Anti-Extraction'",
+        ["addInvFlagTooltip_anti_mail"] = "'Anti-Mail'",
+        ["addInvFlagTooltip_anti_sell"] = "'Anti-Sell'",
+        ["addInvFlagTooltip_anti_fence_sell"] = "Fence 'Anti-Sell'",
+        ["addInvFlagTooltip_anti_launder_sell"] = "Fence 'Anti-Launder'",
+        ["addInvFlagTooltip_anti_trade"] = "'Anti-Trade'",
+        ["addInvFlagTooltip_anti_alchemy"] = "'Anti-Alchemy'",
+        ["addInvFlagTooltip_anti_guild_bank_deposit_without_withdraw_rights"] = "'Anti-Deposit w/o withdraw rights'",
+        ["addInvFlagTooltip_anti_refine"] 		= "'Anti-Refine'",
+        ["addInvFlagTooltip_anti_retrait"] 	= "'Anti-Retrait'",
+        --#334 -^-
 },
 --==============================================================================
 	--German / Deutsch
@@ -2121,6 +2140,8 @@ FCOIS.localizationVars.localizationAll = {
         ["options_additional_buttons_FCOIS_additional_options_color_unprotected"] 	= "Farbe - Schutz AUS",
         ["options_additional_buttons_FCOIS_additional_options_color_unprotected_TT"]  = "Färbt den zusätzliche Inventar Optionen \'Flagge\' (\"..addInvFlagIcon..\") Knopf in den Inventaren ein, wenn die Anti-* Schutz Funktionalität für das aktuelle Panel ausgeschaltet ist.",
         ["options_additional_buttons_FCOIS_additional_options_width"]         = "Zusätzl. Inv. \"..addInvFlagIcon..\" Knopf Breite&Höhe",
+        ["options_additional_buttons_FCOIS_additional_options_texture"] = "Symbol des Knopfes",
+        ["options_additional_buttons_FCOIS_additional_options_texture_TT"] = "Wähle das Symbol für den Zusätzl. Inv. \"..addInvFlagIcon..\" Knopf aus.",
         ["button_FCOIS_settings_TT"]							 = "FCOItemSaver Einstellungen anzeigen",
         --Anti equip
         ["options_header_anti_equip"]					= "Anti Equip",
@@ -2650,6 +2671,24 @@ FCOIS.localizationVars.localizationAll = {
         ["options_allow_mail_exclusion_non_dynamic"] = "An Mail anhängen - Ausnahme",
         ["options_allow_mail_exclusion_non_dynamic_TT"] = "Du kannst nicht-dynamische Symbole in der Dual-Listbox hier drunter von links nach rechts bewegen, um diese Symbole beim Mail Anhang zu erlauben. Oder von rechts nach links, um diese zu blockieren.",
         --#311 -^-
+        --#334 -v-
+        ["on"] = "an",
+        ["off"] = "aus",
+        ["addInvFlagTooltip_anti_destroy"] = "'Anti-Zerstören'",
+        ["addInvFlagTooltip_anti_improve"] = "'Anti-Aufwerten'",
+        ["addInvFlagTooltip_anti_deconstruct"] = "'Anti-Zerlegen'",
+        ["addInvFlagTooltip_anti_create"] = "'Anti-Herstellen'",
+        ["addInvFlagTooltip_anti_extract"] = "'Anti-Extraktion'",
+        ["addInvFlagTooltip_anti_mail"] = "'Anti-Mail'",
+        ["addInvFlagTooltip_anti_sell"] = "'Anti-Verkauf'",
+        ["addInvFlagTooltip_anti_fence_sell"] = "Schieber 'Anti-Verkauf'",
+        ["addInvFlagTooltip_anti_launder_sell"] = "Schieber 'Anti-Schieben'",
+        ["addInvFlagTooltip_anti_trade"] = "'Anti-Handel'",
+        ["addInvFlagTooltip_anti_alchemy"] = "'Anti-Alchemie'",
+        ["addInvFlagTooltip_anti_guild_bank_deposit_without_withdraw_rights"] = "'Anti-Einlagern ohne Auslagern Rechte'",
+        ["addInvFlagTooltip_anti_refine"] 		= "'Anti-Verfeinern'",
+        ["addInvFlagTooltip_anti_retrait"] 	= "'Anti-Retrait'",
+        --#334 -^-
     },
 --==============================================================================
 --French / Französisch

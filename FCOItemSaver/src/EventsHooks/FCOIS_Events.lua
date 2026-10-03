@@ -1177,10 +1177,10 @@ local function FCOItemSaver_Loaded(eventCode, addOnName)
             for _, bagIdToFilter in ipairs(bagIdsToFilterForInvSingleSlotUpdate) do
                 local eventInventorySingleSlotUpdateNameForBagId = eventInventorySingleSlotUpdateName ..tos(bagIdToFilter)
                 em:RegisterForEvent(eventInventorySingleSlotUpdateNameForBagId,  EVENT_INVENTORY_SINGLE_SLOT_UPDATE, FCOItemSaver_Inv_Single_Slot_Update)
-                em:AddFilterForEvent(eventInventorySingleSlotUpdateNameForBagId, EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_UNIT_TAG, playerStr)
-                em:AddFilterForEvent(eventInventorySingleSlotUpdateNameForBagId, EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_INVENTORY_UPDATE_REASON, INVENTORY_UPDATE_REASON_DEFAULT)
-                em:AddFilterForEvent(eventInventorySingleSlotUpdateNameForBagId, EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_IS_NEW_ITEM, true)
-                em:AddFilterForEvent(eventInventorySingleSlotUpdateNameForBagId, EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_BAG_ID, bagIdToFilter)
+                em:AddFilterForEvent(eventInventorySingleSlotUpdateNameForBagId, EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_BAG_ID, bagIdToFilter,
+                                                                                                                    REGISTER_FILTER_UNIT_TAG, playerStr,
+                                                                                                                    REGISTER_FILTER_INVENTORY_UPDATE_REASON, INVENTORY_UPDATE_REASON_DEFAULT,
+                                                                                                                    REGISTER_FILTER_IS_NEW_ITEM, true)
             end
 
             --Register the callback function for an update of the inventory slots

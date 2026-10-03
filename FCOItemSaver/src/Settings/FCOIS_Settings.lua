@@ -9,8 +9,11 @@ local debugMessage = FCOIS.debugMessage
 local tos = tostring
 local strformat = string.format
 local strfind = string.find
+local strgmatch = string.gmatch
 local zo_strf = zo_strformat
 local tabins = table.insert
+local tabconcat = table.concat
+local nonctcount = NonContiguousCount
 
 --Currently logged in account name
 local accName             = GetDisplayName()
@@ -311,7 +314,7 @@ function FCOIS.ChangeAntiSettingsAccordingToFilterPanel(suppressRemoveProtectedI
     if filterPanelId == nil then return nil end
     isItemProtectedAtASlotNow = isItemProtectedAtASlotNow or FCOIS.IsItemProtectedAtASlotNow
     local parentPanel = FCOIS.gFilterWhereParent
---d("[FCOIS.changeAntiSettingsAccordingToFilterPanel - FilterPanel: " .. filterPanelId .. ", FilterPanelParent: " .. tos(parentPanel))
+--d("[FCOIS.changeAntiSettingsAccordingToFilterPanel - FilterPanel: " .. filterPanelId .. ", FilterPanelParent: " .. tos(parentPanel) .. ", suppressRemoveProtectedItemsFromSlots: " ..tos(suppressRemoveProtectedItemsFromSlots))
 
     local currentSettings = FCOIS.settingsVars.settings
     local filterPanelIdToBlockSettingName = FCOIS.mappingVars.filterPanelIdToBlockSettingName
@@ -350,10 +353,11 @@ function FCOIS.ChangeAntiSettingsAccordingToFilterPanel(suppressRemoveProtectedI
     end
     --------------------------------------------------------------------------------------------------------------------
     if not settingNameToChange or settingNameToChange == "" then return end
-    isSettingEnabled = not currentSettings[settingNameToChange]
+    local currentSettingsOfSettingName = currentSettings[settingNameToChange]
+    isSettingEnabled = not currentSettingsOfSettingName
     FCOIS.settingsVars.settings[settingNameToChange] = isSettingEnabled
     --------------------------------------------------------------------------------------------------------------------
---d(">settingNameToChange: " .. tos(settingNameToChange) .. ", isSettingEnabled: " ..tos(isSettingEnabled))
+--d(">settingNameToChange: " .. tos(settingNameToChange) .. ", isSettingEnabled: " ..tos(isSettingEnabled) .. "; currentSettingsOfSettingName: " ..tos(currentSettingsOfSettingName))
     --Check if the settings are enabled now and if any item is slotted in the deconstruction/improvement/extraction/refine/retrait slot
     --> Then remove the item from the slot again if it's protected again now
     if isSettingEnabled and not suppressRemoveProtectedItemsFromSlots then --#286
@@ -1140,7 +1144,7 @@ function FCOIS.AfterSettings()
     for panelId, buttonData in pairs(addInvBtnInvokers) do
         if panelId ~= nil and buttonData ~= nil and buttonData.addInvButton and buttonData.name ~= nil and buttonData.name ~= "" then
             local anchorDataAtAPIVersionAndPanelId = ancVars.additionalInventoryFlagButton[apiVersion][panelId]
-            buttonData.callbackFunction = showAddInvContextMenuFunc
+            buttonData.callbackFunction = showAddInvContextMenuFunc --#335 FCOIS.ShowContextMenuForAddInvButtons
             buttonData.onMouseUpCallbackFunction = showAddInvContextMenuMouseUpFunc
             buttonData.onMouseUpCallbackFunctionMouseButton = mouseButtonRight
             buttonData.text = text
@@ -1230,66 +1234,101 @@ function FCOIS.AfterSettings()
         FCOIS.settingsVars.settings.cleanedFCOISUniqueInNonUnique = true
     end
 
-    --Added with FCOIS v2.2.4
-    --#192 FCOIS uniqueIds contain "nil" strings which consume too much space. Change these to "" instead, as function FCOIS.CreateFCOISUniqueIdString uses too now
-    local markedItemsFCOISUniqueInSV = FCOIS.settingsVars.settings[markedItemsFCOISUniqueName] --markedItemsFCOISUnique
-    if FCOIS.settingsVars.settings.cleanedFCOISUniqueNILEntries == nil then
-        local newPart                    = ""
-        if markedItemsFCOISUniqueInSV ~= nil then
-            for markerIconNr, markedItemsData in ipairs(markedItemsFCOISUniqueInSV) do
-                if ZO_IsTableEmpty(markedItemsData) then
-                    markedItemsData = nil
-                else
-                    for FCOISuniqueIdOfItem, isMarked in pairs(markedItemsData) do
-                        if isMarked == true and type(FCOISuniqueIdOfItem) == "string" and strfind(FCOISuniqueIdOfItem, ",") ~= nil then
-                            local partsOfFCOISUniqueId = splitStringWithDelimiter(FCOISuniqueIdOfItem, ",")
-                            if partsOfFCOISUniqueId ~= nil and #partsOfFCOISUniqueId > 0 then
-                                local newFCOISUniqueId = ""
-                                local wasFCOISUniqueIdChanged = false
-                                for idx, part in ipairs(partsOfFCOISUniqueId) do
-                                    --Always keep the itemID at first part
-                                    if idx > 1 and (part == "nil" or part == "?") then
-                                        part = newPart
-                                        wasFCOISUniqueIdChanged = true
-                                    end
-                                    newFCOISUniqueId = newFCOISUniqueId .. part
-                                    if idx < #partsOfFCOISUniqueId then
-                                        newFCOISUniqueId = newFCOISUniqueId .. ","
-                                    end
-                                end
-                                if wasFCOISUniqueIdChanged == true then
-                                    --d(">changed FCOIS uniqueId from: " ..tos(FCOISuniqueIdOfItem) .. " to: " ..tos(newFCOISUniqueId))
-                                    --Remove old FCOISUniqueId
-                                    FCOIS.settingsVars.settings[markedItemsFCOISUniqueName][markerIconNr][FCOISuniqueIdOfItem] = nil
-                                    --Add new corrected one
-                                    FCOIS.settingsVars.settings[markedItemsFCOISUniqueName][markerIconNr][newFCOISUniqueId] = true
-                                end
-                            end
-                        end
-                    end
-                end
-            end
-        end
-        FCOIS.settingsVars.settings.cleanedFCOISUniqueNILEntries = true
-    end
-
     --Added with FCOIS v2.7.8     --#2025_999 Performance improvement by cleaning unnecessary SavedVariable entries
-    local settingsToUpdate = FCOIS.settingsVars.settings
     for filterIconHelperPanel = 1, numLibFiltersFilterPanelIds, 1 do
         --For each filterPanelId clear the icon offsets table
         --except the really currently needed LF_INVENTORY, that's why we start at 2 (and not 1)
         if filterIconHelperPanel ~= LF_INVENTORY then
             for filterIconHelper = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
-                settingsToUpdate.icon[filterIconHelper].offsets[filterIconHelperPanel] = nil
+                settings.icon[filterIconHelper].offsets[filterIconHelperPanel] = nil
             end
         end
 
         --Remove the additionalInventoryFlag positions if they are all 0
-        local addInvButtonDataAtPanel = settingsToUpdate.FCOISAdditionalInventoriesButtonOffset[filterIconHelperPanel]
+        local addInvButtonDataAtPanel = settings.FCOISAdditionalInventoriesButtonOffset[filterIconHelperPanel]
         if addInvButtonDataAtPanel ~= nil and addInvButtonDataAtPanel.left == 0 and addInvButtonDataAtPanel.top == 0 then
-            settingsToUpdate.FCOISAdditionalInventoriesButtonOffset[filterIconHelperPanel] = nil
+            settings.FCOISAdditionalInventoriesButtonOffset[filterIconHelperPanel] = nil
         end
     end
+
+    --Added with FCOIS 2.8.4 Fix FCOISUniqueId saved values with "nil" string part  --#337 -> Replaced old code of #192
+    local commaStr = ","
+    local nilString = "nil"
+    local questionMarkString = "?"
+    local somethingFoundToMigrateForUniqueIdNILParts = false
+    local cleanWrongParts               = {
+        [nilString] = true,
+        [questionMarkString] = true
+    }
+    local FCOISuniqueIdPartsThatUseZero = {
+        [2] = true, --level
+        [3] = true, --quality
+        [7] = true, --isStolen
+        [8] = true, --isCrafted
+        [10] = true, --isCrownItem
+    }
+
+    local function splitFCOISUniqueIdStr(str)
+        --e.g. split '["54340,0,1,nil,nil,nil,0,nil,nil,0"]' = true, at each ","
+        -->Attention: Entries could still contain normal itemInstaceId strings for some itemTypes! So also respect entries without ,
+        -->like "[-708333181] = true,"
+        if strfind(str, commaStr) ~= nil then
+            local result = {}
+            for part in strgmatch(str .. commaStr, "([^,]*),") do
+                tabins(result, part)
+            end
+            return result
+        end
+        return nil
+    end
+
+    local function removeNILPartsFromFCOISUniqueIdsSVTable()
+        local markedItemsFCOISUnique = settings.markedItemsFCOISUnique
+        for markerIconId, savedFCOISUniqueIdsForMarkerIcon in ipairs(markedItemsFCOISUnique) do
+            local changes = {}
+            for uniqueStr, _ in pairs(savedFCOISUniqueIdsForMarkerIcon) do
+                local parts = splitFCOISUniqueIdStr(uniqueStr)
+                local changed = false
+
+                -- Check the 10 sub-values of the FCOIS uniqueIdString -> If their value is a "nil" or "?": change it to 0 or ""
+                --> Depending on their type of saved data
+                if not ZO_IsTableEmpty(parts) then
+                    for uniqueIdPartIndex = 1, 10 do
+                        if cleanWrongParts[parts[uniqueIdPartIndex]] then
+                            -- 1: itemId, 2: level, 3: quality, 4: trait, 5: style, 6: enchantment, 7: isStolen,
+                            --8: isCrafted, 9: craftedByName, 10: isCrownItem
+                            if not somethingFoundToMigrateForUniqueIdNILParts then
+                                d("[FCOIS]Migrating FCOIS uniqueIds' parts with 'NIL' to appropriate value")
+                                somethingFoundToMigrateForUniqueIdNILParts = true
+                            end
+                            parts[uniqueIdPartIndex] = (FCOISuniqueIdPartsThatUseZero[uniqueIdPartIndex] == true and "0") or ""
+                            changed = true
+                        end
+                    end
+                end
+                if changed then
+                    changes[uniqueStr] = tabconcat(parts, ",")
+                end
+            end
+
+            -- Save changed values to original SV entry now: First delete old key entry, then re-add with fixed parts
+            if not ZO_IsTableEmpty(changes) then
+                d("[FCOIS]Found " ..tos(nonctcount(changes)) .. " wrong formatted unique FCOIS marker itemIds:")
+                for oldStrKey, newStr in pairs(changes) do
+                    markedItemsFCOISUnique[markerIconId][oldStrKey] = nil
+                    markedItemsFCOISUnique[markerIconId][newStr] = true
+                    d(">markerIcon: " .. tos(markerIconId) ..", oldKey: " ..tos(oldStrKey) .. "; fixedKey: " .. tos(newStr))
+                end
+            end
+        end
+        --Mark the fix of SV was done
+        settings.uniqueIdsFCOISFixedNILStringParts = true
+    end
+    --Do we use FCOISuniqueItemIds?
+    if not settings.uniqueIdsFCOISFixedNILStringParts and settings.useUniqueIds == true and settings.uniqueItemIdType == FCOIS_CON_UNIQUE_ITEMID_TYPE_SLIGHTLY_UNIQUE then
+        removeNILPartsFromFCOISUniqueIdsSVTable()
+    end
+    settings.cleanedFCOISUniqueNILEntries = nil
 end -- AfterSettings
 
 

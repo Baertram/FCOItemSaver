@@ -886,7 +886,7 @@ function FCOIS.CreateFCOISUniqueIdString(itemId, bagId, slotIndex, itemLink)
     if bagId and slotIndex and not itemLink then
         itemLink = gil(bagId, slotIndex)
     end
---d("[FCOIS]CreateFCOISUniqueIdString - " ..itemLink)
+    --d("[FCOIS]CreateFCOISUniqueIdString - " ..itemLink)
     if not itemLink or itemLink == "" then return end
 
     --Get the item's base data like itemInstanceId, level, quality
@@ -914,7 +914,7 @@ function FCOIS.CreateFCOISUniqueIdString(itemId, bagId, slotIndex, itemLink)
     local createFCOISUniqueIdStringLastData = FCOIS.CreateFCOISUniqueIdStringLast
     local lastUsedLastUsedType      = createFCOISUniqueIdStringLastData.LastUseType
     if lastUsedLastUsedType == nil or lastUsedLastUsedType > numVars.lastUsedTypes then
---d(">resetting all variables")
+        --d(">resetting all variables")
         --Reset all variables
         resetCreateFCOISUniqueIdStringLastVars()
     end
@@ -927,18 +927,18 @@ function FCOIS.CreateFCOISUniqueIdString(itemId, bagId, slotIndex, itemLink)
 
     --Did we cache something already?
     if lastUsedLastUsedType ~= nil and lastUsedItemInstanceId ~= nil and lastUsedItemInstanceId == itemId
-        and lastFCOISuniqueId ~= nil then
+            and lastFCOISuniqueId ~= nil then
         --unsignedItemInstanceId + bagId, slotIndex
         if lastUsedLastUsedType == FCOIS_CON_FCOISUNIQUEID_TYPE_BAGID_SLOTINDEX then
             if (bagId ~= nil and lastBagId ~= nil and bagId == lastBagId) and
-               (slotIndex ~= nil and lastSlotIndex ~= nil and slotIndex == lastSlotIndex) then
---d("<returning cached bagId/slotIndex value: " ..tos(lastFCOISuniqueId))
+                    (slotIndex ~= nil and lastSlotIndex ~= nil and slotIndex == lastSlotIndex) then
+                --d("<returning cached bagId/slotIndex value: " ..tos(lastFCOISuniqueId))
                 return lastFCOISuniqueId
             end
-        --unsignedItemInstanceId + ItemLink
+            --unsignedItemInstanceId + ItemLink
         elseif lastUsedLastUsedType == FCOIS_CON_FCOISUNIQUEID_TYPE_ITEMLINK then
             if (itemLink ~= nil and lastItemLink ~= nil and itemLink == lastItemLink) then
---d("<returning cached itemLink value: " ..tos(lastFCOISuniqueId))
+                --d("<returning cached itemLink value: " ..tos(lastFCOISuniqueId))
                 return lastFCOISuniqueId
             end
         end
@@ -986,59 +986,74 @@ function FCOIS.CreateFCOISUniqueIdString(itemId, bagId, slotIndex, itemLink)
         if uniqueIdParts.trait == true then
             trait = gilti(itemLink)
         end
-        if trait == nil then trait = "" end
+        if trait == nil or trait == "nil" then trait = "" end
 
         --Add item's enchantment to the uniqueId?
         if uniqueIdParts.enchantment == true then
             enchantment = gilaeid(itemLink)
         end
-        if enchantment == nil then enchantment = "" end
+        if enchantment == nil or enchantment == "nil" then enchantment = "" end
 
         --Add item's style to the uniqueId?
         if uniqueIdParts.style == true then
             style = gilis(itemLink)
         end
-        if style == nil then style = "" end
-
-        --Add item's isCrafted state to the uniqueId?
-        if uniqueIdParts.isCrafted == true then
-            isCrafted = booleanToNumber(isilcr(itemLink))
-            if isCrafted == 1 then
-                if uniqueIdParts.isCraftedBy == true then
-                    if bagId and slotIndex then
-                        craftedByName = gicn(bagId, slotIndex)
+        if style == nil or style == "nil" then style = "" end
+    else --#337
+        trait = ""
+        enchantment = ""
+        style = ""
+    end
+    --Add item's isCrafted state to the uniqueId?
+    if uniqueIdParts.isCrafted == true then --#337
+        local isCraftedBoolean = isilcr(itemLink)
+        isCrafted = (type(isCraftedBoolean) == "boolean" and booleanToNumber(isCraftedBoolean)) or nil --#337
+        if isCrafted == 1 then
+            --            d(itemLink .. " - isItemCrafted: " ..tos(isCrafted))
+            if uniqueIdParts.isCraftedBy == true then
+                if bagId and slotIndex then
+                    craftedByName = gicn(bagId, slotIndex)
+                    --d(">>craftedByName: " ..tos(craftedByName) .. ", hash: " ..tos((craftedByName ~= nil and hashstr(craftedByName)) or ""))
+                    if craftedByName ~= nil and craftedByName ~= "" then
+                        craftedByName = hashstr(craftedByName) --Create a hash number of the crafter's name
+                    else
+                        craftedByName = ""
                     end
                 end
             end
         end
-        if isCrafted == nil then isCrafted = 0 end
-        if craftedByName == nil then craftedByName = ""
-        else
-            craftedByName = hashstr(craftedByName) --Create a hash number of the crafter's name
-        end
     end
+    if isCrafted == nil or isCrafted == "nil" then isCrafted = 0 end
+    if craftedByName == nil then craftedByName = "" end
 
     --Add item's isStolen state to the uniqueId?
     if uniqueIdParts.isStolen == true then
-        isStolen = booleanToNumber(isilst(itemLink))
+    isStolen = booleanToNumber(isilst(itemLink))
     end
-    if isStolen == nil then isStolen = 0 end
+    if isStolen == nil or isStolen == "nil" then isStolen = 0 end
 
     --If item is a crown item add it to the uniqueId?
     if uniqueIdParts.isCrownItem == true then
-        local isCrownStoreItem = isilfcs(itemLink) or isilfcc(itemLink)
-        isCrownItem = booleanToNumber(isCrownStoreItem)
+    local isCrownStoreItem = isilfcs(itemLink) or isilfcc(itemLink)
+    isCrownItem = booleanToNumber(isCrownStoreItem)
     end
-    if isCrownItem == nil then isCrownItem = 0 end
+    if isCrownItem == nil or isCrownItem == "nil" then isCrownItem = 0 end
     --------------------------------------------------------------------------------------------------------------------
 
-    --Build the uniqueId string now
-    local uniqueItemIdString = strformat(uniqueItemIdStringTemplate, itemId,
-            tos(level),tos(quality),tos(trait),tos(style),tos(enchantment),
-            tos(isStolen),
-            tos(isCrafted),tos(craftedByName),
-            tos(isCrownItem)
+    --Build the uniqueId string now, template pattern: "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s"
+    local uniqueItemIdString = strformat(uniqueItemIdStringTemplate,
+        itemId,                 --1
+        tos(level),             --2
+        tos(quality),           --3
+        tos(trait),             --4
+        tos(style),             --5
+        tos(enchantment),       --6
+        tos(isStolen),          --7
+        tos(isCrafted),         --8
+        tos(craftedByName),     --9
+        tos(isCrownItem)        --10
     )
+    --d(">uniqueItemIdString: " .. tos(uniqueItemIdString))
 
     --------------------------------------------------------------------------------------------------------------------
     --Cache the current values and set the last used type
@@ -1046,20 +1061,20 @@ function FCOIS.CreateFCOISUniqueIdString(itemId, bagId, slotIndex, itemLink)
     local lastCreatedUniqueIDStringData = FCOIS.CreateFCOISUniqueIdStringLast
     lastCreatedUniqueIDStringData.UnsignedItemInstanceId = itemId
     if bagId ~= nil and slotIndex ~= nil then
-        lastCreatedUniqueIDStringData.BagId        = bagId
-        lastCreatedUniqueIDStringData.SlotIndex    = slotIndex
-        lastCreatedUniqueIDStringData.ItemLink     = nil
-        lastCreatedUniqueIDStringData.LastUseType  = FCOIS_CON_FCOISUNIQUEID_TYPE_BAGID_SLOTINDEX
+    lastCreatedUniqueIDStringData.BagId        = bagId
+    lastCreatedUniqueIDStringData.SlotIndex    = slotIndex
+    lastCreatedUniqueIDStringData.ItemLink     = nil
+    lastCreatedUniqueIDStringData.LastUseType  = FCOIS_CON_FCOISUNIQUEID_TYPE_BAGID_SLOTINDEX
     elseif itemLink ~= nil then
-        lastCreatedUniqueIDStringData.ItemLink     = itemLink
-        lastCreatedUniqueIDStringData.BagId        = nil
-        lastCreatedUniqueIDStringData.SlotIndex    = nil
-        lastCreatedUniqueIDStringData.LastUseType  = FCOIS_CON_FCOISUNIQUEID_TYPE_ITEMLINK
+    lastCreatedUniqueIDStringData.ItemLink     = itemLink
+    lastCreatedUniqueIDStringData.BagId        = nil
+    lastCreatedUniqueIDStringData.SlotIndex    = nil
+    lastCreatedUniqueIDStringData.LastUseType  = FCOIS_CON_FCOISUNIQUEID_TYPE_ITEMLINK
     end
     lastCreatedUniqueIDStringData.FCOISCreatedUniqueId = uniqueItemIdString
     --------------------------------------------------------------------------------------------------------------------
 
---d("<"..tos(uniqueItemIdString) .. ", lastUsedType: " .. tos(FCOIS.CreateFCOISUniqueIdStringLastLastUseType))
+    --d("<"..tos(uniqueItemIdString) .. ", lastUsedType: " .. tos(FCOIS.CreateFCOISUniqueIdStringLastLastUseType))
     return uniqueItemIdString
 end
 createFCOISUniqueIdString = FCOIS.CreateFCOISUniqueIdString

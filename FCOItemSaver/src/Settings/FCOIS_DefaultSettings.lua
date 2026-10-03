@@ -326,6 +326,8 @@ function FCOIS.BuildDefaultSettings()
 		},
 		FCOISAdditionalInventoriesButtonOffset = {},
 		FCOISAdditionalInventoriesButtonSize = 32, --#329
+		FCOISAdditionalInventoriesButtonTexture = 280, --#333
+		showFCOISAdditionalInventoriesButtonTooltip = false, --#334
 		showFilterButtonTooltip		= true,
 		showFilterButtonContextTooltip = true,
 		showAntiMessageInChat		= true,
