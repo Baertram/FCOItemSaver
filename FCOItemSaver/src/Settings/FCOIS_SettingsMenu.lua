@@ -1112,6 +1112,9 @@ local function buildResearchAddonsList()
                     colorRed = true
                 end
 
+            --LibCharacterKnowledge older than v3.0.0 has no trait research support
+            elseif researchAddonIdx == FCOIS_RESEARCH_ADDON_LIBCHARACTERKNOWLEDGE and LibCharacterKnowledge.CanItemLinkBeTraitResearchedByCharacter == nil then
+                colorRed = true
             end
             if colorRed == true then
                 researchAddonNameColored = "|cFF0000" .. researchAddonNameColored .. "|r"

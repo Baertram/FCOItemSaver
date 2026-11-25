@@ -1375,7 +1375,8 @@ function FCOIS.CheckIfResearchAddonUsed()
         retVar = true
     else
         if (otherAddons.researchAssistantActive)
-            or (otherAddons.craftStoreFixedAndImprovedActive and CraftStoreFixedAndImprovedLongClassName ~= nil and CraftStoreFixedAndImprovedLongClassName.IsResearchable ~= nil) then
+            or (otherAddons.craftStoreFixedAndImprovedActive and CraftStoreFixedAndImprovedLongClassName ~= nil and CraftStoreFixedAndImprovedLongClassName.IsResearchable ~= nil)
+            or (otherAddons.libCharacterKnowledgeActive and FCOIS.LCK ~= nil and FCOIS.LCK.CanItemLinkBeTraitResearchedByCharacter ~= nil) then
             retVar = true
         end
     end
@@ -1394,6 +1395,9 @@ function FCOIS.CheckIfChosenResearchAddonActive(researchAddonId)
         retVar = (otherAddons.craftStoreFixedAndImprovedActive and CraftStoreFixedAndImprovedLongClassName ~= nil and CraftStoreFixedAndImprovedLongClassName.IsResearchable ~= nil) or false
     elseif researchAddonId == FCOIS_RESEARCH_ADDON_RESEARCHASSISTANT then
         retVar = otherAddons.researchAssistantActive or false
+    elseif researchAddonId == FCOIS_RESEARCH_ADDON_LIBCHARACTERKNOWLEDGE then
+        --Trait research API was added in LibCharacterKnowledge v3.0.0
+        retVar = (otherAddons.libCharacterKnowledgeActive and FCOIS.LCK ~= nil and FCOIS.LCK.CanItemLinkBeTraitResearchedByCharacter ~= nil) or false
     end
     return retVar
 end

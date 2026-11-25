@@ -307,6 +307,29 @@ local function automaticMarkingResearchAdditionalCheckFunc(p_itemData, p_checkFu
             if giti(bagId, slotIndex) == ITEM_TRAIT_INFORMATION_CAN_BE_RESEARCHED then
                 isResearchable = true
             end
+
+            --LibCharacterKnowledge (trait research API since LCK v3.0.0)
+        elseif researchAddonId == FCOIS_RESEARCH_ADDON_LIBCHARACTERKNOWLEDGE then
+            isResearchable = false
+            local LCK = FCOIS.LCK
+            if otherAddons.libCharacterKnowledgeActive and LCK ~= nil and LCK.CanItemLinkBeTraitResearchedByCharacter ~= nil and itemLinkResearch ~= nil then
+                if settings.autoMarkResearchOnlyLoggedInChar == true then
+                    --Current server, currently logged in character
+                    isResearchable = LCK.CanItemLinkBeTraitResearchedByCharacter(itemLinkResearch, nil, nil) == true
+                else
+                    --Current server, all characters which LCK tracks research for
+                    local craftingSkillType, researchLineIndex, traitIndex = LCK.GetSmithingResearchFromItemLink(itemLinkResearch)
+                    if craftingSkillType ~= nil then
+                        for _, charData in ipairs(LCK.GetSmithingResearchStatusForCharacters(craftingSkillType, researchLineIndex, traitIndex, nil, nil, nil)) do
+                            --Trait is not known and is not currently being researched by this character
+                            if charData.knowledge == LCK.KNOWLEDGE_UNKNOWN and charData.remaining == nil then
+                                isResearchable = true
+                                break -- Exit the loop now as a researchable item for a character was found
+                            end
+                        end
+                    end
+                end
+            end
         end
         --d("[FCOIS]automaticMarkingResearchAdditionalCheckFunc, isResearchable: " .. tos(isResearchable))
         return isResearchable, nil
