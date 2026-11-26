@@ -2582,3 +2582,14 @@ function FCOIS.ScanInventory(p_bagId, p_slotIndex, doEcho)
 
     end --if isCheckNecessary then
 end --FCOIS.ScanInventory
+
+--LibCharacterKnowledge: the research data of the other characters is only available after LCK was initialized,
+--which can happen after the inventory scan at EVENT_PLAYER_ACTIVATED. Scan for researchable items again then
+if LibCharacterKnowledge ~= nil and LibCharacterKnowledge.RegisterForCallback ~= nil and LibCharacterKnowledge.EVENT_INITIALIZED ~= nil then
+    LibCharacterKnowledge.RegisterForCallback(FCOIS.addonVars.gAddonName .. "_AutomaticMarksResearch", LibCharacterKnowledge.EVENT_INITIALIZED, function()
+        local settings = FCOIS.settingsVars.settings
+        if settings == nil or settings.autoMarkResearch ~= true or settings.researchAddonUsed ~= FCOIS_RESEARCH_ADDON_LIBCHARACTERKNOWLEDGE then return end
+        if not checkIfResearchAddonUsed() or not checkIfChosenResearchAddonActive() then return end
+        FCOIS.ScanInventoryItemsForAutomaticMarks(nil, nil, "research", false)
+    end)
+end
