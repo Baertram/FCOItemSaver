@@ -1617,10 +1617,12 @@ otherAddons.recipeAddonsSupported = {
 FCOIS_RESEARCH_ADDON_ESO_STANDARD       = 1
 FCOIS_RESEARCH_ADDON_CSFAI              = 2
 FCOIS_RESEARCH_ADDON_RESEARCHASSISTANT  = 3
+FCOIS_RESEARCH_ADDON_LIBCHARACTERKNOWLEDGE = 4
 otherAddons.researchAddonsSupported = {
     [FCOIS_RESEARCH_ADDON_ESO_STANDARD]         = "ESO Standard",
     [FCOIS_RESEARCH_ADDON_CSFAI]                = "CraftStoreFixedAndImproved",
     [FCOIS_RESEARCH_ADDON_RESEARCHASSISTANT]    = "ResearchAssistant",
+    [FCOIS_RESEARCH_ADDON_LIBCHARACTERKNOWLEDGE] = "LibCharacterKnowledge",
 }
 
 --The sets colleciton book addons whicha re supported by FCOIS

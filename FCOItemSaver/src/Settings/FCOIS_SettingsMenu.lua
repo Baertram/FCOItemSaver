@@ -1112,6 +1112,9 @@ local function buildResearchAddonsList()
                     colorRed = true
                 end
 
+            --LibCharacterKnowledge older than v3.0.0 has no trait research support
+            elseif researchAddonIdx == FCOIS_RESEARCH_ADDON_LIBCHARACTERKNOWLEDGE and LibCharacterKnowledge.CanItemLinkBeTraitResearchedByCharacter == nil then
+                colorRed = true
             end
             if colorRed == true then
                 researchAddonNameColored = "|cFF0000" .. researchAddonNameColored .. "|r"
@@ -5543,7 +5546,10 @@ d("[FCOIS]LAM - UpdateDisabled -> FCOIS_CON_LIBSHIFTERBOX_FCOISUNIQUEIDITEMTYPES
                                     end,
                                     setFunc = function(value)
                                         FCOISsettings.researchAddonUsed = value
-
+                                        --Apply the automatic research marks of the newly chosen addon now
+                                        if (FCOISsettings.autoMarkResearch == true and checkIfResearchAddonUsed() and checkIfChosenResearchAddonActive(FCOISsettings.researchAddonUsed)) then
+                                            scanInventoryItemsForAutomaticMarks(nil, nil, "research", false)
+                                        end
                                     end,
                                     --disabled = function() return not FCOISsettings.autoMarkResearch end,
                                     width = "half",
